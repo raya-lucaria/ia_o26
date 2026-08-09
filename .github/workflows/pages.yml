@@ -1,0 +1,20 @@
+name: Verify and publish course
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  course-pages:
+    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@9e51bd65c3198cc764544c759cf091ec86faabe3
+    with:
+      course_path: .
