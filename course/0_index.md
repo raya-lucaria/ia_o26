@@ -1,11 +1,11 @@
 ---
 id: course-root
 title: Inteligencia Artificial — Otoño 2026 (ITAM)
-summary: Replaceable root index scaffold for this course.
+summary: Página raíz inicial del curso.
 status: ready
 ---
 
 # Inteligencia Artificial — Otoño 2026 (ITAM)
 
-This page is replaceable scaffold created by `raya course init`.
-Replace it with course material before treating it as official canon.
+Este es el espacio inicial del curso. Sustituye esta página por el material
+académico antes de tratarlo como canon oficial.
