@@ -1,6 +1,7 @@
 ---
 id: course-root
 title: Inteligencia Artificial — Otoño 2026 (ITAM)
+nav_title: Curso
 summary: Página raíz inicial del curso.
 status: ready
 ---
