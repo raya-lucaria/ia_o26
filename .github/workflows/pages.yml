@@ -15,6 +15,6 @@ concurrency:
 
 jobs:
   course-pages:
-    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@9e51bd65c3198cc764544c759cf091ec86faabe3
+    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@2299564623344ac1d34d6cb9cb397c56f15fd76c
     with:
       course_path: .
