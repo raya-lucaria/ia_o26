@@ -1,0 +1,13 @@
+id: inicio-curso-2026
+type: task
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Inicio de cursos
+  instructions: Inicio del curso. La sesión ordinaria es de 16:00 a 18:00.
+  due: "2026-08-10"
+  status: published
+  tags:
+    - calendario
+    - inicio

@@ -1,0 +1,13 @@
+id: asueto-noviembre-2026
+type: task
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Asueto — no hay clase
+  instructions: El lunes 2 de noviembre no hay sesión de Inteligencia Artificial.
+  due: "2026-11-02"
+  status: published
+  tags:
+    - calendario
+    - asueto

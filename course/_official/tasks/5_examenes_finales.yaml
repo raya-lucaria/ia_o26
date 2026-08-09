@@ -1,0 +1,13 @@
+id: examenes-finales-2026
+type: task
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Período de exámenes finales
+  instructions: Del 7 al 12 de diciembre. La fecha marca el inicio del período.
+  due: "2026-12-07"
+  status: published
+  tags:
+    - calendario
+    - evaluacion

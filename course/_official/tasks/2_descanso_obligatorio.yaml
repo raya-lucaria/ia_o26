@@ -1,0 +1,13 @@
+id: descanso-obligatorio-septiembre-2026
+type: task
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Descanso obligatorio — no hay clase
+  instructions: El miércoles 16 de septiembre no hay sesión de Inteligencia Artificial.
+  due: "2026-09-16"
+  status: published
+  tags:
+    - calendario
+    - asueto

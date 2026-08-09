@@ -1,0 +1,13 @@
+id: fin-de-cursos-2026
+type: task
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Fin de cursos
+  instructions: Última sesión ordinaria del curso.
+  due: "2026-12-02"
+  status: published
+  tags:
+    - calendario
+    - cierre
