@@ -1,3 +1,8 @@
 artifact/
 .venv/
 .venv-local/
+.env
+legacy/
+tools/__pycache__/
+.superpowers/
+docs/superpowers/
