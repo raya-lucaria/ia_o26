@@ -61,3 +61,4 @@ Ninguna representa a una persona real ni a un evento histórico documentado.
 | foto-mccarthy.jpg | John McCarthy, uno de los organizadores de la conferencia de Dartmouth | "null0" — Wikimedia Commons | CC BY-SA 2.0 |
 | foto-minsky.jpg | Marvin Minsky, uno de los organizadores de la conferencia de Dartmouth | Sethwoodworth (carga original en Wikipedia en inglés) — Wikimedia Commons | CC BY 3.0 |
 | foto-selfridge.jpg | Oliver Selfridge, participante de la conferencia de Dartmouth | Daderot — Wikimedia Commons | CC0 |
+| ilus-nuwa.png | Ilustración generada: Nüwa moldeando figuras humanas con barro a la orilla de un río, mitología china | Generada con `gpt-image-2` a partir de `tools/ilustraciones.json` | Imagen generada — sin referente fotográfico ni persona real |
