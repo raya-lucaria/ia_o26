@@ -21,9 +21,22 @@ maquetadas en un solo archivo con la razón de cada una.
 | 5 | *El Anti-Edipo*, pp. 239–240 | Deleuze y Guattari | 1972 | — | ⚠️ de la edición Minnesota |
 | 6 | «Terminator vs Avatar», pp. 335–346 | Fisher | 2012 | — | ⚠️ de *#Accelerate* |
 
-Las dos últimas siguen en derechos y no tienen copia abierta que haya podido
-verificar. Se leen de la antología *#Accelerate* (Urbanomic, 2014) y de la
-edición de Minnesota; su paginación es la del temario.
+Las dos últimas siguen en derechos y no tienen copia abierta verificable.
+
+**Si consigues sus PDF**, déjalos en `fuentes/` con estos nombres exactos y la
+siguiente construcción los recorta por página y los une al cuadernillo:
+
+| Archivo esperado en `fuentes/` | Páginas que se recortan |
+|---|---|
+| `deleuze_guattari_anti_oedipus_minnesota_1983.pdf` | 239–240 |
+| `accelerate_reader_urbanomic_2014.pdf` | 335–346 |
+
+Los rangos son los de tu temario. Si el PDF tiene menos páginas de las pedidas,
+la construcción se detiene y avisa que probablemente sea otra edición, en vez de
+recortar el pasaje equivocado en silencio. Si el archivo no está, el cuadernillo
+se arma sin él y lo reporta.
+
+Esos PDF están en `.gitignore`: se quedan en tu disco, no en el repositorio.
 
 ## Dos avisos sobre lo que sí está
 

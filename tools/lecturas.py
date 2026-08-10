@@ -73,6 +73,47 @@ def _cortar_en_parrafo(texto: str, tope: int) -> str:
 
 
 @dataclass
+class LecturaPDF:
+    """Lectura que llega como PDF y se recorta por rango de paginas.
+
+    Sirve para textos que no existen en fuente abierta y hay que tomar de la
+    edicion citada. El archivo va en fuentes/ y NO se versiona: `.gitignore`
+    excluye los PDF con derechos. Si el archivo no esta, la construccion sigue
+    sin el y lo reporta, en vez de fallar.
+    """
+
+    orden: int
+    id: str
+    titulo: str
+    autor: str
+    anio: str
+    fuente: str                 # archivo dentro de fuentes/
+    paginas: tuple[int, int]    # inclusivo, 1-indexado, como las cita el temario
+    edicion: str
+    por_que: str
+
+    def recortar(self, fuentes: Path, destino: Path) -> Path | None:
+        import pypdf
+        origen = fuentes / self.fuente
+        if not origen.is_file():
+            return None
+        lector = pypdf.PdfReader(origen)
+        a, b = self.paginas
+        if b > len(lector.pages):
+            raise ValueError(
+                f"{self.id}: se piden páginas {a}-{b} pero el PDF tiene "
+                f"{len(lector.pages)}. ¿Es la edición correcta?"
+            )
+        escritor = pypdf.PdfWriter()
+        for i in range(a - 1, b):
+            escritor.add_page(lector.pages[i])
+        salida = destino / f"{self.id}.pdf"
+        with salida.open("wb") as f:
+            escritor.write(f)
+        return salida
+
+
+@dataclass
 class Lectura:
     orden: int
     id: str
@@ -160,6 +201,40 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "Silicon Valley. Escrito en 1995, describe con precisión incómoda el "
                 "e/acc de 2026: es el antecedente directo de la sección de "
                 "aceleracionismos de la unidad de historia."
+            ),
+        ),
+    ]
+}
+
+# Sin fuente abierta verificable. Si consigues el PDF de la edicion citada y lo
+# dejas en fuentes/ con este nombre, la siguiente construccion lo recorta y lo
+# une al cuadernillo. Si no esta, se construye sin el y se reporta.
+PDFS: dict[str, list[LecturaPDF]] = {
+    "filosofia_ia/clase_1": [
+        LecturaPDF(
+            orden=5, id="deleuze-guattari-antiedipo",
+            titulo="El Anti-Edipo, pp. 239–240",
+            autor="Gilles Deleuze y Félix Guattari", anio="1972",
+            fuente="deleuze_guattari_anti_oedipus_minnesota_1983.pdf",
+            paginas=(239, 240),
+            edicion="University of Minnesota Press, 1983",
+            por_que=(
+                "Dos páginas: el pasaje donde proponen no retirarse del proceso "
+                "capitalista sino acelerarlo. Es la divisa que el aceleracionismo "
+                "adoptó, casi siempre citada fuera de su contexto."
+            ),
+        ),
+        LecturaPDF(
+            orden=6, id="fisher-terminator-avatar",
+            titulo="Terminator vs Avatar",
+            autor="Mark Fisher", anio="2012",
+            fuente="accelerate_reader_urbanomic_2014.pdf",
+            paginas=(335, 346),
+            edicion="#Accelerate: The Accelerationist Reader, Urbanomic, 2014",
+            por_que=(
+                "Fisher recupera a Land para la izquierda: acepta el diagnóstico y "
+                "rechaza la conclusión. Cierra el módulo porque responde "
+                "directamente a Meltdown."
             ),
         ),
     ]
@@ -310,6 +385,20 @@ def construir(modulo: str) -> Path:
     HTML(string=doc, base_url=str(salida)).write_pdf(destino)
 
     import pypdf
+    extras, faltantes = [], []
+    for lp in sorted(PDFS.get(modulo, []), key=lambda x: x.orden):
+        recorte = lp.recortar(fuentes, salida)
+        (extras if recorte else faltantes).append(recorte or lp)
+    if extras:
+        fusion = pypdf.PdfWriter()
+        for f in [destino, *extras]:
+            fusion.append(str(f))
+        with destino.open("wb") as fh:
+            fusion.write(fh)
+        print(f"  + {len(extras)} lectura(s) de edición citada unidas")
+    for lp in faltantes:
+        print(f"  · falta {lp.fuente} → se omite «{lp.titulo}» (pp. {lp.paginas[0]}-{lp.paginas[1]})")
+
     paginas = len(pypdf.PdfReader(destino).pages)
     print(f"\n  → {destino.relative_to(RAIZ)}  ({paginas} páginas, "
           f"{destino.stat().st_size // 1024} KB)")
