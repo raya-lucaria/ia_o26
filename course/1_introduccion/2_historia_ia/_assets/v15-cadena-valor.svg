@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-label="Cadena de valor de la inteligencia artificial, de la extraccion de minerales a la anotacion de datos, con la posicion de America Latina en cada eslabon"><rect x="0" y="0" width="1200" height="520" rx="16" fill="#211033"/>
+
+<text x="600" y="42" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="20" font-weight="600" text-anchor="middle">La cadena de valor de la inteligencia artificial</text>
+<text x="600" y="66" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" text-anchor="middle">Cinco eslabones, de la roca al dato etiquetado</text>
+
+<!-- connecting arrow line -->
+<line x1="70" y1="150" x2="1130" y2="150" stroke="#78419e" stroke-width="2"/>
+
+<!-- Arrowheads between boxes -->
+<g fill="#f04cff">
+<polygon points="230,145 244,150 230,155"/>
+<polygon points="464,145 478,150 464,155"/>
+<polygon points="698,145 712,150 698,155"/>
+<polygon points="932,145 946,150 932,155"/>
+</g>
+
+<!-- 5 links -->
+<!-- Link 1: mining -->
+<g>
+<rect x="70" y="100" width="160" height="100" rx="10" fill="#a8ff5a" opacity="0.16" stroke="#a8ff5a" stroke-width="1.5"/>
+<text x="150" y="140" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Extraccion de</text>
+<text x="150" y="158" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">minerales</text>
+<text x="150" y="180" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">litio, cobalto, cobre,</text>
+<text x="150" y="194" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">tierras raras</text>
+</g>
+
+<!-- Link 2: chips -->
+<g>
+<rect x="304" y="100" width="160" height="100" rx="10" fill="#55ddff" opacity="0.16" stroke="#55ddff" stroke-width="1.5"/>
+<text x="384" y="140" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Fabricacion</text>
+<text x="384" y="158" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">de chips</text>
+<text x="384" y="180" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">diseno y litografia</text>
+<text x="384" y="194" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">avanzada</text>
+</g>
+
+<!-- Link 3: data centers -->
+<g>
+<rect x="538" y="100" width="160" height="100" rx="10" fill="#ffd166" opacity="0.16" stroke="#ffd166" stroke-width="1.5"/>
+<text x="618" y="140" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Centros de</text>
+<text x="618" y="158" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">datos</text>
+<text x="618" y="180" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">computo, energia,</text>
+<text x="618" y="194" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">agua de enfriamiento</text>
+</g>
+
+<!-- Link 4: training -->
+<g>
+<rect x="772" y="100" width="160" height="100" rx="10" fill="#f04cff" opacity="0.16" stroke="#f04cff" stroke-width="1.5"/>
+<text x="852" y="140" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Entrenamiento</text>
+<text x="852" y="158" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">de modelos</text>
+<text x="852" y="180" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">investigacion,</text>
+<text x="852" y="194" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">arquitecturas, codigo</text>
+</g>
+
+<!-- Link 5: annotation -->
+<g>
+<rect x="1006" y="100" width="160" height="100" rx="10" fill="#a8ff5a" opacity="0.16" stroke="#a8ff5a" stroke-width="1.5"/>
+<text x="1086" y="140" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Anotacion y</text>
+<text x="1086" y="158" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">moderacion de datos</text>
+<text x="1086" y="180" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">etiquetado, filtrado,</text>
+<text x="1086" y="194" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">moderacion de contenido</text>
+</g>
+
+<!-- Geographic concentration bands -->
+<text x="600" y="240" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Donde se concentra cada eslabon</text>
+
+<g font-family="system-ui, sans-serif" font-size="11" fill="#c8b9d8">
+<rect x="70" y="256" width="160" height="60" rx="8" fill="#78419e" opacity="0.22"/>
+<text x="150" y="274" text-anchor="middle">RD Congo (cobalto),</text>
+<text x="150" y="289" text-anchor="middle">Chile y Argentina (litio),</text>
+<text x="150" y="304" text-anchor="middle">China (tierras raras)</text>
+
+<rect x="304" y="256" width="160" height="60" rx="8" fill="#78419e" opacity="0.22"/>
+<text x="384" y="274" text-anchor="middle">Taiwan y Corea del Sur</text>
+<text x="384" y="289" text-anchor="middle">(fabricacion), EE. UU.</text>
+<text x="384" y="304" text-anchor="middle">y Paises Bajos (diseno)</text>
+
+<rect x="538" y="256" width="160" height="60" rx="8" fill="#78419e" opacity="0.22"/>
+<text x="618" y="274" text-anchor="middle">EE. UU., Irlanda,</text>
+<text x="618" y="289" text-anchor="middle">Singapur; creciendo</text>
+<text x="618" y="304" text-anchor="middle">en el Golfo Persico</text>
+
+<rect x="772" y="256" width="160" height="60" rx="8" fill="#78419e" opacity="0.22"/>
+<text x="852" y="274" text-anchor="middle">Un punado de</text>
+<text x="852" y="289" text-anchor="middle">laboratorios en</text>
+<text x="852" y="304" text-anchor="middle">EE. UU. y China</text>
+
+<rect x="1006" y="256" width="160" height="60" rx="8" fill="#78419e" opacity="0.22"/>
+<text x="1086" y="274" text-anchor="middle">Kenia, Filipinas,</text>
+<text x="1086" y="289" text-anchor="middle">India, Venezuela;</text>
+<text x="1086" y="304" text-anchor="middle">subcontratado</text>
+</g>
+
+<!-- Latin America participation row -->
+<text x="600" y="352" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Donde participa America Latina</text>
+
+<g font-family="system-ui, sans-serif" font-size="11">
+<rect x="70" y="368" width="160" height="80" rx="8" fill="#a8ff5a" opacity="0.14" stroke="#a8ff5a" stroke-width="1"/>
+<text x="150" y="388" fill="#a8ff5a" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Participacion fuerte</text>
+<text x="150" y="406" fill="#c8b9d8" text-anchor="middle">Chile y Argentina:</text>
+<text x="150" y="420" fill="#c8b9d8" text-anchor="middle">litio del "triangulo",</text>
+<text x="150" y="434" fill="#c8b9d8" text-anchor="middle">extraccion primaria</text>
+
+<rect x="304" y="368" width="160" height="80" rx="8" fill="#78419e" opacity="0.14" stroke="#78419e" stroke-width="1"/>
+<text x="384" y="388" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Casi sin presencia</text>
+<text x="384" y="406" fill="#c8b9d8" text-anchor="middle">Sin fabricacion</text>
+<text x="384" y="420" fill="#c8b9d8" text-anchor="middle">de punta en</text>
+<text x="384" y="434" fill="#c8b9d8" text-anchor="middle">la region</text>
+
+<rect x="538" y="368" width="160" height="80" rx="8" fill="#ffd166" opacity="0.14" stroke="#ffd166" stroke-width="1"/>
+<text x="618" y="388" fill="#ffd166" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Emergente</text>
+<text x="618" y="406" fill="#c8b9d8" text-anchor="middle">Brasil, Mexico,</text>
+<text x="618" y="420" fill="#c8b9d8" text-anchor="middle">Chile: primeros</text>
+<text x="618" y="434" fill="#c8b9d8" text-anchor="middle">centros de datos</text>
+
+<rect x="772" y="368" width="160" height="80" rx="8" fill="#78419e" opacity="0.14" stroke="#78419e" stroke-width="1"/>
+<text x="852" y="388" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Casi sin presencia</text>
+<text x="852" y="406" fill="#c8b9d8" text-anchor="middle">Sin laboratorio</text>
+<text x="852" y="420" fill="#c8b9d8" text-anchor="middle">de frontera</text>
+<text x="852" y="434" fill="#c8b9d8" text-anchor="middle">propio</text>
+
+<rect x="1006" y="368" width="160" height="80" rx="8" fill="#a8ff5a" opacity="0.14" stroke="#a8ff5a" stroke-width="1"/>
+<text x="1086" y="388" fill="#a8ff5a" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Participacion fuerte</text>
+<text x="1086" y="406" fill="#c8b9d8" text-anchor="middle">Venezuela y</text>
+<text x="1086" y="420" fill="#c8b9d8" text-anchor="middle">otros paises:</text>
+<text x="1086" y="434" fill="#c8b9d8" text-anchor="middle">mano de obra barata</text>
+</g>
+
+<text x="600" y="490" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">America Latina participa en los extremos de la cadena —extraccion y mano de obra— casi nunca en el centro de alto valor.</text>
+</svg>
