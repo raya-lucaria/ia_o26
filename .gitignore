@@ -6,3 +6,8 @@ legacy/
 tools/__pycache__/
 .superpowers/
 docs/superpowers/
+
+# Lecturas con derechos vigentes: se enlazan, no se republican.
+lecturas/**/fuentes/turing_*.pdf
+lecturas/**/fuentes/searle_*.pdf
+lecturas/**/lecturas/cuadernillo.html
