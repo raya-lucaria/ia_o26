@@ -143,14 +143,16 @@ una traducción al francés, y no aparece en una edición en inglés hasta la se
 de 1823. La novela
 retoma casi la misma pregunta que el Golem: Victor Frankenstein construye una
 criatura y la abandona, y es ese abandono, no la criatura en sí, lo que produce la
-tragedia. Poco más de un siglo después, el 25 de enero de 1921, se estrena en Praga
-*R.U.R. (Robots Universales Rossum)*, de Karel Čapek. La obra acuña la palabra
-"robot" —de una raíz eslava para "trabajo forzado"—, que Karel atribuyó a su
-hermano Josef. En R.U.R. los robots sustituyen el trabajo humano y luego se
-rebelan: sustitución y responsabilidad convergen en la misma obra. (La línea
-del tiempo de esta página marca 1920, el año en que Čapek escribió la obra;
-esta prosa usa 1921, el año de su estreno —ambas fechas son correctas, para
-eventos distintos.)
+tragedia. Poco más de un siglo después, *R.U.R. (Robots Universales Rossum)*, de
+Karel Čapek, se estrena mundialmente el 2 de enero de 1921 en Hradec Králové, a
+cargo de una compañía amateur que se adelantó al plan original; el estreno
+profesional en el Teatro Nacional de Praga llega tres semanas después, el 25 de
+enero de 1921. La obra acuña la palabra "robot" —de una raíz eslava para "trabajo
+forzado"—, que Karel atribuyó a su hermano Josef. En R.U.R. los robots sustituyen
+el trabajo humano y luego se rebelan: sustitución y responsabilidad convergen en
+la misma obra. (La línea del tiempo de esta página marca 1920, el año en que
+Čapek escribió la obra; esta prosa usa 1921, el año de sus estrenos —todas las
+fechas son correctas, para eventos distintos.)
 
 ## Astroboy
 

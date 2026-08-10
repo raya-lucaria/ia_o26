@@ -42,8 +42,16 @@ def test_svg_cumple_convenciones():
         texto = svg.read_text(encoding="utf-8")
         raiz = texto.split(">")[0]
         assert 'viewBox="' in texto, f"{svg.name} sin viewBox"
-        assert "width=" not in raiz, f"{svg.name} fija width en la raiz"
-        assert "height=" not in raiz, f"{svg.name} fija height en la raiz"
+        # El sitio incrusta estos SVG con <img src="...svg">, y el CSS del
+        # skin solo trae "max-width: 100%; height: auto" (sin "width"). Un
+        # <svg> sin width/height propios (solo viewBox) no tiene tamano
+        # intrinseco: el navegador cae al tamano por omision de un elemento
+        # reemplazado (~300x150 CSS px) en vez de llenar el contenedor de la
+        # figura, y el diagrama se ve minusculo e ilegible. Verificado
+        # visualmente con Chrome sin interfaz contra el sitio construido
+        # (Tarea 18) -- width/height deben estar presentes, no ausentes.
+        assert "width=" in raiz, f"{svg.name} sin width en la raiz: se vera minusculo en el sitio"
+        assert "height=" in raiz, f"{svg.name} sin height en la raiz: se vera minusculo en el sitio"
         assert 'fill="#211033"' in texto, f"{svg.name} sin fondo legible en impresion"
         assert 'role="img"' in texto and "aria-label=" in texto
 

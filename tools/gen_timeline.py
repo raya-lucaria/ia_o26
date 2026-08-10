@@ -45,9 +45,14 @@ def envolver(texto, ancho=20):
 
 
 def marco(alto, aria):
+    # width/height explicitos (ademas de viewBox): sin ellos, el <svg> no
+    # tiene tamano intrinseco y el navegador lo incrusta con el tamano por
+    # omision de un elemento reemplazado (~300x150 CSS px) en vez de llenar
+    # el contenedor de la figura -- el diagrama se ve minusculo e ilegible
+    # (encontrado en la revision visual de la Tarea 18).
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {ANCHO} {alto}" '
-        f'role="img" aria-label="{escape(aria)}">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{ANCHO}" height="{alto}" '
+        f'viewBox="0 0 {ANCHO} {alto}" role="img" aria-label="{escape(aria)}">'
         f'<rect x="0" y="0" width="{ANCHO}" height="{alto}" rx="16" fill="{FONDO}"/>'
     )
 
