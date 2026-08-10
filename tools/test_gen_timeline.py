@@ -1,7 +1,10 @@
+import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
@@ -9,8 +12,24 @@ TRAMOS = ["mitos", "inteligencia", "arco-1", "arco-2", "boom", "actual",
           "raices", "sociedad"]
 
 
-def test_genera_todos_los_svg():
+def _cargar_gen_timeline():
+    """Carga tools/gen_timeline.py como modulo para probar sus funciones directamente."""
+    spec = importlib.util.spec_from_file_location(
+        "gen_timeline", RAIZ / "tools/gen_timeline.py"
+    )
+    modulo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modulo)
+    return modulo
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _svgs_frescos():
+    """Regenera los SVG una vez por modulo para que ninguna prueba lea archivos
+    obsoletos si se corre con -k contra un solo test."""
     subprocess.run([sys.executable, str(RAIZ / "tools/gen_timeline.py")], check=True)
+
+
+def test_genera_todos_los_svg():
     assert (ASSETS / "v1-panorama.svg").is_file(), "falta el panorama"
     for slug in TRAMOS:
         assert (ASSETS / f"v1-tramo-{slug}.svg").is_file(), f"falta el tramo {slug}"
@@ -21,10 +40,24 @@ def test_svg_cumple_convenciones():
         ASSETS / f"v1-tramo-{s}.svg" for s in TRAMOS
     ]:
         texto = svg.read_text(encoding="utf-8")
+        raiz = texto.split(">")[0]
         assert 'viewBox="' in texto, f"{svg.name} sin viewBox"
-        assert "width=" not in texto.split(">")[0], f"{svg.name} fija width en la raiz"
+        assert "width=" not in raiz, f"{svg.name} fija width en la raiz"
+        assert "height=" not in raiz, f"{svg.name} fija height en la raiz"
         assert 'fill="#211033"' in texto, f"{svg.name} sin fondo legible en impresion"
         assert 'role="img"' in texto and "aria-label=" in texto
+
+
+def test_envolver_no_trunca_ninguna_etiqueta():
+    """hitos.json es la unica fuente de verdad y crecera con las siguientes 9
+    tareas; envolver() descarta en silencio las palabras que no caben en dos
+    lineas, asi que cualquier etiqueta larga debe fallar aqui, no en el SVG."""
+    gen_timeline = _cargar_gen_timeline()
+    datos = json.loads((RAIZ / "tools/hitos.json").read_text(encoding="utf-8"))
+    for h in datos["hitos"]:
+        original = " ".join(h["etiqueta"].split())
+        envuelto = " ".join(" ".join(gen_timeline.envolver(h["etiqueta"])).split())
+        assert envuelto == original, f"envolver() trunco la etiqueta: {h['etiqueta']!r}"
 
 
 def test_hitos_tienen_forma_valida():

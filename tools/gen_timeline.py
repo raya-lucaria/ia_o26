@@ -96,7 +96,6 @@ def dibuja(hitos, bandas, titulo, aria, alto=400):
     for i, h in enumerate(hitos):
         x = x_de(h["anio"])
         lado, tier = NIVELES[i % 4]
-        arriba = lado < 0
         salto = 48 + tier * 46
         p.append(f'<circle cx="{x:.1f}" cy="{eje}" r="5" fill="{ACENTO}"/>')
         y_anio = eje + lado * (salto + 14)
