@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-label="Tres linajes de la inteligencia artificial: simbolico, conexionista, y control y refuerzo, de 1930 a 2026, con los dos inviernos marcados como franjas atenuadas">
+<rect x="0" y="0" width="1200" height="560" rx="16" fill="#211033"/>
+<text x="90.0" y="34.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="17" font-weight="600" text-anchor="start">Tres linajes, 1930-2026</text>
+<text x="90.0" y="54.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="400" text-anchor="start">Convergen despues de 2016</text>
+<rect x="540.0" y="80" width="110.0" height="400" fill="#55ddff" opacity="0.07"/>
+<rect x="720.0" y="80" width="60.0" height="400" fill="#55ddff" opacity="0.07"/>
+<text x="595.0" y="72.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle" opacity="0.85">Primer invierno</text>
+<text x="750.0" y="72.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle" opacity="0.85">Segundo invierno</text>
+<line x1="150" y1="140" x2="1110" y2="140" stroke="#ffd166" stroke-width="2.5" opacity="0.55"/>
+<text x="90.0" y="124.0" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">Simbolico</text>
+<line x1="150" y1="300" x2="1110" y2="300" stroke="#f04cff" stroke-width="2.5" opacity="0.55"/>
+<text x="90.0" y="284.0" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">Conexionista</text>
+<line x1="150" y1="460" x2="1110" y2="460" stroke="#55ddff" stroke-width="2.5" opacity="0.55"/>
+<text x="90.0" y="444.0" fill="#55ddff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">Control y refuerzo</text>
+<circle cx="210.0" cy="140" r="5" fill="#ffd166"/>
+<text x="210.0" y="158.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1936</text>
+<text x="210.0" y="172.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Maquina de</text>
+<text x="210.0" y="185.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Turing</text>
+<circle cx="410.0" cy="140" r="5" fill="#ffd166"/>
+<text x="410.0" y="128.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1956</text>
+<text x="410.0" y="101.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Conferencia de</text>
+<text x="410.0" y="114.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Dartmouth</text>
+<circle cx="650.0" cy="140" r="5" fill="#ffd166"/>
+<text x="650.0" y="158.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1980</text>
+<text x="650.0" y="172.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Sistemas expertos</text>
+<text x="650.0" y="185.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">(XCON)</text>
+<circle cx="720.0" cy="140" r="5" fill="#ffd166"/>
+<text x="720.0" y="128.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1987</text>
+<text x="720.0" y="101.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Declive: colapso</text>
+<text x="720.0" y="114.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">maquinas LISP</text>
+<circle cx="280.0" cy="300" r="5" fill="#f04cff"/>
+<text x="280.0" y="318.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1943</text>
+<text x="280.0" y="332.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Neurona de</text>
+<text x="280.0" y="345.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">McCulloch-Pitts</text>
+<circle cx="430.0" cy="300" r="5" fill="#f04cff"/>
+<text x="430.0" y="288.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1958</text>
+<text x="430.0" y="261.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Perceptron de</text>
+<text x="430.0" y="274.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Rosenblatt</text>
+<circle cx="540.0" cy="300" r="5" fill="#f04cff"/>
+<text x="540.0" y="318.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1969</text>
+<text x="540.0" y="332.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Perceptrons corta</text>
+<text x="540.0" y="345.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">el linaje</text>
+<circle cx="710.0" cy="300" r="5" fill="#f04cff"/>
+<text x="710.0" y="288.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1986</text>
+<text x="710.0" y="261.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Retropropagacion</text>
+<text x="710.0" y="274.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">(Rumelhart et al.)</text>
+<circle cx="970.0" cy="300" r="5" fill="#f04cff"/>
+<text x="970.0" y="318.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">2012</text>
+<text x="970.0" y="332.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">AlexNet</text>
+<circle cx="1020.0" cy="300" r="5" fill="#f04cff"/>
+<text x="1020.0" y="288.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">2017</text>
+<text x="1020.0" y="274.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Transformers</text>
+<circle cx="170.0" cy="460" r="4" fill="#55ddff"/>
+<text x="170.0" y="478.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1932</text>
+<text x="170.0" y="492.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Psicologia animal</text>
+<text x="170.0" y="505.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">(condicionamiento)</text>
+<circle cx="420.0" cy="460" r="5" fill="#55ddff"/>
+<text x="420.0" y="448.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1957</text>
+<text x="420.0" y="421.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Programacion dinamica</text>
+<text x="420.0" y="434.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">de Bellman</text>
+<circle cx="440.0" cy="460" r="5" fill="#55ddff"/>
+<text x="440.0" y="478.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1959</text>
+<text x="440.0" y="492.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">Samuel y las</text>
+<text x="440.0" y="505.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">damas</text>
+<circle cx="770.0" cy="460" r="5" fill="#55ddff"/>
+<text x="770.0" y="448.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">1992</text>
+<text x="770.0" y="434.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">TD-Gammon</text>
+<circle cx="1010.0" cy="460" r="5" fill="#55ddff"/>
+<text x="1010.0" y="478.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">2016</text>
+<text x="1010.0" y="492.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">AlphaGo</text>
+<circle cx="1070.0" cy="460" r="4" fill="#55ddff"/>
+<text x="1070.0" y="448.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">2022</text>
+<text x="1070.0" y="421.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">RLHF y modelos</text>
+<text x="1070.0" y="434.0" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" font-weight="400" text-anchor="middle">de razonamiento</text>
+<line x1="1020.0" y1="140" x2="1080.0" y2="300" stroke="#ffd166" stroke-width="1.5" opacity="0.35" stroke-dasharray="3,3"/>
+<line x1="1020.0" y1="300" x2="1080.0" y2="300" stroke="#f04cff" stroke-width="1.5" opacity="0.35" stroke-dasharray="3,3"/>
+<line x1="1020.0" y1="460" x2="1080.0" y2="300" stroke="#55ddff" stroke-width="1.5" opacity="0.35" stroke-dasharray="3,3"/>
+<circle cx="1080.0" cy="300" r="6" fill="#f7f2ff" opacity="0.9"/>
+<text x="1080.0" y="324.0" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Convergencia</text>
+</svg>
