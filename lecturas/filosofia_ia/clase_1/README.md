@@ -38,6 +38,20 @@ se arma sin él y lo reporta.
 
 Esos PDF están en `.gitignore`: se quedan en tu disco, no en el repositorio.
 
+## Verificación contra la edición original
+
+Los dos textos de CCRU se comprobaron contra el folleto donde se publicaron,
+*Abstract Culture* (serie completa, 258 pp., vía [Monoskop](https://monoskop.org/CCRU)):
+
+| Texto | Lo que tenemos | Folleto original | Diferencia |
+|---|---|---|---|
+| Meltdown | 3 554 palabras | 3 560 (pp. 14–26 de *swarm1*) | 0.2 % |
+| Swarmachines | 1 866 palabras | 1 775 (pp. 72–78 de *swarm1*) | 5.1 % |
+
+**Ambos están íntegros.** Swarmachines son 7 páginas en el original, no 11: la
+diferencia con el temario es la introducción que los editores de la antología le
+anteponen. El texto de ccru.net no está recortado.
+
 ## Dos avisos sobre lo que sí está
 
 **La paginación no coincide.** El temario cuenta páginas de la antología
