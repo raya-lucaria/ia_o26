@@ -1,9 +1,7 @@
 """Extrae, inventaria y recomprime las imagenes del deck heredado."""
 import csv
 import re
-import shutil
 import subprocess
-import sys
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -17,7 +15,6 @@ ASSETS = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
 INVENTARIO = RAIZ / "tools/imagenes_heredadas.tsv"
 ANCHO_MAX = 1400
 
-NS_P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 NS_A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
 
