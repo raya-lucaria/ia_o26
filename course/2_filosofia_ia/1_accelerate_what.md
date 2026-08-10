@@ -35,6 +35,13 @@ entre tres horas y media y cuatro.
 - **[Descargar el PDF](_assets/cuadernillo_modulo_1_accelerate.pdf)** — 1.2 MB,
   para leerlo sin conexión o imprimirlo.
 
+## Qué hay que entregar
+
+Después de leer —no antes—, contesta el **[cuestionario del
+módulo](https://forms.gle/bBHJVMfvKFEr599s5)**. Es lo único que se entrega, y
+está pensado para que llegues a la sesión con una posición tomada, no para
+comprobar que pasaste las páginas.
+
 ## Qué se lee, y por qué
 
 | # | Lectura | Por qué está aquí |
