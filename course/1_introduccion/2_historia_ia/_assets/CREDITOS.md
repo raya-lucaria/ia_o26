@@ -8,4 +8,24 @@ Ninguna representa a una persona real ni a un evento histórico documentado.
 
 | Archivo | Descripción | Autor / origen | Licencia |
 |---|---|---|---|
-| | | | |
+| legacy-conceptos-ia.png | Diagrama de conceptos de IA del deck original | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-escalera-causalidad.png | Diagrama ilustrado de la escalera de causalidad de Judea Pearl (asociación, intervención, contrafactuales) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-diagrama-perceptron.png | Diagrama etiquetado en español del perceptrón (señales de entrada, pesos sinápticos, función de activación) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-eliza-conversacion.png | Captura de una conversación con el chatbot ELIZA (reimplementación de Norbert Landsteiner, 2005) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-tasa-error-imagenet.png | Gráfica de la tasa de error de ImageNet 2010-2015 (Fig. 1.12 del libro *Deep Learning*, datos de Krizhevsky et al. y He et al.) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-precio-flops-gpu.png | Gráfica de evolución del precio por FLOPS de GPUs, 2008-2020 | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-tendencias-computo.png | Gráfica de tendencias de cómputo (ley de Moore, ley de Huang, bio-anchors) con múltiples pendientes de crecimiento | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-tamano-redes-neuronales.png | Gráfica del crecimiento del tamaño de redes neuronales comparado con cerebros biológicos (Fig. 1.11 del libro *Deep Learning*) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-instituciones-ia.png | Infografía de instituciones académicas y empresas del ecosistema de IA | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-rendimiento-gpu-nvidia.png | Gráfica de barras de la evolución del rendimiento de GPUs NVIDIA | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-flops-consolas.png | Tabla de FLOPS de consolas de videojuegos por año de lanzamiento | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-alphago-lee-sedol.png | Captura de la partida de Go entre AlphaGo y Lee Sedol | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-costo-entrenamiento-gpt3.png | Infografía del costo de entrenamiento de GPT-3 | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-costo-entrenamiento-gpt4.png | Captura de texto sobre el costo de entrenamiento y los parámetros de GPT-4 según declaraciones de Sam Altman | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-automata-celular-1d.png | Diagrama explicativo de un autómata celular unidimensional | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-ingresos-deepmind.png | Infografía de ingresos y pérdidas de DeepMind según su declaración financiera | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-prediccion-empleos-automatizacion.png | Tabla comparativa de predicciones de empleos creados y destruidos por automatización (Gartner, Forrester, WEF, McKinsey) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-taxonomia-teoria-juegos.png | Diagrama de taxonomía de teoría de juegos (cooperativo, de suma cero, dinámico, información perfecta/imperfecta) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-despido-gebru.png | Captura de titular de noticia sobre el despido de Timnit Gebru de Google | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-riesgo-automatizacion-entorno.png | Matriz de riesgo de automatización de empleos por interacción social y estructura del entorno de trabajo | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |
+| legacy-riesgo-automatizacion-habilidad.png | Matriz de riesgo de automatización de empleos por tipo de habilidad (optimización vs. creatividad o estrategia) | Deck heredado `02_historia_del_ai.pptx` | Procedencia no documentada en el material original — uso educativo |

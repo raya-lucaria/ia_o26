@@ -1,0 +1,80 @@
+origen	decision	destino	descripcion	fuente_declarada
+image100.png	descartar		Tarjeta con cita de Frank Herbert (Dune), solo decorativa
+image101.jpg	descartar		Captura de miniatura del documental "The Big Reset" (DW)
+image102.jpg	descartar		Captura de miniatura del documental "The Big Reset" (DW)
+image103.png	descartar		Fotograma promocional de la serie Foundation (Hari Seldon), material con derechos
+image104.jpg	descartar		Gráfico decorativo de banner sobre Renta Básica Universal
+image13.png	descartar		Fotografía de una flor, decoración sin relación con el contenido
+image23.png	descartar		Foto del billete de £50 con Alan Turing, existen fotos con licencia clara en Commons
+image24.png	descartar		Retrato fotográfico de Alan Turing, disponible en Commons
+image26.png	descartar		Retrato fotográfico de John von Neumann, disponible en Commons
+image27.png	descartar		Tarjeta con cita de John von Neumann, solo decorativa
+image28.png	descartar		Ilustración antigua de Medea y Talos, existen versiones equivalentes en Commons
+image29.png	descartar		Letra "A" estilizada de plantilla, decoración
+image30.png	descartar		Fotografía histórica relacionada con el Golem, disponible en Commons
+image31.png	descartar		Ilustración de la diosa Nuwa, decorativa/narrativa sin datos propios
+image32.png	descartar		Fotografía de la máquina de Babbage en museo, disponible en Commons
+image33.png	descartar		Retrato pop-art estilizado de Charles Babbage, decorativo y redundante
+image34.jpg	descartar		Cómic-línea de tiempo de IA, resolución muy baja (320x180, fotograma de video)
+image35.png	descartar		Ilustración estilizada de Ada Lovelace, decorativa y redundante
+image36.jpg	descartar		Collage de mapa de Tokio y puntos satelitales, decorativo, sin etiquetas de datos
+image37.png	descartar		Ilustración abstracta de flor rosa, decoración
+image40.jpg	descartar		Tarjeta de título "INTELLIGENCE" con cerebro, plantilla decorativa
+image41.png	descartar		Personaje Astroboy, imagen con derechos de autor, decorativa
+image42.png	descartar		Forma abstracta rosa tipo ameba, decoración
+image43.png	descartar		Robot mecha de ciencia ficción, imagen con derechos, decorativa
+image44.png	descartar		Viñeta cómica sobre robots y aprendizaje automático, meme
+image45.png	descartar		Retrato pintado de David Hume, disponible en Commons
+image46.png	conservar	legacy-conceptos-ia.png	Diagrama de conceptos de IA del deck	deck original
+image47.png	descartar		Viñeta cómica sobre argumentos circulares, meme
+image48.png	conservar	legacy-escalera-causalidad.png	Diagrama ilustrado de la escalera de causalidad de Judea Pearl	deck original
+image49.png	descartar		Fotografía de personas con paraguas bajo la lluvia, foto genérica decorativa
+image50.png	conservar	legacy-diagrama-perceptron.png	Diagrama etiquetado en español del perceptrón (señales, pesos, función de activación)	deck original
+image51.png	descartar		Retrato fotográfico de un pionero histórico de IA, disponible en Commons
+image52.png	conservar	legacy-eliza-conversacion.png	Captura de una conversación real con el chatbot ELIZA	deck original
+image53.png	conservar	legacy-tasa-error-imagenet.png	Gráfica de la tasa de error de ImageNet 2010-2015 (Fig. 1.12, libro Deep Learning)	deck original
+image54.png	descartar		Portada del libro "The Book of Why" de Judea Pearl, decorativa/promocional
+image55.png	descartar		Fotograma de la película Frankenstein (1931), material con derechos
+image56.png	descartar		Gráfica de costo de GFLOPS "según Wikipedia", ya disponible en Commons
+image57.png	conservar	legacy-precio-flops-gpu.png	Gráfica de evolución del precio por FLOPS de GPUs 2008-2020	deck original
+image58.png	descartar		Retrato fotográfico de un investigador histórico, disponible en Commons
+image59.png	descartar		Fotografía compuesta de los "padrinos" del deep learning (Hinton, LeCun, Bengio), disponible en Commons
+image60.png	conservar	legacy-tendencias-computo.png	Gráfica de tendencias de cómputo (Moore, Huang, bio-anchors) con múltiples pendientes	deck original
+image61.png	descartar		Collage fotográfico de los fundadores de la Conferencia de Dartmouth, retratos disponibles en Commons
+image62.png	conservar	legacy-tamano-redes-neuronales.png	Gráfica del crecimiento del tamaño de redes neuronales vs. cerebros biológicos (Fig. 1.11, libro Deep Learning)	deck original
+image63.png	conservar	legacy-instituciones-ia.png	Infografía de instituciones y empresas del ecosistema de IA	deck original
+image64.png	descartar		Logo de OpenAI, disponible en Commons
+image66.png	conservar	legacy-rendimiento-gpu-nvidia.png	Gráfica de barras de evolución del rendimiento de GPUs NVIDIA	deck original
+image67.png	conservar	legacy-flops-consolas.png	Tabla de FLOPS de consolas de videojuegos por año de lanzamiento	deck original
+image68.png	descartar		Fotografía del auto autónomo de Google, disponible en Commons
+image69.png	conservar	legacy-alphago-lee-sedol.png	Captura de la partida de Go AlphaGo vs. Lee Sedol	deck original
+image70.png	conservar	legacy-costo-entrenamiento-gpt3.png	Infografía del costo de entrenamiento de GPT-3	deck original
+image71.png	descartar		Fotografía promocional de un TPU v4 de Google, poco contenido informativo
+image72.png	conservar	legacy-costo-entrenamiento-gpt4.png	Captura de texto sobre el costo y parámetros de GPT-4 según Sam Altman	deck original
+image74.png	conservar	legacy-automata-celular-1d.png	Diagrama explicativo de un autómata celular unidimensional	deck original
+image75.png	descartar		Retrato fotográfico histórico relacionado con teoría de juegos, disponible en Commons
+image76.png	descartar		Matriz de pagos simplificada (juego nuclear EEUU-URSS), baja resolución, rehacer como diagrama nativo
+image77.png	descartar		Retrato fotográfico de un teórico de juegos, disponible en Commons
+image78.png	descartar		Diagrama de reglas del Juego de la Vida de Conway, ampliamente disponible en Commons
+image79.png	conservar	legacy-ingresos-deepmind.png	Infografía de ingresos y pérdidas de DeepMind según su declaración financiera	deck original
+image8.png	descartar		Ilustración abstracta de humo azul, decoración
+image80.png	descartar		Portada del libro "AI Superpowers" de Kai-Fu Lee, decorativa/promocional
+image81.png	descartar		Portada del libro "Life 3.0" de Max Tegmark, decorativa/promocional
+image82.png	descartar		Pantalla de título del documental "AlphaGo" de Netflix, decorativa/promocional
+image83.png	conservar	legacy-prediccion-empleos-automatizacion.png	Tabla comparativa de predicciones de empleos creados/destruidos por automatización (Gartner, Forrester, WEF, McKinsey)	deck original
+image84.png	descartar		Ilustración tipo mural sobre industrialización, probable equivalente en Commons
+image85.png	descartar		Portada del libro "Theory of Games and Economic Behavior" con retratos, disponibles en Commons
+image86.png	conservar	legacy-taxonomia-teoria-juegos.png	Diagrama de taxonomía de teoría de juegos (cooperativo, de suma cero, dinámico, etc.)	deck original
+image87.png	descartar		Retrato fotográfico de Sam Altman, disponible en Commons
+image88.png	descartar		Fotografía compuesta de directores tecnológicos (Musk, Bezos, Gates, Page, Zuckerberg), disponibles en Commons
+image89.png	descartar		Tarjeta con cita de Frank Herbert, decorativa
+image90.png	descartar		Portada del libro "The Fourth Industrial Revolution" de Klaus Schwab, decorativa/promocional
+image91.png	conservar	legacy-despido-gebru.png	Captura de titular de noticia sobre el despido de Timnit Gebru de Google	deck original
+image92.png	conservar	legacy-riesgo-automatizacion-entorno.png	Matriz de riesgo de automatización de empleos por interacción social y estructura del entorno	deck original
+image93.png	descartar		Logo de Tesla, disponible en Commons
+image94.jpg	descartar		Tarjeta de título "EMERGENCE", plantilla decorativa
+image95.jpg	descartar		Tarjeta de título "CONSCIOUSNESS", plantilla decorativa
+image96.png	conservar	legacy-riesgo-automatizacion-habilidad.png	Matriz de riesgo de automatización de empleos por tipo de habilidad (optimización vs. creatividad)	deck original
+image97.png	descartar		Retrato fotográfico de Timnit Gebru, disponible en Commons
+image98.png	descartar		Tarjeta con cita de Frank Herbert sobre el poder, con foto histórica de multitud decorativa
+image99.jpg	descartar		Miniatura de episodio de podcast (Lex Fridman con Kai-Fu Lee), decorativa/promocional
