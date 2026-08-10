@@ -21,6 +21,10 @@
     { "anio": 1822, "etiqueta": "Babbage: maquina diferencial", "tramo": "inteligencia" },
     { "anio": 1837, "etiqueta": "Babbage: maquina analitica", "tramo": "inteligencia" },
     { "anio": 1843, "etiqueta": "Nota G de Ada Lovelace", "tramo": "inteligencia" },
+    { "anio": 1854, "etiqueta": "Boole: Las leyes del pensamiento", "tramo": "inteligencia" },
+    { "anio": 1904, "etiqueta": "Spearman propone el factor g", "tramo": "inteligencia" },
+    { "anio": 1905, "etiqueta": "Binet y Simon miden la inteligencia", "tramo": "inteligencia" },
+    { "anio": 1917, "etiqueta": "Tests Army Alpha y Beta en EEUU", "tramo": "inteligencia" },
 
     { "anio": 1936, "etiqueta": "Maquina de Turing", "tramo": "arco-1" },
     { "anio": 1943, "etiqueta": "Neurona de McCulloch y Pitts", "tramo": "arco-1", "ancla": true },
@@ -42,9 +46,12 @@
     { "anio": 2017, "etiqueta": "Arquitectura Transformer", "tramo": "arco-2" },
     { "anio": 2022, "etiqueta": "Lanzamiento de ChatGPT", "tramo": "arco-2", "ancla": true },
 
+    { "anio": 1986, "etiqueta": "Backprop de Rumelhart y Hinton", "tramo": "boom" },
     { "anio": 2007, "etiqueta": "CUDA abre las GPU al computo general", "tramo": "boom" },
+    { "anio": 2015, "etiqueta": "Google libera TensorFlow", "tramo": "boom" },
     { "anio": 2018, "etiqueta": "Turing a Hinton, LeCun y Bengio", "tramo": "boom" },
     { "anio": 2020, "etiqueta": "GPT-3 y la apuesta por la escala", "tramo": "boom" },
+    { "anio": 2021, "etiqueta": "Schmidhuber disputa el credito Turing", "tramo": "boom" },
     { "anio": 2024, "etiqueta": "Turing a Barto y Sutton", "tramo": "boom" },
 
     { "anio": 2023, "etiqueta": "Modelos multimodales de frontera", "tramo": "actual" },
@@ -61,8 +68,11 @@
     { "anio": 1987, "etiqueta": "Angluin y el algoritmo L*", "tramo": "raices" },
     { "anio": 2002, "etiqueta": "Wolfram: A New Kind of Science", "tramo": "raices" },
 
+    { "anio": 1950, "etiqueta": "Wiener y el uso humano de humanos", "tramo": "sociedad" },
     { "anio": 2005, "etiqueta": "Amazon Mechanical Turk", "tramo": "sociedad" },
     { "anio": 2013, "etiqueta": "Manifiesto aceleracionista", "tramo": "sociedad" },
-    { "anio": 2018, "etiqueta": "Gender Shades documenta sesgo", "tramo": "sociedad" }
+    { "anio": 2018, "etiqueta": "Gender Shades documenta sesgo", "tramo": "sociedad" },
+    { "anio": 2021, "etiqueta": "Stochastic Parrots cuestiona los LLM", "tramo": "sociedad" },
+    { "anio": 2024, "etiqueta": "Union Europea aprueba la ley de IA", "tramo": "sociedad" }
   ]
 }
