@@ -16,7 +16,7 @@ TRAMOS = {
     "mitos": "Imaginar la maquina",
     "inteligencia": "Que es la inteligencia",
     "arco-1": "El arco historico: 1936-1973",
-    "arco-2": "El arco historico: 1980-2022",
+    "arco-2": "El arco historico: 1982-2022",
     "boom": "Por que el boom",
     "actual": "Estado actual",
     "raices": "Otras raices",

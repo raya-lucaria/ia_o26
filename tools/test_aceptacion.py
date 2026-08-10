@@ -134,6 +134,24 @@ def test_5_toda_imagen_tiene_credito_y_las_generadas_estan_marcadas():
         assert "generad" in fila[0].lower(), f"{img.name} sin marca de generada"
 
 
+def test_5b_toda_imagen_en_assets_esta_referenciada_por_alguna_pagina():
+    """Lo inverso de test_5: que toda imagen tenga credito no evita que se
+    quede sin usar. Esto es exactamente lo que dejo pasar 23 de 74 recursos
+    comiteados y acreditados (4.4 MB) sin que ninguna pagina los
+    mencionara (hallazgo H7 de la revision final). CREDITOS.md no cuenta
+    como pagina -- una fila de creditos no es un uso."""
+    texto_paginas = " ".join(
+        (UNIDAD / p).read_text(encoding="utf-8")
+        for p in PAGINAS if (UNIDAD / p).is_file()
+    )
+    extensiones = {".png", ".jpg", ".jpeg", ".svg", ".gif"}
+    huerfanas = sorted(
+        img.name for img in ASSETS.iterdir()
+        if img.suffix.lower() in extensiones and img.name not in texto_paginas
+    )
+    assert not huerfanas, f"imagenes en _assets/ sin usar en ninguna pagina: {huerfanas}"
+
+
 def test_6_ninguna_generada_representa_persona_real_o_evento_documentado():
     creditos_texto = (ASSETS / "CREDITOS.md").read_text(encoding="utf-8")
     filas_generadas = [
@@ -157,19 +175,57 @@ def test_6_ninguna_generada_representa_persona_real_o_evento_documentado():
             )
 
 
+def _filas_de_tabla(texto):
+    """Devuelve (encabezado, filas) de la primera tabla Markdown del texto,
+    como listas de celdas. Omite la fila separadora ("|---|---|...")."""
+    lineas = [l for l in texto.splitlines() if l.strip().startswith("|")]
+    encabezado, filas = None, []
+    for linea in lineas:
+        celdas = [c.strip() for c in linea.strip().strip("|").split("|")]
+        if encabezado is None:
+            encabezado = celdas
+            continue
+        if all(set(c) <= {"-", " ", ":"} for c in celdas):
+            continue  # fila separadora
+        filas.append(celdas)
+    return encabezado, filas
+
+
 def test_7_toda_fecha_y_atribucion_tiene_fuente_verificada():
+    """Cada FILA de afirmacion debe tener su propia celda de verificacion
+    marcada -- no basta con que el archivo contenga un "si" en algun lugar.
+    (`re.search` contra el texto completo daba un solo "si" por bueno para
+    toda la pagina; el mismo agujero de substring-contra-todo-el-archivo que
+    ya se cerro dos veces en las pruebas de creditos.)
+
+    8_material_adicional.md no tiene columna "Verificado" con si/no: verifica
+    enlaces por codigo HTTP en una columna "Código HTTP", y ahi se exige 200
+    en cada fila en vez de "si"."""
     for pagina in PAGINAS:
         registro = RAIZ / "docs/verificacion" / pagina
         assert registro.is_file(), f"falta {registro.relative_to(RAIZ)}"
-        texto = registro.read_text(encoding="utf-8").lower()
-        # La columna "Verificado" puede ser una celda exacta ("| sí |") o una
-        # frase que empieza con "Sí" seguida de la evidencia ("| Sí. ACM
-        # anunció..."). Ambas cuentan como verificado.
-        marcado_si = re.search(r"\|\s*s[ií]\b", texto) is not None
-        # 8_material_adicional.md verifica enlaces por codigo HTTP, no por
-        # columna "Verificado" con si/no.
-        enlaces_verificados = re.search(r"\|\s*200\s*\|", texto) is not None
-        assert marcado_si or enlaces_verificados, f"{pagina}: nada verificado"
+        texto = registro.read_text(encoding="utf-8")
+        encabezado, filas = _filas_de_tabla(texto)
+        assert encabezado and filas, f"{pagina}: no se encontro tabla de verificacion"
+
+        if "Código HTTP" in encabezado:
+            columna = encabezado.index("Código HTTP")
+            for fila in filas:
+                assert fila[columna].strip() == "200", (
+                    f"{pagina}: fila sin codigo 200 en 'Código HTTP': {fila}"
+                )
+        else:
+            assert "Verificado" in encabezado, f"{pagina}: tabla sin columna 'Verificado'"
+            columna = encabezado.index("Verificado")
+            for fila in filas:
+                celda = fila[columna].strip().lower()
+                # La celda puede ser exacta ("sí") o una frase que empieza
+                # con "Sí" seguida de evidencia ("Sí. ACM anuncio..."; "sí —
+                # corrige..."). Ambas cuentan como verificado; cualquier otra
+                # cosa (vacio, "no", "pendiente") no.
+                assert re.match(r"^s[ií]\b", celda), (
+                    f"{pagina}: fila sin verificar en la columna 'Verificado': {fila}"
+                )
 
 
 def test_8_el_repositorio_pesa_menos_de_16mb():

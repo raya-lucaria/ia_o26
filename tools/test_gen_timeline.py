@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -93,3 +94,30 @@ def test_ningun_tramo_repite_anio():
     for slug in TRAMOS:
         anios = [h["anio"] for h in datos["hitos"] if h["tramo"] == slug]
         assert len(anios) == len(set(anios)), f"anios repetidos en el tramo {slug}"
+
+
+def test_titulo_de_tramo_coincide_con_su_rango_de_hitos():
+    """gen_timeline.py:TRAMOS pone a mano el titulo de cada tramo, y algunos
+    (arco-1, arco-2) incluyen un rango de anios. hitos.json es la unica
+    fuente de verdad de las fechas (ver su campo "nota"); si crece sin que
+    alguien actualice el titulo a mano, el rango declarado queda
+    desincronizado en silencio. Ya paso una vez: arco-2 declaraba
+    "1980-2022" con su hito mas antiguo en 1982."""
+    gen_timeline = _cargar_gen_timeline()
+    datos = json.loads((RAIZ / "tools/hitos.json").read_text(encoding="utf-8"))
+    hitos = datos["hitos"]
+    for slug, titulo in gen_timeline.TRAMOS.items():
+        m = re.search(r"(\d{3,4})-(\d{3,4})\s*$", titulo)
+        if not m:
+            continue  # este tramo no declara un rango de anios en el titulo
+        declarado_desde, declarado_hasta = int(m.group(1)), int(m.group(2))
+        anios = [h["anio"] for h in hitos if h["tramo"] == slug]
+        assert anios, f"tramo sin hitos: {slug}"
+        assert declarado_desde == min(anios), (
+            f"tramo '{slug}': el titulo declara desde {declarado_desde} pero "
+            f"el hito mas antiguo es {min(anios)}"
+        )
+        assert declarado_hasta == max(anios), (
+            f"tramo '{slug}': el titulo declara hasta {declarado_hasta} pero "
+            f"el hito mas reciente es {max(anios)}"
+        )
