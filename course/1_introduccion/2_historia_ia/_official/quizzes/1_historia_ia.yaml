@@ -1,0 +1,293 @@
+id: historia-ia-quiz
+type: quiz
+authority: official
+content:
+  questions:
+    - id: relacion-llm-ia
+      prompt: >-
+        ¿Cuál describe correctamente la relación entre los LLM y la
+        inteligencia artificial?
+      options:
+        - label: >-
+            Los LLM son una subclase de los transformers, que son una
+            subclase de las redes profundas, que son una subclase del
+            aprendizaje máquina, que es una de varias ramas de la
+            inteligencia artificial
+          correct: true
+        - label: LLM e inteligencia artificial son sinónimos
+          correct: false
+        - label: La inteligencia artificial es una subclase de los LLM
+          correct: false
+        - label: >-
+            Los LLM son una rama hermana del aprendizaje máquina, al mismo
+            nivel que la lógica y el GOFAI
+          correct: false
+
+    - id: verano-invierno
+      prompt: >-
+        Según el patrón de cuatro pasos que describe "El arco histórico",
+        ¿qué distingue mejor a un invierno de la inteligencia artificial de
+        un verano?
+      options:
+        - label: >-
+            Un invierno llega cuando el financiamiento, que había seguido
+            una promesa pública desbordada sin exigir evidencia, se retira
+            después de que un límite técnico concreto sale a la luz
+          correct: true
+        - label: >-
+            Un invierno es simplemente cualquier año en que se publican
+            menos artículos académicos sobre inteligencia artificial
+          correct: false
+        - label: >-
+            Un invierno ocurre cuando cambia la tecnología dominante del
+            campo, sin relación necesaria con el financiamiento
+          correct: false
+        - label: >-
+            Un invierno y un verano se distinguen por el linaje —simbólico,
+            conexionista o de refuerzo— que esté de moda, no por lo que pase
+            con el dinero
+          correct: false
+
+    - id: gofai-vs-ml
+      prompt: >-
+        Un sistema experto GOFAI puede explicar la cadena exacta de reglas
+        que produjo una decisión; un modelo de aprendizaje máquina rara vez
+        es transparente sin herramientas aparte. ¿Qué conclusión es correcta
+        según "Qué es la inteligencia"?
+      options:
+        - label: >-
+            Ninguno de los dos enfoques es superior en general: son
+            compromisos distintos sobre cómo se especifica el conocimiento y
+            qué tan bien generaliza el sistema
+          correct: true
+        - label: >-
+            El aprendizaje máquina es siempre preferible porque generaliza
+            mejor que cualquier sistema basado en reglas
+          correct: false
+        - label: GOFAI es obsoleto y ya no se usa en ningún sistema real
+          correct: false
+        - label: >-
+            La diferencia es solo de época —GOFAI es viejo, aprendizaje
+            máquina es nuevo— pero ambos funcionan igual
+          correct: false
+
+    - id: regularidad-contrafactual
+      prompt: >-
+        La escalera de la causalidad de Judea Pearl distingue niveles de
+        pregunta causal, pero antes de Pearl ya había dos teorías
+        filosóficas sobre qué significa que A cause B. ¿Cuál describe
+        correctamente la diferencia entre la regularidad de Hume y el
+        contrafactualismo de Lewis?
+      options:
+        - label: >-
+            La regularidad dice que A es causa de B si B se observa siempre
+            después de A; el contrafactualismo dice que A es causa de B si,
+            de no haber ocurrido A, B tampoco habría ocurrido
+          correct: true
+        - label: >-
+            Son la misma teoría con dos nombres distintos: solo cambia el
+            vocabulario que usan
+          correct: false
+        - label: >-
+            La regularidad corresponde al nivel de intervención de la
+            escalera de Pearl, y el contrafactualismo al nivel de asociación
+          correct: false
+        - label: >-
+            El contrafactualismo sostiene que basta con observar la misma
+            correlación muchas veces, igual que la regularidad
+          correct: false
+
+    - id: supervisado-refuerzo
+      prompt: >-
+        Un programa que aprende a jugar damas mejor jugando contra sí mismo,
+        ajustando su comportamiento según una señal de qué tan bien le fue
+        —no según la jugada correcta en cada turno—, ¿qué paradigma
+        ejemplifica, y en qué se diferencia del aprendizaje supervisado?
+      options:
+        - label: >-
+            Aprendizaje por refuerzo: optimiza una recompensa acumulada a
+            partir de la interacción con un entorno, no el acierto sobre un
+            ejemplo ya etiquetado como en el supervisado
+          correct: true
+        - label: >-
+            Aprendizaje supervisado, porque el resultado de cada partida
+            funciona igual que una etiqueta correcta
+          correct: false
+        - label: >-
+            Aprendizaje no supervisado, porque el programa no recibe ninguna
+            señal externa mientras juega
+          correct: false
+        - label: >-
+            Es indistinguible del aprendizaje supervisado: ambos ajustan
+            parámetros para minimizar un error frente a un ejemplo aislado
+          correct: false
+
+    - id: alexnet-alphago
+      prompt: >-
+        AlexNet (2012) y AlphaGo (2016) se citan juntos como hitos del
+        aprendizaje máquina, pero demostraron cosas distintas. ¿Cuál
+        describe correctamente qué demostró cada uno?
+      options:
+        - label: >-
+            AlexNet demostró que un benchmark bien diseñado, con datos y
+            cómputo suficientes, hacía visible lo que arquitecturas ya
+            conocidas podían lograr; AlphaGo demostró que redes profundas
+            combinadas con aprendizaje por refuerzo podían superar la
+            búsqueda exhaustiva en un espacio demasiado grande para
+            resolverse por fuerza bruta
+          correct: true
+        - label: >-
+            Ambos demostraron lo mismo: que más cómputo gana siempre, sin
+            relación con el algoritmo usado
+          correct: false
+        - label: >-
+            AlexNet introdujo una arquitectura conceptualmente nueva;
+            AlphaGo solo escaló esa misma arquitectura a otro juego
+          correct: false
+        - label: >-
+            AlphaGo demostró lo mismo que Deep Blue en 1997: fuerza bruta
+            con una evaluación de posiciones afinada a mano
+          correct: false
+
+    - id: talos-golem
+      prompt: >-
+        Talos y el Golem son dos mitos de creación de vida artificial que
+        fallan por razones distintas. ¿Cuál describe correctamente esa
+        diferencia, según "Imaginar la máquina"?
+      options:
+        - label: >-
+            Talos falla porque alguien manipula su punto de control externo
+            —el perno que sella su única vena—; el Golem falla porque su
+            creador olvida desactivarlo, no porque alguien lo manipule
+          correct: true
+        - label: >-
+            Ambos fallan por la misma razón: un defecto de fabricación que
+            nadie detectó a tiempo
+          correct: false
+        - label: >-
+            Talos codifica la responsabilidad del creador y el Golem
+            codifica la obediencia y el control
+          correct: false
+        - label: >-
+            Ninguno de los dos "falla" en su relato original; los dos
+            cumplen su propósito hasta el final de la historia
+          correct: false
+
+    - id: diferencial-analitica
+      prompt: >-
+        ¿Qué distingue conceptualmente a la máquina diferencial de Babbage
+        de su máquina analítica?
+      options:
+        - label: >-
+            La diferencial es una calculadora limitada a tablas de
+            polinomios; la analítica, con unidad de control, memoria y
+            tarjetas perforadas, habría sido una computadora de propósito
+            general
+          correct: true
+        - label: >-
+            Son la misma máquina, con dos nombres que Babbage usó de forma
+            intercambiable
+          correct: false
+        - label: La máquina diferencial es posterior y más avanzada que la analítica
+          correct: false
+        - label: >-
+            La distinción es solo de financiamiento: ambas hacen lo mismo,
+            pero solo una recibió apoyo del gobierno británico
+          correct: false
+
+    - id: objecion-lovelace
+      prompt: >-
+        Ada Lovelace escribió que la máquina analítica "no tiene
+        pretensiones de originar nada; puede hacer lo que sepamos ordenarle
+        que haga". ¿Cómo responde Turing a esa objeción en 1950?
+      options:
+        - label: >-
+            Argumenta que una máquina que aprende puede sorprender a quien
+            la programó, aunque siga sin resolverse si eso basta para
+            llamarlo pensar
+          correct: true
+        - label: >-
+            Concede que Lovelace tenía razón y abandona la pregunta de si
+            las máquinas pueden pensar
+          correct: false
+        - label: >-
+            Demuestra matemáticamente que la objeción de Lovelace es falsa y
+            cierra el debate
+          correct: false
+        - label: Ignora la objeción de Lovelace y nunca la menciona en su artículo
+          correct: false
+
+    - id: palancas-ciclo
+      prompt: >-
+        "Por qué el boom" insiste en que las cuatro palancas —teoría,
+        hardware, datos, software libre— no deben leerse como cuatro causas
+        independientes. ¿Por qué no?
+      options:
+        - label: >-
+            Porque se retroalimentan entre sí en un ciclo: más cómputo
+            permite entrenar modelos más grandes, y esos modelos, si
+            funcionan, justifican comprar todavía más cómputo —ese refuerzo
+            mutuo explica el crecimiento exponencial
+          correct: true
+        - label: >-
+            Porque en realidad solo el hardware fue decisivo, y las otras
+            tres palancas son secundarias
+          correct: false
+        - label: >-
+            Porque las cuatro ocurrieron por pura coincidencia cronológica,
+            sin relación causal entre ellas
+          correct: false
+        - label: >-
+            Porque la teoría de 1986 ya bastaba por sí sola; las otras tres
+            solo aceleraron algo que iba a pasar de todos modos
+          correct: false
+
+    - id: tescreal-atribucion
+      prompt: >-
+        ¿Qué es correcto decir sobre el término TESCREAL, según "IA y
+        sociedad"?
+      options:
+        - label: >-
+            Es un acrónimo que Gebru y Torres propusieron para nombrar y
+            criticar un conjunto de ideologías que ven interrelacionadas;
+            ninguna de las comunidades agrupadas bajo el término lo usa para
+            describirse a sí misma
+          correct: true
+        - label: >-
+            Es el nombre que un grupo de investigadores de Silicon Valley
+            usa para describir su propio movimiento
+          correct: false
+        - label: >-
+            Es sinónimo de aceleracionismo eficaz (e/acc), el movimiento que
+            hizo público Guillaume Verdon
+          correct: false
+        - label: >-
+            Es una organización formal, con membresía y estatutos, fundada
+            en 2023
+          correct: false
+
+    - id: sesgo-patron
+      prompt: >-
+        Gender Shades y COMPAS documentan casos distintos —clasificación de
+        género por rostro y puntaje de reincidencia—, pero "IA y sociedad"
+        identifica un patrón común entre ambos. ¿Cuál es?
+      options:
+        - label: >-
+            Entrenar con datos que reflejan desigualdades existentes produce
+            sistemas que las reproducen, y esa reproducción rara vez es
+            visible hasta que alguien la mide y la publica
+          correct: true
+        - label: >-
+            En ambos casos el problema fue un error de programación
+            puntual, ya corregido en versiones posteriores
+          correct: false
+        - label: >-
+            Ambos casos muestran que los sistemas de aprendizaje máquina son
+            neutrales y que los datos de entrada no importan
+          correct: false
+        - label: >-
+            El patrón común es que ambos sistemas usaban GOFAI en vez de
+            aprendizaje máquina
+          correct: false
+retrieval:
+  kind: concept-check

@@ -1,0 +1,16 @@
+id: prompt-credito-cientifico
+type: prompt
+authority: official
+content:
+  prompt: >-
+    En 2020, Schmidhuber cuestionó públicamente que se atribuyera a Hinton,
+    LeCun y Bengio ser los «padrinos» de la inteligencia artificial, y
+    señaló trabajo anterior de Ivakhnenko, Fukushima y Hochreiter que sus
+    artículos no citaron. ¿A quién se le debería atribuir una idea
+    científica: a quien la formuló primero, a quien la hizo funcionar a
+    escala, o a quien convenció a una comunidad de que importaba? Argumenta
+    usando el caso de Ivakhnenko, publicando en Kiev en revistas que la
+    comunidad occidental casi no leía, para pensar si el crédito científico
+    premia la prioridad o el acceso.
+retrieval:
+  kind: reflection

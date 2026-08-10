@@ -1,0 +1,13 @@
+id: estudiar-historia-ia
+type: task
+authority: official
+content:
+  title: Estudiar la unidad
+  instructions: >-
+    Estudiar lo que vimos en clase sobre la historia de la inteligencia
+    artificial. Usa las tarjetas de repaso y el quiz de autoevaluación para
+    comprobar qué te falta; los prompts de reflexión son para discutir en
+    clase, no para entregar.
+  status: published
+  tags:
+    - estudio

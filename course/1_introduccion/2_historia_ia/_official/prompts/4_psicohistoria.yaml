@@ -1,0 +1,15 @@
+id: prompt-psicohistoria
+type: prompt
+authority: official
+content:
+  prompt: >-
+    La psicohistoria de Asimov predice el comportamiento agregado de
+    poblaciones enormes, pero no el de ningún individuo suficientemente
+    anómalo; toda la trama de Fundación gira en torno a ese límite. ¿Es
+    razonable pensar que el aprendizaje máquina, entrenado sobre datos
+    masivos de comportamiento humano, se acerca a ese tipo de predicción
+    colectiva, o el límite que rompe la psicohistoria —el individuo
+    anómalo— también rompe cualquier modelo estadístico real? Argumenta
+    considerando tanto el poder como el límite de predecir agregados.
+retrieval:
+  kind: reflection

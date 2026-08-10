@@ -1,0 +1,15 @@
+id: prompt-conciencia
+type: prompt
+authority: official
+content:
+  prompt: >-
+    La unidad se niega a cerrar con una respuesta sobre si un sistema de
+    inteligencia artificial podría ser consciente, porque no hay consenso
+    sobre qué contaría como evidencia suficiente. ¿Qué evidencia, si es que
+    existe alguna, te convencería de que un sistema es consciente y no solo
+    un imitador sofisticado? Argumenta considerando que Turing evitó esta
+    pregunta a propósito en 1950, sustituyéndola por una de comportamiento,
+    y que esa sustitución podría estar ocultando la pregunta en vez de
+    resolverla.
+retrieval:
+  kind: reflection

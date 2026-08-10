@@ -1,0 +1,12 @@
+id: prompt-inteligencia
+type: prompt
+authority: official
+content:
+  prompt: >-
+    Turing sustituyó «¿pueden pensar las máquinas?» por una prueba de
+    comportamiento observable. ¿Qué se gana y qué se pierde con esa
+    sustitución? Argumenta considerando que un sistema podría aprobar la
+    prueba sin entender nada, y que un sistema podría entender algo sin
+    aprobarla.
+retrieval:
+  kind: reflection

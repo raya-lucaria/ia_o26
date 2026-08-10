@@ -1,0 +1,14 @@
+id: prompt-emergencia
+type: prompt
+authority: official
+content:
+  prompt: >-
+    En el Juego de la Vida, en una bandada de aves o en la población
+    digital de Barricelli, el orden global no está escrito en ninguna regla
+    individual: emerge de aplicar reglas locales muchas veces, sin control
+    central. ¿Ese mismo mecanismo explica lo que parece «razonar» en un
+    modelo de lenguaje entrenado solo para predecir el siguiente token, o la
+    analogía se rompe en algún punto? Argumenta identificando qué haría
+    falta para distinguir emergencia genuina de una ilusión de coherencia.
+retrieval:
+  kind: reflection
