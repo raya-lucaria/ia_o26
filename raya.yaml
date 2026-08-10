@@ -6,3 +6,11 @@ source: course
 artifact: artifact
 render:
   skin: eva-cyberpunk
+  numbered_objects:
+    numbering: page-hierarchy
+    sequences:
+      figure: { label: "Figura", style: caption }
+      table: { label: "Tabla", style: caption }
+    families:
+      figure: { sequence: figure, label: "Figura" }
+      table: { sequence: table, label: "Tabla" }
