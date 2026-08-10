@@ -310,10 +310,18 @@ def _parrafos_html(texto: str) -> str:
 
 
 def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
-                   enlaces: list[dict[str, str]]) -> str:
+                   enlaces: list[dict[str, str]],
+                   anexadas: list["LecturaPDF"] | None = None) -> str:
+    """El indice de la portadilla lista TODAS las lecturas del cuadernillo, en su
+    orden, incluidas las que llegan como PDF anexado. Se arma despues de saber
+    cuales se anexaron: antes listaba solo las de texto y quedaba incompleto."""
+    todas = sorted(
+        [(l.orden, l.titulo, l.autor, l.anio) for l in lecturas]
+        + [(x.orden, x.titulo, x.autor, x.anio) for x in (anexadas or [])]
+    )
     indice = "\n".join(
-        f"<li><b>{html.escape(l.titulo)}</b> — {html.escape(l.autor)}, {l.anio}</li>"
-        for l in lecturas
+        f"<li><b>{html.escape(tit)}</b> — {html.escape(aut)}, {anio}</li>"
+        for _, tit, aut, anio in todas
     )
     extra = ""
     if enlaces:
@@ -403,7 +411,15 @@ def construir(modulo: str) -> Path:
         textos[l.id] = recortado
         print(f"  {l.orden}. {l.titulo[:46]:<46} {len(recortado.split()):>6} palabras")
 
-    doc = construir_html(modulo, lecturas, textos, ENLACES.get(modulo, []))
+    pdfs = sorted(PDFS.get(modulo, []), key=lambda x: x.orden)
+    presentes = [lp for lp in pdfs if (fuentes / lp.fuente).is_file()]
+    ausentes = [lp for lp in pdfs if lp not in presentes]
+    for lp in presentes:
+        print(f"  {lp.orden}. {lp.titulo[:46]:<46} {lp.paginas[0]}-{lp.paginas[1]} (PDF)")
+
+    faltan_enlaces = [e for e in ENLACES.get(modulo, [])
+                      if any(x.autor.split()[-1] in e["cita"] for x in ausentes)]
+    doc = construir_html(modulo, lecturas, textos, faltan_enlaces, presentes)
     (salida / "cuadernillo.html").write_text(doc, encoding="utf-8")
 
     from weasyprint import HTML
@@ -411,13 +427,9 @@ def construir(modulo: str) -> Path:
     HTML(string=doc, base_url=str(salida)).write_pdf(destino)
 
     import pypdf
-    extras, faltantes = [], []
-    for lp in sorted(PDFS.get(modulo, []), key=lambda x: x.orden):
-        recorte = lp.recortar(fuentes, salida)
-        if recorte:
-            extras.extend([_portadilla_pdf(lp, salida), recorte])
-        else:
-            faltantes.append(lp)
+    extras, faltantes = [], list(ausentes)
+    for lp in presentes:
+        extras.extend([_portadilla_pdf(lp, salida), lp.recortar(fuentes, salida)])
     if extras:
         fusion = pypdf.PdfWriter()
         for f in [destino, *extras]:
