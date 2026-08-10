@@ -1,0 +1,15 @@
+{
+  "nota": "Computo de entrenamiento por modelo, en FLOP totales. Fuente: Epoch AI, cruzada con Our World in Data. No inventar cifras: si un dato no se verifica en al menos una fuente primaria o una republicacion directa de Epoch AI, se omite.",
+  "fuente": "Epoch AI, Data on Notable AI Models",
+  "fuente_url": "https://epoch.ai/data-insights/compute-trend-post-2010",
+  "fuente_url_secundaria": "https://ourworldindata.org/grapher/artificial-intelligence-training-computation",
+  "consultado": "2026-08-10",
+  "modelos": [
+    { "modelo": "AlexNet", "anio": 2012, "flop": 4.7e17, "flop_texto": "4.7 × 10^17" },
+    { "modelo": "GPT-2 (1.5B)", "anio": 2019, "flop": 1.9e21, "flop_texto": "1.9 × 10^21" },
+    { "modelo": "GPT-3 175B", "anio": 2020, "flop": 3.1e23, "flop_texto": "3.1 × 10^23" },
+    { "modelo": "PaLM 540B", "anio": 2022, "flop": 2.5e24, "flop_texto": "2.5 × 10^24" },
+    { "modelo": "GPT-4", "anio": 2023, "flop": 2.1e25, "flop_texto": "2.1 × 10^25" },
+    { "modelo": "Gemini 1.0 Ultra", "anio": 2023, "flop": 5.0e25, "flop_texto": "5.0 × 10^25" }
+  ]
+}

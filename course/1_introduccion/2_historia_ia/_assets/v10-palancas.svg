@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="Ciclo de refuerzo mutuo entre teoria, hardware, datos y software libre que explica el boom de la inteligencia artificial">
+  <rect x="0" y="0" width="900" height="620" rx="16" fill="#211033"/>
+  <text x="60" y="44" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="18" font-weight="600">Las cuatro palancas se refuerzan entre si</text>
+  <text x="60" y="66" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12">No es una lista: es un ciclo. Cada palanca alimenta a la siguiente.</text>
+
+  <!-- Flechas curvas, definidas antes que los nodos para que queden debajo del texto de los nodos -->
+  <defs>
+    <marker id="punta" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#f04cff"/>
+    </marker>
+  </defs>
+
+  <!-- Teoria (arriba) -> Hardware (derecha) -->
+  <path d="M 560,150 C 660,180 720,240 700,300" fill="none" stroke="#f04cff" stroke-width="2" opacity="0.8" marker-end="url(#punta)"/>
+  <text x="742" y="215" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">nuevas</text>
+  <text x="742" y="230" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">arquitecturas</text>
+  <text x="742" y="245" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">justifican chips</text>
+  <text x="742" y="260" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">especializados</text>
+
+  <!-- Hardware (derecha) -> Datos (abajo) -->
+  <path d="M 690,360 C 660,440 560,470 480,470" fill="none" stroke="#f04cff" stroke-width="2" opacity="0.8" marker-end="url(#punta)"/>
+  <text x="640" y="430" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">mas computo</text>
+  <text x="640" y="445" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">permite entrenar con</text>
+  <text x="640" y="460" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">datasets enormes</text>
+
+  <!-- Datos (abajo) -> Software libre (izquierda) -->
+  <path d="M 360,470 C 260,470 190,430 175,360" fill="none" stroke="#f04cff" stroke-width="2" opacity="0.8" marker-end="url(#punta)"/>
+  <text x="215" y="430" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">mas datos abiertos</text>
+  <text x="215" y="445" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">permiten mas</text>
+  <text x="215" y="460" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">participantes</text>
+
+  <!-- Software libre (izquierda) -> Teoria (arriba) -->
+  <path d="M 170,300 C 150,240 210,180 320,150" fill="none" stroke="#f04cff" stroke-width="2" opacity="0.8" marker-end="url(#punta)"/>
+  <text x="158" y="215" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">herramientas</text>
+  <text x="158" y="230" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">compartidas aceleran</text>
+  <text x="158" y="245" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">nuevas ideas</text>
+
+  <!-- Diagonal: Teoria -> Datos (mas computo permite entrenar modelos que justifican mas computo) -->
+  <path d="M 490,165 C 500,280 480,380 445,455" fill="none" stroke="#78419e" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.6" marker-end="url(#punta)"/>
+  <text x="530" y="300" fill="#78419e" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">modelos que funcionan</text>
+  <text x="530" y="313" fill="#78419e" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">justifican mas escala</text>
+
+  <!-- Nodo: Teoria (arriba) -->
+  <circle cx="450" cy="130" r="66" fill="#211033" stroke="#78419e" stroke-width="2"/>
+  <text x="450" y="122" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="16" font-weight="600" text-anchor="middle">Teoria</text>
+  <text x="450" y="142" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">backprop, CNN,</text>
+  <text x="450" y="155" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">transformers</text>
+
+  <!-- Nodo: Hardware (derecha) -->
+  <circle cx="730" cy="330" r="66" fill="#211033" stroke="#78419e" stroke-width="2"/>
+  <text x="730" y="322" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="16" font-weight="600" text-anchor="middle">Hardware</text>
+  <text x="730" y="342" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">GPU, CUDA,</text>
+  <text x="730" y="355" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">TPU</text>
+
+  <!-- Nodo: Datos (abajo) -->
+  <circle cx="420" cy="500" r="66" fill="#211033" stroke="#78419e" stroke-width="2"/>
+  <text x="420" y="492" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="16" font-weight="600" text-anchor="middle">Datos</text>
+  <text x="420" y="512" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">ImageNet,</text>
+  <text x="420" y="525" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">la web como corpus</text>
+
+  <!-- Nodo: Software libre (izquierda) -->
+  <circle cx="150" cy="330" r="66" fill="#211033" stroke="#78419e" stroke-width="2"/>
+  <text x="150" y="318" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="16" font-weight="600" text-anchor="middle">Software</text>
+  <text x="150" y="336" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="16" font-weight="600" text-anchor="middle">libre</text>
+  <text x="150" y="355" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">TensorFlow, PyTorch</text>
+
+  <text x="60" y="590" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">Cada flecha llena es un mecanismo de refuerzo; la flecha punteada resume el ciclo completo: mas computo entrena</text>
+  <text x="60" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">modelos que justifican mas computo.</text>
+</svg>
