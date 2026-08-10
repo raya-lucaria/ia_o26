@@ -1,0 +1,14 @@
+id: aprendizaje-profundo-vs-llm
+type: card
+authority: official
+content:
+  front: ¿Cómo se relacionan el aprendizaje profundo, los transformers y los modelos de lenguaje grandes (LLM)?
+  back: >-
+    Es una cadena de subconjuntos anidados: las redes neuronales profundas
+    contienen a los transformers —una arquitectura de red profunda publicada
+    en 2017—, que a su vez contienen a los modelos de lenguaje grandes (LLM).
+    Un LLM es un transformer, un transformer es una red profunda: cada nivel
+    es una hoja de la rama anterior, no el campo entero de la inteligencia
+    artificial.
+retrieval:
+  kind: recall

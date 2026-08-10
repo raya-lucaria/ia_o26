@@ -1,0 +1,16 @@
+id: causa-primer-invierno
+type: card
+authority: official
+content:
+  front: ¿Qué detonó el primer invierno de la inteligencia artificial?
+  back: >-
+    En 1969, Marvin Minsky y Seymour Papert publicaron *Perceptrons*, una
+    prueba formal de que los perceptrones de una sola capa no pueden aprender
+    funciones tan simples como el XOR; eso redujo la investigación en redes
+    neuronales a un goteo durante casi dos décadas. En 1973, el informe
+    Lighthill del gobierno británico dio un balance deliberadamente
+    pesimista del campo que le costó buena parte de su financiamiento
+    académico en el Reino Unido, y DARPA recortó fondos de investigación
+    exploratoria en Estados Unidos por la misma época.
+retrieval:
+  kind: recall

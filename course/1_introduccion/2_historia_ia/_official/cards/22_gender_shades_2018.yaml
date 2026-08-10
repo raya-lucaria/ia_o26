@@ -1,0 +1,14 @@
+id: gender-shades-2018
+type: card
+authority: official
+content:
+  front: ¿Qué documentó el estudio Gender Shades (2018)?
+  back: >-
+    Joy Buolamwini y Timnit Gebru evaluaron tres sistemas comerciales de
+    clasificación de género por rostro y encontraron hasta 34.7% de error en
+    mujeres de piel oscura, contra un máximo de 0.8% en hombres de piel
+    clara. La causa era que los conjuntos de datos de entrenamiento eran, de
+    manera abrumadora, rostros de piel clara: el estudio midió un sesgo ya
+    desplegado en productos comerciales en uso, no uno hipotético.
+retrieval:
+  kind: recall

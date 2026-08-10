@@ -1,0 +1,14 @@
+id: verano-vs-invierno
+type: card
+authority: official
+content:
+  front: ¿Qué distingue a un verano de un invierno de la inteligencia artificial?
+  back: >-
+    Un verano es un periodo de entusiasmo, financiamiento abundante y
+    promesas grandes sobre el campo. Un invierno es el colapso de ese
+    financiamiento, y sigue un patrón reconocible de cuatro pasos —promesa
+    pública desbordada, financiamiento que la siguió sin exigir evidencia, un
+    tope técnico que sale a la luz, y el recorte que llega después—, no un
+    evento accidental sin causa.
+retrieval:
+  kind: recall

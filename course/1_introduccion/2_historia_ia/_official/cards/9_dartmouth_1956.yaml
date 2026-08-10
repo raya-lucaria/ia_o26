@@ -1,0 +1,14 @@
+id: dartmouth-1956
+type: card
+authority: official
+content:
+  front: ¿Qué ocurrió en Dartmouth en 1956?
+  back: >-
+    John McCarthy, Marvin Minsky, Nathaniel Rochester y Claude Shannon
+    organizaron, en el verano de 1956, un taller de dos meses en Dartmouth
+    College, a partir de una propuesta escrita el año anterior, en 1955, que
+    contiene la primera aparición impresa de la frase «inteligencia
+    artificial». Nombrar el campo lo convirtió en un programa de
+    investigación con presupuesto propio.
+retrieval:
+  kind: recall

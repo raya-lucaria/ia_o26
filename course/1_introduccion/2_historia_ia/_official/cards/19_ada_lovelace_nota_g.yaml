@@ -1,0 +1,15 @@
+id: ada-lovelace-nota-g
+type: card
+authority: official
+content:
+  front: ¿Cuál fue la aportación específica de Ada Lovelace?
+  back: >-
+    En 1843, Ada Lovelace publicó notas —tres veces más largas que el texto
+    que traducía— sobre la máquina analítica de Babbage. La más célebre, la
+    Nota G, contiene el algoritmo para calcular los números de Bernoulli
+    usando esa máquina: se reconoce hoy como el primer programa de cómputo de
+    la historia, escrito para una máquina que nunca llegó a existir. También
+    formuló la objeción de que la máquina «no tiene pretensiones de originar
+    nada», que Turing retomaría por su nombre en 1950.
+retrieval:
+  kind: recall

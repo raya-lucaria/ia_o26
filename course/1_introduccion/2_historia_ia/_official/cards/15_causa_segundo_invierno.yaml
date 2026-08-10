@@ -1,0 +1,16 @@
+id: causa-segundo-invierno
+type: card
+authority: official
+content:
+  front: ¿Qué detonó el segundo invierno de la inteligencia artificial?
+  back: >-
+    Entre 1987 y 1993, los sistemas expertos no fallaron espectacularmente:
+    no escalaron. Cada regla nueva había que mantenerla a mano, y el costo de
+    mantenimiento crecía más rápido que el beneficio. Al mismo tiempo, las
+    computadoras personales genéricas alcanzaron la potencia de las máquinas
+    LISP especializadas a una fracción del precio, y el mercado de máquinas
+    LISP colapsó hacia 1987: empresas completas del sector desaparecieron en
+    menos de un año y se retiró el financiamiento de defensa que las
+    sostenía.
+retrieval:
+  kind: recall

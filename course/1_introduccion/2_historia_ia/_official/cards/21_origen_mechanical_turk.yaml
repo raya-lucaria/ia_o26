@@ -1,0 +1,14 @@
+id: origen-mechanical-turk
+type: card
+authority: official
+content:
+  front: ¿De dónde viene el nombre Mechanical Turk, usado hoy por la plataforma de Amazon?
+  back: >-
+    En 1770, Wolfgang von Kempelen presentó el Turco Mecánico, un supuesto
+    autómata que jugaba y ganaba partidas de ajedrez; en realidad escondía a
+    una persona moviendo las piezas desde un falso fondo, y el fraude duró
+    ochenta años. Amazon llamó Mechanical Turk a su plataforma de trabajo
+    humano bajo demanda a propósito, porque —igual que en 1770— hay personas
+    escondidas detrás de una interfaz que aparenta automatización.
+retrieval:
+  kind: recall

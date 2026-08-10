@@ -1,0 +1,13 @@
+id: aprendizaje-maquina-vs-aprendizaje-profundo
+type: card
+authority: official
+content:
+  front: ¿Cómo se relacionan el aprendizaje máquina y el aprendizaje profundo (redes neuronales profundas)?
+  back: >-
+    A diferencia de las cinco ramas hermanas de la inteligencia artificial,
+    dentro del aprendizaje máquina sí hay anidamiento estricto: el
+    aprendizaje máquina contiene a las redes neuronales profundas como
+    subconjunto propio. Toda red profunda es aprendizaje máquina, pero no
+    todo aprendizaje máquina usa redes profundas.
+retrieval:
+  kind: recall

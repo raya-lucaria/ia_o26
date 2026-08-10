@@ -1,0 +1,14 @@
+id: ia-vs-aprendizaje-maquina
+type: card
+authority: official
+content:
+  front: ¿En qué se diferencian la inteligencia artificial y el aprendizaje máquina?
+  back: >-
+    La inteligencia artificial es el campo completo, con cinco enfoques
+    hermanos que no se contienen entre sí: búsqueda y planificación, lógica y
+    GOFAI, teoría de juegos, sistemas expertos y aprendizaje máquina. El
+    aprendizaje máquina es solo una de esas cinco ramas —la que ajusta
+    parámetros a partir de datos en vez de seguir reglas escritas a mano—, no
+    un sinónimo del campo entero.
+retrieval:
+  kind: recall

@@ -1,0 +1,13 @@
+id: perceptron-1958
+type: card
+authority: official
+content:
+  front: ¿Qué construyó Frank Rosenblatt en 1958?
+  back: >-
+    Frank Rosenblatt construyó el perceptrón, una red de una sola capa que
+    ajusta sus pesos cada vez que se equivoca hasta aprender a separar dos
+    categorías. Es el primer sistema conexionista que aprende de ejemplos, en
+    vez de seguir reglas programadas una por una, apenas doce años después de
+    la neurona de McCulloch y Pitts (1943).
+retrieval:
+  kind: recall

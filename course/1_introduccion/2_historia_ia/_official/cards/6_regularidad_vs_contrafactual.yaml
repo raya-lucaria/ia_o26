@@ -1,0 +1,15 @@
+id: regularidad-vs-contrafactual
+type: card
+authority: official
+content:
+  front: ¿Qué diferencia a la causalidad como regularidad de la causalidad como contrafactual?
+  back: >-
+    La regularidad, que se remonta a David Hume, sostiene que A es causa de B
+    si B se observa regularmente después de A: causalidad como patrón
+    constante. El contrafactualismo, formulado con más rigor por el filósofo
+    David Lewis, sostiene en cambio que A es causa de B si, de no haber
+    ocurrido A, B tampoco habría ocurrido: causalidad como dependencia entre
+    un mundo real y uno hipotético. Son dos maneras filosóficamente distintas
+    de definir qué significa que algo cause algo.
+retrieval:
+  kind: recall

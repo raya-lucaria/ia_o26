@@ -1,0 +1,14 @@
+id: alphago-2016
+type: card
+authority: official
+content:
+  front: ¿Qué ocurrió con AlphaGo en 2016?
+  back: >-
+    AlphaGo, de DeepMind, venció al campeón Lee Sedol cuatro partidas a una.
+    Combinó redes neuronales profundas con búsqueda en árbol y aprendizaje
+    por refuerzo contra sí mismo —el linaje que arrancó con Arthur Samuel y
+    las damas sesenta años antes—. En la segunda partida jugó el movimiento
+    37, una jugada que ningún jugador profesional habría considerado,
+    descrita por comentaristas como «no humana».
+retrieval:
+  kind: recall

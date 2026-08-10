@@ -1,0 +1,14 @@
+id: deep-blue-1997
+type: card
+authority: official
+content:
+  front: ¿Qué logró Deep Blue en 1997?
+  back: >-
+    Deep Blue, de IBM, venció a Garry Kasparov, campeón mundial vigente, en
+    un encuentro de seis partidas. Fue una victoria real del linaje simbólico
+    —búsqueda en árbol con enorme capacidad de cómputo y evaluación afinada a
+    mano—, pero también mostró sus límites: Deep Blue no aprendía nada ni
+    generalizaba a otro juego. Fue fuerza bruta con puntería, no inteligencia
+    general.
+retrieval:
+  kind: recall

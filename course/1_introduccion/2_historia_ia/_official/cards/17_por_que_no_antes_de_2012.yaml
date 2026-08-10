@@ -1,0 +1,15 @@
+id: por-que-no-antes-de-2012
+type: card
+authority: official
+content:
+  front: Si la retropropagación y las convoluciones ya existían en 1989, ¿por qué el boom llegó hasta 2012 y no antes?
+  back: >-
+    Yann LeCun ya aplicaba convoluciones y retropropagación a dígitos
+    escritos a mano en 1989. El problema no era conceptual: faltaban, a la
+    vez, el hardware, los datos y una comunidad de software capaz de
+    compartir código, y la teoría necesitaba que esas otras tres condiciones
+    existieran para poder probarse a escala. El boom no ocurrió porque
+    alguien tuvo una idea mejor; ocurrió porque, alrededor de 2012, las
+    cuatro condiciones se cumplieron al mismo tiempo.
+retrieval:
+  kind: recall

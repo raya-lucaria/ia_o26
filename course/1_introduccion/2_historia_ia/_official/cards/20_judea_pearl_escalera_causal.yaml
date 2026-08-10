@@ -1,0 +1,15 @@
+id: judea-pearl-escalera-causal
+type: card
+authority: official
+content:
+  front: ¿Cuál fue la aportación específica de Judea Pearl?
+  back: >-
+    Judea Pearl formalizó la escalera de la causalidad, con tres niveles
+    distintos —asociación (pura correlación), intervención (qué pasa si actúo
+    sobre el sistema) y contrafactual (qué habría pasado si el pasado fuera
+    distinto)—. Su aportación central, que le valió el Turing Award en 2011,
+    son las redes bayesianas y el cálculo formal de la causalidad, no los
+    sistemas expertos basados en reglas de los años ochenta, con los que a
+    veces se le confunde.
+retrieval:
+  kind: recall

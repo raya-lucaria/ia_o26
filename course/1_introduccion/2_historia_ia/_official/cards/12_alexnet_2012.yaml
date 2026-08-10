@@ -1,0 +1,14 @@
+id: alexnet-2012
+type: card
+authority: official
+content:
+  front: ¿Qué pasó con AlexNet en 2012?
+  back: >-
+    AlexNet, una red convolucional profunda, ganó la competencia ImageNet
+    por un margen que ninguna técnica anterior había logrado. No fue un
+    algoritmo nuevo lo que destrabó el momento —las redes convolucionales y
+    la retropropagación existían desde los ochenta—: fue un benchmark bien
+    diseñado, con datos suficientes (ImageNet, publicado por Fei-Fei Li en
+    2009) y cómputo suficiente, lo que hizo visible lo que ya era posible.
+retrieval:
+  kind: recall

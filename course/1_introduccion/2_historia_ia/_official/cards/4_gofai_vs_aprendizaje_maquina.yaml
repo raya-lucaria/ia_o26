@@ -1,0 +1,16 @@
+id: gofai-vs-aprendizaje-maquina
+type: card
+authority: official
+content:
+  front: ¿Qué distingue a GOFAI del aprendizaje máquina?
+  back: >-
+    GOFAI (Good Old-Fashioned Artificial Intelligence, término acuñado por el
+    filósofo John Haugeland en 1985) especifica el conocimiento con reglas y
+    hechos escritos a mano por expertos, y puede explicar exactamente qué
+    regla produjo una decisión, pero no generaliza fuera de lo que alguien
+    anticipó. El aprendizaje máquina ajusta parámetros automáticamente a
+    partir de datos, puede fallar de formas impredecibles ante datos
+    distintos a los de entrenamiento, y rara vez es transparente sobre por
+    qué decidió algo.
+retrieval:
+  kind: recall

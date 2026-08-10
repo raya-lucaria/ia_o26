@@ -1,0 +1,16 @@
+id: alan-turing-1950
+type: card
+authority: official
+content:
+  front: ¿Cuál fue la aportación específica de Alan Turing en 1950?
+  back: >-
+    En «Computing Machinery and Intelligence», Turing sustituyó la pregunta
+    ambigua «¿pueden pensar las máquinas?» por el juego de la imitación, una
+    prueba en términos de comportamiento observable. También respondió a la
+    objeción de Lovelace —que una máquina nunca origina nada— argumentando
+    que la sorpresa que produce un programa no depende de que su programador
+    lo haya previsto todo, y propuso simular una «máquina niña» sometida a
+    educación en vez de una mente adulta, adelantando la idea de
+    entrenamiento por siete décadas.
+retrieval:
+  kind: recall

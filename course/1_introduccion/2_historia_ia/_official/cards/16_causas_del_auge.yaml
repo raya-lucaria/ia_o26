@@ -1,0 +1,16 @@
+id: causas-del-auge
+type: card
+authority: official
+content:
+  front: ¿Qué cuatro condiciones hicieron posible el auge del aprendizaje profundo hacia 2012?
+  back: >-
+    Teoría (retropropagación de Rumelhart, Hinton y Williams en 1986, y
+    convoluciones de LeCun en 1989), hardware (CUDA de NVIDIA, liberado en
+    2007, que permitió usar tarjetas gráficas como procesadores de propósito
+    general), datos (ImageNet, publicado por Fei-Fei Li en 2009, con catorce
+    millones de imágenes etiquetadas) y software libre (TensorFlow en 2015 y
+    luego PyTorch, que liberaron a cada laboratorio de reimplementar
+    retropropagación desde cero). No fueron cuatro causas independientes: se
+    alimentaron entre sí en un ciclo de refuerzo mutuo.
+retrieval:
+  kind: recall

@@ -1,0 +1,15 @@
+id: maquina-diferencial-vs-analitica
+type: card
+authority: official
+content:
+  front: ¿Qué diferencia a la máquina diferencial de la máquina analítica de Babbage?
+  back: >-
+    La máquina diferencial (1822) era un dispositivo mecánico para calcular
+    tablas matemáticas reduciendo polinomios a sumas mecánicas: una
+    calculadora. La máquina analítica (1837) era un diseño mucho más
+    ambicioso, con unidad de control, memoria, unidad aritmética y tarjetas
+    perforadas para programar operaciones —de haberse construido, habría sido
+    una computadora de propósito general—. Por falta de financiamiento, la
+    analítica nunca se terminó en vida de Babbage.
+retrieval:
+  kind: recall

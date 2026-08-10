@@ -1,0 +1,15 @@
+id: supervisado-vs-refuerzo
+type: card
+authority: official
+content:
+  front: ¿En qué se diferencian el aprendizaje supervisado y el aprendizaje por refuerzo?
+  back: >-
+    El aprendizaje supervisado entrena con ejemplos ya etiquetados y ajusta
+    parámetros para minimizar el error entre la predicción y la etiqueta
+    correcta. El aprendizaje por refuerzo no tiene etiquetas: un agente actúa
+    sobre un entorno, recibe una señal de recompensa o castigo, y ajusta su
+    comportamiento para maximizar la recompensa acumulada, no el acierto en
+    un caso aislado. Es el linaje detrás de Arthur Samuel enseñando a jugar
+    damas en 1959 y de AlphaGo en 2016.
+retrieval:
+  kind: recall
