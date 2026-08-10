@@ -9,8 +9,8 @@ de la unidad de historia: aquí están los textos que ese mapa ideológico resum
 ## Cuadernillo
 
 **[`lecturas/filosofia_ia_clase_1_cuadernillo.pdf`](lecturas/filosofia_ia_clase_1_cuadernillo.pdf)**
-— 47 páginas con las cuatro lecturas que existen en fuentes primarias abiertas,
-maquetadas en un solo archivo con la razón de cada una.
+— **62 páginas, las seis lecturas completas**, cada una con su portadilla y la
+razón por la que se lee.
 
 | # | Lectura | Autor | Año | Fuente | Estado |
 |---|---|---|---|---|---|
@@ -18,25 +18,23 @@ maquetadas en un solo archivo con la razón de cada una.
 | 2 | Swarmachines | CCRU | 1996 | [ccru.net](http://www.ccru.net/swarm1/1_swarm.htm) | ✅ en el cuadernillo |
 | 3 | Meltdown | Land | 1994 | [ccru.net](http://www.ccru.net/swarm1/1_melt.htm) | ✅ en el cuadernillo |
 | 4 | La ideología californiana | Barbrook y Cameron | 1995 | [imaginaryfutures.net](http://www.imaginaryfutures.net/2007/04/17/the-californian-ideology-2/) | ✅ en el cuadernillo |
-| 5 | *El Anti-Edipo*, pp. 239–240 | Deleuze y Guattari | 1972 | — | ⚠️ de la edición Minnesota |
-| 6 | «Terminator vs Avatar», pp. 335–346 | Fisher | 2012 | — | ⚠️ de *#Accelerate* |
+| 5 | *El Anti-Edipo*, pp. 239–240 | Deleuze y Guattari | 1972 | ed. Paidós, p. 247 | ✅ en el cuadernillo |
+| 6 | «Terminator vs Avatar», pp. 335–346 | Fisher | 2012 | extracto de *#Accelerate* | ✅ en el cuadernillo |
 
-Las dos últimas siguen en derechos y no tienen copia abierta verificable.
+### Sobre las dos que llegaron como PDF
 
-**Si consigues sus PDF**, déjalos en `fuentes/` con estos nombres exactos y la
-siguiente construcción los recorta por página y los une al cuadernillo:
+Ambas se reproducen de la edición que las tiene, y el pipeline las recorta por
+página. Dos avisos que importan al citarlas en clase:
 
-| Archivo esperado en `fuentes/` | Páginas que se recortan |
-|---|---|
-| `deleuze_guattari_anti_oedipus_minnesota_1983.pdf` | 239–240 |
-| `accelerate_reader_urbanomic_2014.pdf` | 335–346 |
+- **El Anti-Edipo es la edición española de Paidós**, no la Minnesota de 1983 que
+  cita el temario. El pasaje equivalente a sus pp. 239–240 **cabe entero en la
+  p. 247** de esta edición, que es más densa. Cortar 239–240 aquí habría dado un
+  pasaje distinto: lo verifiqué buscando «acelerar el proceso» en el texto, no
+  confiando en el número.
+- **El archivo de Fisher ya es el extracto** de la antología: 12 páginas, las
+  335–346, así que se usa entero.
 
-Los rangos son los de tu temario. Si el PDF tiene menos páginas de las pedidas,
-la construcción se detiene y avisa que probablemente sea otra edición, en vez de
-recortar el pasaje equivocado en silencio. Si el archivo no está, el cuadernillo
-se arma sin él y lo reporta.
-
-Esos PDF están en `.gitignore`: se quedan en tu disco, no en el repositorio.
+Los PDF están en `.gitignore`: viven en tu disco, no en el repositorio.
 
 ## Verificación contra la edición original
 

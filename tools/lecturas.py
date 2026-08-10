@@ -215,9 +215,11 @@ PDFS: dict[str, list[LecturaPDF]] = {
             orden=5, id="deleuze-guattari-antiedipo",
             titulo="El Anti-Edipo, pp. 239–240",
             autor="Gilles Deleuze y Félix Guattari", anio="1972",
-            fuente="deleuze_guattari_anti_oedipus_minnesota_1983.pdf",
-            paginas=(239, 240),
-            edicion="University of Minnesota Press, 1983",
+            fuente="deleuze_guattari_antiedipo_paidos.pdf",
+            paginas=(247, 247),
+            edicion=("Paidós, ed. española. El temario cita Minnesota 1983 "
+                     "pp. 239–240; el pasaje equivalente cabe en la p. 247 de "
+                     "esta edición, más densa."),
             por_que=(
                 "Dos páginas: el pasaje donde proponen no retirarse del proceso "
                 "capitalista sino acelerarlo. Es la divisa que el aceleracionismo "
@@ -228,9 +230,10 @@ PDFS: dict[str, list[LecturaPDF]] = {
             orden=6, id="fisher-terminator-avatar",
             titulo="Terminator vs Avatar",
             autor="Mark Fisher", anio="2012",
-            fuente="accelerate_reader_urbanomic_2014.pdf",
-            paginas=(335, 346),
-            edicion="#Accelerate: The Accelerationist Reader, Urbanomic, 2014",
+            fuente="fisher_terminator_vs_avatar.pdf",
+            paginas=(1, 12),
+            edicion=("#Accelerate: The Accelerationist Reader, Urbanomic, 2014, "
+                     "pp. 335–346. El archivo ya es ese extracto: 12 páginas."),
             por_que=(
                 "Fisher recupera a Land para la izquierda: acepta el diagnóstico y "
                 "rechaza la conclusión. Cierra el módulo porque responde "
@@ -362,6 +365,29 @@ def _titulos(modulo: str) -> tuple[str, str]:
     }.get(modulo, (modulo, ""))
 
 
+def _portadilla_pdf(lp: "LecturaPDF", destino: Path) -> Path:
+    """Una hoja de presentacion con el mismo aspecto que las demas lecturas,
+    para que las que llegan como PDF externo no entren sin contexto."""
+    from weasyprint import HTML
+    doc = f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
+<style>{HOJA_DE_ESTILO}
+/* Los PDF anexados traen su propia numeracion; un contador aqui reiniciaria
+   en 1 a media lectura y confundiria mas de lo que orienta. */
+@page {{ @bottom-center {{ content: none; }} }}</style></head><body>
+<section class="lectura" style="page-break-before:auto">
+  <div class="cabecera">
+    <div class="num">Lectura {lp.orden}</div>
+    <h2>{html.escape(lp.titulo)}</h2>
+    <div class="meta">{html.escape(lp.autor)} · {lp.anio}</div>
+  </div>
+  <div class="porque">{html.escape(lp.por_que)}</div>
+  <div class="fuente">Se reproduce de: {html.escape(lp.edicion)}</div>
+</section></body></html>"""
+    salida = destino / f"{lp.id}_portadilla.pdf"
+    HTML(string=doc).write_pdf(salida)
+    return salida
+
+
 def construir(modulo: str) -> Path:
     base = LECTURAS_DIR / modulo
     fuentes, salida = base / "fuentes", base / "lecturas"
@@ -388,7 +414,10 @@ def construir(modulo: str) -> Path:
     extras, faltantes = [], []
     for lp in sorted(PDFS.get(modulo, []), key=lambda x: x.orden):
         recorte = lp.recortar(fuentes, salida)
-        (extras if recorte else faltantes).append(recorte or lp)
+        if recorte:
+            extras.extend([_portadilla_pdf(lp, salida), recorte])
+        else:
+            faltantes.append(lp)
     if extras:
         fusion = pypdf.PdfWriter()
         for f in [destino, *extras]:
