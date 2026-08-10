@@ -1,0 +1,67 @@
+{
+  "nota": "Unica fuente de verdad de las fechas de la unidad. Verificar antes de agregar. Dentro de un mismo tramo no puede haber dos hitos del mismo anio: se encimarian.",
+  "bandas": [
+    { "tipo": "verano",   "desde": 1956, "hasta": 1974, "etiqueta": "Primer verano" },
+    { "tipo": "invierno", "desde": 1974, "hasta": 1980, "etiqueta": "Primer invierno" },
+    { "tipo": "verano",   "desde": 1980, "hasta": 1987, "etiqueta": "Segundo verano" },
+    { "tipo": "invierno", "desde": 1987, "hasta": 1993, "etiqueta": "Segundo invierno" },
+    { "tipo": "verano",   "desde": 1993, "hasta": 2026, "etiqueta": "Tercer verano" }
+  ],
+  "hitos": [
+    { "anio": -200, "etiqueta": "Huainanzi atestigua a Nuwa", "tramo": "mitos" },
+    { "anio": -250, "etiqueta": "Talos en las Argonauticas", "tramo": "mitos" },
+    { "anio": 1206, "etiqueta": "Automatas de al-Jazari", "tramo": "mitos" },
+    { "anio": 1580, "etiqueta": "Leyenda del Golem de Praga", "tramo": "mitos" },
+    { "anio": 1770, "etiqueta": "El Turco Mecanico", "tramo": "mitos" },
+    { "anio": 1818, "etiqueta": "Frankenstein de Mary Shelley", "tramo": "mitos" },
+    { "anio": 1920, "etiqueta": "R.U.R. de Capek acuna robot", "tramo": "mitos" },
+    { "anio": 1952, "etiqueta": "Tetsuwan Atomu", "tramo": "mitos" },
+
+    { "anio": 1786, "etiqueta": "Muller propone una maquina diferencial", "tramo": "inteligencia" },
+    { "anio": 1822, "etiqueta": "Babbage: maquina diferencial", "tramo": "inteligencia" },
+    { "anio": 1837, "etiqueta": "Babbage: maquina analitica", "tramo": "inteligencia" },
+    { "anio": 1843, "etiqueta": "Nota G de Ada Lovelace", "tramo": "inteligencia" },
+
+    { "anio": 1936, "etiqueta": "Maquina de Turing", "tramo": "arco-1" },
+    { "anio": 1943, "etiqueta": "Neurona de McCulloch y Pitts", "tramo": "arco-1", "ancla": true },
+    { "anio": 1948, "etiqueta": "Cibernetica de Wiener", "tramo": "arco-1" },
+    { "anio": 1950, "etiqueta": "Turing y Shannon: imitacion y ajedrez", "tramo": "arco-1" },
+    { "anio": 1956, "etiqueta": "Conferencia de Dartmouth", "tramo": "arco-1", "ancla": true },
+    { "anio": 1958, "etiqueta": "Perceptron de Rosenblatt", "tramo": "arco-1" },
+    { "anio": 1959, "etiqueta": "Samuel y el programa de damas", "tramo": "arco-1" },
+    { "anio": 1966, "etiqueta": "ELIZA de Weizenbaum", "tramo": "arco-1" },
+    { "anio": 1969, "etiqueta": "Minsky y Papert: Perceptrons", "tramo": "arco-1", "ancla": true },
+    { "anio": 1973, "etiqueta": "Informe Lighthill", "tramo": "arco-1" },
+
+    { "anio": 1982, "etiqueta": "Proyecto Quinta Generacion", "tramo": "arco-2" },
+    { "anio": 1987, "etiqueta": "Colapso del mercado de maquinas LISP", "tramo": "arco-2", "ancla": true },
+    { "anio": 1997, "etiqueta": "Deep Blue vence a Kasparov", "tramo": "arco-2", "ancla": true },
+    { "anio": 2009, "etiqueta": "Se publica ImageNet", "tramo": "arco-2" },
+    { "anio": 2012, "etiqueta": "AlexNet gana ImageNet", "tramo": "arco-2", "ancla": true },
+    { "anio": 2016, "etiqueta": "AlphaGo vence a Lee Sedol", "tramo": "arco-2" },
+    { "anio": 2017, "etiqueta": "Arquitectura Transformer", "tramo": "arco-2" },
+    { "anio": 2022, "etiqueta": "Lanzamiento de ChatGPT", "tramo": "arco-2", "ancla": true },
+
+    { "anio": 2007, "etiqueta": "CUDA abre las GPU al computo general", "tramo": "boom" },
+    { "anio": 2018, "etiqueta": "Turing a Hinton, LeCun y Bengio", "tramo": "boom" },
+    { "anio": 2020, "etiqueta": "GPT-3 y la apuesta por la escala", "tramo": "boom" },
+
+    { "anio": 2023, "etiqueta": "Modelos multimodales de frontera", "tramo": "actual" },
+    { "anio": 2024, "etiqueta": "Nobel a Hopfield y Hinton", "tramo": "actual" },
+    { "anio": 2025, "etiqueta": "Turing a Sutton y Barto", "tramo": "actual" },
+
+    { "anio": 1928, "etiqueta": "Von Neumann y los juegos de sociedad", "tramo": "raices" },
+    { "anio": 1944, "etiqueta": "Von Neumann y Morgenstern", "tramo": "raices" },
+    { "anio": 1950, "etiqueta": "Equilibrio de Nash", "tramo": "raices" },
+    { "anio": 1953, "etiqueta": "Barricelli y la evolucion digital", "tramo": "raices" },
+    { "anio": 1956, "etiqueta": "Jerarquia de Chomsky", "tramo": "raices" },
+    { "anio": 1970, "etiqueta": "Game of Life de Conway", "tramo": "raices" },
+    { "anio": 1975, "etiqueta": "Holland formaliza los geneticos", "tramo": "raices" },
+    { "anio": 1987, "etiqueta": "Angluin y el algoritmo L*", "tramo": "raices" },
+    { "anio": 2002, "etiqueta": "Wolfram: A New Kind of Science", "tramo": "raices" },
+
+    { "anio": 2005, "etiqueta": "Amazon Mechanical Turk", "tramo": "sociedad" },
+    { "anio": 2013, "etiqueta": "Manifiesto aceleracionista", "tramo": "sociedad" },
+    { "anio": 2018, "etiqueta": "Gender Shades documenta sesgo", "tramo": "sociedad" }
+  ]
+}
