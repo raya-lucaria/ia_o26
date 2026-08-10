@@ -27,7 +27,15 @@ jobs:
       - run: pip install pytest pillow pyyaml
       - run: python -m pytest tools/ -q
 
+  # `needs: checks` es lo que convierte las pruebas en una compuerta real. Sin
+  # esa línea ambos trabajos corren en paralelo y el sitio se publica aunque la
+  # suite falle — que es exactamente lo que pasaba antes de añadirla.
   course-pages:
+    needs: checks
     uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@6b8b29b1c73648490a733b3a6344fc37f24dbf00
     with:
       course_path: .
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
