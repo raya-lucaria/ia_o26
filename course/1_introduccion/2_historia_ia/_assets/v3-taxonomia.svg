@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" role="img" aria-label="Taxonomía de la inteligencia artificial. Un rectángulo exterior rotulado inteligencia artificial contiene cinco cajas hermanas al mismo nivel: búsqueda y planificación, lógica y GOFAI, teoría de juegos, sistemas expertos, y aprendizaje máquina. Solo aprendizaje máquina se subdivide, en anidamiento estricto: redes neuronales profundas, que contiene transformers, que contiene modelos de lenguaje (LLM), resaltado en rosa. Pie: los LLM son una rama de una rama de una rama, no son sinónimo de inteligencia artificial.">
+  <rect x="0" y="0" width="1000" height="600" rx="16" fill="#211033"/>
+
+  <!-- Outer box: Inteligencia artificial -->
+  <rect x="24" y="24" width="952" height="486" rx="14" fill="none" stroke="#78419e" stroke-width="3"/>
+  <text x="44" y="58" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#f7f2ff">Inteligencia artificial</text>
+
+  <!-- Five sibling boxes, same level -->
+  <!-- Box 1: Busqueda y planificacion -->
+  <rect x="44" y="86" width="168" height="400" rx="10" fill="#2c1745" stroke="#78419e" stroke-width="2"/>
+  <text x="128" y="116" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">Búsqueda y</text>
+  <text x="128" y="136" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">planificación</text>
+
+  <!-- Box 2: Logica y GOFAI -->
+  <rect x="224" y="86" width="168" height="400" rx="10" fill="#2c1745" stroke="#78419e" stroke-width="2"/>
+  <text x="308" y="116" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">Lógica y</text>
+  <text x="308" y="136" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">GOFAI</text>
+
+  <!-- Box 3: Teoria de juegos -->
+  <rect x="404" y="86" width="168" height="400" rx="10" fill="#2c1745" stroke="#78419e" stroke-width="2"/>
+  <text x="488" y="116" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">Teoría de</text>
+  <text x="488" y="136" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">juegos</text>
+
+  <!-- Box 4: Sistemas expertos -->
+  <rect x="584" y="86" width="140" height="400" rx="10" fill="#2c1745" stroke="#78419e" stroke-width="2"/>
+  <text x="654" y="116" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">Sistemas</text>
+  <text x="654" y="136" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f7f2ff" text-anchor="middle">expertos</text>
+
+  <!-- Box 5: Aprendizaje maquina, with strict nesting inside -->
+  <rect x="744" y="86" width="212" height="400" rx="10" fill="#2c1745" stroke="#f04cff" stroke-width="2.5"/>
+  <text x="850" y="112" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f7f2ff" text-anchor="middle">Aprendizaje</text>
+  <text x="850" y="130" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f7f2ff" text-anchor="middle">máquina</text>
+
+  <!-- Nested: Redes neuronales profundas -->
+  <rect x="760" y="150" width="180" height="310" rx="8" fill="#3a1f5c" stroke="#f04cff" stroke-width="1.5"/>
+  <text x="850" y="172" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#f7f2ff" text-anchor="middle">Redes neuronales</text>
+  <text x="850" y="188" font-family="system-ui, sans-serif" font-size="12.5" font-weight="600" fill="#f7f2ff" text-anchor="middle">profundas</text>
+
+  <!-- Nested: Transformers -->
+  <rect x="772" y="204" width="156" height="222" rx="8" fill="#48276e" stroke="#f04cff" stroke-width="1.5"/>
+  <text x="850" y="224" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#f7f2ff" text-anchor="middle">Transformers</text>
+
+  <!-- Nested: Modelos de lenguaje (LLM), accent -->
+  <rect x="784" y="240" width="132" height="164" rx="8" fill="#f04cff" stroke="#f7f2ff" stroke-width="1.5"/>
+  <text x="850" y="310" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#211033" text-anchor="middle">Modelos de</text>
+  <text x="850" y="326" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#211033" text-anchor="middle">lenguaje</text>
+  <text x="850" y="342" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#211033" text-anchor="middle">(LLM)</text>
+
+  <!-- Footer note -->
+  <text x="500" y="536" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f04cff" text-anchor="middle">Los LLM son una rama de una rama de una rama.</text>
+  <text x="500" y="560" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#f04cff" text-anchor="middle">No son sinónimo de inteligencia artificial.</text>
+  <text x="500" y="586" font-family="system-ui, sans-serif" font-size="12.5" fill="#c8b9d8" text-anchor="middle">Las cinco cajas superiores son hermanas: ninguna contiene a las demás.</text>
+</svg>

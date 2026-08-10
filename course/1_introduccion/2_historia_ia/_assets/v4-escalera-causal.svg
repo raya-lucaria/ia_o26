@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" role="img" aria-label="Escalera de la causalidad de Judea Pearl, tres escalones ascendentes. Abajo, asociación: qué observo junto a qué, con el ejemplo qué tan probable es que un paciente que toma este medicamento se cure. En medio, intervención: qué pasa si actúo, con el ejemplo qué pasaría si le doy este medicamento al paciente. Arriba, contrafactual: qué habría pasado si, con el ejemplo el paciente habría mejorado igual si no le hubiera dado el medicamento. Las escaleras muestran preguntas distintas, no grados de la misma pregunta.">
+  <rect x="0" y="0" width="900" height="460" rx="16" fill="#211033"/>
+
+  <text x="30" y="40" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#f7f2ff">La escalera de la causalidad (Pearl)</text>
+
+  <!-- Step 1: Asociacion (bottom) -->
+  <rect x="60" y="340" width="220" height="80" fill="#3a1f5c" stroke="#78419e" stroke-width="2"/>
+  <text x="170" y="368" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#a8ff5a" text-anchor="middle">1. Asociación</text>
+  <text x="170" y="390" font-family="system-ui, sans-serif" font-size="12.5" fill="#f7f2ff" text-anchor="middle">¿qué observo</text>
+  <text x="170" y="406" font-family="system-ui, sans-serif" font-size="12.5" fill="#f7f2ff" text-anchor="middle">junto a qué?</text>
+
+  <!-- Step 2: Intervencion (middle) -->
+  <rect x="60" y="230" width="330" height="80" fill="#3a1f5c" stroke="#78419e" stroke-width="2"/>
+  <text x="225" y="258" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#55ddff" text-anchor="middle">2. Intervención</text>
+  <text x="225" y="280" font-family="system-ui, sans-serif" font-size="12.5" fill="#f7f2ff" text-anchor="middle">¿qué pasa si</text>
+  <text x="225" y="296" font-family="system-ui, sans-serif" font-size="12.5" fill="#f7f2ff" text-anchor="middle">actúo?</text>
+
+  <!-- Step 3: Contrafactual (top) -->
+  <rect x="60" y="120" width="440" height="80" fill="#3a1f5c" stroke="#f04cff" stroke-width="2.5"/>
+  <text x="280" y="148" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#ffd166" text-anchor="middle">3. Contrafactual</text>
+  <text x="280" y="170" font-family="system-ui, sans-serif" font-size="12.5" fill="#f7f2ff" text-anchor="middle">¿qué habría</text>
+  <text x="280" y="186" font-family="system-ui, sans-serif" font-size="12.5" fill="#f7f2ff" text-anchor="middle">pasado si?</text>
+
+  <!-- Ascending arrow along the steps -->
+  <path d="M 40 420 L 40 400 L 40 310 L 40 290 L 40 200 L 40 130" fill="none" stroke="#78419e" stroke-width="0" />
+  <polyline points="40,420 40,130" fill="none" stroke="#78419e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#78419e"/>
+    </marker>
+  </defs>
+
+  <!-- Example questions to the right of each step -->
+  <g font-family="system-ui, sans-serif">
+    <text x="620" y="368" font-size="13" font-weight="600" fill="#a8ff5a" text-anchor="middle">Ejemplo</text>
+    <text x="620" y="386" font-size="12" fill="#c8b9d8" text-anchor="middle">«¿qué tan probable es que un</text>
+    <text x="620" y="402" font-size="12" fill="#c8b9d8" text-anchor="middle">paciente que toma este medicamento</text>
+    <text x="620" y="418" font-size="12" fill="#c8b9d8" text-anchor="middle">se cure?»</text>
+
+    <text x="700" y="258" font-size="13" font-weight="600" fill="#55ddff" text-anchor="middle">Ejemplo</text>
+    <text x="700" y="276" font-size="12" fill="#c8b9d8" text-anchor="middle">«¿qué pasaría si le doy</text>
+    <text x="700" y="292" font-size="12" fill="#c8b9d8" text-anchor="middle">este medicamento al paciente?»</text>
+
+    <text x="740" y="148" font-size="13" font-weight="600" fill="#ffd166" text-anchor="middle">Ejemplo</text>
+    <text x="740" y="166" font-size="12" fill="#c8b9d8" text-anchor="middle">«¿el paciente habría mejorado</text>
+    <text x="740" y="182" font-size="12" fill="#c8b9d8" text-anchor="middle">igual si no le hubiera dado</text>
+    <text x="740" y="198" font-size="12" fill="#c8b9d8" text-anchor="middle">el medicamento?»</text>
+  </g>
+
+  <line x1="60" y1="420" x2="880" y2="420" stroke="#78419e" stroke-width="1"/>
+
+  <text x="30" y="446" font-family="system-ui, sans-serif" font-size="12.5" fill="#c8b9d8">Tres preguntas distintas, no tres grados de la misma pregunta.</text>
+</svg>
