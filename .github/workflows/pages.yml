@@ -14,6 +14,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Guardas de regresión del contenido: créditos completos, imágenes en uso,
+  # fechas verificadas, SVG legibles. Las que necesitan el CLI `raya` o un
+  # artifact/ construido se saltan solas — de eso se encarga course-pages.
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest pillow pyyaml
+      - run: python -m pytest tools/ -q
+
   course-pages:
     uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@6b8b29b1c73648490a733b3a6344fc37f24dbf00
     with:

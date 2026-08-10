@@ -18,11 +18,28 @@ import re
 import subprocess
 from pathlib import Path
 
+import pytest
+
 RAIZ = Path(__file__).resolve().parent.parent
 UNIDAD = RAIZ / "course/1_introduccion/2_historia_ia"
 ASSETS = UNIDAD / "_assets"
 ARTEFACTO = RAIZ / "artifact"
-RAYA_LUCARIA = Path("/home/uumami/itam/raya_lucaria")
+RAYA_LUCARIA = Path(os.environ.get("RAYA_LUCARIA", "/home/uumami/itam/raya_lucaria"))
+
+# Los criterios 1 y 2 necesitan el CLI `raya`, que vive en un repositorio
+# hermano y no existe en CI. Alli se saltan: el workflow de GitHub ya valida y
+# construye el curso por su cuenta, asi que la cobertura no se pierde.
+sin_cli = pytest.mark.skipif(
+    not (RAYA_LUCARIA / "pyproject.toml").is_file(),
+    reason=f"El CLI raya no esta en {RAYA_LUCARIA}; CI lo cubre por su cuenta",
+)
+
+# artifact/ es salida generada y esta en .gitignore, asi que no existe en un
+# clon nuevo. Los criterios que lo inspeccionan se saltan si no se construyo.
+sin_artefacto = pytest.mark.skipif(
+    not (ARTEFACTO / "manifest.json").is_file(),
+    reason="No hay artifact/ construido; corre `raya build` primero",
+)
 
 PAGINAS = [
     "0_index.md", "1_imaginar_la_maquina.md", "2_que_es_inteligencia.md",
@@ -56,6 +73,7 @@ def _run_raya(*args):
     )
 
 
+@sin_cli
 def test_1_raya_validate_pasa_sin_errores_ni_advertencias():
     salida = _run_raya("validate")
     assert "ERROR |" not in salida.stdout, salida.stdout
@@ -63,6 +81,8 @@ def test_1_raya_validate_pasa_sin_errores_ni_advertencias():
     assert "Course validation passed" in salida.stdout, salida.stdout
 
 
+@sin_cli
+@sin_artefacto
 def test_2_build_genera_artefacto_y_preview_serviria_sin_enlaces_rotos():
     build = _run_raya("build")
     assert "ERROR |" not in build.stdout, build.stdout
@@ -80,6 +100,7 @@ def test_2_build_genera_artefacto_y_preview_serviria_sin_enlaces_rotos():
     assert "would_serve=true" in dry_run.stdout, dry_run.stdout
 
 
+@sin_artefacto
 def test_3_las_ocho_paginas_aparecen_en_navegacion_en_orden_bajo_introduccion():
     nav = json.loads((ARTEFACTO / "data/navigation.json").read_text())
     items = {it["id"]: it for it in nav["items"]}
@@ -94,6 +115,7 @@ def test_3_las_ocho_paginas_aparecen_en_navegacion_en_orden_bajo_introduccion():
         assert id_pagina in items, f"falta en navegacion: {id_pagina}"
 
 
+@sin_artefacto
 def test_4_objetos_oficiales_con_scope_correctamente_inferido():
     objetos = json.loads((ARTEFACTO / "data/official.json").read_text())["objects"]
     de_unidad = [o for o in objetos if o["scope"]["quantum"] == "historia-ia"]
