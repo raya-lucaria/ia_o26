@@ -137,7 +137,7 @@ hay reflejo. El descubrimiento no fue sobre el programa. Fue sobre nosotros.
 ![Tres bandas horizontales —simbólica, conexionista, y de control y refuerzo— que corren de 1930 a 2026, se cruzan y convergen después de 2016, con los dos inviernos marcados como franjas atenuadas](_assets/v6-tres-linajes.svg)
 :::
 
-Este es el tercer hilo de la unidad: simbólico, conexionista, refuerzo. Hasta
+Este es uno de los hilos de la unidad: simbólico, conexionista, refuerzo. Hasta
 aquí conviven tres tradiciones que casi nunca comparten sala en los relatos
 populares. La **simbólica** manipula símbolos y reglas explícitas
 —de la máquina de Turing a Dartmouth y de ahí a los sistemas expertos—.
@@ -156,8 +156,9 @@ hacen, lo hacen en el mismo sistema.
 
 Los relatos que solo enumeran "hubo un invierno en los setenta y otro en
 los ochenta" tratan el fenómeno como clima: algo que pasa, sin causa. No es
-clima. Es un ciclo con cuatro pasos reconocibles, y se repitió dos veces con
-actores distintos.
+clima. Es el hilo de expectativa y decepción que recorre esta unidad, hecho
+patrón concreto: un ciclo con cuatro pasos reconocibles, que se repitió dos
+veces con actores distintos.
 
 **El primer invierno** empieza con un tope técnico muy concreto: en 1969,
 Marvin Minsky y Seymour Papert publican *Perceptrons*, una prueba formal de
@@ -262,4 +263,4 @@ primero de su tipo: es el primero empaquetado como conversación accesible
 para cualquiera. En cinco días supera el millón de usuarios.
 
 Ahí se cierra el arco que cuenta esta página. Lo que ha pasado desde
-entonces —y sigue pasando cada semestre— vive en [[estado-actual]].
+entonces —y sigue pasando cada semestre— vive en [[estado-actual|el estado actual del campo]].

@@ -11,7 +11,7 @@ prerequisites: [arco-historico]
 
 # Por qué el boom
 
-[[arco-historico]] mostró que las ideas centrales de las redes neuronales —capas,
+[[arco-historico|El arco histórico]] mostró que las ideas centrales de las redes neuronales —capas,
 retropropagación, convoluciones— circulaban desde los años sesenta y ochenta. Esta
 página responde a la pregunta que deja pendiente: si las ideas ya existían, ¿por
 qué el boom llegó hasta la década de 2010, y no antes?
@@ -49,8 +49,9 @@ cuatro por separado— es lo que explica por qué el crecimiento fue exponencial
 no lineal.
 
 **Teoría.** La retropropagación de Rumelhart, Hinton y Williams (1986) y las
-redes convolucionales de LeCun (1989) llevaban entrenamiento incluido desde el
-principio, pero no correlacionaba con nada útil hasta que hubo con qué entrenar.
+redes convolucionales de LeCun (1989) traían el entrenamiento incluido desde el
+principio, pero esas ideas no rindieron nada útil hasta que hubo datos y cómputo
+con qué entrenarlas.
 
 **Hardware.** En 2007, NVIDIA liberó CUDA, una plataforma que permitía usar
 tarjetas gráficas —diseñadas para videojuegos, no para ciencia— como
@@ -59,8 +60,11 @@ aritméticas en paralelo, y entrenar una red neuronal es, en esencia, hacer
 muchísimas operaciones aritméticas en paralelo. El acoplamiento fue casi
 accidental y resultó decisivo.
 
-**Datos.** Fei-Fei Li y su equipo publicaron ImageNet en 2009: catorce millones
-de imágenes etiquetadas a mano, organizadas según una taxonomía. Antes de
+**Datos.** Fei-Fei Li y su equipo publicaron ImageNet en 2009: 3.2 millones de
+imágenes etiquetadas a mano en esa primera versión, organizadas según la
+jerarquía de WordNet. El conjunto siguió creciendo después de 2009 hasta los
+catorce millones de imágenes que tiene hoy —la cifra que suele citarse, pero que
+corresponde al tamaño final, no al de la publicación original. Antes de
 ImageNet no había datos suficientes para que la diferencia entre arquitecturas
 se notara; después, la visión por computadora tuvo una competencia con una vara
 de medir común.
@@ -80,14 +84,15 @@ cuatro palabras.
 
 Para hablar de la palanca del cómputo con precisión hace falta una unidad. Un
 **FLOP** (*floating-point operation*) es una sola operación aritmética de punto
-flotante: una suma o una multiplicación. Entrenar un modelo grande requiere
-billones de ellas, así que la unidad útil casi siempre es una tasa —FLOP por
-segundo, o FLOP/s— o un total acumulado a lo largo de todo el entrenamiento, que
-es como se miden los puntos de la siguiente sección.
+flotante: una suma o una multiplicación. Entrenar un modelo grande requiere del
+orden de 10²³ operaciones —una cifra comparable al número de Avogadro—, así que
+la unidad útil casi siempre es una tasa —FLOP por segundo, o FLOP/s— o un total
+acumulado a lo largo de todo el entrenamiento, que es como se miden los puntos
+de la siguiente sección.
 
 Aquí conviene una corrección. Es común escuchar que «un chip de IA hace un
 ExaFLOP», y algún material de este mismo curso lo dijo así en una versión
-anterior. Es impreciso. La cifra de 1 ExaFLOP/s —mil trillones de operaciones
+anterior. Es impreciso. La cifra de 1 ExaFLOP/s —un trillón de operaciones
 por segundo— no describe a un chip individual: describe a un **pod** de TPU v4
 de Google, un clúster interconectado y enfriado por líquido de 4 096 chips
 trabajando en conjunto. Un solo chip rinde varios órdenes de magnitud menos. La
@@ -105,14 +110,14 @@ La curva no es sutil. AlexNet, el modelo que ganó ImageNet en 2012 y que suele
 marcarse como el inicio simbólico del boom, se entrenó con del orden de
 4,7 × 10¹⁷ FLOP. GPT-3, ocho años después, usó del orden de 3,1 × 10²³ FLOP:
 casi un millón de veces más. GPT-4, tres años después de GPT-3, usó del orden de
-2,1 × 10²⁵ FLOP. Esa progresión —de cientos de miles de millones de operaciones a
-decenas de septillones— no es una mejora incremental. Es un cambio de escala que
+2,1 × 10²⁵ FLOP. Esa progresión —de 4,7 × 10¹⁷ FLOP a 2,1 × 10²⁵ FLOP, un salto
+de casi cuarenta y cinco millones de veces— no es una mejora incremental. Es un cambio de escala que
 vuelve irreconocible el campo de una generación a la siguiente, y que exige
 presupuestos que ya no caben en un laboratorio universitario.
 
 ## De la academia a la industria
 
-Aquí reaparece el cuarto hilo de la unidad, quién paga y quién decide. Ahí
+Aquí reaparece uno de los hilos de la unidad, quién paga y quién decide. Ahí
 está el desplazamiento institucional. Backprop se publicó desde una
 universidad; CUDA lo escribió una empresa de hardware para vender tarjetas
 gráficas; ImageNet lo construyó un laboratorio académico con etiquetado manual
@@ -136,10 +141,28 @@ ingeniería que hicieron de las redes neuronales profundas un componente central
 de la computación. La prensa los llamó, desde entonces, los «padrinos de la
 inteligencia artificial».
 
+::: figure {#padrinos title="Los tres premiados: Hinton, LeCun y Bengio"}
+![Geoffrey Hinton en la rueda de prensa del Premio Nobel de Física 2024](_assets/foto-hinton.jpg)
+:::
+
+::: figure {#lecun title="Yann LeCun"}
+![Retrato de Yann LeCun](_assets/foto-lecun.jpg)
+:::
+
+::: figure {#bengio title="Yoshua Bengio"}
+![Retrato de Yoshua Bengio](_assets/foto-bengio.jpg)
+:::
+
 En junio de 2020, Jürgen Schmidhuber —investigador que llevaba décadas
 publicando sobre redes profundas, memoria de largo plazo y redes generativas
 adversariales antes de que se llamaran así— publicó una crítica pública y
-extensa a esa atribución. Su argumento no es que Hinton, LeCun y Bengio no
+extensa a esa atribución.
+
+::: figure {#schmidhuber title="Jürgen Schmidhuber"}
+![Retrato de Jürgen Schmidhuber](_assets/foto-schmidhuber.jpg)
+:::
+
+Su argumento no es que Hinton, LeCun y Bengio no
 hayan hecho contribuciones reales, sino que sus artículos —incluidos los de
 revisión, publicados años después, con oportunidad de corregir— omitieron citar
 trabajo anterior que resolvía problemas equivalentes: el de Alexey Ivakhnenko,

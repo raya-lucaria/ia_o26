@@ -22,12 +22,13 @@ campo en 2026, y esta página existe para corregirlo antes de que se instale.
 
 ## Un campo más ancho que su rama de moda
 
-En [[que-es-inteligencia]] se presentó @taxonomia-ia: dentro del rectángulo
+En [[que-es-inteligencia|Qué es la inteligencia]] se presentó @taxonomia-ia: dentro del rectángulo
 grande de la inteligencia artificial hay cinco cajas hermanas —búsqueda y
 planificación, lógica y GOFAI, teoría de juegos, sistemas expertos y
 aprendizaje máquina— y solo la última se subdivide en redes neuronales
-profundas, transformers y modelos de lenguaje. La nota al pie de esa figura
-era deliberada: los LLM son una rama de una rama de una rama.
+profundas, transformers y modelos de lenguaje. La distinción es deliberada:
+los LLM son, como ya precisó [[estado-actual|Estado actual]], una
+rama, dentro de una rama, dentro de una rama del aprendizaje máquina.
 
 Esta página recorre el resto del árbol. La teoría de juegos, los autómatas, los
 algoritmos genéticos y el estudio del comportamiento emergente no son

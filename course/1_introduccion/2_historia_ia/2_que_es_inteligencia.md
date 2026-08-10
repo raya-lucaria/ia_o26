@@ -66,7 +66,7 @@ haga». Un siglo después, Alan Turing la retoma por su nombre —la «objeción
 Lovelace»— en su artículo de 1950 «Computing Machinery and Intelligence», y
 responde que una máquina que aprende puede sorprender a quien la programó. Si
 eso basta para llamarlo pensar sigue sin respuesta consensuada, y
-[[arco-historico]] retoma el hilo con Turing.
+[[arco-historico|el arco histórico]] retoma el hilo con Turing.
 
 ## Qué es la inteligencia
 
@@ -112,7 +112,7 @@ Pero un LLM no es «lógica y GOFAI», ni «búsqueda y planificación»: son ra
 distintas del mismo árbol, no antepasados suyos. Cuando en 2026 se usa
 «inteligencia artificial» como sinónimo de «modelo de lenguaje», se toma la
 hoja más reciente de la rama más reciente y se le llama el árbol entero.
-[[otras-raices]] recorre esas otras ramas —lo que la IA hizo, y sigue
+[[otras-raices|Otras raíces]] recorre esas otras ramas —lo que la IA hizo, y sigue
 haciendo, sin una sola red neuronal de por medio.
 
 ## GOFAI contra aprendizaje máquina
@@ -151,7 +151,7 @@ entorno, recibe una señal de recompensa o castigo, y ajusta su comportamiento
 para maximizar la recompensa acumulada, no el acierto en un ejemplo aislado. Es
 el linaje detrás de que un programa aprenda a jugar mejor que su programador
 —de Arthur Samuel enseñando a una computadora a jugar damas en 1959 a AlphaGo
-venciendo a Lee Sedol en 2016—, episodios que [[arco-historico]] desarrolla.
+venciendo a Lee Sedol en 2016—, episodios que [[arco-historico|el arco histórico]] desarrolla.
 
 ## Aprender no es explicar
 
@@ -195,5 +195,5 @@ sabe parcial, no neutral; una taxonomía donde solo una rama —aprendizaje
 máquina, redes profundas, transformers, LLM— se anida de verdad, mientras las
 demás son hermanas; y la distinción entre predecir y explicar, que va a
 volver cada vez que un sistema entrenado con datos parezca «entender» algo
-que en realidad solo asocia. [[arco-historico]] retoma la cronología donde la
-dejó [[imaginar-la-maquina]] y sigue el hilo desde la cibernética hasta hoy.
+que en realidad solo asocia. [[arco-historico|El arco histórico]] retoma la cronología donde la
+dejó [[imaginar-la-maquina|Imaginar la máquina]] y sigue el hilo desde la cibernética hasta hoy.

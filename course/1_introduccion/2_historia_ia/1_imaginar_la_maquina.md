@@ -124,7 +124,7 @@ repite: cuando algo parece pensar, ¿cómo se sabe si de verdad piensa o si algu
 oculto, hace el trabajo? Esa pregunta le da nombre a un producto de hoy: Amazon
 llamó *Mechanical Turk* a su plataforma de trabajo humano bajo demanda,
 precisamente porque —igual que en 1770— hay personas escondidas detrás de una
-interfaz que aparenta automatización. [[ia-y-sociedad]] retoma ese hilo del trabajo
+interfaz que aparenta automatización. [[ia-y-sociedad|IA y sociedad]] retoma ese hilo del trabajo
 humano oculto.
 
 ## Frankenstein y R.U.R.

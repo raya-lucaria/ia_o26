@@ -61,11 +61,11 @@ Cada página los retoma explícitamente.
 
 ## Recorrido
 
-1. [[imaginar-la-maquina]] — los mitos, la ficción y los autómatas.
-2. [[que-es-inteligencia]] — inteligencia, la taxonomía IA/ML/LLM, y causalidad.
-3. [[arco-historico]] — de la cibernética a ChatGPT.
-4. [[por-que-el-boom]] — qué cambió para que funcionara.
-5. [[estado-actual]] — dónde estamos, con fecha de corte.
-6. [[otras-raices]] — lo que no es aprendizaje máquina.
-7. [[ia-y-sociedad]] — trabajo, poder e ideologías.
-8. [[material-adicional]] — para seguir.
+1. [[imaginar-la-maquina|Imaginar la máquina]] — los mitos, la ficción y los autómatas.
+2. [[que-es-inteligencia|Qué es la inteligencia]] — inteligencia, la taxonomía IA/ML/LLM, y causalidad.
+3. [[arco-historico|El arco histórico]] — de la cibernética a ChatGPT.
+4. [[por-que-el-boom|Por qué el boom]] — qué cambió para que funcionara.
+5. [[estado-actual|Estado actual]] — dónde estamos, con fecha de corte.
+6. [[otras-raices|Otras raíces]] — lo que no es aprendizaje máquina.
+7. [[ia-y-sociedad|IA y sociedad]] — trabajo, poder e ideologías.
+8. [[material-adicional|Material adicional]] — para seguir.
