@@ -12,3 +12,6 @@ lecturas/**/fuentes/turing_*.pdf
 lecturas/**/fuentes/searle_*.pdf
 lecturas/**/lecturas/cuadernillo.html
 lecturas/**/fuentes/*.pdf
+
+# Cliente de recuperación bibliográfica: se queda local, no se publica.
+tools/anna.py
