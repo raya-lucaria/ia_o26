@@ -45,10 +45,10 @@
     { "anio": 2007, "etiqueta": "CUDA abre las GPU al computo general", "tramo": "boom" },
     { "anio": 2018, "etiqueta": "Turing a Hinton, LeCun y Bengio", "tramo": "boom" },
     { "anio": 2020, "etiqueta": "GPT-3 y la apuesta por la escala", "tramo": "boom" },
+    { "anio": 2024, "etiqueta": "Turing a Barto y Sutton", "tramo": "boom" },
 
     { "anio": 2023, "etiqueta": "Modelos multimodales de frontera", "tramo": "actual" },
     { "anio": 2024, "etiqueta": "Nobel a Hopfield y Hinton", "tramo": "actual" },
-    { "anio": 2025, "etiqueta": "Turing a Sutton y Barto", "tramo": "actual" },
 
     { "anio": 1928, "etiqueta": "Von Neumann y los juegos de sociedad", "tramo": "raices" },
     { "anio": 1944, "etiqueta": "Von Neumann y Morgenstern", "tramo": "raices" },
