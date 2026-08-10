@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" role="img" aria-label="Mapa de dos ejes de siete mitos de la maquina artificial: el eje horizontal ordena a Talos, Nuwa, al-Jazari, el Golem, el Turco Mecanico, Frankenstein y R.U.R. por fecha de primera atestiguacion, del siglo III antes de Cristo a 1921; el eje vertical los agrupa por la ansiedad que codifican, de obediencia y control a engano y teatro, pasando por responsabilidad del creador y sustitucion del humano">
+  <rect x="0" y="0" width="960" height="520" rx="16" fill="#211033"/>
+
+  <text x="480" y="34" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="18" font-weight="600" text-anchor="middle">Mapa de los mitos: ansiedad frente a tiempo</text>
+  <text x="480" y="55" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Posicion horizontal = primera atestiguacion · posicion vertical = ansiedad que codifica el mito</text>
+
+  <!-- Axes -->
+  <line x1="250" y1="95" x2="250" y2="450" stroke="#78419e" stroke-width="2"/>
+  <line x1="250" y1="450" x2="910" y2="450" stroke="#78419e" stroke-width="2"/>
+
+  <!-- Band dividers -->
+  <line x1="250" y1="187" x2="910" y2="187" stroke="#78419e" stroke-width="1" opacity="0.4"/>
+  <line x1="250" y1="274" x2="910" y2="274" stroke="#78419e" stroke-width="1" opacity="0.4"/>
+  <line x1="250" y1="361" x2="910" y2="361" stroke="#78419e" stroke-width="1" opacity="0.4"/>
+
+  <!-- Band labels (bottom to top: obediencia y control, responsabilidad del creador, sustitucion del humano, engano y teatro) -->
+  <text x="235" y="150" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="end">Engano y teatro</text>
+
+  <text x="235" y="224" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="end">Sustitucion</text>
+  <text x="235" y="239" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="end">del humano</text>
+
+  <text x="235" y="312" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="end">Responsabilidad</text>
+  <text x="235" y="327" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="end">del creador</text>
+
+  <text x="235" y="409" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="end">Obediencia y control</text>
+
+  <!-- Axis end labels -->
+  <text x="250" y="472" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">mas antiguo</text>
+  <text x="910" y="472" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="end">mas reciente</text>
+  <text x="580" y="495" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Tiempo de atestiguacion (siglo III a.C. a 1921)</text>
+
+  <!-- Vertical axis label -->
+  <text x="30" y="272" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle" transform="rotate(-90 30 272)">Ansiedad codificada</text>
+
+  <!-- Talos: obediencia y control, 250 a.C., label below -->
+  <line x1="290" y1="405" x2="290" y2="421" stroke="#78419e" stroke-width="1"/>
+  <circle cx="290" cy="405" r="7" fill="#f04cff"/>
+  <text x="290" y="435" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Talos</text>
+  <text x="290" y="449" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">250 a.C.</text>
+
+  <!-- Nuwa: responsabilidad del creador, 139 a.C., label above -->
+  <line x1="340" y1="318" x2="340" y2="302" stroke="#78419e" stroke-width="1"/>
+  <circle cx="340" cy="318" r="7" fill="#f04cff"/>
+  <text x="340" y="288" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Nuwa</text>
+  <text x="340" y="302" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">139 a.C.</text>
+
+  <!-- Al-Jazari: sustitucion del humano, 1206, label above -->
+  <line x1="520" y1="230" x2="520" y2="214" stroke="#78419e" stroke-width="1"/>
+  <circle cx="520" cy="230" r="7" fill="#f04cff"/>
+  <text x="520" y="200" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Al-Jazari</text>
+  <text x="520" y="214" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">1206</text>
+
+  <!-- Golem: responsabilidad del creador, 1580, label below -->
+  <line x1="620" y1="318" x2="620" y2="334" stroke="#78419e" stroke-width="1"/>
+  <circle cx="620" cy="318" r="7" fill="#f04cff"/>
+  <text x="620" y="348" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Golem</text>
+  <text x="620" y="362" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">1580</text>
+
+  <!-- Turco Mecanico: engano y teatro, 1770, label above -->
+  <line x1="700" y1="145" x2="700" y2="129" stroke="#78419e" stroke-width="1"/>
+  <circle cx="700" cy="145" r="7" fill="#f04cff"/>
+  <text x="700" y="105" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Turco Mecanico</text>
+  <text x="700" y="119" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">1770</text>
+
+  <!-- Frankenstein: responsabilidad del creador, 1818, label above -->
+  <line x1="760" y1="318" x2="760" y2="302" stroke="#78419e" stroke-width="1"/>
+  <circle cx="760" cy="318" r="7" fill="#f04cff"/>
+  <text x="760" y="288" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Frankenstein</text>
+  <text x="760" y="302" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">1818</text>
+
+  <!-- R.U.R.: sustitucion del humano, 1921, label below -->
+  <line x1="860" y1="230" x2="860" y2="246" stroke="#78419e" stroke-width="1"/>
+  <circle cx="860" cy="230" r="7" fill="#f04cff"/>
+  <text x="860" y="260" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">R.U.R.</text>
+  <text x="860" y="274" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">1921</text>
+</svg>
