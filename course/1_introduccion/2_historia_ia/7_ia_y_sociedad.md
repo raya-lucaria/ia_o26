@@ -39,6 +39,8 @@ Las cifras van de un millón de empleos destruidos a ochocientos millones, segú
 ![Ilustración generada del Turco Mecánico, el autómata ajedrecista del siglo XVIII, reutilizada de la página anterior](_assets/ilus-turco-mecanico.jpg)
 :::
 
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 En [[imaginar-la-maquina]] esta unidad contó la historia del Turco Mecánico: el autómata ajedrecista que Wolfgang von Kempelen presentó en 1770, que en realidad escondía a una persona moviendo las piezas desde dentro del gabinete. Esa página cerraba señalando que Amazon nombró *Mechanical Turk* a su plataforma de trabajo humano bajo demanda a propósito: detrás de una interfaz que aparenta automatización, hay personas.
 
 Esta es esa persona, hecha trabajo real y documentado. Los modelos de lenguaje no aprenden a distinguir contenido aceptable de contenido dañino por sí solos: alguien etiqueta millones de ejemplos —discurso de odio, violencia, abuso sexual— para que el producto final llegue "limpio". Ese trabajo está mayormente subcontratado a países de renta baja: trabajadores en Kenia han etiquetado contenido extremo para OpenAI y Meta, vía la firma Sama, por menos de dos dólares la hora, frente a veintiuno a veintisiete dólares de un moderador equivalente en Estados Unidos. En Filipinas, parte de ese trabajo se paga por debajo del salario mínimo local, y el costo psicológico de la exposición sostenida a contenido extremo rara vez recibe el acompañamiento clínico de las contrapartes mejor pagadas.

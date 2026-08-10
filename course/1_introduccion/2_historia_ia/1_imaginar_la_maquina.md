@@ -46,6 +46,8 @@ Mecánico plantea el engaño y el teatro: ¿cómo se demuestra que algo piensa?
 ![Ilustración generada de Nüwa moldeando figuras humanas con barro a la orilla de un río](_assets/ilus-nuwa.jpg)
 :::
 
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 En la mitología china, Nuwa modela a los primeros humanos con barro amarillo a la
 orilla de un río. El relato más completo está en el *Huainanzi*, presentado en 139
 a. C. —siglo II a. C., no el 2070–1600 a. C. que le atribuía el material original,
@@ -60,6 +62,8 @@ liga la creación de vida artificial con la desigualdad.
 ![Ilustración generada de Talos, autómata de bronce de la mitología griega, vigilando un acantilado](_assets/ilus-talos.jpg)
 :::
 
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 Talos es un gigante de bronce forjado por Hefesto que patrulla Creta arrojando
 piedras a cualquier barco que se acerque. Aparece en las *Argonáuticas* de Apolonio
 de Rodas, del siglo III a. C.: ahí lo derrota Medea, que le promete la inmortalidad
@@ -73,6 +77,8 @@ idea que el curso repite: todo sistema que "solo obedece" tiene un punto de fall
 ::: figure {#golem title="El Golem de Praga"}
 ![Ilustración generada del Golem, figura humanoide de arcilla del folclore judío, en un callejón medieval](_assets/ilus-golem.jpg)
 :::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
 
 La versión más conocida del Golem se atribuye al rabino Judah Loew de Praga, en el
 siglo XVI —no el año 38 a. C. del deck original, una fecha sin texto que la
@@ -90,6 +96,8 @@ desactivarlo.
 ![Ilustración generada de un autómata hidráulico islámico medieval de Al-Jazari, con engranajes y surtidores](_assets/ilus-al-jazari.jpg)
 :::
 
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 Hasta aquí, mito. Con Ismail al-Jazari cambia el registro: en 1206 completa *El
 libro del conocimiento de los dispositivos mecánicos ingeniosos*, con instrucciones
 para construir cincuenta máquinas —relojes de agua, músicos automáticos, un
@@ -103,6 +111,8 @@ máquinas sustituyen tareas que antes hacía una persona.
 ::: figure {#turco-mecanico title="El Turco Mecánico"}
 ![Ilustración generada del Turco Mecánico, autómata ajedrecista del siglo XVIII, con su gabinete de engranajes](_assets/ilus-turco-mecanico.jpg)
 :::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
 
 En 1770, Wolfgang von Kempelen presenta en la corte de Viena una máquina que juega
 ajedrez contra cualquier retador —y gana. Antes de cada partida abre el gabinete
@@ -128,14 +138,19 @@ humano oculto.
 :::
 
 *Frankenstein; o, el moderno Prometeo* se publica de forma anónima el 1 de enero de
-1818; el nombre de Mary Shelley no se asocia a la novela hasta 1821. La novela
+1818; el nombre de Mary Shelley se asocia por primera vez a la novela en 1821, en
+una traducción al francés, y no aparece en una edición en inglés hasta la segunda,
+de 1823. La novela
 retoma casi la misma pregunta que el Golem: Victor Frankenstein construye una
 criatura y la abandona, y es ese abandono, no la criatura en sí, lo que produce la
 tragedia. Poco más de un siglo después, el 25 de enero de 1921, se estrena en Praga
 *R.U.R. (Robots Universales Rossum)*, de Karel Čapek. La obra acuña la palabra
 "robot" —de una raíz eslava para "trabajo forzado"—, que Karel atribuyó a su
 hermano Josef. En R.U.R. los robots sustituyen el trabajo humano y luego se
-rebelan: sustitución y responsabilidad convergen en la misma obra.
+rebelan: sustitución y responsabilidad convergen en la misma obra. (La línea
+del tiempo de esta página marca 1920, el año en que Čapek escribió la obra;
+esta prosa usa 1921, el año de su estreno —ambas fechas son correctas, para
+eventos distintos.)
 
 ## Astroboy
 

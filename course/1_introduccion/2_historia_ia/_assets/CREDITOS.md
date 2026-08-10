@@ -38,6 +38,18 @@ Ninguna representa a una persona real ni a un evento histórico documentado.
 | v1-tramo-mitos.svg | Línea del tiempo: imaginar la máquina | Diagrama propio, generado por `tools/gen_timeline.py` | Material del curso |
 | v1-tramo-raices.svg | Línea del tiempo: otras raíces | Diagrama propio, generado por `tools/gen_timeline.py` | Material del curso |
 | v1-tramo-sociedad.svg | Línea del tiempo: IA y sociedad | Diagrama propio, generado por `tools/gen_timeline.py` | Material del curso |
+| v2-mapa-mitos.svg | Mapa de dos ejes: Nuwa, Talos, el Golem, al-Jazari, el Turco Mecánico, Frankenstein y R.U.R. según fecha de atestiguación y ansiedad codificada | Diagrama propio, generado para el curso | Material del curso |
+| v3-taxonomia.svg | Taxonomía de la inteligencia artificial: cinco categorías hermanas y el anidamiento estricto IA ⊃ ML ⊃ redes profundas ⊃ transformers ⊃ LLM | Diagrama propio, generado para el curso | Material del curso |
+| v4-escalera-causal.svg | Escalera de la causalidad de Judea Pearl: asociación, intervención y contrafactual | Diagrama propio, generado para el curso | Material del curso |
+| v6-tres-linajes.svg | Tres linajes de la inteligencia artificial, 1930-2026: simbólico, conexionista, y de control y refuerzo | Diagrama propio, generado para el curso | Material del curso |
+| v7-anatomia-invierno.svg | Anatomía de un invierno de la inteligencia artificial: promesa pública, financiamiento, tope técnico y recorte, instanciado dos veces | Diagrama propio, generado para el curso | Material del curso |
+| v8-juego-imitacion.svg | El juego de la imitación de Turing: un interrogador y dos interlocutores ocultos, uno humano y uno máquina | Diagrama propio, generado para el curso | Material del curso |
+| v9-computo.svg | Cómputo de entrenamiento en escala logarítmica para AlexNet, GPT-2, GPT-3, PaLM, GPT-4 y Gemini 1.0 Ultra | Diagrama propio, generado para el curso a partir de datos de `tools/computo.json` (fuente: Epoch AI) | Material del curso |
+| v10-palancas.svg | Las cuatro palancas del boom —teoría, hardware, datos y software libre— como ciclo de refuerzo mutuo | Diagrama propio, generado para el curso | Material del curso |
+| v12-arbol-raices.svg | Árbol de seis raíces de la inteligencia artificial confluyendo en un tronco común | Diagrama propio, generado para el curso | Material del curso |
+| v13-game-of-life.png | Cuatro generaciones del Juego de la Vida de Conway: una nave planeadora y un bloque estático | Generado localmente para el curso (simulación del autómata celular de Conway) | Material del curso |
+| v15-cadena-valor.svg | Cadena de valor de la inteligencia artificial en cinco eslabones y la posición de América Latina en cada uno | Diagrama propio, generado para el curso | Material del curso |
+| v16-mapa-ideologico.svg | Mapa 2×2 de las ideologías que empujan la inteligencia artificial, con el contorno disputado de TESCREAL | Diagrama propio, generado para el curso | Material del curso |
 | foto-turing.jpg | Alan Turing a los 16 años | Posiblemente Arthur Reginald Chaffin (1893-1954) — Wikimedia Commons | Public domain |
 | foto-lovelace.jpg | Retrato de Ada Lovelace, acuarela de Alfred Edward Chalon | Alfred Edward Chalon — Wikimedia Commons | Public domain |
 | foto-babbage-maquina.jpg | Máquina diferencial de Charles Babbage, construida por el Science Museum de Londres según sus planos originales | User:geni — Wikimedia Commons | CC BY-SA 4.0 |

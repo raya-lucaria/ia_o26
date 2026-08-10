@@ -137,8 +137,9 @@ hay reflejo. El descubrimiento no fue sobre el programa. Fue sobre nosotros.
 ![Tres bandas horizontales —simbólica, conexionista, y de control y refuerzo— que corren de 1930 a 2026, se cruzan y convergen después de 2016, con los dos inviernos marcados como franjas atenuadas](_assets/v6-tres-linajes.svg)
 :::
 
-Hasta aquí conviven tres tradiciones que casi nunca comparten sala en los
-relatos populares. La **simbólica** manipula símbolos y reglas explícitas
+Este es el tercer hilo de la unidad: simbólico, conexionista, refuerzo. Hasta
+aquí conviven tres tradiciones que casi nunca comparten sala en los relatos
+populares. La **simbólica** manipula símbolos y reglas explícitas
 —de la máquina de Turing a Dartmouth y de ahí a los sistemas expertos—.
 La **conexionista** aprende parámetros a partir de ejemplos —de
 McCulloch-Pitts al perceptrón, y de ahí, con una interrupción larga, a las

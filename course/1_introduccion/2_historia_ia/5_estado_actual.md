@@ -32,7 +32,7 @@ con los modelos cerrados de Silicon Valley.
 
 ## El regreso del aprendizaje por refuerzo
 
-`@tres-linajes`, el diagrama de `[[arco-historico]]`, cerraba su banda azul
+@tres-linajes, el diagrama de [[arco-historico]], cerraba su banda azul
 —control y refuerzo— con AlphaGo en 2016. Ese linaje no se detuvo ahí: en
 2022–2025 volvió a tomar el centro del campo, aunque con un papel distinto al
 de Samuel o AlphaGo.
@@ -95,7 +95,7 @@ Que un premio de física se otorgue por una técnica de aprendizaje máquina no
 es un accidente de comité: es una señal de que estas herramientas —tomadas de
 la física estadística, aplicadas a redes de unidades que se activan o no—
 pertenecen a esa disciplina tanto como a la computación. Es también la
-culminación de un argumento que viene desde `[[que-es-inteligencia]]`: los
+culminación de un argumento que viene desde [[que-es-inteligencia]]: los
 linajes que hoy dominan el campo no nacieron en departamentos de ciencias de
 la computación, sino en la intersección de la física, la psicología animal y
 la lógica.
@@ -131,9 +131,9 @@ ahí. Es una discusión sin resolver, no una que ya se ganó de un lado.
 
 ## Cómo se mide hoy la inteligencia
 
-`[[que-es-inteligencia]]` abrió esta unidad con el primer hilo: esencia
+[[que-es-inteligencia]] abrió esta unidad con el primer hilo: esencia
 contra comportamiento. Turing, en 1950, propuso una salida pragmática a esa
-pregunta con `@juego-imitacion`: no preguntar qué es pensar, sino si el
+pregunta con @juego-imitacion: no preguntar qué es pensar, sino si el
 comportamiento de una máquina es indistinguible del de una persona en una
 conversación por texto.
 
@@ -149,7 +149,7 @@ es en sí una admisión: ningún examen fijo sobrevive mucho tiempo.
 
 Esto no cierra el problema que planteó Turing: lo reabre en otro nivel. Un
 sistema puede pasar cualquier examen de comportamiento y seguir sin resolver
-la pregunta de fondo de `@taxonomia-ia`, en `[[que-es-inteligencia]]`: que un
+la pregunta de fondo de @taxonomia-ia, en [[que-es-inteligencia]]: que un
 modelo de lenguaje sea una rama, dentro de una rama, dentro de una rama del
 aprendizaje máquina no lo vuelve sinónimo de inteligencia artificial, y pasar
 una prueba de comportamiento no dice nada, por sí solo, sobre qué ocurre —si

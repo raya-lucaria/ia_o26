@@ -14,6 +14,8 @@ tags: [historia, filosofia, contexto]
 ![Estatuas antiguas que se disuelven en arquitectura de circuitos luminosos](_assets/ilus-portada.jpg)
 :::
 
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 La inteligencia artificial no empezó en 2022, ni en 2012, ni en 1956. Empezó como
 una fantasía sobre crear vida, y esa fantasía es mucho más vieja que cualquier
 computadora.

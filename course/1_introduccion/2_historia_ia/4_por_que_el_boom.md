@@ -103,7 +103,7 @@ logro de ingeniería de bolsillo.
 
 La curva no es sutil. AlexNet, el modelo que ganó ImageNet en 2012 y que suele
 marcarse como el inicio simbólico del boom, se entrenó con del orden de
-4,7 × 10¹⁷ FLOP. GPT-3, siete años después, usó del orden de 3,1 × 10²³ FLOP:
+4,7 × 10¹⁷ FLOP. GPT-3, ocho años después, usó del orden de 3,1 × 10²³ FLOP:
 casi un millón de veces más. GPT-4, tres años después de GPT-3, usó del orden de
 2,1 × 10²⁵ FLOP. Esa progresión —de cientos de miles de millones de operaciones a
 decenas de septillones— no es una mejora incremental. Es un cambio de escala que
@@ -112,7 +112,8 @@ presupuestos que ya no caben en un laboratorio universitario.
 
 ## De la academia a la industria
 
-Ahí está el desplazamiento institucional. Backprop se publicó desde una
+Aquí reaparece el cuarto hilo de la unidad, quién paga y quién decide. Ahí
+está el desplazamiento institucional. Backprop se publicó desde una
 universidad; CUDA lo escribió una empresa de hardware para vender tarjetas
 gráficas; ImageNet lo construyó un laboratorio académico con etiquetado manual
 masivo; TensorFlow lo liberó Google; GPT-3 y GPT-4 los entrenaron OpenAI y

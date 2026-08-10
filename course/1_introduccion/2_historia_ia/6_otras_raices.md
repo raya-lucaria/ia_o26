@@ -22,7 +22,7 @@ campo en 2026, y esta página existe para corregirlo antes de que se instale.
 
 ## Un campo más ancho que su rama de moda
 
-En [[que-es-inteligencia]] se presentó `@taxonomia-ia`: dentro del rectángulo
+En [[que-es-inteligencia]] se presentó @taxonomia-ia: dentro del rectángulo
 grande de la inteligencia artificial hay cinco cajas hermanas —búsqueda y
 planificación, lógica y GOFAI, teoría de juegos, sistemas expertos y
 aprendizaje máquina— y solo la última se subdivide en redes neuronales
@@ -155,7 +155,8 @@ ambos gobernados por la misma regla local— es el punto del ejemplo.
 Décadas después, el físico Stephen Wolfram retomó los autómatas celulares como
 objeto de estudio sistemático. Aquí también hay que corregir al material
 heredado, que situaba esta investigación alrededor de 1960 —una fecha que en
-realidad pertenece a von Neumann y Ulam. Wolfram empezó a publicar sobre el
+realidad pertenece a von Neumann y Ulam, y que además es imposible por una
+razón más simple: Wolfram nació en 1959. Wolfram empezó a publicar sobre el
 tema en 1983, clasificando los autómatas celulares según su comportamiento a
 largo plazo, y esa investigación culminó hasta 2002 con *A New Kind of
 Science*, donde propone que sistemas computacionales simples —no solo
