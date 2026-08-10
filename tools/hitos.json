@@ -44,14 +44,14 @@
     { "anio": 2012, "etiqueta": "AlexNet gana ImageNet", "tramo": "arco-2", "ancla": true },
     { "anio": 2016, "etiqueta": "AlphaGo vence a Lee Sedol", "tramo": "arco-2" },
     { "anio": 2017, "etiqueta": "Arquitectura Transformer", "tramo": "arco-2" },
+    { "anio": 2020, "etiqueta": "GPT-3 y la apuesta por la escala", "tramo": "arco-2" },
     { "anio": 2022, "etiqueta": "Lanzamiento de ChatGPT", "tramo": "arco-2", "ancla": true },
 
     { "anio": 1986, "etiqueta": "Backprop de Rumelhart y Hinton", "tramo": "boom" },
     { "anio": 2007, "etiqueta": "CUDA abre las GPU al computo general", "tramo": "boom" },
     { "anio": 2015, "etiqueta": "Google libera TensorFlow", "tramo": "boom" },
     { "anio": 2018, "etiqueta": "Turing a Hinton, LeCun y Bengio", "tramo": "boom" },
-    { "anio": 2020, "etiqueta": "GPT-3 y la apuesta por la escala", "tramo": "boom" },
-    { "anio": 2021, "etiqueta": "Schmidhuber disputa el credito Turing", "tramo": "boom" },
+    { "anio": 2020, "etiqueta": "Schmidhuber disputa el credito Turing", "tramo": "boom" },
     { "anio": 2024, "etiqueta": "Turing a Barto y Sutton", "tramo": "boom" },
 
     { "anio": 2023, "etiqueta": "Modelos multimodales de frontera", "tramo": "actual" },

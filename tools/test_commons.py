@@ -3,10 +3,14 @@ from pathlib import Path
 
 from PIL import Image
 
+from test_curar_imagenes import filas_de_creditos
+
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
 LISTA = RAIZ / "tools/commons.tsv"
 CREDITOS = ASSETS / "CREDITOS.md"
+
+CELDA_LICENCIA = 3
 
 LICENCIAS_OK = ("public domain", "cc0", "cc by", "cc-by", "pd-")
 
@@ -28,7 +32,12 @@ def test_fotos_recomprimidas():
 
 
 def test_cada_foto_tiene_credito_con_licencia_aceptable():
-    creditos = CREDITOS.read_text(encoding="utf-8").lower()
+    filas_creditos = filas_de_creditos()
     for fila in filas():
-        assert fila["destino"].lower() in creditos, f"{fila['destino']} sin credito"
-    assert any(l in creditos for l in LICENCIAS_OK), "ninguna licencia reconocible"
+        destino = fila["destino"]
+        assert destino in filas_creditos, f"{destino} sin fila en CREDITOS.md"
+        licencia = filas_creditos[destino][CELDA_LICENCIA].lower()
+        assert licencia, f"{destino}: celda de licencia vacia"
+        assert any(l in licencia for l in LICENCIAS_OK), (
+            f"{destino}: licencia no reconocible: {licencia!r}"
+        )

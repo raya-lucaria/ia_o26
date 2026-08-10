@@ -54,7 +54,7 @@ Ninguna representa a una persona real ni a un evento histórico documentado.
 | foto-lecun.jpg | Yann LeCun | Jérémy Barande — Wikimedia Commons | CC BY-SA 2.0 |
 | foto-bengio.jpg | Yoshua Bengio | Maryse Boyce — Wikimedia Commons | CC BY 4.0 |
 | foto-schmidhuber.jpg | Jürgen Schmidhuber | ITU/R. Farrell — Wikimedia Commons | CC BY 2.0 |
-| foto-pearl.jpg | Judea Pearl en la conferencia NIPS 2013 | Better Than Bacon — Wikimedia Commons | CC BY 2.0 |
+| foto-pearl.jpg | Judea Pearl encendiendo un candelabro en la Casa Blanca, 2007 (recorte) | White House photo by Joyce N. Boghosian — Wikimedia Commons | Public domain |
 | foto-hopfield.jpg | John Hopfield | bhadeshia123 — Wikimedia Commons | CC BY 3.0 |
 | foto-fei-fei-li.jpg | Fei-Fei Li en la cumbre AI for Good 2017 | ITU Pictures — Wikimedia Commons | CC BY 2.0 |
 | foto-weizenbaum.jpg | Joseph Weizenbaum, creador de ELIZA | Ulrich Hansen, Alemania (periodista) — Wikimedia Commons | CC BY-SA 3.0 |
