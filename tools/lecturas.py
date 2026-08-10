@@ -90,103 +90,100 @@ class Lectura:
         return f"{self.autor} ({self.anio}). *{self.titulo}*"
 
 
-# ── Clase 1 · ¿Puede pensar una máquina? ──────────────────────────────────────
-# La pregunta es tres siglos anterior a la computadora. Estas cuatro lecturas
-# la muestran formulandose antes de que existiera la maquina que la volveria
-# urgente, y encadenan con el hilo «esencia contra comportamiento» que abre la
-# unidad de historia.
+# ── Módulo 1 · ¿Accelerate What? ──────────────────────────────────────────────
+# El temario pide seis lecturas con la paginación de la antología #Accelerate
+# (Urbanomic, 2014). Cuatro existen en fuentes primarias abiertas y van en el
+# cuadernillo; dos siguen en derechos y van enlazadas en ENLACES. El texto es el
+# mismo; la numeración de páginas es la de la antología y no la de aquí.
 
 LECTURAS: dict[str, list[Lectura]] = {
     "filosofia_ia/clase_1": [
         Lectura(
             orden=1,
-            id="hobbes-razon-computo",
-            titulo="Leviatán, I.5 — De la razón y la ciencia",
-            autor="Thomas Hobbes",
-            anio="1651",
-            fuente="hobbes_leviathan_en.txt",
-            procedencia="Project Gutenberg, ebook 3207",
+            id="marx-fragmento-maquinas",
+            titulo="Fragmento sobre las máquinas",
+            autor="Karl Marx",
+            anio="1858",
+            fuente="marx_fragmento_maquinas_en.txt",
+            procedencia="Grundrisse, cuadernos VI–VII · Marxists Internet Archive",
             licencia="Dominio público",
             por_que=(
-                "Hobbes define razonar como computar —sumar y restar— tres siglos "
-                "antes de que existiera una máquina que lo hiciera. Es el origen de "
-                "la idea de que pensar podría ser un proceso mecánico."
+                "Marx describe la máquina que absorbe el saber colectivo y vuelve "
+                "marginal al obrero. De aquí sale el «general intellect», la noción "
+                "que el aceleracionismo recogerá siglo y medio después para "
+                "preguntarse si la tecnología puede rebasar al capital que la produjo."
             ),
-            recorte=Recorte(
-                desde=r"^CHAPTER V\. OF REASON, AND SCIENCE\.",
-                hasta=r"^CHAPTER VI\.",
-            ),
+            recorte=Recorte(desde=r"automatic system of machinery", palabras_max=4600),
         ),
         Lectura(
             orden=2,
-            id="descartes-prueba-lenguaje",
-            titulo="Discurso del método, Quinta parte",
-            autor="René Descartes",
-            anio="1637",
-            fuente="descartes_discurso_v_es.txt",
-            procedencia="Wikisource en español, traducción de Wikisource",
-            licencia="Dominio público",
+            id="ccru-swarmachines",
+            titulo="Swarmachines",
+            autor="CCRU",
+            anio="1996",
+            fuente="ccru_swarmachines_en.txt",
+            procedencia="Cybernetic Culture Research Unit · ccru.net",
+            licencia="Publicado abiertamente por el propio colectivo",
             por_que=(
-                "Descartes concede que el cuerpo es una máquina, y propone dos "
-                "pruebas que ninguna máquina pasaría: usar el lenguaje de forma "
-                "creativa y actuar por entendimiento y no por disposición. Es el "
-                "test de Turing planteado al revés, y tres siglos antes."
+                "El CCRU lee la insurrección como enjambre: no un sujeto que dirige, "
+                "sino un proceso distribuido que se propaga. Es el puente entre la "
+                "teoría de sistemas y la política que define al aceleracionismo."
             ),
         ),
         Lectura(
             orden=3,
-            id="leibniz-molino",
-            titulo="Monadología, §17 — El argumento del molino",
-            autor="Gottfried Wilhelm Leibniz",
-            anio="1714",
-            fuente="leibniz_monadologia_en.txt",
-            procedencia="Wikisource en inglés, traducción de G. M. Duncan",
-            licencia="Dominio público",
+            id="land-meltdown",
+            titulo="Meltdown",
+            autor="Nick Land",
+            anio="1994",
+            fuente="land_meltdown_en.txt",
+            procedencia="Cybernetic Culture Research Unit · ccru.net",
+            licencia="Publicado abiertamente en el archivo de CCRU",
             por_que=(
-                "Si agrandáramos una máquina pensante hasta poder pasearnos dentro, "
-                "dice Leibniz, solo veríamos piezas empujándose: nunca la percepción. "
-                "Es el ancestro directo del cuarto chino de Searle."
+                "El texto fundacional del aceleracionismo de derecha: el capital como "
+                "proceso autónomo que se desmantela a sí mismo hacia adelante. Léelo "
+                "junto al mapa ideológico de la unidad de historia — es la esquina de "
+                "acelerar sin frenos."
             ),
-            recorte=Recorte(desde=r"^\s*17\.", hasta=r"^\s*19\."),
         ),
         Lectura(
             orden=4,
-            id="lamettrie-hombre-maquina",
-            titulo="El hombre máquina (extracto)",
-            autor="Julien Offray de La Mettrie",
-            anio="1747",
-            fuente="lamettrie_hombre_maquina_en.txt",
-            procedencia="Project Gutenberg, ebook 52090",
-            licencia="Dominio público",
+            id="barbrook-cameron-californian",
+            titulo="La ideología californiana",
+            autor="Richard Barbrook y Andy Cameron",
+            anio="1995",
+            fuente="barbrook_cameron_californian_ideology_en.txt",
+            procedencia="imaginaryfutures.net, sitio de los autores",
+            licencia="Publicado abiertamente por los autores",
             por_que=(
-                "La Mettrie toma la máquina cartesiana y le quita la excepción: si el "
-                "cuerpo es mecanismo, también la mente. Cierra el arco que Descartes "
-                "abrió dejando el alma fuera."
+                "La crítica que nombró la fusión de contracultura y libre mercado en "
+                "Silicon Valley. Escrito en 1995, describe con precisión incómoda el "
+                "e/acc de 2026: es el antecedente directo de la sección de "
+                "aceleracionismos de la unidad de historia."
             ),
-            recorte=Recorte(desde=r"^MAN A MACHINE\.", palabras_max=2600),
         ),
     ]
 }
 
-# En derechos vigentes: no se redistribuyen, se enlazan.
+# En derechos vigentes: no se redistribuyen, se leen de la antología.
 ENLACES: dict[str, list[dict[str, str]]] = {
     "filosofia_ia/clase_1": [
         {
-            "cita": "Alan Turing (1950). «Computing Machinery and Intelligence». *Mind* LIX(236)",
-            "url": "https://redirect.cs.umbc.edu/courses/471/papers/turing.pdf",
+            "cita": "Gilles Deleuze y Félix Guattari (1972). *El Anti-Edipo*, ed. Minnesota 1983, pp. 239–240",
+            "url": "",
             "por_que": (
-                "Turing declara mal planteada la pregunta «¿pueden pensar las "
-                "máquinas?» y la sustituye por un juego de imitación. Léelo después "
-                "de Descartes: es la misma prueba del lenguaje, con el veredicto "
-                "invertido."
+                "Dos páginas. El pasaje donde proponen no retirarse del proceso "
+                "capitalista sino acelerarlo: la frase que el aceleracionismo tomó "
+                "como divisa, casi siempre fuera de su contexto."
             ),
         },
         {
-            "cita": "John Searle (1980). «Minds, Brains, and Programs». *BBS* 3(3)",
-            "url": "https://home.csulb.edu/~cwallis/382/readings/482/searle.minds.brains.programs.bbs.1980.pdf",
+            "cita": "Mark Fisher (2012). «Terminator vs Avatar», *#Accelerate*, pp. 335–346",
+            "url": "",
             "por_que": (
-                "El cuarto chino: manipular símbolos según reglas no es entender. "
-                "Es el molino de Leibniz, reescrito para la era del software."
+                "Fisher recupera a Land para la izquierda: acepta el diagnóstico y "
+                "rechaza la conclusión. Cierra el módulo porque responde directamente "
+                "a Meltdown."
             ),
         },
     ]
@@ -246,9 +243,10 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
             f"<li>{_enfasis(e['cita'])}</li>" for e in enlaces
         )
         extra = (
-            "<div class='nota'><b>Además, en línea.</b> Estos dos textos siguen "
-            "en derechos y no se reproducen aquí; el temario los enlaza a copias "
-            f"abiertas de universidades.<ol>{filas}</ol></div>"
+            "<div class='nota'><b>Las dos que faltan.</b> Siguen en derechos y no "
+            "se reproducen aquí. Se leen de la antología <i>#Accelerate</i> "
+            "(Urbanomic, 2014) o de la edición citada; su paginación es la que "
+            f"aparece en el temario.<ol>{filas}</ol></div>"
         )
 
     cuerpo = []
@@ -283,8 +281,8 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
 def _titulos(modulo: str) -> tuple[str, str]:
     return {
         "filosofia_ia/clase_1": (
-            "¿Puede pensar una máquina?",
-            "Filosofía de la IA · Clase 1 — La pregunta antes de la computadora",
+            "¿Accelerate What?",
+            "Filosofía de la IA · Módulo 1 — Aceleracionismo, de Marx al valle",
         )
     }.get(modulo, (modulo, ""))
 

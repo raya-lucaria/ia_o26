@@ -1,45 +1,40 @@
-# Clase 1 — ¿Puede pensar una máquina?
+# Módulo 1 — ¿Accelerate What?
 
-**Filosofía de la IA · La pregunta antes de la computadora**
+**Filosofía de la IA · Aceleracionismo, de Marx al valle**
 
-La pregunta que Turing formula en 1950 es tres siglos más vieja que la máquina
-que la volvió urgente. Estas cuatro lecturas la muestran formándose: Hobbes
-define razonar como calcular, Descartes propone la prueba que ninguna máquina
-pasaría, Leibniz nos hace caminar dentro del mecanismo, y La Mettrie quita la
-excepción que Descartes había dejado para el alma.
-
-Encadena con el hilo **esencia contra comportamiento** que abre la unidad de
-[historia de la IA](../../../course/1_introduccion/2_historia_ia/0_index.md).
+Seis lecturas, 63 páginas, entre 3.5 y 4 horas. Encadenan con la sección de
+[aceleracionismos y TESCREAL](../../../course/1_introduccion/2_historia_ia/7_ia_y_sociedad.md)
+de la unidad de historia: aquí están los textos que ese mapa ideológico resume.
 
 ## Cuadernillo
 
 **[`lecturas/filosofia_ia_clase_1_cuadernillo.pdf`](lecturas/filosofia_ia_clase_1_cuadernillo.pdf)**
-— 25 páginas, las cuatro lecturas en un solo archivo, con su portadilla y la
-razón de cada una. Todo dominio público: se puede imprimir, repartir y publicar
-sin pedir permiso a nadie.
+— 47 páginas con las cuatro lecturas que existen en fuentes primarias abiertas,
+maquetadas en un solo archivo con la razón de cada una.
 
-| # | Lectura | Autor | Año | Fuente |
-|---|---|---|---|---|
-| 1 | Leviatán, I.5 — De la razón y la ciencia | Hobbes | 1651 | [Gutenberg 3207](https://www.gutenberg.org/ebooks/3207) |
-| 2 | Discurso del método, Quinta parte | Descartes | 1637 | [Wikisource ES](https://es.wikisource.org/wiki/Discurso_del_método_(Wikisource_tr.)/Quinta_parte) |
-| 3 | Monadología, §17 — El argumento del molino | Leibniz | 1714 | [Wikisource EN, tr. Duncan](https://en.wikisource.org/wiki/Monadology_(Leibniz,_tr._Duncan)) |
-| 4 | El hombre máquina (extracto) | La Mettrie | 1747 | [Gutenberg 52090](https://www.gutenberg.org/ebooks/52090) |
+| # | Lectura | Autor | Año | Fuente | Estado |
+|---|---|---|---|---|---|
+| 1 | Fragmento sobre las máquinas | Marx | 1858 | [Grundrisse, MIA](https://www.marxists.org/archive/marx/works/1857/grundrisse/ch13.htm) | ✅ en el cuadernillo |
+| 2 | Swarmachines | CCRU | 1996 | [ccru.net](http://www.ccru.net/swarm1/1_swarm.htm) | ✅ en el cuadernillo |
+| 3 | Meltdown | Land | 1994 | [ccru.net](http://www.ccru.net/swarm1/1_melt.htm) | ✅ en el cuadernillo |
+| 4 | La ideología californiana | Barbrook y Cameron | 1995 | [imaginaryfutures.net](http://www.imaginaryfutures.net/2007/04/17/the-californian-ideology-2/) | ✅ en el cuadernillo |
+| 5 | *El Anti-Edipo*, pp. 239–240 | Deleuze y Guattari | 1972 | — | ⚠️ de la edición Minnesota |
+| 6 | «Terminator vs Avatar», pp. 335–346 | Fisher | 2012 | — | ⚠️ de *#Accelerate* |
 
-## Además, en línea
+Las dos últimas siguen en derechos y no tienen copia abierta que haya podido
+verificar. Se leen de la antología *#Accelerate* (Urbanomic, 2014) y de la
+edición de Minnesota; su paginación es la del temario.
 
-Estos dos siguen en derechos, así que **no se reproducen aquí**: se enlazan a
-copias abiertas que universidades publican para sus cursos. Si prefieres
-repartirlos como archivo, ese es el lugar del LMS, no de un sitio abierto.
+## Dos avisos sobre lo que sí está
 
-- **Turing (1950), «Computing Machinery and Intelligence»**, *Mind* LIX(236) —
-  [PDF (UMBC)](https://redirect.cs.umbc.edu/courses/471/papers/turing.pdf).
-  Declara mal planteada la pregunta y la sustituye por un juego de imitación.
-  Léelo justo después de Descartes: es la misma prueba del lenguaje, con el
-  veredicto invertido.
-- **Searle (1980), «Minds, Brains, and Programs»**, *BBS* 3(3) —
-  [PDF (CSULB)](https://home.csulb.edu/~cwallis/382/readings/482/searle.minds.brains.programs.bbs.1980.pdf).
-  El cuarto chino: manipular símbolos según reglas no es entender. Es el molino
-  de Leibniz reescrito para la era del software.
+**La paginación no coincide.** El temario cuenta páginas de la antología
+*#Accelerate*; el cuadernillo toma los textos de sus fuentes primarias. El texto
+es el mismo, la numeración no. Marx quedó recortado a las ~4 600 palabras que
+corresponden al fragmento antologizado, que en el Grundrisse cruza dos cuadernos.
+
+**«La ideología californiana» está completa.** El temario pide pp. 44–53, que es
+la versión abreviada de la antología; la de imaginaryfutures es el ensayo íntegro
+de los autores, más largo. Si prefieres la versión corta, dímelo y la recorto.
 
 ## Cómo se reconstruye
 
@@ -49,14 +44,8 @@ python3 tools/lecturas.py       filosofia_ia/clase_1   # recorta y maqueta
 ```
 
 El descargador comprueba que cada archivo contenga lo que dice contener antes de
-guardarlo. No es paranoia: el ebook 17147 de Gutenberg, que parecía ser la
-*Monadología*, resultó ser la *Teodicea* — la guarda lo detectó.
+guardarlo. Agregar una lectura es agregar una entrada a `LECTURAS` en
+`tools/lecturas.py`, con su recorte y la razón por la que se lee.
 
-Agregar una lectura es agregar una entrada a `LECTURAS` en `tools/lecturas.py`,
-con su recorte y la razón por la que se lee. No hay que tocar código.
-
-## Qué se versiona y qué no
-
-`fuentes/` guarda los textos de dominio público tal como se descargaron, para
-que el recorte sea auditable. Los PDF con derechos vigentes están en
-`.gitignore`: viven en tu disco para preparar clase, no en el repositorio.
+Las fuentes quedan en `fuentes/` tal como se descargaron, para que el recorte
+sea auditable.
