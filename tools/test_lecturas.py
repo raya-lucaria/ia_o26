@@ -13,7 +13,8 @@ INTRO = MODULO / "introduccion.md"
 PAGINA = RAIZ / "course/2_filosofia_ia/1_accelerate_what.md"
 
 MARCADORES = re.compile(
-    r"^## Cómo leer este cuadernillo$(.*?)(?=^## )", re.S | re.M
+    r"^## Cómo leer este cuadernillo$(.*?)(?=^## El cuadernillo$)",
+    re.S | re.M,
 )
 
 
@@ -39,7 +40,10 @@ def _normalizar(texto: str) -> str:
 def test_la_introduccion_no_ha_derivado():
     fuente = INTRO.read_text(encoding="utf-8").split("\n", 1)[1]
     m = MARCADORES.search(PAGINA.read_text(encoding="utf-8"))
-    assert m, "la pagina del curso no trae la seccion 'Como leer este cuadernillo'"
+    assert m, (
+        "la pagina del curso debe traer la seccion "
+        "'Como leer este cuadernillo' terminada por '## El cuadernillo'"
+    )
     assert _normalizar(m.group(1)) == _normalizar(fuente), (
         "la introduccion de la pagina del curso ya no coincide con "
         "lecturas/filosofia_ia/clase_1/introduccion.md"
