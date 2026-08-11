@@ -3,6 +3,7 @@
 Aqui no se construye ningun PDF: WeasyPrint y los PDF con derechos no estan
 disponibles en CI. Se prueban funciones puras y archivos versionados.
 """
+import hashlib
 import importlib.util
 import re
 import sys
@@ -12,6 +13,11 @@ RAIZ = Path(__file__).resolve().parent.parent
 MODULO = RAIZ / "lecturas/filosofia_ia/clase_1"
 INTRO = MODULO / "introduccion.md"
 PAGINA = RAIZ / "course/2_filosofia_ia/1_accelerate_what.md"
+TAREA = RAIZ / "course/2_filosofia_ia/_official/tasks/1_leer_cuadernillo.yaml"
+VISOR = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_1.html"
+LECTURAS_README = MODULO / "README.md"
+PUBLICADO = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_1_accelerate.pdf"
+CONSTRUIDO = MODULO / "lecturas/filosofia_ia_clase_1_cuadernillo.pdf"
 
 MARCADORES = re.compile(
     r"^## Cómo leer este cuadernillo$(.*?)(?=^## El cuadernillo$)",
@@ -167,3 +173,59 @@ def test_la_introduccion_va_antes_de_la_primera_lectura():
         [], m.PDFS[modulo], m._introduccion(modulo)
     )
     assert doc.index("Cómo leer este cuadernillo") < doc.index("<h2>Fragmento")
+
+
+def test_el_pdf_publicado_es_el_que_se_construyo():
+    """El cuadernillo publicado en course/2_filosofia_ia/_assets/ se copia a
+    mano desde lecturas/.../lecturas/filosofia_ia_clase_1_cuadernillo.pdf; no
+    hay paso mecanico que los mantenga sincronizados. Esta guarda compara los
+    SHA-256 de las dos copias YA VERSIONADAS en git, no contra una
+    reconstruccion fresca: pypdf escribe metadatos internos (fechas, IDs) que
+    cambian de una corrida a otra aunque el contenido de las paginas sea
+    identico, asi que comparar contra un rebuild fallaria en falso incluso
+    cuando el copiado a mano se hizo bien. Comparar las dos copias
+    versionadas es lo unico que detecta de verdad "se reconstruyo y no se
+    volvio a copiar".
+    """
+    def _sha256(ruta: Path) -> str:
+        return hashlib.sha256(ruta.read_bytes()).hexdigest()
+
+    assert _sha256(PUBLICADO) == _sha256(CONSTRUIDO), (
+        f"{PUBLICADO.relative_to(RAIZ)} no coincide (SHA-256 distinto) con "
+        f"{CONSTRUIDO.relative_to(RAIZ)}: se reconstruyo el cuadernillo y no "
+        "se copio el resultado al asset publicado (o viceversa)."
+    )
+
+
+# Cada entrada busca, en un archivo, la frase exacta donde se declara la
+# cifra TOTAL de paginas del cuadernillo (no las subcifras de una lectura
+# suelta, como las 12 paginas del extracto de Fisher o las 7 del original de
+# Swarmachines). Si el patron deja de encontrarse porque alguien reescribio
+# la frase, la prueba tambien debe fallar: por eso el assert exige el match.
+PATRONES_PAGINAS_TOTALES = [
+    (PAGINA, "1_accelerate_what.md (resumen)", r"cuadernillo de (\d+) páginas"),
+    (PAGINA, "1_accelerate_what.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (TAREA, "1_leer_cuadernillo.yaml", r"un solo archivo de (\d+) páginas"),
+    (VISOR, "visor_modulo_1.html", r"Seis lecturas · (\d+) páginas ·"),
+    (LECTURAS_README, "README.md (resumen)", r"Seis lecturas, (\d+) páginas,"),
+    (LECTURAS_README, "README.md (cuadernillo)",
+     r"\*\*(\d+) páginas, las seis lecturas completas\*\*"),
+]
+
+
+def test_las_paginas_del_cuadernillo_coinciden_en_todos_lados():
+    vistas = []
+    for ruta, etiqueta, patron in PATRONES_PAGINAS_TOTALES:
+        texto = ruta.read_text(encoding="utf-8")
+        m = re.search(patron, texto)
+        assert m, (
+            f"{etiqueta}: no se encontró la frase que declara la cifra total "
+            f"de páginas (se buscó {patron!r})"
+        )
+        vistas.append((etiqueta, int(m.group(1))))
+
+    cifras = {n for _, n in vistas}
+    assert len(cifras) == 1, (
+        "la cifra total de páginas del cuadernillo no coincide entre "
+        "archivos: " + ", ".join(f"{etiqueta}={n}" for etiqueta, n in vistas)
+    )

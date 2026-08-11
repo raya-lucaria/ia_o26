@@ -66,7 +66,7 @@ comprobar que pasaste las páginas.
 | # | Lectura | Por qué está aquí |
 |---|---|---|
 | 1 | **Marx**, Fragmento sobre las máquinas (1858) | La máquina que absorbe el saber colectivo y vuelve marginal al obrero. De aquí sale el «general intellect» |
-| 2 | **Deleuze y Guattari**, El Anti-Edipo (1972) | Dos páginas: no retirarse del proceso, sino acelerarlo. La divisa que el aceleracionismo adoptó, casi siempre citada fuera de contexto |
+| 2 | **Deleuze y Guattari**, El Anti-Edipo (1972) | pp. 239–240: no retirarse del proceso, sino acelerarlo. La divisa que el aceleracionismo adoptó, casi siempre citada fuera de contexto |
 | 3 | **Land**, Meltdown (1994) | El texto fundacional del aceleracionismo de derecha: el capital como proceso autónomo que se desmantela hacia adelante |
 | 4 | **Fisher**, Terminator vs Avatar (2012) | Recupera a Land para la izquierda: acepta el diagnóstico y rechaza la conclusión. Responde directamente a *Meltdown* |
 | 5 | **CCRU**, Swarmachines (1996) | La insurrección como enjambre: no un sujeto que dirige, sino un proceso que se propaga |

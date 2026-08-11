@@ -425,6 +425,13 @@ def _introduccion(modulo: str) -> str:
 
 CARTA_ANCHO, CARTA_ALTO = 612.0, 792.0  # letter, en puntos: el tamano del resto del cuadernillo
 
+# Marca de pagina hueco. El documento de WeasyPrint emite una pagina por cada
+# pagina del PDF externo que va en ese lugar; despues pypdf las sustituye por
+# las reales. Asi el folio corre continuo por todo el cuadernillo y las lecturas
+# de edicion citada quedan en su posicion, no al final.
+MARCA = "##HUECO:%s:%d##"
+RE_MARCA = re.compile(r"##HUECO:([a-z0-9-]+):(\d+)##")
+
 
 def _sustituir_huecos(destino: Path, recortes: dict[str, Path]) -> None:
     """Cambia cada pagina hueco por la pagina real del PDF externo, escalada
@@ -492,15 +499,7 @@ def _parrafos_html(texto: str) -> str:
     )
 
 
-# Marca de pagina hueco. El documento de WeasyPrint emite una pagina por cada
-# pagina del PDF externo que va en ese lugar; despues pypdf las sustituye por
-# las reales. Asi el folio corre continuo por todo el cuadernillo y las lecturas
-# de edicion citada quedan en su posicion, no al final.
-MARCA = "##HUECO:%s:%d##"
-RE_MARCA = re.compile(r"##HUECO:([a-z0-9-]+):(\d+)##")
-
-
-def _cabecera(x) -> str:
+def _cabecera(x: "Lectura | LecturaPDF") -> str:
     return f"""<div class="cabecera">
     <div class="num">Lectura {x.orden}</div>
     <h2>{html.escape(x.titulo)}</h2>
@@ -518,7 +517,7 @@ def _seccion_lectura(l: "Lectura", texto: str) -> str:
 
 
 def _seccion_externa(lp: "LecturaPDF") -> str:
-    """Portadilla de la lectura anexada, seguida de sus paginas hueco."""
+    """Portadilla de la lectura intercalada, seguida de sus paginas hueco."""
     paginas = lp.paginas[1] - lp.paginas[0] + 1
     huecos = "".join(
         f'<div class="hueco">{MARCA % (lp.id, i)}</div>' for i in range(paginas)
@@ -536,7 +535,7 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
                    intro: str) -> str:
     """El indice de la portadilla lista TODAS las lecturas del cuadernillo, en su
     orden, incluidas las que llegan como PDF externo intercalado. Se arma
-    despues de saber cuales se anexaron: antes listaba solo las de texto y
+    despues de saber cuales se intercalaron: antes listaba solo las de texto y
     quedaba incompleto."""
     todas = sorted(list(lecturas) + list(anexadas or []), key=lambda x: x.orden)
     indice = "\n".join(
@@ -548,9 +547,15 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
         filas = "\n".join(
             f"<li>{_inline(e['cita'])}</li>" for e in enlaces
         )
+        if len(enlaces) == 1:
+            encabezado, seguir, reproducir = "La que falta.", "Sigue", "se reproduce"
+        else:
+            cantidad = {2: "dos", 3: "tres"}.get(len(enlaces), str(len(enlaces)))
+            encabezado = f"Las {cantidad} que faltan."
+            seguir, reproducir = "Siguen", "se reproducen"
         extra = (
-            "<div class='nota'><b>Las dos que faltan.</b> Siguen en derechos y no "
-            "se reproducen aquí. Se leen de la antología <i>#Accelerate</i> "
+            f"<div class='nota'><b>{encabezado}</b> {seguir} en derechos y no "
+            f"{reproducir} aquí. Se leen de la antología <i>#Accelerate</i> "
             "(Urbanomic, 2014) o de la edición citada; su paginación es la que "
             f"aparece en el temario.<ol>{filas}</ol></div>"
         )
