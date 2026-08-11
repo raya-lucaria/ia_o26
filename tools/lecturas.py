@@ -90,7 +90,7 @@ class LecturaPDF:
     fuente: str                 # archivo dentro de fuentes/
     paginas: tuple[int, int]    # inclusivo, 1-indexado, como las cita el temario
     edicion: str
-    por_que: str
+    introduccion: str      # ficha de cuatro apartados; ver introduccion.md
 
     def recortar(self, fuentes: Path, destino: Path) -> Path | None:
         import pypdf
@@ -123,7 +123,7 @@ class Lectura:
     fuente: str            # archivo dentro de fuentes/
     procedencia: str       # de donde se descargo
     licencia: str
-    por_que: str           # que aporta a la clase
+    introduccion: str      # ficha de cuatro apartados; ver introduccion.md
     recorte: Recorte = field(default_factory=Recorte)
 
     @property
@@ -134,8 +134,9 @@ class Lectura:
 # ── Módulo 1 · ¿Accelerate What? ──────────────────────────────────────────────
 # El temario pide seis lecturas con la paginación de la antología #Accelerate
 # (Urbanomic, 2014). Cuatro existen en fuentes primarias abiertas y van en el
-# cuadernillo; dos siguen en derechos y van enlazadas en ENLACES. El texto es el
-# mismo; la numeración de páginas es la de la antología y no la de aquí.
+# cuadernillo; dos siguen en derechos y se toman de PDF de la edición citada.
+# Hoy las seis están presentes y se intercalan en el orden acordado. El texto
+# es el mismo; la numeración de páginas es la de la antología y no la de aquí.
 
 LECTURAS: dict[str, list[Lectura]] = {
     "filosofia_ia/clase_1": [
@@ -148,16 +149,30 @@ LECTURAS: dict[str, list[Lectura]] = {
             fuente="marx_fragmento_maquinas_en.txt",
             procedencia="Grundrisse, cuadernos VI–VII · Marxists Internet Archive",
             licencia="Dominio público",
-            por_que=(
-                "Marx describe la máquina que absorbe el saber colectivo y vuelve "
-                "marginal al obrero. De aquí sale el «general intellect», la noción "
-                "que el aceleracionismo recogerá siglo y medio después para "
-                "preguntarse si la tecnología puede rebasar al capital que la produjo."
+            introduccion=(
+                "**Qué vas a leer.** Marx mirando la fábrica: la máquina absorbe "
+                "el saber acumulado de la sociedad entera y el obrero queda al "
+                "lado del proceso, vigilándolo. Son cuadernos de trabajo —los "
+                "*Grundrisse*—, no un libro que Marx haya publicado.\n\n"
+                "**Palabras clave.** *General intellect*: el saber colectivo "
+                "depositado en máquinas. *Capital fijo*: lo invertido en "
+                "maquinaria e instalaciones, frente a lo pagado en salarios. "
+                "*Tiempo de trabajo*: la medida del valor, y el problema del "
+                "texto.\n\n"
+                "**Qué retener.** Dos cosas. El obrero deja de ser quien usa la "
+                "herramienta y pasa a ser apéndice de la máquina. Y la "
+                "contradicción que Marx ve venir: cuando la riqueza la produce "
+                "el saber colectivo, seguir midiéndola en horas trabajadas se "
+                "vuelve absurdo.\n\n"
+                "**Es difícil, y está bien.** Frases largas, paréntesis, cambios "
+                "de tema: Marx escribe para sí mismo. Si un párrafo se te "
+                "cierra, sigue de largo — la tesis vuelve tres o cuatro veces "
+                "con otras palabras."
             ),
             recorte=Recorte(desde=r"automatic system of machinery", palabras_max=4600),
         ),
         Lectura(
-            orden=2,
+            orden=5,
             id="ccru-swarmachines",
             titulo="Swarmachines",
             autor="CCRU",
@@ -165,10 +180,23 @@ LECTURAS: dict[str, list[Lectura]] = {
             fuente="ccru_swarmachines_en.txt",
             procedencia="Cybernetic Culture Research Unit · ccru.net",
             licencia="Publicado abiertamente por el propio colectivo",
-            por_que=(
-                "El CCRU lee la insurrección como enjambre: no un sujeto que dirige, "
-                "sino un proceso distribuido que se propaga. Es el puente entre la "
-                "teoría de sistemas y la política que define al aceleracionismo."
+            introduccion=(
+                "**Qué vas a leer.** El colectivo del que Land formaba parte, "
+                "escribiendo sobre la insurrección como enjambre: sin líder, "
+                "sin centro, propagándose. La prosa está averiada a propósito "
+                "— neologismos, cortes, ritmo de música de baile.\n\n"
+                "**Palabras clave.** *Enjambre*: orden colectivo sin nadie que "
+                "mande. *Acéntrico*: sin centro que dirija. *CCRU*: la "
+                "Cybernetic Culture Research Unit, el grupo de Warwick de los "
+                "noventa donde se cocinó todo esto.\n\n"
+                "**Qué retener.** Una política sin sujeto: no un partido que "
+                "dirige a las masas, sino un proceso que se contagia. Es la "
+                "misma forma que Land le atribuye al capital, aplicada aquí a "
+                "la revuelta.\n\n"
+                "**Es difícil, y está bien.** Es el texto más difícil del "
+                "cuadernillo, y lo es deliberadamente: está escrito para sonar "
+                "como aquello que describe. Son cinco páginas. Léelo como quien "
+                "escucha música — no lo traduzcas frase por frase."
             ),
         ),
         Lectura(
@@ -180,15 +208,25 @@ LECTURAS: dict[str, list[Lectura]] = {
             fuente="land_meltdown_en.txt",
             procedencia="Cybernetic Culture Research Unit · ccru.net",
             licencia="Publicado abiertamente en el archivo de CCRU",
-            por_que=(
-                "El texto fundacional del aceleracionismo de derecha: el capital como "
-                "proceso autónomo que se desmantela a sí mismo hacia adelante. Léelo "
-                "junto al mapa ideológico de la unidad de historia — es la esquina de "
-                "acelerar sin frenos."
+            introduccion=(
+                "**Qué vas a leer.** Land describe el capitalismo no como un "
+                "sistema que alguien administra, sino como un proceso que se "
+                "corre solo y se desarma hacia adelante. Está escrito a "
+                "propósito como una avería: fragmentos, fechas, mayúsculas.\n\n"
+                "**Palabras clave.** *Meltdown*: la fusión del núcleo, el "
+                "colapso ya en curso. *Cibernética*: sistemas que se regulan "
+                "solos por retroalimentación. *Desterritorialización* (de "
+                "Deleuze y Guattari, que acabas de leer): arrancar algo de su "
+                "lugar y ponerlo a circular.\n\n"
+                "**Qué retener.** Una sola tesis: el capital no necesita "
+                "sujeto. Lo demás es estilo.\n\n"
+                "**Es difícil, y está bien.** Nadie lo entiende entero a la "
+                "primera. No te detengas en las referencias que no reconozcas; "
+                "subraya dos frases que te choquen y trae esas a clase."
             ),
         ),
         Lectura(
-            orden=4,
+            orden=6,
             id="barbrook-cameron-californian",
             titulo="La ideología californiana",
             autor="Richard Barbrook y Andy Cameron",
@@ -196,11 +234,24 @@ LECTURAS: dict[str, list[Lectura]] = {
             fuente="barbrook_cameron_californian_ideology_en.txt",
             procedencia="imaginaryfutures.net, sitio de los autores",
             licencia="Publicado abiertamente por los autores",
-            por_que=(
-                "La crítica que nombró la fusión de contracultura y libre mercado en "
-                "Silicon Valley. Escrito en 1995, describe con precisión incómoda el "
-                "e/acc de 2026: es el antecedente directo de la sección de "
-                "aceleracionismos de la unidad de historia."
+            introduccion=(
+                "**Qué vas a leer.** Dos británicos mirando Silicon Valley en "
+                "1995 y nombrando su mezcla: contracultura hippie más libre "
+                "mercado, unidas por la fe en la tecnología. El ensayo que le "
+                "puso nombre a la «ideología californiana».\n\n"
+                "**Palabras clave.** *Ideología californiana*: la fusión de "
+                "bohemia y negocio. *Clase virtual*: los trabajadores del "
+                "conocimiento que se piensan artistas y son empleados. "
+                "*Determinismo tecnológico*: creer que la tecnología decide la "
+                "historia por su cuenta.\n\n"
+                "**Qué retener.** Cuánto de 2026 ya estaba escrito en 1995 — "
+                "incluida la deuda con el dinero público (ARPA, universidades) "
+                "que el relato del emprendedor solitario borra. Es la lectura "
+                "más útil para discutir e/acc.\n\n"
+                "**Es difícil, y está bien.** Esta no lo es: es periodismo y se "
+                "lee sola. Es la más larga, eso sí — quince páginas. Trae "
+                "referencias de 1995 (Gingrich, el Minitel francés, *Wired*) "
+                "que no hace falta reconocer para seguir el argumento."
             ),
         ),
     ]
@@ -212,7 +263,7 @@ LECTURAS: dict[str, list[Lectura]] = {
 PDFS: dict[str, list[LecturaPDF]] = {
     "filosofia_ia/clase_1": [
         LecturaPDF(
-            orden=5, id="deleuze-guattari-antiedipo",
+            orden=2, id="deleuze-guattari-antiedipo",
             titulo="El Anti-Edipo, pp. 239–240",
             autor="Gilles Deleuze y Félix Guattari", anio="1972",
             fuente="deleuze_guattari_antiedipo_paidos.pdf",
@@ -220,24 +271,54 @@ PDFS: dict[str, list[LecturaPDF]] = {
             edicion=("Paidós, ed. española. El temario cita Minnesota 1983 "
                      "pp. 239–240; el pasaje equivalente cabe en la p. 247 de "
                      "esta edición, más densa."),
-            por_que=(
-                "Dos páginas: el pasaje donde proponen no retirarse del proceso "
-                "capitalista sino acelerarlo. Es la divisa que el aceleracionismo "
-                "adoptó, casi siempre citada fuera de su contexto."
+            introduccion=(
+                "**Qué vas a leer.** Una sola página, la más citada del "
+                "aceleracionismo. Deleuze y Guattari preguntan cuál es la vía "
+                "revolucionaria y contestan que no es retirarse del mercado "
+                "mundial, sino ir «aún más lejos» en el movimiento de "
+                "descodificación y desterritorialización.\n\n"
+                "**Palabras clave.** *Desterritorialización*: arrancar algo de "
+                "su lugar y ponerlo a circular. *Flujos*: dinero, deseo, "
+                "mercancías, entendidos como corrientes antes que como cosas. "
+                "*Catexis de deseo*: dónde se invierte el deseo — para ellos, "
+                "en la economía, no en la ideología.\n\n"
+                "**Qué retener.** «Acelerar el proceso» —frase que le atribuyen "
+                "a Nietzsche— es lo que el movimiento entero tomó como divisa. "
+                "Aquí la lees en su sitio: llega como pregunta, y trae un «tal "
+                "vez» que casi siempre se borra al citarla.\n\n"
+                "**Es difícil, y está bien.** Es la página más densa del "
+                "cuadernillo; léela dos veces, que es una sola. El pasaje "
+                "termina en «todavía no hemos visto nada». Lo que sigue después "
+                "de los asteriscos es otro tema —la escritura y el "
+                "capitalismo— y no hace falta para la sesión."
             ),
         ),
         LecturaPDF(
-            orden=6, id="fisher-terminator-avatar",
+            orden=4, id="fisher-terminator-avatar",
             titulo="Terminator vs Avatar",
             autor="Mark Fisher", anio="2012",
             fuente="fisher_terminator_vs_avatar.pdf",
             paginas=(1, 12),
             edicion=("#Accelerate: The Accelerationist Reader, Urbanomic, 2014, "
                      "pp. 335–346. El archivo ya es ese extracto: 12 páginas."),
-            por_que=(
-                "Fisher recupera a Land para la izquierda: acepta el diagnóstico y "
-                "rechaza la conclusión. Cierra el módulo porque responde "
-                "directamente a Meltdown."
+            introduccion=(
+                "**Qué vas a leer.** Fisher toma a Land en serio —lo considera "
+                "el mejor diagnóstico del capitalismo disponible— y luego le da "
+                "la vuelta: acepta que el capital es un proceso desatado, y "
+                "rechaza que haya que celebrarlo. De aquí sale la pregunta que "
+                "da nombre al módulo.\n\n"
+                "**Palabras clave.** *Economía libidinal* (de Lyotard): el goce "
+                "que la crítica no confiesa. *Aceleracionismo de izquierda*: "
+                "acelerar la tecnología, no el capital. *Terminator y Avatar*: "
+                "dos fantasías opuestas —la máquina implacable y el regreso a "
+                "la naturaleza— que Fisher rechaza por igual.\n\n"
+                "**Qué retener.** Acelerar **qué**. Land contesta: el capital. "
+                "Fisher contesta que capital y tecnología no son la misma cosa, "
+                "y que confundirlos es el error fatal.\n\n"
+                "**Es difícil, y está bien.** Es el texto más claro del "
+                "cuadernillo, y por eso está aquí y no al final: úsalo como "
+                "llave. Si *Meltdown* te dejó perdido, vuelve sobre él desde "
+                "aquí — Fisher lo cita y lo explica."
             ),
         ),
     ]
@@ -249,20 +330,10 @@ ENLACES: dict[str, list[dict[str, str]]] = {
         {
             "cita": "Gilles Deleuze y Félix Guattari (1972). *El Anti-Edipo*, ed. Minnesota 1983, pp. 239–240",
             "url": "",
-            "por_que": (
-                "Dos páginas. El pasaje donde proponen no retirarse del proceso "
-                "capitalista sino acelerarlo: la frase que el aceleracionismo tomó "
-                "como divisa, casi siempre fuera de su contexto."
-            ),
         },
         {
             "cita": "Mark Fisher (2012). «Terminator vs Avatar», *#Accelerate*, pp. 335–346",
             "url": "",
-            "por_que": (
-                "Fisher recupera a Land para la izquierda: acepta el diagnóstico y "
-                "rechaza la conclusión. Cierra el módulo porque responde directamente "
-                "a Meltdown."
-            ),
         },
     ]
 }
