@@ -10,7 +10,8 @@ La lista de lecturas es declarativa: agregar una es agregar una entrada a
 LECTURAS, no tocar el codigo. Cada entrada dice de donde sale su texto, que
 tramo se recorta y por que se lee.
 
-Depende de weasyprint (HTML a PDF) y pypdf (union). Ver tools/README.md.
+Depende de weasyprint (HTML a PDF) y pypdf (intercala las paginas de las
+lecturas en derechos en su lugar dentro del cuadernillo). Ver tools/README.md.
 """
 from __future__ import annotations
 
@@ -259,7 +260,8 @@ LECTURAS: dict[str, list[Lectura]] = {
 
 # Sin fuente abierta verificable. Si consigues el PDF de la edicion citada y lo
 # dejas en fuentes/ con este nombre, la siguiente construccion lo recorta y lo
-# une al cuadernillo. Si no esta, se construye sin el y se reporta.
+# intercala en su lugar dentro del cuadernillo. Si no esta, se construye sin
+# el y se reporta.
 PDFS: dict[str, list[LecturaPDF]] = {
     "filosofia_ia/clase_1": [
         LecturaPDF(
@@ -421,23 +423,62 @@ def _introduccion(modulo: str) -> str:
     return (LECTURAS_DIR / modulo / "introduccion.md").read_text(encoding="utf-8")
 
 
+CARTA_ANCHO, CARTA_ALTO = 612.0, 792.0  # letter, en puntos: el tamano del resto del cuadernillo
+
+
 def _sustituir_huecos(destino: Path, recortes: dict[str, Path]) -> None:
-    """Cambia cada pagina hueco por la pagina real del PDF externo.
+    """Cambia cada pagina hueco por la pagina real del PDF externo, escalada
+    a carta y centrada.
 
     Se busca la marca en el texto extraido con los espacios quitados: al
-    extraer, el PDF puede partir la marca en varios fragmentos.
+    extraer, el PDF puede partir la marca en varios fragmentos. Si dos marcas
+    caen en la misma pagina, o si el numero de sustituciones hechas no
+    coincide con el numero de paginas externas esperado, se aborta con
+    ValueError en vez de dejar pasar una marca ##HUECO: visible en el PDF
+    final o una pagina duplicada/perdida en silencio.
+
+    Cada pagina externa se escala con un solo factor —
+    min(CARTA_ANCHO/ancho, CARTA_ALTO/alto) — para no deformar el texto, y se
+    centra en una pagina en blanco del tamano de carta.
     """
     import pypdf
+    from pypdf import Transformation
+
     lector = pypdf.PdfReader(destino)
     externos = {i: pypdf.PdfReader(p) for i, p in recortes.items()}
+    esperadas = sum(len(r.pages) for r in externos.values())
     escritor = pypdf.PdfWriter()
+    sustituidas = 0
     for pagina in lector.pages:
         texto = re.sub(r"\s+", "", pagina.extract_text() or "")
+        coincidencias = RE_MARCA.findall(texto)
+        if len(coincidencias) > 1:
+            raise ValueError(
+                f"dos o mas marcas de hueco cayeron en la misma pagina: "
+                f"{coincidencias}"
+            )
         m = RE_MARCA.search(texto)
         if m:
-            escritor.add_page(externos[m.group(1)].pages[int(m.group(2))])
+            origen = externos[m.group(1)].pages[int(m.group(2))]
+            ancho_o, alto_o = float(origen.mediabox.width), float(origen.mediabox.height)
+            factor = min(CARTA_ANCHO / ancho_o, CARTA_ALTO / alto_o)
+            tx = (CARTA_ANCHO - ancho_o * factor) / 2
+            ty = (CARTA_ALTO - alto_o * factor) / 2
+            centrada = pypdf.PageObject.create_blank_page(
+                width=CARTA_ANCHO, height=CARTA_ALTO
+            )
+            centrada.merge_transformed_page(
+                origen, Transformation().scale(factor).translate(tx, ty)
+            )
+            escritor.add_page(centrada)
+            sustituidas += 1
         else:
             escritor.add_page(pagina)
+    if sustituidas != esperadas:
+        raise ValueError(
+            f"se esperaban {esperadas} paginas externas sustituidas y se "
+            f"hicieron {sustituidas}: alguna marca ##HUECO: no se reconocio"
+        )
     temporal = destino.with_suffix(".tmp.pdf")
     with temporal.open("wb") as fh:
         escritor.write(fh)
@@ -491,11 +532,12 @@ def _seccion_externa(lp: "LecturaPDF") -> str:
 
 def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
                    enlaces: list[dict[str, str]],
-                   anexadas: list["LecturaPDF"] | None = None,
-                   intro: str = "") -> str:
+                   anexadas: list["LecturaPDF"] | None,
+                   intro: str) -> str:
     """El indice de la portadilla lista TODAS las lecturas del cuadernillo, en su
-    orden, incluidas las que llegan como PDF anexado. Se arma despues de saber
-    cuales se anexaron: antes listaba solo las de texto y quedaba incompleto."""
+    orden, incluidas las que llegan como PDF externo intercalado. Se arma
+    despues de saber cuales se anexaron: antes listaba solo las de texto y
+    quedaba incompleto."""
     todas = sorted(list(lecturas) + list(anexadas or []), key=lambda x: x.orden)
     indice = "\n".join(
         f"<li><b>{html.escape(x.titulo)}</b> — {html.escape(x.autor)}, {x.anio}</li>"
