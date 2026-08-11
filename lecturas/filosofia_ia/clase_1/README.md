@@ -2,24 +2,24 @@
 
 **Filosofía de la IA · Aceleracionismo, de Marx al valle**
 
-Seis lecturas, 63 páginas, entre 3.5 y 4 horas. Encadenan con la sección de
+Seis lecturas, 57 páginas, entre 3.5 y 4 horas. Encadenan con la sección de
 [aceleracionismos y TESCREAL](../../../course/1_introduccion/2_historia_ia/7_ia_y_sociedad.md)
 de la unidad de historia: aquí están los textos que ese mapa ideológico resume.
 
 ## Cuadernillo
 
 **[`lecturas/filosofia_ia_clase_1_cuadernillo.pdf`](lecturas/filosofia_ia_clase_1_cuadernillo.pdf)**
-— **62 páginas, las seis lecturas completas**, cada una con su portadilla y la
+— **57 páginas, las seis lecturas completas**, cada una con su portadilla y la
 razón por la que se lee.
 
 | # | Lectura | Autor | Año | Fuente | Estado |
 |---|---|---|---|---|---|
 | 1 | Fragmento sobre las máquinas | Marx | 1858 | [Grundrisse, MIA](https://www.marxists.org/archive/marx/works/1857/grundrisse/ch13.htm) | ✅ en el cuadernillo |
-| 2 | Swarmachines | CCRU | 1996 | [ccru.net](http://www.ccru.net/swarm1/1_swarm.htm) | ✅ en el cuadernillo |
+| 2 | *El Anti-Edipo*, pp. 239–240 | Deleuze y Guattari | 1972 | ed. Paidós, p. 247 | ✅ en el cuadernillo |
 | 3 | Meltdown | Land | 1994 | [ccru.net](http://www.ccru.net/swarm1/1_melt.htm) | ✅ en el cuadernillo |
-| 4 | La ideología californiana | Barbrook y Cameron | 1995 | [imaginaryfutures.net](http://www.imaginaryfutures.net/2007/04/17/the-californian-ideology-2/) | ✅ en el cuadernillo |
-| 5 | *El Anti-Edipo*, pp. 239–240 | Deleuze y Guattari | 1972 | ed. Paidós, p. 247 | ✅ en el cuadernillo |
-| 6 | «Terminator vs Avatar», pp. 335–346 | Fisher | 2012 | extracto de *#Accelerate* | ✅ en el cuadernillo |
+| 4 | «Terminator vs Avatar», pp. 335–346 | Fisher | 2012 | extracto de *#Accelerate* | ✅ en el cuadernillo |
+| 5 | Swarmachines | CCRU | 1996 | [ccru.net](http://www.ccru.net/swarm1/1_swarm.htm) | ✅ en el cuadernillo |
+| 6 | La ideología californiana | Barbrook y Cameron | 1995 | [imaginaryfutures.net](http://www.imaginaryfutures.net/2007/04/17/the-californian-ideology-2/) | ✅ en el cuadernillo |
 
 ### Sobre las dos que llegaron como PDF
 
@@ -74,3 +74,8 @@ guardarlo. Agregar una lectura es agregar una entrada a `LECTURAS` en
 
 Las fuentes quedan en `fuentes/` tal como se descargaron, para que el recorte
 sea auditable.
+
+`introduccion.md` es la fuente de la introducción general del cuadernillo; la
+página del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia
+literal de este texto, bajo guarda de `tools/test_lecturas.py`
+(`test_la_introduccion_no_ha_derivado`), que falla si ambos divergen.
