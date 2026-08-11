@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **course source repository**, not an application. It holds authored Markdown/YAML for the ITAM course *Inteligencia Artificial — Otoño 2026*, consumed by the Raya Lucaria framework (Glintstone static builder) to generate a static site published to GitHub Pages.
 
-There is no application code here — only 10 tracked files: `raya.yaml`, `course/`, `skins/`, and `.github/workflows/pages.yml`.
+The published site comes from `raya.yaml`, `course/`, `skins/`, and `.github/workflows/pages.yml`. Around those sit three support trees that never render: `tools/` (Python generators + the pytest suite), `docs/verificacion/` (per-page source records for every datable claim), and `lecturas/` (the reading-booklet pipeline).
 
 Course-facing content (page prose, titles, summaries, task instructions) is written in **Spanish**. Technical identifiers — `id`, `type`, `authority`, `scope`, filenames, tags, skin token names — stay in **English**.
 
@@ -27,7 +27,7 @@ Docker equivalent, from the same directory: `docker compose run --rm dev uv run 
 
 `validate` is the fast feedback loop — it catches broken links, missing IDs, bad official-object scopes, and skin contrast failures without building. `build` implies validate. `preview` serves `artifact/site/` at `http://127.0.0.1:8000/index.html`, with an inspection view at `/_raya/inspect/index.html`.
 
-There is no test suite in this repo; the CLI's tests live in `raya_lucaria`. Validation of this course *is* the test.
+The CLI's own tests live in `raya_lucaria`. This repo's tests are content guards, under `tools/` (see below) — `raya validate` and `pytest tools/` are two separate gates, and CI runs both.
 
 ## `artifact/` is generated — never edit it
 
@@ -39,9 +39,9 @@ The rules below are enforced by `raya validate` and are the ones most likely to 
 
 **Ordering and stable identity.** Numeric prefixes on files and directories (`1_unit/`, `2_topic/`, `1_inicio_de_cursos.yaml`) define authoring order *only*. They are stripped from rendered URLs, labels, and stable IDs, and renumbering must not break anything. Durable references use the frontmatter `id` (e.g. `course-root`), not the filename. `A_`-prefixed directories are appendix/anexo material.
 
-**Pages.** Every rendered directory needs a `0_index.md` landing page. Frontmatter stays compact: `id`, `title`, `nav_title`, `summary`, `status`, and optionally `estimated_time`, `tags`, `prerequisites`, `aliases`. Cross-page links prefer `raya:<stable-id>` or wikilinks `[[target]]` / `[[target|label]]`; ambiguous or missing wikilinks fail validation.
+**Pages.** Every rendered directory needs a `0_index.md` landing page. Frontmatter stays compact: `id`, `title`, `nav_title`, `summary`, `status`, and optionally `estimated_time`, `tags`, `prerequisites`, `aliases`. Cross-page links prefer `raya:<stable-id>` or wikilinks `[[target]]` / `[[target|label]]`; ambiguous or missing wikilinks fail validation. Images and tables that need a number go inside a directive block — `::: figure {#id title="…"}` … `:::` — numbered per page hierarchy by the `render.numbered_objects` config in `raya.yaml`; a bare `![]()` renders without a "Figura N" caption.
 
-**Official learning objects.** YAML under `_official/<family>/` — families include `tasks`, `cards`, `quizzes`, `prompts`. Objects colocated beside a quantum may omit `scope.quantum` (it is inferred from the nearest directory page); objects under source-root `course/_official/` **must** declare it explicitly. This repo uses the latter — every task carries `scope: {quantum: course-root}`. Shape used here:
+**Official learning objects.** YAML under `_official/<family>/` — families include `tasks`, `cards`, `quizzes`, `prompts`. Objects colocated beside a quantum may omit `scope.quantum` (it is inferred from the nearest directory page); objects under source-root `course/_official/` **must** declare it explicitly. Both patterns are in use: the five calendar tasks in `course/_official/tasks/` carry `scope: {quantum: course-root}`, while unit-level objects (`course/1_introduccion/2_historia_ia/_official/`, `course/2_filosofia_ia/_official/`) carry no `scope` block at all — `test_oficiales.py` fails if a card grows one. Root-scoped shape:
 
 ```yaml
 id: asueto-noviembre-2026        # durable, kebab-case, unique across the course
@@ -86,6 +86,52 @@ Toda fecha nueva se verifica antes de escribirse y se registra ahí; hay una
 prueba que falla si una fila queda sin verificar. `tools/README.md` explica qué
 hace cada script y cuáles son de un solo uso.
 
+## The pytest suite guards content, not code
+
+`python3 -m pytest tools/ -q` (42 tests; needs `pillow pyyaml pytest`) is the
+second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
+assert things prose review misses: every image in `_assets/` has a credit row
+with a recognizable license in `CREDITOS.md`, every generated SVG still matches
+what its generator would produce today, every illustration prompt avoids real
+people and protected characters, every datable claim has a verified row in
+`docs/verificacion/`, official cards keep their shape and unique ids.
+
+Consequences worth internalizing:
+
+- **Editing a generated `_assets/` file by hand fails the suite.** Change the
+  JSON source and rerun the generator instead.
+- **Deleting an unused asset means deleting its inventory row too** (in
+  `commons.tsv`, or flipping `decision` to `descartar` in
+  `imagenes_heredadas.tsv`) — otherwise the generator resurrects it.
+- `test_aceptacion.py` shells out to the `raya` CLI in the sibling repo; two of
+  its tests fail on environment, not on a real defect, if that repo is missing
+  or unsynced.
+
+## `lecturas/` — the reading-booklet pipeline
+
+A second, self-contained toolchain that produces the PDF booklets linked from
+course pages. Two steps, both declarative and both rerunnable:
+
+```bash
+python3 tools/bajar_lecturas.py filosofia_ia/clase_1   # descarga y verifica
+python3 tools/lecturas.py       filosofia_ia/clase_1   # recorta y maqueta
+```
+
+`bajar_lecturas.py` only fetches public-domain texts, and every source declares
+a `debe_contener` string so a wrong-but-plausibly-named download fails loudly.
+`lecturas.py` holds the `LECTURAS` list — adding a reading is adding an entry
+with its excerpt rule and the reason it is read, not editing code. It depends on
+`weasyprint` and `pypdf`. Sources land in `fuentes/` exactly as downloaded so
+the excerpt stays auditable, and each module's `README.md` records provenance
+and any discrepancy with the syllabus pagination.
+
+**In-copyright material is linked, never republished.** `.gitignore` excludes
+`lecturas/**/fuentes/*.pdf` and the generated HTML viewer; keep it that way when
+adding a module. The built booklet reaches the site by being **copied** into the
+consuming page's `_assets/` (e.g. `course/2_filosofia_ia/_assets/cuadernillo_modulo_1_accelerate.pdf`
+is a byte-identical copy of the pipeline output) — nothing links across the two
+trees, so regenerating a booklet means copying it over again.
+
 ## Skins
 
 `raya.yaml` selects the course skin by ID (`render.skin: eva-cyberpunk`), resolved against `skins/*.yaml` at the repo root plus built-in profiles. A section can override it with `<section>/_raya/skin.yaml` containing `render.skin`; that file must sit beside a `0_index.md`, and the deepest matching selector wins.
@@ -94,4 +140,6 @@ Skin files carry **semantic tokens only** — `tokens.color`, `tokens.graph.grou
 
 ## CI / publishing
 
-`.github/workflows/pages.yml` calls a reusable workflow from `raya-lucaria/raya-lucaria.github.io`, pinned to a commit SHA, with `course_path: .`. It runs on every push and pull request and deploys to GitHub Pages (concurrency group `pages`, cancel-in-progress). Bumping the framework version means bumping that pinned SHA. Because CI validates and builds from source, a local `raya validate` pass is the gate before pushing.
+`.github/workflows/pages.yml` runs two jobs on every push and pull request. `checks` runs `python -m pytest tools/ -q`; `course-pages` calls a reusable workflow from `raya-lucaria/raya-lucaria.github.io`, pinned to a commit SHA, with `course_path: .`, and deploys to GitHub Pages (concurrency group `pages`, cancel-in-progress).
+
+The `needs: checks` line on `course-pages` is what makes the tests a real gate — without it both jobs race and the site publishes even when the suite fails. Do not drop it. Bumping the framework version means bumping the pinned SHA. Locally, `raya validate` plus `pytest tools/ -q` reproduce both gates; run them before pushing.
