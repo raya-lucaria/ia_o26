@@ -128,3 +128,42 @@ def test_markdown_basico_borra_los_wikilinks():
 def test_la_introduccion_del_modulo_se_lee_del_archivo():
     m = _cargar_lecturas()
     assert m._introduccion("filosofia_ia/clase_1").startswith("## Cómo leer")
+
+
+def test_se_emite_un_hueco_por_pagina_externa():
+    m = _cargar_lecturas()
+    fisher = next(x for x in m.PDFS["filosofia_ia/clase_1"]
+                  if x.id == "fisher-terminator-avatar")
+    html = m._seccion_externa(fisher)
+    esperadas = fisher.paginas[1] - fisher.paginas[0] + 1   # 12
+    assert len(m.RE_MARCA.findall(html)) == esperadas
+    assert "##HUECO:fisher-terminator-avatar:0##" in html
+    assert f"##HUECO:fisher-terminator-avatar:{esperadas - 1}##" in html
+
+
+def test_las_secciones_salen_en_el_orden_acordado():
+    m = _cargar_lecturas()
+    modulo = "filosofia_ia/clase_1"
+    lecturas = m.LECTURAS[modulo]
+    textos = {l.id: "palabra " * 120 for l in lecturas}
+    doc = m.construir_html(
+        modulo, lecturas, textos, [], m.PDFS[modulo], m._introduccion(modulo)
+    )
+    titulos = ["Fragmento sobre las máquinas", "El Anti-Edipo",
+               "Meltdown", "Terminator vs Avatar", "Swarmachines",
+               "La ideología californiana"]
+    posiciones = [doc.index(f"<h2>{t}") for t in titulos]
+    assert posiciones == sorted(posiciones), (
+        "las secciones no salen en el orden acordado: " + str(posiciones)
+    )
+
+
+def test_la_introduccion_va_antes_de_la_primera_lectura():
+    m = _cargar_lecturas()
+    modulo = "filosofia_ia/clase_1"
+    lecturas = m.LECTURAS[modulo]
+    doc = m.construir_html(
+        modulo, lecturas, {l.id: "palabra " * 120 for l in lecturas},
+        [], m.PDFS[modulo], m._introduccion(modulo)
+    )
+    assert doc.index("Cómo leer este cuadernillo") < doc.index("<h2>Fragmento")

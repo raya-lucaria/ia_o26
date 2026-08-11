@@ -374,6 +374,7 @@ p { margin: 0 0 .42em; text-indent: 1.2em; }
 p:first-of-type { text-indent: 0; }
 .fuente { margin-top: 1cm; padding-top: .4cm; border-top: 1px solid %(borde)s;
           font: 9pt/1.5 system-ui; color: %(suave)s; text-align: left; }
+.hueco { page-break-before: always; }
 """ % PALETA
 
 
@@ -420,11 +421,72 @@ def _introduccion(modulo: str) -> str:
     return (LECTURAS_DIR / modulo / "introduccion.md").read_text(encoding="utf-8")
 
 
+def _sustituir_huecos(destino: Path, recortes: dict[str, Path]) -> None:
+    """Cambia cada pagina hueco por la pagina real del PDF externo.
+
+    Se busca la marca en el texto extraido con los espacios quitados: al
+    extraer, el PDF puede partir la marca en varios fragmentos.
+    """
+    import pypdf
+    lector = pypdf.PdfReader(destino)
+    externos = {i: pypdf.PdfReader(p) for i, p in recortes.items()}
+    escritor = pypdf.PdfWriter()
+    for pagina in lector.pages:
+        texto = re.sub(r"\s+", "", pagina.extract_text() or "")
+        m = RE_MARCA.search(texto)
+        if m:
+            escritor.add_page(externos[m.group(1)].pages[int(m.group(2))])
+        else:
+            escritor.add_page(pagina)
+    temporal = destino.with_suffix(".tmp.pdf")
+    with temporal.open("wb") as fh:
+        escritor.write(fh)
+    temporal.replace(destino)
+
+
 def _parrafos_html(texto: str) -> str:
     bloques = [b.strip() for b in re.split(r"\n\s*\n", texto) if b.strip()]
     return "\n".join(
         f"<p>{html.escape(' '.join(b.split()))}</p>" for b in bloques
     )
+
+
+# Marca de pagina hueco. El documento de WeasyPrint emite una pagina por cada
+# pagina del PDF externo que va en ese lugar; despues pypdf las sustituye por
+# las reales. Asi el folio corre continuo por todo el cuadernillo y las lecturas
+# de edicion citada quedan en su posicion, no al final.
+MARCA = "##HUECO:%s:%d##"
+RE_MARCA = re.compile(r"##HUECO:([a-z0-9-]+):(\d+)##")
+
+
+def _cabecera(x) -> str:
+    return f"""<div class="cabecera">
+    <div class="num">Lectura {x.orden}</div>
+    <h2>{html.escape(x.titulo)}</h2>
+    <div class="meta">{html.escape(x.autor)} · {x.anio}</div>
+  </div>"""
+
+
+def _seccion_lectura(l: "Lectura", texto: str) -> str:
+    return f"""<section class="lectura">
+  {_cabecera(l)}
+  <div class="ficha">{_markdown_basico(l.introduccion)}</div>
+  {_parrafos_html(texto)}
+  <div class="fuente">Fuente: {html.escape(l.procedencia)}. {html.escape(l.licencia)}.</div>
+</section>"""
+
+
+def _seccion_externa(lp: "LecturaPDF") -> str:
+    """Portadilla de la lectura anexada, seguida de sus paginas hueco."""
+    paginas = lp.paginas[1] - lp.paginas[0] + 1
+    huecos = "".join(
+        f'<div class="hueco">{MARCA % (lp.id, i)}</div>' for i in range(paginas)
+    )
+    return f"""<section class="lectura">
+  {_cabecera(lp)}
+  <div class="ficha">{_markdown_basico(lp.introduccion)}</div>
+  <div class="fuente">Se reproduce de: {html.escape(lp.edicion)}</div>
+</section>{huecos}"""
 
 
 def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
@@ -434,13 +496,10 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
     """El indice de la portadilla lista TODAS las lecturas del cuadernillo, en su
     orden, incluidas las que llegan como PDF anexado. Se arma despues de saber
     cuales se anexaron: antes listaba solo las de texto y quedaba incompleto."""
-    todas = sorted(
-        [(l.orden, l.titulo, l.autor, l.anio) for l in lecturas]
-        + [(x.orden, x.titulo, x.autor, x.anio) for x in (anexadas or [])]
-    )
+    todas = sorted(list(lecturas) + list(anexadas or []), key=lambda x: x.orden)
     indice = "\n".join(
-        f"<li><b>{html.escape(tit)}</b> — {html.escape(aut)}, {anio}</li>"
-        for _, tit, aut, anio in todas
+        f"<li><b>{html.escape(x.titulo)}</b> — {html.escape(x.autor)}, {x.anio}</li>"
+        for x in todas
     )
     extra = ""
     if enlaces:
@@ -454,20 +513,11 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
             f"aparece en el temario.<ol>{filas}</ol></div>"
         )
 
-    cuerpo = []
-    for l in lecturas:
-        cuerpo.append(
-            f"""<section class="lectura">
-  <div class="cabecera">
-    <div class="num">Lectura {l.orden}</div>
-    <h2>{html.escape(l.titulo)}</h2>
-    <div class="meta">{html.escape(l.autor)} · {l.anio}</div>
-  </div>
-  <div class="ficha">{_markdown_basico(l.introduccion)}</div>
-  {_parrafos_html(textos[l.id])}
-  <div class="fuente">Fuente: {html.escape(l.procedencia)}. {html.escape(l.licencia)}.</div>
-</section>"""
-        )
+    cuerpo = [
+        _seccion_lectura(x, textos[x.id]) if isinstance(x, Lectura)
+        else _seccion_externa(x)
+        for x in todas
+    ]
 
     titulo, subtitulo = _titulos(modulo)
     return f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
@@ -493,29 +543,6 @@ def _titulos(modulo: str) -> tuple[str, str]:
     }.get(modulo, (modulo, ""))
 
 
-def _portadilla_pdf(lp: "LecturaPDF", destino: Path) -> Path:
-    """Una hoja de presentacion con el mismo aspecto que las demas lecturas,
-    para que las que llegan como PDF externo no entren sin contexto."""
-    from weasyprint import HTML
-    doc = f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
-<style>{HOJA_DE_ESTILO}
-/* Los PDF anexados traen su propia numeracion; un contador aqui reiniciaria
-   en 1 a media lectura y confundiria mas de lo que orienta. */
-@page {{ @bottom-center {{ content: none; }} }}</style></head><body>
-<section class="lectura" style="page-break-before:auto">
-  <div class="cabecera">
-    <div class="num">Lectura {lp.orden}</div>
-    <h2>{html.escape(lp.titulo)}</h2>
-    <div class="meta">{html.escape(lp.autor)} · {lp.anio}</div>
-  </div>
-  <div class="porque">{html.escape(lp.por_que)}</div>
-  <div class="fuente">Se reproduce de: {html.escape(lp.edicion)}</div>
-</section></body></html>"""
-    salida = destino / f"{lp.id}_portadilla.pdf"
-    HTML(string=doc).write_pdf(salida)
-    return salida
-
-
 def construir(modulo: str) -> Path:
     base = LECTURAS_DIR / modulo
     fuentes, salida = base / "fuentes", base / "lecturas"
@@ -534,32 +561,29 @@ def construir(modulo: str) -> Path:
     pdfs = sorted(PDFS.get(modulo, []), key=lambda x: x.orden)
     presentes = [lp for lp in pdfs if (fuentes / lp.fuente).is_file()]
     ausentes = [lp for lp in pdfs if lp not in presentes]
+    recortes: dict[str, Path] = {}
     for lp in presentes:
+        recortes[lp.id] = lp.recortar(fuentes, salida)
         print(f"  {lp.orden}. {lp.titulo[:46]:<46} {lp.paginas[0]}-{lp.paginas[1]} (PDF)")
 
     faltan_enlaces = [e for e in ENLACES.get(modulo, [])
                       if any(x.autor.split()[-1] in e["cita"] for x in ausentes)]
-    doc = construir_html(modulo, lecturas, textos, faltan_enlaces, presentes)
+    doc = construir_html(modulo, lecturas, textos, faltan_enlaces, presentes,
+                         _introduccion(modulo))
     (salida / "cuadernillo.html").write_text(doc, encoding="utf-8")
 
     from weasyprint import HTML
     destino = salida / f"{modulo.replace('/', '_')}_cuadernillo.pdf"
     HTML(string=doc, base_url=str(salida)).write_pdf(destino)
 
-    import pypdf
-    extras, faltantes = [], list(ausentes)
-    for lp in presentes:
-        extras.extend([_portadilla_pdf(lp, salida), lp.recortar(fuentes, salida)])
-    if extras:
-        fusion = pypdf.PdfWriter()
-        for f in [destino, *extras]:
-            fusion.append(str(f))
-        with destino.open("wb") as fh:
-            fusion.write(fh)
-        print(f"  + {len(extras)} lectura(s) de edición citada unidas")
-    for lp in faltantes:
-        print(f"  · falta {lp.fuente} → se omite «{lp.titulo}» (pp. {lp.paginas[0]}-{lp.paginas[1]})")
+    if recortes:
+        _sustituir_huecos(destino, recortes)
+        print(f"  + {len(recortes)} lectura(s) intercalada(s) en su posición")
+    for lp in ausentes:
+        print(f"  · falta {lp.fuente} → se omite «{lp.titulo}» "
+              f"(pp. {lp.paginas[0]}-{lp.paginas[1]})")
 
+    import pypdf
     paginas = len(pypdf.PdfReader(destino).pages)
     print(f"\n  → {destino.relative_to(RAIZ)}  ({paginas} páginas, "
           f"{destino.stat().st_size // 1024} KB)")
