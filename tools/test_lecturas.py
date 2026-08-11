@@ -93,3 +93,38 @@ def test_el_orden_es_el_acordado():
         "ccru-swarmachines",
         "barbrook-cameron-californian",
     ]
+
+
+def test_inline_convierte_negritas_y_cursivas():
+    m = _cargar_lecturas()
+    assert m._inline("**Qué retener.** el *capital*") == (
+        "<strong>Qué retener.</strong> el <em>capital</em>"
+    )
+
+
+def test_inline_escapa_el_html():
+    m = _cargar_lecturas()
+    assert m._inline("a < b & c") == "a &lt; b &amp; c"
+
+
+def test_markdown_basico_arma_parrafos_encabezado_y_lista():
+    m = _cargar_lecturas()
+    html = m._markdown_basico(
+        "## Título\n\nUn párrafo.\n\n- **uno** primero\n  y su continuación\n- dos\n"
+    )
+    assert "<h2>Título</h2>" in html
+    assert "<p>Un párrafo.</p>" in html
+    assert "<li><strong>uno</strong> primero y su continuación</li>" in html
+    assert "<li>dos</li>" in html
+
+
+def test_markdown_basico_borra_los_wikilinks():
+    m = _cargar_lecturas()
+    assert "[[" not in m._markdown_basico("ver [[ia-y-sociedad]] y [[x|el mapa]]")
+    assert "el mapa" in m._markdown_basico("ver [[x|el mapa]]")
+    assert "ia-y-sociedad" in m._markdown_basico("ver [[ia-y-sociedad]]")
+
+
+def test_la_introduccion_del_modulo_se_lee_del_archivo():
+    m = _cargar_lecturas()
+    assert m._introduccion("filosofia_ia/clase_1").startswith("## Cómo leer")

@@ -359,8 +359,17 @@ body { font: 11.5pt/1.62 Georgia, "Times New Roman", serif; color: %(tinta)s;
                  text-transform: uppercase; color: %(acento)s; }
 .cabecera h2 { font: 700 19pt/1.25 Georgia, serif; margin:.18cm 0 .1cm; }
 .cabecera .meta { font: 10pt system-ui; color: %(suave)s; }
-.porque { font: italic 10.5pt/1.55 system-ui; color: %(suave)s;
-          border-left: 3px solid %(borde)s; padding-left: .6cm; margin-bottom: .9cm; }
+.intro h2 { font: 700 20pt/1.25 Georgia, serif; margin: 0 0 .7cm;
+            color: %(acento)s; }
+.intro p, .intro li { text-indent: 0; text-align: left; }
+.intro ul { margin: 0 0 .5cm; padding-left: 1.1em; }
+.intro li { margin-bottom: .3em; }
+.ficha { border-left: 3px solid %(acento)s; padding-left: .6cm;
+         margin-bottom: .9cm; font: 10.5pt/1.55 system-ui; color: %(suave)s; }
+.ficha p { margin: 0 0 .45em; text-indent: 0; text-align: left; }
+.ficha p:last-child { margin-bottom: 0; }
+.ficha strong { color: %(acento)s; font-weight: 600; }
+.ficha em { font-style: italic; }
 p { margin: 0 0 .42em; text-indent: 1.2em; }
 p:first-of-type { text-indent: 0; }
 .fuente { margin-top: 1cm; padding-top: .4cm; border-top: 1px solid %(borde)s;
@@ -368,9 +377,47 @@ p:first-of-type { text-indent: 0; }
 """ % PALETA
 
 
-def _enfasis(texto: str) -> str:
-    """Escapa el texto y convierte el enfasis *asi* en cursivas reales."""
-    return re.sub(r"\*([^*]+)\*", r"<em>\1</em>", html.escape(texto))
+def _inline(texto: str) -> str:
+    """Escapa el texto y aplica el enfasis de linea: **negritas** y *cursivas*."""
+    t = html.escape(texto)
+    t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
+    return re.sub(r"\*([^*]+)\*", r"<em>\1</em>", t)
+
+
+def _markdown_basico(md: str) -> str:
+    """El subconjunto de Markdown que usan introduccion.md y las fichas.
+
+    Parrafos, un encabezado `## `, listas con `- ` (con lineas de continuacion
+    indentadas), y el enfasis de linea. Los wikilinks `[[destino]]` se reducen a
+    texto: en el PDF no hay a donde enlazar, y la pagina del curso recibe el
+    Markdown crudo, donde `raya` si los resuelve.
+    """
+    md = re.sub(r"\[\[[^\]|]+\|([^\]]+)\]\]", r"\1", md)
+    md = re.sub(r"\[\[([^\]]+)\]\]", r"\1", md)
+    salida = []
+    for bloque in [b.strip() for b in re.split(r"\n\s*\n", md) if b.strip()]:
+        lineas = bloque.splitlines()
+        if lineas[0].startswith("## "):
+            salida.append(f"<h2>{_inline(lineas[0][3:].strip())}</h2>")
+        elif lineas[0].lstrip().startswith("- "):
+            items, actual = [], []
+            for linea in lineas:
+                if linea.lstrip().startswith("- "):
+                    if actual:
+                        items.append(" ".join(actual))
+                    actual = [linea.lstrip()[2:].strip()]
+                else:
+                    actual.append(linea.strip())
+            items.append(" ".join(actual))
+            celdas = "".join(f"<li>{_inline(i)}</li>" for i in items)
+            salida.append(f"<ul>{celdas}</ul>")
+        else:
+            salida.append(f"<p>{_inline(' '.join(bloque.split()))}</p>")
+    return "\n".join(salida)
+
+
+def _introduccion(modulo: str) -> str:
+    return (LECTURAS_DIR / modulo / "introduccion.md").read_text(encoding="utf-8")
 
 
 def _parrafos_html(texto: str) -> str:
@@ -382,7 +429,8 @@ def _parrafos_html(texto: str) -> str:
 
 def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
                    enlaces: list[dict[str, str]],
-                   anexadas: list["LecturaPDF"] | None = None) -> str:
+                   anexadas: list["LecturaPDF"] | None = None,
+                   intro: str = "") -> str:
     """El indice de la portadilla lista TODAS las lecturas del cuadernillo, en su
     orden, incluidas las que llegan como PDF anexado. Se arma despues de saber
     cuales se anexaron: antes listaba solo las de texto y quedaba incompleto."""
@@ -397,7 +445,7 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
     extra = ""
     if enlaces:
         filas = "\n".join(
-            f"<li>{_enfasis(e['cita'])}</li>" for e in enlaces
+            f"<li>{_inline(e['cita'])}</li>" for e in enlaces
         )
         extra = (
             "<div class='nota'><b>Las dos que faltan.</b> Siguen en derechos y no "
@@ -415,7 +463,7 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
     <h2>{html.escape(l.titulo)}</h2>
     <div class="meta">{html.escape(l.autor)} · {l.anio}</div>
   </div>
-  <div class="porque">{html.escape(l.por_que)}</div>
+  <div class="ficha">{_markdown_basico(l.introduccion)}</div>
   {_parrafos_html(textos[l.id])}
   <div class="fuente">Fuente: {html.escape(l.procedencia)}. {html.escape(l.licencia)}.</div>
 </section>"""
@@ -431,6 +479,7 @@ def construir_html(modulo: str, lecturas: list[Lectura], textos: dict[str, str],
   <ol>{indice}</ol>
   {extra}
 </div>
+<section class="intro">{_markdown_basico(intro)}</section>
 {"".join(cuerpo)}
 </body></html>"""
 
