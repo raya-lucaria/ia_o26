@@ -2,7 +2,7 @@
 id: accelerate-what
 title: Módulo 1 — ¿Accelerate What?
 nav_title: ¿Accelerate What?
-summary: Aceleracionismo, de Marx al valle. Seis lecturas en un cuadernillo de 55 páginas.
+summary: Aceleracionismo, de Marx al valle. Seis lecturas en un cuadernillo de 57 páginas.
 status: ready
 estimated_time: 240m
 tags: [aceleracionismo, lecturas]
@@ -46,8 +46,8 @@ Mark Fisher le puso a esa apuesta la objeción que da título al módulo: si hay
 [![Portada del cuadernillo «¿Accelerate What?», con las seis lecturas listadas y una nota sobre las dos que se reproducen de la antología](_assets/cuadernillo_portada.png)](_assets/visor_modulo_1.html)
 :::
 
-**55 páginas**, cada lectura con una nota que explica por qué está ahí. Calcula
-entre tres horas y media y cuatro.
+**57 páginas**, cada lectura con una ficha que explica qué vas a leer, qué
+palabras necesitas y qué retener. Calcula entre tres horas y media y cuatro.
 
 - **[Leer en el navegador →](_assets/visor_modulo_1.html)** — se abre completo,
   sin descargar nada. También puedes hacer clic en la portada de arriba.
@@ -66,15 +66,15 @@ comprobar que pasaste las páginas.
 | # | Lectura | Por qué está aquí |
 |---|---|---|
 | 1 | **Marx**, Fragmento sobre las máquinas (1858) | La máquina que absorbe el saber colectivo y vuelve marginal al obrero. De aquí sale el «general intellect» |
-| 2 | **CCRU**, Swarmachines (1996) | La insurrección como enjambre: no un sujeto que dirige, sino un proceso que se propaga |
+| 2 | **Deleuze y Guattari**, El Anti-Edipo (1972) | Dos páginas: no retirarse del proceso, sino acelerarlo. La divisa que el aceleracionismo adoptó, casi siempre citada fuera de contexto |
 | 3 | **Land**, Meltdown (1994) | El texto fundacional del aceleracionismo de derecha: el capital como proceso autónomo que se desmantela hacia adelante |
-| 4 | **Barbrook y Cameron**, La ideología californiana (1995) | La crítica que nombró la fusión de contracultura y libre mercado. Describe el e/acc de 2026 con treinta años de anticipación |
-| 5 | **Deleuze y Guattari**, El Anti-Edipo (1972) | Dos páginas: no retirarse del proceso, sino acelerarlo. La divisa que el aceleracionismo adoptó, casi siempre citada fuera de contexto |
-| 6 | **Fisher**, Terminator vs Avatar (2012) | Recupera a Land para la izquierda: acepta el diagnóstico y rechaza la conclusión. Responde directamente a *Meltdown* |
+| 4 | **Fisher**, Terminator vs Avatar (2012) | Recupera a Land para la izquierda: acepta el diagnóstico y rechaza la conclusión. Responde directamente a *Meltdown* |
+| 5 | **CCRU**, Swarmachines (1996) | La insurrección como enjambre: no un sujeto que dirige, sino un proceso que se propaga |
+| 6 | **Barbrook y Cameron**, La ideología californiana (1995) | La crítica que nombró la fusión de contracultura y libre mercado. Describe el e/acc de 2026 con treinta años de anticipación |
 
-Las cuatro primeras se tomaron de fuentes primarias abiertas — el archivo del
-propio CCRU, el sitio de Barbrook y Cameron, y el archivo Marx/Engels. Las dos
-últimas se reproducen de la edición citada.
+Cuatro se tomaron de fuentes primarias abiertas — el archivo del propio CCRU, el
+sitio de Barbrook y Cameron, y el archivo Marx/Engels. Las de Deleuze y Guattari
+(2ª) y Fisher (4ª) se reproducen de la edición citada.
 
 ## Sobre la paginación
 
