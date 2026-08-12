@@ -17,3 +17,4 @@ fuentes: se leen los textos que ese mapa resume.
 - [[ideas-aceleracionismo]] — el vocabulario del aceleracionismo y de dónde viene cada pieza.
 - [[las-seis-lecturas]] — qué dice cada una de las seis lecturas, en claro.
 - [[para-discutir]] — el mapa de quién discute con quién y las tensiones de la sesión.
+- [[left-takes-future]] — la respuesta de la izquierda: reclamar el futuro en vez de añorar el pasado.
