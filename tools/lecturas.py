@@ -255,7 +255,82 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "que no hace falta reconocer para seguir el argumento."
             ),
         ),
-    ]
+    ],
+    # ── Módulo 2 · The Left Takes the Future Back ─────────────────────────────
+    # El temario pide cuatro lecturas. Dos existen en fuente primaria abierta
+    # (el manifiesto de Williams y Srnicek, el ensayo de Terranova) y van
+    # completas. Dos siguen en derechos: se toman de PDF de la edición citada,
+    # y una de ellas —Inventing the Future— solo existía como EPUB y se
+    # convirtió a PDF, así que su paginación no es la de ningún impreso.
+    "filosofia_ia/clase_2": [
+        Lectura(
+            orden=1,
+            id="williams-srnicek-manifesto",
+            titulo="#ACCELERATE: Manifesto for an Accelerationist Politics",
+            autor="Alex Williams y Nick Srnicek",
+            anio="2013",
+            fuente="williams_srnicek_manifesto_en.txt",
+            procedencia="criticallegalthinking.com, 14 de mayo de 2013",
+            licencia="Publicado abiertamente por los autores",
+            introduccion=(
+                "**Qué vas a leer.** El texto que le da nombre al "
+                "aceleracionismo de izquierda: veintitantas tesis numeradas "
+                "que retoman el diagnóstico de Land —el capital como proceso "
+                "desatado— y lo giran hacia un programa distinto: no "
+                "acelerar el capital, sino las fuerzas productivas que el "
+                "capital ya no sabe usar.\n\n"
+                "**Palabras clave.** *Política popular* (*folk politics*): "
+                "la crítica de los autores a la protesta horizontal, local y "
+                "sin programa —ocupar una plaza en vez de tomar el poder. "
+                "*Hegemonía*: instalar un sentido común, no solo ganar una "
+                "elección. *El Plan y la Red*: la síntesis que buscan entre "
+                "planeación centralizada y coordinación distribuida.\n\n"
+                "**Qué retener.** La frase que resume el manifiesto entero: "
+                "«el mando del Plan debe casarse con el orden improvisado de "
+                "la Red». No es nostalgia del Estado de bienestar ni fe "
+                "ciega en la horizontalidad — es un tercer término.\n\n"
+                "**Es difícil, y está bien.** Formato de manifiesto: tesis "
+                "cortas, tono declarativo, se lee más rápido de lo que "
+                "parece. Da por leído el Módulo 1 entero — si «Meltdown» te "
+                "quedó claro, esto es la respuesta directa."
+            ),
+        ),
+        Lectura(
+            orden=4,
+            id="terranova-red-stack",
+            titulo="Red Stack Attack! Algorithms, Capital and the Automation of the Common",
+            autor="Tiziana Terranova",
+            anio="2014",
+            fuente="terranova_red_stack_en.txt",
+            procedencia="euronomade.info",
+            licencia="Publicado abiertamente por la autora",
+            introduccion=(
+                "**Qué vas a leer.** El aterrizaje más concreto del módulo: "
+                "en vez de hablar de «tecnología» en abstracto, Terranova "
+                "describe una pila —un *stack*— de tres niveles técnicos "
+                "concretos donde se libra la disputa por el futuro.\n\n"
+                "**Palabras clave.** *Stack* (pila): las capas técnicas "
+                "superpuestas —dinero, redes, cómputo— que hacen funcionar "
+                "una plataforma. *Dinero algorítmico*: moneda programable, "
+                "pensada como infraestructura y no solo como medio de pago. "
+                "*Bio-hypermedia*: redes que procesan datos biológicos y "
+                "sociales a la vez —el nivel más nuevo y menos resuelto de "
+                "los tres.\n\n"
+                "**Qué retener.** Los tres niveles de innovación "
+                "socio-técnica que da el texto: dinero virtual, redes "
+                "sociales y bio-hypermedia. La tesis es que estos tres "
+                "niveles se pueden rediseñar para lo común, no solo para el "
+                "capital — no es metáfora, es arquitectura que se puede "
+                "construir de otra manera.\n\n"
+                "**Es difícil, y está bien.** Es el texto más técnico del "
+                "cuadernillo: viene de la tradición post-obrerista italiana "
+                "y da por conocido vocabulario de esa escuela (*común*, "
+                "*general intellect*, ya visto en Marx en el Módulo 1). Si "
+                "un párrafo se pone denso, sigue leyendo por los ejemplos "
+                "concretos — Bitcoin, redes sociales — que vienen después."
+            ),
+        ),
+    ],
 }
 
 # Sin fuente abierta verificable. Si consigues el PDF de la edicion citada y lo
@@ -323,10 +398,85 @@ PDFS: dict[str, list[LecturaPDF]] = {
                 "aquí — Fisher lo cita y lo explica."
             ),
         ),
-    ]
+    ],
+    "filosofia_ia/clase_2": [
+        LecturaPDF(
+            orden=2, id="fisher-capitalist-realism-cap4",
+            titulo="Capitalist Realism, cap. 4",
+            autor="Mark Fisher", anio="2009",
+            fuente="fisher_capitalist_realism.pdf",
+            paginas=(25, 34),
+            edicion=("Zero Books, 2009, 86 pp. en total. Cap. 4, «Reflexive "
+                     "impotence, immobilization and liberal communism»; el "
+                     "cap. 5 empieza en la p. 35 de esta edición."),
+            introduccion=(
+                "**Qué vas a leer.** Fisher antes del manifiesto —el "
+                "capítulo es de 2009, cuatro años anterior— diagnosticando "
+                "por qué la izquierda no logra imaginar una salida: "
+                "estudiantes políticamente conscientes pero incapaces de "
+                "actuar, y un capitalismo que absorbe su propia crítica "
+                "vistiéndola de responsabilidad corporativa.\n\n"
+                "**Palabras clave.** *Impotencia reflexiva*: saber que algo "
+                "está mal y no poder — ni intentar — hacer nada al "
+                "respecto. *Comunismo liberal* (de Žižek): la fantasía "
+                "corporativa de un capitalismo éticamente responsable. "
+                "*Deudor-adicto*: el sujeto que este capítulo ve producir al "
+                "capitalismo — atado por la deuda de la misma forma en que "
+                "un adicto lo está por la sustancia.\n\n"
+                "**Qué retener.** Este capítulo es el diagnóstico que las "
+                "otras tres lecturas del módulo dan por hecho y tratan de "
+                "revertir: se lee segundo, fuera de cronología a propósito, "
+                "para que el programa de Williams y Srnicek se sienta como "
+                "una respuesta y no como una ingenuidad.\n\n"
+                "**Es difícil, y está bien.** Es el texto más legible del "
+                "módulo — Fisher escribe para un público amplio, no "
+                "académico. Dos referencias que ya conoces del Módulo 1 "
+                "ayudan aquí: Deleuze y Guattari, y el propio Žižek aparece "
+                "citado, no explicado."
+            ),
+        ),
+        LecturaPDF(
+            orden=3, id="srnicek-williams-post-work",
+            titulo="Inventing the Future, cap. 6 «Post-Work Imaginaries»",
+            autor="Nick Srnicek y Alex Williams", anio="2015",
+            fuente="srnicek_williams_inventing_the_future.pdf",
+            paginas=(77, 93),
+            edicion=("Verso, 2015. El temario cita pp. 107–128 de la "
+                     "edición impresa; la única fuente conseguida fue un "
+                     "EPUB, convertido a PDF, y sus páginas 77–93 no "
+                     "corresponden a ninguna edición en papel — son "
+                     "internas de este archivo. El capítulo se verificó por "
+                     "encabezado («Chapter 6 / Post-Work Imaginaries» en la "
+                     "p. 77, «Chapter 7 / A New Common Sense» en la p. 93), "
+                     "no por número de página."),
+            introduccion=(
+                "**Qué vas a leer.** El programa aterrizado en demandas "
+                "concretas: automatización plena, semana laboral reducida, "
+                "renta básica universal, y el fin de la ética del trabajo "
+                "como medida del valor de una persona.\n\n"
+                "**Palabras clave.** *Reformas no-reformistas*: demandas "
+                "que se pueden pedir hoy pero que, cumplidas, desbordan lo "
+                "que el capitalismo puede conceder. *Automatización plena*: "
+                "no como amenaza sino como objetivo político. *Renta básica "
+                "universal (UBI)*: la propuesta que separa el ingreso del "
+                "empleo.\n\n"
+                "**Qué retener.** Cómo pasa el texto de la tesis abstracta "
+                "del manifiesto («acelerar las fuerzas productivas») a un "
+                "programa que se puede debatir en términos de política "
+                "pública concreta — con sus límites reconocidos: el trabajo "
+                "de cuidados, la resistencia patronal, la pregunta de quién "
+                "paga.\n\n"
+                "**Es difícil, y está bien.** Prosa académica con muchas "
+                "notas al pie, pero argumentativamente clara — sigue una "
+                "estructura de tesis y respuesta a objeciones. Si te pierdes "
+                "en una nota, el argumento principal sigue en el cuerpo del "
+                "texto."
+            ),
+        ),
+    ],
 }
 
-# En derechos vigentes: no se redistribuyen, se leen de la antología.
+# En derechos vigentes: no se redistribuyen, se leen de la edicion citada.
 ENLACES: dict[str, list[dict[str, str]]] = {
     "filosofia_ia/clase_1": [
         {
@@ -586,7 +736,11 @@ def _titulos(modulo: str) -> tuple[str, str]:
         "filosofia_ia/clase_1": (
             "¿Accelerate What?",
             "Filosofía de la IA · Módulo 1 — Aceleracionismo, de Marx al valle",
-        )
+        ),
+        "filosofia_ia/clase_2": (
+            "The Left Takes the Future Back",
+            "Filosofía de la IA · Módulo 2 — La izquierda reclama el futuro",
+        ),
     }.get(modulo, (modulo, ""))
 
 

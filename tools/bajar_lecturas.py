@@ -69,7 +69,24 @@ FUENTES: dict[str, list[Fuente]] = {
                html=("http://www.imaginaryfutures.net/2007/04/17/the-californian-ideology-2/",
                      r"Not\s+to\s+lie\s+about\s+the\s+future",
                      r"Notes\s+and\s+References|—{5,}")),
-    ]
+    ],
+    # Modulo 2 · The Left Takes the Future Back. Dos de las cuatro lecturas
+    # tienen fuente primaria abierta; las otras dos siguen en derechos y se
+    # toman de PDF de la edicion citada (ver PDFS en tools/lecturas.py).
+    "filosofia_ia/clase_2": [
+        Fuente("williams_srnicek_manifesto_en.txt", "",
+               "Williams y Srnicek · criticallegalthinking.com, 14 de mayo de 2013",
+               "The command of The Plan must be married to the improvised order of The Network.",
+               html=("https://criticallegalthinking.com/2013/05/14/accelerate-manifesto-for-an-accelerationist-politics/",
+                     r"01\.\s*INTRODUCTION:\s*On\s+the\s+Conjuncture",
+                     r"Sharing\s+Options")),
+        Fuente("terranova_red_stack_en.txt", "",
+               "Tiziana Terranova · euronomade.info",
+               "three levels of socio-technical innovation: virtual money, social networks, and bio-hypermedia",
+               html=("http://www.euronomade.info/?p=2268",
+                     r"This\s+essay\s+is\s+the\s+outcome\s+of\s+a\s+research\s+process",
+                     r"Condividere")),
+    ],
 }
 
 

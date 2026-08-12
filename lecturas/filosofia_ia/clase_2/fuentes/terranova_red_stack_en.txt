@@ -1,0 +1,308 @@
+Red Stack Attack! Algorithms, Capital and the Automation of the Common
+
+by TIZIANA TERRANOVA
+This essay is the outcome of a research process which involves a series of Italian institutions of
+autoformazione
+of post-autonomist inspiration (‘free’ universities engaged in grassroots organization of public seminars, conferences, workshops etc) and anglophone social networks of scholars and researchers engaging with digital media theory and practice officially affiliated with universities, journals and research centres, but also artists, activists, precarious knowledge workers and such likes. It refers to a workshop which took place in London in January 2014, hosted by the Digital Culture Unit at the Centre for Cultural Studies (Goldsmiths’ College, University of London). The workshop was the outcome of a process of reflection and organization that started with the Italian free university collective Uninomade 2.0 in early 2013 and continued across mailing lists and websites such as
+Euronomade
+,
+Effimera
+,
+Commonware
+,
+I quaderni di San Precario
+,
+and others. More than a traditional essay, then, it aims to be a synthetic but hopefully also inventive document which plunges into a distributed ‘social research network’ articulating a series of problems, theses and concerns at the crossing between political theory and research into science, technology and capitalism.
+What is at stake
+in the following is the relationship between ‘algorithms’ and ‘capital’—that is, the increasing centrality of algorithms ‘to organizational practices arising out of the centrality of information and communication technologies stretching all the way from production to circulation, from industrial logistics to financial speculation, from urban planning and design to social communication. ((In the words of the programme of the worshop from which this essay originated:
+http://quaderni.sanprecario.info/2014/01/workshop-algorithms/
+)) These apparently esoteric mathematical structures have also become part of the daily life of users of contemporary digital and networked media. Most users of the Internet daily interface or are subjected to the powers of algorithms such as Google’s Pagerank (which sorts the results of our search queries) or Facebook Edgerank (which automatically decides in which order we should get our news on our feed) not to talk about the many other less known algorithms (Appinions, Klout, Hummingbird, PKC, Perlin noise, Cinematch, KDP Select and many more) which modulate our relationship with data, digital devices and each other. This widespread presence of algorithms in the daily life of digital culture, however, is only one of the expressions of the pervasiveness of computational techniques as they become increasingly co-extensive with processes of production, consumption and distribution displayed in logistics, finance, architecture, medicine, urban planning, infographics, advertising, dating, gaming, publishing and all kinds of creative expressions (music, graphics, dance etc).
+The staging of the encounter between ‘algorithms’ and ‘capital’ as a political problem invokes the possibility of breaking with the spell of ‘capitalist realism’—that is, the idea that capitalism constitutes the only possible economy while at the same time claiming that new ways of organizing the production and distribution of wealth need to seize on scientific and technological developments ((M. Fisher,
+Capitalist Realism: Is There No Alternative
+(London: Zer0 Books, 2009); 2009, A. Williams and N. Srnciek,
+‘#Accelerate: Manifesto for an Accelerationist Politics
+’, this volume XXX-XXX.)). Going beyond the opposition between state and market, public and private, the concept of the common is used here as a way to instigate the thought and practice of a possible post-capitalist mode of existence for networked digital media.
+Algorithms, Capital and Automation
+Looking at algorithms from a perspective that seeks the constitution of a new political rationality around the concept of the ‘common’ means engaging with the ways in which algorithms are deeply implicated in the changing nature of automation. Automation is described by Marx as a process of absorption into the machine of the ‘general productive forces of the social brain’ such as ‘knowledge and skills’ ((
+K. Marx, ‘Fragment on Machines’, this volume, XXX–XXX.
+)),
+which hence appear as an attribute of capital rather than as the product of social labour. Looking at the history of the implication of capital and technology, it is clear how automation has evolved away from the thermo-mechanical model of the early industrial assembly line toward the electro-computational dispersed networks of contemporary capitalism. Hence it is possible to read algorithms as part of a genealogical line that, as Marx put it in the ‘Fragment on Machines’, starting with the adoption of technology by capitalism as fixed capital, pushes the former through several metamorphoses ‘whose culmination is the machine, or rather, an automatic system of machinery…set in motion by an automaton, a moving power that moves itself’ ((
+Ibid., XXX.)).
+The industrial automaton was clearly thermodynamical, and gave rise to a system ‘consisting of numerous mechanical and intellectual organs so that workers themselves are cast merely as its conscious linkages’ ((
+Ibid., XXX.)).
+The digital automaton, however, is electro-computational, it puts ‘the soul to work’ and involves primarily the nervous system and the brain and comprises ‘possibilities of virtuality, simulation, abstraction, feedback and autonomous processes’ ((M. Fuller,
+Software Studies: A Lexicon
+(Cambridge, MA: The MIT Press, 2008); F. Berardi,
+The Soul at Work: From Alienation to Autonomy
+,
+Cambridge, Mass: MIT Press, 2009) )).
+The digital automaton unfolds in networks consisting of electronic and nervous connections so that users themselves are cast as quasi-automatic relays of a ceaseless information flow. It is in this wider assemblage, then, that algorithms need to be located when discussing the new modes of automation.
+Quoting a textbook of computer science, Andrew Goffey describes algorithms as ‘the unifying concept for all the activities which computer scientists engage in…and the fundamental entity with which computer scientists operate’ ((
+A.
+Goffey,
+‘Algorithm’
+, in Fuller (ed),
+Software Studies
+, 15–17: 15.))
+.
+An algorithm can be provisionally defined as the ‘description of the method by which a task is to be accomplished’ by means of sequences of steps or instructions, sets of ordered steps that operate on data and computational structures. As such, an algorithm is an abstraction, ‘having an autonomous existence independent of what computer scientists like to refer to as “implementation details,” that is, its embodiment in a particular programming language for a particular machine architecture’ ((
+Ibid.))
+. It can vary in complexity from the most simple set of rules described in natural language (such as those used to generate coordinated patterns of movement in smart mobs) to the most complex mathematical formulas involving all kinds of variables (as in the famous Monte Carlo algorithm used to solve problems in nuclear physics and later also applied to stock markets and now to the study of non-linear technological diffusion processes). At the same time, in order to work, algorithms must exist as part of assemblages that include hardware, data, data structures (such as lists, databases, memory, etc.), and the behaviours and actions of bodies. For the algorithm to become social software, in fact, ‘it must gain its power as a social or cultural artifact and process by means of a better and better accommodation to behaviors and bodies which happen on its outside’. ((Fuller,
+Introduction to Fuller
+(ed),
+Software Studies
+, 5))
+Furthermore, as contemporary algorithms become increasingly exposed to larger and larger data sets (and in general to a growing entropy in the flow of data also known as Big Data), they are, according to Luciana Parisi, becoming something more then mere sets of instructions to be performed: ‘infinite amounts of information interfere with and re-program algorithmic procedures…and data produce alien rules’ ((
+L. Parisi,
+Contagious Architecture: Computation, Aesthetics, Space
+(Cambridge, Mass. and Sidney: MIT Press, 2013),
+x.))
+.
+It seems clea
+r from this brief account, then, that algorithms are neither a homogeneous set of techniques, nor do they guarantee ‘the infallible
+execution of automated order and co
+ntrol ((
+Ibid., ix.)).
+From the point of view of capitalism, however, algorithms are mainly a form of ‘fixed capital’—that is, they are just means of production. They encode a certain quantity of social knowledge (abstracted from that elaborated by mathematicians, programmers, but also users’ activities), but they are not valuable per se. In the current economy, they are valuable only in as much as they allow for the conversion of such knowledge into exchange value (monetization) and its (exponentially increasing) accumulation (the titanic quasi-monopolies of the social Internet). In as much as they constitute fixed capital, algorithms such as Google’s Page Rank and Facebook’s Edgerank appear ‘as a presupposition against which the value-creating power of the individual labour capacity is an infinitesimal, vanishing magnitude’ ((Marx, XXX.)).
+And that is why calls for individual retributions to users for their ‘free labor’ are misplaced. It is clear that for Marx what needs to be compensated is not the individual work of the user, but the much larger powers of social cooperation thus unleashed, and that this compensation implies a profound transformation of the grip that the social relation that we call the capitalist economy has on society.
+From the point of view of capital, then, algorithms are just fixed capital, means of production finalized to achieve an economic return. But that does not mean that, like all technologies and techniques, that is all that they are. Marx explicitly states that even as capital appropriates technology as the most effective form of the subsumption of labor, that does not mean that this is all that can be said about it. Its existence as machinery, he insists, is not ‘identical with its existence as capital… and therefore it does not follow that subsumption under the social relation of capital is the most appropriate and ultimate social relation of production for the application of machinery’.
+13
+It is then essential to remember that the instrumental value that algorithms have for capital does not exhaust the ‘value’ of technology in general and algorithms in particular—that is, their capacity to express not just ‘use value’ as Marx put it, but also aesthetic, existential, social, and ethical values. Wasn’t it this clash between the necessity of capital to reduce software development to exchange value, thus marginalizing the aesthetic and ethical values of software creation, that pushed Richard Stallman and countless hackers and engineers towards the Free and Open Source Movement? Isn’t the enthusiasm that animates hack-meetings and hacker-spaces fueled by the energy liberated from the constraints of ‘working’ for a company in order to remain faithful to one’s own aesthetics and ethics of coding?
+Contrary to some variants of Marxism which tend to identify technology completely with ‘dead labor’, ‘fixed capital’ or ‘instrumental rationality’, and hence with control and capture, it seems important to remember how, for Marx, the evolution of machinery also indexes a level of development of productive powers that are unleashed but never totally contained by the capitalist economy. What interested Marx (and what makes his work still relevant to those who strive for a post-capitalist mode of existence) is the way in which, so he claims, the tendency of capital to invest in technology to automate and hence reduce its labor costs to a minimum potentially frees up a ‘surplus’ of time and energy (labor) or an excess of productive capacity in relation to the basic, important and necessary labor of reproduction (a global economy, for example, should first of all produce enough wealth for all members of a planetary population to be adequately fed, clothed, cured and sheltered). However, what characterizes a capitalist economy is that this surplus of time and energy is not simply released, but must be constantly reabsorbed in the cycle of production of exchange value leading to increasing accumulation of wealth by the few (the collective capitalist) at the expense of the many (the multitudes).
+Automation, then, when seen from the point of view of capital, must always be balanced with new ways to control (that is, absorb and exhaust) the time and energy thus released. It must produce poverty and stress when there should be wealth and leisure. It must make direct labour the measure of value even when it is apparent that science, technology and social cooperation constitute the source of the wealth produced. It thus inevitably leads to the periodic and widespread destruction of this accumulated wealth, in the form of psychic burnout, environmental catastrophe and physical destruction of the wealth through war. It creates hunger where there should be satiety, it puts food banks next to the opulence of the super-rich. That is why the notion of a post-capitalist mode of existence must become believable, that is, it must become what Maurizio Lazzarato described as an enduring autonomous focus of subjectivation. What a post-capitalist commonism then can aim for is not only a better distribution of wealth compared to the unsustainable one that we have today, but also a reclaiming of ‘disposable time’—that is, time and energy freed from work to be deployed in developing and complicating the very notion of what is ‘necessary’.
+The history of capitalism has shown that automation as such has not reduced the quantity and intensity of labor demanded by managers and capitalists. On the contrary, in as much as technology is only a means of production to capital, where it has been able to deploy other means, it has not innovated. For example, industrial technologies of automation in the factory do not seem to have recently experienced any significant technological breakthroughs. Most industrial labor today is still heavily manual, automated only in the sense of being hooked up to the speed of electronic networks of prototyping, marketing and distribution; and it is rendered economically sustainable only by political means—that is, by exploiting geo-political and economic differences (arbitrage) on a global scale and by controlling migration flows through new technologies of the border. The state of things in most industries today is intensified exploitation, which produces an impoverished mode of mass production and consumption that is damaging to both to the body, subjectivity, social relations and the environment. As Marx put it, disposable time released by automation should allow for a change in the very essence of the ‘human’ so that the new subjectivity is allowed to return to the performing of necessary labor in such a way as to redefine what is necessary and what is needed.
+It is not then simply about arguing for a ‘return’ to simpler times, but on the contrary a matter of acknowledging that growing food and feeding populations, constructing shelter and adequate housing, learning and researching, caring for the children, the sick and the elderly requires the mobilization of social invention and cooperation. The whole process is thus transformed from a process of production by the many for the few steeped in impoverishment and stress to one where the many redefine the meaning of what is necessary and valuable, while inventing new ways of achieving it. This corresponds in a way to the notion of ‘commonfare’ as recently elaborated by Andrea Fumagalli and Carlo Vercellone, implying, in the latter’s words, ‘the socialization of investment and money and the question of the modes of management and organisation which allow for an authentic democratic reappropriation of the institutions of Welfare…and the ecologic re-structuring of our systems of production ((C. Vercellone,
+‘From the crisis to the “commonfare” as new mode of production’
+, in special section on
+Eurocrisis
+(ed. G. Amendola, S. Mezzadra and T. Terranova),
+Theory, Culture and Society
+, forth
+coming; also A. Fumagalli,
+‘
+Digital (Crypto) Money and Alternative Financial Circuits: Lead the Attack to the Heart of the State, sorry, of Financial Market’
+)). We n
+eed
+to ask then not only how algorithmic automation works today (mainly in terms of control and monetization, feeding the debt economy) but also what kind of time and energy it subsumes and how it might be made to work once taken up by different social and political assemblages—autonomous ones not subsumed by or subjected to the capitalist drive to accumulation and exploitation.
+The
+Red Stack: Virtual Money, Social Networks, Bio-Hypermedia
+In a recent intervention, digital media and political theorist Benjamin H. Bratton has argued that we are witnessing the emergence of a new nomos of the earth, where older geopolitical divisions linked to territorial sovereign powers are intersecting the new nomos of the Internet and new forms of sovereignty extending in electronic space ((
+B.
+Bratton,
+On the Nomos of the Cloud
+(2012)
+.)).
+This new heterogenous nomos involves the overlapping of national governments (China, United States, European Union, Brasil, Egypt and such likes), transnational bodies (the IMF, the WTO, the European Banks and NGOs of various types), and corporations such as Google, Facebook, Apple, Amazon, etc., producing differentiated patterns of mutual accommodation marked by moments of conflict. Drawing on the organizational structure of computer networks or ‘the OSI network model, upon with the TCP/IP stack and the global internet itself is indirectly based’, Bratton has developed the concept and/or prototype of the ‘stack’ to define the features of ‘a possible new nomos of the earth linking technology, nature and the human.’ ((Ibid.))
+The stack supports and modulates a kind of ‘social cybernetics’ able to compose ‘both equilibrium and emergence’. As a ‘megastructure’, the stack implies a ‘confluence of interoperable standards-based complex material-information systems of systems, organized according to a vertical section, topographic model of layers and protocols…composed equally of social, human and “analog” layers (chthonic energy sources, gestures, affects, user-actants, interfaces, cities and streets, rooms and buildings, organic and inorganic envelopes) and informational, non-human computational and “digital” layers (multiplexed fiber optic cables, datacenters, databases, data standards and protocols, urban-scale networks, embedded systems, universal addressing tabl
+es)’ ((
+Ibid.)).
+In this section, drawing on Bratton’s political prototype, I would like to propose the concept of the ‘Red Stack’—that is, a new nomos for the post-capitalist common. Materializing the ‘red stack’ involves engaging with (at least) three levels of socio-technical innovation: virtual money, social networks, and bio-hypermedia. These three levels, although ‘stacked’, that is, layered, are to be understood at the same time as interacting transversally and nonlinearly. They constitute a possible way to think about an infrastructure of autonomization linking together technology and subjectivation.
+Virtual money
+The contemporary economy, as Christian Marazzi and others have argued, is founded on a form of money which has been turned into a series of signs, with no fixed referent (such as gold) to anchor them, explicitly dependent on the computational automation of simulational models, screen media with automated displays of data (indexes, graphics etc) and algo-trading (bot-to-bot transactions) as its emerging mode of auto
+mation ((
+C.
+Marazzi,
+Money in the World Crisis: The New Basis of Capitalist Power
+)).
+As Toni Negri also puts it, ‘money today—as abstract machine—has taken on the peculiar function of supreme measure of the values extracted out of society in the real subsumpti
+on of the latter und
+er capital’ ((
+T.
+Negri,
+Reflections on the Manifesto for an Accelerationist Politics
+,
+(2014),
+Euronomade))
+.
+Since ownership and control of capital-money (different, as Maurizio Lazzarato remind us, from wage-money, in its capacity to be used not only as a means of exchange, but as a means of investment empowering certain futures over others) is crucial to maintaining populations bonded to the current power relation, how can we turn financial money into the money of the common? An experiment such as Bitcoin demonstrates that in a way ‘
+the taboo on money
+has been b
+r
+oken’ ((
+Jaromil Rojio,
+Bitcoin, la fine del tabù della moneta
+(2014), in
+I Quaderni di San Precario.)) and that beyond the limits of this experience, forkings are already developing in different directions. What kind of relationship can be established between the algorithms of money-creation and ‘a constituent practice which affirms other criteria for the measurement of wealth,
+valorizing new and old collective needs outside the logic of finance’?
+((
+S.
+Lucarelli,
+Il principio della liquidità e la sua corruzione. Un contributo alla discussione su algoritmi e capitale
+(2014), in
+I Quaderni di san Precario
+))
+Current attempts to develop new kinds of cryptocurrencies must be judged, valued and rethought on the basis of this simple question as posed by Andrea Fumagalli: Is the currency created not limited solely to being a means of exchange, but can it also affect the entire cycle of money creation – from finance
+to exchange? ((
+A. Fu
+magalli,
+Commonfare: Per la riappropriazione del libero accesso ai beni comuni
+(2014), in Doppio Zero)).
+Does it allow speculation and hoarding, or does it promote investment in post-capitalist projects and facilitate freedom from exploitation, autonomy of organization etc.? What is becoming increasingly clear is that algorithms are an essential part of the process of creation of the money of the common, but that algorithms also have politics (What are the gendered politics of individual ‘mining’, for example, and of the complex technical knowledge and machinery implied in mining bitcoins?) Furthermore, the drive to completely automate money production in order to escape the fallacies of subjective factors and social relations might cause such relations to come back in the form of speculative trading. In the same way as financial capital is intrinsically linked to a certain kind of subjectivity (the financial predator narrated by Hollywood cinema), so an autonomous form of money needs to be both jacked into and productive of a new kind of subjectivity not limited to the hacking milieu as such, but at the same time oriented not towards monetization and accumulation but towards the empowering of social cooperation. Other questions that the design of the money of the common might involve are: Is it possible to draw on the current financialization of the Internet by corporations such as Google (with its Adsense/Adword programme) to subtract money from the circuit of capitalist accumulation and turn it into a money able to finance new forms of commonfare (education, research, health, environment etc)? What are the lessons to be learned from crowdfunding models and their limits in thinking about new forms of financing autonomous projects of social cooperation? How can we perfect and extend experiments such as that carried out by the Inter-Occupy movement during the Katrina hurricane in turning social networks into crowdfunding networks which can then be use
+d as logistical infrastructure able to move not only information, but also phys
+ica
+l goods? ((
+Common Ground Collective,
+Common Ground Collective, Food, not Bombs and Occupy Movement form Coalition to help Isaac & Kathrina Victims
+(2012),
+Interoccupy.net
+)).
+Social Networks
+Over the past ten years, digital media have undergone a process of becoming social that has introduced genuine innovation in relation to previous forms of social software (mailing lists, forums, multi-user domains, etc). If mailing lists, for example, drew on the communicational language of sending and receiving, social network sites and the diffusion of (proprietary) social plug-ins have turned the social relation itself into the content of new computational procedures. When sending and receiving a message, we can say that algorithms operate outside the social relation as such, in the space of the transmission and distribution of messages; but social network software places intervenes directly on the social relationship. Indeed, digital technologies and social network sites ‘cut into’ the social relation as such—that is, they turn it into a discrete object and introduce a new suppleme
+ntary relation. ((
+B. Stiegler,
+The Most Precious Good in the Era of Social Technologies
+, in G. Lovink and M. Rasch (eds),
+Unlike Us Reader: Social Media Monopolies and Their Alternatives
+(
+Amsterdam: Institute of Network Culture, 2013),
+16–30
+.))
+If, with Gabriel Tarde and Michel Foucault, we understand the social relation as an asymmetrical relation involving at least two poles (one active and the other receptive) and characterized by a certain degree of freedom, we can think of actions such as liking and being liked, writing and reading, looking and being looked at, tagging and being tagged, and even buying and selling as the kind of conducts that transindividuate the social (they induce the passage from the pre-individual through the individual to the collective). In social network sites and social plug-ins these actions become discrete technical objects (like buttons, comment boxes, tags etc) which are then linked to underlying data structures (for example the social graph) and subjected to the power of ranking of algorithms. This produces the characteristic spatio-temporal modality of digital sociality today: the feed, an algorithmically customized flow of opinions, beliefs, statements, desires expressed in words, images, sounds etc. Much reviled in contemporary critical theory for their supposedly homogenizing effect, these new technologies of the social, however, also open the possibility of experimenting with many-to-many interaction and thus with the very processes of individuation. Political experiments (se the various internet-based parties such as the 5 star movement, Pirate Party, Partido X) draw on the powers of these new socio-technical structures in order to produce massive processes of participation and deliberation; but, as with Bitcoin, they also show the far from resolved processes that link political subjectivation to algorithmic automation. They can function, however, because they draw on widely socialized new knowledges and crafts (how to construct a profile, how to cultivate a public, how to share and comment, how to make and post photos, videos, notes, how to publicize events) and on ‘soft skills’ of expression and relation (humour, argumentation, sparring) which are not implicitly good or bad, but present a series of affordances or degrees of freedom of expression for political action that cannot be left to capitalist monopolies. However, it is not only a matter of using social networks to organize resistance and revolt, but also a question of constructing a social mode of self-Information which can collect and reorganize existing drives towards autonomous and singular becomings. Given that algorithms, as we have said, cannot be unlinked from wider social assemblages, their materialization within the red stack involves the hijacking of social network technologies away from a mode of consumption whereby social networks can act as a distributed platform for learning about the world, fostering and nurturing new competences and skills, fostering planetary connections, and developing new ideas and values.
+Bio-hypermedia
+The term bio-hypermedia, coined by Giorgio Griziotti, identifies the ever more intimate relation between bodies and devices which is part of the diffusion of smart phones, tablet computers and ubiquitous computation. As digital networks shift away from the centrality of the desktop or even laptop machine towards smaller, portable devices, a new social and technical landscape emerges around ‘apps’ and ‘clouds’ which directly ‘intervene in how we feel, perceive and understand the w
+orld’. ((
+G. Griziotti,
+Biorank:
+algorithms and transformations in the bios of cognitive capitalism
+(2014), in
+I Quaderni di san Precario
+;
+also S.
+Portanova,
+Moving without a Body
+(
+Boston, MA: MIT Press, 2013))).
+Bratton defines the ‘apps’ for platforms such as Android and Apple as interfaces or membranes linking individual devices to large databases stored in the ‘cloud’ (massive data processing and storage centres owned by large corp
+orations). ((
+B. Bratton,
+On Apps and Elementary Forms of Interfacial Life: Object, Image, Superimposition
+))
+This topological continuity has allowed for the diffusion of downloadable apps which increasingly modulate the relationship of bodies and space. Such technologies not only ‘stick to the skin and respond to the touch’ (as Bruce Sterling once put it), but create new ‘zones’ around bodies which now move through ‘coded spaces’ overlayed with information, able to locate other bodies and places within interactive, informational visual maps. New spatial ecosystems emerging at the crossing of the ‘natural’ and the artificial allow for the activation of a process of chaosmotic co-cr
+eation o
+f u
+rban life. ((
+S.
+Iaconesi and O. Persico,
+The Co-Creation of the City: Re-programming Cities using Real-Time User-Generated Content
+))
+Here again we can see how apps are, for capital, simply a means to ‘monetize’ and ‘accumulate’ data about the body’s movement while subsuming it ever more tightly in networks of consumption and surveillance. However, this subsumption of the mobile body under capital does not necessarily imply that this is the only possible use of these new technological affordances. Turning bio-hypermedia into components of the red stack (the mode of reappropriation of fixed capital in the age of the networked social) implies drawing together current experimentation with hardware (shenzei phone hacking technologies, makers movements, etc.) able to support a new breed of ‘imaginary apps’ (think for example about the apps devised by the artist collective Electronic Disturbance Theatre, which allow migrants to bypass border controls, or apps able to track the origin of commodities, their degrees of exploitation, etc.).
+Conclusions
+This short essay, a synthesis of a wider research process, means to propose another strategy for the construction of a machinic infrastructure of the common. The basic idea is that information technologies, which comprise algorithms as a central component, do not simply constitute a tool of capital, but are simultaneously constructing new potentialities for postneoliberal modes of government and postcapitalist modes of production. It is a matter here of opening possible lines of contamination with the large movements of programmers, hackers and makers involved in a process of re-coding of network architectures and information technologies based on values others than exchange and speculation, but also of acknowledging the wide process of technosocial literacy that has recently affected large swathes of the world population. It is a matter, then, of producing a convergence able to extend the problem of the reprogramming of the Internet away from recent trends towards corporatisation and monetisation at the expense of users’ freedom and control. Linking bio-informational communication to issues such as the production of a money of the commons able to socialize wealth, against current trends towards privatisation, accumulation and concentration, and saying that social networks and diffused communicational competences can also function as means to organize cooperation and produce new knowledges and values, means seeking for a new political synthesis which moves us away from the neoliberal paradigm of debt, austerity and accumulation. This is not a utopia, but a program for the invention of constituent social algorithms of the common.
+In addition to the sources cited above, and the texts contained in this volume, we offer the following expandable bibliographical toolkit or open desiring biblio-machine.
+(Instructions: pick, choose and subtract/add to form your own assemblage of self-formation for the purposes of materialization of the red stack):
+—
+L. Baroniant and C. Vercellone,
+Moneta Del Comune e Reddito Sociale Garantito
+(2013),
+Uninomade
+.
+— M. Bauwens,
+The Social Web and Its Social Contracts: Some Notes on Social Antagonism in Netarchical Capitalism
+(2008),
+Re-Public Re-Imaging Democracy
+.
+— F. Berardi and G. Lovink,
+A call to the army of love and to the army of software
+(2011),
+Nettime
+.
+— R. Braidotti,
+The posthuma
+n
+(
+Cambridge: Polity Press, 2013).
+— G. E. Coleman,
+Coding Freedom: The Ethics and Aesthetics of Hacking
+(Princeton and Oxford: Princeton University Press, 2012).
+—
+A. Fumagalli,
+Trasformazione del lavoro e trasformazioni del welfare: precarietà e welfare del comune (commonfare) in Europa
+, in P. Leon and R. Realfonso (eds),
+L’Economia della precarietà
+(Rome: Manifestolibri, 2008), 159–74.
+— G. Giannelli and A. Fumagalli,
+Il fenomeno Bitcoin: moneta alternativa o moneta speculativa?
+(2013),
+I Quaderni di San Precario
+.
+— G. Griziotti, D. Lovaglio and T. Terranova,
+Netwar 2.0: Verso una convergenza della “calle” e della rete
+(2012),
+Uninomade 2.0
+.
+— E. Grosz,
+Chaos, Territory, Art
+(New York:
+Columbia University Press, 2012).
+— F. Guattari,
+Chaosmosis: An Ethico-Aesthetic Paradigm
+(Indianapolis, IN:
+Indiana University Press, 1995).
+S. Jourdan,
+Game-over Bitcoin: Where Is the Next Human-Based Digital Currency?
+(2014)
+.
+— M. Lazzarato,
+Les puissances de l’invention
+(
+Paris: L’empecheurs de penser ronde, 2004).
+— M. Lazzarato,
+The Making of the Indebted Man
+(
+Los Angeles: Semiotext(e), 2013).
+— G. Lovink and M. Rasch (eds),
+Unlike Us Reader: Social Media Monopolies and their Alternatives
+(
+Amsterdam: Institute of Network Culture, 2013).
+— A. Mackenzie (2013),
+Programming subjects in the regime of anticipation: software studies and subjectivity
+in In: Subjectivity. 6, p. 391-405
+— L. Manovich,
+The Poetics of Augmented Space
+,
+Virtual Communication
+5:2 (2006), 219–40.
+—
+S. Mezzadra and B. Neilson,
+Border as Method or the Multiplication of Labor
+(
+Durham, NC: Duke University Press, 2013).
+—
+P. D. Miller aka DJ Spooky and S. Matviyenko,
+The Imaginary App
+(
+Cambridge, MA: MIT Press, forthcoming).
+— A. Negri,
+Acting in common and the limits of capital
+(2014), in
+Euronomade
+.
+— A. Negri and M. Hardt,
+Commonwealth
+(Cambridge, MA:
+Belknap Press, 2009).
+— M. Pasquinelli,
+Google
+’s Page Rank Algorithm: A Diagram of the Cognitive Capitalism and the Rentier of the Common Intellect
+(2009).
+— B. Scott,
+Heretic’s Guide to Global Finance: Hacking the Future of Money
+(
+London: Pluto Press, 2013).
+— G. Simondon,
+On the Mode of Existence of Technical Objects
+(1958), University of Western Ontario
+— R. Stallman,
+Free Software: Free Society. Selected Essays of Richard M. Stallman
+(
+Free Software Foundation, 2002).
+— A. Toscano,
+Gaming the Plumbing: High-Frequency Trading and the Spaces of Capital
+(2013), in Mute.
+—
+I. Wilkins and B. Dragos,
+Destr
+uctive Distraction? An Ecological Study of High Frequency Trading
+, in
+Mute
+.
