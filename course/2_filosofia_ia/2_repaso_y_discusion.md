@@ -56,6 +56,22 @@ lo suyo.
 
 ## De dónde viene esto
 
+::: figure {#genealogia title="De Marx a e/acc, y por qué el orden de lectura es otro"}
+![Genealogía del aceleracionismo de 1858 a 2022, con el número de lectura de cada texto y una flecha que marca la respuesta de Fisher a Land](_assets/v17-genealogia-aceleracionismo.svg)
+:::
+
+Ciento cincuenta años separan la primera lectura de la última, y el cuadernillo
+no las ordenó por fecha. Marx va primero porque de ahí sale todo. Deleuze y
+Guattari después, con la página que Land va a citar. Land tercero. **Fisher
+cuarto, fuera de lugar a propósito**: responde a Land y explica su texto mejor
+que cualquier introducción, así que conviene leerlo antes que al CCRU, que es lo
+más difícil del cuadernillo. Barbrook y Cameron al final aunque sean de 1995,
+porque no descienden de esta discusión: la miran desde afuera y la aterrizan en
+Silicon Valley, que es donde sigue el curso.
+
+Las dos últimas filas no son lecturas. Son a dónde llega todo esto, y ya las
+viste en [[ia-y-sociedad]].
+
 ## Las seis lecturas, en claro
 
 Cada ficha va igual: de qué viene, qué dice, qué concepto aporta, la línea que

@@ -9,3 +9,4 @@ Ninguna representa a una persona real ni a un evento histórico documentado.
 | Archivo | Descripción | Autor / origen | Licencia |
 |---|---|---|---|
 | cuadernillo_portada.png | Portada del cuadernillo del módulo 1, rasterizada de la primera página del PDF | Material propio, generado por `tools/lecturas.py` y rasterizado con `pdftoppm` | Material del curso |
+| v17-genealogia-aceleracionismo.svg | Genealogía del aceleracionismo de 1858 a 2022, con el orden de lectura del cuadernillo | Diagrama propio, generado para el curso | Material del curso |

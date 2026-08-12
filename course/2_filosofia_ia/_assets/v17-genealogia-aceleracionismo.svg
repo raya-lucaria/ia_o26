@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="Genealogia del aceleracionismo de 1858 a 2022, con el numero de lectura de cada texto en el cuadernillo y una flecha que marca la respuesta de Fisher a Land. El orden de lectura no es el cronologico."><rect x="0" y="0" width="900" height="700" rx="16" fill="#211033"/>
+
+<text x="450" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">De donde viene esto</text>
+<text x="450" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">El numero entre parentesis es el orden en que se leen: no es el cronologico</text>
+
+<!-- Main vertical axis, broken into two solid segments so the dashed cut below reads as an actual gap -->
+<line x1="120" y1="90" x2="120" y2="500" stroke="#78419e" stroke-width="2"/>
+<line x1="120" y1="610" x2="120" y2="640" stroke="#78419e" stroke-width="2"/>
+
+<!-- Row 1: Marx 1858 (1) -->
+<circle cx="120" cy="110" r="7" fill="#a8ff5a"/>
+<text x="145" y="115" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1858</text>
+<text x="205" y="115" fill="#a8ff5a" font-family="system-ui, sans-serif" font-size="14">Marx, Fragmento sobre las maquinas   (1)</text>
+
+<!-- Row 2: Deleuze y Guattari 1972 (2) -->
+<circle cx="120" cy="180" r="7" fill="#9b6dff"/>
+<text x="145" y="185" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1972</text>
+<text x="205" y="185" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="14">Deleuze y Guattari, El Anti-Edipo   (2)</text>
+
+<!-- Row 3: Land 1994 (3) -->
+<circle cx="120" cy="250" r="7" fill="#f04cff"/>
+<text x="145" y="255" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1994</text>
+<text x="205" y="255" fill="#f04cff" font-family="system-ui, sans-serif" font-size="14">Land, Meltdown   (3)</text>
+
+<!-- Row 4: Barbrook y Cameron 1995 (6), lateral branch, not a descendant -->
+<line x1="120" y1="336" x2="180" y2="336" stroke="#c8b9d8" stroke-dasharray="3 3" stroke-width="1.5"/>
+<circle cx="120" cy="320" r="7" fill="#c8b9d8"/>
+<text x="145" y="325" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1995</text>
+<text x="195" y="325" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">Barbrook y Cameron, Ideologia californiana   (6)</text>
+
+<!-- Row 5: CCRU 1996 (5) -->
+<circle cx="120" cy="390" r="7" fill="#55ddff"/>
+<text x="145" y="395" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1996</text>
+<text x="205" y="395" fill="#55ddff" font-family="system-ui, sans-serif" font-size="14">CCRU, Swarmachines   (5)</text>
+
+<!-- Row 6: Fisher 2012 (4) -->
+<circle cx="120" cy="460" r="7" fill="#ffd166"/>
+<text x="145" y="465" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">2012</text>
+<text x="205" y="465" fill="#ffd166" font-family="system-ui, sans-serif" font-size="14">Fisher, Terminator vs Avatar   (4)</text>
+
+<!-- Dashed cut marking the boundary between readings and the bridge rows -->
+<line x1="120" y1="500" x2="120" y2="610" stroke="#78419e" stroke-width="2" stroke-dasharray="4 4"/>
+
+<!-- Row 7: Manifiesto aceleracionista 2013, bridge, not a reading -->
+<g opacity="0.65">
+<circle cx="120" cy="545" r="7" fill="none" stroke="#78419e"/>
+<text x="145" y="550" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">2013</text>
+<text x="205" y="550" fill="#78419e" font-family="system-ui, sans-serif" font-size="14">Manifiesto aceleracionista (Srnicek y Williams)</text>
+</g>
+
+<!-- Row 8: e-acc 2022, bridge, not a reading -->
+<g opacity="0.65">
+<circle cx="120" cy="600" r="7" fill="none" stroke="#78419e"/>
+<text x="145" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">2022</text>
+<text x="205" y="605" fill="#78419e" font-family="system-ui, sans-serif" font-size="14">e-acc</text>
+</g>
+
+<text x="205" y="628" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">No son lecturas del cuadernillo: son el puente a la unidad de historia</text>
+
+<!-- Response arrow: Fisher (2012) answers Land (1994), routed clear of the text column -->
+<path d="M 700 460 C 810 460 810 250 730 250" fill="none" stroke="#ffd166" stroke-width="1.6" stroke-dasharray="5 4"/>
+<polygon points="730,250 744,243 744,257" fill="#ffd166"/>
+<text x="815" y="352" fill="#ffd166" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">responde</text>
+</svg>

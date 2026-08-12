@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from unidades import ASSETS_POR_UNIDAD
+
 RAIZ = Path(__file__).resolve().parent.parent
 UNIDAD = RAIZ / "course/1_introduccion/2_historia_ia"
 ASSETS = UNIDAD / "_assets"
@@ -262,8 +264,11 @@ def test_8_el_repositorio_pesa_menos_de_16mb():
 
 
 def test_9_los_diagramas_svg_son_legibles_sobre_el_fondo_oscuro_del_skin():
-    svgs = sorted(ASSETS.glob("*.svg"))
-    assert svgs, "no hay SVG propios en _assets"
+    # Recorre las dos unidades con figuras propias: la guarda nacio cuando solo
+    # existia la de historia, y un SVG ilegible en filosofia se publicaba sin
+    # que nada lo notara.
+    svgs = sorted(s for assets in ASSETS_POR_UNIDAD.values() for s in assets.glob("*.svg"))
+    assert svgs, "no hay SVG propios en las unidades"
     for svg in svgs:
         texto = svg.read_text(encoding="utf-8")
         assert 'viewBox="' in texto, f"{svg.name} sin viewBox"
