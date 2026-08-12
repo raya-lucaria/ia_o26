@@ -42,17 +42,17 @@
 <line x1="120" y1="500" x2="120" y2="610" stroke="#78419e" stroke-width="2" stroke-dasharray="4 4"/>
 
 <!-- Row 7: Manifiesto aceleracionista 2013, bridge, not a reading -->
-<g opacity="0.65">
+<g opacity="0.85">
 <circle cx="120" cy="545" r="7" fill="none" stroke="#78419e"/>
 <text x="145" y="550" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">2013</text>
-<text x="205" y="550" fill="#78419e" font-family="system-ui, sans-serif" font-size="14">Manifiesto aceleracionista (Srnicek y Williams)</text>
+<text x="205" y="550" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">Manifiesto aceleracionista (Srnicek y Williams)</text>
 </g>
 
 <!-- Row 8: e-acc 2022, bridge, not a reading -->
-<g opacity="0.65">
+<g opacity="0.85">
 <circle cx="120" cy="600" r="7" fill="none" stroke="#78419e"/>
 <text x="145" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">2022</text>
-<text x="205" y="605" fill="#78419e" font-family="system-ui, sans-serif" font-size="14">e-acc</text>
+<text x="205" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">e-acc</text>
 </g>
 
 <text x="205" y="628" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">No son lecturas del cuadernillo: son el puente a la unidad de historia</text>
