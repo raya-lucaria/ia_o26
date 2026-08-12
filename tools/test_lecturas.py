@@ -9,6 +9,8 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 RAIZ = Path(__file__).resolve().parent.parent
 MODULO = RAIZ / "lecturas/filosofia_ia/clase_1"
 INTRO = MODULO / "introduccion.md"
@@ -18,6 +20,15 @@ VISOR = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_1.html"
 LECTURAS_README = MODULO / "README.md"
 PUBLICADO = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_1_accelerate.pdf"
 CONSTRUIDO = MODULO / "lecturas/filosofia_ia_clase_1_cuadernillo.pdf"
+
+# Modulo 2 -- "The Left Takes the Future Back"
+MODULO_2 = RAIZ / "lecturas/filosofia_ia/clase_2"
+PAGINA_2 = RAIZ / "course/2_filosofia_ia/5_left_takes_future.md"
+TAREA_2 = RAIZ / "course/2_filosofia_ia/_official/tasks/2_leer_cuadernillo_modulo_2.yaml"
+VISOR_2 = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_2.html"
+LECTURAS_README_2 = MODULO_2 / "README.md"
+PUBLICADO_2 = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_2_left_future.pdf"
+CONSTRUIDO_2 = MODULO_2 / "lecturas/filosofia_ia_clase_2_cuadernillo.pdf"
 
 MARCADORES = re.compile(
     r"^## Cómo leer este cuadernillo$(.*?)(?=^## El cuadernillo$)",
@@ -175,24 +186,32 @@ def test_la_introduccion_va_antes_de_la_primera_lectura():
     assert doc.index("Cómo leer este cuadernillo") < doc.index("<h2>Fragmento")
 
 
-def test_el_pdf_publicado_es_el_que_se_construyo():
-    """El cuadernillo publicado en course/2_filosofia_ia/_assets/ se copia a
-    mano desde lecturas/.../lecturas/filosofia_ia_clase_1_cuadernillo.pdf; no
-    hay paso mecanico que los mantenga sincronizados. Esta guarda compara los
-    SHA-256 de las dos copias YA VERSIONADAS en git, no contra una
-    reconstruccion fresca: pypdf escribe metadatos internos (fechas, IDs) que
-    cambian de una corrida a otra aunque el contenido de las paginas sea
-    identico, asi que comparar contra un rebuild fallaria en falso incluso
-    cuando el copiado a mano se hizo bien. Comparar las dos copias
-    versionadas es lo unico que detecta de verdad "se reconstruyo y no se
-    volvio a copiar".
-    """
-    def _sha256(ruta: Path) -> str:
-        return hashlib.sha256(ruta.read_bytes()).hexdigest()
+def _sha256(ruta: Path) -> str:
+    return hashlib.sha256(ruta.read_bytes()).hexdigest()
 
-    assert _sha256(PUBLICADO) == _sha256(CONSTRUIDO), (
-        f"{PUBLICADO.relative_to(RAIZ)} no coincide (SHA-256 distinto) con "
-        f"{CONSTRUIDO.relative_to(RAIZ)}: se reconstruyo el cuadernillo y no "
+
+# (publicado en _assets/, construido por el pipeline en lecturas/) por modulo.
+PARES_PDF_PUBLICADO_CONSTRUIDO = [
+    (PUBLICADO, CONSTRUIDO),
+    (PUBLICADO_2, CONSTRUIDO_2),
+]
+
+
+@pytest.mark.parametrize("publicado,construido", PARES_PDF_PUBLICADO_CONSTRUIDO)
+def test_el_pdf_publicado_es_el_que_se_construyo(publicado, construido):
+    """El cuadernillo publicado en course/2_filosofia_ia/_assets/ se copia a
+    mano desde lecturas/.../lecturas/<modulo>_cuadernillo.pdf; no hay paso
+    mecanico que los mantenga sincronizados. Esta guarda compara los SHA-256
+    de las dos copias YA VERSIONADAS en git, no contra una reconstruccion
+    fresca: pypdf escribe metadatos internos (fechas, IDs) que cambian de una
+    corrida a otra aunque el contenido de las paginas sea identico, asi que
+    comparar contra un rebuild fallaria en falso incluso cuando el copiado a
+    mano se hizo bien. Comparar las dos copias versionadas es lo unico que
+    detecta de verdad "se reconstruyo y no se volvio a copiar".
+    """
+    assert _sha256(publicado) == _sha256(construido), (
+        f"{publicado.relative_to(RAIZ)} no coincide (SHA-256 distinto) con "
+        f"{construido.relative_to(RAIZ)}: se reconstruyo el cuadernillo y no "
         "se copio el resultado al asset publicado (o viceversa)."
     )
 
@@ -213,9 +232,24 @@ PATRONES_PAGINAS_TOTALES = [
 ]
 
 
-def test_las_paginas_del_cuadernillo_coinciden_en_todos_lados():
+# Mismas frases-ancla que PATRONES_PAGINAS_TOTALES, pero para el modulo 2
+# ("The Left Takes the Future Back", 53 paginas). Lista aparte porque la
+# cifra de un modulo no tiene por que coincidir con la del otro; mezclarlas
+# en una sola lista haria que test_las_paginas_del_cuadernillo_coinciden_...
+# fallara siempre (57 != 53) aunque cada modulo este internamente consistente.
+PATRONES_PAGINAS_TOTALES_MODULO_2 = [
+    (PAGINA_2, "5_left_takes_future.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (TAREA_2, "2_leer_cuadernillo_modulo_2.yaml", r"un solo archivo de (\d+) páginas"),
+    (VISOR_2, "visor_modulo_2.html", r"Cuatro lecturas · (\d+) páginas ·"),
+    (LECTURAS_README_2, "README.md modulo 2 (resumen)", r"Cuatro lecturas, (\d+) páginas,"),
+    (LECTURAS_README_2, "README.md modulo 2 (cuadernillo)",
+     r"\*\*(\d+) páginas, las cuatro lecturas completas\*\*"),
+]
+
+
+def _verificar_cifra_total_de_paginas(patrones):
     vistas = []
-    for ruta, etiqueta, patron in PATRONES_PAGINAS_TOTALES:
+    for ruta, etiqueta, patron in patrones:
         texto = ruta.read_text(encoding="utf-8")
         m = re.search(patron, texto)
         assert m, (
@@ -229,3 +263,11 @@ def test_las_paginas_del_cuadernillo_coinciden_en_todos_lados():
         "la cifra total de páginas del cuadernillo no coincide entre "
         "archivos: " + ", ".join(f"{etiqueta}={n}" for etiqueta, n in vistas)
     )
+
+
+def test_las_paginas_del_cuadernillo_coinciden_en_todos_lados():
+    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES)
+
+
+def test_las_paginas_del_cuadernillo_modulo_2_coinciden_en_todos_lados():
+    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_2)
