@@ -10,8 +10,8 @@ import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-PAGINA = RAIZ / "course/2_filosofia_ia/2_repaso_y_discusion.md"
-REGISTRO = RAIZ / "docs/verificacion/filosofia_ia/2_repaso_y_discusion.md"
+PAGINA = RAIZ / "course/2_filosofia_ia/3_las_seis_lecturas.md"
+REGISTRO = RAIZ / "docs/verificacion/filosofia_ia/3_las_seis_lecturas.md"
 
 # Formato fijado por el diseno: cada cita es una linea de blockquote que abre
 # con comillas angulares y cierra con la pagina del cuadernillo.
