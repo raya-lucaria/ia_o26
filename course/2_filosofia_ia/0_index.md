@@ -14,4 +14,7 @@ empujan el desarrollo de la inteligencia artificial. Esta unidad va a las
 fuentes: se leen los textos que ese mapa resume.
 
 - [[accelerate-what]] — qué se lee, en qué orden y por qué.
-- [[repaso-accelerate]] — el repaso de las seis lecturas y las preguntas de la sesión.
+- [[ideas-aceleracionismo]] — el vocabulario del aceleracionismo y de dónde viene cada pieza.
+- [[las-seis-lecturas]] — qué dice cada una de las seis lecturas, en claro.
+- [[para-discutir]] — el mapa de quién discute con quién y las tensiones de la sesión.
+- [[left-takes-future]] — la respuesta de la izquierda: reclamar el futuro en vez de añorar el pasado.
