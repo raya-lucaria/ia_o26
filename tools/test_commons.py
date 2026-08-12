@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from test_curar_imagenes import filas_de_creditos
+from unidades import ASSETS_HISTORIA, filas_de_creditos
 
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
@@ -32,7 +32,7 @@ def test_fotos_recomprimidas():
 
 
 def test_cada_foto_tiene_credito_con_licencia_aceptable():
-    filas_creditos = filas_de_creditos()
+    filas_creditos = filas_de_creditos(ASSETS_HISTORIA)
     for fila in filas():
         destino = fila["destino"]
         assert destino in filas_creditos, f"{destino} sin fila en CREDITOS.md"
