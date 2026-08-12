@@ -167,6 +167,55 @@ con treinta años de anticipación.
 
 ## Para discutir
 
+Ninguna tiene respuesta correcta, y ninguna se contesta con una cita. Cada una
+abre con quién dice qué, que es la puerta de entrada si no leíste.
+
+### 1 · ¿Hay alguien al volante?
+
+Marx y Fisher suponen un sujeto capaz de decidir —una clase, una política—.
+Land y el CCRU dicen que no lo hay. Deleuze y Guattari están, justamente,
+disolviéndolo.
+
+- Si el capital es un proceso sin sujeto, ¿qué significa «decidir» algo sobre la
+  inteligencia artificial?
+- ¿Quién decide hoy qué modelo se entrena: un consejo directivo, un mercado, o
+  nadie?
+
+### 2 · ¿Acelerar qué?
+
+Land dice el capital. Fisher dice que eso es rendirse, y que hay que acelerar la
+técnica **contra** el capital. Deleuze y Guattari no distinguen las dos cosas.
+
+- ¿Se pueden separar hoy capital y tecnología, o es una distinción de escritorio?
+- Los modelos abiertos, ¿son técnica contra el capital o el mejor marketing que
+  el capital ha tenido?
+
+### 3 · ¿La crítica frena o acelera?
+
+Barbrook y Cameron describen sin proponer. Fisher acusa a la izquierda de
+refugiarse en una nostalgia que no incomoda a nadie.
+
+- ¿Existe una crítica de la inteligencia artificial que no sea nostálgica?
+- Nombrar una ideología, ¿la debilita o le da marca? «Aceleracionismo» empezó
+  como acusación y e/acc lo lleva en la biografía.
+
+### 4 · ¿Quién es «nosotros»?
+
+El CCRU dice enjambre. Marx dice clase. El discurso de riesgo existencial dice
+«la humanidad». Ninguno dice desde dónde habla.
+
+- Desde México, y desde la posición en la cadena de valor que viste en
+  [[ia-y-sociedad]], ¿acelerar es una decisión o algo que a uno le pasa?
+- ¿El «nosotros» de e/acc te incluye?
+
+### 5 · ¿Es esto una descripción o un deseo?
+
+Land insiste en que solo describe lo que ya está ocurriendo; sus lectores lo
+leen como programa. Marx también describía una tendencia, no un plan.
+
+- ¿Qué tendría que pasar en el mundo para que la tesis de Land fuera falsa?
+- Si una teoría no puede fallar, ¿sirve para decidir algo?
+
 ## Y ahora, otra vez el mapa
 
 Vuelve al mapa ideológico de [[ia-y-sociedad]]. La primera vez fue una lista de
