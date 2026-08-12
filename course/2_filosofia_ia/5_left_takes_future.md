@@ -3,7 +3,7 @@ id: left-takes-future
 title: Módulo 2 — The Left Takes the Future Back
 nav_title: The Left Takes the Future Back
 summary: "La respuesta de la izquierda al aceleracionismo: reclamar el futuro en vez de añorar el pasado."
-status: draft
+status: ready
 estimated_time: 240m
 tags: [aceleracionismo, izquierda, lecturas]
 prerequisites: [accelerate-what]
@@ -44,3 +44,22 @@ sospecha ya instalada; Srnicek y Williams lo aterrizan en propuestas
 concretas; Terranova lo baja a infraestructura. Está bien no estar de
 acuerdo con ninguna de las cuatro: llega a la sesión con la objeción, no con
 el resumen.
+
+## El cuadernillo
+
+::: figure {#cuadernillo-modulo-2 title="Las cuatro lecturas en un solo archivo"}
+[![Portada del cuadernillo «The Left Takes the Future Back», con las cuatro lecturas listadas](_assets/cuadernillo_portada_modulo_2.png)](_assets/visor_modulo_2.html)
+:::
+
+**53 páginas**, cada lectura con su portadilla y la razón por la que se lee.
+Calcula entre tres horas y media y cuatro.
+
+- **[Leer en el navegador →](_assets/visor_modulo_2.html)** — se abre completo,
+  sin descargar nada. También puedes hacer clic en la portada de arriba.
+- **[Descargar el PDF](_assets/cuadernillo_modulo_2_left_future.pdf)** — 1.0 MB,
+  para leerlo sin conexión o imprimirlo.
+
+## Qué hay que hacer
+
+Leer. Esta vez no hay cuestionario ni nada que entregar: la tarea es llegar
+a la sesión con las cuatro lecturas leídas.
