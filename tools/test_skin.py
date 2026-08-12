@@ -5,7 +5,7 @@
 necesita el valor literal para hornear o verificar un fondo. Pero la
 autoridad real es `tokens.color.surface` en `skins/eva-cyberpunk.yaml`. Si
 alguien edita el skin, esas copias se quedan desactualizadas y cada guarda
-que las usa se compara contra si misma: veinte SVG y cuatro PNG quedarian
+que las usa se compara contra si misma: veintidos SVG y cuatro PNG quedarian
 visualmente rotos (fondo del skin distinto al fondo horneado) sin que
 ninguna prueba lo note, porque ninguna prueba mira al skin.
 
