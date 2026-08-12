@@ -3,9 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-CELDA_NOMBRE = 0
-CELDA_ORIGEN = 2
-CELDA_LICENCIA = 3
+from unidades import ASSETS_POR_UNIDAD, CELDA_LICENCIA, CELDA_ORIGEN, filas_de_creditos
 
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
@@ -39,10 +37,6 @@ def test_conservadas_existen_y_estan_recomprimidas():
 def test_peso_total_razonable():
     total = sum(p.stat().st_size for p in ASSETS.glob("legacy-*"))
     assert total < 6_000_000, f"las imagenes heredadas pesan {total/1e6:.1f} MB"
-
-
-from unidades import ASSETS_POR_UNIDAD, filas_de_creditos  # noqa: E402
-
 
 def test_toda_imagen_tiene_fila_en_creditos():
     """Cada unidad con imagenes propias tiene su CREDITOS.md, y ninguna

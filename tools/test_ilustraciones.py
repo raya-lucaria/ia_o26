@@ -12,7 +12,7 @@ CREDITOS = ASSETS / "CREDITOS.md"
 CREDITOS_FILOSOFIA = ASSETS_FILOSOFIA / "CREDITOS.md"
 
 # Un PNG con fondo horneado pesa mas que un JPEG al 85: el tope no puede ser
-# el mismo. Medidos tras cuantizar a 128 colores: 165, 315, 229 y 204 KB. El
+# el mismo. Medidos tras cuantizar a 128 colores: 165, 315, 229 y 172 KB. El
 # tope queda en 400 KB, un escalon arriba del mayor, para que un PNG que se
 # dispare al doble se detecte, sin fallar por la variacion normal entre
 # generaciones.

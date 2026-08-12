@@ -177,11 +177,11 @@ necesita uno: no vanguardia ni partido, sino enjambre —contagio, ritmo,
 propagación sin centro.
 
 **El concepto que aporta.** Enjambre y emergencia, los mismos que viste en
-[[que-es-inteligencia|la unidad de historia]] como comportamiento colectivo sin
+[[otras-raices|la página de otras raíces]] como comportamiento colectivo sin
 control central.
 
 ::: figure {#ilus-enjambre title="El enjambre sin centro que ningún punto dirige"}
-![Ilustración generada de miles de puntos luminosos que forman una figura coherente sin que ninguno la dirija](_assets/ilus-enjambre.png)
+![Ilustración generada de varias corrientes de puntos luminosos que se propagan en direcciones distintas y divergentes, sin que ninguna forme una figura reconocible única](_assets/ilus-enjambre.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
@@ -212,12 +212,12 @@ tecnológico: creer que la técnica decide sola hacia dónde va la sociedad.
 con treinta años de anticipación.
 
 *No todas las fichas llevan retrato, y no es descuido. De Deleuze, Guattari,
-Fisher y Land no circula ninguna fotografía con licencia libre verificable —lo
-que sí circula son imágenes de prensa bajo derechos de autor, o subidas a
-Wikimedia Commons con una licencia que no resiste revisión—, y este curso solo
-publica imágenes que puede publicar. Rellenar el hueco con una cara generada
-por IA no es opción: sería inventar el rostro de una persona real. De paso, la
-asimetría dice algo cierto sobre quién circula con qué permisos.*
+Fisher y Land no encontramos ninguna fotografía cuya licencia pudiéramos
+verificar —lo que sí circula son imágenes de prensa bajo derechos de autor, o
+subidas a Wikimedia Commons con una licencia que no resiste revisión—, y este
+curso solo publica imágenes que puede publicar. Rellenar el hueco con una cara
+generada por IA no es opción: sería inventar el rostro de una persona real. De
+paso, la asimetría dice algo cierto sobre quién circula con qué permisos.*
 
 ## El mapa: quién discute con quién
 

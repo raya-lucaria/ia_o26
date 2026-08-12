@@ -26,6 +26,17 @@ def test_toda_cita_de_la_pagina_esta_en_el_registro():
     texto = PAGINA.read_text(encoding="utf-8")
     registro = REGISTRO.read_text(encoding="utf-8")
     citas = RE_CITA.findall(texto)
+    # Guarda explicita de conteo: sin esto, un cambio de puntuacion en una cita
+    # (o una lectura nueva con formato ligeramente distinto) hace que
+    # RE_CITA.findall devuelva menos citas -- o cero -- y el for de abajo pasa
+    # vacio, sin fallar. Seis lecturas, seis citas; si un dia hay una septima,
+    # esta linea obliga a actualizarla a mano en vez de dejar que la cobertura
+    # baje en silencio.
+    assert len(citas) == 6, (
+        f"se esperaban 6 citas con el formato de RE_CITA, se encontraron "
+        f"{len(citas)}: revisa si RE_CITA todavia calza con el formato de las "
+        "citas de la pagina"
+    )
     for cita in citas:
         assert cita in registro, (
             f"cita sin fila en el registro de verificacion: {cita[:60]!r}"

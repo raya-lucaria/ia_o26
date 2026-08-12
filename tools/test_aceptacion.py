@@ -266,9 +266,14 @@ def test_8_el_repositorio_pesa_menos_de_16mb():
 def test_9_los_diagramas_svg_son_legibles_sobre_el_fondo_oscuro_del_skin():
     # Recorre las dos unidades con figuras propias: la guarda nacio cuando solo
     # existia la de historia, y un SVG ilegible en filosofia se publicaba sin
-    # que nada lo notara.
-    svgs = sorted(s for assets in ASSETS_POR_UNIDAD.values() for s in assets.glob("*.svg"))
-    assert svgs, "no hay SVG propios en las unidades"
+    # que nada lo notara. El "assert svgs" es por unidad, no global: un
+    # "assert svgs" global pasaria aunque _assets de filosofia se quedara sin
+    # ningun SVG propio, mientras los veinte de historia sigan ahi.
+    svgs = []
+    for unidad, assets in ASSETS_POR_UNIDAD.items():
+        svgs_unidad = sorted(assets.glob("*.svg"))
+        assert svgs_unidad, f"{unidad}: no hay SVG propios en _assets"
+        svgs.extend(svgs_unidad)
     for svg in svgs:
         texto = svg.read_text(encoding="utf-8")
         assert 'viewBox="' in texto, f"{svg.name} sin viewBox"
@@ -312,9 +317,13 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
         r"^\*\(.*ilustraci[oó]n generada.*\)\*\s*$", re.IGNORECASE | re.MULTILINE
     )
     total_usos = 0
-    PAGINAS_CON_ILUSTRACIONES = [UNIDAD / p for p in PAGINAS] + [
-        RAIZ / "course/2_filosofia_ia/2_repaso_y_discusion.md",
-    ]
+    # Un nombre de archivo fijo se rompe en silencio si la pagina se renumera
+    # (CLAUDE.md promete que los prefijos numericos son orden de autoria, no
+    # identidad estable): con glob("*.md"), renombrar 2_repaso_y_discusion.md
+    # a 3_repaso_y_discusion.md sigue cubierto.
+    PAGINAS_CON_ILUSTRACIONES = [UNIDAD / p for p in PAGINAS] + sorted(
+        (RAIZ / "course/2_filosofia_ia").glob("*.md")
+    )
     for ruta in PAGINAS_CON_ILUSTRACIONES:
         if not ruta.is_file():
             continue

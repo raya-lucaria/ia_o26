@@ -5,7 +5,9 @@
 
 <!-- Axes -->
 <line x1="90" y1="350" x2="930" y2="350" stroke="#78419e" stroke-width="2"/>
-<line x1="510" y1="100" x2="510" y2="600" stroke="#78419e" stroke-width="2"/>
+<!-- Vertical axis, broken into two segments so it leaves the Deleuze y Guattari box (x 330-700, y 280-410) clear, the same treatment the horizontal axis gets via its text layout -->
+<line x1="510" y1="100" x2="510" y2="270" stroke="#78419e" stroke-width="2"/>
+<line x1="510" y1="420" x2="510" y2="600" stroke="#78419e" stroke-width="2"/>
 <polygon points="930,350 916,343 916,357" fill="#78419e"/>
 <polygon points="90,350 104,343 104,357" fill="#78419e"/>
 <polygon points="510,100 503,114 517,114" fill="#78419e"/>
@@ -19,9 +21,9 @@
 <!-- Region: Deleuze y Guattari (2), drawn first so the axis reads as crossing through it -->
 <rect x="330" y="280" width="370" height="130" rx="26" fill="#9b6dff" opacity="0.10" stroke="#9b6dff" stroke-width="2" stroke-dasharray="6 5"/>
 <text x="515" y="310" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="14" font-weight="600" text-anchor="middle">Deleuze y Guattari (2)</text>
-<text x="515" y="333" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">no distinguen capital de tecnica,</text>
-<!-- Gap here is deliberate: the horizontal axis crosses at y=350 and would strike through a text line -->
-<text x="515" y="372" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">y el sujeto esta en disolucion</text>
+<text x="515" y="333" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">no distinguen capital de tecnica</text>
+<!-- Gap here is deliberate: the horizontal axis crosses at y=350 and would strike through a text line. The two lines around it are independent phrases now, not one clause split by a comma across the hole -->
+<text x="515" y="372" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">el sujeto esta en disolucion</text>
 <text x="515" y="392" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="middle">esa ambiguedad es la que Land explota y Fisher denuncia</text>
 
 <!-- Region: Marx (1), moved up from the brief's y=185 to y=140 so its box clears Deleuze y Guattari's -->

@@ -3,12 +3,10 @@ from pathlib import Path
 
 from PIL import Image
 
-from unidades import ASSETS_POR_UNIDAD, filas_de_creditos
+from unidades import ASSETS_POR_UNIDAD, CELDA_LICENCIA, filas_de_creditos
 
 RAIZ = Path(__file__).resolve().parent.parent
 LISTA = RAIZ / "tools/commons.tsv"
-
-CELDA_LICENCIA = 3
 
 LICENCIAS_OK = ("public domain", "cc0", "cc by", "cc-by", "pd-")
 

@@ -22,11 +22,16 @@
 <text x="145" y="255" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1994</text>
 <text x="205" y="255" fill="#f04cff" font-family="system-ui, sans-serif" font-size="14">Land, Meltdown   (3)</text>
 
-<!-- Row 4: Barbrook y Cameron 1995 (6), lateral branch, not a descendant -->
-<line x1="120" y1="336" x2="180" y2="336" stroke="#c8b9d8" stroke-dasharray="3 3" stroke-width="1.5"/>
-<circle cx="120" cy="320" r="7" fill="#c8b9d8"/>
+<!-- Row 4: Barbrook y Cameron 1995 (6). It IS a reading, so it gets its own
+     accent colour like every other reading (no longer the muted grey the
+     footnote below reserves for "not a reading"). What makes it a lateral
+     branch rather than a descendant is geometry, not colour: a dashed
+     connector that drops off the node and runs in under the label, instead
+     of sitting flush against it like every other row. -->
+<circle cx="120" cy="320" r="7" fill="#ff8fab"/>
+<path d="M 120 327 L 120 340 L 205 340" fill="none" stroke="#c8b9d8" stroke-width="1.5" stroke-dasharray="3 3"/>
 <text x="145" y="325" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">1995</text>
-<text x="195" y="325" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">Barbrook y Cameron, Ideologia californiana   (6)</text>
+<text x="205" y="325" fill="#ff8fab" font-family="system-ui, sans-serif" font-size="14">Barbrook y Cameron, Ideologia californiana   (6)</text>
 
 <!-- Row 5: CCRU 1996 (5) -->
 <circle cx="120" cy="390" r="7" fill="#55ddff"/>
@@ -48,14 +53,14 @@
 <text x="205" y="550" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">Manifiesto aceleracionista (Srnicek y Williams)</text>
 </g>
 
-<!-- Row 8: e-acc 2022, bridge, not a reading -->
+<!-- Row 8: e/acc 2022, bridge, not a reading -->
 <g opacity="0.85">
 <circle cx="120" cy="600" r="7" fill="none" stroke="#78419e"/>
 <text x="145" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600">2022</text>
-<text x="205" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">e-acc</text>
+<text x="205" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">e/acc</text>
 </g>
 
-<text x="205" y="628" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">No son lecturas del cuadernillo: son el puente a la unidad de historia</text>
+<text x="205" y="628" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">No son lecturas del cuadernillo: son a donde llega todo esto</text>
 
 <!-- Response arrow: Fisher (2012) answers Land (1994), routed clear of the text column -->
 <path d="M 700 460 C 810 460 810 250 730 250" fill="none" stroke="#ffd166" stroke-width="1.6" stroke-dasharray="5 4"/>
