@@ -36,7 +36,7 @@ cd /home/uumami/itam/ia_o26
 python3 -m pytest tools/ -q
 ```
 
-54 pruebas, deben pasar todas antes de comitear un cambio que toque
+64 pruebas, deben pasar todas antes de comitear un cambio que toque
 `_assets/`, `_official/`, o cualquier `tools/*.json`/`tools/*.tsv`. Desde el
 commit `47697d2` esto también corre en CI, como job `checks` que bloquea el
 deploy (ver H16), pero eso no exime de correrlo en local antes de comitear.
@@ -104,9 +104,10 @@ correrlo salvo que aparezca una versión nueva del deck original.
 |---|---|---|
 | `hitos.json` | Única fuente de verdad de fechas de la unidad. Ver su campo `"nota"` antes de tocarlo | `gen_timeline.py` |
 | `computo.json` | Cómputo de entrenamiento por modelo (fuente: Epoch AI) | `gen_computo.py` |
-| `ilustraciones.json` | Catálogo de prompts para `gpt-image-2`, con el estilo compartido | `gen_ilustraciones.py` |
-| `commons.tsv` | Manifiesto de fotos a descargar de Wikimedia Commons: título en Commons, descripción, y en qué página se usa | `bajar_commons.py` |
-| `imagenes_heredadas.tsv` | Inventario de las ~91 imágenes del deck heredado, con la decisión `conservar`/`descartar` por cada una y por qué. Es el registro auditable de la curaduría, no solo una lista de archivos | `curar_imagenes.py`, y `test_curar_imagenes.py` expone `filas_de_creditos()` reutilizado por `test_commons.py` |
+| `ilustraciones.json` | Catálogo de prompts para `gpt-image-2`. Ya no es un solo estilo: la clave `ilustraciones` (historia) pide fondo violeta muy oscuro opaco con atmosfera nocturna (JPEG), y `ilustraciones_filosofia` pide fondo plano horneado al color exacto del skin (PNG, ver `FONDO_OBJETIVO` en `test_ilustraciones.py`) | `gen_ilustraciones.py` |
+| `commons.tsv` | Manifiesto de fotos a descargar de Wikimedia Commons: título en Commons, descripción, en qué página se usa, y la columna `unidad` (`historia`/`filosofia`) que enruta cada fila a su `_assets/` vía `ASSETS_POR_UNIDAD` | `bajar_commons.py` |
+| `imagenes_heredadas.tsv` | Inventario de las ~91 imágenes del deck heredado, con la decisión `conservar`/`descartar` por cada una y por qué. Es el registro auditable de la curaduría, no solo una lista de archivos | `curar_imagenes.py`, y `test_curar_imagenes.py` |
+| `unidades.py` | Módulo compartido (no dato): `ASSETS_POR_UNIDAD` mapea cada unidad a su `_assets/`, `filas_de_creditos()` parsea `CREDITOS.md`, y las constantes `CELDA_NOMBRE`/`CELDA_ORIGEN`/`CELDA_LICENCIA` fijan el índice de columna. Única fuente de estas tres cosas — se importa, no se copia | `test_aceptacion.py`, `test_curar_imagenes.py`, `test_commons.py` |
 | `lecturas/filosofia_ia/clase_1/introduccion.md` | Fuente única de la introducción general del cuadernillo de lecturas; la página del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia literal de su sección «Cómo leer este cuadernillo» | `lecturas.py` (la incrusta en el PDF), `test_lecturas.py` (comprueba que la copia de la página del curso no haya derivado) |
 
 **Si borras un archivo de `_assets/` porque quedó sin usar, actualiza también
@@ -126,6 +127,8 @@ corrida del generador correspondiente lo vuelve a traer.
 | `test_ilustraciones.py` | Cada ilustración del catálogo existe, mide 1024px de ancho, pesa menos de 400 KB, está acreditada como generada, y ningún prompt pide una persona real o personaje protegido |
 | `test_oficiales.py` | Las tarjetas oficiales (`_official/cards/*.yaml`) tienen forma válida: `type`, `authority`, anverso/reverso no vacíos, sin bloque `scope`, ids únicos |
 | `test_lecturas.py` | El cuadernillo de lecturas de `filosofia_ia/clase_1`: la introducción general de la página del curso no ha derivado de `introduccion.md`, cada lectura trae su ficha de cuatro apartados, el orden 1..6 es consecutivo y es el acordado, y funciones puras de `lecturas.py` (Markdown básico, huecos de páginas externas, orden de las secciones en el HTML final) |
+| `test_repaso.py` | La página de repaso del módulo 1 de filosofía: cada cita textual (exactamente 6) aparece, literal, en `docs/verificacion/filosofia_ia/2_repaso_y_discusion.md`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada |
+| `test_skin.py` | Que `tokens.color.surface` de `skins/eva-cyberpunk.yaml` siga siendo `#211033`, el valor que `gen_ilustraciones.py`, `test_ilustraciones.py` y `test_aceptacion.py` tienen hardcodeado por triplicado |
 
 ## H16 — resuelto: `pytest tools/` ya corre en CI
 

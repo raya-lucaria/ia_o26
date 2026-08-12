@@ -111,7 +111,7 @@ archivo en `course/1_introduccion/2_historia_ia/`, su registro homónimo en
 
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (56 tests as of August 2026) is the
+`python3 -m pytest tools/ -q` (64 tests as of August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
