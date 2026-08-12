@@ -59,9 +59,7 @@ Calcula entre tres horas y media y cuatro.
 - **[Descargar el PDF](_assets/cuadernillo_modulo_2_left_future.pdf)** — 1.0 MB,
   para leerlo sin conexión o imprimirlo.
 
-## Qué hay que entregar
+## Qué hay que hacer
 
-No hay cuestionario para este módulo. Lo que se entrega es llegar a la
-sesión con la objeción, no con el resumen: un pasaje que te convenza y uno
-que te parezca insostenible, de cualquiera de las cuatro lecturas. Con eso
-discutimos.
+Leer. Esta vez no hay cuestionario ni nada que entregar: la tarea es llegar
+a la sesión con las cuatro lecturas leídas.

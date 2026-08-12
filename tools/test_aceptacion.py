@@ -252,7 +252,17 @@ def test_7_toda_fecha_y_atribucion_tiene_fuente_verificada():
                 )
 
 
-def test_8_el_repositorio_pesa_menos_de_16mb():
+# El tope subio de 10 a 16 MB cuando las 53 imagenes de la unidad de historia
+# ya ocupaban 8.9 MB, y de 16 a 21 MB al publicarse el cuadernillo del modulo 2.
+# Cada modulo de lecturas cuesta unos 2.8 MB, y la mitad de eso es duplicacion
+# deliberada: el PDF vive en lecturas/ y copiado en _assets/, con una guarda que
+# exige que sean identicos byte a byte. Un modulo mas cabe; dos, no. Cuando el
+# siguiente vuelva a chocar contra el tope, la decision ya no es subirlo otra vez
+# sino dejar de versionar los PDF construidos y generarlos en CI.
+TOPE_REPOSITORIO = 21_000_000
+
+
+def test_8_el_repositorio_pesa_menos_del_tope():
     salida = subprocess.run(
         ["git", "ls-files", "-z"], cwd=RAIZ, capture_output=True, text=True, check=True
     )
@@ -260,7 +270,10 @@ def test_8_el_repositorio_pesa_menos_de_16mb():
         (RAIZ / n).stat().st_size
         for n in salida.stdout.split("\0") if n and (RAIZ / n).is_file()
     )
-    assert total < 16_000_000, f"el repositorio pesa {total / 1e6:.1f} MB (tope: 16 MB)"
+    assert total < TOPE_REPOSITORIO, (
+        f"el repositorio pesa {total / 1e6:.1f} MB "
+        f"(tope: {TOPE_REPOSITORIO / 1e6:.0f} MB)"
+    )
 
 
 def test_9_los_diagramas_svg_son_legibles_sobre_el_fondo_oscuro_del_skin():
