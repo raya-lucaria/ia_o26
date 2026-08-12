@@ -33,6 +33,13 @@ The CLI's own tests live in `raya_lucaria`. This repo's tests are content guards
 
 `artifact/` is gitignored build output (`manifest.json`, `data/*.json`, `site/`). Regenerate it with `raya build`; do not hand-edit it or commit it. To change what appears on the site, change `course/`, `raya.yaml`, or `skins/`.
 
+Otras rutas gitignoradas que sí existen en esta máquina y **no** en un clon
+limpio: `legacy/` (el deck heredado y PDFs pesados que consume
+`curar_imagenes.py`), `tools/anna.py` (cliente de recuperación bibliográfica,
+local a propósito), `.env` (solo `OPENAI_API_KEY`, para `gen_ilustraciones.py`),
+y `.superpowers/` + `docs/superpowers/`. Ningún script que corra en CI depende de
+ellas; si una prueba parece necesitar una, es de las que se saltan solas.
+
 ## Authoring contract
 
 The rules below are enforced by `raya validate` and are the ones most likely to bite.
@@ -61,10 +68,19 @@ Calendar tasks mirror the dates listed in `course/0_index.md` — when one chang
 
 **Support directories don't render.** `_official/`, `_assets/`, `_reviewed/`, `_drafts/`, `_partials/` are source support. Rendered Markdown may link into its own or an ancestor `_assets/`, never into the others.
 
-## Mantenimiento de la unidad de historia de la IA
+## Las dos unidades escritas, y cómo se mantiene cada una
 
-`course/1_introduccion/2_historia_ia/` es la única unidad escrita hasta ahora.
-Dos cosas hay que saber para mantenerla.
+Hay dos, y se mantienen distinto:
+
+- `course/1_introduccion/2_historia_ia/` — ocho páginas de prosa, con imágenes
+  y SVG generados desde `tools/`, y un registro de fuentes por página en
+  `docs/verificacion/`. Es la unidad que describe el resto de esta sección.
+- `course/2_filosofia_ia/` — una unidad de lecturas: su contenido real es el
+  cuadernillo PDF que produce `lecturas/` (ver más abajo). No tiene assets
+  generados ni registro de verificación; lo que hay que cuidar ahí es que la
+  copia del PDF y los textos duplicados no se desincronicen de la fuente.
+
+Dos cosas hay que saber para mantener la unidad de historia.
 
 **Qué caduca y qué no.** Solo `5_estado_actual.md` está diseñada para caducar:
 declara su fecha de corte en el `summary`, usa únicamente tablas, y ninguna otra
@@ -78,23 +94,38 @@ gráfica de cómputo. Tras editar cualquiera de los dos hay que regenerar:
 ```bash
 python3 tools/gen_timeline.py    # las nueve líneas del tiempo
 python3 tools/gen_computo.py     # la gráfica de escala de cómputo
-python3 -m pytest tools/ -q      # 42 guardas de regresión
+python3 -m pytest tools/ -q      # las guardas de regresión
 ```
 
 `docs/verificacion/` guarda, por página, la fuente de cada afirmación datable.
 Toda fecha nueva se verifica antes de escribirse y se registra ahí; hay una
-prueba que falla si una fila queda sin verificar. `tools/README.md` explica qué
-hace cada script y cuáles son de un solo uso.
+prueba que falla si una **fila** queda sin verificar (no basta un «sí» suelto en
+el archivo). `tools/README.md` explica qué hace cada script y cuáles son de un
+solo uso.
+
+**Agregar, quitar o renombrar una página de esta unidad toca tres lugares**: el
+archivo en `course/1_introduccion/2_historia_ia/`, su registro homónimo en
+`docs/verificacion/`, y las dos listas literales al inicio de
+`tools/test_aceptacion.py` (`PAGINAS`, por nombre de archivo, y
+`PAGINAS_UNIDAD_EN_ORDEN`, por id estable y en orden de navegación).
 
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (42 tests; needs `pillow pyyaml pytest`) is the
+`python3 -m pytest tools/ -q` (56 tests as of August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
 what its generator would produce today, every illustration prompt avoids real
 people and protected characters, every datable claim has a verified row in
 `docs/verificacion/`, official cards keep their shape and unique ids.
+
+```bash
+pip install pillow pyyaml pytest          # lo que necesita la suite
+python3 -m pytest tools/ -q               # todo
+python3 -m pytest tools/test_lecturas.py -q                          # un archivo
+python3 -m pytest tools/test_lecturas.py::test_la_introduccion_no_ha_derivado -q   # una prueba
+python3 -m pytest tools/ -q -k cuadernillo                           # por nombre
+```
 
 Consequences worth internalizing:
 
@@ -127,10 +158,31 @@ and any discrepancy with the syllabus pagination.
 
 **In-copyright material is linked, never republished.** `.gitignore` excludes
 `lecturas/**/fuentes/*.pdf` and the generated HTML viewer; keep it that way when
-adding a module. The built booklet reaches the site by being **copied** into the
-consuming page's `_assets/` (e.g. `course/2_filosofia_ia/_assets/cuadernillo_modulo_1_accelerate.pdf`
-is a byte-identical copy of the pipeline output) — nothing links across the two
-trees, so regenerating a booklet means copying it over again.
+adding a module. Only the open-access sources (`fuentes/*.txt`) and the produced
+excerpt PDFs are committed.
+
+**Publicar un cuadernillo son tres copias a mano.** Nada enlaza entre `lecturas/`
+y `course/`, así que regenerar el PDF no actualiza el sitio por sí solo:
+
+```bash
+python3 tools/lecturas.py filosofia_ia/clase_1
+cp lecturas/filosofia_ia/clase_1/lecturas/filosofia_ia_clase_1_cuadernillo.pdf \
+   course/2_filosofia_ia/_assets/cuadernillo_modulo_1_accelerate.pdf
+pdftoppm -png -r 106 -f 1 -l 1 -singlefile \
+   course/2_filosofia_ia/_assets/cuadernillo_modulo_1_accelerate.pdf \
+   course/2_filosofia_ia/_assets/cuadernillo_portada
+python3 -m pytest tools/test_lecturas.py -q
+```
+
+Tres duplicaciones deliberadas viven ahí, y `test_lecturas.py` falla si alguna
+deriva — no las arregles editando la copia, edita la fuente y vuelve a copiar:
+
+- El PDF publicado tiene que ser **byte-idéntico** al que produjo el pipeline.
+- `lecturas/**/introduccion.md` es la fuente única de la introducción; la página
+  del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia literal
+  de su sección «Cómo leer este cuadernillo».
+- El número de páginas del cuadernillo aparece en la página del módulo, la tarea
+  oficial, el visor y dos `README.md`; léelo del PDF ya copiado, no lo estimes.
 
 ## Skins
 
