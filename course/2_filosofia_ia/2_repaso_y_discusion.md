@@ -80,6 +80,10 @@ cronológico —eso lo explica la figura de arriba.
 
 ### 1 · Marx, *Fragmento sobre las máquinas* (1858)
 
+::: figure {#retrato-marx title="Karl Marx"}
+![Retrato fotográfico de Karl Marx](_assets/foto-marx.jpg)
+:::
+
 Empieza aquí porque de aquí sale todo lo demás, incluida la palabra
 «aceleracionismo», que Marx nunca usó.
 
@@ -165,6 +169,10 @@ horizontal sin poder es justo lo que el valle aprendió a vender.
 
 ### 6 · Barbrook y Cameron, *La ideología californiana* (1995)
 
+::: figure {#retrato-barbrook title="Richard Barbrook"}
+![Retrato fotográfico de Richard Barbrook](_assets/foto-barbrook.jpg)
+:::
+
 Cierra el cuadernillo porque aterriza todo donde sigue el curso.
 
 **Qué dice en una frase.** Silicon Valley funde contracultura hippie con libre
@@ -178,6 +186,14 @@ tecnológico: creer que la técnica decide sola hacia dónde va la sociedad.
 
 **Quién le contesta.** Nadie del cuadernillo. Contesta ella: describe a e/acc
 con treinta años de anticipación.
+
+*No todas las fichas llevan retrato, y no es descuido. De Deleuze, Guattari,
+Fisher y Land no circula ninguna fotografía con licencia libre verificable —lo
+que sí circula son imágenes de prensa bajo derechos de autor, o subidas a
+Wikimedia Commons con una licencia que no resiste revisión—, y este curso solo
+publica imágenes que puede publicar. Rellenar el hueco con una cara generada
+por IA no es opción: sería inventar el rostro de una persona real. De paso, la
+asimetría dice algo cierto sobre quién circula con qué permisos.*
 
 ## El mapa: quién discute con quién
 

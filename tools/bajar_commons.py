@@ -9,8 +9,9 @@ from pathlib import Path
 
 from PIL import Image
 
+from unidades import ASSETS_POR_UNIDAD
+
 RAIZ = Path(__file__).resolve().parent.parent
-ASSETS = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
 LISTA = RAIZ / "tools/commons.tsv"
 API = "https://commons.wikimedia.org/w/api.php"
 AGENTE = "ia-o26-curso/1.0 (material educativo ITAM)"
@@ -69,11 +70,13 @@ def descargar_con_reintento(url, destino, intentos=5):
 
 
 def main():
-    ASSETS.mkdir(parents=True, exist_ok=True)
+    for assets in ASSETS_POR_UNIDAD.values():
+        assets.mkdir(parents=True, exist_ok=True)
     creditos = []
     with LISTA.open(encoding="utf-8") as f:
         for fila in csv.DictReader(f, delimiter="\t"):
-            destino = ASSETS / fila["destino"]
+            assets = ASSETS_POR_UNIDAD[fila["unidad"]]
+            destino = assets / fila["destino"]
             meta = metadatos(fila["pagina_commons"])
             time.sleep(3)
             if not destino.is_file():
@@ -85,13 +88,18 @@ def main():
                         im = im.resize((ANCHO, alto), Image.LANCZOS)
                     im.save(destino, quality=82, optimize=True)
                 time.sleep(8)
-            creditos.append(
+            creditos.append((
+                fila["unidad"],
                 f'| `{fila["destino"]}` | {fila["descripcion"]} | '
                 f'{limpiar_html(meta["autor"])} — Wikimedia Commons | '
-                f'{limpiar_html(meta["licencia"])} |'
-            )
+                f'{limpiar_html(meta["licencia"])} |',
+            ))
             print(f'{fila["destino"]}  <-  {meta["licencia"]}')
-    print("\nFilas para CREDITOS.md:\n" + "\n".join(creditos))
+    print("\nFilas para CREDITOS.md (agrupadas por unidad):")
+    for unidad in ASSETS_POR_UNIDAD:
+        propias = [c for u, c in creditos if u == unidad]
+        if propias:
+            print(f"\n## {unidad}\n" + "\n".join(propias))
 
 
 if __name__ == "__main__":
