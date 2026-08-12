@@ -100,9 +100,9 @@ revolucionaria es
 
 y la palabra «reterritorialización» no aparece ni una vez en el fragmento que se
 reprodujo. El par completo sí es de ellos —lo desarrollan a lo largo de
-*Capitalismo y esquizofrenia*, la obra en dos tomos que abre *El Anti-Edipo*—,
-pero no está en las dos páginas que te tocaron. Si el par te pareció una sola
-flecha hacia adelante, el recorte ayudó.
+*Capitalismo y esquizofrenia*, la obra en dos tomos de la que *El Anti-Edipo* es
+el primero—, pero no está en la página que te tocó. Si el par te pareció una
+sola flecha hacia adelante, el recorte ayudó.
 
 ### 2 · Land se queda con la mitad
 
@@ -113,12 +113,16 @@ deja de significar «ir más rápido» y pasa a significar algo más preciso y m
 incómodo: **quitar frenos**, dejar que el proceso corra sin nadie que lo modere.
 
 Ahí vive la acusación de que citó mal a *El Anti-Edipo*. El original describe un
-ciclo de dos tiempos; Land se lleva uno. Sus críticos dicen que eso no es una
-lectura sino una amputación: si el capitalismo reterritorializa tanto como
+ciclo de dos tiempos; Land se lleva uno. Quien se lo dice es **Fisher**, la
+lectura 4 del cuadernillo, y el reproche se puede formular así: eso no es una
+lectura, es una amputación. Si el capitalismo reterritorializa tanto como
 desterritorializa, acelerarlo no libera nada, solo cierra el ciclo más rápido.
-Land no lo presenta como error suyo, sino como decisión: para él la otra mitad es
-exactamente lo que hay que dejar de defender. Quién tiene razón sobre qué dice el
-texto de 1972 es una de las cosas que se pueden discutir en sesión.
+Land no contesta ese reproche en el cuadernillo —*Meltdown* es de 1994 y el
+texto de Fisher de 2012—, pero sí se puede leer de dónde vendría la respuesta:
+la frase de *Meltdown* de la ficha 3 describe el orden social desmoronándose
+como el proceso mismo, no como su costo. Desde esa posición, la mitad que
+reterritorializa no es algo que haya que defender. Quién tiene razón sobre qué
+dice el texto de 1972 es una de las cosas que se pueden discutir en sesión.
 
 ### 3 · Fisher invierte el diagnóstico
 
@@ -148,18 +152,18 @@ blogs de ingeniería y la teoría política de mercado, con sus propios término
 contestándole a *El Anti-Edipo* sería falso, y aquí no se hace. Lo que sigue es
 lectura de este curso, no autodescripción suya.
 
-Los hechos primero. Entre 2007 y 2013, Yarvin escribió el blog *Unqualified
-Reservations* bajo el seudónimo **Mencius Moldbug**. Ahí, en la serie *Patchwork:
-A Political System for the 21st Century* (noviembre de 2008), propone sustituir
-los Estados heredados por «decenas, incluso cientos de miles de mini-países
-soberanos e independientes», cada uno administrado por una sociedad anónima: el
-*patch* es el territorio, y su dueño soberano, el *realm*. El principio de diseño
-lo enuncia él mismo en una línea: «The design is all "exit," no "voice."» —todo
-salida, nada de voz—. Ese par no lo inventa él: viene de Albert Hirschman
-(*Exit, Voice, and Loyalty*, 1970), que lo usó para describir las dos respuestas
-posibles ante una organización que se degrada. Yarvin conserva la primera y
-elimina la segunda: si un *patch* no te gusta, no votas ni discutes; te mudas a
-otro.
+Los hechos primero. Sobre todo entre 2007 y 2013, Yarvin escribió el blog
+*Unqualified Reservations* bajo el seudónimo **Mencius Moldbug**. Ahí, en la
+serie *Patchwork: A Political System for the 21st Century* (noviembre de 2008),
+propone sustituir los Estados heredados por «decenas, incluso cientos de miles
+de mini-países soberanos e independientes», cada uno administrado por una
+sociedad anónima: el *patch* es el territorio, y su dueño soberano, el *realm*.
+El principio de diseño lo enuncia él mismo en una línea: «The design is all
+"exit," no "voice."» —todo salida, nada de voz—. Ese par no lo inventa él: viene
+de Albert Hirschman (*Exit, Voice, and Loyalty*, 1970), que lo usó para
+describir las dos respuestas posibles ante una organización que se degrada.
+Yarvin conserva la primera y elimina la segunda: si un *patch* no te gusta, no
+votas ni discutes; te mudas a otro.
 
 Cuesta imaginar un programa más reterritorializador. Frente a un capital que
 disuelve fronteras, monedas y jurisdicciones, la propuesta es fragmentar la
