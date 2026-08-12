@@ -312,10 +312,13 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
         r"^\*\(.*ilustraci[oó]n generada.*\)\*\s*$", re.IGNORECASE | re.MULTILINE
     )
     total_usos = 0
-    for pagina in PAGINAS:
-        ruta = UNIDAD / pagina
+    PAGINAS_CON_ILUSTRACIONES = [UNIDAD / p for p in PAGINAS] + [
+        RAIZ / "course/2_filosofia_ia/2_repaso_y_discusion.md",
+    ]
+    for ruta in PAGINAS_CON_ILUSTRACIONES:
         if not ruta.is_file():
             continue
+        pagina = ruta.name
         texto = ruta.read_text(encoding="utf-8")
         for match in re.finditer(r"]\(_assets/(ilus-[\w-]+\.\w+)\)", texto):
             total_usos += 1

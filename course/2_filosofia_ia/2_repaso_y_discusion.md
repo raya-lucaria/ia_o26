@@ -95,6 +95,12 @@ trabajadas se vuelve una contradicción con patas.
 **trabajo vivo** —el que alguien está haciendo ahora— y **trabajo muerto**, el
 que ya está congelado en la máquina.
 
+::: figure {#ilus-general-intellect title="El saber colectivo, depositado en la máquina"}
+![Ilustración generada de una máquina de engranajes de la que brotan hilos de luz que forman una constelación](_assets/ilus-general-intellect.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 > «The development of fixed capital indicates to what degree general social knowledge has become a direct force of production, and to what degree, hence, the conditions of the process of social life itself have come under the control of the general intellect and been transformed in accordance with it.» — cuadernillo, p. 11
 
 **Quién le contesta.** Nadie, aquí. Deleuze y Guattari le quitan el sujeto
@@ -108,6 +114,12 @@ Una página, y es exactamente la página que Land va a citar.
 hay que ir más lejos en la descodificación, «acelerar el proceso».
 
 **El concepto que aporta.** Desterritorialización.
+
+::: figure {#ilus-desterritorializacion title="El territorio disolviéndose en corriente"}
+![Ilustración generada de un mapa cuyas fronteras se desprenden del papel y se convierten en cintas que fluyen](_assets/ilus-desterritorializacion.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
 
 > «No retirarse del proceso, sino ir más lejos, «acelerar el proceso», como decía Nietzsche: en verdad, en esta materia todavía no hemos visto nada.» — cuadernillo, p. 13
 
@@ -127,6 +139,12 @@ conduzca.
 
 **El concepto que aporta.** Proceso sin sujeto, movido por retroalimentación
 positiva.
+
+::: figure {#ilus-meltdown title="Un mecanismo que se derrite hacia adelante, sin quien lo opere"}
+![Ilustración generada de un mecanismo de relojería que se derrite hacia adelante y se vuelve circuito luminoso](_assets/ilus-meltdown.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
 
 > «Logistically accelerating techno-economic interactivity crumbles social order in auto-sophisticating machine runaway.» — cuadernillo, p. 14
 
@@ -161,6 +179,12 @@ propagación sin centro.
 **El concepto que aporta.** Enjambre y emergencia, los mismos que viste en
 [[que-es-inteligencia|la unidad de historia]] como comportamiento colectivo sin
 control central.
+
+::: figure {#ilus-enjambre title="El enjambre sin centro que ningún punto dirige"}
+![Ilustración generada de miles de puntos luminosos que forman una figura coherente sin que ninguno la dirija](_assets/ilus-enjambre.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
 
 > «Only multiplicities, decolonized ants, swarms without strategies, insectoid freeways burrowed through the screens of spectacular time.» — cuadernillo, p. 38
 
