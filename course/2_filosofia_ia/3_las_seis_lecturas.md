@@ -16,7 +16,8 @@ qué predijo y cómo se ve hoy. ~20 min, ~3–4 min por ficha.
 
 Cada ficha va igual: de qué viene, qué dice, qué concepto aporta, qué predijo y
 cómo se ve hoy, la línea que la resume y quién le contesta. El orden es el del
-cuadernillo, que no es el cronológico —eso lo explica la figura de arriba.
+cuadernillo, que no es el cronológico —eso lo explica la genealogía de
+[[ideas-aceleracionismo|Las ideas del módulo]].
 
 > **Los campos «Qué predijo» y «Hoy, 2026» de cada ficha tienen fecha de
 > corte.** Se escribieron en agosto de 2026, y cada afirmación sobre el
