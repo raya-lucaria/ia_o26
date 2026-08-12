@@ -114,9 +114,12 @@ incómodo: **quitar frenos**, dejar que el proceso corra sin nadie que lo modere
 
 Ahí vive la acusación de que citó mal a *El Anti-Edipo*. El original describe un
 ciclo de dos tiempos; Land se lleva uno. Quien se lo dice es **Fisher**, la
-lectura 4 del cuadernillo, y el reproche se puede formular así: eso no es una
-lectura, es una amputación. Si el capitalismo reterritorializa tanto como
-desterritorializa, acelerarlo no libera nada, solo cierra el ciclo más rápido.
+lectura 4 del cuadernillo, y lo dice con estas palabras exactas:
+
+> «Land collapses capitalism into what Deleuze and Guattari call schizophrenia, thus losing their most crucial insight into the way that capitalism operates via simultaneous processes of deterritorialization and compensatory reterritorialization.» — cuadernillo, p. 35
+
+Si el capitalismo reterritorializa tanto como desterritorializa, acelerarlo no
+libera nada, solo cierra el ciclo más rápido.
 Land no contesta ese reproche en el cuadernillo —*Meltdown* es de 1994 y el
 texto de Fisher de 2012—, pero sí se puede leer de dónde vendría la respuesta:
 la frase de *Meltdown* de la ficha 3 describe el orden social desmoronándose
