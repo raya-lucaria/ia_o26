@@ -181,6 +181,31 @@ con treinta años de anticipación.
 
 ## El mapa: quién discute con quién
 
+::: figure {#cuadrante title="Las seis lecturas en dos ejes"}
+![Cuadrante con las seis lecturas: eje horizontal de acelerar el capital a acelerar la tecnología, eje vertical de sujeto colectivo a proceso sin sujeto; Deleuze y Guattari cruzan el eje y Barbrook y Cameron quedan fuera del plano](_assets/v18-cuadrante-lecturas.svg)
+:::
+
+Dos preguntas ordenan a los seis. La horizontal es la de Fisher: **acelerar
+qué**, el capital o la técnica. La vertical es la que parte el cuadernillo en
+dos: **quién conduce**, si es que alguien.
+
+Marx y Fisher comparten la mitad de arriba: los dos suponen que hay un sujeto
+capaz de decidir. Land y el CCRU comparten la de abajo, y ahí está su desacuerdo
+—para Land lo que acelera es el capital; para el CCRU, un enjambre que el
+capital no controla—. Deleuze y Guattari no caben en un punto: su región cruza
+el eje porque no distinguen capital de técnica y porque el sujeto, en su libro,
+se está disolviendo. **Esa ambigüedad no es un defecto del dibujo: es lo que
+hace posible que Land los cite y que Fisher diga que los citó mal.**
+
+Barbrook y Cameron quedan fuera del plano, y es la decisión más discutible de
+la figura. No proponen acelerar ni frenar: describen a quién le conviene el
+dibujo entero. Ponerlos dentro habría sido inventarles una posición que su texto
+no toma —el mismo problema que en [[ia-y-sociedad]] obliga a dibujar TESCREAL
+como franja punteada y no como región.
+
+El mapa es esquemático y se puede discutir. De hecho, tres de las cinco
+tensiones que siguen salen de discutirlo.
+
 ## Para discutir
 
 Ninguna tiene respuesta correcta, y ninguna se contesta con una cita. Cada una
