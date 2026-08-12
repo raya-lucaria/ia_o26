@@ -11,7 +11,10 @@ prerequisites: [las-seis-lecturas]
 
 # Para discutir
 
-## El mapa: quién discute con quién
+**Qué te llevas:** el mapa de las seis lecturas en dos ejes, y las cinco
+tensiones con las que se discuten en sesión. ~10 min.
+
+## El mapa: quién discute con quién · ~3 min
 
 ::: figure {#cuadrante title="Las seis lecturas en dos ejes"}
 ![Cuadrante con las seis lecturas: eje horizontal de acelerar el capital a acelerar la tecnología, eje vertical de sujeto colectivo a proceso sin sujeto; Deleuze y Guattari cruzan el eje y Barbrook y Cameron quedan fuera del plano](_assets/v18-cuadrante-lecturas.svg)
@@ -38,7 +41,7 @@ como franja punteada y no como región.
 El mapa es esquemático y se puede discutir. De hecho, tres de las cinco
 tensiones que siguen salen de discutirlo.
 
-## Para discutir
+## Para discutir · ~5 min
 
 Ninguna tiene respuesta correcta, y ninguna se contesta con una cita. Cada una
 abre con quién dice qué, que es la puerta de entrada si no leíste.
@@ -89,7 +92,7 @@ leen como programa. Marx también describía una tendencia, no un plan.
 - ¿Qué tendría que pasar en el mundo para que la tesis de Land fuera falsa?
 - Si una teoría no puede fallar, ¿sirve para decidir algo?
 
-## Y ahora, otra vez el mapa
+## Y ahora, otra vez el mapa · ~2 min
 
 Vuelve al mapa ideológico de [[ia-y-sociedad]]. La primera vez fue una lista de
 etiquetas con una posición cada una; ahora cada etiqueta tiene textos debajo, y

@@ -11,17 +11,22 @@ prerequisites: [ideas-aceleracionismo]
 
 # Las seis lecturas, en claro
 
-Cada ficha va igual: de qué viene, qué dice, qué concepto aporta, la línea que
-la resume y quién le contesta. El orden es el del cuadernillo, que no es el
-cronológico —eso lo explica la figura de arriba.
+**Qué te llevas:** qué dice cada uno de los seis textos, qué concepto aporta,
+qué predijo y cómo se ve hoy. ~20 min, ~3–4 min por ficha.
 
-Los dos campos fechados de cada ficha —qué predijo el texto desde su año y cómo
-se ve hoy— tienen fecha de corte: se escribieron en agosto de 2026 y cada
-afirmación sobre el presente se verificó contra una fuente concreta, registrada
-en `docs/verificacion/filosofia_ia/3_las_seis_lecturas.md`. Si lees esto en un
-semestre posterior, esa es la parte que hay que revisar primero.
+Cada ficha va igual: de qué viene, qué dice, qué concepto aporta, qué predijo y
+cómo se ve hoy, la línea que la resume y quién le contesta. El orden es el del
+cuadernillo, que no es el cronológico —eso lo explica la figura de arriba.
 
-### 1 · Marx, *Fragmento sobre las máquinas* (1858)
+> **Los campos «Qué predijo» y «Hoy, 2026» de cada ficha tienen fecha de
+> corte.** Se escribieron en agosto de 2026, y cada afirmación sobre el
+> presente se verificó contra una fuente concreta, registrada en
+> `docs/verificacion/filosofia_ia/3_las_seis_lecturas.md`. El resto de cada
+> ficha —qué dice el texto, qué concepto aporta, la cita— no caduca. **Si lees
+> esto en un semestre posterior, revisa primero el campo «Hoy, 2026» de cada
+> una.**
+
+## 1 de 6 · Marx, *Fragmento sobre las máquinas* (1858) · ~4 min
 
 ::: figure {#retrato-marx title="Karl Marx"}
 ![Retrato fotográfico de Karl Marx](_assets/foto-marx.jpg)
@@ -39,15 +44,17 @@ social depositado en la máquina y no del tiempo de trabajo de cada quien, y que
 entonces seguir midiendo el valor en horas trabajadas sería una contradicción
 abierta, con el obrero puesto al lado del proceso en vez de dentro de él.
 
-**Hoy, 2026.** Los modelos de frontera se entrenan con texto que reunieron
-millones de personas que no cobraron por ello, y el pleito por ese saber ya llegó
-a los tribunales: en julio de 2026 quedó firme el acuerdo de 1,500 millones de
-dólares que Anthropic paga a los autores de cerca de medio millón de libros
-descargados de bibliotecas piratas. La medición es lo que sigue sin cuadrar: las
-estimaciones de cuánta productividad genera todo esto se separan por un orden de
-magnitud y ni siquiera miden lo mismo —0.66% de productividad total de factores
-en diez años según Acemoglu, 1.5 puntos porcentuales al año de productividad
-laboral según Goldman Sachs— y ninguna se deja convertir en horas-hombre.
+**Hoy, 2026.** **El pleito por los datos llegó a los tribunales, y la
+productividad que produce nadie la mide igual.** Los modelos de frontera se
+entrenan con texto que reunieron millones de personas que no cobraron por
+ello, y el pleito por ese saber ya llegó a los tribunales: en julio de 2026
+quedó firme el acuerdo de 1,500 millones de dólares que Anthropic paga a los
+autores de cerca de medio millón de libros descargados de bibliotecas
+piratas. La medición es lo que sigue sin cuadrar: las estimaciones de cuánta
+productividad genera todo esto se separan por un orden de magnitud y ni
+siquiera miden lo mismo —0.66% de productividad total de factores en diez
+años según Acemoglu, 1.5 puntos porcentuales al año de productividad laboral
+según Goldman Sachs— y ninguna se deja convertir en horas-hombre.
 
 **El concepto que aporta.** *General intellect*, y con él la distinción entre
 **trabajo vivo** —el que alguien está haciendo ahora— y **trabajo muerto**, el
@@ -64,7 +71,7 @@ que ya está congelado en la máquina.
 **Quién le contesta.** Nadie, aquí. Deleuze y Guattari le quitan el sujeto
 histórico; Fisher lo revive siglo y medio después.
 
-### 2 · Deleuze y Guattari, *El Anti-Edipo* (1972)
+## 2 de 6 · Deleuze y Guattari, *El Anti-Edipo* (1972) · ~3 min
 
 Una página, y es exactamente la página que Land va a citar.
 
@@ -98,7 +105,7 @@ leyó bien: en el original es un gesto nietzscheano dentro de un libro sobre el
 deseo, no un programa político. Es la cita más usada fuera de contexto de todo
 el cuadernillo.
 
-### 3 · Land, *Meltdown* (1994)
+## 3 de 6 · Land, *Meltdown* (1994) · ~3 min
 
 Land toma la divisa de la lectura anterior y le quita lo que le quedaba de
 sujeto.
@@ -132,7 +139,7 @@ positiva.
 
 **Quién le contesta.** Fisher, en la siguiente ficha, de frente.
 
-### 4 · Fisher, *Terminator vs Avatar* (2012)
+## 4 de 6 · Fisher, *Terminator vs Avatar* (2012) · ~3 min
 
 Va aquí y no en su lugar cronológico a propósito: explica a Land mejor que
 cualquier introducción.
@@ -145,15 +152,16 @@ acelerar el capital tampoco es lo mismo que acelerar la técnica.
 técnica —si se quedaba en la nostalgia orgánica de *Avatar*—, ese terreno lo
 ocuparía quien sí lo quisiera.
 
-**Hoy, 2026.** Se puede leer que es la apuesta que perdió, y no por falta de
-intentos: un año después de este ensayo, en 2013, Williams y Srnicek publicaron
-el *Manifiesto aceleracionista*, que reclama para la izquierda justo lo que
-Fisher pedía. Lo que no consiguió fue el público. Ese lugar en la conversación lo
-ocupó el aceleracionismo de derecha: e/acc aparece en 2022 y en octubre de 2023
-el *Manifiesto tecno-optimista* de Marc Andreessen lo pone por escrito, con Land
-entre sus santos patronos, la máquina tecno-capital como motor y el estatismo en
-la lista de enemigos. Fisher murió en enero de 2017 y no vio ninguna de las dos
-cosas.
+**Hoy, 2026.** **Quién terminó ocupando el lugar que Fisher le pedía a la
+izquierda.** Se puede leer que es la apuesta que perdió, y no por falta de
+intentos: un año después de este ensayo, en 2013, Williams y Srnicek
+publicaron el *Manifiesto aceleracionista*, que reclama para la izquierda
+justo lo que Fisher pedía. Lo que no consiguió fue el público. Ese lugar en la
+conversación lo ocupó el aceleracionismo de derecha: e/acc aparece en 2022 y
+en octubre de 2023 el *Manifiesto tecno-optimista* de Marc Andreessen lo pone
+por escrito, con Land entre sus santos patronos, la máquina tecno-capital como
+motor y el estatismo en la lista de enemigos. Fisher murió en enero de 2017 y
+no vio ninguna de las dos cosas.
 
 **El concepto que aporta.** La distinción **capital ≠ tecnología**, que es la
 bisagra de todo el cuadernillo y de donde sale el título del módulo: acelerar,
@@ -164,7 +172,7 @@ sí, pero **qué**.
 **Quién le contesta.** Land, por anticipado: si de verdad no hay sujeto, «usar
 la técnica contra el capital» es un deseo sin nadie que pueda ejecutarlo.
 
-### 5 · CCRU, *Swarmachines* (1996)
+## 5 de 6 · CCRU, *Swarmachines* (1996) · ~4 min
 
 La prosa más difícil del cuadernillo, puesta cuando ya tienes el mapa.
 
@@ -198,7 +206,7 @@ control central.
 **Quién le contesta.** Barbrook y Cameron, sin nombrarlo: la fantasía de red
 horizontal sin poder es justo lo que el valle aprendió a vender.
 
-### 6 · Barbrook y Cameron, *La ideología californiana* (1995)
+## 6 de 6 · Barbrook y Cameron, *La ideología californiana* (1995) · ~3 min
 
 ::: figure {#retrato-barbrook title="Richard Barbrook"}
 ![Retrato fotográfico de Richard Barbrook](_assets/foto-barbrook.jpg)

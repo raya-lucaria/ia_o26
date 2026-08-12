@@ -12,6 +12,10 @@ aliases: [repaso-accelerate]
 
 # Las ideas del módulo
 
+**Qué te llevas:** el vocabulario para leer las seis fichas, y el ciclo de
+territorialización sobre el que Land y Fisher están realmente en desacuerdo.
+~15 min.
+
 [[accelerate-what|La página del módulo]] dijo qué leer y por qué. Esta es la otra
 mitad: ordenar lo leído y traer las preguntas con las que vamos a discutirlo en
 sesión.
@@ -22,10 +26,12 @@ con eso en la mano. Lo que no vas a tener es la experiencia de chocar contra la
 prosa de Land o del CCRU, que es la mitad del punto: ningún resumen —tampoco
 este— sustituye leerlos. Úsala como repaso o como muleta, no como coartada.
 
-## Ocho palabras antes de empezar
+## Ocho palabras antes de empezar · ~3 min
 
 Sin estas ocho, la primera ficha ya no se entiende. Cada lectura define después
 lo suyo.
+
+### Las cuatro sin las que no entiendes nada
 
 - **General intellect.** El saber colectivo de una sociedad —oficios, ciencia,
   organización del trabajo— acumulado y depositado en máquinas. Marx lo escribe
@@ -43,6 +49,9 @@ lo suyo.
 - **Proceso sin sujeto.** Que algo ocurra sin que nadie lo conduzca: sin clase,
   sin partido, sin consejo directivo, sin humanidad al volante. Es la tesis que
   parte el cuadernillo en dos mitades.
+
+### Las otras cuatro
+
 - **Aceleracionismo, de izquierda y de derecha.** La misma palabra para dos
   programas opuestos: acelerar la tecnología **para salir** del capitalismo, o
   acelerar el capital porque es el proceso que importa. La etiqueta «de derecha»
@@ -56,7 +65,7 @@ lo suyo.
 - **e/acc.** «Aceleracionismo eficaz», nacido en 2022, el descendiente vivo de
   toda esta discusión. Ya lo viste en el mapa ideológico de [[ia-y-sociedad]].
 
-## Territorializar, desterritorializar, reterritorializar
+## Territorializar, desterritorializar, reterritorializar · ~9 min
 
 Si de todo el módulo te llevas una sola idea que no tenías antes, que sea esta.
 Es el concepto más abstracto del cuadernillo y también el que decide la
@@ -118,14 +127,15 @@ lectura 4 del cuadernillo, y lo dice con estas palabras exactas:
 
 > «Land collapses capitalism into what Deleuze and Guattari call schizophrenia, thus losing their most crucial insight into the way that capitalism operates via simultaneous processes of deterritorialization and compensatory reterritorialization.» — cuadernillo, p. 35
 
-Si el capitalismo reterritorializa tanto como desterritorializa, acelerarlo no
-libera nada, solo cierra el ciclo más rápido.
-Land no contesta ese reproche en el cuadernillo —*Meltdown* es de 1994 y el
-texto de Fisher de 2012—, pero sí se puede leer de dónde vendría la respuesta:
-la frase de *Meltdown* de la ficha 3 describe el orden social desmoronándose
-como el proceso mismo, no como su costo. Desde esa posición, la mitad que
-reterritorializa no es algo que haya que defender. Quién tiene razón sobre qué
-dice el texto de 1972 es una de las cosas que se pueden discutir en sesión.
+**La consecuencia del cargo de Fisher, y de dónde vendría la respuesta de
+Land.** Si el capitalismo reterritorializa tanto como desterritorializa,
+acelerarlo no libera nada, solo cierra el ciclo más rápido. Land no contesta ese
+reproche en el cuadernillo —*Meltdown* es de 1994 y el texto de Fisher de 2012—,
+pero sí se puede leer de dónde vendría la respuesta: la frase de *Meltdown* de
+la ficha 3 describe el orden social desmoronándose como el proceso mismo, no
+como su costo. Desde esa posición, la mitad que reterritorializa no es algo que
+haya que defender. Quién tiene razón sobre qué dice el texto de 1972 es una de
+las cosas que se pueden discutir en sesión.
 
 ### 3 · Fisher invierte el diagnóstico
 
@@ -133,6 +143,7 @@ Fisher no propone volver al territorio. Al contrario: llama nostalgia a esa idea
 y la despacha con *Avatar*, la película que sueña con un mundo anterior a la
 máquina. Acepta que no hay regreso.
 
+**La objeción de Fisher, y su prueba: Wal-Mart y Microsoft como anti-mercado.**
 Lo que niega es el otro supuesto, el que Land da por bueno: que el capitalismo
 sea el gran desterritorializador. Para Fisher, el capitalismo tardío hace sobre
 todo lo contrario. **Reterritorializa**: en burocracia, en cadenas de mando
@@ -155,18 +166,19 @@ blogs de ingeniería y la teoría política de mercado, con sus propios término
 contestándole a *El Anti-Edipo* sería falso, y aquí no se hace. Lo que sigue es
 lectura de este curso, no autodescripción suya.
 
-Los hechos primero. Sobre todo entre 2007 y 2013, Yarvin escribió el blog
-*Unqualified Reservations* bajo el seudónimo **Mencius Moldbug**. Ahí, en la
-serie *Patchwork: A Political System for the 21st Century* (noviembre de 2008),
-propone sustituir los Estados heredados por «decenas, incluso cientos de miles
-de mini-países soberanos e independientes», cada uno administrado por una
-sociedad anónima: el *patch* es el territorio, y su dueño soberano, el *realm*.
-El principio de diseño lo enuncia él mismo en una línea: «The design is all
-"exit," no "voice."» —todo salida, nada de voz—. Ese par no lo inventa él: viene
-de Albert Hirschman (*Exit, Voice, and Loyalty*, 1970), que lo usó para
-describir las dos respuestas posibles ante una organización que se degrada.
-Yarvin conserva la primera y elimina la segunda: si un *patch* no te gusta, no
-votas ni discutes; te mudas a otro.
+**Quién es Yarvin, y qué propone en *Patchwork*.** Los hechos primero. Sobre
+todo entre 2007 y 2013, Yarvin escribió el blog *Unqualified Reservations* bajo
+el seudónimo **Mencius Moldbug**. Ahí, en la serie *Patchwork: A Political
+System for the 21st Century* (noviembre de 2008), propone sustituir los Estados
+heredados por «decenas, incluso cientos de miles de mini-países soberanos e
+independientes», cada uno administrado por una sociedad anónima: el *patch* es
+el territorio, y su dueño soberano, el *realm*. El principio de diseño lo
+enuncia él mismo en una línea: «The design is all "exit," no "voice."» —todo
+salida, nada de voz—. Ese par no lo inventa él: viene de Albert Hirschman
+(*Exit, Voice, and Loyalty*, 1970), que lo usó para describir las dos respuestas
+posibles ante una organización que se degrada. Yarvin conserva la primera y
+elimina la segunda: si un *patch* no te gusta, no votas ni discutes; te mudas a
+otro.
 
 Cuesta imaginar un programa más reterritorializador. Frente a un capital que
 disuelve fronteras, monedas y jurisdicciones, la propuesta es fragmentar la
@@ -187,8 +199,8 @@ más duras imaginables. Hay al menos dos respuestas discutibles —que es una
 contradicción que se le escapó, o que la desterritorialización siempre necesitó
 un orden duro que la sostuviera— y ninguna de las dos es obvia.
 
-Con las cuatro posiciones ya sobre la mesa, el ciclo completo se ve mejor en una
-imagen que reconstruido de memoria:
+Con las cuatro posiciones ya sobre la mesa, el ciclo completo se entiende mejor
+en una imagen que reconstruyéndolo de memoria:
 
 ::: figure {#ciclo-territorializacion title="El ciclo de territorialización, desterritorialización y reterritorialización, con las cuatro posiciones del módulo"}
 ![Diagrama de un ciclo cerrado entre dos polos, «fijado en un código» y «puesto a circular», unidos por dos flechas curvas: desterritorializar y reterritorializar. Deleuze y Guattari abarcan el ciclo completo. Land se sitúa sobre la flecha de desterritorializar y Fisher sobre la de reterritorializar. Yarvin aparece fuera del ciclo, en un recuadro aparte con un candado conectado al polo fijado: no discute este vocabulario, propone fijarlo ahí con fronteras duras.](_assets/v19-ciclo-territorializacion.svg)
@@ -207,20 +219,21 @@ Otra vez las dos cosas, a la vez.
 Quién queda de cada lado de esa reterritorialización —quién cobra, quién paga,
 quién etiqueta los datos— es el hilo de [[ia-y-sociedad]].
 
-## De dónde viene esto
+## De dónde viene esto · ~3 min
 
 ::: figure {#genealogia title="De Marx a e/acc, y por qué el orden de lectura es otro"}
 ![Genealogía del aceleracionismo de 1858 a 2022, con el número de lectura de cada texto y una flecha que marca la respuesta de Fisher a Land](_assets/v17-genealogia-aceleracionismo.svg)
 :::
 
-Ciento cincuenta años separan la primera lectura de la última, y el cuadernillo
-no las ordenó por fecha. Marx va primero porque de ahí sale todo. Deleuze y
-Guattari después, con la página que Land va a citar. Land tercero. **Fisher
-cuarto, fuera de lugar a propósito**: responde a Land y explica su texto mejor
-que cualquier introducción, así que conviene leerlo antes que al CCRU, que es lo
-más difícil del cuadernillo. Barbrook y Cameron al final aunque sean de 1995,
-porque no descienden de esta discusión: la miran desde afuera y la aterrizan en
-Silicon Valley, que es donde sigue el curso.
+**Por qué el cuadernillo no sigue el orden cronológico.** Ciento cincuenta años
+separan la primera lectura de la última, y el cuadernillo no las ordenó por
+fecha. Marx va primero porque de ahí sale todo. Deleuze y Guattari después, con
+la página que Land va a citar. Land tercero. **Fisher cuarto, fuera de lugar a
+propósito**: responde a Land y explica su texto mejor que cualquier
+introducción, así que conviene leerlo antes que al CCRU, que es lo más difícil
+del cuadernillo. Barbrook y Cameron al final aunque sean de 1995, porque no
+descienden de esta discusión: la miran desde afuera y la aterrizan en Silicon
+Valley, que es donde sigue el curso.
 
 Las dos últimas filas no son lecturas. Son a dónde llega todo esto, y ya las
 viste en [[ia-y-sociedad]].
