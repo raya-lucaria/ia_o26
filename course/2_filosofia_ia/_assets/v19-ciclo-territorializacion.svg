@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" role="img" aria-label="Ciclo de dos flechas entre dos polos, fijado en un codigo y puesto a circular: desterritorializar suelta el flujo, reterritorializar lo vuelve a fijar. Deleuze y Guattari abarcan el ciclo completo. Land se situa sobre la flecha de desterritorializar y Fisher sobre la de reterritorializar. Yarvin queda fuera del ciclo, como un candado que propone fijar otra vez el polo fijado, sin discutir el ciclo mismo."><rect x="0" y="0" width="900" height="620" rx="16" fill="#211033"/>
+
+<text x="450" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">El ciclo de la territorializacion</text>
+<text x="450" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Fijar en un codigo, soltar a circular, volver a fijar en otro codigo</text>
+
+<!-- Deleuze y Guattari: dashed ellipse embracing both poles and both arrows, they run the whole cycle at once -->
+<ellipse cx="450" cy="305" rx="400" ry="195" fill="none" stroke="#9b6dff" stroke-width="2" stroke-dasharray="6 5" opacity="0.65"/>
+<text x="450" y="132" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="14" font-weight="600" text-anchor="middle">Deleuze y Guattari</text>
+<text x="450" y="149" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">abarcan el ciclo completo: el capitalismo corre las dos mitades a la vez</text>
+
+<!-- Pole: fijado en un codigo -->
+<rect x="80" y="260" width="200" height="90" rx="14" fill="#78419e" opacity="0.16" stroke="#78419e" stroke-width="1.5"/>
+<text x="180" y="298" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="middle">FIJADO EN UN CODIGO</text>
+<text x="180" y="320" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">un oficio, un rol, un salario</text>
+
+<!-- Pole: puesto a circular -->
+<rect x="620" y="260" width="200" height="90" rx="14" fill="#78419e" opacity="0.16" stroke="#78419e" stroke-width="1.5"/>
+<text x="720" y="298" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="middle">PUESTO A CIRCULAR</text>
+<text x="720" y="320" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">trabajo abstracto, dato, cancion</text>
+
+<!-- Top arrow: desterritorializar, from fijado to circulante. Land rides this half -->
+<path d="M 180 260 Q 450 150 720 260" fill="none" stroke="#78419e" stroke-width="3"/>
+<polygon points="718,258 702,248 704,266" fill="#78419e"/>
+<text x="450" y="185" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">desterritorializar</text>
+<text x="260" y="215" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Land</text>
+<text x="260" y="230" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="middle">toma esto como lo real</text>
+
+<!-- Bottom arrow: reterritorializar, from circulante back to fijado. Fisher rides this half -->
+<path d="M 720 350 Q 450 460 180 350" fill="none" stroke="#78419e" stroke-width="3"/>
+<polygon points="182,352 198,362 196,344" fill="#78419e"/>
+<text x="450" y="432" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">reterritorializar</text>
+<text x="640" y="400" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Fisher</text>
+<text x="640" y="415" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="middle">dice que esto es lo que hace el capital</text>
+
+<!-- Yarvin: outside the cycle entirely, connected to the fijado pole by a dashed line, not a fifth station -->
+<path d="M 80 350 L 80 470 L 220 470 L 220 525" fill="none" stroke="#ff8fab" stroke-width="1.5" stroke-dasharray="4 4"/>
+<rect x="200" y="525" width="500" height="75" rx="14" fill="#ff8fab" opacity="0.1" stroke="#ff8fab" stroke-width="1.5" stroke-dasharray="6 5"/>
+<rect x="222" y="548" width="26" height="20" rx="3" fill="#ff8fab"/>
+<path d="M 227 548 L 227 538 A 8 8 0 0 1 243 538 L 243 548" fill="none" stroke="#ff8fab" stroke-width="3"/>
+<text x="266" y="562" fill="#ff8fab" font-family="system-ui, sans-serif" font-size="14" font-weight="600" text-anchor="start">Yarvin, fuera del ciclo</text>
+<text x="222" y="583" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="start">no discute este vocabulario: propone fijar el polo con fronteras duras</text>
+</svg>

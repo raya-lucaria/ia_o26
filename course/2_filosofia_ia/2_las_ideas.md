@@ -184,6 +184,13 @@ más duras imaginables. Hay al menos dos respuestas discutibles —que es una
 contradicción que se le escapó, o que la desterritorialización siempre necesitó
 un orden duro que la sostuviera— y ninguna de las dos es obvia.
 
+Con las cuatro posiciones ya sobre la mesa, el ciclo completo se ve mejor en una
+imagen que reconstruido de memoria:
+
+::: figure {#ciclo-territorializacion title="El ciclo de territorialización, desterritorialización y reterritorialización, con las cuatro posiciones del módulo"}
+![Diagrama de un ciclo cerrado entre dos polos, «fijado en un código» y «puesto a circular», unidos por dos flechas curvas: desterritorializar y reterritorializar. Deleuze y Guattari abarcan el ciclo completo. Land se sitúa sobre la flecha de desterritorializar y Fisher sobre la de reterritorializar. Yarvin aparece fuera del ciclo, en un recuadro aparte con un candado conectado al polo fijado: no discute este vocabulario, propone fijarlo ahí con fronteras duras.](_assets/v19-ciclo-territorializacion.svg)
+:::
+
 ### 5 · Y con la inteligencia artificial
 
 Un modelo entrenado con el texto, el código y las imágenes de medio mundo
