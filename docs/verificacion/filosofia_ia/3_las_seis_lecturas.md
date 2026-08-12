@@ -1,6 +1,6 @@
 # Verificación — Las seis lecturas, en claro
 
-Fuente de cada cita y de cada fecha de `course/2_filosofia_ia/2_repaso_y_discusion.md`.
+Fuente de cada cita y de cada fecha de `course/2_filosofia_ia/3_las_seis_lecturas.md`.
 Las citas se copiaron del PDF del cuadernillo con `pdftotext`; la columna «Página»
 es la del cuadernillo, no la de la edición original.
 
