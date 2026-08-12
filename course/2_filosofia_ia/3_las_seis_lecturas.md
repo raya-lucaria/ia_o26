@@ -45,9 +45,9 @@ a los tribunales: en julio de 2026 quedó firme el acuerdo de 1,500 millones de
 dólares que Anthropic paga a los autores de cerca de medio millón de libros
 descargados de bibliotecas piratas. La medición es lo que sigue sin cuadrar: las
 estimaciones de cuánta productividad genera todo esto se separan por un orden de
-magnitud —0.66% de productividad total de factores en diez años según Acemoglu,
-1.5 puntos porcentuales al año según Goldman Sachs— y ninguna se deja convertir
-en horas-hombre.
+magnitud y ni siquiera miden lo mismo —0.66% de productividad total de factores
+en diez años según Acemoglu, 1.5 puntos porcentuales al año de productividad
+laboral según Goldman Sachs— y ninguna se deja convertir en horas-hombre.
 
 **El concepto que aporta.** *General intellect*, y con él la distinción entre
 **trabajo vivo** —el que alguien está haciendo ahora— y **trabajo muerto**, el
@@ -142,15 +142,18 @@ conclusión: la nostalgia orgánica —el mundo de *Avatar*— no es respuesta, 
 acelerar el capital tampoco es lo mismo que acelerar la técnica.
 
 **Predijo en 2012.** Que si la izquierda no reclamaba para sí la modernidad y la
-técnica —si se quedaba en la nostalgia orgánica de *Avatar*—, cedería ese terreno
-entero a quien sí lo quisiera.
+técnica —si se quedaba en la nostalgia orgánica de *Avatar*—, ese terreno lo
+ocuparía quien sí lo quisiera.
 
-**Hoy, 2026.** Esa es la apuesta que perdió, y conviene leerlo como
-interpretación y no como veredicto. El terreno lo ocupó el aceleracionismo de
-derecha: e/acc aparece en 2022 y en octubre de 2023 el *Manifiesto
-tecno-optimista* de Marc Andreessen lo pone por escrito, con Land entre sus
-santos patronos, la máquina tecno-capital como motor y el estatismo en la lista
-de enemigos. Fisher murió en enero de 2017 y no vio ninguna de las dos cosas.
+**Hoy, 2026.** Se puede leer que es la apuesta que perdió, y no por falta de
+intentos: un año después de este ensayo, en 2013, Williams y Srnicek publicaron
+el *Manifiesto aceleracionista*, que reclama para la izquierda justo lo que
+Fisher pedía. Lo que no consiguió fue el público. Ese lugar en la conversación lo
+ocupó el aceleracionismo de derecha: e/acc aparece en 2022 y en octubre de 2023
+el *Manifiesto tecno-optimista* de Marc Andreessen lo pone por escrito, con Land
+entre sus santos patronos, la máquina tecno-capital como motor y el estatismo en
+la lista de enemigos. Fisher murió en enero de 2017 y no vio ninguna de las dos
+cosas.
 
 **El concepto que aporta.** La distinción **capital ≠ tecnología**, que es la
 bisagra de todo el cuadernillo y de donde sale el título del módulo: acelerar,
