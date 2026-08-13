@@ -24,7 +24,10 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - run: pip install pytest pillow pyyaml
+      # pypdf: las guardas de los cuadernillos abren el PDF publicado para
+      # comparar su número real de páginas con la cifra que declaran la página
+      # del curso, la tarea, el visor y los dos READMEs.
+      - run: pip install pytest pillow pyyaml pypdf
       - run: python -m pytest tools/ -q
 
   # `needs: checks` es lo que convierte las pruebas en una compuerta real. Sin

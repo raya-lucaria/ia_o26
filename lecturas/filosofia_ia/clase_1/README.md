@@ -34,7 +34,11 @@ página. Dos avisos que importan al citarlas en clase:
 - **El archivo de Fisher ya es el extracto** de la antología: 12 páginas, las
   335–346, así que se usa entero.
 
-Los PDF están en `.gitignore`: viven en tu disco, no en el repositorio.
+Qué se versiona y qué no: los dos PDF conseguidos —los archivos completos en
+`fuentes/`— están en `.gitignore` y viven solo en tu disco. Los recortes de los
+pasajes (`lecturas/deleuze-guattari-antiedipo.pdf`,
+`lecturas/fisher-terminator-avatar.pdf`) y el cuadernillo que los contiene sí
+están versionados, y el cuadernillo se publica en el sitio del curso.
 
 ## Verificación contra la edición original
 

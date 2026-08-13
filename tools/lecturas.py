@@ -89,8 +89,9 @@ class LecturaPDF:
     autor: str
     anio: str
     fuente: str                 # archivo dentro de fuentes/
-    paginas: tuple[int, int]    # inclusivo, 1-indexado, como las cita el temario
+    paginas: tuple[int, int]    # inclusivo, 1-indexado, dentro del archivo
     edicion: str
+    debe_contener: str     # frase que tiene que aparecer en el recorte
     introduccion: str      # ficha de cuatro apartados; ver introduccion.md
 
     def recortar(self, fuentes: Path, destino: Path) -> Path | None:
@@ -111,7 +112,34 @@ class LecturaPDF:
         salida = destino / f"{self.id}.pdf"
         with salida.open("wb") as f:
             escritor.write(f)
+        self._verificar(salida)
         return salida
+
+    def _verificar(self, recorte: Path) -> None:
+        """Falla si el recorte no contiene la frase declarada.
+
+        Mismo contrato fail-loud que `debe_contener` en bajar_lecturas.py, pero
+        para la via de PDF: un archivo con el nombre correcto y otra edicion
+        adentro desplaza el rango de paginas y produce un recorte plausible
+        pero equivocado. Se compara sobre el texto extraido con los espacios
+        normalizados, porque la extraccion mete saltos de linea y espacios
+        dobles donde el original no los tiene.
+        """
+        import pypdf
+        texto = " ".join(
+            (p.extract_text() or "") for p in pypdf.PdfReader(recorte).pages
+        )
+        if _normalizar_espacios(self.debe_contener) not in _normalizar_espacios(texto):
+            raise ValueError(
+                f"{self.id}: el recorte de las páginas "
+                f"{self.paginas[0]}-{self.paginas[1]} de {self.fuente} no "
+                f"contiene {self.debe_contener!r}. ¿Es la edición correcta, o "
+                "cambió la paginación del archivo?"
+            )
+
+
+def _normalizar_espacios(texto: str) -> str:
+    return " ".join(texto.split())
 
 
 @dataclass
@@ -274,7 +302,8 @@ LECTURAS: dict[str, list[Lectura]] = {
             licencia="Publicado abiertamente por los autores",
             introduccion=(
                 "**Qué vas a leer.** El texto que le da nombre al "
-                "aceleracionismo de izquierda: veintitantas tesis numeradas "
+                "aceleracionismo de izquierda: tres secciones de tesis "
+                "numeradas "
                 "que retoman el diagnóstico de Land —el capital como proceso "
                 "desatado— y lo giran hacia un programa distinto: no "
                 "acelerar el capital, sino las fuerzas productivas que el "
@@ -310,7 +339,8 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "describe una pila —un *stack*— de tres niveles técnicos "
                 "concretos donde se libra la disputa por el futuro.\n\n"
                 "**Palabras clave.** *Stack* (pila): las capas técnicas "
-                "superpuestas —dinero, redes, cómputo— que hacen funcionar "
+                "superpuestas —dinero, redes, bio-hypermedia— que hacen "
+                "funcionar "
                 "una plataforma. *Dinero algorítmico*: moneda programable, "
                 "pensada como infraestructura y no solo como medio de pago. "
                 "*Bio-hypermedia*: redes que procesan datos biológicos y "
@@ -348,6 +378,7 @@ PDFS: dict[str, list[LecturaPDF]] = {
             edicion=("Paidós, ed. española. El temario cita Minnesota 1983 "
                      "pp. 239–240; el pasaje equivalente cabe en la p. 247 de "
                      "esta edición, más densa."),
+            debe_contener="todavía no hemos visto nada",
             introduccion=(
                 "**Qué vas a leer.** Una sola página, la más citada del "
                 "aceleracionismo. Deleuze y Guattari preguntan cuál es la vía "
@@ -378,6 +409,7 @@ PDFS: dict[str, list[LecturaPDF]] = {
             paginas=(1, 12),
             edicion=("#Accelerate: The Accelerationist Reader, Urbanomic, 2014, "
                      "pp. 335–346. El archivo ya es ese extracto: 12 páginas."),
+            debe_contener="Terminator vs Avatar",
             introduccion=(
                 "**Qué vas a leer.** Fisher toma a Land en serio —lo considera "
                 "el mejor diagnóstico del capitalismo disponible— y luego le da "
@@ -406,9 +438,14 @@ PDFS: dict[str, list[LecturaPDF]] = {
             autor="Mark Fisher", anio="2009",
             fuente="fisher_capitalist_realism.pdf",
             paginas=(25, 34),
-            edicion=("Zero Books, 2009, 86 pp. en total. Cap. 4, «Reflexive "
-                     "impotence, immobilization and liberal communism»; el "
-                     "cap. 5 empieza en la p. 35 de esta edición."),
+            edicion=("Zero Books, 2009. Cap. 4, «Reflexive impotence, "
+                     "immobilization and liberal communism», pp. 21–30 del "
+                     "impreso: así hay que citarlo. En este archivo —86 "
+                     "páginas, con las preliminares numeradas— ese capítulo "
+                     "son las pp. 25–34, cuatro de corrimiento; el índice del "
+                     "propio libro pone el cap. 4 en la p. 21 y el cap. 5 en "
+                     "la 31, que aquí caen en las pp. 25 y 35."),
+            debe_contener="depressive hedonia",
             introduccion=(
                 "**Qué vas a leer.** Fisher antes del manifiesto —el "
                 "capítulo es de 2009, cuatro años anterior— diagnosticando "
@@ -449,6 +486,7 @@ PDFS: dict[str, list[LecturaPDF]] = {
                      "encabezado («Chapter 6 / Post-Work Imaginaries» en la "
                      "p. 77, «Chapter 7 / A New Common Sense» en la p. 93), "
                      "no por número de página."),
+            debe_contener="Post-Work Imaginaries",
             introduccion=(
                 "**Qué vas a leer.** El programa aterrizado en demandas "
                 "concretas: automatización plena, semana laboral reducida, "
@@ -487,7 +525,22 @@ ENLACES: dict[str, list[dict[str, str]]] = {
             "cita": "Mark Fisher (2012). «Terminator vs Avatar», *#Accelerate*, pp. 335–346",
             "url": "",
         },
-    ]
+    ],
+    # Sin estas dos entradas, reconstruir el modulo 2 sin los PDF en derechos
+    # —que estan en .gitignore, asi que en un clon nuevo no estan— produce un
+    # cuadernillo de dos lecturas sin decirlo en ningun lado: `faltan_enlaces`
+    # queda vacio y la nota de la portadilla no se emite.
+    "filosofia_ia/clase_2": [
+        {
+            "cita": "Mark Fisher (2009). *Capitalist Realism*, cap. 4, ed. Zero Books, pp. 21–30",
+            "url": "",
+        },
+        {
+            "cita": ("Nick Srnicek y Alex Williams (2015). *Inventing the Future*, "
+                     "cap. 6 «Post-Work Imaginaries», ed. Verso, pp. 107–128"),
+            "url": "",
+        },
+    ],
 }
 
 

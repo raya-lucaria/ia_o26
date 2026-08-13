@@ -98,3 +98,5 @@ Vuelve al mapa ideológico de [[ia-y-sociedad]]. La primera vez fue una lista de
 etiquetas con una posición cada una; ahora cada etiqueta tiene textos debajo, y
 las fronteras entre ellas se ven por lo que son: discutibles. Esa es toda la
 diferencia entre saber cómo se llaman las posiciones y poder sostener una.
+
+Sigue con [[left-takes-future]].

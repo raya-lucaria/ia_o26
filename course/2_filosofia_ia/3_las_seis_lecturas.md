@@ -21,8 +21,8 @@ cuadernillo, que no es el cronológico —eso lo explica la genealogía de
 
 > **Los campos «Qué predijo» y «Hoy, 2026» de cada ficha tienen fecha de
 > corte.** Se escribieron en agosto de 2026, y cada afirmación sobre el
-> presente se verificó contra una fuente concreta, registrada en
-> `docs/verificacion/filosofia_ia/3_las_seis_lecturas.md`. El resto de cada
+> presente se verificó contra una fuente concreta, anotada en el registro de
+> verificación que el repositorio del curso guarda para esta página. El resto de cada
 > ficha —qué dice el texto, qué concepto aporta, la cita— no caduca. **Si lees
 > esto en un semestre posterior, revisa primero el campo «Hoy, 2026» de cada
 > una.**

@@ -6,14 +6,16 @@ summary: "La respuesta de la izquierda al aceleracionismo: reclamar el futuro en
 status: ready
 estimated_time: 240m
 tags: [aceleracionismo, izquierda, lecturas]
-prerequisites: [accelerate-what]
+prerequisites: [accelerate-what, ideas-aceleracionismo]
 ---
 
 # The Left Takes the Future Back
 
-[[accelerate-what]] terminó en Land: el capital como proceso autónomo que no
-responde a nadie, con Fisher aceptando ese diagnóstico para virarlo hacia la
-izquierda. Este módulo retoma el hilo desde el otro lado. Cuatro lecturas que
+[[accelerate-what]] terminó en Barbrook y Cameron, con la ideología
+californiana aterrizando la discusión en Silicon Valley; antes había dejado a
+Land —el capital como proceso autónomo que no responde a nadie— y a Fisher
+aceptando ese diagnóstico para virarlo hacia la izquierda. Este módulo retoma
+el hilo desde el otro lado. Cuatro lecturas que
 reclaman la aceleración —la tecnología, la planeación, el futuro mismo— para
 un proyecto de izquierda, en vez de dejárselos al capital sin sujeto de Land
 o a la mezcla de contracultura y libre mercado que describen Barbrook y
@@ -29,7 +31,7 @@ explica.
 | # | Lectura | Por qué está aquí |
 |---|---|---|
 | 1 | **Williams y Srnicek**, «#ACCELERATE: Manifesto for an Accelerationist Politics» (2013) | El documento fundacional del aceleracionismo de izquierda: reclamar la tecnología y la planeación del capital en vez de retirarse de ellas |
-| 2 | **Fisher**, *Capitalist Realism*, cap. 4 (2009) | Por qué ya no es posible imaginar una alternativa al capitalismo. Se lee segundo porque plantea el problema que las otras tres lecturas intentan resolver |
+| 2 | **Fisher**, *Capitalist Realism*, cap. 4 (2009) | Por qué la izquierda no logra ni intentarlo: impotencia reflexiva, hedonia depresiva, las protestas francesas de 2006 y el «comunismo liberal» de Žižek. Se lee segundo porque plantea el problema que las otras tres lecturas intentan resolver |
 | 3 | **Srnicek y Williams**, *Inventing the Future*, cap. 6 (2015) | El programa concreto: automatización total, renta básica universal, la exigencia de reducir el trabajo |
 | 4 | **Terranova**, «Red Stack Attack!» (2014) | La versión infraestructural del argumento: algoritmos, dinero y redes sociales como un stack que se puede construir de otra manera. Aterriza la discusión en la tecnología, que es por donde sigue el curso |
 

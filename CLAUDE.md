@@ -111,7 +111,7 @@ archivo en `course/1_introduccion/2_historia_ia/`, su registro homónimo en
 
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (64 tests as of August 2026) is the
+`python3 -m pytest tools/ -q` (77 tests as of August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
@@ -120,7 +120,7 @@ people and protected characters, every datable claim has a verified row in
 `docs/verificacion/`, official cards keep their shape and unique ids.
 
 ```bash
-pip install pillow pyyaml pytest          # lo que necesita la suite
+pip install pillow pyyaml pypdf pytest    # lo que necesita la suite
 python3 -m pytest tools/ -q               # todo
 python3 -m pytest tools/test_lecturas.py -q                          # un archivo
 python3 -m pytest tools/test_lecturas.py::test_la_introduccion_no_ha_derivado -q   # una prueba
@@ -150,8 +150,12 @@ python3 tools/lecturas.py       filosofia_ia/clase_1   # recorta y maqueta
 
 `bajar_lecturas.py` only fetches public-domain texts, and every source declares
 a `debe_contener` string so a wrong-but-plausibly-named download fails loudly.
-`lecturas.py` holds the `LECTURAS` list — adding a reading is adding an entry
-with its excerpt rule and the reason it is read, not editing code. It depends on
+`LecturaPDF` in `lecturas.py` carries the same field for the PDF path: the
+excerpt is re-read after being cut and the build aborts if the phrase is not in
+it, so a different edition behind the expected filename cannot pass as the
+right pages. `lecturas.py` holds the `LECTURAS` list — adding a reading is
+adding an entry with its excerpt rule and the reason it is read, not editing
+code. It depends on
 `weasyprint` and `pypdf`. Sources land in `fuentes/` exactly as downloaded so
 the excerpt stays auditable, and each module's `README.md` records provenance
 and any discrepancy with the syllabus pagination.

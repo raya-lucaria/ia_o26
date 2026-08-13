@@ -11,7 +11,7 @@ pruebas sí corre sola, en CI (ver H16 más abajo).
 ## Dependencias
 
 ```bash
-pip install pillow pyyaml pytest
+pip install pillow pyyaml pypdf pytest
 ```
 
 - **Pillow** (`PIL`): recompresión y generación de imágenes (`gen_life.py`,
@@ -36,7 +36,7 @@ cd /home/uumami/itam/ia_o26
 python3 -m pytest tools/ -q
 ```
 
-64 pruebas, deben pasar todas antes de comitear un cambio que toque
+77 pruebas, deben pasar todas antes de comitear un cambio que toque
 `_assets/`, `_official/`, o cualquier `tools/*.json`/`tools/*.tsv`. Desde el
 commit `47697d2` esto también corre en CI, como job `checks` que bloquea el
 deploy (ver H16), pero eso no exime de correrlo en local antes de comitear.
@@ -133,7 +133,7 @@ corrida del generador correspondiente lo vuelve a traer.
 ## H16 — resuelto: `pytest tools/` ya corre en CI
 
 `.github/workflows/pages.yml` tiene un job `checks` que instala `pillow
-pyyaml pytest` y corre `python -m pytest tools/ -q` en cada push y PR. El job
+pyyaml pypdf pytest` y corre `python -m pytest tools/ -q` en cada push y PR. El job
 `course-pages` (que delega en el workflow reutilizable de Raya para
 `raya validate` + `raya build`) declara `needs: checks`, así que un fallo en
 la suite bloquea el deploy en vez de correr en paralelo y publicarse de
