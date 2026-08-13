@@ -4,6 +4,8 @@ description: "Curso de Inteligencia Artificial del ITAM, Oto\u00f1o 2026."
 language: "es"
 source: course
 artifact: artifact
+calendar:
+  timezone: America/Mexico_City
 render:
   skin: eva-cyberpunk
   numbered_objects:
