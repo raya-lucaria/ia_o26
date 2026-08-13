@@ -1,7 +1,9 @@
 ## Cómo leer este cuadernillo
 
-El módulo anterior terminó en Land: el capital como proceso autónomo que no
-responde a nadie, y Fisher aceptando ese diagnóstico para darle la vuelta.
+El módulo anterior terminó en Barbrook y Cameron, con la ideología
+californiana aterrizando toda la discusión en Silicon Valley; antes de ellos
+había dejado a Land —el capital como proceso autónomo que no responde a
+nadie— y a Fisher aceptando ese diagnóstico para darle la vuelta.
 Este módulo es la otra mitad de esa discusión. La apuesta aquí es que la
 izquierda no debe responder a la aceleración con nostalgia —con volver a un
 Estado más grande, un sindicato más fuerte, un pasado mejor regulado— sino
@@ -44,4 +46,5 @@ salga fácil, y está bien no estar de acuerdo con ninguna de las cuatro:
 llega a la sesión con la objeción, no con el resumen.
 
 **Lo práctico.** Las cuatro lecturas van en inglés. Calcula entre tres horas
-y media y cuatro. El cuestionario se contesta después de leer, no antes.
+y media y cuatro. Esta vez no hay cuestionario ni nada que entregar: la tarea
+es llegar a la sesión con las cuatro lecturas leídas.

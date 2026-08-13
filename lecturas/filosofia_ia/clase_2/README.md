@@ -16,7 +16,7 @@ la razón por la que se lee.
 | # | Lectura | Autor | Año | Fuente | Estado |
 |---|---|---|---|---|---|
 | 1 | «#ACCELERATE: Manifesto for an Accelerationist Politics» | Williams y Srnicek | 2013 | [criticallegalthinking.com](https://criticallegalthinking.com/2013/05/14/accelerate-manifesto-for-an-accelerationist-politics/) | ✅ en el cuadernillo, completa |
-| 2 | *Capitalist Realism*, cap. 4 | Fisher | 2009 | ed. Zero Books 2009, pp. 25–34 | ✅ en el cuadernillo |
+| 2 | *Capitalist Realism*, cap. 4 | Fisher | 2009 | ed. Zero Books 2009, pp. 21–30 del impreso (pp. 25–34 del archivo) | ✅ en el cuadernillo |
 | 3 | *Inventing the Future*, cap. 6 «Post-Work Imaginaries» | Srnicek y Williams | 2015 | ed. Verso 2015, conversión EPUB → PDF, pp. 77–93 de ese archivo | ✅ en el cuadernillo |
 | 4 | «Red Stack Attack! Algorithms, Capital and the Automation of the Common» | Terranova | 2014 | [euronomade.info](http://www.euronomade.info/?p=2268) | ✅ en el cuadernillo, completa |
 
@@ -27,14 +27,20 @@ página. Dos avisos que importan al citarlas en clase — uno de ellos es una
 discrepancia de paginación real, no cosmética:
 
 - **Fisher, *Capitalist Realism*.** El archivo es la edición Zero Books 2009
-  completa (86 páginas). El capítulo 4, «Reflexive impotence, immobilization
-  and liberal communism», cabe en las pp. 25–34 de esa edición; el capítulo 5
-  empieza en la p. 35. Verificado por el `debe_contener` (`debtor-addict`,
-  presente en el recorte) y por lectura del cambio de capítulo en la página 35.
+  completa, 86 páginas contando las preliminares. **Las pp. 25–34 que recorta
+  el pipeline son internas de este archivo, no del impreso**: el índice del
+  propio libro sitúa el capítulo 4, «Reflexive impotence, immobilization and
+  liberal communism», en la p. 21 y el capítulo 5 en la p. 31, y en el archivo
+  esos dos capítulos empiezan en las pp. 25 y 35 — un corrimiento constante de
+  cuatro páginas. **En clase se cita pp. 21–30**, la paginación impresa —que
+  además es la que hace cuadrar el libro con las 81 páginas que le da el
+  catálogo, frente a las 86 del archivo. Verificado por el `debe_contener` de la entrada (`depressive hedonia`, que
+  el pipeline exige encontrar en el recorte o aborta) y por lectura del cambio
+  de capítulo en la página 35 del archivo.
 
 - **Srnicek y Williams, *Inventing the Future*, cap. 6.** Este es el caso que
-  hay que marcar con más cuidado, en la línea de lo que este README's
-  contraparte del Módulo 1 documenta para Swarmachines y El Anti-Edipo: **el
+  hay que marcar con más cuidado, en la línea de lo que la contraparte de
+  este README en el Módulo 1 documenta para Swarmachines y El Anti-Edipo: **el
   texto que tenemos no viene de una edición impresa.** La única fuente
   conseguida fue un EPUB, convertido a PDF para poder recortarlo por página
   con el mismo pipeline que las demás lecturas. Sus páginas 77–93 son
@@ -51,7 +57,11 @@ discrepancia de paginación real, no cosmética:
   termina con «…It is to these issues that we now turn.»). El texto es el
   mismo que el de la edición impresa; la numeración no lo es en absoluto.
 
-Los PDF están en `.gitignore`: viven en tu disco, no en el repositorio.
+Qué se versiona y qué no: los dos PDF conseguidos —los archivos completos en
+`fuentes/`— están en `.gitignore` y viven solo en tu disco. Los recortes de los
+capítulos (`lecturas/fisher-capitalist-realism-cap4.pdf`,
+`lecturas/srnicek-williams-post-work.pdf`) y el cuadernillo que los contiene sí
+están versionados, y el cuadernillo se publica en el sitio del curso.
 
 ## Sobre las dos que llegaron como texto completo
 
