@@ -22,3 +22,14 @@ Las sesiones ordinarias son los lunes y miércoles, de 16:00 a 18:00.
 - 2 de noviembre: asueto; no hay clase.
 - 2 de diciembre: fin de cursos.
 - Del 7 al 12 de diciembre: período de exámenes finales.
+
+## Calendario de lecturas
+
+Qué se lee y para cuándo. Cada fila corresponde a la fecha `due` de la tarea
+oficial de lectura del módulo; añade una fila por módulo nuevo, en orden de
+sesión.
+
+| Sesión | Se lee para |
+|---|---|
+| Miércoles 12 de agosto | Módulo 1 — [[¿Accelerate What?]] |
+| Lunes 17 de agosto | Módulo 2 — [[The Left Takes the Future Back]] |
