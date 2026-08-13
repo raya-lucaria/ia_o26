@@ -6,8 +6,9 @@ exige (S6.2: "Cada ilustracion generada se identifica como tal en el pie de
 figura") pero que el brief original no cubria.
 
 Notas frente al brief original de la Tarea 18:
-- El tope de peso del repositorio es 16 MB, no 10: se subio deliberadamente
-  porque 53 imagenes ya ocupaban 8.9 MB antes de las ilustraciones generadas.
+- El tope de peso del repositorio es 21 MB, no 10: subio a 16 porque 53
+  imagenes ya ocupaban 8.9 MB antes de las ilustraciones generadas, y a 21 al
+  publicarse el cuadernillo del modulo 2. Ver TOPE_REPOSITORIO.
 - navigation.json es una lista PLANA en "items"; "children" contiene ids en
   texto, no objetos anidados. No hay que recorrer recursivamente.
 """
@@ -257,8 +258,13 @@ def test_7_toda_fecha_y_atribucion_tiene_fuente_verificada():
 # Cada modulo de lecturas cuesta unos 2.8 MB, y la mitad de eso es duplicacion
 # deliberada: el PDF vive en lecturas/ y copiado en _assets/, con una guarda que
 # exige que sean identicos byte a byte. Un modulo mas cabe; dos, no. Cuando el
-# siguiente vuelva a chocar contra el tope, la decision ya no es subirlo otra vez
-# sino dejar de versionar los PDF construidos y generarlos en CI.
+# siguiente vuelva a chocar contra el tope, la decision ya no es subirlo otra
+# vez. Generar los cuadernillos en CI NO es la salida: el pipeline necesita
+# weasyprint y pypdf, que CI no instala, y sobre todo los PDF en derechos de
+# fuentes/, que estan en .gitignore y nunca van a estar en un runner. Las dos
+# salidas que si existen son sacar los PDF construidos del arbol de git a Git
+# LFS, o dejar de versionarlos y publicarlos como adjuntos de un release de
+# GitHub, enlazados desde la pagina del curso.
 TOPE_REPOSITORIO = 21_000_000
 
 

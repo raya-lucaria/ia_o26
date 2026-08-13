@@ -247,7 +247,7 @@ PATRONES_PAGINAS_TOTALES_MODULO_2 = [
 ]
 
 
-def _verificar_cifra_total_de_paginas(patrones):
+def _verificar_cifra_total_de_paginas(patrones, pdf):
     vistas = []
     for ruta, etiqueta, patron in patrones:
         texto = ruta.read_text(encoding="utf-8")
@@ -258,6 +258,13 @@ def _verificar_cifra_total_de_paginas(patrones):
         )
         vistas.append((etiqueta, int(m.group(1))))
 
+    # El PDF publicado es la sexta voz de la comparacion, y la unica que no se
+    # escribe a mano. Sin ella las cinco frases pueden estar de acuerdo entre
+    # si y equivocadas todas: un cuadernillo reconstruido sin los PDF en
+    # derechos sale mas corto y ninguna de las cinco lo nota.
+    import pypdf
+    vistas.append((f"{pdf.name} (PDF)", len(pypdf.PdfReader(pdf).pages)))
+
     cifras = {n for _, n in vistas}
     assert len(cifras) == 1, (
         "la cifra total de páginas del cuadernillo no coincide entre "
@@ -266,8 +273,44 @@ def _verificar_cifra_total_de_paginas(patrones):
 
 
 def test_las_paginas_del_cuadernillo_coinciden_en_todos_lados():
-    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES)
+    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES, PUBLICADO)
 
 
 def test_las_paginas_del_cuadernillo_modulo_2_coinciden_en_todos_lados():
-    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_2)
+    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_2, PUBLICADO_2)
+
+
+def test_toda_lectura_en_pdf_declara_que_debe_contener():
+    """La via de PDF tiene que ser tan fail-loud como la de descarga.
+
+    `bajar_lecturas.py` verifica cada texto descargado contra su
+    `debe_contener`; sin esta guarda, una LecturaPDF nueva podria entrar sin
+    frase que verificar y su recorte pasaria sin comprobacion alguna.
+    """
+    m = _cargar_lecturas()
+    for modulo, lecturas in m.PDFS.items():
+        for lp in lecturas:
+            assert getattr(lp, "debe_contener", "").strip(), (
+                f"{modulo}/{lp.id}: no declara debe_contener"
+            )
+
+
+@pytest.mark.parametrize("modulo,ids", [
+    ("filosofia_ia/clase_1", ["deleuze-guattari-antiedipo", "fisher-terminator-avatar"]),
+    ("filosofia_ia/clase_2", ["fisher-capitalist-realism-cap4", "srnicek-williams-post-work"]),
+])
+def test_toda_lectura_en_pdf_tiene_enlace_a_su_edicion(modulo, ids):
+    """Si el PDF fuente no esta —y no esta en ningun clon nuevo: `.gitignore`
+    lo excluye—, el cuadernillo se construye sin esa lectura. ENLACES es lo
+    que hace que la omision se vea en la portadilla en vez de pasar callada,
+    y el filtro de construir() empareja por el apellido del autor."""
+    m = _cargar_lecturas()
+    enlaces = m.ENLACES.get(modulo, [])
+    for lp in m.PDFS[modulo]:
+        assert lp.id in ids
+        apellido = lp.autor.split()[-1]
+        assert any(apellido in e["cita"] for e in enlaces), (
+            f"{modulo}/{lp.id}: ninguna entrada de ENLACES menciona "
+            f"«{apellido}», así que si falta el PDF la lectura se omite sin "
+            "aviso en el cuadernillo"
+        )
