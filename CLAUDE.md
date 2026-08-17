@@ -77,7 +77,15 @@ Hay dos, y se mantienen distinto:
   `docs/verificacion/`. Es la unidad que describe el resto de esta sección.
 - `course/2_filosofia_ia/` — dos módulos de lecturas (`1_accelerate_what.md` y
   `5_left_takes_future.md`), cada uno seguido de sus páginas de repaso: tres
-  para el módulo 1 y dos para el módulo 2, una por hora de sesión. Su
+  para el módulo 1 y dos para el módulo 2, una por hora de sesión. **«Módulo»
+  significa dos cosas distintas en este repo y conviene no confundirlas:** los
+  seis módulos del curso están listados en
+  `course/1_introduccion/1_el_curso/0_index.md` —y todo lo que hay hoy escrito,
+  historia y filosofía, es el módulo 1 de esos seis—, mientras que «módulo 1» y
+  «módulo 2» dentro de la unidad de filosofía son los dos cuadernillos de
+  lectura. Lo que sigue a `left-takes-future` en el temario del curso no es otro
+  cuadernillo: es «Agentes, ambientes, modelado y optimización», y no está
+  escrito. Su
   contenido real son los cuadernillos PDF que produce `lecturas/` (ver más
   abajo), pero la unidad ya tiene assets propios (`v17`–`v19` a mano,
   `ilus-*.png` desde `tools/ilustraciones.json`, fotos de Commons, su propio
