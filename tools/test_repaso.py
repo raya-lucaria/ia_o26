@@ -32,16 +32,17 @@ RAIZ = Path(__file__).resolve().parent.parent
 # lecturas ya citadas en las paginas de fichas, y sus registros lo dicen en vez
 # de traer tabla. TABLA lo marca.
 #
-# La pagina del modulo 3 espera 8 citas y no 4 como la del modulo 2: son tres
-# lecturas en vez de cuatro, pero con mas espacio por ficha, y la lectura de
-# Land se discute en dos bloques (parte 1 y parte 4a) que se citan por separado.
+# La pagina del modulo 3 espera 11 citas: cuatro lecturas con mas espacio por
+# ficha que en el modulo 2. El reparto es 2 / 3 / 3 / 3 -- el manifiesto de 2007
+# lleva dos, y Patchwork, Thiel y Land tres cada uno; la de Land se reparte
+# entre sus dos bloques (parte 1 y parte 4a), que se citan por separado.
 PAGINAS = [
     ("2_las_ideas.md", 2, True),
     ("3_las_seis_lecturas.md", 6, True),
     ("4_para_discutir.md", 0, False),
     ("6_las_cuatro_lecturas.md", 4, True),
     ("7_discutir_el_programa.md", 0, False),
-    ("9_las_tres_lecturas.md", 8, True),
+    ("9_las_lecturas_de_la_salida.md", 11, True),
     ("10_discutir_la_salida.md", 0, False),
 ]
 

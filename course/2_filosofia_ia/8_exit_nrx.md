@@ -4,7 +4,7 @@ title: Módulo 3 — Exit, NRx & Dark Enlightenment
 nav_title: "Exit, NRx & Dark Enlightenment"
 summary: "La tercera respuesta al aceleracionismo: no discutir quién conduce, sino bajarse del coche."
 status: ready
-estimated_time: 80m
+estimated_time: 110m
 tags: [aceleracionismo, neorreaccion, lecturas]
 prerequisites: [left-takes-future, ideas-aceleracionismo]
 ---
@@ -26,26 +26,32 @@ los que desciende.
 
 | # | Lectura | Por qué está aquí |
 |---|---|---|
-| 1 | **Yarvin** (como «Mencius Moldbug»), «A Formalist Manifesto» (2007) | El argumento en su origen, escrito desde cero y sin suponer nada leído: si el único mal que importa es la violencia, formalizar el poder que ya existe. Es **anterior** a *Patchwork*, que el repaso del módulo 1 ya presenta |
-| 2 | **Thiel**, «The Education of a Libertarian» (2009) | El mismo argumento en mil doscientas palabras, dicho por alguien con capital para construir la salida. Aquí aparece la frase que Land cita y que da nombre al módulo |
-| 3 | **Land**, *The Dark Enlightenment*, partes 1 y 4a (2012) | La parte 1 lee las dos anteriores y les pone nombre; la 4a saca la consecuencia que Land cree que se sigue. Se leen juntas a propósito: la segunda no es un desvío de la primera |
+| 1 | **Yarvin** (como «Mencius Moldbug»), «A Formalist Manifesto» (2007) | El argumento en su origen, escrito desde cero y sin suponer nada leído: si el único mal que importa es la violencia, formalizar el poder que ya existe |
+| 2 | **Yarvin**, *Patchwork*, cap. 1 (2008) | El mismo autor año y medio después, con el plano en la mano: qué es un parche, quién es su dueño, qué firma quien vive ahí y qué pasa con quien no puede pagar. Es lo que el repaso del módulo 1 nombró sin leer |
+| 3 | **Thiel**, «The Education of a Libertarian» (2009) | El mismo argumento en mil doscientas palabras, dicho por alguien que se presenta en el texto como emprendedor e inversionista. Aquí aparece la frase que Land cita en la lectura 4, y que es la soldadura entre las dos |
+| 4 | **Land**, *The Dark Enlightenment*, partes 1 y 4a (2012) | La parte 1 lee las anteriores y les pone nombre; la 4a saca la consecuencia que Land cree que se sigue. Se leen juntas a propósito: la segunda no es un desvío de la primera |
 
 ## Cómo leer este cuadernillo
 
-Los tres textos comparten una forma: aceptan un diagnóstico, declaran imposible
-arreglarlo desde dentro y proponen irse. Lo que cambia entre ellos es de qué se
-sale, y esa es la pregunta con la que conviene leer los tres.
+Los cuatro textos comparten una forma: aceptan un diagnóstico y declaran
+imposible arreglarlo discutiendo. De ahí en adelante se separan, y la diferencia
+es la pregunta con la que conviene leerlos: **de qué proponen salirse.** Yarvin
+sale de la discusión y se queda —primero escritura el poder, después diseña el
+lugar—; Thiel se va de la política entera; Land lee esa salida en un
+desplazamiento de gente.
 
-Van en orden cronológico, que aquí sí es el orden en que se entienden. Yarvin
-escribe el argumento completo en 2007. Thiel lo dice en dos páginas en 2009.
-Land, en 2012, **lee a los dos**: cita a Thiel en su primera página, resume a
-Moldbug en extenso y bautiza el conjunto. Leerlo antes sería leer el resumen
-antes que lo resumido.
+Van en orden cronológico, que aquí sí es el orden en que se entienden. **Yarvin
+ocupa las dos primeras**, y no por descuido: en 2007 escribe la tesis y en 2008
+la convierte en un diseño con accionistas, contratos y llaves criptográficas.
+Léelas seguidas, como una sola pieza en dos tiempos. Thiel lo dice en dos
+páginas en 2009. Land, en 2012, **lee a los tres**: cita a Thiel en su quinto
+párrafo, resume a Moldbug en extenso y bautiza el conjunto. Leerlo al final te
+deja hacer algo mejor que creerle — comparar su resumen con el original.
 
-Está bien no estar de acuerdo con ninguno de los tres —lo esperable es que no lo
-estés—. Lo que no funciona es rechazarlos sin haberlos entendido: eso deja el
-argumento intacto y a ti sin nada que decirle. Llega a la sesión sabiendo en qué
-paso concreto se rompe la cadena, no con la conclusión.
+Está bien no estar de acuerdo con ninguno —lo esperable es que no lo estés—. Lo
+que no funciona es rechazarlos sin haberlos entendido: eso deja el argumento
+intacto y a ti sin nada que decirle. Llega a la sesión sabiendo en qué paso
+concreto se rompe la cadena, no con la conclusión.
 
 ## Un aviso sobre la parte 4a de Land
 
@@ -68,30 +74,40 @@ estás de acuerdo, que es distinto de decir que el texto es repugnante.
 
 ## El cuadernillo
 
-::: figure {#cuadernillo-modulo-3 title="Las tres lecturas en un solo archivo"}
-[![Portada del cuadernillo «Exit, NRx & Dark Enlightenment», con las tres lecturas listadas](_assets/cuadernillo_portada_modulo_3.png)](_assets/visor_modulo_3.html)
+::: figure {#cuadernillo-modulo-3 title="Las cuatro lecturas en un solo archivo"}
+[![Portada del cuadernillo «Exit, NRx & Dark Enlightenment», con las cuatro lecturas listadas](_assets/cuadernillo_portada_modulo_3.png)](_assets/visor_modulo_3.html)
 :::
 
-**35 páginas**, cada lectura con su portadilla y la razón por la que se lee. Es
-el cuadernillo más corto de la unidad: calcula entre una hora y diez y una hora
-y veinte.
+**45 páginas**, cada lectura con su portadilla y la razón por la que se lee.
+Sigue siendo el cuadernillo más corto de la unidad: calcula entre una hora y
+treinta y cinco y una hora y cincuenta.
 
 - **[Leer en el navegador →](_assets/visor_modulo_3.html)** — se abre completo,
   sin descargar nada. También puedes hacer clic en la portada de arriba.
-- **[Descargar el PDF](_assets/cuadernillo_modulo_3_exit_nrx.pdf)** — 145 KB,
+- **[Descargar el PDF](_assets/cuadernillo_modulo_3_exit_nrx.pdf)** — 182 KB,
   para leerlo sin conexión o imprimirlo.
 
 ## Sobre las fuentes, y cómo citarlas
 
-Las tres son páginas web abiertas y van completas. **Es el primer módulo de la
-unidad cuyas lecturas no se toman de ninguna edición impresa**, así que no hay
-avisos de paginación que dar: ninguna se cita por número de página. Abierto no
-quiere decir libre de derechos: las tres siguen siendo de sus autores, y están
-aquí como material de clase, con la fuente al pie de cada una.
+Las cuatro son páginas web abiertas. Dos van completas —el manifiesto y
+Thiel—, de *Patchwork* va la segunda mitad del capítulo 1, y de Land van dos
+partes de las diez del ensayo. **Es el primer módulo de la unidad cuyas lecturas no
+se toman de ninguna edición impresa**, así que casi no hay avisos de paginación
+que dar. Abierto no quiere decir libre de derechos: las
+cuatro siguen siendo de sus autores, y están aquí como material de clase, con la
+fuente al pie de cada una.
 
-- **Yarvin** se cita por fecha y título: entrada del 24 de abril de 2007 en
-  *Unqualified Reservations*. El texto viene del archivo del blog en
+- **Yarvin, «A Formalist Manifesto»**, se cita por fecha y título: entrada del
+  24 de abril de 2007 en *Unqualified Reservations*. El texto viene del archivo
+  del blog en
   [unqualified-reservations.org](https://www.unqualified-reservations.org/2007/04/formalist-manifesto-originally-posted/).
+- **Yarvin, *Patchwork***, es la única que sí tiene aviso de paginación. Se cita
+  como capítulo 1, «A Positive Vision», pp. 7–18 de la recopilación en PDF que
+  circula como libro; el texto del cuadernillo viene de la
+  [entrada original del 13 de noviembre de 2008](https://www.unqualified-reservations.org/2008/11/patchwork-positive-vision-part-1/),
+  que el propio sitio titula ya «Chapter 1: A Positive Vision». Va **la segunda
+  mitad del capítulo**: empieza donde el texto deja las anécdotas y se pone a
+  diseñar. Y ojo con el final — remite al capítulo 2, que no está aquí.
 - **Thiel** se cita como *Cato Unbound*, 13 de abril de 2009. El cuadernillo
   reproduce el ensayo y **no** la nota que la revista añadió después, en la que
   el propio Thiel matiza el pasaje sobre el voto femenino. Esa nota está al pie
@@ -101,17 +117,20 @@ aquí como material de clase, con la fuente al pie de cada una.
 - **Land** se cita por parte, no por página: partes 1 y 4a de
   *The Dark Enlightenment*. Las otras ocho partes no están en el cuadernillo.
   **Y hay que decir de dónde sale el texto, porque no es de Land.** El sitio
-  donde el ensayo se publicó, *xenosystems.net*, ya no existe. El único
-  alojamiento completo y estable que queda es
+  donde el ensayo se publicó, *xenosystems.net*, ya no existe. El alojamiento
+  completo y estable que encontramos es
   [thedarkenlightenment.com](https://www.thedarkenlightenment.com/the-dark-enlightenment-by-nick-land/),
   hecho por un tercero que firma como «Charon» — y que en su propia página
   aclara que **Land se deslindó públicamente de ese sitio**. Que el texto más
-  citado de la neorreacción solo sobreviva en un archivo que su autor
-  desautoriza es, por sí mismo, algo que vale la pena notar al citarlo.
+  conocido de la neorreacción solo sobreviva en un archivo que su autor
+  desautoriza es, por sí mismo, algo que vale la pena notar al citarlo. (Que sea
+  «el texto más citado» de la neorreacción es fama, no una cuenta que nadie haya
+  hecho; lo que sí se puede decir es que es el que más circula fuera del
+  ambiente.)
 
 ## Qué hay que hacer
 
 Leer. Como en el módulo anterior, no hay cuestionario ni nada que entregar: la
-tarea es llegar a la sesión con las tres lecturas leídas.
+tarea es llegar a la sesión con las cuatro lecturas leídas.
 
-Sigue con [[las-tres-lecturas]].
+Sigue con [[las-lecturas-de-la-salida]].

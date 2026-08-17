@@ -109,7 +109,7 @@ def test_toda_lectura_trae_introduccion(modulo):
 @pytest.mark.parametrize("modulo,cuantas", [
     ("filosofia_ia/clase_1", 6),
     ("filosofia_ia/clase_2", 4),
-    ("filosofia_ia/clase_3", 3),
+    ("filosofia_ia/clase_3", 4),
 ])
 def test_el_orden_es_consecutivo_y_unico(modulo, cuantas):
     ordenes = sorted(x.orden for x in _todas_las_lecturas(modulo))
@@ -274,12 +274,15 @@ PATRONES_PAGINAS_TOTALES_MODULO_2 = [
 PATRONES_PAGINAS_TOTALES_MODULO_3 = [
     (PAGINA_3, "8_exit_nrx.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
     (TAREA_3, "3_leer_cuadernillo_modulo_3.yaml", r"un solo archivo de (\d+)\s"),
-    (VISOR_3, "visor_modulo_3.html", r"Tres lecturas · (\d+) páginas ·"),
-    (LECTURAS_README_3, "README.md modulo 3 (resumen)", r"Tres lecturas, (\d+) páginas,"),
+    (VISOR_3, "visor_modulo_3.html", r"Cuatro lecturas · (\d+) páginas ·"),
+    (LECTURAS_README_3, "README.md modulo 3 (resumen)", r"Cuatro lecturas, (\d+) páginas,"),
     (LECTURAS_README_3, "README.md modulo 3 (comparación)",
      r"la unidad: (\d+) páginas frente a las 53"),
+    # Sin "completas", a diferencia de los modulos 1 y 2: de Patchwork va solo
+    # la segunda mitad del capitulo, asi que el README no puede decir que las
+    # cuatro lecturas esten completas sin contradecir su propia tabla.
     (LECTURAS_README_3, "README.md modulo 3 (cuadernillo)",
-     r"\*\*(\d+) páginas, las tres lecturas completas\*\*"),
+     r"\*\*(\d+) páginas, las cuatro lecturas\*\*"),
 ]
 
 
@@ -370,6 +373,48 @@ def test_el_cuadernillo_publicado_trae_la_introduccion_vigente(modulo, pdf):
             "y vuelve a copiarlo a _assets/. Párrafo: "
             f"{' '.join(parrafo.split())[:90]!r}"
         )
+
+
+@pytest.mark.parametrize("modulo,pdf", MODULOS_CON_CUADERNILLO)
+def test_el_cuadernillo_publicado_trae_las_fichas_vigentes(modulo, pdf):
+    """Lo mismo que la guarda de arriba, pero para las fichas de `LECTURAS`.
+
+    La de arriba solo muestrea `introduccion.md`, y su docstring prometia cubrir
+    tambien «una ficha» sin cubrirla: editar el campo `introduccion` de una
+    Lectura en tools/lecturas.py y olvidarse de reconstruir dejaba el PDF
+    diciendo otra cosa, y las 102 pruebas pasaban. Paso dos veces al agregar la
+    cuarta lectura al modulo 3 —«las tres» impreso donde la fuente ya decia «las
+    cuatro»—, y por eso existe esta.
+
+    Se comprueban DOS tramos de cada apartado largo -el principio y el final-,
+    con la misma normalizacion a solo-letras: el PDF justifica, parte palabras
+    con guion suave y reflowea, asi que comparar texto con espacios da falsos
+    negativos. Los dos tramos, y no solo el primero, porque la edicion tipica es
+    retocar el final de una frase; con un solo tramo al inicio esta guarda ya
+    dejo pasar en vivo una ficha editada por la cola.
+    """
+    import pypdf
+    m = _cargar_lecturas()
+    texto_pdf = _solo_letras(
+        " ".join((p.extract_text() or "") for p in pypdf.PdfReader(pdf).pages)
+    )
+    comprobados = 0
+    for lectura in _todas_las_lecturas(modulo):
+        for apartado in lectura.introduccion.split("\n\n"):
+            plano = _solo_letras(apartado)
+            if len(plano) < 200:
+                continue
+            comprobados += 1
+            for donde, aguja in (("empieza", plano[:150]), ("termina", plano[-150:])):
+                assert aguja in texto_pdf, (
+                    f"{pdf.name}: el apartado que {donde} asi, en la ficha de "
+                    f"«{lectura.id}», no aparece en el cuadernillo publicado. Se "
+                    "editó la ficha en tools/lecturas.py y no se reconstruyó el "
+                    f"PDF: corre `python3 tools/lecturas.py {modulo}` y vuelve a "
+                    f"copiarlo a _assets/. Apartado: "
+                    f"{' '.join(apartado.split())[:90]!r}"
+                )
+    assert comprobados, f"{modulo}: ninguna ficha tiene un apartado largo que comprobar"
 
 
 def test_toda_lectura_en_pdf_declara_que_debe_contener():

@@ -11,7 +11,7 @@ no se versiona (PDFS).
 
 «Publicado en abierto» NO quiere decir «dominio publico», y conviene no
 confundirlos al leer este archivo. Solo Marx lo es. El manifiesto de Williams y
-Srnicek, el ensayo de Terranova y las tres lecturas del modulo 3 siguen en
+Srnicek, el ensayo de Terranova y las cuatro lecturas del modulo 3 siguen en
 derechos de sus autores; se reproducen en el cuadernillo, con la fuente al pie
 de cada lectura, por ser material educativo de un curso cerrado y estar
 disponibles gratis en la web. El campo `licencia` de cada Fuente dice cual es
@@ -97,7 +97,7 @@ FUENTES: dict[str, list[Fuente]] = {
                      r"This\s+essay\s+is\s+the\s+outcome\s+of\s+a\s+research\s+process",
                      r"Condividere")),
     ],
-    # Modulo 3 · Exit, NRx & Dark Enlightenment. Las tres son paginas web
+    # Modulo 3 · Exit, NRx & Dark Enlightenment. Las cuatro son paginas web
     # abiertas —gratis, no de dominio publico: ver el encabezado de este
     # archivo—, y ninguna llega como PDF, asi que este modulo no tiene entradas
     # en PDFS ni en ENLACES de tools/lecturas.py. De Land se toman dos de las
@@ -133,6 +133,27 @@ FUENTES: dict[str, list[Fuente]] = {
                html=("https://www.unqualified-reservations.org/2007/04/formalist-manifesto-originally-posted/",
                      r"The other day I was tinkering around in my garage",
                      r"next\s*»")),
+        # El temario cita esta lectura por las paginas de la recopilacion en PDF
+        # que circula como libro (cap. 1, pp. 7-18). Aqui se toma del blog, que
+        # es la publicacion original y esta en abierto, y que el propio sitio
+        # presenta ya con numeracion de capitulos: el <title> de esta URL es
+        # «Chapter 1: A Positive Vision | Patchwork: A Political System for the
+        # 21st Century». El recorte NO empieza donde empieza el capitulo: las
+        # primeras seis paginas son la parte propagandistica —anecdotas, Croly,
+        # los valores civicos de 1911— y el temario arranca justo donde el texto
+        # se vuelve de ingenieria. La ficha de la lectura resume lo que queda
+        # antes, para que nadie caiga en frio.
+        #
+        # El `hasta` se apoya en la barra de capitulos del sitio, no en una
+        # frase del texto, por la misma razon que el `next »` de la entrada de
+        # 2007: el capitulo simplemente termina en su segunda nota al pie y lo
+        # siguiente ya es navegacion. Falla ruidosamente si el sitio cambia.
+        Fuente("yarvin_patchwork_cap1_en.txt", "",
+               "Curtis Yarvin (Mencius Moldbug) · en derechos; entrada de blog en abierto, unqualified-reservations.org",
+               "can of course emigrate to any other realm in the Patchwork",
+               html=("https://www.unqualified-reservations.org/2008/11/patchwork-positive-vision-part-1/",
+                     r"Anyway\. Enough anecdotes and generalities",
+                     r"\n\nCh\. 1\n\nCh\. 2\n")),
         # El corte deja fuera la «Editor's Note» que Cato añadió despues: es un
         # texto posterior y distinto —«Your Suffrage Isn't in Danger. Your
         # Other Rights Are.»— y se enlaza desde la pagina del modulo en vez de
