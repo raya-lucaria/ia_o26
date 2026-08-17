@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Mapa de la sesion del modulo 3. A la izquierda, la hora 1 con las tres lecturas y el papel de cada una: Yarvin en 2007 escribe el argumento desde cero, Thiel en 2009 lo dice en dos paginas desde el dinero, y Land en 2012 lee a los dos, les pone nombre y saca la consecuencia. A la derecha, la hora 2 con sus cinco pasos: comprension, interpretacion, comparacion, desacuerdo y aplicacion. Abajo, la pregunta que une las tres lecturas: de que se sale exactamente, y quien se queda."><rect x="0" y="0" width="1000" height="560" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">Las dos horas de la sesion, y la pregunta que las une</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Tres lecturas en la primera hora; cinco movimientos en la segunda</text>
+
+<!-- columna izquierda: hora 1 -->
+<rect x="50" y="86" width="420" height="52" rx="12" fill="#f04cff" opacity="0.14"/>
+<text x="70" y="112" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">HORA 1 - Las tres lecturas, en claro</text>
+<text x="70" y="130" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Una ficha por lectura, unos 18 minutos cada una</text>
+
+<rect x="50" y="152" width="420" height="88" rx="12" fill="#f04cff" opacity="0.10" stroke="#f04cff" stroke-width="1.5"/>
+<text x="70" y="178" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">1 - Yarvin, 2007</text>
+<text x="70" y="200" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Escribe el argumento desde cero: si el mal es la</text>
+<text x="70" y="219" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">violencia, formalizar el poder que ya existe.</text>
+
+<rect x="50" y="252" width="420" height="88" rx="12" fill="#55ddff" opacity="0.10" stroke="#55ddff" stroke-width="1.5"/>
+<text x="70" y="278" fill="#55ddff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">2 - Thiel, 2009</text>
+<text x="70" y="300" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">El mismo argumento en dos paginas, dicho por</text>
+<text x="70" y="319" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">quien tiene con que construir la salida.</text>
+
+<rect x="50" y="352" width="420" height="104" rx="12" fill="#ffd166" opacity="0.10" stroke="#ffd166" stroke-width="1.5"/>
+<text x="70" y="378" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">3 - Land, 2012 (partes 1 y 4a)</text>
+<text x="70" y="400" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Lee a los dos anteriores, le pone nombre a la</text>
+<text x="70" y="419" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">suma, y saca la consecuencia que el cree que</text>
+<text x="70" y="438" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">se sigue. La parte 4a es esa consecuencia.</text>
+
+<!-- columna derecha: hora 2 -->
+<rect x="530" y="86" width="420" height="52" rx="12" fill="#9b6dff" opacity="0.16"/>
+<text x="550" y="112" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">HORA 2 - Discutir la salida</text>
+<text x="550" y="130" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Cinco movimientos, de reconstruir a aplicar</text>
+
+<rect x="530" y="152" width="420" height="304" rx="12" fill="#9b6dff" opacity="0.08" stroke="#9b6dff" stroke-width="1.5"/>
+<text x="556" y="184" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">1</text>
+<text x="586" y="184" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Comprension - reconstruir, sin opinar</text>
+<text x="556" y="240" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">2</text>
+<text x="586" y="240" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Interpretacion - que decidio no decir cada uno</text>
+<text x="556" y="296" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">3</text>
+<text x="586" y="296" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Comparacion - contra los modulos 1 y 2</text>
+<text x="556" y="352" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">4</text>
+<text x="586" y="352" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Desacuerdo - el eslabon que cada quien rompe</text>
+<text x="556" y="408" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">5</text>
+<text x="586" y="408" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">Aplicacion - que tiene esto que ver con la IA</text>
+
+<!-- pregunta que une -->
+<rect x="50" y="480" width="900" height="56" rx="12" fill="#72f1b8" opacity="0.12" stroke="#72f1b8" stroke-width="1.5"/>
+<text x="500" y="504" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">LA PREGUNTA QUE UNE LAS TRES</text>
+<text x="500" y="524" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" text-anchor="middle">Salir, si: pero de que exactamente, quien puede hacerlo, y que queda atras</text>
+</svg>

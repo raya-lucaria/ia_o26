@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="548" viewBox="0 0 1000 548" role="img" aria-label="Matriz de las tres lecturas del modulo 3 en tres columnas: la lectura, de que propone salirse, y quien puede salir junto con lo que queda atras. Yarvin propone salir de la discusion sobre quien deberia mandar, sustituyendola por un registro de quien manda; puede salir quien ya tiene poder formalizable, y queda atras cualquiera cuyo poder no aparezca en el registro. Thiel propone salir de la politica entera hacia el mar, el espacio o internet; puede salir quien pueda pagar la infraestructura de la salida, y el propio texto dice que todo puede depender de una sola persona. Land habla de salir de la democracia como forma de vida, y en la parte 4a incluye mudarse de barrio; puede salir quien tenga a donde irse, y es el unico de los tres que describe al que se queda, aunque no pregunta si una cosa causa la otra. Abajo, lo que ninguna de las tres se pregunta: si la salida de unos tiene que ver con lo que le pasa a los que se quedan."><rect x="0" y="0" width="1000" height="548" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">De que se sale, segun cada lectura</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Las tres dicen salir. No dicen salir de lo mismo, ni le sale a la misma gente</text>
+
+<text x="70" y="98" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">LECTURA</text>
+<text x="330" y="98" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">SE SALE DE...</text>
+<text x="650" y="98" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">...LE SALE A, Y QUEDA ATRAS</text>
+<line x1="60" y1="110" x2="940" y2="110" stroke="#78419e" stroke-width="1.5"/>
+
+<!-- fila 1 -->
+<rect x="60" y="122" width="880" height="106" rx="14" fill="#f04cff" opacity="0.12" stroke="#f04cff" stroke-width="1.5"/>
+<text x="80" y="150" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">1 - Formalismo</text>
+<text x="80" y="170" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Yarvin</text>
+<text x="80" y="187" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2007</text>
+<text x="330" y="154" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">la discusion sobre quien</text>
+<text x="330" y="173" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">deberia mandar, sustituida</text>
+<text x="330" y="192" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">por un registro de quien</text>
+<text x="330" y="211" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">manda ya</text>
+<text x="650" y="154" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">quien tiene poder que se pueda</text>
+<text x="650" y="173" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">escriturar. Queda atras quien lo</text>
+<text x="650" y="192" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">tenga y no aparezca en el papel,</text>
+<text x="650" y="211" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">y quien no tenga ninguno</text>
+
+<!-- fila 2 -->
+<rect x="60" y="240" width="880" height="106" rx="14" fill="#55ddff" opacity="0.12" stroke="#55ddff" stroke-width="1.5"/>
+<text x="80" y="268" fill="#55ddff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">2 - Escape</text>
+<text x="80" y="288" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Thiel</text>
+<text x="80" y="305" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2009</text>
+<text x="330" y="272" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">la politica entera, no de un</text>
+<text x="330" y="291" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">gobierno concreto: hacia el</text>
+<text x="330" y="310" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">mar, el espacio o el</text>
+<text x="330" y="329" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">ciberespacio</text>
+<text x="650" y="272" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">quien pueda pagar la</text>
+<text x="650" y="291" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">infraestructura de la salida. El</text>
+<text x="650" y="310" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">propio texto lo dice: puede</text>
+<text x="650" y="329" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">depender de una sola persona</text>
+
+<!-- fila 3 -->
+<rect x="60" y="358" width="880" height="106" rx="14" fill="#ffd166" opacity="0.12" stroke="#ffd166" stroke-width="1.5"/>
+<text x="80" y="386" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">3 - Dark Enlightenment</text>
+<text x="80" y="406" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Land</text>
+<text x="80" y="423" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2012</text>
+<text x="330" y="390" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">la democracia como forma</text>
+<text x="330" y="409" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">de vida, no como sistema</text>
+<text x="330" y="428" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">electoral: la parte 4a incluye</text>
+<text x="330" y="447" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">mudarse de barrio</text>
+<text x="650" y="390" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">quien tenga a donde irse. Es el</text>
+<text x="650" y="409" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">unico que si describe al que se</text>
+<text x="650" y="428" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">queda: casas fortificadas, calles</text>
+<text x="650" y="447" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">evitadas, pandillas</text>
+
+<!-- cierre -->
+<rect x="60" y="478" width="880" height="52" rx="12" fill="#72f1b8" opacity="0.12" stroke="#72f1b8" stroke-width="1.5"/>
+<text x="500" y="500" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">LO QUE NINGUNA DE LAS TRES SE PREGUNTA</text>
+<text x="500" y="520" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" text-anchor="middle">Si la salida de unos tiene algo que ver con lo que le pasa a los que se quedan</text>
+</svg>

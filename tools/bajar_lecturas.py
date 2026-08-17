@@ -3,9 +3,19 @@
 
     python3 tools/bajar_lecturas.py filosofia_ia/clase_1
 
-Solo se descargan obras de dominio publico desde repositorios que las
-distribuyen legitimamente. Lo que sigue en derechos NO se descarga aqui: se
-enlaza desde tools/lecturas.py, en la lista ENLACES.
+Que se descarga y que no. Aqui solo entra texto que su autor o su editor
+publican en abierto y gratis en la web, y cada fuente declara de donde sale.
+Lo que se vende como edicion o vive tras un muro de pago NO se descarga: se
+enlaza desde tools/lecturas.py, en la lista ENLACES, o se recorta de un PDF que
+no se versiona (PDFS).
+
+«Publicado en abierto» NO quiere decir «dominio publico», y conviene no
+confundirlos al leer este archivo. Solo Marx lo es. El manifiesto de Williams y
+Srnicek, el ensayo de Terranova y las tres lecturas del modulo 3 siguen en
+derechos de sus autores; se reproducen en el cuadernillo, con la fuente al pie
+de cada lectura, por ser material educativo de un curso cerrado y estar
+disponibles gratis en la web. El campo `licencia` de cada Fuente dice cual es
+cada caso, y no debe afirmar una licencia abierta donde no la hay.
 
 Cada fuente declara que debe contener, y la descarga falla ruidosamente si el
 archivo que llego no es el que se pidio. Eso ya evito un error real: el ebook
@@ -87,6 +97,53 @@ FUENTES: dict[str, list[Fuente]] = {
                      r"This\s+essay\s+is\s+the\s+outcome\s+of\s+a\s+research\s+process",
                      r"Condividere")),
     ],
+    # Modulo 3 · Exit, NRx & Dark Enlightenment. Las tres son paginas web
+    # abiertas —gratis, no de dominio publico: ver el encabezado de este
+    # archivo—, y ninguna llega como PDF, asi que este modulo no tiene entradas
+    # en PDFS ni en ENLACES de tools/lecturas.py. De Land se toman dos de las
+    # diez partes del ensayo —la 1 y la 4a— y por eso la fuente concatena dos
+    # recortes de la MISMA pagina: el sitio publica el ensayo entero en una
+    # sola URL, con las partes separadas solo por su encabezado.
+    "filosofia_ia/clase_3": [
+        # Ojo con la procedencia de esta: thedarkenlightenment.com NO es sitio
+        # de Land. Es el archivo de un tercero, y el propio Land lo desautorizo
+        # publicamente (ver el README del modulo). Se usa porque xenosystems.net,
+        # donde el ensayo se publico, ya no existe, y porque este alojamiento
+        # tiene el texto completo. `debe_contener` apunta a una frase del
+        # SEGUNDO recorte, la parte 4a: la del primero seria un subconjunto
+        # literal de su propio ancla `desde` y no podria fallar nunca.
+        Fuente("land_dark_enlightenment_en.txt", "",
+               "Nick Land · en derechos; texto completo alojado por un tercero en thedarkenlightenment.com",
+               "its sub-political character: all exit and no voice",
+               concatenar=[
+                   ("https://www.thedarkenlightenment.com/the-dark-enlightenment-by-nick-land/",
+                    r"Part 1: Neo-reactionaries head for the exit",
+                    r"Part 2: The arc of history is long"),
+                   ("https://www.thedarkenlightenment.com/the-dark-enlightenment-by-nick-land/",
+                    r"Part 4a: A multi-part sub-digression into racial terror",
+                    r"Part 4b: Obnoxious observations"),
+               ]),
+        # El `desde` es la primera frase del ensayo y no la linea de autoria del
+        # blog: empezar en la autoria metia el titulo dos veces en el cuadernillo
+        # —una en la portadilla y otra raspada del sitio—. La fecha se conserva
+        # en `procedencia`, que el cuadernillo imprime al pie de la lectura.
+        Fuente("yarvin_formalist_manifesto_en.txt", "",
+               "Curtis Yarvin (Mencius Moldbug) · en derechos; entrada de blog en abierto, unqualified-reservations.org",
+               "So this is the formalist manifesto",
+               html=("https://www.unqualified-reservations.org/2007/04/formalist-manifesto-originally-posted/",
+                     r"The other day I was tinkering around in my garage",
+                     r"next\s*»")),
+        # El corte deja fuera la «Editor's Note» que Cato añadió despues: es un
+        # texto posterior y distinto —«Your Suffrage Isn't in Danger. Your
+        # Other Rights Are.»— y se enlaza desde la pagina del modulo en vez de
+        # colarse dentro del ensayo como si fuera su final.
+        Fuente("thiel_education_libertarian_en.txt", "",
+               "Peter Thiel · en derechos; publicado en abierto por Cato Unbound, 13 de abril de 2009",
+               "I no longer believe that freedom and democracy are compatible",
+               html=("https://www.cato-unbound.org/2009/04/13/peter-thiel/education-libertarian/",
+                     r"I remain committed to the faith of my teenage years",
+                     r"Editor.s Note: Mr\. Thiel")),
+    ],
 }
 
 
@@ -123,6 +180,16 @@ BASURA = [
     r"CALIFORNIAN\s+IDEOLOGY\s+by[\s\S]{0,80}?Imaginary\s+Futures",
 ]
 
+# Inicial suelta que el raspado dejo separada del resto de su palabra: «T he».
+# «I» y «A» quedan fuera a proposito, porque son palabras enteras del ingles y
+# no iniciales sueltas. Sin esa excepcion, un ensayo en primera persona se
+# arruina entero —«Iremain committed», «Idecided to build a new ideology»— y el
+# defecto ni siquiera se reporta, porque la misma regla que lo produce hace que
+# el texto ya no calce con el patron de PROHIBIDO que deberia detectarlo. El
+# precio es que un «I nteligencia» partido de verdad ahora sobrevive; no ha
+# aparecido ninguno, y es preferible a romper cada «I» de cada lectura.
+INICIAL_SUELTA = r"\b(?![IA]\b)([A-Z]) ([a-z]{2,})\b"
+
 # Lo que NUNCA debe sobrevivir a la limpieza. Si algo de esto queda, la
 # descarga falla: es preferible detenerse a publicar un texto ilegible.
 PROHIBIDO = [
@@ -133,7 +200,7 @@ PROHIBIDO = [
     (r"Kodwo\s*Eshun\s*-?\s*Motion\s*Capture|Cthulhu\s*Club", "índice de la revista CCRU"),
     (r"Print this page|HRC Archive", "cromo de WordPress"),
     (r"Marx/Engels Archive|Previous \| Contents", "pie del archivo Marx/Engels"),
-    (r"\b[A-Z] [a-z]{2,}\b(?= [a-z])", "palabra partida por espacio, tipo «T he»"),
+    (INICIAL_SUELTA + r"(?= [a-z])", "palabra partida por espacio, tipo «T he»"),
 ]
 
 
@@ -158,7 +225,7 @@ def _limpiar(texto: str) -> str:
     # guion de corte de linea que el HTML dejo dentro de la palabra
     texto = re.sub(r"(\w)-\s+(\w{2,})", r"\1\2", texto)
     # inicial separada del resto: «T he» -> «The»
-    texto = re.sub(r"\b([A-Z]) ([a-z]{2,})\b", r"\1\2", texto)
+    texto = re.sub(INICIAL_SUELTA, r"\1\2", texto)
     texto = re.sub(r"\s+([.,;:!?])", r"\1", texto)
     texto = texto.replace("\u00a0", " ")
     return re.sub(r"[ \t]{2,}", " ", texto)

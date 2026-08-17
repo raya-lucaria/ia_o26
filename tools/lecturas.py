@@ -361,6 +361,147 @@ LECTURAS: dict[str, list[Lectura]] = {
             ),
         ),
     ],
+    # ── Módulo 3 · Exit, NRx & Dark Enlightenment ─────────────────────────────
+    # Tres lecturas, las tres de fuente primaria abierta: este módulo no tiene
+    # entradas en PDFS ni en ENLACES. Van en orden cronológico, que aquí sí es
+    # el orden pedagógico: Yarvin escribe el argumento, Thiel lo dice desde el
+    # dinero, y Land lee a los dos y le pone nombre al conjunto. De Land se
+    # leen dos de las diez partes del ensayo —la 1 y la 4a—, y llegan en un
+    # solo archivo, con el encabezado de cada parte dentro del texto.
+    "filosofia_ia/clase_3": [
+        Lectura(
+            orden=1,
+            id="yarvin-formalist-manifesto",
+            titulo="A Formalist Manifesto",
+            autor="Curtis Yarvin (como «Mencius Moldbug»)",
+            anio="2007",
+            fuente="yarvin_formalist_manifesto_en.txt",
+            procedencia="Unqualified Reservations, 24 de abril de 2007 · unqualified-reservations.org",
+            licencia="En derechos del autor; entrada de blog publicada en abierto. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Una entrada de blog de abril de 2007 en la "
+                "que Yarvin —firmando como Mencius Moldbug— dice que va a "
+                "construir una ideología desde cero, y la construye: el "
+                "*formalismo*. Su movimiento central cabe en una frase: dejar "
+                "de preguntar quién **debería** tener qué, y escribir en un "
+                "papel quién **tiene** qué. Al final del texto ese papel dice "
+                "que Estados Unidos es una empresa.\n\n"
+                "**Palabras clave.** *Formalismo*: poner por escrito el poder "
+                "que ya existe, en vez de discutir cómo repartirlo. "
+                "*Violencia = conflicto + incertidumbre*: la ecuación de la que "
+                "sale todo lo demás. *Siervo corporativo*: lo que, según él, "
+                "somos todos ya. *Ciudad-Estado*: Singapur, Hong Kong y Dubái, "
+                "sus tres ejemplos, a los que vuelve Land.\n\n"
+                "**Qué retener.** El giro que convierte la política en un "
+                "problema de ingeniería. Si el único mal que importa es la "
+                "violencia organizada, y la violencia nace de la ambigüedad "
+                "sobre quién manda, entonces la solución es aclarar quién "
+                "manda —no repartirlo mejor—. Todo lo demás del módulo "
+                "descansa en ese paso. Fíjate en dónde te parece que se cae.\n\n"
+                "**Es difícil, y está bien.** La prosa no lo es: es un blog, "
+                "con chistes, y se lee rápido. Lo difícil es otra cosa —es "
+                "simpático, y eso vuelve más trabajoso discutirlo—. Trae "
+                "referencias de 2007 (Bush, Irak, el dueño del *New York "
+                "Times*) que no hace falta reconocer. Y es **anterior** a "
+                "*Patchwork*, la serie de 2008 que ya viste en "
+                "[[ideas-aceleracionismo]]: aquí estás en el origen, no en la "
+                "versión desarrollada."
+            ),
+        ),
+        Lectura(
+            orden=2,
+            id="thiel-education-libertarian",
+            titulo="The Education of a Libertarian",
+            autor="Peter Thiel",
+            anio="2009",
+            fuente="thiel_education_libertarian_en.txt",
+            procedencia="Cato Unbound, 13 de abril de 2009 · cato-unbound.org",
+            licencia="En derechos; publicado en abierto por la revista. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Mil doscientas palabras: la lectura más "
+                "corta del módulo, y de las más cortas del curso. Un "
+                "inversionista cuenta por qué "
+                "dejó de creer en la política y dónde busca ahora la libertad "
+                "—internet, el espacio exterior y las ciudades flotantes—. Es "
+                "el texto en el que aparece la frase que Land cita en la "
+                "lectura 3 y que da nombre a todo este módulo.\n\n"
+                "**Palabras clave.** *Escape*: su palabra, no «salida»; el "
+                "*exit* de Hirschman dicho por alguien que va a pagarlo. "
+                "*Seasteading*: construir ciudades en el mar, fuera de toda "
+                "jurisdicción. *Carrera mortal*: su metáfora para la relación "
+                "entre política y tecnología. *Utopismo tecnológico*: la idea "
+                "de que la técnica trae libertad sola, que él **rechaza** "
+                "expresamente.\n\n"
+                "**Qué retener.** Que el argumento no es «la democracia es "
+                "mala», sino «la democracia no va a dar lo que quiero, así "
+                "que dejo de convencer y me pongo a construir». Eso es la "
+                "salida dicha por alguien que se presenta a sí mismo, en el "
+                "texto, como emprendedor e inversionista. Y retén el "
+                "cierre: el destino del mundo puede depender del esfuerzo de "
+                "una sola persona. Es la tesis opuesta a la de todo el "
+                "Módulo 2.\n\n"
+                "**Es difícil, y está bien.** Es la más clara de las tres y no "
+                "va a costarte trabajo. Dos cosas te van a frenar, y las dos "
+                "son a propósito. Una es la línea de 1920 sobre el "
+                "asistencialismo y el voto de las mujeres; el propio Thiel la "
+                "matizó el 1 de mayo de 2009, en la misma revista, y esa "
+                "aclaración está enlazada desde la página del módulo. La otra "
+                "es lo que sabes de quien escribe por fuera del texto. Lee "
+                "primero lo que dice, y en esos términos; lo demás se discute "
+                "en sesión."
+            ),
+        ),
+        Lectura(
+            orden=3,
+            id="land-dark-enlightenment",
+            titulo="The Dark Enlightenment, partes 1 y 4a",
+            autor="Nick Land",
+            anio="2012",
+            fuente="land_dark_enlightenment_en.txt",
+            procedencia=("thedarkenlightenment.com — archivo de un tercero, no sitio de Land; "
+                         "xenosystems.net, donde el ensayo se publicó, ya no existe"),
+            licencia="En derechos del autor; texto disponible en abierto. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Dos de las diez partes del ensayo que le "
+                "puso nombre a la corriente. La **parte 1** arma el argumento "
+                "entero: llega en su quinto párrafo a la frase de Thiel que "
+                "acabas de leer, pasa por Hoppe y desemboca en el "
+                "neocameralismo de Moldbug y en «la Catedral». Entre las dos "
+                "partes que van aquí faltan la 2, la 3 y la 4, y el texto no "
+                "lo señala: el salto se nota solo porque cambia el "
+                "encabezado. La **parte 4a** es donde ese mismo "
+                "argumento se vuelve racial: Land lee la *fuga blanca* de las "
+                "ciudades estadounidenses como un caso de salida, y discute el "
+                "despido del periodista John Derbyshire de *National Review* "
+                "del lado de Derbyshire.\n\n"
+                "**Palabras clave.** *Neocameralismo*: el Estado como empresa "
+                "con accionistas y un director general. *Gov-corp*: el "
+                "nombre que le da a esa empresa. *La Catedral*: el conjunto de "
+                "universidades, prensa y burocracia que, según Moldbug, fija "
+                "lo que se puede pensar. *Preferencia temporal*: cuánto pesa "
+                "el presente frente al futuro; su vara para medir "
+                "civilizaciones. *No voice, free exit*: su resumen de todo.\n\n"
+                "**Qué retener.** Que la parte 1 es Land leyendo las dos "
+                "lecturas anteriores y soldándolas, y que la 4a es la "
+                "consecuencia que él cree que se sigue. Van juntas a "
+                "propósito: la segunda no es un descarrilamiento de la "
+                "primera, es Land aplicándola. Si al terminar te parece que sí "
+                "es un descarrilamiento, esa es exactamente la discusión de la "
+                "sesión, y hay que poder decir **en qué paso** se descarrila.\n\n"
+                "**Es difícil, y está bien.** Dos avisos, y el segundo importa "
+                "más. El primero: la prosa de Land sigue siendo la de "
+                "*Meltdown*, con más referencias que argumentos; no te "
+                "detengas en los nombres que no reconozcas. El segundo: **la "
+                "parte 4a habla de raza en términos que este curso no "
+                "comparte**, y no viene suavizada. Está aquí como fuente "
+                "primaria, porque es el punto donde el programa de la salida "
+                "deja de ser abstracto, y no porque sus afirmaciones se den "
+                "por buenas. Que te incomode no es un fallo de lectura. Lo "
+                "que se te pide es poder decir cuál es el argumento y dónde "
+                "se rompe."
+            ),
+        ),
+    ],
 }
 
 # Sin fuente abierta verificable. Si consigues el PDF de la edicion citada y lo
@@ -793,6 +934,10 @@ def _titulos(modulo: str) -> tuple[str, str]:
         "filosofia_ia/clase_2": (
             "The Left Takes the Future Back",
             "Filosofía de la IA · Módulo 2 — La izquierda reclama el futuro",
+        ),
+        "filosofia_ia/clase_3": (
+            "Exit, NRx & Dark Enlightenment",
+            "Filosofía de la IA · Módulo 3 — La salida como programa político",
         ),
     }.get(modulo, (modulo, ""))
 

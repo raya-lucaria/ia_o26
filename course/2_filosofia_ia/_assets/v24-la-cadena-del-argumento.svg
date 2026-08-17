@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="628" viewBox="0 0 1000 628" role="img" aria-label="La cadena del argumento de la salida, en seis eslabones encadenados de arriba abajo. Uno, de Yarvin: el unico mal que importa de verdad es la violencia organizada; al lado de eso, la pobreza o la decadencia moral son problemas menores. Dos, de Yarvin: la violencia nace de la incertidumbre sobre quien manda, asi que formalizar es escribir quien manda ya. Tres, de Yarvin: escrito asi, el Estado resulta ser una empresa con duenos, activos y deudas, y lo que hay que hacer es repartir sus acciones entre quienes ya mandan. Cuatro, de Thiel: si deliberar no va a producir ese resultado, hay que dejar de convencer y ponerse a construir la salida. Cinco, de Land en la parte 1, resumiendo a Moldbug: entonces la democracia no es el terreno del problema sino el problema, y a esa empresa se le pone un director general mientras los ciudadanos pasan a ser clientes; sin voz y con salida libre. Seis, de Land en la parte 4a: si toda salida cuenta, tambien cuenta la fuga blanca de las ciudades estadounidenses. Abajo, la pregunta de la sesion: en que eslabon se rompe la cadena, porque los seis no encadenan igual de fuerte."><rect x="0" y="0" width="1000" height="628" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">La cadena del argumento, eslabon por eslabon</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Cada paso se apoya en el anterior. Rechazar el final obliga a decir donde se corta</text>
+
+<line x1="100" y1="96" x2="100" y2="510" stroke="#78419e" stroke-width="2"/>
+
+<!-- 1 -->
+<circle cx="100" cy="130" r="15" fill="#211033" stroke="#f04cff" stroke-width="2"/>
+<text x="100" y="135" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">1</text>
+<rect x="132" y="96" width="798" height="68" rx="12" fill="#f04cff" opacity="0.10" stroke="#f04cff" stroke-width="1.5"/>
+<text x="154" y="118" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" text-anchor="start">YARVIN, 2007</text>
+<text x="154" y="140" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">El unico mal que importa de verdad es la violencia organizada. Al lado de eso,</text>
+<text x="154" y="157" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">la pobreza o la decadencia moral son, dice, problemas menores.</text>
+
+<!-- 2 -->
+<circle cx="100" cy="206" r="15" fill="#211033" stroke="#f04cff" stroke-width="2"/>
+<text x="100" y="211" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">2</text>
+<rect x="132" y="172" width="798" height="68" rx="12" fill="#f04cff" opacity="0.10" stroke="#f04cff" stroke-width="1.5"/>
+<text x="154" y="194" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" text-anchor="start">YARVIN, 2007</text>
+<text x="154" y="216" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">La violencia es conflicto mas incertidumbre. Si no hay duda sobre quien manda,</text>
+<text x="154" y="233" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">no hay por que pelear: formalizar es escribir quien manda ya, no quien deberia.</text>
+
+<!-- 3 -->
+<circle cx="100" cy="282" r="15" fill="#211033" stroke="#f04cff" stroke-width="2"/>
+<text x="100" y="287" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">3</text>
+<rect x="132" y="248" width="798" height="68" rx="12" fill="#f04cff" opacity="0.10" stroke="#f04cff" stroke-width="1.5"/>
+<text x="154" y="270" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" text-anchor="start">YARVIN, 2007</text>
+<text x="154" y="292" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">Escrito asi, el Estado resulta ser una empresa: tiene duenos, activos y deudas,</text>
+<text x="154" y="309" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">y hay que repartir sus acciones entre quienes ya mandan de hecho.</text>
+
+<!-- 4 -->
+<circle cx="100" cy="358" r="15" fill="#211033" stroke="#55ddff" stroke-width="2"/>
+<text x="100" y="363" fill="#55ddff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">4</text>
+<rect x="132" y="324" width="798" height="68" rx="12" fill="#55ddff" opacity="0.10" stroke="#55ddff" stroke-width="1.5"/>
+<text x="154" y="346" fill="#55ddff" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" text-anchor="start">THIEL, 2009</text>
+<text x="154" y="368" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">Si deliberar no va a producir ese resultado, deja de convencer y ponte a construir</text>
+<text x="154" y="385" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">la salida: internet, el espacio, el mar. Libertad y democracia no son compatibles.</text>
+
+<!-- 5 -->
+<circle cx="100" cy="434" r="15" fill="#211033" stroke="#ffd166" stroke-width="2"/>
+<text x="100" y="439" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">5</text>
+<rect x="132" y="400" width="798" height="68" rx="12" fill="#ffd166" opacity="0.10" stroke="#ffd166" stroke-width="1.5"/>
+<text x="154" y="422" fill="#ffd166" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" text-anchor="start">LAND, 2012 - PARTE 1, RESUMIENDO A MOLDBUG</text>
+<text x="154" y="444" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">Entonces la democracia no es el terreno del problema: es el problema. A esa</text>
+<text x="154" y="461" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">empresa se le pone un director general y los ciudadanos pasan a ser clientes.</text>
+
+<!-- 6 -->
+<circle cx="100" cy="510" r="15" fill="#211033" stroke="#ffd166" stroke-width="2"/>
+<text x="100" y="515" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">6</text>
+<rect x="132" y="476" width="798" height="68" rx="12" fill="#ffd166" opacity="0.10" stroke="#ffd166" stroke-width="1.5"/>
+<text x="154" y="498" fill="#ffd166" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" text-anchor="start">LAND, 2012 - PARTE 4a</text>
+<text x="154" y="520" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">Y si toda salida cuenta, tambien cuenta la fuga blanca de las ciudades: irse en vez</text>
+<text x="154" y="537" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start">de discutir, dice Land, es la forma espontanea del programa. Aqui aterriza todo.</text>
+
+<!-- cierre -->
+<rect x="50" y="562" width="900" height="50" rx="12" fill="#72f1b8" opacity="0.12" stroke="#72f1b8" stroke-width="1.5"/>
+<text x="500" y="592" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" text-anchor="middle">En que eslabon se rompe? Rechazar el 6 sin tocar el 1 obliga a decir cual de los cuatro de en medio falla</text>
+</svg>

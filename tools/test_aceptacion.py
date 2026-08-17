@@ -259,7 +259,11 @@ def test_7_toda_fecha_y_atribucion_tiene_fuente_verificada():
 # deliberada: el PDF vive en lecturas/ y copiado en _assets/, con una guarda que
 # exige que sean identicos byte a byte. Medido en agosto de 2026, tras las dos
 # paginas de repaso del modulo 2 y sus ocho imagenes: 17.9 MB, o sea 3.1 MB de
-# margen. Un modulo mas cabe; dos, no. Cuando el
+# margen. El modulo 3 costo mucho menos que los dos anteriores —0.55 MB, y el
+# total quedo en 18.5 MB— porque ninguna de sus tres lecturas llega como PDF
+# escaneado: el cuadernillo es texto y pesa 145 KB por copia, frente al megabyte
+# largo de los otros dos. Quedan 2.5 MB. Otro modulo de solo texto cabe; uno con
+# lecturas en PDF, no. Cuando el
 # siguiente vuelva a chocar contra el tope, la decision ya no es subirlo otra
 # vez. Generar los cuadernillos en CI NO es la salida: el pipeline necesita
 # weasyprint y pypdf, que CI no instala, y sobre todo los PDF en derechos de

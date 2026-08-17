@@ -10,12 +10,16 @@ Ninguna representa a una persona real ni a un evento histórico documentado.
 |---|---|---|---|
 | `cuadernillo_portada.png` | Portada del cuadernillo del módulo 1, rasterizada de la primera página del PDF | Material propio, generado por `tools/lecturas.py` y rasterizado con `pdftoppm` | Material del curso |
 | `cuadernillo_portada_modulo_2.png` | Portada del cuadernillo del módulo 2, rasterizada de la primera página del PDF | Material propio, generado por `tools/lecturas.py` y rasterizado con `pdftoppm` | Material del curso |
+| `cuadernillo_portada_modulo_3.png` | Portada del cuadernillo del módulo 3, rasterizada de la primera página del PDF | Material propio, generado por `tools/lecturas.py` y rasterizado con `pdftoppm` | Material del curso |
 | `v17-genealogia-aceleracionismo.svg` | Genealogía del aceleracionismo de 1858 a 2022, con el orden de lectura del cuadernillo | Diagrama propio, generado para el curso | Material del curso |
 | `v18-cuadrante-lecturas.svg` | Cuadrante de las seis lecturas del módulo en los ejes «acelerar qué» y «quién conduce» | Diagrama propio, generado para el curso | Material del curso |
 | `v19-ciclo-territorializacion.svg` | Ciclo de territorialización, desterritorialización y reterritorialización, con las cuatro posiciones del módulo y Yarvin fuera del ciclo | Diagrama propio, generado para el curso | Material del curso |
 | `v20-mapa-de-la-sesion.svg` | Mapa de la sesión del módulo 2: las cuatro lecturas de la primera hora y los cinco pasos de la segunda | Diagrama propio, generado para el curso | Material del curso |
 | `v21-donde-esta-el-freno.svg` | Matriz de las cuatro lecturas del módulo 2: dónde localiza el freno cada una y qué palanca propone | Diagrama propio, generado para el curso | Material del curso |
 | `v22-cuatro-demandas.svg` | Las cuatro demandas post-trabajo de *Inventing the Future* y cómo se sostienen entre sí | Diagrama propio, generado para el curso | Material del curso |
+| `v23-mapa-de-la-sesion-modulo-3.svg` | Mapa de la sesión del módulo 3: las tres lecturas de la primera hora y los cinco pasos de la segunda | Diagrama propio, generado para el curso | Material del curso |
+| `v24-la-cadena-del-argumento.svg` | Los seis eslabones del argumento de la salida, de Yarvin a la parte 4a de Land | Diagrama propio, generado para el curso | Material del curso |
+| `v25-de-que-se-sale.svg` | Matriz de las tres lecturas del módulo 3: de qué propone salirse cada una, a quién le sale y qué queda atrás | Diagrama propio, generado para el curso | Material del curso |
 | `foto-marx.jpg` | Retrato de Karl Marx | John Jabez Edwin Mayall — Wikimedia Commons | Public domain |
 | `foto-barbrook.jpg` | Retrato de Richard Barbrook | Andy Miah — Wikimedia Commons | CC BY-SA 2.0 |
 | `foto-fisher.jpg` | Retrato de Mark Fisher | MACBA — Wikimedia Commons | CC BY-SA 2.0 |

@@ -75,19 +75,20 @@ Hay dos, y se mantienen distinto:
 - `course/1_introduccion/2_historia_ia/` — ocho páginas de prosa, con imágenes
   y SVG generados desde `tools/`, y un registro de fuentes por página en
   `docs/verificacion/`. Es la unidad que describe el resto de esta sección.
-- `course/2_filosofia_ia/` — dos módulos de lecturas (`1_accelerate_what.md` y
-  `5_left_takes_future.md`), cada uno seguido de sus páginas de repaso: tres
-  para el módulo 1 y dos para el módulo 2, una por hora de sesión. **«Módulo»
+- `course/2_filosofia_ia/` — tres módulos de lecturas (`1_accelerate_what.md`,
+  `5_left_takes_future.md` y `8_exit_nrx.md`), cada uno seguido de sus páginas
+  de repaso: tres para el módulo 1 y dos para cada uno de los otros, una por
+  hora de sesión. **«Módulo»
   significa dos cosas distintas en este repo y conviene no confundirlas:** los
   seis módulos del curso están listados en
   `course/1_introduccion/1_el_curso/0_index.md` —y todo lo que hay hoy escrito,
-  historia y filosofía, es el módulo 1 de esos seis—, mientras que «módulo 1» y
-  «módulo 2» dentro de la unidad de filosofía son los dos cuadernillos de
-  lectura. Lo que sigue a `left-takes-future` en el temario del curso no es otro
+  historia y filosofía, es el módulo 1 de esos seis—, mientras que «módulo 1»,
+  «módulo 2» y «módulo 3» dentro de la unidad de filosofía son los tres
+  cuadernillos de lectura. Lo que sigue a `exit-nrx` en el temario del curso no es otro
   cuadernillo: es «Agentes, ambientes, modelado y optimización», y no está
   escrito. Su
   contenido real son los cuadernillos PDF que produce `lecturas/` (ver más
-  abajo), pero la unidad ya tiene assets propios (`v17`–`v19` a mano,
+  abajo), pero la unidad ya tiene assets propios (`v17`–`v25` a mano,
   `ilus-*.png` desde `tools/ilustraciones.json`, fotos de Commons, su propio
   `CREDITOS.md`) y su propio registro de verificación en
   `docs/verificacion/filosofia_ia/`. Lo específico de esta unidad es que la
@@ -137,7 +138,7 @@ en ambas a propósito, para que la decisión sea a mano.
 
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (85 tests as of August 2026) is the
+`python3 -m pytest tools/ -q` (102 tests as of August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
@@ -186,10 +187,22 @@ code. It depends on
 the excerpt stays auditable, and each module's `README.md` records provenance
 and any discrepancy with the syllabus pagination.
 
-**In-copyright material is linked, never republished.** `.gitignore` excludes
-`lecturas/**/fuentes/*.pdf` and the generated HTML viewer; keep it that way when
-adding a module. Only the open-access sources (`fuentes/*.txt`) and the produced
-excerpt PDFs are committed.
+**Material que se vende como edición: se enlaza, nunca se republica.**
+`.gitignore` excludes `lecturas/**/fuentes/*.pdf` and the generated HTML viewer;
+keep it that way when adding a module. Only the web sources (`fuentes/*.txt`)
+and the produced excerpt PDFs are committed.
+
+Ojo con la línea que separa un caso del otro, porque **no es «dominio público
+frente a derechos»**: de las nueve lecturas publicadas, solo Marx lo es. La
+línea real, y la que aplica `bajar_lecturas.py`, es **cómo se distribuye el
+texto**. Lo que su autor o su editor publican gratis y completo en la web se
+descarga y se reproduce en el cuadernillo, con la fuente al pie de cada lectura
+—así entran el manifiesto de Williams y Srnicek, Terranova y las tres lecturas
+del módulo 3, todas en derechos—. Lo que se vende como edición o vive tras un
+muro de pago se enlaza (`ENLACES`) o se recorta de un PDF que no se versiona
+(`PDFS`). El campo `licencia` de cada `Fuente` dice cuál es cada caso y no debe
+afirmar una licencia abierta donde no la hay; el README del módulo 3 documenta
+el criterio con más detalle.
 
 **Publicar un cuadernillo son tres copias a mano.** Nada enlaza entre `lecturas/`
 y `course/`, así que regenerar el PDF no actualiza el sitio por sí solo:
@@ -204,13 +217,20 @@ pdftoppm -png -r 106 -f 1 -l 1 -singlefile \
 python3 -m pytest tools/test_lecturas.py -q
 ```
 
-Hay dos módulos publicados y cada uno tiene su juego completo de nombres; el
-módulo 2 es el mismo procedimiento con `filosofia_ia/clase_2`,
-`cuadernillo_modulo_2_left_future.pdf`, `cuadernillo_portada_modulo_2` y la
-tarea `2_leer_cuadernillo_modulo_2.yaml`. Las cifras de páginas de los dos
-módulos son distintas y viven en listas separadas
-(`PATRONES_PAGINAS_TOTALES`, `PATRONES_PAGINAS_TOTALES_MODULO_2`): cada módulo
-se compara solo consigo mismo.
+Hay tres módulos publicados y cada uno tiene su juego completo de nombres; los
+módulos 2 y 3 son el mismo procedimiento con `filosofia_ia/clase_2` /
+`clase_3`, `cuadernillo_modulo_2_left_future.pdf` /
+`cuadernillo_modulo_3_exit_nrx.pdf`, sus portadas, y las tareas
+`2_leer_cuadernillo_modulo_2.yaml` / `3_leer_cuadernillo_modulo_3.yaml`. Las
+cifras de páginas de los tres son distintas y viven en listas separadas
+(`PATRONES_PAGINAS_TOTALES`, `..._MODULO_2`, `..._MODULO_3`): cada módulo se
+compara solo consigo mismo.
+
+Y **no vuelvas a descargar las fuentes de los módulos 1 y 2**: sus `.txt`
+versionados ya no se reproducen desde la web —por el arreglo de `_limpiar` que
+trajo el módulo 3 en `clase_1`, y por deriva del HTML de origen en `clase_2`—.
+`lecturas/filosofia_ia/clase_3/README.md` documenta exactamente qué cambia y
+por qué esos dos cuadernillos no se regeneraron.
 
 Tres duplicaciones deliberadas viven ahí, y `test_lecturas.py` falla si alguna
 deriva — no las arregles editando la copia, edita la fuente y vuelve a copiar:
@@ -224,6 +244,10 @@ deriva — no las arregles editando la copia, edita la fuente y vuelve a copiar:
   La guarda cuenta las páginas del PDF publicado con `pypdf` como voz extra, y
   las frases-ancla son literales: si reescribes la frase que declara la cifra,
   la prueba falla aunque el número esté bien.
+- El PDF publicado tiene que venir del `introduccion.md` de hoy. La guarda de
+  identidad byte a byte no lo cubre —pasa igual si las dos copias son viejas—,
+  así que hay otra que busca en el PDF los párrafos largos de la introducción.
+  Editar la introducción o una ficha obliga a reconstruir y volver a copiar.
 
 `course/2_filosofia_ia/_assets/visor_modulo_*.html` es una página propia de ~3 KB
 que enmarca el PDF publicado — no es copia del `cuadernillo.html` que genera
