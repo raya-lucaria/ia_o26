@@ -61,7 +61,19 @@ Calcula entre tres horas y media y cuatro.
 - **[Descargar el PDF](_assets/cuadernillo_modulo_2_left_future.pdf)** — 1.0 MB,
   para leerlo sin conexión o imprimirlo.
 
+## Sobre la paginación
+
+Dos avisos para cuando cites estas lecturas en un trabajo escrito. El capítulo
+de **Fisher** se reproduce de la edición Zero Books de 2009 y se cita **pp.
+21–30 de esa edición**, no el número de página del cuadernillo. El capítulo de
+**Srnicek y Williams** llegó como archivo digital cuya numeración no corresponde
+a ninguna edición en papel: se cita **pp. 107–128 de la edición de Verso, 2015**.
+En ambos casos el texto es el mismo; lo que no transfiere es el número de
+página.
+
 ## Qué hay que hacer
 
 Leer. Esta vez no hay cuestionario ni nada que entregar: la tarea es llegar
 a la sesión con las cuatro lecturas leídas.
+
+Sigue con [[las-cuatro-lecturas]].

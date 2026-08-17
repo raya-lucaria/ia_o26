@@ -86,3 +86,5 @@ original**, no las 11 del temario: la diferencia es la introducción que le
 anteponen los editores de la antología. Y el pasaje de Deleuze y Guattari
 corresponde a las pp. 239–240 de la edición de Minnesota, pero **cabe entero en
 la p. 247** de la edición española que se reproduce aquí, que es más densa.
+
+Sigue con [[ideas-aceleracionismo]].

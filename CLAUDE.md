@@ -75,10 +75,20 @@ Hay dos, y se mantienen distinto:
 - `course/1_introduccion/2_historia_ia/` — ocho páginas de prosa, con imágenes
   y SVG generados desde `tools/`, y un registro de fuentes por página en
   `docs/verificacion/`. Es la unidad que describe el resto de esta sección.
-- `course/2_filosofia_ia/` — una unidad de lecturas: su contenido real es el
-  cuadernillo PDF que produce `lecturas/` (ver más abajo). No tiene assets
-  generados ni registro de verificación; lo que hay que cuidar ahí es que la
+- `course/2_filosofia_ia/` — dos módulos de lecturas (`1_accelerate_what.md` y
+  `5_left_takes_future.md`), cada uno seguido de sus páginas de repaso: tres
+  para el módulo 1 y dos para el módulo 2, una por hora de sesión. Su
+  contenido real son los cuadernillos PDF que produce `lecturas/` (ver más
+  abajo), pero la unidad ya tiene assets propios (`v17`–`v19` a mano,
+  `ilus-*.png` desde `tools/ilustraciones.json`, fotos de Commons, su propio
+  `CREDITOS.md`) y su propio registro de verificación en
+  `docs/verificacion/filosofia_ia/`. Lo específico de esta unidad es que la
   copia del PDF y los textos duplicados no se desincronicen de la fuente.
+
+Las guardas de imágenes leen las rutas de `_assets/` desde
+`tools/unidades.py` — ese mapa es la única fuente de «qué unidades tienen
+imágenes». Agregar una unidad con assets es agregar una línea ahí, no editar
+cuatro archivos de pruebas.
 
 Dos cosas hay que saber para mantener la unidad de historia.
 
@@ -109,9 +119,17 @@ archivo en `course/1_introduccion/2_historia_ia/`, su registro homónimo en
 `tools/test_aceptacion.py` (`PAGINAS`, por nombre de archivo, y
 `PAGINAS_UNIDAD_EN_ORDEN`, por id estable y en orden de navegación).
 
+Las páginas de repaso de filosofía tienen un triple análogo: la página en
+`course/2_filosofia_ia/`, su registro en `docs/verificacion/filosofia_ia/`, y la
+lista `PAGINAS` de `tools/test_repaso.py` —que declara, por página, cuántas
+citas textuales se esperan y si su registro lleva tabla. Cada cita de esas
+páginas debe aparecer literal en el registro (el formato es fijo:
+`> «cita» — cuadernillo, p. N`), y si una cita se muda de página el conteo falla
+en ambas a propósito, para que la decisión sea a mano.
+
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (77 tests as of August 2026) is the
+`python3 -m pytest tools/ -q` (85 tests as of August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
@@ -178,6 +196,14 @@ pdftoppm -png -r 106 -f 1 -l 1 -singlefile \
 python3 -m pytest tools/test_lecturas.py -q
 ```
 
+Hay dos módulos publicados y cada uno tiene su juego completo de nombres; el
+módulo 2 es el mismo procedimiento con `filosofia_ia/clase_2`,
+`cuadernillo_modulo_2_left_future.pdf`, `cuadernillo_portada_modulo_2` y la
+tarea `2_leer_cuadernillo_modulo_2.yaml`. Las cifras de páginas de los dos
+módulos son distintas y viven en listas separadas
+(`PATRONES_PAGINAS_TOTALES`, `PATRONES_PAGINAS_TOTALES_MODULO_2`): cada módulo
+se compara solo consigo mismo.
+
 Tres duplicaciones deliberadas viven ahí, y `test_lecturas.py` falla si alguna
 deriva — no las arregles editando la copia, edita la fuente y vuelve a copiar:
 
@@ -187,6 +213,13 @@ deriva — no las arregles editando la copia, edita la fuente y vuelve a copiar:
   de su sección «Cómo leer este cuadernillo».
 - El número de páginas del cuadernillo aparece en la página del módulo, la tarea
   oficial, el visor y dos `README.md`; léelo del PDF ya copiado, no lo estimes.
+  La guarda cuenta las páginas del PDF publicado con `pypdf` como voz extra, y
+  las frases-ancla son literales: si reescribes la frase que declara la cifra,
+  la prueba falla aunque el número esté bien.
+
+`course/2_filosofia_ia/_assets/visor_modulo_*.html` es una página propia de ~3 KB
+que enmarca el PDF publicado — no es copia del `cuadernillo.html` que genera
+`lecturas.py` (ese está gitignorado y no se publica).
 
 ## Skins
 

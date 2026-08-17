@@ -142,6 +142,10 @@ positiva.
 
 ## 4 de 6 · Fisher, *Terminator vs Avatar* (2012) · ~3 min
 
+::: figure {#retrato-fisher title="Mark Fisher"}
+![Retrato fotográfico de Mark Fisher](_assets/foto-fisher.jpg)
+:::
+
 Va aquí y no en su lugar cronológico a propósito: explica a Land mejor que
 cualquier introducción.
 
@@ -238,8 +242,8 @@ tecnológico: creer que la técnica decide sola hacia dónde va la sociedad.
 **Quién le contesta.** Nadie del cuadernillo. Contesta ella: describe a e/acc
 con treinta años de anticipación.
 
-*No todas las fichas llevan retrato, y no es descuido. De Deleuze, Guattari,
-Fisher y Land no encontramos ninguna fotografía cuya licencia pudiéramos
+*No todas las fichas llevan retrato, y no es descuido. De Deleuze, Guattari y
+Land no encontramos ninguna fotografía cuya licencia pudiéramos
 verificar —lo que sí circula son imágenes de prensa bajo derechos de autor, o
 subidas a Wikimedia Commons con una licencia que no resiste revisión—, y este
 curso solo publica imágenes que puede publicar. Rellenar el hueco con una cara
