@@ -2,9 +2,11 @@
 
 **Filosofía de la IA · La salida como programa político**
 
-Tres lecturas, 35 páginas, entre 1 h 10 y 1 h 20. Es el cuadernillo más corto de
-la unidad: 35 páginas frente a las 53 del [Módulo 2](../clase_2/README.md), y
-alrededor de un tercio de su tiempo de lectura. Cierra el arco que
+Cuatro lecturas, 45 páginas, entre 1 h 35 y 1 h 50. Sigue siendo el cuadernillo
+más corto de la unidad: 45 páginas frente a las 53 del
+[Módulo 2](../clase_2/README.md), y alrededor de la mitad de su tiempo de
+lectura (1 h 35–1 h 50 frente a 3 h 30–4 h).
+Cierra el arco que
 abrieron los otros dos: si el Módulo 1 preguntaba **acelerar qué** y el Módulo 2
 **quién lo construye**, este lee a quienes contestan que la pregunta está mal
 planteada porque de la política hay que salirse.
@@ -12,30 +14,32 @@ planteada porque de la política hay que salirse.
 ## Cuadernillo
 
 **[`lecturas/filosofia_ia_clase_3_cuadernillo.pdf`](lecturas/filosofia_ia_clase_3_cuadernillo.pdf)**
-— **35 páginas, las tres lecturas completas**, cada una con su portadilla y la
-razón por la que se lee.
+— **45 páginas, las cuatro lecturas**, cada una con su portadilla y la razón por
+la que se lee. Tres van completas; de *Patchwork* va la segunda mitad del
+capítulo, que es lo que pide el temario.
 
 | # | Lectura | Autor | Año | Fuente | Estado |
 |---|---|---|---|---|---|
 | 1 | «A Formalist Manifesto» | Yarvin (como «Mencius Moldbug») | 2007 | [unqualified-reservations.org](https://www.unqualified-reservations.org/2007/04/formalist-manifesto-originally-posted/) | ✅ en el cuadernillo, completa |
-| 2 | «The Education of a Libertarian» | Thiel | 2009 | [cato-unbound.org](https://www.cato-unbound.org/2009/04/13/peter-thiel/education-libertarian/) | ✅ en el cuadernillo, completa |
-| 3 | *The Dark Enlightenment*, partes 1 y 4a | Land | 2012 | [thedarkenlightenment.com](https://www.thedarkenlightenment.com/the-dark-enlightenment-by-nick-land/) | ✅ en el cuadernillo, las dos partes completas |
+| 2 | *Patchwork*, cap. 1 «A Positive Vision» | Yarvin (como «Mencius Moldbug») | 2008 | [unqualified-reservations.org](https://www.unqualified-reservations.org/2008/11/patchwork-positive-vision-part-1/) | ✅ en el cuadernillo, **segunda mitad del capítulo** |
+| 3 | «The Education of a Libertarian» | Thiel | 2009 | [cato-unbound.org](https://www.cato-unbound.org/2009/04/13/peter-thiel/education-libertarian/) | ✅ en el cuadernillo, completa |
+| 4 | *The Dark Enlightenment*, partes 1 y 4a | Land | 2012 | [thedarkenlightenment.com](https://www.thedarkenlightenment.com/the-dark-enlightenment-by-nick-land/) | ✅ en el cuadernillo, las dos partes completas |
 
-**Ninguna de las tres llegó como PDF.** Es el primer módulo de la unidad en el
+**Ninguna de las cuatro llegó como PDF.** Es el primer módulo de la unidad en el
 que todas las lecturas salen de la web, así que `filosofia_ia/clase_3` no tiene
 entradas en `PDFS` ni en `ENLACES` de `tools/lecturas.py`, y el cuadernillo se
 puede reconstruir entero en cualquier clon del repositorio, sin archivos que
-vivan solo en un disco. Es también por eso que pesa 145 KB y no un megabyte: no
+vivan solo en un disco. Es también por eso que pesa 182 KB y no un megabyte: no
 lleva dentro ninguna página escaneada.
 
 ### Abierto no es libre de derechos
 
 Conviene decirlo sin rodeos, porque el encabezado de `tools/bajar_lecturas.py`
 hablaba durante un tiempo solo de dominio público y este módulo no lo es:
-**las tres lecturas siguen en derechos de sus autores.** Ninguna de las tres
+**las cuatro lecturas siguen en derechos de sus autores.** Ninguna de las
 páginas declara licencia abierta —lo comprobamos buscando `creative commons`,
-`CC BY` y `licen[cs]e` en el HTML de las tres: nada—. Lo que hay es que las
-tres se pueden leer gratis y completas en la web, y se reproducen aquí como
+`CC BY` y `licen[cs]e` en el HTML de todas ellas: nada—. Lo que hay es que las
+cuatro se pueden leer gratis y completas en la web, y se reproducen aquí como
 material de un curso, con la fuente al pie de cada lectura en el cuadernillo.
 
 No es un caso nuevo del repositorio: el manifiesto de Williams y Srnicek y el
@@ -49,10 +53,35 @@ quien lleva el curso, y el lugar para cambiarla es `CLAUDE.md`.
 
 ## Qué se recortó de cada fuente, y qué no
 
-Las tres se toman completas; lo único que se recorta es el sitio alrededor del
-texto. Tres avisos que importan al citarlas:
+Tres de las cuatro se toman completas y lo único que se les recorta es el sitio
+alrededor del texto; *Patchwork* es la excepción, y por eso va primero. Cuatro
+avisos que importan al citarlas:
 
-- **Yarvin.** Se toma la entrada completa del 24 de abril de 2007, desde su
+- **Yarvin, *Patchwork*. Es el único recorte parcial del módulo.** El temario
+  pide el capítulo 1, «A Positive Vision», pp. 7–18 de la recopilación en PDF
+  que circula como libro — es decir, **no el capítulo entero**, sino desde su
+  página 7. El texto se toma de la entrada de blog original, del 13 de
+  noviembre de 2008, que es la publicación primaria y está en abierto; el
+  propio sitio la titula ya «Chapter 1: A Positive Vision | Patchwork: A
+  Political System for the 21st Century», así que la numeración de capítulos no
+  es un invento de la recopilación. El corte de inicio es la frase con la que
+  el temario empieza («Anyway. Enough anecdotes and generalities…»), que es
+  también donde el texto deja la parte publicitaria y se pone a diseñar; lo que
+  queda fuera son anécdotas y un rodeo por los valores cívicos de 1911, y **la
+  introducción del cuadernillo y la ficha de la lectura avisan de que empieza a
+  media pieza**. El corte final es el segundo del repositorio que se apoya en
+  navegación del sitio y no en una frase del texto: el capítulo termina en su
+  segunda nota al pie y lo siguiente ya es la barra de capítulos. Las notas al
+  pie sí van dentro.
+
+  Una advertencia para quien cite: el capítulo **remite al capítulo 2** para
+  resolver el problema con el que cierra —a dónde van los residentes que no
+  pueden pagar—, y ese capítulo 2 no está en el cuadernillo. La página de la
+  hora 2 de la sesión (`course/2_filosofia_ia/10_discutir_la_salida.md`)
+  reproduce lo esencial de esa respuesta, verificado contra la fuente, y lo
+  marca como material fuera del cuadernillo.
+
+- **Yarvin, «A Formalist Manifesto».** Se toma la entrada completa del 24 de abril de 2007, desde su
   primera frase («The other day I was tinkering around in my garage…») hasta el
   enlace `next »` con el que el archivo del blog pasa a la entrada siguiente.
   Dos notas sobre esos dos cortes. El de inicio empezaba antes, en la línea de
@@ -60,16 +89,16 @@ texto. Tres avisos que importan al citarlas:
   cuadernillo ya pone el título en su portadilla, así que arrancar ahí lo
   imprimía dos veces, la segunda raspado del blog. La fecha no se pierde —va en
   la línea de fuente que el cuadernillo imprime al pie de la lectura—. El de
-  final es el único de las cinco fuentes web del repositorio que se apoya en un
-  elemento de navegación del sitio y no en una frase del texto; el ensayo
-  simplemente termina y viene el enlace. Falla ruidosamente si el sitio cambia,
+  final es uno de los dos cortes del repositorio que se apoyan en un elemento de
+  navegación del sitio y no en una frase del texto —el otro es el de
+  *Patchwork*, aquí arriba—; el ensayo simplemente termina y viene el enlace. Falla ruidosamente si el sitio cambia,
   que es lo que hace tolerable la dependencia.
 
   `unqualified-reservations.org` es el archivo estático que hoy sirve esas
   entradas; el blog se escribió en otra plataforma y Yarvin dejó de
   actualizarlo hacia 2013. La paginación no aplica: es una entrada de blog, se
-  cita por fecha y título. Y es **anterior** a la serie *Patchwork* (noviembre
-  de 2008) que el repaso del Módulo 1 ya presenta.
+  cita por fecha y título. Y es **anterior** a *Patchwork* (noviembre de 2008),
+  que es la lectura siguiente de este mismo cuadernillo.
 
 - **Thiel.** Se toma el ensayo tal como Cato Unbound lo publicó el 13 de abril
   de 2009, desde su primera línea hasta la última. **Lo que queda fuera a
@@ -138,15 +167,15 @@ El descargador comprueba que cada archivo contenga lo que dice contener antes de
 guardarlo. Agregar una lectura es agregar una entrada a `LECTURAS` en
 `tools/lecturas.py`, con su recorte y la razón por la que se lee.
 
-Las tres fuentes (`yarvin_formalist_manifesto_en.txt`,
-`thiel_education_libertarian_en.txt`, `land_dark_enlightenment_en.txt`) quedan en
-`fuentes/` tal como se descargaron, para que el recorte sea auditable, y están
-versionadas.
+Las cuatro fuentes (`yarvin_formalist_manifesto_en.txt`,
+`yarvin_patchwork_cap1_en.txt`, `thiel_education_libertarian_en.txt`,
+`land_dark_enlightenment_en.txt`) quedan en `fuentes/` tal como se descargaron,
+para que el recorte sea auditable, y están versionadas.
 
 ## Un arreglo del descargador salió de este módulo, y no es inocuo
 
 `_limpiar` pegaba toda inicial mayúscula suelta a la palabra siguiente —la regla
-que convierte «T he» en «The»—, y las tres lecturas de aquí están escritas en
+que convierte «T he» en «The»—, y las lecturas de aquí están escritas en
 primera persona: el ensayo de Thiel empezaba «Iremain committed» y el de Yarvin,
 «Idecided to build a new ideology». Ahora «I» y «A» quedan excluidos de esa
 regla, por ser palabras enteras del inglés y no iniciales sueltas. El defecto era

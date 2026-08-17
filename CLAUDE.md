@@ -78,7 +78,11 @@ Hay dos, y se mantienen distinto:
 - `course/2_filosofia_ia/` — tres módulos de lecturas (`1_accelerate_what.md`,
   `5_left_takes_future.md` y `8_exit_nrx.md`), cada uno seguido de sus páginas
   de repaso: tres para el módulo 1 y dos para cada uno de los otros, una por
-  hora de sesión. **«Módulo»
+  hora de sesión. **Los ids de esas páginas de repaso no se pueden nombrar por
+  el número de lecturas**: `las-cuatro-lecturas` ya es del módulo 2, así que la
+  hora 1 del módulo 3 —que también tiene cuatro— se llama
+  `las-lecturas-de-la-salida`. Un id repetido no lo perdona `raya validate`.
+  **«Módulo»
   significa dos cosas distintas en este repo y conviene no confundirlas:** los
   seis módulos del curso están listados en
   `course/1_introduccion/1_el_curso/0_index.md` —y todo lo que hay hoy escrito,
@@ -193,12 +197,12 @@ keep it that way when adding a module. Only the web sources (`fuentes/*.txt`)
 and the produced excerpt PDFs are committed.
 
 Ojo con la línea que separa un caso del otro, porque **no es «dominio público
-frente a derechos»**: de las nueve lecturas publicadas, solo Marx lo es. La
+frente a derechos»**: de las diez lecturas publicadas, solo Marx lo es. La
 línea real, y la que aplica `bajar_lecturas.py`, es **cómo se distribuye el
 texto**. Lo que su autor o su editor publican gratis y completo en la web se
 descarga y se reproduce en el cuadernillo, con la fuente al pie de cada lectura
-—así entran el manifiesto de Williams y Srnicek, Terranova y las tres lecturas
-del módulo 3, todas en derechos—. Lo que se vende como edición o vive tras un
+—así entran el manifiesto de Williams y Srnicek, Terranova y las cuatro
+lecturas del módulo 3, todas en derechos—. Lo que se vende como edición o vive tras un
 muro de pago se enlaza (`ENLACES`) o se recorta de un PDF que no se versiona
 (`PDFS`). El campo `licencia` de cada `Fuente` dice cuál es cada caso y no debe
 afirmar una licencia abierta donde no la hay; el README del módulo 3 documenta

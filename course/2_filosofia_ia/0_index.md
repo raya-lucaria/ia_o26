@@ -34,10 +34,10 @@ unidad: **quién se queda**.
 3. [[las-seis-lecturas]] — repaso: qué dice cada una de las seis lecturas, en claro.
 4. [[para-discutir]] — repaso: el mapa de quién discute con quién y las tensiones de la sesión.
 5. [[left-takes-future]] — módulo 2: la respuesta de la izquierda, reclamar el futuro en vez de añorar el pasado.
-6. [[las-cuatro-lecturas]] — sesión, hora 1: qué dice cada una de las cuatro lecturas, en claro.
+6. [[las-cuatro-lecturas]] — sesión, hora 1: qué dice cada una de las cuatro lecturas del módulo 2, en claro.
 7. [[discutir-el-programa]] — sesión, hora 2: dónde pone el freno cada lectura, y con qué se discute.
 8. [[exit-nrx]] — módulo 3: la salida como programa político, leída en sus fuentes.
-9. [[las-tres-lecturas]] — sesión, hora 1: qué dice cada una de las tres lecturas, en claro.
+9. [[las-lecturas-de-la-salida]] — sesión, hora 1: qué dice cada una de las cuatro lecturas del módulo 3, en claro.
 10. [[discutir-la-salida]] — sesión, hora 2: de qué se sale en cada lectura, y con qué se discute.
 
 Las fechas de lectura de cada módulo están en el calendario de lecturas de la

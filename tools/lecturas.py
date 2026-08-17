@@ -362,10 +362,11 @@ LECTURAS: dict[str, list[Lectura]] = {
         ),
     ],
     # ── Módulo 3 · Exit, NRx & Dark Enlightenment ─────────────────────────────
-    # Tres lecturas, las tres de fuente primaria abierta: este módulo no tiene
-    # entradas en PDFS ni en ENLACES. Van en orden cronológico, que aquí sí es
-    # el orden pedagógico: Yarvin escribe el argumento, Thiel lo dice desde el
-    # dinero, y Land lee a los dos y le pone nombre al conjunto. De Land se
+    # Cuatro lecturas, las cuatro de fuente primaria abierta: este módulo no
+    # tiene entradas en PDFS ni en ENLACES. Van en orden cronológico, que aquí
+    # sí es el orden pedagógico: Yarvin escribe el argumento (2007) y luego lo
+    # convierte en un diseño (2008), Thiel lo dice desde el dinero (2009), y
+    # Land lee a los tres y le pone nombre al conjunto (2012). De Land se
     # leen dos de las diez partes del ensayo —la 1 y la 4a—, y llegan en un
     # solo archivo, con el encabezado de cada parte dentro del texto.
     "filosofia_ia/clase_3": [
@@ -391,7 +392,8 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "*Violencia = conflicto + incertidumbre*: la ecuación de la que "
                 "sale todo lo demás. *Siervo corporativo*: lo que, según él, "
                 "somos todos ya. *Ciudad-Estado*: Singapur, Hong Kong y Dubái, "
-                "sus tres ejemplos, a los que vuelve Land.\n\n"
+                "sus tres ejemplos, que reaparecen en la lectura 4 dentro de "
+                "un pasaje de Moldbug que Land cita.\n\n"
                 "**Qué retener.** El giro que convierte la política en un "
                 "problema de ingeniería. Si el único mal que importa es la "
                 "violencia organizada, y la violencia nace de la ambigüedad "
@@ -403,13 +405,66 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "simpático, y eso vuelve más trabajoso discutirlo—. Trae "
                 "referencias de 2007 (Bush, Irak, el dueño del *New York "
                 "Times*) que no hace falta reconocer. Y es **anterior** a "
-                "*Patchwork*, la serie de 2008 que ya viste en "
-                "[[ideas-aceleracionismo]]: aquí estás en el origen, no en la "
-                "versión desarrollada."
+                "*Patchwork*: aquí estás en el origen, y la lectura 2 es la "
+                "versión desarrollada. Léelas como una sola cosa en dos "
+                "tiempos — el argumento primero, el plano después."
             ),
         ),
         Lectura(
             orden=2,
+            id="yarvin-patchwork-cap1",
+            titulo="Patchwork, cap. 1 «A Positive Vision» (segunda mitad)",
+            autor="Curtis Yarvin (como «Mencius Moldbug»)",
+            anio="2008",
+            fuente="yarvin_patchwork_cap1_en.txt",
+            procedencia=("Unqualified Reservations, 13 de noviembre de 2008 · "
+                         "unqualified-reservations.org. El temario lo cita por la "
+                         "recopilación en PDF, cap. 1, pp. 7–18"),
+            licencia="En derechos del autor; entrada de blog publicada en abierto. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** El mismo autor, año y medio después, "
+                "haciendo lo que el manifiesto no hacía: **el plano**. Si "
+                "aquel decía que hay que escriturar el poder, este contesta "
+                "cómo se administra uno de esos «mini-países», quién manda "
+                "dentro y qué impide que abuse. Empieza a media pieza y a "
+                "propósito: lo anterior del capítulo es la parte "
+                "publicitaria —anécdotas, los valores cívicos de 1911— y el "
+                "recorte arranca justo donde Yarvin escribe «basta de "
+                "anécdotas» y se pone a hacer ingeniería.\n\n"
+                "**Palabras clave.** *Patch* (parche): cada uno de los "
+                "territorios en que se dividiría el mundo. *Realm* (reino): "
+                "la empresa soberana dueña de un parche. *Accionistas y "
+                "director general*: quién manda, y en ese orden. *Contrato de "
+                "servicio al cliente*: lo que firma quien vive ahí, con el "
+                "derecho de salida escrito dentro. *Cadena de mando "
+                "criptográfica*: las llaves con las que los accionistas "
+                "controlan las armas del reino. *Bezonians*: su palabra para "
+                "los que no pueden pagar.\n\n"
+                "**Qué retener.** Tres cosas, y la tercera es la que abre la "
+                "sesión. Una: el reino es una sociedad anónima soberana, y su "
+                "derecho sobre el parche es un derecho de propiedad — vale "
+                "«no porque lo merezca, sino porque lo tiene». Es la frase "
+                "del manifiesto convertida en plano. Dos: lo único que "
+                "impide que el reino te maltrate es que no le conviene; el "
+                "derecho de salida está en el contrato, pero no hay ante "
+                "quién reclamarlo. Tres: al final, Yarvin pregunta a dónde "
+                "van los que no pueden pagar, llama al problema «un desafío "
+                "existencial» y **remite la respuesta al capítulo 2**, que no "
+                "está aquí.\n\n"
+                "**Es difícil, y está bien.** Dos tramos te van a frenar. El "
+                "largo elogio de Sir Robert Filmer y de la monarquía "
+                "absoluta, con citas del siglo XVII y latín, es una sola "
+                "tesis estirada: ningún soberano puede estar sujeto a la ley, "
+                "y la división de poderes es un error de ingeniería. Si te "
+                "pierdes ahí, salta a la comparación con Second Life, que "
+                "dice lo mismo en tres líneas. El otro es el tramo final "
+                "sobre San Francisco —el bulldozer, los oligarcas rusos—, "
+                "escrito en tono de broma. Cuánto de eso es broma es parte de "
+                "lo que hay que decidir leyendo, y se discute en sesión."
+            ),
+        ),
+        Lectura(
+            orden=3,
             id="thiel-education-libertarian",
             titulo="The Education of a Libertarian",
             autor="Peter Thiel",
@@ -424,7 +479,7 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "dejó de creer en la política y dónde busca ahora la libertad "
                 "—internet, el espacio exterior y las ciudades flotantes—. Es "
                 "el texto en el que aparece la frase que Land cita en la "
-                "lectura 3 y que da nombre a todo este módulo.\n\n"
+                "lectura 4 y que da nombre a todo este módulo.\n\n"
                 "**Palabras clave.** *Escape*: su palabra, no «salida»; el "
                 "*exit* de Hirschman dicho por alguien que va a pagarlo. "
                 "*Seasteading*: construir ciudades en el mar, fuera de toda "
@@ -440,7 +495,7 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "cierre: el destino del mundo puede depender del esfuerzo de "
                 "una sola persona. Es la tesis opuesta a la de todo el "
                 "Módulo 2.\n\n"
-                "**Es difícil, y está bien.** Es la más clara de las tres y no "
+                "**Es difícil, y está bien.** Es la más clara de las cuatro y no "
                 "va a costarte trabajo. Dos cosas te van a frenar, y las dos "
                 "son a propósito. Una es la línea de 1920 sobre el "
                 "asistencialismo y el voto de las mujeres; el propio Thiel la "
@@ -452,7 +507,7 @@ LECTURAS: dict[str, list[Lectura]] = {
             ),
         ),
         Lectura(
-            orden=3,
+            orden=4,
             id="land-dark-enlightenment",
             titulo="The Dark Enlightenment, partes 1 y 4a",
             autor="Nick Land",
@@ -481,8 +536,11 @@ LECTURAS: dict[str, list[Lectura]] = {
                 "lo que se puede pensar. *Preferencia temporal*: cuánto pesa "
                 "el presente frente al futuro; su vara para medir "
                 "civilizaciones. *No voice, free exit*: su resumen de todo.\n\n"
-                "**Qué retener.** Que la parte 1 es Land leyendo las dos "
-                "lecturas anteriores y soldándolas, y que la 4a es la "
+                "**Qué retener.** Que la parte 1 es Land leyendo las tres "
+                "lecturas anteriores y soldándolas —y que ahora puedes "
+                "comprobar su resumen contra el original: el neocameralismo "
+                "que él te cuenta lo leíste en la lectura 2, escrito por "
+                "Moldbug—, y que la 4a es la "
                 "consecuencia que él cree que se sigue. Van juntas a "
                 "propósito: la segunda no es un descarrilamiento de la "
                 "primera, es Land aplicándola. Si al terminar te parece que sí "
