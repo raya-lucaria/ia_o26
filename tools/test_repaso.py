@@ -1,6 +1,6 @@
-"""Guardas de las paginas de repaso de filosofia (modulos 1 y 2).
+"""Guardas de las paginas de repaso de filosofia (modulos 1, 2 y 3).
 
-Las cinco paginas llevan citas textuales de diez ensayos, y afirmaciones sobre
+Las siete paginas llevan citas textuales de trece ensayos, y afirmaciones sobre
 personas vivas, a un salon de clases. El riesgo concreto no es un error de
 dedo: es una cita plausible que nadie copio de ningun lado. Por eso cada cita
 de cada pagina tiene que aparecer, literal, en el registro de verificacion de
@@ -26,16 +26,23 @@ import pytest
 
 RAIZ = Path(__file__).resolve().parent.parent
 
-# (pagina, registro, citas esperadas). Las dos paginas de discusion
-# —4_para_discutir.md del modulo 1 y 7_discutir_el_programa.md del modulo 2— no
-# citan textualmente: discuten lecturas ya citadas en las paginas de fichas, y
-# sus registros lo dicen en vez de traer tabla. TABLA lo marca.
+# (pagina, registro, citas esperadas). Las tres paginas de discusion
+# —4_para_discutir.md del modulo 1, 7_discutir_el_programa.md del modulo 2 y
+# 10_discutir_la_salida.md del modulo 3— no citan textualmente: discuten
+# lecturas ya citadas en las paginas de fichas, y sus registros lo dicen en vez
+# de traer tabla. TABLA lo marca.
+#
+# La pagina del modulo 3 espera 8 citas y no 4 como la del modulo 2: son tres
+# lecturas en vez de cuatro, pero con mas espacio por ficha, y la lectura de
+# Land se discute en dos bloques (parte 1 y parte 4a) que se citan por separado.
 PAGINAS = [
     ("2_las_ideas.md", 2, True),
     ("3_las_seis_lecturas.md", 6, True),
     ("4_para_discutir.md", 0, False),
     ("6_las_cuatro_lecturas.md", 4, True),
     ("7_discutir_el_programa.md", 0, False),
+    ("9_las_tres_lecturas.md", 8, True),
+    ("10_discutir_la_salida.md", 0, False),
 ]
 
 # Frase con la que el registro sin tabla declara que no la necesita. Si alguien

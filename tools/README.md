@@ -59,7 +59,7 @@ Cada uno tiene su prueba homónima (`test_gen_timeline.py`, `test_gen_computo.py
 `pytest` ya certifica que el archivo comiteado coincide con lo que el generador
 produciría hoy.
 
-## Reconstruir el cuadernillo de lecturas (`filosofia_ia/clase_1`)
+## Reconstruir un cuadernillo de lecturas (`filosofia_ia/clase_1`, `clase_2`, `clase_3`)
 
 `bajar_lecturas.py` y `lecturas.py` no son parte de la unidad de historia de
 la IA, pero comparten `tools/` y su suite corre junto con el resto:
@@ -89,6 +89,23 @@ lugares del curso (la página del módulo, la tarea oficial, el visor, y este
 mismo README junto con `lecturas/filosofia_ia/clase_1/README.md`); léelos del
 PDF ya copiado, no los estimes.
 
+Los módulos 2 y 3 son el mismo procedimiento con sus propios nombres:
+`clase_2` → `cuadernillo_modulo_2_left_future.pdf` / `cuadernillo_portada_modulo_2`,
+y `clase_3` → `cuadernillo_modulo_3_exit_nrx.pdf` / `cuadernillo_portada_modulo_3`.
+`test_lecturas.py` compara cada cifra de páginas solo contra la de su propio
+módulo, y desde el módulo 3 también comprueba que el PDF publicado venga del
+`introduccion.md` de hoy: editar la introducción sin reconstruir el PDF ya no
+pasa callado.
+
+**Y una advertencia sobre volver a descargar los módulos 1 y 2.** El arreglo de
+`_limpiar` que trajo el módulo 3 —«I» y «A» dejaron de pegarse a la palabra
+siguiente— cambia dos palabras de `clase_1` y siete de `clase_2` respecto de los
+`.txt` versionados, que se descargaron antes. Y las fuentes de `clase_2` ya no
+reproducen desde la web por deriva del HTML de origen, que es un problema
+distinto y anterior. Volver a correr `bajar_lecturas.py` sobre esos dos módulos
+ensucia el árbol sin arreglar nada; `lecturas/filosofia_ia/clase_3/README.md`
+documenta el caso completo.
+
 ## `curar_imagenes.py` — de un solo uso, ya ejecutado
 
 Extrae imágenes del deck heredado `legacy/02_historia_del_ai.pptx` (archivo
@@ -108,7 +125,7 @@ correrlo salvo que aparezca una versión nueva del deck original.
 | `commons.tsv` | Manifiesto de fotos a descargar de Wikimedia Commons: título en Commons, descripción, en qué página se usa, y la columna `unidad` (`historia`/`filosofia`) que enruta cada fila a su `_assets/` vía `ASSETS_POR_UNIDAD` | `bajar_commons.py` |
 | `imagenes_heredadas.tsv` | Inventario de las ~91 imágenes del deck heredado, con la decisión `conservar`/`descartar` por cada una y por qué. Es el registro auditable de la curaduría, no solo una lista de archivos | `curar_imagenes.py`, y `test_curar_imagenes.py` |
 | `unidades.py` | Módulo compartido (no dato): `ASSETS_POR_UNIDAD` mapea cada unidad a su `_assets/`, `filas_de_creditos()` parsea `CREDITOS.md`, y las constantes `CELDA_NOMBRE`/`CELDA_ORIGEN`/`CELDA_LICENCIA` fijan el índice de columna. Única fuente de estas tres cosas — se importa, no se copia | `test_aceptacion.py`, `test_curar_imagenes.py`, `test_commons.py` |
-| `lecturas/filosofia_ia/clase_1/introduccion.md` | Fuente única de la introducción general del cuadernillo de lecturas; la página del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia literal de su sección «Cómo leer este cuadernillo» | `lecturas.py` (la incrusta en el PDF), `test_lecturas.py` (comprueba que la copia de la página del curso no haya derivado) |
+| `lecturas/filosofia_ia/clase_*/introduccion.md` | Fuente única de la introducción general del cuadernillo de lecturas; la página del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia literal de su sección «Cómo leer este cuadernillo» | `lecturas.py` (la incrusta en el PDF), `test_lecturas.py` (comprueba que la copia de la página del curso no haya derivado) |
 
 **Si borras un archivo de `_assets/` porque quedó sin usar, actualiza también
 el inventario que lo generó** (quita la fila de `commons.tsv`, o cambia la
@@ -126,8 +143,8 @@ corrida del generador correspondiente lo vuelve a traer.
 | `test_curar_imagenes.py` | El inventario `imagenes_heredadas.tsv` está bien formado, lo `conservar` existe y está recomprimido, y toda imagen de `_assets/` tiene fila en `CREDITOS.md` con origen y licencia |
 | `test_ilustraciones.py` | Cada ilustración del catálogo existe, mide 1024px de ancho, pesa menos de 400 KB, está acreditada como generada, y ningún prompt pide una persona real o personaje protegido |
 | `test_oficiales.py` | Las tarjetas oficiales (`_official/cards/*.yaml`) tienen forma válida: `type`, `authority`, anverso/reverso no vacíos, sin bloque `scope`, ids únicos |
-| `test_lecturas.py` | El cuadernillo de lecturas de `filosofia_ia/clase_1`: la introducción general de la página del curso no ha derivado de `introduccion.md`, cada lectura trae su ficha de cuatro apartados, el orden 1..6 es consecutivo y es el acordado, y funciones puras de `lecturas.py` (Markdown básico, huecos de páginas externas, orden de las secciones en el HTML final) |
-| `test_repaso.py` | Las cinco páginas de repaso de filosofía (módulos 1 y 2), cada una con su cifra esperada de citas — 2, 6, 0, 4 y 0: cada cita textual aparece, literal, en su registro de `docs/verificacion/filosofia_ia/`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada. Las dos páginas de discusión no citan, y su registro tiene que decir por qué no trae tabla |
+| `test_lecturas.py` | Los tres cuadernillos de lecturas de `filosofia_ia/`: la introducción general de la página del módulo 1 no ha derivado de su `introduccion.md`, cada lectura de los tres módulos trae su ficha de cuatro apartados, el orden es consecutivo (1..6, 1..4, 1..3), el PDF publicado de cada módulo es byte-idéntico al construido **y contiene la introducción vigente**, la cifra total de páginas coincide en los cinco o seis lugares donde cada módulo la declara, y funciones puras de `lecturas.py` (Markdown básico, huecos de páginas externas, orden de las secciones en el HTML final) |
+| `test_repaso.py` | Las siete páginas de repaso de filosofía (módulos 1, 2 y 3), cada una con su cifra esperada de citas — 2, 6, 0, 4, 0, 8 y 0: cada cita textual aparece, literal, en su registro de `docs/verificacion/filosofia_ia/`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada. Las tres páginas de discusión no citan, y su registro tiene que decir por qué no trae tabla |
 | `test_skin.py` | Que `tokens.color.surface` de `skins/eva-cyberpunk.yaml` siga siendo `#211033`, el valor que `gen_ilustraciones.py`, `test_ilustraciones.py` y `test_aceptacion.py` tienen hardcodeado por triplicado |
 
 ## H16 — resuelto: `pytest tools/` ya corre en CI

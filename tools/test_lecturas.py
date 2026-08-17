@@ -30,6 +30,15 @@ LECTURAS_README_2 = MODULO_2 / "README.md"
 PUBLICADO_2 = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_2_left_future.pdf"
 CONSTRUIDO_2 = MODULO_2 / "lecturas/filosofia_ia_clase_2_cuadernillo.pdf"
 
+# Modulo 3 -- "Exit, NRx & Dark Enlightenment"
+MODULO_3 = RAIZ / "lecturas/filosofia_ia/clase_3"
+PAGINA_3 = RAIZ / "course/2_filosofia_ia/8_exit_nrx.md"
+TAREA_3 = RAIZ / "course/2_filosofia_ia/_official/tasks/3_leer_cuadernillo_modulo_3.yaml"
+VISOR_3 = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_3.html"
+LECTURAS_README_3 = MODULO_3 / "README.md"
+PUBLICADO_3 = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_3_exit_nrx.pdf"
+CONSTRUIDO_3 = MODULO_3 / "lecturas/filosofia_ia_clase_3_cuadernillo.pdf"
+
 MARCADORES = re.compile(
     r"^## Cómo leer este cuadernillo$(.*?)(?=^## El cuadernillo$)",
     re.S | re.M,
@@ -81,22 +90,32 @@ APARTADOS = (
 
 
 def _todas_las_lecturas(modulo="filosofia_ia/clase_1"):
+    # PDFS con .get: el modulo 3 no tiene ninguna lectura en PDF externo, y
+    # con m.PDFS[modulo] este helper reventaria con KeyError al usarlo con el.
     m = _cargar_lecturas()
-    return list(m.LECTURAS[modulo]) + list(m.PDFS[modulo])
+    return list(m.LECTURAS[modulo]) + list(m.PDFS.get(modulo, []))
 
 
-def test_toda_lectura_trae_introduccion():
-    for x in _todas_las_lecturas():
+@pytest.mark.parametrize("modulo", [
+    "filosofia_ia/clase_1", "filosofia_ia/clase_2", "filosofia_ia/clase_3",
+])
+def test_toda_lectura_trae_introduccion(modulo):
+    for x in _todas_las_lecturas(modulo):
         assert not hasattr(x, "por_que"), f"{x.id}: por_que quedo vivo"
         for apartado in APARTADOS:
             assert apartado in x.introduccion, f"{x.id}: le falta {apartado}"
 
 
-def test_el_orden_es_consecutivo_y_unico():
-    ordenes = sorted(x.orden for x in _todas_las_lecturas())
-    assert ordenes == [1, 2, 3, 4, 5, 6], (
-        f"el orden debe ser 1..6 sin huecos ni repetidos, y es {ordenes}. "
-        "El intercalado de los PDF externos depende de ello."
+@pytest.mark.parametrize("modulo,cuantas", [
+    ("filosofia_ia/clase_1", 6),
+    ("filosofia_ia/clase_2", 4),
+    ("filosofia_ia/clase_3", 3),
+])
+def test_el_orden_es_consecutivo_y_unico(modulo, cuantas):
+    ordenes = sorted(x.orden for x in _todas_las_lecturas(modulo))
+    assert ordenes == list(range(1, cuantas + 1)), (
+        f"{modulo}: el orden debe ser 1..{cuantas} sin huecos ni repetidos, y "
+        f"es {ordenes}. El intercalado de los PDF externos depende de ello."
     )
 
 
@@ -194,6 +213,7 @@ def _sha256(ruta: Path) -> str:
 PARES_PDF_PUBLICADO_CONSTRUIDO = [
     (PUBLICADO, CONSTRUIDO),
     (PUBLICADO_2, CONSTRUIDO_2),
+    (PUBLICADO_3, CONSTRUIDO_3),
 ]
 
 
@@ -247,6 +267,22 @@ PATRONES_PAGINAS_TOTALES_MODULO_2 = [
 ]
 
 
+# Igual para el modulo 3 ("Exit, NRx & Dark Enlightenment"). Su README declara
+# la cifra tres veces —la tercera comparandola con las 53 del modulo 2—, y las
+# tres entran aqui: la comparacion es justo la que se queda vieja al rehacer el
+# cuadernillo.
+PATRONES_PAGINAS_TOTALES_MODULO_3 = [
+    (PAGINA_3, "8_exit_nrx.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (TAREA_3, "3_leer_cuadernillo_modulo_3.yaml", r"un solo archivo de (\d+)\s"),
+    (VISOR_3, "visor_modulo_3.html", r"Tres lecturas · (\d+) páginas ·"),
+    (LECTURAS_README_3, "README.md modulo 3 (resumen)", r"Tres lecturas, (\d+) páginas,"),
+    (LECTURAS_README_3, "README.md modulo 3 (comparación)",
+     r"la unidad: (\d+) páginas frente a las 53"),
+    (LECTURAS_README_3, "README.md modulo 3 (cuadernillo)",
+     r"\*\*(\d+) páginas, las tres lecturas completas\*\*"),
+]
+
+
 def _verificar_cifra_total_de_paginas(patrones, pdf):
     vistas = []
     for ruta, etiqueta, patron in patrones:
@@ -278,6 +314,62 @@ def test_las_paginas_del_cuadernillo_coinciden_en_todos_lados():
 
 def test_las_paginas_del_cuadernillo_modulo_2_coinciden_en_todos_lados():
     _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_2, PUBLICADO_2)
+
+
+def test_las_paginas_del_cuadernillo_modulo_3_coinciden_en_todos_lados():
+    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_3, PUBLICADO_3)
+
+
+# (modulo, PDF publicado) para la guarda de abajo.
+MODULOS_CON_CUADERNILLO = [
+    ("filosofia_ia/clase_1", PUBLICADO),
+    ("filosofia_ia/clase_2", PUBLICADO_2),
+    ("filosofia_ia/clase_3", PUBLICADO_3),
+]
+
+
+def _solo_letras(texto: str) -> str:
+    """Deja solo letras minusculas, sin acentos ni espacios ni puntuacion.
+
+    Es lo unico que sobrevive intacto al viaje introduccion.md -> WeasyPrint ->
+    pdftotext: el PDF justifica, parte palabras con guion suave (U+2010) y mete
+    saltos de linea donde el Markdown no los tiene, asi que comparar texto con
+    espacios o con guiones da falsos negativos.
+    """
+    import unicodedata
+    plano = unicodedata.normalize("NFKD", texto.lower())
+    return "".join(c for c in plano if c.isalpha() and c.isascii())
+
+
+@pytest.mark.parametrize("modulo,pdf", MODULOS_CON_CUADERNILLO)
+def test_el_cuadernillo_publicado_trae_la_introduccion_vigente(modulo, pdf):
+    """El PDF publicado tiene que venir del `introduccion.md` de hoy.
+
+    `test_el_pdf_publicado_es_el_que_se_construyo` compara las dos copias del
+    PDF entre si, asi que pasa igual de contenta si las dos son viejas. Editar
+    `introduccion.md` (o una ficha) y olvidarse de correr `lecturas.py` deja el
+    cuadernillo diciendo una cosa y la fuente otra, y nada lo notaba: paso
+    exactamente eso al escribir el modulo 3, con «once partes» impreso en el PDF
+    despues de que la fuente ya decia «diez». Se comprueba un tramo largo del
+    tercer parrafo, no el archivo entero: el PDF reflowea y no reproduce los
+    saltos de parrafo del Markdown.
+    """
+    import pypdf
+    intro = (RAIZ / "lecturas" / modulo / "introduccion.md").read_text(encoding="utf-8")
+    parrafos = [p for p in intro.split("\n\n")[1:] if len(_solo_letras(p)) > 300]
+    assert parrafos, f"{modulo}: introduccion.md no tiene ningun parrafo largo que comprobar"
+    texto_pdf = _solo_letras(
+        " ".join((p.extract_text() or "") for p in pypdf.PdfReader(pdf).pages)
+    )
+    for parrafo in parrafos:
+        aguja = _solo_letras(parrafo)[:300]
+        assert aguja in texto_pdf, (
+            f"{pdf.name}: un párrafo de lecturas/{modulo}/introduccion.md no "
+            "aparece en el cuadernillo publicado. Se editó la introducción y no "
+            f"se reconstruyó el PDF: corre `python3 tools/lecturas.py {modulo}` "
+            "y vuelve a copiarlo a _assets/. Párrafo: "
+            f"{' '.join(parrafo.split())[:90]!r}"
+        )
 
 
 def test_toda_lectura_en_pdf_declara_que_debe_contener():

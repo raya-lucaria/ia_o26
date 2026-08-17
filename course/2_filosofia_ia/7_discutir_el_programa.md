@@ -100,8 +100,9 @@ Tres cosas quedan sin resolver, y conviene salir sabiendo cuáles son:
    todavía no existe.
 
 El módulo 1 preguntaba **acelerar qué**. Este pregunta **quién lo construye, y
-con qué**. Esa es la distancia que recorre la unidad: la que hay entre tener una
-posición y tener un programa.
+con qué**. Esa es la distancia que recorre la unidad hasta aquí: la que hay
+entre tener una posición y tener un programa.
 
-Con esto cierra la unidad de filosofía. El calendario de lo que sigue está en la
-[página de inicio](raya:course-root).
+Falta la tercera respuesta, que es la que menos se parece a estas dos: la de
+quienes contestan que la pregunta está mal planteada porque de la política hay
+que salirse. Sigue con [[exit-nrx]].
