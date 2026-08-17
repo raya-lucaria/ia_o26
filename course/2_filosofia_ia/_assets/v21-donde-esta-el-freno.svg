@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" role="img" aria-label="Matriz de las cuatro lecturas del modulo 2 en tres columnas: la lectura, donde localiza el freno y que palanca propone. El manifiesto de Williams y Srnicek pone el freno en el capital, que ya estrangula la tecnica, y en una izquierda que no se la disputa; propone reprogramar la infraestructura existente. Fisher lo pone en lo que se puede imaginar y no llega a un programa: apunta una estrategia en la ultima linea del capitulo y deja el resto para el siguiente. Srnicek y Williams en Inventing the Future lo ponen en el trabajo como medida del merecimiento y proponen cuatro demandas concretas. Terranova lo pone en la infraestructura, que es de otros, y propone construir otro stack. Abajo, lo unico en lo que las cuatro coinciden."><rect x="0" y="0" width="1000" height="620" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">Donde esta el freno, segun cada lectura</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Las cuatro quieren lo mismo. No estan de acuerdo en que es lo que esta atorado</text>
+
+<!-- encabezados -->
+<text x="70" y="108" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">LECTURA</text>
+<text x="330" y="108" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">EL FRENO ESTA EN...</text>
+<text x="650" y="108" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="start">...Y LA PALANCA ES</text>
+<line x1="60" y1="120" x2="940" y2="120" stroke="#78419e" stroke-width="1.5"/>
+
+<!-- fila 1: manifiesto -->
+<rect x="60" y="132" width="880" height="96" rx="14" fill="#f04cff" opacity="0.12" stroke="#f04cff" stroke-width="1.5"/>
+<text x="80" y="162" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">1 - Manifiesto</text>
+<text x="80" y="182" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Williams y Srnicek</text>
+<text x="80" y="199" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2013</text>
+<text x="330" y="166" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">el capital, que ya estrangula la</text>
+<text x="330" y="185" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">tecnica, y una izquierda local y</text>
+<text x="330" y="204" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">nostalgica que no se la disputa</text>
+<text x="650" y="166" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">no destruir la infraestructura</text>
+<text x="650" y="185" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">existente sino reprogramarla:</text>
+<text x="650" y="204" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">el Plan y la Red a la vez</text>
+
+<!-- fila 2: Fisher -->
+<rect x="60" y="236" width="880" height="96" rx="14" fill="#a8ff5a" opacity="0.12" stroke="#a8ff5a" stroke-width="1.5"/>
+<text x="80" y="266" fill="#a8ff5a" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">2 - Capitalist Realism</text>
+<text x="80" y="286" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Fisher, cap. 4</text>
+<text x="80" y="303" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2009</text>
+<text x="330" y="270" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">lo que se alcanza a imaginar:</text>
+<text x="330" y="289" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">saber que esto esta mal y saber</text>
+<text x="330" y="308" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">que no se puede hacer nada</text>
+<text x="650" y="270" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">no llega a un programa: apunta</text>
+<text x="650" y="289" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">una estrategia en la ultima linea y</text>
+<text x="650" y="308" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">deja el resto al capitulo siguiente</text>
+
+<!-- fila 3: Inventing the Future -->
+<rect x="60" y="340" width="880" height="96" rx="14" fill="#55ddff" opacity="0.12" stroke="#55ddff" stroke-width="1.5"/>
+<text x="80" y="370" fill="#55ddff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">3 - Inventing the Future</text>
+<text x="80" y="390" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Srnicek y Williams, cap. 6</text>
+<text x="80" y="407" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2015</text>
+<text x="330" y="374" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">el trabajo convertido en la medida</text>
+<text x="330" y="393" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">de quien merece vivir bien, y la</text>
+<text x="330" y="412" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">creencia que lo sostiene</text>
+<text x="650" y="374" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">cuatro demandas que se pueden</text>
+<text x="650" y="393" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">pedir hoy y que, cumplidas, no</text>
+<text x="650" y="412" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">dejan el mundo donde estaba</text>
+
+<!-- fila 4: Terranova -->
+<rect x="60" y="444" width="880" height="96" rx="14" fill="#ffd166" opacity="0.12" stroke="#ffd166" stroke-width="1.5"/>
+<text x="80" y="474" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">4 - Red Stack Attack!</text>
+<text x="80" y="494" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Terranova</text>
+<text x="80" y="511" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">2014</text>
+<text x="330" y="478" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">la infraestructura: el dinero, las</text>
+<text x="330" y="497" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">redes y los aparatos ya existen, y</text>
+<text x="330" y="516" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">son de alguien mas</text>
+<text x="650" y="478" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">construir otra pila, de al menos</text>
+<text x="650" y="497" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">tres capas: dinero, redes sociales</text>
+<text x="650" y="516" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start">y bio-hipermedia</text>
+
+<!-- coincidencia -->
+<rect x="60" y="556" width="880" height="48" rx="14" fill="#9b6dff" opacity="0.12" stroke="#9b6dff" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="500" y="586" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">En lo que si coinciden: la tecnica no le pertenece al capital por naturaleza, y el futuro no se defiende, se construye</text>
+</svg>

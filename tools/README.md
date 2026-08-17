@@ -36,7 +36,7 @@ cd /home/uumami/itam/ia_o26
 python3 -m pytest tools/ -q
 ```
 
-77 pruebas, deben pasar todas antes de comitear un cambio que toque
+85 pruebas, deben pasar todas antes de comitear un cambio que toque
 `_assets/`, `_official/`, o cualquier `tools/*.json`/`tools/*.tsv`. Desde el
 commit `47697d2` esto también corre en CI, como job `checks` que bloquea el
 deploy (ver H16), pero eso no exime de correrlo en local antes de comitear.
@@ -127,7 +127,7 @@ corrida del generador correspondiente lo vuelve a traer.
 | `test_ilustraciones.py` | Cada ilustración del catálogo existe, mide 1024px de ancho, pesa menos de 400 KB, está acreditada como generada, y ningún prompt pide una persona real o personaje protegido |
 | `test_oficiales.py` | Las tarjetas oficiales (`_official/cards/*.yaml`) tienen forma válida: `type`, `authority`, anverso/reverso no vacíos, sin bloque `scope`, ids únicos |
 | `test_lecturas.py` | El cuadernillo de lecturas de `filosofia_ia/clase_1`: la introducción general de la página del curso no ha derivado de `introduccion.md`, cada lectura trae su ficha de cuatro apartados, el orden 1..6 es consecutivo y es el acordado, y funciones puras de `lecturas.py` (Markdown básico, huecos de páginas externas, orden de las secciones en el HTML final) |
-| `test_repaso.py` | La página de las seis lecturas del módulo 1 de filosofía: cada cita textual (exactamente 6) aparece, literal, en `docs/verificacion/filosofia_ia/3_las_seis_lecturas.md`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada |
+| `test_repaso.py` | Las cinco páginas de repaso de filosofía (módulos 1 y 2), cada una con su cifra esperada de citas — 2, 6, 0, 4 y 0: cada cita textual aparece, literal, en su registro de `docs/verificacion/filosofia_ia/`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada. Las dos páginas de discusión no citan, y su registro tiene que decir por qué no trae tabla |
 | `test_skin.py` | Que `tokens.color.surface` de `skins/eva-cyberpunk.yaml` siga siendo `#211033`, el valor que `gen_ilustraciones.py`, `test_ilustraciones.py` y `test_aceptacion.py` tienen hardcodeado por triplicado |
 
 ## H16 — resuelto: `pytest tools/` ya corre en CI

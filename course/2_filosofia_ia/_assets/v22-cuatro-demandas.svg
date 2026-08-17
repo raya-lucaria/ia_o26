@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" role="img" aria-label="Las cuatro demandas del programa post-trabajo de Srnicek y Williams dispuestas en cuadricula: automatizacion plena, semana laboral mas corta sin recorte de sueldo, renta basica universal y desarmar la etica del trabajo. Las cuatro van del mismo color, el de la lectura 3, porque las cuatro salen de ese solo capitulo. Una flecha horizontal va de la automatizacion a la semana corta: libera tiempo. Una flecha baja de la automatizacion a la renta basica: ese tiempo libre no vale sin ingreso. Una flecha punteada sube de la renta basica a la automatizacion: si se puede decir que no a un empleo, el trabajo barato se acaba. Una cuarta flecha sube desde la etica del trabajo, porque sin desarmarla las otras tres ni siquiera suenan deseables."><rect x="0" y="0" width="1000" height="640" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">Las cuatro demandas post-trabajo</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Cada una se puede pedir por separado; su fuerza esta en que se sostienen entre si</text>
+
+<!-- Las cuatro cajas van del color de la lectura 3 (#55ddff): las cuatro demandas
+     salen de ese unico capitulo. Usar los cuatro colores de lectura de v20 y v21
+     haria leer "magenta = automatizacion" despues de dos figuras que ensenaron
+     "magenta = manifiesto". -->
+
+<!-- 1: automatizacion plena -->
+<rect x="70" y="100" width="360" height="150" rx="20" fill="#55ddff" opacity="0.13" stroke="#55ddff" stroke-width="1.5"/>
+<text x="100" y="134" fill="#55ddff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">1 - Automatizacion plena</text>
+<text x="100" y="160" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">Que las maquinas hagan el trabajo que hoy</text>
+<text x="100" y="178" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">hace la gente, y que eso se exija en vez de</text>
+<text x="100" y="196" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">resistirlo.</text>
+<text x="100" y="224" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">No es un pronostico: es una exigencia</text>
+<text x="100" y="240" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">politica, ocurra o no por si sola.</text>
+
+<!-- 2: semana laboral -->
+<rect x="570" y="100" width="360" height="150" rx="20" fill="#55ddff" opacity="0.13" stroke="#55ddff" stroke-width="1.5"/>
+<text x="600" y="134" fill="#55ddff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">2 - Semana laboral mas corta</text>
+<text x="600" y="160" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">Menos dias de trabajo, sin recorte de</text>
+<text x="600" y="178" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">sueldo. Su propuesta concreta es el fin de</text>
+<text x="600" y="196" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">semana de tres dias.</text>
+<text x="600" y="224" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Reparte el tiempo que se libera en vez de</text>
+<text x="600" y="240" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">dejarlo como desempleo de unos cuantos.</text>
+
+<!-- 3: renta basica -->
+<rect x="70" y="330" width="360" height="150" rx="20" fill="#55ddff" opacity="0.13" stroke="#55ddff" stroke-width="1.5"/>
+<text x="100" y="364" fill="#55ddff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">3 - Renta basica universal</text>
+<text x="100" y="390" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">Un ingreso para todos, suficiente para</text>
+<text x="100" y="408" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">vivir, sin condiciones, y ademas del estado</text>
+<text x="100" y="426" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">de bienestar, nunca en lugar de el.</text>
+<text x="100" y="454" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Su efecto no es repartir dinero: es poder</text>
+<text x="100" y="470" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">decir que no a un empleo.</text>
+
+<!-- 4: etica del trabajo -->
+<rect x="570" y="330" width="360" height="150" rx="20" fill="#55ddff" opacity="0.13" stroke="#55ddff" stroke-width="1.5"/>
+<text x="600" y="364" fill="#55ddff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">4 - Desarmar la etica del trabajo</text>
+<text x="600" y="390" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">Desmontar la idea de que hay que sufrir un</text>
+<text x="600" y="408" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">empleo para merecer vivir bien, y de que</text>
+<text x="600" y="426" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">uno es su empleo.</text>
+<text x="600" y="454" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">El obstaculo mayor de la renta basica, dice</text>
+<text x="600" y="470" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">el capitulo, no es economico: es este.</text>
+
+<!-- flecha 1 -> 2 -->
+<path d="M 430 150 L 560 150" stroke="#9b6dff" stroke-width="2" fill="none"/>
+<polygon points="570,150 556,143 556,157" fill="#9b6dff"/>
+<text x="500" y="140" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="middle">libera tiempo</text>
+
+<!-- flecha 1 -> 3 -->
+<path d="M 130 250 L 130 320" stroke="#9b6dff" stroke-width="2" fill="none"/>
+<polygon points="130,330 123,316 137,316" fill="#9b6dff"/>
+<text x="145" y="272" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="start">y el tiempo libre no vale sin ingreso</text>
+
+<!-- flecha 3 -> 1, el lazo de vuelta -->
+<path d="M 370 330 L 370 260" stroke="#72f1b8" stroke-width="2" fill="none" stroke-dasharray="6 4"/>
+<polygon points="370,250 363,264 377,264" fill="#72f1b8"/>
+<text x="355" y="312" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="end">y entonces el trabajo barato se acaba</text>
+
+<!-- flecha 4 -> arriba -->
+<path d="M 750 330 L 750 265" stroke="#9b6dff" stroke-width="2" fill="none"/>
+<polygon points="750,255 743,269 757,269" fill="#9b6dff"/>
+<text x="765" y="291" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="start">sin esto, las otras tres</text>
+<text x="765" y="306" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="10.5" text-anchor="start">ni siquiera suenan deseables</text>
+
+<!-- pie: el lazo contraintuitivo -->
+<rect x="70" y="520" width="860" height="86" rx="14" fill="#72f1b8" opacity="0.10" stroke="#72f1b8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="500" y="548" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">El lazo contraintuitivo: la flecha punteada, de la renta basica a la automatizacion</text>
+<text x="500" y="572" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Si la gente puede rechazar un empleo, el trabajo barato se acaba. Y sin trabajo barato,</text>
+<text x="500" y="590" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">a la empresa por fin le conviene comprar la maquina: pedir salarios altos es pedir automatizacion.</text>
+</svg>

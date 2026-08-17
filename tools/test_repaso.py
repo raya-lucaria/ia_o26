@@ -1,18 +1,23 @@
-"""Guardas de las paginas de repaso del modulo 1 de filosofia.
+"""Guardas de las paginas de repaso de filosofia (modulos 1 y 2).
 
-Las tres paginas llevan citas textuales de seis ensayos, y afirmaciones sobre
+Las cinco paginas llevan citas textuales de diez ensayos, y afirmaciones sobre
 personas vivas, a un salon de clases. El riesgo concreto no es un error de
 dedo: es una cita plausible que nadie copio de ningun lado. Por eso cada cita
 de cada pagina tiene que aparecer, literal, en el registro de verificacion de
 esa pagina, y cada fila de cada registro tiene que estar marcada como
 verificada.
 
-El repaso empezo siendo una sola pagina y se partio en tres. Al partirlo, dos
-de las citas se mudaron a 2_las_ideas.md y la cobertura de esta guarda se
-quedo apuntando solo a 3_las_seis_lecturas.md. De ahi que las tres paginas
-esten aqui parametrizadas con su cifra esperada de citas: si una cita se muda
+El repaso del modulo 1 empezo siendo una sola pagina y se partio en tres. Al
+partirlo, dos de las citas se mudaron a 2_las_ideas.md y la cobertura de esta
+guarda se quedo apuntando solo a 3_las_seis_lecturas.md. De ahi que cada pagina
+este aqui parametrizada con su cifra esperada de citas: si una cita se muda
 otra vez, el conteo falla en las dos paginas y hay que decidir a mano, en vez
 de perder la cobertura en silencio.
+
+Lo que esta guarda NO comprueba, y conviene tener presente: que el contenido de
+cada fila del registro sea cierto. Comprueba estructura --que cada cita tenga
+fila y que cada fila diga "Si"--, no veracidad. Eso sigue siendo trabajo de
+quien escribe la pagina.
 """
 import re
 from pathlib import Path
@@ -21,13 +26,16 @@ import pytest
 
 RAIZ = Path(__file__).resolve().parent.parent
 
-# (pagina, registro, citas esperadas). 4_para_discutir.md no cita textualmente
-# —discute las seis lecturas ya citadas en las otras dos— y su registro lo
-# dice en vez de traer tabla; TABLA lo marca.
+# (pagina, registro, citas esperadas). Las dos paginas de discusion
+# —4_para_discutir.md del modulo 1 y 7_discutir_el_programa.md del modulo 2— no
+# citan textualmente: discuten lecturas ya citadas en las paginas de fichas, y
+# sus registros lo dicen en vez de traer tabla. TABLA lo marca.
 PAGINAS = [
     ("2_las_ideas.md", 2, True),
     ("3_las_seis_lecturas.md", 6, True),
     ("4_para_discutir.md", 0, False),
+    ("6_las_cuatro_lecturas.md", 4, True),
+    ("7_discutir_el_programa.md", 0, False),
 ]
 
 # Frase con la que el registro sin tabla declara que no la necesita. Si alguien

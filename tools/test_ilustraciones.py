@@ -12,16 +12,16 @@ CREDITOS = ASSETS / "CREDITOS.md"
 CREDITOS_FILOSOFIA = ASSETS_FILOSOFIA / "CREDITOS.md"
 
 # Un PNG con fondo horneado pesa mas que un JPEG al 85: el tope no puede ser
-# el mismo. Medidos tras cuantizar a 128 colores: 165, 315, 229 y 172 KB. El
-# tope queda en 400 KB, un escalon arriba del mayor, para que un PNG que se
-# dispare al doble se detecte, sin fallar por la variacion normal entre
-# generaciones.
+# el mismo. Medidos tras cuantizar a 128 colores, los seis van de 165 a 231 KB
+# (el mayor fue 315 KB antes de una regeneracion). El tope queda en 400 KB, un
+# escalon arriba del mayor, para que un PNG que se dispare al doble se
+# detecte, sin fallar por la variacion normal entre generaciones.
 PESO_MAX_PNG = 400_000
 
 # tokens.color.surface del skin: el color exacto de la columna de contenido
 # de la pagina, medido en pixeles sobre una captura del sitio construido
-# (no deducido del CSS). Las cuatro ilustraciones de filosofia hornean su
-# fondo a este color en vez de dejarlo transparente.
+# (no deducido del CSS). Las ilustraciones de filosofia hornean su fondo a
+# este color en vez de dejarlo transparente.
 FONDO_OBJETIVO = (33, 16, 51)
 
 # "nick land" y no "land": "land" sola pega en palabras inocentes (landscape)

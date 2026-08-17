@@ -60,7 +60,7 @@
 <text x="205" y="605" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="14">e/acc</text>
 </g>
 
-<text x="205" y="628" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">No son lecturas del cuadernillo: son a donde llega todo esto</text>
+<text x="205" y="628" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11">No son lecturas de este cuadernillo: son a donde llega todo esto</text>
 
 <!-- Response arrow: Fisher (2012) answers Land (1994), routed clear of the text column -->
 <path d="M 700 460 C 810 460 810 250 730 250" fill="none" stroke="#ffd166" stroke-width="1.6" stroke-dasharray="5 4"/>

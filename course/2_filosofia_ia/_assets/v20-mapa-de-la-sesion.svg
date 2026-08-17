@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Mapa de la sesion de dos horas. A la izquierda, la primera hora: repasar las cuatro lecturas en el orden del cuadernillo, cada una con el papel que juega: el manifiesto es el programa, Fisher es el diagnostico, Inventing the Future son las demandas y Terranova es la infraestructura. A la derecha, la segunda hora: discutir en cinco pasos, de comprension a interpretacion, comparacion, desacuerdo y aplicacion. Abajo, la pregunta que une las cuatro lecturas: donde esta el freno y que palanca hay que mover."><rect x="0" y="0" width="1000" height="560" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" font-weight="600" text-anchor="middle">La sesion, de un vistazo</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Dos horas: primero ordenamos lo que ya leiste, despues lo discutimos</text>
+
+<!-- HORA 1 -->
+<rect x="40" y="86" width="450" height="382" rx="18" fill="#9b6dff" opacity="0.08" stroke="#9b6dff" stroke-width="1.5"/>
+<text x="65" y="116" fill="#9b6dff" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">Hora 1 - Repasar</text>
+<text x="465" y="116" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="end">~55 min</text>
+<text x="65" y="138" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Las cuatro lecturas en el orden del cuadernillo</text>
+
+<rect x="65" y="152" width="400" height="66" rx="12" fill="#f04cff" opacity="0.14" stroke="#f04cff" stroke-width="1.5"/>
+<text x="86" y="176" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">1 - Williams y Srnicek, Manifiesto (2013)</text>
+<text x="86" y="199" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">El programa: que reclama la izquierda, y para que</text>
+
+<rect x="65" y="228" width="400" height="66" rx="12" fill="#a8ff5a" opacity="0.14" stroke="#a8ff5a" stroke-width="1.5"/>
+<text x="86" y="252" fill="#a8ff5a" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">2 - Fisher, Capitalist Realism cap. 4 (2009)</text>
+<text x="86" y="275" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">El diagnostico: por que ese programa suena imposible</text>
+
+<rect x="65" y="304" width="400" height="66" rx="12" fill="#55ddff" opacity="0.14" stroke="#55ddff" stroke-width="1.5"/>
+<text x="86" y="328" fill="#55ddff" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">3 - Srnicek y Williams, Inventing the Future</text>
+<text x="86" y="351" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">Las demandas: cuatro cosas concretas que pedir</text>
+
+<rect x="65" y="380" width="400" height="66" rx="12" fill="#ffd166" opacity="0.14" stroke="#ffd166" stroke-width="1.5"/>
+<text x="86" y="404" fill="#ffd166" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="start">4 - Terranova, Red Stack Attack! (2014)</text>
+<text x="86" y="427" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="start">La infraestructura: donde se construiria todo eso</text>
+
+<!-- HORA 2 -->
+<rect x="510" y="86" width="450" height="382" rx="18" fill="#72f1b8" opacity="0.08" stroke="#72f1b8" stroke-width="1.5"/>
+<text x="535" y="116" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="start">Hora 2 - Discutir</text>
+<text x="935" y="116" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="end">~55 min</text>
+<text x="535" y="138" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Cinco pasos, en este orden</text>
+
+<circle cx="560" cy="176" r="15" fill="#72f1b8" opacity="0.22"/>
+<text x="560" y="181" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">1</text>
+<text x="590" y="172" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">Comprension</text>
+<text x="590" y="190" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">que dijo cada quien, sin opinar todavia</text>
+<line x1="560" y1="196" x2="560" y2="220" stroke="#72f1b8" stroke-width="2"/>
+
+<circle cx="560" cy="238" r="15" fill="#72f1b8" opacity="0.22"/>
+<text x="560" y="243" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">2</text>
+<text x="590" y="234" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">Interpretacion</text>
+<text x="590" y="252" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">que quiso decir, y que no dijo</text>
+<line x1="560" y1="258" x2="560" y2="282" stroke="#72f1b8" stroke-width="2"/>
+
+<circle cx="560" cy="300" r="15" fill="#72f1b8" opacity="0.22"/>
+<text x="560" y="305" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">3</text>
+<text x="590" y="296" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">Comparacion</text>
+<text x="590" y="314" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">donde se cruzan las cuatro lecturas</text>
+<line x1="560" y1="320" x2="560" y2="344" stroke="#72f1b8" stroke-width="2"/>
+
+<circle cx="560" cy="362" r="15" fill="#72f1b8" opacity="0.22"/>
+<text x="560" y="367" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">4</text>
+<text x="590" y="358" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">Desacuerdo</text>
+<text x="590" y="376" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">se defiende una postura aunque no sea la propia</text>
+<line x1="560" y1="382" x2="560" y2="406" stroke="#72f1b8" stroke-width="2"/>
+
+<circle cx="560" cy="424" r="15" fill="#72f1b8" opacity="0.22"/>
+<text x="560" y="429" fill="#72f1b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">5</text>
+<text x="590" y="420" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13.5" font-weight="600" text-anchor="start">Aplicacion</text>
+<text x="590" y="438" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">que cambia esto para la IA, y desde Mexico</text>
+
+<!-- pregunta que une -->
+<rect x="40" y="486" width="920" height="52" rx="14" fill="#f04cff" opacity="0.10" stroke="#f04cff" stroke-width="1.5"/>
+<text x="500" y="518" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="14" font-weight="600" text-anchor="middle">La pregunta que une las cuatro: donde esta el freno, y que palanca hay que mover</text>
+</svg>

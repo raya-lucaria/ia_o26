@@ -48,6 +48,28 @@ def hornear_fondo(im, tolerancia=FONDO_TOLERANCIA):
     return Image.fromarray(arr.astype(np.uint8), "RGB")
 
 
+def fijar_fondo_en_paleta(im):
+    """Devuelve el color exacto FONDO_OBJETIVO a la entrada de paleta del fondo.
+
+    hornear_fondo() escribe el violeta exacto, pero quantize() elige despues
+    una paleta de 128 colores y puede desplazar ese violeta uno o dos niveles
+    (visto: (33,16,50) en vez de (33,16,51)). A ojo no se distingue; contra el
+    fondo de la columna de contenido del sitio, que si es exacto, deja un
+    borde perceptible en pantallas buenas -- y es justo lo que comprueba
+    test_filosofia_fondo_horneado_al_color_exacto. Se corrige la entrada que
+    usan las cuatro esquinas, que es la del fondo por construccion.
+    """
+    indices = {im.getpixel(xy) for xy in
+               [(0, 0), (im.width - 1, 0), (0, im.height - 1), (im.width - 1, im.height - 1)]}
+    if len(indices) != 1:
+        return im  # el fondo no quedo uniforme: no es algo que la paleta arregle
+    indice = indices.pop()
+    paleta = im.getpalette()
+    paleta[3 * indice:3 * indice + 3] = list(FONDO_OBJETIVO)
+    im.putpalette(paleta)
+    return im
+
+
 def clave():
     valor = os.environ.get("OPENAI_API_KEY")
     if not valor:
@@ -96,7 +118,7 @@ def generar(nombre):
             # fondo horneado es un solo color repetido en la mayoria de los
             # pixeles, que es exactamente el caso donde una paleta gana mas
             # que en modo RGB de color verdadero.
-            im = im.quantize(colors=128, method=Image.FASTOCTREE)
+            im = fijar_fondo_en_paleta(im.quantize(colors=128, method=Image.FASTOCTREE))
             im.save(destino, "PNG", optimize=True)
         else:
             im.save(destino, "JPEG", quality=CALIDAD_JPEG, optimize=True)
