@@ -1,6 +1,6 @@
-"""Guardas de las paginas de repaso de filosofia (modulos 1, 2 y 3).
+"""Guardas de las paginas de repaso de filosofia (modulos 1, 2, 3 y 4).
 
-Las siete paginas llevan citas textuales de trece ensayos, y afirmaciones sobre
+Las nueve paginas llevan citas textuales de dieciocho ensayos, y afirmaciones sobre
 personas vivas, a un salon de clases. El riesgo concreto no es un error de
 dedo: es una cita plausible que nadie copio de ningun lado. Por eso cada cita
 de cada pagina tiene que aparecer, literal, en el registro de verificacion de
@@ -36,6 +36,11 @@ RAIZ = Path(__file__).resolve().parent.parent
 # ficha que en el modulo 2. El reparto es 2 / 3 / 3 / 3 -- el manifiesto de 2007
 # lleva dos, y Patchwork, Thiel y Land tres cada uno; la de Land se reparte
 # entre sus dos bloques (parte 1 y parte 4a), que se citan por separado.
+#
+# La del modulo 4 espera 14, repartidas 3 / 2 / 2 / 2 / 2 / 3 entre sus seis
+# lecturas. Las dos de la lectura 4 son un caso aparte: esa lectura es un apunte
+# escrito por el curso, asi que lo que se cita de ella son los fragmentos de
+# fuente primaria que el propio apunte reproduce, no la prosa del apunte.
 PAGINAS = [
     ("2_las_ideas.md", 2, True),
     ("3_las_seis_lecturas.md", 6, True),
@@ -44,6 +49,8 @@ PAGINAS = [
     ("7_discutir_el_programa.md", 0, False),
     ("9_las_lecturas_de_la_salida.md", 11, True),
     ("10_discutir_la_salida.md", 0, False),
+    ("12_las_lecturas_del_futuro_largo.md", 14, True),
+    ("13_discutir_el_futuro_largo.md", 0, False),
 ]
 
 # Frase con la que el registro sin tabla declara que no la necesita. Si alguien

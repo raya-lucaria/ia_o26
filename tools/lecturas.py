@@ -560,6 +560,332 @@ LECTURAS: dict[str, list[Lectura]] = {
             ),
         ),
     ],
+    # ── Módulo 4 · Moloch, Rationality & the Long Future ──────────────────────
+    # Seis lecturas. Cinco vienen de la web y la sexta —la 4, el apunte del
+    # curso— se escribio para el modulo y vive en fuentes/ sin pasar por
+    # bajar_lecturas.py: no hay nada que descargar. El apunte declara en su
+    # primera linea que se escribio con ayuda de un modelo de lenguaje.
+    #
+    # El orden no es cronologico sino de dependencia: el problema (Alexander),
+    # el metodo (Yudkowsky), la meta (la Declaracion), de donde sale la meta
+    # (el apunte), la aritmetica (Bostrom) y el argumento completo (Greaves y
+    # MacAskill). La fecha del ensayo de Yudkowsky es la del post en LessWrong,
+    # 16 de marzo de 2009, no el 2012 que trae el temario; el README lo explica.
+    "filosofia_ia/clase_4": [
+        Lectura(
+            orden=1,
+            id="alexander-moloch",
+            titulo="Meditations on Moloch",
+            autor="Scott Alexander",
+            anio="2014",
+            fuente="alexander_moloch_en.txt",
+            procedencia="Slate Star Codex, 30 de julio de 2014 · slatestarcodex.com",
+            licencia="En derechos; publicado en abierto y completo por el autor. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Una entrada de blog del 30 de julio de "
+                "2014 y la lectura más larga del curso: catorce mil palabras en "
+                "ocho partes. Scott Alexander abre citando el pasaje sobre "
+                "Moloch de *Howl*, de Allen Ginsberg, y cierra pidiendo que "
+                "construyamos algo capaz de matarlo. En medio hay un solo "
+                "argumento. La parte I lo instala con catorce ejemplos de "
+                "*trampas multipolares* —el dilema del prisionero, las granjas "
+                "de peces que envenenan su propio lago, la carrera "
+                "armamentista, el cáncer—: situaciones que nadie eligió, que "
+                "todos odian y de las que nadie puede salir solo. Las partes II "
+                "a IV generalizan el mecanismo y preguntan qué le hace la "
+                "tecnología; las V y VI discuten a Nick Land; las VII y VIII "
+                "dan la respuesta.\n\n**Palabras clave.** *Trampa multipolar*: "
+                "una competencia en la que la jugada racional de cada uno "
+                "empeora a todos. *Carrera al fondo*: el mecanismo — quien gana "
+                "ventaja sacrificando un valor obliga a los demás a "
+                "sacrificarlo. *Moloch*: el nombre que le pone al conjunto, "
+                "tomado del poema; no es un agente, y en eso está el punto. "
+                "*Dream time*: la idea de Robin Hanson de que vivimos un "
+                "paréntesis raro de abundancia donde todavía caben el arte y el "
+                "amor. *Jardín*: lo contrario de una trampa, y su palabra para "
+                "la coordinación.\n\n**Qué retener.** Tres cosas. Una: la forma "
+                "de la trampa — en una competencia que optimiza X aparece la "
+                "oportunidad de sacrificar otro valor a cambio de más X; quien "
+                "la toma prospera y quien no desaparece; al final la posición "
+                "relativa de todos es la misma, la absoluta es peor, y el valor "
+                "sacrificado ya no vuelve. Dos: los cuatro frenos que hoy nos "
+                "protegen —recursos en exceso, límites físicos, competencias "
+                "que por ahora optimizan valores humanos, y coordinación— y la "
+                "tesis de la parte IV: la tecnología desgasta los cuatro. Con "
+                "la coordinación juega a dos bandas —la mejora, y también "
+                "inventa maneras de volverla imposible—, y ese es el punto "
+                "donde vale la pena detenerse. Tres: la salida. «Lo contrario "
+                "de una trampa es un jardín», y un jardín necesita jardinero: "
+                "una superinteligencia que optimice valores humanos y tenga "
+                "fuerza para imponerlos. El módulo entero descansa en ese paso "
+                "— el problema se diagnostica como coordinación y la solución "
+                "que se busca es técnica.\n\n**Es difícil, y está bien.** No "
+                "por la prosa, que es de blog, sino por el tamaño: calcula una "
+                "hora. El poema del principio son trescientas cincuenta "
+                "palabras y puedes hojearlo; el argumento no depende de él. De "
+                "los catorce ejemplos de la parte I, con cinco tienes el "
+                "patrón. Las partes V y VI —Gnon, Lovecraft, una pelea con dos "
+                "blogueros de 2014— son el tramo más local, pero no las saltes: "
+                "ahí Alexander lee a Nick Land, el mismo de los módulos 1 y 3, "
+                "y dice en qué paso cree que se equivoca. Con el tiempo justo: "
+                "la I en diagonal, y la IV, la VII y la VIII enteras. Dos "
+                "avisos. El poema de Ginsberg trae lenguaje crudo. Y hay "
+                "pasajes que incomodan —la economía de la esclavitud antigua "
+                "citada de un historiador, el patriarcado planteado como "
+                "hipótesis, un párrafo sobre coeficientes intelectuales y "
+                "robots—: están ahí como piezas del argumento sobre la "
+                "competencia, no como tesis morales."
+            ),
+        ),
+        Lectura(
+            orden=2,
+            id="yudkowsky-rationality",
+            titulo="What Do We Mean By “Rationality”?",
+            autor="Eliezer Yudkowsky",
+            anio="2009",
+            fuente="yudkowsky_rationality_en.txt",
+            procedencia="LessWrong, 16 de marzo de 2009 · lesswrong.com",
+            licencia="En derechos; publicado en abierto por el autor. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Mil ochocientas palabras, la lectura más "
+                "corta del módulo: el ensayo con el que Yudkowsky abre las "
+                "secuencias de LessWrong y define el término del que depende "
+                "todo lo demás. No defiende una tesis sobre el mundo. Define "
+                "una palabra, en dos partes, y explica por qué hace falta "
+                "tenerla.\n\n**Palabras clave.** *Racionalidad epistémica*: "
+                "mejorar sistemáticamente la exactitud de tus creencias. "
+                "*Racionalidad instrumental*: conseguir sistemáticamente lo que "
+                "valoras, que él también llama «ganar». *Mapa y territorio*: su "
+                "imagen para la relación entre creencia y realidad. "
+                "*Bayesiano*: creencias que respetan una distribución de "
+                "probabilidad coherente y decisiones que maximizan la esperanza "
+                "de una función de utilidad coherente — la vara con la que "
+                "mide, y la misma que usan sin decirlo las lecturas 5 y "
+                "6.\n\n**Qué retener.** La definición en dos partes, y que la "
+                "segunda mitad es la que carga con el módulo. Si ser racional "
+                "es conseguir lo que valoras, entonces la racionalidad no dice "
+                "qué valorar: es un método que se pone al servicio de los fines "
+                "que le pongas. Las lecturas que siguen le ponen unos fines "
+                "enormes —el futuro entero— y a partir de ahí tratan la "
+                "pregunta de qué hacer como un cálculo.\n\n**Es difícil, y está "
+                "bien.** No lo es: quince minutos. Lo único que puede frenarte "
+                "es media página de notación —P(A) ≥ P(A,B), el ejemplo del "
+                "contador que toca jazz, el problema de Newcomb—; léela como "
+                "ilustración de que hay un patrón medible y sigue. Sí lee las "
+                "tres notas al pie, que son cortas: en la segunda está la "
+                "advertencia de que esto no es «actuar como Spock», y de que la "
+                "racionalidad bayesiana cubre también corazonadas, percepciones "
+                "e intuiciones sin palabras. Es lo que más se le olvida a quien "
+                "cita el texto."
+            ),
+        ),
+        Lectura(
+            orden=3,
+            id="humanityplus-declaracion",
+            titulo="The Transhumanist Declaration",
+            autor="Humanity+",
+            anio="1998/2009",
+            fuente="humanityplus_declaracion_transhumanista_en.txt",
+            procedencia="Humanity+ · humanityplus.org; redactada en 1998, versión vigente adoptada por su mesa directiva en marzo de 2009",
+            licencia="En derechos; publicada en abierto por la propia organización. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Cuatrocientas dieciocho palabras: ocho "
+                "proposiciones numeradas, redactadas en 1998 por un grupo "
+                "internacional de veintidós personas —entre ellas Nick Bostrom, "
+                "que firma la lectura 5— y adoptadas en su versión actual por "
+                "la mesa directiva de Humanity+ en marzo de 2009. La lista de "
+                "nombres viene antes del texto y es parte de lo que hay que "
+                "leer.\n\n**Palabras clave.** *Transhumanismo*: la posición de "
+                "que la condición humana puede y debe modificarse por medios "
+                "técnicos. *Riesgo existencial*: el término de la proposición "
+                "5, que la lectura 5 convierte en prioridad número uno. "
+                "*Mejora* (*enhancement*): extensión de la vida, memoria, "
+                "concentración, criónica — lo que enumera la proposición 8. "
+                "*Sintiencia*: la palabra de la proposición 7, que extiende el "
+                "interés moral a los animales y a las inteligencias "
+                "artificiales futuras.\n\n**Qué retener.** Dos cosas, y las dos "
+                "están literalmente escritas. Una: la meta del módulo cabe en "
+                "la proposición 1 —superar el envejecimiento, los límites "
+                "cognitivos, el sufrimiento involuntario y el confinamiento a "
+                "la Tierra—. Dos: la proposición 6 pide considerar las "
+                "responsabilidades morales hacia las generaciones que existirán "
+                "en el futuro, y la 7 mete en la cuenta a las inteligencias "
+                "artificiales. Es la pregunta de quién cuenta, contestada en "
+                "dos renglones y trece años antes que la lectura 6.\n\n**Es "
+                "difícil, y está bien.** Se lee en cinco minutos y la "
+                "dificultad es de otro tipo. Un manifiesto no argumenta: "
+                "declara. No hay premisas que seguir ni conclusión que "
+                "verificar, así que leerlo bien es preguntar cuáles de esas "
+                "ocho frases necesitarían un argumento y no lo traen. Léelo dos "
+                "veces —la segunda cuesta lo mismo— y déjalo junto a la lectura "
+                "4, que es la que te dice de dónde viene todo esto."
+            ),
+        ),
+        Lectura(
+            orden=4,
+            id="apunte-genealogias",
+            titulo="Genealogies of the Engineered Future",
+            autor="Apunte del curso",
+            anio="2026",
+            fuente="apunte_genealogias_es.txt",
+            procedencia="Escrito para este curso, agosto de 2026, con ayuda de un modelo de lenguaje; las fuentes de cada fragmento van al pie del propio apunte",
+            licencia="Material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Cinco o seis páginas escritas para el "
+                "curso, en español, y la única lectura del cuadernillo que no "
+                "es una fuente. La escribimos porque la Declaración que acabas "
+                "de leer no dice de dónde salió, y leída sola parece inventada "
+                "en 1998. Recorre cinco linajes en orden —el cosmismo ruso de "
+                "Fiódorov, el extropianismo de Max More, el singularitarianismo "
+                "de Kurzweil, el cosmismo contemporáneo y el altruismo eficaz— "
+                "y de cada uno da los hechos, un fragmento breve del texto "
+                "original en inglés y su fuente. La escribimos con ayuda de un "
+                "modelo de lenguaje, y lo dice en su primera "
+                "línea.\n\n**Palabras clave.** *Cosmismo*: la corriente rusa de "
+                "fines del XIX que trata la muerte como un defecto reparable y "
+                "la resurrección de los muertos como una tarea de ingeniería. "
+                "*Extropía*: la palabra que More opone a entropía, y el nombre "
+                "de la revista donde en 1990 se acuña el sentido actual de "
+                "«transhumanismo». *Singularidad*: el punto en que la "
+                "inteligencia de máquina supera a la humana; Kurzweil le pone "
+                "fecha, 2045. *TESCREAL*: el acrónimo con el que Gebru y Torres "
+                "nombran al conjunto —y que incluye, además de estos cinco "
+                "linajes, el racionalismo de tu lectura 2 y el largoplacismo de "
+                "la 6—.\n\n**Qué retener.** Dos cosas. Una: que la meta no "
+                "nació con la IA. La promesa de vencer a la muerte y salir del "
+                "planeta lleva siglo y medio circulando y cambia de vocabulario "
+                "en cada paso —religioso en Fiódorov, libertario en More, "
+                "técnico en Kurzweil, actuarial en el altruismo eficaz—, pero "
+                "el contenido se mueve poco. Dos: que dos de tus seis lecturas "
+                "están al final de esa cadena. Bostrom firma la Declaración en "
+                "1998 y hace la aritmética en 2003; Greaves y MacAskill lo "
+                "citan en su primera página. No estás leyendo autores "
+                "sueltos.\n\n**Es difícil, y está bien.** Es la lectura más "
+                "fácil de las seis y la más corta después de la Declaración: "
+                "quince minutos. Va en español, salvo los cinco fragmentos "
+                "citados, que van en su inglés original con la fuente debajo. "
+                "Lo único que puede confundirte es que un apunte del curso "
+                "conviva con fuentes primarias; léelo como lo que es, un mapa, "
+                "y no como una autoridad. Si algún dato te parece raro, cada "
+                "uno trae de dónde salió, y el propio apunte señala dos casos "
+                "en los que las fuentes no coinciden entre sí."
+            ),
+        ),
+        Lectura(
+            orden=5,
+            id="bostrom-astronomical-waste",
+            titulo="Astronomical Waste",
+            autor="Nick Bostrom",
+            anio="2003",
+            fuente="bostrom_astronomical_waste_en.txt",
+            procedencia="«Astronomical Waste: The Opportunity Cost of Delayed Technological Development» · nickbostrom.com; publicado originalmente en Utilitas 15(3), 2003, pp. 308–314",
+            licencia="En derechos; publicado en abierto y completo por el autor. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Un artículo de filosofía de 2003, corto: "
+                "dos mil seiscientas palabras en cuatro secciones, publicado en "
+                "*Utilitas* 15(3), pp. 308–314. El temario lo cita por esa "
+                "paginación; aquí se reproduce la versión que el propio Bostrom "
+                "publica en su sitio, con el mismo texto y sin esos números de "
+                "página. Es el texto donde el futuro se vuelve una "
+                "cifra.\n\n**Palabras clave.** *Desperdicio astronómico*: los "
+                "recursos del universo que se degradan sin producir vidas "
+                "mientras no colonizamos. *Costo de oportunidad*: lo que se "
+                "pierde por retrasar, medido en vidas que pudieron existir. "
+                "*Riesgo existencial*: el que aniquilaría la vida inteligente "
+                "originada en la Tierra o recortaría para siempre su potencial. "
+                "*Vista person-affecting*: la posición según la cual solo "
+                "cuentan las personas que existen o existirán. *Agregativo* y "
+                "*descuento temporal*: las dos condiciones que Bostrom necesita "
+                "— sumar el bienestar de todos por igual, y no valer menos el "
+                "futuro por ser futuro.\n\n**Qué retener.** Tres pasos, y el "
+                "segundo sorprende. Uno: la aritmética de la sección I. "
+                "Contando las estrellas del Supercúmulo de Virgo y la capacidad "
+                "de cómputo de cada una, cada siglo de colonización retrasada "
+                "cuesta unas 10^38 vidas humanas potenciales; con el supuesto "
+                "más conservador, solo cuerpos biológicos, son más de diez "
+                "billones de vidas por segundo. Dos: la sección III no concluye "
+                "lo que venía prometiendo. Como las galaxias duran miles de "
+                "millones de años y los retrasos que podemos causar duran "
+                "décadas, el riesgo pesa más que la prisa: un punto porcentual "
+                "menos de riesgo existencial vale más que diez millones de años "
+                "de demora, y «maximiza la utilidad agregada esperada» se "
+                "abrevia en «minimiza el riesgo existencial». Tres: la sección "
+                "IV invierte la recomendación con los mismos números. Si solo "
+                "cuentan las personas que ya existen, lo urgente vuelve a ser "
+                "la velocidad, porque hay que llegar vivos. Misma aritmética, "
+                "distinta población contada, política opuesta.\n\n**Es difícil, "
+                "y está bien.** Los exponentes son lo primero que frena, y el "
+                "propio Bostrom te libera: lo que importa, escribe, no son las "
+                "cifras exactas sino que son enormes. No intentes imaginarlas. "
+                "Lo denso de verdad son dos párrafos de la sección IV sobre la "
+                "utilidad marginal de los recursos y Bill Gates; si te pierdes "
+                "ahí, el último párrafo de la sección dice la conclusión "
+                "completa. Las notas al pie van al final y son referencias. Y "
+                "este artículo reaparece en la lectura 6, que lo cita como su "
+                "antecedente directo."
+            ),
+        ),
+        Lectura(
+            orden=6,
+            id="greaves-macaskill-longtermism",
+            titulo="The Case for Strong Longtermism",
+            autor="Hilary Greaves y William MacAskill",
+            anio="2021",
+            fuente="greaves_macaskill_strong_longtermism_en.txt",
+            procedencia="Secciones 1–4 y 10 · Global Priorities Institute, Universidad de Oxford · GPI Working Paper 5-2021, junio de 2021",
+            licencia="En derechos; documento de trabajo publicado en abierto por el instituto. Se reproduce como material del curso",
+            introduccion=(
+                "**Qué vas a leer.** Un artículo académico —*working paper* "
+                "5-2021 del Global Priorities Institute de Oxford— y la lectura "
+                "más exigente del módulo. Van aquí **solo las secciones 1 a 4 y "
+                "la 10**: quedan fuera la 5 (individuos y elección de carrera), "
+                "la 6 (otras axiologías), la 7 (la objeción de que somos "
+                "*clueless* sobre el futuro remoto), la 8 (la de fanatismo por "
+                "probabilidades diminutas), la 9 (la versión deóntica) y el "
+                "apéndice con la demostración. La sección 10 sí resume todo "
+                "eso, así que vas a leer el resumen de argumentos que no "
+                "leíste; sábelo de entrada, y lo mismo con la sección 1, que "
+                "anuncia secciones que aquí no están.\n\n**Palabras clave.** "
+                "*Largoplacismo fuerte*: la tesis de que el efecto sobre el "
+                "futuro remoto es lo más importante de nuestras acciones de "
+                "hoy. *ASL*: su versión axiológica precisa, en dos cláusulas — "
+                "toda opción casi óptima en general lo es para el futuro "
+                "remoto, y entrega mucho más beneficio allá que acá. *Futuro "
+                "remoto*: de aquí a cien años en adelante. *Washing-out*: la "
+                "objeción de que los efectos lejanos se diluyen, que contesta "
+                "la sección 4. *Estado persistente*: una configuración del "
+                "mundo de la que, una vez dentro, se tarda muchísimo en salir — "
+                "la extinción es el caso puro.\n\n**Qué retener.** Tres cosas. "
+                "Una: la forma del argumento, que es comparar dos cotas. "
+                "Arriba, lo mejor que sabemos hacer a corto plazo: repartir "
+                "mosquiteros contra la malaria, unos cuatro mil dólares por "
+                "vida salvada, 0.025 vidas por cada cien dólares. Abajo, una "
+                "cota mínima del beneficio esperado en el futuro remoto. La "
+                "tesis es que la segunda aplasta a la primera por órdenes de "
+                "magnitud. Dos: todo corre sobre la *esperanza* del número de "
+                "seres futuros, no sobre su mediana, y de ahí sale la asimetría "
+                "que hace el número enorme — creer al 50% que el futuro estará "
+                "vacío solo divide la cuenta entre dos, mientras que un 1% de "
+                "crédito a un billón de seres por siglo la multiplica por cien. "
+                "Tres: la sección 4.3 pone a la inteligencia artificial en el "
+                "centro, y en la estimación principal de los autores cada cien "
+                "dólares gastados en seguridad en IA valen tanto como salvar un "
+                "billón de vidas. El módulo termina aquí porque aquí el aparato "
+                "de contar produce una instrucción concreta de gasto.\n\n**Es "
+                "difícil, y está bien.** Es un paper y se nota, pero lo que más "
+                "te va a estorbar son las notas al pie. En este recorte caen "
+                "**entre párrafos**, donde el original cambiaba de página, y a "
+                "veces parten una oración por la mitad. Cuando un párrafo se "
+                "interrumpa sin sentido, busca dónde retoma en vez de releerlo. "
+                "Del resto: lee despacio la sección 2 una vez, porque sus "
+                "definiciones se usan después al pie de la letra; en la 3 y la "
+                "4 quédate con las cifras y sáltate los análisis de "
+                "sensibilidad. Y fíjate en el cierre de la 10, donde los "
+                "propios autores nombran los puntos que consideran más débiles. "
+                "Es el mejor sitio desde donde empezar a discutirlos."
+            ),
+        ),
+    ],
 }
 
 # Sin fuente abierta verificable. Si consigues el PDF de la edicion citada y lo
@@ -996,6 +1322,10 @@ def _titulos(modulo: str) -> tuple[str, str]:
         "filosofia_ia/clase_3": (
             "Exit, NRx & Dark Enlightenment",
             "Filosofía de la IA · Módulo 3 — La salida como programa político",
+        ),
+        "filosofia_ia/clase_4": (
+            "Moloch, Rationality & the Long Future",
+            "Filosofía de la IA · Módulo 4 — El futuro como proyecto de ingeniería",
         ),
     }.get(modulo, (modulo, ""))
 

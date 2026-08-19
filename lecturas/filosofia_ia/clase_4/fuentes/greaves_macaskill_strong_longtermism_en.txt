@@ -1,0 +1,273 @@
+A striking fact about the history of civilisation is just how early we are in it. There are 5000 years of recorded history behind us, but how many years are still to come? If we merely last as long as the typical mammalian species, we still have over 200,000 years to go (Barnosky et al. 2011); there could be a further one billion years until the Earth is no longer habitable for humans (Wolf and Toon 2015); and trillions of years until the last conventional star formations (Adams and Laughlin 1999:34). Even on the most conservative of these timelines, we have progressed through a tiny fraction of history. If humanity’s saga were a novel, we would be on the very first page.
+
+Normally, we pay scant attention to this fact. Political discussions are normally centered around the here and now, focused on the latest scandal or the next election. When a pundit takes a “long-term” view, they talk about the next five or ten years. With the exceptions of climate change and nuclear waste, we essentially never think about how our actions today might influence civilisation hundreds or thousands of years hence.
+
+We believe that this neglect of the very long-run future is a serious mistake. An alternative perspective is given by longtermism, according to which we should be particularly concerned with ensuring that the far future goes well (MacAskill MS). In this article we go further, arguing for strong longtermism: the view that impact on the far future is the most important feature of our actions today. We will defend both axiological and deontic versions of this thesis.
+
+Humanity, today, is like an imprudent teenager. The most important feature of the most important decisions that a teenager makes, like what subject to study at university and how diligently to study, is not the enjoyment they will get in the short term, but how those decisions will affect the rest of their life.
+
+The structure of the paper is as follows. Section 2 sets out more precisely the thesis we will primarily defend: axiological strong longtermism (ASL). This thesis states that, in the most important decision situations facing agents today, (i) every option that is near-best overall is near-best for the far future, and (ii) every option that is near-best overall delivers much larger benefits in the far future than in the near future.
+
+We primarily focus on the decision situation of a society deciding how to spend its resources. We use the cost-effectiveness of antimalarial bednet distribution as an approximate upper bound on attainable near-future benefits per unit of spending. Towards establishing a lower bound on the highest attainable far-future expected benefits, section 3 argues that there is, in expectation, a vast number of sentient beings in the future of human-originating civilisation. Section 4 then argues, by way of examples involving existential risk, that the project of trying to beneficially influence the course of the far future is sufficiently tractable for ASL(i) and ASL(ii) to be true of the above decision situation. Section 5 argues that the same claims and arguments apply equally to an individual deciding how to spend resources, and an individual
+
+choosing a career. We claim these collectively constitute the most important decision situations facing agents today, so that ASL follows.
+
+The remainder of the paper explores objections and extensions to our argument.
+
+Section 6 argues that the case for ASL is robust to several plausible variations in axiology, concerning risk aversion, priority to the worse off, and population ethics. Section 7 addresses the concern that we are clueless about the very long-run effects of our actions. Section 8 addresses the concern that our argument turns problematically on tiny probabilities of enormous payoffs.
+
+Section 9 turns to deontic strong longtermism. We outline an argument to the effect that, according to any plausible non-consequentialist moral theory, our discussion of ASL also suffices to establish an analogous deontic thesis. Section 10 summarises.
+
+The argument in this paper has some precedent in the literature. Nick Bostrom (2003) has argued that total utilitarianism implies we should maximise the chance that humanity ultimately settles space. Nick Beckstead (2013) argues, from a somewhat broader set of assumptions, that “what matters most” is that we do what’s best for humanity’s long-term trajectory. In this paper, we make the argument for strong longtermism more rigorous, and we show that it follows from a much broader set of empirical, moral and decision-theoretic views. In addition, our argument in favour of deontic strong longtermism is novel.
+
+We believe that strong longtermism is of the utmost importance: that if society came to adopt the views we defend in this paper, much of what we prioritise in the world today would change.
+
+2. Precisifying strong longtermism
+
+2.1 Axiological strong longtermism (ASL)
+
+Strong longtermism could be made precise in a variety of ways. First, since we do not assume consequentialism, we must distinguish between axiological and deontic claims. Let axiological (resp. deontic) strong longtermism be the thesis that far-future effects are the most important determinant of the value of our options (resp. of what we ought to do).
+
+It remains imprecise what “most important determinant” means. Taking the axiological case first, in this paper we consider the following more precise thesis:1
+
+Axiological strong longtermism (ASL): In the most important decision situations facing agents today,
+
+(i) Every option that is near-best overall is near-best for the far future.
+
+(ii) Every option that is near-best overall delivers much larger benefits in the far future than in the near future.
+
+We discuss deontic strong longtermism in section 9.
+
+Where condition (i) holds, one can identify the near-best options by focussing in the first instance only on far-future effects. If (as we believe, but will not argue here) the analogous statement regarding near-future effects is not also true, that supplies one sense in which far-future effects are “the most important”. Where condition (ii) holds, the evaluation of near-best options is primarily driven by far-future effects. That supplies another such sense.
+
+In sections 3-5, we will argue that clauses (i) and (ii) of ASL hold of particular decision situations: those of a society deciding how to spend money with no restrictions as to ‘cause area’, an individual making the analogous decision, and individual career choice. Because these decision situations have particularly great significance for the well-being of both present and future sentient beings, we claim, they are the most important situations faced by agents today. Therefore, strong longtermism follows, even if ASL(i) and (ii) do not hold of any other decision situations.
+
+Throughout, “the far future” means everything from some time t onwards, where t is a surprisingly long time from the point of decision (say, 100 years). “The near future” means the time from the point of decision until time t. We will interpret both “near-best overall” and “near-best for the far future” in terms of proportional distance from zero benefit to the maximum available benefit, and “much larger” in terms of a multiplicative factor.
+
+As we intend it, ASL is not directly concerned with the objective value of options and their actual effects. Rather, terms like “near-best” and “benefits” relate to the ex ante value of those options, given the information available at the time of decision, and their prospects for affecting the near or far future. Ex ante value may be expected value, but the statement of ASL does not presuppose this.
+
+Since it refers to “benefits”, ASL makes sense only relative to a status quo option: benefits are increases in value relative to the status quo. As above, our primary examples will be cases of deciding how to spend some resource (either money or time). For concreteness, we will then take the status quo to be a situation in which the resources in question are simply wasted. However, other plausible choices of status quo would be unlikely to significantly affect our argument, and the argument does not require that the status quo be special in any deep sense.
+
+ASL makes only comparative claims. We do not claim, and nor do we believe, that options cannot deliver large benefits without being near-best for the far future, or that available near-future benefits are small in any absolute sense. Our claim is rather that available benefits for the far future are many times larger even than this.
+
+2.2 Benefit ratio (BR) and ASL
+
+Our argument for ASL proceeds via the intermediate claim that the following property holds of the decision situations in question:
+
+Benefit ratio (BR): The highest far-future ex ante benefits that are attainable without net near-future harm are many times greater than the highest attainable near-future ex ante benefits.
+
+We prove in the Appendix that if BR holds of a given decision situation, then (firstly) so does ASL(ii), and (secondly) ASL(i) holds of a certain restriction of that decision situation. (The restriction involves removing any options that do net expected near-future harm; this restriction is innocuous in the context of our argument.)
+
+Evaluating BR, and hence ASL, requires quantitative analysis; any particular quantitative analysis requires strong evaluative assumptions. To this end, we will temporarily make a particular, plausible but controversial, set of evaluative assumptions. Section 6, however, shows that various plausible ways of relaxing these assumptions leave the basic argument intact. One controversial assumption that may be essential, concerning the treatment of very small probabilities, is discussed in section 8.
+
+The inessential assumptions in question include the following. First, we will identify the ex ante value of an option with its expected value: the probability-weighted average of the possible values it might result in. Second, we will identify value with total welfare: that is, we will assume a total utilitarian axiology. Third, and a near-corollary of the latter, we will assume time-separability. The latter allows us to separately define near-future and far-future benefits: overall value is then simply the sum of near-future value and far-future value, where these in turn depend only on near-future (respectively, far-future) effects.
+
+For a rough upper bound on near-future expected benefits in the context of a society spending money, we consider the distribution of long-lasting insecticide-treated bednets in malarial regions, which saves a life on average for around $4000. Each $100 therefore saves on average 0.025 lives in the near future (GiveWell 2020a).2
+
+We cannot argue that this is the action with the very largest near-future benefits. In particular, though it seems hard to beat this cost-effectiveness level via any intervention that is backed by rigorous evidence, it might be possible to achieve higher short-term expected benefits via some substantially more speculative route.3 A full examination of the case for strong longtermism would involve investigation of this, and the corresponding sensitivity analysis. However, even quite large upward adjustments to the figure we use here would leave our argument largely unaffected.
+
+We emphasise that we are not considering the long-run knock-on effects of bednet distribution. It is possible, for all we say in this paper, that bednet distribution is the best way of making the far future go well, though we think this unlikely.4
+
+Following GiveWell (2018b), we will assume that the short-term benefits of the interventions that do the most short-run good would scale proportionately even if very large amounts of money were spent.
+
+A sister organisation to GiveWell, Open Philanthropy, has tried hard to find human-centric interventions that have more short-term impact, and has struggled (Berger 2019). There might be more cost-effective interventions focused on preventing the suffering of animals living in factory farms (Bollard 2016). We leave this aside in order to avoid getting into issues of inter-species comparisons; again, there is a corresponding need for sensitivity analysis.
+
+It would amount to a “surprising and suspicious convergence” between near-future and far-future optimisation (Lewis 2016).
+
+We will argue in section 4 that, for a society’s decision about how to spend its resources, the lower bound on attainable far-future expected benefits is many times higher than this upper bound for near-future expected benefits, and therefore BR holds of this decision situation. Section 5 discusses related decision situations facing individuals.
+
+3. The size of the future
+
+There is, in expectation, a vast number of lives in the future of human civilisation.5 Any estimate of just how “vast” is of course approximate. Nonetheless, we will argue, existing work supports estimates that are sufficiently large for our argument to go through.
+
+There are several techniques one can use for estimating the expected number of future beings. Let us start with the question of the expected duration of humanity’s future existence, temporarily setting aside questions of how large the population might be at any future time.
+
+Firstly, one might use evidence regarding the age of our species to ground judgments on the annual risk of extinction from natural causes, and extrapolate from there. Given that Homo sapiens has existed for over 200,000 years, Snyder-Beattie et al. (2019:2) thereby estimate that the expected future lifespan of humanity is at least 87,000 years, as far as natural causes of extinction are concerned.
+
+Secondly, one might undertake reference class forecasting (Kahneman and Lovallo 1993; Flyvbjerg 2008). Here, the lifespans of other sufficiently similar species serve as benchmarks. Estimates of the average lifespan of mammalian species (resp. hominins) are between 0.5 and 6 million years (resp. around 1 million years) (Snyder-Beattie et al. 2019:6). Thus reference class forecasting, naively applied, suggests at least 1 million years for the expected future duration of humanity.
+
+Both of these estimates, however, ignore the fact that humans today are highly atypical. Humanity today is significantly better equipped to survive extinction-level threats than either other species are, or than our own species was in the past, thanks to a combination of technological capabilities and geographical diversity. Therefore a range of substantially higher benchmarks is also relevant: for instance, the frequency of mass extinction events (1 in every 30-100 million years (Snyder-Beattie et al. 2019:7)), and the time over which the Earth remains habitable for humans (around 1 billion years (Adams 2008:34)).
+
+The above figures concern the expected duration of humanity’s future. Since we are interested in the expected number of future beings, we also need to consider population size.
+
+We again consider several benchmarks. First, the UN Department of Economic and Social Affairs (2019:6) projects that the global population will plateau at around 11 billion people by the year 2100. Second, the large majority of estimates of the Earth’s “carrying capacity” – that is, its long-run sustainable population, based on relatively conservative assumptions about future technological progress – are over 5 billion, and sometimes substantially higher
+
+We will use ‘human’ to refer both to Homo sapiens and to whatever descendants with at least comparable moral status we may have, even if those descendants are a different species, and even if they are non-biological.
+
+(Cohen 1998:342; Bergh and Rietveld 2004:197). Third, for predicting the further future, we might extrapolate from the historical trend of human population increasing over time. Given this trend, it is at least plausible that continued technological advances will enable an even larger future population up to some much higher plateau point (say, 1 trillion), even if we cannot currently foresee the concrete details of how that might happen (Simon 1998).
+
+Importantly, it is the expected number of future beings, not the median, that is relevant for our purposes. In addition to the possibility of numbers like the higher benchmarks indicated above, it is of course also possible that the future duration and/or population size of humanity are much smaller.6 However, the effects of these possibilities on the expected number are highly asymmetric. Even a 50% credence that the number of future beings will be zero would decrease the expected number by only a factor of two. In contrast, a credence as small as 1% that the future will contain, for example, 1 trillion beings per century for 100 million years (rather than 10 billion per century for 1 million years) increases the expected number by a factor of 100.
+
+We must also consider two more radical possibilities that, while very uncertain, could greatly increase the duration and future population sizes of humanity. The first concerns space settlement. There are currently no known obstacles to the viability of space settlement, and some scientific investigations suggesting its feasibility using known science (Sandberg and Armstrong 2013; Beckstead 2014). If humanity lives not only on Earth but also on other planets — in our own solar system, elsewhere in the Milky Way, or in other galaxies too — then terrestrial constraints on future population size disappear, and astronomically larger populations become possible. Even if we only settle the solar system, civilisation would have over 5 billion years until the end of the main sequence lifetime of the Sun (Sackmann et al. 1993:462; Schröder and Smith 2008:157-8), and we would have access to over two billion times as much sunlight power as we do now (Stix 2002:6; Sarbu and Sebarchievici 2017:16). If we are able to widely settle the rest of the Milky Way, then we could access well over 250 million rocky habitable-zone planets (Bryson et al. 2021:22), each of which has the potential to support trillions of lives over the course of their sun’s lifetimes. Moreover, an interstellar civilisation could survive until the end of the stelliferous era, on the order of ten trillion years hence (Adams and Laughlin 1999). If we consider possible settlement of the billions of other galaxies accessible to us, the numbers get dramatically larger again.
+
+The second radical possibility is that of digital sentience: that is, conscious artificial intelligence (AI). The leading theories of philosophy of mind support the idea that consciousness is not essentially biological, and could be instantiated digitally (Lewis 1980; Chalmers 1996: ch. 9). And the dramatic progress in computing and AI over just the past 70 years should give us reason to think that if so, digital sentience could well be a reality in the
+
+On duration: technological progress brings not only protection against existing extinction risks, but also novel sources of extinction risk (Ord 2020: esp. chs. 4 and 5). On population size: the tendency for richer societies to have lower fertility rates has led some to conjecture that human population, after plateauing around 2100, might significantly decline into the indefinite future, a high “carrying capacity” notwithstanding (Bricker and Ibbitson 2019).
+
+future. It is also plausible that such beings would have at least comparable moral status to humans (Liao 2020), so that they count for the purposes of the arguments in this paper.7
+
+Consideration of digital sentience should increase our estimates of the expected number of future beings considerably, in two ways. First, it makes interstellar travel much easier: it is easier to sustain digital than biological beings during very long-distance space travel (Sandberg 2014:453). Second, digital sentience could dramatically increase the number of beings who could live around one star: digital agents could live in a much wider variety of environments (Sandberg 2014:453), and could more efficiently turn energy into conscious life (Bostrom 2003:309).
+
+One might feel sceptical about these scenarios. But given that there are no known scientific obstacles to them, it would be overconfident to be certain, or near-certain, that space settlement, or digital sentience, will not occur. Imagine that you could peer into the future, and thereby discovered that Earth-originating civilisation has spread across many solar systems. How surprised would you be, compared to how surprised you would be if you won the lottery?
+
+To move towards particular numbers, we consider three specific future scenarios, taken from Newberry (2021a), where civilisation is: (i) Earthbound; (ii) limited to the Solar System; and (iii) expanded across the Milky Way. In each case, Newberry makes a conservative estimate of the carrying capacity of civilisation in that scenario, on the assumptions that digital life is and is not possible, giving six scenarios in all. He also provides a best-guess estimate of the duration of civilisation in that scenario. These scenarios are not meant to exhaust the possibility space, but they give an indication of the potential magnitudes of future population size:
+
+Scenario Duration (centuries) Carrying capacity Number of future (lives per century) lives
+
+Earth (mammalian 104 1010 1014 reference class)
+
+Earth (digital life) 104 1014 1018
+
+Solar System 108 1019 1027
+
+Solar System (digital 107 1023 1030 life)
+
+Milky Way 1011 1025 1036
+
+Milky Way (digital 1011 1034 1045 life)
+
+We return to the likelihood of artificial superintelligence in section 4.3.
+
+To arrive at an overall estimate of the expected number of future people, one would further need to estimate probabilities for scenarios such as those above (and for all other scenarios). However, since the number of lives in the future according to different possible scenarios is spread over many orders of magnitude, in any such expected value calculation, it tends to be the “largest” scenario in which one has any nonzero credence that drives the overall estimate. Even a 0.01% credence that biological humanity settles the Milky Way at carrying capacity, for example, contributes at least 1032 to the expected number of future beings. Precisely how one’s remaining credence is spread among “smaller” scenarios then makes very little difference.
+
+Because of this, we believe that any reasonable estimate of the expected number of future beings is at least 1024. (In fact, we believe that any reasonable estimate must be substantially higher than this; since higher numbers would make little difference to the arguments of this paper, however, we will not press that case here.) However, we are also sympathetic to the concern that if this is the only estimate we consider, the case for strong longtermism would be driven purely by tiny credences in highly speculative scenarios. We will therefore also consider the extent to which the same arguments would go through on some vastly more conservative estimates, as follows:
+
+Expected number of future beings
+
+Main estimate 1024
+
+Low estimate 1018
+
+Restricted estimate 1014
+
+Our low estimate (1018) corresponds, for instance, to a 0.0000001% credence in the Solar System (biological life) scenario, with zero credence in either digital sentience or more wide-ranging space settlement. Our restricted estimate (1014) corresponds to the above estimate for Earthbound life, with zero credence in any larger-population scenario (including both digital sentience and any space settlement). In the arguments that follow, the reader is invited to substitute her own preferred estimate throughout.
+
+We will argue that BR (and hence ASL) holds of society’s decision situation even on our restricted estimate, and clearly holds by a large margin on our main estimate.
+
+4. Tractability of significantly affecting the far future
+
+The far-future effects of one’s actions are usually harder to predict than their near-future effects. Might it be that the expected instantaneous value differences between available actions decay with time from the point of action, and decay sufficiently fast that in fact the near-future effects tend to be the most important contributor to expected value? If that were so, then neither BR nor ASL would hold.
+
+This is a natural reason to doubt strong longtermism. We will call it the washing-out hypothesis.8
+
+We agree that the washing-out hypothesis is true of some decision situations. However, we claim that it is false of our society’s decision situation.
+
+Given the argument of section 2, our task is to show that there exists at least one option available to society with the property that its far-future expected benefits are significantly greater than the near-future expected benefits of bednet distribution (that is, recall: 0.025 lives saved per $100 spent). We will consider examples in two categories: mitigating extinction risk, and positively shaping the development of artificial superintelligence.
+
+4.1 Influencing the choice among persistent states
+
+Here is an abstract structure which, insofar as it is instantiated in the real world, offers a recipe for identifying options whose effects will not wash out.
+
+Consider the space Sof all possible fine-grained states the world could be in at a single moment of time (that is, the space of all possible instantaneous microstates). One can picture the history of the universe as a path through this space. Let a persistent state be a subset A of Swith the property that, given the dynamics of the universe, if the instantaneous state of the world is in A, then the expected time for which it remains in A is extremely long. Now suppose that there are two or more such persistent states, differing significantly from one another in value. Suppose further that the world is not yet in any of the states in question, but might settle into one or the other of the states in question in the foreseeable future. Finally, suppose that there is something we can do now that changes the probability that the world ends up in a better rather than a worse persistent state. Then, as a result of the persistence that is built into the definition, the effects of these actions would not wash out at all quickly.
+
+The empirical question is whether there are, in the real world, any options available that instantiate the structure just described. We claim that there are.
+
+4.2 Mitigating risks of premature human extinction
+
+The non-existence of humanity is a persistent state par excellence. To state the obvious: the chances of humanity re-evolving, if we go extinct, are miniscule. Only slightly more subtly, the existence of humanity is also a persistent state: while we face significant risks of premature extinction, as argued in section 3, humanity’s expected persistence is vast.
+
+These persistent states have unequal expected value. Assuming that on average people have lives of significantly positive welfare,9 according to total utilitarianism the existence of humanity is significantly better than its non-existence, at any given time. Combining this with
+
+It is important here to distinguish between ex ante and ex post versions of the washing-out claim. The ex post version is false, as is established by the literature on cluelessness; cf. section 7.1. However, it is the much more plausible ex ante washing-out claim that is relevant to the arguments of this paper.
+
+We return to this assumption in section 6.
+
+the fact that both states are persistent, premature human extinction would be astronomically bad. Correspondingly, even an extremely small reduction in extinction risk would have very high expected value (Bostrom 2013:18). For example, even if there are ‘only’ 1014 lives to come (as on our restricted estimate), a reduction in near-term risk of extinction by one millionth of one percentage point would be equivalent in value to a million lives saved; on our main estimate of 1024 expected future lives, this becomes ten quadrillion (1016) lives saved.
+
+As is increasingly recognised, as an empirical matter of fact, there are things we could do that would reduce the chance of premature human extinction by a non-negligible amount. As a result, although precise estimates of the relevant numbers are difficult, the far-future benefits of some such interventions seem to compare very favourably, by total utilitarian lights, to the highest available near-future benefits.
+
+The detection and potential deflection of asteroids provides a relatively robust example of such an intervention. This involves scanning the skies to identify asteroids that could potentially collide with Earth and, if one were found, investing the resources to try to deflect it, and/or to prepare bunkers and food stockpiles to help us survive an impact winter. Most of the expected costs here are in detection, because the costs of deflection and preparation are only paid in the very unlikely event that one does detect an asteroid on a collision course with Earth.
+
+In 1996, NASA commenced the Spaceguard Survey, a multi-decade plan to track near-Earth objects with the aim of identifying any on impact trajectories. At a total cost of $71 million (USD) by 2012, the Spaceguard Survey had tracked over 90% of asteroids of diameter 1km or more in near-Earth orbit, and all asteroids of diameter 10km or more over 99% of the sky.
+
+It is not certain that a large asteroid collision would cause human beings to go extinct. We assume a status quo risk of human extinction, conditional on the impact of a 10km+ asteroid, of 1%. It is also far from certain that we could deflect a 10km+ asteroid, even if we knew it was on a collision course. However, it is far from certain that we could not, and, as above, there are other actions we could take to protect against the extinction risk. We assume here that if such an object were detected to be on a collision course, our deflection and preparation efforts would reduce extinction risk by a proportional 5%. The assumptions in this paragraph follow Newberry (2021b), and seem fairly conservative.
+
+Putting these numbers together, we estimate that the Spaceguard Survey, on average, reduced extinction risk by at least 5 × 10-16 per $100 spent. On our main estimate of the expected number of future beings, this amounts to 500 additional million lives; this decreases to 500 or 0.05 lives on our low and restricted estimates, respectively.
+
+Of course, we should expect further work on asteroids to have lower cost-effectiveness, because of diminishing marginal returns. However, the opportunity remains significant. The remaining risk of a 10km+ asteroid collision in the next 100 years has been estimated at 1 in 150 million (Ord 2020:71). It has been estimated that the cost to detect with near-certainty
+
+any remaining asteroids of greater than 10km diameter would be at most a further $1.2 billion (Newberry 2021b). On our main (resp. low, restricted) estimate of the expected number of future beings, every $100 of this would, on average, result in 300,000 (resp. 0.3, 0.00003) additional lives. This example therefore supports strong longtermism on our main and low estimates, though not on the restricted estimate. Organisations whose work mitigates risk of extinction from asteroid impacts, and which would benefit from substantially more funding, include the Planetary Society and the B612 Foundation.
+
+While asteroid defense is among the more easily quantified areas of extinction risk reduction, it is far from the only one, or the most significant (Ord 2020: ch. 3). Another possibility concerns global pandemics. Such a pandemic could be natural or man-made, with the latter being particularly concerning (Posner 2004:75-84; Rees 2018: sec. 2.1; Ord 2020). In particular, progress in synthetic biology is very rapid (Meng and Ellis 2020), and it is likely that we will soon be able to design man-made viruses with very high contagiousness and lethality. If such pathogens were released (whether deliberately or by accident (Shulman 2020; Ord 2020:129–131)) in the course of military tensions, or by a terrorist group, there is a real possibility that they could kill a sufficient number of people that the human species would not recover.
+
+In a recent paper, Millet and Snyder-Beattie (2017) use three distinct methods to generate estimates of the risk of an extinction-level pandemic in the next 100 years. The resulting estimates range from 1 in 600,000 to 1 in 50. The authors further use figures from the World Bank to generate a very conservative estimate that $250 billion of spending on strengthening healthcare systems would reduce the chance of such extinction-level pandemics this coming century by at least a proportional 1%.10
+
+Taking the geometric mean to average across the two methods that generate the lower estimates for extinction risk, we obtain a risk of about 1 in 22,000 of extinction from a pandemic over the next 100 years.11 If we use the above figure of $250 billion to reduce the risk by 1%, and assume that the risk reduction occurs throughout the next 100 years but only in that time period, then each $100 of such spending would, in expectation, increase the number of future beings by 200 million (respectively, 200, 0.02) on our main (resp., low, restricted) estimate. According to these calculations, the far-future benefits would thereby significantly exceed the near-future benefits of bednet distribution on our main and low estimates of the size of the future, though not on our restricted estimate. Organisations
+
+Two ways in which Millet and Snyder-Beattie’s estimate is particularly conservative are (i) that the $250bn figure is at the extreme upper end of anticipated costs for the intervention they discuss, and (ii) that the intervention in question concerns an extremely broad-based approach to biosecurity, not specifically optimising for extinction risk reduction.
+
+We use the geometric rather than the arithmetic mean because the estimates in question are spread across several orders of magnitude; the arithmetic mean effectively defers to the highest estimate on the question of order of magnitude. Using the arithmetic mean would lead to results that are still more favourable to strong longtermism. Similarly, we disregard Millet and Snyder-Beattie’s “Model 1” because, as the authors note, this model is flawed in important respects; including this model would also strengthen the case for strong longtermism.
+
+working on these threats include the John Hopkins Center for Health Security, the Nuclear Threat Initiative’s biosecurity program, and Gryphon Scientific.
+
+4.3 Influencing the choice among non-extinction persistent states
+
+A second way of positively impacting the long run is by improving the value of the future conditional on the existence of a very large number of future sentient beings. For concreteness, we focus on one way of doing this: positively shaping the development of artificial superintelligence (ASI), that is, artificial systems that greatly exceed the cognitive performance of humans in virtually all domains of interest.12
+
+The idea that the development of sufficiently advanced artificial intelligence could prove a key turning point in history goes back to the early computer pioneers Alan Turing (1951) and I.J. Good (1966). It has more recently been the subject of wider concern.13 There are two classes of long-term worry.
+
+The first is from AI-takeover scenarios (Bostrom 2014; Russell 2019). This worry is that, once we build a human-level artificial intelligence, it would be able to recursively self-improve, designing ever-better versions of itself, quickly becoming superintelligent. From there, in order to better achieve its aims, it will try to gain resources, and try to prevent threats to its survival. It would therefore be incentivised to take over the world and eliminate or permanently suppress human beings. Because the ASI’s capability is so much greater than that of humans, it would probably succeed in these aims.
+
+The second worry is from entrenchment scenarios (MacAskill MS). If an authoritarian country were the first to develop ASI, with a sufficient lead, they could use this technological advantage to achieve world domination. The authoritarian leader could then quash any ideological competition. An AI police force could guarantee that potential rebellions are prevented; an AI army would remove any possibility of a coup. And if the leader wanted his ideology to persist indefinitely, he could pass control of society on to an ASI successor before his death. To this end, he could hard-code the goals of the ASI to match his own, have the ASI learn his goals from his speech and behaviour, or even ‘mind upload’, scanning his brain and having it digitally emulated (Sandberg and Bostrom 2008; Sandberg 2013).
+
+In either of these scenarios, once power over civilisation is in the hands of an ASI, this could persist as long as civilisation does (Riedel MS). Different versions of the ASI-controlled futures are therefore persistent states with significantly differing expected value, so that we have another instantiation of the structure outlined in section 4.1. The ruler-ASI could monitor every aspect of society. And it could replicate itself indefinitely, just as easily as we can replicate software today; it would be immortal, freed from the biological process of
+
+Other areas one might consider here include affecting the values that the world converges on (Reese 2018), or reducing the risk of a totalitarian world government (Caplan 2008).
+
+Those concerned include leading machine learning researchers such as Stuart Russell (2019) and Shane Legg (2008: sec. 7.3), philosophers such as Nick Bostrom (2014), Eliezer Yudkowsky (2013), Toby Ord (2020:138–152) and Richard Ngo (2020), physicists such as Max Tegmark (2017: ch. 4) and Stephen Hawking (2018: ch. 9), and tech entrepreneurs such as Elon Musk (2014), Sam Altman (2015) and Bill Gates (Statt 2015).
+
+aging. The value of the resulting world would depend in considerable part on the goals of the ruler-ASI.
+
+Though extinction risks involve dramatic reductions in the size of the future population, these AI scenarios need not. In the classic statement of the AI-takeover scenario, the ASI goes on to settle the stars in pursuit of its goals (Bostrom 2014:100). Similarly, if an authoritarian leader transferred power to an ASI, they too might want their civilisation to be large, populous and long-lasting. In particular, for a wide variety of goals (such as building the grandest possible temples, doing research, or, in a toy example Bostrom (2014:123-4) gives to illustrate the general phenomenon of misaligned AI, maximising the number of paperclips), acquiring more resources helps with achievement of these goals, which motivates settling the stars. And, in order to fulfill these goals, a populous workforce would be instrumentally valuable. In expectation, the number of future beings, in these scenarios, is very large.
+
+Now, this workforce might consist almost entirely of AIs. But, as we noted in section 3, there are reasons to think that such beings would have moral status, and therefore how well or poorly their lives went would be of moral concern, relevant to the arguments of this paper. And, at least on the authoritarian-takeover scenarios, the ruler might wish to have a very large number of human followers, too.
+
+There are two strands of work aimed at reducing risks from ASI. First, AI safety research, which aims to ensure that AI systems do what we intend them to do (Amodei et al. 2016). Such work is conducted by organisations such as Berkeley’s Center for Human-Compatible AI, the Machine Intelligence Research Institute, and labs within Google DeepMind and OpenAI. Second, policy work, in particular to ensure a cooperative approach between countries and companies: for example, by The Partnership on AI, the Centre for the Governance of AI, and the Center for New American Security.
+
+Despite this work, ASI safety and policy are still extremely neglected. For example, the Open Philanthropy Project is the only major foundation with these issues as a key focus area; it spends under $30 million per year on them (Open Philanthropy 2020).14 The AI safety teams at OpenAI and DeepMind are small.
+
+There is no hard quantitative evidence to guide cost-effectiveness estimates for AI safety work. Expert judgment, however, tends to put the probability of existential catastrophe from ASI at 1-10%.15 Given these survey results and the arguments we have canvassed, we think
+
+Neglectedness is crucial to the argument of this paper. Would strong longtermism still be true if, for example, 10% of global GDP were already spent on the most valuable long-term-oriented interventions? Even if true, would it still be significantly revisionary compared to a near-termist approach, as we have claimed it is at the current margin? We aren’t sure. Our claim here is only that the world today is clearly far below this optimum.
+
+Grace et al. (2018) asked 352 leading AI researchers to give a probability on the size of existential risk arising from the development of ‘human-level machine intelligence’; the median estimate was 5%. A survey among participants at a conference on global catastrophic risks similarly found the median estimate to be 5% (Sandberg and Bostrom 2008). One would expect a selection effect to be at work in surveys of those who have chosen to work on existential risk, but not so (or not strongly) for the survey of AI researchers.
+
+that even a highly conservative assessment would assign at least a 0.1% chance to an AI-driven catastrophe (as bad as or worse than human extinction) over the coming century. We also estimate that $1 billion of carefully targeted spending would suffice to avoid catastrophic outcomes in (at the very least) 1% of the scenarios where they would otherwise occur. On these estimates, $1 billion of spending would provide at least a 0.001% absolute reduction in existential risk. That would mean that every $100 spent had, on average, an impact as valuable as saving one trillion (resp., one million, 100) lives on our main (resp. low, restricted) estimate – far more than the near-future benefits of bednet distribution.
+
+4.4 Uncertainty and ‘meta’ options
+
+There is a lot of uncertainty in the numbers we have given, even in the most scientifically robust case of asteroid detection. We will give this issue a more thorough treatment in the next section, arguing against various ways in which one might worry it undermines our argument.
+
+One thing that uncertainty can support, however, is a preference for different types of strategy to improve the far future. Rather than directly trying to influence the far future, one could instead try to invest in decision-relevant research, or invest one’s resources for use at a later date.
+
+The possibility of either of these strategies strengthens our argument considerably. To see this, let us suppose, for the sake of argument, that no ‘first-order’ intervention (such as those we discussed in sections 4.2-3) delivers higher far-future expected benefits than the highest available near-future expected benefits, relative to the credences that are appropriate in the present state of information. Suppose, however, that it is highly likely that conditional on sufficient additional information, at least one of the proposed interventions, or another such intervention (not yet considered) in a similar spirit, would have much higher far-future benefits, relative to the updated credences, than the best available near-future benefits. Then society might fund research into the cost-effectiveness of various possible attempts to influence the far future. Provided that subsequent governments or philanthropists would take due note of the results, this ‘meta-option’ could easily have much greater far-future expected benefits than the best available near-future expected benefits, since it could dramatically increase the expected effectiveness of future governmental and philanthropic action (all relative to currently appropriate credences).
+
+A complementary possibility is that rather than spending now, society could save its money for a later time (Christiano 2014; MacAskill 2019; Trammell 2020). That is, it could set up a sovereign wealth fund, with a longtermist mission. This fund would pay out whenever there becomes available some action that will sufficiently benefit the far future (in expectation), whether that is during the lifetimes of current citizens or later. There would be some annual risk of future governments being misaligned and using the money poorly, but this risk could
+
+be mitigated via constitutional enshrinement of the mission, and would be compensated by the fact that the fund would benefit from compound returns of investment.16
+
+These considerations show that the bar that ‘intractability’ objections to our argument must meet is very high. For BR to fail to hold on such grounds, every option available to society must have negligible effect on the far future’s expected value. Moreover, it must be near-certain that there will be no such actions in the future, and that no such actions could be discovered through further research. This constellation of conditions seems unlikely.
+
+10. Summary and conclusions
+
+The potential future of civilisation is vast. Once we appreciate this, it becomes plausible that impact on the far future is the most important feature of our actions today.
+
+Strong longtermism would be false in a world that had sufficiently weak causal connections between the near and the distant future, such that it was too difficult to significantly influence
+
+There are, however, reasons to think that these sacrifices are not as great as we might initially suppose (MacAskill, Mogensen and Ord 2018).
+
+Mogensen (2020) discusses specifically the relationship between demandingness and longtermism.
+
+Might our arguments go further than this, and justify atrocities in the name of the long-term good? Perhaps the French Revolution had good long-term consequences, in terms of bringing about a more liberal and democratic world: does strong longtermism, if so, justify the guillotine? We do not think so, for at least two reasons. The first is that, for such serious side-constraints, something closer to absolutism or near-absolutism becomes much more plausible (or, at least, it takes more than mere ex ante goodness to justify violation of those side-constraints). The second is that, in almost all cases, when there is some option available that promotes the long-term good while violating a serious side-constraint, there will be some alternative option available that achieves a similar amount of long-term good without violating that side-constraint. Liberal democracy could have been achieved in France without the Reign of Terror.
+
+the course of the very long-run future. However, we have argued, the world we find ourselves in today does not have this feature.
+
+We presented our central case in terms of (i) a total utilitarian axiology and (ii) an expected value treatment of decision-making under uncertainty. However, we argued, plausible deviations from either or both of these assumptions do not undermine the core argument.
+
+This paper mainly focussed on the decision situations of a society or individual considering how to spend money without constraints as to cause area, and of an individual’s career choice. We argued that these are situations where we can in expectation significantly influence the far future. Precisely because of this, they are among the most important decision situations we face, and axiological strong longtermism follows.
+
+In our own view, the weakest points in the case for axiological strong longtermism are the assessment of numbers for the cost-effectiveness of particular attempts to benefit the far future, the appropriate treatment of cluelessness, and the question of whether an expected value approach to uncertainty is too “fanatical” in this context. These issues in particular would benefit from further research.
+
+In addition to axiological issues, we also discussed the counterpart deontic issues. We suggested that deontic strong longtermism might well be true even if consequentialism is false, on the grounds that (i) the stakes involved are very high, (ii) a plausible non-consequentialist theory has to be sensitive to the axiological stakes, becoming more consequentialist in output as the axiological stakes get higher, and (iii) in the key decision situations, any countervailing constraints and/or prerogatives are comparatively minor. Quite plausibly, in the world as it is today, the most important determinants of what we ought to do arise from our opportunities to affect the far future.
+
+It is possible, but far from obvious, that far-future impacts are also more important than near-future impacts in a much wider class of decision situations: for instance, decisions about whether or not to have a child, and government policy decisions within a relatively narrow ‘cause area’. Insofar as they are, strong longtermism could potentially set a methodology for further work in applied ethics and applied political philosophy: for each issue in these subfields, one could identify the potential far-future effects from different actions or policies, and then work through how these bear on the issue in question. The answers might sometimes be surprisingly revisionary.

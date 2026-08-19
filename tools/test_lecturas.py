@@ -39,6 +39,15 @@ LECTURAS_README_3 = MODULO_3 / "README.md"
 PUBLICADO_3 = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_3_exit_nrx.pdf"
 CONSTRUIDO_3 = MODULO_3 / "lecturas/filosofia_ia_clase_3_cuadernillo.pdf"
 
+# Modulo 4 -- "Moloch, Rationality & the Long Future"
+MODULO_4 = RAIZ / "lecturas/filosofia_ia/clase_4"
+PAGINA_4 = RAIZ / "course/2_filosofia_ia/11_moloch_long_future.md"
+TAREA_4 = RAIZ / "course/2_filosofia_ia/_official/tasks/4_leer_cuadernillo_modulo_4.yaml"
+VISOR_4 = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_4.html"
+LECTURAS_README_4 = MODULO_4 / "README.md"
+PUBLICADO_4 = RAIZ / "course/2_filosofia_ia/_assets/cuadernillo_modulo_4_long_future.pdf"
+CONSTRUIDO_4 = MODULO_4 / "lecturas/filosofia_ia_clase_4_cuadernillo.pdf"
+
 MARCADORES = re.compile(
     r"^## Cómo leer este cuadernillo$(.*?)(?=^## El cuadernillo$)",
     re.S | re.M,
@@ -98,6 +107,7 @@ def _todas_las_lecturas(modulo="filosofia_ia/clase_1"):
 
 @pytest.mark.parametrize("modulo", [
     "filosofia_ia/clase_1", "filosofia_ia/clase_2", "filosofia_ia/clase_3",
+    "filosofia_ia/clase_4",
 ])
 def test_toda_lectura_trae_introduccion(modulo):
     for x in _todas_las_lecturas(modulo):
@@ -110,6 +120,7 @@ def test_toda_lectura_trae_introduccion(modulo):
     ("filosofia_ia/clase_1", 6),
     ("filosofia_ia/clase_2", 4),
     ("filosofia_ia/clase_3", 4),
+    ("filosofia_ia/clase_4", 6),
 ])
 def test_el_orden_es_consecutivo_y_unico(modulo, cuantas):
     ordenes = sorted(x.orden for x in _todas_las_lecturas(modulo))
@@ -214,6 +225,7 @@ PARES_PDF_PUBLICADO_CONSTRUIDO = [
     (PUBLICADO, CONSTRUIDO),
     (PUBLICADO_2, CONSTRUIDO_2),
     (PUBLICADO_3, CONSTRUIDO_3),
+    (PUBLICADO_4, CONSTRUIDO_4),
 ]
 
 
@@ -271,6 +283,20 @@ PATRONES_PAGINAS_TOTALES_MODULO_2 = [
 # la cifra tres veces —la tercera comparandola con las 53 del modulo 2—, y las
 # tres entran aqui: la comparacion es justo la que se queda vieja al rehacer el
 # cuadernillo.
+# El modulo 4 es el mas largo de la unidad y se compara contra el 1, que era el
+# que lo era antes. Sin "completas" ni "las seis lecturas completas": del
+# articulo de Greaves y MacAskill van las secciones 1 a 4 y la 10, no entero.
+PATRONES_PAGINAS_TOTALES_MODULO_4 = [
+    (PAGINA_4, "11_moloch_long_future.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (TAREA_4, "4_leer_cuadernillo_modulo_4.yaml", r"un solo archivo de (\d+)\s"),
+    (VISOR_4, "visor_modulo_4.html", r"Seis lecturas · (\d+) páginas ·"),
+    (LECTURAS_README_4, "README.md modulo 4 (resumen)", r"Seis lecturas, (\d+) páginas,"),
+    (LECTURAS_README_4, "README.md modulo 4 (comparación)",
+     r"de la unidad: (\d+) páginas frente a las 57"),
+    (LECTURAS_README_4, "README.md modulo 4 (cuadernillo)",
+     r"\*\*(\d+) páginas, las seis lecturas\*\*"),
+]
+
 PATRONES_PAGINAS_TOTALES_MODULO_3 = [
     (PAGINA_3, "8_exit_nrx.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
     (TAREA_3, "3_leer_cuadernillo_modulo_3.yaml", r"un solo archivo de (\d+)\s"),
@@ -323,11 +349,16 @@ def test_las_paginas_del_cuadernillo_modulo_3_coinciden_en_todos_lados():
     _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_3, PUBLICADO_3)
 
 
+def test_las_paginas_del_cuadernillo_modulo_4_coinciden_en_todos_lados():
+    _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_4, PUBLICADO_4)
+
+
 # (modulo, PDF publicado) para la guarda de abajo.
 MODULOS_CON_CUADERNILLO = [
     ("filosofia_ia/clase_1", PUBLICADO),
     ("filosofia_ia/clase_2", PUBLICADO_2),
     ("filosofia_ia/clase_3", PUBLICADO_3),
+    ("filosofia_ia/clase_4", PUBLICADO_4),
 ]
 
 

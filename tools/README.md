@@ -36,7 +36,7 @@ cd /home/uumami/itam/ia_o26
 python3 -m pytest tools/ -q
 ```
 
-85 pruebas, deben pasar todas antes de comitear un cambio que toque
+119 pruebas, deben pasar todas antes de comitear un cambio que toque
 `_assets/`, `_official/`, o cualquier `tools/*.json`/`tools/*.tsv`. Desde el
 commit `47697d2` esto también corre en CI, como job `checks` que bloquea el
 deploy (ver H16), pero eso no exime de correrlo en local antes de comitear.
@@ -59,7 +59,7 @@ Cada uno tiene su prueba homónima (`test_gen_timeline.py`, `test_gen_computo.py
 `pytest` ya certifica que el archivo comiteado coincide con lo que el generador
 produciría hoy.
 
-## Reconstruir un cuadernillo de lecturas (`filosofia_ia/clase_1`, `clase_2`, `clase_3`)
+## Reconstruir un cuadernillo de lecturas (`filosofia_ia/clase_1` … `clase_4`)
 
 `bajar_lecturas.py` y `lecturas.py` no son parte de la unidad de historia de
 la IA, pero comparten `tools/` y su suite corre junto con el resto:
@@ -89,9 +89,10 @@ lugares del curso (la página del módulo, la tarea oficial, el visor, y este
 mismo README junto con `lecturas/filosofia_ia/clase_1/README.md`); léelos del
 PDF ya copiado, no los estimes.
 
-Los módulos 2 y 3 son el mismo procedimiento con sus propios nombres:
+Los módulos 2, 3 y 4 son el mismo procedimiento con sus propios nombres:
 `clase_2` → `cuadernillo_modulo_2_left_future.pdf` / `cuadernillo_portada_modulo_2`,
-y `clase_3` → `cuadernillo_modulo_3_exit_nrx.pdf` / `cuadernillo_portada_modulo_3`.
+`clase_3` → `cuadernillo_modulo_3_exit_nrx.pdf` / `cuadernillo_portada_modulo_3`, y
+`clase_4` → `cuadernillo_modulo_4_long_future.pdf` / `cuadernillo_portada_modulo_4`.
 `test_lecturas.py` compara cada cifra de páginas solo contra la de su propio
 módulo, y desde el módulo 3 también comprueba que el PDF publicado venga del
 `introduccion.md` de hoy: editar la introducción sin reconstruir el PDF ya no
@@ -105,6 +106,13 @@ reproducen desde la web por deriva del HTML de origen, que es un problema
 distinto y anterior. Volver a correr `bajar_lecturas.py` sobre esos dos módulos
 ensucia el árbol sin arreglar nada; `lecturas/filosofia_ia/clase_3/README.md`
 documenta el caso completo.
+
+El módulo 4 estrenó dos formas de fuente en `bajar_lecturas.py`, las dos para
+material publicado en abierto: `lesswrong=<id>`, que trae un ensayo por la API
+pública del sitio porque su HTML devuelve 429 a un script, y
+`pdf=(url, cortes)`, que baja un PDF gratuito y le saca el texto con
+`pdftotext -layout` (hace falta `poppler-utils`). Ninguna de las dos sirve para
+material de pago: eso sigue en `PDFS`, sin versionarse.
 
 ## `curar_imagenes.py` — de un solo uso, ya ejecutado
 
@@ -143,8 +151,8 @@ corrida del generador correspondiente lo vuelve a traer.
 | `test_curar_imagenes.py` | El inventario `imagenes_heredadas.tsv` está bien formado, lo `conservar` existe y está recomprimido, y toda imagen de `_assets/` tiene fila en `CREDITOS.md` con origen y licencia |
 | `test_ilustraciones.py` | Cada ilustración del catálogo existe, mide 1024px de ancho, pesa menos de 400 KB, está acreditada como generada, y ningún prompt pide una persona real o personaje protegido |
 | `test_oficiales.py` | Las tarjetas oficiales (`_official/cards/*.yaml`) tienen forma válida: `type`, `authority`, anverso/reverso no vacíos, sin bloque `scope`, ids únicos |
-| `test_lecturas.py` | Los tres cuadernillos de lecturas de `filosofia_ia/`: la introducción general de la página del módulo 1 no ha derivado de su `introduccion.md`, cada lectura de los tres módulos trae su ficha de cuatro apartados, el orden es consecutivo (1..6, 1..4, 1..3), el PDF publicado de cada módulo es byte-idéntico al construido **y contiene la introducción vigente**, la cifra total de páginas coincide en los cinco o seis lugares donde cada módulo la declara, y funciones puras de `lecturas.py` (Markdown básico, huecos de páginas externas, orden de las secciones en el HTML final) |
-| `test_repaso.py` | Las siete páginas de repaso de filosofía (módulos 1, 2 y 3), cada una con su cifra esperada de citas — 2, 6, 0, 4, 0, 8 y 0: cada cita textual aparece, literal, en su registro de `docs/verificacion/filosofia_ia/`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada. Las tres páginas de discusión no citan, y su registro tiene que decir por qué no trae tabla |
+| `test_lecturas.py` | Los cuatro cuadernillos de lecturas de `filosofia_ia/`: la introducción general de la página del módulo 1 no ha derivado de su `introduccion.md`, cada lectura de los tres módulos trae su ficha de cuatro apartados, el orden es consecutivo (1..6, 1..4, 1..4, 1..6), el PDF publicado de cada módulo es byte-idéntico al construido **y contiene la introducción vigente**, la cifra total de páginas coincide en los cinco o seis lugares donde cada módulo la declara, y funciones puras de `lecturas.py` (Markdown básico, huecos de páginas externas, orden de las secciones en el HTML final) |
+| `test_repaso.py` | Las nueve páginas de repaso de filosofía (módulos 1 a 4), cada una con su cifra esperada de citas — 2, 6, 0, 4, 0, 11, 0, 14 y 0: cada cita textual aparece, literal, en su registro de `docs/verificacion/filosofia_ia/`, sin marcador de plantilla sin llenar, y cada fila de ese registro está marcada como verificada. Las cuatro páginas de discusión no citan, y su registro tiene que decir por qué no trae tabla |
 | `test_skin.py` | Que `tokens.color.surface` de `skins/eva-cyberpunk.yaml` siga siendo `#211033`, el valor que `gen_ilustraciones.py`, `test_ilustraciones.py` y `test_aceptacion.py` tienen hardcodeado por triplicado |
 
 ## H16 — resuelto: `pytest tools/` ya corre en CI

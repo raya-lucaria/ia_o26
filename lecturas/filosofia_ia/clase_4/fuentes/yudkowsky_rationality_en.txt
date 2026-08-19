@@ -1,0 +1,71 @@
+I mean two things:
+
+1. Epistemic rationality: systematically improving the accuracy of your beliefs.
+
+2. Instrumental rationality: systematically achieving your values.
+
+The first concept is simple enough. When you open your eyes and look at the room around you, you’ll locate your laptop in relation to the table, and you’ll locate a bookcase in relation to the wall. If something goes wrong with your eyes, or your brain, then your mental model might say there’s a bookcase where no bookcase exists, and when you go over to get a book, you’ll be disappointed.
+
+This is what it’s like to have a false belief, a map of the world that doesn’t correspond to the territory. Epistemic rationality is about building accurate maps instead. This correspondence between belief and reality is commonly called “truth,” and I’m happy to call it that. 1
+
+Instrumental rationality, on the other hand, is about steering reality—sending the future where you want it to go. It’s the art of choosing actions that lead to outcomes ranked higher in your preferences. I sometimes call this “winning.”
+
+So rationality is about forming true beliefs and making decisions that help you win.
+
+(Where truth doesn't mean “certainty,” since we can do plenty to increase the probability that our beliefs are accurate even though we're uncertain; and winning doesn't mean “winning at others' expense,” since our values include everything we care about, including other people.)
+
+When people say “Xis rational!” it’s usually just a more strident way of saying “I think Xis true” or “I think Xis good.” So why have an additional word for “rational” as well as “true” and “good”?
+
+An analogous argument can be given against using “true.” There is no need to say “it is true that snow is white” when you could just say “snow is white.” What makes the idea of truth useful is that it allows us to talk about the general features of map-territory correspondence. “True models usually produce better experimental predictions than false models” is a useful generalization, and it’s not one you can make without using a concept like “true” or “accurate.”
+
+Similarly, “Rational agents make decisions that maximize the probabilistic expectation of a coherent utility function” is the kind of thought that depends on a concept of (instrumental) rationality, whereas “It’s rational to eat vegetables” can probably be replaced with “It’s useful to eat vegetables” or “It’s in your interest to eat vegetables.” We need a concept like “rational” in order to note general facts about those ways of thinking that systematically produce truth or value—and the systematic ways in which we fall short of those standards.
+
+As we’ve observed in the previous essays, experimental psychologists sometimes uncover human reasoning that seems very strange. For example, someone rates the probability “Bill plays jazz” as less than the probability “Bill is an accountant who plays jazz.” This seems like an odd judgment, since any particular jazz-playing accountant is obviously a jazz player. But to what higher vantage point do we appeal in saying that the judgment is wrong?
+
+Experimental psychologists use two gold standards: probability theory, and decision theory.
+
+Probability theory is the set of laws underlying rational belief. The mathematics of probability applies equally to “figuring out where your bookcase is” and “estimating how many hairs were on Julius Caesars head,” even though our evidence for the claim “Julius Caesar was bald” is likely to be more complicated and indirect than our evidence for the claim “theres a bookcase in my room.” It’s all the same problem of how to process the evidence and observations to update one’s beliefs. Similarly, decision theory is the set of laws underlying rational action, and is equally applicable regardless of what one’s goals and available options are.
+
+Let “P(such-and-such)” stand for “the probability that such-and-such happens,” and “P(A,B)” for “the probability that both A and Bhappen.” Since it is a universal law of probability theory that P(A) ≥ P(A,B), the judgment that P(Bill plays jazz) is less than P(Bill plays jazz, Bill is an accountant) is labeled incorrect.
+
+To keep it technical, you would say that this probability judgment is non-Bayesian. Beliefs that conform to a coherent probability distribution, and decisions that maximize the probabilistic expectation of a coherent utility function, are called “Bayesian.”
+
+I should emphasize that this isn't the notion of rationality thats common in popular culture. People may use the same string of sounds, “ra-tio-nal,” to refer to “acting like Mr. Spock of Star Trek ” and “acting like a Bayesian”; but this doesn't mean that acting Spock-like helps one hair with epistemic or instrumental rationality. 2
+
+All of this does not quite exhaust the problem of what is meant in practice by “rationality,” for two major reasons:
+
+First, the Bayesian formalisms in their full form are computationally intractable on most real-world problems. No one can actually calculate and obey the math, any more than you can predict the stock market by calculating the movements of quarks.
+
+This is why there is a whole site called “Less Wrong,” rather than a single page that simply states the formal axioms and calls it a day. There’s a whole further art to finding the truth and accomplishing value from inside a human mind: we have to learn our own flaws, overcome our biases, prevent ourselves from self-deceiving, get ourselves into good emotional shape to confront the truth and do what needs doing, et cetera, et cetera.
+
+Second, sometimes the meaning of the math itself is called into question. The exact rules of probability theory are called into question by, e.g., anthropic problems in which the number of observers is uncertain. The exact rules of decision theory are called into question by, e.g., Newcomblike problems in which other agents may predict your decision before it happens. 3
+
+In cases where our best formalizations still come up short, we can return to simpler ideas like “truth” and “winning.” If you are a scientist just beginning to investigate fire, it might be a lot wiser to point to a campfire and say “Fire is that orangey-bright hot stuff over there,” rather than saying “I define fire as an alchemical transmutation of substances which releases phlogiston.” You certainly shouldn’t ignore something just because you can’t define it. I can't quote the equations of General Relativity from memory, but nonetheless if I walk off a cliff, I'll fall. And we can say the same of cognitive biases and other obstacles to truth—they won't hit any less hard if it turns out we can't define compactly what “irrationality” is.
+
+In cases like these, it is futile to try to settle the problem by coming up with some new definition of the word “rational” and saying, “Therefore my preferred answer, by definition, is what is meant by the word ‘rational.’ ” This simply raises the question of why anyone should pay attention to your definition. I’m not interested in probability theory because it is the holy word handed down from Laplace. I’m interested in Bayesian-style belief-updating (with Occam priors) because I expect that this style of thinking gets us systematically closer to, you know, accuracy, the map that reflects the territory.
+
+And then there are questions of how to think that seem not quite answered by either probability theory or decision theory—like the question of how to feel about the truth once you have it. Here, again, trying to define “rationality” a particular way doesn’t support an answer, but merely presumes one.
+
+I am not here to argue the meaning of a word, not even if that word is “rationality.” The point of attaching sequences of letters to particular concepts is to let two people communicate —to help transport thoughts from one mind to another. You cannot change reality, or prove the thought, by manipulating which meanings go with which words.
+
+So if you understand what concept I am generally getting at with this word “rationality,” and with the sub-terms “epistemic rationality” and “instrumental rationality,” we have communicated: we have accomplished everything there is to accomplish by talking about how to define “rationality.” What’s left to discuss is not what meaning to attach to the syllables “ra-tio-na-li-ty”; what’s left to discuss is what is a good way to think.
+
+If you say, “It’s (epistemically) rational for me to believe X, but the truth is Y,” then you are probably using the word “rational” to mean something other than what I have in mind. (E.g., “rationality” should be consistent under reflection —“rationally” looking at the evidence, and “rationally” considering how your mind processes the evidence, shouldn’t lead to two different conclusions.)
+
+Similarly, if you find yourself saying, “The (instrumentally) rational thing for me to do is X, but the right thing for me to do is Y,” then you are almost certainly using some other meaning for the word “rational” or the word “right.” I use the term “rationality” normatively, to pick out desirable patterns of thought.
+
+In this case—or in any other case where people disagree about word meanings—you should substitute more specific language in place of “rational”: “The self-benefiting thing to do is to run away, but I hope I would at least try to drag the child off the railroad tracks,” or “Causal decision theory as usually formulated says you should two-box on Newcomb’s Problem, but I’d rather have a million dollars.”
+
+In fact, I recommend reading back through this essay, replacing every instance of “rational” with “foozal,” and seeing if that changes the connotations of what I’m saying any. If so, I say: strive not for rationality, but for foozality.
+
+The word “rational” has potential pitfalls, but there are plenty of non -borderline cases where “rational” works fine to communicate what I’m getting at. Likewise “irrational.” In these cases I’m not afraid to use it.
+
+Yet one should be careful not to overuse that word. One receives no points merely for pronouncing it loudly. If you speak overmuch of the Way, you will not attain it.
+
+1 For a longer discussion of truth, see “ The Simple Truth ” at the very end of this volume.
+
+2 The idea that rationality is about strictly privileging verbal reasoning over feelings is a case in point. Bayesian rationality applies to urges, hunches, perceptions, and wordless intuitions, not just to assertions.
+
+I gave the example of opening your eyes, looking around you, and building a mental model of a room containing a bookcase against the wall. The modern idea of rationality is general enough to include your eyes and your brains visual areas as things-that-map, and to include instincts and emotions in the belief-and-goal calculus.
+
+3 For an informal statement of Newcomb’s Problem, see Jim Holt, “Thinking Inside the Boxes,” Slate, 2002, http://www.slate.com/articles/arts/egghead/2002/02/thinkinginside_the_boxes.single.html.

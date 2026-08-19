@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" role="img" aria-label="Mapa de la sesion del modulo 4, en dos columnas. La izquierda es la hora 1, 'Las lecturas del futuro largo', con una ficha por lectura. Uno, Alexander 2014, Moloch: el problema, trampas de coordinacion que nadie eligio y de las que nadie puede salir solo. Dos, Yudkowsky 2009: el metodo, racionalidad epistemica e instrumental. Tres, la Declaracion Transhumanista de 1998 y 2009: la meta, en ocho proposiciones. Cuatro, el handout del curso: de donde viene esa meta, cinco linajes de Fedorov a la altruismo eficaz. Cinco, Bostrom 2003: la aritmetica, el costo de cada ano de retraso medido en vidas que pudieron existir. Seis, Greaves y MacAskill 2021: el argumento completo y su forma. La columna derecha es la hora 2, 'Discutir el futuro largo', con cinco movimientos numerados: comprension, reconstruir sin opinar; interpretacion, que decide contar cada texto; comparacion contra los modulos anteriores; desacuerdo, en que paso se rompe la cadena; y aplicacion, que tiene esto que ver con la inteligencia artificial. Abajo, en una franja, la pregunta que une las seis lecturas: si el futuro se puede contar, quien queda dentro de la cuenta y quien decide como se cuenta."><rect x="0" y="0" width="1000" height="700" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" text-anchor="middle" font-weight="600">Las dos horas de la sesion, y la pregunta que las une</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Seis lecturas en la primera hora; cinco movimientos en la segunda</text>
+
+<rect x="50" y="86" width="420" height="52" rx="12" fill="#f04cff" opacity="0.14" stroke="none"/>
+<text x="70" y="112" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">HORA 1 - Las lecturas del futuro largo</text>
+<text x="70" y="130" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Una ficha por lectura, entre 5 y 14 minutos cada una</text>
+<rect x="50" y="152" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="72" y="177" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">1</text>
+<text x="96" y="177" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Alexander 2014 - Moloch</text>
+<text x="96" y="197" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">El problema: trampas que nadie eligio</text>
+<text x="452" y="177" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">~14 min</text>
+<rect x="50" y="222" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="72" y="247" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">2</text>
+<text x="96" y="247" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Yudkowsky 2009 - Racionalidad</text>
+<text x="96" y="267" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">El metodo: creer bien y conseguir</text>
+<text x="452" y="247" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">~7 min</text>
+<rect x="50" y="292" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="72" y="317" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">3</text>
+<text x="96" y="317" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Humanity+ 1998/2009 - Declaracion</text>
+<text x="96" y="337" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">La meta, en ocho proposiciones</text>
+<text x="452" y="317" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">~5 min</text>
+<rect x="50" y="362" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="72" y="387" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">4</text>
+<text x="96" y="387" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Handout del curso - Genealogias</text>
+<text x="96" y="407" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">De donde viene la meta: cinco linajes</text>
+<text x="452" y="387" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">~8 min</text>
+<rect x="50" y="432" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="72" y="457" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">5</text>
+<text x="96" y="457" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Bostrom 2003 - Astronomical Waste</text>
+<text x="96" y="477" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">La aritmetica: el costo de tardar</text>
+<text x="452" y="457" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">~10 min</text>
+<rect x="50" y="502" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="72" y="527" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">6</text>
+<text x="96" y="527" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Greaves y MacAskill 2021</text>
+<text x="96" y="547" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">El argumento completo, y su forma</text>
+<text x="452" y="527" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">~11 min</text>
+<rect x="530" y="86" width="420" height="52" rx="12" fill="#f04cff" opacity="0.14" stroke="none"/>
+<text x="550" y="112" fill="#f04cff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">HORA 2 - Discutir el futuro largo</text>
+<text x="550" y="130" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Cinco movimientos, de reconstruir a aplicar</text>
+<rect x="530" y="152" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="552" y="177" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">1</text>
+<text x="576" y="177" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Comprension</text>
+<text x="576" y="197" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Reconstruir, sin opinar todavia</text>
+<rect x="530" y="222" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="552" y="247" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">2</text>
+<text x="576" y="247" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Interpretacion</text>
+<text x="576" y="267" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Que decide contar cada texto</text>
+<rect x="530" y="292" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="552" y="317" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">3</text>
+<text x="576" y="317" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Comparacion</text>
+<text x="576" y="337" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Contra los modulos 1, 2 y 3</text>
+<rect x="530" y="362" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="552" y="387" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">4</text>
+<text x="576" y="387" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Desacuerdo</text>
+<text x="576" y="407" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">En que paso se rompe la cadena</text>
+<rect x="530" y="432" width="420" height="62" rx="10" fill="none" stroke="#78419e"/>
+<text x="552" y="457" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="start" font-weight="700">5</text>
+<text x="576" y="457" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="start" font-weight="600">Aplicacion</text>
+<text x="576" y="477" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Que tiene esto que ver con la IA</text>
+<rect x="50" y="592" width="900" height="74" rx="12" fill="#f04cff" opacity="0.10" stroke="#78419e"/>
+<text x="500" y="620" fill="#f04cff" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle" font-weight="600">La pregunta que une las seis</text>
+<text x="500" y="644" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="middle">Si el futuro se puede contar: quien queda dentro de la cuenta, y quien decide como se cuenta.</text>
+</svg>

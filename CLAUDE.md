@@ -75,24 +75,26 @@ Hay dos, y se mantienen distinto:
 - `course/1_introduccion/2_historia_ia/` — ocho páginas de prosa, con imágenes
   y SVG generados desde `tools/`, y un registro de fuentes por página en
   `docs/verificacion/`. Es la unidad que describe el resto de esta sección.
-- `course/2_filosofia_ia/` — tres módulos de lecturas (`1_accelerate_what.md`,
-  `5_left_takes_future.md` y `8_exit_nrx.md`), cada uno seguido de sus páginas
-  de repaso: tres para el módulo 1 y dos para cada uno de los otros, una por
-  hora de sesión. **Los ids de esas páginas de repaso no se pueden nombrar por
+- `course/2_filosofia_ia/` — cuatro módulos de lecturas (`1_accelerate_what.md`,
+  `5_left_takes_future.md`, `8_exit_nrx.md` y `11_moloch_long_future.md`), cada
+  uno seguido de sus páginas de repaso: tres para el módulo 1 y dos para cada
+  uno de los otros, una por hora de sesión. **Los ids de esas páginas de repaso no se pueden nombrar por
   el número de lecturas**: `las-cuatro-lecturas` ya es del módulo 2, así que la
   hora 1 del módulo 3 —que también tiene cuatro— se llama
-  `las-lecturas-de-la-salida`. Un id repetido no lo perdona `raya validate`.
+  `las-lecturas-de-la-salida`, y la del módulo 4
+  `las-lecturas-del-futuro-largo`. Se nombran por el tema, no por la cuenta. Un
+  id repetido no lo perdona `raya validate`.
   **«Módulo»
   significa dos cosas distintas en este repo y conviene no confundirlas:** los
   seis módulos del curso están listados en
   `course/1_introduccion/1_el_curso/0_index.md` —y todo lo que hay hoy escrito,
   historia y filosofía, es el módulo 1 de esos seis—, mientras que «módulo 1»,
   «módulo 2» y «módulo 3» dentro de la unidad de filosofía son los tres
-  cuadernillos de lectura. Lo que sigue a `exit-nrx` en el temario del curso no es otro
+  cuadernillos de lectura. Lo que sigue a `moloch-long-future` en el temario del curso no es otro
   cuadernillo: es «Agentes, ambientes, modelado y optimización», y no está
   escrito. Su
   contenido real son los cuadernillos PDF que produce `lecturas/` (ver más
-  abajo), pero la unidad ya tiene assets propios (`v17`–`v25` a mano,
+  abajo), pero la unidad ya tiene assets propios (`v17`–`v28` a mano,
   `ilus-*.png` desde `tools/ilustraciones.json`, fotos de Commons, su propio
   `CREDITOS.md`) y su propio registro de verificación en
   `docs/verificacion/filosofia_ia/`. Lo específico de esta unidad es que la
@@ -142,7 +144,7 @@ en ambas a propósito, para que la decisión sea a mano.
 
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (102 tests as of August 2026) is the
+`python3 -m pytest tools/ -q` (119 tests as of 18 August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
@@ -197,16 +199,21 @@ keep it that way when adding a module. Only the web sources (`fuentes/*.txt`)
 and the produced excerpt PDFs are committed.
 
 Ojo con la línea que separa un caso del otro, porque **no es «dominio público
-frente a derechos»**: de las diez lecturas publicadas, solo Marx lo es. La
+frente a derechos»**: de las quince lecturas que el pipeline descarga, solo
+Marx es de dominio público. La
 línea real, y la que aplica `bajar_lecturas.py`, es **cómo se distribuye el
 texto**. Lo que su autor o su editor publican gratis y completo en la web se
 descarga y se reproduce en el cuadernillo, con la fuente al pie de cada lectura
-—así entran el manifiesto de Williams y Srnicek, Terranova y las cuatro
-lecturas del módulo 3, todas en derechos—. Lo que se vende como edición o vive tras un
+—así entran el manifiesto de Williams y Srnicek, Terranova, las cuatro
+lecturas del módulo 3 y las cinco del módulo 4, todas en derechos—. Lo que se vende como edición o vive tras un
 muro de pago se enlaza (`ENLACES`) o se recorta de un PDF que no se versiona
 (`PDFS`). El campo `licencia` de cada `Fuente` dice cuál es cada caso y no debe
 afirmar una licencia abierta donde no la hay; el README del módulo 3 documenta
-el criterio con más detalle.
+el criterio con más detalle, y el del módulo 4 añade las dos formas de fuente
+que estrenó: `lesswrong=<id>`, que trae un ensayo por la API pública del sitio
+porque su HTML devuelve 429 a un script, y `pdf=(url, cortes)`, que baja un PDF
+publicado gratis y le saca el texto con `pdftotext -layout` (hace falta
+`poppler-utils`). Ninguna de las dos es una vía para material de pago.
 
 **Publicar un cuadernillo son tres copias a mano.** Nada enlaza entre `lecturas/`
 y `course/`, así que regenerar el PDF no actualiza el sitio por sí solo:
@@ -221,14 +228,28 @@ pdftoppm -png -r 106 -f 1 -l 1 -singlefile \
 python3 -m pytest tools/test_lecturas.py -q
 ```
 
-Hay tres módulos publicados y cada uno tiene su juego completo de nombres; los
-módulos 2 y 3 son el mismo procedimiento con `filosofia_ia/clase_2` /
-`clase_3`, `cuadernillo_modulo_2_left_future.pdf` /
-`cuadernillo_modulo_3_exit_nrx.pdf`, sus portadas, y las tareas
-`2_leer_cuadernillo_modulo_2.yaml` / `3_leer_cuadernillo_modulo_3.yaml`. Las
-cifras de páginas de los tres son distintas y viven en listas separadas
-(`PATRONES_PAGINAS_TOTALES`, `..._MODULO_2`, `..._MODULO_3`): cada módulo se
-compara solo consigo mismo.
+**Un cuadernillo nuevo empuja contra el tope de peso del repositorio.** El PDF
+publicado pesa ~4 MB y `test_8` de `tools/test_aceptacion.py` mide todo lo
+rastreado por git contra `TOPE_REPOSITORIO` (21 MB hoy; 19.9 MB ocupados tras publicar el
+módulo 4). El módulo 4 cupo porque es de solo texto: sus dos copias del PDF
+pesan 0.8 MB. Uno con páginas de PDF empalmadas —como los módulos 1 y 2, de
+~1.2 MB cada copia— ya no cabe, y entonces subir esa constante es una decisión
+deliberada y documentada en el docstring del archivo, no un ajuste automático.
+
+**Y el módulo nuevo va también al calendario de lecturas.** `course/0_index.md`
+lleva una tabla «Calendario de lecturas» con una fila por módulo —sesión y
+wikilink a la página del módulo— cuya fecha debe coincidir con el `due` de la
+tarea oficial de lectura. Nada lo verifica: es a mano.
+
+Hay cuatro módulos publicados y cada uno tiene su juego completo de nombres;
+los módulos 2, 3 y 4 son el mismo procedimiento con `filosofia_ia/clase_2` /
+`clase_3` / `clase_4`, `cuadernillo_modulo_2_left_future.pdf` /
+`cuadernillo_modulo_3_exit_nrx.pdf` / `cuadernillo_modulo_4_long_future.pdf`,
+sus portadas, y las tareas `2_leer_cuadernillo_modulo_2.yaml` /
+`3_leer_cuadernillo_modulo_3.yaml` / `4_leer_cuadernillo_modulo_4.yaml`. Las
+cifras de páginas de los cuatro son distintas y viven en listas separadas
+(`PATRONES_PAGINAS_TOTALES`, `..._MODULO_2`, `..._MODULO_3`, `..._MODULO_4`):
+cada módulo se compara solo consigo mismo.
 
 Y **no vuelvas a descargar las fuentes de los módulos 1 y 2**: sus `.txt`
 versionados ya no se reproducen desde la web —por el arreglo de `_limpiar` que
@@ -262,6 +283,15 @@ que enmarca el PDF publicado — no es copia del `cuadernillo.html` que genera
 `raya.yaml` selects the course skin by ID (`render.skin: eva-cyberpunk`), resolved against `skins/*.yaml` at the repo root plus built-in profiles. A section can override it with `<section>/_raya/skin.yaml` containing `render.skin`; that file must sit beside a `0_index.md`, and the deepest matching selector wins.
 
 Skin files carry **semantic tokens only** — `tokens.color`, `tokens.graph.group_1..8`, `tokens.font`, `tokens.density`. Raw CSS or extra keys are rejected. The builder enforces a **4.5:1 contrast minimum** on three pairs: `text`/`page`, `accent`/`page`, and `text`/`accent_soft`. A dark skin like `eva-cyberpunk` is easy to break here — run `raya validate` after any palette edit.
+
+`skins/eva-cyberpunk.yaml` is the only skin file here, and its
+`tokens.color.surface` (`#211033`) is **horneado** into generated art: the
+twenty-two SVG and four PNG assets carry that exact background, and the literal
+is hardcoded in `tools/gen_ilustraciones.py`, `tools/test_ilustraciones.py` and
+`tools/test_aceptacion.py`. `test_skin.py` is the only test that reads the skin,
+and it exists to catch exactly this: changing `surface` means updating those
+three copies *and* regenerating everything baked against it, or the site ships
+figures on the wrong background with a green suite.
 
 ## CI / publishing
 
