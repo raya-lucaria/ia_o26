@@ -21,7 +21,7 @@ y que hecha la cuenta, ella decide.
 La cuenta sale enorme, y de ahí sale todo lo demás. Son las ideas con las que
 trabajan buena parte de los laboratorios de IA, las fundaciones que financian
 seguridad y una porción visible de la discusión pública sobre regulación. En
-[[ia-y-sociedad]] aparecieron como una posición del mapa; aquí se leen en sus
+[[ia-y-sociedad|IA y sociedad]] aparecieron como una posición del mapa; aquí se leen en sus
 fuentes.
 
 ## Qué se lee, y por qué
@@ -113,4 +113,4 @@ la fuente al pie de cada una.
 Leer. Como en los dos módulos anteriores, no hay cuestionario ni nada que
 entregar: la tarea es llegar a la sesión con las seis lecturas leídas.
 
-Sigue con [[las-lecturas-del-futuro-largo]].
+Sigue con [[las-lecturas-del-futuro-largo|Las lecturas del futuro largo]].

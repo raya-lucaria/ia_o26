@@ -9,7 +9,7 @@ Mark Fisher le puso a esa apuesta la objeción que da título al módulo: si hay
 - **General intellect** (Marx). El saber colectivo de una sociedad, acumulado y depositado en máquinas. Cuando la riqueza sale de ahí y no de las horas trabajadas, medirla en horas se vuelve absurdo.
 - **Desterritorialización** (Deleuze y Guattari). Arrancar algo de su lugar —una tradición, un oficio, un significado— y ponerlo a circular. El capitalismo lo hace sin parar; la pregunta es si eso libera o solo recodifica.
 - **Cibernética.** Sistemas que se regulan solos por retroalimentación, sin nadie al mando. Es el modelo que Land y el CCRU le aplican al capital: un proceso sin sujeto.
-- **Izquierda y derecha.** La misma palabra sostiene dos programas opuestos: acelerar el capital (Land) o acelerar la tecnología para salir del capital (Fisher). Su descendiente vivo se llama e/acc, nació en 2022, y está en el mapa ideológico de [[ia-y-sociedad]].
+- **Izquierda y derecha.** La misma palabra sostiene dos programas opuestos: acelerar el capital (Land) o acelerar la tecnología para salir del capital (Fisher). Su descendiente vivo se llama e/acc, nació en 2022, y está en el mapa ideológico de [[ia-y-sociedad|IA y sociedad]].
 
 **Por qué van en este orden.** Marx primero, porque de ahí sale todo. Deleuze y Guattari en segundo lugar: una página, justo la que Land cita. Land tercero. Fisher enseguida —fuera de cronología, a propósito— porque explica a Land mejor que cualquier introducción: úsalo como llave. El CCRU quinto, la prosa más difícil, cuando ya tienes el mapa. Barbrook y Cameron al final, que aterrizan todo en Silicon Valley, que es donde sigue el curso.
 

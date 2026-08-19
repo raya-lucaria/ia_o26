@@ -429,3 +429,23 @@ def test_extra_ningun_encabezado_lleva_un_enlace_dentro():
         "encabezados con un enlace dentro (el indice de la pagina los imprime "
         "en crudo):\n" + "\n".join(con_enlace)
     )
+
+
+def test_extra_ningun_wikilink_va_sin_etiqueta():
+    """Raya rotula un `[[id]]` sin etiqueta con el id crudo, no con el titulo
+    de la pagina: en la prosa se leia «En ia-y-sociedad aparecieron como una
+    posicion del mapa». No es un enlace roto —resuelve bien— asi que
+    `raya validate` lo da por bueno; se vio mirando el sitio desplegado.
+    """
+    desnudos = []
+    for ruta in sorted((RAIZ / "course").rglob("*.md")):
+        if "_assets" in ruta.parts:
+            continue
+        texto = ruta.read_text(encoding="utf-8")
+        for match in re.finditer(r"\[\[([^\]|\n]+)\]\]", texto):
+            linea = texto[: match.start()].count("\n") + 1
+            desnudos.append(f"{ruta.relative_to(RAIZ)}:{linea}: {match.group(0)}")
+    assert not desnudos, (
+        "wikilinks sin etiqueta (se publican mostrando el id crudo):\n"
+        + "\n".join(desnudos)
+    )

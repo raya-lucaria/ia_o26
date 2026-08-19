@@ -35,7 +35,7 @@ hace posible que Land los cite y que Fisher diga que los citó mal.**
 Barbrook y Cameron quedan fuera del plano, y es la decisión más discutible de
 la figura. No proponen acelerar ni frenar: describen a quién le conviene el
 dibujo entero. Ponerlos dentro habría sido inventarles una posición que su texto
-no toma —el mismo problema que en [[ia-y-sociedad]] obliga a dibujar TESCREAL
+no toma —el mismo problema que en [[ia-y-sociedad|IA y sociedad]] obliga a dibujar TESCREAL
 como franja punteada y no como región.
 
 El mapa es esquemático y se puede discutir. De hecho, tres de las cinco
@@ -81,7 +81,7 @@ El CCRU dice enjambre. Marx dice clase. El discurso de riesgo existencial dice
 «la humanidad». Ninguno dice desde dónde habla.
 
 - Desde México, y desde la posición en la cadena de valor que viste en
-  [[ia-y-sociedad]], ¿acelerar es una decisión o algo que a uno le pasa?
+  [[ia-y-sociedad|IA y sociedad]], ¿acelerar es una decisión o algo que a uno le pasa?
 - ¿El «nosotros» de e/acc te incluye?
 
 ### 5 · ¿Es esto una descripción o un deseo?
@@ -94,9 +94,9 @@ leen como programa. Marx también describía una tendencia, no un plan.
 
 ## Y ahora, otra vez el mapa · ~2 min
 
-Vuelve al mapa ideológico de [[ia-y-sociedad]]. La primera vez fue una lista de
+Vuelve al mapa ideológico de [[ia-y-sociedad|IA y sociedad]]. La primera vez fue una lista de
 etiquetas con una posición cada una; ahora cada etiqueta tiene textos debajo, y
 las fronteras entre ellas se ven por lo que son: discutibles. Esa es toda la
 diferencia entre saber cómo se llaman las posiciones y poder sostener una.
 
-Sigue con [[left-takes-future]].
+Sigue con [[left-takes-future|The Left Takes the Future Back]].

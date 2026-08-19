@@ -17,5 +17,5 @@ hasta los sistemas de 2026.
 El orden no es accidental. Es difícil juzgar lo que la inteligencia artificial es
 hoy sin saber cuántas veces prometió lo mismo antes.
 
-- [[el-curso]]
-- [[historia-ia]]
+- [[el-curso|El curso]]
+- [[historia-ia|Historia de la IA]]

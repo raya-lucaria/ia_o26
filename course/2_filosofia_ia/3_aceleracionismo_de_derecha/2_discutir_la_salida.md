@@ -55,7 +55,7 @@ que la salida de unos es una de las causas de lo que le pasa a los otros, la
 salida dejaría de ser una decisión privada.
 
 Esta figura conviene dejarla proyectada el resto de la hora, junto a la cadena
-de [[las-lecturas-de-la-salida]].
+de [[las-lecturas-de-la-salida|Las lecturas de la salida]].
 
 ## Cinco movimientos · ~43 min
 
@@ -109,7 +109,7 @@ rinden.
   lo mismo a la izquierda, y lo llama *folk politics*. Dos diagnósticos casi
   idénticos, dos conclusiones opuestas: uno pide un programa hegemónico, el otro
   pide irse. ¿Qué comparten exactamente, y en qué punto se separan?
-- **Land contra Land.** En [[ideas-aceleracionismo]] quedó planteada la pregunta
+- **Land contra Land.** En [[ideas-aceleracionismo|Las ideas del módulo 1]] quedó planteada la pregunta
   de por qué la posición que más celebra al capital que disuelve fronteras
   termina proponiendo las fronteras más duras imaginables. Ahora ya leíste el
   texto de 2012. ¿La contradicción se sostiene, o el propio texto ofrece una
@@ -155,7 +155,7 @@ Qué cambia esto para la inteligencia artificial, y desde dónde lo miras.
   ¿alguna de las tres tiene lo que el plano pide —dueño identificable, contrato
   con el residente, derecho de salida—, o solo se le parece el vocabulario?
 - Para quien etiqueta datos desde México, en el lugar de la cadena de valor que
-  viste en [[ia-y-sociedad]], ¿la salida es una opción que exista? Si no lo es,
+  viste en [[ia-y-sociedad|IA y sociedad]], ¿la salida es una opción que exista? Si no lo es,
   ¿qué le queda de las cuatro lecturas — y qué le queda de las del módulo 2?
 
 ## La respuesta que no leímos · ~4 min
@@ -228,4 +228,4 @@ construye ahora, quién se queda ahora.
 
 El módulo que sigue mueve la discusión de lugar. En vez de pelear la dirección,
 cuenta a quienes vendrán después —y son muchos— y deja que esa cuenta decida
-qué hacer hoy. Sigue con [[moloch-long-future]].
+qué hacer hoy. Sigue con [[moloch-long-future|Moloch, Rationality & the Long Future]].

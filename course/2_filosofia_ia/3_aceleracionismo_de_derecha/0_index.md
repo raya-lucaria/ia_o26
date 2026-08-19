@@ -16,10 +16,10 @@ prerequisites: [left-takes-future, ideas-aceleracionismo]
 quienes contestan que las dos preguntas están mal planteadas, porque de la
 política no se discute: se sale.
 
-Esa es la posición que en [[ideas-aceleracionismo]] apareció de refilón —Yarvin,
+Esa es la posición que en [[ideas-aceleracionismo|Las ideas del módulo 1]] apareció de refilón —Yarvin,
 *Patchwork*, la Catedral, el par salida/voz de Hirschman— y que aquí se lee
 entera y en su propio idioma. Es también la mitad del árbol que faltaba: cuando
-en [[ia-y-sociedad]] viste e/acc en el mapa ideológico, estos son los textos de
+en [[ia-y-sociedad|IA y sociedad]] viste e/acc en el mapa ideológico, estos son los textos de
 los que desciende.
 
 ## Qué se lee, y por qué
@@ -133,4 +133,4 @@ fuente al pie de cada una.
 Leer. Como en el módulo anterior, no hay cuestionario ni nada que entregar: la
 tarea es llegar a la sesión con las cuatro lecturas leídas.
 
-Sigue con [[las-lecturas-de-la-salida]].
+Sigue con [[las-lecturas-de-la-salida|Las lecturas de la salida]].

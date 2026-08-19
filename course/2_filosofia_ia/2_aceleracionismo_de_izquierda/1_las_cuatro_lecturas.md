@@ -223,4 +223,4 @@ Wikimedia Commons, y el de Srnicek ya salió en la ficha 1. Este curso solo
 publica imágenes que puede publicar, y rellenar un hueco con una cara generada
 no es una opción: sería inventar el rostro de una persona real.*
 
-Sigue con [[discutir-el-programa]].
+Sigue con [[discutir-el-programa|Discutir el programa]].

@@ -59,7 +59,7 @@ no leemos, y eso se ve al final de la hora 2.
 **De dónde sale.** Una entrada de blog, no un artículo: el archivo del sitio la
 firma «MENCIUS MOLDBUG · APRIL 24, 2007», y esa fecha es la que el cuadernillo
 imprime al pie de la lectura. Que Curtis Yarvin firmaba con ese seudónimo en
-*Unqualified Reservations* ya salió en [[ideas-aceleracionismo]]. Lo que ahí no
+*Unqualified Reservations* ya salió en [[ideas-aceleracionismo|Las ideas del módulo 1]]. Lo que ahí no
 se dijo es lo que importa hoy: **esta entrada es año y medio anterior a
 *Patchwork***, que es la lectura que sigue. Aquí está la tesis; allá está el
 diseño. Está escrito para programadores, con chistes, y él mismo describe el
@@ -128,7 +128,7 @@ de pregunta que la sesión discute.
 **De dónde sale.** Noviembre de 2008, año y medio después del manifiesto, en el
 mismo blog. *Patchwork* es una serie de cuatro entregas que el propio sitio
 numera como capítulos de un libro; aquí va la segunda mitad de la primera. En
-[[ideas-aceleracionismo]] ya apareció el nombre y la imagen de los «cientos de
+[[ideas-aceleracionismo|Las ideas del módulo 1]] ya apareció el nombre y la imagen de los «cientos de
 miles de mini-países», pero no el contenido. Esto es el contenido.
 
 **Empieza a media pieza, y hay que decirlo en voz alta.** El recorte arranca
@@ -279,7 +279,7 @@ persona. El módulo 2 completo estaba dedicado a construir un sujeto colectivo
 ## 4 de 4 · Land, *The Dark Enlightenment*, partes 1 y 4a (2012) · ~18 min en dos rondas
 
 **De dónde sale.** El mismo autor de *Meltdown*, dieciocho años después. En
-[[ideas-aceleracionismo]] ya se advirtió la distancia: el Land de 1994 no es
+[[ideas-aceleracionismo|Las ideas del módulo 1]] ya se advirtió la distancia: el Land de 1994 no es
 este, y solo uno de los dos estaba en el cuadernillo del módulo 1. Ahora está el
 otro. El ensayo tiene diez partes; el cuadernillo trae dos, y el orden de lectura
 no es casual: la parte 1 arma el argumento y la 4a lo aplica. **Entre las dos
@@ -384,4 +384,4 @@ argumento, y aquí las cuatro lecturas son de personas vivas y en desacuerdo con
 el curso —a Land ya lo leíste así en el módulo 1, con* Meltdown—. *Lo que sí se
 identifica, cada vez, es qué escribió cada quien y dónde.*
 
-Sigue con [[discutir-la-salida]].
+Sigue con [[discutir-la-salida|Discutir la salida]].
