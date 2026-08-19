@@ -31,19 +31,34 @@ es **quién cuenta**.
 
 ## Recorrido
 
-1. [[accelerate-what]] — módulo 1: qué se lee, en qué orden y por qué.
-2. [[ideas-aceleracionismo]] — repaso: el vocabulario del aceleracionismo y de dónde viene cada pieza.
-3. [[las-seis-lecturas]] — repaso: qué dice cada una de las seis lecturas, en claro.
-4. [[para-discutir]] — repaso: el mapa de quién discute con quién y las tensiones de la sesión.
-5. [[left-takes-future]] — módulo 2: la respuesta de la izquierda, reclamar el futuro en vez de añorar el pasado.
-6. [[las-cuatro-lecturas]] — sesión, hora 1: qué dice cada una de las cuatro lecturas del módulo 2, en claro.
-7. [[discutir-el-programa]] — sesión, hora 2: dónde pone el freno cada lectura, y con qué se discute.
-8. [[exit-nrx]] — módulo 3: la salida como programa político, leída en sus fuentes.
-9. [[las-lecturas-de-la-salida]] — sesión, hora 1: qué dice cada una de las cuatro lecturas del módulo 3, en claro.
-10. [[discutir-la-salida]] — sesión, hora 2: de qué se sale en cada lectura, y con qué se discute.
-11. [[moloch-long-future]] — módulo 4: la coordinación, la racionalidad y el futuro largo, leídos en sus fuentes.
-12. [[las-lecturas-del-futuro-largo]] — sesión, hora 1: qué dice cada una de las seis lecturas del módulo 4, en claro.
-13. [[discutir-el-futuro-largo]] — sesión, hora 2: qué cuenta cada lectura, quién queda fuera, y con qué se discute.
+La unidad son cuatro módulos y cada uno es un directorio propio. Dentro de
+cada uno, el orden es siempre el mismo: primero las lecturas y el cuadernillo,
+después las páginas de sesión.
+
+### [[accelerate-what|Módulo 1 · Aceleracionismo]] — ¿acelerar qué?
+
+1. [[accelerate-what]] — las seis lecturas, en qué orden y por qué.
+2. [[ideas-aceleracionismo]] — el vocabulario del aceleracionismo, y de dónde viene cada pieza.
+3. [[las-seis-lecturas]] — qué dice cada una de las seis lecturas, en claro.
+4. [[para-discutir]] — el mapa de quién discute con quién y las tensiones de la sesión.
+
+### [[left-takes-future|Módulo 2 · Aceleracionismo de izquierda]] — ¿quién lo construye?
+
+1. [[left-takes-future]] — las cuatro lecturas y el cuadernillo.
+2. [[las-cuatro-lecturas]] — hora 1: qué dice cada una, en claro.
+3. [[discutir-el-programa]] — hora 2: dónde pone el freno cada lectura, y con qué se discute.
+
+### [[exit-nrx|Módulo 3 · Aceleracionismo de derecha]] — ¿quién se queda?
+
+1. [[exit-nrx]] — las cuatro lecturas y el cuadernillo.
+2. [[las-lecturas-de-la-salida]] — hora 1: qué dice cada una, en claro.
+3. [[discutir-la-salida]] — hora 2: de qué se sale en cada lectura, y con qué se discute.
+
+### [[moloch-long-future|Módulo 4 · El futuro largo]] — ¿quién cuenta?
+
+1. [[moloch-long-future]] — las seis lecturas y el cuadernillo.
+2. [[las-lecturas-del-futuro-largo]] — hora 1: qué dice cada una, en claro.
+3. [[discutir-el-futuro-largo]] — hora 2: qué cuenta cada lectura, quién queda fuera, y con qué se discute.
 
 Las fechas de lectura de cada módulo están en el calendario de lecturas de la
 [página de inicio](raya:course-root).

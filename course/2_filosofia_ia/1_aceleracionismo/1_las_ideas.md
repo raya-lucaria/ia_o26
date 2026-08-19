@@ -1,7 +1,7 @@
 ---
 id: ideas-aceleracionismo
 title: Las ideas del módulo
-nav_title: Las ideas
+nav_title: "Repaso · Las ideas"
 summary: El vocabulario del aceleracionismo, y de dónde viene cada pieza.
 status: ready
 estimated_time: 15m
@@ -203,7 +203,7 @@ Con las cuatro posiciones ya sobre la mesa, el ciclo completo se entiende mejor
 en una imagen que reconstruyéndolo de memoria:
 
 ::: figure {#ciclo-territorializacion title="El ciclo de territorialización, desterritorialización y reterritorialización, con las cuatro posiciones del módulo"}
-![Diagrama de un ciclo cerrado entre dos polos, «fijado en un código» y «puesto a circular», unidos por dos flechas curvas: desterritorializar y reterritorializar. Deleuze y Guattari abarcan el ciclo completo. Land se sitúa sobre la flecha de desterritorializar y Fisher sobre la de reterritorializar. Yarvin aparece fuera del ciclo, en un recuadro aparte con un candado conectado al polo fijado: no discute este vocabulario, propone fijarlo ahí con fronteras duras.](_assets/v19-ciclo-territorializacion.svg)
+![Diagrama de un ciclo cerrado entre dos polos, «fijado en un código» y «puesto a circular», unidos por dos flechas curvas: desterritorializar y reterritorializar. Deleuze y Guattari abarcan el ciclo completo. Land se sitúa sobre la flecha de desterritorializar y Fisher sobre la de reterritorializar. Yarvin aparece fuera del ciclo, en un recuadro aparte con un candado conectado al polo fijado: no discute este vocabulario, propone fijarlo ahí con fronteras duras.](../_assets/v19-ciclo-territorializacion.svg)
 :::
 
 ### 5 · Y con la inteligencia artificial
@@ -222,7 +222,7 @@ quién etiqueta los datos— es el hilo de [[ia-y-sociedad]].
 ## De dónde viene esto · ~3 min
 
 ::: figure {#genealogia title="De Marx a e/acc, y por qué el orden de lectura es otro"}
-![Genealogía del aceleracionismo de 1858 a 2022, con el número de lectura de cada texto y una flecha que marca la respuesta de Fisher a Land](_assets/v17-genealogia-aceleracionismo.svg)
+![Genealogía del aceleracionismo de 1858 a 2022, con el número de lectura de cada texto y una flecha que marca la respuesta de Fisher a Land](../_assets/v17-genealogia-aceleracionismo.svg)
 :::
 
 **Por qué el cuadernillo no sigue el orden cronológico.** Ciento cincuenta años

@@ -1,7 +1,7 @@
 ---
 id: moloch-long-future
-title: Módulo 4 — Moloch, Rationality & the Long Future
-nav_title: "Moloch, Rationality & the Long Future"
+title: "Módulo 4 · El futuro largo — ¿quién cuenta?"
+nav_title: "Módulo 4 · El futuro largo"
 summary: "La cuarta respuesta: en vez de discutir la dirección, contar a quienes vendrán después y dejar que la cuenta decida."
 status: ready
 estimated_time: 200m
@@ -65,16 +65,16 @@ competencia, no como tesis morales.
 ## El cuadernillo
 
 ::: figure {#cuadernillo-modulo-4 title="Las seis lecturas en un solo archivo"}
-[![Portada del cuadernillo «Moloch, Rationality & the Long Future», con las seis lecturas listadas](_assets/cuadernillo_portada_modulo_4.png)](_assets/visor_modulo_4.html)
+[![Portada del cuadernillo «Moloch, Rationality & the Long Future», con las seis lecturas listadas](../_assets/cuadernillo_portada_modulo_4.png)](../_assets/visor_modulo_4.html)
 :::
 
 **78 páginas**, cada lectura con su portadilla y la razón por la que se lee.
 Es el cuadernillo más largo de la unidad: calcula entre tres horas y tres y
 media, con más de la mitad en la primera lectura.
 
-- **[Leer en el navegador →](_assets/visor_modulo_4.html)** — se abre completo,
+- **[Leer en el navegador →](../_assets/visor_modulo_4.html)** — se abre completo,
   sin descargar nada. También puedes hacer clic en la portada de arriba.
-- **[Descargar el PDF](_assets/cuadernillo_modulo_4_long_future.pdf)** — 403 KB,
+- **[Descargar el PDF](../_assets/cuadernillo_modulo_4_long_future.pdf)** — 403 KB,
   para leerlo sin conexión o imprimirlo.
 
 ## Sobre las fuentes, y cómo citarlas

@@ -75,10 +75,22 @@ Hay dos, y se mantienen distinto:
 - `course/1_introduccion/2_historia_ia/` — ocho páginas de prosa, con imágenes
   y SVG generados desde `tools/`, y un registro de fuentes por página en
   `docs/verificacion/`. Es la unidad que describe el resto de esta sección.
-- `course/2_filosofia_ia/` — cuatro módulos de lecturas (`1_accelerate_what.md`,
-  `5_left_takes_future.md`, `8_exit_nrx.md` y `11_moloch_long_future.md`), cada
-  uno seguido de sus páginas de repaso: tres para el módulo 1 y dos para cada
-  uno de los otros, una por hora de sesión. **Los ids de esas páginas de repaso no se pueden nombrar por
+- `course/2_filosofia_ia/` — **un directorio por módulo**
+  (`1_aceleracionismo/`, `2_aceleracionismo_de_izquierda/`,
+  `3_aceleracionismo_de_derecha/`, `4_futuro_largo/`), y dentro de cada uno el
+  mismo orden: el `0_index.md` es la página del módulo —las lecturas y el
+  cuadernillo—, y las que siguen son las páginas de repaso: tres para el
+  módulo 1 y dos para cada uno de los otros, una por hora de sesión. El
+  segmento de URL de cada módulo sale del **nombre del directorio**, no del id
+  de su página (`/filosofia-ia/futuro-largo/las-lecturas-del-futuro-largo/`),
+  así que renombrar un directorio mueve URLs. **`aliases` no las conserva:** en
+  Raya un alias es un id alterno —sirve para wikilinks y para el `scope` de los
+  objetos oficiales— y el builder no emite ninguna redirección, así que una URL
+  vieja queda en 404. Mover páginas es romper enlaces externos a propósito. `_assets/` y `_official/` se
+  quedan en la raíz de la unidad y las páginas los alcanzan con `../_assets/`;
+  no los partas por módulo, porque el contrato de Raya prohíbe enlazar al
+  `_assets/` de un hermano y `tools/unidades.py` asume un inventario por
+  unidad. **Los ids de esas páginas de repaso no se pueden nombrar por
   el número de lecturas**: `las-cuatro-lecturas` ya es del módulo 2, así que la
   hora 1 del módulo 3 —que también tiene cuatro— se llama
   `las-lecturas-de-la-salida`, y la del módulo 4
@@ -88,9 +100,9 @@ Hay dos, y se mantienen distinto:
   significa dos cosas distintas en este repo y conviene no confundirlas:** los
   seis módulos del curso están listados en
   `course/1_introduccion/1_el_curso/0_index.md` —y todo lo que hay hoy escrito,
-  historia y filosofía, es el módulo 1 de esos seis—, mientras que «módulo 1»,
-  «módulo 2» y «módulo 3» dentro de la unidad de filosofía son los tres
-  cuadernillos de lectura. Lo que sigue a `moloch-long-future` en el temario del curso no es otro
+  historia y filosofía, es el módulo 1 de esos seis—, mientras que los «módulos
+  1 a 4» dentro de la unidad de filosofía son los cuatro cuadernillos de
+  lectura, uno por directorio. Lo que sigue a `moloch-long-future` en el temario del curso no es otro
   cuadernillo: es «Agentes, ambientes, modelado y optimización», y no está
   escrito. Su
   contenido real son los cuadernillos PDF que produce `lecturas/` (ver más
@@ -136,7 +148,10 @@ archivo en `course/1_introduccion/2_historia_ia/`, su registro homónimo en
 
 Las páginas de repaso de filosofía tienen un triple análogo: la página en
 `course/2_filosofia_ia/`, su registro en `docs/verificacion/filosofia_ia/`, y la
-lista `PAGINAS` de `tools/test_repaso.py` —que declara, por página, cuántas
+lista `PAGINAS` de `tools/test_repaso.py`. Los tres comparten **la misma ruta
+relativa**: `docs/verificacion/filosofia_ia/` replica los directorios de
+módulo a propósito, y `PAGINAS` los nombra por esa ruta, no por el nombre de
+archivo suelto. La lista declara, por página, cuántas
 citas textuales se esperan y si su registro lleva tabla. Cada cita de esas
 páginas debe aparecer literal en el registro (el formato es fijo:
 `> «cita» — cuadernillo, p. N`), y si una cita se muda de página el conteo falla
@@ -262,7 +277,7 @@ deriva — no las arregles editando la copia, edita la fuente y vuelve a copiar:
 
 - El PDF publicado tiene que ser **byte-idéntico** al que produjo el pipeline.
 - `lecturas/**/introduccion.md` es la fuente única de la introducción; la página
-  del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia literal
+  del curso (`course/2_filosofia_ia/1_aceleracionismo/0_index.md`) lleva una copia literal
   de su sección «Cómo leer este cuadernillo».
 - El número de páginas del cuadernillo aparece en la página del módulo, la tarea
   oficial, el visor y dos `README.md`; léelo del PDF ya copiado, no lo estimes.

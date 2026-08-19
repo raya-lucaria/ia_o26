@@ -345,18 +345,32 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
     total_usos = 0
     # Un nombre de archivo fijo se rompe en silencio si la pagina se renumera
     # (CLAUDE.md promete que los prefijos numericos son orden de autoria, no
-    # identidad estable): con glob("*.md"), renombrar 2_repaso_y_discusion.md
+    # identidad estable): con rglob("*.md"), renombrar 2_repaso_y_discusion.md
     # a 3_repaso_y_discusion.md sigue cubierto.
+    #
+    # rglob y no glob: al partir la unidad de filosofia en un directorio por
+    # modulo, un glob("*.md") plano dejo de ver las nueve paginas de repaso y
+    # esta guarda paso a cubrir cero ilustraciones sin fallar. La unica pagina
+    # que rglob agrega de mas es _assets/CREDITOS.md, que no enlaza figuras.
     PAGINAS_CON_ILUSTRACIONES = [UNIDAD / p for p in PAGINAS] + sorted(
-        (RAIZ / "course/2_filosofia_ia").glob("*.md")
+        p for p in (RAIZ / "course/2_filosofia_ia").rglob("*.md")
+        if "_assets" not in p.parts
     )
+    usos_por_unidad = {"historia": 0, "filosofia": 0}
     for ruta in PAGINAS_CON_ILUSTRACIONES:
         if not ruta.is_file():
             continue
         pagina = ruta.name
+        unidad = "filosofia" if "2_filosofia_ia" in ruta.parts else "historia"
         texto = ruta.read_text(encoding="utf-8")
-        for match in re.finditer(r"]\(_assets/(ilus-[\w-]+\.\w+)\)", texto):
+        # El "../" es opcional a proposito: las paginas de historia enlazan a
+        # su _assets/ hermano y las de filosofia, desde su directorio de
+        # modulo, al _assets/ de la unidad. Sin la alternativa, el patron dejo
+        # de calzar con las de filosofia en cuanto se anidaron -- otra vez sin
+        # fallar, porque un finditer vacio no falla.
+        for match in re.finditer(r"]\((?:\.\./)?_assets/(ilus-[\w-]+\.\w+)\)", texto):
             total_usos += 1
+            usos_por_unidad[unidad] += 1
             archivo = match.group(1)
             resto = texto[match.end():match.end() + 400]
             assert patron_aviso.search(resto), (
@@ -364,3 +378,8 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
                 "justo despues de su bloque de figura"
             )
     assert total_usos > 0, "no se encontro ningun uso de ilus-* en las paginas"
+    # Por unidad, no en total: con una sola cifra global, que las paginas de
+    # filosofia dejaran de calzar con el patron no se notaba -- las de historia
+    # solas mantenian el total por encima de cero.
+    for unidad, usos in usos_por_unidad.items():
+        assert usos > 0, f"ningun uso de ilus-* en las paginas de {unidad}"

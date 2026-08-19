@@ -1,7 +1,7 @@
 ---
 id: discutir-el-futuro-largo
 title: Hora 2 — Discutir el futuro largo
-nav_title: Discutir el futuro largo
+nav_title: "Hora 2 · Discutir el futuro largo"
 summary: Qué cuenta cada lectura, quién queda fuera de la cuenta, y los cinco movimientos de la discusión en sesión.
 status: ready
 estimated_time: 20m
@@ -18,7 +18,7 @@ cada sección son minutos de clase.
 ## El puente: quién cuenta · ~8 min
 
 ::: figure {#quien-cuenta title="Qué cuenta cada lectura, y quién queda fuera"}
-![Matriz de las seis lecturas del módulo con tres columnas: qué cuenta cada una, quién queda fuera de la cuenta y qué se sigue de ello](_assets/v28-quien-cuenta.svg)
+![Matriz de las seis lecturas del módulo con tres columnas: qué cuenta cada una, quién queda fuera de la cuenta y qué se sigue de ello](../_assets/v28-quien-cuenta.svg)
 :::
 
 Puestas juntas, las seis dejan ver algo que por separado no se nota: **el

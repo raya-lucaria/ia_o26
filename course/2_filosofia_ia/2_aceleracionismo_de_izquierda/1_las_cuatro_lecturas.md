@@ -1,7 +1,7 @@
 ---
 id: las-cuatro-lecturas
 title: Hora 1 — Las cuatro lecturas, en claro
-nav_title: Las cuatro lecturas
+nav_title: "Hora 1 · Las cuatro lecturas"
 summary: Qué dice cada una de las cuatro lecturas del módulo 2, qué concepto aporta y con qué pregunta te deja.
 status: ready
 estimated_time: 20m
@@ -19,7 +19,7 @@ igual y usa las fichas como muleta; lo que no vas a tener es haber discutido con
 el texto, que es la mitad de lo que importa.
 
 ::: figure {#mapa-sesion title="Las dos horas de la sesión, y la pregunta que las une"}
-![Mapa de la sesión: a la izquierda, la hora 1 con las cuatro lecturas y el papel de cada una; a la derecha, la hora 2 con sus cinco pasos; abajo, la pregunta que une las cuatro lecturas](_assets/v20-mapa-de-la-sesion.svg)
+![Mapa de la sesión: a la izquierda, la hora 1 con las cuatro lecturas y el papel de cada una; a la derecha, la hora 2 con sus cinco pasos; abajo, la pregunta que une las cuatro lecturas](../_assets/v20-mapa-de-la-sesion.svg)
 :::
 
 Las cuatro quieren lo mismo: que la izquierda deje de defender el pasado y
@@ -36,7 +36,7 @@ segunda hora.
 ## 1 de 4 · Williams y Srnicek, «#ACCELERATE» (2013) · ~13 min
 
 ::: figure {#retrato-srnicek title="Nick Srnicek"}
-![Retrato fotográfico de Nick Srnicek](_assets/foto-srnicek.jpg)
+![Retrato fotográfico de Nick Srnicek](../_assets/foto-srnicek.jpg)
 :::
 
 **De dónde sale.** Se publicó el 14 de mayo de 2013 en el sitio *Critical Legal
@@ -89,7 +89,7 @@ déficit de atención, dislexia—, y en cuanto se vuelve cosa de química cereb
 de familia, ya no se puede discutir como problema político.
 
 ::: figure {#ilus-realismo-capitalista title="El horizonte cerrado del realismo capitalista"}
-![Ilustración generada de un pasillo interminable de arcos repetidos cuyas ventanas muestran todas exactamente el mismo paisaje](_assets/ilus-realismo-capitalista.png)
+![Ilustración generada de un pasillo interminable de arcos repetidos cuyas ventanas muestran todas exactamente el mismo paisaje](../_assets/ilus-realismo-capitalista.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
@@ -135,7 +135,7 @@ donde estaba:
 4. **Desarmar la ética del trabajo** — la idea de que hay que sufrir un empleo para merecer vivir bien, y de que uno es su empleo.
 
 ::: figure {#cuatro-demandas title="Cómo se sostienen entre sí las cuatro demandas"}
-![Diagrama de las cuatro demandas post-trabajo dispuestas en cuadrícula, con flechas que muestran cómo la automatización libera tiempo que no vale sin ingreso, cómo la renta básica encarece el trabajo barato y empuja a automatizar, y cómo la cuarta demanda vuelve deseables a las otras tres](_assets/v22-cuatro-demandas.svg)
+![Diagrama de las cuatro demandas post-trabajo dispuestas en cuadrícula, con flechas que muestran cómo la automatización libera tiempo que no vale sin ingreso, cómo la renta básica encarece el trabajo barato y empuja a automatizar, y cómo la cuarta demanda vuelve deseables a las otras tres](../_assets/v22-cuatro-demandas.svg)
 :::
 
 **Lo difícil, en claro: qué es una demanda «no reformista».** Es una demanda que
@@ -170,7 +170,7 @@ dos capítulos más adelante.
 ## 4 de 4 · Terranova, «Red Stack Attack!» (2014) · ~13 min
 
 ::: figure {#retrato-terranova title="Tiziana Terranova"}
-![Retrato fotográfico de Tiziana Terranova](_assets/foto-terranova.jpg)
+![Retrato fotográfico de Tiziana Terranova](../_assets/foto-terranova.jpg)
 :::
 
 **De dónde sale.** Tiziana Terranova es teórica italiana de los medios. El
@@ -203,7 +203,7 @@ conocimientos, redes— antes de que alguien la registre a su nombre.
 cuerpo—. Y advierte que no se apilan una sobre otra sin más: se cruzan.
 
 ::: figure {#ilus-red-stack title="Una pila que se puede construir de otra manera"}
-![Ilustración generada de tres capas horizontales translúcidas apiladas y cosidas por hilos de luz verticales: discos como monedas abajo, una malla de nodos en medio y dispositivos portátiles arriba](_assets/ilus-red-stack.png)
+![Ilustración generada de tres capas horizontales translúcidas apiladas y cosidas por hilos de luz verticales: discos como monedas abajo, una malla de nodos en medio y dispositivos portátiles arriba](../_assets/ilus-red-stack.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*

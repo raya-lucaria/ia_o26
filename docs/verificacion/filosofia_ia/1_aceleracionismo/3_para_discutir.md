@@ -1,6 +1,6 @@
 # Verificación — Para discutir
 
-Fuente de cada cita y de cada fecha de `course/2_filosofia_ia/4_para_discutir.md`.
+Fuente de cada cita y de cada fecha de `course/2_filosofia_ia/1_aceleracionismo/3_para_discutir.md`.
 Las citas se copiaron del PDF del cuadernillo con `pdftotext`; la columna «Página»
 es la del cuadernillo, no la de la edición original.
 
@@ -19,6 +19,6 @@ navega quien lo lee.
 
 Esta página no introduce citas ni fechas propias: el mapa y las cinco tensiones
 discuten las seis lecturas y sus fechas, ya verificadas en
-`docs/verificacion/filosofia_ia/3_las_seis_lecturas.md` y en
-`docs/verificacion/filosofia_ia/2_las_ideas.md`. No hay, por tanto, una tabla de
+`docs/verificacion/filosofia_ia/1_aceleracionismo/2_las_seis_lecturas.md` y en
+`docs/verificacion/filosofia_ia/1_aceleracionismo/1_las_ideas.md`. No hay, por tanto, una tabla de
 verificación propia en este archivo.

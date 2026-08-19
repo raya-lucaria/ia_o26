@@ -100,5 +100,5 @@ derechos (`fisher_capitalist_realism.pdf`,
 excluidos por `.gitignore`.
 
 `introduccion.md` es la fuente de la introducción general del cuadernillo; la
-página del curso (`course/2_filosofia_ia/5_left_takes_future.md`) es donde
+página del curso (`course/2_filosofia_ia/2_aceleracionismo_de_izquierda/0_index.md`) es donde
 vive la versión para el sitio de este módulo.

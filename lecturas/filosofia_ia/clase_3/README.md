@@ -77,7 +77,7 @@ avisos que importan al citarlas:
   Una advertencia para quien cite: el capítulo **remite al capítulo 2** para
   resolver el problema con el que cierra —a dónde van los residentes que no
   pueden pagar—, y ese capítulo 2 no está en el cuadernillo. La página de la
-  hora 2 de la sesión (`course/2_filosofia_ia/10_discutir_la_salida.md`)
+  hora 2 de la sesión (`course/2_filosofia_ia/3_aceleracionismo_de_derecha/2_discutir_la_salida.md`)
   reproduce lo esencial de esa respuesta, verificado contra la fuente, y lo
   marca como material fuera del cuadernillo.
 
@@ -211,5 +211,5 @@ este arreglo. Volver a descargar ese módulo no restaura nada: produce un texto
 distinto.
 
 `introduccion.md` es la fuente de la introducción general del cuadernillo; la
-página del curso (`course/2_filosofia_ia/8_exit_nrx.md`) es donde vive la versión
+página del curso (`course/2_filosofia_ia/3_aceleracionismo_de_derecha/0_index.md`) es donde vive la versión
 para el sitio de este módulo.

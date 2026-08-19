@@ -14,7 +14,7 @@ import pytest
 RAIZ = Path(__file__).resolve().parent.parent
 MODULO = RAIZ / "lecturas/filosofia_ia/clase_1"
 INTRO = MODULO / "introduccion.md"
-PAGINA = RAIZ / "course/2_filosofia_ia/1_accelerate_what.md"
+PAGINA = RAIZ / "course/2_filosofia_ia/1_aceleracionismo/0_index.md"
 TAREA = RAIZ / "course/2_filosofia_ia/_official/tasks/1_leer_cuadernillo.yaml"
 VISOR = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_1.html"
 LECTURAS_README = MODULO / "README.md"
@@ -23,7 +23,7 @@ CONSTRUIDO = MODULO / "lecturas/filosofia_ia_clase_1_cuadernillo.pdf"
 
 # Modulo 2 -- "The Left Takes the Future Back"
 MODULO_2 = RAIZ / "lecturas/filosofia_ia/clase_2"
-PAGINA_2 = RAIZ / "course/2_filosofia_ia/5_left_takes_future.md"
+PAGINA_2 = RAIZ / "course/2_filosofia_ia/2_aceleracionismo_de_izquierda/0_index.md"
 TAREA_2 = RAIZ / "course/2_filosofia_ia/_official/tasks/2_leer_cuadernillo_modulo_2.yaml"
 VISOR_2 = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_2.html"
 LECTURAS_README_2 = MODULO_2 / "README.md"
@@ -32,7 +32,7 @@ CONSTRUIDO_2 = MODULO_2 / "lecturas/filosofia_ia_clase_2_cuadernillo.pdf"
 
 # Modulo 3 -- "Exit, NRx & Dark Enlightenment"
 MODULO_3 = RAIZ / "lecturas/filosofia_ia/clase_3"
-PAGINA_3 = RAIZ / "course/2_filosofia_ia/8_exit_nrx.md"
+PAGINA_3 = RAIZ / "course/2_filosofia_ia/3_aceleracionismo_de_derecha/0_index.md"
 TAREA_3 = RAIZ / "course/2_filosofia_ia/_official/tasks/3_leer_cuadernillo_modulo_3.yaml"
 VISOR_3 = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_3.html"
 LECTURAS_README_3 = MODULO_3 / "README.md"
@@ -41,7 +41,7 @@ CONSTRUIDO_3 = MODULO_3 / "lecturas/filosofia_ia_clase_3_cuadernillo.pdf"
 
 # Modulo 4 -- "Moloch, Rationality & the Long Future"
 MODULO_4 = RAIZ / "lecturas/filosofia_ia/clase_4"
-PAGINA_4 = RAIZ / "course/2_filosofia_ia/11_moloch_long_future.md"
+PAGINA_4 = RAIZ / "course/2_filosofia_ia/4_futuro_largo/0_index.md"
 TAREA_4 = RAIZ / "course/2_filosofia_ia/_official/tasks/4_leer_cuadernillo_modulo_4.yaml"
 VISOR_4 = RAIZ / "course/2_filosofia_ia/_assets/visor_modulo_4.html"
 LECTURAS_README_4 = MODULO_4 / "README.md"
@@ -254,8 +254,8 @@ def test_el_pdf_publicado_es_el_que_se_construyo(publicado, construido):
 # Swarmachines). Si el patron deja de encontrarse porque alguien reescribio
 # la frase, la prueba tambien debe fallar: por eso el assert exige el match.
 PATRONES_PAGINAS_TOTALES = [
-    (PAGINA, "1_accelerate_what.md (resumen)", r"cuadernillo de (\d+) páginas"),
-    (PAGINA, "1_accelerate_what.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (PAGINA, "modulo 1 · 0_index.md (resumen)", r"cuadernillo de (\d+) páginas"),
+    (PAGINA, "modulo 1 · 0_index.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
     (TAREA, "1_leer_cuadernillo.yaml", r"un solo archivo de (\d+) páginas"),
     (VISOR, "visor_modulo_1.html", r"Seis lecturas · (\d+) páginas ·"),
     (LECTURAS_README, "README.md (resumen)", r"Seis lecturas, (\d+) páginas,"),
@@ -270,7 +270,7 @@ PATRONES_PAGINAS_TOTALES = [
 # en una sola lista haria que test_las_paginas_del_cuadernillo_coinciden_...
 # fallara siempre (57 != 53) aunque cada modulo este internamente consistente.
 PATRONES_PAGINAS_TOTALES_MODULO_2 = [
-    (PAGINA_2, "5_left_takes_future.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (PAGINA_2, "modulo 2 · 0_index.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
     (TAREA_2, "2_leer_cuadernillo_modulo_2.yaml", r"un solo archivo de (\d+) páginas"),
     (VISOR_2, "visor_modulo_2.html", r"Cuatro lecturas · (\d+) páginas ·"),
     (LECTURAS_README_2, "README.md modulo 2 (resumen)", r"Cuatro lecturas, (\d+) páginas,"),
@@ -287,7 +287,7 @@ PATRONES_PAGINAS_TOTALES_MODULO_2 = [
 # que lo era antes. Sin "completas" ni "las seis lecturas completas": del
 # articulo de Greaves y MacAskill van las secciones 1 a 4 y la 10, no entero.
 PATRONES_PAGINAS_TOTALES_MODULO_4 = [
-    (PAGINA_4, "11_moloch_long_future.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (PAGINA_4, "modulo 4 · 0_index.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
     (TAREA_4, "4_leer_cuadernillo_modulo_4.yaml", r"un solo archivo de (\d+)\s"),
     (VISOR_4, "visor_modulo_4.html", r"Seis lecturas · (\d+) páginas ·"),
     (LECTURAS_README_4, "README.md modulo 4 (resumen)", r"Seis lecturas, (\d+) páginas,"),
@@ -298,7 +298,7 @@ PATRONES_PAGINAS_TOTALES_MODULO_4 = [
 ]
 
 PATRONES_PAGINAS_TOTALES_MODULO_3 = [
-    (PAGINA_3, "8_exit_nrx.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
+    (PAGINA_3, "modulo 3 · 0_index.md (cuerpo)", r"\*\*(\d+) páginas\*\*, cada lectura"),
     (TAREA_3, "3_leer_cuadernillo_modulo_3.yaml", r"un solo archivo de (\d+)\s"),
     (VISOR_3, "visor_modulo_3.html", r"Cuatro lecturas · (\d+) páginas ·"),
     (LECTURAS_README_3, "README.md modulo 3 (resumen)", r"Cuatro lecturas, (\d+) páginas,"),

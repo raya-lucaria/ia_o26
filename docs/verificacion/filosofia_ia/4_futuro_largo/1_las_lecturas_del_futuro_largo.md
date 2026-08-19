@@ -1,7 +1,7 @@
 # Verificación — Las seis lecturas, en claro
 
 Fuente de cada cita y de cada afirmación datable de
-`course/2_filosofia_ia/12_las_lecturas_del_futuro_largo.md`, y de las dos
+`course/2_filosofia_ia/4_futuro_largo/1_las_lecturas_del_futuro_largo.md`, y de las dos
 figuras que esa página usa (`v26-mapa-de-la-sesion-modulo-4.svg` y
 `v27-de-moloch-al-futuro-largo.svg`).
 

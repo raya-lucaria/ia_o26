@@ -1,7 +1,7 @@
 ---
 id: las-lecturas-del-futuro-largo
 title: Hora 1 — Las seis lecturas, en claro
-nav_title: Las lecturas del futuro largo
+nav_title: "Hora 1 · Las lecturas del futuro largo"
 summary: Qué dice cada una de las seis lecturas del módulo 4, qué concepto aporta y con qué pregunta te deja.
 status: ready
 estimated_time: 40m
@@ -20,7 +20,7 @@ igual y usa las fichas como muleta; lo que no vas a tener es haber discutido con
 el texto, que es la mitad de lo que importa.
 
 ::: figure {#mapa-sesion-modulo-4 title="Las dos horas de la sesión, y la pregunta que las une"}
-![Mapa de la sesión del módulo 4: a la izquierda, la hora 1 con las seis lecturas y el papel de cada una; a la derecha, la hora 2 con sus cinco pasos; abajo, la pregunta que une las seis lecturas](_assets/v26-mapa-de-la-sesion-modulo-4.svg)
+![Mapa de la sesión del módulo 4: a la izquierda, la hora 1 con las seis lecturas y el papel de cada una; a la derecha, la hora 2 con sus cinco pasos; abajo, la pregunta que une las seis lecturas](../_assets/v26-mapa-de-la-sesion-modulo-4.svg)
 :::
 
 > **Cómo se corre la hora.** Entrada y cadena, ~5 min. Ficha 1 —la lectura larga,
@@ -43,7 +43,7 @@ nuestro—, y cada uno se apoya en el anterior. Por eso el módulo pide algo má
 desacuerdo: pide señalar el eslabón.
 
 ::: figure {#cadena-argumento-modulo-4 title="De Moloch al futuro largo: los seis eslabones"}
-![Los seis eslabones del argumento del módulo 4, uno debajo de otro: hay trampas de coordinación; nadie puede salirse solo; se puede pensar mejor y eso se entrena; lo que está en juego es la especie, no la época; el futuro es enorme y se puede contar; y por lo tanto casi todo lo que importa está en el futuro lejano](_assets/v27-de-moloch-al-futuro-largo.svg)
+![Los seis eslabones del argumento del módulo 4, uno debajo de otro: hay trampas de coordinación; nadie puede salirse solo; se puede pensar mejor y eso se entrena; lo que está en juego es la especie, no la época; el futuro es enorme y se puede contar; y por lo tanto casi todo lo que importa está en el futuro lejano](../_assets/v27-de-moloch-al-futuro-largo.svg)
 :::
 
 Déjala proyectada durante las seis fichas y vuelve a ella al cerrar cada una: la

@@ -1,7 +1,7 @@
 ---
 id: accelerate-what
-title: Módulo 1 — ¿Accelerate What?
-nav_title: ¿Accelerate What?
+title: "Módulo 1 · Aceleracionismo — ¿acelerar qué?"
+nav_title: "Módulo 1 · Aceleracionismo"
 summary: Aceleracionismo, de Marx al valle. Seis lecturas en un cuadernillo de 57 páginas.
 status: ready
 estimated_time: 240m
@@ -43,15 +43,15 @@ Mark Fisher le puso a esa apuesta la objeción que da título al módulo: si hay
 ## El cuadernillo
 
 ::: figure {#cuadernillo title="Las seis lecturas en un solo archivo"}
-[![Portada del cuadernillo «¿Accelerate What?», con las seis lecturas listadas y una nota sobre las dos que se reproducen de la antología](_assets/cuadernillo_portada.png)](_assets/visor_modulo_1.html)
+[![Portada del cuadernillo «¿Accelerate What?», con las seis lecturas listadas y una nota sobre las dos que se reproducen de la antología](../_assets/cuadernillo_portada.png)](../_assets/visor_modulo_1.html)
 :::
 
 **57 páginas**, cada lectura con una ficha que explica qué vas a leer, qué
 palabras necesitas y qué retener. Calcula entre tres horas y media y cuatro.
 
-- **[Leer en el navegador →](_assets/visor_modulo_1.html)** — se abre completo,
+- **[Leer en el navegador →](../_assets/visor_modulo_1.html)** — se abre completo,
   sin descargar nada. También puedes hacer clic en la portada de arriba.
-- **[Descargar el PDF](_assets/cuadernillo_modulo_1_accelerate.pdf)** — 1.2 MB,
+- **[Descargar el PDF](../_assets/cuadernillo_modulo_1_accelerate.pdf)** — 1.2 MB,
   para leerlo sin conexión o imprimirlo.
 
 ## Qué hay que entregar

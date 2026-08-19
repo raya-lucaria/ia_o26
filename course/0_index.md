@@ -31,7 +31,7 @@ sesión.
 
 | Sesión | Se lee para |
 |---|---|
-| Miércoles 12 de agosto | Módulo 1 — [[¿Accelerate What?]] |
-| Lunes 17 de agosto | Módulo 2 — [[The Left Takes the Future Back]] |
-| Miércoles 19 de agosto | Módulo 3 — [[Exit, NRx & Dark Enlightenment]] |
-| Lunes 24 de agosto | Módulo 4 — [[Moloch, Rationality & the Long Future]] |
+| Miércoles 12 de agosto | Módulo 1 — [[accelerate-what|¿Accelerate What?]] |
+| Lunes 17 de agosto | Módulo 2 — [[left-takes-future|The Left Takes the Future Back]] |
+| Miércoles 19 de agosto | Módulo 3 — [[exit-nrx|Exit, NRx & Dark Enlightenment]] |
+| Lunes 24 de agosto | Módulo 4 — [[moloch-long-future|Moloch, Rationality & the Long Future]] |

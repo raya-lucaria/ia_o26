@@ -1,11 +1,11 @@
 # Verificación — Discutir el futuro largo
 
-Registro de `course/2_filosofia_ia/13_discutir_el_futuro_largo.md`.
+Registro de `course/2_filosofia_ia/4_futuro_largo/2_discutir_el_futuro_largo.md`.
 
 Esta página no introduce citas propias en el formato de bloque de las páginas de
 fichas: los cinco movimientos de discusión se construyen sobre lo que ya dicen
 las seis fichas de
-[`12_las_lecturas_del_futuro_largo.md`](12_las_lecturas_del_futuro_largo.md), y
+[`4_futuro_largo/1_las_lecturas_del_futuro_largo.md`](1_las_lecturas_del_futuro_largo.md), y
 cada cita y cada afirmación datable de aquellas está verificada en su propio
 registro. **No hay, por tanto, una tabla de verificación propia.**
 
