@@ -35,30 +35,30 @@ La unidad son cuatro módulos y cada uno es un directorio propio. Dentro de
 cada uno, el orden es siempre el mismo: primero las lecturas y el cuadernillo,
 después las páginas de sesión.
 
-### [[accelerate-what|Módulo 1 · Aceleracionismo]] — ¿acelerar qué?
+### Módulo 1 · Aceleracionismo — ¿acelerar qué?
 
-1. [[accelerate-what]] — las seis lecturas, en qué orden y por qué.
-2. [[ideas-aceleracionismo]] — el vocabulario del aceleracionismo, y de dónde viene cada pieza.
-3. [[las-seis-lecturas]] — qué dice cada una de las seis lecturas, en claro.
-4. [[para-discutir]] — el mapa de quién discute con quién y las tensiones de la sesión.
+1. [[accelerate-what|El cuadernillo]] — las seis lecturas, en qué orden y por qué.
+2. [[ideas-aceleracionismo|Repaso · Las ideas]] — el vocabulario del aceleracionismo, y de dónde viene cada pieza.
+3. [[las-seis-lecturas|Repaso · Las seis lecturas]] — qué dice cada una de las seis, en claro.
+4. [[para-discutir|Repaso · Para discutir]] — el mapa de quién discute con quién y las tensiones de la sesión.
 
-### [[left-takes-future|Módulo 2 · Aceleracionismo de izquierda]] — ¿quién lo construye?
+### Módulo 2 · Aceleracionismo de izquierda — ¿quién lo construye?
 
-1. [[left-takes-future]] — las cuatro lecturas y el cuadernillo.
-2. [[las-cuatro-lecturas]] — hora 1: qué dice cada una, en claro.
-3. [[discutir-el-programa]] — hora 2: dónde pone el freno cada lectura, y con qué se discute.
+1. [[left-takes-future|El cuadernillo]] — las cuatro lecturas, en qué orden y por qué.
+2. [[las-cuatro-lecturas|Hora 1 · Las cuatro lecturas]] — qué dice cada una, en claro.
+3. [[discutir-el-programa|Hora 2 · Discutir el programa]] — dónde pone el freno cada lectura, y con qué se discute.
 
-### [[exit-nrx|Módulo 3 · Aceleracionismo de derecha]] — ¿quién se queda?
+### Módulo 3 · Aceleracionismo de derecha — ¿quién se queda?
 
-1. [[exit-nrx]] — las cuatro lecturas y el cuadernillo.
-2. [[las-lecturas-de-la-salida]] — hora 1: qué dice cada una, en claro.
-3. [[discutir-la-salida]] — hora 2: de qué se sale en cada lectura, y con qué se discute.
+1. [[exit-nrx|El cuadernillo]] — las cuatro lecturas, en qué orden y por qué.
+2. [[las-lecturas-de-la-salida|Hora 1 · Las lecturas de la salida]] — qué dice cada una, en claro.
+3. [[discutir-la-salida|Hora 2 · Discutir la salida]] — de qué se sale en cada lectura, y con qué se discute.
 
-### [[moloch-long-future|Módulo 4 · El futuro largo]] — ¿quién cuenta?
+### Módulo 4 · El futuro largo — ¿quién cuenta?
 
-1. [[moloch-long-future]] — las seis lecturas y el cuadernillo.
-2. [[las-lecturas-del-futuro-largo]] — hora 1: qué dice cada una, en claro.
-3. [[discutir-el-futuro-largo]] — hora 2: qué cuenta cada lectura, quién queda fuera, y con qué se discute.
+1. [[moloch-long-future|El cuadernillo]] — las seis lecturas, en qué orden y por qué.
+2. [[las-lecturas-del-futuro-largo|Hora 1 · Las lecturas del futuro largo]] — qué dice cada una, en claro.
+3. [[discutir-el-futuro-largo|Hora 2 · Discutir el futuro largo]] — qué cuenta cada lectura, quién queda fuera, y con qué se discute.
 
 Las fechas de lectura de cada módulo están en el calendario de lecturas de la
 [página de inicio](raya:course-root).

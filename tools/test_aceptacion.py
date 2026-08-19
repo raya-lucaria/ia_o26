@@ -407,3 +407,25 @@ def test_extra_ningun_wikilink_queda_partido_por_un_salto_de_linea():
         "wikilinks partidos por un salto de linea (se publican crudos):\n"
         + "\n".join(partidos)
     )
+
+
+def test_extra_ningun_encabezado_lleva_un_enlace_dentro():
+    """El indice «On This Page» toma el texto crudo del encabezado: un enlace
+    dentro de un H2/H3 se imprime ahi con su sintaxis Markdown a la vista
+    («[Modulo 1](raya:accelerate-what) — ¿acelerar que?») y ensucia el ancla.
+    Paso al reescribir el recorrido de la unidad de filosofia con los modulos
+    como encabezados enlazados; se vio en el sitio desplegado, no en local.
+    """
+    con_enlace = []
+    for ruta in sorted((RAIZ / "course").rglob("*.md")):
+        if "_assets" in ruta.parts:
+            continue
+        for numero, linea in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            if not linea.startswith("#"):
+                continue
+            if re.search(r"\[\[.+?\]\]|\]\(", linea):
+                con_enlace.append(f"{ruta.relative_to(RAIZ)}:{numero}: {linea.strip()}")
+    assert not con_enlace, (
+        "encabezados con un enlace dentro (el indice de la pagina los imprime "
+        "en crudo):\n" + "\n".join(con_enlace)
+    )
