@@ -383,3 +383,27 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
     # solas mantenian el total por encima de cero.
     for unidad, usos in usos_por_unidad.items():
         assert usos > 0, f"ningun uso de ilus-* en las paginas de {unidad}"
+
+
+def test_extra_ningun_wikilink_queda_partido_por_un_salto_de_linea():
+    """Un wikilink con un salto de linea dentro no lo reconoce el parser: se
+    publica crudo, con los corchetes a la vista, y `raya validate` no lo ve
+    porque para el no es un enlace. Paso exactamente eso en las paginas de los
+    modulos 3 y 4 de filosofia, y se descubrio mirando el sitio ya desplegado.
+
+    Solo mira el cuerpo, no el frontmatter: `prerequisites` y `aliases` son
+    listas YAML y no llevan wikilinks.
+    """
+    partidos = []
+    for ruta in sorted((RAIZ / "course").rglob("*.md")):
+        if "_assets" in ruta.parts:
+            continue
+        texto = ruta.read_text(encoding="utf-8")
+        for match in re.finditer(r"\[\[[^\]]*\n[^\]]*\]\]", texto):
+            linea = texto[: match.start()].count("\n") + 1
+            crudo = " ".join(match.group(0).split())
+            partidos.append(f"{ruta.relative_to(RAIZ)}:{linea}: {crudo}")
+    assert not partidos, (
+        "wikilinks partidos por un salto de linea (se publican crudos):\n"
+        + "\n".join(partidos)
+    )
