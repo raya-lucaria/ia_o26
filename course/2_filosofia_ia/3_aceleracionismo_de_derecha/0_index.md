@@ -1,7 +1,7 @@
 ---
 id: exit-nrx
-title: Módulo 3 — Exit, NRx & Dark Enlightenment
-nav_title: "Exit, NRx & Dark Enlightenment"
+title: "Módulo 3 · Aceleracionismo de derecha — ¿quién se queda?"
+nav_title: "Módulo 3 · Aceleracionismo de derecha"
 summary: "La tercera respuesta al aceleracionismo: no discutir quién conduce, sino bajarse del coche."
 status: ready
 estimated_time: 110m
@@ -75,16 +75,16 @@ estás de acuerdo, que es distinto de decir que el texto es repugnante.
 ## El cuadernillo
 
 ::: figure {#cuadernillo-modulo-3 title="Las cuatro lecturas en un solo archivo"}
-[![Portada del cuadernillo «Exit, NRx & Dark Enlightenment», con las cuatro lecturas listadas](_assets/cuadernillo_portada_modulo_3.png)](_assets/visor_modulo_3.html)
+[![Portada del cuadernillo «Exit, NRx & Dark Enlightenment», con las cuatro lecturas listadas](../_assets/cuadernillo_portada_modulo_3.png)](../_assets/visor_modulo_3.html)
 :::
 
 **45 páginas**, cada lectura con su portadilla y la razón por la que se lee.
 Sigue siendo el cuadernillo más corto de la unidad: calcula entre una hora y
 treinta y cinco y una hora y cincuenta.
 
-- **[Leer en el navegador →](_assets/visor_modulo_3.html)** — se abre completo,
+- **[Leer en el navegador →](../_assets/visor_modulo_3.html)** — se abre completo,
   sin descargar nada. También puedes hacer clic en la portada de arriba.
-- **[Descargar el PDF](_assets/cuadernillo_modulo_3_exit_nrx.pdf)** — 182 KB,
+- **[Descargar el PDF](../_assets/cuadernillo_modulo_3_exit_nrx.pdf)** — 182 KB,
   para leerlo sin conexión o imprimirlo.
 
 ## Sobre las fuentes, y cómo citarlas

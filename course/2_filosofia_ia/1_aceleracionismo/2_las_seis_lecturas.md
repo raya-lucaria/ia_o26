@@ -1,7 +1,7 @@
 ---
 id: las-seis-lecturas
 title: Las seis lecturas, en claro
-nav_title: Las seis lecturas
+nav_title: "Repaso · Las seis lecturas"
 summary: Qué dice cada ensayo, qué predijo desde su año, y cómo se ve hoy. Corte, agosto de 2026.
 status: ready
 estimated_time: 20m
@@ -30,7 +30,7 @@ cuadernillo, que no es el cronológico —eso lo explica la genealogía de
 ## 1 de 6 · Marx, *Fragmento sobre las máquinas* (1858) · ~4 min
 
 ::: figure {#retrato-marx title="Karl Marx"}
-![Retrato fotográfico de Karl Marx](_assets/foto-marx.jpg)
+![Retrato fotográfico de Karl Marx](../_assets/foto-marx.jpg)
 :::
 
 Empieza aquí porque de aquí sale todo lo demás, incluida la palabra
@@ -62,7 +62,7 @@ según Goldman Sachs— y ninguna se deja convertir en horas-hombre.
 que ya está congelado en la máquina.
 
 ::: figure {#ilus-general-intellect title="El saber colectivo, depositado en la máquina"}
-![Ilustración generada de una máquina de engranajes de la que brotan hilos de luz que forman una constelación](_assets/ilus-general-intellect.png)
+![Ilustración generada de una máquina de engranajes de la que brotan hilos de luz que forman una constelación](../_assets/ilus-general-intellect.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
@@ -94,7 +94,7 @@ fundaron ni alcanzaron a ver.
 **El concepto que aporta.** Desterritorialización.
 
 ::: figure {#ilus-desterritorializacion title="El territorio disolviéndose en corriente"}
-![Ilustración generada de un mapa cuyas fronteras se desprenden del papel y se convierten en cintas que fluyen](_assets/ilus-desterritorializacion.png)
+![Ilustración generada de un mapa cuyas fronteras se desprenden del papel y se convierten en cintas que fluyen](../_assets/ilus-desterritorializacion.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
@@ -131,7 +131,7 @@ proceso corre rápido, pero pasa por la aduana.
 positiva.
 
 ::: figure {#ilus-meltdown title="Un mecanismo que se derrite hacia adelante, sin quien lo opere"}
-![Ilustración generada de un mecanismo de relojería que se derrite hacia adelante y se vuelve circuito luminoso](_assets/ilus-meltdown.png)
+![Ilustración generada de un mecanismo de relojería que se derrite hacia adelante y se vuelve circuito luminoso](../_assets/ilus-meltdown.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
@@ -143,7 +143,7 @@ positiva.
 ## 4 de 6 · Fisher, *Terminator vs Avatar* (2012) · ~3 min
 
 ::: figure {#retrato-fisher title="Mark Fisher"}
-![Retrato fotográfico de Mark Fisher](_assets/foto-fisher.jpg)
+![Retrato fotográfico de Mark Fisher](../_assets/foto-fisher.jpg)
 :::
 
 Va aquí y no en su lugar cronológico a propósito: explica a Land mejor que
@@ -201,7 +201,7 @@ quién lo levante.
 control central.
 
 ::: figure {#ilus-enjambre title="El enjambre sin centro que ningún punto dirige"}
-![Ilustración generada de varias corrientes de puntos luminosos que se propagan en direcciones distintas y divergentes, sin que ninguna forme una figura reconocible única](_assets/ilus-enjambre.png)
+![Ilustración generada de varias corrientes de puntos luminosos que se propagan en direcciones distintas y divergentes, sin que ninguna forme una figura reconocible única](../_assets/ilus-enjambre.png)
 :::
 
 *(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
@@ -214,7 +214,7 @@ horizontal sin poder es justo lo que el valle aprendió a vender.
 ## 6 de 6 · Barbrook y Cameron, *La ideología californiana* (1995) · ~3 min
 
 ::: figure {#retrato-barbrook title="Richard Barbrook"}
-![Retrato fotográfico de Richard Barbrook](_assets/foto-barbrook.jpg)
+![Retrato fotográfico de Richard Barbrook](../_assets/foto-barbrook.jpg)
 :::
 
 Cierra el cuadernillo porque aterriza todo donde sigue el curso.

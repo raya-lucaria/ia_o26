@@ -80,6 +80,6 @@ Las fuentes quedan en `fuentes/` tal como se descargaron, para que el recorte
 sea auditable.
 
 `introduccion.md` es la fuente de la introducción general del cuadernillo; la
-página del curso (`course/2_filosofia_ia/1_accelerate_what.md`) lleva una copia
+página del curso (`course/2_filosofia_ia/1_aceleracionismo/0_index.md`) lleva una copia
 literal de este texto, bajo guarda de `tools/test_lecturas.py`
 (`test_la_introduccion_no_ha_derivado`), que falla si ambos divergen.

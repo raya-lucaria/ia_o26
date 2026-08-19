@@ -1,11 +1,11 @@
 # Verificación — Discutir la salida
 
-Registro de `course/2_filosofia_ia/10_discutir_la_salida.md`.
+Registro de `course/2_filosofia_ia/3_aceleracionismo_de_derecha/2_discutir_la_salida.md`.
 
 Esta página no introduce citas propias en el formato de bloque de las páginas de
 fichas: los cinco movimientos de discusión se construyen sobre lo que ya dicen
 las cuatro fichas de
-[`9_las_lecturas_de_la_salida.md`](9_las_lecturas_de_la_salida.md), y cada cita y
+[`3_aceleracionismo_de_derecha/1_las_lecturas_de_la_salida.md`](1_las_lecturas_de_la_salida.md), y cada cita y
 cada afirmación datable de aquellas está verificada en su propio registro. **No
 hay, por tanto, una tabla de verificación propia.**
 
@@ -97,19 +97,19 @@ se comprobó a mano:
   de *Cato Unbound* al que Thiel responde, verificado en el registro de la
   página 9 contra la propia página de la revista; y la *folk politics* del
   manifiesto de Williams y Srnicek, verificada en el registro de
-  [`6_las_cuatro_lecturas.md`](6_las_cuatro_lecturas.md). **Que los dos
+  [`2_aceleracionismo_de_izquierda/1_las_cuatro_lecturas.md`](../2_aceleracionismo_de_izquierda/1_las_cuatro_lecturas.md). **Que los dos
   diagnósticos sean «casi idénticos» es lectura del curso**, y la página la
   presenta como pregunta a discutir, no como hecho.
 
 - **«Land contra Land»** (movimiento 3) retoma literalmente la pregunta que
-  [`2_las_ideas.md`](2_las_ideas.md) dejó planteada en su sección 4, ya
+  [`1_aceleracionismo/1_las_ideas.md`](../1_aceleracionismo/1_las_ideas.md) dejó planteada en su sección 4, ya
   verificada ahí. Lo nuevo es que ahora el texto de 2012 está leído; la página no
   afirma que la contradicción exista, la pone a prueba.
 
 - **«Dos diseños, uno enfrente del otro»** (movimiento 3) es comparación del
   curso, no afirmación de ninguno de los dos autores. Lo verificable son las dos
   mitades: que Terranova propone rediseñar una pila técnica está verificado en
-  el registro de [`6_las_cuatro_lecturas.md`](6_las_cuatro_lecturas.md); que
+  el registro de [`2_aceleracionismo_de_izquierda/1_las_cuatro_lecturas.md`](../2_aceleracionismo_de_izquierda/1_las_cuatro_lecturas.md); que
   *Patchwork* entrega un diseño de gobierno pieza por pieza está verificado en
   el registro de la página 9. Ni Terranova cita a Yarvin ni Yarvin a Terranova, y
   la página no sugiere que se conozcan.

@@ -1,7 +1,7 @@
 ---
 id: las-lecturas-de-la-salida
 title: Hora 1 — Las cuatro lecturas, en claro
-nav_title: Las lecturas de la salida
+nav_title: "Hora 1 · Las lecturas de la salida"
 summary: Qué dice cada una de las cuatro lecturas del módulo 3, qué concepto aporta y con qué pregunta te deja.
 status: ready
 estimated_time: 40m
@@ -21,7 +21,7 @@ igual y usa las fichas como muleta; lo que no vas a tener es haber discutido con
 el texto, que es la mitad de lo que importa.
 
 ::: figure {#mapa-sesion-modulo-3 title="Las dos horas de la sesión, y la pregunta que las une"}
-![Mapa de la sesión: a la izquierda, la hora 1 con las cuatro lecturas y el papel de cada una; a la derecha, la hora 2 con sus cinco pasos; abajo, la pregunta que une las cuatro lecturas](_assets/v23-mapa-de-la-sesion-modulo-3.svg)
+![Mapa de la sesión: a la izquierda, la hora 1 con las cuatro lecturas y el papel de cada una; a la derecha, la hora 2 con sus cinco pasos; abajo, la pregunta que une las cuatro lecturas](../_assets/v23-mapa-de-la-sesion-modulo-3.svg)
 :::
 
 Dos de las cuatro son del mismo autor, y eso no es un descuido: **Yarvin ocupa
@@ -46,7 +46,7 @@ y cada uno se apoya en el anterior. Por eso el módulo pide algo más preciso qu
 estar en desacuerdo: pide señalar el eslabón.
 
 ::: figure {#cadena-argumento title="La cadena del argumento, eslabón por eslabón"}
-![Cadena de ocho eslabones numerados: los tres primeros del manifiesto de Yarvin de 2007, sobre la violencia como único mal, la violencia como conflicto más incertidumbre, y el Estado formalizado como una empresa cuyas acciones se reparten entre quienes ya mandan; el cuarto, de Patchwork (2008), sobre administrar esa empresa como una sociedad anónima —accionistas, un director general, clientes con contrato— sin ninguna ley por encima del dueño; el quinto, también de Patchwork y dibujado con borde punteado por ser el único que el cuadernillo deja sin cerrar, sobre quién puede vivir en un parche y a dónde van los demás; el sexto de Thiel, sobre dejar de convencer y construir la salida en internet, el espacio o el mar; el séptimo de Land en la parte 1, sobre la democracia como el problema y no como el terreno del problema; y el octavo de Land en la parte 4a, sobre la fuga blanca como forma espontánea de la salida](_assets/v24-la-cadena-del-argumento.svg)
+![Cadena de ocho eslabones numerados: los tres primeros del manifiesto de Yarvin de 2007, sobre la violencia como único mal, la violencia como conflicto más incertidumbre, y el Estado formalizado como una empresa cuyas acciones se reparten entre quienes ya mandan; el cuarto, de Patchwork (2008), sobre administrar esa empresa como una sociedad anónima —accionistas, un director general, clientes con contrato— sin ninguna ley por encima del dueño; el quinto, también de Patchwork y dibujado con borde punteado por ser el único que el cuadernillo deja sin cerrar, sobre quién puede vivir en un parche y a dónde van los demás; el sexto de Thiel, sobre dejar de convencer y construir la salida en internet, el espacio o el mar; el séptimo de Land en la parte 1, sobre la democracia como el problema y no como el terreno del problema; y el octavo de Land en la parte 4a, sobre la fuga blanca como forma espontánea de la salida](../_assets/v24-la-cadena-del-argumento.svg)
 :::
 
 Vale la pena dejarla proyectada durante las cuatro fichas, y volver a ella al

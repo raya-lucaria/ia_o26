@@ -8,8 +8,8 @@ esa pagina, y cada fila de cada registro tiene que estar marcada como
 verificada.
 
 El repaso del modulo 1 empezo siendo una sola pagina y se partio en tres. Al
-partirlo, dos de las citas se mudaron a 2_las_ideas.md y la cobertura de esta
-guarda se quedo apuntando solo a 3_las_seis_lecturas.md. De ahi que cada pagina
+partirlo, dos de las citas se mudaron a 1_las_ideas.md y la cobertura de esta
+guarda se quedo apuntando solo a 2_las_seis_lecturas.md. De ahi que cada pagina
 este aqui parametrizada con su cifra esperada de citas: si una cita se muda
 otra vez, el conteo falla en las dos paginas y hay que decidir a mano, en vez
 de perder la cobertura en silencio.
@@ -27,8 +27,8 @@ import pytest
 RAIZ = Path(__file__).resolve().parent.parent
 
 # (pagina, registro, citas esperadas). Las tres paginas de discusion
-# —4_para_discutir.md del modulo 1, 7_discutir_el_programa.md del modulo 2 y
-# 10_discutir_la_salida.md del modulo 3— no citan textualmente: discuten
+# —3_para_discutir.md del modulo 1, 2_discutir_el_programa.md del modulo 2 y
+# 2_discutir_la_salida.md del modulo 3— no citan textualmente: discuten
 # lecturas ya citadas en las paginas de fichas, y sus registros lo dicen en vez
 # de traer tabla. TABLA lo marca.
 #
@@ -41,16 +41,21 @@ RAIZ = Path(__file__).resolve().parent.parent
 # lecturas. Las dos de la lectura 4 son un caso aparte: esa lectura es un apunte
 # escrito por el curso, asi que lo que se cita de ella son los fragmentos de
 # fuente primaria que el propio apunte reproduce, no la prosa del apunte.
+#
+# Desde que la unidad se partio en un directorio por modulo, el nombre es la
+# ruta relativa dentro de la unidad -- y la misma ruta relativa dentro de
+# docs/verificacion/filosofia_ia/, que replica la estructura a proposito para
+# que "pagina y registro homonimo" siga siendo literalmente cierto.
 PAGINAS = [
-    ("2_las_ideas.md", 2, True),
-    ("3_las_seis_lecturas.md", 6, True),
-    ("4_para_discutir.md", 0, False),
-    ("6_las_cuatro_lecturas.md", 4, True),
-    ("7_discutir_el_programa.md", 0, False),
-    ("9_las_lecturas_de_la_salida.md", 11, True),
-    ("10_discutir_la_salida.md", 0, False),
-    ("12_las_lecturas_del_futuro_largo.md", 14, True),
-    ("13_discutir_el_futuro_largo.md", 0, False),
+    ("1_aceleracionismo/1_las_ideas.md", 2, True),
+    ("1_aceleracionismo/2_las_seis_lecturas.md", 6, True),
+    ("1_aceleracionismo/3_para_discutir.md", 0, False),
+    ("2_aceleracionismo_de_izquierda/1_las_cuatro_lecturas.md", 4, True),
+    ("2_aceleracionismo_de_izquierda/2_discutir_el_programa.md", 0, False),
+    ("3_aceleracionismo_de_derecha/1_las_lecturas_de_la_salida.md", 11, True),
+    ("3_aceleracionismo_de_derecha/2_discutir_la_salida.md", 0, False),
+    ("4_futuro_largo/1_las_lecturas_del_futuro_largo.md", 14, True),
+    ("4_futuro_largo/2_discutir_el_futuro_largo.md", 0, False),
 ]
 
 # Frase con la que el registro sin tabla declara que no la necesita. Si alguien
@@ -118,7 +123,7 @@ def test_toda_fila_del_registro_esta_verificada(nombre, esperadas, tabla):
     lineas = [l for l in crudo.splitlines() if l.strip().startswith("|")]
     encabezado, filas = None, []
     for linea in lineas:
-        # Split por barra NO escapada: las celdas de 2_las_ideas.md citan
+        # Split por barra NO escapada: las celdas de 1_las_ideas.md citan
         # tuberias de shell (`pdftotext … \| grep …`), y partir por "|" a secas
         # mete una celda de mas y corre la columna 'Verificado' de sitio.
         celdas = [c.strip() for c in RE_CELDA.split(linea.strip().strip("|"))]

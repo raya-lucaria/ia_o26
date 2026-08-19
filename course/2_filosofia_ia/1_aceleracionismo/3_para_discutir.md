@@ -1,7 +1,7 @@
 ---
 id: para-discutir
 title: Para discutir
-nav_title: Para discutir
+nav_title: "Repaso · Para discutir"
 summary: El mapa de quién discute con quién, y las cinco tensiones de la sesión.
 status: ready
 estimated_time: 10m
@@ -17,7 +17,7 @@ tensiones con las que se discuten en sesión. ~10 min.
 ## El mapa: quién discute con quién · ~3 min
 
 ::: figure {#cuadrante title="Las seis lecturas en dos ejes"}
-![Cuadrante con las seis lecturas: eje horizontal de acelerar el capital a acelerar la tecnología, eje vertical de sujeto colectivo a proceso sin sujeto; Deleuze y Guattari cruzan el eje y Barbrook y Cameron quedan fuera del plano](_assets/v18-cuadrante-lecturas.svg)
+![Cuadrante con las seis lecturas: eje horizontal de acelerar el capital a acelerar la tecnología, eje vertical de sujeto colectivo a proceso sin sujeto; Deleuze y Guattari cruzan el eje y Barbrook y Cameron quedan fuera del plano](../_assets/v18-cuadrante-lecturas.svg)
 :::
 
 Dos preguntas ordenan a los seis. La horizontal es la de Fisher: **acelerar

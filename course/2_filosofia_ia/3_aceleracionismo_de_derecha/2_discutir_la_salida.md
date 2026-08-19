@@ -1,7 +1,7 @@
 ---
 id: discutir-la-salida
 title: Hora 2 — Discutir la salida
-nav_title: Discutir la salida
+nav_title: "Hora 2 · Discutir la salida"
 summary: De qué se sale en cada lectura, quién puede salir, y los cinco movimientos de la discusión en sesión.
 status: ready
 estimated_time: 20m
@@ -18,7 +18,7 @@ minutos de cada sección son minutos de clase.
 ## El puente: de qué se sale · ~8 min
 
 ::: figure {#de-que-se-sale title="Las cuatro lecturas, y de qué propone salirse cada una"}
-![Matriz de las cuatro lecturas en tres columnas: la lectura, de qué se sale, y a quién le sale junto con lo que pasa con el que se queda. Abajo, la pregunta que el propio diseño de Patchwork deja abierta](_assets/v25-de-que-se-sale.svg)
+![Matriz de las cuatro lecturas en tres columnas: la lectura, de qué se sale, y a quién le sale junto con lo que pasa con el que se queda. Abajo, la pregunta que el propio diseño de Patchwork deja abierta](../_assets/v25-de-que-se-sale.svg)
 :::
 
 Puestas juntas, las cuatro dejan ver algo que por separado no se nota: **la

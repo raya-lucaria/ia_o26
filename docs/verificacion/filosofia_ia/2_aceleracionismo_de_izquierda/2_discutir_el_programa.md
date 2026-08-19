@@ -1,10 +1,10 @@
 # Verificación — Discutir el programa
 
-Registro de `course/2_filosofia_ia/7_discutir_el_programa.md`.
+Registro de `course/2_filosofia_ia/2_aceleracionismo_de_izquierda/2_discutir_el_programa.md`.
 
 Esta página no introduce citas propias: los cinco movimientos de discusión se
 construyen sobre lo que ya dicen las cuatro fichas de
-[`6_las_cuatro_lecturas.md`](6_las_cuatro_lecturas.md), y cada cita y cada
+[`2_aceleracionismo_de_izquierda/1_las_cuatro_lecturas.md`](1_las_cuatro_lecturas.md), y cada cita y cada
 afirmación datable de aquellas está verificada en su propio registro. **No hay,
 por tanto, una tabla de verificación propia.**
 

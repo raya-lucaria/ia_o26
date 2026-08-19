@@ -1,7 +1,7 @@
 ---
 id: discutir-el-programa
 title: Hora 2 — Discutir el programa
-nav_title: Discutir el programa
+nav_title: "Hora 2 · Discutir el programa"
 summary: El mapa de dónde pone el freno cada lectura, y los cinco movimientos de la discusión en sesión.
 status: ready
 estimated_time: 10m
@@ -18,7 +18,7 @@ minutos de cada sección son minutos de clase.
 ## El puente: dónde está el freno · ~8 min
 
 ::: figure {#donde-esta-el-freno title="Las cuatro lecturas, por dónde localizan el freno"}
-![Matriz de las cuatro lecturas en tres columnas: la lectura, dónde localiza el freno y qué palanca propone](_assets/v21-donde-esta-el-freno.svg)
+![Matriz de las cuatro lecturas en tres columnas: la lectura, dónde localiza el freno y qué palanca propone](../_assets/v21-donde-esta-el-freno.svg)
 :::
 
 Puestas juntas, las cuatro dejan ver algo que por separado no se nota: **Fisher
