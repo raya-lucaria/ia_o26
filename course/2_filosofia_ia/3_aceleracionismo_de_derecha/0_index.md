@@ -11,10 +11,10 @@ prerequisites: [left-takes-future, ideas-aceleracionismo]
 
 # Exit, NRx & Dark Enlightenment
 
-[[accelerate-what|El módulo 1]] preguntaba **acelerar qué**. [[left-takes-future|El
-módulo 2]] preguntaba **quién lo construye**. Este lee a quienes contestan que
-las dos preguntas están mal planteadas, porque de la política no se discute: se
-sale.
+[[accelerate-what|El módulo 1]] preguntaba **acelerar qué**.
+[[left-takes-future|El módulo 2]] preguntaba **quién lo construye**. Este lee a
+quienes contestan que las dos preguntas están mal planteadas, porque de la
+política no se discute: se sale.
 
 Esa es la posición que en [[ideas-aceleracionismo]] apareció de refilón —Yarvin,
 *Patchwork*, la Catedral, el par salida/voz de Hirschman— y que aquí se lee

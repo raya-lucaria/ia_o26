@@ -11,11 +11,12 @@ prerequisites: [exit-nrx, ideas-aceleracionismo]
 
 # Moloch, Rationality & the Long Future
 
-[[accelerate-what|El módulo 1]] preguntaba **acelerar qué**. [[left-takes-future|El
-módulo 2]], **quién lo construye**. [[exit-nrx|El módulo 3]], **quién se queda**.
-Los tres discuten sobre el presente. Este lee a quienes contestan que la
-discusión está mal escalada: que antes de pelear la dirección hay que hacer la
-cuenta de cuántos vienen después, y que hecha la cuenta, ella decide.
+[[accelerate-what|El módulo 1]] preguntaba **acelerar qué**.
+[[left-takes-future|El módulo 2]], **quién lo construye**.
+[[exit-nrx|El módulo 3]], **quién se queda**. Los tres discuten sobre el
+presente. Este lee a quienes contestan que la discusión está mal escalada: que
+antes de pelear la dirección hay que hacer la cuenta de cuántos vienen después,
+y que hecha la cuenta, ella decide.
 
 La cuenta sale enorme, y de ahí sale todo lo demás. Son las ideas con las que
 trabajan buena parte de los laboratorios de IA, las fundaciones que financian

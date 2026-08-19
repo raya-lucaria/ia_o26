@@ -482,3 +482,35 @@ def test_toda_lectura_en_pdf_tiene_enlace_a_su_edicion(modulo, ids):
             f"«{apellido}», así que si falta el PDF la lectura se omite sin "
             "aviso en el cuadernillo"
         )
+
+
+# (visor, pagina del modulo) por modulo. El visor es HTML a mano dentro de
+# _assets/, asi que su boton de vuelta es una URL escrita a dedo: nada la
+# reescribe cuando la pagina se mueve.
+PARES_VISOR_PAGINA = [
+    (VISOR, PAGINA),
+    (VISOR_2, PAGINA_2),
+    (VISOR_3, PAGINA_3),
+    (VISOR_4, PAGINA_4),
+]
+
+
+@pytest.mark.parametrize("visor,pagina", PARES_VISOR_PAGINA)
+def test_el_visor_vuelve_a_la_url_publicada_de_su_modulo(visor, pagina):
+    """El boton «Volver al modulo» del visor apuntaba al id estable de la
+    pagina (`/filosofia-ia/moloch-long-future/`), pero el segmento publicado
+    sale del NOMBRE DEL DIRECTORIO del modulo (`4_futuro_largo` ->
+    `futuro-largo`). Al anidar la unidad, los cuatro botones se quedaron
+    apuntando a un 404 -- y no lo vio ni `raya validate`, que no mira dentro
+    de _assets/, ni el resto de la suite. Se descubrio en el sitio desplegado.
+    """
+    segmento = re.sub(r"^\d+_", "", pagina.parent.name).replace("_", "-")
+    esperado = f"filosofia-ia/{segmento}/index.html"
+    html = visor.read_text(encoding="utf-8")
+    hrefs = re.findall(r'href="([^"]*filosofia-ia/[^"]*)"', html)
+    assert hrefs, f"{visor.name}: no enlaza de vuelta a ninguna pagina del curso"
+    for href in hrefs:
+        assert href.endswith(esperado), (
+            f"{visor.name}: enlaza a «{href}», que ya no es la URL publicada "
+            f"de {pagina.relative_to(RAIZ)}; deberia terminar en «{esperado}»"
+        )
