@@ -250,4 +250,4 @@ curso solo publica imágenes que puede publicar. Rellenar el hueco con una cara
 generada por IA no es opción: sería inventar el rostro de una persona real. De
 paso, la asimetría dice algo cierto sobre quién circula con qué permisos.*
 
-Sigue con [[para-discutir]].
+Sigue con [[para-discutir|Para discutir]].

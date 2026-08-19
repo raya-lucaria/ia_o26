@@ -440,4 +440,4 @@ puede estar equivocado y sí lo es. Por eso es la única del cuadernillo que dec
 cómo se escribió, la única que trae la fuente de cada dato debajo del dato, y la
 única que incluye una advertencia contra el uso que se le podría dar.*
 
-Sigue con [[discutir-el-futuro-largo]].
+Sigue con [[discutir-el-futuro-largo|Discutir el futuro largo]].

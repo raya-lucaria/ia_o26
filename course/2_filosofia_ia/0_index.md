@@ -9,7 +9,7 @@ tags: [filosofia, lecturas]
 
 # Filosofía de la inteligencia artificial
 
-La unidad de [[historia-ia]] terminó con un mapa de las posiciones que hoy
+La unidad de [[historia-ia|Historia de la IA]] terminó con un mapa de las posiciones que hoy
 empujan el desarrollo de la inteligencia artificial. Esta unidad va a las
 fuentes: se leen los textos que ese mapa resume, en cuatro módulos con lecturas
 propias. Los tres primeros siguen un hilo — el aceleracionismo, desde Marx

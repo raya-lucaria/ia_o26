@@ -11,7 +11,7 @@ prerequisites: [accelerate-what, ideas-aceleracionismo]
 
 # The Left Takes the Future Back
 
-[[accelerate-what]] terminó en Barbrook y Cameron, con la ideología
+[[accelerate-what|El módulo 1]] terminó en Barbrook y Cameron, con la ideología
 californiana aterrizando la discusión en Silicon Valley; antes había dejado a
 Land —el capital como proceso autónomo que no responde a nadie— y a Fisher
 aceptando ese diagnóstico para virarlo hacia la izquierda. Este módulo retoma
@@ -21,7 +21,7 @@ un proyecto de izquierda, en vez de dejárselos al capital sin sujeto de Land
 o a la mezcla de contracultura y libre mercado que describen Barbrook y
 Cameron.
 
-Enlaza con el vocabulario de [[ideas-aceleracionismo]]: estas cuatro lecturas
+Enlaza con el vocabulario de [[ideas-aceleracionismo|Las ideas del módulo 1]]: estas cuatro lecturas
 dan por conocidos el general intellect, la desterritorialización y la
 distinción entre aceleracionismo de izquierda y de derecha que ese módulo
 explica.
@@ -76,4 +76,4 @@ página.
 Leer. Esta vez no hay cuestionario ni nada que entregar: la tarea es llegar
 a la sesión con las cuatro lecturas leídas.
 
-Sigue con [[las-cuatro-lecturas]].
+Sigue con [[las-cuatro-lecturas|Las cuatro lecturas, en claro]].

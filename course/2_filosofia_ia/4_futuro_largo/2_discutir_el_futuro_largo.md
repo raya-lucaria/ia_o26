@@ -71,7 +71,7 @@ Las seis lecturas hacen cosas distintas con eso, y la novedad está en las dos
   meta.
 
 Esta figura conviene dejarla proyectada el resto de la hora, junto a la cadena
-de [[las-lecturas-del-futuro-largo]].
+de [[las-lecturas-del-futuro-largo|Las lecturas del futuro largo]].
 
 ## Cinco movimientos · ~43 min
 
@@ -148,7 +148,7 @@ rinden.
   el mismo proceso ciego que nadie eligió y del que nadie puede salirse solo;
   Alexander lo dice explícitamente, que Land recorrió el 99.9% del camino y
   falló en la última vuelta. Uno concluye que hay que someterse y el otro que
-  hay que matarlo. Con [[exit-nrx]] y [[ideas-aceleracionismo]] frescos:
+  hay que matarlo. Con [[exit-nrx|Exit, NRx & Dark Enlightenment]] y [[ideas-aceleracionismo|Las ideas del módulo 1]] frescos:
   ¿discrepan sobre los hechos, o sobre qué se hace con un hecho — y si es lo
   segundo, de dónde saca cada uno el «se hace»?
 - **La salida contra la coordinación, y una responde a la otra.** El módulo 3
@@ -158,8 +158,8 @@ rinden.
   muro—. ¿Eso refuta el programa de la salida, o solo demuestra que la salida
   tendría que ser global, que es exactamente lo que él llama coordinador?
 - **Dos maneras de que el futuro mande sobre el presente.** El manifiesto de
-  [[left-takes-future]] quiere reprogramar la infraestructura hacia un futuro
-  que todavía no existe, y [[accelerate-what]] preguntaba hacia qué. Greaves y
+  [[left-takes-future|The Left Takes the Future Back]] quiere reprogramar la infraestructura hacia un futuro
+  que todavía no existe, y [[accelerate-what|¿Accelerate What?]] preguntaba hacia qué. Greaves y
   MacAskill quieren que el año 3000 decida en qué se gasta cada peso hoy. Los
   dos subordinan el presente a algo que no está. ¿Qué los separa — el contenido
   del futuro, o que uno nombra un sujeto que actúa y puede equivocarse y el otro
@@ -206,7 +206,7 @@ Qué cambia esto para la inteligencia artificial, y desde dónde lo miras.
   Alexander y trae su propio problema, o la posibilidad de que esto no sea una
   trampa sino una decisión con responsables identificables?
 - Para quien etiqueta datos desde México, en el lugar de la cadena de valor que
-  viste en [[ia-y-sociedad]], la cuenta de este módulo lo deja del lado que
+  viste en [[ia-y-sociedad|IA y sociedad]], la cuenta de este módulo lo deja del lado que
   pierde: su daño es medible, ocurre hoy, y en la comparación de la sección 2 se
   enfrenta a un número con veinticuatro ceros. ¿Es un defecto del argumento, o
   una consecuencia que sus autores aceptarían sin incomodarse? Y si es lo

@@ -82,7 +82,7 @@ Qué cambia esto para la inteligencia artificial, y desde dónde lo miras.
   herramienta para reclamarlo, y cuál se queda corta?
 - Si el trabajo barato frena la automatización, ¿qué significa eso para quien
   etiqueta datos desde México, en el lugar de la cadena de valor que viste en
-  [[ia-y-sociedad]]? ¿La renta básica lo protege o lo vuelve prescindible?
+  [[ia-y-sociedad|IA y sociedad]]? ¿La renta básica lo protege o lo vuelve prescindible?
 
 ## Síntesis · ~4 min
 
@@ -105,4 +105,4 @@ entre tener una posición y tener un programa.
 
 Falta la tercera respuesta, que es la que menos se parece a estas dos: la de
 quienes contestan que la pregunta está mal planteada porque de la política hay
-que salirse. Sigue con [[exit-nrx]].
+que salirse. Sigue con [[exit-nrx|Exit, NRx & Dark Enlightenment]].

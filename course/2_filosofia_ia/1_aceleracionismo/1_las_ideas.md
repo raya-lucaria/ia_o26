@@ -20,8 +20,8 @@ territorialización sobre el que Land y Fisher están realmente en desacuerdo.
 mitad: ordenar lo leído y traer las preguntas con las que vamos a discutirlo en
 sesión.
 
-Si no alcanzaste a leer, entra igual. Las fichas de [[las-seis-lecturas]] cargan
-lo que cada texto dice, y las tensiones de [[para-discutir]] se pueden discutir
+Si no alcanzaste a leer, entra igual. Las fichas de [[las-seis-lecturas|las seis lecturas]] cargan
+lo que cada texto dice, y las tensiones de [[para-discutir|Para discutir]] se pueden discutir
 con eso en la mano. Lo que no vas a tener es la experiencia de chocar contra la
 prosa de Land o del CCRU, que es la mitad del punto: ningún resumen —tampoco
 este— sustituye leerlos. Úsala como repaso o como muleta, no como coartada.
@@ -63,7 +63,7 @@ lo suyo.
 - **Ideología californiana.** El nombre que Barbrook y Cameron le pusieron a la
   mezcla de contracultura hippie y libre mercado que sostiene a Silicon Valley.
 - **e/acc.** «Aceleracionismo eficaz», nacido en 2022, el descendiente vivo de
-  toda esta discusión. Ya lo viste en el mapa ideológico de [[ia-y-sociedad]].
+  toda esta discusión. Ya lo viste en el mapa ideológico de [[ia-y-sociedad|IA y sociedad]].
 
 ## Territorializar, desterritorializar, reterritorializar · ~9 min
 
@@ -151,7 +151,7 @@ corporativas, en cuasi-monopolios, en un horizonte de futuro tan cerrado que ya
 no se imagina otra cosa. Su frase sobre Wal-Mart y Microsoft como un
 **anti-mercado** dice justamente eso —lo que se anuncia como mercado libre y
 fluido termina siendo la institución más rígida del paisaje—; está completa, con
-su contexto, en la ficha 4 de [[las-seis-lecturas]].
+su contexto, en la ficha 4 de [[las-seis-lecturas|las seis lecturas]].
 
 Puesto en el ciclo, el desacuerdo se ordena solo: Land mira la flecha que suelta,
 Fisher la que vuelve a fijar, y los dos están describiendo el mismo capitalismo.
@@ -217,7 +217,7 @@ servicio vuelven a fijar ese saber, ahora como producto de una empresa concreta.
 Otra vez las dos cosas, a la vez.
 
 Quién queda de cada lado de esa reterritorialización —quién cobra, quién paga,
-quién etiqueta los datos— es el hilo de [[ia-y-sociedad]].
+quién etiqueta los datos— es el hilo de [[ia-y-sociedad|IA y sociedad]].
 
 ## De dónde viene esto · ~3 min
 
@@ -236,6 +236,6 @@ descienden de esta discusión: la miran desde afuera y la aterrizan en Silicon
 Valley, que es donde sigue el curso.
 
 Las dos últimas filas no son lecturas. Son a dónde llega todo esto, y ya las
-viste en [[ia-y-sociedad]].
+viste en [[ia-y-sociedad|IA y sociedad]].
 
-Sigue con [[las-seis-lecturas]].
+Sigue con [[las-seis-lecturas|Las seis lecturas, en claro]].
