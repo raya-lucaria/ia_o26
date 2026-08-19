@@ -24,7 +24,10 @@ archivo que llego no es el que se pidio. Eso ya evito un error real: el ebook
 from __future__ import annotations
 
 import html as _html
+import json
 import re
+import shutil
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -46,6 +49,14 @@ class Fuente:
     wikisource: tuple[str, str] | None = None   # (idioma, titulo)
     html: tuple[str, str | None, str | None] | None = None  # (url, desde, hasta)
     concatenar: list[tuple[str, str | None, str | None]] | None = None
+    #  PDF publicado en abierto por su autor o su editor: se baja, se le saca el
+    #  texto con pdftotext y se recorta igual que una pagina web. Es (url, cortes),
+    #  y cada corte es un (desde, hasta), para poder tomar dos tramos del mismo
+    #  archivo sin bajarlo dos veces. NO es la via de los PDF de pago: esos no se
+    #  bajan aqui, van en PDFS de lecturas.py y no se versionan.
+    pdf: tuple[str, list[tuple[str, str]]] | None = None
+    #  Id del post en LessWrong; se trae por su API publica (ver _de_lesswrong).
+    lesswrong: str | None = None
 
 
 FUENTES: dict[str, list[Fuente]] = {
@@ -165,6 +176,72 @@ FUENTES: dict[str, list[Fuente]] = {
                      r"I remain committed to the faith of my teenage years",
                      r"Editor.s Note: Mr\. Thiel")),
     ],
+
+    # ── Modulo 4 · Moloch, Rationality & the Long Future ──────────────────────
+    # Seis lecturas. Cinco se bajan de la web y la sexta —el handout del curso,
+    # handout_genealogias_en.txt— se escribe a mano y ya vive en fuentes/: no
+    # tiene entrada aqui porque no hay nada que descargar ni que verificar
+    # contra una fuente externa.
+    #
+    # Dos formas de fuente estrenan en este modulo, y las dos son de texto
+    # publicado en abierto, no de material de pago:
+    #   · `lesswrong=` trae el ensayo de Yudkowsky por la API publica del sitio.
+    #     Su HTML devuelve 429 a un script; la API, no.
+    #   · `pdf=` baja un PDF que su editor publica gratis y le saca el texto.
+    #     Es el caso del articulo del Global Priorities Institute, que no se
+    #     vende: se descarga de la pagina del propio instituto.
+    "filosofia_ia/clase_4": [
+        # El ensayo entero, partes I a VIII. El `hasta` corta en el pie del
+        # blog —el aviso del podcast y del NFT—, que es lo primero que sigue al
+        # ultimo verso citado de Ginsberg. Sin ese corte entrarian los miles de
+        # comentarios de la entrada, que pesan seis veces mas que el ensayo.
+        Fuente("alexander_moloch_en.txt", "",
+               "Scott Alexander · en derechos; publicado en abierto y completo por el autor en Slate Star Codex",
+               "The opposite of a trap is a garden",
+               html=("https://slatestarcodex.com/2014/07/30/meditations-on-moloch/",
+                     r"Allen Ginsberg.s famous poem on Moloch",
+                     r"\[\s*Also available as podcast")),
+        # Sin recorte: el post es exactamente la lectura, prologo del libro
+        # «Rationality: From AI to Zombies» que el propio autor publica gratis.
+        Fuente("yudkowsky_rationality_en.txt", "",
+               "Eliezer Yudkowsky · en derechos; publicado en abierto por el autor en LessWrong",
+               "systematically achieving your values",
+               lesswrong="RcZCwxFiZzE6X7nsv"),
+        # Las ocho proposiciones y el parrafo de procedencia que las precede.
+        # No lleva `hasta`: la pagina termina en la octava.
+        Fuente("humanityplus_declaracion_transhumanista_en.txt", "",
+               "Humanity+ · declaracion publicada en abierto por la propia organizacion",
+               "the well-being of all sentience",
+               html=("https://www.humanityplus.org/the-transhumanist-declaration",
+                     r"The Transhumanist Declaration was originally crafted in 1998",
+                     None)),
+        # El articulo completo tal como lo aloja el autor. La paginacion
+        # 308-314 que cita el temario es la de Utilitas, y la propia pagina la
+        # declara; el cuadernillo reproduce la version del autor, que es la
+        # misma pieza sin la maqueta de la revista.
+        Fuente("bostrom_astronomical_waste_en.txt", "",
+               "Nick Bostrom · en derechos; publicado en abierto y completo por el autor en nickbostrom.com",
+               "The Chief Goal for Utilitarians Should Be to Reduce Existential Risk",
+               html=("https://nickbostrom.com/astronomical/waste",
+                     r"I\. The Rate of Loss of Potential Lives",
+                     None)),
+        # Dos tramos del mismo PDF: el argumento (secciones 1 a 4) y las
+        # conclusiones (seccion 10). Quedan fuera las objeciones tecnicas
+        # —cluelessness, fanatismo, la version deontica y el apendice—, que en
+        # una sesion de dos horas no se alcanzan y que la ficha dice donde
+        # estan. El `debe_contener` apunta al segundo tramo a proposito: una
+        # frase del primero seria subcadena de su propio `desde` y no podria
+        # fallar nunca.
+        Fuente("greaves_macaskill_strong_longtermism_en.txt", "",
+               "Hilary Greaves y William MacAskill · en derechos; documento de trabajo publicado en abierto por el Global Priorities Institute (Oxford)",
+               "The potential future of civilisation is vast",
+               pdf=("https://globalprioritiesinstitute.org/wp-content/uploads/"
+                    "The-Case-for-Strong-Longtermism-GPI-Working-Paper-June-2021-2-2.pdf",
+                    [(r"A striking fact about the history of civilisation",
+                      r"5\. Strong longtermism about individual decisions"),
+                     (r"10\. Summary and conclusions\n\nThe potential future of civilisation is vast",
+                      r"Appendix")])),
+    ],
 }
 
 
@@ -263,6 +340,34 @@ def revisar(nombre: str, texto: str) -> list[str]:
     return fallos
 
 
+def _texto_de_html(h: str) -> str:
+    """HTML -> texto en parrafos, ya limpio. Lo comparten la web y la API."""
+    h = re.sub(r"<(script|style|nav|header|footer|form)\b.*?</\1>", "", h, flags=re.S | re.I)
+    h = re.sub(r"<br\s*/?>|</p>|</div>|</h[1-6]>|</li>", "\n\n", h, flags=re.I)
+    t = _limpiar(re.sub(r"<[^>]+>", " ", h))
+    return "\n\n".join(" ".join(b.split()) for b in t.split("\n\n") if b.strip())
+
+
+def _de_lesswrong(post_id: str) -> str:
+    """Trae un ensayo de LessWrong por su API publica.
+
+    El HTML del sitio esta detras de proteccion antibots y devuelve 429 a un
+    script; la API de GraphQL, que es la via que el propio sitio documenta, no.
+    """
+    consulta = ('{post(input:{selector:{_id:"%s"}}){result{title contents{html}}}}' % post_id)
+    req = urllib.request.Request(
+        "https://www.lesswrong.com/graphql",
+        data=json.dumps({"query": consulta}).encode(),
+        headers={"User-Agent": AGENTE, "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as r:
+        datos = json.loads(r.read().decode())
+    post = (datos.get("data") or {}).get("post", {}).get("result")
+    if not post:
+        raise SystemExit(f"  ✗ LessWrong no devolvió el post {post_id}: {datos}")
+    return _texto_de_html(post["contents"]["html"])
+
+
 def _de_html(url: str, desde: str | None = None, hasta: str | None = None) -> str:
     """Extrae el cuerpo legible de una pagina.
 
@@ -270,11 +375,7 @@ def _de_html(url: str, desde: str | None = None, hasta: str | None = None) -> st
     de navegacion del sitio, su pie, y en ccru.net el indice completo de la
     revista. Cada fuente declara donde empieza y termina su ensayo.
     """
-    h = _pedir(url)
-    h = re.sub(r"<(script|style|nav|header|footer|form)\b.*?</\1>", "", h, flags=re.S | re.I)
-    h = re.sub(r"<br\s*/?>|</p>|</div>|</h[1-6]>|</li>", "\n\n", h, flags=re.I)
-    t = _limpiar(re.sub(r"<[^>]+>", " ", h))
-    t = "\n\n".join(" ".join(b.split()) for b in t.split("\n\n") if b.strip())
+    t = _texto_de_html(_pedir(url))
 
     if desde:
         m = re.search(desde, t)
@@ -287,6 +388,44 @@ def _de_html(url: str, desde: str | None = None, hasta: str | None = None) -> st
             raise SystemExit(f"  ✗ no se halló el final {hasta!r} en {url}")
         t = t[: 1 + m.start()]
     return t.strip()
+
+
+def _de_pdf(url: str, cortes: list[tuple[str, str]], destino: Path) -> str:
+    """Saca el texto de un PDF abierto y devuelve los tramos pedidos.
+
+    El PDF se guarda junto a las fuentes para poder auditarlo, pero no se
+    versiona: `.gitignore` excluye `lecturas/**/fuentes/*.pdf`. Lo que queda en
+    el repositorio es el .txt, que es lo que acaba en el cuadernillo.
+
+    `pdftotext -layout` respeta los parrafos; sin `-layout` pega las palabras.
+    """
+    if shutil.which("pdftotext") is None:
+        raise SystemExit("  ✗ falta pdftotext (paquete poppler-utils)")
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    req = urllib.request.Request(url, headers={"User-Agent": AGENTE})
+    with urllib.request.urlopen(req, timeout=180) as r:
+        destino.write_bytes(r.read())
+
+    salida = subprocess.run(["pdftotext", "-layout", str(destino), "-"],
+                            capture_output=True, text=True, check=True).stdout
+
+    # El numero de pagina suelto en su propia linea es lo unico que el pie de
+    # este tipo de articulo deja en el texto, y partiria un parrafo en dos.
+    salida = re.sub(r"^[ \t]*\d{1,3}[ \t]*$", "", salida, flags=re.M)
+    t = _limpiar(salida)
+    t = "\n\n".join(" ".join(b.split()) for b in t.split("\n\n") if b.strip())
+
+    tramos = []
+    for desde, hasta in cortes:
+        i = re.search(desde, t)
+        if not i:
+            raise SystemExit(f"  ✗ no se halló el inicio {desde!r} en {url}")
+        resto = t[i.start():]
+        f = re.search(hasta, resto[1:])
+        if not f:
+            raise SystemExit(f"  ✗ no se halló el final {hasta!r} en {url}")
+        tramos.append(resto[: 1 + f.start()].strip())
+    return "\n\n".join(tramos)
 
 
 def _de_wikisource(idioma: str, titulo: str) -> str:
@@ -311,8 +450,13 @@ def bajar(modulo: str) -> None:
         print(f"  {f.archivo:<38} ", end="", flush=True)
         if f.concatenar:
             texto = "\n\n".join(_de_html(*c) for c in f.concatenar)
+        elif f.pdf:
+            url, cortes = f.pdf
+            texto = _de_pdf(url, cortes, destino / (Path(f.archivo).stem + ".pdf"))
         elif f.html:
             texto = _de_html(*f.html)
+        elif f.lesswrong:
+            texto = _de_lesswrong(f.lesswrong)
         elif f.wikisource:
             texto = _de_wikisource(*f.wikisource)
         else:

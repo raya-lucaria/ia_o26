@@ -1,0 +1,95 @@
+Este apunte lo escribimos para el curso con ayuda de un modelo de lenguaje. Cada cita se cotejó contra la fuente que aparece debajo de ella.
+
+La Declaración Transhumanista, que acabas de leer, son ocho proposiciones sin un solo argumento. Afirma que el envejecimiento, los límites cognitivos y el confinamiento a la Tierra se pueden superar, y que conviene superarlos. No dice de dónde salió esa idea. Leída sola parece caída del cielo, o inventada en 1998 por veintidós personas en una lista de correo.
+
+No fue así. Hay siglo y medio de esta idea antes de que llegara a un laboratorio de inteligencia artificial, y ninguna otra lectura del módulo te lo cuenta. Este apunte recorre cinco linajes en orden: el cosmismo ruso, el extropianismo, el singularitarianismo, el cosmismo contemporáneo y el altruismo eficaz. De cada uno vas a encontrar los hechos, un fragmento breve del texto original en inglés y su fuente. Al final, un apartado sobre quienes critican al conjunto.
+
+Lo que importa no es la lista sino la cadena. En cada paso pregúntate dos cosas: qué tomó del anterior y qué le cambió.
+
+1. Fiódorov, o la muerte como problema de ingeniería
+
+Nikolái Fiódorov fue bibliotecario del Museo Rumiántsev de Moscú durante veinticinco años, a partir de 1868. Casi no publicó nada en vida. Murió en 1903. Su año de nacimiento no está firme: la Internet Encyclopedia of Philosophy dice 1829 y la edición inglesa que citamos aquí dice 1828. Que dos fuentes serias discrepen en un dato así se dice, no se resuelve en silencio.
+
+Sus discípulos Kozhevnikov y Peterson reunieron sus papeles y los publicaron después de su muerte, en dos volúmenes: Filosofiya obshchago dela, La filosofía de la obra común, 1906 y 1913. Los repartieron gratis, renunciando a los derechos.
+
+La tesis es esta: la muerte no es una ley de la naturaleza, es un defecto, la señal de que la humanidad sigue siendo menor de edad. La obra común del título es la tarea que Fiódorov le propone a la especie entera: resucitar, por medios científicos y de manera colectiva, a todos los muertos. A todos, uno por uno, empezando por los propios padres. Y como los resucitados necesitan dónde vivir, el programa incluye regular la naturaleza y poblar otros planetas.
+
+People are still minors, half-beings, whereas the fulness of personal existence, personal perfection, is possible. However, it is possible only within general perfection. Coming of age will bring perfect health and immortality, but for the living immortality is impossible without the resurrection of the dead.
+
+N. F. Fedorov, What Was Man Created For? The Philosophy of the Common Task, traducción de Elisabeth Koutaissoff y Marilyn Minto, Honeyglen / L'Age d'Homme, 1990, parte II, p. 76.
+
+Fíjate en la forma del argumento, porque es la que heredan los otros cuatro linajes: una promesa que hasta entonces era religiosa, vencer a la muerte, se convierte en un proyecto técnico con tareas, con obreros y con un plazo abierto. Fiódorov era cristiano ortodoxo y para él las dos cosas eran la misma. Lo que viene después conserva el proyecto y va soltando la religión.
+
+2. Max More y el extropianismo
+
+El número 1 de la revista Extropy apareció en el otoño de 1988, en Los Ángeles, publicado dos veces al año por Tom W. Bell y Max More. La fecha de fundación del Extropy Institute es más resbalosa: se da como 1988, como 1990 y como 1991 según la fuente, incluso en fuentes cercanas al propio More, así que aquí nos quedamos con la fecha limpia de la revista.
+
+En el número 6, verano de 1990, More anunció que se había cambiado el nombre: hasta entonces era Max O'Connor. Explicó que eligió More por el deseo extropiano de más: más vida, más inteligencia, más libertad. Es un detalle mínimo y te dice el registro en el que trabaja el movimiento.
+
+En ese mismo número, pp. 6-12, va el ensayo «Transhumanism: Towards a Futurist Philosophy». Ahí queda acuñado el sentido moderno de la palabra.
+
+Humanism is a reliberium or philosophy of life that rejects deities, faith, and worship, instead basing a view of values and meaningfulness on the nature of humans and their potentials given rationality and science. Transhumanism is similar but recognizes and anticipates the radical alterations in the conditions of our existence resulting from various sciences and technologies such as neuroscience and neuropharmacology, nanotechnology, artificial ultraintelligence, space habitation, and so on.
+
+Max More, «Transhumanism: Towards a Futurist Philosophy», Extropy #6, verano de 1990, p. 6.
+
+En la p. 17 de ese número están «The Extropian Principles», que entonces eran cuatro: Boundless Expansion, Self-Transformation, Dynamic Optimism e Intelligent Technology. El quinto, Spontaneous Order, llega en la revisión de 1998. More fue presidente y director general de Alcor, la fundación de criónica, entre 2011 y 2020.
+
+Qué cambió respecto de Fiódorov. El optimismo cósmico sigue entero —vencer a la muerte, salir del planeta— pero sin cristianismo ortodoxo y refundado sobre libertarianismo californiano. Y el sujeto se mueve: donde Fiódorov ponía a la especie resucitando a sus muertos, aquí está el individuo que se transforma a sí mismo.
+
+3. Kurzweil, o la aspiración con fecha
+
+Ray Kurzweil publicó «The Law of Accelerating Returns» en KurzweilAI.net el 7 de marzo de 2001. El argumento es que el progreso tecnológico no avanza en línea recta sino que se acelera, y que por eso el siglo XXI no traerá cien años de avance sino, en sus palabras, «more like 20,000 years of progress (at today's rate)».
+
+Within a few decades, machine intelligence will surpass human intelligence, leading to The Singularity — technological change so rapid and profound it represents a rupture in the fabric of human history. The implications include the merger of biological and nonbiological intelligence, immortal software-based humans, and ultra-high levels of intelligence that expand outward in the universe at the speed of light.
+
+Ray Kurzweil, «The Law of Accelerating Returns», KurzweilAI.net, 7 de marzo de 2001, párrafo inicial. El sitio está muerto; se consulta por el Internet Archive.
+
+Cuatro años después, en The Singularity Is Near (Viking, 2005), le puso fecha: 2045. Está en el capítulo 3, en la sección «Setting a Date for the Singularity», y se cita así, por capítulo y sección, porque el número de página que circula para ese pasaje está mal. Desde 2012 Kurzweil es director de ingeniería en Google.
+
+La palabra singularitarian no es suya. Según Gebru y Torres (2024), que es de donde viene la atribución, la acuñó en 1991 un extropiano, Mark Plus.
+
+Qué cambió: la fecha. Fiódorov y More describían una meta; Kurzweil publica un pronóstico con año y con curva. Ese es el paso que permite tratar el futuro como una masa de probabilidad que se optimiza, en lugar de un valor sobre el que se discute. Las dos últimas lecturas de este cuadernillo hacen exactamente eso.
+
+4. El cosmismo vuelve, y vuelve literal
+
+En 2010 Ben Goertzel publicó A Cosmist Manifesto: Practical Philosophy for the Posthuman Age (Humanity+ Press), con licencia Creative Commons y PDF gratuito. Goertzel fundó SingularityNET.
+
+El corazón del libro son las «Ten Cosmist Convictions». Las redactó Giulio Prisco en la lista de correo de la Order of Cosmic Engineers, y Goertzel las editó y las extendió un poco. La versión de blog es del 31 de enero de 2009; en el libro ocupan las pp. 9-11. Antes de leerlas conviene la aclaración del propio Prisco, impresa en el libro: el will de estas frases no está usado en el sentido de que algo vaya a ocurrir inevitablemente, sino en el de una intención.
+
+Spacetime engineering and future magic will permit achieving, by scientific means, most of the promises of religions — and many amazing things that no human religion ever dreamed. Eventually we will be able to resurrect the dead by "copying them to the future". Intelligent life will become the main factor in the evolution of the cosmos, and steer it toward an intended path.
+
+Ben Goertzel, A Cosmist Manifesto, Humanity+ Press, 2010, «Ten Cosmist Convictions (Mostly Suggested by Giulio Prisco)», convicciones 6 y 7, pp. 10-11.
+
+Qué cambió: se cierra el círculo con Fiódorov. El extropianismo había secularizado la resurrección en extensión de la vida y criónica, es decir, en conservar a quienes todavía no mueren. Aquí regresa la tarea original, resucitar a los muertos copiándolos al futuro, ciento cincuenta años después y con vocabulario de ingeniería del espaciotiempo. La palabra cosmismo también regresa a propósito. En paralelo, el mundo del arte redescubrió a los cosmistas rusos: Boris Groys (ed.), Russian Cosmism, e-flux / MIT Press, 2018.
+
+El mismo argumento tiene una versión con presupuesto de ingeniería: Elon Musk, «Making Humans a Multi-Planetary Species», New Space 5(2), 2017, pp. 46-61, donde la razón para salir del planeta es que quedarse en uno solo termina, tarde o temprano, en un evento de extinción.
+
+5. El altruismo eficaz y su giro largoplacista
+
+Giving What We Can arrancó en noviembre de 2009 en Oxford, de la mano de Toby Ord y Will MacAskill. 80,000 Hours abrió discretamente en febrero de 2011. El nombre «effective altruism» se eligió por votación el 5 de diciembre de 2011, y le ganó a «Rational Altruism» y a «Strategic Altruism»; el dato lo cuenta el propio MacAskill en una entrada del EA Forum del 11 de marzo de 2014.
+
+El giro largoplacista no está en ese arranque, llega después. Su semilla filosófica es «Astronomical Waste» de Nick Bostrom (2003), que es la lectura 5 de este mismo cuadernillo, y queda formalizado en Greaves y MacAskill (2021), que es la lectura 6. Dos de tus seis lecturas están al final de esta cadena.
+
+We believe that this neglect of the very long-run future is a serious mistake. An alternative perspective is given by longtermism, according to which we should be particularly concerned with ensuring that the far future goes well (MacAskill MS). In this article we go further, arguing for strong longtermism: the view that impact on the far future is the most important feature of our actions today.
+
+Hilary Greaves y William MacAskill, «The Case for Strong Longtermism», GPI Working Paper 5-2021, junio de 2021, §1, p. 2.
+
+Qué cambió: el linaje deja el manifiesto y adopta un cálculo. Fiódorov, More, Kurzweil y Goertzel escriben declaraciones. Aquí hay una tesis enunciada con precisión para poder defenderla y para poder atacarla, y las cifras de Bostrom entran en una suma de valor esperado. En cuanto entran ahí, colonizar y sobrevivir dejan de ser una esperanza y pasan a ser una consecuencia derivada.
+
+6. La crítica, y qué hacer con todo esto
+
+Timnit Gebru y Émile P. Torres acuñaron el término TESCREAL mientras escribían un artículo juntos. La primera exposición pública es de Torres: «TESCREALism: The Acronym Behind Our Wildest AI Dreams and Nightmares», Truthdig, 15 de junio de 2023. El artículo es «The TESCREAL bundle: Eugenics and the promise of utopia through artificial general intelligence», First Monday 29(4), 14 de abril de 2024.
+
+El acrónimo se despliega como transhumanism, Extropianism, singularitarianism, cosmism (el moderno), Rationalism, Effective Altruism y longtermism. Es decir, nombra exactamente los cinco linajes de este apunte más el racionalismo —el de Yudkowsky, tu lectura 2— y el largoplacismo. La tesis central de Gebru y Torres también es genealógica: rastrean la meta del conjunto hasta el movimiento eugenésico angloamericano, con el transhumanismo como puente.
+
+Hay otras dos críticas que conviene tener a mano. Amia Srinivasan reseñó a MacAskill en la London Review of Books 37(18) del 24 de septiembre de 2015, con el título «Stop the Robot Apocalypse». Su objeción no es aritmética:
+
+Effective altruism doesn't try to understand how power works, except to better align itself with it. In this sense it leaves everything just as it is.
+
+Amia Srinivasan, «Stop the Robot Apocalypse», London Review of Books 37(18), 24 de septiembre de 2015.
+
+Y Torres firma por su cuenta «Why longtermism is the world's most dangerous secular credo», Aeon, 19 de octubre de 2021.
+
+Falta una advertencia, y va contra este apunte. Nombrar un linaje no refuta nada. Una genealogía explica de dónde viene una idea, y de dónde viene una idea no es lo mismo que si es verdadera. Un argumento con antepasados incómodos puede ser correcto y uno con antepasados simpáticos puede ser falso, y eso se decide leyendo el argumento, no el árbol genealógico. Lo que la genealogía sí hace es quitarle a la Declaración el aire de haber caído del cielo y mostrarte de qué discusión es una jugada.
+
+En la sesión vas a discutir estos textos. Hazlo con su versión más fuerte.

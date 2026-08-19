@@ -223,9 +223,9 @@ Tres cosas quedan sin resolver, y conviene salir sabiendo cuáles son:
 
 El módulo 1 preguntaba **acelerar qué**. El módulo 2, **quién lo construye**.
 Este pregunta **quién se queda**. Los tres son la misma discusión vista desde
-tres lugares, y la unidad termina donde empezó —con la técnica corriendo más
-rápido que la política— pero con algo que al principio no tenías: la capacidad
-de decir en qué paso concreto no estás de acuerdo.
+tres lugares, y los tres la tienen sobre el presente: quién decide ahora, quién
+construye ahora, quién se queda ahora.
 
-Con esto cierra la unidad de filosofía. El calendario de lo que sigue está en la
-[página de inicio](raya:course-root).
+El módulo que sigue mueve la discusión de lugar. En vez de pelear la dirección,
+cuenta a quienes vendrán después —y son muchos— y deja que esa cuenta decida
+qué hacer hoy. Sigue con [[moloch-long-future]].

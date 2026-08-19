@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" role="img" aria-label="Los seis eslabones del argumento del modulo 4, uno debajo de otro, de Moloch al futuro largo. Uno, hay trampas de coordinacion en las que cada quien actua bien y el resultado es malo para todos; Alexander las llama Moloch. Dos, nadie puede salirse solo de una trampa asi, y por eso duran. Tres, se puede pensar mejor y eso se entrena: racionalidad epistemica e instrumental, de Yudkowsky. Cuatro, lo que esta en juego es la especie y no la epoca: envejecer, morir y pensar poco se tratan como problemas tecnicos; es la Declaracion Transhumanista y el handout. Cinco, el futuro es enorme y se puede contar, asi que cada ano de retraso tiene un costo medible en vidas que no existieron; es Bostrom. Seis, entonces casi todo lo que importa esta en el futuro lejano y lo mejor que puedes hacer hoy es lo que mejora ese futuro; es Greaves y MacAskill. Al pie, la advertencia: cada eslabon se sostiene solo si el anterior aguanta, y el trabajo de la sesion es decir en cual se rompe, no rechazar la cadena entera."><rect x="0" y="0" width="1000" height="700" rx="16" fill="#211033"/>
+
+<text x="500" y="38" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="19" text-anchor="middle" font-weight="600">De Moloch al futuro largo: los seis eslabones</text>
+<text x="500" y="60" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="12" text-anchor="middle">Cada lectura agrega un paso. La cadena es el argumento; el desacuerdo es un eslabon</text>
+
+<defs><marker id="f" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#78419e"/></marker></defs>
+<rect x="50" y="92" width="900" height="74" rx="10" fill="none" stroke="#78419e"/>
+<circle cx="86" cy="129" r="17" fill="#f04cff" opacity="0.18" stroke="#78419e"/>
+<text x="86" y="134" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle" font-weight="700">1</text>
+<text x="120" y="122" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">Hay trampas de coordinacion.</text>
+<text x="120" y="144" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Cada quien actua bien y el resultado es malo para todos. Alexander las llama Moloch.</text>
+<text x="930" y="122" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">Alexander</text>
+<path d="M 500 166 L 500 182" stroke="#78419e" stroke-width="2" marker-end="url(#f)"/>
+<rect x="50" y="182" width="900" height="74" rx="10" fill="none" stroke="#78419e"/>
+<circle cx="86" cy="219" r="17" fill="#f04cff" opacity="0.18" stroke="#78419e"/>
+<text x="86" y="224" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle" font-weight="700">2</text>
+<text x="120" y="212" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">Nadie puede salirse solo.</text>
+<text x="120" y="234" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Salirse de una trampa te deja peor: por eso duran. Hace falta algo que coordine por encima.</text>
+<text x="930" y="212" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">Alexander</text>
+<path d="M 500 256 L 500 272" stroke="#78419e" stroke-width="2" marker-end="url(#f)"/>
+<rect x="50" y="272" width="900" height="74" rx="10" fill="none" stroke="#78419e"/>
+<circle cx="86" cy="309" r="17" fill="#f04cff" opacity="0.18" stroke="#78419e"/>
+<text x="86" y="314" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle" font-weight="700">3</text>
+<text x="120" y="302" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">Se puede pensar mejor, y eso se entrena.</text>
+<text x="120" y="324" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Racionalidad epistemica: creer lo que es. Instrumental: conseguir lo que valoras.</text>
+<text x="930" y="302" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">Yudkowsky</text>
+<path d="M 500 346 L 500 362" stroke="#78419e" stroke-width="2" marker-end="url(#f)"/>
+<rect x="50" y="362" width="900" height="74" rx="10" fill="none" stroke="#78419e"/>
+<circle cx="86" cy="399" r="17" fill="#f04cff" opacity="0.18" stroke="#78419e"/>
+<text x="86" y="404" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle" font-weight="700">4</text>
+<text x="120" y="392" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">Lo que esta en juego es la especie, no la epoca.</text>
+<text x="120" y="414" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Envejecer, morir y pensar poco son problemas tecnicos y no condiciones fijas.</text>
+<text x="930" y="392" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">Declaracion / handout</text>
+<path d="M 500 436 L 500 452" stroke="#78419e" stroke-width="2" marker-end="url(#f)"/>
+<rect x="50" y="452" width="900" height="74" rx="10" fill="none" stroke="#78419e"/>
+<circle cx="86" cy="489" r="17" fill="#f04cff" opacity="0.18" stroke="#78419e"/>
+<text x="86" y="494" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle" font-weight="700">5</text>
+<text x="120" y="482" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">El futuro es enorme y se puede contar.</text>
+<text x="120" y="504" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Si se puede contar, cada ano de retraso tiene un costo medible en vidas que no existieron.</text>
+<text x="930" y="482" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">Bostrom</text>
+<path d="M 500 526 L 500 542" stroke="#78419e" stroke-width="2" marker-end="url(#f)"/>
+<rect x="50" y="542" width="900" height="74" rx="10" fill="none" stroke="#78419e"/>
+<circle cx="86" cy="579" r="17" fill="#f04cff" opacity="0.18" stroke="#78419e"/>
+<text x="86" y="584" fill="#f04cff" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle" font-weight="700">6</text>
+<text x="120" y="572" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="13" text-anchor="start" font-weight="600">Entonces casi todo lo que importa esta en el futuro lejano.</text>
+<text x="120" y="594" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="11.5" text-anchor="start">Y lo mejor que puedes hacer hoy es lo que mejora ese futuro, aunque no veas el resultado.</text>
+<text x="930" y="572" fill="#f04cff" font-family="system-ui, sans-serif" font-size="11" text-anchor="end">Greaves y MacAskill</text>
+<rect x="50" y="632" width="900" height="50" rx="12" fill="#f04cff" opacity="0.10" stroke="#78419e"/>
+<text x="500" y="662" fill="#f7f2ff" font-family="system-ui, sans-serif" font-size="12.5" text-anchor="middle">Cada eslabon se sostiene solo si el anterior aguanta. Di en cual se rompe, no rechaces la cadena entera.</text>
+</svg>
