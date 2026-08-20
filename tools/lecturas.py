@@ -582,6 +582,9 @@ LECTURAS: dict[str, list[Lectura]] = {
             procedencia="Slate Star Codex, 30 de julio de 2014 · slatestarcodex.com",
             licencia="En derechos; publicado en abierto y completo por el autor. Se reproduce como material del curso",
             introduccion=(
+                "**Puedes leer o escuchar este texto.** Lee la versión completa "
+                "incluida en este cuadernillo o [escucha las ocho partes en "
+                "YouTube](https://www.youtube.com/watch?v=SeohwQls2GE).\n\n"
                 "**Qué vas a leer.** Una entrada de blog del 30 de julio de "
                 "2014 y la lectura más larga del curso: catorce mil palabras en "
                 "ocho partes. Scott Alexander abre citando el pasaje sobre "
@@ -1109,10 +1112,27 @@ p:first-of-type { text-indent: 0; }
 
 
 def _inline(texto: str) -> str:
-    """Escapa el texto y aplica el enfasis de linea: **negritas** y *cursivas*."""
+    """Escapa el texto y aplica enlaces web, **negritas** y *cursivas*."""
+    def enfasis(t: str) -> str:
+        t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
+        return re.sub(r"\*([^*]+)\*", r"<em>\1</em>", t)
+
     t = html.escape(texto)
-    t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
-    return re.sub(r"\*([^*]+)\*", r"<em>\1</em>", t)
+    enlaces = []
+
+    def enlace(m: re.Match) -> str:
+        enlaces.append(f'<a href="{m.group(2)}">{enfasis(m.group(1))}</a>')
+        return f"@@ENLACE{len(enlaces) - 1}@@"
+
+    t = re.sub(
+        r"\[([^\]]+)\]\((https://[^)\s]+)\)",
+        enlace,
+        t,
+    )
+    t = enfasis(t)
+    for i, anchor in enumerate(enlaces):
+        t = t.replace(f"@@ENLACE{i}@@", anchor)
+    return t
 
 
 def _markdown_basico(md: str) -> str:

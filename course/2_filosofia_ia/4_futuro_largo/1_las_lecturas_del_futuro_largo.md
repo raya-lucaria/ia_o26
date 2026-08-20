@@ -11,11 +11,11 @@ prerequisites: [moloch-long-future]
 
 # Las seis lecturas, en claro
 
-**Qué te llevas:** un mapa de las seis lecturas que leíste de tarea —qué dice
+**Qué te llevas:** un mapa de las seis lecturas que preparaste de tarea —qué dice
 cada una, qué concepto aporta y con qué pregunta te deja—, y la cadena que las
 une, eslabón por eslabón.
 
-Esto no sustituye el cuadernillo: lo ordena. Si no alcanzaste a leer, entra
+Esto no sustituye la preparación: la ordena. Si no alcanzaste a terminar, entra
 igual y usa las fichas como muleta; lo que no vas a tener es haber discutido con
 el texto, que es la mitad de lo que importa.
 
@@ -62,6 +62,10 @@ precisamente por eso el trabajo de la sesión es localizar dónde se rompe y no
 rechazarla en bloque.
 
 ## 1 de 6 · Alexander, «Meditations on Moloch» (2014) · ~14 min
+
+**Cómo hacer esta lectura.** Puedes leer «Meditations on Moloch» en el
+cuadernillo o [escuchar la versión completa en YouTube](https://www.youtube.com/watch?v=SeohwQls2GE).
+El audio cubre las ocho partes del ensayo.
 
 **De dónde sale.** Una entrada de blog firmada por Scott Alexander en *Slate Star
 Codex* el 30 de julio de 2014, reproducida completa en el cuadernillo: catorce mil

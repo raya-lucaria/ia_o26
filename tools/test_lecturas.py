@@ -172,6 +172,31 @@ def test_markdown_basico_borra_los_wikilinks():
     assert "ia-y-sociedad" in m._markdown_basico("ver [[ia-y-sociedad]]")
 
 
+def test_markdown_basico_convierte_enlace_web_en_ancla():
+    m = _cargar_lecturas()
+    resultado = m._markdown_basico(
+        "[escucha las ocho partes](https://www.youtube.com/watch?v=SeohwQls2GE)"
+    )
+    assert (
+        '<a href="https://www.youtube.com/watch?v=SeohwQls2GE">'
+        "escucha las ocho partes</a>"
+    ) in resultado
+
+
+def test_markdown_basico_no_activa_enlaces_http():
+    m = _cargar_lecturas()
+    resultado = m._markdown_basico("[sitio inseguro](http://example.com)")
+    assert "<a " not in resultado
+    assert "http://example.com" in resultado
+
+
+def test_markdown_basico_no_corrompe_asteriscos_en_url_https():
+    m = _cargar_lecturas()
+    resultado = m._markdown_basico("[ruta](https://example.com/*path*)")
+    assert '<a href="https://example.com/*path*">ruta</a>' in resultado
+    assert "<em>path</em>" not in resultado
+
+
 def test_la_introduccion_del_modulo_se_lee_del_archivo():
     m = _cargar_lecturas()
     assert m._introduccion("filosofia_ia/clase_1").startswith("## Cómo leer")
@@ -351,6 +376,23 @@ def test_las_paginas_del_cuadernillo_modulo_3_coinciden_en_todos_lados():
 
 def test_las_paginas_del_cuadernillo_modulo_4_coinciden_en_todos_lados():
     _verificar_cifra_total_de_paginas(PATRONES_PAGINAS_TOTALES_MODULO_4, PUBLICADO_4)
+
+
+@pytest.mark.parametrize("pdf", [CONSTRUIDO_4, PUBLICADO_4])
+def test_el_cuadernillo_modulo_4_enlaza_el_audio_de_moloch(pdf):
+    import pypdf
+
+    esperado = "https://www.youtube.com/watch?v=SeohwQls2GE"
+    enlaces = []
+    for pagina in pypdf.PdfReader(pdf).pages:
+        for referencia in pagina.get("/Annots", []):
+            anotacion = referencia.get_object()
+            uri = anotacion.get("/A", {}).get("/URI")
+            if uri:
+                enlaces.append(uri)
+    assert esperado in enlaces, (
+        f"{pdf.name}: la ficha de Moloch debe enlazar el audio completo en YouTube"
+    )
 
 
 # (modulo, PDF publicado) para la guarda de abajo.

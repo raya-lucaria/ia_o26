@@ -35,9 +35,9 @@ fuentes.
 | 5 | **Nick Bostrom**, «Astronomical Waste» (2003) | La aritmética: el costo de cada año de retraso, medido en vidas que pudieron existir |
 | 6 | **Greaves y MacAskill**, «The Case for Strong Longtermism» (2021), secciones 1–4 y 10 | El argumento completo, escrito con la precisión de un artículo académico |
 
-## Cómo leer este cuadernillo
+## Cómo preparar este cuadernillo
 
-Las seis se leen con una sola pregunta: **qué mete cada una en la cuenta, y qué
+Las seis se preparan con una sola pregunta: **qué mete cada una en la cuenta, y qué
 deja fuera.** Todas cuentan gente que todavía no existe. Difieren en cuánta, con
 qué certeza, y en qué autoriza a pasar de la suma a una instrucción sobre lo que
 hay que hacer hoy.
@@ -45,7 +45,7 @@ hay que hacer hoy.
 El orden no es cronológico sino de dependencia. Alexander nombra el problema;
 Yudkowsky da el método; la Declaración pone la meta y el apunte cuenta de dónde
 viene; Bostrom hace la aritmética; Greaves y MacAskill la convierten en un
-argumento con objeciones adentro. Leerlas al revés funciona mal: las cifras del
+argumento con objeciones adentro. Recorrerlas al revés funciona mal: las cifras del
 final no se sostienen sin el aparato del principio.
 
 Está bien no estar de acuerdo. Lo que no funciona es rechazar el conjunto en
@@ -58,8 +58,10 @@ Llega a la sesión sabiendo en cuál.
 de la unidad, casi la mitad del cuadernillo, y él solo toma casi tanto tiempo
 como las cuatro lecturas del módulo 3 juntas. Se lee fácil —es un blog, tiene chistes,
 abre con un poema— y por eso se subestima. **Empieza temprano**; va primero para
-que no quede al final. Dos cosas más: el poema de Ginsberg trae lenguaje crudo,
-y hay pasajes incómodos —la esclavitud antigua, el patriarcado, un párrafo sobre
+que no quede al final. **Puedes leerlo en el cuadernillo o [escuchar las ocho
+partes en YouTube](https://www.youtube.com/watch?v=SeohwQls2GE).** Dos cosas más:
+el poema de Ginsberg trae lenguaje crudo, y hay pasajes incómodos —la esclavitud
+antigua, el patriarcado, un párrafo sobre
 coeficientes intelectuales— que están ahí como piezas de un argumento sobre la
 competencia, no como tesis morales.
 
@@ -110,7 +112,9 @@ la fuente al pie de cada una.
 
 ## Qué hay que hacer
 
-Leer. Como en los dos módulos anteriores, no hay cuestionario ni nada que
-entregar: la tarea es llegar a la sesión con las seis lecturas leídas.
+Lee las otras cinco lecturas y, para «Meditations on Moloch», elige entre leer el
+texto o escuchar el audio completo. Como en los dos módulos anteriores, no hay
+cuestionario ni nada que entregar: la tarea es llegar a la sesión con las seis
+lecturas preparadas.
 
 Sigue con [[las-lecturas-del-futuro-largo|Las lecturas del futuro largo]].
