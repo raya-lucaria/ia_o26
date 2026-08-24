@@ -60,5 +60,5 @@ después las páginas de sesión.
 2. [[las-lecturas-del-futuro-largo|Hora 1 · Las lecturas del futuro largo]] — qué dice cada una, en claro.
 3. [[discutir-el-futuro-largo|Hora 2 · Discutir el futuro largo]] — qué cuenta cada lectura, quién queda fuera, y con qué se discute.
 
-Las fechas de lectura de cada módulo están en el calendario de lecturas de la
+Las fechas de lectura de cada módulo están en el calendario de preparación de la
 [página de inicio](raya:course-root).

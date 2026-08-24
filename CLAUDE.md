@@ -263,10 +263,11 @@ pesan 0.8 MB. Uno con páginas de PDF empalmadas —como los módulos 1 y 2, de
 ~1.2 MB cada copia— ya no cabe, y entonces subir esa constante es una decisión
 deliberada y documentada en el docstring del archivo, no un ajuste automático.
 
-**Y el módulo nuevo va también al calendario de lecturas.** `course/0_index.md`
-lleva una tabla «Calendario de lecturas» con una fila por módulo —sesión y
-wikilink a la página del módulo— cuya fecha debe coincidir con el `due` de la
-tarea oficial de lectura. Nada lo verifica: es a mano.
+**Y el módulo nuevo va también al calendario.** `course/0_index.md` lleva una
+tabla «Calendario de preparación» con una fila por módulo o unidad —sesión,
+prefijo de tipo (`Lectura ·`, `Video ·`) y wikilink etiquetado a su página—
+cuya fecha debe coincidir con el `due` de su tarea oficial. Nada lo verifica: es
+a mano.
 
 Hay cuatro módulos publicados y cada uno tiene su juego completo de nombres;
 los módulos 2, 3 y 4 son el mismo procedimiento con `filosofia_ia/clase_2` /

@@ -23,15 +23,16 @@ Las sesiones ordinarias son los lunes y miércoles, de 16:00 a 18:00.
 - 2 de diciembre: fin de cursos.
 - Del 7 al 12 de diciembre: período de exámenes finales.
 
-## Calendario de lecturas
+## Calendario de preparación
 
-Qué se lee y para cuándo. Cada fila corresponde a la fecha `due` de la tarea
-oficial de lectura del módulo; añade una fila por módulo nuevo, en orden de
+Qué hay que traer preparado y para cuándo. Cada fila corresponde a la fecha
+`due` de su tarea oficial; añade una fila por módulo o unidad nueva, en orden de
 sesión.
 
-| Sesión | Se lee para |
+| Sesión | Qué se prepara |
 |---|---|
-| Miércoles 12 de agosto | Módulo 1 — [[accelerate-what|¿Accelerate What?]] |
-| Lunes 17 de agosto | Módulo 2 — [[left-takes-future|The Left Takes the Future Back]] |
-| Miércoles 19 de agosto | Módulo 3 — [[exit-nrx|Exit, NRx & Dark Enlightenment]] |
-| Lunes 24 de agosto | Módulo 4 — [[moloch-long-future|Moloch, Rationality & the Long Future]] |
+| Miércoles 12 de agosto | Lectura · Módulo 1 — [[accelerate-what|¿Accelerate What?]] |
+| Lunes 17 de agosto | Lectura · Módulo 2 — [[left-takes-future|The Left Takes the Future Back]] |
+| Miércoles 19 de agosto | Lectura · Módulo 3 — [[exit-nrx|Exit, NRx & Dark Enlightenment]] |
+| Lunes 24 de agosto | Lectura · Módulo 4 — [[moloch-long-future|Moloch, Rationality & the Long Future]] |
+| Miércoles 26 de agosto | Video · [[computabilidad|Computabilidad e incompletitud]] |
