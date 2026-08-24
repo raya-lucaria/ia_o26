@@ -36,7 +36,7 @@ cd /home/uumami/itam/ia_o26
 python3 -m pytest tools/ -q
 ```
 
-119 pruebas, deben pasar todas antes de comitear un cambio que toque
+131 pruebas, deben pasar todas antes de comitear un cambio que toque
 `_assets/`, `_official/`, o cualquier `tools/*.json`/`tools/*.tsv`. Desde el
 commit `47697d2` esto también corre en CI, como job `checks` que bloquea el
 deploy (ver H16), pero eso no exime de correrlo en local antes de comitear.

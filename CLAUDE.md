@@ -46,7 +46,15 @@ The rules below are enforced by `raya validate` and are the ones most likely to 
 
 **Ordering and stable identity.** Numeric prefixes on files and directories (`1_unit/`, `2_topic/`, `1_inicio_de_cursos.yaml`) define authoring order *only*. They are stripped from rendered URLs, labels, and stable IDs, and renumbering must not break anything. Durable references use the frontmatter `id` (e.g. `course-root`), not the filename. `A_`-prefixed directories are appendix/anexo material.
 
-**Pages.** Every rendered directory needs a `0_index.md` landing page. Frontmatter stays compact: `id`, `title`, `nav_title`, `summary`, `status`, and optionally `estimated_time`, `tags`, `prerequisites`, `aliases`. Cross-page links prefer `raya:<stable-id>` or wikilinks `[[target]]` / `[[target|label]]`; ambiguous or missing wikilinks fail validation. Images and tables that need a number go inside a directive block — `::: figure {#id title="…"}` … `:::` — numbered per page hierarchy by the `render.numbered_objects` config in `raya.yaml`; a bare `![]()` renders without a "Figura N" caption.
+**Pages.** Every rendered directory needs a `0_index.md` landing page. Frontmatter stays compact: `id`, `title`, `nav_title`, `summary`, `status`, and optionally `estimated_time`, `tags`, `prerequisites`, `aliases`. Cross-page links prefer `raya:<stable-id>` or **labelled** wikilinks `[[target|label]]`; ambiguous or missing wikilinks fail validation. Images and tables that need a number go inside a directive block — `::: figure {#id title="…"}` … `:::` — numbered per page hierarchy by the `render.numbered_objects` config in `raya.yaml`; a bare `![]()` renders without a "Figura N" caption.
+
+**Three prose defects that `raya validate` cannot see.** Each of these published a broken page while validation stayed green, and each was found by looking at the deployed site — so `pytest` guards them instead. They live in `test_aceptacion.py`, scan every `.md` under `course/`, and are the reason the bare wikilink form is banned above:
+
+| Guard | Rule |
+|---|---|
+| `test_extra_ningun_wikilink_va_sin_etiqueta` | A bare `[[target]]` prints the raw stable id, not the page title — *"En ia-y-sociedad aparecieron…"*. Always `[[target\|label]]` |
+| `test_extra_ningun_wikilink_queda_partido_por_un_salto_de_linea` | A wikilink wrapped across a newline stops being a link and publishes with its brackets showing. Keep each one on one line, even past the wrap column |
+| `test_extra_ningun_encabezado_lleva_un_enlace_dentro` | No link of any kind inside an `#` heading — the "On This Page" index takes the raw heading text and prints the Markdown syntax |
 
 **Official learning objects.** YAML under `_official/<family>/` — families include `tasks`, `cards`, `quizzes`, `prompts`. Objects colocated beside a quantum may omit `scope.quantum` (it is inferred from the nearest directory page); objects under source-root `course/_official/` **must** declare it explicitly. Both patterns are in use: the five calendar tasks in `course/_official/tasks/` carry `scope: {quantum: course-root}`, while unit-level objects (`course/1_introduccion/2_historia_ia/_official/`, `course/2_filosofia_ia/_official/`) carry no `scope` block at all — `test_oficiales.py` fails if a card grows one. Root-scoped shape:
 
@@ -159,7 +167,7 @@ en ambas a propósito, para que la decisión sea a mano.
 
 ## The pytest suite guards content, not code
 
-`python3 -m pytest tools/ -q` (119 tests as of 18 August 2026) is the
+`python3 -m pytest tools/ -q` (131 tests as of 24 August 2026) is the
 second gate alongside `raya validate`, and CI blocks the deploy on it. The tests
 assert things prose review misses: every image in `_assets/` has a credit row
 with a recognizable license in `CREDITOS.md`, every generated SVG still matches
@@ -182,9 +190,13 @@ Consequences worth internalizing:
 - **Deleting an unused asset means deleting its inventory row too** (in
   `commons.tsv`, or flipping `decision` to `descartar` in
   `imagenes_heredadas.tsv`) — otherwise the generator resurrects it.
-- `test_aceptacion.py` shells out to the `raya` CLI in the sibling repo; two of
-  its tests fail on environment, not on a real defect, if that repo is missing
-  or unsynced.
+- **And the converse: an asset no page links to fails the suite**
+  (`test_5b_toda_imagen_en_assets_esta_referenciada_por_alguna_pagina`). Adding
+  an image is a three-part move — the file, its `CREDITOS.md` row, and a
+  reference from some page.
+- `test_aceptacion.py` shells out to the `raya` CLI in the sibling repo;
+  `test_1` and `test_2` fail on environment, not on a real defect, if that repo
+  is missing or unsynced.
 
 ## `lecturas/` — the reading-booklet pipeline
 
@@ -307,6 +319,16 @@ is hardcoded in `tools/gen_ilustraciones.py`, `tools/test_ilustraciones.py` and
 and it exists to catch exactly this: changing `surface` means updating those
 three copies *and* regenerating everything baked against it, or the site ships
 figures on the wrong background with a green suite.
+
+## Git
+
+Substantive work lands as a named branch merged back into `main` with `--no-ff`
+(`Merge branch 'modulo-4-moloch-long-future'`), never as a direct commit on
+`main` — the first-parent log is meant to read as one line per finished piece of
+work. The language split is the **inverse** of the content rule: course prose is
+Spanish, but **commit subjects and bodies are English**, and branch names are
+Spanish. Bodies are long and explain the *why*, including how a defect was found
+(«se vio mirando el sitio desplegado») and what was deliberately not changed.
 
 ## CI / publishing
 
