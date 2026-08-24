@@ -1,0 +1,49 @@
+id: ver-video-computabilidad
+type: task
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Ver y entender el video sobre los límites de las matemáticas
+  instructions: >-
+    Antes de la sesión del miércoles 26 de agosto, ver y entender el video de
+    Veritasium sobre los límites de las matemáticas y de la computación. Es la
+    preparación de la unidad que sigue, sobre computabilidad e incompletitud, y
+    esa unidad entera se apoya en lo que aquí se explica. Hay dos versiones del
+    mismo video y eliges una. En inglés, la original: «Math's Fundamental
+    Flaw», 34 minutos, en https://www.youtube.com/watch?v=HeQX2HjkcNo. En
+    español, el doblaje del canal oficial Veritasium en español: «Las
+    Matemáticas Tienen Una FALLA Descomunal», 33 minutos, en
+    https://www.youtube.com/watch?v=RRg38oNQ9vk. Son el mismo contenido y
+    ninguna de las dos es la versión buena: escoge la que te deje entender
+    mejor, no la que suene más seria. Si quieres la original pero el inglés te
+    cuesta, YouTube trae subtítulos automáticos y traducción de subtítulos, y
+    puedes apoyarte en un traductor o en cualquier herramienta que uses
+    normalmente; nada de eso está prohibido y la única condición es que
+    entiendas lo que viste. Y ojo con esa condición, porque no es un video para
+    dejar de fondo: son más de treinta minutos densos, con media docena de
+    ideas que se apoyan una en la otra, y verlo sin entenderlo no sirve de nada
+    en la sesión. Pausa, regresa, y busca por tu cuenta lo que no quede claro.
+    Llega a la sesión pudiendo explicar con tus palabras estas ocho cosas, que
+    son sobre las que vamos a discutir: (1) qué es una máquina de Turing; (2)
+    qué es un axioma y qué es una teoría aritmética; (3) qué es computabilidad;
+    (4) qué es el halting problem, el problema de la parada; (5) qué es
+    diagonalización; (6) qué dice intuitivamente el primer teorema de
+    incompletitud de Gödel, y qué significa eso para las matemáticas —la
+    intuición, no la demostración formal—; (7) lo mismo para el segundo teorema
+    de Gödel; y (8) qué dicen intuitivamente los axiomas de Peano. Dos avisos
+    para que no las busques donde no están: el segundo teorema el video lo
+    menciona de pasada, en una sola frase, así que para contestar el (7) vas a
+    tener que investigar un poco por tu cuenta; y los axiomas de Peano no
+    aparecen en el video, ni por nombre, así que el (8) se busca aparte
+    completo. Explicarlo con tus palabras es el punto: si solo puedes repetir
+    la frase del video, todavía no está. La tarea es llegar entendiendo: no hay
+    cuestionario ni nada que entregar.
+  due: "2026-08-26"
+  status: published
+  tags:
+    - tarea
+    - video
+    - preparacion
+    - computabilidad
+    - godel
