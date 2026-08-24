@@ -1,8 +1,6 @@
 id: ver-video-computabilidad
 type: task
 authority: official
-scope:
-  quantum: course-root
 content:
   title: Ver y entender el video sobre los límites de las matemáticas
   instructions: >-
