@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador — la máquina de juguete que decide 0ⁿ1ⁿ</title>
+<style>
+  /* Paleta de skins/eva-cyberpunk.yaml. Ver tools/test_skin.py: estas copias
+     literales están vigiladas contra el skin, que es la autoridad real. */
+  :root{
+    --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
+    --accent:#f04cff; --border:#78419e; --ok:#a8ff5a; --info:#55ddff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--page);color:var(--text);
+            font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .envoltura{max-width:1080px;margin:0 auto;padding:1.2rem}
+  h1{font-size:19px;margin:0 0 .2rem}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 1.1rem}
+
+  .panel{background:var(--surface);border:1px solid var(--border);
+         border-radius:12px;padding:1rem;margin-bottom:1rem}
+
+  label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:.35rem}
+  input[type=text]{background:var(--page);color:var(--text);
+    border:1px solid var(--border);border-radius:8px;padding:.55rem .7rem;
+    font:16px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;width:230px}
+  input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+  button{background:var(--surface);color:var(--text);border:1px solid var(--border);
+    border-radius:8px;padding:.5rem .85rem;font:inherit;font-size:13.5px;cursor:pointer}
+  button:hover:not(:disabled){border-color:var(--accent)}
+  button:disabled{opacity:.38;cursor:default}
+  button.primario{background:var(--accent);color:#1b0025;border-color:var(--accent);font-weight:650}
+
+  .fila{display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap}
+  .atajos{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.55rem}
+  .atajos button{font:13px ui-monospace,Menlo,monospace;padding:.3rem .55rem}
+
+  /* --- la cinta --- */
+  .cinta{display:flex;gap:4px;overflow-x:auto;padding:1.6rem .2rem .6rem}
+  .celda{flex:0 0 auto;width:46px;height:46px;border:1px solid var(--border);
+    border-radius:5px;display:grid;place-items:center;position:relative;
+    font:20px ui-monospace,Menlo,monospace;background:var(--page)}
+  .celda.aqui{border-color:var(--accent);border-width:2px}
+  .celda.aqui::before{content:"▼";position:absolute;top:-19px;color:var(--accent);font-size:12px}
+  .celda.marca{color:var(--muted)}
+
+  .estado{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:baseline;
+          font-size:14px;margin-top:.3rem}
+  .estado b{font:16px ui-monospace,Menlo,monospace;color:var(--accent)}
+  .papel{color:var(--muted);font-size:13px}
+  .config{font:15px ui-monospace,Menlo,monospace;color:var(--text);
+          background:var(--page);border:1px solid var(--border);border-radius:8px;
+          padding:.5rem .7rem;margin-top:.7rem;overflow-x:auto;white-space:nowrap}
+  .config .q{color:var(--accent);font-weight:700}
+
+  /* --- veredicto --- */
+  .veredicto{margin-top:.8rem;padding:.6rem .8rem;border-radius:8px;font-size:14px;
+             border:1px solid var(--border)}
+  .veredicto.acepta{border-color:var(--ok);color:var(--ok)}
+  .veredicto.rechaza{border-color:var(--muted);color:var(--muted)}
+  .veredicto.cicla{border-color:var(--accent);color:var(--accent)}
+
+  /* --- tabla de delta --- */
+  table{border-collapse:collapse;width:100%;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:.4rem .5rem;text-align:center;
+        font-family:ui-monospace,Menlo,monospace}
+  th{color:var(--muted);font-weight:600}
+  td.papel-col{font-family:inherit;color:var(--muted);text-align:left;font-size:12px}
+  td.disparando{background:var(--accent);color:#1b0025;font-weight:700}
+  td.vacia{color:var(--border)}
+
+  .nota{color:var(--muted);font-size:12.5px;margin-top:.7rem}
+  .contador{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+  a{color:var(--info)}
+</style>
+</head>
+<body>
+<div class="envoltura">
+
+  <h1>La máquina de juguete, corriendo</h1>
+  <p class="sub">Decide <code>0ⁿ1ⁿ</code>: unos cuantos ceros seguidos de exactamente
+  la misma cantidad de unos. Escribe lo que quieras y míralo pasar.</p>
+
+  <div class="panel">
+    <div class="fila">
+      <div>
+        <label for="entrada">Entrada (solo 0 y 1; vacío = cadena vacía ε)</label>
+        <input id="entrada" type="text" value="0011" autocomplete="off" spellcheck="false">
+      </div>
+      <button id="cargar" class="primario">Cargar</button>
+      <button id="paso">Paso →</button>
+      <button id="atras">← Atrás</button>
+      <button id="correr">Correr</button>
+      <button id="reiniciar">Reiniciar</button>
+    </div>
+    <div class="atajos">
+      <span class="papel" style="align-self:center;margin-right:.2rem">Prueba:</span>
+      <button data-w="0011">0011</button>
+      <button data-w="000111">000111</button>
+      <button data-w="01">01</button>
+      <button data-w="001">001</button>
+      <button data-w="0101">0101</button>
+      <button data-w="00111">00111</button>
+      <button data-w="">ε (vacía)</button>
+      <button data-w="10">10</button>
+    </div>
+    <p class="nota"><label style="display:inline;margin:0">
+      <input type="checkbox" id="sinrechazo"> <b>Modo sin rechazo</b> — quita las
+      reglas que llevan a q_rej, para <em>ver</em> el tercer desenlace: ciclar para siempre.
+    </label></p>
+  </div>
+
+  <div class="panel">
+    <div class="cinta" id="cinta"></div>
+    <div class="estado">
+      <span>Estado: <b id="q">q₀</b> <span class="papel" id="papel"></span></span>
+      <span class="contador" id="pasos">paso 1</span>
+    </div>
+    <div class="config" id="config"></div>
+    <div id="veredicto"></div>
+  </div>
+
+  <div class="panel">
+    <p class="nota" style="margin:0 0 .6rem">La regla que está disparando ahora
+    mismo se ilumina. Las celdas <span style="color:var(--border)">—</span> son
+    inalcanzables: nunca ocurren en ningún cómputo.</p>
+    <table id="delta"></table>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var BLANCO = "␣";
+  var PAPEL = {
+    "q0":"busca el siguiente cero sin tachar",
+    "q1":"va a la derecha buscando un uno",
+    "q2":"regresa a la izquierda",
+    "q3":"verifica que solo queden marcas"
+  };
+  var ESTADOS = ["q0","q1","q2","q3"];
+  var SIMBOLOS = ["0","1","X","Y",BLANCO];
+  // delta tal cual la tabla de la pagina 2. null = celda inalcanzable.
+  var D = {
+    q0:{"0":["q1","X","R"], "1":"rej", "X":null, "Y":["q3","Y","R"], "␣":"rej"},
+    q1:{"0":["q1","0","R"], "1":["q2","Y","L"], "X":null, "Y":["q1","Y","R"], "␣":"rej"},
+    q2:{"0":["q2","0","L"], "1":null, "X":["q0","X","R"], "Y":["q2","Y","L"], "␣":null},
+    q3:{"0":"rej", "1":"rej", "X":null, "Y":["q3","Y","R"], "␣":"acc"}
+  };
+  var sub = {q0:"q₀",q1:"q₁",q2:"q₂",q3:"q₃"};
+
+  var el = function(id){ return document.getElementById(id); };
+  var historia = [], idx = 0, timer = null, sinRechazo = false;
+
+  function inicial(w){
+    return { cinta:(w.split("").concat([BLANCO,BLANCO,BLANCO])), i:0, q:"q0", fin:null, regla:null };
+  }
+
+  function siguiente(c){
+    if (c.fin) return null;
+    var s = c.cinta[c.i] === undefined ? BLANCO : c.cinta[c.i];
+    var r = D[c.q][s];
+    if (r === null || r === undefined) r = "rej";      // inalcanzable: total hacia rej
+    if (r === "rej" && sinRechazo) return { bloqueado:true };
+    var n = { cinta:c.cinta.slice(), i:c.i, q:c.q, fin:null, regla:[c.q,s] };
+    if (r === "acc"){ n.fin = "acepta"; return n; }
+    if (r === "rej"){ n.fin = "rechaza"; return n; }
+    n.cinta[c.i] = r[1];
+    n.q = r[0];
+    n.i = r[2] === "R" ? c.i + 1 : Math.max(0, c.i - 1);   // tope izquierdo
+    while (n.i >= n.cinta.length) n.cinta.push(BLANCO);
+    return n;
+  }
+
+  function pintar(){
+    var c = historia[idx];
+    // cinta
+    var cinta = el("cinta"); cinta.innerHTML = "";
+    var largo = Math.max(c.cinta.length, c.i + 3);
+    for (var k = 0; k < largo; k++){
+      var s = c.cinta[k] === undefined ? BLANCO : c.cinta[k];
+      var d = document.createElement("div");
+      d.className = "celda" + (k === c.i ? " aqui" : "") + (s === "X" || s === "Y" ? " marca" : "");
+      d.textContent = s;
+      cinta.appendChild(d);
+    }
+    // estado
+    el("q").textContent = c.fin ? (c.fin === "acepta" ? "q_acc" : "q_rej") : sub[c.q];
+    el("papel").textContent = c.fin ? "" : "— " + PAPEL[c.q];
+    el("pasos").textContent = "paso " + (idx + 1) + " de " + historia.length;
+    // configuracion u q v
+    var u = c.cinta.slice(0, c.i).join("").replace(/␣+$/,"");
+    var v = c.cinta.slice(c.i).join("").replace(/␣+$/,"") || BLANCO;
+    el("config").innerHTML = "configuración: " + u +
+      ' <span class="q">' + (c.fin ? (c.fin==="acepta"?"q_acc":"q_rej") : sub[c.q]) + "</span> " + v;
+    // veredicto
+    var ver = el("veredicto"); ver.className = "veredicto"; ver.textContent = "";
+    if (c.fin === "acepta"){ ver.classList.add("acepta");
+      ver.textContent = "✓ ACEPTA — los dos bloques se emparejaron exactamente."; }
+    else if (c.fin === "rechaza"){ ver.classList.add("rechaza");
+      ver.textContent = "✕ RECHAZA — " + porQueRechaza(historia[idx-1]); }
+    else { ver.style.display = "none"; }
+    if (c.fin) ver.style.display = "";
+    pintarDelta(c);
+    el("paso").disabled = !!c.fin;
+    el("atras").disabled = idx === 0;
+    el("correr").textContent = timer ? "Pausar" : "Correr";
+    el("correr").disabled = !!c.fin;
+  }
+
+  function porQueRechaza(prev){
+    if (!prev) return "la cadena vacía no tiene ningún par que emparejar.";
+    var s = prev.cinta[prev.i] === undefined ? BLANCO : prev.cinta[prev.i];
+    if (prev.q === "q1" && s === BLANCO) return "buscaba un 1 y encontró el fin de la cinta: había más ceros que unos.";
+    if (prev.q === "q3" && (s === "0" || s === "1")) return "ya no quedaban ceros pero sobraban símbolos sin tachar: había más unos que ceros.";
+    if (prev.q === "q0" && s === "1") return "empezó con un 1: los ceros tienen que ir primero.";
+    if (prev.q === "q0" && s === BLANCO) return "la entrada estaba vacía, y se pide al menos un par.";
+    return "la máquina llegó a una combinación que no pertenece al lenguaje.";
+  }
+
+  function pintarDelta(c){
+    var t = el("delta"); t.innerHTML = "";
+    var thead = t.createTHead().insertRow();
+    thead.insertCell().outerHTML = "<th>δ</th>";
+    SIMBOLOS.forEach(function(s){ thead.insertCell().outerHTML = "<th>" + s + "</th>"; });
+    thead.insertCell().outerHTML = "<th style='text-align:left'>qué hace ese estado</th>";
+    var body = t.createTBody();
+    ESTADOS.forEach(function(q){
+      var tr = body.insertRow();
+      tr.insertCell().outerHTML = "<th>" + sub[q] + "</th>";
+      SIMBOLOS.forEach(function(s){
+        var r = D[q][s], td = tr.insertCell(), txt;
+        if (r === null) { txt = "—"; td.className = "vacia"; }
+        else if (r === "acc") txt = "acepta";
+        else if (r === "rej") txt = sinRechazo ? "(sin regla)" : "rechaza";
+        else txt = "(" + sub[r[0]] + "," + r[1] + "," + (r[2] === "R" ? "→" : "←") + ")";
+        td.textContent = txt;
+        if (c.regla && c.regla[0] === q && c.regla[1] === s) td.className = "disparando";
+      });
+      var p = tr.insertCell(); p.className = "papel-col"; p.textContent = PAPEL[q];
+    });
+  }
+
+  function cargar(){
+    var w = el("entrada").value.replace(/[^01]/g, "");
+    el("entrada").value = w;
+    historia = [inicial(w)]; idx = 0; parar();
+    pintar();
+  }
+  function paso(){
+    if (idx < historia.length - 1){ idx++; pintar(); return true; }
+    var n = siguiente(historia[idx]);
+    if (!n) return false;
+    if (n.bloqueado){ ciclando(); return false; }
+    historia.push(n); idx++; pintar();
+    return !n.fin;
+  }
+  function ciclando(){
+    parar();
+    var ver = el("veredicto"); ver.className = "veredicto cicla"; ver.style.display = "";
+    ver.textContent = "∞ CICLA — sin la regla de rechazo, la máquina se queda aquí para siempre. "
+      + "Ése es el tercer desenlace, y es el que hace posible toda la unidad.";
+    el("paso").disabled = true; el("correr").disabled = true;
+  }
+  function parar(){ if (timer){ clearInterval(timer); timer = null; } }
+  function correr(){
+    if (timer){ parar(); pintar(); return; }
+    timer = setInterval(function(){ if (!paso()) { parar(); pintar(); } }, 320);
+    el("correr").textContent = "Pausar";
+  }
+
+  el("cargar").onclick = cargar;
+  el("paso").onclick = function(){ parar(); paso(); };
+  el("atras").onclick = function(){ parar(); if (idx > 0){ idx--; pintar(); } };
+  el("correr").onclick = correr;
+  el("reiniciar").onclick = function(){ idx = 0; parar(); pintar(); };
+  el("entrada").onkeydown = function(e){ if (e.key === "Enter") cargar(); };
+  el("sinrechazo").onchange = function(){ sinRechazo = this.checked; cargar(); };
+  Array.prototype.forEach.call(document.querySelectorAll(".atajos button"), function(b){
+    b.onclick = function(){ el("entrada").value = b.getAttribute("data-w"); cargar(); };
+  });
+
+  cargar();
+})();
+</script>
+</body>
+</html>
