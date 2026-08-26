@@ -980,7 +980,232 @@ def comp_aritmetizacion():
     return "".join(p)
 
 
+def comp_for_enumera():
+    """Pagina 7. El motor de la demostracion de Godel es la enumeracion."""
+    ancho, alto = 960, 380
+    aria = (
+        "El ciclo recorre todas las cadenas en orden shortlex y le pregunta a "
+        "cada una si es una demostracion de la formula buscada"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "El motor es la enumeración, y nada más", TEXTO, 20, peso="600"))
+
+    celda, y = 92, 130
+    x0 = 60
+    cadenas = ["ε", "0", "1", "00", "01", "10", "11", "…"]
+    for i, s in enumerate(cadenas):
+        x = x0 + i * celda
+        if s == "…":
+            p.append(texto(x + 30, y + 40, "· · ·", SUAVE, 20))
+            continue
+        p.append(caja(x, y, 76, 56, borde=LINEA, radio=6))
+        p.append(texto(x + 38, y + 36, s, TEXTO, 17))
+        p.append(texto(x + 38, y + 82, "¿eres?", SUAVE, 11))
+        p.append(flecha(x + 38, y + 62, x + 38, y + 68, color=SUAVE))
+
+    p.append(caja(240, 250, 480, 74, borde=ACENTO, radio=10))
+    p.append(texto(480, 278, "¿eres una demostración de «x no termina con entrada x»?", ACENTO, 14, peso="600"))
+    p.append(texto(480, 304, "Si alguna lo es, el ciclo la encuentra. Si ninguna, corre para siempre.", SUAVE, 12.5))
+
+    p.append(
+        texto(
+            ancho / 2,
+            360,
+            "Una demostración es una cadena finita, y este orden llega a toda cadena finita. Ese es todo el truco.",
+            TEXTO,
+            13.5,
+            peso="600",
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_p_sobre_si():
+    """Pagina 7. P sobre su propio codigo.
+
+    Usa _panel_autorreferencia, la MISMA funcion que comp-cortocircuito: el
+    parecido con la demostracion de la parada es el contenido de la pagina 8.
+    """
+    ancho, alto = 980, 590
+    aria = (
+        "El programa P recibiendo su propio codigo: las dos ramas trazadas "
+        "hasta su conclusion, con el mismo encuadre que la figura del problema "
+        "de la parada"
+    )
+    p = [marco(ancho, alto, aria)]
+    _panel_autorreferencia(
+        p, 40, 46,
+        "¿Qué hace P con su propio código?",
+        "P", SERIE[1],
+        "⟨P⟩",
+        [
+            ("Si suponemos que TERMINA…", "…encontró una demostración de que no termina…",
+             "…y F solo demuestra verdades. Imposible."),
+            ("Luego NO termina…", "…y entonces eso es VERDAD…",
+             "…pero si F lo demostrara, P terminaría."),
+        ],
+        "Hay una verdad que F no demuestra.",
+    )
+    p.append(caja(200, 496, 580, 52, borde=ACENTO, grosor=3, radio=26))
+    p.append(texto(490, 528, "«P no termina con ⟨P⟩» es verdadera, y F no la demuestra", ACENTO, 15, peso="600"))
+    p.append(texto(490, 572, "Mismo encuadre que la figura de la parada: es el mismo movimiento.", SUAVE, 13))
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_verdadero_demostrable():
+    """Pagina 7. Contencion PROPIA, no traslape.
+
+    Un revisor pedia cortar este diagrama porque "dos manchas traslapadas"
+    produce justo los malentendidos que la pagina combate. Se conserva
+    dibujandolo como contencion estricta, y anotando lo que de verdad las
+    distingue: los teoremas son enumerables, las verdades no.
+    """
+    ancho, alto = 900, 440
+    aria = (
+        "Los teoremas de F estrictamente dentro de las verdades de la "
+        "aritmetica, con la oracion de Godel marcada en el hueco entre ambas"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Verdadero y demostrable no son lo mismo", TEXTO, 20, peso="600"))
+
+    cx, cy = 450, 240
+    p.append(
+        f'<ellipse cx="{cx}" cy="{cy}" rx="330" ry="140" fill="none" '
+        f'stroke="{SERIE[0]}" stroke-width="2"/>'
+    )
+    p.append(texto(cx, 116, "las verdades de la aritmética", SERIE[0], 15, peso="600"))
+    p.append(texto(cx, 136, "NO son enumerables", SUAVE, 12))
+
+    p.append(
+        f'<ellipse cx="{cx - 60}" cy="{cy + 10}" rx="200" ry="88" fill="none" '
+        f'stroke="{SERIE[1]}" stroke-width="2"/>'
+    )
+    p.append(texto(cx - 60, cy + 6, "los teoremas de F", SERIE[1], 15, peso="600"))
+    p.append(texto(cx - 60, cy + 28, "SÍ son enumerables — el «for»", SUAVE, 12))
+
+    p.append(f'<circle cx="{cx + 210}" cy="{cy + 40}" r="7" fill="{ACENTO}"/>')
+    p.append(texto(cx + 210, cy + 74, "«P no termina", ACENTO, 13, peso="600"))
+    p.append(texto(cx + 210, cy + 92, "con ⟨P⟩»", ACENTO, 13, peso="600"))
+    p.append(texto(cx + 210, cy + 114, "verdadera, no demostrable", SUAVE, 11))
+
+    p.append(
+        texto(
+            ancho / 2,
+            412,
+            "La contención es ESTRICTA, y esa es la diferencia que importa: una lista puede enumerar los teoremas; ninguna enumera las verdades.",
+            SUAVE,
+            12.5,
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_con_f():
+    """Pagina 7. Con(F) es la oracion de parada de un programa concreto."""
+    ancho, alto = 940, 380
+    aria = (
+        "El buscador de contradicciones: un programa que enumera demostraciones "
+        "de F y se detiene si encuentra una de que cero es igual a uno"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "La consistencia de F es un programa que no termina", TEXTO, 20, peso="600"))
+
+    p.append(caja(60, 96, 420, 180, borde=SERIE[1], radio=12, grosor=3))
+    p.append(texto(270, 128, "M_F — el buscador de contradicciones", SERIE[1], 15, peso="600"))
+    lineas = [
+        "for p in shortlex:",
+        "    if EsDemostracion(p, «0 = 1»):",
+        "        halt",
+    ]
+    for i, linea in enumerate(lineas):
+        p.append(texto(90, 168 + i * 30, linea, TEXTO, 15, anclaje="start"))
+    p.append(texto(270, 258, "enumera TODAS las demostraciones de F", SUAVE, 12))
+
+    p.append(caja(530, 120, 360, 64, borde=ACENTO, radio=10, grosor=3))
+    p.append(texto(710, 148, "F es consistente", ACENTO, 16, peso="600"))
+    p.append(texto(710, 170, "⟺  este programa nunca se detiene", ACENTO, 14))
+
+    p.append(caja(530, 208, 360, 74, borde=SUAVE, radio=10))
+    p.append(texto(710, 234, "Y el segundo teorema dice:", TEXTO, 14, peso="600"))
+    p.append(texto(710, 258, "F no puede demostrar que no se detiene", TEXTO, 14))
+    p.append(texto(710, 276, "— aunque de hecho no se detenga.", SUAVE, 12))
+
+    p.append(
+        texto(
+            ancho / 2,
+            340,
+            "Con(F) no es una fórmula opaca: es la oración de parada de un programa que cabe en tres renglones.",
+            TEXTO,
+            13.5,
+            peso="600",
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_mismo_esqueleto():
+    """Pagina 8. Los tres reducidos a su forma, en fila.
+
+    No es la tabla de la pagina otra vez: la tabla lo dice con palabras, esto
+    lo muestra con la forma.
+    """
+    ancho, alto = 980, 420
+    aria = (
+        "Cantor, Turing y Godel reducidos a su estructura y puestos en fila: la "
+        "misma diagonal en los tres, con objetos distintos"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "El mismo esqueleto, tres veces", TEXTO, 20, peso="600"))
+
+    columnas = [
+        (60, "Cantor", SERIE[2], "sucesiones", "cambiar cada dígito",
+         "no hay lista que las agote"),
+        (370, "Turing", SERIE[1], "máquinas", "hacer lo contrario de H",
+         "HALT es indecidible"),
+        (680, "Gödel", ACENTO, "programas", "terminar si se prueba que no",
+         "F es incompleta"),
+    ]
+    for x, titulo, color, objetos, giro, final in columnas:
+        p.append(texto(x + 120, 84, titulo, color, 18, peso="600"))
+        # La rejilla con su diagonal: identica en las tres columnas.
+        gx, gy, c = x + 40, 106, 32
+        for i in range(4):
+            for j in range(4):
+                diag = i == j
+                p.append(
+                    f'<rect x="{gx + j * c}" y="{gy + i * c}" width="{c - 4}" '
+                    f'height="{c - 4}" rx="3" fill="none" '
+                    f'stroke="{color if diag else LINEA}" '
+                    f'stroke-width="{2 if diag else 1}"/>'
+                )
+        p.append(texto(x + 120, 258, objetos, TEXTO, 14, peso="600"))
+        p.append(texto(x + 120, 286, giro, SUAVE, 12))
+        p.append(caja(x + 10, 306, 220, 44, borde=color, radio=8))
+        p.append(texto(x + 120, 334, final, color, 13, peso="600"))
+
+    p.append(
+        texto(
+            ancho / 2,
+            390,
+            "El núcleo común no es la autorreferencia: es la diagonalización. En Cantor los objetos no hablan de sí mismos; en los otros dos, sí.",
+            SUAVE,
+            13,
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
 DIAGRAMAS = {
+    "comp-for-enumera": comp_for_enumera,
+    "comp-p-sobre-si": comp_p_sobre_si,
+    "comp-verdadero-demostrable": comp_verdadero_demostrable,
+    "comp-con-f": comp_con_f,
+    "comp-mismo-esqueleto": comp_mismo_esqueleto,
     "comp-cantor": comp_cantor,
     "comp-existir-exhibir": comp_existir_exhibir,
     "comp-que-es-demostracion": comp_que_es_demostracion,
