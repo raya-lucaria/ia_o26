@@ -13,6 +13,14 @@ render:
     sequences:
       figure: { label: "Figura", style: caption }
       table: { label: "Tabla", style: caption }
+      theorem: { label: "Teorema", style: scannable }
+      example: { label: "Ejemplo", style: scannable }
+      exercise: { label: "Ejercicio", style: scannable }
     families:
       figure: { sequence: figure, label: "Figura" }
       table: { sequence: table, label: "Tabla" }
+      theorem: { sequence: theorem, label: "Teorema" }
+      definition: { sequence: theorem, label: "Definición" }
+      remark: { sequence: theorem, label: "Observación" }
+      example: { sequence: example, label: "Ejemplo" }
+      exercise: { sequence: exercise, label: "Ejercicio" }
