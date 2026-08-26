@@ -347,66 +347,128 @@ def comp_configuracion():
 
 
 def comp_automata():
-    """Pagina 2. El automata de la maquina de juguete, con los papeles en espanol."""
-    ancho, alto = 980, 480
+    """Pagina 2. El automata de la maquina de juguete.
+
+    La topologia se rediseno para que NO HAYA cruces posibles, despues de que
+    dos revisiones visuales del PNG mostraran que arreglar un cruce a la vez
+    creaba otro: al separar el arco q0->q3 del circulo de q1 empezo a partir el
+    chip del bucle de q1, y el bucle de q3 acabo cortando la flecha de
+    aceptacion.
+
+    La forma que lo resuelve: el ciclo q0->q1->q2->q0 vive abajo a la izquierda,
+    y la salida q0->q3->acc sube por un arco despejado a la banda superior
+    derecha, que antes era hueco muerto. Ninguna arista tiene que pasar cerca de
+    otra.
+
+    Cada etiqueta es un CHIP con fondo opaco puesto SOBRE su propia trayectoria:
+    la unica manera de que se sepa de quien es sin adivinar. Que un chip tape su
+    propia arista es correcto; que lo cruce una arista ajena, no.
+    """
+    ancho, alto = 1100, 800
+    TRAZO = "#a273d6"   # 5.09:1 sobre #211033. LINEA (#78419e) da 2.57:1
     aria = (
-        "Automata de la maquina de juguete que decide 0 elevado a n seguido de "
-        "1 elevado a n: seis estados con sus transiciones etiquetadas"
+        "Automata de la maquina que decide 0 elevado a n seguido de 1 elevado a "
+        "n: cinco estados y diez transiciones, cada una etiquetada con el "
+        "simbolo que lee, el que escribe y la direccion en que se mueve"
     )
     p = [marco(ancho, alto, aria)]
-    p.append(texto(ancho / 2, 42, "La máquina de juguete, como autómata", TEXTO, 20, peso="600"))
+    for nombre, color in [("pm", ACENTO), ("pv", SERIE[0]), ("pc", SERIE[1]), ("pt", TRAZO)]:
+        p.append(
+            f'<defs><marker id="{nombre}" viewBox="0 0 10 10" refX="9" refY="5" '
+            f'markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+            f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{color}"/></marker></defs>'
+        )
+    p.append(texto(300, 40, "La máquina de juguete, como autómata", TEXTO, 21, peso="600"))
 
-    pos = {
-        "q₀": (150, 200),
-        "q₁": (420, 140),
-        "q₂": (420, 300),
-        "q₃": (690, 200),
-        "acc": (880, 200),
-    }
+    def chip(x, y, lee, escribe, direccion, color):
+        txt = f"{lee} │ {escribe}"
+        w = len(txt) * 9.2 + 24
+        s = [f'<rect x="{x - w/2}" y="{y - 14}" width="{w}" height="24" rx="5" '
+             f'fill="{FONDO}" stroke="{color}" stroke-width="1.2"/>']
+        s.append(texto(x - 9, y + 3, txt, color, 14, peso="600"))
+        s.append(texto(x + w/2 - 14, y + 3, direccion, SERIE[0], 14, peso="600"))
+        return "".join(s)
+
+    # --- Leyenda ---
+    p.append(caja(620, 22, 452, 46, borde=SUAVE, radio=8))
+    p.append(texto(648, 52, "0 │ X", TRAZO, 16, anclaje="start", peso="600"))
+    p.append(texto(712, 52, "▶", SERIE[0], 15, anclaje="start", peso="600"))
+    p.append(texto(740, 45, "lee 0, escribe X, se mueve a la derecha", SUAVE, 13, anclaje="start"))
+    p.append(texto(740, 62, "◀", SERIE[0], 14, anclaje="start", peso="600"))
+    p.append(texto(758, 62, "es a la izquierda", SUAVE, 13, anclaje="start"))
+
+    pos = {"q0": (180, 470), "q1": (450, 370), "q2": (450, 600), "q3": (800, 190), "acc": (985, 190)}
+
+    # --- Salida: sube por la banda superior, lejos de todo ---
+    p.append(f'<path d="M 178 440 C 214 258, 470 168, 768 180" fill="none" '
+             f'stroke="{ACENTO}" stroke-width="2.5" marker-end="url(#pm)"/>')
+    p.append(chip(300, 216, "Y", "Y", "▶", ACENTO))
+    p.append(texto(252, 240, "ya no quedan ceros que tachar", ACENTO, 13, anclaje="middle"))
+
+    # --- Ciclo principal ---
+    p.append(f'<path d="M 209 452 C 280 412, 350 386, 419 375" fill="none" '
+             f'stroke="{TRAZO}" stroke-width="2.5" marker-end="url(#pt)"/>')
+    p.append(chip(312, 404, "0", "X", "▶", TRAZO))
+
+    p.append(f'<path d="M 478 396 C 528 445, 528 525, 478 574" fill="none" '
+             f'stroke="{SERIE[1]}" stroke-width="2.5" marker-end="url(#pc)"/>')
+    p.append(chip(540, 485, "1", "Y", "◀", SERIE[1]))
+
+    p.append(f'<path d="M 419 588 C 350 578, 280 538, 210 494" fill="none" '
+             f'stroke="{TRAZO}" stroke-width="2.5" marker-end="url(#pt)"/>')
+    p.append(chip(312, 560, "X", "X", "▶", TRAZO))
+
+    # --- Bucles grandes, con sus chips SOBRE el apice ---
+    p.append(f'<path d="M 426 342 C 340 196, 560 196, 474 342" fill="none" '
+             f'stroke="{TRAZO}" stroke-width="2.5" marker-end="url(#pt)"/>')
+    p.append(chip(450, 300, "0", "0", "▶", TRAZO))
+    p.append(chip(450, 270, "Y", "Y", "▶", TRAZO))
+
+    p.append(f'<path d="M 426 630 C 340 776, 560 776, 474 630" fill="none" '
+             f'stroke="{TRAZO}" stroke-width="2.5" marker-end="url(#pt)"/>')
+    p.append(chip(450, 700, "0", "0", "◀", TRAZO))
+    p.append(chip(450, 670, "Y", "Y", "◀", TRAZO))
+
+    p.append(f'<path d="M 776 160 C 700 60, 900 60, 824 160" fill="none" '
+             f'stroke="{TRAZO}" stroke-width="2.5" marker-end="url(#pt)"/>')
+    p.append(chip(800, 106, "Y", "Y", "▶", TRAZO))
+
+    # --- Aceptacion ---
+    p.append(f'<line x1="832" y1="190" x2="951" y2="190" stroke="{SERIE[0]}" '
+             f'stroke-width="2.5" marker-end="url(#pv)"/>')
+    p.append(chip(891, 190, "␣", "␣", "▶", SERIE[0]))
+    p.append(texto(891, 222, "fin de cinta", SERIE[0], 12.5))
+
     papeles = {
-        "q₀": "busca el siguiente\ncero sin tachar",
-        "q₁": "va a la derecha\nbuscando un uno",
-        "q₂": "regresa a\nla izquierda",
-        "q₃": "verifica que solo\nqueden marcas",
+        "q0": ("busca el siguiente|cero sin tachar", "middle", 0),
+        "q1": ("va a la derecha|buscando un uno", "start", 40),
+        "q2": ("regresa a|la izquierda", "start", 46),
+        "q3": ("verifica que solo|queden marcas", "middle", 0),
     }
-
-    p.append(curva(184, 186, 388, 152, comba=18))
-    p.append(texto(280, 150, "0 → X, →", SERIE[0], 13))
-    p.append(bucle(420, 140))
-    p.append(texto(420, 74, "0 → 0, →   ·   Y → Y, →", SUAVE, 12))
-    p.append(curva(420, 174, 420, 266, comba=-52))
-    p.append(texto(505, 222, "1 → Y, ←", SERIE[1], 13))
-    p.append(bucle(420, 300))
-    p.append(texto(420, 234, "0 → 0, ←   ·   Y → Y, ←", SUAVE, 12))
-    p.append(curva(388, 320, 172, 232, comba=18))
-    p.append(texto(275, 305, "X → X, →", SUAVE, 13))
-    p.append(curva(184, 190, 656, 190, comba=-84))
-    p.append(texto(420, 96, "Y → Y, →   (ya no quedan ceros)", ACENTO, 13))
-    p.append(bucle(690, 200))
-    p.append(texto(690, 134, "Y → Y, →", SUAVE, 12))
-    p.append(flecha(724, 200, 842, 200, color=SERIE[0]))
-    p.append(texto(783, 188, "␣", SERIE[0], 15))
+    # De donde arranca todo. No es una transicion, pero sin ella el dibujo no
+    # dice por donde se empieza a leer, que es la mitad de lo que hace falta.
+    p.append(f'<line x1="96" y1="470" x2="140" y2="470" stroke="{TEXTO}" '
+             f'stroke-width="2.5" marker-end="url(#pt)"/>')
+    p.append(texto(60, 452, "empieza aquí", TEXTO, 12.5, anclaje="start"))
 
     for nombre, (x, y) in pos.items():
         if nombre == "acc":
-            p.append(estado(x, y, "acc", borde=SERIE[0], color_texto=SERIE[0], doble=True))
+            p.append(estado(x, y, "acc", r=32, borde=SERIE[0], color_texto=SERIE[0], doble=True))
             continue
-        p.append(estado(x, y, nombre))
-    for nombre, papel in papeles.items():
+        p.append(estado(x, y, nombre, r=32, borde=TRAZO))
+    for nombre, (papel, anclaje, dx) in papeles.items():
         x, y = pos[nombre]
-        for i, linea in enumerate(papel.split("\n")):
-            p.append(texto(x, y + 56 + i * 16, linea, SUAVE, 12))
+        if anclaje == "abajo":
+            anclaje, dy = "middle", 62
+        else:
+            dy = 62 if anclaje == "middle" else -8
+        for i, linea in enumerate(papel.split("|")):
+            p.append(texto(x + dx, y + dy + i * 17, linea, SUAVE, 13, anclaje=anclaje))
 
-    p.append(
-        texto(
-            ancho / 2,
-            452,
-            "Falta un estado: q_rej. Todo lo que no aparece aquí va a él — por eso δ es total "
-            "aunque el dibujo se vea incompleto.",
-            SUAVE,
-            13,
-        )
-    )
+    p.append(texto(660, 330, "Falta un estado: q\u1d63\u2091\u2c7c.", SUAVE, 13, anclaje="start"))
+    p.append(texto(660, 350, "Todo lo que no aparece aquí va a él —", SUAVE, 13, anclaje="start"))
+    p.append(texto(660, 370, "por eso δ es total aunque el dibujo", SUAVE, 13, anclaje="start"))
+    p.append(texto(660, 390, "se vea incompleto.", SUAVE, 13, anclaje="start"))
     p.append(cierre())
     return "".join(p)
 
