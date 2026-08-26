@@ -132,15 +132,35 @@ Una **configuración** es una fotografía del cómputo completo: qué hay en la
 cinta, dónde está el cabezal y en qué estado está la máquina. Se escribe como
 una sola cadena, $u\,q\,v$.
 
-::: figure {#comp-configuracion title="Cómo se lee una configuración"}
-![La notación u q v anotada: lo que quedó atrás, el estado, y lo que empieza en el cabezal](_assets/comp-configuracion.svg)
+Se escribe pegando tres cosas en este orden, **sin separadores**:
+
+$$\underbrace{u}_{\text{lo que quedó atrás}}\ \ \underbrace{q}_{\text{el estado}}\ \ \underbrace{v}_{\text{desde el cabezal en adelante}}$$
+
+La regla completa, y es la única que hay que recordar: **el estado se escribe
+justo a la izquierda del símbolo que la máquina está leyendo.** Por lo tanto el
+cabezal siempre está sobre el **primer símbolo de $v$**.
+
+Vamos con un caso concreto —y no inventado: es el **paso 3** de la traza que
+viene más abajo en esta misma página—.
+
+::: figure {#comp-configuracion title="La misma configuración, dibujada y escrita"}
+![Arriba la cinta con el cabezal sobre el primer uno; abajo la misma configuración escrita como X0 q1 11, con llaves marcando cada parte](_assets/comp-configuracion.svg)
 :::
 
-El estado va escrito **justo a la izquierda del símbolo que la máquina está
-leyendo**. Así, $X0\,q_1\,11$ dice tres cosas a la vez: en la cinta está escrito
-`X011`, la máquina está en el estado $q_1$, y el cabezal está parado sobre el
-primer `1` — el que sigue inmediatamente al estado. La configuración inicial con
-entrada $w$ es simplemente $q_0 w$: todo a la derecha, nada atrás.
+$$X0\ \ q_1\ \ 11$$
+
+| La pieza | Dice que… |
+|---|---|
+| $u = X0$ | en las casillas que ya pasaron hay una `X` y un `0` |
+| $q_1$ | la máquina está en el estado $q_1$ |
+| $v = 11$ | de la casilla del cabezal en adelante hay `1` y `1` |
+
+Juntando $u$ y $v$: **en la cinta está escrito `X011`**, y el cabezal está sobre
+el tercer símbolo —el primer `1`—, porque es donde empieza $v$.
+
+Y el caso más fácil de todos, el del arranque: la configuración inicial con
+entrada $w$ es simplemente $q_0\,w$. Nada atrás, todo por delante, y el cabezal
+en el primer símbolo.
 
 Y con eso ya se puede decir qué acepta una máquina:
 
