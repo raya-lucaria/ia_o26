@@ -32,6 +32,12 @@ Fíjate en el reparto de la figura: **la tabla de reglas es finita; la cinta de
 símbolos no lo es.** Ese contraste va a reaparecer, ya con nombre propio, en la
 página siguiente.
 
+::: figure {#ilus-simbolos title="Símbolos que se transforman, y nada más"}
+![Una cinta perforada cubierta de marcas simples que se pierde hacia el horizonte](_assets/ilus-simbolos.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ## El vocabulario mínimo
 
 Son cuatro objetos y se definen en cascada: cada uno usa el anterior. Vale la

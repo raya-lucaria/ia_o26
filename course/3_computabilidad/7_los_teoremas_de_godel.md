@@ -58,6 +58,12 @@ el ciclo la encuentra. Si $F$ no la demuestra, el ciclo no termina nunca.
 Reconocible, no decidible: la distinción de
 [[computabilidad-y-decidibilidad|la página 3]], cobrada aquí.
 
+::: figure {#ilus-espejo-enfrentado title="Un sistema que habla de sí mismo"}
+![Dos espejos enfrentados generando una regresión infinita de reflejos](_assets/ilus-espejo-enfrentado.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ## Primer teorema de incompletitud
 
 ::: theorem {#comp-teo-godel-1 title="Primer teorema de incompletitud"}

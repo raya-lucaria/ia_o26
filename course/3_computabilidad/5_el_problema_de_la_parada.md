@@ -69,6 +69,12 @@ tenga dos demostraciones:
 > abrumadora: no lo es. HALT **sí** es reconocible, y casi ninguno de los otros
 > lo es.
 
+::: figure {#ilus-muro title="Un límite que no se cruza"}
+![Un muro descomunal que atraviesa un paisaje llano y se pierde hacia arriba, con una figura diminuta al pie](_assets/ilus-muro.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ## El problema, formalmente
 
 ::: definition {#comp-halt title="El problema de la parada"}

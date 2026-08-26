@@ -253,39 +253,43 @@ def test_7_toda_fecha_y_atribucion_tiene_fuente_verificada():
                 )
 
 
-# El tope subio de 10 a 16 MB cuando las 53 imagenes de la unidad de historia
-# ya ocupaban 8.9 MB, y de 16 a 21 MB al publicarse el cuadernillo del modulo 2.
-# Cada modulo de lecturas cuesta unos 2.8 MB, y la mitad de eso es duplicacion
-# deliberada: el PDF vive en lecturas/ y copiado en _assets/, con una guarda que
-# exige que sean identicos byte a byte. Medido en agosto de 2026, tras las dos
-# paginas de repaso del modulo 2 y sus ocho imagenes: 17.9 MB, o sea 3.1 MB de
-# margen. El modulo 3 costo mucho menos que los dos anteriores —0.74 MB, y el
-# total quedo en 18.7 MB— porque ninguna de sus cuatro lecturas llega como PDF
-# escaneado: el cuadernillo es texto y pesa 182 KB por copia, frente al megabyte
-# largo de los otros dos. Quedan 2.3 MB. La cuarta lectura, agregada en
-# agosto de 2026, costo 0.19 MB entre las dos copias del PDF y la fuente.
-# Otro modulo de solo texto cabe; uno con lecturas en PDF, no. Cuando el
-# siguiente vuelva a chocar contra el tope, la decision ya no es subirlo otra
-# vez. Generar los cuadernillos en CI NO es la salida: el pipeline necesita
-# weasyprint y pypdf, que CI no instala, y sobre todo los PDF en derechos de
-# fuentes/, que estan en .gitignore y nunca van a estar en un runner. Las dos
-# salidas que si existen son sacar los PDF construidos del arbol de git a Git
-# LFS, o dejar de versionarlos y publicarlos como adjuntos de un release de
-# GitHub, enlazados desde la pagina del curso.
-TOPE_REPOSITORIO = 21_000_000
+# El tope global del repositorio se retiro deliberadamente en agosto de 2026,
+# por decision explicita al publicar la unidad de computabilidad ("quita ese
+# limite, las imagenes que sean necesarias"). Su historia: subio de 10 a 16 MB
+# cuando las 53 imagenes de historia ocupaban 8.9 MB, y de 16 a 21 al publicarse
+# el cuadernillo del modulo 2. Cada modulo de lecturas cuesta ~2.8 MB, la mitad
+# duplicacion deliberada. Al retirarlo, el repositorio pesaba 20.2 MB.
+#
+# Lo que se pierde con esa decision, para que este escrito: nada avisa ya cuando
+# el arbol de git crece, y los bytes se pagan en cada clon, cada checkout y cada
+# corrida de CI --que aqui ocurre en cada push Y en cada pull request--. Borrar
+# un archivo pesado despues NO encoge la historia. Si algun dia esto pesa,
+# las salidas siguen siendo las de antes: mover los PDF construidos a Git LFS,
+# o dejar de versionarlos y publicarlos como adjuntos de un release.
+#
+# Lo que SI se conserva es la guarda por archivo de abajo. No limita cuantas
+# imagenes hay --que es lo que se pidio quitar-- sino que atrapa el accidente
+# distinto: un binario enorme comiteado por error, que es el caso que de verdad
+# arruina un repositorio y que nadie decide a proposito.
+TOPE_POR_ARCHIVO = 12_000_000
 
 
-def test_8_el_repositorio_pesa_menos_del_tope():
+def test_8_ningun_archivo_rastreado_es_desmesurado():
+    """Sustituye al tope global retirado. No cuenta imagenes: caza el binario
+    que nadie quiso comitear. El PDF publicado mas pesado del curso son 1.3 MB,
+    asi que 12 MB es holgado por un orden de magnitud y solo salta ante algo
+    que claramente no deberia estar versionado."""
     salida = subprocess.run(
         ["git", "ls-files", "-z"], cwd=RAIZ, capture_output=True, text=True, check=True
     )
-    total = sum(
-        (RAIZ / n).stat().st_size
-        for n in salida.stdout.split("\0") if n and (RAIZ / n).is_file()
-    )
-    assert total < TOPE_REPOSITORIO, (
-        f"el repositorio pesa {total / 1e6:.1f} MB "
-        f"(tope: {TOPE_REPOSITORIO / 1e6:.0f} MB)"
+    gordos = [
+        (n, (RAIZ / n).stat().st_size)
+        for n in salida.stdout.split("\0")
+        if n and (RAIZ / n).is_file() and (RAIZ / n).stat().st_size > TOPE_POR_ARCHIVO
+    ]
+    assert not gordos, (
+        "archivos rastreados desmesurados (git no olvida: borrarlos despues no "
+        f"encoge la historia): {[(n, f'{s/1e6:.1f} MB') for n, s in gordos]}"
     )
 
 
@@ -352,16 +356,27 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
     # modulo, un glob("*.md") plano dejo de ver las nueve paginas de repaso y
     # esta guarda paso a cubrir cero ilustraciones sin fallar. La unica pagina
     # que rglob agrega de mas es _assets/CREDITOS.md, que no enlaza figuras.
+    # Al agregar la unidad de computabilidad hubo que tocar DOS cosas, no una:
+    # la lista de paginas y el diccionario de abajo. Extender solo la lista deja
+    # las paginas nuevas contabilizadas como "historia" --por el else del
+    # discriminante-- y el piso por unidad deja de significar nada. Es el mismo
+    # fallo silencioso que el comentario de arriba documenta que ya ocurrio.
     PAGINAS_CON_ILUSTRACIONES = [UNIDAD / p for p in PAGINAS] + sorted(
-        p for p in (RAIZ / "course/2_filosofia_ia").rglob("*.md")
+        p for carpeta in ("course/2_filosofia_ia", "course/3_computabilidad")
+        for p in (RAIZ / carpeta).rglob("*.md")
         if "_assets" not in p.parts
     )
-    usos_por_unidad = {"historia": 0, "filosofia": 0}
+    usos_por_unidad = {"historia": 0, "filosofia": 0, "computabilidad": 0}
     for ruta in PAGINAS_CON_ILUSTRACIONES:
         if not ruta.is_file():
             continue
         pagina = ruta.name
-        unidad = "filosofia" if "2_filosofia_ia" in ruta.parts else "historia"
+        if "3_computabilidad" in ruta.parts:
+            unidad = "computabilidad"
+        elif "2_filosofia_ia" in ruta.parts:
+            unidad = "filosofia"
+        else:
+            unidad = "historia"
         texto = ruta.read_text(encoding="utf-8")
         # El "../" es opcional a proposito: las paginas de historia enlazan a
         # su _assets/ hermano y las de filosofia, desde su directorio de

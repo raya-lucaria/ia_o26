@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from unidades import ASSETS_FILOSOFIA, ASSETS_HISTORIA
+from unidades import ASSETS_COMPUTABILIDAD, ASSETS_FILOSOFIA, ASSETS_HISTORIA
 
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = ASSETS_HISTORIA          # el conjunto original no cambia de sitio
@@ -109,5 +109,66 @@ def test_filosofia_dimensiones_y_peso():
 def test_filosofia_acreditadas_como_generadas():
     creditos = CREDITOS_FILOSOFIA.read_text(encoding="utf-8").lower()
     for nombre in nombres_filosofia():
+        assert f"ilus-{nombre}.png" in creditos, f"ilus-{nombre}.png sin credito"
+    assert "generada" in creditos
+
+
+# --- Bloque de computabilidad -------------------------------------------------
+# Las guardas de arriba leen SOLO su propio bloque del catalogo: nombres() lee
+# "ilustraciones" y nombres_filosofia() lee "ilustraciones_filosofia". Un bloque
+# nuevo queda cubierto por UNA sola prueba de este archivo --la de prompts
+# prohibidos, que serializa el catalogo entero-- y se pierde justamente la mas
+# cara: la del fondo horneado, que es la unica que agarra un modelo que devolvio
+# gradiente o vineta. Peor, fijar_fondo_en_paleta() de gen_ilustraciones.py se
+# rinde EN SILENCIO cuando las esquinas no caen en un solo indice de paleta. Sin
+# estas cuatro, la unidad publicaria un fondo desfasado con la suite en verde.
+
+CREDITOS_COMPUTABILIDAD = ASSETS_COMPUTABILIDAD / "CREDITOS.md"
+
+
+def nombres_computabilidad():
+    catalogo = json.loads(CATALOGO.read_text(encoding="utf-8"))
+    return list(catalogo.get("ilustraciones_computabilidad", {}))
+
+
+def test_computabilidad_todas_generadas():
+    for nombre in nombres_computabilidad():
+        ruta = ASSETS_COMPUTABILIDAD / f"ilus-{nombre}.png"
+        assert ruta.is_file(), f"falta {ruta.name}"
+
+
+def test_computabilidad_fondo_horneado_al_color_exacto():
+    for nombre in nombres_computabilidad():
+        ruta = ASSETS_COMPUTABILIDAD / f"ilus-{nombre}.png"
+        assert ruta.is_file(), f"falta {ruta.name}"
+        with Image.open(ruta) as im:
+            im = im.convert("RGB")
+            esquinas = [
+                im.getpixel((0, 0)),
+                im.getpixel((im.width - 1, 0)),
+                im.getpixel((0, im.height - 1)),
+                im.getpixel((im.width - 1, im.height - 1)),
+            ]
+            assert all(px == FONDO_OBJETIVO for px in esquinas), (
+                f"{ruta.name}: las esquinas no son {FONDO_OBJETIVO} exacto ({esquinas})"
+            )
+
+
+def test_computabilidad_dimensiones_y_peso():
+    """Tope propio del bloque, mas estricto que PESO_MAX_PNG. El tope global
+    del repositorio se retiro, asi que este es el unico numero que impide que
+    una ilustracion salga desmesurada sin que nadie lo note."""
+    for nombre in nombres_computabilidad():
+        ruta = ASSETS_COMPUTABILIDAD / f"ilus-{nombre}.png"
+        with Image.open(ruta) as im:
+            assert im.width == 1024, f"{ruta.name} mide {im.width}px de ancho"
+        assert ruta.stat().st_size < PESO_MAX_PNG, (
+            f"{ruta.name} pesa {ruta.stat().st_size/1000:.0f} KB"
+        )
+
+
+def test_computabilidad_acreditadas_como_generadas():
+    creditos = CREDITOS_COMPUTABILIDAD.read_text(encoding="utf-8").lower()
+    for nombre in nombres_computabilidad():
         assert f"ilus-{nombre}.png" in creditos, f"ilus-{nombre}.png sin credito"
     assert "generada" in creditos
