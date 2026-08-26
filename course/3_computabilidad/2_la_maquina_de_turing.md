@@ -280,6 +280,24 @@ sea, buscando un uno— y lo que encontró fue el final de la cinta.
 > distintas desde el paso 1**, porque las entradas son distintas. Lo que se
 > repite es el procedimiento, no la cinta.
 
+## Córrela tú
+
+Trece filas son suficientes para ver *una* corrida. Lo que no se puede hacer en
+una tabla es preguntar «¿y con esta otra entrada?» — y ésa es justo la pregunta
+que hace que se entienda.
+
+> ### [▶ Abrir el simulador de la máquina](_assets/simulador_maquina_turing.html)
+>
+> Escribe la entrada que quieras y avanza paso a paso, o déjala correr. Verás la
+> cinta, el cabezal, el estado, y **la regla de δ que está disparando se ilumina
+> en la tabla**. Puedes retroceder.
+>
+> Vale la pena probar `0101` —que tiene dos ceros y dos unos y aun así
+> rechaza—, la cadena vacía, y `00111`.
+>
+> Y trae un **modo sin rechazo**: quita las reglas que llevan a $q_{\text{rej}}$
+> para que puedas *ver* el tercer desenlace, el que arriba solo se afirma.
+
 ## Ejercicios
 
 ::: exercise {#comp-ej-traza title="Traza tú"}
