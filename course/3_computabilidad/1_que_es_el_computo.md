@@ -50,17 +50,31 @@ Ejemplo: $\Sigma = \{0,1\}$. También vale $\Sigma = \{a, b, c\}$, o el conjunto
 de caracteres de tu teclado. Lo único que importa es que sean **finitos**.
 :::
 
-::: definition {#comp-cadena title="Cadena"}
+::: definition {#comp-cadena title="Cadena, y su longitud"}
 Una **cadena** sobre $\Sigma$ es una sucesión finita de símbolos de $\Sigma$.
 
-$0110$ es una cadena sobre $\{0,1\}$, y su longitud es $\lvert 0110\rvert = 4$.
-La **cadena vacía** se escribe $\varepsilon$ y tiene longitud $0$: no es «nada»,
-es una cadena legítima con cero símbolos, igual que $0$ es un número legítimo.
+Su **longitud** es cuántos símbolos tiene, y se escribe entre barras:
+
+$$\lvert 0110 \rvert = 4$$
+:::
+
+::: definition {#comp-cadena-vacia title="La cadena vacía, ε"}
+La **cadena vacía** es la cadena que no tiene ningún símbolo. Se escribe con la
+letra griega épsilon:
+
+$$\varepsilon, \qquad \lvert \varepsilon \rvert = 0$$
+
+**No es «nada», y no es el conjunto vacío.** Es una cadena perfectamente
+legítima que resulta tener cero símbolos — igual que $0$ es un número
+perfectamente legítimo que resulta contar cero cosas.
+
+Aparece más de lo que parece, y casi siempre es el caso que se olvida al
+resolver un ejercicio.
 :::
 
 ::: definition {#comp-sigma-estrella title="El conjunto de todas las cadenas"}
 $\Sigma^*$ es el conjunto de **todas** las cadenas finitas sobre $\Sigma$,
-$\varepsilon$ incluida.
+incluida la cadena vacía @comp-cadena-vacia.
 
 Para $\Sigma=\{0,1\}$:
 $\Sigma^* = \{\varepsilon,\ 0,\ 1,\ 00,\ 01,\ 10,\ 11,\ 000,\ \dots\}$
