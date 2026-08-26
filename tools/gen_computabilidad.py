@@ -368,12 +368,153 @@ def comp_automata():
     return "".join(p)
 
 
+def comp_tres_desenlaces():
+    """Pagina 3. El tercer desenlace es el que hace posible la unidad entera."""
+    ancho, alto = 900, 380
+    aria = (
+        "Una maquina con tres salidas posibles: acepta, rechaza, y cicla para "
+        "siempre, dibujado como una flecha que vuelve sobre si misma"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Tres desenlaces, no dos", TEXTO, 20, peso="600"))
+
+    p.append(caja(90, 150, 150, 90, borde=SUAVE))
+    p.append(texto(165, 186, "M", TEXTO, 22, peso="600"))
+    p.append(texto(165, 214, "con entrada w", SUAVE, 12))
+
+    salidas = [
+        (110, "acepta", SERIE[0], "w ∈ L(M)"),
+        (200, "rechaza", SUAVE, "w ∉ L(M)"),
+    ]
+    for y, etiqueta, color, glosa in salidas:
+        p.append(flecha(240, 195, 470, y + 20, color=color))
+        p.append(caja(480, y - 8, 150, 56, borde=color))
+        p.append(texto(555, y + 20, etiqueta, color, 16, peso="600"))
+        p.append(texto(660, y + 24, glosa, SUAVE, 13, anclaje="start"))
+
+    p.append(flecha(240, 215, 470, 300, color=ACENTO))
+    p.append(caja(480, 272, 150, 56, borde=ACENTO))
+    p.append(texto(555, 300, "cicla", ACENTO, 16, peso="600"))
+    p.append(
+        f'<path d="M 630 288 C 700 250, 700 350, 630 314" fill="none" '
+        f'stroke="{ACENTO}" stroke-width="2" marker-end="url(#p)"/>'
+    )
+    p.append(texto(712, 304, "para siempre", ACENTO, 13, anclaje="start"))
+
+    p.append(
+        texto(
+            ancho / 2,
+            356,
+            "El tercero es el que hace posible esta unidad. Sin él no habría nada que demostrar.",
+            TEXTO,
+            14,
+            peso="600",
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_decidir_vs_reconocer():
+    """Pagina 3. La promesa de detenerse, dibujada."""
+    ancho, alto = 940, 420
+    aria = (
+        "Dos maquinas sobre la misma entrada: el decisor siempre llega a una de "
+        "dos puertas; el reconocedor tiene una tercera salida que no llega a "
+        "ninguna parte"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "La única diferencia es la promesa de detenerse", TEXTO, 20, peso="600"))
+
+    bloques = [
+        (86, "Un DECISOR de L", SERIE[0], True),
+        (250, "Un RECONOCEDOR de L", ACENTO, False),
+    ]
+    for y, titulo, color, es_decisor in bloques:
+        p.append(texto(60, y, titulo, color, 16, anclaje="start", peso="600"))
+        p.append(caja(60, y + 14, 130, 78, borde=color))
+        p.append(texto(125, y + 60, "M", TEXTO, 20, peso="600"))
+        p.append(flecha(190, y + 40, 380, y + 30, color=SERIE[0]))
+        p.append(texto(400, y + 34, "acepta", SERIE[0], 14, anclaje="start"))
+        p.append(flecha(190, y + 66, 380, y + 76, color=SUAVE))
+        p.append(texto(400, y + 80, "rechaza", SUAVE, 14, anclaje="start"))
+        if es_decisor:
+            p.append(texto(560, y + 56, "siempre llega a una de las dos", SERIE[0], 13, anclaje="start"))
+        else:
+            p.append(
+                f'<line x1="190" y1="{y+82}" x2="380" y2="{y+120}" stroke="{ACENTO}" '
+                f'stroke-width="2" stroke-dasharray="7 6"/>'
+            )
+            p.append(texto(400, y + 124, "cicla — nunca contesta", ACENTO, 14, anclaje="start"))
+            p.append(texto(560, y + 156, "¿cuánto espero antes de rendirme?", ACENTO, 14, anclaje="middle", peso="600"))
+
+    p.append(
+        texto(
+            ancho / 2,
+            398,
+            "Si la respuesta es «sí», el reconocedor te lo dice. Si es «no», quizá esperas para siempre "
+            "— y no hay momento en que puedas rendirte con derecho.",
+            SUAVE,
+            13,
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_tres_clases():
+    """Pagina 3. Los tres anillos, poblados con ejemplos con nombre."""
+    ancho, alto = 880, 460
+    aria = (
+        "Tres anillos anidados: los lenguajes decidibles dentro de los "
+        "reconocibles, y estos dentro de todos los lenguajes, con un ejemplo "
+        "con nombre en cada region"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Tres clases, y las dos son contenciones estrictas", TEXTO, 20, peso="600"))
+
+    cx, cy = 440, 250
+    anillos = [
+        (330, 160, SUAVE, "todos los lenguajes", 108),
+        (230, 112, ACENTO, "reconocibles", 158),
+        (130, 64, SERIE[0], "decidibles", 208),
+    ]
+    for rx, ry, color, etiqueta, y_et in anillos:
+        p.append(
+            f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="none" '
+            f'stroke="{color}" stroke-width="2"/>'
+        )
+        p.append(texto(cx, y_et, etiqueta, color, 14, peso="600"))
+
+    p.append(texto(cx, 258, "0ⁿ1ⁿ", SERIE[0], 17, peso="600"))
+    p.append(texto(cx, 278, "la máquina de la pág. 2", SUAVE, 11))
+    p.append(texto(cx, 330, "HALT", ACENTO, 17, peso="600"))
+    p.append(texto(cx, 348, "reconocible, no decidible", SUAVE, 11))
+    p.append(texto(cx, 392, "el complemento de HALT", TEXTO, 15, peso="600"))
+    p.append(texto(cx, 410, "ni siquiera reconocible", SUAVE, 11))
+
+    p.append(
+        texto(
+            ancho / 2,
+            440,
+            "Cada anillo tiene un habitante con nombre. Los dos de afuera se ganan en la página 5.",
+            SUAVE,
+            13,
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
 DIAGRAMAS = {
     "comp-esencia": comp_esencia,
     "comp-tres-vistas": comp_tres_vistas,
     "comp-anatomia": comp_anatomia,
     "comp-configuracion": comp_configuracion,
     "comp-automata": comp_automata,
+    "comp-tres-desenlaces": comp_tres_desenlaces,
+    "comp-decidir-vs-reconocer": comp_decidir_vs_reconocer,
+    "comp-tres-clases": comp_tres_clases,
 }
 
 

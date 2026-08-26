@@ -16,3 +16,6 @@ que una edición manual falla la suite.
 | `comp-anatomia.svg` | Anatomía de la máquina de Turing: cinta con tope izquierdo, cabezal y control finito | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-configuracion.svg` | Cómo se lee la notación de configuración u q v, anotada pieza por pieza | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-automata.svg` | El autómata de la máquina de juguete que decide 0ⁿ1ⁿ, con el papel de cada estado | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-tres-desenlaces.svg` | Los tres desenlaces de una máquina: acepta, rechaza y cicla para siempre | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-decidir-vs-reconocer.svg` | Decisor contra reconocedor sobre la misma entrada: la tercera salida que nunca contesta | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-tres-clases.svg` | Decidibles, reconocibles y todos los lenguajes, con un habitante con nombre en cada región | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |

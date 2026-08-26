@@ -70,6 +70,21 @@ def test_cada_svg_cumple_las_cinco_convenciones_de_la_raiz():
         )
 
 
+def test_cada_svg_es_xml_bien_formado():
+    """Las demas guardas comprueban subcadenas: un SVG con una etiqueta sin
+    cerrar las pasa todas y se publica como una imagen rota. Esto lo parsea de
+    verdad."""
+    import xml.dom.minidom
+
+    modulo = _cargar()
+    for nombre in modulo.DIAGRAMAS:
+        ruta = ASSETS / f"{nombre}.svg"
+        try:
+            xml.dom.minidom.parse(str(ruta))
+        except Exception as error:  # noqa: BLE001 - se re-lanza como fallo legible
+            raise AssertionError(f"{ruta.name} no es XML bien formado: {error}") from error
+
+
 def test_ningun_svg_quedo_huerfano_en_assets():
     """Un SVG que el generador ya no produce se queda en el directorio y sigue
     pesando contra TOPE_REPOSITORIO sin que nada lo note. Falla para que se
