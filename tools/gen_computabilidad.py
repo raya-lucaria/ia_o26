@@ -506,6 +506,164 @@ def comp_tres_clases():
     return "".join(p)
 
 
+def comp_shortlex():
+    """Pagina 4. La biyeccion concreta, y la advertencia de que no es binario."""
+    ancho, alto = 900, 360
+    aria = (
+        "El orden shortlex emparejado con los naturales: cadena vacia a 0, "
+        "cero a 1, uno a 2, y asi. No es leer la cadena como numero binario"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Toda cadena tiene su número, y todo número su cadena", TEXTO, 20, peso="600"))
+
+    pares = [("ε", 0), ("0", 1), ("1", 2), ("00", 3), ("01", 4), ("10", 5), ("11", 6), ("000", 7)]
+    x0, y = 90, 130
+    ancho_col = 92
+    for i, (cadena, n) in enumerate(pares):
+        x = x0 + i * ancho_col
+        p.append(caja(x, y, 68, 48, borde=LINEA, radio=6))
+        p.append(texto(x + 34, y + 32, cadena, TEXTO, 17))
+        p.append(flecha(x + 34, y + 56, x + 34, y + 86, color=SUAVE))
+        p.append(texto(x + 34, y + 112, str(n), SERIE[1], 19, peso="600"))
+    p.append(texto(x0 + 8 * ancho_col - 10, y + 32, "· · ·", SUAVE, 20, anclaje="start"))
+
+    p.append(caja(150, 268, 600, 56, borde=ACENTO))
+    p.append(
+        texto(
+            450,
+            292,
+            "No es «leer la cadena en binario»: eso no sería inyectivo,",
+            ACENTO,
+            14,
+            peso="600",
+        )
+    )
+    p.append(texto(450, 312, "porque 0, 00 y 000 darían todos 0. Es la posición en el orden.", ACENTO, 14))
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_maquina_dato():
+    """Pagina 4. La maquina universal: el programa es dato."""
+    ancho, alto = 900, 380
+    aria = (
+        "La maquina universal U recibe el codigo de una maquina M junto con una "
+        "entrada w, y simula M sobre w: el programa entra como dato"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Una sola máquina, y el programa entra como dato", TEXTO, 20, peso="600"))
+
+    p.append(caja(70, 140, 200, 100, borde=SERIE[2], radio=8))
+    p.append(texto(170, 176, "⟨M, w⟩", SERIE[2], 20, peso="600"))
+    p.append(texto(170, 204, "una cadena, nada más", SUAVE, 12))
+    p.append(texto(170, 226, "el código de M, y su entrada", SUAVE, 12))
+
+    p.append(flecha(270, 190, 360, 190))
+
+    p.append(caja(370, 110, 300, 160, borde=ACENTO, radio=12, grosor=3))
+    p.append(texto(520, 146, "U", ACENTO, 26, peso="600"))
+    p.append(texto(520, 172, "la máquina universal", ACENTO, 13))
+    p.append(caja(410, 190, 220, 62, borde=SUAVE, radio=6))
+    p.append(texto(520, 216, "aquí adentro corre M", SUAVE, 13))
+    p.append(texto(520, 238, "paso por paso, sobre w", SUAVE, 12))
+
+    p.append(flecha(670, 190, 760, 190))
+    p.append(texto(830, 186, "lo mismo que", TEXTO, 13))
+    p.append(texto(830, 206, "habría hecho M", TEXTO, 13))
+
+    p.append(
+        texto(
+            ancho / 2,
+            330,
+            "No hace falta una máquina por problema: hay una, y el programa es su entrada.",
+            TEXTO,
+            15,
+            peso="600",
+        )
+    )
+    p.append(
+        texto(
+            ancho / 2,
+            356,
+            "Es la computadora de programa almacenado, enunciada en 1936, antes de que existiera ninguna.",
+            SUAVE,
+            13,
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_de_h_a_d():
+    """Pagina 5. Los dos paneles: H sola, y D construida CON H adentro.
+
+    Que se vea que D esta hecha con H es medio argumento: es lo que justifica
+    "si H existe, D existe".
+    """
+    ancho, alto = 980, 440
+    aria = (
+        "Dos paneles. A la izquierda la maquina H que decidiria el problema de "
+        "la parada. A la derecha la maquina D, construida con H dentro, un "
+        "duplicador a la entrada y un inversor a la salida"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(245, 44, "1. Lo que H sería", TEXTO, 18, peso="600"))
+    p.append(texto(715, 44, "2. Y lo que construimos con ella", TEXTO, 18, peso="600"))
+    p.append(
+        f'<line x1="490" y1="70" x2="490" y2="400" stroke="{LINEA}" '
+        f'stroke-width="1" stroke-dasharray="6 6"/>'
+    )
+
+    # Panel izquierdo: H sola
+    p.append(texto(70, 150, "⟨M, w⟩", SERIE[2], 16, anclaje="start"))
+    p.append(flecha(160, 145, 215, 145))
+    p.append(caja(225, 110, 130, 110, borde=ACENTO, grosor=3))
+    p.append(texto(290, 158, "H", ACENTO, 26, peso="600"))
+    p.append(texto(290, 182, "decide HALT", ACENTO, 11))
+    p.append(flecha(355, 132, 410, 122, color=SERIE[0]))
+    p.append(texto(420, 126, "SÍ", SERIE[0], 16, anclaje="start", peso="600"))
+    p.append(flecha(355, 198, 410, 208, color=SUAVE))
+    p.append(texto(420, 212, "NO", SUAVE, 16, anclaje="start", peso="600"))
+    p.append(caja(150, 250, 280, 44, borde=SERIE[0], radio=22))
+    p.append(texto(290, 278, "y SIEMPRE se detiene", SERIE[0], 14, peso="600"))
+    p.append(texto(290, 330, "Es la máquina que suponemos", SUAVE, 13))
+    p.append(texto(290, 350, "que existe. Todo lo demás", SUAVE, 13))
+    p.append(texto(290, 370, "sale de ahí.", SUAVE, 13))
+
+    # Panel derecho: D, con H adentro
+    p.append(texto(530, 150, "⟨M⟩", SERIE[2], 16, anclaje="start"))
+    p.append(flecha(580, 145, 615, 145))
+    p.append(caja(605, 92, 340, 210, borde=SERIE[1], grosor=3, radio=14))
+    p.append(texto(775, 84, "D", SERIE[1], 22, peso="600"))
+    p.append(caja(620, 120, 96, 50, borde=SUAVE, radio=6))
+    p.append(texto(668, 142, "duplica", SUAVE, 11))
+    p.append(texto(668, 158, "⟨M⟩ → M,⟨M⟩", SUAVE, 10))
+    p.append(flecha(716, 145, 748, 145))
+    p.append(caja(756, 112, 96, 66, borde=ACENTO, grosor=2))
+    p.append(texto(804, 150, "H", ACENTO, 20, peso="600"))
+    p.append(flecha(852, 130, 890, 122, color=SERIE[0]))
+    p.append(texto(896, 126, "SÍ", SERIE[0], 12, anclaje="start"))
+    p.append(flecha(852, 162, 890, 172, color=SUAVE))
+    p.append(texto(896, 176, "NO", SUAVE, 12, anclaje="start"))
+    p.append(caja(700, 208, 220, 76, borde=ACENTO, radio=8))
+    p.append(texto(810, 232, "el inversor", ACENTO, 13, peso="600"))
+    p.append(texto(810, 254, "SÍ → cicla para siempre", SUAVE, 12))
+    p.append(texto(810, 272, "NO → se detiene", SUAVE, 12))
+
+    p.append(
+        texto(
+            ancho / 2,
+            424,
+            "D está construida CON H adentro: por eso, si H existiera, D existiría también.",
+            TEXTO,
+            14,
+            peso="600",
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
 DIAGRAMAS = {
     "comp-esencia": comp_esencia,
     "comp-tres-vistas": comp_tres_vistas,
@@ -515,6 +673,9 @@ DIAGRAMAS = {
     "comp-tres-desenlaces": comp_tres_desenlaces,
     "comp-decidir-vs-reconocer": comp_decidir_vs_reconocer,
     "comp-tres-clases": comp_tres_clases,
+    "comp-shortlex": comp_shortlex,
+    "comp-maquina-dato": comp_maquina_dato,
+    "comp-de-h-a-d": comp_de_h_a_d,
 }
 
 

@@ -19,3 +19,6 @@ que una edición manual falla la suite.
 | `comp-tres-desenlaces.svg` | Los tres desenlaces de una máquina: acepta, rechaza y cicla para siempre | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-decidir-vs-reconocer.svg` | Decisor contra reconocedor sobre la misma entrada: la tercera salida que nunca contesta | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-tres-clases.svg` | Decidibles, reconocibles y todos los lenguajes, con un habitante con nombre en cada región | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-shortlex.svg` | El orden shortlex emparejado con los naturales, y la advertencia de que no es leer la cadena en binario | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-maquina-dato.svg` | La máquina universal recibiendo el código de otra máquina como dato | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-de-h-a-d.svg` | Dos paneles: la máquina H que decidiría la parada, y la máquina D construida con H adentro | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
