@@ -35,7 +35,7 @@ jobs:
   # suite falle — que es exactamente lo que pasaba antes de añadirla.
   course-pages:
     needs: checks
-    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@dc014b41d047d7871247667130a95deae481b45e
+    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@dbf10c787142167700174f8e086ae7721ad1f5f6
     with:
       course_path: .
     permissions:

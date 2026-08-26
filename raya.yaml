@@ -8,25 +8,15 @@ calendar:
   timezone: America/Mexico_City
 render:
   skin: eva-cyberpunk
-  # Estilo de resaltado de codigo. El de Pygments por omision es CLARO, asi que
-  # sobre el fondo oscuro del skin el codigo salia ilegible.
+  # Estilo de resaltado de código. El de Pygments por omisión es CLARO, así que
+  # sobre el fondo oscuro de eva-cyberpunk el código salía ilegible. Va aquí y
+  # no por idioma porque es una decisión de piel: el builder no puede saber si
+  # un skin es oscuro.
+  #
+  # Las etiquetas de callouts y de entornos estáticos —«Nota», «Respuesta a»—
+  # NO se configuran aquí: el builder las localiza con el campo `language` de
+  # arriba.
   code_style: monokai
-  callouts:
-    labels:
-      note: "Nota"
-      tip: "Consejo"
-      warning: "Ojo"
-      caution: "Cuidado"
-  static_environments:
-    labels:
-      proof: "Demostración de"
-      solution: "Solución de"
-      hint: "Pista para"
-      answer: "Respuesta a"
-      proof_standalone: "Demostración"
-      solution_standalone: "Solución"
-      hint_standalone: "Pista"
-      answer_standalone: "Respuesta"
   numbered_objects:
     numbering: page-hierarchy
     sequences:
