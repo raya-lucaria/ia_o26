@@ -664,7 +664,124 @@ def comp_de_h_a_d():
     return "".join(p)
 
 
+def _panel_autorreferencia(p, x0, y0, titulo, etiqueta_maquina, color_maquina,
+                           entrada, ramas, remate):
+    """Encuadre compartido por comp-cortocircuito y comp-p-sobre-si.
+
+    Los dos diagramas usan LA MISMA funcion a proposito: el parecido entre la
+    demostracion de la parada y la de Godel es el contenido, no una
+    coincidencia, y el alumno tiene que verlo antes de que se lo digan. Si un
+    dia hay que reacomodar uno, se reacomodan los dos.
+    """
+    p.append(texto(x0 + 300, y0, titulo, TEXTO, 19, peso="600"))
+    p.append(caja(x0 + 200, y0 + 40, 200, 110, borde=color_maquina, grosor=3, radio=14))
+    p.append(texto(x0 + 300, y0 + 92, etiqueta_maquina, color_maquina, 26, peso="600"))
+    p.append(texto(x0 + 300, y0 + 120, "con su propio código", SUAVE, 12))
+    # El cortocircuito: la entrada sale de la propia maquina y vuelve a ella.
+    p.append(
+        f'<path d="M {x0+200} {y0+95} C {x0+120} {y0+95}, {x0+120} {y0+8}, '
+        f'{x0+300} {y0+8} C {x0+480} {y0+8}, {x0+480} {y0+95}, {x0+400} {y0+95}" '
+        f'fill="none" stroke="{SERIE[2]}" stroke-width="2" marker-end="url(#p)"/>'
+    )
+    p.append(texto(x0 + 300, y0 + 26, entrada, SERIE[2], 15, peso="600"))
+
+    for i, (supuesto, medio, consecuencia) in enumerate(ramas):
+        y = y0 + 190 + i * 96
+        p.append(flecha(x0 + 300, y0 + 152, x0 + 150 + i * 300, y - 16, color=SUAVE))
+        p.append(caja(x0 + 30 + i * 300, y - 6, 270, 78, borde=ACENTO, radio=8))
+        p.append(texto(x0 + 165 + i * 300, y + 16, supuesto, TEXTO, 13, peso="600"))
+        p.append(texto(x0 + 165 + i * 300, y + 38, medio, SUAVE, 12))
+        p.append(texto(x0 + 165 + i * 300, y + 60, consecuencia, ACENTO, 13, peso="600"))
+
+    p.append(texto(x0 + 300, y0 + 330, remate, TEXTO, 17, peso="600"))
+
+
+def comp_cortocircuito():
+    """Pagina 5. D sobre su propio codigo. La figura de la unidad."""
+    ancho, alto = 980, 590
+    aria = (
+        "La maquina D recibiendo su propio codigo: las dos ramas posibles "
+        "trazadas hasta su contradiccion, y el remate de que D se detiene si y "
+        "solo si no se detiene"
+    )
+    p = [marco(ancho, alto, aria)]
+    _panel_autorreferencia(
+        p, 40, 46,
+        "¿Qué hace D con su propio código?",
+        "D", SERIE[1],
+        "⟨D⟩",
+        [
+            ("Si suponemos que SE DETIENE…", "…entonces H contestó SÍ…", "…y entonces D cicla."),
+            ("Si suponemos que CICLA…", "…entonces H contestó NO…", "…y entonces D se detiene."),
+        ],
+        "Las dos ramas se contradicen. Y no hay una tercera.",
+    )
+    p.append(caja(240, 496, 500, 52, borde=ACENTO, grosor=3, radio=26))
+    p.append(texto(490, 528, "D se detiene con ⟨D⟩  ⟺  D NO se detiene con ⟨D⟩", ACENTO, 16, peso="600"))
+    p.append(texto(490, 572, "Luego H no existe.", TEXTO, 15, peso="600"))
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_cuadricula():
+    """Pagina 5. Donde esta la diagonal: D difiere de cada Mi en la casilla (i,i)."""
+    ancho, alto = 940, 500
+    aria = (
+        "Matriz de maquinas contra codigos con para y no para en cada casilla, "
+        "la diagonal resaltada, y la fila de D construida invirtiendola"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Dónde está la diagonal", TEXTO, 20, peso="600"))
+
+    x0, y0, cw, ch = 190, 90, 132, 60
+    codigos = ["⟨M₁⟩", "⟨M₂⟩", "⟨M₃⟩", "⟨M₄⟩"]
+    for j, c in enumerate(codigos):
+        p.append(texto(x0 + j * cw + cw / 2, y0 + 22, c, SERIE[2], 14, peso="600"))
+    tabla = [
+        ["para", "no para", "para", "para"],
+        ["no para", "no para", "para", "no para"],
+        ["para", "para", "no para", "para"],
+        ["no para", "para", "para", "no para"],
+    ]
+    for i, fila in enumerate(tabla):
+        y = y0 + 40 + i * ch
+        p.append(texto(x0 - 20, y + 36, f"M{'₁₂₃₄'[i]}", TEXTO, 15, anclaje="end", peso="600"))
+        for j, celda in enumerate(fila):
+            x = x0 + j * cw
+            diag = i == j
+            p.append(caja(x, y, cw, ch, borde=ACENTO if diag else LINEA,
+                          grosor=3 if diag else 1, radio=4))
+            p.append(texto(x + cw / 2, y + 36, celda, ACENTO if diag else SUAVE, 13,
+                           peso="600" if diag else "normal"))
+
+    yd = y0 + 40 + 4 * ch + 22
+    p.append(texto(x0 - 20, yd + 36, "D", SERIE[1], 17, anclaje="end", peso="600"))
+    invertida = ["no para", "para", "para", "para"]
+    for j, celda in enumerate(invertida):
+        x = x0 + j * cw
+        p.append(caja(x, yd, cw, ch, borde=SERIE[1], grosor=2, radio=4))
+        p.append(texto(x + cw / 2, yd + 36, celda, SERIE[1], 13, peso="600"))
+    p.append(texto(x0 + 4 * cw + 24, yd + 30, "D se construye", SERIE[1], 12, anclaje="start"))
+    p.append(texto(x0 + 4 * cw + 24, yd + 48, "invirtiendo la diagonal", SERIE[1], 12, anclaje="start"))
+
+    p.append(
+        texto(
+            ancho / 2,
+            478,
+            "D difiere de cada Mᵢ justo en la casilla (i, i). Pero D es alguna Mⱼ de la lista "
+            "— y entonces difiere de sí misma.",
+            TEXTO,
+            14,
+            peso="600",
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
 DIAGRAMAS = {
+    "comp-cortocircuito": comp_cortocircuito,
+    "comp-cuadricula": comp_cuadricula,
     "comp-esencia": comp_esencia,
     "comp-tres-vistas": comp_tres_vistas,
     "comp-anatomia": comp_anatomia,

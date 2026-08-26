@@ -22,3 +22,5 @@ que una edición manual falla la suite.
 | `comp-shortlex.svg` | El orden shortlex emparejado con los naturales, y la advertencia de que no es leer la cadena en binario | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-maquina-dato.svg` | La máquina universal recibiendo el código de otra máquina como dato | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-de-h-a-d.svg` | Dos paneles: la máquina H que decidiría la parada, y la máquina D construida con H adentro | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-cortocircuito.svg` | La máquina D recibiendo su propio código: las dos ramas y su contradicción | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-cuadricula.svg` | La matriz de máquinas contra códigos con la diagonal resaltada y la fila de D invirtiéndola | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
