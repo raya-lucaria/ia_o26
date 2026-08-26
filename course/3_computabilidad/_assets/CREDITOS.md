@@ -24,3 +24,7 @@ que una edición manual falla la suite.
 | `comp-de-h-a-d.svg` | Dos paneles: la máquina H que decidiría la parada, y la máquina D construida con H adentro | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-cortocircuito.svg` | La máquina D recibiendo su propio código: las dos ramas y su contradicción | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-cuadricula.svg` | La matriz de máquinas contra códigos con la diagonal resaltada y la fila de D invirtiéndola | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-cantor.svg` | La diagonal de Cantor sobre sucesiones binarias, y la sucesión nueva que ninguna lista contiene | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-existir-exhibir.svg` | El conteo demuestra que existe alguno; la diagonalización exhibe uno concreto | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-que-es-demostracion.svg` | Una demostración como secuencia finita de fórmulas y el verificador mecánico que la revisa | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-aritmetizacion.svg` | Los dos pasos de la aritmetización: codificar y representar, separados a propósito | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |

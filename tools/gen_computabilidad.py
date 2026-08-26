@@ -779,7 +779,212 @@ def comp_cuadricula():
     return "".join(p)
 
 
+def comp_cantor():
+    """Pagina 5. La diagonal de Cantor, sobre sucesiones binarias."""
+    ancho, alto = 900, 460
+    aria = (
+        "La tabla de Cantor: una lista supuesta de todas las sucesiones "
+        "binarias, con la diagonal resaltada y la sucesion nueva que se obtiene "
+        "cambiando cada digito"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "El conteo: hay más funciones que programas", TEXTO, 20, peso="600"))
+    p.append(texto(ancho / 2, 72, "Supón que ESTA lista tuviera todas las sucesiones de 0 y 1:", SUAVE, 13))
+
+    filas = [
+        "0 1 1 0 1 0 …",
+        "1 1 0 0 1 1 …",
+        "0 0 1 1 0 1 …",
+        "1 0 0 1 1 0 …",
+        "1 1 1 0 0 1 …",
+    ]
+    x0, y0, dy = 250, 118, 46
+    for i, fila in enumerate(filas):
+        y = y0 + i * dy
+        p.append(texto(x0 - 24, y + 16, f"f{'₁₂₃₄₅'[i]}", SUAVE, 14, anclaje="end"))
+        for j, ch in enumerate(fila.split()):
+            x = x0 + j * 42
+            if i == j:
+                p.append(caja(x - 14, y - 6, 32, 32, borde=ACENTO, grosor=2, radio=4))
+                p.append(texto(x + 2, y + 16, ch, ACENTO, 17, peso="600"))
+            else:
+                p.append(texto(x + 2, y + 16, ch, SUAVE, 16))
+
+    y = y0 + 5 * dy + 24
+    p.append(texto(x0 - 24, y + 16, "nueva", SERIE[0], 13, anclaje="end", peso="600"))
+    for j, ch in enumerate(["1", "0", "0", "0", "1", "…"]):
+        p.append(texto(x0 + j * 42 + 2, y + 16, ch, SERIE[0], 17, peso="600"))
+    p.append(texto(x0 + 6 * 42 + 30, y + 16, "cambia cada dígito de la diagonal", SERIE[0], 13, anclaje="start"))
+
+    p.append(
+        texto(
+            ancho / 2,
+            420,
+            "La nueva no puede ser ninguna de la lista: difiere de fᵢ justo en el lugar i.",
+            TEXTO,
+            14,
+            peso="600",
+        )
+    )
+    p.append(texto(ancho / 2, 444, "Luego no hay lista que las agote — y los programas sí forman una lista.", SUAVE, 13))
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_existir_exhibir():
+    """Pagina 5. El conteo dice que HAY; la diagonal dice CUAL. No es lo mismo.
+
+    Existe porque la revision adversarial predijo el malentendido: creer que el
+    conteo demostro que HALT es indecidible. No lo demuestra, y ademas HALT no
+    es representativo de esa mayoria, porque HALT si es reconocible.
+    """
+    ancho, alto = 900, 340
+    aria = (
+        "Dos paneles: el argumento de conteo demuestra que existe algun lenguaje "
+        "indecidible sin exhibir ninguno; la diagonalizacion exhibe uno concreto "
+        "con nombre"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Dos demostraciones distintas, y se parecen mucho", TEXTO, 20, peso="600"))
+    p.append(
+        f'<line x1="450" y1="76" x2="450" y2="286" stroke="{LINEA}" '
+        f'stroke-width="1" stroke-dasharray="6 6"/>'
+    )
+
+    p.append(texto(225, 108, "El conteo", SERIE[2], 17, peso="600"))
+    p.append(
+        f'<ellipse cx="225" cy="186" rx="115" ry="52" fill="none" stroke="{SERIE[2]}" '
+        f'stroke-width="2" stroke-dasharray="8 6"/>'
+    )
+    p.append(texto(225, 182, "hay alguno", SERIE[2], 16, peso="600"))
+    p.append(texto(225, 204, "ahí dentro", SUAVE, 12))
+    p.append(texto(225, 262, "Demuestra que EXISTE.", TEXTO, 14, peso="600"))
+    p.append(texto(225, 284, "No exhibe ninguno.", SUAVE, 13))
+
+    p.append(texto(675, 108, "La diagonalización", ACENTO, 17, peso="600"))
+    p.append(caja(600, 152, 150, 68, borde=ACENTO, grosor=3))
+    p.append(texto(675, 182, "HALT", ACENTO, 22, peso="600"))
+    p.append(texto(675, 204, "con nombre y apellido", SUAVE, 11))
+    p.append(texto(675, 262, "Exhibe UNO concreto.", TEXTO, 14, peso="600"))
+    p.append(texto(675, 284, "Y es otra demostración.", SUAVE, 13))
+
+    p.append(
+        texto(
+            ancho / 2,
+            322,
+            "El conteo no demuestra que HALT sea indecidible. Y HALT ni siquiera es típico de esa mayoría: HALT sí es reconocible.",
+            SUAVE,
+            12.5,
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_que_es_demostracion():
+    """Pagina 6. Una demostracion es un computo: verificarla es decidible."""
+    ancho, alto = 940, 400
+    aria = (
+        "Axiomas arriba, reglas de inferencia aplicandose, una cadena finita de "
+        "formulas, y un verificador mecanico palomeando cada paso"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Una demostración es un objeto finito que se puede revisar a máquina", TEXTO, 18, peso="600"))
+
+    p.append(caja(60, 84, 200, 54, borde=SERIE[2], radio=8))
+    p.append(texto(160, 116, "los axiomas", SERIE[2], 15, peso="600"))
+
+    pasos = [
+        ("φ₁", "es un axioma"),
+        ("φ₂", "es un axioma"),
+        ("φ₃", "de φ₁ y φ₂, modus ponens"),
+        ("φ₄", "de φ₃, generalización"),
+    ]
+    for i, (formula, razon) in enumerate(pasos):
+        y = 168 + i * 52
+        p.append(caja(60, y, 470, 42, borde=LINEA, radio=6))
+        p.append(texto(96, y + 27, formula, TEXTO, 16, peso="600"))
+        p.append(texto(140, y + 27, razon, SUAVE, 13, anclaje="start"))
+        p.append(texto(556, y + 27, "✓", SERIE[0], 20, peso="600"))
+
+    p.append(caja(610, 168, 270, 198, borde=SERIE[0], radio=10))
+    p.append(texto(745, 200, "el verificador", SERIE[0], 16, peso="600"))
+    p.append(texto(745, 232, "¿cada renglón es un axioma", SUAVE, 12))
+    p.append(texto(745, 250, "o se sigue de los de arriba", SUAVE, 12))
+    p.append(texto(745, 268, "por una regla?", SUAVE, 12))
+    p.append(texto(745, 308, "Es DECIDIBLE.", SERIE[0], 15, peso="600"))
+    p.append(texto(745, 334, "Siempre termina, y no", SUAVE, 12))
+    p.append(texto(745, 350, "se equivoca nunca.", SUAVE, 12))
+
+    p.append(
+        texto(
+            ancho / 2,
+            386,
+            "De aquí cuelga todo lo que sigue: si revisar una demostración es un cómputo, un programa puede buscarlas.",
+            TEXTO,
+            13.5,
+            peso="600",
+        )
+    )
+    p.append(cierre())
+    return "".join(p)
+
+
+def comp_aritmetizacion():
+    """Pagina 6. Los DOS pasos, separados: codificar no es representar.
+
+    El diseno original decia "el truco de la pagina 4 otra vez", y no lo es:
+    codificar da una biyeccion, y Godel ademas necesita que la relacion sea
+    EXPRESABLE por una formula. Este diagrama dibuja el hueco que el texto
+    declara.
+    """
+    ancho, alto = 960, 380
+    aria = (
+        "Los dos pasos de la aritmetizacion, separados: primero codificar "
+        "formulas como numeros, que es lo de la pagina 4, y despues "
+        "representar la relacion como una formula de la aritmetica, que es lo "
+        "que Godel ademas necesita"
+    )
+    p = [marco(ancho, alto, aria)]
+    p.append(texto(ancho / 2, 44, "Codificar no basta: hacen falta dos pasos, no uno", TEXTO, 19, peso="600"))
+
+    p.append(caja(50, 96, 230, 120, borde=SUAVE, radio=10))
+    p.append(texto(165, 128, "fórmulas y", TEXTO, 15))
+    p.append(texto(165, 150, "demostraciones", TEXTO, 15))
+    p.append(texto(165, 186, "objetos de sintaxis", SUAVE, 12))
+
+    p.append(flecha(280, 156, 360, 156, color=SUAVE))
+    p.append(texto(320, 132, "paso 1", SUAVE, 13, peso="600"))
+    p.append(texto(320, 186, "codificar", SUAVE, 12))
+    p.append(texto(320, 202, "(la página 4)", SUAVE, 11))
+
+    p.append(caja(370, 96, 200, 120, borde=SERIE[1], radio=10))
+    p.append(texto(470, 146, "números", SERIE[1], 18, peso="600"))
+    p.append(texto(470, 178, "⌜φ⌝ = 34517…", SUAVE, 12))
+
+    p.append(flecha(570, 156, 650, 156, color=ACENTO, grosor=3))
+    p.append(texto(610, 132, "paso 2", ACENTO, 13, peso="600"))
+    p.append(texto(610, 186, "representar", ACENTO, 12))
+    p.append(texto(610, 202, "(lo que falta)", ACENTO, 11))
+
+    p.append(caja(660, 96, 250, 120, borde=ACENTO, radio=10, grosor=3))
+    p.append(texto(785, 134, "Dem(x, y)", ACENTO, 18, peso="600"))
+    p.append(texto(785, 162, "una FÓRMULA de la", SUAVE, 12))
+    p.append(texto(785, 180, "aritmética que dice", SUAVE, 12))
+    p.append(texto(785, 198, "«x demuestra y»", SUAVE, 12))
+
+    p.append(caja(120, 264, 720, 74, borde=ACENTO, radio=10))
+    p.append(texto(480, 292, "El paso 2 funciona porque revisar una demostración es un cómputo,", TEXTO, 14))
+    p.append(texto(480, 314, "y todo cómputo se puede expresar en aritmética. Ese es el teorema que damos por bueno.", TEXTO, 14))
+    p.append(cierre())
+    return "".join(p)
+
+
 DIAGRAMAS = {
+    "comp-cantor": comp_cantor,
+    "comp-existir-exhibir": comp_existir_exhibir,
+    "comp-que-es-demostracion": comp_que_es_demostracion,
+    "comp-aritmetizacion": comp_aritmetizacion,
     "comp-cortocircuito": comp_cortocircuito,
     "comp-cuadricula": comp_cuadricula,
     "comp-esencia": comp_esencia,
