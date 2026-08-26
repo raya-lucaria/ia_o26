@@ -99,15 +99,14 @@ La misma cosa tiene varios nombres según el libro. Conviene reconocerlos:
 
 ## Cómo se relacionan
 
-Un par de notaciones que hacen falta para enunciarlo:
+Tres notaciones que hacen falta para enunciarlo, y que no habían aparecido:
 
-- $\chi_L$ es la **función característica** de $L$: vale $1$ sobre las cadenas
-  que están en $L$ y $0$ sobre las que no. (Codificamos esas salidas como las
-  cadenas `0` y `1`.)
-- $\overline{L}$ es el **complemento** de $L$: todas las cadenas de $\Sigma^*$
-  que **no** están en $L$.
-- $\mathcal{P}(\Sigma^*)$ es el conjunto de **todos** los lenguajes posibles
-  sobre $\Sigma$.
+| Símbolo | Se lee | Qué es |
+|---|---|---|
+| $\chi_L$ | «ji sub ele» | La **función característica** de $L$: vale $1$ sobre las cadenas que están en $L$ y $0$ sobre las que no. (Esas salidas se codifican como las cadenas `0` y `1`) |
+| $\overline{L}$ | «ele barra», el complemento de $L$ | Todas las cadenas de $\Sigma^*$ que **no** están en $L$ |
+| $\mathcal{P}(\Sigma^*)$ | «partes de sigma estrella» | El conjunto de **todos** los lenguajes posibles sobre $\Sigma$ — o sea, todos los subconjuntos de $\Sigma^*$ |
+| $\subsetneq$ | «contenido estrictamente en» | Está contenido, y **no** son iguales: falta al menos un elemento |
 
 Con eso:
 

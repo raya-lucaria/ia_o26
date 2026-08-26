@@ -136,6 +136,12 @@ intentado.
 | 7 | [[teoremas-de-godel|Los teoremas de Gödel]] | Los dos teoremas, y sobre todo **qué no dicen** | 30m |
 | 8 | [[el-mismo-truco|El mismo truco tres veces]] | Los tres resultados lado a lado, y qué significan para la IA | 15m |
 
+Y aparte de las ocho, una hoja de consulta:
+[[notacion-computabilidad|Toda la notación, en una hoja]] — cada símbolo de la
+unidad, cómo se lee, qué significa y en qué página se presentó. Si te topas con
+uno a media lectura y no recuerdas de dónde salió, búscalo ahí en vez de
+retroceder.
+
 **Si vas con poco tiempo**, la ruta mínima es 1, 2, 4, 5 y 7: el aparato, el
 problema de la parada y la incompletitud. Las páginas 3, 6 y 8 completan el
 cuadro y se pueden dejar para después.
