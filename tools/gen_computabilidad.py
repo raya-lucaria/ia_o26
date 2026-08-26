@@ -1064,34 +1064,36 @@ def comp_for_enumera():
     return "".join(p)
 
 
-def comp_p_sobre_si():
-    """Pagina 7. P sobre su propio codigo.
+def comp_g_autorreferente():
+    """Pagina 7. La oracion G preguntando por su propia demostrabilidad.
 
     Usa _panel_autorreferencia, la MISMA funcion que comp-cortocircuito: el
-    parecido con la demostracion de la parada es el contenido de la pagina 8.
+    parecido entre la demostracion de la parada y la de Godel es el contenido
+    de la pagina 8, no una coincidencia. Compartir la funcion hace que no
+    puedan separarse con una edicion futura.
     """
     ancho, alto = 980, 590
     aria = (
-        "El programa P recibiendo su propio codigo: las dos ramas trazadas "
-        "hasta su conclusion, con el mismo encuadre que la figura del problema "
-        "de la parada"
+        "La oracion G preguntando si el sistema puede demostrarla, con las dos "
+        "ramas trazadas y el mismo encuadre que la figura del problema de la "
+        "parada"
     )
     p = [marco(ancho, alto, aria)]
     _panel_autorreferencia(
         p, 40, 46,
-        "¿Qué hace P con su propio código?",
-        "P", SERIE[1],
-        "⟨P⟩",
+        "¿Puede el sistema demostrar G?",
+        "G", SERIE[1],
+        "«yo no puedo ser demostrada»",
         [
-            ("Si suponemos que TERMINA…", "…encontró una demostración de que no termina…",
-             "…y F solo demuestra verdades. Imposible."),
-            ("Luego NO termina…", "…y entonces eso es VERDAD…",
-             "…pero si F lo demostrara, P terminaría."),
+            ("Si SÍ la demuestra…", "…entonces también demuestra que la demuestra…",
+             "…y G decía lo contrario. Se contradice."),
+            ("Luego NO la demuestra…", "…y eso es justo lo que G afirmaba…",
+             "…así que G es VERDADERA."),
         ],
-        "Hay una verdad que F no demuestra.",
+        "Hay una verdad que el sistema no alcanza.",
     )
-    p.append(caja(200, 496, 580, 52, borde=ACENTO, grosor=3, radio=26))
-    p.append(texto(490, 528, "«P no termina con ⟨P⟩» es verdadera, y F no la demuestra", ACENTO, 15, peso="600"))
+    p.append(caja(210, 496, 560, 52, borde=ACENTO, grosor=3, radio=26))
+    p.append(texto(490, 528, "G es verdadera, y el sistema no la demuestra", ACENTO, 16, peso="600"))
     p.append(texto(490, 572, "Mismo encuadre que la figura de la parada: es el mismo movimiento.", SUAVE, 13))
     p.append(cierre())
     return "".join(p)
@@ -1209,7 +1211,7 @@ def comp_mismo_esqueleto():
          "no hay lista que las agote"),
         (370, "Turing", SERIE[1], "máquinas", "hacer lo contrario de H",
          "HALT es indecidible"),
-        (680, "Gödel", ACENTO, "programas", "terminar si se prueba que no",
+        (680, "Gödel", ACENTO, "fórmulas", "negar la propia demostrabilidad",
          "F es incompleta"),
     ]
     for x, titulo, color, objetos, giro, final in columnas:
@@ -1245,7 +1247,7 @@ def comp_mismo_esqueleto():
 
 DIAGRAMAS = {
     "comp-for-enumera": comp_for_enumera,
-    "comp-p-sobre-si": comp_p_sobre_si,
+    "comp-g-autorreferente": comp_g_autorreferente,
     "comp-verdadero-demostrable": comp_verdadero_demostrable,
     "comp-con-f": comp_con_f,
     "comp-mismo-esqueleto": comp_mismo_esqueleto,
