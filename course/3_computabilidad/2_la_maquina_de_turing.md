@@ -44,6 +44,12 @@ que todos los que cierran. Sirve para ubicarte, pero ojo con la analogía —
 `()()`, que sería `0101`, **está balanceado y esta máquina lo rechaza**. El
 lenguaje de los paréntesis balanceados es más grande; éste es su caso más chico.
 
+::: figure {#ilus-cinta-sin-fin title="La cinta no se acaba"}
+![Una figura diminuta de espaldas ante una cinta de datos colosal que asciende sin final visible](_assets/ilus-cinta-sin-fin.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ## La estrategia, sin notación
 
 Antes de ver una sola regla, la idea completa:

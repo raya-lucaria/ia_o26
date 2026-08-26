@@ -60,6 +60,12 @@ Es lo que suele decirse, y **está mal por dos lados**:
 > **La riqueza es la que te mata:** en cuanto un sistema es lo bastante expresivo
 > para codificar sus propios objetos, la diagonal cae dentro de su alcance.
 
+::: figure {#ilus-horizonte-de-red title="El techo del edificio"}
+![Una llanura vacía que se convierte gradualmente en una malla de circuitos luminosos hacia el horizonte](_assets/ilus-horizonte-de-red.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ## Qué significa esto para la inteligencia artificial
 
 Ésta es la pregunta con la que abrió la unidad, y ya se puede contestar sin

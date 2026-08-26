@@ -47,6 +47,12 @@ $000 \mapsto 7$…
 Es la lista concreta que prometía la definición de numerable en
 [[que-es-el-computo|Qué es el cómputo]]: **$\Sigma^*$ es numerable.**
 
+::: figure {#ilus-archivo-de-codigos title="Todas las máquinas, numeradas"}
+![Una sala de archivo infinita de estanterías idénticas, con una sola casilla iluminada entre miles](_assets/ilus-archivo-de-codigos.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ## El código de una máquina
 
 Una máquina de Turing es un objeto finito: unos cuantos estados, un alfabeto

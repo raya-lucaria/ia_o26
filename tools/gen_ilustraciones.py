@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from unidades import ASSETS_FILOSOFIA, ASSETS_HISTORIA
+from unidades import ASSETS_COMPUTABILIDAD, ASSETS_FILOSOFIA, ASSETS_HISTORIA
 
 RAIZ = Path(__file__).resolve().parent.parent
 CATALOGO = RAIZ / "tools/ilustraciones.json"
@@ -87,6 +87,10 @@ def receta(nombre, datos):
     if nombre in datos.get("ilustraciones_filosofia", {}):
         return (ASSETS_FILOSOFIA / f"ilus-{nombre}.png",
                 f'{datos["ilustraciones_filosofia"][nombre]} {datos["estilo_fondo_plano"]}',
+                True)
+    if nombre in datos.get("ilustraciones_computabilidad", {}):
+        return (ASSETS_COMPUTABILIDAD / f"ilus-{nombre}.png",
+                f'{datos["ilustraciones_computabilidad"][nombre]} {datos["estilo_fondo_plano"]}',
                 True)
     raise SystemExit(f"nombre desconocido en el catalogo: {nombre}")
 

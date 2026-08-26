@@ -33,3 +33,10 @@ que una edición manual falla la suite.
 | `comp-verdadero-demostrable.svg` | Los teoremas de F estrictamente dentro de las verdades, con la oración de Gödel marcada en el hueco | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-con-f.svg` | El buscador de contradicciones, y la consistencia de F como una oración de parada | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-mismo-esqueleto.svg` | Cantor, Turing y Gödel reducidos a su estructura y puestos en fila | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `ilus-simbolos.png` | Cinta perforada perdiéndose en el horizonte — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |
+| `ilus-cinta-sin-fin.png` | Figura diminuta ante una cinta de datos colosal — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |
+| `ilus-espera-sin-fin.png` | Monitor solitario con el cursor parpadeando sin respuesta — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |
+| `ilus-archivo-de-codigos.png` | Sala de archivo infinita con una sola casilla iluminada — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |
+| `ilus-muro.png` | Muro descomunal sin coronación visible, con una figura diminuta al pie — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |
+| `ilus-espejo-enfrentado.png` | Dos espejos enfrentados en regresión infinita — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |
+| `ilus-horizonte-de-red.png` | Llanura que se convierte en malla de circuitos hacia el horizonte — ilustración generada | Ilustración **generada** con `gpt-image-2` desde `tools/ilustraciones.json` | Material del curso |

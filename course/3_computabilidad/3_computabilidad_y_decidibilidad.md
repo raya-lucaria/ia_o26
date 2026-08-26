@@ -73,6 +73,12 @@ horas esperando, ¿es que la respuesta es «no», o es que todavía no termina? 
 hay manera de saberlo, y no hay ningún momento en el que puedas rendirte con
 derecho.
 
+::: figure {#ilus-espera-sin-fin title="¿Cuánto se espera antes de rendirse?"}
+![Un monitor solitario en una sala vacía, con el cursor parpadeando y ninguna respuesta](_assets/ilus-espera-sin-fin.png)
+:::
+
+*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
+
 ### Los nombres que vas a encontrar afuera
 
 La misma cosa tiene varios nombres según el libro. Conviene reconocerlos:
