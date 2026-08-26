@@ -25,7 +25,23 @@ $M$ genérica:
 > de cadenas— y acepta exactamente las que pertenecen al lenguaje. Cada vez que
 > abajo diga «existe una máquina tal que…», piensa en ésa.
 
-## Las tres definiciones
+## Dos preguntas distintas, tres respuestas
+
+Vienen tres definiciones, y lo primero es saber que **no son tres variantes de
+lo mismo**. Se reparten en dos familias, según qué le estés pidiendo a la
+máquina:
+
+| Le pides que… | El objeto se llama | Y la máquina… |
+|---|---|---|
+| **calcule algo** y te lo entregue | una **función** $f$ | escribe la respuesta en la cinta |
+| **conteste sí o no** | un **lenguaje** $L$ | acepta o rechaza |
+
+La primera definición es de la familia de arriba. Las otras dos son de la de
+abajo, y se distinguen entre sí por **una sola cosa**, que vale la pena tener en
+la cabeza desde antes de leerlas: si la máquina **promete detenerse siempre**, o
+solo cuando la respuesta es «sí».
+
+### Familia 1 · calcular algo
 
 ::: definition {#comp-funcion-computable title="Función computable"}
 Una función $f : \Sigma^* \to \Sigma^*$ es **computable** si existe una máquina
@@ -38,9 +54,17 @@ En una frase: *hay un programa que la calcula, y siempre termina.*
 Nótese el «exactamente». Sin él la definición no dice nada: cualquier máquina
 que deje basura a la derecha «tiene $f(w)$ escrita en la cinta» en algún sentido.
 
+### Familia 2 · contestar sí o no
+
+Las dos que siguen hablan del **mismo** tipo de objeto —un conjunto de
+cadenas— y aceptan **exactamente las mismas cadenas**. Léelas mirando qué pasa
+con las cadenas que **no** pertenecen al lenguaje: ahí está toda la diferencia.
+
 ::: definition {#comp-decidible title="Lenguaje decidible"}
 Un lenguaje $L \subseteq \Sigma^*$ es **decidible** si existe una máquina $M$ que
 **se detiene con toda entrada** y cumple $L(M) = L$.
+
+Si $w \in L$, acepta. Si $w \notin L$, **rechaza** — y en los dos casos termina.
 
 En una frase: *hay un programa que contesta sí o no, siempre.*
 :::
@@ -48,17 +72,39 @@ En una frase: *hay un programa que contesta sí o no, siempre.*
 ::: definition {#comp-reconocible title="Lenguaje reconocible"}
 Un lenguaje $L$ es **reconocible** si existe una máquina $M$ con $L(M) = L$.
 
-Sobre una cadena $w \notin L$, esa máquina puede rechazar **o ciclar para
-siempre**. No se le exige detenerse.
+Si $w \in L$, acepta — igual que arriba. Pero si $w \notin L$, esa máquina puede
+rechazar **o ciclar para siempre**: no se le exige detenerse.
 
 En una frase: *si la respuesta es sí, te enteras; si es no, quizá esperas para
 siempre.*
 :::
 
+### Las tres, lado a lado
+
+Ésta es la tabla a la que hay que volver si algo no cuadra:
+
+::: table {#comp-comparacion title="En qué se diferencian exactamente las tres nociones"}
+| | Función computable | Lenguaje decidible | Lenguaje reconocible |
+|---|---|---|---|
+| **¿De qué habla?** | de una función $f$ | de un conjunto $L$ | de un conjunto $L$ |
+| **¿Qué produce la máquina?** | una **salida** escrita en la cinta | **sí** o **no** | **sí**, o nada |
+| **¿Se detiene siempre?** | **sí** | **sí** | **no necesariamente** |
+| **Si $w \in L$** | — | acepta | acepta |
+| **Si $w \notin L$** | — | **rechaza** | rechaza **o cicla para siempre** |
+| **¿Puedes confiar en el silencio?** | — | no hay silencio | **no**: puede ser «no», o puede ser «todavía no» |
+:::
+
 > [!WARNING]
-> **La única diferencia entre decidible y reconocible es la promesa de
-> detenerse.** Las dos definiciones aceptan exactamente las mismas cadenas. Lo
-> que cambia es qué pasa con las que *no* están en el lenguaje.
+> **Entre decidible y reconocible, la única diferencia es la promesa de
+> detenerse.** No cambian qué cadenas acepta la máquina — eso es idéntico.
+> Cambia qué te pasa a ti cuando la respuesta es «no»: con un decisor te
+> enteras; con un reconocedor te quedas esperando, sin saber si esperas por
+> nada.
+
+Y las dos familias se tocan en un punto, que es la manera más limpia de ver que
+son la misma idea aplicada a objetos distintos: **un lenguaje es decidible
+exactamente cuando su función característica es computable.** Contestar «¿está
+$w$ en $L$?» es calcular la función que devuelve $1$ o $0$.
 
 ::: figure {#comp-tres-desenlaces title="Tres desenlaces, no dos"}
 ![Una máquina con tres salidas: acepta, rechaza, y cicla para siempre dibujado como una flecha que vuelve sobre sí misma](_assets/comp-tres-desenlaces.svg)
@@ -108,7 +154,9 @@ Tres notaciones que hacen falta para enunciarlo, y que no habían aparecido:
 | $\mathcal{P}(\Sigma^*)$ | «partes de sigma estrella» | El conjunto de **todos** los lenguajes posibles sobre $\Sigma$ — o sea, todos los subconjuntos de $\Sigma^*$ |
 | $\subsetneq$ | «contenido estrictamente en» | Está contenido, y **no** son iguales: falta al menos un elemento |
 
-Con eso:
+Con eso ya se puede escribir en símbolos lo que la sección anterior cerró en
+palabras —un lenguaje es decidible exactamente cuando su función característica
+es computable— y la cadena de contenciones que ordena las tres clases:
 
 $$L \text{ es decidible} \iff \chi_L \text{ es computable}$$
 

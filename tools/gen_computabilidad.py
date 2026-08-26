@@ -261,42 +261,85 @@ def comp_anatomia():
 
 
 def comp_configuracion():
-    """Pagina 2. Como se lee la notacion u q v. El calentamiento antes de delta."""
-    ancho, alto = 900, 300
+    """Pagina 2. Como se lee la notacion u q v.
+
+    Muestra la cinta dibujada Y la notacion sobre LA MISMA configuracion, y esa
+    configuracion es un paso real: el 3 de la traza de 0011 que la pagina trae
+    mas abajo. La primera version invento X0 q1 Y1, que la maquina no alcanza
+    nunca, y ademas no coincidia con el ejemplo de la prosa: la figura que
+    enseniaba la notacion usaba una notacion distinta de la del resto.
+    """
+    ancho, alto = 940, 470
     aria = (
-        "La notacion de configuracion u q v anotada: u es lo que quedo atras, "
-        "q es el estado, y v empieza en el simbolo que el cabezal esta leyendo"
+        "La misma configuracion mostrada de dos maneras: arriba la cinta con el "
+        "cabezal sobre el primer uno, y abajo escrita como X0 q1 11, con llaves "
+        "que marcan que quedo atras y que empieza en el cabezal"
     )
     p = [marco(ancho, alto, aria)]
-    p.append(texto(ancho / 2, 46, "Cómo se lee una configuración", TEXTO, 20, peso="600"))
+    p.append(texto(ancho / 2, 44, "Una configuración es la cinta, el cabezal y el estado, en una sola línea", TEXTO, 17, peso="600"))
 
-    y = 140
-    piezas = [(250, "X0", SUAVE), (360, "q₁", ACENTO), (450, "Y1", TEXTO)]
+    # --- Arriba: la cinta de verdad ---
+    p.append(texto(ancho / 2, 84, "1 · La máquina, tal como está", SERIE[1], 15, peso="600"))
+    celda, y = 64, 104
+    x0 = (ancho - 5 * celda) / 2
+    simbolos = ["X", "0", "1", "1", "␣"]
+    cabezal = 2
+    for i, s in enumerate(simbolos):
+        x = x0 + i * celda
+        p.append(caja(x, y, celda, celda, borde=ACENTO if i == cabezal else LINEA, radio=5))
+        p.append(texto(x + celda / 2, y + 42, s, TEXTO, 24))
+    cx = x0 + cabezal * celda + celda / 2
+    p.append(
+        f'<path d="M {cx - 15} {y - 22} L {cx + 15} {y - 22} L {cx} {y - 3} z" fill="{ACENTO}"/>'
+    )
+    p.append(texto(cx, y - 32, "el cabezal está aquí", ACENTO, 13))
+    p.append(texto(x0 - 16, y + 42, "estado " , SUAVE, 14, anclaje="end"))
+    p.append(texto(x0 - 16, y + 62, "q₁", ACENTO, 17, anclaje="end", peso="600"))
+
+    # --- Abajo: lo mismo, escrito ---
+    p.append(texto(ancho / 2, 246, "2 · Lo mismo, escrito en una línea", SERIE[1], 15, peso="600"))
+    yn = 300
+    piezas = [(360, "X0", SUAVE), (452, "q₁", ACENTO), (534, "11", TEXTO)]
     for x, s, color in piezas:
-        p.append(texto(x, y, s, color, 34, peso="600"))
+        p.append(texto(x, yn, s, color, 32, peso="600"))
 
-    p.append(f'<path d="M 210 {y+22} L 210 {y+38} L 292 {y+38} L 292 {y+22}" '
+    p.append(f'<path d="M 328 {yn+16} L 328 {yn+32} L 392 {yn+32} L 392 {yn+16}" '
              f'fill="none" stroke="{SUAVE}" stroke-width="2"/>')
-    p.append(texto(251, y + 62, "lo que quedó atrás", SUAVE, 13))
+    p.append(texto(360, yn + 54, "lo que quedó atrás", SUAVE, 13))
+    p.append(texto(360, yn + 72, "(las dos primeras casillas)", SUAVE, 11))
 
-    p.append(f'<path d="M 410 {y+22} L 410 {y+38} L 496 {y+38} L 496 {y+22}" '
+    p.append(f'<path d="M 502 {yn+16} L 502 {yn+32} L 566 {yn+32} L 566 {yn+16}" '
              f'fill="none" stroke="{TEXTO}" stroke-width="2"/>')
-    p.append(texto(453, y + 62, "desde el cabezal en adelante", TEXTO, 13))
+    p.append(texto(534, yn + 54, "desde el cabezal en adelante", TEXTO, 13))
+    p.append(texto(534, yn + 72, "(empieza en el símbolo que lee)", SUAVE, 11))
 
-    p.append(texto(360, y - 44, "el estado", ACENTO, 13))
-    p.append(f'<line x1="360" y1="{y-36}" x2="360" y2="{y-22}" stroke="{ACENTO}" stroke-width="2"/>')
+    p.append(texto(452, yn - 40, "el estado", ACENTO, 13))
+    p.append(f'<line x1="452" y1="{yn-32}" x2="452" y2="{yn-18}" stroke="{ACENTO}" stroke-width="2"/>')
 
-    p.append(flecha(440, y - 40, 428, y - 14, color=SERIE[1]))
-    p.append(texto(470, y - 48, "el cabezal lee ESTE símbolo", SERIE[1], 13, anclaje="start"))
+    # La flecha que ata las dos mitades: del cabezal de arriba al primer simbolo de v.
+    p.append(
+        f'<path d="M {cx} {y + celda + 12} C {cx} 230, 516 236, 516 {yn - 30}" '
+        f'fill="none" stroke="{SERIE[1]}" stroke-width="2" stroke-dasharray="6 5" '
+        f'marker-end="url(#p)"/>'
+    )
+    p.append(texto(cx + 96, 214, "el mismo símbolo", SERIE[1], 12, anclaje="start"))
 
     p.append(
         texto(
             ancho / 2,
-            258,
-            "El estado va escrito justo a la izquierda de lo que la máquina está leyendo. "
-            "No hay más truco que ése.",
+            416,
+            "El estado se escribe justo a la izquierda del símbolo que la máquina está leyendo. No hay más truco que ése.",
             SUAVE,
             13.5,
+        )
+    )
+    p.append(
+        texto(
+            ancho / 2,
+            444,
+            "Y esto no es un ejemplo inventado: es el paso 3 de la traza de 0011 que viene más abajo en esta página.",
+            SERIE[0],
+            13,
         )
     )
     p.append(cierre())
