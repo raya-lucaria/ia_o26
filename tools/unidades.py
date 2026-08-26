@@ -11,10 +11,12 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS_HISTORIA = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
 ASSETS_FILOSOFIA = RAIZ / "course/2_filosofia_ia/_assets"
+ASSETS_COMPUTABILIDAD = RAIZ / "course/3_computabilidad/_assets"
 
 ASSETS_POR_UNIDAD = {
     "historia": ASSETS_HISTORIA,
     "filosofia": ASSETS_FILOSOFIA,
+    "computabilidad": ASSETS_COMPUTABILIDAD,
 }
 
 CELDA_NOMBRE = 0
