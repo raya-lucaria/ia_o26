@@ -4,7 +4,7 @@ title: Computabilidad e incompletitud
 nav_title: Computabilidad
 summary: Qué puede demostrar un sistema formal y qué puede calcular una máquina — dos preguntas que resultaron ser la misma.
 status: ready
-estimated_time: 45m
+estimated_time: 3h15m
 tags: [computabilidad, logica, godel, turing]
 ---
 
@@ -120,5 +120,25 @@ llegar entendiendo.
 
 ## Recorrido
 
-Esta unidad está en construcción. Por ahora existe la preparación; las páginas
-de sesión se agregan conforme avancemos.
+Ocho páginas, en este orden. Cada una se sostiene sola y declara cuánto toma
+leerla; el total ronda las **tres horas**, así que no es material de una
+sentada. Los ejercicios traen su respuesta plegada: ábrela cuando ya lo hayas
+intentado.
+
+| | Página | Qué resuelve | |
+|---|---|---|---:|
+| 1 | [[que-es-el-computo|Qué es el cómputo]] | Qué tienen en común todas las cosas que llamamos calcular, y por qué un problema **es** un conjunto de cadenas | 15m |
+| 2 | [[maquina-de-turing|La máquina de Turing]] | La definición formal, y una máquina de juguete completa que puedes seguir paso por paso | 40m |
+| 3 | [[computabilidad-y-decidibilidad|Computabilidad y decidibilidad]] | Las tres definiciones centrales, y la distinción que casi todos se saltan | 25m |
+| 4 | [[todo-es-un-numero|Todo es un número]] | Cómo se le da una máquina a otra máquina, y por qué existe una que corre a todas | 12m |
+| 5 | [[problema-de-la-parada|El problema de la parada]] | El resultado central, demostrado completo | 35m |
+| 6 | [[sistemas-formales|Sistemas formales y aritmetización]] | Por qué una demostración es un cómputo | 20m |
+| 7 | [[teoremas-de-godel|Los teoremas de Gödel]] | Los dos teoremas, y sobre todo **qué no dicen** | 30m |
+| 8 | [[el-mismo-truco|El mismo truco tres veces]] | Los tres resultados lado a lado, y qué significan para la IA | 15m |
+
+**Si vas con poco tiempo**, la ruta mínima es 1, 2, 4, 5 y 7: el aparato, el
+problema de la parada y la incompletitud. Las páginas 3, 6 y 8 completan el
+cuadro y se pueden dejar para después.
+
+Y una advertencia de lectura: la página 2 es la más larga y la única que hay que
+leer entera y despacio. Todo lo demás habla del objeto que ahí se define.
