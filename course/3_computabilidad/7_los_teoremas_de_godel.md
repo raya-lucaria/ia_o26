@@ -18,187 +18,154 @@ Aquí vamos por otro camino, el que abrió Turing, y por una razón concreta: **
 lo que ya tenemos, la demostración del primer teorema cabe en seis líneas y la
 podemos hacer completa**, no en esbozo. Llega al mismo lugar.
 
-## Lo que suponemos de $F$
+## Lo que suponemos del sistema
 
-Tres cosas, y cada una va a tener un lugar identificable en el argumento:
+Todo lo que sigue vale para un sistema formal $F$ que sea:
 
-| Hipótesis | Qué pide |
-|---|---|
-| **Efectivamente axiomatizable** | hay un algoritmo que reconoce sus demostraciones |
-| **Sano** | solo demuestra verdades |
-| **Expresa la parada** | existe la oración $\text{NoPara}(x,y)$ de la página anterior |
+| Hipótesis | Qué pide | Dónde se usa |
+|---|---|---|
+| **Consistente** | nunca demuestra un enunciado **y** su negación | en el paso 4 del teorema 1 |
+| **Efectivamente describible** | hay un algoritmo que reconoce sus demostraciones | en el paso 2 del teorema 1 |
+| **Suficientemente potente** | puede hablar de sus propias demostraciones | en que $G$ exista, y en el paso 2 del teorema 2 |
 
-PA las cumple las tres.
+La aritmética las cumple las tres. Y hay sistemas que no: la aritmética **sin
+multiplicación** es completa y decidible, porque no puede hablar de sí misma.
 
-## El lema del `for`
+## La oración $G$
 
-Antes del teorema, una observación que hace todo el trabajo.
+Todo el primer teorema cuelga de una sola oración. En pseudocódigo:
 
-::: theorem {#comp-lema-for title="Los teoremas de F son reconocibles"}
-Si $F$ es efectivamente axiomatizable, existe un programa que, dado un enunciado
-$\varphi$, se detiene si $F \vdash \varphi$ — y corre para siempre si no.
-:::
-
-::: proof {#comp-dem-lema-for of="comp-lema-for"}
-```
-para cada cadena p en orden shortlex:      # la lista de la página 4
-    si EsDemostracion(p, φ):               # decidible: es un cómputo
-        devuelve "F demuestra φ"
+```python
+def G():
+    return not PROVES("G")      # "yo no puedo ser demostrada en este sistema"
 ```
 
-Si $F$ demuestra $\varphi$, esa demostración **es una cadena finita**, y el
-orden shortlex llega a toda cadena finita en un número finito de pasos. Así que
-el ciclo la encuentra. Si $F$ no la demuestra, el ciclo no termina nunca.
-:::
+**Que esa oración exista es el trabajo pesado de Gödel**, y es lo único que aquí
+damos por bueno: hace falta que el sistema pueda codificar sus propias fórmulas
+como números y hablar de ellas. Eso es la aritmetización de
+[[sistemas-formales|la página anterior]]. Con eso, `PROVES(...)` no es un
+comentario: es una fórmula aritmética de verdad.
 
-::: figure {#comp-for-enumera title="El motor es la enumeración, y nada más"}
-![El ciclo recorriendo todas las cadenas en orden shortlex y preguntándole a cada una si es la demostración buscada](_assets/comp-for-enumera.svg)
-:::
+En palabras normales: **$G$ dice «yo no puedo ser demostrada dentro de este
+sistema».**
 
-Reconocible, no decidible: la distinción de
-[[computabilidad-y-decidibilidad|la página 3]], cobrada aquí.
+## Teorema 1 — Incompletitud
 
-::: figure {#ilus-espejo-enfrentado title="Un sistema que habla de sí mismo"}
-![Dos espejos enfrentados generando una regresión infinita de reflejos](_assets/ilus-espejo-enfrentado.png)
-:::
-
-*(Esta imagen es una ilustración generada, no una fotografía ni un dato real.)*
-
-## Primer teorema de incompletitud
-
-::: theorem {#comp-teo-godel-1 title="Primer teorema de incompletitud"}
-Si $F$ es sano, efectivamente axiomatizable y expresa la parada, entonces
-**existe un enunciado verdadero que $F$ no demuestra.**
-
-$F$ es **incompleto**.
-:::
-
-Considera este programa:
-
-```
-P(x):                                        # x es el código de un programa
-    for p in shortlex:
-        if EsDemostracion(p, NoPara(x, x)):  # ¿demuestra "x no termina con entrada x"?
-            halt
+```python
+if PROVES("G"):
+    contradiction()             # el sistema se contradice a sí mismo
+else:
+    G_is_true = True            # G decía justo eso, y acertó
 ```
 
-En español: **$P$ busca una demostración de que no termina, y si la encuentra,
-termina.**
+### Por qué eso es una contradicción, paso a paso
 
-::: proof {#comp-dem-godel-1 of="comp-teo-godel-1"}
-Le damos a $P$ su propio código y preguntamos qué hace.
+Supongamos que el sistema **sí** demuestra $G$, y sigamos el hilo:
 
-1. **Supón que $P(\langle P\rangle)$ termina.** Entonces el ciclo encontró una
-   demostración de $\text{NoPara}(\langle P\rangle, \langle P\rangle)$. Como $F$
-   es sano, lo que demuestra es verdad: $P$ **no** termina con $\langle
-   P\rangle$. Pero supusimos que sí. Contradicción.
-
-   **Luego $P(\langle P\rangle)$ no termina.**
-
-2. **Entonces $\text{NoPara}(\langle P\rangle, \langle P\rangle)$ es
-   verdadera** — dice exactamente lo que acabamos de establecer.
-
-3. **¿La demuestra $F$?** No. Si la demostrara, esa demostración sería una cadena
-   finita, el `for` la alcanzaría, y $P$ terminaría. Pero por el paso 1 no
-   termina.
-
-Hay un enunciado verdadero que $F$ no demuestra.
+::: table {#comp-contradiccion-1 title="Qué pasa si el sistema demuestra G"}
+| | Paso | Por qué |
+|---|---|---|
+| 1 | Existe una demostración de $G$ | es lo que acabamos de suponer |
+| 2 | El sistema puede **verificar** esa demostración, y demostrar `PROVES("G")` | revisar una demostración es un cómputo, y el sistema es lo bastante potente para expresarlo |
+| 3 | Pero $G$ **es** el enunciado `not PROVES("G")` | así se construyó |
+| 4 | Entonces el sistema demuestra `PROVES("G")` **y** `not PROVES("G")` | de 2 y 3 |
+| 5 | **Eso es exactamente ser inconsistente** | demostrar algo y su negación |
 :::
 
-::: figure {#comp-p-sobre-si title="¿Qué hace P con su propio código?"}
-![El programa P recibiendo su propio código, con las dos ramas y el mismo encuadre que la figura del problema de la parada](_assets/comp-p-sobre-si.svg)
-:::
+Fíjate en el paso 5, porque ahí está la fuerza del argumento: **no llegamos a
+algo raro ni a una paradoja**. Llegamos a que el sistema se contradice, que es la
+única cosa que un sistema formal no puede permitirse.
 
-### Dónde se usó cada hipótesis
+Así que damos la vuelta:
 
-Esto es lo que quiero que se lleven de aquí, más que la demostración misma: cada
-hipótesis tiene **un lugar señalable** en el argumento, y quitarla lo rompe en un
-punto concreto.
-
-| Hipótesis | Dónde exactamente se usó |
-|---|---|
-| Efectivamente axiomatizable | en que `EsDemostracion` sea decidible: sin eso el `for` no puede preguntar nada |
-| Sano | en el paso 1, para concluir que lo demostrado es verdad |
-| Expresa la parada | en que la oración exista, para empezar |
-
-Y por eso hay sistemas a los que Gödel **no** les aplica. El ejemplo clásico: la
-aritmética con **suma pero sin multiplicación** es completa y decidible. Falla la
-tercera hipótesis — no puede hablar de programas.
-
-> [!WARNING]
-> **No es que la multiplicación sea mágica.** La aritmética con **solo**
-> multiplicación también es decidible, y la teoría de los **números reales** con
-> suma *y* producto también lo es — y ésa tiene las dos operaciones.
->
-> Lo que hace falta para que Gödel muerda es poder **codificar sucesiones
-> finitas**, y eso lo dan la suma y el producto **juntos sobre los naturales**.
-> Un sistema se escapa cuando no puede hablar de sus propias demostraciones, no
-> cuando le falta un símbolo.
+```python
+if system_is_consistent:
+    not PROVES("G")             # no la puede demostrar
+    # ...pero eso es literalmente lo que G afirmaba:
+    G_is_true = True
+```
 
 > [!NOTE]
-> **La honestidad, declarada.** Usamos **sanidad** («$F$ solo demuestra
-> verdades») y no **consistencia** («$F$ no se contradice»). Sanidad es más
-> fuerte, y es exactamente la razón por la que esto cabe en seis líneas.
+> **Conclusión: hay verdades que el sistema no puede demostrar.**
 >
-> Bajar a consistencia pelada se puede, y es lo que le costó a Gödel maquinaria
-> considerable en 1931 y a Rosser un ajuste extra en 1936. El resultado es el
-> mismo; el camino, mucho más largo. Preferimos decir qué estamos suponiendo a
-> esconderlo.
+> Y nota lo que *no* dijimos: que $G$ sea falsa, ni que sea indecidible, ni que
+> las matemáticas fallen. Solo que **es verdadera y el sistema no la alcanza**.
 
-## Segundo teorema de incompletitud
+::: figure {#comp-g-autorreferente title="La oración que habla de sí misma"}
+![G preguntando por su propia demostrabilidad, con las dos ramas y su desenlace](_assets/comp-g-autorreferente.svg)
+:::
 
-El segundo se vuelve concreto con un truco: darle a la consistencia de $F$ la
-forma de un programa.
+## Teorema 2 — El sistema no demuestra su propia consistencia
 
-Sea $M_F$ **el buscador de contradicciones**:
+Ahora escribimos la consistencia como un enunciado más:
 
-```
-M_F:
-    for p in shortlex:
-        if EsDemostracion(p, «0 = 1»):
-            halt
+```python
+CONSISTENT = "este sistema nunca demuestra una contradicción"
 ```
 
-Entonces
+Y la pregunta es si el sistema puede demostrar **eso** sobre sí mismo.
 
-$$F \text{ es consistente} \iff M_F \text{ nunca se detiene}$$
+### Paso a paso
 
-Es decir: $\text{Con}(F)$ no es una fórmula opaca. **Es la oración de parada de
-un programa que cabe en tres renglones.**
+::: table {#comp-contradiccion-2 title="Qué pasa si el sistema demuestra su propia consistencia"}
+| | Paso | Por qué |
+|---|---|---|
+| 1 | Todo el razonamiento del teorema 1 es finito y mecánico | son cinco renglones de tabla |
+| 2 | El sistema puede rehacerlo **por dentro**, y demostrar `CONSISTENT → G` | es lo bastante potente; éste es el trabajo técnico real |
+| 3 | Supongamos además que demuestra `CONSISTENT` | es lo que queremos refutar |
+| 4 | De 2 y 3: demuestra `G` | modus ponens |
+| 5 | Pero el teorema 1 dijo: si es consistente, **no** demuestra `G` | ya lo probamos arriba |
+| 6 | **Contradicción** | 4 choca con 5 |
+:::
+
+```python
+if system_is_consistent:
+    not PROVES(CONSISTENT)
+```
+
+En palabras normales: **un sistema suficientemente potente no puede darse a sí
+mismo una prueba definitiva de «yo nunca voy a producir contradicciones».**
+
+Y hay una manera de volverlo tangible. Escribe el buscador de contradicciones:
+
+```python
+def M_F():
+    for p in todas_las_demostraciones():
+        if es_demostracion_de(p, "0 = 1"):
+            return "encontré una"      # se detiene
+    # si nunca la encuentra, no termina jamás
+```
+
+Entonces **el sistema es consistente exactamente cuando ese programa nunca
+termina** — y el teorema 2 dice que el sistema no puede demostrar que no
+termina, aunque de hecho no termine.
 
 ::: figure {#comp-con-f title="La consistencia de F es un programa que no termina"}
 ![El buscador de contradicciones enumerando demostraciones, y la equivalencia con la consistencia](_assets/comp-con-f.svg)
 :::
 
-::: theorem {#comp-teo-godel-2 title="Segundo teorema de incompletitud"}
-Si $F$ es consistente, efectivamente axiomatizable y suficientemente fuerte,
-entonces **$F$ no demuestra $\text{Con}(F)$.**
+## Los dos, juntos
 
-Dicho con el programa: **$F$ no puede demostrar que $M_F$ nunca se detiene** —
-aunque de hecho no se detenga.
-:::
+$$\boxed{\;\text{1. No puede demostrar todas las verdades.}\;}$$
 
-**Esbozo**, y esta vez sí es un esbozo. El argumento del primer teorema es
-finito y mecánico, así que $F$ —que es lo bastante fuerte— puede llevarlo a cabo
-internamente. Eso da
+$$\boxed{\;\text{2. No puede demostrar su propia consistencia.}\;}$$
 
-$$F \vdash \text{Con}(F) \to \text{NoPara}(\langle P\rangle, \langle P\rangle)$$
-
-Y si $F$ demostrara $\text{Con}(F)$, demostraría también la oración de la
-derecha — que es justo lo que el primer teorema prohíbe.
-
-> [!NOTE]
-> **Por qué el segundo se enuncia con consistencia y no con sanidad.** Porque
-> «$F$ es sana» $F$ **ni siquiera lo puede expresar**: la verdad no es definible
-> dentro del propio sistema. La consistencia sí, y por eso es la que se
-> formaliza.
->
-> El paso de «llevarlo a cabo internamente» es el trabajo técnico real del
-> segundo teorema, y es lo único de estas dos páginas que se pide creer.
+Todo esto suponiendo un sistema formal **suficientemente potente y efectivamente
+describible**, como la aritmética.
 
 ::: figure {#comp-verdadero-demostrable title="Verdadero y demostrable no son lo mismo"}
 ![Los teoremas de F estrictamente dentro de las verdades, con la oración marcada en el hueco](_assets/comp-verdadero-demostrable.svg)
 :::
+
+> [!TIP]
+> **El mismo resultado sale por otro camino, sin oración autorreferente.** Si
+> existiera un sistema que demostrara toda verdad de la forma «este programa no
+> termina», podrías decidir el problema de la parada: enumeras demostraciones
+> hasta encontrar una. Y [[problema-de-la-parada|la página 5]] demostró que eso
+> es imposible.
+>
+> Dos rutas, un destino — y no es casualidad. De eso trata
+> [[el-mismo-truco|la última página]].
 
 ## Qué NO dicen
 

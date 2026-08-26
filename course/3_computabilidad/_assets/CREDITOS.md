@@ -29,7 +29,7 @@ que una edición manual falla la suite.
 | `comp-que-es-demostracion.svg` | Una demostración como secuencia finita de fórmulas y el verificador mecánico que la revisa | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-aritmetizacion.svg` | Los dos pasos de la aritmetización: codificar y representar, separados a propósito | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-for-enumera.svg` | El ciclo recorriendo todas las cadenas en orden shortlex y preguntándole a cada una si es la demostración buscada | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
-| `comp-p-sobre-si.svg` | El programa P recibiendo su propio código, con el mismo encuadre que la figura del problema de la parada | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
+| `comp-g-autorreferente.svg` | La oración G preguntando por su propia demostrabilidad, con el mismo encuadre que la figura del problema de la parada | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-verdadero-demostrable.svg` | Los teoremas de F estrictamente dentro de las verdades, con la oración de Gödel marcada en el hueco | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-con-f.svg` | El buscador de contradicciones, y la consistencia de F como una oración de parada | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |
 | `comp-mismo-esqueleto.svg` | Cantor, Turing y Gödel reducidos a su estructura y puestos en fila | Diagrama propio, generado con `tools/gen_computabilidad.py` | Material del curso |

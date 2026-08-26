@@ -21,12 +21,12 @@ primero y el último. Y por debajo, el mismo argumento.
 ::: table {#comp-tabla-truco title="Los tres argumentos, renglón por renglón"}
 | | **Cantor** 1891 | **Turing** 1936 | **Gödel** 1931 |
 |---|---|---|---|
-| Los objetos | sucesiones de 0 y 1 | máquinas de Turing | programas y demostraciones |
+| Los objetos | sucesiones de 0 y 1 | máquinas de Turing | fórmulas y demostraciones |
 | La lista, que **sí** existe | — | las máquinas, enumerables | las demostraciones, enumerables |
 | Lo que se **supone y se refuta** | que una enumeración las **agota** | que existe $H$ que **decide** HALT | que $F$ **demuestra toda verdad** |
-| La diagonal | dígito $n$ de la sucesión $n$ | $M_i$ con entrada $\langle M_i\rangle$ | $P$ con entrada $\langle P\rangle$ |
-| El giro | cambiar cada dígito | hacer lo contrario de lo que $H$ predice | terminar si se demuestra que no termina |
-| La conclusión | los reales no son numerables | HALT es indecidible | $F$, si es sana, es incompleta |
+| La diagonal | dígito $n$ de la sucesión $n$ | $M_i$ con entrada $\langle M_i\rangle$ | $G$ hablando de $G$ |
+| El giro | cambiar cada dígito | hacer lo contrario de lo que $H$ predice | negar la propia demostrabilidad |
+| La conclusión | los reales no son numerables | HALT es indecidible | $F$, si es consistente, es incompleta |
 :::
 
 Fíjate en el tercer renglón, porque es donde se confunde todo el mundo: **la
