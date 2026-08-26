@@ -10,6 +10,7 @@
   :root{
     --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
     --accent:#f04cff; --border:#78419e; --ok:#a8ff5a; --info:#55ddff;
+    --trazo:#a273d6;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--page);color:var(--text);
@@ -123,10 +124,19 @@
   </div>
 
   <div class="panel">
-    <p class="nota" style="margin:0 0 .6rem">La regla que está disparando ahora
-    mismo se ilumina. Las celdas <span style="color:var(--border)">—</span> son
+    <p class="nota" style="margin:0 0 .6rem">La regla que <b>acaba de disparar</b> se ilumina. Las celdas <span style="color:var(--border)">—</span> son
     inalcanzables: nunca ocurren en ningún cómputo.</p>
-    <table id="delta"></table>
+    <div style="overflow-x:auto"><table id="delta"></table></div>
+  </div>
+
+  <div class="panel">
+    <p class="nota" style="margin:0 0 .6rem">El mismo cómputo, sobre el autómata.
+    <b>El estado actual se ilumina</b>, y la arista que acaba de recorrer queda
+    marcada. Notación: <b style="color:var(--accent)">lee │ escribe</b>
+    <b style="color:var(--ok)">▶</b> dirección.</p>
+    <div style="overflow-x:auto"><svg id="automata" viewBox="0 0 660 480" width="100%"
+         style="min-width:640px" role="img"
+         aria-label="Automata de la maquina, con el estado actual iluminado"></svg></div>
   </div>
 
 </div>
@@ -206,6 +216,7 @@
     else { ver.style.display = "none"; }
     if (c.fin) ver.style.display = "";
     pintarDelta(c);
+    pintarAutomata(c);
     el("paso").disabled = !!c.fin;
     el("atras").disabled = idx === 0;
     el("correr").textContent = timer ? "Pausar" : "Correr";
@@ -243,6 +254,130 @@
       });
       var p = tr.insertCell(); p.className = "papel-col"; p.textContent = PAPEL[q];
     });
+  }
+
+
+  // ---- autómata: la MISMA geometría del diagrama de la página ------------
+  // Portado de comp-automata.svg escalando 0.6. Era otro dibujo -- otra
+  // topología, otros colores, otra forma de etiquetar -- y eso hacía que las
+  // dos vistas enseñaran dos imágenes distintas de la misma máquina. Peor: su
+  // arista q0->q3 atravesaba el círculo de q2 y se leía como una transición
+  // q2->q3 que no existe. Compartir la geometría validada lo arregla de raíz.
+  var R = 22;
+  var NODOS = {q0:[108,282], q1:[270,222], q2:[270,360], q3:[480,114], acc:[591,114]};
+  var COL = {t:"var(--trazo)", m:"var(--accent)", c:"var(--info)", v:"var(--ok)"};
+  var ARISTAS = [
+    {de:"q0", a:"q3", d:"M 104 256 C 128 150, 282 98, 459 106", col:COL.m,
+     lee:"Y", esc:"Y", dir:"▶", chip:[180,130]},
+    {de:"q0", a:"q1", d:"M 127 268 C 168 245, 206 232, 246 227", col:COL.t,
+     lee:"0", esc:"X", dir:"▶", chip:[187,244]},
+    {de:"q1", a:"q2", d:"M 287 238 C 317 267, 317 315, 287 344", col:COL.c,
+     lee:"1", esc:"Y", dir:"◀", chip:[330,291]},
+    {de:"q2", a:"q0", d:"M 251 353 C 210 347, 168 323, 126 296", col:COL.t,
+     lee:"X", esc:"X", dir:"▶", chip:[187,334]},
+    {de:"q3", a:"acc", d:"M 504 114 L 566 114", col:COL.v,
+     lee:"␣", esc:"␣", dir:"▶", chip:[535,92]}
+  ];
+  var BUCLES = [
+    {en:"q1", d:"M 256 205 C 204 118, 336 118, 284 205", col:COL.t,
+     chips:[{lee:"0",esc:"0",dir:"▶",en:[270,182]},{lee:"Y",esc:"Y",dir:"▶",en:[270,158]}]},
+    {en:"q2", d:"M 256 378 C 204 466, 336 466, 284 378", col:COL.t,
+     chips:[{lee:"0",esc:"0",dir:"◀",en:[270,420]},{lee:"Y",esc:"Y",dir:"◀",en:[270,444]}]},
+    {en:"q3", d:"M 466 97 C 420 37, 540 37, 494 97", col:COL.t,
+     chips:[{lee:"Y",esc:"Y",dir:"▶",en:[480,66]}]}
+  ];
+  var NS = "http://www.w3.org/2000/svg";
+  function sv(tag, attrs, txt){
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (txt !== undefined) e.textContent = txt;
+    return e;
+  }
+  function chipSVG(svg, x, y, lee, esc, dir, color, activo){
+    var etiqueta = lee + " │ " + esc, w = etiqueta.length * 6.4 + 12;
+    svg.appendChild(sv("rect",{x:x-w/2, y:y-9, width:w, height:17, rx:4,
+      fill:"var(--page)", stroke:color, "stroke-width":activo?1.8:1}));
+    var t1 = sv("text",{x:x-6, y:y+4, "text-anchor":"middle", "font-size":"9.5",
+      "font-family":"ui-monospace,Menlo,monospace", fill:color,
+      "font-weight":activo?"700":"500"});
+    t1.textContent = etiqueta;
+    svg.appendChild(t1);
+    var t2 = sv("text",{x:x+w/2-9, y:y+4, "text-anchor":"middle", "font-size":"9.5",
+      fill:"var(--ok)", "font-weight":"700"});
+    t2.textContent = dir;
+    svg.appendChild(t2);
+  }
+  function pintarAutomata(c){
+    var svg = el("automata"); if (!svg) return;
+    svg.innerHTML = "";
+    var defs = sv("defs");
+    [["mt","var(--trazo)"],["mm","var(--accent)"],["mc","var(--info)"],["mv","var(--ok)"],["mg","var(--muted)"]]
+      .forEach(function(par){
+        var mk = sv("marker",{id:par[0],viewBox:"0 0 10 10",refX:"9",refY:"5",
+          markerWidth:"5",markerHeight:"5",orient:"auto-start-reverse"});
+        mk.appendChild(sv("path",{d:"M 0 0 L 10 5 L 0 10 z", fill:par[1]}));
+        defs.appendChild(mk);
+      });
+    svg.appendChild(defs);
+    var MK = {}; MK[COL.t]="mt"; MK[COL.m]="mm"; MK[COL.c]="mc"; MK[COL.v]="mv";
+    var qAct = c.regla ? c.regla[0] : null, sAct = c.regla ? c.regla[1] : null;
+
+    // arranque
+    svg.appendChild(sv("path",{d:"M 52 282 L 82 282", fill:"none",
+      stroke:"var(--muted)","stroke-width":1.6,"marker-end":"url(#mt)"}));
+    var ini = sv("text",{x:46,y:252,"text-anchor":"start","font-size":"9",
+      fill:"var(--muted)"}); ini.textContent = "empieza aquí"; svg.appendChild(ini);
+
+    ARISTAS.forEach(function(e){
+      var on = qAct === e.de && sAct === e.lee;
+      svg.appendChild(sv("path",{d:e.d, fill:"none",
+        stroke:on?"var(--accent)":e.col, "stroke-width":on?3:1.6,
+        "marker-end":"url(#"+(on?"mm":MK[e.col])+")"}));
+      chipSVG(svg, e.chip[0], e.chip[1], e.lee, e.esc, e.dir,
+              on?"var(--accent)":e.col, on);
+    });
+    BUCLES.forEach(function(b){
+      var on = qAct === b.en && b.chips.some(function(x){ return x.lee === sAct; });
+      svg.appendChild(sv("path",{d:b.d, fill:"none",
+        stroke:on?"var(--accent)":b.col, "stroke-width":on?3:1.6,
+        "marker-end":"url(#"+(on?"mm":"mt")+")"}));
+      b.chips.forEach(function(x){
+        var act = qAct === b.en && x.lee === sAct;
+        chipSVG(svg, x.en[0], x.en[1], x.lee, x.esc, x.dir,
+                act?"var(--accent)":b.col, act);
+      });
+    });
+
+    Object.keys(NODOS).forEach(function(n){
+      var q = NODOS[n], esAcc = n === "acc";
+      var aqui = c.fin ? (esAcc && c.fin === "acepta") : (n === c.q);
+      var col = aqui ? "var(--accent)" : (esAcc ? "var(--ok)" : "var(--trazo)");
+      svg.appendChild(sv("circle",{cx:q[0],cy:q[1],r:R,
+        fill:aqui?"var(--accent)":"var(--page)", stroke:col, "stroke-width":aqui?3:2}));
+      if (esAcc) svg.appendChild(sv("circle",{cx:q[0],cy:q[1],r:R-5,fill:"none",
+        stroke:aqui?"#1b0025":col,"stroke-width":2}));
+      var tx = sv("text",{x:q[0],y:q[1]+5,"text-anchor":"middle","font-size":"13",
+        "font-weight":"700", fill:aqui?"#1b0025":"var(--text)",
+        "font-family":"ui-monospace,Menlo,monospace"});
+      tx.textContent = esAcc ? "acc" : sub[n];
+      svg.appendChild(tx);
+    });
+
+    // Al rechazar no se iluminaba NADA, justo en el desenlace que mas se explica.
+    if (c.fin === "rechaza"){
+      svg.appendChild(sv("circle",{cx:591,cy:282,r:R,fill:"var(--muted)",
+        stroke:"var(--muted)","stroke-width":3}));
+      var tr = sv("text",{x:591,y:287,"text-anchor":"middle","font-size":"11",
+        "font-weight":"700",fill:"#1b0025","font-family":"ui-monospace,Menlo,monospace"});
+      tr.textContent = "q_rej"; svg.appendChild(tr);
+      var prev = historia[idx-1];
+      if (prev){
+        var pq = NODOS[prev.q];
+        svg.appendChild(sv("path",{d:"M "+(pq[0]+R)+" "+pq[1]+" Q "+((pq[0]+591)/2)+" "
+          +((pq[1]+282)/2+40)+" "+(591-R)+" 282", fill:"none",stroke:"var(--muted)",
+          "stroke-width":2,"stroke-dasharray":"5 4","marker-end":"url(#mg)"}));
+      }
+    }
   }
 
   function cargar(){
