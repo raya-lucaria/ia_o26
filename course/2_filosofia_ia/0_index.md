@@ -29,6 +29,47 @@ quienes rechazan las dos preguntas anteriores, pregunta **quién se queda**. El
 después y deja que la cuenta decida, así que la pregunta que cierra la unidad
 es **quién cuenta**.
 
+## Evaluación de la unidad
+
+Dos cosas, las dos el **miércoles 9 de septiembre**.
+
+### El examen
+
+Sobre los cuatro módulos y sus páginas de repaso. Se responde **solo y en el
+momento, sin apuntes**.
+
+Entra lo que discutimos en clase: qué pregunta hace cada módulo, qué contesta
+cada lectura, y en qué se contradicen entre sí. No se piden fechas ni citas
+literales de memoria — se pide poder **reconstruir una posición y decir dónde
+falla**. Si puedes explicar por qué el módulo 3 rechaza las preguntas de los
+módulos 1 y 2, vas bien.
+
+### El ensayo
+
+**De tres a cinco páginas, en PDF, por Canvas.** *(El enlace de entrega se
+agrega aquí en cuanto esté.)*
+
+El tema es **abierto**, pero abierto no quiere decir sin forma. El ensayo tiene
+que hacer dos cosas, y se evalúa por las dos:
+
+| | Qué se pide |
+|---|---|
+| **1 · El análisis** | Plantear un problema y desarmarlo. Qué está realmente en juego, quién sostiene qué, y por qué la discusión no se resuelve sola |
+| **2 · La propuesta** | Tu solución. Cuál es tu posición, qué se sigue de ella, y qué le contestas a quien piense lo contrario |
+
+Esa segunda parte es **tu ideología**, dicha con todas sus letras. No se
+califica cuál sea: se califica cómo la sostienes.
+
+> [!CAUTION]
+> **Lo escribes tú.** Puedes usar inteligencia artificial para **corregir** —
+> ortografía, redacción, claridad, ayudarte a ver si un párrafo se entiende—,
+> pero **no para escribir por ti**: ni el argumento, ni la estructura, ni los
+> párrafos.
+>
+> La razón no es de reglamento. Un ensayo de este tipo es el único trabajo del
+> curso donde lo que se evalúa **es tu posición**, y una posición que no
+> escribiste no es tuya.
+
 ## Recorrido
 
 La unidad son cuatro módulos y cada uno es un directorio propio. Dentro de
