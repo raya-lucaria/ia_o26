@@ -118,6 +118,24 @@ Explicarlo con tus palabras es el punto. Si solo puedes repetir la frase del
 video, todavía no está. No hay cuestionario ni nada que entregar: la tarea es
 llegar entendiendo.
 
+## El examen
+
+**Miércoles 2 de septiembre**, sobre **dos** unidades que van juntas: ésta
+—computabilidad, *qué* puede calcular una máquina— y la que sigue —complejidad,
+*cuánto cuesta* calcularlo—. Se responde solo y en el momento, sin apuntes.
+
+Entra lo visto en clase y **los ejercicios de las páginas**. Los ejercicios no
+son relleno: son el formato en que vienen las preguntas.
+
+Concretamente se pide poder:
+
+- **Enunciar las definiciones con precisión.** Máquina de Turing, computable,
+  decidible, reconocible. La diferencia entre las dos últimas se pregunta.
+- **Distinguir indecidible de intratable.** Es el error más común al salir de
+  esta unidad, y por eso se pregunta.
+- **Reconstruir un argumento de diagonalización**, no repetirlo de memoria.
+  Si puedes explicar por qué $D$ no puede existir sin mirar la página, ya está.
+
 ## Recorrido
 
 Ocho páginas, en este orden. Cada una se sostiene sola y declara cuánto toma

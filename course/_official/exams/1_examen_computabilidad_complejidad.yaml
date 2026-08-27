@@ -1,0 +1,25 @@
+id: examen-computabilidad-complejidad
+type: exam
+authority: official
+scope:
+  quantum: course-root
+content:
+  title: Examen — Computabilidad y complejidad
+  instructions: >-
+    Examen sobre las dos unidades que van juntas: computabilidad —qué puede
+    calcular una máquina— y complejidad —cuánto cuesta calcularlo—. Se responde
+    solo y en el momento, sin apuntes.
+
+    Entra lo visto en clase y los ejercicios de las páginas de ambas unidades.
+    Se pide poder enunciar las definiciones con precisión, distinguir un
+    problema indecidible de uno intratable, y reconstruir los argumentos de
+    diagonalización, no repetirlos de memoria.
+
+    El detalle de qué entra está en la página de la unidad de computabilidad.
+  due: "2026-09-02"
+  status: published
+  tags:
+    - evaluacion
+    - examen
+    - computabilidad
+    - complejidad

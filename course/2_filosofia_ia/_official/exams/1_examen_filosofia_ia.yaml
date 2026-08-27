@@ -1,0 +1,22 @@
+id: examen-filosofia-ia
+type: exam
+authority: official
+content:
+  title: Examen — Filosofía de la IA
+  instructions: >-
+    Examen sobre la unidad de filosofía de la inteligencia artificial: los
+    cuatro módulos de lecturas y las páginas de repaso de cada uno. Se responde
+    solo y en el momento, sin apuntes.
+
+    Entra lo que discutimos en clase: qué pregunta hace cada módulo, qué
+    contesta cada lectura, y en qué se contradicen entre sí. No se pide
+    memorizar fechas ni citas literales; se pide poder reconstruir una posición
+    y decir dónde falla.
+
+    El detalle de qué entra y cómo prepararlo está en la página de la unidad.
+  due: "2026-09-09"
+  status: published
+  tags:
+    - evaluacion
+    - examen
+    - filosofia

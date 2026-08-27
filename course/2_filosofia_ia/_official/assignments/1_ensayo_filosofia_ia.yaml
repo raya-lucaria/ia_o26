@@ -1,0 +1,26 @@
+id: ensayo-filosofia-ia
+type: assignment
+authority: official
+content:
+  title: Ensayo — Filosofía de la IA
+  instructions: >-
+    Un ensayo de tema abierto sobre filosofía de la inteligencia artificial, de
+    tres a cinco páginas, entregado en PDF por Canvas.
+
+    Abierto no quiere decir sin forma. El ensayo tiene que hacer dos cosas:
+    analizar un problema, y proponer una solución. Esa solución es tu posición,
+    y el ensayo se juzga por cómo la sostienes, no por cuál sea.
+
+    Lo escribes tú. Puedes usar inteligencia artificial para corregir
+    —ortografía, redacción, claridad—, pero no para escribir por ti: ni el
+    argumento, ni la estructura, ni los párrafos.
+
+    Los requisitos completos, qué se espera de cada parte y en qué se evalúa
+    están en la página de la unidad.
+  due: "2026-09-09"
+  status: published
+  tags:
+    - evaluacion
+    - ensayo
+    - entrega
+    - filosofia
