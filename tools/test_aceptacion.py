@@ -362,16 +362,20 @@ def test_extra_ninguna_ilustracion_generada_aparece_sin_su_aviso_visible():
     # discriminante-- y el piso por unidad deja de significar nada. Es el mismo
     # fallo silencioso que el comentario de arriba documenta que ya ocurrio.
     PAGINAS_CON_ILUSTRACIONES = [UNIDAD / p for p in PAGINAS] + sorted(
-        p for carpeta in ("course/2_filosofia_ia", "course/3_computabilidad")
+        p for carpeta in ("course/2_filosofia_ia", "course/3_computabilidad",
+                          "course/4_complejidad")
         for p in (RAIZ / carpeta).rglob("*.md")
         if "_assets" not in p.parts
     )
-    usos_por_unidad = {"historia": 0, "filosofia": 0, "computabilidad": 0}
+    usos_por_unidad = {"historia": 0, "filosofia": 0, "computabilidad": 0,
+                       "complejidad": 0}
     for ruta in PAGINAS_CON_ILUSTRACIONES:
         if not ruta.is_file():
             continue
         pagina = ruta.name
-        if "3_computabilidad" in ruta.parts:
+        if "4_complejidad" in ruta.parts:
+            unidad = "complejidad"
+        elif "3_computabilidad" in ruta.parts:
             unidad = "computabilidad"
         elif "2_filosofia_ia" in ruta.parts:
             unidad = "filosofia"

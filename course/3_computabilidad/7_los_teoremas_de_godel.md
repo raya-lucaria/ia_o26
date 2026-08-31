@@ -222,7 +222,7 @@ preciso.
 >    oración ni su negación. Se dice también **independiente de $F$**. La oración
 >    de arriba es indecidible **en $F$** — pero es perfectamente decidible si es
 >    verdadera: lo es.
-> 3. **Indecidible ≠ intratable** (página 5): eso es complejidad, no
+> 3. **Indecidible ≠ intratable** (página 5): eso es [[complejidad|complejidad]], no
 >    computabilidad.
 
 ## Ejercicios

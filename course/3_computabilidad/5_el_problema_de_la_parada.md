@@ -221,7 +221,7 @@ de estados finitos, donde la pregunta **sí** es decidible.
 > | **Indecidible** | ninguna máquina lo resuelve, nunca, ni con tiempo infinito | HALT |
 > | **Intratable** | se puede resolver, pero tardaría más que la edad del universo | factorizar números enormes |
 >
-> Lo segundo es **complejidad**, y es otro curso. Un problema intratable tiene
+> Lo segundo es **complejidad**, y es [[complejidad|la unidad siguiente]]. Un problema intratable tiene
 > solución; uno indecidible, no.
 
 ## Ejercicios

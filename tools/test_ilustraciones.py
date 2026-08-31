@@ -3,7 +3,8 @@ from pathlib import Path
 
 from PIL import Image
 
-from unidades import ASSETS_COMPUTABILIDAD, ASSETS_FILOSOFIA, ASSETS_HISTORIA
+from unidades import (ASSETS_COMPLEJIDAD, ASSETS_COMPUTABILIDAD, ASSETS_FILOSOFIA,
+                      ASSETS_HISTORIA)
 
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = ASSETS_HISTORIA          # el conjunto original no cambia de sitio
@@ -172,3 +173,77 @@ def test_computabilidad_acreditadas_como_generadas():
     for nombre in nombres_computabilidad():
         assert f"ilus-{nombre}.png" in creditos, f"ilus-{nombre}.png sin credito"
     assert "generada" in creditos
+
+
+# --- Bloque de complejidad ----------------------------------------------------
+# Las mismas cuatro guardas que el bloque de computabilidad, por la misma razon
+# que ese comentario explica: cada bloque del catalogo necesita las suyas o se
+# queda cubierto solo por la de prompts prohibidos.
+#
+# Y una quinta, propia de este bloque: es el unico que usa un estilo distinto
+# --anime en vez del grabado editorial-- y ese estilo lleva escritas dos
+# restricciones (rostro no reconocible, ninguna obra existente) que son la razon
+# por la que la unidad puede tener el registro visual que pidio sin copiarle el
+# diseño a nadie. Si alguien reescribe el estilo y las quita, la guarda avisa.
+
+CREDITOS_COMPLEJIDAD = ASSETS_COMPLEJIDAD / "CREDITOS.md"
+
+
+def nombres_complejidad():
+    catalogo = json.loads(CATALOGO.read_text(encoding="utf-8"))
+    return list(catalogo.get("ilustraciones_complejidad", {}))
+
+
+def test_complejidad_todas_generadas():
+    for nombre in nombres_complejidad():
+        ruta = ASSETS_COMPLEJIDAD / f"ilus-{nombre}.png"
+        assert ruta.is_file(), f"falta {ruta.name}"
+
+
+def test_complejidad_fondo_horneado_al_color_exacto():
+    for nombre in nombres_complejidad():
+        ruta = ASSETS_COMPLEJIDAD / f"ilus-{nombre}.png"
+        assert ruta.is_file(), f"falta {ruta.name}"
+        with Image.open(ruta) as im:
+            im = im.convert("RGB")
+            esquinas = [
+                im.getpixel((0, 0)),
+                im.getpixel((im.width - 1, 0)),
+                im.getpixel((0, im.height - 1)),
+                im.getpixel((im.width - 1, im.height - 1)),
+            ]
+            assert all(px == FONDO_OBJETIVO for px in esquinas), (
+                f"{ruta.name}: las esquinas no son {FONDO_OBJETIVO} exacto ({esquinas})"
+            )
+
+
+def test_complejidad_dimensiones_y_peso():
+    for nombre in nombres_complejidad():
+        ruta = ASSETS_COMPLEJIDAD / f"ilus-{nombre}.png"
+        with Image.open(ruta) as im:
+            assert im.width == 1024, f"{ruta.name} mide {im.width}px de ancho"
+        assert ruta.stat().st_size < PESO_MAX_PNG, (
+            f"{ruta.name} pesa {ruta.stat().st_size/1000:.0f} KB"
+        )
+
+
+def test_complejidad_acreditadas_como_generadas():
+    creditos = CREDITOS_COMPLEJIDAD.read_text(encoding="utf-8").lower()
+    for nombre in nombres_complejidad():
+        assert f"ilus-{nombre}.png" in creditos, f"ilus-{nombre}.png sin credito"
+    assert "generada" in creditos
+
+
+def test_complejidad_el_estilo_anime_conserva_sus_dos_restricciones():
+    """El estilo propio de esta unidad es el unico que pide un registro de una
+    tradicion visual concreta (anime de ciencia ficcion), asi que es el unico
+    que puede derivar hacia copiar un personaje con dueño. Las dos frases que
+    lo impiden viven en el propio prompt y esta guarda las fija."""
+    catalogo = json.loads(CATALOGO.read_text(encoding="utf-8"))
+    estilo = catalogo["estilo_anime_fondo_plano"].lower()
+    assert "rostro nunca visible ni reconocible" in estilo, (
+        "el estilo anime perdio la restriccion de rostro no reconocible"
+    )
+    assert "no basado en ninguna serie ni obra existente" in estilo, (
+        "el estilo anime perdio la restriccion de no copiar obra existente"
+    )
