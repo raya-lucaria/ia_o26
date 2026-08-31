@@ -111,7 +111,7 @@ perfecto, ni analizador estático completo.
 Sabiendo todo esto, hay que resistir la tentación de aplicarlo donde no toca.
 
 **En la práctica, lo que limita a la inteligencia artificial de hoy casi nunca es
-la computabilidad.** Es complejidad, son datos, es energía, es que no sabemos
+la computabilidad.** Es [[complejidad|complejidad]], son datos, es energía, es que no sabemos
 formular bien el problema. Los sistemas que no funcionan no fallan porque
 chocaron con Turing.
 

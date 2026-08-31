@@ -121,8 +121,8 @@ llegar entendiendo.
 ## El examen
 
 **Miércoles 2 de septiembre**, sobre **dos** unidades que van juntas: ésta
-—computabilidad, *qué* puede calcular una máquina— y la que sigue —complejidad,
-*cuánto cuesta* calcularlo—. Se responde solo y en el momento, sin apuntes.
+—computabilidad, *qué* puede calcular una máquina— y la que sigue
+—[[complejidad|complejidad]], *cuánto cuesta* calcularlo—. Se responde solo y en el momento, sin apuntes.
 
 Entra lo visto en clase y **los ejercicios de las páginas**. Los ejercicios no
 son relleno: son el formato en que vienen las preguntas.

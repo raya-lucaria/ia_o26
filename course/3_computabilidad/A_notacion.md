@@ -79,4 +79,4 @@ algo de esta hoja, que sea esto:
 |---|---|---|
 | **numerable** | **recursivamente enumerable** | *Todo* lenguaje es numerable. Casi ninguno es r.e. |
 | **indecidible** (un lenguaje) | **indecidible en $F$** (una oración) | Lo primero es que ninguna máquina lo decide; lo segundo es que $F$ no demuestra ni la oración ni su negación |
-| **indecidible** | **intratable** | Lo primero es imposible siempre; lo segundo es posible pero carísimo. Eso es complejidad, no computabilidad |
+| **indecidible** | **intratable** | Lo primero es imposible siempre; lo segundo es posible pero carísimo. Eso es [[complejidad|complejidad]], no computabilidad |

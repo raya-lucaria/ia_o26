@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carrera de crecimiento — cuánto tarda cada complejidad</title>
+<style>
+  /* Paleta de skins/eva-cyberpunk.yaml. Ver tools/test_skin.py: estas copias
+     literales están vigiladas contra el skin, que es la autoridad real. */
+  :root{
+    --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
+    --accent:#f04cff; --border:#78419e; --ok:#a8ff5a; --info:#55ddff;
+    --aviso:#ffd166; --alarma:#ff5a7a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--page);color:var(--text);
+            font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .envoltura{max-width:1000px;margin:0 auto;padding:1.2rem}
+  h1{font-size:19px;margin:0 0 .2rem}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 1.1rem}
+  .panel{background:var(--surface);border:1px solid var(--border);
+         border-radius:12px;padding:1rem;margin-bottom:1rem}
+  label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:.35rem}
+
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .valorn{font:26px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);
+          font-weight:700}
+  .fila{display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap}
+  .atajos{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
+  button{background:var(--surface);color:var(--text);border:1px solid var(--border);
+    border-radius:8px;padding:.35rem .6rem;font:13px ui-monospace,Menlo,monospace;
+    cursor:pointer}
+  button:hover{border-color:var(--accent)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:.5rem .55rem;border-bottom:1px solid #3a2255}
+  th{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;
+     letter-spacing:.05em}
+  td.num{font:14px ui-monospace,Menlo,monospace;text-align:right;white-space:nowrap}
+  .barra{height:12px;border-radius:6px;min-width:2px;display:block}
+  td.celdabarra{width:38%}
+  .nombre{font-weight:650}
+  .veredicto{font-size:12.5px;color:var(--muted)}
+  .malo{color:var(--alarma);font-weight:650}
+  .bien{color:var(--ok);font-weight:650}
+  .regular{color:var(--aviso);font-weight:650}
+  .nota{color:var(--muted);font-size:13px;margin-top:.9rem}
+  .nota b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <h1>Carrera de crecimiento</h1>
+  <p class="sub">Mueve <b>n</b> y mira cuánto tardaría cada algoritmo en una
+  máquina de mil millones de operaciones por segundo. Las constantes se ignoran:
+  cada fila cuesta exactamente su fórmula.</p>
+
+  <div class="panel">
+    <label for="n">Tamaño de la entrada — n</label>
+    <div class="fila">
+      <div class="valorn" id="etiquetaN">30</div>
+      <div style="flex:1;min-width:260px">
+        <input type="range" id="n" min="1" max="200" value="30" step="1">
+      </div>
+    </div>
+    <div class="atajos">
+      <button data-n="5">n = 5</button>
+      <button data-n="10">n = 10</button>
+      <button data-n="30">n = 30</button>
+      <button data-n="50">n = 50</button>
+      <button data-n="60">n = 60</button>
+      <button data-n="100">n = 100</button>
+      <button data-n="200">n = 200</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <table>
+      <thead>
+        <tr><th>Complejidad</th><th>Ejemplo</th><th class="num">Operaciones</th>
+            <th>Tiempo</th><th class="celdabarra"></th></tr>
+      </thead>
+      <tbody id="filas"></tbody>
+    </table>
+    <p class="nota">La barra es <b>logarítmica</b>: cada tramo vale mil veces el
+    anterior. En escala normal, todo lo que no fuera 2ⁿ ni n! sería invisible.</p>
+  </div>
+
+  <div class="panel">
+    <p class="nota" id="moraleja"></p>
+  </div>
+</div>
+
+<script>
+"use strict";
+const OPS_POR_SEGUNDO = 1e9;
+
+// Cada fila calcula su costo con logaritmos en base 10 y no con el numero, para
+// que 200! -- que desborda el punto flotante de JavaScript en 2^1024 -- se pueda
+// seguir comparando y mostrando en vez de convertirse en Infinity.
+const FILAS = [
+  {nombre:"log n",  ejemplo:"búsqueda binaria",  color:"var(--info)",
+   log10:n => Math.log10(Math.max(Math.log2(n), 1))},
+  {nombre:"n",      ejemplo:"búsqueda lineal",   color:"var(--ok)",
+   log10:n => Math.log10(n)},
+  {nombre:"n log n",ejemplo:"ordenar",           color:"var(--ok)",
+   log10:n => Math.log10(n) + Math.log10(Math.max(Math.log2(n), 1))},
+  {nombre:"n²",     ejemplo:"comparar todo par", color:"var(--aviso)",
+   log10:n => 2 * Math.log10(n)},
+  {nombre:"n³",     ejemplo:"multiplicar matrices", color:"var(--aviso)",
+   log10:n => 3 * Math.log10(n)},
+  {nombre:"2ⁿ",     ejemplo:"todos los subconjuntos", color:"var(--alarma)",
+   log10:n => n * Math.log10(2)},
+  {nombre:"n!",     ejemplo:"todos los órdenes",  color:"var(--alarma)",
+   log10:n => log10Factorial(n)},
+];
+
+// log10(n!) por la aproximacion de Stirling, con el termino de correccion: el
+// error relativo es menor a una diezmilesima ya en n = 10, y aqui solo se usa
+// para elegir la unidad de tiempo.
+function log10Factorial(n){
+  if (n < 2) return 0;
+  const ln = n * Math.log(n) - n + 0.5 * Math.log(2 * Math.PI * n)
+             + 1 / (12 * n);
+  return ln / Math.LN10;
+}
+
+function formatoTiempo(log10ops){
+  const seg = log10ops - Math.log10(OPS_POR_SEGUNDO);
+  if (seg < -9) return {texto:"instantáneo", clase:"bien"};
+  const escalones = [
+    [-9, -6, 1e9,  "ns"], [-6, -3, 1e6, "µs"], [-3, 0, 1e3, "ms"],
+    [0, Math.log10(60), 1, "s"], [Math.log10(60), Math.log10(3600), 1/60, "min"],
+    [Math.log10(3600), Math.log10(86400), 1/3600, "h"],
+    [Math.log10(86400), Math.log10(31557600), 1/86400, "días"],
+  ];
+  for (const [lo, hi, factor, sufijo] of escalones){
+    if (seg >= lo && seg < hi){
+      const v = Math.pow(10, seg) * factor;
+      const clase = seg < 0 ? "bien" : (seg < Math.log10(60) ? "bien" : "regular");
+      return {texto: `${v < 10 ? v.toFixed(1) : Math.round(v)} ${sufijo}`, clase};
+    }
+  }
+  const log10anios = seg - Math.log10(31557600);
+  if (log10anios < 3){
+    const v = Math.pow(10, log10anios);
+    return {texto: `${v < 10 ? v.toFixed(1) : Math.round(v)} años`,
+            clase: log10anios < 1 ? "regular" : "malo"};
+  }
+  if (log10anios < 10.14) {  // 1.38e10: la edad del universo
+    return {texto: `10^${Math.round(log10anios)} años`, clase:"malo"};
+  }
+  const veces = log10anios - 10.14;
+  return {texto: `10^${Math.round(veces)} veces la edad del universo`, clase:"malo"};
+}
+
+function formatoOperaciones(log10ops){
+  if (log10ops < 6){
+    const v = Math.pow(10, log10ops);
+    return v < 1000 ? String(Math.round(v)) : Math.round(v).toLocaleString("es-MX");
+  }
+  return `10^${Math.round(log10ops)}`;
+}
+
+const cuerpo = document.getElementById("filas");
+const control = document.getElementById("n");
+const etiqueta = document.getElementById("etiquetaN");
+const moraleja = document.getElementById("moraleja");
+
+function dibujar(){
+  const n = Number(control.value);
+  etiqueta.textContent = n;
+  const logs = FILAS.map(f => Math.max(f.log10(n), 0));
+  const tope = Math.max(...logs, 1);
+
+  cuerpo.innerHTML = "";
+  FILAS.forEach((f, i) => {
+    const log10ops = logs[i];
+    const t = formatoTiempo(log10ops);
+    const ancho = Math.max(100 * log10ops / tope, 1.5);
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td class="nombre" style="color:${f.color}">${f.nombre}</td>` +
+      `<td class="veredicto">${f.ejemplo}</td>` +
+      `<td class="num">${formatoOperaciones(log10ops)}</td>` +
+      `<td class="${t.clase}">${t.texto}</td>` +
+      `<td class="celdabarra"><span class="barra" style="width:${ancho}%;` +
+      `background:${f.color}"></span></td>`;
+    cuerpo.appendChild(tr);
+  });
+
+  const logExp = n * Math.log10(2) - Math.log10(OPS_POR_SEGUNDO);
+  if (logExp < 0){
+    moraleja.innerHTML = "Con esta n <b>todo funciona</b>, incluso la fuerza " +
+      "bruta. Por eso probar un algoritmo con entradas chicas no dice nada.";
+  } else if (logExp < Math.log10(31557600)){
+    moraleja.innerHTML = "Aquí <b>2ⁿ empieza a doler</b> y n! ya es imposible. " +
+      "Fíjate que los polinomios siguen instantáneos: la diferencia no es de grado.";
+  } else {
+    moraleja.innerHTML = "<b>2ⁿ ya salió del universo</b> y los polinomios " +
+      "siguen tranquilos. Sube n al doble y mira: los polinomios se multiplican " +
+      "por una constante; el exponencial se eleva al cuadrado.";
+  }
+}
+
+control.addEventListener("input", dibujar);
+document.querySelectorAll("button[data-n]").forEach(b => {
+  b.addEventListener("click", () => { control.value = b.dataset.n; dibujar(); });
+});
+dibujar();
+</script>
+</body>
+</html>

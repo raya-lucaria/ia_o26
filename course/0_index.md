@@ -36,6 +36,6 @@ sesión.
 | Miércoles 19 de agosto | Lectura · Módulo 3 — [[exit-nrx|Exit, NRx & Dark Enlightenment]] |
 | Lunes 24 de agosto | Lectura · Módulo 4 — [[moloch-long-future|Moloch, Rationality & the Long Future]] |
 | Miércoles 26 de agosto | Video · [[computabilidad|Computabilidad e incompletitud]] |
-| Miércoles 2 de septiembre | Examen · [[computabilidad|Computabilidad y complejidad]] |
+| Miércoles 2 de septiembre | Examen · [[computabilidad|Computabilidad]] y [[complejidad|complejidad]] |
 | Miércoles 9 de septiembre | Examen · [[filosofia-ia|Filosofía de la IA]] |
 | Miércoles 9 de septiembre | Entrega · ensayo de [[filosofia-ia|Filosofía de la IA]], en PDF por Canvas |

@@ -29,5 +29,15 @@
     "muro": "Un muro liso y descomunal que atraviesa un paisaje llano de un borde al otro del encuadre y se pierde hacia arriba sin coronacion visible, con una figura diminuta detenida frente a el mirando hacia arriba. Luz baja, silencio, escala imposible.",
     "espejo-enfrentado": "Dos espejos altos enfrentados en una sala vacia, generando una regresion infinita de reflejos que se hunde hacia el fondo, con un unico haz de luz de neon recorriendo la serie y volviendose mas tenue en cada repeticion. Sin figuras humanas, sin rostros.",
     "horizonte-de-red": "Una linea de horizonte al anochecer donde una llanura vacia se convierte gradualmente en una malla de circuitos luminosos que continua hasta el borde del encuadre, con postes de tendido electrico espaciados alejandose. Sin figuras humanas."
+  },
+  "estilo_anime_fondo_plano": "Ilustracion en estilo anime cinematografico de ciencia ficcion, linea limpia y sombreado plano por celdas, atmosfera melancolica y contemplativa. Luz de neon magenta brillante y verde acido sobre un fondo violeta oscuro solido, plano y uniforme de un unico color, sin gradiente, sin vineta, sin textura ni bordes en el fondo, de pared a pared. Composicion centrada, figura solitaria vista de espaldas o en silueta, el rostro nunca visible ni reconocible. Diseño original, no basado en ninguna serie ni obra existente. Sin texto, sin letras, sin marcas de agua, sin firmas.",
+  "ilustraciones_complejidad": {
+    "portada-complejidad": "Una figura solitaria de espaldas frente a un paisaje urbano nocturno cuyos edificios se prolongan hacia arriba como columnas de calculo que no terminan, imagen de portada para una unidad sobre el costo del computo.",
+    "explosion-combinatoria": "Una figura pequenia de espaldas al pie de una estructura ramificada colosal que se duplica en cada nivel y llena todo el aire, metafora visual del crecimiento exponencial.",
+    "dos-caminos": "Una figura de espaldas ante una bifurcacion: a la izquierda un sendero corto e iluminado que llega a su destino visible, a la derecha un laberinto que se pierde sin fondo hacia el horizonte.",
+    "el-arbol-que-se-abre": "Un corredor que se abre simultaneamente en miles de corredores identicos, todos recorridos a la vez por la misma luz, metafora del no determinismo.",
+    "la-llave-y-los-cerrojos": "Una mano sostiene una sola llave luminosa frente a un muro inmenso cubierto de cerraduras identicas hasta perderse de vista, metafora de que comprobar es facil y buscar no.",
+    "la-moneda": "Una moneda girando en el aire, suspendida y brillante, en medio de una sala de servidores oscura y silenciosa, metafora del algoritmo que decide al azar.",
+    "la-frontera": "Un territorio partido en dos por una linea de luz: de un lado un mapa detallado y cartografiado, del otro una extension en blanco sin explorar, metafora de una frontera que nadie ha cruzado."
   }
 }

@@ -51,13 +51,21 @@ pide red ni credenciales (salvo `gen_ilustraciones.py`).
 | `gen_timeline.py` | `hitos.json` | `_assets/v1-panorama.svg`, `_assets/v1-tramo-*.svg` (9 archivos) | Al agregar, quitar o mover un hito |
 | `gen_computo.py` | `computo.json` | `_assets/v9-computo.svg` | Al agregar un modelo o actualizar una cifra de cómputo |
 | `gen_life.py` | (patrón fijo en el propio script) | `_assets/v13-game-of-life.png` | Rara vez — el patrón no cambia; existe por si se ajusta la paleta o el tamaño de celda |
-| `gen_ilustraciones.py` | `ilustraciones.json` + API de `gpt-image-2` | `_assets/ilus-*.jpg` | Al agregar una ilustración nueva al catálogo. Requiere `OPENAI_API_KEY` (`set -a && . ./.env && set +a`) y cuesta dinero por llamada: no es para correr "por si acaso" |
+| `gen_complejidad.py` | (los diagramas viven en el propio script) | `course/4_complejidad/_assets/cx-*.svg` (23 archivos) | Al agregar o rediseñar un diagrama de la unidad de complejidad |
+| `gen_ilustraciones.py` | `ilustraciones.json` + API de `gpt-image-2` | `_assets/ilus-*.jpg` en historia, `ilus-*.png` en las demás unidades | Al agregar una ilustración nueva al catálogo. Requiere `OPENAI_API_KEY` (`set -a && . ./.env && set +a`) y cuesta dinero por llamada: no es para correr "por si acaso" |
 | `bajar_commons.py` | `commons.tsv` | `_assets/foto-*.jpg` + bloque de filas para `CREDITOS.md` (impreso en stdout, no escrito solo) | Al agregar una fotografía nueva desde Wikimedia Commons |
 
 Cada uno tiene su prueba homónima (`test_gen_timeline.py`, `test_gen_computo.py`,
-`test_commons.py`) que regenera el archivo antes de comparar, así que correr
+`test_gen_complejidad.py`, `test_commons.py`) que regenera el archivo antes de comparar, así que correr
 `pytest` ya certifica que el archivo comiteado coincide con lo que el generador
 produciría hoy.
+
+`tools/ilustraciones.json` tiene un bloque por unidad y **dos** estilos: el
+grabado editorial (`estilo` y `estilo_fondo_plano`) que usan historia, filosofía
+y computabilidad, y `estilo_anime_fondo_plano`, que estrenó complejidad. El
+segundo lleva escritas dos restricciones —rostro nunca reconocible y ningún
+diseño basado en obra existente— que `test_ilustraciones.py` fija con una guarda
+propia: no se pueden quitar sin que la suite lo diga.
 
 ## Reconstruir un cuadernillo de lecturas (`filosofia_ia/clase_1` … `clase_4`)
 
