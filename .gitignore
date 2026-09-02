@@ -1,6 +1,7 @@
 artifact/
 .venv/
 .venv-local/
+.worktrees/
 .env
 legacy/
 tools/__pycache__/
