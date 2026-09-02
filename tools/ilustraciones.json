@@ -39,5 +39,11 @@
     "la-llave-y-los-cerrojos": "Una mano sostiene una sola llave luminosa frente a un muro inmenso cubierto de cerraduras identicas hasta perderse de vista, metafora de que comprobar es facil y buscar no.",
     "la-moneda": "Una moneda girando en el aire, suspendida y brillante, en medio de una sala de servidores oscura y silenciosa, metafora del algoritmo que decide al azar.",
     "la-frontera": "Un territorio partido en dos por una linea de luz: de un lado un mapa detallado y cartografiado, del otro una extension en blanco sin explorar, metafora de una frontera que nadie ha cruzado."
+  },
+  "estilo_agentes_ambientes": "Ilustracion editorial de aventura y decision, formato panoramico, linea limpia, personajes y espacios con detalle legible, luz cinematografica calida y fria. Diseño original, ninguna franquicia, ningun personaje reconocible, ninguna serie, videojuego, equipo deportivo ni piloto real. Debe mostrar una situacion concreta con una eleccion y sus posibilidades, no un diagrama ni una interfaz. Sin texto, letras, logotipos, marcas de agua, firmas ni paneles con datos legibles.",
+  "ilustraciones_agentes_ambientes": {
+    "decision-penal": "Una portera original vista desde dentro de su arco, detenida justo antes de decidir hacia que lado saltar ante un penal en un estadio nocturno ficticio; la jugadora rival queda lejana y sin rasgos identificables, composicion amplia que hace visible la incertidumbre del instante.",
+    "plataformas": "Un explorador original y pequeño ante un hueco en un mundo lateral de plataformas de piedra y vegetacion; hay un mecanismo movil peligroso, una ruta iluminada y una entrada parcialmente oculta, para mostrar que un salto cambia opciones futuras.",
+    "estrategia-carrera": "Un equipo original de estrategia en una sala de control con ventanales observa una carrera de monoplazas ficticios bajo lluvia; una persona compara dos rutas abstractas de luz azul y dorada mientras el circuito mojado se ve afuera, sin datos legibles ni marcas."
   }
 }

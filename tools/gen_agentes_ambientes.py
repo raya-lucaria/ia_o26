@@ -19,17 +19,26 @@ DIAGRAMAS = {
 
 def svg(titulo, descripcion, etiquetas):
     total = len(etiquetas)
-    paso = 1040 / total
     tarjetas = []
+    columnas = 5 if total >= 8 else (4 if total == 7 else total)
+    filas = (total + columnas - 1) // columnas
+    ancho = 1040 / columnas
+    alto = 84 if filas == 2 else 96
+    y_inicial = 218 if filas == 2 else 245
     for indice, etiqueta in enumerate(etiquetas):
-        x = 80 + indice * paso
+        fila, columna = divmod(indice, columnas)
+        x = 80 + columna * ancho
+        y = y_inicial + fila * 122
         color = "#ff4fd8" if indice % 2 == 0 else "#55ddff"
-        tarjetas.append(f'<rect x="{x:.0f}" y="245" width="{paso - 12:.0f}" height="96" rx="16" fill="#35164d" stroke="{color}" stroke-width="3"/>')
-        tarjetas.append(f'<text x="{x + (paso - 12) / 2:.0f}" y="288" text-anchor="middle" fill="#f7f2ff" font-size="18" font-weight="700">{escape(etiqueta)}</text>')
-        if indice < total - 1:
-            flecha_x = x + paso - 8
-            tarjetas.append(f'<path d="M {flecha_x:.0f} 293 h 18" stroke="#f7c948" stroke-width="4" marker-end="url(#flecha)"/>')
+        tarjetas.append(f'<rect x="{x:.0f}" y="{y}" width="{ancho - 14:.0f}" height="{alto}" rx="16" fill="#35164d" stroke="{color}" stroke-width="3"/>')
+        tarjetas.append(f'<text x="{x + (ancho - 14) / 2:.0f}" y="{y + alto / 2 + 6:.0f}" text-anchor="middle" fill="#f7f2ff" font-size="18" font-weight="700">{escape(etiqueta)}</text>')
+        if indice < total - 1 and columna < columnas - 1:
+            flecha_x = x + ancho - 10
+            tarjetas.append(f'<path d="M {flecha_x:.0f} {y + alto / 2:.0f} h 17" stroke="#f7c948" stroke-width="4" marker-end="url(#flecha)"/>')
+        elif indice < total - 1 and filas == 2:
+            tarjetas.append(f'<path d="M 1104 {y + alto / 2:.0f} h 22 v 72 H 94" fill="none" stroke="#f7c948" stroke-width="4" marker-end="url(#flecha)"/>')
     contenido = "".join(tarjetas)
+    pie_y = 488 if filas == 2 else 445
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-label="{escape(titulo)}">
 <title>{escape(titulo)}</title>
 <desc>{escape(descripcion)}</desc>
@@ -39,7 +48,7 @@ def svg(titulo, descripcion, etiquetas):
 <text x="600" y="140" text-anchor="middle" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="18">{escape(descripcion)}</text>
 <path d="M100 188 H1100" stroke="#6a3d8d" stroke-width="2"/>
 {contenido}
-<text x="600" y="445" text-anchor="middle" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="17">Primero modela el caso; después nombra la herramienta.</text>
+<text x="600" y="{pie_y}" text-anchor="middle" fill="#c8b9d8" font-family="system-ui, sans-serif" font-size="17">Primero modela el caso; después nombra la herramienta.</text>
 </svg>'''
 
 

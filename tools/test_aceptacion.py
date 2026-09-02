@@ -26,6 +26,8 @@ from unidades import ASSETS_POR_UNIDAD
 RAIZ = Path(__file__).resolve().parent.parent
 UNIDAD = RAIZ / "course/1_introduccion/2_historia_ia"
 ASSETS = UNIDAD / "_assets"
+UNIDAD_AGENTES = RAIZ / "course/5_agentes_ambientes"
+ASSETS_AGENTES = UNIDAD_AGENTES / "_assets"
 ARTEFACTO = RAIZ / "artifact"
 RAYA_LUCARIA = Path(os.environ.get("RAYA_LUCARIA", "/home/uumami/itam/raya_lucaria"))
 
@@ -54,6 +56,13 @@ PAGINAS_UNIDAD_EN_ORDEN = [
     "imaginar-la-maquina", "que-es-inteligencia", "arco-historico",
     "por-que-el-boom", "estado-actual", "otras-raices", "ia-y-sociedad",
     "material-adicional",
+]
+
+PAGINAS_AGENTES = [
+    "0_index.md", "1_de_prediccion_a_decision.md", "2_dibujar_el_bucle.md",
+    "3_especificar_la_tarea.md", "4_diagnosticar_el_entorno.md",
+    "5_disenar_el_agente.md", "6_de_consecuencias_a_refuerzo.md",
+    "7_lienzo_de_modelado.md",
 ]
 
 # Apellidos/nombres de personas reales retratadas en foto-*.jpg (Capa B). Ninguno
@@ -175,6 +184,27 @@ def test_5b_toda_imagen_en_assets_esta_referenciada_por_alguna_pagina():
         if img.suffix.lower() in extensiones and img.name not in texto_paginas
     )
     assert not huerfanas, f"imagenes en _assets/ sin usar en ninguna pagina: {huerfanas}"
+
+
+def test_agentes_ambientes_tiene_assets_integrados_y_aviso_en_ilustraciones():
+    """La unidad nueva conserva las dos direcciones de la guarda: cada asset
+    se acredita y se usa, y las escenas generadas no se hacen pasar por datos.
+    Sin esta prueba, el mapa general de SVG revisa su sintaxis pero no detecta
+    una imagen narrativa huérfana ni un aviso omitido tras la figura."""
+    paginas = "\n".join(
+        (UNIDAD_AGENTES / pagina).read_text(encoding="utf-8")
+        for pagina in PAGINAS_AGENTES
+    )
+    creditos = (ASSETS_AGENTES / "CREDITOS.md").read_text(encoding="utf-8").lower()
+    extensiones = {".png", ".jpg", ".jpeg", ".svg", ".gif"}
+    for asset in ASSETS_AGENTES.iterdir():
+        if asset.suffix.lower() in extensiones:
+            assert asset.name in paginas, f"{asset.name} no se usa en la unidad"
+            assert asset.name.lower() in creditos, f"{asset.name} no tiene crédito"
+
+    generadas = list(ASSETS_AGENTES.glob("ilus-*.jpg"))
+    assert len(generadas) == 3, "faltan o sobran escenas narrativas generadas"
+    assert paginas.count("Esta imagen es una ilustración generada") == len(generadas)
 
 
 def test_6_ninguna_generada_representa_persona_real_o_evento_documentado():

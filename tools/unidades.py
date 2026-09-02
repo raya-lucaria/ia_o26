@@ -13,12 +13,14 @@ ASSETS_HISTORIA = RAIZ / "course/1_introduccion/2_historia_ia/_assets"
 ASSETS_FILOSOFIA = RAIZ / "course/2_filosofia_ia/_assets"
 ASSETS_COMPUTABILIDAD = RAIZ / "course/3_computabilidad/_assets"
 ASSETS_COMPLEJIDAD = RAIZ / "course/4_complejidad/_assets"
+ASSETS_AGENTES = RAIZ / "course/5_agentes_ambientes/_assets"
 
 ASSETS_POR_UNIDAD = {
     "historia": ASSETS_HISTORIA,
     "filosofia": ASSETS_FILOSOFIA,
     "computabilidad": ASSETS_COMPUTABILIDAD,
     "complejidad": ASSETS_COMPLEJIDAD,
+    "agentes-ambientes": ASSETS_AGENTES,
 }
 
 CELDA_NOMBRE = 0
