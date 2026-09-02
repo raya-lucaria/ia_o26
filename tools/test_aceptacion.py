@@ -60,9 +60,17 @@ PAGINAS_UNIDAD_EN_ORDEN = [
 
 PAGINAS_AGENTES = [
     "0_index.md", "1_de_prediccion_a_decision.md", "2_dibujar_el_bucle.md",
-    "3_especificar_la_tarea.md", "4_diagnosticar_el_entorno.md",
-    "5_disenar_el_agente.md", "6_de_consecuencias_a_refuerzo.md",
-    "7_lienzo_de_modelado.md",
+    "3_especificar_la_tarea.md", "4_el_entorno_peas.md",
+    "5_actuadores_peas.md", "6_sensores_peas.md", "7_peas_integrado.md",
+    "8_diagnosticar_el_entorno.md", "9_disenar_el_agente.md",
+    "10_de_consecuencias_a_refuerzo.md", "A_lienzo_de_modelado.md",
+]
+
+PAGINAS_AGENTES_EN_ORDEN = [
+    "de-prediccion-a-decision", "dibujar-el-bucle", "desempeno-en-peas",
+    "entorno-en-peas", "actuadores-en-peas", "sensores-en-peas",
+    "peas-integrado", "diagnosticar-el-entorno", "disenar-el-agente",
+    "de-consecuencias-a-refuerzo", "lienzo-de-modelado",
 ]
 
 # Apellidos/nombres de personas reales retratadas en foto-*.jpg (Capa B). Ninguno
@@ -125,6 +133,15 @@ def test_3_las_ocho_paginas_aparecen_en_navegacion_en_orden_bajo_introduccion():
     )
     for id_pagina in PAGINAS_UNIDAD_EN_ORDEN:
         assert id_pagina in items, f"falta en navegacion: {id_pagina}"
+
+
+@sin_artefacto
+def test_agentes_aparece_en_navegacion_con_el_recorrido_peas_completo():
+    """Una PEAS de cuatro letras no puede publicarse como una sola escala:
+    este contrato comprueba el recorrido que realmente verá quien estudia."""
+    nav = json.loads((ARTEFACTO / "data/navigation.json").read_text())
+    items = {it["id"]: it for it in nav["items"]}
+    assert items["agentes-ambientes"]["children"] == PAGINAS_AGENTES_EN_ORDEN
 
 
 @sin_artefacto

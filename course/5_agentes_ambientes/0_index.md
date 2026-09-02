@@ -4,7 +4,7 @@ title: Agentes, ambientes y modelado de decisiones
 nav_title: Agentes y ambientes
 summary: Antes de escoger un modelo, aprende a dibujar qué decide un sistema, qué observa, qué puede hacer y cómo se juzgan sus consecuencias.
 status: draft
-estimated_time: 2h15m
+estimated_time: 4h15m
 tags: [agentes, ambientes, modelado, decision, refuerzo]
 ---
 
@@ -37,18 +37,23 @@ dibujar el problema que realmente tenemos enfrente.
 |---|---|---|---:|
 | 1 | [[de-prediccion-a-decision|De predicción a decisión]] | Qué añade actuar a estimar algo | 15m |
 | 2 | [[dibujar-el-bucle|Dibujar el bucle]] | Frontera, observación, creencia y acción | 20m |
-| 3 | [[especificar-la-tarea|Especificar la tarea]] | PEAS y desempeño | 20m |
-| 4 | [[diagnosticar-el-entorno|Diagnosticar el entorno]] | Qué propiedades cambian el diseño | 25m |
-| 5 | [[disenar-el-agente|Diseñar el agente]] | Arquitecturas como capacidades de decisión | 25m |
-| 6 | [[de-consecuencias-a-refuerzo|De consecuencias a refuerzo]] | Recompensa, retorno y política | 20m |
+| 3 | [[desempeno-en-peas|P — desempeño]] | Qué cuenta como una trayectoria buena y qué no permitimos | 25m |
+| 4 | [[entorno-en-peas|E — entorno]] | Entidades, reglas, recursos y dinámica fuera del agente | 20m |
+| 5 | [[actuadores-en-peas|A — actuadores]] | Acciones posibles, precisión, legalidad y abstención | 15m |
+| 6 | [[sensores-en-peas|S — sensores]] | Observación, ruido, retraso y zonas ciegas | 20m |
+| 7 | [[peas-integrado|Integrar PEAS]] | Una ficha completa y pruebas para detectar contradicciones | 25m |
+| 8 | [[diagnosticar-el-entorno|Diagnosticar el entorno]] | Siete propiedades, una por una, con evidencia | 35m |
+| 9 | [[disenar-el-agente|Diseñar el agente]] | Capacidades que responden a cada limitación | 30m |
+| 10 | [[de-consecuencias-a-refuerzo|De consecuencias a refuerzo]] | Política, recompensa y retorno | 20m |
 
 Y una hoja para usar frente a un caso nuevo:
 
 - [[lienzo-de-modelado|El lienzo de modelado]] — los diez pasos, tarjetas de caso y supuestos permitidos.
 
-**Si vas con poco tiempo**, lee 1, 2, 3 y 4. Con eso ya puedes construir un
-problema de decisión; las dos últimas páginas explican cómo decidir y aprender
-dentro de ese marco.
+**Si vas con poco tiempo**, lee 1, 2, las cuatro páginas PEAS (3–7) y 8. Con
+eso ya puedes especificar y diagnosticar un problema de decisión; las dos
+páginas posteriores explican qué capacidad necesita el agente y cómo conecta
+con refuerzo.
 
 ## El principio de esta unidad
 

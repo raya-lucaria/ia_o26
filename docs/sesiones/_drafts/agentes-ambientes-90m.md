@@ -8,9 +8,9 @@
 Cada estudiante puede tomar una historia nueva y completar de forma defendible:
 
 1. decisión concreta, frontera, entorno, observación y acciones;
-2. una medida de desempeño con al menos una restricción;
-3. dos propiedades del entorno justificadas por hechos; y
-4. una capacidad mínima del agente derivada de esa evidencia.
+2. una P con horizonte, resultado y al menos una restricción;
+3. una E, una A y una S que no se contradicen; y
+4. dos propiedades del entorno justificadas por hechos.
 
 No se pide resolver un MDP ni programar. La formalización matemática empieza en
 la sesión siguiente, una vez que estas cajas sean habituales.
@@ -31,12 +31,12 @@ la sesión siguiente, una vez que estas cajas sean habituales.
 |---:|---|---|---|
 | 0–10 | **Gancho: portera.** «¿Qué falta para convertir 70% a la izquierda en una decisión?» | Acciones, consecuencias y criterio. | No llamar agente a la predicción sola. |
 | 10–22 | **Bucle: plataformas.** «¿Qué existe, qué llega a pantalla y qué queda fuera?» | Frontera, observación, acción, memoria posible. | No equiparar mundo con pantalla. |
-| 22–35 | **PEAS: pits.** «¿Qué significa hacerlo bien?» | Una P con restricción; E, A y S mínimos. | Meta, desempeño, utilidad y recompensa no son sinónimos. |
-| 35–49 | **Ajedrez y póker.** «¿Qué evidencia cambia el diseño?» | Dos cadenas hecho → propiedad → implicación. | Ajedrez es estratégico aunque su transición sea determinista. |
+| 22–37 | **P: pits.** «¿Qué cuenta como hacerlo bien?» | P con horizonte, resultado, límite y posible atajo. | Meta, desempeño, utilidad y recompensa no son sinónimos. |
+| 37–49 | **E/A/S en contraste.** «¿Qué existe, qué puedo mover y qué veo?» | Una fila de cada letra para el mismo caso. | No copiar el mundo a los sensores ni confundir deseo con acción. |
 | 49–54 | **Pausa.** | — | No añadir contenido. |
-| 54–66 | **Capacidades.** «¿Qué no puede resolver el percepto actual?» | Regla, memoria/modelo, objetivo, utilidad o aprendizaje. | No presentar una escalera rígida. |
-| 66–78 | **Trayectoria y recompensa.** «¿Por qué +1 por objeto brillante falla?» | Conducta inducida, desempeño, reparación y prueba. | Recompensa local no equivale al objetivo. |
-| 78–88 | **Clínica: museo simulado.** Completar pasos 1–5 y 8. | Tarjeta con supuestos y evidencia. | No intentar los diez pasos. |
+| 54–66 | **Diagnóstico: ajedrez y póker.** «¿Qué evidencia cambia el diseño?» | Dos cadenas hecho → propiedad → implicación. | Ajedrez es estratégico aunque su transición sea determinista. |
+| 66–78 | **Capacidades.** «¿Qué no puede resolver el percepto actual?» | Regla, memoria/modelo, objetivo, utilidad o aprendizaje. | No presentar una escalera rígida. |
+| 78–88 | **Clínica: museo simulado.** Completar P, E, A y S; marcar un supuesto. | Ficha PEAS breve y coherente. | No intentar taxonomía ni refuerzo todavía. |
 | 88–90 | **Salida.** «Una etiqueta sin evidencia no cuenta.» | Recolectar tarjeta. | Cerrar con el método, no definiciones. |
 
 ## Lienzo que permanece escrito
@@ -70,3 +70,11 @@ la sesión siguiente, una vez que estas cajas sean habituales.
 | «La recompensa es ganar.» | «¿Cuándo y cómo la recibe? ¿Qué hace antes del final?» |
 | «Necesita RL.» | «¿Qué evidencia descarta primero una regla, memoria o modelo?» |
 | «No hay respuesta.» | «Puede haber varias; marca el supuesto que separa una de otra.» |
+
+## Después de los 90 minutos
+
+La sesión introduce P y contrasta E/A/S; no pretende agotar la unidad. La ruta
+de estudio sigue con las cuatro páginas PEAS y su clínica integrada, después las
+siete propiedades del entorno, y solo entonces capacidades de agente y
+refuerzo. El siguiente encuentro puede retomar una ficha real y preguntar qué
+capacidad exige su evidencia.

@@ -4,7 +4,7 @@ title: Diseñar el agente
 nav_title: Capacidades
 summary: La taxonomía del agente pregunta qué puede hacer el controlador, no qué tan elegante suena su etiqueta.
 status: draft
-estimated_time: 25m
+estimated_time: 30m
 tags: [agentes, arquitecturas, modelos, objetivos]
 ---
 
@@ -34,6 +34,78 @@ basados en modelo, basados en objetivos, basados en utilidad y con aprendizaje.
 Es un vocabulario útil si lo lees como aumento de **capacidad disponible**, no
 como una afirmación de que todo agente real ocupa una sola casilla. Un agente
 puede usar reglas de seguridad, un modelo de mapa y aprendizaje a la vez.
+
+## 1. Reglas reactivas — responder a lo que se ve ahora
+
+Una regla reactiva tiene la forma «si observo X, hago Y». Un termostato puede
+abrir calefacción si la lectura baja de un umbral; una alarma puede sonar si un
+sensor rebasa un límite. Es una capacidad honesta cuando la observación actual
+contiene lo necesario y el costo de equivocarse se controló con la regla.
+
+Se queda corta si dos historias distintas producen la misma observación pero
+requieren acciones distintas. Una cámara puede mostrar al explorador quieto en
+una plataforma; sin recordar si la rueda peligrosa venía subiendo o bajando, la
+misma imagen no basta para elegir el salto.
+
+## 2. Estado interno o modelo — conservar e inferir lo que no está a la vista
+
+El agente mantiene un resumen: última posición, mapa parcial, fase estimada de
+un mecanismo o posibles manos de un rival. Llamarlo **modelo** no exige una
+física perfecta; basta con una estructura que conecte acciones, observaciones y
+consecuencias de manera útil.
+
+Esta capacidad responde a una falta concreta: el entorno es parcialmente
+observable, tiene retraso o cambia entre observaciones. No resuelve por sí sola
+qué futuro preferimos; solo evita decidir como si la información perdida no
+importara.
+
+## 3. Objetivos — reconocer qué estados cuentan como llegar
+
+Un objetivo permite buscar o planear hacia una condición: «recoger la ficha y
+volver a base», «llegar a la salida», «completar la entrega». A diferencia de
+una regla, puede comparar caminos por si alcanzan o no ese estado.
+
+Pero dos planes pueden cumplir el mismo objetivo con costos radicalmente
+distintos. Llegar a la salida con batería agotada, o llegar con seguridad y
+tiempo sobrante, cumplen «llegar». Si esa diferencia importa en P, hace falta
+otra capacidad para ordenar intercambios.
+
+## 4. Utilidad — elegir entre futuros que ambos parecen aceptables
+
+Una utilidad representa preferencias cuando no basta una condición de sí/no.
+En la estrategia de carrera, dos decisiones pueden terminar la competencia, pero
+una sacrifica tiempo por menor riesgo y otra hace lo contrario. La utilidad hace
+explícita esa comparación en vez de esconderla dentro de la palabra «mejor».
+
+No es una fórmula mágica ni una obligación de poner números enseguida. Antes de
+cuantificar, se declara qué intercambio existe y quién decide su prioridad. Una
+utilidad elegante que omite una restricción de P solo optimiza el problema mal
+planteado con gran precisión.
+
+## 5. Aprendizaje — mejorar una capacidad a partir de experiencia
+
+Aprender puede estimar la física de un videojuego, mejorar una creencia sobre un
+rival, ajustar una política o calibrar un sensor. No es el último escalón que
+reemplaza a los demás: aprende **algo** para que una regla, modelo, objetivo o
+preferencia funcione mejor.
+
+Si no sabes qué señal recibe, qué consecuencia puede probar o qué parte del
+modelo falta, «usar aprendizaje» todavía no es un diseño. Y si la interfaz no
+ve el obstáculo, entrenar más con la misma señal no hace aparecer información
+nueva.
+
+## Del hecho a la capacidad mínima
+
+Repite esta cadena antes de nombrar un algoritmo:
+
+1. **Hecho:** «La cámara solo muestra una zona y la rueda sigue moviéndose».
+2. **Falta:** «El percepto actual no dice dónde estará la rueda al saltar».
+3. **Capacidad mínima:** «Memoria o modelo de su ciclo».
+4. **Familia posible después:** reglas temporizadas, estimación, planeación o
+   aprendizaje, según los demás supuestos.
+
+La palabra «mínima» evita dos errores opuestos: llamar RL a todo problema y
+fingir que una regla reactiva resuelve información que nunca recibió el agente.
 
 ## Arquitectura: controlador, cuerpo y ambiente
 

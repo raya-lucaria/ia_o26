@@ -129,5 +129,5 @@ hay que dibujarla antes de discutirla.
 ## A dónde va esto
 
 El bucle nos dice qué existe. Falta decidir qué cuenta como hacerlo bien.
-[[especificar-la-tarea|Especificar la tarea]] convierte una historia en una
+[[desempeno-en-peas|P — desempeño]] convierte una historia en una
 especificación que alguien más puede revisar.
