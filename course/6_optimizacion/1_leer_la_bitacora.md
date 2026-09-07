@@ -14,9 +14,43 @@ tags: [optimizacion, modelado, supuestos]
 
 Primera página de la unidad. Aquí no se resuelve nada: se lee y se ordena.
 
-El fabricador de la nave quedó libre esta mañana y hay que decidir qué hacer con
-él. Lo que sabemos del asunto está en la bitácora de anoche, tal como la dictó
-quien estaba de guardia.
+## La nave, el fabricador y el depósito
+
+Vas a bordo de un carguero en un viaje largo. La próxima parada es un
+**depósito**: una estación donde se descarga lo que llevas y te lo pagan en
+**créditos**.
+
+En la bodega hay un **fabricador**, una máquina que convierte materia prima en
+piezas. Sabe hacer dos cosas, y solo dos:
+
+- **Filtros de aire**, que el depósito paga a **cuatro créditos**.
+- **Celdas de agua**, que paga a **tres**.
+
+Hoy el fabricador quedó libre. Podrías llenarlo de filtros, que se pagan mejor.
+No puedes, y ésa es toda la gracia del problema: **tres cosas se acaban**.
+
+- Las **horas** de fabricador que quedan antes de llegar. Cada pieza toma su
+  tiempo.
+- El **polímero** de la bodega. Cada pieza se lleva su parte.
+- La **energía** que el reactor deja para la máquina. Cada pieza gasta la suya.
+
+Y las dos piezas **no gastan lo mismo**: una es barata en material y cara en
+corriente, la otra al revés. Por eso hacer más de una significa hacer menos de la
+otra, y casi nunca en la proporción que uno esperaría.
+
+::: figure {#opt-el-fabricador title="Qué decide la tripulación"}
+![Tres recursos limitados entran al fabricador, que produce filtros de aire y celdas de agua; el depósito paga créditos por cada pieza](_assets/opt-el-fabricador.svg)
+:::
+
+La pregunta, entonces, es una sola: **¿cuántos filtros y cuántas celdas conviene
+hacer?**
+
+## Pero el problema no llega así
+
+Ese resumen limpio te lo acabo de dar yo. **En la vida real nadie te lo da.**
+
+Lo que llega es esto: la bitácora que dictó anoche quien estaba de guardia,
+medio dormido, sin pensar en que alguien iba a modelar nada con ella.
 
 > **Bitácora del fabricador.** Quedó libre esta mañana y hay que decidir qué
 > hacer con él antes de llegar al depósito. Ahí nos abonan por lo que llevemos:
@@ -38,6 +72,22 @@ quien estaba de guardia.
 >
 > Y me dijo la ingeniera antes de irse a dormir que no conviene hacer más celdas
 > que filtros.
+
+Léela otra vez y fíjate en tres cosas. **Los datos no vienen en orden.** **La
+celda llega tarde y a medias**, en el penúltimo párrafo, como si el tripulante se
+hubiera acordado de golpe. Y **no todo lo que dice es un dato**.
+
+::: table {#opt-el-caso title="La historia, en cinco renglones"}
+| | En esta historia |
+|---|---|
+| **Quién decide** | La tripulación, hoy, antes de llegar al depósito |
+| **Qué decide** | Cuántos filtros de aire y cuántas celdas de agua fabricar |
+| **Qué lo limita** | Tres cosas que se acaban: horas, polímero y energía |
+| **Qué se quiere** | Que el total de créditos sea lo más grande posible |
+| **Qué estorba** | La bitácora trae frases que no son ninguna de las cuatro anteriores |
+:::
+
+Ese último renglón es el trabajo de hoy: **separar lo que es dato de lo que no**.
 
 ## 1 · Las tres preguntas que deciden si un número entra
 

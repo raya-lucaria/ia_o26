@@ -85,6 +85,22 @@ el total de la primera clase ronda los **77 minutos**.
 - [[que-es-una-respuesta|4 · Qué es una respuesta]]
 - [[patrones-lineales|5 · Patrones lineales]]
 
+## El notebook de la clase 1
+
+Las páginas se leen; el notebook se corre. Trae el fabricador resuelto con
+código, el mismo dibujo hecho por la computadora, y **al final una historia nueva
+para que la modeles tú**. No hay nada que entregar.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_fabricador_lineal.ipynb)
+
+**Dónde vive.** El archivo está en este repositorio, en
+`course/6_optimizacion/_assets/01_fabricador_lineal.ipynb`. El botón de arriba lo
+abre en Google Colab, que lo ejecuta en el navegador sin instalar nada. Si
+prefieres correrlo en tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
+
+**Cuándo.** Después de leer las cinco páginas. La última celda da por sabidas
+todas.
+
 ## Qué no cubre esta clase
 
 Nada de esta clase resuelve un problema **sin dibujarlo**, y el dibujo solo

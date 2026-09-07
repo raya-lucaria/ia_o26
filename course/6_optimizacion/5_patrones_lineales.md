@@ -133,6 +133,19 @@ visto desde los dos lados.
 - Las desigualdades se le entregan al solver todas con $\le$, y al máximo hay que
   cambiarle el signo **dos veces**: al entrar y al salir.
 
+## Y ahora, el notebook
+
 Con esto ya puedes leer un problema, escribirlo, dibujarlo y traducir sus frases.
-Lo que falta es resolverlo **sin dibujar**, que es lo que hace falta en cuanto hay
-más de dos variables.
+Toca hacerlo con las manos.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_fabricador_lineal.ipynb)
+
+El notebook resuelve el fabricador con código y **cierra con una bitácora nueva,
+del invernadero, que no está resuelta en ninguna página**. Ése es el ejercicio de
+la clase. No hay nada que entregar.
+
+El archivo vive en este repositorio, en
+`course/6_optimizacion/_assets/01_fabricador_lineal.ipynb`.
+
+Lo que falta después es resolver **sin dibujar**, que es lo que hace falta en
+cuanto hay más de dos variables.
