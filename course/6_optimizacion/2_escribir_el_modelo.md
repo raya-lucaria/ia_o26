@@ -134,10 +134,6 @@ el de todos los puntos factibles: todo lo que se puede hacer, antes de preguntar
 qué conviene.
 :::
 
-**Y por eso son cinco condiciones y no tres.** El punto $(-2,10)$ cumple las tres
-desigualdades de recurso y no es un plan: no se imprimen menos de 2 filtros. Si la
-definición dijera «cualquier plan que cumpla las tres», lo admitiría.
-
 ## 2 · El lienzo, paso a paso
 
 Ya tienes las piezas. Falta el **orden en que se buscan**, porque empezar por las
@@ -170,26 +166,75 @@ Fíjate en el último renglón de la figura: **la columna izquierda está vacía
 Nadie dijo en la bitácora que no se pueden imprimir menos de cero filtros, y aun
 así hay que escribirlo. Ésa es la restricción que todo el mundo olvida.
 
-Con eso, el modelo completo queda:
+Con eso, el modelo completo queda escrito en su **forma canónica**: el objetivo
+arriba, cada restricción en su propio renglón, y el dominio al final.
 
-$$\max\; 4x_1 + 3x_2 \quad \text{sujeto a}\quad x_1 + x_2 \le 10,\;\; 2x_1 + x_2 \le 18,\;\; x_1 + 2x_2 \le 18,\;\; x_1, x_2 \ge 0.$$
+$$
+\begin{aligned}
+\max_{x_1,\, x_2} \quad & 4x_1 + 3x_2 && \text{créditos} \\
+\text{sujeto a} \quad & x_1 + x_2 \le 10 && \text{horas} \\
+& 2x_1 + x_2 \le 18 && \text{polímero} \\
+& x_1 + 2x_2 \le 18 && \text{energía} \\
+& x_1 \ge 0,\; x_2 \ge 0 && \text{no negatividad}
+\end{aligned}
+$$
 
-## 3 · El paso 6, con honestidad
+Un renglón por restricción, y el nombre del recurso al lado. Cuesta más espacio y
+se lee mucho mejor: cuando algo salga mal, vas a querer señalar **un** renglón.
 
-De los siete pasos, el 6 es el que más gente se salta, así que vale la pena
-detenerse. Comprueba las dos maneras de no tener respuesta. Que exista algún punto
-factible descarta que el problema sea imposible. Que ninguna variable crezca sin
-freno descarta que se pueda mejorar para siempre.
+### Por qué el último renglón hace falta
 
-**En este problema la segunda mitad no puede fallar.** Las tres restricciones
-tienen todos sus coeficientes positivos, así que **cualquiera de ellas junto con
-la no negatividad** ya pone techo: no hay manera de imprimir sin límite. El paso
-6 vale para el caso general, no para éste, y aquí se hace por costumbre.
+Con el modelo delante ya se puede comprobar, y conviene hacerlo, porque la no
+negatividad parece una formalidad y no lo es.
 
-**Y «junto con la no negatividad» no es un detalle que se pueda ahorrar.** Con
-$x_1+x_2\le10$ sola, sin exigir $x \ge 0$, el punto se puede ir en la dirección
-que aumenta $x_1$ y disminuye $x_2$ para siempre, y el objetivo crece sin freno
-porque $4-3>0$. Las tres restricciones se comportan igual.
+Toma el punto $(-2,\, 10)$: **menos dos filtros** y diez celdas. Métele los
+números a las tres primeras restricciones.
+
+| Restricción | Con $(-2, 10)$ | ¿Cumple? |
+|---|---|---|
+| $x_1 + x_2 \le 10$ | $-2 + 10 = 8$ | sí |
+| $2x_1 + x_2 \le 18$ | $-4 + 10 = 6$ | sí |
+| $x_1 + 2x_2 \le 18$ | $-2 + 20 = 18$ | sí, justo |
+
+**Las cumple las tres, y no es un plan.** Nadie puede imprimir menos dos filtros.
+Si el conjunto factible se describiera con las tres desigualdades de recurso,
+este punto entraría, y la página siguiente lo dibujaría como si fuera una opción.
+
+Por eso son **cinco** condiciones y no tres.
+
+## 3 · El paso 6, que es el que todos se saltan
+
+Los pasos 5 y 7 son mecánicos. El 6 no, y es el que evita perder una tarde.
+
+Pregunta si el problema **tiene respuesta**, y hay exactamente dos maneras de que
+no la tenga. Las dos se detectan antes de resolver nada.
+
+| Qué puede pasar | Cómo se ve | Cómo lo descartas |
+|---|---|---|
+| **No hay ningún plan posible** | Las restricciones se contradicen entre sí y no queda nada que elegir | Encuentra **un** plan, aunque sea malísimo |
+| **Siempre se puede mejorar** | No existe el mejor plan: cualquiera que propongas, hay otro que da más | Comprueba que ninguna variable pueda crecer sin que algo la frene |
+
+Para la primera, aquí sobra con $(0,\, 0)$: no imprimir nada cumple las cinco
+condiciones. Es un plan pésimo y eso da igual; su trabajo es existir.
+
+**Para la segunda, en este problema no hay manera de fallar.** Los tres recursos
+tienen coeficientes positivos, así que cualquiera de ellos **junto con la no
+negatividad** ya pone techo: si $x_1$ crece, $x_1+x_2$ crece con él y choca contra
+las 10 horas. Aquí el paso 6 se hace por costumbre; en otros problemas es lo que
+te salva.
+
+### Y no es por las restricciones solas
+
+Ese «junto con la no negatividad» carga todo el peso, y se ve quitándola.
+
+Quédate solo con $x_1+x_2 \le 10$ y permite valores negativos. Ahora muévete
+subiendo $x_1$ de uno en uno y bajando $x_2$ lo mismo: la suma no cambia, así que
+la restricción se sigue cumpliendo para siempre. Pero el objetivo sí cambia, y
+sube: cada paso te da $+4$ por el filtro y te quita $-3$ por la celda, o sea
+**una ganancia neta de 1 crédito, sin final**.
+
+Nada frena eso salvo prohibir que $x_2$ se vuelva negativo. Por eso el renglón de
+la no negatividad no es papeleo.
 
 ## 4 · Tu turno
 

@@ -85,8 +85,26 @@ deslizarla consiste en pasarla por terreno no factible hasta que sale.
 ![El polígono con cuatro rectas paralelas rotuladas con su valor; la de valor 38 toca la región en un solo punto](_assets/opt-curvas-de-nivel.svg)
 :::
 
-Se empuja la familia hasta la última recta que todavía toca el polígono. Esa es
-$4x_1+3x_2=38$, y toca el polígono **solo en $(8,2)$**.
+### Hacia qué lado se empuja, y por qué
+
+La flecha verde del dibujo apunta hacia donde el valor **crece**, y la razón no
+tiene misterio: **moverse a la derecha es imprimir más filtros, y cada filtro
+suma 4 créditos; moverse hacia arriba es imprimir más celdas, y cada celda suma
+3.** Así que cualquier movimiento hacia arriba y a la derecha sube el total, y
+cualquier movimiento hacia abajo y a la izquierda lo baja.
+
+Ponle números. Desde donde estés, da un paso de un filtro a la derecha: el total
+sube 4. Da uno de una celda hacia arriba: sube 3. Combínalos como quieras y el
+total sigue subiendo. Por eso las rectas de la familia valen más conforme se
+alejan del origen: la de 12 está cerca, la de 48 está lejos, y ninguna de las dos
+se cruza con las otras.
+
+**La flecha es exactamente la pareja de precios**, $(4,\, 3)$: cuatro de avance
+por cada tres de subida. Cambia los precios y la flecha gira, que es otra forma
+de decir lo que dice la caja de arriba.
+
+Se empuja la familia en ese sentido hasta la última recta que todavía toca el
+polígono. Esa es $4x_1+3x_2=38$, y toca el polígono **solo en $(8,2)$**.
 
 ::: table {#opt-tabla-vertices title="Lo que vale cada esquina"}
 | Esquina | Créditos |
@@ -132,14 +150,31 @@ contestarlas hacía falta conocer la respuesta, y hasta ahora no la había.
 | Con 14 kg de polímero, ¿cambia la respuesta? | Sí: el óptimo se va a $(4,6)$ y vale 34. Y ese plan consume **16 kWh**, así que la condición del supuesto se endurece: ya no basta con 12 |
 :::
 
-**El argumento del 12**, que se puede dar en el pizarrón. Tacha la energía y
-quédate con las horas y el polímero: ese polígono más grande tiene esquinas
-$(0,0)$, $(0,10)$, $(8,2)$ y $(9,0)$, que valen 0, 30, **38** y 36. Así que 38 es
-un techo que no se pasa **por mucha energía que haya**. Y $(8,2)$ consume
-$8+2\cdot2 = 12$ kWh, así que cabe en cuanto haya 12 o más. Un plan que cabe y
-alcanza el techo es el mejor.
+#### El argumento del 12, en tres pasos
 
-Con menos de 12 deja de caber: con 11 el óptimo se va a $(25/3,\, 4/3)$.
+Es el más útil de la página y se puede dar en el pizarrón sin cuentas.
+
+**Paso 1. Tacha la energía y mira qué región queda.** Sin esa restricción el
+polígono crece: se le añade el triángulo de arriba a la izquierda, y pasa de 5
+esquinas a 4.
+
+::: figure {#opt-sin-energia title="El techo no depende de la energía"}
+![Dos regiones superpuestas: la que queda al quitar la restricción de energía, más grande, y la real dentro de ella; la esquina (8,2) pertenece a las dos](_assets/opt-sin-energia.svg)
+:::
+
+**Paso 2. En esa región más grande, el mejor plan sigue siendo $(8,2)$**, con 38.
+Sus cuatro esquinas valen 0, 30, **38** y 36. Y esto es lo que hay que ver: por
+mucha energía que tengas, **nunca vas a pasar de 38**, porque ni siquiera
+regalándotela toda se puede. El triángulo que se añadió está lleno de planes
+peores.
+
+**Paso 3. $(8,2)$ gasta $8 + 2\cdot 2 = 12$ kWh.** Así que en cuanto tengas 12 o
+más, ese plan **cabe**. Y un plan que cabe y que alcanza un techo que nadie puede
+pasar es, sin más, el mejor.
+
+De ahí sale el 12: **con 12 o más, la respuesta es la misma.** Con menos deja de
+caber y todo se mueve; con 11 el óptimo se va a $(25/3,\, 4/3)$, que ni siquiera
+es un número entero de piezas.
 
 ## 3 · Tu turno
 
