@@ -87,14 +87,14 @@ el total de la primera clase ronda los **77 minutos**.
 
 ## El notebook de la clase 1
 
-Las páginas se leen; el notebook se corre. Trae el fabricador resuelto con
+Las páginas se leen; el notebook se corre. Trae la impresora resuelto con
 código, el mismo dibujo hecho por la computadora, y **al final una historia nueva
 para que la modeles tú**. No hay nada que entregar.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_fabricador_lineal.ipynb)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_impresora_lineal.ipynb)
 
 **Dónde vive.** El archivo está en este repositorio, en
-`course/6_optimizacion/_assets/01_fabricador_lineal.ipynb`. El botón de arriba lo
+`course/6_optimizacion/_assets/01_impresora_lineal.ipynb`. El botón de arriba lo
 abre en Google Colab, que lo ejecuta en el navegador sin instalar nada. Si
 prefieres correrlo en tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
 

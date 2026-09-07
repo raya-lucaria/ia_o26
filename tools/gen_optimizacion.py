@@ -10,7 +10,7 @@ son unicos en TODO el curso, no por pagina.
 Dos de los cinco CALCULAN su contenido en vez de dibujarlo a mano:
 opt_poligono y opt_curvas_de_nivel derivan los vertices del modelo del episodio
 (A, B, C mas abajo) con aritmetica exacta de fracciones. Si un parametro del
-fabricador cambia, el dibujo cambia solo y no hay que mover coordenadas.
+impresora cambia, el dibujo cambia solo y no hay que mover coordenadas.
 """
 import sys
 from fractions import Fraction as F
@@ -31,7 +31,7 @@ ALARMA = "#ff5a7a"
 FUENTE = "system-ui, sans-serif"
 MONO = "ui-monospace, SFMono-Regular, Menlo, monospace"
 
-# El episodio del fabricador. Unica fuente de los numeros para los dos
+# El episodio de la impresora. Unica fuente de los numeros para los dos
 # diagramas que calculan.
 A = [[1, 1], [2, 1], [1, 2]]
 B = [10, 18, 18]
@@ -202,7 +202,7 @@ def opt_lienzo():
     return "".join(s)
 
 
-def opt_el_fabricador():
+def opt_la_impresora():
     """La situacion entera de un vistazo, SIN numeros.
 
     Los numeros son la respuesta del ejercicio de la pagina 1; el diagrama
@@ -212,18 +212,18 @@ def opt_el_fabricador():
     W, H = 940, 400
     s = [marco(
         W, H,
-        "Tres recursos limitados entran al fabricador, que produce filtros de "
+        "Tres recursos limitados entran a la impresora, que produce filtros de "
         "aire y celdas de agua; el depósito paga créditos por cada pieza",
         "Qué decide la tripulación",
         "A la izquierda tres recursos que se gastan y se acaban: horas de "
-        "fabricador, polimero y energia. En medio el fabricador, donde se decide "
+        "impresora, polimero y energia. En medio la impresora, donde se decide "
         "cuantos filtros y cuantas celdas hacer. A la derecha el deposito, que "
         "paga creditos por cada pieza entregada.",
     )]
     # columna 1: los recursos
     s.append(texto(140, 44, "lo que se gasta", color=SERIE[0], tam=14, peso="600"))
     s.append(texto(140, 64, "y se acaba", color=SUAVE, tam=12))
-    for k, (nombre, unidad) in enumerate([("Horas de fabricador", "antes de la parada"),
+    for k, (nombre, unidad) in enumerate([("Horas de impresora", "antes de la parada"),
                                           ("Polímero", "kilos en la bodega"),
                                           ("Energía", "kilowatt-hora del reactor")]):
         y = 96 + 76 * k
@@ -236,10 +236,10 @@ def opt_el_fabricador():
     s.append(caja(320, 96, 220, 214, relleno=mezclar(ACENTO, 0.14), borde=ACENTO, grosor=2.5))
     s.append(texto(430, 44, "lo que se decide", color=ACENTO, tam=14, peso="600"))
     s.append(texto(430, 64, "y es la pregunta", color=SUAVE, tam=12))
-    s.append(texto(430, 136, "EL FABRICADOR", color=ACENTO, tam=15, peso="700"))
+    s.append(texto(430, 136, "LA IMPRESORA", color=ACENTO, tam=15, peso="700"))
     s.append(texto(430, 176, "¿cuántos filtros", tam=15))
     s.append(texto(430, 200, "y cuántas celdas", tam=15))
-    s.append(texto(430, 224, "hacer con esto?", tam=15))
+    s.append(texto(430, 224, "imprimir con esto?", tam=15))
     s.append(texto(430, 268, "no se puede todo:", color=SUAVE, tam=12))
     s.append(texto(430, 286, "los tres se acaban", color=SUAVE, tam=12))
     # columna 3: las piezas
@@ -259,8 +259,8 @@ def opt_el_fabricador():
     s.append(texto(890, 292, "paga", color=SERIE[2], tam=13, peso="600"))
     s.append(texto(890, 310, "créditos", color=SERIE[2], tam=13, peso="600"))
     s.append(texto(W / 2, 360,
-                   "tres cosas que se acaban, dos que se pueden hacer, "
-                   "un total que se quiere lo más grande posible",
+                   "3 recursos que se acaban, 2 piezas que se pueden imprimir, "
+                   "1 total que se quiere lo más grande posible",
                    color=SUAVE, tam=13))
     s.append(cierre())
     return "".join(s)
@@ -281,10 +281,10 @@ def opt_historia_a_modelo():
     s.append(texto(230, 44, "Lo que dice la bitácora", color=SUAVE, tam=14, peso="600"))
     s.append(texto(700, 44, "Lo que se escribe", color=SUAVE, tam=14, peso="600"))
     filas = [
-        ("cuatro créditos por filtro, tres por celda", "max 4x₁ + 3x₂", SERIE[2]),
-        ("diez horas, y cada pieza se lleva una", "x₁ + x₂ ≤ 10", SERIE[0]),
-        ("dieciocho kilos; el filtro dos, la celda uno", "2x₁ + x₂ ≤ 18", SERIE[0]),
-        ("el filtro gasta uno, la celda dos", "x₁ + 2x₂ ≤ 18", SERIE[0]),
+        ("4 créditos por filtro, 3 por celda", "max 4x₁ + 3x₂", SERIE[2]),
+        ("10 horas, y cada pieza se lleva 1", "x₁ + x₂ ≤ 10", SERIE[0]),
+        ("18 kilos; el filtro 2, la celda 1", "2x₁ + x₂ ≤ 18", SERIE[0]),
+        ("el filtro gasta 1, la celda 2", "x₁ + 2x₂ ≤ 18", SERIE[0]),
         (None, "x₁ ≥ 0,  x₂ ≥ 0", SERIE[1]),
     ]
     for k, (izq, der, color) in enumerate(filas):
@@ -377,7 +377,7 @@ def opt_poligono():
         W, H,
         "Las tres rectas de recurso y los dos ejes recortan una región de "
         "cinco lados; sus cinco esquinas están marcadas y rotuladas",
-        "La región factible del fabricador",
+        "La región factible de la impresora",
         "Region sombreada con esquinas en (0,0), (9,0), (8,2), (2,8) y (0,9). "
         "Las tres rectas de recurso la cierran por arriba y por la derecha. "
         "La esquina (8,2) esta resaltada porque es la mejor.",
@@ -511,7 +511,7 @@ def opt_fig_dos_cimas():
 
 
 DIAGRAMAS = {
-    "opt-el-fabricador": opt_el_fabricador,
+    "opt-la-impresora": opt_la_impresora,
     "opt-lienzo": opt_lienzo,
     "opt-historia-a-modelo": opt_historia_a_modelo,
     "opt-poligono": opt_poligono,

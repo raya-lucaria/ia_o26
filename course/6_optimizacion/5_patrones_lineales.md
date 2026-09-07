@@ -12,7 +12,7 @@ tags: [optimizacion, modelado, restricciones, signos]
 
 **¿Cómo se escribe como desigualdad una frase que no habla de un recurso?**
 
-El fabricador ya está modelado, resuelto y certificado. Estas son las frases que
+La impresora ya está modelado, resuelto y certificado. Estas son las frases que
 vas a encontrar en cualquier otro problema.
 
 ## 1 · Los tres moldes
@@ -23,12 +23,12 @@ unidad de cada variable gasta una cantidad fija, y el total no puede pasar de lo
 que hay.
 
 Su forma es una suma de consumos a la izquierda y la disponibilidad a la derecha,
-con $\le$. Las tres del fabricador son de este tipo.
+con $\le$. Las tres de la impresora son de este tipo.
 :::
 
 ::: definition {#opt-cota title="Cota sobre una variable"}
 Una **cota** es un piso o un techo **directo sobre una sola variable**: «al menos
-tres filtros», «a lo más cuatro celdas».
+3 filtros», «a lo más 4 celdas».
 
 Se distingue del recurso en que no hay nada que se reparta entre las variables:
 la desigualdad menciona una sola.
@@ -47,8 +47,8 @@ juntarlas de un solo lado para que quede en forma estándar.
 |---|---|---|
 | «cada pieza se lleva una hora y quedan diez» | $x_1 + x_2 \le 10$ | recurso |
 | «el filtro se lleva 2 kg, la celda 1, y hay 18» | $2x_1 + x_2 \le 18$ | recurso |
-| «al menos tres filtros» | $x_1 \ge 3$ | cota |
-| «a lo más cuatro celdas» | $x_2 \le 4$ | cota |
+| «al menos 3 filtros» | $x_1 \ge 3$ | cota |
+| «a lo más 4 celdas» | $x_2 \le 4$ | cota |
 | «por cada celda, al menos dos filtros» | $x_1 - 2x_2 \ge 0$ | proporción |
 :::
 
@@ -73,14 +73,14 @@ de esta unidad es `linprog`, de la biblioteca `scipy`.
 :::
 
 > [!WARNING]
-> La fila del signo de vuelta no es adorno. Al resolver el fabricador con
+> La fila del signo de vuelta no es adorno. Al resolver la impresora con
 > `linprog` y el objetivo negado, el resultado trae `fun = -38.0`. Quien copie
 > solo «se minimiza $-f$» y compare contra 38 va a ver reventar su comprobación.
 
 ## 3 · Tu turno
 
 ::: exercise {#opt-ej-cota title="Una restricción más"}
-La ingeniera pide una cosa más: «esta vez quiero **al menos cuatro celdas**».
+La ingeniera pide una cosa más: «esta vez quiero **al menos 4 celdas**».
 
 Tradúcela, di si cambia la respuesta, y compárala con las **tres últimas filas**
 de la tabla de patrones, que son las que no están ya en el modelo.
@@ -138,14 +138,14 @@ visto desde los dos lados.
 Con esto ya puedes leer un problema, escribirlo, dibujarlo y traducir sus frases.
 Toca hacerlo con las manos.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_fabricador_lineal.ipynb)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_impresora_lineal.ipynb)
 
-El notebook resuelve el fabricador con código y **cierra con una bitácora nueva,
+El notebook resuelve la impresora con código y **cierra con una bitácora nueva,
 del invernadero, que no está resuelta en ninguna página**. Ése es el ejercicio de
 la clase. No hay nada que entregar.
 
 El archivo vive en este repositorio, en
-`course/6_optimizacion/_assets/01_fabricador_lineal.ipynb`.
+`course/6_optimizacion/_assets/01_impresora_lineal.ipynb`.
 
 Lo que falta después es resolver **sin dibujar**, que es lo que hace falta en
 cuanto hay más de dos variables.

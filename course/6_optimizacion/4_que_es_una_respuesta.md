@@ -12,7 +12,7 @@ tags: [optimizacion, optimo, cota, certificado]
 
 **¿Qué clase de cosa te entrega un método, y cómo sé que es la mejor?**
 
-Ya tienes la respuesta del fabricador: $(8,2)$, con 38 créditos. Esta página dice
+Ya tienes la respuesta de la impresora: $(8,2)$, con 38 créditos. Esta página dice
 qué es exactamente eso, qué otras cosas te puede entregar un método, y cómo se
 convence a alguien más sin rehacer el dibujo.
 
@@ -34,11 +34,11 @@ terminó.
 ![Una curva de una variable con dos cimas de altura distinta separadas por un valle; la cima izquierda es más baja que la derecha](_assets/opt-fig-dos-cimas.svg)
 :::
 
-*La cima baja es un óptimo local que no es global. En el polígono del fabricador
+*La cima baja es un óptimo local que no es global. En el polígono de la impresora
 esto no puede pasar, y más adelante en la unidad se ve por qué.*
 
 > [!WARNING]
-> Lo que **no** vas a ver en el dibujo del fabricador es un óptimo local que no
+> Lo que **no** vas a ver en el dibujo de la impresora es un óptimo local que no
 > sea global. Óptimos locales sí hay: $(8,2)$ es uno, porque todo global también
 > es local.
 >
@@ -67,7 +67,7 @@ esto no puede pasar, y más adelante en la unidad se ve por qué.*
 | **Solución aproximada** | Un punto factible que un método entrega **sin demostrar que sea óptimo**. Qué tan buena es solo se sabe comparándola contra una cota |
 :::
 
-Del fabricador tienes los tres primeros: cinco soluciones factibles en las
+Dla impresora tienes los tres primeros: cinco soluciones factibles en las
 esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valor
 óptimo. Los demás llegan con los métodos que los producen.
 
@@ -75,11 +75,11 @@ esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valo
 > **Que una región sea abierta no quiere decir que el problema sea no acotado**,
 > y las dos cosas se confunden casi siempre.
 >
-> Quítale al fabricador las dos restricciones de no negatividad. La región deja
+> Quítale a la impresora las dos restricciones de no negatividad. La región deja
 > de estar encerrada: le quedan dos esquinas, $(2,8)$ y $(8,2)$, y dos semirrectas
 > que se van al infinito. Y sin embargo **el máximo sigue siendo 38**, porque en
 > las dos direcciones por las que la región se escapa el objetivo **baja**, dos y
-> cinco créditos por unidad.
+> 5 créditos por unidad.
 >
 > Una región abierta puede tener máximo. Lo que hace no acotado a un problema es
 > que exista una dirección de escape en la que el objetivo **sube**.
@@ -88,10 +88,10 @@ esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valo
 
 El método gráfico te da la respuesta, pero no te da manera de **convencer a
 alguien más** sin rehacer el dibujo. Eso es lo que hace un certificado. Para el
-fabricador son tres números, uno por recurso: $y = (2,\, 1,\, 0)$.
+impresora son tres números, uno por recurso: $y = (2,\, 1,\, 0)$.
 
 ::: table {#opt-certificado title="Las tres condiciones, y ninguna sobra"}
-| Condición | En el fabricador |
+| Condición | En la impresora |
 |---|---|
 | Los tres números son $\ge 0$ | $2\ge0$, $1\ge0$, $0\ge0$ |
 | Cubren el precio de cada pieza | filtro: $2\cdot1+1\cdot2+0\cdot1 = 4 \ge 4$ · celda: $2\cdot1+1\cdot1+0\cdot2 = 3 \ge 3$ |
@@ -112,7 +112,7 @@ cota que además se alcanza**.
 
 ::: exercise {#opt-ej-certificado title="¿Certifica o no?"}
 Alguien te entrega tres juegos de números y afirma que los tres demuestran que
-ningún plan del fabricador pasa de 38. Revisa cada uno con las tres condiciones y
+ningún plan de la impresora pasa de 38. Revisa cada uno con las tres condiciones y
 di cuál sirve y por qué los otros no.
 
 1. $y = (2,\, 1,\, 0)$

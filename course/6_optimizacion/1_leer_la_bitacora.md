@@ -14,75 +14,88 @@ tags: [optimizacion, modelado, supuestos]
 
 Primera página de la unidad. Aquí no se resuelve nada: se lee y se ordena.
 
-## La nave, el fabricador y el depósito
+## La nave, la impresora y el depósito
 
-Vas a bordo de un carguero en un viaje largo. La próxima parada es un
-**depósito**: una estación donde se descarga lo que llevas y te lo pagan en
-**créditos**.
+Vas a bordo de un carguero, en mitad de un viaje de meses. La próxima parada es
+un **depósito**: una estación que compra repuestos y los paga en **créditos**.
 
-En la bodega hay un **fabricador**, una máquina que convierte materia prima en
-piezas. Sabe hacer dos cosas, y solo dos:
+Abajo, en la bodega, hay una **impresora industrial**. No guarda piezas hechas:
+las **fabrica una por una**, fundiendo polímero en bruto capa sobre capa. Tiene
+dos moldes cargados, y por eso puede hacer dos cosas y nada más:
 
-- **Filtros de aire**, que el depósito paga a **cuatro créditos**.
-- **Celdas de agua**, que paga a **tres**.
+- **Filtros de aire.** El depósito los paga a **4 créditos** cada uno.
+- **Celdas de agua**, a **3 créditos**.
 
-Hoy el fabricador quedó libre. Podrías llenarlo de filtros, que se pagan mejor.
-No puedes, y ésa es toda la gracia del problema: **tres cosas se acaban**.
+Hoy nadie tiene la impresora reservada, así que es tuya hasta llegar. Y aquí
+empieza el problema.
 
-- Las **horas** de fabricador que quedan antes de llegar. Cada pieza toma su
-  tiempo.
-- El **polímero** de la bodega. Cada pieza se lleva su parte.
-- La **energía** que el reactor deja para la máquina. Cada pieza gasta la suya.
+### Por qué no basta con imprimir puros filtros
 
-Y las dos piezas **no gastan lo mismo**: una es barata en material y cara en
-corriente, la otra al revés. Por eso hacer más de una significa hacer menos de la
-otra, y casi nunca en la proporción que uno esperaría.
+El filtro se paga mejor, así que lo obvio sería dedicarle todo el turno. **No se
+puede**, porque imprimir no es gratis: cada pieza que sale de la máquina consume
+tres cosas, y de las tres hay una cantidad fija.
 
-::: figure {#opt-el-fabricador title="Qué decide la tripulación"}
-![Tres recursos limitados entran al fabricador, que produce filtros de aire y celdas de agua; el depósito paga créditos por cada pieza](_assets/opt-el-fabricador.svg)
+| Se consume | De dónde sale | Se acaba cuando |
+|---|---|---|
+| **Tiempo de impresora** | Las horas que faltan para llegar al depósito | Se acaba el turno |
+| **Polímero** | Los kilos que quedan en la bodega | Se vacía el contenedor |
+| **Energía** | Los kilowatt-hora que el reactor le presta a la bodega | El reactor corta el suministro |
+
+Y los dos moldes **no consumen lo mismo**. Uno gasta más polímero y menos
+corriente; el otro, al revés. Así que cada filtro que imprimes no solo ocupa un
+lugar que podía ser de una celda: **te deja distinta cantidad de cada recurso
+para lo que sigue**.
+
+::: figure {#opt-la-impresora title="Qué tiene que decidir la tripulación"}
+![Tres recursos limitados entran a la impresora, que produce filtros de aire y celdas de agua; el depósito paga créditos por cada pieza entregada](_assets/opt-la-impresora.svg)
 :::
 
-La pregunta, entonces, es una sola: **¿cuántos filtros y cuántas celdas conviene
-hacer?**
+Toda la decisión cabe en una pregunta: **¿cuántos filtros y cuántas celdas
+conviene imprimir antes de llegar?**
 
-## Pero el problema no llega así
+## Pero el problema no te llega así
 
-Ese resumen limpio te lo acabo de dar yo. **En la vida real nadie te lo da.**
+Ese resumen ordenado te lo acabo de dar yo. **Nadie te lo va a dar en la vida
+real.**
 
-Lo que llega es esto: la bitácora que dictó anoche quien estaba de guardia,
-medio dormido, sin pensar en que alguien iba a modelar nada con ella.
+Lo que llega es esto: la bitácora que dictó anoche quien estaba de guardia, medio
+dormido, sin pensar en que alguien iba a sacar cuentas de ella.
 
-> **Bitácora del fabricador.** Quedó libre esta mañana y hay que decidir qué
-> hacer con él antes de llegar al depósito. Ahí nos abonan por lo que llevemos:
-> cuatro créditos por cada filtro de aire, tres por cada celda de agua.
+> **Bitácora de la impresora.** Quedó libre esta mañana y hay que decidir qué
+> imprimir antes de llegar al depósito. Ahí nos abonan por lo que llevemos: 4
+> créditos por cada filtro de aire, 3 por cada celda de agua.
 >
-> El problema es el tiempo. Nos quedan diez horas de fabricador antes de la
-> parada, y cualquiera de las dos piezas se lleva una hora.
+> El problema es el tiempo. Nos quedan 10 horas de impresora antes de la parada,
+> y cualquiera de las dos piezas se lleva 1 hora.
 >
-> De polímero andamos bien: quedan dieciocho kilos en la bodega y el filtro se
-> lleva dos, así que por ahí no nos vamos a quedar cortos.
+> De polímero andamos bien: quedan 18 kilos en la bodega y el filtro se lleva 2,
+> así que por ahí no nos vamos a quedar cortos.
 >
-> De energía, el reactor nos deja lo de siempre. El filtro gasta un
-> kilowatt-hora.
+> De energía, el reactor nos deja lo de siempre. El filtro gasta 1 kilowatt-hora.
 >
-> La bodega sigue a cuatro grados bajo cero, como siempre.
+> La bodega sigue a 4 grados bajo cero, como siempre.
 >
-> Se me olvidaba la celda: de polímero se lleva uno, pero de energía gasta dos.
-> Es la barata en material y la cara en corriente.
+> Se me olvidaba la celda: de polímero se lleva 1, pero de energía gasta 2. Es la
+> barata en material y la cara en corriente.
 >
 > Y me dijo la ingeniera antes de irse a dormir que no conviene hacer más celdas
 > que filtros.
 
-Léela otra vez y fíjate en tres cosas. **Los datos no vienen en orden.** **La
-celda llega tarde y a medias**, en el penúltimo párrafo, como si el tripulante se
-hubiera acordado de golpe. Y **no todo lo que dice es un dato**.
+Léela otra vez y fíjate en tres cosas.
+
+- **Los datos no vienen en orden.** Los precios abren la bitácora; en cualquier
+  tabla irían al final.
+- **La celda llega tarde y a medias.** Sus kilos y sus kilowatt-hora aparecen en
+  el penúltimo párrafo, como si el tripulante se hubiera acordado de golpe.
+- **No todo lo que dice es un dato.** Hay al menos una frase que no sirve para
+  nada, y hay algo que hace falta y no está.
 
 ::: table {#opt-el-caso title="La historia, en cinco renglones"}
 | | En esta historia |
 |---|---|
 | **Quién decide** | La tripulación, hoy, antes de llegar al depósito |
-| **Qué decide** | Cuántos filtros de aire y cuántas celdas de agua fabricar |
-| **Qué lo limita** | Tres cosas que se acaban: horas, polímero y energía |
+| **Qué decide** | Cuántos filtros de aire y cuántas celdas de agua imprimir |
+| **Qué lo limita** | Tres cosas que se acaban: horas de impresora, polímero y energía |
 | **Qué se quiere** | Que el total de créditos sea lo más grande posible |
 | **Qué estorba** | La bitácora trae frases que no son ninguna de las cuatro anteriores |
 :::
@@ -115,7 +128,7 @@ Una **restricción** es una condición que la respuesta está obligada a cumplir
 escrita como una comparación entre dos cantidades: $\le$, $\ge$ o $=$.
 
 Cada restricción recorta las opciones; ninguna dice cuál es la mejor, que es
-trabajo del objetivo. En el fabricador hay **una por recurso** —no se pueden
+trabajo del objetivo. En la impresora hay **una por recurso** —no se pueden
 gastar más horas, más polímero ni más energía de los que hay— **y dos más que
 nadie dice en voz alta**: no se fabrican menos de cero filtros ni menos de cero
 celdas. Son cinco.
@@ -154,7 +167,7 @@ será el modelo.
 ## 3 · Tu turno
 
 ::: exercise {#opt-ej-bitacora title="Saca la tabla"}
-Escribe la tabla de recursos del fabricador: una fila por recurso, una columna
+Escribe la tabla de recursos de la impresora: una fila por recurso, una columna
 por pieza, y una columna con lo disponible.
 
 Después marca tres cosas:
@@ -182,15 +195,15 @@ La tabla queda así:
 
 | Recurso | Por filtro | Por celda | Disponible |
 |---|---:|---:|---:|
-| Horas de fabricador | 1 | 1 | 10 |
+| Horas de impresora | 1 | 1 | 10 |
 | Polímero (kg) | 2 | 1 | 18 |
 | Energía (kWh) | 1 | 2 | 18 |
 | **Créditos que abona el depósito** | **4** | **3** | maximizar |
 
 *El 18 de la energía es un supuesto; falta comprobar hasta dónde aguanta.*
 
-Son **once números**, que son los once parámetros del problema: seis de consumo,
-tres de disponibilidad y dos de precio. La última celda de la fila del objetivo
+Son **11 números**, que son los 11 parámetros del problema: 6 de consumo,
+3 de disponibilidad y 2 de precio. La última celda de la fila del objetivo
 es la palabra «maximizar», no un número.
 
 **Sobra** la temperatura de la bodega. No dice cuánto consume una pieza, ni
@@ -209,7 +222,7 @@ supuesto, y más adelante se comprueba si la elección importó.
 :::
 
 > [!WARNING]
-> Lo que sobra no sobra por ser un número fijo. Las diez horas y los dieciocho
+> Lo que sobra no sobra por ser un número fijo. Las 10 horas y los 18
 > kilos también son números fijos, y son el centro del problema. La temperatura
 > sobra porque no contesta ninguna de las tres preguntas.
 

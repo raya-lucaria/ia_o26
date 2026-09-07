@@ -109,9 +109,9 @@ abajo.
 ::: table {#opt-deudas title="Lo que las páginas anteriores dejaron abierto"}
 | Lo que quedó pendiente | Lo que el dibujo contesta |
 |---|---|
-| La bitácora decía que del polímero «no nos vamos a quedar cortos» | En $(8,2)$ se gastan los dieciocho kilos **exactos**. Se acaba junto con las horas. Una opinión de la tripulación no es un dato |
+| La bitácora decía que del polímero «no nos vamos a quedar cortos» | En $(8,2)$ se gastan los 18 kilos **exactos**. Se acaba junto con las horas. Una opinión de la tripulación no es un dato |
 | El supuesto de la energía necesitaba su condición | Aguanta con **12 kWh o más**, y el argumento va abajo |
-| «No conviene hacer más celdas que filtros» se resolvió como preferencia | El óptimo hace ocho filtros y dos celdas: la cumple de sobra. La elección no importó, y ahora se puede decir en vez de suponerlo |
+| «No conviene hacer más celdas que filtros» se resolvió como preferencia | El óptimo hace 8 filtros y 2 celdas: la cumple de sobra. La elección no importó, y ahora se puede decir en vez de suponerlo |
 | Con 14 kg de polímero, ¿cambia la respuesta? | Sí: el óptimo se va a $(4,6)$ y vale 34. Y ese plan consume **16 kWh**, así que la condición del supuesto se endurece: ya no basta con 12 |
 :::
 
