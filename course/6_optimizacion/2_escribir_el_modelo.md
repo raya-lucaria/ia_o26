@@ -46,18 +46,43 @@ porque la historia lo diga. Se hace por dos razones.
 1. Los métodos de esta unidad necesitan variables continuas. Con variables
    enteras el dibujo de la página siguiente deja de ser una figura de lados
    rectos y hace falta otra cosa.
-2. **Aquí sale gratis**, y eso se comprueba al final: las esquinas de la región
-   salen todas con coordenadas enteras y la respuesta también, así que el modelo
-   relajado da una respuesta de verdad, sin redondear nada.
+2. **Aquí sale gratis**, y eso se comprueba al final: la respuesta que da el
+   modelo con fracciones permitidas resulta ser de piezas enteras de todos modos,
+   así que no hay nada que redondear ni nada que disculpar.
 
 Cuando **no** sale gratis, que es casi siempre, hace falta maquinaria aparte.
 
 ::: definition {#opt-parametro title="Parámetro"}
 Un **parámetro** es cada número que el problema te **da** y que tú no eliges.
 
-Aquí son los 11 de la tabla: los 6 de consumo, los 3 de
-disponibilidad y los 2 de precio. Cambiar un parámetro es plantear otro
-problema, no resolver mejor el mismo.
+Este problema tiene **11**, y conviene verlos uno por uno, porque «los números de
+la tabla» es justo el tipo de frase que suena clara y no lo es.
+
+| # | Qué mide | Valor |
+|---:|---|---:|
+| 1 | Horas que consume **un filtro** | 1 h |
+| 2 | Horas que consume **una celda** | 1 h |
+| 3 | Polímero que consume un filtro | 2 kg |
+| 4 | Polímero que consume una celda | 1 kg |
+| 5 | Energía que consume un filtro | 1 kWh |
+| 6 | Energía que consume una celda | 2 kWh |
+| 7 | Horas de impresora **disponibles** | 10 h |
+| 8 | Polímero disponible | 18 kg |
+| 9 | Energía disponible | 18 kWh *(supuesto)* |
+| 10 | Créditos que paga **un filtro** | 4 |
+| 11 | Créditos que paga **una celda** | 3 |
+
+Los seis primeros son **de consumo**: cuánto se lleva cada pieza de cada recurso.
+Van a ser los coeficientes del lado izquierdo de las restricciones. Los tres
+siguientes son **de disponibilidad**, y van del lado derecho. Los dos últimos son
+**de precio**, y van en el objetivo.
+
+**Qué no es parámetro, para que la definición muerda.** El 4 de «cuatro grados
+bajo cero» no lo es: no entra en ninguna cuenta, así que no es un número del
+problema aunque esté en la bitácora. Y $x_1$ y $x_2$ tampoco: ésos los eliges tú,
+y por eso son variables.
+
+Cambiar un parámetro es plantear **otro problema**, no resolver mejor el mismo.
 :::
 
 ::: definition {#opt-funcion-lineal title="Función lineal"}
@@ -74,20 +99,16 @@ las restricciones. **Un problema en el que el objetivo y todas las restricciones
 son lineales se llama problema lineal**, y esta unidad entera trata de uno.
 :::
 
-> [!WARNING]
-> Lo que es una recta **no** es la función: son sus curvas de nivel. La gráfica
-> de $4x_1+3x_2$ vive en tres dimensiones y es un plano inclinado. Lo que se
-> dibuja en la hoja es el conjunto de puntos donde la función vale un número
-> fijo, y eso sí es una recta. Confundirlas rompe el método de la página
-> siguiente antes de empezar.
-
 ::: definition {#opt-problema title="Problema de optimización"}
 Un **problema de optimización** es la terna objetivo, restricciones y dominio,
 escrita así:
 
 $$\max_{x \in X}\; f(x) \quad \text{sujeto a}\quad g_i(x) \le b_i,\;\; i = 1,\dots,m.$$
 
-Tres cosas que esa forma corta esconde:
+Se lee así: **elige el punto $x$, de entre los que están en $X$, que haga $f$ lo
+más grande posible sin violar ninguna de las $m$ desigualdades.**
+
+Esa forma corta esconde tres cosas que conviene saber desde ahora:
 
 - **Mínimo y máximo son el mismo problema.** Minimizar $f$ es maximizar $-f$:
   son **los mismos puntos**, y el valor cambia de signo,
@@ -96,10 +117,11 @@ Tres cosas que esa forma corta esconde:
 - **$\ge$ y $=$ también caben.** Una restricción $a\cdot x \ge b$ se escribe
   $-a\cdot x \le -b$; una igualdad son las dos desigualdades a la vez. Se
   escriben todas con $\le$ para tener una sola forma.
-- **$X$ es el dominio**, y es donde vive la no negatividad al escribir las
-  variables. La misma condición reaparece como restricción al describir el
-  conjunto de abajo, y no es contradicción: es la misma condición vista desde
-  los dos lados.
+- **$X$ dice con qué números trabajas.** Aquí, reales que no pueden ser
+  negativos. Es la única parte del modelo que no habla de la impresora sino del
+  tipo de número, y por eso va pegada al $\max$ y no en la lista de
+  restricciones. Que $x_1$ y $x_2$ no sean negativos se puede escribir en los dos
+  sitios; lo que no se puede es no escribirlo.
 :::
 
 ::: definition {#opt-factible title="Punto factible y conjunto factible"}
@@ -159,10 +181,10 @@ detenerse. Comprueba las dos maneras de no tener respuesta. Que exista algún pu
 factible descarta que el problema sea imposible. Que ninguna variable crezca sin
 freno descarta que se pueda mejorar para siempre.
 
-**En este problema la segunda mitad no puede fallar**, y conviene decirlo en vez
-de inventar un peligro: las tres restricciones tienen todos sus coeficientes
-positivos, así que **cualquiera de ellas junto con la no negatividad** ya pone
-techo. El paso vale para el caso general, no para éste.
+**En este problema la segunda mitad no puede fallar.** Las tres restricciones
+tienen todos sus coeficientes positivos, así que **cualquiera de ellas junto con
+la no negatividad** ya pone techo: no hay manera de imprimir sin límite. El paso
+6 vale para el caso general, no para éste, y aquí se hace por costumbre.
 
 **Y «junto con la no negatividad» no es un detalle que se pueda ahorrar.** Con
 $x_1+x_2\le10$ sola, sin exigir $x \ge 0$, el punto se puede ir en la dirección

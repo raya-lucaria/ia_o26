@@ -118,10 +118,10 @@ solo usan lo que ya está en la página.
 El caso del lado entero no es una rareza: es la segunda parte del ejercicio de
 abajo.
 
-### Cuatro cuentas pendientes que el dibujo ya salda
+### Cuatro preguntas que ya se pueden contestar
 
-Las páginas anteriores dejaron cosas en el aire a propósito, porque no había
-respuesta con qué contestarlas. Ahora la hay.
+Las páginas anteriores dejaron cuatro cosas pendientes, y no por descuido: para
+contestarlas hacía falta conocer la respuesta, y hasta ahora no la había.
 
 ::: table {#opt-deudas title="Lo que las páginas anteriores dejaron abierto"}
 | Lo que quedó pendiente | Lo que el dibujo contesta |
