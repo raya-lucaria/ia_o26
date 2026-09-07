@@ -16,4 +16,5 @@ no son imágenes.
 | `opt-historia-a-modelo.svg` | Cada frase de la bitácora y la desigualdad que produce | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-poligono.svg` | La región factible de la impresora y sus cinco esquinas | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-curvas-de-nivel.svg` | La familia de curvas de nivel y la que toca el óptimo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-sin-energia.svg` | Las dos regiones, con y sin la restricción de energía | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-dos-cimas.svg` | Un óptimo local que no es global, en una variable | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

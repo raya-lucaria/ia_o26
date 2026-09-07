@@ -119,6 +119,29 @@ def punto(x, y, r=5, color=ACENTO):
 # --------------------------------------------------------------------------
 # geometria del episodio, exacta
 
+def _region(filas_a, lados_b):
+    """Vertices ordenados de {A x <= b, x >= 0}, en fracciones exactas."""
+    filas = list(filas_a) + [[-1, 0], [0, -1]]
+    lados = list(lados_b) + [0, 0]
+    V = []
+    for i, j in combinations(range(len(filas)), 2):
+        (a1, b1), (a2, b2) = filas[i], filas[j]
+        det = a1 * b2 - b1 * a2
+        if det == 0:
+            continue
+        x = F(lados[i] * b2 - b1 * lados[j], det)
+        y = F(a1 * lados[j] - lados[i] * a2, det)
+        if any(filas[k][0] * x + filas[k][1] * y > lados[k] for k in range(len(filas))):
+            continue
+        if (x, y) not in V:
+            V.append((x, y))
+    import math
+    cx = sum(p[0] for p in V) / len(V)
+    cy = sum(p[1] for p in V) / len(V)
+    V.sort(key=lambda p: math.atan2(float(p[1] - cy), float(p[0] - cx)))
+    return V
+
+
 def vertices():
     """Las esquinas de la region factible, con fracciones exactas.
 
@@ -465,6 +488,65 @@ def opt_curvas_de_nivel():
     return "".join(s)
 
 
+def opt_sin_energia():
+    """Los dos polígonos: el real y el que queda al tachar la energía.
+
+    Es el dibujo del argumento del umbral. Calcula las dos regiones desde los
+    mismos parámetros del episodio, así que si un dato cambia el dibujo cambia.
+    """
+    W, H = 720, 560
+    ox, oy, esc, top = 90, 460, 34, 10
+    px, py, plano = _plano(W, H, ox, oy, esc, top)
+    grande = _region([A[0], A[1]], [B[0], B[1]])      # sin la energía
+    real = vertices()
+    mejor = max(real, key=valor)
+    s = [marco(
+        W, H,
+        "Dos regiones superpuestas: la que queda al quitar la restricción de "
+        "energía, más grande, y la real dentro de ella; la esquina (8,2) "
+        "pertenece a las dos",
+        "El techo no depende de la energía",
+        "Al tachar la restriccion de energia la region crece y pasa a tener "
+        "cuatro esquinas: (0,0), (0,10), (8,2) y (9,0), que valen 0, 30, 38 y "
+        "36. La esquina (8,2) sigue siendo la mejor, y esta tambien en la "
+        "region real.",
+    )]
+    d = lambda V: " ".join(("M" if i == 0 else "L") + f" {px(p[0]):.1f} {py(p[1]):.1f}"
+                           for i, p in enumerate(V)) + " Z"
+    s.append(f'<path d="{d(grande)}" fill="{mezclar(SERIE[1], 0.20)}" '
+             f'stroke="{SERIE[1]}" stroke-width="2.5" stroke-dasharray="8 5"/>')
+    s.append(f'<path d="{d(real)}" fill="{mezclar(ACENTO, 0.30)}" '
+             f'stroke="{mezclar(ACENTO, 0.8)}" stroke-width="2"/>')
+    s += plano
+    for p in grande:
+        es_mejor = p == mejor
+        s.append(punto(px(p[0]), py(p[1]), r=8 if es_mejor else 5,
+                       color=ACENTO if es_mejor else SERIE[1]))
+        # desplazamientos a mano, revisados renderizando: (0,10) choca con el
+        # rótulo del eje si va arriba, y (9,0) choca con el pie si va abajo.
+        dx, dy, anc = {(0, 0): (14, 26, "start"),
+                       (0, 10): (18, 20, "start"),
+                       (9, 0): (-8, -18, "end")}.get(
+                          (int(p[0]), int(p[1])), (16, -14, "start"))
+        if es_mejor:
+            dx, dy, anc = 18, -12, "start"
+        s.append(texto(px(p[0]) + dx, py(p[1]) + dy,
+                       f"{rotulo(p)} = {valor(p)}",
+                       color=ACENTO if es_mejor else SERIE[1], tam=13, anclaje=anc,
+                       peso="700" if es_mejor else "normal"))
+    s += _leyenda(378, 60, [
+        (SERIE[1], "sin la energía: 4 esquinas"),
+        (ACENTO, "la región real, dentro"),
+    ], ancho=312)
+    s.append(texto(W / 2, 34, "el techo es 38 con energía o sin ella",
+                   color=SUAVE, tam=15))
+    s.append(texto(W / 2, 520,
+                   "(8, 2) es esquina de las dos, y la mejor de las dos",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_fig_dos_cimas():
     W, H = 720, 380
     ox, oy, ancho, alto = 80, 320, 560, 220
@@ -516,6 +598,7 @@ DIAGRAMAS = {
     "opt-historia-a-modelo": opt_historia_a_modelo,
     "opt-poligono": opt_poligono,
     "opt-curvas-de-nivel": opt_curvas_de_nivel,
+    "opt-sin-energia": opt_sin_energia,
     "opt-fig-dos-cimas": opt_fig_dos_cimas,
 }
 
