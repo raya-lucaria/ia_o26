@@ -15,11 +15,17 @@ de esa frase pesan lo mismo: hay que saber **cuáles se pueden**, y hay que sabe
 **qué significa mejor**. Escribir esas dos cosas con precisión es modelar, y es
 lo más difícil del asunto.
 
-[[complejidad|La unidad anterior]] terminó explicando por qué casi ningún problema
-interesante se resuelve probando todas las opciones. Ésta empieza donde aquélla
-dejó: si no puedes enumerar, tienes que **describir** —el conjunto de opciones y
-el criterio— y dejar que un método recorra esa descripción por ti. La descripción
-es el modelo.
+[[agentes-ambientes|La unidad anterior]] enseñó a dibujar una decisión: quién
+decide, qué observa, qué puede hacer y cómo se juzgan las consecuencias. Y cerró
+con siete propiedades para diagnosticar el entorno. Ésta empieza cuando esas
+siete salen en su combinación más simple —lo ves todo, no hay azar, nada se mueve
+mientras piensas— porque entonces la decisión deja de ser un problema de agentes
+y se vuelve uno de **cuentas**.
+
+Cuentas que no se pueden hacer probando todas las opciones: eso lo cerró
+[[complejidad|la unidad de complejidad]]. Si no puedes enumerar, tienes que
+**describir** —el conjunto de opciones y el criterio— y dejar que un método
+recorra esa descripción por ti. La descripción es el modelo.
 
 ::: figure {#opt-lienzo title="Las siete preguntas, en dos bloques"}
 ![Siete cajas numeradas en dos bloques: cuatro para construir el modelo y tres para revisarlo, con una flecha de regreso](_assets/opt-lienzo.svg)
@@ -28,8 +34,10 @@ es el modelo.
 ## Por qué esto está en un curso de inteligencia artificial
 
 Porque es el paso que casi nadie enseña y todos necesitan. Un agente que decide
-qué hacer está resolviendo un problema de optimización, lo diga o no: tiene un
-conjunto de acciones posibles y un criterio para preferir unas sobre otras.
+qué hacer está resolviendo un problema de optimización, lo diga o no: el espacio
+de acciones de su [[entorno-en-peas|especificación PEAS]] es el conjunto
+factible, y su medida de desempeño es la función objetivo. Esta unidad les pone
+nombre y método.
 
 La parte que se estudia normalmente es el método —cómo buscar rápido—. La parte
 que decide si el resultado sirve es la otra: **si el modelo dice lo que creías

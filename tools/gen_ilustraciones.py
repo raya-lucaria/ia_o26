@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image
 
 from unidades import (ASSETS_COMPLEJIDAD, ASSETS_COMPUTABILIDAD, ASSETS_FILOSOFIA,
-                      ASSETS_HISTORIA)
+                      ASSETS_HISTORIA, ASSETS_AGENTES)
 
 RAIZ = Path(__file__).resolve().parent.parent
 CATALOGO = RAIZ / "tools/ilustraciones.json"
@@ -99,6 +99,11 @@ def receta(nombre, datos):
                 f'{datos["ilustraciones_complejidad"][nombre]} '
                 f'{datos["estilo_anime_fondo_plano"]}',
                 True)
+    if nombre in datos.get("ilustraciones_agentes_ambientes", {}):
+        return (ASSETS_AGENTES / f"ilus-{nombre}.jpg",
+                f'{datos["ilustraciones_agentes_ambientes"][nombre]} '
+                f'{datos["estilo_agentes_ambientes"]}',
+                False)
     raise SystemExit(f"nombre desconocido en el catalogo: {nombre}")
 
 

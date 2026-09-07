@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image
 
 from unidades import (ASSETS_COMPLEJIDAD, ASSETS_COMPUTABILIDAD, ASSETS_FILOSOFIA,
-                      ASSETS_HISTORIA)
+                      ASSETS_HISTORIA, ASSETS_AGENTES)
 
 RAIZ = Path(__file__).resolve().parent.parent
 ASSETS = ASSETS_HISTORIA          # el conjunto original no cambia de sitio
@@ -247,3 +247,46 @@ def test_complejidad_el_estilo_anime_conserva_sus_dos_restricciones():
     assert "no basado en ninguna serie ni obra existente" in estilo, (
         "el estilo anime perdio la restriccion de no copiar obra existente"
     )
+
+
+# --- Bloque de agentes y ambientes ------------------------------------------
+# Estas ilustraciones narran decisiones concretas. A diferencia de los PNG con
+# fondo plano, se conservan como JPEG editorial de formato ancho; la guarda
+# propia fija tanto las tres piezas previstas como las restricciones de diseño
+# original que evitan que una referencia pedagógica se vuelva una imitación.
+
+CREDITOS_AGENTES = ASSETS_AGENTES / "CREDITOS.md"
+
+
+def nombres_agentes():
+    catalogo = json.loads(CATALOGO.read_text(encoding="utf-8"))
+    return list(catalogo["ilustraciones_agentes_ambientes"])
+
+
+def test_agentes_todas_generadas():
+    for nombre in nombres_agentes():
+        ruta = ASSETS_AGENTES / f"ilus-{nombre}.jpg"
+        assert ruta.is_file(), f"falta {ruta.name}"
+
+
+def test_agentes_dimensiones_y_peso():
+    for nombre in nombres_agentes():
+        ruta = ASSETS_AGENTES / f"ilus-{nombre}.jpg"
+        with Image.open(ruta) as im:
+            assert im.width == 1024, f"{ruta.name} mide {im.width}px de ancho"
+        assert ruta.stat().st_size < 400_000, f"{ruta.name} pesa demasiado"
+
+
+def test_agentes_acreditadas_como_generadas():
+    creditos = CREDITOS_AGENTES.read_text(encoding="utf-8").lower()
+    for nombre in nombres_agentes():
+        assert f"ilus-{nombre}.jpg" in creditos, f"ilus-{nombre}.jpg sin credito"
+    assert "generada" in creditos
+
+
+def test_agentes_el_estilo_conserva_restricciones_de_originalidad():
+    catalogo = json.loads(CATALOGO.read_text(encoding="utf-8"))
+    estilo = catalogo["estilo_agentes_ambientes"].lower()
+    assert "diseño original" in estilo
+    assert "ninguna franquicia" in estilo
+    assert "sin texto" in estilo

@@ -25,7 +25,7 @@ qué información tienes, y qué estás dispuesto a pagar por una respuesta mejo
 | | Módulo | De qué va |
 |---|---|---|
 | 1 | **Introducción y filosofía de la IA** | Qué se ha entendido por inteligencia y por máquina que piensa. La historia del campo y las ideas que hoy empujan su desarrollo |
-| 2 | **Agentes, ambientes, modelado y optimización** | La abstracción central del curso: percibir, decidir, actuar. Cómo se formula un problema y qué significa resolverlo |
+| 2 | [[agentes-ambientes|**Agentes, ambientes, modelado y optimización**]] | La abstracción central del curso: percibir, decidir, actuar. Cómo se formula un problema y qué significa resolverlo |
 | 3 | **Tópicos de probabilidad y matemáticas** | Las herramientas que el resto del curso da por sabidas. Razonar con incertidumbre, medir información, optimizar |
 | 4 | **Tópicos de IA clásica** | Búsqueda, lógica y planificación. Lo que se puede hacer sin aprender de datos, y por qué sigue importando |
 | 5 | **Machine Learning y Deep Learning** | Aprender de la experiencia en lugar de programar la respuesta. Qué garantiza y qué no |
