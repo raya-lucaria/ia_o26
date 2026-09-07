@@ -87,7 +87,7 @@ el total de la primera clase ronda los **77 minutos**.
 
 ## El notebook de la clase 1
 
-Las páginas se leen; el notebook se corre. Trae la impresora resuelto con
+Las páginas se leen; el notebook se corre. Trae el problema de la impresora resuelto con
 código, el mismo dibujo hecho por la computadora, y **al final una historia nueva
 para que la modeles tú**. No hay nada que entregar.
 
