@@ -33,9 +33,12 @@ jobs:
   # `needs: checks` es lo que convierte las pruebas en una compuerta real. Sin
   # esa línea ambos trabajos corren en paralelo y el sitio se publica aunque la
   # suite falle — que es exactamente lo que pasaba antes de añadirla.
+  # El SHA fijado es el commit del framework que construye el sitio. Subirlo
+  # trae los cambios del framework; af1dfe9 es el que abre los enlaces externos
+  # en pestaña nueva, que ninguna página del curso puede pedir por su cuenta.
   course-pages:
     needs: checks
-    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@dbf10c787142167700174f8e086ae7721ad1f5f6
+    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@af1dfe988e2aef78d761e4e0fff104ecc74d5e57
     with:
       course_path: .
     permissions:
