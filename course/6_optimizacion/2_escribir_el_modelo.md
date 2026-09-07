@@ -12,10 +12,19 @@ tags: [optimizacion, modelado, variables, restricciones]
 
 **¿Cómo convierto esta tabla en matemáticas?**
 
-Ya sacaste la tabla de la bitácora, y ya sabes qué es un objetivo y qué es una
-restricción. Ahora se escriben.
+De la bitácora saliste con una tabla: 11 números, un supuesto anotado y una frase
+ambigua resuelta. Eso ya es mucho más de lo que tenías. Pero una tabla todavía no
+se puede resolver: **hay que decidir qué de ahí es una incógnita, qué es un dato
+y qué es una regla.**
+
+Esa traducción tiene siempre las mismas cinco piezas, y siempre en el mismo
+orden. Aprendértelas es lo que hace que el segundo problema de tu vida cueste la
+mitad que el primero.
 
 ## 1 · Las cinco piezas
+
+Léelas seguidas: cada una contesta una pregunta distinta sobre el mismo texto que
+ya leíste.
 
 ::: definition {#opt-variable title="Variable de decisión"}
 Una **variable de decisión** es cada cosa cuyo valor **eliges tú**, junto con el
@@ -24,7 +33,7 @@ conjunto de valores que puede tomar, su **dominio**.
 La prueba para distinguirla de todo lo demás: si al terminar tienes que anunciar
 ese número, es variable; si ya venía dado y no lo puedes cambiar, no lo es.
 
-Aquí las variables son $x_1$, cuántos filtros se fabrican, y $x_2$, cuántas
+Aquí las variables son $x_1$, cuántos filtros se imprimen, y $x_2$, cuántas
 celdas. Su dominio son los **reales no negativos**. Las 10 horas no son
 variable: nadie decide cuántas horas quedan antes de la parada.
 :::
@@ -109,8 +118,15 @@ definición dijera «cualquier plan que cumpla las tres», lo admitiría.
 
 ## 2 · El lienzo, paso a paso
 
-Siete preguntas en dos bloques. Las cuatro primeras construyen el modelo; las
-tres últimas lo revisan.
+Ya tienes las piezas. Falta el **orden en que se buscan**, porque empezar por las
+restricciones es la manera más rápida de acabar modelando otro problema.
+
+Son siete preguntas en dos bloques. Las cuatro primeras **construyen**; las tres
+últimas **revisan**. El segundo bloque no es adorno: es donde se atrapan los
+errores que si no aparecen hasta el final, cuando ya diste por buena una
+respuesta absurda.
+
+Renglón por renglón, así se ve la traducción:
 
 ::: figure {#opt-historia-a-modelo title="De la frase a la desigualdad"}
 ![Dos columnas: a la izquierda las frases de la bitácora, a la derecha la desigualdad que produce cada una; el último renglón tiene la izquierda vacía](_assets/opt-historia-a-modelo.svg)
@@ -128,13 +144,18 @@ tres últimas lo revisan.
 | 7 | ¿Qué forma tiene? | Las cuatro funciones son lineales |
 :::
 
+Fíjate en el último renglón de la figura: **la columna izquierda está vacía**.
+Nadie dijo en la bitácora que no se pueden imprimir menos de cero filtros, y aun
+así hay que escribirlo. Ésa es la restricción que todo el mundo olvida.
+
 Con eso, el modelo completo queda:
 
 $$\max\; 4x_1 + 3x_2 \quad \text{sujeto a}\quad x_1 + x_2 \le 10,\;\; 2x_1 + x_2 \le 18,\;\; x_1 + 2x_2 \le 18,\;\; x_1, x_2 \ge 0.$$
 
 ## 3 · El paso 6, con honestidad
 
-El paso 6 comprueba las dos maneras de no tener respuesta. Que exista algún punto
+De los siete pasos, el 6 es el que más gente se salta, así que vale la pena
+detenerse. Comprueba las dos maneras de no tener respuesta. Que exista algún punto
 factible descarta que el problema sea imposible. Que ninguna variable crezca sin
 freno descarta que se pueda mejorar para siempre.
 

@@ -12,11 +12,19 @@ tags: [optimizacion, optimo, cota, certificado]
 
 **¿Qué clase de cosa te entrega un método, y cómo sé que es la mejor?**
 
-Ya sabes qué imprimir: **8 filtros y 2 celdas**, que valen 38 créditos. Esta
-página dice qué es exactamente esa respuesta, qué otras cosas te puede entregar un método, y cómo se
-convence a alguien más sin rehacer el dibujo.
+Ya sabes qué imprimir: **8 filtros y 2 celdas**, que valen 38 créditos.
+
+Ahora imagina que se lo dices a la ingeniera y te contesta lo que contestaría
+cualquiera: **«¿y cómo sabes que no hay algo mejor?»**
+
+Tienes un dibujo, y el dibujo no viaja. Necesitas algo más chico y más duro que
+un dibujo. Esta página construye eso, y de paso pone nombre a las **otras siete
+cosas** que un método te puede entregar y que no son la respuesta.
 
 ## 1 · Óptimo global y óptimo local
+
+Empecemos por lo que puede salir mal, porque es lo que da sentido a todo lo
+demás.
 
 ::: definition {#opt-global-local title="Óptimo global y óptimo local"}
 Un punto factible es **óptimo global** si ningún otro punto factible da un valor

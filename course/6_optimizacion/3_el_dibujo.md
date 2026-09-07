@@ -12,8 +12,16 @@ tags: [optimizacion, metodo-grafico, poligono, vertice]
 
 **¿Qué significa este modelo en el plano, y dónde está la respuesta?**
 
-Tienes el modelo escrito. Con dos variables se puede dibujar, y verlo antes de
-calcularlo cambia todo lo que sigue.
+Tienes el modelo escrito. Tres desigualdades y dos variables, y ninguna pista de
+por dónde empezar a buscar.
+
+Aquí está el atajo: **con dos variables, un modelo se puede dibujar**. Cada plan
+posible es un punto del plano —tantos filtros a la derecha, tantas celdas hacia
+arriba—, y cada restricción recorta una parte de ese plano. Lo que queda es la
+figura de todos los planes que sí se pueden hacer.
+
+Y una vez dibujada, la respuesta no hay que buscarla: **se ve**. Esta página
+explica por qué, y la razón vale mucho más allá de dos variables.
 
 ## 1 · El polígono
 
@@ -57,6 +65,9 @@ hay 10. De los diez cruces sobreviven cinco.
 
 ## 2 · La curva de nivel, y por qué la respuesta está en una esquina
 
+Ya tienes el terreno: todos los planes posibles. Falta el criterio, porque el
+dibujo de arriba **no sabe nada de créditos**. Se dibuja aparte, y encima.
+
 ::: definition {#opt-curva-nivel title="Curva de nivel"}
 Fijado un número $v$, la **curva de nivel de valor $v$** es el conjunto de
 **todos los puntos del plano** —dentro o fuera del polígono— donde el objetivo
@@ -87,8 +98,11 @@ $4x_1+3x_2=38$, y toca el polígono **solo en $(8,2)$**.
 | $(9,0)$ | 36 |
 :::
 
-**Por qué eso siempre cae en una esquina.** Es la frase que uno se lleva, así que
-va con su razón, en cuatro pasos.
+### Por qué eso siempre cae en una esquina
+
+Podría parecer una casualidad de este dibujo: la recta salió con esa inclinación
+y tocó justo ahí. **No lo es.** Pasa siempre, y la razón cabe en cuatro pasos que
+solo usan lo que ya está en la página.
 
 1. El polígono es una figura cerrada y de tamaño finito, así que empujando la
    recta llega un momento en que ya no se puede más: hay una **última** que lo
@@ -104,7 +118,10 @@ va con su razón, en cuatro pasos.
 El caso del lado entero no es una rareza: es la segunda parte del ejercicio de
 abajo.
 
-### Cuatro cosas que quedaron pendientes, y que el dibujo ya contesta
+### Cuatro cuentas pendientes que el dibujo ya salda
+
+Las páginas anteriores dejaron cosas en el aire a propósito, porque no había
+respuesta con qué contestarlas. Ahora la hay.
 
 ::: table {#opt-deudas title="Lo que las páginas anteriores dejaron abierto"}
 | Lo que quedó pendiente | Lo que el dibujo contesta |
