@@ -183,6 +183,78 @@ def rotulo(p):
 # --------------------------------------------------------------------------
 # diagramas
 
+def opt_anatomia():
+    """El modelo escrito, con cada una de sus partes señalada por su nombre.
+
+    No es un diagrama de proceso: es una radiografía. El lector debe poder
+    apuntar a cualquier símbolo de la forma canónica y decir cómo se llama.
+    """
+    W, H = 940, 560
+    s = [marco(
+        W, H,
+        "La forma canónica del modelo con cada parte señalada: sentido, función "
+        "objetivo, coeficientes, variables de decisión, restricciones, lados "
+        "derechos y dominio",
+        "Las partes de un problema de optimización",
+        "El modelo de la impresora escrito en forma canonica. Flechas y "
+        "etiquetas nombran el sentido max, la funcion objetivo, los "
+        "coeficientes de precio, las variables de decision, las tres "
+        "restricciones de recurso, sus coeficientes de consumo, los lados "
+        "derechos con lo disponible, y el dominio.",
+    )]
+    fx = 330                      # donde empieza la fórmula
+    filas = [
+        (150, "max", "4x\u2081 + 3x\u2082", ACENTO),
+        (232, "sujeto a", "x\u2081 +  x\u2082  \u2264 10", SERIE[0]),
+        (280, "", "2x\u2081 +  x\u2082  \u2264 18", SERIE[0]),
+        (328, "", "x\u2081 + 2x\u2082  \u2264 18", SERIE[0]),
+        (400, "", "x\u2081 \u2265 0,  x\u2082 \u2265 0", SERIE[1]),
+    ]
+    for y, izq, der, color in filas:
+        if izq:
+            s.append(texto(fx - 18, y + 6, izq, color=SUAVE, tam=17, anclaje="end",
+                           fuente=MONO))
+        s.append(texto(fx + 8, y + 6, der, color=color, tam=20, anclaje="start",
+                       fuente=MONO))
+    s.append(caja(fx - 8, 214, 320, 148, borde=mezclar(SERIE[0], 0.6), guiones="6 5"))
+    s.append(caja(fx - 8, 380, 320, 40, borde=mezclar(SERIE[1], 0.6), guiones="6 5"))
+
+    def etiqueta(x, y, texto_, color, hacia, anc="start"):
+        s.append(flecha(x, y, hacia[0], hacia[1], color=color, grosor=1.6,
+                        marcador="s" if color == SUAVE else "p"))
+        s.append(texto(x + (6 if anc == "start" else -6), y + 5, texto_,
+                       color=color, tam=13, anclaje=anc))
+
+    # izquierda
+    etiqueta(196, 118, "el sentido:", SUAVE, (300, 143), anc="end")
+    s.append(texto(190, 136, "máximo o mínimo", color=SUAVE, tam=13, anclaje="end"))
+    etiqueta(300, 200, "una restricción por recurso", SERIE[0], (360, 224), anc="end")
+    etiqueta(258, 300, "coeficientes:", SERIE[0], (338, 284), anc="end")
+    s.append(texto(252, 318, "cuánto consume cada pieza", color=SUAVE, tam=12,
+                   anclaje="end"))
+    etiqueta(240, 400, "el dominio", SERIE[1], (322, 400), anc="end")
+    s.append(texto(234, 418, "con qué números", color=SUAVE, tam=12, anclaje="end"))
+    s.append(texto(234, 434, "se trabaja", color=SUAVE, tam=12, anclaje="end"))
+    # derecha
+    etiqueta(700, 116, "la función objetivo:", ACENTO, (560, 143))
+    s.append(texto(706, 134, "lo que se quiere", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(706, 150, "lo más grande posible", color=SUAVE, tam=13, anclaje="start"))
+    etiqueta(700, 196, "coeficientes del objetivo:", SERIE[2], (430, 168))
+    s.append(texto(706, 214, "cuánto vale cada pieza", color=SUAVE, tam=13, anclaje="start"))
+    etiqueta(700, 300, "lado derecho:", SERIE[0], (620, 284))
+    s.append(texto(706, 318, "cuánto hay de ese recurso", color=SUAVE, tam=13,
+                   anclaje="start"))
+    etiqueta(700, 412, "variables de decisión:", ACENTO, (580, 402))
+    s.append(texto(706, 430, "lo único que eliges", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(W / 2, 40, "las siete partes de un problema de optimización",
+                   color=SUAVE, tam=16))
+    s.append(texto(W / 2, 505,
+                   "si puedes nombrar cada símbolo, ya sabes leer un modelo",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_lienzo():
     W, H = 900, 400
     s = [marco(
@@ -594,6 +666,7 @@ def opt_fig_dos_cimas():
 
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
+    "opt-anatomia": opt_anatomia,
     "opt-lienzo": opt_lienzo,
     "opt-historia-a-modelo": opt_historia_a_modelo,
     "opt-poligono": opt_poligono,

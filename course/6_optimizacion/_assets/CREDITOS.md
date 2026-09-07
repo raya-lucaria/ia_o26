@@ -12,6 +12,7 @@ no son imágenes.
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
 | `opt-la-impresora.svg` | La situación entera: qué se gasta, qué se decide y qué se gana | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-anatomia.svg` | La forma canónica con cada una de sus siete partes señalada | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-lienzo.svg` | Los siete pasos del lienzo de modelado, en dos bloques | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-historia-a-modelo.svg` | Cada frase de la bitácora y la desigualdad que produce | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-poligono.svg` | La región factible de la impresora y sus cinco esquinas | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
