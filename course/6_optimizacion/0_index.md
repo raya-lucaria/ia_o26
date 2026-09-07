@@ -93,6 +93,9 @@ para que la modeles tú**. No hay nada que entregar.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_impresora_lineal.ipynb)
 
+*Se abre en Google Colab. Si quieres conservar esta página, ábrelo en otra
+pestaña: **ctrl + clic** en Windows y Linux, **cmd + clic** en Mac.*
+
 **Dónde vive.** El archivo está en este repositorio, en
 `course/6_optimizacion/_assets/01_impresora_lineal.ipynb`. El botón de arriba lo
 abre en Google Colab, que lo ejecuta en el navegador sin instalar nada. Si
