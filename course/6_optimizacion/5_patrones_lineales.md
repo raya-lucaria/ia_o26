@@ -12,8 +12,15 @@ tags: [optimizacion, modelado, restricciones, signos]
 
 **¿Cómo se escribe como desigualdad una frase que no habla de un recurso?**
 
-El problema de la impresora ya está modelado, resuelto y certificado. Estas son las frases que
-vas a encontrar en cualquier otro problema.
+El problema de la impresora ya está modelado, resuelto y certificado. Pero se
+modeló con una ventaja que no vas a volver a tener: **sus tres restricciones eran
+del mismo tipo**, las tres decían «hay tanto de esto y cada pieza gasta tanto».
+
+Los problemas de verdad mezclan tipos. Aparecen frases que no hablan de ningún
+recurso —«al menos tres», «a lo más cuatro», «por cada uno de éstos, dos de
+aquéllos»— y hay que saber en qué se convierten sin pensarlo mucho.
+
+Son **tres moldes**, y casi todo cae en uno de ellos.
 
 ## 1 · Los tres moldes
 
