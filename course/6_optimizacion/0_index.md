@@ -67,7 +67,8 @@ leer, escribir, resolver, dudar de la respuesta.
 ## Recorrido
 
 Cinco páginas, en orden. Cada una se sostiene sola y declara cuánto toma leerla;
-el total de la primera clase ronda los **77 minutos**.
+el total de la primera clase ronda los **77 minutos**, más la hoja de práctica
+del final.
 
 ::: table {#opt-ruta title="Las cinco páginas de la primera clase"}
 | | Página | Qué resuelve | |
@@ -84,6 +85,11 @@ el total de la primera clase ronda los **77 minutos**.
 - [[el-dibujo|3 · El dibujo]]
 - [[que-es-una-respuesta|4 · Qué es una respuesta]]
 - [[patrones-lineales|5 · Patrones lineales]]
+
+Y una hoja de práctica, aparte del recorrido:
+
+- [[tres-bitacoras|Tres bitácoras para practicar]] — tres historias nuevas sin
+  resolver, una por cada patrón, con la solución plegada. Unos 30 minutos.
 
 ## El notebook de la clase 1
 
