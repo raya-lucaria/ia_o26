@@ -128,7 +128,7 @@ Una **restricción** es una condición que la respuesta está obligada a cumplir
 escrita como una comparación entre dos cantidades: $\le$, $\ge$ o $=$.
 
 Cada restricción recorta las opciones; ninguna dice cuál es la mejor, que es
-trabajo del objetivo. En la impresora hay **una por recurso** —no se pueden
+trabajo del objetivo. Aquí hay **una por recurso** —no se pueden
 gastar más horas, más polímero ni más energía de los que hay— **y dos más que
 nadie dice en voz alta**: no se fabrican menos de cero filtros ni menos de cero
 celdas. Son cinco.
@@ -144,7 +144,7 @@ Están puestas a propósito, y conviene nombrarlas antes de buscarlas.
 ::: table {#opt-trampas title="Lo que un texto real le hace a quien lo lee"}
 | Trampa | Dónde está | Qué hay que hacer |
 |---|---|---|
-| **Irrelevante** | «La bodega sigue a cuatro grados bajo cero» | Descartarlo, y **decir por qué** |
+| **Irrelevante** | «La bodega sigue a 4 grados bajo cero» | Descartarlo, y **decir por qué** |
 | **Falta** | «De energía, el reactor nos deja lo de siempre» | Suponer, **y anotar el supuesto con su condición** |
 | **Ambigua** | «No conviene hacer más celdas que filtros» | Decidir entre regla y preferencia, **y justificarlo** |
 :::
@@ -167,7 +167,7 @@ será el modelo.
 ## 3 · Tu turno
 
 ::: exercise {#opt-ej-bitacora title="Saca la tabla"}
-Escribe la tabla de recursos de la impresora: una fila por recurso, una columna
+Escribe la tabla de recursos: una fila por recurso, una columna
 por pieza, y una columna con lo disponible.
 
 Después marca tres cosas:

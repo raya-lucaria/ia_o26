@@ -46,7 +46,7 @@ Cuando **no** sale gratis, que es casi siempre, hace falta maquinaria aparte.
 ::: definition {#opt-parametro title="Parámetro"}
 Un **parámetro** es cada número que el problema te **da** y que tú no eliges.
 
-En la impresora son los 11 de la tabla: los 6 de consumo, los tres de
+Aquí son los 11 de la tabla: los 6 de consumo, los 3 de
 disponibilidad y los 2 de precio. Cambiar un parámetro es plantear otro
 problema, no resolver mejor el mismo.
 :::
@@ -104,7 +104,7 @@ qué conviene.
 :::
 
 **Y por eso son cinco condiciones y no tres.** El punto $(-2,10)$ cumple las tres
-desigualdades de recurso y no es un plan: no se fabrican menos dos filtros. Si la
+desigualdades de recurso y no es un plan: no se imprimen menos de 2 filtros. Si la
 definición dijera «cualquier plan que cumpla las tres», lo admitiría.
 
 ## 2 · El lienzo, paso a paso
@@ -116,7 +116,7 @@ tres últimas lo revisan.
 ![Dos columnas: a la izquierda las frases de la bitácora, a la derecha la desigualdad que produce cada una; el último renglón tiene la izquierda vacía](_assets/opt-historia-a-modelo.svg)
 :::
 
-::: table {#opt-lienzo-pasos title="Los siete pasos, aplicados a la impresora"}
+::: table {#opt-lienzo-pasos title="Los siete pasos, aplicados a este problema"}
 | Paso | Pregunta | Lo que sale |
 |---|---|---|
 | 1 | ¿Qué decido? | $x_1$, $x_2$, reales $\ge 0$ |
@@ -161,7 +161,7 @@ cambia también la respuesta?
 Recorre los siete pasos del lienzo y márcalos: ¿cuáles se rehacen y cuáles no?
 
 Para la predicción no hace falta resolver nada: piensa si el plan que tenías en
-mente sigue cabiendo con cuatro kilos menos.
+mente sigue cabiendo con 4 kilos menos.
 :::
 
 ::: answer {#opt-resp-polimero of="opt-ej-polimero"}

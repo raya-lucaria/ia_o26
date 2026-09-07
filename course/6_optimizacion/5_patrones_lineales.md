@@ -12,7 +12,7 @@ tags: [optimizacion, modelado, restricciones, signos]
 
 **¿Cómo se escribe como desigualdad una frase que no habla de un recurso?**
 
-La impresora ya está modelado, resuelto y certificado. Estas son las frases que
+El problema de la impresora ya está modelado, resuelto y certificado. Estas son las frases que
 vas a encontrar en cualquier otro problema.
 
 ## 1 · Los tres moldes
@@ -23,7 +23,7 @@ unidad de cada variable gasta una cantidad fija, y el total no puede pasar de lo
 que hay.
 
 Su forma es una suma de consumos a la izquierda y la disponibilidad a la derecha,
-con $\le$. Las tres de la impresora son de este tipo.
+con $\le$. Las 3 del problema de la impresora son de este tipo.
 :::
 
 ::: definition {#opt-cota title="Cota sobre una variable"}
@@ -36,7 +36,7 @@ la desigualdad menciona una sola.
 
 ::: definition {#opt-proporcion title="Restricción de proporción"}
 Una **restricción de proporción** compara **una variable con otra**: «por cada
-celda, al menos dos filtros».
+celda, al menos 2 filtros».
 
 Casi siempre llega escrita con las variables en lados distintos, y hay que
 juntarlas de un solo lado para que quede en forma estándar.
@@ -45,11 +45,11 @@ juntarlas de un solo lado para que quede en forma estándar.
 ::: table {#opt-patrones title="La frase, la desigualdad y el molde"}
 | Frase | Desigualdad | Molde |
 |---|---|---|
-| «cada pieza se lleva una hora y quedan diez» | $x_1 + x_2 \le 10$ | recurso |
+| «cada pieza se lleva 1 hora y quedan 10» | $x_1 + x_2 \le 10$ | recurso |
 | «el filtro se lleva 2 kg, la celda 1, y hay 18» | $2x_1 + x_2 \le 18$ | recurso |
 | «al menos 3 filtros» | $x_1 \ge 3$ | cota |
 | «a lo más 4 celdas» | $x_2 \le 4$ | cota |
-| «por cada celda, al menos dos filtros» | $x_1 - 2x_2 \ge 0$ | proporción |
+| «por cada celda, al menos 2 filtros» | $x_1 - 2x_2 \ge 0$ | proporción |
 :::
 
 Las cinco filas se reproducen desde la frase sola: **cada frase dice lo que
@@ -73,7 +73,7 @@ de esta unidad es `linprog`, de la biblioteca `scipy`.
 :::
 
 > [!WARNING]
-> La fila del signo de vuelta no es adorno. Al resolver la impresora con
+> La fila del signo de vuelta no es adorno. Al resolver este modelo con
 > `linprog` y el objetivo negado, el resultado trae `fun = -38.0`. Quien copie
 > solo «se minimiza $-f$» y compare contra 38 va a ver reventar su comprobación.
 
@@ -96,8 +96,8 @@ tienes, $(8,2)$, la cumple.
 ::: answer {#opt-resp-cota of="opt-ej-cota"}
 Es $x_2 \ge 4$, una **cota**.
 
-Y **sí cambia**: $(8,2)$ hace dos celdas, así que no la cumple. El óptimo se mueve
-a $(6,4)$, con 36 créditos en vez de 38. Las dos celdas extra cuestan dos
+Y **sí cambia**: $(8,2)$ hace 2 celdas, así que no la cumple. El óptimo se mueve
+a $(6,4)$, con 36 créditos en vez de 38. Las 2 celdas extra cuestan 2
 créditos.
 
 Las tres últimas filas de la tabla son $x_1\ge3$, $x_1-2x_2\ge0$ y $x_2\le4$, y
@@ -140,7 +140,7 @@ Toca hacerlo con las manos.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/01_impresora_lineal.ipynb)
 
-El notebook resuelve la impresora con código y **cierra con una bitácora nueva,
+El notebook resuelve este problema con código y **cierra con una bitácora nueva,
 del invernadero, que no está resuelta en ninguna página**. Ése es el ejercicio de
 la clase. No hay nada que entregar.
 
