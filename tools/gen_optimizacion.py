@@ -202,6 +202,70 @@ def opt_lienzo():
     return "".join(s)
 
 
+def opt_el_fabricador():
+    """La situacion entera de un vistazo, SIN numeros.
+
+    Los numeros son la respuesta del ejercicio de la pagina 1; el diagrama
+    ensena la estructura —que se gasta, que se decide, que se gana— para que el
+    lector entienda la historia sin que nadie le resuelva la tabla.
+    """
+    W, H = 940, 400
+    s = [marco(
+        W, H,
+        "Tres recursos limitados entran al fabricador, que produce filtros de "
+        "aire y celdas de agua; el depósito paga créditos por cada pieza",
+        "Qué decide la tripulación",
+        "A la izquierda tres recursos que se gastan y se acaban: horas de "
+        "fabricador, polimero y energia. En medio el fabricador, donde se decide "
+        "cuantos filtros y cuantas celdas hacer. A la derecha el deposito, que "
+        "paga creditos por cada pieza entregada.",
+    )]
+    # columna 1: los recursos
+    s.append(texto(140, 44, "lo que se gasta", color=SERIE[0], tam=14, peso="600"))
+    s.append(texto(140, 64, "y se acaba", color=SUAVE, tam=12))
+    for k, (nombre, unidad) in enumerate([("Horas de fabricador", "antes de la parada"),
+                                          ("Polímero", "kilos en la bodega"),
+                                          ("Energía", "kilowatt-hora del reactor")]):
+        y = 96 + 76 * k
+        s.append(caja(30, y, 220, 58, relleno=mezclar(SERIE[0], 0.16), borde=SERIE[0]))
+        s.append(texto(140, y + 26, nombre, tam=14, peso="600"))
+        s.append(texto(140, y + 45, unidad, color=SUAVE, tam=12))
+        s.append(flecha(254, y + 29, 316, 200 if k != 1 else y + 29,
+                        color=SERIE[0], grosor=2))
+    # columna 2: la decision
+    s.append(caja(320, 96, 220, 214, relleno=mezclar(ACENTO, 0.14), borde=ACENTO, grosor=2.5))
+    s.append(texto(430, 44, "lo que se decide", color=ACENTO, tam=14, peso="600"))
+    s.append(texto(430, 64, "y es la pregunta", color=SUAVE, tam=12))
+    s.append(texto(430, 136, "EL FABRICADOR", color=ACENTO, tam=15, peso="700"))
+    s.append(texto(430, 176, "¿cuántos filtros", tam=15))
+    s.append(texto(430, 200, "y cuántas celdas", tam=15))
+    s.append(texto(430, 224, "hacer con esto?", tam=15))
+    s.append(texto(430, 268, "no se puede todo:", color=SUAVE, tam=12))
+    s.append(texto(430, 286, "los tres se acaban", color=SUAVE, tam=12))
+    # columna 3: las piezas
+    for k, (nombre, detalle) in enumerate([("Filtro de aire", "4 créditos"),
+                                           ("Celda de agua", "3 créditos")]):
+        y = 116 + 110 * k
+        s.append(flecha(544, 203, 606, y + 30, color=ACENTO, grosor=2))
+        s.append(caja(610, y, 180, 60, relleno=mezclar(SERIE[1], 0.16), borde=SERIE[1]))
+        s.append(texto(700, y + 27, nombre, tam=14, peso="600"))
+        s.append(texto(700, y + 46, detalle, color=SERIE[1], tam=13))
+        s.append(flecha(794, y + 30, 856, 200, color=SERIE[1], grosor=2))
+    s.append(texto(700, 44, "lo que se entrega", color=SERIE[1], tam=14, peso="600"))
+    # columna 4: el deposito
+    s.append(caja(860, 140, 60, 120, relleno=mezclar(SERIE[2], 0.16), borde=SERIE[2]))
+    for i, ch in enumerate("DEPÓSITO"):
+        s.append(texto(890, 162 + 13 * i, ch, color=SERIE[2], tam=12, peso="700"))
+    s.append(texto(890, 292, "paga", color=SERIE[2], tam=13, peso="600"))
+    s.append(texto(890, 310, "créditos", color=SERIE[2], tam=13, peso="600"))
+    s.append(texto(W / 2, 360,
+                   "tres cosas que se acaban, dos que se pueden hacer, "
+                   "un total que se quiere lo más grande posible",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_historia_a_modelo():
     W, H = 900, 380
     s = [marco(
@@ -447,6 +511,7 @@ def opt_fig_dos_cimas():
 
 
 DIAGRAMAS = {
+    "opt-el-fabricador": opt_el_fabricador,
     "opt-lienzo": opt_lienzo,
     "opt-historia-a-modelo": opt_historia_a_modelo,
     "opt-poligono": opt_poligono,
