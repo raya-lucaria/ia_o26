@@ -25,7 +25,7 @@ La prueba para distinguirla de todo lo demás: si al terminar tienes que anuncia
 ese número, es variable; si ya venía dado y no lo puedes cambiar, no lo es.
 
 Aquí las variables son $x_1$, cuántos filtros se fabrican, y $x_2$, cuántas
-celdas. Su dominio son los **reales no negativos**. Las diez horas no son
+celdas. Su dominio son los **reales no negativos**. Las 10 horas no son
 variable: nadie decide cuántas horas quedan antes de la parada.
 :::
 
@@ -46,8 +46,8 @@ Cuando **no** sale gratis, que es casi siempre, hace falta maquinaria aparte.
 ::: definition {#opt-parametro title="Parámetro"}
 Un **parámetro** es cada número que el problema te **da** y que tú no eliges.
 
-En el fabricador son los once de la tabla: los seis de consumo, los tres de
-disponibilidad y los dos de precio. Cambiar un parámetro es plantear otro
+En la impresora son los 11 de la tabla: los 6 de consumo, los tres de
+disponibilidad y los 2 de precio. Cambiar un parámetro es plantear otro
 problema, no resolver mejor el mismo.
 :::
 
@@ -116,11 +116,11 @@ tres últimas lo revisan.
 ![Dos columnas: a la izquierda las frases de la bitácora, a la derecha la desigualdad que produce cada una; el último renglón tiene la izquierda vacía](_assets/opt-historia-a-modelo.svg)
 :::
 
-::: table {#opt-lienzo-pasos title="Los siete pasos, aplicados al fabricador"}
+::: table {#opt-lienzo-pasos title="Los siete pasos, aplicados a la impresora"}
 | Paso | Pregunta | Lo que sale |
 |---|---|---|
 | 1 | ¿Qué decido? | $x_1$, $x_2$, reales $\ge 0$ |
-| 2 | ¿Qué sé? | Los once parámetros, con sus unidades |
+| 2 | ¿Qué sé? | Los 11 parámetros, con sus unidades |
 | 3 | ¿Qué quiero? | $\max 4x_1+3x_2$ |
 | 4 | ¿Qué no puedo? | Tres desigualdades de recurso |
 | 5 | ¿Cuadran las unidades? | Horas con horas, kilos con kilos, kWh con kWh |
