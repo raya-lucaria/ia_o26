@@ -27,8 +27,8 @@ disponible menos lo usado.
 Una restricción es **activa** si su holgura es cero —el recurso se acabó
 exacto— e **inactiva** si sobra margen.
 
-En el mejor plan del viaje, $(8,2)$, las horas y el polímero están activos. La
-energía no: de sus 18 kWh se gastan 12.
+En el óptimo del **modelo de dos piezas**, $(8,2)$, las horas y el polímero
+están activos. La energía no: de sus 18 kWh se gastan 12.
 :::
 
 ::: table {#opt-estado-recursos title="Los tres recursos en el óptimo del modelo de dos piezas"}
@@ -93,8 +93,10 @@ Los dos extremos son **codos**, donde cambia la pendiente, y en un codo **no hay
 derivada**: en 12 el valor sube 2 por la izquierda y 0 por la derecha.
 
 Y $(6,6)$ merece su renglón, con el papel cambiado: era la trampa del dibujo
-**porque pedía 12 horas y solo había 10**. Ahí concurren tres rectas y sigue
-siendo un vértice: dos cualesquiera ya lo determinan.
+**porque pedía 12 horas y solo había 10**. Ahí concurren tres rectas, y es el
+vértice **degenerado** que las páginas 2 y 3 declararon ausente. Sigue siendo
+vértice —dos cualesquiera ya lo determinan—, pero ahí contar vecinos ya no
+basta, y por eso el rango de validez se acaba justo en 12.
 
 ## 3 · Qué eran esos tres números
 
@@ -108,14 +110,26 @@ Las tres condiciones de allá, leídas hoy, dicen:
 - a esos precios sombra cada pieza queda cubierta;
 - y lo disponible, valuado así, da el valor óptimo.
 
-El cero cae donde tiene que caer: al recurso que sobra le toca cero. El séptimo
-kWh no compra nada.
+El cero cae donde tiene que caer: al recurso que sobra le toca cero. El kWh
+diecinueve no compra nada.
 
 ## 4 · Y el sello lo cambia todo
 
-Con el sello, el óptimo $(5,2,3)$ consume los tres recursos exactos. Ya no sobra
-energía, y su precio sombra deja de ser cero: los tres pasan a $\tfrac12$,
-$\tfrac32$ y $\tfrac12$.
+Con el sello, el óptimo $(5,2,3)$ consume los tres recursos exactos, y los tres
+precios sombra cambian: la hora pasa de 2 a $\tfrac12$, el kilo de polímero de 1
+a $\tfrac32$, y el kWh de 0 a $\tfrac12$. **La hora se desplomó a la cuarta
+parte**, en la página que pregunta cuánto vale una hora más.
+
+No lo causó que la energía se agotara. El contraejemplo está en el rango de
+validez de la sección 2: con 12 horas el óptimo es $(6,6)$ y se agotan **los
+tres** recursos, y aun así la hora trece no compra nada —la tabla lo dice, de 12 a 13
+el óptimo se queda en 42—. *(Agotarse es necesario para valer algo, no
+suficiente.)* Lo que cambió fue el problema entero.
+
+Y de paso se cobra una deuda de la clase 1. El 18 de energía era un supuesto, y
+su condición decía «con 12 kWh o más, la misma respuesta» —se apoyaba en que la
+energía sobrara—. Con el sello ya no sobra: **el supuesto que en la clase 1
+sobraba, ahora aprieta.**
 
 > **El precio sombra de un recurso no es del recurso. Es del problema.**
 
@@ -183,5 +197,6 @@ página**. Ahí lo único que se pide es escribir la terna, y el notebook la rev
 dato por dato. El archivo vive en este repositorio, en
 `course/6_optimizacion/_assets/02_simplex.ipynb`.
 
-Que los precios sombra existan siempre no es casualidad: es un teorema, y llega
-en la clase 3.
+Que **siempre haya** precios sombra —números que certifican el óptimo— no es
+casualidad: es un teorema, y llega en la clase 3. Que sean **únicos**, y por
+tanto una derivada, es otra cosa: en un codo hay todo un rango de ellos.

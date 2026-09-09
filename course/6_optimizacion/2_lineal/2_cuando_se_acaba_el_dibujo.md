@@ -38,8 +38,12 @@ $$c=(4,3,5),\quad A=\begin{pmatrix}1&1&1\\2&1&2\\1&2&3\end{pmatrix},\quad b=\beg
   el sello: 1 hora, 2 kilos, 3 kWh.
 - $b$ — **lo disponible, uno por recurso**: 10 horas, 18 kilos, 18 kWh.
 
+Ese 18 de energía sigue siendo el **supuesto** de la clase 1, y allá se anotó con
+su condición: «con 12 kWh o más, la misma respuesta». Con el tercer molde
+cargado la condición deja de tener sentido, y la página 5 lo cobra.
+
 > [!NOTE]
-> **¿Y $x\ge0$?** No está en $A$, y no es un olvido. En la forma canónica
+> **¿Y $x\ge0$?** No está en $A$, y no es un olvido. En la forma estándar
 > **toda** restricción va con $\le$, así que $x_1\ge0$ se escribe
 > $-x_1\le0$; aquí va en la forma legible, que dice lo mismo. Vive pegada al
 > $\max$ porque declara **con qué números trabajas**, no qué recurso se acaba, y
@@ -97,14 +101,15 @@ vértice: ahí se cumplen con igualdad las horas, el polímero y $x_3=0$. Sigue
 valiendo 38, y ya no gana.
 
 **De aquí en adelante se dice «vértice». «Esquina» se queda para el dibujo de
-dos variables.**
+dos variables** —por eso la página 3 se titula «De esquina en esquina» sin
+romper la regla: camina sobre el polígono de la clase 1, que sí se dibuja—.
 :::
 
 ::: figure {#opt-fig-poliedro title="El poliedro de la impresora con sello"}
 ![Un poliedro de ocho vértices y doce aristas en proyección, con las tres caras de recurso sombreadas, las tres aristas del origen punteadas por detrás, el óptimo (5,2,3) marcado con un punto lleno y el plan de la clase 1, (8,2,0), con un anillo](../_assets/opt-fig-poliedro.svg)
 :::
 
-## 3 · Los ocho vértices, y quién es vecino de quién
+## 3 · Los ocho vértices
 
 ::: table {#opt-ocho-vertices title="Los ocho vértices del poliedro, y qué se acaba en cada uno"}
 | Plan | Vale | Qué se acaba ahí |
@@ -119,9 +124,11 @@ dos variables.**
 | $(5,2,3)$ | **41** | horas, polímero, energía |
 :::
 
-**Vecinos** son los vértices que une una arista: comparten dos activas
-—$(9,0,0)$ y $(8,2,0)$, el polímero y $x_3=0$—. Contar alcanza porque aquí
-ningún vértice es **degenerado**: en ninguno hay más de tres activas.
+**Vecinos** son los vértices que une una arista: comparten dos **restricciones
+activas** —las que se cumplen con igualdad, o sea el recurso que se acabó
+exacto—. $(9,0,0)$ y $(8,2,0)$ comparten el polímero y $x_3=0$. Contar alcanza
+porque aquí ningún vértice es **degenerado**: en ninguno se cumplen con igualdad
+más de tres restricciones.
 
 ## 4 · El teorema, ahora con sus hipótesis
 
@@ -200,7 +207,7 @@ Es suficiente, no necesaria.
 ## 5 · Y por qué no se pueden mirar todos
 
 ::: table {#opt-cuenta-de-cruces title="Cuántos candidatos habría que mirar"}
-| Problema | Restricciones | Tríos que revisar |
+| Problema | Restricciones | Candidatos que revisar |
 |---|---:|---|
 | 2 piezas, 3 recursos — el de la clase 1 | 5 | $\binom{5}{2}=10$, de los que sobreviven **5** |
 | 3 piezas, 3 recursos — con el sello | 6 | $\binom{6}{3}=20$, de los que sobreviven **8** |
@@ -208,8 +215,10 @@ Es suficiente, no necesaria.
 :::
 
 Con $n$ piezas y $m$ recursos hay $m+n$ restricciones y a lo más
-$\binom{m+n}{n}$ candidatos. **Enumerar está descartado**, y no por
-lentitud: es el muro de [[las-clases|P, NP y EXP]].
+$\binom{m+n}{n}$ candidatos. **Enumerar está descartado por crecimiento**, no
+por dificultad del problema: la cuenta explota antes que la máquina. Es la
+lección de [[las-clases|P, NP y EXP]] aplicada al revés — la programación lineal
+resulta ser **fácil**, y la página 4 dice por qué.
 
 ## 6 · Tu turno
 
