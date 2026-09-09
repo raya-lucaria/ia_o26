@@ -4,7 +4,7 @@ title: "Clase 2 · Resolver sin dibujar"
 nav_title: Lineal
 summary: "El dibujo se acaba en cuanto hay tres piezas. Esta clase escribe el modelo como matriz y enseña el método que llega a la esquina correcta sin verla."
 status: ready
-estimated_time: 103m
+estimated_time: 108m
 tags: [optimizacion, programacion-lineal, simplex]
 prerequisites: [leer-y-escribir]
 ---
@@ -37,13 +37,13 @@ y ese detalle es el que rompe el dibujo.
 ## Recorrido
 
 Cinco páginas, en orden. Cada una se sostiene sola y declara cuánto toma
-leerla; el total de esta clase suma **103 minutos**.
+leerla; el total de esta clase suma **108 minutos**.
 
 ::: table {#opt-ruta-lineal title="Las cinco páginas de esta clase"}
 | | Página | Qué resuelve | |
 |---|---|---|---:|
 | 1 | El modelo como matriz | Cómo se escribe el modelo sin que dependa de dos variables | 16m |
-| 2 | Cuando se acaba el dibujo | Qué es un vértice cuando ya no hay dibujo que ver | 25m |
+| 2 | Cuando se acaba el dibujo | Qué es un vértice cuando ya no hay dibujo que ver | 30m |
 | 3 | De esquina en esquina | El primer método: caminar de vecino en vecino | 30m |
 | 4 | Sin dibujo | El mismo método sobre un poliedro de tres dimensiones | 12m |
 | 5 | Cuánto vale una hora más | Qué dice el óptimo sobre cada recurso | 20m |

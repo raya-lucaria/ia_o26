@@ -180,8 +180,8 @@
 
     <div class="panel">
       <h2>El pseudocódigo</h2>
-      <p class="cabecera">ENTRADA  un problema lineal de máximo con x ≥ 0, y un vértice factible v₀.
-SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p>
+      <p class="cabecera">INPUT   un problema lineal de máximo con x ≥ 0, y un vértice factible v₀.
+OUTPUT  un vértice óptimo, o el aviso de que el problema no está acotado.</p>
       <div id="pseudo" aria-live="off"></div>
       <p class="nota"><b style="color:var(--accent)">▶</b> es la línea que corre
       al dar Paso. Cuando el método para, la línea queda marcada en verde: ya
@@ -352,14 +352,14 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
   var LINEAS = [
     {n:1, i:0, cod:"v ← v₀", glosa:"▷ dónde estoy"},
-    {n:2, i:0, cod:"repetir", glosa:""},
-    {n:3, i:1, cod:"si sale de v un rayo que mejora y nunca choca con otro vértice", glosa:""},
-    {n:4, i:2, cod:"devolver «no acotado»", glosa:"▷ aquí no: el poliedro está acotado"},
+    {n:2, i:0, cod:"while true", glosa:""},
+    {n:3, i:1, cod:"if sale de v un rayo que mejora y nunca choca con otro vértice", glosa:""},
+    {n:4, i:2, cod:"return «no acotado»", glosa:"▷ aquí no: el poliedro está acotado"},
     {n:5, i:1, cod:"M ← { w vecino de v : c·w > c·v }", glosa:"▷ hacia dónde: los que mejoran"},
-    {n:6, i:1, cod:"si M = { }", glosa:""},
-    {n:7, i:2, cod:"devolver v", glosa:"▷ ¿paro? ninguno mejora"},
+    {n:6, i:1, cod:"if M = { }", glosa:""},
+    {n:7, i:2, cod:"return v", glosa:"▷ ¿paro? ninguno mejora"},
     {n:8, i:1, cod:"v ← el w de M con mayor c·w", glosa:"▷ cuánto avanzo: hasta ese vecino"},
-    {n:9, i:0, cod:"fin repetir", glosa:""}
+    {n:9, i:0, cod:"end while", glosa:""}
   ];
 
   // ---------------------------------------------------------------- estado

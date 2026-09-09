@@ -97,18 +97,18 @@ para. El resultado es el que la clase 1 ya sabía: por eso se puede comprobar.
 ## 4 · El procedimiento, en nueve líneas
 
 ```text
-ENTRADA  un problema lineal de máximo con x ≥ 0, y un vértice factible v₀.
-SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.
+INPUT   un problema lineal de máximo con x ≥ 0, y un vértice factible v₀.
+OUTPUT  un vértice óptimo, o el aviso de que el problema no está acotado.
 
  1  v ← v₀                                      ▷ dónde estoy
- 2  repetir
- 3      si sale de v un rayo que mejora y nunca choca con otro vértice
- 4          devolver «no acotado»
+ 2  while true
+ 3      if sale de v un rayo que mejora y nunca choca con otro vértice
+ 4          return «no acotado»
  5      M ← { w vecino de v : c·w > c·v }       ▷ hacia dónde: los que mejoran
- 6      si M = { }
- 7          devolver v                          ▷ ¿paro? ninguno mejora
+ 6      if M = { }
+ 7          return v                            ▷ ¿paro? ninguno mejora
  8      v ← el w de M con mayor c·w             ▷ cuánto avanzo: hasta ese vecino
- 9  fin repetir
+ 9  end while
 ```
 
 **De dónde sale $v_0$.** El **origen** siempre sirve, porque todas las

@@ -4,7 +4,7 @@ title: Cuando se acaba el dibujo
 nav_title: Sin papel
 summary: "Con tres piezas el polígono se vuelve poliedro y con veinte ya no se puede dibujar. Qué es una esquina cuando no hay esquinas que ver."
 status: ready
-estimated_time: 25m
+estimated_time: 30m
 tags: [optimizacion, poliedro, vertice]
 ---
 
@@ -32,6 +32,19 @@ El modelo ya es una terna. Nada obliga a que tenga dos columnas.
 Con $x_3$ los sellos:
 
 $$c=(4,3,5),\quad A=\begin{pmatrix}1&1&1\\2&1&2\\1&2&3\end{pmatrix},\quad b=\begin{pmatrix}10\\18\\18\end{pmatrix}$$
+
+- $c$ — **un precio por pieza**: filtro 4, celda 3, sello 5.
+- $A$ — **un renglón por recurso, una columna por pieza**. La tercera columna es
+  el sello: 1 hora, 2 kilos, 3 kWh.
+- $b$ — **lo disponible, uno por recurso**: 10 horas, 18 kilos, 18 kWh.
+
+> [!NOTE]
+> **¿Y $x\ge0$?** No está en $A$, y no es un olvido. En la forma canónica
+> **toda** restricción va con $\le$, así que $x_1\ge0$ se escribe
+> $-x_1\le0$; aquí va en la forma legible, que dice lo mismo. Vive pegada al
+> $\max$ porque declara **con qué números trabajas**, no qué recurso se acaba, y
+> por eso no ocupa renglón. Pero **sí cuenta como restricción al buscar
+> esquinas**: por eso el dibujo de la clase 1 lleva cinco rectas y no tres.
 
 La terna aguantó la tercera columna. El dibujo no.
 
@@ -120,18 +133,53 @@ En el viaje: el mejor plan es $(5,2,3)$, con 41 créditos, y es uno de los ocho
 de la tabla.
 :::
 
-::: remark {#opt-que-le-falta-al-dibujo title="Qué le falta al argumento de la clase 1"}
-Esta página no lo demuestra otra vez: el argumento de cuatro pasos está en
-[[el-dibujo|El dibujo]]. Pero aquel empieza suponiendo que el polígono es
-«cerrado y de tamaño finito», o sea acotado, y el teorema de arriba no lo pide.
+::: proof {#opt-dem-vertice of="opt-teo-vertice"}
+**Aquí se demuestra el caso acotado**, que es el del viaje: el poliedro de la
+tabla cabe en una caja. El caso general se comenta al final y **no** se
+demuestra.
 
-Lo cierra un renglón. Con $x\ge0$ el poliedro no contiene ninguna recta, así que
-aunque se extienda al infinito siempre se puede bajar por una arista hasta un
-vértice.
+**Lo prestado, dicho por su nombre.** Si el poliedro es acotado, tiene
+**finitos** vértices —son cruces de $n$ restricciones activas independientes, y
+de esos hay a lo más $\binom{m+n}{n}$: la cuenta de la sección 5— y además
+**todo punto factible es una mezcla de ellos**:
+
+$$x=\lambda_1v_1+\dots+\lambda_kv_k,$$
+
+con cada $\lambda_i\ge0$ y $\lambda_1+\dots+\lambda_k=1$.
+
+Esa segunda mitad es el **teorema de Minkowski**, un resultado clásico que esta
+página **usa y no demuestra**. Es el hecho profundo del argumento; lo que sigue
+es contabilidad.
+
+Sea $x^\ast$ un punto óptimo y $z^\ast=c\cdot x^\ast$ lo que paga. Como el
+objetivo es **lineal**, el valor de la mezcla es la mezcla de los valores:
+
+$$z^\ast=\lambda_1(c\cdot v_1)+\dots+\lambda_k(c\cdot v_k).$$
+
+Cada $v_i$ es factible, así que ninguno paga más que el óptimo:
+$c\cdot v_i\le z^\ast$. **Y un promedio de números que no pasan de $z^\ast$
+solo da $z^\ast$ si todos los que pesan valen $z^\ast$** —con pesos $0.2$,
+$0.3$ y $0.5$ y $z^\ast=10$, un vértice que valiera 8 dejaría el promedio en
+9.6, no en 10—. Luego **todo** $v_i$ con $\lambda_i>0$ es óptimo, y hay al
+menos uno porque los pesos suman 1.
+
+**Qué queda fuera.** El teorema de arriba no pide acotamiento, y este argumento
+sí lo usa: sin él no hay lista finita de vértices ni mezcla que escribir. El
+caso general se demuestra igual, pero con la versión general de Minkowski —la
+que escribe un punto como mezcla de vértices **más** una dirección infinita—, y
+esa pide menos: basta con que el poliedro **no contenga ninguna recta**. Aquí
+solo se dice por qué $x\ge0$ salva la situación, y es de una línea: un poliedro
+metido en el primer cuadrante no puede contener una recta entera, porque toda
+recta se va a menos infinito en alguna coordenada.
 :::
 
 **«Al menos uno» no es una hipótesis: es una palabra de la conclusión.** Con la
-celda a 4 empatan $(2,8)$, $(8,2)$ y el segmento entero.
+celda a 4 empatan $(2,8)$, $(8,2)$ y el segmento entero — y el segmento sale del
+mismo display: si los dos extremos valen $z^\ast$, toda mezcla suya también.
+
+::: figure {#opt-fig-vertice-o-arista title="O toca en un vértice, o cae en una arista entera"}
+![Dos paneles sobre el polígono de la clase 1. A la izquierda, con c=(4,3), la última recta de nivel toca la región en un solo vértice, (8,2), que vale 38. A la derecha, con c=(4,4), la recta queda paralela al lado de las horas: toda la arista que va de (8,2) a (2,8) vale 40, y sus dos extremos están marcados como vértices](../_assets/opt-fig-vertice-o-arista.svg)
+:::
 
 ### Por qué «lineal» no es decoración
 

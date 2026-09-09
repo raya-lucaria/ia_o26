@@ -8,7 +8,9 @@ así que cambiar un dato de la impresora cambia el dibujo solo.
 `opt-camino-simplex` calcula además la relación de vecindad y la traza entera
 del método, y `opt-fig-precio-sombra` las dos regiones y los tres óptimos que
 recorre la recta de las horas. `opt-fig-circulos`
-calcula el polígono y el consumo de su punto interior.
+calcula el polígono y el consumo de su punto interior, y `opt-fig-vertice-o-arista`
+deriva de cada objetivo cuáles vértices ganan y cuánto pagan: por eso uno de
+sus paneles trae un punto y el otro una arista.
 
 Las páginas HTML autocontenidas de `_assets/`, si las hay, no llevan fila aquí:
 no son imágenes.
@@ -28,3 +30,4 @@ no son imágenes.
 | `opt-fig-circulos.svg` | Curvas de nivel circulares sobre el polígono de la clase 1, con el máximo por dentro | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-camino-simplex.svg` | El camino de simplex sobre el polígono de la clase 1: dos pivotes y dos esquinas que nadie miró | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-precio-sombra.svg` | Qué compra una hora más: la recta de las horas en 10, 11 y 12, y el óptimo corriendo por la arista del polímero hasta (6,6) | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-fig-vertice-o-arista.svg` | Los dos desenlaces del teorema del vértice: la recta de nivel que toca en un solo vértice y la que se apoya en una arista entera | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

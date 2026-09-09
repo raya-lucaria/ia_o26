@@ -1297,6 +1297,144 @@ def opt_camino_simplex():
     return "".join(s)
 
 
+# Los dos paneles de opt-fig-vertice-o-arista, sobre el poligono de la clase 1:
+# el objetivo de cada uno, los dos valores de nivel que se dibujan punteados, y
+# el pie del panel. Los vertices OPTIMOS y el valor que alcanzan no se escriben
+# aqui: se calculan desde el objetivo, que es lo que impide que el dibujo
+# contradiga a la pagina si un parametro del episodio cambia.
+# Es una FUNCION y no una constante de modulo a proposito. Como constante se
+# evalua al importar, y entonces `tuple(C)` y un `(4, 3)` escrito a mano son
+# indistinguibles para cualquier prueba: la que lo intentaba era tautologica.
+# Leyendo C al llamarse, una guarda puede cambiar el objetivo del episodio y
+# exigir que el panel izquierdo lo siga.
+def paneles_vertice_o_arista():
+    """Los dos paneles de opt-fig-vertice-o-arista: objetivo, niveles, pie.
+
+    El de la izquierda es el objetivo del episodio, leido de C y no copiado. El
+    de la derecha es «la celda a 4» que la clase 1 ya uso para el empate: paga
+    lo mismo por las dos piezas, asi que su recta de nivel es paralela al
+    renglon de las horas —A[0] = [1, 1]— y toda esa arista empata.
+    """
+    return (
+        (tuple(C), (20, 30), "toca en un solo vértice"),
+        ((C[0], C[0]), (24, 32), "queda paralela a un lado"),
+    )
+
+# Desplazamiento del rotulo de cada vertice optimo de opt-fig-vertice-o-arista,
+# a mano y revisado renderizando AMPLIADO. Los dos van arriba a la derecha
+# porque es el unico cuadrante libre en los dos paneles: la recta de nivel sale
+# de cada punto hacia arriba a la izquierda, y hacia abajo se va a la derecha,
+# que es justo donde un rotulo anclado abajo la encontraria.
+ROTULOS_VERTICE_O_ARISTA = {
+    (8, 2): (16, -14, "start"),
+    (2, 8): (14, -18, "start"),
+}
+
+
+def desplazamiento_vertice_o_arista(p):
+    """El desplazamiento del rotulo de p, o un error que dice que hacer.
+
+    Un KeyError pelado aqui revienta el generador desde el fixture de la
+    prueba y arrastra todo el archivo a ERROR, que es la peor manera de
+    enterarse. Esto falla igual, pero diciendo por que y donde se arregla.
+    """
+    clave = (int(p[0]), int(p[1]))
+    if clave not in ROTULOS_VERTICE_O_ARISTA:
+        raise ValueError(
+            f"{rotulo(p)} gana en un panel de opt-fig-vertice-o-arista y no "
+            "tiene entrada en ROTULOS_VERTICE_O_ARISTA. Los desplazamientos "
+            "se eligen a mano mirando el render AMPLIADO a 4x: elige uno, "
+            "declaralo ahi, y comprueba que ningun trazo parte el rotulo."
+        )
+    return ROTULOS_VERTICE_O_ARISTA[clave]
+
+
+def optimos_con(c):
+    """Los vertices del poligono de la clase 1 que maximizan c, y su valor.
+
+    Devuelve los ganadores en el orden del poligono, asi que con c = (4, 4)
+    salen (8, 2) y (2, 8) —los dos extremos de la arista de las horas— y no una
+    pareja cualquiera.
+    """
+    V = vertices()
+
+    def z(p):
+        return c[0] * p[0] + c[1] * p[1]
+
+    mejor = max(z(p) for p in V)
+    return V, mejor, [p for p in V if z(p) == mejor]
+
+
+def pie_vertice_o_arista(z, ganadores):
+    """El pie de cada panel, redactado desde lo que el calculo devolvio."""
+    if len(ganadores) == 1:
+        return f"la recta de {z} toca solo en {rotulo(ganadores[0])}"
+    a, b = ganadores
+    return f"toda la arista de {rotulo(a)} a {rotulo(b)} vale {z}"
+
+
+def opt_fig_vertice_o_arista():
+    """Los dos desenlaces del teorema del vertice, sobre el mismo poligono.
+
+    Izquierda, c = (4, 3): la ultima recta de nivel toca en un solo vertice.
+    Derecha, c = (4, 4): queda paralela al lado de las horas, y toda esa arista
+    empata —con sus dos extremos, que son vertices—. Es el caso que la pagina
+    llama «al menos uno».
+
+    Los dos casos se distinguen sin color: a la izquierda hay un punto sobre la
+    recta, a la derecha una banda gruesa con un punto en cada extremo.
+    """
+    W, H = 720, 470
+    esc, top, oy = 27, 10, 400
+    s = [marco(
+        W, H,
+        "Dos paneles sobre el mismo polígono: a la izquierda la última recta "
+        "de nivel toca la región en un solo vértice; a la derecha queda "
+        "paralela a un lado y toda esa arista empata",
+        "O toca en un vértice, o cae en una arista entera",
+        "Panel izquierdo, objetivo (4, 3): la recta de valor 38 toca el "
+        "poligono solo en (8, 2). Panel derecho, objetivo (4, 4): la recta de "
+        "valor 40 se apoya en el lado que va de (8, 2) a (2, 8); toda esa "
+        "arista vale 40, y sus dos extremos son vertices.",
+    )]
+    for k, (c, niveles, subtitulo) in enumerate(paneles_vertice_o_arista()):
+        ox = 58 + 345 * k
+        centro = ox + esc * top / 2
+        V, z, ganadores = optimos_con(c)
+        px, py, plano = _plano(W, H, ox, oy, esc, top)
+        d = " ".join(("M" if i == 0 else "L") + f" {px(p[0]):.1f} {py(p[1]):.1f}"
+                     for i, p in enumerate(V)) + " Z"
+        s.append(f'<path d="{d}" fill="{mezclar(ACENTO, 0.20)}" '
+                 f'stroke="{mezclar(ACENTO, 0.85)}" stroke-width="2.5"/>')
+        s += plano
+        for v in niveles:
+            extremos = _corte(c[0], c[1], v, top)
+            if len(extremos) == 2:
+                (x1, y1), (x2, y2) = extremos
+                s.append(linea(px(x1), py(y1), px(x2), py(y2), color=SUAVE,
+                               grosor=1.8, guiones="7 6"))
+        # la arista ganadora va debajo de la recta de nivel: la recta la
+        # atraviesa entera y se ve que el empate es el lado, no dos puntos
+        if len(ganadores) == 2:
+            a, b = ganadores
+            s.append(linea(px(a[0]), py(a[1]), px(b[0]), py(b[1]),
+                           color=ACENTO, grosor=9))
+        (x1, y1), (x2, y2) = _corte(c[0], c[1], z, top)
+        s.append(linea(px(x1), py(y1), px(x2), py(y2), color=SERIE[1], grosor=3.2))
+        for p in ganadores:
+            dx, dy, anc = desplazamiento_vertice_o_arista(p)
+            s.append(punto(px(p[0]), py(p[1]), r=8))
+            s.append(texto(px(p[0]) + dx, py(p[1]) + dy, rotulo(p),
+                           color=ACENTO, tam=13, anclaje=anc, peso="700"))
+        s.append(texto(centro, 32, f"c = ({c[0]}, {c[1]})", color=TEXTO, tam=16,
+                       peso="700", fuente=MONO))
+        s.append(texto(centro, 56, subtitulo, color=SUAVE, tam=14))
+        s.append(texto(centro, 448, pie_vertice_o_arista(z, ganadores),
+                       color=TEXTO, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 # Las tres posiciones de la recta de las horas que dibuja opt-fig-precio-sombra,
 # y el desplazamiento del rotulo de cada optimo, a mano y revisado renderizando
 # AMPLIADO. Los rotulos llevan el valor, asi que miden casi 80 px: los tres van
@@ -1459,6 +1597,7 @@ DIAGRAMAS = {
     "opt-fig-circulos": opt_fig_circulos,
     "opt-camino-simplex": opt_camino_simplex,
     "opt-fig-precio-sombra": opt_fig_precio_sombra,
+    "opt-fig-vertice-o-arista": opt_fig_vertice_o_arista,
 }
 
 

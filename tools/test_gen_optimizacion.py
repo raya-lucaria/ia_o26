@@ -508,6 +508,130 @@ def test_el_diagrama_del_precio_sombra_calcula_sus_tres_optimos():
         assert f"{rot} = {valor}" in texto, f"el diagrama no rotula {rot} = {valor}"
 
 
+def _circulos_de_vertice(svg, radio=8.0):
+    """Los centros de los puntos gordos que marcan un optimo en el diagrama."""
+    raiz = ET.fromstring(svg)
+    return {
+        (round(float(c.get("cx")), 2), round(float(c.get("cy")), 2))
+        for c in raiz.iter()
+        if c.tag.split("}")[-1] == "circle" and float(c.get("r", 0)) == radio
+    }
+
+
+def _trazos_gruesos(svg, grosor_minimo=6.0):
+    raiz = ET.fromstring(svg)
+    fuera = []
+    for e in raiz.iter():
+        if e.tag.split("}")[-1] != "line":
+            continue
+        if float(e.get("stroke-width", 1)) < grosor_minimo:
+            continue
+        fuera.append((
+            (round(float(e.get("x1")), 2), round(float(e.get("y1")), 2)),
+            (round(float(e.get("x2")), 2), round(float(e.get("y2")), 2)),
+            e.get("stroke"),
+        ))
+    return fuera
+
+
+def test_los_dos_paneles_del_teorema_derivan_sus_optimos_del_objetivo():
+    """opt-fig-vertice-o-arista no tiene escrito a mano quien gana.
+
+    Los dos paneles son los dos desenlaces del teorema del vertice, y la
+    diferencia entre ellos es SOLO el objetivo: con (4, 3) gana un vertice y
+    con (4, 4) gana una arista entera. Si el diagrama trajera los ganadores
+    escritos, cambiar un precio del episodio dejaria un dibujo que contradice
+    a la pagina sin que nada lo note.
+
+    Los dos casos vienen de la hoja canonica de la clase
+    (docs/superpowers/verificacion-optimizacion/clase2.py): «con la celda a 4
+    hay dos vertices optimos, los dos con 40».
+    """
+    (c_uno, _, _), (c_dos, _, _) = gen.paneles_vertice_o_arista()
+    assert (c_uno, c_dos) == ((4, 3), (4, 4))
+
+    _, z1, g1 = gen.optimos_con(c_uno)
+    assert [(int(x), int(y)) for x, y in g1] == [(8, 2)], f"un solo ganador: {g1}"
+    assert int(z1) == 38
+
+    _, z2, g2 = gen.optimos_con(c_dos)
+    assert [(int(x), int(y)) for x, y in g2] == [(8, 2), (2, 8)], f"la arista: {g2}"
+    assert int(z2) == 40
+    assert gen.vecinos(g2[0], g2[1]), (
+        "los dos optimos de (4, 4) tienen que ser los EXTREMOS DE UNA ARISTA: "
+        "es lo que el panel derecho dibuja"
+    )
+
+    texto = _texto("opt-fig-vertice-o-arista")
+    for p in g1 + g2:
+        assert gen.rotulo(p) in texto, f"el diagrama no rotula {gen.rotulo(p)}"
+    for pie in (gen.pie_vertice_o_arista(z1, g1), gen.pie_vertice_o_arista(z2, g2)):
+        assert pie in texto, f"el pie calculado no esta en el SVG: {pie!r}"
+
+
+def test_el_panel_izquierdo_sigue_al_objetivo_del_episodio(monkeypatch):
+    """La version anterior de esta guarda era TAUTOLOGICA.
+
+    Comparaba el objetivo del panel contra `tuple(gen.C)` con el C de hoy, asi
+    que un `(4, 3)` escrito a mano pasaba igual: no distinguia derivado de
+    horneado, que es justo lo unico que tenia que distinguir. Por eso los
+    paneles son ahora una funcion que lee C al llamarse: aqui se cambia C y se
+    exige que el panel izquierdo lo siga.
+    """
+    monkeypatch.setattr(gen, "C", [4, 5])
+    (c_uno, _, _), (c_dos, _, _) = gen.paneles_vertice_o_arista()
+    assert c_uno == (4, 5), (
+        "el panel izquierdo tiene el objetivo horneado en vez de leerlo de C"
+    )
+    assert c_dos == (4, 4), "el panel derecho es «la celda a 4», derivada de C[0]"
+
+
+def test_el_pie_de_cada_panel_lo_redacta_el_calculo():
+    """Con numeros que NO son del episodio, para que no pueda pasar en verde
+    devolviendo dos literales fijos."""
+    assert gen.pie_vertice_o_arista(99, [(F(1), F(2))]) == (
+        "la recta de 99 toca solo en (1, 2)")
+    assert gen.pie_vertice_o_arista(7, [(F(1), F(2)), (F(3), F(4))]) == (
+        "toda la arista de (1, 2) a (3, 4) vale 7")
+    # y con los del episodio dice lo que la pagina dice
+    _, z1, g1 = gen.optimos_con((4, 3))
+    _, z2, g2 = gen.optimos_con((4, 4))
+    assert gen.pie_vertice_o_arista(z1, g1) == "la recta de 38 toca solo en (8, 2)"
+    assert gen.pie_vertice_o_arista(z2, g2) == (
+        "toda la arista de (8, 2) a (2, 8) vale 40")
+
+
+def test_la_arista_ganadora_se_dibuja_como_arista_y_no_como_dos_puntos():
+    """La banda gruesa es lo UNICO que hace que el panel derecho ensene una
+    arista entera. Sin ella quedan dos puntos sueltos sobre una recta, que es
+    exactamente la lectura que el panel existe para desmentir, y hasta hoy se
+    podia borrar con la suite en verde."""
+    svg = _texto("opt-fig-vertice-o-arista")
+    bandas = _trazos_gruesos(svg)
+    assert len(bandas) == 1, f"se esperaba una sola banda gruesa: {bandas}"
+    (a, b, color) = bandas[0]
+    assert color == gen.ACENTO, f"la banda no va en el color del optimo: {color}"
+    puntos = _circulos_de_vertice(svg)
+    assert {a, b} <= puntos, (
+        "la banda no une los dos puntos de optimo del panel derecho: "
+        f"{a} y {b} contra {sorted(puntos)}"
+    )
+    assert a != b
+
+
+def test_el_generador_se_niega_a_dibujar_un_optimo_sin_desplazamiento_declarado():
+    """La version anterior de esta guarda era INALCANZABLE: el estado que
+    vigilaba reventaba con KeyError dentro del fixture que regenera los SVG,
+    asi que las 16 pruebas del archivo salian en ERROR y su mensaje no llegaba
+    a imprimirse nunca. Ahora la comprobacion cuelga de una funcion del
+    generador, que se puede llamar sin dibujar nada."""
+    for c, _, _ in gen.paneles_vertice_o_arista():
+        for p in gen.optimos_con(c)[2]:
+            gen.desplazamiento_vertice_o_arista(p)
+    with pytest.raises(ValueError, match="ROTULOS_VERTICE_O_ARISTA"):
+        gen.desplazamiento_vertice_o_arista((F(0), F(9)))
+
+
 # --------------------------------------------------------------------------
 # Guarda de rotulos: ningun trazo parte un rotulo de vertice.
 #
