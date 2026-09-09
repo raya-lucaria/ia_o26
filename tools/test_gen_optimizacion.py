@@ -96,6 +96,28 @@ def test_no_queda_ningun_svg_huerfano():
     )
 
 
+def test_ningun_svg_sin_pagina_que_lo_use():
+    """El mapa de huerfanos compara disco contra catalogo, y eso deja pasar un
+    diagrama generado, acreditado, y que ninguna pagina enlaza. Historia y
+    agentes tienen esta guarda; optimizacion no la tenia.
+
+    Recorre con rglob porque las paginas de la unidad estan anidadas por clase,
+    y salta los directorios de soporte: _assets/CREDITOS.md nombra TODOS los
+    SVG, asi que incluirlo dejaria pasar justo el caso que esta guarda busca
+    —acreditado y sin enlazar—."""
+    unidad = ASSETS_OPTIMIZACION.parent
+    renderizadas = sorted(
+        p for p in unidad.rglob("*.md")
+        if not any(parte.startswith("_") for parte in p.relative_to(unidad).parts)
+    )
+    paginas = "\n".join(p.read_text(encoding="utf-8") for p in renderizadas)
+    sin_usar = sorted(
+        svg.name for svg in ASSETS_OPTIMIZACION.glob("*.svg")
+        if svg.name not in paginas
+    )
+    assert not sin_usar, f"SVG que ninguna pagina enlaza: {sin_usar}"
+
+
 def test_cada_svg_tiene_fila_en_creditos():
     filas = filas_de_creditos(ASSETS_OPTIMIZACION)
     for nombre in gen.DIAGRAMAS:

@@ -664,6 +664,112 @@ def opt_fig_dos_cimas():
     return "".join(s)
 
 
+def _corchete(x, arriba, abajo, hacia, color=SUAVE, grosor=2):
+    """Corchete de matriz: una barra vertical con dos puntas.
+
+    `hacia` es +1 para el izquierdo y -1 para el derecho.
+    """
+    p = 10 * hacia
+    return (
+        f'<path d="M {x + p} {arriba} L {x} {arriba} L {x} {abajo} L {x + p} {abajo}" '
+        f'fill="none" stroke="{color}" stroke-width="{grosor}" '
+        f'stroke-linecap="round" stroke-linejoin="round"/>'
+    )
+
+
+def opt_fig_matriz():
+    """El modelo escrito y la terna (c, A, b), con las dos maneras de recorrer A.
+
+    Esquematico, no calculado: los numeros son los del episodio de dos piezas y
+    van a mano porque lo que ensena el dibujo es la POSICION de cada uno.
+
+    Las dos marcas —el segundo renglon y la primera columna— llevan recuadro
+    con trazo distinto (continuo y punteado) y rotulo de texto, no solo color:
+    quien no distingue el cian del ambar tiene que poder leer el diagrama
+    igual. Se marca el SEGUNDO renglon a proposito; el primero es (1,1) y sus
+    dos entradas iguales no ensenan nada sobre que dice recorrer un renglon.
+    """
+    W, H = 1020, 510
+    s = [marco(
+        W, H,
+        "A la izquierda el modelo de la impresora escrito con desigualdades; a "
+        "la derecha la misma informacion como la terna c, A, b, con el segundo "
+        "renglon de A recuadrado y rotulado como el polimero y la primera "
+        "columna recuadrada y rotulada como el filtro",
+        "El modelo como terna (c, A, b)",
+        "Dos bloques unidos por una flecha. El izquierdo tiene el modelo en "
+        "forma canonica: max 4x1+3x2 sujeto a tres desigualdades de recurso y "
+        "las dos de no negatividad. El derecho tiene c igual a (4,3), la "
+        "matriz A de tres renglones y dos columnas, y la columna b con 10, 18 "
+        "y 18. Un recuadro de trazo continuo marca el segundo renglon de A, "
+        "que es el del polimero y compara piezas; otro de trazo punteado marca "
+        "la primera columna, que es el filtro y arma una receta. Los dos se "
+        "cruzan en la entrada A21, igual a 2, senalada con un circulo.",
+    )]
+    s.append(texto(W / 2, 40, "un renglón por recurso, una columna por producto",
+                   color=SUAVE, tam=16))
+
+    # ---- el modelo escrito, a la izquierda
+    s.append(texto(175, 86, "el modelo escrito", color=SUAVE, tam=14, peso="600"))
+    s.append(caja(30, 104, 290, 238, borde=SUAVE, guiones="6 5"))
+    # Cada parte lleva su propia x: <text> colapsa los espacios de sangria, asi
+    # que alinear con espacios en una sola cadena no alinea nada.
+    fx = 122
+    filas = [
+        (150, "max", "4x\u2081 + 3x\u2082", ACENTO),
+        (198, "s.a.", "x\u2081 + x\u2082 \u2264 10", TEXTO),
+        (230, "", "2x\u2081 + x\u2082 \u2264 18", TEXTO),
+        (262, "", "x\u2081 + 2x\u2082 \u2264 18", TEXTO),
+        (310, "", "x\u2081 \u2265 0, x\u2082 \u2265 0", SUAVE),
+    ]
+    for y, izq, der, color in filas:
+        if izq:
+            s.append(texto(fx - 16, y, izq, color=SUAVE, tam=15, anclaje="end",
+                           fuente=MONO))
+        s.append(texto(fx, y, der, color=color, tam=15, anclaje="start", fuente=MONO))
+
+    s.append(texto(396, 222, "es exactamente", color=SUAVE, tam=12))
+    s.append(flecha(358, 238, 434, 238))
+
+    # ---- la terna, a la derecha
+    s.append(texto(700, 86, "la terna (c, A, b)", color=SUAVE, tam=14, peso="600"))
+    s.append(texto(706, 158, "c = (4, 3)", color=ACENTO, tam=19, fuente=MONO))
+
+    ay, alto_celda = 212, 46
+    ys = [ay + 23 + alto_celda * i + 6 for i in range(3)]      # linea base
+    s.append(texto(706, 190, "A", color=SUAVE, tam=14, peso="600"))
+    s.append(_corchete(636, 200, 362, +1))
+    s.append(_corchete(776, 200, 362, -1))
+    for i, renglon in enumerate([["1", "1"], ["2", "1"], ["1", "2"]]):
+        for j, entrada in enumerate(renglon):
+            s.append(texto(677 + 58 * j, ys[i], entrada, tam=19, fuente=MONO))
+
+    s.append(texto(885, 190, "b", color=SUAVE, tam=14, peso="600"))
+    s.append(_corchete(844, 200, 362, +1))
+    s.append(_corchete(926, 200, 362, -1))
+    for i, entrada in enumerate(["10", "18", "18"]):
+        s.append(texto(885, ys[i], entrada, tam=19, fuente=MONO))
+
+    # ---- las dos marcas: recuadro con trazo propio, y rotulo
+    s.append(caja(644, 206, 66, 150, borde=SERIE[2], radio=8, grosor=2.5, guiones="7 5"))
+    s.append(linea(677, 360, 677, 376, color=SERIE[2], guiones="4 4"))
+    s.append(texto(677, 396, "columna 1 = el filtro", color=SERIE[2], tam=13))
+    s.append(texto(677, 414, "arma una receta", color=SUAVE, tam=12))
+
+    s.append(caja(642, 254, 128, 54, borde=SERIE[1], radio=8, grosor=2.5))
+    s.append(texto(614, 275, "renglón 2 = el polímero", color=SERIE[1], tam=13,
+                   anclaje="end"))
+    s.append(texto(614, 294, "compara piezas", color=SUAVE, tam=12, anclaje="end"))
+
+    s.append(f'<circle cx="677" cy="281" r="17" fill="none" stroke="{SUAVE}" '
+             f'stroke-width="1.5"/>')
+    s.append(texto(W / 2, 468,
+                   "A\u2082\u2081 = 2 está en los dos recorridos: por eso la misma "
+                   "tabla contesta las dos preguntas",
+                   color=SUAVE, tam=14))
+    s.append(cierre())
+    return "".join(s)
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -673,6 +779,7 @@ DIAGRAMAS = {
     "opt-curvas-de-nivel": opt_curvas_de_nivel,
     "opt-sin-energia": opt_sin_energia,
     "opt-fig-dos-cimas": opt_fig_dos_cimas,
+    "opt-fig-matriz": opt_fig_matriz,
 }
 
 
