@@ -12,6 +12,8 @@ ata el archivo comiteado a su generador es correr el generador y comprobar que
 """
 import re
 import xml.etree.ElementTree as ET
+from fractions import Fraction as F
+from itertools import combinations
 
 import pytest
 
@@ -150,3 +152,130 @@ def test_el_rotulo_de_cada_esquina_esta_declarado():
     su desplazamiento no existe y el generador reventaria al dibujarla."""
     claves = {(int(x), int(y)) for x, y in gen.vertices()}
     assert claves <= set(gen.ROTULOS), f"esquinas sin desplazamiento: {claves - set(gen.ROTULOS)}"
+
+
+# --------------------------------------------------------------------------
+# Aritmetica exacta del poliedro con sello.
+#
+# Copiado literal de docs/superpowers/verificacion-optimizacion/clase2.py, que
+# es la hoja canonica de la clase. Solo fractions, itertools y math: el job
+# `checks` de CI no instala scipy, numpy ni sympy.
+#
+# `vecinos_por_arista` aterriza aqui aunque esta guarda no lo llame: las
+# paginas 3 y 4 tabulan vecinos, y sus guardas lo necesitan. Y decide por
+# RANGO n-1, no por conteo: contar activas compartidas declara vecinos a los
+# extremos de la diagonal de una cara, y esa version falsa ya se publico una
+# vez en el primer borrador del diseno.
+
+def _reducir(M, ncol):
+    """Gauss-Jordan sobre fracciones. Devuelve (matriz reducida, columnas pivote)."""
+    M = [fila[:] for fila in M]
+    piv, r = [], 0
+    for col in range(ncol):
+        p = next((i for i in range(r, len(M)) if M[i][col] != 0), None)
+        if p is None:
+            continue
+        M[r], M[p] = M[p], M[r]
+        f = M[r][col]
+        M[r] = [v / f for v in M[r]]
+        for i in range(len(M)):
+            if i != r and M[i][col] != 0:
+                fa = M[i][col]
+                M[i] = [a - fa * b for a, b in zip(M[i], M[r])]
+        piv.append(col)
+        r += 1
+        if r == len(M):
+            break
+    return M, piv
+
+
+def rango(filas, n):
+    if not filas:
+        return 0
+    _, piv = _reducir([[F(v) for v in f] for f in filas], n)
+    return len(piv)
+
+
+def resolver_cuadrado(filas, rhs, n):
+    """Solucion unica de un sistema n x n, o None si es singular."""
+    M, piv = _reducir([[F(v) for v in f] + [F(r)] for f, r in zip(filas, rhs)], n)
+    if len(piv) != n:
+        return None
+    return [M[i][n] for i in range(n)]
+
+
+def _sistema(A, b, n):
+    """Todas las restricciones como (fila, lado derecho), con las no negatividades."""
+    filas = [(A[i], b[i]) for i in range(len(A))]
+    filas += [([-1 if j == k else 0 for j in range(n)], 0) for k in range(n)]
+    return filas
+
+
+def vertices(A, b, n):
+    filas = _sistema(A, b, n)
+    V = []
+    for idx in combinations(range(len(filas)), n):
+        x = resolver_cuadrado([filas[i][0] for i in idx], [filas[i][1] for i in idx], n)
+        if x is None or any(v < 0 for v in x):
+            continue
+        if any(sum(a * xx for a, xx in zip(A[i], x)) > b[i] for i in range(len(A))):
+            continue
+        if x not in V:
+            V.append(x)
+    return V
+
+
+def activas(A, b, n, x):
+    filas = _sistema(A, b, n)
+    return frozenset(i for i, (a, bb) in enumerate(filas)
+                     if sum(ai * xi for ai, xi in zip(a, x)) == bb)
+
+
+def vecinos_por_arista(A, b, n, v, w):
+    """La relacion buena: comparten n-1 activas INDEPENDIENTES."""
+    if v == w:
+        return False
+    filas = _sistema(A, b, n)
+    comp = activas(A, b, n, v) & activas(A, b, n, w)
+    return rango([filas[i][0] for i in comp], n) == n - 1
+
+
+def test_el_poliedro_del_sello_tiene_los_ocho_vertices_que_la_pagina_tabula():
+    """La pagina 2 tabula ocho vertices con sus restricciones activas, y la
+    traza de la pagina 4 se verifica contra esa tabla. Si el poliedro cambia,
+    las dos paginas mienten a la vez."""
+    A = [[1, 1, 1], [2, 1, 2], [1, 2, 3]]
+    b = [10, 18, 18]
+    c = [4, 3, 5]
+    V = vertices(A, b, 3)
+    assert len(V) == 8, f"el poliedro tiene {len(V)} vertices, no 8"
+    assert all(len(activas(A, b, 3, v)) == 3 for v in V), "hay un vertice degenerado"
+    z = max(sum(ci * xi for ci, xi in zip(c, v)) for v in V)
+    arg = [v for v in V if sum(ci * xi for ci, xi in zip(c, v)) == z]
+    assert z == 41 and len(arg) == 1, "el optimo no es (5,2,3)=41 unico"
+    assert all(sum(A[i][j] * arg[0][j] for j in range(3)) == b[i] for i in range(3)), \
+        "el optimo ya no consume los tres recursos exactos, y de eso vive la pagina 5"
+    # La pagina tiene que tabular los ocho, y nombrar bien lo que se acaba en
+    # cada uno. Esta segunda mitad existe porque la primera version del diseno
+    # decia que en (0,9,0) estaba activo el polimero, y no lo esta: 9 de 18.
+    # Una tabla de restricciones activas se escribe sola en la cabeza y sale mal.
+    texto = (ASSETS_OPTIMIZACION.parent / "2_lineal" /
+             "2_cuando_se_acaba_el_dibujo.md").read_text(encoding="utf-8")
+    bloque = texto.split("{#opt-ocho-vertices")[1].split(":::")[0]
+    filas = [l for l in bloque.splitlines()
+             if l.strip().startswith("|") and "---" not in l and "Plan" not in l]
+    assert len(filas) == 8, f"la tabla tiene {len(filas)} filas de datos, no 8"
+    recursos = {0: "horas", 1: "polimero", 2: "energia"}
+    esperado = sorted(
+        sorted(recursos[i] for i in activas(A, b, 3, v) if i in recursos)
+        for v in V
+    )
+
+    def normaliza(s):
+        return s.replace("ó", "o").replace("í", "i").replace("é", "e").lower()
+
+    visto = sorted(
+        sorted(r for r in recursos.values() if r in normaliza(f.split("|")[3]))
+        for f in filas
+    )
+    assert visto == esperado, f"las restricciones activas no cuadran:\n{visto}\n{esperado}"

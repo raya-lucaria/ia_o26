@@ -12,6 +12,7 @@ opt_poligono y opt_curvas_de_nivel derivan los vertices del modelo del episodio
 (A, B, C mas abajo) con aritmetica exacta de fracciones. Si un parametro del
 impresora cambia, el dibujo cambia solo y no hay que mover coordenadas.
 """
+import math
 import sys
 from fractions import Fraction as F
 from itertools import combinations
@@ -770,6 +771,359 @@ def opt_fig_matriz():
     s.append(cierre())
     return "".join(s)
 
+# --------------------------------------------------------------------------
+# el modelo con sello: tres piezas, y el poliedro que sale
+
+A3 = [[1, 1, 1], [2, 1, 2], [1, 2, 3]]
+B3 = [10, 18, 18]
+C3 = [4, 3, 5]
+NOMBRES3 = ["horas", "polímero", "energía"]
+
+
+def _reducir(M, ncol):
+    """Gauss-Jordan sobre fracciones. Devuelve (matriz reducida, columnas pivote)."""
+    M = [fila[:] for fila in M]
+    piv, r = [], 0
+    for col in range(ncol):
+        p = next((i for i in range(r, len(M)) if M[i][col] != 0), None)
+        if p is None:
+            continue
+        M[r], M[p] = M[p], M[r]
+        f = M[r][col]
+        M[r] = [v / f for v in M[r]]
+        for i in range(len(M)):
+            if i != r and M[i][col] != 0:
+                fa = M[i][col]
+                M[i] = [a - fa * b for a, b in zip(M[i], M[r])]
+        piv.append(col)
+        r += 1
+        if r == len(M):
+            break
+    return M, piv
+
+
+def _rango(filas, n):
+    if not filas:
+        return 0
+    return len(_reducir([[F(v) for v in f] for f in filas], n)[1])
+
+
+def _resolver(filas, rhs, n):
+    M, piv = _reducir([[F(v) for v in f] + [F(r)] for f, r in zip(filas, rhs)], n)
+    if len(piv) != n:
+        return None
+    return tuple(M[i][n] for i in range(n))
+
+
+def _sistema3():
+    """Las seis restricciones: tres de recurso y tres de no negatividad.
+
+    El indice es el mismo que usa la hoja canonica clase2.py y la guarda de
+    tools/test_gen_optimizacion.py: 0 horas, 1 polimero, 2 energia, 3 x1>=0,
+    4 x2>=0, 5 x3>=0. Las tres ultimas se escriben -x_k <= 0 para que todas
+    apunten en el mismo sentido y su normal sea la exterior.
+    """
+    filas = [(A3[i], B3[i]) for i in range(3)]
+    filas += [(tuple(-1 if j == k else 0 for j in range(3)), 0) for k in range(3)]
+    return filas
+
+
+def vertices_sello():
+    """Los vertices del poliedro de tres piezas, en fracciones exactas.
+
+    Mismo procedimiento que la pagina ensena y que vertices() hace en dos
+    dimensiones: cruza las restricciones de tres en tres, tira los sistemas
+    singulares, y se queda con los puntos que cumplen todo lo demas.
+    """
+    filas = _sistema3()
+    V = []
+    for idx in combinations(range(len(filas)), 3):
+        x = _resolver([filas[i][0] for i in idx], [filas[i][1] for i in idx], 3)
+        if x is None or any(v < 0 for v in x):
+            continue
+        if any(sum(a * xx for a, xx in zip(A3[i], x)) > B3[i] for i in range(3)):
+            continue
+        if x not in V:
+            V.append(x)
+    return sorted(V, key=lambda v: (-sum(c * xi for c, xi in zip(C3, v)), v))
+
+
+def activas_sello(x):
+    filas = _sistema3()
+    return frozenset(i for i, (a, bb) in enumerate(filas)
+                     if sum(ai * xi for ai, xi in zip(a, x)) == bb)
+
+
+def aristas_sello(V):
+    """Pares de vertices unidos por una arista, con las dos caras que la forman.
+
+    Se decide por RANGO n-1, no contando activas compartidas: contar declara
+    vecinos a los extremos de la diagonal de una cara. En este poliedro las dos
+    reglas coinciden porque ningun vertice es degenerado, pero el dibujo se
+    calcula con la buena.
+    """
+    filas = _sistema3()
+    out = []
+    for i, j in combinations(range(len(V)), 2):
+        comp = activas_sello(V[i]) & activas_sello(V[j])
+        if _rango([filas[k][0] for k in comp], 3) == 2:
+            out.append((i, j, sorted(comp)))
+    return out
+
+
+def rotulo3(p):
+    def n(t):
+        return str(t) if t.denominator == 1 else f"{t.numerator}/{t.denominator}"
+    return f"({n(p[0])}, {n(p[1])}, {n(p[2])})"
+
+
+# Direccion de camara, elegida buscando la que mas separa los ocho vertices
+# proyectados y los aleja de las aristas que no los tocan. Con ella x1 baja a la
+# derecha, x3 baja a la izquierda y x2 sube: la vista de siempre de una caja, y
+# el origen queda en la esquina de atras, que es justo el vertice que menos
+# importa ver.
+CAMARA = (1.1, 1.8, 1.35)
+
+
+def _camara():
+    """Base ortonormal de la vista: (derecha, arriba, hacia el observador)."""
+    import math
+    n = [c / math.sqrt(sum(v * v for v in CAMARA)) for c in CAMARA]
+    arriba = [0, 1, 0]                                  # x2 manda hacia arriba
+    w = [arriba[i] - sum(arriba[j] * n[j] for j in range(3)) * n[i] for i in range(3)]
+    largo = math.sqrt(sum(v * v for v in w))
+    w = [c / largo for c in w]
+    u = [w[1] * n[2] - w[2] * n[1],
+         w[2] * n[0] - w[0] * n[2],
+         w[0] * n[1] - w[1] * n[0]]
+    return u, w, n
+
+
+# Desplazamiento del rotulo de cada vertice, en pixeles, elegido a mano
+# mirando el render en Chrome: ninguno puede quedar encima de una arista.
+ROTULOS3 = {
+    (0, 0, 0): (-14, -14, "end"),
+    (0, 0, 6): (-14, 6, "end"),
+    (0, 9, 0): (16, 6, "start"),
+    (2, 8, 0): (-14, -6, "end"),
+    (9, 0, 0): (16, 20, "start"),
+}
+
+
+def opt_fig_poliedro():
+    """El poliedro de tres piezas en proyeccion, con sus ocho vertices.
+
+    Calcula todo: los vertices con fracciones exactas, las doce aristas por
+    rango, y cuales quedan escondidas. Una arista esta escondida si las dos
+    caras que la forman miran para el otro lado; con esta camara son
+    exactamente las tres que salen del origen, que es la esquina de atras.
+
+    Los desplazamientos de rotulo estan a mano porque se ajustaron mirando el
+    render en Chrome: la primera version ponia (0,9,0) encima del titulo y el
+    nombre de la cara de energia encima del origen.
+    """
+    W, H = 940, 610
+    OX, OY, ESC = 320, 320, 40
+    u, w, n = _camara()
+    V = vertices_sello()
+    E = aristas_sello(V)
+    filas = _sistema3()
+    de_frente = [sum(filas[k][0][i] * n[i] for i in range(3)) > 0 for k in range(6)]
+
+    def pantalla(p):
+        f = [float(t) for t in p]
+        return (OX + sum(f[i] * u[i] for i in range(3)) * ESC,
+                OY - sum(f[i] * w[i] for i in range(3)) * ESC)
+
+    P = [pantalla(v) for v in V]
+    s = [marco(
+        W, H,
+        "El poliedro de tres piezas en proyección, con sus ocho vértices "
+        "rotulados; el óptimo (5,2,3) marcado con un punto lleno y el plan de "
+        "la clase 1, (8,2,0), con un anillo",
+        "El poliedro de la impresora con sello",
+        "Cuerpo de ocho vertices y doce aristas. Las tres caras de recurso "
+        "—horas, polimero y energia— quedan de frente y estan sombreadas; las "
+        "tres aristas que salen del origen quedan detras y van punteadas. Los "
+        "ocho vertices son (0,0,0), (0,9,0), (0,0,6), (2,8,0), (9,0,0), "
+        "(8,2,0), (9/2,0,9/2) y (5,2,3). El optimo (5,2,3) vale 41 y el plan "
+        "de la clase 1, (8,2,0), vale 38.",
+    )]
+    s.append(texto(W / 2, 40, "ocho vértices y doce aristas: el terreno con tres piezas",
+                   color=SUAVE, tam=16))
+
+    # Las tres caras de recurso, sombreadas: dan volumen sin tapar nada. El
+    # nombre va en el centroide mas un desplazamiento; el de la energia no
+    # puede ir en su centroide porque ahi esta el origen.
+    CORRIMIENTO = {0: (0, 0), 1: (0, 0), 2: (-76, -92)}
+    for k in range(3):
+        if not de_frente[k]:
+            continue
+        cara = [P[i] for i, v in enumerate(V) if k in activas_sello(v)]
+        cx = sum(p[0] for p in cara) / len(cara)
+        cy = sum(p[1] for p in cara) / len(cara)
+        cara.sort(key=lambda p: math.atan2(p[1] - cy, p[0] - cx))
+        d = " ".join(("M" if i == 0 else "L") + f" {x:.1f} {y:.1f}"
+                     for i, (x, y) in enumerate(cara)) + " Z"
+        s.append(f'<path d="{d}" fill="{mezclar(SERIE[k], 0.17)}" stroke="none"/>')
+        dx, dy = CORRIMIENTO[k]
+        s.append(texto(cx + dx, cy + dy + 5, NOMBRES3[k], color=SERIE[k], tam=15,
+                       peso="600"))
+
+    for i, j_, caras in E:                      # primero las de atras
+        if not any(de_frente[k] for k in caras):
+            s.append(linea(P[i][0], P[i][1], P[j_][0], P[j_][1],
+                           color=mezclar(SUAVE, 0.55), grosor=1.6, guiones="6 5"))
+    for i, j_, caras in E:
+        if any(de_frente[k] for k in caras):
+            s.append(linea(P[i][0], P[i][1], P[j_][0], P[j_][1], color=SUAVE, grosor=2.4))
+
+    # Los tres ejes coinciden con las tres aristas de atras, asi que se rotulan
+    # sobre ellas en vez de dibujar flechas aparte.
+    origen = pantalla((F(0), F(0), F(0)))
+    for nombre, destino, corr in [("x\u2081 filtros", (9, 0, 0), (15, -26)),
+                                  ("x\u2082 celdas", (0, 9, 0), (-78, 0)),
+                                  ("x\u2083 sellos", (0, 0, 6), (20, 26))]:
+        dx, dy = pantalla(tuple(F(t) for t in destino))
+        mx = origen[0] + (dx - origen[0]) * 0.6 + corr[0]
+        my = origen[1] + (dy - origen[1]) * 0.6 + corr[1]
+        s.append(texto(mx, my, nombre, color=mezclar(SUAVE, 0.8), tam=12))
+
+    mejor = max(range(len(V)), key=lambda i: sum(c * x for c, x in zip(C3, V[i])))
+    clase1 = V.index((F(8), F(2), F(0)))
+    for i, v in enumerate(V):
+        x, y = P[i]
+        if i == mejor:
+            s.append(punto(x, y, r=9, color=ACENTO))
+            s.append(texto(x - 30, y - 24, "(5, 2, 3) = 41", color=ACENTO, tam=14,
+                           anclaje="end", peso="700"))
+            s.append(texto(x - 30, y - 6, "el óptimo", color=SUAVE, tam=12,
+                           anclaje="end"))
+            continue
+        if i == clase1:
+            s.append(f'<circle cx="{x}" cy="{y}" r="8" fill="{FONDO}" '
+                     f'stroke="{TEXTO}" stroke-width="3"/>')
+            s.append(texto(x + 18, y - 4, "(8, 2, 0) = 38", tam=14, anclaje="start",
+                           peso="700"))
+            s.append(texto(x + 18, y + 14, "el plan de la clase 1", color=SUAVE,
+                           tam=12, anclaje="start"))
+            continue
+        s.append(punto(x, y, r=5, color=TEXTO))
+        clave = tuple(int(t) for t in v) if all(t.denominator == 1 for t in v) else None
+        dx, dy, anc = ROTULOS3.get(clave, (0, 34, "middle"))
+        s.append(texto(x + dx, y + dy, rotulo3(v), color=SUAVE, tam=13, anclaje=anc))
+
+    s += _leyenda(660, 78, [
+        (SERIE[0], "x\u2081 + x\u2082 + x\u2083 \u2264 10   horas"),
+        (SERIE[1], "2x\u2081 + x\u2082 + 2x\u2083 \u2264 18   polímero"),
+        (SERIE[2], "x\u2081 + 2x\u2082 + 3x\u2083 \u2264 18   energía"),
+    ], ancho=250)
+    s.append(caja(660, 206, 250, 142, borde=SUAVE, guiones="6 5"))
+    for k, renglon in enumerate([
+        "la línea punteada pasa por detrás:",
+        "son las tres aristas del origen,",
+        "que es la esquina de atrás.",
+        "",
+        "la cara x\u2083 = 0 es el polígono",
+        "de la clase 1, y aquí queda detrás.",
+    ]):
+        if renglon:
+            s.append(texto(674, 232 + 19 * k, renglon, color=SUAVE, tam=13,
+                           anclaje="start"))
+    s.append(texto(W / 2, 578,
+                   "en tres dimensiones un vértice es donde se cortan tres planos, "
+                   "no dos",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_fig_circulos():
+    """El mismo poligono de la clase 1 con curvas de nivel CIRCULARES.
+
+    Es el contraejemplo del teorema del vertice: maximizar
+    -(x1-4)^2-(x2-4)^2 sobre la region factible da (4,4), que es estrictamente
+    interior. El poligono sale de los parametros del episodio y el consumo de
+    (4,4) se calcula, para que nada este escrito a mano.
+    """
+    W, H = 820, 560
+    ox, oy, esc, top = 90, 470, 34, 10
+    CENTRO = (4, 4)
+    RADIOS = [4, 3, 2, 1]
+    # angulo (grados) y radio del rotulo de cada curva, ajustados mirando el
+    # render: ninguno puede caer sobre la linea guia del punto interior
+    ROTULO_CURVA = {4: (235, 122), 3: (145, 88), 2: (270, 54), 1: (340, 50)}
+    V = vertices()
+    px, py, plano = _plano(W, H, ox, oy, esc, top)
+    consumo = [sum(a * c for a, c in zip(fila, CENTRO)) for fila in A]
+    s = [marco(
+        W, H,
+        "El polígono de la clase 1 con cuatro curvas de nivel circulares "
+        "concéntricas alrededor de (4,4), que está marcado como punto interior",
+        "Cuando las curvas de nivel se curvan",
+        "El mismo poligono de cinco esquinas de la clase 1. Encima, cuatro "
+        "circunferencias concentricas centradas en (4,4) con valores -16, -9, "
+        "-4 y -1. El punto (4,4) esta marcado con un punto lleno y vale 0: es "
+        "el maximo, queda estrictamente dentro de la region y no es ninguna de "
+        "las cinco esquinas, que van dibujadas como aros huecos.",
+    )]
+    d = " ".join(("M" if i == 0 else "L") + f" {px(p[0]):.1f} {py(p[1]):.1f}"
+                 for i, p in enumerate(V)) + " Z"
+    s.append(f'<path d="{d}" fill="{mezclar(LINEA, 0.34)}" '
+             f'stroke="{mezclar(SUAVE, 0.75)}" stroke-width="2.5"/>')
+    s += plano
+    cx, cy = px(CENTRO[0]), py(CENTRO[1])
+    for r in RADIOS:
+        ultima = r == min(RADIOS)
+        color = ACENTO if ultima else SERIE[1]
+        s.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r * esc}" fill="none" '
+                 f'stroke="{color}" stroke-width="{3 if ultima else 2}"'
+                 + ("" if ultima else ' stroke-dasharray="8 6"') + "/>")
+        grados, radio = ROTULO_CURVA[r]
+        ang = math.radians(grados)
+        s.append(texto(cx + math.cos(ang) * radio, cy - math.sin(ang) * radio + 5,
+                       f"\u2212{r * r}", color=color, tam=14,
+                       peso="700" if ultima else "normal"))
+    for p in V:
+        s.append(f'<circle cx="{px(p[0])}" cy="{py(p[1])}" r="5" fill="{FONDO}" '
+                 f'stroke="{TEXTO}" stroke-width="2.5"/>')
+    # linea guia del punto interior hasta el texto de la derecha
+    s.append(linea(cx + 12, cy - 6, 486, 246, color=mezclar(ACENTO, 0.7), grosor=1.5))
+    s.append(punto(cx, cy, r=8, color=ACENTO))
+    s.append(texto(W / 2, 34,
+                   "objetivo \u2212(x\u2081\u22124)\u00b2 \u2212 "
+                   "(x\u2082\u22124)\u00b2: las curvas de nivel se curvan",
+                   color=SUAVE, tam=15))
+
+    s.append(caja(478, 84, 306, 116, borde=SUAVE, guiones="6 5"))
+    for k, renglon in enumerate([
+        "en la clase 1 las curvas de nivel",
+        "eran rectas paralelas: se desplazaban",
+        "sin girar, y la última tocaba",
+        "el polígono en una esquina.",
+    ]):
+        s.append(texto(494, 112 + 22 * k, renglon, color=SUAVE, tam=13,
+                       anclaje="start"))
+    s.append(texto(494, 250, "(4, 4) = 0, el máximo", color=ACENTO, tam=15,
+                   anclaje="start", peso="700"))
+    for k, renglon in enumerate([
+        f"cabe: {consumo[0]} horas de {B[0]}, {consumo[1]} kg de {B[1]},",
+        f"{consumo[2]} kWh de {B[2]}. Y le sobra de los tres,",
+        "así que está estrictamente por dentro.",
+        "",
+        "ninguna de las cinco esquinas lo alcanza.",
+    ]):
+        if renglon:
+            s.append(texto(494, 276 + 21 * k, renglon, color=SUAVE, tam=13,
+                           anclaje="start"))
+    s.append(texto(W / 2, 528,
+                   "los círculos se encogen hasta cerrarse sobre un punto de "
+                   "adentro: ahí no hay ninguna esquina",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -780,6 +1134,8 @@ DIAGRAMAS = {
     "opt-sin-energia": opt_sin_energia,
     "opt-fig-dos-cimas": opt_fig_dos_cimas,
     "opt-fig-matriz": opt_fig_matriz,
+    "opt-fig-poliedro": opt_fig_poliedro,
+    "opt-fig-circulos": opt_fig_circulos,
 }
 
 

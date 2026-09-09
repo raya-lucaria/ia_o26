@@ -1,10 +1,11 @@
 # Créditos de las imágenes — Modelado y optimización
 
 Los diagramas SVG de esta unidad los produce `tools/gen_optimizacion.py`. No se
-editan a mano: se cambia la función del generador y se vuelve a correr. Dos de
-ellos —`opt-poligono` y `opt-curvas-de-nivel`— **calculan** su contenido desde
-los parámetros del episodio, así que cambiar un dato de la impresora cambia el
-dibujo solo.
+editan a mano: se cambia la función del generador y se vuelve a correr. Cuatro de
+ellos —`opt-poligono`, `opt-curvas-de-nivel`, `opt-sin-energia` y
+`opt-fig-poliedro`— **calculan** su contenido desde los parámetros del episodio,
+así que cambiar un dato de la impresora cambia el dibujo solo. `opt-fig-circulos`
+calcula el polígono y el consumo de su punto interior.
 
 Las páginas HTML autocontenidas de `_assets/`, si las hay, no llevan fila aquí:
 no son imágenes.
@@ -20,3 +21,5 @@ no son imágenes.
 | `opt-sin-energia.svg` | Las dos regiones, con y sin la restricción de energía | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-dos-cimas.svg` | Un óptimo local que no es global, en una variable | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-matriz.svg` | El modelo escrito y la misma información como terna, con un renglón y una columna marcados | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-fig-poliedro.svg` | El poliedro de tres piezas en proyección, con sus ocho vértices | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-fig-circulos.svg` | Curvas de nivel circulares sobre el polígono de la clase 1, con el máximo por dentro | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
