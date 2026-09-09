@@ -4,7 +4,7 @@ title: Cuando se acaba el dibujo
 nav_title: Sin papel
 summary: "Con tres piezas el polígono se vuelve poliedro y con veinte ya no se puede dibujar. Qué es una esquina cuando no hay esquinas que ver."
 status: ready
-estimated_time: 25m
+estimated_time: 30m
 tags: [optimizacion, poliedro, vertice]
 ---
 
@@ -134,10 +134,22 @@ de la tabla.
 :::
 
 ::: proof {#opt-dem-vertice of="opt-teo-vertice"}
-**Supón primero el poliedro acotado.** Entonces tiene finitos vértices
-$v_1,\dots,v_k$, y todo punto factible es una **mezcla** de ellos:
-$x=\lambda_1v_1+\dots+\lambda_kv_k$, con cada $\lambda_i\ge0$ y
-$\lambda_1+\dots+\lambda_k=1$.
+**Aquí se demuestra el caso acotado**, que es el del viaje: el poliedro de la
+tabla cabe en una caja. El caso general se comenta al final y **no** se
+demuestra.
+
+**Lo prestado, dicho por su nombre.** Si el poliedro es acotado, tiene
+**finitos** vértices —son cruces de $n$ restricciones activas independientes, y
+de esos hay a lo más $\binom{m+n}{n}$: la cuenta de la sección 5— y además
+**todo punto factible es una mezcla de ellos**:
+
+$$x=\lambda_1v_1+\dots+\lambda_kv_k,$$
+
+con cada $\lambda_i\ge0$ y $\lambda_1+\dots+\lambda_k=1$.
+
+Esa segunda mitad es el **teorema de Minkowski**, un resultado clásico que esta
+página **usa y no demuestra**. Es el hecho profundo del argumento; lo que sigue
+es contabilidad.
 
 Sea $x^\ast$ un punto óptimo y $z^\ast=c\cdot x^\ast$ lo que paga. Como el
 objetivo es **lineal**, el valor de la mezcla es la mezcla de los valores:
@@ -151,15 +163,19 @@ $0.3$ y $0.5$ y $z^\ast=10$, un vértice que valiera 8 dejaría el promedio en
 9.6, no en 10—. Luego **todo** $v_i$ con $\lambda_i>0$ es óptimo, y hay al
 menos uno porque los pesos suman 1.
 
-**Sin acotamiento se cae por donde se ve.** La franja $0\le x_2\le1$ con $x_1$
-libre no tiene ningún vértice, así que no hay mezcla que escribir. Lo que hace
-falta de verdad no es que el poliedro sea acotado, sino que **no contenga una
-recta**, y $x\ge0$ lo garantiza: aunque se extienda al infinito, siempre se
-puede bajar por una arista hasta un vértice.
+**Qué queda fuera.** El teorema de arriba no pide acotamiento, y este argumento
+sí lo usa: sin él no hay lista finita de vértices ni mezcla que escribir. El
+caso general se demuestra igual, pero con la versión general de Minkowski —la
+que escribe un punto como mezcla de vértices **más** una dirección infinita—, y
+esa pide menos: basta con que el poliedro **no contenga ninguna recta**. Aquí
+solo se dice por qué $x\ge0$ salva la situación, y es de una línea: un poliedro
+metido en el primer cuadrante no puede contener una recta entera, porque toda
+recta se va a menos infinito en alguna coordenada.
 :::
 
 **«Al menos uno» no es una hipótesis: es una palabra de la conclusión.** Con la
-celda a 4 empatan $(2,8)$, $(8,2)$ y el segmento entero.
+celda a 4 empatan $(2,8)$, $(8,2)$ y el segmento entero — y el segmento sale del
+mismo display: si los dos extremos valen $z^\ast$, toda mezcla suya también.
 
 ::: figure {#opt-fig-vertice-o-arista title="O toca en un vértice, o cae en una arista entera"}
 ![Dos paneles sobre el polígono de la clase 1. A la izquierda, con c=(4,3), la última recta de nivel toca la región en un solo vértice, (8,2), que vale 38. A la derecha, con c=(4,4), la recta queda paralela al lado de las horas: toda la arista que va de (8,2) a (2,8) vale 40, y sus dos extremos están marcados como vértices](../_assets/opt-fig-vertice-o-arista.svg)

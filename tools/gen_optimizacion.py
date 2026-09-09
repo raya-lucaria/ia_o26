@@ -1302,14 +1302,23 @@ def opt_camino_simplex():
 # el pie del panel. Los vertices OPTIMOS y el valor que alcanzan no se escriben
 # aqui: se calculan desde el objetivo, que es lo que impide que el dibujo
 # contradiga a la pagina si un parametro del episodio cambia.
-# El de la izquierda es el objetivo del episodio, leido de C y no copiado. El
-# de la derecha es «la celda a 4» que la clase 1 ya uso para el empate: paga
-# lo mismo por las dos piezas, asi que su recta de nivel es paralela al renglon
-# de las horas —A[0] = [1, 1]— y toda esa arista empata.
-PANELES_VERTICE_O_ARISTA = (
-    (tuple(C), (20, 30), "toca en un solo vértice"),
-    ((C[0], C[0]), (24, 32), "queda paralela a un lado"),
-)
+# Es una FUNCION y no una constante de modulo a proposito. Como constante se
+# evalua al importar, y entonces `tuple(C)` y un `(4, 3)` escrito a mano son
+# indistinguibles para cualquier prueba: la que lo intentaba era tautologica.
+# Leyendo C al llamarse, una guarda puede cambiar el objetivo del episodio y
+# exigir que el panel izquierdo lo siga.
+def paneles_vertice_o_arista():
+    """Los dos paneles de opt-fig-vertice-o-arista: objetivo, niveles, pie.
+
+    El de la izquierda es el objetivo del episodio, leido de C y no copiado. El
+    de la derecha es «la celda a 4» que la clase 1 ya uso para el empate: paga
+    lo mismo por las dos piezas, asi que su recta de nivel es paralela al
+    renglon de las horas —A[0] = [1, 1]— y toda esa arista empata.
+    """
+    return (
+        (tuple(C), (20, 30), "toca en un solo vértice"),
+        ((C[0], C[0]), (24, 32), "queda paralela a un lado"),
+    )
 
 # Desplazamiento del rotulo de cada vertice optimo de opt-fig-vertice-o-arista,
 # a mano y revisado renderizando AMPLIADO. Los dos van arriba a la derecha
@@ -1320,6 +1329,24 @@ ROTULOS_VERTICE_O_ARISTA = {
     (8, 2): (16, -14, "start"),
     (2, 8): (14, -18, "start"),
 }
+
+
+def desplazamiento_vertice_o_arista(p):
+    """El desplazamiento del rotulo de p, o un error que dice que hacer.
+
+    Un KeyError pelado aqui revienta el generador desde el fixture de la
+    prueba y arrastra todo el archivo a ERROR, que es la peor manera de
+    enterarse. Esto falla igual, pero diciendo por que y donde se arregla.
+    """
+    clave = (int(p[0]), int(p[1]))
+    if clave not in ROTULOS_VERTICE_O_ARISTA:
+        raise ValueError(
+            f"{rotulo(p)} gana en un panel de opt-fig-vertice-o-arista y no "
+            "tiene entrada en ROTULOS_VERTICE_O_ARISTA. Los desplazamientos "
+            "se eligen a mano mirando el render AMPLIADO a 4x: elige uno, "
+            "declaralo ahi, y comprueba que ningun trazo parte el rotulo."
+        )
+    return ROTULOS_VERTICE_O_ARISTA[clave]
 
 
 def optimos_con(c):
@@ -1370,7 +1397,7 @@ def opt_fig_vertice_o_arista():
         "valor 40 se apoya en el lado que va de (8, 2) a (2, 8); toda esa "
         "arista vale 40, y sus dos extremos son vertices.",
     )]
-    for k, (c, niveles, subtitulo) in enumerate(PANELES_VERTICE_O_ARISTA):
+    for k, (c, niveles, subtitulo) in enumerate(paneles_vertice_o_arista()):
         ox = 58 + 345 * k
         centro = ox + esc * top / 2
         V, z, ganadores = optimos_con(c)
@@ -1395,7 +1422,7 @@ def opt_fig_vertice_o_arista():
         (x1, y1), (x2, y2) = _corte(c[0], c[1], z, top)
         s.append(linea(px(x1), py(y1), px(x2), py(y2), color=SERIE[1], grosor=3.2))
         for p in ganadores:
-            dx, dy, anc = ROTULOS_VERTICE_O_ARISTA[(int(p[0]), int(p[1]))]
+            dx, dy, anc = desplazamiento_vertice_o_arista(p)
             s.append(punto(px(p[0]), py(p[1]), r=8))
             s.append(texto(px(p[0]) + dx, py(p[1]) + dy, rotulo(p),
                            color=ACENTO, tam=13, anclaje=anc, peso="700"))
