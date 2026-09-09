@@ -19,7 +19,7 @@ no lo hay.
 
 Nada cambia, y esa es la noticia. Los vecinos de cada vértice salen de la tabla
 de los ocho de [[cuando-se-acaba-el-dibujo|Cuando se acaba el dibujo]]: son los
-que comparten con él **dos** cosas activas.
+que comparten con él **dos restricciones activas**.
 
 ::: table {#opt-traza-sello title="Simplex sobre el poliedro con sello, desde el origen"}
 | Estoy en | Vale | Vecinos, y lo que valen | Me voy a |
@@ -52,8 +52,9 @@ un tirón:
 Entrega un óptimo **global y exacto**, no una aproximación, y de regalo la
 información para construir su certificado. De eso vive la página siguiente.
 
-**Un paso** cuesta mirar hasta $n$ vecinos, y cada vecino es resolver un sistema
-de $n$ ecuaciones con $n$ incógnitas. **Cuántos pasos** es la pregunta abierta:
+**Un paso** cuesta mirar sus vecinos —$n$ exactos si ningún vértice es
+degenerado, como aquí; más si los hay— y cada vecino es resolver un sistema de
+$n$ ecuaciones con $n$ incógnitas. **Cuántos pasos** es la pregunta abierta:
 pocos en la práctica, y hay problemas construidos a propósito para que sean
 exponencialmente muchos.
 
@@ -82,9 +83,9 @@ esas tres cosas, y hasta entonces compara valores.
 ::: answer {#opt-resp-sello of="opt-ej-sello"}
 $$c=(4,3,5),\quad A=\begin{pmatrix}1&1&1\\2&1&2\\1&2&3\end{pmatrix},\quad b=\begin{pmatrix}10\\18\\18\end{pmatrix}$$
 
-En $(0,0,6)$ se acaban la energía, $x_1=0$ y $x_2=0$. Comparten dos de esas tres
-$(0,0,0)$ con 0, $(0,9,0)$ con 27 y $(\tfrac92,0,\tfrac92)$ con $\tfrac{81}{2}$:
-son los tres vecinos.
+En $(0,0,6)$ están activas la energía, $x_1=0$ y $x_2=0$. Comparten dos de esas
+tres $(0,0,0)$ con 0, $(0,9,0)$ con 27 y $(\tfrac92,0,\tfrac92)$ con
+$\tfrac{81}{2}$: son los tres vecinos.
 
 Donde estoy vale 30, así que el único que mejora es $(\tfrac92,0,\tfrac92)$, y
 el paso lleva ahí. Es la misma parada de coordenadas partidas por la que pasa la

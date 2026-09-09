@@ -2,7 +2,7 @@
 id: optimizacion-lineal
 title: "Clase 2 · Resolver sin dibujar"
 nav_title: Lineal
-summary: "El dibujo se acaba en cuanto hay tres piezas. Esta clase escribe el modelo como matriz y enseña el método que llega a la esquina correcta sin verla."
+summary: "El dibujo se acaba en cuanto hay tres piezas. Esta clase escribe el modelo como matriz y enseña el método que llega al vértice correcto sin verlo."
 status: ready
 estimated_time: 108m
 tags: [optimizacion, programacion-lineal, simplex]
@@ -15,8 +15,8 @@ El dibujo se acaba en cuanto hay tres piezas. La clase 1 resolvió todo
 mirando un polígono; aquí el depósito agrega una tercera pieza, el polígono se
 vuelve poliedro, y con veinte piezas nadie ha visto jamás la figura. Esta
 clase escribe el modelo como una matriz, para que no le importe cuántas
-columnas tenga, y enseña el método que llega a la esquina correcta
-preguntándole solo a sus vecinos, sin necesidad de verla.
+columnas tenga, y enseña el método que llega al vértice correcto preguntándole
+solo a sus vecinos, sin necesidad de verlo.
 
 ## La tercera pieza
 
@@ -33,6 +33,8 @@ y ese detalle es el que rompe el dibujo.
 | Energía (kWh) | 1 | 2 | 3 |
 | **Créditos que abona el depósito** | **4** | **3** | **5** |
 :::
+
+**Disponible:** 10 horas de impresora, 18 kg de polímero y 18 kWh.
 
 ## Recorrido
 
@@ -78,7 +80,7 @@ corriste en el notebook de la clase 1.
 ## Qué no cubre esta clase
 
 No vas a ver el cuadro de cálculo con que se enseña simplex a mano —aquí el
-método camina por esquinas, que es la misma idea sin la contabilidad—, ni la
+método camina por vértices, que es la misma idea sin la contabilidad—, ni la
 dualidad como teoría, ni qué hacer cuando el método se atora en un empate. Nada
 de eso hace falta para lo que sigue.
 

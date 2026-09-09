@@ -84,9 +84,13 @@ $Ax\le b$ quiere decir esto: haz el producto punto de cada renglón de $A$ con
 $x$, y ninguno de esos $m$ números puede pasar de la entrada de $b$ que le toca.
 Son las $m$ desigualdades de recurso a la vez, escritas de un tirón.
 
-Todo esto cabe en una línea porque la clase 1 dejó el modelo en forma canónica:
-todas las restricciones con $\le$, todas las variables no negativas, y el mínimo
-escrito como máximo. **Un problema lineal es exactamente una terna $(c, A, b)$.**
+Todo esto cabe en una línea porque el modelo está en **forma estándar**: todas
+las restricciones con $\le$, todas las variables no negativas, y el mínimo
+escrito como máximo. La clase 1 lo dejó casi ahí —lo que allá se llamó
+**forma canónica** es la maqueta de la hoja: dónde va cada cosa— y lo único que
+falta es voltear las que van con $\ge$, que es la maniobra que
+[[escribir-el-modelo|Escribir el modelo]] ya describe sin ponerle nombre.
+**Un problema lineal es exactamente una terna $(c, A, b)$.**
 
 Para la impresora, $n=2$ y $m=3$, y la terna es la de arriba.
 :::
@@ -135,10 +139,10 @@ resolviste.)*
 > [!WARNING]
 > El error clásico es escribir $A$ **transpuesta**, o sea con los renglones y las
 > columnas cambiados. La prueba de tamaños lo caza: $b$ tiene una entrada por
-> **renglón** y $c$ una por **columna**: si los dos miden lo mismo y no deberían,
-> está transpuesta. Pero ojo: **con tantas piezas como recursos, $A$ es
-> cuadrada y la prueba no dice nada**: es justo lo que pasa en la página
-> siguiente. Ahí toca revisar un renglón contra la bitácora.
+> **renglón** de $A$ y $c$ una por **columna**. Si $|b|$ no coincide con los
+> renglones que escribiste, está transpuesta. Pero ojo: **con tantas piezas como
+> recursos, $A$ es cuadrada y la prueba no dice nada**: es justo lo que pasa en
+> la página siguiente. Ahí toca revisar un renglón contra la bitácora.
 >
 > Y $A$ lleva un renglón por restricción **de recurso**: las de no negatividad
 > viven en el $x\ge0$.

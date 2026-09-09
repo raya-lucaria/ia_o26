@@ -44,8 +44,8 @@ nada: si el modelo permite fracciones es porque nosotros se lo permitimos, no
 porque la historia lo diga. Se hace por dos razones.
 
 1. Los métodos de esta unidad necesitan variables continuas. Con variables
-   enteras el dibujo de la página siguiente deja de ser una figura de lados
-   rectos y hace falta otra cosa.
+   enteras el dibujo de la página siguiente deja de ser una figura: se vuelve un
+   puñado de puntos sueltos, y hace falta otra cosa.
 2. **Aquí sale gratis**, y eso se comprueba al final: la respuesta que da el
    modelo con fracciones permitidas resulta ser de piezas enteras de todos modos,
    así que no hay nada que redondear ni nada que disculpar.

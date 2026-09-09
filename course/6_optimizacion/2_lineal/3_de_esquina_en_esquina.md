@@ -16,15 +16,15 @@ Sabemos que la respuesta es un vértice y que hay demasiados.
 
 ## 1 · La idea, sin fórmulas
 
-Estás parado en una esquina del polígono, con niebla. No ves la figura: solo
-puedes preguntarle a las esquinas de al lado cuánto pagan. Si alguna paga más,
-te mueves. Si ninguna, te quedas.
+Estás parado en un vértice del poliedro, con niebla. No ves la figura: solo
+puedes preguntarle a los vértices de al lado cuánto pagan. Si alguno paga más,
+te mueves. Si ninguno, te quedas.
 
 Toda la clase se juega en que esa regla baste.
 
 ## 2 · Vecinos, y por qué la regla local alcanza
 
-Esas esquinas de al lado tienen nombre, y se reconocen sin dibujo.
+Esos vértices de al lado tienen nombre, y se reconocen sin dibujo.
 
 ::: definition {#opt-vertice-adyacente title="Vértice adyacente, o vecino"}
 Dos vértices son **adyacentes**, o vecinos, si están unidos por una **arista**
@@ -37,9 +37,9 @@ conteo declararía vecinos a los extremos de la diagonal de una cara. Aquí
 coincide porque ningún vértice es degenerado.
 
 En el polígono de la clase 1, $(9,0)$ y $(8,2)$ son vecinos: los dos agotan el
-polímero. $(9,0)$ y $(2,8)$ no comparten ninguna, y no lo son. Cada esquina de
-**ese** polígono tiene dos vecinos, y cada vértice del poliedro con sello tiene
-tres. Es una cuenta de **estos** dos poliedros, no una regla: el ápice de una
+polímero. $(9,0)$ y $(2,8)$ no comparten ninguna restricción activa, y no lo
+son. Cada esquina de **ese** polígono tiene dos vecinos, y cada vértice del
+poliedro con sello tiene tres. Es una cuenta de **estos** dos poliedros, no una regla: el ápice de una
 pirámide de base cuadrada tiene cuatro.
 :::
 
@@ -120,9 +120,10 @@ queda con el de menor $x_1$; si también empatan ahí, con el de menor $x_2$. Es
 una convención, no matemáticas.
 
 **Y de otra ruta se promete el valor, no el destino.** Con la celda a 4 —el
-empate que la clase 1 ya mostró— desde el origen empatan $(9,0)$ y $(0,9)$: una
-ruta termina en $(8,2)$ y la otra en $(2,8)$, las dos con 40. El valor óptimo
-coincide siempre; el vértice, solo cuando el óptimo es único.
+empate que la clase 1 ya mostró— desde el origen empatan $(9,0)$ y $(0,9)$ en
+36. Con nuestra regla gana $(0,9)$, el de menor $x_1$, y la ruta termina en
+$(2,8)$; quien arranque en $(9,0)$ termina en $(8,2)$. Las dos con 40. El valor
+óptimo coincide siempre; el vértice, solo cuando el óptimo es único.
 
 Las líneas 3 y 4 son la rama del problema **no acotado**, que
 [[que-es-una-respuesta|Qué es una respuesta]] ya definió; aquí nunca se ejecuta.
@@ -130,10 +131,12 @@ Las líneas 3 y 4 son la rama del problema **no acotado**, que
 > **Córrelo tú.** Estas nueve líneas se pueden ejecutar
 > [una a la vez](../_assets/camino_por_vertices.html), con la línea actual
 > resaltada y el estado a la vista: dónde está $v$, qué acaba de entrar en $M$,
-> cuál vecino gana la línea 8 y por qué, y por qué para. Trae el polígono de la
-> clase 1 y el poliedro de la página anterior detrás de un interruptor: con el
-> segundo desaparece el dibujo y no el método. El ejercicio de abajo hazlo
-> primero a mano, porque la página también empieza donde le digas.
+> cuál vecino gana la línea 8 y por qué, y por qué para. Trae **tres** modelos
+> detrás de un interruptor: el polígono de la clase 1; el mismo polígono con la
+> celda a 4, que es donde la regla de desempate por fin se ejecuta y se ve qué
+> decide; y el poliedro de la página anterior, con el que desaparece el dibujo y
+> no el método. El ejercicio de abajo hazlo primero a mano, porque la página
+> también empieza donde le digas.
 
 ## 5 · Tu turno
 
