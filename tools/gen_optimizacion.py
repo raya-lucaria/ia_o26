@@ -706,7 +706,7 @@ def opt_fig_matriz():
         "la primera columna, que es el filtro y arma una receta. Los dos se "
         "cruzan en la entrada A21, igual a 2, senalada con un circulo.",
     )]
-    s.append(texto(W / 2, 40, "un renglón por recurso, una columna por producto",
+    s.append(texto(W / 2, 40, "un renglón por recurso, una columna por pieza",
                    color=SUAVE, tam=16))
 
     # ---- el modelo escrito, a la izquierda
@@ -751,7 +751,7 @@ def opt_fig_matriz():
         s.append(texto(885, ys[i], entrada, tam=19, fuente=MONO))
 
     # ---- las dos marcas: recuadro con trazo propio, y rotulo
-    s.append(caja(644, 206, 66, 150, borde=SERIE[2], radio=8, grosor=2.5, guiones="7 5"))
+    s.append(caja(648, 206, 58, 150, borde=SERIE[2], radio=8, grosor=2.5, guiones="7 5"))
     s.append(linea(677, 360, 677, 376, color=SERIE[2], guiones="4 4"))
     s.append(texto(677, 396, "columna 1 = el filtro", color=SERIE[2], tam=13))
     s.append(texto(677, 414, "arma una receta", color=SUAVE, tam=12))
