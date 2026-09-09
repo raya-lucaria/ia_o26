@@ -10,30 +10,38 @@
      se actualiza aparte: nada la regenera. Mismo deber que el simulador de
      la maquina de Turing en la unidad de computabilidad.
 
-     Los numeros -vertices, valores, vecindades y las dos trazas- salen de
+     Los numeros -vertices, valores, vecindades y las trazas- salen de
      docs/superpowers/verificacion-optimizacion/clase2.py --datos. No se
      recalculan aqui: se transcriben de esa salida y se comparan contra ella.
 
-     Sobre la vecindad: la tabla ADY de cada modo es la relacion de ARISTAS
+     Sobre la vecindad: la tabla ADY de cada modelo es la relacion de ARISTAS
      que calcula vecinos_por_arista() en el verificador. Contar activas
-     compartidas coincide con ella en estos dos poliedros porque ninguno es
+     compartidas coincide con ella en estos poliedros porque ninguno es
      degenerado, y por eso la pagina puede ensenar el conteo; pero contar no
      es la definicion de arista, y el codigo no lo afirma. El verificador
-     trae el contraejemplo en cuatro dimensiones donde el conteo falla. -->
+     trae el contraejemplo en cuatro dimensiones donde el conteo falla.
+
+     Una regla que rige todo el pintado: NINGUN panel puede ensenar el efecto
+     de una linea antes de que esa linea corra. Por eso `v` no existe hasta
+     que corre la 1, y el aro de vecino consultado no aparece hasta que corre
+     la 5. Sin esa regla la linea 5 no cambiaba nada en el dibujo y el alumno
+     salia creyendo que preguntarle a los vecinos ya venia hecho. -->
 
 <style>
   /* Paleta de skins/eva-cyberpunk.yaml. Ver tools/test_skin.py: estas copias
      literales estan vigiladas contra el skin, que es la autoridad real.
      --trazo no es un token del skin: es el morado de --border aclarado hasta
-     pasar 4.5:1 sobre --page y sobre --surface, para que ningun trazo del
-     dibujo quede por debajo del minimo. --relleno es --accent ya fundido
-     contra --surface: se funde el color en vez de usar fill-opacity, que en
-     la unidad de complejidad tapo dos curvas. */
+     pasar 4.5:1 sobre --page y sobre --surface, y se usa SOLO para bordes de
+     panel, tabla y control. Dentro del dibujo no se usa: sobre --relleno solo
+     da 3.82:1, y ahi todo trazo va en --muted, como en el SVG de la pagina.
+     --relleno es --accent ya fundido contra --surface y --enM es --ok fundido
+     igual: se funde el color en vez de usar fill-opacity, que en la unidad de
+     complejidad tapo dos curvas. */
   :root{
     --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
     --accent:#f04cff; --accent-soft:#42164f; --border:#78419e;
     --ok:#a8ff5a; --info:#55ddff; --aviso:#ffd166; --alarma:#ff6f91;
-    --trazo:#a273d6; --relleno:#461b58;
+    --trazo:#a273d6; --relleno:#461b58; --enM:#47533e;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--page);color:var(--text);
@@ -68,7 +76,7 @@
     font:14px ui-monospace,Menlo,monospace}
   input[type=range]{padding:0;width:100%;max-width:340px;accent-color:var(--aviso)}
   .grupo{display:inline-flex;gap:.35rem;border:1px solid var(--trazo);
-         border-radius:9px;padding:.25rem}
+         border-radius:9px;padding:.25rem;flex-wrap:wrap}
   .grupo button{border:none;padding:.35rem .6rem}
 
   /* --- reja de dos columnas --- */
@@ -108,6 +116,8 @@
   .paso b{color:var(--accent)}
   .parado{margin-top:.7rem;padding:.55rem .7rem;border:1px solid var(--ok);
           border-radius:8px;color:var(--ok);font-size:13px}
+  .partida{margin-top:.7rem;padding:.55rem .7rem;border:1px solid var(--aviso);
+           border-radius:8px;color:var(--aviso);font-size:13px}
   .contadores{margin-top:.7rem;font:12.5px ui-monospace,Menlo,monospace;
               color:var(--muted)}
 
@@ -138,9 +148,10 @@
 <div class="envoltura">
 
   <h1>El camino por los vértices, línea por línea</h1>
-  <p class="sub">Simplex corriendo sobre los dos modelos de la clase: el polígono
-  de dos piezas y el poliedro de tres. Se avanza <b>una línea del pseudocódigo</b>,
-  no un pivote, porque lo que hay que ver es qué decide cada línea y con qué.</p>
+  <p class="sub">Simplex corriendo sobre los modelos de la clase. Se avanza
+  <b>una línea del pseudocódigo</b>, no un pivote, porque lo que hay que ver es
+  qué decide cada línea y con qué. Ningún panel enseña el efecto de una línea
+  antes de que esa línea corra.</p>
 
   <div class="panel">
     <div class="fila">
@@ -151,13 +162,14 @@
         <label for="sel-inicio">Vértice inicial (v₀)</label>
         <select id="sel-inicio"></select>
       </div>
-      <div class="campo">
-        <label>Modelo</label>
-        <span class="grupo" role="group" aria-label="Número de variables">
-          <button id="b-m2" data-modo="2">2 variables</button>
-          <button id="b-m3" data-modo="3">3 variables</button>
-        </span>
-      </div>
+    </div>
+    <div class="campo" style="margin-top:.7rem">
+      <label>Modelo</label>
+      <span class="grupo" role="group" aria-label="Modelo">
+        <button id="b-m2" data-modo="2">2 variables</button>
+        <button id="b-m2b" data-modo="2b">2 variables · celda a 4</button>
+        <button id="b-m3" data-modo="3">3 variables</button>
+      </span>
     </div>
     <p class="nota" id="nota-modo"></p>
   </div>
@@ -183,10 +195,10 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
         <dt>línea 8</dt><dd id="e-decision"></dd>
       </dl>
       <div class="paso" id="e-paso" aria-live="polite"></div>
+      <div class="partida oculto" id="e-partida"></div>
       <div class="parado oculto" id="e-parado"></div>
       <p class="contadores" id="e-contadores"></p>
-      <p class="nota">Preguntarle a un vecino en la línea 5 no es visitarlo: el
-      contador solo cuenta dónde ha estado <span class="mono">v</span>.</p>
+      <p class="nota" id="nota-contadores"></p>
     </div>
 
   </div>
@@ -195,33 +207,36 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
     <h2>El dibujo</h2>
     <div id="lienzo"></div>
     <div class="leyenda">
-      <span><i style="color:var(--accent)">●</i> donde estoy</span>
-      <span><i style="color:var(--info)">○</i> vecino consultado</span>
-      <span><i style="color:var(--ok)">○</i> vecino que mejora (está en M)</span>
-      <span><i style="color:var(--trazo)">○</i> esquina donde v nunca estuvo</span>
-      <span><i style="color:var(--aviso)">╱</i> curva de nivel</span>
+      <span><i style="color:var(--accent)">●</i> donde estoy (v)</span>
+      <span><i style="color:var(--ok)">◉</i> vecino que mejora — está en M</span>
+      <span><i style="color:var(--info)">○</i> vecino consultado que no mejora</span>
+      <span><i style="color:var(--muted)">○</i> esquina que no es vecina de v</span>
+      <span><i style="color:var(--accent)">·</i> dentro del aro: v ya estuvo ahí</span>
+      <span><i style="color:var(--info)">·</i> dentro del aro: ya consultada en otra vuelta</span>
+      <span><i style="color:var(--aviso)">╱</i> curva de nivel que arrastras</span>
+      <span><i style="color:var(--accent)">┄</i> la que pasa por v</span>
     </div>
     <div class="campo" style="margin-top:.8rem">
       <label for="sel-nivel" id="lbl-nivel"></label>
       <input id="sel-nivel" type="range" min="0" max="60" step="0.5" value="24">
     </div>
     <p class="nota" id="nota-nivel"></p>
-    <p class="nota">Arrastra sobre el dibujo o mueve la barra: la recta
-    4x₁ + 3x₂ = v se desliza sin girar. Girarla es cambiar lo que paga el
-    depósito, y eso no lo hace esta página.</p>
+    <p class="nota" id="nota-dos-rectas"></p>
   </div>
 
   <div class="panel oculto" id="panel-tabla">
     <h2>Los ocho vértices, sin dibujo</h2>
     <p class="nota" style="margin:0 0 .6rem">Aquí no hay figura, y el
-    pseudocódigo no cambió ni una línea. Lo único que hace falta es saber quién
-    es vecino de quién, y eso se lee de la columna de la derecha.</p>
+    pseudocódigo no cambia ni una línea. Lo único que hace falta es saber quién
+    es vecino de quién, y la columna de la derecha lo dice para la
+    <span class="mono">v</span> de ahora.</p>
     <div class="desliz"><table id="tabla3"></table></div>
-    <p class="nota">Vecino quiere decir <b>unido a v por una arista</b>. En este
-    poliedro se reconoce contando —comparte dos activas con v—, y aquí el conteo
-    coincide con las aristas porque ningún vértice es degenerado. Contar no es la
-    definición: si las compartidas no fueran independientes, el conteo declararía
-    vecinos a los extremos de la diagonal de una cara.</p>
+    <p class="nota">Vecino quiere decir <b>unido a v por una arista</b>; en este
+    poliedro se reconoce contando, y por eso la columna dice cuáles activas
+    comparte. El conteo coincide con las aristas porque ningún vértice es
+    degenerado. Contar no es la definición: si las compartidas no fueran
+    independientes, el conteo declararía vecinos a los extremos de la diagonal
+    de una cara.</p>
   </div>
 
   <div class="panel">
@@ -231,17 +246,14 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   </div>
 
   <ul class="notas">
-    <li>Los vértices, sus valores, la vecindad y las dos trazas salen de
+    <li>Los vértices, sus valores, la vecindad y las trazas salen de
     <span class="mono">docs/superpowers/verificacion-optimizacion/clase2.py</span>.
     Aquí están transcritos, no recalculados.</li>
     <li>La regla de desempate de la línea 8 —menor x₁, y si vuelven a empatar
-    menor x₂— está implementada, y con estos precios nunca llega a ejecutarse:
-    los cinco valores del polígono y los ocho del poliedro son todos distintos.
-    Con la celda a 4 sí empataría, y las dos rutas terminarían en vértices
-    distintos con el mismo valor.</li>
-    <li>Ocho vértices son pocos y aquí el método acaba consultándolos casi
-    todos. La ventaja de simplex no se ve en ocho: se ve cuando hay 10¹¹
-    candidatos y el método recorre unas decenas.</li>
+    menor x₂— es una convención declarada, no matemáticas. Con
+    <span class="mono">c = (4, 3)</span> nunca llega a ejecutarse, porque los
+    valores de los vértices son todos distintos; el modelo de la celda a 4 está
+    aquí para que se ejecute y para que se vea qué decide.</li>
   </ul>
 
 </div>
@@ -251,29 +263,61 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   "use strict";
 
   // ---------------------------------------------------------------- datos
-  // Transcritos de clase2.py --datos. ACT indexa NOMBRES; ADY es la relacion
+  // Transcritos de clase2.py --datos. ACT indexa `nombres`; ADY es la relacion
   // de aristas del verificador (vecinos_por_arista), no un conteo hecho aqui.
-  // Los valores son 0, 27, 30, 32, 36, 38, 81/2 y 41: todos exactos en punto
-  // flotante binario, asi que comparar con > es seguro en los dos modelos.
+  // Los valores son 0, 27, 30, 32, 36, 38, 40, 81/2 y 41: todos exactos en
+  // punto flotante binario, asi que comparar con > es seguro.
+  //
+  // `orden` es el de la columna «Vecinos, y lo que valen» de la tabla del
+  // curso que cada modelo reproduce: opt-traza-simplex los lista ASCENDENTE y
+  // opt-traza-sello DESCENDENTE. La bitacora de aqui tiene que coincidir con
+  // la de la pagina que el alumno tenga al lado, asi que no se unifica.
+  var NOMBRES2 = ["horas", "polímero", "energía", "x₁=0", "x₂=0"];
+  // Las cinco esquinas del poligono de la clase 1, en orden antihorario para
+  // que el path cierre bien, y su relacion de vecindad (un ciclo de cinco).
+  var ADY2 = [[1,4],[0,2],[1,3],[2,4],[0,3]];
+  var ACT2 = [[3,4],[1,4],[0,1],[0,2],[2,3]];
+  var XY2  = [[0,0],[9,0],[8,2],[2,8],[0,9]];
+  var T2   = ["(0,0)","(9,0)","(8,2)","(2,8)","(0,9)"];
+
+  function poligono(valores){
+    var V = [];
+    for (var k = 0; k < 5; k++){
+      V.push({t:T2[k], v:valores[k][0], vt:valores[k][1],
+              x:XY2[k][0], y:XY2[k][1], act:ACT2[k]});
+    }
+    return V;
+  }
+
   var MODELOS = {
     "2": {
-      n: 2,
-      objetivo: "c = (4, 3)",
-      nombres: ["horas", "polímero", "energía", "x₁=0", "x₂=0"],
-      // en orden antihorario, para que el poligono cierre bien
-      V: [
-        {t:"(0,0)", v:0,  vt:"0",  x:0, y:0, act:[3,4]},
-        {t:"(9,0)", v:36, vt:"36", x:9, y:0, act:[1,4]},
-        {t:"(8,2)", v:38, vt:"38", x:8, y:2, act:[0,1]},
-        {t:"(2,8)", v:32, vt:"32", x:2, y:8, act:[0,2]},
-        {t:"(0,9)", v:27, vt:"27", x:0, y:9, act:[2,3]}
-      ],
-      ADY: [[1,4],[0,2],[1,3],[2,4],[0,3]],
-      inicio: 0
+      n: 2, dibujo: true, orden: "asc",
+      boton: "2 variables", objetivo: "c = (4, 3)", coef: [4, 3],
+      nombres: NOMBRES2,
+      V: poligono([[0,"0"],[36,"36"],[38,"38"],[32,"32"],[27,"27"]]),
+      ADY: ADY2, inicio: 0,
+      nota: "Dos piezas —filtros y celdas—, objetivo <span class=\"mono\">c = (4, 3)</span>. " +
+            "En <b>este</b> polígono cada esquina tiene dos vecinos, y eso es una cuenta " +
+            "de este polígono, no una regla: el ápice de una pirámide de base cuadrada " +
+            "tiene cuatro. Los cinco valores son distintos, así que la línea 8 nunca " +
+            "empata y todos los arranques terminan en (8,2)."
+    },
+    "2b": {
+      n: 2, dibujo: true, orden: "asc",
+      boton: "2 variables · celda a 4", objetivo: "c = (4, 4)", coef: [4, 4],
+      nombres: NOMBRES2,
+      V: poligono([[0,"0"],[36,"36"],[40,"40"],[40,"40"],[36,"36"]]),
+      ADY: ADY2, inicio: 0,
+      nota: "El mismo polígono, y lo único que cambió es lo que paga el depósito por " +
+            "una celda: <span class=\"mono\">c = (4, 4)</span>. Ahora <b>(8,2) y (2,8) " +
+            "valen los dos 40</b>. Desde el origen los dos vecinos empatan en 36 y la " +
+            "línea 8 ejecuta por fin su regla de desempate; empieza en <b>(9,0)</b> y " +
+            "terminas en el <b>otro</b> vértice, también con 40. Coincide el valor " +
+            "óptimo, no el vértice."
     },
     "3": {
-      n: 3,
-      objetivo: "c = (4, 3, 5)",
+      n: 3, dibujo: false, orden: "desc",
+      boton: "3 variables", objetivo: "c = (4, 3, 5)", coef: [4, 3, 5],
       nombres: ["horas", "polímero", "energía", "x₁=0", "x₂=0", "x₃=0"],
       V: [
         {t:"(0,0,0)",     v:0,    vt:"0",    act:[3,4,5]},
@@ -282,11 +326,19 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
         {t:"(2,8,0)",     v:32,   vt:"32",   act:[0,2,5]},
         {t:"(9,0,0)",     v:36,   vt:"36",   act:[1,4,5]},
         {t:"(8,2,0)",     v:38,   vt:"38",   act:[0,1,5]},
-        {t:"(9/2,0,9/2)", v:40.5, vt:"81/2", act:[1,2,4]},
+        {t:"(9/2,0,9/2)", v:40.5, vt:"81/2", act:[1,2,4],
+         partida:"(9/2, 0, 9/2) son <b>cuatro filtros y medio y cuatro sellos y medio</b>. " +
+                 "No es la respuesta: es una parada del camino, y aquí las piezas se " +
+                 "pueden partir porque el modelo lo permite."},
         {t:"(5,2,3)",     v:41,   vt:"41",   act:[0,1,2]}
       ],
       ADY: [[1,2,4],[0,2,3],[0,1,6],[1,5,7],[0,5,6],[3,4,7],[2,4,7],[3,5,6]],
-      inicio: 0
+      inicio: 0,
+      nota: "Tres piezas —filtros, celdas y sellos—, objetivo " +
+            "<span class=\"mono\">c = (4, 3, 5)</span>, y <b>ningún dibujo</b>: el " +
+            "pseudocódigo no cambia ni una línea. En <b>este</b> poliedro cada vértice " +
+            "tiene tres vecinos, y también eso es una cuenta de este poliedro y no una " +
+            "regla: el ápice de una pirámide de base cuadrada tiene cuatro."
     }
   };
 
@@ -309,35 +361,52 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
   function arrancar(modo, inicio, nivel){
     var m = MODELOS[modo];
+    var i0 = inicio === undefined ? m.inicio : inicio;
     S = {
       modo: modo,
       linea: 1,          // la que corre al dar Paso
-      v: inicio === undefined ? m.inicio : inicio,
-      inicio: inicio === undefined ? m.inicio : inicio,
+      v: i0,             // no significa nada hasta que corre la 1: ver `arrancada()`
+      inicio: i0,
       M: null,           // null = la linea 5 no ha corrido en esta vuelta
-      decision: null,    // {gana, razon} de la linea 8
+      decision: null,    // {gana, razon} de la linea 8, valida solo en esta vuelta
       pivotes: 0,
-      estuvo: [],        // indices donde v ha estado, en orden
+      estuvo: [],        // indices donde v HA ESTADO; vacio hasta que corre la 1
+      consultados: [],   // indices que la linea 5 ha leido alguna vez
+      huboEmpate: false,
       bitacora: [],
       parado: false,
-      mensaje: "Sin arrancar. La línea 1 pone v en v₀.",
-      nivel: nivel === undefined ? 24 : nivel
+      mensaje: "Sin arrancar. La línea 1 es la que pone v en v₀ = " + m.V[i0].t +
+               "; hasta que corra, el panel no tiene ninguna v que enseñar.",
+      nivel: Math.min(nivel === undefined ? 24 : nivel, nivelMax(m))
     };
+  }
+
+  function nivelMax(m){
+    // El tope del deslizador. En el extremo del marco los dos cortes de la
+    // recta con el marco coinciden y la curva de nivel degenera en un punto; se
+    // deja fuera del recorrido en vez de dibujar ese caso.
+    return (m.coef[0] + m.coef[1]) * TOP - 10;
   }
 
   // ------------------------------------------------------------- el motor
   function mod(){ return MODELOS[S.modo]; }
   function vert(i){ return mod().V[i]; }
+  function arrancada(){ return S.estuvo.length > 0; }   // ¿ya corrio la linea 1?
 
   function vecinos(i){
-    // Ordenados por valor ascendente, como la tabla opt-traza-simplex.
-    return mod().ADY[i].slice().sort(function(a,b){ return vert(a).v - vert(b).v; });
+    var signo = mod().orden === "desc" ? -1 : 1;
+    return mod().ADY[i].slice().sort(function(a,b){ return signo * (vert(a).v - vert(b).v); });
   }
 
-  function compartidas(i,j){
+  function compartidas(i, j){
     var a = vert(i).act, b = vert(j).act, r = [];
     for (var k = 0; k < a.length; k++) if (b.indexOf(a[k]) >= 0) r.push(a[k]);
     return r;
+  }
+
+  function nombresDe(lista){
+    var m = mod();
+    return lista.map(function(i){ return m.nombres[i]; }).join(", ");
   }
 
   function listaValores(idx){
@@ -345,14 +414,11 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   }
 
   // Desempate declarado en la pagina: menor x1, y si vuelven a empatar menor x2.
-  // Con estos precios nunca se ejecuta -- los valores son todos distintos -- y
-  // esta aqui para que la regla de la pagina y la del programa sean la misma.
   function desempatar(cands){
     var m = mod();
-    return cands.slice().sort(function(a,b){
-      var A = m.V[a], B = m.V[b];
+    return cands.slice().sort(function(a, b){
       for (var k = 0; k < m.n; k++){
-        var ca = coord(A, k), cb = coord(B, k);
+        var ca = coord(m.V[a], k), cb = coord(m.V[b], k);
         if (ca !== cb) return ca - cb;
       }
       return 0;
@@ -369,12 +435,13 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
   function ejecutar(){
     if (S.parado) return false;
-    var m = mod(), yo = vert(S.v), i, w;
+    var m = mod(), yo = vert(S.v), i;
     switch (S.linea){
       case 1:
         S.estuvo = [S.v];
-        S.mensaje = "<b>Línea 1.</b> v arranca en " + yo.t + ", con c·v = " +
-                    yo.vt + ". M no existe todavía: lo llena la línea 5.";
+        S.mensaje = "<b>Línea 1.</b> v arranca en " + yo.t + ", con c·v = " + yo.vt +
+                    ". Antes de esta línea no había ninguna v: ahora el panel puede " +
+                    "enseñarla. M sigue sin existir, lo llena la 5.";
         S.linea = 2; break;
       case 2:
         S.mensaje = "<b>Línea 2.</b> Entra al ciclo. Cada vuelta termina en un " +
@@ -382,21 +449,23 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
         S.linea = 3; break;
       case 3:
         S.mensaje = "<b>Línea 3.</b> La condición es falsa: con x ≥ 0 y las " +
-                    "tres restricciones de recurso el poliedro está acotado, así " +
-                    "que no hay rayo que se escape. La línea 4 no corre aquí nunca.";
+                    "restricciones de recurso el poliedro está acotado, así que no " +
+                    "hay rayo que se escape. La línea 4 no corre aquí nunca.";
         S.linea = 5; break;
       case 4:
-        S.linea = 5; break;   // inalcanzable en estos dos modelos
+        S.linea = 5; break;   // inalcanzable en estos modelos
       case 5:
         var vec = vecinos(S.v), mejoran = [];
-        for (i = 0; i < vec.length; i++) if (vert(vec[i]).v > yo.v) mejoran.push(vec[i]);
+        for (i = 0; i < vec.length; i++){
+          if (S.consultados.indexOf(vec[i]) < 0) S.consultados.push(vec[i]);
+          if (vert(vec[i]).v > yo.v) mejoran.push(vec[i]);
+        }
         S.M = mejoran;
-        S.decision = null;
-        S.mensaje = "<b>Línea 5.</b> De los " + vec.length + " vecinos de " + yo.t +
-          " —" + listaValores(vec) + "— pasan el filtro c·w > " + yo.vt +
-          " los que valen más: " +
-          (mejoran.length ? "M = { " + listaValores(mejoran) + " }." :
-                            "ninguno. M queda vacío.");
+        S.mensaje = "<b>Línea 5.</b> Pregunta a los " + vec.length + " vecinos de " +
+          yo.t + " —" + listaValores(vec) + "— y se queda con los que pasan el filtro " +
+          "c·w > " + yo.vt + ": " +
+          (mejoran.length ? "M = { " + listaValores(mejoran) + " }."
+                          : "ninguno. M queda vacío.");
         S.linea = 6; break;
       case 6:
         if (S.M.length === 0){
@@ -404,7 +473,8 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
           S.linea = 7;
         } else {
           S.mensaje = "<b>Línea 6.</b> M no está vacío: tiene " + S.M.length +
-            (S.M.length === 1 ? " vecino" : " vecinos") + ". Se salta la 7 y se va a la 8.";
+            (S.M.length === 1 ? " vecino" : " vecinos") +
+            ". Se salta la 7 y se va a la 8.";
           S.linea = 8;
         }
         break;
@@ -420,10 +490,17 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
         var empatan = S.M.filter(function(k){ return vert(k).v === vert(top).v; });
         var gana = empatan.length > 1 ? desempatar(empatan) : top;
         var otros = S.M.filter(function(k){ return k !== gana; });
-        var razon;
+        var razon, extra = "";
         if (empatan.length > 1){
-          razon = "empatan en " + vert(gana).vt + "; gana " + vert(gana).t +
-                  " por la regla de desempate (menor x₁)";
+          S.huboEmpate = true;
+          razon = "empatan en " + vert(gana).vt + " (" +
+                  empatan.map(function(k){ return vert(k).t; }).join(" y ") +
+                  ") y la regla declarada se queda con el de menor x₁";
+          extra = " <b>Empate.</b> " +
+                  empatan.map(function(k){ return vert(k).t; }).join(" y ") +
+                  " valen los dos " + vert(gana).vt + ", así que aquí no decide el " +
+                  "objetivo sino la convención de la página. Empezar en el otro lleva " +
+                  "a un vértice distinto con el mismo valor.";
         } else if (otros.length){
           razon = vert(gana).vt + " > " +
                   otros.map(function(k){ return vert(k).vt; }).join(" y > ") +
@@ -434,7 +511,7 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
         S.decision = {gana: gana, razon: razon};
         S.bitacora.push([yo.t, yo.vt, listaValores(vecinos(S.v)), vert(gana).t]);
         S.mensaje = "<b>Línea 8.</b> Gana " + vert(gana).t + " con " + vert(gana).vt +
-          ": " + razon + ". v se mueve, y M se vacía.";
+          ": " + razon + ". v se mueve, y M se vacía." + extra;
         S.v = gana;
         S.pivotes += 1;
         if (S.estuvo.indexOf(gana) < 0) S.estuvo.push(gana);
@@ -442,6 +519,9 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
         S.linea = 9;
         break;
       case 9:
+        // M y la decision son de la vuelta que acaba: se borran las dos, o el
+        // panel afirmaria un alcance que el codigo no respeta.
+        S.decision = null;
         S.mensaje = "<b>Línea 9.</b> Fin de la vuelta: vuelve a la línea 2 con la " +
                     "v nueva. Nada más se guarda entre vuelta y vuelta.";
         S.linea = 2; break;
@@ -478,15 +558,20 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   }
 
   function pintarEstado(){
-    var m = mod(), yo = vert(S.v);
-    el("e-v").innerHTML = "<b>" + yo.t + "</b> &nbsp; c·v = <b>" + yo.vt + "</b>";
-    el("e-act").innerHTML = '<span class="flojo">' +
-      yo.act.map(function(i){ return m.nombres[i]; }).join(", ") + "</span>";
+    var m = mod(), yo = vert(S.v), sinArrancar =
+      '<span class="flojo">— la línea 1 todavía no la ha puesto</span>';
+
+    el("e-v").innerHTML = arrancada()
+      ? "<b>" + yo.t + "</b> &nbsp; c·v = <b>" + yo.vt + "</b>"
+      : sinArrancar;
+    el("e-act").innerHTML = arrancada()
+      ? '<span class="flojo">' + nombresDe(yo.act) + "</span>"
+      : sinArrancar;
 
     var dm = el("e-m");
     if (S.M === null){
       dm.innerHTML = '<span class="flojo">— la línea 5 no ha corrido en esta vuelta' +
-        (S.pivotes > 0 && S.linea === 9 ? " (se vació al moverse)" : "") + "</span>";
+        (S.pivotes > 0 ? " (se vació al moverse)" : "") + "</span>";
     } else if (S.M.length === 0){
       dm.innerHTML = "{ } &nbsp;<span class=\"flojo\">vacío: ningún vecino mejora</span>";
     } else {
@@ -500,21 +585,40 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
     el("e-paso").innerHTML = S.mensaje;
 
-    var par = el("e-parado");
-    if (S.parado){
+    var par = el("e-partida");
+    if (arrancada() && yo.partida){
       par.classList.remove("oculto");
-      par.innerHTML = "Paró en la <b>línea 7</b>, con M vacío. Los " +
-        m.ADY[S.v].length + " vecinos de " + yo.t + " valen " +
-        listaValores(vecinos(S.v)) + ", y ninguno pasa de " + yo.vt +
-        ". El resultado es " + yo.t + " con " + yo.vt + ": no paró por quedarse " +
-        "sin vértices, paró porque cerca no hay nada mejor.";
+      par.innerHTML = yo.partida;
     } else {
       par.classList.add("oculto");
     }
 
+    var fin = el("e-parado");
+    if (S.parado){
+      fin.classList.remove("oculto");
+      fin.innerHTML = "Paró en la <b>línea 7</b>, con M vacío. Los " +
+        m.ADY[S.v].length + " vecinos de " + yo.t + " valen " +
+        listaValores(vecinos(S.v)) + ", y ninguno pasa de " + yo.vt +
+        ". El resultado es " + yo.t + " con " + yo.vt + ": no paró por quedarse " +
+        "sin vértices, paró porque cerca no hay nada mejor." +
+        (S.huboEmpate ? " Y en el camino hubo un empate, así que este vértice " +
+                        "depende de la convención: el valor no." : "");
+    } else {
+      fin.classList.add("oculto");
+    }
+
     el("e-contadores").textContent =
-      "pivotes: " + S.pivotes + "   ·   vértices donde estuvo v: " +
-      S.estuvo.length + " de " + m.V.length;
+      "pivotes: " + S.pivotes +
+      "   ·   v estuvo en: " + S.estuvo.length + " de " + m.V.length +
+      "   ·   consultados (línea 5): " + S.consultados.length + " de " + m.V.length;
+
+    el("nota-contadores").innerHTML =
+      "Los dos contadores juntos son el argumento, y no dicen lo mismo: <b>v</b> se " +
+      "para en unos cuantos vértices, pero la línea 5 pregunta por <b>todos</b> los " +
+      "vecinos de cada uno. Preguntar no es visitar, y en un poliedro de " +
+      m.V.length + " acaba preguntando por los " + m.V.length + ". Lo que simplex " +
+      "promete no es preguntar poco aquí: es no recorrer los 10¹¹ candidatos de un " +
+      "problema de veinte piezas.";
 
     el("b-paso").disabled = S.parado;
     el("b-pivote").disabled = S.parado;
@@ -534,9 +638,10 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   function px(u){ return OX + u * ESC; }
   function py(u){ return OY - u * ESC; }
 
-  function corteVentana(nivel){
-    var cand = [], y0 = nivel / 3, x0 = nivel / 4,
-        xt = (nivel - 3 * TOP) / 4, yt = (nivel - 4 * TOP) / 3, k;
+  function corteVentana(nivel, c){
+    var cand = [], k,
+        y0 = nivel / c[1], x0 = nivel / c[0],
+        xt = (nivel - c[1] * TOP) / c[0], yt = (nivel - c[0] * TOP) / c[1];
     if (y0 >= 0 && y0 <= TOP) cand.push([0, y0]);
     if (x0 >= 0 && x0 <= TOP) cand.push([x0, 0]);
     if (xt >= 0 && xt <= TOP) cand.push([xt, TOP]);
@@ -546,51 +651,65 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
       var clave = cand[k][0].toFixed(4) + "|" + cand[k][1].toFixed(4);
       if (!vistos[clave]){ vistos[clave] = 1; out.push(cand[k]); }
     }
-    // Con v = 0 los dos cortes caen en el origen y con v = 4·10 + 3·10 en la
-    // esquina de la ventana: ahi la curva de nivel es un punto, no un segmento.
     return out.length ? out.slice(0, 2) : null;
+  }
+
+  function rectaNivel(nivel, c, color, guiones, grosor){
+    var q = corteVentana(nivel, c);
+    if (!q) return "";
+    if (q.length === 1){
+      // Con nivel 0 los dos cortes caen en el origen: ahi la curva de nivel es
+      // un punto, no un segmento.
+      return '<circle cx="' + px(q[0][0]).toFixed(1) + '" cy="' + py(q[0][1]).toFixed(1) +
+             '" r="5" fill="none" stroke="' + color + '" stroke-width="' + grosor + '"/>';
+    }
+    return '<line x1="' + px(q[0][0]).toFixed(1) + '" y1="' + py(q[0][1]).toFixed(1) +
+           '" x2="' + px(q[1][0]).toFixed(1) + '" y2="' + py(q[1][1]).toFixed(1) +
+           '" stroke="' + color + '" stroke-width="' + grosor +
+           '" stroke-dasharray="' + guiones + '"/>';
   }
 
   function pintarDibujo(){
     var m = mod(), s = [], k, p;
+    // El aro de vecino solo se pinta cuando la linea 5 YA corrio en esta
+    // vuelta. Sin esta condicion el dibujo ensenaba consultados cuatro pasos
+    // antes de consultarlos, y la linea 5 no cambiaba nada al ejecutarse.
+    var hayM = arrancada() && S.M !== null;
+    var enM = hayM ? S.M : [], vec = hayM ? m.ADY[S.v] : [];
+
     s.push('<svg viewBox="0 0 ' + W + " " + H + '" role="img" ' +
       'aria-label="El polígono de cinco esquinas de la clase 1. La esquina donde ' +
-      'está v va con punto lleno, sus vecinos con aro, el camino recorrido con ' +
-      'flechas, y la curva de nivel con una recta punteada.">');
+      'está v va con punto lleno, los vecinos que la línea 5 ya consultó van con ' +
+      'aro, el camino recorrido con flechas, y dos rectas de nivel: la que pasa ' +
+      'por v y la que se arrastra.">');
     s.push('<rect x="0" y="0" width="' + W + '" height="' + H + '" rx="16" fill="var(--surface)"/>');
 
-    // poligono
     var d = "";
     for (k = 0; k < m.V.length; k++){
       p = m.V[k];
       d += (k ? " L " : "M ") + px(p.x).toFixed(1) + " " + py(p.y).toFixed(1);
     }
-    s.push('<path d="' + d + ' Z" fill="var(--relleno)" stroke="var(--trazo)" stroke-width="2"/>');
+    s.push('<path d="' + d + ' Z" fill="var(--relleno)" stroke="var(--muted)" stroke-width="2"/>');
 
-    // ejes
-    s.push(recta(px(0), py(0), px(TOP) + 16, py(0), "var(--trazo)", 2));
-    s.push(recta(px(0), py(0), px(0), py(TOP) - 16, "var(--trazo)", 2));
+    s.push(recta(px(0), py(0), px(TOP) + 16, py(0), "var(--muted)", 2));
+    s.push(recta(px(0), py(0), px(0), py(TOP) - 16, "var(--muted)", 2));
     s.push(rotulo(px(TOP) + 34, py(0) + 6, "x₁", "var(--muted)", 15, "middle", "normal", true));
     s.push(rotulo(px(0) + 20, py(TOP) - 22, "x₂", "var(--muted)", 15, "start", "normal", true));
     for (k = 2; k <= TOP; k += 2){
-      s.push(recta(px(k), py(0) - 5, px(k), py(0) + 5, "var(--trazo)", 1.5));
-      s.push(recta(px(0) - 5, py(k), px(0) + 5, py(k), "var(--trazo)", 1.5));
+      s.push(recta(px(k), py(0) - 5, px(k), py(0) + 5, "var(--muted)", 1.5));
+      s.push(recta(px(0) - 5, py(k), px(0) + 5, py(k), "var(--muted)", 1.5));
       s.push(rotulo(px(k), py(0) + 22, String(k), "var(--muted)", 12, "middle", "normal", true));
       s.push(rotulo(px(0) - 12, py(k) + 5, String(k), "var(--muted)", 12, "end", "normal", true));
     }
 
-    // curva de nivel
-    var c = corteVentana(S.nivel);
-    if (c && c.length === 2){
-      s.push('<line x1="' + px(c[0][0]).toFixed(1) + '" y1="' + py(c[0][1]).toFixed(1) +
-             '" x2="' + px(c[1][0]).toFixed(1) + '" y2="' + py(c[1][1]).toFixed(1) +
-             '" stroke="var(--aviso)" stroke-width="2.5" stroke-dasharray="8 5"/>');
-    } else if (c){
-      s.push('<circle cx="' + px(c[0][0]).toFixed(1) + '" cy="' + py(c[0][1]).toFixed(1) +
-             '" r="5" fill="none" stroke="var(--aviso)" stroke-width="2.5"/>');
+    // La recta que arrastra el lector, y la que pasa por v. La segunda es la
+    // que ata el dibujo al panel: sube en cada pivote, deja a los de M por
+    // encima, y al parar deja el poligono entero por debajo.
+    s.push(rectaNivel(S.nivel, m.coef, "var(--aviso)", "8 5", 2.5));
+    if (arrancada()){
+      s.push(rectaNivel(vert(S.v).v, m.coef, "var(--accent)", "2 4", 2));
     }
 
-    // camino recorrido
     for (k = 0; k + 1 < S.estuvo.length; k++){
       var a = m.V[S.estuvo[k]], b = m.V[S.estuvo[k + 1]];
       var x1 = px(a.x), y1 = py(a.y), x2 = px(b.x), y2 = py(b.y);
@@ -603,31 +722,37 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
              '" stroke="var(--accent)" stroke-width="3.5" marker-end="url(#punta)"/>');
     }
 
-    // esquinas
-    var enM = S.M || [], vec = mod().ADY[S.v];
     for (k = 0; k < m.V.length; k++){
       p = m.V[k];
-      var x = px(p.x), y = py(p.y), color, texto2;
-      if (k === S.v){
+      var x = px(p.x), y = py(p.y), color;
+      if (arrancada() && k === S.v){
         s.push('<circle cx="' + x + '" cy="' + y + '" r="7.5" fill="var(--accent)"/>');
         s.push('<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" stroke="var(--accent)" stroke-width="2.5"/>');
         color = "var(--accent)";
       } else if (enM.indexOf(k) >= 0){
-        s.push('<circle cx="' + x + '" cy="' + y + '" r="8" fill="var(--surface)" stroke="var(--ok)" stroke-width="3.5"/>');
+        // Lleno contra hueco, no solo tono: es la distincion que el SVG de la
+        // pagina ya usa, y medio pixel de grosor no se ve.
+        s.push('<circle cx="' + x + '" cy="' + y + '" r="8" fill="var(--enM)" stroke="var(--ok)" stroke-width="3"/>');
         color = "var(--ok)";
       } else if (vec.indexOf(k) >= 0){
         s.push('<circle cx="' + x + '" cy="' + y + '" r="8" fill="var(--surface)" stroke="var(--info)" stroke-width="3"/>');
         color = "var(--info)";
       } else {
-        s.push('<circle cx="' + x + '" cy="' + y + '" r="6" fill="var(--surface)" stroke="var(--trazo)" stroke-width="2.5"/>');
+        s.push('<circle cx="' + x + '" cy="' + y + '" r="7" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"/>');
         color = "var(--muted)";
       }
-      if (S.estuvo.indexOf(k) >= 0 && k !== S.v){
-        s.push('<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--accent)"/>');
+      // El aro dice el papel en ESTA vuelta; el punto de dentro dice la
+      // historia, y por eso se pinta en todas las ramas menos en la de v.
+      if (!(arrancada() && k === S.v)){
+        if (S.estuvo.indexOf(k) >= 0){
+          s.push('<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--accent)"/>');
+        } else if (S.consultados.indexOf(k) >= 0){
+          s.push('<circle cx="' + x + '" cy="' + y + '" r="2.5" fill="var(--info)"/>');
+        }
       }
       var r = ROTULOS[p.t];
-      texto2 = p.t + " = " + p.vt;
-      s.push(rotulo(x + r[0], y + r[1], texto2, color, 13, r[2], k === S.v ? "700" : "normal"));
+      s.push(rotulo(x + r[0], y + r[1], p.t + " = " + p.vt, color, 13, r[2],
+                    (arrancada() && k === S.v) ? "700" : "normal"));
     }
 
     s.push('<defs><marker id="punta" viewBox="0 0 10 10" refX="9" refY="5" ' +
@@ -637,14 +762,33 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
     s.push("</svg>");
     el("lienzo").innerHTML = s.join("");
 
-    var tope = 38;   // el mayor valor del poligono, de clase2.py
-    el("lbl-nivel").textContent = "Curva de nivel: 4x₁ + 3x₂ = " + fmt(S.nivel);
+    var obj = m.coef[0] + "x₁ + " + m.coef[1] + "x₂";
+    var tope = 0;
+    for (k = 0; k < m.V.length; k++) if (m.V[k].v > tope) tope = m.V[k].v;
+    var mejores = m.V.filter(function(w){ return w.v === tope; })
+                     .map(function(w){ return w.t; }).join(" y ");
+
+    el("sel-nivel").max = String(nivelMax(m));
     el("sel-nivel").value = String(S.nivel);
+    el("lbl-nivel").textContent = "Curva de nivel que arrastras: " + obj + " = " + fmt(S.nivel);
     el("nota-nivel").innerHTML = S.nivel > tope
       ? "Esa recta ya <b>no toca</b> el polígono: ningún plan factible vale " +
-        fmt(S.nivel) + ". La última que todavía lo toca es la de 38, y lo toca solo en (8,2)."
+        fmt(S.nivel) + ". La última que todavía lo toca es la de " + tope +
+        ", y lo toca en " + mejores + "."
       : "Esa recta <b>todavía toca</b> el polígono. Empújala hacia arriba y a la " +
         "derecha hasta que deje de tocarlo.";
+
+    el("nota-dos-rectas").innerHTML = arrancada()
+      ? "La recta <b style=\"color:var(--accent)\">de puntos</b> no se arrastra: va " +
+        "siempre por <b>v</b>, en " + obj + " = " + vert(S.v).vt + ". Sube en cada " +
+        "pivote, los de M le quedan por encima, y " +
+        (S.parado ? "ahora que paró <b>deja el polígono entero por debajo</b>: eso es " +
+                    "lo que la línea 7 acaba de decidir."
+                  : "cuando el método pare habrá dejado el polígono entero por debajo.")
+      : "La recta <b style=\"color:var(--accent)\">de puntos</b> aparecerá en cuanto " +
+        "corra la línea 1: va siempre por <b>v</b>, y sube en cada pivote. La de " +
+        "rayas la arrastras tú, sobre el dibujo o con la barra, y se desliza sin " +
+        "girar: girarla es cambiar lo que paga el depósito.";
   }
 
   function recta(x1, y1, x2, y2, color, g){
@@ -665,25 +809,31 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
   // --- la tabla de tres variables ---------------------------------------
   function pintarTabla(){
-    var m = mod(), enM = S.M || [], vec = m.ADY[S.v], h = "";
+    var m = mod(), hayM = arrancada() && S.M !== null;
+    var enM = hayM ? S.M : [], vec = arrancada() ? m.ADY[S.v] : [], h = "";
     h += "<thead><tr><th>Plan</th><th>Vale</th><th>Qué se acaba ahí</th>" +
          "<th>Relación con v</th></tr></thead><tbody>";
     for (var k = 0; k < m.V.length; k++){
-      var p = m.V[k], estado, comp;
-      if (k === S.v){
+      var p = m.V[k], estado;
+      if (!arrancada()){
+        estado = "— la línea 1 todavía no ha puesto v";
+      } else if (k === S.v){
         estado = "◀ aquí estoy";
       } else if (vec.indexOf(k) >= 0){
-        comp = compartidas(S.v, k).map(function(i){ return m.nombres[i]; }).join(" y ");
-        estado = "vecino — comparte dos activas con v: " + comp;
-        if (enM.indexOf(k) >= 0) estado += " · <b class=\"ok\" style=\"color:var(--ok)\">está en M</b>";
-        else if (S.M !== null) estado += " · no mejora";
+        estado = "vecino (unido a v por una arista) · comparte dos activas: " +
+                 nombresDe(compartidas(S.v, k));
+        if (hayM){
+          estado += enM.indexOf(k) >= 0
+            ? " · <b style=\"color:var(--ok)\">está en M</b>"
+            : " · consultado, no mejora";
+        }
       } else {
         estado = "— no es vecino de v";
       }
-      h += '<tr class="' + (k === S.v ? "aqui" : "") + '">' +
+      h += '<tr class="' + (arrancada() && k === S.v ? "aqui" : "") + '">' +
         "<td>" + p.t + (S.estuvo.indexOf(k) >= 0 && k !== S.v ? " ·" : "") + "</td>" +
         '<td class="der">' + p.vt + "</td>" +
-        '<td class="prosa">' + p.act.map(function(i){ return m.nombres[i]; }).join(", ") + "</td>" +
+        '<td class="prosa">' + nombresDe(p.act) + "</td>" +
         '<td class="prosa">' + estado + "</td></tr>";
     }
     h += "</tbody>";
@@ -714,49 +864,44 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
   // --- controles ---------------------------------------------------------
   function pintarControles(){
-    var m = mod();
-    var sel = el("sel-inicio"), h = "";
-    for (var k = 0; k < m.V.length; k++){
+    var m = mod(), sel = el("sel-inicio"), h = "", k;
+    for (k = 0; k < m.V.length; k++){
       h += '<option value="' + k + '"' + (k === S.inicio ? " selected" : "") + ">" +
            m.V[k].t + "</option>";
     }
     sel.innerHTML = h;
-    el("b-m2").className = S.modo === "2" ? "elegido" : "";
-    el("b-m3").className = S.modo === "3" ? "elegido" : "";
-    el("panel-dibujo").classList.toggle("oculto", S.modo !== "2");
-    el("panel-tabla").classList.toggle("oculto", S.modo !== "3");
-    el("nota-modo").innerHTML = S.modo === "2"
-      ? "Dos piezas —filtros y celdas—, objetivo " + m.objetivo +
-        ". Cinco esquinas, y cada una con dos vecinos."
-      : "Tres piezas —filtros, celdas y sellos—, objetivo " + m.objetivo +
-        ". Ocho vértices, cada uno con tres vecinos, y <b>ningún dibujo</b>: " +
-        "el pseudocódigo es el mismo de la izquierda, sin cambiar una línea.";
+    ["2", "2b", "3"].forEach(function(clave, i){
+      el(["b-m2", "b-m2b", "b-m3"][i]).className = S.modo === clave ? "elegido" : "";
+    });
+    el("panel-dibujo").classList.toggle("oculto", !m.dibujo);
+    el("panel-tabla").classList.toggle("oculto", m.dibujo);
+    el("nota-modo").innerHTML = m.nota;
   }
 
   function pintar(){
     pintarControles();
     pintarPseudo();
     pintarEstado();
-    if (S.modo === "2") pintarDibujo(); else pintarTabla();
+    if (mod().dibujo) pintarDibujo(); else pintarTabla();
     pintarBitacora();
   }
 
   // --- arrastre de la curva de nivel -------------------------------------
   var arrastrando = false;
   function nivelDesde(ev){
-    var svg = el("lienzo").querySelector("svg");
+    var m = mod(), svg = el("lienzo").querySelector("svg");
     if (!svg) return;
     var caja = svg.getBoundingClientRect();
     if (!caja.width) return;
     var k = W / caja.width;
     var ux = (ev.clientX - caja.left) * k, uy = (ev.clientY - caja.top) * k;
     var x = (ux - OX) / ESC, y = (OY - uy) / ESC;
-    var v = 4 * x + 3 * y;
-    S.nivel = Math.max(0, Math.min(60, Math.round(v * 2) / 2));
+    var v = m.coef[0] * x + m.coef[1] * y;
+    S.nivel = Math.max(0, Math.min(nivelMax(m), Math.round(v * 2) / 2));
     pintarDibujo();
   }
   el("lienzo").addEventListener("pointerdown", function(ev){
-    if (S.modo !== "2") return;
+    if (!mod().dibujo) return;
     arrastrando = true;
     try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
     nivelDesde(ev);
@@ -774,14 +919,15 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
   el("b-paso").onclick = function(){ ejecutar(); pintar(); };
   el("b-pivote").onclick = function(){ hastaElSiguienteVertice(); pintar(); };
-  el("b-reiniciar").onclick = function(){
-    arrancar(S.modo, S.inicio, S.nivel); pintar();
-  };
+  el("b-reiniciar").onclick = function(){ arrancar(S.modo, S.inicio, S.nivel); pintar(); };
   el("sel-inicio").onchange = function(){
     arrancar(S.modo, parseInt(this.value, 10), S.nivel); pintar();
   };
-  el("b-m2").onclick = function(){ if (S.modo !== "2"){ arrancar("2", undefined, S.nivel); pintar(); } };
-  el("b-m3").onclick = function(){ if (S.modo !== "3"){ arrancar("3", undefined, S.nivel); pintar(); } };
+  ["2", "2b", "3"].forEach(function(clave, i){
+    el(["b-m2", "b-m2b", "b-m3"][i]).onclick = function(){
+      if (S.modo !== clave){ arrancar(clave, undefined, S.nivel); pintar(); }
+    };
+  });
 
   arrancar("2");
   pintar();
