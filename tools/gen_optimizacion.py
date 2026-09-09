@@ -646,8 +646,8 @@ def opt_sin_energia():
         # desplazamientos a mano, revisados renderizando: (0,10) choca con el
         # rótulo del eje si va arriba, y (9,0) choca con el pie si va abajo.
         dx, dy, anc = {(0, 0): (14, 26, "start"),
-                       (0, 10): (18, 20, "start"),
-                       (9, 0): (-8, -18, "end")}.get(
+                       (0, 10): (30, 20, "start"),
+                       (9, 0): (-20, -18, "end")}.get(
                           (int(p[0]), int(p[1])), (16, -14, "start"))
         if es_mejor:
             dx, dy, anc = 18, -12, "start"

@@ -178,7 +178,7 @@ con sus dos codos.
 
 *Se abre en Google Colab, en otra pestaña.*
 
-Cierra con una bitácora nueva, la del taller, que **no está resuelta en ninguna
+Cierra con una bitácora nueva, la del torno, que **no está resuelta en ninguna
 página**. Ahí lo único que se pide es escribir la terna, y el notebook la revisa
 dato por dato. El archivo vive en este repositorio, en
 `course/6_optimizacion/_assets/02_simplex.ipynb`.

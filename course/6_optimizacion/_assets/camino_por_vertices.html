@@ -318,9 +318,10 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
       nota: "El mismo polígono, y lo único que cambió es lo que paga el depósito por " +
             "una celda: <span class=\"mono\">c = (4, 4)</span>. Ahora <b>(8,2) y (2,8) " +
             "valen los dos 40</b>. Desde el origen los dos vecinos empatan en 36 y la " +
-            "línea 8 ejecuta por fin su regla de desempate; empieza en <b>(9,0)</b> y " +
-            "terminas en el <b>otro</b> vértice, también con 40. Coincide el valor " +
-            "óptimo, no el vértice."
+            "línea 8 ejecuta por fin su regla de desempate y se queda con <b>(0,9)</b>, " +
+            "el de menor x₁, para terminar en <b>(2,8)</b>. Arranca tú en <b>(9,0)</b> " +
+            "y terminas en <b>(8,2)</b>, el otro vértice, también con 40. Coincide el " +
+            "valor óptimo, no el vértice."
     },
     "3": {
       n: 3, dibujo: false, orden: "desc",
