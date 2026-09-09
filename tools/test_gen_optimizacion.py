@@ -493,9 +493,15 @@ def test_el_diagrama_del_precio_sombra_calcula_sus_tres_optimos():
     assert [int(gen.valor(p)) for p in optimos] == [38, 40, 42]
     # los tres caen sobre la arista del polimero, 2x1 + x2 = 18
     assert all(2 * p[0] + p[1] == 18 for p in optimos), "ya no corren por esa arista"
-    assert len(gen._region(gen.A, [12, 18, 18])) == 4, (
-        "con 12 horas la region tiene cuatro esquinas: en (6, 6) concurren las "
-        "tres rectas de recurso"
+    # el 12 se deriva de HORAS y de B, no se clava: con una hora menos la region
+    # tiene cinco esquinas, y es perder una lo que dice que hay concurrencia
+    ultimo = [gen.HORAS[-1]] + gen.B[1:]
+    assert len(gen._region(gen.A, ultimo)) == 4, (
+        f"con {gen.HORAS[-1]} horas la region tiene cuatro esquinas: en "
+        f"{gen.rotulo(optimos[-1])} concurren las tres rectas de recurso"
+    )
+    assert len(gen._region(gen.A, [gen.HORAS[-2]] + gen.B[1:])) == 5, (
+        "una hora antes todavia son cinco: la esquina se pierde en el codo"
     )
     texto = _texto("opt-fig-precio-sombra")
     for rot, valor in zip(esperados, (38, 40, 42)):

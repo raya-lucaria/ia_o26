@@ -1403,12 +1403,18 @@ def opt_fig_precio_sombra():
     # color, asi que lo que las distingue es el trazo, y la barra solida de
     # _leyenda no lo ensenaria. Lleva una fila por recta —tambien las dos
     # dibujadas a guiones— porque ninguna va rotulada dentro del dibujo.
+    # Las tres filas de horas salen de HORAS y de GUIONES_HORAS, no de literales:
+    # la leyenda es lo unico que identifica esas tres rectas, y con el trazo y
+    # el numero escritos a mano se desincronizan de la recta sin que nada lo
+    # note. Aqui ya paso: la fila de 12 decia "3 5" y la recta iba a "3 4".
     filas = [
         (SERIE[1], None, "2x\u2081 + x\u2082 \u2264 18   polímero"),
         (SERIE[2], None, "x\u2081 + 2x\u2082 \u2264 18   energía"),
-        (SERIE[0], None, "x\u2081 + x\u2082 \u2264 10   las horas de hoy"),
-        (SERIE[0], "9 6", "x\u2081 + x\u2082 \u2264 11   con una hora más"),
-        (SERIE[0], "3 5", "x\u2081 + x\u2082 \u2264 12   con dos horas más"),
+    ] + [
+        (SERIE[0], GUIONES_HORAS[k],
+         f"x\u2081 + x\u2082 \u2264 {h}   {glosa}")
+        for k, (h, glosa) in enumerate(zip(
+            HORAS, ("las horas de hoy", "con una hora más", "con dos horas más")))
     ]
     s.append(caja(500, 96, 348, 26 + 30 * len(filas),
                   relleno=mezclar(LINEA, 0.16), borde=SUAVE))

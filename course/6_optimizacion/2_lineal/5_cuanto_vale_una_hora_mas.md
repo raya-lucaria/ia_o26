@@ -71,8 +71,7 @@ salía 38, así que la hora vale 2.
 | 14 | 42 | 0 |
 :::
 
-La tercera columna dice lo que ganó **esa** hora, no lo que pagará la siguiente.
-Y para quien ya llevó cálculo: el precio sombra es la derivada del valor óptimo
+Para quien ya llevó cálculo: el precio sombra es la derivada del valor óptimo
 respecto de lo disponible, **donde existe**.
 
 ::: figure {#opt-fig-precio-sombra title="Qué compra una hora más"}
@@ -88,11 +87,10 @@ Aquí la hora vale 2 créditos **mientras haya entre 9 y 12 horas**. Por debajo 
 9 sobra polímero y el mejor plan es puro filtro, que rinde 4 por hora; con 12 el
 óptimo es $(6,6)$, se acaba también la energía, y de ahí en adelante la hora ya
 no vale nada.
-
-Los dos extremos son codos, así que en los dos **esa derivada no existe**: en 12
-vale 2 por la izquierda y 0 por la derecha. Nunca «la derivada vale 2 hasta 12»;
-siempre «2 por hora mientras haya entre 9 y 12 horas».
 :::
+
+Los dos extremos son **codos**, donde cambia la pendiente, y en un codo **no hay
+derivada**: en 12 el valor sube 2 por la izquierda y 0 por la derecha.
 
 Y $(6,6)$ merece su renglón, con el papel cambiado: era la trampa del dibujo
 **porque pedía 12 horas y solo había 10**. Ahí concurren tres rectas y sigue
