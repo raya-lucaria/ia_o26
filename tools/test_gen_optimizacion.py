@@ -529,10 +529,15 @@ def test_el_diagrama_del_precio_sombra_calcula_sus_tres_optimos():
 #     2.5** —el de la parada de opt-camino-simplex, el de sus dos esquinas sin
 #     visitar, el de (8,2,0) en opt-fig-poliedro y el de (6,6) en
 #     opt-fig-precio-sombra—, los trazos de opt-fig-matriz, y **todas las
-#     puntas de flecha, porque son <marker> y no <line>**. Hoy ninguno de esos
-#     cruza un rotulo de vertice —medido—, asi que no hay defecto vivo
-#     escondido detras del hueco; pero un rotulo partido por una punta de
-#     flecha o por el borde del poligono pasaria esta guarda.
+#     puntas de flecha, porque son <marker> y no <line>**. Ninguno de esos
+#     cruza hoy un rotulo de vertice —medido a mano sobre los TRECE diagramas
+#     del catalogo, no solo los que trajo esta rama: opt-sin-energia tenia dos
+#     rotulos partidos por sus <path> (el contorno de (0,10) y el de (9,0)),
+#     que la corrida de esta guarda nunca vio porque el hueco los excluye. Se
+#     corrigieron los desplazamientos, no el hueco, asi que sigue habiendo
+#     defecto vivo posible detras de el; solo que hoy no hay ninguno. Un
+#     rotulo partido por una punta de flecha o por el borde del poligono
+#     seguiria pasando esta guarda sin que la prueba lo note.
 #
 #     Se aceptan fuera por dos razones distintas. Los <path> y <circle> que
 #     rotulan curvas llevan placa de fondo debajo —el arreglo publicado en
