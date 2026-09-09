@@ -30,7 +30,7 @@ Esas esquinas de al lado tienen nombre, y se reconocen sin dibujo.
 Dos vértices son **adyacentes**, o vecinos, si están unidos por una **arista**
 del poliedro.
 
-En los dos cuerpos de esta clase eso se comprueba contando: **comparten $n-1$
+En los dos poliedros de esta clase eso se comprueba contando: **comparten $n-1$
 restricciones activas**, y esas $n-1$ son independientes. Contar no equivale a
 estar unidos por una arista: si las compartidas no fueran independientes, el
 conteo declararía vecinos a los extremos de la diagonal de una cara. Aquí
@@ -39,7 +39,7 @@ coincide porque ningún vértice es degenerado.
 En el polígono de la clase 1, $(9,0)$ y $(8,2)$ son vecinos: los dos agotan el
 polímero. $(9,0)$ y $(2,8)$ no comparten ninguna, y no lo son. Cada esquina de
 **ese** polígono tiene dos vecinos, y cada vértice del poliedro con sello tiene
-tres. Es una cuenta de **estos** dos cuerpos, no una regla: el ápice de una
+tres. Es una cuenta de **estos** dos poliedros, no una regla: el ápice de una
 pirámide de base cuadrada tiene cuatro.
 :::
 
@@ -55,9 +55,10 @@ vértice se visita dos veces, y los vértices son finitos.
 
 **Por qué parar es correcto**, que es lo que no es obvio, son dos pasos:
 
-1. **De los vecinos al alrededor.** Desde un vértice, cualquier movimiento
-   factible es una mezcla de los movimientos hacia sus vecinos. Si ninguno de
-   ésos sube, ninguna mezcla sube: cerca no hay nada mejor.
+1. **De los vecinos al alrededor.** Desde un vértice de un poliedro acotado,
+   cualquier movimiento factible es una mezcla de los movimientos hacia sus
+   vecinos. Si ninguno de ésos sube, ninguna mezcla sube: cerca no hay nada
+   mejor.
 2. **Del alrededor a todo el poliedro.** Aquí se cobra lo que
    [[que-es-una-respuesta|Qué es una respuesta]] ya dijo: el conjunto factible
    es **convexo** —no tiene huecos ni entrantes— **y** el objetivo es lineal.
@@ -104,7 +105,7 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.
  3      si sale de v un rayo que mejora y nunca choca con otro vértice
  4          devolver «no acotado»
  5      M ← { w vecino de v : c·w > c·v }       ▷ hacia dónde: los que mejoran
- 6      si M = ∅
+ 6      si M = { }
  7          devolver v                          ▷ ¿paro? ninguno mejora
  8      v ← el w de M con mayor c·w             ▷ cuánto avanzo: hasta ese vecino
  9  fin repetir
@@ -160,7 +161,8 @@ casualidad del tamaño del problema.
 > [!WARNING]
 > Simplex no promete recorrer pocos vértices: promete no recorrerlos todos, y
 > parar en el correcto. Y no promete llegar por tu camino: si dos vecinos
-> empatan, dos personas terminan en vértices distintos con el mismo valor.
+> empatan, dos personas pueden terminar en vértices distintos con el mismo
+> valor.
 
 ## Lo que hay que llevarse
 

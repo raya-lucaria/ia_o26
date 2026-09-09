@@ -343,10 +343,24 @@ def test_la_traza_de_simplex_en_dos_variables_es_la_que_la_pagina_imprime():
 #
 # Esta ESTRECHADA a proposito, en vez de aflojar un umbral hasta que no muerda:
 #
-#   - Solo segmentos de linea RECTOS (<line>). Los <path> y los <circle> se
-#     quedan fuera: sus rotulos de curva llevan placa de fondo debajo, que es
-#     el arreglo publicado en opt-fig-circulos, y una guarda geometrica los
-#     marcaria igual.
+#   - Solo segmentos de linea RECTOS (<line>).
+#
+#     ESTO DEJA UN HUECO DE COBERTURA, y hay que nombrarlo entero: **ningun
+#     trazo que no sea <line> se comprueba**. Quedan fuera, aunque lleven
+#     informacion: el contorno del poligono (un <path> a grosor 2 en
+#     opt-camino-simplex y opt-fig-circulos), las curvas de nivel circulares
+#     (<circle> a grosor 2.5), los trazos de opt-fig-matriz, y **todas las
+#     puntas de flecha, porque son <marker> y no <line>**. Hoy ninguno de esos
+#     cruza un rotulo de vertice —medido—, asi que no hay defecto vivo
+#     escondido detras del hueco; pero un rotulo partido por una punta de
+#     flecha o por el borde del poligono pasaria esta guarda.
+#
+#     Se aceptan fuera por dos razones distintas. Los <path> y <circle> que
+#     rotulan curvas llevan placa de fondo debajo —el arreglo publicado en
+#     opt-fig-circulos—, asi que una guarda geometrica los marcaria aunque
+#     esten bien. Y los <marker> no tienen geometria propia en el documento:
+#     habria que reconstruir el triangulo desde el extremo y la orientacion de
+#     su linea, que es una segunda guarda, no un umbral de esta.
 #   - Solo trazos de grosor >= 1.5. La rejilla de _plano va a grosor 1 y al 40%
 #     del color de linea: pasa por detras de un rotulo sin partir ningun glifo,
 #     y ademas es inevitable —la rejilla va cada 68 px y un rotulo con valor
