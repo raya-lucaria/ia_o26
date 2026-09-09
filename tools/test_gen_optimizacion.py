@@ -395,6 +395,113 @@ def test_la_traza_con_sello_pasa_por_la_parada_fraccionaria():
         )
 
 
+def _pagina_5():
+    return (ASSETS_OPTIMIZACION.parent / "2_lineal" /
+            "5_cuanto_vale_una_hora_mas.md").read_text(encoding="utf-8")
+
+
+def _filas_publicadas(texto, id_tabla, cabecera):
+    bloque = texto.split("{#" + id_tabla)[1].split(":::")[0]
+    return [l for l in bloque.splitlines()
+            if l.strip().startswith("|") and "---" not in l and cabecera not in l]
+
+
+def test_la_serie_de_horas_y_su_fila_de_diferencias():
+    """La fila que la pagina imprime es lo que gano ESA hora respecto de la
+    anterior. La version anterior la rotulo "lo que gana la hora siguiente" con
+    estos mismos numeros, y entonces dos celdas eran falsas: la fila hacia
+    adelante tiene SEIS entradas y empieza en 4, 2, no en 4, 4.
+
+    Por eso la guarda afirma las dos filas y ademas lee el rotulo publicado.
+    """
+    A, c = [[1, 1], [2, 1], [1, 2]], [4, 3]
+    z = lambda h: max(sum(ci * xi for ci, xi in zip(c, v))
+                      for v in vertices(A, [h, 18, 18], 2))
+    serie = [z(h) for h in range(8, 15)]
+    assert serie == [32, 36, 38, 40, 42, 42, 42]
+    gano_esa_hora = [serie[0] - z(7)] + [serie[i] - serie[i - 1] for i in range(1, 7)]
+    assert gano_esa_hora == [4, 4, 2, 2, 2, 0, 0]
+    assert [serie[i + 1] - serie[i] for i in range(6)] == [4, 2, 2, 2, 0, 0], \
+        "la fila hacia adelante es OTRA y tiene seis entradas, no siete"
+
+    # Los dos codos: la hora vale 2 entre 9 y 12, y el rango tiene DOS extremos.
+    assert gano_esa_hora[1] == 4 and gano_esa_hora[2] == 2, "el codo de abajo, en 9"
+    assert gano_esa_hora[4] == 2 and gano_esa_hora[5] == 0, "el codo de arriba, en 12"
+
+    texto = _pagina_5()
+    assert "ganó esa hora" in texto, (
+        "el rotulo de la tercera columna es 'lo que gano ESA hora'; con "
+        "'la hora siguiente' dos celdas de la tabla son falsas"
+    )
+    assert "hora siguiente" not in texto.split("{#opt-valor-por-hora")[1].split(":::")[0]
+    filas = _filas_publicadas(texto, "opt-valor-por-hora", "Horas disponibles")
+    assert len(filas) == 7, f"la tabla tiene {len(filas)} filas de datos, no 7"
+    for fila, h, zz, d in zip(filas, range(8, 15), serie, gano_esa_hora):
+        celdas = [x.strip().strip("*") for x in fila.strip().strip("|").split("|")]
+        assert len(celdas) == 3, "la tabla va transpuesta: tres columnas, siete filas"
+        assert celdas[0] == str(h), f"{celdas[0]}: la primera columna son las horas"
+        assert celdas[1] == str(zz), f"h={h}: el optimo publicado no es {zz}"
+        assert int(celdas[2].replace("+", "")) == d, f"h={h}: gano {d}, no {celdas[2]}"
+
+
+def test_los_tres_numeros_del_certificado_son_los_precios_sombra():
+    """El enganche entero de la pagina. Si dejan de coincidir, la revelacion
+    es falsa y hay que reescribir la seccion, no ajustar el numero."""
+    A, b, c = [[1, 1], [2, 1], [1, 2]], [10, 18, 18], [4, 3]
+    z = lambda bb: max(sum(ci * xi for ci, xi in zip(c, v)) for v in vertices(A, bb, 2))
+    base = z(b)
+    y = [z([b[i] + (1 if k == i else 0) for i in range(3)]) - base for k in range(3)]
+    assert y == [2, 1, 0], y
+    assert base == 38 and sum(y[i] * b[i] for i in range(3)) == 38
+    assert y[2] == 0, "el recurso que sobra tiene que tener precio cero"
+
+    # Y la tabla de holguras que la pagina publica al lado, que es de donde
+    # sale que el cero cae justo en el recurso que sobra.
+    optimo = max(vertices(A, b, 2), key=lambda v: sum(ci * xi for ci, xi in zip(c, v)))
+    holguras = [b[i] - sum(A[i][j] * optimo[j] for j in range(2)) for i in range(3)]
+    assert holguras == [0, 0, 6], holguras
+    filas = _filas_publicadas(_pagina_5(), "opt-estado-recursos", "Recurso")
+    assert len(filas) == 3, f"la tabla tiene {len(filas)} filas de datos, no 3"
+    for fila, i in zip(filas, range(3)):
+        celdas = [x.strip().strip("*") for x in fila.strip().strip("|").split("|")]
+        gasta = b[i] - holguras[i]
+        assert [celdas[1], celdas[2], celdas[3]] == [str(b[i]), str(gasta),
+                                                     str(holguras[i])], celdas
+
+
+def test_el_diagrama_del_precio_sombra_calcula_sus_tres_optimos():
+    """opt-fig-precio-sombra no lleva coordenadas a mano: los tres optimos y
+    las dos regiones salen de recortar el episodio con 10, 11 y 12 horas.
+
+    Fija ademas la concurrencia, que es lo que el dibujo tiene que ensenar: con
+    12 horas la region pierde una esquina porque las tres rectas de recurso
+    pasan por (6, 6).
+    """
+    # Las tres posiciones de la recta no son tres numeros elegidos a mano: la
+    # primera es lo que hay, y la ultima es el codo de arriba, el primer h en el
+    # que una hora mas ya no mueve el optimo. Sin esto, dibujar 13 en vez de 12
+    # pasaba la guarda, porque con 13 el optimo sigue siendo (6, 6).
+    assert gen.HORAS[0] == gen.B[0], "la primera posicion es lo disponible hoy"
+    assert list(gen.HORAS) == [gen.HORAS[0] + k for k in range(3)], "van de una en una"
+    codo = next(h for h in range(gen.B[0], 40)
+                if gen.optimo_con_horas(h) == gen.optimo_con_horas(h + 1))
+    assert gen.HORAS[-1] == codo, f"el codo de arriba esta en {codo}, no en {gen.HORAS[-1]}"
+
+    esperados = ["(8, 2)", "(7, 4)", "(6, 6)"]
+    optimos = [gen.optimo_con_horas(h) for h in gen.HORAS]
+    assert [gen.rotulo(p) for p in optimos] == esperados, optimos
+    assert [int(gen.valor(p)) for p in optimos] == [38, 40, 42]
+    # los tres caen sobre la arista del polimero, 2x1 + x2 = 18
+    assert all(2 * p[0] + p[1] == 18 for p in optimos), "ya no corren por esa arista"
+    assert len(gen._region(gen.A, [12, 18, 18])) == 4, (
+        "con 12 horas la region tiene cuatro esquinas: en (6, 6) concurren las "
+        "tres rectas de recurso"
+    )
+    texto = _texto("opt-fig-precio-sombra")
+    for rot, valor in zip(esperados, (38, 40, 42)):
+        assert f"{rot} = {valor}" in texto, f"el diagrama no rotula {rot} = {valor}"
+
+
 # --------------------------------------------------------------------------
 # Guarda de rotulos: ningun trazo parte un rotulo de vertice.
 #
@@ -411,8 +518,11 @@ def test_la_traza_con_sello_pasa_por_la_parada_fraccionaria():
 #     trazo que no sea <line> se comprueba**. Quedan fuera, aunque lleven
 #     informacion: el contorno del poligono (un <path>, a grosor 2 en
 #     opt-camino-simplex y a 2.5 en opt-fig-circulos), las curvas de nivel
-#     circulares (<circle>, a grosor 3 la de dentro y 2 las otras tres), los
-#     trazos de opt-fig-matriz, y **todas las
+#     circulares (<circle>, a grosor 3 la de dentro y 2 las otras tres), **los
+#     aros huecos de los vertices, que tambien son <circle> y van a grosor
+#     2.5** —el de la parada de opt-camino-simplex, el de sus dos esquinas sin
+#     visitar, el de (8,2,0) en opt-fig-poliedro y el de (6,6) en
+#     opt-fig-precio-sombra—, los trazos de opt-fig-matriz, y **todas las
 #     puntas de flecha, porque son <marker> y no <line>**. Hoy ninguno de esos
 #     cruza un rotulo de vertice —medido—, asi que no hay defecto vivo
 #     escondido detras del hueco; pero un rotulo partido por una punta de

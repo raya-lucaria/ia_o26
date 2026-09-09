@@ -1297,6 +1297,148 @@ def opt_camino_simplex():
     return "".join(s)
 
 
+# Las tres posiciones de la recta de las horas que dibuja opt-fig-precio-sombra,
+# y el desplazamiento del rotulo de cada optimo, a mano y revisado renderizando
+# AMPLIADO. Los rotulos llevan el valor, asi que miden casi 80 px: los tres van
+# a la derecha de su punto, que es el unico lado libre. A la izquierda pasan las
+# tres rectas de horas, y encima la de la energia.
+HORAS = (10, 11, 12)
+GUIONES_HORAS = (None, "9 6", "3 4")
+ROTULOS_HORAS = {
+    (8, 2): (18, 12, "start"),
+    (7, 4): (18, 14, "start"),
+    (6, 6): (22, -22, "start"),
+}
+
+
+def optimo_con_horas(h):
+    """El mejor plan cuando hay h horas de impresora, con el resto igual.
+
+    Se calcula, no se transcribe: recorta la region con [h, 18, 18] y se queda
+    con el vertice que mas paga. Con h = 12 esa region tiene cuatro esquinas en
+    vez de cinco, porque la recta de las horas, la del polimero y la de la
+    energia pasan las tres por (6, 6).
+    """
+    return max(_region(A, [h, B[1], B[2]]), key=valor)
+
+
+def opt_fig_precio_sombra():
+    """Que compra una hora mas: el optimo corre por la arista del polimero.
+
+    Calcula las dos regiones y los tres optimos desde los parametros del
+    episodio. Los tres puntos caen sobre 2x1 + x2 = 18 —la arista del
+    polimero— y el ultimo, (6, 6), es donde las tres rectas de recurso se
+    juntan: ahi la energia deja de sobrar y la hora siguiente ya no compra
+    nada.
+
+    Cada recta de horas se dibuja SOLO hasta su optimo, y no cruzando toda la
+    ventana como en opt-poligono. No es adorno: las tres son paralelas y quedan
+    a 24 px una de otra, asi que con las tres enteras no hay un solo hueco a la
+    derecha de los puntos donde quepa un rotulo de 80 px sin que un trazo lo
+    parta. Ademas el corte cae justo donde el dibujo quiere que mires: donde la
+    recta de las horas se encuentra con la del polimero. Quien identifica cada
+    recta es la leyenda, con su trazo.
+    """
+    W, H = 880, 600
+    ox, oy, esc, top = 90, 490, 34, 10
+    px, py, plano = _plano(W, H, ox, oy, esc, top)
+    chica = _region(A, [HORAS[0], B[1], B[2]])
+    grande = _region(A, [HORAS[-1], B[1], B[2]])
+    optimos = [optimo_con_horas(h) for h in HORAS]
+    s = [marco(
+        W, H,
+        "El polígono de la clase 1 con la recta de las horas en tres "
+        "posiciones, 10, 11 y 12; el mejor plan corre por la arista del "
+        "polímero de (8,2) a (7,4) y a (6,6), donde las tres rectas de recurso "
+        "se juntan",
+        "Qué compra una hora más de impresora",
+        "Con 10 horas la region factible tiene cinco esquinas y el mejor plan "
+        "es (8, 2), que vale 38 creditos. Al subir las horas a 11 y a 12 la "
+        "region crece y el mejor plan se corre por la arista del polimero a "
+        "(7, 4) con 40 y a (6, 6) con 42. En (6, 6) coinciden la recta de las "
+        "horas, la del polimero y la de la energia: los tres recursos se "
+        "acaban exactos y una hora mas ya no compra nada.",
+    )]
+    trazo = lambda V: " ".join(("M" if i == 0 else "L") + f" {px(p[0]):.1f} {py(p[1]):.1f}"
+                               for i, p in enumerate(V)) + " Z"
+    s.append(f'<path d="{trazo(grande)}" fill="{mezclar(ACENTO, 0.20)}" stroke="none"/>')
+    s.append(f'<path d="{trazo(chica)}" fill="{mezclar(ACENTO, 0.34)}" stroke="none"/>')
+    s += plano
+    # las dos rectas que no se mueven, enteras
+    for k in (1, 2):
+        (x1, y1), (x2, y2) = _corte(A[k][0], A[k][1], B[k], top)
+        s.append(linea(px(x1), py(y1), px(x2), py(y2), color=SERIE[k], grosor=2.5))
+    # y las tres posiciones de la que si, cada una hasta su optimo
+    for h, guiones, mejor in zip(HORAS, GUIONES_HORAS, optimos):
+        alto = max(_corte(A[0][0], A[0][1], h, top), key=lambda t: t[1])
+        s.append(linea(px(alto[0]), py(alto[1]), px(mejor[0]), py(mejor[1]),
+                       color=SERIE[0], grosor=2.5, guiones=guiones))
+    # el optimo corriendo por la arista: las flechas van ENCIMA de la recta del
+    # polimero, no paralelas a ella. Paralelas y desplazadas quedaban cruzando
+    # las dos rectas de horas punteadas, y el ojo no sabia por donde corre el
+    # optimo; encima, el tramo (8,2)-(6,6) se lee como lo que es -- un tramo de
+    # esa arista--, y la recta sigue a la vista antes y despues
+    for a, b in zip(optimos, optimos[1:]):
+        x1, y1, x2, y2 = px(a[0]), py(a[1]), px(b[0]), py(b[1])
+        largo = math.hypot(x2 - x1, y2 - y1)
+        ux, uy = (x2 - x1) / largo, (y2 - y1) / largo
+        s.append(flecha(x1 + ux * 12, y1 + uy * 12, x2 - ux * 16, y2 - uy * 16,
+                        color=ACENTO, grosor=3.5))
+    for k, p in enumerate(optimos):
+        x, y = px(p[0]), py(p[1])
+        ultimo = k == len(optimos) - 1
+        # el punto de (6,6) NO va mas gordo que los otros dos: con r = 9 tapaba
+        # justo lo que el dibujo tiene que ensenar, que es que las tres rectas
+        # pasan por ahi. Lo que lo destaca es el aro, que no tapa nada.
+        s.append(punto(x, y, r=6))
+        if ultimo:
+            s.append(f'<circle cx="{x}" cy="{y}" r="15" fill="none" '
+                     f'stroke="{ACENTO}" stroke-width="2.5"/>')
+        dx, dy, anc = ROTULOS_HORAS[(int(p[0]), int(p[1]))]
+        s.append(texto(x + dx, y + dy, f"{rotulo(p)} = {int(valor(p))}", color=ACENTO,
+                       tam=13, anclaje=anc, peso="700" if ultimo else "normal"))
+    s.append(texto(px(optimos[-1][0]) + 22, py(optimos[-1][1]) - 4,
+                   "tres rectas, un punto", color=ACENTO, tam=12, anclaje="start"))
+    # Leyenda propia: las tres posiciones de la recta de horas son del mismo
+    # color, asi que lo que las distingue es el trazo, y la barra solida de
+    # _leyenda no lo ensenaria. Lleva una fila por recta —tambien las dos
+    # dibujadas a guiones— porque ninguna va rotulada dentro del dibujo.
+    filas = [
+        (SERIE[1], None, "2x\u2081 + x\u2082 \u2264 18   polímero"),
+        (SERIE[2], None, "x\u2081 + 2x\u2082 \u2264 18   energía"),
+        (SERIE[0], None, "x\u2081 + x\u2082 \u2264 10   las horas de hoy"),
+        (SERIE[0], "9 6", "x\u2081 + x\u2082 \u2264 11   con una hora más"),
+        (SERIE[0], "3 5", "x\u2081 + x\u2082 \u2264 12   con dos horas más"),
+    ]
+    s.append(caja(500, 96, 348, 26 + 30 * len(filas),
+                  relleno=mezclar(LINEA, 0.16), borde=SUAVE))
+    for k, (color, guiones, etiqueta) in enumerate(filas):
+        yy = 126 + 30 * k
+        s.append(linea(516, yy, 552, yy, color=color, grosor=3, guiones=guiones))
+        s.append(texto(566, yy + 5, etiqueta, tam=13, anclaje="start"))
+    s.append(caja(500, 292, 348, 190, borde=SUAVE, guiones="6 5"))
+    for k, renglon in enumerate([
+        "cada hora más corre el óptimo por la",
+        "misma arista, la del polímero, y paga",
+        "2 créditos más: 38, 40, 42.",
+        "",
+        "en 12 el óptimo es (6, 6), y ahí se",
+        "juntan las tres rectas: la energía se",
+        "acaba también, y la hora siguiente ya",
+        "no compra nada.",
+    ]):
+        if renglon:
+            s.append(texto(520, 320 + 21 * k, renglon, color=SUAVE, tam=13,
+                           anclaje="start"))
+    s.append(texto(W / 2, 40, "una hora más corre el óptimo por la misma arista",
+                   color=SUAVE, tam=16))
+    s.append(texto(260, 556,
+                   "de 10 a 12 cada hora paga 2 créditos; de 12 en adelante, ninguno",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -1310,6 +1452,7 @@ DIAGRAMAS = {
     "opt-fig-poliedro": opt_fig_poliedro,
     "opt-fig-circulos": opt_fig_circulos,
     "opt-camino-simplex": opt_camino_simplex,
+    "opt-fig-precio-sombra": opt_fig_precio_sombra,
 }
 
 

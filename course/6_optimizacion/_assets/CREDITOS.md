@@ -6,7 +6,8 @@ ellos —`opt-poligono`, `opt-curvas-de-nivel`, `opt-sin-energia` y
 `opt-fig-poliedro`— **calculan** su contenido desde los parámetros del episodio,
 así que cambiar un dato de la impresora cambia el dibujo solo.
 `opt-camino-simplex` calcula además la relación de vecindad y la traza entera
-del método. `opt-fig-circulos`
+del método, y `opt-fig-precio-sombra` las dos regiones y los tres óptimos que
+recorre la recta de las horas. `opt-fig-circulos`
 calcula el polígono y el consumo de su punto interior.
 
 Las páginas HTML autocontenidas de `_assets/`, si las hay, no llevan fila aquí:
@@ -26,3 +27,4 @@ no son imágenes.
 | `opt-fig-poliedro.svg` | El poliedro de tres piezas en proyección, con sus ocho vértices | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-circulos.svg` | Curvas de nivel circulares sobre el polígono de la clase 1, con el máximo por dentro | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-camino-simplex.svg` | El camino de simplex sobre el polígono de la clase 1: dos pivotes y dos esquinas que nadie miró | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-fig-precio-sombra.svg` | Qué compra una hora más: la recta de las horas en 10, 11 y 12, y el óptimo corriendo por la arista del polímero hasta (6,6) | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
