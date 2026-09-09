@@ -126,6 +126,8 @@
   .leyenda{display:flex;flex-wrap:wrap;gap:.3rem .9rem;font-size:12.5px;
            color:var(--muted);margin-top:.5rem}
   .leyenda i{font-style:normal;font-weight:700}
+  .leyenda span{display:inline-flex;align-items:center;gap:.3rem}
+  .leyenda svg{width:17px;height:17px;flex:none;overflow:visible}
 
   /* --- tablas --- */
   table{border-collapse:collapse;width:100%;font-size:13px}
@@ -206,15 +208,20 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   <div class="panel" id="panel-dibujo">
     <h2>El dibujo</h2>
     <div id="lienzo"></div>
+    <!-- Los glifos son el mismo marcador del dibujo, a la misma geometria: el
+         dibujo distingue el aro grueso del delgado y el punto grande del chico,
+         y con dos ○ y dos · la leyenda perdia esa distincion y solo quedaba el
+         color. Aqui van en SVG para que no dependan ni del color ni de la
+         fuente. -->
     <div class="leyenda">
-      <span><i style="color:var(--accent)">●</i> donde estoy (v)</span>
-      <span><i style="color:var(--ok)">◉</i> vecino que mejora — está en M</span>
-      <span><i style="color:var(--info)">○</i> vecino consultado que no mejora</span>
-      <span><i style="color:var(--muted)">○</i> esquina que no es vecina de v</span>
-      <span><i style="color:var(--accent)">·</i> dentro del aro: v ya estuvo ahí</span>
-      <span><i style="color:var(--info)">·</i> dentro del aro: ya consultada en otra vuelta</span>
-      <span><i style="color:var(--aviso)">╱</i> curva de nivel que arrastras</span>
-      <span><i style="color:var(--accent)">┄</i> la que pasa por v</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7.5" fill="var(--accent)"/><circle cx="16" cy="16" r="14" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg> donde estoy (v)</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="8" fill="var(--enM)" stroke="var(--ok)" stroke-width="3"/></svg> aro grueso relleno: vecino que mejora — está en M</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="8" fill="var(--surface)" stroke="var(--info)" stroke-width="3"/></svg> aro grueso hueco: vecino consultado que no mejora</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"/></svg> aro delgado: esquina que no es vecina de v</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="var(--accent)"/></svg> punto grande dentro del aro: v ya estuvo ahí</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"/><circle cx="16" cy="16" r="2.5" fill="var(--info)"/></svg> punto chico dentro del aro: ya consultada en otra vuelta</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><line x1="2" y1="28" x2="30" y2="4" stroke="var(--aviso)" stroke-width="2.5" stroke-dasharray="8 5"/></svg> raya larga: curva de nivel que arrastras</span>
+      <span><svg viewBox="0 0 32 32" aria-hidden="true"><line x1="2" y1="28" x2="30" y2="4" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 4"/></svg> punteada: la que pasa por v</span>
     </div>
     <div class="campo" style="margin-top:.8rem">
       <label for="sel-nivel" id="lbl-nivel"></label>
@@ -654,14 +661,17 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
     return out.length ? out.slice(0, 2) : null;
   }
 
-  function rectaNivel(nivel, c, color, guiones, grosor){
+  function rectaNivel(nivel, c, color, guiones, grosor, radio){
     var q = corteVentana(nivel, c);
     if (!q) return "";
     if (q.length === 1){
       // Con nivel 0 los dos cortes caen en el origen: ahi la curva de nivel es
-      // un punto, no un segmento.
+      // un punto, no un segmento. El aro va con el radio que le pasen porque
+      // el punto cae justo donde esta v, y con r=5 el disco de v lo tapaba
+      // entero mientras la nota afirmaba que la recta va siempre por v.
       return '<circle cx="' + px(q[0][0]).toFixed(1) + '" cy="' + py(q[0][1]).toFixed(1) +
-             '" r="5" fill="none" stroke="' + color + '" stroke-width="' + grosor + '"/>';
+             '" r="' + (radio || 5) + '" fill="none" stroke="' + color +
+             '" stroke-width="' + grosor + '" stroke-dasharray="' + guiones + '"/>';
     }
     return '<line x1="' + px(q[0][0]).toFixed(1) + '" y1="' + py(q[0][1]).toFixed(1) +
            '" x2="' + px(q[1][0]).toFixed(1) + '" y2="' + py(q[1][1]).toFixed(1) +
@@ -702,13 +712,11 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
       s.push(rotulo(px(0) - 12, py(k) + 5, String(k), "var(--muted)", 12, "end", "normal", true));
     }
 
-    // La recta que arrastra el lector, y la que pasa por v. La segunda es la
-    // que ata el dibujo al panel: sube en cada pivote, deja a los de M por
-    // encima, y al parar deja el poligono entero por debajo.
-    s.push(rectaNivel(S.nivel, m.coef, "var(--aviso)", "8 5", 2.5));
-    if (arrancada()){
-      s.push(rectaNivel(vert(S.v).v, m.coef, "var(--accent)", "2 4", 2));
-    }
+    // La recta que arrastra el lector va aqui, debajo de las esquinas. La que
+    // pasa por v se pinta al final, encima de todo: es la que ata el dibujo al
+    // panel —sube en cada pivote, deja a los de M por encima, y al parar deja
+    // el poligono entero por debajo— y no puede quedar tapada por un marcador.
+    s.push(rectaNivel(S.nivel, m.coef, "var(--aviso)", "8 5", 2.5, 22));
 
     for (k = 0; k + 1 < S.estuvo.length; k++){
       var a = m.V[S.estuvo[k]], b = m.V[S.estuvo[k + 1]];
@@ -755,6 +763,13 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
                     (arrancada() && k === S.v) ? "700" : "normal"));
     }
 
+    // Encima de las esquinas, para que se vea siempre. Con c·v = 0 la curva
+    // degenera en el punto v, y el aro va a r=18 —fuera del aro de v, que es
+    // r=14— porque a r=5 caia entero debajo del disco de v.
+    if (arrancada()){
+      s.push(rectaNivel(vert(S.v).v, m.coef, "var(--accent)", "2 4", 2, 18));
+    }
+
     s.push('<defs><marker id="punta" viewBox="0 0 10 10" refX="9" refY="5" ' +
            'markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" ' +
            'orient="auto-start-reverse">' +
@@ -780,7 +795,15 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
 
     el("nota-dos-rectas").innerHTML = arrancada()
       ? "La recta <b style=\"color:var(--accent)\">de puntos</b> no se arrastra: va " +
-        "siempre por <b>v</b>, en " + obj + " = " + vert(S.v).vt + ". Sube en cada " +
+        "siempre por <b>v</b>, en " + obj + " = " + vert(S.v).vt + ". " +
+        (vert(S.v).v === 0
+          ? "Con " + obj + " = 0 todavía no es una recta: en el trozo de plano " +
+            "que ves, el único punto donde el objetivo vale cero es el origen, " +
+            "que es justo donde está <b>v</b>. La curva se encoge a ese punto, " +
+            "y por eso la ves como un aro de puntos alrededor de él. En cuanto " +
+            "haya un pivote se abre. "
+          : "") +
+        "Sube en cada " +
         "pivote, los de M le quedan por encima, y " +
         (S.parado ? "ahora que paró <b>deja el polígono entero por debajo</b>: eso es " +
                     "lo que la línea 7 acaba de decidir."
@@ -914,7 +937,10 @@ SALIDA   un vértice óptimo, o el aviso de que el problema no está acotado.</p
   el("lienzo").addEventListener("pointercancel", function(){ arrastrando = false; });
   el("sel-nivel").addEventListener("input", function(){
     S.nivel = parseFloat(this.value);
-    pintarDibujo();
+    // El guardia es el mismo de pintar(): con tres variables no hay dibujo, y
+    // sin el la barra —que vive en un panel oculto— tira un TypeError si algo
+    // le manda un evento.
+    if (mod().dibujo) pintarDibujo();
   });
 
   el("b-paso").onclick = function(){ ejecutar(); pintar(); };

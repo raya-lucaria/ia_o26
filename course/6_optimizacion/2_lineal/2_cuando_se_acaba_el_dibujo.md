@@ -3,7 +3,7 @@ id: cuando-se-acaba-el-dibujo
 title: Cuando se acaba el dibujo
 nav_title: Sin papel
 summary: "Con tres piezas el polígono se vuelve poliedro y con veinte ya no se puede dibujar. Qué es una esquina cuando no hay esquinas que ver."
-status: draft
+status: ready
 estimated_time: 25m
 tags: [optimizacion, poliedro, vertice]
 ---

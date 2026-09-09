@@ -3,8 +3,8 @@ id: cuanto-vale-una-hora-mas
 title: Cuánto vale una hora más
 nav_title: Precios sombra
 summary: "Qué recurso aprieta, cuál sobra, y cuánto conviene pagar por una unidad más. Y qué eran, en realidad, los tres números del certificado."
-status: draft
-estimated_time: 17m
+status: ready
+estimated_time: 20m
 tags: [optimizacion, precio-sombra, holgura]
 ---
 

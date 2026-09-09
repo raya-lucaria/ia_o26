@@ -3,7 +3,7 @@ id: sin-dibujo
 title: Sin dibujo
 nav_title: En tres variables
 summary: "El mismo método sobre el poliedro de tres piezas, donde nadie puede ver la figura. Qué entrega, y qué cuesta."
-status: draft
+status: ready
 estimated_time: 12m
 tags: [optimizacion, simplex, costo]
 ---

@@ -3,7 +3,7 @@ id: el-modelo-como-matriz
 title: El modelo como matriz
 nav_title: La matriz
 summary: "Cómo se escribe un problema lineal para que no dependa de que sean dos variables: un renglón por recurso, una columna por pieza."
-status: draft
+status: ready
 estimated_time: 16m
 tags: [optimizacion, matriz, programacion-lineal]
 ---
