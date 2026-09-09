@@ -167,4 +167,21 @@ ganó esa hora» y compara cada renglón con 1.5.
 - Aquellos tres números del certificado eran los precios sombra, y con una pieza
   más ninguno sigue igual.
 
-Que existan siempre no es casualidad: es un teorema, y llega en la clase 3.
+## Y ahora, el notebook
+
+Las tablas de esta clase están calculadas, y conviene verlas calcular. El
+notebook rehace desde la terna los ocho vértices, la vecindad y las trazas, y
+dibuja lo que aquí solo está tabulado: el valor del mejor plan contra las horas,
+con sus dos codos.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/02_simplex.ipynb)
+
+*Se abre en Google Colab, en otra pestaña.*
+
+Cierra con una bitácora nueva, la del taller, que **no está resuelta en ninguna
+página**. Ahí lo único que se pide es escribir la terna, y el notebook la revisa
+dato por dato. El archivo vive en este repositorio, en
+`course/6_optimizacion/_assets/02_simplex.ipynb`.
+
+Que los precios sombra existan siempre no es casualidad: es un teorema, y llega
+en la clase 3.

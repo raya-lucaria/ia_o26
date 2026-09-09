@@ -55,6 +55,26 @@ leerla; el total de esta clase ronda los **85 minutos**.
 - [[sin-dibujo|4 · Sin dibujo]]
 - [[cuanto-vale-una-hora-mas|5 · Cuánto vale una hora más]]
 
+## El notebook de la clase 2
+
+Las páginas tabulan; el notebook calcula. Rehace por su cuenta los ocho vértices
+con lo que se acaba en cada uno, la relación de vecindad y las trazas de simplex,
+y dibuja el valor del mejor plan contra las horas de impresora, que tiene dos
+codos. Cierra con **una bitácora nueva para que escribas tú la terna**, y la
+revisa dato por dato. No hay nada que entregar.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/02_simplex.ipynb)
+
+*Se abre en Google Colab, en otra pestaña.*
+
+**Dónde vive.** El archivo está en este repositorio, en
+`course/6_optimizacion/_assets/02_simplex.ipynb`. El botón de arriba lo abre en
+Google Colab, que lo ejecuta en el navegador sin instalar nada. Si prefieres
+correrlo en tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
+
+**Cuándo.** Después de leer las cinco páginas. No repite nada de lo que ya
+corriste en el notebook de la clase 1.
+
 ## Qué no cubre esta clase
 
 No vas a ver el cuadro de cálculo con que se enseña simplex a mano —aquí el
