@@ -147,7 +147,7 @@ respuesta absurda.
 Renglón por renglón, así se ve la traducción:
 
 ::: figure {#opt-historia-a-modelo title="De la frase a la desigualdad"}
-![Dos columnas: a la izquierda las frases de la bitácora, a la derecha la desigualdad que produce cada una; el último renglón tiene la izquierda vacía](_assets/opt-historia-a-modelo.svg)
+![Dos columnas: a la izquierda las frases de la bitácora, a la derecha la desigualdad que produce cada una; el último renglón tiene la izquierda vacía](../_assets/opt-historia-a-modelo.svg)
 :::
 
 ::: table {#opt-lienzo-pasos title="Los siete pasos, aplicados a este problema"}

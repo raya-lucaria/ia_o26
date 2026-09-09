@@ -13,8 +13,9 @@ tags: [optimizacion, modelado, practica]
 **¿Puedo hacerlo yo solo, con una historia que no he visto?**
 
 Hoja de práctica, no de sesión. No trae teoría nueva: trae **tres historias sin
-resolver**, una por cada patrón de la página 5. Cada una tiene su respuesta
-plegada, y conviene no abrirla antes de haber escrito algo.
+resolver**, una por cada patrón de [[patrones-lineales|Patrones lineales]]. Cada
+una tiene su respuesta plegada, y conviene no abrirla antes de haber escrito
+algo.
 
 ## Antes de empezar: qué hay que producir
 
@@ -30,10 +31,10 @@ modelo.** Escribirlo es hacer el camino al revés.
 ::: table {#opt-que-entregar title="Los cuatro pasos, y en qué orden"}
 | Paso | Qué produces | Con qué |
 |---|---|---|
-| 1 | **La tabla limpia**, y las tres trampas señaladas | Las tres preguntas de la página 1 |
-| 2 | **El modelo en forma canónica**, con las siete partes | El lienzo de la página 2 |
-| 3 | **El dibujo y la respuesta** | El método de la página 3 |
-| 4 | **Qué recurso sobra**, y hasta dónde aguanta tu supuesto | Las páginas 3 y 4 |
+| 1 | **La tabla limpia**, y las tres trampas señaladas | Las tres preguntas de *Leer la bitácora* |
+| 2 | **El modelo en forma canónica**, con las siete partes | El lienzo de *Escribir el modelo* |
+| 3 | **El dibujo y la respuesta** | El método de *El dibujo* |
+| 4 | **Qué recurso sobra**, y hasta dónde aguanta tu supuesto | *El dibujo* y *Qué es una respuesta* |
 :::
 
 > [!WARNING]
@@ -66,7 +67,8 @@ Haz los cuatro pasos de la tabla de arriba.
 
 ::: hint {#opt-pista-taller of="opt-ej-taller" title="Dos avisos"}
 El renglón de los kits **no es una restricción de recurso como las otras**: solo
-menciona una de las dos variables. Ése es el patrón «cota» de la página 5.
+menciona una de las dos variables. Ése es el patrón «cota» de
+[[patrones-lineales|Patrones lineales]].
 
 Y ojo con lo que dice el jefe de máquinas: decide si es una regla dura o una
 preferencia, **anótalo como supuesto**, y comprueba al final si tu elección
@@ -133,8 +135,9 @@ Aquí no se maximiza: **se minimiza el costo**. Y los dos requisitos son pisos, 
 techos, así que van con $\ge$ y no con $\le$.
 
 Para entregárselo a un solver hay que voltearlas, como dice la tabla de signos de
-la página 5. Para dibujarlas a mano no hace falta: solo cambia de qué lado de la
-recta queda la zona buena, y eso se sabe probando un punto.
+[[patrones-lineales|Patrones lineales]]. Para dibujarlas a mano no hace falta:
+solo cambia de qué lado de la recta queda la zona buena, y eso se sabe probando
+un punto.
 :::
 
 ::: answer {#opt-resp-racion of="opt-ej-racion"}
@@ -165,7 +168,7 @@ tirado.
 encerrada**: se extiende hacia arriba y a la derecha sin límite. No pasa nada,
 porque el objetivo se minimiza y empujar la recta hacia abajo sí tiene tope. Una
 región abierta no es un problema sin respuesta, que es lo que dice la
-advertencia de la página 4.
+advertencia de [[que-es-una-respuesta|Qué es una respuesta]].
 :::
 
 ## 3 · La antena de comunicaciones
@@ -239,6 +242,7 @@ recurso y aun así puede ser la que manda.
 
 - El trabajo es **siempre el mismo**: leer, señalar las trampas, escribir en
   forma canónica, resolver, y preguntarle a la respuesta qué sobró.
-- Los tres patrones de la página 5 aparecen uno por historia, y en los tres casos
+- Los tres patrones de [[patrones-lineales|Patrones lineales]] aparecen uno por
+  historia, y en los tres casos
   **el patrón raro es el que decide la respuesta**.
 - Minimizar no es un problema distinto: es el mismo con el sentido volteado.

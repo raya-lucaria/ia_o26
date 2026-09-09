@@ -108,7 +108,7 @@ a $(6,4)$, con 36 créditos en vez de 38. Las 2 celdas extra cuestan 2
 créditos.
 
 Las tres últimas filas de la tabla son $x_1\ge3$, $x_1-2x_2\ge0$ y $x_2\le4$, y
-$(8,2)$ **las cumple las tres con holgura**, así que ninguna mueve el óptimo. Pero
+$(8,2)$ **las cumple las tres de sobra**, así que ninguna mueve el óptimo. Pero
 **las tres sí mueven el polígono**, que es distinto:
 
 | Se añade | Óptimo | Esquinas | Qué le pasa al polígono |

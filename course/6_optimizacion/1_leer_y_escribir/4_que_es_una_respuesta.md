@@ -39,7 +39,7 @@ terminó.
 :::
 
 ::: figure {#opt-fig-dos-cimas title="Una cima que no es la más alta"}
-![Una curva de una variable con dos cimas de altura distinta separadas por un valle; la cima izquierda es más baja que la derecha](_assets/opt-fig-dos-cimas.svg)
+![Una curva de una variable con dos cimas de altura distinta separadas por un valle; la cima izquierda es más baja que la derecha](../_assets/opt-fig-dos-cimas.svg)
 :::
 
 *La cima baja es un óptimo local que no es global. En el polígono de la página anterior
@@ -108,8 +108,8 @@ impresora son 3 números, uno por recurso: $y = (2,\, 1,\, 0)$.
 
 **Por qué con eso basta, en dos renglones.** Toma cualquier plan factible. Como
 los 3 números cubren el precio de cada pieza, lo que ese plan vale es a lo más
-lo que costaría pagándolo con esos 3 números. Y como los 3 números son
-positivos y el plan no gasta más de lo que hay, esa cuenta es a lo más
+lo que costaría pagándolo con esos 3 números. Y como los 3 números no son
+negativos y el plan no gasta más de lo que hay, esa cuenta es a lo más
 $2\cdot10+1\cdot18+0\cdot18 = 38$. **Ningún plan pasa de 38.** Y $(8,2)$ vale
 exactamente 38, así que es el mejor.
 
