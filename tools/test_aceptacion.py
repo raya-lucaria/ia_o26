@@ -497,6 +497,35 @@ def test_extra_ningun_encabezado_lleva_un_enlace_dentro():
     )
 
 
+def test_extra_ningun_encabezado_lleva_matematicas():
+    """Misma familia que la guarda de arriba, con LaTeX en vez de enlaces.
+
+    El indice «On This Page» toma el texto crudo del encabezado, y el renderizador
+    de matematicas no lo toca: un `### Por que «$x\\ge0$»` se publica en el indice
+    como «Por que «$x\\ge0$»», con los pesos y la barra invertida a la vista, y el
+    ancla queda en `#por-que-xge0`. Paso al escribir la pagina 2 de la clase 2 de
+    optimizacion y se vio construyendo el sitio, no en `raya validate`.
+
+    El arreglo es Unicode: «x ≥ 0», «Θ(n)», «Θ(2ⁿ)», «G». Un encabezado no
+    necesita composicion matematica; el cuerpo de la seccion si la tiene.
+    """
+    con_matematicas = []
+    for ruta in sorted((RAIZ / "course").rglob("*.md")):
+        if "_assets" in ruta.parts:
+            continue
+        for numero, linea in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            if not linea.startswith("#"):
+                continue
+            if "$" in linea or "\\(" in linea:
+                con_matematicas.append(
+                    f"{ruta.relative_to(RAIZ)}:{numero}: {linea.strip()}"
+                )
+    assert not con_matematicas, (
+        "encabezados con matematicas dentro (el indice de la pagina imprime el "
+        "LaTeX en crudo; usa Unicode):\n" + "\n".join(con_matematicas)
+    )
+
+
 def test_extra_ningun_wikilink_va_sin_etiqueta():
     """Raya rotula un `[[id]]` sin etiqueta con el id crudo, no con el titulo
     de la pagina: en la prosa se leia «En ia-y-sociedad aparecieron como una

@@ -31,7 +31,7 @@ Todo lo que sigue vale para un sistema formal $F$ que sea:
 La aritmética las cumple las tres. Y hay sistemas que no: la aritmética **sin
 multiplicación** es completa y decidible, porque no puede hablar de sí misma.
 
-## La oración $G$
+## La oración G
 
 Todo el primer teorema cuelga de una sola oración. En pseudocódigo:
 

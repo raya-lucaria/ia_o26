@@ -47,7 +47,7 @@ lugar que podía ser de una celda: **te deja distinta cantidad de cada recurso
 para lo que sigue**.
 
 ::: figure {#opt-la-impresora title="Qué tiene que decidir la tripulación"}
-![Tres recursos limitados entran a la impresora, que produce filtros de aire y celdas de agua; el depósito paga créditos por cada pieza entregada](_assets/opt-la-impresora.svg)
+![Tres recursos limitados entran a la impresora, que produce filtros de aire y celdas de agua; el depósito paga créditos por cada pieza entregada](../_assets/opt-la-impresora.svg)
 :::
 
 Toda la decisión cabe en una pregunta: **¿cuántos filtros y cuántas celdas

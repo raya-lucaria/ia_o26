@@ -60,7 +60,7 @@ hay 10. De los diez cruces sobreviven cinco.
 > pide 12 horas cuando solo hay 10.
 
 ::: figure {#opt-poligono title="Los cinco semiplanos y las cinco esquinas"}
-![Las tres rectas de recurso y los dos ejes recortan una región de cinco lados, con sus cinco esquinas marcadas y rotuladas](_assets/opt-poligono.svg)
+![Las tres rectas de recurso y los dos ejes recortan una región de cinco lados, con sus cinco esquinas marcadas y rotuladas](../_assets/opt-poligono.svg)
 :::
 
 ## 2 · La curva de nivel, y por qué la respuesta está en una esquina
@@ -82,8 +82,13 @@ Que la curva viva en todo el plano es lo que hace funcionar el método:
 deslizarla consiste en pasarla por terreno no factible hasta que sale.
 
 ::: figure {#opt-curvas-de-nivel title="La familia de rectas, y la última que toca"}
-![El polígono con cuatro rectas paralelas rotuladas con su valor; la de valor 38 toca la región en un solo punto](_assets/opt-curvas-de-nivel.svg)
+![El polígono con cuatro rectas paralelas rotuladas con su valor; la de valor 38 toca la región en un solo punto](../_assets/opt-curvas-de-nivel.svg)
 :::
+
+> **Empújala tú.** La recta se puede arrastrar sobre este mismo polígono en una
+> [página aparte](../_assets/camino_por_vertices.html), y ahí se ve en qué
+> esquina deja de tocarlo. Esa página hace algo más, que es de la clase que
+> viene; para esto basta la barra de abajo del dibujo.
 
 ### Hacia qué lado se empuja, y por qué
 
@@ -159,7 +164,7 @@ polígono crece: se le añade el triángulo de arriba a la izquierda, y pasa de 
 esquinas a 4.
 
 ::: figure {#opt-sin-energia title="El techo no depende de la energía"}
-![Dos regiones superpuestas: la que queda al quitar la restricción de energía, más grande, y la real dentro de ella; la esquina (8,2) pertenece a las dos](_assets/opt-sin-energia.svg)
+![Dos regiones superpuestas: la que queda al quitar la restricción de energía, más grande, y la real dentro de ella; la esquina (8,2) pertenece a las dos](../_assets/opt-sin-energia.svg)
 :::
 
 **Paso 2. En esa región más grande, el mejor plan sigue siendo $(8,2)$**, con 38.
