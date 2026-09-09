@@ -4,7 +4,7 @@ title: Modelado y optimización
 nav_title: Optimización
 summary: "Antes de resolver hay que plantear. Esta unidad enseña a leer un problema en palabras y escribirlo como matemáticas, y después a resolverlo."
 status: ready
-estimated_time: 1h17m
+estimated_time: 2h42m
 tags: [optimizacion, modelado, programacion-lineal]
 ---
 
@@ -60,6 +60,10 @@ tiempo estimado.
 | Clase | Título | Qué resuelve | Minutos |
 |---|---|---|---:|
 | 1 | Leer y escribir | Leer un problema real, escribirlo como matemáticas y dibujar la respuesta | 77m |
+| 2 | Resolver sin dibujar | Escribir el modelo como matriz y resolverlo con simplex sin dibujarlo | 85m |
 :::
+
+- [[leer-y-escribir|Clase 1 · Leer y escribir]]
+- [[optimizacion-lineal|Clase 2 · Resolver sin dibujar]]
 
 Empieza por [[leer-y-escribir|la clase 1]].
