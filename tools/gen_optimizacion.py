@@ -880,7 +880,7 @@ def rotulo3(p):
 # Direccion de camara, elegida buscando la que mas separa los ocho vertices
 # proyectados y los aleja de las aristas que no los tocan. Con ella x1 baja a la
 # derecha, x3 baja a la izquierda y x2 sube: la vista de siempre de una caja, y
-# el origen queda en la esquina de atras, que es justo el vertice que menos
+# el origen queda en el vertice de atras, que es justo el que menos
 # importa ver.
 CAMARA = (1.1, 1.8, 1.35)
 
@@ -900,12 +900,16 @@ def _camara():
 
 
 # Desplazamiento del rotulo de cada vertice, en pixeles, elegido a mano
-# mirando el render en Chrome: ninguno puede quedar encima de una arista.
+# mirando el render en Chrome AMPLIADO: a tamano normal no se ve que un glifo
+# este partido. El de (2,8,0) iba anclado a la derecha y la arista punteada de
+# x2 —la vertical— le cortaba el parentesis de apertura; con anclaje "end" no
+# hay corrimiento que lo salve, porque para despejar esa vertical el texto
+# tendria que empezar mas a la derecha que el propio vertice.
 ROTULOS3 = {
     (0, 0, 0): (-14, -14, "end"),
     (0, 0, 6): (-14, 6, "end"),
     (0, 9, 0): (16, 6, "start"),
-    (2, 8, 0): (-14, -6, "end"),
+    (2, 8, 0): (16, -8, "start"),
     (9, 0, 0): (16, 20, "start"),
 }
 
@@ -916,7 +920,7 @@ def opt_fig_poliedro():
     Calcula todo: los vertices con fracciones exactas, las doce aristas por
     rango, y cuales quedan escondidas. Una arista esta escondida si las dos
     caras que la forman miran para el otro lado; con esta camara son
-    exactamente las tres que salen del origen, que es la esquina de atras.
+    exactamente las tres que salen del origen, que es el vertice de atras.
 
     Los desplazamientos de rotulo estan a mano porque se ajustaron mirando el
     render en Chrome: la primera version ponia (0,9,0) encima del titulo y el
@@ -955,7 +959,10 @@ def opt_fig_poliedro():
     # Las tres caras de recurso, sombreadas: dan volumen sin tapar nada. El
     # nombre va en el centroide mas un desplazamiento; el de la energia no
     # puede ir en su centroide porque ahi esta el origen.
-    CORRIMIENTO = {0: (0, 0), 1: (0, 0), 2: (-76, -92)}
+    # El de la energia iba arriba a la izquierda y la arista (0,9,0)-(0,0,6)
+    # le partia el glifo: se vio ampliando el render a 4x, no a tamano normal.
+    # Baja a la parte ancha de la cara, entre (0,0,6) y (9/2,0,9/2).
+    CORRIMIENTO = {0: (0, 0), 1: (0, 0), 2: (-33, 144)}
     for k in range(3):
         if not de_frente[k]:
             continue
@@ -1022,7 +1029,7 @@ def opt_fig_poliedro():
     for k, renglon in enumerate([
         "la línea punteada pasa por detrás:",
         "son las tres aristas del origen,",
-        "que es la esquina de atrás.",
+        "que es el vértice de atrás.",
         "",
         "la cara x\u2083 = 0 es el polígono",
         "de la clase 1, y aquí queda detrás.",
@@ -1038,6 +1045,11 @@ def opt_fig_poliedro():
     return "".join(s)
 
 
+# Relleno del poligono en opt_fig_circulos. Es tambien el color de la placa
+# que va debajo de cada rotulo de curva, y por eso vive fuera de la funcion.
+FONDO_POLIGONO = mezclar(LINEA, 0.34)
+
+
 def opt_fig_circulos():
     """El mismo poligono de la clase 1 con curvas de nivel CIRCULARES.
 
@@ -1050,9 +1062,14 @@ def opt_fig_circulos():
     ox, oy, esc, top = 90, 470, 34, 10
     CENTRO = (4, 4)
     RADIOS = [4, 3, 2, 1]
-    # angulo (grados) y radio del rotulo de cada curva, ajustados mirando el
-    # render: ninguno puede caer sobre la linea guia del punto interior
-    ROTULO_CURVA = {4: (235, 122), 3: (145, 88), 2: (270, 54), 1: (340, 50)}
+    # Angulo (grados) del rotulo de cada curva. Va SOBRE su circunferencia,
+    # que es lo unico que lo asocia sin ambiguedad —las curvas estan a 34 px
+    # una de otra, asi que un rotulo despegado queda a la misma distancia de
+    # dos—, y por eso lleva placa del color del poligono debajo: sin ella el
+    # trazo discontinuo parte el glifo, y eso solo se ve ampliando el render.
+    # Los cuatro angulos estan separados para que no se toquen las placas ni
+    # la linea guia del punto interior.
+    ROTULO_CURVA = {4: 225, 3: 115, 2: 310, 1: 240}
     V = vertices()
     px, py, plano = _plano(W, H, ox, oy, esc, top)
     consumo = [sum(a * c for a, c in zip(fila, CENTRO)) for fila in A]
@@ -1069,7 +1086,7 @@ def opt_fig_circulos():
     )]
     d = " ".join(("M" if i == 0 else "L") + f" {px(p[0]):.1f} {py(p[1]):.1f}"
                  for i, p in enumerate(V)) + " Z"
-    s.append(f'<path d="{d}" fill="{mezclar(LINEA, 0.34)}" '
+    s.append(f'<path d="{d}" fill="{FONDO_POLIGONO}" '
              f'stroke="{mezclar(SUAVE, 0.75)}" stroke-width="2.5"/>')
     s += plano
     cx, cy = px(CENTRO[0]), py(CENTRO[1])
@@ -1079,10 +1096,13 @@ def opt_fig_circulos():
         s.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r * esc}" fill="none" '
                  f'stroke="{color}" stroke-width="{3 if ultima else 2}"'
                  + ("" if ultima else ' stroke-dasharray="8 6"') + "/>")
-        grados, radio = ROTULO_CURVA[r]
-        ang = math.radians(grados)
-        s.append(texto(cx + math.cos(ang) * radio, cy - math.sin(ang) * radio + 5,
-                       f"\u2212{r * r}", color=color, tam=14,
+        ang = math.radians(ROTULO_CURVA[r])
+        rx, ry = cx + math.cos(ang) * r * esc, cy - math.sin(ang) * r * esc
+        etiqueta = f"\u2212{r * r}"
+        ancho = 14 + len(etiqueta) * 9
+        s.append(f'<rect x="{rx - ancho / 2:.1f}" y="{ry - 13:.1f}" '
+                 f'width="{ancho}" height="18" rx="4" fill="{FONDO_POLIGONO}"/>')
+        s.append(texto(rx, ry, etiqueta, color=color, tam=14,
                        peso="700" if ultima else "normal"))
     for p in V:
         s.append(f'<circle cx="{px(p[0])}" cy="{py(p[1])}" r="5" fill="{FONDO}" '

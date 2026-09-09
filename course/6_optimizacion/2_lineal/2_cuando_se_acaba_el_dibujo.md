@@ -4,7 +4,7 @@ title: Cuando se acaba el dibujo
 nav_title: Sin papel
 summary: "Con tres piezas el polígono se vuelve poliedro y con veinte ya no se puede dibujar. Qué es una esquina cuando no hay esquinas que ver."
 status: draft
-estimated_time: 20m
+estimated_time: 25m
 tags: [optimizacion, poliedro, vertice]
 ---
 
@@ -61,7 +61,7 @@ dimensiones, y nadie lo ha visto nunca.
 
 ## 2 · Qué es una esquina cuando no hay esquinas que ver
 
-Dos planos se cortan en una recta, no en un punto: falta un tercero.
+Dos planos se cortan en una recta, no en un punto.
 
 ::: definition {#opt-vertice-n-dimensiones title="Vértice, en cualquier dimensión"}
 Extiende la caja de [[el-dibujo|El dibujo]], donde $n$ valía 2.
@@ -108,7 +108,7 @@ dos variables.**
 
 **Vecinos** son los vértices que une una arista: comparten dos activas
 —$(9,0,0)$ y $(8,2,0)$, el polímero y $x_3=0$—. Contar alcanza porque aquí
-ninguno es degenerado.
+ningún vértice es **degenerado**: en ninguno hay más de tres activas.
 
 ## 4 · El teorema, ahora con sus hipótesis
 
@@ -118,23 +118,26 @@ menos uno de sus puntos óptimos es un **vértice** del poliedro.
 
 En el viaje: el mejor plan es $(5,2,3)$, con 41 créditos, y es uno de los ocho
 de la tabla.
+:::
 
-Esta página no lo demuestra otra vez —el argumento de cuatro pasos está en
-[[el-dibujo|El dibujo]]— pero hay que decir **qué le falta**: aquel empieza
-suponiendo que el polígono es «cerrado y de tamaño finito», o sea acotado, y el
-teorema no lo pide. Lo cierra un renglón. Con $x\ge0$ el poliedro no contiene
-ninguna recta, así que aunque se extienda al infinito siempre se puede bajar por
-una arista hasta un vértice.
+::: remark {#opt-que-le-falta-al-dibujo title="Qué le falta al argumento de la clase 1"}
+Esta página no lo demuestra otra vez: el argumento de cuatro pasos está en
+[[el-dibujo|El dibujo]]. Pero aquel empieza suponiendo que el polígono es
+«cerrado y de tamaño finito», o sea acotado, y el teorema de arriba no lo pide.
+
+Lo cierra un renglón. Con $x\ge0$ el poliedro no contiene ninguna recta, así que
+aunque se extienda al infinito siempre se puede bajar por una arista hasta un
+vértice.
 :::
 
 **«Al menos uno» no es una hipótesis: es una palabra de la conclusión.** Con la
-celda a 4 empataron $(2,8)$ y $(8,2)$, y el segmento entero.
+celda a 4 empatan $(2,8)$, $(8,2)$ y el segmento entero.
 
 ### Por qué «lineal» no es decoración
 
 Sobre el mismo polígono, maximiza $-(x_1-4)^2-(x_2-4)^2$: las curvas de nivel
-dejan de ser rectas paralelas y son círculos alrededor de $(4,4)$, que es
-factible, queda estrictamente por dentro, y **ningún vértice lo alcanza**.
+ya no son rectas paralelas sino círculos alrededor de $(4,4)$, que es factible,
+queda estrictamente por dentro, y **ningún vértice lo alcanza**.
 
 ::: figure {#opt-fig-circulos title="Curvas de nivel que se curvan"}
 ![El polígono de cinco esquinas de la clase 1 con cuatro circunferencias concéntricas alrededor de (4,4), que está marcado como el máximo y queda estrictamente dentro de la región](../_assets/opt-fig-circulos.svg)
@@ -143,8 +146,8 @@ factible, queda estrictamente por dentro, y **ningún vértice lo alcanza**.
 ### Por qué «x ≥ 0»
 
 Sin ella el teorema **es falso**, no queda sin referente: sobre la franja
-$0\le x_2\le1$ con $x_1$ libre, el máximo de $x_2$ se alcanza y no hay ni un
-vértice. Es suficiente, no necesaria.
+$0\le x_2\le1$ con $x_1$ libre, el máximo de $x_2$ se alcanza y no hay vértices.
+Es suficiente, no necesaria.
 
 ## 5 · Y por qué no se pueden mirar todos
 
@@ -199,8 +202,8 @@ Y de paso, un viejo conocido: cruzar polímero, energía y $x_3=0$ da $(6,6,0)$
 
 ## Lo que hay que llevarse
 
-- El dibujo se acabó y el modelo no: el polígono es ahora un cuerpo de ocho
-  vértices.
+- Dibujar era el atajo, no el método: el modelo aguantó la tercera columna y el
+  dibujo no.
 - El teorema vive de sus hipótesis: sin «lineal», el mejor plan se va al
   interior.
 - Saber que la respuesta está en un vértice no dice en cuál, y ya no se pueden
