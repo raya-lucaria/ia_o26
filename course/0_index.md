@@ -39,3 +39,4 @@ sesión.
 | Miércoles 2 de septiembre | Examen · [[computabilidad|Computabilidad]] y [[complejidad|complejidad]] |
 | Miércoles 9 de septiembre | Examen · [[filosofia-ia|Filosofía de la IA]] |
 | Miércoles 9 de septiembre | Entrega · ensayo de [[filosofia-ia|Filosofía de la IA]], en PDF por Canvas |
+| Lunes 14 de septiembre | Video · [[optimizacion|Programación lineal, reducciones y simplex]] |
