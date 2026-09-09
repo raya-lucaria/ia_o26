@@ -25,14 +25,16 @@ vacío**: la impresora tiene un tercer molde cargado. El sello gasta lo mismo
 que un filtro en horas de impresora y en polímero, pero el triple de energía —
 y ese detalle es el que rompe el dibujo.
 
-::: table {#opt-tres-piezas title="Las tres piezas del viaje, con un renglón por recurso y lo disponible al final"}
-| Recurso | Por filtro | Por celda | Por sello | Disponible |
-|---|---:|---:|---:|---:|
-| Horas de impresora | 1 | 1 | 1 | 10 |
-| Polímero (kg) | 2 | 1 | 2 | 18 |
-| Energía (kWh) | 1 | 2 | 3 | 18 |
-| **Créditos que abona el depósito** | **4** | **3** | **5** | — |
+::: table {#opt-tres-piezas title="Las tres piezas del viaje, con un renglón por recurso"}
+| Recurso | Por filtro | Por celda | Por sello |
+|---|---:|---:|---:|
+| Horas de impresora | 1 | 1 | 1 |
+| Polímero (kg) | 2 | 1 | 2 |
+| Energía (kWh) | 1 | 2 | 3 |
+| **Créditos que abona el depósito** | **4** | **3** | **5** |
 :::
+
+**Disponible:** 10 horas de impresora, 18 kg de polímero y 18 kWh.
 
 ## Recorrido
 

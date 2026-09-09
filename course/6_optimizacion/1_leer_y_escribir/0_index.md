@@ -55,7 +55,8 @@ final.
 Y una hoja de práctica, aparte del recorrido:
 
 - [[tres-bitacoras|Tres bitácoras para practicar]] — tres historias nuevas sin
-  resolver, una por cada patrón, con la solución plegada. Unos 30 minutos.
+  resolver, una para la cota, una para el mínimo con $\ge$ y una para la
+  proporción, con la solución plegada. Unos 30 minutos.
 
 ## El notebook de la clase 1
 
@@ -80,7 +81,8 @@ todas.
 Nada de esta clase resuelve un problema **sin dibujarlo**, y el dibujo solo
 funciona con dos variables. Tampoco aparecen aquí los problemas donde las
 variables no se pueden partir, ni aquéllos donde el objetivo deja de ser una
-recta. El primero de los tres llega en la clase 2; los otros dos, después. Los
-tres se apoyan en lo que se plantea aquí.
+recta. El primero de los tres llega en la clase 2 y el segundo en la clase 4; el
+objetivo que no es una recta queda fuera de esta unidad. Los tres se apoyan en lo
+que se plantea aquí.
 
 Empieza por [[leer-la-bitacora|leer la bitácora]].

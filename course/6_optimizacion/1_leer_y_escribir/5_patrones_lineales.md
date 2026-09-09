@@ -59,10 +59,10 @@ juntarlas de un solo lado para que quede en forma estándar.
 | «por cada celda, al menos 2 filtros» | $x_1 - 2x_2 \ge 0$ | proporción |
 :::
 
-Las cinco filas se reproducen desde la frase sola: **cada frase dice lo que
-consume cada pieza**, no solo una. Una frase como «cada filtro consume 2 kg y hay
-18» daría $2x_1 \le 18$, y el término de las celdas tendría que salir de otro
-lado.
+Las dos primeras filas se reproducen desde la frase sola porque **cada una dice
+lo que consume cada pieza**, no solo una. Una frase como «cada filtro consume 2
+kg y hay 18» daría $2x_1 \le 18$, y el término de las celdas tendría que salir de
+otro lado. Las otras tres no hablan de consumo, y por eso llevan otro molde.
 
 ## 2 · La trampa de los signos
 

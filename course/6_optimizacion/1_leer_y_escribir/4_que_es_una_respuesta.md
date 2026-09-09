@@ -75,7 +75,7 @@ esto no puede pasar, y más adelante en la unidad se ve por qué.*
 | **Solución aproximada** | Un punto factible que un método entrega **sin demostrar que sea óptimo**. Qué tan buena es solo se sabe comparándola contra una cota |
 :::
 
-De esa lista ya tienes los 3 primeros: cinco soluciones factibles en las
+De esa lista ya tienes los tres primeros: cinco soluciones factibles en las
 esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valor
 óptimo. Los demás llegan con los métodos que los producen.
 
@@ -83,11 +83,11 @@ esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valo
 > **Que una región sea abierta no quiere decir que el problema sea no acotado**,
 > y las dos cosas se confunden casi siempre.
 >
-> Quítale al modelo las 2 restricciones de no negatividad. La región deja
+> Quítale al modelo las dos restricciones de no negatividad. La región deja
 > de estar encerrada: le quedan dos esquinas, $(2,8)$ y $(8,2)$, y dos semirrectas
 > que se van al infinito. Y sin embargo **el máximo sigue siendo 38**, porque en
 > las dos direcciones por las que la región se escapa el objetivo **baja**, dos y
-> 5 créditos por unidad.
+> cinco créditos por unidad.
 >
 > Una región abierta puede tener máximo. Lo que hace no acotado a un problema es
 > que exista una dirección de escape en la que el objetivo **sube**.
@@ -95,20 +95,20 @@ esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valo
 ## 3 · Un certificado, completo
 
 El método gráfico te da la respuesta, pero no te da manera de **convencer a
-alguien más** sin rehacer el dibujo. Eso es lo que hace un certificado. Para el
-impresora son 3 números, uno por recurso: $y = (2,\, 1,\, 0)$.
+alguien más** sin rehacer el dibujo. Eso es lo que hace un certificado. Para la
+impresora son tres números, uno por recurso: $y = (2,\, 1,\, 0)$.
 
 ::: table {#opt-certificado title="Las tres condiciones, y ninguna sobra"}
 | Condición | En este problema |
 |---|---|
-| Los 3 números son $\ge 0$ | $2\ge0$, $1\ge0$, $0\ge0$ |
+| Los tres números son $\ge 0$ | $2\ge0$, $1\ge0$, $0\ge0$ |
 | Cubren el precio de cada pieza | filtro: $2\cdot1+1\cdot2+0\cdot1 = 4 \ge 4$ · celda: $2\cdot1+1\cdot1+0\cdot2 = 3 \ge 3$ |
 | Su cuenta con lo disponible da el valor del plan | $2\cdot10 + 1\cdot18 + 0\cdot18 = 38$ |
 :::
 
 **Por qué con eso basta, en dos renglones.** Toma cualquier plan factible. Como
-los 3 números cubren el precio de cada pieza, lo que ese plan vale es a lo más
-lo que costaría pagándolo con esos 3 números. Y como los 3 números no son
+los tres números cubren el precio de cada pieza, lo que ese plan vale es a lo más
+lo que costaría pagándolo con esos tres números. Y como los tres números no son
 negativos y el plan no gasta más de lo que hay, esa cuenta es a lo más
 $2\cdot10+1\cdot18+0\cdot18 = 38$. **Ningún plan pasa de 38.** Y $(8,2)$ vale
 exactamente 38, así que es el mejor.

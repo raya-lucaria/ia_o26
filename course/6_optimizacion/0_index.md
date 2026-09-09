@@ -63,8 +63,8 @@ tiempo estimado.
 | 2 | Resolver sin dibujar | Escribir el modelo como matriz y resolverlo con simplex sin dibujarlo | 108m |
 :::
 
-Las clases 3 y 4 —el caso continuo y los problemas con variables enteras— están
-en preparación.
+Las clases 3 y 4 —lo que hay detrás de los precios sombra, y los problemas donde
+las piezas no se pueden partir— están en preparación.
 
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
 - [[optimizacion-lineal|Clase 2 · Resolver sin dibujar]]

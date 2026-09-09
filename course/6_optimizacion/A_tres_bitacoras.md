@@ -13,9 +13,9 @@ tags: [optimizacion, modelado, practica]
 **¿Puedo hacerlo yo solo, con una historia que no he visto?**
 
 Hoja de práctica, no de sesión. No trae teoría nueva: trae **tres historias sin
-resolver**, una por cada patrón de [[patrones-lineales|Patrones lineales]]. Cada
-una tiene su respuesta plegada, y conviene no abrirla antes de haber escrito
-algo.
+resolver**, una por cada cosa que la clase 1 dejó sin practicar: la **cota**, el
+**mínimo con $\ge$** y la **proporción**. Cada una tiene su respuesta plegada, y
+conviene no abrirla antes de haber escrito algo.
 
 ## Antes de empezar: qué hay que producir
 
@@ -31,16 +31,16 @@ modelo.** Escribirlo es hacer el camino al revés.
 ::: table {#opt-que-entregar title="Los cuatro pasos, y en qué orden"}
 | Paso | Qué produces | Con qué |
 |---|---|---|
-| 1 | **La tabla limpia**, y las tres trampas señaladas | Las tres preguntas de *Leer la bitácora* |
+| 1 | **La tabla limpia**, y las trampas señaladas | Las tres preguntas de *Leer la bitácora* |
 | 2 | **El modelo en forma canónica**, con las siete partes | El lienzo de *Escribir el modelo* |
 | 3 | **El dibujo y la respuesta** | El método de *El dibujo* |
 | 4 | **Qué recurso sobra**, y hasta dónde aguanta tu supuesto | *El dibujo* y *Qué es una respuesta* |
 :::
 
 > [!WARNING]
-> Las tres bitácoras traen **una trampa de cada tipo**: un número que no sirve
-> para nada, un dato que hace falta y no está, y una frase que se puede leer de
-> dos maneras. Si terminas una sin haber encontrado las tres, vuelve a leerla.
+> Cada bitácora trae trampas como las de la clase 1: algo que no sirve, algo que
+> hay que suponer, o una frase con dos lecturas. **No todas traen las tres.** Si
+> terminas una sin haber encontrado ninguna, vuelve a leerla.
 
 ## 1 · El taller de reparaciones
 
@@ -76,10 +76,12 @@ cambió algo.
 :::
 
 ::: answer {#opt-resp-taller of="opt-ej-taller"}
-**La tabla.** Sobra la cubierta 3. Falta cuántas refacciones hay… no: eso sí
-está. **Lo que falta es cuántas horas de turno quedan tras el descanso**, y como
-la bitácora no lo dice, se supone que las 16 son útiles. La frase ambigua es la
-del jefe de máquinas: «hay que dejar hechas las válvulas» no dice cuántas.
+**La tabla.** Sobra la cubierta 3. **Lo que falta es cuántos kits gasta una
+válvula**: la bitácora dice que cada sello gasta uno y de la válvula no dice
+nada, así que se supone que **la válvula no gasta ninguno**. Ése es el supuesto
+que hace que la cota se escriba $s \le 4$ y no $s + kv \le 4$ con algún gasto
+$k$ por válvula. La frase ambigua es la del jefe de máquinas: «hay que dejar
+hechas las válvulas» no dice cuántas.
 
 **El modelo**, tomando esa frase como preferencia y no como regla:
 
@@ -202,14 +204,15 @@ otra. Escríbela primero tal como suena —telemetría al menos el doble que
 datos— y después junta las dos variables de un solo lado, que es lo que pide la
 forma canónica.
 
-Y fíjate en que ésta **no** es una frase ambigua: dice exactamente qué hacer. La
-ambigua es otra.
+Y fíjate en que ésta **no** es una frase ambigua: dice exactamente qué hacer. Lo
+que le falta a esta bitácora es un dato, no una lectura.
 :::
 
 ::: answer {#opt-resp-antena of="opt-ej-antena"}
 **La tabla.** Sobran los 47 grados de elevación. Falta cuántos paquetes caben en
-la ventana de enlace, o sea su duración. La frase ambigua es «hay ventana de
-enlace»: no dice de cuánto.
+la ventana de enlace, o sea su duración: la bitácora dice que hay ventana y
+nunca dice de cuánto. **Y aquí no hay frase ambigua**: ninguna de las de esta
+bitácora se puede leer de dos maneras.
 
 **El modelo.** Con $d$ paquetes de datos y $t$ de telemetría, la frase del
 protocolo es $t \ge 2d$, que en forma canónica se escribe $2d - t \le 0$:
@@ -242,7 +245,7 @@ recurso y aun así puede ser la que manda.
 
 - El trabajo es **siempre el mismo**: leer, señalar las trampas, escribir en
   forma canónica, resolver, y preguntarle a la respuesta qué sobró.
-- Los tres patrones de [[patrones-lineales|Patrones lineales]] aparecen uno por
-  historia, y en los tres casos
-  **el patrón raro es el que decide la respuesta**.
+- En el taller manda la **cota** y en la antena la **proporción**: en esos dos,
+  el patrón raro de [[patrones-lineales|Patrones lineales]] **es el que decide la
+  respuesta**. En la ración lo que cambia es el sentido.
 - Minimizar no es un problema distinto: es el mismo con el sentido volteado.
