@@ -85,6 +85,11 @@ deslizarla consiste en pasarla por terreno no factible hasta que sale.
 ![El polígono con cuatro rectas paralelas rotuladas con su valor; la de valor 38 toca la región en un solo punto](../_assets/opt-curvas-de-nivel.svg)
 :::
 
+> **Empújala tú.** La recta se puede arrastrar sobre este mismo polígono en una
+> [página aparte](../_assets/camino_por_vertices.html), y ahí se ve en qué
+> esquina deja de tocarlo. Esa página hace algo más, que es de la clase que
+> viene; para esto basta la barra de abajo del dibujo.
+
 ### Hacia qué lado se empuja, y por qué
 
 La flecha verde del dibujo apunta hacia donde el valor **crece**, y la razón no

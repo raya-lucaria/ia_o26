@@ -127,6 +127,14 @@ coincide siempre; el vértice, solo cuando el óptimo es único.
 Las líneas 3 y 4 son la rama del problema **no acotado**, que
 [[que-es-una-respuesta|Qué es una respuesta]] ya definió; aquí nunca se ejecuta.
 
+> **Córrelo tú.** Estas nueve líneas se pueden ejecutar
+> [una a la vez](../_assets/camino_por_vertices.html), con la línea actual
+> resaltada y el estado a la vista: dónde está $v$, qué acaba de entrar en $M$,
+> cuál vecino gana la línea 8 y por qué, y por qué para. Trae el polígono de la
+> clase 1 y el poliedro de la página anterior detrás de un interruptor: con el
+> segundo desaparece el dibujo y no el método. El ejercicio de abajo hazlo
+> primero a mano, porque la página también empieza donde le digas.
+
 ## 5 · Tu turno
 
 ::: exercise {#opt-ej-simplex title="Empieza en otra esquina"}
