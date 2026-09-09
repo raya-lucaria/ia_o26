@@ -17,7 +17,7 @@ La notación ya está. Ahora hay que usarla, y el procedimiento es mecánico:
 Van cuatro algoritmos, del más barato al más caro. No están para que los
 memorices: están para que veas que la diferencia entre ellos no es de grado.
 
-## 1 · Búsqueda lineal — $\Theta(n)$
+## 1 · Búsqueda lineal — Θ(n)
 
 ```python
 def buscar(lista, x):
@@ -34,7 +34,7 @@ El peor caso importa aquí: si $x$ está en la primera posición son $1$
 comparaciones. Pero como acordamos en [[cuanto-cuesta|la primera página]], la que
 contamos es la peor.
 
-## 2 · Búsqueda binaria — $\Theta(\log n)$
+## 2 · Búsqueda binaria — Θ(log n)
 
 Sobre una lista **ya ordenada**:
 
@@ -72,7 +72,7 @@ Se acaba cuando $n/2^k \le 1$, es decir $k \ge \log_2 n$. **$\Theta(\log n)$.**
 > patrón más frecuente de toda la materia, y funciona igual si se parte en tres
 > o en diez: solo cambia la base, y la base no cuenta.
 
-## 3 · Multiplicar dos matrices — $\Theta(n^3)$
+## 3 · Multiplicar dos matrices — Θ(n³)
 
 Ésta es la que conecta con matemáticas que ya sabes. Para $C = A \cdot B$ con
 matrices $n \times n$:
@@ -111,7 +111,7 @@ Ese recuadro tiene una moraleja que vale para toda la unidad: **la complejidad
 que conoces es la de tu algoritmo, no la del problema.** Son cosas distintas, y
 distinguirlas es media unidad.
 
-## 4 · Todos los subconjuntos — $\Theta(2^n)$
+## 4 · Todos los subconjuntos — Θ(2ⁿ)
 
 ```python
 def mejor_subconjunto(objetos, vale):

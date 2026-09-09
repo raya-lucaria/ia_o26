@@ -175,6 +175,49 @@ def valor(p):
     return C[0] * p[0] + C[1] * p[1]
 
 
+def _activas(p):
+    """Indices de las restricciones que p cumple con igualdad, las cinco."""
+    filas = A + [[-1, 0], [0, -1]]
+    lados = list(B) + [0, 0]
+    return frozenset(i for i in range(len(filas))
+                     if filas[i][0] * p[0] + filas[i][1] * p[1] == lados[i])
+
+
+def vecinos(v, w):
+    """Vecinos = los une una arista, decidido por RANGO n-1, no por conteo.
+
+    Con n = 2 eso es rango 1 de las activas compartidas. Contarlas sin mirar
+    la independencia declara vecinos a los extremos de la diagonal de una
+    cara, y esa version falsa ya estuvo escrita una vez en el diseno.
+    """
+    if v == w:
+        return False
+    filas = A + [[-1, 0], [0, -1]]
+    comp = [filas[i] for i in _activas(v) & _activas(w)]
+    if not comp:
+        return False                       # rango 0: no comparten nada
+    base = comp[0]                         # rango 1 <=> todas paralelas
+    return all(base[0] * f[1] - base[1] * f[0] == 0 for f in comp)
+
+
+def camino_simplex():
+    """La traza de simplex desde el origen, calculada, no transcrita.
+
+    Empieza en el origen —que siempre es vertice factible aqui, porque todas
+    las restricciones son <= con lado derecho no negativo—, y en cada paso se
+    va al vecino que mas paga. La regla de desempate es la que declara la
+    pagina: el de menor x1, y si tambien empatan, el de menor x2.
+    """
+    V = vertices()
+    v = next(p for p in V if p[0] == 0 and p[1] == 0)
+    ruta = [v]
+    while True:
+        mejores = [w for w in V if vecinos(ruta[-1], w) and valor(w) > valor(ruta[-1])]
+        if not mejores:
+            return ruta
+        ruta.append(max(mejores, key=lambda w: (valor(w), -w[0], -w[1])))
+
+
 def rotulo(p):
     def n(t):
         return str(t) if t.denominator == 1 else f"{t.numerator}/{t.denominator}"
@@ -455,12 +498,17 @@ def _leyenda(x, y, filas, ancho=250):
 
 # Desplazamiento del rotulo de cada esquina, elegido a mano para que ninguno
 # choque con otro, con un eje o con una recta. Revisado renderizando en Chrome.
+# El de (0,9) iba arriba a la derecha y la recta de las horas —que sale justo
+# de (0,10), un paso mas arriba— le entraba por el parentesis de apertura; lo
+# encontro la guarda de rotulos, no el ojo. A la derecha no hay corrimiento que
+# lo salve: la recta baja con la misma pendiente con la que crece el texto. Se
+# fue a la izquierda del eje, a la altura de su punto, donde no hay nada.
 ROTULOS = {
     (0, 0): (0, 48, "middle"),
     (9, 0): (0, 48, "middle"),
     (8, 2): (16, -14, "start"),
     (2, 8): (14, -16, "start"),
-    (0, 9): (16, -16, "start"),
+    (0, 9): (-8, -6, "end"),
 }
 
 
@@ -1144,6 +1192,111 @@ def opt_fig_circulos():
     return "".join(s)
 
 
+# Desplazamiento del rotulo de cada esquina en opt-camino-simplex, a mano y
+# revisado renderizando AMPLIADO. Los rotulos llevan el valor, asi que miden
+# casi 80 px: los dos de abajo van fuera del eje horizontal, y los tres de
+# arriba lejos de las dos flechas del camino.
+ROTULOS_CAMINO = {
+    (0, 0): (12, 48, "start"),
+    (9, 0): (0, 48, "middle"),
+    (8, 2): (20, -14, "start"),
+    (2, 8): (16, -16, "start"),
+    (0, 9): (16, -16, "start"),
+}
+
+
+def opt_camino_simplex():
+    """El camino que simplex recorre sobre el poligono de la clase 1.
+
+    Calcula las cinco esquinas, la relacion de vecindad y la traza entera con
+    la aritmetica exacta del episodio: si un precio o un disponible cambia, el
+    camino dibujado cambia solo. No lleva las tres rectas de recurso —eso ya
+    lo dibuja opt-poligono— porque aqui lo que se sigue son las flechas.
+    """
+    W, H = 820, 560
+    ox, oy, esc, top = 90, 460, 34, 10
+    V = vertices()
+    ruta = camino_simplex()
+    px, py, plano = _plano(W, H, ox, oy, esc, top)
+    s = [marco(
+        W, H,
+        "El polígono de la clase 1 con las cinco esquinas rotuladas con su "
+        "valor y dos flechas que van del origen a (9,0) y de ahí a (8,2)",
+        "El camino de simplex, de esquina en esquina",
+        "El poligono de cinco esquinas de la clase 1. Las esquinas valen "
+        "(0,0)=0, (9,0)=36, (8,2)=38, (2,8)=32 y (0,9)=27. Dos flechas "
+        "gruesas marcan el camino: del origen a (9,0), primer pivote, y de "
+        "(9,0) a (8,2), segundo pivote. Las tres esquinas visitadas van con "
+        "punto lleno y las dos que nadie visito con aro hueco. En (8,2) los "
+        "dos vecinos valen 36 y 32, los dos menos que 38, y ahi para.",
+    )]
+    d = " ".join(("M" if i == 0 else "L") + f" {px(p[0]):.1f} {py(p[1]):.1f}"
+                 for i, p in enumerate(V)) + " Z"
+    s.append(f'<path d="{d}" fill="{mezclar(ACENTO, 0.18)}" '
+             f'stroke="{mezclar(SUAVE, 0.7)}" stroke-width="2"/>')
+    s += plano
+    for k in range(len(ruta) - 1):
+        a, b = ruta[k], ruta[k + 1]
+        # La flecha arranca despues del punto de salida y termina antes del de
+        # llegada: si va de centro a centro, la punta se mete dentro del aro
+        # de la parada y se lee como si la atravesara.
+        x1, y1, x2, y2 = px(a[0]), py(a[1]), px(b[0]), py(b[1])
+        largo = math.hypot(x2 - x1, y2 - y1)
+        ux, uy = (x2 - x1) / largo, (y2 - y1) / largo
+        fin = (15 if b == ruta[-1] else 6) + 4      # el aro de la parada es mayor
+        s.append(flecha(x1 + ux * 10, y1 + uy * 10, x2 - ux * fin, y2 - uy * fin,
+                        color=ACENTO, grosor=3))
+    # Los dos rotulos de pivote van al lado de su flecha, no encima.
+    s.append(texto((px(ruta[0][0]) + px(ruta[1][0])) / 2, py(0) - 14,
+                   "pivote 1", color=ACENTO, tam=13, peso="700"))
+    s.append(texto(px(ruta[1][0]) + 30, (py(ruta[1][1]) + py(ruta[2][1])) / 2 + 4,
+                   "pivote 2", color=ACENTO, tam=13, anclaje="start", peso="700"))
+    visitadas = set(ruta)
+    for p in V:
+        x, y = px(p[0]), py(p[1])
+        dx, dy, anc = ROTULOS_CAMINO[(int(p[0]), int(p[1]))]
+        parada = p == ruta[-1]
+        if p in visitadas:
+            s.append(punto(x, y, r=9 if parada else 6, color=ACENTO))
+            if parada:
+                s.append(f'<circle cx="{x}" cy="{y}" r="15" fill="none" '
+                         f'stroke="{ACENTO}" stroke-width="2.5"/>')
+        else:
+            s.append(f'<circle cx="{x}" cy="{y}" r="6" fill="{FONDO}" '
+                     f'stroke="{SUAVE}" stroke-width="2.5"/>')
+        s.append(texto(x + dx, y + dy, f"{rotulo(p)} = {int(valor(p))}",
+                       color=ACENTO if p in visitadas else SUAVE, tam=13,
+                       anclaje=anc, peso="700" if parada else "normal"))
+    s.append(texto(W / 2, 34,
+                   "desde el origen: dos pivotes y tres esquinas de cinco",
+                   color=SUAVE, tam=16))
+    # Leyenda propia, con los dos simbolos que de verdad usa el dibujo: la
+    # distincion es punto lleno contra aro hueco, no color, y una barra de
+    # color no la ensenaria.
+    s.append(caja(506, 66, 280, 78, relleno=mezclar(LINEA, 0.16), borde=SUAVE))
+    s.append(punto(530, 96, r=6, color=ACENTO))
+    s.append(texto(556, 101, "esquina visitada", color=TEXTO, tam=13,
+                   anclaje="start"))
+    s.append(f'<circle cx="530" cy="124" r="6" fill="{FONDO}" '
+             f'stroke="{SUAVE}" stroke-width="2.5"/>')
+    s.append(texto(556, 129, "esquina que nadie miró", color=TEXTO, tam=13,
+                   anclaje="start"))
+    s.append(caja(506, 190, 280, 132, borde=SUAVE, guiones="6 5"))
+    for k, renglon in enumerate([
+        "en (8, 2) los dos vecinos valen",
+        "36 y 32: ninguno mejora, y ahí",
+        "para el método.",
+        "",
+        "las dos esquinas huecas nunca",
+        "se miraron, y ninguna ganaba.",
+    ]):
+        if renglon:
+            s.append(texto(522, 216 + 19 * k, renglon, color=SUAVE, tam=13,
+                           anclaje="start"))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -1156,6 +1309,7 @@ DIAGRAMAS = {
     "opt-fig-matriz": opt_fig_matriz,
     "opt-fig-poliedro": opt_fig_poliedro,
     "opt-fig-circulos": opt_fig_circulos,
+    "opt-camino-simplex": opt_camino_simplex,
 }
 
 

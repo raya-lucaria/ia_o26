@@ -279,3 +279,170 @@ def test_el_poliedro_del_sello_tiene_los_ocho_vertices_que_la_pagina_tabula():
         for f in filas
     )
     assert visto == esperado, f"las restricciones activas no cuadran:\n{visto}\n{esperado}"
+
+
+def test_la_traza_de_simplex_en_dos_variables_es_la_que_la_pagina_imprime():
+    """La pagina 3 tabula tres filas con los vecinos de cada vertice y su valor,
+    y opt-camino-simplex dibuja esa misma traza.
+
+    Si el poligono cambia, la tabla deja de ser comprobable con el dibujo, que
+    es la unica razon de que el ejemplo a mano sea de dos variables. La
+    vecindad se decide por RANGO n-1, no contando activas: contar declara
+    vecinos a los extremos de la diagonal de una cara, y clase2.py trae el
+    contraejemplo en cuatro dimensiones.
+    """
+    A = [[1, 1], [2, 1], [1, 2]]
+    b = [10, 18, 18]
+    c = [4, 3]
+    V = vertices(A, b, 2)
+    val = lambda v: sum(ci * xi for ci, xi in zip(c, v))
+    camino = [[F(0), F(0)]]
+    while True:
+        mej = [w for w in V
+               if vecinos_por_arista(A, b, 2, camino[-1], w) and val(w) > val(camino[-1])]
+        if not mej:
+            break
+        camino.append(max(mej, key=val))
+    assert [[int(x) for x in v] for v in camino] == [[0, 0], [9, 0], [8, 2]], camino
+    assert val(camino[-1]) == 38
+    assert len(camino) == 3 and len(V) == 5, "ya no visita 3 de 5"
+
+    # Y el generador tiene que llegar a la misma traza por su propia cuenta:
+    # el dibujo la calcula, no la transcribe.
+    assert [gen.rotulo(p) for p in gen.camino_simplex()] == ["(0, 0)", "(9, 0)", "(8, 2)"]
+
+    # Las tres filas de la tabla publicada, con sus vecinos y sus valores.
+    texto = (ASSETS_OPTIMIZACION.parent / "2_lineal" /
+             "3_de_esquina_en_esquina.md").read_text(encoding="utf-8")
+    bloque = texto.split("{#opt-traza-simplex")[1].split(":::")[0]
+    filas = [l for l in bloque.splitlines()
+             if l.strip().startswith("|") and "---" not in l and "Estoy en" not in l]
+    assert len(filas) == 3, f"la tabla tiene {len(filas)} filas de datos, no 3"
+    for fila, v in zip(filas, camino):
+        celdas = [c.strip() for c in fila.strip().strip("|").split("|")]
+        rot = "$(%d,%d)$" % (int(v[0]), int(v[1]))
+        assert celdas[0] == rot, f"la fila dice {celdas[0]}, no {rot}"
+        assert celdas[1].strip("*") == str(int(val(v))), f"{rot}: valor mal en la tabla"
+        esperados = sorted(w for w in V if vecinos_por_arista(A, b, 2, v, w))
+        for w in esperados:
+            marca = "$(%d,%d)=%d$" % (int(w[0]), int(w[1]), int(val(w)))
+            assert marca in celdas[2], f"{rot}: falta el vecino {marca}"
+        assert celdas[2].count("$(") == len(esperados), (
+            f"{rot}: la celda de vecinos lista {celdas[2].count('$(')} y son "
+            f"{len(esperados)}"
+        )
+
+
+# --------------------------------------------------------------------------
+# Guarda de rotulos: ningun trazo parte un rotulo de vertice.
+#
+# Nace de tres defectos reales de esta rama que el ojo no vio a tamano normal:
+# el rotulo (2,8,0) de opt-fig-poliedro partido por la arista punteada de x2, y
+# el rotulo (0,9) de opt-poligono con la recta de las horas metida por el
+# parentesis de apertura. Se ven ampliando el render a 4x, o midiendo.
+#
+# Esta ESTRECHADA a proposito, en vez de aflojar un umbral hasta que no muerda:
+#
+#   - Solo segmentos de linea RECTOS (<line>). Los <path> y los <circle> se
+#     quedan fuera: sus rotulos de curva llevan placa de fondo debajo, que es
+#     el arreglo publicado en opt-fig-circulos, y una guarda geometrica los
+#     marcaria igual.
+#   - Solo trazos de grosor >= 1.5. La rejilla de _plano va a grosor 1 y al 40%
+#     del color de linea: pasa por detras de un rotulo sin partir ningun glifo,
+#     y ademas es inevitable —la rejilla va cada 68 px y un rotulo con valor
+#     mide casi 80—. Todo trazo que lleva informacion (ejes, rectas, aristas,
+#     flechas) va a 1.6 o mas.
+#   - Solo ROTULOS DE VERTICE: los que empiezan con un parentesis y un digito,
+#     «(0, 9)», «(8, 2) = 38», «(5, 2, 3) = 41». Son los que van pegados al
+#     dibujo y no pueden llevar placa.
+#
+# La caja de cada rotulo es una ESTIMACION (0.55 em por caracter), no la
+# metrica real de la fuente: para el ancho de glifos latinos en una sans del
+# sistema se queda corta antes que larga, que es el lado seguro para no
+# inventar defectos.
+
+_ROTULO_DE_VERTICE = re.compile(r"^\(\s*-?\d")
+
+
+def _caja_de_texto(t):
+    x, y = float(t.get("x")), float(t.get("y"))
+    tam = float(t.get("font-size"))
+    ancho = len(t.text or "") * tam * 0.55
+    anclaje = t.get("text-anchor", "start")
+    x0 = x if anclaje == "start" else (x - ancho if anclaje == "end" else x - ancho / 2)
+    return (x0, y - tam * 0.78, x0 + ancho, y + tam * 0.22)
+
+
+def _trazos_rectos(raiz, grosor_minimo=1.5):
+    fuera = []
+    for e in raiz.iter():
+        if e.tag.split("}")[-1] != "line":
+            continue
+        if e.get("stroke") in (None, "none"):
+            continue
+        if float(e.get("stroke-width", 1)) < grosor_minimo:
+            continue
+        fuera.append(tuple(float(e.get(k)) for k in ("x1", "y1", "x2", "y2")))
+    return fuera
+
+
+def _atraviesa(seg, caja, pasos=200):
+    x1, y1, x2, y2 = seg
+    izq, arr, der, aba = caja
+    for k in range(pasos + 1):
+        x = x1 + (x2 - x1) * k / pasos
+        y = y1 + (y2 - y1) * k / pasos
+        if izq <= x <= der and arr <= y <= aba:
+            return True
+    return False
+
+
+def rotulos_partidos(svg):
+    """Los rotulos de vertice que un trazo recto atraviesa, con su trazo."""
+    raiz = ET.fromstring(svg)
+    trazos = _trazos_rectos(raiz)
+    malos = []
+    for t in raiz.iter():
+        if t.tag.split("}")[-1] != "text":
+            continue
+        if not _ROTULO_DE_VERTICE.match((t.text or "").strip()):
+            continue
+        caja = _caja_de_texto(t)
+        for seg in trazos:
+            if _atraviesa(seg, caja):
+                malos.append((t.text, tuple(round(v, 1) for v in seg)))
+                break
+    return malos
+
+
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
+def test_ningun_rotulo_de_vertice_queda_partido_por_un_trazo(nombre):
+    malos = rotulos_partidos(_texto(nombre))
+    assert not malos, (
+        f"{nombre}: un trazo atraviesa el rotulo de un vertice "
+        "(se ve ampliando el render a 4x, no a tamano normal):\n"
+        + "\n".join(f"   {t!r} lo cruza {s}" for t, s in malos)
+    )
+
+
+def test_la_guarda_de_rotulos_si_puede_fallar():
+    """Una guarda que no puede fallar es peor que ninguna.
+
+    Los dos escenarios son los dos defectos historicos: un rotulo encima de un
+    trazo, y un trazo que le pasa por encima a un rotulo que estaba limpio.
+    """
+    cabeza = ('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" '
+              'viewBox="0 0 200 100">')
+    rotulo = '<text x="60" y="50" font-size="13" text-anchor="start">(8, 2) = 38</text>'
+    limpio = cabeza + '<line x1="0" y1="90" x2="200" y2="90" stroke="#fff" ' \
+                      'stroke-width="2"/>' + rotulo + "</svg>"
+    assert rotulos_partidos(limpio) == [], "la guarda marca un SVG que esta bien"
+
+    encima = cabeza + '<line x1="0" y1="46" x2="200" y2="46" stroke="#fff" ' \
+                      'stroke-width="2"/>' + rotulo + "</svg>"
+    assert rotulos_partidos(encima), "la guarda no vio un trazo sobre el rotulo"
+
+    # Y la rejilla, a grosor 1, se queda fuera a proposito: pasa por detras.
+    rejilla = cabeza + '<line x1="0" y1="46" x2="200" y2="46" stroke="#fff" ' \
+                       'stroke-width="1"/>' + rotulo + "</svg>"
+    assert rotulos_partidos(rejilla) == [], "la rejilla no deberia contar"
