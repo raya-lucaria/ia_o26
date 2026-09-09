@@ -88,7 +88,7 @@ dos variables.**
 :::
 
 ::: figure {#opt-fig-poliedro title="El poliedro de la impresora con sello"}
-![Un cuerpo de ocho vértices y doce aristas en proyección, con las tres caras de recurso sombreadas, las tres aristas del origen punteadas por detrás, el óptimo (5,2,3) marcado con un punto lleno y el plan de la clase 1, (8,2,0), con un anillo](../_assets/opt-fig-poliedro.svg)
+![Un poliedro de ocho vértices y doce aristas en proyección, con las tres caras de recurso sombreadas, las tres aristas del origen punteadas por detrás, el óptimo (5,2,3) marcado con un punto lleno y el plan de la clase 1, (8,2,0), con un anillo](../_assets/opt-fig-poliedro.svg)
 :::
 
 ## 3 · Los ocho vértices, y quién es vecino de quién

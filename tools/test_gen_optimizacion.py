@@ -333,6 +333,68 @@ def test_la_traza_de_simplex_en_dos_variables_es_la_que_la_pagina_imprime():
         )
 
 
+def test_la_traza_con_sello_pasa_por_la_parada_fraccionaria():
+    """Tres pivotes, cuatro vertices de ocho, y la parada intermedia tiene
+    coordenadas partidas: la pagina la nombra en vez de esconderla, y de ahi
+    sale el enganche con la clase 4.
+
+    La pagina 4 no tiene diagrama: su figura es la tabla de los ocho de la
+    pagina 2, asi que lo unico que ata su traza a la aritmetica es esta guarda.
+    """
+    A, b, c = [[1, 1, 1], [2, 1, 2], [1, 2, 3]], [10, 18, 18], [4, 3, 5]
+    V = vertices(A, b, 3)
+    val = lambda v: sum(ci * xi for ci, xi in zip(c, v))
+    camino = [[F(0)] * 3]
+    while True:
+        mej = [w for w in V
+               if vecinos_por_arista(A, b, 3, camino[-1], w) and val(w) > val(camino[-1])]
+        if not mej:
+            break
+        camino.append(max(mej, key=val))
+    assert len(camino) == 4 and val(camino[-1]) == 41
+    assert len(V) == 8, "ya no visita 4 de 8"
+    assert camino[2] == [F(9, 2), F(0), F(9, 2)]
+    assert camino[2][0].denominator == 2, "la parada fraccionaria desaparecio"
+
+    # El paso que la elige le gana a (8,2,0) por DOS CREDITOS Y MEDIO, no por
+    # medio: el spec y la etiqueta de clase2.py decian "medio credito" y
+    # 81/2 - 38 = 5/2. La pagina imprime el margen, asi que va pineado aqui.
+    assert val(camino[2]) - val([F(8), F(2), F(0)]) == F(5, 2)
+
+    # Las cuatro filas publicadas, con sus tres vecinos y sus valores.
+    def rotulo(v):
+        partes = []
+        for q in v:
+            partes.append(str(q.numerator) if q.denominator == 1
+                          else r"\tfrac%d%d" % (q.numerator, q.denominator))
+        return "(" + ",".join(partes) + ")"
+
+    def valor(v):
+        z = F(val(v))
+        return (str(z.numerator) if z.denominator == 1
+                else r"\tfrac{%d}{%d}" % (z.numerator, z.denominator))
+
+    texto = (ASSETS_OPTIMIZACION.parent / "2_lineal" /
+             "4_sin_dibujo.md").read_text(encoding="utf-8")
+    bloque = texto.split("{#opt-traza-sello")[1].split(":::")[0]
+    filas = [l for l in bloque.splitlines()
+             if l.strip().startswith("|") and "---" not in l and "Estoy en" not in l]
+    assert len(filas) == 4, f"la tabla tiene {len(filas)} filas de datos, no 4"
+    for fila, v in zip(filas, camino):
+        celdas = [x.strip() for x in fila.strip().strip("|").split("|")]
+        rot = f"${rotulo(v)}$"
+        assert celdas[0] == rot, f"la fila dice {celdas[0]}, no {rot}"
+        assert celdas[1].strip("*$") == valor(v), f"{rot}: valor mal en la tabla"
+        esperados = [w for w in V if vecinos_por_arista(A, b, 3, v, w)]
+        assert len(esperados) == 3, f"{rot}: {len(esperados)} vecinos, no 3"
+        for w in esperados:
+            marca = f"${rotulo(w)}={valor(w)}$"
+            assert marca in celdas[2], f"{rot}: falta el vecino {marca}"
+        assert celdas[2].count("$(") == 3, (
+            f"{rot}: la celda de vecinos lista {celdas[2].count('$(')} y son 3"
+        )
+
+
 # --------------------------------------------------------------------------
 # Guarda de rotulos: ningun trazo parte un rotulo de vertice.
 #
@@ -347,9 +409,10 @@ def test_la_traza_de_simplex_en_dos_variables_es_la_que_la_pagina_imprime():
 #
 #     ESTO DEJA UN HUECO DE COBERTURA, y hay que nombrarlo entero: **ningun
 #     trazo que no sea <line> se comprueba**. Quedan fuera, aunque lleven
-#     informacion: el contorno del poligono (un <path> a grosor 2 en
-#     opt-camino-simplex y opt-fig-circulos), las curvas de nivel circulares
-#     (<circle> a grosor 2.5), los trazos de opt-fig-matriz, y **todas las
+#     informacion: el contorno del poligono (un <path>, a grosor 2 en
+#     opt-camino-simplex y a 2.5 en opt-fig-circulos), las curvas de nivel
+#     circulares (<circle>, a grosor 3 la de dentro y 2 las otras tres), los
+#     trazos de opt-fig-matriz, y **todas las
 #     puntas de flecha, porque son <marker> y no <line>**. Hoy ninguno de esos
 #     cruza un rotulo de vertice —medido—, asi que no hay defecto vivo
 #     escondido detras del hueco; pero un rotulo partido por una punta de
