@@ -69,4 +69,40 @@ las piezas no se pueden partir— están en preparación.
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
 - [[optimizacion-lineal|Clase 2 · Resolver sin dibujar]]
 
+## La tarea del lunes
+
+Una clase del MIT sobre programación lineal, y **es la única tarea de la
+sesión**. La condición no es verla: es entenderla. Tómate tu tiempo, párala,
+regrésate y vuelve a correr un trozo si hace falta.
+
+[15. Linear Programming: LP, reductions, Simplex](https://www.youtube.com/watch?v=WwMz2fJwUCg)
+— MIT 6.046J, *Design and Analysis of Algorithms*, con Srinivas Devadas.
+**Ochenta y dos minutos, en inglés**; los subtítulos automáticos ayudan si los
+necesitas.
+
+**Dos de las tres cosas del título ya las tienes.** El video llama *LP* a lo que
+esta unidad llama problema lineal, y *Simplex* al método de caminar de vértice
+en vértice. Que un curso de algoritmos del MIT llegue a las mismas dos ideas por
+otro camino es justamente lo que conviene ver.
+
+**La tercera es nueva.** Una **reducción** es escribir un problema que no parece
+lineal como si lo fuera, para resolverlo con la maquinaria que ya existe. Esta
+unidad no la cubre, así que ahí el video te lleva más lejos que las páginas.
+
+**No lo veas de un tirón.** Párale cuando reconozcas algo y compáralo con lo que
+ya leíste: ahí es donde la tarea rinde.
+
+### Con qué llegas a clase
+
+Pudiendo explicar con tus palabras, sin leerlas:
+
+1. Qué es un problema lineal, y por qué la respuesta cae en un vértice.
+2. Cómo camina simplex de un vértice a otro, y cuándo para.
+3. Qué es una reducción, y por qué convierte un problema nuevo en uno resuelto.
+4. Una cosa del video que **no** esté en estas páginas, y una de estas páginas
+   que **no** esté en el video.
+
+La cuarta es la que más se va a discutir en clase. **No hay cuestionario ni nada
+que entregar.**
+
 Empieza por [[leer-y-escribir|la clase 1]].

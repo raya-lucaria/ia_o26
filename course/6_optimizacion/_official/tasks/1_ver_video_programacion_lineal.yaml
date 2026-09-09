@@ -1,0 +1,26 @@
+id: ver-video-programacion-lineal
+type: task
+authority: official
+content:
+  title: Ver y entender la clase del MIT sobre programación lineal
+  instructions: >-
+    Para esta sesión hay que ver y entender una clase del MIT sobre programación
+    lineal: la número 15 del curso 6.046J, con Srinivas Devadas. Dura ochenta y
+    dos minutos y está en inglés; los subtítulos automáticos ayudan si los
+    necesitas. Es la única tarea de la sesión, y la
+    condición no es verla: es entenderla. Tómate tu tiempo, párala, regrésate y
+    vuelve a correr un trozo si hace falta. Llega a clase pudiendo explicar con
+    tus palabras qué es un problema lineal, por qué la respuesta cae en un
+    vértice, cómo camina el método simplex de un vértice a otro, y qué es una
+    reducción, que es lo único del video que la unidad todavía no cubre. El
+    enlace y las cuatro preguntas con las que hay que llegar están en la página
+    de la unidad, arriba. No hay cuestionario ni nada que
+    entregar.
+  due: "2026-09-14"
+  status: published
+  tags:
+    - tarea
+    - video
+    - preparacion
+    - optimizacion
+    - simplex
