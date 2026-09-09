@@ -33,6 +33,19 @@ Con $x_3$ los sellos:
 
 $$c=(4,3,5),\quad A=\begin{pmatrix}1&1&1\\2&1&2\\1&2&3\end{pmatrix},\quad b=\begin{pmatrix}10\\18\\18\end{pmatrix}$$
 
+- $c$ — **un precio por pieza**: filtro 4, celda 3, sello 5.
+- $A$ — **un renglón por recurso, una columna por pieza**. La tercera columna es
+  el sello: 1 hora, 2 kilos, 3 kWh.
+- $b$ — **lo disponible, uno por recurso**: 10 horas, 18 kilos, 18 kWh.
+
+> [!NOTE]
+> **¿Y $x\ge0$?** No está en $A$, y no es un olvido. En la forma canónica
+> **toda** restricción va con $\le$, así que $x_1\ge0$ se escribe
+> $-x_1\le0$; aquí va en la forma legible, que dice lo mismo. Vive pegada al
+> $\max$ porque declara **con qué números trabajas**, no qué recurso se acaba, y
+> por eso no ocupa renglón. Pero **sí cuenta como restricción al buscar
+> esquinas**: por eso el dibujo de la clase 1 lleva cinco rectas y no tres.
+
 La terna aguantó la tercera columna. El dibujo no.
 
 ## 1 · El polígono se vuelve poliedro
@@ -120,18 +133,37 @@ En el viaje: el mejor plan es $(5,2,3)$, con 41 créditos, y es uno de los ocho
 de la tabla.
 :::
 
-::: remark {#opt-que-le-falta-al-dibujo title="Qué le falta al argumento de la clase 1"}
-Esta página no lo demuestra otra vez: el argumento de cuatro pasos está en
-[[el-dibujo|El dibujo]]. Pero aquel empieza suponiendo que el polígono es
-«cerrado y de tamaño finito», o sea acotado, y el teorema de arriba no lo pide.
+::: proof {#opt-dem-vertice of="opt-teo-vertice"}
+**Supón primero el poliedro acotado.** Entonces tiene finitos vértices
+$v_1,\dots,v_k$, y todo punto factible es una **mezcla** de ellos:
+$x=\lambda_1v_1+\dots+\lambda_kv_k$, con cada $\lambda_i\ge0$ y
+$\lambda_1+\dots+\lambda_k=1$.
 
-Lo cierra un renglón. Con $x\ge0$ el poliedro no contiene ninguna recta, así que
-aunque se extienda al infinito siempre se puede bajar por una arista hasta un
-vértice.
+Sea $x^\ast$ un punto óptimo y $z^\ast=c\cdot x^\ast$ lo que paga. Como el
+objetivo es **lineal**, el valor de la mezcla es la mezcla de los valores:
+
+$$z^\ast=\lambda_1(c\cdot v_1)+\dots+\lambda_k(c\cdot v_k).$$
+
+Cada $v_i$ es factible, así que ninguno paga más que el óptimo:
+$c\cdot v_i\le z^\ast$. **Y un promedio de números que no pasan de $z^\ast$
+solo da $z^\ast$ si todos los que pesan valen $z^\ast$** —con pesos $0.2$,
+$0.3$ y $0.5$ y $z^\ast=10$, un vértice que valiera 8 dejaría el promedio en
+9.6, no en 10—. Luego **todo** $v_i$ con $\lambda_i>0$ es óptimo, y hay al
+menos uno porque los pesos suman 1.
+
+**Sin acotamiento se cae por donde se ve.** La franja $0\le x_2\le1$ con $x_1$
+libre no tiene ningún vértice, así que no hay mezcla que escribir. Lo que hace
+falta de verdad no es que el poliedro sea acotado, sino que **no contenga una
+recta**, y $x\ge0$ lo garantiza: aunque se extienda al infinito, siempre se
+puede bajar por una arista hasta un vértice.
 :::
 
 **«Al menos uno» no es una hipótesis: es una palabra de la conclusión.** Con la
 celda a 4 empatan $(2,8)$, $(8,2)$ y el segmento entero.
+
+::: figure {#opt-fig-vertice-o-arista title="O toca en un vértice, o cae en una arista entera"}
+![Dos paneles sobre el polígono de la clase 1. A la izquierda, con c=(4,3), la última recta de nivel toca la región en un solo vértice, (8,2), que vale 38. A la derecha, con c=(4,4), la recta queda paralela al lado de las horas: toda la arista que va de (8,2) a (2,8) vale 40, y sus dos extremos están marcados como vértices](../_assets/opt-fig-vertice-o-arista.svg)
+:::
 
 ### Por qué «lineal» no es decoración
 

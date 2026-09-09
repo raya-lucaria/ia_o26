@@ -508,6 +508,56 @@ def test_el_diagrama_del_precio_sombra_calcula_sus_tres_optimos():
         assert f"{rot} = {valor}" in texto, f"el diagrama no rotula {rot} = {valor}"
 
 
+def test_los_dos_paneles_del_teorema_derivan_sus_optimos_del_objetivo():
+    """opt-fig-vertice-o-arista no tiene escrito a mano quien gana.
+
+    Los dos paneles son los dos desenlaces del teorema del vertice, y la
+    diferencia entre ellos es SOLO el objetivo: con (4, 3) gana un vertice y
+    con (4, 4) gana una arista entera. Si el diagrama trajera los ganadores
+    escritos, cambiar un precio del episodio dejaria un dibujo que contradice
+    a la pagina sin que nada lo note.
+
+    Los dos casos vienen de la hoja canonica de la clase
+    (docs/superpowers/verificacion-optimizacion/clase2.py): «con la celda a 4
+    hay dos vertices optimos, los dos con 40».
+    """
+    (c_uno, _, _), (c_dos, _, _) = gen.PANELES_VERTICE_O_ARISTA
+    assert (c_uno, c_dos) == ((4, 3), (4, 4))
+    assert c_uno == tuple(gen.C), "el panel izquierdo es el objetivo del episodio"
+
+    _, z1, g1 = gen.optimos_con(c_uno)
+    assert [(int(x), int(y)) for x, y in g1] == [(8, 2)], f"un solo ganador: {g1}"
+    assert int(z1) == 38
+
+    _, z2, g2 = gen.optimos_con(c_dos)
+    assert [(int(x), int(y)) for x, y in g2] == [(8, 2), (2, 8)], f"la arista: {g2}"
+    assert int(z2) == 40
+    assert gen.vecinos(g2[0], g2[1]), (
+        "los dos optimos de (4, 4) tienen que ser los EXTREMOS DE UNA ARISTA: "
+        "es lo que el panel derecho dibuja"
+    )
+
+    texto = _texto("opt-fig-vertice-o-arista")
+    for p in g1 + g2:
+        assert gen.rotulo(p) in texto, f"el diagrama no rotula {gen.rotulo(p)}"
+    assert gen.pie_vertice_o_arista(z1, g1) == "la recta de 38 toca solo en (8, 2)"
+    assert gen.pie_vertice_o_arista(z2, g2) == (
+        "toda la arista de (8, 2) a (2, 8) vale 40")
+    for pie in (gen.pie_vertice_o_arista(z1, g1), gen.pie_vertice_o_arista(z2, g2)):
+        assert pie in texto, f"el pie calculado no esta en el SVG: {pie!r}"
+
+
+def test_el_rotulo_de_cada_optimo_de_los_dos_paneles_esta_declarado():
+    """Mismo motivo que ROTULOS: el desplazamiento se ajusto mirando el render
+    ampliado, asi que un ganador nuevo reventaria el generador al dibujarlo."""
+    claves = set()
+    for c, _, _ in gen.PANELES_VERTICE_O_ARISTA:
+        claves |= {(int(x), int(y)) for x, y in gen.optimos_con(c)[2]}
+    assert claves <= set(gen.ROTULOS_VERTICE_O_ARISTA), (
+        f"optimos sin desplazamiento: {claves - set(gen.ROTULOS_VERTICE_O_ARISTA)}"
+    )
+
+
 # --------------------------------------------------------------------------
 # Guarda de rotulos: ningun trazo parte un rotulo de vertice.
 #
