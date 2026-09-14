@@ -240,7 +240,7 @@ restricción que no usaste.
 
 ::: answer {#opt-resp-poliedro of="opt-ej-poliedro"}
 **Sale $(0,2,8)$**: sin filtros, dos celdas y ocho sellos. Cumple las horas
-—$0+2+8=10$— y el polímero —$0+2+16=18$—, los dos exactos, y ninguna coordenada
+($0+2+8=10$) y el polímero ($0+2+16=18$), los dos exactos, y ninguna coordenada
 es negativa. Tiene todo el aspecto de un vértice.
 
 **No lo es.** Falta la energía: $0+4+24=28$, y solo hay 18. El punto queda

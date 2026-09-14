@@ -54,7 +54,7 @@ no cambia porque cambie la matemática**.
 
 **La primera ambigüedad es la que cambia el modelo.** «Repártela toda» se puede
 leer como que la potencia sobrante se pierde —y entonces es una **igualdad**— o
-como que se puede guardar —y entonces sería $\le$—. Un reactor que no acumula no
+como que se puede guardar (y entonces sería $\le$). Un reactor que no acumula no
 deja guardar nada, así que se escribe con igualdad, y de ahí sale todo lo demás
 de esta clase.
 

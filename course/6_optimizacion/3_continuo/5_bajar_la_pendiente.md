@@ -28,7 +28,7 @@ falta un problema libre para enseñarlo, y la bomba lo es.
 $$\min\; f(x,y) = (x-3)^2 + 4\,(y-2)^2.$$
 
 Se **minimiza**, que es lo natural para un desgaste, y por eso el método se llama
-descenso. Su mínimo está en $(3,2)$ —se ve a ojo— y eso es justo lo que lo hace
+descenso. Su mínimo está en $(3,2)$ (se ve a ojo) y eso es justo lo que lo hace
 buen ejemplo: se puede comprobar a dónde llega.
 
 ## 1 · Hacia dónde, y cuánto

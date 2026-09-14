@@ -76,7 +76,7 @@ esto no puede pasar, y más adelante en la unidad se ve por qué.*
 :::
 
 De esa lista ya tienes los tres primeros: cinco soluciones factibles en las
-esquinas —y muchas más en medio, como $(5,5)$—, un óptimo global y un valor
+esquinas (y muchas más en medio, como $(5,5)$), un óptimo global y un valor
 óptimo. Los demás llegan con los métodos que los producen.
 
 > [!WARNING]
