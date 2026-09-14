@@ -52,8 +52,8 @@ un tirón:
 Entrega un óptimo **global y exacto**, no una aproximación, y de regalo la
 información para construir su certificado. De eso vive la página siguiente.
 
-**Un paso** cuesta mirar sus vecinos —$n$ exactos si ningún vértice es
-degenerado, como aquí; más si los hay— y cada vecino es resolver un sistema de
+**Un paso** cuesta mirar sus vecinos ($n$ exactos si ningún vértice es
+degenerado, como aquí; más si los hay) y cada vecino es resolver un sistema de
 $n$ ecuaciones con $n$ incógnitas. **Cuántos pasos** es la pregunta abierta:
 pocos en la práctica, y hay problemas construidos a propósito para que sean
 exponencialmente muchos.

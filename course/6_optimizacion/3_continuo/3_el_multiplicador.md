@@ -52,14 +52,14 @@ Tres cosas del dibujo, antes de leerlo:
 - **La recta magenta es $h(p) = 8$**: los repartos que usan la potencia exacta.
   Todo lo factible está sobre ella y nada más.
 - **$\nabla h$ sale de la recta en ángulo recto**, y no puede ser de otra
-  manera: caminar a lo largo de la recta no cambia $h$ —para eso es la recta—,
+  manera: caminar a lo largo de la recta no cambia $h$ (para eso es la recta),
   así que la dirección en la que $h$ más crece no puede tener nada a lo largo de
   ella. Ése es el ángulo que marca el dibujo.
 
 Ahora sí. Mira qué pasa en $(6,2)$, que es factible: la curva de nivel lo
 **cruza**, así que caminando por la recta hacia un lado se sube. Solo donde la
-recta **toca sin cruzar** se acaba la mejora, y ahí las dos flechas —$\nabla f$
-y $\nabla h$— apuntan en la misma dirección.
+recta **toca sin cruzar** se acaba la mejora, y ahí las dos flechas ($\nabla f$
+y $\nabla h$) apuntan en la misma dirección.
 
 Eso es toda la idea: **en el óptimo, el gradiente del objetivo no tiene ninguna
 componente a lo largo de la restricción**. Si la tuviera, moverse en esa
@@ -118,8 +118,8 @@ nada.
 > [!NOTE]
 > **Lagrange no adivina: acota.** El teorema dice que el óptimo **cumple** esas
 > ecuaciones, no que quien las cumpla sea óptimo. Aquí sí lo es, y por una razón
-> que se puede escribir: el objetivo es estrictamente cóncavo —su matriz de
-> segundas derivadas es $-I$—, el conjunto factible es convexo, y con eso
+> que se puede escribir: el objetivo es estrictamente cóncavo (su matriz de
+> segundas derivadas es $-I$), el conjunto factible es convexo, y con eso
 > [[el-rendimiento-que-decrece|el teorema de local a global]] convierte el único
 > punto que cumple las condiciones en el máximo global.
 
@@ -136,8 +136,8 @@ derivada de verdad y no como diferencia.
 :::
 
 En el reactor se puede comprobar, porque el valor óptimo tiene forma cerrada.
-Se escribe $U^\ast(P)$ y no $f^\ast(c)$ por comodidad —$U$ de rendimiento, $P$ de
-potencia—, pero **es el mismo objeto de la caja de arriba**. Resolviendo con
+Se escribe $U^\ast(P)$ y no $f^\ast(c)$ por comodidad ($U$ de rendimiento, $P$ de
+potencia), pero **es el mismo objeto de la caja de arriba**. Resolviendo con
 potencia $P$ en vez de 15, el óptimo es $p = (P/3 - 2,\; P/3,\; P/3 + 2)$ y
 
 $$U^\ast(P) = -\tfrac16 P^2 + 8P + 4,

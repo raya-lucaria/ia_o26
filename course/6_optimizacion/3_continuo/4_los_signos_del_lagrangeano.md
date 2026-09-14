@@ -23,9 +23,12 @@ $\mathcal{L} = f - \lambda g$ en el siguiente, sin que ninguno de los dos esté
 mal. Conviene entender por qué antes de fijar el de estas notas.
 
 ::: definition {#opt-lagrangeano-general title="El lagrangeano, con igualdades y desigualdades"}
-En estas notas las restricciones se escriben siempre con la constante a la
-derecha —$h_j(x) = c_j$, $g_i(x) \le b_i$ o $g_i(x) \ge b_i$— y el lagrangeano
-lleva **todos los términos restando**:
+En estas notas cada restricción se escribe con la constante a la derecha, en una
+de estas tres formas:
+
+$$h_j(x) = c_j, \qquad g_i(x) \le b_i, \qquad g_i(x) \ge b_i,$$
+
+y el lagrangeano lleva **todos los términos restando**:
 
 $$\begin{aligned}
 \mathcal{L}(x,\lambda,\mu) = f(x)
@@ -167,18 +170,18 @@ $\mathcal{L} = \sum_i u_i(p_i) - \lambda(p_1+p_2+p_3-15) - \mu_3(p_3 - 5)$.
 Un punto y sus multiplicadores cumplen las condiciones de
 **Karush–Kuhn–Tucker** si cumplen las cuatro:
 
-1. **Estacionariedad** — $\nabla_x \mathcal{L} = 0$.
+1. **Estacionariedad**: $\nabla_x \mathcal{L} = 0$.
 2. **Factibilidad** — el punto cumple todas las restricciones.
-3. **Signo** — cada $\mu_i$ tiene el signo que le toca en
+3. **Signo**: cada $\mu_i$ tiene el signo que le toca en
    @opt-tabla-signos; $\lambda_j$ es libre.
-4. **Holgura complementaria** — $\mu_i\,(g_i(x) - b_i) = 0$ para cada
+4. **Holgura complementaria**: $\mu_i\,(g_i(x) - b_i) = 0$ para cada
    desigualdad: o la restricción está activa, o su multiplicador es cero. Dicho
    en corto: **una restricción que no se toca no empuja**.
 :::
 
 Resolviendo: la estacionariedad da $b_i - p_i = \lambda$ para escudos y motores,
 y $b_3 - p_3 = \lambda + \mu_3$ para el soporte vital. Con la cota activa
-—$p_3 = 5$— sale
+($p_3 = 5$) sale
 
 $$p = (4,\,6,\,5), \qquad \lambda = 2, \qquad \mu_3 = 3.$$
 
@@ -187,8 +190,8 @@ $$p = (4,\,6,\,5), \qquad \lambda = 2, \qquad \mu_3 = 3.$$
 |---|---:|---:|
 | Reparto | $(3,5,7)$ | $(4,6,5)$ |
 | Rendimiento | 86.5 | 83.5 |
-| $\lambda$ — vale una unidad más de potencia | 3 | **2** |
-| $\mu_3$ — vale una unidad más de cota | — | **3** |
+| $\lambda$: vale una unidad más de potencia | 3 | **2** |
+| $\mu_3$: vale una unidad más de cota | no aplica | **3** |
 :::
 
 Los dos números se leen solos. **$\mu_3 = 3 > 0$**: la cota está activa y
@@ -220,7 +223,7 @@ Fuera de ese caso, KKT solo produce **candidatos**.
 
 **Y el dibujo de por qué el signo no puede ser otro.** A $\nabla g_i$ se le llama
 la **normal exterior** de esa restricción: sale de su frontera en ángulo recto
-—igual que $\nabla h$ en [[el-multiplicador|la página anterior]]— y apunta hacia
+(igual que $\nabla h$ en [[el-multiplicador|la página anterior]]) y apunta hacia
 el lado prohibido, porque es la dirección en la que $g_i$ crece y la restricción
 pide que no crezca.
 
