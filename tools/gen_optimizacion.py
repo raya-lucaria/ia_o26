@@ -1806,9 +1806,18 @@ def opt_tangencia():
     s.append(punto(X(6), Y(8), r=4, color=mezclar(SERIE[1], 0.7)))
     s.append(texto(X(6) + 12, Y(8) - 12, "sin límite se iría aquí",
                    color=mezclar(SERIE[1], 0.85), tam=12, anclaje="start"))
+    # Las circunferencias son curvas de nivel de f, y la recta es h. El dibujo
+    # nombraba ∇h sin que h apareciera en ninguna parte.
+    s.append(texto(X(0.5), Y(3.1), "curvas de nivel de f",
+                   color=mezclar(SERIE[1], 0.9), tam=13, anclaje="start"))
     s.append(linea(X(0), Y(8), X(8), Y(0), color=ACENTO, grosor=3))
-    s.append(texto(X(7.0), Y(0.62), "p₁ + p₂ = 8", color=ACENTO, tam=14,
-                   peso="700", anclaje="start"))
+    # El rotulo de h va ROTADO sobre la recta. Horizontal la cruzaba: cualquier
+    # texto horizontal cerca de una recta diagonal termina encima de ella.
+    lx, ly = X(1.6) - 13, Y(6.4) + 13   # tramo alto de la recta, que está vacío
+    s.append(f'<text x="{lx:.1f}" y="{ly:.1f}" fill="{ACENTO}" '
+             f'font-family="{FUENTE}" font-size="14" font-weight="700" '
+             f'text-anchor="middle" transform="rotate(45 {lx:.1f} {ly:.1f})">'
+             f'h(p) = p₁ + p₂ = 8</text>')
 
     # el optimo: las dos flechas, la de la restriccion desplazada en perpendicular
     px, py = X(3), Y(5)
@@ -1821,6 +1830,19 @@ def opt_tangencia():
                    anclaje="start", peso="700"))
     s.append(texto(px + 76, py - 54, "= 3 × ∇h", color=SERIE[0], tam=13, anclaje="start"))
     s.append(texto(px + 66, py + 26, "∇h = (1,1)", color=SERIE[2], tam=13, anclaje="start"))
+    # Angulo recto entre la recta y ∇h: es la razon por la que el gradiente de la
+    # restriccion se dibuja saliendo de la recta y no a lo largo de ella.
+    import math as _m
+    lado_recta = (1 / _m.sqrt(2), 1 / _m.sqrt(2))     # (1,-1) en pantalla baja
+    lado_grad = (1 / _m.sqrt(2), -1 / _m.sqrt(2))     # (1,1) en pantalla sube
+    a = 15
+    esquinas = [(px + lado_recta[0] * a, py + lado_recta[1] * a),
+                (px + (lado_recta[0] + lado_grad[0]) * a,
+                 py + (lado_recta[1] + lado_grad[1]) * a),
+                (px + lado_grad[0] * a, py + lado_grad[1] * a)]
+    d = " ".join(("M" if i == 0 else "L") + f" {x:.1f} {y:.1f}"
+                 for i, (x, y) in enumerate(esquinas))
+    s.append(f'<path d="{d}" fill="none" stroke="{SUAVE}" stroke-width="1.5"/>')
 
     # un punto factible peor, donde las dos flechas NO son multiplos
     qx, qy = X(6), Y(2)
@@ -1832,10 +1854,10 @@ def opt_tangencia():
                    anclaje="end"))
 
     s.append(texto(W / 2, H - 38,
-                   "las de adentro valen más y no tocan la recta; la de afuera la cruza dos veces",
+                   "∇h sale de la recta en ángulo recto: caminar por la recta no cambia h",
                    color=SUAVE, tam=13))
     s.append(texto(W / 2, H - 16,
-                   "la que la toca una sola vez es la mejor alcanzable, y ahí las flechas se alinean",
+                   "la curva de nivel que solo la toca una vez es la mejor alcanzable: ahí se alinean",
                    color=SUAVE, tam=13))
     s.append(cierre())
     return "".join(s)

@@ -48,8 +48,12 @@ número que lo decide:
 
 $$x \leftarrow x - \alpha\,\nabla f(x).$$
 
-Como el gradiente se encoge cerca del óptimo, el avance real $\alpha\|\nabla f\|$
-se encoge solo, aunque $\alpha$ no cambie.
+Las barras dobles son el **tamaño** de un vector, su norma:
+$\|(a,b)\| = \sqrt{a^2+b^2}$. Así que $\|\nabla f\|$ es qué tan empinada está la
+subida, sin importar hacia dónde.
+
+Y como el gradiente se encoge cerca del óptimo, el avance real
+$\alpha\|\nabla f\|$ se encoge solo, aunque $\alpha$ no cambie.
 
 En aprendizaje automático a este mismo $\alpha$ se le llama **tasa de
 aprendizaje**. Es el mismo número.
@@ -150,8 +154,9 @@ solo se sabe comparándolo contra una cota.
 > **Tres cosas que no promete.** No promete **distancia** al óptimo: acota la
 > pendiente, no el error. No promete un **óptimo** si el problema no es convexo:
 > llega a un punto de pendiente casi cero, que puede ser un mínimo local o un
-> punto silla —sobre $x^2 - y^2$ desde $(1,0)$ converge a $(0,0)$, que no es ni
-> lo uno ni lo otro—. Y **no respeta restricciones**: aplicado al reactor tal
+> **punto silla** —un punto que baja en una dirección y sube en otra, como el
+> centro de una silla de montar—. Sobre $x^2 - y^2$, desde $(1,0)$, converge a
+> $(0,0)$, que no es ni máximo ni mínimo de nada. Y **no respeta restricciones**: aplicado al reactor tal
 > cual, el primer paso se sale de $p_1+p_2+p_3=15$ y nada lo regresa.
 
 ## Lo que hay que llevarse
