@@ -71,19 +71,21 @@ objetivo y queda un problema sin restricciones, con una variable menos. Entonces
 sí: derivar, igualar a cero, resolver.
 :::
 
-De $p_1+p_2+p_3=15$ sale $p_3 = 15 - p_1 - p_2$. Sustituyendo,
+De $p_1+p_2+p_3=15$ sale $p_3 = 15 - p_1 - p_2$. Llámale $\tilde f$ al objetivo
+que queda al meter eso: **el mismo rendimiento, escrito en dos variables y ya sin
+restricción**. El acento lo distingue de $f$, que sigue siendo el de tres.
 
 $$\begin{aligned}
-g(p_1,p_2) = \;&\left(6p_1 - \tfrac{p_1^2}{2}\right)
+\tilde f(p_1,p_2) = \;&\left(6p_1 - \tfrac{p_1^2}{2}\right)
 + \left(8p_2 - \tfrac{p_2^2}{2}\right) \\
 +\;&\left(10(15-p_1-p_2) - \tfrac{(15-p_1-p_2)^2}{2}\right).
 \end{aligned}$$
 
 Las dos derivadas parciales quedan lineales:
 
-$$\frac{\partial g}{\partial p_1} = 11 - 2p_1 - p_2 = 0,
+$$\frac{\partial \tilde f}{\partial p_1} = 11 - 2p_1 - p_2 = 0,
 \qquad
-\frac{\partial g}{\partial p_2} = 13 - p_1 - 2p_2 = 0.$$
+\frac{\partial \tilde f}{\partial p_2} = 13 - p_1 - 2p_2 = 0.$$
 
 Dos ecuaciones, dos incógnitas: $p_1 = 3$, $p_2 = 5$, y de la restricción
 $p_3 = 7$. **El reparto óptimo es $(3,5,7)$ y rinde 86.5.**

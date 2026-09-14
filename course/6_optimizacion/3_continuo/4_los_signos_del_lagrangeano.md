@@ -41,6 +41,19 @@ Una variable nueva por restricción: $\lambda$ para las igualdades, $\mu$ para l
 desigualdades.
 :::
 
+::: table {#opt-letras-kkt title="Qué es cada letra, para no tener que adivinarlo"}
+| Letra | Qué es |
+|---|---|
+| $f$ | El objetivo, lo que se maximiza |
+| $h_j$, $c_j$ | La función y el lado derecho de la **igualdad** $j$ |
+| $g_i$, $b_i$ | La función y el lado derecho de la **desigualdad** $i$ |
+| $\lambda_j$ | El multiplicador de la igualdad $j$ |
+| $\mu_i$ | El multiplicador de la desigualdad $i$ |
+:::
+
+En el reactor con su cota hay una de cada una: $h(p) = p_1+p_2+p_3$ con $c = 15$,
+y $g(p) = p_3$ con $b = 5$.
+
 **Y por qué el mismo problema aparece con $+$ y con $-$.** Son dos operaciones
 distintas y cada una voltea el multiplicador:
 
@@ -162,12 +175,17 @@ Fuera de ese caso, KKT solo produce **candidatos**.
 > es derivable en $x=1$, que es justo donde está su máximo. En esta unidad las
 > dos hipótesis se cumplen siempre; fuera de ella, hay que mirarlas.
 
-**Y el dibujo de por qué el signo no puede ser otro.** En un máximo con
-restricciones $\le$, la estacionariedad dice que $\nabla f$ es una combinación
-**con coeficientes no negativos** de los gradientes de las restricciones activas,
-que apuntan hacia afuera de la región. Con un coeficiente negativo, la flecha
-apuntaría hacia adentro, y hacia adentro siempre se puede caminar: el punto no
-sería óptimo.
+**Y el dibujo de por qué el signo no puede ser otro.** A $\nabla g_i$ se le llama
+la **normal exterior** de esa restricción: sale de su frontera en ángulo recto
+—igual que $\nabla h$ en [[el-multiplicador|la página anterior]]— y apunta hacia
+el lado prohibido, porque es la dirección en la que $g_i$ crece y la restricción
+pide que no crezca.
+
+En un máximo con restricciones $\le$, la estacionariedad dice entonces que
+$\nabla f$ es una combinación **con coeficientes no negativos** de las normales
+exteriores de las restricciones activas. Con un coeficiente negativo, la flecha
+del objetivo apuntaría hacia adentro de la región — y hacia adentro siempre se
+puede caminar, así que el punto no sería óptimo.
 
 ::: figure {#opt-normales title="El gradiente del objetivo, escrito con las normales activas"}
 ![El polígono de la clase 1 con su esquina óptima; desde ella salen las dos normales de las restricciones activas y la flecha del objetivo, que es la diagonal del paralelogramo que forman](../_assets/opt-normales.svg)

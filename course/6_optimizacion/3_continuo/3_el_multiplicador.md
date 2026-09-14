@@ -15,20 +15,51 @@ tags: [optimizacion, lagrange, precio-sombra]
 La página anterior resolvió el reparto sustituyendo, y dejó a la vista un número
 —el 3— que aparecía en los tres sistemas a la vez.
 
-## 1 · La pista está en el dibujo
+## 1 · Dos letras, y luego el dibujo
 
-Con tres sistemas no hay dibujo. Con dos sí, y basta: **escudos y motores**,
-$b=(6,8)$, repartiendo 8 unidades. Es el mismo problema con una variable menos, y
-su óptimo es $(3,5)$ con el mismo multiplicador que el de tres.
+Lo que sigue usa dos funciones todo el tiempo, y conviene separarlas antes de
+mirar nada.
+
+- **$f$ es el objetivo**: lo que se quiere hacer grande. Aquí
+  $f(p) = \sum_i\left(b_i p_i - \tfrac12 p_i^2\right)$, el margen de seguridad
+  total de la nave.
+- **$h$ es la función de la restricción**: la cantidad que la restricción obliga
+  a valer algo fijo. Aquí $h(p) = p_1+p_2+p_3$, la potencia repartida, y la
+  restricción es $h(p) = 15$. A ese número de la derecha se le llama $c$.
+
+Las dos comen el mismo punto y contestan preguntas distintas: **$f$ dice qué tan
+bueno es, $h$ dice si está permitido.** Con esos nombres, el reactor es un caso
+de una forma que vale para cualquier problema con una igualdad: **maximizar
+$f(x)$ sujeto a $h(x) = c$.**
+
+### El mismo problema, con dos sistemas, para poder dibujarlo
+
+Con tres variables no hay dibujo. Con dos sí, y basta: **escudos y motores**,
+$b = (6,8)$, repartiendo 8 unidades — o sea $h(p) = p_1+p_2$ y $c = 8$. Su óptimo
+es $(3,5)$, y su multiplicador vale **lo mismo** que el del reactor de tres, que
+por eso se eligió así.
 
 ::: figure {#opt-tangencia title="Donde la recta toca la curva de nivel más alta"}
 ![Curvas de nivel circulares del rendimiento, la recta que fija la potencia total, y en el punto donde la recta toca la curva de nivel más alta, dos flechas que apuntan en la misma dirección](../_assets/opt-tangencia.svg)
 :::
 
-Mira qué pasa en $(6,2)$, que es factible: la curva de nivel lo **cruza**, así
-que caminando por la recta hacia un lado se sube. Solo donde la recta **toca sin
-cruzar** se acaba la mejora, y ahí las dos flechas —la del objetivo y la de la
-restricción— apuntan en la misma dirección.
+Tres cosas del dibujo, antes de leerlo:
+
+- **Las circunferencias son las [[el-dibujo|curvas de nivel]] de $f$**: los
+  repartos que rinden lo mismo. En la clase 1 eran rectas paralelas porque el
+  objetivo era lineal; con el objetivo doblado son círculos alrededor de $(6,8)$,
+  que es a donde se iría cada sistema si nadie lo limitara.
+- **La recta magenta es $h(p) = 8$**: los repartos que usan la potencia exacta.
+  Todo lo factible está sobre ella y nada más.
+- **$\nabla h$ sale de la recta en ángulo recto**, y no puede ser de otra
+  manera: caminar a lo largo de la recta no cambia $h$ —para eso es la recta—,
+  así que la dirección en la que $h$ más crece no puede tener nada a lo largo de
+  ella. Ése es el ángulo que marca el dibujo.
+
+Ahora sí. Mira qué pasa en $(6,2)$, que es factible: la curva de nivel lo
+**cruza**, así que caminando por la recta hacia un lado se sube. Solo donde la
+recta **toca sin cruzar** se acaba la mejora, y ahí las dos flechas —$\nabla f$
+y $\nabla h$— apuntan en la misma dirección.
 
 Eso es toda la idea: **en el óptimo, el gradiente del objetivo no tiene ninguna
 componente a lo largo de la restricción**. Si la tuviera, moverse en esa
@@ -105,8 +136,9 @@ derivada de verdad y no como diferencia.
 :::
 
 En el reactor se puede comprobar, porque el valor óptimo tiene forma cerrada.
-Resolviendo con potencia $P$ en vez de 15, el óptimo es
-$p = (P/3 - 2,\; P/3,\; P/3 + 2)$ y
+Se escribe $U^\ast(P)$ y no $f^\ast(c)$ por comodidad —$U$ de rendimiento, $P$ de
+potencia—, pero **es el mismo objeto de la caja de arriba**. Resolviendo con
+potencia $P$ en vez de 15, el óptimo es $p = (P/3 - 2,\; P/3,\; P/3 + 2)$ y
 
 $$U^\ast(P) = -\tfrac16 P^2 + 8P + 4,
 \qquad \frac{dU^\ast}{dP} = 8 - \frac{P}{3},$$
