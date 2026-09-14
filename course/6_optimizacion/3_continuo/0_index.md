@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando ya no es una recta"
 nav_title: Continuo
 summary: "El reactor no rinde en línea recta: cada unidad extra de potencia sirve menos que la anterior. Qué se rompe, qué se salva, y cómo se reconoce el mejor reparto sin probarlos todos."
 status: ready
-estimated_time: 116m
+estimated_time: 118m
 tags: [optimizacion, convexidad, lagrange, kkt, gradiente]
 prerequisites: [optimizacion-lineal]
 ---
@@ -46,7 +46,7 @@ entero.
 ## Recorrido
 
 Cinco páginas, en orden. Cada una se sostiene sola y declara cuánto toma leerla;
-el total de esta clase suma **116 minutos**.
+el total de esta clase suma **118 minutos**.
 
 ::: table {#opt-ruta-continua title="Las cinco páginas de esta clase"}
 | | Página | Qué resuelve | |
@@ -54,7 +54,7 @@ el total de esta clase suma **116 minutos**.
 | 1 | El rendimiento que decrece | Escribir el modelo del reactor, y qué se rompe cuando el objetivo se dobla | 26m |
 | 2 | Sustituir y derivar | El primer método: quitar la restricción y derivar | 16m |
 | 3 | El multiplicador | Encontrar el óptimo sin despejar, y qué mide el número de más | 24m |
-| 4 | Los signos del lagrangeano | Cómo se escribe cada restricción y qué signo le toca | 30m |
+| 4 | Los signos del lagrangeano | Cómo se escribe cada restricción y qué signo le toca | 32m |
 | 5 | Bajar la pendiente | Cuando no se puede resolver: dar pasos contra la pendiente | 20m |
 :::
 
