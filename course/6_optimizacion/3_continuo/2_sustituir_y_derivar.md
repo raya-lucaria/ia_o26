@@ -54,9 +54,9 @@ en otro lado.
 ::: table {#opt-dos-puntos title="El estacionario contra el factible"}
 | Reparto | ¿Suma 15? | ¿Gradiente cero? | Rinde |
 |---|---|---|---:|
-| $(6,8,10)$ | no: suma 24 | sí | 100 |
-| $(5,5,5)$ | sí | no: $(1,3,5)$ | 82.5 |
-| $(3,5,7)$ | sí | no: $(3,3,3)$ | **86.5** |
+| $(6,8,10)$ | no: suma 24 | sí | 100 de margen |
+| $(5,5,5)$ | sí | no: $(1,3,5)$ | 82.5 de margen |
+| $(3,5,7)$ | sí | no: $(3,3,3)$ | **86.5 de margen** |
 :::
 
 El primero es inalcanzable. El segundo es factible y mejorable. El tercero es el
