@@ -2,7 +2,7 @@
 id: los-signos-del-lagrangeano
 title: Los signos del lagrangeano
 nav_title: Signos y KKT
-summary: "Cómo se escribe el lagrangeano con igualdades y con desigualdades, por qué a veces el multiplicador entra restando y a veces sumando, y qué signo le toca en cada caso."
+summary: "Con qué signo entra cada restricción en el lagrangeano y qué signo tiene su multiplicador, con una regla de dos miradas que decide las dos cosas sin memorizar casos."
 status: ready
 estimated_time: 30m
 tags: [optimizacion, kkt, lagrange, signos]
@@ -10,177 +10,182 @@ tags: [optimizacion, kkt, lagrange, signos]
 
 # Los signos del lagrangeano
 
-**¿Con qué signo entra cada restricción, y qué significa el número que sale?**
+**¿Con qué signo entra cada restricción, y qué signo tiene su multiplicador?**
 
 Falta la cota que la bitácora dejó pendiente: el soporte vital no aguanta más de
 cinco. Es una **desigualdad**, y con ella llega la pregunta que más confusión
 causa de toda la unidad.
 
-## 1 · Un solo lagrangeano para los tres sentidos
+Abre dos libros y verás $\mathcal{L} = f + \lambda g$ en uno y
+$\mathcal{L} = f - \lambda g$ en el otro, sin que ninguno esté mal. Esta página
+da la regla que decide, y de paso explica por qué los dos libros tienen razón.
 
-Abre cualquier libro y verás $\mathcal{L} = f + \lambda g$ en uno y
-$\mathcal{L} = f - \lambda g$ en el siguiente, sin que ninguno de los dos esté
-mal. Conviene entender por qué antes de fijar el de estas notas.
+## 1 · Primero, la restricción contra cero
 
-::: definition {#opt-lagrangeano-general title="El lagrangeano, con igualdades y desigualdades"}
-En estas notas cada restricción se escribe con la constante a la derecha, en una
-de estas tres formas:
+Antes de elegir ningún signo hay un paso mecánico, y de él sale todo lo demás.
 
-$$h_j(x) = c_j, \qquad g_i(x) \le b_i, \qquad g_i(x) \ge b_i,$$
+::: definition {#opt-contra-cero title="Dejar una restricción contra cero"}
+**Pasa toda la restricción a un lado y compárala con cero.** Es el mismo
+movimiento que ya hiciste en [[tres-bitacoras|las bitácoras de práctica]], donde
+«la telemetría al menos el doble que los datos» se escribió $2d - t \le 0$.
 
-y el lagrangeano lleva **todos los términos restando**:
+Contra cero solo quedan tres formas, y solo tres:
 
-$$\begin{aligned}
-\mathcal{L}(x,\lambda,\mu) = f(x)
-&\;-\; \sum_j \lambda_j\bigl(h_j(x) - c_j\bigr) \\
-&\;-\; \sum_i \mu_i\bigl(g_i(x) - b_i\bigr).
-\end{aligned}$$
-
-Pedir $\nabla_x\mathcal{L} = 0$ es pedir
-
-$$\nabla f(x) = \sum_j \lambda_j \nabla h_j(x) + \sum_i \mu_i \nabla g_i(x).$$
-
-Una variable nueva por restricción: $\lambda$ para las igualdades, $\mu$ para las
-desigualdades.
+$$h(x) - c = 0, \qquad g(x) - b \le 0, \qquad g(x) - b \ge 0.$$
 :::
 
-::: table {#opt-letras-kkt title="Qué es cada letra, para no tener que adivinarlo"}
-| Letra | Qué es |
-|---|---|
-| $f$ | El objetivo, lo que se maximiza |
-| $h_j$, $c_j$ | La función y el lado derecho de la **igualdad** $j$ |
-| $g_i$, $b_i$ | La función y el lado derecho de la **desigualdad** $i$ |
-| $\lambda_j$ | El multiplicador de la igualdad $j$ |
-| $\mu_i$ | El multiplicador de la desigualdad $i$ |
+> [!WARNING]
+> **Mira hacia dónde quedó la restricción, no el signo de $b$.** El error típico
+> es decidir el signo del lagrangeano por cómo venía escrita la frase, o por si
+> la constante es positiva o negativa. Ninguna de las dos cosas importa: lo
+> único que cuenta es si, ya contra cero, la restricción quedó $\le 0$ o
+> $\ge 0$.
+
+**Y no importa hacia qué lado la pases.** Una misma restricción se puede dejar
+contra cero de dos maneras ($p_3 - 5 \le 0$ o $5 - p_3 \ge 0$), y la regla de
+abajo les asigna signos de delante distintos. Da igual: el término que resulta es
+**el mismo**, porque también se volteó el paréntesis. En el reactor las dos
+escrituras dan $\mu_3 = 3$.
+
+## 2 · La regla, en dos miradas
+
+::: definition {#opt-lagrangeano-general title="El lagrangeano, con el multiplicador siempre no negativo"}
+En estas notas **se fija $\lambda \ge 0$** y se deja que el signo de delante se
+acomode. Para cada restricción:
+
+1. déjala contra cero;
+2. mira si el problema es de **mínimo o de máximo**;
+3. mira si quedó **$\le 0$ o $\ge 0$**.
+
+Con esas dos miradas, el signo de delante está decidido, y el multiplicador sale
+no negativo siempre.
 :::
 
-En el reactor con su cota hay una de cada una: $h(p) = p_1+p_2+p_3$ con $c = 15$,
-y $g(p) = p_3$ con $b = 5$.
-
-### Qué va dentro del paréntesis, y qué signo lleva delante
-
-Son las dos decisiones que hay que tomar para **escribir** $\mathcal{L}$, y
-ninguna se deduce: se eligen. Lo que no se elige es la consecuencia.
-
-**Dentro del paréntesis va el lado izquierdo menos el derecho.** Siempre
-$(g(x) - b)$, y no $(b - g(x))$, por una razón práctica: así el paréntesis vale
-**cero exactamente cuando la restricción está apretada**. En el reactor,
-$(p_3 - 5)$ se anula cuando el soporte vital está pegado a su tope, y por eso la
-holgura complementaria de la sección 3 se lee de un golpe.
-
-**Delante va restando.** Tampoco es capricho: es lo que hace que $\mu$ **sea** el
-precio sombra en vez de su negativo, que es el teorema de la sección siguiente.
-
-**Y las dos decisiones se compensan entre sí**, que es la razón de que veas el
-mismo problema escrito de cuatro maneras sin que ninguna esté mal:
-
-::: table {#opt-cuatro-escrituras title="Las cuatro maneras de escribir el mismo término"}
-| Cómo lo escribes | Qué es | Qué mide su multiplicador |
-|---|---|---|
-| $f - \mu\,(g - b)$ | **la de estas notas** | $\partial f^\ast/\partial b$ |
-| $f + \mu\,(b - g)$ | idéntica a la de arriba | $\partial f^\ast/\partial b$ |
-| $f + \mu\,(g - b)$ | la primera con el signo volteado | $-\partial f^\ast/\partial b$ |
-| $f - \mu\,(b - g)$ | idéntica a la de arriba | $-\partial f^\ast/\partial b$ |
-:::
-
-Los renglones van en pares porque **voltear el paréntesis y voltear el signo de
-delante son la misma operación**: cada una por separado cambia $\mu$ por
-$-\mu$, y hacer las dos deja todo igual.
-
-**¿Y qué tiene que ver con maximizar o minimizar? Nada — y por eso confunde.**
-El signo de delante se puede elegir igual en los dos casos. Lo que sí depende de
-si maximizas o minimizas es **qué signo acaba teniendo el multiplicador**, que es
-la tabla de la sección siguiente. El enredo viene de que la costumbre de los
-libros es elegir el signo de delante **para que el multiplicador salga no
-negativo**, y como eso depende del sentido de la optimización y del de la
-desigualdad, cada libro escribe una cosa distinta. Estas notas hacen lo
-contrario: fijan el signo de delante, y dejan que el multiplicador salga con el
-signo que le toque — porque así el número significa algo.
-
-**El reactor con su cota, escrito de las tres formas.** El óptimo es $(4,6,5)$ en
-las tres, y lo único que se mueve son los signos de los multiplicadores:
-
-| Lagrangeano | $\lambda$ | $\mu_3$ |
-|---|---:|---:|
-| $f - \lambda\,(p_1+p_2+p_3-15) - \mu_3\,(p_3-5)$ | $2$ | $3$ |
-| $f + \lambda\,(15-p_1-p_2-p_3) + \mu_3\,(5-p_3)$ | $2$ | $3$ |
-| $f + \lambda\,(p_1+p_2+p_3-15) + \mu_3\,(p_3-5)$ | $-2$ | $-3$ |
-
-**No hay un signo correcto: hay una convención, y lo que cambia con ella es qué
-significa el número que sale.** Elige una, escríbela una vez, y no la cambies a
-media hoja.
-
-## 2 · De dónde sale el signo
-
-Escrito como arriba, el multiplicador no es un residuo del método: es una
-cantidad con significado, y de ahí sale su signo sin memorizar nada.
-
-::: theorem {#opt-mu-derivada title="Cada multiplicador es la derivada del valor óptimo respecto de su lado derecho"}
-Con el lagrangeano de arriba, y llamando $f^\ast(b_i)$ al valor óptimo cuando se
-mueve el lado derecho de la restricción $i$,
-
-$$\mu_i = \frac{\partial f^\ast}{\partial b_i}.$$
-
-Vale igual si el problema maximiza o minimiza, y es
-[[el-multiplicador|el mismo enunciado de la página anterior]] extendido a las
-desigualdades.
-:::
-
-Entonces el signo sale de dos preguntas, las dos sobre el mundo y ninguna sobre
-la notación: **¿subir $b$ afloja o aprieta?** y **¿el problema maximiza o
-minimiza?**
-
-::: table {#opt-tabla-signos title="El signo del multiplicador, caso por caso"}
-| Problema | Restricción | Subir $b$… | Signo |
+::: table {#opt-regla-signos title="El signo de delante, caso por caso"}
+| Problema | Restricción original | Contra cero | Lagrangeano |
 |---|---|---|---|
-| máximo | $g(x) \le b$ | afloja | $\mu \ge 0$ |
-| máximo | $g(x) \ge b$ | aprieta | $\mu \le 0$ |
-| mínimo | $g(x) \le b$ | afloja | $\mu \le 0$ |
-| mínimo | $g(x) \ge b$ | aprieta | $\mu \ge 0$ |
+| **Mín** $f$ | $g(x) \le b$ | $g(x) - b \le 0$ | $\mathcal{L} = f + \lambda\,(g-b)$ |
+| **Mín** $f$ | $g(x) \ge b$ | $g(x) - b \ge 0$ | $\mathcal{L} = f - \lambda\,(g-b)$ |
+| **Máx** $f$ | $g(x) \le b$ | $g(x) - b \le 0$ | $\mathcal{L} = f - \lambda\,(g-b)$ |
+| **Máx** $f$ | $g(x) \ge b$ | $g(x) - b \ge 0$ | $\mathcal{L} = f + \lambda\,(g-b)$ |
 :::
 
-Lee el primer renglón despacio, que es el de esta unidad: en un máximo, aflojar
-un recurso **no puede empeorar** el óptimo, así que su derivada no es negativa.
-El tercero es el mismo argumento con el objetivo cambiado de signo: aflojar
-tampoco puede empeorar, y en un mínimo «no empeorar» es **bajar**.
+Los cuatro renglones caben en un cuadro de dos por dos. El signo de la casilla es
+el que va **antes de $\lambda$**:
+
+::: table {#opt-atajo-signos title="El atajo mental"}
+| | Restricción $\le 0$ | Restricción $\ge 0$ |
+|---|---:|---:|
+| **Minimizar** | $+\lambda$ | $-\lambda$ |
+| **Maximizar** | $-\lambda$ | $+\lambda$ |
+:::
+
+**Fíjate en que no son dos reglas sino una:** el signo es el **producto** de las
+dos miradas. Cambiar una sola lo voltea; cambiar las dos lo deja igual — que es
+exactamente lo que pasa al pasar la misma restricción contra cero por el otro
+lado.
+
+**Y no hace falta memorizar el cuadro, porque las cuatro casillas salen de una
+sola idea:** el término se escribe de modo que **violar la restricción empeore el
+objetivo**. Para ver cuál toca, mira dos cosas: qué signo toma $(g-b)$ cuando la
+restricción se viola, y qué significa empeorar en tu problema.
+
+- **Máx con $g-b \le 0$.** Violarla es que $g$ se pase de $b$, así que $(g-b)$ se
+  vuelve **positivo**. En un máximo, empeorar es **bajar**. Ese positivo hay que
+  **restarlo**.
+- **Máx con $g-b \ge 0$.** Violarla es que $g$ se quede corto, así que $(g-b)$ se
+  vuelve **negativo**. Y sumar un negativo **baja**. Hay que **sumarlo**.
+- **Mín con $g-b \le 0$.** Violarla hace $(g-b)$ **positivo**, y en un mínimo
+  empeorar es **subir**. Sumar un positivo sube: hay que **sumarlo**.
+- **Mín con $g-b \ge 0$.** Violarla hace $(g-b)$ **negativo**, y restar un
+  negativo **sube**, que es empeorar. Hay que **restarlo**.
+
+En los cuatro el castigo apunta al mismo lado; lo único que cambia es hacia dónde
+queda «peor» y con qué signo llega el paréntesis.
 
 > [!NOTE]
-> **La igualdad no tiene signo, y ninguna convención puede dárselo.** $h(x) = c$
-> no se afloja ni se aprieta: moverla puede subir o bajar el valor óptimo, según
-> hacia dónde. Y hay un argumento de una línea que lo cierra: $h - c = 0$ y
-> $c - h = 0$ son **la misma restricción**, y sus multiplicadores son opuestos.
-> Un signo fijo tendría que ser positivo y negativo a la vez.
+> **Por qué dos libros serios parecen contradecirse.** Boyd y Vandenberghe
+> minimizan con las restricciones escritas $f_i(x) \le 0$ y escriben
+> $\mathcal{L} = f_0 + \sum \lambda_i f_i$, sumando. Nocedal y Wright también
+> minimizan, pero escriben sus restricciones $c_i(x) \ge 0$, y su lagrangeano es
+> $\mathcal{L} = f - \sum \lambda_i c_i$, restando. Uno suma y el otro resta, los
+> dos exigen $\lambda \ge 0$, y **los dos usan exactamente la misma convención**:
+> son los dos renglones de «Mín» del cuadro de arriba.
 >
-> Por eso $\lambda$ es **libre**, y el reactor no lo delata: ahí sale positivo
-> las dos veces.
+> Y el renglón que más raro se ve (máximo con $\ge$, que suma) es el del
+> **artículo original de Kuhn y Tucker**, de 1951: maximizan $g(x)$ sujeto a
+> $Fx \ge 0$ y forman $\varphi(x,u) = g(x) + u'Fx$ con $u$ no negativo. Los
+> cuatro renglones del cuadro están en la literatura; lo que no suele estar es
+> los cuatro juntos.
 
-## 3 · La cota del soporte vital
+Con el multiplicador anclado en no negativo, el número deja de depender de la
+escritura y pasa a medir siempre lo mismo:
 
-Con la cota, el problema del reactor queda
+::: theorem {#opt-lambda-mejora title="Qué mide el multiplicador"}
+Con la regla de arriba, para cada desigualdad, $\lambda$ es **cuánto mejora el
+valor óptimo por cada unidad que se afloja esa restricción**.
 
-$$\begin{aligned}
-\max \;&\sum_i \left(b_i p_i - \tfrac12 p_i^2\right) \\
-\text{s.a.}\;\; &p_1+p_2+p_3 = 15,\quad p_3 \le 5,\quad p \ge 0,
-\end{aligned}$$
+Y por eso $\lambda \ge 0$: aflojar nunca puede empeorar. Aflojar es **subir** el
+lado derecho si la restricción quedó $\le 0$, y **bajarlo** si quedó $\ge 0$.
 
-y su lagrangeano, con la convención de arriba, es
-$\mathcal{L} = \sum_i u_i(p_i) - \lambda(p_1+p_2+p_3-15) - \mu_3(p_3 - 5)$.
+En un máximo «mejorar» es subir y en un mínimo es bajar, y el enunciado no
+cambia: en los cuatro casos $\lambda$ es la mejora, medida en unidades del
+objetivo por unidad de holgura.
+:::
+
+## 3 · Qué valor toma, y cuándo vale cero
 
 ::: definition {#opt-kkt title="Las condiciones KKT"}
 Un punto y sus multiplicadores cumplen las condiciones de
 **Karush–Kuhn–Tucker** si cumplen las cuatro:
 
 1. **Estacionariedad**: $\nabla_x \mathcal{L} = 0$.
-2. **Factibilidad** — el punto cumple todas las restricciones.
-3. **Signo**: cada $\mu_i$ tiene el signo que le toca en
-   @opt-tabla-signos; $\lambda_j$ es libre.
-4. **Holgura complementaria**: $\mu_i\,(g_i(x) - b_i) = 0$ para cada
-   desigualdad: o la restricción está activa, o su multiplicador es cero. Dicho
-   en corto: **una restricción que no se toca no empuja**.
+2. **Factibilidad**: el punto cumple todas las restricciones.
+3. **Signo**: $\lambda \ge 0$ para cada desigualdad; el de una **igualdad** es
+   libre.
+4. **Holgura complementaria**: $\lambda\,\bigl(g(x) - b\bigr) = 0$ para cada
+   desigualdad. Dicho en corto: **una restricción que no se toca no empuja**.
 :::
 
-Resolviendo: la estacionariedad da $b_i - p_i = \lambda$ para escudos y motores,
-y $b_3 - p_3 = \lambda + \mu_3$ para el soporte vital. Con la cota activa
+De la cuarta sale toda la lectura del número:
+
+::: table {#opt-valor-multiplicador title="Qué valor puede tomar el multiplicador"}
+| Estado de la restricción | Multiplicador |
+|---|---|
+| **Inactiva**: se cumple con holgura | $\lambda = 0$, siempre |
+| **Activa**: se cumple con igualdad | $\lambda \ge 0$: normalmente positivo, **pero puede ser cero** |
+| **Igualdad** $h(x) = c$ | $\lambda$ libre: positivo, negativo o cero |
+| Cualquiera | $\lambda < 0$ **nunca**, con esta convención |
+:::
+
+> [!WARNING]
+> **Activa no implica $\lambda > 0$.** La holgura complementaria prohíbe que una
+> restricción inactiva tenga multiplicador, pero no obliga a que una activa lo
+> tenga. Maximiza $-(x-1)^2$ sujeto a $x \le 1$: el óptimo es $x = 1$, la cota se
+> cumple con igualdad —está activa—, y sin embargo $\lambda = 0$, porque aflojar
+> la cota no mejora nada: el máximo libre ya estaba justo ahí.
+>
+> Es el caso **degenerado**, y tiene consecuencia práctica: un recurso puede
+> agotarse exacto y aun así no valer nada conseguir más.
+
+## 4 · El reactor con su cota
+
+Con la cota, el problema queda
+
+$$\begin{aligned}
+\max \;&\sum_i \left(b_i p_i - \tfrac12 p_i^2\right) \\
+\text{s.a.}\;\; &p_1+p_2+p_3 = 15,\quad p_3 \le 5,\quad p \ge 0.
+\end{aligned}$$
+
+Las dos miradas: es un **máximo**, y la cota contra cero queda $p_3 - 5 \le 0$.
+Casilla superior derecha del atajo: **restando**. La igualdad lleva su propio
+multiplicador, libre de signo, y se escribe restando también para que valga lo
+que ya valía en [[el-multiplicador|la página anterior]]:
+
+$$\mathcal{L} = \sum_i u_i(p_i) - \lambda\,(p_1+p_2+p_3-15) - \mu_3\,(p_3 - 5).$$
+
+La estacionariedad da $b_i - p_i = \lambda$ para escudos y motores, y
+$b_3 - p_3 = \lambda + \mu_3$ para el soporte vital. Con la cota activa
 ($p_3 = 5$) sale
 
 $$p = (4,\,6,\,5), \qquad \lambda = 2, \qquad \mu_3 = 3.$$
@@ -194,12 +199,13 @@ $$p = (4,\,6,\,5), \qquad \lambda = 2, \qquad \mu_3 = 3.$$
 | $\mu_3$: vale una unidad más de cota | no aplica | **3** |
 :::
 
-Los dos números se leen solos. **$\mu_3 = 3 > 0$**: la cota está activa y
-empuja, y subirla una unidad rendiría 3 más. **$\lambda$ baja de 3 a 2**: con el
-mejor sistema tapado, la potencia extra vale menos, porque ya no puede irse a
-donde más rendía. Y la cota cuesta exactamente $86.5 - 83.5 = 3$.
+Los dos números se leen solos. **$\mu_3 = 3$**: la cota está activa y empuja, y
+subirla una unidad rendiría 3 más — que es exactamente lo que promete
+@opt-lambda-mejora. **$\lambda$ baja de 3 a 2**: con el mejor sistema tapado, la
+potencia extra vale menos, porque ya no puede irse a donde más rendía. Y la cota
+cuesta $86.5 - 83.5 = 3$.
 
-## 4 · Qué garantizan, y cómo se traduce
+## 5 · Qué garantizan, y cómo se traduce
 
 ::: theorem {#opt-teo-kkt title="Qué garantiza KKT, y dónde deja de garantizarlo"}
 Si el objetivo es diferenciable y **todas las restricciones son afines** —rectas
@@ -221,17 +227,16 @@ Fuera de ese caso, KKT solo produce **candidatos**.
 > es derivable en $x=1$, que es justo donde está su máximo. En esta unidad las
 > dos hipótesis se cumplen siempre; fuera de ella, hay que mirarlas.
 
-**Y el dibujo de por qué el signo no puede ser otro.** A $\nabla g_i$ se le llama
-la **normal exterior** de esa restricción: sale de su frontera en ángulo recto
-(igual que $\nabla h$ en [[el-multiplicador|la página anterior]]) y apunta hacia
-el lado prohibido, porque es la dirección en la que $g_i$ crece y la restricción
-pide que no crezca.
+**Y el dibujo de por qué $\lambda$ no puede ser negativo.** A $\nabla g_i$ se le
+llama la **normal exterior** de esa restricción: sale de su frontera en ángulo
+recto (igual que $\nabla h$ en [[el-multiplicador|la página anterior]]) y apunta
+hacia el lado prohibido.
 
-En un máximo con restricciones $\le$, la estacionariedad dice entonces que
-$\nabla f$ es una combinación **con coeficientes no negativos** de las normales
-exteriores de las restricciones activas. Con un coeficiente negativo, la flecha
-del objetivo apuntaría hacia adentro de la región — y hacia adentro siempre se
-puede caminar, así que el punto no sería óptimo.
+En un máximo con restricciones $\le$, la estacionariedad dice que $\nabla f$ es
+una combinación **con coeficientes no negativos** de las normales exteriores de
+las restricciones activas. Con un coeficiente negativo, la flecha del objetivo
+apuntaría hacia adentro de la región — y hacia adentro siempre se puede caminar,
+así que el punto no sería óptimo.
 
 ::: figure {#opt-normales title="El gradiente del objetivo, escrito con las normales activas"}
 ![El polígono de la clase 1 con su esquina óptima; desde ella salen las dos normales de las restricciones activas y la flecha del objetivo, que es la diagonal del paralelogramo que forman](../_assets/opt-normales.svg)
@@ -245,28 +250,25 @@ programación lineal son los multiplicadores KKT del problema lineal**, y eso
 demuestra lo que la clase 2 prometió: que siempre existen no es casualidad, es el
 teorema de arriba aplicado al caso afín.
 
-::: table {#opt-convenciones-kkt title="La misma cuenta en tres convenciones"}
+::: table {#opt-convenciones-kkt title="La misma cuenta, en el papel y en el código"}
 | Dónde | Cómo se escribe | Qué sale |
 |---|---|---|
-| Estas notas | máximo, $g \le b$, $\mathcal{L} = f - \mu(g-b)$ | $\mu$ **es** el precio sombra, con su signo |
-| Forma estándar de los libros | mínimo, $g(x) \le 0$, $\mathcal{L} = f + \mu g$ | $\mu \ge 0$ siempre: el signo ya se absorbió al pasar a la forma estándar. Es **menos** el de aquí |
-| `scipy` | minimiza, y devuelve los duales de ese mínimo | los precios sombra del máximo son $-\texttt{marginals}$ |
+| Estas notas y los libros | el signo de delante según @opt-atajo-signos | $\lambda \ge 0$ siempre |
+| `scipy` | minimiza, y devuelve los duales de ese mínimo | los precios sombra de un máximo son $-\texttt{marginals}$ |
 :::
 
-Ese último renglón es el que explica un tropiezo de la clase 2: `linprog`
-devuelve $-2$ donde la página enseña 2. No es un error del solver ni de la
-página: **son el mismo número en dos convenciones**, y ahora se sabe cuál es
-cuál.
+Ese último renglón explica un tropiezo de la clase 2: `linprog` devuelve $-2$
+donde la página enseña 2. No es un error del solver ni de la página: **es el
+mismo número visto desde el problema minimizado**.
 
 ## Lo que hay que llevarse
 
-- El lagrangeano no tiene un signo correcto: tiene una convención. Voltear el
-  término y voltear la desigualdad es la misma operación, y hacer las dos no
-  cambia nada.
-- Con los términos restando, cada multiplicador **es** la derivada del valor
-  óptimo respecto de su lado derecho, y de ahí sale su signo: aflojar o apretar,
-  maximizar o minimizar.
-- Una restricción que no se toca no empuja, y su multiplicador es cero.
+- Primero la restricción **contra cero**; sin ese paso, ninguna regla de signos
+  significa nada.
+- Dos miradas deciden el signo de delante: **mín o máx**, y **$\le 0$ o
+  $\ge 0$**. Con eso, $\lambda \ge 0$ siempre.
+- El multiplicador mide **cuánto mejora el óptimo al aflojar una unidad**. Vale
+  cero cuando la restricción no se toca — y también puede valer cero tocándola.
 
 Falta el caso en que estas condiciones no se pueden resolver a mano:
 [[bajar-la-pendiente|la página siguiente]].
