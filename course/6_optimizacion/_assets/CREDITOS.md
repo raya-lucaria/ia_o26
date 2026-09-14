@@ -31,3 +31,8 @@ no son imágenes.
 | `opt-camino-simplex.svg` | El camino de simplex sobre el polígono de la clase 1: dos pivotes y dos esquinas que nadie miró | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-precio-sombra.svg` | Qué compra una hora más: la recta de las horas en 10, 11 y 12, y el óptimo corriendo por la arista del polímero hasta (6,6) | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-fig-vertice-o-arista.svg` | Los dos desenlaces del teorema del vértice: la recta de nivel que toca en un solo vértice y la que se apoya en una arista entera | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-cuerda.svg` | La prueba de la cuerda sobre la curva de rendimiento de un sistema | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-concava-convexa.svg` | La misma curva y su reflejo: maximizar una cóncava es minimizar una convexa | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-tangencia.svg` | Las curvas de nivel del reactor, la recta de la potencia, y los dos gradientes alineados en el óptimo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-normales.svg` | El gradiente del objetivo escrito como suma de las normales de las restricciones activas, con los precios sombra por coeficiente | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-pasos-gradiente.svg` | Las tres trayectorias del descenso de gradiente sobre el mismo valle, con α de 1/10, 1/4 y 3/10 | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

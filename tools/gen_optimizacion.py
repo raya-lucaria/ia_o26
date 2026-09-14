@@ -1583,6 +1583,431 @@ def opt_fig_precio_sombra():
     return "".join(s)
 
 
+# --------------------------------------------------------------------------
+# Clase 3 - el reactor. Cinco diagramas.
+#
+# Los cinco CALCULAN lo que dibujan: la curva de rendimiento, sus curvas de
+# nivel, la descomposicion del gradiente y las trayectorias del descenso salen
+# de los mismos numeros que verifica
+# docs/superpowers/verificacion-optimizacion/clase3.py. Si un parametro del
+# reactor cambia, el dibujo cambia solo.
+
+# El episodio del reactor: rendimiento u_i(p) = b_i p - p^2/2.
+B_REACTOR = (6, 8, 10)
+P_TOTAL = 15
+
+
+def _u(p, b=8):
+    return b * p - p * p / 2
+
+
+def _flechac(x1, y1, x2, y2, color, ident, grosor=3):
+    """Flecha cuya PUNTA lleva el color de su linea.
+
+    flecha() apunta a los dos marcadores de marco(), que son magenta y gris:
+    una flecha verde salia con punta magenta. Se vio renderizando, no leyendo
+    el XML. Cada llamada emite su propio marcador, asi que `ident` tiene que
+    ser unico dentro del archivo.
+    """
+    return (
+        f'<defs><marker id="{ident}" viewBox="0 0 10 10" refX="9" refY="5" '
+        f'markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+        f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{color}"/></marker></defs>'
+        f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+        f'stroke="{color}" stroke-width="{grosor}" marker-end="url(#{ident})"/>'
+    )
+
+
+def _ejes(ox, oy, ancho, alto, etx, ety):
+    """Los dos ejes con punta y sus rotulos, en el gris del skin."""
+    return [
+        flecha(ox, oy, ox + ancho + 16, oy, color=SUAVE, marcador="s"),
+        flecha(ox, oy, ox, oy - alto - 16, color=SUAVE, marcador="s"),
+        texto(ox + ancho + 26, oy + 5, etx, color=SUAVE, tam=13, anclaje="start"),
+        texto(ox - 4, oy - alto - 26, ety, color=SUAVE, tam=13, anclaje="start"),
+    ]
+
+
+def _curva(puntos, color, grosor=3, guiones=None):
+    d = " ".join(("M" if i == 0 else "L") + f" {x:.1f} {y:.1f}"
+                 for i, (x, y) in enumerate(puntos))
+    trazo = f' stroke-dasharray="{guiones}"' if guiones else ""
+    return (f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{grosor}" '
+            f'stroke-linejoin="round"{trazo}/>')
+
+
+def _trozos(puntos, dentro):
+    """Parte una lista de puntos en los tramos que caen dentro del cuadro.
+
+    Recortar muestreando en vez de con <clipPath> porque un SVG suelto se abre
+    en visores que no siempre lo respetan, y estas figuras se miran tambien
+    fuera del sitio.
+    """
+    salida, actual = [], []
+    for p in puntos:
+        if dentro(*p):
+            actual.append(p)
+        elif actual:
+            salida.append(actual)
+            actual = []
+    if actual:
+        salida.append(actual)
+    return [t for t in salida if len(t) > 1]
+
+
+def opt_cuerda():
+    """La prueba de la cuerda sobre el rendimiento real de un sistema.
+
+    La curva es u(p) = 8p - p^2/2, el sistema de motores del episodio. La
+    cuerda va de p=2 a p=7 y en su punto medio la curva saca 3.125 de ventaja:
+    ese hueco es la concavidad, y esta calculado, no dibujado a ojo.
+    """
+    W, H = 840, 470
+    ox, oy, ancho, alto = 100, 380, 620, 290
+    pmax, umax = 10.5, 34.0
+    X = lambda p: ox + p / pmax * ancho
+    Y = lambda u: oy - u / umax * alto
+
+    s = [marco(
+        W, H,
+        "La curva de rendimiento de un sistema con una cuerda trazada entre dos "
+        "de sus puntos; la cuerda queda por debajo de la curva en todo el tramo",
+        "La prueba de la cuerda",
+        "Curva concava u(p) = 8p - p cuadrado medios. Entre p=2 y p=7 se traza "
+        "una cuerda recta que queda por debajo de la curva; en el punto medio "
+        "p=4.5 la curva vale 25.875 y la cuerda 22.75.",
+    )]
+    s += _ejes(ox, oy, ancho, alto, "potencia p", "rendimiento u(p)")
+
+    s.append(_curva([(X(i / 20), Y(_u(i / 20))) for i in range(0, int(pmax * 20) + 1)],
+                    SERIE[1]))
+
+    a, c = 2.0, 7.0
+    s.append(linea(X(a), Y(_u(a)), X(c), Y(_u(c)), color=ACENTO, grosor=3))
+    for t in (a, c):
+        s.append(punto(X(t), Y(_u(t)), r=6, color=ACENTO))
+        s.append(linea(X(t), Y(_u(t)), X(t), oy, color=SUAVE, grosor=1.5, guiones="4 4"))
+        s.append(texto(X(t), oy + 24, f"p = {t:.0f}", color=SUAVE, tam=13))
+
+    m = (a + c) / 2
+    ucurva, ucuerda = _u(m), (_u(a) + _u(c)) / 2
+    s.append(linea(X(m), Y(ucurva), X(m), Y(ucuerda), color=SERIE[0], grosor=3))
+    s.append(punto(X(m), Y(ucurva), r=5, color=SERIE[0]))
+    s.append(punto(X(m), Y(ucuerda), r=5, color=SERIE[0]))
+    # los tres numeros van juntos en el hueco de abajo a la derecha: puestos
+    # junto a sus trazos se montaban encima de la curva y de la cuerda.
+    for i, (etiqueta, color) in enumerate((
+        (f"la curva en p = {m:g}:  {ucurva:g}", SERIE[1]),
+        (f"la cuerda en p = {m:g}:  {ucuerda:g}", ACENTO),
+        (f"ventaja de la curva:  {ucurva - ucuerda:g}", SERIE[0]),
+    )):
+        s.append(texto(X(7.5), Y(13) + i * 24, etiqueta, color=color, tam=14,
+                       anclaje="start", peso="700" if i == 2 else "normal"))
+    s.append(texto(W / 2, H - 16,
+                   "repartir la potencia entre dos puntos rinde menos que ponerla en medio",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_concava_convexa():
+    """La misma curva y su reflejo: maximizar una es minimizar la otra.
+
+    Los dos paneles comparten orientacion —eje vertical hacia arriba, cero en
+    la misma altura— para que el reflejo se lea como reflejo. La primera
+    version puso el eje del panel derecho apuntando hacia abajo y parecia otra
+    convencion en vez de la misma funcion cambiada de signo.
+    """
+    W, H = 980, 470
+    ancho, alto = 340, 150
+    pmax, umax = 10.5, 34.0
+    s = [marco(
+        W, H,
+        "Dos paneles con la misma curva reflejada: a la izquierda una funcion "
+        "concava con su maximo senalado, a la derecha su negativo, una funcion "
+        "convexa con su minimo en la misma potencia",
+        "Cóncava y convexa son el mismo problema",
+        "Panel izquierdo: u(p) concava, maximo en p=8 con valor 32. Panel "
+        "derecho: menos u(p) convexa, minimo en p=8 con valor menos 32. La "
+        "potencia optima es la misma en los dos.",
+    )]
+
+    cero = 230          # la altura del cero, identica en los dos paneles
+    for ox, signo, titulo, color, etiqueta in (
+        (80, +1, "u es cóncava — se maximiza", SERIE[1], "máximo"),
+        (560, -1, "−u es convexa — se minimiza", SERIE[2], "mínimo"),
+    ):
+        X = lambda p, ox=ox: ox + p / pmax * ancho
+        Y = lambda u, signo=signo: cero - signo * u / umax * alto
+        s.append(texto(ox + ancho / 2, 56, titulo, color=TEXTO, tam=15, peso="700"))
+        s.append(flecha(ox, cero + 170, ox, cero - 170, color=SUAVE, marcador="s"))
+        s.append(linea(ox, cero, ox + ancho + 14, cero, color=SUAVE, grosor=1.5))
+        s.append(texto(ox - 12, cero + 5, "0", color=SUAVE, tam=13, anclaje="end"))
+        s.append(texto(ox + ancho + 20, cero + 5, "p", color=SUAVE, tam=13, anclaje="start"))
+        s.append(_curva([(X(i / 20), Y(_u(i / 20))) for i in range(0, int(pmax * 20) + 1)],
+                        color))
+        s.append(punto(X(8), Y(_u(8)), r=7, color=ACENTO))
+        s.append(linea(X(8), Y(_u(8)), X(8), cero, color=ACENTO, grosor=1.5, guiones="4 4"))
+        cifra = "32" if signo > 0 else "−32"      # menos tipografico, no guion
+        s.append(texto(X(8) + 14, Y(_u(8)) - signo * 14 + 5,
+                       f"{etiqueta}: {cifra}", color=ACENTO, tam=14,
+                       peso="700", anclaje="start"))
+        s.append(texto(X(8), cero + (22 if signo > 0 else -12), "p = 8", color=SUAVE, tam=13))
+    s.append(texto(W / 2, H - 16,
+                   "la misma potencia resuelve los dos: cambiar de signo cambia la pregunta, no la respuesta",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_tangencia():
+    """Curvas de nivel del reactor de dos sistemas, la recta, y los gradientes.
+
+    Con dos sistemas (b = 6 y 8) y potencia 8 el optimo es (3,5) y lambda vale
+    3: el MISMO lambda que el reactor de tres sistemas con potencia 15, elegido
+    asi para que el dibujo ensene el numero que la pagina calcula.
+
+    Las curvas de nivel son circunferencias centradas en (6,8) porque
+    f(p) = 50 - ((p1-6)^2 + (p2-8)^2)/2. Las dos flechas del optimo son
+    paralelas por definicion, asi que la de la restriccion va desplazada en
+    perpendicular: dibujadas una encima de otra solo se veia la larga.
+    """
+    import math
+    W, H = 780, 690
+    ox, oy, lado = 95, 560, 470
+    k = lado / 9.6
+    X = lambda p: ox + p * k
+    Y = lambda p: oy - p * k
+    dentro = lambda p1, p2: -0.05 <= p1 <= 9.5 and -0.05 <= p2 <= 9.5
+
+    s = [marco(
+        W, H,
+        "Curvas de nivel circulares del rendimiento, la recta que fija la "
+        "potencia total, y en el punto donde la recta toca la curva de nivel "
+        "mas alta, dos flechas que apuntan en la misma direccion",
+        "Tangencia: los dos gradientes se alinean",
+        "Circunferencias centradas en (6,8) cortadas por la recta p1+p2=8. En "
+        "(3,5) la recta es tangente a una de ellas y el gradiente del objetivo, "
+        "(3,3), es multiplo del de la restriccion, (1,1). En (6,2) las dos "
+        "flechas apuntan distinto y todavia se puede mejorar.",
+    )]
+    s += _ejes(ox, oy, lado, lado, "p₁ escudos", "p₂ motores")
+
+    for r, papel in ((1.6, "alta"), (3.0, "alta"), (math.sqrt(18), "toca"), (5.6, "cruza")):
+        puntos = []
+        for i in range(721):
+            th = math.radians(i / 2)
+            puntos.append((6 + r * math.cos(th), 8 + r * math.sin(th)))
+        color = SERIE[1] if papel == "toca" else mezclar(SERIE[1], 0.45)
+        for t in _trozos(puntos, dentro):
+            s.append(_curva([(X(p1), Y(p2)) for p1, p2 in t], color,
+                            grosor=3 if papel == "toca" else 2))
+
+    s.append(punto(X(6), Y(8), r=4, color=mezclar(SERIE[1], 0.7)))
+    s.append(texto(X(6) + 12, Y(8) - 12, "sin límite se iría aquí",
+                   color=mezclar(SERIE[1], 0.85), tam=12, anclaje="start"))
+    s.append(linea(X(0), Y(8), X(8), Y(0), color=ACENTO, grosor=3))
+    s.append(texto(X(7.0), Y(0.62), "p₁ + p₂ = 8", color=ACENTO, tam=14,
+                   peso="700", anclaje="start"))
+
+    # el optimo: las dos flechas, la de la restriccion desplazada en perpendicular
+    px, py = X(3), Y(5)
+    s.append(punto(px, py, r=7, color=TEXTO))
+    s.append(texto(px - 16, py + 6, "(3, 5)", color=TEXTO, tam=15, peso="700", anclaje="end"))
+    s.append(_flechac(px, py, px + 3 * 22, py - 3 * 22, SERIE[0], "gf1"))
+    dx, dy = 13, 13      # desplazamiento perpendicular, hacia abajo-derecha
+    s.append(_flechac(px + dx, py + dy, px + dx + 42, py + dy - 42, SERIE[2], "gh1"))
+    s.append(texto(px + 76, py - 74, "∇f = (3,3)", color=SERIE[0], tam=14,
+                   anclaje="start", peso="700"))
+    s.append(texto(px + 76, py - 54, "= 3 × ∇h", color=SERIE[0], tam=13, anclaje="start"))
+    s.append(texto(px + 66, py + 26, "∇h = (1,1)", color=SERIE[2], tam=13, anclaje="start"))
+
+    # un punto factible peor, donde las dos flechas NO son multiplos
+    qx, qy = X(6), Y(2)
+    s.append(punto(qx, qy, r=6, color=SUAVE))
+    s.append(_flechac(qx, qy, qx, qy - 6 * 11, SERIE[0], "gf2", grosor=2.5))
+    s.append(_flechac(qx + 10, qy + 10, qx + 10 + 34, qy + 10 - 34, SERIE[2], "gh2", grosor=2.5))
+    s.append(texto(qx - 12, qy - 70, "∇f = (0,6)", color=SERIE[0], tam=13, anclaje="end"))
+    s.append(texto(qx - 12, qy + 24, "(6, 2): todavía mejora", color=SUAVE, tam=13,
+                   anclaje="end"))
+
+    s.append(texto(W / 2, H - 38,
+                   "las de adentro valen más y no tocan la recta; la de afuera la cruza dos veces",
+                   color=SUAVE, tam=13))
+    s.append(texto(W / 2, H - 16,
+                   "la que la toca una sola vez es la mejor alcanzable, y ahí las flechas se alinean",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_normales():
+    """De donde sale el signo: ∇f como suma de las normales activas.
+
+    Sobre el poligono de la clase 1, en su optimo (8,2), el gradiente del
+    objetivo c = (4,3) se escribe como 2·(1,1) + 1·(2,1): las normales
+    exteriores de las dos restricciones activas, con coeficientes 2 y 1, que
+    son EXACTAMENTE los precios sombra que la clase 2 calculo. El dibujo es la
+    estacionariedad de KKT, y los coeficientes no pueden ser negativos sin que
+    la flecha apunte hacia dentro de la region.
+
+    Se dibuja como paralelogramo de suma de vectores: la primera version puso
+    las dos piezas una detras de otra y quedaban casi alineadas con la
+    diagonal, asi que no se veia que fueran dos.
+    """
+    W, H = 900, 580
+    ox, oy, k = 90, 470, 36
+    X = lambda x: ox + x * k
+    Y = lambda y: oy - y * k
+
+    s = [marco(
+        W, H,
+        "El poligono de la clase 1 con su esquina optima; desde ella salen las "
+        "dos normales de las restricciones activas y la flecha del objetivo, "
+        "que es la diagonal del paralelogramo que forman",
+        "El gradiente, escrito con las normales activas",
+        "En la esquina (8,2) del poligono, la flecha del objetivo c=(4,3) es la "
+        "diagonal del paralelogramo que forman dos veces la normal de horas "
+        "(1,1) y una vez la normal de polimero (2,1). Los coeficientes 2 y 1 "
+        "son los precios sombra de esos dos recursos.",
+    )]
+    s += _ejes(ox, oy, 400, 400, "filtros x₁", "celdas x₂")
+
+    V = [(0, 0), (9, 0), (8, 2), (2, 8), (0, 9)]
+    pts = " ".join(f"{X(x):.1f},{Y(y):.1f}" for x, y in V)
+    s.append(f'<polygon points="{pts}" fill="{mezclar(SERIE[1], 0.16)}" '
+             f'stroke="{mezclar(SERIE[1], 0.6)}" stroke-width="2"/>')
+    s.append(texto(X(2.6), Y(3.2), "región factible", color=mezclar(SERIE[1], 0.95), tam=13))
+
+    # los dos lados activos, cada uno del color de su normal
+    s.append(linea(X(2), Y(8), X(8), Y(2), color=SERIE[2], grosor=3.5))
+    s.append(texto(X(2.4), Y(8.0) - 10, "lado de horas", color=SERIE[2], tam=13, anclaje="start"))
+    s.append(linea(X(8), Y(2), X(9), Y(0), color=SERIE[0], grosor=3.5))
+    s.append(texto(X(9.2), Y(0.4), "lado de polímero", color=SERIE[0], tam=13, anclaje="start"))
+
+    vx, vy = 8, 2
+    P = (X(vx), Y(vy))
+    A = (X(vx + 2), Y(vy + 2))          # 2 × (1,1)
+    Bp = (X(vx + 2), Y(vy + 1))         # 1 × (2,1)
+    S = (X(vx + 4), Y(vy + 3))          # la suma, c = (4,3)
+    s.append(linea(*A, *S, color=mezclar(SERIE[0], 0.7), grosor=2, guiones="6 5"))
+    s.append(linea(*Bp, *S, color=mezclar(SERIE[2], 0.7), grosor=2, guiones="6 5"))
+    s.append(_flechac(*P, *A, SERIE[2], "na"))
+    s.append(_flechac(*P, *Bp, SERIE[0], "nb"))
+    s.append(_flechac(*P, *S, ACENTO, "nc", grosor=3.5))
+    s.append(punto(*P, r=7, color=TEXTO))
+    s.append(texto(P[0] - 12, P[1] + 24, "(8, 2)", color=TEXTO, tam=14, peso="700", anclaje="end"))
+    s.append(texto(A[0] - 6, A[1] - 12, "2 × (1,1)", color=SERIE[2], tam=14,
+                   anclaje="end", peso="700"))
+    s.append(texto(Bp[0] + 10, Bp[1] + 20, "1 × (2,1)", color=SERIE[0], tam=14,
+                   anclaje="start", peso="700"))
+    s.append(texto(S[0] + 12, S[1] - 6, "∇f = c = (4,3)", color=ACENTO, tam=15,
+                   anclaje="start", peso="700"))
+
+    s.append(texto(W / 2, H - 42,
+                   "2 y 1 son los precios sombra de la clase 2: horas 2, polímero 1",
+                   color=TEXTO, tam=14, peso="700"))
+    s.append(texto(W / 2, H - 18,
+                   "con un coeficiente negativo la flecha apuntaría hacia dentro, y todavía se podría mejorar",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_pasos_gradiente():
+    """Las tres tasas sobre el desgaste (x-3)^2 + 4(y-2)^2, desde (0,0).
+
+    Un panel por tasa, con las mismas curvas de nivel y el mismo encuadre para
+    que las tres trayectorias se comparen. Los puntos se ITERAN aqui con el
+    mismo paso que la pagina tabula, no se copian a mano, y las elipses se
+    recortan contra su panel: sin recorte se salian al panel vecino.
+    """
+    import math
+    W, H = 1020, 440
+    ancho = alto = 280
+    xmin, xmax, ymin, ymax = -1.2, 5.6, -2.6, 6.4
+
+    def trayectoria(alpha, n=5, x=0.0, y=0.0):
+        salida = [(x, y)]
+        for _ in range(n):
+            x, y = x - alpha * 2 * (x - 3), y - alpha * 8 * (y - 2)
+            salida.append((x, y))
+        return salida
+
+    s = [marco(
+        W, H,
+        "Tres paneles con las mismas curvas de nivel elipticas del desgaste y "
+        "una trayectoria en cada uno: la primera llega al centro, la segunda "
+        "salta entre dos alturas, la tercera se sale del cuadro",
+        "Tres tamaños de paso sobre el mismo valle",
+        "Con alpha un decimo la trayectoria converge al minimo (3,2). Con un "
+        "cuarto la coordenada vertical salta entre 0 y 4 sin acercarse mientras "
+        "la horizontal si converge. Con tres decimos las dos se alejan.",
+    )]
+
+    paneles = (
+        (0.10, "α = 1/10", "converge", SERIE[0]),
+        (0.25, "α = 1/4", "la y salta para siempre", SERIE[2]),
+        (0.30, "α = 3/10", "se va", ALARMA),
+    )
+    for i, (alpha, etiqueta, nota, color) in enumerate(paneles):
+        ox, oy = 50 + i * 330, 350
+        X = lambda x, ox=ox: ox + (x - xmin) / (xmax - xmin) * ancho
+        Y = lambda y, oy=oy: oy - (y - ymin) / (ymax - ymin) * alto
+        dentro = lambda x, y: xmin <= x <= xmax and ymin <= y <= ymax
+        s.append(caja(ox, oy - alto, ancho, alto, borde=mezclar(SUAVE, 0.35), radio=8, grosor=1.5))
+        s.append(texto(ox + ancho / 2, 46, etiqueta, color=color, tam=16, peso="700"))
+        s.append(texto(ox + ancho / 2, 66, nota, color=SUAVE, tam=13))
+
+        for nivel in (1, 4, 9, 16):
+            a, b = math.sqrt(nivel), math.sqrt(nivel) / 2
+            elipse = [(3 + a * math.cos(math.radians(t)), 2 + b * math.sin(math.radians(t)))
+                      for t in range(0, 361, 3)]
+            for t in _trozos(elipse, dentro):
+                s.append(_curva([(X(x), Y(y)) for x, y in t], mezclar(SERIE[1], 0.45),
+                                grosor=1.5))
+        s.append(punto(X(3), Y(2), r=5, color=SERIE[1]))
+        s.append(texto(X(3) + 10, Y(2) - 8, "(3,2)", color=SERIE[1], tam=12, anclaje="start"))
+
+        puntos = trayectoria(alpha)
+        visibles, fuga = [], None
+        for x, y in puntos:
+            if dentro(x, y):
+                visibles.append((X(x), Y(y)))
+            else:
+                fuga = (X(x), Y(y))
+                break
+        if len(visibles) > 1:
+            s.append(_curva(visibles, color, grosor=2.5))
+        for j, (px, py) in enumerate(visibles):
+            s.append(punto(px, py, r=4.5 if j else 6, color=color))
+        if fuga is not None:
+            # La trayectoria sale POR EL BORDE, con la punta justo donde lo
+            # cruza. Dos versiones anteriores fallaron aqui: una apuntaba
+            # siempre hacia abajo y hacia la derecha —y este paso se dispara
+            # hacia arriba—, y otra dibujaba un tramo corto que quedaba encima
+            # de la propia trayectoria. El rotulo sobra: el subtitulo del panel
+            # ya dice "se va".
+            ux, uy = visibles[-1]
+            dx, dy = fuga[0] - ux, fuga[1] - uy
+            t = 1.0
+            for lim, d, v in ((ox, dx, ux), (ox + ancho, dx, ux),
+                              (oy - alto, dy, uy), (oy, dy, uy)):
+                if d:
+                    tt = (lim - v) / d
+                    if 0 < tt < t:
+                        t = tt
+            largo = math.hypot(dx * t, dy * t) or 1
+            t *= max(0.0, (largo - 14) / largo)   # la punta cabe dentro del panel
+            s.append(_flechac(ux, uy, ux + dx * t, uy + dy * t, color, f"fuga{i}", grosor=2.5))
+        s.append(texto(X(0) + 4, Y(0) + 22, "arranca en (0,0)", color=SUAVE, tam=12))
+    s.append(texto(W / 2, H - 14,
+                   "mismo valle, mismo punto de arranque: lo único que cambia es cuánto se avanza",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -1598,6 +2023,11 @@ DIAGRAMAS = {
     "opt-camino-simplex": opt_camino_simplex,
     "opt-fig-precio-sombra": opt_fig_precio_sombra,
     "opt-fig-vertice-o-arista": opt_fig_vertice_o_arista,
+    "opt-cuerda": opt_cuerda,
+    "opt-concava-convexa": opt_concava_convexa,
+    "opt-tangencia": opt_tangencia,
+    "opt-normales": opt_normales,
+    "opt-pasos-gradiente": opt_pasos_gradiente,
 }
 
 
