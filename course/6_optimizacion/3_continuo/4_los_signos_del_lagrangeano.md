@@ -4,7 +4,7 @@ title: Los signos del lagrangeano
 nav_title: Signos y KKT
 summary: "Cómo se escribe el lagrangeano con igualdades y con desigualdades, por qué a veces el multiplicador entra restando y a veces sumando, y qué signo le toca en cada caso."
 status: ready
-estimated_time: 26m
+estimated_time: 30m
 tags: [optimizacion, kkt, lagrange, signos]
 ---
 
@@ -54,15 +54,58 @@ desigualdades.
 En el reactor con su cota hay una de cada una: $h(p) = p_1+p_2+p_3$ con $c = 15$,
 y $g(p) = p_3$ con $b = 5$.
 
-**Y por qué el mismo problema aparece con $+$ y con $-$.** Son dos operaciones
-distintas y cada una voltea el multiplicador:
+### Qué va dentro del paréntesis, y qué signo lleva delante
 
-- cambiar el **signo del término** en $\mathcal{L}$ —de $-\mu(g-b)$ a
-  $+\mu(g-b)$— cambia $\mu$ por $-\mu$;
-- cambiar el **sentido de la desigualdad** —de $g \le b$ a $-g \le -b$— también.
+Son las dos decisiones que hay que tomar para **escribir** $\mathcal{L}$, y
+ninguna se deduce: se eligen. Lo que no se elige es la consecuencia.
 
-Hacer las dos deja todo exactamente igual. **No hay un signo correcto: hay una
-convención, y lo que cambia con ella es qué significa el número que sale.**
+**Dentro del paréntesis va el lado izquierdo menos el derecho.** Siempre
+$(g(x) - b)$, y no $(b - g(x))$, por una razón práctica: así el paréntesis vale
+**cero exactamente cuando la restricción está apretada**. En el reactor,
+$(p_3 - 5)$ se anula cuando el soporte vital está pegado a su tope, y por eso la
+holgura complementaria de la sección 3 se lee de un golpe.
+
+**Delante va restando.** Tampoco es capricho: es lo que hace que $\mu$ **sea** el
+precio sombra en vez de su negativo, que es el teorema de la sección siguiente.
+
+**Y las dos decisiones se compensan entre sí**, que es la razón de que veas el
+mismo problema escrito de cuatro maneras sin que ninguna esté mal:
+
+::: table {#opt-cuatro-escrituras title="Las cuatro maneras de escribir el mismo término"}
+| Cómo lo escribes | Qué es | Qué mide su multiplicador |
+|---|---|---|
+| $f - \mu\,(g - b)$ | **la de estas notas** | $\partial f^\ast/\partial b$ |
+| $f + \mu\,(b - g)$ | idéntica a la de arriba | $\partial f^\ast/\partial b$ |
+| $f + \mu\,(g - b)$ | la primera con el signo volteado | $-\partial f^\ast/\partial b$ |
+| $f - \mu\,(b - g)$ | idéntica a la de arriba | $-\partial f^\ast/\partial b$ |
+:::
+
+Los renglones van en pares porque **voltear el paréntesis y voltear el signo de
+delante son la misma operación**: cada una por separado cambia $\mu$ por
+$-\mu$, y hacer las dos deja todo igual.
+
+**¿Y qué tiene que ver con maximizar o minimizar? Nada — y por eso confunde.**
+El signo de delante se puede elegir igual en los dos casos. Lo que sí depende de
+si maximizas o minimizas es **qué signo acaba teniendo el multiplicador**, que es
+la tabla de la sección siguiente. El enredo viene de que la costumbre de los
+libros es elegir el signo de delante **para que el multiplicador salga no
+negativo**, y como eso depende del sentido de la optimización y del de la
+desigualdad, cada libro escribe una cosa distinta. Estas notas hacen lo
+contrario: fijan el signo de delante, y dejan que el multiplicador salga con el
+signo que le toque — porque así el número significa algo.
+
+**El reactor con su cota, escrito de las tres formas.** El óptimo es $(4,6,5)$ en
+las tres, y lo único que se mueve son los signos de los multiplicadores:
+
+| Lagrangeano | $\lambda$ | $\mu_3$ |
+|---|---:|---:|
+| $f - \lambda\,(p_1+p_2+p_3-15) - \mu_3\,(p_3-5)$ | $2$ | $3$ |
+| $f + \lambda\,(15-p_1-p_2-p_3) + \mu_3\,(5-p_3)$ | $2$ | $3$ |
+| $f + \lambda\,(p_1+p_2+p_3-15) + \mu_3\,(p_3-5)$ | $-2$ | $-3$ |
+
+**No hay un signo correcto: hay una convención, y lo que cambia con ella es qué
+significa el número que sale.** Elige una, escríbela una vez, y no la cambies a
+media hoja.
 
 ## 2 · De dónde sale el signo
 
