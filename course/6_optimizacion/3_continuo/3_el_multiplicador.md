@@ -96,6 +96,12 @@ Pedir $\nabla_x \mathcal{L} = 0$ es exactamente $\nabla f = \lambda \nabla h$, y
 pedir $\partial \mathcal{L}/\partial \lambda = 0$ devuelve la restricción
 $h(x) = c$. Las incógnitas dejan de ser $n$ y pasan a ser $n+1$, pero ya no hay
 nada que despejar.
+
+**En una igualdad el signo de delante es libre**, porque $\lambda$ tampoco tiene
+signo obligado: escribir $-\lambda(h-c)$ o $+\lambda(h-c)$ solo cambia $\lambda$
+por $-\lambda$. Aquí se resta, y con eso $\lambda$ sale igual a la derivada del
+valor óptimo, que es lo que usa la sección 4. En una **desigualdad** el signo sí
+se decide con una regla, y es [[los-signos-del-lagrangeano|la página siguiente]].
 :::
 
 ## 3 · El reactor, otra vez, sin sustituir
