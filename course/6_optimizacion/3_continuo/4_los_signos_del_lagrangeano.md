@@ -4,7 +4,7 @@ title: Los signos del lagrangeano
 nav_title: Signos y KKT
 summary: "Con qué signo entra cada restricción en el lagrangeano y qué signo tiene su multiplicador, con una regla de dos miradas que decide las dos cosas sin memorizar casos."
 status: ready
-estimated_time: 30m
+estimated_time: 32m
 tags: [optimizacion, kkt, lagrange, signos]
 ---
 
@@ -20,9 +20,41 @@ Abre dos libros y verás $\mathcal{L} = f + \lambda g$ en uno y
 $\mathcal{L} = f - \lambda g$ en el otro, sin que ninguno esté mal. Esta página
 da la regla que decide, y de paso explica por qué los dos libros tienen razón.
 
-## 1 · Primero, la restricción contra cero
+## 1 · El problema canónico
 
-Antes de elegir ningún signo hay un paso mecánico, y de él sale todo lo demás.
+Antes de elegir ningún signo, el problema entero se escribe en una sola forma. Es
+[[escribir-el-modelo|la forma canónica de la clase 1]] —objetivo arriba, una
+restricción por renglón, el dominio al final— con **un paso más: cada restricción
+también contra cero**.
+
+$$\begin{aligned}
+\max_{x} \;\text{ o }\; \min_{x} \quad & f(x) && \text{el objetivo} \\
+\text{sujeto a} \quad & h_j(x) - c_j = 0 && j = 1,\dots,p \\
+& g_i(x) - b_i \le 0 \;\text{ o }\; g_i(x) - b_i \ge 0 && i = 1,\dots,m \\
+& x \in X && \text{el dominio}
+\end{aligned}$$
+
+**Por qué esta forma y no otra.** Porque la regla de los signos lee exactamente
+dos cosas, y las dos solo son visibles cuando el problema está así escrito:
+
+- **El sentido de la optimización**, que vive en el primer renglón y vale para
+  **todo** el problema. Es una sola decisión: o maximizas o minimizas.
+- **El sentido de cada restricción contra cero**, que vive en su propio renglón y
+  puede ser **distinto en cada una**. Un mismo problema puede tener unas $\le 0$
+  y otras $\ge 0$, y cada una se decide por separado.
+
+Esa asimetría es la razón de que la regla sea un cuadro de dos por dos y no una
+sola respuesta: el máximo o mínimo lo fijas una vez y te acompaña hasta el final;
+el sentido de la restricción lo vuelves a mirar en cada renglón.
+
+El dominio $x \in X$ (la no negatividad, casi siempre) se queda donde está y **no
+entra al lagrangeano** en esta unidad: es una restricción como las demás y podría
+llevar su propio multiplicador, pero aquí se trata aparte, igual que en
+[[cuando-se-acaba-el-dibujo|la clase 2]].
+
+### La restricción contra cero
+
+De ese paso extra sale todo lo demás, así que vale la pena aislarlo.
 
 ::: definition {#opt-contra-cero title="Dejar una restricción contra cero"}
 **Pasa toda la restricción a un lado y compárala con cero.** Es el mismo
