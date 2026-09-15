@@ -4,7 +4,7 @@ title: Sustituir y derivar
 nav_title: Sin restricción
 summary: "El primer método para el reparto: quitar la restricción sustituyéndola, derivar, e igualar a cero. Funciona, da el reparto exacto, y deja de servir en cuanto no se puede despejar."
 status: ready
-estimated_time: 16m
+estimated_time: 18m
 tags: [optimizacion, gradiente, derivada]
 ---
 
@@ -37,13 +37,31 @@ $b=(6,8,10)$, el gradiente en el reparto parejo $(5,5,5)$ es $(1,3,5)$.
 
 ## 2 · Por qué no basta con igualar el gradiente a cero
 
+::: definition {#opt-primer-orden title="Condiciones de primer orden"}
+Las **condiciones de primer orden** son las ecuaciones que salen de derivar e
+igualar a cero, y que **todo óptimo está obligado a cumplir**.
+
+Se llaman «de primer orden» porque usan solo la **primera** derivada: miran la
+pendiente y no la curvatura. Por eso no distinguen un máximo de un mínimo. Para
+eso harían falta las de segundo orden, que esta unidad no necesita: aquí ese
+trabajo lo hace [[el-rendimiento-que-decrece|la concavidad]].
+
+Y son **necesarias, no suficientes**: todo óptimo las cumple, pero quien las
+cumple no tiene por qué ser óptimo. Lo que producen son **candidatos**.
+
+Esta clase las va a escribir tres veces, y son la misma idea cada vez: sin
+restricciones, $\nabla f = 0$; con una igualdad, derivando el lagrangeano; con
+desigualdades, las condiciones KKT.
+:::
+
 ::: definition {#opt-estacionario title="Punto estacionario"}
 Un punto es **estacionario** si $\nabla f = 0$: ninguna perilla, movida sola,
 cambia el valor a primer orden.
 
-En un problema **sin restricciones** y con $f$ cóncava y diferenciable, eso es
-exactamente el máximo. Con restricciones, casi nunca: el óptimo suele estar
-pegado a la frontera, donde la pendiente **no** es cero.
+Es la condición de primer orden **del caso sin restricciones**: con $f$ cóncava
+y diferenciable, ahí sí basta, y ese punto es el máximo. Con restricciones, casi
+nunca: el óptimo suele estar pegado a la frontera, donde la pendiente **no** es
+cero.
 :::
 
 Aquí se ve de inmediato. $\nabla f = 0$ pide $b_i - p_i = 0$, o sea

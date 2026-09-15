@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando ya no es una recta"
 nav_title: Continuo
 summary: "El reactor no rinde en línea recta: cada unidad extra de potencia sirve menos que la anterior. Qué se rompe, qué se salva, y cómo se reconoce el mejor reparto sin probarlos todos."
 status: ready
-estimated_time: 118m
+estimated_time: 144m
 tags: [optimizacion, convexidad, lagrange, kkt, gradiente]
 prerequisites: [optimizacion-lineal]
 ---
@@ -26,13 +26,15 @@ alrededor basta. Pero ya no se sostiene en la linealidad: se sostiene en la
 
 ## El episodio
 
-El reactor reparte su potencia entre **escudos, motores y soporte vital**. Los
-tres rinden cada vez menos por cada unidad extra, la potencia se reparte entera,
-y el soporte vital tiene un tope. Lo que le presta a la bodega para la impresora
+El reactor reparte su potencia entre **escudos, motores y soporte vital**, y los
+tres rinden cada vez menos por cada unidad extra. Cuánta potencia hay en total,
+si se reparte entera o puede sobrar, y qué hacer con el tope del soporte vital
+son **decisiones de modelado**: la bitácora no las deja cerradas, y la página 1
+las toma una por una. Lo que el reactor le presta a la bodega para la impresora
 va aparte y no se discute aquí.
 
-::: table {#opt-el-reactor title="El reparto del reactor, con 15 unidades de potencia por turno"}
-| Sistema | Rinde | Lo que paga su primera unidad |
+::: table {#opt-el-reactor title="Los tres sistemas del reactor, y lo que rinde cada uno"}
+| Sistema | Rinde | Su parámetro $b_i$ |
 |---|---|---:|
 | Escudos | $6p_1 - \tfrac12 p_1^2$ | 6 |
 | Motores | $8p_2 - \tfrac12 p_2^2$ | 8 |
@@ -41,32 +43,76 @@ va aparte y no se discute aquí.
 
 **Y cada unidad que le pones a un sistema rinde uno menos que la anterior.** Ésa
 es toda la diferencia con las clases 1 y 2, y alcanza para cambiar el método
-entero.
+entero. (El $b_i$ de la tabla es la pendiente en cero, no lo que paga la primera
+unidad: la página 1 explica la diferencia, que resulta importar.)
 
 ## Recorrido
 
-Cinco páginas, en orden. Cada una se sostiene sola y declara cuánto toma leerla;
-el total de esta clase suma **118 minutos**.
+Seis páginas, en orden. Cada una se sostiene sola y declara cuánto toma leerla;
+el total de esta clase suma **144 minutos**.
 
-::: table {#opt-ruta-continua title="Las cinco páginas de esta clase"}
-| | Página | Qué resuelve | |
+::: table {#opt-ruta-continua title="Las seis páginas de esta clase"}
+| | Página | Qué resuelve | Minutos |
 |---|---|---|---:|
 | 1 | El rendimiento que decrece | Escribir el modelo del reactor, y qué se rompe cuando el objetivo se dobla | 26m |
-| 2 | Sustituir y derivar | El primer método: quitar la restricción y derivar | 16m |
-| 3 | El multiplicador | Encontrar el óptimo sin despejar, y qué mide el número de más | 24m |
-| 4 | Los signos del lagrangeano | Cómo se escribe cada restricción y qué signo le toca | 32m |
-| 5 | Bajar la pendiente | Cuando no se puede resolver: dar pasos contra la pendiente | 20m |
+| 2 | Sustituir y derivar | El primer método: quitar la restricción y derivar | 18m |
+| 3 | El multiplicador | Encontrar el óptimo sin despejar, y qué mide el número de más | 28m |
+| 4 | Los signos del lagrangeano | Cómo se escribe cada restricción y qué signo le toca | 28m |
+| 5 | Resolver, paso a paso | El procedimiento completo, y el reactor resuelto con sus dos casos | 24m |
+| 6 | Bajar la pendiente | Cuando no se puede resolver: dar pasos contra la pendiente | 20m |
 :::
 
 - [[el-rendimiento-que-decrece|1 · El rendimiento que decrece]]
 - [[sustituir-y-derivar|2 · Sustituir y derivar]]
 - [[el-multiplicador|3 · El multiplicador]]
 - [[los-signos-del-lagrangeano|4 · Los signos del lagrangeano]]
-- [[bajar-la-pendiente|5 · Bajar la pendiente]]
+- [[resolver-paso-a-paso|5 · Resolver, paso a paso]]
+- [[bajar-la-pendiente|6 · Bajar la pendiente]]
 
-**Si vas con poco tiempo**, las imprescindibles son la 1 y la 4: la primera es la
-que sostiene todo lo demás, y la cuarta es la que se usa en la práctica y la que
-más se equivoca.
+**Si vas con poco tiempo**, las imprescindibles son la 1, la 4 y la 5: la primera
+sostiene todo lo demás, la cuarta es la que más se equivoca, y la quinta es la que
+de verdad se usa cuando te sientas a resolver algo.
+
+## La tarea de esta clase
+
+Son dos cosas, y las dos se entregan por **Canvas** antes de la sesión del
+**lunes 21 de septiembre** (el miércoles 16 es descanso obligatorio y no hay
+clase). En el sistema los grupos están separados, así que **cada quien entrega en
+el suyo**:
+
+- **COM-23101-003** → [entrega en Canvas](https://itam.instructure.com/courses/17744/assignments/228362)
+- **COM-11308-003** → [entrega en Canvas](https://itam.instructure.com/courses/17950/assignments/228363)
+
+### 1 · La unidad de Khan Academy sobre multiplicadores de Lagrange
+
+Ve los videos y **haz los ejercicios** de la unidad de optimización con
+restricciones:
+
+[Multiplicadores de Lagrange y optimización con restricciones](https://es.khanacademy.org/math/multivariable-calculus/applications-of-multivariable-derivatives/lagrange-multipliers-and-constrained-optimization/v/constrained-optimization-introduction)
+— Khan Academy, en español.
+
+Cubre lo mismo que las páginas 3 y 4 por otro camino y con otra notación, que es
+justo lo que conviene: si reconoces la misma idea escrita distinto, la
+entendiste.
+
+**Hay que tomarla y subir evidencia de haberla hecho.** Vale el certificado de
+la unidad, una captura del progreso, una foto de la pantalla — lo que tengas. No
+se evalúa la forma de la evidencia: se evalúa que la hiciste.
+
+Si algo no te cuadra con lo que dice esta clase, anótalo y tráelo. La diferencia
+casi siempre va a ser de **convención de signos**, y ya sabes exactamente dónde
+mirar.
+
+### 2 · Cómo se hace descenso de gradiente con restricciones
+
+[[bajar-la-pendiente|La página 6]] cierra diciendo que el método **no respeta
+restricciones**, y ahí se queda. Investiga por tu cuenta cómo se arregla en su
+**versión más sencilla**, y súbelo a Canvas en media cuartilla: qué se le hace al
+paso para que el punto no se salga del conjunto factible, cómo se llama eso, y
+qué hace falta saber del conjunto para poder aplicarlo.
+
+No tiene que ser exhaustivo ni formal. Tiene que estar entendido: con un dibujo
+de dos variables y tres renglones alcanza.
 
 ## El notebook de la clase 3
 
@@ -84,7 +130,7 @@ de paso, incluido el que oscila.
 `course/6_optimizacion/_assets/03_reactor_continuo.ipynb`. Si prefieres correrlo
 en tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
 
-**Cuándo.** Después de leer las cinco páginas.
+**Cuándo.** Después de leer las seis páginas.
 
 ## Qué no cubre esta clase
 

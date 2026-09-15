@@ -42,7 +42,7 @@ Cinco páginas, en orden. Cada una se sostiene sola y declara cuánto toma
 leerla; el total de esta clase suma **108 minutos**.
 
 ::: table {#opt-ruta-lineal title="Las cinco páginas de esta clase"}
-| | Página | Qué resuelve | |
+| | Página | Qué resuelve | Minutos |
 |---|---|---|---:|
 | 1 | El modelo como matriz | Cómo se escribe el modelo sin que dependa de dos variables | 16m |
 | 2 | Cuando se acaba el dibujo | Qué es un vértice cuando ya no hay dibujo que ver | 30m |

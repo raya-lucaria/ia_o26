@@ -104,9 +104,10 @@ potencia en contra a un sistema; reales porque la potencia se parte.
 Vega. Está en la bitácora, es un número, y no entra en ninguna cuenta.
 
 > [!WARNING]
-> **Este supuesto no sale gratis, y el de la clase 1 sí salía.** Allá el supuesto
-> de los 18 kWh venía con su condición —«con 12 o más, la misma respuesta»— y por
-> eso podía dejarse anotado sin más. Aquí la potencia total está en una
+> **Este supuesto no sale gratis.** El de la clase 1 tampoco acabó saliendo: los
+> 18 kWh venían con su condición («con 12 o más, la misma respuesta») y se
+> dejaron anotados sin más, hasta que [[cuando-se-acaba-el-dibujo|el sello]] los
+> hizo apretar. Aquí la potencia total está en una
 > **igualdad**: cambiarla cambia el reparto, siempre. Si mañana el reactor entrega
 > 16 en vez de 15, la respuesta es otra. Cuánto de otra es exactamente lo que
 > calcula [[el-multiplicador|la página 3]].
@@ -238,8 +239,9 @@ clases 1 y 2 era los dos casos a la vez.
 ![La curva de rendimiento de un sistema con una cuerda trazada entre dos de sus puntos; la cuerda queda por debajo de la curva en todo el tramo](../_assets/opt-cuerda.svg)
 :::
 
-En el reactor eso se lee directo. Los dos extremos de la cuerda son dos maneras
-de gastar la misma potencia media: 2 unidades unas veces y 7 otras. La curva por
+En el reactor eso se lee directo. La figura es la curva de **motores**
+($b_2 = 8$), y los dos extremos de la cuerda son dos maneras de gastar la misma
+potencia media: 2 unidades unas veces y 7 otras. La curva por
 encima dice que **ponerlas todas en el punto medio rinde más**. Rendimiento
 decreciente y concavidad son la misma frase, dicha en dos idiomas.
 

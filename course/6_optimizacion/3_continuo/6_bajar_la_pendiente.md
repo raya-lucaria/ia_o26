@@ -12,9 +12,10 @@ tags: [optimizacion, gradiente, algoritmo]
 
 **¿Y si no puedo resolver esas condiciones a mano?**
 
-Las condiciones de la página anterior se resolvieron con dos ecuaciones lineales.
-Eso fue suerte del ejemplo: en cuanto el objetivo no es cuadrático, el sistema no
-se despeja, y hace falta un método que **no resuelva nada**.
+La página anterior resolvió el reactor abriendo dos casos y despejando un sistema
+chico. Eso fue suerte del ejemplo: en cuanto el objetivo deja de ser cuadrático,
+las ecuaciones de la estacionariedad no se despejan, y hace falta un método que
+**no resuelva nada**.
 
 > **Bitácora de la bomba.** La bomba de refrigerante tiene dos perillas mal
 > calibradas y el desgaste sube cuando cualquiera de las dos se aleja de su punto
@@ -86,13 +87,15 @@ plano y largo se puede estar lejísimos con pendiente diminuta.
 
 > [!WARNING]
 > **Éste es el único de los algoritmos de la unidad que puede no terminar.**
-> Simplex termina porque hay finitos vértices y cada paso mejora. Aquí no hay
+> Simplex termina en los problemas de la clase 2 porque hay finitos vértices y
+> cada paso mejora estrictamente; con vértices degenerados eso deja de estar
+> garantizado, y la clase 2 dice que no cubre ese caso. Aquí no hay
 > nada finito que agotar: sobre $f(x)=x^2$, desde $x_0=1$ y con $\alpha=1$, el
 > método salta entre 1 y $-1$ **para siempre**, con la pendiente clavada en 2, y
 > la condición de paro nunca se cumple. No es un error numérico: es un bucle
 > infinito. Por eso la entrada no puede decir solo «$\alpha>0$».
 
-## 3 · Tres pasos a mano
+## 3 · Correrlo: tres pasos, y cuánto avanzar
 
 Desde $(0,0)$, con $\alpha = 1/10$. El gradiente es
 $\nabla f = \bigl(2(x-3),\; 8(y-2)\bigr)$.
@@ -112,11 +115,15 @@ pasa en todos, y explica por qué $y$ llega casi de inmediato y $x$ se arrastra.
 El $4$ del objetivo hace el valle **alargado**, y el método baja rápido por la
 pared empinada y lento por el pasillo plano.
 
-## 4 · Cuánto avanzar
+### Cuánto avanzar
 
-Los factores de arriba se leen del propio paso: en $x$ lo que falta se multiplica
-por $1-2\alpha$, y en $y$ por $1-8\alpha$. Cada uno encoge solo si su factor está
-entre $-1$ y $1$.
+Los factores de arriba salen del propio paso, en un renglón. Restando 3 a los dos
+lados de $x \leftarrow x - \alpha\,2(x-3)$ queda
+
+$$x_{k+1} - 3 = (1-2\alpha)\,(x_k - 3),$$
+
+y lo mismo en $y$ con $1-8\alpha$: **lo que falta se multiplica por ese factor en
+cada paso**. Cada coordenada encoge solo si su factor está entre $-1$ y $1$. 
 
 ::: table {#opt-tres-tasas title="El mismo valle con tres tamaños de paso"}
 | $\alpha$ | Factor en $x$ | Factor en $y$ | Qué pasa |
@@ -143,7 +150,7 @@ lo sufren**.
 > dejan de depender de un $\alpha$ a mano. Cuestan más por paso y dan muchos
 > menos pasos. Esta unidad no los cubre.
 
-## 5 · Qué entrega
+## 4 · Qué entrega
 
 Esto llena la última fila de la tabla de
 [[que-es-una-respuesta|los ocho tipos de respuesta]]: **solución aproximada**. El
@@ -156,7 +163,10 @@ solo se sabe comparándolo contra una cota.
 > llega a un punto de pendiente casi cero, que puede ser un mínimo local o un
 > **punto silla** —un punto que baja en una dirección y sube en otra, como el
 > centro de una silla de montar—. Sobre $x^2 - y^2$, desde $(1,0)$, converge a
-> $(0,0)$, que no es ni máximo ni mínimo de nada. Y **no respeta restricciones**: aplicado al reactor tal
+> $(0,0)$, que no es ni máximo ni mínimo de nada. Ojo con ese ejemplo: converge
+> ahí porque $y_0$ vale **cero exacto**; con cualquier $y_0 \ne 0$ la coordenada
+> $y$ se dispara. Los puntos silla atrapan al método solo desde direcciones muy
+> particulares, y aun así basta para no poder prometer nada. Y **no respeta restricciones**: aplicado al reactor tal
 > cual, el primer paso se sale de $p_1+p_2+p_3=15$ y nada lo regresa.
 
 ## Lo que hay que llevarse
@@ -167,5 +177,8 @@ solo se sabe comparándolo contra una cota.
   oscila, más grande revienta. Y el umbral lo fija la dirección más empinada.
 - Lo que entrega es una solución aproximada. Parar no es lo mismo que llegar.
 
-Con esto cierra la clase: [[optimizacion-continua|vuelve a la portada]] para el
-notebook y el recorrido completo.
+Y queda una pregunta abierta a propósito: el método no respeta restricciones, y
+el reactor es todo restricciones. **Averiguar qué se hace al respecto es la tarea
+de esta clase** — hay una versión sencilla que sí las respeta, y está a un paso
+de lo que ya sabes. Los detalles, en
+[[optimizacion-continua|la portada de la clase]].

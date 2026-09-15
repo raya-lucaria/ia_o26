@@ -4,7 +4,7 @@ title: El multiplicador
 nav_title: Lagrange
 summary: "De dónde sale ese 3: el método que encuentra el óptimo sin despejar nada, por qué funciona, y qué mide el número que aparece de más."
 status: ready
-estimated_time: 24m
+estimated_time: 28m
 tags: [optimizacion, lagrange, precio-sombra]
 ---
 
@@ -106,28 +106,74 @@ se decide con una regla, y es [[los-signos-del-lagrangeano|la página siguiente]
 
 ## 3 · El reactor, otra vez, sin sustituir
 
-Con $h(p) = p_1+p_2+p_3$ y $c = 15$:
+Antes de resolver, la cuenta que explica por qué esto no deja el problema peor de
+como estaba.
+
+::: remark {#opt-cuentas-lagrange title="Qué agrega un multiplicador, y qué devuelve"}
+Cada multiplicador **agrega una incógnita**: pasas de $n$ variables a $n+1$.
+Parece un mal negocio, y no lo es, porque **también devuelve una ecuación**:
+
+$$\frac{\partial \mathcal{L}}{\partial \lambda} = -\bigl(h(x) - c\bigr) = 0$$
+
+no es una condición nueva, **es la restricción otra vez**. Derivar el
+lagrangeano respecto del multiplicador te la regresa.
+
+Así que el sistema sigue cuadrado: con $n$ variables y $m$ igualdades hay
+$n+m$ incógnitas y $n+m$ ecuaciones. Lo que cambió no es el tamaño del problema,
+es que **ya no hay nada que despejar a mano**.
+:::
+
+Con $h(p) = p_1+p_2+p_3$ y $c = 15$, el reactor son cuatro incógnitas
+($p_1$, $p_2$, $p_3$ y $\lambda$) y cuatro ecuaciones. Paso a paso:
+
+**Paso 1. Escribe el lagrangeano.**
 
 $$\mathcal{L}(p,\lambda) = \sum_i\left(b_i p_i - \tfrac12 p_i^2\right)
 - \lambda\left(p_1+p_2+p_3-15\right).$$
 
-Derivando respecto de cada $p_i$ e igualando a cero sale, de un renglón,
+**Paso 2. Deriva respecto de cada variable e iguala a cero.** La derivada de
+$u_i$ es $b_i - p_i$, y la del término del multiplicador es $-\lambda$:
 
-$$b_i - p_i = \lambda \quad\text{para } i=1,2,3.$$
+$$\frac{\partial \mathcal{L}}{\partial p_i} = b_i - p_i - \lambda = 0
+\qquad\Longrightarrow\qquad b_i - p_i = \lambda \quad (i = 1,2,3).$$
 
-Que es **la observación de la página anterior, ahora demostrada**: lo que paga la
-siguiente unidad tiene que valer lo mismo en los tres sistemas, y ese valor común
-es $\lambda$. Sumando las tres, $24 - 15 = 3\lambda$, o sea $\lambda = 3$, y de
-ahí $p = (6-3,\,8-3,\,10-3) = (3,5,7)$. El mismo reparto, sin haber despejado
-nada.
+Son tres ecuaciones, y dicen algo antes de resolverse: **lo que paga la siguiente
+unidad vale lo mismo en los tres sistemas**. Es la observación de la página
+anterior, ahora demostrada en vez de notada.
+
+**Paso 3. Deriva respecto del multiplicador.** Devuelve la restricción, que es la
+cuarta ecuación:
+
+$$p_1+p_2+p_3 = 15.$$
+
+**Paso 4. Resuelve el sistema.** De las tres primeras, $p_i = b_i - \lambda$.
+Mételas en la cuarta:
+
+$$(6-\lambda) + (8-\lambda) + (10-\lambda) = 15
+\qquad\Longrightarrow\qquad 24 - 3\lambda = 15
+\qquad\Longrightarrow\qquad \lambda = 3.$$
+
+**Paso 5. Vuelve a las variables.** $p = (6-3,\;8-3,\;10-3) = (3,5,7)$, el
+mismo reparto de la página anterior, sin haber despejado ninguna variable.
+
+**Paso 6. Comprueba.** Suma 15, ninguna coordenada es negativa, y las tres
+derivadas valen 3. Cierra.
 
 > [!NOTE]
-> **Lagrange no adivina: acota.** El teorema dice que el óptimo **cumple** esas
-> ecuaciones, no que quien las cumpla sea óptimo. Aquí sí lo es, y por una razón
-> que se puede escribir: el objetivo es estrictamente cóncavo (su matriz de
-> segundas derivadas es $-I$), el conjunto factible es convexo, y con eso
-> [[el-rendimiento-que-decrece|el teorema de local a global]] convierte el único
-> punto que cumple las condiciones en el máximo global.
+> **El de dos sistemas, en tres renglones.** El del dibujo se resuelve igual y
+> más corto: $b = (6,8)$ y $c = 8$ dan $(6-\lambda) + (8-\lambda) = 8$, o sea
+> $14 - 2\lambda = 8$ y $\lambda = 3$, con $p = (3,5)$. **El mismo
+> $\lambda$ que el de tres**, que es por lo que el dibujo enseña el número que
+> la página calcula.
+
+> [!NOTE]
+> **Lagrange no adivina: acota.** Éstas son
+> [[sustituir-y-derivar|condiciones de primer orden]], con todo lo que eso trae:
+> el óptimo las cumple, y quien las cumple no tiene por qué ser óptimo. Aquí sí
+> lo es, y por una razón que se puede escribir: el objetivo es estrictamente
+> cóncavo (su matriz de segundas derivadas es $-I$), el conjunto factible es
+> convexo, y con eso [[el-rendimiento-que-decrece|el teorema de local a global]]
+> convierte el único punto que las cumple en el máximo global.
 
 ## 4 · Qué mide ese 3
 
