@@ -39,8 +39,8 @@ dos factores sea cero, se puede **suponer cuál** y ver qué pasa:
 
 - si supones que la restricción **está activa**, escribes $g(x) = d$ y con eso
   tienes una ecuación: el sistema vuelve a ser un sistema;
-- si supones que **está inactiva**, escribes $\lambda = 0$ y también tienes una
-  ecuación, con una incógnita menos.
+- si supones que **está inactiva**, escribes $\mu = 0$, que es la otra ecuación
+  posible, y el multiplicador se va del sistema.
 
 En los dos casos vuelves a tener tantas ecuaciones como incógnitas. Lo que no
 puedes es saber de antemano cuál de los dos es el bueno: **por eso hay que probar

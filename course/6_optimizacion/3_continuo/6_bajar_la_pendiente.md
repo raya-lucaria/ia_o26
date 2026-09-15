@@ -140,7 +140,8 @@ cada paso**. Cada coordenada encoge solo si su factor está entre $-1$ y $1$.
 El caso $\alpha = 1/4$ es el que casi nunca se enseña y el que más dice: **una
 coordenada converge y la otra oscila, en el mismo punto y al mismo tiempo**. El
 umbral no es aproximado: el método converge exactamente cuando
-$0 < \alpha < 1/4$, que es donde $|1-8\alpha| = 1$. Y el que manda es el $8$, la
+$0 < \alpha < 1/4$, que es donde $|1-8\alpha| < 1$; en $\alpha = 1/4$ el factor
+vale $-1$ justo, y por eso salta sin acercarse. Y el que manda es el $8$, la
 dirección más empinada: **el paso lo fija la coordenada más sensible, y las demás
 lo sufren**.
 

@@ -118,8 +118,8 @@ $$\frac{\partial \mathcal{L}}{\partial \lambda} = -\bigl(h(x) - c\bigr) = 0$$
 no es una condición nueva, **es la restricción otra vez**. Derivar el
 lagrangeano respecto del multiplicador te la regresa.
 
-Así que el sistema sigue cuadrado: con $n$ variables y $m$ igualdades hay
-$n+m$ incógnitas y $n+m$ ecuaciones. Lo que cambió no es el tamaño del problema,
+Así que el sistema sigue cuadrado: con $n$ variables y $k$ igualdades hay
+$n+k$ incógnitas y $n+k$ ecuaciones. Lo que cambió no es el tamaño del problema,
 es que **ya no hay nada que despejar a mano**.
 :::
 
@@ -170,8 +170,8 @@ derivadas valen 3. Cierra.
 > **Lagrange no adivina: acota.** Éstas son
 > [[sustituir-y-derivar|condiciones de primer orden]], con todo lo que eso trae:
 > el óptimo las cumple, y quien las cumple no tiene por qué ser óptimo. Aquí sí
-> lo es, y por una razón que se puede escribir: el objetivo es estrictamente
-> cóncavo (su matriz de segundas derivadas es $-I$), el conjunto factible es
+> lo es, y por una razón que se puede escribir: cada $u_i$ es estrictamente
+> cóncava, porque su segunda derivada vale $-1$ en todas partes; el factible es
 > convexo, y con eso [[el-rendimiento-que-decrece|el teorema de local a global]]
 > convierte el único punto que las cumple en el máximo global.
 
@@ -190,7 +190,9 @@ derivada de verdad y no como diferencia.
 En el reactor se puede comprobar, porque el valor óptimo tiene forma cerrada.
 Se escribe $U^\ast(P)$ y no $f^\ast(c)$ por comodidad ($U$ de rendimiento, $P$ de
 potencia), pero **es el mismo objeto de la caja de arriba**. Resolviendo con
-potencia $P$ en vez de 15, el óptimo es $p = (P/3 - 2,\; P/3,\; P/3 + 2)$ y
+potencia $P$ en vez de 15 se repiten los pasos 4 y 5: sumar las tres ecuaciones
+da $24 - 3\lambda = P$, o sea $\lambda = (24-P)/3$, y $p_i = b_i - \lambda$ deja
+$p = (P/3 - 2,\; P/3,\; P/3 + 2)$. Con eso,
 
 $$U^\ast(P) = -\tfrac16 P^2 + 8P + 4,
 \qquad \frac{dU^\ast}{dP} = 8 - \frac{P}{3},$$

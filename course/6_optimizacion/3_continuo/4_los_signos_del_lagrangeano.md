@@ -31,7 +31,7 @@ también contra cero**.
 
 $$\begin{aligned}
 \max_{x} \;\text{ o }\; \min_{x} \quad & f(x) && \text{el objetivo} \\
-\text{sujeto a} \quad & h_j(x) - c_j = 0 && j = 1,\dots,p \\
+\text{sujeto a} \quad & h_j(x) - c_j = 0 && j = 1,\dots,k \\
 & g_i(x) - d_i \le 0 \;\text{ o }\; g_i(x) - d_i \ge 0 && i = 1,\dots,m \\
 & x \in X && \text{el dominio}
 \end{aligned}$$
@@ -65,7 +65,7 @@ movimiento que ya hiciste en [[tres-bitacoras|las bitácoras de práctica]], don
 
 Contra cero solo quedan tres formas, y solo tres:
 
-$$h(x) - c = 0, \qquad g(x) - b \le 0, \qquad g(x) - b \ge 0.$$
+$$h(x) - c = 0, \qquad g(x) - d \le 0, \qquad g(x) - d \ge 0.$$
 :::
 
 > [!WARNING]
@@ -242,7 +242,7 @@ $$\begin{aligned}
 \end{aligned}$$
 
 Las dos miradas: es un **máximo**, y la cota contra cero queda $p_3 - 5 \le 0$.
-Casilla superior derecha del atajo: **restando**. La igualdad lleva su propio
+Casilla inferior izquierda del atajo: **restando**. La igualdad lleva su propio
 multiplicador, libre de signo, y se escribe restando también para que valga lo
 que ya valía en [[el-multiplicador|la página anterior]]:
 
@@ -275,16 +275,20 @@ rendía. La cota, en total, cuesta $86.5 - 83.5 = 3$.
 
 ::: definition {#opt-normal-exterior title="Normal exterior"}
 La **normal exterior** de una restricción es el gradiente de su función,
-$\nabla g_i$. Sale de la frontera en ángulo recto (igual que $\nabla h$ en
-[[el-multiplicador|la página anterior]]) y apunta hacia **el lado prohibido**,
-porque es la dirección en la que $g_i$ crece y la restricción pide que no crezca.
+$\nabla g_i$ cuando la restricción quedó $\le 0$, y $-\nabla g_i$ cuando quedó
+$\ge 0$. Sale de la frontera en ángulo recto (igual que $\nabla h$ en
+[[el-multiplicador|la página anterior]]) y apunta hacia **el lado prohibido**: en
+el primer caso, la dirección en la que $g_i$ crece, que es lo que la restricción
+no permite.
 :::
 
 En un máximo con restricciones $\le$, la estacionariedad dice que $\nabla f$ es
 una combinación **con coeficientes no negativos** de las normales exteriores de
-las restricciones activas. Con un coeficiente negativo, la flecha del objetivo
-apuntaría hacia adentro de la región — y hacia adentro siempre se puede caminar,
-así que el punto no sería óptimo.
+las restricciones activas. Con una sola restricción activa se ve de inmediato:
+un coeficiente negativo pondría la flecha del objetivo apuntando hacia adentro, y
+hacia adentro siempre se puede caminar, así que el punto no sería óptimo. Con
+varias activas la conclusión es la misma pero el dibujo ya no basta para
+probarla; hace falta un resultado sobre conos que esta unidad no cubre.
 
 ::: figure {#opt-normales title="El gradiente del objetivo, escrito con las normales activas"}
 ![El polígono de la clase 1 con su esquina óptima; desde ella salen las dos normales de las restricciones activas y la flecha del objetivo, que es la diagonal del paralelogramo que forman](../_assets/opt-normales.svg)
@@ -316,8 +320,9 @@ mismo número visto desde el problema minimizado**.
   significa nada.
 - Dos miradas deciden el signo de delante: **mín o máx**, y **$\le 0$ o
   $\ge 0$**. Con eso, $\mu \ge 0$ siempre.
-- El multiplicador mide **cuánto mejora el óptimo al aflojar una unidad**. Vale
-  cero cuando la restricción no se toca — y también puede valer cero tocándola.
+- El multiplicador mide **la tasa a la que mejora el óptimo al aflojar**, que no
+  es lo que paga una unidad entera. Vale cero cuando la restricción no se toca, y
+  también puede valer cero tocándola.
 
 Ya sabes qué escribir. Falta resolverlo:
 [[resolver-paso-a-paso|la página siguiente]].
