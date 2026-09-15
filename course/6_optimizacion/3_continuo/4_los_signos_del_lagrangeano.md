@@ -31,7 +31,7 @@ también contra cero**.
 
 $$\begin{aligned}
 \max_{x} \;\text{ o }\; \min_{x} \quad & f(x) && \text{el objetivo} \\
-\text{sujeto a} \quad & h_j(x) - c_j = 0 && j = 1,\dots,k \\
+\text{sujeto a} \quad & h_j(x) - c_j = 0 && j = 1,\dots,r \\
 & g_i(x) - d_i \le 0 \;\text{ o }\; g_i(x) - d_i \ge 0 && i = 1,\dots,m \\
 & x \in X && \text{el dominio}
 \end{aligned}$$

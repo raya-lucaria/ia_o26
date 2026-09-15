@@ -118,8 +118,8 @@ $$\frac{\partial \mathcal{L}}{\partial \lambda} = -\bigl(h(x) - c\bigr) = 0$$
 no es una condición nueva, **es la restricción otra vez**. Derivar el
 lagrangeano respecto del multiplicador te la regresa.
 
-Así que el sistema sigue cuadrado: con $n$ variables y $k$ igualdades hay
-$n+k$ incógnitas y $n+k$ ecuaciones. Lo que cambió no es el tamaño del problema,
+Así que el sistema sigue cuadrado: con $n$ variables y $r$ igualdades hay
+$n+r$ incógnitas y $n+r$ ecuaciones. Lo que cambió no es el tamaño del problema,
 es que **ya no hay nada que despejar a mano**.
 :::
 
