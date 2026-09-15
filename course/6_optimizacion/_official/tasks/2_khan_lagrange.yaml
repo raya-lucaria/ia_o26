@@ -1,0 +1,28 @@
+id: khan-lagrange-y-gradiente-restringido
+type: task
+authority: official
+content:
+  title: Unidad de Khan Academy sobre Lagrange, y media cuartilla sobre descenso con restricciones
+  instructions: >-
+    Para esta sesión hay dos cosas, y las dos se entregan por Canvas. La primera
+    es ver los videos y hacer los ejercicios de la unidad de Khan Academy sobre
+    multiplicadores de Lagrange y optimización con restricciones, en español;
+    cubre lo mismo que las páginas 3 y 4 de la clase por otro camino y con otra
+    notación, que es justo lo que conviene. Hay que tomarla y subir evidencia de
+    haberla hecho: el certificado, una captura del progreso o una foto, lo que
+    tengas. Si algo no cuadra con lo que dice la clase, anótalo y
+    tráelo: casi siempre va a ser una diferencia de convención de signos. La
+    segunda es investigar por tu cuenta cómo se hace descenso de gradiente
+    cuando sí hay restricciones, en su versión más sencilla, y subir media
+    cuartilla: qué se le hace al paso para que el punto no se salga, cómo se
+    llama, y qué hace falta saber del conjunto factible. En Canvas cada grupo tiene su propia entrega, COM-23101-003 y
+    COM-11308-003, así que revisa que estés subiendo en el tuyo. Los enlaces, el de Khan Academy y el
+    de cada grupo, están en la portada de la clase 3.
+  due: "2026-09-21"
+  status: published
+  tags:
+    - tarea
+    - preparacion
+    - optimizacion
+    - lagrange
+    - kkt

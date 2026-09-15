@@ -68,8 +68,11 @@ Todos con aritmética exacta de fracciones; el guion está en
 | 15 | Con la cota $p_3 \le 5$: $(4,6,5)$, $\lambda = 2$, $\mu_3 = 3$, rendimiento $167/2 = 83.5$ | Íd. **Este registro corrigió un número estimado a ojo**: 83.5, no 84.5 |
 | 16 | $\mu_3$ es la derivada del valor óptimo respecto de la cota | Moviendo la cota $\pm\varepsilon$ con fracciones, da 3 |
 | 17 | La regla da el mismo término se escriba $p_3 - 5 \le 0$ o $5 - p_3 \ge 0$ | Las dos escrituras dan $\mu_3 = 3$ |
-| 18 | Los tres pasos del descenso desde $(0,0)$ con $\alpha = 1/10$, y los factores $4/5$ y $1/5$ | Iterados con fracciones; los factores se comprueban en **todos** los pasos, no en los tres que la tabla muestra |
-| 19 | El descenso converge exactamente cuando $0 < \alpha < 1/4$ | Comprobado por lo que **hace** la sucesión, no derivando el factor: con $\alpha$ justo por debajo encoge, justo por encima crece, y en $1/4$ la coordenada $y$ se queda a distancia 2 alternando signo mientras la $x$ sí converge |
+| 18 | El análisis de casos de la página 5: suponiendo la cota **inactiva** sale $(3,5,7)$, que tiene $p_3 = 7 > 5$ y **se descarta por infactible** | Resuelto el caso con fracciones; el descarte lo dispara la factibilidad, no el signo |
+| 19 | Suponiendo la cota **activa** sale $(4,6,5)$ con $\lambda = 2$ y $\mu_3 = 3 \ge 0$, y **se acepta** | Íd. Es el único superviviente de los dos casos |
+| 20 | El conteo de ecuaciones: $4\times4$ sin cota, $5\times5$ con cota | Contado: 3 de estacionariedad + 1 de factibilidad, más la ecuación que aporta el caso |
+| 21 | Los tres pasos del descenso desde $(0,0)$ con $\alpha = 1/10$, y los factores $4/5$ y $1/5$ | Iterados con fracciones; los factores se comprueban en **todos** los pasos, no en los tres que la tabla muestra |
+| 22 | El descenso converge exactamente cuando $0 < \alpha < 1/4$ | Comprobado por lo que **hace** la sucesión, no derivando el factor: con $\alpha$ justo por debajo encoge, justo por encima crece, y en $1/4$ la coordenada $y$ se queda a distancia 2 alternando signo mientras la $x$ sí converge |
 
 ## Fuentes
 
