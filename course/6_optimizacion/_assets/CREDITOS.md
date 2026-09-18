@@ -38,3 +38,7 @@ no son imágenes.
 | `opt-pasos-gradiente.svg` | Las tres trayectorias del descenso de gradiente sobre el mismo valle, con α de 1/10, 1/4 y 3/10 | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-flujo-enumerar.svg` | Diagrama de flujo completo de la enumeración, de la entrada a la salida, con cada nodo etiquetado con su línea del pseudocódigo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-rejilla.svg` | Los veinte planes del taller con su valor, los siete que no caben tachados, el orden de revisión y el ganador | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-relajacion-corte.svg` | El polígono del taller con sus trece planes enteros, el óptimo de la relajación y el mejor plan entero | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-ramas.svg` | El polígono partido por x₂ ≤ 1 y x₂ ≥ 2, con la franja intermedia vacía de puntos enteros | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol.svg` | El árbol de ramificación del taller: cinco nodos, dos cierres por solución entera y una poda por cota | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-flujo-ramificar.svg` | Diagrama de flujo completo de ramificar y acotar, con cada nodo etiquetado con su línea del pseudocódigo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

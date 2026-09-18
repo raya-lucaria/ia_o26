@@ -4,7 +4,7 @@ title: "Clase 4 · Cuando las piezas no se parten"
 nav_title: Entero
 summary: "Un taller que fabrica cosas que no se pueden dejar a medias. Qué cambia al escribir el modelo, por qué los métodos anteriores no cierran, y el primer método que sí: mirarlos todos."
 status: ready
-estimated_time: 66m
+estimated_time: 100m
 tags: [optimizacion, modelado, entera]
 prerequisites: [optimizacion-lineal]
 ---
@@ -40,10 +40,12 @@ la regla de que las cosas se fabrican enteras o no se fabrican.
 | 1 | La bitácora | Las preguntas que hay que hacerle, y cómo se contesta cada una. **El modelo lo escribes tú** |
 | 2 | El modelo | Contesta la lectura, formaliza, y **tres variantes que obligan a inventar variables nuevas** |
 | 3 | Enumerar | El primer método que sí funciona, con su costo |
+| 4 | Ramificar y acotar | El algoritmo que descarta planes que nunca miró, y prueba que puede |
 
 - [[la-bitacora-del-taller|1 · La bitácora del taller]]
 - [[el-modelo-del-taller|2 · El modelo, escrito]]
 - [[enumerar|3 · Enumerar]]
+- [[ramificar-y-acotar|4 · Ramificar y acotar]]
 
 ## Cómo se trabaja esta clase
 
@@ -74,9 +76,9 @@ bitácora nueva y comprueba tu respuesta sola.
 
 ## Qué no cubre
 
-No vas a ver todavía cómo se resuelve esto sin mirar todos los planes —enumerar
-funciona con 20 candidatos y no con un millón—, ni variables mixtas, ni los
-métodos que usan la relajación para descartar sin probar. Esta clase llega hasta
-el método tosco y su factura.
+No vas a ver variables mixtas —unas enteras y otras continuas—, ni planos de
+corte, ni las heurísticas que los solucionadores usan para encontrar pronto una
+solución buena. Tampoco el mapa de qué algoritmo le toca a cada familia, que
+cierra la unidad y todavía no está escrito.
 
 Empieza por [[la-bitacora-del-taller|la bitácora del taller]].

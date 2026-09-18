@@ -2285,6 +2285,348 @@ def opt_rejilla():
     return "".join(s)
 
 
+
+# --------------------------------------------------------------------------
+# clase 4, pagina 4: ramificar y acotar sobre el mismo taller.
+#
+# El arbol NO se dibuja a mano: se ramifica de verdad, con aritmetica exacta de
+# fracciones y con las dos reglas de desempate que la pagina declara. Si un dato
+# del taller cambia, el arbol cambia solo y su guarda lo comprueba.
+
+def _lp_caja(lo, hi):
+    """Optimo exacto del PL del taller sobre la caja [lo, hi].
+
+    Enumera vertices: el optimo de un lineal acotado esta en uno de ellos.
+    Devuelve (punto, valor) o (None, None) si la caja no deja nada factible.
+    """
+    rectas = [
+        (F(A_TALLER[0][0]), F(A_TALLER[0][1]), F(B_TALLER[0])),
+        (F(A_TALLER[1][0]), F(A_TALLER[1][1]), F(B_TALLER[1])),
+        (F(1), F(0), F(hi[0])), (F(-1), F(0), -F(lo[0])),
+        (F(0), F(1), F(hi[1])), (F(0), F(-1), -F(lo[1])),
+    ]
+    mejor, punto = None, None
+    for (a1, b1, c1), (a2, b2, c2) in combinations(rectas, 2):
+        det = a1 * b2 - a2 * b1
+        if det == 0:
+            continue
+        x = (c1 * b2 - c2 * b1) / det
+        y = (a1 * c2 - a2 * c1) / det
+        if any(a * x + b * y > c for a, b, c in rectas):
+            continue
+        z = F(C_TALLER[0]) * x + F(C_TALLER[1]) * y
+        if mejor is None or z > mejor:
+            mejor, punto = z, (x, y)
+    return punto, mejor
+
+
+def arbol_taller():
+    """Ramifica y acota el taller. Un nodo por entrada, en orden de apertura.
+
+    Reglas de desempate, las mismas que imprime la pagina: de la lista sale el
+    ultimo que entro, se empuja primero el hijo del <= para que abra el del >=,
+    y se parte por la primera variable fraccionaria en el orden en que estan
+    escritas.
+    """
+    u = caja_taller()
+    pila = [([0, 0], list(u), "raíz", None)]
+    mejor, x_mejor, nodos = None, None, []
+    while pila:
+        lo, hi, etiqueta, padre = pila.pop()
+        x, z = _lp_caja(lo, hi)
+        n = len(nodos) + 1
+        if z is None:
+            nodos.append(dict(n=n, etiqueta=etiqueta, padre=padre, cota=None,
+                              x=None, cierre="infactible"))
+            continue
+        if mejor is not None and z <= mejor:
+            nodos.append(dict(n=n, etiqueta=etiqueta, padre=padre, cota=z,
+                              x=x, cierre="poda"))
+            continue
+        frac = [j for j in (0, 1) if x[j].denominator != 1]
+        if not frac:
+            mejor, x_mejor = z, x
+            nodos.append(dict(n=n, etiqueta=etiqueta, padre=padre, cota=z,
+                              x=x, cierre="entera"))
+            continue
+        j = frac[0]
+        piso, techo = int(x[j]), int(x[j]) + 1
+        nodos.append(dict(n=n, etiqueta=etiqueta, padre=padre, cota=z, x=x,
+                          cierre="parte", j=j, piso=piso, techo=techo))
+        lo1, hi1 = list(lo), list(hi)
+        hi1[j] = piso
+        lo2, hi2 = list(lo), list(hi)
+        lo2[j] = techo
+        pila.append((lo1, hi1, f"x{_sub(j+1)} ≤ {piso}", n))
+        pila.append((lo2, hi2, f"x{_sub(j+1)} ≥ {techo}", n))
+    return nodos, x_mejor, mejor
+
+
+def _sub(k):
+    return "\u2081\u2082\u2083\u2084"[k - 1]
+
+
+def _frac(z, decimal=False):
+    """La cota como la imprime la pagina: entera si lo es, si no a/b."""
+    if z.denominator == 1:
+        return str(z.numerator)
+    texto_ = f"{z.numerator}/{z.denominator}"
+    return f"{texto_} ≈ {float(z):.2f}" if decimal else texto_
+
+
+def _plano_taller(W, H):
+    """El plano del taller, con su poligono y sus puntos enteros."""
+    # top = 4 y no 6: con 6 la mitad del lienzo quedaba vacia sobre la region.
+    ox, oy, esc, top = 80, H - 96, 80, 5
+    px, py, plano = _plano(W, H, ox, oy, esc, top)
+    V = _region([[F(a) for a in fila] for fila in A_TALLER], [F(b) for b in B_TALLER])
+    ruta = " ".join(f"{px(x)},{py(y)}" for x, y in V)
+    poligono = (f'<polygon points="{ruta}" fill="{mezclar(LINEA, 0.30)}" '
+                f'stroke="{mezclar(SERIE[1], 0.6)}" stroke-width="2"/>')
+    return px, py, plano, poligono, top
+
+
+def _puntos_enteros(px, py, resaltar=None):
+    """Los puntos de la reticula que caben, como circulos."""
+    s = []
+    for x1, x2, factible, valor, _ in rejilla_taller():
+        if not factible:
+            continue
+        gana = resaltar is not None and (x1, x2) == resaltar
+        s.append(punto(px(x1), py(x2), r=8 if gana else 5,
+                       color=ACENTO if gana else SERIE[0]))
+    return s
+
+
+def opt_relajacion_corte():
+    W, H = 640, 560
+    px, py, plano, poligono, top = _plano_taller(W, H)
+    x_ent, _, z_ent = optimo_taller()[0], None, optimo_taller()[2]
+    s = [marco(
+        W, H,
+        "El poligono del taller con los trece planes enteros que caben dentro, "
+        "el optimo continuo marcado con una cruz sobre el borde y el mejor plan "
+        "entero resaltado en la esquina de abajo a la derecha",
+        "La cota que da la relajación",
+        "Region factible del taller. Los circulos son los planes enteros. La "
+        "cruz es el optimo de la relajacion, que vale 21 y no es un punto "
+        "entero. El circulo grande es el mejor plan entero, que vale 20: por "
+        "debajo de la cruz, como manda la cota.",
+    )]
+    s.append(poligono)
+    s += plano
+    s += _puntos_enteros(px, py, resaltar=(4, 0))
+    cx, cy = px(3), py(1.5)
+    for dx, dy in ((-9, -9, ), (-9, 9)):
+        s.append(linea(cx + dx, cy + dy, cx - dx, cy - dy, color=ALARMA, grosor=3))
+    s.append(texto(cx + 16, cy - 10, "relajación: (3, 3/2)", color=ALARMA, tam=14,
+                   anclaje="start"))
+    s.append(texto(cx + 16, cy + 10, "cota = 21", color=ALARMA, tam=14, peso="700",
+                   anclaje="start"))
+    s.append(texto(px(4), py(0) + 46, "mejor entero: (4, 0) = 20",
+                   color=ACENTO, tam=14))
+    s.append(texto(W // 2, H - 26,
+                   "ningún plan entero puede pasar de 21, porque todos están dentro",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_ramas():
+    W, H = 640, 560
+    px, py, plano, poligono, top = _plano_taller(W, H)
+    s = [marco(
+        W, H,
+        "El mismo poligono partido en dos por una franja horizontal entre uno y "
+        "dos, que no contiene ningun punto entero; arriba la rama de x dos mayor "
+        "o igual que dos y abajo la de x dos menor o igual que uno",
+        "Partir no pierde ninguna solución",
+        "La franja abierta entre x2 igual a uno y x2 igual a dos esta sombreada "
+        "y vacia de puntos enteros. Las dos ramas se reparten los trece planes: "
+        "cuatro arriba y nueve abajo, y ninguno se queda en medio.",
+    )]
+    s.append(poligono)
+    # La franja se corta en x1 = 4: fuera de la region no hay nada que decir.
+    franja = (f'<rect x="{px(0)}" y="{py(2)}" width="{px(4) - px(0)}" '
+              f'height="{py(1) - py(2)}" fill="{mezclar(ALARMA, 0.22)}"/>')
+    s.append(franja)
+    s += plano
+    s += _puntos_enteros(px, py)
+    for u, etiqueta, color in ((2, "x₂ ≥ 2", SERIE[1]), (1, "x₂ ≤ 1", SERIE[2])):
+        s.append(linea(px(0), py(u), px(4.6), py(u), color=mezclar(color, 0.9),
+                       grosor=2, guiones="7 5"))
+        s.append(texto(px(4.6) + 8, py(u) + 5, etiqueta, color=mezclar(color, 0.9),
+                       tam=14, anclaje="start"))
+    s.append(texto(px(2), py(1.5) + 5, "ningún punto entero",
+                   color=ALARMA, tam=13))
+    s.append(texto(W // 2, H - 26,
+                   "la rama de arriba se queda 4 planes; la de abajo, 9",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_arbol():
+    W, H = 940, 560
+    nodos, x_mejor, mejor = arbol_taller()
+    por_n = {nd["n"]: nd for nd in nodos}
+    lugar = {1: (470, 76), 3: (250, 250), 2: (720, 250), 5: (130, 424), 4: (390, 424)}
+    color_cierre = {"entera": SERIE[0], "poda": ALARMA, "parte": SERIE[1],
+                    "infactible": ALARMA}
+    s = [marco(
+        W, H,
+        "Arbol de cinco nodos: la raiz con cota veintiuno se parte en dos ramas, "
+        "la de arriba cierra con una solucion entera de dieciocho, la de abajo "
+        "se vuelve a partir y da la solucion entera de veinte y una poda por "
+        "cota",
+        "El árbol del taller",
+        "Cada caja es un subproblema con su cota. Verde, la relajacion salio "
+        "entera y cierra la rama. Rojo, la cota no supera a la mejor solucion y "
+        "se poda. Azul, hay que partir. El numero entre corchetes es el orden "
+        "en que se abrieron, que no es el de izquierda a derecha.",
+    )]
+    ancho, alto = 218, 96
+    for n, (cx, cy) in lugar.items():
+        nd = por_n[n]
+        if nd["padre"] is not None:
+            pcx, pcy = lugar[nd["padre"]]
+            s.append(flecha(pcx, pcy + alto // 2, cx, cy - alto // 2,
+                            color=SUAVE, marcador="s"))
+    for n, (cx, cy) in lugar.items():
+        nd = por_n[n]
+        col = color_cierre[nd["cierre"]]
+        s.append(caja(cx - ancho // 2, cy - alto // 2, ancho, alto,
+                      relleno=mezclar(col, 0.16), borde=mezclar(col, 0.55)))
+        s.append(texto(cx - ancho // 2 + 12, cy - alto // 2 + 20, f"[{n}]",
+                       color=SUAVE, tam=12, anclaje="start", fuente=MONO))
+        s.append(texto(cx + 10, cy - alto // 2 + 20, nd["etiqueta"], tam=15, peso="600"))
+        s.append(texto(cx, cy + 4, f"cota = {_frac(nd['cota'], decimal=True)}", tam=15))
+        if nd["cierre"] == "parte":
+            detalle = f"x{_sub(nd['j']+1)} = {_frac(nd['x'][nd['j']])} → parte"
+        elif nd["cierre"] == "entera":
+            px_, py_ = nd["x"]
+            detalle = f"entera ({px_}, {py_}) → mejor {_frac(nd['cota'])}"
+        else:
+            detalle = f"{_frac(nd['cota'])} ≤ {mejor} → poda"
+        s.append(texto(cx, cy + alto // 2 - 12, detalle, color=mezclar(col, 0.95), tam=13))
+    filas = [(mezclar(SERIE[1], 0.9), "hay que partir"),
+             (mezclar(SERIE[0], 0.9), "entera: cierra la rama"),
+             (mezclar(ALARMA, 0.9), "poda por cota")]
+    s += _leyenda(640, 400, filas, ancho=270)
+    s.append(texto(470, H - 22,
+                   f"cinco nodos, y el óptimo es ({x_mejor[0]}, {x_mejor[1]}) = {mejor}",
+                   color=SUAVE, tam=14))
+    s.append(cierre())
+    return "".join(s)
+
+
+
+def opt_flujo_ramificar():
+    """Diagrama de flujo completo de ramificar y acotar.
+
+    Mismo contrato que opt_flujo_enumerar: entrada, inicializacion, el ciclo
+    entero con sus tres salidas —poda por infactibilidad, poda por cota y cierre
+    por solucion entera— y la salida. Cada nodo lleva su linea [Ln].
+    """
+    W, H = 1000, 1240
+    s = [marco(
+        W, H,
+        "Diagrama de flujo de ramificar y acotar, de la entrada a la salida: "
+        "inicializar la mejor solucion, meter el problema original en la lista "
+        "de nodos vivos, y repetir un ciclo que saca un nodo, lo descarta si su "
+        "relajacion es infactible o si su cota no supera a la mejor solucion, "
+        "lo guarda si la relajacion salio entera, y si no lo parte en dos por "
+        "una variable fraccionaria; cuando la lista se vacia devuelve la mejor "
+        "solucion",
+        "Ramificar y acotar, paso a paso",
+        "Once nodos en una columna. Los paralelogramos son la entrada y la "
+        "salida, los rectangulos son calculos y los rombos son decisiones. Tres "
+        "caminos vuelven al ciclo: las dos podas por la izquierda y, tras "
+        "guardar o partir, tambien por la izquierda. Un carril a la derecha "
+        "lleva a la salida cuando la lista de nodos vivos queda vacia.",
+    )]
+    cx, izq, rodeo, salida_x = 430, 90, 770, 910
+    anchoc, altoc, my, mx = 420, 52, 46, 200
+    proceso, decision = mezclar(LINEA, 0.22), mezclar(SERIE[1], 0.16)
+    borde_dec, extremo = mezclar(SERIE[1], 0.5), mezclar(SERIE[0], 0.18)
+    borde_ext = mezclar(SERIE[0], 0.5)
+
+    def rect(cy, etiqueta, cuerpo, alto=altoc):
+        return [
+            caja(cx - anchoc // 2, cy - alto // 2, anchoc, alto,
+                 relleno=proceso, borde=LINEA),
+            texto(cx - anchoc // 2 + 14, cy - alto // 2 + 20, etiqueta,
+                  color=SUAVE, tam=11, anclaje="start", fuente=MONO),
+            texto(cx + 14, cy + 6, cuerpo, tam=15),
+        ]
+
+    def rombo(cy, etiqueta, cuerpo):
+        return [
+            _rombo(cx, cy, mx, my, decision, borde_dec),
+            texto(cx - 142, cy + 4, etiqueta, color=SUAVE, tam=11,
+                  anclaje="start", fuente=MONO),
+            texto(cx + 28, cy + 6, cuerpo, tam=15),
+        ]
+
+    s.append(_paralelogramo(cx, 82, anchoc, altoc, 22, extremo, borde_ext))
+    s.append(texto(cx - anchoc // 2 + 36, 62, "[ENTRADA]", color=SUAVE, tam=11,
+                   anclaje="start", fuente=MONO))
+    s.append(texto(cx, 90, "c, A, b, l, u", tam=15))
+
+    s += rect(160, "[L1]", "mejor ← −∞ ;   x* ← «ninguno»")
+    s += rect(238, "[L2]", "L ← { el problema original }")
+    s += rombo(336, "[L3]", "¿L ≠ { } ?")
+    s += rect(434, "[L4]", "P ← saca un nodo de L")
+    s += rombo(532, "[L5]", "¿la relajación de P es factible?")
+    s += rect(630, "[L6]", "x̄, z̄ ← óptimo de la relajación")
+    s += rombo(728, "[L7]", "¿z̄ > mejor?")
+    s += rombo(838, "[L8]", "¿x̄ es entera?")
+    s += rect(948, "[L9]", "mejor ← z̄ ;   x* ← x̄")
+    s += rect(1050, "[L10–L11]", "parte en xⱼ ≤ ⌊x̄ⱼ⌋  y  xⱼ ≥ ⌈x̄ⱼ⌉")
+
+    s.append(_paralelogramo(cx, 1140, anchoc, 60, 22, extremo, borde_ext))
+    s.append(texto(cx - anchoc // 2 + 36, 1120, "[L13]", color=SUAVE, tam=11,
+                   anclaje="start", fuente=MONO))
+    s.append(texto(cx, 1140, "devuelve x*, mejor", tam=15))
+    s.append(texto(cx, 1162, "«no hay factible» si x* = «ninguno»", color=SUAVE, tam=12))
+
+    for y0, y1 in ((108, 132), (186, 210), (264, 288), (382, 406),
+                   (460, 484), (578, 602), (656, 680), (774, 790),
+                   (884, 920)):
+        s.append(flecha(cx, y0, cx, y1))
+    for y, etiqueta in ((786, "sí"), (896, "sí"), (602, "sí")):
+        s.append(texto(cx + 18, y, etiqueta, color=SUAVE, tam=13, anclaje="start"))
+
+    # Los tres retornos al ciclo, por la izquierda.
+    for cy, nota in ((532, "poda por infactibilidad"), (728, "poda por cota")):
+        s.append(flecha(cx - mx, cy, izq, cy, color=SUAVE, marcador="s"))
+        s.append(texto(cx - mx - 12, cy - 10, "no", color=SUAVE, tam=13, anclaje="end"))
+        # La nota va DEBAJO de la flecha: en la misma linea se montaba con el "no".
+        s.append(texto(izq + 10, cy + 20, nota, color=SUAVE, tam=12, anclaje="start"))
+    for cy in (948, 1050):
+        s.append(flecha(cx - anchoc // 2, cy, izq, cy, color=SUAVE, marcador="s"))
+    s.append(linea(izq, 1050, izq, 336, color=SUAVE))
+    s.append(flecha(izq, 336, cx - mx, 336))
+    s.append(texto(izq + 10, 310, "vuelve al ciclo", color=SUAVE, tam=12, anclaje="start"))
+
+    # El "no" de L8 rodea por la derecha hasta el nodo que parte.
+    s.append(linea(cx + mx, 838, rodeo, 838, color=SUAVE))
+    s.append(texto(cx + mx + 12, 828, "no", color=SUAVE, tam=13, anclaje="start"))
+    s.append(linea(rodeo, 838, rodeo, 1050, color=SUAVE))
+    s.append(flecha(rodeo, 1050, cx + anchoc // 2, 1050, color=SUAVE, marcador="s"))
+
+    # El carril de salida, mas a la derecha para no cruzar el rodeo.
+    s.append(linea(cx + mx, 336, salida_x, 336, color=SUAVE))
+    s.append(texto(cx + mx + 12, 326, "no", color=SUAVE, tam=13, anclaje="start"))
+    s.append(linea(salida_x, 336, salida_x, 1140, color=SUAVE))
+    s.append(flecha(salida_x, 1140, cx + anchoc // 2 - 11, 1140, color=SUAVE, marcador="s"))
+
+    s.append(texto(cx, 1215, "una lista, tres formas de cerrar una rama, y una salida",
+                   color=SUAVE, tam=14))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -2307,6 +2649,10 @@ DIAGRAMAS = {
     "opt-pasos-gradiente": opt_pasos_gradiente,
     "opt-flujo-enumerar": opt_flujo_enumerar,
     "opt-rejilla": opt_rejilla,
+    "opt-relajacion-corte": opt_relajacion_corte,
+    "opt-ramas": opt_ramas,
+    "opt-arbol": opt_arbol,
+    "opt-flujo-ramificar": opt_flujo_ramificar,
 }
 
 
