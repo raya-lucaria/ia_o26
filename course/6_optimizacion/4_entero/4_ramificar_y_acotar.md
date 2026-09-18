@@ -12,8 +12,7 @@ tags: [optimizacion, entera, algoritmos]
 
 **¿Cómo descarto un plan que nunca miré?**
 
-Vienes de [[enumerar|enumerar]] · Aquí: el algoritmo que sí escala · Sigue:
-medir los dos en el mismo problema.
+Vienes de [[enumerar|enumerar]] · Aquí: el algoritmo que sí escala.
 
 Enumerar encontró el ganador en el candidato 17 de 20 **y siguió tres más**. No
 le faltaba suerte: le faltaba un **argumento** para parar. Este algoritmo lo
@@ -31,12 +30,39 @@ Ya no es un problema entero: es uno lineal, de los de la clase 2, y lo resuelve
 simplex.
 :::
 
-**Por qué su valor es una cota, argumentado y no afirmado.** Al soltar
-$x\in\mathbb{Z}$ no se quita ninguna solución: **todo plan entero factible sigue
-siendo factible**. El conjunto solo puede crecer, y sobre un conjunto más grande
-el máximo no puede bajar. Entonces:
+**Por qué su valor es una cota, argumentado y no afirmado.**
 
-$$z_{\text{relajación}} \;\ge\; z_{\text{entero}}$$
+Primero la regla, que no es de optimización sino de conjuntos:
+
+> Si $A \subseteq B$, entonces $\max B \ge \max A$. **Agregar opciones nunca baja
+> el máximo.**
+
+Con números sueltos: si $A = \{12,\ 19,\ 20\}$ y le agregas el 21, el máximo sube
+a 21. Si le agregas el 7, se queda en 20. Lo que no puede hacer es **bajar**.
+
+Ahora, por qué aquí $A \subseteq B$. Un plan entero factible cumple $Ax \le b$ y
+$l \le x \le u$. La relajación pide **exactamente eso y nada más** —solo deja de
+exigir $x \in \mathbb{Z}$—, así que **ningún plan entero se cae**: todos siguen
+estando.
+
+En el taller, con $A$ = los 13 planes enteros y $B$ = todos los puntos del
+polígono:
+
+| Plan | ¿Entero? | ¿Está en la relajación? | Vale |
+|---|---|---|---:|
+| $(4,\ 0)$ | sí | sí | 20 |
+| $(3,\ 1)$ | sí | sí | 19 |
+| $(2,\ 2)$ | sí | sí | 18 |
+| $(3,\ 3/2)$ | **no**: media sonda | **sí** | **21** |
+
+Los tres primeros están en los dos conjuntos. El cuarto **solo está en el
+segundo**, y es el que manda. Por eso
+
+$$z_{\text{relajación}} \;\ge\; z_{\text{entero}}, \qquad\text{y aquí}\quad 21 \ge 20.$$
+
+**Y a veces son iguales.** Si la relajación sale entera, ese punto está en los
+dos conjuntos: entonces la cota no es una cota, es **la respuesta**. De eso vive
+el algoritmo — es lo que cierra las ramas 2 y 4 del árbol.
 
 ::: definition {#opt-cota-relajacion title="Cota superior"}
 Una **cota superior** de un subproblema es un número que **ningún** plan entero
@@ -122,7 +148,7 @@ de resolver**, no se descartó.
 ### El algoritmo
 
 ::: figure {#opt-flujo-ramificar title="Ramificar y acotar, paso a paso"}
-![Diagrama de flujo de once nodos: entrada, inicialización, la lista de nodos vivos, el ciclo que saca un nodo, lo descarta si su relajación es infactible o si su cota no supera a la mejor solución, lo guarda si salió entera y si no lo parte en dos, y la salida cuando la lista se vacía](../_assets/opt-flujo-ramificar.svg)
+![Diagrama de flujo de doce nodos: entrada, inicialización, la lista de nodos vivos, el ciclo que saca un nodo, lo descarta si su relajación es infactible o si su cota no supera a la mejor solución, lo guarda si salió entera y si no lo parte en dos, y la salida cuando la lista se vacía](../_assets/opt-flujo-ramificar.svg)
 :::
 
 Las etiquetas `[Ln]` son las líneas de aquí abajo:
@@ -143,8 +169,13 @@ OUTPUT  un óptimo x* y su valor, o «no hay factibles».
 10      elige j con x̄ⱼ fraccionaria
 11      mete en L  xⱼ ≤ ⌊x̄ⱼ⌋  y  xⱼ ≥ ⌈x̄ⱼ⌉
 12  end while
-13  return x*, mejor
+13  return x*, mejor      ▷ x* = «ninguno» si no hubo factibles
 ```
+
+**La línea 5 supone la caja finita**, igual que enumerar. Si una variable no
+tiene cota superior, la relajación puede salir **no acotada**, que no es lo mismo
+que infactible: tratarla como infactible haría que el algoritmo contestara «no
+hay factibles» a un problema que sí tiene respuesta.
 
 **La línea 6 llama a otro algoritmo.** Es la primera vez que pasa en el curso:
 resolver la relajación **es** correr simplex. Ramificar y acotar no sabe
@@ -167,6 +198,7 @@ sobrescribiría.
 En Python, el mismo texto:
 
 ```python
+import numpy as np
 from math import floor, ceil
 from scipy.optimize import linprog
 
@@ -174,7 +206,8 @@ pila = [(l, u)]                                  # L2
 mejor, x_mejor = -np.inf, None                   # L1
 while pila:                                      # L3
     lo, hi = pila.pop()                          # L4
-    r = linprog(-c, A_ub=A, b_ub=b, bounds=list(zip(lo, hi)))
+    r = linprog(-np.asarray(c), A_ub=A, b_ub=b,
+                bounds=list(zip(lo, hi)))
     if not r.success:                            # L5
         continue
     z = -r.fun                                   # L6
@@ -204,7 +237,7 @@ se abrió tenía una cota peor que la respuesta.
 ## 3 · Los cinco nodos
 
 ::: figure {#opt-arbol title="El árbol del taller"}
-![Árbol de cinco nodos: la raíz con cota veintiuno se parte en dos ramas, la de arriba cierra con una solución entera de dieciocho, la de abajo se vuelve a partir y da la solución entera de veinte y una poda por cota](../_assets/opt-arbol.svg)
+![Árbol de cinco nodos: la raíz con cota veintiuno se parte en dos ramas; la de la derecha cierra con una solución entera de dieciocho y la de la izquierda se vuelve a partir, y de ahí salen la solución entera de veinte y una poda por cota](../_assets/opt-arbol.svg)
 :::
 
 | # | Nodo | Cota | Relajación | Qué pasa |
@@ -225,7 +258,8 @@ $\ge$ entró después.
 ### Dónde quedaron los veinte planes
 
 Las tres ramas que se cerraron **parten la caja entera**, sin solapes y sin
-huecos:
+huecos. Ojo con la unidad: aquí se cuentan **celdas de la caja**, las 20, no los
+13 planes factibles —el pie de la figura de las ramas cuenta esos otros—:
 
 | Nodo | Qué tapa | Planes de la caja | Se resolvió con |
 |---|---|---:|---|
@@ -245,7 +279,7 @@ una sola cuenta, porque su cota —19— no alcanzaba. Eso es podar.
 
 ### Los dos factores, otra vez
 
-$$T \;=\; \underbrace{\text{cuántos nodos se abren}}_{\text{de } 1 \text{ a } 2^{n+1}-1} \;\times\; \underbrace{\text{qué cuesta un nodo}}_{\textbf{un problema lineal completo}}$$
+$$T \;=\; \underbrace{\text{cuántos nodos se abren}}_{\text{de } 1 \text{ a } 2|X|-1} \;\times\; \underbrace{\text{qué cuesta un nodo}}_{\textbf{un problema lineal completo}}$$
 
 ### El primer factor no tiene fórmula
 
@@ -256,7 +290,17 @@ cotas, antes de correr nada. Aquí **depende de la instancia**:
 |---|---|
 | El mejor caso | 1 — la relajación sale entera de una vez |
 | Este problema | 5 |
-| El peor caso | $2^{n+1}-1$: el árbol completo, sin podar nada |
+| El peor caso | $2|X|-1$, con $|X|$ la caja de la página 3 — aquí **39** |
+
+**De dónde sale ese tope.** Cada hoja se queda con un pedazo de la caja, los
+pedazos no se solapan, y ninguno queda vacío: hay a lo más $|X|$ hojas, y un
+árbol binario con $L$ hojas tiene $2L-1$ nodos. Con variables **0/1** eso es el
+$2^{n+1}-1$ que se suele citar; con enteras generales **no hay tope que dependa
+solo de $n$**, porque la misma variable se puede volver a partir más abajo.
+
+Léelo despacio, porque es incómodo: **en el peor caso este algoritmo abre casi el
+doble de nodos que candidatos tiene la caja**, y cada nodo cuesta un problema
+lineal. Ramificar y acotar puede ser mucho peor que enumerar.
 
 **Podar no cambia la clase de complejidad.** El problema sigue siendo NP-duro, y
 existen instancias donde el árbol se abre entero. Lo que cambia es la
@@ -267,7 +311,7 @@ existen instancias donde el árbol se abre entero. Lo que cambia es la
 | Algoritmo | Un paso es | Cuesta |
 |---|---|---|
 | Enumerar | Revisar un candidato | $(m+1)n$ productos |
-| Ramificar | Resolver un nodo | **Un problema lineal entero**: simplex, con sus pivotes |
+| Ramificar | Resolver un nodo | **Un problema lineal completo**: la relajación, con los pivotes de simplex |
 
 > **Cinco nodos contra veinte candidatos no es cuatro veces más rápido.**
 > Comparar los conteos mezcla unidades, igual que comparar hojas con nodos. Un
@@ -276,8 +320,8 @@ existen instancias donde el árbol se abre entero. Lo que cambia es la
 **En el taller, enumerar gana en el reloj.** Veinte productos punto valen menos
 que cinco llamadas a simplex. Ramificar y acotar no está hecho para 20
 candidatos: está hecho para cuando la caja tiene $10^{12}$, y ahí la
-comparación se invierte de golpe. Medirlo en el mismo problema es lo único que
-zanja la discusión, y es lo que sigue.
+comparación se invierte de golpe. Medir los dos en el mismo problema es lo único
+que zanja la discusión.
 
 ### Qué lo hace crecer
 
@@ -309,6 +353,6 @@ esqueleto es el de arriba.
   que permite descartar sin mirar.
 - Partir por $\lfloor \bar x_j\rfloor$ y $\lceil \bar x_j\rceil$ no pierde
   soluciones, porque entre las dos no hay ningún entero.
-- Enumerar mira 20 y no puede parar; ramificar abre 5 y **demuestra** que los
-  otros 15 no hacían falta. Lo segundo cuesta más por paso: por eso gana en
-  grande y pierde en chico.
+- Enumerar mira los 20 planes uno por uno y no puede parar; ramificar cierra los
+  20 con **cinco relajaciones**, y demuestra que no hacía falta mirarlos. Cada
+  paso suyo cuesta mucho más: por eso gana en grande y pierde en chico.

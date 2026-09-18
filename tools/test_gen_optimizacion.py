@@ -795,3 +795,38 @@ def test_la_rejilla_del_taller_es_la_que_la_pagina_tabula():
     por_punto = {(f[0], f[1]): f for f in filas}
     assert por_punto[(3, 1)][2] and por_punto[(3, 1)][3] == 19
     assert not por_punto[(3, 2)][2]
+
+
+def test_el_arbol_del_taller_es_el_que_la_pagina_tabula():
+    """Los cinco nodos de la pagina 4, atados al generador.
+
+    La tabla de la pagina copia esta traza, y el SVG la dibuja: si el arbol
+    cambia sin que cambien las dos, esta guarda lo caza. Comprueba tambien que
+    ningun nodo tiene vertice optimo empatado —un empate haria que la traza
+    dependiera del solucionador— y que las hojas parten la caja sin huecos.
+    """
+    from fractions import Fraction as F
+
+    nodos, x_mejor, mejor = gen.arbol_taller()
+    assert len(nodos) == 5, f"el arbol abre {len(nodos)} nodos, no 5"
+    assert (x_mejor, mejor) == ((F(4), F(0)), F(20)), "el optimo entero cambio"
+
+    esperado = [
+        ("raíz", F(21), "parte"),
+        ("x₂ ≥ 2", F(18), "entera"),
+        ("x₂ ≤ 1", F(62, 3), "parte"),
+        ("x₁ ≥ 4", F(20), "entera"),
+        ("x₁ ≤ 3", F(19), "poda"),
+    ]
+    visto = [(nd["etiqueta"], nd["cota"], nd["cierre"]) for nd in nodos]
+    assert visto == esperado, f"la traza cambio:\n{visto}\n{esperado}"
+
+    # Las tres hojas parten los 20 candidatos de la caja: 10 + 2 + 8, sin solapes.
+    hojas = {(0, 2, 4, 3): 10, (4, 0, 4, 1): 2, (0, 0, 3, 1): 8}
+    cubierto = set()
+    for (l1, l2, u1, u2), cuantos in hojas.items():
+        puntos = {(a, b) for a in range(l1, u1 + 1) for b in range(l2, u2 + 1)}
+        assert len(puntos) == cuantos, f"la hoja {(l1, l2, u1, u2)} tapa {len(puntos)}"
+        assert not (cubierto & puntos), "dos hojas se solapan"
+        cubierto |= puntos
+    assert len(cubierto) == 20, f"las hojas tapan {len(cubierto)} de 20 candidatos"

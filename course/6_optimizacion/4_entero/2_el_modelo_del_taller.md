@@ -111,16 +111,17 @@ uno o se fabriquen cuatro. Si no se fabrica ninguno, no se gasta.
 Una variable nueva, $y \in \{0,1\}$: ¿se enciende la línea?
 
 $$x_1 + 2x_2 + 3y \le 6 \qquad\text{(calibración)}$$
-$$x_1 \le 4y \qquad\text{(enlace)}$$
+$$x_1 \le 3y \qquad\text{(enlace)}$$
 
 **Lo difícil es el enlace, y tiene dos sutilezas.**
 
-El **4** no es un número cualquiera: es la cota más pequeña que sigue siendo
-válida, y sale de $6x_1 \le 24$. Un número más grande también da un modelo
-correcto, y más difícil de resolver — usa siempre la más chica que no elimine
-ninguna solución.
+**De dónde sale el 3.** Es la cota más pequeña que sigue siendo válida, y hay
+que buscarla en el renglón que el costo fijo acaba de cambiar: si se enciende,
+$y=1$ y la calibración deja $x_1 + 2x_2 \le 3$, así que $x_1 \le 3$. Un número
+más grande —el 4 de la aleación, o un 1000— también da un modelo **correcto**,
+y más difícil de resolver: usa la más chica que puedas justificar.
 
-Y fíjate en que $x_1 \le 4y$ **no** es una @opt-cota: su lado derecho no es un
+Y fíjate en que $x_1 \le 3y$ **no** es una @opt-cota: su lado derecho no es un
 número, es otra variable. Es un **enlace**.
 
 **Falta el enlace al revés, y no hace falta.** Nada impide $y=1$ con $x_1=0$,
@@ -137,6 +138,9 @@ tres**. Cuatro y cinco están bien; uno y dos, no.
 Otra vez una indicadora $y \in \{0,1\}$, y esta vez **dos** enlaces:
 
 $$3y \;\le\; x_1 \;\le\; 4y$$
+
+El techo aquí sí es 4 y no 3: en esta variante la calibración no cambió, así que
+la cota más apretada vuelve a salir de la aleación, $6x_1 \le 24$.
 
 **Por qué no se puede sin ella.** Los valores permitidos de $x_1$ son
 $\{0\} \cup \{3,4\}$, y eso tiene un **hueco**. Una desigualdad sobre $x_1$ sola
