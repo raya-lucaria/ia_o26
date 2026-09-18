@@ -4,7 +4,7 @@ title: Enumerar
 nav_title: Enumerar
 summary: "El método que siempre funciona: generar todos los planes posibles, tirar los que no se pueden y quedarse con el mejor. Qué garantiza y qué cuesta."
 status: ready
-estimated_time: 20m
+estimated_time: 24m
 tags: [optimizacion, entera, algoritmos]
 ---
 
@@ -48,10 +48,13 @@ Cada pieza del planteamiento hace un trabajo, y solo uno:
 | $c^{\mathsf T}x$ | **Comparar** los que quedan |
 
 ::: figure {#opt-flujo-enumerar title="Genera, filtra, compara"}
-![Cuatro pasos en ciclo: tomar el siguiente candidato de la caja, comprobar si cumple las restricciones, comparar su valor con el mejor guardado y guardarlo; las dos respuestas negativas y el guardado vuelven al primer paso, y cuando la caja se agota devuelve el mejor](../_assets/opt-flujo-enumerar.svg)
+![Diagrama de flujo de diez nodos: la entrada con los datos, la inicialización de la mejor solución en menos infinito, la construcción de la caja, la prueba del ciclo, el paso que toma el siguiente candidato, las dos decisiones que lo descartan por infactible o por no superar a la mejor, la actualización, y la salida con su caso de infactibilidad; un carril de retorno a la izquierda y el de salida a la derecha](../_assets/opt-flujo-enumerar.svg)
 :::
 
-El pseudocódigo es ese dibujo, sin dibujo:
+Nada empieza a media ejecución: están la entrada, la inicialización, la
+construcción de la caja y las dos formas de terminar. **La etiqueta `[Ln]` de
+cada nodo es la línea del pseudocódigo** que le toca, y aquí está el
+pseudocódigo:
 
 ```text
 INPUT   max cᵀx  s.a.  Ax ≤ b,  l ≤ x ≤ u,  x entera.
@@ -122,29 +125,68 @@ transmite 19.
 
 ## 4 · Qué cuesta
 
-### La cuenta tiene dos factores
+### Los dos factores, y por qué se multiplican
+
+Primero los nombres, que aquí todo cuelga de ellos:
+
+| Símbolo | Qué es | En el taller |
+|---|---|---:|
+| $n$ | Número de **variables** — las columnas de $A$ | 2 |
+| $m$ | Número de **restricciones** — los renglones de $A$, sin contar el dominio | 2 |
+| $l_i,\ u_i$ | El valor **mínimo y máximo** que puede tomar $x_i$, deducidos arriba | $0,4$ y $0,3$ |
 
 ::: remark {#opt-costo-enumerar title="El costo de enumerar"}
-$$T \;=\; \underbrace{\textstyle\prod_i (u_i - l_i + 1)}_{\text{cuántos candidatos}} \;\times\; \underbrace{O(mn)}_{\text{revisar uno}}$$
-
-Si todas las variables tienen $k$ valores posibles, el primer factor es $k^n$.
-Con variables 0/1, es $2^n$.
-
-$n$ es el número de **variables**; $m$, el de **restricciones**.
+$$T \;=\; \underbrace{\textstyle\prod_{i=1}^{n} (u_i - l_i + 1)}_{|X|,\ \text{cuántos candidatos}} \;\times\; \underbrace{O(mn)}_{\text{revisar uno}}$$
 :::
 
-En el taller: 20 candidatos por dos restricciones de dos términos. Nada.
+**Se multiplican, no se suman**, y la razón está en la línea 3: el `for each`
+repite **todo el cuerpo** —líneas 4 a 7— una vez por cada candidato. Revisar uno
+no se hace una vez: se hace $|X|$ veces.
 
-Ese $2^n$ ya lo contaste en [[contar-un-algoritmo|complejidad]], en abstracto.
-Aquí tiene unidades: son planes de fabricación.
+### El primer factor: cuántos candidatos hay
+
+Tres pasos, ninguno saltable:
+
+1. **Cuántos valores puede tomar una variable.** Los enteros de $l_i$ a $u_i$,
+   contando los dos extremos. Son $u_i - l_i + 1$ — **el $+1$ es el extremo de
+   abajo**: de 0 a 4 hay 5 números, no 4.
+2. **Por qué se multiplican entre variables.** Elegir el valor de $x_1$ no
+   restringe el de $x_2$: cada pareja distinta es un candidato distinto. Es la
+   regla del producto, la misma con la que contaste subconjuntos en
+   [[contar-un-algoritmo|complejidad]].
+3. **Por eso** $|X| = \prod_{i=1}^{n}(u_i - l_i + 1)$, un factor por variable.
+
+En el taller: $x_1$ va de 0 a 4 —**5** valores— y $x_2$ de 0 a 3 —**4**—, así que
+$|X| = 5 \times 4 = 20$.
+
+Y si las $n$ variables tienen todas los mismos $k$ valores, el producto es
+$k \cdot k \cdots k = k^n$. Con variables 0/1, $k=2$ y queda $2^n$: **la $n$ está
+en el exponente, y ahí está todo el problema.**
+
+### El segundo factor: qué cuesta revisar uno
+
+Sale de leer el cuerpo del ciclo línea por línea:
+
+| Línea | Qué hace | Operaciones |
+|---|---|---|
+| L4 | Comprobar $Ax \le b$: son **$m$ desigualdades**, cada una con **$n$ términos** | $mn$ productos, $m(n-1)$ sumas, $m$ comparaciones |
+| L5 | Evaluar $z = c^{\mathsf T}x$: una suma de $n$ términos | $n$ productos |
+| L6–L7 | Comparar contra `mejor` y guardar | constante |
+
+Sumando, $(m+1)\,n$ productos y algo menos de sumas. En O grande, **$O(mn)$**: lo
+que domina es revisar la matriz, y crece con el **área** de $A$ — si duplicas las
+restricciones o las variables, duplicas ese trabajo.
+
+En el taller, $m = n = 2$: seis productos por candidato, y $20 \times 6 = 120$ en
+total. El problema entero cabe en una servilleta.
 
 ### Qué lo hace crecer, y cuánto
 
-| Si agregas… | Al costo le pasa |
-|---|---|
-| Una restricción más | Sube **un poco**: un renglón más que revisar por candidato |
-| Una variable más | Se **multiplica**. Con variables 0/1, se duplica |
-| Datos más grandes | La caja se estira. Con 30 kg en vez de 24, $x_1$ llega a 5 y son **24 candidatos, no 20** |
+| Si agregas… | Qué factor toca | Qué le pasa a $T$ |
+|---|---|---|
+| Una restricción, $m \to m+1$ | Solo el segundo | $n$ productos más por candidato: sube **en proporción** |
+| Una variable, $n \to n+1$ | **Los dos** | El primero se **multiplica por $k$** (con 0/1, se duplica); el segundo solo sube en $m$ productos |
+| Un dato más grande, $u_i$ sube | Solo el primero | La caja se estira. Con 30 kg en vez de 24, $x_1$ llega a 5 y son **24 candidatos, no 20** |
 
 El tercer renglón es el que sorprende: **la variante del cargamento no cambió el
 modelo, pero sí cambió lo que cuesta resolverlo.** Enumerar paga por el tamaño
@@ -152,9 +194,11 @@ de los números, no solo por cuántos hay.
 
 ### La escalera
 
-Con variables 0/1, a mil millones de candidatos por segundo:
+Solo mueve $n$, con variables 0/1 ($k=2$). El segundo factor se deja fijo y
+pequeño —pocas restricciones, como en el taller— y se cuenta **un candidato como
+una unidad de trabajo**, a mil millones por segundo:
 
-| Variables | Candidatos | Tiempo |
+| Variables ($n$) | Candidatos ($2^n$) | Tiempo |
 |---:|---:|---|
 | 10 | 1 024 | instantáneo |
 | 20 | 1 millón | instantáneo |
@@ -166,6 +210,12 @@ Con variables 0/1, a mil millones de candidatos por segundo:
 Lee la columna de la derecha hacia abajo: **cada diez variables, mil veces más.**
 Y una sola variable más **duplica** el tiempo — de 40 a 41 variables cuesta más
 que todo lo que llevabas hecho.
+
+**Y si el segundo factor no fuera pequeño, la tabla no cambiaría de forma.** El
+$O(mn)$ **multiplica**: con cien veces más trabajo por candidato, los 18 minutos
+se vuelven día y cuarto, y los 36 años, 3 600. Sigue siendo la misma curva
+corrida hacia arriba, porque $m$ multiplica y $n$ **exponencia**. Por eso la
+escalera mide variables y no restricciones.
 
 Compáralo con lo que ya conoces: simplex es exponencial **en el peor caso**, y en
 la práctica da pocos pasos. Enumerar es exponencial **siempre**. No tiene casos

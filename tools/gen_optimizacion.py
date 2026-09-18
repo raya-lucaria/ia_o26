@@ -2097,61 +2097,126 @@ def _paso(numero, cx, cy):
     )
 
 
+def _paralelogramo(cx, cy, w, h, sesgo, relleno, borde=LINEA, grosor=2):
+    """Entrada o salida, en la convencion clasica de diagrama de flujo."""
+    x0, x1 = cx - w / 2, cx + w / 2
+    y0, y1 = cy - h / 2, cy + h / 2
+    puntos = f"{x0 + sesgo},{y0} {x1},{y0} {x1 - sesgo},{y1} {x0},{y1}"
+    return (
+        f'<polygon points="{puntos}" fill="{relleno}" stroke="{borde}" '
+        f'stroke-width="{grosor}"/>'
+    )
+
+
 def opt_flujo_enumerar():
-    W, H = 900, 510
+    """Diagrama de flujo completo del pseudocodigo de la pagina 3.
+
+    Completo quiere decir que no empieza a media ejecucion: lleva la entrada, la
+    inicializacion del incumbente, la construccion de la caja, la prueba del
+    ciclo, las dos decisiones, la actualizacion y la salida con su caso de
+    infactibilidad. Cada nodo lleva la linea del pseudocodigo que le toca, y el
+    orden de los nodos es el del pseudocodigo, no uno comodo para dibujar.
+    """
+    W, H = 760, 1050
     s = [marco(
         W, H,
-        "Cuatro pasos en ciclo: tomar el siguiente candidato de la caja, "
-        "comprobar si cumple las restricciones, comparar su valor con el mejor "
-        "guardado y guardarlo; las dos respuestas negativas y el guardado "
-        "vuelven al primer paso, y cuando la caja se agota devuelve el mejor",
+        "Diagrama de flujo de la enumeracion, de la entrada a la salida: leer "
+        "los datos, poner la mejor solucion en menos infinito, construir la "
+        "caja de candidatos, y repetir un ciclo que toma el siguiente "
+        "candidato, descarta el que no cumple las restricciones, descarta el "
+        "que no supera a la mejor solucion y guarda el que si la supera; "
+        "cuando la caja se agota devuelve la mejor solucion, o el aviso de que "
+        "no hay ninguna factible",
         "Genera, filtra, compara",
-        "Diagrama de flujo de la enumeracion. Un paso genera el siguiente "
-        "candidato, un rombo filtra por las restricciones, otro rombo compara "
-        "contra la mejor solucion guardada y un paso la actualiza. Un carril de "
-        "retorno a la izquierda recoge las dos salidas negativas y cierra el "
-        "ciclo. Una flecha a la derecha sale cuando ya no quedan candidatos.",
+        "Diagrama de flujo con diez nodos en una columna. Los paralelogramos "
+        "son la entrada y la salida, los rectangulos son calculos y los rombos "
+        "son decisiones. Cada nodo lleva entre corchetes la linea del "
+        "pseudocodigo que representa. Un carril de retorno a la izquierda "
+        "devuelve a la prueba del ciclo desde las dos respuestas negativas y "
+        "desde la actualizacion; un carril a la derecha lleva a la salida "
+        "cuando ya no quedan candidatos.",
     )]
-    carril, medio = 92, 380
-    suave_tenue = mezclar(LINEA, 0.22)
+    cx, izq, der = 380, 90, 690
+    anchoc, altoc, my, mx = 380, 52, 46, 210
+    proceso, decision = mezclar(LINEA, 0.22), mezclar(SERIE[1], 0.16)
+    borde_dec, extremo = mezclar(SERIE[1], 0.5), mezclar(SERIE[0], 0.18)
+    borde_ext = mezclar(SERIE[0], 0.5)
 
-    s.append(caja(170, 60, 420, 56, relleno=suave_tenue, borde=LINEA))
-    s.append(texto(medio + 15, 94, "Toma el siguiente candidato", tam=16))
-    s.append(_paso("1", 200, 88))
+    def rect(cy, etiqueta, cuerpo, relleno=proceso, borde=LINEA, alto=altoc):
+        return [
+            caja(cx - anchoc // 2, cy - alto // 2, anchoc, alto,
+                 relleno=relleno, borde=borde),
+            texto(cx - anchoc // 2 + 14, cy - alto // 2 + 20, etiqueta,
+                  color=SUAVE, tam=11, anclaje="start", fuente=MONO),
+            texto(cx + 14, cy + 6, cuerpo, tam=15),
+        ]
 
-    # Los rombos son anchos a proposito: con mx=170 el disco numerado se comia
-    # la primera letra de la pregunta mas larga, y eso solo se vio renderizando.
-    mx, my = 220, 54
-    s.append(_rombo(medio, 196, mx, my, mezclar(SERIE[1], 0.16), mezclar(SERIE[1], 0.5)))
-    s.append(texto(medio + 25, 202, "¿Cumple Ax ≤ b?", tam=16))
-    s.append(_paso("2", medio - 155, 196))
+    def rombo(cy, etiqueta, cuerpo):
+        return [
+            _rombo(cx, cy, mx, my, decision, borde_dec),
+            texto(cx - 145, cy + 4, etiqueta, color=SUAVE, tam=11,
+                  anclaje="start", fuente=MONO),
+            texto(cx + 25, cy + 6, cuerpo, tam=15),
+        ]
 
-    s.append(_rombo(medio, 326, mx, my, mezclar(SERIE[2], 0.16), mezclar(SERIE[2], 0.5)))
-    s.append(texto(medio + 25, 332, "¿Vale más que el mejor?", tam=16))
-    s.append(_paso("3", medio - 155, 326))
+    # Entrada
+    s.append(_paralelogramo(cx, 82, anchoc, altoc, 22, extremo, borde_ext))
+    s.append(texto(cx - anchoc // 2 + 36, 62, "[ENTRADA]", color=SUAVE, tam=11,
+                   anclaje="start", fuente=MONO))
+    s.append(texto(cx, 90, "c, A, b, l, u", tam=15))
 
-    s.append(caja(170, 404, 420, 52, relleno=mezclar(SERIE[0], 0.18),
-                  borde=mezclar(SERIE[0], 0.5)))
-    s.append(texto(medio + 15, 436, "Guárdalo como el mejor", tam=16))
-    s.append(_paso("4", 200, 430))
+    s += rect(160, "[L1]", "mejor ← −∞ ;   x* ← «ninguno»")
+    s += rect(238, "[L2]", "X ← { l₁..u₁ } × ⋯ × { lₙ..uₙ }")
+    s += rombo(336, "[L3]", "¿queda algún x ∈ X sin revisar?")
+    s += rect(434, "[L3]", "x ← el siguiente de X")
+    s += rombo(532, "[L4]", "¿Ax ≤ b?")
+    s += rect(630, "[L5]", "z ← cᵀx")
+    s += rombo(728, "[L6]", "¿z > mejor?")
+    s += rect(826, "[L7]", "mejor ← z ;   x* ← x")
 
-    for y0, y1 in ((116, 138), (252, 268), (382, 402)):
-        s.append(flecha(medio, y0, medio, y1))
-    # El "si" solo cuelga de los rombos: del paso 1 no sale ninguna pregunta.
-    s.append(texto(medio + 18, 266, "sí", color=SUAVE, tam=13, anclaje="start"))
-    s.append(texto(medio + 18, 396, "sí", color=SUAVE, tam=13, anclaje="start"))
+    # Salida, con su caso de infactibilidad
+    s.append(_paralelogramo(cx, 952, anchoc, 64, 22, extremo, borde_ext))
+    s.append(texto(cx - anchoc // 2 + 36, 930, "[L9–L10]", color=SUAVE, tam=11,
+                   anclaje="start", fuente=MONO))
+    s.append(texto(cx, 950, "devuelve x*, mejor", tam=15))
+    s.append(texto(cx, 972, "«no hay factible» si x* = «ninguno»",
+                   color=SUAVE, tam=12))
 
-    for cy in (196, 326):
-        s.append(flecha(medio - mx, cy, carril, cy, color=SUAVE, marcador="s"))
-        s.append(texto(medio - mx - 12, cy - 10, "no", color=SUAVE, tam=13, anclaje="end"))
-    s.append(flecha(170, 430, carril, 430, color=SUAVE, marcador="s"))
-    s.append(linea(carril, 430, carril, 88, color=SUAVE))
-    s.append(flecha(carril, 88, 170, 88))
+    for y0, y1 in ((108, 132), (186, 210), (264, 288), (382, 406),
+                   (460, 484), (578, 602), (656, 680), (774, 798)):
+        s.append(flecha(cx, y0, cx, y1))
+    s.append(texto(cx + 18, 400, "sí", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(cx + 18, 596, "sí", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(cx + 18, 792, "sí", color=SUAVE, tam=13, anclaje="start"))
 
-    s.append(flecha(590, 88, 668, 88))
-    s.append(texto(676, 82, "si ya no quedan,", color=SUAVE, tam=13, anclaje="start"))
-    s.append(texto(676, 102, "devuelve el mejor", color=TEXTO, tam=13, anclaje="start"))
-    s.append(texto(medio, 490, "genera · filtra · compara", color=SUAVE, tam=15))
+    # Carril de retorno: las dos negativas y la actualizacion vuelven a [L3].
+    for cy in (532, 728):
+        s.append(flecha(cx - mx, cy, izq, cy, color=SUAVE, marcador="s"))
+        s.append(texto(cx - mx - 12, cy - 10, "no", color=SUAVE, tam=13,
+                       anclaje="end"))
+    s.append(flecha(cx - anchoc // 2, 826, izq, 826, color=SUAVE, marcador="s"))
+    s.append(linea(izq, 826, izq, 336, color=SUAVE))
+    s.append(flecha(izq, 336, cx - mx, 336))
+    s.append(texto(izq + 10, 310, "vuelve al ciclo", color=SUAVE, tam=12,
+                   anclaje="start"))
+
+    # Carril de salida: solo se toma cuando la caja se agota.
+    s.append(linea(cx + mx, 336, der, 336, color=SUAVE))
+    s.append(texto(cx + mx + 12, 326, "no", color=SUAVE, tam=13, anclaje="start"))
+    s.append(linea(der, 336, der, 952, color=SUAVE))
+    s.append(flecha(der, 952, cx + anchoc // 2 - 11, 952, color=SUAVE, marcador="s"))
+
+    # Leyenda de formas.
+    ly = 1018
+    s.append(_paralelogramo(140, ly, 44, 22, 8, extremo, borde_ext))
+    s.append(texto(170, ly + 5, "entrada / salida", color=SUAVE, tam=12,
+                   anclaje="start"))
+    s.append(caja(320, ly - 11, 44, 22, relleno=proceso, borde=LINEA, radio=5))
+    s.append(texto(374, ly + 5, "cálculo", color=SUAVE, tam=12, anclaje="start"))
+    s.append(_rombo(470, ly, 26, 13, decision, borde_dec))
+    s.append(texto(504, ly + 5, "decisión", color=SUAVE, tam=12, anclaje="start"))
+    s.append(texto(620, ly + 5, "[Ln] = línea", color=SUAVE, tam=12,
+                   anclaje="start", fuente=MONO))
     s.append(cierre())
     return "".join(s)
 
