@@ -356,7 +356,7 @@ $$T_{\text{ram}} \;=\; \underbrace{N}_{\text{nodos que se abren}} \;\times\; \un
 
 Igual que en enumerar, cada factor se deriva por separado.
 
-### El primer factor: cuántos nodos, $N$
+### El primer factor: cuántos nodos se abren
 
 **No tiene fórmula cerrada**, y ésa es la diferencia más honda con enumerar.
 Allá el conteo salía de las cotas antes de correr nada; aquí depende de la
@@ -381,7 +381,7 @@ $\lvert X\rvert = 2^n$. Con enteras generales **no hay tope que dependa solo de 
 misma variable se puede volver a partir más abajo, y el tope crece con el tamaño
 de las cotas.
 
-### El segundo factor: qué cuesta un nodo, $C_{\text{nodo}}$
+### El segundo factor: qué cuesta abrir uno
 
 Abrir un nodo es resolver un problema lineal con $n$ variables y $m$
 restricciones. Simplex se mueve de vértice en vértice, y **cada pivote cuesta del
