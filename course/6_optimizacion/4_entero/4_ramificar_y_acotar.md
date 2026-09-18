@@ -2,7 +2,7 @@
 id: ramificar-y-acotar
 title: Ramificar y acotar
 nav_title: Ramificar
-summary: "El algoritmo que no mira todos los planes y aun así demuestra que su respuesta es la mejor: parte el problema en dos, y descarta ramas enteras con una cuenta."
+summary: "El algoritmo que no mira todos los planes y aun así demuestra que su respuesta es la mejor: parte el problema en dos, y descarta grupos enteros de planes con una sola cuenta."
 status: ready
 estimated_time: 34m
 tags: [optimizacion, entera, algoritmos]
@@ -16,7 +16,8 @@ Vienes de [[enumerar|enumerar]] · Aquí: el algoritmo que sí escala.
 
 Enumerar encontró el ganador en el candidato 17 de 20 **y siguió tres más**. No
 le faltaba suerte: le faltaba un **argumento** para parar. Este algoritmo lo
-tiene.
+tiene, y se arma con tres piezas: una cota, un corte, y una manera de llevar la
+cuenta.
 
 ## 1 · La cota
 
@@ -30,7 +31,9 @@ Ya no es un problema entero: es uno lineal, de los de la clase 2, y lo resuelve
 simplex.
 :::
 
-**Por qué su valor es una cota, argumentado y no afirmado.**
+En el taller, la relajación vale **21**, en el punto $(3,\ 3/2)$.
+
+### Por qué ese número es un techo
 
 Primero la regla, que no es de optimización sino de conjuntos:
 
@@ -45,8 +48,7 @@ $l \le x \le u$. La relajación pide **exactamente eso y nada más** —solo dej
 exigir $x \in \mathbb{Z}$—, así que **ningún plan entero se cae**: todos siguen
 estando.
 
-En el taller, con $A$ = los 13 planes enteros y $B$ = todos los puntos del
-polígono:
+Con $A$ = los 13 planes enteros y $B$ = todos los puntos del polígono:
 
 | Plan | ¿Entero? | ¿Está en la relajación? | Vale |
 |---|---|---|---:|
@@ -60,98 +62,111 @@ segundo**, y es el que manda. Por eso
 
 $$z_{\text{relajación}} \;\ge\; z_{\text{entero}}, \qquad\text{y aquí}\quad 21 \ge 20.$$
 
-**Y a veces son iguales.** Si la relajación sale entera, ese punto está en los
-dos conjuntos: entonces la cota no es una cota, es **la respuesta**. De eso vive
-el algoritmo — es lo que cierra las ramas 2 y 4 del árbol.
-
-::: definition {#opt-cota-relajacion title="Cota superior"}
-Una **cota superior** de un subproblema es un número que **ningún** plan entero
-suyo puede superar, calculado **sin** conocer ese plan.
-
-Sirve para descartar: si la cota de una rama no supera a lo que ya tienes, esa
-rama **no puede ganar**, y no hace falta abrirla.
-:::
-
 ::: figure {#opt-relajacion-corte title="La cota que da la relajación"}
 ![El polígono del taller con los trece planes enteros que caben dentro, el óptimo continuo marcado con una cruz sobre el borde y el mejor plan entero resaltado en la esquina de abajo a la derecha](../_assets/opt-relajacion-corte.svg)
 :::
 
-En el taller:
+::: definition {#opt-cota-relajacion title="Cota superior"}
+Una **cota superior** de un problema es un número que **ninguno** de sus planes
+enteros puede superar, calculado **sin** conocer el mejor de ellos.
 
-| | Plan | Vale |
-|---|---|---:|
-| Relajación | $(3,\ 3/2)$ | **21** ← la cota |
-| Mejor entero | $(4,\ 0)$ | 20 |
+Y sirve para una cosa: si la cota de un problema no supera a una solución que ya
+tienes en la mano, **ese problema no hace falta resolverlo**.
+:::
 
 > **Cuidado.** La cota **no es la respuesta**. «Tres rovers y media sonda» no
 > existe. Lo único que dice el 21 es que nadie va a pasar de ahí.
 
-## 2 · Cómo usa el modelo
+## 2 · Partir el problema
 
-Cada pieza hace un trabajo, y solo uno:
-
-| Pieza | Sirve para |
-|---|---|
-| La relajación de un subproblema | **Acotar** lo mejor que puede haber ahí abajo |
-| ¿La solución salió entera? | **Cerrar** la rama |
-| La mejor solución hasta ahora | **Podar** lo que ya no puede ganar |
-| Una variable fraccionaria | **Partir** en dos |
-
-::: definition {#opt-subproblema title="Subproblema"}
-Un **subproblema** es el mismo modelo con las cotas más apretadas: mismo $c$,
-misma $A$, mismo $b$, y un $l \le x \le u$ más chico.
-
-Por eso todo lo que sabes del original sigue valiendo dentro de él.
-:::
-
-### Partir en dos, sin perder nada
-
-La relajación de la raíz dio $x_2 = 3/2$. Se parte por ahí, con la regla general:
+La relajación contestó $x_2 = 3/2$, que no es un plan. Hay que **obligar a $x_2$
+a decidirse**: o es 1 o menos, o es 2 o más. Ésa es la regla general:
 
 $$x_j \le \lfloor \bar x_j \rfloor \qquad\text{y}\qquad x_j \ge \lceil \bar x_j \rceil$$
 
 Aquí, $x_2 \le 1$ y $x_2 \ge 2$.
 
 ::: figure {#opt-ramas title="Partir no pierde ninguna solución"}
-![El mismo polígono partido en dos por una franja horizontal entre uno y dos, que no contiene ningún punto entero; arriba la rama de x dos mayor o igual que dos y abajo la de x dos menor o igual que uno](../_assets/opt-ramas.svg)
+![El mismo polígono partido en dos por una franja horizontal entre uno y dos, que no contiene ningún punto entero; arriba la mitad de x dos mayor o igual que dos y abajo la de x dos menor o igual que uno](../_assets/opt-ramas.svg)
 :::
 
-**Las dos ramas cubren todo.** Entre $\lfloor \bar x_j \rfloor$ y
-$\lceil \bar x_j \rceil$ **no hay ningún entero**: la franja que queda fuera está
-vacía de soluciones. Por eso partir es exhaustivo y no una apuesta.
+El dibujo dice dos cosas a la vez:
 
-Y fíjate en lo que sí se pierde a propósito: el punto $(3,\ 3/2)$ —el de la
-cota— **no está en ninguna de las dos ramas**. Ese es el punto: cada corte
-obliga a la relajación a dar algo distinto, y por eso el árbol avanza.
+- **No se pierde ningún plan.** Entre $\lfloor \bar x_j \rfloor$ y
+  $\lceil \bar x_j \rceil$ no hay ningún entero, así que la franja que queda
+  fuera está vacía. Partir es exhaustivo, no una apuesta.
+- **Sí se pierde el punto de la cota.** $(3,\ 3/2)$ no sobrevive a ninguna de las
+  dos mitades. Por eso cada corte obliga a la relajación a contestar algo
+  distinto, y el método avanza en vez de dar vueltas.
+
+Cada mitad es un problema completo —mismo objetivo, mismas restricciones, cotas
+más apretadas—, y tiene nombre:
+
+::: definition {#opt-subproblema title="Subproblema"}
+Un **subproblema** es el mismo modelo con las cotas más apretadas: mismo $c$,
+misma $A$, mismo $b$, y un $l \le x \le u$ más chico.
+
+Por eso todo lo que sabes del original sigue valiendo dentro de él — incluida su
+relajación, que se calcula igual.
+:::
+
+### Los subproblemas forman un árbol
+
+Partir uno da dos, y a esos dos se les puede volver a partir. Lo que se va
+formando es un árbol binario, y le damos los nombres de siempre. Esto es un
+recordatorio, no vocabulario nuevo:
+
+| Palabra | Aquí significa |
+|---|---|
+| **raíz** | El problema original |
+| **nodo** | Un subproblema |
+| **hijos** | Los dos subproblemas que salen de partir uno |
+| **hoja** | Un nodo que no se partió |
+| **rama** | Un nodo **con todo lo que cuelga de él** |
+| **abrir** un nodo | Resolver su relajación |
+
+::: figure {#opt-arbol-vocabulario title="Cómo se llama cada parte"}
+![Árbol genérico de tres niveles: una raíz arriba, dos hijos debajo, y el hijo de la izquierda con dos hijos propios; un recuadro punteado encierra al hijo de la izquierda con todo lo que cuelga de él](../_assets/opt-arbol-vocabulario.svg)
+:::
+
+**Nodo y subproblema son la misma cosa**, con dos nombres: *subproblema* cuando
+hablamos del modelo, *nodo* cuando hablamos del dibujo.
+
+## 3 · El algoritmo
+
+Ya está todo lo que hace falta: una cota para descartar, un corte para avanzar y
+un árbol donde poner lo que se va abriendo. Falta la contabilidad.
 
 ::: definition {#opt-nodos-vivos title="Lista de nodos vivos"}
-La **lista de nodos vivos** son los subproblemas creados y todavía sin resolver.
+La **lista de nodos vivos** son los subproblemas ya creados y todavía sin
+resolver.
 
-Es el estado del algoritmo. Enumerar tenía un punto, el gradiente tenía un
-punto, simplex tenía un vértice: **éste tiene un conjunto.**
+Es el estado del algoritmo, y es lo que lo hace distinto de todo lo anterior:
+simplex estaba en un vértice, el gradiente en un punto, enumerar en un
+candidato. **Éste no está en un lugar: tiene un conjunto.**
 :::
 
-::: definition {#opt-poda title="Podar"}
-**Podar** es cerrar una rama sin abrir lo que cuelga de ella. Hay tres formas de
-cerrar, y solo dos son podas:
+::: definition {#opt-poda title="Cerrar y podar"}
+Un nodo se **cierra** cuando ya no hay que abrir nada debajo de él. Hay tres
+formas, y solo dos son podas:
 
 | Cierre | Cuándo | ¿Poda? |
 |---|---|---|
-| Por infactibilidad | La relajación no tiene ni un punto | sí |
-| Por cota | $\bar z \le$ la mejor solución que ya tienes | sí |
-| Por solución entera | La relajación salió entera: no hay nada mejor debajo | no: la resolvió |
+| Por infactibilidad | La relajación del nodo no tiene ni un punto | sí |
+| Por cota | Su cota no supera a la mejor solución que ya tienes | sí |
+| Por solución entera | Su relajación salió entera: nada debajo puede ser mejor | no: la resolvió |
+
+**Podar** es cerrar una rama sin abrir lo que cuelga de ella.
 :::
 
-El tercer renglón se confunde con una poda y no lo es: ahí la rama **se terminó
+El tercer renglón se confunde con una poda y no lo es: ahí el nodo **se terminó
 de resolver**, no se descartó.
 
-### El algoritmo
-
 ::: figure {#opt-flujo-ramificar title="Ramificar y acotar, paso a paso"}
-![Diagrama de flujo de doce nodos: entrada, inicialización, la lista de nodos vivos, el ciclo que saca un nodo, lo descarta si su relajación es infactible o si su cota no supera a la mejor solución, lo guarda si salió entera y si no lo parte en dos, y la salida cuando la lista se vacía](../_assets/opt-flujo-ramificar.svg)
+![Diagrama de flujo de doce pasos: entrada, inicialización, la lista de nodos vivos, el ciclo que saca un nodo, lo descarta si su relajación es infactible o si su cota no supera a la mejor solución, lo guarda si salió entera y si no lo parte en dos, y la salida cuando la lista se vacía](../_assets/opt-flujo-ramificar.svg)
 :::
 
-Las etiquetas `[Ln]` son las líneas de aquí abajo:
+Las etiquetas `[Ln]` de cada paso son las líneas de aquí abajo:
 
 ```text
 INPUT   max cᵀx  s.a.  Ax ≤ b,  l ≤ x ≤ u,  x entera.
@@ -172,18 +187,20 @@ OUTPUT  un óptimo x* y su valor, o «no hay factibles».
 13  return x*, mejor      ▷ x* = «ninguno» si no hubo factibles
 ```
 
+Dos cosas que hay que decir antes de correrlo.
+
+**La línea 6 llama a otro algoritmo.** Es la primera vez que pasa en el curso:
+resolver la relajación **es** correr simplex. Ramificar y acotar no sabe resolver
+nada por sí mismo; sabe **decidir qué vale la pena resolver**.
+
 **La línea 5 supone la caja finita**, igual que enumerar. Si una variable no
 tiene cota superior, la relajación puede salir **no acotada**, que no es lo mismo
 que infactible: tratarla como infactible haría que el algoritmo contestara «no
 hay factibles» a un problema que sí tiene respuesta.
 
-**La línea 6 llama a otro algoritmo.** Es la primera vez que pasa en el curso:
-resolver la relajación **es** correr simplex. Ramificar y acotar no sabe
-resolver nada por sí mismo; sabe **decidir qué vale la pena resolver**.
+### Tres decisiones que el pseudocódigo deja abiertas
 
-### Dos reglas que el pseudocódigo deja abiertas
-
-Sin ellas el árbol no tiene cinco nodos: tiene los que le toquen.
+Sin ellas, el árbol del taller no tiene cinco nodos: tiene los que le toquen.
 
 | Línea | Lo que no dice | Lo que usamos aquí |
 |---|---|---|
@@ -191,9 +208,9 @@ Sin ellas el árbol no tiene cinco nodos: tiene los que le toquen.
 | 11 | En qué orden entran los hijos | Primero el del $\le$, para que abra el del $\ge$ |
 | 10 | **Cuál** variable fraccionaria | La primera, en el orden en que están escritas |
 
-Y una que no es de estilo: en la línea 7 la comparación va **antes** de revisar
-si $\bar x$ es entera. Al revés, un nodo entero peor que la mejor solución la
-sobrescribiría.
+Y una cuarta que no es de estilo: en la línea 7 la comparación va **antes** de
+revisar si $\bar x$ es entera. Al revés, un nodo entero peor que la mejor
+solución la sobrescribiría.
 
 En Python, el mismo texto:
 
@@ -226,7 +243,7 @@ while pila:                                      # L3
 ```
 
 ::: definition {#opt-bnb title="Ramificar y acotar"}
-**Ramificar y acotar** es este ciclo: acotar cada subproblema con su relajación,
+**Ramificar y acotar** es este ciclo: acotar cada nodo con su relajación,
 partirlo por una variable fraccionaria cuando la cota promete, y cerrarlo cuando
 no.
 
@@ -234,7 +251,16 @@ Entrega el **óptimo global** y un **certificado**: al terminar, toda rama que n
 se abrió tenía una cota peor que la respuesta.
 :::
 
-## 3 · Los cinco nodos
+De repaso, qué hace cada pieza del modelo dentro del ciclo:
+
+| Pieza | Sirve para |
+|---|---|
+| La relajación de un nodo | **Acotar** lo mejor que puede haber en esa rama |
+| ¿La solución salió entera? | **Cerrar** el nodo |
+| La mejor solución hasta ahora | **Podar** lo que ya no puede ganar |
+| Una variable fraccionaria | **Partir** en dos |
+
+## 4 · El árbol del taller, y su factura
 
 ::: figure {#opt-arbol title="El árbol del taller"}
 ![Árbol de cinco nodos: la raíz con cota veintiuno se parte en dos ramas; la de la derecha cierra con una solución entera de dieciocho y la de la izquierda se vuelve a partir, y de ahí salen la solución entera de veinte y una poda por cota](../_assets/opt-arbol.svg)
@@ -257,11 +283,11 @@ $\ge$ entró después.
 
 ### Dónde quedaron los veinte planes
 
-Las tres ramas que se cerraron **parten la caja entera**, sin solapes y sin
-huecos. Ojo con la unidad: aquí se cuentan **celdas de la caja**, las 20, no los
-13 planes factibles —el pie de la figura de las ramas cuenta esos otros—:
+Las tres hojas **parten la caja entera**, sin solapes y sin huecos. Ojo con la
+unidad: aquí se cuentan **celdas de la caja**, las 20, no los 13 planes
+factibles:
 
-| Nodo | Qué tapa | Planes de la caja | Se resolvió con |
+| Nodo | Qué tapa | Celdas | Se resolvió con |
 |---|---|---:|---|
 | 2 | $x_2 \ge 2$ | 10 | una relajación |
 | 4 | $x_1 \ge 4$, $x_2 \le 1$ | 2 | una relajación |
@@ -275,16 +301,13 @@ una sola cuenta, porque su cota —19— no alcanzaba. Eso es podar.
 > entera, pero **ninguna poda por infactibilidad**: en este problema toda rama
 > tiene al menos un punto. Es la tercera forma de cerrar, y aquí no aparece.
 
-## 4 · Qué cuesta
-
-### Los dos factores, otra vez
+### Los dos factores
 
 $$T \;=\; \underbrace{\text{cuántos nodos se abren}}_{\text{de } 1 \text{ a } 2|X|-1} \;\times\; \underbrace{\text{qué cuesta un nodo}}_{\textbf{un problema lineal completo}}$$
 
-### El primer factor no tiene fórmula
-
-Y ésta es la diferencia más honda con enumerar. Allá el conteo salía de las
-cotas, antes de correr nada. Aquí **depende de la instancia**:
+**El primero no tiene fórmula**, y ésa es la diferencia más honda con enumerar.
+Allá el conteo salía de las cotas antes de correr nada; aquí depende de la
+instancia:
 
 | | Nodos |
 |---|---|
@@ -293,8 +316,8 @@ cotas, antes de correr nada. Aquí **depende de la instancia**:
 | El peor caso | $2|X|-1$, con $|X|$ la caja de la página 3 — aquí **39** |
 
 **De dónde sale ese tope.** Cada hoja se queda con un pedazo de la caja, los
-pedazos no se solapan, y ninguno queda vacío: hay a lo más $|X|$ hojas, y un
-árbol binario con $L$ hojas tiene $2L-1$ nodos. Con variables **0/1** eso es el
+pedazos no se solapan y ninguno queda vacío: hay a lo más $|X|$ hojas, y un árbol
+binario con $L$ hojas tiene $2L-1$ nodos. Con variables **0/1** eso es el
 $2^{n+1}-1$ que se suele citar; con enteras generales **no hay tope que dependa
 solo de $n$**, porque la misma variable se puede volver a partir más abajo.
 
@@ -303,15 +326,15 @@ doble de nodos que candidatos tiene la caja**, y cada nodo cuesta un problema
 lineal. Ramificar y acotar puede ser mucho peor que enumerar.
 
 **Podar no cambia la clase de complejidad.** El problema sigue siendo NP-duro, y
-existen instancias donde el árbol se abre entero. Lo que cambia es la
-**constante y la suerte**, y en la práctica eso es casi todo.
+existen instancias donde el árbol se abre entero. Lo que cambia es la constante y
+la suerte, y en la práctica eso es casi todo.
 
 ### El segundo factor es mucho más caro
 
 | Algoritmo | Un paso es | Cuesta |
 |---|---|---|
 | Enumerar | Revisar un candidato | $(m+1)n$ productos |
-| Ramificar | Resolver un nodo | **Un problema lineal completo**: la relajación, con los pivotes de simplex |
+| Ramificar | Abrir un nodo | **Un problema lineal completo**: la relajación, con los pivotes de simplex |
 
 > **Cinco nodos contra veinte candidatos no es cuatro veces más rápido.**
 > Comparar los conteos mezcla unidades, igual que comparar hojas con nodos. Un
@@ -319,9 +342,9 @@ existen instancias donde el árbol se abre entero. Lo que cambia es la
 
 **En el taller, enumerar gana en el reloj.** Veinte productos punto valen menos
 que cinco llamadas a simplex. Ramificar y acotar no está hecho para 20
-candidatos: está hecho para cuando la caja tiene $10^{12}$, y ahí la
-comparación se invierte de golpe. Medir los dos en el mismo problema es lo único
-que zanja la discusión.
+candidatos: está hecho para cuando la caja tiene $10^{12}$, y ahí la comparación
+se invierte de golpe. Medir los dos en el mismo problema es lo único que zanja la
+discusión.
 
 ### Qué lo hace crecer
 
@@ -332,8 +355,8 @@ que zanja la discusión.
 | Una cota más floja (un $M$ grande) | La relajación se aleja del entero, poda menos, y el árbol crece |
 
 El último renglón es el que conecta con la página 2: por eso el enlace del costo
-fijo se escribe $x_1 \le 4y$ y no $x_1 \le 1000y$. Los dos modelos son
-correctos; **uno se resuelve y el otro no.**
+fijo se escribe $x_1 \le 3y$ y no $x_1 \le 1000y$. Los dos modelos son correctos;
+**uno se resuelve y el otro no.**
 
 ### Cuándo sí, cuándo no
 
@@ -352,7 +375,7 @@ esqueleto es el de arriba.
 - La relajación no resuelve el problema: **da una cota**, y la cota es lo único
   que permite descartar sin mirar.
 - Partir por $\lfloor \bar x_j\rfloor$ y $\lceil \bar x_j\rceil$ no pierde
-  soluciones, porque entre las dos no hay ningún entero.
+  soluciones, porque entre las dos mitades no hay ningún entero.
 - Enumerar mira los 20 planes uno por uno y no puede parar; ramificar cierra los
-  20 con **cinco relajaciones**, y demuestra que no hacía falta mirarlos. Cada
-  paso suyo cuesta mucho más: por eso gana en grande y pierde en chico.
+  20 con **cinco relajaciones**. Cada paso suyo cuesta mucho más: por eso gana en
+  grande y pierde en chico.

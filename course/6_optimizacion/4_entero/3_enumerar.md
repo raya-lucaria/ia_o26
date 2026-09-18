@@ -48,12 +48,12 @@ Cada pieza del planteamiento hace un trabajo, y solo uno:
 | $c^{\mathsf T}x$ | **Comparar** los que quedan |
 
 ::: figure {#opt-flujo-enumerar title="Genera, filtra, compara"}
-![Diagrama de flujo de diez nodos: la entrada con los datos, la inicialización de la mejor solución en menos infinito, la construcción de la caja, la prueba del ciclo, el paso que toma el siguiente candidato, las dos decisiones que lo descartan por infactible o por no superar a la mejor, la actualización, y la salida con su caso de infactibilidad; un carril de retorno a la izquierda y el de salida a la derecha](../_assets/opt-flujo-enumerar.svg)
+![Diagrama de flujo de diez pasos: la entrada con los datos, la inicialización de la mejor solución en menos infinito, la construcción de la caja, la prueba del ciclo, el paso que toma el siguiente candidato, la decisión que lo descarta si no cumple las restricciones, el cálculo de su valor, la decisión que lo descarta si no supera a la mejor, la actualización, y la salida con su caso de infactibilidad; un carril de retorno a la izquierda y el de salida a la derecha](../_assets/opt-flujo-enumerar.svg)
 :::
 
 Nada empieza a media ejecución: están la entrada, la inicialización, la
 construcción de la caja y las dos formas de terminar. **La etiqueta `[Ln]` de
-cada nodo es la línea del pseudocódigo** que le toca, y aquí está el
+cada paso es la línea del pseudocódigo** que le toca, y aquí está el
 pseudocódigo:
 
 ```text
