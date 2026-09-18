@@ -42,3 +42,4 @@ no son imágenes.
 | `opt-ramas.svg` | El polígono partido por x₂ ≤ 1 y x₂ ≥ 2, con la franja intermedia vacía de puntos enteros | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-arbol.svg` | El árbol de ramificación del taller: cinco nodos, dos cierres por solución entera y una poda por cota | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-flujo-ramificar.svg` | Diagrama de flujo completo de ramificar y acotar, con cada nodo etiquetado con su línea del pseudocódigo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol-vocabulario.svg` | Esquema genérico de un árbol de subproblemas, con la raíz, los hijos, una hoja y una rama señaladas | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

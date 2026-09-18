@@ -2128,7 +2128,7 @@ def opt_flujo_enumerar():
         "cuando la caja se agota devuelve la mejor solucion, o el aviso de que "
         "no hay ninguna factible",
         "Genera, filtra, compara",
-        "Diagrama de flujo con diez nodos en una columna. Los paralelogramos "
+        "Diagrama de flujo con diez pasos en una columna. Los paralelogramos "
         "son la entrada y la salida, los rectangulos son calculos y los rombos "
         "son decisiones. Cada nodo lleva entre corchetes la linea del "
         "pseudocodigo que representa. Un carril de retorno a la izquierda "
@@ -2460,7 +2460,7 @@ def opt_ramas():
     s.append(texto(px(2), py(1.5) + 5, "ningún punto entero",
                    color=ALARMA, tam=13))
     s.append(texto(W // 2, H - 26,
-                   "la rama de arriba se queda 4 planes; la de abajo, 9",
+                   "la mitad de arriba se queda 4 planes; la de abajo, 9",
                    color=SUAVE, tam=13))
     s.append(cierre())
     return "".join(s)
@@ -2539,7 +2539,7 @@ def opt_flujo_ramificar():
         "una variable fraccionaria; cuando la lista se vacia devuelve la mejor "
         "solucion",
         "Ramificar y acotar, paso a paso",
-        "Doce nodos en una columna. Los paralelogramos son la entrada y la "
+        "Doce pasos en una columna. Los paralelogramos son la entrada y la "
         "salida, los rectangulos son calculos y los rombos son decisiones. Tres "
         "caminos vuelven al ciclo: las dos podas por la izquierda y, tras "
         "guardar o partir, tambien por la izquierda. Un carril a la derecha "
@@ -2627,6 +2627,61 @@ def opt_flujo_ramificar():
     return "".join(s)
 
 
+
+def opt_arbol_vocabulario():
+    """El recordatorio de vocabulario de la pagina 4, sin numeros.
+
+    Generico a proposito: aqui no se resuelve nada, solo se senala como se
+    llama cada parte. El arbol con los datos del taller es opt_arbol.
+    """
+    W, H = 860, 500
+    s = [marco(
+        W, H,
+        "Arbol generico de tres niveles: una raiz arriba, dos hijos debajo, y "
+        "el hijo de la izquierda con dos hijos propios; un recuadro punteado "
+        "encierra al hijo de la izquierda con todo lo que cuelga de el",
+        "Cómo se llama cada parte",
+        "Esquema sin numeros para nombrar las partes de un arbol de "
+        "subproblemas: la raiz es el problema original, cada circulo es un "
+        "nodo, los dos que salen de uno son sus hijos, un nodo que no se "
+        "partio es una hoja, y un nodo con todo lo que cuelga de el es una "
+        "rama.",
+    )]
+    raiz, izq, der = (430, 86), (280, 216), (600, 216)
+    nieto_a, nieto_b = (200, 336), (360, 336)
+    r = 24
+
+    s.append(caja(146, 172, 268, 216, relleno=mezclar(ACENTO, 0.12),
+                  borde=ACENTO, radio=18, guiones="7 6"))
+    s.append(texto(150, 160, "rama", color=ACENTO, tam=15, peso="700",
+                   anclaje="start"))
+
+    for a, b in ((raiz, izq), (raiz, der), (izq, nieto_a), (izq, nieto_b)):
+        s.append(linea(a[0], a[1] + r, b[0], b[1] - r, color=SUAVE))
+    for centro in (raiz, izq, der, nieto_a, nieto_b):
+        s.append(punto(centro[0], centro[1], r=r, color=mezclar(SERIE[1], 0.5)))
+
+    s.append(texto(raiz[0] + r + 16, raiz[1] + 5, "raíz", tam=15, peso="700",
+                   anclaje="start"))
+    s.append(texto(raiz[0] + r + 70, raiz[1] + 5, "el problema original",
+                   color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(der[0] + r + 16, der[1] + 5, "hoja", tam=15, peso="700",
+                   anclaje="start"))
+    s.append(texto(der[0] + r + 74, der[1] + 5, "no se partió", color=SUAVE,
+                   tam=13, anclaje="start"))
+    # "hijos" va sobre la arista derecha, que esta vacia: en el centro chocaba
+    # con la descripcion de "rama".
+    s.append(texto(430, 156, "hijos", color=SUAVE, tam=13))
+    s.append(texto(W // 2, H - 56,
+                   "cada círculo es un nodo, es decir, un subproblema",
+                   color=SUAVE, tam=14))
+    s.append(texto(W // 2, H - 28,
+                   "abrir un nodo es resolver su relajación",
+                   color=SUAVE, tam=14))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -2653,6 +2708,7 @@ DIAGRAMAS = {
     "opt-ramas": opt_ramas,
     "opt-arbol": opt_arbol,
     "opt-flujo-ramificar": opt_flujo_ramificar,
+    "opt-arbol-vocabulario": opt_arbol_vocabulario,
 }
 
 
