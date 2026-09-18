@@ -2,9 +2,9 @@
 id: la-bitacora-del-taller
 title: La bitácora del taller
 nav_title: La bitácora
-summary: "Una bitácora nueva y el trabajo de siempre: separar lo que decides, lo que te limita y lo que mides. Aquí no se resuelve nada."
+summary: "Una bitácora nueva y cómo se lee: qué preguntarle, dónde se esconde lo que sobra y lo que falta, y cómo se decide el dominio. El modelo lo escribes tú."
 status: ready
-estimated_time: 12m
+estimated_time: 10m
 tags: [optimizacion, modelado, entera]
 ---
 
@@ -27,27 +27,43 @@ modelo.
 >
 > El comandante cierra la reunión: «y no me hagan más de cuatro rovers».
 
-## 1 · Las tres trampas
+**Esta página no escribe el modelo. Lo escribes tú.** Aquí solo están las
+preguntas que hay que hacerle a una bitácora, y cómo se contesta cada una.
 
-Toda bitácora trae tres. Cázalas antes de escribir nada.
+## 1 · Qué preguntarle, y cómo se escribe la respuesta
 
-| Trampa | Cuál es aquí | Qué hago |
+| Pregunta | Cómo la contestas | Qué forma tiene la respuesta |
 |---|---|---|
-| Un dato que sobra | La electricidad del taller | Fuera: es igual en todos los planes |
-| Un dato que falta | **¿Sirve de algo media sonda?** Nadie lo dijo | Preguntar. Respuesta: no transmite |
-| Una frase que no aporta | «No más de cuatro rovers» | Fuera: la aleación ya lo impide |
+| ¿Qué decido? | Busca lo que puedes **contar o repartir**, no lo que ya está decidido | Una variable por cada cosa, con su unidad dicha en voz alta |
+| ¿Qué me limita? | Busca lo que **se acaba** | Una desigualdad por recurso: lo que consumes $\le$ lo que hay |
+| ¿Qué quiero? | Busca lo único que quieres que **suba** | $\max$ de una suma: coeficiente por variable |
+| ¿De qué tipo son los números? | **Pregúntate qué significaría media unidad** de cada variable | Un renglón propio para el dominio |
 
-La segunda es la importante. Todo lo que hace distinta a esta clase cuelga de esa
-respuesta.
+### El dominio, que es la casilla que casi todos se saltan
 
-## 2 · Lo que sí entra
+Es la pregunta nueva de esta clase, así que va con más detalle. Tres preguntas,
+en este orden:
 
-| Parte | En la bitácora |
+1. **¿Media unidad sirve de algo?** Media hora de trabajo sí significa algo.
+   ¿Y medio aparato? Si la mitad no hace nada, la variable no puede valer $3/2$.
+2. **¿Puede ser negativa?** Casi nunca, y hay que escribirlo igual.
+3. **¿Tiene un tope propio**, independiente de los recursos?
+
+Y ojo con **cómo** se expresa: el dominio va en su **propio renglón**, al final
+del modelo, y **no sustituye a** $x \ge 0$. Son dos afirmaciones distintas sobre
+la misma variable.
+
+## 2 · Tres cosas que esconde toda bitácora
+
+No las busques al escribir: búscalas **antes**.
+
+| Qué esconde | Cómo se reconoce |
 |---|---|
-| Lo que decides | Cuántos rovers y cuántas sondas fabricar |
-| Lo que te limita | 24 kg de aleación · 6 horas de calibración |
-| Lo que mides | MB transmitidos al día, y los quieres al máximo |
-| Qué clase de números | **Cantidades completas.** Media sonda no es media respuesta: es nada |
+| **Un dato que sobra** | Vale lo mismo en todos los planes posibles, así que no puede cambiar la decisión |
+| **Un dato que falta** | Un número que el modelo necesita y nadie dijo. No lo inventes: anótalo como pregunta |
+| **Una frase que no aporta** | Suena a restricción, pero otra parte del modelo ya la impone |
+
+Esta bitácora trae una de cada. Cuáles son, se contesta en la página siguiente.
 
 ## 3 · Plantéalo tú
 
@@ -74,14 +90,16 @@ qué renglón se mueve y cuál se queda igual.
 Las dos respuestas están en la página siguiente, plegadas. No las abras antes de
 haber escrito algo.
 
-> **Cuidado.** La frase del comandante suena a restricción y no lo es.
-> Escribirla te deja un renglón que no hace nada — y en un modelo grande, un
-> renglón que no hace nada es un renglón que nadie vuelve a revisar.
+> **Cuidado.** Si un número no está en la bitácora, no lo inventes. Anótalo como
+> pregunta y sigue: preguntarlo es parte del trabajo, y la respuesta puede
+> cambiar el dominio entero.
 
 ## Lo que hay que llevarse
 
-- La bitácora trae siempre un dato de más, uno de menos y una frase inútil.
-- El dato que falta suele ser el que fija **de qué tipo son los números**.
-- Un modelo bien escrito se revisa por su forma, no por su resultado.
+- Modelar empieza leyendo, no escribiendo.
+- El dominio no se hereda del problema anterior: se decide preguntando qué
+  significaría media unidad.
+- Lo que no puedas justificar señalando una frase de la bitácora, no entra al
+  modelo.
 
-Ahora sí, con nombre y símbolos: [[el-modelo-del-taller|el modelo, escrito]].
+Cuando ya tengas el tuyo escrito: [[el-modelo-del-taller|el modelo, escrito]].
