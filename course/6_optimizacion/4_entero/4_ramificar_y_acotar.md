@@ -86,7 +86,12 @@ tienes en la mano, **ese problema no hace falta resolverlo**.
 ## 2 · Partir el problema
 
 La relajación contestó $x_2 = 3/2$, que no es un plan. Hay que **obligar a $x_2$
-a decidirse**: o es 1 o menos, o es 2 o más. Ésa es la regla general:
+a decidirse**: o es 1 o menos, o es 2 o más.
+
+Para escribirlo en general hace falta un nombre. **Al punto que devuelve la
+relajación lo llamamos $\bar x$**, con barra, y la barra quiere decir siempre lo
+mismo: *esto lo dio la relajación, y puede tener fracciones*. Su coordenada $j$
+es $\bar x_j$ — aquí $\bar x_2 = 3/2$. La regla es:
 
 $$x_j \le \lfloor \bar x_j \rfloor \qquad\text{y}\qquad x_j \ge \lceil \bar x_j \rceil$$
 
@@ -187,8 +192,26 @@ formas, y solo dos son podas:
 El tercer renglón se confunde con una poda y no lo es: ahí el nodo **se terminó
 de resolver**, no se descartó.
 
+### La notación del ciclo
+
+Cuatro nombres aparecen en el diagrama y en el pseudocódigo, y conviene tenerlos
+juntos antes de leerlos:
+
+| Símbolo | Qué es | ¿Puede tener fracciones? |
+|---|---|---|
+| $L$ | La lista de nodos vivos | — |
+| $P$ | El nodo que se está abriendo | — |
+| $\bar x$ | El **punto** que devuelve la relajación de $P$ | **sí** |
+| $\bar z$ | Su **valor**, $\bar z = c^{\mathsf T}\bar x$: la cota de ese nodo | sí |
+| $x^*$ | La **mejor solución entera** encontrada hasta ahora | no, nunca |
+| `mejor` | Su valor, $c^{\mathsf T}x^*$ | no |
+
+Las dos marcas dicen de dónde viene cada cosa: **la barra es lo que dio la
+relajación** —puede no ser un plan— y **la estrella es la mejor solución entera
+que tienes en la mano**. Al terminar, $x^*$ es la respuesta.
+
 ::: figure {#opt-flujo-ramificar title="Ramificar y acotar, paso a paso"}
-![Diagrama de flujo de doce pasos: entrada, inicialización, la lista de nodos vivos, el ciclo que saca un nodo, lo descarta si su relajación es infactible o si su cota no supera a la mejor solución, lo guarda si salió entera y si no lo parte en dos, y la salida cuando la lista se vacía](../_assets/opt-flujo-ramificar.svg)
+![Diagrama de flujo de doce pasos: entrada, inicialización, la lista de nodos vivos, el ciclo que saca un nodo, lo descarta si su relajación es infactible o si su cota no supera a la mejor solución, lo guarda si salió entera y si no lo parte en dos, y la salida cuando la lista se vacía; al pie, una leyenda con el significado de x con barra, z con barra, x estrella y mejor](../_assets/opt-flujo-ramificar.svg)
 :::
 
 Las etiquetas `[Ln]` de cada paso son las líneas de aquí abajo:
@@ -266,6 +289,9 @@ while pila:                                      # L3
     pila.append((lo, baja))                      # el ≤ entra primero
     pila.append((sube, hi))                      # el ≥ sale primero
 ```
+
+En el código, `pila` es $L$, `x_mejor` es $x^*$ y `r.x` es $\bar x$: los mismos
+cuatro nombres de la tabla, escritos como se pueden teclear.
 
 ::: definition {#opt-bnb title="Ramificar y acotar"}
 **Ramificar y acotar** es este ciclo: acotar cada nodo con su relajación,
@@ -390,12 +416,12 @@ de las cotas.
 
 Abrir un nodo es resolver un problema lineal con $n$ variables y $m$
 restricciones. Simplex se mueve de vértice en vértice, y **cada pivote cuesta del
-orden de $mn$ operaciones**: recorrer la matriz. Si llamamos $P$ al número de
-pivotes,
+orden de $mn$ operaciones**: recorrer la matriz. Si llamamos $v$ al número de
+pivotes —los vértices que simplex visita, como en la clase 2—,
 
-$$C_{\text{nodo}} \;=\; O(P\,mn).$$
+$$C_{\text{nodo}} \;=\; O(v\,mn).$$
 
-De $P$ ya sabes lo que dice la clase 2: pocos en la práctica, exponencial en el
+De $v$ ya sabes lo que dice la clase 2: pocos en la práctica, exponencial en el
 peor caso.
 
 ### Los dos algoritmos, lado a lado
@@ -404,20 +430,20 @@ Y aquí aparece lo que hace legible la comparación. Revisar un candidato tambi�
 cuesta $O(mn)$ —son las mismas $m$ desigualdades de $n$ términos—, así que el
 factor $mn$ **es el mismo en los dos**:
 
-$$T_{\text{enum}} = O(\lvert X\rvert\;mn), \qquad T_{\text{ram}} = O(N\,P\;mn)$$
+$$T_{\text{enum}} = O(\lvert X\rvert\;mn), \qquad T_{\text{ram}} = O(N\,v\;mn)$$
 
 Divide uno entre otro y el $mn$ se va. Queda una regla limpia:
 
-> **Ramificar gana cuando $N \cdot P < \lvert X\rvert$**, y pierde cuando no. Todo lo demás
+> **Ramificar gana cuando $N \cdot v < \lvert X\rvert$**, y pierde cuando no. Todo lo demás
 > es constante.
 
 Dos consecuencias inmediatas:
 
-- **En el peor caso** $N = 2\lvert X\rvert-1$, y entonces $T_{\text{ram}} = O(\lvert X\rvert\,P\,mn)$:
-  **$P$ veces peor que enumerar**, no mejor. Podar no cambia la clase de
+- **En el peor caso** $N = 2\lvert X\rvert-1$, y entonces $T_{\text{ram}} = O(\lvert X\rvert\,v\,mn)$:
+  **$v$ veces peor que enumerar**, no mejor. Podar no cambia la clase de
   complejidad —el problema sigue siendo NP-duro—, cambia la constante y la
   suerte.
-- **En la práctica** conviene medir $P$ junto con todo lo demás que cuesta abrir
+- **En la práctica** conviene medir $v$ junto con todo lo demás que cuesta abrir
   un nodo, y llamarle $K$: **cuántos candidatos cuesta un nodo**. La regla queda
 
 $$\frac{N}{\lvert X\rvert} \;<\; \frac{1}{K}.$$
@@ -463,7 +489,7 @@ Aquí la comparación con enumerar se invierte, y vale la pena verla en paralelo
 
 | | Enumerar | Ramificar y acotar |
 |---|---|---|
-| Encontrar pronto una buena solución | **No ayuda**: revisa los demás igual | **Ayuda mucho**: un incumbente alto poda más ramas |
+| Encontrar pronto una buena solución | **No ayuda**: revisa los demás igual | **Ayuda mucho**: un `mejor` alto poda más ramas |
 | Que casi todo sea infactible | No ayuda: los genera igual | **Ayuda**: las relajaciones salen infactibles y cierran ramas enteras |
 | Un modelo más apretado | Da igual | **Ayuda**: la cota se pega al óptimo entero y poda antes |
 | Más variables | Duplica el trabajo | Puede duplicarlo… o no cambiarlo, según pode |

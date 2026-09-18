@@ -2528,7 +2528,7 @@ def opt_flujo_ramificar():
     entero con sus tres salidas —poda por infactibilidad, poda por cota y cierre
     por solucion entera— y la salida. Cada nodo lleva su linea [Ln].
     """
-    W, H = 1000, 1240
+    W, H = 1000, 1290
     s = [marco(
         W, H,
         "Diagrama de flujo de ramificar y acotar, de la entrada a la salida: "
@@ -2543,7 +2543,10 @@ def opt_flujo_ramificar():
         "salida, los rectangulos son calculos y los rombos son decisiones. Tres "
         "caminos vuelven al ciclo: las dos podas por la izquierda y, tras "
         "guardar o partir, tambien por la izquierda. Un carril a la derecha "
-        "lleva a la salida cuando la lista de nodos vivos queda vacia.",
+        "lleva a la salida cuando la lista de nodos vivos queda vacia. Al pie, una "
+        "leyenda dice que x con barra y z con barra son el punto y el valor que "
+        "devuelve la relajacion, y que x estrella y mejor son la mejor solucion "
+        "entera encontrada hasta ahora y su valor.",
     )]
     cx, izq, rodeo, salida_x = 430, 90, 770, 910
     anchoc, altoc, my, mx = 420, 52, 46, 200
@@ -2622,7 +2625,13 @@ def opt_flujo_ramificar():
     s.append(linea(salida_x, 336, salida_x, 1140, color=SUAVE))
     s.append(flecha(salida_x, 1140, cx + anchoc // 2 - 11, 1140, color=SUAVE, marcador="s"))
 
-    s.append(texto(cx, 1215, "una lista, tres formas de cerrar una rama, y una salida",
+    # La leyenda va dentro: la figura se lee sola, sin la tabla de la pagina.
+    s.append(linea(140, 1200, W - 140, 1200, color=mezclar(LINEA, 0.5), grosor=1))
+    s.append(texto(cx, 1228,
+                   "x̄, z̄  —  el punto y el valor que devuelve la relajación: pueden tener fracciones",
+                   color=SUAVE, tam=14))
+    s.append(texto(cx, 1256,
+                   "x*, mejor  —  la mejor solución entera encontrada hasta ahora, y su valor",
                    color=SUAVE, tam=14))
     s.append(cierre())
     return "".join(s)
