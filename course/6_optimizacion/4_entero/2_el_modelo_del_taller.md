@@ -2,9 +2,9 @@
 id: el-modelo-del-taller
 title: El modelo, escrito
 nav_title: El modelo
-summary: "El modelo del taller en forma canónica y con su dominio declarado, dos variantes para ver qué mueve cada cambio, y por qué los métodos anteriores dejan de cerrar."
+summary: "Qué sale de la bitácora y qué se queda fuera, el modelo en forma canónica con su dominio declarado, dos variantes para ver qué mueve cada cambio, y por qué los métodos anteriores dejan de cerrar."
 status: ready
-estimated_time: 18m
+estimated_time: 22m
 tags: [optimizacion, modelado, entera]
 ---
 
@@ -15,7 +15,32 @@ tags: [optimizacion, modelado, entera]
 Vienes de [[la-bitacora-del-taller|leer la bitácora]] · Aquí: el modelo formal ·
 Sigue: resolverlo.
 
-## 1 · El modelo completo
+**Compara con lo que escribiste.** Si algo no coincide, lo interesante es *dónde*
+deja de coincidir, no cuánto.
+
+## 1 · Qué sale de la bitácora
+
+Las cuatro preguntas, contestadas:
+
+| Parte | En la bitácora |
+|---|---|
+| Lo que decides | Cuántos rovers y cuántas sondas fabricar |
+| Lo que te limita | 24 kg de aleación · 6 horas de calibración |
+| Lo que mides | MB transmitidos al día, y los quieres al máximo |
+| Qué clase de números | **Cantidades completas.** Media sonda no es media respuesta: es nada |
+
+Y las tres que escondía:
+
+| Trampa | Cuál era | Qué se hace con ella |
+|---|---|---|
+| Un dato que sobra | La electricidad del taller | Fuera: es igual en todos los planes |
+| Un dato que falta | **¿Sirve de algo media sonda?** Nadie lo dijo | Preguntar. Respuesta: no transmite |
+| Una frase que no aporta | «No más de cuatro rovers» | Fuera: la aleación ya lo impide |
+
+La segunda es la importante. Todo lo que hace distinta a esta clase cuelga de esa
+respuesta.
+
+## 2 · El modelo, con cada parte nombrada
 
 $$\max\; 5x_1 + 4x_2$$
 
@@ -36,8 +61,6 @@ Renglón por renglón, contra la bitácora:
 | «media sonda no transmite» | $x \in \mathbb{Z}$ |
 | «la electricidad del taller» | nada |
 | «no más de cuatro rovers» | nada: $6x_1 \le 24$ ya da $x_1 \le 4$ |
-
-## 2 · Cada parte, con su nombre
 
 ::: definition {#opt-entera title="Variable entera"}
 Una variable de decisión es **entera** cuando su valor solo tiene sentido en
