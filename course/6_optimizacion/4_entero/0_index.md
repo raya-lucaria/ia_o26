@@ -53,6 +53,25 @@ papel antes de pasar de página. Las respuestas, incluidas las de sus tres
 variantes, están en la página 2. Eso es el trabajo de la clase: no hay forma de
 aprender a modelar leyendo modelos ya escritos.
 
+## El notebook de la clase 4
+
+La función `enumerar` es el pseudocódigo de la página 3, línea por línea, y
+recibe cualquier modelo entero: le pasas `c`, `A`, `b` y las cotas, y te
+devuelve el óptimo con cuántos candidatos miró. Trae resueltos el taller y las
+**tres variantes** de la página 2, las contrasta contra `scipy.optimize.milp`, y
+cierra midiendo cómo crece el costo al mover $n$ y al mover $m$ por separado.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/04_taller_entero.ipynb)
+
+*Se abre en Google Colab, en otra pestaña.*
+
+**Dónde vive.** El archivo está en este repositorio, en
+`course/6_optimizacion/_assets/04_taller_entero.ipynb`. Si prefieres correrlo en
+tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
+
+**Cuándo.** Después de leer las tres páginas. La última celda te pide modelar una
+bitácora nueva y comprueba tu respuesta sola.
+
 ## Qué no cubre
 
 No vas a ver todavía cómo se resuelve esto sin mirar todos los planes —enumerar
