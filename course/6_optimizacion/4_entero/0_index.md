@@ -4,7 +4,7 @@ title: "Clase 4 · Cuando las piezas no se parten"
 nav_title: Entero
 summary: "Un taller que fabrica cosas que no se pueden dejar a medias. Qué cambia al escribir el modelo, por qué los métodos anteriores no cierran, y el primer método que sí: mirarlos todos."
 status: ready
-estimated_time: 62m
+estimated_time: 66m
 tags: [optimizacion, modelado, entera]
 prerequisites: [optimizacion-lineal]
 ---
