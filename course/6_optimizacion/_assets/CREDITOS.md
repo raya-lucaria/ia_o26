@@ -36,3 +36,5 @@ no son imágenes.
 | `opt-tangencia.svg` | Las curvas de nivel del reactor, la recta de la potencia, y los dos gradientes alineados en el óptimo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-normales.svg` | El gradiente del objetivo escrito como suma de las normales de las restricciones activas, con los precios sombra por coeficiente | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-pasos-gradiente.svg` | Las tres trayectorias del descenso de gradiente sobre el mismo valle, con α de 1/10, 1/4 y 3/10 | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-flujo-enumerar.svg` | El ciclo de la enumeración: genera, filtra, compara, guarda, y la salida cuando la caja se agota | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-rejilla.svg` | Los veinte planes del taller con su valor, los siete que no caben tachados, el orden de revisión y el ganador | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
