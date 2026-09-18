@@ -2030,6 +2030,196 @@ def opt_pasos_gradiente():
     return "".join(s)
 
 
+# --------------------------------------------------------------------------
+# clase 4: el taller. Enteras generales, sin ninguna continua.
+#
+# Los dos diagramas de abajo CALCULAN su contenido desde estas tres constantes,
+# como opt_poligono: la caja sale de las restricciones, la factibilidad de
+# A x <= b y el valor de c. La tabla de la pagina 3 es copia de rejilla_taller().
+
+A_TALLER = [[6, 4], [1, 2]]      # aleacion (kg), calibracion (horas)
+B_TALLER = [24, 6]
+C_TALLER = [5, 4]                # MB al dia: rover, sonda
+
+
+def caja_taller():
+    """Cota superior de cada variable, deducida del propio modelo.
+
+    a_ij x_j <= sum_k a_ik x_k <= b_i cuando todo es no negativo, asi que cada
+    restriccion con coeficiente positivo da un techo y el menor manda.
+    """
+    return [
+        min(B_TALLER[i] // A_TALLER[i][j]
+            for i in range(len(B_TALLER)) if A_TALLER[i][j] > 0)
+        for j in range(len(C_TALLER))
+    ]
+
+
+def rejilla_taller():
+    """Los candidatos de la caja, en el orden en que los mira el pseudocodigo.
+
+    Devuelve (x1, x2, factible, valor, orden) con x1 por fuera y x2 por dentro,
+    que es lo que hace el for anidado de la pagina.
+    """
+    u1, u2 = caja_taller()
+    filas, orden = [], 0
+    for x1 in range(u1 + 1):
+        for x2 in range(u2 + 1):
+            orden += 1
+            factible = all(
+                A_TALLER[i][0] * x1 + A_TALLER[i][1] * x2 <= B_TALLER[i]
+                for i in range(len(B_TALLER))
+            )
+            filas.append((x1, x2, factible, C_TALLER[0] * x1 + C_TALLER[1] * x2, orden))
+    return filas
+
+
+def optimo_taller():
+    """(x1, x2, valor, orden) del mejor candidato factible."""
+    factibles = [f for f in rejilla_taller() if f[2]]
+    mejor = max(factibles, key=lambda f: f[3])
+    return mejor[0], mejor[1], mejor[3], mejor[4]
+
+
+def _rombo(cx, cy, mx, my, relleno, borde=LINEA, grosor=2):
+    puntos = f"{cx},{cy - my} {cx + mx},{cy} {cx},{cy + my} {cx - mx},{cy}"
+    return (
+        f'<polygon points="{puntos}" fill="{relleno}" stroke="{borde}" '
+        f'stroke-width="{grosor}"/>'
+    )
+
+
+def _paso(numero, cx, cy):
+    """El disco numerado que llevan los cuatro pasos del flujo."""
+    return (
+        punto(cx, cy, r=13, color=ACENTO)
+        + texto(cx, cy + 5, numero, color=FONDO, tam=14, peso="700")
+    )
+
+
+def opt_flujo_enumerar():
+    W, H = 900, 510
+    s = [marco(
+        W, H,
+        "Cuatro pasos en ciclo: tomar el siguiente candidato de la caja, "
+        "comprobar si cumple las restricciones, comparar su valor con el mejor "
+        "guardado y guardarlo; las dos respuestas negativas y el guardado "
+        "vuelven al primer paso, y cuando la caja se agota devuelve el mejor",
+        "Genera, filtra, compara",
+        "Diagrama de flujo de la enumeracion. Un paso genera el siguiente "
+        "candidato, un rombo filtra por las restricciones, otro rombo compara "
+        "contra la mejor solucion guardada y un paso la actualiza. Un carril de "
+        "retorno a la izquierda recoge las dos salidas negativas y cierra el "
+        "ciclo. Una flecha a la derecha sale cuando ya no quedan candidatos.",
+    )]
+    carril, medio = 92, 380
+    suave_tenue = mezclar(LINEA, 0.22)
+
+    s.append(caja(170, 60, 420, 56, relleno=suave_tenue, borde=LINEA))
+    s.append(texto(medio + 15, 94, "Toma el siguiente candidato", tam=16))
+    s.append(_paso("1", 200, 88))
+
+    # Los rombos son anchos a proposito: con mx=170 el disco numerado se comia
+    # la primera letra de la pregunta mas larga, y eso solo se vio renderizando.
+    mx, my = 220, 54
+    s.append(_rombo(medio, 196, mx, my, mezclar(SERIE[1], 0.16), mezclar(SERIE[1], 0.5)))
+    s.append(texto(medio + 25, 202, "¿Cumple Ax ≤ b?", tam=16))
+    s.append(_paso("2", medio - 155, 196))
+
+    s.append(_rombo(medio, 326, mx, my, mezclar(SERIE[2], 0.16), mezclar(SERIE[2], 0.5)))
+    s.append(texto(medio + 25, 332, "¿Vale más que el mejor?", tam=16))
+    s.append(_paso("3", medio - 155, 326))
+
+    s.append(caja(170, 404, 420, 52, relleno=mezclar(SERIE[0], 0.18),
+                  borde=mezclar(SERIE[0], 0.5)))
+    s.append(texto(medio + 15, 436, "Guárdalo como el mejor", tam=16))
+    s.append(_paso("4", 200, 430))
+
+    for y0, y1 in ((116, 138), (252, 268), (382, 402)):
+        s.append(flecha(medio, y0, medio, y1))
+    # El "si" solo cuelga de los rombos: del paso 1 no sale ninguna pregunta.
+    s.append(texto(medio + 18, 266, "sí", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(medio + 18, 396, "sí", color=SUAVE, tam=13, anclaje="start"))
+
+    for cy in (196, 326):
+        s.append(flecha(medio - mx, cy, carril, cy, color=SUAVE, marcador="s"))
+        s.append(texto(medio - mx - 12, cy - 10, "no", color=SUAVE, tam=13, anclaje="end"))
+    s.append(flecha(170, 430, carril, 430, color=SUAVE, marcador="s"))
+    s.append(linea(carril, 430, carril, 88, color=SUAVE))
+    s.append(flecha(carril, 88, 170, 88))
+
+    s.append(flecha(590, 88, 668, 88))
+    s.append(texto(676, 82, "si ya no quedan,", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(676, 102, "devuelve el mejor", color=TEXTO, tam=13, anclaje="start"))
+    s.append(texto(medio, 490, "genera · filtra · compara", color=SUAVE, tam=15))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_rejilla():
+    filas = rejilla_taller()
+    u1, u2 = caja_taller()
+    gx, gy = u1 + 1, u2 + 1
+    cw, ch = 96, 68
+    x0, y0 = 170, 86
+    W, H = x0 + gx * cw + 40, y0 + gy * ch + 150
+    mx1, mx2, mejor, orden_mejor = optimo_taller()
+    s = [marco(
+        W, H,
+        f"Rejilla de {gx} columnas por {gy} renglones con los {gx * gy} planes "
+        f"posibles; {sum(1 for f in filas if f[2])} llevan su valor y el resto "
+        "están tachados por no caber, y el ganador está resaltado",
+        "La caja entera, con su valor",
+        "Cada celda es un plan: una columna por número de rovers y un renglón "
+        "por número de sondas. Las celdas que cumplen las dos restricciones "
+        "llevan los MB que transmite ese plan; las que no, van tachadas. El "
+        "número pequeño de cada celda es el lugar que ocupa en el recorrido.",
+    )]
+    for x1, x2, factible, valor, orden in filas:
+        x = x0 + x1 * cw
+        y = y0 + (u2 - x2) * ch
+        gana = (x1, x2) == (mx1, mx2)
+        if gana:
+            s.append(caja(x + 4, y + 4, cw - 8, ch - 8,
+                          relleno=mezclar(ACENTO, 0.24), borde=ACENTO, grosor=3))
+        elif factible:
+            s.append(caja(x + 4, y + 4, cw - 8, ch - 8,
+                          relleno=mezclar(SERIE[0], 0.14), borde=mezclar(SERIE[0], 0.4)))
+        else:
+            s.append(caja(x + 4, y + 4, cw - 8, ch - 8,
+                          relleno=mezclar(ALARMA, 0.10), borde=mezclar(ALARMA, 0.3)))
+            tachado = mezclar(ALARMA, 0.65)
+            s.append(linea(x + 26, y + 20, x + cw - 26, y + ch - 20, color=tachado))
+            s.append(linea(x + cw - 26, y + 20, x + 26, y + ch - 20, color=tachado))
+        s.append(texto(x + 14, y + 24, str(orden), color=SUAVE, tam=11, anclaje="start"))
+        if factible:
+            s.append(texto(x + cw // 2, y + 44, str(valor), tam=22,
+                           peso="700" if gana else "500"))
+    for x1 in range(gx):
+        s.append(texto(x0 + x1 * cw + cw // 2, y0 - 14, str(x1), color=SUAVE, tam=14))
+    for x2 in range(gy):
+        s.append(texto(x0 - 18, y0 + (u2 - x2) * ch + ch // 2 + 5, str(x2),
+                       color=SUAVE, tam=14, anclaje="end"))
+    s.append(texto(36, y0 - 14, "x₂ = sondas", color=SUAVE, tam=13, anclaje="start"))
+    s.append(texto(x0 + gx * cw // 2, y0 + gy * ch + 34, "x₁ = rovers",
+                   color=SUAVE, tam=15))
+    ly = y0 + gy * ch + 74
+    s.append(caja(x0, ly - 14, 22, 20, relleno=mezclar(SERIE[0], 0.14),
+                  borde=mezclar(SERIE[0], 0.4), radio=5))
+    s.append(texto(x0 + 32, ly + 2, "cabe", color=SUAVE, tam=13, anclaje="start"))
+    s.append(caja(x0 + 110, ly - 14, 22, 20, relleno=mezclar(ALARMA, 0.10),
+                  borde=mezclar(ALARMA, 0.3), radio=5))
+    s.append(texto(x0 + 142, ly + 2, "no cabe", color=SUAVE, tam=13, anclaje="start"))
+    # La nota va en su propio renglon: en la misma linea que los cuadros se
+    # salia del lienzo por la derecha, y eso solo se vio renderizando.
+    s.append(texto(W // 2, ly + 34,
+                   f"el número pequeño es el orden de revisión: el ganador "
+                   f"sale en el {orden_mejor} de {len(filas)}",
+                   color=SUAVE, tam=13))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
@@ -2050,6 +2240,8 @@ DIAGRAMAS = {
     "opt-tangencia": opt_tangencia,
     "opt-normales": opt_normales,
     "opt-pasos-gradiente": opt_pasos_gradiente,
+    "opt-flujo-enumerar": opt_flujo_enumerar,
+    "opt-rejilla": opt_rejilla,
 }
 
 

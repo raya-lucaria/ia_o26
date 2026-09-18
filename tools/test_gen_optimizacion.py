@@ -768,3 +768,30 @@ def test_la_guarda_de_rotulos_si_puede_fallar():
     rejilla = cabeza + '<line x1="0" y1="46" x2="200" y2="46" stroke="#fff" ' \
                        'stroke-width="1"/>' + rotulo + "</svg>"
     assert rotulos_partidos(rejilla) == [], "la rejilla no deberia contar"
+
+
+def test_la_rejilla_del_taller_es_la_que_la_pagina_tabula():
+    """El caso de la clase 4, con la aritmetica que la pagina 3 copia.
+
+    La caja no es un dato: se deduce de las restricciones, y esta prueba falla
+    si alguien la escribe a mano. El optimo tiene que ser unico —un empate
+    arruina el ejemplo— y el lugar que ocupa en el recorrido es lo que la
+    pagina usa para decir que enumerar no puede parar antes.
+    """
+    assert gen.caja_taller() == [4, 3], "la caja ya no sale de las restricciones"
+
+    filas = gen.rejilla_taller()
+    assert len(filas) == 20, f"la caja tiene {len(filas)} candidatos, no 20"
+    factibles = [f for f in filas if f[2]]
+    assert len(factibles) == 13, f"hay {len(factibles)} factibles, no 13"
+
+    x1, x2, valor, orden = gen.optimo_taller()
+    assert (x1, x2, valor) == (4, 0, 20), "el optimo entero ya no es (4,0) = 20"
+    assert orden == 17, f"el ganador sale en el candidato {orden}, no en el 17"
+    assert sum(1 for f in factibles if f[3] == valor) == 1, "el optimo empata"
+
+    # El redondeo de la relajacion, que la pagina 2 descarta: (3,1) es factible
+    # y vale menos que el optimo, y (3,2) ni siquiera cabe.
+    por_punto = {(f[0], f[1]): f for f in filas}
+    assert por_punto[(3, 1)][2] and por_punto[(3, 1)][3] == 19
+    assert not por_punto[(3, 2)][2]
