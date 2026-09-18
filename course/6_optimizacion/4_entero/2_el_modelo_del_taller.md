@@ -2,9 +2,9 @@
 id: el-modelo-del-taller
 title: El modelo, escrito
 nav_title: El modelo
-summary: "Qué sale de la bitácora y qué se queda fuera, el modelo en forma canónica con su dominio declarado, dos variantes para ver qué mueve cada cambio, y por qué los métodos anteriores dejan de cerrar."
+summary: "Qué sale de la bitácora y qué se queda fuera, el modelo en forma canónica con su dominio declarado, tres variantes que obligan a inventar variables nuevas, y por qué los métodos anteriores dejan de cerrar."
 status: ready
-estimated_time: 22m
+estimated_time: 30m
 tags: [optimizacion, modelado, entera]
 ---
 
@@ -87,37 +87,92 @@ cambia todo: $F$ ya no es una región, es un **conjunto de puntos sueltos**.
 ::: remark {#opt-binaria title="El caso binario"}
 Si además $x \le 1$, cada variable solo vale 0 o 1: **binaria**. Es el caso de
 «lo llevo o no lo llevo», y es donde viven las frases lógicas —«si A entonces B»
-se escribe $x_B \ge x_A$—. Aquí no lo necesitamos: los rovers se cuentan.
+se escribe $x_B \ge x_A$—. Aquí no lo necesitamos para contar: los rovers se
+cuentan.
 :::
 
-## 3 · Dos variantes
+::: remark {#opt-indicadora title="Variable indicadora"}
+Una **indicadora** es una binaria que no cuenta nada: solo dice **si algo
+ocurre**. ¿Se enciende la línea? ¿Se usa el lote?
 
-::: exercise {#opt-ej-cargamento title="Variante 1 — llega un cargamento"}
-Ahora hay **30 kg** de aleación. Escribe el modelo nuevo y di qué se movió.
+Por sí sola no hace nada. Solo sirve si se **enlaza** con las variables que sí
+cuentan, mediante desigualdades que la obliguen a valer 1 cuando eso ocurre.
+Cuáles son esas desigualdades es el trabajo de los tres ejercicios de abajo.
 :::
 
-::: answer {#opt-resp-cargamento of="opt-ej-cargamento"}
-Cambia **un número y nada más**: $6x_1 + 4x_2 \le 30$.
+## 3 · Tres variantes, y ninguna es un cambio de número
 
-$c$ igual, $A$ igual, dominio igual. Los datos viven en $b$; la forma del modelo
-no se entera. Lo único que sí crece es cuántos planes hay que considerar: ahora
-$x_1$ puede llegar a 5.
+::: exercise {#opt-ej-encender title="Variante 1 — encender cuesta"}
+Poner en marcha la línea de rovers gasta **3 horas de calibración**, se fabrique
+uno o se fabriquen cuatro. Si no se fabrica ninguno, no se gasta.
 :::
 
-::: exercise {#opt-ej-antenas title="Variante 2 — solo hay tres antenas"}
-Cada rover necesita su propia antena y solo hay 3. Escribe el modelo nuevo.
+::: answer {#opt-resp-encender of="opt-ej-encender"}
+Una variable nueva, $y \in \{0,1\}$: ¿se enciende la línea?
+
+$$x_1 + 2x_2 + 3y \le 6 \qquad\text{(calibración)}$$
+$$x_1 \le 4y \qquad\text{(enlace)}$$
+
+**Lo difícil es el enlace, y tiene dos sutilezas.**
+
+El **4** no es un número cualquiera: es la cota más pequeña que sigue siendo
+válida, y sale de $6x_1 \le 24$. Un número más grande también da un modelo
+correcto, y más difícil de resolver — usa siempre la más chica que no elimine
+ninguna solución.
+
+Y fíjate en que $x_1 \le 4y$ **no** es una @opt-cota: su lado derecho no es un
+número, es otra variable. Es un **enlace**.
+
+**Falta el enlace al revés, y no hace falta.** Nada impide $y=1$ con $x_1=0$,
+pero encender cuesta 3 horas y no da nada: ningún plan óptimo lo haría. Si
+encender regalara algo, sí habría que escribir $y \le x_1$.
 :::
 
-::: answer {#opt-resp-antenas of="opt-ej-antenas"}
-Un renglón nuevo: $x_1 \le 3$.
+::: exercise {#opt-ej-lote title="Variante 2 — o ninguno, o lote completo"}
+Los rovers se calibran en lote: o no fabricas ninguno, o fabricas **al menos
+tres**. Cuatro y cinco están bien; uno y dos, no.
+:::
 
-Y fíjate en qué **tipo** de renglón es. No es un recurso: no hay nada que se
-reparta entre las dos variables, la desigualdad menciona una sola. Es una
-@opt-cota, de las que definiste en la clase 1.
+::: answer {#opt-resp-lote of="opt-ej-lote"}
+Otra vez una indicadora $y \in \{0,1\}$, y esta vez **dos** enlaces:
 
-Con esto, la frase del comandante sí habría sido una restricción — pero decía 4,
-y la aleación ya daba 4. Una cota que repite lo que ya sabías no agrega nada;
-una que dice menos, sí.
+$$3y \;\le\; x_1 \;\le\; 4y$$
+
+**Por qué no se puede sin ella.** Los valores permitidos de $x_1$ son
+$\{0\} \cup \{3,4\}$, y eso tiene un **hueco**. Una desigualdad sobre $x_1$ sola
+solo puede describir un intervalo, y ningún intervalo se salta el 1 y el 2 sin
+saltarse también el 0.
+
+**Y por qué $x_1 \ge 3y$ y no $x_1 \ge 3$.** Lo segundo prohibiría no fabricar
+ninguno, que es justamente una de las dos opciones que el protocolo permite.
+:::
+
+::: exercise {#opt-ej-antena-compartida title="Variante 3 — la antena se comparte"}
+Los dos primeros rovers transmiten 5 MB cada uno; del tercero en adelante, solo
+**3 MB**. Sin variables nuevas de sí o no.
+:::
+
+::: answer {#opt-resp-antena-compartida of="opt-ej-antena-compartida"}
+Parte la variable en sus dos tramos: $x_1 = u + v$, con
+
+$$0 \le u \le 2, \qquad 0 \le v \le 2, \qquad u, v \in \mathbb{Z}$$
+
+El objetivo pasa a ser $5u + 3v + 4x_2$, y en las dos restricciones $x_1$ se
+sustituye por $u+v$.
+
+**Aquí está el edge case.** Nada en el modelo obliga a llenar $u$ antes que $v$:
+el plan «$u=0$, $v=2$» es factible y significaría cobrar el precio del tercer y
+el cuarto rover habiendo fabricado dos. Funciona igual **porque el tramo caro va
+primero**: como $u$ paga 5 y $v$ paga 3, ningún óptimo abre el segundo tramo sin
+haber llenado el primero. Lo hace solo.
+
+**Dale la vuelta y el truco miente.** Si los dos primeros rindieran 3 MB y del
+tercero en adelante 5 —rendimiento creciente—, el mismo modelo declara **18 MB**
+con $u=0,\ v=2$, y la verdad es **16**. Ahí sí hace falta una indicadora que
+obligue a llenar el primer tramo antes de abrir el segundo.
+
+Partir en tramos vale cuando cada tramo rinde **menos** que el anterior. Con
+rendimiento creciente, no.
 :::
 
 ## 4 · Por qué lo que ya sabes no cierra
@@ -140,7 +195,7 @@ no puedes caminar dentro de él, porque no hay dentro.
 ## Lo que hay que llevarse
 
 - El modelo entero es el lineal más una línea: $x \in \mathbb{Z}^n$.
-- Un dato que cambia mueve $b$; una frase nueva agrega un renglón; el tipo de
-  número mueve el dominio. Son tres sitios distintos.
+- Hay condiciones que **no son un renglón más**: piden una variable nueva, y la
+  parte difícil nunca es la variable, es el enlace que la ata a las demás.
 - Perdiste la región y ganaste una lista. La página siguiente la lee entera:
   [[enumerar|enumerar]].

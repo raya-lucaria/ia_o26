@@ -4,7 +4,7 @@ title: La bitácora del taller
 nav_title: La bitácora
 summary: "Una bitácora nueva y cómo se lee: qué preguntarle, dónde se esconde lo que sobra y lo que falta, y cómo se decide el dominio. El modelo lo escribes tú."
 status: ready
-estimated_time: 10m
+estimated_time: 12m
 tags: [optimizacion, modelado, entera]
 ---
 
@@ -81,14 +81,24 @@ No lo corrijas contra nada todavía. Revisa solo que tenga sus siete partes:
 
 ## 4 · Y ahora cámbialo
 
-Dos avisos que llegan después. Replantea cada uno **sin volver a empezar**: di
-qué renglón se mueve y cuál se queda igual.
+Tres avisos que llegan después. **Ninguno es un cambio de número**: los tres
+piden algo que las clases anteriores no te enseñaron a escribir.
 
-1. **Llega un cargamento**: habrá 30 kg de aleación, no 24.
-2. **Cada rover necesita su propia antena**, y solo hay 3 antenas.
+1. **Encender cuesta.** Poner en marcha la línea de rovers gasta 3 horas de
+   calibración, se fabrique uno o se fabriquen cuatro. Si no se fabrica
+   ninguno, no se gasta.
+2. **O ninguno, o lote completo.** Los rovers se calibran en lote: o no
+   fabricas ninguno, o fabricas **al menos tres**.
+3. **La antena se comparte.** Los dos primeros rovers transmiten 5 MB cada uno;
+   del tercero en adelante, **3 MB**.
 
-Las dos respuestas están en la página siguiente, plegadas. No las abras antes de
-haber escrito algo.
+Pista, y solo eso: dos de los tres necesitan una **variable nueva que no cuenta
+nada** —solo dice sí o no—, y el tercero necesita **partir una variable en
+dos**. En los tres, la pregunta difícil es la misma: **cómo se conecta lo nuevo
+con lo que ya estaba.**
+
+Las tres respuestas están en la página siguiente, plegadas. No las abras antes
+de haber escrito algo, aunque esté mal.
 
 > **Cuidado.** Si un número no está en la bitácora, no lo inventes. Anótalo como
 > pregunta y sigue: preguntarlo es parte del trabajo, y la respuesta puede

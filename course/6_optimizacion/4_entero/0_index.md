@@ -4,7 +4,7 @@ title: "Clase 4 · Cuando las piezas no se parten"
 nav_title: Entero
 summary: "Un taller que fabrica cosas que no se pueden dejar a medias. Qué cambia al escribir el modelo, por qué los métodos anteriores no cierran, y el primer método que sí: mirarlos todos."
 status: ready
-estimated_time: 52m
+estimated_time: 62m
 tags: [optimizacion, modelado, entera]
 prerequisites: [optimizacion-lineal]
 ---
@@ -38,7 +38,7 @@ la regla de que las cosas se fabrican enteras o no se fabrican.
 | # | Página | Qué hace |
 |---|---|---|
 | 1 | La bitácora | Las preguntas que hay que hacerle, y cómo se contesta cada una. **El modelo lo escribes tú** |
-| 2 | El modelo | Contesta la lectura, formaliza, cambia el modelo dos veces, y dice por qué lo anterior no cierra |
+| 2 | El modelo | Contesta la lectura, formaliza, y **tres variantes que obligan a inventar variables nuevas** |
 | 3 | Enumerar | El primer método que sí funciona, con su costo |
 
 - [[la-bitacora-del-taller|1 · La bitácora del taller]]
@@ -49,7 +49,7 @@ la regla de que las cosas se fabrican enteras o no se fabrican.
 
 La página 1 **no escribe el modelo**: da las preguntas, dice cómo se contesta
 cada una —el dominio con más detalle, porque es la nueva— y te pide el tuyo en
-papel antes de pasar de página. Las respuestas, incluidas las de sus dos
+papel antes de pasar de página. Las respuestas, incluidas las de sus tres
 variantes, están en la página 2. Eso es el trabajo de la clase: no hay forma de
 aprender a modelar leyendo modelos ya escritos.
 
