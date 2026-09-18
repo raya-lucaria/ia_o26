@@ -544,3 +544,46 @@ def test_extra_ningun_wikilink_va_sin_etiqueta():
         "wikilinks sin etiqueta (se publican mostrando el id crudo):\n"
         + "\n".join(desnudos)
     )
+
+
+def test_extra_el_vocabulario_de_arbol_no_se_usa_antes_de_presentarlo():
+    """La página de ramificar y acotar no puede nombrar árboles antes de tenerlos.
+
+    Su sección 1 habla de una cota y su sección 2 de partir en dos; el
+    vocabulario prestado de grafos —nodo, rama, hoja, raíz, hijo, colgar— nace
+    en la subsección que lo presenta, y antes de ahí no existe para el lector.
+    Esta guarda existe porque el defecto se publicó dos veces: la primera con
+    la página entera escrita al revés, la segunda en un bloque añadido después,
+    encima del que ya lo arreglaba.
+
+    Se ignoran el frontmatter, los encabezados de nivel 1, los ids y el texto
+    alternativo de las figuras: ahí «rama» o «nodo» son identificadores o
+    descripciones de un dibujo, no prosa que el lector tenga que entender.
+    """
+    pagina = RAIZ / "course/6_optimizacion/4_entero/4_ramificar_y_acotar.md"
+    lineas = pagina.read_text(encoding="utf-8").splitlines()
+
+    presenta = next(
+        (i for i, l in enumerate(lineas) if "Los subproblemas forman un árbol" in l),
+        None,
+    )
+    assert presenta is not None, (
+        "la subsección que presenta el vocabulario de árbol desapareció: si se "
+        "renombró, esta guarda hay que actualizarla, no borrarla"
+    )
+
+    prestadas = ("nodo", "rama", "hoja", "raíz", "hijo", "cuelga", "árbol")
+    culpables = []
+    for i, linea in enumerate(lineas[:presenta]):
+        suelta = linea.strip()
+        if (suelta.startswith("![") or suelta.startswith(":::")
+                or suelta.startswith("#") or i < 10):
+            continue
+        for palabra in prestadas:
+            if re.search(rf"\b{palabra}", suelta, re.IGNORECASE):
+                culpables.append(f"línea {i + 1}: [{palabra}] {suelta[:70]}")
+                break
+
+    assert not culpables, (
+        "vocabulario de árbol usado antes de presentarlo:\n" + "\n".join(culpables)
+    )

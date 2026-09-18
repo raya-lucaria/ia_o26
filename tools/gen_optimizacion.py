@@ -2574,7 +2574,8 @@ def opt_flujo_ramificar():
     s.append(texto(cx, 90, "c, A, b, l, u", tam=15))
 
     s += rect(160, "[L1]", "mejor ← −∞ ;   x* ← «ninguno»")
-    s += rect(238, "[L2]", "L ← { el problema original }")
+    s += rect(236, "[L2]", "L ← { el problema original }", alto=74)
+    s.append(texto(cx + 14, 262, "L es la lista de nodos vivos", color=SUAVE, tam=12))
     s += rombo(336, "[L3]", "¿L ≠ { } ?")
     s += rect(434, "[L4]", "P ← saca un nodo de L")
     s += rombo(532, "[L5]", "¿la relajación de P es factible?")

@@ -105,15 +105,15 @@ El dibujo dice dos cosas a la vez:
   dos mitades. Por eso cada corte obliga a la relajación a contestar algo
   distinto, y el método avanza en vez de dar vueltas.
 
-### Siempre dos hijos, y por una sola variable
+### Siempre dos mitades, y por una sola variable
 
 Tres preguntas que el dibujo no contesta:
 
 | Pregunta | Respuesta |
 |---|---|
 | ¿Cuántas mitades? | **Siempre dos.** Partir por una variable da exactamente dos, y entre las dos cubren todo |
-| ¿Y si hay **varias** variables fraccionarias? | Se parte por **una sola**. No hay que combinarlas: las demás siguen fraccionarias en los hijos, y se partirán más abajo si hace falta. Cuál se elige es una decisión libre, y la fijamos en la sección 3 |
-| ¿Y si una variable fuera **continua**? | **Nunca se ramifica.** Solo se mira la integralidad de las variables que la exigen: en una continua, $3/2$ es una respuesta perfectamente buena |
+| ¿Y si hay **varias** variables fraccionarias? | Se parte por **una sola**. No hay que combinarlas: las demás siguen fraccionarias en las dos mitades, y se partirán más abajo si hace falta. Cuál se elige es una decisión libre, y la fijamos en la sección 3 |
+| ¿Y si una variable fuera **continua**? | **Nunca se parte por ella.** Solo se mira la integralidad de las variables que la exigen: en una continua, $3/2$ es una respuesta perfectamente buena |
 
 De la última se sigue el caso extremo: si **ninguna** variable tuviera que ser
 entera, el problema sería lineal y no habría nada que partir — la relajación
@@ -158,8 +158,13 @@ Ya está todo lo que hace falta: una cota para descartar, un corte para avanzar 
 un árbol donde poner lo que se va abriendo. Falta la contabilidad.
 
 ::: definition {#opt-nodos-vivos title="Lista de nodos vivos"}
-La **lista de nodos vivos** son los subproblemas ya creados y todavía sin
-resolver.
+La **lista de nodos vivos**, que escribimos $L$, son los subproblemas ya creados
+y todavía sin resolver.
+
+Al arrancar, $L$ tiene un solo elemento: el problema original, el que todavía no
+se ha partido por ningún lado. Cada vez que un nodo se parte, sale de $L$ y
+entran sus dos mitades; cada vez que uno se cierra, sale y no entra nada. El
+algoritmo termina cuando $L$ se queda vacía.
 
 Es el estado del algoritmo, y es lo que lo hace distinto de todo lo anterior:
 simplex estaba en un vértice, el gradiente en un punto, enumerar en un
