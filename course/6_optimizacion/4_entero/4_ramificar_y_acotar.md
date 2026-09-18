@@ -352,74 +352,105 @@ una sola cuenta, porque su cota —19— no alcanzaba. Eso es podar.
 
 ### Los dos factores
 
-$$T \;=\; \underbrace{\text{cuántos nodos se abren}}_{\text{de } 1 \text{ a } 2|X|-1} \;\times\; \underbrace{\text{qué cuesta un nodo}}_{\textbf{un problema lineal completo}}$$
+$$T_{\text{ram}} \;=\; \underbrace{N}_{\text{nodos que se abren}} \;\times\; \underbrace{C_{\text{nodo}}}_{\text{lo que cuesta abrir uno}}$$
 
-**El primero no tiene fórmula**, y ésa es la diferencia más honda con enumerar.
+Igual que en enumerar, cada factor se deriva por separado.
+
+### El primer factor: cuántos nodos, $N$
+
+**No tiene fórmula cerrada**, y ésa es la diferencia más honda con enumerar.
 Allá el conteo salía de las cotas antes de correr nada; aquí depende de la
-instancia:
+instancia. Lo que sí hay es un intervalo:
 
-| | Nodos |
-|---|---|
-| El mejor caso | 1 — la relajación sale entera de una vez |
-| Este problema | 5 |
-| El peor caso | $2|X|-1$, con $|X|$ la caja de la página 3 — aquí **39** |
+$$1 \;\le\; N \;\le\; 2\lvert X\rvert - 1$$
 
-**De dónde sale ese tope.** Cada hoja se queda con un pedazo de la caja, los
-pedazos no se solapan y ninguno queda vacío: hay a lo más $|X|$ hojas, y un árbol
-binario con $L$ hojas tiene $2L-1$ nodos. Con variables **0/1** eso es el
-$2^{n+1}-1$ que se suele citar; con enteras generales **no hay tope que dependa
-solo de $n$**, porque la misma variable se puede volver a partir más abajo.
+| | $N$ | Por qué |
+|---|---|---|
+| Mejor caso | 1 | La relajación de la raíz sale entera y se acabó |
+| Este problema | 5 | |
+| Peor caso | $2\lvert X\rvert-1$ — aquí **39** | Ver abajo |
 
-Léelo despacio, porque es incómodo: **en el peor caso este algoritmo abre casi el
-doble de nodos que candidatos tiene la caja**, y cada nodo cuesta un problema
-lineal. Ramificar y acotar puede ser mucho peor que enumerar.
+**De dónde sale el tope.** Cada hoja se queda con un pedazo de la caja, los
+pedazos no se solapan y ninguno queda vacío, así que hay a lo más $\lvert X\rvert$ hojas. Y
+un árbol binario en el que cada nodo interno tiene exactamente dos hijos cumple
 
-**Podar no cambia la clase de complejidad.** El problema sigue siendo NP-duro, y
-existen instancias donde el árbol se abre entero. Lo que cambia es la constante y
-la suerte, y en la práctica eso es casi todo.
+$$\text{nodos} \;=\; 2\,\text{hojas} - 1 \;\le\; 2\lvert X\rvert - 1.$$
+
+Con variables **0/1** eso es el $2^{n+1}-1$ que se suele citar, porque ahí
+$\lvert X\rvert = 2^n$. Con enteras generales **no hay tope que dependa solo de $n$**: la
+misma variable se puede volver a partir más abajo, y el tope crece con el tamaño
+de las cotas.
+
+### El segundo factor: qué cuesta un nodo, $C_{\text{nodo}}$
+
+Abrir un nodo es resolver un problema lineal con $n$ variables y $m$
+restricciones. Simplex se mueve de vértice en vértice, y **cada pivote cuesta del
+orden de $mn$ operaciones**: recorrer la matriz. Si llamamos $P$ al número de
+pivotes,
+
+$$C_{\text{nodo}} \;=\; O(P\,mn).$$
+
+De $P$ ya sabes lo que dice la clase 2: pocos en la práctica, exponencial en el
+peor caso.
+
+### Los dos algoritmos, lado a lado
+
+Y aquí aparece lo que hace legible la comparación. Revisar un candidato también
+cuesta $O(mn)$ —son las mismas $m$ desigualdades de $n$ términos—, así que el
+factor $mn$ **es el mismo en los dos**:
+
+$$T_{\text{enum}} = O(\lvert X\rvert\;mn), \qquad T_{\text{ram}} = O(N\,P\;mn)$$
+
+Divide uno entre otro y el $mn$ se va. Queda una regla limpia:
+
+> **Ramificar gana cuando $N \cdot P < \lvert X\rvert$**, y pierde cuando no. Todo lo demás
+> es constante.
+
+Dos consecuencias inmediatas:
+
+- **En el peor caso** $N = 2\lvert X\rvert-1$, y entonces $T_{\text{ram}} = O(\lvert X\rvert\,P\,mn)$:
+  **$P$ veces peor que enumerar**, no mejor. Podar no cambia la clase de
+  complejidad —el problema sigue siendo NP-duro—, cambia la constante y la
+  suerte.
+- **En la práctica** conviene medir $P$ junto con todo lo demás que cuesta abrir
+  un nodo, y llamarle $K$: **cuántos candidatos cuesta un nodo**. La regla queda
+
+$$\frac{N}{\lvert X\rvert} \;<\; \frac{1}{K}.$$
+
+Es decir: **ramificar gana cuando abre menos de una $K$-ésima parte de la caja.**
 
 ### La escalera, medida
 
-Lo que pasa entre el mejor y el peor caso **no se deduce: se mide.** Mochilas
-binarias aleatorias con $m=3$, cinco por tamaño, mediana:
+Las dos cantidades de esa regla se miden. Mochilas binarias aleatorias con
+$m=3$, cinco instancias por tamaño, mediana:
 
-| Variables ($n$) | Candidatos ($2^n$) | Nodos abiertos | % de la caja | Enumerar | Ramificar |
+| Variables ($n$) | Caja $\lvert X\rvert = 2^n$ | Nodos $N$ | $N/\lvert X\rvert$ | Enumerar | Ramificar |
 |---:|---:|---:|---:|---:|---:|
 | 8 | 256 | 29 | 11 % | 4 ms | 56 ms |
-| 10 | 1 024 | 55 | 5 % | 26 ms | 137 ms |
-| 12 | 4 096 | 63 | 1.5 % | 90 ms | 98 ms |
-| 14 | 16 384 | 29 | 0.2 % | 303 ms | 63 ms |
+| 10 | 1 024 | 55 | 5.4 % | 26 ms | 137 ms |
+| 12 | 4 096 | 63 | **1.5 %** | 90 ms | 98 ms |
+| 14 | 16 384 | 29 | **0.2 %** | 303 ms | 63 ms |
 | 16 | 65 536 | 65 | 0.1 % | 1 048 ms | 88 ms |
 | 18 | 262 144 | 141 | 0.1 % | 4 148 ms | 277 ms |
 
-Dos columnas que hay que leer juntas. **La de los nodos casi no sube** —de 29 a
-141 mientras la caja se multiplica por mil—, y por eso el porcentaje se
-desploma. Pero **el reloj dice otra cosa al principio**: hasta $n=12$ enumerar
-gana, y solo después de ahí se invierte, hasta ser quince veces más rápido en
-$n=18$.
+De las mismas corridas sale $K$: un candidato costó unos **16 µs** y un nodo unos
+**1.7 ms**, así que $K \approx 100$ y la regla predice el cruce en
+$N/\lvert X\rvert \approx 1\%$.
 
-Ese cruce es todo el argumento de esta página. No hay un algoritmo mejor: hay un
-tamaño a partir del cual conviene pagar nodos caros para no mirarlo todo.
+**Y ahí está.** En $n=12$ abre el 1.5 % —por encima del 1 %— y pierde en el
+reloj, 90 ms contra 98. En $n=14$ abre el 0.2 % y gana cinco veces. La
+desigualdad de arriba y el cronómetro dicen lo mismo.
 
-### El segundo factor: qué cuesta un nodo
+> **De dónde salen estos milisegundos.** De correr los dos algoritmos **en la
+> máquina donde se escribió este curso**, en Python con `scipy`. Los
+> milisegundos dependen de la máquina y de la implementación, y $K$ con ellos:
+> en C, un nodo costaría bastantes menos candidatos y el cruce llegaría antes.
+> Lo que no depende de la máquina son las dos columnas del medio y la regla
+> $N\cdot P < \lvert X\rvert$, que es la que hay que recordar.
 
-| Algoritmo | Un paso es | Cuesta |
-|---|---|---|
-| Enumerar | Revisar un candidato | $(m+1)n$ productos |
-| Ramificar | Abrir un nodo | **Un problema lineal completo**: simplex sobre $n$ variables y $m+n$ restricciones, contando las cotas |
-
-En las mismas corridas de arriba, un candidato salió a unos **16 µs** y un nodo a
-unos **1.7 ms**: **un nodo cuesta del orden de cien candidatos.** Ese 100 es la
-constante que hay que ganar podando, y por eso el cruce llega en $n=12$ y no en
-$n=4$.
-
-> **Cinco nodos contra veinte candidatos no es cuatro veces más rápido.**
-> Comparar los conteos mezcla unidades, igual que comparar hojas con nodos. Un
-> candidato es un producto punto; un nodo es un algoritmo completo.
-
-**En el taller, enumerar gana en el reloj**, y por mucho: 20 productos punto
-contra 5 llamadas a simplex. Ramificar y acotar no está hecho para 20
-candidatos.
+**La columna que hay que mirar es $N/\lvert X\rvert$.** Los nodos apenas se mueven —de 29 a
+141— mientras la caja se multiplica por mil. Eso es lo que hace ganar a
+ramificar: no que sus pasos sean baratos, sino que sean poquísimos.
 
 ### Qué lo abarata, y qué no
 
