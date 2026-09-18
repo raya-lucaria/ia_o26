@@ -2475,10 +2475,10 @@ def opt_arbol():
                     "infactible": ALARMA}
     s = [marco(
         W, H,
-        "Arbol de cinco nodos: la raiz con cota veintiuno se parte en dos ramas, "
-        "la de arriba cierra con una solucion entera de dieciocho, la de abajo "
-        "se vuelve a partir y da la solucion entera de veinte y una poda por "
-        "cota",
+        "Arbol de cinco nodos: la raiz con cota veintiuno se parte en dos ramas; "
+        "la de la derecha cierra con una solucion entera de dieciocho y la de la "
+        "izquierda se vuelve a partir, y de ahi salen la solucion entera de "
+        "veinte y una poda por cota",
         "El árbol del taller",
         "Cada caja es un subproblema con su cota. Verde, la relajacion salio "
         "entera y cierra la rama. Rojo, la cota no supera a la mejor solucion y "
@@ -2539,7 +2539,7 @@ def opt_flujo_ramificar():
         "una variable fraccionaria; cuando la lista se vacia devuelve la mejor "
         "solucion",
         "Ramificar y acotar, paso a paso",
-        "Once nodos en una columna. Los paralelogramos son la entrada y la "
+        "Doce nodos en una columna. Los paralelogramos son la entrada y la "
         "salida, los rectangulos son calculos y los rombos son decisiones. Tres "
         "caminos vuelven al ciclo: las dos podas por la izquierda y, tras "
         "guardar o partir, tambien por la izquierda. Un carril a la derecha "

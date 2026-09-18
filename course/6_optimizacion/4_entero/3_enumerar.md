@@ -75,6 +75,9 @@ OUTPUT  un óptimo x* y su valor, o «no hay factibles».
 Y en Python es el mismo texto:
 
 ```python
+import numpy as np
+from itertools import product
+
 mejor, x_mejor = -np.inf, None
 for x in product(range(0, 5), range(0, 4)):      # la caja
     x = np.array(x)
@@ -185,7 +188,7 @@ total. El problema entero cabe en una servilleta.
 | Si agregas… | Qué factor toca | Qué le pasa a $T$ |
 |---|---|---|
 | Una restricción, $m \to m+1$ | Solo el segundo | $n$ productos más por candidato: sube **en proporción** |
-| Una variable, $n \to n+1$ | **Los dos** | El primero se **multiplica por $k$** (con 0/1, se duplica); el segundo solo sube en $m$ productos |
+| Una variable, $n \to n+1$ | **Los dos** | El primero se **multiplica por $k$** (con 0/1, se duplica); el segundo solo sube en $m+1$ productos |
 | Un dato más grande, $u_i$ sube | Solo el primero | La caja se estira. Con 30 kg en vez de 24, $x_1$ llega a 5 y son **24 candidatos, no 20** |
 
 El tercer renglón es el que sorprende: **la variante del cargamento no cambió el

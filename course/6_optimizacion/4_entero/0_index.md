@@ -2,7 +2,7 @@
 id: optimizacion-entera
 title: "Clase 4 · Cuando las piezas no se parten"
 nav_title: Entero
-summary: "Un taller que fabrica cosas que no se pueden dejar a medias. Qué cambia al escribir el modelo, por qué los métodos anteriores no cierran, y el primer método que sí: mirarlos todos."
+summary: "Un taller que fabrica cosas que no se pueden dejar a medias. Qué cambia al escribir el modelo, por qué los métodos anteriores no cierran, y dos que sí: mirarlos todos, y descartarlos sin mirarlos."
 status: ready
 estimated_time: 100m
 tags: [optimizacion, modelado, entera]
@@ -71,7 +71,7 @@ cierra midiendo cómo crece el costo al mover $n$ y al mover $m$ por separado.
 `course/6_optimizacion/_assets/04_taller_entero.ipynb`. Si prefieres correrlo en
 tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
 
-**Cuándo.** Después de leer las tres páginas. La última celda te pide modelar una
+**Cuándo.** Después de leer las cuatro páginas. La última celda te pide modelar una
 bitácora nueva y comprueba tu respuesta sola.
 
 ## Qué no cubre
