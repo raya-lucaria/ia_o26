@@ -4,7 +4,7 @@ title: Ramificar y acotar
 nav_title: Ramificar
 summary: "El algoritmo que no mira todos los planes y aun así demuestra que su respuesta es la mejor: parte el problema en dos, y descarta grupos enteros de planes con una sola cuenta."
 status: ready
-estimated_time: 34m
+estimated_time: 42m
 tags: [optimizacion, entera, algoritmos]
 ---
 
@@ -48,17 +48,23 @@ $l \le x \le u$. La relajación pide **exactamente eso y nada más** —solo dej
 exigir $x \in \mathbb{Z}$—, así que **ningún plan entero se cae**: todos siguen
 estando.
 
-Con $A$ = los 13 planes enteros y $B$ = todos los puntos del polígono:
+Los dos conjuntos, con nombre:
 
-| Plan | ¿Entero? | ¿Está en la relajación? | Vale |
+- $A$ = **los planes enteros que caben**: los 13 puntos de la retícula que
+  cumplen $Ax\le b$ y las cotas.
+- $B$ = **los puntos de la relajación**: todos los del polígono, fracciones
+  incluidas. «Estar en $B$» significa cumplir $Ax\le b$ y las cotas, y **nada
+  más** — nadie pregunta si los números son enteros.
+
+| Plan | ¿Está en $A$? | ¿Está en $B$? | Vale |
 |---|---|---|---:|
 | $(4,\ 0)$ | sí | sí | 20 |
 | $(3,\ 1)$ | sí | sí | 19 |
 | $(2,\ 2)$ | sí | sí | 18 |
-| $(3,\ 3/2)$ | **no**: media sonda | **sí** | **21** |
+| $(3,\ 3/2)$ | **no**: media sonda | **sí**: cumple las dos restricciones | **21** |
 
-Los tres primeros están en los dos conjuntos. El cuarto **solo está en el
-segundo**, y es el que manda. Por eso
+Los tres primeros están en los dos conjuntos. El cuarto **solo está en $B$**, y
+es el que manda. Por eso
 
 $$z_{\text{relajación}} \;\ge\; z_{\text{entero}}, \qquad\text{y aquí}\quad 21 \ge 20.$$
 
@@ -98,6 +104,20 @@ El dibujo dice dos cosas a la vez:
 - **Sí se pierde el punto de la cota.** $(3,\ 3/2)$ no sobrevive a ninguna de las
   dos mitades. Por eso cada corte obliga a la relajación a contestar algo
   distinto, y el método avanza en vez de dar vueltas.
+
+### Siempre dos hijos, y por una sola variable
+
+Tres preguntas que el dibujo no contesta:
+
+| Pregunta | Respuesta |
+|---|---|
+| ¿Cuántas mitades? | **Siempre dos.** Partir por una variable da exactamente dos, y entre las dos cubren todo |
+| ¿Y si hay **varias** variables fraccionarias? | Se parte por **una sola**. No hay que combinarlas: las demás siguen fraccionarias en los hijos, y se partirán más abajo si hace falta. Cuál se elige es una decisión libre, y la fijamos en la sección 3 |
+| ¿Y si una variable fuera **continua**? | **Nunca se ramifica.** Solo se mira la integralidad de las variables que la exigen: en una continua, $3/2$ es una respuesta perfectamente buena |
+
+De la última se sigue el caso extremo: si **ninguna** variable tuviera que ser
+entera, el problema sería lineal y no habría nada que partir — la relajación
+sería la respuesta, y estaríamos en la clase 2.
 
 Cada mitad es un problema completo —mismo objetivo, mismas restricciones, cotas
 más apretadas—, y tiene nombre:
@@ -251,6 +271,35 @@ Entrega el **óptimo global** y un **certificado**: al terminar, toda rama que n
 se abrió tenía una cota peor que la respuesta.
 :::
 
+### ¿Llega siempre al óptimo?
+
+Sí, y por dos razones separadas que conviene no mezclar.
+
+**No se pierde el óptimo.** Dos hechos, uno de cada sección anterior:
+
+1. **Partir cubre todo** (§2): entre $\lfloor\bar x_j\rfloor$ y
+   $\lceil\bar x_j\rceil$ no hay enteros, así que todo plan entero del padre
+   está en alguno de los dos hijos. Por inducción, **todo plan entero está en
+   alguna hoja**.
+2. **Podar solo tira lo que no puede ganar** (§1): una rama se descarta cuando su
+   cota no supera a una solución que ya tienes, y la cota es un techo válido de
+   esa rama. Lo descartado es, como mucho, tan bueno como lo que ya tenías.
+
+Junta las dos y el óptimo no tiene por dónde escaparse.
+
+**Y termina.** Cada corte reduce en al menos 1 el rango $u_j - l_j$ de la
+variable por la que se parte, y los rangos empiezan finitos y nunca crecen.
+Ninguna rama se puede partir para siempre: la profundidad del árbol está acotada
+por $\sum_j (u_j - l_j)$. **Con la caja infinita esta garantía desaparece**, que
+es la otra cara del aviso de la línea 5.
+
+**Qué entrega, exactamente:** el óptimo **exacto**, no una aproximación. Y algo
+que enumerar no puede dar — si lo paras antes de tiempo, te quedas con la mejor
+solución encontrada **y** con la mayor cota que quedó abierta en la lista. La
+diferencia entre las dos es el **hueco**, y te dice cuánto podrías estar
+perdiendo como máximo. Parar temprano deja de ser rendirse: deja una respuesta
+con su margen de error declarado.
+
 De repaso, qué hace cada pieza del modelo dentro del ciclo:
 
 | Pieza | Sirve para |
@@ -329,22 +378,63 @@ lineal. Ramificar y acotar puede ser mucho peor que enumerar.
 existen instancias donde el árbol se abre entero. Lo que cambia es la constante y
 la suerte, y en la práctica eso es casi todo.
 
-### El segundo factor es mucho más caro
+### La escalera, medida
+
+Lo que pasa entre el mejor y el peor caso **no se deduce: se mide.** Mochilas
+binarias aleatorias con $m=3$, cinco por tamaño, mediana:
+
+| Variables ($n$) | Candidatos ($2^n$) | Nodos abiertos | % de la caja | Enumerar | Ramificar |
+|---:|---:|---:|---:|---:|---:|
+| 8 | 256 | 29 | 11 % | 4 ms | 56 ms |
+| 10 | 1 024 | 55 | 5 % | 26 ms | 137 ms |
+| 12 | 4 096 | 63 | 1.5 % | 90 ms | 98 ms |
+| 14 | 16 384 | 29 | 0.2 % | 303 ms | 63 ms |
+| 16 | 65 536 | 65 | 0.1 % | 1 048 ms | 88 ms |
+| 18 | 262 144 | 141 | 0.1 % | 4 148 ms | 277 ms |
+
+Dos columnas que hay que leer juntas. **La de los nodos casi no sube** —de 29 a
+141 mientras la caja se multiplica por mil—, y por eso el porcentaje se
+desploma. Pero **el reloj dice otra cosa al principio**: hasta $n=12$ enumerar
+gana, y solo después de ahí se invierte, hasta ser quince veces más rápido en
+$n=18$.
+
+Ese cruce es todo el argumento de esta página. No hay un algoritmo mejor: hay un
+tamaño a partir del cual conviene pagar nodos caros para no mirarlo todo.
+
+### El segundo factor: qué cuesta un nodo
 
 | Algoritmo | Un paso es | Cuesta |
 |---|---|---|
 | Enumerar | Revisar un candidato | $(m+1)n$ productos |
-| Ramificar | Abrir un nodo | **Un problema lineal completo**: la relajación, con los pivotes de simplex |
+| Ramificar | Abrir un nodo | **Un problema lineal completo**: simplex sobre $n$ variables y $m+n$ restricciones, contando las cotas |
+
+En las mismas corridas de arriba, un candidato salió a unos **16 µs** y un nodo a
+unos **1.7 ms**: **un nodo cuesta del orden de cien candidatos.** Ese 100 es la
+constante que hay que ganar podando, y por eso el cruce llega en $n=12$ y no en
+$n=4$.
 
 > **Cinco nodos contra veinte candidatos no es cuatro veces más rápido.**
 > Comparar los conteos mezcla unidades, igual que comparar hojas con nodos. Un
 > candidato es un producto punto; un nodo es un algoritmo completo.
 
-**En el taller, enumerar gana en el reloj.** Veinte productos punto valen menos
-que cinco llamadas a simplex. Ramificar y acotar no está hecho para 20
-candidatos: está hecho para cuando la caja tiene $10^{12}$, y ahí la comparación
-se invierte de golpe. Medir los dos en el mismo problema es lo único que zanja la
-discusión.
+**En el taller, enumerar gana en el reloj**, y por mucho: 20 productos punto
+contra 5 llamadas a simplex. Ramificar y acotar no está hecho para 20
+candidatos.
+
+### Qué lo abarata, y qué no
+
+Aquí la comparación con enumerar se invierte, y vale la pena verla en paralelo:
+
+| | Enumerar | Ramificar y acotar |
+|---|---|---|
+| Encontrar pronto una buena solución | **No ayuda**: revisa los demás igual | **Ayuda mucho**: un incumbente alto poda más ramas |
+| Que casi todo sea infactible | No ayuda: los genera igual | **Ayuda**: las relajaciones salen infactibles y cierran ramas enteras |
+| Un modelo más apretado | Da igual | **Ayuda**: la cota se pega al óptimo entero y poda antes |
+| Más variables | Duplica el trabajo | Puede duplicarlo… o no cambiarlo, según pode |
+
+La primera fila es la diferencia de fondo. Enumerar **no aprende nada mientras
+avanza**; éste sí: cada solución entera que encuentra mejora la vara con la que
+descarta lo que falta.
 
 ### Qué lo hace crecer
 
