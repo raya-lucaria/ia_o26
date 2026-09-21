@@ -2,253 +2,397 @@
 id: enumerar
 title: Enumerar
 nav_title: Enumerar
-summary: "El método que siempre funciona: generar todos los planes posibles, tirar los que no se pueden y quedarse con el mejor. Qué garantiza y qué cuesta."
+summary: "Construir una caja finita, revisar sus candidatos y conservar el mejor factible. Un recorrido completo, su pseudocódigo, su corrección y su costo."
 status: ready
-estimated_time: 24m
+estimated_time: 30m
 tags: [optimizacion, entera, algoritmos]
 ---
 
 # Enumerar
 
-**Si no puedo caminar por la región, ¿qué me queda?**
+**Problema activo: problema 1 · Taller original.** Retomamos el
+[problema 1 de la bitácora](raya:la-bitacora-del-taller#raya-object-opt-ent-ej-modelo-base), sin los cambios de los problemas 2, 3 y 4.
+$x_1$ cuenta rovers y $x_2$, sondas.
+El problema que vamos a resolver es:
 
-Vienes de [[el-modelo-del-taller|el modelo escrito]] · Aquí: el primer algoritmo
-· Sigue: hacerlo listo.
+$$\begin{aligned}
+\max\quad &5x_1+4x_2\\
+\text{sujeto a}\quad &6x_1+4x_2\le24,\\
+&x_1+2x_2\le6,\\
+&x_1\le4,\\
+&x_1,x_2\ge0,\\
+&x_1,x_2\in\mathbb Z.
+\end{aligned}$$
 
-Leer la lista entera. Es tosco y siempre funciona.
+La idea del primer algoritmo es comprobar todas las posibilidades de una lista
+finita. Para convertir esa idea en un procedimiento necesitamos contestar:
+**qué lista recorrer, qué descartar y qué guardar**.
 
-## 1 · La caja de candidatos
+## 1 · Construir la caja de candidatos
+
+Para comenzar el algoritmo necesitamos límites individuales. Usamos los que
+ya da el enunciado y, donde falten, justificamos uno a partir de los recursos:
+
+| Variable | Límite inferior | Cómo obtenemos el límite superior | Valores que vamos a probar |
+|---|---:|---|---|
+| Rovers, $x_1$ | 0 | La orden del comandante exige $x_1\le4$ | 0, 1, 2, 3, 4 |
+| Sondas, $x_2$ | 0 | $2x_2\le6$, por tanto $x_2\le3$ | 0, 1, 2, 3 |
+
+Hay cinco elecciones para la primera variable y cuatro para la segunda. Al
+combinarlas obtenemos $5\cdot4=20$ parejas.
+
+**Ojo:** que un valor sea posible por separado no significa que cualquier
+pareja sea factible. Por ejemplo, $(4,3)$ está en esa lista, pero consume más
+recursos de los disponibles.
+
+### Representar todas las condiciones para ejecutarlas
+
+La orden $x_1\le4$ se cumple al generar los candidatos: la primera lista
+termina en cuatro. La no negatividad y la integralidad también se cumplen al
+generar las dos listas. Después comprobamos las restricciones de recursos.
+
+Para esta implementación guardamos los límites en la caja y las dos filas de
+recursos en
+
+$$A=\begin{pmatrix}6&4\\1&2\end{pmatrix},\qquad
+b=\begin{pmatrix}24\\6\end{pmatrix}.$$
+
+En la página de modelado escribimos la orden como una tercera fila explícita.
+Aquí está representada en el límite de la primera lista: **la condición sigue
+vigente**. Esta separación entre límites de variables y otras restricciones
+permite ejecutar el modelo sin comprobar dos veces lo que ya cumple cada
+candidato generado.
+
+### Dar nombre a la lista
+
+Para $n$ variables, llamaremos $l_i$ y $u_i$ a los límites inferior y superior
+de la variable $x_i$. Aquí la letra $i$ indica qué variable estamos mirando.
+Los límites que usaremos son enteros, finitos y cumplen $l_i\le u_i$.
 
 ::: definition {#opt-caja title="Caja entera y conjunto factible"}
-La **caja** $X$ son todos los valores que las variables pueden tomar por
-separado: $X = \{l_1..u_1\}\times\cdots\times\{l_n..u_n\}$.
+La **caja de candidatos**, llamada $X$, combina todos los enteros de cada
+intervalo:
 
-El **conjunto factible** $F$ son los de la caja que además cumplen $Ax\le b$.
+$$X=\{l_1,l_1+1,\ldots,u_1\}\times\cdots\times
+\{l_n,l_n+1,\ldots,u_n\}.$$
 
-Siempre $F \subseteq X$, y $X$ es el que se puede recorrer.
+El signo $\times$ indica un **producto cartesiano**: tomar un valor de cada
+lista forma un candidato completo. El conjunto factible es
+
+$$F=\{x\in X:Ax\le b\}.$$
+
+Por tanto, $F\subseteq X$: los factibles son los candidatos que además
+cumplen todas las restricciones.
 :::
 
-**La caja no es un dato: se deduce del modelo.**
+Los límites deben conservar **todas** las soluciones factibles del modelo.
+Pueden venir del enunciado o deducirse de sus restricciones. Si elegimos un
+límite arbitrario demasiado pequeño, podríamos excluir el óptimo antes de
+buscarlo. Si no contamos con límites finitos válidos, este procedimiento de
+enumeración finita no se puede aplicar tal como está escrito.
 
-| Cota | De dónde sale |
-|---|---|
-| $x_1 \le 4$ | $6x_1 \le 6x_1 + 4x_2 \le 24$ |
-| $x_2 \le 3$ | $2x_2 \le x_1 + 2x_2 \le 6$ |
+## 2 · Revisar uno y recordar lo que llevamos
 
-Caja: $5 \times 4 = 20$ candidatos.
+Para cada candidato haremos tres preguntas:
 
-## 2 · Cómo usa el modelo
+```text
+¿Está en la caja? → lo generamos
+¿Cumple las restricciones? → si no, lo descartamos
+¿Mejora lo que ya tenemos? → si sí, lo guardamos
+```
 
-Cada pieza del planteamiento hace un trabajo, y solo uno:
+Antes de arrancar no hay ningún plan guardado. Necesitamos recordar tanto el
+plan como su valor.
 
-| Pieza | Sirve para |
-|---|---|
-| Dominio y cotas | **Generar** los candidatos |
-| $Ax \le b$ | **Filtrar** los que no se pueden |
-| $c^{\mathsf T}x$ | **Comparar** los que quedan |
+::: definition {#opt-mejor-hasta-ahora title="La mejor solución encontrada hasta ahora"}
+$x^*$ guardará la mejor solución factible encontrada y `mejor`, su valor.
+Durante el recorrido la estrella **no significa que ya probamos optimalidad**.
 
-::: figure {#opt-flujo-enumerar title="Genera, filtra, compara"}
-![Diagrama de flujo de diez pasos: la entrada con los datos, la inicialización de la mejor solución en menos infinito, la construcción de la caja, la prueba del ciclo, el paso que toma el siguiente candidato, la decisión que lo descarta si no cumple las restricciones, el cálculo de su valor, la decisión que lo descarta si no supera a la mejor, la actualización, y la salida con su caso de infactibilidad; un carril de retorno a la izquierda y el de salida a la derecha](../_assets/opt-flujo-enumerar.svg)
+Al inicio, $x^*=$ «ninguno» y `mejor` $=-\infty$. Menos infinito es una marca
+inferior a cualquier valor real: permite que el primer candidato factible se
+guarde, incluso si su objetivo es negativo.
 :::
 
-Nada empieza a media ejecución: están la entrada, la inicialización, la
-construcción de la caja y las dos formas de terminar. **La etiqueta `[Ln]` de
-cada paso es la línea del pseudocódigo** que le toca, y aquí está el
-pseudocódigo:
+**Orden de esta enumeración:** fijamos primero la cantidad de rovers y
+recorremos las sondas de 0 a 3. Después aumentamos los rovers. Comienza así:
+$(0,0),(0,1),(0,2),(0,3),(1,0),\ldots$.
+
+Los primeros cuatro candidatos son factibles y dan valores 0, 4, 8 y 12.
+Después de ellos tenemos $x^*=(0,3)$ y `mejor` $=12$.
+
+::: exercise {#opt-ent-ej-traza-enum title="Decide qué se guarda"}
+Partiendo de ese estado, procesa $(1,0),(1,1),(1,2),(1,3)$ en ese orden.
+Para cada uno anota: si es factible, su valor cuando corresponda y el plan que
+queda guardado. No actualices el registro solo porque apareció otro candidato.
+:::
+
+::: answer {#opt-ent-resp-traza-enum of="opt-ent-ej-traza-enum"}
+| Candidato | ¿Cumple los recursos? | Valor | Decisión | Registro al terminar |
+|---|---|---:|---|---|
+| $(1,0)$ | Sí | 5 | Conservar el anterior | $(0,3)$, valor 12 |
+| $(1,1)$ | Sí | 9 | Conservar el anterior | $(0,3)$, valor 12 |
+| $(1,2)$ | Sí | 13 | Guardar el nuevo | $(1,2)$, valor 13 |
+| $(1,3)$ | No: necesita 7 horas | No se evalúa | Descartar | $(1,2)$, valor 13 |
+:::
+
+Hay tres resultados posibles de un paso: descartar un infactible, conservar
+el registro ante un factible que no mejora, o actualizarlo. **Revisar y guardar
+no son la misma operación.**
+
+## 3 · Completar los veinte candidatos
+
+Seguimos con el mismo modelo y el mismo orden. En la figura, localiza primero
+un candidato tachado y uno factible; después encuentra el de mayor valor.
+
+::: figure {#opt-rejilla title="Los veinte candidatos del taller"}
+![Rejilla con cinco cantidades de rovers y cuatro de sondas. Trece candidatos muestran su transmisión y siete están tachados. Cada celda indica su posición en el recorrido; cuatro rovers y cero sondas aparece como candidato 17 y da 20 MB al día](../_assets/opt-rejilla.svg)
+:::
+
+La rejilla distingue la **caja completa** de lo que los recursos permiten. Esta
+es la misma información en una tabla; una cruz significa infactible:
+
+| Sondas / rovers | 0 | 1 | 2 | 3 | 4 |
+|---|---:|---:|---:|---:|---:|
+| 3 | 12 | ✗ | ✗ | ✗ | ✗ |
+| 2 | 8 | 13 | 18 | ✗ | ✗ |
+| 1 | 4 | 9 | 14 | 19 | ✗ |
+| 0 | 0 | 5 | 10 | 15 | **20** |
+
+Desde el registro de valor 13, las siguientes mejoras son:
+
+| Candidato | Valor nuevo de `mejor` |
+|---|---:|
+| $(2,1)$ | 14 |
+| $(2,2)$ | 18 |
+| $(3,1)$ | 19 |
+| $(4,0)$ | 20 |
+
+Al terminar contamos **13 factibles y 7 infactibles**. La respuesta es
+**cuatro rovers y ninguna sonda**, con **20 MB/día**. Es el único plan con ese
+valor; el siguiente mejor transmite 19.
+
+El ganador apareció en la posición 17. El procedimiento revisó también los
+últimos tres candidatos, porque no mantiene una cota que le permita descartarlos
+juntos. Solo al agotar la caja ha comprobado que ninguno mejora el registro.
+
+## 4 · Escribir el procedimiento general
+
+**Ya hicimos una ejecución.** Ahora reemplazamos sus números por los datos de
+cualquier modelo lineal entero con una caja finita válida. $c$ contiene los
+rendimientos; $A$ y $b$, las restricciones; $l$ y $u$, las cotas de variables.
 
 ```text
 INPUT   max cᵀx  s.a.  Ax ≤ b,  l ≤ x ≤ u,  x entera.
-OUTPUT  un óptimo x* y su valor, o «no hay factibles».
+        l y u son vectores de enteros finitos; l ≤ u.
+OUTPUT  una solución óptima x* y su valor, o «no hay factibles».
 
  1  mejor ← −∞ ;  x* ← «ninguno»
- 2  X ← { l₁..u₁ } × … × { lₙ..uₙ }        ▷ la caja
+ 2  X ← { l₁..u₁ } × … × { lₙ..uₙ }
  3  for each x in X
- 4      if Ax ≤ b no se cumple: continue         ▷ filtra
- 5      z ← cᵀx                                  ▷ compara
+ 4      if Ax ≤ b no se cumple: continue
+ 5      z ← cᵀx
  6      if z > mejor
- 7          mejor ← z ;  x* ← x                  ▷ guarda
+ 7          mejor ← z ;  x* ← x
  8  end for
  9  if x* = «ninguno»: return «no hay solución factible»
 10  return x*, mejor
 ```
 
-Y en Python es el mismo texto:
+`continue` significa pasar al candidato siguiente. Si aparece un empate,
+conservamos el plan que ya teníamos: buscamos **un** óptimo, no todos.
 
+Sigue ahora en el diagrama el camino de un candidato infactible y después el de
+uno que mejora. Las etiquetas `[Ln]` corresponden a las líneas anteriores.
+
+::: figure {#opt-flujo-enumerar title="Del candidato al registro"}
+![Flujo de enumeración: recibir el modelo, inicializar el registro, generar candidatos, comprobar factibilidad, comparar valores y actualizar. Las decisiones regresan al ciclo; al terminar se devuelve el mejor factible o se informa que no existe ninguno](../_assets/opt-flujo-enumerar.svg)
+:::
+
+Ambos caminos regresan al recorrido. La figura resume por qué descartar un
+candidato no termina la búsqueda.
+
+### Por qué termina y por qué la respuesta es correcta
+
+La caja es finita y cada candidato se revisa una sola vez, así que el ciclo
+termina. La propiedad que se mantiene después de cada paso es:
+
+> Si ya apareció un factible, el registro contiene el mejor de los factibles
+> **revisados hasta ahora**. Si no apareció ninguno, sigue vacío.
+
+Al revisar otro candidato, o no puede mejorar el registro y lo conservamos,
+o sí lo mejora y lo sustituimos. Así la propiedad se mantiene. Cuando ya
+revisamos toda $X$, también revisamos todo $F$: el registro es un óptimo global.
+Si sigue vacío, no existe solución factible en el modelo.
+
+**Comprueba:** tras revisar 12 candidatos, ¿ya puedes asegurar optimalidad entre
+los 20? Solo puedes asegurarla entre los 12 revisados, salvo que dispongas de
+algún argumento adicional sobre los restantes.
+
+## 5 · Contar el trabajo
+
+**Pregunta nueva:** ¿por qué un procedimiento tan sencillo puede tardar tanto?
+Separaremos el tamaño de la caja del trabajo necesario para revisar un candidato.
+
+### Cuántos candidatos hay
+
+La notación $|X|$ significa la **cantidad de elementos** de $X$. Una variable
+que va de $l_i$ a $u_i$, contando ambos extremos, tiene $u_i-l_i+1$ valores.
+Cada elección se combina con las de las otras variables, por eso multiplicamos:
+
+$$|X|=\prod_{i=1}^{n}(u_i-l_i+1).$$
+
+El signo $\prod$ abrevia un producto. En el taller, $n=2$ y las cotas son
+$(l_1,u_1)=(0,4)$ y $(l_2,u_2)=(0,3)$: $|X|=5\cdot4=20$.
+
+Con $n$ variables binarias hay $2^n$ candidatos. Si todas tienen exactamente
+$k$ valores, hay $k^n$. Ese crecimiento es exponencial en $n$ cuando $k\ge2$
+se mantiene fijo. Si todas las variables están fijadas a un valor, la caja
+contiene solo un candidato.
+
+### Qué cuesta revisar uno
+
+$m$ es el número de filas de $A$, y $n$, su número de columnas. En esta
+representación del taller, $m=n=2$: las dos filas de recursos se comprueban
+después de generar cada candidato dentro de la caja. Supongamos que calculamos completas las expresiones
+lineales, como hace la evaluación matricial del fragmento de Python al final.
+
+| Operación | Trabajo aritmético |
+|---|---|
+| Comprobar las $m$ restricciones | $mn$ productos, $m(n-1)$ sumas y $m$ comparaciones |
+| Evaluar el objetivo, si es factible | $n$ productos y $n-1$ sumas |
+| Comparar y conservar o copiar el plan | Una comparación; hasta $n$ componentes si se copia |
+
+La notación $O(mn)$ expresa una **cota del crecimiento** de ese trabajo, dejando
+fuera factores constantes. Para una matriz densa y $m\ge1$, domina el costo de
+las restricciones. No significa que todos los candidatos cuesten exactamente
+lo mismo ni proporciona un tiempo en segundos.
+
+::: remark {#opt-costo-enumerar title="Costo de la enumeración presentada"}
+Con evaluación densa y operaciones aritméticas contadas como unidades,
+
+$$T_{\mathrm{enum}}=O\!\left(|X|\,mn\right)
+=O\!\left(\prod_{i=1}^{n}(u_i-l_i+1)\,mn\right).$$
+
+Se multiplican los factores porque revisamos un candidato por cada elemento
+de la caja. La expresión incluye un costo por candidato; no solo cuenta puntos.
+:::
+
+En el taller calculamos cuatro productos de recursos por cada uno de los
+20 candidatos, y dos productos del objetivo para cada uno de los 13 factibles:
+**$20(4)+13(2)=106$ productos**. Usar seis por candidato daría 120, una cota
+superior, no el conteo exacto de este recorrido.
+
+### Qué cambia cuando cambia el modelo
+
+| Cambio | Efecto que podemos justificar |
+|---|---|
+| Añadir una variable con $k$ valores | Multiplica los candidatos por $k$ y aumenta el trabajo de evaluar cada uno |
+| Añadir una restricción manteniendo la misma caja | Añade una comprobación por candidato; puede reducir los factibles |
+| Volver a deducir cotas después de añadir restricciones | Puede reducir también la caja |
+| Ampliar una cota de variable | Aumenta los candidatos, aunque no cambien $n$ ni $m$ |
+
+::: exercise {#opt-ent-ej-caja-30 title="Más aleación y una orden que sigue vigente"}
+Llegan 6 kg adicionales: ahora hay 30 kg de aleación y las mismas 6 horas.
+¿Cuántos candidatos tiene una caja con las cotas individuales más ajustadas?
+Responde primero manteniendo la orden de máximo cuatro rovers y después
+suponiendo que el comandante autoriza hasta cinco.
+:::
+
+::: answer {#opt-ent-resp-caja-30 of="opt-ent-ej-caja-30"}
+Con la orden original, $0\le x_1\le4$ y $0\le x_2\le3$: siguen siendo
+$5\cdot4=20$ candidatos. La orden mantiene el máximo de cuatro rovers,
+aunque ahora haya más aleación.
+
+Si también se autoriza fabricar cinco, $0\le x_1\le5$, pues $6x_1\le30$.
+Las sondas siguen limitadas a tres: son $6\cdot4=24$ candidatos.
+
+También podríamos usar la caja holgada de 24 sin cambiar la orden, pero habría
+que conservar $x_1\le4$ en el filtro. Los candidatos con cinco rovers se
+rechazarían. Una caja de búsqueda no es lo mismo que el conjunto factible.
+:::
+
+### Ver el crecimiento antes de mirar el reloj
+
+Para aislar el número de candidatos, supón una tasa **hipotética** de mil
+millones de candidatos por segundo. No es una medición de Python y omite cómo
+cambia el costo por candidato.
+
+| Variables binarias | Candidatos | Tiempo con esa tasa supuesta |
+|---:|---:|---:|
+| 10 | 1 024 | Aproximadamente un microsegundo |
+| 30 | $\approx1.07\times10^9$ | Aproximadamente un segundo |
+| 40 | $\approx1.10\times10^{12}$ | Aproximadamente 18 minutos |
+| 50 | $\approx1.13\times10^{15}$ | Aproximadamente 13 días |
+| 60 | $\approx1.15\times10^{18}$ | Aproximadamente 37 años |
+
+Diez variables binarias adicionales multiplican la caja por $2^{10}=1024$.
+En una implementación real también importan el número de restricciones, la
+representación de los números y el costo de las operaciones.
+
+**Ampliación sobre los datos:** una sola variable con $0\le x\le2^B$ tiene
+$2^B+1$ candidatos, aunque escribir el límite superior en binario requiera
+solo $B+1$ bits. El tamaño numérico de una cota también puede hacer inviable
+la enumeración. El conteo de operaciones anterior no analiza el costo de
+aritmética con números de longitud arbitraria.
+
+## 6 · Resolver un caso por tu cuenta
+
+::: exercise {#opt-ent-ej-comun-enum title="Una caja pequeña para comparar métodos"}
+Maximiza $2x$ con $x$ entera y $\tfrac12\le x\le\tfrac52$.
+
+Usa **esta caja de búsqueda deliberadamente holgada**: $X=\{0,1,2,3\}$.
+Mantén las dos desigualdades en el filtro. Recorre la caja, escribe el registro
+después de cada candidato y justifica tu respuesta. En la página siguiente
+resolverás el mismo modelo por otro método.
+:::
+
+::: answer {#opt-ent-resp-comun-enum of="opt-ent-ej-comun-enum"}
+| Candidato | ¿Factible? | Valor, si corresponde | Registro |
+|---:|---|---:|---|
+| 0 | No: menor que $1/2$ | — | Ninguno |
+| 1 | Sí | 2 | $x^*=1$, `mejor` $=2$ |
+| 2 | Sí | 4 | $x^*=2$, `mejor` $=4$ |
+| 3 | No: mayor que $5/2$ | — | $x^*=2$, `mejor` $=4$ |
+
+Se revisaron cuatro candidatos y todos los factibles. El óptimo es $x=2$,
+valor 4. Podríamos haber deducido una caja más ajustada, pero esta caja prescrita
+nos permitirá comparar recorridos concretos.
+:::
+
+### Correspondencia opcional con Python
+
+::: exercise {#opt-ent-ej-python-enum title="Lectura guiada del fragmento de Python"}
+Abre el fragmento comentado del taller. Relaciona las instrucciones marcadas
+como generar, filtrar y evaluar con las líneas 3, 4 y 5 del pseudocódigo.
+La salida está incluida para comprobar esa correspondencia.
+:::
+
+::: answer {#opt-ent-resp-python-enum of="opt-ent-ej-python-enum"}
 ```python
 import numpy as np
 from itertools import product
 
+A = np.array([[6, 4], [1, 2]])
+b = np.array([24, 6])
+c = np.array([5, 4])
 mejor, x_mejor = -np.inf, None
-for x in product(range(0, 5), range(0, 4)):      # la caja
-    x = np.array(x)
-    if np.any(A_ub @ x > b_ub):                  # filtra
+for punto in product(range(5), range(4)):       # generar
+    x = np.array(punto)
+    if np.any(A @ x > b):                     # filtrar
         continue
-    z = c @ x                                    # compara
-    if z > mejor:
-        mejor, x_mejor = z, x                    # guarda
+    z = c @ x                                # evaluar
+    if z > mejor:                            # comparar
+        mejor, x_mejor = z, x.copy()
+print(x_mejor, mejor)                         # [4 0] 20
 ```
 
-::: definition {#opt-mejor-hasta-ahora title="La mejor hasta ahora"}
-`mejor` guarda el valor de la mejor solución **factible** encontrada hasta ese
-punto del recorrido. Empieza en $-\infty$ para que el primer factible siempre la
-supere.
-
-No es el óptimo mientras el recorrido no termine. Es lo mejor que llevas.
+`product` genera candidatos sucesivos; no hace falta almacenar toda la caja a
+la vez. El código usa los pequeños datos enteros del taller. La integralidad
+de las variables no obliga al objetivo a ser entero: con $\max 0.5x$ y
+$x\in\{0,1\}$, el óptimo sería $x=1$ y su valor, $0.5$.
 :::
 
-## 3 · Los veinte candidatos
-
-::: figure {#opt-rejilla title="La caja entera, con su valor"}
-![Rejilla de cinco columnas por cuatro renglones con los veinte planes posibles; trece llevan los MB que transmite ese plan y siete están tachados por no caber, con el número de orden en cada celda y el ganador resaltado](../_assets/opt-rejilla.svg)
-:::
-
-|  | $x_1=0$ | 1 | 2 | 3 | 4 |
-|---|---:|---:|---:|---:|---:|
-| $x_2=3$ | 12 | ✗ | ✗ | ✗ | ✗ |
-| $x_2=2$ | 8 | 13 | 18 | ✗ | ✗ |
-| $x_2=1$ | 4 | 9 | 14 | 19 | ✗ |
-| $x_2=0$ | 0 | 5 | 10 | 15 | **20** |
-
-**13 factibles, 7 tachadas.** Y el recorrido, solo donde `mejor` se mueve:
-
-| Candidato | $z$ | `mejor` |
-|---|---:|---:|
-| $(0,0)$ | 0 | 0 |
-| $(0,1)$ | 4 | 4 |
-| $(0,2)$ | 8 | 8 |
-| $(0,3)$ | 12 | 12 |
-| $(1,2)$ | 13 | 13 |
-| $(2,1)$ | 14 | 14 |
-| $(2,2)$ | 18 | 18 |
-| $(3,1)$ | 19 | 19 |
-| **$(4,0)$** | **20** | **20** |
-
-**Respuesta: 4 rovers, ninguna sonda, 20 MB al día.** Única: la siguiente mejor
-transmite 19.
-
-## 4 · Qué cuesta
-
-### Los dos factores, y por qué se multiplican
-
-Primero los nombres, que aquí todo cuelga de ellos:
-
-| Símbolo | Qué es | En el taller |
-|---|---|---:|
-| $n$ | Número de **variables** — las columnas de $A$ | 2 |
-| $m$ | Número de **restricciones** — los renglones de $A$, sin contar el dominio | 2 |
-| $l_i,\ u_i$ | El valor **mínimo y máximo** que puede tomar $x_i$, deducidos arriba | $0,4$ y $0,3$ |
-
-::: remark {#opt-costo-enumerar title="El costo de enumerar"}
-$$T \;=\; \underbrace{\textstyle\prod_{i=1}^{n} (u_i - l_i + 1)}_{|X|,\ \text{cuántos candidatos}} \;\times\; \underbrace{O(mn)}_{\text{revisar uno}}$$
-:::
-
-**Se multiplican, no se suman**, y la razón está en la línea 3: el `for each`
-repite **todo el cuerpo** —líneas 4 a 7— una vez por cada candidato. Revisar uno
-no se hace una vez: se hace $|X|$ veces.
-
-### El primer factor: cuántos candidatos hay
-
-Tres pasos, ninguno saltable:
-
-1. **Cuántos valores puede tomar una variable.** Los enteros de $l_i$ a $u_i$,
-   contando los dos extremos. Son $u_i - l_i + 1$ — **el $+1$ es el extremo de
-   abajo**: de 0 a 4 hay 5 números, no 4.
-2. **Por qué se multiplican entre variables.** Elegir el valor de $x_1$ no
-   restringe el de $x_2$: cada pareja distinta es un candidato distinto. Es la
-   regla del producto, la misma con la que contaste subconjuntos en
-   [[contar-un-algoritmo|complejidad]].
-3. **Por eso** $|X| = \prod_{i=1}^{n}(u_i - l_i + 1)$, un factor por variable.
-
-En el taller: $x_1$ va de 0 a 4 —**5** valores— y $x_2$ de 0 a 3 —**4**—, así que
-$|X| = 5 \times 4 = 20$.
-
-Y si las $n$ variables tienen todas los mismos $k$ valores, el producto es
-$k \cdot k \cdots k = k^n$. Con variables 0/1, $k=2$ y queda $2^n$: **la $n$ está
-en el exponente, y ahí está todo el problema.**
-
-### El segundo factor: qué cuesta revisar uno
-
-Sale de leer el cuerpo del ciclo línea por línea:
-
-| Línea | Qué hace | Operaciones |
-|---|---|---|
-| L4 | Comprobar $Ax \le b$: son **$m$ desigualdades**, cada una con **$n$ términos** | $mn$ productos, $m(n-1)$ sumas, $m$ comparaciones |
-| L5 | Evaluar $z = c^{\mathsf T}x$: una suma de $n$ términos | $n$ productos |
-| L6–L7 | Comparar contra `mejor` y guardar | constante |
-
-Sumando, $(m+1)\,n$ productos y algo menos de sumas. En O grande, **$O(mn)$**: lo
-que domina es revisar la matriz, y crece con el **área** de $A$ — si duplicas las
-restricciones o las variables, duplicas ese trabajo.
-
-En el taller, $m = n = 2$: seis productos por candidato, y $20 \times 6 = 120$ en
-total. El problema entero cabe en una servilleta.
-
-### Qué lo hace crecer, y cuánto
-
-| Si agregas… | Qué factor toca | Qué le pasa a $T$ |
-|---|---|---|
-| Una restricción, $m \to m+1$ | Solo el segundo | $n$ productos más por candidato: sube **en proporción** |
-| Una variable, $n \to n+1$ | **Los dos** | El primero se **multiplica por $k$** (con 0/1, se duplica); el segundo solo sube en $m+1$ productos |
-| Un dato más grande, $u_i$ sube | Solo el primero | La caja se estira. Con 30 kg en vez de 24, $x_1$ llega a 5 y son **24 candidatos, no 20** |
-
-El tercer renglón es el que sorprende: **la variante del cargamento no cambió el
-modelo, pero sí cambió lo que cuesta resolverlo.** Enumerar paga por el tamaño
-de los números, no solo por cuántos hay.
-
-### La escalera
-
-Solo mueve $n$, con variables 0/1 ($k=2$). El segundo factor se deja fijo y
-pequeño —pocas restricciones, como en el taller— y se cuenta **un candidato como
-una unidad de trabajo**, a mil millones por segundo:
-
-| Variables ($n$) | Candidatos ($2^n$) | Tiempo |
-|---:|---:|---|
-| 10 | 1 024 | instantáneo |
-| 20 | 1 millón | instantáneo |
-| 30 | 1 000 millones | 1 segundo |
-| 40 | 1.1 billones | 18 minutos |
-| 50 | $10^{15}$ | 13 días |
-| 60 | $1.2\times10^{18}$ | 36 años |
-
-Lee la columna de la derecha hacia abajo: **cada diez variables, mil veces más.**
-Y una sola variable más **duplica** el tiempo — de 40 a 41 variables cuesta más
-que todo lo que llevabas hecho.
-
-**Y si el segundo factor no fuera pequeño, la tabla no cambiaría de forma.** El
-$O(mn)$ **multiplica**: con cien veces más trabajo por candidato, los 18 minutos
-se vuelven día y cuarto, y los 36 años, 3 600. Sigue siendo la misma curva
-corrida hacia arriba, porque $m$ multiplica y $n$ **exponencia**. Por eso la
-escalera mide variables y no restricciones.
-
-Compáralo con lo que ya conoces: simplex es exponencial **en el peor caso**, y en
-la práctica da pocos pasos. Enumerar es exponencial **siempre**. No tiene casos
-buenos.
-
-### Dos cosas que no lo abaratan
-
-| Lo que creerías que ayuda | Por qué no |
-|---|---|
-| Que casi todo sea infactible | Aquí se tiran 7 de 20 — pero se **generan y se revisan igual**. Filtrar descarta, no ahorra |
-| Que el óptimo salga pronto | Salió en el candidato 17 de 20 y revisó los tres restantes. Si hubiera salido en el 1, habría revisado los otros 19 |
-
-Las dos dicen lo mismo con palabras distintas: **el costo lo fija la caja, no el
-problema.** Enumerar no aprende nada mientras avanza.
-
-### Cuándo sí, cuándo no
-
-| Úsalo | Evítalo |
-|---|---|
-| Hasta ~20 variables 0/1 | Pasando de 30 |
-| Cuando necesitas certeza y hay tiempo | Cuando alguna variable no tiene cota superior: la caja es infinita y el método ni arranca |
-| Cuando el objetivo es raro —no lineal, a trozos—: enumerar ni lo mira | Cuando los datos son grandes, aunque haya pocas variables |
-| Como **oráculo**: para comprobar que otro algoritmo no miente | |
-
-## Lo que hay que llevarse
-
-- Genera, filtra, compara. Todo algoritmo de esta clase hace esas tres cosas; lo
-  que cambia es cuántos candidatos se salta.
-- Enumerar siempre acierta, y su certificado —«los vi todos»— cuesta exactamente
-  lo mismo que buscar.
-- Su costo lo fija el tamaño de la caja, no la dificultad del problema: no
-  aprende nada mientras avanza, y por eso revisó tres planes después de haber
-  encontrado el ganador.
+**Punto de parada:** ya puedes ejecutar enumeración, justificar su respuesta y
+separar sus dos factores de costo. Nos queda una pregunta: ¿podemos descartar
+grupos de candidatos con una sola justificación? Eso lleva a
+[[ramificar-y-acotar|ramificar y acotar]].

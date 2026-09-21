@@ -2466,6 +2466,90 @@ def opt_ramas():
     return "".join(s)
 
 
+def opt_arbol_paso(paso):
+    """Snapshot of the workshop tree after 0–4 processed nodes.
+
+    Reuse the exact trace behind the final tree, revealing a node only once
+    its parent has branched and revealing its result only once processed.
+    Fixed positions keep the same branches recognizable across snapshots.
+    """
+    if paso not in range(5):
+        raise ValueError("El recorrido parcial admite pasos de 0 a 4")
+    nodos, _, _ = arbol_taller()
+    visibles = [nd for nd in nodos if nd["padre"] is None or nd["padre"] <= paso]
+    pendientes = [nd for nd in visibles if nd["n"] > paso]
+    siguiente = min(nd["n"] for nd in pendientes)
+    guardadas = [nd for nd in nodos if nd["n"] <= paso and nd["cierre"] == "entera"]
+    guardada = max(guardadas, key=lambda nd: nd["cota"]) if guardadas else None
+
+    W = 700
+    H = 296 if paso == 0 else 486 if paso <= 2 else 676
+    lugares = {1: (350, 68), 3: (230, 258), 2: (560, 258),
+               5: (110, 448), 4: (350, 448)}
+    ancho, alto = 196, 134
+    titulo = "Antes de resolver el primer nodo" if paso == 0 else f"Árbol después del paso {paso}"
+    resumen = []
+    for nd in visibles:
+        if nd["n"] <= paso:
+            estado = "dividido" if nd["cierre"] == "parte" else "cerrado con solución entera"
+            resumen.append(f'Nodo {nd["n"]}, {nd["etiqueta"]}: {estado}, cota {_frac(nd["cota"])}.')
+        else:
+            turno = "por resolver" if paso == 0 else "siguiente" if nd["n"] == siguiente else "pendiente"
+            herencia = ", heredando x₂ ≤ 1" if nd["padre"] == 3 else ""
+            resumen.append(f'{nd["etiqueta"]}{herencia}: {turno}, relajación sin resolver.')
+    desc = " ".join(resumen)
+    s = [marco(W, H, desc, titulo, desc)]
+    s.append(texto(W / 2, 29, titulo, tam=18, peso="700"))
+
+    for nd in visibles:
+        if nd["padre"] is None:
+            continue
+        px, py = lugares[nd["padre"]]
+        x, y = lugares[nd["n"]]
+        s.append(flecha(px, py + alto, x, y - 4, color=SUAVE, grosor=2, marcador="s"))
+
+    for nd in visibles:
+        n = nd["n"]
+        cx, y = lugares[n]
+        x = cx - ancho / 2
+        procesado = n <= paso
+        if not procesado:
+            estado = "POR RESOLVER" if paso == 0 else "SIGUIENTE" if n == siguiente else "PENDIENTE"
+            color = SERIE[2] if n == siguiente else SUAVE
+        else:
+            estado = "DIVIDIDO" if nd["cierre"] == "parte" else "CERRADO · ENTERO"
+            color = SERIE[1] if nd["cierre"] == "parte" else SERIE[0]
+        s.append(caja(x, y, ancho, alto, relleno=mezclar(color, 0.10), borde=color,
+                      grosor=3 if n == siguiente else 2,
+                      guiones="7 4" if not procesado else None))
+        nombre = "Taller original" if n == 1 else nd["etiqueta"]
+        # Processing numbers belong only to resolved nodes, except the sole root.
+        if procesado or n == 1:
+            nombre = f"[{n}] {nombre}"
+        contexto = "Problema 1 de la bitácora" if n == 1 else "hereda x₂ ≤ 1" if nd["padre"] == 3 else "más restricciones del P1"
+        s.append(texto(cx, y + 23, nombre, tam=16, peso="700"))
+        s.append(texto(cx, y + 45, contexto, tam=13, color=SUAVE))
+        s.append(texto(cx, y + 69, estado, tam=14, peso="700", color=color))
+        if procesado:
+            s.append(texto(cx, y + 92, f'cota = {_frac(nd["cota"])}', tam=15))
+            punto_ = ", ".join(_frac(v) for v in nd["x"])
+            etiqueta = "plan entero" if nd["cierre"] == "entera" else "óptimo relajado"
+            s.append(texto(cx, y + 115, f"{etiqueta}: ({punto_})", tam=12))
+        else:
+            s.append(texto(cx, y + 94, "relajación sin resolver", tam=13, color=SUAVE))
+
+    if guardada is None:
+        registro = "Mejor solución entera guardada: ninguna"
+    else:
+        punto_ = ", ".join(_frac(v) for v in guardada["x"])
+        registro = f'Mejor solución entera: ({punto_}) · valor {_frac(guardada["cota"])}'
+    s.append(texto(W / 2, H - 50, registro, tam=16, peso="700"))
+    s.append(texto(W / 2, H - 24, "Cada nodo conserva las restricciones del taller y las de su camino.",
+                   tam=13, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_arbol():
     W, H = 940, 560
     nodos, x_mejor, mejor = arbol_taller()
@@ -2717,6 +2801,8 @@ DIAGRAMAS = {
     "opt-relajacion-corte": opt_relajacion_corte,
     "opt-ramas": opt_ramas,
     "opt-arbol": opt_arbol,
+    **{f"opt-arbol-paso-{paso}": (lambda paso=paso: opt_arbol_paso(paso))
+       for paso in range(5)},
     "opt-flujo-ramificar": opt_flujo_ramificar,
     "opt-arbol-vocabulario": opt_arbol_vocabulario,
 }
