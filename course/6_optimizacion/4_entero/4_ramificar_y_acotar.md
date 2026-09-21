@@ -144,6 +144,11 @@ Creamos **dos problemas separados**. En cada uno mantenemos el objetivo y
 **todas** las restricciones del taller, y agregamos una de las dos condiciones.
 Es una alternativa «o»: imponer ambas en el mismo problema sería imposible.
 
+**No estamos probando solamente $x_2=1$ y $x_2=2$.** Dentro de la caja del
+taller, el primer grupo incluye $x_2=0,1$ y el segundo, $x_2=2,3$, junto con
+las posibles cantidades de rovers. Piso y techo sirven para separar grupos
+completos, no para recorrer los enteros uno por uno.
+
 Observa en la figura la franja que queda fuera. ¿Contiene algún punto entero?
 
 ::: figure {#opt-ramas title="La división conserva todos los planes enteros"}
@@ -417,6 +422,10 @@ $19\le20$ permiten cerrar el subproblema completo.
 
 ## 5 · Reconocer todas las formas de cerrar
 
+**No necesitamos encontrar el óptimo entero de cada nodo para cerrarlo.**
+Una cota de su relajación puede bastar, aunque la solución relajada tenga
+fracciones. Seguimos maximizando y buscando **una** solución óptima.
+
 El taller mostró una solución relajada entera y una cota que no mejora. Falta
 una tercera posibilidad: que la relajación no tenga ningún punto factible.
 
@@ -439,13 +448,41 @@ justificaciones:
 | Motivo | Evidencia necesaria | Qué permite concluir |
 |---|---|---|
 | Infactibilidad | Su relajación es infactible | No contiene ningún plan entero factible |
-| Cota | Su cota no supera el valor de una solución factible guardada | No puede mejorar nuestra respuesta |
+| Cota | Su cota no supera el valor de una solución **entera factible** guardada | No puede mejorar nuestra respuesta, aunque no conozcamos su óptimo entero |
 | Integralidad | Un **óptimo** de su relajación es entero | Ese punto también es óptimo del subproblema entero |
 
 Llamaremos **poda por cota** o **por infactibilidad** a los dos primeros
 cierres. El tercero resuelve el subproblema; también se encuentra descrito como
 poda por integralidad en otras presentaciones.
 :::
+
+### Cerrar por cota sin encontrar el óptimo entero del nodo
+
+**Ejemplo independiente del taller.** Imagina otro problema de maximización:
+
+1. En otra parte de la búsqueda encontramos una solución entera válida de
+   valor **100**. La guardamos; todavía no sabemos si es el óptimo global.
+2. En el nodo actual, resolvemos la relajación. Su solución tiene fracciones
+   y su valor óptimo es **97.5**.
+3. Cerramos ese nodo: permitir fracciones ya da más libertad y aun así no
+   alcanza el 100 que tenemos.
+
+$$\underbrace{c^{\mathsf T}x}_{\text{cualquier entero factible de este nodo}}
+\;\le\;97.5\;<\;100.$$
+
+**No averiguamos cuál es el mejor entero de ese nodo.** Demostramos que
+ninguno puede mejorar nuestra solución. El valor 100 puede venir de otro
+nodo: para compararlo con la cota solo necesitamos que corresponda a un plan
+entero factible del problema original.
+
+Con una cota de 105, en cambio, esta comparación no permitiría cerrar: el
+nodo todavía podría mejorar el registro. Tampoco garantizaría que exista
+esa mejora. Sin un plan entero guardado no podemos usar esta comparación.
+
+La igualdad también permite cerrar si buscamos **un** óptimo. Si buscáramos
+todas las soluciones empatadas, no descartaríamos un nodo solo por igualar
+el valor guardado. Certificamos el óptimo global cuando ya no queda ningún
+nodo que pueda mejorarlo.
 
 Encontrar **cualquier** punto entero no basta para cerrar por integralidad:
 debe ser un óptimo de la relajación. Y una relajación fraccionaria no demuestra
@@ -608,6 +645,20 @@ resuelto; no queda un lugar donde encontrar una mejora.
 
 ## 8 · Comparar trabajo y costo
 
+**El ahorro posible está en descartar grupos, no en revisar más rápido cada
+vector.** Por ejemplo, con 100 decisiones binarias hay $2^{100}$ candidatos.
+Un nodo que fija diez decisiones y deja libres las otras noventa representa
+una caja de $2^{90}$ candidatos. Si una cota demuestra que ninguno mejora
+lo guardado, cerramos todo ese grupo sin enumerarlo. No hay garantía de que
+encontremos una cota así de útil.
+
+En enumeración, dejar de revisar un vector cuando viola una restricción
+ahorra trabajo sobre **ese vector**. Si además descartamos todas las
+continuaciones de una asignación parcial, ya estamos podando grupos por
+restricciones. Branch and bound añade la posibilidad de descartar grupos
+que sí contienen soluciones factibles, porque **ninguna puede mejorar el
+valor guardado**.
+
 **Regresamos al problema 1 · Taller original:** enumeración revisó 20 candidatos y branch
 and bound procesó 5 nodos. Cada nodo exigió resolver una relajación completa.
 Esas cuentas no miden operaciones del mismo costo.
@@ -627,6 +678,16 @@ No asignamos un costo universal a cada pivote de simplex.
 | Evalúa restricciones y objetivo en candidatos | Resuelve relajaciones para obtener cotas |
 | Encontrar pronto el ganador no detiene su ciclo | Encontrar pronto una buena solución puede permitir más cierres por cota |
 | El tamaño de la caja determina cuántos candidatos revisa | El número de nodos depende del modelo y de las decisiones de búsqueda |
+
+**¿Cuándo puede convenir cada uno?**
+
+- **Ramificar y acotar puede ganar** si encuentra pronto buenas soluciones
+  enteras y cotas útiles: el trabajo de resolver relajaciones se compensa
+  evitando muchos candidatos.
+- **Enumerar puede ganar** si la caja es pequeña o comprobar candidatos es
+  muy barato. Con cotas poco útiles, branch and bound puede abrir muchos
+  nodos y pagar además el costo de sus relajaciones. Su peor caso sigue
+  siendo exponencial; no garantiza una mejora de tiempo.
 
 ::: exercise {#opt-ent-ej-costo-comun title="Menos pasos, pero pasos más caros"}
 Ahora compara el modelo de una variable, $\max 2x$ con
