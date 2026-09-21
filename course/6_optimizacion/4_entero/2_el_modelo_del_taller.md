@@ -337,6 +337,70 @@ agrega $\sum_{j\in S}d_{ij}y_j$ y escribe un enlace $x_j\le U_jy_j$ por producto
 con $y_j\in\{0,1\}$. El consumo de preparar cada producto se cuenta una sola
 vez; los consumos por equipo siguen en $\sum_{j\in J}a_{ij}x_j$.
 
+### Si no hubiera un máximo explícito
+
+**No tener un máximo escrito en el enunciado no significa poder producir
+sin límite.** Los recursos u otras restricciones pueden imponer una cota.
+Esta ampliación considera una variante del problema 2: quitamos el máximo
+del comandante, pero conservamos los recursos y la preparación.
+
+**1. Buscar una cota válida en los recursos.** Llamaremos $M_r$ a un límite
+finito deducido para el producto $r$. Cumplirá el mismo papel que $U_r$ en el
+enlace, pero no proviene de una orden explícita.
+
+Supongamos que las cantidades, los consumos por equipo y los consumos fijos
+son no negativos. Para un recurso con $a_{ir}>0$ y disponibilidad finita
+$b_i\ge0$, cualquier plan factible cumple
+
+$$\begin{aligned}
+a_{ir}x_r&\le\sum_{j\in J}a_{ij}x_j\le b_i,\\
+x_r&\le\frac{b_i}{a_{ir}}.
+\end{aligned}$$
+
+Los consumos fijos de preparación tampoco pueden compensar consumos de
+producción: son no negativos. Por eso el presupuesto completo permite usar
+esta desigualdad, aunque la cota obtenida no sea la más ajustada.
+
+Si $I_r$ es el conjunto de recursos con esas propiedades y no está vacío,
+podemos elegir
+
+$$M_r=\min_{i\in I_r}\left\lfloor\frac{b_i}{a_{ir}}\right\rfloor.$$
+
+El piso $\lfloor t\rfloor$ es el mayor entero que no supera $t$; lo usamos
+porque $x_r$ es entera. Tomamos el menor de los límites, pues todos deben
+cumplirse. Entonces escribimos **$x_r\le M_r y$**: cero producción si $y=0$
+y una cota válida si $y=1$.
+
+**2. Aplicarlo al taller sin la orden del comandante.** La aleación basta:
+
+$$\begin{aligned}
+6x_1&\le6x_1+4x_2\le24,\\
+x_1&\le4,\\
+\text{Enlace:}\quad x_1&\le4y.
+\end{aligned}$$
+
+Aquí $M_1=4$ viene de los recursos. **Deducir esta cota no es encontrar el
+plan óptimo:** solo demuestra un límite que ninguna solución factible puede
+superar. Las demás restricciones, incluidas las horas de preparación, se
+conservan.
+
+**3. Distinguir no haber encontrado una cota de que no exista ninguna.** Si
+la receta anterior no da un límite, otras restricciones todavía podrían
+darlo. Pero si realmente $x_r$ puede crecer sin límite cuando $y=1$, ningún
+$M_r$ finito representa exactamente esa posibilidad: cortaría cantidades
+permitidas. No debemos inventar un número grande ni usar $\infty$ como
+coeficiente de $y$.
+
+La condición que queremos expresar sigue siendo
+
+$$y=0\quad\Longrightarrow\quad x_r=0.$$
+
+Es una **restricción indicadora**: activa una condición cuando la binaria
+toma el valor indicado. Con $y=1$ no impone un máximo. Esta forma lógica
+requiere un método que la admita, o justificar una cota finita para convertirla
+en el enlace lineal anterior. Una variable indicadora, por sí sola, no escribe
+esa implicación.
+
 ## Problema 3 · Fabricar cero rovers o un lote de al menos tres
 
 Retomamos el [problema 3 de la bitácora: Fabricar cero rovers o un lote de al menos tres](raya:la-bitacora-del-taller#raya-object-opt-ent-ej-intento-lote).
