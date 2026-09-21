@@ -43,3 +43,8 @@ no son imágenes.
 | `opt-arbol.svg` | El árbol de ramificación del taller: cinco nodos, dos cierres por solución entera y una poda por cota | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-flujo-ramificar.svg` | Diagrama de flujo completo de ramificar y acotar, con cada nodo etiquetado con su línea del pseudocódigo | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-arbol-vocabulario.svg` | Esquema genérico de un árbol de subproblemas, con la raíz, los hijos, una hoja y una rama señaladas | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol-paso-0.svg` | Árbol parcial del taller después de procesar 0 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol-paso-1.svg` | Árbol parcial del taller después de procesar 1 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol-paso-2.svg` | Árbol parcial del taller después de procesar 2 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol-paso-3.svg` | Árbol parcial del taller después de procesar 3 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-arbol-paso-4.svg` | Árbol parcial del taller después de procesar 4 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

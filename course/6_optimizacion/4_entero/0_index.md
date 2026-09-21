@@ -2,83 +2,116 @@
 id: optimizacion-entera
 title: "Clase 4 · Cuando las piezas no se parten"
 nav_title: Entero
-summary: "Un taller que fabrica cosas que no se pueden dejar a medias. Qué cambia al escribir el modelo, por qué los métodos anteriores no cierran, y dos que sí: mirarlos todos, y descartarlos sin mirarlos."
+summary: "De los datos y las decisiones a cuatro modelos enteros completos. Después, enumeración y ramificación y cotas para resolver el taller original."
 status: ready
-estimated_time: 108m
+estimated_time: 125m
 tags: [optimizacion, modelado, entera]
 prerequisites: [optimizacion-lineal]
 ---
 
 # Clase 4 · Cuando las piezas no se parten
 
-Las tres clases anteriores se apoyaron en una licencia que nadie discutió: que
-una fracción de pieza significa algo. Media hora de trabajo, medio filtro a
-medio armar. En la impresora era razonable.
+**Empieza con papel y lápiz:** vas a convertir las condiciones de un taller
+en cuatro modelos enteros completos. Sigue la ruta **datos → variables →
+reglas → ecuaciones → modelo completo**. Después aprenderás dos algoritmos
+para resolver el taller original.
 
-Aquí no. Media sonda no es media respuesta: es una sonda que no transmite. El
-modelo cambia en **una sola línea** —el dominio— y con esa línea se cae casi todo
-el instrumental de las clases 2 y 3.
+En las clases anteriores podíamos repartir cantidades continuas. Aquí contamos
+aparatos que deben entregarse completos. Esa condición cambia las soluciones
+permitidas, aunque el objetivo y las restricciones sigan siendo lineales.
 
-## El episodio
+## El problema 1 · Taller original
 
-El taller de la nave fabrica **rovers** y **sondas de superficie** con lo que
-queda de aleación y de horas de calibración. Dos variables, dos restricciones, y
-la regla de que las cosas se fabrican enteras o no se fabrican.
+El taller fabrica **rovers** y **sondas de superficie**. Quiere transmitir la
+mayor cantidad de datos al día con los recursos disponibles.
 
-::: table {#opt-el-taller title="Lo que consume y lo que da cada equipo"}
-| Equipo | Aleación (kg) | Calibración (h) | Transmite (MB/día) |
+::: table {#opt-el-taller title="Recursos y rendimiento del taller"}
+| Equipo | Aleación por equipo | Calibración por equipo | Transmisión por equipo |
 |---|---:|---:|---:|
-| Rover | 6 | 1 | 5 |
-| Sonda | 4 | 2 | 4 |
-| **Disponible** | **24** | **6** | maximizar |
+| Rover | 6 kg | 1 h | 5 MB/día |
+| Sonda | 4 kg | 2 h | 4 MB/día |
+| **Disponible** | **24 kg** | **6 h** | **Maximizar el total** |
 :::
 
-## Las páginas
+La bitácora agrega una orden del comandante: fabricar como máximo cuatro
+rovers. Este es el **problema 1 · Taller original**, al que volveremos para
+aprender los dos algoritmos.
 
-| # | Página | Qué hace |
+## Cuatro problemas con nombres propios
+
+| Problema | Qué cambia respecto del taller original |
+|---|---|
+| **1 · Taller original** | Ningún cambio: usamos los datos de la bitácora |
+| **2 · Preparar la línea de ensamble de rovers** | Preparar las máquinas consume 3 horas una sola vez, además de la hora de calibración de cada rover |
+| **3 · Fabricar cero rovers o un lote de al menos tres** | Se permite fabricar 0, 3 o 4 rovers; no hay horas de preparación adicionales |
+| **4 · Compartir la antena entre los rovers** | Los primeros dos rovers transmiten 5 MB/día cada uno; el tercero y el cuarto, 3 cada uno |
+
+**Los problemas 2, 3 y 4 son variantes independientes del problema 1.** Cada
+uno cambia una condición del taller original; los cambios no se acumulan.
+Primero formularemos los cuatro, conservando todas las condiciones de cada
+enunciado y los dominios de sus variables. El objetivo de esta primera parte
+es aprender a construir modelos, incluso cuando haya miles de variables.
+Después resolveremos el **problema 1** por enumeración y por ramificación y
+cotas.
+
+## La ruta de trabajo
+
+| Etapa | Qué harás | Qué debes poder explicar al terminar |
 |---|---|---|
-| 1 | La bitácora | Las preguntas que hay que hacerle, y cómo se contesta cada una. **El modelo lo escribes tú** |
-| 2 | El modelo | Contesta la lectura, formaliza, y **tres variantes que obligan a inventar variables nuevas** |
-| 3 | Enumerar | El primer método que sí funciona, con su costo |
-| 4 | Ramificar y acotar | El algoritmo que descarta planes que nunca miró, y prueba que puede |
+| 1 · La bitácora | Separar datos y variables; describir reglas y casos; construir ecuaciones | Qué es un dato, qué se decide y cómo una condición se convierte en una expresión |
+| 2 · Los modelos | Revisar cuatro formulaciones completas, con parámetros antes de los datos | Cómo se construye cada renglón y dónde queda cada condición del relato |
+| 3 · Enumerar | Generar, filtrar y comparar candidatos | Por qué encuentra un óptimo y cuánto trabajo requiere |
+| 4 · Ramificar y acotar | Resolver relajaciones y cerrar subproblemas | Qué permite descartar candidatos sin enumerarlos individualmente |
 
-- [[la-bitacora-del-taller|1 · La bitácora del taller]]
-- [[el-modelo-del-taller|2 · El modelo, escrito]]
-- [[enumerar|3 · Enumerar]]
-- [[ramificar-y-acotar|4 · Ramificar y acotar]]
+1. [[la-bitacora-del-taller|Leer la bitácora y plantear los ejercicios]].
+2. [[el-modelo-del-taller|Comprobar los modelos]].
+3. [[enumerar|Resolver por enumeración]].
+4. [[ramificar-y-acotar|Resolver por ramificación y cotas]].
 
-## Cómo se trabaja esta clase
+## Cómo usar estas páginas
 
-La página 1 **no escribe el modelo**: da las preguntas, dice cómo se contesta
-cada una —el dominio con más detalle, porque es la nueva— y te pide el tuyo en
-papel antes de pasar de página. Las respuestas, incluidas las de sus tres
-variantes, están en la página 2. Eso es el trabajo de la clase: no hay forma de
-aprender a modelar leyendo modelos ya escritos.
+Intenta cada formulación antes de abrir sus pistas o leer las soluciones.
+Primero expresa las condiciones en palabras y por casos; después construye
+las ecuaciones con parámetros y sustituye los datos. Termina cada intento
+reuniendo el objetivo, todas las restricciones y los dominios en un solo
+modelo. En esta etapa conserva las condiciones explícitas del enunciado;
+la búsqueda de un óptimo viene después.
 
-## El notebook de la clase 4
+En las tablas de los algoritmos sigue dos cosas: **qué se está revisando** y
+**qué solución se guarda**.
 
-La función `enumerar` es el pseudocódigo de la página 3, línea por línea, y
-recibe cualquier modelo entero: le pasas `c`, `A`, `b` y las cotas, y te
-devuelve el óptimo con cuántos candidatos miró. Trae resueltos el taller y las
-**tres variantes** de la página 2, las contrasta contra `scipy.optimize.milp`, y
-cierra midiendo cómo crece el costo al mover $n$ y al mover $m$ por separado.
+Si pierdes el hilo, vuelve al comienzo del bloque: ahí se indica el problema
+activo y el paso pendiente. Los problemas 2, 3 y 4 se trabajan por
+separado; para aprender los algoritmos regresamos al **problema 1 · Taller
+original**.
+
+Como orientación, reserva **unos 125 minutos** para el recorrido principal con
+intentos breves: 20 para plantear, 30 para comparar modelos, 30 para enumerar y
+45 para ramificar. Es una estimación de trabajo, no una prueba contra reloj.
+Las ampliaciones y el notebook pueden hacerse después. Hay un punto de parada
+al terminar cada página.
+
+## Práctica en el notebook
+
+El cuaderno permite ejecutar **enumeración** sobre el taller y las tres
+variantes, comparar sus resultados con `scipy.optimize.milp` y experimentar con
+el número de variables y restricciones. Úsalo después de hacer el recorrido a
+mano. La llamada a `milp` comprueba resultados; no muestra los pasos del árbol
+que construirás en la última página.
+
+El cuaderno incluye representaciones simplificadas para esos contrastes. Las
+mismas decisiones físicas pueden representarse con distintas variables y
+restricciones: comprueba siempre qué significa cada una. En particular, la
+formulación de la antena que construiremos en estas páginas usa una binaria
+para imponer el orden de los tramos en toda asignación permitida; al comparar
+con el cuaderno, distingue esa garantía del resultado que se obtiene al
+maximizar.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/6_optimizacion/_assets/04_taller_entero.ipynb)
 
-*Se abre en Google Colab, en otra pestaña.*
+El archivo local es `course/6_optimizacion/_assets/04_taller_entero.ipynb`.
+Necesita `numpy`, `scipy` y `matplotlib` si lo ejecutas en tu equipo.
 
-**Dónde vive.** El archivo está en este repositorio, en
-`course/6_optimizacion/_assets/04_taller_entero.ipynb`. Si prefieres correrlo en
-tu máquina, necesitas `numpy`, `scipy` y `matplotlib`.
-
-**Cuándo.** Después de leer las cuatro páginas. La última celda te pide modelar una
-bitácora nueva y comprueba tu respuesta sola.
-
-## Qué no cubre
-
-No vas a ver variables mixtas —unas enteras y otras continuas—, ni planos de
-corte, ni las heurísticas que los solucionadores usan para encontrar pronto una
-solución buena. Tampoco el mapa de qué algoritmo le toca a cada familia, que
-cierra la unidad y todavía no está escrito.
-
-Empieza por [[la-bitacora-del-taller|la bitácora del taller]].
+En esta clase buscamos **una solución óptima** de problemas lineales enteros
+con cotas finitas. Las variables mixtas, los planos de corte y las heurísticas
+de los solucionadores quedan para otro momento.
