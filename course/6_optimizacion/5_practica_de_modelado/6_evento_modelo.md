@@ -1,40 +1,53 @@
 ---
 id: opt-modelo-evento
-title: "Evento: de elegir actividades a decidir cantidades"
+title: "Cómo modelar la selección y duración de talleres"
 nav_title: "Evento · Modelo general"
 summary: "Selección binaria y duración continua: parámetros, dependencias, enlaces y dos modelos completos en forma estándar."
 status: ready
 tags: [optimizacion, modelado, entera, mixta]
 ---
 
-# Evento: de elegir actividades a decidir cantidades
+# Cómo modelar la selección y duración de talleres
 
 **Primero intenta los [[opt-practica-evento|dos ejercicios del evento]].**
-La pregunta inicial es **qué talleres ofrecer**. En la variante también
-decidimos **cuánto dura cada uno**. Ese cambio explica por qué necesitamos
-otra familia de variables y restricciones que las relacionen.
+Primero decidimos **qué talleres ofrecer**. En la segunda variante también
+elegimos **cuánto dura cada uno**. Veremos cómo escribir ambas decisiones
+para cualquier número de talleres y cómo impedir que se contradigan.
 
-## 1 · Elegir talleres completos
+## 1 · Contar las horas de los talleres elegidos
 
-| Dato conocido | Significado |
-|---|---|
-| $J$ | Conjunto finito no vacío de talleres |
-| $B,T\ge0$ | Presupuesto en pesos y tiempo disponible en horas |
-| $c_j,t_j\ge0$ | Precio en pesos y duración en horas del taller completo |
-| $E\subseteq J\times J$ | Pares de talleres $(p,q)$ donde ofrecer $q$ requiere ofrecer $p$ |
+Todos los talleres se imparten uno después de otro en un solo salón. Podemos
+elegir cualquiera de ellos, siempre que respetemos los recursos disponibles
+y los requisitos entre talleres.
+
+Llamamos $J$ al conjunto finito no vacío de talleres. Estos son los datos
+necesarios para la primera variante:
+
+- $B\ge0$: Presupuesto disponible, en pesos.
+- $T\ge0$: Tiempo disponible en el salón, en horas.
+- $c_j\ge0$: Precio del taller completo, en pesos.
+- $t_j\ge0$: Duración del taller completo, en horas.
 
 La decisión es $y_j\in\{0,1\}$: $1$ si ofrecemos el taller $j$ y $0$ si
 no. Su duración ya está dada; todavía no necesitamos decidirla.
 
-**Objetivo.** Queremos horas, no número de talleres. Cada taller elegido
-aporta $t_jy_j$ horas, así que maximizamos $\sum_{j\in J}t_jy_j$.
+**El objetivo cuenta horas de talleres.** Un taller elegido aporta $t_jy_j$
+horas: su duración completa si $y_j=1$, y cero si $y_j=0$. Sumamos esas
+aportaciones y buscamos el mayor total:
 
-**Recursos.** Las mismas elecciones generan dos consumos distintos:
+$$\max\quad\sum_{j\in J}t_jy_j.$$
 
-| Obligación | Restricción | Origen |
-|---|---|---|
-| Respetar el presupuesto | $\sum_{j\in J}c_jy_j\le B$ | Solo pagamos los talleres elegidos |
-| Respetar el tiempo del salón | $\sum_{j\in J}t_jy_j\le T$ | Se imparten uno después de otro |
+Contar talleres sería otro objetivo: uno largo y uno corto contarían lo mismo.
+
+**El presupuesto limita el gasto.** Solo pagamos los talleres elegidos, de
+modo que cada uno cuesta $c_jy_j$ pesos. El total debe caber en el presupuesto:
+
+$$\sum_{j\in J}c_jy_j\le B.$$
+
+**El salón limita el tiempo.** Como los talleres se imparten uno después de
+otro, sus duraciones se suman. No pueden superar las horas disponibles:
+
+$$\sum_{j\in J}t_jy_j\le T.$$
 
 La suma de horas aparece como objetivo y como restricción. No sobra ninguna:
 el límite establece cuánto está permitido; el objetivo prefiere más horas
@@ -42,22 +55,34 @@ entre las elecciones que cumplen todas las condiciones.
 
 ## 2 · Traducir «si ofrecemos uno, también el otro»
 
-Para $(p,q)\in E$, $p$ es el requerido y $q$ el que lo necesita. Primero
-identificamos qué combinación prohíbe el relato:
+Puede haber varios requisitos como el de video y fotografía. Los reunimos
+en un conjunto de pares $E\subseteq J\times J$: escribir $(p,q)\in E$
+significa que ofrecer $q$ exige ofrecer $p$.
 
-| Ofrecer el requerido: $y_p$ | Ofrecer el dependiente: $y_q$ | ¿Cumple la dependencia? |
+Para cada par, revisamos las cuatro combinaciones posibles. En la tabla,
+$y_p$ indica si ofrecemos el requerido y $y_q$ si ofrecemos el que lo necesita:
+
+| $y_p$ | $y_q$ | ¿Está permitido? |
 |---:|---:|---|
 | 0 | 0 | Sí |
 | 1 | 0 | Sí |
 | 1 | 1 | Sí |
 | 0 | 1 | No |
 
-La desigualdad $y_q\le y_p$ elimina exactamente la última fila. Por eso no
-usamos igualdad: ofrecer $p$ sin $q$ sí está permitido. Tampoco necesitamos
-otra variable: ya tenemos las dos decisiones que queremos relacionar.
+La desigualdad que elimina exactamente la última fila es:
 
-Pasamos a la forma estándar con $y_q-y_p\le0$. Escribimos el dominio binario
-como entero, no negativo y como máximo uno. El modelo completo es:
+$$y_q\le y_p.$$
+
+No usamos igualdad: ofrecer $p$ sin $q$ sí está permitido. Tampoco necesitamos
+otra variable, pues ya tenemos las dos decisiones que queremos relacionar.
+Si ofrecemos el taller que tiene el requisito, debemos incluir también el
+requerido; no se exige impartirlo antes.
+
+En la forma estándar del curso, escribimos esa condición como $y_q-y_p\le0$.
+Para expresar el dominio binario, exigimos que cada $y_j$ sea entero, no
+negativo y como máximo uno: los únicos valores que quedan son 0 y 1.
+
+El modelo completo es:
 
 $$
 \begin{aligned}
@@ -71,39 +96,50 @@ $$
 \end{aligned}
 $$
 
-Es **lineal entero**. Cada par de $E$ produce una restricción con la misma
-regla; no tenemos que inventar una fórmula distinta para cada dependencia.
+Es **lineal entero**: todas las variables son enteras y las expresiones son
+sumas de variables multiplicadas por datos conocidos. Cada par de $E$ produce
+una restricción con la misma regla; no necesitamos una fórmula distinta para
+cada requisito.
 
-## 3 · Añadir la duración como decisión
+## 3 · Decidir también cuánto dura cada taller
 
-En el problema 6, la duración deja de ser un dato fijo. Añadimos
-$h_j\in\mathbb R_{\ge0}$: horas que impartimos del taller $j$. Conservamos
-$y_j$ para indicar si lo ofrecemos y cobrar su preparación una sola vez.
+En el problema 6, la duración deja de ser un dato fijo. Añadimos $h_j$, las
+horas que impartimos del taller $j$. Su dominio es $h_j\in\mathbb R_{\ge0}$,
+porque se permiten fracciones de hora.
+
+Conservamos $y_j$ para indicar si ofrecemos el taller. Esa decisión también
+determina si debemos pagar su preparación, que se cobra una sola vez.
 
 Los nuevos datos por taller son:
 
-| Dato | Significado |
+- $f_j\ge0$: Costo fijo de preparación, en pesos, si se ofrece.
+- $k_j\ge0$: Tarifa por hora impartida, en pesos/hora.
+- $L_j$: Duración mínima contratada, en horas.
+- $U_j$: Duración máxima contratada, en horas.
+
+Los límites cumplen $0<L_j\le U_j<\infty$. El mínimo debe ser positivo;
+el máximo es finito y no puede ser menor que el mínimo.
+
+**Las dos decisiones deben ser coherentes.** Si solo escribimos sus dominios,
+podríamos elegir $y_j=0$ y $h_j>0$: asignar horas a un taller que no ofrecemos.
+Necesitamos restricciones que relacionen las dos variables. Las llamaremos
+restricciones de enlace.
+
+## 4 · Exigir cero horas a los talleres que no se ofrecen
+
+El contrato pide estas posibilidades. El valor $y_j=0$ significa que el
+taller no se ofrece; $y_j=1$ significa que sí se ofrece.
+
+| $y_j$ | Horas permitidas |
 |---|---|
-| $f_j\ge0$ | Costo fijo de preparación, en pesos, si se ofrece |
-| $k_j\ge0$ | Tarifa por hora impartida, en pesos/hora |
-| $L_j,U_j$ | Duración mínima y máxima contratadas, en horas; $0<L_j\le U_j<\infty$ |
+| $0$ | $h_j=0$ |
+| $1$ | $L_j\le h_j\le U_j$ |
 
-**Dos variables no deben permitir dos relatos incompatibles.** Si solo
-escribiéramos sus dominios, sería posible elegir $y_j=0$ y $h_j>0$: impartir
-horas de un taller que supuestamente no ofrecemos. Faltan los enlaces.
+Para construir el límite inferior, buscamos una expresión que valga cero
+cuando $y_j=0$ y $L_j$ cuando $y_j=1$. El producto $L_jy_j$ hace eso.
+Para el superior usamos $U_jy_j$, que cambia de cero a $U_j$.
 
-## 4 · Construir los enlaces por casos
-
-El contrato pide estas posibilidades:
-
-| Elección | Duración permitida |
-|---|---|
-| No ofrecer: $y_j=0$ | $h_j=0$ |
-| Ofrecer: $y_j=1$ | $L_j\le h_j\le U_j$ |
-
-El límite inferior debe valer cero al no ofrecer y $L_j$ al ofrecer:
-lo representa $L_jy_j$. El superior debe valer cero o $U_j$:
-lo representa $U_jy_j$. Así construimos las dos restricciones:
+Así obtenemos las dos restricciones:
 
 $$
 \begin{aligned}
@@ -112,36 +148,57 @@ $$
 \end{aligned}
 $$
 
-**Compruébalas juntas.** Con $y_j=0$, fuerzan $h_j=0$. Con $y_j=1$,
-recuperan el intervalo contratado. Como $L_j>0$, abrir implica impartir
-una duración positiva; cualquier duración positiva también exige abrir.
+**Comprueba los dos casos.** Si no ofrecemos el taller, $y_j=0$: la cota
+superior exige $h_j\le0$ y el dominio impide horas negativas. Por tanto,
+necesariamente $h_j=0$.
 
-El límite superior impide horas sin apertura. El inferior impide abrir con
-menos horas que el mínimo. Escribir solo $h_j\ge L_j$ obligaría a abrir todos
-los talleres. Los límites vienen del contrato: no son números grandes arbitrarios.
+Si lo ofrecemos, $y_j=1$: ambas desigualdades recuperan el intervalo
+contratado, desde $L_j$ hasta $U_j$. Como **$L_j>0$**, no podemos seleccionar
+un taller y asignarle cero horas.
 
-## 5 · Actualizar el costo y el objetivo
+La cota superior impide asignar horas a un taller no seleccionado. La inferior
+impide ofrecerlo durante menos del mínimo contratado. Juntas aseguran que
+ofrecer un taller implica impartir horas y que impartir horas exige ofrecerlo.
 
-El costo de cada taller se construye por separado de las horas que queremos maximizar:
+Escribir solo $h_j\ge L_j$ obligaría a impartir todos los talleres, incluso
+los que queríamos dejar fuera. Los límites vienen del contrato; no son
+números grandes elegidos arbitrariamente.
+
+## 5 · Sumar la preparación y las horas impartidas
+
+La preparación cuesta $f_j$ pesos, **una sola vez y solo si ofrecemos el
+taller**. Por eso aporta $f_jy_j$ al gasto. Impartir $h_j$ horas a una tarifa
+de $k_j$ pesos por hora aporta $k_jh_j$ pesos.
+
+Sumamos esos dos cobros:
 
 $$\text{costo del taller }j=f_jy_j+k_jh_j.$$
 
 Si no se ofrece, $y_j=h_j=0$ y el costo es cero. Si se ofrece, pagamos
-$f_j$ una sola vez más $k_j$ por cada hora. Este cobro **sustituye** al precio
-completo $c_j$; no sumamos ambos esquemas.
+la preparación más las horas impartidas. Este cobro **sustituye** al precio
+completo $c_j$; no sumamos los dos esquemas de pago.
 
-No multiplicamos $k_jh_j$ por $y_j$: los enlaces ya anulan las horas cuando
-no se abre. Cada producto que usamos es un dato por una variable, por lo que
-el modelo sigue siendo lineal.
+No hace falta multiplicar $k_jh_j$ por $y_j$: las restricciones anteriores
+ya exigen cero horas cuando no ofrecemos el taller. Cada producto que usamos
+es un dato por una variable, por lo que el modelo sigue siendo lineal.
 
-**El objetivo conserva su significado, pero cambia su expresión:** antes
-sumábamos duraciones fijas elegidas, $\sum_j t_jy_j$; ahora sumamos duraciones
-decididas, $\sum_j h_j$. No usamos $\sum_j y_j$, que contaría talleres.
+**Seguimos buscando el mayor total de horas.** Antes seleccionábamos
+duraciones ya fijadas y sumábamos $\sum_j t_jy_j$. Ahora elegimos esas
+duraciones, de modo que el objetivo es:
+
+$$\max\quad\sum_j h_j.$$
+
+La suma $\sum_j y_j$ contaría talleres; no representa las horas que pide el relato.
 
 ## 6 · Modelo completo con duración flexible
 
-Conservamos presupuesto, tiempo y dependencias. Agregamos las duraciones y
-sus dos enlaces, escritos con $\le$ para la forma estándar:
+Conservamos las condiciones de presupuesto, tiempo y requisitos entre
+talleres. Añadimos las duraciones y las dos restricciones que las relacionan
+con la selección.
+
+Para escribir estas últimas con $\le$, pasamos los términos al mismo lado:
+$h_j\ge L_jy_j$ se convierte en $L_jy_j-h_j\le0$, y
+$h_j\le U_jy_j$ en $h_j-U_jy_j\le0$. El modelo completo queda:
 
 $$
 \begin{aligned}
@@ -158,9 +215,13 @@ $$
 \end{aligned}
 $$
 
-Es **lineal mixto**: elegimos conjuntamente aperturas enteras y duraciones
-continuas. La dependencia conecta aperturas entre talleres; los enlaces
-conectan cada apertura con su duración; presupuesto y tiempo reúnen a todos.
+Es **lineal mixto**: combina las variables enteras de selección con las
+duraciones, que pueden tomar valores reales. Cada grupo de restricciones
+tiene una función:
+
+- Los requisitos entre talleres relacionan cuáles se ofrecen.
+- Los enlaces relacionan cada taller con su duración.
+- El presupuesto y el tiempo limitan los totales del programa.
 
 ## Qué razonamiento puedes reutilizar
 

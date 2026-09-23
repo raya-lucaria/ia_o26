@@ -1,88 +1,129 @@
 ---
 id: opt-practica-cafe
-title: "Preparar una mezcla de café"
+title: "Comprar café para una mezcla"
 nav_title: "Café: práctica"
 summary: "Formular una mezcla por kilogramo y su variante con paquetes completos, sin calcular la mejor compra."
 status: ready
 tags: [optimizacion, modelado, practica]
 ---
 
-# Preparar una mezcla de café
+# Comprar café para una mezcla
 
-**Tu tarea:** escribir dos modelos completos, no encontrar cuánto comprar.
-Son situaciones habituales de una cafetería; los números son didácticos.
-Intenta cada ejercicio antes de abrir sus ayudas.
+Una cafetería necesita comprar café de dos orígenes para preparar su mezcla.
+Primero podrá pedir las cantidades por kilogramo; después, el proveedor solo
+venderá paquetes completos. Los números de ambos problemas son didácticos.
 
-## Problema 1 · Comprar por kilogramo
+**Tu tarea es escribir el modelo de cada compra.** Explica qué se decide,
+qué condiciones debe cumplir la mezcla y cómo se calcula el gasto.
+No hace falta encontrar la compra más barata. Intenta cada problema antes de
+abrir sus ayudas.
+
+## Problema 1 · Preparar 20 kg comprando a granel
 
 ::: exercise {#opt-b-cafe-ej-mezcla title="Una mezcla para la semana"}
-Una cafetería prepara **20 kg de café mezclando dos orígenes, A y B**. Puede
-comprar fracciones de kilogramo. El origen A cuesta 180 pesos por kg y hay
-12 kg disponibles; el B cuesta 120 pesos por kg y hay 16 kg disponibles.
+Una cafetería necesita preparar **exactamente 20 kg de café** mezclando dos
+orígenes, A y B. Compra a granel: puede pedir la cantidad que necesite de cada
+origen, incluidas fracciones de kilogramo. Paga únicamente lo que compra.
 
-Para conservar el sabor de la receta, **al menos el 40 % del peso de la mezcla
-debe ser del origen A**. No hay pérdidas al mezclar: cada kilogramo comprado
-se incorpora a la preparación. Se paga únicamente la cantidad comprada.
+El proveedor ofrece estas cantidades para los orígenes A y B:
 
-La cafetería quiere preparar exactamente los 20 kg y gastar lo menos posible.
-**Define los datos y las decisiones; escribe el objetivo, todas las
-restricciones y el dominio de cada variable.**
+| Dato | A | B |
+|---|---:|---:|
+| Precio (pesos/kg) | 180 | 120 |
+| Disponible (kg) | 12 | 16 |
+
+La receta pide que **al menos el 40 % del peso de la mezcla sea del origen A**.
+Todo el café comprado se usa en esta preparación y no se pierde nada al mezclar.
+
+La cafetería quiere cumplir el pedido y **gastar lo menos posible**.
+Escribe un modelo que permita elegir cuánto comprar de cada origen:
+
+- Distingue los datos de las decisiones y explica sus unidades.
+- Define las variables y los valores que pueden tomar.
+- Escribe el objetivo y una restricción por cada condición del relato.
+
+Presenta primero el modelo con parámetros y después sustituye los datos.
 :::
 
 ### Primero intenta plantearlo
 
-**NO ABRAS LA PISTA 1 SIN INTENTARLO. ÚSALA SOLO SI TE ATORASTE.**
+Escribe lo que puedas por tu cuenta. Si te atoras, abre la primera pista y
+vuelve a tu intento.
 
-::: hint {#opt-b-cafe-pista-mezcla-datos of="opt-b-cafe-ej-mezcla" title="PISTA 1 · Solo si te atoraste"}
-| Dato | Origen A | Origen B |
+::: hint {#opt-b-cafe-pista-mezcla-datos of="opt-b-cafe-ej-mezcla" title="Pista 1 · Ordena los datos de la compra"}
+Las columnas A y B corresponden a los dos orígenes:
+
+| Dato | A | B |
 |---|---:|---:|
-| Costo por kilogramo | 180 pesos | 120 pesos |
-| Disponible | 12 kg | 16 kg |
+| Precio (pesos/kg) | 180 | 120 |
+| Disponible (kg) | 12 | 16 |
 
-| Condición de la mezcla | Información del relato |
-|---|---|
-| Peso total | Exactamente 20 kg |
-| Participación del origen A | Al menos 40 % del peso |
-| Cantidades permitidas | Fracciones de kilogramo |
-| Pérdidas | Ninguna |
+- **Peso total**: Exactamente 20 kg.
+- **Participación del origen A**: Al menos 40 % del peso.
+- **Cantidades permitidas**: Fracciones de kilogramo.
+- **Pérdidas**: Ninguna.
+- **Uso del café comprado**: Todo entra en la mezcla.
 
 Debes decidir cuánto comprar de cada origen.
 :::
 
-**NO ABRAS LA PISTA 2 SIN INTENTARLO. ÚSALA SOLO SI SIGUES ATORADO.**
+Si todavía no sabes cómo representar la receta, prueba con esta pregunta.
 
-::: hint {#opt-b-cafe-pista-mezcla-guia of="opt-b-cafe-ej-mezcla" title="PISTA 2 · Solo si te atoraste"}
+::: hint {#opt-b-cafe-pista-mezcla-guia of="opt-b-cafe-ej-mezcla" title="Pista 2 · ¿De qué es el porcentaje?"}
 ¿El porcentaje de la receta se refiere al dinero gastado o al peso preparado?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Cuando tengas un planteamiento, abre la respuesta y compáralo paso a paso.
 
-::: answer {#opt-b-cafe-resp-mezcla of="opt-b-cafe-ej-mezcla" title="Respuesta · Del relato al modelo"}
-**1. Leer las condiciones.** La cantidad preparada es exacta. La disponibilidad
-es un máximo; la participación de A es un mínimo. El costo mide dinero, mientras
-que la receta y las existencias se refieren a masa.
+::: answer {#opt-b-cafe-resp-mezcla of="opt-b-cafe-ej-mezcla" title="Respuesta · De los kilogramos al modelo"}
+**1. Distinguir las condiciones de la compra.** El pedido fija un peso exacto.
+Las existencias ponen un máximo a lo que podemos comprar de cada origen;
+la receta exige un mínimo del origen A.
 
-**2. Separar parámetros y decisiones.** Para escribir una regla que admita más
-orígenes, sea $J$ el conjunto de orígenes y $S\subseteq J$ el conjunto cuya
-participación mínima exige la receta. Aquí $J=\{A,B\}$ y $S=\{A\}$.
+El precio sirve para calcular dinero. Las otras condiciones hablan de
+**kilogramos de café**, así que no podemos interpretar el 40 % como una parte
+del gasto.
 
-| Parámetro conocido | Significado y unidad |
-|---|---|
-| $D>0$ | Peso total requerido, en kg |
-| $c_j\ge0$ | Costo del origen $j$, en pesos/kg |
-| $s_j\ge0$ | Disponibilidad del origen $j$, en kg |
-| $\alpha\in[0,1]$ | Fracción mínima del peso que debe provenir de $S$ |
+**2. Dar nombre a los datos y a las decisiones.** Primero escribiremos el
+modelo con parámetros: símbolos que representan los datos conocidos. Así
+podremos reconocer la misma estructura aunque cambien el pedido o los precios.
 
-La decisión $x_j$ es cuántos **kg** comprar del origen $j$. Como pueden medirse
-fracciones de kilogramo, $x_j\in\mathbb R_{\ge0}$.
+Llamamos $J$ al conjunto de orígenes disponibles. Dentro de él, $S\subseteq J$
+reúne los orígenes cuya participación conjunta tiene un mínimo en la receta.
+En este pedido, $J=\{A,B\}$ y $S=\{A\}$: ese mínimo corresponde solo a A.
 
-**3. Construir cada expresión.** Costo por kilogramo multiplicado por
-kilogramos da pesos: $c_jx_j$. Sumamos esos costos para obtener el gasto total.
+- $D>0$: Peso total requerido, en kg.
+- $c_j\ge0$: Costo del origen $j$, en pesos/kg.
+- $s_j\ge0$: Disponibilidad del origen $j$, en kg.
+- $\alpha\in[0,1]$: Fracción mínima del peso que debe provenir de $S$.
 
-Sumar las compras da el peso preparado porque no hay pérdidas. El mínimo de
-la receta se obtiene multiplicando la fracción requerida por el peso total:
-$\alpha D$ kg. La suma de las cantidades de los orígenes de $S$ debe alcanzar
-ese mínimo.
+La variable $x_j$ representa cuántos **kg comprar del origen $j$**. Hay una
+variable por origen. Podemos comprar fracciones de kilogramo, pero no cantidades
+negativas; por eso elegimos el dominio $x_j\in\mathbb R_{\ge0}$.
+
+**3. Construir el gasto y las restricciones.** Para cualquier compra, el
+gasto en un origen se obtiene multiplicando su precio por la cantidad comprada:
+
+$$c_jx_j\quad\text{pesos}.$$
+
+Sumar ese gasto para todos los orígenes da el costo total que queremos minimizar.
+
+**El peso comprado es también el peso preparado.** Esto se cumple porque todo
+lo comprado entra en la mezcla y no hay pérdidas. Por eso el pedido se escribe:
+
+$$\sum_{j\in J}x_j=D.$$
+
+Cada origen tiene sus propias existencias. No podemos comprar más de ellas:
+
+$$x_j\le s_j\qquad\text{para cada }j\in J.$$
+
+Por último, la receta exige una fracción $\alpha$ del peso total. Como ese
+peso está fijado en $D$ kg, el mínimo requerido es $\alpha D$ kg. Sumamos
+lo comprado de los orígenes de $S$ y exigimos que alcance ese mínimo:
+
+$$\sum_{j\in S}x_j\ge\alpha D.$$
+
+El signo incluye la igualdad porque la receta dice «al menos».
 
 **4. Reunir el modelo general.**
 
@@ -116,60 +157,88 @@ menos de 20 kg no. Una mezcla con exactamente 40 % de A cumple la receta:
 «al menos» incluye la igualdad. No hemos calculado la compra óptima.
 :::
 
-## Problema 2 · El proveedor cambia la presentación
+## Problema 2 · Preparar la misma mezcla con paquetes completos
 
 ::: exercise {#opt-b-cafe-ej-paquetes title="Comprar paquetes completos"}
-Esta variante conserva la mezcla del problema 1, pero cambia cómo se compra.
-El proveedor vende A en **paquetes de 4 kg** y B en **paquetes de 2 kg**. Solo
-vende paquetes completos, y **todo lo comprado debe entrar en esta mezcla**:
-no se permite guardar sobrantes ni desechar café.
+La cafetería mantiene el mismo pedido, pero el proveedor cambia la forma de
+venta. Ahora solo ofrece A en **paquetes completos de 4 kg** y B en
+**paquetes completos de 2 kg**. No abre los paquetes para vender una parte.
 
-La cafetería necesita exactamente **20 kg**, con **al menos 40 % del peso de A**.
-A cuesta 180 pesos por kg y hay 12 kg disponibles; B cuesta 120 pesos por kg y
-hay 16 kg disponibles. No hay pérdidas y se busca el menor costo total.
+Todo lo comprado debe entrar en esta mezcla. **No se permite guardar sobrantes
+ni desechar café**, y sigue sin haber pérdidas al mezclar.
 
-**Escribe el modelo completo de esta variante. Explica qué representa cada
-variable y por qué elegiste su dominio.**
+Estas condiciones del pedido se conservan:
+
+- Preparar exactamente **20 kg**.
+- Que al menos **40 % del peso de la mezcla provenga del origen A**.
+- Pagar 180 pesos por kg de A y 120 pesos por kg de B.
+- Comprar dentro de las existencias: 12 kg de A y 16 kg de B.
+
+Se sigue buscando el menor costo total. Escribe el modelo completo, primero
+con parámetros y después con estos datos. Explica qué cuenta cada variable
+y por qué los valores que le permites representan las compras que acepta
+el proveedor.
 :::
 
 ### Primero intenta plantearlo
 
-**NO ABRAS LA PISTA 1 SIN INTENTARLO. ÚSALA SOLO SI TE ATORASTE.**
+Revisa qué parte de tu modelo anterior necesita cambiar. Abre esta pista
+solo si necesitas ordenar los datos.
 
-::: hint {#opt-b-cafe-pista-paquetes-datos of="opt-b-cafe-ej-paquetes" title="PISTA 1 · Solo si te atoraste"}
-| Dato | Origen A | Origen B |
+::: hint {#opt-b-cafe-pista-paquetes-datos of="opt-b-cafe-ej-paquetes" title="Pista 1 · Revisa lo que vende el proveedor"}
+Para cada origen, comparamos el precio, las existencias y el peso de cada paquete:
+
+| Dato | A | B |
 |---|---:|---:|
-| Costo por kilogramo | 180 pesos | 120 pesos |
-| Disponible | 12 kg | 16 kg |
-| Presentación de venta | Paquete de 4 kg | Paquete de 2 kg |
+| Precio (pesos/kg) | 180 | 120 |
+| Disponible (kg) | 12 | 16 |
+| Paquete (kg) | 4 | 2 |
 
 Se preparan exactamente 20 kg, al menos 40 % de A. Los paquetes se compran
 completos y se usan íntegramente; no hay pérdidas ni sobrantes.
 :::
 
-**NO ABRAS LA PISTA 2 SIN INTENTARLO. ÚSALA SOLO SI SIGUES ATORADO.**
+Si sigues atorado, piensa en las compras que permite la nueva presentación.
 
-::: hint {#opt-b-cafe-pista-paquetes-guia of="opt-b-cafe-ej-paquetes" title="PISTA 2 · Solo si te atoraste"}
+::: hint {#opt-b-cafe-pista-paquetes-guia of="opt-b-cafe-ej-paquetes" title="Pista 2 · ¿Qué compras rechazaría?"}
 ¿Qué compras que eran posibles por kilogramo ahora rechazaría el proveedor?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Compara tu propuesta con la respuesta cuando hayas intentado escribirla completa.
 
-::: answer {#opt-b-cafe-resp-paquetes of="opt-b-cafe-ej-paquetes" title="Respuesta · Contar paquetes y medir kilogramos"}
+::: answer {#opt-b-cafe-resp-paquetes of="opt-b-cafe-ej-paquetes" title="Respuesta · De los paquetes al modelo"}
 **1. Identificar el cambio.** Ahora la unidad que podemos contar es el paquete.
 Exigir kilogramos enteros no basta: por ejemplo, un kilogramo de A no constituye
 un paquete completo.
 
-**2. Definir datos y decisiones.** Conservamos $J,S,D,c_j,s_j,\alpha$ del modelo
-anterior y añadimos el dato $q_j>0$: kg que contiene cada paquete del origen $j$.
+**2. Definir datos y decisiones.** Conservamos los datos del modelo anterior:
+los orígenes $J$, el grupo $S$ exigido por la receta, el pedido $D$, los precios
+$c_j$, las existencias $s_j$ y la fracción mínima $\alpha$.
 
-Elegimos $n_j$, el número de paquetes comprados del origen $j$, con
-$n_j\in\mathbb Z_{\ge0}$. La masa comprada es $q_jn_j$ kg. No necesitamos otra
-variable para representarla.
+Añadimos un dato: $q_j>0$, los **kg que contiene cada paquete** del origen $j$.
+Elegimos $n_j$, el **número de paquetes comprados** de ese origen. Como solo
+se venden completos, $n_j\in\mathbb Z_{\ge0}$.
 
-**3. Traducir todas las reglas a sus unidades.** La disponibilidad, la receta y
-el peso total se expresan en kg: usamos $q_jn_j$ en cada una. El costo es
-$c_jq_jn_j$ pesos, porque el precio dado es por kilogramo, no por paquete.
+**3. Pasar de paquetes a kilogramos y a pesos.** Cada paquete contiene $q_j$ kg.
+Al comprar $n_j$ paquetes recibimos:
+
+$$q_jn_j\quad\text{kg}.$$
+
+Esta cantidad se calcula a partir de la compra; no necesitamos elegir otra
+variable para ella. El proveedor sigue cobrando por kilogramo, de modo que
+el gasto en ese origen es:
+
+$$c_j(q_jn_j)\quad\text{pesos}.$$
+
+Sumamos esos gastos para obtener el costo total. Las demás condiciones siguen
+hablando de kilogramos, así que en todas ellas usamos $q_jn_j$:
+
+- El peso total comprado debe ser exactamente $D$, porque todo entra en la mezcla.
+- La cantidad de cada origen no puede superar sus existencias $s_j$.
+- Los orígenes de $S$ deben aportar al menos $\alpha D$ kg.
+
+**Cambiar cómo contamos la compra afecta todo el modelo**, aunque el pedido
+y sus reglas sean los mismos.
 
 **4. Escribir el modelo general completo.**
 

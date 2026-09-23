@@ -1,63 +1,83 @@
 ---
 id: opt-modelo-red
-title: Una regla de salida con muchos ejemplos
+title: Ajustar una misma regla para todos los clips
 nav_title: Red · Modelo general
-summary: "Separar las entradas fijas de los pesos que ajustamos y escribir un modelo convexo completo."
+summary: "Construir la salida y el error de cada clip usando pesos compartidos, y limitar esos pesos sin cambiar el objetivo."
 status: ready
 tags: [optimizacion, modelado, convexidad]
 ---
 
-# Una regla de salida con muchos ejemplos
+# Ajustar una misma regla para todos los clips
 
 **Primero intenta los [[opt-practica-red|dos problemas de la salida neuronal]].**
-La pregunta es: **¿qué pesos y qué constante producen una sola regla que
-aproxime los puntajes de todos los clips?** Solo ajustamos esa salida; las
-entradas ya están calculadas.
+Queremos elegir pesos y una constante para que una sola regla aproxime
+los puntajes de todos los clips. Las entradas de esa regla ya están
+calculadas: las etapas anteriores de la red permanecen fijas.
 
-## 1 · Distinguir datos por ejemplo y decisiones compartidas
+El criterio también está dado: minimizar la suma de errores cuadrados.
+Nuestro trabajo consiste en traducirlo, distinguir las decisiones de los
+datos y, en la segunda variante, añadir la condición sobre los pesos.
 
-| Símbolo | Significado | ¿Se elige? |
-|---|---|---|
-| $I,J$ | Conjuntos finitos no vacíos de clips y entradas | No |
-| $h_{ij}\in\mathbb R$ | Entrada $j$ ya calculada para el clip $i$ | No |
-| $t_i\in\mathbb R$ | Puntaje de referencia del clip $i$ | No |
-| $w_j\in\mathbb R$ | Peso de la entrada $j$ en todos los clips | Sí |
-| $b\in\mathbb R$ | Constante que se suma en todos los clips | Sí |
+## 1 · Separar los datos de los ajustes
 
-Un peso lleva índice $j$, pero no $i$: **el mismo peso se usa en todos los
-clips**. La constante $b$ también es única. Si diéramos pesos distintos a
-cada clip, estaríamos ajustando reglas distintas, no la regla compartida del relato.
+Cada clip tiene sus propias entradas y su puntaje de referencia. Llamemos
+$I$ al conjunto de clips y $J$ al conjunto de entradas de la salida; ambos
+son finitos y no vacíos.
 
-Pesos y constante pueden ser negativos, positivos o cero. El dominio real
-traduce esa libertad; imponer no negatividad agregaría una condición que
-el problema no pide. Todos los valores usan la escala numérica sin unidades
-físicas establecida en el ejercicio.
+**Los datos** son números reales conocidos:
 
-## 2 · Construir la función objetivo desde el relato
+- $h_{ij}$: Entrada $j$ ya calculada para el clip $i$.
+- $t_i$: Puntaje de referencia del clip $i$.
 
-Primero escribimos qué produce la regla para **un** clip $i$:
+**Las decisiones** son los números reales que ajustamos:
+
+- $w_j$: Peso que multiplica la entrada $j$.
+- $b$: Constante que se suma a la salida, también llamada sesgo.
+
+Un peso lleva índice $j$, pero no $i$: **usamos el mismo peso en todos los
+clips**. La constante $b$ también es única. Si eligiéramos pesos diferentes
+para cada clip, tendríamos varias reglas en lugar de la regla compartida
+que pide el enunciado.
+
+Los pesos y la constante pueden ser negativos, positivos o cero. Eso se
+expresa permitiendo cualquier valor real. Todos los valores están en la
+escala sin unidades físicas del ejercicio.
+
+## 2 · Calcular la salida y el error de un clip
+
+Para el clip $i$, multiplicamos cada entrada por su peso y sumamos esos
+productos. Después añadimos la constante:
 
 $$\text{salida del clip }i=\sum_{j\in J}h_{ij}w_j+b.$$
 
-Después restamos su referencia y elevamos la diferencia al cuadrado:
+Ahora comparamos esa salida con el puntaje de referencia $t_i$. La
+diferencia es el error del clip; elevamos esa diferencia al cuadrado,
+como pide el criterio del equipo:
 
 $$\text{error cuadrado del clip }i=
 \left(\sum_{j\in J}h_{ij}w_j+b-t_i\right)^2.$$
 
-Por último, sumamos sobre $i\in I$. La suma interior recorre las entradas
-de un clip; la exterior reúne los errores de todos los clips.
-**No elevamos al cuadrado la suma de errores:** errores positivos y negativos
-podrían cancelarse antes de elevarla. El relato pide un cuadrado por clip.
+**Calculamos un cuadrado por clip y luego los sumamos.** La suma sobre
+$j$ recorre las entradas de un solo clip para obtener su salida. La suma
+sobre $i$, que aparecerá en el objetivo, reúne los errores cuadrados de
+todos los clips.
 
-Las salidas y errores son expresiones calculadas con $w_j,b$, no nuevas
-decisiones libres. Escribirlas directamente evita variables adicionales y
-las igualdades que harían falta para vincularlas con los pesos.
+El orden importa. Si primero sumáramos los errores y después eleváramos
+el total al cuadrado, un error positivo podría cancelar uno negativo.
+Esa sería una medida distinta de la que pide el enunciado.
 
-## 3 · Modelo completo del ajuste básico
+Las salidas y los errores se calculan con los pesos y la constante. No
+son nuevas decisiones que podamos escoger libremente. Si quisiéramos
+representarlos con variables adicionales, necesitaríamos igualdades que
+los vincularan con esa misma regla de salida.
 
-El problema 7 pide aproximar las referencias lo mejor posible, no acertar
-exactamente en todas. Por eso no imponemos una igualdad entre salida y
-referencia: medimos la diferencia en el objetivo.
+## 3 · Minimizar la suma de errores cuadrados
+
+El problema 7 pide aproximar las referencias. **No exige acertar
+exactamente en todos los clips.** Por eso medimos las diferencias en el
+objetivo, sin imponer que cada salida sea igual a su referencia.
+
+El modelo general es
 
 $$
 \begin{aligned}
@@ -69,38 +89,46 @@ $$
 \end{aligned}
 $$
 
-No faltan restricciones de recursos: el relato básico no las establece.
-Los dominios completan el modelo. Los términos del objetivo están relacionados
-porque comparten decisiones: modificar un peso puede cambiar los errores de
-varios clips a la vez. No podemos elegir cada salida independientemente.
+Los dominios completan este modelo. El enunciado no establece límites de
+recursos ni pide pesos no negativos o puntajes dentro de un intervalo.
+Añadir cualquiera de esas condiciones cambiaría el problema.
 
-## 4 · Añadir un límite conjunto a los pesos
+Aunque cada clip aporte un término distinto, los términos comparten las
+decisiones. Cambiar un peso puede modificar los errores de varios clips a
+la vez. Por eso no podemos elegir cada salida por separado.
 
-El problema 8 conserva las decisiones y el objetivo. Añade el **dato** $R>0$
-y exige que la suma de cuadrados de los pesos sea como máximo $R^2$:
+## 4 · Añadir un límite para los pesos
+
+El problema 8 conserva los datos, las decisiones y el objetivo. Añade un
+dato $R>0$ y pide que la suma de cuadrados de los pesos no supere $R^2$:
 
 $$\sum_{j\in J}w_j^2\le R^2.$$
 
-$R$ no es algo que podamos aumentar para evitar la condición. No añadimos
-variables. La restricción relaciona todos los pesos: lo que aporta cada
-$w_j^2$ cuenta contra **un mismo límite**.
+Cada $w_j^2$ cuenta contra **el mismo límite**. El valor de $R$ está dado;
+no podemos aumentarlo para hacer que una elección de pesos cumpla la
+condición. Tampoco necesitamos nuevas variables.
 
-| Pregunta al traducir el relato | Consecuencia en el modelo |
-|---|---|
-| ¿Se limita cada peso o la suma? | Una restricción conjunta para todos los pesos |
-| ¿Entra la constante? | No: $b$ queda fuera de esa suma |
-| ¿Se permiten pesos negativos? | Sí: conservamos $w_j\in\mathbb R$ |
-| ¿El límite es obligatorio o una preferencia? | Obligatorio: va entre las restricciones |
+Al traducir la condición, conservamos estas distinciones:
 
-Limitar cada $w_j^2$ por separado no bastaría: varios pesos podrían cumplir
-su límite individual y superar la suma permitida. Tampoco añadimos esa suma
-al objetivo; eso cambiaría la medida que minimizamos y no impondría el máximo pedido.
+- **El límite se aplica a la suma**: Una restricción reúne todos los pesos.
+- **La constante queda libre**: $b$ no entra en esa suma.
+- **Los pesos pueden ser negativos**: Se mantiene su dominio real.
+- **El máximo es obligatorio**: Aparece entre las restricciones.
 
-## 5 · Modelo completo y forma estándar convexa
+Limitar cada peso por separado no bastaría. Varios pesos podrían respetar
+sus límites individuales y, juntos, exceder el total permitido. En la
+práctica, dos pesos iguales a 1 suman 2 al elevarlos al cuadrado, aunque
+cada uno esté entre $-1$ y 1.
 
-La convención convexa del curso minimiza una función convexa, con
-restricciones convexas escritas como $g(x)\le0$ e igualdades afines, si las hay.
-Aquí solo trasladamos $R^2$ al lado izquierdo; **el objetivo no cambia**.
+Tampoco basta con sumar los cuadrados de los pesos al objetivo. Eso
+penalizaría los valores grandes, pero no impondría el máximo pedido y
+cambiaría la medida que minimizamos.
+
+## 5 · Escribir el modelo con el nuevo límite
+
+Para usar la forma estándar convexa del curso, escribimos las
+desigualdades con cero del lado derecho. Restamos $R^2$ en ambos lados de
+la restricción. **El objetivo permanece igual:**
 
 $$
 \begin{aligned}
@@ -113,24 +141,42 @@ $$
 \end{aligned}
 $$
 
-Es un modelo **continuo convexo**. Cada error antes de elevarlo al cuadrado
-es una expresión afín en las decisiones, porque $h_{ij},t_i$ son datos.
-Su cuadrado es convexo y la suma conserva esa propiedad. La función de la
-desigualdad también es convexa; el dominio real es convexo.
+En el ejercicio hay dos pesos y $R=1$, por lo que la condición se convierte
+en $w_1^2+w_2^2-1\le0$. La constante $b$ sigue libre.
 
-La presencia de cuadrados impide llamarlo lineal. La forma estándar lineal
-no exige que transformemos todo problema en uno lineal: cambiar signos no
-elimina esos cuadrados. Aquí corresponde la forma convexa.
+## 6 · Comprobar por qué el modelo es convexo
 
-## Qué razonamiento puedes reutilizar
+La forma estándar convexa que usamos minimiza una función convexa.
+Admite desigualdades $g(x)\le0$ con $g$ convexa e igualdades afines, si las
+hay. Este modelo cumple esas condiciones.
 
-**Distingue lo que se calcula por ejemplo de lo que se decide para todos.**
-Más clips añaden términos al objetivo; más entradas añaden pesos compartidos.
-Una condición nueva puede restringir las decisiones existentes sin crear
-variables ni modificar el objetivo.
+**En el objetivo**, cada error antes de elevarlo al cuadrado es una
+expresión afín en las decisiones. Los valores $h_{ij}$ y $t_i$ son datos:
+solo multiplicamos decisiones por números conocidos, sumamos $b$ y
+restamos la referencia. No hay productos entre decisiones.
 
-No estamos ajustando una red completa. Si las etapas que producen $h_{ij}$
-también cambiaran, esas entradas dejarían de ser datos y esta justificación
-de convexidad ya no bastaría.
+El cuadrado de esa expresión afín es convexo. Al sumar los errores
+cuadrados, conservamos la convexidad del objetivo.
+
+**En la restricción**, la suma de cuadrados de los pesos menos el dato
+$R^2$ también es una función convexa. Pedir que sea menor o igual que
+cero define un conjunto permitido convexo. Los dominios reales de pesos
+y constante son convexos, así que el problema es **continuo convexo**.
+
+No es lineal: contiene cuadrados. La forma estándar lineal no obliga a
+convertir todo problema en uno lineal, y cambiar signos no elimina esos
+cuadrados. Aquí corresponde usar la forma convexa.
+
+## Qué conservar al añadir clips o entradas
+
+**Distingue lo que se calcula para cada clip de lo que se elige para todos.**
+Más clips añaden términos al objetivo; más entradas añaden pesos
+compartidos. Una condición nueva puede limitar esas decisiones sin crear
+variables ni cambiar el objetivo.
+
+Esta explicación depende de que las entradas $h_{ij}$ permanezcan fijas.
+Si ajustáramos también las etapas anteriores de la red, esas entradas
+dejarían de ser datos y la justificación de convexidad que acabamos de
+usar ya no bastaría. Aquí solo ajustamos la combinación final.
 
 [[opt-practica-red|Volver a los ejercicios]] · [[opt-practica-modelado|Volver a la guía]].

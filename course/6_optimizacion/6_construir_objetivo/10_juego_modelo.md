@@ -1,143 +1,278 @@
 ---
 id: opt-objetivo-juego-modelo
-title: Del resultado final a la evaluación de posiciones
+title: Formular cómo elegir una jugada
 nav_title: Juego · Modelo general
-summary: "Justificar max–min y distinguir la utilidad terminal de una valoración aproximada al limitar la exploración."
+summary: "Construir un objetivo que tenga en cuenta al rival y revisar qué ocurre cuando contamos fichas en vez de valorar si ganaremos."
 status: ready
 tags: [optimizacion, modelado, juegos]
 ---
 
-# Del resultado final a la evaluación de posiciones
+# Formular cómo elegir una jugada
 
 **Primero intenta los [[opt-objetivo-juego-practica|dos problemas del juego]].**
-Hay dos decisiones de modelado: cómo representar la respuesta del rival
-y qué valor asignar a cada consecuencia que podemos examinar.
+Vamos a reunir el razonamiento que sirve para ambos: decidir cómo tener
+en cuenta la respuesta rival y qué puntuación usar para comparar jugadas.
 
-## 1 · Decisiones propias y respuestas ajenas
+En el primer problema conocemos los resultados finales. En el segundo,
+revisamos un programa que deja de mirar antes del final y cuenta fichas.
+Las acciones permitidas son las mismas; cambia lo que el programa valora.
 
-| Símbolo | Significado | Papel |
-|---|---|---|
-| $A$ | Acciones propias, conjunto finito no vacío | Dato |
-| $B(a)$ | Respuestas permitidas tras $a$, conjunto finito no vacío | Dato |
-| $U(a,b)$ | Utilidad final propia tras ambas acciones | Dato conocido |
-| $a$ | Primera acción propia | Decisión que buscamos |
-| $b$ | Respuesta elegida después por el rival | Decisión ajena |
+## 1 · Distinguir lo que elegimos de lo que sabemos
 
-Suponemos un juego determinista de suma cero: la utilidad rival es $-U$.
-El rival observa $a$, conoce sus alternativas y busca minimizar $U$.
-Todas las condiciones importan para interpretar el mínimo como respuesta
-adversaria. No describimos decisiones simultáneas ni incertidumbre aleatoria.
+Llamamos $A$ al conjunto de nuestras acciones posibles. Si jugamos $a$,
+el rival dispone de las respuestas del conjunto $B(a)$. Estos conjuntos
+son finitos y no vacíos; sus elementos describen las jugadas permitidas.
 
-En la práctica, los movimientos que siguen a $a,b$ están forzados; por eso
-la tabla ya puede dar su utilidad final. Si hubiera nuevas elecciones,
-el valor de la continuación tendría que representarlas también.
+- $A$: Acciones propias permitidas.
+- $B(a)$: Respuestas que el rival puede elegir después de $a$.
+- $U(a,b)$: Nuestra puntuación final tras esas dos acciones.
 
-## 2 · Construir el criterio frente al rival
+**Elegimos $a$; el rival elige $b$ después de observarnos.** Conocer sus
+opciones no nos permite elegir su respuesta. Tampoco significa que nos
+falte información sobre qué ocurriría con cada una: $U(a,b)$ es un dato
+conocido para todas las combinaciones.
 
-Para cada acción propia, el menor resultado disponible al rival es
+A esa puntuación final la llamamos *utilidad*. En la práctica vale +1 al
+ganar y −1 al perder. En otro juego podría tener más valores, según qué
+resultados nos interesara distinguir. Las acciones no tienen unidades
+físicas; la utilidad usa la escala de puntos acordada.
+
+Para interpretar correctamente el modelo, necesitamos estos supuestos:
+
+- No hay azar: una misma combinación de acciones produce el mismo resultado.
+  Eso significa que el juego es **determinista**.
+- La utilidad rival es $-U$. Ambas utilidades suman cero: es un juego de
+  **suma cero**, con preferencias opuestas sobre los resultados.
+- El rival observa nuestra jugada, conoce sus opciones y sus resultados,
+  y elige la respuesta que le da la mayor utilidad a él.
+
+Tener dos jugadores no implica por sí solo que el juego sea de suma cero.
+Aquí lo hemos establecido al especificar cómo se relacionan sus utilidades.
+También importa que las decisiones sean sucesivas: el modelo no describe
+jugadas simultáneas ni respuestas elegidas al azar.
+
+En la práctica, los movimientos posteriores son obligatorios. Por eso la
+pareja $a,b$ basta para determinar la utilidad final. Si después hubiera
+nuevas decisiones, tendríamos que representar también esas elecciones
+para valorar cómo continúa el juego.
+
+## 2 · Valorar una acción después de pensar en el rival
+
+Imaginemos que ya elegimos $a$. El rival puede comparar las puntuaciones
+que quedan disponibles con cada respuesta $b\in B(a)$.
+
+Como su utilidad es el negativo de la nuestra, conseguir más puntos para
+él equivale a dejarnos menos a nosotros. Bajo el comportamiento supuesto,
+el valor que debemos atribuir a nuestra acción es:
 
 $$v(a)=\min_{b\in B(a)}U(a,b).$$
 
-Luego elegimos el mayor de esos valores:
+El mínimo convierte los resultados posibles de una acción en un solo
+número. Ese número se mide en la misma escala que $U$ y se obtiene de los
+datos; no lo escogemos libremente.
 
-$$\begin{aligned}
+Ahora comparamos nuestras acciones y buscamos la de mayor valor. El
+modelo completo es:
+
+$$
+\begin{aligned}
 \max_a\quad &\min_{b\in B(a)}U(a,b)\\
 \text{sujeto a}\quad &a\in A.
-\end{aligned}$$
+\end{aligned}
+$$
 
-Este orden expresa que elegimos primero y el rival responde después de
-observarnos. No podemos reemplazarlo por una maximización conjunta sobre
-$a,b$: eso nos daría control sobre ambos jugadores.
+**El máximo representa nuestra elección; el mínimo representa la respuesta
+rival.** Escribir una sola maximización sobre $a$ y $b$ nos daría control
+sobre ambos jugadores y cambiaría el problema.
 
-El valor usa la escala de $U$. En la práctica es +1 al ganar y −1 al perder,
-y ninguna ficha otorga utilidad por sí misma. Minimizar una carga máxima
-en un horario también puede combinar extremos, pero allí no aparece por
-eso otro agente que elija una respuesta. La interpretación depende del relato.
+Los conjuntos $A$ y $B(a)$ recogen los dominios y todas las reglas sobre
+jugadas permitidas. No hacen falta restricciones de recursos adicionales
+en el relato de la práctica.
 
-## 3 · Sustituir las reglas del juego pequeño
+La combinación de un máximo y un mínimo no demuestra por sí sola que
+exista un rival. En el problema de horarios comparábamos molestias sin
+suponer que alguien quisiera perjudicarnos. Aquí la interpretación viene
+de los intereses y las decisiones del otro jugador.
 
-Tomamos $A=\{G,S\}$ para Guardar y Sacrificar, y $B(a)=\{I,D\}$ en ambos
-casos. La tabla final determina
+## 3 · Usar la tabla del juego pequeño
+
+En el problema 9 usamos $G$ por Guardar y $S$ por Sacrificar:
+
+$$A=\{G,S\},\qquad B(G)=B(S)=\{I,D\}.$$
+
+La tabla fija nuestras utilidades finales, en puntos. Las columnas I y D
+son las respuestas del rival.
+
+| Acción | I | D |
+|---|---:|---:|
+| Guardar | +1 | −1 |
+| Sacrificar | +1 | +1 |
+
+Con estos datos, el modelo es:
+
+$$\max_{a\in\{G,S\}}\min\{U(a,I),U(a,D)\}.$$
+
+Al comprobar qué valor atribuye a cada acción obtenemos:
 
 $$v(G)=\min\{1,-1\}=-1,\qquad v(S)=\min\{1,1\}=1.$$
 
-El modelo $\max_{a\in\{G,S\}}v(a)$ elige Sacrificar. En cambio, el mejor
-resultado posible de cada fila vale 1: compararlos deja empate y omite
-que Guardar permite una derrota. No hay probabilidades con las cuales
-justificar un promedio de columnas.
+Así, el modelo elige Sacrificar. Si usáramos el mejor resultado de cada
+fila, ambas acciones recibirían un 1. Ese empate ocultaría que Guardar
+permite al rival derrotarnos.
 
-El supuesto adversarial puede ser demasiado conservador para otros fines.
-Si quisiéramos modelar errores frecuentes del rival, necesitaríamos datos
-sobre ellos. Con probabilidades justificadas $\pi(b\mid a)$, otro objetivo
-posible sería maximizar $\sum_{b\in B(a)}\pi(b\mid a)U(a,b)$ sobre $a\in A$.
-Ese sería otro modelo de conducta, no una consecuencia de la tabla sola.
+**La puntuación y la conducta rival son dos supuestos distintos.** La
+puntuación elegida solo distingue ganar de perder; no valora fichas ni
+duración. La conducta supuesta dice que el rival siempre elige una
+respuesta que nos deja la menor utilidad posible.
 
-## 4 · Detenerse antes del desenlace
+Podríamos querer aprovechar los errores de un rival que conocemos. Para
+eso necesitaríamos datos sobre cómo responde. Si dispusiéramos de
+probabilidades justificadas $\pi(b\mid a)$ —la probabilidad de su respuesta
+$b$ después de ver $a$—, podríamos plantear otro modelo:
 
-Sea $s(a,b)$ la posición alcanzada tras ambas acciones y sea $h(s)$ una
-valoración fija de esa posición. Cuando no usamos el desenlace final,
-el modelo de la recomendación limitada es
+$$
+\begin{aligned}
+\max_a\quad &\sum_{b\in B(a)}\pi(b\mid a)U(a,b)\\
+\text{sujeto a}\quad &a\in A.
+\end{aligned}
+$$
 
-$$\begin{aligned}
+Esas probabilidades serían datos no negativos que suman uno para cada
+acción $a$. El objetivo compararía puntuaciones promedio según esa conducta.
+La tabla de victorias y derrotas, por sí sola, no proporciona esas
+probabilidades: en la práctica no podemos justificar ese promedio.
+
+## 4 · Contar fichas cuando dejamos de mirar antes del final
+
+En el problema 10, el programa examina solo la posición que queda después
+de nuestra acción y de la respuesta rival. La llamamos $s(a,b)$.
+
+Una función fija $h(s)$ asigna una puntuación a cada posición. El programa
+de la práctica cuenta nuestras fichas, así que **$h$ se mide en fichas**.
+No mide los puntos que obtendremos al ganar o perder.
+
+Para una acción $a$, el programa toma la menor puntuación entre las
+posiciones que puede dejar el rival:
+
+$$\min_{b\in B(a)}h(s(a,b)).$$
+
+Después elige la acción con mayor valor. El modelo completo de su
+recomendación es:
+
+$$
+\begin{aligned}
 \max_a\quad &\min_{b\in B(a)}h(s(a,b))\\
 \text{sujeto a}\quad &a\in A.
-\end{aligned}$$
+\end{aligned}
+$$
 
-Aquí $h$ cuenta fichas propias. Por tanto, sus valores tienen unidades de
-fichas y no de utilidad terminal. Para el problema 10:
+Esta fórmula expresa la regla dada al programa. Reemplazar $U$ por $h$
+conserva la forma de comparar las respuestas, pero cambia qué intenta
+conseguir. Ni la posición ni su puntuación pueden elegirse por separado:
+quedan determinadas por las jugadas y por la función fijada.
+
+En el ejercicio conservamos $A=\{G,S\}$ y $B(a)=\{I,D\}$. Las columnas I y D
+son las respuestas del rival; los valores se miden en fichas.
+
+| Acción | I | D |
+|---|---:|---:|
+| Guardar | 3 | 2 |
+| Sacrificar | 0 | 0 |
+
+Sustituir estos datos da:
+
+$$\max_{a\in\{G,S\}}\min\{h(s(a,I)),h(s(a,D))\}.$$
+
+Los valores que compara el programa son:
 
 $$\min_{b\in\{I,D\}}h(s(G,b))=\min\{3,2\}=2,$$
 
 $$\min_{b\in\{I,D\}}h(s(S,b))=\min\{0,0\}=0.$$
 
-El modelo recomienda Guardar. La auditoría conserva la tabla terminal
-conocida y comprueba que esa recomendación permite perder. El agente no
-ha incumplido su modelo: la valoración intermedia ordena las decisiones
-de una manera distinta al propósito final.
+Recomienda Guardar. Nosotros podemos **auditar esa recomendación**, es decir,
+comprobarla usando también la tabla de resultados finales. Esa tabla muestra
+que Guardar permite al rival hacernos perder.
 
-En problemas mayores puede que no conozcamos los desenlaces para hacer
-esta comparación completa. El juego pequeño permite aislar el defecto
-de la valoración antes de sumar esa dificultad.
+El programa aplicó correctamente su regla. El problema es que tener más
+fichas no garantiza una victoria. Este ejemplo permite ver la diferencia
+porque conocemos los resultados finales; en un juego más grande quizá
+no los conoceríamos para hacer una comprobación completa.
 
-## 5 · Revisar la valoración con información disponible
+## 5 · Distinguir victorias y derrotas inevitables
 
-En la práctica hay señales locales que certifican victoria o derrota
-inevitables. Con indicadores $W(s),D(s)\in\{0,1\}$ para esas dos señales,
-y sin que ambas puedan activarse a la vez, definimos
+La práctica da señales observables que permiten comprobar si una posición
+lleva inevitablemente a ganar o a perder. Podemos usarlas para construir
+otra puntuación.
+
+Definimos $W(s)$ y $D(s)$ como indicadores conocidos que toman valores en
+$\{0,1\}$:
+
+- $W(s)=1$ cuando la señal certifica una victoria inevitable; vale 0 en
+  otro caso.
+- $D(s)=1$ cuando la señal certifica una derrota inevitable; vale 0 en
+  otro caso.
+
+Ambas señales no pueden estar activas a la vez. Para asignar +1 a una
+victoria certificada y −1 a una derrota certificada, usamos:
 
 $$h'(s)=W(s)-D(s).$$
 
-Las señales dadas producen valores $(1,-1)$ para las posiciones de Guardar
-y $(1,1)$ para las de Sacrificar. El modelo completo revisado es
+Esta función usa la escala de utilidad, no una cantidad de fichas. El
+modelo completo con la nueva puntuación es:
 
-$$\max_{a\in A}\min_{b\in B(a)}h'(s(a,b)),$$
+$$\max_{a\in A}\min_{b\in B(a)}h'(s(a,b)).$$
 
-con los mismos conjuntos $A=\{G,S\}$ y $B(a)=\{I,D\}$. Recomienda
-Sacrificar, de acuerdo con los resultados finales. La nueva función usa
-hechos observables relacionados con el objetivo; no basta con cambiar
-puntuaciones hasta que gane nuestra acción favorita.
+Con los conjuntos $A=\{G,S\}$ y $B(a)=\{I,D\}$, las señales dadas producen
+los siguientes valores, en la escala de utilidad. Las columnas I y D son
+las respuestas del rival.
 
-En un juego grande, detectar una victoria forzada puede exigir examinar
-muchas continuaciones. Si ninguna señal se activa, el cero de $h'$ indica
-ausencia de certificación, **no empate demostrado**. Para usar otras
-características habría que explicar su relación con ganar, fijar su escala
-y comprobar casos donde engañen. Los parámetros de esa valoración deben
-estar fijados al elegir la jugada: optimizarlos libremente junto con ella
-permitiría mejorar la puntuación sin mejorar la posición.
+| Acción | I | D |
+|---|---:|---:|
+| Guardar | +1 | −1 |
+| Sacrificar | +1 | +1 |
 
-## 6 · El puente hacia árboles de juegos
+El modelo del ejercicio queda:
 
-Cuando los jugadores vuelven a decidir, cada posición puede representarse
-como un nodo y cada acción como una arista hacia otra posición. Los turnos
-propios buscan valores altos y los adversarios, bajos. Esta alternancia
-conduce a la formulación **minimax**. En las hojas terminales conocemos la
-utilidad; si detenemos la exploración antes, usamos una función de evaluación.
-La distinción se desarrolla en el
-[texto de Berkeley sobre minimax y evaluaciones limitadas por profundidad](https://inst.eecs.berkeley.edu/~cs188/textbook/games/minimax.html).
+$$\max_{a\in\{G,S\}}\min\{h'(s(a,I)),h'(s(a,D))\}.$$
 
+Ahora recomienda Sacrificar, de acuerdo con los resultados finales. Las
+puntuaciones se justifican por las señales y por lo que sabemos que
+significan; no basta con cambiarlas hasta que salga la jugada que preferimos.
+
+**Un cero exige cuidado.** Si ninguna señal se activa, tenemos
+$W(s)=D(s)=0$ y, por tanto, $h'(s)=0$. Eso indica que no certificamos ni una
+victoria ni una derrota. No es un empate demostrado.
+
+En un juego grande, detectar una victoria forzada puede requerir examinar
+muchas jugadas posteriores. Si las señales no bastan, necesitaremos mirar
+más lejos o justificar una valoración aproximada, también llamada
+*heurística*. Esa aproximación no garantiza conservar la decisión que
+tomaríamos con todos los resultados finales conocidos.
+
+Para usar otras características de la posición, hay que explicar su
+relación con ganar, fijar su escala y buscar casos en que engañen. Los
+parámetros de esa valoración deben estar fijados al elegir la jugada:
+si pudiéramos ajustarlos libremente junto con ella, podríamos mejorar
+la puntuación sin mejorar la posición.
+
+## 6 · Representar más turnos de juego
+
+Si los jugadores vuelven a decidir después de las dos primeras acciones,
+necesitamos representar también esos turnos. Podemos dibujar cada posición
+como un nodo y cada jugada posible como una arista hacia otra posición.
+
+En nuestros turnos buscamos valores altos; en los del rival, suponemos que
+él busca valores bajos para nosotros. Esa alternancia conduce a la
+formulación **minimax**. En las posiciones donde el juego ya terminó
+conocemos la utilidad; si dejamos de explorar antes, usamos una función
+para evaluar la posición.
+
+El [texto de Berkeley sobre minimax y evaluaciones limitadas por profundidad](https://inst.eecs.berkeley.edu/~cs188/textbook/games/minimax.html) desarrolla esa distinción.
 Más adelante estudiaremos cómo recorrer esos árboles y cuándo la poda
-alfa–beta permite omitir ramas. Aquí la pregunta previa es **qué valor
-estamos propagando y qué supuestos lo justifican**. Resolver exactamente
-un modelo con una mala valoración no corrige lo que esa valoración omite.
+alfa–beta permite omitir ramas.
+
+Por ahora importa saber **qué puntuación estamos comparando y por qué**.
+Resolver exactamente el modelo no corrige una puntuación que premia
+conservar fichas cuando lo que queríamos era ganar.
 
 [[opt-objetivo-juego-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver a la guía]].
