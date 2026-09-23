@@ -48,3 +48,5 @@ no son imágenes.
 | `opt-arbol-paso-2.svg` | Árbol parcial del taller después de procesar 2 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-arbol-paso-3.svg` | Árbol parcial del taller después de procesar 3 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
 | `opt-arbol-paso-4.svg` | Árbol parcial del taller después de procesar 4 nodos, sin anticipar resultados pendientes | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-clasificacion-sigmoide.svg` | Sigmoide calculada frente a z = α + βx, punto central y asíntotas 0 y 1. Página 6.5.3: `5_practica_de_modelado/3_clasificacion_practica.md` | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |
+| `opt-clasificacion-log-loss.svg` | Pérdidas calculadas −ln(p) y −ln(1−p), con límites abiertos y divergencia hacia infinito. Página 6.5.3: `5_practica_de_modelado/3_clasificacion_practica.md` | Generado con `tools/gen_optimizacion.py` | Propio, CC BY-SA 4.0 |

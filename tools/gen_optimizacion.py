@@ -2776,7 +2776,125 @@ def opt_arbol_vocabulario():
     return "".join(s)
 
 
+
+def opt_clasificacion_sigmoide():
+    """Sigmoide calculada; las rectas 0 y 1 son límites, no valores alcanzados."""
+    W, H = 560, 506
+    izquierda, derecha, arriba, abajo = 78, 514, 128, 366
+
+    def coord(z, probabilidad):
+        return (izquierda + (z + 4) / 8 * (derecha - izquierda),
+                abajo - probabilidad * (abajo - arriba))
+
+    s = [marco(
+        W, H,
+        "Sigmoide de z igual a alfa más beta por x; p sube de 0 a 1 sin "
+        "alcanzar esos límites y vale 0.5 cuando z es cero",
+        "La sigmoide convierte z en una probabilidad p",
+        "Curva calculada p = 1 / (1 + exp(-z)) para z entre -4 y 4. "
+        "El eje horizontal es z = alfa + beta por x. Las líneas "
+        "discontinuas p = 0 y p = 1 son asíntotas. El punto central es "
+        "z = 0, p = 0.5. Para todo z real finito, 0 < p < 1.",
+    )]
+    s.append(texto(W / 2, 38, "La sigmoide", tam=28, peso="700"))
+    s.append(texto(W / 2, 77, "p = 1 / (1 + exp(−z))", tam=23, color=SERIE[1]))
+    s.append(texto(izquierda, 110, "p", tam=24, anclaje="end"))
+    for probabilidad in (0, 0.5, 1):
+        _, y = coord(0, probabilidad)
+        s.append(linea(izquierda, y, derecha, y,
+                       color=SERIE[2] if probabilidad != 0.5 else LINEA,
+                       grosor=1.5, guiones="7 7"))
+        s.append(texto(izquierda - 14, y + 7, f"{probabilidad:g}",
+                       tam=22, anclaje="end"))
+    s.append(linea(izquierda, arriba, izquierda, abajo, color=SUAVE, grosor=1.5))
+    cero, _ = coord(0, 0)
+    s.append(linea(cero, arriba, cero, abajo, color=LINEA, grosor=1))
+    for z in (-4, -2, 0, 2, 4):
+        x, _ = coord(z, 0)
+        s.append(linea(x, abajo + 5, x, abajo + 12, color=SUAVE, grosor=1.5))
+        s.append(texto(x, abajo + 36, str(z).replace("-", "−"), tam=22))
+    muestras = [-4 + k / 20 for k in range(161)]
+    s.append(_curva([coord(z, 1 / (1 + math.exp(-z))) for z in muestras],
+                    SERIE[1], grosor=4))
+    x, y = coord(0, 0.5)
+    s.append(punto(x, y, r=6, color=SERIE[1]))
+    s.append(texto(x + 20, y + 36, "(0, 0.5)", tam=22, anclaje="start"))
+    s.append(texto(W / 2, 444, "z = α + βx", tam=26))
+    s.append(texto(W / 2, 486, "Asíntotas: p = 0 y p = 1", color=SERIE[2], tam=22))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_clasificacion_log_loss():
+    """Pérdidas calculadas en 0 < p < 1, con flechas hacia infinito."""
+    W, H = 560, 570
+    izquierda, derecha, arriba, abajo = 78, 514, 180, 420
+
+    def coord(probabilidad, perdida):
+        return (izquierda + probabilidad * (derecha - izquierda),
+                abajo - perdida * (abajo - arriba) / 4)
+
+    s = [marco(
+        W, H,
+        "Pérdida logarítmica frente a p: si y es 1, menos ln p decrece; "
+        "si y es 0, menos ln uno menos p crece. Ambas divergen hacia "
+        "infinito al asignar probabilidad casi cero a la clase correcta",
+        "La pérdida depende de la clase correcta",
+        "Dos curvas calculadas para 0 < p < 1. La verde, y = 1, representa "
+        "-ln(p) y crece sin límite cuando p tiende a 0. La azul, y = 0, "
+        "representa -ln(1-p) y crece sin límite cuando p tiende a 1. "
+        "Las flechas superiores indican continuación sin cota, no un máximo. "
+        "Los círculos abiertos en pérdida cero muestran límites no incluidos.",
+    )]
+    s.append(texto(W / 2, 36, "Pérdida logarítmica", tam=28, peso="700"))
+    for y, color, etiqueta in ((77, SERIE[0], "y = 1:  −ln(p)"),
+                               (111, SERIE[1], "y = 0:  −ln(1 − p)")):
+        s.append(linea(82, y - 7, 123, y - 7, color=color, grosor=4))
+        s.append(texto(142, y, etiqueta, tam=23, color=color, anclaje="start"))
+    s.append(texto(W / 2, 152, "Pérdida", tam=24))
+    for perdida in (0, 2, 4):
+        _, y = coord(0, perdida)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 15, y + 7, str(perdida), tam=22, anclaje="end"))
+    for probabilidad in (0, 1):
+        x, _ = coord(probabilidad, 0)
+        s.append(linea(x, arriba - 24, x, abajo, color=SUAVE,
+                       grosor=1.5, guiones="6 7"))
+    s.append(linea(izquierda, abajo, derecha, abajo, color=SUAVE, grosor=1.5))
+    for probabilidad in (0, 0.5, 1):
+        x, _ = coord(probabilidad, 0)
+        s.append(linea(x, abajo, x, abajo + 8, color=SUAVE, grosor=1.5))
+        s.append(texto(x, abajo + 33, f"{probabilidad:g}", tam=22))
+    # Muestreo uniforme en pérdida: resuelve bien las colas cerca de 0 y 1.
+    # Los puntos se evalúan con ln; ninguno toca los extremos excluidos.
+    perdidas = [0.001 + k * (4.5 - 0.001) / 300 for k in range(301)]
+    for clase, color in ((1, SERIE[0]), (0, SERIE[1])):
+        probabilidades = [math.exp(-t) if clase == 1 else -math.expm1(-t)
+                          for t in perdidas]
+        puntos = [coord(p, -math.log(p) if clase == 1 else -math.log1p(-p))
+                  for p in probabilidades]
+        s.append(_curva(puntos, color, grosor=4))
+        # Una punta en la dirección de la tangente indica que la curva sigue.
+        x, y = puntos[-1]
+        s.append(f'<path d="M {x - 5:.1f} {y + 10:.1f} L {x:.1f} {y:.1f} '
+                 f'L {x + 5:.1f} {y + 10:.1f}" fill="none" stroke="{color}" '
+                 f'stroke-width="3"/>')
+        extremo = 1 if clase == 1 else 0
+        x0, y0 = coord(extremo, 0)
+        s.append(f'<circle cx="{x0}" cy="{y0}" r="5" fill="{FONDO}" '
+                 f'stroke="{color}" stroke-width="2.5"/>')
+        s.append(texto(x + (22 if clase == 1 else -22), y + 6, "∞",
+                       tam=27, color=color))
+    s.append(texto(W / 2, 492, "Probabilidad p", tam=25))
+    s.append(texto(W / 2, 528, "p → 0:  −ln(p) → ∞", tam=22, color=SERIE[0]))
+    s.append(texto(W / 2, 557, "p → 1:  −ln(1 − p) → ∞", tam=22, color=SERIE[1]))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
+    "opt-clasificacion-sigmoide": opt_clasificacion_sigmoide,
+    "opt-clasificacion-log-loss": opt_clasificacion_log_loss,
     "opt-la-impresora": opt_la_impresora,
     "opt-anatomia": opt_anatomia,
     "opt-lienzo": opt_lienzo,

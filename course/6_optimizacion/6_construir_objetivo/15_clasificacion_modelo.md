@@ -38,17 +38,18 @@ numéricas sin unidades físicas, como antes.
 - $n$: Cantidad de casos.
 - $x_{ij}$: Valor real del atributo $j$ en el caso $i$.
 - $y_i$: Etiqueta correcta del caso $i$, igual a 0 o 1.
-- $M>0$: Cota para la magnitud de cada parámetro.
 
 El número de casos es $n=|I|>0$.
 
 **Elegimos un peso $w_j$ para cada atributo y una constante $b$.** Son
 números reales, sin unidades físicas, que compartimos entre todos los
-casos. Al combinar cada entrada con su peso y sumar la constante, obtenemos
-un número al que aplicamos la sigmoide:
+casos. En el ejemplo guiado hay una sola entrada: $w_1=\beta$ y
+$b=\alpha$. Al combinar cada entrada con su peso y sumar la constante,
+obtenemos un número al que aplicamos la sigmoide:
 
-$$p_i(w,b)=\sigma\left(\sum_{j\in J}w_jx_{ij}+b\right),
-\qquad \sigma(z)=\frac{1}{1+e^{-z}}.$$
+$$p_i(w,b)=\sigma\left(\sum_{j\in J}w_jx_{ij}+b\right).$$
+
+$$\sigma(z)=\frac{1}{1+e^{-z}}.$$
 
 Esta fórmula define la familia de reglas que estamos considerando. Su
 resultado $p_i$ es la probabilidad asignada a la clase 1; a la clase 0 le
@@ -67,14 +68,11 @@ El símbolo $\mathbf1\{P\}$ vale 1 cuando la afirmación $P$ es verdadera
 y 0 cuando es falsa. La etiqueta anunciada tampoco es una decisión
 independiente: queda determinada por los parámetros.
 
-**Cada parámetro debe estar entre $-M$ y $M$.** Llamamos $\Theta$ al conjunto
-de todas las elecciones permitidas:
+Permitimos cualquier peso real y cualquier intercepto real:
 
-$$\Theta=\{(w,b):w_j\in\mathbb R,\ -M\le w_j\le M\ (j\in J),
-\ b\in\mathbb R,\ -M\le b\le M\}.$$
+$$w_j\in\mathbb R\quad(j\in J),\qquad b\in\mathbb R.$$
 
-Estas cotas forman parte del problema planteado. No son una condición
-obligatoria de todos los modelos de clasificación.
+No imponemos cotas adicionales a los parámetros.
 
 ## 2 · Contar aciertos
 
@@ -88,7 +86,7 @@ y queremos acertar tantas etiquetas como sea posible, el modelo es
 $$\begin{aligned}
 \max_{w,b}\quad &\frac1n\sum_{i\in I}
 \mathbf1\{\widehat y_i(w,b)=y_i\}\\
-\text{sujeto a}\quad &(w,b)\in\Theta.
+\text{sujeto a}\quad &w_j\in\mathbb R\quad(j\in J),\qquad b\in\mathbb R.
 \end{aligned}$$
 
 El objetivo no tiene unidades y toma valores entre 0 y 1. Acertar en un
@@ -125,7 +123,12 @@ altas para la clase correcta explica el propósito, pero no determina una
 
 **Una expresión reúne las dos etiquetas:**
 
-$$\ell_i(w,b)=-y_i\ln p_i(w,b)-(1-y_i)\ln(1-p_i(w,b)).$$
+$$
+\begin{aligned}
+\ell_i(w,b)={}&-y_i\ln p_i(w,b)\\
+&-(1-y_i)\ln\bigl(1-p_i(w,b)\bigr).
+\end{aligned}
+$$
 
 Cuando $y_i=1$, solo queda el primer término. Cuando $y_i=0$, solo queda
 el segundo. Así usamos en cada caso la probabilidad de su clase correcta.
@@ -140,12 +143,17 @@ las mismas decisiones permitidas:
 
 $$\begin{aligned}
 \min_{w,b}\quad &\frac1n\sum_{i\in I}\ell_i(w,b)\\
-\text{sujeto a}\quad &(w,b)\in\Theta.
+\text{sujeto a}\quad &w_j\in\mathbb R\quad(j\in J),\qquad b\in\mathbb R.
 \end{aligned}$$
 
-En esta familia, la pérdida varía suavemente con los parámetros. Puede
+En esta familia, la pérdida es suave y convexa en los parámetros. Puede
 registrar cambios en las probabilidades aunque ninguna cruce el umbral
 que cambia una etiqueta.
+
+La convexidad no garantiza un mínimo finito: si podemos dar puntajes
+estrictamente positivos a todos los casos de clase 1 y estrictamente
+negativos a los de clase 0, escalar los parámetros acerca la pérdida a cero
+sin alcanzarlo. No hemos impuesto cotas que impidan ese crecimiento.
 
 Si nos interesa evaluar esas probabilidades, log loss puede ser una medida
 de interés por sí misma. Si al final solo nos importa accuracy, usar log
@@ -156,53 +164,45 @@ En ese segundo uso necesitamos comprobar el resultado con la medida final.
 Las dos funciones no se vuelven idénticas por aplicarlas a las mismas
 reglas, y mejorar una no garantiza mejorar la otra en cada comparación.
 
-## 4 · Comparar dos reglas permitidas
+## 4 · Comparar reglas constantes
 
-En el ejemplo guiado hay un atributo, el número de enlaces del mensaje, de modo
-que $w_1=a$. La cota es $M=4$; las entradas son 0, 1 y 2. El primer mensaje
-es normal y los otros dos son no deseados: sus etiquetas son 0, 1 y 1. Al
-sustituir estos datos, la proporción de aciertos es
+El ejemplo guiado compara un conjunto hipotético con $n$ múltiplo de 3:
+dos terceras partes de las etiquetas son 1 y la tercera parte restante es 0.
+Podemos reproducir la comparación con cualquier número de atributos,
+fijando todos los pesos en cero. Así, cada caso recibe la misma probabilidad
+$p$ de clase 1. Para cualquier $p$ entre 0 y 1, sin incluir los extremos,
+fijamos
 
-$$A(a,b)=\frac{\mathbf1\{\sigma(b)<0.5\}
-+\mathbf1\{\sigma(a+b)\ge0.5\}
-+\mathbf1\{\sigma(2a+b)\ge0.5\}}3.$$
+$$w_j=0\qquad(j\in J).$$
 
-La pérdida logarítmica promedio es
+$$b=\ln\frac{p}{1-p}.$$
 
-$$L(a,b)=\frac{-\ln(1-\sigma(b))-\ln\sigma(a+b)-\ln\sigma(2a+b)}3.$$
+En la notación del ejemplo guiado, esto corresponde a $\beta=0$ y
+$\alpha=\ln(p/(1-p))$. Todos estos parámetros son reales y están permitidos.
+Las entradas no afectan a una regla constante.
 
-Los dos problemas consisten en maximizar $A(a,b)$ o minimizar $L(a,b)$,
-sujetos a $a,b\in[-4,4]$. No necesitamos resolverlos para comprobar si una
-mejora de pérdida siempre acompaña a una mejora de accuracy: basta encontrar
-una comparación que contradiga esa afirmación.
+Si $p\ge0.5$, anunciamos clase 1 para todos y acertamos dos terceras partes
+de los casos. Si $p<0.5$, anunciamos clase 0 y acertamos una tercera parte.
+La pérdida promedio es
 
-Tomamos $a=0$, con lo que la probabilidad de clase 1 es la misma en todos
-los casos. Las dos parejas siguientes respetan las cotas:
+$$-\frac23\ln p-\frac13\ln(1-p).$$
 
-La primera usa $b=\ln9$ y la segunda, $b=\ln(0.49/0.51)$. La tabla
-muestra las aproximaciones de $b$ y la probabilidad $p$ de clase 1:
+Estas son tres comparaciones permitidas; las pérdidas están redondeadas:
 
-| Regla | $b$ aprox. | $p$ |
+| $p$ | Aciertos | Pérdida |
 |---|---:|---:|
-| Primera | 2.197 | 0.9 |
-| Segunda | −0.040 | 0.49 |
+| 0.49 | 1/3 | 0.700 |
+| 2/3 | 2/3 | 0.637 |
+| 0.9 | 2/3 | 0.838 |
 
-La primera anuncia clase 1 en los tres casos y acierta dos. La segunda
-anuncia clase 0 en los tres y acierta uno. Al calcular también sus pérdidas,
-obtenemos estos valores redondeados:
+Pasar de 0.49 a 2/3 mejora ambas medidas. Pasar de 0.9 a 2/3 reduce la
+pérdida sin cambiar las etiquetas. Pero pasar de 0.9 a 0.49 reduce la pérdida
+**y también reduce los aciertos**: la regla de 0.9 penaliza mucho los casos
+de clase 0, a los que asigna solo 0.1 de probabilidad de su clase correcta.
 
-| Regla | Accuracy | Log loss |
-|---|---:|---:|
-| Primera | 2/3 | 0.838 |
-| Segunda | 1/3 | 0.700 |
-
-**La segunda regla reduce la pérdida, pero también reduce los aciertos.**
-La primera recibe una penalización considerable por asignar probabilidad
-0.1 a la clase correcta del caso cuya etiqueta es 0.
-
-Este contraejemplo basta para rechazar la garantía en cada comparación.
-No identifica los mejores parámetros posibles ni demuestra que los óptimos
-de ambos problemas sean distintos en este conjunto.
+Este último contraejemplo basta para rechazar que cada reducción de la
+pérdida aumente accuracy. No identifica los mejores parámetros posibles
+ni demuestra que los óptimos de ambos problemas sean distintos.
 
 ## 5 · Comprobar qué falta evaluar
 
@@ -211,7 +211,7 @@ una clase costara más que equivocarse con la otra, necesitaríamos datos
 sobre esos costos y decidir cómo representarlos. Las medidas anteriores
 no hacen esa distinción.
 
-Tampoco basta evaluar los tres casos usados para ajustar la regla si
+Tampoco basta evaluar los casos usados para ajustar la regla si
 queremos saber cómo funcionará con casos nuevos. Esa comprobación necesita
 otros datos, que no hayan determinado los parámetros.
 

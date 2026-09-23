@@ -350,6 +350,10 @@ recta. Con $q$ entero, admiten una reformulación de **programación lineal
 entera mixta** mediante variables auxiliares continuas. Esa formulación
 permite usar *branch and bound* (ramificación y acotación).
 
+La única decisión física sigue siendo $q$, el número entero de piezas que
+preparamos. Las auxiliares continuas representan ventas o cotas; no permiten
+elegir la demanda ni preparar una cantidad distinta para cada escenario.
+
 Si permitiéramos que $q$ fuera real, maximizaríamos una función cóncava sobre
 el intervalo $[0,Q]$. Esa sería una **relajación convexa** del problema entero.
 
