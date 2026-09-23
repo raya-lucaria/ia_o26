@@ -202,8 +202,19 @@ Dentro de una meseta, sus derivadas no señalan cómo conseguir más aciertos.
 Consideremos un conjunto hipotético donde $n$ es múltiplo de 3 y dos
 terceras partes de las etiquetas son 1. La tercera parte restante es 0.
 Para ver por qué entrenar con $L$ no equivale a optimizar $A$, compararemos
-reglas **constantes**: fijamos $\beta=0$ y todas las observaciones reciben
-la misma probabilidad $p$ de clase 1, cualquiera que sea su entrada $x_i$.
+reglas **constantes**: fijamos $\beta=0$. Al sustituirlo en el modelo,
+
+$$
+\begin{aligned}
+p_i(\alpha,0)&=\sigma(\alpha+0x_i)\\
+&=\sigma(\alpha).
+\end{aligned}
+$$
+
+Desaparece la entrada $x_i$: todos los mensajes reciben el mismo score
+normalizado $p$ para la clase 1. **Ese score sigue dependiendo de $\alpha$.**
+«Constante» significa que no cambia de un mensaje a otro; cambiar el
+intercepto sí cambia la probabilidad que anuncia la regla.
 
 **Escogemos a mano tres valores: 0.49, 2/3 y 0.9.** No son iteraciones de
 un entrenamiento ni resultados de una búsqueda en rejilla. Fijar la
@@ -223,9 +234,14 @@ e^\alpha&=\frac{p}{1-p},\\
 $$
 
 Esta transformación se llama **logit** y está definida para $0<p<1$.
-Por ejemplo, para asignar $p=2/3$ a todos los casos elegimos
-$\alpha=\ln 2$ y $\beta=0$. Las probabilidades 0 y 1 solo se alcanzan
-como límites cuando $\alpha$ tiende a menos o más infinito.
+Con $\beta=0$, los tres valores elegidos corresponden a estos interceptos:
+
+- Para $p=0.49$: $\alpha=\ln(0.49/0.51)$.
+- Para $p=2/3$: $\alpha=\ln((2/3)/(1/3))=\ln 2$.
+- Para $p=0.9$: $\alpha=\ln(0.9/0.1)=\ln 9$.
+
+Las probabilidades 0 y 1 solo se alcanzan como límites cuando $\alpha$
+tiende a menos o más infinito.
 
 En el modelo general, el logit de $p_i$ es $\alpha+\beta x_i$.
 Los tres valores de $p$ que escogimos producen tres parejas permitidas
@@ -263,9 +279,23 @@ $$
 Los pesos $2/3$ y $1/3$ son las **proporciones de etiquetas en estos datos**;
 $p$ es la **probabilidad que anuncia la regla**. Son cantidades distintas.
 
-La gráfica recorre las probabilidades de **estas reglas constantes**.
-Arriba muestra la pérdida; abajo, accuracy. Las marcas son los tres valores
-escogidos a mano y las pérdidas que los acompañan están redondeadas.
+**Primero miremos qué ocurre al cambiar $\alpha$, manteniendo $\beta=0$.**
+El eje horizontal de la siguiente gráfica es el intercepto. El eje vertical
+mide pérdida promedio en el panel superior y proporción de aciertos en el
+inferior. Las marcas corresponden a las tres reglas escogidas a mano.
+
+El cambio de etiqueta sucede en $\alpha=0$: allí
+$\sigma(0)=1/(1+1)=0.5$. Como la sigmoide es creciente, $\alpha<0$ da
+$p<0.5$ y anuncia clase 0; $\alpha\ge0$ da $p\ge0.5$ y anuncia clase 1.
+Con las proporciones de este ejemplo, sus aciertos son $1/3$ y $2/3$,
+respectivamente.
+
+![Pérdida promedio y proporción de aciertos frente al intercepto alfa, con pendiente cero; las marcas señalan las tres reglas construidas a mano](../_assets/opt-clasificacion-alfa.svg)
+
+**Ahora veamos las mismas reglas en otra escala horizontal:** la siguiente
+gráfica usa $p=\sigma(\alpha)$ en lugar de $\alpha$. Esta transformación
+no es lineal, por lo que cambia las distancias entre las marcas. La pérdida
+y los aciertos de cada regla son los mismos; las pérdidas se redondean.
 
 ![Dos paneles de reglas constantes con dos tercios de etiquetas de clase 1: la curva de pérdida y el escalón de accuracy muestran las tres reglas elegidas a mano, con probabilidades 0.49, dos tercios y 0.9](../_assets/opt-clasificacion-proxy.svg)
 
@@ -766,6 +796,172 @@ Eso no hace coincidir su argmin con el argmax de accuracy ni garantiza
 acercarnos al máximo de aciertos de esta familia. Entrenar con $L$ requiere
 comprobar $A$ con datos que no hayan determinado los parámetros; una regla
 factible no queda certificada como óptima por haber reducido la pérdida.
+:::
+
+## 8 · Corregir las probabilidades que anuncia una regla
+
+**Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
+pedir ayuda a ChatGPT.**
+
+::: exercise {#opt-clasificacion-ej-calibracion title="Comprobar y corregir las probabilidades de fraude"}
+Volvemos a las dos clases: mensaje legítimo (0) y fraudulento (1).
+El clasificador ya fue entrenado: **sus parámetros $\alpha$ y $\beta$
+quedan fijos**. Sus scores normalizados se interpretan como probabilidades
+estimadas, pero eso no garantiza que estén calibrados. Por ejemplo, entre
+muchos mensajes con scores cercanos a 0.8, querríamos observar una proporción
+de fraudes cercana a 0.8.
+
+Disponemos de **$m\ge1$ mensajes nuevos y etiquetados para calibración**,
+separados de los usados para entrenar. Para cada mensaje $i=1,\ldots,m$
+conocemos el score fijo $r_i\in[0,1]$ que produjo el clasificador y la
+etiqueta correcta $y_i\in\{0,1\}$. Buscamos una corrección de esos scores
+que podamos aplicar también a mensajes futuros, sin volver a entrenar
+$\alpha$ y $\beta$.
+
+1. Separa los datos conocidos de lo que determinarías para corregir las
+   probabilidades. Propón una regla de corrección y formula las condiciones
+   que debería satisfacer, o un objetivo que permita elegirla.
+2. Explica cómo obtendrías esa corrección y qué información necesitas para
+   aplicarla a un mensaje nuevo, cuya etiqueta todavía no conoces.
+3. Describe cómo comprobarías la interpretación probabilística con **otro
+   conjunto de mensajes independientes**, reservado para evaluación. ¿Basta
+   con que la corrección funcione en los datos usados para construirla?
+
+Puedes proponer un método sencillo. La respuesta desarrolla una opción;
+no hay una única forma de calibrar.
+:::
+
+::: hint {#opt-clasificacion-pista-calibracion-datos of="opt-clasificacion-ej-calibracion" title="Pista 1 · Mirar los scores y las etiquetas"}
+Un histograma puede mostrar dónde se concentran los scores. ¿Qué información
+sobre las etiquetas necesitarías añadir para comprobar si los valores
+anunciados concuerdan con las proporciones de fraude observadas?
+:::
+
+::: hint {#opt-clasificacion-pista-calibracion-grupos of="opt-clasificacion-ej-calibracion" title="Pista 2 · Comparar casos con scores parecidos"}
+Piensa en reunir mensajes con scores similares y comparar lo anunciado con
+la frecuencia de clase 1. ¿Qué corrección compartirían esos mensajes?
+Revisa también cuántos casos respaldan cada estimación y qué harías si no
+hubiera ninguno. Después necesitarás evaluar la regla con otros mensajes.
+:::
+
+::: answer {#opt-clasificacion-respuesta-calibracion of="opt-clasificacion-ej-calibracion" title="Respuesta · Usar frecuencias dentro de intervalos"}
+
+### Fijar los grupos y contar los casos
+
+Una opción es **agrupar los scores en intervalos** y asignar a cada grupo
+su frecuencia de clase 1. Este método, llamado *histogram binning*, se
+describe en [Guo y colaboradores (2017), sección 4.1](https://proceedings.mlr.press/v70/guo17a/guo17a.pdf).
+Aquí lo formularemos mediante igualdades entre conteos y probabilidades.
+
+Fijamos un número entero $J\ge1$ de intervalos y sus fronteras:
+
+$$0=t_0<t_1<\cdots<t_J=1.$$
+
+Para $j=1,\ldots,J-1$ usamos $B_j=[t_{j-1},t_j)$; el último es
+$B_J=[t_{J-1},1]$. Así, **cada score pertenece a un solo intervalo**,
+incluso si coincide con una frontera. Estos intervalos forman parte de
+la regla que fijamos antes de determinar las probabilidades corregidas.
+
+Para cada intervalo $j$, contamos sus mensajes de calibración y los que
+son fraude:
+
+$$m_j=\sum_{i=1}^{m}\mathbf1\{r_i\in B_j\}.$$
+
+$$k_j=\sum_{i=1}^{m}\mathbf1\{r_i\in B_j\}y_i.$$
+
+$m_j$ y $k_j$ son **datos calculados**, con $0\le k_j\le m_j$.
+La incógnita $q_j\in[0,1]$ será la probabilidad corregida de clase 1
+para cualquier mensaje cuyo score caiga en $B_j$. Su complemento $1-q_j$
+corresponde a clase 0. Los intervalos agrupan mensajes, no son categorías:
+**no exigimos que las $q_j$ sumen uno**.
+
+### Formular las condiciones de la corrección
+
+Pedimos que la probabilidad corregida reproduzca el conteo de fraudes en
+cada grupo de calibración:
+
+$$m_jq_j=k_j,\qquad j=1,\ldots,J.$$
+
+Si hay mensajes en el intervalo, despejamos:
+
+$$
+\begin{aligned}
+m_jq_j&=k_j,\\
+q_j&=\frac{k_j}{m_j}\qquad(m_j>0).
+\end{aligned}
+$$
+
+Por ejemplo, si un grupo contiene 100 mensajes con scores cercanos a 0.8
+y 60 son fraude, la corrección anuncia $60/100=0.6$ para ese intervalo.
+Es la proporción observada **en esta muestra**, no una certeza sobre los
+mensajes que lleguen después.
+
+Si $m_j=0$, también $k_j=0$: la igualdad queda $0=0$ y no determina
+$q_j$. Adoptamos una regla explícita para esos intervalos vacíos: usar la
+frecuencia de fraude de todo el conjunto de calibración,
+
+$$\bar y=\frac1m\sum_{i=1}^{m}y_i.$$
+
+Está definida porque $m\ge1$. El modelo completo consiste en **encontrar
+$q_1,\ldots,q_J$** que satisfagan
+
+$$
+\begin{aligned}
+0\le q_j\le1&\qquad j=1,\ldots,J,\\
+m_jq_j=k_j&\qquad j=1,\ldots,J,\\
+q_j=\bar y&\qquad\text{si }m_j=0.
+\end{aligned}
+$$
+
+Es un **problema de factibilidad lineal**: los conteos son constantes y
+las condiciones fijan todas las $q_j$. No hace falta añadir un objetivo
+para elegir entre ellas. La regla para grupos vacíos también es parte del
+modelo y se fija antes de evaluar la corrección.
+
+### Aplicar y evaluar la corrección
+
+Para un mensaje nuevo calculamos su score con el clasificador original,
+buscamos el intervalo al que pertenece y anunciamos el $q_j$ de ese
+intervalo. No necesitamos conocer la etiqueta del mensaje para aplicar
+esta regla.
+
+En los grupos ocupados, la coincidencia con las frecuencias de calibración
+se cumple **por construcción**. Para comprobar si funciona fuera de esa
+muestra, congelamos la corrección y usamos el conjunto independiente de
+evaluación: comparamos cada $q_j$ con la proporción de fraudes observada
+en su intervalo, teniendo en cuenta cuántos mensajes la respaldan.
+Los datos de evaluación no se usan para escoger los intervalos ni las
+probabilidades corregidas.
+
+Con pocos casos, las frecuencias pueden variar mucho. Incluso $q_j=0$ o
+$q_j=1$ son estimaciones empíricas permitidas, no seguridad de que los
+próximos mensajes tengan todos la misma clase. Tampoco garantizamos mejorar
+accuracy: la corrección puede cambiar el orden de los scores y las etiquetas
+que se obtienen al aplicar el umbral 0.5.
+
+### Resumen del modelo y su costo
+
+| Signo | Papel en el modelo |
+|---|---|
+| $m,i$ | Número e índice de casos |
+| $r_i,y_i$ | Score fijo y etiqueta: datos |
+| $J,j$ | Número e índice de grupos |
+| $t_j,B_j$ | Fronteras e intervalos fijados |
+| $m_j,k_j$ | Conteos calculados de los datos |
+| $\bar y$ | Frecuencia global calculada |
+| $q_j\in[0,1]$ | Probabilidad por determinar |
+
+**Las decisiones son la corrección $q_1,\ldots,q_J$**, con los intervalos
+y la regla para vacíos ya fijados. No son decisiones nuevas sobre el
+clasificador original, ni probabilidades verdaderas garantizadas. Las
+igualdades las determinan a partir de los datos; no quedan variables
+auxiliares libres.
+
+**Tipo, método y costo.** Es un problema de factibilidad lineal. Contamos
+$m_j,k_j$ y resolvemos las igualdades por intervalo. Un procedimiento directo que recorre hasta $J$ intervalos para
+ubicar cada uno de los $m$ scores cuesta $O(mJ+J)$, incluyendo el cálculo
+de las $J$ probabilidades. Este costo corresponde a construir la corrección
+con scores ya disponibles; no incluye entrenar el clasificador original.
 :::
 
 Siguiente ejemplo: [[opt-objetivo-juego-practica|elegir una jugada cuando el rival responde]].

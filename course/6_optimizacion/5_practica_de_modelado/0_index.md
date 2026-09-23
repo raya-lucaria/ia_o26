@@ -68,6 +68,6 @@ un objetivo bien escrito también necesita una razón para preferirlo.
 El recorrido guiado suma aproximadamente **95 minutos**. Puedes repartirlo en
 varias sesiones y volver a los pasos que necesites reconstruir.
 
-Los tres primeros ejemplos cierran con un ejercicio, dos pistas y una respuesta.
+Los tres primeros ejemplos incluyen ejercicios para practicar. Cada ejercicio tiene dos pistas y una respuesta ocultas.
 Resolver esos ejercicios requiere tiempo de práctica adicional a los 95 minutos
 del recorrido guiado.
