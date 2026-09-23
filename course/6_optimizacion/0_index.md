@@ -4,7 +4,7 @@ title: Modelado y optimización
 nav_title: Optimización
 summary: "Antes de resolver hay que plantear. Esta unidad enseña a leer un problema en palabras y escribirlo como matemáticas, y después a resolverlo."
 status: ready
-estimated_time: 7h34m
+estimated_time: 14h44m
 tags: [optimizacion, modelado, programacion-lineal]
 ---
 
@@ -46,29 +46,40 @@ que nadie firmaría. Esta unidad pasa la mayor parte del tiempo ahí.
 
 ## La nave
 
-Todo pasa en la misma nave, en un viaje largo, y cada clase es un episodio. La
+Las primeras cuatro clases pasan en la misma nave, en un viaje largo, y cada
+clase es un episodio. La
 tripulación decide qué fabricar, cómo repartir la potencia del reactor y qué
 subir al módulo de descenso. Son tres problemas distintos y el mismo método:
 leer, escribir, resolver, dudar de la respuesta.
 
 ## Las clases
 
-Cada clase vive en su propio directorio, con su portada, sus páginas y su
-tiempo estimado.
+Las primeras cuatro secciones desarrollan las clases de la nave. Las dos
+siguientes son bancos de práctica para varias sesiones: primero formular con un
+criterio dado y después justificar también el criterio. Los tiempos estiman
+el recorrido completo, con intentos y lectura de modelos generales.
 
 ::: table {#opt-clases title="Las clases de la unidad"}
-| Clase | Título | Qué resuelve | Minutos |
+| Sección | Título | Qué trabaja | Minutos |
 |---|---|---|---:|
 | 1 | Leer y escribir | Leer un problema real, escribirlo como matemáticas y dibujar la respuesta | 77m |
 | 2 | Resolver sin dibujar | Escribir el modelo como matriz y resolverlo con simplex sin dibujarlo | 108m |
 | 3 | Cuando ya no es una recta | Repartir la potencia del reactor cuando el rendimiento decrece | 144m |
 | 4 | Cuando las piezas no se parten | Escribir un problema cuyas cantidades son enteras, y resolverlo: mirándolos todos, y sin mirarlos todos | 125m |
+| 5 | Del problema al modelo | Ocho ejercicios para traducir decisiones, objetivos y restricciones | 180m |
+| 6 | Construir la función objetivo | Diez ejercicios para justificar qué optimizar y revisar sus límites | 250m |
 :::
 
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
 - [[optimizacion-lineal|Clase 2 · Resolver sin dibujar]]
 - [[optimizacion-continua|Clase 3 · Cuando ya no es una recta]]
 - [[optimizacion-entera|Clase 4 · Cuando las piezas no se parten]]
+- [[opt-practica-modelado|6.5 · Del problema al modelo]]
+- [[opt-construir-objetivo|6.6 · Construir la función objetivo]]
+
+La sección 6.5 integra el antiguo anexo 6.B. Entre los dos bancos hay 18
+problemas; elige una pareja por sesión. El tiempo total de la unidad incluye
+todo ese material de práctica, no solo las cuatro clases iniciales.
 
 ## La tarea del lunes
 
