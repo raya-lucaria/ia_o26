@@ -42,9 +42,9 @@ concentran en una dificultad nueva.
 
    [[opt-objetivo-clasificacion-practica|Leer el ejemplo de clasificación]] · 20 minutos.
 
-4. **Juego: elegir cuando el rival también decide.** Construimos el valor de
-   una acción frente a sus respuestas y revisamos qué falla cuando un programa
-   valora fichas en lugar de resultados finales.
+4. **Juego: elegir una jugada y planear los turnos siguientes.** Modelamos
+   la respuesta del rival y representamos las opciones en un árbol.
+   Calculamos su valor desde los resultados finales mediante inducción hacia atrás.
 
    [[opt-objetivo-juego-practica|Leer el ejemplo del juego]] · 20 minutos.
 
@@ -71,8 +71,3 @@ varias sesiones y volver a los pasos que necesites reconstruir.
 Los tres primeros ejemplos cierran con un ejercicio, dos pistas y una respuesta.
 Resolver esos ejercicios requiere tiempo de práctica adicional a los 95 minutos
 del recorrido guiado.
-
-Después elige un problema en [[opt-construir-objetivo|6.6 · Problemas para practicar]].
-Allí escribirás tu propio modelo antes de abrir las pistas y las respuestas.
-Las consultas generales amplían los ejemplos y son opcionales; no forman parte
-de estos 95 minutos.

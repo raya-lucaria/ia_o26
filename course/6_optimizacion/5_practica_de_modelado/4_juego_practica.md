@@ -2,7 +2,7 @@
 id: opt-objetivo-juego-practica
 title: Elegir una jugada cuando el rival responde
 nav_title: Juego
-summary: "Representar la elección del rival y comprobar por qué conservar más fichas puede llevarnos a perder."
+summary: "Representar turnos sucesivos en un árbol y construir el valor de una jugada desde los resultados finales."
 status: ready
 estimated_time: 20m
 tags: [optimizacion, modelado, juegos]
@@ -14,8 +14,8 @@ Hasta ahora comparábamos decisiones usando datos sobre sus consecuencias.
 En un juego aparece otra dificultad: **la consecuencia también depende de
 lo que decida otra persona**. Queremos ganar, pero el rival también.
 
-Usaremos un juego pequeño cuyos resultados conocemos por completo. No
-necesitamos saber ajedrez ni estudiar todavía un algoritmo para elegir jugadas.
+Usaremos un juego pequeño cuyos resultados conocemos por completo. Después
+extenderemos una de sus ramas para decidir también en un turno posterior.
 
 ## 1 · Separar nuestra jugada de la respuesta rival
 
@@ -91,7 +91,12 @@ $$\max_{a\in\{G,S\}}\min\{U(a,I),U(a,D)\}.$$
 
 Cada acción recibe este valor:
 
-$$v(G)=\min\{1,-1\}=-1,\qquad v(S)=\min\{1,1\}=1.$$
+$$
+\begin{aligned}
+v(G)&=\min\{1,-1\}=-1,\\
+v(S)&=\min\{1,1\}=1.
+\end{aligned}
+$$
 
 Sacrificar asegura la victoria con estas reglas. Guardar deja al rival
 una respuesta que nos derrota. Si miráramos solo el mejor resultado de
@@ -105,61 +110,133 @@ Si quisiéramos aprovechar errores frecuentes de un rival, necesitaríamos
 datos sobre cómo responde y otro modelo de su conducta. La tabla de
 resultados no proporciona probabilidades para promediar sus columnas.
 
-## 4 · Revisar un programa que solo cuenta fichas
+## 4 · Añadir una decisión después de la respuesta rival
 
-**¿Tener más fichas es lo mismo que estar más cerca de ganar?**
+Hasta aquí, después de nuestra acción y la respuesta rival, el final estaba
+fijado. **Ahora cambiamos una sola rama del juego:** si elegimos Sacrificar
+y el rival responde D, vuelve a ser nuestro turno.
 
-Conservamos el juego, pero examinamos un programa que deja de mirar justo
-después de la respuesta rival, antes de completar los movimientos obligatorios.
-Para valorar la posición alcanzada, cuenta únicamente nuestras fichas.
-Las columnas siguen siendo I y D; ahora los valores se miden en fichas:
+En ese nuevo estado tenemos dos acciones, llamadas X y Y. Elegir X termina
+en derrota, con utilidad −1; elegir Y termina en victoria, con utilidad +1.
+Las otras ramas conservan sus resultados. Sigue sin haber azar y el rival
+recibe la utilidad contraria a la nuestra. Ambos conocen las opciones y
+observan las jugadas anteriores.
 
-| Acción | I | D |
-|---|---:|---:|
-| Guardar | 3 | 2 |
-| Sacrificar | 0 | 0 |
+**¿Basta con decidir «Sacrificar» si después podríamos elegir X o Y?**
 
-Llamamos $s(a,b)$ a esa posición y $h(s)$ a la cantidad de fichas que
-cuenta el programa. Ambas quedan determinadas por las jugadas; no son
-nuevas decisiones libres. La regla del programa toma el menor conteo de
-cada fila y recomienda la acción cuyo conteo mínimo es mayor.
+Para describir esta variante usamos un **árbol**, un caso particular de
+un grafo. Cada nodo representa un estado y dice a quién le toca decidir.
+Cada flecha representa una acción permitida. Las hojas son los finales y
+muestran **nuestra utilidad**, incluso cuando la última acción la tomó el rival.
 
-El modelo completo de **esa regla dada al programa** es
+![Árbol de nueve estados: desde s0 elegimos Guardar o Sacrificar; el rival responde I o D. Guardar lleva a finales +1 o −1. Sacrificar e I lleva a +1; Sacrificar y D lleva a s3, donde elegimos X para −1 o Y para +1](../_assets/opt-juego-turnos.svg)
 
-$$\begin{aligned}
-\max_a\quad &\min_{b\in B(a)}h(s(a,b))\\
-\text{sujeto a}\quad &a\in A.
-\end{aligned}$$
+Los estados $s_0,s_1,s_2,s_3$ requieren una decisión; los cinco estados
+$t_1,\ldots,t_5$ son finales. En nuestros turnos aparece **MAX**, porque
+buscamos una utilidad alta. En los del rival aparece **MIN**, porque él
+prefiere dejarnos una utilidad baja.
 
-Conservamos $A=\{G,S\}$ y $B(a)=\{I,D\}$. Para Guardar, el mínimo es
-$\min\{3,2\}=2$; para Sacrificar, $\min\{0,0\}=0$. El programa recomienda
-Guardar. Calculó bien su criterio, pero la primera tabla muestra que esa
-jugada permite al rival derrotarnos.
+Una partida recorre **un solo camino** desde el inicio hasta un final.
+Por ejemplo, Sacrificar → D → X termina en $t_4$, donde perdemos. El árbol
+muestra también los caminos que esa partida no recorrió.
 
-El programa usa fichas; nosotros comprobamos su recomendación con las
-utilidades finales. **Resolver correctamente un modelo no corrige una
-puntuación que premia algo distinto de lo que queremos.** Tampoco hemos
-supuesto que el rival realmente prefiera quitarnos fichas a ganar.
+Son turnos sucesivos de una misma partida. Todavía no estamos planteando
+jugar varias partidas ni aprender de resultados anteriores.
 
-## 5 · Justificar una puntuación mejor
+## 5 · Valorar los estados desde los finales
 
-Una puntuación mejor debe apoyarse en señales que permitan reconocer una
-victoria o una derrota. Aquí conocemos los finales y podemos comprobar si
-la valoración coincide con ellos. En juegos más grandes, una valoración
-aproximada, llamada **heurística**, necesita justificación y puede recomendar
-una acción distinta de la que elegiríamos con todos los finales conocidos.
-La [[opt-objetivo-juego-modelo|consulta opcional sobre valoraciones]] desarrolla cómo usar esas señales y qué límites tienen.
+En la tabla original, $U(a,b)$ describía el resultado final de dos acciones.
+En la variante, llegar por Sacrificar–D no termina la partida. **Reservaremos
+$U(s)$ para la utilidad de un estado final** y usaremos $V(s)$ para el valor
+que calculamos en cualquier estado.
 
-## 6 · Pasar de dos decisiones a varios turnos
+Las utilidades de las hojas son datos. El valor de un estado intermedio
+resume lo que podemos asegurar desde allí si ambos jugadores eligen según
+sus intereses. No es otra cantidad que podamos decidir libremente.
 
-Si después hubiera nuevas decisiones, tendríamos que representar también
-esos turnos. Un árbol puede mostrar cada posición y las jugadas que llevan
-a otras. En nuestros turnos buscamos valores altos; en los del rival,
-valores bajos para nosotros. Esa alternancia lleva a la formulación **minimax**.
+**¿Qué valor tiene llegar a un estado donde todavía podemos elegir cómo terminar?**
 
-Al terminar el juego conocemos la utilidad. Si dejamos de explorar antes,
-usamos una evaluación de la posición. Más adelante estudiaremos cómo recorrer
-esos árboles y cómo la **poda alfa–beta** permite omitir ramas sin cambiar
-el valor de la búsqueda correspondiente. Aquí dejamos planteado qué se compara.
+Empezamos por $s_3$, nuestro último turno posible. Allí X da −1 y Y da +1:
 
-Continúa con [[opt-construir-objetivo|los problemas para practicar]].
+$$V(s_3)=\max\{-1,1\}=1.$$
+
+El valor es 1 porque podemos elegir Y. No significa que toda acción desde
+ese estado sea igual de buena.
+
+Ahora podemos valorar $s_2$, donde el rival responde a Sacrificar. Si elige
+I, ganamos inmediatamente; si elige D, llegamos a $s_3$, donde podemos
+asegurar 1. Por tanto,
+
+$$V(s_2)=\min\{1,V(s_3)\}=1.$$
+
+En $s_1$, después de Guardar, el rival elige entre dos finales conocidos:
+
+$$V(s_1)=\min\{1,-1\}=-1.$$
+
+Por último comparamos nuestras opciones en el estado inicial:
+
+$$V(s_0)=\max\{V(s_1),V(s_2)\}=1.$$
+
+El plan óptimo es **Sacrificar al inicio y elegir Y si después ocurre D**.
+Si el rival responde I, la partida ya termina con victoria. Así, nuestro
+plan dice qué hacer cuando vuelve a tocarnos, no solo cómo empezar.
+
+Este razonamiento se llama **inducción hacia atrás**: calculamos primero
+los valores de los finales y después los de sus estados anteriores.
+La partida se juega hacia delante; lo que hacemos hacia atrás es valorar
+las opciones. Los valores coinciden con los de la tabla inicial porque,
+en la rama ampliada, podemos elegir la continuación que gana.
+
+## 6 · Reunir el modelo del árbol
+
+Para escribir la misma idea en cualquier árbol finito de este tipo,
+necesitamos identificar los estados, las acciones permitidas y a quién le
+toca jugar. Todas esas reglas, junto con las utilidades finales, son datos.
+
+| Símbolo | Qué representa |
+|---|---|
+| $s$ | Estado de la partida |
+| $A(s)$ | Acciones permitidas |
+| $a$ | Acción en ese estado |
+| $T(s,a)$ | Estado siguiente |
+| $U(s)$ | Utilidad de un final |
+| $V(s)$ | Valor del estado |
+| $a^\star$ | Acción óptima |
+
+Aquí $A(s)$ es el conjunto finito, no vacío, de acciones de un estado que
+no es final. $T(s,a)$ indica adónde lleva la acción $a$. El jugador de turno
+elige $a\in A(s)$; no elige la transición ni la utilidad del final.
+Los valores $U$ y $V$ se miden siempre en **nuestros puntos**.
+
+**En un final**, no queda ninguna acción por elegir:
+
+$$V(s)=U(s).$$
+
+**En nuestro turno**, elegimos la continuación con mayor valor:
+
+$$V(s)=\max_{a\in A(s)}V\bigl(T(s,a)\bigr).$$
+
+**En el turno rival**, él elige la continuación de menor valor para nosotros:
+
+$$V(s)=\min_{a\in A(s)}V\bigl(T(s,a)\bigr).$$
+
+La alternancia de máximos y mínimos se llama **minimax**. Los dominios
+$A(s)$ recogen las jugadas permitidas; no hay otras restricciones de recursos.
+Las hojas proporcionan los datos con los que se calculan todos los demás
+valores, sin atribuirnos control sobre las decisiones del rival.
+
+**El valor óptimo no es una jugada.** En un estado nuestro, el máximo devuelve
+puntos; $\operatorname{arg\,max}$ reúne las acciones que alcanzan ese valor.
+Una acción óptima satisface
+
+$$a^\star\in\operatorname*{arg\,max}_{a\in A(s)}
+V\bigl(T(s,a)\bigr).$$
+
+Escribimos pertenencia porque varias acciones podrían empatar. En nuestro
+árbol, el valor inicial es 1 y la única acción inicial óptima es Sacrificar.
+En $s_3$, la acción óptima es Y.
+
+Es **optimización discreta, finita y adversarial**. La inducción hacia atrás
+permite valorar cada estado cuando ya conocemos los valores de todas sus
+continuaciones. Aquí el árbol es pequeño y conocemos todas sus hojas;
+podemos completar el razonamiento sin aproximar resultados futuros.

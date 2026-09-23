@@ -285,10 +285,6 @@ Una pérdida menor puede acompañarse de más, los mismos o menos aciertos.
 Si ese es el propósito final, debemos comprobar accuracy después del ajuste
 con **datos que no hayan intervenido en él**.
 
-Algo parecido ocurre al contar aciertos en una actividad educativa:
-responder bien con ayuda no demuestra que después se responderá sin ella.
-En [[opt-objetivo-aprendizaje-practica|la práctica de aprendizaje]] revisarás esa diferencia.
-
 ## 6 · Resumen de los dos modelos
 
 Los datos son $n\ge1$ pares $(x_i,y_i)$, con $i=1,\ldots,n$,
@@ -771,7 +767,5 @@ acercarnos al máximo de aciertos de esta familia. Entrenar con $L$ requiere
 comprobar $A$ con datos que no hayan determinado los parámetros; una regla
 factible no queda certificada como óptima por haber reducido la pérdida.
 :::
-
-Consulta opcional: [[opt-objetivo-clasificacion-modelo|generalizar la regla a varias características]].
 
 Siguiente ejemplo: [[opt-objetivo-juego-practica|elegir una jugada cuando el rival responde]].

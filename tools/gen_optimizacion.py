@@ -3077,7 +3077,81 @@ def opt_clasificacion_proxy():
     return "".join(s)
 
 
+
+def opt_juego_turnos():
+    """Árbol de nueve estados; solo las hojas llevan utilidades conocidas."""
+    W, H = 560, 802
+    # id: (x, y, anchura, jugador o None, utilidad terminal o None, rótulo)
+    nodos = {
+        "s0": (280, 115, 174, "MAX", None, "s₀ · inicio"),
+        "s1": (120, 280, 174, "MIN", None, "s₁"),
+        "s2": (405, 280, 174, "MIN", None, "s₂"),
+        "s3": (455, 455, 174, "MAX", None, "s₃"),
+        "t1": (60, 455, 100, None, 1, "t₁"),
+        "t2": (180, 455, 100, None, -1, "t₂"),
+        "t3": (300, 455, 100, None, 1, "t₃"),
+        "t4": (370, 655, 100, None, -1, "t₄"),
+        "t5": (500, 655, 100, None, 1, "t₅"),
+    }
+    # origen, destino, acción y posición de su etiqueta, lejos del trazo.
+    aristas = [
+        ("s0", "s1", "Guardar", 126, 202),
+        ("s0", "s2", "Sacrificar", 433, 202),
+        ("s1", "t1", "I", 61, 374),
+        ("s1", "t2", "D", 189, 374),
+        ("s2", "t3", "I", 330, 374),
+        ("s2", "s3", "D", 480, 374),
+        ("s3", "t4", "X", 390, 568),
+        ("s3", "t5", "Y", 510, 568),
+    ]
+    s = [marco(
+        W, H,
+        "Árbol de nueve estados. En s0 elegimos Guardar o Sacrificar. "
+        "El rival responde I o D. Tras Sacrificar y D volvemos a elegir: "
+        "X lleva a derrota y Y a victoria",
+        "Una decisión más después de Sacrificar y D",
+        "Cuatro estados de decisión y cinco finales, unidos por ocho "
+        "acciones. s0 es nuestro turno MAX; Guardar lleva a s1 y Sacrificar "
+        "a s2, ambos del rival MIN. Desde s1, I llega a t1 con utilidad +1 "
+        "y D a t2 con -1. Desde s2, I llega a t3 con +1 y D a s3, nuestro "
+        "turno MAX. Desde s3, X llega a t4 con -1 e Y a t5 con +1. "
+        "Todas las utilidades son nuestras; los estados intermedios no "
+        "llevan valores anticipados. Una partida sigue un único camino "
+        "desde s0 hasta una hoja.",
+    )]
+    s.append(texto(W / 2, 37, "Una decisión más tras S → D", tam=25, peso="700"))
+    for origen, destino, accion, lx, ly in aristas:
+        x1, y1, _, jugador1, _, _ = nodos[origen]
+        x2, y2, _, jugador2, _, _ = nodos[destino]
+        medio1 = 45 if jugador1 else 35
+        medio2 = 45 if jugador2 else 35
+        s.append(flecha(x1, y1 + medio1 + 1, x2, y2 - medio2 - 5,
+                        color=SUAVE, grosor=2.5, marcador="s"))
+        s.append(texto(lx, ly, accion, tam=24))
+    for x, y, ancho, jugador, utilidad, rotulo in nodos.values():
+        if jugador:
+            color = SERIE[1] if jugador == "MAX" else SERIE[2]
+            s.append(caja(x - ancho / 2, y - 45, ancho, 90,
+                          relleno=mezclar(color, 0.09), borde=color, radio=12))
+            s.append(texto(x, y - 18, rotulo, tam=24, peso="600"))
+            s.append(texto(x, y + 10, "Nuestro turno" if jugador == "MAX" else "Turno rival",
+                           tam=23))
+            s.append(texto(x, y + 35, jugador, tam=21, color=color, peso="600"))
+        else:
+            color = SERIE[0] if utilidad > 0 else ALARMA
+            s.append(caja(x - ancho / 2, y - 35, ancho, 70,
+                          relleno=mezclar(color, 0.09), borde=color, radio=10))
+            s.append(texto(x, y - 8, rotulo, tam=24))
+            valor = f"+{utilidad}" if utilidad > 0 else str(utilidad).replace("-", "−")
+            s.append(texto(x, y + 21, f"U = {valor}", tam=23, color=color, peso="600"))
+    s.append(texto(W / 2, 751, "Hojas: utilidad para nosotros", tam=23))
+    s.append(texto(W / 2, 785, "Una partida recorre un solo camino.", tam=22, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
+    "opt-juego-turnos": opt_juego_turnos,
     "opt-clasificacion-proxy": opt_clasificacion_proxy,
     "opt-panaderia-criterios": opt_panaderia_criterios,
     "opt-clasificacion-sigmoide": opt_clasificacion_sigmoide,
