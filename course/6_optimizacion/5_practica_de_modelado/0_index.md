@@ -1,9 +1,10 @@
 ---
 id: opt-practica-modelado
 title: Del problema al modelo
-nav_title: Practicar el planteamiento
+nav_title: Del problema al modelo
 summary: "Ocho ejercicios de formulación: café, vuelos, un evento y la salida de una red neuronal. Dos ayudas graduales y una respuesta explicada por ejercicio."
 status: ready
+estimated_time: 3h
 tags: [optimizacion, modelado, practica]
 ---
 
@@ -13,7 +14,11 @@ tags: [optimizacion, modelado, practica]
 problemas: cuatro situaciones y una variación de cada una. Practicarás cómo
 convertir una historia en un objetivo, restricciones y dominios.
 
-Son situaciones reales con **cifras didácticas**. Todos los datos están dados;
+Esta sección 6.5 incorpora el antiguo anexo 6.B. Aquí el criterio ya está
+suficientemente especificado: practicamos cómo traducirlo. «Clásico» no
+significa que todos los modelos sean lineales.
+
+Son situaciones habituales con **cifras didácticas**. Todos los datos están dados;
 no necesitas investigar café, conocer aviación, organizar un evento ni
 conocer redes neuronales. No hay probabilidad ni métodos de resolución.
 
@@ -76,3 +81,11 @@ usaremos minimización convexa con restricciones convexas escritas contra cero.
 Cambiar de presentación no debe cambiar las decisiones permitidas.
 
 Si necesitas recuperar el método, vuelve a [[la-bitacora-del-taller|separar datos y decisiones]] o a [[el-modelo-del-taller|construir un modelo completo]].
+
+## Tiempo y siguiente paso
+
+Reserva aproximadamente 45 minutos por pareja, unas tres horas si haces las
+cuatro con sus modelos generales. Es un banco de práctica para varias sesiones;
+el tiempo depende de tus intentos y de las ayudas que necesites.
+
+Después, [[opt-construir-objetivo|en 6.6 construirás y justificarás también la función objetivo]].
