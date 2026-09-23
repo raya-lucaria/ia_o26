@@ -323,6 +323,10 @@ Ahora sí podemos utilizar la restricción nueva para certificar su cota:
 $$5x_1+4x_2=\frac56(6x_1+4x_2)+\frac23x_2
 \le\frac56(24)+\frac23(1)=\frac{62}{3}.$$
 
+**Antes de seguir:** tenemos un plan entero de valor 18 y este subproblema
+tiene cota $62/3$. ¿Podemos cerrarlo por cota? ¿Esa cota demuestra que existe
+un plan entero mejor que el guardado?
+
 El punto $(10/3,1)$ cumple el subproblema y alcanza el techo. Como
 $62/3>18$, la cota **no permite descartarlo**. No asegura que haya un entero
 mejor: solo dice que todavía no hemos demostrado lo contrario.
@@ -398,15 +402,17 @@ izquierda a derecha.
 ![Árbol de cinco nodos: raíz con cota 21; hijo de x dos mayor o igual que dos con óptimo entero 18; hijo de x dos menor o igual que uno con cota 62 tercios. Este se divide y produce la solución entera 20 y un nodo de cota 19 que se cierra por cota](../_assets/opt-arbol.svg)
 :::
 
-La tabla recupera las restricciones heredadas que debes leer en cada camino:
+La tabla recupera las restricciones heredadas y el registro después de cada
+paso. La cota corresponde al subproblema de esa fila; el registro conserva la
+mejor solución entera encontrada en todo el recorrido.
 
-| Orden | Condiciones adicionales al taller | Óptimo relajado | Cota | Acción |
+| Orden | Condiciones adicionales al taller | Óptimo relajado | Cota local | Acción y valor guardado |
 |---:|---|---|---:|---|
-| 1 | Ninguna | $(3,3/2)$ | 21 | Dividir por $x_2$ |
+| 1 | Ninguna | $(3,3/2)$ | 21 | Dividir por $x_2$; sin solución guardada |
 | 2 | $x_2\ge2$ | $(2,2)$ | 18 | Guardar 18; cerrar |
-| 3 | $x_2\le1$ | $(10/3,1)$ | $62/3$ | Dividir por $x_1$ |
+| 3 | $x_2\le1$ | $(10/3,1)$ | $62/3$ | Dividir por $x_1$; conservar 18 |
 | 4 | $x_2\le1,\ x_1\ge4$ | $(4,0)$ | 20 | Guardar 20; cerrar |
-| 5 | $x_2\le1,\ x_1\le3$ | $(3,1)$ | 19 | Cerrar por cota |
+| 5 | $x_2\le1,\ x_1\le3$ | $(3,1)$ | 19 | Cerrar por cota; conservar 20 |
 
 Las tres hojas cubren la caja de veinte candidatos sin solaparse:
 
@@ -458,26 +464,18 @@ poda por integralidad en otras presentaciones.
 
 ### Cerrar por cota sin encontrar el óptimo entero del nodo
 
-**Ejemplo independiente del taller.** Imagina otro problema de maximización:
-
-1. En otra parte de la búsqueda encontramos una solución entera válida de
-   valor **100**. La guardamos; todavía no sabemos si es el óptimo global.
-2. En el nodo actual, resolvemos la relajación. Su solución tiene fracciones
-   y su valor óptimo es **97.5**.
-3. Cerramos ese nodo: permitir fracciones ya da más libertad y aun así no
-   alcanza el 100 que tenemos.
+**Ejemplo independiente del taller.** En un problema de maximización ya
+guardamos una solución entera factible de valor **100**. Otro nodo tiene
+óptimo relajado fraccionario de valor **97.5**. Podemos cerrarlo:
 
 $$\underbrace{c^{\mathsf T}x}_{\text{cualquier entero factible de este nodo}}
 \;\le\;97.5\;<\;100.$$
 
-**No averiguamos cuál es el mejor entero de ese nodo.** Demostramos que
-ninguno puede mejorar nuestra solución. El valor 100 puede venir de otro
-nodo: para compararlo con la cota solo necesitamos que corresponda a un plan
-entero factible del problema original.
+**No averiguamos cuál es el mejor entero de ese nodo.** Basta demostrar que
+ninguno supera el plan factible guardado, aunque ese plan venga de otro nodo.
 
-Con una cota de 105, en cambio, esta comparación no permitiría cerrar: el
-nodo todavía podría mejorar el registro. Tampoco garantizaría que exista
-esa mejora. Sin un plan entero guardado no podemos usar esta comparación.
+Una cota de 105 no permitiría cerrar ni garantizaría que exista una mejora.
+Sin un plan entero guardado no podemos usar esta comparación.
 
 La igualdad también permite cerrar si buscamos **un** óptimo. Si buscáramos
 todas las soluciones empatadas, no descartaríamos un nodo solo por igualar
@@ -488,10 +486,59 @@ Encontrar **cualquier** punto entero no basta para cerrar por integralidad:
 debe ser un óptimo de la relajación. Y una relajación fraccionaria no demuestra
 infactibilidad entera: en la raíz del taller había trece planes enteros posibles.
 
+### Cambiar el rendimiento del rover
+
+::: exercise {#opt-ent-ej-rover-tres title="El rover transmite menos"}
+En el árbol anterior, el último nodo podía cerrarse por cota y además tenía
+óptimo relajado entero. Ahora comprobaremos que las fracciones no obligan a
+dividir.
+
+Conserva los recursos y dominios del taller, pero cambia el rendimiento del
+rover de 5 a **3 MB/día**. El objetivo es ahora $3x_1+4x_2$.
+
+**Comienza una búsqueda nueva:** la pila contiene solo el problema con este
+objetivo y no hay solución guardada. No arrastres el registro 20 del taller
+anterior. Procesa primero el hijo de $\ge$. Puedes usar estos óptimos de las
+relajaciones:
+
+| Subproblema | Punto óptimo relajado | Valor |
+|---|---|---:|
+| Original | $(3,3/2)$ | 15 |
+| $x_2\ge2$ | $(2,2)$ | 14 |
+| $x_2\le1$ | $(10/3,1)$ | 14 |
+
+Anota la pila y el registro después de cada nodo. **Antes de abrir la
+respuesta:** en el último nodo, la solución relajada tiene fracciones y su
+valor iguala el registro. ¿Cerramos o dividimos? Justifica la decisión.
+:::
+
+::: answer {#opt-ent-resp-rover-tres of="opt-ent-ej-rover-tres"}
+| Después de procesar | Pendientes, último a la derecha | Registro |
+|---|---|---|
+| Original | $[x_2\le1,\ x_2\ge2]$ | Ninguno |
+| $x_2\ge2$ | $[x_2\le1]$ | $(2,2)$, valor 14 |
+| $x_2\le1$ | Vacía | $(2,2)$, valor 14 |
+
+El último nodo se cierra porque su cota 14 no supera `mejor` $=14$. Aunque
+$(10/3,1)$ tiene fracciones, ningún plan entero de ese subproblema puede
+mejorar el plan $(2,2)$ que ya guardamos. No hace falta dividirlo.
+
+La igualdad es entre **la cota y el valor guardado**; no demuestra que haya
+otro plan entero de valor 14. Buscamos un óptimo y ya no quedan pendientes:
+el resultado es dos rovers y dos sondas, de valor 14.
+
+Aquí la cota de la raíz también puede comprobarse sumando $1/4$ de la
+restricción de aleación y $3/2$ de la de calibración: da
+$3x_1+4x_2\le15$. Para $x_2\le1$, la aleación da
+$3x_1+4x_2\le12+2x_2\le14$. Los puntos dados alcanzan esos techos.
+:::
+
 ## 6 · Generalizar el algoritmo
 
-**Ahora reunimos lo que ya hicimos.** La caja inicial tiene límites enteros
-finitos, las restricciones se heredan y buscamos una solución óptima.
+**Ahora reunimos lo que ya hicimos.** El algoritmo sirve para ambos objetivos
+trabajados; en cada ejecución conservamos el objetivo elegido. La caja inicial
+tiene límites enteros finitos, las restricciones se heredan y buscamos una
+solución óptima.
 
 | Nombre | Qué guarda |
 |---|---|
@@ -583,41 +630,6 @@ El árbol es binario y tiene profundidad finita: contiene un número finito de
 nodos. No estamos prometiendo que sean pocos; estamos probando terminación.
 
 ## 7 · Practicar las decisiones
-
-### Cambiar el rendimiento del rover
-
-::: exercise {#opt-ent-ej-rover-tres title="El rover transmite menos"}
-Conserva los recursos y dominios del taller, pero cambia el rendimiento del
-rover de 5 a **3 MB/día**. El objetivo es ahora $3x_1+4x_2$.
-
-Ejecuta el algoritmo desde una pila con el problema original y sin solución
-guardada. Procesa primero el hijo de $\ge$. Puedes usar estas relajaciones:
-
-| Subproblema | Punto óptimo relajado | Valor |
-|---|---|---:|
-| Original | $(3,3/2)$ | 15 |
-| $x_2\ge2$ | $(2,2)$ | 14 |
-| $x_2\le1$ | $(10/3,1)$ | 14 |
-
-Anota la pila y el registro después de cada nodo. ¿Debes dividir el último,
-aunque tenga una cantidad fraccionaria de rovers?
-:::
-
-::: answer {#opt-ent-resp-rover-tres of="opt-ent-ej-rover-tres"}
-| Después de procesar | Pendientes, último a la derecha | Registro |
-|---|---|---|
-| Original | $[x_2\le1,\ x_2\ge2]$ | Ninguno |
-| $x_2\ge2$ | $[x_2\le1]$ | $(2,2)$, valor 14 |
-| $x_2\le1$ | Vacía | $(2,2)$, valor 14 |
-
-El último nodo se cierra porque su cota 14 no supera `mejor` $=14$. No hace
-falta dividirlo. El óptimo es dos rovers y dos sondas, de valor 14.
-
-Aquí la cota de la raíz también puede comprobarse sumando $1/4$ de la
-restricción de aleación y $3/2$ de la de calibración: da
-$3x_1+4x_2\le15$. Para $x_2\le1$, la aleación da
-$3x_1+4x_2\le12+2x_2\le14$. Los puntos dados alcanzan esos techos.
-:::
 
 ### Resolver el mismo caso pequeño que enumeración
 
@@ -960,3 +972,15 @@ Para comprobar tu comprensión, explica con tus palabras qué diferencia hay
 entre **tener una buena solución** y **demostrar que no queda una mejor**.
 En estos algoritmos, la primera permite guardar un plan; la segunda permite
 terminar la búsqueda.
+
+### Si el problema pide minimizar
+
+Al minimizar, la relajación da una **cota inferior** para su subproblema y
+el valor del mejor plan entero factible guardado da una **cota superior**
+para el óptimo global. El registro `mejor` empieza en $+\infty$ y se actualiza
+cuando encontramos un plan de menor valor.
+
+Si buscamos un óptimo, cerramos por cota cuando la cota inferior del
+subproblema es **mayor o igual** que `mejor`: ninguno de sus planes puede
+mejorar el que ya tenemos. La división y los cierres por infactibilidad e
+integralidad se justifican como antes.
