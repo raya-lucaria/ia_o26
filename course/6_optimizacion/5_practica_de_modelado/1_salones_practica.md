@@ -527,5 +527,3 @@ acotación a la formulación binaria.
 :::
 
 Continúa con [[opt-objetivo-panaderia-practica|cómo decidir cuánto pan producir cuando la demanda es incierta]].
-
-Para practicar después: [[opt-practica-horarios|decidir también las horas de inicio]]. La [[opt-objetivo-salones-modelo|consulta opcional de salones y horarios]] reúne la formulación más general.

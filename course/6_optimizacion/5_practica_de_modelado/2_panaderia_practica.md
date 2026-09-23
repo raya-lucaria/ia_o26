@@ -557,5 +557,3 @@ todos los tamaños del problema.
 :::
 
 Continúa con [[opt-objetivo-clasificacion-practica|cómo comparar aciertos y probabilidades al clasificar mensajes]].
-
-Para practicar después: [[opt-practica-riesgo|comparar la ganancia con lo que habríamos ganado conociendo la demanda]]. La [[opt-objetivo-panaderia-modelo|consulta opcional de panadería]] desarrolla esos criterios con más detalle.

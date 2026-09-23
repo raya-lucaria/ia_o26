@@ -4,7 +4,7 @@ title: Modelado y optimización
 nav_title: Optimización
 summary: "Antes de resolver hay que plantear. Esta unidad enseña a leer un problema en palabras y escribirlo como matemáticas, y después a resolverlo."
 status: ready
-estimated_time: 14h9m
+estimated_time: 9h9m
 tags: [optimizacion, modelado, programacion-lineal]
 ---
 
@@ -55,9 +55,8 @@ leer, escribir, resolver, dudar de la respuesta.
 ## Las clases
 
 Las primeras cuatro secciones desarrollan las clases de la nave. La sección
-6.5 reúne cuatro ejemplos guiados para construir modelos; la 6.6 ofrece un
-banco de problemas para practicar por tu cuenta. Puedes seleccionar problemas
-según lo que necesites reforzar. Las consultas generales son opcionales.
+6.5 reúne cuatro ejemplos guiados para construir modelos. Los tres primeros
+incluyen ejercicios con pistas y respuestas para practicar por tu cuenta.
 
 ::: table {#opt-clases title="Las clases de la unidad"}
 | Sección | Título | Qué trabaja | Minutos |
@@ -67,7 +66,6 @@ según lo que necesites reforzar. Las consultas generales son opcionales.
 | 3 | Cuando ya no es una recta | Repartir la potencia del reactor cuando el rendimiento decrece | 144m |
 | 4 | Cuando las piezas no se parten | Escribir un problema cuyas cantidades son enteras, y resolverlo: mirándolos todos, y sin mirarlos todos | 125m |
 | 5 | Modelar problemas de optimización | Cuatro ejemplos guiados para construir decisiones, restricciones y objetivos | 95m |
-| 6 | Problemas para practicar | Doce problemas seleccionables con pistas y respuestas | 300m |
 :::
 
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
@@ -75,13 +73,10 @@ según lo que necesites reforzar. Las consultas generales son opcionales.
 - [[optimizacion-continua|Clase 3 · Cuando ya no es una recta]]
 - [[optimizacion-entera|Clase 4 · Cuando las piezas no se parten]]
 - [[opt-practica-modelado|6.5 · Modelar problemas de optimización]]
-- [[opt-construir-objetivo|6.6 · Problemas para practicar]]
 
 El recorrido de las cuatro clases suma 454 minutos; los ejemplos guiados,
-95 minutos. El total de **14 horas y 9 minutos** incluye además las cinco
-horas estimadas para hacer todo el banco de práctica opcional. No incluye
-la lectura adicional de las consultas generales ni obliga a resolver los
-doce problemas en clase.
+95 minutos. En total son **9 horas y 9 minutos**, más el tiempo que dediques
+a los ejercicios de las guías.
 
 ## La tarea del lunes
 
