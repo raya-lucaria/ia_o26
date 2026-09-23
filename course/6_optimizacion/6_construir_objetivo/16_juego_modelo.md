@@ -9,11 +9,12 @@ tags: [optimizacion, modelado, juegos]
 
 # Formular cómo elegir una jugada
 
-**Primero intenta los [[opt-objetivo-juego-practica|dos problemas del juego]].**
-Vamos a reunir el razonamiento que sirve para ambos: decidir cómo tener
-en cuenta la respuesta rival y qué puntuación usar para comparar jugadas.
+Esta es una **consulta opcional** que amplía el [[opt-objetivo-juego-practica|ejemplo guiado del juego]].
+Vamos a reunir el razonamiento que sirve tanto para el modelo con resultados
+finales como para el modelo que cuenta fichas: decidir cómo tener en cuenta
+la respuesta rival y qué puntuación usar para comparar jugadas.
 
-En el primer problema conocemos los resultados finales. En el segundo,
+En la primera parte del ejemplo guiado conocemos los resultados finales. En la segunda,
 revisamos un programa que deja de mirar antes del final y cuenta fichas.
 Las acciones permitidas son las mismas; cambia lo que el programa valora.
 
@@ -32,7 +33,7 @@ opciones no nos permite elegir su respuesta. Tampoco significa que nos
 falte información sobre qué ocurriría con cada una: $U(a,b)$ es un dato
 conocido para todas las combinaciones.
 
-A esa puntuación final la llamamos *utilidad*. En la práctica vale +1 al
+A esa puntuación final la llamamos *utilidad*. En el ejemplo guiado vale +1 al
 ganar y −1 al perder. En otro juego podría tener más valores, según qué
 resultados nos interesara distinguir. Las acciones no tienen unidades
 físicas; la utilidad usa la escala de puntos acordada.
@@ -51,7 +52,7 @@ Aquí lo hemos establecido al especificar cómo se relacionan sus utilidades.
 También importa que las decisiones sean sucesivas: el modelo no describe
 jugadas simultáneas ni respuestas elegidas al azar.
 
-En la práctica, los movimientos posteriores son obligatorios. Por eso la
+En el ejemplo guiado, los movimientos posteriores son obligatorios. Por eso la
 pareja $a,b$ basta para determinar la utilidad final. Si después hubiera
 nuevas decisiones, tendríamos que representar también esas elecciones
 para valorar cómo continúa el juego.
@@ -87,7 +88,7 @@ sobre ambos jugadores y cambiaría el problema.
 
 Los conjuntos $A$ y $B(a)$ recogen los dominios y todas las reglas sobre
 jugadas permitidas. No hacen falta restricciones de recursos adicionales
-en el relato de la práctica.
+en el relato del ejemplo guiado.
 
 La combinación de un máximo y un mínimo no demuestra por sí sola que
 exista un rival. En el problema de horarios comparábamos molestias sin
@@ -96,7 +97,7 @@ de los intereses y las decisiones del otro jugador.
 
 ## 3 · Usar la tabla del juego pequeño
 
-En el problema 9 usamos $G$ por Guardar y $S$ por Sacrificar:
+En la primera parte del ejemplo guiado usamos $G$ por Guardar y $S$ por Sacrificar:
 
 $$A=\{G,S\},\qquad B(G)=B(S)=\{I,D\}.$$
 
@@ -140,15 +141,15 @@ $$
 Esas probabilidades serían datos no negativos que suman uno para cada
 acción $a$. El objetivo compararía puntuaciones promedio según esa conducta.
 La tabla de victorias y derrotas, por sí sola, no proporciona esas
-probabilidades: en la práctica no podemos justificar ese promedio.
+probabilidades: en el ejemplo guiado no podemos justificar ese promedio.
 
 ## 4 · Contar fichas cuando dejamos de mirar antes del final
 
-En el problema 10, el programa examina solo la posición que queda después
+En la segunda parte del ejemplo guiado, el programa examina solo la posición que queda después
 de nuestra acción y de la respuesta rival. La llamamos $s(a,b)$.
 
 Una función fija $h(s)$ asigna una puntuación a cada posición. El programa
-de la práctica cuenta nuestras fichas, así que **$h$ se mide en fichas**.
+del ejemplo guiado cuenta nuestras fichas, así que **$h$ se mide en fichas**.
 No mide los puntos que obtendremos al ganar o perder.
 
 Para una acción $a$, el programa toma la menor puntuación entre las
@@ -200,9 +201,14 @@ no los conoceríamos para hacer una comprobación completa.
 
 ## 5 · Distinguir victorias y derrotas inevitables
 
-La práctica da señales observables que permiten comprobar si una posición
+Podemos ampliar el ejemplo guiado con señales observables que permiten comprobar si una posición
 lleva inevitablemente a ganar o a perder. Podemos usarlas para construir
 otra puntuación.
+
+En este juego pequeño, una comprobación local certifica llegada inevitable a
+la meta tras Guardar–I y tras las dos respuestas a Sacrificar. Tras Guardar–D,
+certifica un bloqueo que termina en derrota. Suponemos disponibles esas señales
+para esta ampliación; contar fichas por sí solo no las proporciona.
 
 Definimos $W(s)$ y $D(s)$ como indicadores conocidos que toman valores en
 $\{0,1\}$:
@@ -231,7 +237,7 @@ las respuestas del rival.
 | Guardar | +1 | −1 |
 | Sacrificar | +1 | +1 |
 
-El modelo del ejercicio queda:
+El modelo de esta ampliación queda:
 
 $$\max_{a\in\{G,S\}}\min\{h'(s(a,I)),h'(s(a,D))\}.$$
 
@@ -275,4 +281,4 @@ Por ahora importa saber **qué puntuación estamos comparando y por qué**.
 Resolver exactamente el modelo no corrige una puntuación que premia
 conservar fichas cuando lo que queríamos era ganar.
 
-[[opt-objetivo-juego-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver a la guía]].
+[[opt-objetivo-juego-practica|Volver al ejemplo guiado]] · [[opt-construir-objetivo|Volver al banco de práctica]].

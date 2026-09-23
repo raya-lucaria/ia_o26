@@ -160,4 +160,4 @@ costos por pareja sin recargos por combinaciones. No describe conexiones ni
 reutilización de aviones durante el día. Si faltan recursos, capacidad o
 permisos, puede ser imposible cubrir todos los vuelos.
 
-[[opt-practica-vuelos|Volver a los ejercicios]] · [[opt-practica-modelado|Volver a la guía]].
+[[opt-practica-vuelos|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver al banco de práctica]].

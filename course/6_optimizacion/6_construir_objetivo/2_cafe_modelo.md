@@ -173,4 +173,4 @@ todas sus apariciones.** Un cambio de unidad de compra afecta tanto al
 objetivo como a las restricciones. Si hubiera sobrantes o pérdidas,
 comprar y usar ya no serían necesariamente la misma cantidad.
 
-[[opt-practica-cafe|Volver a los ejercicios]] · [[opt-practica-modelado|Volver a la guía]].
+[[opt-practica-cafe|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver al banco de práctica]].

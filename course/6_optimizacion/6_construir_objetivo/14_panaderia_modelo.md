@@ -9,7 +9,7 @@ tags: [optimizacion, modelado, practica]
 
 # Calcular la ganancia y decidir qué proteger
 
-Primero intenta los [[opt-objetivo-panaderia-practica|dos problemas de panadería]].
+Esta es una **consulta opcional** que amplía el [[opt-objetivo-panaderia-practica|ejemplo guiado de panadería]] y el [[opt-practica-riesgo|problema 12 de ganancias y oportunidades perdidas]].
 La pregunta común es **cuánto pan producir antes de conocer la demanda**.
 Para responderla, necesitamos calcular qué pasaría con cada producción y
 explicar qué resultado queremos favorecer.
@@ -109,7 +109,7 @@ Si todas producen el mismo ingreso, minimizar el costo también maximiza
 la ganancia.
 
 En la panadería, ni los ingresos ni los costos son constantes entre todas
-las producciones. Con las probabilidades de la práctica, producir 65 piezas
+las producciones. Con las probabilidades del ejemplo guiado, producir 65 piezas
 da más ingreso esperado que producir 20, pero deja menos ganancia esperada:
 
 Las columnas comparan producir 20 y 65 piezas; los resultados están en pesos.
@@ -187,7 +187,7 @@ El promedio de los referentes no cambia al elegir otra producción.
 Por eso **maximizar la ganancia esperada equivale a minimizar la oportunidad
 perdida esperada**: las dos comparaciones ordenan igual las decisiones.
 
-En el problema 3, ese promedio fijo es $0.8(120)+0.2(480)=192$ pesos.
+En el ejemplo guiado, ese promedio fijo es $0.8(120)+0.2(480)=192$ pesos.
 Para una producción de 20 piezas, la ganancia esperada de 120 deja una
 oportunidad perdida esperada de 72; para 65 piezas, las cantidades son
 102 y 90 pesos. Los dos criterios prefieren 20 entre esas alternativas.
@@ -301,4 +301,4 @@ cambiando de signo. Después comprueba que la transformación conserva la
 preferencia, incluida la forma de tratar la incertidumbre. Una equivalencia
 entre promedios no se traslada automáticamente al peor caso.
 
-[[opt-objetivo-panaderia-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver a la guía]].
+[[opt-objetivo-panaderia-practica|Volver al ejemplo guiado]] · [[opt-practica-riesgo|Practicar la comparación de riesgos]] · [[opt-construir-objetivo|Volver al banco de práctica]].

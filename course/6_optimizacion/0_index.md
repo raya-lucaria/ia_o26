@@ -4,7 +4,7 @@ title: Modelado y optimización
 nav_title: Optimización
 summary: "Antes de resolver hay que plantear. Esta unidad enseña a leer un problema en palabras y escribirlo como matemáticas, y después a resolverlo."
 status: ready
-estimated_time: 14h44m
+estimated_time: 14h9m
 tags: [optimizacion, modelado, programacion-lineal]
 ---
 
@@ -54,10 +54,10 @@ leer, escribir, resolver, dudar de la respuesta.
 
 ## Las clases
 
-Las primeras cuatro secciones desarrollan las clases de la nave. Las dos
-siguientes son bancos de práctica para varias sesiones: primero formular con un
-criterio dado y después justificar también el criterio. Los tiempos estiman
-el recorrido completo, con intentos y lectura de modelos generales.
+Las primeras cuatro secciones desarrollan las clases de la nave. La sección
+6.5 reúne cuatro ejemplos guiados para construir modelos; la 6.6 ofrece un
+banco de problemas para practicar por tu cuenta. Puedes seleccionar problemas
+según lo que necesites reforzar. Las consultas generales son opcionales.
 
 ::: table {#opt-clases title="Las clases de la unidad"}
 | Sección | Título | Qué trabaja | Minutos |
@@ -66,20 +66,22 @@ el recorrido completo, con intentos y lectura de modelos generales.
 | 2 | Resolver sin dibujar | Escribir el modelo como matriz y resolverlo con simplex sin dibujarlo | 108m |
 | 3 | Cuando ya no es una recta | Repartir la potencia del reactor cuando el rendimiento decrece | 144m |
 | 4 | Cuando las piezas no se parten | Escribir un problema cuyas cantidades son enteras, y resolverlo: mirándolos todos, y sin mirarlos todos | 125m |
-| 5 | Del problema al modelo | Ocho ejercicios para traducir decisiones, objetivos y restricciones | 180m |
-| 6 | Construir la función objetivo | Diez ejercicios para justificar qué optimizar y revisar sus límites | 250m |
+| 5 | Modelar problemas de optimización | Cuatro ejemplos guiados para construir decisiones, restricciones y objetivos | 95m |
+| 6 | Problemas para practicar | Doce problemas seleccionables con pistas y respuestas | 300m |
 :::
 
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
 - [[optimizacion-lineal|Clase 2 · Resolver sin dibujar]]
 - [[optimizacion-continua|Clase 3 · Cuando ya no es una recta]]
 - [[optimizacion-entera|Clase 4 · Cuando las piezas no se parten]]
-- [[opt-practica-modelado|6.5 · Del problema al modelo]]
-- [[opt-construir-objetivo|6.6 · Construir la función objetivo]]
+- [[opt-practica-modelado|6.5 · Modelar problemas de optimización]]
+- [[opt-construir-objetivo|6.6 · Problemas para practicar]]
 
-La sección 6.5 integra el antiguo anexo 6.B. Entre los dos bancos hay 18
-problemas; elige una pareja por sesión. El tiempo total de la unidad incluye
-todo ese material de práctica, no solo las cuatro clases iniciales.
+El recorrido de las cuatro clases suma 454 minutos; los ejemplos guiados,
+95 minutos. El total de **14 horas y 9 minutos** incluye además las cinco
+horas estimadas para hacer todo el banco de práctica opcional. No incluye
+la lectura adicional de las consultas generales ni obliga a resolver los
+doce problemas en clase.
 
 ## La tarea del lunes
 

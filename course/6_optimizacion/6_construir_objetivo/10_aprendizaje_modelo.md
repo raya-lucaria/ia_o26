@@ -34,7 +34,7 @@ que recibimos sobre las actividades es la siguiente:
 - $b_j\ge0$: Aciertos previstos después, en el bloque del tema preparado con $j$.
 
 El dato $b_j$ solo está disponible cuando contamos con estimaciones para una
-prueba posterior, como en el problema 6. No se obtiene de $a_j$: saber
+prueba posterior, como en el problema 10. No se obtiene de $a_j$: saber
 cuántas preguntas se responderán bien durante la práctica no basta para
 predecir lo que ocurrirá después.
 
@@ -142,7 +142,7 @@ información que falta.
 
 Podemos querer que el estudiante responda bien después y, además, que durante
 la sesión consiga cierto número de aciertos. Esta segunda petición agrega
-una condición que **no estaba en el problema 6**. Tiene que ser una decisión
+una condición que **no estaba en el problema 10**. Tiene que ser una decisión
 explícita de quien prepara la sesión.
 
 Llamemos $A\ge0$ al mínimo exigido de aciertos previstos durante la práctica.
@@ -194,4 +194,4 @@ Al revisar el modelo, distingue las actividades que puedes elegir, las
 estimaciones que recibes y las reglas que debes respetar. Si cambias un
 dato o un supuesto, explica cuál y vuelve a escribir el modelo completo.
 
-[[opt-objetivo-aprendizaje-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver a la guía]].
+[[opt-objetivo-aprendizaje-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver al banco de práctica]].

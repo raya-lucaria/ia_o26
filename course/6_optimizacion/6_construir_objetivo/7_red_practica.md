@@ -259,4 +259,8 @@ Sumar los cuadrados de los pesos al objetivo cambiaría lo que minimizamos
 y no obligaría a respetar el máximo pedido.
 :::
 
-Después de comparar tus dos planteamientos, pasa a [[opt-modelo-red|la forma general de esta salida]].
+Si quieres ampliar lo trabajado, tienes una consulta opcional sobre [[opt-modelo-red|la forma general de esta salida]].
+
+Si necesitas ayuda para construir el modelo, vuelve a [[opt-objetivo-clasificacion-practica|el ejemplo guiado de clasificación]].
+
+[[opt-construir-objetivo|Volver al banco de práctica]].

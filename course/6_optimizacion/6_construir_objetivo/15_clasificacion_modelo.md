@@ -9,8 +9,9 @@ tags: [optimizacion, modelado, clasificacion]
 
 # Dos formas de evaluar una regla de clasificación
 
-**Primero intenta los [[opt-objetivo-clasificacion-practica|dos problemas de clasificación]].**
-En ambos queremos ajustar una regla que distinga entre las clases 0 y 1.
+Esta es una **consulta opcional** que amplía el [[opt-objetivo-clasificacion-practica|ejemplo guiado de clasificación]].
+Tanto al maximizar los aciertos como al minimizar la pérdida logarítmica,
+queremos ajustar una regla que distinga entre las clases 0 y 1.
 Usamos los mismos casos y ajustamos los mismos parámetros, pero cambiamos
 la medida que decide qué ajuste preferimos.
 
@@ -25,7 +26,7 @@ al compararlos.
 
 ## 1 · Calcular probabilidades y anunciar etiquetas
 
-En la práctica usamos el número de enlaces de cada mensaje como única
+En el ejemplo guiado usamos el número de enlaces de cada mensaje como única
 entrada. Ahora permitimos varias características o **atributos** por caso: el dato $x_{ij}$ es el valor del
 atributo $j$ en el caso $i$. Todas las entradas se expresan en escalas
 numéricas sin unidades físicas, como antes.
@@ -58,7 +59,7 @@ eligiéramos libremente para cada caso, ya no estaríamos ajustando una regla
 compartida de esta familia.
 
 **Para anunciar la etiqueta**, comparamos $p_i$ con 0.5. El empate da
-clase 1, igual que en la práctica:
+clase 1, igual que en el ejemplo guiado:
 
 $$\widehat y_i(w,b)=\mathbf1\{p_i(w,b)\ge0.5\}.$$
 
@@ -157,7 +158,7 @@ reglas, y mejorar una no garantiza mejorar la otra en cada comparación.
 
 ## 4 · Comparar dos reglas permitidas
 
-En la práctica hay un atributo, el número de enlaces del mensaje, de modo
+En el ejemplo guiado hay un atributo, el número de enlaces del mensaje, de modo
 que $w_1=a$. La cota es $M=4$; las entradas son 0, 1 y 2. El primer mensaje
 es normal y los otros dos son no deseados: sus etiquetas son 0, 1 y 1. Al
 sustituir estos datos, la proporción de aciertos es
@@ -223,4 +224,4 @@ Al justificar el objetivo, deja claras estas tres decisiones:
 Un objetivo sustituto necesita tanto una razón para elegirlo como una
 comprobación frente al propósito que motivó el ajuste.
 
-[[opt-objetivo-clasificacion-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver a la guía]].
+[[opt-objetivo-clasificacion-practica|Volver al ejemplo guiado]] · [[opt-construir-objetivo|Volver al banco de práctica]].
