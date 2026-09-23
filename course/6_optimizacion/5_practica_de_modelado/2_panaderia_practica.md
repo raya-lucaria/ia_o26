@@ -17,70 +17,95 @@ compararla cuando no conocemos la demanda.**
 
 ## 1 · Decidir esta noche para vender mañana
 
-La panadería puede producir entre **0 y 100 piezas enteras**. Debe elegir
-la cantidad esta noche y no puede ajustarla después de conocer la demanda.
-Los datos de este ejemplo son didácticos.
+La dueña de una pequeña panadería deja listas las piezas por la noche y
+a la mañana siguiente hornea todo lo preparado. Durante el día se dedica a
+vender: no puede preparar nuevas tandas. Tiene capacidad para **100 piezas por jornada** y
+debe decidir cuántas preparar antes de conocer la demanda total de mañana.
 
-| Por cada pieza | Pesos |
-|---|---:|
-| Precio de venta | 8 |
-| Costo de producción | 2 |
+Producir cada pieza cuesta **2 pesos** y venderla deja un ingreso de
+**8 pesos**. El costo de producción se paga por todas las piezas, aunque
+algunas no se vendan.
 
-El costo se paga por todas las piezas producidas, incluidas las que no se
-venden. Los sobrantes no tienen valor de recuperación. Se vende toda la
-cantidad que permitan la producción y la demanda, sin otros costos ni ingresos.
+Por su política de calidad, la panadería vende pan del día. Al cerrar regala
+lo que sobró; no lo guarda para venderlo al día siguiente. En este modelo,
+regalar el pan no genera ingresos ni costos adicionales y no hay otros
+costos o ingresos que considerar.
 
-Para mañana se consideran estos dos escenarios:
+La dueña quiere **maximizar la ganancia**: lo que queda de las ventas después
+de pagar la producción. La dificultad es que **por la noche todavía no sabe
+cuántas piezas querrán comprarle al día siguiente**.
 
-| Demanda | Probabilidad |
-|---|---:|
-| 20 piezas | 0.8 |
-| 80 piezas | 0.2 |
+**Piensa: ¿qué cantidad tiene que decidir la dueña esta noche?**
 
-Suponemos que las probabilidades describen adecuadamente la incertidumbre.
-La responsable propone elegir la producción con mayor ganancia promedio.
-
-**Piensa: ¿podemos elegir una producción para cada demanda?**
-
-No: elegimos una sola cantidad antes de conocer cuál demanda ocurrirá.
-Llamaremos $q$ a las piezas producidas. Para formular con parámetros,
-usaremos los siguientes datos:
-
-- $Q\in\mathbb Z_{\ge0}$: capacidad de producción, en piezas.
-- $S$: conjunto finito no vacío de escenarios.
-- $d_s\in\mathbb Z_{\ge0}$: demanda del escenario $s$, en piezas.
-- $v$ y $c$: precio de venta y costo de producción, en pesos por pieza;
-  en este relato, $v>c>0$.
-- $p_s$: probabilidad del escenario $s$, con $p_s\ge0$ y $\sum_{s\in S}p_s=1$.
-
-Las condiciones sobre la decisión son
+Llamaremos $q$ al número entero de piezas que prepara. La letra minúscula
+$q$ representa **la decisión**; la mayúscula $Q$ representa **la capacidad**,
+un dato entero no negativo, en piezas. Las condiciones son
 
 $$0\le q\le Q,\qquad q\in\mathbb Z.$$
 
-Ni la demanda ni su probabilidad se pueden elegir para mejorar el resultado.
+Aquí $Q=100$. Elegimos una sola cantidad $q$ antes de saber cuánto se venderá.
+
+Para describir la incertidumbre, llamamos $\mathcal E$ al conjunto finito,
+no vacío, de escenarios posibles. El índice $e\in\mathcal E$ identifica
+un escenario. Usaremos estos datos:
+
+- $d_e$: piezas que los clientes quieren comprar al precio dado en el
+  escenario $e$; es un entero no negativo.
+- $p_e$: probabilidad del escenario $e$.
+- $v$: precio de **venta**, en pesos por pieza.
+- $c$: **costo** de producción, en pesos por pieza.
+
+Suponemos $v>c>0$. Las probabilidades cumplen $p_e\ge0$ para cada
+$e\in\mathcal E$ y suman 1:
+
+$$\sum_{e\in\mathcal E}p_e=1.$$
+
+Para mañana se consideran dos escenarios, $\mathcal E=\{1,2\}$:
+
+- Escenario 1: $d_1=20$ piezas, con probabilidad $p_1=0.8$.
+- Escenario 2: $d_2=80$ piezas, con probabilidad $p_2=0.2$.
+
+El precio es $v=8$ y el costo unitario es $c=2$. Suponemos que esas
+probabilidades describen adecuadamente la incertidumbre. Para comparar las
+cantidades posibles, la dueña decide **maximizar la ganancia esperada**:
+el promedio ponderado por esas probabilidades.
+
+El índice $e$ sirve para recorrer los escenarios; **no es una decisión**.
+La misma cantidad $q$ debe servir para todos, porque se elige de noche.
 
 ## 2 · De las piezas al dinero ganado
 
-**Piensa: si producimos más de lo que se pide, ¿qué limita las ventas? ¿Y si producimos menos?**
+**Piensa: si preparamos 65 piezas y solo nos piden 20, ¿cuántas vendemos? ¿Y si nos piden 80?**
 
-Cuando sobra pan, vendemos la cantidad que se pide. Cuando falta, vendemos
-todo lo producido. La cantidad vendida es la menor de las dos:
+En el primer caso vendemos 20; en el segundo, 65. Cuando sobra pan, las
+ventas están limitadas por la demanda. Cuando falta, están limitadas por
+lo que producimos. En el escenario $e$, las piezas vendidas son
 
-$$\text{piezas vendidas en el escenario }s=\min(q,d_s).$$
+$$\min(q,d_e).$$
 
-El ingreso corresponde a las piezas **vendidas**. El costo corresponde a
-todas las piezas **producidas**, incluso si algunas sobran:
+Llamaremos $I_e(q)$ al **ingreso** por ventas en ese escenario. Se calcula
+multiplicando las piezas vendidas por el precio:
 
-$$I(q,d_s)=v\min(q,d_s),\qquad C(q)=cq.$$
+$$I_e(q)=v\min(q,d_e).$$
 
-Multiplicar pesos por pieza por piezas da pesos en ambas expresiones.
-La ganancia es el dinero que queda del ingreso después de pagar la producción:
+El **costo** $C(q)$ corresponde a todas las piezas producidas, incluidas
+las que regalamos. Es el mismo en cualquier escenario:
 
-$$\Pi(q,d_s)=v\min(q,d_s)-cq.$$
+$$C(q)=cq.$$
 
-Puede ser negativa si no vendemos lo suficiente para cubrir el costo.
-Las ventas y la ganancia quedan determinadas por $q$ y la demanda; no son
-otras decisiones que podamos escoger por separado.
+Ambas expresiones están en pesos: multiplicamos pesos por pieza por piezas.
+La **ganancia** $G_e(q)$ es el dinero que queda del ingreso después de pagar
+la producción:
+
+$$G_e(q)=I_e(q)-C(q).$$
+
+El subíndice $e$ en $I_e(q)$ y $G_e(q)$ indica que el ingreso y la ganancia
+pueden cambiar con el escenario. En $C(q)$ no aparece porque producir la
+misma cantidad $q$ cuesta lo mismo, se venda o se regale el pan.
+
+La ganancia puede ser negativa si las ventas no cubren el costo. Las ventas,
+el ingreso y la ganancia se calculan a partir de $q$ y los datos; no son
+cantidades que podamos escoger por separado.
 
 ## 3 · Construir la ganancia promedio
 
@@ -92,25 +117,18 @@ medida en pesos. El modelo completo es
 
 $$
 \begin{aligned}
-\max\quad &\sum_{s\in S}p_s\bigl[v\min(q,d_s)-cq\bigr]\\
-\text{sujeto a}\quad &0\le q\le Q,\\
+&\max_q\quad\sum_{e\in\mathcal E}p_eG_e(q)\\
+&\text{sujeto a}\\
+&0\le q\le Q,\\
 &q\in\mathbb Z.
 \end{aligned}
 $$
 
-Al sustituir $Q=100$, $v=8$, $c=2$ y los dos escenarios, queda
-
-$$
-\begin{aligned}
-\max\quad &0.8\bigl[8\min(q,20)-2q\bigr]\\
-&\quad+0.2\bigl[8\min(q,80)-2q\bigr]\\
-\text{sujeto a}\quad &0\le q\le100,\\
-&q\in\mathbb Z.
-\end{aligned}
-$$
+Las probabilidades y las demandas son datos del modelo. No podemos elegirlas
+para mejorar el resultado.
 
 **Las probabilidades permiten calcular ese promedio; no obligan a preferirlo.**
-La responsable eligió ese criterio. Podría considerar inaceptable un resultado
+La dueña eligió ese criterio. Podría considerar inaceptable un resultado
 muy bajo, aunque quedara compensado por una ganancia alta en otro escenario.
 
 ## 4 · Comprobar qué cuenta el objetivo
@@ -148,39 +166,74 @@ en todas las decisiones comparadas. Minimizar costos equivale a maximizar
 ganancia si el ingreso es el mismo. Aquí no se cumplen esas condiciones
 para el conjunto de producciones permitidas.
 
-## 5 · Cambiar la prioridad ante la incertidumbre
+## 5 · Suponer escenarios igualmente probables
 
-**Piensa: ¿esperar una ganancia de 102 pesos garantiza ganar al menos esa cantidad mañana?**
+Ahora imaginemos que conocemos las mismas demandas posibles, pero **no
+contamos con probabilidades justificadas**. No podemos seguir usando 0.8 y
+0.2 como si todavía fueran datos.
 
-No. Al producir 65 piezas, las ganancias son 30 pesos si se piden 20 y
-390 pesos si se piden 80. Su promedio es $0.8(30)+0.2(390)=102$ pesos;
-no es una ganancia mínima garantizada ni una predicción exacta de mañana.
+**Piensa: si decidimos dar el mismo peso a cada escenario, ¿qué estamos suponiendo?**
 
-Ahora imaginemos que conocemos las mismas demandas posibles, pero **ya no
-contamos con probabilidades justificadas**. No podemos usar 0.8 y 0.2 para
-comparar decisiones. Tampoco podemos asignar probabilidades iguales como
-si desconocerlas significara que los escenarios son igualmente probables.
+Estamos eligiendo una distribución **uniforme**. Si la única información que
+usamos es el conjunto finito de escenarios y no imponemos otras restricciones,
+esa distribución maximiza la entropía. El [principio de máxima entropía](https://www.cs.cmu.edu/afs/cs/user/aberger/www/html/tutorial/node6.html) propone
+entonces asignar a cada escenario la probabilidad
 
-Una prioridad posible es que la menor ganancia entre los escenarios sea
-lo más alta posible. Para cada producción tomamos su menor ganancia y
-buscamos aumentar ese valor. El modelo es
+$$p_e=\frac{1}{|\mathcal E|}\qquad(e\in\mathcal E).$$
+
+Aquí $|\mathcal E|$ es el número de escenarios. Con dos escenarios, cada uno
+recibe probabilidad 0.5. Es un **supuesto para construir el modelo**, no una
+consecuencia obligatoria de desconocer las probabilidades. Depende de cuáles
+escenarios hayamos incluido. Volveremos a la entropía y a esta forma de elegir
+probabilidades más adelante.
+
+Con ese supuesto seguimos maximizando una ganancia esperada, ahora con pesos
+iguales:
 
 $$
 \begin{aligned}
-\max\quad &\min_{s\in S}\Pi(q,d_s)\\
-\text{sujeto a}\quad &0\le q\le Q,\\
+&\max_q\quad\frac{1}{|\mathcal E|}\sum_{e\in\mathcal E}G_e(q)\\
+&\text{sujeto a}\\
+&0\le q\le Q,\\
 &q\in\mathbb Z.
 \end{aligned}
 $$
 
-Con los datos conocidos, su objetivo compara las dos ganancias siguientes;
-las condiciones siguen exigiendo una producción entera entre 0 y 100:
+La diferencia puede cambiar qué producción preferimos. Producir 20 piezas
+deja 120 pesos en los dos escenarios, así que su promedio sigue siendo 120.
+Con 65 piezas, las ganancias son 30 y 390 pesos. Con pesos iguales, el promedio
+es
+
+$$0.5(30)+0.5(390)=210\text{ pesos}.$$
+
+Entre estas dos cantidades, el modelo uniforme prefiere 65; el modelo con
+probabilidades 0.8 y 0.2 prefiere 20. Cambiamos el supuesto sobre la demanda,
+no el precio, el costo ni las condiciones de producción.
+
+## 6 · Elegir pensando en la menor ganancia
+
+**Piensa: ¿esperar una ganancia de 102 pesos garantiza ganar al menos esa cantidad mañana?**
+
+No. Al producir 65 piezas, las ganancias son 30 pesos si se piden 20 y
+390 pesos si se piden 80. Con las probabilidades originales, el promedio es
+$0.8(30)+0.2(390)=102$ pesos; no es una ganancia mínima garantizada ni una
+predicción exacta de mañana.
+
+Podemos elegir otra prioridad: proteger la menor ganancia que obtendríamos
+entre los escenarios incluidos. Primero fijamos una producción y buscamos
+su peor resultado. Con 65 piezas, ese resultado es 30 pesos; con 20 piezas,
+es 120 pesos. Después comparamos esas ganancias mínimas para elegir la
+producción que deje la mayor.
+
+Ese orden explica el modelo **max–min**: el mínimo recorre los escenarios
+para una cantidad fija; el máximo elige la cantidad con mejor resultado mínimo.
+El modelo es
 
 $$
 \begin{aligned}
-\max\quad &\min\{8\min(q,20)-2q,\\
-&\qquad 8\min(q,80)-2q\}\\
-\text{sujeto a}\quad &0\le q\le100,\\
+&\max_q\quad\min_{e\in\mathcal E}G_e(q)\\
+&\text{sujeto a}\\
+&0\le q\le Q,\\
 &q\in\mathbb Z.
 \end{aligned}
 $$
@@ -193,6 +246,115 @@ adoptarlo con probabilidades conocidas si esa protección fuera nuestra priorida
 Tanto el promedio como el peor caso dependen de los escenarios considerados.
 Ninguno garantiza protección frente a cualquier demanda omitida. Cambiar
 las demandas posibles o añadir costos requeriría revisar la formulación.
+
+## 7 · Resumen de los tres modelos
+
+Elegimos una sola cantidad de noche y horneamos todo lo preparado por la
+mañana. Durante el día vendemos lo que permitan la producción y la demanda;
+al cierre regalamos el sobrante, sin ingresos ni costos adicionales.
+El modelo no incluye otros costos o ingresos.
+
+| Símbolo | Qué representa |
+|---|---|
+| $\mathcal E$ | Conjunto de escenarios |
+| $e$ | Índice de escenario |
+| $q$ | Piezas por producir |
+| $Q$ | Capacidad en piezas |
+| $d_e$ | Demanda en piezas |
+| $v$ | Precio de venta |
+| $c$ | Costo por pieza |
+| $p_e$ | Probabilidad |
+| $I_e(q)$ | Ingreso por ventas |
+| $C(q)$ | Costo de producción |
+| $G_e(q)$ | Ganancia por escenario |
+
+La **variable** $q$ es el número entero de piezas que elegimos antes de
+conocer la demanda. El conjunto $\mathcal E$ es finito y no vacío;
+$e\in\mathcal E$ identifica un escenario. Usamos el mismo $q$ en todos ellos.
+
+Los **datos** $Q$ y $d_e$ son enteros no negativos. El precio $v$ y el costo
+$c$ se miden en pesos por pieza y cumplen $v>c>0$. La demanda cuenta las
+piezas que los clientes quieren comprar a ese precio.
+
+Para calcular la esperanza usamos probabilidades dadas o adoptadas bajo un
+supuesto explícito. Deben cumplir $p_e\ge0$ para cada $e\in\mathcal E$ y
+
+$$\sum_{e\in\mathcal E}p_e=1.$$
+
+Estas son condiciones sobre los datos, no decisiones que optimizamos.
+Las ventas son $\min(q,d_e)$. De ellas obtenemos las siguientes
+**expresiones en pesos** para cada escenario:
+
+$$I_e(q)=v\min(q,d_e).$$
+
+$$C(q)=cq.$$
+
+$$G_e(q)=I_e(q)-C(q).$$
+
+El costo se paga por todas las piezas producidas y no depende del escenario.
+Los tres modelos completos comparten las mismas condiciones sobre $q$.
+
+**Modelo 1 · Ganancia esperada con probabilidades dadas.** Usamos los datos
+$p_e$ para ponderar las ganancias:
+
+$$
+\begin{aligned}
+&\max_q\quad\sum_{e\in\mathcal E}p_eG_e(q)\\
+&\text{sujeto a}\\
+&0\le q\le Q,\\
+&q\in\mathbb Z.
+\end{aligned}
+$$
+
+Es un problema de **optimización discreta con una variable entera**. Podemos
+resolverlo recorriendo $q=0,1,\ldots,Q$, calculando su ganancia esperada y
+eligiendo una cantidad que alcance el mayor valor.
+
+**Modelo 2 · Ganancia esperada con máxima entropía.** Si adoptamos la
+uniformidad sobre el conjunto finito de escenarios, sin otras restricciones
+sobre sus probabilidades, usamos $p_e=1/|\mathcal E|$:
+
+$$
+\begin{aligned}
+&\max_q\quad\frac{1}{|\mathcal E|}\sum_{e\in\mathcal E}G_e(q)\\
+&\text{sujeto a}\\
+&0\le q\le Q,\\
+&q\in\mathbb Z.
+\end{aligned}
+$$
+
+También es **optimización discreta con una variable entera**. Recorremos
+$q=0,1,\ldots,Q$, calculamos el promedio simple de sus ganancias y elegimos
+una cantidad con el mayor promedio.
+
+**Modelo 3 · Mayor ganancia mínima.** Comparamos los escenarios sin usar
+sus probabilidades:
+
+$$
+\begin{aligned}
+&\max_q\quad\min_{e\in\mathcal E}G_e(q)\\
+&\text{sujeto a}\\
+&0\le q\le Q,\\
+&q\in\mathbb Z.
+\end{aligned}
+$$
+
+Es **optimización discreta max–min con una variable entera**. Para cada
+$q=0,1,\ldots,Q$ calculamos la menor ganancia entre los escenarios; después
+elegimos una cantidad que alcance la mayor de esas ganancias mínimas.
+
+Los tres recorridos son finitos: revisan las $Q+1$ cantidades permitidas.
+
+Los tres objetivos son **lineales por tramos**: se componen de segmentos de
+recta. Con $q$ entero, admiten una reformulación de **programación lineal
+entera mixta** mediante variables auxiliares continuas. Esa formulación
+permite usar *branch and bound* (ramificación y acotación).
+
+Si permitiéramos que $q$ fuera real, maximizaríamos una función cóncava sobre
+el intervalo $[0,Q]$. Esa sería una **relajación convexa** del problema entero.
+
+Elegir el peor caso es una prioridad explícita: no viene impuesta por la
+falta de probabilidades. Protege únicamente frente a los escenarios incluidos.
 
 Continúa con [[opt-objetivo-clasificacion-practica|cómo comparar aciertos y probabilidades al clasificar mensajes]].
 

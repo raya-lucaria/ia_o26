@@ -241,6 +241,7 @@ escribir las mismas reglas para cualquier cantidad de cursos y salones.
 | $d_s$ | Disponibilidad previa |
 | $m_{cs}$ | Molestia por asignación |
 | $M_c(x)$ | Molestia del grupo |
+| $z$ | Cota de molestia |
 | $F$ | Asignaciones factibles |
 
 Los conjuntos $\mathcal C$ y $\mathcal S$ son finitos y no vacíos, con
@@ -285,13 +286,42 @@ curso por salón, capacidad suficiente, proyector cuando se requiere y
 disponibilidad previa. Las dos últimas filas se aplican a cada pareja
 curso–salón.
 
+Este es un modelo de **programación lineal entera binaria**, con estructura
+de asignación: el objetivo y las restricciones son lineales, pero las
+decisiones $x_{cs}$ solo pueden valer 0 o 1.
+
 Si la prioridad es reducir la **mayor molestia de un grupo**, conservamos
 las mismas restricciones y dominios y cambiamos solo el objetivo:
 
 $$\min_{x\in F}\quad\max_{c\in\mathcal C}M_c(x).$$
 
+El máximo no es una expresión lineal. Podemos escribir un modelo equivalente
+con una variable real $z$ que acote por arriba la molestia de cada grupo:
+
+$$
+\begin{aligned}
+&\min_{x,z}\quad z\\
+&\text{sujeto a}\quad x\in F,\\
+&z\ge M_c(x) &&(c\in\mathcal C),\\
+&z\in\mathbb R_{\ge0}.
+\end{aligned}
+$$
+
+Al minimizar $z$, esa cota baja hasta la mayor molestia. Esta formulación es
+**programación lineal entera mixta**: combina las variables binarias de la
+asignación con la variable continua $z$, mediante expresiones lineales.
+
 Para buscar únicamente una asignación factible, usamos el objetivo constante
 cero con esas mismas condiciones: $\min_{x\in F}0$.
+Es un problema de **factibilidad de una asignación binaria con restricciones
+lineales**; basta encontrar una asignación permitida.
+
+**¿Cómo podrían resolverse?** En una instancia pequeña podemos enumerar las
+asignaciones, descartar las prohibidas y comparar las restantes según el
+objetivo; para factibilidad, basta conservar cualquiera de ellas. Un método
+general para las tres formulaciones lineales enteras es la **ramificación y
+acotación** (*branch-and-bound*). Aquí nos interesa formularlas; no necesitamos
+desarrollar ese algoritmo.
 
 Continúa con [[opt-objetivo-panaderia-practica|cómo decidir cuánto pan producir cuando la demanda es incierta]].
 
