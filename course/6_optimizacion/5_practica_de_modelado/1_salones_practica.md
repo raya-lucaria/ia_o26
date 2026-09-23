@@ -234,6 +234,7 @@ escribir las mismas reglas para cualquier cantidad de cursos y salones.
 | $s$ | Índice de salón |
 | $x_{cs}$ | Asignar curso a salón |
 | $x$ | Asignación completa |
+| $x^*$ | Asignación óptima |
 | $n_c$ | Número de estudiantes |
 | $a_s$ | Aforo en lugares |
 | $r_c$ | Requiere proyector |
@@ -249,6 +250,8 @@ Los conjuntos $\mathcal C$ y $\mathcal S$ son finitos y no vacíos, con
 
 La **variable binaria** $x_{cs}$ vale 1 si asignamos el curso $c$ al salón $s$
 y 0 si no. La colección de todos esos valores forma la asignación $x$.
+Estas son las decisiones sobre qué haremos con los cursos. Su dominio es
+$\{0,1\}$: una decisión del mundo no tiene por qué ser una variable continua.
 
 Los **datos** $n_c$ y $a_s$ son enteros no negativos: cuentan estudiantes
 y lugares, respectivamente. Los datos $r_c$, $p_s$ y $d_s$ son binarios:
@@ -290,10 +293,25 @@ Este es un modelo de **programación lineal entera binaria**, con estructura
 de asignación: el objetivo y las restricciones son lineales, pero las
 decisiones $x_{cs}$ solo pueden valer 0 o 1.
 
+**El mínimo es un valor; una asignación que lo alcanza es una decisión.**
+Si $F$ no está vacío, podemos elegir una asignación óptima escribiendo
+
+$$x^*\in\operatorname*{arg\,min}_{x\in F}
+\sum_{c\in\mathcal C}M_c(x).$$
+
+`arg min` recoge las asignaciones que alcanzan el menor valor. Usamos
+pertenencia porque puede haber varias empatadas; no devuelve necesariamente
+una única asignación.
+
 Si la prioridad es reducir la **mayor molestia de un grupo**, conservamos
 las mismas restricciones y dominios y cambiamos solo el objetivo:
 
 $$\min_{x\in F}\quad\max_{c\in\mathcal C}M_c(x).$$
+
+Si hay asignaciones factibles, elegimos una bajo esta otra prioridad con
+
+$$x^*\in\operatorname*{arg\,min}_{x\in F}
+\max_{c\in\mathcal C}M_c(x).$$
 
 El máximo no es una expresión lineal. Podemos escribir un modelo equivalente
 con una variable real $z$ que acote por arriba la molestia de cada grupo:
@@ -311,17 +329,202 @@ Al minimizar $z$, esa cota baja hasta la mayor molestia. Esta formulación es
 **programación lineal entera mixta**: combina las variables binarias de la
 asignación con la variable continua $z$, mediante expresiones lineales.
 
+$z$ es una **variable auxiliar** de la reformulación: no decide otro salón.
+Aquí «real» describe su dominio $\mathbb R_{\ge0}$. En cambio, $m_{cs}$ es un
+dato real conocido y $M_c(x)$ es una expresión calculada; ninguno es una
+decisión adicional.
+
 Para buscar únicamente una asignación factible, usamos el objetivo constante
 cero con esas mismas condiciones: $\min_{x\in F}0$.
 Es un problema de **factibilidad de una asignación binaria con restricciones
 lineales**; basta encontrar una asignación permitida.
 
+Si $F$ no está vacío, todas sus asignaciones alcanzan el mismo valor cero:
+
+$$x^*\in\operatorname*{arg\,min}_{x\in F}0=F.$$
+
+Si no hay asignaciones factibles, no existe una decisión que devolver.
+
 **¿Cómo podrían resolverse?** En una instancia pequeña podemos enumerar las
 asignaciones, descartar las prohibidas y comparar las restantes según el
-objetivo; para factibilidad, basta conservar cualquiera de ellas. Un método
-general para las tres formulaciones lineales enteras es la **ramificación y
-acotación** (*branch-and-bound*). Aquí nos interesa formularlas; no necesitamos
-desarrollar ese algoritmo.
+objetivo; para factibilidad, podemos detenernos al encontrar una permitida.
+
+Sean $N=|\mathcal C|$ cursos y $R=|\mathcal S|$ salones. Elegir un salón para
+cada curso genera $R^N$ candidatos, incluidos los que incumplen otras reglas.
+Una comprobación directa que recorra las $NR$ variables y evalúe el objetivo
+cuesta $O(NR)$ operaciones por candidato. Para ese procedimiento,
+
+$$T_{\mathrm{enum}}=O\!\left(NR\cdot R^N\right).$$
+
+Esta cota corresponde a la enumeración descrita. Con pocos salones y cursos
+puede bastar; para $R\ge2$ fijo, el número de candidatos crece
+exponencialmente con $N$.
+
+La [[ramificar-y-acotar|ramificación y acotación]] también puede resolver
+las formulaciones lineales enteras y, en el caso general, puede explorar un
+árbol exponencial. Esa posibilidad del método no implica que este modelo
+de asignación necesite una búsqueda exponencial.
+
+## 8 · Practicar con dos horas posibles
+
+**Haz primero un esfuerzo por escribir tu propio modelo, sin abrir las pistas ni la solución y sin pedir ayuda a ChatGPT. Después de intentarlo, usa las pistas una por una y vuelve a tu hoja antes de abrir la respuesta.**
+
+::: exercise {#opt-obj-sal-dos-horas title="Cuatro clases, dos salones y un proyector"}
+La coordinación debe organizar las clases A, B, C y D. Cada una tiene
+20 estudiantes, dura una hora completa y debe impartirse exactamente una
+vez. Sus docentes son distintos y ningún estudiante toma más de una de
+estas clases.
+
+Puede usar dos bloques: de 9 a 10 y de 10 a 11. **Ninguna clase tiene una
+hora fijada**; docentes y estudiantes están disponibles en ambos bloques.
+
+Hay dos salones, llamados 1 y 2, con 30 lugares cada uno. Ambos están
+disponibles durante los dos bloques. Solo el salón 1 tiene proyector:
+A y C lo necesitan; B y D no. No se puede trasladar el proyector.
+
+Cada clase debe ocupar un único salón durante su hora completa. Dos clases
+no pueden compartir salón a la misma hora. La coordinación solo pide
+**encontrar un horario que cumpla las reglas**; no ha establecido preferencias
+por salón ni por hora.
+
+Formula un modelo general: define los conjuntos, los índices, los datos,
+las decisiones y todas las condiciones. Después usa estos datos para dar
+un horario de ejemplo y comprueba que cumple las reglas. Indica qué tipo
+de modelo obtuviste y un método para buscar una solución, distinguiendo
+cuántos candidatos revisa del costo de revisar cada uno.
+:::
+
+::: hint {#opt-obj-sal-dos-horas-p1 of="opt-obj-sal-dos-horas" title="Pista 1 · Qué hay que decidir ahora"}
+Antes la hora estaba fijada. Ahora piensa qué información debe contener
+la decisión correspondiente a una clase para que podamos colocarla en
+una agenda. Separa esa elección de las características y la disponibilidad
+de cada salón, que ya conocemos.
+:::
+
+::: hint {#opt-obj-sal-dos-horas-p2 of="opt-obj-sal-dos-horas" title="Pista 2 · Qué ocupaciones son incompatibles"}
+Elegir el mismo salón para dos clases no siempre provoca un conflicto.
+¿Qué otra parte de sus asignaciones tendría que coincidir? Revisa también
+cómo distinguirías exigir proyector de tenerlo disponible. Al final,
+comprueba si has impartido alguna clase dos veces o dejado alguna fuera.
+:::
+
+::: answer {#opt-obj-sal-dos-horas-resp of="opt-obj-sal-dos-horas" title="Respuesta · Elegir salón y hora para cada clase"}
+**1. Separar datos y decisiones.** Sean $\mathcal C$, $\mathcal S$ y
+$\mathcal H$ conjuntos finitos, no vacíos, de clases, salones y bloques de
+una hora. Los índices $c\in\mathcal C$, $s\in\mathcal S$ y
+$h\in\mathcal H$ identifican una clase, un salón y un bloque.
+
+Todas las clases duran un bloque completo y pueden impartirse en cualquiera
+de ellos. Los docentes son distintos, están disponibles en todos los bloques
+y ningún estudiante cursa más de una clase. Cada salón puede recibir una
+sola clase por bloque.
+
+| Signo | Qué representa |
+|---|---|
+| $\mathcal C$ | Clases |
+| $\mathcal S$ | Salones |
+| $\mathcal H$ | Bloques de una hora |
+| $c,s,h$ | Clase, salón, bloque |
+| $n_c$ | Estudiantes de la clase |
+| $a_s$ | Aforo del salón |
+| $r_c$ | Requiere proyector |
+| $p_s$ | Salón con proyector |
+| $d_{sh}$ | Disponibilidad previa |
+| $x_{csh}$ | Clase en salón y bloque |
+| $x$ | Horario completo |
+| $F_{\mathrm{hor}}$ | Horarios factibles |
+
+Los datos $n_c$ y $a_s$ son enteros no negativos. Los datos $r_c$, $p_s$ y
+$d_{sh}$ son binarios. La disponibilidad $d_{sh}=1$ significa que el salón
+$s$ está libre y autorizado en el bloque $h$ **antes de asignar las clases**;
+si vale cero, no podemos usarlo en ese bloque.
+
+Usamos una **variable binaria** $x_{csh}$: vale 1 si impartimos la clase $c$
+en el salón $s$ durante el bloque $h$, y 0 si no. La colección de todas
+esas decisiones forma el horario $x$. Ahora elegimos también la hora;
+el índice $h$ no es un dato fijo de cada clase.
+
+**2. Reunir el modelo.** Una clase debe recibir exactamente una pareja
+salón–bloque. Un salón puede reutilizarse en otro bloque; por eso la
+exclusividad se exige para cada pareja $s,h$.
+
+$$
+\begin{aligned}
+&\min_x\quad 0\\
+&\text{sujeto a}\\
+&\sum_{s\in\mathcal S}\sum_{h\in\mathcal H}x_{csh}=1
+&& (c\in\mathcal C),\\
+&\sum_{c\in\mathcal C}x_{csh}\le1
+&& \left(\substack{s\in\mathcal S\\h\in\mathcal H}\right),\\
+&\sum_{s\in\mathcal S}\sum_{h\in\mathcal H}a_sx_{csh}\ge n_c
+&& (c\in\mathcal C),\\
+&\sum_{s\in\mathcal S}\sum_{h\in\mathcal H}p_sx_{csh}\ge r_c
+&& (c\in\mathcal C),\\
+&x_{csh}\le d_{sh}
+&& \left(\substack{c\in\mathcal C\\s\in\mathcal S\\h\in\mathcal H}\right),\\
+&x_{csh}\in\{0,1\}
+&& \left(\substack{c\in\mathcal C\\s\in\mathcal S\\h\in\mathcal H}\right).
+\end{aligned}
+$$
+
+Las dos sumas de capacidad y proyector recuperan las características del
+único salón–bloque elegido para cada clase. Las últimas dos filas se
+aplican a cada triple $c,s,h$.
+
+Llamamos $F_{\mathrm{hor}}$ al conjunto de horarios que cumplen todas estas
+condiciones. Si no está vacío, el valor óptimo es cero y cualquier horario
+factible lo alcanza:
+
+$$x^*\in\operatorname*{arg\,min}_{x\in F_{\mathrm{hor}}}0.$$
+
+No añadimos costos de molestia: el enunciado no proporciona esas preferencias.
+Los parámetros son datos y las únicas decisiones son las variables binarias;
+este modelo no necesita variables auxiliares continuas.
+
+**3. Usar los datos y comprobar un horario.** En esta instancia,
+
+$$\mathcal C=\{A,B,C,D\},\qquad\mathcal S=\{1,2\}.$$
+
+Los bloques son $\mathcal H=\{1,2\}$: el 1 va de 9 a 10 y el 2, de 10 a 11.
+Los demás datos son:
+
+- $n_c=20$ para cada clase y $a_1=a_2=30$.
+- $r_A=r_C=1$ y $r_B=r_D=0$.
+- $p_1=1$ y $p_2=0$.
+- $d_{sh}=1$ para ambos salones en ambos bloques.
+
+Un horario permitido es el siguiente:
+
+| Bloque | Salón 1 | Salón 2 |
+|---|---|---|
+| 9–10 | A | B |
+| 10–11 | C | D |
+
+En variables, $x_{A,1,1}$, $x_{B,2,1}$, $x_{C,1,2}$ y $x_{D,2,2}$ valen 1;
+las demás valen 0. Cada clase aparece una vez, ningún salón recibe dos clases
+en un bloque y todos los grupos caben. A y C usan el salón con proyector,
+en horas distintas. Los dos bloques y los dos salones estaban disponibles.
+Por tanto, el horario pertenece a $F_{\mathrm{hor}}$.
+
+**4. Tipo de modelo, método y costo.** Es un problema de factibilidad con
+variables binarias y restricciones lineales: puede escribirse como
+programación lineal entera binaria con objetivo cero.
+
+Para enumerar, sean $N=|\mathcal C|$, $R=|\mathcal S|$ y $H=|\mathcal H|$.
+Cada clase puede elegir una de $RH$ parejas salón–bloque. Esto produce
+$(RH)^N$ candidatos antes de comprobar las otras reglas. Recorrer todas las
+$NRH$ variables para revisar un candidato cuesta $O(NRH)$ operaciones.
+La cota para esa enumeración directa es
+
+$$T_{\mathrm{enum}}=O\!\left(NRH\cdot(RH)^N\right).$$
+
+Aquí hay $N=4$, $R=2$ y $H=2$: son $4^4=256$ candidatos, no 256 horarios
+factibles. Podemos detenernos al encontrar uno que cumpla las reglas;
+si ninguno las cumple, se agota la búsqueda. Las cuentas usan operaciones
+aritméticas como unidades y describen este procedimiento, no un costo
+obligatorio de todos los métodos. También puede aplicarse ramificación y
+acotación a la formulación binaria.
+:::
 
 Continúa con [[opt-objetivo-panaderia-practica|cómo decidir cuánto pan producir cuando la demanda es incierta]].
 

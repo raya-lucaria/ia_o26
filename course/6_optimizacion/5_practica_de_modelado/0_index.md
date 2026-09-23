@@ -68,6 +68,10 @@ un objetivo bien escrito también necesita una razón para preferirlo.
 El recorrido guiado suma aproximadamente **95 minutos**. Puedes repartirlo en
 varias sesiones y volver a los pasos que necesites reconstruir.
 
+Los tres primeros ejemplos cierran con un ejercicio, dos pistas y una respuesta.
+Resolver esos ejercicios requiere tiempo de práctica adicional a los 95 minutos
+del recorrido guiado.
+
 Después elige un problema en [[opt-construir-objetivo|6.6 · Problemas para practicar]].
 Allí escribirás tu propio modelo antes de abrir las pistas y las respuestas.
 Las consultas generales amplían los ejemplos y son opcionales; no forman parte
