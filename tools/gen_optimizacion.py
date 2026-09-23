@@ -2788,10 +2788,13 @@ def opt_clasificacion_sigmoide():
 
     s = [marco(
         W, H,
-        "Sigmoide de z igual a alfa más beta por x; p sube de 0 a 1 sin "
+        "Sigmoide de z igual a alfa más beta por x; el score normalizado p "
+        "se interpreta como probabilidad estimada. Sube de 0 a 1 sin "
         "alcanzar esos límites y vale 0.5 cuando z es cero",
-        "La sigmoide convierte z en una probabilidad p",
+        "La sigmoide convierte z en un score normalizado p",
         "Curva calculada p = 1 / (1 + exp(-z)) para z entre -4 y 4. "
+        "El score p se interpreta como probabilidad estimada del modelo; "
+        "su normalización no garantiza calibración con frecuencias reales. "
         "El eje horizontal es z = alfa + beta por x. Las líneas "
         "discontinuas p = 0 y p = 1 son asíntotas. El punto central es "
         "z = 0, p = 0.5. Para todo z real finito, 0 < p < 1.",
@@ -2836,11 +2839,14 @@ def opt_clasificacion_log_loss():
 
     s = [marco(
         W, H,
-        "Pérdida logarítmica frente a p: si y es 1, menos ln p decrece; "
+        "Pérdida logarítmica frente al score normalizado p de clase 1: "
+        "si y es 1, menos ln p decrece; "
         "si y es 0, menos ln uno menos p crece. Ambas divergen hacia "
-        "infinito al asignar probabilidad casi cero a la clase correcta",
+        "infinito al asignar un score casi cero a la clase correcta",
         "La pérdida depende de la clase correcta",
-        "Dos curvas calculadas para 0 < p < 1. La verde, y = 1, representa "
+        "Dos curvas calculadas para 0 < p < 1. El score normalizado p se "
+        "interpreta como probabilidad estimada de clase 1 bajo el modelo. "
+        "La verde, y = 1, representa "
         "-ln(p) y crece sin límite cuando p tiende a 0. La azul, y = 0, "
         "representa -ln(1-p) y crece sin límite cuando p tiende a 1. "
         "Las flechas superiores indican continuación sin cota, no un máximo. "
@@ -2885,7 +2891,7 @@ def opt_clasificacion_log_loss():
                  f'stroke="{color}" stroke-width="2.5"/>')
         s.append(texto(x + (22 if clase == 1 else -22), y + 6, "∞",
                        tam=27, color=color))
-    s.append(texto(W / 2, 492, "Probabilidad p", tam=25))
+    s.append(texto(W / 2, 492, "Score de clase p", tam=25))
     s.append(texto(W / 2, 528, "p → 0:  −ln(p) → ∞", tam=22, color=SERIE[0]))
     s.append(texto(W / 2, 557, "p → 1:  −ln(1 − p) → ∞", tam=22, color=SERIE[1]))
     s.append(cierre())
@@ -2962,7 +2968,117 @@ def opt_panaderia_criterios():
     return "".join(s)
 
 
+
+def opt_clasificacion_proxy():
+    """Compara pérdida y aciertos de tres reglas constantes elegidas a mano."""
+    W, H = 560, 1018
+    izquierda, derecha = 78, 514
+    ancho = derecha - izquierda
+    elegidas = [(0.49, "0.49", SERIE[0]),
+                (2 / 3, "2/3", SERIE[1]),
+                (0.9, "0.9", SERIE[2])]
+
+    def perdida(p):
+        return -(2 / 3) * math.log(p) - (1 / 3) * math.log1p(-p)
+
+    def px(p):
+        return izquierda + ancho * p
+
+    def ly(valor):
+        return 400 - valor / 1.6 * 210
+
+    def ay(valor):
+        return 750 - valor * 200
+
+    s = [marco(
+        W, H,
+        "Dos paneles con el mismo eje p comparan pérdida y aciertos de reglas "
+        "constantes, con beta cero y dos tercios de casos de clase 1. "
+        "Los scores 0.49, dos tercios y 0.9 se eligieron a mano",
+        "Tres reglas constantes, dos medidas distintas",
+        "Arriba, curva calculada L constante de p igual a menos dos tercios "
+        "por ln p menos un tercio por ln uno menos p, en 0 < p < 1. "
+        "Las flechas indican divergencia hacia infinito en ambos extremos. "
+        "Las tres marcas representan reglas elegidas a mano, no iteraciones "
+        "de entrenamiento. Sus pérdidas son 0.700, 0.637 y 0.838. "
+        "Abajo, accuracy vale un tercio si p < 0.5 y dos tercios si p >= 0.5. "
+        "En p = 0.5 el punto inferior está abierto y el superior cerrado; "
+        "el empate anuncia clase 1. Los extremos p = 0 y p = 1 están excluidos. "
+        "La comparación solo abarca reglas constantes, no óptimos del modelo completo.",
+    )]
+    s.append(texto(W / 2, 36, "Tres reglas constantes", tam=28, peso="700"))
+    s.append(texto(W / 2, 70, "β = 0 · 2/3 de casos con clase 1", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 101, "Scores p elegidos a mano", tam=23))
+    s.append(texto(W / 2, 148, "Pérdida promedio", tam=25, color=ACENTO))
+    for valor in (0, 0.8, 1.6):
+        y = ly(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 13, y + 7, f"{valor:g}", tam=21, anclaje="end"))
+    for p in (0, 1):
+        s.append(linea(px(p), 176, px(p), 400, color=SUAVE,
+                       grosor=1.5, guiones="6 7"))
+    s.append(linea(izquierda, 400, derecha, 400, color=SUAVE, grosor=1.5))
+    muestras = [k / 5000 for k in range(1, 5000)]
+    puntos = [(px(p), ly(perdida(p))) for p in muestras if perdida(p) <= 1.75]
+    s.append(_curva(puntos, ACENTO, grosor=3.5))
+    # Puntas siguiendo la tangente exterior: el recorte no es un máximo finito.
+    for extremo, interior, lado in ((puntos[0], puntos[1], 1),
+                                     (puntos[-1], puntos[-2], -1)):
+        x, y = extremo
+        dx, dy = x - interior[0], y - interior[1]
+        largo = math.hypot(dx, dy)
+        ux, uy = dx / largo, dy / largo
+        x1, y1 = x - 10 * ux - 5 * uy, y - 10 * uy + 5 * ux
+        x2, y2 = x - 10 * ux + 5 * uy, y - 10 * uy - 5 * ux
+        s.append(f'<path d="M {x1:.1f} {y1:.1f} L {x:.1f} {y:.1f} '
+                 f'L {x2:.1f} {y2:.1f}" fill="none" stroke="{ACENTO}" '
+                 f'stroke-width="3"/>')
+        s.append(texto(x + lado * 22, y + 5, "∞", tam=27, color=ACENTO))
+    for p, etiqueta, color in elegidas:
+        x, y = px(p), ly(perdida(p))
+        s.append(punto(x, y, r=6, color=color))
+        # Los valores elegidos se rotulan dentro del panel, lejos del tick 0.5.
+        s.append(texto(x, y + (34 if p < 0.8 else -22), etiqueta, tam=22, color=color))
+    for p in (0, 0.5, 1):
+        x = px(p)
+        s.append(linea(x, 400, x, 408, color=SUAVE, grosor=1.5))
+        s.append(texto(x, 435, f"{p:g}", tam=22))
+    s.append(texto(W / 2, 474, "p (score constante)", tam=24))
+
+    s.append(texto(W / 2, 521, "Proporción de aciertos", tam=25))
+    for valor, etiqueta in ((0, "0"), (1 / 3, "1/3"), (2 / 3, "2/3"), (1, "1")):
+        y = ay(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 13, y + 7, etiqueta, tam=21, anclaje="end"))
+    s.append(linea(izquierda, 550, izquierda, 750, color=SUAVE, grosor=1.5))
+    s.append(linea(izquierda, 750, derecha, 750, color=SUAVE, grosor=1.5))
+    s.append(linea(px(0), ay(1 / 3), px(0.5), ay(1 / 3), color=TEXTO, grosor=4))
+    s.append(linea(px(0.5), ay(2 / 3), px(1), ay(2 / 3), color=TEXTO, grosor=4))
+    # Los círculos abiertos distinguen extremos excluidos y el salto en 0.5.
+    for p, valor in ((0, 1 / 3), (0.5, 1 / 3), (1, 2 / 3)):
+        s.append(f'<circle cx="{px(p)}" cy="{ay(valor)}" r="6" '
+                 f'fill="{FONDO}" stroke="{TEXTO}" stroke-width="2.5"/>')
+    s.append(punto(px(0.5), ay(2 / 3), r=6, color=TEXTO))
+    s.append(texto(px(0.24), ay(1 / 3) - 22, "p < 0.5", tam=22))
+    s.append(texto(px(0.75), ay(2 / 3) - 22, "p ≥ 0.5", tam=22))
+    for p in (0, 0.5, 1):
+        x = px(p)
+        s.append(linea(x, 750, x, 758, color=SUAVE, grosor=1.5))
+        s.append(texto(x, 785, f"{p:g}", tam=22))
+    s.append(texto(W / 2, 824, "p (score constante)", tam=24))
+    s.append(texto(W / 2, 868, "Mismas reglas, dos medidas", tam=22, color=SUAVE))
+    for k, (p, etiqueta, color) in enumerate(elegidas):
+        aciertos = "1/3" if p < 0.5 else "2/3"
+        s.append(texto(W / 2, 904 + 34 * k,
+                       f"p = {etiqueta} · pérdida {perdida(p):.3f} · aciertos {aciertos}",
+                       tam=22, color=color))
+    s.append(texto(W / 2, 1006, "Las marcas no son iteraciones.", tam=21, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
+    "opt-clasificacion-proxy": opt_clasificacion_proxy,
     "opt-panaderia-criterios": opt_panaderia_criterios,
     "opt-clasificacion-sigmoide": opt_clasificacion_sigmoide,
     "opt-clasificacion-log-loss": opt_clasificacion_log_loss,

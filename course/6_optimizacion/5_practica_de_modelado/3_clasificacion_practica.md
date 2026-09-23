@@ -39,10 +39,22 @@ para ajustar una regla y comprobar qué consigue con esa información.
 No. Las entradas y las etiquetas son **datos conocidos**. Elegiremos los
 parámetros de la regla; no modificaremos los casos para mejorar su puntuación.
 
-## 2 · Convertir una entrada en una probabilidad y una etiqueta
+## 2 · Plantear el entrenamiento de la regla
+
+**Entrenar será elegir juntos $\alpha$ y $\beta$ para minimizar la pérdida
+logarítmica promedio.** La llamaremos $L(\alpha,\beta)$: mide cuánta
+probabilidad asigna la regla a las etiquetas correctas de los datos.
+El problema que resolveremos es
+
+$$\min_{\alpha,\beta\in\mathbb R}\quad L(\alpha,\beta).$$
+
+Para construir esa pérdida necesitamos una regla que transforme la entrada
+en probabilidades. Sus parámetros serán las decisiones; las probabilidades
+serán resultados calculados.
 
 Elegimos dos números reales: $\alpha$, el **intercepto**, y $\beta$, la
-**pendiente**. Con ellos calculamos un puntaje para cada caso:
+**pendiente**. Con ellos calculamos un **puntaje crudo**, también llamado
+*score*, para cada caso:
 
 $$z_i(\alpha,\beta)=\alpha+\beta x_i.$$
 
@@ -64,69 +76,30 @@ La aplicamos al puntaje para estimar la probabilidad de clase 1:
 $$p_i(\alpha,\beta)=\sigma\bigl(z_i(\alpha,\beta)\bigr).$$
 
 La sigmoide transforma cualquier puntaje real en un número estrictamente
-entre 0 y 1. A la clase 0 le asignamos el complemento $1-p_i(\alpha,\beta)$.
+entre 0 y 1. $p_i$ es un **score normalizado** que el modelo interpreta como
+la **probabilidad estimada** de clase 1. A la clase 0 le asignamos el
+complemento $1-p_i(\alpha,\beta)$.
 Esta regla se llama [regresión logística](https://cs229.stanford.edu/notes_archive/cs229-notes-all/cs229-notes1.pdf); aquí tiene una sola entrada.
 
 ![La sigmoide transforma el puntaje z en una probabilidad p: pasa por p igual a 0.5 cuando z es cero y se aproxima a 0 y 1 sin alcanzarlos](../_assets/opt-clasificacion-sigmoide.svg)
 
-El eje horizontal de la gráfica es **el puntaje**, no el número de enlaces.
+El eje horizontal de la gráfica es **el puntaje crudo**, no el número de
+enlaces. En esta regla logística, ese puntaje también se llama **logit**.
 Cuando $\beta$ es positiva, más enlaces elevan el puntaje; cuando es negativa,
 lo reducen. Esa relación depende de los parámetros que elijamos.
 
-Que las dos probabilidades sumen 1 permite usarlas como un modelo
-probabilístico. No demuestra que estén bien **calibradas**: asignar 0.8 a
-ciertos mensajes no garantiza que el 80 % de ellos sean fraudulentos.
-Eso tendría que comprobarse con datos.
+La sigmoide define un modelo probabilístico legítimo; sus estimaciones no
+son probabilidades reales garantizadas. Que sumen 1 no demuestra que estén
+bien **calibradas**: asignar 0.8 a ciertos mensajes no garantiza que el 80 %
+de ellos sean fraudulentos. Eso tendría que comprobarse con datos.
 
-Para anunciar una etiqueta fijamos el umbral en 0.5. **El empate da clase 1**:
+Con esta regla ya podemos calcular la pérdida que vamos a minimizar.
 
-$$
-\widehat y_i(\alpha,\beta)=
-\begin{cases}
-1 &\text{si }p_i(\alpha,\beta)\ge0.5,\\
-0 &\text{si }p_i(\alpha,\beta)<0.5.
-\end{cases}
-$$
+## 3 · Calcular la pérdida y ajustar los parámetros
 
-Solo elegimos $\alpha$ y $\beta$. El puntaje, la probabilidad y la etiqueta
-se calculan a partir de ellos; no podemos escogerlos por separado para
-hacer que cada mensaje salga bien.
-
-## 3 · Contar cuántas etiquetas acertamos
-
-Queremos acertar tantas etiquetas como sea posible y damos el mismo peso
-a cada caso. **Piensa: ¿cómo contarías un acierto y dejarías fuera un error?**
-
-Usamos un **indicador**, escrito $\mathbf1\{\cdot\}$: vale 1 cuando lo que
-está entre llaves es verdadero y 0 cuando es falso. Así,
-$\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}$ cuenta el acierto del caso $i$.
-Sumamos los aciertos y dividimos entre el número de casos:
-
-$$A(\alpha,\beta)=\frac1n\sum_{i=1}^n
-\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}.$$
-
-Esta proporción se llama **accuracy**. Toma valores entre 0 y 1 y no tiene
-unidades. Nuestro primer problema de optimización es
-
-$$\max_{\alpha,\beta\in\mathbb R}\quad A(\alpha,\beta).$$
-
-**Piensa: si la clase correcta es 1, ¿cuenta distinto acertar con probabilidad 0.51 que con 0.99?**
-
-No: ambos casos cuentan un acierto. Podemos cambiar los parámetros y las
-probabilidades sin cambiar ninguna etiqueta. Mientras eso ocurra, accuracy
-permanece en una **meseta**: su valor no cambia. Cuando una probabilidad cruza
-el umbral, el conteo puede saltar.
-
-Dentro de una meseta, sus derivadas no señalan cómo conseguir más aciertos.
-
-## 4 · Valorar la probabilidad de la clase correcta
-
-Podemos evaluar algo que el conteo de aciertos deja fuera: **cuánta
-probabilidad recibe la clase correcta**. Proponemos usar el negativo de su
-logaritmo natural, una medida llamada **pérdida logarítmica** o *log loss*.
-
-Es una elección del modelo. Interesarse por las probabilidades no obliga
-a usar esta fórmula; vamos a examinar qué mide y qué facilita al ajustar.
+Para cada caso evaluamos **cuánta probabilidad recibe la clase correcta**.
+Tomamos el negativo de su logaritmo natural: esa es la **pérdida logarítmica**
+o *log loss* que elegimos para entrenar.
 
 **Piensa: si la etiqueta correcta es 0, ¿debemos evaluar la probabilidad de clase 1 o su complemento?**
 
@@ -154,28 +127,88 @@ Promediamos las pérdidas de los $n$ casos:
 
 $$L(\alpha,\beta)=\frac1n\sum_{i=1}^n\ell_i(\alpha,\beta).$$
 
-El segundo problema de optimización es
-
-$$\min_{\alpha,\beta\in\mathbb R}\quad L(\alpha,\beta).$$
+Así queda definida la función del problema de entrenamiento planteado antes.
 
 La pérdida promedio se expresa en **nats por caso**, porque usamos
 logaritmos naturales. No es un porcentaje de errores.
 
-Con esta regla logística, la pérdida varía suavemente con los parámetros.
-Sus derivadas pueden orientar cambios para reducirla, incluso cuando las
-etiquetas todavía no cambian.
-Esa es una razón para usarla como **objetivo sustituto** al ajustar una regla
-con la que queremos acertar etiquetas.
+**El descenso por gradiente ajusta ambos parámetros**, el intercepto y la
+pendiente, usando cómo cambia $L$ respecto de cada uno. No elige una
+probabilidad independiente para cada caso: después de cada ajuste vuelve
+a calcularlas con la misma regla compartida.
 
-## 5 · Comprobar cuándo coinciden las dos medidas
+En esta familia logística, $L$ es suave y convexa: **cualquier mínimo local
+es global por convexidad**. Si el mínimo se alcanza con parámetros finitos,
+el descenso por gradiente con pasos adecuados puede aproximar su valor.
+No se garantiza llegar exactamente en un número fijo de pasos ni obtener
+una única pareja de parámetros.
+
+Si una pareja finita alcanza el mínimo, podemos elegirla mediante
+
+$$(\alpha^\star,\beta^\star)\in
+\operatorname*{arg\,min}_{\alpha,\beta\in\mathbb R}L(\alpha,\beta).$$
+
+El mínimo es un valor de pérdida; el argmin reúne las parejas que lo
+alcanzan y puede contener varias. **También puede estar vacío.** Si podemos
+separar los datos con puntajes estrictamente positivos para la clase 1 y
+negativos para la clase 0, escalar esos parámetros acerca $L$ a cero sin
+alcanzarlo. En ese caso hay ínfimo cero, pero no una pareja óptima finita.
+
+## 4 · Anunciar etiquetas y contar aciertos
+
+Para anunciar una etiqueta fijamos el umbral en 0.5. **El empate da clase 1**:
+
+$$
+\widehat y_i(\alpha,\beta)=
+\begin{cases}
+1 &\text{si }p_i(\alpha,\beta)\ge0.5,\\
+0 &\text{si }p_i(\alpha,\beta)<0.5.
+\end{cases}
+$$
+
+Solo elegimos $\alpha$ y $\beta$. El puntaje, la probabilidad y la etiqueta
+se calculan a partir de ellos; no podemos escogerlos por separado para
+hacer que cada mensaje salga bien.
+
+Queremos acertar tantas etiquetas como sea posible y damos el mismo peso
+a cada caso. **Piensa: ¿cómo contarías un acierto y dejarías fuera un error?**
+
+Usamos un **indicador**, escrito $\mathbf1\{\cdot\}$: vale 1 cuando lo que
+está entre llaves es verdadero y 0 cuando es falso. Así,
+$\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}$ cuenta el acierto del caso $i$.
+Sumamos los aciertos y dividimos entre el número de casos:
+
+$$A(\alpha,\beta)=\frac1n\sum_{i=1}^n
+\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}.$$
+
+Esta proporción se llama **accuracy**. Toma valores entre 0 y 1 y no tiene
+unidades. Si optimizáramos directamente este criterio, el problema sería
+
+$$\max_{\alpha,\beta\in\mathbb R}\quad A(\alpha,\beta).$$
+
+**Piensa: si la clase correcta es 1, ¿cuenta distinto acertar con probabilidad 0.51 que con 0.99?**
+
+No: ambos casos cuentan un acierto. Podemos cambiar los parámetros y las
+probabilidades sin cambiar ninguna etiqueta. Mientras eso ocurra, accuracy
+permanece en una **meseta**: su valor no cambia. Cuando una probabilidad cruza
+el umbral, el conteo puede saltar.
+
+Dentro de una meseta, sus derivadas no señalan cómo conseguir más aciertos.
+
+## 5 · Comparar tres reglas construidas a mano
 
 **Piensa: ¿reducir la pérdida siempre aumenta los aciertos?**
 
 Consideremos un conjunto hipotético donde $n$ es múltiplo de 3 y dos
 terceras partes de las etiquetas son 1. La tercera parte restante es 0.
-Para comparar las dos medidas, construiremos algunas reglas **constantes**:
-fijamos $\beta=0$ y así todas las observaciones reciben la misma probabilidad
-$p$ de clase 1, cualquiera que sea su entrada $x_i$.
+Para ver por qué entrenar con $L$ no equivale a optimizar $A$, compararemos
+reglas **constantes**: fijamos $\beta=0$ y todas las observaciones reciben
+la misma probabilidad $p$ de clase 1, cualquiera que sea su entrada $x_i$.
+
+**Escogemos a mano tres valores: 0.49, 2/3 y 0.9.** No son iteraciones de
+un entrenamiento ni resultados de una búsqueda en rejilla. Fijar la
+pendiente en cero restringe la familia solo para esta ilustración; entrenar
+el modelo completo permite ajustar tanto $\alpha$ como $\beta$.
 
 **¿Qué valor de $\alpha$ produce la probabilidad que queremos comparar?**
 Al sustituir $\beta=0$ en la sigmoide y despejar, obtenemos
@@ -194,11 +227,10 @@ Por ejemplo, para asignar $p=2/3$ a todos los casos elegimos
 $\alpha=\ln 2$ y $\beta=0$. Las probabilidades 0 y 1 solo se alcanzan
 como límites cuando $\alpha$ tiende a menos o más infinito.
 
-**Aquí estamos construyendo ejemplos, no resolviendo todavía la optimización.**
-Fijamos $\beta=0$ solo para esta comparación. En el modelo general,
-el logit de $p_i$ es $\alpha+\beta x_i$, y ambos parámetros se pueden ajustar.
+En el modelo general, el logit de $p_i$ es $\alpha+\beta x_i$.
+Los tres valores de $p$ que escogimos producen tres parejas permitidas
+mediante el despeje anterior; no afirmamos que sean soluciones globales.
 
-Las tres reglas de la tabla pertenecen a nuestra familia.
 **Para calcular su pérdida promedio, agrupamos los casos por su etiqueta.**
 Al sustituir $y_i$ en la pérdida de una observación, obtenemos:
 
@@ -231,31 +263,27 @@ $$
 Los pesos $2/3$ y $1/3$ son las **proporciones de etiquetas en estos datos**;
 $p$ es la **probabilidad que anuncia la regla**. Son cantidades distintas.
 
-Las pérdidas están redondeadas y las fracciones de aciertos son exactas.
+La gráfica recorre las probabilidades de **estas reglas constantes**.
+Arriba muestra la pérdida; abajo, accuracy. Las marcas son los tres valores
+escogidos a mano y las pérdidas que los acompañan están redondeadas.
 
-| $p$ | Aciertos | Pérdida |
-|---|---:|---:|
-| 0.49 | 1/3 | 0.700 |
-| 2/3 | 2/3 | 0.637 |
-| 0.9 | 2/3 | 0.838 |
+![Dos paneles de reglas constantes con dos tercios de etiquetas de clase 1: la curva de pérdida y el escalón de accuracy muestran las tres reglas elegidas a mano, con probabilidades 0.49, dos tercios y 0.9](../_assets/opt-clasificacion-proxy.svg)
 
-Al pasar de 0.49 a 2/3, **mejoran ambas medidas**: baja la pérdida y sube
-la proporción de aciertos. Pasar de 0.9 a 2/3 también reduce la pérdida,
-pero conserva las etiquetas y, por tanto, los aciertos.
+**Al comparar las reglas**, la de $p=2/3$ tiene menor pérdida y más
+aciertos que la de $p=0.49$. Frente a la de $p=0.9$, tiene menor pérdida
+y los mismos aciertos.
 
-En cambio, pasar de 0.9 a 0.49 reduce la pérdida **y reduce los aciertos**.
-La regla de 0.9 penaliza mucho a los casos de clase 0: les asigna solo 0.1
-de probabilidad de pertenecer a su clase correcta.
+En cambio, la regla de $p=0.49$ tiene **menor pérdida y menos aciertos**
+que la de $p=0.9$. Esta última penaliza mucho a los casos de clase 0:
+les asigna solo 0.1 de probabilidad de pertenecer a su clase correcta.
 
-Estos ejemplos muestran que los criterios pueden coincidir o discrepar.
-No hemos encontrado los óptimos globales de los dos problemas ni probado
-que sean distintos. Tampoco hay una garantía de que cada mejora de la
-pérdida mejore accuracy.
+Son comparaciones entre reglas, no pasos que deba seguir un optimizador.
+$p$ permite representar esta subfamilia constante; el entrenamiento del
+modelo completo sigue eligiendo $\alpha$ y $\beta$.
 
-Si el propósito es acertar etiquetas, debemos comprobar accuracy después
-del ajuste. Para evaluar mensajes nuevos necesitamos además **datos que no
-hayan intervenido en ese ajuste**. Ninguno de los dos objetivos garantiza
-por sí solo buenos resultados fuera de los casos usados.
+Una pérdida menor puede acompañarse de más, los mismos o menos aciertos.
+Si ese es el propósito final, debemos comprobar accuracy después del ajuste
+con **datos que no hayan intervenido en él**.
 
 Algo parecido ocurre al contar aciertos en una actividad educativa:
 responder bien con ayuda no demuestra que después se responderá sin ella.
@@ -271,19 +299,24 @@ y la clase 1 significa fraude. Ajustamos una sola regla para todos los casos.
 |---|---|
 | $n$ | Número de casos |
 | $i$ | Índice de caso |
+| $k$ | Clase binaria |
+| $n_k$ | Casos de clase $k$ |
 | $x_i$ | Entrada del caso |
 | $y_i$ | Clase correcta |
 | $\alpha$ | Intercepto |
 | $\beta$ | Pendiente |
-| $z_i$ | Puntaje |
+| $z_i$ | Score crudo o logit |
 | $\sigma$ | Sigmoide |
-| $p_i$ | Probabilidad de clase 1 |
+| $p_i$ | Prob. estimada de 1 |
 | $\widehat y_i$ | Clase anunciada |
 | $\mathbf1\{\cdot\}$ | Indicador |
 | $A$ | Proporción de aciertos |
 | $\ell_i$ | Pérdida del caso |
 | $L$ | Pérdida promedio |
 | $\alpha^\star,\beta^\star$ | Parámetros óptimos |
+| $\alpha_{\mathrm{base}}$ | Intercepto de referencia |
+| $\beta_{\mathrm{base}}$ | Pendiente de referencia |
+| $A_{\mathrm{base}}$ | Aciertos de referencia |
 | $T$ | Iteraciones |
 
 **Las decisiones son $\alpha,\beta\in\mathbb R$.** Las entradas y las
@@ -308,10 +341,12 @@ $$
 \end{cases}
 $$
 
-El umbral es fijo y el empate da clase 1. La probabilidad de clase 0 es
-$1-p_i$; ninguna de las dos probabilidades se elige por separado.
+El umbral es fijo y el empate da clase 1. $z_i$ es el score crudo o logit;
+$p_i$ y $1-p_i$ son scores normalizados, interpretados por el modelo como
+probabilidades estimadas. Se calculan a partir de los parámetros y su
+calibración debe comprobarse.
 
-**Modelo 1 · Maximizar los aciertos.** El indicador vale 1 si acertamos
+**Criterio final · Maximizar los aciertos.** El indicador vale 1 si acertamos
 y 0 si nos equivocamos. La formulación completa es
 
 $$
@@ -332,10 +367,61 @@ $\operatorname*{arg\,max}$ devuelve el conjunto de parejas óptimas; usamos
 pertenencia porque puede haber empates. Los argumentos bajo el operador
 indican qué elegimos: $\alpha$ y $\beta$, manteniendo fijos los datos.
 
-Es optimización con parámetros continuos y un objetivo, en general,
-discontinuo y no cóncavo. No es un problema de optimización convexa en general.
+Es **optimización no lineal sin restricciones adicionales**, sobre los
+parámetros continuos $(\alpha,\beta)\in\mathbb R^2$. El objetivo es
+escalonado: permanece constante en regiones y, en general, tiene saltos
+en sus fronteras. Donde salta no es continuo ni diferenciable. Tampoco es
+cóncavo en general, por lo que esta maximización **no es optimización
+convexa en general**.
 
-**Modelo 2 · Minimizar la pérdida logarítmica promedio.** Para cada caso,
+Las etiquetas binarias son resultados calculados. No convierten las
+variables de decisión en enteras ni hacen de esta formulación un modelo mixto.
+
+**Una solución factible: anunciar siempre la clase mayoritaria.** Antes de
+buscar una regla mejor, contamos las etiquetas conocidas:
+
+$$n_k=\sum_{i=1}^n\mathbf1\{y_i=k\},\qquad k\in\{0,1\}.$$
+
+Estos conteos son datos calculados, no decisiones. Fijamos una pendiente
+cero y elegimos un intercepto con el signo de la clase que queremos anunciar:
+
+$$\beta_{\mathrm{base}}=0.$$
+
+$$\alpha_{\mathrm{base}}=
+\begin{cases}
++1 &\text{si }n_1\ge n_0,\\
+-1 &\text{si }n_0>n_1.
+\end{cases}$$
+
+Con pendiente cero, todos los puntajes son iguales al intercepto. Un puntaje
+positivo produce una probabilidad mayor que 0.5 y anuncia clase 1; uno
+negativo anuncia clase 0. Si las clases tienen el mismo número de casos,
+nuestra referencia anuncia clase 1.
+
+**La regla es factible porque ambos parámetros son reales.** Funciona
+incluso si alguna clase no aparece entre los datos: no exige probabilidades
+exactamente cero o uno ni parámetros infinitos. Su accuracy es
+
+$$
+\begin{aligned}
+A_{\mathrm{base}}
+&=A(\alpha_{\mathrm{base}},\beta_{\mathrm{base}})\\
+&=\frac{\max\{n_0,n_1\}}{n}.
+\end{aligned}
+$$
+
+Como $n_0+n_1=n$, la clase más frecuente reúne al menos la mitad de los casos.
+Además, esta regla pertenece a la familia que estamos optimizando. Por tanto,
+
+$$\max_{\alpha,\beta\in\mathbb R} A(\alpha,\beta)
+\ge A_{\mathrm{base}}\ge\frac12.$$
+
+Es una **cota inferior del máximo en los datos de entrenamiento**.
+La regla es óptima entre las que anuncian siempre la misma clase, pero
+puede mejorar al usar la entrada. No garantiza el óptimo de toda la familia
+ni esa proporción de aciertos en mensajes nuevos.
+
+**Entrenamiento · Minimizar la pérdida logarítmica promedio.** Para cada caso,
 la pérdida evalúa la probabilidad de su clase correcta:
 
 $$
@@ -363,27 +449,27 @@ $$(\alpha^\star,\beta^\star)\in
 El mínimo es un valor de pérdida; $\operatorname*{arg\,min}$ reúne los
 parámetros que lo alcanzan. Puede haber varias parejas o ninguna.
 
-La convexidad no garantiza que aquí exista un mínimo con parámetros finitos.
-Si los datos se pueden separar con puntajes estrictamente positivos para
-la clase 1 y estrictamente negativos para la clase 0, podemos multiplicar
-los parámetros por números cada vez mayores. La pérdida se acerca a cero
-sin alcanzarlo. Hemos dejado los parámetros sin límites; en ese caso la
-formulación tiene un ínfimo, pero no una pareja finita que lo alcance.
-
-En ese último caso, el conjunto $\operatorname*{arg\,min}$ es vacío:
-no existe una pareja óptima finita que podamos seleccionar. Reducir la
-pérdida tampoco garantiza aumentar la proporción de aciertos.
+Como vimos al plantear el entrenamiento, con datos separables el ínfimo
+puede ser cero sin alcanzarse con parámetros finitos. Entonces el argmin
+es vacío. Cuando existe un mínimo, es global para $L$; eso no lo convierte
+en un máximo de $A$.
 
 ### Métodos y costos de los dos modelos
 
 **Piensa: ¿un objetivo suave siempre se puede optimizar más rápido que uno con saltos?**
 
-No basta con mirar la forma del objetivo. También importan la familia de
-reglas, el algoritmo y la precisión que buscamos. Aquí solo tenemos una
-entrada y dos parámetros.
+Con muchas entradas y parámetros, un sustituto suave permite orientar
+los ajustes mediante gradientes y procesar datos en lotes con operaciones
+vectorizadas. En la práctica, eso **puede hacer el entrenamiento mucho más
+viable y rápido** que una búsqueda directa sobre el conteo de errores.
+
+La comparación depende del modelo, el algoritmo y la precisión buscada.
+Aquí tenemos una excepción sencilla: una sola entrada y dos parámetros
+permiten optimizar accuracy exactamente mediante cortes.
 
 Para una pareja fija $\alpha,\beta$, evaluar accuracy o la pérdida requiere
-recorrer los $n$ casos: cuesta $O(n)$ operaciones. En la pérdida logística,
+recorrer los $n$ casos: cuesta $O(n)$ operaciones. **Evaluar una regla no
+es lo mismo que entrenarla.** En la pérdida logística,
 un paso de **descenso por gradiente con todos los datos** también cuesta
 $O(n)$: reúne las contribuciones de los casos para ajustar los dos parámetros.
 Hacer $T$ iteraciones cuesta $O(Tn)$, bajo el conteo usual de operaciones
@@ -405,6 +491,60 @@ Volver a contar los $n$ casos desde cero para cada corte daría un barrido
 innecesario de $O(n^2)$. Mejorar ese algoritmo es distinto de cambiar el
 objetivo. **Usar log loss no garantiza resolver más rápido**: facilita
 ajustes guiados por derivadas y evalúa probabilidades, pero optimiza otra medida.
+
+### Por qué entrenamos con un objetivo sustituto
+
+Cuando la meta es acertar etiquetas, usamos log loss como **sustituto o
+proxy de accuracy**: favorece dar más probabilidad a la etiqueta verdadera
+y ofrece derivadas para avanzar dentro de las mesetas del conteo.
+Esta es la idea de una [pérdida sustituta en las notas de Cornell](https://www.cs.cornell.edu/courses/cs4780/2015fa/web/lecturenotes/lecturenote10.html).
+
+Hay una relación útil entre ambas medidas. Si nos equivocamos, la
+probabilidad de la etiqueta verdadera es como máximo 0.5:
+
+- Si $y_i=1$ y anunciamos 0, entonces $p_i<0.5$.
+- Si $y_i=0$ y anunciamos 1, entonces $1-p_i\le0.5$.
+
+En ambos casos, la pérdida de esa observación es al menos
+
+$$-\ln(0.5)=\ln2.$$
+
+Si acertamos, el indicador de error vale cero y la pérdida sigue siendo
+no negativa. Por eso, para cada caso y cualquier pareja finita de parámetros,
+
+$$\mathbf1\{\widehat y_i\ne y_i\}\le\frac{\ell_i}{\ln2}.$$
+
+Al promediar, obtenemos la proporción de errores a la izquierda:
+
+$$
+\begin{aligned}
+1-A(\alpha,\beta)
+&=\frac1n\sum_{i=1}^n\mathbf1\{\widehat y_i\ne y_i\}\\
+&\le\frac{1}{n\ln2}\sum_{i=1}^n\ell_i\\
+&=\frac{L(\alpha,\beta)}{\ln2}.
+\end{aligned}
+$$
+
+La cota usa **la pérdida dividida entre $\ln2$**, no log loss sin escalar.
+Reducirla estrecha una cota superior del error; no obliga a que el error
+observado disminuya en cada paso.
+
+Minimizar $L$ **no equivale a maximizar $A$**: sus conjuntos argmin y argmax
+no tienen por qué coincidir. En una familia restringida como esta tampoco
+se garantiza acercarse al óptimo de accuracy al optimizar la pérdida.
+La comparación de reglas constantes mostró cómo pueden discrepar.
+
+**Del entrenamiento a la evaluación, seguimos cuatro pasos:**
+
+1. Ajustamos $\alpha$ y $\beta$ con gradiente para reducir $L$.
+2. Con esos parámetros calculamos los scores $z_i$ y las probabilidades
+   estimadas $p_i$ de casos que no participaron en el ajuste.
+3. Aplicamos el umbral 0.5: anunciamos 1 si $p_i\ge0.5$ y 0 en otro caso.
+4. Comparamos esas etiquetas con las correctas y calculamos accuracy en
+   esos datos aparte, usando la regla mayoritaria como referencia.
+
+Una pareja finita define una regla factible; reducir $L$ no certifica que
+esa regla sea óptima para accuracy.
 
 ## 7 · Practicar con tres o más categorías
 
@@ -497,8 +637,8 @@ correcta. El dominio real no introduce cotas a los parámetros.
 | $\alpha_k$ | Intercepto de clase |
 | $\beta_k$ | Pendiente de clase |
 | $\alpha,\beta$ | Vectores de parámetros |
-| $z_{ik}$ | Puntaje de clase |
-| $p_{ik}$ | Probabilidad de clase |
+| $z_{ik}$ | Score crudo de clase |
+| $p_{ik}$ | Prob. estimada de clase |
 | $\widehat y_i$ | Clase anunciada |
 | $\mathbf1\{\cdot\}$ | Indicador |
 | $\ell_i$ | Pérdida del caso |
@@ -515,7 +655,7 @@ independientes para reformular los problemas.
 
 ### De los puntajes a una sola etiqueta
 
-Calculamos un puntaje para la categoría $k$ en el caso $i$:
+Calculamos un **puntaje crudo o score** para la categoría $k$ en el caso $i$:
 
 $$z_{ik}(\alpha,\beta)=\alpha_k+\beta_kx_i.$$
 
@@ -531,8 +671,10 @@ categorías del mismo caso. Por eso
 
 $$0<p_{ik}<1,\qquad\sum_{k=1}^K p_{ik}=1.$$
 
-Son probabilidades propuestas por el modelo. Cumplir estas condiciones no
-demuestra que estén calibradas ni que la entrada permita clasificar bien.
+Los $p_{ik}$ son **scores normalizados que el modelo interpreta como
+probabilidades estimadas**. Cumplir estas condiciones no garantiza que sean
+las probabilidades reales ni que estén calibradas. Los scores crudos
+$z_{ik}$ pueden tomar cualquier valor real; no son probabilidades.
 
 Para anunciar la etiqueta buscamos las categorías con probabilidad máxima.
 Si hay empate, tomamos el menor índice del conjunto empatado:
@@ -567,8 +709,11 @@ el argmax reúne las parejas de vectores que la alcanzan. Como solo hay
 un número finito de conteos de aciertos posibles, alguno de los realizables
 es el mayor, aunque distintas parejas puedan empatar.
 
-El objetivo tiene mesetas y saltos y no es cóncavo en general. Este problema
-con parámetros continuos **no es optimización convexa en general**.
+Es **optimización no lineal sin restricciones adicionales**, con $2K$
+parámetros continuos. El objetivo es escalonado, con saltos en general,
+y no es diferenciable donde salta. Al no ser cóncavo en general, esta
+maximización **no es optimización convexa en general**. Las etiquetas
+discretas se calculan; no son variables enteras que estemos eligiendo.
 
 Evaluar una regla dada cuesta $O(nK)$: calculamos y comparamos los puntajes
 de $K$ categorías en cada uno de los $n$ casos. Un método posible es
@@ -619,11 +764,12 @@ El desplazamiento común de los puntajes se cancela en el cociente softmax.
 Por eso no debemos prometer una pareja óptima única, incluso cuando existe
 un mínimo. No necesitamos imponer regularización para formular el problema.
 
-**Los dos objetivos siguen midiendo cosas distintas.** Uno cuenta etiquetas
-acertadas y el otro evalúa probabilidades de las clases correctas. Reducir
-la pérdida no garantiza mejorar accuracy. Para comprobar cómo funciona la
-regla fuera del ajuste necesitamos otros datos que no hayan determinado
-sus parámetros.
+**La pérdida puede usarse como proxy para entrenar**, porque favorece las
+probabilidades de las clases correctas y permite ajustar mediante derivadas.
+Eso no hace coincidir su argmin con el argmax de accuracy ni garantiza
+acercarnos al máximo de aciertos de esta familia. Entrenar con $L$ requiere
+comprobar $A$ con datos que no hayan determinado los parámetros; una regla
+factible no queda certificada como óptima por haber reducido la pérdida.
 :::
 
 Consulta opcional: [[opt-objetivo-clasificacion-modelo|generalizar la regla a varias características]].
