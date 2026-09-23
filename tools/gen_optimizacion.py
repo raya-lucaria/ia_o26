@@ -2779,8 +2779,8 @@ def opt_arbol_vocabulario():
 
 def opt_clasificacion_sigmoide():
     """Sigmoide calculada; las rectas 0 y 1 son límites, no valores alcanzados."""
-    W, H = 560, 506
-    izquierda, derecha, arriba, abajo = 78, 514, 128, 366
+    W, H = 560, 538
+    izquierda, derecha, arriba, abajo = 110, 514, 128, 366
 
     def coord(z, probabilidad):
         return (izquierda + (z + 4) / 8 * (derecha - izquierda),
@@ -2801,7 +2801,8 @@ def opt_clasificacion_sigmoide():
     )]
     s.append(texto(W / 2, 38, "La sigmoide", tam=28, peso="700"))
     s.append(texto(W / 2, 77, "p = 1 / (1 + exp(−z))", tam=23, color=SERIE[1]))
-    s.append(texto(izquierda, 110, "p", tam=24, anclaje="end"))
+    s.append('<g transform="rotate(-90 26 247)">'
+             + texto(26, 247, "Score normalizado p", tam=22) + '</g>')
     for probabilidad in (0, 0.5, 1):
         _, y = coord(0, probabilidad)
         s.append(linea(izquierda, y, derecha, y,
@@ -2809,7 +2810,10 @@ def opt_clasificacion_sigmoide():
                        grosor=1.5, guiones="7 7"))
         s.append(texto(izquierda - 14, y + 7, f"{probabilidad:g}",
                        tam=22, anclaje="end"))
-    s.append(linea(izquierda, arriba, izquierda, abajo, color=SUAVE, grosor=1.5))
+    s.append(flecha(izquierda, abajo, izquierda, arriba - 12,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(flecha(derecha, abajo, derecha + 20, abajo,
+                    color=SUAVE, grosor=1.5, marcador="s"))
     cero, _ = coord(0, 0)
     s.append(linea(cero, arriba, cero, abajo, color=LINEA, grosor=1))
     for z in (-4, -2, 0, 2, 4):
@@ -2822,8 +2826,9 @@ def opt_clasificacion_sigmoide():
     x, y = coord(0, 0.5)
     s.append(punto(x, y, r=6, color=SERIE[1]))
     s.append(texto(x + 20, y + 36, "(0, 0.5)", tam=22, anclaje="start"))
-    s.append(texto(W / 2, 444, "z = α + βx", tam=26))
-    s.append(texto(W / 2, 486, "Asíntotas: p = 0 y p = 1", color=SERIE[2], tam=22))
+    s.append(texto(W / 2, 441, "Score z", tam=25))
+    s.append(texto(W / 2, 477, "z = α + βx", tam=24))
+    s.append(texto(W / 2, 519, "Asíntotas: p = 0 y p = 1", color=SERIE[2], tam=22))
     s.append(cierre())
     return "".join(s)
 
@@ -2831,7 +2836,7 @@ def opt_clasificacion_sigmoide():
 def opt_clasificacion_log_loss():
     """Pérdidas calculadas en 0 < p < 1, con flechas hacia infinito."""
     W, H = 560, 570
-    izquierda, derecha, arriba, abajo = 78, 514, 180, 420
+    izquierda, derecha, arriba, abajo = 110, 514, 180, 420
 
     def coord(probabilidad, perdida):
         return (izquierda + probabilidad * (derecha - izquierda),
@@ -2857,7 +2862,8 @@ def opt_clasificacion_log_loss():
                                (111, SERIE[1], "y = 0:  −ln(1 − p)")):
         s.append(linea(82, y - 7, 123, y - 7, color=color, grosor=4))
         s.append(texto(142, y, etiqueta, tam=23, color=color, anclaje="start"))
-    s.append(texto(W / 2, 152, "Pérdida", tam=24))
+    s.append('<g transform="rotate(-90 26 300)">'
+             + texto(26, 300, "Pérdida (nats)", tam=22) + '</g>')
     for perdida in (0, 2, 4):
         _, y = coord(0, perdida)
         s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
@@ -2866,7 +2872,10 @@ def opt_clasificacion_log_loss():
         x, _ = coord(probabilidad, 0)
         s.append(linea(x, arriba - 24, x, abajo, color=SUAVE,
                        grosor=1.5, guiones="6 7"))
-    s.append(linea(izquierda, abajo, derecha, abajo, color=SUAVE, grosor=1.5))
+    s.append(flecha(izquierda, abajo, derecha + 20, abajo,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(flecha(izquierda, abajo, izquierda, arriba - 44,
+                    color=SUAVE, grosor=1.5, marcador="s"))
     for probabilidad in (0, 0.5, 1):
         x, _ = coord(probabilidad, 0)
         s.append(linea(x, abajo, x, abajo + 8, color=SUAVE, grosor=1.5))
@@ -2969,10 +2978,136 @@ def opt_panaderia_criterios():
 
 
 
+
+def opt_clasificacion_alfa():
+    """Pérdida y aciertos frente al intercepto real, con beta fija en cero."""
+    W, H = 560, 1158
+    izquierda, derecha = 110, 514
+    elegidas = [(0.49, "0.49", SERIE[0]),
+                (2 / 3, "2/3", SERIE[1]),
+                (0.9, "0.9", SERIE[2])]
+
+    def perdida(alfa):
+        return math.log1p(math.exp(alfa)) - (2 / 3) * alfa
+
+    def ax(alfa):
+        return izquierda + (alfa + 4) / 8 * (derecha - izquierda)
+
+    def ly(valor):
+        return 410 - valor / 3 * 220
+
+    def ay(valor):
+        return 790 - valor * 220
+
+    s = [marco(
+        W, H,
+        "Dos paneles frente al intercepto alfa, con beta cero: pérdida "
+        "promedio y proporción de aciertos. Tres reglas elegidas a mano, "
+        "no iteraciones de entrenamiento",
+        "El intercepto cambia la regla constante",
+        "Eje horizontal alfa real, mostrado de -4 a 4, con flechas de "
+        "continuación. Dos tercios de los casos son de clase 1. Arriba, "
+        "L(alfa,0) = ln(1+exp(alfa)) - dos tercios por alfa, en nats por "
+        "caso. No hay asíntotas verticales: la curva continúa hacia ambos "
+        "lados fuera de la ventana. Abajo, accuracy es un tercio para alfa "
+        "negativa y dos tercios para alfa mayor o igual a cero. En cero, "
+        "el punto inferior está abierto y el superior cerrado. Las marcas "
+        "son ln(0.49/0.51), ln(2) y ln(9), correspondientes a los scores "
+        "constantes 0.49, dos tercios y 0.9. Sus pérdidas son 0.700, 0.637 "
+        "y 0.838; no se presentan como óptimos del modelo completo.",
+    )]
+    s.append(texto(W / 2, 36, "El intercepto cambia la regla", tam=27, peso="700"))
+    s.append(texto(W / 2, 70, "β = 0 · 2/3 de casos con clase 1", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 102, "Tres valores de α elegidos a mano", tam=22))
+    s.append(texto(W / 2, 150, "Pérdida promedio", tam=25, color=ACENTO))
+    s.append('<g transform="rotate(-90 26 300)">'
+             + texto(26, 300, "Pérdida (nats/caso)", tam=22) + '</g>')
+    for valor in (0, 1, 2, 3):
+        y = ly(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 14, y + 7, str(valor), tam=22, anclaje="end"))
+    s.append(flecha(izquierda, 410, izquierda, 178,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(linea(izquierda, 410, derecha, 410, color=SUAVE, grosor=1.5))
+    s.append(flecha(derecha, 410, derecha + 20, 410,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    muestras = [-4 + k / 50 for k in range(401)]
+    puntos = [(ax(alfa), ly(perdida(alfa))) for alfa in muestras]
+    s.append(_curva(puntos, ACENTO, grosor=3.5))
+    # Las puntas siguen las tangentes en los bordes finitos de la ventana.
+    # No hay asíntotas verticales ni puntos abiertos en alfa = -4 o alfa = 4.
+    for extremo, interior in ((puntos[0], puntos[1]), (puntos[-1], puntos[-2])):
+        x, y = extremo
+        dx, dy = x - interior[0], y - interior[1]
+        largo = math.hypot(dx, dy)
+        ux, uy = dx / largo, dy / largo
+        x1, y1 = x - 10 * ux - 5 * uy, y - 10 * uy + 5 * ux
+        x2, y2 = x - 10 * ux + 5 * uy, y - 10 * uy - 5 * ux
+        s.append(f'<path d="M {x1:.1f} {y1:.1f} L {x:.1f} {y:.1f} '
+                 f'L {x2:.1f} {y2:.1f}" fill="none" stroke="{ACENTO}" '
+                 f'stroke-width="3"/>')
+    # Anotaciones separadas del tick alfa = 0 y entre sí.
+    rotulos = [(228, 338, 260, 345), (366, 397, 354, 377), (470, 317, 450, 328)]
+    for (p, _, color), (tx, ty, lx, ly_rotulo) in zip(elegidas, rotulos):
+        alfa = math.log(p / (1 - p))
+        x, y = ax(alfa), ly(perdida(alfa))
+        s.append(linea(lx, ly_rotulo, x, y, color=color, grosor=1.5))
+        s.append(punto(x, y, r=6, color=color))
+        etiqueta = f"{alfa:.3f}".replace("-", "−")
+        s.append(texto(tx, ty, etiqueta, tam=22, color=color))
+    for alfa in (-4, -2, 0, 2, 4):
+        x = ax(alfa)
+        s.append(linea(x, 410, x, 418, color=SUAVE, grosor=1.5))
+        s.append(texto(x, 445, str(alfa).replace("-", "−"), tam=22))
+    s.append(texto(W / 2, 484, "α (intercepto)", tam=24))
+
+    s.append(texto(W / 2, 534, "Proporción de aciertos", tam=25))
+    s.append('<g transform="rotate(-90 26 680)">'
+             + texto(26, 680, "Aciertos (proporción)", tam=22) + '</g>')
+    for valor, etiqueta in ((0, "0"), (1 / 3, "1/3"), (2 / 3, "2/3"), (1, "1")):
+        y = ay(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 14, y + 7, etiqueta, tam=22, anclaje="end"))
+    s.append(flecha(izquierda, 790, izquierda, 558,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(linea(izquierda, 790, derecha, 790, color=SUAVE, grosor=1.5))
+    s.append(flecha(derecha, 790, derecha + 20, 790,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(linea(ax(-4), ay(1 / 3), ax(0), ay(1 / 3), color=TEXTO, grosor=4))
+    s.append(linea(ax(0), ay(2 / 3), ax(4), ay(2 / 3), color=TEXTO, grosor=4))
+    # Continuación horizontal de ambos escalones hacia alfa infinita.
+    for x, y, lado in ((ax(-4), ay(1 / 3), 1), (ax(4), ay(2 / 3), -1)):
+        s.append(f'<path d="M {x + lado * 10} {y - 5} L {x} {y} '
+                 f'L {x + lado * 10} {y + 5}" fill="none" stroke="{TEXTO}" '
+                 f'stroke-width="3"/>')
+    s.append(f'<circle cx="{ax(0)}" cy="{ay(1 / 3)}" r="6" '
+             f'fill="{FONDO}" stroke="{TEXTO}" stroke-width="2.5"/>')
+    s.append(punto(ax(0), ay(2 / 3), r=6, color=TEXTO))
+    s.append(texto(ax(-2), ay(1 / 3) - 22, "α < 0", tam=22))
+    s.append(texto(ax(2), ay(2 / 3) - 22, "α ≥ 0", tam=22))
+    for alfa in (-4, -2, 0, 2, 4):
+        x = ax(alfa)
+        s.append(linea(x, 790, x, 798, color=SUAVE, grosor=1.5))
+        s.append(texto(x, 825, str(alfa).replace("-", "−"), tam=22))
+    s.append(texto(W / 2, 864, "α (intercepto)", tam=24))
+    s.append(texto(W / 2, 905, "Tres reglas; no son iteraciones", tam=22, color=SUAVE))
+    for k, (p, etiqueta, color) in enumerate(elegidas):
+        alfa = math.log(p / (1 - p))
+        etiqueta_alfa = f"{alfa:.4f}".replace("-", "−")
+        aciertos = "1/3" if alfa < 0 else "2/3"
+        s.append(texto(W / 2, 939 + 63 * k,
+                       f"α ≈ {etiqueta_alfa} · p = {etiqueta}", tam=22, color=color))
+        s.append(texto(W / 2, 967 + 63 * k,
+                       f"Pérdida {perdida(alfa):.3f} · aciertos {aciertos}", tam=22, color=color))
+    s.append(texto(W / 2, 1134, "Ventana: [−4, 4]; dominio: α real.", tam=22, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_clasificacion_proxy():
     """Compara pérdida y aciertos de tres reglas constantes elegidas a mano."""
     W, H = 560, 1018
-    izquierda, derecha = 78, 514
+    izquierda, derecha = 110, 514
     ancho = derecha - izquierda
     elegidas = [(0.49, "0.49", SERIE[0]),
                 (2 / 3, "2/3", SERIE[1]),
@@ -3010,6 +3145,8 @@ def opt_clasificacion_proxy():
     s.append(texto(W / 2, 70, "β = 0 · 2/3 de casos con clase 1", tam=22, color=SUAVE))
     s.append(texto(W / 2, 101, "Scores p elegidos a mano", tam=23))
     s.append(texto(W / 2, 148, "Pérdida promedio", tam=25, color=ACENTO))
+    s.append('<g transform="rotate(-90 26 295)">'
+             + texto(26, 295, "Pérdida (nats/caso)", tam=22) + '</g>')
     for valor in (0, 0.8, 1.6):
         y = ly(valor)
         s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
@@ -3017,7 +3154,10 @@ def opt_clasificacion_proxy():
     for p in (0, 1):
         s.append(linea(px(p), 176, px(p), 400, color=SUAVE,
                        grosor=1.5, guiones="6 7"))
-    s.append(linea(izquierda, 400, derecha, 400, color=SUAVE, grosor=1.5))
+    s.append(flecha(izquierda, 400, derecha + 20, 400,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(flecha(izquierda, 400, izquierda, 176,
+                    color=SUAVE, grosor=1.5, marcador="s"))
     muestras = [k / 5000 for k in range(1, 5000)]
     puntos = [(px(p), ly(perdida(p))) for p in muestras if perdida(p) <= 1.75]
     s.append(_curva(puntos, ACENTO, grosor=3.5))
@@ -3046,12 +3186,16 @@ def opt_clasificacion_proxy():
     s.append(texto(W / 2, 474, "p (score constante)", tam=24))
 
     s.append(texto(W / 2, 521, "Proporción de aciertos", tam=25))
+    s.append('<g transform="rotate(-90 26 650)">'
+             + texto(26, 650, "Aciertos (proporción)", tam=22) + '</g>')
     for valor, etiqueta in ((0, "0"), (1 / 3, "1/3"), (2 / 3, "2/3"), (1, "1")):
         y = ay(valor)
         s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
         s.append(texto(izquierda - 13, y + 7, etiqueta, tam=21, anclaje="end"))
-    s.append(linea(izquierda, 550, izquierda, 750, color=SUAVE, grosor=1.5))
-    s.append(linea(izquierda, 750, derecha, 750, color=SUAVE, grosor=1.5))
+    s.append(flecha(izquierda, 750, izquierda, 538,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(flecha(izquierda, 750, derecha + 20, 750,
+                    color=SUAVE, grosor=1.5, marcador="s"))
     s.append(linea(px(0), ay(1 / 3), px(0.5), ay(1 / 3), color=TEXTO, grosor=4))
     s.append(linea(px(0.5), ay(2 / 3), px(1), ay(2 / 3), color=TEXTO, grosor=4))
     # Los círculos abiertos distinguen extremos excluidos y el salto en 0.5.
@@ -3151,6 +3295,7 @@ def opt_juego_turnos():
 
 
 DIAGRAMAS = {
+    "opt-clasificacion-alfa": opt_clasificacion_alfa,
     "opt-juego-turnos": opt_juego_turnos,
     "opt-clasificacion-proxy": opt_clasificacion_proxy,
     "opt-panaderia-criterios": opt_panaderia_criterios,
