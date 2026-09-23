@@ -219,6 +219,80 @@ mismo máximo y distinta suma. Además, los puntos son por grupo; si los grupos
 tuvieran tamaños distintos, dar el mismo peso a grupos o a personas requeriría
 otra decisión. Capacidad y equipo no resuelven ninguna de esas preferencias.
 
+## 7 · Resumen del modelo
+
+Todos los cursos ocurren durante la misma hora fija. Los cursos tienen
+docentes distintos y ningún estudiante cursa más de uno. Distinguimos los
+**datos conocidos** de las **variables que elegimos**; los índices permiten
+escribir las mismas reglas para cualquier cantidad de cursos y salones.
+
+| Símbolo | Qué representa |
+|---|---|
+| $\mathcal C$ | Conjunto de cursos |
+| $\mathcal S$ | Conjunto de salones |
+| $c$ | Índice de curso |
+| $s$ | Índice de salón |
+| $x_{cs}$ | Asignar curso a salón |
+| $x$ | Asignación completa |
+| $n_c$ | Número de estudiantes |
+| $a_s$ | Aforo en lugares |
+| $r_c$ | Requiere proyector |
+| $p_s$ | Proyector en el salón |
+| $d_s$ | Disponibilidad previa |
+| $m_{cs}$ | Molestia por asignación |
+| $M_c(x)$ | Molestia del grupo |
+| $F$ | Asignaciones factibles |
+
+Los conjuntos $\mathcal C$ y $\mathcal S$ son finitos y no vacíos, con
+índices $c\in\mathcal C$ y $s\in\mathcal S$.
+
+La **variable binaria** $x_{cs}$ vale 1 si asignamos el curso $c$ al salón $s$
+y 0 si no. La colección de todos esos valores forma la asignación $x$.
+
+Los **datos** $n_c$ y $a_s$ son enteros no negativos: cuentan estudiantes
+y lugares, respectivamente. Los datos $r_c$, $p_s$ y $d_s$ son binarios:
+
+- $r_c=1$ si el curso requiere proyector; 0 si no.
+- $p_s=1$ si el salón tiene proyector; 0 si no.
+- $d_s=1$ si el salón está libre y autorizado toda la hora; 0 si está cerrado,
+  bloqueado o reservado. Es un dato **previo a la asignación**.
+
+El dato $m_{cs}\ge0$ es real y mide puntos de molestia del grupo de $c$ al
+usar $s$. La **expresión** $M_c(x)$ calcula la molestia de ese grupo, en puntos:
+
+$$M_c(x)=\sum_{s\in\mathcal S}m_{cs}x_{cs}.$$
+
+El **conjunto factible** $F$ reúne las asignaciones que cumplen las cinco
+familias de restricciones y el dominio binario del modelo siguiente.
+
+Para **minimizar la molestia total**, el modelo completo es
+
+$$
+\begin{aligned}
+&\min_x\quad\sum_{c\in\mathcal C}\sum_{s\in\mathcal S}m_{cs}x_{cs}\\
+&\text{sujeto a}\\
+&\sum_{s\in\mathcal S}x_{cs}=1 &&(c\in\mathcal C),\\
+&\sum_{c\in\mathcal C}x_{cs}\le1 &&(s\in\mathcal S),\\
+&\sum_{s\in\mathcal S}a_sx_{cs}\ge n_c &&(c\in\mathcal C),\\
+&\sum_{s\in\mathcal S}p_sx_{cs}\ge r_c &&(c\in\mathcal C),\\
+&x_{cs}\le d_s &&\left(\substack{c\in\mathcal C\\s\in\mathcal S}\right),\\
+&x_{cs}\in\{0,1\} &&\left(\substack{c\in\mathcal C\\s\in\mathcal S}\right).
+\end{aligned}
+$$
+
+Las cinco familias exigen, en orden: un salón por curso, como máximo un
+curso por salón, capacidad suficiente, proyector cuando se requiere y
+disponibilidad previa. Las dos últimas filas se aplican a cada pareja
+curso–salón.
+
+Si la prioridad es reducir la **mayor molestia de un grupo**, conservamos
+las mismas restricciones y dominios y cambiamos solo el objetivo:
+
+$$\min_{x\in F}\quad\max_{c\in\mathcal C}M_c(x).$$
+
+Para buscar únicamente una asignación factible, usamos el objetivo constante
+cero con esas mismas condiciones: $\min_{x\in F}0$.
+
 Continúa con [[opt-objetivo-panaderia-practica|cómo decidir cuánto pan producir cuando la demanda es incierta]].
 
 Para practicar después: [[opt-practica-horarios|decidir también las horas de inicio]]. La [[opt-objetivo-salones-modelo|consulta opcional de salones y horarios]] reúne la formulación más general.
