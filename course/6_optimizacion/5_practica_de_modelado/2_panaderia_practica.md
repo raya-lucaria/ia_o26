@@ -259,6 +259,7 @@ El modelo no incluye otros costos o ingresos.
 | $\mathcal E$ | Conjunto de escenarios |
 | $e$ | Índice de escenario |
 | $q$ | Piezas por producir |
+| $q^\star$ | Producción óptima |
 | $Q$ | Capacidad en piezas |
 | $d_e$ | Demanda en piezas |
 | $v$ | Precio de venta |
@@ -294,6 +295,12 @@ $$G_e(q)=I_e(q)-C(q).$$
 El costo se paga por todas las piezas producidas y no depende del escenario.
 Los tres modelos completos comparten las mismas condiciones sobre $q$.
 
+**El máximo es un valor en pesos; una producción óptima es una cantidad de
+piezas.** Para distinguirlos, $\operatorname{arg\,max}$ reúne las cantidades
+que alcanzan el máximo. Escribimos $q^\star\in\operatorname{arg\,max}$ para
+indicar que elegimos una de ellas: puede haber empates. En cada modelo,
+$q^\star$ se refiere al criterio que estamos optimizando.
+
 **Modelo 1 · Ganancia esperada con probabilidades dadas.** Usamos los datos
 $p_e$ para ponderar las ganancias:
 
@@ -305,6 +312,11 @@ $$
 &q\in\mathbb Z.
 \end{aligned}
 $$
+
+Una producción óptima cumple
+
+$$q^\star\in\operatorname*{arg\,max}_{\substack{0\le q\le Q\\q\in\mathbb Z}}
+\sum_{e\in\mathcal E}p_eG_e(q).$$
 
 Es un problema de **optimización discreta con una variable entera**. Podemos
 resolverlo recorriendo $q=0,1,\ldots,Q$, calculando su ganancia esperada y
@@ -323,6 +335,11 @@ $$
 \end{aligned}
 $$
 
+Con este criterio, una producción óptima cumple
+
+$$q^\star\in\operatorname*{arg\,max}_{\substack{0\le q\le Q\\q\in\mathbb Z}}
+\frac{1}{|\mathcal E|}\sum_{e\in\mathcal E}G_e(q).$$
+
 También es **optimización discreta con una variable entera**. Recorremos
 $q=0,1,\ldots,Q$, calculamos el promedio simple de sus ganancias y elegimos
 una cantidad con el mayor promedio.
@@ -339,16 +356,31 @@ $$
 \end{aligned}
 $$
 
+Una producción que alcanza la mayor ganancia mínima cumple
+
+$$q^\star\in\operatorname*{arg\,max}_{\substack{0\le q\le Q\\q\in\mathbb Z}}
+\min_{e\in\mathcal E}G_e(q).$$
+
 Es **optimización discreta max–min con una variable entera**. Para cada
 $q=0,1,\ldots,Q$ calculamos la menor ganancia entre los escenarios; después
 elegimos una cantidad que alcance la mayor de esas ganancias mínimas.
 
 Los tres recorridos son finitos: revisan las $Q+1$ cantidades permitidas.
+Evaluar una cantidad recorre $|\mathcal E|$ escenarios y cuesta
+$O(|\mathcal E|)$ operaciones. El costo total de esta enumeración es
+
+$$O\bigl((Q+1)|\mathcal E|\bigr).$$
+
+Este conteo supone el costo usual por operación aritmética. Depende del
+valor numérico de $Q$, no solo de los bits que bastan para escribirlo; por
+eso se llama **pseudopolinomial** cuando $Q$ se codifica en binario.
 
 Los tres objetivos son **lineales por tramos**: se componen de segmentos de
 recta. Con $q$ entero, admiten una reformulación de **programación lineal
 entera mixta** mediante variables auxiliares continuas. Esa formulación
-permite usar *branch and bound* (ramificación y acotación).
+permite usar [*branch and bound*](https://web.stanford.edu/class/ee364b/lectures/bb_slides.pdf) (ramificación y acotación).
+Su costo depende del número de nodos explorados, que puede crecer exponencialmente
+en problemas enteros generales; no garantiza una mejora frente a enumerar este caso pequeño.
 
 La única decisión física sigue siendo $q$, el número entero de piezas que
 preparamos. Las auxiliares continuas representan ventas o cotas; no permiten
@@ -359,6 +391,170 @@ el intervalo $[0,Q]$. Esa sería una **relajación convexa** del problema entero
 
 Elegir el peor caso es una prioridad explícita: no viene impuesta por la
 falta de probabilidades. Protege únicamente frente a los escenarios incluidos.
+
+La gráfica compara los tres criterios con los datos del ejemplo. Cada panel
+marca una **cantidad óptima** y el **valor máximo** correspondiente. El caso
+uniforme usa el supuesto 0.5/0.5; no lo presenta como una frecuencia observada.
+Los segmentos solo ayudan a seguir los valores de las cantidades enteras.
+
+![Tres paneles de ganancia frente a producción: probabilidades 0.8 y 0.2 alcanzan 120 pesos con 20 piezas; el supuesto uniforme alcanza 240 pesos con 80 piezas; el peor caso alcanza 120 pesos con 20 piezas](../_assets/opt-panaderia-criterios.svg)
+
+## 8 · Dos tipos de pan comparten el horno
+
+**Intenta formular el modelo sin abrir las pistas ni la respuesta y sin
+consultar ChatGPT. Después de un primer intento, usa una pista si la necesitas.**
+
+::: exercise {#opt-pan-ej-dos-panes title="Repartir el espacio entre dos tipos de pan"}
+La dueña preparará dos tipos de pan durante la noche y horneará todo en una
+sola tanda por la mañana. Durante el día solo vende; al cierre regala el
+sobrante sin ingresos ni costos adicionales.
+
+Las piezas tienen tamaños distintos. Para cada tipo conocemos el espacio
+que ocupa una pieza en las bandejas, su costo de producción y su precio de
+venta. El espacio por pieza y el costo son positivos; el precio supera al
+costo. También conocemos el espacio total utilizable en las bandejas de
+esa tanda. En esta simplificación, el espacio ocupado es la suma del espacio
+reservado a todas las piezas; no hay otras condiciones de colocación.
+
+Tenemos una lista de **escenarios conjuntos de demanda** y sus probabilidades:
+cada escenario indica cuántas piezas de cada tipo querrán comprar los clientes
+al precio fijado. Esos datos no suponen que las demandas de ambos panes sean
+independientes. Se vende todo lo que permitan la producción y la demanda de
+cada tipo. No hay otros costos ni ingresos.
+
+La dueña debe decidir cuántas piezas enteras de cada tipo preparar antes de
+saber qué escenario ocurrirá. Quiere maximizar la ganancia esperada.
+
+1. Formula un modelo general que también sirva para más tipos de pan.
+   Distingue datos, decisiones y expresiones calculadas; incluye todas las
+   condiciones de producción.
+2. Explica qué cambiarías si adoptara probabilidades uniformes sobre esa lista
+   de escenarios, o si prefiriera maximizar su menor ganancia. Conserva las
+   condiciones físicas del negocio.
+3. Propón un método finito para encontrar una producción óptima y explica de
+   qué depende su costo.
+:::
+
+::: hint {#opt-pan-pista-dos-panes-datos of="opt-pan-ej-dos-panes" title="Pista 1 · Ordenar los datos"}
+Separa los datos que pertenecen a un tipo de pan de los que necesitan indicar
+también un escenario. ¿Cuántas cantidades eliges durante la noche? ¿Cuáles
+pueden cambiar al día siguiente sin que tú las elijas?
+:::
+
+::: hint {#opt-pan-pista-dos-panes-recursos of="opt-pan-ej-dos-panes" title="Pista 2 · Revisar espacio y ventas"}
+Comprueba tu propuesta con dos preguntas: ¿cuánto espacio ocupan juntas las
+piezas que preparas?, ¿cuántas puedes vender de un tipo si la producción y
+la demanda no coinciden? Recuerda que producir una pieza cuesta aunque
+termine regalada. Después revisa cómo comparas los resultados de los escenarios.
+:::
+
+::: answer {#opt-pan-resp-dos-panes of="opt-pan-ej-dos-panes" title="Una formulación con varios productos"}
+**Datos e índices.** Llamamos $\mathcal J$ al conjunto de tipos de pan y
+$\mathcal E$ al conjunto de escenarios; ambos son finitos y no vacíos.
+El índice $j\in\mathcal J$ identifica un producto y $e\in\mathcal E$, un
+escenario conjunto. Para el relato, $\mathcal J=\{1,2\}$.
+
+| Signo | Qué representa |
+|---|---|
+| $\mathcal J$ | Tipos de pan |
+| $\mathcal E$ | Escenarios conjuntos |
+| $j$, $e$ | Índices |
+| $q_j$ | Piezas del tipo $j$ |
+| $q$ | Producción completa |
+| $q^\star$ | Producción óptima |
+| $a_j$ | Espacio por pieza |
+| $B$ | Espacio disponible |
+| $v_j$ | Precio de venta |
+| $c_j$ | Costo por pieza |
+| $d_{je}$ | Demanda por tipo y caso |
+| $p_e$ | Probabilidad |
+| $G_e(q)$ | Ganancia del escenario |
+| $F$ | Producciones permitidas |
+| $Q_j$ | Cota de piezas por tipo |
+
+Los datos $a_j>0$ y $B\ge0$ se expresan en una misma unidad de superficie:
+por ejemplo, cm² por pieza y cm² disponibles. Los precios y costos cumplen
+$v_j>c_j>0$, en pesos por pieza. Cada $d_{je}$ es un entero no negativo,
+en piezas. Las probabilidades son datos con $p_e\ge0$ y
+
+$$\sum_{e\in\mathcal E}p_e=1.$$
+
+**Decisiones y resultados.** Elegimos $q_j\in\mathbb Z_{\ge0}$ para cada
+$j\in\mathcal J$. La colección de esas cantidades es $q$, la producción
+completa. Es la misma en todos los escenarios: no podemos esperar a ver
+la demanda para elegirla.
+
+En el escenario $e$ vendemos $\min(q_j,d_{je})$ piezas del tipo $j$.
+Sumamos sus ingresos y descontamos el costo de todas las piezas preparadas:
+
+$$
+\begin{aligned}
+G_e(q)={}&\sum_{j\in\mathcal J}v_j\min(q_j,d_{je})\\
+&-\sum_{j\in\mathcal J}c_jq_j.
+\end{aligned}
+$$
+
+Esta ganancia está en pesos. Las ventas y la ganancia son **expresiones
+calculadas**, no decisiones adicionales.
+
+**Modelo completo.** El espacio compartido limita la producción:
+
+$$
+\begin{aligned}
+&\max_q\quad\sum_{e\in\mathcal E}p_eG_e(q)\\
+&\text{sujeto a}\\
+&\sum_{j\in\mathcal J}a_jq_j\le B,\\
+&q_j\in\mathbb Z_{\ge0}\qquad(j\in\mathcal J).
+\end{aligned}
+$$
+
+Llamamos $F$ al conjunto de producciones que cumplen esa restricción y esos
+dominios. El máximo da una ganancia esperada en pesos; una producción óptima
+es una colección de cantidades que la alcanza:
+
+$$q^\star\in\operatorname*{arg\,max}_{q\in F}
+\sum_{e\in\mathcal E}p_eG_e(q).$$
+
+Puede haber más de una. Para cambiar el criterio conservamos exactamente $F$.
+Con **uniformidad adoptada sobre la lista de escenarios**, usamos
+$p_e=1/|\mathcal E|$ y buscamos
+
+$$q^\star\in\operatorname*{arg\,max}_{q\in F}
+\frac{1}{|\mathcal E|}\sum_{e\in\mathcal E}G_e(q).$$
+
+Esa uniformidad se refiere a escenarios conjuntos completos. No reemplaza
+sus probabilidades por el producto de probabilidades de cada pan.
+Para **proteger la menor ganancia**, buscamos
+
+$$q^\star\in\operatorname*{arg\,max}_{q\in F}
+\min_{e\in\mathcal E}G_e(q).$$
+
+**Tipo, método y costo.** Es optimización entera con ganancias lineales por
+tramos. Admite una reformulación lineal entera mixta con auxiliares continuas
+para ventas o cotas; las decisiones físicas siguen siendo las cantidades $q_j$.
+
+Un método exacto es enumerar. Como cada pieza consume espacio positivo,
+la capacidad proporciona una cota para cada producto:
+
+$$Q_j=\left\lfloor\frac{B}{a_j}\right\rfloor\qquad(j\in\mathcal J).$$
+
+Estas cotas se deducen de los datos; no son nuevas decisiones. Enumeramos
+$q_j=0,1,\ldots,Q_j$ para cada producto y descartamos las combinaciones que
+excedan el espacio compartido. Para cada combinación permitida evaluamos
+los escenarios y conservamos una que alcance el mejor valor del criterio.
+
+Hay $\prod_{j\in\mathcal J}(Q_j+1)$ combinaciones antes de descartar ninguna.
+Comprobar el espacio cuesta $O(|\mathcal J|)$ y evaluar un criterio cuesta
+$O(|\mathcal J|\,|\mathcal E|)$. Bajo el conteo usual de operaciones, una
+cota para todo el recorrido es
+
+$$O\left(|\mathcal J|\,|\mathcal E|
+\prod_{j\in\mathcal J}(Q_j+1)\right).$$
+
+El método termina, pero el número de combinaciones puede crecer mucho con
+los productos y la capacidad. Ser finito y exacto no lo hace eficiente en
+todos los tamaños del problema.
+:::
 
 Continúa con [[opt-objetivo-clasificacion-practica|cómo comparar aciertos y probabilidades al clasificar mensajes]].
 

@@ -2892,7 +2892,78 @@ def opt_clasificacion_log_loss():
     return "".join(s)
 
 
+
+def opt_panaderia_criterios():
+    """Tres criterios calculados para los 101 valores enteros de producción."""
+    W, H = 560, 1152
+    izquierda, derecha = 78, 514
+    producciones = list(range(101))
+    ganancias = [(8 * min(q, 20) - 2 * q, 8 * min(q, 80) - 2 * q)
+                 for q in producciones]
+    paneles = [
+        ("1 · Promedio: datos 0.8 / 0.2", SERIE[1],
+         [(8 * g1 + 2 * g2) / 10 for g1, g2 in ganancias]),
+        ("2 · Supuesto uniforme 0.5 / 0.5", SERIE[0],
+         [(g1 + g2) / 2 for g1, g2 in ganancias]),
+        ("3 · Menor ganancia", SERIE[2],
+         [min(g1, g2) for g1, g2 in ganancias]),
+    ]
+    s = [marco(
+        W, H,
+        "Tres paneles comparan la ganancia con probabilidades dadas, "
+        "con uniformidad supuesta y en el peor caso. Las producciones "
+        "óptimas son 20, 80 y 20 piezas respectivamente",
+        "Producción óptima y valor máximo según el criterio",
+        "Curvas calculadas para q entero de 0 a 100, con demandas 20 y 80, "
+        "precio 8 y costo unitario 2. Los tres paneles comparten escala: "
+        "producción en piezas y ganancia en pesos. Con probabilidades 0.8 y "
+        "0.2, el máximo es 120 pesos con 20 piezas. Con el supuesto uniforme "
+        "0.5 y 0.5, es 240 pesos con 80 piezas. La menor ganancia alcanza "
+        "su máximo de 120 pesos con 20 piezas. Los segmentos solo unen "
+        "los valores de las cantidades enteras.",
+    )]
+    s.append(texto(W / 2, 37, "Tres criterios de ganancia", tam=27, peso="700"))
+    s.append(texto(W / 2, 73, "Producción y ganancia por criterio", tam=22, color=SUAVE))
+    for k, (titulo, color, valores) in enumerate(paneles):
+        inicio = 98 + 344 * k
+        arriba, abajo = inicio + 102, inicio + 282
+
+        def coord(q, ganancia):
+            return (izquierda + q / 100 * (derecha - izquierda),
+                    abajo - (ganancia + 60) / 360 * (abajo - arriba))
+
+        maximo = max(valores)
+        optimos = [q for q, valor in zip(producciones, valores) if valor == maximo]
+        s.append(texto(W / 2, inicio + 22, titulo, tam=24, color=color, peso="600"))
+        s.append(texto(W / 2, inicio + 55,
+                       f"q* = {optimos[0]} piezas · máximo = {maximo:g} pesos", tam=22))
+        s.append(texto(izquierda, inicio + 87, "Ganancia (pesos)",
+                       tam=20, color=SUAVE, anclaje="start"))
+        for ganancia in (-60, 0, 120, 240):
+            _, y = coord(0, ganancia)
+            s.append(linea(izquierda, y, derecha, y,
+                           color=SUAVE if ganancia == 0 else LINEA, grosor=1))
+            s.append(texto(izquierda - 13, y + 7, str(ganancia).replace("-", "−"),
+                           tam=20, anclaje="end"))
+        s.append(linea(izquierda, arriba, izquierda, abajo, color=SUAVE, grosor=1.5))
+        s.append(linea(izquierda, abajo, derecha, abajo, color=SUAVE, grosor=1.5))
+        for q in (0, 20, 80, 100):
+            x, _ = coord(q, 0)
+            s.append(linea(x, abajo, x, abajo + 7, color=SUAVE, grosor=1.5))
+            s.append(texto(x, abajo + 28, str(q), tam=21))
+        puntos = [coord(q, valor) for q, valor in zip(producciones, valores)]
+        s.append(_curva(puntos, color, grosor=3.5))
+        for q in optimos:
+            x, y = coord(q, maximo)
+            s.append(linea(x, y, x, abajo, color=color, grosor=1.5, guiones="5 6"))
+            s.append(punto(x, y, r=6, color=color))
+        s.append(texto(W / 2, abajo + 56, "q (piezas)", tam=23))
+    s.append(cierre())
+    return "".join(s)
+
+
 DIAGRAMAS = {
+    "opt-panaderia-criterios": opt_panaderia_criterios,
     "opt-clasificacion-sigmoide": opt_clasificacion_sigmoide,
     "opt-clasificacion-log-loss": opt_clasificacion_log_loss,
     "opt-la-impresora": opt_la_impresora,
