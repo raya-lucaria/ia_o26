@@ -9,7 +9,7 @@ tags: [optimizacion, modelado, entera]
 
 # Cómo modelar salones, horarios y comodidad
 
-Antes de continuar, intenta [[opt-objetivo-salones-practica|los dos problemas de salones]].
+Esta es una **consulta opcional**. Parte del [[opt-objetivo-salones-practica|ejemplo guiado de salones]] y amplía el [[opt-practica-horarios|problema 11 de horarios]].
 Allí cambiamos la decisión de salón por la decisión de horario; aquí reunimos
 ambas: **dónde y cuándo impartir cada curso**.
 
@@ -107,11 +107,11 @@ y los dominios binarios**, usando el $K$ ya definido. Así, escribir $x\in F$
 conserva también los requisitos de capacidad, equipo y disponibilidad que usamos
 para construir $K$.
 
-Los dos ejercicios se obtienen al fijar algunos de estos datos:
+El ejemplo guiado y el problema 11 se obtienen al fijar algunos de estos datos:
 
-- En el primero, cada $S_c$ contiene solo el inicio fijo y todos los cursos
+- En el ejemplo guiado, cada $S_c$ contiene solo el inicio fijo y todos los cursos
   duran un bloque.
-- En el segundo, $R$ contiene un único salón, $S_A=\{1,2\}$, $S_B=\{1,3\}$
+- En el problema 11, $R$ contiene un único salón, $S_A=\{1,2\}$, $S_B=\{1,3\}$
   y las duraciones son $d_A=2$ y $d_B=1$.
 
 En ambos, $H$ está vacío porque los grupos y los docentes son distintos.
@@ -232,4 +232,4 @@ eliminarlas. Para combinar varios propósitos hacen falta unidades, escalas
 y prioridades explícitas. Para medir consecuencias nuevas pueden hacer falta
 datos nuevos, no solamente una fórmula más larga.
 
-[[opt-objetivo-salones-practica|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver a la guía]].
+[[opt-objetivo-salones-practica|Volver al ejemplo guiado]] · [[opt-practica-horarios|Practicar horarios]] · [[opt-construir-objetivo|Volver al banco de práctica]].

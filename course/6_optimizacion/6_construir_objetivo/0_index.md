@@ -1,111 +1,111 @@
 ---
 id: opt-construir-objetivo
-title: Construir la función objetivo
-nav_title: Construir la función objetivo
-summary: "Diez ejercicios para justificar qué optimizar: preferencias, incertidumbre, indicadores, pérdidas sustitutas y rivales."
+title: Problemas para practicar
+nav_title: Practicar
+summary: "Doce problemas de modelado con dos pistas y respuesta plegada; modelos generales como consulta opcional."
 status: ready
-estimated_time: 4h10m
+estimated_time: 5h
 tags: [optimizacion, modelado, practica]
 ---
 
-# Construir la función objetivo
+# Problemas para practicar
 
-**Para elegir la mejor decisión, necesitamos explicar qué significa mejor.**
-En [[opt-practica-modelado|6.5 · Del problema al modelo]] el criterio ya estaba
-especificado. Aquí también tendrás que construirlo o examinar una propuesta:
-qué queremos conseguir, cómo lo medimos y por qué esa medida ayuda a elegir.
+**Elige una situación y escribe tu modelo antes de abrir las ayudas.** Este
+banco reúne doce problemas. Los diez primeros forman cinco parejas; los dos
+últimos amplían los ejemplos de horarios y panadería.
 
-Los diez problemas muestran dificultades distintas. A veces dos grupos tienen
-preferencias que compiten; otras veces no sabemos qué ocurrirá mañana o solo
-podemos observar una parte de lo que nos importa.
+Si necesitas ver cómo se construye un modelo, vuelve a [[opt-practica-modelado|6.5 · Modelar problemas de optimización]].
+Aquí la tarea es intentarlo por tu cuenta. No necesitas encontrar los óptimos
+ni desarrollar algoritmos de resolución.
 
-La tarea sigue siendo **escribir modelos completos y justificar sus objetivos**.
-No hace falta elegir algoritmos ni calcular óptimos. Las cifras son didácticas.
+## Elige qué practicar
 
-Si falta deliberadamente un dato, explica cuál y formula bajo un supuesto
-explícito. Distingue ese supuesto de la información que sí da el enunciado.
+- **Problemas 1 y 2 · Café.** Prepara una mezcla al menor costo. Primero puedes
+  comprar fracciones de kilogramo; después solo se venden paquetes completos.
 
-## Elige una situación
+  [[opt-practica-cafe|Intentar los problemas de café]].
 
-Cada situación conserva las dos páginas de 6.5: **práctica** y **modelo general**.
-Lee el modelo general después de intentar los problemas. Allí se reconstruye
-la formulación para más elementos y se explican sus límites.
+- **Problemas 3 y 4 · Aviones.** Asigna un avión con suficientes asientos a cada
+  vuelo. Después añade una prohibición de operación y conserva las reglas anteriores.
 
-- **Salones y horarios.** Asigna salones y después elige las horas de inicio.
-  Compara reducir la molestia total con atender al grupo que recibe el mayor
-  puntaje de molestia.
+  [[opt-practica-vuelos|Intentar los problemas de aviones]].
 
-  [[opt-objetivo-salones-practica|Intentar los problemas 1 y 2]] · [[opt-objetivo-salones-modelo|Consultar el modelo de salones y horarios]].
+- **Problemas 5 y 6 · Talleres.** Elige qué ofrecer con un presupuesto y un tiempo
+  disponibles. Después decide también cuánto dura cada taller.
 
-- **Panadería.** Decide cuánto producir antes de conocer la demanda. Construye
-  la ganancia a partir de las ventas y del costo de producción; después compara
-  decisiones con probabilidades conocidas o sin ellas.
+  [[opt-practica-evento|Intentar los problemas de talleres]].
 
-  Examina qué cambia al buscar una mayor ganancia promedio, proteger la menor
-  ganancia o comparar con lo que habrías ganado conociendo la demanda a tiempo.
+- **Problemas 7 y 8 · Red neuronal.** Ajusta una regla compartida a los puntajes
+  de cuatro clips de audio. Después impón un límite al tamaño de los pesos.
 
-  [[opt-objetivo-panaderia-practica|Intentar los problemas 3 y 4]] · [[opt-objetivo-panaderia-modelo|Consultar el modelo de producción y ganancia]].
+  [[opt-practica-red|Intentar los problemas de la red]].
 
-- **Aprendizaje.** Elige actividades para una sesión. Revisa qué nos dicen los
-  aciertos durante la práctica y qué cambia al mirar una prueba posterior sin ayuda.
+- **Problemas 9 y 10 · Aprendizaje.** Elige actividades para una sesión y revisa
+  qué cambia al contar aciertos posteriores sin ayuda.
 
-  [[opt-objetivo-aprendizaje-practica|Intentar los problemas 5 y 6]] · [[opt-objetivo-aprendizaje-modelo|Consultar el modelo de selección de actividades]].
+  [[opt-objetivo-aprendizaje-practica|Intentar los problemas de aprendizaje]].
 
-- **Clasificación.** Ajusta una regla para distinguir mensajes normales de
-  mensajes no deseados. Compara contar etiquetas acertadas con evaluar las
-  probabilidades que asigna la regla.
+- **Problema 11 · Horarios.** Decide cuándo empiezan cursos que ocupan distintos
+  números de bloques. Compara la molestia total con la del grupo peor atendido.
 
-  [[opt-objetivo-clasificacion-practica|Intentar los problemas 7 y 8]] · [[opt-objetivo-clasificacion-modelo|Consultar los modelos de clasificación]].
+  [[opt-practica-horarios|Intentar el problema de horarios]].
 
-- **Juego.** Elige una acción teniendo en cuenta que el rival responderá.
-  Después revisa un programa que recomienda jugadas contando fichas antes de
-  llegar al final del juego.
+- **Problema 12 · Ganancias y oportunidades perdidas.** Sin probabilidades
+  justificadas, compara asegurar una ganancia con limitar lo que dejas de ganar
+  por no conocer la demanda a tiempo.
 
-  [[opt-objetivo-juego-practica|Intentar los problemas 9 y 10]] · [[opt-objetivo-juego-modelo|Consultar el modelo para elegir una jugada]].
+  [[opt-practica-riesgo|Intentar el problema de panadería]].
 
-## Qué debes entregar
+## Cómo trabajar cada problema
 
-1. **Datos y decisiones.** Distingue qué conoces y qué eliges, con sus unidades
-   y dominios. Separa también lo incierto y lo que decide otra persona.
-2. **Expresiones.** Escribe cómo calcular los resultados de una decisión y
-   cómo representar las condiciones que debe cumplir.
-3. **Modelo completo.** Escribe objetivo, restricciones y dominios, primero
-   con parámetros y después con los datos del ejercicio.
-4. **Justificación del objetivo.** Explica qué mide, en qué unidades y qué
-   preferencia o supuesto te permite usarlo para comparar decisiones.
-5. **Revisión.** Señala qué deja fuera y un caso en que pueda fallar. Explica
-   qué cambiarías en el modelo o qué información pedirías.
+1. **Separa datos y decisiones.** Indica su significado, unidades y dominios.
+   Distingue también lo incierto o lo que decide otra persona.
+2. **Construye las expresiones.** Explica cómo calculas el objetivo y cómo
+   representas cada condición. Comprueba las unidades antes de sumar.
+3. **Reúne el modelo completo.** Escribe objetivo, restricciones y dominios,
+   primero con parámetros y después con los datos del ejercicio.
+4. **Revisa el significado.** Comprueba que acepta las decisiones permitidas
+   y rechaza las prohibidas. Cuando debas justificar un objetivo, explica qué
+   mide, qué supuesto permite usarlo y qué deja fuera.
 
-Puede haber varias respuestas defendibles. Si tu respuesta depende de un
-supuesto, escribe cuál y muestra la formulación que resulta al adoptarlo.
-Una fórmula puede estar bien escrita y aun así medir algo distinto de lo
-que queríamos conseguir.
+Conserva cada condición del relato, aunque resulte redundante con los números
+pequeños. No necesitas resolver el problema para deducir sus restricciones.
+Las cifras son didácticas y los enunciados dan los datos necesarios.
 
-## Primero intenta plantearlo
+## Usa las ayudas por etapas
 
-Escribe un primer intento antes de abrir las pistas. Consulta una ayuda a la
-vez y vuelve a tu planteamiento. Después compara con la respuesta y revisa
-qué supuestos habías usado.
+- **Pista 1:** organiza la información para retomar tu intento.
+- **Pista 2:** plantea una pregunta que ayuda a construir el modelo.
+- **Respuesta:** explica la formulación para compararla con la tuya.
 
-- **Pista 1**: Datos del relato ordenados.
-- **Pista 2**: Una pregunta para construir el modelo.
-- **Respuesta**: Formulación razonada, supuestos y una comprobación del criterio.
+Las ayudas empiezan cerradas y se abren por separado. Vuelve a tu hoja después
+de cada pista. En las parejas, intenta primero el problema inicial y después
+su variante.
 
-Haz un problema por vez y consulta el modelo general después de revisar sus
-dos ejercicios. Conserva todas las condiciones del relato, incluso si alguna
-resulta redundante con los números del ejemplo.
+## Consultas opcionales
 
-Algunos problemas piden comparar alternativas dadas. Explica qué muestra esa
-comparación sobre el objetivo. Es una forma de revisar el criterio; no sustituye
-al modelo ni exige examinar todas las posibilidades.
+Estas páginas generalizan las formulaciones y explican variantes o formas
+estándar. **No hace falta leerlas todas para completar la práctica.** Abre la
+que corresponda después de revisar tu intento, si quieres extender el razonamiento.
+
+- [[opt-modelo-cafe|Mezclas y paquetes]].
+- [[opt-modelo-vuelos|Asignación de aviones y permisos]].
+- [[opt-modelo-evento|Selección y duración de talleres]].
+- [[opt-modelo-red|Ajuste de una salida con pesos compartidos]].
+- [[opt-objetivo-aprendizaje-modelo|Selección de actividades e indicadores]].
+- [[opt-objetivo-salones-modelo|Salones, horarios y prioridades]].
+- [[opt-objetivo-panaderia-modelo|Producción, ganancia y oportunidad perdida]].
+- [[opt-objetivo-clasificacion-modelo|Objetivos para clasificación]].
+- [[opt-objetivo-juego-modelo|Utilidad y evaluación de jugadas]].
 
 ## Tiempo y conexión con lo que sigue
 
-Reserva aproximadamente 50 minutos por pareja, incluyendo intento, revisión y
-modelo general: unas 4 horas y 10 minutos para todo el banco. Distribuye ese
-tiempo en varias sesiones y ajústalo según las ayudas y revisiones que necesites.
+Reserva aproximadamente **45 minutos por pareja**, **35 para horarios** y
+**40 para ganancias y oportunidades perdidas**: unas **cinco horas** si haces
+los doce problemas con sus intentos y revisión de respuestas. Es un banco
+seleccionable para varias sesiones, no una clase única ni una tarea que debas
+hacer completa de una vez. Las consultas opcionales requieren tiempo adicional.
 
-Los problemas de juego preparan el siguiente paso: representar en un árbol
-nuestras acciones, las respuestas del rival y los valores de las posiciones.
-Después estudiaremos minimax y la poda alfa–beta para recorrer ese árbol.
-Aquí primero justificamos **qué queremos conseguir al elegir una jugada**.
+El [[opt-objetivo-juego-practica|ejemplo guiado del juego]] prepara el paso a
+árboles de decisiones, minimax y poda alfa–beta. Formular qué se valora y por
+qué sigue siendo necesario antes de estudiar cómo recorrer esos árboles.

@@ -234,4 +234,4 @@ Sumamos tiempos porque hay un salón y cualquier orden está permitido.
 Horarios, varios salones o instructores con disponibilidad parcial pedirían
 otras condiciones.
 
-[[opt-practica-evento|Volver a los ejercicios]] · [[opt-practica-modelado|Volver a la guía]].
+[[opt-practica-evento|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver al banco de práctica]].

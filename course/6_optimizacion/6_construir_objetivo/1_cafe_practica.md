@@ -272,4 +272,8 @@ en las restricciones. La igualdad incorpora la obligación de usar todo lo
 comprado; permitir sobrantes requeriría otro relato y otro modelo.
 :::
 
-Después de escribir tus intentos, consulta [[opt-modelo-cafe|la estructura general y su forma estándar]].
+Si quieres ampliar lo trabajado, tienes una consulta opcional sobre [[opt-modelo-cafe|la estructura general y su forma estándar]].
+
+Si necesitas ayuda para construir el modelo, vuelve a [[opt-objetivo-salones-practica|el ejemplo guiado de salones]].
+
+[[opt-construir-objetivo|Volver al banco de práctica]].

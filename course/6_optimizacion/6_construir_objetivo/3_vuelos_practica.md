@@ -313,4 +313,8 @@ $$
 A1 tiene permiso para V3, pero no suficientes asientos. Son comprobaciones distintas.
 :::
 
-Después de tus intentos, consulta [[opt-modelo-vuelos|la estructura general de asignación y su forma estándar]].
+Si quieres ampliar lo trabajado, tienes una consulta opcional sobre [[opt-modelo-vuelos|la estructura general de asignación y su forma estándar]].
+
+Si necesitas ayuda para construir el modelo, vuelve a [[opt-objetivo-salones-practica|el ejemplo guiado de salones]].
+
+[[opt-construir-objetivo|Volver al banco de práctica]].

@@ -18,7 +18,7 @@ En estos dos problemas vas a formular una propuesta y después revisarla con
 información nueva. Los valores son **estimaciones didácticas inventadas**,
 no resultados de un estudio. Intenta cada ejercicio antes de abrir sus ayudas.
 
-## Problema 5 · Preparar una sesión para dos temas
+## Problema 9 · Preparar una sesión para dos temas
 
 ::: exercise {#opt-obj-apr-ej-sesion title="Elegir una actividad por tema"}
 Dispones de **20 minutos** para la sesión con el estudiante. Para cada
@@ -164,7 +164,7 @@ después, por ejemplo en una prueba común sin ayuda. Cambiar el nombre del
 objetivo a “aprendizaje” no aporta esa información.
 :::
 
-## Problema 6 · Responder después sin ayuda
+## Problema 10 · Responder después sin ayuda
 
 ::: exercise {#opt-obj-apr-ej-diferida title="Preparar al estudiante para una prueba sin ayuda"}
 Seguimos preparando la misma sesión, pero queremos mirar lo que el estudiante
@@ -201,7 +201,7 @@ resultados.
 Con esta información, tu colega propone elegir las actividades con las que
 se prevean más aciertos en la prueba posterior. Examina esta nueva propuesta:
 
-1. Escribe el modelo completo y explica qué cambia respecto del problema 5.
+1. Escribe el modelo completo y explica qué cambia respecto del problema 9.
 2. Explica por qué esta evaluación está más cerca del propósito de aprender.
 3. Describe una situación en la que se obtenga una puntuación alta y aun así
    quede fuera algo importante del aprendizaje. ¿Qué habría que observar
@@ -317,4 +317,8 @@ reutilizar los mismos $b_j$ sin justificarlos**. También habría que revisar
 la suma si estudiar un tema cambiara el desempeño en el otro.
 :::
 
-Después de tus intentos, consulta [[opt-objetivo-aprendizaje-modelo|el modelo general de selección e indicadores]].
+Si quieres ampliar lo trabajado, tienes una consulta opcional sobre [[opt-objetivo-aprendizaje-modelo|el modelo general de selección e indicadores]].
+
+Para revisar qué mide un objetivo, vuelve a [[opt-objetivo-clasificacion-practica|el ejemplo guiado de clasificación]].
+
+[[opt-construir-objetivo|Volver al banco de práctica]].

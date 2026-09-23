@@ -179,4 +179,4 @@ Si ajustáramos también las etapas anteriores de la red, esas entradas
 dejarían de ser datos y la justificación de convexidad que acabamos de
 usar ya no bastaría. Aquí solo ajustamos la combinación final.
 
-[[opt-practica-red|Volver a los ejercicios]] · [[opt-practica-modelado|Volver a la guía]].
+[[opt-practica-red|Volver a los ejercicios]] · [[opt-construir-objetivo|Volver al banco de práctica]].

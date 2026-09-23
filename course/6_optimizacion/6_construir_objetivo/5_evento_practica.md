@@ -317,4 +317,8 @@ exigen el intervalo contratado. Escribir $h_j\ge L_j$ sin la decisión de
 ofrecer el taller obligaría a impartirlos todos.
 :::
 
-Después de comparar ambos intentos, revisa [[opt-modelo-evento|la estructura general y su forma estándar]].
+Si quieres ampliar lo trabajado, tienes una consulta opcional sobre [[opt-modelo-evento|la estructura general y su forma estándar]].
+
+Si necesitas ayuda para construir el modelo, vuelve a [[opt-objetivo-salones-practica|el ejemplo guiado de salones]].
+
+[[opt-construir-objetivo|Volver al banco de práctica]].
