@@ -1,97 +1,121 @@
 ---
 id: opt-practica-red
-title: Ajustar la salida de una red neuronal
+title: Ajustar puntajes de claridad con una red
 nav_title: Red · Practicar
-summary: "Dos ejercicios de optimización continua con una regla de salida y datos fijos. Plantear el error y una condición sobre los pesos."
+summary: "Ajustar una regla compartida para aproximar cuatro puntajes y añadir un límite para sus pesos."
 status: ready
 tags: [optimizacion, modelado, convexidad, practica]
 ---
 
-# Ajustar la salida de una red neuronal
+# Ajustar puntajes de claridad con una red
 
-**Solo ajustaremos la última salida.** No necesitas conocer redes neuronales.
-Piensa en una regla que recibe números, multiplica cada uno por un peso y
-suma una constante. Los pesos y la constante son los ajustes que elegimos.
-Las etapas anteriores de la red permanecen fijas.
+Una red neuronal puede transformar un audio en varios números y usarlos
+para producir un puntaje. Aquí **solo ajustaremos la última combinación
+de esos números**: multiplicar cada uno por un peso y sumar una constante.
+Las etapas anteriores ya están construidas y permanecen fijas.
 
-Los datos son didácticos. Aquí no hay azar ni cálculo de probabilidades:
-queremos escribir un problema a partir de ejemplos que ya tenemos.
+No necesitas conocer redes neuronales para plantear estos problemas.
+Los datos son didácticos; no hay azar ni cálculo de probabilidades.
+Queremos escribir un modelo a partir de cuatro clips que ya conocemos.
 
-## Problema 7 · Un puntaje de claridad para clips de audio
+## Problema 7 · Ajustar los puntajes de cuatro clips
 
-::: exercise {#opt-b-red-ej-1 title="Ajustar una regla a ejemplos conocidos"}
-Una aplicación asigna un **puntaje de claridad** a clips de audio: un número
-mayor representa un audio más claro. Una etapa ya construida convierte cada
-clip en dos características numéricas. **Esos dos números están dados y no
-se modifican** durante este ajuste.
+::: exercise {#opt-b-red-ej-1 title="Ajustar los puntajes de cuatro clips"}
+Una aplicación asigna un **puntaje de claridad** a clips de audio. Un número
+mayor representa un audio más claro. Una etapa ya construida convierte
+cada clip en dos características numéricas: **ambas están dadas y no se
+modifican** durante el ajuste.
 
-La salida multiplica el primer número por un peso, el segundo por otro y
-suma una constante común a todos los clips. Tanto los pesos como la constante
-pueden ser positivos, negativos o cero. Todos los números de este ejercicio
-están en una escala sin unidades físicas; no se exige limitar el puntaje a
-un intervalo.
+Tenemos cuatro clips que un equipo de revisión ya escuchó y calificó.
+Queremos que la aplicación produzca puntajes cercanos a esas referencias.
 
-Tenemos cuatro clips de referencia. Sus pares de entrada son **(0, 0),
-(1, 0), (0, 1) y (1, 1)**. El equipo de revisión ya les asignó los puntajes
-de claridad **0, 1, 1 y 3**, respectivamente. Esos son los valores de
-referencia que queremos aproximar.
+| Clip | Entradas | Referencia |
+|---|---|---:|
+| 1 | (0, 0) | 0 |
+| 2 | (1, 0) | 1 |
+| 3 | (0, 1) | 1 |
+| 4 | (1, 1) | 3 |
 
-Para evaluar un ajuste, en cada clip restamos el puntaje de referencia al
-puntaje producido, elevamos esa diferencia al cuadrado y sumamos los cuatro
-resultados. Queremos que esa suma sea lo más pequeña posible.
+**Cómo se calcula el puntaje.** La salida multiplica la primera entrada
+por un peso, la segunda por otro y suma una constante. Usamos **los mismos
+dos pesos y la misma constante en los cuatro clips**.
 
-**Plantea el modelo completo.** Define qué datos corresponden a cada clip y
-qué decisiones se comparten entre todos. No calcules los mejores pesos.
+Podemos elegir valores positivos, negativos o cero para esos tres ajustes.
+Todos los números del ejercicio están en una escala sin unidades físicas.
+No se pide limitar el puntaje producido a un intervalo.
+
+**Cómo se evalúa el ajuste.** Para cada clip, restamos el puntaje de
+referencia al producido y elevamos esa diferencia al cuadrado. Después
+sumamos los cuatro resultados. Queremos que esa suma sea lo más pequeña
+posible.
+
+Plantea el modelo completo: identifica los datos de cada clip, las
+decisiones compartidas, sus valores permitidos y el objetivo. No calcules
+los mejores pesos.
 :::
 
-### Primero intenta plantearlo
+### Intenta escribir una regla para los cuatro clips
 
-**NO ABRAS LA PISTA 1 SI TODAVÍA NO HAS HECHO UN INTENTO.**
+Escribe tu propuesta antes de abrir las pistas. Si no encuentras por dónde
+empezar, usa la primera para ordenar la información.
 
-::: hint {#opt-b-red-pista-1a of="opt-b-red-ej-1" title="PISTA 1 · Solo si te atoraste"}
-Esta tabla solo ordena los datos del relato:
+::: hint {#opt-b-red-pista-1a of="opt-b-red-ej-1" title="Pista 1 · Datos de cada clip y ajustes compartidos"}
 
-| Clip | Primera entrada fija | Segunda entrada fija | Puntaje de referencia |
-|---|---:|---:|---:|
-| 1 | 0 | 0 | 0 |
-| 2 | 1 | 0 | 1 |
-| 3 | 0 | 1 | 1 |
-| 4 | 1 | 1 | 3 |
+- **Entradas**: Dos números ya calculados para cada clip.
+- **Referencia**: Un puntaje conocido para cada clip.
+- **Ajustes**: Dos pesos y una constante, iguales para todos los clips.
+- **Valores permitidos**: Los ajustes pueden ser positivos, negativos o cero.
 
-El mismo ajuste se utiliza para los cuatro clips. El relato permite valores
-negativos en sus pesos y en su constante.
+La tabla del enunciado contiene los datos de los cuatro clips. Elegir los
+ajustes no modifica esos datos.
 :::
 
-**ABRE LA PISTA 2 SOLO SI SIGUES ATORADO; DESPUÉS VUELVE A TU HOJA.**
+Si todavía no sabes cómo usar una sola regla, abre la segunda pista y
+vuelve a tu hoja.
 
-::: hint {#opt-b-red-pista-1b of="opt-b-red-ej-1" title="PISTA 2 · Solo si te atoraste"}
-¿Qué cantidades cambian cuando pasas de un clip a otro y cuáles deben seguir
-siendo las mismas para que exista una sola regla de salida?
+::: hint {#opt-b-red-pista-1b of="opt-b-red-ej-1" title="Pista 2 · Qué cambia entre clips"}
+¿Qué cantidades cambian cuando pasas de un clip a otro? ¿Cuáles deben
+seguir siendo las mismas para que exista una sola regla de salida?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Antes de abrir la respuesta, revisa tu modelo. Después compara cómo
+representaste los datos, los ajustes y el error.
 
-::: answer {#opt-b-red-resp-1 of="opt-b-red-ej-1"}
-**Datos y decisiones.** Llamamos $I$ al conjunto de clips y $J$ al conjunto
-de entradas de la salida. Ambos son finitos y no vacíos.
+::: answer {#opt-b-red-resp-1 of="opt-b-red-ej-1" title="Construir el error de una regla compartida"}
+**Separamos datos y decisiones.** Llamemos $I$ al conjunto de clips y $J$
+al conjunto de entradas de la salida. Ambos son finitos y no vacíos.
+Para cada clip conocemos las entradas y el puntaje de referencia.
 
-| Símbolo | Qué representa | Tipo |
-|---|---|---|
-| $h_{ij}$ | Entrada $j$ ya calculada para el clip $i$ | Dato real |
-| $t_i$ | Puntaje de referencia del clip $i$ | Dato real |
-| $w_j$ | Peso que multiplica la entrada $j$ en todos los clips | Decisión real |
-| $b$ | Constante que se suma en todos los clips | Decisión real |
+- $h_{ij}$: Entrada $j$ ya calculada para el clip $i$; es un dato real.
+- $t_i$: Puntaje de referencia del clip $i$; es un dato real.
+- $w_j$: Peso de la entrada $j$; es una decisión real.
+- $b$: Constante que se suma a la salida; es una decisión real.
 
-**Construir la salida.** Para el clip $i$, la regla produce
-$\sum_{j\in J}h_{ij}w_j+b$. Los $h_{ij}$ son datos, así que esta expresión
-es afín en las decisiones: suma productos de datos por variables y el
-término $b$, una variable compartida por todos los clips.
+Elegimos una sola lista de pesos y una sola constante para todos los clips.
+Por eso $w_j$ lleva el índice de la entrada, pero no el del clip. Tanto los
+datos como las decisiones usan la escala sin unidades físicas del enunciado.
 
-**Construir el error.** Restamos $t_i$, elevamos al cuadrado y sumamos sobre
-los clips. La misma lista de pesos y el mismo $b$ aparecen en cada término.
-No imponemos que cada error sea cero: el relato pide aproximar.
+**Calculamos la salida de un clip.** Multiplicamos cada entrada por su peso,
+sumamos los productos y añadimos $b$:
 
-**Modelo general completo:**
+$$\text{puntaje producido para el clip }i=\sum_{j\in J}h_{ij}w_j+b.$$
+
+Cada $h_{ij}$ es un dato fijo: ninguna decisión multiplica otra decisión.
+La expresión es **afín** en los ajustes; es una suma de múltiplos conocidos
+de las decisiones. Aquí $b$ también se elige, aunque se sume de la misma
+manera en todos los clips.
+
+**Calculamos el error de ese clip.** Restamos el puntaje de referencia al
+producido. Elevamos esa diferencia al cuadrado, como pide el enunciado:
+
+$$\left(\sum_{j\in J}h_{ij}w_j+b-t_i\right)^2.$$
+
+Repetimos el cálculo para cada clip y sumamos los resultados. En todos los
+términos usamos los mismos pesos y la misma constante. No exigimos que cada
+error sea cero: buscamos aproximar las referencias lo mejor posible según
+esta suma.
+
+**El modelo general** queda así:
 
 $$\begin{aligned}
 \min_{w,b}\quad
@@ -101,7 +125,17 @@ $$\begin{aligned}
 &b\in\mathbb R.
 \end{aligned}$$
 
-**Con los datos del ejercicio**, $I=\{1,2,3,4\}$ y $J=\{1,2\}$:
+**Ahora sustituimos los datos.** Tenemos cuatro clips y dos entradas:
+$I=\{1,2,3,4\}$ y $J=\{1,2\}$. La misma regla produce estas salidas:
+
+| Clip | Salida | Referencia |
+|---|---|---:|
+| 1 | $b$ | 0 |
+| 2 | $w_1+b$ | 1 |
+| 3 | $w_2+b$ | 1 |
+| 4 | $w_1+w_2+b$ | 3 |
+
+Restamos cada referencia, elevamos cada diferencia al cuadrado y sumamos:
 
 $$\begin{aligned}
 \min_{w_1,w_2,b}\quad
@@ -111,61 +145,84 @@ $$\begin{aligned}
 &w_1,w_2,b\in\mathbb R.
 \end{aligned}$$
 
-**Comprobación:** el primer clip tiene ambas entradas en cero; por eso su
-salida es $b$ y su error cuadrado es $b^2$. Cada clip aporta un término, pero
-no recibe pesos propios. No agregamos no negatividad ni límites de salida
-que el enunciado no pide.
+**Comprobamos el primer término.** El primer clip tiene ambas entradas en
+cero, de modo que su salida es $b$. Su referencia es 0 y el error cuadrado
+es $b^2$. Cada clip aporta un término, pero ninguno recibe pesos propios.
 
-Es un problema continuo convexo: cada término es el cuadrado de una expresión
-afín. No es un problema lineal, porque el objetivo contiene cuadrados.
+El dominio real permite los valores negativos que admite el enunciado.
+No añadimos condiciones de no negatividad ni límites al puntaje.
+
+Este es un problema **continuo convexo**: el error de cada clip es afín en
+las decisiones y su cuadrado es convexo. La suma conserva esa propiedad.
+No es un problema lineal, porque el objetivo contiene cuadrados.
 :::
 
-## Problema 8 · Limitar los pesos de la salida
+## Problema 8 · Ajustar la red con un límite para los pesos
 
-::: exercise {#opt-b-red-ej-2 title="Conservar el ajuste y agregar una condición"}
-Parte del **problema 7 · Un puntaje de claridad para clips de audio**. Conserva las
-entradas (0, 0), (1, 0), (0, 1), (1, 1), los puntajes de referencia 0, 1,
-1, 3 y el objetivo de minimizar la suma de errores cuadrados.
+::: exercise {#opt-b-red-ej-2 title="Ajustar la red con un límite para los pesos"}
+Volvemos a los cuatro clips del problema 7. Todavía tenemos que elegir los
+pesos y la constante; no hemos fijado sus valores.
 
-Ahora el equipo quiere evitar pesos demasiado grandes. Establece esta regla:
-**la suma de los cuadrados de los dos pesos no puede superar 1**. La constante
-que se suma a la salida no entra en ese límite y sigue siendo libre. Los
-pesos todavía pueden ser negativos.
+**Conservamos:**
 
-Escribe el modelo completo. Para la versión general, llama $R>0$ al dato
-que fija el límite $R^2$; en este ejercicio $R=1$. Conserva el objetivo y
-agrega la condición pedida como restricción.
+- Las entradas (0, 0), (1, 0), (0, 1) y (1, 1), que permanecen fijas.
+- Los puntajes de referencia 0, 1, 1 y 3, respectivamente.
+- La misma regla de salida para todos los clips.
+- El objetivo de minimizar la suma de errores cuadrados.
+
+**Añadimos una condición.** Para evitar pesos demasiado grandes, el equipo
+establece que **la suma de los cuadrados de los dos pesos no puede superar
+1**. Los pesos todavía pueden ser negativos.
+
+La constante que se suma a la salida, también llamada **sesgo**, queda
+fuera de ese límite. Sigue siendo un número real libre.
+
+Escribe el modelo completo con la nueva condición como restricción.
+Para la versión general, usa el dato $R>0$: el límite de la suma será
+$R^2$. En este ejercicio, $R=1$. No busques los mejores parámetros.
 :::
 
-### Primero escribe tu restricción
+### Intenta escribir la condición nueva
 
-**NO ABRAS LA PISTA 1 SIN INTENTAR TRADUCIR LA NUEVA CONDICIÓN.**
+Conserva tu objetivo del problema anterior y escribe la condición que
+ahora deben cumplir los pesos. Usa las pistas si necesitas revisar esa
+traducción.
 
-::: hint {#opt-b-red-pista-2a of="opt-b-red-ej-2" title="PISTA 1 · Solo si te atoraste"}
-| Parte del relato | Condición |
-|---|---|
-| Entradas de los cuatro clips | (0, 0), (1, 0), (0, 1), (1, 1), fijas |
-| Puntajes de referencia | 0, 1, 1, 3 |
-| Medida que se minimiza | Suma de errores cuadrados |
-| Pesos | Pueden ser negativos; sus cuadrados suman como máximo 1 |
-| Constante de salida | Libre; queda fuera del nuevo límite |
+::: hint {#opt-b-red-pista-2a of="opt-b-red-ej-2" title="Pista 1 · Qué cambia con el límite"}
+
+- **Entradas y referencias**: Se conservan los datos de los cuatro clips.
+- **Medida que se minimiza**: Sigue siendo la suma de errores cuadrados.
+- **Pesos**: Admiten valores negativos; sus cuadrados suman como máximo 1.
+- **Constante de salida**: Sigue libre y queda fuera del nuevo límite.
+
+El dato $R$ fija el límite. No es otro ajuste que podamos elegir.
 :::
 
-**ABRE LA PISTA 2 SOLO SI LA CONDICIÓN TODAVÍA NO TE QUEDA CLARA.**
+Si todavía no sabes qué debe reunir la restricción, abre la segunda pista.
 
-::: hint {#opt-b-red-pista-2b of="opt-b-red-ej-2" title="PISTA 2 · Solo si te atoraste"}
-¿El relato exige limitar cada peso por separado o una cantidad que depende
-de todos ellos juntos?
+::: hint {#opt-b-red-pista-2b of="opt-b-red-ej-2" title="Pista 2 · Una suma para todos los pesos"}
+¿El enunciado exige limitar cada peso por separado o una cantidad que
+depende de todos ellos juntos?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Antes de abrir la respuesta, comprueba qué hiciste con la constante.
+Después compara tu restricción con la formulación propuesta.
 
-::: answer {#opt-b-red-resp-2 of="opt-b-red-ej-2"}
-**Conservamos** los datos $h_{ij},t_i$ y las decisiones compartidas $w_j,b$
-del problema 7. El nuevo parámetro es $R>0$. La condición suma $w_j^2$ para
-todos los pesos, y deja fuera a $b$.
+::: answer {#opt-b-red-resp-2 of="opt-b-red-ej-2" title="Añadir el límite sin cambiar el objetivo"}
+**Se mantienen los datos y las decisiones.** Las entradas $h_{ij}$ y las
+referencias $t_i$ siguen fijas. Elegimos los mismos tipos de ajustes: los
+pesos compartidos $w_j$ y la constante $b$. El nuevo dato es $R>0$.
 
-**Modelo general completo:**
+**Construimos la condición sobre los pesos.** Cada peso aporta su cuadrado,
+$w_j^2$. Sumamos esas aportaciones y comparamos el total con $R^2$:
+
+$$\sum_{j\in J}w_j^2\le R^2.$$
+
+El límite se aplica a todos los pesos juntos. La constante $b$ no aparece
+en esta suma porque el enunciado la deja libre. Para escribir la condición
+con cero del lado derecho, restamos $R^2$ en ambos lados.
+
+**El modelo general** conserva el objetivo y añade la restricción:
 
 $$\begin{aligned}
 \min_{w,b}\quad
@@ -176,7 +233,8 @@ $$\begin{aligned}
 &b\in\mathbb R.
 \end{aligned}$$
 
-**Modelo con los datos del ejercicio:**
+**Ahora sustituimos los datos.** Usamos las cuatro referencias y las dos
+entradas por clip del problema anterior. Con $R=1$, obtenemos
 
 $$\begin{aligned}
 \min_{w_1,w_2,b}\quad
@@ -187,15 +245,18 @@ $$\begin{aligned}
 &w_1,w_2,b\in\mathbb R.
 \end{aligned}$$
 
-**Comprobación:** dos pesos de valor 1 violan la regla porque sus cuadrados
-suman 2. Limitar cada uno a un intervalo entre $-1$ y 1 no bastaría. Un peso
-negativo es válido si se respeta la suma de cuadrados.
+**Comprobamos qué impone el límite.** Si ambos pesos valieran 1, sus
+cuadrados sumarían 2 y violarían la condición. Por eso no basta con pedir
+que cada peso esté entre $-1$ y 1. Un peso negativo sí está permitido,
+siempre que se respete la suma de cuadrados.
 
-El objetivo sigue siendo convexo. La nueva restricción tiene una función
-convexa del lado izquierdo y está escrita con $\le0$: su región es convexa.
-El límite es obligatorio: debe aparecer entre las restricciones. Sumar los
-cuadrados de los pesos al objetivo no impondría ese máximo y cambiaría el
-criterio que queremos minimizar.
+El objetivo sigue siendo convexo. En la nueva restricción, la suma de
+cuadrados menos el dato $R^2$ también es una función convexa. Al exigir
+que sea menor o igual que cero, obtenemos un conjunto permitido convexo.
+
+**El límite es obligatorio.** Por eso aparece entre las restricciones.
+Sumar los cuadrados de los pesos al objetivo cambiaría lo que minimizamos
+y no obligaría a respetar el máximo pedido.
 :::
 
 Después de comparar tus dos planteamientos, pasa a [[opt-modelo-red|la forma general de esta salida]].

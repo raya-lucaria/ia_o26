@@ -1,91 +1,134 @@
 ---
 id: opt-objetivo-clasificacion-practica
-title: Acertar etiquetas y asignar probabilidades
+title: Clasificar casos y comparar probabilidades
 nav_title: Clasificación · Practicar
-summary: "Formular accuracy y pérdida logarítmica, y comprobar por qué mejorar una no siempre mejora la otra."
+summary: "Construir una medida de aciertos y otra de probabilidades, y comprobar qué cambia al elegir entre ellas."
 status: ready
 tags: [optimizacion, modelado, clasificacion, practica]
 ---
 
-# Acertar etiquetas y asignar probabilidades
+# Clasificar casos y comparar probabilidades
 
-Una misma regla puede evaluarse por las etiquetas que acierta o por las
-probabilidades que asigna. Practicaremos cómo construir ambos objetivos.
-Los datos son didácticos; no necesitas entrenar un modelo ni conocer un
-algoritmo de clasificación.
+**Clasificar** es decidir a cuál de varios grupos pertenece un caso. Aquí
+vamos a separar mensajes normales de mensajes no deseados. Una regla
+asignará probabilidades a ambos grupos y, a partir de ellas, anunciará
+a cuál pertenece cada mensaje.
 
-## Problema 7 · Contar decisiones correctas
+Vamos a comparar reglas usando casos cuya clase correcta ya conocemos.
+Primero contaremos aciertos; después evaluaremos las probabilidades que
+asigna cada regla. Los datos son ficticios: no necesitas entrenar un modelo
+ni conocer un algoritmo de clasificación.
 
-::: exercise {#opt-obj-clas-ej-1 title="Ajustar una regla para acertar etiquetas"}
-Tenemos tres ejemplos conocidos. Una entrada numérica $x$ resume cada
-ejemplo; la etiqueta correcta $y$ vale 0 o 1.
+## Problema 7 · Contar cuántas etiquetas acierta una regla
 
-| Ejemplo | Entrada | Etiqueta correcta |
+::: exercise {#opt-obj-clas-ej-1 title="Contar cuántas etiquetas acierta una regla"}
+Un equipo quiere ajustar una regla que separe mensajes normales de
+mensajes no deseados. Para ponerla a prueba, tiene **tres mensajes ya
+revisados**. Son datos ficticios para este ejercicio.
+
+De cada mensaje conoce el número de enlaces que contiene, que será la
+entrada $x$. La etiqueta correcta $y$ vale **0 para un mensaje normal** y
+**1 para uno no deseado**.
+
+| Mensaje | Enlaces | Clase |
 |---|---:|---:|
 | 1 | 0 | 0 |
 | 2 | 1 | 1 |
 | 3 | 2 | 1 |
 
-Elegimos dos números reales, $a$ y $b$, compartidos por los tres ejemplos.
-Cada uno debe estar entre $-4$ y $4$. Con ellos, la regla asigna a la clase 1
-la probabilidad
+El número de enlaces es un conteo, sin unidades físicas. Los tres
+registros son los datos disponibles; no establecen una regla general
+sobre qué mensajes son no deseados.
+
+**La regla que podemos ajustar.** Elegimos dos números reales, $a$ y $b$.
+Cada uno debe estar entre $-4$ y $4$, y usamos la misma pareja para los tres
+mensajes. La probabilidad que la regla asigna a la clase 1 está dada por
 
 $$p(x;a,b)=\frac{1}{1+e^{-(ax+b)}}.$$
 
-Esta transformación, llamada **sigmoide**, convierte cualquier número real
-en un valor entre 0 y 1. La probabilidad de la clase 0 es $1-p(x;a,b)$.
-Entradas, parámetros y probabilidades no tienen unidades físicas aquí.
+La transformación del número $ax+b$ mediante esta fórmula se llama
+**sigmoide**. Su resultado está estrictamente entre 0 y 1. La probabilidad
+de la clase 0 es $1-p(x;a,b)$; los parámetros y las probabilidades tampoco
+tienen unidades físicas.
 
-La regla anuncia clase 1 cuando su probabilidad es **mayor o igual que
-0.5**; anuncia clase 0 en caso contrario. Queremos maximizar la proporción
-de etiquetas acertadas, llamada **accuracy**. Cada ejemplo cuenta lo mismo.
+**Cómo anuncia una clase.** La regla marca el mensaje como no deseado
+(clase 1) cuando su probabilidad es **mayor o igual que 0.5**. En caso
+contrario, lo marca como normal (clase 0). Así queda
+resuelto también el empate entre las dos probabilidades.
 
-Plantea el modelo completo sin buscar los mejores parámetros. Explica qué
-información conserva el objetivo y qué información pierde: compara asignar
-probabilidad 0.51 o 0.99 a la clase correcta.
+**Qué quiere el equipo.** Al comparar reglas, cada mensaje cuenta lo mismo:
+el equipo prefiere la que tenga una mayor proporción de etiquetas
+acertadas. Esa proporción se conoce como **accuracy**.
+
+Plantea el modelo completo, sin buscar los mejores parámetros. Tu propuesta
+debe indicar qué se elige, qué valores se permiten y cómo se calcula la
+proporción que quieres maximizar.
+
+Explica también qué información conserva esa medida y cuál pierde.
+Para hacerlo, compara asignar probabilidad 0.51 o 0.99 a la clase correcta.
 :::
 
-### Primero intenta plantearlo
+### Intenta escribir el modelo
 
-**NO ABRAS LA PISTA 1 SI TODAVÍA NO HAS HECHO UN INTENTO.**
+Haz un primer intento en tu hoja. Si no encuentras cómo empezar, abre la
+primera pista; después vuelve a tu propuesta.
 
-::: hint {#opt-obj-clas-pista-1a of="opt-obj-clas-ej-1" title="PISTA 1 · Solo si te atoraste"}
-| Parte del relato | ¿Está dada o se elige? |
-|---|---|
-| Entradas y etiquetas correctas | Dadas, una pareja por ejemplo |
-| Dos parámetros entre −4 y 4 | Se eligen una sola vez |
-| Umbral y regla del empate | Dados |
-| Probabilidad de cada ejemplo | Se calcula con la regla elegida |
+::: hint {#opt-obj-clas-pista-1a of="opt-obj-clas-ej-1" title="Pista 1 · Qué eliges y qué calculas"}
+Organiza lo que dice el enunciado antes de escribir el objetivo.
 
-El objetivo cuenta decisiones correctas, no suma directamente probabilidades.
+- **Mensajes que conocemos**: Número de enlaces y etiqueta correcta de cada uno.
+- **Números que ajustamos**: Una pareja de parámetros, ambos entre −4 y 4.
+- **Regla para anunciar la clase**: Usa la probabilidad de clase 1 y el umbral 0.5; el empate da clase 1.
+
+Al elegir los dos parámetros, ya puedes calcular la probabilidad y la
+etiqueta anunciada para cada caso.
 :::
 
-**ABRE LA PISTA 2 SOLO SI SIGUES ATORADO; DESPUÉS VUELVE A TU HOJA.**
+Si todavía no logras expresar la proporción, usa la segunda pista.
 
-::: hint {#opt-obj-clas-pista-1b of="opt-obj-clas-ej-1" title="PISTA 2 · Solo si te atoraste"}
+::: hint {#opt-obj-clas-pista-1b of="opt-obj-clas-ej-1" title="Pista 2 · Cómo contar los aciertos"}
 ¿Cómo asignarías un 1 a un acierto y un 0 a un error? ¿Qué necesitas hacer
 con esos tres números para obtener una proporción?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Antes de abrir la respuesta, revisa tu propuesta. Después compara ambas
+y localiza los pasos que planteaste de otra manera.
 
-::: answer {#opt-obj-clas-resp-1 of="opt-obj-clas-ej-1"}
-**Datos y decisiones.** Sean $I$ los ejemplos, $n=|I|>0$, $x_i$ sus entradas
-y $y_i\in\{0,1\}$ sus etiquetas. El dato $M>0$ limita los parámetros.
-Las decisiones son $a,b\in[-M,M]$, sin unidades físicas.
+::: answer {#opt-obj-clas-resp-1 of="opt-obj-clas-ej-1" title="Construir la proporción de aciertos"}
+**Los datos y los números que elegimos.** Llamemos $I$ al conjunto de casos
+y $n=|I|>0$ a su cantidad. Para cada caso conocemos su entrada $x_i$ y su
+etiqueta correcta $y_i\in\{0,1\}$. También conocemos una cota $M>0$ para
+los parámetros.
 
-**Construir probabilidades y etiquetas.** Abreviamos
-$p_i(a,b)=1/(1+e^{-(ax_i+b)})$. La etiqueta anunciada es
+Elegimos únicamente $a$ y $b$, ambos reales en el intervalo $[-M,M]$.
+Esta pareja se usa en todos los casos. Las entradas y los parámetros no
+tienen unidades físicas.
+
+**De los parámetros a la etiqueta.** Primero calculamos la probabilidad
+de clase 1 para cada caso:
+
+$$p_i(a,b)=\frac{1}{1+e^{-(ax_i+b)}}.$$
+
+Después aplicamos la regla del umbral. La etiqueta anunciada, que escribimos
+como $\widehat y_i$, es
 
 $$\widehat y_i(a,b)=
 \begin{cases}1&\text{si }p_i(a,b)\ge0.5,\\0&\text{si }p_i(a,b)<0.5.\end{cases}$$
 
-Son expresiones derivadas de $a,b$, no decisiones independientes.
-La notación $\mathbf 1\{P\}$ vale 1 cuando la proposición $P$ es verdadera
-y 0 cuando es falsa. Así, cada ejemplo aporta
-$\mathbf 1\{\widehat y_i(a,b)=y_i\}$.
+**No elegimos las probabilidades ni las etiquetas por separado.** Una vez
+fijados $a$ y $b$, estas expresiones determinan ambas.
 
-**Modelo general completo:**
+**De la etiqueta al acierto.** Comparamos la etiqueta anunciada con la
+correcta. El símbolo $\mathbf 1\{P\}$ vale 1 cuando la afirmación $P$ es
+verdadera y 0 cuando es falsa. Por eso,
+
+$$\mathbf 1\{\widehat y_i(a,b)=y_i\}$$
+
+aporta un 1 si acertamos en el caso $i$ y un 0 si fallamos. Sumamos esas
+aportaciones para contar los aciertos y dividimos entre $n$ para obtener
+su proporción. El resultado no tiene unidades y está entre 0 y 1.
+
+**El modelo general** busca la mayor proporción posible:
 
 $$\begin{aligned}
 \max_{a,b}\quad &\frac1n\sum_{i\in I}
@@ -94,9 +137,15 @@ $$\begin{aligned}
 &-M\le b\le M,\qquad a,b\in\mathbb R.
 \end{aligned}$$
 
-**Con los datos del ejercicio**, $I=\{1,2,3\}$, $M=4$ y
-$(p_1,p_2,p_3)=(\sigma(b),\sigma(a+b),\sigma(2a+b))$, donde
-$\sigma(z)=1/(1+e^{-z})$. El modelo queda
+**Ahora sustituimos los datos.** Los tres casos son los mensajes del
+enunciado: $I=\{1,2,3\}$ y $M=4$.
+Para abreviar la sigmoide escribimos $\sigma(z)=1/(1+e^{-z})$. Las entradas
+0, 1 y 2 dan las probabilidades
+
+$$(p_1,p_2,p_3)=(\sigma(b),\sigma(a+b),\sigma(2a+b)).$$
+
+La primera etiqueta correcta es 0; las otras dos son 1. Por tanto, el modelo
+concreto es
 
 $$\begin{aligned}
 \max_{a,b}\quad &\frac{
@@ -106,71 +155,122 @@ $$\begin{aligned}
 \text{sujeto a}\quad &-4\le a\le4,\quad -4\le b\le4,\quad a,b\in\mathbb R.
 \end{aligned}$$
 
-**Qué mide y qué omite.** Es una proporción sin unidades, entre 0 y 1.
-Dar el mismo peso a cada acierto supone que todos los errores cuestan lo
-mismo. Una probabilidad 0.51 y una 0.99 para la clase correcta producen
-el mismo acierto: el objetivo omite cuánta confianza expresa la regla.
+**Lo que cuenta y lo que deja fuera.** Dar el mismo peso a cada acierto
+supone que todos los errores cuestan lo mismo. Asignar probabilidad 0.51 o
+0.99 a la clase correcta produce el mismo acierto. Accuracy registra la
+etiqueta final, pero pierde esa diferencia entre probabilidades.
 
-Evaluar accuracy es sencillo. Lo que dificulta usarla para orientar pequeños
-cambios de parámetros es que permanece constante mientras ninguna etiqueta
-cambie; al cruzar ciertos límites, salta. El siguiente problema revisa la
-medida para conservar información probabilística. Si el problema real
-penalizara más un tipo de error, también habría que representar esos costos.
+Contar aciertos es sencillo. Sin embargo, podemos cambiar un poco los
+parámetros y obtener las mismas etiquetas: mientras eso ocurra, el objetivo
+permanece igual. El conteo puede saltar cuando cambian las etiquetas.
+
+El siguiente problema considera una medida que conserva diferencias entre
+probabilidades. Si un error de clasificación costara más que otro, harían
+falta además datos sobre esos costos para representarlos en el modelo.
 :::
 
-## Problema 8 · Evaluar la probabilidad de la clase correcta
+## Problema 8 · Evaluar las probabilidades de una regla
 
-::: exercise {#opt-obj-clas-ej-2 title="Cambiar el objetivo sin cambiar el predictor"}
-Conserva los tres ejemplos, la regla de probabilidad, el umbral, la regla
-del empate y las cotas del problema 7. Ahora importa asignar una probabilidad
-alta a la clase correcta, además de poder anunciar una etiqueta.
+::: exercise {#opt-obj-clas-ej-2 title="Evaluar las probabilidades de una regla"}
+El equipo también quiere evaluar las probabilidades que asigna la regla
+a cada mensaje. La etiqueta anunciada no muestra toda esa información: distintas
+probabilidades pueden producir la misma etiqueta.
 
-El equipo propone que cada ejemplo aporte **el negativo del logaritmo
-natural de la probabilidad asignada a su clase correcta**. Quiere minimizar
-el promedio de esas aportaciones; esta medida se llama **pérdida
+**Se conserva lo siguiente:**
+
+- Los tres mensajes, con sus números de enlaces y sus etiquetas correctas.
+- La fórmula que calcula probabilidades a partir de $a$ y $b$.
+- Las cotas entre $-4$ y $4$ para ambos parámetros.
+- El umbral 0.5 y la regla que anuncia clase 1 en caso de empate.
+
+**Cambia la medida con la que se ajusta la regla.** Para cada caso, el
+equipo propone tomar la probabilidad asignada a su clase correcta y
+calcular el **negativo de su logaritmo natural**. Después quiere minimizar
+el promedio de los tres valores. Esta medida se llama **pérdida
 logarítmica** o **log loss**.
 
-Construye el modelo completo y explica el signo negativo. Después compara
-estas dos reglas permitidas: ambas usan $a=0$; una usa $b=\ln9$ y asigna
-probabilidad 0.9 a la clase 1 en todos los ejemplos; la otra usa
-$b=\ln(0.49/0.51)$ y asigna 0.49. Puedes usar calculadora.
+Esta es una propuesta concreta del equipo. Querer probabilidades altas
+para la clase correcta no obliga, por sí solo, a elegir esta medida.
 
-¿Menor log loss implica necesariamente mayor accuracy en este conjunto?
-No necesitas calcular el óptimo de ninguno de los dos modelos.
+Construye el modelo completo y explica para qué sirve el signo negativo.
+Después compara estas dos reglas permitidas, que usan $a=0$:
+
+La primera usa $b=\ln9$ y la segunda, $b=\ln(0.49/0.51)$. En la tabla,
+$p$ es la probabilidad de clase 1 en cada mensaje.
+
+| Regla | $p$ |
+|---|---:|
+| Primera | 0.9 |
+| Segunda | 0.49 |
+
+Calcula la pérdida logarítmica y la proporción de aciertos de cada regla.
+Puedes usar calculadora. A partir de la comparación, responde: ¿tener menor
+log loss implica necesariamente tener mayor accuracy en este conjunto?
+
+No necesitas encontrar los mejores parámetros de ninguno de los dos modelos.
 :::
 
-### Primero construye la nueva medida
+### Intenta construir la nueva medida
 
-**NO ABRAS LA PISTA 1 SIN DISTINGUIR LAS DOS CLASES.**
+Antes de abrir las pistas, identifica qué probabilidad corresponde a la
+clase correcta en cada caso y escribe una propuesta de objetivo.
 
-::: hint {#opt-obj-clas-pista-2a of="opt-obj-clas-ej-2" title="PISTA 1 · Solo si te atoraste"}
-La probabilidad que produce la regla corresponde siempre a la clase 1.
-Las etiquetas correctas de los tres ejemplos siguen siendo 0, 1 y 1.
-Los parámetros de las dos reglas propuestas están dentro de las cotas.
+::: hint {#opt-obj-clas-pista-2a of="opt-obj-clas-ej-2" title="Pista 1 · Qué clase estás evaluando"}
+Ordena los datos que necesitas para evaluar cada regla.
+
+- **Probabilidad que entrega la fórmula**: Corresponde siempre a la clase 1.
+- **Etiquetas correctas**: Son 0, 1 y 1, en ese orden.
+- **Dos reglas para comparar**: Sus parámetros están dentro de las cotas.
+
+La medida propuesta usa la probabilidad de la **clase correcta de cada
+caso**, que puede ser distinta de la clase anunciada.
 :::
 
-**ABRE LA PISTA 2 SOLO SI SIGUES ATORADO.**
+Si todavía no sabes cómo escribir esa medida, abre la segunda pista y
+vuelve a tu hoja.
 
-::: hint {#opt-obj-clas-pista-2b of="opt-obj-clas-ej-2" title="PISTA 2 · Solo si te atoraste"}
-Si la etiqueta correcta es 0, ¿qué probabilidad corresponde a un acierto?
-¿Qué sucede con el negativo de su logaritmo cuando esa probabilidad se
-acerca a 1? ¿Y cuando se acerca a 0?
+::: hint {#opt-obj-clas-pista-2b of="opt-obj-clas-ej-2" title="Pista 2 · Qué probabilidad recibe esa clase"}
+Si la etiqueta correcta es 0, ¿qué probabilidad le asigna la regla a esa
+clase? ¿Qué sucede con el negativo de su logaritmo cuando esa probabilidad
+se acerca a 1? ¿Y cuando se acerca a 0?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Antes de abrir la respuesta, revisa tu modelo y tus cálculos. Después
+compara los resultados y la explicación de cada medida.
 
-::: answer {#opt-obj-clas-resp-2 of="opt-obj-clas-ej-2"}
-**Conservamos** los datos $I,x_i,y_i,M$ y las decisiones $a,b$.
-Cuando $y_i=1$, la probabilidad correcta es $p_i(a,b)$; cuando $y_i=0$,
-es $1-p_i(a,b)$. La expresión
+::: answer {#opt-obj-clas-resp-2 of="opt-obj-clas-ej-2" title="Construir y comparar la pérdida logarítmica"}
+**Primero elegimos qué probabilidad evaluar.** Conservamos los datos
+$I,x_i,y_i,M$ y las decisiones $a,b$ del problema anterior. La probabilidad
+asignada a la clase correcta depende de su etiqueta:
 
-$$\ell_i(a,b)=-y_i\ln p_i(a,b)-(1-y_i)\ln(1-p_i(a,b))$$
+- Si $y_i=1$, usamos $p_i(a,b)$.
+- Si $y_i=0$, usamos $1-p_i(a,b)$.
 
-elige el término que corresponde a cada etiqueta: uno de sus coeficientes
-vale 1 y el otro 0. Las probabilidades de esta familia están estrictamente
-entre 0 y 1, de modo que los logaritmos están definidos.
+**Después calculamos la pérdida.** Llamemos $r$ a esa probabilidad correcta.
+Para $0<r<1$, el logaritmo natural $\ln r$ es negativo. Por eso $-\ln r$
+es positivo y disminuye cuando $r$ aumenta.
 
-**Modelo general completo:**
+Cuando $r$ se acerca a 1, la pérdida se acerca a 0. Cuando $r$ se acerca a
+0, la pérdida crece sin límite: asignar una probabilidad muy baja a la
+clase correcta recibe una penalización grande. Así se penalizan los errores
+en los que la regla expresa mucha confianza en la clase equivocada.
+
+Con logaritmo natural, la escala se expresa en **nats por ejemplo**. No es
+un porcentaje de errores. El signo negativo ya está incluido en la
+pérdida; al minimizarla no volvemos a cambiarle el signo.
+
+**Reunimos las dos etiquetas en una expresión.** La pérdida del caso $i$ es
+
+$$\ell_i(a,b)=-y_i\ln p_i(a,b)-(1-y_i)\ln(1-p_i(a,b)).$$
+
+Si $y_i=1$, el primer coeficiente vale 1 y el segundo vale 0. Si $y_i=0$,
+sucede lo contrario. La fórmula conserva así el término que corresponde
+a la clase correcta.
+
+La sigmoide produce probabilidades estrictamente entre 0 y 1 con estos
+parámetros finitos. Por eso ambos logaritmos están definidos.
+
+**El modelo general** minimiza el promedio de las pérdidas:
 
 $$\begin{aligned}
 \min_{a,b}\quad &\frac1n\sum_{i\in I}
@@ -179,45 +279,58 @@ $$\begin{aligned}
 &-M\le b\le M,\qquad a,b\in\mathbb R.
 \end{aligned}$$
 
-**Con los datos del ejercicio**, se sustituyen las etiquetas 0, 1 y 1:
+**Ahora sustituimos los datos.** Las etiquetas son 0, 1 y 1, y usamos las
+mismas probabilidades del problema anterior. El modelo queda
 
 $$\begin{aligned}
 \min_{a,b}\quad &\frac{-\ln(1-\sigma(b))-\ln\sigma(a+b)-\ln\sigma(2a+b)}{3}\\
 \text{sujeto a}\quad &-4\le a\le4,\quad -4\le b\le4,\quad a,b\in\mathbb R.
 \end{aligned}$$
 
-**Sentido y escala.** Para una probabilidad correcta $r\in(0,1)$,
-$-\ln r$ es positivo, se aproxima a 0 cuando $r$ se aproxima a 1 y crece
-sin límite cuando $r$ se aproxima a 0. Minimizarlo favorece probabilidades
-altas para lo que ocurrió y penaliza errores muy confiados. Con logaritmo
-natural, la escala se expresa en **nats por ejemplo**; no es porcentaje de
-errores. El signo negativo ya forma parte de la pérdida: no se vuelve a negar.
+**Comparamos las dos reglas.** La primera asigna 0.9 a la clase 1, por lo
+que anuncia esa clase en los tres casos. Acierta dos veces. La segunda
+asigna 0.49 a la clase 1, anuncia clase 0 en todos los casos y acierta una
+vez.
 
-**Comprobación de las dos reglas:**
+Para calcular la pérdida usamos la probabilidad de la clase correcta,
+incluso cuando la regla anuncia otra clase. Los promedios son
 
-| Probabilidad de clase 1 | Aciertos | Log loss |
+$$\frac{-\ln0.1-2\ln0.9}{3}\quad\text{para la primera regla},$$
+
+$$\frac{-\ln0.51-2\ln0.49}{3}\quad\text{para la segunda regla}.$$
+
+La columna $p$ muestra la probabilidad de clase 1; accuracy es la proporción
+de aciertos.
+
+| $p$ | Accuracy | Log loss |
 |---|---:|---:|
 | 0.9 | 2/3 | 0.838 |
 | 0.49 | 1/3 | 0.700 |
 
-Los promedios se calculan como $(-\ln0.1-2\ln0.9)/3$ para la primera
-regla y $(-\ln0.51-2\ln0.49)/3$ para la segunda. Los valores de la tabla
-están redondeados.
+Los valores de pérdida están redondeados. **La segunda regla tiene menor
+pérdida y menos aciertos.** La primera recibe una penalización considerable
+por asignar apenas 0.1 a la clase correcta del primer caso.
 
-La segunda regla baja la pérdida y acierta menos etiquetas. En la primera,
-el error sobre el ejemplo de clase 0 recibe una penalización considerable.
-Así queda refutada la garantía de que **cada reducción de log loss** aumente
-accuracy. No hemos comparado los óptimos globales de ambos problemas.
+Este ejemplo refuta que cada reducción de log loss tenga que aumentar
+accuracy. Comparamos dos reglas permitidas; **no comparamos los mejores
+valores posibles** de los dos problemas ni probamos que sus parámetros
+óptimos sean distintos.
 
-**Por qué elegirla y qué deja fuera.** Log loss distingue probabilidades
-que accuracy trata igual y, en esta familia, varía suavemente con los
-parámetros. Es defendible cuando también queremos evaluar probabilidades;
-puede servir como objetivo sustituto cuando la medida final es accuracy.
-No garantiza que cada cambio favorezca esa medida final ni incorpora costos
-distintos de equivocarse. Para juzgar el resultado conviene conservar ambas
-medidas y, al evaluar predicción futura, usar ejemplos que no determinaron
-el ajuste. Ninguna de las dos cifras de entrenamiento demuestra por sí sola
-cómo se comportará la regla con datos nuevos.
+**Cuándo tiene sentido elegir esta medida.** Log loss distingue
+probabilidades que accuracy trata igual. En esta familia, además, varía
+suavemente cuando cambian los parámetros.
+
+Si nos interesa evaluar probabilidades, esa información justifica
+considerarla. Si lo que finalmente importa es accuracy, podemos usar log
+loss como **objetivo sustituto**: ajustamos con una medida y después
+comprobamos los resultados con la otra. El contraejemplo muestra por qué
+no debemos suponer que cada cambio mejora ambas.
+
+Ambas medidas siguen dando el mismo peso a cada caso; ninguna representa
+costos distintos de equivocarse. También necesitamos casos que no se hayan
+usado para ajustar los parámetros si queremos evaluar predicciones nuevas.
+Ninguna de las dos cifras obtenidas en los casos de ajuste demuestra, por
+sí sola, cómo funcionará la regla con datos nuevos.
 :::
 
 Después de comparar tus modelos, pasa a [[opt-objetivo-clasificacion-modelo|la formulación general de clasificación]].

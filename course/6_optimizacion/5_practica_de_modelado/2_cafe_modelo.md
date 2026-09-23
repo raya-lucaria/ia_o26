@@ -1,73 +1,100 @@
 ---
 id: opt-modelo-cafe
-title: "El modelo general de una mezcla"
+title: "Cómo escribir el modelo de una mezcla"
 nav_title: "Café: modelo general"
 summary: "Reconocer los datos, dominios y restricciones de una mezcla y expresarlos en la forma estándar del curso."
 status: ready
 tags: [optimizacion, modelado, practica]
 ---
 
-# El modelo general de una mezcla
+# Cómo escribir el modelo de una mezcla
 
-**Primero intenta los [[opt-practica-cafe|dos problemas de café]].** Aquí
-reconstruimos el razonamiento para cualquier número de ingredientes.
-La pregunta es: **¿cuánto comprar de cada uno para cumplir la receta al menor costo?**
+**Primero intenta los [[opt-practica-cafe|dos problemas de café]].** Aquí veremos
+cómo escribir esa misma compra cuando haya más ingredientes. También pondremos
+los dos modelos en la forma estándar que usamos en el curso.
 
-## 1 · Separar lo conocido de lo que elegimos
+La pregunta sigue siendo: **¿cuánto comprar de cada ingrediente para cumplir
+la receta al menor costo?**
 
-El relato fija una mezcla de peso exacto, sin pérdidas, y exige usar todo lo
-comprado. Esas condiciones determinan cómo relacionamos compras y mezcla.
+## 1 · Nombrar los datos y la compra
 
-| Dato conocido | Significado |
-|---|---|
-| $J$ | Conjunto finito no vacío de ingredientes |
-| $S\subseteq J$ | Ingredientes cuya participación conjunta tiene un mínimo |
-| $D>0$ | Masa total requerida, en kg |
-| $c_j\ge0$ | Precio constante del ingrediente $j$, en pesos/kg |
-| $s_j\ge0$ | Disponibilidad del ingrediente $j$, en kg |
-| $\alpha\in[0,1]$ | Fracción mínima de masa procedente de $S$ |
+El pedido exige un peso exacto. Todo lo comprado entra en la mezcla y no se
+pierde nada al prepararla. Por eso podemos usar la misma cantidad para hablar
+del café que compramos y del que lleva la mezcla.
 
-Elegimos $x_j$: **kg comprados del ingrediente $j$**. Hay una variable por
-ingrediente. Como se permiten fracciones y no compras negativas,
-$x_j\in\mathbb R_{\ge0}$.
+Llamamos $J$ al conjunto de ingredientes disponibles; debe ser finito y tener
+al menos un elemento. Dentro de $J$, el conjunto $S$ reúne los ingredientes
+cuya aportación conjunta debe alcanzar la proporción mínima de la receta.
+En la práctica solo A tenía ese requisito; aquí podemos agrupar varios.
+
+- $D>0$: Masa total requerida, en kg.
+- $c_j\ge0$: Precio constante del ingrediente $j$, en pesos/kg.
+- $s_j\ge0$: Disponibilidad del ingrediente $j$, en kg.
+- $\alpha\in[0,1]$: Fracción mínima de masa procedente de $S$.
+
+Para cada ingrediente $j\in J$, elegimos $x_j$: los **kg que compramos de ese
+ingrediente**. Como se permiten fracciones de kilogramo y no cantidades
+negativas, su dominio es:
+
+$$x_j\in\mathbb R_{\ge0}\qquad\text{para cada }j\in J.$$
 
 No elegimos el precio, la disponibilidad ni la receta. Cambiar sus datos
 describe otro pedido; cambiar $x_j$ describe otra compra para el mismo pedido.
 
-## 2 · Construir el objetivo y las condiciones
+## 2 · Escribir el gasto y las reglas de la receta
 
-Para gastar lo menos posible, primero escribimos cuánto cuesta **cualquier**
-compra. Precio por cantidad da $c_jx_j$ pesos; sumamos todos los ingredientes:
+Para comparar compras, necesitamos calcular cuánto cuesta **cualquier compra
+permitida**. Multiplicar el precio $c_j$, en pesos por kg, por la cantidad
+$x_j$, en kg, da un gasto de $c_jx_j$ pesos.
+
+Sumamos los gastos de todos los ingredientes y pedimos el menor total:
 
 $$\min\quad \sum_{j\in J}c_jx_j.$$
 
-Ahora traducimos cada obligación sin buscar todavía la mejor compra:
+Ahora escribimos cada obligación del pedido.
 
-| Condición del relato | Traducción | Por qué |
-|---|---|---|
-| Preparar exactamente el pedido | $\sum_{j\in J}x_j=D$ | Toda la compra entra en la mezcla, sin pérdidas |
-| No comprar más de lo disponible | $x_j\le s_j$ para cada $j$ | Cada ingrediente tiene su propia existencia |
-| Cumplir la proporción mínima | $\sum_{j\in S}x_j\ge\alpha D$ | El grupo requerido debe aportar esa fracción del peso total |
+**Preparar el peso exacto.** La suma de las compras es el peso de la mezcla,
+porque usamos todo y no hay pérdidas. Debe coincidir con el pedido:
 
-**Son las mismas cantidades en todas las filas.** No elegimos una compra
-para el costo y otra para la receta. Al cambiar $x_j$, cambian simultáneamente
-su costo, su aportación al peso y, si $j\in S$, su aportación a la proporción.
+$$\sum_{j\in J}x_j=D.$$
 
-El mínimo $\alpha D$ no es una cota descubierta resolviendo el ejemplo:
-proviene del porcentaje pedido y del total fijo. Si el total no estuviera
-fijado, no podríamos usar $D$ de esta manera.
+**Respetar las existencias.** Cada ingrediente tiene su propio límite.
+Escribimos una condición para cada uno:
 
-## 3 · Pasar a la forma estándar sin cambiar el pedido
+$$x_j\le s_j\qquad\text{para cada }j\in J.$$
 
-En el curso, la forma estándar lineal **maximiza**, usa $\le$ y declara
-variables no negativas. Adaptamos la escritura:
+**Cumplir la proporción mínima.** La fracción requerida es $\alpha$ y el
+peso total es $D$ kg. Por eso los ingredientes de $S$, sumados, deben aportar
+al menos $\alpha D$ kg:
+
+$$\sum_{j\in S}x_j\ge\alpha D.$$
+
+Ese mínimo sale de la receta y del peso fijado en el pedido; no necesitamos
+resolver el problema para conocerlo. Si el total no estuviera fijado, no
+podríamos usar $D$ de esta manera.
+
+**Las mismas variables aparecen en el gasto y en todas las condiciones.**
+Al cambiar una cantidad $x_j$, cambiamos cuánto cuesta, cuánto pesa y, si el
+ingrediente pertenece a $S$, cuánto aporta a la proporción exigida.
+
+## 3 · Escribir el mismo modelo en forma estándar
+
+Ya tenemos el objetivo, las restricciones y los dominios. Para reunirlos en
+la **forma estándar lineal del curso**, escribiremos una maximización,
+restricciones con $\le$ y variables no negativas.
+
+Hacemos tres cambios de escritura que conservan las compras permitidas y
+cuáles son las mejores:
 
 - **Objetivo:** minimizar el costo equivale a maximizar su negativo. Se
   conservan las mejores compras; el valor del objetivo cambia de signo.
-- **Peso exacto:** escribimos tanto «no más de $D$» como «no menos de $D$».
-- **Mínimo de receta:** multiplicamos ambos lados por $-1$ e invertimos el signo.
+- **Peso exacto:** exigimos tanto «no más de $D$» como «no menos de $D$».
+  Juntas, esas condiciones obligan a comprar exactamente $D$ kg. Para escribir
+  la segunda con $\le$, multiplicamos sus dos lados por $-1$.
+- **Mínimo de receta:** también multiplicamos sus dos lados por $-1$.
+  Al hacerlo, el signo $\ge$ se convierte en $\le$.
 
-No agregamos variables ni nuevas condiciones al pedido. El modelo completo es:
+No agregamos variables ni condiciones nuevas al pedido. El modelo completo es:
 
 $$
 \begin{aligned}
@@ -81,34 +108,43 @@ $$
 \end{aligned}
 $$
 
-Las dos primeras filas juntas representan la igualdad. Las demás conservan
-la disponibilidad y la receta. Este modelo es **lineal**.
+Las dos primeras restricciones juntas representan el peso exacto. Las otras
+conservan las existencias y la proporción de la receta.
+
+Este modelo es **lineal**: las variables se multiplican por datos conocidos
+y se suman; no se multiplican entre sí.
 
 ## 4 · Qué cambia al comprar paquetes completos
 
-En el problema 2 cambia la unidad de compra. Añadimos el **dato** $q_j>0$:
-kg que contiene un paquete del ingrediente $j$.
+Al pasar al problema 2, el pedido y la receta se conservan. Lo que cambia es
+la venta: solo se pueden comprar paquetes completos. Añadimos el **dato**
+$q_j>0$, que dice cuántos kg contiene un paquete del ingrediente $j$.
 
-Elegimos ahora $n_j\in\mathbb Z_{\ge0}$, el número de paquetes. Un número
-entero de kg no bastaría: debe comprarse un múltiplo del tamaño del paquete.
-La relación entre las dos maneras de contar es
+Ahora elegimos $n_j$, el número de paquetes de ese ingrediente, con dominio
+$n_j\in\mathbb Z_{\ge0}$. Pedir un número entero de kg no bastaría: la cantidad
+comprada debe ser un múltiplo del peso de cada paquete.
+
+Para pasar de paquetes a kilogramos, multiplicamos:
 
 $$\underbrace{x_j}_{\text{kg}}=
 \underbrace{q_j}_{\text{kg por paquete}}\,
 \underbrace{n_j}_{\text{paquetes}}.$$
 
-**Reemplazamos las variables de masa por variables de paquetes.** En el
-modelo siguiente no elegimos $x_j$ y $n_j$ por separado: la masa queda
-calculada como $q_jn_j$. Si decidiéramos conservar ambas, tendríamos que
-agregar la igualdad $x_j=q_jn_j$ para enlazarlas.
+**Una vez elegidos los paquetes, los kilogramos quedan determinados.**
+En el siguiente modelo usamos $n_j$ y calculamos la masa como $q_jn_j$;
+ya no necesitamos elegir $x_j$ por separado.
 
-| Parte | Qué cambia y qué se conserva |
-|---|---|
-| Objetivo | Sigue midiendo costo; cada paquete cuesta $c_jq_j$ pesos |
-| Restricciones de masa | Sustituimos cada $x_j$ por $q_jn_j$, siempre en kg |
-| Dominio | Contamos paquetes enteros; no permitimos fracciones de paquete |
+Si quisiéramos conservar ambas variables, tendríamos que agregar la igualdad
+$x_j=q_jn_j$. Así representarían la misma compra.
 
-Así obtenemos el modelo completo, en la misma forma estándar:
+- **Objetivo**: Sigue midiendo costo; cada paquete cuesta $c_jq_j$ pesos.
+- **Restricciones de masa**: Sustituimos cada $x_j$ por $q_jn_j$, siempre en kg.
+- **Dominio**: Contamos paquetes enteros; no permitimos fracciones de paquete.
+
+La obligación de usar todo lo comprado sigue siendo esencial: los kilogramos
+de los paquetes son los que deben completar el pedido, sin guardar sobrantes
+ni desechar café. Con esa condición, obtenemos el modelo completo en la misma
+forma estándar:
 
 $$
 \begin{aligned}
@@ -122,9 +158,13 @@ $$
 \end{aligned}
 $$
 
-Es **lineal entero**: $c_j$ y $q_j$ son datos, así que sus productos con $n_j$
-siguen siendo lineales. La nueva presentación puede hacer imposible el
-pedido exacto; formular correctamente no garantiza que exista una compra válida.
+Es **lineal entero**. Los precios $c_j$ y los tamaños $q_j$ son datos, así que
+$c_jq_j$ es un coeficiente conocido: multiplicarlo por $n_j$ conserva la
+linealidad. El dominio exige que el número de paquetes sea entero.
+
+La nueva presentación puede hacer imposible un pedido exacto. Formular
+correctamente el problema no garantiza que haya una compra que cumpla
+todas sus condiciones.
 
 ## Qué razonamiento puedes reutilizar
 

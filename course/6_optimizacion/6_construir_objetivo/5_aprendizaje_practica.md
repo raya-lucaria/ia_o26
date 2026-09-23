@@ -9,82 +9,112 @@ tags: [optimizacion, modelado, practica]
 
 # Elegir actividades para aprender
 
-**Tu tarea:** formular dos maneras de elegir actividades y explicar qué
-permiten afirmar sus objetivos. El propósito es que una persona pueda
-resolver después preguntas de dos temas sin ayuda. Los valores siguientes
-son estimaciones didácticas inventadas, no resultados de un estudio.
-Intenta cada ejercicio antes de abrir sus ayudas.
+Como tutor, vas a preparar una sesión para que un estudiante pueda
+**resolver después preguntas de dos temas sin ayuda**. Puedes elegir las
+actividades que realizará, pero necesitas decidir cómo comparar las opciones. ¿Basta con contar lo que
+responde bien mientras practica?
 
-## Problema 5 · Lo que podemos medir durante la sesión
+En estos dos problemas vas a formular una propuesta y después revisarla con
+información nueva. Los valores son **estimaciones didácticas inventadas**,
+no resultados de un estudio. Intenta cada ejercicio antes de abrir sus ayudas.
+
+## Problema 5 · Preparar una sesión para dos temas
 
 ::: exercise {#opt-obj-apr-ej-sesion title="Elegir una actividad por tema"}
-Una sesión dura **20 minutos** y debe cubrir dos temas. Hay que elegir
-**exactamente una actividad del tema 1 y exactamente una del tema 2**.
-Cada actividad dura 10 minutos y contiene 10 preguntas. No se pueden repetir
-actividades ni dividirlas.
+Dispones de **20 minutos** para la sesión con el estudiante. Para cada
+tema puedes elegir entre una actividad E, con ayudas abundantes, y una
+actividad R, que requiere responder sin ayuda.
 
-Las actividades E incluyen ayudas abundantes; las R requieren responder
-sin ayuda. Estas son las estimaciones disponibles:
+Todas las actividades duran **10 minutos** y contienen **10 preguntas**.
+La sesión debe cumplir estas condiciones:
 
-| Actividad | Tema | Duración | Aciertos previstos durante la actividad |
-|---|---:|---:|---:|
-| E1 | 1 | 10 min | 10 de 10 |
-| E2 | 2 | 10 min | 10 de 10 |
-| R1 | 1 | 10 min | 6 de 10 |
-| R2 | 2 | 10 min | 6 de 10 |
+- Elegir exactamente una actividad del tema 1 y una del tema 2.
+- Realizar completas las actividades elegidas, sin dividirlas ni repetirlas.
+- Terminar dentro de los 20 minutos disponibles.
 
-Se propone elegir las actividades con **mayor número total de aciertos
-previstos durante la sesión**. Para este modelo, las estimaciones de una
-actividad no cambian según qué actividad se elija para el otro tema.
+La tabla muestra cuántos aciertos se prevén durante cada actividad:
 
-Escribe datos, decisiones, objetivo, restricciones y dominios. Después
-propón una selección admisible que puntúe alto y explica cómo podría
-lograrlo sin demostrar que la persona responderá después sin ayuda.
-¿Qué mide el objetivo y qué deja fuera? No inventes datos sobre esa
-evaluación posterior.
+| Actividad | Tema | Aciertos |
+|---|---:|---:|
+| E1 | 1 | 10 |
+| E2 | 2 | 10 |
+| R1 | 1 | 6 |
+| R2 | 2 | 6 |
+
+Un colega te propone usar esos aciertos para comparar las opciones: le
+parece conveniente que el estudiante responda correctamente tantas
+preguntas como sea posible durante la práctica. Para este ejercicio, la
+estimación de una actividad no cambia al elegir otra para el segundo tema.
+
+**Tu tarea es formular y examinar esa propuesta:**
+
+1. Identifica los datos y las decisiones. Escribe el objetivo, las
+   restricciones y los dominios de las variables.
+2. Construye una selección admisible que puntúe alto. Explica cómo podría
+   lograrlo sin demostrar que el estudiante responderá después sin ayuda.
+3. Distingue qué mide el objetivo y qué deja fuera del propósito de aprender.
+
+No tenemos datos sobre una evaluación posterior. Tu explicación debe
+respetar ese límite, sin inventar resultados para esa evaluación.
 :::
 
 ### Primero intenta plantearlo
 
-**NO ABRAS LA PISTA 1 SIN INTENTARLO. ÚSALA SOLO SI TE ATORASTE.**
+Antes de abrir la primera pista, intenta separar lo que sabes de lo que puedes elegir.
 
-::: hint {#opt-obj-apr-pista-sesion-datos of="opt-obj-apr-ej-sesion" title="PISTA 1 · Solo si te atoraste"}
+::: hint {#opt-obj-apr-pista-sesion-datos of="opt-obj-apr-ej-sesion" title="Pista 1 · Separar datos y decisiones"}
 Agrupa las opciones por tema: E1 y R1 son alternativas entre sí; E2 y R2
 también. Los minutos y aciertos previstos son datos. Lo que eliges es qué
 actividad se realiza en cada tema.
 :::
 
-**NO ABRAS LA PISTA 2 SIN INTENTARLO. ÚSALA SOLO SI SIGUES ATORADO.**
+Si todavía no encuentras cómo expresarlo, la segunda pista puede ayudarte.
 
-::: hint {#opt-obj-apr-pista-sesion-guia of="opt-obj-apr-ej-sesion" title="PISTA 2 · Solo si te atoraste"}
+::: hint {#opt-obj-apr-pista-sesion-guia of="opt-obj-apr-ej-sesion" title="Pista 2 · Construir la expresión"}
 ¿Cómo harías que una actividad no elegida aportara cero al total, y una
 elegida aportara su estimación completa?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Cuando tengas un planteamiento, compáralo con la respuesta.
 
-::: answer {#opt-obj-apr-resp-sesion of="opt-obj-apr-ej-sesion" title="Respuesta · Un indicador no es el propósito completo"}
-**1. Separar propósito e indicador.** Queremos desempeño posterior sin ayuda.
-Por ahora comparamos aciertos durante actividades que pueden incluir ayudas.
-Ambas cosas pueden relacionarse, pero no son la misma medición.
+::: answer {#opt-obj-apr-resp-sesion of="opt-obj-apr-ej-sesion" title="Respuesta · Contar aciertos y preguntar qué demuestran"}
+**1. Distinguir lo que queremos de lo que contamos.** Queremos que el estudiante
+responda después sin ayuda. Por ahora solo tenemos estimaciones de aciertos
+durante las actividades, algunas de las cuales ofrecen ayudas abundantes.
+
+Ese conteo es un **indicador**: una medida concreta que usamos para valorar
+una selección. Puede relacionarse con el propósito, pero la relación necesita
+justificarse; no basta con llamar “aprendizaje” a los aciertos.
 
 **2. Definir parámetros y decisiones.** Sea $K$ el conjunto de temas y $J_k$
 el conjunto de actividades del tema $k$. Cada actividad pertenece a un solo
 tema y $J$ reúne todas las actividades.
 
-| Parámetro | Significado y unidad |
-|---|---|
-| $t_j>0$ | Duración de la actividad $j$, en minutos |
-| $T>0$ | Tiempo disponible, en minutos |
-| $a_j\ge0$ | Aciertos previstos durante la actividad $j$ si se selecciona |
+- $t_j>0$: Duración de $j$, en minutos.
+- $T>0$: Tiempo disponible, en minutos.
+- $a_j\ge0$: Aciertos previstos al realizar $j$.
 
-La decisión $x_j\in\{0,1\}$ vale uno si seleccionamos la actividad $j$ y
-cero si no. Es un indicador de selección, sin unidad física.
+Para cada actividad definimos una variable $x_j\in\{0,1\}$. Vale uno si
+seleccionamos la actividad completa y cero si la dejamos fuera; no tiene
+unidad física. **Elegimos actividades, no sus aciertos**: las estimaciones
+ya vienen dadas.
 
-**3. Construir expresiones.** La actividad aporta $a_jx_j$ aciertos
-previstos y consume $t_jx_j$ minutos. Sumamos aportaciones porque el ejercicio
-supone que la elección del otro tema no modifica esas estimaciones.
-Para cada tema, sumar las selecciones debe dar exactamente uno.
+**3. Construir lo que vamos a contar.** Si seleccionamos la actividad $j$,
+contamos sus $a_j$ aciertos previstos; si la dejamos fuera, contamos cero.
+El producto $a_jx_j$ expresa esas dos posibilidades. Al sumar obtenemos:
+
+$$
+\text{aciertos previstos durante la sesión}=\sum_{j\in J}a_jx_j.
+$$
+
+La suma se mide en aciertos. Podemos usarla porque el ejercicio supone que
+seleccionar una actividad no cambia la estimación de la elegida para el otro
+tema.
+
+Para el tiempo hacemos lo mismo: $t_jx_j$ cuenta los minutos de una actividad
+solo cuando se realiza. La suma de esos minutos debe caber en $T$. Además,
+al sumar las variables de las actividades de un mismo tema, el resultado
+debe ser uno: así elegimos una y dejamos fuera las demás.
 
 **4. Reunir el modelo general.**
 
@@ -98,9 +128,10 @@ $$
 \end{aligned}
 $$
 
-El objetivo mide un número previsto de aciertos durante la sesión. Es
-defendible para priorizar ese desempeño inmediato. Si se usa para representar
-aprendizaje posterior, hace falta justificar la relación entre ambos.
+El objetivo mide un número previsto de aciertos durante la sesión. Sirve
+para preferir las actividades con más respuestas correctas en ese momento.
+Si queremos usarlo para valorar lo que se aprenderá, todavía necesitamos
+justificar esa relación.
 
 **5. Sustituir los datos.** Aquí $J_1=\{E1,R1\}$ y $J_2=\{E2,R2\}$:
 
@@ -118,78 +149,114 @@ $$
 El tiempo se cumple automáticamente con estos datos y una actividad por tema;
 mantener la condición permite reconocer el presupuesto del relato.
 
-**Comprobación y caso límite.** E1 y E2 obtienen 20 aciertos previstos;
-R1 y R2, 12. El objetivo favorece la primera pareja. Pero esos 20 aciertos
-pueden depender de las ayudas: por sí solos no demuestran que la persona
-resolverá preguntas después sin ellas. Tampoco podemos concluir con estos
-datos que las R produzcan más aprendizaje.
+**6. Poner a prueba el indicador.** La selección E1 y E2 cumple las reglas y
+suma 20 aciertos previstos. R1 y R2 también es admisible, pero suma 12. El
+objetivo favorece la primera pareja.
 
-Para revisar el modelo necesitamos información alineada con el propósito,
-por ejemplo desempeño posterior en una prueba común sin ayuda. Cambiar el
-nombre del objetivo a “aprendizaje” no aporta esa información.
+Podemos imaginar que el estudiante responde bien gracias a las ayudas y aún
+necesita esas ayudas al terminar. Eso basta para mostrar el límite del
+indicador: **una puntuación alta durante la sesión no demuestra que el
+estudiante pueda responder después sin ayuda**. Tampoco podemos concluir con estos datos que las R produzcan
+más aprendizaje.
+
+Para saber más necesitamos observar lo que el estudiante puede responder
+después, por ejemplo en una prueba común sin ayuda. Cambiar el nombre del
+objetivo a “aprendizaje” no aporta esa información.
 :::
 
-## Problema 6 · Incorporar una evaluación posterior
+## Problema 6 · Responder después sin ayuda
 
-::: exercise {#opt-obj-apr-ej-diferida title="Cambiar el indicador con nuevos datos"}
-Conserva las cuatro actividades, sus duraciones de 10 minutos, el presupuesto
-de 20 minutos y la obligación de seleccionar exactamente una actividad por
-tema. También se conservan los aciertos previstos durante la sesión.
+::: exercise {#opt-obj-apr-ej-diferida title="Preparar al estudiante para una prueba sin ayuda"}
+Seguimos preparando la misma sesión, pero queremos mirar lo que el estudiante
+podrá responder **después, sin ayuda**. Para eso disponemos ahora de
+estimaciones sobre una evaluación posterior.
 
-Ahora hay estimaciones adicionales para una **prueba común posterior, sin
-ayuda**, de 20 preguntas: 10 del tema 1 y 10 del tema 2. Todas las personas
-responden la misma prueba, cualquiera que haya sido su selección.
+**Las condiciones de la sesión se conservan:**
 
-| Actividad seleccionada para un tema | Aciertos previstos en el bloque posterior de ese tema |
-|---|---:|
-| E1 | 2 de 10 del tema 1 |
-| E2 | 2 de 10 del tema 2 |
-| R1 | 7 de 10 del tema 1 |
-| R2 | 7 de 10 del tema 2 |
+- Las mismas cuatro actividades, completas y sin repeticiones, de 10 minutos
+  cada una.
+- Un presupuesto de 20 minutos y exactamente una actividad por tema.
+- Los mismos aciertos previstos durante la sesión.
 
-Para este ejercicio, el resultado previsto de cada tema depende únicamente
-de su actividad seleccionada: no hay interacción entre temas. Los dos
-bloques tienen preguntas distintas y sus aciertos se suman. Son supuestos
-didácticos del modelo, no evidencia de que una actividad cause esos resultados.
+**La información nueva** corresponde a una prueba común de 20 preguntas:
+10 del tema 1 y 10 del tema 2. Todas las personas responden la misma prueba
+sin ayuda, cualquiera que haya sido su selección de actividades.
 
-Se propone maximizar el total de aciertos previstos en esa prueba posterior.
-Escribe el modelo completo y explica qué cambió respecto del problema 5,
-por qué el nuevo objetivo está más cerca del propósito y qué sigue sin medir.
+Cada fila indica los aciertos previstos en el bloque de un tema si se
+selecciona esa actividad para prepararlo:
+
+| Actividad | Tema | Aciertos |
+|---|---:|---:|
+| E1 | 1 | 2 |
+| E2 | 2 | 2 |
+| R1 | 1 | 7 |
+| R2 | 2 | 7 |
+
+Suponemos que el resultado previsto de cada tema depende únicamente de la
+actividad elegida para ese tema: **no hay interacción entre temas**. Los
+bloques contienen preguntas distintas y sus aciertos se suman. Estos son
+supuestos didácticos; no son evidencia de que las actividades causen esos
+resultados.
+
+Con esta información, tu colega propone elegir las actividades con las que
+se prevean más aciertos en la prueba posterior. Examina esta nueva propuesta:
+
+1. Escribe el modelo completo y explica qué cambia respecto del problema 5.
+2. Explica por qué esta evaluación está más cerca del propósito de aprender.
+3. Describe una situación en la que se obtenga una puntuación alta y aun así
+   quede fuera algo importante del aprendizaje. ¿Qué habría que observar
+   para revisar ese límite?
 :::
 
 ### Primero intenta plantearlo
 
-**NO ABRAS LA PISTA 1 SIN INTENTARLO. ÚSALA SOLO SI TE ATORASTE.**
+Antes de abrir la primera pista, intenta separar lo que sabes de lo que puedes elegir.
 
-::: hint {#opt-obj-apr-pista-diferida-datos of="opt-obj-apr-ej-diferida" title="PISTA 1 · Solo si te atoraste"}
-Tenemos dos mediciones por actividad: aciertos durante la sesión y aciertos
-previstos después en el bloque de su tema. Las actividades posibles y las
+::: hint {#opt-obj-apr-pista-diferida-datos of="opt-obj-apr-ej-diferida" title="Pista 1 · Separar datos y decisiones"}
+Tenemos dos estimaciones de aciertos por actividad: durante la sesión y
+después, en el bloque de su tema. Las actividades posibles y las
 reglas de selección se conservan; la prueba posterior es común.
 :::
 
-**NO ABRAS LA PISTA 2 SIN INTENTARLO. ÚSALA SOLO SI SIGUES ATORADO.**
+Si todavía no encuentras cómo expresarlo, la segunda pista puede ayudarte.
 
-::: hint {#opt-obj-apr-pista-diferida-guia of="opt-obj-apr-ej-diferida" title="PISTA 2 · Solo si te atoraste"}
-¿Qué datos corresponden al momento y a las condiciones del desempeño que
-ahora quieres valorar? ¿Cambiar esa medición modifica por sí solo el tiempo
-disponible o la obligación de cubrir ambos temas?
+::: hint {#opt-obj-apr-pista-diferida-guia of="opt-obj-apr-ej-diferida" title="Pista 2 · Construir la expresión"}
+¿Qué datos te dicen cuántas preguntas podría responder bien el estudiante
+cuando ya no tenga ayuda? Al usar esos datos, ¿cambian el tiempo disponible
+o la obligación de cubrir ambos temas?
 :::
 
-**COMPARA CON TU INTENTO ANTES DE LEER LA RESPUESTA.**
+Cuando tengas un planteamiento, compáralo con la respuesta.
 
-::: answer {#opt-obj-apr-resp-diferida of="opt-obj-apr-ej-diferida" title="Respuesta · Revisar el indicador y conservar las obligaciones"}
-**1. Identificar el cambio.** Sustituimos el desempeño durante actividades
-por el desempeño previsto después, sin ayudas. La selección sigue siendo
-una decisión previa: las estimaciones no son resultados garantizados.
+::: answer {#opt-obj-apr-resp-diferida of="opt-obj-apr-ej-diferida" title="Respuesta · Cambiar los aciertos que contamos"}
+**1. Identificar el cambio.** Antes contábamos aciertos durante las
+actividades; ahora contamos los previstos en una prueba posterior sin
+ayuda. Las actividades se eligen antes de conocer esos resultados: las
+estimaciones no garantizan lo que ocurrirá.
 
-**2. Definir el dato nuevo.** Conservamos $K,J_k,J,t_j,T$ y las variables
-binarias $x_j$. Sea $b_j\ge0$ el número previsto de aciertos en el bloque
-posterior del tema de $j$ si seleccionamos esa actividad.
+**2. Definir el dato nuevo.** Los conjuntos de temas y actividades
+($K,J_k,J$), las duraciones $t_j$, el tiempo disponible $T$ y las variables
+binarias $x_j$ conservan su significado.
 
-**3. Construir la nueva expresión.** Una sola actividad está seleccionada
-por tema. Por ello $\sum_{j\in J_k}b_jx_j$ toma la estimación de esa actividad,
-sin contar también su alternativa. Sumamos los temas porque sus preguntas
-son distintas y el supuesto excluye efectos entre ellos.
+Llamamos $b_j\ge0$ al número previsto de aciertos en el bloque posterior del
+tema de $j$ si seleccionamos esa actividad. Esta estimación es un dato nuevo:
+no podemos deducirla de los aciertos durante la sesión ni de nuestro deseo
+de que el estudiante aprenda.
+
+**3. Contar los aciertos de cada bloque.** Para un mismo tema hay varias
+actividades posibles, pero realizamos solo una. Multiplicar $b_j$ por $x_j$
+permite contar la estimación de la actividad elegida y dejar en cero las de
+sus alternativas:
+
+$$
+\text{aciertos previstos en el bloque del tema }k
+=\sum_{j\in J_k}b_jx_j.
+$$
+
+Después sumamos los bloques para obtener el total de la prueba. Las
+preguntas de un bloque son distintas de las del otro, así que no contamos
+un mismo acierto dos veces. Además, el supuesto de ausencia de interacción
+permite conservar la estimación de un bloque al elegir la actividad del otro.
 
 **4. Reunir el modelo general completo.**
 
@@ -204,8 +271,9 @@ $$
 $$
 
 El objetivo se mide en aciertos previstos en la prueba posterior. Ahora
-compara el desempeño sin ayuda y en un momento posterior, como pedía el
-propósito. Sigue suponiendo que esa prueba y esas estimaciones son adecuadas.
+comparamos lo que el estudiante respondería después y sin ayuda, como pedía
+el propósito. Aún necesitamos confiar en que la prueba evalúa lo que nos
+interesa y en que las estimaciones son adecuadas.
 
 **5. Sustituir los datos.**
 
@@ -220,9 +288,13 @@ $$
 \end{aligned}
 $$
 
-**Comprobación y límite.** Las mismas selecciones reciben ahora otra valoración:
+**6. Comparar las dos valoraciones.** Las selecciones admisibles no han
+cambiado. Para cada una, esta tabla compara los aciertos previstos en los
+dos momentos:
 
-| Selección válida | Aciertos previstos en sesión | Aciertos previstos después |
+En la tabla, «Prueba» corresponde a la evaluación posterior.
+
+| Selección | Sesión | Prueba |
 |---|---:|---:|
 | E1 y E2 | 20 | 4 |
 | E1 y R2 | 16 | 9 |
@@ -233,12 +305,16 @@ La pareja que más puntuaba durante la sesión puntúa menos en la evaluación
 posterior. Estos datos permiten mostrar la diferencia que antes solo
 podíamos señalar como posibilidad.
 
-El nuevo indicador tampoco equivale a todo el aprendizaje. Si alguien
-memoriza las 20 preguntas y falla ante preguntas nuevas, puede obtener una
-puntuación alta sin poder transferir lo aprendido. Revisaríamos la prueba
-para incluir preguntas nuevas y necesitaríamos estimaciones correspondientes:
-no podemos reutilizar los mismos $b_j$ sin justificarlos. También habría
-que revisar la suma si estudiar un tema cambiara el desempeño en el otro.
+**7. Buscar lo que todavía queda fuera.** Si alguien memoriza las 20
+preguntas de la prueba y falla ante preguntas nuevas, puede obtener una
+puntuación alta sin poder usar lo aprendido en otra situación. El nuevo
+indicador está más cerca del propósito, pero tampoco equivale a todo el
+aprendizaje.
+
+Para examinar ese límite, podríamos incluir preguntas nuevas en la prueba.
+Necesitaríamos estimaciones correspondientes a esa evaluación: **no podemos
+reutilizar los mismos $b_j$ sin justificarlos**. También habría que revisar
+la suma si estudiar un tema cambiara el desempeño en el otro.
 :::
 
 Después de tus intentos, consulta [[opt-objetivo-aprendizaje-modelo|el modelo general de selección e indicadores]].

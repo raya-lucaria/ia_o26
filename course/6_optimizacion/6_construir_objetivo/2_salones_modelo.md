@@ -1,51 +1,68 @@
 ---
 id: opt-objetivo-salones-modelo
-title: Un modelo de horarios y prioridades
+title: Cómo modelar salones, horarios y comodidad
 nav_title: "Salones: modelo general"
 summary: "Asignaciones, intervalos ocupados y objetivos que expresan prioridades distintas entre grupos."
 status: ready
 tags: [optimizacion, modelado, entera]
 ---
 
-# Un modelo de horarios y prioridades
+# Cómo modelar salones, horarios y comodidad
 
-**Primero intenta [[opt-objetivo-salones-practica|los dos problemas de salones]].**
-Aquí reunimos las dos decisiones: dónde y cuándo impartir cada curso. Después
-comparamos criterios sin alterar silenciosamente las reglas obligatorias.
+Antes de continuar, intenta [[opt-objetivo-salones-practica|los dos problemas de salones]].
+Allí cambiamos la decisión de salón por la decisión de horario; aquí reunimos
+ambas: **dónde y cuándo impartir cada curso**.
+
+Construiremos primero las opciones que cumplen las reglas. Después veremos
+cómo compararlas cuando nos importan consecuencias distintas para los grupos.
 
 ## 1 · Construir las opciones de cada curso
 
-| Dato | Significado |
-|---|---|
-| $C,R,T$ | Conjuntos finitos de cursos, salones y bloques horarios |
-| $n_c,k_r$ | Estudiantes del curso y lugares del salón |
-| $d_c\in\mathbb Z_{>0}$ | Duración del curso en bloques consecutivos |
-| $e_c,p_r\in\{0,1\}$ | Necesidad y existencia de proyector |
-| $v_{rt}\in\{0,1\}$ | Disponibilidad del salón durante el bloque |
-| $S_c$ | Inicios permitidos por calendario y disponibilidad del docente |
-| $G$ | Grupos de estudiantes cuya molestia queremos comparar |
-| $C_g\subseteq C$ | Cursos que cursa el grupo $g$ |
-| $H$ | Parejas de cursos que comparten docente o estudiantes |
+- $C,R,T$: Conjuntos finitos de cursos, salones y bloques horarios.
+- $n_c,k_r$: Estudiantes del curso y lugares del salón.
+- $d_c\in\mathbb Z_{>0}$: Duración del curso en bloques consecutivos.
+- $e_c,p_r\in\{0,1\}$: Necesidad y existencia de proyector.
+- $v_{rt}\in\{0,1\}$: Disponibilidad del salón durante el bloque.
+- $S_c$: Inicios permitidos por calendario y disponibilidad del docente.
+- $G$: Grupos de estudiantes cuya molestia queremos comparar.
+- $C_g\subseteq C$: Cursos que cursa el grupo $g$.
+- $H$: Parejas de cursos que comparten docente o estudiantes.
 
-Los datos de matrícula determinan los conflictos; no se deducen de los nombres
-de los cursos. Si un grupo cursa dos materias, su pareja debe figurar en $H$.
-Cada curso se imparte una vez, en un salón y sin interrupciones.
+Cada curso se imparte una vez, en un solo salón y sin interrupciones. Además
+de conocer sus necesidades, debemos saber qué cursos comparten personas:
+los datos de matrícula y de docentes determinan esas parejas de conflicto.
+Si un grupo cursa dos materias, la pareja correspondiente debe figurar en $H$.
 
-Para cada inicio $s$, definimos los bloques ocupados
-$O_{cs}=\{s,\ldots,s+d_c-1\}$. Solo admitimos inicios cuyo intervalo completo
-esté dentro de $T$. Una opción $(c,r,s)$ es admisible individualmente cuando
-el salón tiene capacidad y equipo y está disponible en **todos** esos bloques.
-Reunimos esas opciones en el conjunto conocido:
+Una opción $(c,r,s)$ significa impartir el curso $c$ en el salón $r$, comenzando
+en el bloque $s$. La duración determina todos los bloques que esa opción ocupa:
+
+$$O_{cs}=\{s,\ldots,s+d_c-1\}.$$
+
+Antes de combinar opciones de cursos distintos, revisamos si cada opción puede
+usarse por sí sola. Para admitirla deben cumplirse estas condiciones:
+
+- El inicio está permitido para el curso y su intervalo completo queda dentro de $T$.
+- La capacidad del salón alcanza para sus estudiantes.
+- El salón cuenta con el proyector si el curso lo requiere.
+- El salón está disponible en **todos los bloques ocupados**.
+
+Llamamos $K$ al conjunto de opciones que pasan esas comprobaciones. En símbolos:
 
 $$
-K=\{(c,r,s):c\in C,r\in R,s\in S_c,\ O_{cs}\subseteq T,
-\ k_r\ge n_c,\ p_r\ge e_c,
-\ v_{rt}=1\text{ para todo }t\in O_{cs}\}.
+\begin{aligned}
+K=\{(c,r,s):\;&c\in C,\ r\in R,\ s\in S_c,\\
+&O_{cs}\subseteq T,\\
+&k_r\ge n_c,\ p_r\ge e_c,\\
+&v_{rt}=1\text{ para todo }t\in O_{cs}\}.
+\end{aligned}
 $$
 
-Así incorporamos capacidad, equipo y disponibilidad al construir las opciones;
-no desaparecen del modelo. Si un curso no tiene opciones en $K$, el problema
-es imposible bajo estos datos. No lo arregla cambiar el objetivo.
+Capacidad, equipo y disponibilidad ya están incorporados en $K$. Al usar
+únicamente sus opciones, seguimos respetando esas condiciones.
+
+Si un curso no tiene ninguna opción en $K$, no será posible impartirlo con
+estos datos. Cambiar la preferencia del objetivo no crea un salón ni un horario
+que cumpla sus necesidades.
 
 ## 2 · Decidir una opción y evitar conflictos
 
@@ -53,7 +70,19 @@ Para cada $(c,r,s)\in K$, elegimos $x_{crs}\in\{0,1\}$: vale uno si el curso
 usa ese salón con ese inicio. Los subíndices identifican tres datos de una misma
 elección; no son tres decisiones independientes.
 
-La factibilidad completa se escribe como:
+Una opción puede ser válida por sí sola y entrar en conflicto con otra cuando
+armamos el horario. Para evitarlos, debemos comprobar tres cosas:
+
+1. **Una opción por curso.** Contamos sus elecciones sobre todos los salones e
+   inicios admitidos en $K$; la cuenta debe ser uno.
+2. **Un curso por salón y bloque.** Contamos las opciones elegidas que usan ese
+   salón durante ese bloque; la cuenta no puede superar uno.
+3. **Sin cursos simultáneos para una misma persona.** Para cada pareja de $H$,
+   contamos si sus cursos ocupan el mismo bloque, aunque sea en salones distintos.
+   La cuenta tampoco puede superar uno.
+
+El objetivo constante $0$ deja empatados los horarios que cumplen las reglas.
+Con él, el modelo de factibilidad completo se escribe como:
 
 $$
 \begin{aligned}
@@ -69,34 +98,53 @@ $$
 \end{aligned}
 $$
 
-La primera fila elige una opción por curso. La segunda evita compartir salón.
-La tercera evita que una persona deba atender dos cursos simultáneos, incluso
-en salones distintos. Son condiciones diferentes. Llamaremos $F$ al conjunto
-de asignaciones que cumple **todas** estas filas, usando el $K$ ya definido.
+Las tres primeras filas corresponden a las tres comprobaciones anteriores.
+El dominio binario permite interpretar cada variable como elegir o descartar
+una opción.
 
-En el primer ejercicio, cada $S_c$ contiene solo el inicio fijo y todos los
-cursos duran un bloque. En el segundo, $R$ contiene solo un salón; $S_A=\{1,2\}$,
-$S_B=\{1,3\}$ y $d_A=2,d_B=1$. En ambos, $H$ está vacío porque sus grupos y
-docentes son distintos. La exclusividad del salón sigue siendo necesaria.
+Llamaremos $F$ al conjunto de asignaciones que cumple **todas estas restricciones
+y los dominios binarios**, usando el $K$ ya definido. Así, escribir $x\in F$
+conserva también los requisitos de capacidad, equipo y disponibilidad que usamos
+para construir $K$.
+
+Los dos ejercicios se obtienen al fijar algunos de estos datos:
+
+- En el primero, cada $S_c$ contiene solo el inicio fijo y todos los cursos
+  duran un bloque.
+- En el segundo, $R$ contiene un único salón, $S_A=\{1,2\}$, $S_B=\{1,3\}$
+  y las duraciones son $d_A=2$ y $d_B=1$.
+
+En ambos, $H$ está vacío porque los grupos y los docentes son distintos.
+Aunque no haya conflictos entre personas, sigue siendo necesario evitar
+que dos cursos ocupen el mismo salón al mismo tiempo.
 
 ## 3 · Medir antes de combinar
 
-Supongamos conocidos $m_{gcrs}\ge0$, puntos de molestia que la opción del
-curso $c\in C_g$ aporta al grupo $g$. Las escalas deben ser comparables entre
-grupos. Con el supuesto adicional de que estas aportaciones se suman,
-la molestia del grupo es:
+Para comparar horarios necesitamos datos sobre sus consecuencias. Supongamos
+que conocemos los puntos de molestia $m_{gcrs}\ge0$ que la opción $(c,r,s)$
+aporta al grupo $g$, cuando ese grupo cursa la materia: $c\in C_g$.
+Las escalas deben ser comparables entre grupos.
+
+El producto $m_{gcrs}x_{crs}$ aporta esos puntos cuando elegimos la opción y
+aporta cero cuando la descartamos. **Si suponemos que las aportaciones se suman**,
+podemos reunir las molestias de los cursos que lleva el grupo:
 
 $$M_g(x)=\sum_{(c,r,s)\in K:\ c\in C_g}m_{gcrs}x_{crs}.$$
 
-Es una expresión derivada, no una decisión que podamos reducir por separado.
-El supuesto aditivo no sirve para todos los criterios. Por ejemplo, caminar
-entre dos clases depende de **las dos** asignaciones, de su orden, de quién
-cursa ambas y de las distancias. No puede obtenerse simplemente contando
-edificios usados. Habría que dar esos datos y construir las transiciones.
+La expresión $M_g(x)$ queda medida en puntos y su valor depende del horario
+elegido. No podemos reducirla por separado de las decisiones que producen
+esa molestia.
+
+El supuesto de sumar aportaciones no sirve para todos los criterios. Por ejemplo,
+caminar entre dos clases depende de **las dos asignaciones**, de su orden, de
+quién cursa ambas y de las distancias. Contar edificios usados no basta para
+medir ese traslado: harían falta esos datos y una representación de las transiciones.
 
 ## 4 · Dos modelos completos, dos preferencias
 
-Si cada punto cuenta igual y aceptamos compensaciones entre grupos:
+Una primera prioridad es reducir la molestia de los grupos en conjunto. Si cada
+punto cuenta igual, podemos sumar sus molestias; así aceptamos que una mejora
+para un grupo compense un empeoramiento igual para otro. El modelo es:
 
 $$\min_{x\in F}\quad\sum_{g\in G}M_g(x).$$
 
@@ -104,7 +152,11 @@ Aquí $F$ incluye las variables binarias y todas las restricciones del apartado 
 $M_g$ es la expresión del apartado 3. Esta escritura abreviada conserva el modelo
 completo. Mide puntos totales de molestia según la escala acordada.
 
-Si priorizamos al grupo con la mayor molestia:
+Una segunda prioridad es atender al grupo que quede peor situado. Para medirlo,
+nos interesa la mayor molestia individual.
+
+Introducimos una variable auxiliar $z$, en puntos, y exigimos que alcance la
+molestia de cada grupo. El modelo busca la cota común más pequeña:
 
 $$
 \begin{aligned}
@@ -116,9 +168,12 @@ $$
 \end{aligned}
 $$
 
-La variable auxiliar $z$ tiene unidades de puntos. Sus desigualdades obligan
-que esté por encima de todas las molestias; minimizarla equivale a minimizar
-la mayor. No mide la diferencia entre grupos ni garantiza igualdad.
+Cada desigualdad obliga a que $z$ sea al menos tan grande como la molestia de
+un grupo. Como deben cumplirse todas, $z$ debe alcanzar la mayor molestia.
+Al minimizarla, hacemos que coincida con ella.
+
+**Minimizar la mayor molestia no garantiza igualdad.** Este objetivo tampoco
+mide la diferencia entre grupos.
 
 En la práctica, las opciones con molestias $(0,6)$ y $(4,4)$ exhiben el
 conflicto: la suma puede concentrar la molestia; el máximo puede aceptar una
@@ -126,16 +181,26 @@ suma mayor. Ninguno es universalmente justo sin explicar qué se protege.
 
 ## 5 · Pesos, prioridades y límites
 
-Los pesos positivos $w_g$, fijados **antes** de resolver, dan el modelo
-$\min_{x\in F}\sum_g w_gM_g(x)$. Dar mayor peso a un grupo representa mayor
-prioridad. Multiplicar por el tamaño del grupo solo tiene sentido si $M_g$
-representa una molestia por persona comparable, no un total ya agregado.
-Cambiar la escala de un indicador sin ajustar sus pesos cambia el criterio.
+También podemos dar distinta importancia a los grupos mediante pesos positivos
+$w_g$, fijados **antes de resolver**. Cada peso multiplica la contribución de su
+grupo al objetivo; un peso mayor le da mayor prioridad. El modelo resultante es
 
-Una prioridad estricta es diferente de un peso grande elegido a ojo. Podemos
-primero minimizar la mayor molestia y llamar $z^\star$ al valor obtenido;
-después minimizar la suma **conservando** $M_g(x)\le z^\star$ para todos los
-grupos. Este segundo modelo es:
+$$\min_{x\in F}\quad\sum_g w_gM_g(x).$$
+
+La interpretación de la medida sigue siendo necesaria. Multiplicar por el tamaño
+del grupo solo tiene sentido si $M_g$ representa una molestia por persona
+comparable, no un total ya agregado. Además, cambiar la escala de un indicador
+sin ajustar sus pesos cambia el criterio.
+
+Un peso grande elegido a ojo no expresa necesariamente una prioridad estricta.
+Si queremos que reducir la mayor molestia tenga precedencia sobre reducir la
+suma, podemos formular dos decisiones sucesivas:
+
+1. Minimizar la mayor molestia y llamar $z^\star$ al valor obtenido.
+2. Minimizar la suma entre los horarios que conservan esa primera prioridad.
+   Para ello exigimos $M_g(x)\le z^\star$ para todos los grupos.
+
+El segundo modelo queda así:
 
 $$
 \begin{aligned}
@@ -148,10 +213,16 @@ $$
 Esto desempata sin sacrificar la prioridad inicial. Se conoce como prioridad
 lexicográfica; no necesitamos desarrollar un algoritmo para formularla.
 
-Por último, exigir $M_g(x)\le L_g$ expresa un límite obligatorio, con $L_g$
-dado. Agregar una penalización al objetivo no impone ese límite: puede seguir
-aceptando una violación a cambio de otra mejora. Un límite demasiado exigente
-puede dejar $F$ sin opciones. Hay que distinguir preferencia de obligación.
+Por último, una condición puede expresar una obligación en lugar de una
+preferencia. Si se fija un límite $L_g$ de molestia que el grupo no debe superar,
+lo escribimos como
+
+$$M_g(x)\le L_g.$$
+
+Agregar una penalización al objetivo no impone ese límite: el criterio todavía
+podría aceptar una violación a cambio de otra mejora. En cambio, un límite
+obligatorio elimina las opciones que lo incumplen. Si es demasiado exigente,
+puede dejar sin opciones al conjunto factible.
 
 ## Qué razonamiento puedes reutilizar
 
