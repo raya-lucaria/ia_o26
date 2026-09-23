@@ -173,16 +173,63 @@ con la que queremos acertar etiquetas.
 
 Consideremos un conjunto hipotético donde $n$ es múltiplo de 3 y dos
 terceras partes de las etiquetas son 1. La tercera parte restante es 0.
-No necesitamos fijar las entradas para comparar reglas **constantes**:
-con $\beta=0$, todos los casos reciben la misma probabilidad $p$ de clase 1.
-Para obtenerla elegimos
+Para comparar las dos medidas, construiremos algunas reglas **constantes**:
+fijamos $\beta=0$ y así todas las observaciones reciben la misma probabilidad
+$p$ de clase 1, cualquiera que sea su entrada $x_i$.
 
-$$\alpha=\ln\frac{p}{1-p},\qquad 0<p<1.$$
+**¿Qué valor de $\alpha$ produce la probabilidad que queremos comparar?**
+Al sustituir $\beta=0$ en la sigmoide y despejar, obtenemos
 
-Las tres reglas de la tabla pertenecen a nuestra familia. La pérdida
-promedio de cada una se calcula con
+$$
+\begin{aligned}
+p&=\frac{1}{1+e^{-\alpha}},\\
+e^{-\alpha}&=\frac{1-p}{p},\\
+e^\alpha&=\frac{p}{1-p},\\
+\alpha&=\ln\!\left(\frac{p}{1-p}\right).
+\end{aligned}
+$$
 
-$$-\frac23\ln p-\frac13\ln(1-p).$$
+Esta transformación se llama **logit** y está definida para $0<p<1$.
+Por ejemplo, para asignar $p=2/3$ a todos los casos elegimos
+$\alpha=\ln 2$ y $\beta=0$. Las probabilidades 0 y 1 solo se alcanzan
+como límites cuando $\alpha$ tiende a menos o más infinito.
+
+**Aquí estamos construyendo ejemplos, no resolviendo todavía la optimización.**
+Fijamos $\beta=0$ solo para esta comparación. En el modelo general,
+el logit de $p_i$ es $\alpha+\beta x_i$, y ambos parámetros se pueden ajustar.
+
+Las tres reglas de la tabla pertenecen a nuestra familia.
+**Para calcular su pérdida promedio, agrupamos los casos por su etiqueta.**
+Al sustituir $y_i$ en la pérdida de una observación, obtenemos:
+
+- **Etiqueta 1:** hay $2n/3$ casos. Sustituimos $y_i=1$:
+
+  $$\begin{aligned}
+  \ell_i&=-1\ln p-0\ln(1-p)\\
+  &=-\ln p.
+  \end{aligned}$$
+
+- **Etiqueta 0:** hay $n/3$ casos. Sustituimos $y_i=0$:
+
+  $$\begin{aligned}
+  \ell_i&=-0\ln p-1\ln(1-p)\\
+  &=-\ln(1-p).
+  \end{aligned}$$
+
+Sumamos esas contribuciones y dividimos entre los $n$ casos:
+
+$$
+\begin{aligned}
+L(\alpha,0)
+&=\frac1n\left[\frac{2n}{3}(-\ln p)\right.\\
+&\qquad\left.+\frac n3(-\ln(1-p))\right]\\
+&=-\frac{2n}{3n}\ln p-\frac{n}{3n}\ln(1-p)\\
+&=-\frac23\ln p-\frac13\ln(1-p).
+\end{aligned}
+$$
+
+Los pesos $2/3$ y $1/3$ son las **proporciones de etiquetas en estos datos**;
+$p$ es la **probabilidad que anuncia la regla**. Son cantidades distintas.
 
 Las pérdidas están redondeadas y las fracciones de aciertos son exactas.
 
