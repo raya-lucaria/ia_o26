@@ -151,7 +151,47 @@ probabilidades sin cambiar ninguna etiqueta. Mientras eso ocurra, accuracy
 permanece en una **meseta**: su valor no cambia. Cuando una probabilidad cruza
 el umbral, el conteo puede saltar.
 
-Dentro de una meseta, sus derivadas no señalan cómo conseguir más aciertos.
+**Veamos esas mesetas con cuatro casos.** Son datos de una ilustración;
+el problema anterior sigue admitiendo cualquier número $n$ de casos.
+
+| Caso $i$ | $x_i$ | $y_i$ |
+|---|---|---|
+| 1 | 0 | 0 |
+| 2 | 1 | 0 |
+| 3 | 2 | 1 |
+| 4 | 3 | 1 |
+
+Para dibujar fijamos **$\beta=1$** y variamos $\alpha$. Esto muestra un
+corte de la función $A(\alpha,\beta)$; en el problema original seguimos
+eligiendo ambos parámetros. Como la sigmoide es creciente y
+$\sigma(0)=0.5$, la regla anuncia 1 exactamente cuando
+
+$$\alpha+x_i\ge0\quad\Longleftrightarrow\quad\alpha\ge-x_i.$$
+
+Cada caso cambia de etiqueta al llegar a $\alpha=-x_i$. Por ejemplo,
+con $\alpha=-2.5$ sustituimos $z_i=-2.5+x_i$ y obtenemos, en el orden
+de la tabla, estos puntajes:
+
+$$(-2.5,\,-1.5,\,-0.5,\,0.5).$$
+
+Solo el último es positivo. Las etiquetas anunciadas son $(0,0,0,1)$:
+acertamos los casos 1, 2 y 4, por lo que $A(-2.5,1)=3/4$.
+
+Al aumentar $\alpha$ hasta $-2$, el puntaje del caso 3 pasa a cero.
+El empate anuncia 1 y ahora acertamos los cuatro casos: $A(-2,1)=1$.
+Los aciertos permanecen en 1 mientras $-2\le\alpha<-1$; al llegar a
+$-1$, el caso 2 cambia a clase 1 y aparece un error.
+
+![Accuracy frente a alfa con beta fija en 1: vale un medio antes de menos tres, tres cuartos entre menos tres y menos dos, uno entre menos dos y menos uno, tres cuartos entre menos uno y cero, y un medio desde cero; en cada salto se toma el valor del tramo a la derecha](../_assets/opt-clasificacion-accuracy.svg)
+
+El eje horizontal es **$\alpha$**; el vertical, **la proporción de aciertos
+$A(\alpha,1)$**. Un punto lleno incluye el extremo del tramo y uno hueco
+lo excluye. La gráfica compara reglas con distintos interceptos; no muestra
+iteraciones de un algoritmo.
+
+Dentro de cada meseta, cambiar un poco $\alpha$ deja accuracy igual:
+su derivada es cero y no indica cómo alcanzar un tramo con más aciertos.
+En los saltos la derivada no existe.
 
 **Una solución factible: anunciar siempre la clase mayoritaria.** Antes de
 buscar una regla mejor, contamos las etiquetas conocidas:
