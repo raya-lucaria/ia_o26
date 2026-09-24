@@ -2979,6 +2979,206 @@ def opt_panaderia_criterios():
 
 
 
+# Datos didácticos compartidos por las tres figuras de regresión.
+_REG_X = tuple(map(F, range(1, 7)))
+_REG_Y = tuple(map(F, (15, 17, 23, 25, 31, 33)))
+_REG_X_VAL = tuple(F(k, 2) for k in (3, 5, 7, 9, 11))
+_REG_Y_VAL = tuple(map(F, (16, 20, 24, 28, 32)))
+
+
+def _regresion_ajuste(grado):
+    """OLS exacto para estas seis observaciones, solo para generar la figura."""
+    # Sistema de momentos resuelto con fracciones: no es una recomendación
+    # de resolver ecuaciones normales con flotantes en aplicaciones reales.
+    matriz = [[sum(x ** (i + j) for x in _REG_X) for j in range(grado + 1)]
+              + [sum(x ** i * y for x, y in zip(_REG_X, _REG_Y))]
+              for i in range(grado + 1)]
+    for j in range(grado + 1):
+        pivote = matriz[j][j]
+        matriz[j] = [v / pivote for v in matriz[j]]
+        for i in range(grado + 1):
+            if i != j:
+                factor = matriz[i][j]
+                matriz[i] = [v - factor * w for v, w in zip(matriz[i], matriz[j])]
+    return tuple(fila[-1] for fila in matriz)
+
+
+def _regresion_prediccion(coeficientes, x):
+    return sum(c * x ** j for j, c in enumerate(coeficientes))
+
+
+def _regresion_rmse(coeficientes, xs, ys):
+    return math.sqrt(float(sum((y - _regresion_prediccion(coeficientes, x)) ** 2
+                               for x, y in zip(xs, ys)) / len(xs)))
+
+
+def opt_regresion_residuos():
+    W, H = 560, 652
+    izquierda, derecha = 110, 514
+    ax = lambda x: izquierda + (float(x) - 1) / 5 * (derecha - izquierda)
+    ay = lambda y: 470 - (float(y) - 10) / 26 * 300
+    s = [marco(W, H,
+        "Tiempos de entrega observados, recta de ejemplo y residuos verticales",
+        "Una predicción y su residuo",
+        "Distancia en kilómetros, tiempo en minutos. Seis observaciones en "
+        "x=1,2,3,4,5,6 con tiempos 15,17,23,25,31,33. La recta elegida "
+        "y estimada=10+4x es un ejemplo, no la recta óptima de mínimos cuadrados. "
+        "Los residuos observado menos predicho son 1,-1,1,-1,1,-1 minutos. "
+        "Se destaca el tercer residuo: 23 menos 22 es un minuto.")]
+    s.append(texto(W / 2, 36, "Una predicción y su residuo", tam=27, peso="700"))
+    s.append(texto(W / 2, 73, "Recta de ejemplo: ŷ = 10 + 4x", tam=23, color=ACENTO))
+    s.append(texto(W / 2, 109, "Recta elegida para ilustrar los residuos.", tam=22, color=SUAVE))
+    s.append('<g transform="rotate(-90 26 320)">'
+             + texto(26, 320, "Tiempo de entrega (min)", tam=22) + '</g>')
+    for valor in (10, 15, 20, 25, 30, 35):
+        y = ay(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 14, y + 7, str(valor), tam=22, anclaje="end"))
+    s.append(flecha(izquierda, 470, izquierda, 157, color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(flecha(izquierda, 470, derecha + 20, 470, color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(linea(ax(1), ay(14), ax(6), ay(34), color=ACENTO, grosor=3))
+    for i, (x, y) in enumerate(zip(_REG_X, _REG_Y)):
+        xp, observado, predicho = ax(x), ay(y), ay(10 + 4 * x)
+        color = SERIE[2] if i == 2 else SUAVE
+        s.append(linea(xp, observado, xp, predicho, color=color, grosor=4))
+        s.append(f'<rect x="{xp - 5}" y="{predicho - 5}" width="10" height="10" '
+                 f'fill="{SERIE[1]}"/>')
+        s.append(punto(xp, observado, r=5, color=SERIE[0]))
+        s.append(linea(xp, 470, xp, 478, color=SUAVE, grosor=1.5))
+        s.append(texto(xp, 505, str(x), tam=22))
+    s.append(linea(280, 405, ax(3) + 5, ay(F(45, 2)), color=SERIE[2], grosor=1.5))
+    s.append(texto(302, 437, "e₃ = 23 − 22 = +1 min", tam=22, color=SERIE[2]))
+    s.append(texto(W / 2, 544, "Distancia x (km)", tam=24))
+    s.append(punto(120, 582, r=5, color=SERIE[0]))
+    s.append(texto(137, 589, "Observado yᵢ", tam=22, anclaje="start"))
+    s.append(f'<rect x="318" y="577" width="10" height="10" fill="{SERIE[1]}"/>')
+    s.append(texto(339, 589, "Predicho ŷᵢ", tam=22, anclaje="start"))
+    s.append(texto(W / 2, 632, "Residuo: eᵢ = yᵢ − ŷᵢ (min)", tam=23, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_regresion_perdidas():
+    W, H = 560, 980
+    izquierda, derecha = 110, 514
+    ax = lambda e: izquierda + (e + 4) / 8 * (derecha - izquierda)
+    s = [marco(W, H,
+        "Dos pérdidas puntuales frente al residuo: valor absoluto y cuadrado",
+        "Cómo pesa el tamaño del error",
+        "Arriba, valor absoluto del residuo, con ambos ejes en minutos. "
+        "Abajo, residuo al cuadrado, con eje horizontal en minutos y "
+        "vertical en minutos cuadrados. Las escalas verticales son diferentes. "
+        "RMSE no es una pérdida puntual: es la raíz del promedio de cuadrados.")]
+    s.append(texto(W / 2, 36, "Cómo pesa el tamaño del error", tam=26, peso="700"))
+    s.append(texto(W / 2, 74, "Dos pérdidas; distintas unidades", tam=22, color=SUAVE))
+    for panel, (titulo, etiqueta, funcion, maximo, ticks, color) in enumerate((
+        ("Valor absoluto |e|", "Pérdida |e| (min)", abs, 4, (0, 1, 2, 3, 4), SERIE[1]),
+        ("Error al cuadrado e²", "Pérdida e² (min²)", lambda e: e * e, 16, (0, 4, 8, 12, 16), ACENTO),
+    )):
+        abajo = 400 + panel * 410
+        ay = lambda valor: abajo - valor / maximo * 220
+        s.append(texto(W / 2, abajo - 267, titulo, tam=25, color=color))
+        centro = abajo - 110
+        s.append(f'<g transform="rotate(-90 26 {centro})">'
+                 + texto(26, centro, etiqueta, tam=22) + '</g>')
+        for valor in ticks:
+            y = ay(valor)
+            s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+            s.append(texto(izquierda - 14, y + 7, str(valor), tam=22, anclaje="end"))
+        s.append(flecha(izquierda, abajo, izquierda, abajo - 235,
+                        color=SUAVE, grosor=1.5, marcador="s"))
+        s.append(flecha(izquierda, abajo, derecha + 20, abajo,
+                        color=SUAVE, grosor=1.5, marcador="s"))
+        for e in (-4, -2, 0, 2, 4):
+            x = ax(e)
+            s.append(linea(x, abajo, x, abajo + 8, color=SUAVE, grosor=1.5))
+            s.append(texto(x, abajo + 35, str(e).replace("-", "−"), tam=22))
+        s.append(texto(W / 2, abajo + 74, "Residuo e (min)", tam=24))
+        s.append(_curva([(ax(e / 50), ay(funcion(e / 50))) for e in range(-200, 201)],
+                         color, grosor=3.5))
+    s.append(texto(W / 2, 932, "RMSE: raíz del promedio de cuadrados.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 965, "No es una pérdida de un solo caso.", tam=22, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
+def opt_regresion_grado():
+    W, H = 560, 1660
+    izquierda, derecha = 110, 514
+    ajustes = {n: _regresion_ajuste(n) for n in range(1, 6)}
+    ax = lambda x: izquierda + (float(x) - 1) / 5 * (derecha - izquierda)
+    s = [marco(W, H,
+        "Ajustes polinomiales de grados uno, tres y cinco, y RMSE por grado",
+        "Ajustar mejor no siempre generaliza mejor",
+        "Tres paneles muestran ajustes OLS calculados solo con seis casos de "
+        "entrenamiento; cinco casos de validación independientes solo evalúan "
+        "los ajustes. Se comparan grados uno, tres y cinco en las mismas escalas. "
+        "El último panel muestra RMSE de entrenamiento y validación para los "
+        "grados discretos uno a cinco, sin unirlos como si el grado fuera continuo. "
+        "El grado cinco interpola entrenamiento, pero aquí su error de validación "
+        "es mayor. Los grados uno y dos empatan en ambos errores.")]
+    s.append(texto(W / 2, 35, "Más grado, ¿mejor predicción?", tam=26, peso="700"))
+    s.append(texto(W / 2, 72, "Ajuste solo con entrenamiento", tam=22, color=SUAVE))
+    s.append(punto(113, 109, r=5, color=SERIE[0]))
+    s.append(texto(129, 116, "Entrenamiento", tam=22, anclaje="start"))
+    s.append(f'<path d="M 346 102 L 353 109 L 346 116 L 339 109 Z" fill="{SERIE[1]}"/>')
+    s.append(texto(362, 116, "Validación", tam=22, anclaje="start"))
+    for panel, grado in enumerate((1, 3, 5)):
+        abajo = 402 + panel * 350
+        ay = lambda y: abajo - (float(y) - 10) / 30 * 220
+        centro = abajo - 110
+        s.append(texto(W / 2, abajo - 251, f"Grado N = {grado}", tam=25, color=ACENTO))
+        s.append(f'<g transform="rotate(-90 26 {centro})">'
+                 + texto(26, centro, "Tiempo (min)", tam=22) + '</g>')
+        for valor in (10, 20, 30, 40):
+            y = ay(valor)
+            s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+            s.append(texto(izquierda - 14, y + 7, str(valor), tam=22, anclaje="end"))
+        s.append(flecha(izquierda, abajo, izquierda, abajo - 231,
+                        color=SUAVE, grosor=1.5, marcador="s"))
+        s.append(flecha(izquierda, abajo, derecha + 20, abajo,
+                        color=SUAVE, grosor=1.5, marcador="s"))
+        for x in range(1, 7):
+            s.append(linea(ax(x), abajo, ax(x), abajo + 7, color=SUAVE, grosor=1.5))
+            s.append(texto(ax(x), abajo + 32, str(x), tam=22))
+        s.append(texto(W / 2, abajo + 65, "Distancia x (km)", tam=23))
+        muestras = [F(1) + F(k, 60) for k in range(301)]
+        s.append(_curva([(ax(x), ay(_regresion_prediccion(ajustes[grado], x)))
+                         for x in muestras], ACENTO, grosor=3))
+        for x, y in zip(_REG_X, _REG_Y):
+            s.append(punto(ax(x), ay(y), r=5, color=SERIE[0]))
+        for x, y in zip(_REG_X_VAL, _REG_Y_VAL):
+            xp, yp = ax(x), ay(y)
+            s.append(f'<path d="M {xp} {yp - 6} L {xp + 6} {yp} L {xp} {yp + 6} '
+                     f'L {xp - 6} {yp} Z" fill="{SERIE[1]}"/>')
+    abajo = 1497
+    nx = lambda n: izquierda + (n - 1) / 4 * (derecha - izquierda)
+    ey = lambda error: abajo - error / 2 * 220
+    s.append(texto(W / 2, 1220, "RMSE por grado", tam=25))
+    s.append(texto(W / 2, 1255, "Validación evalúa; no ajusta coeficientes.", tam=22, color=SUAVE))
+    s.append('<g transform="rotate(-90 26 1387)">'
+             + texto(26, 1387, "RMSE (min)", tam=22) + '</g>')
+    for valor in (0, .5, 1, 1.5, 2):
+        y = ey(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 14, y + 7, f"{valor:g}", tam=22, anclaje="end"))
+    s.append(flecha(izquierda, abajo, izquierda, 1268, color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(linea(izquierda, abajo, derecha, abajo, color=SUAVE, grosor=1.5))
+    for n, coef in ajustes.items():
+        x = nx(n)
+        s.append(linea(x, abajo, x, abajo + 7, color=SUAVE, grosor=1.5))
+        s.append(texto(x, abajo + 34, str(n), tam=22))
+        s.append(punto(x, ey(_regresion_rmse(coef, _REG_X, _REG_Y)), r=6, color=SERIE[0]))
+        y = ey(_regresion_rmse(coef, _REG_X_VAL, _REG_Y_VAL))
+        s.append(f'<path d="M {x} {y - 7} L {x + 7} {y} L {x} {y + 7} '
+                 f'L {x - 7} {y} Z" fill="{SERIE[1]}"/>')
+    s.append(texto(W / 2, 1570, "Grado N (entero)", tam=24))
+    s.append(texto(W / 2, 1612, "Grado 5: error cero al entrenar;", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 1645, "mayor error de validación en estos datos.", tam=22, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_clasificacion_accuracy():
     """Accuracy calculada en un corte con beta fija, sin unir los saltos."""
     W, H = 560, 690
@@ -3379,6 +3579,9 @@ def opt_juego_turnos():
 
 
 DIAGRAMAS = {
+    "opt-regresion-residuos": opt_regresion_residuos,
+    "opt-regresion-perdidas": opt_regresion_perdidas,
+    "opt-regresion-grado": opt_regresion_grado,
     "opt-clasificacion-accuracy": opt_clasificacion_accuracy,
     "opt-clasificacion-alfa": opt_clasificacion_alfa,
     "opt-juego-turnos": opt_juego_turnos,

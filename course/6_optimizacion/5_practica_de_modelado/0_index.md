@@ -2,9 +2,9 @@
 id: opt-practica-modelado
 title: Modelar problemas de optimización
 nav_title: Modelar problemas
-summary: "Cuatro ejemplos guiados para construir decisiones, restricciones y objetivos, y revisar qué representan."
+summary: "Cinco ejemplos guiados para construir decisiones, restricciones y objetivos, y revisar qué representan."
 status: ready
-estimated_time: 1h35m
+estimated_time: 2h10m
 tags: [optimizacion, modelado]
 ---
 
@@ -14,11 +14,11 @@ tags: [optimizacion, modelado]
 buscar la mejor opción, necesitamos describir cuáles se permiten y explicar
 qué significa que una sea mejor que otra.
 
-En estas cuatro páginas construiremos modelos paso a paso. Las explicaciones
+En estas cinco páginas construiremos modelos paso a paso. Las explicaciones
 están abiertas: detente en las preguntas breves y escribe una idea antes de
 seguir leyendo. Aquí no hace falta resolver los modelos ni aprender algoritmos.
 
-## Cuatro ejemplos guiados
+## Cinco ejemplos guiados
 
 Empieza por salones. Allí construimos con más calma la diferencia entre datos,
 decisiones y condiciones. Los siguientes ejemplos retoman esos pasos y se
@@ -42,7 +42,13 @@ concentran en una dificultad nueva.
 
    [[opt-objetivo-clasificacion-practica|Leer el ejemplo de clasificación]] · 20 minutos.
 
-4. **Juego: elegir una jugada y planear los turnos siguientes.** Modelamos
+4. **Regresión: medir el error y elegir la complejidad.** Predecimos un valor
+   con una recta, comparamos RMSE y MAE y permitimos elegir el grado de un
+   polinomio. Distinguimos ajustar los datos de predecir casos nuevos.
+
+   [[opt-objetivo-regresion-practica|Leer el ejemplo de regresión]] · 35 minutos.
+
+5. **Juego: elegir una jugada y planear los turnos siguientes.** Modelamos
    la respuesta del rival y representamos las opciones en un árbol.
    Calculamos su valor desde los resultados finales mediante inducción hacia atrás.
 
@@ -65,9 +71,9 @@ un objetivo bien escrito también necesita una razón para preferirlo.
 
 ## Tiempo y práctica
 
-El recorrido guiado suma aproximadamente **95 minutos**. Puedes repartirlo en
+El recorrido guiado suma aproximadamente **130 minutos**. Puedes repartirlo en
 varias sesiones y volver a los pasos que necesites reconstruir.
 
-Los tres primeros ejemplos incluyen ejercicios para practicar. Cada ejercicio tiene dos pistas y una respuesta ocultas.
-Resolver esos ejercicios requiere tiempo de práctica adicional a los 95 minutos
+Los cuatro primeros ejemplos incluyen ejercicios para practicar. Cada ejercicio tiene dos pistas y una respuesta ocultas.
+Resolver esos ejercicios requiere tiempo de práctica adicional a los 130 minutos
 del recorrido guiado.

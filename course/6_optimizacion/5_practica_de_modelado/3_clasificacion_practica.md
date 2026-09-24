@@ -1039,4 +1039,4 @@ de las $J$ probabilidades. Este costo corresponde a construir la corrección
 con scores ya disponibles; no incluye entrenar el clasificador original.
 :::
 
-Siguiente ejemplo: [[opt-objetivo-juego-practica|elegir una jugada cuando el rival responde]].
+Siguiente ejemplo: [[opt-objetivo-regresion-practica|predecir un valor y elegir la complejidad del modelo]].
