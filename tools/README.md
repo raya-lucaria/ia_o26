@@ -51,7 +51,7 @@ pide red ni credenciales (salvo `gen_ilustraciones.py`).
 | `gen_timeline.py` | `hitos.json` | `_assets/v1-panorama.svg`, `_assets/v1-tramo-*.svg` (9 archivos) | Al agregar, quitar o mover un hito |
 | `gen_computo.py` | `computo.json` | `_assets/v9-computo.svg` | Al agregar un modelo o actualizar una cifra de cómputo |
 | `gen_life.py` | (patrón fijo en el propio script) | `_assets/v13-game-of-life.png` | Rara vez — el patrón no cambia; existe por si se ajusta la paleta o el tamaño de celda |
-| `gen_regresion_experimentos.py` | Semillas y fórmulas fijas en el script; `requirements-regresion.txt` | `course/6_optimizacion/_assets/opt-regresion-{datos,ajustes,pendiente,formas,sobreajuste,validacion}.png` y `.superpowers/regresion-ampliada/metrics.json` local | Al cambiar un dato, grado, fórmula o estilo de las seis gráficas de regresión |
+| `gen_regresion_experimentos.py` | Semillas y fórmulas fijas en el script; `requirements-regresion.txt` | `course/6_optimizacion/_assets/opt-regresion-{datos,ajustes,pendiente,validacion}.png`, cinco `opt-regresion-forma-*.png` y `.superpowers/polinomios-extrapolacion/metrics.json` local | Al cambiar un dato, grado, fórmula o estilo de las nueve gráficas de regresión |
 | `gen_complejidad.py` | (los diagramas viven en el propio script) | `course/4_complejidad/_assets/cx-*.svg` (23 archivos) | Al agregar o rediseñar un diagrama de la unidad de complejidad |
 | `gen_ilustraciones.py` | `ilustraciones.json` + API de `gpt-image-2` | `_assets/ilus-*.jpg` en historia, `ilus-*.png` en las demás unidades | Al agregar una ilustración nueva al catálogo. Requiere `OPENAI_API_KEY` (`set -a && . ./.env && set +a`) y cuesta dinero por llamada: no es para correr "por si acaso" |
 | `bajar_commons.py` | `commons.tsv` | `_assets/foto-*.jpg` + bloque de filas para `CREDITOS.md` (impreso en stdout, no escrito solo) | Al agregar una fotografía nueva desde Wikimedia Commons |
@@ -61,7 +61,7 @@ Cada uno tiene su prueba homónima (`test_gen_timeline.py`, `test_gen_computo.py
 `pytest` ya certifica que el archivo comiteado coincide con lo que el generador
 produciría hoy.
 
-Para las seis gráficas de regresión de la página 6.5.4, instalar las
+Para las nueve gráficas de regresión de la página 6.5.4, instalar las
 dependencias de cálculo y dibujo y regenerar desde la raíz:
 
 ```bash
@@ -72,7 +72,14 @@ python3 tools/gen_regresion_experimentos.py
 El generador usa semillas fijas y datos **simulados**. Ajusta MAE con
 `scipy.optimize.linprog`, RMSE lineal con mínimos cuadrados y polinomios con
 `numpy.polynomial.Polynomial.fit`. También escribe métricas reproducibles en
-`.superpowers/regresion-ampliada/metrics.json` (archivo local ignorado por Git).
+`.superpowers/polinomios-extrapolacion/metrics.json` (archivo local ignorado por Git).
+Cada una de las cinco familias usa 120 observaciones irregulares, incluidos los
+extremos del intervalo de entrenamiento. Las dos vistas de cada figura muestran
+los mismos modelos: una dentro del intervalo y otra con extrapolación; sus escalas
+verticales son independientes. Para las familias lineal y cuadrática, el mismo
+entrenamiento se evalúa sobre 300 observaciones nuevas dentro del intervalo y
+otras 300 fuera de él (150 a cada lado), sin usar las exteriores para escoger
+el grado. `metrics.json` registra los RMSE por grado y dominio.
 
 `tools/ilustraciones.json` tiene un bloque por unidad y **dos** estilos: el
 grabado editorial (`estilo` y `estilo_fondo_plano`) que usan historia, filosofía
