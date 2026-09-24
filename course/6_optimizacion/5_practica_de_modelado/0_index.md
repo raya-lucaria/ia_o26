@@ -4,7 +4,7 @@ title: Modelar problemas de optimización
 nav_title: Modelar problemas
 summary: "Cinco ejemplos guiados para construir decisiones, restricciones y objetivos, y revisar qué representan."
 status: ready
-estimated_time: 2h25m
+estimated_time: 2h35m
 tags: [optimizacion, modelado]
 ---
 
@@ -46,7 +46,7 @@ concentran en una dificultad nueva.
    con una recta, comparamos RMSE y MAE y permitimos elegir el grado de un
    polinomio. Distinguimos ajustar los datos de predecir casos nuevos.
 
-   [[opt-objetivo-regresion-practica|Leer el ejemplo de regresión]] · 50 minutos.
+   [[opt-objetivo-regresion-practica|Leer el ejemplo de regresión]] · 60 minutos.
 
 5. **Juego: elegir una jugada y planear los turnos siguientes.** Modelamos
    la respuesta del rival y representamos las opciones en un árbol.
@@ -71,9 +71,9 @@ un objetivo bien escrito también necesita una razón para preferirlo.
 
 ## Tiempo y práctica
 
-El recorrido guiado suma aproximadamente **145 minutos**. Puedes repartirlo en
+El recorrido guiado suma aproximadamente **155 minutos**. Puedes repartirlo en
 varias sesiones y volver a los pasos que necesites reconstruir.
 
 Los cuatro primeros ejemplos incluyen ejercicios para practicar. Cada ejercicio tiene dos pistas y una respuesta ocultas.
-Resolver esos ejercicios requiere tiempo de práctica adicional a los 145 minutos
+Resolver esos ejercicios requiere tiempo de práctica adicional a los 155 minutos
 del recorrido guiado.

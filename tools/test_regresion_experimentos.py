@@ -36,18 +36,54 @@ def test_cada_criterio_prefiere_su_ajuste_sobre_los_mismos_datos():
     assert rmse['rmse_min'] < mae['rmse_min']
 
 
-def test_el_sobreajuste_no_es_un_artefacto_de_la_base_polinomica():
-    for experiment in gen.overfit_experiments().values():
+def test_mismos_modelos_estables_dentro_y_fuera_del_entrenamiento():
+    for experiment in gen.family_data().values():
         x, y = experiment['x_train'], experiment['y_train']
-        validation_x, validation_y = experiment['x_val'], experiment['y_val']
-        assert x.min() <= validation_x.min() < validation_x.max() <= x.max()
+        evaluation_x = np.r_[experiment['x_val'], experiment['x_exterior']]
         model = experiment['models'][15]
         independent, diagnostics = Chebyshev.fit(x, y, 15, full=True)
         assert diagnostics[1] == 16
-        np.testing.assert_allclose(model(validation_x), independent(validation_x), atol=1e-7)
+        np.testing.assert_allclose(
+            model(evaluation_x), independent(evaluation_x), rtol=1e-7, atol=1e-6,
+        )
+
+
+def test_muestras_abundantes_y_evaluaciones_en_regiones_separadas():
+    for experiment in gen.family_data().values():
+        x = experiment['x_train']
+        left, right = experiment['spec']['domain']
+        interior, exterior = experiment['x_val'], experiment['x_exterior']
+        assert len(x) >= 100
+        assert len(np.unique(x)) == len(x)
+        assert x.min() == left and x.max() == right
+        assert np.std(np.diff(np.sort(x))) > 0.01
+        assert np.all((interior > left) & (interior < right))
+        assert np.all((exterior < left) | (exterior > right))
+        assert np.count_nonzero(exterior < left) == np.count_nonzero(exterior > right)
+        # Validación son observaciones con ruido propio, no la curva exacta.
+        assert np.std(experiment['y_val'] - experiment['truth'](interior)) > 0.1
+        assert np.std(experiment['y_exterior'] - experiment['truth'](exterior)) > 0.1
+
+
+def test_evaluar_no_reajusta_y_las_perdidas_usan_la_region_correcta():
+    datasets = gen.family_data()
+    coefficients = {
+        name: {degree: model.coef.copy() for degree, model in data['models'].items()}
+        for name, data in datasets.items()
+    }
+    experiments = gen.overfit_experiments(datasets)
+    for name, experiment in experiments.items():
+        assert experiment is datasets[name]
         errors = experiment['errors_by_degree']
         assert np.all(np.diff([r['train_rmse'] for r in errors]) <= 1e-9)
-        reference = experiment['models'][experiment['generating_degree']]
-        error_reference = np.mean((reference(validation_x) - validation_y)**2)
-        error_flexible = np.mean((model(validation_x) - validation_y)**2)
-        assert error_flexible > error_reference
+        for row in errors:
+            degree = row['degree']
+            model = experiment['models'][degree]
+            np.testing.assert_array_equal(model.coef, coefficients[name][degree])
+            for x_key, y_key, loss in [
+                ('x_train', 'y_train', 'train_rmse'),
+                ('x_val', 'y_val', 'validation_rmse'),
+                ('x_exterior', 'y_exterior', 'exterior_rmse'),
+            ]:
+                residual = experiment[y_key] - model(experiment[x_key])
+                np.testing.assert_allclose(row[loss], np.linalg.norm(residual) / np.sqrt(len(residual)))

@@ -1,4 +1,4 @@
-"""Regenera seis gráficas de regresión con datos simulados y ajustes calculados.
+"""Regenera gráficas de regresión con datos simulados y ajustes calculados.
 
 Ejecutar desde cualquier directorio: python3 tools/gen_regresion_experimentos.py
 Requiere numpy, scipy, matplotlib y seaborn (requirements-regresion.txt).
@@ -15,13 +15,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from matplotlib.ticker import FuncFormatter
 from numpy.polynomial import Polynomial
 from scipy.optimize import linprog
 
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "course/6_optimizacion/_assets"
-METRICS = ROOT / ".superpowers/regresion-ampliada/metrics.json"
+METRICS = ROOT / ".superpowers/polinomios-extrapolacion/metrics.json"
 BG = "#211033"
 PANEL = "#2e1945"
 WHITE = "#fff8ed"
@@ -145,106 +146,160 @@ def plot_slope_slice(x: np.ndarray, y: np.ndarray) -> dict[str, float]:
             "rmse_slice_min": float(np.sqrt(np.mean((y-intercept-slope_rmse*x)**2)))}
 
 
-def gallery() -> list[dict[str, object]]:
-    rng = np.random.default_rng(672)
-    families = [
-        ("Lineal", "4 + 2x", lambda z: 4 + 2.0*z, [1, 2, 8], (-0.9, 0.9)),
-        ("Cuadrática", "4 + 1.5x + 4x²", lambda z: 4 + 1.5*z + 4*z*z,
-         [1, 2, 10], (-0.9, 0.9)),
-        ("Cúbica", "4 + 2x − 2x² + 3x³", lambda z: 4 + 2*z - 2*z*z + 3*z**3,
-         [1, 3, 12], (-0.9, 0.9)),
-        ("Senoidal", "4 + 2sin(5x)", lambda z: 4 + 2*np.sin(5*z),
-         [1, 5, 15], (-0.9, 0.9)),
-        ("Recíproca", "2 + 5/x", lambda z: 2 + 5/z, [1, 4, 12], (1, 5)),
-    ]
-    fig, axes = plt.subplots(5, 1, figsize=(7.1, 22), layout="constrained")
-    facts = []
-    for ax, (name, formula, truth, degrees, domain) in zip(axes, families):
-        x = np.linspace(*domain, 27)
-        dense = np.linspace(*domain, 450)
-        y = truth(x) + rng.normal(0, 0.17, x.size)
-        ax.plot(dense, truth(dense), color=WHITE, linestyle="--", linewidth=2,
-                label="Generadora")
-        for degree, color in zip(degrees, [CYAN, GOLD, PINK]):
-            model = Polynomial.fit(x, y, degree)
-            ax.plot(dense, model(dense), color=color, linewidth=2.3,
-                    label=f"Grado {degree}")
-        sns.scatterplot(x=x, y=y, ax=ax, s=35, color=GREEN, edgecolor="none",
-                        zorder=6, label="Muestras")
-        ax.set(xlabel="Entrada x (u. a.)",
-               ylabel="Salida y (u. a.)", xlim=domain)
-        ax.set_title(f"{name}: tres ajustes; 27 muestras", pad=13)
-        ax.legend(ncol=2, fontsize=16, facecolor=PANEL, edgecolor=GRID,
-                  labelcolor=WHITE, loc="upper left")
-        facts.append({"family": name, "generating_formula": formula,
-                      "x_interval": list(domain), "degrees": degrees,
-                      "n_samples": len(x), "noise_sd": 0.17})
-    save(fig, "opt-regresion-formas.png")
-    return facts
+FAMILIES = {
+    "linear": {"label": "Lineal", "file": "lineal", "formula": "4 + 2x",
+               "truth": lambda z: 4 + 2*z, "degrees": [1, 2, 15],
+               "domain": (-1, 1), "extended": (-1.5, 1.5), "seed": 672},
+    "quadratic": {"label": "Cuadrática", "file": "cuadratica",
+                  "formula": "4 + 1.5x + 4x²", "truth": lambda z: 4 + 1.5*z + 4*z*z,
+                  "degrees": [1, 2, 15], "domain": (-1, 1),
+                  "extended": (-1.5, 1.5), "seed": 673},
+    "cubic": {"label": "Cúbica", "file": "cubica",
+              "formula": "4 + 2x − 2x² + 3x³",
+              "truth": lambda z: 4 + 2*z - 2*z*z + 3*z**3,
+              "degrees": [1, 3, 15], "domain": (-1, 1),
+              "extended": (-1.5, 1.5), "seed": 674},
+    "sinusoidal": {"label": "Senoidal", "file": "senoidal",
+                   "formula": "4 + 2sin(5x)", "truth": lambda z: 4 + 2*np.sin(5*z),
+                   "degrees": [1, 5, 15], "domain": (-1, 1),
+                   "extended": (-1.5, 1.5), "seed": 675},
+    "reciprocal": {"label": "Recíproca", "file": "reciproca",
+                   "formula": "2 + 5/x", "truth": lambda z: 2 + 5/z,
+                   "degrees": [1, 4, 15], "domain": (1, 5),
+                   "extended": (0.5, 6), "seed": 676},
+}
+NOISE_SD = 0.4
+N_TRAIN = 120
+N_VALIDATION = 300
+SUPERSCRIPT = str.maketrans("0123456789-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻")
 
 
-def overfit_data() -> dict[str, dict[str, object]]:
-    """Dos experimentos independientes, cada uno con entrenamiento y validación."""
-    rng = np.random.default_rng(8182)
-    x_train = np.linspace(-1, 1, 21)
-    x_val = np.linspace(-1, 1, 101)
-    truths = {"linear": lambda z: 4 + 1.5*z,
-              "quadratic": lambda z: 4 + 1.2*z + 2.8*z*z}
+def family_data() -> dict[str, dict[str, object]]:
+    """Datos fijos; los extremos observados son parte del entrenamiento."""
     result = {}
-    for name, truth in truths.items():
-        result[name] = {"x_train": x_train, "y_train": truth(x_train) + rng.normal(0, 0.28, 21),
-                        "x_val": x_val, "y_val": truth(x_val) + rng.normal(0, 0.28, 101),
-                        "truth": truth, "generating_degree": 1 if name == "linear" else 2}
+    for key, spec in FAMILIES.items():
+        rng = np.random.default_rng(spec["seed"])
+        left, right = spec["domain"]
+        outer_left, outer_right = spec["extended"]
+        x = np.r_[left, np.sort(rng.uniform(left, right, N_TRAIN - 2)), right]
+        truth = spec["truth"]
+        y = truth(x) + rng.normal(0, NOISE_SD, N_TRAIN)
+        models = {degree: Polynomial.fit(x, y, degree)
+                  for degree in range(1, 17)}
+        x_val = rng.uniform(left, right, N_VALIDATION)
+        y_val = truth(x_val) + rng.normal(0, NOISE_SD, N_VALIDATION)
+        x_ext = np.r_[rng.uniform(outer_left, left, N_VALIDATION // 2),
+                      rng.uniform(right, outer_right, N_VALIDATION // 2)]
+        y_ext = truth(x_ext) + rng.normal(0, NOISE_SD, N_VALIDATION)
+        result[key] = {"x_train": x, "y_train": y,
+                       "x_val": x_val, "y_val": y_val,
+                       "x_exterior": x_ext, "y_exterior": y_ext,
+                       "x_ext": x_ext, "y_ext": y_ext,
+                       "models": models, "truth": truth, "spec": spec,
+                       "generating_degree": {"linear": 1, "quadratic": 2}.get(key)}
     return result
 
 
-def overfit_experiments() -> dict[str, dict[str, object]]:
-    """Ajusta grados 1–16 en cada entrenamiento y mide validación independiente."""
-    datasets = overfit_data()
+def _axis_number(value: float, _position: float) -> str:
+    if value == 0:
+        return "0"
+    if abs(value) >= 1000:
+        return f"{value:.1e}"
+    return f"{value:g}"
+
+
+def gallery(datasets: dict[str, dict[str, object]] | None = None) -> list[dict[str, object]]:
+    """Cinco pares de vistas: cada modelo se ajusta una sola vez."""
+    datasets = family_data() if datasets is None else datasets
+    facts = []
+    for key, experiment in datasets.items():
+        spec = experiment["spec"]
+        left, right = spec["domain"]
+        outer_left, outer_right = spec["extended"]
+        fig, axes = plt.subplots(2, 1, figsize=(6.0, 14.0))
+        fig.subplots_adjust(left=0.17, right=0.97, top=0.93, bottom=0.14, hspace=0.30)
+        for index, (ax, interval) in enumerate(zip(axes, [spec["domain"], spec["extended"]])):
+            dense = np.linspace(*interval, 750)
+            curves = [experiment["truth"](dense)] + [
+                experiment["models"][degree](dense) for degree in spec["degrees"]]
+            if index == 1:
+                ax.axvspan(left, right, color=CYAN, alpha=0.09, zorder=0)
+                ax.axvline(left, color=MUTED, linestyle=":", linewidth=2)
+                ax.axvline(right, color=MUTED, linestyle=":", linewidth=2)
+            ax.plot(dense, curves[0], color=WHITE,
+                    linestyle="--", linewidth=2.4, label="Generadora")
+            for degree, color, values in zip(spec["degrees"], [CYAN, GOLD, PINK], curves[1:]):
+                ax.plot(dense, values, color=color,
+                        linewidth=2.5, label=f"Grado {degree}")
+            sns.scatterplot(x=experiment["x_train"], y=experiment["y_train"],
+                            ax=ax, s=35, color=GREEN, edgecolor="none", alpha=0.75,
+                            zorder=6, label="Datos (120)", legend=False)
+            ax.set(xlim=interval, xlabel="x (u. a.)", ylabel="y (u. a.)")
+            max_abs = max(float(np.max(np.abs(values))) for values in curves)
+            if max_abs >= 1000:
+                exponent = int(np.floor(np.log10(max_abs)))
+                ax.yaxis.set_major_formatter(FuncFormatter(
+                    lambda value, _position, scale=10**exponent: f"{value/scale:g}"))
+                ax.set_ylabel(f"y (u. a.; ×10{str(exponent).translate(SUPERSCRIPT)})")
+            else:
+                ax.yaxis.set_major_formatter(FuncFormatter(_axis_number))
+            ax.set_title("Intervalo observado" if index == 0 else
+                         "Intervalo ampliado", fontsize=19, pad=10)
+            if index == 1:
+                width = outer_right - outer_left
+                for center in ((outer_left + left) / 2, (right + outer_right) / 2):
+                    ax.text((center - outer_left) / width, 0.75, "Extrapolación",
+                            rotation=90, transform=ax.transAxes, va="center",
+                            ha="center", color=MUTED, fontsize=15,
+                            bbox={"facecolor": PANEL, "edgecolor": "none", "pad": 1.5})
+                ax.text(((left + right) / 2 - outer_left) / width,
+                        0.72 if key == "reciprocal" else 0.96,
+                        "Observado", transform=ax.transAxes, va="top",
+                        ha="center", color=CYAN, fontsize=15)
+            ax.grid(alpha=0.3)
+        fig.suptitle(f"Relación {spec['label'].lower()}: mismos ajustes", fontsize=20)
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.005),
+                   ncol=2, facecolor=PANEL, edgecolor=GRID, labelcolor=WHITE,
+                   fontsize=17, frameon=True)
+        save(fig, f"opt-regresion-forma-{spec['file']}.png")
+        facts.append({"family": spec["label"], "key": key,
+                      "generating_formula": spec["formula"],
+                      "x_interval": list(spec["domain"]),
+                      "extended_interval": list(spec["extended"]),
+                      "degrees": spec["degrees"], "n_samples": N_TRAIN,
+                      "noise_sd": NOISE_SD, "seed": spec["seed"]})
+    return facts
+
+
+def overfit_data(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, dict[str, object]]:
+    """Comparación con los mismos datos lineales y cuadráticos de la galería."""
+    datasets = family_data() if datasets is None else datasets
+    return {name: datasets[name] for name in ("linear", "quadratic")}
+
+
+def overfit_experiments(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, dict[str, object]]:
+    """Mide entrenamiento, validación interior y prueba exterior independientes."""
+    datasets = overfit_data(datasets)
     for experiment in datasets.values():
         x_train, y_train = experiment["x_train"], experiment["y_train"]
         x_val, y_val = experiment["x_val"], experiment["y_val"]
-        models = {degree: Polynomial.fit(x_train, y_train, degree)
-                  for degree in range(1, 17)}
-        experiment["models"] = models
+        x_ext, y_ext = experiment["x_exterior"], experiment["y_exterior"]
+        models = experiment["models"]
         experiment["errors_by_degree"] = [
             {"degree": degree,
              "train_rmse": float(np.sqrt(np.mean((model(x_train)-y_train)**2))),
-             "validation_rmse": float(np.sqrt(np.mean((model(x_val)-y_val)**2)))}
+             "validation_rmse": float(np.sqrt(np.mean((model(x_val)-y_val)**2))),
+             "exterior_rmse": float(np.sqrt(np.mean((model(x_ext)-y_ext)**2)))}
             for degree, model in models.items()
         ]
     return datasets
 
 
-def overfit() -> dict[str, object]:
-    experiments = overfit_experiments()
-    dense = np.linspace(-1, 1, 500)
-    fig, axes = plt.subplots(2, 1, figsize=(7.1, 9.1), layout="constrained")
-    for ax, (name, experiment) in zip(axes, experiments.items()):
-        truth = experiment["truth"]
-        x_train, y_train = experiment["x_train"], experiment["y_train"]
-        x_val, y_val = experiment["x_val"], experiment["y_val"]
-        models = experiment["models"]
-        correct_degree = experiment["generating_degree"]
-        ax.plot(dense, truth(dense), color=WHITE, linestyle="--", linewidth=2.6,
-                label="Relación generadora")
-        ax.scatter(x_train, y_train, color=GREEN, s=42, zorder=5,
-                   label="21 entren.")
-        ax.scatter(x_val[::7], y_val[::7], color=MUTED, s=24, alpha=0.65,
-                   label="101 val. (muestra)")
-        ax.plot(dense, models[correct_degree](dense), color=CYAN, linewidth=3,
-                label=f"Ajuste grado {correct_degree}")
-        ax.plot(dense, models[15](dense), color=PINK, linewidth=2.8,
-                label="Ajuste grado 15")
-        ax.set(xlim=(-1, 1), xlabel="Entrada x (u. a.)",
-               ylabel="Salida y (u. a.)")
-        ax.set_title(("Relación lineal" if name == "linear" else "Relación cuadrática")
-                     + ": grado correcto y grado 15", pad=13)
-        ax.legend(loc="upper left", fontsize=15, ncol=2, facecolor=PANEL,
-                  edgecolor=GRID, labelcolor=WHITE)
-    save(fig, "opt-regresion-sobreajuste.png")
-
-    fig, axes = plt.subplots(2, 1, figsize=(7.1, 9.1), layout="constrained")
+def overfit(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, object]:
+    experiments = overfit_experiments(datasets)
+    fig, axes = plt.subplots(2, 1, figsize=(6.0, 10.0))
+    fig.subplots_adjust(left=0.18, right=0.97, top=0.94, bottom=0.22, hspace=0.38)
     for ax, (name, experiment) in zip(axes, experiments.items()):
         rows = experiment["errors_by_degree"]
         ax.plot([r["degree"] for r in rows], [r["train_rmse"] for r in rows],
@@ -253,17 +308,25 @@ def overfit() -> dict[str, object]:
                 color=PINK, marker="o", label="Validación independiente")
         degree = experiment["generating_degree"]
         ax.axvline(degree, color=GOLD, linestyle="--", linewidth=2,
-                   label=f"Grado generador: {degree}")
-        ax.set(xlabel="Grado del polinomio (entero)", ylabel="RMSE (u. a.)",
+                   label="Grado generador")
+        ax.set(xlabel="Grado del polinomio", ylabel="RMSE (u. a.)",
                xlim=(0.5, 16.5), xticks=list(range(1, 17, 2)))
-        ax.set_title(("Datos lineales" if name == "linear" else "Datos cuadráticos")
-                     + ": entrenamiento y validación", pad=14)
-        ax.legend(facecolor=PANEL, edgecolor=GRID, labelcolor=WHITE, fontsize=16)
+        ax.set_title("Datos lineales" if name == "linear" else "Datos cuadráticos", pad=14)
+        ax.grid(alpha=0.3)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.005),
+               ncol=1, facecolor=PANEL, edgecolor=GRID, labelcolor=WHITE, fontsize=15)
     save(fig, "opt-regresion-validacion.png")
-    formulas = {"linear": "4 + 1.5x", "quadratic": "4 + 1.2x + 2.8x²"}
-    return {name: {"n_train": 21, "n_validation": 101,
-                   "generating_formula": formulas[name], "x_interval": [-1, 1],
+    return {name: {"n_train": N_TRAIN, "n_validation": N_VALIDATION,
+                   "n_exterior": N_VALIDATION,
+                   "n_exterior_each_side": N_VALIDATION // 2,
+                   "noise_distribution": "normal", "noise_sd": NOISE_SD,
+                   "generating_formula": exp["spec"]["formula"],
+                   "x_interval": list(exp["spec"]["domain"]),
+                   "exterior_interval": list(exp["spec"]["extended"]),
                    "generating_degree": exp["generating_degree"],
+                   "best_validation_degree": min(exp["errors_by_degree"],
+                                                   key=lambda row: row["validation_rmse"])["degree"],
                    "errors_by_degree": exp["errors_by_degree"]}
             for name, exp in experiments.items()}
 
@@ -277,8 +340,9 @@ def main() -> None:
     plot_delivery(x, y, outliers)
     plot_fits(x, y, fits)
     slope = plot_slope_slice(x, y)
-    families = gallery()
-    overfit_metrics = overfit()
+    datasets = family_data()
+    families = gallery(datasets)
+    overfit_metrics = overfit(datasets)
     manifest = {
         "source": "Datos simulados; semilla fija. Ajustes calculados, no observaciones reales.",
         "delivery": {"n": len(x), "seed": 20260924, "outlier_indices_zero_based": outliers,
@@ -289,12 +353,12 @@ def main() -> None:
                                       **score(x, y, beta)} for name, beta in fits.items()},
                      "slope_slice": slope},
         "form_gallery": families,
-        "overfit": {"seed": 8182, "noise_sd": 0.28, "experiments": overfit_metrics},
+        "overfit": {"noise_sd": NOISE_SD, "experiments": overfit_metrics},
     }
     METRICS.parent.mkdir(parents=True, exist_ok=True)
     METRICS.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
                        encoding="utf-8")
-    print(f"Seis gráficas y métricas: {METRICS}")
+    print(f"Nueve gráficas y métricas: {METRICS}")
 
 
 if __name__ == "__main__":

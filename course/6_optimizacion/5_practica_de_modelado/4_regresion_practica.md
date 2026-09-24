@@ -4,7 +4,7 @@ title: Predecir un valor y elegir la complejidad del modelo
 nav_title: Regresión
 summary: "Ajustar tiempos de entrega, comparar errores y elegir la complejidad de una curva con datos reservados."
 status: ready
-estimated_time: 50m
+estimated_time: 60m
 tags: [optimizacion, modelado, regresion]
 ---
 
@@ -259,22 +259,62 @@ encontrar tendencias cuadráticas, cúbicas, senoidales o recíprocas.
 **Elegir una familia** delimita qué formas podrá tener la regla antes
 de ajustar sus parámetros.
 
-![Cinco familias de datos simulados, con muestras, curva generadora y tres polinomios ajustados; cada panel tiene x horizontal y valor vertical](../_assets/opt-regresion-formas.png)
+En otro experimento simulado, independiente de las entregas, generamos
+**120 observaciones por familia** en posiciones irregulares y añadimos
+ruido normal independiente con desviación estándar $0.4$ a sus respuestas.
 
-Esta galería es **otro experimento simulado**, independiente de las
-entregas: cada panel tiene 27 muestras, una curva que las generó y tres
-polinomios ajustados a esas mismas muestras. El eje horizontal es la
-entrada $x$ y el vertical, el valor generado o predicho. Las curvas
-generadoras son $4+2x$, $4+1.5x+4x^2$, $4+2x-2x^2+3x^3$,
-$4+2\sin(5x)$ y $2+5/x$, respectivamente. Los primeros cuatro paneles
-usan $-0.9\le x\le0.9$; el recíproco usa $1\le x\le5$. Así evitamos
-$x=0$, donde $1/x$ no está definida.
+En cada figura, la vista superior muestra en detalle el **intervalo
+observado**; la inferior incluye valores de $x$ fuera de él. Su franja
+sombreada marca dónde hubo entrenamiento. **Cada curva ajustada conserva
+los mismos coeficientes en las dos vistas:** cambiar el intervalo
+dibujado no equivale a volver a optimizar el modelo. Las escalas
+verticales son distintas y se indican en los ejes.
 
-**Mira qué cambia al dar más grados al polinomio.** Una recta puede
-seguir la tendencia lineal, pero tiene poco margen para doblarse. Una
-curva muy flexible puede acercarse a las muestras y oscilar entre ellas.
-La figura muestra posibilidades, no demuestra que un grado particular
-sea siempre mejor.
+Los primeros cuatro casos se entrenan en $[-1,1]$ y se dibujan hasta
+$[-1.5,1.5]$; el recíproco se entrena en $[1,5]$ y se dibuja en
+$[0.5,6]$.
+
+**Lineal.** La relación generadora es $4+2x$. Una recta puede seguir
+esta tendencia que crece a ritmo constante. Compara los ajustes de
+grados 1, 2 y 15 dentro de la zona observada y luego mira cómo
+continúan fuera de ella: un buen ajuste local no fija por sí solo la
+continuación.
+
+![Datos simulados con tendencia lineal y polinomios ajustados: vista ampliada del intervalo observado y vista extendida; el sombreado señala el entrenamiento](../_assets/opt-regresion-forma-lineal.png)
+
+**Cuadrática.** La relación es $4+1.5x+4x^2$. Una recta no puede
+reproducir la curvatura de una parábola; el grado 2 sí puede describirla,
+aunque los puntos ruidosos no caigan exactamente sobre ella. También se
+muestra el ajuste de grado 15.
+
+![Datos simulados con tendencia cuadrática y polinomios ajustados: vista ampliada del intervalo observado y vista extendida con los mismos ajustes](../_assets/opt-regresion-forma-cuadratica.png)
+
+**Cúbica.** La relación $4+2x-2x^2+3x^3$ cambia de curvatura.
+Comparamos grados 1, 3 y 15. Aquí también conviene distinguir entre
+seguir la forma general y perseguir cada variación del ruido.
+
+![Datos simulados con tendencia cúbica y polinomios ajustados, vistos dentro y fuera del intervalo observado](../_assets/opt-regresion-forma-cubica.png)
+
+**Senoidal.** La relación es $4+2\sin(5x)$ y se muestran grados 1,
+5 y 15. Un polinomio puede aproximar una parte de la onda en el
+intervalo donde se ajustó. Esa aproximación no lo convierte en una
+función periódica: al prolongarla puede dejar de repetir las
+oscilaciones.
+
+![Datos simulados con tendencia senoidal y polinomios ajustados: la vista extendida sombrea el intervalo de entrenamiento](../_assets/opt-regresion-forma-senoidal.png)
+
+**Recíproca.** La relación es $2+5/x$ y se muestran grados 1, 4 y 15.
+La regla $1/x$ cambia con rapidez cuando $x$ se acerca a cero. Los datos
+observados están lejos de ese punto; la vista extendida muestra qué
+ocurre al acercarse, sin incluir $x=0$, donde la regla no está definida.
+
+![Datos simulados con tendencia recíproca y polinomios ajustados: vista del intervalo observado y extensión hacia valores positivos más pequeños y grandes](../_assets/opt-regresion-forma-reciproca.png)
+
+**Mira qué cambia al dar más grados al polinomio.** Más flexibilidad
+permite acercarse a los datos, pero la forma fuera del intervalo
+observado requiere una comprobación aparte. Las figuras muestran lo
+que sucede en esta simulación; no establecen que un grado concreto sea
+siempre el mejor.
 
 Nos concentraremos en la familia de polinomios. Para un grado máximo
 **fijo** $N$, la regla es
@@ -348,21 +388,14 @@ significa que una curva capta particularidades del entrenamiento que
 perjudican su predicción fuera de esa muestra. Un grado alto por sí solo
 no prueba sobreajuste: necesitamos comparar con datos reservados.
 
-En el siguiente experimento simulamos dos patrones distintos: uno lineal
-y otro cuadrático. Para cada patrón ajustamos polinomios con **21 puntos de
-entrenamiento** y los miramos sobre **101 puntos de validación**. La figura
-compara el grado que corresponde a cada patrón (1 o 2) con grado 15.
-Las relaciones generadoras son $y=4+1.5x$ y $y=4+1.2x+2.8x^2$, con
-$-1\le x\le1$. Añadimos variación independiente a los datos de
-entrenamiento y validación de cada patrón.
-
-![Dos patrones simulados: grado 1 frente a 15 para el patrón lineal, y grado 2 frente a 15 para el cuadrático; ejes de entrada x y respuesta y](../_assets/opt-regresion-sobreajuste.png)
-
-En cada panel, el eje horizontal es $x$ y el vertical, la respuesta.
-El grado 15 pasa cerca de muchos puntos usados para ajustarlo, pero
-se aleja de la tendencia entre ellos y en los extremos. La figura
-anterior mostró cómo la recta tampoco seguía una curva cuadrática.
-Mediremos ambos problemas con validación en la siguiente sección.
+Regresa a las figuras **lineal** y **cuadrática** de la sección 6.
+Dentro de la franja sombreada de la vista extendida, compara los puntos
+con las curvas; fuera de ella, observa cómo continúan **los mismos
+ajustes**. Una curva puede seguir el ruido del entrenamiento y predecir
+peor otros casos
+del mismo intervalo: eso sería sobreajuste. También puede tener buen
+error en casos nuevos de ese intervalo y fallar al extrapolar. Son
+preguntas distintas, que mediremos por separado en la siguiente sección.
 El [ejemplo de ajuste polinómico de scikit-learn](https://scikit-learn.org/stable/auto_examples/model_selection/plot_underfitting_overfitting.html)
 ilustra esta comparación entre flexibilidad y error fuera del entrenamiento.
 
@@ -434,20 +467,60 @@ entrenamiento y, sin embargo, tiene mayor error en estos datos reservados.
 **El algoritmo puede resolver correctamente el objetivo de entrenamiento
 y aun así elegir una regla que prediga peor casos nuevos.**
 
-La misma comparación aparece con más datos en los **dos patrones simulados**
-de la sección anterior: uno lineal y otro cuadrático. Para cada patrón,
-las curvas siguientes miden RMSE en los 21 puntos de entrenamiento y en
-101 puntos independientes de validación, para $N=1,\ldots,16$.
+Repetimos la comparación con los **mismos 120 datos lineales y 120 datos
+cuadráticos** de la sección 6, por separado. En cada familia ajustamos
+los grados $N=1,\ldots,16$ con sus propios datos de entrenamiento.
+Después calculamos RMSE en **300 casos nuevos dentro** del intervalo
+observado y, aparte, en **300 casos nuevos fuera** de él: 150 a cada
+lado. Los conjuntos tienen ruido independiente. El error interior sirve
+para elegir $N$; los casos exteriores quedan reservados para examinar
+la extrapolación y **no intervienen en esa elección**. No mezclamos sus
+errores en un único promedio.
 
-![Dos gráficas de RMSE frente al grado polinómico, una para datos lineales y otra para cuadráticos, con curvas de entrenamiento y validación](../_assets/opt-regresion-validacion.png)
+![RMSE de entrenamiento y validación dentro del intervalo observado frente al grado polinómico para los mismos datos lineales y cuadráticos de las figuras anteriores](../_assets/opt-regresion-validacion.png)
 
-En ambos paneles, el eje horizontal es el grado permitido $N$ y el
-vertical, RMSE en **unidades arbitrarias** de la respuesta. Para el
-patrón lineal, validación es menor en $N=1$ (0.342); para el cuadrático,
-en $N=2$ (0.249). Esas cifras están redondeadas. Aumentar $N$ sigue
-reduciendo el error de entrenamiento, pero al llegar a $N=16$ el error
-de validación sube a 1.716 y 1.408, respectivamente. **La caída del
-entrenamiento no basta para elegir el grado.**
+En la gráfica se comparan entrenamiento y validación **dentro del
+intervalo**: el eje horizontal es el grado permitido $N$ y el
+vertical, RMSE en **unidades arbitrarias** de la respuesta. Los errores
+de entrenamiento bajan de $0.4357$ a $0.4108$ en el caso lineal y de
+$1.3793$ a $0.3552$ en el cuadrático entre los grados 1 y 16. Eso
+solo describe el ajuste a los datos usados. Para algunos grados,
+comparamos el **RMSE dentro y fuera** del intervalo, siempre con los
+mismos coeficientes ajustados en entrenamiento. Los valores están
+redondeados.
+
+**Patrón lineal:**
+
+| Grado | Dentro | Fuera |
+|---|---:|---:|
+| 1 | 0.4126 | 0.4001 |
+| 2 | 0.4124 | 0.4008 |
+| 15 | 0.4465 | 41778.1 |
+
+**Patrón cuadrático:**
+
+| Grado | Dentro | Fuera |
+|---|---:|---:|
+| 1 | 1.2546 | 4.9173 |
+| 2 | 0.4241 | 0.4222 |
+| 15 | 0.4378 | 17634.4 |
+
+Con los valores **sin redondear**, la validación interior elige $N=2$
+en ambos patrones. En el lineal, su ventaja sobre $N=1$ es de solo
+$0.00026$ unidades de RMSE; no sería razonable concluir que la relación
+generadora dejó de ser lineal. En el cuadrático, $N=1$ subajusta de
+forma visible. El grado 15 reduce el error de entrenamiento, pero su
+validación interior es algo peor que la del grado elegido: **hay
+sobreajuste medido dentro del intervalo** en esta simulación. Fuera de
+él, el mismo ajuste de grado 15 se dispara. Ese fallo de extrapolación
+es mucho mayor y es una observación distinta. El grado alto no implica
+por sí solo este comportamiento en cualquier muestra o intervalo.
+
+Podemos dibujar la relación generadora porque **esta es una simulación**:
+conocemos la función que produjo los datos. En una aplicación real no
+conoceríamos esa curva fuera de lo observado. Los casos exteriores
+reservados permiten medir allí el error de estas reglas concretas, sin
+usar esa medición para seleccionar el grado.
 
 La validación ya intervino en nuestra elección. **Su error no es una
 estimación insesgada del error final solo por haber sido reservada al inicio.**
