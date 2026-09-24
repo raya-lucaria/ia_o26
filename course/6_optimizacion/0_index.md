@@ -4,7 +4,7 @@ title: Modelado y optimización
 nav_title: Optimización
 summary: "Antes de resolver hay que plantear. Esta unidad enseña a leer un problema en palabras y escribirlo como matemáticas, y después a resolverlo."
 status: ready
-estimated_time: 9h9m
+estimated_time: 9h44m
 tags: [optimizacion, modelado, programacion-lineal]
 ---
 
@@ -55,7 +55,7 @@ leer, escribir, resolver, dudar de la respuesta.
 ## Las clases
 
 Las primeras cuatro secciones desarrollan las clases de la nave. La sección
-6.5 reúne cuatro ejemplos guiados para construir modelos. Los tres primeros
+6.5 reúne cinco ejemplos guiados para construir modelos. Los cuatro primeros
 incluyen ejercicios con pistas y respuestas para practicar por tu cuenta.
 
 ::: table {#opt-clases title="Las clases de la unidad"}
@@ -65,7 +65,7 @@ incluyen ejercicios con pistas y respuestas para practicar por tu cuenta.
 | 2 | Resolver sin dibujar | Escribir el modelo como matriz y resolverlo con simplex sin dibujarlo | 108m |
 | 3 | Cuando ya no es una recta | Repartir la potencia del reactor cuando el rendimiento decrece | 144m |
 | 4 | Cuando las piezas no se parten | Escribir un problema cuyas cantidades son enteras, y resolverlo: mirándolos todos, y sin mirarlos todos | 125m |
-| 5 | Modelar problemas de optimización | Cuatro ejemplos guiados para construir decisiones, restricciones y objetivos | 95m |
+| 5 | Modelar problemas de optimización | Cinco ejemplos guiados para construir decisiones, restricciones y objetivos | 130m |
 :::
 
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
@@ -75,7 +75,7 @@ incluyen ejercicios con pistas y respuestas para practicar por tu cuenta.
 - [[opt-practica-modelado|6.5 · Modelar problemas de optimización]]
 
 El recorrido de las cuatro clases suma 454 minutos; los ejemplos guiados,
-95 minutos. En total son **9 horas y 9 minutos**, más el tiempo que dediques
+130 minutos. En total son **9 horas y 44 minutos**, más el tiempo que dediques
 a los ejercicios de las guías.
 
 ## La tarea del lunes
