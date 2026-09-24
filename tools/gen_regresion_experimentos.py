@@ -170,31 +170,21 @@ FAMILIES = {
 }
 NOISE_SD = 0.4
 N_TRAIN = 120
-N_VALIDATION = 300
 SUPERSCRIPT = str.maketrans("0123456789-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻")
 
 
 def family_data() -> dict[str, dict[str, object]]:
-    """Datos fijos; los extremos observados son parte del entrenamiento."""
+    """Un conjunto fijo por relación, con ambos extremos observados."""
     result = {}
     for key, spec in FAMILIES.items():
         rng = np.random.default_rng(spec["seed"])
         left, right = spec["domain"]
-        outer_left, outer_right = spec["extended"]
         x = np.r_[left, np.sort(rng.uniform(left, right, N_TRAIN - 2)), right]
         truth = spec["truth"]
         y = truth(x) + rng.normal(0, NOISE_SD, N_TRAIN)
         models = {degree: Polynomial.fit(x, y, degree)
                   for degree in range(1, 17)}
-        x_val = rng.uniform(left, right, N_VALIDATION)
-        y_val = truth(x_val) + rng.normal(0, NOISE_SD, N_VALIDATION)
-        x_ext = np.r_[rng.uniform(outer_left, left, N_VALIDATION // 2),
-                      rng.uniform(right, outer_right, N_VALIDATION // 2)]
-        y_ext = truth(x_ext) + rng.normal(0, NOISE_SD, N_VALIDATION)
-        result[key] = {"x_train": x, "y_train": y,
-                       "x_val": x_val, "y_val": y_val,
-                       "x_exterior": x_ext, "y_exterior": y_ext,
-                       "x_ext": x_ext, "y_ext": y_ext,
+        result[key] = {"x": x, "y": y,
                        "models": models, "truth": truth, "spec": spec,
                        "generating_degree": {"linear": 1, "quadratic": 2}.get(key)}
     return result
@@ -231,7 +221,7 @@ def gallery(datasets: dict[str, dict[str, object]] | None = None) -> list[dict[s
             for degree, color, values in zip(spec["degrees"], [CYAN, GOLD, PINK], curves[1:]):
                 ax.plot(dense, values, color=color,
                         linewidth=2.5, label=f"Grado {degree}")
-            sns.scatterplot(x=experiment["x_train"], y=experiment["y_train"],
+            sns.scatterplot(x=experiment["x"], y=experiment["y"],
                             ax=ax, s=35, color=GREEN, edgecolor="none", alpha=0.75,
                             zorder=6, label="Datos (120)", legend=False)
             ax.set(xlim=interval, xlabel="x (u. a.)", ylabel="y (u. a.)")
@@ -272,61 +262,49 @@ def gallery(datasets: dict[str, dict[str, object]] | None = None) -> list[dict[s
     return facts
 
 
-def overfit_data(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, dict[str, object]]:
-    """Comparación con los mismos datos lineales y cuadráticos de la galería."""
+def degree_experiments(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, dict[str, object]]:
+    """Mide grados 1–16 sobre los mismos puntos que determinaron cada ajuste."""
     datasets = family_data() if datasets is None else datasets
-    return {name: datasets[name] for name in ("linear", "quadratic")}
-
-
-def overfit_experiments(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, dict[str, object]]:
-    """Mide entrenamiento, validación interior y prueba exterior independientes."""
-    datasets = overfit_data(datasets)
-    for experiment in datasets.values():
-        x_train, y_train = experiment["x_train"], experiment["y_train"]
-        x_val, y_val = experiment["x_val"], experiment["y_val"]
-        x_ext, y_ext = experiment["x_exterior"], experiment["y_exterior"]
-        models = experiment["models"]
+    experiments = {name: datasets[name] for name in ("linear", "quadratic")}
+    for experiment in experiments.values():
+        x, y = experiment["x"], experiment["y"]
         experiment["errors_by_degree"] = [
             {"degree": degree,
-             "train_rmse": float(np.sqrt(np.mean((model(x_train)-y_train)**2))),
-             "validation_rmse": float(np.sqrt(np.mean((model(x_val)-y_val)**2))),
-             "exterior_rmse": float(np.sqrt(np.mean((model(x_ext)-y_ext)**2)))}
-            for degree, model in models.items()
+             "observed_rmse": float(np.sqrt(np.mean((model(x) - y)**2)))}
+            for degree, model in experiment["models"].items()
         ]
-    return datasets
+    return experiments
 
 
-def overfit(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, object]:
-    experiments = overfit_experiments(datasets)
+def plot_degree_error(datasets: dict[str, dict[str, object]] | None = None) -> dict[str, object]:
+    experiments = degree_experiments(datasets)
     fig, axes = plt.subplots(2, 1, figsize=(6.0, 10.0))
-    fig.subplots_adjust(left=0.18, right=0.97, top=0.94, bottom=0.22, hspace=0.38)
+    fig.subplots_adjust(left=0.18, right=0.97, top=0.94, bottom=0.22, hspace=0.48)
     for ax, (name, experiment) in zip(axes, experiments.items()):
         rows = experiment["errors_by_degree"]
-        ax.plot([r["degree"] for r in rows], [r["train_rmse"] for r in rows],
-                color=CYAN, marker="o", label="Entrenamiento")
-        ax.plot([r["degree"] for r in rows], [r["validation_rmse"] for r in rows],
-                color=PINK, marker="o", label="Validación independiente")
+        ax.plot([r["degree"] for r in rows], [r["observed_rmse"] for r in rows],
+                color=CYAN, marker="o", label="Error en los datos observados")
+        best = min(rows, key=lambda row: row["observed_rmse"])
+        ax.scatter(best["degree"], best["observed_rmse"], color=PINK,
+                   s=115, zorder=5, label=f"Mínimo: grado {best['degree']}")
         degree = experiment["generating_degree"]
         ax.axvline(degree, color=GOLD, linestyle="--", linewidth=2,
-                   label="Grado generador")
+                   label="Grado de la curva original")
         ax.set(xlabel="Grado del polinomio", ylabel="RMSE (u. a.)",
                xlim=(0.5, 16.5), xticks=list(range(1, 17, 2)))
         ax.set_title("Datos lineales" if name == "linear" else "Datos cuadráticos", pad=14)
         ax.grid(alpha=0.3)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.005),
-               ncol=1, facecolor=PANEL, edgecolor=GRID, labelcolor=WHITE, fontsize=15)
-    save(fig, "opt-regresion-validacion.png")
-    return {name: {"n_train": N_TRAIN, "n_validation": N_VALIDATION,
-                   "n_exterior": N_VALIDATION,
-                   "n_exterior_each_side": N_VALIDATION // 2,
+               ncol=1, facecolor=PANEL, edgecolor=GRID, labelcolor=WHITE, fontsize=17)
+    save(fig, "opt-regresion-error-grado.png")
+    return {name: {"n_observed": N_TRAIN,
                    "noise_distribution": "normal", "noise_sd": NOISE_SD,
                    "generating_formula": exp["spec"]["formula"],
                    "x_interval": list(exp["spec"]["domain"]),
-                   "exterior_interval": list(exp["spec"]["extended"]),
                    "generating_degree": exp["generating_degree"],
-                   "best_validation_degree": min(exp["errors_by_degree"],
-                                                   key=lambda row: row["validation_rmse"])["degree"],
+                   "best_observed_degree": min(exp["errors_by_degree"],
+                                               key=lambda row: row["observed_rmse"])["degree"],
                    "errors_by_degree": exp["errors_by_degree"]}
             for name, exp in experiments.items()}
 
@@ -342,7 +320,7 @@ def main() -> None:
     slope = plot_slope_slice(x, y)
     datasets = family_data()
     families = gallery(datasets)
-    overfit_metrics = overfit(datasets)
+    degree_metrics = plot_degree_error(datasets)
     manifest = {
         "source": "Datos simulados; semilla fija. Ajustes calculados, no observaciones reales.",
         "delivery": {"n": len(x), "seed": 20260924, "outlier_indices_zero_based": outliers,
@@ -353,7 +331,7 @@ def main() -> None:
                                       **score(x, y, beta)} for name, beta in fits.items()},
                      "slope_slice": slope},
         "form_gallery": families,
-        "overfit": {"noise_sd": NOISE_SD, "experiments": overfit_metrics},
+        "degree_error": {"noise_sd": NOISE_SD, "experiments": degree_metrics},
     }
     METRICS.parent.mkdir(parents=True, exist_ok=True)
     METRICS.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",

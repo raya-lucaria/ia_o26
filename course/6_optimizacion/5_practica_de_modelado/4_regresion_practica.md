@@ -2,9 +2,9 @@
 id: opt-objetivo-regresion-practica
 title: Predecir un valor y elegir la complejidad del modelo
 nav_title: Regresión
-summary: "Ajustar tiempos de entrega, comparar errores y elegir la complejidad de una curva con datos reservados."
+summary: "Ajustar tiempos de entrega, comparar errores y explorar qué ocurre al dejar que el algoritmo elija el grado de un polinomio."
 status: ready
-estimated_time: 60m
+estimated_time: 50m
 tags: [optimizacion, modelado, regresion]
 ---
 
@@ -260,18 +260,20 @@ encontrar tendencias cuadráticas, cúbicas, senoidales o recíprocas.
 de ajustar sus parámetros.
 
 En otro experimento simulado, independiente de las entregas, generamos
-**120 observaciones por familia** en posiciones irregulares y añadimos
-ruido normal independiente con desviación estándar $0.4$ a sus respuestas.
+**120 observaciones por familia** en posiciones irregulares. Añadimos pequeñas
+variaciones a sus respuestas para que los puntos no caigan perfectamente
+sobre una curva. **En cada ejemplo hay un solo conjunto de datos:** usamos
+esos mismos puntos para ajustar los coeficientes y calcular el error.
 
 En cada figura, la vista superior muestra en detalle el **intervalo
 observado**; la inferior incluye valores de $x$ fuera de él. Su franja
-sombreada marca dónde hubo entrenamiento. **Cada curva ajustada conserva
+sombreada marca dónde están los datos. **Cada curva ajustada conserva
 los mismos coeficientes en las dos vistas:** cambiar el intervalo
 dibujado no equivale a volver a optimizar el modelo. Las escalas
 verticales son distintas y se indican en los ejes.
 
-Los primeros cuatro casos se entrenan en $[-1,1]$ y se dibujan hasta
-$[-1.5,1.5]$; el recíproco se entrena en $[1,5]$ y se dibuja en
+Los primeros cuatro casos se ajustan en $[-1,1]$ y se dibujan hasta
+$[-1.5,1.5]$; el recíproco se ajusta en $[1,5]$ y se dibuja en
 $[0.5,6]$.
 
 **Lineal.** La relación generadora es $4+2x$. Una recta puede seguir
@@ -280,7 +282,7 @@ grados 1, 2 y 15 dentro de la zona observada y luego mira cómo
 continúan fuera de ella: un buen ajuste local no fija por sí solo la
 continuación.
 
-![Datos simulados con tendencia lineal y polinomios ajustados: vista ampliada del intervalo observado y vista extendida; el sombreado señala el entrenamiento](../_assets/opt-regresion-forma-lineal.png)
+![Datos simulados con tendencia lineal y polinomios ajustados: vista ampliada del intervalo observado y vista extendida; el sombreado señala dónde están los datos](../_assets/opt-regresion-forma-lineal.png)
 
 **Cuadrática.** La relación es $4+1.5x+4x^2$. Una recta no puede
 reproducir la curvatura de una parábola; el grado 2 sí puede describirla,
@@ -301,7 +303,7 @@ intervalo donde se ajustó. Esa aproximación no lo convierte en una
 función periódica: al prolongarla puede dejar de repetir las
 oscilaciones.
 
-![Datos simulados con tendencia senoidal y polinomios ajustados: la vista extendida sombrea el intervalo de entrenamiento](../_assets/opt-regresion-forma-senoidal.png)
+![Datos simulados con tendencia senoidal y polinomios ajustados: la vista extendida sombrea el intervalo observado](../_assets/opt-regresion-forma-senoidal.png)
 
 **Recíproca.** La relación es $2+5/x$ y se muestran grados 1, 4 y 15.
 La regla $1/x$ cambia con rapidez cuando $x$ se acerca a cero. Los datos
@@ -311,10 +313,11 @@ ocurre al acercarse, sin incluir $x=0$, donde la regla no está definida.
 ![Datos simulados con tendencia recíproca y polinomios ajustados: vista del intervalo observado y extensión hacia valores positivos más pequeños y grandes](../_assets/opt-regresion-forma-reciproca.png)
 
 **Mira qué cambia al dar más grados al polinomio.** Más flexibilidad
-permite acercarse a los datos, pero la forma fuera del intervalo
-observado requiere una comprobación aparte. Las figuras muestran lo
-que sucede en esta simulación; no establecen que un grado concreto sea
-siempre el mejor.
+permite acercarse a los puntos, pero también puede producir curvas que
+oscilan mucho o se disparan al prolongarlas. **El error que calculamos en
+los puntos no penaliza directamente esas formas.** Las figuras muestran
+lo que sucede en estos ejemplos; no establecen que todo polinomio de
+grado alto se comporte así.
 
 Nos concentraremos en la familia de polinomios. Para un grado máximo
 **fijo** $N$, la regla es
@@ -326,7 +329,7 @@ $\beta_0$, porque $x^0=1$. Para un $N$ fijo elegimos
 
 $$\beta=(\beta_0,\ldots,\beta_N)\in\mathbb R^{N+1}.$$
 
-**No confundamos $n$ con $N$:** $n$ cuenta las entregas observadas;
+**No confundamos $n$ con $N$:** $n$ cuenta las observaciones;
 $N$ limita el grado y determina que ajustamos $N+1$ coeficientes.
 El coeficiente de mayor índice puede ser cero; no exigimos grado exactamente
 $N$.
@@ -348,7 +351,7 @@ $$
 \beta\in\mathbb R^{N+1}}}\quad\mathrm{MSE}(\beta,N),
 $$
 
-con el error de entrenamiento
+con el error calculado sobre los mismos $n$ datos observados
 
 $$\mathrm{MSE}(\beta,N)=\frac1n
 \sum_{i=1}^n\bigl(y_i-f_{\beta,N}(x_i)\bigr)^2.$$
@@ -372,160 +375,80 @@ f_{(\beta,0),N+1}(x)
 $$
 
 Las predicciones y el error no cambian. Al minimizar sobre una familia
-que contiene a la anterior, **el mejor error de entrenamiento no puede
+que contiene a la anterior, **el menor error en esos mismos datos no puede
 aumentar**. Esto vale para MAE y RMSE, además de MSE. Puede quedarse igual:
 no afirmamos que el optimizador siempre deba elegir el grado más alto.
 
 Si las $n$ entradas son distintas y permitimos $N\ge n-1$, existe un
-polinomio que pasa por todos los puntos y logra error de entrenamiento
-cero. Si dos entregas tienen la misma distancia pero tiempos diferentes,
+polinomio que pasa por todos los puntos y logra error cero en esos datos.
+Si dos entregas tienen la misma distancia pero tiempos diferentes,
 ninguna función de esa distancia puede acertar exactamente ambos tiempos.
 
-Ajustar los datos con exactitud puede recoger variaciones que no se repitan.
-**Subajuste** significa que la familia es demasiado limitada para captar
-el patrón, como una recta ante una tendencia cuadrática. **Sobreajuste**
-significa que una curva capta particularidades del entrenamiento que
-perjudican su predicción fuera de esa muestra. Un grado alto por sí solo
-no prueba sobreajuste: necesitamos comparar con datos reservados.
+**Subajuste:** la familia es demasiado limitada para seguir el patrón.
+La recta del ejemplo cuadrático no puede doblarse para acompañar la nube,
+por mucho que ajustemos sus dos coeficientes.
 
-Regresa a las figuras **lineal** y **cuadrática** de la sección 6.
-Dentro de la franja sombreada de la vista extendida, compara los puntos
-con las curvas; fuera de ella, observa cómo continúan **los mismos
-ajustes**. Una curva puede seguir el ruido del entrenamiento y predecir
-peor otros casos
-del mismo intervalo: eso sería sobreajuste. También puede tener buen
-error en casos nuevos de ese intervalo y fallar al extrapolar. Son
-preguntas distintas, que mediremos por separado en la siguiente sección.
-El [ejemplo de ajuste polinómico de scikit-learn](https://scikit-learn.org/stable/auto_examples/model_selection/plot_underfitting_overfitting.html)
-ilustra esta comparación entre flexibilidad y error fuera del entrenamiento.
+En el otro extremo, dar más flexibilidad permite seguir incluso pequeñas
+irregularidades de los puntos. **Esa es la intuición que queremos abrir
+sobre el sobreajuste:** una curva puede acercarse más a cada dato y, al mismo
+tiempo, volverse muy ondulada. Un grado alto no obliga a que esto suceda;
+observa las curvas concretas de los ejemplos.
 
-## 8 · Elegir la complejidad con datos reservados
+Regresa a las figuras **lineal** y **cuadrática**. En la vista ampliada,
+mira qué tanto se doblan las curvas para acercarse a los puntos. En la
+vista extendida, mira cómo continúan **esos mismos polinomios**. Dibujarlos
+fuera del intervalo no añade observaciones ni cambia el objetivo: solo
+permite ver la forma de la regla que hemos elegido.
 
-Separamos los datos antes de comparar modelos:
+## 8 · Ver qué premia el objetivo al elegir el grado
 
-1. **Entrenamiento:** usamos los $n$ pares para ajustar los coeficientes.
-2. **Validación:** reservamos otros $m\ge1$ pares para elegir el grado.
-3. **Prueba final:** dejamos un tercer conjunto sin consultar hasta fijar
-   el modelo y las decisiones anteriores.
+Volvamos a las **mismas seis entregas** del cálculo manual. Para cada
+$N=1,\ldots,5$, ajustamos los coeficientes por mínimos cuadrados y
+calculamos RMSE sobre esos seis puntos.
 
-Para cada grado candidato ajustamos sus coeficientes **solo con entrenamiento**:
+![Polinomios de grados 1, 3 y 5 ajustados a las mismas seis entregas y RMSE sobre esos datos frente al grado permitido](../_assets/opt-regresion-grado.svg)
 
-$$\beta^\star(N)\in
-\operatorname*{arg\,min}_{\beta\in\mathbb R^{N+1}}
-\mathrm{MSE}(\beta,N).$$
+En las curvas, los ejes son distancia y tiempo. En la comparación de
+errores, el eje horizontal es $N$ y el vertical es **RMSE en minutos**.
 
-Si hay varios ajustes óptimos, fijamos de antemano una regla para escoger
-uno, por ejemplo el de menor suma de cuadrados de sus coeficientes.
-Así cada candidato tiene una predicción definida antes de ver la validación.
+| Grado permitido $N$ | RMSE en las seis entregas |
+|---|---:|
+| 1 | 0.956 |
+| 2 | 0.956 |
+| 3 | 0.823 |
+| 4 | 0.823 |
+| 5 | 0.000 |
 
-Escribimos los pares de validación como
-$(x_r^{\mathrm{val}},y_r^{\mathrm{val}})$, con $r=1,\ldots,m$.
-Calculamos sus residuos sin volver a ajustar los coeficientes:
+Las cifras están redondeadas. El polinomio de grado 5 pasa por todos los
+puntos: **si solo pedimos el menor error en estas entregas, gana ese ajuste.**
+El algoritmo cumple exactamente lo que le pedimos. No incluimos en el
+objetivo ningún costo por usar más coeficientes ni por producir una curva
+con tantas variaciones entre los puntos.
 
-$$e_r^{\mathrm{val}}(\beta,N)=
-y_r^{\mathrm{val}}-f_{\beta,N}(x_r^{\mathrm{val}}).$$
+Ahora mira el error en los ejemplos **lineal y cuadrático de 120 puntos**.
+Para cada uno conservamos su único conjunto de datos y comparamos los
+grados $N=1,\ldots,16$.
 
-Después los reunimos en RMSE de validación:
+![RMSE sobre los mismos puntos observados al aumentar el grado permitido, para los ejemplos lineal y cuadrático](../_assets/opt-regresion-error-grado.png)
 
-$$\mathrm{RMSE}_{\mathrm{val}}(\beta,N)=
-\sqrt{\frac1m\sum_{r=1}^{m}e_r^{\mathrm{val}}(\beta,N)^2}.$$
+El eje horizontal muestra $N$; el vertical, el RMSE en unidades de la
+respuesta. La línea amarilla señala el grado de la curva original de
+la simulación: 1 para la recta y 2 para la parábola. Sin embargo, **el
+menor error en los puntos se alcanza con grado 16 en ambos ejemplos**,
+señalado en rosa.
 
-La segunda decisión es
+**Al permitir más grados, el menor error baja o se mantiene.**
+La caída inicial del caso cuadrático tiene una razón visible: pasar de
+una recta a una parábola permite seguir la curvatura de la nube. Seguir
+aumentando el grado puede reducir el error un poco más, aunque la forma
+resultante sea mucho más complicada.
 
-$$N^\star\in
-\operatorname*{arg\,min}_{N\in\{1,\ldots,N_{\max}\}}
-\mathrm{RMSE}_{\mathrm{val}}\bigl(\beta^\star(N),N\bigr).$$
-
-En caso de empate elegimos el menor $N$. **Primero ajustamos coeficientes;
-después comparamos grados.** La regla seleccionada es
-$f_{\beta^\star(N^\star),N^\star}$. Aquí la conservamos para evaluarla en
-prueba final, sin volver a ajustarla con los datos de validación.
-
-Volvamos a las seis entregas del ejemplo y comparemos $N=1,\ldots,5$.
-Reservamos para validación las distancias $1.5,2.5,3.5,4.5,5.5$ km,
-con tiempos $16,20,24,28,32$ minutos, respectivamente. Son datos didácticos,
-no un resultado empírico sobre una empresa de reparto.
-
-![Polinomios de distintos grados ajustados a seis entregas y comparación del RMSE de entrenamiento y validación frente al grado permitido](../_assets/opt-regresion-grado.svg)
-
-En las curvas, los ejes son distancia y tiempo. En la comparación de errores,
-el eje horizontal es $N$ y el vertical es **RMSE en minutos**.
-Los coeficientes se ajustaron por mínimos cuadrados para cada grado:
-
-| $N$ | Entrenamiento | Validación |
-|---|---|---|
-| 1 | 0.956 | 0.242 |
-| 2 | 0.956 | 0.242 |
-| 3 | 0.823 | 0.272 |
-| 4 | 0.823 | 0.272 |
-| 5 | 0.000 | 1.651 |
-
-Los valores están redondeados. Los grados 1 y 2 empatan también antes de
-redondear: el coeficiente cuadrático del ajuste de grado permitido 2 es cero.
-Elegimos $N=1$ por la regla de desempate. El candidato 5 interpola el
-entrenamiento y, sin embargo, tiene mayor error en estos datos reservados.
-**El algoritmo puede resolver correctamente el objetivo de entrenamiento
-y aun así elegir una regla que prediga peor casos nuevos.**
-
-Repetimos la comparación con los **mismos 120 datos lineales y 120 datos
-cuadráticos** de la sección 6, por separado. En cada familia ajustamos
-los grados $N=1,\ldots,16$ con sus propios datos de entrenamiento.
-Después calculamos RMSE en **300 casos nuevos dentro** del intervalo
-observado y, aparte, en **300 casos nuevos fuera** de él: 150 a cada
-lado. Los conjuntos tienen ruido independiente. El error interior sirve
-para elegir $N$; los casos exteriores quedan reservados para examinar
-la extrapolación y **no intervienen en esa elección**. No mezclamos sus
-errores en un único promedio.
-
-![RMSE de entrenamiento y validación dentro del intervalo observado frente al grado polinómico para los mismos datos lineales y cuadráticos de las figuras anteriores](../_assets/opt-regresion-validacion.png)
-
-En la gráfica se comparan entrenamiento y validación **dentro del
-intervalo**: el eje horizontal es el grado permitido $N$ y el
-vertical, RMSE en **unidades arbitrarias** de la respuesta. Los errores
-de entrenamiento bajan de $0.4357$ a $0.4108$ en el caso lineal y de
-$1.3793$ a $0.3552$ en el cuadrático entre los grados 1 y 16. Eso
-solo describe el ajuste a los datos usados. Para algunos grados,
-comparamos el **RMSE dentro y fuera** del intervalo, siempre con los
-mismos coeficientes ajustados en entrenamiento. Los valores están
-redondeados.
-
-**Patrón lineal:**
-
-| Grado | Dentro | Fuera |
-|---|---:|---:|
-| 1 | 0.4126 | 0.4001 |
-| 2 | 0.4124 | 0.4008 |
-| 15 | 0.4465 | 41778.1 |
-
-**Patrón cuadrático:**
-
-| Grado | Dentro | Fuera |
-|---|---:|---:|
-| 1 | 1.2546 | 4.9173 |
-| 2 | 0.4241 | 0.4222 |
-| 15 | 0.4378 | 17634.4 |
-
-Con los valores **sin redondear**, la validación interior elige $N=2$
-en ambos patrones. En el lineal, su ventaja sobre $N=1$ es de solo
-$0.00026$ unidades de RMSE; no sería razonable concluir que la relación
-generadora dejó de ser lineal. En el cuadrático, $N=1$ subajusta de
-forma visible. El grado 15 reduce el error de entrenamiento, pero su
-validación interior es algo peor que la del grado elegido: **hay
-sobreajuste medido dentro del intervalo** en esta simulación. Fuera de
-él, el mismo ajuste de grado 15 se dispara. Ese fallo de extrapolación
-es mucho mayor y es una observación distinta. El grado alto no implica
-por sí solo este comportamiento en cualquier muestra o intervalo.
-
-Podemos dibujar la relación generadora porque **esta es una simulación**:
-conocemos la función que produjo los datos. En una aplicación real no
-conoceríamos esa curva fuera de lo observado. Los casos exteriores
-reservados permiten medir allí el error de estas reglas concretas, sin
-usar esa medición para seleccionar el grado.
-
-La validación ya intervino en nuestra elección. **Su error no es una
-estimación insesgada del error final solo por haber sido reservada al inicio.**
-La prueba final permite evaluar el modelo elegido con datos que no usamos
-para ajustar coeficientes ni seleccionar el grado.
+**La pregunta que dejamos abierta:** si el algoritmo solo busca reducir
+el error en estos puntos, ¿qué razón le hemos dado para preferir una curva
+sencilla? Por ahora queremos reconocer ese límite del planteamiento.
+Elegir el grado también es parte del problema de optimización, y el
+objetivo debe reflejar qué esperamos de la regla además de acercarse a
+los datos.
 
 ## 9 · Resumen de los modelos y sus métodos
 
@@ -535,6 +458,7 @@ para ajustar coeficientes ni seleccionar el grado.
 | $x_i,y_i$ | Distancia y tiempo observados |
 | $\beta_j\in\mathbb R$ | Coeficiente que elegimos |
 | $\beta$ | Vector de coeficientes |
+| $\beta^\star$ | Coeficientes de una solución óptima |
 | $\gamma$ | Otro vector para comparar |
 | $f_\beta,f_{\beta,N}$ | Reglas de predicción |
 | $\widehat y_i,e_i$ | Predicción y residuo calculados |
@@ -546,10 +470,6 @@ para ajustar coeficientes ni seleccionar el grado.
 | $N\in\{1,\ldots,N_{\max}\}$ | Grado permitido, entero |
 | $j=0,\ldots,N$ | Índice de coeficiente |
 | $N_{\max}$ | Mayor grado candidato, dato |
-| $m,r$ | Cantidad e índice de validación |
-| $x_r^{\mathrm{val}},y_r^{\mathrm{val}}$ | Datos de validación |
-| $e_r^{\mathrm{val}}$ | Residuo de validación |
-| $\mathrm{RMSE}_{\mathrm{val}}$ | Error de validación |
 | $\beta^\star(N)$ | Ajuste para el grado $N$ |
 | $N^\star$ | Grado seleccionado |
 | $T$ | Número de pasos del método |
@@ -565,22 +485,23 @@ $$\min_{\beta\in\mathbb R^2}\quad\mathrm{MAE}(\beta).$$
 
 $$\min_{\beta\in\mathbb R^2}\quad\mathrm{RMSE}(\beta).$$
 
-**Elegir grado y coeficientes solo por entrenamiento** sería resolver
+**Elegir grado y coeficientes por el error en los datos observados** es resolver
 
 $$
 \min_{\substack{N\in\{1,\ldots,N_{\max}\}\\
 \beta\in\mathbb R^{N+1}}}\quad\mathrm{MSE}(\beta,N).
 $$
 
-**Elegir el grado con validación** usa los coeficientes $\beta^\star(N)$
-previamente ajustados con entrenamiento:
+Una solución reúne las dos decisiones:
 
 $$
-\begin{gathered}
-N^\star\in\operatorname*{arg\,min}_{N\in\{1,\ldots,N_{\max}\}}\\
-\mathrm{RMSE}_{\mathrm{val}}\bigl(\beta^\star(N),N\bigr).
-\end{gathered}
+(N^\star,\beta^\star)\in
+\operatorname*{arg\,min}_{\substack{N\in\{1,\ldots,N_{\max}\}\\
+\beta\in\mathbb R^{N+1}}}\mathrm{MSE}(\beta,N).
 $$
+
+El grado determina cuántos coeficientes elegimos. Los datos $(x_i,y_i)$
+permanecen fijos; todas las comparaciones usan esos mismos puntos.
 
 Cada grado fijo da un ajuste convexo. La elección conjunta entre grados
 no es un único problema convexo con todas las decisiones continuas: $N$
@@ -634,14 +555,15 @@ $O(n)$ y no equivale a resolver su problema de ajuste.
 lineal en ellos. Cuando $n\ge N+1$ y las columnas $1,x,\ldots,x^N$
 son independientes, QR para mínimos cuadrados cuesta
 $O\bigl(n(N+1)^2\bigr)$ en el conteo usual de operaciones aritméticas.
-Con rango insuficiente podemos usar SVD. Evaluar el polinomio en los
-$m$ casos de validación cuesta $O\bigl(m(N+1)\bigr)$.
+Con rango insuficiente podemos usar SVD. Evaluar el polinomio y calcular
+su error en los $n$ puntos cuesta $O\bigl(n(N+1)\bigr)$.
 
-**Selección de grado.** Recorremos los candidatos finitos, ajustamos cada
-uno con entrenamiento y comparamos sus errores de validación. El costo
-total suma los ajustes y las evaluaciones de todos los grados considerados.
-Elegir $N$ es una decisión discreta entre problemas convexos; el test
-final queda fuera de esa comparación.
+**Selección de grado.** Llamamos $\beta^\star(N)$ a un ajuste óptimo
+para el grado fijo $N$. Recorremos los candidatos finitos, ajustamos cada
+uno y comparamos sus errores en los mismos datos. En caso de empate
+podemos preferir el menor grado. El costo total suma los ajustes y las
+evaluaciones de todos los grados considerados. Elegir $N$ es una decisión
+discreta entre problemas convexos; no derivamos respecto de $N$.
 
 ## 10 · Elegir un modelo que quepa en el dispositivo
 
@@ -655,19 +577,16 @@ conocido. Su implementación guarda todos los coeficientes de la regla,
 incluso los que valen cero. Puede evaluar los polinomios candidatos con
 $N\in\{1,\ldots,N_{\max}\}$.
 
-Una persona propone escoger la curva con menor error de entrenamiento.
-Tenemos datos de entrenamiento, validación y prueba final ya separados.
-Queremos elegir una regla que quepa en el dispositivo y funcione en
-entregas que no se usaron para ajustar sus coeficientes.
+Tenemos **un único conjunto de $n$ entregas observadas**. Queremos elegir
+el grado y los coeficientes que den el menor RMSE en esas entregas, sin
+exceder la capacidad del dispositivo.
 
 1. Distingue los datos, las decisiones y las cantidades calculadas.
    Traduce la capacidad del dispositivo a una condición sobre el modelo.
-2. Reformula la comparación propuesta usando RMSE: explica qué datos
-   ajustan los coeficientes y cuáles eligen el grado. Escribe los problemas
-   y decide cómo resolverías empates.
-3. Describe un procedimiento finito para escoger la regla y qué harías
-   con los datos de prueba final. ¿Qué afirmación sobre entregas futuras
-   no puedes deducir del error de entrenamiento?
+2. Escribe el problema completo: objetivo, variables y restricciones.
+   ¿Cómo resolverías un empate entre grados con el mismo error mínimo?
+3. Describe un procedimiento finito para escoger la regla. ¿La capacidad
+   del dispositivo basta para evitar una curva con muchas oscilaciones?
 :::
 
 ::: hint {#opt-regresion-pista-capacidad of="opt-regresion-ej-capacidad" title="Pista 1 · Contar lo que debe guardar el dispositivo"}
@@ -676,60 +595,71 @@ cuadrático. ¿Cuántos lugares ocupan? Recuerda que el intercepto también
 se guarda y que el dispositivo conserva los coeficientes cero.
 :::
 
-::: hint {#opt-regresion-pista-comparacion of="opt-regresion-ej-capacidad" title="Pista 2 · Separar ajuste y selección"}
-Primero identifica cuáles de los candidatos caben. Para cada uno necesitarás
-ajustar una regla y medirla en datos que no hayan elegido sus coeficientes.
-¿Qué conjunto debes mantener sin consultar hasta terminar la comparación?
+::: hint {#opt-regresion-pista-comparacion of="opt-regresion-ej-capacidad" title="Pista 2 · Separar las dos decisiones"}
+Primero piensa qué grados caben. Si fijaras uno de ellos, ¿qué números
+faltaría elegir y con qué objetivo? Después podrías comparar los
+resultados. Recuerda que añadir un coeficiente cero conserva la curva.
 :::
 
-::: answer {#opt-regresion-respuesta-capacidad of="opt-regresion-ej-capacidad" title="Respuesta · Restringir candidatos y comparar validación"}
+::: answer {#opt-regresion-respuesta-capacidad of="opt-regresion-ej-capacidad" title="Respuesta · Limitar el grado y minimizar el error"}
 
-$B$ y $N_{\max}$ son datos enteros, además de los tres conjuntos de entregas.
-Un candidato de grado permitido $N$ ocupa $N+1$ coeficientes. Por tanto,
-los grados disponibles forman el conjunto
+$B$ y $N_{\max}$ son datos enteros, además de los $n$ pares $(x_i,y_i)$.
+Elegimos $N$ y sus $N+1$ coeficientes reales. Las predicciones y los
+residuos se calculan a partir de esas decisiones.
+
+Como el dispositivo guarda todos los coeficientes, la condición es
+$N+1\le B$. El modelo completo queda
+
+$$
+\begin{aligned}
+\min_{N,\,\beta}\quad &\mathrm{RMSE}(\beta,N)\\
+\text{sujeto a}\quad &N\in\{1,\ldots,N_{\max}\},\\
+&N+1\le B,\\
+&\beta\in\mathbb R^{N+1}.
+\end{aligned}
+$$
+
+Los grados disponibles forman el conjunto
 
 $$\mathcal G=\{N\in\{1,\ldots,N_{\max}\}:N+1\le B\}.$$
 
 Es finito y no vacío: $N=1$ está permitido porque $B\ge2$ y
-$N_{\max}\ge1$. Los coeficientes pueden ser cero; la restricción cuenta
-el almacenamiento de esta implementación, no el grado exacto de la curva.
-
-Para cada $N\in\mathcal G$ ajustamos con entrenamiento:
+$N_{\max}\ge1$. Para cada $N\in\mathcal G$ ajustamos los coeficientes:
 
 $$\beta^\star(N)\in
 \operatorname*{arg\,min}_{\beta\in\mathbb R^{N+1}}
 \mathrm{MSE}(\beta,N).$$
 
-Esto también minimiza RMSE de entrenamiento. Si hay varios vectores óptimos,
-escogemos el de menor suma de cuadrados de sus coeficientes, como en la guía.
-Después elegimos el grado con validación:
+Esto también minimiza RMSE. Si hay varios vectores óptimos, podemos
+escoger el de menor suma de cuadrados de sus coeficientes. Después
+comparamos **el error en las mismas entregas**:
 
 $$N^\star\in\operatorname*{arg\,min}_{N\in\mathcal G}
-\mathrm{RMSE}_{\mathrm{val}}\bigl(\beta^\star(N),N\bigr).$$
+\mathrm{RMSE}\bigl(\beta^\star(N),N\bigr).$$
 
-Desempatamos con el menor $N$. La regla resultante cabe en el dispositivo
-porque su grado pertenece a $\mathcal G$. Un error de entrenamiento menor
-no demuestra que prediga mejor entregas futuras.
+En caso de empate elegimos el menor $N$. La solución del problema
+conjunto es $(N^\star,\beta^\star(N^\star))$.
 
 | Signo | Papel |
 |---|---|
+| $x_i,y_i$ | Datos de las $n$ entregas |
 | $B$ | Capacidad conocida |
 | $N_{\max}$ | Límite conocido |
-| $\mathcal G$ | Candidatos permitidos |
-| $N,\beta$ | Grado y coeficientes |
-| $\beta^\star(N)$ | Ajuste por candidato |
+| $\mathcal G$ | Grados permitidos |
+| $N,\beta$ | Grado y coeficientes que elegimos |
+| $\beta^\star(N)$ | Ajuste para un grado fijo |
 | $N^\star$ | Grado seleccionado |
 
 **Tipo, método y costo.** La selección es discreta y finita; cada ajuste
 por MSE es convexo. Recorremos $\mathcal G$, ajustamos por QR o SVD y
-comparamos RMSE de validación. Sumamos los costos de esos ajustes y
-comparaciones, con las condiciones de tamaño y rango explicadas en el
-resumen. No ajustamos el grado mediante un gradiente.
+comparamos RMSE. Sumamos los costos de esos ajustes y comparaciones,
+con las condiciones de tamaño y rango explicadas en el resumen.
 
-Congelamos la regla elegida y la evaluamos una vez con prueba final.
-Ese conjunto no participa en escoger grados, coeficientes ni desempates.
-El resultado permite evaluar la propuesta, no garantizar un error idéntico
-en cualquier entrega futura.
+**La capacidad limita el grado, pero no controla cuánto se curva la
+regla ni cuánto crecen sus valores.** Entre los grados que caben, el objetivo sigue premiando solo
+el menor error en los puntos. Una restricción de almacenamiento resuelve
+ese límite del dispositivo; por sí sola no expresa una preferencia por
+curvas que cambien suavemente.
 :::
 
 Siguiente ejemplo: [[opt-objetivo-juego-practica|elegir una jugada cuando el rival responde]].
