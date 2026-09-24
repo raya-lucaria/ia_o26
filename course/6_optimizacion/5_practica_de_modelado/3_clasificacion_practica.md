@@ -11,8 +11,11 @@ tags: [optimizacion, modelado, clasificacion]
 # Clasificar mensajes y evaluar probabilidades
 
 **Clasificar** consiste en decidir a qué grupo pertenece un caso. Aquí
-trabajaremos con dos clases, llamadas 0 y 1. Primero construiremos una regla
-para asignarlas; después compararemos dos maneras de decidir qué regla es mejor.
+trabajaremos con dos clases, llamadas 0 y 1. Construiremos una regla y
+plantearemos cómo elegir sus parámetros para **acertar el mayor número de
+etiquetas**. Después veremos qué dificulta optimizar ese conteo y por qué
+podemos entrenar con una pérdida que evalúa las probabilidades. Ese cambio
+de objetivo no garantiza mejorar los aciertos en cada ajuste.
 
 ## 1 · Distinguir los datos de lo que vamos a elegir
 
@@ -39,18 +42,11 @@ para ajustar una regla y comprobar qué consigue con esa información.
 No. Las entradas y las etiquetas son **datos conocidos**. Elegiremos los
 parámetros de la regla; no modificaremos los casos para mejorar su puntuación.
 
-## 2 · Plantear el entrenamiento de la regla
+## 2 · Construir una regla con dos parámetros
 
-**Entrenar será elegir juntos $\alpha$ y $\beta$ para minimizar la pérdida
-logarítmica promedio.** La llamaremos $L(\alpha,\beta)$: mide cuánta
-probabilidad asigna la regla a las etiquetas correctas de los datos.
-El problema que resolveremos es
-
-$$\min_{\alpha,\beta\in\mathbb R}\quad L(\alpha,\beta).$$
-
-Para construir esa pérdida necesitamos una regla que transforme la entrada
-en probabilidades. Sus parámetros serán las decisiones; las probabilidades
-serán resultados calculados.
+Necesitamos una regla que transforme la entrada en probabilidades y,
+después, en una etiqueta. Sus parámetros serán las decisiones; los puntajes,
+las probabilidades y las etiquetas anunciadas serán resultados calculados.
 
 Elegimos dos números reales: $\alpha$, el **intercepto**, y $\beta$, la
 **pendiente**. Con ellos calculamos un **puntaje crudo**, también llamado
@@ -93,9 +89,128 @@ son probabilidades reales garantizadas. Que sumen 1 no demuestra que estén
 bien **calibradas**: asignar 0.8 a ciertos mensajes no garantiza que el 80 %
 de ellos sean fraudulentos. Eso tendría que comprobarse con datos.
 
-Con esta regla ya podemos calcular la pérdida que vamos a minimizar.
+Con esta regla ya podemos anunciar etiquetas y contar cuántas acertamos.
 
-## 3 · Calcular la pérdida y ajustar los parámetros
+## 3 · Elegir los parámetros para acertar más etiquetas
+
+Para anunciar una etiqueta fijamos el umbral en 0.5. **El empate da clase 1**:
+
+$$
+\widehat y_i(\alpha,\beta)=
+\begin{cases}
+1 &\text{si }p_i(\alpha,\beta)\ge0.5,\\
+0 &\text{si }p_i(\alpha,\beta)<0.5.
+\end{cases}
+$$
+
+Solo elegimos $\alpha$ y $\beta$. El puntaje, la probabilidad y la etiqueta
+se calculan a partir de ellos; no podemos escogerlos por separado para
+hacer que cada mensaje salga bien.
+
+Queremos acertar tantas etiquetas como sea posible y damos el mismo peso
+a cada caso. **Piensa: ¿cómo contarías un acierto y dejarías fuera un error?**
+
+Usamos un **indicador**, escrito $\mathbf1\{\cdot\}$: vale 1 cuando lo que
+está entre llaves es verdadero y 0 cuando es falso. Así,
+$\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}$ cuenta el acierto del caso $i$.
+Sumamos los aciertos y dividimos entre el número de casos:
+
+$$A(\alpha,\beta)=\frac1n\sum_{i=1}^n
+\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}.$$
+
+Esta proporción se llama **accuracy**. Toma valores entre 0 y 1 y no tiene
+unidades. **Nuestro objetivo original es maximizar esta proporción**, eligiendo
+juntos los dos parámetros:
+
+$$\max_{\alpha,\beta\in\mathbb R}\quad A(\alpha,\beta).$$
+
+El máximo es un valor de accuracy. Para indicar qué parámetros lo alcanzan,
+escribimos
+
+$$(\alpha^\star,\beta^\star)\in
+\operatorname*{arg\,max}_{\alpha,\beta\in\mathbb R} A(\alpha,\beta).$$
+
+El argmax reúne las parejas óptimas y puede contener varias. Los argumentos
+bajo el operador indican qué elegimos: $\alpha$ y $\beta$, manteniendo
+fijos los datos.
+
+Es **optimización no lineal sin restricciones adicionales**, sobre los
+parámetros continuos $(\alpha,\beta)\in\mathbb R^2$. El objetivo es
+escalonado: permanece constante en regiones y, en general, tiene saltos
+en sus fronteras. Donde salta no es continuo ni diferenciable. Tampoco es
+cóncavo en general, por lo que esta maximización **no es optimización
+convexa en general**.
+
+Las etiquetas binarias son resultados calculados. No convierten las
+variables de decisión en enteras ni hacen de esta formulación un modelo mixto.
+
+**Piensa: si la clase correcta es 1, ¿cuenta distinto acertar con probabilidad 0.51 que con 0.99?**
+
+No: ambos casos cuentan un acierto. Podemos cambiar los parámetros y las
+probabilidades sin cambiar ninguna etiqueta. Mientras eso ocurra, accuracy
+permanece en una **meseta**: su valor no cambia. Cuando una probabilidad cruza
+el umbral, el conteo puede saltar.
+
+Dentro de una meseta, sus derivadas no señalan cómo conseguir más aciertos.
+
+**Una solución factible: anunciar siempre la clase mayoritaria.** Antes de
+buscar una regla mejor, contamos las etiquetas conocidas:
+
+$$n_k=\sum_{i=1}^n\mathbf1\{y_i=k\},\qquad k\in\{0,1\}.$$
+
+Estos conteos son datos calculados, no decisiones. Fijamos una pendiente
+cero y elegimos un intercepto con el signo de la clase que queremos anunciar:
+
+$$\beta_{\mathrm{base}}=0.$$
+
+$$\alpha_{\mathrm{base}}=
+\begin{cases}
++1 &\text{si }n_1\ge n_0,\\
+-1 &\text{si }n_0>n_1.
+\end{cases}$$
+
+Con pendiente cero, todos los puntajes son iguales al intercepto. Un puntaje
+positivo produce una probabilidad mayor que 0.5 y anuncia clase 1; uno
+negativo anuncia clase 0. Si las clases tienen el mismo número de casos,
+nuestra referencia anuncia clase 1.
+
+**La regla es factible porque ambos parámetros son reales.** Funciona
+incluso si alguna clase no aparece entre los datos: no exige probabilidades
+exactamente cero o uno ni parámetros infinitos. Su accuracy es
+
+$$
+\begin{aligned}
+A_{\mathrm{base}}
+&=A(\alpha_{\mathrm{base}},\beta_{\mathrm{base}})\\
+&=\frac{\max\{n_0,n_1\}}{n}.
+\end{aligned}
+$$
+
+Como $n_0+n_1=n$, la clase más frecuente reúne al menos la mitad de los casos.
+Además, esta regla pertenece a la familia que estamos optimizando. Por tanto,
+
+$$\max_{\alpha,\beta\in\mathbb R} A(\alpha,\beta)
+\ge A_{\mathrm{base}}\ge\frac12.$$
+
+Es una **cota inferior del máximo en los datos de entrenamiento**.
+La regla es óptima entre las que anuncian siempre la misma clase, pero
+puede mejorar al usar la entrada. No garantiza el óptimo de toda la familia
+ni esa proporción de aciertos en mensajes nuevos.
+
+**En este modelo univariado sí podemos encontrar el máximo exacto**:
+ordenamos las entradas y comparamos cortes entre valores distintos,
+incluyendo ambas orientaciones y las reglas constantes. El método cuesta
+$O(n\log n)$; explicaremos el conteo en el resumen. Las mesetas dificultan
+usar el gradiente del conteo para orientar los ajustes, pero no impiden
+optimizarlo mediante cortes.
+
+## 4 · Usar la pérdida logarítmica como objetivo sustituto
+
+Accuracy ignora cuánto respaldo recibe la etiqueta correcta mientras no
+cambie la etiqueta anunciada. Proponemos ahora un **objetivo sustituto o
+proxy** que sí registre esos cambios: la pérdida logarítmica. Sus derivadas
+permitirán orientar ajustes incluso donde el conteo permanece constante.
+Minimizarla será otro problema; no equivale a maximizar accuracy.
 
 Para cada caso evaluamos **cuánta probabilidad recibe la clase correcta**.
 Tomamos el negativo de su logaritmo natural: esa es la **pérdida logarítmica**
@@ -127,7 +242,10 @@ Promediamos las pérdidas de los $n$ casos:
 
 $$L(\alpha,\beta)=\frac1n\sum_{i=1}^n\ell_i(\alpha,\beta).$$
 
-Así queda definida la función del problema de entrenamiento planteado antes.
+**Entrenar con este sustituto consiste en elegir juntos $\alpha$ y $\beta$
+para minimizar la pérdida promedio:**
+
+$$\min_{\alpha,\beta\in\mathbb R}\quad L(\alpha,\beta).$$
 
 La pérdida promedio se expresa en **nats por caso**, porque usamos
 logaritmos naturales. No es un porcentaje de errores.
@@ -153,47 +271,6 @@ alcanzan y puede contener varias. **También puede estar vacío.** Si podemos
 separar los datos con puntajes estrictamente positivos para la clase 1 y
 negativos para la clase 0, escalar esos parámetros acerca $L$ a cero sin
 alcanzarlo. En ese caso hay ínfimo cero, pero no una pareja óptima finita.
-
-## 4 · Anunciar etiquetas y contar aciertos
-
-Para anunciar una etiqueta fijamos el umbral en 0.5. **El empate da clase 1**:
-
-$$
-\widehat y_i(\alpha,\beta)=
-\begin{cases}
-1 &\text{si }p_i(\alpha,\beta)\ge0.5,\\
-0 &\text{si }p_i(\alpha,\beta)<0.5.
-\end{cases}
-$$
-
-Solo elegimos $\alpha$ y $\beta$. El puntaje, la probabilidad y la etiqueta
-se calculan a partir de ellos; no podemos escogerlos por separado para
-hacer que cada mensaje salga bien.
-
-Queremos acertar tantas etiquetas como sea posible y damos el mismo peso
-a cada caso. **Piensa: ¿cómo contarías un acierto y dejarías fuera un error?**
-
-Usamos un **indicador**, escrito $\mathbf1\{\cdot\}$: vale 1 cuando lo que
-está entre llaves es verdadero y 0 cuando es falso. Así,
-$\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}$ cuenta el acierto del caso $i$.
-Sumamos los aciertos y dividimos entre el número de casos:
-
-$$A(\alpha,\beta)=\frac1n\sum_{i=1}^n
-\mathbf1\{\widehat y_i(\alpha,\beta)=y_i\}.$$
-
-Esta proporción se llama **accuracy**. Toma valores entre 0 y 1 y no tiene
-unidades. Si optimizáramos directamente este criterio, el problema sería
-
-$$\max_{\alpha,\beta\in\mathbb R}\quad A(\alpha,\beta).$$
-
-**Piensa: si la clase correcta es 1, ¿cuenta distinto acertar con probabilidad 0.51 que con 0.99?**
-
-No: ambos casos cuentan un acierto. Podemos cambiar los parámetros y las
-probabilidades sin cambiar ninguna etiqueta. Mientras eso ocurra, accuracy
-permanece en una **meseta**: su valor no cambia. Cuando una probabilidad cruza
-el umbral, el conteo puede saltar.
-
-Dentro de una meseta, sus derivadas no señalan cómo conseguir más aciertos.
 
 ## 5 · Comparar tres reglas construidas a mano
 
@@ -372,7 +449,7 @@ $p_i$ y $1-p_i$ son scores normalizados, interpretados por el modelo como
 probabilidades estimadas. Se calculan a partir de los parámetros y su
 calibración debe comprobarse.
 
-**Criterio final · Maximizar los aciertos.** El indicador vale 1 si acertamos
+**Objetivo original · Maximizar los aciertos.** El indicador vale 1 si acertamos
 y 0 si nos equivocamos. La formulación completa es
 
 $$
@@ -393,59 +470,17 @@ $\operatorname*{arg\,max}$ devuelve el conjunto de parejas óptimas; usamos
 pertenencia porque puede haber empates. Los argumentos bajo el operador
 indican qué elegimos: $\alpha$ y $\beta$, manteniendo fijos los datos.
 
-Es **optimización no lineal sin restricciones adicionales**, sobre los
-parámetros continuos $(\alpha,\beta)\in\mathbb R^2$. El objetivo es
-escalonado: permanece constante en regiones y, en general, tiene saltos
-en sus fronteras. Donde salta no es continuo ni diferenciable. Tampoco es
-cóncavo en general, por lo que esta maximización **no es optimización
-convexa en general**.
+Es un problema **no lineal con parámetros continuos reales**, sin
+restricciones adicionales. Como vimos en la sección 3, su objetivo
+escalonado no es cóncavo en general: esta maximización no es convexa en
+general. Las etiquetas binarias calculadas no son decisiones enteras.
 
-Las etiquetas binarias son resultados calculados. No convierten las
-variables de decisión en enteras ni hacen de esta formulación un modelo mixto.
-
-**Una solución factible: anunciar siempre la clase mayoritaria.** Antes de
-buscar una regla mejor, contamos las etiquetas conocidas:
-
-$$n_k=\sum_{i=1}^n\mathbf1\{y_i=k\},\qquad k\in\{0,1\}.$$
-
-Estos conteos son datos calculados, no decisiones. Fijamos una pendiente
-cero y elegimos un intercepto con el signo de la clase que queremos anunciar:
-
-$$\beta_{\mathrm{base}}=0.$$
-
-$$\alpha_{\mathrm{base}}=
-\begin{cases}
-+1 &\text{si }n_1\ge n_0,\\
--1 &\text{si }n_0>n_1.
-\end{cases}$$
-
-Con pendiente cero, todos los puntajes son iguales al intercepto. Un puntaje
-positivo produce una probabilidad mayor que 0.5 y anuncia clase 1; uno
-negativo anuncia clase 0. Si las clases tienen el mismo número de casos,
-nuestra referencia anuncia clase 1.
-
-**La regla es factible porque ambos parámetros son reales.** Funciona
-incluso si alguna clase no aparece entre los datos: no exige probabilidades
-exactamente cero o uno ni parámetros infinitos. Su accuracy es
-
-$$
-\begin{aligned}
-A_{\mathrm{base}}
-&=A(\alpha_{\mathrm{base}},\beta_{\mathrm{base}})\\
-&=\frac{\max\{n_0,n_1\}}{n}.
-\end{aligned}
-$$
-
-Como $n_0+n_1=n$, la clase más frecuente reúne al menos la mitad de los casos.
-Además, esta regla pertenece a la familia que estamos optimizando. Por tanto,
-
-$$\max_{\alpha,\beta\in\mathbb R} A(\alpha,\beta)
-\ge A_{\mathrm{base}}\ge\frac12.$$
-
-Es una **cota inferior del máximo en los datos de entrenamiento**.
-La regla es óptima entre las que anuncian siempre la misma clase, pero
-puede mejorar al usar la entrada. No garantiza el óptimo de toda la familia
-ni esa proporción de aciertos en mensajes nuevos.
+**Referencia factible.** La regla mayoritaria construida en la sección 3
+usa $\beta_{\mathrm{base}}=0$ y $\alpha_{\mathrm{base}}\in\{-1,+1\}$.
+Su accuracy es $A_{\mathrm{base}}=\max\{n_0,n_1\}/n\ge1/2$ en los datos
+de entrenamiento. Es óptima entre reglas constantes y da una cota inferior
+del máximo de esta familia; no certifica el óptimo global ni el desempeño
+con mensajes nuevos.
 
 **Entrenamiento · Minimizar la pérdida logarítmica promedio.** Para cada caso,
 la pérdida evalúa la probabilidad de su clase correcta:
