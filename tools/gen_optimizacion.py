@@ -2982,8 +2982,6 @@ def opt_panaderia_criterios():
 # Datos didácticos compartidos por las tres figuras de regresión.
 _REG_X = tuple(map(F, range(1, 7)))
 _REG_Y = tuple(map(F, (15, 17, 23, 25, 31, 33)))
-_REG_X_VAL = tuple(F(k, 2) for k in (3, 5, 7, 9, 11))
-_REG_Y_VAL = tuple(map(F, (16, 20, 24, 28, 32)))
 
 
 def _regresion_ajuste(grado):
@@ -3103,26 +3101,27 @@ def opt_regresion_perdidas():
 
 
 def opt_regresion_grado():
-    W, H = 560, 1660
+    W, H = 560, 1700
     izquierda, derecha = 110, 514
     ajustes = {n: _regresion_ajuste(n) for n in range(1, 6)}
     ax = lambda x: izquierda + (float(x) - 1) / 5 * (derecha - izquierda)
     s = [marco(W, H,
         "Ajustes polinomiales de grados uno, tres y cinco, y RMSE por grado",
-        "Ajustar mejor no siempre generaliza mejor",
-        "Tres paneles muestran ajustes OLS calculados solo con seis casos de "
-        "entrenamiento; cinco casos de validación independientes solo evalúan "
-        "los ajustes. Se comparan grados uno, tres y cinco en las mismas escalas. "
-        "El último panel muestra RMSE de entrenamiento y validación para los "
-        "grados discretos uno a cinco, sin unirlos como si el grado fuera continuo. "
-        "El grado cinco interpola entrenamiento, pero aquí su error de validación "
-        "es mayor. Los grados uno y dos empatan en ambos errores.")]
-    s.append(texto(W / 2, 35, "Más grado, ¿mejor predicción?", tam=26, peso="700"))
-    s.append(texto(W / 2, 72, "Ajuste solo con entrenamiento", tam=22, color=SUAVE))
-    s.append(punto(113, 109, r=5, color=SERIE[0]))
-    s.append(texto(129, 116, "Entrenamiento", tam=22, anclaje="start"))
-    s.append(f'<path d="M 346 102 L 353 109 L 346 116 L 339 109 Z" fill="{SERIE[1]}"/>')
-    s.append(texto(362, 116, "Validación", tam=22, anclaje="start"))
+        "Elegir el grado por el error en los datos observados",
+        "Tres paneles muestran ajustes por mínimos cuadrados calculados con "
+        "los mismos seis datos observados. Se comparan grados uno, tres y cinco "
+        "en las mismas escalas. El último panel muestra el RMSE en esos seis "
+        "datos para los grados discretos uno a cinco, sin unirlos como si el "
+        "grado fuera continuo. Los grados uno y dos empatan. El grado cinco "
+        "pasa por los seis puntos y alcanza error cero, aunque la curva oscila "
+        "entre ellos. El objetivo solo cuenta errores en los puntos observados; "
+        "no penaliza la forma de la curva.")]
+    s.append(texto(W / 2, 35, "Elegir el grado por su error", tam=26, peso="700"))
+    s.append(texto(W / 2, 72, "Seis datos, tres ajustes", tam=22, color=SUAVE))
+    s.append(punto(78, 109, r=5, color=SERIE[0]))
+    s.append(texto(94, 116, "Datos observados", tam=22, anclaje="start"))
+    s.append(linea(330, 109, 366, 109, color=ACENTO, grosor=3))
+    s.append(texto(380, 116, "Ajuste", tam=22, anclaje="start"))
     for panel, grado in enumerate((1, 3, 5)):
         abajo = 402 + panel * 350
         ay = lambda y: abajo - (float(y) - 10) / 30 * 220
@@ -3147,15 +3146,11 @@ def opt_regresion_grado():
                          for x in muestras], ACENTO, grosor=3))
         for x, y in zip(_REG_X, _REG_Y):
             s.append(punto(ax(x), ay(y), r=5, color=SERIE[0]))
-        for x, y in zip(_REG_X_VAL, _REG_Y_VAL):
-            xp, yp = ax(x), ay(y)
-            s.append(f'<path d="M {xp} {yp - 6} L {xp + 6} {yp} L {xp} {yp + 6} '
-                     f'L {xp - 6} {yp} Z" fill="{SERIE[1]}"/>')
     abajo = 1497
     nx = lambda n: izquierda + (n - 1) / 4 * (derecha - izquierda)
     ey = lambda error: abajo - error / 2 * 220
     s.append(texto(W / 2, 1220, "RMSE por grado", tam=25))
-    s.append(texto(W / 2, 1255, "Validación evalúa; no ajusta coeficientes.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 1255, "Error en los mismos seis datos.", tam=22, color=SUAVE))
     s.append('<g transform="rotate(-90 26 1387)">'
              + texto(26, 1387, "RMSE (min)", tam=22) + '</g>')
     for valor in (0, .5, 1, 1.5, 2):
@@ -3169,12 +3164,10 @@ def opt_regresion_grado():
         s.append(linea(x, abajo, x, abajo + 7, color=SUAVE, grosor=1.5))
         s.append(texto(x, abajo + 34, str(n), tam=22))
         s.append(punto(x, ey(_regresion_rmse(coef, _REG_X, _REG_Y)), r=6, color=SERIE[0]))
-        y = ey(_regresion_rmse(coef, _REG_X_VAL, _REG_Y_VAL))
-        s.append(f'<path d="M {x} {y - 7} L {x + 7} {y} L {x} {y + 7} '
-                 f'L {x - 7} {y} Z" fill="{SERIE[1]}"/>')
     s.append(texto(W / 2, 1570, "Grado N (entero)", tam=24))
-    s.append(texto(W / 2, 1612, "Grado 5: error cero al entrenar;", tam=22, color=SUAVE))
-    s.append(texto(W / 2, 1645, "mayor error de validación en estos datos.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 1612, "Grado 5: pasa por los seis puntos.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 1645, "Error cero, aunque la curva oscila.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 1678, "El objetivo no penaliza su forma.", tam=22, color=SUAVE))
     s.append(cierre())
     return "".join(s)
 
