@@ -4,7 +4,7 @@ title: Modelado y optimización
 nav_title: Optimización
 summary: "Antes de resolver hay que plantear. Esta unidad enseña a leer un problema en palabras y escribirlo como matemáticas, y después a resolverlo."
 status: ready
-estimated_time: 9h44m
+estimated_time: 9h59m
 tags: [optimizacion, modelado, programacion-lineal]
 ---
 
