@@ -2979,6 +2979,90 @@ def opt_panaderia_criterios():
 
 
 
+def opt_clasificacion_accuracy():
+    """Accuracy calculada en un corte con beta fija, sin unir los saltos."""
+    W, H = 560, 690
+    izquierda, derecha = 110, 514
+    casos = [(0, 0), (1, 0), (2, 1), (3, 1)]
+    beta = 1
+
+    def accuracy(alfa):
+        return sum(int(alfa + beta * x >= 0) == y for x, y in casos) / len(casos)
+
+    def ax(alfa):
+        return izquierda + (alfa + 4) / 5 * (derecha - izquierda)
+
+    def ay(valor):
+        return 450 - 240 * valor
+
+    s = [marco(
+        W, H,
+        "Accuracy frente al intercepto alfa para cuatro casos, con beta fija en uno",
+        "La accuracy cambia a saltos",
+        "Casos x=(0,1,2,3), y=(0,0,1,1). Predicción uno si alfa+x es "
+        "mayor o igual a cero. Beta se fija en uno solo para visualizar un "
+        "corte del problema original, donde alfa y beta son libres. La "
+        "accuracy vale un medio antes de -3, tres cuartos en [-3,-2), "
+        "uno en [-2,-1), tres cuartos en [-1,0) y un medio desde cero. "
+        "Los círculos cerrados incluyen el extremo y los abiertos lo "
+        "excluyen. Alfa=-2.5 da tres cuartos. La ventana es [-4,1], "
+        "pero alfa tiene dominio real. No son iteraciones de entrenamiento.",
+    )]
+    s.append(texto(W / 2, 36, "La accuracy cambia a saltos", tam=27, peso="700"))
+    s.append(texto(W / 2, 72, "β = 1 · cuatro casos", tam=23, color=SUAVE))
+    s.append(texto(W / 2, 108, "x = (0, 1, 2, 3)", tam=22))
+    s.append(texto(W / 2, 139, "y = (0, 0, 1, 1)", tam=22))
+    s.append('<g transform="rotate(-90 26 330)">'
+             + texto(26, 330, "Aciertos (proporción)", tam=22) + '</g>')
+    for valor, etiqueta in ((0, "0"), (.25, "1/4"), (.5, "1/2"), (.75, "3/4"), (1, "1")):
+        y = ay(valor)
+        s.append(linea(izquierda, y, derecha, y, color=LINEA, grosor=1))
+        s.append(texto(izquierda - 14, y + 7, etiqueta, tam=22, anclaje="end"))
+    s.append(flecha(izquierda, 450, izquierda, 195,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    s.append(flecha(izquierda, 450, derecha + 20, 450,
+                    color=SUAVE, grosor=1.5, marcador="s"))
+    for alfa in (-4, -3, -2, -1, 0, 1):
+        x = ax(alfa)
+        s.append(linea(x, 450, x, 458, color=SUAVE, grosor=1.5))
+        s.append(texto(x, 485, str(alfa).replace("-", "−"), tam=22))
+    s.append(texto(W / 2, 524, "α (intercepto)", tam=24))
+
+    cortes = sorted(-x / beta for x, _ in casos)
+    bordes = [-4] + cortes + [1]
+    for i, (a, b) in enumerate(zip(bordes, bordes[1:])):
+        valor = accuracy((a + b) / 2)
+        y = ay(valor)
+        color = SERIE[1] if valor == 1 else ACENTO
+        s.append(linea(ax(a), y, ax(b), y, color=color, grosor=4))
+        if i > 0:
+            s.append(punto(ax(a), y, r=6, color=color))
+        if i < len(bordes) - 2:
+            s.append(f'<circle cx="{ax(b)}" cy="{y}" r="6" '
+                     f'fill="{FONDO}" stroke="{color}" stroke-width="2.5"/>')
+    # Las colas continúan fuera de la ventana; no son extremos del dominio.
+    for alfa, lado in ((-4, 1), (1, -1)):
+        x, y = ax(alfa), ay(accuracy(alfa))
+        s.append(f'<path d="M {x + lado * 10} {y - 5} L {x} {y} '
+                 f'L {x + lado * 10} {y + 5}" fill="none" '
+                 f'stroke="{ACENTO}" stroke-width="3"/>')
+    s.append(texto(ax(-1.5), 184, "A = 1 en [−2, −1)", tam=22, color=SERIE[1]))
+    x, y = ax(-2.5), ay(accuracy(-2.5))
+    s.append(linea(x, y + 7, 217, 290, color=SERIE[0], grosor=1.5))
+    s.append(punto(x, y, r=6, color=SERIE[0]))
+    s.append(texto(214, 315, "α = −2.5: A = 3/4", tam=22, color=SERIE[0]))
+    s.append(punto(122, 567, r=6, color=TEXTO))
+    s.append(texto(140, 574, "Incluido", tam=22, anclaje="start"))
+    s.append(f'<circle cx="325" cy="567" r="6" fill="{FONDO}" '
+             f'stroke="{TEXTO}" stroke-width="2.5"/>')
+    s.append(texto(343, 574, "Excluido", tam=22, anclaje="start"))
+    s.append(texto(W / 2, 615, "α varía; β = 1 solo en esta vista.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 646, "No son iteraciones de entrenamiento.", tam=22, color=SUAVE))
+    s.append(texto(W / 2, 677, "Ventana: [−4, 1]; dominio: α real.", tam=22, color=SUAVE))
+    s.append(cierre())
+    return "".join(s)
+
+
 def opt_clasificacion_alfa():
     """Pérdida y aciertos frente al intercepto real, con beta fija en cero."""
     W, H = 560, 1158
@@ -3295,6 +3379,7 @@ def opt_juego_turnos():
 
 
 DIAGRAMAS = {
+    "opt-clasificacion-accuracy": opt_clasificacion_accuracy,
     "opt-clasificacion-alfa": opt_clasificacion_alfa,
     "opt-juego-turnos": opt_juego_turnos,
     "opt-clasificacion-proxy": opt_clasificacion_proxy,
