@@ -4,75 +4,79 @@ title: Predecir un valor y elegir la complejidad del modelo
 nav_title: Regresión
 summary: "Ajustar tiempos de entrega, comparar errores y elegir la complejidad de una curva con datos reservados."
 status: ready
-estimated_time: 35m
+estimated_time: 50m
 tags: [optimizacion, modelado, regresion]
 ---
 
 # Predecir un valor y elegir la complejidad del modelo
 
 Una empresa de reparto quiere estimar **cuántos minutos tardará una entrega**
-a partir de su distancia. Aquí la salida es un número, no una categoría.
-Construiremos una regla, elegiremos cómo medir sus errores y compararemos
-modelos con distinta cantidad de coeficientes.
+a partir de su distancia. La respuesta es un número. Veremos cómo pasar de
+entregas observadas a una regla de predicción, medir sus errores y elegir
+cuánta flexibilidad necesita la regla.
 
-## 1 · Separar las entregas observadas de la regla que elegimos
+## 1 · Empezar por las entregas observadas
 
-Tenemos $n\ge1$ entregas registradas:
+Una entrega registrada aporta dos números: distancia y tiempo. Por ejemplo,
+las primeras tres filas de **101 entregas simuladas** son estas (cifras
+redondeadas):
 
-$$(x_i,y_i),\qquad i=1,\ldots,n.$$
+| $i$ | Distancia $x_i$ (km) | Tiempo $y_i$ (min) |
+|---|---:|---:|
+| 1 | 0.526 | 3.589 |
+| 2 | 0.676 | 14.494 |
+| 3 | 0.969 | 13.073 |
+| $\vdots$ | $\vdots$ | $\vdots$ |
+| $n$ | $x_n$ | $y_n$ |
 
-El índice $i$ recorre las entregas. La entrada $x_i$ es la distancia en
-kilómetros y $y_i$ es el tiempo observado en minutos. En este contexto
-ambos son números reales no negativos. El tráfico, la preparación del pedido
-y otros factores pueden producir tiempos distintos para una misma distancia.
+La última fila representa cualquier conjunto con $n\ge1$ entregas;
+en esta simulación, $n=101$. Escribimos cada fila como $(x_i,y_i)$,
+con $i=1,\ldots,n$. **$n$ cuenta entregas; $i$ señala una de ellas.**
+Los datos ya fueron observados: no podemos elegirlos para que la
+predicción resulte más fácil. Aquí distancias y tiempos observados
+son no negativos.
 
-**Los datos no se eligen.** Lo que ajustamos es una regla para predecir el
-tiempo. Empezamos con una recta:
+En la siguiente nube cada punto representa una entrega. Los tiempos varían
+incluso para distancias parecidas: también influyen el tráfico, la preparación
+del pedido y otros factores. Para hacer visibles los tiempos atípicos,
+**añadimos 25 minutos de retraso a siete entregas**. Estos datos son
+simulados para aprender el método; no describen los repartos de una
+empresa real.
+
+![Entregas simuladas: el eje horizontal muestra distancia en kilómetros y el vertical, tiempo observado en minutos; la nube presenta dispersión y varias entregas tardías atípicas](../_assets/opt-regresion-datos.png)
+
+El eje horizontal mide distancia y el vertical, tiempo. La dispersión nos
+pide una regla que resuma la tendencia sin esperar que acierte cada punto.
+
+## 2 · Probar primero una recta
+
+La regla más sencilla que usaremos es
 
 $$f_\beta(x)=\beta_0+\beta_1x.$$
 
-Las decisiones son el intercepto $\beta_0$ y la pendiente $\beta_1$:
+$\beta_0$ es el tiempo que la recta predice para $x=0$; $\beta_1$ indica
+cuánto cambia el tiempo predicho cuando la distancia aumenta un kilómetro.
+Por ejemplo, con $\beta_0=10$ y $\beta_1=4$, para una entrega de $3$ km
+predecimos **$10+4(3)=22$ minutos**. La suma completa da minutos.
 
-$$\beta=(\beta_0,\beta_1)\in\mathbb R^2.$$
+Los dos números de la recta son las **decisiones del ajuste**:
+$\beta=(\beta_0,\beta_1)\in\mathbb R^2$. Elegimos una sola pareja para
+todas las entregas; los pares $(x_i,y_i)$ permanecen fijos. No imponemos
+restricciones a los coeficientes en este primer modelo.
 
-$\beta_0$ se mide en minutos y $\beta_1$ en minutos por kilómetro. Ambos
-son libres: no imponemos cotas a los coeficientes. Usamos **la misma recta
-para todos los casos**; no ajustamos una predicción independiente para cada
-entrega. Este modelo tampoco impone por sí solo tiempos predichos positivos
-para cualquier distancia.
+Para la entrega $i$, la predicción es $\widehat y_i(\beta)=f_\beta(x_i)$.
+Llamamos **residuo** al error con signo:
 
-La predicción y el **residuo**, o error con signo, se calculan:
+$$e_i(\beta)=y_i-\widehat y_i(\beta)=y_i-\beta_0-\beta_1x_i.$$
 
-$$\widehat y_i(\beta)=f_\beta(x_i).$$
+Si $e_i>0$, la entrega tardó más de lo predicho; si $e_i<0$, tardó menos.
+Una vez elegida la recta, cada residuo queda determinado por los datos.
 
-$$e_i(\beta)=y_i-f_\beta(x_i).$$
+## 3 · Ver el error en seis entregas
 
-Un residuo positivo significa que la entrega tardó más de lo anunciado;
-uno negativo, que tardó menos. $e_i$ no es una decisión auxiliar libre:
-queda determinado por los datos y los coeficientes elegidos.
-
-## 2 · Medir el error sin cancelar retrasos y adelantos
-
-**Piensa: ¿sirve promediar los residuos con su signo?**
-
-Un error de un minuto por exceso puede cancelar uno por defecto, aunque
-ninguna de las dos predicciones sea exacta. Para evitarlo consideramos dos
-criterios distintos.
-
-El **error absoluto medio**, o MAE, promedia el tamaño de los residuos:
-
-$$\mathrm{MAE}(\beta)=\frac1n\sum_{i=1}^n|e_i(\beta)|.$$
-
-La **raíz del error cuadrático medio**, o RMSE, primero eleva los residuos
-al cuadrado, los promedia y toma la raíz:
-
-$$\mathrm{RMSE}(\beta)=\sqrt{\frac1n\sum_{i=1}^n e_i(\beta)^2}.$$
-
-**Ambas medidas se expresan en minutos.** Dentro de la raíz, el promedio
-de cuadrados tiene unidades de minutos cuadrados.
-
-Para verlo, usemos seis entregas ficticias. Esta tabla ilustra las fórmulas;
-el modelo general sigue teniendo $n$ observaciones.
+Para hacer las cuentas a mano, tomemos seis entregas ficticias. Son un
+ejemplo pequeño y distinto de la nube anterior; la regla general sigue
+usando $n$ observaciones.
 
 | Caso $i$ | Distancia (km) | Tiempo (min) |
 |---|---|---|
@@ -83,8 +87,8 @@ el modelo general sigue teniendo $n$ observaciones.
 | 5 | 5 | 31 |
 | 6 | 6 | 33 |
 
-Consideremos la recta de referencia $f_\beta(x)=10+4x$. **La escogemos para
-hacer el cálculo; no afirmamos que sea la recta óptima.** Por ejemplo,
+Tomemos como referencia $f_\beta(x)=10+4x$. **La escogemos para calcular;
+todavía no hemos buscado la mejor recta.** Por ejemplo,
 
 $$
 \begin{aligned}
@@ -95,22 +99,45 @@ e_2&=17-18=-1.
 \end{aligned}
 $$
 
-Los seis residuos son $(1,-1,1,-1,1,-1)$. Su promedio con signo es cero,
-pero las medidas de error dan
-
-$$\mathrm{MAE}=\frac{1+1+1+1+1+1}{6}=1.$$
-
-$$\mathrm{RMSE}=\sqrt{\frac{1+1+1+1+1+1}{6}}=1.$$
+Los seis residuos son $(1,-1,1,-1,1,-1)$. El promedio con signo vale
+$(1-1+1-1+1-1)/6=0$, aunque ninguna predicción da en el punto observado.
 
 ![Tiempos de seis entregas frente a distancia, recta de referencia 10 más 4x y segmentos verticales que muestran los residuos de un minuto](../_assets/opt-regresion-residuos.svg)
 
-El eje horizontal es distancia; el vertical, tiempo. Cada segmento vertical
-conecta una predicción de la recta con el tiempo observado del mismo caso.
+El eje horizontal mide distancia y el vertical, tiempo. **Si un punto cae
+sobre la recta, su segmento vertical mide cero:** la predicción acierta.
+Cuanto más lejos queda el punto de la recta en dirección vertical, mayor
+es el tamaño del error. Los segmentos de la figura miden un minuto.
+
+**Piensa: ¿sirve promediar los residuos con su signo?** Un retraso puede
+cancelar un adelanto. Para contar el tamaño de ambos, podemos usar el valor
+absoluto o el cuadrado de cada residuo.
+
+El **error absoluto medio**, o MAE, promedia los tamaños:
+
+$$\mathrm{MAE}(\beta)=\frac1n\sum_{i=1}^n|e_i(\beta)|.$$
+
+En las seis entregas, $|1|=|-1|=1$, así que
+
+$$\mathrm{MAE}=\frac{1+1+1+1+1+1}{6}=1\text{ minuto}.$$
+
+Para dar mayor peso a errores grandes, primero cuadramos cada residuo.
+El **error cuadrático medio**, MSE, es el promedio de esos cuadrados:
+
+$$\mathrm{MSE}(\beta)=\frac1n\sum_{i=1}^n e_i(\beta)^2.$$
+
+El MSE se expresa en minutos cuadrados. Tomamos la raíz **después de
+promediar** para volver a minutos; obtenemos RMSE:
+
+$$\mathrm{RMSE}(\beta)=\sqrt{\frac1n\sum_{i=1}^n e_i(\beta)^2}.$$
+
+En el ejemplo, $1^2=(-1)^2=1$:
+
+$$\mathrm{RMSE}=\sqrt{\frac{1+1+1+1+1+1}{6}}=1\text{ minuto}.$$
 
 **Las medidas no valoran igual los errores grandes.** Un residuo que pasa
 de 1 a 3 minutos aporta 1 y 3 al valor absoluto, pero 1 y 9 al cuadrado.
-RMSE conserva esa mayor sensibilidad a residuos grandes, aunque la raíz
-final devuelva la medida a minutos.
+La raíz final devuelve RMSE a minutos sin deshacer esa diferencia de peso.
 
 ![Valor absoluto y cuadrado de un residuo en paneles separados: el eje horizontal es el error con signo, y los ejes verticales miden minutos y minutos cuadrados respectivamente](../_assets/opt-regresion-perdidas.svg)
 
@@ -118,16 +145,17 @@ La gráfica muestra las contribuciones de **un caso**. Para obtener MAE
 hay que promediar los valores absolutos; para obtener RMSE hay que
 promediar los cuadrados y después tomar la raíz.
 
-## 3 · Elegir qué error vamos a minimizar
+## 4 · Ajustar la recta a las entregas
 
-Podemos pedir la recta que minimice MAE:
+Una medida de error nos permite **elegir** la recta en vez de proponer sus
+coeficientes a ojo. Si nos importa el error absoluto medio, resolvemos
 
 $$\min_{\beta\in\mathbb R^2}\quad\mathrm{MAE}(\beta).$$
 
 $$\beta^\star_{\mathrm{MAE}}\in
 \operatorname*{arg\,min}_{\beta\in\mathbb R^2}\mathrm{MAE}(\beta).$$
 
-O podemos pedir la que minimice RMSE:
+Si queremos dar más peso a los errores grandes, resolvemos
 
 $$\min_{\beta\in\mathbb R^2}\quad\mathrm{RMSE}(\beta).$$
 
@@ -135,16 +163,16 @@ $$\beta^\star_{\mathrm{RMSE}}\in
 \operatorname*{arg\,min}_{\beta\in\mathbb R^2}\mathrm{RMSE}(\beta).$$
 
 En ambos problemas elegimos **los dos coeficientes juntos**. El mínimo
-es un valor de error; el argmin es el conjunto de coeficientes que lo
-alcanzan. Usamos pertenencia porque puede haber varias soluciones.
+es un valor de error; el argmin es el conjunto de parejas que lo alcanzan.
+Usamos pertenencia porque puede haber varias soluciones.
 
 **Son objetivos distintos y pueden elegir rectas diferentes.** Si queremos
 penalizar especialmente los errores grandes, RMSE refleja esa preferencia.
 MAE mide el tamaño de cada error sin elevarlo al cuadrado. La elección del
 criterio debe responder al propósito de la predicción.
 
-Con las seis entregas anteriores, **resolver los dos problemas da resultados
-diferentes**. El ajuste por RMSE es
+Con las seis entregas del cálculo manual, **resolver los dos problemas da
+resultados diferentes**. El ajuste por RMSE es
 $f_\beta(x)=10.6+(134/35)x$; un ajuste óptimo por MAE es
 $f_\beta(x)=11.4+3.6x$. Evaluando ambas rectas obtenemos estos errores,
 en minutos y redondeados:
@@ -157,13 +185,33 @@ en minutos y redondeados:
 Cada una gana con el objetivo para el que se ajustó. Estas rectas son
 resultados de optimización, a diferencia de la referencia $10+4x$.
 
+Volvamos ahora a las **101 entregas simuladas** del comienzo. Sus puntos
+tienen dispersión y algunos tiempos atípicos. Al ajustar
+**la misma nube** con MAE y con RMSE podemos ver cómo cambia la recta según
+lo que penalizamos. La figura compara ambos ajustes; sus coeficientes y
+errores se calcularon con los datos simulados.
+
+![La misma nube simulada con dos rectas ajustadas: eje horizontal distancia en kilómetros, eje vertical tiempo en minutos; MAE y RMSE responden de modo distinto a las entregas tardías atípicas](../_assets/opt-regresion-ajustes.png)
+
+El eje horizontal mide distancia y el vertical, tiempo. El ajuste por
+MAE dio $f_\beta(x)=10.675+3.178x$; el ajuste por RMSE dio
+$f_\beta(x)=8.556+3.705x$. Sus errores, en minutos, son:
+
+| Ajuste | MAE | RMSE |
+|---|---:|---:|
+| Minimiza MAE | **3.630** | 7.166 |
+| Minimiza RMSE | 4.270 | **6.841** |
+
+Los coeficientes se muestran redondeados, pero los errores se calcularon
+con los ajustes completos. Cada método logra el menor valor de su propia
+medida. **La función objetivo expresa una preferencia:** RMSE carga más
+peso a los residuos grandes y aquí mueve la recta hacia algunos puntos
+atípicos.
+
 ### Minimizar RMSE mediante mínimos cuadrados
 
-Llamamos **MSE** al error cuadrático medio:
-
-$$\mathrm{MSE}(\beta)=\frac1n\sum_{i=1}^n e_i(\beta)^2.$$
-
-Para dos parejas cualesquiera $\beta$ y $\gamma$, los valores de MSE son
+Ya definimos MSE como el promedio de los residuos al cuadrado. Para dos
+parejas cualesquiera $\beta$ y $\gamma$, sus valores de MSE son
 no negativos. Como la raíz cuadrada es estrictamente creciente,
 
 $$
@@ -177,8 +225,8 @@ $$
 $$
 
 Por tanto, **minimizar MSE y minimizar RMSE produce el mismo conjunto de
-coeficientes óptimos**. El mínimo de RMSE es la raíz del mínimo de MSE;
-sus unidades son distintas. Esta equivalencia no incluye a MAE.
+coeficientes óptimos**. El mínimo de RMSE es la raíz del mínimo de MSE.
+Esta equivalencia no incluye a MAE.
 
 MSE es una función **cuadrática, suave y convexa** de los coeficientes.
 Este ajuste se conoce como [mínimos cuadrados en regresión lineal](https://cs229.stanford.edu/notes_archive/cs229-notes-all/cs229-notes1.pdf).
@@ -186,43 +234,50 @@ RMSE también es convexa: es la norma euclídea del vector de residuos dividida
 entre $\sqrt n$. Puede no ser diferenciable cuando todos los residuos son
 cero; por eso conviene distinguirla de MSE al hablar de derivadas.
 
-### Expresar MAE con restricciones lineales
+## 5 · Ver qué pasa si cambiamos solo la pendiente
 
-MAE es convexa, pero **no es suave en general** por los valores absolutos.
-Podemos formularla como programación lineal añadiendo una variable
-$u_i\ge0$ por observación. La usamos para representar el tamaño del error:
+La optimización anterior mueve $\beta_0$ y $\beta_1$ a la vez. Para
+imaginar la función objetivo, podemos hacer un **corte del problema**:
+fijamos $\beta_0=10$ y dejamos variar solo $\beta_1$. Cada valor de la
+pendiente produce una recta distinta y, al medir sus residuos sobre los
+mismos datos, un valor de MAE y otro de RMSE.
 
-$$u_i\ge e_i(\beta),\qquad u_i\ge-e_i(\beta).$$
+![Errores MAE y RMSE de las entregas simuladas al variar la pendiente con intercepto fijo en 10: eje horizontal pendiente, eje vertical error en minutos](../_assets/opt-regresion-pendiente.png)
 
-Estas dos desigualdades exigen $u_i\ge|e_i(\beta)|$. El problema completo es
+En esta figura, el eje horizontal es $\beta_1$ y el vertical es el error
+en minutos. Los puntos más bajos señalan las mejores pendientes **entre las
+rectas cuyo intercepto es 10**. No tienen por qué coincidir con los ajustes
+completos de la sección anterior, donde ambos coeficientes eran libres.
+En este corte, MAE alcanza su mínimo con $\beta_1\approx3.250$ y RMSE
+con $\beta_1\approx3.526$; las pendientes del ajuste completo fueron
+$3.178$ y $3.705$, respectivamente.
 
-$$\min_{\beta\in\mathbb R^2,\ u\in\mathbb R^n}
-\quad\frac1n\sum_{i=1}^n u_i$$
+## 6 · Conocer otras familias de reglas
 
-sujeto, para cada $i=1,\ldots,n$, a
+Una recta quizá no describa bien todos los patrones. También podemos
+encontrar tendencias cuadráticas, cúbicas, senoidales o recíprocas.
+**Elegir una familia** delimita qué formas podrá tener la regla antes
+de ajustar sus parámetros.
 
-$$
-\begin{aligned}
-u_i&\ge y_i-\beta_0-\beta_1x_i,\\
-u_i&\ge-y_i+\beta_0+\beta_1x_i,\\
-u_i&\ge0.
-\end{aligned}
-$$
+![Cinco familias de datos simulados, con muestras, curva generadora y tres polinomios ajustados; cada panel tiene x horizontal y valor vertical](../_assets/opt-regresion-formas.png)
 
-Para coeficientes fijos, minimizar la suma lleva cada $u_i$ a su menor
-valor permitido, $|e_i(\beta)|$. Así recuperamos exactamente MAE.
-**Los $u_i$ son auxiliares del modelo**, medidos en minutos; no son datos
-observados ni tiempos que podamos decidir para las entregas.
+Esta galería es **otro experimento simulado**, independiente de las
+entregas: cada panel tiene 27 muestras, una curva que las generó y tres
+polinomios ajustados a esas mismas muestras. El eje horizontal es la
+entrada $x$ y el vertical, el valor generado o predicho. Las curvas
+generadoras son $4+2x$, $4+1.5x+4x^2$, $4+2x-2x^2+3x^3$,
+$4+2\sin(5x)$ y $2+5/x$, respectivamente. Los primeros cuatro paneles
+usan $-0.9\le x\le0.9$; el recíproco usa $1\le x\le5$. Así evitamos
+$x=0$, donde $1/x$ no está definida.
 
-Que la predicción sea una recta no convierte cualquier objetivo en un
-programa lineal. Aquí obtenemos uno al reformular MAE; con MSE tenemos
-una minimización cuadrática convexa. La [reformulación del error absoluto como programa lineal](https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf#page=308)
-aparece en Boyd y Vandenberghe, sección 6.1.1.
+**Mira qué cambia al dar más grados al polinomio.** Una recta puede
+seguir la tendencia lineal, pero tiene poco margen para doblarse. Una
+curva muy flexible puede acercarse a las muestras y oscilar entre ellas.
+La figura muestra posibilidades, no demuestra que un grado particular
+sea siempre mejor.
 
-## 4 · Dejar que la curva tenga más coeficientes
-
-Una recta puede resultar demasiado limitada. Ampliemos la familia a
-polinomios de **grado a lo sumo $N$**:
+Nos concentraremos en la familia de polinomios. Para un grado máximo
+**fijo** $N$, la regla es
 
 $$f_{\beta,N}(x)=\sum_{j=0}^{N}\beta_jx^j.$$
 
@@ -233,14 +288,17 @@ $$\beta=(\beta_0,\ldots,\beta_N)\in\mathbb R^{N+1}.$$
 
 **No confundamos $n$ con $N$:** $n$ cuenta las entregas observadas;
 $N$ limita el grado y determina que ajustamos $N+1$ coeficientes.
-Ahora $\beta_j$ tiene unidades de minutos por kilómetro elevado a $j$.
 El coeficiente de mayor índice puede ser cero; no exigimos grado exactamente
 $N$.
 
 La curva puede ser no lineal en $x$, pero sigue siendo **lineal en los
 coeficientes que elegimos**: los valores $x_i^j$ son datos calculados.
 Para cada grado fijo, minimizar MSE sigue siendo un problema convexo de
-mínimos cuadrados.
+mínimos cuadrados. Una curva polinómica puede aproximar una onda o una
+regla recíproca en un intervalo adecuado; eso **no la convierte en la
+función seno ni en $1/x$ exactas**.
+
+## 7 · Preguntar si conviene aumentar el grado
 
 Si además elegimos el grado, necesitamos un límite finito conocido
 $N_{\max}\ge1$, entero. Una primera propuesta sería
@@ -284,13 +342,31 @@ cero. Si dos entregas tienen la misma distancia pero tiempos diferentes,
 ninguna función de esa distancia puede acertar exactamente ambos tiempos.
 
 Ajustar los datos con exactitud puede recoger variaciones que no se repitan.
-**Sobreajustar** significa ajustar particularidades del entrenamiento que
-perjudican la predicción fuera de esa muestra. No significa simplemente
-«usar grado alto»; hace falta comprobar cómo funciona en otros datos.
+**Subajuste** significa que la familia es demasiado limitada para captar
+el patrón, como una recta ante una tendencia cuadrática. **Sobreajuste**
+significa que una curva capta particularidades del entrenamiento que
+perjudican su predicción fuera de esa muestra. Un grado alto por sí solo
+no prueba sobreajuste: necesitamos comparar con datos reservados.
+
+En el siguiente experimento simulamos dos patrones distintos: uno lineal
+y otro cuadrático. Para cada patrón ajustamos polinomios con **21 puntos de
+entrenamiento** y los miramos sobre **101 puntos de validación**. La figura
+compara el grado que corresponde a cada patrón (1 o 2) con grado 15.
+Las relaciones generadoras son $y=4+1.5x$ y $y=4+1.2x+2.8x^2$, con
+$-1\le x\le1$. Añadimos variación independiente a los datos de
+entrenamiento y validación de cada patrón.
+
+![Dos patrones simulados: grado 1 frente a 15 para el patrón lineal, y grado 2 frente a 15 para el cuadrático; ejes de entrada x y respuesta y](../_assets/opt-regresion-sobreajuste.png)
+
+En cada panel, el eje horizontal es $x$ y el vertical, la respuesta.
+El grado 15 pasa cerca de muchos puntos usados para ajustarlo, pero
+se aleja de la tendencia entre ellos y en los extremos. La figura
+anterior mostró cómo la recta tampoco seguía una curva cuadrática.
+Mediremos ambos problemas con validación en la siguiente sección.
 El [ejemplo de ajuste polinómico de scikit-learn](https://scikit-learn.org/stable/auto_examples/model_selection/plot_underfitting_overfitting.html)
 ilustra esta comparación entre flexibilidad y error fuera del entrenamiento.
 
-## 5 · Elegir la complejidad con entregas reservadas
+## 8 · Elegir la complejidad con datos reservados
 
 Separamos los datos antes de comparar modelos:
 
@@ -358,12 +434,27 @@ entrenamiento y, sin embargo, tiene mayor error en estos datos reservados.
 **El algoritmo puede resolver correctamente el objetivo de entrenamiento
 y aun así elegir una regla que prediga peor casos nuevos.**
 
+La misma comparación aparece con más datos en los **dos patrones simulados**
+de la sección anterior: uno lineal y otro cuadrático. Para cada patrón,
+las curvas siguientes miden RMSE en los 21 puntos de entrenamiento y en
+101 puntos independientes de validación, para $N=1,\ldots,16$.
+
+![Dos gráficas de RMSE frente al grado polinómico, una para datos lineales y otra para cuadráticos, con curvas de entrenamiento y validación](../_assets/opt-regresion-validacion.png)
+
+En ambos paneles, el eje horizontal es el grado permitido $N$ y el
+vertical, RMSE en **unidades arbitrarias** de la respuesta. Para el
+patrón lineal, validación es menor en $N=1$ (0.342); para el cuadrático,
+en $N=2$ (0.249). Esas cifras están redondeadas. Aumentar $N$ sigue
+reduciendo el error de entrenamiento, pero al llegar a $N=16$ el error
+de validación sube a 1.716 y 1.408, respectivamente. **La caída del
+entrenamiento no basta para elegir el grado.**
+
 La validación ya intervino en nuestra elección. **Su error no es una
 estimación insesgada del error final solo por haber sido reservada al inicio.**
 La prueba final permite evaluar el modelo elegido con datos que no usamos
 para ajustar coeficientes ni seleccionar el grado.
 
-## 6 · Resumen de los modelos y sus métodos
+## 9 · Resumen de los modelos y sus métodos
 
 | Signo | Qué representa |
 |---|---|
@@ -430,6 +521,30 @@ de programación lineal tiene un costo que depende del tamaño del problema,
 el método y la precisión. No se deduce una resolución en $O(n)$ del costo
 de escribir sus restricciones.
 
+Para ver la reformulación completa, añadimos una variable auxiliar
+$u_i\ge0$ por observación y exigimos $u_i\ge e_i(\beta)$ y
+$u_i\ge-e_i(\beta)$. Las dos desigualdades implican
+$u_i\ge|e_i(\beta)|$. Resolvemos
+
+$$\min_{\beta\in\mathbb R^2,\ u\in\mathbb R^n}
+\quad\frac1n\sum_{i=1}^n u_i$$
+
+sujeto, para cada $i=1,\ldots,n$, a
+
+$$
+\begin{aligned}
+u_i&\ge y_i-\beta_0-\beta_1x_i,\\
+u_i&\ge-y_i+\beta_0+\beta_1x_i,\\
+u_i&\ge0.
+\end{aligned}
+$$
+
+Para coeficientes fijos, minimizar la suma lleva cada $u_i$ a su menor
+valor permitido, $|e_i(\beta)|$. Así recuperamos exactamente MAE.
+Los $u_i$ miden tamaños de error; no son tiempos observados. La
+[reformulación del error absoluto como programa lineal](https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf#page=308)
+aparece en Boyd y Vandenberghe, sección 6.1.1.
+
 **Recta con RMSE.** Minimizamos $\mathrm{RMSE}(\beta)$ sobre el mismo
 dominio. Comparte argmin con MSE, una cuadrática convexa suave. Podemos
 resolver mínimos cuadrados con factorización QR en $O(n)$ cuando las dos
@@ -455,7 +570,7 @@ total suma los ajustes y las evaluaciones de todos los grados considerados.
 Elegir $N$ es una decisión discreta entre problemas convexos; el test
 final queda fuera de esa comparación.
 
-## 7 · Elegir un modelo que quepa en el dispositivo
+## 10 · Elegir un modelo que quepa en el dispositivo
 
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**

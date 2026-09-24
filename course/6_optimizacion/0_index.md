@@ -65,7 +65,7 @@ incluyen ejercicios con pistas y respuestas para practicar por tu cuenta.
 | 2 | Resolver sin dibujar | Escribir el modelo como matriz y resolverlo con simplex sin dibujarlo | 108m |
 | 3 | Cuando ya no es una recta | Repartir la potencia del reactor cuando el rendimiento decrece | 144m |
 | 4 | Cuando las piezas no se parten | Escribir un problema cuyas cantidades son enteras, y resolverlo: mirándolos todos, y sin mirarlos todos | 125m |
-| 5 | Modelar problemas de optimización | Cinco ejemplos guiados para construir decisiones, restricciones y objetivos | 130m |
+| 5 | Modelar problemas de optimización | Cinco ejemplos guiados para construir decisiones, restricciones y objetivos | 145m |
 :::
 
 - [[leer-y-escribir|Clase 1 · Leer y escribir]]
@@ -75,7 +75,7 @@ incluyen ejercicios con pistas y respuestas para practicar por tu cuenta.
 - [[opt-practica-modelado|6.5 · Modelar problemas de optimización]]
 
 El recorrido de las cuatro clases suma 454 minutos; los ejemplos guiados,
-130 minutos. En total son **9 horas y 44 minutos**, más el tiempo que dediques
+145 minutos. En total son **9 horas y 59 minutos**, más el tiempo que dediques
 a los ejercicios de las guías.
 
 ## La tarea del lunes
