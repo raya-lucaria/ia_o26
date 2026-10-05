@@ -15,6 +15,7 @@ ASSETS_COMPUTABILIDAD = RAIZ / "course/3_computabilidad/_assets"
 ASSETS_COMPLEJIDAD = RAIZ / "course/4_complejidad/_assets"
 ASSETS_AGENTES = RAIZ / "course/5_agentes_ambientes/_assets"
 ASSETS_OPTIMIZACION = RAIZ / "course/6_optimizacion/_assets"
+ASSETS_JUEGOS = RAIZ / "course/7_juegos/_assets"
 
 ASSETS_POR_UNIDAD = {
     "historia": ASSETS_HISTORIA,
@@ -23,6 +24,7 @@ ASSETS_POR_UNIDAD = {
     "complejidad": ASSETS_COMPLEJIDAD,
     "agentes-ambientes": ASSETS_AGENTES,
     "optimizacion": ASSETS_OPTIMIZACION,
+    "juegos": ASSETS_JUEGOS,
 }
 
 CELDA_NOMBRE = 0
