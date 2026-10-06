@@ -16,10 +16,9 @@ Sí. Al terminar conocerás la **búsqueda de árbol Monte Carlo**, o **MCTS**
 (del inglés *Monte Carlo tree search*): su idea, sus cuatro pasos y en qué
 se distingue de cortar y evaluar. Es un adelanto: no la calculamos a mano.
 
-> **Notación de la clase 1.** Esta página escribe $\mathrm{Pl}(s)$ para el
-> jugador de turno, como en [[escribir-el-juego|Escribir el juego]]; las
-> páginas anteriores de esta clase lo escriben $P(s)$. La utilidad es
-> $U=+1$ si gana MAX y $U=-1$ si gana MIN.
+> **Notación de la clase 1.** $\mathrm{Pl}(s)$ es el jugador de turno, como
+> en [[escribir-el-juego|Escribir el juego]]. La utilidad es $U=+1$ si gana
+> MAX y $U=-1$ si gana MIN.
 
 ## 1 · Jugar al azar y promediar
 

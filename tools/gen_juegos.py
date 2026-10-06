@@ -125,12 +125,18 @@ def tipo_de_nodo(tablero, turno):
 
 
 def nodo_svg(cx, cy, tablero, turno, arriba, nuevo=False, expandido=True,
-             w=150, h=160, celda=24):
+             w=150, h=160, celda=24, renglones=None, color=None, orden=None, radio=10):
     """Un nodo: rotulo arriba, tablero al centro y su tipo en dos renglones.
 
     Borde doble: final. Borde punteado: existe pero aun no se expande.
-    Borde grueso de acento: lo nuevo de este paso."""
-    color, r1, r2 = tipo_de_nodo(tablero, turno)
+    Borde grueso de acento: lo nuevo de este paso. `renglones` reemplaza los
+    dos renglones de abajo (para escribir su valor), `color` el color de su
+    tipo (para el nodo de azar) y `orden` dibuja en la esquina el numero de
+    visita de un recorrido."""
+    color_tipo, r1, r2 = tipo_de_nodo(tablero, turno)
+    color = color or color_tipo
+    if renglones:
+        r1, r2 = renglones
     final = bool(j.ganador(tablero, turno))
     x, y = cx - w / 2, cy - h / 2
     s = []
@@ -138,23 +144,31 @@ def nodo_svg(cx, cy, tablero, turno, arriba, nuevo=False, expandido=True,
         s.append(caja(x - 5, y - 5, w + 10, h + 10, borde=color, grosor=2))
     s.append(caja(x, y, w, h, relleno=mezclar(color, 0.16 if nuevo else 0.07),
                   borde=ACENTO if nuevo else color, grosor=3.5 if nuevo else 2,
-                  guiones=None if (expandido or final) else "8 5"))
+                  guiones=None if (expandido or final) else "8 5", radio=radio))
     f = min(1.5, max(0.88, w / 150))  # la letra crece con el nodo
     s.append(texto(cx, y + 22 * f, arriba, tam=round(16 * f, 1), peso="700"))
     lado = 3 * celda
     s.append(tablero_svg(cx, y + 32 * f + lado / 2, tablero, celda))
     s.append(texto(cx, y + h - 27 * f, r1, tam=round(13 * f, 1), color=color, peso="700"))
     s.append(texto(cx, y + h - 10 * f, r2, tam=round(13 * f, 1), color=color, peso="700"))
+    if orden is not None:
+        s.append(f'<circle cx="{x + 4:.1f}" cy="{y + 4:.1f}" r="15" fill="{ACENTO}"/>')
+        s.append(texto(round(x + 4, 1), round(y + 9.5, 1), f"{orden}º", tam=13,
+                       color=FONDO, peso="700"))
     return "".join(s)
 
 
-def arista_svg(x1, y1, x2, y2, rotulo, nueva=False, h=160):
+def arista_svg(x1, y1, x2, y2, rotulo, nueva=False, h=160, tenue=False):
     """Flecha del borde inferior del padre al superior del hijo, con el
-    nombre de la jugada sobre la flecha."""
-    color = ACENTO if nueva else SUAVE
+    nombre de la jugada sobre la flecha. `tenue`: la jugada se conoce, pero
+    su estado nunca se genera."""
+    color = ACENTO if nueva else (LINEA if tenue else SUAVE)
     ya, yb = y1 + h / 2, y2 - h / 2 - 8
-    s = [flecha(x1, ya, x2, yb, color=color, grosor=3 if nueva else 2,
-                marcador="p" if nueva else "s")]
+    if tenue:
+        s = [linea(x1, ya, x2, yb, color=color, grosor=2, guiones="6 5")]
+    else:
+        s = [flecha(x1, ya, x2, yb, color=color, grosor=3 if nueva else 2,
+                    marcador="p" if nueva else "s")]
     mx, my = (x1 + x2) / 2, (ya + yb) / 2
     ancho = 11 * len(rotulo) + 14
     s.append(caja(mx - ancho / 2, my - 14, ancho, 26, relleno=FONDO, borde=color,
@@ -520,12 +534,392 @@ def jue_transposicion():
     return "".join(out)
 
 
+
+# ============================================================ clase 2 ===
+#
+# Las figuras de la clase 2 reusan la geometria del subgrafo de n1 de la
+# clase 1 (LUGARES_N1): el lector ya conoce ese dibujo, y ahora se le van
+# escribiendo encima los valores, el recorrido y las podas. Todo numero que
+# aparece se calcula con juegos.py.
+
+COLOR_AZAR = TEXTO
+
+
+def fmt(v):
+    """+1, −1, 0, 1/3, ±∞: como se escribe un valor en las figuras."""
+    if v == float("inf"):
+        return "+∞"
+    if v == float("-inf"):
+        return "−∞"
+    if hasattr(v, "denominator") and v.denominator != 1:
+        signo = "−" if v < 0 else ""
+        return f"{signo}{abs(v.numerator)}/{v.denominator}"
+    v = int(v)
+    return f"+{v}" if v > 0 else ("0" if v == 0 else f"−{-v}")
+
+
+def valores_n1(sin_jugada_empata=False):
+    """n -> V(n) en el subgrafo de n1, con utilidad +1/−1."""
+    return {n: j.valor(t, p, sin_jugada_empata=sin_jugada_empata)
+            for n, (t, p, _, _) in subgrafo_n1().items()}
+
+
+def elegidas_n1(valores):
+    """Aristas (padre, hijo) cuyo hijo alcanza el valor del padre: las
+    jugadas del arg max en MAX y del arg min en MIN."""
+    nodos = subgrafo_n1()
+    return {(padre, n) for n, (_, _, padre, _) in nodos.items()
+            if padre is not None and valores[n] == valores[padre]}
+
+
+def renglones_valor(tablero, turno, v):
+    """Los dos renglones de un nodo ya valorado."""
+    if j.ganador(tablero, turno):
+        return None  # un final se queda como en la clase 1: quien gana y su U
+    quien = "Mueve Blancas" if turno == "B" else "Mueve Negras"
+    return quien, f"{'MAX' if turno == 'B' else 'MIN'} · V = {fmt(v)}"
+
+
+# Que nodo se valora en cada paso de «Minimax a mano», y que se dice debajo.
+PASOS_MINIMAX = {
+    1: (6, "Paso 1 · Valorar n6: Blancas toma el máximo",
+        ["n7 ya vale +1: Negras está obligada a jugar a3xb2 y luego",
+         "gana Blancas. max{+1, +1, +1} = +1: las tres jugadas empatan."]),
+    2: (3, "Paso 2 · Valorar n3: Negras toma el mínimo",
+        ["min{+1, +1, −1} = −1. A Negras le basta una respuesta",
+         "buena: c3xb2 deja a Blancas sin jugada."]),
+    3: (1, "Paso 3 · Valorar n1: la jugada de Blancas",
+        ["max{+1, −1} = +1, con c1-c2. Capturar en b2 pierde:",
+         "Negras respondería c3xb2."]),
+}
+
+
+def camino_n1(n):
+    """Las jugadas desde s0 hasta el nodo n del subgrafo."""
+    nodos = subgrafo_n1()
+    jugadas_ = []
+    while nodos[n][2] is not None:
+        jugadas_.append(nodos[n][3])
+        n = nodos[n][2]
+    return CAMINO_N1 + jugadas_[::-1]
+
+
+def jue_minimax_paso(paso):
+    """Un paso de minimax a mano: el nodo que se valora arriba, sus hijos ya
+    valorados abajo y, resaltadas, las jugadas que alcanzan su valor."""
+    if paso not in PASOS_MINIMAX:
+        raise ValueError("Minimax paso a paso admite pasos de 1 a 3")
+    n, titulo, notas = PASOS_MINIMAX[paso]
+    nodos, valores = subgrafo_n1(), valores_n1()
+    elegidas = elegidas_n1(valores)
+    tp, pp, _, _ = nodos[n]
+    hijos_ = [m for m, (_, _, padre, _) in nodos.items() if padre == n]
+    W, H, y_padre, y_hijo = ANCHO, 800, 210, 510
+    k = len(hijos_)
+    paso_x = 210 if k == 3 else 260
+    xs = [W / 2 + (i - (k - 1) / 2) * paso_x for i in range(k)]
+    operacion = "máximo" if pp == "B" else "mínimo"
+    desc = (f"{titulo}. Arriba, n{n}, donde {'mueve Blancas (MAX)' if pp == 'B' else 'mueve Negras (MIN)'}; "
+            "abajo, sus hijos con su valor: "
+            + "; ".join(f"{nodos[m][3]} lleva a n{m}, que vale {fmt(valores[m])}" for m in hijos_)
+            + f". El {operacion} es {fmt(valores[n])}, así que V(n{n}) = {fmt(valores[n])}; "
+            "las jugadas que lo alcanzan van resaltadas.")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 36, titulo, tam=20, peso="700")]
+    out.append(rastro_svg(68, camino_n1(n), f"n{n}"))
+    for m, x in zip(hijos_, xs):
+        out.append(arista_svg(W / 2, y_padre, x, y_hijo, nodos[m][3],
+                              nueva=(n, m) in elegidas, h=190))
+    out.append(nodo_svg(W / 2, y_padre, tp, pp, f"n{n}", nuevo=True, w=180, h=190, celda=32,
+                        renglones=renglones_valor(tp, pp, valores[n])))
+    for m, x in zip(hijos_, xs):
+        t, p, _, _ = nodos[m]
+        out.append(nodo_svg(x, y_hijo, t, p, f"n{m}", w=180, h=190, celda=32,
+                            renglones=renglones_valor(t, p, valores[m])))
+    out.append(nota_svg(y_hijo + 140, notas))
+    out.append(leyenda_svg(H - 34, [("nuevo", "se valora en este paso"),
+                                    ("expandido", "ya valorado"),
+                                    ("final", "final, con su U")]))
+    out.append(cierre())
+    return "".join(out)
+
+
+def _dibujar_n1(out, lugares, y0, dy, valores=None, elegidas=(), renglones=None,
+                fantasmas=(), tenues=(), nuevos=(), ordenes=None, etiquetas_corte=None):
+    """El subgrafo de n1 con la geometria de la clase 1.
+
+    `fantasmas`: nodos que nunca se generan (sin tablero, borde punteado).
+    `tenues`: aristas hacia un fantasma, con la jugada conocida.
+    `etiquetas_corte`: {(padre, hijo): texto} sobre la arista donde se corta."""
+    nodos = subgrafo_n1()
+    etiquetas_corte = etiquetas_corte or {}
+    for n, (t, p, padre, jugada) in nodos.items():
+        if padre is None:
+            continue
+        x1, l1 = lugares[padre]
+        x2, l2 = lugares[n]
+        if padre in fantasmas:
+            out.append(linea(x1, y0 + l1 * dy + NODO_ALTO_SUB / 2, x2,
+                             y0 + l2 * dy - NODO_ALTO_SUB / 2, color=LINEA, grosor=1.5,
+                             guiones="4 6"))
+            continue
+        out.append(arista_svg(x1, y0 + l1 * dy, x2, y0 + l2 * dy, jugada,
+                              nueva=(padre, n) in elegidas, h=NODO_ALTO_SUB,
+                              tenue=n in fantasmas))
+    # El corte: una barra de acento que atraviesa las aristas que ya no se
+    # siguen, justo debajo del nodo que corta, con el tipo de corte al lado.
+    for (padre, primero), rotulo in etiquetas_corte.items():
+        hermanos = [m for m, (_, _, pa, _) in nodos.items() if pa == padre]
+        cortados = [m for m in hermanos if m in fantasmas]
+        xp, lp = lugares[padre]
+        yb = y0 + lp * dy + NODO_ALTO_SUB / 2
+        ym = y0 + (lp + 1) * dy - NODO_ALTO_SUB / 2 - 8
+        yc = yb + 0.8 * (ym - yb)  # debajo de los rotulos de las jugadas
+        xs = []
+        for m in cortados:
+            xm, _ = lugares[m]
+            xs.append(xp + (xm - xp) * (yc - yb) / (ym - yb))
+        x_a, x_b = min(xs) - 14, max(xs) + 14
+        out.append(linea(x_a, yc, x_b, yc, color=ACENTO, grosor=5))
+        a_la_derecha = x_b + 120 < ANCHO
+        out.append(texto(x_b + 8 if a_la_derecha else x_a - 8, yc + 5, rotulo, tam=15,
+                         color=ACENTO, peso="700", anclaje="start" if a_la_derecha else "end"))
+    for n, (t, p, _, _) in nodos.items():
+        x, nivel = lugares[n]
+        y = y0 + nivel * dy
+        if n in fantasmas:
+            w, h = NODO_SUB, NODO_ALTO_SUB
+            out.append(caja(x - w / 2, y - h / 2, w, h, relleno=FONDO, borde=LINEA,
+                            grosor=2, guiones="7 6"))
+            out.append(texto(x, y - 32, f"n{n}", tam=16, color=SUAVE, peso="700"))
+            out.append(texto(x, y + 6, "?", tam=30, color=LINEA, peso="700"))
+            out.append(texto(x, y + 44, "no se genera", tam=13, color=SUAVE))
+            continue
+        r = renglones(n, t, p) if renglones else (
+            renglones_valor(t, p, valores[n]) if valores else None)
+        out.append(nodo_svg(x, y, t, p, f"n{n}", nuevo=n in nuevos, w=NODO_SUB,
+                            h=NODO_ALTO_SUB, celda=21, renglones=r,
+                            orden=(ordenes or {}).get(n)))
+
+
+def jue_minimax_n1():
+    """El subgrafo de n1 resuelto: cada nodo con su V y, resaltadas, las
+    jugadas que alcanzan el valor de su padre."""
+    nodos, valores = subgrafo_n1(), valores_n1()
+    W, y0, dy = ANCHO, 175, 228
+    H = y0 + 5 * dy + 150
+    titulo = "El subgrafo de n1, resuelto"
+    desc = ("El mismo grafo de n1 de la clase 1, con un valor en cada nodo: "
+            + ", ".join(f"V(n{n}) = {fmt(v)}" for n, v in valores.items())
+            + ". Van resaltadas las jugadas que alcanzan el valor de su padre: c1-c2 en n1, "
+            "c3xb2 en n3 y las tres jugadas de n6, que empatan.")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 36, titulo, tam=20, peso="700")]
+    out.append(rastro_svg(70, CAMINO_N1, "n1"))
+    _dibujar_n1(out, LUGARES_N1, y0, dy, valores=valores, elegidas=elegidas_n1(valores))
+    out.append(leyenda_svg(H - 34, [("nuevo", "jugada que alcanza el valor"),
+                                    ("final", "final, con su U")]))
+    out.append(cierre())
+    return "".join(out)
+
+
+# El momento que congela «Minimax como algoritmo»: MINIMAX(n8) acaba de
+# empezar. En la pila esperan n1, n3, n6 y n7; n2 y n4 ya devolvieron su
+# valor y se olvidaron (n5 con n4); lo demas todavia no existe.
+EN_PILA = [1, 3, 6, 7, 8]
+YA_DEVOLVIERON = [2, 4, 5]
+SIN_GENERAR = [9, 10, 11, 12, 13]
+
+
+def jue_minimax_genera():
+    """Lo que hay en memoria a media ejecucion de MINIMAX desde n1."""
+    nodos, valores = subgrafo_n1(), valores_n1()
+    assert sorted(EN_PILA + YA_DEVOLVIERON + SIN_GENERAR) == sorted(nodos)
+    W, y0, dy = ANCHO, 175, 228
+    H = y0 + 5 * dy + 150
+    titulo = "MINIMAX a media ejecución"
+    desc = ("El subgrafo de n1 en el momento en que MINIMAX empieza a valorar n8. "
+            "En memoria solo está el camino n1, n3, n6, n7, n8, cada uno esperando a "
+            "sus hijos con el mejor valor visto hasta ahora. n2 y n4 ya devolvieron "
+            "+1 y se olvidaron, con n5. n9, n10, n11, n12 y n13 todavía no se generan.")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 36, titulo, tam=20, peso="700")]
+    out.append(texto(W / 2, 70, "Empieza MINIMAX(n8). ¿Qué hay en memoria?", tam=15,
+                     color=SUAVE))
+    # v visto hasta ahora en cada nodo de la pila, recorriendo en el orden fijo.
+    v_hasta_ahora = {}
+    for n in EN_PILA:
+        t, p, _, _ = nodos[n]
+        hechos = [valores[m] for m, (_, _, padre, _) in nodos.items()
+                  if padre == n and m in YA_DEVOLVIERON]
+        if p == "B":
+            v_hasta_ahora[n] = max(hechos, default=float("-inf"))
+        else:
+            v_hasta_ahora[n] = min(hechos, default=float("inf"))
+    lugares = LUGARES_N1
+    for n, (t, p, padre, jugada) in nodos.items():
+        if padre is None:
+            continue
+        x1, l1 = lugares[padre]
+        x2, l2 = lugares[n]
+        y1, y2 = y0 + l1 * dy, y0 + l2 * dy
+        if n in EN_PILA:
+            out.append(arista_svg(x1, y1, x2, y2, jugada, nueva=True, h=NODO_ALTO_SUB))
+        else:
+            out.append(linea(x1, y1 + NODO_ALTO_SUB / 2, x2, y2 - NODO_ALTO_SUB / 2,
+                             color=LINEA, grosor=1.5, guiones="4 6"))
+    for n, (t, p, _, _) in nodos.items():
+        x, nivel = lugares[n]
+        y = y0 + nivel * dy
+        w, h = NODO_SUB, NODO_ALTO_SUB
+        if n in EN_PILA:
+            quien = "MAX" if p == "B" else "MIN"
+            out.append(nodo_svg(x, y, t, p, f"n{n}", nuevo=True, w=w, h=h, celda=21,
+                                renglones=(f"{quien} · espera", f"v = {fmt(v_hasta_ahora[n])}")))
+        elif n in YA_DEVOLVIERON:
+            out.append(caja(x - w / 2, y - h / 2, w, h, relleno=FONDO, borde=SUAVE,
+                            grosor=1.5, guiones="2 5"))
+            out.append(texto(x, y - 32, f"n{n}", tam=16, color=SUAVE, peso="700"))
+            out.append(texto(x, y + 2, f"devolvió {fmt(valores[n])}", tam=14, color=SUAVE,
+                             peso="700"))
+            out.append(texto(x, y + 26, "y se olvidó", tam=14, color=SUAVE))
+        else:
+            out.append(caja(x - w / 2, y - h / 2, w, h, relleno=FONDO, borde=LINEA,
+                            grosor=2, guiones="7 6"))
+            out.append(texto(x, y - 32, f"n{n}", tam=16, color=SUAVE, peso="700"))
+            out.append(texto(x, y + 6, "?", tam=30, color=LINEA, peso="700"))
+            out.append(texto(x, y + 44, "aún no existe", tam=13, color=SUAVE))
+    ly = H - 34
+    out.append(caja(18, ly, 24, 16, borde=ACENTO, grosor=3, radio=4))
+    out.append(texto(52, ly + 13, "en la pila: esperan", tam=13, color=SUAVE, anclaje="start"))
+    out.append(caja(250, ly, 24, 16, borde=SUAVE, grosor=1.5, radio=4, guiones="2 4"))
+    out.append(texto(284, ly + 13, "devolvió y se olvidó", tam=13, color=SUAVE, anclaje="start"))
+    out.append(caja(480, ly, 24, 16, borde=LINEA, grosor=2, radio=4, guiones="5 3"))
+    out.append(texto(514, ly + 13, "todavía no se genera", tam=13, color=SUAVE, anclaje="start"))
+    out.append(cierre())
+    return "".join(out)
+
+
+def jue_azar_n3():
+    """n3 como nodo de azar: Negras elige al azar, cada jugada con 1/3."""
+    nodos, valores = subgrafo_n1(), valores_n1()
+    tp, pp, _, _ = nodos[3]
+    hijos_ = [m for m, (_, _, padre, _) in nodos.items() if padre == 3]
+    import fractions
+    promedio = sum(fractions.Fraction(valores[m]) for m in hijos_) / len(hijos_)
+    assert promedio == j.expectiminimax_rival_al_azar(tp, pp)
+    W, H, y_padre, y_hijo = ANCHO, 800, 210, 510
+    xs = [W / 2 + (i - 1) * 230 for i in range(3)]
+    titulo = "Si Negras eligiera al azar en n3"
+    desc = ("n3 dibujado como nodo de azar: nadie elige, cada una de las tres jugadas de "
+            "Negras sale con probabilidad 1/3. Sus hijos valen "
+            + ", ".join(f"n{m} = {fmt(valores[m])}" for m in hijos_)
+            + f". El nodo vale su promedio, {fmt(promedio)}.")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 36, titulo, tam=20, peso="700")]
+    out.append(rastro_svg(68, camino_n1(3), "n3"))
+    for m, x in zip(hijos_, xs):
+        out.append(arista_svg(W / 2, y_padre, x, y_hijo, f"{nodos[m][3]}: ⅓", h=190))
+    out.append(nodo_svg(W / 2, y_padre, tp, pp, "n3", nuevo=True, w=180, h=190, celda=32,
+                        color=COLOR_AZAR, radio=45,
+                        renglones=("AZAR: nadie elige", f"V = {fmt(promedio)}")))
+    for m, x in zip(hijos_, xs):
+        t, p, _, _ = nodos[m]
+        out.append(nodo_svg(x, y_hijo, t, p, f"n{m}", w=180, h=190, celda=32,
+                            renglones=renglones_valor(t, p, valores[m])))
+    out.append(nota_svg(y_hijo + 140, ["Se promedia con las probabilidades:",
+                                       "⅓(+1) + ⅓(+1) + ⅓(−1) = 1/3."]))
+    ly = H - 34
+    out.append(caja(18, ly - 3, 30, 22, borde=COLOR_AZAR, grosor=2, radio=11))
+    out.append(texto(58, ly + 13, "nodo de azar: esquinas redondas", tam=13, color=SUAVE,
+                     anclaje="start"))
+    out.append(caja(330, ly, 24, 16, borde=ACENTO, grosor=3, radio=4))
+    out.append(texto(364, ly + 13, "se valora en este paso", tam=13, color=SUAVE,
+                     anclaje="start"))
+    out.append(cierre())
+    return "".join(out)
+
+
+def traza_n1(invertir=False, sin_jugada_empata=False):
+    """Alfa-beta desde n1, traducido a numeros de nodo.
+
+    Devuelve (visitas, cortes): visitas es {n: (orden, tipo, alfa, beta,
+    devuelve)} y cortes es {(padre, primer hijo no visitado): tipo}."""
+    nodos = subgrafo_n1()
+    por_camino = {tuple(camino_n1(n)[len(CAMINO_N1):]): n for n in nodos}
+    t, p, _, _ = nodos[1]
+    r = j.alfa_beta_traza(t, p, invertir=invertir, sin_jugada_empata=sin_jugada_empata)
+    visitas = {por_camino[c]: (k + 1, tipo, a, b, v)
+               for k, (c, tipo, a, b, v) in enumerate(r["visitas"])}
+    cortes = {}
+    for tipo, camino, jugada, _ in r["cortes"]:
+        padre = por_camino[camino]
+        hermanos = [m for m, (_, _, pa, _) in nodos.items() if pa == padre]
+        if invertir:
+            hermanos = hermanos[::-1]
+        k = hermanos.index(por_camino[camino + (jugada,)])
+        cortes[(padre, hermanos[k + 1])] = tipo
+    return visitas, cortes
+
+
+def lugares_invertidos():
+    """La geometria del subgrafo reflejada: de izquierda a derecha queda el
+    orden de visita cuando todas las listas de jugadas se invierten."""
+    return {n: (ANCHO - x, nivel) for n, (x, nivel) in LUGARES_N1.items()}
+
+
+def jue_alfa_beta(invertir=False):
+    """Alfa-beta desde n1: orden de visita, alfa y beta al llegar, lo que
+    devuelve cada nodo, el corte y los nodos que nunca se generan."""
+    nodos = subgrafo_n1()
+    visitas, cortes = traza_n1(invertir)
+    fantasmas = [n for n in nodos if n not in visitas]
+    W, y0, dy = ANCHO, 190, 228
+    H = y0 + 5 * dy + 150
+    orden_txt = "invertido" if invertir else "fijo"
+    titulo = f"Alfa-beta con el orden {orden_txt}: {len(visitas)} de {len(nodos)} nodos"
+    corte_txt = "; ".join(f"corte {tipo} en n{padre}" for (padre, _), tipo in cortes.items())
+    desc = (f"El subgrafo de n1 recorrido por alfa-beta con el orden {orden_txt}. "
+            + " ".join(f"{orden}º n{n}: llega con α = {fmt(a)} y β = {fmt(b)} y devuelve {fmt(v)}."
+                       for n, (orden, _, a, b, v) in sorted(visitas.items(), key=lambda x: x[1][0]))
+            + f" {corte_txt}. Nunca se generan: "
+            + ", ".join(f"n{n}" for n in fantasmas) + ".")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 36, titulo, tam=20, peso="700")]
+    out.append(texto(W / 2, 70, "Cada nodo: α y β al llegar, y lo que devuelve", tam=15,
+                     color=SUAVE))
+
+    def renglones(n, t, p):
+        orden, tipo, a, b, v = visitas[n]
+        if tipo == "final":
+            return None
+        return f"α {fmt(a)} · β {fmt(b)}", f"{tipo} · devuelve {fmt(v)}"
+
+    etiquetas = {arista: f"corte {tipo}" for arista, tipo in cortes.items()}
+    lugares = lugares_invertidos() if invertir else LUGARES_N1
+    _dibujar_n1(out, lugares, y0, dy, renglones=renglones, fantasmas=fantasmas,
+                ordenes={n: v[0] for n, v in visitas.items()}, etiquetas_corte=etiquetas)
+    ly = H - 34
+    out.append(f'<circle cx="30" cy="{ly + 8}" r="12" fill="{ACENTO}"/>')
+    out.append(texto(30, ly + 13, "1º", tam=12, color=FONDO, peso="700"))
+    out.append(texto(50, ly + 13, "orden de visita", tam=13, color=SUAVE, anclaje="start"))
+    out.append(caja(240, ly, 24, 16, borde=LINEA, grosor=2, radio=4, guiones="5 3"))
+    out.append(texto(274, ly + 13, "no se genera", tam=13, color=SUAVE, anclaje="start"))
+    out.append(caja(440, ly - 3, 30, 22, borde=COLOR_FINAL, grosor=1.5, radio=5))
+    out.append(caja(443, ly, 24, 16, borde=COLOR_FINAL, grosor=1.5, radio=4))
+    out.append(texto(480, ly + 13, "final, con su U", tam=13, color=SUAVE, anclaje="start"))
+    out.append(cierre())
+    return "".join(out)
+
+
 DIAGRAMAS = {
     "jue-ciclo-partida": jue_ciclo_partida,
     **{f"jue-grafo-paso-{paso}": (lambda paso=paso: jue_grafo_paso(paso))
        for paso in PASOS_TITULO},
     "jue-subgrafo-n1": jue_subgrafo_n1,
     "jue-transposicion": jue_transposicion,
+    **{f"jue-minimax-paso-{paso}": (lambda paso=paso: jue_minimax_paso(paso))
+       for paso in PASOS_MINIMAX},
+    "jue-minimax-n1": jue_minimax_n1,
+    "jue-minimax-genera": jue_minimax_genera,
+    "jue-azar-n3": jue_azar_n3,
+    "jue-alfa-beta-fijo": lambda: jue_alfa_beta(False),
+    "jue-alfa-beta-invertido": lambda: jue_alfa_beta(True),
 }
 
 

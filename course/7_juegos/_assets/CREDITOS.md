@@ -14,3 +14,11 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-grafo-paso-4.svg` | Un camino hasta el primer final, con su utilidad | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-subgrafo-n1.svg` | El grafo completo desde n1, con sus 13 estados | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-transposicion.svg` | Dos órdenes de jugadas que llegan al mismo estado: árbol contra grafo | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-minimax-paso-1.svg` | Minimax a mano: valorar n6, donde las tres jugadas de Blancas empatan | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-minimax-paso-2.svg` | Minimax a mano: valorar n3, donde Negras toma el mínimo | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-minimax-paso-3.svg` | Minimax a mano: valorar n1 y elegir c1-c2 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-minimax-n1.svg` | El subgrafo de n1 con el valor de cada nodo y las jugadas que lo alcanzan | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-minimax-genera.svg` | Lo que MINIMAX tiene en memoria a media ejecución: el camino, lo ya olvidado y lo que aún no existe | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-azar-n3.svg` | n3 como nodo de azar: una Negras que elige al azar vale 1/3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-alfa-beta-fijo.svg` | Alfa-beta desde n1 con el orden fijo: 5 estados generados y un corte alfa | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-alfa-beta-invertido.svg` | Alfa-beta desde n1 con el orden invertido: 8 estados generados y un corte beta | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |

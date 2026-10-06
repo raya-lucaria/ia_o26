@@ -35,38 +35,7 @@ def test_clase_1_tarea():
     # Si quedarse sin jugada empata, el valor exacto pasa de -1 a 0.
     assert j.valor(j.inicio(), "B") == -1
     assert j.valor(j.inicio(), "B", sin_jugada_empata=True) == 0
-    assert j.valor(j.inicio(), "B", util=j.utilidad_rapida,
-                   sin_jugada_empata=True) == 0
     assert j.contar_arbol(sin_jugada_empata=True) == (252, 135)
-
-
-def test_clase_2_minimax_y_alfa_beta():
-    assert j.valor(j.inicio(), "B", util=j.utilidad_rapida) == -4
-    hijos = {j.nombre_jugada(j.inicio(), m):
-             j.valor(j.mover(j.inicio(), m), "N", 1, util=j.utilidad_rapida)
-             for m in j.jugadas(j.inicio(), "B")}
-    assert hijos == {"a1-a2": -6, "b1-b2": -4, "c1-c2": -6}
-    assert j.contar_arbol(SUBARBOL) == (13, 13)
-    assert j.valor(SUBARBOL, "B", 2, util=j.utilidad_rapida) == 7
-    assert j.alfa_beta(SUBARBOL, "B", 2) == (7, 5, [("alfa", "a3xb2", 2)])
-    assert j.alfa_beta(SUBARBOL, "B", 2, invertir=True) == (
-        7, 8, [("beta", "b2xa3", 2)])
-
-
-def test_clase_2_dado_y_tarea():
-    d = j.dado_ejemplo()
-    assert d["tirar"] == F(4, 3) and d["plantarse"] == 1
-    assert d["tirar_si_el_dado_fuera_rival"] == -2
-    assert j.monedas_valor((2, 1, 5, 3)) == 3
-    assert j.monedas_codicioso_contra_optimo((2, 1, 5, 3)) == -1
-    assert j.monedas_conteos(4) == (23, 8, 11)
-    assert j.monedas_alfa_beta((2, 1, 5, 3)) == (3, 23)
-    assert j.monedas_alfa_beta((2, 1, 5, 3), True) == (3, 21)
-    assert j.cerdo_tirar(3, 1) == F(35, 6)
-    assert j.cerdo(3, 2) == F(275, 36)
-    # Con una sola tirada, tirar conviene mientras los puntos no pasen de 20.
-    assert all(j.cerdo_tirar(s, 1) >= s for s in range(0, 21))
-    assert j.cerdo_tirar(20, 1) == 20 and j.cerdo_tirar(21, 1) < 21
 
 
 def test_clase_3_no_cabe_y_horizonte():
@@ -150,34 +119,6 @@ def test_clase_4_numeros_de_la_prosa():
     assert j.garantia_mezcla(tarea, [F(3, 5), F(2, 5)]) == 64
 
 
-def test_clase_2_numeros_de_la_prosa():
-    tras_a2 = j.mover(j.inicio(), (0, 3))  # a1-a2
-    respuestas = {j.nombre_jugada(tras_a2, m): j.valor(j.mover(tras_a2, m), "B", 2,
-                                                        util=j.utilidad_rapida)
-                  for m in j.jugadas(tras_a2, "N")}
-    assert respuestas["b3-b2"] == 7 and respuestas["b3xa2"] == -6
-    assert j.valor(SUBARBOL, "B", 2) == 1
-    # Ramificacion: 162 jugadas entre 70 estados no finales; maximo 4.
-    vistos, pila, total, maximo = set(), [(j.inicio(), "B")], 0, 0
-    while pila:
-        t, p = pila.pop()
-        if (t, p) in vistos:
-            continue
-        vistos.add((t, p))
-        if j.ganador(t, p):
-            continue
-        ms = j.jugadas(t, p)
-        total, maximo = total + len(ms), max(maximo, len(ms))
-        pila += [(j.mover(t, m), j.otro(p)) for m in ms]
-    assert (total, maximo) == (162, 4)
-    # Ejercicio del dado: plantarse +2; con 1 se pierde -3; con 2 a 6 el rival
-    # elige entre +4 y +6.
-    assert F(1, 6) * -3 + F(5, 6) * 4 == F(17, 6)
-    assert F(1, 6) * -3 + F(5, 6) * F(4 + 6, 2) == F(11, 3)
-    # Ejemplo de la pagina si se promediara al rival.
-    assert F(2, 6) * -2 + F(4, 6) * F(7, 2) == F(5, 3)
-
-
 def test_clase_1_posiciones_de_negras_por_simetria():
     # 37 estados no finales con Negras al turno; 19 si se identifican reflejos.
     espejo = lambda t: "".join(t[f * 3:(f + 1) * 3][::-1] for f in range(3))
@@ -243,15 +184,6 @@ def test_clase_3_toda_primera_jugada_de_gato_empata():
     assert [v("." * i + "X" + "." * (8 - i), "O") for i in range(9)] == [0] * 9
 
 
-def test_clase_2_caso_propio_y_dado():
-    assert sum(4 ** i for i in range(8)) == 21845
-    assert F(2, 6) * -20 + F(4, 6) * min(F(3), F(4)) == F(-14, 3)
-    assert j.contar_arbol("..B.B.NN.", "N") == (11, 11)
-    assert j.valor("..B.B.NN.", "N", 3, util=j.utilidad_rapida) == -4
-    for n in range(1, 9):
-        assert j.monedas_conteos(n)[0] == 2 ** n - 1 + 2 ** (n - 1)
-
-
 # La partida que la pagina «Escribir el juego» traza con las siete piezas.
 PARTIDA_TRAZADA = ["a1-a2", "b3xa2", "b1-b2", "a2-a1"]
 
@@ -275,3 +207,136 @@ def test_clase_1_partida_trazada_con_las_piezas():
     assert (t, p) == ("N.B" + ".B." + "N.N", "B")
     assert j.ganador(t, p) == "N"
     assert j.utilidad_simple(j.ganador(t, p), 0) == -1
+
+
+# ------------------------------------------------------------- clase 2 ---
+# Todo con la utilidad de la clase 1: +1 si gana Blancas y -1 si gana Negras.
+
+E1 = "..B.B.NN."  # el caso propio de «Minimax como algoritmo»; mueven Negras
+
+
+def test_clase_2_minimax_a_mano():
+    assert j.contar_arbol(SUBARBOL) == (13, 13)
+    assert j.valor(SUBARBOL, "B") == 1
+    # Tras c1xb2 (n3), Negras gana con c3xb2.
+    n3 = j.mover(SUBARBOL, (2, 4))
+    assert {j.nombre_jugada(n3, m): j.valor(j.mover(n3, m), "B")
+            for m in j.jugadas(n3, "N")} == {"a3xb2": 1, "c3-c2": 1, "c3xb2": -1}
+    # El juego completo: las tres aperturas pierden.
+    assert j.valor(j.inicio(), "B") == -1
+    assert {j.nombre_jugada(j.inicio(), m): j.valor(j.mover(j.inicio(), m), "N")
+            for m in j.jugadas(j.inicio(), "B")} == {"a1-a2": -1, "b1-b2": -1, "c1-c2": -1}
+    # n1 viene de un error de Negras: tras a1-a2, solo la captura gana.
+    tras_a2 = j.mover(j.inicio(), (0, 3))
+    assert {j.nombre_jugada(tras_a2, m): j.valor(j.mover(tras_a2, m), "B")
+            for m in j.jugadas(tras_a2, "N")} == {"b3-b2": 1, "b3xa2": -1, "c3-c2": 1}
+
+
+def test_clase_2_minimax_como_algoritmo():
+    assert j.partida_mas_larga() == 7
+    assert sum(4 ** i for i in range(8)) == 21845
+    # Ramificacion: 162 jugadas entre 70 estados no finales; maximo 4.
+    vistos, pila, total, maximo = set(), [(j.inicio(), "B")], 0, 0
+    while pila:
+        t, p = pila.pop()
+        if (t, p) in vistos:
+            continue
+        vistos.add((t, p))
+        if j.ganador(t, p):
+            continue
+        ms = j.jugadas(t, p)
+        total, maximo = total + len(ms), max(maximo, len(ms))
+        pila += [(j.mover(t, m), j.otro(p)) for m in ms]
+    assert (total, maximo, len(vistos) - 65) == (162, 4, 70)
+    # El caso propio e1: tras b1-b2, c3xb2 y a1xb2.
+    t, p = j.inicio(), "B"
+    for nombre in ["b1-b2", "c3xb2", "a1xb2"]:
+        m = {j.nombre_jugada(t, m): m for m in j.jugadas(t, p)}[nombre]
+        t, p = j.mover(t, m), j.otro(p)
+    assert (t, p) == (E1, "N")
+    assert j.contar_arbol(E1, "N") == (11, 11)
+    assert j.valor(E1, "N") == -1
+    assert {j.nombre_jugada(E1, m): j.valor(j.mover(E1, m), "B")
+            for m in j.jugadas(E1, "N")} == {"a3-a2": -1, "a3xb2": 1}
+
+
+def test_clase_2_azar():
+    # El volado: si empieza Negras, gana Blancas.
+    assert j.valor(j.inicio(), "N") == 1
+    assert F(1, 2) * -1 + F(1, 2) * 1 == 0
+    # Una Negras que mueve al azar.
+    assert j.expectiminimax_rival_al_azar(j.mover(SUBARBOL, (2, 4)), "N") == F(1, 3)
+    aperturas = {j.nombre_jugada(j.inicio(), m):
+                 j.expectiminimax_rival_al_azar(j.mover(j.inicio(), m), "N")
+                 for m in j.jugadas(j.inicio(), "B")}
+    assert aperturas == {"a1-a2": F(5, 9), "b1-b2": F(3, 4), "c1-c2": F(5, 9)}
+    assert {k: (v + 1) / 2 for k, v in aperturas.items()} == {
+        "a1-a2": F(7, 9), "b1-b2": F(7, 8), "c1-c2": F(7, 9)}
+    # Con azar importa la escala: volado entre +1 y -L contra un empate seguro.
+    volado = lambda L: F(1, 2) * 1 + F(1, 2) * -L
+    assert volado(1) == 0 and volado(2) == F(-1, 2)
+    assert volado(F(1, 2)) > 0 and volado(F(3, 2)) < 0
+
+
+def test_clase_2_alfa_beta():
+    assert j.alfa_beta(SUBARBOL, "B") == (1, 5, [("alfa", "a3xb2", 2)])
+    assert j.alfa_beta(SUBARBOL, "B", invertir=True) == (1, 8, [("beta", "b2xa3", 2)])
+    # Sin el igual en las condiciones, no se corta nada en n1.
+    assert j.alfa_beta(SUBARBOL, "B", estricto=True)[:2] == (1, 13)
+    # El juego completo.
+    assert j.alfa_beta(j.inicio(), "B")[:2] == (-1, 82)
+    assert j.alfa_beta(j.inicio(), "B", invertir=True)[:2] == (-1, 72)
+    # Con la ventana [-1, +1], la de los valores de U.
+    assert j.alfa_beta(SUBARBOL, "B", alfa=-1, beta=1) == (1, 2, [("beta", "c1-c2", 1)])
+    assert j.alfa_beta(j.inicio(), "B", alfa=-1, beta=1)[:2] == (-1, 49)
+    assert j.alfa_beta(j.inicio(), "B", invertir=True, alfa=-1, beta=1)[:2] == (-1, 53)
+
+
+def test_clase_2_tarea():
+    assert j.monedas_valor((2, 1, 5, 3)) == 3
+    assert j.monedas_codicioso_contra_optimo((2, 1, 5, 3)) == -1
+    assert j.monedas_conteos(4) == (23, 8, 11)
+    assert j.monedas_alfa_beta((2, 1, 5, 3)) == (3, 23)
+    assert j.monedas_alfa_beta((2, 1, 5, 3), True) == (3, 21)
+    for n in range(1, 9):
+        assert j.monedas_conteos(n)[0] == 2 ** n - 1 + 2 ** (n - 1)
+    # n1 cuando quedarse sin jugada empata.
+    assert j.valor(SUBARBOL, "B", sin_jugada_empata=True) == 0
+    assert j.alfa_beta(SUBARBOL, "B", sin_jugada_empata=True) == (
+        0, 10, [("beta", "a2-a3", 1), ("beta", "b1xc2", 2)])
+    assert j.alfa_beta(SUBARBOL, "B", invertir=True, sin_jugada_empata=True) == (
+        0, 8, [("beta", "b2xa3", 2)])
+
+
+# ------------------------------------------------- la prosa de la clase 2 ---
+
+import re
+from pathlib import Path
+
+UNIDAD = Path(__file__).resolve().parent.parent / "course/7_juegos"
+
+
+def test_la_unidad_escribe_pl_y_no_p():
+    """El jugador de turno es Pl(s), como en la clase 1, en toda la unidad."""
+    for pagina in UNIDAD.rglob("*.md"):
+        texto = pagina.read_text(encoding="utf-8")
+        assert not re.search(r"(?<![A-Za-z\\])P\(s", texto), pagina.name
+
+
+def test_cada_ejercicio_de_la_clase_2_trae_pista_y_respuesta():
+    for pagina in sorted((UNIDAD / "2_mirar_todo_y_podar").glob("*.md")):
+        texto = pagina.read_text(encoding="utf-8")
+        for ejercicio in re.findall(r"::: exercise \{#([\w-]+)", texto):
+            assert re.search(rf'::: hint \{{#[\w-]+ of="{ejercicio}"', texto), ejercicio
+            assert re.search(rf'::: answer \{{#[\w-]+ of="{ejercicio}"', texto), ejercicio
+
+
+def test_la_clase_2_usa_la_utilidad_de_la_clase_1():
+    """±(10−k) solo aparece en el aviso que explica por qué no se usa."""
+    for pagina in UNIDAD.rglob("*.md"):
+        texto = pagina.read_text(encoding="utf-8")
+        apariciones = re.findall(r"10\s*-\s*k", texto)
+        if pagina.name == "1_minimax.md":
+            assert len(apariciones) == 1
+        else:
+            assert not apariciones, pagina.name

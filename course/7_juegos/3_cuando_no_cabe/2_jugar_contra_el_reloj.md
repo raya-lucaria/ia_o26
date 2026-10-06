@@ -24,10 +24,6 @@ jugada más allá.
 > captura todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$
 > si gana Negras.
 
-> **Cambio respecto de las clases 1 y 2:** dejamos $10-k$. En el 4×4 solo
-> nos importa quién gana, y al cortar la búsqueda no sabemos cuántas jugadas
-> faltan; usamos $U=\pm1$, y el estado ya no necesita guardar $k$.
-
 Seguimos con la posición de [[cortar-y-evaluar|la página anterior]] y la
 misma evaluación: $\mathrm{EVAL}=10\cdot(\text{peones blancos}-\text{peones negros})+(\text{avance blanco}-\text{avance negro})$,
 y $100\cdot U=\pm100$ en los finales. Como allá, $d$ es **la profundidad que
@@ -183,7 +179,7 @@ La última búsqueda domina el costo, y repetir las otras es casi gratis
 cuando $b$ es grande.
 
 Además, la repetición **ayuda**. La mejor jugada de la búsqueda anterior se
-prueba primero en la siguiente. Como viste en [[alfa-beta|alfa-beta]], probar
+prueba primero en la siguiente. Como viste en [[alfa-beta-como-algoritmo|alfa-beta]], probar
 primero una buena jugada produce más cortes. Para aprovecharlo, la búsqueda
 de cada iteración tiene que ser alfa-beta y compartir $\alpha$ entre las
 jugadas de la raíz; lo escribimos en la sección siguiente.
@@ -198,7 +194,7 @@ jugadas de la raíz; lo escribimos en la sección siguiente.
 | `jugada` | Mejor jugada de la última búsqueda completa |
 | `mejor` | Mejor jugada de la búsqueda en curso |
 
-`ALFA-BETA-CON-CORTE(s, d, α, β)` es el [[alfa-beta|alfa-beta de la clase 2]] con la línea del corte de minimax con corte: devuelve $100\cdot U(s)$ si $s$ es final y $\mathrm{EVAL}(s)$ si $d=0$, y en lo demás poda igual.
+`ALFA-BETA-CON-CORTE(s, d, α, β)` es el [[alfa-beta-como-algoritmo|alfa-beta de la clase 2]] con la línea del corte de minimax con corte: devuelve $100\cdot U(s)$ si $s$ es final y $\mathrm{EVAL}(s)$ si $d=0$, y en lo demás poda igual.
 
 ```text
 INPUT   un estado s donde mueve MAX, y un reloj

@@ -97,3 +97,61 @@ def test_el_ciclo_nombra_las_siete_piezas_y_resalta_solo_elegir():
     gruesas = re.findall(rf'<rect [^>]*stroke="{gen.ACENTO}" stroke-width="4"', svg)
     assert len(gruesas) == 1
     assert "Elige una jugada" in svg
+
+
+# ------------------------------------------------------------- clase 2 ---
+
+def test_los_valores_dibujados_son_los_de_minimax():
+    valores = gen.valores_n1()
+    nodos = gen.subgrafo_n1()
+    for n, (t, p, _, _) in nodos.items():
+        assert valores[n] == j.valor(t, p)
+    assert valores[1] == 1 and valores[3] == -1
+    # Las jugadas resaltadas: c1-c2 en n1, c3xb2 en n3 y las tres de n6.
+    elegidas = gen.elegidas_n1(valores)
+    assert {h for p, h in elegidas if p == 1} == {2}
+    assert {h for p, h in elegidas if p == 3} == {13}
+    assert {h for p, h in elegidas if p == 6} == {7, 11, 12}
+    svg = _texto("jue-minimax-n1")
+    for n, (t, p, _, _) in nodos.items():
+        if not j.ganador(t, p):
+            assert f"V = {gen.fmt(valores[n])}" in svg
+
+
+@pytest.mark.parametrize("paso", sorted(gen.PASOS_MINIMAX))
+def test_cada_paso_de_minimax_escribe_el_valor_de_su_nodo(paso):
+    n, _, _ = gen.PASOS_MINIMAX[paso]
+    svg = _texto(f"jue-minimax-paso-{paso}")
+    t, p, _, _ = gen.subgrafo_n1()[n]
+    assert f"V = {gen.fmt(j.valor(t, p))}" in svg
+    assert f">n{n}<" in svg
+
+
+def test_la_memoria_de_minimax_es_un_camino():
+    nodos = gen.subgrafo_n1()
+    # El camino en la pila baja de padre a hijo, y lo ya devuelto va antes en
+    # el orden de visita que lo que todavia no existe.
+    for padre, hijo in zip(gen.EN_PILA, gen.EN_PILA[1:]):
+        assert nodos[hijo][2] == padre
+    assert max(gen.YA_DEVOLVIERON) < gen.EN_PILA[-1] < min(gen.SIN_GENERAR)
+    svg = _texto("jue-minimax-genera")
+    assert svg.count("aún no existe") == len(gen.SIN_GENERAR)
+    assert svg.count("y se olvidó") == len(gen.YA_DEVOLVIERON) + 1  # mas la leyenda
+
+
+def test_el_nodo_de_azar_promedia():
+    svg = _texto("jue-azar-n3")
+    assert "V = 1/3" in svg and svg.count(": ⅓") == 3
+
+
+@pytest.mark.parametrize("invertir,generados,corte", [(False, 5, "alfa"), (True, 8, "beta")])
+def test_alfa_beta_dibuja_lo_que_genera(invertir, generados, corte):
+    nombre = "jue-alfa-beta-invertido" if invertir else "jue-alfa-beta-fijo"
+    svg = _texto(nombre)
+    visitas, cortes = gen.traza_n1(invertir)
+    assert len(visitas) == generados == j.alfa_beta(".BBBN.N.N", "B", invertir=invertir)[1]
+    assert f"{generados} de 13 nodos" in svg
+    assert svg.count("no se genera") == 13 - generados + 1  # mas la leyenda
+    assert list(cortes.values()) == [corte] and f"corte {corte}" in svg
+    for orden in range(1, generados + 1):
+        assert f">{orden}º<" in svg
