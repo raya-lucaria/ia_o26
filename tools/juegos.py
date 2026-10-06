@@ -301,6 +301,104 @@ def minimax_limitado(tablero, turno, profundidad, n, util=utilidad_simple,
     return v(tablero, turno, profundidad)
 
 
+def es_captura(tablero, jugada):
+    return tablero[jugada[1]] != "."
+
+
+def minimax_con_quietud(tablero, turno, profundidad, n, escala=100):
+    """Minimax con corte que, al llegar a d = 0, no evalua en seco: sigue
+    mirando solo capturas hasta una posicion quieta. En cada paso de la
+    quietud el jugador de turno puede no capturar y quedarse con EVAL."""
+    def quieta(t, j):
+        g = ganador(t, j, n)
+        if g:
+            return escala * utilidad_simple(g, 0)
+        v = evaluar_peones(t, n)
+        for m in jugadas(t, j, n):
+            if es_captura(t, m):
+                h = quieta(mover(t, m), otro(j))
+                v = max(v, h) if j == "B" else min(v, h)
+        return v
+
+    def v(t, j, d):
+        g = ganador(t, j, n)
+        if g:
+            return escala * utilidad_simple(g, 0)
+        if d == 0:
+            return quieta(t, j)
+        hijos = [v(mover(t, m), otro(j), d - 1) for m in jugadas(t, j, n)]
+        return max(hijos) if j == "B" else min(hijos)
+    return v(tablero, turno, profundidad)
+
+
+def nodos_con_corte(tablero, turno, profundidad, n):
+    """Nodos que genera minimax con corte, contando la raiz."""
+    def c(t, j, d):
+        if ganador(t, j, n) or d == 0:
+            return 1
+        return 1 + sum(c(mover(t, m), otro(j), d - 1) for m in jugadas(t, j, n))
+    return c(tablero, turno, profundidad)
+
+
+def profundizacion_iterativa(tablero, profundidades, n):
+    """PROFUNDIZACION-ITERATIVA de «Jugar contra el reloj», sin reloj: para
+    cada d, alfa-beta con corte en cada hijo de la raiz, alfa compartido, la
+    jugada anterior primero y salida temprana con 100. Devuelve
+    [(d, nodos generados contando la raiz, jugada lista)]. Mueve Blancas."""
+    def ab(t, j, d, a, b, c):
+        c[0] += 1
+        g = ganador(t, j, n)
+        if g:
+            return 100 * utilidad_simple(g, 0)
+        if d == 0:
+            return evaluar_peones(t, n)
+        v = float("-inf") if j == "B" else float("inf")
+        for m in jugadas(t, j, n):
+            h = ab(mover(t, m), otro(j), d - 1, a, b, c)
+            if j == "B":
+                v = max(v, h)
+                if v >= b:
+                    return v
+                a = max(a, v)
+            else:
+                v = min(v, h)
+                if v <= a:
+                    return v
+                b = min(b, v)
+        return v
+    res, jugada = [], None
+    for d in profundidades:
+        c, alfa = [1], float("-inf")
+        orden = jugadas(tablero, "B", n)
+        if jugada is not None:
+            orden = [jugada] + [m for m in orden if m != jugada]
+        mejor = jugada
+        for m in orden:
+            v = ab(mover(tablero, m), "N", d - 1, alfa, float("inf"), c)
+            if v == 100:
+                mejor = m
+                break
+            if v > alfa:
+                alfa, mejor = v, m
+        jugada = mejor
+        res.append((d, c[0], nombre_jugada(tablero, jugada, n)))
+    return res
+
+
+def promedio_simulaciones(tablero, turno, n=3):
+    """Lo que promediarian infinitas simulaciones desde (tablero, turno):
+    partidas donde los dos eligen cada jugada al azar, con la misma
+    probabilidad, hasta un final. Fraccion exacta, en la escala de U."""
+    @lru_cache(maxsize=None)
+    def r(t, j):
+        g = ganador(t, j, n)
+        if g:
+            return F(utilidad_simple(g, 0))
+        hijos = [r(mover(t, m), otro(j)) for m in jugadas(t, j, n)]
+        return sum(hijos) / len(hijos)
+    return r(tablero, turno)
+
+
 # ------------------------------------------------------------------- gato ---
 
 LINEAS_GATO = [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7),

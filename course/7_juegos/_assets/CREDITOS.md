@@ -22,3 +22,8 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-azar-n3.svg` | n3 como nodo de azar: una Negras que elige al azar vale 1/3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-alfa-beta-fijo.svg` | Alfa-beta desde n1 con el orden fijo: 5 estados generados y un corte alfa | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-alfa-beta-invertido.svg` | Alfa-beta desde n1 con el orden invertido: 8 estados generados y un corte beta | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-corte-prof-1.svg` | Minimax con corte a profundidad 1 en la posición de la clase 3: la captura parece la mejor | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-corte-prof-2.svg` | Minimax con corte a profundidad 2: las respuestas de Negras y el cambio de decisión | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-horizonte.svg` | El efecto horizonte: la recaptura queda detrás del corte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-profundizacion.svg` | La profundización iterativa en el tiempo, con la jugada lista tras cada búsqueda | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-mcts-pasos.svg` | Una vuelta de MCTS: selección, expansión, simulación y retropropagación | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |

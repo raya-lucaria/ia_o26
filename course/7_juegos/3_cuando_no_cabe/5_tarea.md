@@ -50,6 +50,9 @@ evaluación.
 6. Con juego perfecto, gato termina en empate. ¿Lo sabe la evaluación? ¿Qué
    valor le darías a un final para que la evaluación respete el orden de los
    finales?
+7. ¿Qué tipo de modelo y qué método usaste, y cuántas posiciones evaluaste?
+8. Di un límite de la jugada que elegiste: algo que el valor con corte no
+   dice.
 :::
 
 ::: hint {#jue-tarea-3-pista-gato-a of="jue-tarea-3-ej-gato" title="Pista 1 · Cuántas líneas pasan por cada casilla"}
@@ -120,7 +123,7 @@ evaluación, el valor de ganar tiene que quedar por encima de lo más alto que
 pueda dar.
 
 **7. Tipo de modelo, método y costo.** Juego por turnos, determinista, de
-información completa y suma cero, resuelto con **minimax con corte a
+información perfecta y suma cero, resuelto con **minimax con corte a
 profundidad 2** y una evaluación escrita a mano. Mirar todas las parejas de
 jugada y respuesta son $9\cdot8=72$ posiciones evaluadas; la simetría lo
 reduce a tres casos, cada uno con sus respuestas de O.
@@ -163,23 +166,27 @@ Mueven Blancas en esta posición:
 
 1. Escribe $A(s)$ y calcula $\mathrm{EVAL}(s)$.
 2. Calcula el valor de cada jugada a **profundidad 1**. ¿Cuál elige Blancas?
-3. A **profundidad 2**, b1-b2 y c1-c2 valen $-11$ cada una. Calcula el valor
-   de a2-a3 y el de d2xc3, escribiendo cada respuesta de Negras con su
+3. A **profundidad 2**, $\text{b1}\textbf{-}\text{b2}$ y $\text{c1}\textbf{-}\text{c2}$ valen $-11$ cada una. Calcula el valor
+   de $\text{a2}\textbf{-}\text{a3}$ y el de $\text{d2}\textbf{x}\text{c3}$, escribiendo cada respuesta de Negras con su
    $\mathrm{EVAL}$. ¿Cuál elige Blancas?
-4. La computadora calcula los valores exactos: b1-b2, c1-c2 y d2xc3 valen
-   $-1$; **a2-a3 vale $+1$**. Y a más profundidad da:
+4. La computadora calcula los valores exactos: $\text{b1}\textbf{-}\text{b2}$, $\text{c1}\textbf{-}\text{c2}$ y $\text{d2}\textbf{x}\text{c3}$ valen
+   $-1$; **$\text{a2}\textbf{-}\text{a3}$ vale $+1$**. Y a más profundidad da:
 
    | Jugada | Prof. 3 | Prof. 4 | Prof. 5 |
    |---|---:|---:|---:|
-   | b1-b2 | 1 | $-100$ | $-100$ |
-   | c1-c2 | 1 | $-100$ | $-100$ |
-   | a2-a3 | 0 | $-1$ | 100 |
-   | d2xc3 | 0 | $-1$ | 12 |
+   | $\text{b1}\textbf{-}\text{b2}$ | 1 | $-100$ | $-100$ |
+   | $\text{c1}\textbf{-}\text{c2}$ | 1 | $-100$ | $-100$ |
+   | $\text{a2}\textbf{-}\text{a3}$ | 0 | $-1$ | 100 |
+   | $\text{d2}\textbf{x}\text{c3}$ | 0 | $-1$ | 12 |
 
    ¿Qué jugadas elige Blancas a cada profundidad, de 1 a 5? ¿Qué te dice eso
    sobre subir la profundidad?
 5. ¿En qué profundidades aparece el efecto horizonte? Señala qué respuesta o
    qué final quedó detrás del corte.
+6. ¿Qué tipo de modelo y qué método usaste, y cuánto cuesta cada profundidad
+   más?
+7. Di un límite: ¿subir la profundidad garantiza acercarse a la jugada
+   correcta?
 :::
 
 ::: hint {#jue-tarea-3-pista-peones-a of="jue-tarea-3-ej-peones" title="Pista 1 · Las capturas de Negras"}
@@ -189,12 +196,12 @@ peón?
 :::
 
 ::: hint {#jue-tarea-3-pista-peones-b of="jue-tarea-3-ej-peones" title="Pista 2 · La recaptura"}
-Tras d2xc3, el peón blanco queda en c3. ¿Qué peón negro lo tiene en diagonal?
-Tras a2-a3, ¿qué peón negro lo tiene en diagonal?
+Tras $\text{d2}\textbf{x}\text{c3}$, el peón blanco queda en c3. ¿Qué peón negro lo tiene en diagonal?
+Tras $\text{a2}\textbf{-}\text{a3}$, ¿qué peón negro lo tiene en diagonal?
 :::
 
 ::: answer {#jue-tarea-3-resp-peones of="jue-tarea-3-ej-peones" title="Respuesta · La captura engaña a dos profundidades"}
-**1. Leer la posición.** $A(s)=\{\text{b1-b2},\ \text{c1-c2},\ \text{a2-a3},\ \text{d2xc3}\}$.
+**1. Leer la posición.** $A(s)=\{\text{b1}\textbf{-}\text{b2},\ \text{c1}\textbf{-}\text{c2},\ \text{a2}\textbf{-}\text{a3},\ \text{d2}\textbf{x}\text{c3}\}$.
 El peón de d2 tiene d3 ocupada enfrente, pero puede capturar en c3. Cada lado
 tiene 4 peones; el avance de Blancas es $1+1=2$ (a2 y d2) y el de Negras,
 $1+1=2$ (c3 y d3). $\mathrm{EVAL}=0$.
@@ -202,17 +209,17 @@ $1+1=2$ (c3 y d3). $\mathrm{EVAL}=0$.
 **2. Mirar a profundidad 1.** Las tres jugadas que avanzan suben el avance
 blanco a 3: valen $0+(3-2)=1$. La captura deja 4 peones contra 3, con avance
 blanco 3 (a2, y el peón que llegó a c3) y negro 1: $10+(3-1)=12$. Blancas
-elige **d2xc3**.
+elige **$\text{d2}\textbf{x}\text{c3}$**.
 
 **3. Mirar a profundidad 2.** Negras elige la respuesta de menor evaluación:
 
 | Jugada | Respuestas de Negras y su $\mathrm{EVAL}$ | Valor |
 |---|---|---:|
-| a2-a3 | c3-c2: 0 · c3xd2: $-11$ · b4-b3: 0 · b4xa3: $-12$ | $-12$ |
-| d2xc3 | d3-d2: 11 · a4-a3: 11 · b4-b3: 11 · b4xc3: $-1$ | $-1$ |
+| $\text{a2}\textbf{-}\text{a3}$ | $\text{c3}\textbf{-}\text{c2}$: 0 · $\text{c3}\textbf{x}\text{d2}$: $-11$ · $\text{b4}\textbf{-}\text{b3}$: 0 · $\text{b4}\textbf{x}\text{a3}$: $-12$ | $-12$ |
+| $\text{d2}\textbf{x}\text{c3}$ | $\text{d3}\textbf{-}\text{d2}$: 11 · $\text{a4}\textbf{-}\text{a3}$: 11 · $\text{b4}\textbf{-}\text{b3}$: 11 · $\text{b4}\textbf{x}\text{c3}$: $-1$ | $-1$ |
 
-Con b1-b2 y c1-c2 en $-11$, Blancas compara $-11$, $-11$, $-12$ y $-1$, y
-**sigue eligiendo d2xc3**. La recaptura b4xc3 ya se ve, pero las otras jugadas
+Con $\text{b1}\textbf{-}\text{b2}$ y $\text{c1}\textbf{-}\text{c2}$ en $-11$, Blancas compara $-11$, $-11$, $-12$ y $-1$, y
+**sigue eligiendo $\text{d2}\textbf{x}\text{c3}$**. La recaptura $\text{b4}\textbf{x}\text{c3}$ ya se ve, pero las otras jugadas
 también regalan un peón.
 
 **4. Seguir la decisión al crecer la profundidad.** La jugada elegida es un
@@ -220,28 +227,29 @@ $a^{∗}\in\operatorname*{arg\,max}$, así que puede haber empates:
 
 | Profundidad | Mejor valor | Jugadas empatadas |
 |---:|---:|---|
-| 1 | 12 | d2xc3 |
-| 2 | $-1$ | d2xc3 |
-| 3 | 1 | b1-b2, c1-c2 |
-| 4 | $-1$ | a2-a3, d2xc3 |
-| 5 | 100 | a2-a3 |
+| 1 | 12 | $\text{d2}\textbf{x}\text{c3}$ |
+| 2 | $-1$ | $\text{d2}\textbf{x}\text{c3}$ |
+| 3 | 1 | $\text{b1}\textbf{-}\text{b2}$, $\text{c1}\textbf{-}\text{c2}$ |
+| 4 | $-1$ | $\text{a2}\textbf{-}\text{a3}$, $\text{d2}\textbf{x}\text{c3}$ |
+| 5 | 100 | $\text{a2}\textbf{-}\text{a3}$ |
 
-Solo a2-a3 gana, y solo a profundidad 5 la búsqueda la elige sin empate. La
+Solo $\text{a2}\textbf{-}\text{a3}$ gana, y solo a profundidad 5 la búsqueda la elige sin empate. La
 elección cambió **varias veces**: de la captura a dos jugadas perdedoras,
 luego a un empate entre la buena y la captura, y por fin a la buena.
 
 **5. Nombrar el efecto horizonte.** Es **efecto horizonte** cada vez que una
-consecuencia decisiva queda justo detrás del corte. A profundidad 1, d2xc3
-vale 12 porque la recaptura b4xc3 queda detrás del horizonte; a profundidad 2
-ya se ve y la captura baja a $-1$. A profundidad 3, b1-b2 y c1-c2 parecen
+consecuencia decisiva queda justo detrás del corte. A profundidad 1, $\text{d2}\textbf{x}\text{c3}$
+vale 12 porque la recaptura $\text{b4}\textbf{x}\text{c3}$ queda detrás del horizonte; a profundidad 2
+ya se ve y la captura baja a $-1$. A profundidad 3, $\text{b1}\textbf{-}\text{b2}$ y $\text{c1}\textbf{-}\text{c2}$ parecen
 valer 1, y a profundidad 4 aparece que pierden ($-100$): esa derrota estaba
-detrás del horizonte. Y la victoria de a2-a3 solo aparece a profundidad 5.
+detrás del horizonte. Y la victoria de $\text{a2}\textbf{-}\text{a3}$ solo aparece a profundidad 5.
 
 **6. Tipo de modelo, método y costo.** El mismo árbol MAX/MIN de un juego
 por turnos, determinista y de suma cero, cortado con $d$ jugadas por mirar y
 valorado con $\mathrm{EVAL}$ y $100\cdot U$: **minimax con corte**. Cuesta
 $O(b^d)$ con ramificación $b$; cada profundidad más multiplica el trabajo por
-hasta $b$, y aquí Blancas tiene cuatro jugadas en la raíz.
+hasta $b$. En esta posición, la computadora cuenta 5, 22, 90, 315 y 1001
+nodos con $d=1$ a 5: cada nivel multiplica el trabajo por entre 3 y 4.
 
 **7. Límite.** **Más profundidad no siempre basta**: el valor con corte no se
 acerca al exacto de forma ordenada, y a una profundidad dada puede elegir una

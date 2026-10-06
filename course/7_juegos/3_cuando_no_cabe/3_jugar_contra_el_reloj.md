@@ -4,7 +4,7 @@ title: Jugar contra el reloj
 nav_title: Contra el reloj
 summary: "Una búsqueda cortada puede no ver la respuesta que deshace su jugada. Buscar un poco más donde hay capturas, profundizar paso a paso y recordar posiciones permiten entregar una jugada a tiempo."
 status: ready
-estimated_time: 30m
+estimated_time: 25m
 tags: [juegos, busqueda-adversarial, evaluacion]
 ---
 
@@ -24,7 +24,17 @@ jugada más allá.
 > captura todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$
 > si gana Negras.
 
-Seguimos con la posición de [[cortar-y-evaluar|la página anterior]] y la
+> **Las piezas que usa esta página.** Las de
+> [[escribir-el-juego|Escribir el juego]]: $S_F$ (@jue-c1-finales),
+> $\mathrm{Pl}(s)$ (@jue-c1-pl), $A(s)$ (@jue-c1-acciones), $T(s,a)$
+> (@jue-c1-transicion) y $U(s)$ (@jue-c1-utilidad), más $\mathrm{EVAL}$
+> (@jue-c3-evaluacion).
+
+> **Supuestos de esta página.** Los de
+> [[cortar-y-evaluar|Cortar y evaluar a mano]], y uno más: **hay un reloj**.
+> El tablero espera a que juegues, pero el tiempo para decidir se acaba.
+
+Seguimos con la posición de [[cortar-y-evaluar|Cortar y evaluar a mano]] y la
 misma evaluación, $\mathrm{EVAL}=10\cdot\text{material}+\text{avance}$: el
 material es peones blancos menos peones negros, y el avance, avance blanco
 menos avance negro. En los finales, $100\cdot U=\pm100$. Como allá, $d$ es **la profundidad que
@@ -44,15 +54,19 @@ queda**: en la raíz, la profundidad de toda la búsqueda.
 **Piensa: a profundidad 1, ¿qué no alcanzó a ver Blancas cuando eligió
 capturar?**
 
-A profundidad 1, d2xc3 valía 13 y las otras jugadas, 2. El algoritmo vio
+A profundidad 1, $\text{d2}\textbf{x}\text{c3}$ valía 13 y las otras jugadas, 2. El algoritmo vio
 **la ganancia**: un peón de más. No vio **la respuesta**: Negras recaptura con
-b4xc3 y el peón de ventaja desaparece. Esa respuesta estaba una jugada más
+$\text{b4}\textbf{x}\text{c3}$ y el peón de ventaja desaparece. Esa respuesta estaba una jugada más
 allá del corte, donde el algoritmo ya no mira.
 
 ::: definition {#jue-c3-efecto-horizonte title="Efecto horizonte"}
 El **efecto horizonte** ocurre cuando una consecuencia importante de una
 jugada queda más allá de la profundidad de corte, y la búsqueda valora mal
 la posición porque la evalúa antes de esa consecuencia.
+:::
+
+::: figure {#jue-c3-fig-horizonte title="El efecto horizonte"}
+![La posición de la clase arriba; la flecha d2xc3 lleva a un nodo de corte con EVAL = 13, un peón de más. Debajo, una línea punteada marca el horizonte, donde se corta con d = 1. Detrás de la línea, en gris, la recaptura b4xc3, que deja EVAL = 0 y que la búsqueda no ve](../_assets/jue-c3-horizonte.svg)
 :::
 
 Al corte se le llama **horizonte** porque el algoritmo no ve nada detrás.
@@ -93,14 +107,20 @@ jugadas, y en las tres mueven Negras.
    valor recibe cada jugada y cuál elige Blancas?
 :::
 
+::: hint {#jue-c3-pista-quietud of="jue-c3-ej-quietud" title="Negras puede no capturar"}
+En la quietud, el jugador de turno elige entre quedarse con la evaluación
+de la posición o hacer una captura. Negras es MIN: se queda con el menor de
+esos números.
+:::
+
 ::: answer {#jue-c3-resp-quietud of="jue-c3-ej-quietud"}
-1. Tras **a1-a2**, Negras puede jugar c3xd2. Tras **d2xc3**, puede jugar
-   b4xc3. Tras **d2-d3**, el peón de c3 está bloqueado y no tiene a quién
+1. Tras **$\text{a1}\textbf{-}\text{a2}$**, Negras puede jugar $\text{c3}\textbf{x}\text{d2}$. Tras **$\text{d2}\textbf{x}\text{c3}$**, puede jugar
+   $\text{b4}\textbf{x}\text{c3}$. Tras **$\text{d2}\textbf{-}\text{d3}$**, el peón de c3 está bloqueado y no tiene a quién
    capturar: esa posición es quieta.
 2. Negras elige entre capturar o no, y escoge lo peor para Blancas:
-   a1-a2 vale $\min(2,-10)=-10$ y d2xc3 vale $\min(13,0)=0$. Después de esas
-   capturas ya no hay más capturas, así que se evalúa. d2-d3 se queda con su
-   $\mathrm{EVAL}=2$. Blancas elige **d2-d3**, la jugada que gana.
+   $\text{a1}\textbf{-}\text{a2}$ vale $\min(2,-10)=-10$ y $\text{d2}\textbf{x}\text{c3}$ vale $\min(13,0)=0$. Después de esas
+   capturas ya no hay más capturas, así que se evalúa. $\text{d2}\textbf{-}\text{d3}$ se queda con su
+   $\mathrm{EVAL}=2$. Blancas elige **$\text{d2}\textbf{-}\text{d3}$**, la jugada que gana.
 :::
 
 Con solo mirar las capturas, la profundidad 1 dejó de elegir la jugada
@@ -124,6 +144,14 @@ La salida es no elegir: **buscar con $d=1$, luego con $d=2$, luego con
 $d=3$**, y así mientras haya tiempo. Cuando el reloj se acaba, se juega la
 mejor jugada de la **última búsqueda completa**.
 
+> **El problema de la profundización iterativa.**
+>
+> **Dado:** un estado $s$ donde mueve MAX, las reglas del juego,
+> $\mathrm{EVAL}$ y un reloj que nadie sabe cuándo se acaba.
+>
+> **Encontrar:** una jugada lista para entregar en cualquier momento, tan
+> buena como lo permita el tiempo que hubo.
+
 **Estamos aquí:** la posición de la clase, mueven Blancas.
 
 **Pendiente:** ver qué jugada tendría lista el programa después de cada
@@ -131,9 +159,9 @@ búsqueda.
 
 | Búsqueda | Valores | Jugada lista |
 |---|---|---|
-| $d=1$ | a1-a2: 2 · d2-d3: 2 · d2xc3: 13 | d2xc3 |
-| $d=2$ | a1-a2: $-10$ · d2-d3: 1 · d2xc3: 0 | d2-d3 |
-| $d=3$ | a1-a2: $-9$ · d2-d3: 100 · d2xc3: 1 | d2-d3 |
+| $d=1$ | $\text{a1}\textbf{-}\text{a2}$: 2 · $\text{d2}\textbf{-}\text{d3}$: 2 · $\text{d2}\textbf{x}\text{c3}$: 13 | $\text{d2}\textbf{x}\text{c3}$ |
+| $d=2$ | $\text{a1}\textbf{-}\text{a2}$: $-10$ · $\text{d2}\textbf{-}\text{d3}$: 1 · $\text{d2}\textbf{x}\text{c3}$: 0 | $\text{d2}\textbf{-}\text{d3}$ |
+| $d=3$ | $\text{a1}\textbf{-}\text{a2}$: $-9$ · $\text{d2}\textbf{-}\text{d3}$: 100 · $\text{d2}\textbf{x}\text{c3}$: 1 | $\text{d2}\textbf{-}\text{d3}$ |
 
 ::: exercise {#jue-c3-ej-reloj title="Decide qué jugada se entrega"}
 **Decide:** para cada caso, ¿qué jugada entrega el programa?
@@ -143,12 +171,24 @@ búsqueda.
 3. El reloj alcanza para terminar $d=3$.
 :::
 
+::: hint {#jue-c3-pista-reloj of="jue-c3-ej-reloj" title="La última completa"}
+Una búsqueda que no terminó no cuenta. Para cada caso, pregúntate cuál fue
+la última búsqueda que **sí** terminó, y busca su jugada en la tabla.
+:::
+
 ::: answer {#jue-c3-resp-reloj of="jue-c3-ej-reloj"}
-1. La última búsqueda completa es $d=1$: entrega **d2xc3** y pierde.
-2. La última completa es $d=2$: entrega **d2-d3**, que gana.
-3. Entrega **d2-d3**, y además ya sabe que gana: vale 100.
+1. La última búsqueda completa es $d=1$: entrega **$\text{d2}\textbf{x}\text{c3}$** y pierde.
+2. La última completa es $d=2$: entrega **$\text{d2}\textbf{-}\text{d3}$**, que gana.
+3. Entrega **$\text{d2}\textbf{-}\text{d3}$**, y además ya sabe que gana: vale 100.
 
 Una búsqueda a medias no se usa: puede no haber revisado la mejor jugada.
+:::
+
+La figura lo dibuja en el tiempo. Cada barra es una búsqueda **sin poda**,
+con MINIMAX-CON-CORTE, y su largo, cuántos nodos genera:
+
+::: figure {#jue-c3-fig-profundizacion title="Profundizar mientras haya tiempo"}
+![Tres barras seguidas en el tiempo: la búsqueda con d = 1 genera 4 nodos y deja lista d2xc3; la de d = 2 genera 12 y deja lista d2-d3; la de d = 3 genera 33 y deja lista d2-d3, que gana. Dos líneas marcan dos relojes: el reloj 1 se acaba durante d = 2, así que se entrega d2xc3; el reloj 2 se acaba durante d = 3, así que se entrega d2-d3](../_assets/jue-c3-profundizacion.svg)
 :::
 
 El reloj decide la calidad de la jugada. **Si el tiempo solo alcanza para
@@ -177,7 +217,9 @@ mismo que la última, y el total es cerca del doble.
 :::
 
 La última búsqueda domina el costo, y repetir las otras es casi gratis
-cuando $b$ es grande.
+cuando $b$ es grande. En la posición de la clase, sin poda, las búsquedas
+con $d=1$ y $d=2$ generan $4+12=16$ nodos, menos de la mitad de los 33 de
+$d=3$.
 
 Además, la repetición **ayuda**. La mejor jugada de la búsqueda anterior se
 prueba primero en la siguiente. Como viste en [[alfa-beta-como-algoritmo|alfa-beta]], probar
@@ -198,8 +240,9 @@ jugadas de la raíz; lo escribimos en la sección siguiente.
 `ALFA-BETA-CON-CORTE(s, d, α, β)` es el [[alfa-beta-como-algoritmo|alfa-beta de la clase 2]] con la línea del corte de minimax con corte: devuelve $100\cdot U(s)$ si $s$ es final y $\mathrm{EVAL}(s)$ si $d=0$, y en lo demás poda igual.
 
 ```text
-INPUT   un estado s donde mueve MAX, y un reloj
-OUTPUT  una jugada de A(s)
+INPUT   un estado s donde mueve MAX; las reglas S_F, Pl, A, T y U;
+        una función EVAL; y un reloj. No recibe el grafo.
+OUTPUT  una jugada de A(s), la mejor de la última búsqueda completa.
 
  1  function PROFUNDIZACIÓN-ITERATIVA(s)
  2      jugada ← cualquier a in A(s)
@@ -226,23 +269,36 @@ OUTPUT  una jugada de A(s)
   la línea 6: si la jugada de la búsqueda anterior es buena y se prueba
   primero, $\alpha$ sube pronto y las demás jugadas se podan antes.
 
-En la posición de la clase, con $d=3$ se prueba primero d2-d3, la jugada
+En la posición de la clase, con $d=3$ se prueba primero $\text{d2}\textbf{-}\text{d3}$, la jugada
 que dejó lista $d=2$. Vale 100, y la línea 9 la entrega sin mirar las otras
 dos: los valores $-9$ y 1 de la tabla de la sección 3 están ahí para
 comparar, pero el programa ya no los calcula.
 
+Con todo eso, el procedimiento de esta sección genera **4**, **10** y **9**
+nodos con $d=1$, 2 y 3, contra los 4, 12 y 33 de la figura sin poda. La
+búsqueda con $d=3$ es la más barata de las tres: empieza por la jugada
+ganadora y sale en la línea 9.
+
 ::: exercise {#jue-c3-ej-linea title="Decide qué línea actúa"}
 1. El reloj se acaba durante la búsqueda con $d=2$, después de valorar
-   d2xc3 y antes de valorar las otras jugadas. ¿Qué línea actúa y qué
+   $\text{d2}\textbf{x}\text{c3}$ y antes de valorar las otras jugadas. ¿Qué línea actúa y qué
    jugada se entrega?
 2. ¿Por qué no basta con devolver `mejor` en ese momento?
 :::
 
+::: hint {#jue-c3-pista-linea of="jue-c3-ej-linea" title="Qué guarda cada variable"}
+`jugada` es la de la última búsqueda **completa**; `mejor`, la de la
+búsqueda en curso. ¿Cuál de las dos ya vio todas las jugadas?
+:::
+
 ::: answer {#jue-c3-resp-linea of="jue-c3-ej-linea"}
 1. Actúa la **línea 8** y entrega `jugada`, la de la última búsqueda
-   completa: con $d=1$ era **d2xc3**.
+   completa: con $d=1$ era **$\text{d2}\textbf{x}\text{c3}$**.
 2. `mejor` solo compara las jugadas ya valoradas en esta búsqueda; las que
-   faltan podrían ser mejores. En este caso, d2-d3 estaba sin valorar.
+   faltan podrían ser mejores. En este caso las dos variables dicen lo
+   mismo, $\text{d2}\textbf{x}\text{c3}$, porque es la primera que se
+   probó, pero `mejor` no lo sabe: $\text{d2}\textbf{-}\text{d3}$, la
+   que gana, estaba sin valorar.
 :::
 
 ## 6 · Recordar posiciones ya valoradas

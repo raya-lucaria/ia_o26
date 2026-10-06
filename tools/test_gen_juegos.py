@@ -155,3 +155,41 @@ def test_alfa_beta_dibuja_lo_que_genera(invertir, generados, corte):
     assert list(cortes.values()) == [corte] and f"corte {corte}" in svg
     for orden in range(1, generados + 1):
         assert f">{orden}º<" in svg
+
+
+# ------------------------------------------------------------- clase 3 ---
+
+def test_las_figuras_de_corte_dibujan_las_evaluaciones_calculadas():
+    p1 = _texto("jue-c3-corte-prof-1")
+    for nombre, t, p in gen.hijos4(gen.POSICION_C3, "B"):
+        assert f"EVAL = {gen.fmt(gen.ev(t))}" in p1
+    assert "con corte: +13" in p1
+    p2 = _texto("jue-c3-corte-prof-2")
+    minimos = [min(gen.ev(t2) for _, t2, _ in gen.hijos4(t, p))
+               for _, t, p in gen.hijos4(gen.POSICION_C3, "B")]
+    assert minimos == [-10, 1, 0]
+    for v in minimos:
+        assert f"mínimo: {gen.fmt(v)}" in p2
+    assert "con corte: +1" in p2
+
+
+def test_el_horizonte_esconde_la_recaptura():
+    svg = _texto("jue-c3-horizonte")
+    assert "tras d2xc3" in svg and "tras b4xc3" in svg
+    assert "EVAL = +13" in svg and "EVAL = 0" in svg
+
+
+def test_la_profundizacion_dibuja_lo_que_cada_busqueda_deja_listo():
+    svg = _texto("jue-c3-profundizacion")
+    assert [gen.jugada_lista(d)[0] for d in gen.PROFUNDIDADES_RELOJ] == ["d2xc3", "d2-d3", "d2-d3"]
+    assert gen.jugada_lista(3)[1] == 100
+    for d, c in zip(gen.PROFUNDIDADES_RELOJ, (4, 12, 33)):
+        assert f"d = {d} · {c} nodos" in svg
+    assert "entrega d2xc3" in svg and "entrega d2-d3" in svg
+
+
+def test_mcts_tiene_sus_cuatro_pasos():
+    svg = _texto("jue-c3-mcts-pasos")
+    for paso in ("Selección", "Expansión", "Simulación", "Retropropagación"):
+        assert paso in svg
+    assert "5/11" in svg and "U = +1" in svg

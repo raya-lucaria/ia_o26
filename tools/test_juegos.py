@@ -323,8 +323,10 @@ def test_la_unidad_escribe_pl_y_no_p():
         assert not re.search(r"(?<![A-Za-z\\])P\(s", texto), pagina.name
 
 
-def test_cada_ejercicio_de_la_clase_2_trae_pista_y_respuesta():
-    for pagina in sorted((UNIDAD / "2_mirar_todo_y_podar").glob("*.md")):
+def test_cada_ejercicio_de_las_clases_2_y_3_trae_pista_y_respuesta():
+    paginas = list((UNIDAD / "2_mirar_todo_y_podar").glob("*.md")) + \
+        list((UNIDAD / "3_cuando_no_cabe").glob("*.md"))
+    for pagina in sorted(paginas):
         texto = pagina.read_text(encoding="utf-8")
         for ejercicio in re.findall(r"::: exercise \{#([\w-]+)", texto):
             assert re.search(rf'::: hint \{{#[\w-]+ of="{ejercicio}"', texto), ejercicio
@@ -340,3 +342,43 @@ def test_la_clase_2_usa_la_utilidad_de_la_clase_1():
             assert len(apariciones) == 1
         else:
             assert not apariciones, pagina.name
+
+
+# ------------------------------------------------------------- clase 3 ---
+
+def test_clase_3_lo_nuevo():
+    # En 4x4 el turno ya no se deduce del tablero.
+    assert len(j.tableros_con_dos_turnos(4)) == 2925
+    nombres = lambda t: [j.nombre_jugada(t, m, 4) for m in j.jugadas(t, "B", 4)]
+    assert nombres(HORIZONTE) == ["a1-a2", "d2-d3", "d2xc3"]
+    # Quietud a profundidad 1: -10, 2 y 0; elige d2-d3.
+    assert [j.minimax_con_quietud(j.mover(HORIZONTE, m), "N", 0, 4)
+            for m in j.jugadas(HORIZONTE, "B", 4)] == [-10, 2, 0]
+    # Nodos que genera minimax con corte con d = 1, 2, 3 en la raiz.
+    assert [j.nodos_con_corte(HORIZONTE, "B", d, 4) for d in (1, 2, 3)] == [4, 12, 33]
+    # Con poda, la jugada anterior primero y la salida en 100: 4, 10 y 9.
+    assert j.profundizacion_iterativa(HORIZONTE, (1, 2, 3), 4) == [
+        (1, 4, "d2xc3"), (2, 10, "d2-d3"), (3, 9, "d2-d3")]
+    assert [j.nodos_con_corte(HORIZONTE_TAREA, "B", d, 4) for d in range(1, 6)] == [
+        5, 22, 90, 315, 1001]
+    # Promedio exacto de las simulaciones al azar.
+    assert [j.promedio_simulaciones(j.mover(HORIZONTE, m), "N", 4)
+            for m in j.jugadas(HORIZONTE, "B", 4)] == [F(1097, 5184), F(8, 9), F(11, 72)]
+    assert [round(float(x), 2) for x in (F(1097, 5184), F(8, 9), F(11, 72))] == [0.21, 0.89, 0.15]
+    assert [j.promedio_simulaciones(j.mover(j.inicio(), m), "N")
+            for m in j.jugadas(j.inicio(), "B")] == [F(7, 36), F(5, 24), F(7, 36)]
+    assert (F(8, 9) + 1) / 2 == F(17, 18) and (F(5, 24) + 1) / 2 == F(29, 48)
+
+
+def test_clase_3_el_rasgo_de_capturas_no_arregla_el_error():
+    """El ejercicio «Decide si un rasgo nuevo arregla el error»."""
+    def capturas(t, quien):
+        return sum(1 for m in j.jugadas(t, quien, 4) if j.es_captura(t, m))
+    simetrico, solo_negras = [], []
+    for m in j.jugadas(HORIZONTE, "B", 4):
+        t = j.mover(HORIZONTE, m)
+        e = j.evaluar_peones(t, 4)
+        simetrico.append(e - 10 * capturas(t, "N") + 10 * capturas(t, "B"))
+        solo_negras.append(e - 10 * capturas(t, "N"))
+    assert simetrico == [2, 2, 13]
+    assert solo_negras == [-8, 2, 3]

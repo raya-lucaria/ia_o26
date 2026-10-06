@@ -28,6 +28,9 @@ Las fuentes se consultaron el **1 de octubre de 2026**.
 | Alfa-beta desde n1: 5 nodos (corte alfa) u 8 con el orden invertido (corte beta); 13 con desigualdades estrictas; 2 con la ventana $[-1,+1]$. Juego completo: 82 u 72, y 49 o 53 con la ventana | `alfa_beta`, `alfa_beta_traza` | `test_clase_2_alfa_beta` |
 | Octapawn 4×4: 4 197 973 nodos, 20 286 estados, gana el primero | `contar_arbol`, `valor` | `test_clase_3_no_cabe_y_horizonte` |
 | Posiciones de horizonte de la clase 3 y su tarea | `minimax_limitado`, `evaluar_peones` | `test_clase_3_no_cabe_y_horizonte` |
+| Clase 3: en 4×4, 2925 tableros se alcanzan con los dos turnos; quietud a profundidad 1 da −10, 2 y 0; minimax con corte genera 4, 12 y 33 nodos con $d=1,2,3$ (5, 22, 90, 315 y 1001 en la posición de la tarea); la profundización iterativa con poda genera 4, 10 y 9 | `tableros_con_dos_turnos`, `minimax_con_quietud`, `nodos_con_corte`, `profundizacion_iterativa` | `test_clase_3_lo_nuevo` |
+| Clase 3: promedio exacto de simulaciones al azar, 1097/5184, 8/9 y 11/72 en la posición de la clase, y 7/36, 5/24 y 7/36 en las aperturas de hexapawn | `promedio_simulaciones` | `test_clase_3_lo_nuevo` |
+| Clase 3: el rasgo de capturas da 2, 2, 13 (simétrico) y −8, 2, 3 (solo quien mueve) | `jugadas`, `evaluar_peones` | `test_clase_3_el_rasgo_de_capturas_no_arregla_el_error` |
 | Tarea de la clase 2: monedas (2,1,5,3), valor +3; n1 con «sin jugada = empate» vale 0, y alfa-beta genera 10 u 8 nodos | `monedas_*`, `valor`, `alfa_beta` | `test_clase_2_tarea` |
 | Pares o nones, piedra-papel-tijera, penales, gallina, prisionero | `mezcla_2x2`, `punto_de_silla`, `equilibrios_puros` | `test_clase_4_*` |
 

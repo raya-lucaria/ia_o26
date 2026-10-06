@@ -4,7 +4,7 @@ title: Jugar contra alguien que también piensa
 nav_title: Juegos
 summary: "Cómo decide una IA cuando otro agente también decide: escribir un juego, calcular la mejor jugada, estimarla cuando el juego no cabe y mezclar cuando los dos eligen a la vez."
 status: ready
-estimated_time: 6h10m
+estimated_time: 6h25m
 tags: [juegos, busqueda-adversarial, minimax, alfa-beta]
 prerequisites: [optimizacion]
 ---
@@ -60,7 +60,7 @@ nueva:
 |---|---|---|---:|
 | 1 | Leer y escribir el juego | Ordenar unas reglas confusas, escribir el juego, construir su grafo y diagnosticarlo | 105m |
 | 2 | Mirar todo y podar | Calcular la mejor jugada y descartar ramas sin generarlas | 110m |
-| 3 | Cuando el árbol no cabe | Cortar la búsqueda, estimar posiciones, jugar contra el reloj y simular partidas | 75m |
+| 3 | Cuando el árbol no cabe | Cortar la búsqueda, estimar posiciones, jugar contra el reloj y simular partidas | 90m |
 | 4 | Cuando no hay turnos | Mezclar jugadas, escribirlo como programa lineal y reconocer cuándo no es suma cero | 80m |
 :::
 
@@ -69,7 +69,7 @@ nueva:
 - [[juegos-cuando-no-cabe|Clase 3 · Cuando el árbol no cabe]]
 - [[juegos-sin-turnos|Clase 4 · Cuando no hay turnos]]
 
-El recorrido de lectura suma **6 horas y 10 minutos**. Cada clase termina
+El recorrido de lectura suma **6 horas y 25 minutos**. Cada clase termina
 con una **tarea de refuerzo**: dos ejercicios con pistas y respuestas
 plegadas, uno con un juego nuevo y otro que modifica o complementa lo que ya
 viste. Las cuatro tareas suman unas **3 horas más**. No se entregan; sirven
