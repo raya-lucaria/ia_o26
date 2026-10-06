@@ -211,6 +211,19 @@ $$
 \end{aligned}
 $$
 
+**El mismo lagrangeano, en forma genérica**, con los datos del modelo genérico ($n$ observaciones, pendiente mínima $m$, tope $T$ en la distancia $D$):
+
+$$
+\begin{aligned}
+\mathcal{L}(\beta,\mu_1,\mu_2) = {} & \sum_{k=1}^{n} \big(y_k - (\beta_0 + \beta_1 d_k)\big)^2 \\
+& + \mu_1\,(\beta_0 + D\,\beta_1 - T) \\
+& - \mu_2\,(\beta_1 - m), \\
+& \mu_1,\ \mu_2 \ge 0.
+\end{aligned}
+$$
+
+Los signos no dependen de los números: dependen de que se minimiza, de que el tope es $\le 0$ y de que la pendiente mínima es $\ge 0$. Con $n = 3$, $m = 2$, $D = 5$ y $T = 22$ sale la forma explícita.
+
 **Por qué cada signo.** Es un problema de **mínimo**, y la regla de [[los-signos-del-lagrangeano|los signos del lagrangeano]] es:
 
 | Problema | Restricción contra cero | Término |

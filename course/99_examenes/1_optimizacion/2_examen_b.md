@@ -154,6 +154,20 @@ $$
 \end{aligned}
 $$
 
+**El mismo modelo, en forma genérica.** Con un conjunto de modelos $M$, las horas $h_i$ que recibe el modelo $i$, su mejora $a_i h_i - b_i h_i^2$ (con $b_i > 0$, el rendimiento que decrece), el total de horas $H$ y el mínimo de horas $\ell_i$ que le toca a cada modelo:
+
+$$
+\begin{aligned}
+\max_{h}\quad & \sum_{i\in M} \big(a_i\,h_i - b_i\,h_i^2\big) \\
+\text{s.a.}\quad
+& \textstyle\sum_{i\in M} h_i - H \le 0\\
+& h_i - \ell_i \ge 0 \quad \forall i\in M\\
+& h_i \in \mathbb{R} \quad \forall i\in M
+\end{aligned}
+$$
+
+En este examen $M = \{v, t\}$, $(a_v, b_v) = (10,\ 1)$, $(a_t, b_t) = (8,\ \tfrac12)$, $H = 10$, $\ell_v = 0$ y $\ell_t = 7$. El mínimo de visión, $h_v - 0 \ge 0$, es solo «no hay horas negativas»: la forma explícita lo escribe en el dominio, y el de texto es el contrato.
+
 Por qué cada parte:
 
 - **Variables.** $v$ y $t$ (horas) son las horas de GPU para visión y para texto: es lo que se decide.
@@ -186,6 +200,19 @@ $$
 & \mu_1,\ \mu_2 \ge 0.
 \end{aligned}
 $$
+
+**El mismo lagrangeano, en forma genérica**, a partir del modelo genérico:
+
+$$
+\begin{aligned}
+\mathcal{L}(h,\lambda,\mu) = {} & \sum_{i\in M} \big(a_i\,h_i - b_i\,h_i^2\big) \\
+& - \lambda \Big(\textstyle\sum_{i\in M} h_i - H\Big) \\
+& + \textstyle\sum_{i\in M} \mu_i\,(h_i - \ell_i), \\
+& \lambda \ge 0,\quad \mu_i \ge 0 \ \ \forall i\in M.
+\end{aligned}
+$$
+
+$\lambda$ es el $\mu_1$ de la forma explícita y $\mu_t$ es su $\mu_2$. El término $\mu_v\,(h_v - 0)$ es el de $v \ge 0$: aparece aquí porque el modelo genérico lo escribió como restricción, y en la forma explícita no, porque se dejó en el dominio. Las dos maneras valen.
 
 **Por qué cada signo.** Es un problema de **máximo**, y la regla de [[los-signos-del-lagrangeano|los signos del lagrangeano]] es:
 
