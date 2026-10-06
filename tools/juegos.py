@@ -93,11 +93,6 @@ def utilidad_simple(g, k):
     return {"B": 1, "N": -1, "empate": 0}[g]
 
 
-def utilidad_rapida(g, k):
-    """Ganar antes vale mas: 10 menos las jugadas hechas desde el inicio."""
-    return {"B": 10 - k, "N": -(10 - k), "empate": 0}[g]
-
-
 def valor(tablero, turno, k=0, n=3, util=utilidad_simple,
           sin_jugada_empata=False):
     """Valor minimax exacto, en puntos de Blancas."""
@@ -195,45 +190,84 @@ def contar_estados(n=3, sin_jugada_empata=False):
     return cuenta
 
 
-def alfa_beta(tablero, turno, k, n=3, util=utilidad_rapida, invertir=False):
-    """Alfa-beta con el orden fijo de jugadas (o el inverso).
+def alfa_beta_traza(tablero, turno, n=3, invertir=False, sin_jugada_empata=False,
+                    alfa=float("-inf"), beta=float("inf"), estricto=False):
+    """Alfa-beta con utilidad +1/-1 (0 si empatan), anotando cada visita.
 
-    Devuelve (valor, nodos visitados, cortes). Cada corte es
-    (tipo, jugada tras la que se corta, hermanos que no se visitan); solo se
-    cuentan los cortes que de verdad dejan hermanos sin visitar.
+    Es el pseudocodigo de la pagina «Alfa-beta como algoritmo», linea por
+    linea: corte beta si v >= beta en un nodo de MAX, corte alfa si v <= alfa
+    en uno de MIN, y el nodo devuelve v (una cota si hubo corte).
+
+    Devuelve un dict con:
+    - valor: lo que devuelve la raiz;
+    - visitas: en orden, (camino, tipo, alfa al llegar, beta al llegar,
+      devuelve). El camino es la tupla de nombres de jugada desde la raiz y el
+      tipo es "MAX", "MIN" o "final";
+    - cortes: (tipo, camino del nodo que corta, jugada tras la que corta,
+      hermanos que no se visitan). Solo cuentan los cortes que dejan hermanos
+      sin visitar.
     """
-    visitados = [0]
-    cortes = []
+    visitas, cortes = [], []
 
-    def ab(t, j, kk, a, b):
-        visitados[0] += 1
-        g = ganador(t, j, n)
+    def ab(t, j, a, b, camino):
+        fila = len(visitas)
+        visitas.append(None)
+        g = ganador(t, j, n, sin_jugada_empata)
         if g:
-            return util(g, kk)
+            u = utilidad_simple(g, 0)
+            visitas[fila] = (camino, "final", a, b, u)
+            return u
+        tipo = "MAX" if j == "B" else "MIN"
+        a0, b0 = a, b
         lista = jugadas(t, j, n)
         if invertir:
             lista = lista[::-1]
         v = float("-inf") if j == "B" else float("inf")
         for idx, m in enumerate(lista):
-            h = ab(mover(t, m), otro(j), kk + 1, a, b)
+            nombre = nombre_jugada(t, m, n)
+            h = ab(mover(t, m), otro(j), a, b, camino + (nombre,))
             quedan = len(lista) - idx - 1
             if j == "B":
                 v = max(v, h)
-                if v >= b:
+                if v > b or (v == b and not estricto):
                     if quedan:
-                        cortes.append(("beta", nombre_jugada(t, m, n), quedan))
-                    return v
+                        cortes.append(("beta", camino, nombre, quedan))
+                    break
                 a = max(a, v)
             else:
                 v = min(v, h)
-                if v <= a:
+                if v < a or (v == a and not estricto):
                     if quedan:
-                        cortes.append(("alfa", nombre_jugada(t, m, n), quedan))
-                    return v
+                        cortes.append(("alfa", camino, nombre, quedan))
+                    break
                 b = min(b, v)
+        visitas[fila] = (camino, tipo, a0, b0, v)
         return v
-    v = ab(tablero, turno, k, float("-inf"), float("inf"))
-    return v, visitados[0], cortes
+
+    v = ab(tablero, turno, alfa, beta, ())
+    return {"valor": v, "visitas": visitas, "cortes": cortes}
+
+
+def alfa_beta(tablero, turno, n=3, invertir=False, sin_jugada_empata=False,
+              alfa=float("-inf"), beta=float("inf"), estricto=False):
+    """(valor, nodos visitados, cortes como (tipo, jugada, hermanos sin visitar))."""
+    r = alfa_beta_traza(tablero, turno, n, invertir, sin_jugada_empata, alfa, beta,
+                        estricto)
+    return (r["valor"], len(r["visitas"]),
+            [(tipo, jugada, quedan) for tipo, _, jugada, quedan in r["cortes"]])
+
+
+def expectiminimax_rival_al_azar(tablero, turno, n=3):
+    """Valor esperado para Blancas si Negras elige cada jugada al azar, con la
+    misma probabilidad. Blancas sigue maximizando. Fracciones exactas."""
+    @lru_cache(maxsize=None)
+    def v(t, j):
+        g = ganador(t, j, n)
+        if g:
+            return F(utilidad_simple(g, 0))
+        hijos = [v(mover(t, m), otro(j)) for m in jugadas(t, j, n)]
+        return max(hijos) if j == "B" else sum(hijos) / len(hijos)
+    return v(tablero, turno)
 
 
 def evaluar_peones(tablero, n):
@@ -436,38 +470,6 @@ def monedas_alfa_beta(fila, derecha_primero=False):
 
 
 # -------------------------------------------------------------------- azar ---
-
-def dado_ejemplo():
-    """El ejemplo de la clase 2: plantarse (+1) o tirar un dado de seis caras.
-
-    Con 1 o 2 se pierde (-2); con 3 a 6 el rival elige entre +3 y +4.
-    """
-    plantarse = F(1)
-    rival = min(F(3), F(4))
-    tirar = F(2, 6) * F(-2) + F(4, 6) * rival
-    peor_caso = min(F(-2), rival)
-    return {"plantarse": plantarse, "tirar": tirar, "rival": rival,
-            "tirar_si_el_dado_fuera_rival": peor_caso}
-
-
-def cerdo(puntos, tiradas_restantes):
-    """Valor esperado del cerdo reducido con decisiones optimas.
-
-    Tienes `puntos` sin asegurar. Plantarte los asegura. Tirar un dado de seis
-    caras: con 1 pierdes todo; con 2 a 6 sumas la cara. Puedes tirar a lo mas
-    `tiradas_restantes` veces; sin tiradas, te plantas.
-    """
-    if tiradas_restantes == 0:
-        return F(puntos)
-    tirar = F(1, 6) * 0 + sum(F(1, 6) * cerdo(puntos + c, tiradas_restantes - 1)
-                              for c in range(2, 7))
-    return max(F(puntos), tirar)
-
-
-def cerdo_tirar(puntos, tiradas_restantes):
-    return sum(F(1, 6) * cerdo(puntos + c, tiradas_restantes - 1)
-               for c in range(2, 7))
-
 
 # ------------------------------------------------------ juegos simultaneos ---
 

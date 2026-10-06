@@ -29,9 +29,9 @@ hay que detenerse antes y **estimar**.
 - Explicar la idea de la búsqueda de árbol Monte Carlo: estimar una jugada
   simulando partidas al azar, sin función de evaluación.
 
-En esta clase la utilidad cambia: dejamos $10-k$ y usamos $U=\pm1$, porque
-en el 4×4 solo importa quién gana y al cortar no sabemos cuántas jugadas
-faltan. La primera página lo explica.
+La utilidad no cambia: sigue siendo la de las clases 1 y 2, $U=+1$ si gana
+Blancas y $U=-1$ si gana Negras. Lo nuevo es lo que se hace cuando la
+búsqueda se corta antes de llegar a un final.
 
 ## Recorrido
 

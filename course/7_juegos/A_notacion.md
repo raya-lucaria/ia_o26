@@ -65,7 +65,7 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | $s$, $s_0$ | «ese», «ese cero» | Un estado cualquiera; el estado inicial | Escribir el juego |
 | $s_1, s_2, \dots$ | «ese uno, ese dos» | Los estados de la partida trazada con las piezas, en orden | Escribir el juego |
 | $S_F$ | «ese efe» | Los estados finales: donde la partida terminó | Escribir el juego |
-| $\mathrm{Pl}(s)$ | «pe ele de ese» | El jugador que mueve en un estado no final: MAX o MIN. Traduce el turno guardado | Escribir el juego |
+| $\mathrm{Pl}(s)$ | «pe ele de ese» | El jugador que mueve en un estado no final: MAX o MIN. Traduce el turno guardado. En un juego con azar también puede valer AZAR | Escribir el juego |
 | MAX, MIN | «max», «min» | MAX es el jugador desde cuyo lado se mide la utilidad y busca que sea alta; MIN busca que sea baja | Escribir el juego |
 | $\mathcal{A}$ | «a caligráfica» | Todas las jugadas que se pueden escribir en el juego | Escribir el juego |
 | $a$ | «a» | Una jugada cualquiera (no es la columna a) | Escribir el juego |
@@ -77,9 +77,16 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 
 | Símbolo | Se lee | Qué es | Se presenta en |
 |---|---|---|---|
-| $V(s)$ | «ve de ese» | El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$ | El juego como grafo |
+| $V(s)$ | «ve de ese» | El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo | El juego como grafo y Minimax a mano |
 | $\max_{a\in A(s)} f(a)$ | «máximo de efe» | El número más alto que alcanza $f$ entre las jugadas de $A(s)$ | Diagnosticar el juego |
 | $\operatorname*{arg\,max}_{a\in A(s)} f(a)$ | «arg max de efe» | El conjunto de jugadas que alcanzan ese máximo; puede tener varias | Diagnosticar el juego |
+| $a^{∗}$ | «a estrella» | Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias | Minimax a mano |
+| $v$ | «ve» | En un procedimiento: el mejor valor visto hasta ahora entre los hijos del nodo actual | Minimax como algoritmo |
+| $-\infty$, $+\infty$ | «menos infinito», «más infinito» | Marcas menores y mayores que cualquier utilidad: el primer hijo siempre las reemplaza | Minimax como algoritmo |
+| $b$, $m$ | «be», «eme» | Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) | Minimax como algoritmo |
+| AZAR | «azar» | Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda | Cuando decide un dado |
+| $\Pr(a)$ | «probabilidad de a» | En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 | Cuando decide un dado |
+| $\alpha$, $\beta$ | «alfa», «beta» | Lo que MAX y lo que MIN ya tienen asegurado con alguna alternativa en el camino desde la raíz | Alfa-beta a mano |
 | $\bar u(s')$, $N(s')$ | «u barra», «ene» | En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron | Simular en vez de evaluar |
 
 ## Términos
@@ -103,6 +110,15 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Transposición | Dos caminos distintos que llegan al mismo estado | El juego como grafo |
 | Grafo explícito, implícito | Explícito: se generan todos los estados antes y se guardan. Implícito: se generan cuando hacen falta | El juego como grafo |
 | Resolver el juego | Ponerle a cada nodo su valor $V(s)$ | El juego como grafo |
+| Desempate | Una preferencia, como ganar rápido, que elige entre jugadas del $\operatorname{arg\,max}$ sin cambiar la utilidad | Minimax a mano |
+| Minimax | Procedimiento que recibe las reglas, genera los estados en profundidad y devuelve $V(s)$ | Minimax como algoritmo |
+| Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
+| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino | Minimax como algoritmo |
+| Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad | Cuando decide un dado |
+| Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
+| Alfa-beta | Minimax que deja de generar las jugadas que ya no pueden cambiar la decisión de arriba | Alfa-beta a mano |
+| Corte alfa, corte beta | En un nodo de MIN, dejar de generar hijos cuando $v\le\alpha$; en uno de MAX, cuando $v\ge\beta$ | Alfa-beta a mano |
+| Cota | Lo que devuelve un nodo donde se cortó: su valor es a lo más, o al menos, ese número | Alfa-beta a mano |
 | Estrategia | Función que a cada estado donde le toca a un jugador le asigna una jugada de $A(s)$ | Diagnosticar el juego |
 | Nodo de azar | Nodo donde no elige un jugador sino un dado; cada flecha lleva su probabilidad | Diagnosticar el juego |
 | Tabla de pagos | Filas: jugadas de uno; columnas: jugadas del otro; cada celda: lo que gana cada uno | Diagnosticar el juego |
@@ -119,5 +135,9 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Borde doble | Estado final, con su $U$ |
 | Borde punteado | El estado existe, pero todavía no se expande |
 | Borde grueso de color | Lo nuevo de ese paso |
+| Flecha resaltada | Una jugada que alcanza el valor de su padre |
+| Esquinas redondas | Nodo de azar |
+| Caja punteada con «?» | Estado que el recorrido nunca genera |
+| Círculo con número | Orden en que un recorrido visita el nodo |
 
-Las clases 2, 3 y 4 agregarán sus símbolos a esta hoja.
+Cada clase agrega sus símbolos a esta hoja.

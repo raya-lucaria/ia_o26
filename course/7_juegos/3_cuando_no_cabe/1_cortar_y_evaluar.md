@@ -23,10 +23,6 @@ a mano en una posición de peones y verás que puede equivocarse.
 > captura todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$
 > si gana Negras.
 
-> **Cambio respecto de las clases 1 y 2:** dejamos $10-k$. En el 4×4 solo
-> nos importa quién gana, y al cortar la búsqueda no sabemos cuántas jugadas
-> faltan; usamos $U=\pm1$, y el estado ya no necesita guardar $k$.
-
 ## 1 · Medir cuánto crece el árbol
 
 **Piensa: si el tablero pasa de 3×3 a 4×4, ¿el árbol crece al doble, al
@@ -315,7 +311,7 @@ Reunimos lo que hicimos a mano. Necesitamos estos nombres:
 |---|---|
 | $s$ | Estado que se está valorando |
 | $d$ | La profundidad que queda: jugadas que todavía se pueden mirar desde $s$ |
-| $P(s)$ | Jugador de turno: MAX o MIN |
+| $\mathrm{Pl}(s)$ | Jugador de turno: MAX o MIN |
 | $A(s)$, $T(s,a)$ | Jugadas permitidas y estado al que lleva cada una |
 | $U(s)$ | Utilidad de un final: $+1$ o $-1$ |
 | $\mathrm{EVAL}(s)$ | Estimación de un estado sin terminar |
@@ -325,14 +321,14 @@ INPUT   un estado s y la profundidad que queda, d ≥ 0
 OUTPUT  el valor con corte de s, en puntos de MAX
 
  1  function MINIMAX-CON-CORTE(s, d)
- 2      if s es final: return 100 · U(s)
+ 2      if s ∈ S_F: return 100 · U(s)
  3      if d = 0: return EVAL(s)                   ▷ nodo de corte
- 4      if P(s) = MAX
+ 4      if Pl(s) = MAX
  5          v ← −∞
  6          for each a in A(s)
  7              v ← max(v, MINIMAX-CON-CORTE(T(s, a), d − 1))
  8          return v
- 9      else                                       ▷ P(s) = MIN
+ 9      else                                       ▷ Pl(s) = MIN
 10          v ← +∞
 11          for each a in A(s)
 12              v ← min(v, MINIMAX-CON-CORTE(T(s, a), d − 1))
