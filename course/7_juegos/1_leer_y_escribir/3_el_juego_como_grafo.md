@@ -38,7 +38,7 @@ escribimos de una vez y en general.
 El **grafo del juego** $(S,\ s_0,\ S_F,\ \mathrm{Pl},\ A,\ T,\ U)$ es el grafo
 dirigido $G=(S,E)$: sus nodos son los estados y sus aristas son
 
-$$E=\bigl\{\bigl(s,\ T(s,a)\bigr)\ :\ s\in S\setminus S_F,\ a\in A(s)\bigr\}.$$
+$$E=\bigl\{\bigl(s,T(s,a)\bigr) : s\in S\setminus S_F,\ a\in A(s)\bigr\}.$$
 
 Cada arista lleva el nombre de su jugada $a$. Cada nodo lleva una etiqueta:
 
