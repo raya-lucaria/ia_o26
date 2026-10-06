@@ -59,6 +59,28 @@ $$
 \end{aligned}
 $$
 
+**El mismo modelo, desarrollado.** Con iniciales ($x_{\text{AR}}$ = Ana cubre Robótica, $x_{\text{BG}}$ = Beto cubre GPU, …) y los datos de la tabla sustituidos:
+
+$$
+\begin{aligned}
+\min\quad & z \\
+\text{s.a.}\quad
+& x_{\text{AR}} + x_{\text{BR}} + x_{\text{CR}} - 1 = 0\\
+& x_{\text{AG}} + x_{\text{BG}} + x_{\text{CG}} - 1 = 0\\
+& x_{\text{AN}} + x_{\text{BN}} + x_{\text{CN}} - 1 = 0\\
+& x_{\text{AR}} + x_{\text{AG}} + x_{\text{AN}} - 1 \le 0\\
+& x_{\text{BR}} + x_{\text{BG}} + x_{\text{BN}} - 1 \le 0\\
+& x_{\text{CR}} + x_{\text{CG}} + x_{\text{CN}} - 1 \le 0\\
+& x_{\text{BG}} = 0\\
+& 2x_{\text{AR}} + 5x_{\text{AG}} + 3x_{\text{AN}} - z \le 0\\
+& 4x_{\text{BR}} + 1x_{\text{BG}} + 2x_{\text{BN}} - z \le 0\\
+& 3x_{\text{CR}} + 4x_{\text{CG}} + 6x_{\text{CN}} - z \le 0\\
+& x \in \{0,1\}^{9},\quad z \ge 0
+\end{aligned}
+$$
+
+Las tres primeras son «cubrir» (una por laboratorio: Robótica, GPU, Redes), las tres siguientes «uno por ayudante», luego «certificado» y al final «peor traslado» (una por ayudante). La forma genérica de arriba es esta misma con índices: $\forall j$ genera las tres de cubrir, $\forall i$ las de cada ayudante.
+
 Por qué cada parte:
 
 - **Variables.** $x_{ij}\in\{0,1\}$ vale 1 si el ayudante $i$ cubre el laboratorio $j$: es lo que la coordinación decide. $z$ (horas por semana) es una **auxiliar**: el traslado del ayudante que más viaja. Hace falta porque «el que más viaja» es un máximo, y un máximo no es lineal; con $z$ se escribe con restricciones lineales.
@@ -141,6 +163,20 @@ $$
 \end{aligned}
 $$
 
+**El mismo modelo, en forma genérica.** Con $n$ observaciones $(d_k, y_k)$, $k = 1, \dots, n$ (distancia y tiempo de la entrega $k$), una pendiente mínima $m$ y un tope $T$ para una distancia $D$:
+
+$$
+\begin{aligned}
+\min_{\beta_0,\,\beta_1}\quad & f(\beta) = \sum_{k=1}^{n} \big(y_k - (\beta_0 + \beta_1 d_k)\big)^2 \\
+\text{s.a.}\quad
+& \beta_1 - m \ge 0\\
+& \beta_0 + D\,\beta_1 - T \le 0\\
+& \beta_0,\ \beta_1 \in \mathbb{R}
+\end{aligned}
+$$
+
+En este examen $n = 3$, $(d_k, y_k) = (1, 10), (2, 13), (4, 20)$, $m = 2$, $D = 5$ y $T = 22$. La forma explícita es la genérica con los datos sustituidos: cada término de la suma es el residuo de una entrega, al cuadrado.
+
 Por qué cada parte:
 
 - **Variables.** $\beta_0$ (minutos) es la ordenada al origen y $\beta_1$ (minutos por km) la pendiente. Son lo que se decide: fijarlas es fijar la recta. Las distancias y los tiempos son **datos**.
@@ -152,7 +188,7 @@ Por qué cada parte:
 **También valía:**
 
 - $\min \tfrac13 f(\beta)$ (el error cuadrático medio, MSE) o $\min \tfrac12 f(\beta)$: multiplicar el objetivo por una constante positiva no cambia el óptimo.
-- Escribirlo con sumatoria, $\sum_{k=1}^{3}\big(y_k - \beta_0 - \beta_1 d_k\big)^2$, con $d_k, y_k$ de la tabla.
+- Escribirlo solo en la forma genérica (con sumatoria), siempre que digas qué valen $d_k$, $y_k$, $m$, $D$ y $T$; o en forma de vectores, $\lVert y - X\beta \rVert^2$, con $X$ la matriz de renglones $(1, d_k)$.
 - La pendiente mínima como $2 - \beta_1 \le 0$: es la misma restricción, todo con $\le$.
 - Desarrollar el objetivo como cuadrática, si los coeficientes son correctos.
 
