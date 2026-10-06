@@ -87,6 +87,9 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda | Cuando decide un dado |
 | $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 | Cuando decide un dado |
 | $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX y lo que MIN ya tienen asegurado con alguna alternativa en el camino desde la raíz | Alfa-beta a mano |
+| $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual | Cortar y evaluar a mano |
+| $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ | Cortar y evaluar a mano |
+| $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación | Cortar y evaluar a mano |
 | $\bar u(s')$, $N(s')$ | «u barra», «ene». En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron | Simular en vez de evaluar |
 
 ## Términos
@@ -124,6 +127,12 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Tabla de pagos | Filas: jugadas de uno; columnas: jugadas del otro; cada celda: lo que gana cada uno | Diagnosticar el juego |
 | El problema de la unidad | Dado el juego, encontrar en cada estado de MAX la jugada que le asegura la mayor utilidad si MIN responde lo mejor que puede | Escribir el juego |
 | Análisis hacia atrás | Con el grafo explícito, etiquetar los nodos desde los finales hacia $s_0$; así se construyen las tablas de finales de ajedrez | El juego como grafo |
+| Nodo de corte | Estado no final al que se llega con $d=0$: se evalúa con $\mathrm{EVAL}$ y no se expande | Cortar y evaluar a mano |
+| Valor con corte | El minimax del árbol cortado a $d$ jugadas, con $\mathrm{EVAL}$ en los nodos de corte; no es el valor del juego | Cortar y evaluar a mano |
+| Material, avance | Peones blancos menos negros; filas avanzadas por los blancos menos las de los negros | Cortar y evaluar a mano |
+| Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Jugar contra el reloj |
+| Posición quieta, búsqueda de quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar | Jugar contra el reloj |
+| Profundización iterativa | Buscar con $d=1,2,3,\dots$ mientras haya tiempo y entregar la jugada de la última búsqueda completa | Jugar contra el reloj |
 | Simulación | Partida desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final | Simular en vez de evaluar |
 | MCTS, búsqueda de árbol Monte Carlo | Construye un árbol con vueltas de selección, expansión, simulación y retropropagación, y estima cada jugada por el promedio de sus simulaciones | Simular en vez de evaluar |
 | Explorar, aprovechar | Probar lo poco probado, o elegir lo que ya funcionó; la regla UCT equilibra los dos | Simular en vez de evaluar |

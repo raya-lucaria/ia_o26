@@ -238,7 +238,7 @@ Dónde se explica cada uno:
 
 - minimax, en [[minimax|Minimax]], clase 2;
 - alfa-beta, en [[alfa-beta|Alfa-beta]], clase 2;
-- minimax con corte, en [[cortar-y-evaluar|Cortar y evaluar]], clase 3;
+- minimax con corte, en [[cortar-y-evaluar|Cortar y evaluar a mano]], clase 3;
 - Monte Carlo, en [[simular-en-vez-de-evaluar|Simular en vez de evaluar]], clase 3;
 - el análisis hacia atrás no tiene página propia: es la idea de la sección
   5, aplicada a un grafo entero.
