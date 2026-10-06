@@ -65,6 +65,21 @@ $$
 \end{aligned}
 $$
 
+**El mismo modelo, en forma genérica.** Con un conjunto de escenarios $\mathcal{E}$, la probabilidad $p_e$ y la demanda $d_e$ de cada escenario $e$, el precio $r$, el costo $c$ y la capacidad $K$:
+
+$$
+\begin{aligned}
+\max_{q,\,s}\quad & \sum_{e\in\mathcal{E}} p_e\,(r\,s_e - c\,q) \\
+\text{s.a.}\quad
+& s_e - q \le 0 \quad \forall e\in\mathcal{E}\\
+& s_e - d_e \le 0 \quad \forall e\in\mathcal{E}\\
+& q - K \le 0\\
+& q \in \mathbb{Z}_{\ge 0},\quad s_e \ge 0 \quad \forall e\in\mathcal{E}
+\end{aligned}
+$$
+
+En este examen $\mathcal{E} = \{N, E\}$, $p = (0.7,\ 0.3)$, $d = (30,\ 50)$, $r = 40$, $c = 15$ y $K = 60$. Es la misma notación de la panadería: $q$ no lleva índice $e$ porque se decide antes de saber el escenario, y cada $s_e$ sí lo lleva.
+
 Por qué cada parte:
 
 - **Variables.** $q$ (sándwiches) es lo que se prepara esta noche. Es **una sola** variable para los dos escenarios, porque se decide **antes** de saber qué día será: el café no puede preparar 30 si es normal y 50 si es examen. $s_N$ y $s_E$ (sándwiches) son **auxiliares**: lo vendido en cada escenario. Hacen falta porque lo vendido es $\min(q, \text{demanda})$, y un mínimo no es lineal.
@@ -78,7 +93,7 @@ Por qué cada parte:
 
 - Escribir el objetivo sin simplificar, como $0.7(40s_N - 15q) + 0.3(40s_E - 15q)$.
 - Declarar $s_N, s_E$ enteras.
-- Con índice de escenario: $\max \sum_{e} p_e\,(40\,s_e - 15\,q)$ s.a. $s_e \le q$, $s_e \le d_e$ para todo $e$.
+- Escribirlo solo en la forma genérica, siempre que digas qué valen $\mathcal{E}$, $p_e$, $d_e$, $r$, $c$ y $K$.
 - Agregar variables de sobrante $r_e = q - s_e \ge 0$; son redundantes, pero no están mal si están bien escritas.
 
 **Errores típicos:** usar dos variables de producción ($q_N$, $q_E$), que es decidir sabiendo el futuro; escribir $\min(q, 30)$ en el objetivo (no es lineal, y el enunciado pedía un modelo lineal); maximizar la demanda esperada $0.7\cdot30 + 0.3\cdot50 = 36$ como si fuera una venta segura; restar el costo solo de lo vendido.
