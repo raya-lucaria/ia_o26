@@ -171,9 +171,10 @@ cambia $U$**, en los finales donde la partida acabó porque el jugador de
 turno no tenía jugada. Los casos se revisan **en orden**: primero llegar,
 luego capturar todo y solo si no pasó nada de eso, quedarse sin jugada.
 
-$$U(s)=\begin{cases}+1 & \text{si Blancas llegó o capturó todo},\\
--1 & \text{si Negras llegó o capturó todo},\\
-\phantom{-}0 & \text{si nadie llegó ni capturó todo y al jugador de turno no le queda jugada}.\end{cases}$$
+- $U(s)=+1$ si Blancas llegó o capturó todo;
+- $U(s)=-1$ si Negras llegó o capturó todo;
+- $U(s)=0$ si nadie llegó ni capturó todo y al jugador de turno no le
+  queda jugada.
 
 **2. Contar.** Los conteos no cambian. Una partida termina en los mismos
 tableros que antes; solo cambia el dato de $U$ en algunos finales. Siguen

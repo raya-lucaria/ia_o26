@@ -107,11 +107,14 @@ punto de silla**: hay que mezclar.
 
 $$\begin{aligned}
 \max_{p,\,v}\quad & v\\
-\text{sujeto a}\quad & 60p+70(1-p)\ \ge\ v \quad \text{(se cubre abierto)},\\
-& 80p+40(1-p)\ \ge\ v \quad \text{(se cubre al centro)},\\
+\text{sujeto a}\quad & 60p+70(1-p)\ \ge\ v,\\
+& 80p+40(1-p)\ \ge\ v,\\
 & 0\le p\le 1,\\
 & v \text{ libre}.
 \end{aligned}$$
+
+La primera restricción es quien resta cubriéndose abierto; la segunda,
+cubriéndose al centro.
 
 **5. Usar los datos: el dibujo.** Las rectas son $70-10p$, que baja de 70 a
 60, y $40+40p$, que sube de 40 a 80. Los vértices de arriba de la envolvente
@@ -125,7 +128,7 @@ inferior son:
 
 El cruce sale de igualar las rectas:
 
-$$70-10p=40+40p\ \Longrightarrow\ 30=50p\ \Longrightarrow\ p=\tfrac35,$$
+$$\begin{aligned}70-10p&=40+40p\\ 30&=50p\\ p&=\tfrac35,\end{aligned}$$
 
 con $v=70-10\cdot\tfrac35=64$. Quien saca saca abierto con probabilidad
 $3/5$ y al centro con $2/5$, y asegura **64 %** de los puntos, 4 puntos más
@@ -135,7 +138,7 @@ que el mejor saque fijo.
 $(q,1-q)$ deja a quien saca en $60q+80(1-q)=80-20q$; contra un saque al
 centro, en $70q+40(1-q)=40+30q$. Igualando,
 
-$$80-20q=40+30q\ \Longrightarrow\ 40=50q\ \Longrightarrow\ q=\tfrac45.$$
+$$\begin{aligned}80-20q&=40+30q\\ 40&=50q\\ q&=\tfrac45.\end{aligned}$$
 
 Con esa $q$, los dos saques dan $80-16=64$. Quien resta se cubre abierto con
 probabilidad $4/5$ y asegura que quien saca no pase de **64 %**. Los dos
@@ -236,8 +239,8 @@ o una reputación.
 **5. Calcular la mezcla (opcional).** Si el otro sigue con probabilidad
 $1/10$:
 
-$$\text{Desviarse: } \tfrac{9}{10}(0)+\tfrac{1}{10}(-1)=-\tfrac{1}{10},\qquad
-\text{Seguir: } \tfrac{9}{10}(1)+\tfrac{1}{10}(-10)=-\tfrac{1}{10}.$$
+- Desviarse: $\tfrac{9}{10}(0)+\tfrac{1}{10}(-1)=-\tfrac{1}{10}$;
+- Seguir: $\tfrac{9}{10}(1)+\tfrac{1}{10}(-10)=-\tfrac{1}{10}$.
 
 Las dos acciones dan lo mismo: el conductor de la fila queda **indiferente**.
 Si los dos siguen con probabilidad $1/10$, ninguno gana cambiando su mezcla;

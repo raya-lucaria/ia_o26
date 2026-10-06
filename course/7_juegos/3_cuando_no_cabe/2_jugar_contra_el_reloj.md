@@ -25,8 +25,9 @@ jugada más allá.
 > si gana Negras.
 
 Seguimos con la posición de [[cortar-y-evaluar|la página anterior]] y la
-misma evaluación: $\mathrm{EVAL}=10\cdot(\text{peones blancos}-\text{peones negros})+(\text{avance blanco}-\text{avance negro})$,
-y $100\cdot U=\pm100$ en los finales. Como allá, $d$ es **la profundidad que
+misma evaluación, $\mathrm{EVAL}=10\cdot\text{material}+\text{avance}$: el
+material es peones blancos menos peones negros, y el avance, avance blanco
+menos avance negro. En los finales, $100\cdot U=\pm100$. Como allá, $d$ es **la profundidad que
 queda**: en la raíz, la profundidad de toda la búsqueda.
 
 ::: table {#jue-c3-horizonte-reloj title="La posición de la clase · mueven Blancas"}

@@ -100,7 +100,10 @@ Para medir el avance, el de un peón blanco es cuántas filas subió desde la
 fila 1; el de un peón negro, cuántas bajó desde la fila 4. La evaluación de
 esta clase es:
 
-$$\mathrm{EVAL}(s)=10\cdot(\text{peones blancos}-\text{peones negros})+(\text{avance blanco}-\text{avance negro}).$$
+$$\mathrm{EVAL}(s)=10\cdot\text{material}+\text{avance},$$
+
+donde **material** es peones blancos menos peones negros, y **avance** es el
+avance blanco menos el avance negro.
 
 Los dos rasgos se restan porque lo que es bueno para Negras es malo para
 Blancas: la evaluación, igual que $U$, se mide en puntos de MAX.
@@ -219,11 +222,11 @@ Con profundidad 1, Blancas **captura**. Parece obvio: un peón de más.
 las respuestas de Negras**, y evaluamos. Negras es MIN: de sus respuestas,
 elige la de menor $\mathrm{EVAL}$.
 
-| Jugada de Blancas | Respuestas de Negras y su $\mathrm{EVAL}$ | Peor para Blancas |
-|---|---|---:|
-| a1-a2 | c3xd2: $-10$ · a4-a3: $1$ · b4-b3: $1$ | $-10$ |
-| d2-d3 | a4-a3: $1$ · b4-b3: $1$ | $1$ |
-| d2xc3 | ? | ? |
+- **a1-a2.** Negras puede responder c3xd2 ($-10$), a4-a3 ($1$) o b4-b3
+  ($1$). Lo peor para Blancas: $-10$.
+- **d2-d3.** Negras puede responder a4-a3 ($1$) o b4-b3 ($1$). Lo peor para
+  Blancas: $1$.
+- **d2xc3.** Es el ejercicio que sigue.
 
 Tras a1-a2, Negras captura en d2 con el peón de c3. Tras d2-d3, el peón de c3
 queda bloqueado por c2 y ya no tiene a quién capturar.
@@ -272,7 +275,7 @@ profundidad 3?**
 A profundidad 3 se mira jugada de Blancas, respuesta de Negras y otra jugada
 de Blancas. La computadora da:
 
-| Jugada | Prof. 1 | Prof. 2 | Prof. 3 | Exacto, en la escala de los cortes (±100) |
+| Jugada | Prof. 1 | Prof. 2 | Prof. 3 | Exacto |
 |---|---:|---:|---:|---:|
 | a1-a2 | 2 | $-10$ | $-9$ | $-100$ |
 | d2-d3 | 2 | 1 | **100** | $+100$ |

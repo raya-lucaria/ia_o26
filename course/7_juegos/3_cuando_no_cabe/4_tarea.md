@@ -70,7 +70,10 @@ un borde.
 propuesta posible usa dos rasgos: las **amenazas**, líneas con dos marcas
 propias y la tercera casilla vacía, y las líneas abiertas:
 
-$$\mathrm{EVAL}_{\text{propia}}(s)=5\cdot(\text{amenazas de X}-\text{amenazas de O})+(\text{abiertas para X}-\text{abiertas para O}).$$
+$$\mathrm{EVAL}_{\text{propia}}(s)=5\cdot\text{amenazas}+\text{abiertas},$$
+
+donde **amenazas** son las de X menos las de O, y **abiertas**, las líneas
+abiertas para X menos las abiertas para O.
 
 Expresa que una amenaza vale lo mismo que cinco líneas abiertas: prefiere
 estar a una jugada de ganar antes que tener muchas opciones lejanas. Lo que
@@ -143,7 +146,10 @@ Las reglas son las de la clase: tablero de 4×4, gana quien llega a la fila
 del rival, captura todo o deja al rival sin jugada, y los finales valen
 $100\cdot U=\pm100$. La evaluación es la misma:
 
-$$\mathrm{EVAL}(s)=10\cdot(\text{peones blancos}-\text{peones negros})+(\text{avance blanco}-\text{avance negro}).$$
+$$\mathrm{EVAL}(s)=10\cdot\text{material}+\text{avance},$$
+
+donde **material** es peones blancos menos peones negros, y **avance** es el
+avance blanco menos el avance negro.
 
 ::: exercise {#jue-tarea-3-ej-peones title="Sigue la decisión al crecer la profundidad"}
 Mueven Blancas en esta posición:

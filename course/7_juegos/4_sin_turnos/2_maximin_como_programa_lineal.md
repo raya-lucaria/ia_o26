@@ -36,7 +36,8 @@ así:
 
 $$\begin{aligned}
 \max_{p,\,v}\quad & v\\
-\text{sujeto a}\quad & \sum_i p_i\,U(i,j)\ \ge\ v \quad \text{para cada columna } j,\\
+\text{sujeto a}\quad & \sum_i p_i\,U(i,j)\ \ge\ v\\
+& \qquad\text{para cada columna } j,\\
 & \sum_i p_i = 1,\\
 & p_i \ge 0 \quad \text{para cada fila } i,\\
 & v \text{ libre}.
@@ -95,11 +96,14 @@ Aquí $p$ es la probabilidad de tirar a la **izquierda**. El programa queda:
 
 $$\begin{aligned}
 \max_{p,\,v}\quad & v\\
-\text{sujeto a}\quad & 40p+80(1-p)\ \ge\ v \quad \text{(portero a la izquierda)},\\
-& 90p+50(1-p)\ \ge\ v \quad \text{(portero a la derecha)},\\
+\text{sujeto a}\quad & 40p+80(1-p)\ \ge\ v,\\
+& 90p+50(1-p)\ \ge\ v,\\
 & 0\le p\le 1,\\
 & v \text{ libre}.
 \end{aligned}$$
+
+La primera restricción es el portero que se lanza a la izquierda; la
+segunda, a la derecha.
 
 Simplificando, las dos restricciones son $80-40p\ge v$ y $50+40p\ge v$.
 
@@ -135,7 +139,7 @@ después baja, siguiendo la otra.
 El máximo está donde la envolvente deja de subir y empieza a bajar: donde las
 dos rectas se cruzan.
 
-$$80-40p=50+40p\ \Longrightarrow\ 30=80p\ \Longrightarrow\ p=\tfrac38.$$
+$$\begin{aligned}80-40p&=50+40p\\ 30&=80p\\ p&=\tfrac38.\end{aligned}$$
 
 En ese punto, $v=80-40\cdot\tfrac38=80-15=65$.
 :::
@@ -198,18 +202,21 @@ tires a donde tires:
 
 $$\begin{aligned}
 \min_{q,\,w}\quad & w\\
-\text{sujeto a}\quad & 40q+90(1-q)\ \le\ w \quad \text{(tiro a la izquierda)},\\
-& 80q+50(1-q)\ \le\ w \quad \text{(tiro a la derecha)},\\
+\text{sujeto a}\quad & 40q+90(1-q)\ \le\ w,\\
+& 80q+50(1-q)\ \le\ w,\\
 & 0\le q\le 1,\\
 & w \text{ libre}.
 \end{aligned}$$
+
+La primera restricción es el tiro a la izquierda; la segunda, a la
+derecha.
 
 Simplificando, sus dos rectas son $90-50q$ y $50+30q$. Ahora él busca el
 punto más **bajo** de la envolvente **superior**, la más alta de las dos
 rectas para cada $q$. La primera baja de 90 a 40 y la segunda sube de 50 a
 80, así que ese punto está en el cruce:
 
-$$90-50q=50+30q\ \Longrightarrow\ 40=80q\ \Longrightarrow\ q=\tfrac12.$$
+$$\begin{aligned}90-50q&=50+30q\\ 40&=80q\\ q&=\tfrac12.\end{aligned}$$
 
 Compruébalo en la tabla:
 
@@ -272,12 +279,15 @@ probabilidades y $v$: cuatro variables. El programa, con las columnas de
 
 $$\begin{aligned}
 \max_{p,\,v}\quad & v\\
-\text{sujeto a}\quad & p_2-p_3\ \ge\ v \quad \text{(rival saca piedra)},\\
-& -p_1+p_3\ \ge\ v \quad \text{(rival saca papel)},\\
-& p_1-p_2\ \ge\ v \quad \text{(rival saca tijera)},\\
+\text{sujeto a}\quad & p_2-p_3\ \ge\ v,\\
+& -p_1+p_3\ \ge\ v,\\
+& p_1-p_2\ \ge\ v,\\
 & p_1+p_2+p_3=1,\\
 & p_1,p_2,p_3\ge0,\quad v \text{ libre}.
 \end{aligned}$$
+
+Las tres primeras restricciones son el rival que saca piedra, papel y
+tijera, en ese orden.
 
 Aquí $p_1$, $p_2$ y $p_3$ son las probabilidades de piedra, papel y tijera.
 

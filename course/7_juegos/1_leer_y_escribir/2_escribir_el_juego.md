@@ -175,8 +175,12 @@ turno. Como cada una de las 9 casillas tiene 3 opciones, hay $3^9$ tableros
 ($3$ multiplicado por sí mismo 9 veces), y con 2 turnos, $2\times 3^9$
 pares. El inicial es:
 
-$$s_0=(\tau_0,\ B),\qquad \tau_0(x)=\begin{cases}B & \text{si } x\in\{a1,b1,c1\},\\
-N & \text{si } x\in\{a3,b3,c3\},\\ \cdot & \text{en las demás casillas}.\end{cases}$$
+$$s_0=(\tau_0,\ B),$$
+
+donde $\tau_0$ es el tablero inicial:
+
+$$\tau_0(x)=\begin{cases}B & \text{si } x\in\{a1,b1,c1\},\\
+N & \text{si } x\in\{a3,b3,c3\},\\ \cdot & \text{en las demás}.\end{cases}$$
 
 **Por qué guardamos el turno.** En general el tablero solo no basta: en
 ajedrez la misma posición puede tocarle a cualquiera de los dos, y quien
@@ -545,16 +549,28 @@ El jugador de turno elige $a\in A(s)$. Todo lo demás lo deciden las reglas:
 a dónde lleva la jugada, cuándo termina y cuánto vale.
 :::
 
-::: table {#jue-c1-piezas title="Las siete piezas, en general, en hexapawn y en ajedrez"}
-| Pieza | De dónde a dónde | Qué significa | En hexapawn | En ajedrez |
-|---|---|---|---|---|
-| $S$ | Subconjunto de $\mathcal{S}$ | Las situaciones alcanzables | Pares (tablero, turno) | Tablero, turno, enroques, al paso, contador de 50 jugadas, posiciones ya vistas |
-| $s_0$ | Elemento de $S$ | Cómo empieza | Tres peones por lado, mueve Blancas | La posición inicial, mueven blancas |
-| $S_F$ | Subconjunto de $S$ | Dónde termina | Llegar, capturar todo o dejar sin jugada | Mate, ahogado, repetición, 50 jugadas, material insuficiente |
-| $\mathrm{Pl}$ | $S\setminus S_F\to\{\text{MAX},\text{MIN}\}$ | Quién mueve | El turno guardado | El turno guardado |
-| $A$ | $S\setminus S_F\to$ conjuntos no vacíos de jugadas | Qué se puede hacer | Avanzar o capturar | Jugadas legales, sin dejar el rey en jaque |
-| $T$ | $\{(s,a): s\in S\setminus S_F,\ a\in A(s)\}\to S$ | Qué pasa al hacerlo | Mover, capturar y cambiar el turno | Mover y actualizar enroques, al paso, contador e historial |
-| $U$ | $S_F\to\mathbb{R}$ | Cuánto vale para MAX | $+1$ o $-1$ | $+1$, $0$ o $-1$ |
+::: table {#jue-c1-piezas title="Las siete piezas, en general"}
+| Pieza | De dónde a dónde | Qué significa |
+|---|---|---|
+| $S$ | Subconjunto de $\mathcal{S}$ | Las situaciones alcanzables |
+| $s_0$ | Elemento de $S$ | Cómo empieza |
+| $S_F$ | Subconjunto de $S$ | Dónde termina |
+| $\mathrm{Pl}$ | $S\setminus S_F\to\{\text{MAX},\text{MIN}\}$ | Quién mueve |
+| $A$ | $S\setminus S_F\to$ conjuntos no vacíos de jugadas | Qué se puede hacer |
+| $T$ | $\{(s,a): s\in S\setminus S_F,\ a\in A(s)\}\to S$ | Qué pasa al hacerlo |
+| $U$ | $S_F\to\mathbb{R}$ | Cuánto vale para MAX |
+:::
+
+::: table {#jue-c1-piezas-ejemplos title="Las siete piezas, en hexapawn y en ajedrez"}
+| Pieza | En hexapawn | En ajedrez |
+|---|---|---|
+| $S$ | Pares (tablero, turno) | Tablero, turno, enroques, al paso, contador de 50 jugadas, posiciones ya vistas |
+| $s_0$ | Tres peones por lado, mueve Blancas | La posición inicial, mueven blancas |
+| $S_F$ | Llegar, capturar todo o dejar sin jugada | Mate, ahogado, repetición, 50 jugadas, material insuficiente |
+| $\mathrm{Pl}$ | El turno guardado | El turno guardado |
+| $A$ | Avanzar o capturar | Jugadas legales, sin dejar el rey en jaque |
+| $T$ | Mover, capturar y cambiar el turno | Mover y actualizar enroques, al paso, contador e historial |
+| $U$ | $+1$ o $-1$ | $+1$, $0$ o $-1$ |
 :::
 
 **Cuántos estados hay.** Ya con $A$ y $T$ podemos generar $S$: partir de
@@ -584,22 +600,28 @@ a, b y c de esa fila.
 
 Ahora, la partida, vuelta por vuelta:
 
-| Estado | ¿Está en $S_F$? | $\mathrm{Pl}(s)$ | $A(s)$ | Se elige | $T(s,a)$ |
-|---|---|---|---|---|---|
-| $s_0$ | No | MAX | $\{\text{a1-a2},\ \text{b1-b2},\ \text{c1-c2}\}$ | a1-a2 | $s_1$ |
-| $s_1$ | No | MIN | $\{\text{b3-b2},\ \text{b3xa2},\ \text{c3-c2}\}$ | b3xa2 | $s_2$ |
-| $s_2$ | No | MAX | $\{\text{b1-b2},\ \text{b1xa2},\ \text{c1-c2}\}$ | b1-b2 | $s_3$ |
-| $s_3$ | No | MIN | $\{\text{a2-a1},\ \text{a3xb2},\ \text{c3-c2},\ \text{c3xb2}\}$ | a2-a1 | $s_4$ |
-| $s_4$ | **Sí** | — | — | — | — |
+1. **$s_0$**: no está en $S_F$; $\mathrm{Pl}(s_0)=\text{MAX}$;
+   $A(s_0)=\{\text{a1-a2},\ \text{b1-b2},\ \text{c1-c2}\}$.
+   **Se elige a1-a2**, y $T$ lleva a $s_1$.
+2. **$s_1$**: no está en $S_F$; $\mathrm{Pl}(s_1)=\text{MIN}$;
+   $A(s_1)=\{\text{b3-b2},\ \text{b3xa2},\ \text{c3-c2}\}$.
+   **Se elige b3xa2**, y $T$ lleva a $s_2$.
+3. **$s_2$**: no está en $S_F$; $\mathrm{Pl}(s_2)=\text{MAX}$;
+   $A(s_2)=\{\text{b1-b2},\ \text{b1xa2},\ \text{c1-c2}\}$.
+   **Se elige b1-b2**, y $T$ lleva a $s_3$.
+4. **$s_3$**: no está en $S_F$; $\mathrm{Pl}(s_3)=\text{MIN}$;
+   $A(s_3)=\{\text{a2-a1},\ \text{a3xb2},\ \text{c3-c2},\ \text{c3xb2}\}$.
+   **Se elige a2-a1**, y $T$ lleva a $s_4$.
+5. **$s_4$**: **sí** está en $S_F$. La partida terminó.
 
 $s_4$ es final por la condición 1: hay un peón negro en la fila 1. Ganó
 Negras, así que
 
 $$U(s_4)=-1.$$
 
-**Fíjate en la columna «Se elige».** Es la única que no salió de las piezas:
-las demás las calcula cualquiera con las reglas. Las jugadas de esa
-columna las escogimos nosotros, sin ningún criterio.
+**Fíjate en lo que «se elige» en cada vuelta.** Es lo único que no salió de
+las piezas: lo demás lo calcula cualquiera con las reglas. Esas jugadas las
+escogimos nosotros, sin ningún criterio.
 
 ## 11 · La pregunta que falta: qué jugada elegir
 

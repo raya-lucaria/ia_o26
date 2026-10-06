@@ -22,72 +22,72 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 
 ## Conjuntos y funciones
 
-| Símbolo | Se lee | Qué es | Se presenta en |
-|---|---|---|---|
-| $x\in X$ | «equis pertenece a equis mayúscula» | $x$ es un elemento del conjunto $X$; $x\notin X$, que no lo es | Escribir el juego |
-| $\{x,y,z\}$ | «el conjunto equis, ye, zeta» | El conjunto formado por esos elementos | Escribir el juego |
-| $\{x\in X : P(x)\}$ | «los equis de X tales que pe» | Los elementos de $X$ que cumplen la condición $P$ | Escribir el juego |
-| $X\subseteq Y$ | «equis contenido en ye» | Todo elemento de $X$ está en $Y$ | Escribir el juego |
-| $X\setminus Y$ | «equis menos ye» | Los elementos de $X$ que no están en $Y$ | Escribir el juego |
-| $X\times Y$ | «equis por ye» | Los pares $(x,y)$ con $x\in X$ y $y\in Y$. Entre números, $\times$ es multiplicar | Escribir el juego |
-| $\mathbb{R}$ | «los reales» | Los números reales | Escribir el juego |
-| $f: X\to Y$ | «efe de equis en ye» | Una función: a cada elemento de su **dominio** $X$ le asigna uno de su **codominio** $Y$ | Escribir el juego |
-| $3^9$ | «tres a la nueve» | $3$ multiplicado por sí mismo 9 veces | Escribir el juego |
-| Llave con renglones | «por casos» | Una función que da un valor distinto según qué condición se cumpla | Escribir el juego |
+| Símbolo | Cómo se lee y qué es | Se presenta en |
+|---|---|---|
+| $x\in X$ | «equis pertenece a equis mayúscula». $x$ es un elemento del conjunto $X$; $x\notin X$, que no lo es | Escribir el juego |
+| $\{x,y,z\}$ | «el conjunto equis, ye, zeta». El conjunto formado por esos elementos | Escribir el juego |
+| $\{x\in X : P(x)\}$ | «los equis de X tales que pe». Los elementos de $X$ que cumplen la condición $P$ | Escribir el juego |
+| $X\subseteq Y$ | «equis contenido en ye». Todo elemento de $X$ está en $Y$ | Escribir el juego |
+| $X\setminus Y$ | «equis menos ye». Los elementos de $X$ que no están en $Y$ | Escribir el juego |
+| $X\times Y$ | «equis por ye». Los pares $(x,y)$ con $x\in X$ y $y\in Y$. Entre números, $\times$ es multiplicar | Escribir el juego |
+| $\mathbb{R}$ | «los reales». Los números reales | Escribir el juego |
+| $f: X\to Y$ | «efe de equis en ye». Una función: a cada elemento de su **dominio** $X$ le asigna uno de su **codominio** $Y$ | Escribir el juego |
+| $3^9$ | «tres a la nueve». $3$ multiplicado por sí mismo 9 veces | Escribir el juego |
+| Llave con renglones | «por casos». Una función que da un valor distinto según qué condición se cumpla | Escribir el juego |
 
 ## Grafos
 
-| Símbolo | Se lee | Qué es | Se presenta en |
-|---|---|---|---|
-| $G=(\mathcal{N},E)$ | «ge igual a ene caligráfica, e» | Un grafo dirigido: nodos $\mathcal{N}$ y aristas $E\subseteq\mathcal{N}\times\mathcal{N}$ | Escribir el juego |
-| $(u,v)$ | «u, ve» | Una arista: una flecha del nodo $u$ al nodo $v$; $v$ es **hijo** de $u$ | Escribir el juego |
-| $G=(S,E)$ | «ge igual a ese, e» | El grafo de un juego: un nodo por estado y una arista por jugada, $E=\{(s,T(s,a))\}$ | El juego como grafo |
-| n1 → n3 | «ene uno y luego ene tres» | Un camino en el grafo: de un nodo a su hijo | El juego como grafo |
+| Símbolo | Cómo se lee y qué es | Se presenta en |
+|---|---|---|
+| $G=(\mathcal{N},E)$ | «ge igual a ene caligráfica, e». Un grafo dirigido: nodos $\mathcal{N}$ y aristas $E\subseteq\mathcal{N}\times\mathcal{N}$ | Escribir el juego |
+| $(u,v)$ | «u, ve». Una arista: una flecha del nodo $u$ al nodo $v$; $v$ es **hijo** de $u$ | Escribir el juego |
+| $G=(S,E)$ | «ge igual a ese, e». El grafo de un juego: un nodo por estado y una arista por jugada, $E=\{(s,T(s,a))\}$ | El juego como grafo |
+| n1 → n3 | «ene uno y luego ene tres». Un camino en el grafo: de un nodo a su hijo | El juego como grafo |
 
 ## Hexapawn
 
-| Símbolo | Se lee | Qué es | Se presenta en |
-|---|---|---|---|
-| $C$ | «ce» | Las nueve casillas, de $a1$ a $c3$: la letra es la columna y el número, la fila | Escribir el juego |
-| $B$, $N$, $\cdot$ | «be», «ene», «punto» | Lo que hay en una casilla: peón blanco, peón negro o nada. $B$ y $N$ también nombran el turno y a los jugadores, Blancas y Negras | Leer el reglamento y Escribir el juego |
-| $\tau: C\to\{B,N,\cdot\}$ | «tau» | Un tablero: a cada casilla le asigna lo que hay en ella; $\tau_0$ es el tablero inicial | Escribir el juego |
-| a1-a2, c1xb2 | «a uno a a dos», «c uno por b dos» | Una jugada: casilla de salida, guion **-** si avanza o **x** si captura, casilla de llegada | Escribir el juego |
-| «tras a1-a2» | «tras a uno a dos» | El estado $T(s_0,\text{a1-a2})$ al que se llega con esa jugada | Escribir el juego |
-| n1 | «ene uno» | El estado tras a1-a2 y b3-b2 | Escribir el juego |
-| n2, …, n13 | «ene dos» | Los demás estados del subgrafo de n1, en el orden en que se recorren | El juego como grafo |
+| Símbolo | Cómo se lee y qué es | Se presenta en |
+|---|---|---|
+| $C$ | «ce». Las nueve casillas, de $a1$ a $c3$: la letra es la columna y el número, la fila | Escribir el juego |
+| $B$, $N$, $\cdot$ | «be», «ene», «punto». Lo que hay en una casilla: peón blanco, peón negro o nada. $B$ y $N$ también nombran el turno y a los jugadores, Blancas y Negras | Leer el reglamento y Escribir el juego |
+| $\tau: C\to\{B,N,\cdot\}$ | «tau». Un tablero: a cada casilla le asigna lo que hay en ella; $\tau_0$ es el tablero inicial | Escribir el juego |
+| a1-a2, c1xb2 | «a uno a a dos», «c uno por b dos». Una jugada: casilla de salida, guion **-** si avanza o **x** si captura, casilla de llegada | Escribir el juego |
+| «tras a1-a2» | «tras a uno a dos». El estado $T(s_0,\text{a1-a2})$ al que se llega con esa jugada | Escribir el juego |
+| n1 | «ene uno». El estado tras a1-a2 y b3-b2 | Escribir el juego |
+| n2, …, n13 | «ene dos». Los demás estados del subgrafo de n1, en el orden en que se recorren | El juego como grafo |
 
 ## Las siete piezas de un juego
 
-| Símbolo | Se lee | Qué es | Se presenta en |
-|---|---|---|---|
-| $\mathcal{S}$ | «ese caligráfica» | El universo: todas las situaciones que se pueden escribir, se alcancen o no | Escribir el juego |
-| $S$ | «ese» | Los estados: las situaciones que se alcanzan desde $s_0$ | Escribir el juego |
-| $s$, $s_0$ | «ese», «ese cero» | Un estado cualquiera; el estado inicial | Escribir el juego |
-| $s_1, s_2, \dots$ | «ese uno, ese dos» | Los estados de la partida trazada con las piezas, en orden | Escribir el juego |
-| $S_F$ | «ese efe» | Los estados finales: donde la partida terminó | Escribir el juego |
-| $\mathrm{Pl}(s)$ | «pe ele de ese» | El jugador que mueve en un estado no final: MAX o MIN. Traduce el turno guardado. En un juego con azar también puede valer AZAR | Escribir el juego |
-| MAX, MIN | «max», «min» | MAX es el jugador desde cuyo lado se mide la utilidad y busca que sea alta; MIN busca que sea baja | Escribir el juego |
-| $\mathcal{A}$ | «a caligráfica» | Todas las jugadas que se pueden escribir en el juego | Escribir el juego |
-| $a$ | «a» | Una jugada cualquiera (no es la columna a) | Escribir el juego |
-| $A(s)$ | «a de ese» | Las jugadas permitidas en un estado no final; nunca está vacío | Escribir el juego |
-| $T(s,a)$ | «te de ese, a» | El estado al que lleva la jugada $a$ desde $s$. Dominio: $\{(s,a): s\in S\setminus S_F,\ a\in A(s)\}$ | Escribir el juego |
-| $U(s)$ | «u de ese» | Lo que vale un final para MAX; para MIN vale $-U(s)$ | Escribir el juego |
+| Símbolo | Cómo se lee y qué es | Se presenta en |
+|---|---|---|
+| $\mathcal{S}$ | «ese caligráfica». El universo: todas las situaciones que se pueden escribir, se alcancen o no | Escribir el juego |
+| $S$ | «ese». Los estados: las situaciones que se alcanzan desde $s_0$ | Escribir el juego |
+| $s$, $s_0$ | «ese», «ese cero». Un estado cualquiera; el estado inicial | Escribir el juego |
+| $s_1, s_2, \dots$ | «ese uno, ese dos». Los estados de la partida trazada con las piezas, en orden | Escribir el juego |
+| $S_F$ | «ese efe». Los estados finales: donde la partida terminó | Escribir el juego |
+| $\mathrm{Pl}(s)$ | «pe ele de ese». El jugador que mueve en un estado no final: MAX o MIN. Traduce el turno guardado. En un juego con azar también puede valer AZAR | Escribir el juego |
+| MAX, MIN | «max», «min». MAX es el jugador desde cuyo lado se mide la utilidad y busca que sea alta; MIN busca que sea baja | Escribir el juego |
+| $\mathcal{A}$ | «a caligráfica». Todas las jugadas que se pueden escribir en el juego | Escribir el juego |
+| $a$ | «a». Una jugada cualquiera (no es la columna a) | Escribir el juego |
+| $A(s)$ | «a de ese». Las jugadas permitidas en un estado no final; nunca está vacío | Escribir el juego |
+| $T(s,a)$ | «te de ese, a». El estado al que lleva la jugada $a$ desde $s$. Dominio: $\{(s,a): s\in S\setminus S_F,\ a\in A(s)\}$ | Escribir el juego |
+| $U(s)$ | «u de ese». Lo que vale un final para MAX; para MIN vale $-U(s)$ | Escribir el juego |
 
 ## Resolver
 
-| Símbolo | Se lee | Qué es | Se presenta en |
-|---|---|---|---|
-| $V(s)$ | «ve de ese» | El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo | El juego como grafo y Minimax a mano |
-| $\max_{a\in A(s)} f(a)$ | «máximo de efe» | El número más alto que alcanza $f$ entre las jugadas de $A(s)$ | Diagnosticar el juego |
-| $\operatorname*{arg\,max}_{a\in A(s)} f(a)$ | «arg max de efe» | El conjunto de jugadas que alcanzan ese máximo; puede tener varias | Diagnosticar el juego |
-| $a^{∗}$ | «a estrella» | Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias | Minimax a mano |
-| $v$ | «ve» | En un procedimiento: el mejor valor visto hasta ahora entre los hijos del nodo actual | Minimax como algoritmo |
-| $-\infty$, $+\infty$ | «menos infinito», «más infinito» | Marcas menores y mayores que cualquier utilidad: el primer hijo siempre las reemplaza | Minimax como algoritmo |
-| $b$, $m$ | «be», «eme» | Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) | Minimax como algoritmo |
-| AZAR | «azar» | Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda | Cuando decide un dado |
-| $\Pr(a)$ | «probabilidad de a» | En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 | Cuando decide un dado |
-| $\alpha$, $\beta$ | «alfa», «beta» | Lo que MAX y lo que MIN ya tienen asegurado con alguna alternativa en el camino desde la raíz | Alfa-beta a mano |
-| $\bar u(s')$, $N(s')$ | «u barra», «ene» | En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron | Simular en vez de evaluar |
+| Símbolo | Cómo se lee y qué es | Se presenta en |
+|---|---|---|
+| $V(s)$ | «ve de ese». El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo | El juego como grafo y Minimax a mano |
+| $\max_{a\in A(s)} f(a)$ | «máximo de efe». El número más alto que alcanza $f$ entre las jugadas de $A(s)$ | Diagnosticar el juego |
+| $\operatorname*{arg\,max}_{a\in A(s)} f(a)$ | «arg max de efe». El conjunto de jugadas que alcanzan ese máximo; puede tener varias | Diagnosticar el juego |
+| $a^{∗}$ | «a estrella». Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias | Minimax a mano |
+| $v$ | «ve». En un procedimiento: el mejor valor visto hasta ahora entre los hijos del nodo actual | Minimax como algoritmo |
+| $-\infty$, $+\infty$ | «menos infinito», «más infinito». Marcas menores y mayores que cualquier utilidad: el primer hijo siempre las reemplaza | Minimax como algoritmo |
+| $b$, $m$ | «be», «eme». Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) | Minimax como algoritmo |
+| AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda | Cuando decide un dado |
+| $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 | Cuando decide un dado |
+| $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX y lo que MIN ya tienen asegurado con alguna alternativa en el camino desde la raíz | Alfa-beta a mano |
+| $\bar u(s')$, $N(s')$ | «u barra», «ene». En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron | Simular en vez de evaluar |
 
 ## Términos
 
