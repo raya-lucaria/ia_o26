@@ -4,7 +4,7 @@ Registro de fuentes de `course/7_juegos/`. Como en optimización, **un solo
 archivo cubre la unidad**. Lo que hay que respaldar son de dos tipos:
 
 - **Números de los juegos de la unidad** (hexapawn, octapawn, gato, monedas,
-  el dado, los juegos simultáneos). No se citan de ninguna fuente: se
+  los juegos simultáneos). No se citan de ninguna fuente: se
   **calculan** por fuerza bruta o con fracciones exactas en `tools/juegos.py`,
   y `tools/test_juegos.py` comprueba cada número que la prosa cita.
 - **Hechos externos** (ajedrez, Gardner, Deep Blue, AlphaZero, MCTS, AlphaGo), con su fuente
@@ -20,12 +20,15 @@ Las fuentes se consultaron el **1 de octubre de 2026**.
 | La partida trazada en «Escribir el juego»: a1-a2, b3xa2, b1-b2, a2-a1; las $A(s)$ de cada paso, el final $s_4$ y $U(s_4)=-1$ | `jugadas`, `mover`, `ganador` | `test_clase_1_partida_trazada_con_las_piezas` |
 | En 3×3 el tablero determina el turno y $k$; en 4×4, 2925 tableros se alcanzan con los dos turnos | `tableros_con_dos_turnos`, `tableros_con_dos_contadores` | `test_clase_1_hexapawn` |
 | 33 estados no finales con Blancas al turno, 37 con Negras, 65 finales (8 por falta de jugada) | `contar_estados` | `test_clase_1_hexapawn` |
-| Con juego perfecto gana Negras (valor −1; −4 con puntos de torneo); con «sin jugada = empate», valor 0 | `valor` | `test_clase_1_tarea`, `test_clase_2_minimax_y_alfa_beta` |
+| Con juego perfecto gana Negras: valor −1, y las tres aperturas valen −1; con «sin jugada = empate», valor 0 | `valor` | `test_clase_1_tarea`, `test_clase_2_minimax_a_mano` |
 | Gato: 255 168 partidas, 549 946 nodos, 5478 tableros; el turno se deduce; valor 0 | `gato_conteos`, `gato_turno_se_deduce`, `gato_valor` | `test_clase_1_tarea`, `test_clase_3_tarea_gato` |
-| Subárbol de la clase 2: 13 nodos, valor 7; alfa-beta visita 5 (corte alfa) u 8 con el orden invertido (corte beta) | `alfa_beta` | `test_clase_2_minimax_y_alfa_beta` |
+| Subgrafo de n1 en la clase 2: 13 nodos, $V(\text{n1})=+1$ con c1-c2, $V(\text{n3})=-1$ con c3xb2; tras a1-a2, solo b3xa2 gana para Negras | `valor` | `test_clase_2_minimax_a_mano` |
+| Minimax como algoritmo: 162 jugadas entre 70 estados no finales, máximo 4; cota $1+4+\cdots+4^7=21\,845$; el caso e1 tiene 11 nodos y vale −1 con a3-a2 | `jugadas`, `contar_arbol`, `valor` | `test_clase_2_minimax_como_algoritmo` |
+| Azar en hexapawn: el volado vale 0; contra una Negras al azar, n3 vale 1/3 y las aperturas 5/9, 3/4 y 5/9 (gana 7/9, 7/8 y 7/9) | `valor`, `expectiminimax_rival_al_azar` | `test_clase_2_azar` |
+| Alfa-beta desde n1: 5 nodos (corte alfa) u 8 con el orden invertido (corte beta); 13 con desigualdades estrictas; 2 con la ventana $[-1,+1]$. Juego completo: 82 u 72, y 49 o 53 con la ventana | `alfa_beta`, `alfa_beta_traza` | `test_clase_2_alfa_beta` |
 | Octapawn 4×4: 4 197 973 nodos, 20 286 estados, gana el primero | `contar_arbol`, `valor` | `test_clase_3_no_cabe_y_horizonte` |
 | Posiciones de horizonte de la clase 3 y su tarea | `minimax_limitado`, `evaluar_peones` | `test_clase_3_no_cabe_y_horizonte` |
-| Monedas (2,1,5,3), dado, cerdo reducido | `monedas_*`, `dado_ejemplo`, `cerdo*` | `test_clase_2_dado_y_tarea` |
+| Tarea de la clase 2: monedas (2,1,5,3), valor +3; n1 con «sin jugada = empate» vale 0, y alfa-beta genera 10 u 8 nodos | `monedas_*`, `valor`, `alfa_beta` | `test_clase_2_tarea` |
 | Pares o nones, piedra-papel-tijera, penales, gallina, prisionero | `mezcla_2x2`, `punto_de_silla`, `equilibrios_puros` | `test_clase_4_*` |
 
 ## Hechos externos
