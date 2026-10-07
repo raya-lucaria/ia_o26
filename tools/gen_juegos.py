@@ -18,7 +18,7 @@ from xml.sax.saxutils import escape
 import juegos as j
 from gen_optimizacion import (ACENTO, FONDO, FUENTE, LINEA, SERIE, SUAVE,
                               TEXTO, _rombo, caja, cierre, flecha, linea,
-                              marco, mezclar, texto)
+                              marco, mezclar, punto, texto)
 from unidades import ASSETS_JUEGOS
 
 ASSETS = ASSETS_JUEGOS
@@ -131,14 +131,17 @@ def tipo_de_nodo(tablero, turno):
 
 
 def nodo_svg(cx, cy, tablero, turno, arriba, nuevo=False, expandido=True,
-             w=150, h=160, celda=24, renglones=None, color=None, orden=None, radio=10):
+             w=150, h=160, celda=24, renglones=None, color=None, orden=None, radio=10,
+             escala=None):
     """Un nodo: rotulo arriba, tablero al centro y su tipo en dos renglones.
 
     Borde doble: final. Borde punteado: existe pero aun no se expande.
     Borde grueso de acento: lo nuevo de este paso. `renglones` reemplaza los
     dos renglones de abajo (para escribir su valor), `color` el color de su
     tipo (para el nodo de azar) y `orden` dibuja en la esquina el numero de
-    visita de un recorrido."""
+    visita de un recorrido. `escala` fija el tamano de la letra en vez de
+    deducirlo del ancho (las figuras de alfa-beta por partes lo suben para
+    que se lean en un telefono)."""
     color_tipo, r1, r2 = tipo_de_nodo(tablero, turno)
     color = color or color_tipo
     if renglones:
@@ -151,7 +154,7 @@ def nodo_svg(cx, cy, tablero, turno, arriba, nuevo=False, expandido=True,
     s.append(caja(x, y, w, h, relleno=mezclar(color, 0.16 if nuevo else 0.07),
                   borde=ACENTO if nuevo else color, grosor=3.5 if nuevo else 2,
                   guiones=None if (expandido or final) else "8 5", radio=radio))
-    f = min(1.5, max(0.88, w / 150))  # la letra crece con el nodo
+    f = escala or min(1.5, max(0.88, w / 150))  # la letra crece con el nodo
     s.append(texto(cx, y + 22 * f, arriba, tam=round(16 * f, 1), peso="700"))
     lado = lado_de(tablero) * celda
     s.append(tablero_svg(cx, y + 32 * f + lado / 2, tablero, celda))
@@ -864,42 +867,60 @@ def traza_n1(invertir=False, sin_jugada_empata=False):
     return visitas, cortes
 
 
-def lugares_invertidos():
-    """La geometria del subgrafo reflejada: de izquierda a derecha queda el
-    orden de visita cuando todas las listas de jugadas se invierten."""
-    return {n: (ANCHO - x, nivel) for n, (x, nivel) in LUGARES_N1.items()}
-
-
 def jue_alfa_beta(invertir=False):
     """Alfa-beta desde n1: orden de visita, alfa y beta al llegar, lo que
-    devuelve cada nodo, el corte y los nodos que nunca se generan."""
+    devuelve cada nodo, el corte y, en una caja por subarbol, lo que nunca se
+    genera. Misma geometria que las figuras por partes, con letra chica."""
     nodos = subgrafo_n1()
     visitas, cortes = traza_n1(invertir)
-    fantasmas = [n for n in nodos if n not in visitas]
-    W, y0, dy = ANCHO, 190, 228
-    H = y0 + 5 * dy + 150
+    lugares = LUGARES_INV if invertir else LUGARES_FIJO
+    grupos = FANTASMAS_INV if invertir else FANTASMAS_FIJO
+    # Cada nodo no generado cae en exactamente un fantasma.
+    assert sorted(m for g in grupos.values() for m in g) == sorted(
+        n for n in nodos if n not in visitas)
+    assert all(_subarbol(n) == g for n, g in grupos.items())
+    # El nodo que corta devuelve una cota: ≤ en MIN, ≥ en MAX.
+    cota = {padre: "≤ " if tipo == "alfa" else "≥ " for (padre, _), tipo in cortes.items()}
+    esc = CHICA
+    ys = esc["ys_inv" if invertir else "ys_fijo"]
+    H = round(esc["y0"] + ys[3] + esc["h"] / 2 + 80)
     orden_txt = "invertido" if invertir else "fijo"
     titulo = f"Alfa-beta con el orden {orden_txt}: {len(visitas)} de {len(nodos)} nodos"
     corte_txt = "; ".join(f"corte {tipo} en n{padre}" for (padre, _), tipo in cortes.items())
     desc = (f"El subgrafo de n1 recorrido por alfa-beta con el orden {orden_txt}. "
-            + " ".join(f"{orden}º n{n}: llega con α = {fmt(a)} y β = {fmt(b)} y devuelve {fmt(v)}."
+            + " ".join(f"{orden}º n{n}: llega con α = {fmt(a)} y β = {fmt(b)} y devuelve "
+                       f"{cota.get(n, '')}{fmt(v)}."
                        for n, (orden, _, a, b, v) in sorted(visitas.items(), key=lambda x: x[1][0]))
             + f" {corte_txt}. Nunca se generan: "
-            + ", ".join(f"n{n}" for n in fantasmas) + ".")
-    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 36, titulo, tam=20, peso="700")]
-    out.append(texto(W / 2, 70, "Cada nodo: α y β al llegar, y lo que devuelve", tam=15,
+            + ", ".join(f"n{n}" + (" y lo que cuelga de él" if len(g) > 1 else "")
+                        for n, g in grupos.items()) + ".")
+    out = [marco(ANCHO, H, desc, titulo, desc), texto(ANCHO / 2, 36, titulo, tam=20, peso="700")]
+    out.append(texto(ANCHO / 2, 66, "Cada nodo: α y β al llegar, y lo que devuelve", tam=15,
                      color=SUAVE))
-
-    def renglones(n, t, p):
-        orden, tipo, a, b, v = visitas[n]
+    specs = {}
+    for n, (orden, tipo, a, b, v) in visitas.items():
         if tipo == "final":
-            return None
-        return f"α {fmt(a)} · β {fmt(b)}", f"{tipo} · devuelve {fmt(v)}"
-
-    etiquetas = {arista: f"corte {tipo}" for arista, tipo in cortes.items()}
-    lugares = lugares_invertidos() if invertir else LUGARES_N1
-    _dibujar_n1(out, lugares, y0, dy, renglones=renglones, fantasmas=fantasmas,
-                ordenes={n: v[0] for n, v in visitas.items()}, etiquetas_corte=etiquetas)
+            specs[n] = dict(modo="tablero", renglones=None)
+        else:
+            specs[n] = dict(modo="tablero", renglones=(
+                f"α {fmt(a)} · β {fmt(b)}", f"{tipo} · devuelve {cota.get(n, '')}{fmt(v)}"))
+    for n, g in grupos.items():
+        specs[n] = dict(modo="fantasma",
+                        lineas=["y lo que", "cuelga de él"] if len(g) > 1 else ["no se", "genera"])
+    aristas = []
+    for n in list(visitas) + list(grupos):
+        padre = nodos[n][2]
+        if padre is None:
+            continue
+        tenue = n in grupos
+        t = {11: 0.75, 7: 0.6}.get(n, 0.5) if invertir else (0.62 if tenue else 0.5)
+        aristas.append((padre, n, "tenue" if tenue else "normal",
+                        [(t, nodos[n][3], LINEA if tenue else SUAVE)]))
+    cortes_ = [(padre, [m for m in grupos if nodos[m][2] == padre], f"corte {tipo}", "der",
+                0.18)
+               for (padre, _), tipo in cortes.items()]
+    _dibujar_partes(out, lugares, esc, ys, specs, aristas, cortes_,
+                    ordenes={n: v[0] for n, v in visitas.items()})
     ly = H - 34
     out.append(f'<circle cx="30" cy="{ly + 8}" r="12" fill="{ACENTO}"/>')
     out.append(texto(30, ly + 13, "1º", tam=12, color=FONDO, peso="700"))
@@ -909,6 +930,736 @@ def jue_alfa_beta(invertir=False):
     out.append(caja(440, ly - 3, 30, 22, borde=COLOR_FINAL, grosor=1.5, radio=5))
     out.append(caja(443, ly, 24, 16, borde=COLOR_FINAL, grosor=1.5, radio=4))
     out.append(texto(480, ly + 13, "final, con su U", tam=13, color=SUAVE, anclaje="start"))
+    out.append(cierre())
+    return "".join(out)
+
+
+# ------------------------------------------- alfa-beta por partes (C2) ---
+#
+# «Alfa-beta a mano» enseña la poda primero en arboles chicos sin tableros
+# (A y B, de tools/juegos.py) y luego en n1, por partes. Cada serie conserva
+# la misma geometria de un paso al siguiente para que el lector vea crecer
+# el mismo dibujo: solo cambia que se genera y que va en acento. Estas figuras
+# se leen en un telefono (el sitio las escala a ~350 px), asi que su letra
+# minima es de 22 unidades.
+
+T_TIT, T_TXT, T_VAL = 26, 22, 26
+
+
+def _ancho_pastilla(rotulo, tam, mono=True):
+    return round((0.62 if mono else 0.55) * tam * len(rotulo) + 20)
+
+
+def _pastilla(cx, cy, rotulo, color, tam=T_TXT, mono=True, relleno=FONDO, color_texto=None):
+    """Rotulo en una caja redondeada, centrado en (cx, cy)."""
+    ancho = _ancho_pastilla(rotulo, tam, mono)
+    alto = round(tam * 1.45)
+    return (caja(round(cx - ancho / 2, 1), round(cy - alto / 2, 1), ancho, alto,
+                 relleno=relleno, borde=color, radio=8, grosor=2)
+            + texto(round(cx, 1), round(cy + tam * 0.36, 1), rotulo, tam=tam,
+                    color=color_texto or color, peso="700", fuente=MONO if mono else None))
+
+
+def _arista_ab(x1, ya, x2, yb, estilo="normal", pastillas=(), tam=T_TXT):
+    """Arista del borde inferior del padre (ya) al superior del hijo (yb).
+
+    estilo: 'nueva' (acento), 'normal' o 'tenue' (hacia lo que no se genera).
+    pastillas: [(t, rotulo, color)], t en [0, 1] a lo largo de la arista."""
+    fin = yb - 8
+    if estilo == "tenue":
+        s = [linea(x1, ya, x2, yb, color=LINEA, grosor=2, guiones="6 5")]
+        fin = yb
+    else:
+        s = [flecha(x1, ya, x2, fin, color=ACENTO if estilo == "nueva" else SUAVE,
+                    grosor=3 if estilo == "nueva" else 2,
+                    marcador="p" if estilo == "nueva" else "s")]
+    for t, rotulo, color in pastillas:
+        s.append(_pastilla(x1 + (x2 - x1) * t, ya + (fin - ya) * t, rotulo, color, tam=tam))
+    return "".join(s)
+
+
+def _corte_ab(x_padre, ya, hijos_xy, t, rotulo, lado="der", tam=T_TXT):
+    """La barra de corte: atraviesa las aristas que ya no se siguen, a la
+    fraccion t de su largo, con el tipo de corte en una pastilla al lado.
+    hijos_xy: [(x, y superior)] de los hijos que no se generan."""
+    y = ya + (hijos_xy[0][1] - ya) * t
+    xs = [x_padre + (x - x_padre) * (y - ya) / (yh - ya) for x, yh in hijos_xy]
+    pad = 26 if tam >= T_TXT else 16
+    x_a, x_b = min(xs) - pad, max(xs) + pad
+    ancho = _ancho_pastilla(rotulo, tam, mono=False)
+    cx = x_b + 8 + ancho / 2 if lado == "der" else x_a - 8 - ancho / 2
+    return (linea(round(x_a, 1), round(y, 1), round(x_b, 1), round(y, 1), color=ACENTO,
+                  grosor=7 if tam >= T_TXT else 5)
+            + _pastilla(cx, y, rotulo, ACENTO, tam=tam, mono=False, relleno=ACENTO,
+                        color_texto=FONDO))
+
+
+def _notas_ab(y, renglones, tam=T_TXT):
+    return "".join(texto(ANCHO / 2, y + round(tam * 1.45) * k, r, tam=tam)
+                   for k, r in enumerate(renglones))
+
+
+# ---------------------------------------- los arboles chicos, A y B ---
+
+# Corrido 20 px a la izquierda: a la derecha va la pastilla del corte.
+RAIZ_AB = (330, 190)
+HIJOS_AB = [(170, 400), (490, 400)]
+HOJAS_AB = [(90, 600), (250, 600), (410, 600), (570, 600)]
+NODO_AB_W, NODO_AB_H, HOJA_R = 200, 120, 34
+
+
+def _nodo_gen(cx, cy, tipo, estado, sub=None, modo="normal"):
+    """Nodo de un arbol generico: sin tablero, solo su tipo, lo que vale o
+    sabe ahora (estado) y una aclaracion (sub). modo: 'normal', 'nuevo' o
+    'pormirar' (existe en el arbol, pero el algoritmo aun no llega)."""
+    color = COLOR_MAX if tipo == "MAX" else COLOR_MIN
+    w, h = NODO_AB_W, NODO_AB_H
+    x, y = cx - w / 2, cy - h / 2
+    if modo == "pormirar":
+        return (caja(x, y, w, h, relleno=FONDO, borde=LINEA, grosor=2, guiones="8 6")
+                + texto(cx, cy - 22, tipo, tam=T_TXT, color=SUAVE, peso="700")
+                + texto(cx, cy + 20, "por mirar", tam=T_TXT, color=SUAVE))
+    nuevo = modo == "nuevo"
+    s = [caja(x, y, w, h, relleno=mezclar(color, 0.16 if nuevo else 0.07),
+              borde=ACENTO if nuevo else color, grosor=3.5 if nuevo else 2)]
+    s.append(texto(cx, cy - 30, tipo, tam=T_TXT, color=color, peso="700"))
+    s.append(texto(cx, cy + 10 if sub else cy + 18, estado, tam=T_VAL, peso="700"))
+    if sub:
+        s.append(texto(cx, cy + 44, sub, tam=T_TXT, color=SUAVE))
+    return "".join(s)
+
+
+def _hoja(cx, cy, valor, modo="normal", debajo=None):
+    """Hoja de un arbol generico: un circulo con su numero, borde doble como
+    los finales. modo: 'normal', 'nuevo', 'pormirar' o 'fantasma' (no se
+    genera: punteada y con «?»). `debajo`: rotulo en acento bajo la hoja."""
+    r = HOJA_R
+    s = []
+    if modo in ("pormirar", "fantasma"):
+        s.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{FONDO}" stroke="{LINEA}" '
+                 f'stroke-width="2" stroke-dasharray="7 6"/>')
+        rotulo = "?" if modo == "fantasma" else str(valor)
+        s.append(texto(cx, cy + 10, rotulo, tam=30, color=LINEA if modo == "fantasma" else SUAVE,
+                       peso="700"))
+        if modo == "fantasma":
+            s.append(texto(cx, cy + r + 32, "no se genera", tam=T_TXT, color=SUAVE))
+    else:
+        nuevo = modo == "nuevo"
+        s.append(f'<circle cx="{cx}" cy="{cy}" r="{r + 5}" fill="none" stroke="{COLOR_FINAL}" '
+                 f'stroke-width="1.5"/>')
+        s.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{mezclar(COLOR_FINAL, 0.16 if nuevo else 0.07)}" '
+                 f'stroke="{ACENTO if nuevo else COLOR_FINAL}" stroke-width="{3.5 if nuevo else 2}"/>')
+        s.append(texto(cx, cy + 10, str(valor), tam=28, peso="700"))
+    if debajo:
+        s.append(texto(cx, cy + r + 32, debajo, tam=T_TXT, color=ACENTO, peso="700"))
+    return "".join(s)
+
+
+def _paso_arbol(arbol, es_max, titulo, desc, notas, nodos, hojas, aristas, ventanas=(),
+                corte=None):
+    """Dibuja un paso de un arbol chico de dos niveles.
+
+    nodos: {camino: (estado, sub, modo)} para la raiz () y los hijos (0,), (1,).
+    hojas: {camino: (modo, debajo)}; las ausentes van «por mirar».
+    aristas: {camino del hijo: estilo}; las ausentes, 'normal'.
+    ventanas: {camino del hijo: (rotulo, color)} sobre su arista.
+    corte: (camino del nodo que corta, rotulo)."""
+    W, H = ANCHO, 780
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 44, titulo, tam=T_TIT, peso="700")]
+    tipo_raiz, tipo_hijo = ("MAX", "MIN") if es_max else ("MIN", "MAX")
+    rx, ry = RAIZ_AB
+    for i, (hx, hy) in enumerate(HIJOS_AB):
+        pastillas = []
+        if (i,) in dict(ventanas):
+            rotulo, color = dict(ventanas)[(i,)]
+            pastillas.append((0.5, rotulo, color))
+        # Hacia lo que aun no se mira, la arista va punteada como el nodo.
+        tenue_hijo = "tenue" if nodos[(i,)][2] == "pormirar" else "normal"
+        out.append(_arista_ab(rx, ry + NODO_AB_H / 2, hx, hy - NODO_AB_H / 2,
+                              aristas.get((i,), tenue_hijo), pastillas))
+        for k in range(2):
+            fx, fy = HOJAS_AB[2 * i + k]
+            tenue_hoja = ("tenue" if hojas.get((i, k), ("pormirar",))[0] == "pormirar"
+                          else "normal")
+            out.append(_arista_ab(hx, hy + NODO_AB_H / 2, fx, fy - HOJA_R - 5,
+                                  aristas.get((i, k), tenue_hoja)))
+    if corte:
+        (i,), rotulo = corte
+        hx, hy = HIJOS_AB[i]
+        podadas = [HOJAS_AB[2 * i + k] for k in range(2) if hojas.get((i, k), ("",))[0] == "fantasma"]
+        out.append(_corte_ab(hx, hy + NODO_AB_H / 2, [(x, y - HOJA_R - 5) for x, y in podadas],
+                             0.3, rotulo, lado="der"))
+    for camino, (cx, cy) in [((), RAIZ_AB), ((0,), HIJOS_AB[0]), ((1,), HIJOS_AB[1])]:
+        estado, sub, modo = nodos[camino]
+        out.append(_nodo_gen(cx, cy, tipo_raiz if camino == () else tipo_hijo, estado, sub, modo))
+    for i in range(2):
+        for k in range(2):
+            fx, fy = HOJAS_AB[2 * i + k]
+            modo, debajo = hojas.get((i, k), ("pormirar", None))
+            valor = arbol[i][k]
+            out.append(_hoja(fx, fy, "?" if (i, k) == (1, 1) else valor, modo, debajo))
+    out.append(_notas_ab(H - 70, notas))
+    out.append(cierre())
+    return "".join(out)
+
+
+def _traza_arbol(arbol, es_max):
+    r = j.alfa_beta_arbol(arbol, es_max=es_max)
+    return r, {c: (tipo, a, b, v, corte) for c, tipo, a, b, v, corte in r["traza"]}
+
+
+PASOS_ARBOL_A = (1, 2, 3, 4)
+
+
+def jue_ab_arbol_a(paso):
+    """Arbol A, raiz MAX: la poda alfa en cuatro pasos."""
+    arbol = j.ARBOL_A
+    r, t = _traza_arbol(arbol, True)
+    L = arbol[0]
+    vL = t[(0,)][3]                      # lo que devuelve el MIN de la izquierda
+    alfa_R = t[(1,)][1]                  # alfa con la que llega el de la derecha
+    primera = t[(1, 0)][3]               # su primera hoja
+    vR = t[(1,)][3]                      # lo que devuelve: una cota
+    assert t[(1,)][4] == "alfa" and r["podados"] == [(1, 1)]
+    n_total, n_gen = j.contar_nodos(arbol), r["generados"]
+    ventana = f"[{alfa_R}, +∞]"
+    if paso == 1:
+        titulo = f"Árbol A · 1. La izquierda vale {vL}"
+        notas = [f"MIN, a la izquierda, toma el menor: min{{{L[0]}, {L[1]}}} = {vL}."]
+        nodos = {(): ("espera", None, "normal"),
+                 (0,): (f"= {vL}", f"min{{{L[0]}, {L[1]}}}", "nuevo"),
+                 (1,): (None, None, "pormirar")}
+        hojas = {(0, 0): ("nuevo", None), (0, 1): ("nuevo", None)}
+        aristas = {(0,): "nueva", (0, 0): "nueva", (0, 1): "nueva"}
+        desc = (f"Árbol A, paso 1. Raíz de MAX con dos hijos de MIN. El MIN de la izquierda "
+                f"y sus hojas, {L[0]} y {L[1]}, van resaltados: vale {vL}. La rama de la "
+                "derecha, con sus hojas 2 y «?», sigue punteada: aún no se mira.")
+        return _paso_arbol(arbol, True, titulo, desc, notas, nodos, hojas, aristas)
+    if paso == 2:
+        titulo = f"Árbol A · 2. MAX ya tiene {vL}"
+        notas = [f"MAX ya tiene asegurado {vL}: α = {vL}.",
+                 f"Otra rama solo le sirve si vale más de {vL}."]
+        nodos = {(): (f"α = {vL}", f"ya tiene {vL}", "nuevo"),
+                 (0,): (f"= {vL}", f"min{{{L[0]}, {L[1]}}}", "normal"),
+                 (1,): (None, None, "pormirar")}
+        hojas = {(0, 0): ("normal", None), (0, 1): ("normal", None)}
+        desc = (f"Árbol A, paso 2. La raíz, de MAX, va resaltada con α = {vL}: MAX ya tiene "
+                f"{vL}. El MIN de la izquierda conserva su {vL}; la rama de la derecha sigue "
+                "punteada.")
+        return _paso_arbol(arbol, True, titulo, desc, notas, nodos, hojas, {})
+    if paso == 3:
+        titulo = f"Árbol A · 3. La derecha empieza con {primera}"
+        notas = [f"El MIN de la derecha llega con {ventana}.",
+                 f"Su primera hoja da {primera}, y {primera} ≤ {alfa_R}."]
+        nodos = {(): (f"α = {vL}", f"ya tiene {vL}", "normal"),
+                 (0,): (f"= {vL}", f"min{{{L[0]}, {L[1]}}}", "normal"),
+                 (1,): (f"v = {primera} ≤ {alfa_R}", None, "nuevo")}
+        hojas = {(0, 0): ("normal", None), (0, 1): ("normal", None), (1, 0): ("nuevo", None)}
+        aristas = {(1,): "nueva", (1, 0): "nueva"}
+        desc = (f"Árbol A, paso 3. El MIN de la derecha ya se generó: llega con {ventana}. "
+                f"Su primera hoja, {primera}, va resaltada, y el nodo muestra v = {primera} ≤ "
+                f"{alfa_R}. La segunda hoja, «?», aún no se mira.")
+        return _paso_arbol(arbol, True, titulo, desc, notas, nodos, hojas, aristas,
+                           ventanas={(1,): (ventana, ACENTO)})
+    if paso == 4:
+        titulo = f"Árbol A · 4. Corte alfa: {n_gen} de {n_total} nodos"
+        notas = [f"El MIN de la derecha valdrá a lo más {vR}: MAX no lo elegirá.",
+                 f"La hoja «?» no se genera: {n_gen} de {n_total} nodos."]
+        nodos = {(): (f"= {r['valor']}", f"se queda con {r['valor']}", "nuevo"),
+                 (0,): (f"= {vL}", f"min{{{L[0]}, {L[1]}}}", "normal"),
+                 (1,): (f"≤ {vR}", f"a lo más {vR}", "nuevo")}
+        hojas = {(0, 0): ("normal", None), (0, 1): ("normal", None), (1, 0): ("normal", None),
+                 (1, 1): ("fantasma", None)}
+        aristas = {(1, 1): "tenue"}
+        desc = (f"Árbol A, paso 4, terminado. Bajo el MIN de la derecha, una barra de acento "
+                f"con la leyenda «corte alfa»; su segunda hoja es un círculo punteado con «?»: "
+                f"no se genera. El MIN de la derecha muestra ≤ {vR} y la raíz = {r['valor']}. "
+                f"Se generan {n_gen} de {n_total} nodos.")
+        return _paso_arbol(arbol, True, titulo, desc, notas, nodos, hojas, aristas,
+                           ventanas={(1,): (ventana, SUAVE)}, corte=((1,), "corte alfa"))
+    raise ValueError("El árbol A admite pasos de 1 a 4")
+
+
+PASOS_ARBOL_B = (1, 2)
+
+
+def jue_ab_arbol_b(paso):
+    """Arbol B, raiz MIN: el espejo, con la poda beta en dos pasos."""
+    arbol = j.ARBOL_B
+    r, t = _traza_arbol(arbol, False)
+    L = arbol[0]
+    vL = t[(0,)][3]
+    beta_R = t[(1,)][2]
+    primera = t[(1, 0)][3]
+    vR = t[(1,)][3]
+    assert t[(1,)][4] == "beta" and r["podados"] == [(1, 1)]
+    n_total, n_gen = j.contar_nodos(arbol), r["generados"]
+    ventana = f"[−∞, {beta_R}]"
+    if paso == 1:
+        titulo = f"Árbol B · 1. La izquierda vale {vL}"
+        notas = [f"MAX, a la izquierda, toma el mayor: max{{{L[0]}, {L[1]}}} = {vL}.",
+                 f"MIN ya tiene asegurado {vL}: β = {vL}."]
+        nodos = {(): (f"β = {vL}", f"ya tiene {vL}", "nuevo"),
+                 (0,): (f"= {vL}", f"max{{{L[0]}, {L[1]}}}", "nuevo"),
+                 (1,): (None, None, "pormirar")}
+        hojas = {(0, 0): ("nuevo", None), (0, 1): ("nuevo", None)}
+        aristas = {(0,): "nueva", (0, 0): "nueva", (0, 1): "nueva"}
+        desc = (f"Árbol B, paso 1. Raíz de MIN con dos hijos de MAX. El MAX de la izquierda "
+                f"y sus hojas, {L[0]} y {L[1]}, van resaltados: vale {vL}. La raíz lleva "
+                f"β = {vL}. La rama de la derecha sigue punteada: aún no se mira.")
+        return _paso_arbol(arbol, False, titulo, desc, notas, nodos, hojas, aristas)
+    if paso == 2:
+        titulo = f"Árbol B · 2. Corte beta: {n_gen} de {n_total} nodos"
+        notas = [f"El MAX de la derecha llega con {ventana}; su hoja {primera} da {primera} ≥ {beta_R}.",
+                 f"Valdrá al menos {vR}: MIN no lo elegirá. {n_gen} de {n_total} nodos."]
+        nodos = {(): (f"= {r['valor']}", f"se queda con {r['valor']}", "nuevo"),
+                 (0,): (f"= {vL}", f"max{{{L[0]}, {L[1]}}}", "normal"),
+                 (1,): (f"≥ {vR}", f"al menos {vR}", "nuevo")}
+        hojas = {(0, 0): ("normal", None), (0, 1): ("normal", None),
+                 (1, 0): ("nuevo", f"{primera} ≥ {beta_R}"), (1, 1): ("fantasma", None)}
+        aristas = {(1,): "nueva", (1, 0): "nueva", (1, 1): "tenue"}
+        desc = (f"Árbol B, paso 2, terminado. El MAX de la derecha llega con {ventana}; su "
+                f"primera hoja, {primera}, va resaltada con {primera} ≥ {beta_R}. Su segunda hoja "
+                "es un círculo punteado con «?»: no se genera. Una barra de acento con la "
+                f"leyenda «corte beta» va bajo ese nodo, que muestra ≥ {vR}. La raíz muestra "
+                f"= {r['valor']}. Se generan {n_gen} de {n_total} nodos.")
+        return _paso_arbol(arbol, False, titulo, desc, notas, nodos, hojas, aristas,
+                           ventanas={(1,): (ventana, ACENTO)}, corte=((1,), "corte beta"))
+    raise ValueError("El árbol B admite pasos 1 y 2")
+
+
+def jue_ab_ventana():
+    """La ventana [α, β] como una banda en la recta: lo que cae fuera corta."""
+    W, H = ANCHO, 660
+    titulo = "La ventana [α, β]"
+    desc = ("Una recta numérica de −∞ a +∞ con dos marcas, α y β. La banda entre ellas va "
+            "resaltada: aquí el valor importa. A la izquierda de α, v ≤ α: corte alfa, en un "
+            "nodo de MIN. A la derecha de β, v ≥ β: corte beta, en un nodo de MAX. El igual "
+            "cuenta. Abajo, los dos árboles: en A, el MIN de la derecha tiene la ventana "
+            "[3, +∞] y su hoja 2 cae a la izquierda; en B, el MAX de la derecha tiene "
+            "[−∞, 8] y su hoja 9 cae a la derecha.")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 44, titulo, tam=T_TIT, peso="700")]
+    x0, x1, xa, xb, y = 30, 670, 240, 460, 210
+    # la banda
+    out.append(caja(xa, y - 78, xb - xa, 78, relleno=mezclar(ACENTO, 0.22), borde=ACENTO,
+                    grosor=2, radio=6))
+    out.append(texto((xa + xb) / 2, y - 46, "aquí el valor", tam=T_TXT, peso="700"))
+    out.append(texto((xa + xb) / 2, y - 18, "importa", tam=T_TXT, peso="700"))
+    out.append(linea(x0, y, xa, y, color=SUAVE, grosor=4))
+    out.append(linea(xb, y, x1, y, color=SUAVE, grosor=4))
+    out.append(linea(xa, y, xb, y, color=ACENTO, grosor=6))
+    for x, letra in ((xa, "α"), (xb, "β")):
+        out.append(linea(x, y - 14, x, y + 14, color=ACENTO, grosor=3))
+        out.append(texto(x, y + 44, letra, tam=30, color=ACENTO, peso="700"))
+    out.append(texto(x0, y + 44, "−∞", tam=T_TXT, color=SUAVE, anclaje="start"))
+    out.append(texto(x1, y + 44, "+∞", tam=T_TXT, color=SUAVE, anclaje="end"))
+    for cx, r1, r2, r3 in (((x0 + xa) / 2, "v ≤ α:", "corte alfa", "(nodo de MIN)"),
+                           ((xb + x1) / 2, "v ≥ β:", "corte beta", "(nodo de MAX)")):
+        out.append(texto(cx, y - 46, r1, tam=T_VAL, peso="700"))
+        out.append(texto(cx, y - 16, r2, tam=T_TXT, color=ACENTO, peso="700"))
+        out.append(texto(cx, y + 78, r3, tam=T_TXT, color=SUAVE))
+    out.append(texto(W / 2, y + 116, "El igual cuenta: v = α o v = β ya corta.", tam=T_TXT))
+
+    # Los dos arboles, cada uno en su recta.
+    _, ta = _traza_arbol(j.ARBOL_A, True)
+    _, tb = _traza_arbol(j.ARBOL_B, False)
+    alfa_a, hoja_a = ta[(1,)][1], ta[(1, 0)][3]
+    beta_b, hoja_b = tb[(1,)][2], tb[(1, 0)][3]
+    assert hoja_a <= alfa_a and hoja_b >= beta_b
+
+    def recta(y, titulo_, desde, hasta, marca, letra, punto_x, punto_v, leyenda):
+        s = [texto(x0, y - 44, titulo_, tam=T_TXT, color=SUAVE, anclaje="start")]
+        s.append(linea(x0, y, x1, y, color=SUAVE, grosor=3))
+        s.append(caja(desde, y - 9, hasta - desde, 18, relleno=mezclar(ACENTO, 0.22),
+                      borde=ACENTO, grosor=2, radio=4))
+        s.append(linea(marca, y - 14, marca, y + 14, color=ACENTO, grosor=3))
+        s.append(texto(marca, y + 40, letra, tam=T_TXT, color=ACENTO, peso="700"))
+        s.append(punto(punto_x, y, r=11, color=TEXTO))
+        s.append(texto(punto_x, y + 40, str(punto_v), tam=T_VAL, peso="700"))
+        s.append(texto(x1, y - 44, leyenda, tam=T_TXT, color=ACENTO, peso="700", anclaje="end"))
+        return "".join(s)
+
+    out.append(recta(y + 220, f"A · MIN derecho, [{alfa_a}, +∞]", 330, x1, 330, f"α = {alfa_a}",
+                     250, hoja_a, f"{hoja_a} ≤ {alfa_a}: corte alfa"))
+    out.append(recta(y + 360, f"B · MAX derecho, [−∞, {beta_b}]", x0, 370, 370, f"β = {beta_b}",
+                     450, hoja_b, f"{hoja_b} ≥ {beta_b}: corte beta"))
+    out.append(cierre())
+    return "".join(out)
+
+
+# ------------------------------------------------ n1, por partes ---
+#
+# Las posiciones de cada orden: la del orden fijo pone a la izquierda lo que
+# se visita primero; la del invertido, tambien (n3 antes que n2). Los
+# fantasmas agrupan un subarbol entero que no se genera en una sola caja.
+
+LUGARES_FIJO = {1: (350, 0), 2: (150, 1), 3: (470, 1), 4: (290, 2), 6: (480, 2),
+                13: (625, 2), 5: (290, 3)}
+LUGARES_INV = {1: (350, 0), 3: (230, 1), 2: (560, 1), 13: (95, 2), 6: (320, 2),
+               4: (590, 2), 12: (150, 3), 11: (300, 3), 7: (420, 3), 5: (590, 3)}
+ANCHO_FANTASMA = {6: 140, 13: 110, 11: 100, 7: 100}
+# Lo que cada fantasma agrupa: el nodo y todo lo que cuelga de el.
+FANTASMAS_FIJO = {6: [6, 7, 8, 9, 10, 11, 12], 13: [13]}
+FANTASMAS_INV = {11: [11], 7: [7, 8, 9, 10]}
+
+# Tamanos de las dos escalas: las partes (letra de 22) y los resumenes.
+GRANDE = dict(w=170, h=200, celda=22, escala=22 / 13, tam=T_TXT, y0=185,
+              ys_fijo=(0, 320, 640, 960), ys_inv=(0, 320, 640, 990))
+CHICA = dict(w=140, h=NODO_ALTO_SUB, celda=21, escala=None, tam=15, y0=158,
+             ys_fijo=(0, 215, 430, 645), ys_inv=(0, 215, 430, 655))
+
+
+def _subarbol(n):
+    """n y todos sus descendientes en el subgrafo."""
+    nodos = subgrafo_n1()
+    fuera = [n]
+    for m, (_, _, padre, _) in nodos.items():
+        if padre in fuera:
+            fuera.append(m)
+    return sorted(fuera)
+
+
+def _dibujar_partes(out, lugares, escala, ys, specs, aristas, cortes=(), ordenes=None):
+    """Dibuja los nodos de `specs` en `lugares`.
+
+    specs: {n: dict(modo, renglones, nuevo, lineas, ancho)} con modo
+    'tablero' (con su tablero), 'pormirar' (tablero, borde punteado),
+    'fantasma' (no se genera: «?») u 'olvidado' (devolvio y se olvido).
+    aristas: [(padre, hijo, estilo, pastillas)].
+    cortes: [(padre, [hijos podados], rotulo, lado, t)]."""
+    nodos = subgrafo_n1()
+    w, h, tam = escala["w"], escala["h"], escala["tam"]
+
+    def centro(n):
+        x, nivel = lugares[n]
+        return x, escala["y0"] + ys[nivel]
+
+    for padre, hijo, estilo, pastillas in aristas:
+        if estilo == "normal" and specs.get(hijo, {}).get("modo") == "pormirar":
+            estilo = "tenue"  # como el nodo: aun no se recorre
+        x1, y1 = centro(padre)
+        x2, y2 = centro(hijo)
+        out.append(_arista_ab(x1, y1 + h / 2, x2, y2 - h / 2, estilo, pastillas, tam=tam))
+    for padre, hijos_, rotulo, lado, t in cortes:
+        xp, yp = centro(padre)
+        out.append(_corte_ab(xp, yp + h / 2, [(centro(m)[0], centro(m)[1] - h / 2) for m in hijos_],
+                             t, rotulo, lado=lado, tam=tam))
+    grande = tam >= T_TXT
+    for n, spec in specs.items():
+        x, y = centro(n)
+        t, p, _, _ = nodos[n]
+        modo = spec["modo"]
+        if modo == "pormirar":
+            # Existe, pero el algoritmo aun no llega: tablero tenue, sin tipo
+            # ni borde doble (un final por mirar no debe parecer ya valorado).
+            f = escala["escala"] or 1
+            out.append(caja(x - w / 2, y - h / 2, w, h, relleno=FONDO, borde=LINEA, grosor=2,
+                            guiones="8 6"))
+            out.append(texto(x, round(y - h / 2 + 22 * f, 1), f"n{n}", tam=round(16 * f, 1),
+                             color=SUAVE, peso="700"))
+            lado = lado_de(t) * escala["celda"]
+            out.append(tablero_svg(x, round(y - h / 2 + 32 * f + lado / 2, 1), t, escala["celda"]))
+            out.append(texto(x, round(y + h / 2 - 20 * f, 1), "por mirar", tam=tam, color=SUAVE))
+            continue
+        if modo == "tablero":
+            out.append(nodo_svg(x, y, t, p, spec.get("nombre", f"n{n}"), nuevo=spec.get("nuevo", False),
+                                expandido=True, w=spec.get("ancho", w), h=h,
+                                celda=escala["celda"], renglones=spec["renglones"],
+                                escala=escala["escala"],
+                                orden=(ordenes or {}).get(n)))
+            continue
+        ancho = spec.get("ancho", ANCHO_FANTASMA.get(n, w))
+        borde, guiones = (LINEA, "7 6") if modo == "fantasma" else (SUAVE, "2 5")
+        out.append(caja(x - ancho / 2, y - h / 2, ancho, h, relleno=FONDO, borde=borde,
+                        grosor=2 if modo == "fantasma" else 1.5, guiones=guiones))
+        out.append(texto(x, y - h / 2 + (32 if grande else 24), f"n{n}", tam=tam, color=SUAVE,
+                         peso="700"))
+        lineas = spec.get("lineas", [])
+        if modo == "fantasma":
+            out.append(texto(x, y + (4 if grande else 0) - (14 if lineas else 0), "?",
+                             tam=40 if grande else 30, color=LINEA, peso="700"))
+            y_l = y + (40 if grande else 26) - (14 if lineas else 0)
+        else:
+            y_l = y - (len(lineas) - 1) * (tam * 0.65)
+        for k, r in enumerate(lineas):
+            out.append(texto(x, round(y_l + k * tam * 1.3, 1), r, tam=tam, color=SUAVE,
+                             peso="700" if (modo == "olvidado" and k == 0) else "normal"))
+
+
+def _fila_final(nuevo=False):
+    return dict(modo="tablero", renglones=("final", "U = +1"), nuevo=nuevo)
+
+
+def _jugada(padre, hijo):
+    return subgrafo_n1()[hijo][3] if subgrafo_n1()[hijo][2] == padre else None
+
+
+def _parte(titulo, desc, notas, lugares, ys_clave, specs, aristas, cortes=(), extra=None):
+    """Una figura por partes: alto segun el nivel mas bajo que dibuja."""
+    esc = GRANDE
+    ys = esc[ys_clave]
+    nivel = max(lugares[n][1] for n in specs)
+    y_fondo = esc["y0"] + ys[nivel] + esc["h"] / 2
+    extra_alto = 70 if extra else 0
+    H = round(y_fondo + extra_alto + 40 + len(notas) * 32 + 20)
+    out = [marco(ANCHO, H, desc, titulo, desc),
+           texto(ANCHO / 2, 44, titulo, tam=T_TIT, peso="700")]
+    _dibujar_partes(out, lugares, esc, ys, specs, aristas, cortes)
+    if extra:
+        x, renglones = extra
+        x = min(x, ANCHO - 150)  # que el renglon mas largo no se salga del lienzo
+        for k, r in enumerate(renglones):
+            out.append(texto(x, y_fondo + 34 + 30 * k, r, tam=T_TXT, color=ACENTO, peso="700"))
+    out.append(_notas_ab(y_fondo + extra_alto + 52, notas))
+    out.append(cierre())
+    return "".join(out)
+
+
+def _a(padre, hijo, estilo="normal", ventana=None, t_jugada=0.45, t_ventana=0.82):
+    """Una arista con su jugada y, si se da, la ventana con la que llega el hijo."""
+    color = ACENTO if estilo == "nueva" else (LINEA if estilo == "tenue" else SUAVE)
+    pastillas = [(t_jugada, _jugada(padre, hijo), color)]
+    if ventana:
+        rotulo, nueva = ventana
+        pastillas.append((t_ventana, rotulo, ACENTO if nueva else SUAVE))
+    return (padre, hijo, estilo, pastillas)
+
+
+def _datos_fijo():
+    visitas, cortes = traza_n1(False)
+    assert list(visitas) == [1, 2, 3, 4, 5] and cortes == {(3, 6): "alfa"}
+    _, _, a3, b3, v3 = visitas[3]
+    _, _, a4, b4, v4 = visitas[4]
+    v1 = visitas[1][4]
+    v2 = visitas[2][4]
+    v5 = visitas[5][4]
+    assert a3 == v2 and v3 <= a3  # el corte alfa con el igual
+    return dict(a3=a3, b3=b3, v3=v3, a4=a4, b4=b4, v4=v4, v1=v1, v2=v2, v5=v5,
+                generados=len(visitas))
+
+
+def jue_ab_fijo_parte(parte):
+    d = _datos_fijo()
+    f = fmt
+    v_exacto_n3 = valores_n1()[3]
+    ventana3 = f"[{f(d['a3'])}, {f(d['b3'])}]"
+    ventana4 = f"[{f(d['a4'])}, {f(d['b4'])}]"
+    raiz = dict(modo="tablero", renglones=(f"α = {f(d['v2'])}", f"ya tiene {f(d['v2'])}"))
+    if parte == 1:
+        titulo = f"Orden fijo · 1. n2 vale {f(d['v2'])}"
+        specs = {1: dict(raiz, nuevo=True), 2: _fila_final(True),
+                 3: dict(modo="pormirar", renglones=("por mirar", ""))}
+        aristas = [_a(1, 2, "nueva"), _a(1, 3)]
+        notas = [f"n2 es final y vale {f(d['v2'])}: MAX ya tiene {f(d['v2'])}, así que α = {f(d['v2'])}.",
+                 "n3 todavía no se mira."]
+        desc = (f"Alfa-beta desde n1 con el orden fijo, parte 1. n1, con su tablero, arriba: "
+                f"mueve Blancas (MAX). Su primer hijo, n2, tras c1-c2, va resaltado: final, "
+                f"vale {f(d['v2'])}. La raíz lleva la anotación α = {f(d['v2'])}. n3, tras "
+                "c1xb2, aparece punteado y sin expandir.")
+        return _parte(titulo, desc, notas, LUGARES_FIJO, "ys_fijo", specs, aristas)
+    if parte == 2:
+        titulo = "Orden fijo · 2. Corte alfa en n3"
+        specs = {1: raiz, 2: _fila_final(),
+                 3: dict(modo="tablero", nuevo=True,
+                         renglones=(f"v = {f(d['v3'])} ≤ {f(d['a3'])}", f"≤ {f(d['v3'])} (cota)")),
+                 4: dict(modo="tablero", nuevo=True, renglones=("una jugada", f"= {f(d['v4'])}")),
+                 5: _fila_final(True),
+                 6: dict(modo="fantasma", lineas=["y lo que", "cuelga"]),
+                 13: dict(modo="fantasma")}
+        aristas = [_a(1, 2), _a(1, 3, "nueva", (ventana3, True)),
+                   _a(3, 4, "nueva", (ventana4, True)),
+                   _a(4, 5, "nueva"),
+                   _a(3, 6, "tenue", t_jugada=0.72), _a(3, 13, "tenue", t_jugada=0.72)]
+        cortes = [(3, [6, 13], "corte alfa", "der", 0.28)]
+        generados = d["generados"]
+        notas = [f"n3 llega con {ventana3}. n4 da {f(d['v4'])}, y en n3 v = {f(d['v3'])} ≤ α = {f(d['a3'])}.",
+                 f"n6 (con lo que cuelga) y n13 no se generan: {generados} de 13."]
+        desc = (f"Alfa-beta desde n1 con el orden fijo, parte 2. n3, de MIN, llega con {ventana3}. "
+                f"Debajo, n4, de MAX, llega con {ventana4}, y su único hijo n5, final, vale "
+                f"{f(d['v5'])}. n3 muestra v = {f(d['v3'])} ≤ {f(d['a3'])} y ≤ {f(d['v3'])}: "
+                f"devuelve una cota, su valor exacto es {f(v_exacto_n3)}. Una barra de acento "
+                "con la leyenda «corte alfa» va bajo n3. Al lado, dos cajas punteadas con «?»: "
+                f"n6 con lo que cuelga de él, tras c3-c2, y n13, tras c3xb2; no se generan. "
+                f"{generados} de 13 nodos.")
+        return _parte(titulo, desc, notas, LUGARES_FIJO, "ys_fijo", specs, aristas, cortes)
+    raise ValueError("El orden fijo admite partes 1 y 2")
+
+
+def _datos_inv():
+    visitas, cortes = traza_n1(True)
+    assert list(visitas) == [1, 3, 13, 6, 12, 4, 5, 2] and cortes == {(6, 11): "beta"}
+    return visitas, cortes
+
+
+def jue_ab_invertido_parte(parte):
+    visitas, _ = _datos_inv()
+    f = fmt
+    v13 = visitas[13][4]
+    _, _, a6, b6, v6 = visitas[6]
+    v12 = visitas[12][4]
+    _, _, a4, b4, v4 = visitas[4]
+    v5 = visitas[5][4]
+    _, _, a2, b2, v2 = visitas[2]
+    v3, v1 = visitas[3][4], visitas[1][4]
+    assert v6 >= b6 and v5 >= b4 and v3 == valores_n1()[3]
+    ventana6, ventana4, ventana2 = (f"[{f(a6)}, {f(b6)}]", f"[{f(a4)}, {f(b4)}]",
+                                    f"[{f(a2)}, {f(b2)}]")
+    por_mirar = dict(modo="pormirar", renglones=("por mirar", ""))
+    n3_beta = ("β = " + f(v13), "MIN tiene " + f(v13))
+    n6_corte = (f"{f(v6)} ≥ {f(b6)}", f"≥ {f(v6)} (cota)")
+    fantasmas = {11: dict(modo="fantasma"), 7: dict(modo="fantasma", lineas=["y lo que", "cuelga"])}
+    if parte == 1:
+        titulo = f"Orden invertido · 1. n13 vale {f(v13)}"
+        specs = {1: dict(modo="tablero", renglones=("MAX", "espera")),
+                 3: dict(modo="tablero", nuevo=True, renglones=n3_beta),
+                 2: por_mirar, 13: _fila_final(True) | dict(renglones=("final", f"U = {f(v13)}")),
+                 6: por_mirar, 4: por_mirar}
+        aristas = [_a(1, 3, "nueva"), _a(1, 2),
+                   _a(3, 13, "nueva"), _a(3, 6), _a(3, 4)]
+        notas = ["Al revés, n1 mira primero c1xb2, y n3 mira primero c3xb2.",
+                 f"n13 es final y vale {f(v13)}: MIN ya tiene {f(v13)}, β = {f(v13)}."]
+        desc = (f"Alfa-beta desde n1 con el orden invertido, parte 1. n1, con su tablero, "
+                "arriba. Su primer hijo ahora es n3, tras c1xb2: mueve Negras (MIN). El primer "
+                f"hijo de n3, n13, tras c3xb2, va resaltado: final, vale {f(v13)}. n3 lleva la "
+                f"anotación β = {f(v13)}. n6, n4 y n2 aparecen punteados: aún no se miran.")
+        return _parte(titulo, desc, notas, LUGARES_INV, "ys_inv", specs, aristas)
+    if parte == 2:
+        titulo = "Orden invertido · 2. Corte beta en n6"
+        specs = {1: dict(modo="tablero", renglones=("MAX", "espera")),
+                 3: dict(modo="tablero", renglones=n3_beta),
+                 2: por_mirar, 13: dict(modo="tablero", renglones=("final", f"U = {f(v13)}")),
+                 6: dict(modo="tablero", nuevo=True, renglones=n6_corte),
+                 12: _fila_final(True), 4: por_mirar, **fantasmas}
+        aristas = [_a(1, 3), _a(1, 2),
+                   _a(3, 13), _a(3, 6, "nueva", (ventana6, True)),
+                   _a(3, 4),
+                   _a(6, 12, "nueva"), _a(6, 11, "tenue", t_jugada=0.78),
+                   _a(6, 7, "tenue", t_jugada=0.5)]
+        cortes = [(6, [11, 7], "corte beta", "der", 0.27)]
+        notas = [f"n6 llega con {ventana6}. n12 vale {f(v12)}, y {f(v12)} ≥ β = {f(b6)}.",
+                 "Corte beta: n11 y n7 (con lo que cuelga) no se generan."]
+        desc = (f"Alfa-beta desde n1 con el orden invertido, parte 2. n6, de MAX, llega con "
+                f"{ventana6}. Su primer hijo, n12, tras b2xa3, va resaltado: final, vale {f(v12)}. "
+                f"n6 muestra {f(v12)} ≥ {f(b6)} y ≥ {f(v6)}, una cota. Una barra de acento con la "
+                "leyenda «corte beta» va bajo n6. Sus otros dos hijos, n11 tras b2-b3 y n7 tras "
+                "b1xc2 con lo que cuelga de él, son cajas punteadas con «?»: no se generan.")
+        return _parte(titulo, desc, notas, LUGARES_INV, "ys_inv", specs, aristas, cortes)
+    if parte == 3:
+        titulo = f"Orden invertido · 3. n1 vale {f(v1)}"
+        specs = {1: dict(modo="tablero", nuevo=True, renglones=(f"α = {f(v3)}", f"= {f(v1)}")),
+                 3: dict(modo="tablero", nuevo=True, renglones=(f"β = {f(v13)}", f"= {f(v3)}")),
+                 2: _fila_final(True),
+                 13: dict(modo="tablero", renglones=("final", f"U = {f(v13)}")),
+                 6: dict(modo="tablero", renglones=n6_corte),
+                 12: _fila_final(),
+                 4: dict(modo="tablero", nuevo=True, renglones=(f"{f(v5)} ≥ {f(b4)}", f"= {f(v4)}")),
+                 5: _fila_final(True), **fantasmas}
+        aristas = [_a(1, 3, t_jugada=0.4), _a(1, 2, "nueva", (ventana2, True)),
+                   _a(3, 13), _a(3, 6, ventana=(ventana6, False)),
+                   _a(3, 4, "nueva", (ventana4, True)),
+                   _a(6, 12), _a(6, 11, "tenue", t_jugada=0.78),
+                   _a(6, 7, "tenue", t_jugada=0.5), _a(4, 5, "nueva")]
+        cortes = [(6, [11, 7], "corte beta", "der", 0.27)]
+        notas = [f"n3 devuelve {f(v3)}, su valor exacto: en n1, α = {f(v3)}.",
+                 f"n2 llega con {ventana2} y vale {f(v2)}. n1 vale {f(v1)}: 8 de 13."]
+        desc = (f"Alfa-beta desde n1 con el orden invertido, parte 3. De vuelta en n3, falta n4, "
+                f"de MAX, que llega con {ventana4}; su único hijo, n5, vale {f(v5)}, y debajo "
+                f"una nota sobre n4: «en n4, {f(v5)} ≥ {f(b4)}: corta, pero no ahorra». n3 devuelve {f(v3)}. La raíz muestra "
+                f"α = {f(v3)}. Su último hijo, n2, llega con {ventana2} y vale {f(v2)}. La raíz "
+                f"vale {f(v1)}. Se generan 8 de 13 nodos.")
+        extra = (LUGARES_INV[5][0], [f"en n4: {f(v5)} ≥ {f(b4)},", "corta, pero no ahorra"])
+        return _parte(titulo, desc, notas, LUGARES_INV, "ys_inv", specs, aristas, cortes, extra)
+    raise ValueError("El orden invertido admite partes de 1 a 3")
+
+
+def jue_ab_a_media_ejecucion():
+    """La pila de ALFA-BETA en orden fijo cuando n3 esta por cortar."""
+    d = _datos_fijo()
+    f = fmt
+    ventana3 = f"[{f(d['a3'])}, {f(d['b3'])}]"
+    ventana4 = f"[{f(d['a4'])}, {f(d['b4'])}]"
+    titulo = "ALFA-BETA a media ejecución"
+    desc = ("La pila de llamadas de alfa-beta en orden fijo, en el instante del corte en n3. "
+            "Resaltado, el camino n1, n3, n4. n1 llegó con [−∞, +∞] y ya tiene "
+            f"v = {f(d['v1'])} y α = {f(d['v2'])}. n3 llegó con {ventana3} y tiene v = {f(d['v3'])}, "
+            f"que no supera α = {f(d['a3'])}: ahí corta. n4 llegó con {ventana4} y devolvió "
+            f"{f(d['v4'])}. n2 y n5 aparecen tenues: ya devolvieron {f(d['v2'])} y se olvidaron. "
+            "n6, con lo que cuelga, y n13 son cajas punteadas con «?»: no se generarán.")
+    specs = {1: dict(modo="tablero", nuevo=True,
+                     renglones=(f"v = {f(d['v2'])}", f"α = {f(d['v2'])}")),
+             2: dict(modo="olvidado", lineas=[f"devolvió {f(d['v2'])}", "y se olvidó"]),
+             3: dict(modo="tablero", nuevo=True,
+                     renglones=(f"v = {f(d['v4'])} ≤ α", "→ corta")),
+             4: dict(modo="tablero", nuevo=True, renglones=(f"v = {f(d['v4'])}", f"devuelve {f(d['v4'])}")),
+             5: dict(modo="olvidado", lineas=[f"devolvió {f(d['v5'])}", "y se olvidó"]),
+             6: dict(modo="fantasma", lineas=["y lo que", "cuelga"]),
+             13: dict(modo="fantasma")}
+    aristas = [(1, 2, "tenue", [(0.45, "c1-c2", LINEA)]),
+               _a(1, 3, "nueva", (ventana3, True)),
+               _a(3, 4, "nueva", (ventana4, True)),
+               (4, 5, "tenue", [(0.45, "a2-a3", LINEA)]),
+               _a(3, 6, "tenue", t_jugada=0.72), _a(3, 13, "tenue", t_jugada=0.72)]
+    esc = GRANDE
+    ys = esc["ys_fijo"]
+    y_fondo = esc["y0"] + ys[3] + esc["h"] / 2
+    notas = ["En memoria: solo el camino n1, n3,",
+             "cada marco con la ventana con que llegó y su v.",
+             f"n4 acaba de devolver {f(d['v4'])}: en n3, {f(d['v3'])} ≤ α = {f(d['a3'])}, y corta."]
+    H = round(y_fondo + 52 + len(notas) * 32 + 10)
+    out = [marco(ANCHO, H, desc, titulo, desc), texto(ANCHO / 2, 44, titulo, tam=T_TIT, peso="700")]
+    out.append(texto(40, esc["y0"] - 10, "n1 llegó con", tam=T_TXT, color=SUAVE, anclaje="start"))
+    out.append(texto(40, esc["y0"] + 22, "[−∞, +∞]", tam=T_TXT, color=SUAVE, peso="700",
+                     anclaje="start", fuente=MONO))
+    _dibujar_partes(out, LUGARES_FIJO, esc, ys, specs, aristas)
+    out.append(_notas_ab(y_fondo + 52, notas))
+    out.append(cierre())
+    return "".join(out)
+
+
+def jue_ab_arbol_c():
+    """El arbol C del ejercicio, sin marcas: tres niveles, ocho hojas."""
+    arbol = j.ARBOL_C
+    assert j.contar_nodos(arbol) == 15
+    W, H = ANCHO, 640
+    titulo = "El árbol C"
+    hojas = [h for a in arbol for b in a for h in b]
+    desc = ("El árbol C, de tres niveles y 15 nodos. La raíz es de MAX y tiene dos hijos de "
+            "MIN. El MIN izquierdo tiene dos hijos de MAX, con hojas "
+            f"{hojas[0]} y {hojas[1]} el primero, y {hojas[2]} y {hojas[3]} el segundo. El MIN "
+            f"derecho tiene dos hijos de MAX, con hojas {hojas[4]} y {hojas[5]} el primero, y "
+            f"{hojas[6]} y {hojas[7]} el segundo. Sin marcas: es el enunciado del ejercicio.")
+    out = [marco(W, H, desc, titulo, desc), texto(W / 2, 44, titulo, tam=T_TIT, peso="700")]
+    xs_h = [70 + 80 * k for k in range(8)]
+    xs_max = [(xs_h[2 * k] + xs_h[2 * k + 1]) / 2 for k in range(4)]
+    xs_min = [(xs_max[0] + xs_max[1]) / 2, (xs_max[2] + xs_max[3]) / 2]
+    y_r, y_min, y_max, y_h = 130, 270, 410, 545
+    bw, bh, r = 120, 58, 30
+    for i, xm in enumerate(xs_min):
+        out.append(flecha(W / 2, y_r + bh / 2, xm, y_min - bh / 2 - 8, color=SUAVE, marcador="s"))
+        for k in range(2):
+            xM = xs_max[2 * i + k]
+            out.append(flecha(xm, y_min + bh / 2, xM, y_max - bh / 2 - 8, color=SUAVE, marcador="s"))
+            for q in range(2):
+                xh = xs_h[4 * i + 2 * k + q]
+                out.append(flecha(xM, y_max + bh / 2, xh, y_h - r - 13, color=SUAVE, marcador="s"))
+
+    def caja_tipo(cx, cy, tipo):
+        color = COLOR_MAX if tipo == "MAX" else COLOR_MIN
+        return (caja(cx - bw / 2, cy - bh / 2, bw, bh, relleno=mezclar(color, 0.07), borde=color)
+                + texto(cx, cy + 9, tipo, tam=T_VAL, color=color, peso="700"))
+    out.append(caja_tipo(W / 2, y_r, "MAX"))
+    for xm in xs_min:
+        out.append(caja_tipo(xm, y_min, "MIN"))
+    for xM in xs_max:
+        out.append(caja_tipo(xM, y_max, "MAX"))
+    for xh, v in zip(xs_h, hojas):
+        out.append(f'<circle cx="{xh}" cy="{y_h}" r="{r + 5}" fill="none" stroke="{COLOR_FINAL}" '
+                   f'stroke-width="1.5"/>')
+        out.append(f'<circle cx="{xh}" cy="{y_h}" r="{r}" fill="{mezclar(COLOR_FINAL, 0.07)}" '
+                   f'stroke="{COLOR_FINAL}" stroke-width="2"/>')
+        out.append(texto(xh, y_h + 9, str(v), tam=T_VAL, peso="700"))
+    out.append(texto(W / 2, H - 30, "Las hojas, de izquierda a derecha, en el orden dado.",
+                     tam=T_TXT, color=SUAVE))
     out.append(cierre())
     return "".join(out)
 
@@ -1210,6 +1961,18 @@ DIAGRAMAS = {
     "jue-azar-n3": jue_azar_n3,
     "jue-alfa-beta-fijo": lambda: jue_alfa_beta(False),
     "jue-alfa-beta-invertido": lambda: jue_alfa_beta(True),
+    **{f"jue-ab-arbol-a-paso-{paso}": (lambda paso=paso: jue_ab_arbol_a(paso))
+       for paso in PASOS_ARBOL_A},
+    **{f"jue-ab-arbol-b-paso-{paso}": (lambda paso=paso: jue_ab_arbol_b(paso))
+       for paso in PASOS_ARBOL_B},
+    "jue-ab-ventana": jue_ab_ventana,
+    "jue-ab-fijo-parte-1": lambda: jue_ab_fijo_parte(1),
+    "jue-ab-fijo-parte-2": lambda: jue_ab_fijo_parte(2),
+    "jue-ab-invertido-parte-1": lambda: jue_ab_invertido_parte(1),
+    "jue-ab-invertido-parte-2": lambda: jue_ab_invertido_parte(2),
+    "jue-ab-invertido-parte-3": lambda: jue_ab_invertido_parte(3),
+    "jue-ab-a-media-ejecucion": jue_ab_a_media_ejecucion,
+    "jue-ab-arbol-c": jue_ab_arbol_c,
     "jue-c3-corte-prof-1": jue_c3_corte_prof_1,
     "jue-c3-corte-prof-2": jue_c3_corte_prof_2,
     "jue-c3-horizonte": jue_c3_horizonte,

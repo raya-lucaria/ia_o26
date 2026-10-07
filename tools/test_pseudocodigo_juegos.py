@@ -28,7 +28,8 @@ HORIZONTE = "B..." + "..BB" + "..N." + "NN.."  # la posicion de la clase 3
 PAGINAS = {
     CLASE_2 / "2_minimax_como_algoritmo.md": ["minimax", "decidir"],
     CLASE_2 / "3_cuando_decide_un_dado.md": ["expectiminimax"],
-    CLASE_2 / "5_alfa_beta_como_algoritmo.md": ["alfa_beta"],
+    CLASE_2 / "5_alfa_beta_como_algoritmo.md": [
+        "alfa_beta", "decidir_alfa_beta"],
     CLASE_3 / "2_minimax_con_corte.md": ["minimax_con_corte"],
     CLASE_3 / "3_jugar_contra_el_reloj.md": [
         "alfa_beta_con_corte", "profundizacion_iterativa"],
@@ -161,8 +162,60 @@ def test_alfa_beta_en_python(tablero, invertir, valor, nodos):
     assert (valor, nodos) == j.alfa_beta(tablero, "B", invertir=invertir)[:2]
 
 
+@pytest.mark.parametrize("tablero, invertir, entrega, nodos", [
+    (SUBARBOL, False, "c1-c2", 5),
+    (SUBARBOL, True, "c1-c2", 8),
+    (j.inicio(), False, "a1-a2", 82),
+    (j.inicio(), True, "c1-c2", 72),
+])
+def test_decidir_alfa_beta_en_python(tablero, invertir, entrega, nodos):
+    """DECIDIR-ALFA-BETA genera lo mismo que ALFA-BETA en la raiz y, en n1,
+    entrega c1-c2 en los dos ordenes."""
+    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    ns, c = cargar(pagina, invertir=invertir)
+    a = ns["decidir_alfa_beta"]((tablero, "B"))
+    assert j.nombre_jugada(tablero, a) == entrega
+    assert c["T"] + 1 == nodos
+
+
+def test_en_la_raiz_una_cota_que_empata_no_gana():
+    """La regla del empate: en orden fijo, c1xb2 devuelve +1 (una cota) y su
+    valor exacto es -1. Con >= en la linea 5, DECIDIR elegiria c1xb2."""
+    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    ns, _ = cargar(pagina)
+    n3 = (j.mover(SUBARBOL, jugada(SUBARBOL, "c1xb2")), "N")
+    assert ns["alfa_beta"](n3, 1, float("inf")) == 1
+    assert j.valor(n3[0], "N") == -1
+    codigo = bloques_python(pagina)[1]
+    assert codigo.count("if v > alfa:") == 1
+    ns, _ = cargar(pagina)
+    exec(codigo.replace("if v > alfa:", "if v >= alfa:"), ns)
+    a = ns["decidir_alfa_beta"]((SUBARBOL, "B"))
+    assert j.nombre_jugada(SUBARBOL, a) == "c1xb2"
+
+
+def test_sin_el_igual_se_pierde_casi_toda_la_poda():
+    """El ejercicio «Decide si importa el igual»: con < y > estrictos en las
+    lineas 14 y 7, n1 genera los 13 y el juego completo 228 y 171."""
+    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    codigo = bloques_python(pagina)[0]
+    assert "if v >= beta:" in codigo and "if v <= alfa:" in codigo
+    estricto = codigo.replace("if v >= beta:", "if v > beta:").replace(
+        "if v <= alfa:", "if v < alfa:")
+    inf = float("inf")
+    for tablero, invertir, nodos in [(SUBARBOL, False, 13),
+                                     (j.inicio(), False, 228),
+                                     (j.inicio(), True, 171)]:
+        ns, c = reglas(invertir=invertir)
+        exec(estricto, ns)
+        v = ns["alfa_beta"]((tablero, "B"), -inf, inf)
+        assert v == j.valor(tablero, "B")
+        assert c["T"] + 1 == nodos == j.alfa_beta(
+            tablero, "B", invertir=invertir, estricto=True)[1]
+
+
 def test_alfa_beta_en_python_con_ventana_estrecha():
-    """Con alfa = -1 y beta = +1, como en la seccion 5 de la pagina."""
+    """Con alfa = -1 y beta = +1, como en la seccion 6 de la pagina."""
     pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
     for tablero, invertir in [(SUBARBOL, False), (j.inicio(), False),
                               (j.inicio(), True)]:
@@ -233,3 +286,41 @@ def test_profundizacion_iterativa_en_python_genera_4_10_y_9():
     esperado = j.profundizacion_iterativa(HORIZONTE, (1, 2, 3), 4)
     assert [nodos for _, nodos, _ in esperado] == [4, 10, 9]
     assert c["T"] == sum(nodos - 1 for nodos in (4, 10, 9))
+
+
+# El arbol C del ejercicio «Recorre el arbol C»: raiz MAX, dos MIN, cuatro
+# MAX y ocho hojas. Un nodo es ("MAX" | "MIN", hijos); una hoja, un numero.
+ARBOL_C = ("MAX", [("MIN", [("MAX", [3, 5]), ("MAX", [6, 9])]),
+                   ("MIN", [("MAX", [2, 4]), ("MAX", [7, 1])])])
+
+
+def _invertir(nodo):
+    if isinstance(nodo, int):
+        return nodo
+    return (nodo[0], [_invertir(h) for h in nodo[1]][::-1])
+
+
+@pytest.mark.parametrize("arbol, nodos", [
+    (ARBOL_C, 11),
+    (_invertir(ARBOL_C), 15),
+])
+def test_alfa_beta_en_python_sobre_el_arbol_c(arbol, nodos):
+    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    contador = {"T": 0}
+
+    def transicion(s, a):
+        contador["T"] += 1
+        return s[1][a]
+
+    ns = dict(es_final=lambda s: isinstance(s, int),
+              pl=lambda s: s[0],
+              acciones=lambda s: range(len(s[1])),
+              transicion=transicion,
+              utilidad=lambda s: s)
+    exec(bloques_python(pagina)[0], ns)
+    inf = float("inf")
+    assert ns["alfa_beta"](arbol, -inf, inf) == 5
+    assert contador["T"] + 1 == nodos
+    # El MAX (6, 9) devuelve 6 con [-inf, 5]; el MAX (2, 4), 4 con [5, +inf].
+    assert ns["alfa_beta"](ARBOL_C[1][0][1][1], -inf, 5) == 6
+    assert ns["alfa_beta"](ARBOL_C[1][1], 5, inf) == 4
