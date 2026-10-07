@@ -88,24 +88,35 @@ Depende de quién mueve. Si mueve MAX, elige el hijo que más vale. Si mueve
 MIN, el que menos. Y un final ya tiene su número. Ésa es toda la regla.
 
 ::: definition {#jue-c2-valor title="Valor minimax"}
-El **valor** de un estado $s$ es el número $V(s)$ que se calcula así:
+**Qué es:** el **valor** $V(s)$ es lo que MAX puede **asegurar** desde $s$
+si MIN es racional (@jue-c1-racional), es decir, si siempre responde con lo
+peor para MAX. Ya lo definimos con palabras en
+@jue-c1-valor-jugada-estrategia; aquí va **cómo se calcula**.
 
-- si $s\in S_F$: $\ V(s)=U(s)$;
-- si $\mathrm{Pl}(s)=\text{MAX}$: $\ V(s)=\max_{a\in A(s)} V\bigl(T(s,a)\bigr)$;
-- si $\mathrm{Pl}(s)=\text{MIN}$: $\ V(s)=\min_{a\in A(s)} V\bigl(T(s,a)\bigr)$.
+**Cómo se calcula,** según el tipo de nodo:
 
-**Qué significa:** $V(s)$ es lo que MAX puede **asegurar** desde $s$ si MIN
-siempre responde con lo peor para MAX, es decir, si MIN es racional
-(@jue-c1-racional). Es el mismo $V$ de
-[[el-juego-como-grafo|El juego como grafo]], ahora con su fórmula.
+- si $s$ es final, $s\in S_F$:
+
+  $$V(s)=U(s);$$
+
+- si mueve MAX, $\mathrm{Pl}(s)=\text{MAX}$:
+
+  $$V(s)=\max_{a\in A(s)} V\bigl(T(s,a)\bigr);$$
+
+- si mueve MIN, $\mathrm{Pl}(s)=\text{MIN}$:
+
+  $$V(s)=\min_{a\in A(s)} V\bigl(T(s,a)\bigr).$$
+
+**La fórmula se usa a sí misma:** $V$ aparece a los dos lados del igual. El
+valor de un nodo se calcula con el de sus **hijos**, y los **finales**
+detienen la cuenta, porque su valor ya lo da $U$.
 
 **Qué no es:** no es lo que pasará en una partida real. Si MIN se equivoca,
 MAX puede obtener más; nunca menos.
 :::
 
-La fórmula define $V(s)$ con los valores de los **hijos**. Por eso se
-calcula de abajo hacia arriba: un nodo se valora solo cuando ya se conocen
-todos sus hijos.
+Por eso se calcula **de abajo hacia arriba**: un nodo se valora solo cuando
+ya se conocen todos sus hijos.
 
 ## 3 · Empezar por los finales
 
