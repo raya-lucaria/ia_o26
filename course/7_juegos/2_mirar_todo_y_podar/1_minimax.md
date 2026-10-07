@@ -38,6 +38,12 @@ alcanza y la respuesta a por qué gana quien juega segundo.
 >   (@jue-c1-transicion).
 > - $U(s)$: lo que vale un final para MAX: $+1$ si gana Blancas y $-1$ si
 >   gana Negras (@jue-c1-utilidad).
+> - $V(s)$: el valor, lo que MAX puede asegurar desde $s$ si MIN es
+>   racional; en un final, $V(s)=U(s)$ (@jue-c1-valor-jugada-estrategia).
+>   Esta página da la fórmula para calcularlo.
+>
+> La tabla completa, con el problema escrito, está en
+> [[juegos-mirar-todo-y-podar|la página de la clase]].
 
 ## 1 · El problema, en n1
 

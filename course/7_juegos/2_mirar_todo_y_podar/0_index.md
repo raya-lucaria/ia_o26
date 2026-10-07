@@ -20,6 +20,54 @@ La clase 1 escribió el juego; esta lo resuelve. Hexapawn cabe completo en la
 memoria de una computadora, así que podemos **mirar todo** el árbol. Después
 aprenderemos a **podar**: dejar ramas sin generar sin cambiar la respuesta.
 
+## Lo que traes de la clase 1
+
+Todo lo que usa esta clase, en una tabla. Si un renglón no te suena, vuelve
+a su definición en [[escribir-el-juego|Escribir el juego]] o en
+[[diagnosticar-el-juego|Diagnosticar el juego]].
+
+::: table {#jue-c2-repaso title="El juego, sus piezas y lo que se busca"}
+| | Qué es, y en hexapawn |
+|---|---|
+| $s$ | Un estado: el tablero y a quién le toca. *Ej.: n1* |
+| $s_0$ | El estado inicial. *Tres peones por lado; mueve Blancas* |
+| $S_F$ | Los estados donde la partida terminó. *Alguien llegó, capturó todo o dejó al otro sin jugada* |
+| $\mathrm{Pl}(s)$ | Quién mueve en un estado no final. *Blancas es MAX; Negras es MIN* |
+| $A(s)$ | Las jugadas permitidas en $s$. *En n1: $\text{c1}\textbf{-}\text{c2}$ y $\text{c1}\textbf{x}\text{b2}$* |
+| $T(s,a)$ | El estado al que lleva la jugada $a$. *Desde n1, $\text{c1}\textbf{-}\text{c2}$ lleva a n2* |
+| $U(s)$ | Lo que vale un final **para MAX**; para MIN vale $-U(s)$. *$+1$ si gana Blancas, $-1$ si gana Negras* |
+| $V(s)$ | El **valor**: lo que MAX puede asegurar desde $s$ si MIN es racional. En un final, $V(s)=U(s)$. *$V(s_0)=-1$: gana Negras; esta clase lo calcula* |
+| $a$ | Una jugada: lo que se hace ahora. *Ej.: $\text{c1}\textbf{-}\text{c2}$* |
+| $\operatorname{arg\,max}$ | El **conjunto** de jugadas que alcanzan el máximo; puede tener varias |
+:::
+
+Y tres palabras que no son símbolos:
+
+- **Racional:** elige lo mejor **según su utilidad**, con lo que sabe y lo
+  que alcanza a calcular. No quiere decir que gane (@jue-c1-racional).
+- **Estrategia:** una jugada para **cada** estado donde le toca a un
+  jugador, no solo para el actual.
+- **Supuestos:** por turnos, sin azar, todo a la vista, toda partida
+  termina y lo que gana uno lo pierde el otro.
+
+El problema de la unidad (@jue-c1-problema), escrito completo:
+
+> **Dado:** las reglas del juego, $\bigl(S,\ s_0,\ S_F,\ \mathrm{Pl},\ A,\
+> T,\ U\bigr)$. No el grafo dibujado: las reglas para generarlo.
+>
+> **Encontrar:** en cada estado $s$ donde le toca a MAX, una jugada
+>
+> $$a^{∗}\in\operatorname*{arg\,max}_{a\in A(s)} V\bigl(T(s,a)\bigr),$$
+>
+> es decir, la jugada que lleva al hijo de mayor valor.
+>
+> **Qué significa:** si MAX juega $a^{∗}$ y sigue eligiendo así en cada
+> turno, se asegura al menos $V(s)$ contra cualquier respuesta de MIN, y
+> exactamente $V(s)$ si MIN es racional.
+
+Lo único que falta para resolverlo es **cómo se calcula $V$**. Eso es la
+primera página.
+
 ## Qué vas a poder hacer al terminar esta clase
 
 - Calcular a mano el valor de un árbol pequeño, desde los finales hacia la
