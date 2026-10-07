@@ -247,9 +247,10 @@ Dónde se explica cada uno:
 
 Las hojas ya tienen su número: $U$. Los demás nodos todavía no tienen
 ninguno. **Resolver el juego** será ponerle a cada nodo un número, su
-**valor** $V(s)$: la utilidad que MAX puede garantizar desde $s$ suponiendo
-que MIN siempre responde con lo peor para MAX. En un final no queda nada que
-elegir, así que $V(s)=U(s)$.
+**valor** $V(s)$: lo que MAX puede asegurar desde $s$ si MIN responde
+siempre con lo peor para MAX. En un final, $V(s)=U(s)$. La definición
+formal, junto con la de jugada y estrategia, está en
+[[diagnosticar-el-juego|Diagnosticar el juego]].
 
 En la clase 2 lo haremos sobre el grafo de n1, de las hojas hacia la raíz, con
 el método que ya conoces del [[opt-objetivo-juego-practica|ejemplo del juego]]
