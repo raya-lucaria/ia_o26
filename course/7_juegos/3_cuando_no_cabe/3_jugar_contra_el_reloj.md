@@ -245,18 +245,100 @@ INPUT   un estado s donde mueve MAX; las reglas S_F, Pl, A, T y U;
 OUTPUT  una jugada de A(s), la mejor de la última búsqueda completa.
 
  1  function PROFUNDIZACIÓN-ITERATIVA(s)
+        ▷ Siempre hay algo que entregar, aunque sea malo.
  2      jugada ← cualquier a in A(s)
- 3      d ← 1
+ 3      d ← 1                         ▷ la primera búsqueda
+        ▷ Cada vuelta es una búsqueda completa, más honda.
  4      while quede tiempo
+            ▷ Nada asegurado aún en esta búsqueda.
  5          α ← −∞ ;  mejor ← jugada
+            ▷ La jugada de la búsqueda anterior va primero:
+            ▷ si es buena, α sube pronto y se poda más.
  6          for each a in A(s), empezando por jugada
+                ▷ valora el hijo; le quedan d − 1 jugadas
  7              v ← ALFA-BETA-CON-CORTE(T(s, a), d − 1, α, +∞)
- 8              if el tiempo se acabó: return jugada   ▷ búsqueda a medias: se descarta
- 9              if v = 100: return a                   ▷ victoria asegurada
+                ▷ búsqueda a medias: se descarta
+ 8              if el tiempo se acabó: return jugada
+                ▷ victoria asegurada: no hay nada mejor
+ 9              if v = 100: return a
+                ▷ mejor que todo lo visto: se guarda
 10              if v > α: α ← v ;  mejor ← a
-11          jugada ← mejor
-12          d ← d + 1
+11          jugada ← mejor            ▷ esta búsqueda terminó
+12          d ← d + 1                 ▷ mira una jugada más
 13      return jugada
+```
+
+El mismo procedimiento en Python, línea por línea. Primero va
+`alfa_beta_con_corte`, el alfa-beta de la clase 2 con las dos líneas de
+minimax con corte; el reloj es una función, `queda_tiempo()`, que dice si
+sigue habiendo tiempo. El número entre paréntesis es la línea del
+pseudocódigo de arriba:
+
+```python
+from math import inf
+
+# Las reglas: es_final(s), pl(s), acciones(s),
+# transicion(s, a), utilidad(s) y evaluar(s), que es EVAL.
+# pl(s) da "MAX" o "MIN".
+
+def alfa_beta_con_corte(s, d, alfa, beta):
+    # Un final vale 100 veces su utilidad.
+    if es_final(s):
+        return 100 * utilidad(s)
+    # Nodo de corte: se estima.
+    if d == 0:
+        return evaluar(s)
+    # Lo demás es el alfa-beta de la clase 2,
+    # con una jugada menos en cada hijo.
+    if pl(s) == "MAX":
+        v = -inf
+        for a in acciones(s):
+            h = alfa_beta_con_corte(transicion(s, a),
+                                    d - 1, alfa, beta)
+            v = max(v, h)
+            if v >= beta:             # corte beta
+                return v
+            alfa = max(alfa, v)
+        return v
+    else:
+        v = inf
+        for a in acciones(s):
+            h = alfa_beta_con_corte(transicion(s, a),
+                                    d - 1, alfa, beta)
+            v = min(v, h)
+            if v <= alfa:             # corte alfa
+                return v
+            beta = min(beta, v)
+        return v
+
+def profundizacion_iterativa(s):      # (1)
+    # (2) Siempre hay algo que entregar.
+    jugada = acciones(s)[0]
+    d = 1                             # (3) primera búsqueda
+    while queda_tiempo():             # (4) otra búsqueda
+        # (5) Nada asegurado aún en esta búsqueda.
+        alfa = -inf
+        mejor = jugada
+        # (6) La jugada anterior va primero.
+        orden = [jugada] + [a for a in acciones(s)
+                            if a != jugada]
+        for a in orden:
+            # (7) Valora el hijo; le quedan d - 1 jugadas.
+            v = alfa_beta_con_corte(transicion(s, a),
+                                    d - 1, alfa, inf)
+            # (8) Búsqueda a medias: se descarta.
+            if not queda_tiempo():
+                return jugada
+            # (9) Victoria asegurada: no hay nada mejor.
+            if v == 100:
+                return a
+            # (10) Mejor que lo visto: se guarda.
+            if v > alfa:
+                alfa = v
+                mejor = a
+        jugada = mejor                # (11) terminó completa
+        d = d + 1                     # (12) una jugada más
+    return jugada                     # (13)
 ```
 
 - La línea 2 asegura que siempre haya algo que entregar.

@@ -208,10 +208,43 @@ INPUT   un estado s y las reglas S_F, Pl, A, T y U de un juego finito
 OUTPUT  V(s), el valor esperado de s en puntos de MAX.
 
  1  function EXPECTIMINIMAX(s)
+        ▷ Caso base: un final ya vale su utilidad.
  2      if s ∈ S_F: return U(s)
+        ▷ MAX tiene intereses: optimiza hacia arriba.
  3      if Pl(s) = MAX:  return el máximo de EXPECTIMINIMAX(T(s, a)), a in A(s)
+        ▷ MIN también: optimiza hacia abajo.
  4      if Pl(s) = MIN:  return el mínimo de EXPECTIMINIMAX(T(s, a)), a in A(s)
+        ▷ El azar no quiere nada: se promedia. Cada hijo
+        ▷ pesa su probabilidad, y hay que valorarlos todos.
  5      if Pl(s) = AZAR: return la suma de Pr(a) · EXPECTIMINIMAX(T(s, a)), a in A(s)
+```
+
+El mismo procedimiento en Python, línea por línea. `pr(s, a)` es
+$\Pr(a)$ en el estado $s$; el número entre paréntesis es la línea del
+pseudocódigo:
+
+```python
+# Las reglas: es_final(s), pl(s), acciones(s),
+# transicion(s, a), utilidad(s) y pr(s, a).
+# pl(s) da "MAX", "MIN" o "AZAR".
+
+def expectiminimax(s):                # (1)
+    # (2) Caso base: un final ya vale su utilidad.
+    if es_final(s):
+        return utilidad(s)
+    # (3) MAX: el máximo sobre sus hijos.
+    if pl(s) == "MAX":
+        return max(expectiminimax(transicion(s, a))
+                   for a in acciones(s))
+    # (4) MIN: el mínimo sobre sus hijos.
+    if pl(s) == "MIN":
+        return min(expectiminimax(transicion(s, a))
+                   for a in acciones(s))
+    # (5) AZAR: el promedio, cada hijo por su probabilidad.
+    if pl(s) == "AZAR":
+        return sum(pr(s, a)
+                   * expectiminimax(transicion(s, a))
+                   for a in acciones(s))
 ```
 
 Las líneas 3 y 4 son MINIMAX abreviado; la 5 es la nueva. Igual que

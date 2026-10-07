@@ -68,18 +68,57 @@ INPUT   un estado s; la profundidad que queda, d ≥ 0; las reglas
 OUTPUT  el valor con corte de s, en puntos de MAX.
 
  1  function MINIMAX-CON-CORTE(s, d)
+        ▷ Un final vale su utilidad, en otra escala:
+        ▷ 100 pesa más que cualquier estimación.
  2      if s ∈ S_F: return 100 · U(s)
- 3      if d = 0: return EVAL(s)                   ▷ nodo de corte
+        ▷ Ya no quedan jugadas por mirar: se estima.
+ 3      if d = 0: return EVAL(s)      ▷ nodo de corte
+        ▷ De aquí abajo, MINIMAX con d − 1 en cada hijo.
  4      if Pl(s) = MAX
- 5          v ← −∞
- 6          for each a in A(s)
+ 5          v ← −∞                    ▷ menor que todo
+ 6          for each a in A(s)        ▷ genera los hijos
+                ▷ al hijo le queda una jugada menos
  7              v ← max(v, MINIMAX-CON-CORTE(T(s, a), d − 1))
- 8          return v
- 9      else                                       ▷ Pl(s) = MIN
-10          v ← +∞
-11          for each a in A(s)
+ 8          return v                  ▷ lo mejor para MAX
+ 9      else                          ▷ Pl(s) = MIN
+10          v ← +∞                    ▷ mayor que todo
+11          for each a in A(s)        ▷ genera los hijos
+                ▷ al hijo le queda una jugada menos
 12              v ← min(v, MINIMAX-CON-CORTE(T(s, a), d − 1))
-13          return v
+13          return v                  ▷ lo mejor para MIN
+```
+
+El mismo procedimiento en Python, línea por línea; el número entre
+paréntesis es la línea del pseudocódigo:
+
+```python
+from math import inf
+
+# Las reglas: es_final(s), pl(s), acciones(s),
+# transicion(s, a), utilidad(s) y evaluar(s), que es EVAL.
+# pl(s) da "MAX" o "MIN".
+
+def minimax_con_corte(s, d):          # (1)
+    # (2) Un final vale 100 veces su utilidad.
+    if es_final(s):
+        return 100 * utilidad(s)
+    # (3) Nodo de corte: no se expande, se estima.
+    if d == 0:
+        return evaluar(s)
+    if pl(s) == "MAX":                # (4) mueve MAX
+        v = -inf                      # (5) menor que todo
+        for a in acciones(s):         # (6) genera los hijos
+            # (7) valora el hijo con una jugada menos
+            h = minimax_con_corte(transicion(s, a), d - 1)
+            v = max(v, h)
+        return v                      # (8) lo mejor para MAX
+    else:                             # (9) mueve MIN
+        v = inf                       # (10) mayor que todo
+        for a in acciones(s):         # (11) genera los hijos
+            # (12) valora el hijo con una jugada menos
+            h = minimax_con_corte(transicion(s, a), d - 1)
+            v = min(v, h)
+        return v                      # (13) lo mejor para MIN
 ```
 
 Respecto del MINIMAX de [[minimax-como-algoritmo|la clase 2]]:
