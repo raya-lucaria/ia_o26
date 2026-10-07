@@ -275,6 +275,100 @@ def alfa_beta(tablero, turno, n=3, invertir=False, sin_jugada_empata=False,
             [(tipo, jugada, quedan) for tipo, _, jugada, quedan in r["cortes"]])
 
 
+# -------------------------------------- alfa-beta sobre un arbol generico ---
+#
+# Los arboles chicos de «Alfa-beta a mano» (A y B) y el ejercicio de «Alfa-beta
+# como algoritmo» (C) no son hexapawn: son tuplas anidadas. Una hoja es un
+# numero; un nodo interno, la tupla de sus hijos en el orden dado. Los niveles
+# alternan MAX y MIN a partir de la raiz.
+
+# Arbol A: raiz MAX, hijos MIN (3, 5) y (2, 1). La hoja 1 es la que se poda.
+ARBOL_A = ((3, 5), (2, 1))
+# Arbol B: raiz MIN, hijos MAX (8, 6) y (9, 1). La hoja 1 es la que se poda.
+ARBOL_B = ((8, 6), (9, 1))
+# Arbol C: tres niveles, raiz MAX.
+ARBOL_C = (((3, 5), (6, 9)), ((2, 4), (7, 1)))
+
+
+def invertir_arbol(arbol):
+    """El mismo arbol con cada lista de hijos al reves."""
+    if not isinstance(arbol, tuple):
+        return arbol
+    return tuple(invertir_arbol(h) for h in reversed(arbol))
+
+
+def contar_nodos(arbol):
+    if not isinstance(arbol, tuple):
+        return 1
+    return 1 + sum(contar_nodos(h) for h in arbol)
+
+
+def alfa_beta_arbol(arbol, es_max=True, alfa=float("-inf"), beta=float("inf"),
+                    invertir=False, estricto=False):
+    """Alfa-beta fail-soft sobre un arbol de tuplas anidadas.
+
+    Las mismas lineas que alfa_beta_traza: corte beta si v >= beta en un nodo
+    de MAX, corte alfa si v <= alfa en uno de MIN (sin el igual si
+    `estricto`), y el nodo devuelve v, que es una cota si hubo corte.
+
+    Los caminos son tuplas de indices en el orden *dado* del arbol, aunque se
+    recorra invertido, para que un mismo nodo se llame igual en los dos
+    recorridos. Devuelve un dict con:
+    - valor: lo que devuelve la raiz;
+    - generados: cuantos nodos se generan (hojas incluidas);
+    - traza: en orden de visita, (camino, tipo, alfa al llegar, beta al
+      llegar, v devuelto, corte), con tipo "MAX", "MIN" u "hoja" y corte
+      "alfa", "beta" o None. Solo cuenta el corte que deja hermanos sin
+      generar;
+    - podados: los caminos de las raices de los subarboles que no se generan.
+    """
+    traza, podados = [], []
+
+    def ab(nodo, maximiza, a, b, camino):
+        fila = len(traza)
+        traza.append(None)
+        if not isinstance(nodo, tuple):
+            traza[fila] = (camino, "hoja", a, b, nodo, None)
+            return nodo
+        a0, b0 = a, b
+        indices = list(range(len(nodo)))
+        if invertir:
+            indices.reverse()
+        v = float("-inf") if maximiza else float("inf")
+        corte = None
+        for k, i in enumerate(indices):
+            h = ab(nodo[i], not maximiza, a, b, camino + (i,))
+            quedan = indices[k + 1:]
+            if maximiza:
+                v = max(v, h)
+                if v > b or (v == b and not estricto):
+                    corte = "beta" if quedan else None
+                    break
+                a = max(a, v)
+            else:
+                v = min(v, h)
+                if v < a or (v == a and not estricto):
+                    corte = "alfa" if quedan else None
+                    break
+                b = min(b, v)
+        else:
+            quedan = []
+        podados.extend(camino + (i,) for i in quedan)
+        traza[fila] = (camino, "MAX" if maximiza else "MIN", a0, b0, v, corte)
+        return v
+
+    v = ab(arbol, es_max, alfa, beta, ())
+    return {"valor": v, "generados": len(traza), "traza": traza, "podados": podados}
+
+
+def minimax_arbol(arbol, es_max=True):
+    """El valor exacto de un nodo del arbol generico."""
+    if not isinstance(arbol, tuple):
+        return arbol
+    hijos = [minimax_arbol(h, not es_max) for h in arbol]
+    return max(hijos) if es_max else min(hijos)
+
+
 def expectiminimax_rival_al_azar(tablero, turno, n=3):
     """Valor esperado para Blancas si Negras elige cada jugada al azar, con la
     misma probabilidad. Blancas sigue maximizando. Fracciones exactas."""

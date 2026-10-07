@@ -4,7 +4,7 @@ title: "Clase 2 · Mirar todo y podar"
 nav_title: Mirar todo y podar
 summary: "Calcular quién gana un juego que cabe completo: minimax desde los finales, nodos de azar que promedian y alfa-beta para no generar ramas que no cambian la respuesta."
 status: ready
-estimated_time: 115m
+estimated_time: 120m
 tags: [juegos, minimax, alfa-beta, algoritmos]
 prerequisites: [juegos-leer-y-escribir]
 ---
@@ -102,7 +102,7 @@ algoritmo**, en general.
 | 1 | Minimax a mano | Valorar n1 desde los finales y saber quién gana hexapawn | 25m |
 | 2 | Minimax como algoritmo | Qué recibe, qué genera, por qué es correcto y cuánto cuesta | 25m |
 | 3 | Cuando decide un dado | El problema con azar, en general, y qué cambia si un nodo no lo decide nadie | 20m |
-| 4 | Alfa-beta a mano | Dos recorridos de n1 que no generan todos los nodos | 25m |
+| 4 | Alfa-beta a mano | La idea en dos árboles de siete nodos, α y β, y dos recorridos de n1 | 30m |
 | 5 | Alfa-beta como algoritmo | Por qué los cortes son seguros y por qué el orden importa | 20m |
 | 6 | Tarea de refuerzo | Resolver monedas en fila y hexapawn con empate | 45m, aparte |
 :::

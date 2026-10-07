@@ -400,3 +400,45 @@ def test_clase_3_el_rasgo_de_capturas_no_arregla_el_error():
         solo_negras.append(e - 10 * capturas(t, "N"))
     assert simetrico == [2, 2, 13]
     assert solo_negras == [-8, 2, 3]
+
+
+def test_clase_2_alfa_beta_en_arboles_genericos():
+    """Los arboles A, B y C de «Alfa-beta a mano» y «Alfa-beta como algoritmo»."""
+    inf = float("inf")
+    # Arbol A: raiz MAX, hijos MIN (3, 5) y (2, ?). Se generan 6 de 7.
+    a = j.alfa_beta_arbol(j.ARBOL_A, es_max=True)
+    assert (a["valor"], a["generados"], j.contar_nodos(j.ARBOL_A)) == (3, 6, 7)
+    assert a["podados"] == [(1, 1)]  # la hoja «?»
+    paso = {c: (tipo, al, be, v, corte) for c, tipo, al, be, v, corte in a["traza"]}
+    assert paso[(0,)] == ("MIN", -inf, inf, 3, None)
+    # R llega con [3, +inf], su hoja 2 cumple 2 <= 3 y devuelve 2, una cota:
+    # su valor exacto es 1.
+    assert paso[(1,)] == ("MIN", 3, inf, 2, "alfa")
+    assert j.minimax_arbol(j.ARBOL_A[1], es_max=False) == 1
+    # Al reves, R primero: 7 de 7 y ningun corte.
+    a_inv = j.alfa_beta_arbol(j.ARBOL_A, es_max=True, invertir=True)
+    assert (a_inv["valor"], a_inv["generados"], a_inv["podados"]) == (3, 7, [])
+    # Con un 3 en lugar del 2 tambien corta: el igual cuenta.
+    a3 = j.alfa_beta_arbol(((3, 5), (3, 1)), es_max=True)
+    assert (a3["valor"], a3["generados"], a3["podados"]) == (3, 6, [(1, 1)])
+    # Arbol B: raiz MIN, hijos MAX (8, 6) y (9, ?). 6 de 7, corte beta.
+    b = j.alfa_beta_arbol(j.ARBOL_B, es_max=False)
+    assert (b["valor"], b["generados"], b["podados"]) == (8, 6, [(1, 1)])
+    paso = {c: (tipo, al, be, v, corte) for c, tipo, al, be, v, corte in b["traza"]}
+    assert paso[(0,)] == ("MAX", -inf, inf, 8, None)
+    assert paso[(1,)] == ("MAX", -inf, 8, 9, "beta")
+    # Arbol C: 15 nodos, vale 5; 11 en el orden dado, 15 al reves.
+    c = j.alfa_beta_arbol(j.ARBOL_C, es_max=True)
+    assert (c["valor"], c["generados"], j.contar_nodos(j.ARBOL_C)) == (5, 11, 15)
+    assert j.minimax_arbol(j.ARBOL_C) == 5
+    # Se poda la hoja 9 (corte beta en MAX(6, 9), que llega con [-inf, 5]) y
+    # el subarbol (7, 1), tres nodos (corte alfa en el MIN derecho).
+    assert c["podados"] == [(0, 1, 1), (1, 1)]
+    paso = {cam: (tipo, al, be, v, corte) for cam, tipo, al, be, v, corte in c["traza"]}
+    assert paso[(0, 1)] == ("MAX", -inf, 5, 6, "beta")
+    assert paso[(1,)] == ("MIN", 5, inf, 4, "alfa")
+    c_inv = j.alfa_beta_arbol(j.ARBOL_C, es_max=True, invertir=True)
+    assert (c_inv["valor"], c_inv["generados"], c_inv["podados"]) == (5, 15, [])
+    # Sin el igual, el juego completo pierde casi toda la poda: 228 y 171.
+    assert j.alfa_beta(j.inicio(), "B", estricto=True)[:2] == (-1, 228)
+    assert j.alfa_beta(j.inicio(), "B", invertir=True, estricto=True)[:2] == (-1, 171)

@@ -87,6 +87,7 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda | Cuando decide un dado |
 | $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 | Cuando decide un dado |
 | $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX y lo que MIN ya tienen asegurado con alguna alternativa en el camino desde la raíz | Alfa-beta a mano |
+| $[\alpha,\beta]$ | «la ventana alfa beta». Los valores que todavía importan en un nodo: lo que cae estrictamente dentro es un valor exacto; lo que sale, una cota | Alfa-beta a mano |
 | $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual | Cortar y evaluar a mano |
 | $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ | Cortar y evaluar a mano |
 | $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación | Cortar y evaluar a mano |
@@ -123,8 +124,11 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Utilidad esperada | El valor esperado de la utilidad. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
 | Alfa-beta | Minimax que deja de generar las jugadas que ya no pueden cambiar la decisión de arriba | Alfa-beta a mano |
-| Corte alfa, corte beta | En un nodo de MIN, dejar de generar hijos cuando $v\le\alpha$; en uno de MAX, cuando $v\ge\beta$ | Alfa-beta a mano |
-| Cota | Lo que devuelve un nodo donde se cortó: su valor es a lo más, o al menos, ese número | Alfa-beta a mano |
+| Corte alfa, corte beta | El corte alfa ocurre en un nodo de MIN: deja de generar hijos cuando $v\le\alpha$. El corte beta ocurre en uno de MAX, cuando $v\ge\beta$. Cada corte se llama como la cota que usa, no como el nodo donde pasa | Alfa-beta a mano |
+| Cota | Lo que devuelve un nodo cuyo número $w$ salió de la ventana. Si $w\le\alpha$, cota superior: su valor es a lo más $w$. Si $w\ge\beta$, cota inferior: al menos $w$ | Alfa-beta a mano |
+| Ventana | El intervalo $[\alpha,\beta]$ con que llega un nodo. Empieza en $[-\infty,+\infty]$ en la raíz y al bajar solo se encoge | Alfa-beta a mano |
+| Fail-soft | La versión de alfa-beta que, al cortar, devuelve su $v$ tal cual aunque caiga fuera de la ventana, en vez de recortarlo a $\alpha$ o $\beta$ | Alfa-beta como algoritmo |
+| Regla del empate en la raíz | Con alfa-beta, la raíz cambia de jugada solo si $v$ mejora estrictamente: un hijo que devolvió una cota no gana un empate | Alfa-beta como algoritmo |
 | Estrategia | Función que a cada estado donde le toca a un jugador le asigna una jugada de $A(s)$ | Diagnosticar el juego |
 | Nodo de azar | Nodo donde no elige un jugador sino un dado; cada flecha lleva su probabilidad | Diagnosticar el juego |
 | Tabla de pagos | Filas: jugadas de uno; columnas: jugadas del otro; cada celda: lo que gana cada uno | Diagnosticar el juego |

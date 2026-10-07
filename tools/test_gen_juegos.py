@@ -151,10 +151,128 @@ def test_alfa_beta_dibuja_lo_que_genera(invertir, generados, corte):
     visitas, cortes = gen.traza_n1(invertir)
     assert len(visitas) == generados == j.alfa_beta(".BBBN.N.N", "B", invertir=invertir)[1]
     assert f"{generados} de 13 nodos" in svg
-    assert svg.count("no se genera") == 13 - generados + 1  # mas la leyenda
+    # Un fantasma por subarbol no generado, no uno por nodo.
+    grupos = gen.FANTASMAS_INV if invertir else gen.FANTASMAS_FIJO
+    assert sum(len(g) for g in grupos.values()) == 13 - generados
+    assert svg.count(">?<") == len(grupos) == 2
+    assert svg.count(">cuelga de él<") == 1
     assert list(cortes.values()) == [corte] and f"corte {corte}" in svg
     for orden in range(1, generados + 1):
         assert f">{orden}º<" in svg
+    # El nodo que corta devuelve una cota, y la figura lo escribe asi.
+    (padre, _), = cortes
+    cota = "≤" if corte == "alfa" else "≥"
+    assert f"devuelve {cota} {gen.fmt(visitas[padre][4])}" in svg
+    assert padre == (6 if invertir else 3)
+    # Bajo de los ~1480 px de antes.
+    alto = int(re.search(r'<svg\b[^>]*\bheight="(\d+)"', svg).group(1))
+    assert alto < 1000
+
+
+# ------------------------------------------- alfa-beta por partes ---
+
+NUEVAS_AB = (["jue-ab-arbol-a-paso-%d" % k for k in gen.PASOS_ARBOL_A]
+             + ["jue-ab-arbol-b-paso-%d" % k for k in gen.PASOS_ARBOL_B]
+             + ["jue-ab-ventana", "jue-ab-fijo-parte-1", "jue-ab-fijo-parte-2",
+                "jue-ab-invertido-parte-1", "jue-ab-invertido-parte-2",
+                "jue-ab-invertido-parte-3", "jue-ab-a-media-ejecucion", "jue-ab-arbol-c"])
+
+
+def test_estan_las_catorce_figuras_de_alfa_beta():
+    assert len(NUEVAS_AB) == 14
+    assert set(NUEVAS_AB) <= set(gen.DIAGRAMAS)
+
+
+@pytest.mark.parametrize("nombre", NUEVAS_AB)
+def test_las_figuras_de_alfa_beta_se_leen_en_un_telefono(nombre):
+    """Ancho de la columna y letra minima de 22: el sitio las escala a ~350 px."""
+    svg = _texto(nombre)
+    etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
+    assert 'width="700"' in etiqueta and 'viewBox="0 0 700 ' in etiqueta
+    assert re.search(r'aria-label="[^"]{60,}"', etiqueta)
+    # Toda la letra, salvo la B y la N de las piezas de los tableros.
+    tamanos = [float(t) for t, contenido in
+               re.findall(r'font-size="([\d.]+)"[^>]*>([^<]*)</text>', svg)
+               if contenido not in ("B", "N")]
+    assert min(tamanos) >= 22, (nombre, min(tamanos))
+
+
+def _arbol(arbol, es_max):
+    r = j.alfa_beta_arbol(arbol, es_max=es_max)
+    return r, {c: (tipo, a, b, v, corte) for c, tipo, a, b, v, corte in r["traza"]}
+
+
+def test_el_arbol_a_dibuja_su_traza():
+    r, t = _arbol(j.ARBOL_A, True)
+    assert (r["valor"], r["generados"], j.contar_nodos(j.ARBOL_A)) == (3, 6, 7)
+    p1, p2, p3, p4 = (_texto(f"jue-ab-arbol-a-paso-{k}") for k in gen.PASOS_ARBOL_A)
+    assert ">= 3<" in p1 and "min{3, 5}" in p1 and ">por mirar<" in p1
+    assert ">α = 3<" in p2
+    assert t[(1,)][1] == 3 and "[3, +∞]" in p3 and ">v = 2 ≤ 3<" in p3
+    assert ">≤ 2<" in p4 and ">= 3<" in p4 and "corte alfa" in p4
+    assert "6 de 7 nodos" in p4 and p4.count(">?<") == 1 and ">no se genera<" in p4
+    # Antes del corte, «?» todavia no es un fantasma.
+    for svg in (p1, p2, p3):
+        assert "no se genera" not in svg and "corte" not in svg
+
+
+def test_el_arbol_b_dibuja_su_traza():
+    r, t = _arbol(j.ARBOL_B, False)
+    assert (r["valor"], r["generados"]) == (8, 6) and t[(1,)][4] == "beta"
+    p1, p2 = (_texto(f"jue-ab-arbol-b-paso-{k}") for k in gen.PASOS_ARBOL_B)
+    assert ">β = 8<" in p1 and ">= 8<" in p1 and "max{8, 6}" in p1
+    assert "[−∞, 8]" in p2 and ">9 ≥ 8<" in p2 and ">≥ 9<" in p2 and ">= 8<" in p2
+    assert "corte beta" in p2 and "6 de 7 nodos" in p2
+
+
+def test_la_ventana_marca_los_dos_cortes():
+    svg = _texto("jue-ab-ventana")
+    for rotulo in ("v ≤ α:", "v ≥ β:", "corte alfa", "corte beta", "aquí el valor",
+                   "2 ≤ 3: corte alfa", "9 ≥ 8: corte beta", "α = 3", "β = 8"):
+        assert rotulo in svg, rotulo
+
+
+def test_las_partes_del_orden_fijo_dibujan_su_traza():
+    visitas, cortes = gen.traza_n1(False)
+    assert cortes == {(3, 6): "alfa"}
+    p1, p2 = _texto("jue-ab-fijo-parte-1"), _texto("jue-ab-fijo-parte-2")
+    assert ">α = +1<" in p1 and ">por mirar<" in p1 and "corte" not in p1
+    _, _, a3, b3, v3 = visitas[3]
+    assert (a3, b3, v3) == (1, float("inf"), 1) and gen.valores_n1()[3] == -1
+    assert "[+1, +∞]" in p2
+    assert ">v = +1 ≤ +1<" in p2 and ">≤ +1 (cota)<" in p2
+    assert "corte alfa" in p2 and p2.count(">?<") == 2 and "5 de 13" in p2
+
+
+def test_las_partes_del_orden_invertido_dibujan_su_traza():
+    visitas, cortes = gen.traza_n1(True)
+    assert cortes == {(6, 11): "beta"}
+    p1, p2, p3 = (_texto(f"jue-ab-invertido-parte-{k}") for k in (1, 2, 3))
+    # n13 vale −1, y es lo primero que ve n3: β = −1.
+    assert visitas[13][4] == -1 and visitas[6][3] == -1
+    assert ">β = −1<" in p1 and ">U = −1<" in p1 and "corte" not in p1
+    assert "[−∞, −1]" in p2 and ">+1 ≥ −1<" in p2 and ">≥ +1 (cota)<" in p2
+    assert "corte beta" in p2 and p2.count(">?<") == 2
+    assert visitas[3][4] == -1 and visitas[2][2:4] == (-1, float("inf"))
+    assert ">α = −1<" in p3 and "[−1, +∞]" in p3 and "pero no ahorra" in p3
+    assert ">= +1<" in p3 and "8 de 13" in p3
+
+
+def test_a_media_ejecucion_es_la_pila_del_corte_en_n3():
+    svg = _texto("jue-ab-a-media-ejecucion")
+    assert ">v = +1 ≤ α<" in svg and ">→ corta<" in svg and ">α = +1<" in svg
+    assert svg.count("y se olvidó") == 2 and svg.count(">?<") == 2
+    assert svg.count(">[+1, +∞]<") == 2 and ">[−∞, +∞]<" in svg
+
+
+def test_el_arbol_c_es_el_del_ejercicio():
+    svg = _texto("jue-ab-arbol-c")
+    hojas = re.findall(r'font-size="26" font-weight="700" text-anchor="middle">(\d)</text>', svg)
+    assert hojas == ["3", "5", "6", "9", "2", "4", "7", "1"]
+    assert svg.count(">MAX<") == 5 and svg.count(">MIN<") == 2
+    assert j.contar_nodos(j.ARBOL_C) == 15
+    # Sin marcas: es el enunciado.
+    assert "corte" not in svg and "α" not in svg and "β" not in svg
 
 
 # ------------------------------------------------------------- clase 3 ---
