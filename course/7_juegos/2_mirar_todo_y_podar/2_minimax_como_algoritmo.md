@@ -71,17 +71,50 @@ INPUT   un estado s y las reglas S_F, Pl, A, T y U de un juego
 OUTPUT  V(s), el valor de s en puntos de MAX.
 
  1  function MINIMAX(s)
+        ▷ Caso base: un final ya vale su utilidad.
  2      if s ∈ S_F: return U(s)
+        ▷ Mueve MAX: se queda con el hijo más alto.
  3      if Pl(s) = MAX
- 4          v ← −∞
- 5          for each a in A(s)                 ▷ genera los hijos
+ 4          v ← −∞                    ▷ menor que todo
+ 5          for each a in A(s)        ▷ genera los hijos
+                ▷ valora el hijo T(s, a); guarda el mayor
  6              v ← max(v, MINIMAX(T(s, a)))
- 7          return v
- 8      else                                   ▷ Pl(s) = MIN
- 9          v ← +∞
-10          for each a in A(s)
+ 7          return v                  ▷ lo mejor para MAX
+ 8      else                          ▷ Pl(s) = MIN
+            ▷ Mueve MIN: se queda con el hijo más bajo.
+ 9          v ← +∞                    ▷ mayor que todo
+10          for each a in A(s)        ▷ un hijo por vuelta
+                ▷ valora el hijo T(s, a); guarda el menor
 11              v ← min(v, MINIMAX(T(s, a)))
-12          return v
+12          return v                  ▷ lo mejor para MIN
+```
+
+El mismo procedimiento en Python, línea por línea. Las reglas son
+funciones que ya existen; el número entre paréntesis es la línea del
+pseudocódigo:
+
+```python
+from math import inf
+
+# Las reglas: es_final(s), pl(s), acciones(s),
+# transicion(s, a) y utilidad(s). pl(s) da "MAX" o "MIN".
+
+def minimax(s):                       # (1)
+    # (2) Caso base: un final ya vale su utilidad.
+    if es_final(s):
+        return utilidad(s)
+    if pl(s) == "MAX":                # (3) mueve MAX
+        v = -inf                      # (4) menor que todo
+        for a in acciones(s):         # (5) genera los hijos
+            # (6) valora el hijo y guarda el mayor
+            v = max(v, minimax(transicion(s, a)))
+        return v                      # (7) lo mejor para MAX
+    else:                             # (8) mueve MIN
+        v = inf                       # (9) mayor que todo
+        for a in acciones(s):         # (10) un hijo por vuelta
+            # (11) valora el hijo y guarda el menor
+            v = min(v, minimax(transicion(s, a)))
+        return v                      # (12) lo mejor para MIN
 ```
 
 Cada línea usa una pieza del modelo:
@@ -111,7 +144,20 @@ INPUT   un estado s con Pl(s) = MAX, y las mismas reglas.
 OUTPUT  una jugada a∗ de A(s) que alcanza V(s).
 
  1  function DECIDIR(s)
+        ▷ Valora cada hijo de la raíz con MINIMAX y
+        ▷ devuelve la jugada, no el número.
  2      return una jugada a de A(s) con el mayor MINIMAX(T(s, a))
+```
+
+En Python, con la función `minimax` de arriba:
+
+```python
+def decidir(s):                       # (1)
+    # (2) max recorre A(s) y compara cada jugada a por
+    # minimax(T(s, a)); devuelve la jugada, no el valor.
+    # Si hay empate, se queda con la primera.
+    return max(acciones(s),
+               key=lambda a: minimax(transicion(s, a)))
 ```
 
 En n1: $\mathrm{MINIMAX}(T(\text{n1},\text{c1}\textbf{-}\text{c2}))=+1$ y

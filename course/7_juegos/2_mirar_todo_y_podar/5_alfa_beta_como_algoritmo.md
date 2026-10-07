@@ -66,21 +66,66 @@ OUTPUT  V(s) si queda estrictamente entre α y β; si no, una cota que basta par
         decidir. En la raíz, con −∞ y +∞, siempre el valor exacto.
 
  1  function ALFA-BETA(s, α, β)
+        ▷ Caso base: un final ya vale su utilidad.
  2      if s ∈ S_F: return U(s)
+        ▷ Mueve MAX: busca el hijo más alto.
  3      if Pl(s) = MAX
- 4          v ← −∞
- 5          for each a in A(s)
+ 4          v ← −∞                    ▷ menor que todo
+ 5          for each a in A(s)        ▷ un hijo por vuelta
+                ▷ valora el hijo con lo asegurado hasta ahora
  6              v ← max(v, ALFA-BETA(T(s, a), α, β))
- 7              if v ≥ β: return v                 ▷ corte beta
- 8              α ← max(α, v)
- 9          return v
-10      else                                       ▷ Pl(s) = MIN
-11          v ← +∞
-12          for each a in A(s)
+                ▷ arriba, MIN ya tiene algo mejor
+ 7              if v ≥ β: return v    ▷ corte beta
+ 8              α ← max(α, v)         ▷ MAX ya asegura v
+ 9          return v                  ▷ valor o cota
+10      else                          ▷ Pl(s) = MIN
+            ▷ Mueve MIN: busca el hijo más bajo.
+11          v ← +∞                    ▷ mayor que todo
+12          for each a in A(s)        ▷ un hijo por vuelta
+                ▷ valora el hijo con lo asegurado hasta ahora
 13              v ← min(v, ALFA-BETA(T(s, a), α, β))
-14              if v ≤ α: return v                 ▷ corte alfa
-15              β ← min(β, v)
-16          return v
+                ▷ arriba, MAX ya tiene algo mejor
+14              if v ≤ α: return v    ▷ corte alfa
+15              β ← min(β, v)         ▷ MIN ya asegura v
+16          return v                  ▷ valor o cota
+```
+
+El mismo procedimiento en Python, línea por línea; el número entre
+paréntesis es la línea del pseudocódigo:
+
+```python
+from math import inf
+
+# Las reglas: es_final(s), pl(s), acciones(s),
+# transicion(s, a) y utilidad(s). pl(s) da "MAX" o "MIN".
+# Se llama como alfa_beta(s, -inf, inf).
+
+def alfa_beta(s, alfa, beta):         # (1)
+    # (2) Caso base: un final ya vale su utilidad.
+    if es_final(s):
+        return utilidad(s)
+    if pl(s) == "MAX":                # (3) mueve MAX
+        v = -inf                      # (4) menor que todo
+        for a in acciones(s):         # (5) un hijo por vuelta
+            # (6) valora el hijo con alfa y beta actuales
+            h = alfa_beta(transicion(s, a), alfa, beta)
+            v = max(v, h)
+            # (7) Corte beta: las demás no se generan.
+            if v >= beta:
+                return v
+            alfa = max(alfa, v)       # (8) MAX ya asegura v
+        return v                      # (9) valor o cota
+    else:                             # (10) mueve MIN
+        v = inf                       # (11) mayor que todo
+        for a in acciones(s):         # (12) un hijo por vuelta
+            # (13) valora el hijo con alfa y beta actuales
+            h = alfa_beta(transicion(s, a), alfa, beta)
+            v = min(v, h)
+            # (14) Corte alfa: las demás no se generan.
+            if v <= alfa:
+                return v
+            beta = min(beta, v)       # (15) MIN ya asegura v
+        return v                      # (16) valor o cota
 ```
 
 Compáralo con el MINIMAX de [[minimax-como-algoritmo|la página 2]]: las
