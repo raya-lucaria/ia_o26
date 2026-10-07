@@ -120,6 +120,7 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
 | Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino | Minimax como algoritmo |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad | Cuando decide un dado |
+| Utilidad esperada | El valor esperado de la utilidad. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
 | Alfa-beta | Minimax que deja de generar las jugadas que ya no pueden cambiar la decisión de arriba | Alfa-beta a mano |
 | Corte alfa, corte beta | En un nodo de MIN, dejar de generar hijos cuando $v\le\alpha$; en uno de MAX, cuando $v\ge\beta$ | Alfa-beta a mano |
