@@ -89,7 +89,8 @@ El **valor** de un estado $s$ es el número $V(s)$ que se calcula así:
 - si $\mathrm{Pl}(s)=\text{MIN}$: $\ V(s)=\min_{a\in A(s)} V\bigl(T(s,a)\bigr)$.
 
 **Qué significa:** $V(s)$ es lo que MAX puede **asegurar** desde $s$ si MIN
-siempre responde con lo peor para MAX. Es el mismo $V$ de
+siempre responde con lo peor para MAX, es decir, si MIN es racional
+(@jue-c1-racional). Es el mismo $V$ de
 [[el-juego-como-grafo|El juego como grafo]], ahora con su fórmula.
 
 **Qué no es:** no es lo que pasará en una partida real. Si MIN se equivoca,
