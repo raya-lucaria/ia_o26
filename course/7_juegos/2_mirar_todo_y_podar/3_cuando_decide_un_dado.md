@@ -4,7 +4,7 @@ title: Cuando decide un dado
 nav_title: Cuando decide un dado
 summary: "Un nodo que no decide nadie se valora con un promedio, no con un máximo ni un mínimo. En hexapawn: un volado para empezar y un rival que mueve al azar. Tratar al azar como rival, o a un rival como azar, es un error de modelado."
 status: ready
-estimated_time: 15m
+estimated_time: 20m
 tags: [juegos, azar, expectiminimax]
 ---
 
@@ -35,11 +35,28 @@ con el azar.
 > a dónde lleva cada una (@jue-c1-transicion); y $U(s)$, $+1$ si gana
 > Blancas y $-1$ si gana Negras (@jue-c1-utilidad).
 
-Hexapawn no tiene dados. Para ver el azar sin cambiar de juego, le
-agregamos dos cosas, una por sección: un volado antes de empezar, y un
-rival que mueve sin pensar.
+## 1 · El problema, en general, cuando hay azar
 
-## 1 · Repasar el valor esperado
+**Piensa: ¿qué le falta al juego de la clase 1 para poder describir un
+dado?**
+
+Una sola pieza: **las probabilidades**. Un juego con azar es la misma tupla
+de @jue-c1-juego con una pieza más, $\Pr$:
+
+$$\bigl(S,\ s_0,\ S_F,\ \mathrm{Pl},\ A,\ T,\ \Pr,\ U\bigr).$$
+
+Lo demás se queda igual. Lo que cambia, pieza por pieza:
+
+::: table {#jue-c2-azar-cambia title="Qué cambia cuando hay azar"}
+| | Con azar |
+|---|---|
+| $\mathrm{Pl}(s)$ | MAX, MIN o **AZAR**. *Antes, solo MAX o MIN* |
+| $A(s)$ | En un nodo de azar, los **resultados** posibles |
+| $\Pr(a)$ | **Nueva:** la probabilidad de cada resultado; suman 1 |
+| $S$, $s_0$, $S_F$, $T$, $U$ | Iguales que en la clase 1 |
+| $V(s)$ | Lo que MAX obtiene **en promedio**. *Antes, lo que asegura* |
+| Ser racional | Buscar la mayor utilidad **esperada**. *Antes, la mayor utilidad* |
+:::
 
 > **Repaso de valor esperado.** Si un resultado aleatorio vale
 > $x_1,\dots,x_n$ con probabilidades $p_1,\dots,p_n$, que suman 1, su
@@ -47,6 +64,39 @@ rival que mueve sin pensar.
 > ponderado: lo que obtendrías en promedio si repitieras la situación muchas
 > veces. Por ejemplo, ganar 6 con probabilidad $1/2$ y 0 con $1/2$ vale en
 > promedio 3.
+
+Con eso, el problema de la unidad (@jue-c1-problema) se escribe igual,
+salvo por una palabra:
+
+::: definition {#jue-c2-problema-azar title="El problema, con azar"}
+**Dado:** las reglas del juego con azar,
+$\bigl(S,\ s_0,\ S_F,\ \mathrm{Pl},\ A,\ T,\ \Pr,\ U\bigr)$, con las
+probabilidades conocidas.
+
+**Encontrar:** en cada estado $s$ donde le toca a MAX, una jugada
+
+$$a^{∗}\in\operatorname*{arg\,max}_{a\in A(s)} V\bigl(T(s,a)\bigr),$$
+
+donde $V$ toma el máximo en los nodos de MAX, el mínimo en los de MIN y el
+**promedio** en los de azar. La sección 3 lo escribe completo.
+
+**Qué significa:** MAX elige la jugada con la mayor utilidad **esperada**,
+suponiendo que MIN es racional y que el azar sigue sus probabilidades. Es
+la definición de racional de @jue-c1-racional, que ya decía «la jugada que
+**espera** que le dé la mayor utilidad»: con azar, esa palabra trabaja.
+
+**Qué no es:** no garantiza ganar ninguna partida concreta. Un dado puede
+salir mal; lo que se asegura es el mejor promedio.
+:::
+
+**Lo que dicen las reglas y lo que elige alguien.** En un nodo de azar,
+$\Pr$ es un **dato** del juego, como $T$. Nadie la elige: viene en el
+reglamento (un dado justo da $1/6$ a cada cara) o en lo que sabemos del
+rival.
+
+Hexapawn no tiene dados. Para ver el azar sin cambiar de juego, le
+agregamos dos cosas, una por sección: un volado antes de empezar, y un
+rival que mueve sin pensar. Los dos son **casos de este problema**.
 
 ## 2 · Un volado decide quién empieza
 
@@ -298,6 +348,8 @@ explicar qué error comete quien confunde un rival con el azar.
 
 ## Lo que hay que llevarse
 
+- Con azar, el juego gana una pieza, $\Pr$, y el problema cambia una
+  palabra: MAX busca la mayor utilidad **esperada**, no la asegurada.
 - Un nodo de azar tiene $\mathrm{Pl}(s)=\text{AZAR}$: nadie elige, y se
   valora con el **promedio ponderado** de sus hijos.
 - En hexapawn: el volado para empezar vale 0, y contra una Negras al azar
