@@ -209,6 +209,24 @@ def test_clase_1_partida_trazada_con_las_piezas():
     assert j.utilidad_simple(j.ganador(t, p), 0) == -1
 
 
+def test_clase_1_racional_con_una_utilidad_mal_escrita():
+    # «Jugar bien», caso 2: +3 por captura hace preferir c1xb2, que pierde.
+    con_premio = j.valor_con_premio_por_captura(SUBARBOL, "B", 3)
+    assert con_premio == {"c1-c2": 1, "c1xb2": 2}
+    assert max(con_premio, key=con_premio.get) == "c1xb2"
+    reglamento = {j.nombre_jugada(SUBARBOL, m):
+                  j.valor(j.mover(SUBARBOL, m), "N")
+                  for m in j.jugadas(SUBARBOL, "B")}
+    assert reglamento == {"c1-c2": 1, "c1xb2": -1}
+    # Tras c1xb2, Negras gana de inmediato con c3xb2.
+    t = j.mover(SUBARBOL, (2, 4))
+    ms = {j.nombre_jugada(t, m): m for m in j.jugadas(t, "N")}
+    assert j.ganador(j.mover(t, ms["c3xb2"]), "B") == "N"
+    # Con +2 empatan, por eso la pagina dice +3.
+    assert j.valor_con_premio_por_captura(SUBARBOL, "B", 2) == {
+        "c1-c2": 1, "c1xb2": 1}
+
+
 # ------------------------------------------------------------- clase 2 ---
 # Todo con la utilidad de la clase 1: +1 si gana Blancas y -1 si gana Negras.
 

@@ -4,7 +4,7 @@ title: Escribir el juego
 nav_title: Escribir el juego
 summary: "Las piezas con las que se escribe cualquier juego por turnos, cada una con su definición, su dominio y su ejemplo en hexapawn, mientras el grafo del juego crece."
 status: ready
-estimated_time: 40m
+estimated_time: 45m
 tags: [juegos, modelado, grafos]
 ---
 
@@ -623,7 +623,139 @@ $$U(s_4)=-1.$$
 las piezas: lo demás lo calcula cualquiera con las reglas. Esas jugadas las
 escogimos nosotros, sin ningún criterio.
 
-## 11 · La pregunta que falta: qué jugada elegir
+## 11 · Jugar bien: qué es ser racional
+
+**Piensa: el problema de la unidad va a pedir que MIN «responda lo mejor
+que puede». ¿Lo mejor según quién, y con qué?**
+
+::: definition {#jue-c1-racional title="Jugador racional"}
+Un jugador es **racional** si, cada vez que le toca, elige la jugada que
+espera que le dé la mayor utilidad, **dado**:
+
+1. **su función a optimizar**: su utilidad, la que está escrita;
+2. **lo que sabe**: las reglas y lo que ha visto de la partida;
+3. **lo que puede hacer**: sus jugadas, $A(s)$;
+4. **lo que alcanza a calcular** con el tiempo y la memoria que tiene.
+
+**Qué significa:** no existe «racional» a secas. Siempre es racional
+**respecto a** esas cuatro cosas, y la primera es la que manda: la
+racionalidad sale de la función a optimizar, no de ganar ni de parecer
+listo.
+:::
+
+Es la definición del libro de texto de IA, el de Russell y Norvig: un agente
+racional elige la acción que espera que maximice su **medida de desempeño**,
+con lo que ha percibido y lo que sabe. Es la misma medida de desempeño de
+[[desempeno-en-peas|la unidad de agentes]]. En un juego, esa medida es $U$.
+
+### Racional para MAX y para MIN
+
+- **MAX racional** elige para que $U$ quede lo más alto posible.
+- **MIN racional** elige para que **su** utilidad, $-U$, quede lo más alta
+  posible. Es decir, para que $U$ quede lo más bajo posible.
+
+Por eso, y **solo** porque es suma cero, «lo mejor para MIN» es «lo peor
+para MAX». En la clase 4 aparecen juegos que no son de suma cero, y esa
+equivalencia deja de valer.
+
+### No hay racionalidad perfecta
+
+Elegir la jugada perfecta exige calcular todas las continuaciones. En
+hexapawn se puede: son 252 nodos. En ajedrez nadie puede, ni la computadora
+más grande.
+
+**Eso no vuelve irracional a quien juega ajedrez.** Lo racional, entonces,
+es **lo mejor que puedes dado tu objetivo y tus límites**: si tienes un
+segundo, la mejor jugada que encuentras en un segundo. Stuart Russell, uno
+de los autores de ese libro, lo llamó **racionalidad limitada**; en
+economía, Herbert Simon le había llamado racionalidad acotada.
+
+::: table {#jue-c1-racional-limites title="Lo racional depende de lo que tiene el jugador"}
+| Lo que tiene el jugador | Lo racional |
+|---|---|
+| Tiempo para recorrer todo el árbol | La jugada que asegura lo más posible contra cualquier respuesta |
+| Un segundo por jugada | La mejor jugada que encuentra en ese segundo |
+| Una tabla de 24 cajas | Lo que dice la caja de esa posición |
+:::
+
+La jugada perfecta es un ideal que sirve de **regla para medir**, no una
+exigencia. Lo que sí se exige es no desperdiciar: si tenías tiempo de ver
+que una jugada pierde y la hiciste, eso sí es irracional.
+
+### Lo que racional no quiere decir
+
+::: table {#jue-c1-racional-no title="Cuatro confusiones con «racional»"}
+| No es | Por qué no |
+|---|---|
+| Ganar siempre | En hexapawn, Blancas jugando perfecto pierde; lo calcularemos en la clase 2 |
+| Ser inteligente o humano | La máquina de cerillos de Gardner son cajas, y puede ser racional |
+| Saberlo todo o calcularlo todo | Elige con lo que sabe y con lo que alcanza a calcular |
+| Querer lo que queremos nosotros | Persigue **su** $U$; si $U$ premia otra cosa, persigue esa otra cosa |
+:::
+
+La última fila es la importante: **un jugador racional con una utilidad
+mal escrita hace mal las cosas con toda eficiencia.** El error está en
+$U$, no en el jugador. Por eso la sección 8 insiste en que la utilidad
+copia el reglamento.
+
+### Que el rival sea racional es un supuesto
+
+Lo anotamos igual que los supuestos del reglamento. Vuelve en tres clases:
+
+- **Clase 2:** si Negras mueve al azar, lo que Blancas calcula suponiéndola
+  racional se sigue cumpliendo como piso, pero puede dejar puntos sobre la
+  mesa.
+- **Clase 3:** cuando el árbol no cabe, se corta y se estima. Es
+  racionalidad limitada en la práctica.
+- **Clase 4:** cuando eligen a la vez, cada uno es racional **dado lo que
+  hará el otro**.
+
+::: exercise {#jue-c1-ej-racional title="¿Racional o no?"}
+Para cada caso, di si el jugador fue racional y, si algo salió mal, dónde
+está el error: en el jugador o en la utilidad.
+
+1. En n1, Blancas juega $\text{c1}\textbf{-}\text{c2}$ y gana en esa jugada.
+2. Un programa recibe $+1$ por ganar, $-1$ por perder y además $+3$ por
+   cada peón que captura. En n1 juega $\text{c1}\textbf{x}\text{b2}$ en vez
+   de $\text{c1}\textbf{-}\text{c2}$, y pierde.
+3. Blancas juega perfecto desde el inicio y pierde.
+4. Un programa juega suponiendo que Negras es racional, pero Negras mueve
+   al azar.
+5. Con un segundo por jugada, un programa de ajedrez mira 4 jugadas hacia
+   delante y elige una que, vista con 20, pierde.
+:::
+
+::: hint {#jue-c1-pista-racional of="jue-c1-ej-racional" title="Las cuatro cosas dadas"}
+En cada caso pregúntate: ¿qué función optimizaba el jugador, qué sabía y
+cuánto podía calcular? Si con eso eligió lo mejor, fue racional, aunque el
+resultado haya sido malo.
+
+Para el caso 2, cuenta los puntos de cada jugada con **la utilidad del
+programa**, no con la del reglamento. Tras $\text{c1}\textbf{x}\text{b2}$,
+Negras gana de inmediato con $\text{c3}\textbf{x}\text{b2}$.
+:::
+
+::: answer {#jue-c1-resp-racional of="jue-c1-ej-racional"}
+1. **Racional.** Gana en una jugada, y ganar es lo más alto que da $U$.
+2. **Racional, con una utilidad mal escrita.** Para el programa,
+   $\text{c1}\textbf{-}\text{c2}$ vale $+1$: gana sin capturar. Y
+   $\text{c1}\textbf{x}\text{b2}$ vale $-1+3=+2$: pierde, pero capturó un
+   peón. Con su utilidad, capturar es mejor. **El error está en $U$:** el
+   reglamento no paga por capturar, y el programa hizo con toda eficiencia
+   lo que su número le pedía.
+3. **Racional.** En hexapawn, Negras puede asegurar la victoria haga lo que
+   haga Blancas. Perder no prueba que se jugó mal; ser racional no es
+   ganar.
+4. **El programa es racional dado lo que supone**, pero el supuesto es
+   falso. Lo que calculó lo sigue protegiendo: nunca le irá peor que eso.
+   Lo que pierde es la oportunidad de aprovechar los errores de Negras. En
+   la clase 2 se calcula cuánto.
+5. **Racional.** Eligió lo mejor que encontraba en un segundo, y no tenía
+   cómo ver 20 jugadas. Sería irracional solo si tuviera tiempo de mirar
+   más y no lo usara.
+:::
+
+## 12 · La pregunta que falta: qué jugada elegir
 
 **Piensa: en $s_0$, ¿pudo Blancas evitar perder?**
 
@@ -636,8 +768,9 @@ tienes que encontrar.
 **Dado:** el juego $(S,\ s_0,\ S_F,\ \mathrm{Pl},\ A,\ T,\ U)$.
 
 **Encontrar:** en cada estado donde le toca a MAX, la jugada de $A(s)$ que
-le asegura la mayor utilidad posible, suponiendo que MIN responde siempre lo
-mejor que puede, es decir, lo peor para MAX.
+le asegura la mayor utilidad posible, suponiendo que MIN es **racional**
+(@jue-c1-racional): responde siempre lo mejor que puede para su utilidad,
+$-U$, es decir, lo peor para MAX.
 :::
 
 **Por qué en cada estado, y no solo en $s_0$.** El rival puede llevarte a
@@ -660,7 +793,8 @@ cambiar.
 escribir su estado, decir si es final, quién mueve, cuáles son sus jugadas,
 a dónde lleva cada una y, si es final, cuánto vale. Deberías poder escribir
 una partida completa con esas piezas, decir qué cambiaría en cada pieza si
-el juego fuera ajedrez y decir qué pide el problema de la unidad.
+el juego fuera ajedrez, decir respecto a qué es racional un jugador y decir
+qué pide el problema de la unidad.
 
 ## Lo que hay que llevarse
 
@@ -674,6 +808,12 @@ el juego fuera ajedrez y decir qué pide el problema de la unidad.
 - Una partida es una vuelta que se repite: ¿terminó?, ¿a quién le toca?,
   ¿qué puede hacer?, elegir y ¿a dónde lleva? Las reglas contestan todo
   menos elegir.
+- Ser racional es elegir lo mejor **dada tu función a optimizar**, lo que
+  sabes, lo que puedes hacer y lo que alcanzas a calcular. Ganar no entra en
+  la definición.
+- No hay racionalidad perfecta fuera de los juegos chicos: lo racional es lo
+  mejor que puedes con tus límites. Y con una $U$ mal escrita, un jugador
+  racional hace mal las cosas con toda eficiencia.
 - El problema de la unidad: dado el juego, encontrar en cada estado de MAX
   la jugada que le asegura más si MIN responde lo mejor que puede.
 

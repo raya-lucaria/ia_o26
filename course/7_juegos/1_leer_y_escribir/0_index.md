@@ -4,7 +4,7 @@ title: "Clase 1 · Leer y escribir el juego"
 nav_title: Leer y escribir
 summary: "Antes de calcular una jugada hay que escribir el juego: quién mueve, qué puede hacer, cómo cambia el tablero, cuándo termina y cuánto vale terminar así."
 status: ready
-estimated_time: 105m
+estimated_time: 110m
 tags: [juegos, modelado]
 prerequisites: [juegos]
 ---
@@ -28,6 +28,8 @@ computadora podría recorrer. Calcular la mejor jugada empieza en la clase 2.
 - Distinguir el árbol de partidas del grafo de estados, y explicar qué
   recibe un algoritmo: el grafo dibujado o las reglas para generarlo.
 - Diagnosticar un juego y decir qué modelo le corresponde.
+- Decir qué significa que un jugador sea racional, respecto a qué, y qué
+  no significa.
 - Distinguir un valor, una jugada y una estrategia.
 
 ## Antes de leer: juega
@@ -52,7 +54,7 @@ Cuatro páginas, en orden, y una tarea de refuerzo al final.
 | | Página | Qué resuelve | Minutos |
 |---|---|---|---:|
 | 1 | Leer el reglamento | Qué dicen de verdad unas reglas explicadas con prisa | 15m |
-| 2 | Escribir el juego | Las siete piezas de cualquier juego por turnos, una partida escrita con ellas y el problema de la unidad | 40m |
+| 2 | Escribir el juego | Las siete piezas de cualquier juego por turnos, una partida escrita con ellas, qué es ser racional y el problema de la unidad | 45m |
 | 3 | El juego como grafo | El grafo completo, árbol contra grafo y qué recibe y qué genera cada método | 30m |
 | 4 | Diagnosticar el juego | Qué tipo de juego es y qué modelo le toca | 20m |
 | 5 | Tarea de refuerzo | Escribir gato desde cero y cambiar una regla de hexapawn | 40m, aparte |

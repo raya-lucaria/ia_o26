@@ -106,6 +106,24 @@ def valor(tablero, turno, k=0, n=3, util=utilidad_simple,
     return v(tablero, turno, k)
 
 
+def valor_con_premio_por_captura(tablero, turno, premio, n=3):
+    """Valor de cada jugada de Blancas con una utilidad mal escrita: la del
+    reglamento mas `premio` por cada peon que captura Blancas. Negras minimiza
+    esa misma utilidad. Devuelve {nombre de la jugada: valor}."""
+    @lru_cache(maxsize=None)
+    def v(t, j, capturas):
+        g = ganador(t, j, n)
+        if g:
+            return utilidad_simple(g, 0) + premio * capturas
+        hijos = [v(mover(t, m), otro(j),
+                   capturas + (j == "B" and t[m[1]] != "."))
+                 for m in jugadas(t, j, n)]
+        return max(hijos) if j == "B" else min(hijos)
+    return {nombre_jugada(tablero, m, n):
+            v(mover(tablero, m), otro(turno), int(tablero[m[1]] != "."))
+            for m in jugadas(tablero, turno, n)}
+
+
 def contar_arbol(tablero=None, turno="B", n=3, sin_jugada_empata=False):
     """(nodos del arbol, situaciones distintas). Una situacion es (tablero, turno)."""
     tablero = tablero or inicio(n)

@@ -107,6 +107,8 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Posición perdida | Una en la que el rival puede asegurarte la derrota, hagas lo que hagas | Escribir el juego |
 | Jugada, acción | Lo mismo: lo que el jugador de turno elige | Escribir el juego |
 | Tupla | Lista ordenada de piezas | Escribir el juego |
+| Racional | Que elige la jugada que espera le dé más utilidad, dados su función a optimizar, lo que sabe, lo que puede hacer y lo que alcanza a calcular. No quiere decir que gane | Escribir el juego |
+| Racionalidad limitada | Elegir lo mejor que se alcanza con el tiempo y la memoria que hay, cuando la jugada perfecta no se puede calcular | Escribir el juego |
 | Por turnos, determinista, información perfecta, finito, suma cero | Los supuestos de la clase 1: uno mueve a la vez; sin azar; cada uno ve el estado y las jugadas anteriores; toda partida termina; lo que gana uno lo pierde el otro | Escribir el juego |
 | Subgrafo de un estado | Los estados que se alcanzan desde él, con sus aristas | El juego como grafo |
 | Árbol de partidas, grafo de estados | En el árbol, un nodo por camino; en el grafo, un nodo por estado | El juego como grafo |
@@ -125,7 +127,7 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Estrategia | Función que a cada estado donde le toca a un jugador le asigna una jugada de $A(s)$ | Diagnosticar el juego |
 | Nodo de azar | Nodo donde no elige un jugador sino un dado; cada flecha lleva su probabilidad | Diagnosticar el juego |
 | Tabla de pagos | Filas: jugadas de uno; columnas: jugadas del otro; cada celda: lo que gana cada uno | Diagnosticar el juego |
-| El problema de la unidad | Dado el juego, encontrar en cada estado de MAX la jugada que le asegura la mayor utilidad si MIN responde lo mejor que puede | Escribir el juego |
+| El problema de la unidad | Dado el juego, encontrar en cada estado de MAX la jugada que le asegura la mayor utilidad si MIN es racional y responde lo mejor que puede | Escribir el juego |
 | Análisis hacia atrás | Con el grafo explícito, etiquetar los nodos desde los finales hacia $s_0$; así se construyen las tablas de finales de ajedrez | El juego como grafo |
 | Nodo de corte | Estado no final al que se llega con $d=0$: se evalúa con $\mathrm{EVAL}$ y no se expande | Cortar y evaluar a mano |
 | Valor con corte | El minimax del árbol cortado a $d$ jugadas, con $\mathrm{EVAL}$ en los nodos de corte; no es el valor del juego | Cortar y evaluar a mano |
