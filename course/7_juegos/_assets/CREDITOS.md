@@ -20,22 +20,32 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-minimax-n1.svg` | El subgrafo de n1 con el valor de cada nodo y las jugadas que lo alcanzan | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-minimax-genera.svg` | Lo que MINIMAX tiene en memoria a media ejecución: el camino, lo ya olvidado y lo que aún no existe | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-azar-n3.svg` | n3 como nodo de azar: una Negras que elige al azar vale 1/3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-alfa-beta-fijo.svg` | Alfa-beta desde n1 con el orden fijo: 5 estados generados, un corte alfa y n3 con la cota ≤ +1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-alfa-beta-fijo.svg` | Alfa-beta desde n1 con el orden fijo: 5 estados generados, un corte alfa y n3 con la cota v = +1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-alfa-beta-invertido.svg` | Alfa-beta desde n1 con el orden invertido: 8 estados generados y un corte beta | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-a-paso-1.svg` | Árbol A, paso 1: el MIN de la izquierda vale 3; la rama derecha aún no se mira | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-a-paso-2.svg` | Árbol A, paso 2: la raíz, de MAX, ya tiene 3 (α = 3) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-a-paso-3.svg` | Árbol A, paso 3: el MIN de la derecha llega con [3, +∞] y su primera hoja da 2 ≤ 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-a-paso-4.svg` | Árbol A, paso 4: corte alfa, la hoja «?» no se genera; 6 de 7 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-b-paso-1.svg` | Árbol B, paso 1: raíz de MIN, el MAX de la izquierda vale 8 (β = 8) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-b-paso-2.svg` | Árbol B, paso 2: el MAX de la derecha llega con [−∞, 8], 9 ≥ 8 y corte beta; 6 de 7 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-ventana.svg` | La ventana [α, β] como banda en la recta: fuera de ella, corte alfa o corte beta | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-ab-ventana.svg` | La ventana (α, β) como banda en la recta: en un extremo o fuera, corte alfa o corte beta; los dos cortes del árbol T | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-fijo-parte-1.svg` | Alfa-beta desde n1 en orden fijo, parte 1: n2 vale +1 y la raíz toma α = +1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-fijo-parte-2.svg` | Alfa-beta desde n1 en orden fijo, parte 2: corte alfa en n3, que devuelve la cota ≤ +1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-ab-fijo-parte-2.svg` | Alfa-beta desde n1 en orden fijo, parte 2: corte alfa en n3, que devuelve v = +1, una cota | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-invertido-parte-1.svg` | Alfa-beta desde n1 en orden invertido, parte 1: n13 vale −1 y n3 toma β = −1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-invertido-parte-2.svg` | Alfa-beta desde n1 en orden invertido, parte 2: corte beta en n6 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-invertido-parte-3.svg` | Alfa-beta desde n1 en orden invertido, parte 3: n4, n3 = −1, n2 y la raíz +1; 8 de 13 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-a-media-ejecucion.svg` | ALFA-BETA a media ejecución: la pila n1, n3, n4 en el instante del corte en n3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-arbol-c.svg` | El árbol C del ejercicio: tres niveles, 15 nodos, sin marcas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-ab-invertido-parte-3.svg` | Alfa-beta desde n1 en orden invertido, parte 3: n4, n3 devuelve v = −1, n2 y la raíz v = +1; 8 de 13 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-arbol.svg` | El árbol T, el problema: R de MAX con izq, centro y der; C con C1 y C2; las ocho hojas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-1.svg` | Minimax en T, paso 1: I devuelve 3 y mejor_jugada = izq (fila 5 de la traza) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-2.svg` | Minimax en T, paso 2: a media ejecución, pila R›C›C2 con C2 en v = 7 (fila 12) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-3.svg` | Minimax en T, paso 3: C devuelve 5 y mejor_jugada = centro (fila 15) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-4.svg` | Minimax en T, paso 4: D devuelve 2 y 2 > 5 es falso; DECIDIR devuelve centro (fila 19) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t1-ab-1.svg` | Alfa-beta en T1, paso 1: I devuelve 3, α = 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t1-ab-2.svg` | Alfa-beta en T1, paso 2: D llega con (3, +∞), v = 2 ≤ α = 3, corte alfa; la hoja 12 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t1-ab-3.svg` | Alfa-beta en T1, paso 3: el final, 6 de 7 nodos, juega izq | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-1.svg` | Alfa-beta en T, paso 1: I devuelve 3, α = 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-2.svg` | Alfa-beta en T, paso 2: C1 devuelve 5; C compara v = 5 con α = 3, el número del rival, y baja su β a 5 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-3.svg` | Alfa-beta en T, paso 3: corte beta en C2, v = 7 ≥ β = 5; la hoja 8 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-4.svg` | Alfa-beta en T, paso 4: corte alfa en D, v = 2 ≤ α = 5; la hoja 12 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-5.svg` | Alfa-beta en T, paso 5: el final, 12 de 14 nodos, juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-pila.svg` | ALFA-BETA a media ejecución en T: la pila R›C›C2 y sus marcos en el instante del corte beta en C2 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-azar.svg` | T con I, C y D como volados parejos: 9/2, 13/2 y 7; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-corte-d1.svg` | T con corte a profundidad 1: EVAL en I, C y D; juega der, la trampa del horizonte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-corte-d2.svg` | T con corte a profundidad 2: EVAL en C1 y C2; juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-iterativa.svg` | Profundización iterativa en T: d = 1, 2, 3 con la jugada anterior primero; 4, 10 y 11 nodos; en d = 3, I, D y C2 devuelven cotas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-1.svg` | Minimax con corte a profundidad 1 en la posición de la clase 3: la captura parece la mejor | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-2.svg` | Minimax con corte a profundidad 2: las respuestas de Negras y el cambio de decisión | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-horizonte.svg` | El efecto horizonte: la recaptura queda detrás del corte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |

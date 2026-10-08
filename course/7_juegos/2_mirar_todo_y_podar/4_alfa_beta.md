@@ -2,505 +2,602 @@
 id: alfa-beta
 title: Alfa-beta a mano
 nav_title: Alfa-beta a mano
-summary: "La idea de alfa-beta en dos árboles de siete nodos, qué son α y β, y dos recorridos del subgrafo de n1: dónde se corta, qué estados nunca se generan y por qué la raíz da el mismo valor que minimax."
+summary: "El código de DECIDIR-ALFA-BETA, qué son α y β y la regla que decide cada corte, el árbol T recorrido hijo por hijo con cada if a la vista, y n1 de hexapawn: 5 de 13 estados y la misma jugada que minimax."
 status: ready
-estimated_time: 30m
+estimated_time: 35m
 tags: [juegos, alfa-beta, poda]
 ---
 
 # Alfa-beta a mano
 
-**¿Cómo dejar ramas sin generar sin cambiar la respuesta?**
+**¿Cómo dejar ramas sin generar sin cambiar la jugada?**
 
 Al terminar tendrás:
 
-- **la idea de alfa-beta**, vista en dos árboles de siete nodos;
-- **qué son $\alpha$ y $\beta$**, y en qué nodo corta cada una;
-- **dos recorridos de n1 hechos a mano**: uno genera 5 de los 13 estados y
-  otro genera 8, y los dos dan el mismo valor que minimax.
+- **el código**: DECIDIR-ALFA-BETA, que devuelve la jugada, y su recursión
+  ALFA-BETA; son las líneas de minimax y cuatro más;
+- **qué son $\alpha$ y $\beta$** y **la regla** que dice, en cada nodo,
+  con qué número se compara y si se corta;
+- **el árbol T recorrido hijo por hijo**, con la comparación de cada `if`
+  y la jugada que va guardando la raíz;
+- **n1 de hexapawn**: 5 de sus 13 estados, y la misma jugada que minimax.
 
-> **Las reglas, en cuatro líneas.** Tablero de 3×3; Blancas (B) abajo en la
-> fila 1 y Negras (N) arriba en la fila 3. Empiezan Blancas. Un peón avanza
-> una casilla si está vacía o captura en diagonal hacia delante. Gana quien
-> llega a la fila del rival, captura todos los peones rivales o deja al rival
-> sin jugada; ganar vale $+1$ y perder, $-1$.
-
-> **Supuestos de esta página.** Los mismos de
-> [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin
-> azar, todo a la vista, toda partida termina y suma cero.
-
-> **Las piezas que usa esta página.** Las cinco primeras vienen de
-> [[escribir-el-juego|Escribir el juego]]; $V$, de
-> [[minimax|Minimax a mano]].
+> **Lo que traes de [[minimax-como-algoritmo|Minimax como algoritmo]].**
 >
-> - $S_F$: los estados donde la partida ya terminó (@jue-c1-finales).
-> - $\mathrm{Pl}(s)$: quién mueve, MAX (Blancas) o MIN (Negras), leído del
->   turno guardado (@jue-c1-pl).
-> - $A(s)$: las jugadas permitidas en $s$ (@jue-c1-acciones).
-> - $T(s,a)$: el estado al que lleva la jugada $a$ (@jue-c1-transicion).
-> - $U(s)$: lo que vale un final para MAX: $+1$ si gana Blancas, $-1$ si
->   gana Negras (@jue-c1-utilidad).
-> - $V(s)$: el valor minimax, lo que MAX puede asegurar desde $s$
->   (@jue-c2-valor).
-> - $v$: **nuevo en esta página.** El mejor valor visto **hasta ahora**
->   entre los hijos del nodo actual. Cambia mientras el nodo revisa a sus
->   hijos.
+> - DECIDIR-MINIMAX y MINIMAX, líneas 1–20, con las reglas $S_F$,
+>   $\mathrm{Pl}$, $A$, $T$, $U$ y el valor $V$ (@jue-c2-valor). La raíz
+>   guarda `mejor_valor` y `mejor_jugada`.
+> - $v$: lo mejor que ha visto **este** nodo entre sus hijos; $w$: lo que
+>   devuelve **un** hijo.
 
-> **El problema de esta página.**
->
-> **Dado:** el estado n1 y las reglas del juego, $S_F$, $\mathrm{Pl}$, $A$,
-> $T$ y $U$: lo mismo que recibe minimax.
->
-> **Encontrar:** $V(\text{n1})$ y la jugada que lo alcanza, **sin generar**
-> los estados que no pueden cambiar la respuesta.
-
-## 1 · La idea, sin letras griegas
+## 1 · La idea
 
 **Piensa: si ya tienes una jugada que te da 3, ¿necesitas saber cuánto vale
 exactamente otra que te da 2 o menos?**
 
-- **Minimax mira todo.** Genera cada estado del árbol, hasta los finales.
+- **Minimax mira todo**: genera cada estado, hasta los finales.
 - **Alfa-beta deja de mirar una rama en cuanto sabe que no cambia la
-  decisión de arriba.** Y lo que no se mira **no se genera**: ése es el
-  ahorro.
-- **La respuesta en la raíz es la misma** que la de minimax: el mismo valor
-  y la misma jugada.
+  decisión de arriba.** Lo que no mira **no lo genera**: ése es el ahorro.
+- Para saberlo, cada nodo carga **dos números** de lo que pasó arriba:
+  $\alpha$, lo que **MAX** ya tiene asegurado, y $\beta$, lo que **MIN** ya
+  tiene asegurado. La sección 3 los define.
+- **La raíz entrega lo mismo** que minimax: la misma jugada, con el mismo
+  valor.
 
-## 2 · Un árbol de siete nodos
+## 2 · El código
+
+**Piensa: en DECIDIR-MINIMAX, ¿qué número de la raíz le serviría a un hijo
+para saber que ya no puede ganarle?**
+
+Es DECIDIR-MINIMAX con $\alpha$ y $\beta$. En la raíz, `mejor_valor` se
+llama $\alpha$ y se le pasa a cada hijo (línea 4). Las líneas 1–13 son las
+de minimax; las **nuevas son 14, 15, 22 y 23**:
+
+- **14 y 22 leen** el número del rival y, si toca, cortan;
+- **15 y 23 actualizan** el número propio.
+
+Cada línea, explicada, está en
+[[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]]; aquí basta con
+seguirlas.
+
+```text
+INPUT   un estado s donde mueve MAX, y las
+        reglas S_F, Pl, A, T y U de un juego
+        finito, por turnos y sin azar.
+OUTPUT  una jugada de A(s) que alcanza V(s).
+
+ 1 function DECIDIR-ALFA-BETA(s)
+       ▷ mueve MAX en s; α hace de
+       ▷ mejor_valor: lo que la raíz ya
+       ▷ tiene asegurado.
+ 2   α ← −∞ ; mejor_jugada ← ninguna
+ 3   for each a in A(s)
+       ▷ Pasa su α: el hijo corta contra él.
+       ▷ β = +∞: arriba de la raíz no hay
+       ▷ rival que tenga algo asegurado.
+ 4     w ← ALFA-BETA(T(s, a), α, +∞)
+       ▷ Estricto: un hijo que cortó
+       ▷ devuelve una cota; si empata con
+       ▷ α, puede valer menos.
+ 5     if w > α: α ← w ; mejor_jugada ← a
+ 6   return mejor_jugada      ▷ la jugada
+
+ 7 function ALFA-BETA(s, α, β)  ▷ devuelve v
+ 8   if s ∈ S_F: return U(s)
+ 9   if Pl(s) = MAX
+10     v ← −∞
+11     for each a in A(s)
+         ▷ el hijo hereda la ventana
+12       w ← ALFA-BETA(T(s, a), α, β)
+13       v ← max(v, w)
+         ▷ LEE el del rival: MIN ya tiene β
+         ▷ asegurado arriba; si aquí MAX
+         ▷ logra β o más, MIN no viene.
+14       if v ≥ β: return v  ▷ corte beta
+         ▷ ACTUALIZA el suyo: sube α
+15       α ← max(α, v)
+16     return v              ▷ valor o cota
+17   else                    ▷ Pl(s) = MIN
+18     v ← +∞
+19     for each a in A(s)
+         ▷ el hijo hereda la ventana
+20       w ← ALFA-BETA(T(s, a), α, β)
+21       v ← min(v, w)
+         ▷ LEE el del rival: MAX ya tiene α
+         ▷ asegurado arriba; si aquí MIN lo
+         ▷ deja en α o menos, MAX no viene.
+22       if v ≤ α: return v  ▷ corte alfa
+         ▷ ACTUALIZA el suyo: baja β
+23       β ← min(β, v)
+24     return v              ▷ valor o cota
+```
+
+El mismo código en Python; el número entre paréntesis es la línea del
+pseudocódigo:
+
+```python
+from math import inf
+
+# Las reglas ya existen como funciones:
+# es_final(s), pl(s) ("MAX" o "MIN"),
+# acciones(s), transicion(s, a) y
+# utilidad(s).
+
+def decidir_alfa_beta(s):     # (1)
+    # (2) alfa hace de mejor_valor
+    alfa = -inf
+    mejor_jugada = None
+    for a in acciones(s):     # (3)
+        # (4) pasa su alfa; beta: inf
+        hijo = transicion(s, a)
+        w = alfa_beta(hijo, alfa, inf)
+        # (5) estricto: una cota que empata
+        # con alfa puede valer menos
+        if w > alfa:
+            alfa = w
+            mejor_jugada = a
+    return mejor_jugada       # (6)
+
+def alfa_beta(s, alfa, beta): # (7)
+    if es_final(s):           # (8)
+        return utilidad(s)
+    if pl(s) == "MAX":        # (9)
+        v = -inf              # (10)
+        for a in acciones(s): # (11)
+            # (12) hereda la ventana
+            hijo = transicion(s, a)
+            w = alfa_beta(hijo, alfa, beta)
+            v = max(v, w)     # (13)
+            # (14) lee el del rival
+            if v >= beta:
+                return v
+            # (15) actualiza el suyo
+            alfa = max(alfa, v)
+        return v              # (16)
+    else:                     # (17)
+        v = inf               # (18)
+        for a in acciones(s): # (19)
+            # (20) hereda la ventana
+            hijo = transicion(s, a)
+            w = alfa_beta(hijo, alfa, beta)
+            v = min(v, w)     # (21)
+            # (22) lee el del rival
+            if v <= alfa:
+                return v
+            # (23) actualiza el suyo
+            beta = min(beta, v)
+        return v              # (24)
+```
+
+## 3 · Alfa, beta y la regla
+
+**Piensa: para saber que una rama no sirve, ¿qué tiene que recordar cada
+nodo de lo que pasó arriba?**
+
+Dos números. Los dos se miden **en puntos de MAX**, como $U$.
+
+::: definition {#jue-c2-alfa-beta title="Alfa y beta"}
+Sea un nodo del recorrido y el camino de la raíz hasta él.
+
+- **$\alpha$ («alfa»)** es el **mayor** valor que algún nodo de **MAX** del
+  camino ya tiene asegurado con una jugada revisada. Para MAX es un
+  **piso**: tendrá al menos $\alpha$.
+- **$\beta$ («beta»)** es el **menor** valor que algún nodo de **MIN** del
+  camino ya tiene asegurado con una jugada revisada. Para MAX es un
+  **techo**: tendrá a lo más $\beta$.
+
+|  | $\alpha$ | $\beta$ |
+|---|---|---|
+| Dueño | MAX | MIN |
+| Empieza en | $-\infty$ | $+\infty$ |
+| Se mueve | solo sube | solo baja |
+| Lo cambia | MAX, línea 15 | MIN, línea 23 |
+| Lo lee | MIN, línea 22 | MAX, línea 14 |
+
+El par se escribe $(\alpha,\beta)$ y se llama **ventana**; la sección 6
+dice por qué.
+:::
+
+::: definition {#jue-c2-t-regla title="La regla de alfa-beta"}
+1. **Hereda los dos.** Al generarse, cada nodo recibe el $\alpha$ y el
+   $\beta$ que su padre tiene en ese momento (líneas 4, 12 y 20). **El suyo
+   también empieza heredado**: C1, de MAX, arranca con el $\alpha=3$ que
+   trae de R.
+2. **Lee el del rival.** Después de cada hijo compara su $v$ con el número
+   del **rival**:
+   - un nodo de **MAX** compara $v$ con $\beta$: si $v\ge\beta$, deja de
+     mirar hijos (línea 14, **corte beta**);
+   - un nodo de **MIN** compara $v$ con $\alpha$: si $v\le\alpha$, deja de
+     mirar hijos (línea 22, **corte alfa**).
+
+   **El número del rival no cambia mientras el nodo trabaja**: MAX nunca
+   escribe $\beta$ y MIN nunca escribe $\alpha$; solo lo leen en su `if`.
+3. **Actualiza el suyo.** Si no corta, MAX sube $\alpha$ (línea 15) y MIN
+   baja $\beta$ (línea 23). Es el único de los dos que cambia.
+4. **Al padre solo sube $v$**, y le llega como su $w$. Las $\alpha$ y $\beta$
+   que el hijo cambió **se pierden al regresar**: el padre sigue con las
+   suyas.
+
+**El igual cuenta**: $v\ge\beta$ y $v\le\alpha$. Un empate con lo que el
+rival ya tiene no le sirve a nadie. El corte se llama como el número que
+lo provoca: el **alfa** pasa en un nodo de **MIN**; el **beta**, en uno de
+**MAX**.
+:::
+
+> [!NOTE]
+> **El puente con «$\alpha\ge\beta$».** Los libros dicen «se corta cuando
+> $\alpha\ge\beta$». El código compara $v$ con el número del rival. Es lo
+> mismo, un paso antes: en un nodo de MAX con $v\ge\beta$, si no cortara,
+> la línea 15 haría $\alpha\leftarrow v\ge\beta$. La línea 14 corta justo
+> antes (y la 22, igual, en uno de MIN).
+
+**Cómo leer las trazas.** Es la tabla de la traza de minimax con dos
+columnas más. Una fila al entrar a un nodo interno y una por cada hijo que
+regresa; las hojas van plegadas en la columna $w$.
+
+- **línea · pila:** qué líneas corren y la pila de llamadas. Un hijo que
+  regresa a un nodo de MAX es 12–15 (o 12–14 si corta); a uno de MIN,
+  20–23 (o 20–22). En la raíz, 4–5.
+- **$(\alpha,\beta)$:** la ventana del último nodo de la pila al terminar
+  la fila.
+- **corta:** la comparación del `if`, **corte o no**: «3≤−∞ no», «7≥5 sí».
+  En la raíz es la línea 5: «3>−∞ sí» cambia la jugada; «2>5 no», no.
+- **v:** en las filas de R es `mejor_valor`, que aquí se llama $\alpha$.
+- **jugada:** `mejor_jugada` en ese momento; «—» si todavía no hay.
+- **Fila ✗:** está en la traza de minimax y no en ésta: su hoja (en
+  cursiva) no se genera. Así cada fila lleva el mismo número en las dos
+  trazas.
+
+## 4 · Etapa 1: el árbol T1
 
 **Piensa: ¿en qué momento MAX ya sabe que la rama de la derecha no le
 sirve?**
 
-El **árbol A**: arriba mueve MAX; abajo, dos nodos de MIN, cada uno con dos
-hojas. Se recorre en profundidad, de izquierda a derecha. Una hoja aparece
-como «?»: es la que nunca llegaremos a ver.
+**T1** tiene siete nodos. Arriba, R (MAX). Con $\text{izq}$ llega a I (MIN),
+con hojas 3 y 6; con $\text{der}$, a D (MIN), con hojas 2 y 12. Minimax:
+I vale 3, D vale 2, R vale **3** y juega **izq**.
 
-::: figure {#jue-c2-ab-a-1 title="Árbol A, paso 1: la rama de la izquierda"}
-![Árbol de siete nodos sin tableros. Arriba, la raíz, de MAX. Abajo, dos nodos de MIN. El de la izquierda y sus hojas, 3 y 5, van resaltados, y el nodo muestra «= 3». El nodo de MIN de la derecha y sus dos hojas aparecen punteados y tenues: todavía no se generan](../_assets/jue-ab-arbol-a-paso-1.svg)
+### Tramo 1 · La rama izq
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
+| 2 | 18 · R›I | $(-\infty,+\infty)$ | $+\infty$ |  |  | — |
+| 3 | 20–23 · R›I | $(-\infty,3)$ | 3 | 3 | $3\le -\infty$ no | — |
+| 4 | 20–23 · R›I | $(-\infty,3)$ | 3 | 6 | $3\le -\infty$ no | — |
+| 5 | 4–5 · R | $(3,+\infty)$ | 3 | 3 (I) | $3>-\infty$ sí | izq |
+
+::: figure {#jue-c2-t1-ab-1 title="T1, fila 5: I devuelve 3 y R sube α"}
+![Árbol T1. R, de MAX, arriba; abajo I y D, de MIN. I y sus hojas 3 y 6 ya se revisaron: I devolvió v = 3. En el recuadro de R: «mejor_jugada = izq · α = 3». D y sus hojas aparecen punteadas: todavía no se generan. Abajo, la recta numérica con la ventana de R](../_assets/jue-t1-ab-1.svg)
 :::
 
-**El MIN de la izquierda toma la menor de sus hojas: vale 3.**
+- I es de MIN y lee $\alpha=-\infty$: $3\le-\infty$ es falso, así que
+  nunca corta. Baja su $\beta$ a 3.
+- **Fila 5:** R recibe $w=3$; $3>-\infty$, así que $\alpha\leftarrow3$ y
+  `mejor_jugada ← izq` (línea 5).
 
-::: figure {#jue-c2-ab-a-2 title="Árbol A, paso 2: MAX ya tiene 3"}
-![El mismo árbol A. Ahora la raíz, de MAX, va resaltada con la anotación «α = 3»: MAX ya tiene 3. El MIN de la izquierda conserva su «= 3»; la rama de la derecha sigue punteada](../_assets/jue-ab-arbol-a-paso-2.svg)
+### Tramo 2 · D corta
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 6 | 18 · R›D | $(3,+\infty)$ | $+\infty$ |  |  | izq |
+| 7 | 20–22 · R›D | $(3,+\infty)$ | 2 | 2 | $2\le 3$ sí | izq |
+| 8 ✗ | R›D | — | — | $\textit{12}$ | — | — |
+| 9 | 4–5 · R | $(3,+\infty)$ | 3 | 2 (D) | $2>3$ no | izq |
+| 10 | 6 · R | $(3,+\infty)$ | 3 |  |  | izq |
+
+::: figure {#jue-c2-t1-ab-2 title="T1, fila 7: el corte alfa en D"}
+![Árbol T1. D, de MIN, en la pila con la ventana (3, +∞). Su primera hoja, 2, va resaltada: v = 2 y «2 ≤ 3: corte alfa». La hoja 12 es una caja punteada con «?»: no se genera. Banda arriba: línea 22. Abajo, la recta con la ventana (3, +∞) sombreada y el punto v = 2 a la izquierda de α](../_assets/jue-t1-ab-2.svg)
 :::
 
-**De vuelta en la raíz, MAX ya tiene 3 asegurado.** No aceptará menos. El
-dibujo lo anota $\alpha=3$; el nombre se explica en la sección 4.
+**D es de MIN: compara su $v=2$ con $\alpha=3$, el número de MAX que
+heredó; $2\le3$ → corte alfa, línea 22.**
 
-::: figure {#jue-c2-ab-a-3 title="Árbol A, paso 3: la primera hoja de la derecha"}
-![El mismo árbol A. El MIN de la derecha ya se generó; sobre la arista que llega a él va la anotación [3, +∞]. Su primera hoja, 2, va resaltada, y el nodo muestra «v = 2 ≤ 3». La segunda hoja aún no se genera](../_assets/jue-ab-arbol-a-paso-3.svg)
+- En palabras: MIN ya puede dejar a MAX en 2 o menos aquí, y MAX tiene 3
+  por la izquierda. MAX nunca entrará a D.
+- **Fila 8 ✗: la hoja 12 no se genera.** Valga 100 o $-50$, D vale a lo
+  más 2. D devuelve 2.
+
+::: figure {#jue-c2-t1-ab-3 title="T1, fila 10: 6 de 7 nodos"}
+![Árbol T1 terminado. R con «mejor_jugada = izq · α = 3». I devolvió 3; D devolvió 2 tras el corte alfa. La hoja 12 sigue como caja punteada con «?». Nota: 6 de 7 nodos](../_assets/jue-t1-ab-3.svg)
 :::
 
-**El MIN de la derecha llega con $[3,+\infty]$ y su primera hoja vale 2.**
+**Fila 9:** R recibe $w=2$; $2>3$ es falso: se queda **izq**. Se generaron
+**6 de 7** nodos.
 
-- Entre corchetes van **dos números heredados**: a la izquierda, lo que **MAX**
-  ya tiene asegurado (3); a la derecha, lo que **MIN** ya tiene asegurado
-  (nada todavía: $+\infty$).
-- Con esa hoja, MIN **ya puede dejar a MAX en 2 o menos** aquí.
+**El orden decide el ahorro.** Con D primero, R llega a I con $\alpha=2$.
+I ve 3: ¿$3\le2$? No, así que no corta y genera también la hoja 6: se
+generan **los 7**.
 
-::: figure {#jue-c2-ab-a-4 title="Árbol A, paso 4: el corte"}
-![El mismo árbol A, terminado. Bajo el MIN de la derecha, una barra de acento con la leyenda «corte alfa». Su segunda hoja es una caja punteada con «?»: no se genera. El MIN de la derecha muestra «≤ 2» y la raíz «= 3». Una nota dice «6 de 7 nodos»](../_assets/jue-ab-arbol-a-paso-4.svg)
+## 5 · Etapa 2: se agrega el centro
+
+**Piensa: si MIN también puede asegurarse algo, ¿quién corta entonces?**
+
+**T** es T1 con un hijo más de R, en medio: con $\text{centro}$ llega a C
+(MIN), que tiene dos hijos de MAX, C1 (hojas 5 y 2) y C2 (hojas 7 y 8).
+Catorce nodos. Minimax: I = 3, C1 = 5, C2 = 8, C = 5, D = 2; R vale **5** y
+juega **centro**. La traza tiene las 20 filas de la de DECIDIR-MINIMAX en
+T, dos de ellas con ✗.
+
+### Tramo 1 · La rama izq
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
+| 2 | 18 · R›I | $(-\infty,+\infty)$ | $+\infty$ |  |  | — |
+| 3 | 20–23 · R›I | $(-\infty,3)$ | 3 | 3 | $3\le -\infty$ no | — |
+| 4 | 20–23 · R›I | $(-\infty,3)$ | 3 | 6 | $3\le -\infty$ no | — |
+| 5 | 4–5 · R | $(3,+\infty)$ | 3 | 3 (I) | $3>-\infty$ sí | izq |
+
+::: figure {#jue-c2-t-ab-1 title="T, fila 5: I devuelve 3"}
+![Árbol T: R de MAX arriba; I, C y D de MIN; C1 y C2 de MAX bajo C. I y sus hojas 3 y 6 ya se revisaron: I devolvió v = 3. Recuadro de R: «mejor_jugada = izq · α = 3». C, C1, C2, D y sus hojas aparecen punteados](../_assets/jue-t-ab-1.svg)
 :::
 
-**MAX tiene 3 por la izquierda; por la derecha recibiría 2 o menos. Nunca
-entrará ahí.**
+Igual que en T1: I devuelve 3, y en la fila 5 R pasa a $\alpha=3$ con
+**izq**.
 
-- La hoja «?» **no se genera**. Es un **corte alfa**: lo provocó lo que MAX
-  ya tenía.
-- El MIN de la derecha devuelve 2, pero **eso no es su valor**: solo se
-  sabe que vale **a lo más 2**. Su valor exacto depende de «?», que nunca
-  se genera: el algoritmo no lo sabrá.
-- La raíz vale **3**, igual que con minimax. Se generaron **6 de 7** nodos.
+### Tramo 2 · C1, y el α que se pierde
 
-¿Y si el árbol se recorriera de derecha a izquierda? Entonces el MIN de la
-derecha va primero, nadie tiene nada asegurado todavía, y **se generan los
-7**: no hay corte. **El orden decide cuánto se ahorra.**
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 6 | 18 · R›C | $(3,+\infty)$ | $+\infty$ |  |  | izq |
+| 7 | 10 · R›C›C1 | $(3,+\infty)$ | $-\infty$ |  |  | izq |
+| 8 | 12–15 · R›C›C1 | $(5,+\infty)$ | 5 | 5 | $5\ge +\infty$ no | izq |
+| 9 | 12–15 · R›C›C1 | $(5,+\infty)$ | 5 | 2 | $5\ge +\infty$ no | izq |
+| 10 | 20–23 · R›C | $(3,5)$ | 5 | 5 (C1) | $5\le 3$ no | izq |
 
-::: exercise {#jue-c2-ej-hoja-oculta title="Decide si importa la hoja oculta"}
-1. Si la hoja «?» valiera 100, ¿cambiaría el valor de la raíz?
-2. ¿Y si valiera $-50$?
+::: figure {#jue-c2-t-ab-2 title="T, fila 10: C1 devuelve 5 y C baja β"}
+![Árbol T. C, de MIN, en la pila con la ventana (3, 5). C1 ya devolvió v = 5 tras revisar sus hojas 5 y 2. C2 y D siguen punteados. Abajo, la recta con la ventana (3, 5) sombreada](../_assets/jue-t-ab-2.svg)
 :::
 
-::: hint {#jue-c2-pista-hoja-oculta of="jue-c2-ej-hoja-oculta" title="Quién elige ahí"}
-En ese nodo elige MIN, y ya tiene un 2. ¿Puede el valor del nodo subir por
-encima de 2, valga lo que valga la otra hoja?
+- **Filas 6–7:** C hereda $(3,+\infty)$, y C1 lo mismo. El $\alpha=3$ de
+  C1 es **suyo**, pero empezó heredado de R.
+- **Filas 8–9:** C1 es de MAX y lee $\beta=+\infty$: «5≥+∞ no». Sube
+  **su** $\alpha$ a 5 (línea 15) y devuelve $v=5$.
+- **Fila 10: el $\alpha=5$ de C1 se pierde al regresar.** A C solo le llega
+  $w=5$, y sigue con su $\alpha=3$. **C es de MIN: compara su $v=5$ con
+  $\alpha=3$; $5\le3$ es falso → no corta, y baja su $\beta$ a 5 (línea
+  23).** C queda con $(3,5)$.
+
+### Tramo 3 · El corte beta en C2
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 11 | 10 · R›C›C2 | $(3,5)$ | $-\infty$ |  |  | izq |
+| 12 | 12–14 · R›C›C2 | $(3,5)$ | 7 | 7 | $7\ge 5$ sí | izq |
+| 13 ✗ | R›C›C2 | — | — | $\textit{8}$ | — | — |
+
+::: figure {#jue-c2-t-ab-3 title="T, fila 12: el corte beta en C2"}
+![Árbol T. C2, de MAX, en la pila R›C›C2 con la ventana (3, 5). Su primera hoja, 7, va resaltada: v = 7 y «7 ≥ 5: corte beta». La hoja 8 es una caja punteada con «?». Banda arriba: línea 14. Abajo, la recta con la ventana (3, 5) sombreada y el punto v = 7 a la derecha de β](../_assets/jue-t-ab-3.svg)
 :::
 
-::: answer {#jue-c2-resp-hoja-oculta of="jue-c2-ej-hoja-oculta"}
-1. No. MIN se quedaría con el 2: el nodo vale 2, y MAX prefiere su 3.
-2. Tampoco. El nodo valdría $-50$, todavía peor para MAX. La raíz sigue en
-   3.
+**C2 es de MAX: compara su $v=7$ con $\beta=5$, el número de MIN que
+heredó; $7\ge5$ → corte beta, línea 14.**
 
-**Valga lo que valga «?», el nodo vale a lo más 2**, y eso ya basta para que
-MAX no entre. Por eso no hace falta generarla.
+- En palabras: MAX ya puede conseguir 7 o más en C2, y MIN tiene 5 con
+  c1. MIN nunca dejará que la partida llegue a C2.
+- **Fila 13 ✗: la hoja 8 no se genera.** C2 devuelve 7.
+
+### Tramo 4 · C devuelve 5 y D corta
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 14 | 20–23 · R›C | $(3,5)$ | 5 | 7 (C2) | $5\le 3$ no | izq |
+| 15 | 4–5 · R | $(5,+\infty)$ | 5 | 5 (C) | $5>3$ sí | centro |
+| 16 | 18 · R›D | $(5,+\infty)$ | $+\infty$ |  |  | centro |
+| 17 | 20–22 · R›D | $(5,+\infty)$ | 2 | 2 | $2\le 5$ sí | centro |
+| 18 ✗ | R›D | — | — | $\textit{12}$ | — | — |
+
+::: figure {#jue-c2-t-ab-4 title="T, fila 17: el corte alfa en D"}
+![Árbol T. D, de MIN, en la pila con la ventana (5, +∞). Su primera hoja, 2, va resaltada: v = 2 y «2 ≤ 5: corte alfa». La hoja 12 es una caja punteada con «?». Recuadro de R: «mejor_jugada = centro · α = 5». Abajo, la recta con la ventana (5, +∞) y el punto v = 2 a la izquierda de α](../_assets/jue-t-ab-4.svg)
 :::
 
-## 3 · El espejo: raíz MIN
+- **Fila 14:** C recibe la cota 7 y la trata como cualquier $w$:
+  $\min(5,7)=5$; «5≤3 no». C devuelve 5.
+- **Fila 15:** en R, $5>3$: $\alpha$ sube a 5 y la jugada pasa a
+  **centro**.
+- **Fila 17. D es de MIN: compara su $v=2$ con $\alpha=5$, el número de
+  MAX que heredó; $2\le5$ → corte alfa, línea 22.** En la fila 18 ✗, la
+  hoja 12 no se genera; D devuelve 2.
 
-**Piensa: si arriba mueve MIN, ¿quién provoca el corte?**
+### Tramo 5 · La raíz decide
 
-El **árbol B** es el mismo dibujo con los papeles al revés: arriba mueve
-MIN; abajo, dos nodos de MAX. Hojas: 8 y 6 a la izquierda; 9 y «?» a la
-derecha.
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 19 | 4–5 · R | $(5,+\infty)$ | 5 | 2 (D) | $2>5$ no | centro |
+| 20 | 6 · R | $(5,+\infty)$ | 5 |  |  | centro |
 
-::: figure {#jue-c2-ab-b-1 title="Árbol B, paso 1: MIN ya tiene 8"}
-![Árbol de siete nodos sin tableros, con la raíz de MIN y dos nodos de MAX abajo. El MAX de la izquierda y sus hojas, 8 y 6, van resaltados, y el nodo muestra «= 8». La raíz lleva la anotación «β = 8». La rama de la derecha aparece punteada: todavía no se genera](../_assets/jue-ab-arbol-b-paso-1.svg)
+::: figure {#jue-c2-t-ab-5 title="T, fila 20: 12 de 14 nodos"}
+![Árbol T terminado. R con «mejor_jugada = centro · α = 5». I devolvió 3, C devolvió 5, D devolvió 2. Bajo C2, la hoja 8 como caja punteada; bajo D, la hoja 12. Nota: 12 de 14 nodos](../_assets/jue-t-ab-5.svg)
 :::
 
-**El MAX de la izquierda toma la mayor de sus hojas: 8.** Entonces MIN, en
-la raíz, **ya tiene 8 asegurado**: no aceptará más. El dibujo lo anota
-$\beta=8$.
+- **Fila 19:** en R, $2>5$ es falso: se queda **centro**.
+- `mejor_jugada` fue — → izq (fila 5) → centro (fila 15). DECIDIR devuelve
+  **centro**, como minimax, con **12 de 14** nodos.
 
-::: figure {#jue-c2-ab-b-2 title="Árbol B, paso 2: el corte"}
-![El mismo árbol B, terminado. El MAX de la derecha lleva la anotación [−∞, 8]; su primera hoja, 9, va resaltada con «9 ≥ 8». Su segunda hoja es una caja punteada con «?». Una barra de acento con la leyenda «corte beta» va bajo ese nodo, que muestra «≥ 9». La raíz muestra «= 8»](../_assets/jue-ab-arbol-b-paso-2.svg)
+**Una cota no es un valor.** C2 devolvió **7**, pero vale **8**: no miró
+la hoja 8. Tras un corte beta, el número devuelto solo dice «**al menos**
+7»; tras uno alfa, como en D, «**a lo más** 2». A C le basta: cualquier
+cosa $\ge5$ la descarta.
+
+## 6 · La ventana
+
+**Piensa: en T, ¿qué tienen en común los dos números que provocaron cada
+corte?**
+
+Los dos son del **rival** del nodo que corta, y los dos vienen de una
+jugada ya revisada más arriba. Juntos, $\alpha$ y $\beta$ marcan los
+valores que todavía importan.
+
+::: figure {#jue-c2-ab-ventana title="La ventana (α, β)"}
+![Una recta numérica de −∞ a +∞ con dos marcas, α y β. La banda entre ellas va resaltada con la leyenda «aquí el valor importa». A la izquierda de α, «v ≤ α: corte alfa (nodo de MIN)»; a la derecha de β, «v ≥ β: corte beta (nodo de MAX)», y la nota «El igual cuenta». Abajo, dos ejemplos del árbol T: D llega con (5, +∞) y su hoja 2 cae a la izquierda, «2 ≤ 5: corte alfa»; C2 llega con (3, 5) y su hoja 7 cae a la derecha, «7 ≥ 5: corte beta»](../_assets/jue-ab-ventana.svg)
 :::
 
-**El MAX de la derecha llega con $[-\infty,8]$; su primera hoja vale 9.**
+- **La ventana $(\alpha,\beta)$ son los valores estrictamente entre
+  $\alpha$ y $\beta$**: los únicos que pueden cambiar la decisión de arriba.
+  Se escribe con paréntesis porque **los extremos no están dentro**: tocar
+  uno ya corta.
+- **Sale por la izquierda** ($v\le\alpha$) en un nodo de MIN: corte alfa.
+  **Sale por la derecha** ($v\ge\beta$) en uno de MAX: corte beta.
+- **En la raíz** es $(-\infty,+\infty)$. **Al bajar solo se encoge**: el
+  hijo hereda la de su padre, y dentro de cada nodo $\alpha$ solo sube y
+  $\beta$ solo baja.
 
-- MAX **ya puede conseguir 9 o más** aquí. MIN tiene 8 por la izquierda:
-  nunca dejará que la partida llegue aquí.
-- La hoja «?» **no se genera**. Es un **corte beta**: lo provocó lo que MIN
-  ya tenía.
-- El MAX de la derecha devuelve 9, pero el algoritmo solo sabe que vale
-  **al menos 9**: no generó la otra hoja, así que no conoce su valor exacto.
-- La raíz vale **8**. Se generaron **6 de 7** nodos.
+## 7 · El juego real: n1 de hexapawn
 
-## 4 · Alfa y beta, en una tabla
+**Piensa: si Blancas ya tiene una jugada que gana, ¿necesita saber cuánto
+vale exactamente la otra?**
 
-**Piensa: en los dos árboles, ¿qué número decidió cada corte?**
+Minimax generó los 13 estados de n1 y obtuvo $V(\text{n1})=+1$ con
+$\text{c1}\textbf{-}\text{c2}$. Ahora, la misma regla, con las jugadas en
+el orden fijo.
 
-En el árbol A, lo que **MAX** ya tenía (3). En el árbol B, lo que **MIN**
-ya tenía (8). Alfa-beta lleva esos dos números en cada nodo.
-
-::: definition {#jue-c2-alfa-beta title="Alfa y beta"}
-En cada nodo del recorrido hay dos números:
-
-| | $\alpha$ («alfa») | $\beta$ («beta») |
-|---|---|---|
-| Qué es | Lo mejor que **MAX** ya tiene asegurado en el camino desde la raíz | Lo mejor que **MIN** ya tiene asegurado en ese camino |
-| Empieza en | $-\infty$ | $+\infty$ |
-| Se mueve | Solo sube | Solo baja |
-| Lo actualiza | Un nodo de MAX, cuando $v$ lo supera | Un nodo de MIN, cuando $v$ queda debajo |
-| Corta en | Un nodo de **MIN**, si $v\le\alpha$ | Un nodo de **MAX**, si $v\ge\beta$ |
-
-- **Cada hijo hereda** el $\alpha$ y el $\beta$ que tiene su padre **en el
-  momento de generarlo**.
-- **Qué significa:** el valor que puede cambiar la decisión de arriba está
-  entre $\alpha$ y $\beta$. Lo que cae fuera, alguno de los dos ya lo
-  evitó.
-- **Qué no es:** ni $\alpha$ ni $\beta$ es el valor del nodo. Son lo que
-  cada jugador tiene asegurado **fuera del hijo que se está revisando**.
+::: figure {#jue-c2-ab-fijo-1 title="n1, parte 1: n2 da +1"}
+![n1, con su tablero, arriba: mueve Blancas (MAX). Su primer hijo, n2, tras c1-c2, va resaltado: final, vale +1. En la raíz, α pasa de −∞ a +1. n3, tras c1xb2, aparece punteado y sin expandir](../_assets/jue-ab-fijo-parte-1.svg)
 :::
 
-> [!WARNING]
-> **El corte se llama como la cota que usa, no como el nodo donde ocurre.**
-> El corte **alfa** pasa en un nodo de **MIN**: lo provoca lo que MAX ya
-> tenía. El corte **beta** pasa en un nodo de **MAX**: lo provoca lo que
-> MIN ya tenía.
-
-## 5 · Los dos cortes
-
-**Piensa: ¿qué tiene que pasar exactamente para dejar de revisar hijos?**
-
-::: definition {#jue-c2-cortes title="Corte alfa y corte beta"}
-$v$ es el mejor valor visto hasta ahora entre los hijos del nodo actual.
-
-**Corte alfa**, en un nodo de MIN:
-
-- condición: $v\le\alpha$;
-- por qué: MIN ya puede dejar a MAX en $v$ o menos, y MAX tiene asegurado
-  $\alpha$ en otra parte. **MAX nunca elegirá entrar aquí;**
-- efecto: los hijos que faltan **no se generan**.
-
-**Corte beta**, en un nodo de MAX:
-
-- condición: $v\ge\beta$;
-- por qué: MAX ya puede conseguir $v$ o más, y MIN tiene asegurado $\beta$
-  en otra parte. **MIN nunca dejará que la partida llegue aquí;**
-- efecto: los hijos que faltan **no se generan**.
+::: figure {#jue-c2-ab-fijo-2 title="n1, parte 2: el corte alfa en n3"}
+![n3, de MIN, con la ventana (+1, +∞). Debajo, n4, de MAX, con (+1, +∞), y su único hijo n5, final, que vale +1. n3 muestra v = +1 y «+1 ≤ +1: corte alfa». Al lado, dos cajas punteadas con «?»: n6 con lo que cuelga de él, tras c3-c2, y n13, tras c3xb2; no se generan](../_assets/jue-ab-fijo-parte-2.svg)
 :::
 
-Dos avisos:
+- n2 vale $+1$: en la línea 5, $+1>-\infty$, y la raíz sube a $\alpha=+1$
+  con $\text{c1}\textbf{-}\text{c2}$.
+- n3 hereda $(+1,+\infty)$; n4 devuelve $+1$ (su único hijo, n5, vale
+  $+1$).
+- **n3 es de MIN: compara su $v=+1$ con $\alpha=+1$, el número de MAX que
+  heredó; $+1\le+1$ → corte alfa, línea 22.** n6, lo que cuelga de él, y
+  n13 no se generan. Ojo: **no corta la raíz**. Con $\alpha=+1$ ningún hijo
+  puede mejorarla, pero DECIDIR no tiene línea de corte; corta el primer
+  nodo de MIN que hereda ese $\alpha$ y ve un $+1$.
+- n3 devuelve $+1$, pero **vale $-1$**: es una cota, «a lo más $+1$». En la
+  raíz, $+1>+1$ es falso: se queda $\text{c1}\textbf{-}\text{c2}$. Con un
+  $\ge$ la raíz elegiría $\text{c1}\textbf{x}\text{b2}$, que pierde.
 
-- **El igual cuenta.** Un empate con lo que el otro ya tiene no le sirve a
-  nadie, así que también se corta.
-- **Un corte no da el valor del nodo: devuelve una cota.** «A lo más $v$»
-  tras un corte alfa; «al menos $v$» tras un corte beta. La sección 9
-  vuelve sobre esto.
-
-::: exercise {#jue-c2-ej-empate-a title="Decide si se corta con un empate"}
-En el árbol A, cambia la hoja 2 por un **3**: el MIN de la derecha tiene
-ahora hojas 3 y «?».
-
-1. Ese nodo llega con $[3,+\infty]$ y su primera hoja vale 3. ¿Se corta?
-2. ¿Cambia el valor de la raíz?
-:::
-
-::: hint {#jue-c2-pista-empate-a of="jue-c2-ej-empate-a" title="Mira el signo"}
-El nodo es de MIN, así que toca el corte alfa. Su condición es $v\le\alpha$,
-no $v<\alpha$.
-:::
-
-::: answer {#jue-c2-resp-empate-a of="jue-c2-ej-empate-a"}
-1. Sí: $v=3\le\alpha=3$, un **corte alfa**, por el igual. Aquí MIN puede
-   dejar a MAX en 3 o menos, y MAX ya tiene 3 por la izquierda: entrar no
-   lo mejora.
-2. No: la raíz sigue en **3**. Se generan otra vez 6 de 7 nodos.
-:::
-
-## 6 · La ventana [α, β]
-
-**Piensa: ¿con qué números llegó el MIN de la derecha del árbol A, y qué
-valores le habrían importado a la raíz?**
-
-Los dos números de un nodo se escriben juntos, $[\alpha,\beta]$, y se llaman
-**ventana**.
-
-::: figure {#jue-c2-ab-ventana title="La ventana [α, β]"}
-![Una recta numérica de −∞ a +∞ con dos marcas, α y β. La banda entre ellas va resaltada con la leyenda «aquí el valor importa». A la izquierda de α, la leyenda «v ≤ α: corte alfa (nodo de MIN)»; a la derecha de β, «v ≥ β: corte beta (nodo de MAX)», y la nota «El igual cuenta». Abajo, dos rectas de ejemplo: la del MIN de la derecha del árbol A, con [3, +∞] y 2 ≤ 3, y la del MAX de la derecha del árbol B, con [−∞, 8] y 9 ≥ 8](../_assets/jue-ab-ventana.svg)
-:::
-
-- **Solo importa lo que cae estrictamente dentro**, entre $\alpha$ y
-  $\beta$. Solo ese valor puede cambiar la decisión de arriba. Se escribe
-  $[\alpha,\beta]$ por costumbre, pero **los extremos no están dentro**: si
-  $v$ toca $\alpha$ o $\beta$, ya se corta.
-- **Sale por la izquierda** ($v\le\alpha$), en un nodo de MIN: **corte
-  alfa**.
-- **Sale por la derecha** ($v\ge\beta$), en un nodo de MAX: **corte beta**.
-- **En la raíz** la ventana es $[-\infty,+\infty]$: todavía nada está
-  asegurado.
-- **Al bajar, la ventana solo se encoge**: el hijo hereda la de su padre, y
-  dentro de cada nodo $\alpha$ solo sube y $\beta$ solo baja.
-
-En una línea: **cortar es lo mismo que decir que la ventana se cerró**, es
-decir, que al actualizarla quedaría $\alpha\ge\beta$.
-
-## 7 · n1 en orden fijo, por partes
-
-**Piensa: si Blancas ya tiene una jugada que gana, ¿necesita saber
-exactamente cuánto vale la otra?**
-
-Volvemos al subgrafo de n1. Minimax generó sus 13 estados y obtuvo
-$V(\text{n1})=+1$ con $\text{c1}\textbf{-}\text{c2}$. **Nosotros ya
-conocemos ese $+1$; el algoritmo empezará sin él.** Lo usaremos al final
-para comprobar.
-
-> [!NOTE]
-> **En n1, $U$ solo vale $+1$ o $-1$.** Por eso, en cuanto la raíz tiene
-> $\alpha=+1$, ya tiene el máximo posible, y el primer corte se lee como
-> «ya gané». La lógica es la misma de los árboles A y B, que la muestran con
-> números variados.
-
-::: figure {#jue-c2-ab-fijo-1 title="Orden fijo, parte 1: n2 da +1"}
-![n1, con su tablero, arriba: mueve Blancas (MAX). Su primer hijo, n2, tras c1-c2, va resaltado: final, vale +1. La raíz lleva la anotación «α = +1». n3, tras c1xb2, aparece punteado y sin expandir](../_assets/jue-ab-fijo-parte-1.svg)
-:::
-
-**Blancas genera n2, tras $\text{c1}\textbf{-}\text{c2}$: es final y vale
-$+1$.** La raíz pasa a $\alpha=+1$: Blancas **ya tiene asegurado $+1$**.
-
-::: exercise {#jue-c2-ej-primer-corte title="Decide si se corta en n3"}
-Después, Blancas genera n3, tras $\text{c1}\textbf{x}\text{b2}$; ahí mueve
-Negras. Su primera respuesta, $\text{a3}\textbf{x}\text{b2}$, lleva a n4, y
-la única jugada de n4 lleva a n5, que vale $+1$.
-
-1. ¿Por qué n3 llega con $\alpha=+1$ y no con $-\infty$?
-2. Tras valorar n4, n3 tiene $v=+1$. ¿Se cumple la condición de algún
-   corte? ¿Cuál?
-3. ¿Qué devuelve n3 a la raíz y qué sabe el algoritmo de su valor exacto?
-:::
-
-::: hint {#jue-c2-pista-primer-corte of="jue-c2-ej-primer-corte" title="Hereda y compara"}
-Un hijo hereda el $\alpha$ de su padre **en el momento de generarlo**. ¿Qué
-había pasado en n1 antes de generar n3? Para el corte, n3 es de MIN: mira
-la condición del corte alfa.
-:::
-
-::: answer {#jue-c2-resp-primer-corte of="jue-c2-ej-primer-corte"}
-1. Porque antes de generar n3, la raíz ya había valorado n2 y había subido
-   su $\alpha$ a $+1$. n3 lo hereda.
-2. Sí: $v=+1\le\alpha=+1$, un **corte alfa**. Las dos respuestas que faltan,
-   $\text{c3}\textbf{-}\text{c2}$ (n6) y $\text{c3}\textbf{x}\text{b2}$
-   (n13), no se generan.
-3. Devuelve $+1$. Del valor exacto solo sabe que es **a lo más $+1$**.
-   Minimax calculó que es $-1$, pero alfa-beta no lo sabe ni lo necesita.
-:::
-
-::: figure {#jue-c2-ab-fijo-2 title="Orden fijo, parte 2: el corte alfa en n3"}
-![n3, de MIN, con la anotación [+1, +∞]. Debajo, n4, de MAX, con [+1, +∞], y su único hijo n5, final, que vale +1. n3 muestra «v = +1 ≤ +1» y «≤ +1 (cota)». Una barra de acento con la leyenda «corte alfa» va bajo n3. Al lado, dos cajas punteadas con «?»: n6 con lo que cuelga de él, tras c3-c2, y n13, tras c3xb2; no se generan](../_assets/jue-ab-fijo-parte-2.svg)
-:::
-
-**En n3, Negras ya puede dejar a Blancas en $+1$ o menos**: le basta
-$\text{a3}\textbf{x}\text{b2}$. Sus otras respuestas solo podrían bajar ese
-número. Para Blancas, «$+1$ o menos» no mejora el $+1$ que ya tiene.
-
-- **Corte alfa en n3**: n6, todo lo que cuelga de n6, y n13 **no se
-  generan**.
-- Se generan **5 estados de 13**: n1, n2, n3, n4 y n5.
-- La raíz da **$+1$, con $\text{c1}\textbf{-}\text{c2}$**: lo mismo que
-  minimax.
-
-El recorrido completo, sobre el dibujo de n1. El número en la esquina de
-cada nodo es el orden de visita.
-
-::: figure {#jue-c2-ab-fijo title="Alfa-beta con el orden fijo"}
+::: figure {#jue-c2-ab-fijo title="Alfa-beta en n1 con el orden fijo"}
 ![El subgrafo de n1 recorrido por alfa-beta con el orden fijo. Primero n1 (α −∞, β +∞, MAX, devuelve +1); segundo n2, final +1; tercero n3 (α +1, β +∞, MIN, devuelve ≤ +1, una cota); cuarto n4 (α +1, β +∞, MAX, devuelve +1); quinto n5, final +1. Una barra de acento debajo de n3 marca el corte alfa sobre las jugadas c3-c2 y c3xb2. Cajas punteadas con signo de interrogación marcan n6, con lo que cuelga de él, y n13: no se generan](../_assets/jue-alfa-beta-fijo.svg)
 :::
 
-**La traza.** Cada renglón numerado es un estado que se genera, en orden, con
-la ventana con que llega. Las viñetas de abajo son lo que pasa **al
-volver** a un nodo ya generado.
+**$+1$ con $\text{c1}\textbf{-}\text{c2}$**, como minimax, con **5** de los
+13 estados. Con las jugadas en el orden inverso se generan 8: está en
+[[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]], donde se estudia el
+orden.
 
-1. **n1** · MAX · $[-\infty,+\infty]$ · genera n2.
-2. **n2** · final · $[-\infty,+\infty]$ · vale $+1$.
-   - De vuelta en n1: $\alpha$ sube a $+1$. Genera n3.
-3. **n3** · MIN · $[+1,+\infty]$ · genera n4.
-4. **n4** · MAX · $[+1,+\infty]$ · genera n5, su único hijo.
-5. **n5** · final · $[+1,+\infty]$ · vale $+1$.
-   - De vuelta en n4: devuelve $+1$.
-   - De vuelta en n3: $v=+1\le\alpha=+1$, **corte alfa**. Devuelve $+1$,
-     una cota: **a lo más $+1$**.
-   - De vuelta en n1: ese $+1$ **empata** con el de n2, no lo mejora. La
-     jugada sigue siendo $\text{c1}\textbf{-}\text{c2}$. Devuelve $+1$.
+## 8 · Ejercicios
 
-## 8 · n1 en orden invertido, por partes
+::: exercise {#jue-c2-t-ej-tabla title="Completa la traza de T con el centro primero"}
+Mismo árbol T, pero R revisa sus jugadas en el orden **centro, izq, der**
+(dentro de C, C1 y C2, nada cambia). La numeración es la de la traza de
+minimax en ese mismo orden. Las filas 1–11 van a medio llenar.
 
-**Piensa: si Blancas hubiera mirado primero la captura, ¿se habría
-ahorrado lo mismo?**
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
+| 2 | 18 · R›C | ? | $+\infty$ |  |  | — |
+| 3 | 10 · R›C›C1 | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
+| 4 | 12–15 · R›C›C1 | ? | 5 | 5 | ? | — |
+| 5 | 12–15 · R›C›C1 | $(5,+\infty)$ | 5 | 2 | $5\ge +\infty$ no | — |
+| 6 | 20–23 · R›C | ? | 5 | 5 (C1) | ? | — |
+| 7 | 10 · R›C›C2 | ? | $-\infty$ |  |  | — |
+| 8 | ? · R›C›C2 | $(-\infty,5)$ | 7 | 7 | ? | — |
+| 9 ✗ | R›C›C2 | — | — | ? | — | — |
+| 10 | 20–23 · R›C | $(-\infty,5)$ | 5 | 7 (C2) | $5\le -\infty$ no | — |
+| 11 | 4–5 · R | ? | 5 | 5 (C) | ? | ? |
 
-Repetimos todo con el orden **invertido en todos los nodos**: la última
-jugada de cada lista se revisa primero.
-
-- El árbol y sus finales no cambian, y los nodos **conservan sus números**.
-- En las figuras, el dibujo está reflejado para que de izquierda a derecha se
-  lea el nuevo orden.
-
-::: figure {#jue-c2-ab-inv-1 title="Orden invertido, parte 1: Negras ya tiene −1"}
-![n1, con su tablero, arriba. Su primer hijo ahora es n3, tras c1xb2: mueve Negras (MIN). El primer hijo de n3, n13, tras c3xb2, va resaltado: final, vale −1. n3 lleva la anotación «β = −1»](../_assets/jue-ab-invertido-parte-1.svg)
+1. Llena los «?».
+2. Escribe las filas 12 a 20, con sus ✗.
+3. ¿Cuántos de los 14 nodos se generan? ¿Dónde se corta, de qué tipo y
+   qué no se genera?
 :::
 
-**La raíz empieza por n3, y n3 por n13**, tras
-$\text{c3}\textbf{x}\text{b2}$: final, vale $-1$.
-
-- En n3, $v=-1$. ¿$-1\le\alpha=-\infty$? No: no hay corte.
-- n3 actualiza $\beta=-1$: **Negras ya tiene asegurado $-1$**.
-
-**Ahora Blancas, en n6.** n6 hereda $[-\infty,-1]$. Su primer hijo, en el
-orden invertido, es n12, tras $\text{b2}\textbf{x}\text{a3}$: final, vale
-$+1$. En n6, $v=+1$.
-
-::: exercise {#jue-c2-ej-corte-beta title="Decide si se corta en n6"}
-1. En n6, $\beta=-1$ y $v=+1$. Es un nodo de MAX. ¿Se cumple la condición
-   de algún corte?
-2. ¿Qué hijos de n6 no se generan?
-3. Dilo en palabras: ¿por qué Negras no necesita saber cuánto vale n6
-   exactamente?
+::: hint {#jue-c2-t-pista-tabla of="jue-c2-t-ej-tabla" title="Qué cambia al ir primero"}
+C llega con $(-\infty,+\infty)$: nadie tiene nada asegurado todavía. Pero
+después de C, la raíz ya tiene $\alpha=5$, e I y D lo heredan. En cada
+fila de corta, di qué nodo es, con qué número del rival compara y en qué
+línea.
 :::
 
-::: hint {#jue-c2-pista-corte-beta of="jue-c2-ej-corte-beta" title="Desde el lado de Negras"}
-$\beta=-1$ es lo que Negras ya tiene asegurado en n3 con otra jugada. Si
-entra en n6, Blancas consigue al menos $+1$. ¿Le conviene a Negras?
+::: answer {#jue-c2-t-resp-tabla of="jue-c2-t-ej-tabla"}
+En negrita, lo que era «?»; las filas 12–20 son las que faltaban.
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | corta | jugada |
+|---|---|---|---|---|---|---|
+| 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
+| 2 | 18 · R›C | $\mathbf{(-\infty,+\infty)}$ | $+\infty$ |  |  | — |
+| 3 | 10 · R›C›C1 | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
+| 4 | 12–15 · R›C›C1 | $\mathbf{(5,+\infty)}$ | 5 | 5 | **5≥+∞ no** | — |
+| 5 | 12–15 · R›C›C1 | $(5,+\infty)$ | 5 | 2 | $5\ge +\infty$ no | — |
+| 6 | 20–23 · R›C | $\mathbf{(-\infty,5)}$ | 5 | 5 (C1) | **5≤−∞ no** | — |
+| 7 | 10 · R›C›C2 | $\mathbf{(-\infty,5)}$ | $-\infty$ |  |  | — |
+| 8 | $\textbf{12–14}$ · R›C›C2 | $(-\infty,5)$ | 7 | 7 | **7≥5 sí** | — |
+| 9 ✗ | R›C›C2 | — | — | $\textit{8}$ | — | — |
+| 10 | 20–23 · R›C | $(-\infty,5)$ | 5 | 7 (C2) | $5\le -\infty$ no | — |
+| 11 | 4–5 · R | $\mathbf{(5,+\infty)}$ | 5 | 5 (C) | **5>−∞ sí** | $\textbf{centro}$ |
+| 12 | 18 · R›I | $(5,+\infty)$ | $+\infty$ |  |  | centro |
+| 13 | 20–22 · R›I | $(5,+\infty)$ | 3 | 3 | $3\le 5$ sí | centro |
+| 14 ✗ | R›I | — | — | $\textit{6}$ | — | — |
+| 15 | 4–5 · R | $(5,+\infty)$ | 5 | 3 (I) | $3>5$ no | centro |
+| 16 | 18 · R›D | $(5,+\infty)$ | $+\infty$ |  |  | centro |
+| 17 | 20–22 · R›D | $(5,+\infty)$ | 2 | 2 | $2\le 5$ sí | centro |
+| 18 ✗ | R›D | — | — | $\textit{12}$ | — | — |
+| 19 | 4–5 · R | $(5,+\infty)$ | 5 | 2 (D) | $2>5$ no | centro |
+| 20 | 6 · R | $(5,+\infty)$ | 5 |  |  | centro |
+
+Se generan **11 de 14** nodos, con **tres cortes**:
+
+- **C2 es de MAX:** compara su $v=7$ con $\beta=5$; $7\ge5$ → corte beta,
+  línea 14. No se genera la hoja 8.
+- **I es de MIN:** compara su $v=3$ con $\alpha=5$; $3\le5$ → corte alfa,
+  línea 22. No se genera la hoja 6.
+- **D es de MIN:** compara su $v=2$ con $\alpha=5$; $2\le5$ → corte alfa,
+  línea 22. No se genera la hoja 12.
+
+Uno menos que con izq primero (12): **la mejor jugada primero corta más**.
 :::
 
-::: answer {#jue-c2-resp-corte-beta of="jue-c2-ej-corte-beta"}
-1. Sí: $v=+1\ge\beta=-1$, un **corte beta**.
-2. n11, tras $\text{b2}\textbf{-}\text{b3}$, y n7, tras
-   $\text{b1}\textbf{x}\text{c2}$, con todo lo que cuelga de n7: n8, n9 y
-   n10.
-3. Negras ya tiene $\text{c3}\textbf{x}\text{b2}$, que gana. Si jugara
-   $\text{c3}\textbf{-}\text{c2}$, Blancas conseguiría **al menos** $+1$.
-   Negras nunca elegirá esa jugada, y no importa cuánto más valga.
+::: exercise {#jue-c2-t-ej-empate-raiz title="Decide la regla del empate en la raíz"}
+Cambia D en T: sus hojas son ahora **5 y 1** (en ese orden). Lo demás
+queda igual.
+
+1. ¿Con qué ventana llega D? ¿Se corta tras su primera hoja? ¿Qué
+   devuelve, y cuánto vale de verdad?
+2. En la raíz, la línea 5 dice `if w > α`. ¿Qué jugada entrega
+   DECIDIR-ALFA-BETA?
+3. ¿Y si la línea 5 dijera `if w ≥ α`? ¿Cuánto obtendría MAX?
 :::
 
-::: figure {#jue-c2-ab-inv-2 title="Orden invertido, parte 2: el corte beta en n6"}
-![n6, de MAX, con la anotación [−∞, −1]. Su primer hijo, n12, tras b2xa3, va resaltado: final, vale +1. n6 muestra «+1 ≥ −1» y «≥ +1 (cota)». Una barra de acento con la leyenda «corte beta» va bajo n6. Sus otros dos hijos, n11 tras b2-b3 y n7 tras b1xc2, son cajas punteadas con «?»: no se generan](../_assets/jue-ab-invertido-parte-2.svg)
+::: hint {#jue-c2-t-pista-empate-raiz of="jue-c2-t-ej-empate-raiz" title="El igual corta abajo, no arriba"}
+D es de MIN y hereda el $\alpha$ de R después de C. Recuerda que en la
+línea 22 el igual cuenta. Después, compara lo que D devuelve con el
+$\alpha$ de R.
 :::
 
-**Corte beta en n6**: n11, n7 y lo que cuelga de n7 **no se generan**. n6
-devuelve $+1$: **al menos $+1$**.
-
-::: figure {#jue-c2-ab-inv-3 title="Orden invertido, parte 3: Negras termina, y la raíz también"}
-![De vuelta en n3, falta n4, de MAX, con [−∞, −1]; su único hijo, n5, vale +1, y bajo n5 va la nota «en n4, +1 ≥ −1: corta, pero no ahorra». n3 devuelve −1. La raíz muestra «α = −1». Su último hijo, n2, llega con [−1, +∞] y vale +1. La raíz muestra +1](../_assets/jue-ab-invertido-parte-3.svg)
+::: answer {#jue-c2-t-resp-empate-raiz of="jue-c2-t-ej-empate-raiz"}
+1. D llega con $(5,+\infty)$. **D es de MIN: compara su $v=5$ con
+   $\alpha=5$; $5\le5$ → corte alfa, línea 22**: la hoja 1 no se genera. D
+   devuelve **5**, una cota («a lo más 5»); de verdad vale
+   $\min(5,1)=1$.
+2. $5>5$ es falso: se queda **centro**, que vale 5. Correcto.
+3. Con $\ge$, $5\ge5$ elegiría **der**, que vale **1**: MAX obtendría 1 en
+   vez de 5. **Un hijo que cortó devuelve una cota, y una cota que empata
+   no debe ganar.** Por eso la línea 5 es estricta.
 :::
-
-**Negras termina, y la raíz también.**
-
-- De vuelta en n3, $v$ sigue en $-1$. Falta n4, que hereda $[-\infty,-1]$.
-- Su único hijo, n5, vale $+1$. Como $+1\ge\beta$, **se cumpliría un corte
-  beta**, pero n4 ya no tiene más hijos que ahorrar.
-- n3 devuelve $-1$: revisó todos sus hijos, así que **es su valor exacto**.
-- En la raíz, $\alpha$ sube a $-1$. El último hijo, n2, llega con
-  $[-1,+\infty]$ y vale $+1$.
-- La raíz devuelve **$+1$, con $\text{c1}\textbf{-}\text{c2}$**. Mismo valor,
-  misma jugada. Se generan **8 estados de 13**.
-
-El recorrido completo, sobre el dibujo reflejado de n1:
-
-::: figure {#jue-c2-ab-invertido title="Alfa-beta con el orden invertido"}
-![El subgrafo de n1, reflejado, recorrido por alfa-beta con el orden invertido. Primero n1; segundo n3 (α −∞, β +∞, MIN, devuelve −1); tercero n13, final −1; cuarto n6 (α −∞, β −1, MAX, devuelve ≥ +1, una cota); quinto n12, final +1; sexto n4 (α −∞, β −1, MAX, devuelve +1); séptimo n5, final +1; octavo n2, final +1. Una barra de acento debajo de n6 marca el corte beta sobre las jugadas b2-b3 y b1xc2. Cajas punteadas con signo de interrogación marcan n11 y n7, con lo que cuelga de n7: no se generan](../_assets/jue-alfa-beta-invertido.svg)
-:::
-
-**La traza**, con el mismo formato que la del orden fijo:
-
-1. **n1** · MAX · $[-\infty,+\infty]$ · genera n3.
-2. **n3** · MIN · $[-\infty,+\infty]$ · genera n13.
-3. **n13** · final · $[-\infty,+\infty]$ · vale $-1$.
-   - De vuelta en n3: $v=-1$, sin corte. $\beta$ baja a $-1$. Genera n6.
-4. **n6** · MAX · $[-\infty,-1]$ · genera n12.
-5. **n12** · final · $[-\infty,-1]$ · vale $+1$.
-   - De vuelta en n6: $v=+1\ge\beta=-1$, **corte beta**. Devuelve $+1$,
-     una cota: **al menos $+1$**.
-   - De vuelta en n3: $v$ sigue en $-1$. Genera n4.
-6. **n4** · MAX · $[-\infty,-1]$ · genera n5, su único hijo.
-7. **n5** · final · $[-\infty,-1]$ · vale $+1$.
-   - De vuelta en n4: $+1\ge-1$, pero no queda nada que ahorrar. Devuelve
-     $+1$.
-   - De vuelta en n3: $v$ sigue en $-1$, sin más hijos. Devuelve $-1$.
-   - De vuelta en n1: $\alpha$ sube a $-1$. Genera n2.
-8. **n2** · final · $[-1,+\infty]$ · vale $+1$.
-   - De vuelta en n1: $+1$ mejora a $-1$; la jugada pasa a
-     $\text{c1}\textbf{-}\text{c2}$. Devuelve $+1$.
-
-## 9 · Una cota no es un valor
-
-**Piensa: n3 devolvió $+1$ en el primer recorrido. ¿Vale $+1$?**
-
-No. En los dos recorridos, la **raíz** devuelve el valor exacto, $+1$. Los
-nodos donde hubo corte, no:
-
-- **n3, orden fijo:** devolvió $+1$; su valor exacto es $-1$. El algoritmo
-  solo sabe que vale **a lo más $+1$**.
-- **n6, orden invertido:** devolvió $+1$; su valor exacto es $+1$. El
-  algoritmo solo sabe que vale **al menos $+1$**. El número coincide **por
-  suerte**: el algoritmo no lo sabe. Para el valor exacto tendría que
-  generar n11 y n7.
-- **El MIN de la derecha del árbol A:** devolvió 2; el algoritmo solo sabe
-  que vale **a lo más 2**, porque nunca generó la hoja «?».
-
-**Por eso la raíz elige su jugada solo cuando $v$ mejora estrictamente.** En
-el orden fijo, n3 devolvió un $+1$ que empata con el de n2. Si un empate
-cambiara la jugada, la raíz elegiría $\text{c1}\textbf{x}\text{b2}$, que
-pierde. El detalle está en
-[[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]].
 
 **Punto de control:** deberías poder recorrer un árbol pequeño con
-alfa-beta, anotar $[\alpha,\beta]$ al llegar a cada nodo, marcar cada corte
-como alfa o beta y decir qué nodos no se generan. Si te pierdes, vuelve a
-los pasos del árbol A y sigue una figura a la vez. El árbol de tres niveles
-de la página siguiente es la prueba.
+DECIDIR-ALFA-BETA, anotar $(\alpha,\beta)$ al llegar a cada nodo, decir en
+cada `if` «este nodo es de …, compara su $v$ con … del rival, línea …»,
+decir qué nodos no se generan y qué jugada sale.
 
 ## Lo que hay que llevarse
 
-- Alfa-beta deja de mirar una rama en cuanto sabe que no cambia la decisión
-  de arriba. **Lo que no mira no lo genera**, y la raíz da lo mismo que
-  minimax.
-- $\alpha$: lo que **MAX** ya tiene asegurado; corta en un nodo de **MIN**
-  si $v\le\alpha$. $\beta$: lo que **MIN** ya tiene asegurado; corta en un
-  nodo de **MAX** si $v\ge\beta$. **El igual cuenta.**
-- Solo importa lo que cae dentro de la ventana $[\alpha,\beta]$; al bajar,
-  la ventana solo se encoge.
-- Un nodo donde se cortó devuelve **una cota**, no su valor.
-- **El orden decide el ahorro:** en n1, 5 estados con el orden fijo y 8 con
-  el invertido; en el árbol A, 6 de 7 o los 7.
+- **El código** es DECIDIR-MINIMAX con $\alpha$ y $\beta$: 14 y 22 leen el
+  número del rival y cortan; 15 y 23 actualizan el propio
+  (@jue-c2-t-regla). Al padre solo sube $v$.
+- $\alpha$ es un **piso** para MAX y $\beta$ un **techo**; los dos en puntos
+  de MAX. La ventana $(\alpha,\beta)$ no incluye sus extremos: **el igual
+  corta**.
+- Un nodo que cortó devuelve **una cota**, no su valor (C2 devolvió 7 y
+  vale 8). Por eso la raíz cambia de jugada solo con $w>\alpha$.
+- **El orden decide el ahorro:** T, 12 de 14 con izq primero y 11 con
+  centro primero; n1, 5 de 13.
 
 Continúa con [[alfa-beta-como-algoritmo|alfa-beta como algoritmo]].

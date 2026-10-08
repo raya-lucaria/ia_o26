@@ -4,7 +4,7 @@ title: Cuando decide un dado
 nav_title: Cuando decide un dado
 summary: "Un nodo que no decide nadie se valora con un promedio, no con un máximo ni un mínimo. En hexapawn: un volado para empezar y un rival que mueve al azar. Tratar al azar como rival, o a un rival como azar, es un error de modelado."
 status: ready
-estimated_time: 20m
+estimated_time: 30m
 tags: [juegos, azar, expectiminimax]
 ---
 
@@ -195,7 +195,7 @@ Blancas valen $-1$: da igual cuál juegue. Si **todas** las jugadas de Negras
 son al azar, la computadora calcula:
 
 ::: table {#jue-c2-rival-azar title="Las aperturas contra una Negras que mueve al azar"}
-| Primera jugada de Blancas | Valor contra Negras perfecta | Valor contra Negras al azar |
+| Primera jugada | Contra Negras perfecta | Contra Negras al azar |
 |---|---:|---:|
 | $\text{a1}\textbf{-}\text{a2}$ | −1 | 5/9 |
 | $\text{b1}\textbf{-}\text{b2}$ | −1 | 3/4 |
@@ -235,10 +235,10 @@ valor de la tabla.
 Hay dos maneras de equivocarse, una en cada dirección:
 
 ::: table {#jue-c2-errores-azar title="Confundir el azar con un rival, y al revés"}
-| Error | Qué haces | Qué pasa |
-|---|---|---|
-| Tratar al azar como rival | Pones MIN donde Negras mueve al azar | Las tres aperturas valen $-1$ y te da igual cuál jugar. Pierdes la información que hacía mejor a $\text{b1}\textbf{-}\text{b2}$ |
-| Tratar al rival como azar | Pones AZAR donde Negras juega perfecto | Crees que $\text{b1}\textbf{-}\text{b2}$ gana 7 de cada 8 veces. En realidad pierdes siempre |
+| Error | Qué pasa |
+|---|---|
+| **Tratar al azar como rival:** pones MIN donde Negras mueve al azar | Las tres aperturas valen $-1$ y te da igual cuál jugar. Pierdes lo que hacía mejor a $\text{b1}\textbf{-}\text{b2}$ |
+| **Tratar al rival como azar:** pones AZAR donde Negras juega perfecto | Crees que $\text{b1}\textbf{-}\text{b2}$ gana 7 de cada 8 veces. En realidad pierdes siempre |
 :::
 
 El primero te vuelve **demasiado prudente**: supones lo peor de algo que no
@@ -248,25 +248,59 @@ tiene intereses, optimiza; lo que no los tiene, se promedia.**
 
 ## 6 · El procedimiento: expectiminimax
 
-**Piensa: ¿cuántas líneas hay que cambiarle a MINIMAX?**
+**Piensa: ¿cuántas líneas hay que agregarle a DECIDIR-MINIMAX y MINIMAX?**
 
-Una: el caso del azar. El procedimiento se llama **expectiminimax**:
+Seis, todas al final: el caso del azar. El procedimiento se llama
+**expectiminimax**. Las líneas 1 a 20 son las de
+[[minimax-como-algoritmo|Minimax como algoritmo]]; solo la 15 deja de ser
+un «else» a secas, porque ahora hay un tercer caso.
 
 ```text
-INPUT   un estado s y las reglas S_F, Pl, A, T y U de un juego finito
-        por turnos, con Pl(s) ∈ {MAX, MIN, AZAR} y las probabilidades Pr.
-OUTPUT  V(s), el valor esperado de s en puntos de MAX.
+INPUT   un estado s donde mueve MAX; las
+        reglas S_F, Pl, A, T y U de un juego
+        finito por turnos, con
+        Pl(s) ∈ {MAX, MIN, AZAR}; y las
+        probabilidades Pr. No recibe el grafo.
+OUTPUT  una jugada de A(s) con el mayor
+        valor esperado.
 
- 1  function EXPECTIMINIMAX(s)
-        ▷ Caso base: un final ya vale su utilidad.
- 2      if s ∈ S_F: return U(s)
-        ▷ MAX tiene intereses: optimiza hacia arriba.
- 3      if Pl(s) = MAX:  return el máximo de EXPECTIMINIMAX(T(s, a)), a in A(s)
-        ▷ MIN también: optimiza hacia abajo.
- 4      if Pl(s) = MIN:  return el mínimo de EXPECTIMINIMAX(T(s, a)), a in A(s)
-        ▷ El azar no quiere nada: se promedia. Cada hijo
-        ▷ pesa su probabilidad, y hay que valorarlos todos.
- 5      if Pl(s) = AZAR: return la suma de Pr(a) · EXPECTIMINIMAX(T(s, a)), a in A(s)
+ 1 function DECIDIR-EXPECTIMINIMAX(s)
+     ▷ mueve MAX en s
+ 2   mejor_valor ← −∞ ; mejor_jugada ← ninguna
+ 3   for each a in A(s)
+       ▷ cuánto vale a, en promedio, si
+       ▷ después MAX y MIN juegan bien y
+       ▷ el azar sigue Pr
+ 4     w ← EXPECTIMINIMAX(T(s, a))
+       ▷ estricto: en un empate se queda
+       ▷ la primera
+ 5     if w > mejor_valor:
+         mejor_valor ← w ; mejor_jugada ← a
+ 6   return mejor_jugada   ▷ la jugada, no w
+
+ 7 function EXPECTIMINIMAX(s)
+ 8   if s ∈ S_F: return U(s)  ▷ un final: su U
+ 9   if Pl(s) = MAX           ▷ optimiza
+10     v ← −∞
+11     for each a in A(s)
+12       w ← EXPECTIMINIMAX(T(s, a))
+13       v ← max(v, w)        ▷ el mayor
+14     return v
+15   else if Pl(s) = MIN      ▷ optimiza
+16     v ← +∞
+17     for each a in A(s)
+18       w ← EXPECTIMINIMAX(T(s, a))
+19       v ← min(v, w)        ▷ el menor
+20     return v
+21   else                     ▷ AZAR
+       ▷ nadie elige. Un promedio empieza en
+       ▷ 0, no en ±∞: no busca al mejor hijo,
+       ▷ suma todos
+22     v ← 0
+23     for each a in A(s)     ▷ todos cuentan
+24       w ← EXPECTIMINIMAX(T(s, a))
+25       v ← v + Pr(a) · w    ▷ pesa su Pr
+26     return v               ▷ valor esperado
 ```
 
 El mismo procedimiento en Python, línea por línea. `pr(s, a)` es
@@ -274,33 +308,143 @@ $\Pr(a)$ en el estado $s$; el número entre paréntesis es la línea del
 pseudocódigo:
 
 ```python
+from math import inf
+
 # Las reglas: es_final(s), pl(s), acciones(s),
 # transicion(s, a), utilidad(s) y pr(s, a).
 # pl(s) da "MAX", "MIN" o "AZAR".
 
-def expectiminimax(s):                # (1)
-    # (2) Caso base: un final ya vale su utilidad.
-    if es_final(s):
+def decidir_expectiminimax(s):  # (1)
+    # (2) Aún no ha visto ninguna jugada.
+    mejor_valor = -inf
+    mejor_jugada = None
+    for a in acciones(s):       # (3)
+        # (4) ¿Cuánto vale a, en promedio?
+        w = expectiminimax(transicion(s, a))
+        # (5) Solo si mejora estrictamente.
+        if w > mejor_valor:
+            mejor_valor = w
+            mejor_jugada = a
+    return mejor_jugada         # (6) jugada
+
+def expectiminimax(s):          # (7)
+    if es_final(s):             # (8) su U
         return utilidad(s)
-    # (3) MAX: el máximo sobre sus hijos.
-    if pl(s) == "MAX":
-        return max(expectiminimax(transicion(s, a))
-                   for a in acciones(s))
-    # (4) MIN: el mínimo sobre sus hijos.
-    if pl(s) == "MIN":
-        return min(expectiminimax(transicion(s, a))
-                   for a in acciones(s))
-    # (5) AZAR: el promedio, cada hijo por su probabilidad.
-    if pl(s) == "AZAR":
-        return sum(pr(s, a)
-                   * expectiminimax(transicion(s, a))
-                   for a in acciones(s))
+    if pl(s) == "MAX":          # (9)
+        v = -inf                # (10)
+        for a in acciones(s):   # (11)
+            w = expectiminimax(  # (12)
+                transicion(s, a))
+            v = max(v, w)       # (13) mayor
+        return v                # (14)
+    elif pl(s) == "MIN":        # (15)
+        v = inf                 # (16)
+        for a in acciones(s):   # (17)
+            w = expectiminimax(  # (18)
+                transicion(s, a))
+            v = min(v, w)       # (19) menor
+        return v                # (20)
+    else:                       # (21) AZAR
+        v = 0                   # (22) desde 0
+        for a in acciones(s):   # (23) todos
+            w = expectiminimax(  # (24)
+                transicion(s, a))
+            v = v + pr(s, a) * w  # (25)
+        return v                # (26)
 ```
 
-Las líneas 3 y 4 son MINIMAX abreviado; la 5 es la nueva. Igual que
-minimax, **recibe las reglas y genera los estados** mientras recorre. El
-costo crece: en un nodo de azar hay que valorar **todos** los resultados,
-porque todos cuentan en el promedio.
+::: table {#jue-c2-t-que-cambia-azar title="Qué cambia respecto de minimax"}
+| Líneas | Qué hacen |
+|---|---|
+| 1–14 y 16–20 | Lo mismo que en minimax |
+| 15 | Pregunta si mueve MIN |
+| 22 | $v$ empieza en 0, no en $\mp\infty$ |
+| 25 | **Suma** $\Pr(a)\cdot w$ de todos los hijos |
+:::
+
+Igual que minimax, **recibe las reglas y genera los estados** mientras
+recorre. El costo crece: en un nodo de azar hay que valorar **todos** los
+resultados, porque todos cuentan en el promedio.
+
+### El árbol T con dados
+
+**Piensa: si I, C y D los decidiera una moneda, ¿seguiría ganando centro?**
+
+Toma el árbol T de [[minimax-como-algoritmo|Minimax como algoritmo]] y
+cambia una sola cosa: **I, C y D son nodos de azar**, cada hijo con
+probabilidad $\tfrac12$. R, C1 y C2 siguen siendo de MAX.
+
+::: figure {#jue-c2-t-fig-azar title="El árbol T con I, C y D de azar"}
+![El árbol T con R de MAX arriba. I, C y D son nodos de azar con probabilidad un medio en cada flecha. I promedia 3 y 6 y vale 9/2; C promedia C1 = 5 y C2 = 8 y vale 13/2; D promedia 2 y 12 y vale 7. R elige der, la de mayor valor esperado](../_assets/jue-t-azar.svg)
+:::
+
+La traza de DECIDIR-EXPECTIMINIMAX(R), con el formato de
+[[minimax-como-algoritmo|Minimax como algoritmo]]: una fila al entrar a un
+nodo de azar (línea 22, $v=0$) y una por cada hijo que regresa (líneas
+24–25 en el azar, 4–5 en la raíz). En las filas de R, $v$ es mejor_valor,
+y la columna jugada lleva mejor_jugada en todas las filas («—» si ninguna).
+C1 y C2 se valoran como en minimax y aquí solo devuelven su $w$.
+
+**Tramo 1 · izq y centro**
+
+::: table {#jue-c2-t-traza-azar title="Traza de DECIDIR-EXPECTIMINIMAX en el árbol T"}
+| # | línea · pila | v | w | jugada |
+|---:|---|---:|---|---|
+| 1 | 2 · R | −∞ |  | — |
+| 2 | 22 · R›I | 0 |  | — |
+| 3 | 24–25 · R›I | 3/2 | 3 | — |
+| 4 | 24–25 · R›I | 9/2 | 6 | — |
+| 5 | 4–5 · R | 9/2 | 9/2 (I) | izq |
+| 6 | 22 · R›C | 0 |  | izq |
+| 7 | 24–25 · R›C | 5/2 | 5 (C1) | izq |
+| 8 | 24–25 · R›C | 13/2 | 8 (C2) | izq |
+| 9 | 4–5 · R | 13/2 | 13/2 (C) | centro |
+:::
+
+- **Fila 3:** la hoja 3 pesa $\tfrac12$: $v=0+\tfrac12\cdot3=3/2$.
+- **Fila 5:** $9/2>-\infty$: mejor_jugada pasa a **izq**.
+- **Fila 9:** $13/2>9/2$: mejor_jugada pasa a **centro**.
+
+**Tramo 2 · der**
+
+| # | línea · pila | v | w | jugada |
+|---:|---|---:|---|---|
+| 10 | 22 · R›D | 0 |  | centro |
+| 11 | 24–25 · R›D | 1 | 2 | centro |
+| 12 | 24–25 · R›D | 7 | 12 | centro |
+| 13 | 4–5 · R | 7 | 7 (D) | der |
+| 14 | 6 · R | 7 |  | der |
+
+- **Fila 12:** la hoja 12 sube el promedio de D de 1 a 7.
+- **Fila 13:** $7>13/2$: mejor_jugada pasa a **der**, y la línea 6 la
+  devuelve.
+
+Con MIN en I, C y D, minimax jugaba **centro** (5): D valía 2, el peor de
+sus hijos. Con azar juega **der**, gracias a la **hoja 12**. Un MIN no la
+necesita para descartar D; un promedio sí, y no puede saltársela.
+**Guarda esta hoja: volverá.**
+
+::: exercise {#jue-c2-t-ej-azar title="Cambia una moneda"}
+En D, la hoja 2 sale ahora con probabilidad $\tfrac35$ y la hoja 12 con
+$\tfrac25$. Lo demás no cambia.
+
+1. ¿Cuánto vale D? ¿Qué jugada devuelve DECIDIR-EXPECTIMINIMAX(R)?
+2. Si la hoja 2 sale con probabilidad $p$, ¿desde qué $p$ deja de jugar
+   der?
+:::
+
+::: hint {#jue-c2-t-pista-azar of="jue-c2-t-ej-azar" title="Solo cambia el tramo de D"}
+I y C no cambian. La línea 25 en D suma $\Pr\cdot w$ con las nuevas
+probabilidades, y la línea 5 compara ese número con $13/2$.
+:::
+
+::: answer {#jue-c2-t-resp-azar of="jue-c2-t-ej-azar"}
+1. $V(\text{D})=\tfrac35\cdot2+\tfrac25\cdot12=6$. Como $6>13/2$ es falso,
+   la línea 5 no cambia de jugada: devuelve **centro**.
+2. $V(\text{D})=2p+12(1-p)=12-10p$, que es mayor que $13/2$ solo si
+   $p<\tfrac{11}{20}$. Con $p=\tfrac{11}{20}$ empatan en $13/2$ y gana
+   centro, que llegó primero: el $>$ de la línea 5 es estricto.
+:::
 
 ## 7 · Con azar importan las distancias
 
@@ -357,7 +501,10 @@ explicar qué error comete quien confunde un rival con el azar.
   veces.
 - Tratar al azar como rival te vuelve demasiado prudente; tratar a un rival
   como azar, demasiado optimista.
-- Expectiminimax es minimax con una línea más. Con azar importan las
-  distancias entre utilidades, no solo su orden.
+- Expectiminimax es DECIDIR y MINIMAX con un caso más, el del azar: $v$
+  empieza en 0 y suma $\Pr(a)\cdot w$ de **todos** los hijos. En el
+  árbol T con monedas juega der, gracias a la hoja 12, que un MIN no
+  necesitaba mirar.
+- Con azar importan las distancias entre utilidades, no solo su orden.
 
 Continúa con [[alfa-beta|alfa-beta a mano]].
