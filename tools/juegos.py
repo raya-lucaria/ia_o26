@@ -277,17 +277,19 @@ def alfa_beta(tablero, turno, n=3, invertir=False, sin_jugada_empata=False,
 
 # -------------------------------------- alfa-beta sobre un arbol generico ---
 #
-# Los arboles chicos de «Alfa-beta a mano» (A y B) y el ejercicio de «Alfa-beta
-# como algoritmo» (C) no son hexapawn: son tuplas anidadas. Una hoja es un
-# numero; un nodo interno, la tupla de sus hijos en el orden dado. Los niveles
-# alternan MAX y MIN a partir de la raiz.
+# El arbol de juguete de la clase 2 (el «arbol T») no es hexapawn: es una
+# tupla anidada. Una hoja es un numero; un nodo interno, la tupla de sus hijos
+# en el orden dado. Los niveles alternan MAX y MIN a partir de la raiz.
 
-# Arbol A: raiz MAX, hijos MIN (3, 5) y (2, 1). La hoja 1 es la que se poda.
-ARBOL_A = ((3, 5), (2, 1))
-# Arbol B: raiz MIN, hijos MAX (8, 6) y (9, 1). La hoja 1 es la que se poda.
-ARBOL_B = ((8, 6), (9, 1))
-# Arbol C: tres niveles, raiz MAX.
-ARBOL_C = (((3, 5), (6, 9)), ((2, 4), (7, 1)))
+# Arbol T, etapa 1: R (MAX) con dos hijos MIN, I por «izq» y D por «der».
+# Minimax: R = 3, juega izq. Alfa-beta poda la hoja 12 (corte alfa en D).
+ARBOL_T1 = ((3, 6), (2, 12))
+# Arbol T, etapa 2: se agrega C (MIN) por «centro», en medio, con dos hijos
+# MAX, C1 y C2 (jugadas c1 y c2). Minimax: R = 5, juega centro. Alfa-beta
+# poda la hoja 8 (corte beta en C2) y la hoja 12 (corte alfa en D).
+ARBOL_T = ((3, 6), ((5, 2), (7, 8)), (2, 12))
+# La EVAL de «Minimax con corte» para los nodos internos de T.
+EVAL_T = {"I": 5, "C": 4, "D": 7, "C1": 6, "C2": 9}
 
 
 def invertir_arbol(arbol):
@@ -367,6 +369,386 @@ def minimax_arbol(arbol, es_max=True):
         return arbol
     hijos = [minimax_arbol(h, not es_max) for h in arbol]
     return max(hijos) if es_max else min(hijos)
+
+
+# ------------------------------------------- el arbol T, linea por linea ---
+#
+# Las paginas de la clase 2 trazan DECIDIR-MINIMAX y DECIDIR-ALFA-BETA sobre
+# el arbol T con el pseudocodigo de abajo (numeracion fija, la misma en todas
+# las paginas) y las figuras jue-t-* dibujan esa misma traza. Las dos leen de
+# traza_decidir: una fila al entrar a un nodo interno y una cada vez que un
+# hijo regresa a su padre; las hojas se pliegan en la celda w.
+
+PSEUDO_MINIMAX = {
+    1: "function DECIDIR-MINIMAX(s)",
+    2: "mejor_valor ← −∞ ; mejor_jugada ← ninguna",
+    3: "for each a in A(s)",
+    4: "w ← MINIMAX(T(s, a))",
+    5: "if w > mejor_valor: mejor_valor ← w ; mejor_jugada ← a",
+    6: "return mejor_jugada",
+    7: "function MINIMAX(s)",
+    8: "if s ∈ S_F: return U(s)",
+    9: "if Pl(s) = MAX",
+    10: "v ← −∞",
+    11: "for each a in A(s)",
+    12: "w ← MINIMAX(T(s, a))",
+    13: "v ← max(v, w)",
+    14: "return v",
+    15: "else",
+    16: "v ← +∞",
+    17: "for each a in A(s)",
+    18: "w ← MINIMAX(T(s, a))",
+    19: "v ← min(v, w)",
+    20: "return v",
+}
+
+PSEUDO_ALFA_BETA = {
+    1: "function DECIDIR-ALFA-BETA(s)",
+    2: "α ← −∞ ; mejor_jugada ← ninguna",
+    3: "for each a in A(s)",
+    4: "w ← ALFA-BETA(T(s, a), α, +∞)",
+    5: "if w > α: α ← w ; mejor_jugada ← a",
+    6: "return mejor_jugada",
+    7: "function ALFA-BETA(s, α, β)",
+    8: "if s ∈ S_F: return U(s)",
+    9: "if Pl(s) = MAX",
+    10: "v ← −∞",
+    11: "for each a in A(s)",
+    12: "w ← ALFA-BETA(T(s, a), α, β)",
+    13: "v ← max(v, w)",
+    14: "if v ≥ β: return v",
+    15: "α ← max(α, v)",
+    16: "return v",
+    17: "else",
+    18: "v ← +∞",
+    19: "for each a in A(s)",
+    20: "w ← ALFA-BETA(T(s, a), α, β)",
+    21: "v ← min(v, w)",
+    22: "if v ≤ α: return v",
+    23: "β ← min(β, v)",
+    24: "return v",
+}
+
+# La linea (o el tramo de lineas) que resume cada fila de la traza.
+LINEAS_MINIMAX = {"inicio": "2", "raiz": "4–5", "fin": "6",
+                  "entra_MAX": "10", "entra_MIN": "16",
+                  "regresa_MAX": "12–13", "regresa_MIN": "18–19"}
+LINEAS_ALFA_BETA = {"inicio": "2", "raiz": "4–5", "fin": "6",
+                    "entra_MAX": "10", "entra_MIN": "18",
+                    "regresa_MAX": "12–15", "regresa_MIN": "20–23",
+                    "corta_MAX": "12–14", "corta_MIN": "20–22"}
+
+INF = float("inf")
+
+
+def nombres_t(arbol):
+    """{camino: (nombre, jugada que lleva ahi)} para el arbol T o T1.
+
+    La raiz es R; sus hijos, I, C y D por izq, centro y der (en T1 solo I y
+    D); los hijos internos de C, C1 y C2 por c1 y c2. Una hoja se llama por
+    su numero y la jugada que lleva a ella no tiene nombre."""
+    jugadas_raiz = {2: ("izq", "der"), 3: ("izq", "centro", "der")}[len(arbol)]
+    res = {(): ("R", None)}
+
+    def visitar(nodo, camino, nombre):
+        if not isinstance(nodo, tuple):
+            return
+        for i, hijo in enumerate(nodo):
+            c = camino + (i,)
+            if not isinstance(hijo, tuple):
+                res[c] = (str(hijo), None)
+            elif camino == ():
+                jugada = jugadas_raiz[i]
+                res[c] = ({"izq": "I", "centro": "C", "der": "D"}[jugada], jugada)
+            else:
+                res[c] = (f"{nombre}{i + 1}", f"{nombre.lower()}{i + 1}")
+            visitar(hijo, c, res[c][0])
+    visitar(arbol, (), "R")
+    return res
+
+
+def nodo_en(arbol, camino):
+    for i in camino:
+        arbol = arbol[i]
+    return arbol
+
+
+def fmt_t(x):
+    """Un numero de las trazas de T: ±∞, fracciones como 13/2, enteros sin signo."""
+    if x is None:
+        return ""
+    if x == INF:
+        return "+∞"
+    if x == -INF:
+        return "−∞"
+    if isinstance(x, F):
+        return str(x.numerator) if x.denominator == 1 else f"{x.numerator}/{x.denominator}"
+    return str(x)
+
+
+def traza_decidir(arbol=ARBOL_T, poda=False, orden=None, profundidad=None,
+                  evaluar=None, lineas=None):
+    """DECIDIR-MINIMAX (poda=False) o DECIDIR-ALFA-BETA (poda=True) sobre un
+    arbol de tuplas con raiz MAX, fila por fila.
+
+    - orden: {nombre de nodo: [nombres de sus hijos en el orden de visita]}
+      para cambiar el orden de algunos nodos (los demas, el dado).
+    - profundidad: si se da, corte por profundidad (la raiz esta a 0); un nodo
+      interno a esa profundidad no se expande y vale evaluar[nombre].
+    - lineas: {evento: linea}, para otra numeracion (por omision, la
+      canonica: LINEAS_MINIMAX o LINEAS_ALFA_BETA).
+
+    Devuelve un dict con:
+    - filas: lista de dicts con n, evento ('inicio', 'entra', 'regresa',
+      'raiz', 'fin'), linea, pila (tupla de nombres hasta el nodo de la
+      fila), nodo, v, w, hijo (quien devolvio w), evaluado (si w es EVAL),
+      alfa, beta (los del nodo tras la fila; en R, el α de DECIDIR y +∞),
+      corta (None, 'alfa' o 'beta'), podados (nombres que no se generan por
+      ese corte, con sus descendientes), mejor_jugada, mejor_valor, mejora
+      (en filas de R: si w > mejor_valor), estado (foto de todos los nodos
+      tras la fila: {nombre: dict(estado, v, alfa, beta, cota)} con estado
+      'pila', 'devuelto', 'evaluado', 'pormirar' o 'podado') y generados
+      (nodos generados hasta esa fila, raiz incluida);
+    - jugada, valor, generados, orden_generados (nombres en el orden en que
+      se generan), caminos_generados (lo mismo, por camino: «2» nombra dos
+      hojas), podados (todos), cortes [(tipo, nodo, w, alfa, beta)].
+    """
+    lineas = lineas or (LINEAS_ALFA_BETA if poda else LINEAS_MINIMAX)
+    nombres = nombres_t(arbol)
+    camino_de = {nombre: c for c, (nombre, _) in nombres.items()}
+    orden = orden or {}
+    evaluar = evaluar or {}
+    estado = {nombre: dict(estado="pormirar", v=None, alfa=None, beta=None, cota=False)
+              for nombre, _ in nombres.values()}
+    filas, generados, caminos, podados, cortes = [], [], [], [], []
+    raiz = dict(mejor_jugada=None, mejor_valor=-INF)
+
+    def hijos_de(camino):
+        nodo = nodo_en(arbol, camino)
+        cs = [camino + (i,) for i in range(len(nodo))]
+        nombre = nombres[camino][0]
+        if nombre in orden:
+            cs = [camino_de[h] for h in orden[nombre]]
+        return cs
+
+    def descendientes(camino):
+        res = [camino]
+        nodo = nodo_en(arbol, camino)
+        if isinstance(nodo, tuple):
+            for i in range(len(nodo)):
+                res += descendientes(camino + (i,))
+        return res
+
+    def foto():
+        return {k: dict(e) for k, e in estado.items()}
+
+    def fila(evento, linea, pila, v=None, w=None, hijo=None, evaluado=False, alfa=None,
+             beta=None, corta=None, podados_=(), mejora=None):
+        filas.append(dict(n=len(filas) + 1, evento=evento, linea=linea, pila=tuple(pila),
+                          nodo=pila[-1], v=v, w=w, hijo=hijo, evaluado=evaluado,
+                          alfa=alfa, beta=beta, corta=corta, podados=list(podados_),
+                          mejor_jugada=raiz["mejor_jugada"],
+                          mejor_valor=raiz["mejor_valor"], mejora=mejora,
+                          estado=foto(), generados=len(generados)))
+
+    def generar(camino):
+        generados.append(nombres[camino][0])
+        caminos.append(camino)
+
+    def valorar(camino, a, b, d, pila):
+        """Lo que devuelve el hijo en `camino`: (w, evaluado)."""
+        nodo = nodo_en(arbol, camino)
+        nombre = nombres[camino][0]
+        if not isinstance(nodo, tuple):
+            estado[nombre].update(estado="devuelto", v=nodo)
+            return nodo, False
+        if profundidad is not None and d == profundidad:
+            estado[nombre].update(estado="evaluado", v=evaluar[nombre])
+            return evaluar[nombre], True
+        return recursion(camino, a, b, d, pila + [nombre]), False
+
+    def recursion(camino, a, b, d, pila):
+        nombre = nombres[camino][0]
+        es_max = len(camino) % 2 == 0
+        tipo = "MAX" if es_max else "MIN"
+        v = -INF if es_max else INF
+        e = estado[nombre]
+        e.update(estado="pila", v=v, alfa=a if poda else None, beta=b if poda else None)
+        fila("entra", lineas[f"entra_{tipo}"], pila, v=v,
+             alfa=a if poda else None, beta=b if poda else None)
+        hs = hijos_de(camino)
+        for k, c in enumerate(hs):
+            generar(c)
+            w, evaluado = valorar(c, a, b, d + 1, pila)
+            hijo = nombres[c][0]
+            v = max(v, w) if es_max else min(v, w)
+            e["v"] = v
+            corta = None
+            if poda and ((es_max and v >= b) or (not es_max and v <= a)):
+                corta = "beta" if es_max else "alfa"
+            if corta:
+                fuera = [nombres[x][0] for q in hs[k + 1:] for x in descendientes(q)]
+                for x in fuera:
+                    estado[x]["estado"] = "podado"
+                podados.extend(fuera)
+                cortes.append((corta, nombre, w, a, b))
+                e.update(estado="devuelto", cota=bool(fuera), alfa=None, beta=None)
+                fila("regresa", lineas[f"corta_{tipo}"], pila, v=v, w=w, hijo=hijo,
+                     evaluado=evaluado, alfa=a, beta=b, corta=corta, podados_=fuera)
+                return v
+            if poda:
+                if es_max:
+                    a = max(a, v)
+                else:
+                    b = min(b, v)
+                e.update(alfa=a, beta=b)
+            if k == len(hs) - 1:
+                e.update(estado="devuelto", alfa=None, beta=None)
+            fila("regresa", lineas[f"regresa_{tipo}"], pila, v=v, w=w, hijo=hijo,
+                 evaluado=evaluado, alfa=a if poda else None, beta=b if poda else None)
+        return v
+
+    generar(())
+    estado["R"].update(estado="pila")
+    fila("inicio", lineas["inicio"], ["R"], alfa=-INF if poda else None,
+         beta=INF if poda else None)
+    for c in hijos_de(()):
+        generar(c)
+        a = raiz["mejor_valor"]
+        w, evaluado = valorar(c, a if poda else None, INF if poda else None, 1, ["R"])
+        mejora = w > raiz["mejor_valor"]
+        if mejora:
+            raiz.update(mejor_valor=w, mejor_jugada=nombres[c][1])
+        estado["R"]["v"] = raiz["mejor_valor"]
+        fila("raiz", lineas["raiz"], ["R"], w=w, hijo=nombres[c][0], evaluado=evaluado,
+             alfa=raiz["mejor_valor"] if poda else None, beta=INF if poda else None,
+             mejora=mejora)
+    estado["R"]["estado"] = "devuelto"
+    fila("fin", lineas["fin"], ["R"], alfa=raiz["mejor_valor"] if poda else None,
+         beta=INF if poda else None)
+    return dict(filas=filas, jugada=raiz["mejor_jugada"], valor=raiz["mejor_valor"],
+                generados=len(generados), orden_generados=generados,
+                caminos_generados=caminos, podados=podados,
+                cortes=cortes)
+
+
+def tabla_traza(traza, poda=None, combinar=False):
+    """La traza como tabla Markdown, con las columnas de las paginas:
+
+    minimax:   | # | línea | pila | v | w | mejor_jugada |
+    alfa-beta: | # | línea | pila | (α, β) | v | w | ¿corta? | mejor_jugada |
+
+    La ventana se escribe como intervalo abierto, (α, β): tocar un extremo
+    ya corta (decision de la pagina «Alfa-beta a mano»).
+
+    En las filas de R, v es mejor_valor (en alfa-beta, α: es lo mismo) y la
+    columna w dice quien lo devolvio («3 (I)»); una hoja va sola («3»). Si
+    w > mejor_valor es falso, mejor_jugada lo dice («centro (2 > 5 falso)»).
+    combinar=True junta línea y pila en una columna (para el telefono)."""
+    filas = traza["filas"] if isinstance(traza, dict) else traza
+    if poda is None:
+        poda = any(f["alfa"] is not None for f in filas)
+
+    def celda_w(f):
+        if f["w"] is None:
+            return ""
+        if f["evaluado"]:
+            return f"{fmt_t(f['w'])} (EVAL {f['hijo']})"
+        if f["hijo"] == str(f["w"]):
+            return fmt_t(f["w"])
+        return f"{fmt_t(f['w'])} ({f['hijo']})"
+
+    def celda_v(f):
+        if f["nodo"] == "R":
+            return fmt_t(f["mejor_valor"])
+        return fmt_t(f["v"])
+
+    def celda_corta(f):
+        if f["evento"] != "regresa":
+            return ""
+        if not f["corta"]:
+            return "no"
+        signo, borde = ("≥", f["beta"]) if f["corta"] == "beta" else ("≤", f["alfa"])
+        return f"sí: {fmt_t(f['v'])}{signo}{fmt_t(borde)}"
+
+    def celda_mejor(f):
+        jugada = f["mejor_jugada"] or "ninguna"
+        if f["evento"] == "raiz" and not f["mejora"]:
+            return f"{jugada} ({fmt_t(f['w'])} > {fmt_t(f['mejor_valor'])} falso)"
+        return jugada
+
+    pila = lambda f: "›".join(f["pila"])
+    if combinar:
+        cab = ["#", "línea · pila"]
+        base = lambda f: [str(f["n"]), f"{f['linea']} · {pila(f)}"]
+    else:
+        cab = ["#", "línea", "pila"]
+        base = lambda f: [str(f["n"]), f["linea"], pila(f)]
+    if poda:
+        cab += ["(α, β)", "v", "w", "¿corta?", "mejor_jugada"]
+        resto = lambda f: [f"({fmt_t(f['alfa'])}, {fmt_t(f['beta'])})", celda_v(f),
+                           celda_w(f), celda_corta(f), celda_mejor(f)]
+    else:
+        cab += ["v", "w", "mejor_jugada"]
+        resto = lambda f: [celda_v(f), celda_w(f), celda_mejor(f)]
+    out = ["| " + " | ".join(cab) + " |", "|" + "---|" * len(cab)]
+    for f in filas:
+        out.append("| " + " | ".join(base(f) + resto(f)) + " |")
+    return "\n".join(out)
+
+
+def expectiminimax_t(arbol=ARBOL_T, azar=("I", "C", "D")):
+    """DECIDIR sobre T con los nodos de `azar` como volados parejos: cada
+    hijo con probabilidad 1/len(hijos). Los demas nodos siguen alternando
+    MAX y MIN. Devuelve (jugada, {nombre: valor exacto}, orden de generados)."""
+    nombres = nombres_t(arbol)
+    valores, generados = {}, ["R"]
+
+    def ev(camino):
+        nodo = nodo_en(arbol, camino)
+        nombre = nombres[camino][0]
+        if not isinstance(nodo, tuple):
+            valores[nombre] = F(nodo)
+            return F(nodo)
+        hs = []
+        for i in range(len(nodo)):
+            generados.append(nombres[camino + (i,)][0])
+            hs.append(ev(camino + (i,)))
+        if nombre in azar:
+            v = sum(hs) / len(hs)
+        else:
+            v = max(hs) if len(camino) % 2 == 0 else min(hs)
+        valores[nombre] = v
+        return v
+    mejor, jugada = -INF, None
+    for i in range(len(arbol)):
+        generados.append(nombres[(i,)][0])
+        w = ev((i,))
+        if w > mejor:
+            mejor, jugada = w, nombres[(i,)][1]
+    valores["R"] = mejor
+    return jugada, valores, generados
+
+
+def profundizacion_iterativa_t(arbol=ARBOL_T, profundidades=(1, 2, 3), evaluar=None):
+    """PROFUNDIZACION-ITERATIVA sobre T, sin reloj: para cada d, DECIDIR-
+    ALFA-BETA con corte a profundidad d, con la jugada que dejo lista la
+    iteracion anterior primero en la raiz (las demas, en el orden dado).
+    Devuelve [(d, orden de la raiz, traza)]."""
+    evaluar = evaluar or EVAL_T
+    nombres = nombres_t(arbol)
+    raiz = [nombres[(i,)] for i in range(len(arbol))]
+    res, jugada = [], None
+    for d in profundidades:
+        orden_raiz = [n for n, a in raiz]
+        if jugada:
+            primero = next(n for n, a in raiz if a == jugada)
+            orden_raiz = [primero] + [n for n in orden_raiz if n != primero]
+        t = traza_decidir(arbol, poda=True, orden={"R": orden_raiz}, profundidad=d,
+                          evaluar=evaluar)
+        res.append((d, [dict(raiz)[n] for n in orden_raiz], t))
+        jugada = t["jugada"]
+    return res
 
 
 def expectiminimax_rival_al_azar(tablero, turno, n=3):

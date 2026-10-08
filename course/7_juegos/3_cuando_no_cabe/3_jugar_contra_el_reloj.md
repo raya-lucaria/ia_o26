@@ -4,7 +4,7 @@ title: Jugar contra el reloj
 nav_title: Contra el reloj
 summary: "Una búsqueda cortada puede no ver la respuesta que deshace su jugada. Buscar un poco más donde hay capturas, profundizar paso a paso y recordar posiciones permiten entregar una jugada a tiempo."
 status: ready
-estimated_time: 25m
+estimated_time: 30m
 tags: [juegos, busqueda-adversarial, evaluacion]
 ---
 
@@ -157,11 +157,11 @@ mejor jugada de la **última búsqueda completa**.
 **Pendiente:** ver qué jugada tendría lista el programa después de cada
 búsqueda.
 
-| Búsqueda | Valores | Jugada lista |
+| $d$ | Valor de cada jugada | Jugada lista |
 |---|---|---|
-| $d=1$ | $\text{a1}\textbf{-}\text{a2}$: 2 · $\text{d2}\textbf{-}\text{d3}$: 2 · $\text{d2}\textbf{x}\text{c3}$: 13 | $\text{d2}\textbf{x}\text{c3}$ |
-| $d=2$ | $\text{a1}\textbf{-}\text{a2}$: $-10$ · $\text{d2}\textbf{-}\text{d3}$: 1 · $\text{d2}\textbf{x}\text{c3}$: 0 | $\text{d2}\textbf{-}\text{d3}$ |
-| $d=3$ | $\text{a1}\textbf{-}\text{a2}$: $-9$ · $\text{d2}\textbf{-}\text{d3}$: 100 · $\text{d2}\textbf{x}\text{c3}$: 1 | $\text{d2}\textbf{-}\text{d3}$ |
+| 1 | $\text{a1}\textbf{-}\text{a2}$: 2 · $\text{d2}\textbf{-}\text{d3}$: 2 · $\text{d2}\textbf{x}\text{c3}$: 13 | $\text{d2}\textbf{x}\text{c3}$ |
+| 2 | $\text{a1}\textbf{-}\text{a2}$: $-10$ · $\text{d2}\textbf{-}\text{d3}$: 1 · $\text{d2}\textbf{x}\text{c3}$: 0 | $\text{d2}\textbf{-}\text{d3}$ |
+| 3 | $\text{a1}\textbf{-}\text{a2}$: $-9$ · $\text{d2}\textbf{-}\text{d3}$: 100 · $\text{d2}\textbf{x}\text{c3}$: 1 | $\text{d2}\textbf{-}\text{d3}$ |
 
 ::: exercise {#jue-c3-ej-reloj title="Decide qué jugada se entrega"}
 **Decide:** para cada caso, ¿qué jugada entrega el programa?
@@ -229,127 +229,212 @@ jugadas de la raíz; lo escribimos en la sección siguiente.
 
 ## 5 · Escribir la profundización iterativa
 
-| Nombre | Qué guarda |
-|---|---|
-| $s$ | Estado donde le toca jugar a MAX |
-| $d$ | La profundidad que queda en la raíz: la de la búsqueda en curso |
-| $\alpha$ | Lo que MAX ya asegura en la raíz durante la búsqueda en curso |
-| `jugada` | Mejor jugada de la última búsqueda completa |
-| `mejor` | Mejor jugada de la búsqueda en curso |
+Qué guarda cada nombre:
 
-`ALFA-BETA-CON-CORTE(s, d, α, β)` es el [[alfa-beta-como-algoritmo|alfa-beta de la clase 2]] con la línea del corte de minimax con corte: devuelve $100\cdot U(s)$ si $s$ es final y $\mathrm{EVAL}(s)$ si $d=0$, y en lo demás poda igual.
+- **$s$:** el estado donde le toca jugar a MAX.
+- **$d$:** la profundidad que queda en la raíz, la de la búsqueda en curso.
+- **$\alpha$:** lo que MAX ya asegura en la raíz durante la búsqueda en
+  curso: el `mejor_valor` de DECIDIR.
+- **`jugada`:** la mejor de la última búsqueda **completa**: la que se
+  entrega.
+- **`mejor_jugada`:** la mejor de la búsqueda **en curso**, como en
+  DECIDIR.
+- **$w$:** lo que devuelve un hijo de la raíz.
+
+PROFUNDIZACIÓN-ITERATIVA hace el papel de DECIDIR: va primero, en las
+líneas 1–13. Su auxiliar, ALFA-BETA-CON-CORTE, va en el mismo bloque, en
+las líneas 14–32.
 
 ```text
-INPUT   un estado s donde mueve MAX; las reglas S_F, Pl, A, T y U;
-        una función EVAL; y un reloj. No recibe el grafo.
-OUTPUT  una jugada de A(s), la mejor de la última búsqueda completa.
+INPUT   un estado s donde mueve MAX; las
+        reglas S_F, Pl, A, T y U; una
+        función EVAL; y un reloj.
+        No recibe el grafo.
+OUTPUT  una jugada de A(s), la mejor de la
+        última búsqueda completa.
 
- 1  function PROFUNDIZACIÓN-ITERATIVA(s)
-        ▷ Siempre hay algo que entregar, aunque sea malo.
- 2      jugada ← cualquier a in A(s)
- 3      d ← 1                         ▷ la primera búsqueda
-        ▷ Cada vuelta es una búsqueda completa, más honda.
- 4      while quede tiempo
-            ▷ Nada asegurado aún en esta búsqueda.
- 5          α ← −∞ ;  mejor ← jugada
-            ▷ La jugada de la búsqueda anterior va primero:
-            ▷ si es buena, α sube pronto y se poda más.
- 6          for each a in A(s), empezando por jugada
-                ▷ valora el hijo; le quedan d − 1 jugadas
- 7              v ← ALFA-BETA-CON-CORTE(T(s, a), d − 1, α, +∞)
-                ▷ búsqueda a medias: se descarta
- 8              if el tiempo se acabó: return jugada
-                ▷ victoria asegurada: no hay nada mejor
- 9              if v = 100: return a
-                ▷ mejor que todo lo visto: se guarda
-10              if v > α: α ← v ;  mejor ← a
-11          jugada ← mejor            ▷ esta búsqueda terminó
-12          d ← d + 1                 ▷ mira una jugada más
-13      return jugada
+ 1 function PROFUNDIZACIÓN-ITERATIVA(s)
+     ▷ siempre hay algo que entregar,
+     ▷ aunque sea malo
+ 2   jugada ← cualquier a in A(s)
+ 3   d ← 1                 ▷ primera búsqueda
+     ▷ cada vuelta: una búsqueda completa,
+     ▷ más honda
+ 4   while quede tiempo
+       ▷ nada asegurado aún en esta búsqueda
+ 5     α ← −∞ ; mejor_jugada ← jugada
+       ▷ la jugada de la búsqueda anterior va
+       ▷ primero: si es buena, α sube pronto
+       ▷ y se poda más
+ 6     for each a in A(s), jugada primero
+         ▷ le quedan d − 1 jugadas
+ 7       w ← ALFA-BETA-CON-CORTE(
+               T(s, a), d − 1, α, +∞)
+         ▷ a medias: se descarta. El reloj se
+         ▷ revisa aquí, entre hijos de la raíz
+ 8       if el tiempo se acabó: return jugada
+         ▷ victoria asegurada: nada es mejor
+ 9       if w = 100: return a
+         ▷ mejor que todo lo visto: se guarda
+10       if w > α: α ← w ; mejor_jugada ← a
+11     jugada ← mejor_jugada  ▷ ya terminó
+12     d ← d + 1              ▷ una jugada más
+13   return jugada
+
+14 function ALFA-BETA-CON-CORTE(s, d, α, β)
+15   if s ∈ S_F: return 100 · U(s)
+16   if d = 0: return EVAL(s)  ▷ se estima
+17   if Pl(s) = MAX
+18     v ← −∞
+19     for each a in A(s)
+20       w ← ALFA-BETA-CON-CORTE(
+               T(s, a), d − 1, α, β)
+21       v ← max(v, w)
+22       if v ≥ β: return v     ▷ corte beta
+23       α ← max(α, v)
+24     return v
+25   else
+26     v ← +∞
+27     for each a in A(s)
+28       w ← ALFA-BETA-CON-CORTE(
+               T(s, a), d − 1, α, β)
+29       v ← min(v, w)
+30       if v ≤ α: return v     ▷ corte alfa
+31       β ← min(β, v)
+32     return v
 ```
 
-El mismo procedimiento en Python, línea por línea. Primero va
-`alfa_beta_con_corte`, el alfa-beta de la clase 2 con las dos líneas de
-minimax con corte; el reloj es una función, `queda_tiempo()`, que dice si
-sigue habiendo tiempo. El número entre paréntesis es la línea del
-pseudocódigo de arriba:
+El mismo procedimiento en Python, línea por línea. El reloj es una
+función, `queda_tiempo()`, que dice si sigue habiendo tiempo. El número
+entre paréntesis es la línea del pseudocódigo de arriba:
 
 ```python
 from math import inf
 
 # Las reglas: es_final(s), pl(s), acciones(s),
-# transicion(s, a), utilidad(s) y evaluar(s), que es EVAL.
-# pl(s) da "MAX" o "MIN".
+# transicion(s, a), utilidad(s) y evaluar(s),
+# que es EVAL. pl(s) da "MAX" o "MIN".
 
-def alfa_beta_con_corte(s, d, alfa, beta):
-    # Un final vale 100 veces su utilidad.
-    if es_final(s):
-        return 100 * utilidad(s)
-    # Nodo de corte: se estima.
-    if d == 0:
-        return evaluar(s)
-    # Lo demás es el alfa-beta de la clase 2,
-    # con una jugada menos en cada hijo.
-    if pl(s) == "MAX":
-        v = -inf
-        for a in acciones(s):
-            h = alfa_beta_con_corte(transicion(s, a),
-                                    d - 1, alfa, beta)
-            v = max(v, h)
-            if v >= beta:             # corte beta
-                return v
-            alfa = max(alfa, v)
-        return v
-    else:
-        v = inf
-        for a in acciones(s):
-            h = alfa_beta_con_corte(transicion(s, a),
-                                    d - 1, alfa, beta)
-            v = min(v, h)
-            if v <= alfa:             # corte alfa
-                return v
-            beta = min(beta, v)
-        return v
-
-def profundizacion_iterativa(s):      # (1)
-    # (2) Siempre hay algo que entregar.
-    jugada = acciones(s)[0]
-    d = 1                             # (3) primera búsqueda
-    while queda_tiempo():             # (4) otra búsqueda
-        # (5) Nada asegurado aún en esta búsqueda.
-        alfa = -inf
-        mejor = jugada
+def profundizacion_iterativa(s):   # (1)
+    jugada = acciones(s)[0]        # (2)
+    d = 1                          # (3)
+    while queda_tiempo():          # (4)
+        alfa = -inf                # (5)
+        mejor_jugada = jugada
         # (6) La jugada anterior va primero.
-        orden = [jugada] + [a for a in acciones(s)
-                            if a != jugada]
-        for a in orden:
-            # (7) Valora el hijo; le quedan d - 1 jugadas.
-            v = alfa_beta_con_corte(transicion(s, a),
-                                    d - 1, alfa, inf)
-            # (8) Búsqueda a medias: se descarta.
+        resto = [a for a in acciones(s)
+                 if a != jugada]
+        for a in [jugada] + resto:
+            # (7) Le quedan d - 1 jugadas.
+            w = alfa_beta_con_corte(
+                transicion(s, a),
+                d - 1, alfa, inf)
+            # (8) A medias: se descarta.
             if not queda_tiempo():
                 return jugada
-            # (9) Victoria asegurada: no hay nada mejor.
-            if v == 100:
+            # (9) Victoria asegurada.
+            if w == 100:
                 return a
-            # (10) Mejor que lo visto: se guarda.
-            if v > alfa:
-                alfa = v
-                mejor = a
-        jugada = mejor                # (11) terminó completa
-        d = d + 1                     # (12) una jugada más
-    return jugada                     # (13)
+            # (10) Mejor que lo visto.
+            if w > alfa:
+                alfa = w
+                mejor_jugada = a
+        jugada = mejor_jugada      # (11)
+        d = d + 1                  # (12)
+    return jugada                  # (13)
+
+# (14) El alfa-beta de la clase 2, con d.
+def alfa_beta_con_corte(s, d, alfa, beta):
+    if es_final(s):                # (15)
+        return 100 * utilidad(s)
+    if d == 0:                     # (16) EVAL
+        return evaluar(s)
+    if pl(s) == "MAX":             # (17)
+        v = -inf                   # (18)
+        for a in acciones(s):      # (19)
+            w = alfa_beta_con_corte(  # (20)
+                transicion(s, a),
+                d - 1, alfa, beta)
+            v = max(v, w)          # (21)
+            if v >= beta:          # (22) beta
+                return v
+            alfa = max(alfa, v)    # (23)
+        return v                   # (24)
+    else:                          # (25)
+        v = inf                    # (26)
+        for a in acciones(s):      # (27)
+            w = alfa_beta_con_corte(  # (28)
+                transicion(s, a),
+                d - 1, alfa, beta)
+            v = min(v, w)          # (29)
+            if v <= alfa:          # (30) alfa
+                return v
+            beta = min(beta, v)    # (31)
+        return v                   # (32)
 ```
+
+**Las líneas 14–32 son el [[alfa-beta-como-algoritmo|ALFA-BETA de la clase 2]]**
+(sus líneas 7–24) con lo de [[minimax-con-corte|minimax con corte]]:
+
+- **15** es su línea 8, con la escala $100\cdot U$.
+- **16** es la nueva: con $d=0$ se estima. Por ella, las demás quedan
+  corridas en uno: el corte beta, su 14, es aquí la 22, y el corte alfa,
+  su 22, es aquí la 30.
+- **20 y 28** pasan $d-1$ al hijo.
+
+Y en PROFUNDIZACIÓN-ITERATIVA:
 
 - La línea 2 asegura que siempre haya algo que entregar.
 - La línea 8 descarta una búsqueda a medias y entrega la de la última
-  búsqueda completa.
+  búsqueda completa. El reloj **solo se revisa ahí**, entre dos hijos de
+  la raíz: si un hijo tarda mucho, la búsqueda se pasa del tiempo hasta
+  que ese hijo termina. Un programa real lo revisa también por dentro.
 - La línea 9 es la salida temprana: como $|\mathrm{EVAL}|\le36$ en las
   posiciones alcanzables que no son finales, un 100 solo viene de finales
   ganados. No hay nada mejor que buscar.
-- La línea 10 actualiza $\alpha$ entre los hijos de la raíz. Por eso importa
-  la línea 6: si la jugada de la búsqueda anterior es buena y se prueba
-  primero, $\alpha$ sube pronto y las demás jugadas se podan antes.
+- Las líneas 5, 7, 10 y 11 son DECIDIR-ALFA-BETA: $\alpha$ hace de
+  `mejor_valor`, y la línea 10 lo sube entre los hijos de la raíz. Por eso
+  importa la línea 6: si la jugada de la búsqueda anterior es buena y se
+  prueba primero, $\alpha$ sube pronto y las demás jugadas se podan antes.
+- Si ninguna jugada gana, la línea 9 nunca actúa. Cuando $d$ ya alcanza
+  todos los finales —en una posición perdida o empatada—, cada vuelta
+  repite la misma búsqueda hasta que se acaba el reloj: gasta el tiempo,
+  pero no cambia la jugada.
+
+**En el árbol T.** Con la $\mathrm{EVAL}$ de
+[[minimax-con-corte|Minimax con corte]] (I 5, C 4, D 7, C1 6, C2 9) y la
+jugada inicial izq (línea 2). Como allá, las hojas de T ya están en la
+escala de los finales: la hoja 3 tiene $U=3/100$, y la línea 15 devuelve
+$100\cdot U=3$, su número.
+
+::: figure {#jue-c3-t-fig-iterativa title="Profundización iterativa en el árbol T"}
+![Tres copias pequeñas del árbol T, una por búsqueda. Con d = 1, la raíz prueba izq, centro y der, ve sus EVAL 5, 4 y 7, genera 4 nodos y deja lista der. Con d = 2 prueba der primero, luego izq y centro; ve 2, 3 y 6, sin cortes, genera 10 nodos y deja lista centro. Con d = 3 prueba centro primero y ve 5; poda la hoja 8 con un corte beta en C2 y las hojas 6 y 12 con cortes alfa en I y en D; genera 11 nodos y deja lista centro](../_assets/jue-t-iterativa.svg)
+:::
+
+::: table {#jue-c3-t-iterativa title="Cada búsqueda de la profundización iterativa en el árbol T"}
+| $d$ | orden: $w$ | Lista |
+|---|---|---|
+| 1 | I 5 · C 4 · D 7 | der |
+| 2 | **D** 2 · I 3 · C 6 | centro |
+| 3 | **C** 5 · I ≤3 · D ≤2 | centro |
+:::
+
+- **Cómo leer la tabla:** «orden: $w$» da los hijos de R en el orden en que
+  se prueban, con el $w$ que devuelve cada uno; en negrita, el que va
+  primero por ser la jugada lista de la búsqueda anterior. I, C y D son los
+  hijos por izq, centro y der.
+- **Nodos generados:** 4, 10 y 11. **Cortes:** con $d=1$ y $d=2$, ninguno.
+  Con $d=3$, un corte beta en C2 y dos cortes alfa, en I y en D.
+- **$d=1$ deja lista la trampa**, der, y por la línea 6 der va primero con
+  $d=2$. Ahí ya se ve que vale 2: la búsqueda corrige la jugada.
+- **Con $d=3$, centro va primero** y $\alpha$ sube a 5 de entrada. I y D
+  llegan con $(5,+\infty)$: su primera hoja, 3 y 2, ya es $\le5$ y cortan.
+  En C2, $7\ge5$ corta y la hoja 8 no se genera.
+- Los $w$ de I y D con $d=3$ son **techos**, no valores: «I vale a lo más
+  3». Bastan para saber que no superan a centro.
+- Las tres búsquedas generan $4+10+11=25$ nodos. Sin poda, con
+  DECIDIR-CON-CORTE, serían $4+10+14=28$. Con alfa-beta en el orden de
+  siempre, la de $d=3$ sola genera 12; con centro primero, 11.
 
 En la posición de la clase, con $d=3$ se prueba primero $\text{d2}\textbf{-}\text{d3}$, la jugada
 que dejó lista $d=2$. Vale 100, y la línea 9 la entrega sin mirar las otras
@@ -365,21 +450,21 @@ ganadora y sale en la línea 9.
 1. El reloj se acaba durante la búsqueda con $d=2$, después de valorar
    $\text{d2}\textbf{x}\text{c3}$ y antes de valorar las otras jugadas. ¿Qué línea actúa y qué
    jugada se entrega?
-2. ¿Por qué no basta con devolver `mejor` en ese momento?
+2. ¿Por qué no basta con devolver `mejor_jugada` en ese momento?
 :::
 
 ::: hint {#jue-c3-pista-linea of="jue-c3-ej-linea" title="Qué guarda cada variable"}
-`jugada` es la de la última búsqueda **completa**; `mejor`, la de la
+`jugada` es la de la última búsqueda **completa**; `mejor_jugada`, la de la
 búsqueda en curso. ¿Cuál de las dos ya vio todas las jugadas?
 :::
 
 ::: answer {#jue-c3-resp-linea of="jue-c3-ej-linea"}
 1. Actúa la **línea 8** y entrega `jugada`, la de la última búsqueda
    completa: con $d=1$ era **$\text{d2}\textbf{x}\text{c3}$**.
-2. `mejor` solo compara las jugadas ya valoradas en esta búsqueda; las que
+2. `mejor_jugada` solo compara las jugadas ya valoradas en esta búsqueda; las que
    faltan podrían ser mejores. En este caso las dos variables dicen lo
    mismo, $\text{d2}\textbf{x}\text{c3}$, porque es la primera que se
-   probó, pero `mejor` no lo sabe: $\text{d2}\textbf{-}\text{d3}$, la
+   probó, pero `mejor_jugada` no lo sabe: $\text{d2}\textbf{-}\text{d3}$, la
    que gana, estaba sin valorar.
 :::
 
@@ -390,12 +475,23 @@ valorarlo dos veces?**
 
 Como en [[minimax-como-algoritmo|minimax]], un estado al que se llega por
 varios caminos —una **transposición**— no hace falta valorarlo dos veces: una
-**tabla de transposición** guarda cada estado ya valorado con su valor.
+**tabla de transposición** guarda cada estado ya valorado. Con corte y con
+poda, guardar «el estado y su valor» no basta. Cada entrada guarda tres
+cosas:
 
-Lo nuevo con corte es que también hay que guardar **la profundidad que
-quedaba** cuando se valoró. Un valor calculado con $d=1$ no sirve para una
-búsqueda que llega a ese estado con $d=3$: miró menos. Solo se reutiliza si
-se calculó con al menos la profundidad que queda ahora.
+- **El número** que devolvió la búsqueda.
+- **La profundidad que quedaba**, $d$. Un número calculado con $d=1$ no
+  sirve a una búsqueda que llega con $d=3$: miró menos. Solo se reutiliza
+  si se calculó con al menos la profundidad que queda ahora.
+- **Qué clase de número es.** Con alfa-beta, un nodo que cortó no devolvió
+  su valor, sino una cota:
+  - **exacto**, si no hubo corte;
+  - **piso**, si hubo corte beta: el valor es **al menos** ese número;
+  - **techo**, si hubo corte alfa: el valor es **a lo más** ese número,
+    como I y D con $d=3$ en el árbol T.
+
+Un techo de 3 en I no sirve para decir «I vale 3»; sirve para descartar I
+en cualquier búsqueda donde MAX ya asegure 3 o más.
 
 **Punto de control:** deberías poder explicar, con la posición de la clase,
 qué jugada entrega un programa según cuándo se acaba el reloj, y por qué
@@ -427,7 +523,8 @@ que cambia es cómo se estima lo que no se alcanza a calcular.
 - La profundización iterativa busca con $d=1,2,3,\dots$ con alfa-beta y
   entrega lo mejor de la última búsqueda completa. Repetir cuesta cerca de
   $1/(b-1)$ de la última y deja la mejor jugada primero para podar más.
-- Una tabla de transposición evita valorar dos veces el mismo estado, y con
-  corte guarda también la profundidad con que se valoró.
+- Una tabla de transposición evita valorar dos veces el mismo estado. Con
+  corte y poda guarda también la profundidad con que se valoró y si el
+  número es exacto, un piso o un techo.
 
 Continúa con [[simular-en-vez-de-evaluar|simular en vez de evaluar]].

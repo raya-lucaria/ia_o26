@@ -402,43 +402,75 @@ def test_clase_3_el_rasgo_de_capturas_no_arregla_el_error():
     assert solo_negras == [-8, 2, 3]
 
 
-def test_clase_2_alfa_beta_en_arboles_genericos():
-    """Los arboles A, B y C de «Alfa-beta a mano» y «Alfa-beta como algoritmo»."""
+def test_clase_2_el_arbol_t_con_minimax_y_alfa_beta():
+    """El arbol T de la clase 2, en sus dos etapas: las cifras del contrato."""
     inf = float("inf")
-    # Arbol A: raiz MAX, hijos MIN (3, 5) y (2, ?). Se generan 6 de 7.
-    a = j.alfa_beta_arbol(j.ARBOL_A, es_max=True)
-    assert (a["valor"], a["generados"], j.contar_nodos(j.ARBOL_A)) == (3, 6, 7)
-    assert a["podados"] == [(1, 1)]  # la hoja «?»
-    paso = {c: (tipo, al, be, v, corte) for c, tipo, al, be, v, corte in a["traza"]}
-    assert paso[(0,)] == ("MIN", -inf, inf, 3, None)
-    # R llega con [3, +inf], su hoja 2 cumple 2 <= 3 y devuelve 2, una cota:
-    # su valor exacto es 1.
-    assert paso[(1,)] == ("MIN", 3, inf, 2, "alfa")
-    assert j.minimax_arbol(j.ARBOL_A[1], es_max=False) == 1
-    # Al reves, R primero: 7 de 7 y ningun corte.
-    a_inv = j.alfa_beta_arbol(j.ARBOL_A, es_max=True, invertir=True)
-    assert (a_inv["valor"], a_inv["generados"], a_inv["podados"]) == (3, 7, [])
-    # Con un 3 en lugar del 2 tambien corta: el igual cuenta.
-    a3 = j.alfa_beta_arbol(((3, 5), (3, 1)), es_max=True)
-    assert (a3["valor"], a3["generados"], a3["podados"]) == (3, 6, [(1, 1)])
-    # Arbol B: raiz MIN, hijos MAX (8, 6) y (9, ?). 6 de 7, corte beta.
-    b = j.alfa_beta_arbol(j.ARBOL_B, es_max=False)
-    assert (b["valor"], b["generados"], b["podados"]) == (8, 6, [(1, 1)])
-    paso = {c: (tipo, al, be, v, corte) for c, tipo, al, be, v, corte in b["traza"]}
-    assert paso[(0,)] == ("MAX", -inf, inf, 8, None)
-    assert paso[(1,)] == ("MAX", -inf, 8, 9, "beta")
-    # Arbol C: 15 nodos, vale 5; 11 en el orden dado, 15 al reves.
-    c = j.alfa_beta_arbol(j.ARBOL_C, es_max=True)
-    assert (c["valor"], c["generados"], j.contar_nodos(j.ARBOL_C)) == (5, 11, 15)
-    assert j.minimax_arbol(j.ARBOL_C) == 5
-    # Se poda la hoja 9 (corte beta en MAX(6, 9), que llega con [-inf, 5]) y
-    # el subarbol (7, 1), tres nodos (corte alfa en el MIN derecho).
-    assert c["podados"] == [(0, 1, 1), (1, 1)]
-    paso = {cam: (tipo, al, be, v, corte) for cam, tipo, al, be, v, corte in c["traza"]}
-    assert paso[(0, 1)] == ("MAX", -inf, 5, 6, "beta")
-    assert paso[(1,)] == ("MIN", 5, inf, 4, "alfa")
-    c_inv = j.alfa_beta_arbol(j.ARBOL_C, es_max=True, invertir=True)
-    assert (c_inv["valor"], c_inv["generados"], c_inv["podados"]) == (5, 15, [])
+    # Etapa 1, T1: R = 3 y juega izq; alfa-beta genera 6 de 7.
+    m1 = j.traza_decidir(j.ARBOL_T1)
+    assert (m1["jugada"], m1["valor"], m1["generados"]) == ("izq", 3, 7)
+    assert j.contar_nodos(j.ARBOL_T1) == 7 and j.minimax_arbol(j.ARBOL_T1) == 3
+    a1 = j.traza_decidir(j.ARBOL_T1, poda=True)
+    assert (a1["jugada"], a1["valor"], a1["generados"]) == ("izq", 3, 6)
+    assert a1["podados"] == ["12"] and a1["cortes"] == [("alfa", "D", 2, 3, inf)]
+    assert len(m1["filas"]) == 10 and len(a1["filas"]) == 9
+    # Etapa 2, T: I = 3, C1 = 5, C2 = 8, C = 5, D = 2, R = 5, juega centro.
+    m = j.traza_decidir(j.ARBOL_T)
+    assert (m["jugada"], m["valor"], m["generados"]) == ("centro", 5, 14)
+    devuelve = {f["hijo"]: f["w"] for f in m["filas"] if f["w"] is not None}
+    assert {k: devuelve[k] for k in ("I", "C1", "C2", "C", "D")} == {
+        "I": 3, "C1": 5, "C2": 8, "C": 5, "D": 2}
+    assert m["orden_generados"] == ["R", "I", "3", "6", "C", "C1", "5", "2", "C2",
+                                    "7", "8", "D", "2", "12"]
+    # mejor_jugada: ninguna, izq, centro; la de D no mejora (2 > 5 es falso).
+    raiz = [(f["hijo"], f["w"], f["mejora"], f["mejor_jugada"])
+            for f in m["filas"] if f["evento"] == "raiz"]
+    assert raiz == [("I", 3, True, "izq"), ("C", 5, True, "centro"),
+                    ("D", 2, False, "centro")]
+    # Alfa-beta: 12 de 14 y la misma tabla con menos filas (20 contra 18).
+    a = j.traza_decidir(j.ARBOL_T, poda=True)
+    assert (a["jugada"], a["valor"], a["generados"]) == ("centro", 5, 12)
+    assert len(m["filas"]) == 20 and len(a["filas"]) == 18
+    assert a["podados"] == ["8", "12"]
+    # Corte beta en C2, que llega con [3, 5]: 7 >= 5. Devuelve 7, una cota:
+    # su valor exacto es 8. Corte alfa en D, que llega con [5, +inf]: 2 <= 5.
+    assert a["cortes"] == [("beta", "C2", 7, 3, 5), ("alfa", "D", 2, 5, inf)]
+    assert j.minimax_arbol(j.ARBOL_T[1][1]) == 8
+    entra = {f["nodo"]: (f["alfa"], f["beta"]) for f in a["filas"] if f["evento"] == "entra"}
+    assert entra == {"I": (-inf, inf), "C": (3, inf), "C1": (3, inf), "C2": (3, 5),
+                     "D": (5, inf)}
+    # La tabla impresa trae las columnas del contrato.
+    tabla = j.tabla_traza(a)
+    assert tabla.splitlines()[0] == (
+        "| # | línea | pila | (α, β) | v | w | ¿corta? | mejor_jugada |")
+    assert "| 12 | 12–14 | R›C›C2 | (3, 5) | 7 | 7 | sí: 7≥5 | izq |" in tabla
+    assert "centro (2 > 5 falso)" in tabla
+    assert j.tabla_traza(m).splitlines()[0] == "| # | línea | pila | v | w | mejor_jugada |"
+
+
+def test_clase_2_el_arbol_t_con_azar():
+    jugada, valores, generados = j.expectiminimax_t()
+    assert jugada == "der" and len(generados) == 14
+    assert (valores["I"], valores["C"], valores["D"]) == (F(9, 2), F(13, 2), F(7))
+    assert (valores["C1"], valores["C2"]) == (5, 8)
+
+
+def test_clase_3_el_arbol_t_con_corte_y_contra_el_reloj():
+    jugadas, nodos = [], []
+    for d in (1, 2, 3):
+        t = j.traza_decidir(j.ARBOL_T, profundidad=d, evaluar=j.EVAL_T)
+        jugadas.append((t["jugada"], t["valor"]))
+        nodos.append(t["generados"])
+    assert jugadas == [("der", 7), ("centro", 6), ("centro", 5)]
+    assert nodos == [4, 10, 14]
+    pi = j.profundizacion_iterativa_t()
+    assert [(d, orden, t["jugada"], t["valor"], t["generados"]) for d, orden, t in pi] == [
+        (1, ["izq", "centro", "der"], "der", 7, 4),
+        (2, ["der", "izq", "centro"], "centro", 6, 10),
+        (3, ["centro", "izq", "der"], "centro", 5, 11)]
+    assert [c[:2] for c in pi[2][2]["cortes"]] == [("beta", "C2"), ("alfa", "I"), ("alfa", "D")]
+
+
+def test_clase_2_sin_el_igual_se_pierde_la_poda():
     # Sin el igual, el juego completo pierde casi toda la poda: 228 y 171.
     assert j.alfa_beta(j.inicio(), "B", estricto=True)[:2] == (-1, 228)
     assert j.alfa_beta(j.inicio(), "B", invertir=True, estricto=True)[:2] == (-1, 171)

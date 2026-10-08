@@ -75,23 +75,29 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 
 ## Resolver
 
-| Símbolo | Cómo se lee y qué es | Se presenta en |
-|---|---|---|
-| $V(s)$ | «ve de ese». El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo | El juego como grafo y Minimax a mano |
-| $\max_{a\in A(s)} f(a)$ | «máximo de efe». El número más alto que alcanza $f$ entre las jugadas de $A(s)$ | Diagnosticar el juego |
-| $\operatorname*{arg\,max}_{a\in A(s)} f(a)$ | «arg max de efe». El conjunto de jugadas que alcanzan ese máximo; puede tener varias | Diagnosticar el juego |
-| $a^{∗}$ | «a estrella». Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias | Minimax a mano |
-| $v$ | «ve». En un procedimiento: el mejor valor visto hasta ahora entre los hijos del nodo actual | Minimax como algoritmo |
-| $-\infty$, $+\infty$ | «menos infinito», «más infinito». Marcas menores y mayores que cualquier utilidad: el primer hijo siempre las reemplaza | Minimax como algoritmo |
-| $b$, $m$ | «be», «eme». Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) | Minimax como algoritmo |
-| AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda | Cuando decide un dado |
-| $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 | Cuando decide un dado |
-| $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX y lo que MIN ya tienen asegurado con alguna alternativa en el camino desde la raíz | Alfa-beta a mano |
-| $[\alpha,\beta]$ | «la ventana alfa beta». Los valores que todavía importan en un nodo: lo que cae estrictamente dentro es un valor exacto; lo que sale, una cota | Alfa-beta a mano |
-| $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual | Cortar y evaluar a mano |
-| $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ | Cortar y evaluar a mano |
-| $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación | Cortar y evaluar a mano |
-| $\bar u(s')$, $N(s')$ | «u barra», «ene». En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron | Simular en vez de evaluar |
+En esta tabla, la página donde se presenta cada símbolo va al final de su
+renglón, en cursivas.
+
+| Símbolo | Cómo se lee y qué es |
+|---|---|
+| $V(s)$ | «ve de ese». El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo · *El juego como grafo y Minimax a mano* |
+| $\max_{a\in A(s)} f(a)$ | «máximo de efe». El número más alto que alcanza $f$ entre las jugadas de $A(s)$ · *Diagnosticar el juego* |
+| $\operatorname*{arg\,max}_{a\in A(s)} f(a)$ | «arg max de efe». El conjunto de jugadas que alcanzan ese máximo; puede tener varias · *Diagnosticar el juego* |
+| $a^{∗}$ | «a estrella». Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias · *Minimax a mano* |
+| $v$ | «ve». En un procedimiento: el mejor valor visto hasta ahora entre los hijos del nodo actual · *Minimax como algoritmo* |
+| $w$ | «doble ve». En un procedimiento: lo que devuelve **un** hijo, recién calculado; luego se compara con $v$ (o, en la raíz, con mejor_valor) · *Minimax como algoritmo* |
+| mejor_valor | En DECIDIR, el mayor $w$ que ha devuelto hasta ahora un hijo de la raíz; empieza en $-\infty$. En DECIDIR-ALFA-BETA hace ese papel $\alpha$ · *Minimax como algoritmo* |
+| mejor_jugada | En DECIDIR, la jugada que dio mejor_valor; empieza en «ninguna». Es lo que el agente entrega · *Minimax como algoritmo* |
+| $-\infty$, $+\infty$ | «menos infinito», «más infinito». Marcas menores y mayores que cualquier utilidad: el primer hijo siempre las reemplaza · *Minimax como algoritmo* |
+| $b$, $m$ | «be», «eme». Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) · *Minimax como algoritmo* |
+| AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda · *Cuando decide un dado* |
+| $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 · *Cuando decide un dado* |
+| $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX ($\alpha$) y lo que MIN ($\beta$) ya se aseguran con una jugada ya revisada en un nodo suyo del camino desde la raíz. $\alpha$ es un piso para MAX; $\beta$, un techo. MAX actualiza $\alpha$ y corta comparando su $v$ con $\beta$; MIN actualiza $\beta$ y corta comparando su $v$ con $\alpha$ · *Alfa-beta a mano* |
+| $(\alpha,\beta)$ | «la ventana alfa beta». Los valores que todavía importan en un nodo. Se escribe abierta porque tocar un extremo ya corta: lo que cae dentro es un valor exacto; lo que sale o toca un extremo puede ser una cota · *Alfa-beta a mano* |
+| $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual · *Cortar y evaluar a mano* |
+| $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ · *Cortar y evaluar a mano* |
+| $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación · *Cortar y evaluar a mano* |
+| $\bar u(s')$, $N(s')$ | «u barra», «ene». En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron · *Simular en vez de evaluar* |
 
 ## Términos
 
@@ -117,18 +123,19 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 | Grafo explícito, implícito | Explícito: se generan todos los estados antes y se guardan. Implícito: se generan cuando hacen falta | El juego como grafo |
 | Resolver el juego | Ponerle a cada nodo su valor $V(s)$ | El juego como grafo |
 | Desempate | Una preferencia, como ganar rápido, que elige entre jugadas del $\operatorname{arg\,max}$ sin cambiar la utilidad | Minimax a mano |
-| Minimax | Procedimiento que recibe las reglas, genera los estados en profundidad y devuelve $V(s)$ | Minimax como algoritmo |
+| Minimax | Procedimiento que recibe las reglas y un estado, genera los estados en profundidad y devuelve $V(s)$. Es el auxiliar de DECIDIR-MINIMAX | Minimax como algoritmo |
+| DECIDIR-MINIMAX | Lo que el agente corre en su turno: valora cada jugada con MINIMAX y devuelve la **jugada** de mayor valor, no el número. DECIDIR-ALFA-BETA hace lo mismo pasando $\alpha$ a los hijos | Minimax como algoritmo |
 | Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
-| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino | Minimax como algoritmo |
+| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con alfa-beta guarda también si el número es exacto, un piso o un techo | Minimax como algoritmo |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad | Cuando decide un dado |
 | Utilidad esperada | El valor esperado de la utilidad. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
 | Alfa-beta | Minimax que deja de generar las jugadas que ya no pueden cambiar la decisión de arriba | Alfa-beta a mano |
 | Corte alfa, corte beta | El corte alfa ocurre en un nodo de MIN: deja de generar hijos cuando $v\le\alpha$. El corte beta ocurre en uno de MAX, cuando $v\ge\beta$. Cada corte se llama como la cota que usa, no como el nodo donde pasa | Alfa-beta a mano |
 | Cota | Lo que devuelve un nodo cuyo número $w$ salió de la ventana. Si $w\le\alpha$, cota superior: su valor es a lo más $w$. Si $w\ge\beta$, cota inferior: al menos $w$ | Alfa-beta a mano |
-| Ventana | El intervalo $[\alpha,\beta]$ con que llega un nodo. Empieza en $[-\infty,+\infty]$ en la raíz y al bajar solo se encoge | Alfa-beta a mano |
+| Ventana | El intervalo $(\alpha,\beta)$ con que llega un nodo. Empieza en $(-\infty,+\infty)$ en la raíz y al bajar solo se encoge | Alfa-beta a mano |
 | Fail-soft | La versión de alfa-beta que, al cortar, devuelve su $v$ tal cual aunque caiga fuera de la ventana, en vez de recortarlo a $\alpha$ o $\beta$ | Alfa-beta como algoritmo |
-| Regla del empate en la raíz | Con alfa-beta, la raíz cambia de jugada solo si $v$ mejora estrictamente: un hijo que devolvió una cota no gana un empate | Alfa-beta como algoritmo |
+| Regla del empate en la raíz | Con alfa-beta, la raíz cambia de jugada solo si el $w$ de un hijo supera estrictamente a $\alpha$: un hijo que devolvió una cota no gana un empate | Alfa-beta como algoritmo |
 | Estrategia | Función que a cada estado donde le toca a un jugador le asigna una jugada de $A(s)$ | Diagnosticar el juego |
 | Nodo de azar | Nodo donde no elige un jugador sino un dado; cada flecha lleva su probabilidad | Diagnosticar el juego |
 | Tabla de pagos | Filas: jugadas de uno; columnas: jugadas del otro; cada celda: lo que gana cada uno | Diagnosticar el juego |

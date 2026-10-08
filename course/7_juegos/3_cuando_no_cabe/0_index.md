@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 90m
+estimated_time: 105m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -49,8 +49,8 @@ primeras van en par, como en la clase 2: primero **a mano** y después
 | | Página | Qué resuelve | Minutos |
 |---|---|---|---:|
 | 1 | Cortar y evaluar a mano | Cortar la búsqueda y estimar, a profundidad 1, 2 y 3 | 25m |
-| 2 | Minimax con corte como algoritmo | Qué recibe, qué genera, qué garantiza y cuánto cuesta | 20m |
-| 3 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 25m |
+| 2 | Minimax con corte como algoritmo | Qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta | 30m |
+| 3 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 30m |
 | 4 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 20m |
 | 5 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
