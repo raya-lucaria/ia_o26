@@ -35,11 +35,12 @@ jobs:
   # esa línea ambos trabajos corren en paralelo y el sitio se publica aunque la
   # suite falle — que es exactamente lo que pasaba antes de añadirla.
   # El SHA fijado es el commit del framework que construye el sitio. Subirlo
-  # trae los cambios del framework; af1dfe9 es el que abre los enlaces externos
-  # en pestaña nueva, que ninguna página del curso puede pedir por su cuenta.
+  # trae los cambios del framework; 4566103 es el que deja de partir palabras
+  # letra por letra dentro de las celdas de tabla (las trazas de juegos), y
+  # trae también los enlaces externos en pestaña nueva de af1dfe9.
   course-pages:
     needs: checks
-    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@af1dfe988e2aef78d761e4e0fff104ecc74d5e57
+    uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@45661034e3cbc68f889e2e1f4a3b87b5e8ba59df
     with:
       course_path: .
     permissions:
