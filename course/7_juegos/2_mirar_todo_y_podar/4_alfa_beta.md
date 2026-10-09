@@ -2,7 +2,7 @@
 id: alfa-beta
 title: Alfa-beta a mano
 nav_title: Alfa-beta a mano
-summary: "El código de DECIDIR-ALFA-BETA, qué son α y β y la regla que decide cada corte, el árbol T recorrido hijo por hijo con cada if a la vista, y n1 de hexapawn: 5 de 13 estados y la misma jugada que minimax."
+summary: "Qué son α y β y la regla que decide cada corte, el código de DECIDIR-ALFA-BETA que la aplica, el árbol T recorrido hijo por hijo con cada if a la vista, y n1 de hexapawn: 5 de 13 estados y la misma jugada que minimax."
 status: ready
 estimated_time: 35m
 tags: [juegos, alfa-beta, poda]
@@ -14,10 +14,10 @@ tags: [juegos, alfa-beta, poda]
 
 Al terminar tendrás:
 
-- **el código**: DECIDIR-ALFA-BETA, que devuelve la jugada, y su recursión
-  ALFA-BETA; son las líneas de minimax y cuatro más;
 - **qué son $\alpha$ y $\beta$** y **la regla** que dice, en cada nodo,
   con qué número se compara y si se corta;
+- **el código**: DECIDIR-ALFA-BETA, que devuelve la jugada, y su recursión
+  ALFA-BETA; son las líneas de minimax y cuatro más;
 - **el árbol T recorrido hijo por hijo**, con la comparación de cada `if`
   y la jugada que va guardando la raíz;
 - **n1 de hexapawn**: 5 de sus 13 estados, y la misma jugada que minimax.
@@ -40,14 +40,78 @@ exactamente otra que te da 2 o menos?**
   decisión de arriba.** Lo que no mira **no lo genera**: ése es el ahorro.
 - Para saberlo, cada nodo carga **dos números** de lo que pasó arriba:
   $\alpha$, lo que **MAX** ya tiene asegurado, y $\beta$, lo que **MIN** ya
-  tiene asegurado. La sección 3 los define.
+  tiene asegurado. La sección 2 los define.
 - **La raíz entrega lo mismo** que minimax: la misma jugada, con el mismo
   valor.
 
-## 2 · El código
+## 2 · Alfa, beta y la regla
 
-**Piensa: en DECIDIR-MINIMAX, ¿qué número de la raíz le serviría a un hijo
-para saber que ya no puede ganarle?**
+**Piensa: para saber que una rama no sirve, ¿qué tiene que recordar cada
+nodo de lo que pasó arriba?**
+
+Dos números. Los dos se miden **en puntos de MAX**, como $U$. Las líneas
+que cita esta sección son las del código de la sección 3, justo abajo: aquí
+basta saber qué hace cada una.
+
+::: definition {#jue-c2-alfa-beta title="Alfa y beta"}
+Sea un nodo del recorrido y el camino de la raíz hasta él.
+
+- **$\alpha$ («alfa»)** es el **mayor** valor que algún nodo de **MAX** del
+  camino ya tiene asegurado con una jugada revisada. Para MAX es un
+  **piso**: tendrá al menos $\alpha$.
+- **$\beta$ («beta»)** es el **menor** valor que algún nodo de **MIN** del
+  camino ya tiene asegurado con una jugada revisada. Para MAX es un
+  **techo**: tendrá a lo más $\beta$.
+
+|  | $\alpha$ | $\beta$ |
+|---|---|---|
+| Dueño | MAX | MIN |
+| Empieza en | $-\infty$ | $+\infty$ |
+| Se mueve | solo sube | solo baja |
+| Lo cambia | MAX, línea 15 | MIN, línea 23 |
+| Lo lee | MIN, línea 22 | MAX, línea 14 |
+
+El par se escribe $(\alpha,\beta)$ y se llama **ventana**; la sección 6
+dice por qué.
+:::
+
+::: definition {#jue-c2-t-regla title="La regla de alfa-beta"}
+1. **Hereda los dos.** Al generarse, cada nodo recibe el $\alpha$ y el
+   $\beta$ que su padre tiene en ese momento (líneas 4, 12 y 20). **El suyo
+   también empieza heredado**: por ejemplo, un nodo de MAX debajo de uno
+   de MIN arranca con el $\alpha$ que viene de la raíz.
+2. **Lee el del rival.** Después de cada hijo compara su $v$ con el número
+   del **rival**:
+   - un nodo de **MAX** compara $v$ con $\beta$: si $v\ge\beta$, deja de
+     mirar hijos (línea 14, **corte beta**);
+   - un nodo de **MIN** compara $v$ con $\alpha$: si $v\le\alpha$, deja de
+     mirar hijos (línea 22, **corte alfa**).
+
+   **El número del rival no cambia mientras el nodo trabaja**: MAX nunca
+   escribe $\beta$ y MIN nunca escribe $\alpha$; solo lo leen en su `if`.
+3. **Actualiza el suyo.** Si no corta, MAX sube $\alpha$ (línea 15) y MIN
+   baja $\beta$ (línea 23). Es el único de los dos que cambia.
+4. **Al padre solo sube $v$**, y le llega como su $w$. Las $\alpha$ y $\beta$
+   que el hijo cambió **se pierden al regresar**: el padre sigue con las
+   suyas.
+
+**El igual cuenta**: $v\ge\beta$ y $v\le\alpha$. Un empate con lo que el
+rival ya tiene no le sirve a nadie. El corte se llama como el número que
+lo provoca: el **alfa** pasa en un nodo de **MIN**; el **beta**, en uno de
+**MAX**.
+:::
+
+> [!NOTE]
+> **El puente con «$\alpha\ge\beta$».** Los libros dicen «se corta cuando
+> $\alpha\ge\beta$». El código compara $v$ con el número del rival. Es lo
+> mismo, un paso antes: en un nodo de MAX con $v\ge\beta$, si no cortara,
+> la línea 15 haría $\alpha\leftarrow v\ge\beta$. La línea 14 corta justo
+> antes (y la 22, igual, en uno de MIN).
+
+## 3 · El código
+
+**Piensa: en DECIDIR-MINIMAX, ¿en qué líneas habría que pasar, leer y
+actualizar $\alpha$ y $\beta$ para que la regla se cumpla?**
 
 Es DECIDIR-MINIMAX con $\alpha$ y $\beta$. En la raíz, `mejor_valor` se
 llama $\alpha$ y se le pasa a cada hijo (línea 4). Las líneas 1–13 son las
@@ -155,68 +219,6 @@ def alfa_beta(s, alfa, beta): # (7)
         return v              # (24)
 ```
 
-## 3 · Alfa, beta y la regla
-
-**Piensa: para saber que una rama no sirve, ¿qué tiene que recordar cada
-nodo de lo que pasó arriba?**
-
-Dos números. Los dos se miden **en puntos de MAX**, como $U$.
-
-::: definition {#jue-c2-alfa-beta title="Alfa y beta"}
-Sea un nodo del recorrido y el camino de la raíz hasta él.
-
-- **$\alpha$ («alfa»)** es el **mayor** valor que algún nodo de **MAX** del
-  camino ya tiene asegurado con una jugada revisada. Para MAX es un
-  **piso**: tendrá al menos $\alpha$.
-- **$\beta$ («beta»)** es el **menor** valor que algún nodo de **MIN** del
-  camino ya tiene asegurado con una jugada revisada. Para MAX es un
-  **techo**: tendrá a lo más $\beta$.
-
-|  | $\alpha$ | $\beta$ |
-|---|---|---|
-| Dueño | MAX | MIN |
-| Empieza en | $-\infty$ | $+\infty$ |
-| Se mueve | solo sube | solo baja |
-| Lo cambia | MAX, línea 15 | MIN, línea 23 |
-| Lo lee | MIN, línea 22 | MAX, línea 14 |
-
-El par se escribe $(\alpha,\beta)$ y se llama **ventana**; la sección 6
-dice por qué.
-:::
-
-::: definition {#jue-c2-t-regla title="La regla de alfa-beta"}
-1. **Hereda los dos.** Al generarse, cada nodo recibe el $\alpha$ y el
-   $\beta$ que su padre tiene en ese momento (líneas 4, 12 y 20). **El suyo
-   también empieza heredado**: C1, de MAX, arranca con el $\alpha=3$ que
-   trae de R.
-2. **Lee el del rival.** Después de cada hijo compara su $v$ con el número
-   del **rival**:
-   - un nodo de **MAX** compara $v$ con $\beta$: si $v\ge\beta$, deja de
-     mirar hijos (línea 14, **corte beta**);
-   - un nodo de **MIN** compara $v$ con $\alpha$: si $v\le\alpha$, deja de
-     mirar hijos (línea 22, **corte alfa**).
-
-   **El número del rival no cambia mientras el nodo trabaja**: MAX nunca
-   escribe $\beta$ y MIN nunca escribe $\alpha$; solo lo leen en su `if`.
-3. **Actualiza el suyo.** Si no corta, MAX sube $\alpha$ (línea 15) y MIN
-   baja $\beta$ (línea 23). Es el único de los dos que cambia.
-4. **Al padre solo sube $v$**, y le llega como su $w$. Las $\alpha$ y $\beta$
-   que el hijo cambió **se pierden al regresar**: el padre sigue con las
-   suyas.
-
-**El igual cuenta**: $v\ge\beta$ y $v\le\alpha$. Un empate con lo que el
-rival ya tiene no le sirve a nadie. El corte se llama como el número que
-lo provoca: el **alfa** pasa en un nodo de **MIN**; el **beta**, en uno de
-**MAX**.
-:::
-
-> [!NOTE]
-> **El puente con «$\alpha\ge\beta$».** Los libros dicen «se corta cuando
-> $\alpha\ge\beta$». El código compara $v$ con el número del rival. Es lo
-> mismo, un paso antes: en un nodo de MAX con $v\ge\beta$, si no cortara,
-> la línea 15 haría $\alpha\leftarrow v\ge\beta$. La línea 14 corta justo
-> antes (y la 22, igual, en uno de MIN).
-
 **Cómo leer las trazas.** Es la tabla de la traza de minimax con dos
 columnas más. Una fila al entrar a un nodo interno y una por cada hijo que
 regresa; las hojas van plegadas en la columna $w$.
@@ -231,8 +233,10 @@ regresa; las hojas van plegadas en la columna $w$.
 - **v:** en las filas de R es `mejor_valor`, que aquí se llama $\alpha$.
 - **jugada:** `mejor_jugada` en ese momento; «—» si todavía no hay.
 - **Fila ✗:** está en la traza de minimax y no en ésta: su hoja (en
-  cursiva) no se genera. Así cada fila lleva el mismo número en las dos
-  trazas.
+  cursiva) no se genera. Así cada fila lleva el mismo número que en la
+  traza de minimax del mismo árbol; la de T está en
+  [[minimax-como-algoritmo|Minimax como algoritmo]]. La de T1 no se
+  escribe: es la de T sin la rama del centro.
 
 ## 4 · Etapa 1: el árbol T1
 
