@@ -1934,7 +1934,7 @@ def jue_t_azar():
             "rama tiene probabilidad ½. C1 y C2 siguen siendo de MAX. "
             + "; ".join(formulas) + f". C1 vale v = {f(valores['C1'])} y C2 v = "
             f"{f(valores['C2'])}. R elige el mayor: {jugada}, con {f(valores['R'])}. Gana der "
-            "gracias a la hoja 12, la que alfa-beta nunca genera.")
+            "gracias a la hoja 12: con MIN en D, esa hoja no cuenta y D valdría 2.")
     out = []
     y = _titulo_t(out, titulo) + 8
     y = _info(out, y, "I, C y D: volados parejos")
@@ -1945,7 +1945,7 @@ def jue_t_azar():
                       renglones={(): "DECIDIR"},
                       recuadro=[f"mejor_jugada = {jugada}", f"mejor_valor = {f(valores['R'])}"])
     y = _pie_t(out, fondo + HOJA_T_R + 44, formulas, peso="700")
-    y = _pie_t(out, y, ["Gana der por la hoja 12:", "alfa-beta nunca la genera."])
+    y = _pie_t(out, y, ["Gana der por la hoja 12:", "con MIN, D valdría 2."])
     return _svg_t(titulo, desc, y - 10, out)
 
 
