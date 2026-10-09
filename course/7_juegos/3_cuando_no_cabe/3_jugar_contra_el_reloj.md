@@ -4,7 +4,7 @@ title: Jugar contra el reloj
 nav_title: Contra el reloj
 summary: "Una búsqueda cortada puede no ver la respuesta que deshace su jugada. Buscar un poco más donde hay capturas, profundizar paso a paso y recordar posiciones permiten entregar una jugada a tiempo."
 status: ready
-estimated_time: 30m
+estimated_time: 35m
 tags: [juegos, busqueda-adversarial, evaluacion]
 ---
 
@@ -185,7 +185,7 @@ Una búsqueda a medias no se usa: puede no haber revisado la mejor jugada.
 :::
 
 La figura lo dibuja en el tiempo. Cada barra es una búsqueda **sin poda**,
-con MINIMAX-CON-CORTE, y su largo, cuántos nodos genera:
+con DECIDIR-CON-CORTE, y su largo, cuántos nodos genera:
 
 ::: figure {#jue-c3-fig-profundizacion title="Profundizar mientras haya tiempo"}
 ![Tres barras seguidas en el tiempo: la búsqueda con d = 1 genera 4 nodos y deja lista d2xc3; la de d = 2 genera 12 y deja lista d2-d3; la de d = 3 genera 33 y deja lista d2-d3, que gana. Dos líneas marcan dos relojes: el reloj 1 se acaba durante d = 2, así que se entrega d2xc3; el reloj 2 se acaba durante d = 3, así que se entrega d2-d3](../_assets/jue-c3-profundizacion.svg)
@@ -394,9 +394,9 @@ Y en PROFUNDIZACIÓN-ITERATIVA:
 
 **En el árbol T.** Con la $\mathrm{EVAL}$ de
 [[minimax-con-corte|Minimax con corte]] (I 5, C 4, D 7, C1 6, C2 9) y la
-jugada inicial izq (línea 2). Como allá, las hojas de T ya están en la
-escala de los finales: la hoja 3 tiene $U=3/100$, y la línea 15 devuelve
-$100\cdot U=3$, su número.
+jugada inicial izq (línea 2). Como allá, el número de cada hoja de T ya
+está en la escala de los finales: es lo que devolvió la línea 15,
+$100\cdot U$. T es un árbol de juguete, sin un $U=\pm1$ detrás.
 
 ::: figure {#jue-c3-t-fig-iterativa title="Profundización iterativa en el árbol T"}
 ![Tres copias pequeñas del árbol T, una por búsqueda. Con d = 1, la raíz prueba izq, centro y der, ve sus EVAL 5, 4 y 7, genera 4 nodos y deja lista der. Con d = 2 prueba der primero, luego izq y centro; ve 2, 3 y 6, sin cortes, genera 10 nodos y deja lista centro. Con d = 3 prueba centro primero y ve 5; poda la hoja 8 con un corte beta en C2 y las hojas 6 y 12 con cortes alfa en I y en D; genera 11 nodos y deja lista centro](../_assets/jue-t-iterativa.svg)

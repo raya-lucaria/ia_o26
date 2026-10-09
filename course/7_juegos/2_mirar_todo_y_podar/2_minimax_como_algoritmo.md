@@ -4,7 +4,7 @@ title: Minimax como algoritmo
 nav_title: Minimax como algoritmo
 summary: "El agente recibe un estado y devuelve una jugada: DECIDIR-MINIMAX y su auxiliar MINIMAX, trazados línea por línea en el árbol T, por qué son correctos y un subárbol de Negras para resolver por tu cuenta."
 status: ready
-estimated_time: 30m
+estimated_time: 45m
 tags: [juegos, minimax, algoritmos]
 ---
 
@@ -300,8 +300,9 @@ traen la utilidad. Lo usan también las páginas que siguen.
 :::
 
 **En resumen:** mejor_jugada pasó de **ninguna → izq → centro**, y der no
-la cambió porque su 2 no supera el 5 de centro. MINIMAX generó los **14
-nodos** del árbol: los 13 debajo de R, más la raíz.
+la cambió porque su 2 no supera el 5 de centro. El recorrido generó los
+**14 nodos** del árbol: la raíz, que DECIDIR recibe, y los 13 debajo de
+ella, que genera MINIMAX.
 
 ::: exercise {#jue-c2-ej-t-orden title="Llena la traza con los hijos al revés"}
 Ahora $A(s)$ da las jugadas **al revés** en todos los nodos: R prueba
@@ -524,16 +525,16 @@ queda a Blancas?
 El árbol tiene **11 nodos**: 5 finales y 6 donde alguien decide.
 
 - **e1 · Raíz** · mueve Negras (MIN)
-  - **e2 · a3-a2** · mueve Blancas (MAX)
-    - **e3 · c1-c2** · mueve Negras (MIN)
-      - **e4 · a2-a1** · FINAL: Negras llega a la fila 1, $U=-1$
-      - **e5 · b3xc2** · mueve Blancas (MAX)
-        - **e6 · b2-b3** · FINAL: Blancas llega a la fila 3, $U=+1$
-  - **e7 · a3xb2** · mueve Blancas (MAX)
-    - **e8 · c1-c2** · mueve Negras (MIN)
-      - **e9 · b2-b1** · FINAL: Negras llega, $U=-1$
-      - **e10 · b3xc2** · FINAL: Negras captura todo, $U=-1$
-    - **e11 · c1xb2** · FINAL: Negras sin jugada, $U=+1$
+  - **e2 · $\text{a3}\textbf{-}\text{a2}$** · mueve Blancas (MAX)
+    - **e3 · $\text{c1}\textbf{-}\text{c2}$** · mueve Negras (MIN)
+      - **e4 · $\text{a2}\textbf{-}\text{a1}$** · FINAL: Negras llega a la fila 1, $U=-1$
+      - **e5 · $\text{b3}\textbf{x}\text{c2}$** · mueve Blancas (MAX)
+        - **e6 · $\text{b2}\textbf{-}\text{b3}$** · FINAL: Blancas llega a la fila 3, $U=+1$
+  - **e7 · $\text{a3}\textbf{x}\text{b2}$** · mueve Blancas (MAX)
+    - **e8 · $\text{c1}\textbf{-}\text{c2}$** · mueve Negras (MIN)
+      - **e9 · $\text{b2}\textbf{-}\text{b1}$** · FINAL: Negras llega, $U=-1$
+      - **e10 · $\text{b3}\textbf{x}\text{c2}$** · FINAL: Negras captura todo, $U=-1$
+    - **e11 · $\text{c1}\textbf{x}\text{b2}$** · FINAL: Negras sin jugada, $U=+1$
 
 Junto a cada nodo, quién mueve: Blancas es MAX y toma el mayor; Negras es
 MIN y toma el menor.
@@ -566,20 +567,6 @@ Negras sin jugada.
 memoria, decir qué recibe el agente y qué devuelve, trazar el árbol T fila
 por fila diciendo cuándo cambia mejor_jugada, y decir en qué paso de la
 demostración se usa que el rival juega bien.
-
-## Lo que hay que llevarse
-
-- El agente **recibe un estado y las reglas** ($S_F$, $\mathrm{Pl}$, $A$,
-  $T$, $U$), **no el grafo**, y **devuelve una jugada**.
-- **DECIDIR-MINIMAX** (líneas 1–6) elige la jugada; **MINIMAX** (7–20)
-  calcula el valor de cada hijo. El valor es el medio, la jugada el fin.
-- **$v$** es lo mejor visto por este nodo; **$w$**, lo que devuelve un
-  hijo. En T, mejor_jugada pasa de ninguna a izq y a centro; der no la
-  cambia porque $2>5$ es falso.
-- Es correcto por inducción sobre la altura. MINIMAX mira todo: el orden
-  de los hijos no cambia la jugada ni los nodos generados.
-
-Continúa con [[cuando-decide-un-dado|cuando decide un dado]].
 
 ## Para profundizar
 
@@ -671,3 +658,17 @@ cuántas jugadas van, dos caminos al mismo tablero podrían valer distinto.
 | Muchos caminos llegan al mismo estado | Una tabla de transposición ahorra mucho, a cambio de memoria |
 | Un final cambia de utilidad | Hay que recalcular sus antecesores; el costo no cambia |
 :::
+
+## Lo que hay que llevarse
+
+- El agente **recibe un estado y las reglas** ($S_F$, $\mathrm{Pl}$, $A$,
+  $T$, $U$), **no el grafo**, y **devuelve una jugada**.
+- **DECIDIR-MINIMAX** (líneas 1–6) elige la jugada; **MINIMAX** (7–20)
+  calcula el valor de cada hijo. El valor es el medio, la jugada el fin.
+- **$v$** es lo mejor visto por este nodo; **$w$**, lo que devuelve un
+  hijo. En T, mejor_jugada pasa de ninguna a izq y a centro; der no la
+  cambia porque $2>5$ es falso.
+- Es correcto por inducción sobre la altura. MINIMAX mira todo: el orden
+  de los hijos no cambia la jugada ni los nodos generados.
+
+Continúa con [[cuando-decide-un-dado|cuando decide un dado]].

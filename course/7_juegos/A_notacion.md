@@ -48,12 +48,12 @@ búscalo en la suya: esos dos están en «Las siete piezas de un juego».
 
 | Símbolo | Cómo se lee y qué es | Se presenta en |
 |---|---|---|
-| $C$ | «ce». Las nueve casillas, de $a1$ a $c3$: la letra es la columna y el número, la fila | Escribir el juego |
+| $C$ | «ce». Las nueve casillas, de $\text{a1}$ a $\text{c3}$: la letra es la columna y el número, la fila | Escribir el juego |
 | $B$, $N$, $\cdot$ | «be», «ene», «punto». Lo que hay en una casilla: peón blanco, peón negro o nada. $B$ y $N$ también nombran el turno y a los jugadores, Blancas y Negras | Leer el reglamento y Escribir el juego |
 | $\tau: C\to\{B,N,\cdot\}$ | «tau». Un tablero: a cada casilla le asigna lo que hay en ella; $\tau_0$ es el tablero inicial | Escribir el juego |
-| a1-a2, c1xb2 | «a uno a a dos», «c uno por b dos». Una jugada: casilla de salida, guion **-** si avanza o **x** si captura, casilla de llegada | Escribir el juego |
-| «tras a1-a2» | «tras a uno a dos». El estado $T(s_0,\text{a1-a2})$ al que se llega con esa jugada | Escribir el juego |
-| n1 | «ene uno». El estado tras a1-a2 y b3-b2 | Escribir el juego |
+| $\text{a1}\textbf{-}\text{a2}$, $\text{c1}\textbf{x}\text{b2}$ | «a uno a a dos», «c uno por b dos». Una jugada: casilla de salida, guion **-** si avanza o **x** si captura, casilla de llegada | Escribir el juego |
+| «tras $\text{a1}\textbf{-}\text{a2}$» | «tras a uno a dos». El estado $T(s_0,\text{a1}\textbf{-}\text{a2})$ al que se llega con esa jugada | Escribir el juego |
+| n1 | «ene uno». El estado tras $\text{a1}\textbf{-}\text{a2}$ y $\text{b3}\textbf{-}\text{b2}$ | Escribir el juego |
 | n2, …, n13 | «ene dos». Los demás estados del subgrafo de n1, en el orden en que se recorren | El juego como grafo |
 
 ## Las siete piezas de un juego
@@ -92,7 +92,7 @@ renglón, en cursivas.
 | $b$, $m$ | «be», «eme». Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) · *Minimax como algoritmo* |
 | AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda · *Cuando decide un dado* |
 | $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 · *Cuando decide un dado* |
-| $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX ($\alpha$) y lo que MIN ($\beta$) ya se aseguran con una jugada ya revisada en un nodo suyo del camino desde la raíz. $\alpha$ es un piso para MAX; $\beta$, un techo. MAX actualiza $\alpha$ y corta comparando su $v$ con $\beta$; MIN actualiza $\beta$ y corta comparando su $v$ con $\alpha$ · *Alfa-beta a mano* |
+| $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX ($\alpha$) y lo que MIN ($\beta$) ya se aseguran con una jugada revisada en un nodo suyo del camino desde la raíz. $\alpha$ es un piso para MAX; $\beta$, un techo. MAX actualiza $\alpha$ y corta comparando su $v$ con $\beta$; MIN actualiza $\beta$ y corta comparando su $v$ con $\alpha$ · *Alfa-beta a mano* |
 | $(\alpha,\beta)$ | «la ventana alfa beta». Los valores que todavía importan en un nodo. Se escribe abierta porque tocar un extremo ya corta: lo que cae dentro es un valor exacto; lo que sale o toca un extremo puede ser una cota · *Alfa-beta a mano* |
 | $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual · *Cortar y evaluar a mano* |
 | $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ · *Cortar y evaluar a mano* |
@@ -126,7 +126,8 @@ renglón, en cursivas.
 | Minimax | Procedimiento que recibe las reglas y un estado, genera los estados en profundidad y devuelve $V(s)$. Es el auxiliar de DECIDIR-MINIMAX | Minimax como algoritmo |
 | DECIDIR-MINIMAX | Lo que el agente corre en su turno: valora cada jugada con MINIMAX y devuelve la **jugada** de mayor valor, no el número. DECIDIR-ALFA-BETA hace lo mismo pasando $\alpha$ a los hijos | Minimax como algoritmo |
 | Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
-| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con alfa-beta guarda también si el número es exacto, un piso o un techo | Minimax como algoritmo |
+| Pila | Las llamadas abiertas, de la raíz al nodo activo; se escribe R›C›C2. Es todo lo que el recorrido tiene en memoria | Minimax como algoritmo |
+| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la profundidad que quedaba y si el número es exacto, un piso o un techo | Minimax como algoritmo; lo de exacto, piso o techo, en Jugar contra el reloj |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad | Cuando decide un dado |
 | Utilidad esperada | El valor esperado de la utilidad. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
@@ -135,7 +136,8 @@ renglón, en cursivas.
 | Cota | Lo que devuelve un nodo cuyo número $w$ salió de la ventana. Si $w\le\alpha$, cota superior: su valor es a lo más $w$. Si $w\ge\beta$, cota inferior: al menos $w$ | Alfa-beta a mano |
 | Ventana | El intervalo $(\alpha,\beta)$ con que llega un nodo. Empieza en $(-\infty,+\infty)$ en la raíz y al bajar solo se encoge | Alfa-beta a mano |
 | Fail-soft | La versión de alfa-beta que, al cortar, devuelve su $v$ tal cual aunque caiga fuera de la ventana, en vez de recortarlo a $\alpha$ o $\beta$ | Alfa-beta como algoritmo |
-| Regla del empate en la raíz | Con alfa-beta, la raíz cambia de jugada solo si el $w$ de un hijo supera estrictamente a $\alpha$: un hijo que devolvió una cota no gana un empate | Alfa-beta como algoritmo |
+| Marco | Lo que guarda la pila por cada llamada abierta: el estado, la jugada por la que va su `for`, su ventana y su $v$. Se pierde cuando la llamada regresa | Alfa-beta como algoritmo |
+| Regla del empate en la raíz | Con alfa-beta, la raíz cambia de jugada solo si el $w$ de un hijo supera estrictamente a $\alpha$: un hijo que devolvió una cota no gana un empate | Alfa-beta a mano |
 | Estrategia | Función que a cada estado donde le toca a un jugador le asigna una jugada de $A(s)$ | Diagnosticar el juego |
 | Nodo de azar | Nodo donde no elige un jugador sino un dado; cada flecha lleva su probabilidad | Diagnosticar el juego |
 | Tabla de pagos | Filas: jugadas de uno; columnas: jugadas del otro; cada celda: lo que gana cada uno | Diagnosticar el juego |
