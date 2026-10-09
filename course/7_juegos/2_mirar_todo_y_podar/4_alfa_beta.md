@@ -30,6 +30,16 @@ Al terminar tendrás:
 > - $v$: lo mejor que ha visto **este** nodo entre sus hijos; $w$: lo que
 >   devuelve **un** hijo.
 
+> [!TIP]
+> **Míralo correr: alfa-beta en el árbol T**
+>
+> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#alfa-beta)**: el árbol, la línea del
+>   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
+> - **Notebook en Colab**, sección 5: el mismo Python de esta página,
+>   corriendo; cámbiale un número y mira qué pasa.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## 1 · La idea
 
 **Piensa: si ya tienes una jugada que te da 3, ¿necesitas saber cuánto vale

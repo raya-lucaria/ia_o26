@@ -16,6 +16,15 @@ tablero de hexapawn a 4×4 y el árbol pasa de cientos de nodos a millones. El
 ajedrez está muchísimo más lejos. Ya no se puede llegar a los finales:
 hay que detenerse antes y **estimar**.
 
+> [!TIP]
+> **Esta clase tiene animaciones y un notebook.** Minimax con corte y profundización iterativa, corriendo en el árbol T:
+>
+> - **▶ Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
+>   algoritmo abre la suya en un recuadro como éste.
+> - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## Qué vas a poder hacer al terminar esta clase
 
 - Explicar por qué minimax completo no sirve para un juego como el ajedrez.
@@ -61,15 +70,15 @@ primeras van en par, como en la clase 2: primero **a mano** y después
 4. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
 5. [[tarea-cuando-no-cabe|Tarea de refuerzo]]
 
-## El notebook y la traza interactiva
+## Las animaciones y el notebook
 
 Los mismos de la clase 2, con dos secciones más: minimax con corte y
 profundización iterativa, en el árbol T. No se cuentan en el tiempo de la
 clase.
 
-- [La traza con corte](../_assets/traza_arbol_t.html#corte): cambia $d$ entre
+- [La animación con corte](../_assets/traza_arbol_t.html#corte): cambia $d$ entre
   1, 2 y 3.
-- [La profundización iterativa](../_assets/traza_arbol_t.html#iterativa): las
+- [La animación de la profundización iterativa](../_assets/traza_arbol_t.html#iterativa): las
   tres búsquedas seguidas.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)

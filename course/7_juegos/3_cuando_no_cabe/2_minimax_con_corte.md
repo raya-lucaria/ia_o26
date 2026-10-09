@@ -29,6 +29,16 @@ sabrás leer qué preferencia expresa una función de evaluación.
 > sin azar, todo a la vista, toda partida termina, suma cero, y no alcanza
 > el tiempo para llegar a los finales.
 
+> [!TIP]
+> **Míralo correr: minimax con corte, con d = 1, 2 o 3**
+>
+> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#corte)**: el árbol, la línea del
+>   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
+> - **Notebook en Colab**, sección 6: el mismo Python de esta página,
+>   corriendo; cámbiale un número y mira qué pasa.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## 1 · Qué recibe y qué genera
 
 **Piensa: ¿qué tuviste que saber para calcular la tabla de profundidades a

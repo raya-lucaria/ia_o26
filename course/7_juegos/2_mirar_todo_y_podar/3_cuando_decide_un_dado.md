@@ -35,6 +35,16 @@ con el azar.
 > a dónde lleva cada una (@jue-c1-transicion); y $U(s)$, $+1$ si gana
 > Blancas y $-1$ si gana Negras (@jue-c1-utilidad).
 
+> [!TIP]
+> **Míralo correr: expectiminimax en el árbol T**
+>
+> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#azar)**: el árbol, la línea del
+>   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
+> - **Notebook en Colab**, sección 4: el mismo Python de esta página,
+>   corriendo; cámbiale un número y mira qué pasa.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## 1 · El problema, en general, cuando hay azar
 
 **Piensa: ¿qué le falta al juego de la clase 1 para poder describir un

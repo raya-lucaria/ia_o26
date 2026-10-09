@@ -20,6 +20,15 @@ La clase 1 escribió el juego; esta lo resuelve. Hexapawn cabe completo en la
 memoria de una computadora, así que podemos **mirar todo** el árbol. Después
 aprenderemos a **podar**: dejar ramas sin generar sin cambiar la respuesta.
 
+> [!TIP]
+> **Esta clase tiene animaciones y un notebook.** Minimax, azar y alfa-beta, corriendo en el árbol T:
+>
+> - **▶ Animaciones paso a paso:** [minimax](../_assets/traza_arbol_t.html#minimax) · [alfa-beta](../_assets/traza_arbol_t.html#alfa-beta). Cada página de
+>   algoritmo abre la suya en un recuadro como éste.
+> - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## Lo que traes de la clase 1
 
 Todo lo que usa esta clase, en una tabla. Si un renglón no te suena, vuelve
@@ -114,13 +123,13 @@ algoritmo**, en general.
 5. [[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]]
 6. [[tarea-mirar-todo-y-podar|Tarea de refuerzo]]
 
-## El notebook y la traza interactiva
+## Las animaciones y el notebook
 
 Dos formas de ver correr los algoritmos de esta clase en el árbol T, sin
 escribir nada. No se cuentan en el tiempo de la clase y no hay nada que
 entregar.
 
-**La traza interactiva.** Una página con el árbol, el pseudocódigo con la
+**Las animaciones.** Una página con el árbol, el pseudocódigo con la
 línea que corre y el valor de cada variable; avanzas un paso con ▶ o con las
 flechas del teclado. Cada página de algoritmo la enlaza en su traza, y aquí
 están todas:

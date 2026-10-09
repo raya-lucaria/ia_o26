@@ -36,6 +36,16 @@ $V(\text{n1})=+1$ se alcanza con $\text{c1}\textbf{-}\text{c2}$. Esta
 página convierte ese cálculo en un procedimiento que no depende de
 hexapawn.
 
+> [!TIP]
+> **Míralo correr: minimax en el árbol T**
+>
+> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#minimax)**: el árbol, la línea del
+>   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
+> - **Notebook en Colab**, sección 3: el mismo Python de esta página,
+>   corriendo; cámbiale un número y mira qué pasa.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## 1 · Qué recibe y qué devuelve
 
 **Piensa: a Blancas, en n1, ¿de qué le sirve saber que $V(\text{n1})=+1$?**
