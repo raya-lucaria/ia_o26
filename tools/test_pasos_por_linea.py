@@ -34,30 +34,35 @@ RET, FIN = "RET", "FIN"
 # puede seguir. RET: la funcion devuelve (lo siguiente es la linea de la
 # llamada, en el marco de abajo). FIN: termina el programa. LLAMA: las lineas
 # de llamada y la linea `function` a la que saltan.
-_DECIDIR = {1: {2}, 2: {3}, 3: {4}, 4: {5}, 5: {3, 6}, 6: {FIN}}
+_DECIDIR = {1: {2}, 2: {3}, 3: {4, 6}, 4: {5}, 5: {3}, 6: {FIN}}
+# Un `for` es la linea de su bucle: tras el cuerpo se vuelve a el, y de el se
+# sale a la linea siguiente al bucle (el paso «ya no quedan hijos»).
 SUCESORES = {
     "minimax": {**_DECIDIR, **{
-        7: {8}, 8: {9, RET}, 9: {10, 15}, 10: {11}, 11: {12}, 12: {13}, 13: {11, 14},
-        14: {RET}, 15: {16}, 16: {17}, 17: {18}, 18: {19}, 19: {17, 20}, 20: {RET}}},
+        7: {8}, 8: {9, RET}, 9: {10, 15}, 10: {11}, 11: {12, 14}, 12: {13}, 13: {11},
+        14: {RET}, 15: {16}, 16: {17}, 17: {18, 20}, 18: {19}, 19: {17}, 20: {RET}}},
     "azar": {**_DECIDIR, **{
-        7: {8}, 8: {9, RET}, 9: {10, 15}, 10: {11}, 11: {12}, 12: {13}, 13: {11, 14},
-        14: {RET}, 15: {16, 21}, 16: {17}, 17: {18}, 18: {19}, 19: {17, 20}, 20: {RET},
-        21: {22}, 22: {23}, 23: {24}, 24: {25}, 25: {23, 26}, 26: {RET}}},
+        7: {8}, 8: {9, RET}, 9: {10, 15}, 10: {11}, 11: {12, 14}, 12: {13}, 13: {11},
+        14: {RET}, 15: {16, 21}, 16: {17}, 17: {18, 20}, 18: {19}, 19: {17}, 20: {RET},
+        21: {22}, 22: {23}, 23: {24, 26}, 24: {25}, 25: {23}, 26: {RET}}},
     "alfa-beta": {**_DECIDIR, **{
-        7: {8}, 8: {9, RET}, 9: {10, 17}, 10: {11}, 11: {12}, 12: {13}, 13: {14},
-        14: {15, RET}, 15: {11, 16}, 16: {RET}, 17: {18}, 18: {19}, 19: {20}, 20: {21},
-        21: {22}, 22: {23, RET}, 23: {19, 24}, 24: {RET}}},
+        7: {8}, 8: {9, RET}, 9: {10, 17}, 10: {11}, 11: {12, 16}, 12: {13}, 13: {14},
+        14: {15, RET}, 15: {11}, 16: {RET}, 17: {18}, 18: {19}, 19: {20, 24}, 20: {21},
+        21: {22}, 22: {23, RET}, 23: {19}, 24: {RET}}},
     "corte": {**_DECIDIR, **{
-        7: {8}, 8: {9, RET}, 9: {10, RET}, 10: {11, 16}, 11: {12}, 12: {13}, 13: {14},
-        14: {12, 15}, 15: {RET}, 16: {17}, 17: {18}, 18: {19}, 19: {20}, 20: {18, 21},
+        7: {8}, 8: {9, RET}, 9: {10, RET}, 10: {11, 16}, 11: {12}, 12: {13, 15}, 13: {14},
+        14: {12}, 15: {RET}, 16: {17}, 17: {18}, 18: {19, 21}, 19: {20}, 20: {18},
         21: {RET}}},
     "iterativa": {
-        1: {2}, 2: {3}, 3: {4}, 4: {5, 13}, 5: {6}, 6: {7}, 7: {8}, 8: {9, FIN},
-        9: {10, FIN}, 10: {6, 11}, 11: {12}, 12: {4}, 13: {FIN},
-        14: {15}, 15: {16, RET}, 16: {17, RET}, 17: {18, 25}, 18: {19}, 19: {20},
-        20: {21}, 21: {22}, 22: {23, RET}, 23: {19, 24}, 24: {RET}, 25: {26}, 26: {27},
-        27: {28}, 28: {29}, 29: {30}, 30: {31, RET}, 31: {27, 32}, 32: {RET}},
+        1: {2}, 2: {3}, 3: {4}, 4: {5, 13}, 5: {6}, 6: {7, 11}, 7: {8}, 8: {9, FIN},
+        9: {10, FIN}, 10: {6}, 11: {12}, 12: {4}, 13: {FIN},
+        14: {15}, 15: {16, RET}, 16: {17, RET}, 17: {18, 25}, 18: {19}, 19: {20, 24},
+        20: {21}, 21: {22}, 22: {23, RET}, 23: {19}, 24: {RET}, 25: {26}, 26: {27},
+        27: {28, 32}, 28: {29}, 29: {30}, 30: {31, RET}, 31: {27}, 32: {RET}},
 }
+# las lineas `for each` de cada modo
+FORS = {"minimax": {3, 11, 17}, "azar": {3, 11, 17, 23}, "alfa-beta": {3, 11, 19},
+        "corte": {3, 12, 18}, "iterativa": {6, 19, 27}}
 LLAMA = {"minimax": {4: 7, 12: 7, 18: 7}, "azar": {4: 7, 12: 7, 18: 7, 24: 7},
          "alfa-beta": {4: 7, 12: 7, 20: 7}, "corte": {4: 7, 13: 7, 19: 7},
          "iterativa": {7: 14, 20: 14, 28: 14}}
@@ -131,6 +136,54 @@ def test_a_el_problema_reportado_alfa_beta_ya_no_salta_lineas():
     assert [p["linea"] for p in pasos[9:17]] == [19, 20, 7, 8, 20, 21, 22, 23]
 
 
+def test_a_cada_for_sale_solo_cuando_ya_no_quedan_hijos(caso):
+    """Un paso de `for` por hijo tomado y uno mas al salir, salvo que un corte
+    salga antes por su return."""
+    modo, d, _ = caso
+    hijos = {}
+    for n in d["arbol"]["nodos"]:
+        if n["padre"]:
+            hijos[n["padre"]] = hijos.get(n["padre"], 0) + 1
+    tomados = {}                 # profundidad del marco -> hijos tomados
+    for p in d["pasos"]:
+        prof = len(p["marco"])
+        if p["linea"] in FUNCIONES[modo]:
+            tomados[prof] = 0
+        if p["linea"] == 4 and modo == "iterativa":
+            tomados[prof] = 0
+        if p["linea"] not in FORS[modo]:
+            continue
+        if p["frase"].startswith("for each: ya no quedan"):
+            assert tomados[prof] == hijos[p["nodo"]], p["n"]
+            assert not p["cambia"], p["n"]
+        else:
+            assert p["frase"].startswith("Toma a = "), p["n"]
+            tomados[prof] += 1
+
+
+def test_a_la_raiz_sigue_en_la_pila_hasta_el_final(caso):
+    _, d, _ = caso
+    for p in d["pasos"]:
+        assert p["estado"]["R"]["estado"] == "pila", p["n"]
+
+
+def test_a_parcial_solo_en_la_linea_5_de_dos_renglones_con_condicion_falsa(caso):
+    modo, d, _ = caso
+    for p in d["pasos"]:
+        if p["parcial"]:
+            assert modo in ("minimax", "azar", "corte") and p["linea"] == 5, p["n"]
+            assert " no: " in p["frase"], p["frase"]
+        elif p["linea"] == 5 and modo in ("minimax", "azar", "corte"):
+            assert " sí → " in p["frase"], p["frase"]
+
+
+def test_a_tabla_en_pagina_dice_si_la_pagina_escribe_la_traza():
+    import test_pasos_interactivos as tpi
+    for modo, variante in MODOS:
+        d = j.pasos_por_linea(modo, variante)
+        assert d["tabla_en_pagina"] == bool(tpi.tabla_de(modo, variante)), (modo, variante)
+
+
 # ---------------------------------------------------------------- (b) ---
 
 def _ultimo_de_cada_fila(pasos):
@@ -161,7 +214,12 @@ def test_b_proyectar_a_filas_da_pasos_interactivos(caso):
     for f in b["pasos"]:
         p = ult[f["n"]]
         donde = f"{modo} fila {f['n']} (paso {p['n']})"
-        assert p["estado"] == f["estado"], donde
+        esperado = f["estado"]
+        if f["evento"] in ("fin", "entrega"):
+            # pasos_por_linea deja la raiz en la pila hasta su ultimo paso
+            assert p["estado"]["R"]["estado"] == "pila", donde
+            esperado = dict(esperado, R=p["estado"]["R"])
+        assert p["estado"] == esperado, donde
         assert p["generados"] == f["generados"], donde
         if f["evento"] == "podado":
             assert f["n"] in p["filas_x"], donde
@@ -210,6 +268,12 @@ def test_c_resultados_y_generados_son_los_hechos(modo, variante):
         assert r["jugada"] == "centro" and r["generados"] == 25
         assert todas(ultimo["marco"][0])["jugada"] == "centro"
         assert sum(1 for p in d["pasos"] if p["linea"] == 4) == 4
+        # el dibujo cambia de busqueda en la linea 5, no en la 4
+        for k, p in enumerate(d["pasos"]):
+            if p["linea"] == 4 and k > 3:
+                assert p["d"] == d["pasos"][k - 1]["d"] and p["generados"] > 1, p["n"]
+            if p["linea"] == 5:
+                assert p["generados"] == 1 and str(p["d"]) == todas(p["marco"][0])["d"], p["n"]
         assert [p["frase"].split("?")[1].split()[0].strip(":") for p in d["pasos"] if p["linea"] == 4] == [
             "sí", "sí", "sí", "no"]
         return

@@ -1662,19 +1662,27 @@ def pasos_interactivos(modo, variante=None):
 #   de la linea 5 con su asignacion tambien es un paso.
 # - `else` es un paso cuando se toma esa rama; `else if` (azar, 15) es un
 #   paso con su condicion.
-# - `for each` es un paso por cada hijo que toma, con `a` ya ligado. Cuando
-#   no quedan hijos no hay paso extra: sigue la linea de despues del bucle.
+# - `for each` es un paso por cada hijo que toma, con `a` ya ligado, y uno
+#   mas cuando ya no quedan hijos («sale del bucle»), como el `while` de
+#   iterativa, que tambien es un paso cuando dice «no». Un corte sale por su
+#   return y no llega a ese ultimo paso del for. La jugada hacia una hoja se
+#   llama «hoja 3»; en un nodo de azar, a es un resultado, no una jugada.
+# - El `if` de la linea 5 de DECIDIR ocupa dos renglones impresos en
+#   minimax, azar y corte: `parcial` dice que la condicion fue falsa y su
+#   cuerpo (el segundo renglon) no corre.
 # - Una llamada son dos pasos en su linea: «llama» (el hijo se GENERA aqui;
 #   su estado es «generado») y, tras los pasos del hijo, «w ← valor».
 # - Un nodo esta «pila» mientras su marco existe, incluido su return; pasa a
 #   «devuelto» (o «evaluado», si devolvio EVAL) en el paso «w ←» del padre.
-#   La raiz pasa a «devuelto» cuando su bucle termina (linea 6, u 11 en
-#   iterativa), como en la ultima fila de la tabla.
+#   La raiz sigue «pila», con su ventana, hasta su ultimo paso: su marco
+#   existe hasta el final. (La ultima fila de pasos_interactivos la pinta
+#   «devuelto»; es la unica diferencia entre las dos fotos, a proposito.)
 # - Los podados no se llaman y no tienen pasos: el return del corte dice
 #   cuales quedan sin generar, y en `filas_x` lleva las filas ✗ de la tabla.
 # - El reloj de iterativa alcanza para d = 1, 2 y 3: el while (4) es «sí»
-#   tres veces y «no» la cuarta; la linea 8 siempre es «no». Al empezar cada
-#   busqueda (4 con «sí») el dibujo y el conteo de generados vuelven a cero.
+#   tres veces y «no» la cuarta; la linea 8 siempre es «no». El dibujo, el
+#   conteo de generados y la d del paso cambian a la busqueda nueva en la
+#   linea 5, cuando empieza; en el 4 con «sí» todavia se ve la anterior.
 #
 # Cada paso: n, linea, fila (la fila de la tabla de la pagina que este paso
 # ayuda a cerrar: los pasos entre el fin de la fila k-1 y el de la fila k son
@@ -1683,7 +1691,9 @@ def pasos_interactivos(modo, variante=None):
 # [nombre, valor ya formateado]), cambia (las variables que ESTA linea
 # acaba de escribir: [indice de marco, nombre, valor anterior]), estado (por
 # nodo, como en pasos_interactivos, mas «generado»), generados, frase (≤ 90
-# caracteres) y, en iterativa, d (la de la busqueda en curso).
+# caracteres), parcial y, en iterativa, d (la de la busqueda que se dibuja).
+# La traza lleva ademas tabla_en_pagina: si la pagina escribe esa traza
+# fila por fila (corte con d = 1 o 3 e iterativa solo traen resumenes).
 
 ORDINAL = ["primer", "segundo", "tercer"]
 
@@ -1727,7 +1737,7 @@ class _PorLinea:
         return f"hoja {self.valor_hoja(c)}" if self.hoja(c) else self.ids[c]
 
     def accion(self, c):
-        return self.nombres[c][1] or f"→{self.valor_hoja(c)}"
+        return self.nombres[c][1] or f"hoja {self.valor_hoja(c)}"
 
     def descendientes(self, c):
         res = [c]
@@ -1810,7 +1820,7 @@ class _PorLinea:
             return v
         return fmt_t(v)
 
-    def paso(self, linea, frase, cierra=None):
+    def paso(self, linea, frase, cierra=None, parcial=False):
         if len(frase) > 90:
             raise ValueError(f"frase de {len(frase)} caracteres: {frase}")
         marco = [{"func": m["func"], "nodo": self.ids[m["c"]],
@@ -1822,7 +1832,7 @@ class _PorLinea:
                   for c, e in sorted(self.estado.items())}
         p = {"linea": linea, "nodo": self.ids[self.pila[-1]["c"]], "marco": marco,
              "estado": estado, "generados": self.generados, "frase": frase,
-             "_cierra": cierra, "_escritas": self.escritas}
+             "_cierra": cierra, "_escritas": self.escritas, "_parcial": parcial}
         self.escritas = []
         if self.d is not None:
             p["d"] = self.d
@@ -1838,10 +1848,18 @@ class _PorLinea:
 
 
 def _frase_for(x, c, k, padre):
+    """La frase de un `for each` que toma un hijo. En un nodo de azar nadie
+    elige: a es un resultado del azar, no una jugada."""
+    yo = c[:-1]
+    if yo and x.tipo(yo) == "AZAR":
+        lleva = "" if x.hoja(c) else f", que lleva a {x.ids[c]}"
+        return f"Toma a = {x.accion(c)}: el {ORDINAL[k]} resultado del azar en {padre}{lleva}."
     if x.hoja(c):
-        return (f"Toma a = {x.accion(c)}, la jugada hacia la hoja {x.valor_hoja(c)}: "
-                f"el {ORDINAL[k]} hijo de {padre}.")
+        return f"Toma a = {x.accion(c)}: el {ORDINAL[k]} hijo de {padre}."
     return f"Toma a = {x.accion(c)}: el {ORDINAL[k]} hijo de {padre} es {x.ids[c]}."
+
+
+FRASE_SALE = "for each: ya no quedan hijos → sale del bucle."
 
 
 def _texto_args(args):
@@ -1963,9 +1981,9 @@ def _interna(x):
                 cola = f"{otra} sigue igual"
             x.paso(base + 5, f"{otra} ← {nom}({fmt_t(a0)}, {fmt_t(v)}) = {fmt_t(a1)}: {cola}.",
                    cierra=0)
+        x.paso(base + 1, FRASE_SALE)
         ret = base + (6 if ab else 4)
-        return x.retorna(ret, f"No quedan hijos: {N} devuelve v = {fmt_t(x.loc['v'])}.",
-                         x.loc["v"])
+        return x.retorna(ret, f"return v = {fmt_t(x.loc['v'])}.", x.loc["v"])
     interna.nombre = func
     return interna
 
@@ -1992,9 +2010,9 @@ def _decidir_linea(x, func, d=None):
         x.llamar(4, c, f"Genera {x.N(c)} y llama {interna.nombre}({x.etiqueta(c)}{_texto_args(ha)}).")
         w = x.recibe(4, interna(c, **ha))
         _compara_raiz(x, 5, w, c, mv)
-    x.estado[R].update(estado="devuelto", alfa=None, beta=None)
-    x.paso(6, f"Ya no quedan jugadas: return mejor_jugada = {x.loc['mejor_jugada']}.",
-           cierra=0)
+    # la raiz sigue en la pila hasta su ultimo paso, con su ventana
+    x.paso(3, "for each: ya no quedan jugadas → sale del bucle.")
+    x.paso(6, f"return mejor_jugada = {x.loc['mejor_jugada']}.", cierra=0)
     return x.loc["mejor_jugada"], x.loc[mv]
 
 
@@ -2009,7 +2027,7 @@ def _compara_raiz(x, linea, w, c, mv):
     else:
         f = (f"w > {mv}? {fmt_t(w)} > {fmt_t(antes)} no: mejor_jugada sigue en "
              f"{x._fmt(x.loc['mejor_jugada'])}.")
-    x.paso(linea, f, cierra=0)
+    x.paso(linea, f, cierra=0, parcial=not w > antes)
 
 
 def _iterativa_linea(x, busquedas=3):
@@ -2033,11 +2051,13 @@ def _iterativa_linea(x, busquedas=3):
         if d > busquedas:
             x.paso(4, f"¿Queda tiempo? no: el reloj se acabó tras la búsqueda con d = {d - 1}.")
             break
+        x.paso(4, f"¿Queda tiempo? sí → una búsqueda con d = {d}.")
+        # el dibujo y el conteo empiezan de nuevo cuando empieza la busqueda
+        # (linea 5), no antes: hasta ahi se ve la busqueda anterior
         if d > 1:
             x.reiniciar()
             x.d = d
             x.estado[R]["estado"] = "pila"
-        x.paso(4, f"¿Queda tiempo? sí → una búsqueda con d = {d}.")
         x.asigna("α", -INF)
         x.asigna("mejor_jugada", jugada)
         x.raiz_estado(-INF)
@@ -2056,7 +2076,7 @@ def _iterativa_linea(x, busquedas=3):
             x.paso(8, "¿Se acabó el tiempo? no: la búsqueda sigue.")
             x.paso(9, f"w = 100? {fmt_t(w)} = 100 no: no es una victoria segura.")
             _compara_raiz(x, 10, w, c, "α")
-        x.estado[R].update(estado="devuelto", alfa=None, beta=None)
+        x.paso(6, "for each: ya no quedan jugadas → sale del bucle.")
         jugada = x.loc["mejor_jugada"]
         x.asigna("jugada", jugada)
         x.paso(11, f"jugada ← {jugada}: la búsqueda con d = {d} terminó completa.")
@@ -2134,6 +2154,10 @@ def pasos_por_linea(modo, variante=None):
         resultado = {"jugada": jugada, "valor": fmt_t(valor), "generados": x.generados,
                      "total": contar_nodos(arbol)}
     pasos = x.pasos
+    continuadas = {r for k, r in enumerate(base["renglones"])
+                   if r is not None and k > 0 and base["renglones"][k - 1] == r}
+    for p in pasos:
+        p["parcial"] = bool(p.pop("_parcial")) and p["linea"] in continuadas
     _numerar_filas(pasos)
     _marcar_cambios(pasos)
     for k, p in enumerate(pasos, 1):
@@ -2141,4 +2165,9 @@ def pasos_por_linea(modo, variante=None):
     return {"modo": modo, "variante": variante, "titulo": base["titulo"],
             "pagina": base["pagina"], "pseudo": base["pseudo"],
             "renglones": base["renglones"], "arbol": base["arbol"],
+            "tabla_en_pagina": (modo, variante) not in SIN_TABLA_EN_PAGINA,
             "pasos": pasos, "resultado": resultado}
+
+
+# Las trazas que su pagina no escribe fila por fila (solo en resumen).
+SIN_TABLA_EN_PAGINA = {("corte", 1), ("corte", 3), ("iterativa", None)}
