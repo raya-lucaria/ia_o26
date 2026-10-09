@@ -3,18 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Traza paso a paso en el árbol T</title>
+<title>Traza renglón por renglón en el árbol T</title>
 
-<!-- Los pasos NO se calculan aqui. Salen de juegos.pasos_interactivos() y
+<!-- Los pasos NO se calculan aqui. Salen de juegos.pasos_por_linea() y
      tools/gen_traza_web.py los escribe en el bloque <script id="trazas">
      del final; tools/test_traza_web.py compara ese bloque con lo que la
-     funcion produce hoy. Este archivo solo pinta: el arbol, la linea del
-     pseudocodigo y las variables de cada paso. Un paso es una fila de la
-     traza tal como la escribe la pagina del algoritmo.
+     funcion produce hoy. Este archivo solo pinta: la linea que corre, la
+     frase, la pila de llamadas con sus variables y el arbol.
+
+     Un paso es UNA linea del pseudocodigo que se ejecuta, en el orden real,
+     aunque se quede en el mismo nodo. Cada paso sabe a que fila de la tabla
+     de traza de la pagina pertenece; ◀◀ y ▶▶ saltan de fila en fila.
 
      Fragmentos: #minimax, #azar, #alfa-beta (#alfa-beta-t1), #corte
-     (#corte-d1, #corte-d3), #iterativa; con -paso-N abre en el paso N
-     (#alfa-beta-paso-12). Al avanzar, la pagina reescribe el fragmento. -->
+     (#corte-d1, #corte-d3), #iterativa. Con -paso-N abre al cerrar la FILA N
+     de la tabla de la pagina (#alfa-beta-paso-12: el corte beta de C2), como
+     antes; con -linea-K abre en el paso de linea K (#alfa-beta-linea-57). Al
+     avanzar, la pagina reescribe el fragmento con -linea-K. -->
 
 <style>
   /* Paleta de skins/eva-cyberpunk.yaml, vigilada por tools/test_skin.py.
@@ -22,82 +27,137 @@
      (tools/gen_juegos.py). Los rellenos --f-* son esos colores ya fundidos
      contra --surface (al 16 % y al 7 %), como mezclar() en los generadores:
      nada de fill-opacity. --trazo es --border aclarado hasta 4.5:1: bordes de
-     panel y control, y lo que aun no se mira en el dibujo. */
+     panel y control, y lo que aun no se mira en el dibujo. --cambio es
+     --hoja: lo que la linea acaba de escribir (siempre con «←» y el valor de
+     antes tachado, nunca solo con color). */
   :root{
     --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
     --accent:#f04cff; --accent-soft:#42164f; --border:#78419e;
     --max:#55ddff; --min:#ffd166; --hoja:#a8ff5a; --azar:#f7f2ff;
     --f-max:#293154; --f-max2:#251e41; --f-min:#452f3b; --f-min2:#311e37;
     --f-azar:#433454; --f-azar2:#302041; --f-hoja:#373639; --f-hoja2:#2a2136;
-    --f-acc:#421a54; --trazo:#a273d6;
+    --f-acc:#421a54; --trazo:#a273d6; --cambio:#a8ff5a; --f-cambio:#2b3a2a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--page);color:var(--text);
             font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-  .envoltura{max-width:1240px;margin:0 auto;padding:.7rem 16px 2rem}
-  .cabeza{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .8rem;margin-bottom:.4rem}
-  h1{font-size:18px;margin:0}
-  h2{font-size:12.5px;margin:0 0 .4rem;color:var(--muted);font-weight:600;
-     letter-spacing:.04em;text-transform:uppercase}
-  .sub{color:var(--muted);font-size:13.5px;margin:0}
+  .envoltura{max-width:1280px;margin:0 auto;padding:.6rem 16px 2rem}
+  .cabeza{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem 1rem;margin-bottom:.35rem}
+  h1{font-size:17px;margin:0;letter-spacing:.01em}
+  h2{font-size:12px;margin:0 0 .45rem;color:var(--muted);font-weight:600;
+     letter-spacing:.06em;text-transform:uppercase}
+  .sub{color:var(--muted);font-size:13.5px;margin:0;flex-basis:100%}
   .panel{background:var(--surface);border:1px solid var(--trazo);border-radius:12px;
-         padding:.65rem;margin-bottom:.7rem;min-width:0}
-  @media (max-width:600px){ #p-arbol{padding:.35rem} }
+         padding:.7rem;margin-bottom:.75rem;min-width:0}
   button{background:var(--surface);color:var(--text);border:1px solid var(--trazo);
-    border-radius:8px;padding:.38rem .7rem;font:inherit;font-size:14px;cursor:pointer;
+    border-radius:8px;padding:.35rem .65rem;font:inherit;font-size:14px;cursor:pointer;
     min-height:38px}
   button:hover:not(:disabled){border-color:var(--accent)}
-  button:focus-visible,input:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+  button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--text);outline-offset:2px}
   /* inactivo: por debajo de 4.5:1 a proposito (WCAG 1.4.3 lo exime) */
   button:disabled{opacity:.5;cursor:default}
   button[aria-pressed=true]{background:var(--accent);color:#1b0025;border-color:var(--accent);
     font-weight:700}
   .selector{display:flex;flex-wrap:wrap;gap:.3rem .9rem}
   .grupo{display:flex;gap:.3rem;flex-wrap:wrap}
-  .grupo button{padding:.25rem .6rem;min-height:34px;font-size:13.5px}
-  .barra{position:sticky;top:0;z-index:2;background:var(--page);padding:.4rem 0;
-         border-bottom:1px solid var(--accent-soft);margin-bottom:.6rem}
+  .grupo button{padding:.2rem .6rem;min-height:34px;font-size:13.5px}
+  .barra{position:sticky;top:0;z-index:3;background:var(--page);padding:.45rem 0;
+         border-bottom:1px solid var(--accent-soft);margin-bottom:.7rem}
   .controles{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}
   .controles button{min-width:42px;font-size:15px}
-  #b-play{min-width:8.2em}
-  #desliz{flex:1 1 120px;min-width:100px;accent-color:var(--accent)}
-  #cuenta{font:13px ui-monospace,Menlo,monospace;color:var(--muted);white-space:nowrap}
+  .controles .fila-b{font-size:13px;color:var(--muted)}
+  .controles .fila-b b{color:var(--text);font-weight:600}
+  #b-play{min-width:8.4em}
+  #desliz{flex:1 1 140px;min-width:110px;accent-color:var(--accent)}
+  #cuenta{font:13px var(--mono);color:var(--muted);white-space:nowrap}
   .teclas{color:var(--muted);font-size:12.5px;margin:.25rem 0 0}
   .teclas b{color:var(--text)}
-  .reja{display:grid;grid-template-columns:minmax(0,1fr);gap:0 .9rem}
+  @media (max-width:600px){ .teclas{display:none} }
+
+  /* --- la reja: una columna en el telefono; tres en escritorio, en el
+     orden en que se lee un paso: la linea, lo que hace, el arbol --- */
+  .reja{display:grid;grid-template-columns:minmax(0,1fr);gap:0 .9rem;
+        grid-template-areas:"frase" "pseudo" "pila" "arbol"}
+  #col-frase{grid-area:frase;margin-bottom:.75rem} #col-pseudo{grid-area:pseudo}
+  #col-pila{grid-area:pila} #col-arbol{grid-area:arbol}
+  @media (min-width:760px){
+    .reja{grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+          grid-template-areas:"pseudo frase" "pseudo pila" "pseudo arbol";
+          grid-template-rows:auto auto 1fr}
+    /* el codigo se queda a la vista mientras se baja hasta el arbol */
+    #col-pseudo{align-self:start;position:sticky;top:calc(var(--barra,4rem) + .5rem)}
+  }
+  @media (min-width:1150px){
+    .reja{grid-template-columns:minmax(0,1.06fr) minmax(0,.9fr) minmax(0,1.04fr);
+          grid-template-areas:"pseudo frase arbol" "pseudo pila arbol";
+          grid-template-rows:auto 1fr}
+    #col-pseudo{position:static}
+  }
+
+  /* --- la frase: lo segundo que se mira --- */
+  .frase{padding:.65rem .8rem;border:2px solid var(--accent);border-radius:10px;
+         background:var(--page);font-size:16px;line-height:1.45;min-height:4.4em}
+  .frase .cab{display:flex;flex-wrap:wrap;gap:.3rem .5rem;align-items:center;margin-bottom:.3rem}
+  .chip{display:inline-block;font:700 13px var(--mono);color:#1b0025;background:var(--accent);
+        border-radius:6px;padding:.05rem .45rem}
+  .pastilla{display:inline-block;font:12.5px var(--mono);color:var(--text);
+        border:1px solid var(--trazo);border-radius:999px;padding:0 .55rem}
+  .pastilla.cierra{border-color:var(--cambio);color:var(--cambio)}
+  .resultado{margin-top:.55rem;padding:.5rem .7rem;border:1px solid var(--hoja);
+             border-radius:8px;color:var(--hoja);font-size:14px}
+
+  /* --- el pseudocodigo: la linea que corre es lo primero que se mira --- */
+  #pseudo{position:relative;overflow:auto;max-height:15.5rem;background:var(--page);
+          border-radius:8px;padding:.3rem 0}
+  .lin{display:flex;font:12.5px/1.6 var(--mono);white-space:pre;padding:0 .5rem 0 0;
+       border-left:4px solid transparent;min-width:max-content;min-height:1.6em}
+  .lin .m{width:1.4em;flex:none;text-align:center;color:var(--accent);font-weight:700}
+  .lin.cab,.lin.com{color:var(--muted)}
+  .lin.aqui{background:var(--accent-soft);border-left-color:var(--accent);font-weight:700}
+  @media (min-width:760px){
+    #pseudo{max-height:var(--alto-pseudo,24rem)}
+  }
+
+  /* --- la pila de llamadas: tarjetas apiladas, el tope arriba --- */
+  .pila{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem}
+  .marco{border:1px solid var(--trazo);border-radius:10px;background:var(--page);
+         padding:.4rem .6rem}
+  .marco .firma{font:13px/1.4 var(--mono);color:var(--muted);overflow-wrap:anywhere}
+  .marco .firma b{color:var(--text);font-weight:600}
+  .marco.actual{border:2px solid var(--accent);background:var(--f-acc);padding:.55rem .7rem}
+  .marco.actual .firma{color:var(--text);font-size:14px}
+  .marco.actual .firma b{color:var(--accent);font-weight:700}
+  .marco .etq{font:600 11px system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--accent);margin-bottom:.15rem;display:flex;justify-content:space-between;gap:.5rem}
+  .marco .etq span:last-child{color:var(--muted)}
+  .marco .resumen{font:12.5px var(--mono);color:var(--muted);margin-top:.1rem;overflow-wrap:anywhere}
+  .vars{width:100%;border-collapse:collapse;margin-top:.4rem;font:14px var(--mono)}
+  .vars th{text-align:left;font:600 11px system-ui,sans-serif;letter-spacing:.06em;
+           text-transform:uppercase;color:var(--muted);padding:0 .5rem .2rem;
+           border-bottom:1px solid var(--trazo)}
+  .vars td{padding:.18rem .5rem;border-bottom:1px solid var(--accent-soft);vertical-align:baseline}
+  .vars td:first-child{width:9.5em;color:var(--muted);white-space:nowrap}
+  .vars tr:last-child td{border-bottom:0}
+  .vars .vacia td{color:var(--muted);font:italic 13px system-ui,sans-serif}
+  .vars tr.cambia td{background:var(--f-cambio)}
+  .vars tr.cambia td:first-child{color:var(--cambio);box-shadow:inset 3px 0 var(--cambio)}
+  .vars tr.cambia td:first-child::after{content:" ←";font-weight:700}
+  .vars .nuevo{color:var(--cambio);font-weight:700}
+  .vars s, .firma s{color:var(--muted);text-decoration-thickness:2px;margin-right:.35em}
+  .firma .cambia{color:var(--cambio);font-weight:700;border-bottom:2px solid var(--cambio)}
+  .fondo{color:var(--muted);font-size:12px;margin:.35rem 0 0;text-align:center}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* --- el arbol --- */
   #arbol svg{width:100%;height:auto;display:block}
-  .leyenda{display:flex;flex-wrap:wrap;gap:.15rem .8rem;font-size:13px;color:var(--muted);
-           margin-top:.3rem}
+  @media (min-width:1150px){ #arbol svg{max-height:calc(100vh - var(--barra,4rem) - 13rem)} }
+  .leyenda{display:flex;flex-wrap:wrap;gap:.15rem .8rem;font-size:12.5px;color:var(--muted);
+           margin-top:.35rem}
   .leyenda span{display:inline-flex;align-items:center;gap:.3rem}
   .leyenda svg{width:24px;height:18px;flex:none}
   .nota{color:var(--muted);font-size:12.5px;margin:.35rem 0 0}
-  .frase{padding:.55rem .7rem;border:1px solid var(--accent);border-radius:8px;
-         background:var(--page);font-size:15px;min-height:3.2em}
-  .frase .chip{display:inline-block;font:12px ui-monospace,Menlo,monospace;
-         color:var(--accent);border:1px solid var(--accent);border-radius:6px;
-         padding:0 .35rem;margin-right:.4rem}
-  .resultado{margin-top:.55rem;padding:.5rem .7rem;border:1px solid var(--hoja);
-             border-radius:8px;color:var(--hoja);font-size:14px}
-  .est{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.2rem .8rem;margin:0;
-       font-size:14px;align-items:baseline}
-  .est dt{color:var(--muted);font:12.5px ui-monospace,Menlo,monospace;white-space:nowrap}
-  .est dd{margin:0;font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
-  .est dd .de{color:var(--muted);font-size:12.5px}
-  .est dd b{color:var(--accent)}
-  #pseudo{position:relative;overflow:auto;max-height:24rem;background:var(--page);
-          border-radius:8px;padding:.3rem 0}
-  .lin{display:flex;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
-       white-space:pre;padding:0 .5rem 0 0;border-left:3px solid transparent;
-       min-width:max-content;min-height:1.55em}
-  .lin .m{width:1.3em;flex:none;text-align:center;color:var(--accent);font-weight:700}
-  .lin.cab,.lin.com{color:var(--muted)}
-  .lin.aqui{background:var(--accent-soft);border-left-color:var(--accent);font-weight:700}
-  @media (min-width:900px){
-    .reja{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr)}
-    #arbol svg{max-height:52vh}
-    .est{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)}
-    #pseudo{max-height:max(13rem, calc(100vh - var(--barra,4rem) - 21rem))}
-  }
+  @media (max-width:600px){ #p-arbol{padding:.35rem} }
   .oculto{display:none}
   @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
@@ -105,53 +165,57 @@
 <body>
 <div class="envoltura">
   <div class="cabeza">
-    <h1>Traza paso a paso en el árbol T</h1>
-    <p class="sub" id="titulo"></p>
-  </div>
-  <div class="selector">
-    <div class="grupo" role="group" aria-label="Algoritmo" id="modos">
-      <button data-modo="minimax">Minimax</button>
-      <button data-modo="azar">Con azar</button>
-      <button data-modo="alfa-beta">Alfa-beta</button>
-      <button data-modo="corte">Con corte</button>
-      <button data-modo="iterativa">Contra el reloj</button>
+    <h1>Traza renglón por renglón en el árbol T</h1>
+    <div class="selector">
+      <div class="grupo" role="group" aria-label="Algoritmo" id="modos">
+        <button data-modo="minimax">Minimax</button>
+        <button data-modo="azar">Con azar</button>
+        <button data-modo="alfa-beta">Alfa-beta</button>
+        <button data-modo="corte">Con corte</button>
+        <button data-modo="iterativa">Contra el reloj</button>
+      </div>
+      <div class="grupo" role="group" aria-label="Variante" id="variantes"></div>
     </div>
-    <div class="grupo" role="group" aria-label="Variante" id="variantes"></div>
+    <p class="sub" id="titulo"></p>
   </div>
   <div class="barra">
     <div class="controles">
-      <button id="b-ini" aria-label="Reiniciar: volver al paso 1">⟲</button>
-      <button id="b-atras" aria-label="Paso atrás">◀</button>
-      <button id="b-adelante" aria-label="Paso adelante">▶</button>
+      <button id="b-ini" aria-label="Reiniciar: volver al primer paso">⟲</button>
+      <button id="b-fila-atras" class="fila-b" aria-label="Fila anterior de la tabla">◀◀ <b>fila</b></button>
+      <button id="b-atras" aria-label="Línea anterior">◀</button>
+      <button id="b-adelante" aria-label="Línea siguiente">▶</button>
+      <button id="b-fila-adelante" class="fila-b" aria-label="Fila siguiente de la tabla"><b>fila</b> ▶▶</button>
       <button id="b-play">▷ Reproducir</button>
       <input id="desliz" type="range" min="1" value="1" aria-label="Paso">
       <span id="cuenta" aria-hidden="true"></span>
     </div>
-    <p class="teclas" id="teclas"><span id="ayuda"><b>Pulsa ▶ para avanzar un paso.</b> </span>Teclado:
-      ← y → mueven un paso; espacio reproduce o pausa.</p>
+    <p class="teclas" id="teclas"><span id="ayuda"><b>Pulsa ▶ para correr una línea.</b> </span>Teclado:
+      ← → una línea; Mayús + ← → una fila de la tabla; espacio reproduce o pausa.</p>
   </div>
 
   <div class="reja">
+    <div id="col-frase">
+      <div class="frase" id="frase" aria-live="polite"></div>
+      <div class="resultado oculto" id="resultado"></div>
+    </div>
+    <div id="col-pseudo">
+      <div class="panel">
+        <h2>Pseudocódigo</h2>
+        <div id="pseudo" tabindex="0" aria-label="Pseudocódigo; la línea que corre va marcada"></div>
+      </div>
+    </div>
+    <div id="col-pila">
+      <div class="panel">
+        <h2 id="h-pila">Pila de llamadas · el tope arriba</h2>
+        <ol class="pila" id="pila" aria-labelledby="h-pila" reversed></ol>
+        <p class="fondo">fondo de la pila: la primera llamada</p>
+      </div>
+    </div>
     <div id="col-arbol">
       <div class="panel" id="p-arbol">
         <div id="arbol"></div>
         <div class="leyenda" id="leyenda"></div>
         <p class="nota oculto" id="nota-escala">En T, las hojas ya están en la escala 100·U.</p>
-      </div>
-      <div class="panel">
-        <div class="frase" id="frase" aria-live="polite"></div>
-        <div class="resultado oculto" id="resultado"></div>
-      </div>
-    </div>
-    <div id="col-pseudo">
-      <div class="panel">
-        <h2>Variables</h2>
-        <dl class="est" id="vars"></dl>
-      </div>
-      <div class="panel">
-        <h2>Pseudocódigo</h2>
-        <div id="pseudo"></div>
-        <p class="nota"><b style="color:var(--accent)">▸</b> marca las líneas que corren en este paso.</p>
       </div>
     </div>
   </div>
@@ -160,7 +224,7 @@
 <!-- trazas: generado por tools/gen_traza_web.py; no se edita a mano -->
 <script type="application/json" id="trazas">
 {
-"estados":["pormirar","pila","devuelto","evaluado","podado"],
+"estados":["pormirar","generado","pila","devuelto","evaluado","podado"],
 "claves_estado":["estado","v","alfa","beta","cota"],
 "claves_nodo":["id","nombre","tipo","padre","jugada","hoja","valor","prob","eval"],
 "pseudos":[
@@ -175,427 +239,2122 @@
 [["R","R","MAX",null,null,false,null,null,null],["I","I","MIN","R","izq",false,null,null,null],["I-1","3","HOJA","I",null,true,"3",null,null],["I-2","6","HOJA","I",null,true,"6",null,null],["D","D","MIN","R","der",false,null,null,null],["D-1","2","HOJA","D",null,true,"2",null,null],["D-2","12","HOJA","D",null,true,"12",null,null]],
 [["R","R","MAX",null,null,false,null,null,null],["I","I","MIN","R","izq",false,null,null,"5"],["I-1","3","HOJA","I",null,true,"3",null,null],["I-2","6","HOJA","I",null,true,"6",null,null],["C","C","MIN","R","centro",false,null,null,"4"],["C1","C1","MAX","C","c1",false,null,null,"6"],["C1-1","5","HOJA","C1",null,true,"5",null,null],["C1-2","2","HOJA","C1",null,true,"2",null,null],["C2","C2","MAX","C","c2",false,null,null,"9"],["C2-1","7","HOJA","C2",null,true,"7",null,null],["C2-2","8","HOJA","C2",null,true,"8",null,null],["D","D","MIN","R","der",false,null,null,"7"],["D-1","2","HOJA","D",null,true,"2",null,null],["D-2","12","HOJA","D",null,true,"12",null,null]]],
 "valores":[
-[1,"−∞","","",0],
+[2,"","","",0],
 [0,"","","",0],
-"",
-false,
-"R empieza: mejor_valor = −∞, aún no hay jugada.",
-1,
-"2",
-[2],
-"ninguna",
-null,
-"R",
-["R"],
-14,
-"−∞",
-[1,"+∞","","",0],
-"I es de MIN: v = +∞, mayor que todo.",
-2,
-"16",
-[16],
-"I",
-["R","I"],
-"+∞",
-[1,"3","","",0],
-[2,"3","","",0],
-"I recibe 3 de la hoja: v = min(+∞, 3) = 3.",
-3,
-"I-1",
-"18–19",
-[18,19],
-"3",
-[2,"6","","",0],
-"I recibe 6 de la hoja: v = min(3, 6) = 3.",
-4,
-"I-2",
-"6",
-"R recibe 3 de I: 3 > mejor_valor = −∞ → mejor_valor = 3, mejor_jugada = izq.",
-"4–5",
-[4,5],
-"izq",
-true,
-"C es de MIN: v = +∞, mayor que todo.",
-5,
-"C",
-["R","C"],
-"C1 es de MAX: v = −∞, menor que todo.",
-6,
-"10",
-[10],
-"C1",
-["R","C","C1"],
-[1,"5","","",0],
-[2,"5","","",0],
-"C1 recibe 5 de la hoja: v = max(−∞, 5) = 5.",
-7,
-"C1-1",
-"12–13",
-[12,13],
-"5",
-[2,"2","","",0],
-"C1 recibe 2 de la hoja: v = max(5, 2) = 5.",
-8,
-"C1-2",
-"C recibe 5 de C1: v = min(+∞, 5) = 5.",
-"C2 es de MAX: v = −∞, menor que todo.",
-9,
-"C2",
-["R","C","C2"],
-[1,"7","","",0],
-[2,"7","","",0],
-"C2 recibe 7 de la hoja: v = max(−∞, 7) = 7.",
-10,
-"C2-1",
-"7",
-[1,"8","","",0],
-[2,"8","","",0],
-"C2 recibe 8 de la hoja: v = max(7, 8) = 8.",
-11,
-"C2-2",
-"8",
-"C recibe 8 de C2: v = min(5, 8) = 5.",
-"R recibe 5 de C: 5 > mejor_valor = 3 → mejor_valor = 5, mejor_jugada = centro.",
-"centro",
-"D es de MIN: v = +∞, mayor que todo.",
-12,
-"D",
-["R","D"],
-[1,"2","","",0],
-"D recibe 2 de la hoja: v = min(+∞, 2) = 2.",
-13,
-"D-1",
-[2,"12","","",0],
-"D recibe 12 de la hoja: v = min(2, 12) = 2.",
-"D-2",
-"12",
-"R recibe 2 de D: 2 > mejor_valor = 5 es falso; mejor_jugada sigue en centro.",
-"R devuelve centro; el valor 5 se queda dentro.",
-[6],
-[1,"0","","",0],
-"I es de azar: v = 0; sumará Pr · w de cada hijo.",
-"22",
-[22],
-"0",
-[1,"3/2","","",0],
-"I suma 1/2 · 3 de la hoja: v = 0 + 3/2 = 3/2.",
-"24–25",
-[24,25],
-"3/2",
-[1,"9/2","","",0],
-"I suma 1/2 · 6 de la hoja: v = 3/2 + 3 = 9/2.",
-"9/2",
-[2,"9/2","","",0],
-"R recibe 9/2 de I: 9/2 > mejor_valor = −∞ → mejor_valor = 9/2, mejor_jugada = izq.",
-"C es de azar: v = 0; sumará Pr · w de cada hijo.",
-[1,"5/2","","",0],
-"C suma 1/2 · 5 de C1: v = 0 + 5/2 = 5/2.",
-"5/2",
-[1,"13/2","","",0],
-"C suma 1/2 · 8 de C2: v = 5/2 + 4 = 13/2.",
-"13/2",
-[2,"13/2","","",0],
-"R recibe 13/2 de C: 13/2 > mejor_valor = 9/2 → mejor_valor = 13/2, mejor_jugada = centro.",
-"D es de azar: v = 0; sumará Pr · w de cada hijo.",
-[1,"1","","",0],
-"D suma 1/2 · 2 de la hoja: v = 0 + 1 = 1.",
-"1",
-"D suma 1/2 · 12 de la hoja: v = 1 + 6 = 7.",
-"R recibe 7 de D: 7 > mejor_valor = 13/2 → mejor_valor = 7, mejor_jugada = der.",
-"der",
-"R devuelve der; el valor 7 se queda dentro.",
-[1,"−∞","−∞","+∞",0],
-"R empieza: α = −∞, aún no hay jugada.",
-[1,"+∞","−∞","+∞",0],
-"I es de MIN: v = +∞; llega con la ventana (−∞, +∞).",
-"18",
-[18],
-[1,"3","−∞","3",0],
-"I recibe 3 de la hoja: v = min(+∞, 3) = 3; 3 ≤ α = −∞ es falso, β baja a 3.",
-"20–23",
-[20,21,22,23],
-"I recibe 6 de la hoja: v = min(3, 6) = 3; 3 ≤ α = −∞ es falso, β sigue en 3.",
-[1,"3","3","+∞",0],
-"R recibe 3 de I: 3 > α = −∞ → α = 3, mejor_jugada = izq.",
-[1,"+∞","3","+∞",0],
-"D es de MIN: v = +∞; llega con la ventana (3, +∞).",
-[1,"2","3","+∞",0],
-[4,"","","",0],
-"alfa",
-"D recibe 2 de la hoja: v = 2 ≤ α = 3 → corte alfa; la hoja 12 no se genera.",
-"20–22",
-[20,21,22],
-"La hoja 12 no se genera: el corte alfa de D la deja fuera.",
+["DECIDIR-MINIMAX","R",[],[]],
 [],
-[2,"2","","",1],
-"R recibe 2 de D, una cota: 2 > α = 3 es falso; mejor_jugada sigue en izq.",
-"R devuelve izq; α = 3 se queda dentro.",
-"C es de MIN: v = +∞; llega con la ventana (3, +∞).",
-[1,"−∞","3","+∞",0],
-"C1 es de MAX: v = −∞; llega con la ventana (3, +∞).",
-[1,"5","5","+∞",0],
-"C1 recibe 5 de la hoja: v = max(−∞, 5) = 5; 5 ≥ β = +∞ es falso, α sube a 5.",
-"12–15",
-[12,13,14,15],
-"C1 recibe 2 de la hoja: v = max(5, 2) = 5; 5 ≥ β = +∞ es falso, α sigue en 5.",
-[1,"5","3","5",0],
-"C recibe 5 de C1: v = min(+∞, 5) = 5; 5 ≤ α = 3 es falso, β baja a 5.",
-[1,"−∞","3","5",0],
-"C2 es de MAX: v = −∞; llega con la ventana (3, 5).",
-[1,"7","3","5",0],
-"beta",
-"C2 recibe 7 de la hoja: v = 7 ≥ β = 5 → corte beta; la hoja 8 no se genera.",
-"12–14",
-[12,13,14],
-"La hoja 8 no se genera: el corte beta de C2 la deja fuera.",
-[2,"7","","",1],
-"C recibe 7 de C2, una cota: v = min(5, 7) = 5; 5 ≤ α = 3 es falso, β sigue en 5.",
-"R recibe 5 de C: 5 > α = 3 → α = 5, mejor_jugada = centro.",
-[1,"+∞","5","+∞",0],
-"D es de MIN: v = +∞; llega con la ventana (5, +∞).",
-[1,"2","5","+∞",0],
-"D recibe 2 de la hoja: v = 2 ≤ α = 5 → corte alfa; la hoja 12 no se genera.",
-"R recibe 2 de D, una cota: 2 > α = 5 es falso; mejor_jugada sigue en centro.",
-"R devuelve centro; α = 5 se queda dentro.",
-[3,"5","","",0],
-"R recibe EVAL(I) = 5: 5 > mejor_valor = −∞ → mejor_valor = 5, mejor_jugada = izq.",
-[3,"4","","",0],
-"R recibe EVAL(C) = 4: 4 > mejor_valor = 5 es falso; mejor_jugada sigue en izq.",
-"4",
-[3,"7","","",0],
-"R recibe EVAL(D) = 7: 7 > mejor_valor = 5 → mejor_valor = 7, mejor_jugada = der.",
-"17",
-[17],
-"19–20",
-[19,20],
-[1,"6","","",0],
-[3,"6","","",0],
-"C recibe EVAL(C1) = 6: v = min(+∞, 6) = 6.",
-[3,"9","","",0],
-"C recibe EVAL(C2) = 9: v = min(6, 9) = 6.",
-"9",
-"R recibe 6 de C: 6 > mejor_valor = 3 → mejor_valor = 6, mejor_jugada = centro.",
-"R recibe 2 de D: 2 > mejor_valor = 6 es falso; mejor_jugada sigue en centro.",
-"R devuelve centro; el valor 6 se queda dentro.",
-"11",
-[11],
-"13–14",
-[13,14],
+1,
+"Empieza DECIDIR-MINIMAX en la raíz R.",
+[2],
+"R",
+[2,"−∞","","",0],
+["DECIDIR-MINIMAX","R",[],["mejor_valor","−∞","mejor_jugada","ninguna"]],
+[[0,"mejor_valor",""],[0,"mejor_jugada",""]],
+"mejor_valor ← −∞ y mejor_jugada ← ninguna: aún no hay jugada.",
+2,
+[9],
+["DECIDIR-MINIMAX","R",[],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq"]],
+[[0,"a",""]],
+"Toma a = izq: el primer hijo de R es I.",
+3,
+[14],
 [1,"","","",0],
-"Antes de buscar: jugada = izq, una cualquiera, y d = 1.",
-"2–3",
-[2,3],
-"Búsqueda con d = 1: α = −∞ y mejor_jugada = izq, la jugada lista.",
-[5],
-"R recibe EVAL(I) = 5: 5 > α = −∞ → α = 5, mejor_jugada = izq.",
-"7–10",
-[7,8,9,10],
-"R recibe EVAL(C) = 4: 4 > α = 5 es falso; mejor_jugada sigue en izq.",
-[1,"7","7","+∞",0],
-"R recibe EVAL(D) = 7: 7 > α = 5 → α = 7, mejor_jugada = der.",
-"La búsqueda con d = 1 terminó: jugada = der; la siguiente usará d = 2.",
-"11–12",
-[11,12],
-"Búsqueda con d = 2: α = −∞ y mejor_jugada = der, la jugada lista.",
-"D es de MIN: v = +∞; llega con la ventana (−∞, +∞).",
-"26",
-[26],
-[1,"2","−∞","2",0],
-"D recibe 2 de la hoja: v = min(+∞, 2) = 2; 2 ≤ α = −∞ es falso, β baja a 2.",
-"28–31",
-[28,29,30,31],
-"D recibe 12 de la hoja: v = min(2, 12) = 2; 2 ≤ α = −∞ es falso, β sigue en 2.",
-[1,"2","2","+∞",0],
-"R recibe 2 de D: 2 > α = −∞ → α = 2, mejor_jugada = der.",
-[1,"+∞","2","+∞",0],
-"I es de MIN: v = +∞; llega con la ventana (2, +∞).",
-[1,"3","2","3",0],
-"I recibe 3 de la hoja: v = min(+∞, 3) = 3; 3 ≤ α = 2 es falso, β baja a 3.",
-"I recibe 6 de la hoja: v = min(3, 6) = 3; 3 ≤ α = 2 es falso, β sigue en 3.",
-"R recibe 3 de I: 3 > α = 2 → α = 3, mejor_jugada = izq.",
-[1,"6","3","6",0],
-"C recibe EVAL(C1) = 6: v = min(+∞, 6) = 6; 6 ≤ α = 3 es falso, β baja a 6.",
-"C recibe EVAL(C2) = 9: v = min(6, 9) = 6; 6 ≤ α = 3 es falso, β sigue en 6.",
-[1,"6","6","+∞",0],
-"R recibe 6 de C: 6 > α = 3 → α = 6, mejor_jugada = centro.",
-"La búsqueda con d = 2 terminó: jugada = centro; la siguiente usará d = 3.",
-"Búsqueda con d = 3: α = −∞ y mejor_jugada = centro, la jugada lista.",
-"C es de MIN: v = +∞; llega con la ventana (−∞, +∞).",
-"C1 es de MAX: v = −∞; llega con la ventana (−∞, +∞).",
-[1,"5","−∞","5",0],
-"C recibe 5 de C1: v = min(+∞, 5) = 5; 5 ≤ α = −∞ es falso, β baja a 5.",
-[1,"−∞","−∞","5",0],
-"C2 es de MAX: v = −∞; llega con la ventana (−∞, 5).",
-[1,"7","−∞","5",0],
-"C recibe 7 de C2, una cota: v = min(5, 7) = 5; 5 ≤ α = −∞ es falso, β sigue en 5.",
-"R recibe 5 de C: 5 > α = −∞ → α = 5, mejor_jugada = centro.",
-"I es de MIN: v = +∞; llega con la ventana (5, +∞).",
-[1,"3","5","+∞",0],
-"I recibe 3 de la hoja: v = 3 ≤ α = 5 → corte alfa; la hoja 6 no se genera.",
-"28–30",
-[28,29,30],
-"La hoja 6 no se genera: el corte alfa de I la deja fuera.",
-[2,"3","","",1],
-"R recibe 3 de I, una cota: 3 > α = 5 es falso; mejor_jugada sigue en centro.",
-"La búsqueda con d = 3 terminó: jugada = centro; ya no hay tiempo.",
-"Se acaba el tiempo: se entrega centro, de la búsqueda con d = 3.",
-"4, 13",
-[4,13]],
+"Genera I y llama MINIMAX(I).",
+4,
+["MINIMAX","I",[],[]],
+"Entra a MINIMAX: s = I.",
+7,
+[14,22],
+"I",
+"s ∈ S_F? no: I no es final.",
+8,
+"Pl(I) = MAX? no.",
+9,
+"else: en I elige MIN.",
+15,
+[2,"+∞","","",0],
+["MINIMAX","I",[],["v","+∞"]],
+[[1,"v",""]],
+"v ← +∞: mayor que todo.",
+16,
+[14,34],
+["MINIMAX","I",[],["v","+∞","a","→3"]],
+[[1,"a",""]],
+"Toma a = →3, la jugada hacia la hoja 3: el primer hijo de I.",
+17,
+[14,39],
+"Genera la hoja 3 y llama MINIMAX(hoja 3).",
+18,
+["MINIMAX","I-1",[],[]],
+"Entra a MINIMAX: s = la hoja 3.",
+[14,39,46],
+"I-1",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 3.",
+[3,"3","","",0],
+["MINIMAX","I",[],["v","+∞","a","→3","w","3"]],
+[[1,"w",""]],
+"w ← 3: lo que devolvió la hoja.",
+[14,52],
+[2,"3","","",0],
+["MINIMAX","I",[],["v","3","a","→3","w","3"]],
+[[1,"v","+∞"]],
+"v ← min(+∞, 3) = 3.",
+19,
+[14,57],
+["MINIMAX","I",[],["v","3","a","→6","w","3"]],
+[[1,"a","→3"]],
+"Toma a = →6, la jugada hacia la hoja 6: el segundo hijo de I.",
+[14,62],
+"Genera la hoja 6 y llama MINIMAX(hoja 6).",
+["MINIMAX","I-2",[],[]],
+"Entra a MINIMAX: s = la hoja 6.",
+[14,62,67],
+"I-2",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 6.",
+[3,"6","","",0],
+["MINIMAX","I",[],["v","3","a","→6","w","6"]],
+[[1,"w","3"]],
+"w ← 6: lo que devolvió la hoja.",
+[14,73],
+[[1,"v","3"]],
+"v ← min(3, 6) = 3.",
+5,
+"No quedan hijos: I devuelve v = 3.",
+20,
+["DECIDIR-MINIMAX","R",[],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq","w","3"]],
+[[0,"w",""]],
+"w ← 3: lo que devolvió I.",
+[82],
+["DECIDIR-MINIMAX","R",[],["mejor_valor","3","mejor_jugada","izq","a","izq","w","3"]],
+[[0,"mejor_valor","−∞"],[0,"mejor_jugada","ninguna"]],
+"w > mejor_valor? 3 > −∞ sí → mejor_valor ← 3, mejor_jugada ← izq.",
+[86],
+["DECIDIR-MINIMAX","R",[],["mejor_valor","3","mejor_jugada","izq","a","centro","w","3"]],
+[[0,"a","izq"]],
+6,
+"Toma a = centro: el segundo hijo de R es C.",
+[90],
+"Genera C y llama MINIMAX(C).",
+["MINIMAX","C",[],[]],
+"Entra a MINIMAX: s = C.",
+[90,96],
+"C",
+"s ∈ S_F? no: C no es final.",
+"Pl(C) = MAX? no.",
+"else: en C elige MIN.",
+["MINIMAX","C",[],["v","+∞"]],
+[90,103],
+["MINIMAX","C",[],["v","+∞","a","c1"]],
+"Toma a = c1: el primer hijo de C es C1.",
+[90,105],
+"Genera C1 y llama MINIMAX(C1).",
+["MINIMAX","C1",[],[]],
+"Entra a MINIMAX: s = C1.",
+[90,105,109],
+"C1",
+"s ∈ S_F? no: C1 no es final.",
+"Pl(C1) = MAX? sí: en C1 elige MAX.",
+["MINIMAX","C1",[],["v","−∞"]],
+[[2,"v",""]],
+"v ← −∞: menor que todo.",
+10,
+[90,105,115],
+["MINIMAX","C1",[],["v","−∞","a","→5"]],
+[[2,"a",""]],
+"Toma a = →5, la jugada hacia la hoja 5: el primer hijo de C1.",
+11,
+[90,105,120],
+"Genera la hoja 5 y llama MINIMAX(hoja 5).",
+12,
+["MINIMAX","C1-1",[],[]],
+"Entra a MINIMAX: s = la hoja 5.",
+[90,105,120,127],
+"C1-1",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 5.",
+[3,"5","","",0],
+["MINIMAX","C1",[],["v","−∞","a","→5","w","5"]],
+[[2,"w",""]],
+"w ← 5: lo que devolvió la hoja.",
+[90,105,133],
+[2,"5","","",0],
+["MINIMAX","C1",[],["v","5","a","→5","w","5"]],
+[[2,"v","−∞"]],
+"v ← max(−∞, 5) = 5.",
+13,
+[90,105,138],
+["MINIMAX","C1",[],["v","5","a","→2","w","5"]],
+[[2,"a","→5"]],
+"Toma a = →2, la jugada hacia la hoja 2: el segundo hijo de C1.",
+[90,105,143],
+"Genera la hoja 2 y llama MINIMAX(hoja 2).",
+["MINIMAX","C1-2",[],[]],
+"Entra a MINIMAX: s = la hoja 2.",
+[90,105,143,148],
+"C1-2",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 2.",
+[3,"2","","",0],
+["MINIMAX","C1",[],["v","5","a","→2","w","2"]],
+[[2,"w","5"]],
+"w ← 2: lo que devolvió la hoja.",
+[90,105,154],
+[[2,"v","5"]],
+"v ← max(5, 2) = 5.",
+"No quedan hijos: C1 devuelve v = 5.",
+14,
+["MINIMAX","C",[],["v","+∞","a","c1","w","5"]],
+"w ← 5: lo que devolvió C1.",
+[90,162],
+["MINIMAX","C",[],["v","5","a","c1","w","5"]],
+"v ← min(+∞, 5) = 5.",
+[90,165],
+["MINIMAX","C",[],["v","5","a","c2","w","5"]],
+[[1,"a","c1"]],
+"Toma a = c2: el segundo hijo de C es C2.",
+[90,168],
+"Genera C2 y llama MINIMAX(C2).",
+["MINIMAX","C2",[],[]],
+"Entra a MINIMAX: s = C2.",
+[90,168,173],
+"C2",
+"s ∈ S_F? no: C2 no es final.",
+"Pl(C2) = MAX? sí: en C2 elige MAX.",
+["MINIMAX","C2",[],["v","−∞"]],
+[90,168,179],
+["MINIMAX","C2",[],["v","−∞","a","→7"]],
+"Toma a = →7, la jugada hacia la hoja 7: el primer hijo de C2.",
+[90,168,181],
+"Genera la hoja 7 y llama MINIMAX(hoja 7).",
+["MINIMAX","C2-1",[],[]],
+"Entra a MINIMAX: s = la hoja 7.",
+[90,168,181,185],
+"C2-1",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 7.",
+[3,"7","","",0],
+["MINIMAX","C2",[],["v","−∞","a","→7","w","7"]],
+"w ← 7: lo que devolvió la hoja.",
+[90,168,191],
+[2,"7","","",0],
+["MINIMAX","C2",[],["v","7","a","→7","w","7"]],
+"v ← max(−∞, 7) = 7.",
+[90,168,195],
+["MINIMAX","C2",[],["v","7","a","→8","w","7"]],
+[[2,"a","→7"]],
+"Toma a = →8, la jugada hacia la hoja 8: el segundo hijo de C2.",
+[90,168,198],
+"Genera la hoja 8 y llama MINIMAX(hoja 8).",
+["MINIMAX","C2-2",[],[]],
+"Entra a MINIMAX: s = la hoja 8.",
+[90,168,198,203],
+"C2-2",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 8.",
+[3,"8","","",0],
+["MINIMAX","C2",[],["v","7","a","→8","w","8"]],
+[[2,"w","7"]],
+"w ← 8: lo que devolvió la hoja.",
+[90,168,209],
+[2,"8","","",0],
+["MINIMAX","C2",[],["v","8","a","→8","w","8"]],
+[[2,"v","7"]],
+"v ← max(7, 8) = 8.",
+[90,168,214],
+"No quedan hijos: C2 devuelve v = 8.",
+["MINIMAX","C",[],["v","5","a","c2","w","8"]],
+[[1,"w","5"]],
+"w ← 8: lo que devolvió C2.",
+[90,219],
+[[1,"v","5"]],
+"v ← min(5, 8) = 5.",
+"No quedan hijos: C devuelve v = 5.",
+["DECIDIR-MINIMAX","R",[],["mejor_valor","3","mejor_jugada","izq","a","centro","w","5"]],
+[[0,"w","3"]],
+"w ← 5: lo que devolvió C.",
+[226],
+["DECIDIR-MINIMAX","R",[],["mejor_valor","5","mejor_jugada","centro","a","centro","w","5"]],
+[[0,"mejor_valor","3"],[0,"mejor_jugada","izq"]],
+"w > mejor_valor? 5 > 3 sí → mejor_valor ← 5, mejor_jugada ← centro.",
+[230],
+["DECIDIR-MINIMAX","R",[],["mejor_valor","5","mejor_jugada","centro","a","der","w","5"]],
+[[0,"a","centro"]],
+"Toma a = der: el tercer hijo de R es D.",
+[234],
+"Genera D y llama MINIMAX(D).",
+["MINIMAX","D",[],[]],
+"Entra a MINIMAX: s = D.",
+[234,239],
+"D",
+"s ∈ S_F? no: D no es final.",
+"Pl(D) = MAX? no.",
+"else: en D elige MIN.",
+["MINIMAX","D",[],["v","+∞"]],
+[234,246],
+["MINIMAX","D",[],["v","+∞","a","→2"]],
+"Toma a = →2, la jugada hacia la hoja 2: el primer hijo de D.",
+[234,248],
+["MINIMAX","D-1",[],[]],
+[234,248,251],
+"D-1",
+["MINIMAX","D",[],["v","+∞","a","→2","w","2"]],
+[234,254],
+[2,"2","","",0],
+["MINIMAX","D",[],["v","2","a","→2","w","2"]],
+"v ← min(+∞, 2) = 2.",
+[234,257],
+["MINIMAX","D",[],["v","2","a","→12","w","2"]],
+[[1,"a","→2"]],
+"Toma a = →12, la jugada hacia la hoja 12: el segundo hijo de D.",
+[234,260],
+"Genera la hoja 12 y llama MINIMAX(hoja 12).",
+["MINIMAX","D-2",[],[]],
+"Entra a MINIMAX: s = la hoja 12.",
+[234,260,265],
+"D-2",
+"s ∈ S_F? sí: la hoja es final → return U(s) = 12.",
+[3,"12","","",0],
+["MINIMAX","D",[],["v","2","a","→12","w","12"]],
+[[1,"w","2"]],
+"w ← 12: lo que devolvió la hoja.",
+[234,271],
+[[1,"v","2"]],
+"v ← min(2, 12) = 2.",
+"No quedan hijos: D devuelve v = 2.",
+["DECIDIR-MINIMAX","R",[],["mejor_valor","5","mejor_jugada","centro","a","der","w","2"]],
+[[0,"w","5"]],
+"w ← 2: lo que devolvió D.",
+[278],
+"w > mejor_valor? 2 > 5 no: mejor_jugada sigue en centro.",
+"Ya no quedan jugadas: return mejor_jugada = centro.",
+["DECIDIR-EXPECTIMINIMAX","R",[],[]],
+"Empieza DECIDIR-EXPECTIMINIMAX en la raíz R.",
+[284],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","−∞","mejor_jugada","ninguna"]],
+[287],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq"]],
+[289],
+"Genera I y llama EXPECTIMINIMAX(I).",
+["EXPECTIMINIMAX","I",[],[]],
+"Entra a EXPECTIMINIMAX: s = I.",
+[289,292],
+"Pl(I) = MIN? no: I es de azar.",
+"else: I es de azar; nadie elige.",
+21,
+[2,"0","","",0],
+["EXPECTIMINIMAX","I",[],["v","0"]],
+"v ← 0: aquí se suma, no se compara.",
+22,
+[289,299],
+["EXPECTIMINIMAX","I",[],["v","0","a","→3"]],
+23,
+[289,303],
+"Genera la hoja 3 y llama EXPECTIMINIMAX(hoja 3).",
+24,
+["EXPECTIMINIMAX","I-1",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 3.",
+[289,303,308],
+["EXPECTIMINIMAX","I",[],["v","0","a","→3","w","3"]],
+[289,311],
+[2,"3/2","","",0],
+["EXPECTIMINIMAX","I",[],["v","3/2","a","→3","w","3"]],
+[[1,"v","0"]],
+"v ← 0 + 1/2 · 3 = 3/2.",
+25,
+[289,314],
+["EXPECTIMINIMAX","I",[],["v","3/2","a","→6","w","3"]],
+[289,319],
+"Genera la hoja 6 y llama EXPECTIMINIMAX(hoja 6).",
+["EXPECTIMINIMAX","I-2",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 6.",
+[289,319,322],
+["EXPECTIMINIMAX","I",[],["v","3/2","a","→6","w","6"]],
+[289,325],
+[2,"9/2","","",0],
+["EXPECTIMINIMAX","I",[],["v","9/2","a","→6","w","6"]],
+[[1,"v","3/2"]],
+"v ← 3/2 + 1/2 · 6 = 9/2.",
+[289,328],
+"No quedan hijos: I devuelve v = 9/2.",
+26,
+[3,"9/2","","",0],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq","w","9/2"]],
+"w ← 9/2: lo que devolvió I.",
+[335],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","9/2","mejor_jugada","izq","a","izq","w","9/2"]],
+"w > mejor_valor? 9/2 > −∞ sí → mejor_valor ← 9/2, mejor_jugada ← izq.",
+[338],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","9/2","mejor_jugada","izq","a","centro","w","9/2"]],
+[341],
+"Genera C y llama EXPECTIMINIMAX(C).",
+["EXPECTIMINIMAX","C",[],[]],
+"Entra a EXPECTIMINIMAX: s = C.",
+[341,344],
+"Pl(C) = MIN? no: C es de azar.",
+"else: C es de azar; nadie elige.",
+["EXPECTIMINIMAX","C",[],["v","0"]],
+[341,349],
+["EXPECTIMINIMAX","C",[],["v","0","a","c1"]],
+[341,351],
+"Genera C1 y llama EXPECTIMINIMAX(C1).",
+["EXPECTIMINIMAX","C1",[],[]],
+"Entra a EXPECTIMINIMAX: s = C1.",
+[341,351,354],
+["EXPECTIMINIMAX","C1",[],["v","−∞"]],
+[341,351,357],
+["EXPECTIMINIMAX","C1",[],["v","−∞","a","→5"]],
+[341,351,359],
+"Genera la hoja 5 y llama EXPECTIMINIMAX(hoja 5).",
+["EXPECTIMINIMAX","C1-1",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 5.",
+[341,351,359,362],
+["EXPECTIMINIMAX","C1",[],["v","−∞","a","→5","w","5"]],
+[341,351,365],
+["EXPECTIMINIMAX","C1",[],["v","5","a","→5","w","5"]],
+[341,351,367],
+["EXPECTIMINIMAX","C1",[],["v","5","a","→2","w","5"]],
+[341,351,369],
+"Genera la hoja 2 y llama EXPECTIMINIMAX(hoja 2).",
+["EXPECTIMINIMAX","C1-2",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 2.",
+[341,351,369,372],
+["EXPECTIMINIMAX","C1",[],["v","5","a","→2","w","2"]],
+[341,351,375],
+["EXPECTIMINIMAX","C",[],["v","0","a","c1","w","5"]],
+[341,377],
+[2,"5/2","","",0],
+["EXPECTIMINIMAX","C",[],["v","5/2","a","c1","w","5"]],
+"v ← 0 + 1/2 · 5 = 5/2.",
+[341,380],
+["EXPECTIMINIMAX","C",[],["v","5/2","a","c2","w","5"]],
+[341,383],
+"Genera C2 y llama EXPECTIMINIMAX(C2).",
+["EXPECTIMINIMAX","C2",[],[]],
+"Entra a EXPECTIMINIMAX: s = C2.",
+[341,383,386],
+["EXPECTIMINIMAX","C2",[],["v","−∞"]],
+[341,383,389],
+["EXPECTIMINIMAX","C2",[],["v","−∞","a","→7"]],
+[341,383,391],
+"Genera la hoja 7 y llama EXPECTIMINIMAX(hoja 7).",
+["EXPECTIMINIMAX","C2-1",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 7.",
+[341,383,391,394],
+["EXPECTIMINIMAX","C2",[],["v","−∞","a","→7","w","7"]],
+[341,383,397],
+["EXPECTIMINIMAX","C2",[],["v","7","a","→7","w","7"]],
+[341,383,399],
+["EXPECTIMINIMAX","C2",[],["v","7","a","→8","w","7"]],
+[341,383,401],
+"Genera la hoja 8 y llama EXPECTIMINIMAX(hoja 8).",
+["EXPECTIMINIMAX","C2-2",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 8.",
+[341,383,401,404],
+["EXPECTIMINIMAX","C2",[],["v","7","a","→8","w","8"]],
+[341,383,407],
+["EXPECTIMINIMAX","C2",[],["v","8","a","→8","w","8"]],
+[341,383,409],
+["EXPECTIMINIMAX","C",[],["v","5/2","a","c2","w","8"]],
+[341,411],
+[2,"13/2","","",0],
+["EXPECTIMINIMAX","C",[],["v","13/2","a","c2","w","8"]],
+[[1,"v","5/2"]],
+"v ← 5/2 + 1/2 · 8 = 13/2.",
+[341,414],
+"No quedan hijos: C devuelve v = 13/2.",
+[3,"13/2","","",0],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","9/2","mejor_jugada","izq","a","centro","w","13/2"]],
+[[0,"w","9/2"]],
+"w ← 13/2: lo que devolvió C.",
+[420],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","13/2","mejor_jugada","centro","a","centro","w","13/2"]],
+[[0,"mejor_valor","9/2"],[0,"mejor_jugada","izq"]],
+"w > mejor_valor? 13/2 > 9/2 sí → mejor_valor ← 13/2, mejor_jugada ← centro.",
+[424],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","13/2","mejor_jugada","centro","a","der","w","13/2"]],
+[428],
+"Genera D y llama EXPECTIMINIMAX(D).",
+["EXPECTIMINIMAX","D",[],[]],
+"Entra a EXPECTIMINIMAX: s = D.",
+[428,431],
+"Pl(D) = MIN? no: D es de azar.",
+"else: D es de azar; nadie elige.",
+["EXPECTIMINIMAX","D",[],["v","0"]],
+[428,436],
+["EXPECTIMINIMAX","D",[],["v","0","a","→2"]],
+[428,438],
+["EXPECTIMINIMAX","D-1",[],[]],
+[428,438,440],
+["EXPECTIMINIMAX","D",[],["v","0","a","→2","w","2"]],
+[428,442],
+[2,"1","","",0],
+["EXPECTIMINIMAX","D",[],["v","1","a","→2","w","2"]],
+"v ← 0 + 1/2 · 2 = 1.",
+[428,445],
+["EXPECTIMINIMAX","D",[],["v","1","a","→12","w","2"]],
+[428,448],
+"Genera la hoja 12 y llama EXPECTIMINIMAX(hoja 12).",
+["EXPECTIMINIMAX","D-2",[],[]],
+"Entra a EXPECTIMINIMAX: s = la hoja 12.",
+[428,448,451],
+["EXPECTIMINIMAX","D",[],["v","1","a","→12","w","12"]],
+[428,454],
+["EXPECTIMINIMAX","D",[],["v","7","a","→12","w","12"]],
+[[1,"v","1"]],
+"v ← 1 + 1/2 · 12 = 7.",
+[428,456],
+"No quedan hijos: D devuelve v = 7.",
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","13/2","mejor_jugada","centro","a","der","w","7"]],
+[[0,"w","13/2"]],
+"w ← 7: lo que devolvió D.",
+[461],
+["DECIDIR-EXPECTIMINIMAX","R",[],["mejor_valor","7","mejor_jugada","der","a","der","w","7"]],
+[[0,"mejor_valor","13/2"],[0,"mejor_jugada","centro"]],
+"w > mejor_valor? 7 > 13/2 sí → mejor_valor ← 7, mejor_jugada ← der.",
+[465],
+"Ya no quedan jugadas: return mejor_jugada = der.",
+["DECIDIR-ALFA-BETA","R",[],[]],
+"Empieza DECIDIR-ALFA-BETA en la raíz R.",
+[470],
+[2,"−∞","−∞","+∞",0],
+["DECIDIR-ALFA-BETA","R",[],["α","−∞","mejor_jugada","ninguna"]],
+[[0,"α",""],[0,"mejor_jugada",""]],
+"α ← −∞ y mejor_jugada ← ninguna: aún no hay jugada.",
+[474],
+["DECIDIR-ALFA-BETA","R",[],["α","−∞","mejor_jugada","ninguna","a","izq"]],
+[478],
+"Genera I y llama ALFA-BETA(I, α = −∞, β = +∞).",
+[2,"","−∞","+∞",0],
+["ALFA-BETA","I",["α","−∞","β","+∞"],[]],
+[[1,"α",""],[1,"β",""]],
+"Entra a ALFA-BETA: s = I, α = −∞, β = +∞.",
+[478,482],
+[2,"+∞","−∞","+∞",0],
+["ALFA-BETA","I",["α","−∞","β","+∞"],["v","+∞"]],
+[478,487],
+["ALFA-BETA","I",["α","−∞","β","+∞"],["v","+∞","a","→3"]],
+[478,489],
+"Genera la hoja 3 y llama ALFA-BETA(hoja 3, α = −∞, β = +∞).",
+["ALFA-BETA","I-1",["α","−∞","β","+∞"],[]],
+[[2,"α",""],[2,"β",""]],
+"Entra a ALFA-BETA: s = la hoja 3, α = −∞, β = +∞.",
+[478,489,492],
+["ALFA-BETA","I",["α","−∞","β","+∞"],["v","+∞","a","→3","w","3"]],
+[478,496],
+[2,"3","−∞","+∞",0],
+["ALFA-BETA","I",["α","−∞","β","+∞"],["v","3","a","→3","w","3"]],
+[478,499],
+"v ≤ α? 3 ≤ −∞ no: sigue.",
+[2,"3","−∞","3",0],
+["ALFA-BETA","I",["α","−∞","β","3"],["v","3","a","→3","w","3"]],
+[[1,"β","+∞"]],
+"β ← min(+∞, 3) = 3: β baja.",
+[478,503],
+["ALFA-BETA","I",["α","−∞","β","3"],["v","3","a","→6","w","3"]],
+[478,507],
+"Genera la hoja 6 y llama ALFA-BETA(hoja 6, α = −∞, β = 3).",
+[2,"","−∞","3",0],
+["ALFA-BETA","I-2",["α","−∞","β","3"],[]],
+"Entra a ALFA-BETA: s = la hoja 6, α = −∞, β = 3.",
+[478,507,511],
+["ALFA-BETA","I",["α","−∞","β","3"],["v","3","a","→6","w","6"]],
+[478,514],
+[[1,"β","3"]],
+"β ← min(3, 3) = 3: β sigue igual.",
+["DECIDIR-ALFA-BETA","R",[],["α","−∞","mejor_jugada","ninguna","a","izq","w","3"]],
+[518],
+[2,"3","3","+∞",0],
+["DECIDIR-ALFA-BETA","R",[],["α","3","mejor_jugada","izq","a","izq","w","3"]],
+[[0,"α","−∞"],[0,"mejor_jugada","ninguna"]],
+"w > α? 3 > −∞ sí → α ← 3, mejor_jugada ← izq.",
+[521],
+["DECIDIR-ALFA-BETA","R",[],["α","3","mejor_jugada","izq","a","der","w","3"]],
+"Toma a = der: el segundo hijo de R es D.",
+[525],
+"Genera D y llama ALFA-BETA(D, α = 3, β = +∞).",
+[2,"","3","+∞",0],
+["ALFA-BETA","D",["α","3","β","+∞"],[]],
+"Entra a ALFA-BETA: s = D, α = 3, β = +∞.",
+[525,530],
+[2,"+∞","3","+∞",0],
+["ALFA-BETA","D",["α","3","β","+∞"],["v","+∞"]],
+[525,534],
+["ALFA-BETA","D",["α","3","β","+∞"],["v","+∞","a","→2"]],
+[525,536],
+"Genera la hoja 2 y llama ALFA-BETA(hoja 2, α = 3, β = +∞).",
+["ALFA-BETA","D-1",["α","3","β","+∞"],[]],
+"Entra a ALFA-BETA: s = la hoja 2, α = 3, β = +∞.",
+[525,536,539],
+["ALFA-BETA","D",["α","3","β","+∞"],["v","+∞","a","→2","w","2"]],
+[525,542],
+[2,"2","3","+∞",0],
+["ALFA-BETA","D",["α","3","β","+∞"],["v","2","a","→2","w","2"]],
+[525,545],
+[5,"","","",0],
+[8],
+"v ≤ α? 2 ≤ 3 sí → return 2, corte alfa; la hoja 12 no se genera.",
+[3,"2","","",1],
+["DECIDIR-ALFA-BETA","R",[],["α","3","mejor_jugada","izq","a","der","w","2"]],
+"w ← 2: lo que devolvió D, una cota.",
+[551],
+"w > α? 2 > 3 no: mejor_jugada sigue en izq.",
+"Ya no quedan jugadas: return mejor_jugada = izq.",
+["DECIDIR-ALFA-BETA","R",[],["α","3","mejor_jugada","izq","a","centro","w","3"]],
+[556],
+"Genera C y llama ALFA-BETA(C, α = 3, β = +∞).",
+["ALFA-BETA","C",["α","3","β","+∞"],[]],
+"Entra a ALFA-BETA: s = C, α = 3, β = +∞.",
+[556,559],
+["ALFA-BETA","C",["α","3","β","+∞"],["v","+∞"]],
+[556,562],
+["ALFA-BETA","C",["α","3","β","+∞"],["v","+∞","a","c1"]],
+[556,564],
+"Genera C1 y llama ALFA-BETA(C1, α = 3, β = +∞).",
+["ALFA-BETA","C1",["α","3","β","+∞"],[]],
+"Entra a ALFA-BETA: s = C1, α = 3, β = +∞.",
+[556,564,567],
+[2,"−∞","3","+∞",0],
+["ALFA-BETA","C1",["α","3","β","+∞"],["v","−∞"]],
+[556,564,571],
+["ALFA-BETA","C1",["α","3","β","+∞"],["v","−∞","a","→5"]],
+[556,564,573],
+"Genera la hoja 5 y llama ALFA-BETA(hoja 5, α = 3, β = +∞).",
+["ALFA-BETA","C1-1",["α","3","β","+∞"],[]],
+[[3,"α",""],[3,"β",""]],
+"Entra a ALFA-BETA: s = la hoja 5, α = 3, β = +∞.",
+[556,564,573,576],
+["ALFA-BETA","C1",["α","3","β","+∞"],["v","−∞","a","→5","w","5"]],
+[556,564,580],
+[2,"5","3","+∞",0],
+["ALFA-BETA","C1",["α","3","β","+∞"],["v","5","a","→5","w","5"]],
+[556,564,583],
+"v ≥ β? 5 ≥ +∞ no: sigue.",
+[2,"5","5","+∞",0],
+["ALFA-BETA","C1",["α","5","β","+∞"],["v","5","a","→5","w","5"]],
+[[2,"α","3"]],
+"α ← max(3, 5) = 5: α sube.",
+[556,564,587],
+["ALFA-BETA","C1",["α","5","β","+∞"],["v","5","a","→2","w","5"]],
+[556,564,591],
+"Genera la hoja 2 y llama ALFA-BETA(hoja 2, α = 5, β = +∞).",
+[2,"","5","+∞",0],
+["ALFA-BETA","C1-2",["α","5","β","+∞"],[]],
+"Entra a ALFA-BETA: s = la hoja 2, α = 5, β = +∞.",
+[556,564,591,595],
+["ALFA-BETA","C1",["α","5","β","+∞"],["v","5","a","→2","w","2"]],
+[556,564,598],
+[[2,"α","5"]],
+"α ← max(5, 5) = 5: α sigue igual.",
+["ALFA-BETA","C",["α","3","β","+∞"],["v","+∞","a","c1","w","5"]],
+[556,602],
+["ALFA-BETA","C",["α","3","β","+∞"],["v","5","a","c1","w","5"]],
+[556,604],
+"v ≤ α? 5 ≤ 3 no: sigue.",
+[2,"5","3","5",0],
+["ALFA-BETA","C",["α","3","β","5"],["v","5","a","c1","w","5"]],
+"β ← min(+∞, 5) = 5: β baja.",
+[556,608],
+["ALFA-BETA","C",["α","3","β","5"],["v","5","a","c2","w","5"]],
+[556,611],
+"Genera C2 y llama ALFA-BETA(C2, α = 3, β = 5).",
+[2,"","3","5",0],
+["ALFA-BETA","C2",["α","3","β","5"],[]],
+"Entra a ALFA-BETA: s = C2, α = 3, β = 5.",
+[556,611,615],
+[2,"−∞","3","5",0],
+["ALFA-BETA","C2",["α","3","β","5"],["v","−∞"]],
+[556,611,619],
+["ALFA-BETA","C2",["α","3","β","5"],["v","−∞","a","→7"]],
+[556,611,621],
+"Genera la hoja 7 y llama ALFA-BETA(hoja 7, α = 3, β = 5).",
+["ALFA-BETA","C2-1",["α","3","β","5"],[]],
+"Entra a ALFA-BETA: s = la hoja 7, α = 3, β = 5.",
+[556,611,621,624],
+["ALFA-BETA","C2",["α","3","β","5"],["v","−∞","a","→7","w","7"]],
+[556,611,627],
+[2,"7","3","5",0],
+["ALFA-BETA","C2",["α","3","β","5"],["v","7","a","→7","w","7"]],
+[556,611,630],
+[13],
+"v ≥ β? 7 ≥ 5 sí → return 7, corte beta; la hoja 8 no se genera.",
+[3,"7","","",1],
+["ALFA-BETA","C",["α","3","β","5"],["v","5","a","c2","w","7"]],
+"w ← 7: lo que devolvió C2, una cota.",
+[556,635],
+"v ← min(5, 7) = 5.",
+[[1,"β","5"]],
+"β ← min(5, 5) = 5: β sigue igual.",
+["DECIDIR-ALFA-BETA","R",[],["α","3","mejor_jugada","izq","a","centro","w","5"]],
+[641],
+["DECIDIR-ALFA-BETA","R",[],["α","5","mejor_jugada","centro","a","centro","w","5"]],
+[[0,"α","3"],[0,"mejor_jugada","izq"]],
+"w > α? 5 > 3 sí → α ← 5, mejor_jugada ← centro.",
+[643],
+["DECIDIR-ALFA-BETA","R",[],["α","5","mejor_jugada","centro","a","der","w","5"]],
+[647],
+"Genera D y llama ALFA-BETA(D, α = 5, β = +∞).",
+["ALFA-BETA","D",["α","5","β","+∞"],[]],
+"Entra a ALFA-BETA: s = D, α = 5, β = +∞.",
+[647,650],
+[2,"+∞","5","+∞",0],
+["ALFA-BETA","D",["α","5","β","+∞"],["v","+∞"]],
+[647,654],
+["ALFA-BETA","D",["α","5","β","+∞"],["v","+∞","a","→2"]],
+[647,656],
+["ALFA-BETA","D-1",["α","5","β","+∞"],[]],
+[647,656,658],
+["ALFA-BETA","D",["α","5","β","+∞"],["v","+∞","a","→2","w","2"]],
+[647,660],
+[2,"2","5","+∞",0],
+["ALFA-BETA","D",["α","5","β","+∞"],["v","2","a","→2","w","2"]],
+[647,663],
+[18],
+"v ≤ α? 2 ≤ 5 sí → return 2, corte alfa; la hoja 12 no se genera.",
+["DECIDIR-ALFA-BETA","R",[],["α","5","mejor_jugada","centro","a","der","w","2"]],
+[667],
+"w > α? 2 > 5 no: mejor_jugada sigue en centro.",
+["DECIDIR-CON-CORTE","R",["d","1"],[]],
+[[0,"d",""]],
+"Empieza DECIDIR-CON-CORTE en la raíz R, d = 1.",
+[670],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","−∞","mejor_jugada","ninguna"]],
+[674],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq"]],
+[676],
+"Genera I y llama MINIMAX-CON-CORTE(I, d = 0).",
+["MINIMAX-CON-CORTE","I",["d","0"],[]],
+[[1,"d",""]],
+"Entra a MINIMAX-CON-CORTE: s = I, d = 0.",
+[676,679],
+"d = 0? sí → return EVAL(I) = 5: aquí se estima.",
+[4,"5","","",0],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq","w","5"]],
+"w ← 5: lo que devolvió EVAL(I).",
+[685],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","5","mejor_jugada","izq","a","izq","w","5"]],
+"w > mejor_valor? 5 > −∞ sí → mejor_valor ← 5, mejor_jugada ← izq.",
+[688],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","5","mejor_jugada","izq","a","centro","w","5"]],
+[691],
+"Genera C y llama MINIMAX-CON-CORTE(C, d = 0).",
+["MINIMAX-CON-CORTE","C",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C, d = 0.",
+[691,694],
+"d = 0? sí → return EVAL(C) = 4: aquí se estima.",
+[4,"4","","",0],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","5","mejor_jugada","izq","a","centro","w","4"]],
+"w ← 4: lo que devolvió EVAL(C).",
+[699],
+"w > mejor_valor? 4 > 5 no: mejor_jugada sigue en izq.",
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","5","mejor_jugada","izq","a","der","w","4"]],
+[703],
+"Genera D y llama MINIMAX-CON-CORTE(D, d = 0).",
+["MINIMAX-CON-CORTE","D",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = D, d = 0.",
+[703,706],
+"d = 0? sí → return EVAL(D) = 7: aquí se estima.",
+[4,"7","","",0],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","5","mejor_jugada","izq","a","der","w","7"]],
+[[0,"w","4"]],
+"w ← 7: lo que devolvió EVAL(D).",
+[711],
+["DECIDIR-CON-CORTE","R",["d","1"],["mejor_valor","7","mejor_jugada","der","a","der","w","7"]],
+[[0,"mejor_valor","5"],[0,"mejor_jugada","izq"]],
+"w > mejor_valor? 7 > 5 sí → mejor_valor ← 7, mejor_jugada ← der.",
+[715],
+["DECIDIR-CON-CORTE","R",["d","2"],[]],
+"Empieza DECIDIR-CON-CORTE en la raíz R, d = 2.",
+[719],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","−∞","mejor_jugada","ninguna"]],
+[722],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq"]],
+[724],
+"Genera I y llama MINIMAX-CON-CORTE(I, d = 1).",
+["MINIMAX-CON-CORTE","I",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = I, d = 1.",
+[724,727],
+"d = 0? no: d = 1, aún se mira más hondo.",
+["MINIMAX-CON-CORTE","I",["d","1"],["v","+∞"]],
+[724,731],
+["MINIMAX-CON-CORTE","I",["d","1"],["v","+∞","a","→3"]],
+[724,733],
+"Genera la hoja 3 y llama MINIMAX-CON-CORTE(hoja 3, d = 0).",
+["MINIMAX-CON-CORTE","I-1",["d","0"],[]],
+[[2,"d",""]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 3, d = 0.",
+[724,733,736],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 3.",
+["MINIMAX-CON-CORTE","I",["d","1"],["v","+∞","a","→3","w","3"]],
+[724,741],
+["MINIMAX-CON-CORTE","I",["d","1"],["v","3","a","→3","w","3"]],
+[724,743],
+["MINIMAX-CON-CORTE","I",["d","1"],["v","3","a","→6","w","3"]],
+[724,745],
+"Genera la hoja 6 y llama MINIMAX-CON-CORTE(hoja 6, d = 0).",
+["MINIMAX-CON-CORTE","I-2",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 6, d = 0.",
+[724,745,748],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 6.",
+["MINIMAX-CON-CORTE","I",["d","1"],["v","3","a","→6","w","6"]],
+[724,752],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq","w","3"]],
+[754],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","3","mejor_jugada","izq","a","izq","w","3"]],
+[756],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","3","mejor_jugada","izq","a","centro","w","3"]],
+[758],
+"Genera C y llama MINIMAX-CON-CORTE(C, d = 1).",
+["MINIMAX-CON-CORTE","C",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C, d = 1.",
+[758,761],
+["MINIMAX-CON-CORTE","C",["d","1"],["v","+∞"]],
+[758,764],
+["MINIMAX-CON-CORTE","C",["d","1"],["v","+∞","a","c1"]],
+[758,766],
+"Genera C1 y llama MINIMAX-CON-CORTE(C1, d = 0).",
+["MINIMAX-CON-CORTE","C1",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C1, d = 0.",
+[758,766,769],
+"d = 0? sí → return EVAL(C1) = 6: aquí se estima.",
+[4,"6","","",0],
+["MINIMAX-CON-CORTE","C",["d","1"],["v","+∞","a","c1","w","6"]],
+"w ← 6: lo que devolvió EVAL(C1).",
+[758,774],
+[2,"6","","",0],
+["MINIMAX-CON-CORTE","C",["d","1"],["v","6","a","c1","w","6"]],
+"v ← min(+∞, 6) = 6.",
+[758,778],
+["MINIMAX-CON-CORTE","C",["d","1"],["v","6","a","c2","w","6"]],
+[758,781],
+"Genera C2 y llama MINIMAX-CON-CORTE(C2, d = 0).",
+["MINIMAX-CON-CORTE","C2",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C2, d = 0.",
+[758,781,784],
+"d = 0? sí → return EVAL(C2) = 9: aquí se estima.",
+[4,"9","","",0],
+["MINIMAX-CON-CORTE","C",["d","1"],["v","6","a","c2","w","9"]],
+[[1,"w","6"]],
+"w ← 9: lo que devolvió EVAL(C2).",
+[758,789],
+[[1,"v","6"]],
+"v ← min(6, 9) = 6.",
+"No quedan hijos: C devuelve v = 6.",
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","3","mejor_jugada","izq","a","centro","w","6"]],
+"w ← 6: lo que devolvió C.",
+[796],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","6","mejor_jugada","centro","a","centro","w","6"]],
+"w > mejor_valor? 6 > 3 sí → mejor_valor ← 6, mejor_jugada ← centro.",
+[799],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","6","mejor_jugada","centro","a","der","w","6"]],
+[802],
+"Genera D y llama MINIMAX-CON-CORTE(D, d = 1).",
+["MINIMAX-CON-CORTE","D",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = D, d = 1.",
+[802,805],
+["MINIMAX-CON-CORTE","D",["d","1"],["v","+∞"]],
+[802,808],
+["MINIMAX-CON-CORTE","D",["d","1"],["v","+∞","a","→2"]],
+[802,810],
+"Genera la hoja 2 y llama MINIMAX-CON-CORTE(hoja 2, d = 0).",
+["MINIMAX-CON-CORTE","D-1",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 2, d = 0.",
+[802,810,813],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 2.",
+["MINIMAX-CON-CORTE","D",["d","1"],["v","+∞","a","→2","w","2"]],
+[802,817],
+["MINIMAX-CON-CORTE","D",["d","1"],["v","2","a","→2","w","2"]],
+[802,819],
+["MINIMAX-CON-CORTE","D",["d","1"],["v","2","a","→12","w","2"]],
+[802,821],
+"Genera la hoja 12 y llama MINIMAX-CON-CORTE(hoja 12, d = 0).",
+["MINIMAX-CON-CORTE","D-2",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 12, d = 0.",
+[802,821,824],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 12.",
+["MINIMAX-CON-CORTE","D",["d","1"],["v","2","a","→12","w","12"]],
+[802,828],
+["DECIDIR-CON-CORTE","R",["d","2"],["mejor_valor","6","mejor_jugada","centro","a","der","w","2"]],
+[[0,"w","6"]],
+[830],
+"w > mejor_valor? 2 > 6 no: mejor_jugada sigue en centro.",
+["DECIDIR-CON-CORTE","R",["d","3"],[]],
+"Empieza DECIDIR-CON-CORTE en la raíz R, d = 3.",
+[834],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","−∞","mejor_jugada","ninguna"]],
+[837],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq"]],
+[839],
+"Genera I y llama MINIMAX-CON-CORTE(I, d = 2).",
+["MINIMAX-CON-CORTE","I",["d","2"],[]],
+"Entra a MINIMAX-CON-CORTE: s = I, d = 2.",
+[839,842],
+"d = 0? no: d = 2, aún se mira más hondo.",
+["MINIMAX-CON-CORTE","I",["d","2"],["v","+∞"]],
+[839,846],
+["MINIMAX-CON-CORTE","I",["d","2"],["v","+∞","a","→3"]],
+[839,848],
+"Genera la hoja 3 y llama MINIMAX-CON-CORTE(hoja 3, d = 1).",
+["MINIMAX-CON-CORTE","I-1",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 3, d = 1.",
+[839,848,851],
+["MINIMAX-CON-CORTE","I",["d","2"],["v","+∞","a","→3","w","3"]],
+[839,854],
+["MINIMAX-CON-CORTE","I",["d","2"],["v","3","a","→3","w","3"]],
+[839,856],
+["MINIMAX-CON-CORTE","I",["d","2"],["v","3","a","→6","w","3"]],
+[839,858],
+"Genera la hoja 6 y llama MINIMAX-CON-CORTE(hoja 6, d = 1).",
+["MINIMAX-CON-CORTE","I-2",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 6, d = 1.",
+[839,858,861],
+["MINIMAX-CON-CORTE","I",["d","2"],["v","3","a","→6","w","6"]],
+[839,864],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","−∞","mejor_jugada","ninguna","a","izq","w","3"]],
+[866],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","3","mejor_jugada","izq","a","izq","w","3"]],
+[868],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","3","mejor_jugada","izq","a","centro","w","3"]],
+[870],
+"Genera C y llama MINIMAX-CON-CORTE(C, d = 2).",
+["MINIMAX-CON-CORTE","C",["d","2"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C, d = 2.",
+[870,873],
+["MINIMAX-CON-CORTE","C",["d","2"],["v","+∞"]],
+[870,876],
+["MINIMAX-CON-CORTE","C",["d","2"],["v","+∞","a","c1"]],
+[870,878],
+"Genera C1 y llama MINIMAX-CON-CORTE(C1, d = 1).",
+["MINIMAX-CON-CORTE","C1",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C1, d = 1.",
+[870,878,881],
+["MINIMAX-CON-CORTE","C1",["d","1"],["v","−∞"]],
+[870,878,884],
+["MINIMAX-CON-CORTE","C1",["d","1"],["v","−∞","a","→5"]],
+[870,878,886],
+"Genera la hoja 5 y llama MINIMAX-CON-CORTE(hoja 5, d = 0).",
+["MINIMAX-CON-CORTE","C1-1",["d","0"],[]],
+[[3,"d",""]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 5, d = 0.",
+[870,878,886,889],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 5.",
+["MINIMAX-CON-CORTE","C1",["d","1"],["v","−∞","a","→5","w","5"]],
+[870,878,894],
+["MINIMAX-CON-CORTE","C1",["d","1"],["v","5","a","→5","w","5"]],
+[870,878,896],
+["MINIMAX-CON-CORTE","C1",["d","1"],["v","5","a","→2","w","5"]],
+[870,878,898],
+["MINIMAX-CON-CORTE","C1-2",["d","0"],[]],
+[870,878,898,900],
+["MINIMAX-CON-CORTE","C1",["d","1"],["v","5","a","→2","w","2"]],
+[870,878,902],
+["MINIMAX-CON-CORTE","C",["d","2"],["v","+∞","a","c1","w","5"]],
+[870,904],
+["MINIMAX-CON-CORTE","C",["d","2"],["v","5","a","c1","w","5"]],
+[870,906],
+["MINIMAX-CON-CORTE","C",["d","2"],["v","5","a","c2","w","5"]],
+[870,908],
+"Genera C2 y llama MINIMAX-CON-CORTE(C2, d = 1).",
+["MINIMAX-CON-CORTE","C2",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = C2, d = 1.",
+[870,908,911],
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","−∞"]],
+[870,908,914],
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","−∞","a","→7"]],
+[870,908,916],
+"Genera la hoja 7 y llama MINIMAX-CON-CORTE(hoja 7, d = 0).",
+["MINIMAX-CON-CORTE","C2-1",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 7, d = 0.",
+[870,908,916,919],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 7.",
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","−∞","a","→7","w","7"]],
+[870,908,923],
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","7","a","→7","w","7"]],
+[870,908,925],
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","7","a","→8","w","7"]],
+[870,908,927],
+"Genera la hoja 8 y llama MINIMAX-CON-CORTE(hoja 8, d = 0).",
+["MINIMAX-CON-CORTE","C2-2",["d","0"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 8, d = 0.",
+[870,908,927,930],
+"s ∈ S_F? sí: la hoja es final → return 100·U(s) = 8.",
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","7","a","→8","w","8"]],
+[870,908,934],
+["MINIMAX-CON-CORTE","C2",["d","1"],["v","8","a","→8","w","8"]],
+[870,908,936],
+["MINIMAX-CON-CORTE","C",["d","2"],["v","5","a","c2","w","8"]],
+[870,938],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","3","mejor_jugada","izq","a","centro","w","5"]],
+[940],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","5","mejor_jugada","centro","a","centro","w","5"]],
+[942],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","5","mejor_jugada","centro","a","der","w","5"]],
+[944],
+"Genera D y llama MINIMAX-CON-CORTE(D, d = 2).",
+["MINIMAX-CON-CORTE","D",["d","2"],[]],
+"Entra a MINIMAX-CON-CORTE: s = D, d = 2.",
+[944,947],
+["MINIMAX-CON-CORTE","D",["d","2"],["v","+∞"]],
+[944,950],
+["MINIMAX-CON-CORTE","D",["d","2"],["v","+∞","a","→2"]],
+[944,952],
+"Genera la hoja 2 y llama MINIMAX-CON-CORTE(hoja 2, d = 1).",
+["MINIMAX-CON-CORTE","D-1",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 2, d = 1.",
+[944,952,955],
+["MINIMAX-CON-CORTE","D",["d","2"],["v","+∞","a","→2","w","2"]],
+[944,958],
+["MINIMAX-CON-CORTE","D",["d","2"],["v","2","a","→2","w","2"]],
+[944,960],
+["MINIMAX-CON-CORTE","D",["d","2"],["v","2","a","→12","w","2"]],
+[944,962],
+"Genera la hoja 12 y llama MINIMAX-CON-CORTE(hoja 12, d = 1).",
+["MINIMAX-CON-CORTE","D-2",["d","1"],[]],
+"Entra a MINIMAX-CON-CORTE: s = la hoja 12, d = 1.",
+[944,962,965],
+["MINIMAX-CON-CORTE","D",["d","2"],["v","2","a","→12","w","12"]],
+[944,968],
+["DECIDIR-CON-CORTE","R",["d","3"],["mejor_valor","5","mejor_jugada","centro","a","der","w","2"]],
+[970],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],[]],
+"Empieza PROFUNDIZACIÓN-ITERATIVA en la raíz R.",
+[972],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq"]],
+[[0,"jugada",""]],
+"jugada ← izq, una cualquiera: siempre hay algo que entregar.",
+[975],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1"]],
+"d ← 1: la primera búsqueda mira una sola jugada.",
+[979],
+"¿Queda tiempo? sí → una búsqueda con d = 1.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","−∞","mejor_jugada","izq"]],
+"α ← −∞ y mejor_jugada ← izq, la jugada lista.",
+[983],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","−∞","mejor_jugada","izq","a","izq"]],
+"Toma a = izq primero: es la jugada lista.",
+[986],
+"Genera I y llama ALFA-BETA-CON-CORTE(I, d = 0, α = −∞, β = +∞).",
+["ALFA-BETA-CON-CORTE","I",["d","0","α","−∞","β","+∞"],[]],
+[[1,"d",""],[1,"α",""],[1,"β",""]],
+"Entra a ALFA-BETA-CON-CORTE: s = I, d = 0, α = −∞, β = +∞.",
+[986,990],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","−∞","mejor_jugada","izq","a","izq","w","5"]],
+[994],
+"¿Se acabó el tiempo? no: la búsqueda sigue.",
+"w = 100? 5 = 100 no: no es una victoria segura.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","5","mejor_jugada","izq","a","izq","w","5"]],
+[[0,"α","−∞"],[0,"mejor_jugada","izq"]],
+"w > α? 5 > −∞ sí → α ← 5, mejor_jugada ← izq.",
+[998],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","5","mejor_jugada","izq","a","centro","w","5"]],
+"Toma a = centro: el siguiente hijo de R es C.",
+[1002],
+"Genera C y llama ALFA-BETA-CON-CORTE(C, d = 0, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","C",["d","0","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C, d = 0, α = 5, β = +∞.",
+[1002,1006],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","5","mejor_jugada","izq","a","centro","w","4"]],
+[1009],
+"w = 100? 4 = 100 no: no es una victoria segura.",
+"w > α? 4 > 5 no: mejor_jugada sigue en izq.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","5","mejor_jugada","izq","a","der","w","4"]],
+"Toma a = der: el siguiente hijo de R es D.",
+[1013],
+"Genera D y llama ALFA-BETA-CON-CORTE(D, d = 0, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","D",["d","0","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = D, d = 0, α = 5, β = +∞.",
+[1013,1017],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","5","mejor_jugada","izq","a","der","w","7"]],
+[1020],
+"w = 100? 7 = 100 no: no es una victoria segura.",
+[2,"7","7","+∞",0],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","izq","d","1","α","7","mejor_jugada","der","a","der","w","7"]],
+[[0,"α","5"],[0,"mejor_jugada","izq"]],
+"w > α? 7 > 5 sí → α ← 7, mejor_jugada ← der.",
+[1024],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","1","α","7","mejor_jugada","der","a","der","w","7"]],
+[[0,"jugada","izq"]],
+"jugada ← der: la búsqueda con d = 1 terminó completa.",
+[1028],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","7","mejor_jugada","der","a","der","w","7"]],
+[[0,"d","1"]],
+"d ← 1 + 1 = 2.",
+[1032],
+"¿Queda tiempo? sí → una búsqueda con d = 2.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","−∞","mejor_jugada","der","a","der","w","7"]],
+[[0,"α","7"],[0,"mejor_jugada","der"]],
+"α ← −∞ y mejor_jugada ← der, la jugada lista.",
+[1037],
+[[0,"a","der"]],
+"Toma a = der primero: es la jugada lista.",
+"Genera D y llama ALFA-BETA-CON-CORTE(D, d = 1, α = −∞, β = +∞).",
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = D, d = 1, α = −∞, β = +∞.",
+[1037,1044],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","+∞"],["v","+∞"]],
+[1037,1047],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","+∞"],["v","+∞","a","→2"]],
+27,
+[1037,1049],
+"Genera la hoja 2 y llama ALFA-BETA-CON-CORTE(hoja 2, d = 0, α = −∞, β = +∞).",
+28,
+["ALFA-BETA-CON-CORTE","D-1",["d","0","α","−∞","β","+∞"],[]],
+[[2,"d",""],[2,"α",""],[2,"β",""]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 2, d = 0, α = −∞, β = +∞.",
+[1037,1049,1054],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","+∞"],["v","+∞","a","→2","w","2"]],
+[1037,1058],
+[2,"2","−∞","+∞",0],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","+∞"],["v","2","a","→2","w","2"]],
+29,
+[1037,1061],
+"v ≤ α? 2 ≤ −∞ no: sigue.",
+30,
+[2,"2","−∞","2",0],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","2"],["v","2","a","→2","w","2"]],
+"β ← min(+∞, 2) = 2: β baja.",
+31,
+[1037,1067],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","2"],["v","2","a","→12","w","2"]],
+[1037,1071],
+"Genera la hoja 12 y llama ALFA-BETA-CON-CORTE(hoja 12, d = 0, α = −∞, β = 2).",
+[2,"","−∞","2",0],
+["ALFA-BETA-CON-CORTE","D-2",["d","0","α","−∞","β","2"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 12, d = 0, α = −∞, β = 2.",
+[1037,1071,1075],
+["ALFA-BETA-CON-CORTE","D",["d","1","α","−∞","β","2"],["v","2","a","→12","w","12"]],
+[1037,1078],
+[[1,"β","2"]],
+"β ← min(2, 2) = 2: β sigue igual.",
+32,
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","−∞","mejor_jugada","der","a","der","w","2"]],
+[[0,"w","7"]],
+[1083],
+"w = 100? 2 = 100 no: no es una victoria segura.",
+[2,"2","2","+∞",0],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","2","mejor_jugada","der","a","der","w","2"]],
+[[0,"α","−∞"],[0,"mejor_jugada","der"]],
+"w > α? 2 > −∞ sí → α ← 2, mejor_jugada ← der.",
+[1088],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","2","mejor_jugada","der","a","izq","w","2"]],
+"Toma a = izq: el siguiente hijo de R es I.",
+[1092],
+"Genera I y llama ALFA-BETA-CON-CORTE(I, d = 1, α = 2, β = +∞).",
+[2,"","2","+∞",0],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = I, d = 1, α = 2, β = +∞.",
+[1092,1097],
+[2,"+∞","2","+∞",0],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","+∞"],["v","+∞"]],
+[1092,1101],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","+∞"],["v","+∞","a","→3"]],
+[1092,1103],
+"Genera la hoja 3 y llama ALFA-BETA-CON-CORTE(hoja 3, d = 0, α = 2, β = +∞).",
+["ALFA-BETA-CON-CORTE","I-1",["d","0","α","2","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 3, d = 0, α = 2, β = +∞.",
+[1092,1103,1106],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","+∞"],["v","+∞","a","→3","w","3"]],
+[1092,1109],
+[2,"3","2","+∞",0],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","+∞"],["v","3","a","→3","w","3"]],
+[1092,1112],
+"v ≤ α? 3 ≤ 2 no: sigue.",
+[2,"3","2","3",0],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","3"],["v","3","a","→3","w","3"]],
+[1092,1116],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","3"],["v","3","a","→6","w","3"]],
+[1092,1118],
+"Genera la hoja 6 y llama ALFA-BETA-CON-CORTE(hoja 6, d = 0, α = 2, β = 3).",
+[2,"","2","3",0],
+["ALFA-BETA-CON-CORTE","I-2",["d","0","α","2","β","3"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 6, d = 0, α = 2, β = 3.",
+[1092,1118,1122],
+["ALFA-BETA-CON-CORTE","I",["d","1","α","2","β","3"],["v","3","a","→6","w","6"]],
+[1092,1125],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","2","mejor_jugada","der","a","izq","w","3"]],
+[[0,"w","2"]],
+[1127],
+"w = 100? 3 = 100 no: no es una victoria segura.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","3","mejor_jugada","izq","a","izq","w","3"]],
+[[0,"α","2"],[0,"mejor_jugada","der"]],
+"w > α? 3 > 2 sí → α ← 3, mejor_jugada ← izq.",
+[1131],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","3","mejor_jugada","izq","a","centro","w","3"]],
+[1135],
+"Genera C y llama ALFA-BETA-CON-CORTE(C, d = 1, α = 3, β = +∞).",
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C, d = 1, α = 3, β = +∞.",
+[1135,1138],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","+∞"],["v","+∞"]],
+[1135,1141],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","+∞"],["v","+∞","a","c1"]],
+[1135,1143],
+"Genera C1 y llama ALFA-BETA-CON-CORTE(C1, d = 0, α = 3, β = +∞).",
+["ALFA-BETA-CON-CORTE","C1",["d","0","α","3","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C1, d = 0, α = 3, β = +∞.",
+[1135,1143,1146],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","+∞"],["v","+∞","a","c1","w","6"]],
+[1135,1149],
+[2,"6","3","+∞",0],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","+∞"],["v","6","a","c1","w","6"]],
+[1135,1152],
+"v ≤ α? 6 ≤ 3 no: sigue.",
+[2,"6","3","6",0],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","6"],["v","6","a","c1","w","6"]],
+"β ← min(+∞, 6) = 6: β baja.",
+[1135,1156],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","6"],["v","6","a","c2","w","6"]],
+[1135,1159],
+"Genera C2 y llama ALFA-BETA-CON-CORTE(C2, d = 0, α = 3, β = 6).",
+[2,"","3","6",0],
+["ALFA-BETA-CON-CORTE","C2",["d","0","α","3","β","6"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C2, d = 0, α = 3, β = 6.",
+[1135,1159,1163],
+["ALFA-BETA-CON-CORTE","C",["d","1","α","3","β","6"],["v","6","a","c2","w","9"]],
+[1135,1166],
+[[1,"β","6"]],
+"β ← min(6, 6) = 6: β sigue igual.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","3","mejor_jugada","izq","a","centro","w","6"]],
+[1170],
+"w = 100? 6 = 100 no: no es una victoria segura.",
+[2,"6","6","+∞",0],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","der","d","2","α","6","mejor_jugada","centro","a","centro","w","6"]],
+"w > α? 6 > 3 sí → α ← 6, mejor_jugada ← centro.",
+[1174],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","2","α","6","mejor_jugada","centro","a","centro","w","6"]],
+[[0,"jugada","der"]],
+"jugada ← centro: la búsqueda con d = 2 terminó completa.",
+[1177],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","6","mejor_jugada","centro","a","centro","w","6"]],
+[[0,"d","2"]],
+"d ← 2 + 1 = 3.",
+[1181],
+"¿Queda tiempo? sí → una búsqueda con d = 3.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","−∞","mejor_jugada","centro","a","centro","w","6"]],
+[[0,"α","6"],[0,"mejor_jugada","centro"]],
+"α ← −∞ y mejor_jugada ← centro, la jugada lista.",
+[1186],
+"Toma a = centro primero: es la jugada lista.",
+"Genera C y llama ALFA-BETA-CON-CORTE(C, d = 2, α = −∞, β = +∞).",
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C, d = 2, α = −∞, β = +∞.",
+[1186,1192],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","+∞"],["v","+∞"]],
+[1186,1195],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","+∞"],["v","+∞","a","c1"]],
+[1186,1197],
+"Genera C1 y llama ALFA-BETA-CON-CORTE(C1, d = 1, α = −∞, β = +∞).",
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","−∞","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C1, d = 1, α = −∞, β = +∞.",
+[1186,1197,1200],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","−∞","β","+∞"],["v","−∞"]],
+[1186,1197,1203],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","−∞","β","+∞"],["v","−∞","a","→5"]],
+[1186,1197,1205],
+"Genera la hoja 5 y llama ALFA-BETA-CON-CORTE(hoja 5, d = 0, α = −∞, β = +∞).",
+["ALFA-BETA-CON-CORTE","C1-1",["d","0","α","−∞","β","+∞"],[]],
+[[3,"d",""],[3,"α",""],[3,"β",""]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 5, d = 0, α = −∞, β = +∞.",
+[1186,1197,1205,1208],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","−∞","β","+∞"],["v","−∞","a","→5","w","5"]],
+[1186,1197,1212],
+[2,"5","−∞","+∞",0],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","−∞","β","+∞"],["v","5","a","→5","w","5"]],
+[1186,1197,1215],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","5","β","+∞"],["v","5","a","→5","w","5"]],
+[[2,"α","−∞"]],
+"α ← max(−∞, 5) = 5: α sube.",
+[1186,1197,1217],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","5","β","+∞"],["v","5","a","→2","w","5"]],
+[1186,1197,1221],
+"Genera la hoja 2 y llama ALFA-BETA-CON-CORTE(hoja 2, d = 0, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","C1-2",["d","0","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 2, d = 0, α = 5, β = +∞.",
+[1186,1197,1221,1224],
+["ALFA-BETA-CON-CORTE","C1",["d","1","α","5","β","+∞"],["v","5","a","→2","w","2"]],
+[1186,1197,1227],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","+∞"],["v","+∞","a","c1","w","5"]],
+[1186,1229],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","+∞"],["v","5","a","c1","w","5"]],
+[1186,1231],
+"v ≤ α? 5 ≤ −∞ no: sigue.",
+[2,"5","−∞","5",0],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","5"],["v","5","a","c1","w","5"]],
+[1186,1235],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","5"],["v","5","a","c2","w","5"]],
+[1186,1237],
+"Genera C2 y llama ALFA-BETA-CON-CORTE(C2, d = 1, α = −∞, β = 5).",
+[2,"","−∞","5",0],
+["ALFA-BETA-CON-CORTE","C2",["d","1","α","−∞","β","5"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = C2, d = 1, α = −∞, β = 5.",
+[1186,1237,1241],
+[2,"−∞","−∞","5",0],
+["ALFA-BETA-CON-CORTE","C2",["d","1","α","−∞","β","5"],["v","−∞"]],
+[1186,1237,1245],
+["ALFA-BETA-CON-CORTE","C2",["d","1","α","−∞","β","5"],["v","−∞","a","→7"]],
+[1186,1237,1247],
+"Genera la hoja 7 y llama ALFA-BETA-CON-CORTE(hoja 7, d = 0, α = −∞, β = 5).",
+["ALFA-BETA-CON-CORTE","C2-1",["d","0","α","−∞","β","5"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 7, d = 0, α = −∞, β = 5.",
+[1186,1237,1247,1250],
+["ALFA-BETA-CON-CORTE","C2",["d","1","α","−∞","β","5"],["v","−∞","a","→7","w","7"]],
+[1186,1237,1253],
+[2,"7","−∞","5",0],
+["ALFA-BETA-CON-CORTE","C2",["d","1","α","−∞","β","5"],["v","7","a","→7","w","7"]],
+[1186,1237,1256],
+[29],
+["ALFA-BETA-CON-CORTE","C",["d","2","α","−∞","β","5"],["v","5","a","c2","w","7"]],
+[1186,1259],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","−∞","mejor_jugada","centro","a","centro","w","5"]],
+[1261],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","5","mejor_jugada","centro","a","centro","w","5"]],
+[[0,"α","−∞"],[0,"mejor_jugada","centro"]],
+"w > α? 5 > −∞ sí → α ← 5, mejor_jugada ← centro.",
+[1263],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","5","mejor_jugada","centro","a","izq","w","5"]],
+[1267],
+"Genera I y llama ALFA-BETA-CON-CORTE(I, d = 2, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","I",["d","2","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = I, d = 2, α = 5, β = +∞.",
+[1267,1270],
+["ALFA-BETA-CON-CORTE","I",["d","2","α","5","β","+∞"],["v","+∞"]],
+[1267,1273],
+["ALFA-BETA-CON-CORTE","I",["d","2","α","5","β","+∞"],["v","+∞","a","→3"]],
+33,
+[1267,1275],
+"Genera la hoja 3 y llama ALFA-BETA-CON-CORTE(hoja 3, d = 1, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","I-1",["d","1","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 3, d = 1, α = 5, β = +∞.",
+[1267,1275,1279],
+["ALFA-BETA-CON-CORTE","I",["d","2","α","5","β","+∞"],["v","+∞","a","→3","w","3"]],
+[1267,1282],
+[2,"3","5","+∞",0],
+["ALFA-BETA-CON-CORTE","I",["d","2","α","5","β","+∞"],["v","3","a","→3","w","3"]],
+[1267,1285],
+[34],
+"v ≤ α? 3 ≤ 5 sí → return 3, corte alfa; la hoja 6 no se genera.",
+[3,"3","","",1],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","5","mejor_jugada","centro","a","izq","w","3"]],
+35,
+"w ← 3: lo que devolvió I, una cota.",
+[1290],
+"w > α? 3 > 5 no: mejor_jugada sigue en centro.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","5","mejor_jugada","centro","a","der","w","3"]],
+36,
+[1295],
+"Genera D y llama ALFA-BETA-CON-CORTE(D, d = 2, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","D",["d","2","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = D, d = 2, α = 5, β = +∞.",
+[1295,1299],
+["ALFA-BETA-CON-CORTE","D",["d","2","α","5","β","+∞"],["v","+∞"]],
+[1295,1302],
+["ALFA-BETA-CON-CORTE","D",["d","2","α","5","β","+∞"],["v","+∞","a","→2"]],
+37,
+[1295,1304],
+"Genera la hoja 2 y llama ALFA-BETA-CON-CORTE(hoja 2, d = 1, α = 5, β = +∞).",
+["ALFA-BETA-CON-CORTE","D-1",["d","1","α","5","β","+∞"],[]],
+"Entra a ALFA-BETA-CON-CORTE: s = la hoja 2, d = 1, α = 5, β = +∞.",
+[1295,1304,1308],
+["ALFA-BETA-CON-CORTE","D",["d","2","α","5","β","+∞"],["v","+∞","a","→2","w","2"]],
+[1295,1311],
+["ALFA-BETA-CON-CORTE","D",["d","2","α","5","β","+∞"],["v","2","a","→2","w","2"]],
+[1295,1313],
+[38],
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","3","α","5","mejor_jugada","centro","a","der","w","2"]],
+39,
+[1316],
+[[0,"jugada","centro"]],
+40,
+"jugada ← centro: la búsqueda con d = 3 terminó completa.",
+["PROFUNDIZACIÓN-ITERATIVA","R",[],["jugada","centro","d","4","α","5","mejor_jugada","centro","a","der","w","2"]],
+[[0,"d","3"]],
+"d ← 3 + 1 = 4.",
+[1322],
+41,
+"¿Queda tiempo? no: el reloj se acabó tras la búsqueda con d = 3.",
+"return jugada = centro: se entrega la de la búsqueda con d = 3."],
 "trazas":{
-"minimax":{"modo":"minimax","variante":null,"titulo":"DECIDIR-MINIMAX en el árbol T","pagina":"2_mirar_todo_y_podar/2_minimax_como_algoritmo.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":0,"arbol":0,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,15,5,16,7,17,8,18,11,19,12,20,14,21],["I",14]],
-[[4,24,5,25,6,26,7,27,8,28,14,29,15,29],["I",22,"I-1",23]],
-[[4,31,5,32,6,33,15,34],["I-2",30]],
-[[4,35,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",22,"I",23]],
-[[4,40,5,41,6,2,7,17,8,18,10,9,11,42,12,43,14,21,15,2],["C",14]],
-[[4,44,5,45,7,46,8,47,11,48,12,49,14,13],["C1",0]],
-[[4,52,5,53,6,54,7,55,8,56,14,57,15,57],["C1",50,"C1-1",51]],
-[[4,59,5,60,6,61,15,6],["C1-2",58]],
-[[4,62,6,48,7,27,8,28,11,42,12,43,15,57],["C",50,"C1",51]],
-[[4,63,5,64,6,2,7,46,8,47,11,65,12,66,14,13,15,2],["C2",0]],
-[[4,69,5,70,6,71,7,55,8,56,14,72,15,72],["C2",67,"C2-1",68]],
-[[4,75,5,76,6,77,14,78,15,78],["C2",73,"C2-2",74]],
-[[4,79,6,65,7,27,8,28,11,42,12,43,14,57],["C2",74]],
-[[4,80,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,57],["R",50,"C",51]],
-[[4,82,5,83,6,2,7,17,8,18,10,9,11,84,12,85,14,21,15,2],["D",14]],
-[[4,87,5,88,6,89,7,27,8,28,14,6,15,6],["D",86,"D-1",58]],
-[[4,91,5,12,6,92,15,93],["D-2",90]],
-[[4,94,6,84,7,36,8,37,10,3,11,10,12,11,14,57,15,6],["D",58]],
-[[4,95,6,2,7,34,8,96,10,9,15,2],["R",51]]]},
-"azar":{"modo":"azar","variante":null,"titulo":"DECIDIR-EXPECTIMINIMAX en el árbol T, con I, C y D de azar","pagina":"2_mirar_todo_y_podar/3_cuando_decide_un_dado.md","resultado":{"jugada":"der","valor":"7","generados":14,"total":14},"pseudo":1,"arbol":1,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,98,5,16,7,99,8,100,11,19,12,20,14,101],["I",97]],
-[[4,103,5,25,6,26,7,104,8,105,14,106,15,29],["I",102,"I-1",23]],
-[[4,108,5,32,6,33,14,109,15,34],["I",107,"I-2",30]],
-[[4,111,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,109],["R",107,"I",110]],
-[[4,112,5,41,6,2,7,99,8,100,10,9,11,42,12,43,14,101,15,2],["C",97]],
-[[4,114,5,60,6,48,7,104,8,105,14,115,15,57],["C",113,"C1",51,"C1-1",51,"C1-2",58]],
-[[4,117,5,76,6,65,14,118,15,78],["C",116,"C2",74,"C2-1",68,"C2-2",74]],
-[[4,120,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,118],["R",116,"C",119]],
-[[4,121,5,83,6,2,7,99,8,100,10,9,11,84,12,85,14,101,15,2],["D",97]],
-[[4,123,5,88,6,89,7,104,8,105,14,124,15,6],["D",122,"D-1",58]],
-[[4,125,5,12,6,92,14,72,15,93],["D",67,"D-2",90]],
-[[4,126,6,84,7,36,8,37,9,127,10,39,11,10,12,11,15,72],["R",67,"D",68]],
-[[4,128,6,2,7,34,8,96,10,9,15,2],["R",68]]]},
-"alfa-beta-T1":{"modo":"alfa-beta","variante":"T1","titulo":"DECIDIR-ALFA-BETA en el árbol T1","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"izq","valor":"3","generados":6,"total":7},"pseudo":2,"arbol":2,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,13,1,21,2,2,3,3,4,130,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,53,14,13,15,2],["R",129,"I",1,"I-1",1,"I-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,132,5,16,7,133,8,134,11,19,12,20,14,21],["I",131]],
-[[1,29,4,136,5,25,6,26,7,137,8,138,14,29,15,29],["I",135,"I-1",23]],
-[[4,139,5,32,6,33,15,34],["I-2",30]],
-[[0,29,1,21,4,141,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",140,"I",23]],
-[[4,143,5,41,6,2,7,133,8,134,10,9,11,84,12,85,14,21,15,2],["D",142]],
-[[2,146,4,147,5,45,6,89,7,148,8,149,14,6,15,6],["D",144,"D-1",58,"D-2",145]],
-[[0,2,1,2,4,150,6,2,7,2,8,151,11,92,14,2,15,93],[]],
-[[0,29,1,21,2,2,4,153,6,84,7,36,8,37,10,3,11,10,12,11,14,29,15,6],["D",152]],
-[[4,154,6,2,7,34,8,96,10,9,15,2],["R",23]]]},
-"alfa-beta-T":{"modo":"alfa-beta","variante":"T","titulo":"DECIDIR-ALFA-BETA en el árbol T","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"centro","valor":"5","generados":12,"total":14},"pseudo":2,"arbol":0,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,13,1,21,2,2,3,3,4,130,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",129,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,132,5,16,7,133,8,134,11,19,12,20,14,21],["I",131]],
-[[1,29,4,136,5,25,6,26,7,137,8,138,14,29,15,29],["I",135,"I-1",23]],
-[[4,139,5,32,6,33,15,34],["I-2",30]],
-[[0,29,1,21,4,141,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",140,"I",23]],
-[[4,155,5,41,6,2,7,133,8,134,10,9,11,42,12,43,14,21,15,2],["C",142]],
-[[4,157,5,45,7,46,8,47,11,48,12,49,14,13],["C1",156]],
-[[0,57,4,159,5,53,6,54,7,160,8,161,14,57,15,57],["C1",158,"C1-1",51]],
-[[4,162,5,60,6,61,15,6],["C1-2",58]],
-[[0,29,1,57,4,164,6,48,7,137,8,138,11,42,12,43,15,57],["C",163,"C1",51]],
-[[4,166,5,64,6,2,7,46,8,47,11,65,12,66,14,13,15,2],["C2",165]],
-[[2,168,4,169,5,70,6,71,7,170,8,171,14,72,15,72],["C2",167,"C2-1",68,"C2-2",145]],
-[[0,2,1,2,4,172,6,2,7,2,8,151,11,77,14,2,15,78],[]],
-[[0,29,1,57,2,2,4,174,6,65,7,137,8,138,11,42,12,43,14,57,15,72],["C2",173]],
-[[0,57,1,21,4,175,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,57],["R",158,"C",51]],
-[[4,177,5,76,6,2,7,133,8,134,10,9,11,84,12,85,14,21,15,2],["D",176]],
-[[2,146,4,179,5,83,6,89,7,148,8,149,14,6,15,6],["D",178,"D-1",58,"D-2",145]],
-[[0,2,1,2,4,150,6,2,7,2,8,151,11,92,14,2,15,93],[]],
-[[0,57,1,21,2,2,4,180,6,84,7,36,8,37,10,3,11,10,12,11,14,57,15,6],["D",152]],
-[[4,181,6,2,7,34,8,96,10,9,15,2],["R",51]]]},
-"corte-1":{"modo":"corte","variante":1,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 1","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"der","valor":"7","generados":4,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[3,39,4,183,5,16,6,19,7,36,8,37,9,38,10,39,14,57,15,57],["R",50,"I",182]],
-[[4,185,5,25,6,42,10,3,15,186],["C",184]],
-[[4,188,5,32,6,84,9,127,10,39,14,72,15,72],["R",67,"D",187]],
-[[3,3,4,128,6,2,7,34,8,96,10,9,15,2],["R",68]]]},
-"corte-2":{"modo":"corte","variante":2,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 2","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"6","generados":10,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,15,5,16,7,189,8,190,11,19,12,20,14,21],["I",14]],
-[[4,24,5,25,6,26,7,191,8,192,14,29,15,29],["I",22,"I-1",23]],
-[[4,31,5,32,6,33,15,34],["I-2",30]],
-[[4,35,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",22,"I",23]],
-[[4,40,5,41,6,2,7,189,8,190,10,9,11,42,12,43,14,21,15,2],["C",14]],
-[[3,39,4,195,5,45,6,48,7,191,8,192,14,34,15,34],["C",193,"C1",194]],
-[[4,197,5,53,6,65,15,198],["C2",196]],
-[[3,3,4,199,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,34],["R",193,"C",30]],
-[[4,82,5,60,6,2,7,189,8,190,10,9,11,84,12,85,14,21,15,2],["D",14]],
-[[4,87,5,64,6,89,7,191,8,192,14,6,15,6],["D",86,"D-1",58]],
-[[4,91,5,70,6,92,15,93],["D-2",90]],
-[[4,200,6,84,7,36,8,37,10,3,11,10,12,11,14,34,15,6],["D",58]],
-[[4,201,6,2,7,34,8,96,10,9,15,2],["R",30]]]},
-"corte-3":{"modo":"corte","variante":3,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 3","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,15,5,16,7,189,8,190,11,19,12,20,14,21],["I",14]],
-[[4,24,5,25,6,26,7,191,8,192,14,29,15,29],["I",22,"I-1",23]],
-[[4,31,5,32,6,33,15,34],["I-2",30]],
-[[4,35,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",22,"I",23]],
-[[4,40,5,41,6,2,7,189,8,190,10,9,11,42,12,43,14,21,15,2],["C",14]],
-[[4,44,5,45,7,202,8,203,11,48,12,49,14,13],["C1",0]],
-[[4,52,5,53,6,54,7,204,8,205,14,57,15,57],["C1",50,"C1-1",51]],
-[[4,59,5,60,6,61,15,6],["C1-2",58]],
-[[4,62,6,48,7,191,8,192,11,42,12,43,15,57],["C",50,"C1",51]],
-[[4,63,5,64,6,2,7,202,8,203,11,65,12,66,14,13,15,2],["C2",0]],
-[[4,69,5,70,6,71,7,204,8,205,14,72,15,72],["C2",67,"C2-1",68]],
-[[4,75,5,76,6,77,14,78,15,78],["C2",73,"C2-2",74]],
-[[4,79,6,65,7,191,8,192,11,42,12,43,14,57],["C2",74]],
-[[4,80,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,57],["R",50,"C",51]],
-[[4,82,5,83,6,2,7,189,8,190,10,9,11,84,12,85,14,21,15,2],["D",14]],
-[[4,87,5,88,6,89,7,191,8,192,14,6,15,6],["D",86,"D-1",58]],
-[[4,91,5,12,6,92,15,93],["D-2",90]],
-[[4,94,6,84,7,36,8,37,10,3,11,10,12,11,14,57,15,6],["D",58]],
-[[4,95,6,2,7,34,8,96,10,9,15,2],["R",51]]]},
-"iterativa":{"modo":"iterativa","variante":null,"titulo":"PROFUNDIZACIÓN-ITERATIVA en el árbol T con d = 1, 2 y 3","pagina":"3_cuando_no_cabe/3_jugar_contra_el_reloj.md","resultado":{"jugada":"centro","valor":"5","generados":25,"total":42,"por_d":[{"d":1,"orden":["izq","centro","der"],"jugada":"der","valor":"7","generados":4,"w":[{"hijo":"I","w":"5","cota":false},{"hijo":"C","w":"4","cota":false},{"hijo":"D","w":"7","cota":false}]},{"d":2,"orden":["der","izq","centro"],"jugada":"centro","valor":"6","generados":10,"w":[{"hijo":"D","w":"2","cota":false},{"hijo":"I","w":"3","cota":false},{"hijo":"C","w":"6","cota":false}]},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":"5","generados":11,"w":[{"hijo":"C","w":"5","cota":false},{"hijo":"I","w":"3","cota":true},{"hijo":"D","w":"2","cota":true}]}]},"pseudo":4,"arbol":3,"claves":["alfa","beta","corta","d","evaluado","frase","generados","hijo","jugada","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,5,4,3,5,207,6,5,7,2,8,38,9,208,10,209,11,8,12,9,13,10,14,11,15,12,16,2,17,2],["R",206,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[0,13,1,21,5,210,9,57,10,211,11,38,16,13],["R",129]],
-[[0,57,4,39,5,212,6,16,7,19,9,213,10,214,12,39,16,57,17,57],["R",158,"I",182]],
-[[5,215,6,25,7,42,12,3,17,186],["C",184]],
-[[0,72,5,217,6,32,7,84,11,127,12,39,16,72,17,72],["R",216,"D",187]],
-[[4,3,5,218,7,2,8,127,9,219,10,220,12,9,17,2],["R",68]],
-[[0,13,3,16,5,221,6,5,9,57,10,211,16,13],["R",129,"I",1,"C",1,"D",1]],
-[[5,222,6,16,9,223,10,224,13,84,14,85,16,21],["D",131]],
-[[1,6,5,226,6,25,7,89,9,227,10,228,16,6,17,6],["D",225,"D-1",58]],
-[[5,229,6,32,7,92,17,93],["D-2",90]],
-[[0,6,1,21,5,231,7,84,9,213,10,214,12,39,13,10,14,11,17,6],["R",230,"D",58]],
-[[5,233,6,41,7,2,9,223,10,224,12,9,13,19,14,20,16,21,17,2],["I",232]],
-[[1,29,5,235,6,45,7,26,9,227,10,228,16,29,17,29],["I",234,"I-1",23]],
-[[5,236,6,53,7,33,17,34],["I-2",30]],
-[[0,29,1,21,5,237,7,19,9,213,10,214,11,38,12,39,13,10,14,11,17,29],["R",140,"I",23]],
-[[5,155,6,60,7,2,9,223,10,224,12,9,13,42,14,43,16,21,17,2],["C",142]],
-[[1,34,4,39,5,239,6,64,7,48,9,227,10,228,16,34,17,34],["C",238,"C1",194]],
-[[5,240,6,70,7,65,17,198],["C2",196]],
-[[0,34,1,21,4,3,5,242,7,42,9,213,10,214,11,81,12,39,13,10,14,11,17,34],["R",241,"C",30]],
-[[5,243,7,2,8,81,9,219,10,220,12,9,17,2],["R",30]],
-[[0,13,3,25,5,244,6,5,9,57,10,211,16,13],["R",129,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C2",1,"D",1,"D-1",1,"D-2",1]],
-[[5,245,6,16,9,223,10,224,13,42,14,43,16,21],["C",131]],
-[[5,246,6,25,9,133,10,134,13,48,14,49,16,13],["C1",129]],
-[[0,57,5,159,6,32,7,54,9,137,10,138,16,57,17,57],["C1",158,"C1-1",51]],
-[[5,162,6,41,7,61,17,6],["C1-2",58]],
-[[0,13,1,57,5,248,7,48,9,227,10,228,13,42,14,43,17,57],["C",247,"C1",51]],
-[[5,250,6,45,7,2,9,133,10,134,13,65,14,66,16,13,17,2],["C2",249]],
-[[2,168,5,169,6,53,7,71,9,148,10,149,16,72,17,72],["C2",251,"C2-1",68,"C2-2",145]],
-[[0,2,1,2,5,172,7,2,9,2,10,151,13,77,16,2,17,78],[]],
-[[0,13,1,57,2,2,5,252,7,65,9,227,10,228,13,42,14,43,16,57,17,72],["C2",173]],
-[[0,57,1,21,5,253,7,42,9,213,10,214,12,39,13,10,14,11,17,57],["R",158,"C",51]],
-[[5,254,6,60,7,2,9,223,10,224,12,9,13,19,14,20,16,21,17,2],["I",176]],
-[[2,146,5,256,6,64,7,26,9,257,10,258,16,29,17,29],["I",255,"I-1",23,"I-2",145]],
-[[0,2,1,2,5,259,7,2,9,2,10,151,13,33,16,2,17,34],[]],
-[[0,57,1,21,2,2,5,261,7,19,9,213,10,214,12,3,13,10,14,11,16,57,17,29],["I",260]],
-[[5,177,6,70,7,2,9,223,10,224,12,9,13,84,14,85,16,21,17,2],["D",176]],
-[[2,146,5,179,6,76,7,89,9,257,10,258,16,6,17,6],["D",178,"D-1",58,"D-2",145]],
-[[0,2,1,2,5,150,7,2,9,2,10,151,13,92,16,2,17,93],[]],
-[[0,57,1,21,2,2,5,180,7,84,9,213,10,214,12,3,13,10,14,11,16,57,17,6],["D",152]],
-[[5,262,7,2,9,219,10,220,12,9,17,2],["R",51]],
-[[5,263,9,264,10,265],[]]]}}}
+"minimax":{"modo":"minimax","variante":null,"titulo":"DECIDIR-MINIMAX en el árbol T","pagina":"2_mirar_todo_y_podar/2_minimax_como_algoritmo.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":0,"arbol":0,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,3,1,4,2,3,3,5,4,4,5,4,6,6,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,10,3,11,5,12,6,13],["R",8]],
+[[0,15,1,12,3,16,5,17,6,18],[]],
+[[0,3,3,20,4,12,5,21],["I",19]],
+[[3,23,5,24,6,25,7,26],["I",0]],
+[[3,27,5,28],[]],
+[[3,29,5,30],[]],
+[[3,31,5,32],[]],
+[[0,35,3,36,5,37,6,38],["I",33]],
+[[0,40,1,17,3,41,5,42,6,43],[]],
+[[0,3,3,44,4,17,5,45],["I-1",19]],
+[[3,47,5,24,6,48,7,49],["I-1",0]],
+[[3,50,5,28],[]],
+[[0,53,3,54,5,45,6,55,7,26],["I-1",51]],
+[[0,58,3,59,5,60,6,61],["I",56]],
+[[0,63,1,21,3,64,5,42,6,65],[]],
+[[0,3,3,66,4,21,5,45],["I-2",19]],
+[[3,68,5,24,6,69,7,70],["I-2",0]],
+[[3,71,5,28],[]],
+[[0,74,3,75,5,45,6,76,7,26],["I-2",72]],
+[[0,77,3,78,5,60],[]],
+[[0,3,1,79,3,80,5,81],[]],
+[[0,83,3,84,5,21,6,85,7,7],["I",51]],
+[[0,87,3,88,5,79,6,89],["R",56]],
+[[0,91,1,92,3,93,5,17,6,94],[]],
+[[0,3,3,95,4,79,5,21],["C",19]],
+[[3,97,5,24,6,98,7,99],["C",0]],
+[[3,100,5,28],[]],
+[[3,101,5,30],[]],
+[[3,102,5,32],[]],
+[[0,35,3,36,5,37,6,104],["C",33]],
+[[0,40,1,24,3,106,5,42,6,107],[]],
+[[0,3,3,108,4,92,5,45],["C1",19]],
+[[3,110,5,24,6,111,7,112],["C1",0]],
+[[3,113,5,28],[]],
+[[3,114,5,30],[]],
+[[0,116,3,117,5,118,6,119],["C1",8]],
+[[0,121,1,28,3,122,5,123,6,124],[]],
+[[0,3,3,125,4,24,5,126],["C1-1",19]],
+[[3,128,5,24,6,129,7,130],["C1-1",0]],
+[[3,131,5,28],[]],
+[[0,134,3,135,5,126,6,136,7,112],["C1-1",132]],
+[[0,139,3,140,5,141,6,142],["C1",137]],
+[[0,144,1,30,3,145,5,123,6,146],[]],
+[[0,3,3,147,4,28,5,126],["C1-2",19]],
+[[3,149,5,24,6,150,7,151],["C1-2",0]],
+[[3,152,5,28],[]],
+[[0,155,3,156,5,126,6,157,7,112],["C1-2",153]],
+[[0,158,3,159,5,141],[]],
+[[0,3,1,118,3,160,5,161],[]],
+[[0,53,3,163,5,45,6,164,7,99],["C1",132]],
+[[0,58,3,166,5,60,6,167],["C",137]],
+[[0,169,1,123,3,170,5,42,6,171],[]],
+[[0,3,3,172,4,30,5,45],["C2",19]],
+[[3,174,5,24,6,175,7,176],["C2",0]],
+[[3,177,5,28],[]],
+[[3,178,5,30],[]],
+[[0,116,3,117,5,118,6,180],["C2",8]],
+[[0,121,1,126,3,182,5,123,6,183],[]],
+[[0,3,3,184,4,118,5,126],["C2-1",19]],
+[[3,186,5,24,6,187,7,188],["C2-1",0]],
+[[3,189,5,28],[]],
+[[0,134,3,192,5,126,6,193,7,176],["C2-1",190]],
+[[0,139,3,196,5,141,6,197],["C2",194]],
+[[0,199,1,141,3,200,5,123,6,201],[]],
+[[0,3,3,202,4,123,5,126],["C2-2",19]],
+[[3,204,5,24,6,205,7,206],["C2-2",0]],
+[[3,207,5,28],[]],
+[[0,210,3,211,5,126,6,212,7,176],["C2-2",208]],
+[[0,215,3,216,5,141,6,217],["C2",213]],
+[[0,3,1,161,3,218,5,161],[]],
+[[0,220,3,221,5,45,6,222,7,99],["C2",208]],
+[[0,223,3,224,5,60],[]],
+[[0,3,1,32,3,225,5,81],[]],
+[[0,227,3,228,5,21,6,229,7,7],["C",132]],
+[[0,231,3,232,5,79,6,233],["R",137]],
+[[0,235,1,37,3,236,5,17,6,237],[]],
+[[0,3,3,238,4,126,5,21],["D",19]],
+[[3,240,5,24,6,241,7,242],["D",0]],
+[[3,243,5,28],[]],
+[[3,244,5,30],[]],
+[[3,245,5,32],[]],
+[[0,35,3,36,5,37,6,247],["D",33]],
+[[0,40,1,42,3,249,5,42,6,250],[]],
+[[0,3,3,147,4,141,5,45],["D-1",19]],
+[[3,149,5,24,6,252,7,253],["D-1",0]],
+[[3,152,5,28],[]],
+[[0,53,3,156,5,45,6,255,7,242],["D-1",153]],
+[[0,58,3,258,5,60,6,259],["D",256]],
+[[0,261,1,45,3,262,5,42,6,263],[]],
+[[0,3,3,264,4,161,5,45],["D-2",19]],
+[[3,266,5,24,6,267,7,268],["D-2",0]],
+[[3,269,5,28],[]],
+[[0,272,3,273,5,45,6,274,7,242],["D-2",270]],
+[[0,275,3,276,5,60],[]],
+[[0,3,1,60,3,277,5,81],[]],
+[[0,279,3,280,5,21,6,281,7,7],["D",153]],
+[[0,3,3,282,5,79],[]],
+[[1,81,3,283,5,92],["R",132]]]},
+"azar":{"modo":"azar","variante":null,"titulo":"DECIDIR-EXPECTIMINIMAX en el árbol T, con I, C y D de azar","pagina":"2_mirar_todo_y_podar/3_cuando_decide_un_dado.md","resultado":{"jugada":"der","valor":"7","generados":14,"total":14},"pseudo":1,"arbol":1,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,3,1,4,2,3,3,285,4,4,5,4,6,286,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,10,3,11,5,12,6,288],["R",8]],
+[[0,15,1,12,3,16,5,17,6,290],[]],
+[[0,3,3,291,4,12,5,21],["I",19]],
+[[3,293,5,24,6,294,7,26],["I",0]],
+[[3,27,5,28],[]],
+[[3,29,5,30],[]],
+[[3,295,5,32],[]],
+[[3,296,5,297],[]],
+[[0,35,3,300,5,301,6,302],["I",298]],
+[[0,40,1,17,3,41,5,304,6,305],[]],
+[[0,3,3,306,4,17,5,307],["I-1",19]],
+[[3,309,5,24,6,310,7,49],["I-1",0]],
+[[3,50,5,28],[]],
+[[0,53,3,54,5,307,6,312,7,26],["I-1",51]],
+[[0,315,3,316,5,317,6,318],["I",313]],
+[[0,63,1,21,3,64,5,304,6,320],[]],
+[[0,3,3,321,4,21,5,307],["I-2",19]],
+[[3,323,5,24,6,324,7,70],["I-2",0]],
+[[3,71,5,28],[]],
+[[0,74,3,75,5,307,6,326,7,26],["I-2",72]],
+[[0,329,3,330,5,317,6,331],["I",327]],
+[[0,3,1,79,3,332,5,333],[]],
+[[0,83,3,336,5,21,6,337,7,7],["I",334]],
+[[0,87,3,339,5,79,6,340],["R",327]],
+[[0,91,1,92,3,93,5,17,6,342],[]],
+[[0,3,3,343,4,79,5,21],["C",19]],
+[[3,345,5,24,6,346,7,99],["C",0]],
+[[3,100,5,28],[]],
+[[3,101,5,30],[]],
+[[3,347,5,32],[]],
+[[3,348,5,297],[]],
+[[0,35,3,300,5,301,6,350],["C",298]],
+[[0,40,1,24,3,106,5,304,6,352],[]],
+[[0,3,3,353,4,92,5,307],["C1",19]],
+[[3,355,5,24,6,356,7,112],["C1",0]],
+[[3,113,5,28],[]],
+[[3,114,5,30],[]],
+[[0,116,3,117,5,118,6,358],["C1",8]],
+[[0,121,3,122,5,123,6,360],[]],
+[[0,3,3,361,4,24,5,126],["C1-1",19]],
+[[3,363,5,24,6,364,7,130],["C1-1",0]],
+[[3,131,5,28],[]],
+[[0,134,3,135,5,126,6,366,7,112],["C1-1",132]],
+[[0,139,3,140,5,141,6,368],["C1",137]],
+[[0,144,3,145,5,123,6,370],[]],
+[[0,3,3,371,4,28,5,126],["C1-2",19]],
+[[3,373,5,24,6,374,7,151],["C1-2",0]],
+[[3,152,5,28],[]],
+[[0,155,3,156,5,126,6,376,7,112],["C1-2",153]],
+[[0,158,3,159,5,141],[]],
+[[0,3,3,160,5,161],[]],
+[[0,53,3,163,5,307,6,378,7,99],["C1",132]],
+[[0,315,3,381,5,317,6,382],["C",379]],
+[[0,169,1,28,3,170,5,304,6,384],[]],
+[[0,3,3,385,4,30,5,307],["C2",19]],
+[[3,387,5,24,6,388,7,176],["C2",0]],
+[[3,177,5,28],[]],
+[[3,178,5,30],[]],
+[[0,116,3,117,5,118,6,390],["C2",8]],
+[[0,121,3,182,5,123,6,392],[]],
+[[0,3,3,393,4,118,5,126],["C2-1",19]],
+[[3,395,5,24,6,396,7,188],["C2-1",0]],
+[[3,189,5,28],[]],
+[[0,134,3,192,5,126,6,398,7,176],["C2-1",190]],
+[[0,139,3,196,5,141,6,400],["C2",194]],
+[[0,199,3,200,5,123,6,402],[]],
+[[0,3,3,403,4,123,5,126],["C2-2",19]],
+[[3,405,5,24,6,406,7,206],["C2-2",0]],
+[[3,207,5,28],[]],
+[[0,210,3,211,5,126,6,408,7,176],["C2-2",208]],
+[[0,215,3,216,5,141,6,410],["C2",213]],
+[[0,3,3,218,5,161],[]],
+[[0,220,3,221,5,307,6,412,7,99],["C2",208]],
+[[0,415,3,416,5,317,6,417],["C",413]],
+[[0,3,1,30,3,418,5,333],[]],
+[[0,421,3,422,5,21,6,423,7,7],["C",419]],
+[[0,425,3,426,5,79,6,427],["R",413]],
+[[0,235,1,118,3,236,5,17,6,429],[]],
+[[0,3,3,430,4,126,5,21],["D",19]],
+[[3,432,5,24,6,433,7,242],["D",0]],
+[[3,243,5,28],[]],
+[[3,244,5,30],[]],
+[[3,434,5,32],[]],
+[[3,435,5,297],[]],
+[[0,35,3,300,5,301,6,437],["D",298]],
+[[0,40,1,123,3,249,5,304,6,439],[]],
+[[0,3,3,371,4,141,5,307],["D-1",19]],
+[[3,373,5,24,6,441,7,253],["D-1",0]],
+[[3,152,5,28],[]],
+[[0,53,3,156,5,307,6,443,7,242],["D-1",153]],
+[[0,315,3,446,5,317,6,447],["D",444]],
+[[0,261,1,126,3,262,5,304,6,449],[]],
+[[0,3,3,450,4,161,5,307],["D-2",19]],
+[[3,452,5,24,6,453,7,268],["D-2",0]],
+[[3,269,5,28],[]],
+[[0,272,3,273,5,307,6,455,7,242],["D-2",270]],
+[[0,457,3,458,5,317,6,459],["D",194]],
+[[0,3,1,141,3,460,5,333],[]],
+[[0,462,3,463,5,21,6,464,7,7],["D",190]],
+[[0,466,3,467,5,79,6,468],["R",194]],
+[[0,3,1,161,3,469,5,92],["R",190]]]},
+"alfa-beta-T1":{"modo":"alfa-beta","variante":"T1","titulo":"DECIDIR-ALFA-BETA en el árbol T1","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"izq","valor":"3","generados":6,"total":7},"pseudo":2,"arbol":2,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,3,1,4,2,3,3,471,4,4,5,4,6,472,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,475,3,476,5,12,6,477],["R",473]],
+[[0,15,1,12,3,16,5,17,6,479],[]],
+[[0,3,3,480,4,12,5,21],["I",19]],
+[[0,483,3,484,5,24,6,485,7,26],["I",481]],
+[[0,3,3,27,5,28],[]],
+[[3,29,5,30],[]],
+[[3,31,5,42],[]],
+[[0,35,3,36,5,45,6,488],["I",486]],
+[[0,40,1,17,3,41,5,60,6,490],[]],
+[[0,3,3,491,4,17,5,81],["I-1",19]],
+[[0,493,3,494,5,24,6,495,7,49],["I-1",481]],
+[[0,3,3,50,5,28],[]],
+[[0,53,3,54,5,81,6,497,7,26],["I-1",51]],
+[[0,58,3,59,5,297,6,500],["I",498]],
+[[0,3,3,501,5,301],[]],
+[[0,504,3,505,5,304,6,506],["I",502]],
+[[0,63,1,21,3,64,5,60,6,508],[]],
+[[0,3,3,509,4,21,5,81],["I-2",19]],
+[[0,493,3,512,5,24,6,513,7,70],["I-2",510]],
+[[0,3,3,71,5,28],[]],
+[[0,74,3,75,5,81,6,515,7,26],["I-2",72]],
+[[0,77,3,78,5,297],[]],
+[[0,3,3,501,5,301],[]],
+[[0,516,3,517,5,304],[]],
+[[0,3,1,79,3,80,5,307],[]],
+[[0,83,3,84,5,21,6,519,7,7],["I",51]],
+[[0,522,3,523,5,79,6,524],["R",520]],
+[[0,91,1,92,3,526,5,17,6,527],[]],
+[[0,3,3,528,4,79,5,21],["D",19]],
+[[0,483,3,531,5,24,6,532,7,242],["D",529]],
+[[0,3,3,243,5,28],[]],
+[[3,244,5,30],[]],
+[[3,245,5,42],[]],
+[[0,35,3,36,5,45,6,535],["D",533]],
+[[0,40,1,24,3,249,5,60,6,537],[]],
+[[0,3,3,538,4,92,5,81],["D-1",19]],
+[[0,493,3,540,5,24,6,541,7,253],["D-1",529]],
+[[0,3,3,152,5,28],[]],
+[[0,53,3,156,5,81,6,543,7,242],["D-1",153]],
+[[0,58,3,258,5,297,6,546],["D",544]],
+[[0,3,2,548,3,549,5,301],["D-2",547]],
+[[0,227,1,30,2,3,3,552,5,21,6,553,7,7],["D",550]],
+[[0,3,3,554,5,79],[]],
+[[1,118,3,555,5,92],["R",51]]]},
+"alfa-beta-T":{"modo":"alfa-beta","variante":"T","titulo":"DECIDIR-ALFA-BETA en el árbol T","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"centro","valor":"5","generados":12,"total":14},"pseudo":2,"arbol":0,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,3,1,4,2,3,3,471,4,4,5,4,6,472,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,475,3,476,5,12,6,477],["R",473]],
+[[0,15,1,12,3,16,5,17,6,479],[]],
+[[0,3,3,480,4,12,5,21],["I",19]],
+[[0,483,3,484,5,24,6,485,7,26],["I",481]],
+[[0,3,3,27,5,28],[]],
+[[3,29,5,30],[]],
+[[3,31,5,42],[]],
+[[0,35,3,36,5,45,6,488],["I",486]],
+[[0,40,1,17,3,41,5,60,6,490],[]],
+[[0,3,3,491,4,17,5,81],["I-1",19]],
+[[0,493,3,494,5,24,6,495,7,49],["I-1",481]],
+[[0,3,3,50,5,28],[]],
+[[0,53,3,54,5,81,6,497,7,26],["I-1",51]],
+[[0,58,3,59,5,297,6,500],["I",498]],
+[[0,3,3,501,5,301],[]],
+[[0,504,3,505,5,304,6,506],["I",502]],
+[[0,63,1,21,3,64,5,60,6,508],[]],
+[[0,3,3,509,4,21,5,81],["I-2",19]],
+[[0,493,3,512,5,24,6,513,7,70],["I-2",510]],
+[[0,3,3,71,5,28],[]],
+[[0,74,3,75,5,81,6,515,7,26],["I-2",72]],
+[[0,77,3,78,5,297],[]],
+[[0,3,3,501,5,301],[]],
+[[0,516,3,517,5,304],[]],
+[[0,3,1,79,3,80,5,307],[]],
+[[0,83,3,84,5,21,6,519,7,7],["I",51]],
+[[0,522,3,523,5,79,6,524],["R",520]],
+[[0,91,1,92,3,93,5,17,6,557],[]],
+[[0,3,3,558,4,79,5,21],["C",19]],
+[[0,483,3,560,5,24,6,561,7,99],["C",529]],
+[[0,3,3,100,5,28],[]],
+[[3,101,5,30],[]],
+[[3,102,5,42],[]],
+[[0,35,3,36,5,45,6,563],["C",533]],
+[[0,40,1,24,3,106,5,60,6,565],[]],
+[[0,3,3,566,4,92,5,81],["C1",19]],
+[[0,493,3,568,5,24,6,569,7,112],["C1",529]],
+[[0,3,3,113,5,28],[]],
+[[3,114,5,30],[]],
+[[0,116,3,117,5,118,6,572],["C1",570]],
+[[0,121,1,28,3,122,5,123,6,574],[]],
+[[0,3,3,575,4,24,5,126],["C1-1",19]],
+[[0,577,3,578,5,24,6,579,7,130],["C1-1",529]],
+[[0,3,3,131,5,28],[]],
+[[0,134,3,135,5,126,6,581,7,112],["C1-1",132]],
+[[0,139,3,140,5,141,6,584],["C1",582]],
+[[0,3,3,585,5,161],[]],
+[[0,588,3,589,5,32,6,590],["C1",586]],
+[[0,144,1,30,3,145,5,123,6,592],[]],
+[[0,3,3,593,4,28,5,126],["C1-2",19]],
+[[0,577,3,596,5,24,6,597,7,151],["C1-2",594]],
+[[0,3,3,152,5,28],[]],
+[[0,155,3,156,5,126,6,599,7,112],["C1-2",153]],
+[[0,158,3,159,5,141],[]],
+[[0,3,3,585,5,161],[]],
+[[0,600,3,601,5,32],[]],
+[[0,3,1,118,3,160,5,37],[]],
+[[0,53,3,163,5,81,6,603,7,99],["C1",132]],
+[[0,58,3,166,5,297,6,605],["C",582]],
+[[0,3,3,606,5,301],[]],
+[[0,504,3,609,5,304,6,610],["C",607]],
+[[0,169,1,123,3,170,5,60,6,612],[]],
+[[0,3,3,613,4,30,5,81],["C2",19]],
+[[0,493,3,616,5,24,6,617,7,176],["C2",614]],
+[[0,3,3,177,5,28],[]],
+[[3,178,5,30],[]],
+[[0,116,3,117,5,118,6,620],["C2",618]],
+[[0,121,1,126,3,182,5,123,6,622],[]],
+[[0,3,3,623,4,118,5,126],["C2-1",19]],
+[[0,577,3,625,5,24,6,626,7,188],["C2-1",614]],
+[[0,3,3,189,5,28],[]],
+[[0,134,3,192,5,126,6,628,7,176],["C2-1",190]],
+[[0,139,3,196,5,141,6,631],["C2",629]],
+[[0,3,2,632,3,633,5,161],["C2-2",547]],
+[[0,220,1,161,2,3,3,636,5,81,6,637,7,99],["C2",634]],
+[[0,223,3,638,5,297],[]],
+[[0,3,3,606,5,301],[]],
+[[0,639,3,640,5,304],[]],
+[[0,3,1,32,3,225,5,307],[]],
+[[0,227,3,228,5,21,6,642,7,7],["C",132]],
+[[0,644,3,645,5,79,6,646],["R",586]],
+[[0,235,1,37,3,236,5,17,6,648],[]],
+[[0,3,3,649,4,123,5,21],["D",19]],
+[[0,483,3,651,5,24,6,652,7,242],["D",594]],
+[[0,3,3,243,5,28],[]],
+[[3,244,5,30],[]],
+[[3,245,5,42],[]],
+[[0,35,3,36,5,45,6,655],["D",653]],
+[[0,40,1,42,3,249,5,60,6,657],[]],
+[[0,3,3,593,4,126,5,81],["D-1",19]],
+[[0,493,3,596,5,24,6,659,7,253],["D-1",594]],
+[[0,3,3,152,5,28],[]],
+[[0,53,3,156,5,81,6,661,7,242],["D-1",153]],
+[[0,58,3,258,5,297,6,664],["D",662]],
+[[0,3,2,665,3,666,5,301],["D-2",547]],
+[[0,279,1,60,2,3,3,552,5,21,6,668,7,7],["D",550]],
+[[0,3,3,669,5,79],[]],
+[[1,81,3,283,5,92],["R",132]]]},
+"corte-1":{"modo":"corte","variante":1,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 1","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"der","valor":"7","generados":4,"total":14},"pseudo":3,"arbol":3,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,671,1,4,2,3,3,672,4,4,5,4,6,673,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,10,3,11,5,12,6,675],["R",8]],
+[[0,15,1,12,3,16,5,17,6,677],[]],
+[[0,3,3,678,4,12,5,21],["I",19]],
+[[0,680,3,681,5,24,6,682,7,26],["I",0]],
+[[0,3,3,27,5,28],[]],
+[[3,683,5,30],[]],
+[[0,83,3,686,5,21,6,687,7,7],["I",684]],
+[[0,87,3,689,5,79,6,690],["R",137]],
+[[0,91,1,17,3,93,5,17,6,692],[]],
+[[0,3,3,693,4,17,5,21],["C",19]],
+[[0,680,3,695,5,24,6,696,7,99],["C",0]],
+[[0,3,3,100,5,28],[]],
+[[3,697,5,30],[]],
+[[0,279,3,700,5,21,6,701,7,7],["C",698]],
+[[0,3,3,702,5,79],[]],
+[[0,235,1,21,3,236,5,17,6,704],[]],
+[[0,3,3,705,4,21,5,21],["D",19]],
+[[0,680,3,707,5,24,6,708,7,242],["D",0]],
+[[0,3,3,243,5,28],[]],
+[[3,709,5,30],[]],
+[[0,712,3,713,5,21,6,714,7,7],["D",710]],
+[[0,716,3,717,5,79,6,718],["R",194]],
+[[0,3,1,79,3,469,5,92],["R",190]]]},
+"corte-2":{"modo":"corte","variante":2,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 2","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"6","generados":10,"total":14},"pseudo":3,"arbol":3,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,671,1,4,2,3,3,720,4,4,5,4,6,721,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,10,3,11,5,12,6,723],["R",8]],
+[[0,15,1,12,3,16,5,17,6,725],[]],
+[[0,3,3,726,4,12,5,21],["I",19]],
+[[0,680,3,728,5,24,6,729,7,26],["I",0]],
+[[0,3,3,27,5,28],[]],
+[[3,730,5,30],[]],
+[[3,29,5,118],[]],
+[[3,31,5,37],[]],
+[[0,35,3,36,5,42,6,732],["I",33]],
+[[0,40,1,17,3,41,5,45,6,734],[]],
+[[0,3,3,735,4,17,5,60],["I-1",19]],
+[[0,737,3,738,5,24,6,739,7,49],["I-1",0]],
+[[0,3,3,740,5,28],[]],
+[[0,53,3,54,5,60,6,742,7,26],["I-1",51]],
+[[0,58,3,59,5,81,6,744],["I",56]],
+[[0,63,1,21,3,64,5,45,6,746],[]],
+[[0,3,3,747,4,21,5,60],["I-2",19]],
+[[0,737,3,749,5,24,6,750,7,70],["I-2",0]],
+[[0,3,3,751,5,28],[]],
+[[0,74,3,75,5,60,6,753,7,26],["I-2",72]],
+[[0,77,3,78,5,81],[]],
+[[0,3,1,79,3,80,5,297],[]],
+[[0,83,3,84,5,21,6,755,7,7],["I",51]],
+[[0,87,3,88,5,79,6,757],["R",56]],
+[[0,91,1,92,3,93,5,17,6,759],[]],
+[[0,3,3,760,4,79,5,21],["C",19]],
+[[0,680,3,762,5,24,6,763,7,99],["C",0]],
+[[0,3,3,100,5,28],[]],
+[[3,730,5,30],[]],
+[[3,101,5,118],[]],
+[[3,102,5,37],[]],
+[[0,35,3,36,5,42,6,765],["C",33]],
+[[0,40,1,24,3,106,5,45,6,767],[]],
+[[0,3,3,768,4,92,5,60],["C1",19]],
+[[0,737,3,770,5,24,6,771,7,112],["C1",0]],
+[[0,3,3,113,5,28],[]],
+[[3,772,5,30],[]],
+[[0,53,3,775,5,60,6,776,7,99],["C1",773]],
+[[0,58,3,779,5,81,6,780],["C",777]],
+[[0,169,1,28,3,170,5,45,6,782],[]],
+[[0,3,3,783,4,24,5,60],["C2",19]],
+[[0,737,3,785,5,24,6,786,7,176],["C2",0]],
+[[0,3,3,177,5,28],[]],
+[[3,787,5,30],[]],
+[[0,790,3,791,5,60,6,792,7,99],["C2",788]],
+[[0,793,3,794,5,81],[]],
+[[0,3,1,30,3,795,5,297],[]],
+[[0,227,3,797,5,21,6,798,7,7],["C",72]],
+[[0,231,3,800,5,79,6,801],["R",777]],
+[[0,235,1,118,3,236,5,17,6,803],[]],
+[[0,3,3,804,4,28,5,21],["D",19]],
+[[0,680,3,806,5,24,6,807,7,242],["D",0]],
+[[0,3,3,243,5,28],[]],
+[[3,730,5,30],[]],
+[[3,244,5,118],[]],
+[[3,245,5,37],[]],
+[[0,35,3,36,5,42,6,809],["D",33]],
+[[0,40,1,123,3,249,5,45,6,811],[]],
+[[0,3,3,812,4,30,5,60],["D-1",19]],
+[[0,737,3,814,5,24,6,815,7,253],["D-1",0]],
+[[0,3,3,816,5,28],[]],
+[[0,53,3,156,5,60,6,818,7,242],["D-1",153]],
+[[0,58,3,258,5,81,6,820],["D",256]],
+[[0,261,1,126,3,262,5,45,6,822],[]],
+[[0,3,3,823,4,118,5,60],["D-2",19]],
+[[0,737,3,825,5,24,6,826,7,268],["D-2",0]],
+[[0,3,3,827,5,28],[]],
+[[0,272,3,273,5,60,6,829,7,242],["D-2",270]],
+[[0,275,3,276,5,81],[]],
+[[0,3,1,141,3,277,5,297],[]],
+[[0,831,3,280,5,21,6,832,7,7],["D",153]],
+[[0,3,3,833,5,79],[]],
+[[1,161,3,283,5,92],["R",72]]]},
+"corte-3":{"modo":"corte","variante":3,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 3","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":3,"arbol":3,"claves":["cambia","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,671,1,4,2,3,3,835,4,4,5,4,6,836,7,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,10,3,11,5,12,6,838],["R",8]],
+[[0,15,1,12,3,16,5,17,6,840],[]],
+[[0,3,3,841,4,12,5,21],["I",19]],
+[[0,680,3,843,5,24,6,844,7,26],["I",0]],
+[[0,3,3,27,5,28],[]],
+[[3,845,5,30],[]],
+[[3,29,5,118],[]],
+[[3,31,5,37],[]],
+[[0,35,3,36,5,42,6,847],["I",33]],
+[[0,40,1,17,3,41,5,45,6,849],[]],
+[[0,3,3,850,4,17,5,60],["I-1",19]],
+[[0,737,3,852,5,24,6,853,7,49],["I-1",0]],
+[[0,3,3,740,5,28],[]],
+[[0,53,3,54,5,60,6,855,7,26],["I-1",51]],
+[[0,58,3,59,5,81,6,857],["I",56]],
+[[0,63,1,21,3,64,5,45,6,859],[]],
+[[0,3,3,860,4,21,5,60],["I-2",19]],
+[[0,737,3,862,5,24,6,863,7,70],["I-2",0]],
+[[0,3,3,751,5,28],[]],
+[[0,74,3,75,5,60,6,865,7,26],["I-2",72]],
+[[0,77,3,78,5,81],[]],
+[[0,3,1,79,3,80,5,297],[]],
+[[0,83,3,84,5,21,6,867,7,7],["I",51]],
+[[0,87,3,88,5,79,6,869],["R",56]],
+[[0,91,1,92,3,93,5,17,6,871],[]],
+[[0,3,3,872,4,79,5,21],["C",19]],
+[[0,680,3,874,5,24,6,875,7,99],["C",0]],
+[[0,3,3,100,5,28],[]],
+[[3,845,5,30],[]],
+[[3,101,5,118],[]],
+[[3,102,5,37],[]],
+[[0,35,3,36,5,42,6,877],["C",33]],
+[[0,40,1,24,3,106,5,45,6,879],[]],
+[[0,3,3,880,4,92,5,60],["C1",19]],
+[[0,737,3,882,5,24,6,883,7,112],["C1",0]],
+[[0,3,3,113,5,28],[]],
+[[3,730,5,30],[]],
+[[3,114,5,118],[]],
+[[0,116,3,117,5,123,6,885],["C1",8]],
+[[0,121,1,28,3,122,5,126,6,887],[]],
+[[0,3,3,888,4,24,5,141],["C1-1",19]],
+[[0,890,3,891,5,24,6,892,7,130],["C1-1",0]],
+[[0,3,3,893,5,28],[]],
+[[0,134,3,135,5,141,6,895,7,112],["C1-1",132]],
+[[0,139,3,140,5,161,6,897],["C1",137]],
+[[0,144,1,30,3,145,5,126,6,899],[]],
+[[0,3,3,812,4,28,5,141],["C1-2",19]],
+[[0,890,3,814,5,24,6,901,7,151],["C1-2",0]],
+[[0,3,3,816,5,28],[]],
+[[0,155,3,156,5,141,6,903,7,112],["C1-2",153]],
+[[0,158,3,159,5,161],[]],
+[[0,3,1,118,3,160,5,32],[]],
+[[0,53,3,163,5,60,6,905,7,99],["C1",132]],
+[[0,58,3,166,5,81,6,907],["C",137]],
+[[0,169,1,123,3,170,5,45,6,909],[]],
+[[0,3,3,910,4,30,5,60],["C2",19]],
+[[0,737,3,912,5,24,6,913,7,176],["C2",0]],
+[[0,3,3,177,5,28],[]],
+[[3,730,5,30],[]],
+[[3,178,5,118],[]],
+[[0,116,3,117,5,123,6,915],["C2",8]],
+[[0,121,1,126,3,182,5,126,6,917],[]],
+[[0,3,3,918,4,118,5,141],["C2-1",19]],
+[[0,890,3,920,5,24,6,921,7,188],["C2-1",0]],
+[[0,3,3,922,5,28],[]],
+[[0,134,3,192,5,141,6,924,7,176],["C2-1",190]],
+[[0,139,3,196,5,161,6,926],["C2",194]],
+[[0,199,1,141,3,200,5,126,6,928],[]],
+[[0,3,3,929,4,123,5,141],["C2-2",19]],
+[[0,890,3,931,5,24,6,932,7,206],["C2-2",0]],
+[[0,3,3,933,5,28],[]],
+[[0,210,3,211,5,141,6,935,7,176],["C2-2",208]],
+[[0,215,3,216,5,161,6,937],["C2",213]],
+[[0,3,1,161,3,218,5,32],[]],
+[[0,220,3,221,5,60,6,939,7,99],["C2",208]],
+[[0,223,3,224,5,81],[]],
+[[0,3,1,32,3,225,5,297],[]],
+[[0,227,3,228,5,21,6,941,7,7],["C",132]],
+[[0,231,3,232,5,79,6,943],["R",137]],
+[[0,235,1,37,3,236,5,17,6,945],[]],
+[[0,3,3,946,4,126,5,21],["D",19]],
+[[0,680,3,948,5,24,6,949,7,242],["D",0]],
+[[0,3,3,243,5,28],[]],
+[[3,845,5,30],[]],
+[[3,244,5,118],[]],
+[[3,245,5,37],[]],
+[[0,35,3,36,5,42,6,951],["D",33]],
+[[0,40,1,42,3,249,5,45,6,953],[]],
+[[0,3,3,954,4,141,5,60],["D-1",19]],
+[[0,737,3,956,5,24,6,957,7,253],["D-1",0]],
+[[0,3,3,816,5,28],[]],
+[[0,53,3,156,5,60,6,959,7,242],["D-1",153]],
+[[0,58,3,258,5,81,6,961],["D",256]],
+[[0,261,1,45,3,262,5,45,6,963],[]],
+[[0,3,3,964,4,161,5,60],["D-2",19]],
+[[0,737,3,966,5,24,6,967,7,268],["D-2",0]],
+[[0,3,3,827,5,28],[]],
+[[0,272,3,273,5,60,6,969,7,242],["D-2",270]],
+[[0,275,3,276,5,81],[]],
+[[0,3,1,60,3,277,5,297],[]],
+[[0,279,3,280,5,21,6,971,7,7],["D",153]],
+[[0,3,3,282,5,79],[]],
+[[1,81,3,283,5,92],["R",132]]]},
+"iterativa":{"modo":"iterativa","variante":null,"titulo":"PROFUNDIZACIÓN-ITERATIVA en el árbol T con d = 1, 2 y 3","pagina":"3_cuando_no_cabe/3_jugar_contra_el_reloj.md","resultado":{"jugada":"centro","valor":"5","generados":25,"total":42,"por_d":[{"d":1,"orden":["izq","centro","der"],"jugada":"der","valor":"7","generados":4},{"d":2,"orden":["der","izq","centro"],"jugada":"centro","valor":"6","generados":10},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":"5","generados":11}]},"pseudo":4,"arbol":3,"claves":["cambia","d","fila","filas_x","frase","generados","linea","marco","nodo"],"pasos":[
+[[0,3,1,4,2,4,3,3,4,973,5,4,6,4,7,974,8,7],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,976,4,977,6,12,7,978],[]],
+[[0,671,4,980,6,17,7,981],[]],
+[[0,3,2,12,4,982,6,21],[]],
+[[0,475,4,984,6,79,7,985],["R",473]],
+[[0,15,2,17,4,987,6,92,7,988],[]],
+[[0,3,4,989,5,12,6,24],["I",19]],
+[[0,991,4,992,6,161,7,993,8,26],["I",481]],
+[[0,3,4,27,6,32],[]],
+[[4,683,6,37],[]],
+[[0,83,4,686,6,24,7,995,8,7],["I",684]],
+[[0,3,4,996,6,28],[]],
+[[4,997,6,30],[]],
+[[0,999,4,1000,6,118,7,1001],["R",586]],
+[[0,91,2,21,4,1003,6,92,7,1004],[]],
+[[0,3,4,1005,5,17,6,24],["C",19]],
+[[0,991,4,1007,6,161,7,1008,8,99],["C",594]],
+[[0,3,4,100,6,32],[]],
+[[4,697,6,37],[]],
+[[0,279,4,700,6,24,7,1010,8,7],["C",698]],
+[[0,3,4,996,6,28],[]],
+[[4,1011,6,30],[]],
+[[4,1012,6,118],[]],
+[[0,235,2,79,4,1014,6,92,7,1015],[]],
+[[0,3,4,1016,5,21,6,24],["D",19]],
+[[0,991,4,1018,6,161,7,1019,8,242],["D",594]],
+[[0,3,4,243,6,32],[]],
+[[4,709,6,37],[]],
+[[0,712,4,713,6,24,7,1021,8,7],["D",710]],
+[[0,3,4,996,6,28],[]],
+[[4,1022,6,30],[]],
+[[0,1025,4,1026,6,118,7,1027],["R",1023]],
+[[0,1029,2,92,4,1030,6,123,7,1031],["R",190]],
+[[0,1033,4,1034,6,126,7,1035],[]],
+[[0,3,1,12,2,24,4,1036,5,4,6,21],["R",0,"I",1,"C",1,"D",1]],
+[[0,1038,4,1039,6,79,7,1040],["R",473]],
+[[0,1041,2,28,4,1042,6,92],[]],
+[[0,3,4,1043,5,12,6,24],["D",19]],
+[[0,991,4,1045,6,161,7,1046,8,242],["D",481]],
+[[0,3,4,243,6,32],[]],
+[[4,730,6,37],[]],
+[[4,244,6,42],[]],
+[[4,245,6,317],[]],
+[[0,35,4,36,6,333,7,1048],["D",486]],
+[[0,40,2,30,4,249,6,1050,7,1051],[]],
+[[0,3,4,1052,5,17,6,1053],["D-1",19]],
+[[0,1055,4,1056,6,161,7,1057,8,253],["D-1",481]],
+[[0,3,4,816,6,32],[]],
+[[0,53,4,156,6,1053,7,1059,8,242],["D-1",153]],
+[[0,58,4,258,6,1062,7,1063],["D",1060]],
+[[0,3,4,1064,6,1065],[]],
+[[0,504,4,1068,6,1069,7,1070],["D",1066]],
+[[0,261,2,118,4,262,6,1050,7,1072],[]],
+[[0,3,4,1073,5,21,6,1053],["D-2",19]],
+[[0,1055,4,1076,6,161,7,1077,8,268],["D-2",1074]],
+[[0,3,4,827,6,32],[]],
+[[0,272,4,273,6,1053,7,1079,8,242],["D-2",270]],
+[[0,275,4,276,6,1062],[]],
+[[0,3,4,1064,6,1065],[]],
+[[0,1080,4,1081,6,1069],[]],
+[[0,3,2,123,4,277,6,1082],[]],
+[[0,1084,4,280,6,24,7,1085,8,7],["D",153]],
+[[0,3,4,996,6,28],[]],
+[[4,1086,6,30],[]],
+[[0,1089,4,1090,6,118,7,1091],["R",1087]],
+[[0,1041,2,126,4,1093,6,92,7,1094],[]],
+[[0,3,4,1095,5,79,6,24],["I",19]],
+[[0,991,4,1098,6,161,7,1099,8,26],["I",1096]],
+[[0,3,4,27,6,32],[]],
+[[4,730,6,37],[]],
+[[4,29,6,42],[]],
+[[4,31,6,317],[]],
+[[0,35,4,36,6,333,7,1102],["I",1100]],
+[[0,40,2,141,4,41,6,1050,7,1104],[]],
+[[0,3,4,1105,5,92,6,1053],["I-1",19]],
+[[0,1055,4,1107,6,161,7,1108,8,49],["I-1",1096]],
+[[0,3,4,740,6,32],[]],
+[[0,53,4,54,6,1053,7,1110,8,26],["I-1",51]],
+[[0,58,4,59,6,1062,7,1113],["I",1111]],
+[[0,3,4,1114,6,1065],[]],
+[[0,504,4,505,6,1069,7,1117],["I",1115]],
+[[0,63,2,161,4,64,6,1050,7,1119],[]],
+[[0,3,4,1120,5,24,6,1053],["I-2",19]],
+[[0,1055,4,1123,6,161,7,1124,8,70],["I-2",1121]],
+[[0,3,4,751,6,32],[]],
+[[0,74,4,75,6,1053,7,1126,8,26],["I-2",72]],
+[[0,77,4,78,6,1062],[]],
+[[0,3,4,1114,6,1065],[]],
+[[0,516,4,517,6,1069],[]],
+[[0,3,2,32,4,80,6,1082],[]],
+[[0,1128,4,84,6,24,7,1129,8,7],["I",51]],
+[[0,3,4,996,6,28],[]],
+[[4,1130,6,30],[]],
+[[0,1132,4,1133,6,118,7,1134],["R",520]],
+[[0,91,2,37,4,1003,6,92,7,1136],[]],
+[[0,3,4,1137,5,28,6,24],["C",19]],
+[[0,991,4,1139,6,161,7,1140,8,99],["C",529]],
+[[0,3,4,100,6,32],[]],
+[[4,730,6,37],[]],
+[[4,101,6,42],[]],
+[[4,102,6,317],[]],
+[[0,35,4,36,6,333,7,1142],["C",533]],
+[[0,40,2,42,4,106,6,1050,7,1144],[]],
+[[0,3,4,1145,5,30,6,1053],["C1",19]],
+[[0,1055,4,1147,6,161,7,1148,8,112],["C1",529]],
+[[0,3,4,113,6,32],[]],
+[[4,772,6,37],[]],
+[[0,53,4,775,6,1053,7,1150,8,99],["C1",773]],
+[[0,58,4,779,6,1062,7,1153],["C",1151]],
+[[0,3,4,1154,6,1065],[]],
+[[0,504,4,1157,6,1069,7,1158],["C",1155]],
+[[0,169,2,45,4,170,6,1050,7,1160],[]],
+[[0,3,4,1161,5,118,6,1053],["C2",19]],
+[[0,1055,4,1164,6,161,7,1165,8,176],["C2",1162]],
+[[0,3,4,177,6,32],[]],
+[[4,787,6,37],[]],
+[[0,790,4,791,6,1053,7,1167,8,99],["C2",788]],
+[[0,793,4,794,6,1062],[]],
+[[0,3,4,1154,6,1065],[]],
+[[0,1168,4,1169,6,1069],[]],
+[[0,3,2,60,4,795,6,1082],[]],
+[[0,227,4,797,6,24,7,1171,8,7],["C",72]],
+[[0,3,4,996,6,28],[]],
+[[4,1172,6,30],[]],
+[[0,644,4,1175,6,118,7,1176],["R",1173]],
+[[0,1178,2,81,4,1179,6,123,7,1180],["R",72]],
+[[0,1182,4,1183,6,126,7,1184],[]],
+[[0,3,1,17,2,297,4,1185,5,4,6,21],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,1187,4,1188,6,79,7,1189],["R",473]],
+[[0,235,2,301,4,1190,6,92],[]],
+[[0,3,4,1191,5,12,6,24],["C",19]],
+[[0,991,4,1193,6,161,7,1194,8,99],["C",481]],
+[[0,3,4,100,6,32],[]],
+[[4,845,6,37],[]],
+[[4,101,6,42],[]],
+[[4,102,6,317],[]],
+[[0,35,4,36,6,333,7,1196],["C",486]],
+[[0,40,2,304,4,106,6,1050,7,1198],[]],
+[[0,3,4,1199,5,17,6,1053],["C1",19]],
+[[0,1055,4,1201,6,161,7,1202,8,112],["C1",481]],
+[[0,3,4,113,6,32],[]],
+[[4,730,6,37],[]],
+[[4,114,6,42],[]],
+[[0,116,4,117,6,45,7,1204],["C1",473]],
+[[0,121,2,307,4,122,6,60,7,1206],[]],
+[[0,3,4,1207,5,21,6,81],["C1-1",19]],
+[[0,1209,4,1210,6,161,7,1211,8,130],["C1-1",481]],
+[[0,3,4,893,6,32],[]],
+[[0,134,4,135,6,81,7,1213,8,112],["C1-1",132]],
+[[0,139,4,140,6,297,7,1216],["C1",1214]],
+[[0,3,4,585,6,301],[]],
+[[0,1218,4,1219,6,304,7,1220],["C1",586]],
+[[0,144,2,317,4,145,6,60,7,1222],[]],
+[[0,3,4,1223,5,79,6,81],["C1-2",19]],
+[[0,1209,4,1225,6,161,7,1226,8,151],["C1-2",594]],
+[[0,3,4,816,6,32],[]],
+[[0,155,4,156,6,81,7,1228,8,112],["C1-2",153]],
+[[0,158,4,159,6,297],[]],
+[[0,3,4,585,6,301],[]],
+[[0,600,4,601,6,304],[]],
+[[0,3,2,333,4,160,6,307],[]],
+[[0,53,4,163,6,1053,7,1230,8,99],["C1",132]],
+[[0,58,4,166,6,1062,7,1232],["C",1214]],
+[[0,3,4,1233,6,1065],[]],
+[[0,504,4,609,6,1069,7,1236],["C",1234]],
+[[0,169,2,1050,4,170,6,1050,7,1238],[]],
+[[0,3,4,1239,5,92,6,1053],["C2",19]],
+[[0,1055,4,1242,6,161,7,1243,8,176],["C2",1240]],
+[[0,3,4,177,6,32],[]],
+[[4,730,6,37],[]],
+[[4,178,6,42],[]],
+[[0,116,4,117,6,45,7,1246],["C2",1244]],
+[[0,121,2,1053,4,182,6,60,7,1248],[]],
+[[0,3,4,1249,5,24,6,81],["C2-1",19]],
+[[0,1209,4,1251,6,161,7,1252,8,188],["C2-1",1240]],
+[[0,3,4,922,6,32],[]],
+[[0,134,4,192,6,81,7,1254,8,176],["C2-1",190]],
+[[0,139,4,196,6,297,7,1257],["C2",1255]],
+[[0,3,3,1258,4,633,6,301],["C2-2",547]],
+[[0,220,2,1065,3,3,4,636,6,1053,7,1260,8,99],["C2",634]],
+[[0,223,4,638,6,1062],[]],
+[[0,3,4,1233,6,1065],[]],
+[[0,639,4,640,6,1069],[]],
+[[0,3,2,1069,4,225,6,1082],[]],
+[[0,831,4,228,6,24,7,1262,8,7],["C",132]],
+[[0,3,4,996,6,28],[]],
+[[4,997,6,30],[]],
+[[0,1264,4,1265,6,118,7,1266],["R",586]],
+[[0,235,2,1082,4,1093,6,92,7,1268],[]],
+[[0,3,4,1269,5,28,6,24],["I",19]],
+[[0,991,4,1271,6,161,7,1272,8,26],["I",594]],
+[[0,3,4,27,6,32],[]],
+[[4,845,6,37],[]],
+[[4,29,6,42],[]],
+[[4,31,6,317],[]],
+[[0,35,4,36,6,333,7,1274],["I",653]],
+[[0,40,2,1276,4,41,6,1050,7,1277],[]],
+[[0,3,4,1278,5,30,6,1053],["I-1",19]],
+[[0,1055,4,1280,6,161,7,1281,8,49],["I-1",594]],
+[[0,3,4,740,6,32],[]],
+[[0,53,4,54,6,1053,7,1283,8,26],["I-1",51]],
+[[0,58,4,59,6,1062,7,1286],["I",1284]],
+[[0,3,3,1287,4,1288,6,1065],["I-2",547]],
+[[0,279,2,1291,3,3,4,1292,6,24,7,1293,8,7],["I",1289]],
+[[0,3,4,996,6,28],[]],
+[[4,1130,6,30],[]],
+[[4,1294,6,118],[]],
+[[0,91,2,1296,4,1014,6,92,7,1297],[]],
+[[0,3,4,1298,5,118,6,24],["D",19]],
+[[0,991,4,1300,6,161,7,1301,8,242],["D",594]],
+[[0,3,4,243,6,32],[]],
+[[4,845,6,37],[]],
+[[4,244,6,42],[]],
+[[4,245,6,317],[]],
+[[0,35,4,36,6,333,7,1303],["D",653]],
+[[0,40,2,1305,4,249,6,1050,7,1306],[]],
+[[0,3,4,1307,5,123,6,1053],["D-1",19]],
+[[0,1055,4,1309,6,161,7,1310,8,253],["D-1",594]],
+[[0,3,4,816,6,32],[]],
+[[0,53,4,156,6,1053,7,1312,8,242],["D-1",153]],
+[[0,58,4,258,6,1062,7,1314],["D",662]],
+[[0,3,3,1315,4,666,6,1065],["D-2",547]],
+[[0,227,2,1317,3,3,4,552,6,24,7,1318,8,7],["D",550]],
+[[0,3,4,996,6,28],[]],
+[[4,1086,6,30],[]],
+[[4,669,6,118],[]],
+[[0,1319,2,1320,4,1321,6,123],["R",132]],
+[[0,1323,4,1324,6,126,7,1325],[]],
+[[0,3,2,1326,4,1327,6,21],[]],
+[[4,1328,6,141],[]]]}}}
 </script>
-
 <script>
 "use strict";
 const D = JSON.parse(document.getElementById("trazas").textContent);
@@ -620,6 +2379,7 @@ function traza(clave){
   if(cache[clave]) return cache[clave];
   const t = D.trazas[clave], [pseudo, renglones] = D.pseudos[t.pseudo], V = D.valores;
   const nodos = D.arboles[t.arbol].map(n => Object.fromEntries(D.claves_nodo.map((k,i) => [k, n[i]])));
+  const pares = l => { const r = []; for(let j = 0; j < l.length; j += 2) r.push([l[j], l[j+1]]); return r; };
   let estado = {}, valores = [];
   const pasos = t.pasos.map(([campos, cambio], k) => {
     valores = valores.slice();
@@ -631,21 +2391,24 @@ function traza(clave){
     }
     const p = {n:k+1, estado};
     t.claves.forEach((c,i) => p[c] = valores[i]);
+    p.marco = p.marco.map(m => { const [func, nodo, args, loc] = V[m];
+      return {func, nodo, args:pares(args), locales:pares(loc)}; });
+    p.pila = p.marco.map(m => m.nodo);
     return p;
   });
-  return cache[clave] = Object.assign({}, t, {pseudo, renglones, nodos, pasos,
+  // el paso que cierra cada fila de la tabla (y las filas ✗ que cierra con el)
+  const cierre = {};
+  pasos.forEach((p, k) => { cierre[p.fila] = k; p.filas_x.forEach(x => cierre[x] = k); });
+  const cierres = [...new Set(Object.values(cierre))].sort((a,b) => a-b);
+  const filas = Math.max(...Object.keys(cierre).map(Number));
+  return cache[clave] = Object.assign({}, t, {pseudo, renglones, nodos, pasos, cierre, cierres, filas,
     porId: Object.fromEntries(nodos.map(n => [n.id, n])),
     conAB: t.modo === "alfa-beta" || t.modo === "iterativa"});
 }
 
 let clave = "minimax", i = 0, reloj = null;
 const reducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const PAUSA_MS = 2500;
-
-// Un paso ✗: la hoja que un corte deja sin generar. Su «nodo» es la hoja; lo
-// que se lee (v, la ventana, el corte) es del nodo en el tope de la pila.
-const esPodado = p => p.linea === "" && p.estado[p.nodo] && p.estado[p.nodo].estado === "podado";
-const tope = p => p.pila[p.pila.length-1];
+const PAUSA_MS = 1300;
 
 // ---------- el arbol ----------
 // Medidas del viewBox. A 390 px el dibujo se reduce a ~0.7: 18 unidades dan
@@ -679,7 +2442,6 @@ const fraccion = s => s === "1/2" ? "½" : s;
 
 // Nodos generados. En iterativa el contador de cada paso es el de la busqueda
 // en curso (vuelve a 1 al empezar cada d); el acumulado suma las anteriores.
-// Se compara con el tamano del arbol, no con el total de la traza.
 function generados(t, p){
   const n = t.nodos.length;
   if(t.modo !== "iterativa") return {corto:`generados ${p.generados}/${n}`, largo:`${p.generados} de ${n}`};
@@ -695,14 +2457,23 @@ function horizonte(t, p){
 function texto(x, y, txt, extra){
   return el("text", Object.assign({x, y, "text-anchor":"middle", "font-size":LETRA}, extra), txt);
 }
+// El hijo que acaba de devolver (en el paso «w ←» del padre): el tope de la
+// pila del paso anterior.
+function vuelveDe(t, k){
+  if(k === 0) return null;
+  const a = t.pasos[k-1], p = t.pasos[k];
+  return a.marco.length === p.marco.length + 1 ? a.pila[a.pila.length-1] : null;
+}
 
-function pintarArbol(t, p){
+function pintarArbol(t, k){
+  const p = t.pasos[k];
   const L = disposicion(t.nodos), y = id => Y0 + DY*L.prof[id], x = id => L.pos[id];
-  const conAB = t.conAB, d = horizonte(t, p), alto = L.alto;
+  const conAB = t.conAB, d = horizonte(t, p), alto = L.alto, vuelto = vuelveDe(t, k);
   BH = conAB ? 84 : 60;
   const fuera = id => d !== null && L.prof[id] > d;
+  const nombres = p.pila.map(id => t.porId[id].nombre);
   const svg = el("svg", {viewBox:`0 0 ${W} ${alto}`, width:W, height:alto, role:"img",
-    "aria-label": `Árbol, paso ${p.n}: pila ${p.pila.join(", ")}; generados ${generados(t, p).largo}.`});
+    "aria-label": `Árbol: pila ${nombres.join(", ")}; generados ${generados(t, p).largo}.`});
   svg.appendChild(el("rect", {x:0, y:0, width:W, height:alto, fill:"var(--surface)"}));
   svg.appendChild(texto(4, alto-10, generados(t, p).corto,
     {"text-anchor":"start", fill:"var(--muted)", "font-family":MONO, "font-size":17}));
@@ -720,13 +2491,13 @@ function pintarArbol(t, p){
   t.nodos.forEach(n => { if(!n.padre) return;
     const e = p.estado[n.id], a = n.padre, x1 = x(a), y1 = y(a)+BH/2;
     const x2 = x(n.id), y2 = y(n.id) - (n.hoja ? R : BH/2);
-    const vuelve = p.hijo === n.id && p.w !== "";
-    const camino = enPila.has(n.id) || vuelve;
+    const vuelve = vuelto === n.id, nuevo = e.estado === "generado";
+    const camino = enPila.has(n.id) || vuelve || nuevo;
     const tenue = e.estado === "pormirar" || e.estado === "podado";
     svg.appendChild(el("line", {x1, y1, x2, y2,
       stroke: camino ? "var(--accent)" : (tenue ? "var(--trazo)" : "var(--muted)"),
-      "stroke-width": vuelve ? 4 : (camino ? 2.5 : 1.6),
-      "stroke-dasharray": tenue ? "6 5" : "none"}));
+      "stroke-width": vuelve || nuevo ? 4 : (camino ? 2.5 : 1.6),
+      "stroke-dasharray": tenue ? "6 5" : (nuevo ? "10 4" : "none")}));
     const rot = n.prob ? fraccion(n.prob) : n.jugada;
     if(rot){
       const mx = x1+(x2-x1)*.55, my = y1+(y2-y1)*.55, w = rot.length*10.8+12;
@@ -743,11 +2514,11 @@ function pintarArbol(t, p){
     const nada = est === "pormirar" || est === "podado";
     const guiones = fuera(n.id) ? "2 4" : (nada ? "6 5" : (est === "evaluado" ? "8 4" : "none"));
     const borde = est === "pila" ? "var(--accent)" : (nada ? "var(--trazo)" : COLOR[n.tipo]);
-    const relleno = est === "pila" ? FONDO[n.tipo][0] : (nada ? "var(--surface)" : FONDO[n.tipo][1]);
+    const relleno = est === "pila" ? FONDO[n.tipo][0] : (nada || est === "generado" ? "var(--surface)" : FONDO[n.tipo][1]);
     const grueso = activo ? 4 : (est === "pila" ? 3 : 2);
     if(n.hoja){
       if(activo) g.appendChild(el("circle", {cx, cy, r:R+6, fill:"none", stroke:"var(--accent)", "stroke-width":2}));
-      else if(!nada) g.appendChild(el("circle", {cx, cy, r:R+4, fill:"none", stroke:"var(--hoja)", "stroke-width":1.3}));
+      else if(!nada && est !== "generado") g.appendChild(el("circle", {cx, cy, r:R+4, fill:"none", stroke:"var(--hoja)", "stroke-width":1.3}));
       g.appendChild(el("circle", {cx, cy, r:R, fill:relleno, stroke: activo ? "var(--accent)" : borde,
         "stroke-width":grueso, "stroke-dasharray":guiones}));
       g.appendChild(texto(cx, cy+7, est === "podado" ? "?" : n.valor, {"font-size":20, "font-weight":700,
@@ -763,9 +2534,10 @@ function pintarArbol(t, p){
       let r2 = "";
       if(est === "podado") r2 = "?";
       else if(est === "evaluado") r2 = `EVAL = ${e.v}`;
+      else if(est === "generado") r2 = "generado";
       else if(e.v !== "") r2 = `v = ${e.v}`;
-      g.appendChild(texto(cx, y1+24, r2, {"font-weight":700,
-        fill: est === "podado" ? "var(--accent)" : "var(--text)"}));
+      g.appendChild(texto(cx, y1+24, r2, {"font-weight": est === "generado" ? 400 : 700,
+        fill: est === "podado" ? "var(--accent)" : (est === "generado" ? "var(--muted)" : "var(--text)")}));
       if(conAB && est === "pila" && e.alfa !== "")
         g.appendChild(texto(cx, y1+48, `(${e.alfa}, ${e.beta})`, {"font-family":MONO, fill:"var(--text)"}));
       else if(conAB && e.cota)
@@ -793,6 +2565,9 @@ function muestra(forma, txt){
   } else if(forma === "cota"){
     s.appendChild(el("text", {x:12, y:13, "text-anchor":"middle", "font-size":9, "font-style":"italic",
       fill:"var(--muted)"}, "cota"));
+  } else if(forma === "generado"){
+    s.appendChild(el("line", {x1:1, y1:9, x2:23, y2:9, stroke:"var(--accent)", "stroke-width":3,
+      "stroke-dasharray":"6 2"}));
   } else s.appendChild(el("rect", a));
   if(forma === "podado") s.appendChild(el("text", {x:12, y:13.5, "text-anchor":"middle",
     "font-size":12, "font-weight":700, fill:"var(--accent)"}, "?"));
@@ -801,8 +2576,8 @@ function muestra(forma, txt){
   return sp;
 }
 function pintarLeyenda(t){
-  const l = [muestra("pila","en la pila"), muestra("devuelto","ya devolvió"),
-    muestra("hoja","hoja generada"), muestra("pormirar","por mirar")];
+  const l = [muestra("pila","en la pila"), muestra("generado","recién generado: aún no entra"),
+    muestra("devuelto","ya devolvió"), muestra("hoja","hoja generada"), muestra("pormirar","por mirar")];
   if(t.modo === "corte" || t.modo === "iterativa")
     l.push(muestra("evaluado","EVAL: estimado"), muestra("fuera","más allá del horizonte"));
   if(t.conAB) l.push(muestra("podado","no se genera"), muestra("cota","cortó: su v es solo una cota"));
@@ -810,7 +2585,7 @@ function pintarLeyenda(t){
   $("nota-escala").classList.toggle("oculto", !(t.modo === "corte" || t.modo === "iterativa"));
 }
 
-// ---------- pseudocodigo ----------
+// ---------- pseudocodigo: una sola linea marcada, la que corre ----------
 function pintarPseudo(t){
   const caja = $("pseudo");
   caja.replaceChildren(...t.pseudo.map((txt, k) => {
@@ -818,77 +2593,103 @@ function pintarPseudo(t){
     const r = t.renglones[k], c = document.createElement("span");
     d.className = "lin" + (r === null ? (/^\s*#/.test(txt) ? " com" : " cab") : "");
     d.dataset.r = r === null ? "" : r;
-    m.className = "m";
-    c.textContent = txt || " ";   // un renglon vacio tambien ocupa su alto
+    m.className = "m"; m.setAttribute("aria-hidden", "true");
+    c.textContent = txt || " ";   // un renglon vacio tambien ocupa su alto
     d.append(m, c);
     return d;
   }));
   caja.scrollTop = 0;
 }
 function marcarPseudo(p){
-  const caja = $("pseudo"), act = new Set(p.lineas);
-  let primera = null;
+  const caja = $("pseudo");
+  let primera = null, ultima = null;
   for(const d of caja.children){
-    const si = d.dataset.r !== "" && act.has(Number(d.dataset.r));
+    const si = d.dataset.r !== "" && Number(d.dataset.r) === p.linea;
     d.classList.toggle("aqui", si);
-    d.firstChild.textContent = si ? "▸" : "";
-    if(si){ d.setAttribute("aria-current","step"); primera = primera || d; }
+    d.firstChild.textContent = si && !primera ? "▸" : "";
+    if(si){ d.setAttribute("aria-current","step"); primera = primera || d; ultima = d; }
     else d.removeAttribute("aria-current");
   }
   if(primera){
-    const top = Math.max(0, primera.offsetTop - caja.clientHeight*0.3);
-    caja.scrollTo({top, behavior: reducido ? "auto" : "smooth"});
+    // que la linea quede a la vista, hacia el primer tercio de la caja
+    const arriba = primera.offsetTop, abajo = ultima.offsetTop + ultima.offsetHeight;
+    if(arriba < caja.scrollTop + 8 || abajo > caja.scrollTop + caja.clientHeight - 8){
+      const top = Math.max(0, arriba - caja.clientHeight*0.3);
+      caja.scrollTo({top, behavior: reducido ? "auto" : "smooth"});
+    }
   }
 }
 
-// ---------- variables ----------
-function fila(dt, dd){ const a = document.createElement("dt"), b = document.createElement("dd");
-  a.textContent = dt; if(typeof dd === "string") b.textContent = dd || "—"; else b.append(...dd);
-  return [a, b]; }
-function span(cls, txt){ const s = document.createElement(cls === "b" ? "b" : "span");
-  if(cls !== "b") s.className = cls; s.textContent = txt; return s; }
-
-// La comparacion del paso, como en la columna «corta» de las tablas de la
-// pagina: el if del nodo (v ≥ β en MAX, v ≤ α en MIN) o, en la raiz, w > α.
-// El «sí» o «no» sale de los datos (corta, mejora), no de recalcular.
-function comparacion(t, k){
-  const p = t.pasos[k];
-  if(esPodado(p)){
-    const id = tope(p), e = p.estado[id], max = t.porId[id].tipo === "MAX";
-    return ["¿corta?", `sí: ${e.v} ${max ? "≥" : "≤"} ${max ? e.beta : e.alfa}`, true];
-  }
-  if(p.w === "") return ["¿corta?", "", false];
-  if(p.pila.length === 1){
-    const antes = k > 0 ? t.pasos[k-1].estado[p.pila[0]].alfa : "";
-    return ["¿w > α?", `${p.mejora ? "sí" : "no"}: ${p.w} > ${antes}`, p.mejora];
-  }
-  const max = t.porId[p.nodo].tipo === "MAX";
-  return ["¿corta?", `${p.corta ? "sí" : "no"}: ${p.v} ${max ? "≥" : "≤"} ${max ? p.beta : p.alfa}`, !!p.corta];
-}
-
-function pintarVars(t, k){
-  const p = t.pasos[k], conAB = t.conAB, podado = esPodado(p);
-  const de = podado ? p.estado[tope(p)] : {v:p.v, alfa:p.alfa, beta:p.beta};
+// ---------- la pila de llamadas ----------
+function nodoTxt(t, id){ const n = t.porId[id]; return n.hoja ? `hoja ${n.valor}` : n.nombre; }
+function span(cls, txt){ const s = document.createElement("span"); if(cls) s.className = cls;
+  s.textContent = txt; return s; }
+const vacio = v => v === "" || v === undefined;
+// valor que cambio: «−∞ → 3», con el de antes tachado (no solo color)
+function valorCambiado(antes, ahora){
   const out = [];
-  if(t.modo === "iterativa") out.push(...fila("d", String(p.d)), ...fila("jugada", p.jugada || ""));
-  out.push(...fila("pila", p.pila.map(id => t.porId[id].nombre).join(" → ")));
-  if(p.pila.length === 1 && !conAB) out.push(...fila("mejor_valor", p.v));
-  else if(p.pila.length > 1 || !conAB) out.push(...fila("v", de.v));
-  let w = [p.w || "—"];
-  if(podado) w = ["— ", span("de", "(no se genera)")];
-  else if(p.w !== "" && p.hijo){
-    const h = t.porId[p.hijo];
-    w.push(span("de", p.evaluado ? "  ← EVAL(" + h.nombre + ")" : (h.hoja ? "  ← de la hoja" : "  ← de " + h.nombre)));
+  if(vacio(antes)) out.push(span("nuevo", ahora), span("sr", " (recién asignada)"));
+  else {
+    const s = document.createElement("s"); s.textContent = antes;
+    out.push(span("sr", "antes "), s, span("sr", " ahora "), document.createTextNode("→ "), span("nuevo", ahora));
   }
-  out.push(...fila("w", w));
-  if(conAB){
-    out.push(...fila("(α, β)", de.alfa === "" ? "" : `(${de.alfa}, ${de.beta})`));
-    const [rot, txt, si] = comparacion(t, k);
-    out.push(...fila(rot, si ? [span("b", txt)] : txt));
+  return out;
+}
+function firma(t, m, cambios, actual){
+  const f = document.createElement("div"); f.className = "firma";
+  const b = document.createElement("b"); b.textContent = m.func;
+  f.append(b, "(", nodoTxt(t, m.nodo));
+  for(const [k, v] of m.args){
+    f.append(", ");
+    if(actual && cambios.has(k)){
+      const c = span("cambia", ""); c.append(`${k} = `, ...valorCambiado(cambios.get(k), v));
+      f.append(c);
+    } else f.append(`${k} = ${v}`);
   }
-  out.push(...fila("mejor_jugada", p.mejor_jugada));
-  out.push(...fila("generados", generados(t, p).largo));
-  $("vars").replaceChildren(...out);
+  f.append(")");
+  return f;
+}
+function pintarPila(t, k){
+  const p = t.pasos[k], top = p.marco.length - 1;
+  const cambios = new Map(p.cambia.filter(c => c[0] === top).map(c => [c[1], c[2]]));
+  const lis = [];
+  for(let j = top; j >= 0; j--){
+    const m = p.marco[j], actual = j === top, li = document.createElement("li");
+    li.className = "marco" + (actual ? " actual" : "");
+    if(actual) li.setAttribute("aria-current", "true");
+    const etq = document.createElement("div"); etq.className = "etq";
+    etq.append(span("", actual ? "marco actual · corre aquí" : (j === 0 ? "fondo" : "esperando")),
+      span("", `nivel ${j+1}`));
+    li.append(etq, firma(t, m, cambios, actual));
+    if(actual){
+      const tabla = document.createElement("table"); tabla.className = "vars";
+      const cap = document.createElement("caption"); cap.className = "sr";
+      cap.textContent = `Variables locales de ${m.func}`;
+      const th = document.createElement("thead");
+      th.innerHTML = "<tr><th scope=\"col\">variable</th><th scope=\"col\">valor</th></tr>";
+      const tb = document.createElement("tbody");
+      if(!m.locales.length){
+        const tr = document.createElement("tr"); tr.className = "vacia";
+        const td = document.createElement("td"); td.colSpan = 2;
+        td.textContent = m.args.length ? "sin variables locales todavía; solo sus argumentos"
+                                        : "sin variables todavía";
+        tr.append(td); tb.append(tr);
+      }
+      for(const [nombre, v] of m.locales){
+        const tr = document.createElement("tr"), a = document.createElement("td"), b = document.createElement("td");
+        a.textContent = nombre;
+        if(cambios.has(nombre)){ tr.className = "cambia"; b.append(...valorCambiado(cambios.get(nombre), v)); }
+        else b.textContent = v;
+        tr.append(a, b); tb.append(tr);
+      }
+      tabla.append(cap, th, tb);
+      li.append(tabla);
+    } else if(m.locales.length){
+      li.append(span("resumen", m.locales.map(([a, b]) => `${a} = ${b}`).join(" · ")));
+    }
+    lis.push(li);
+  }
+  $("pila").replaceChildren(...lis);
 }
 
 function textoResultado(t){
@@ -902,27 +2703,47 @@ function textoResultado(t){
   return `Resultado: juega ${r.jugada} (${v}). Generó ${r.generados} de ${n} nodos.`;
 }
 
+// ---------- la frase ----------
+function pintarFrase(t, k){
+  const p = t.pasos[k], cab = document.createElement("div"); cab.className = "cab";
+  const cierra = t.cierre[p.fila] === k;
+  let fila = `fila ${p.fila} de ${t.filas}`;
+  if(p.filas_x.length) fila += ` · y ${p.filas_x.join(", ")} ✗`;
+  const pas = span("pastilla" + (cierra ? " cierra" : ""), cierra ? `✓ cierra la ${fila}` : `va hacia la ${fila}`);
+  pas.title = "La fila de la tabla de traza de la página a la que pertenece esta línea";
+  cab.append(span("chip", `línea ${p.linea}`), pas);
+  const f = document.createElement("div"); f.textContent = p.frase;
+  $("frase").replaceChildren(cab, f);
+}
+
 // ---------- estado de la pagina ----------
+// --barra: el alto de la barra pegajosa. --alto-pseudo: lo que le queda al
+// pseudocodigo hasta el borde de la ventana, para que en escritorio la pagina
+// no tenga scroll y la caja lo tenga por dentro.
 function medirBarra(){
-  document.documentElement.style.setProperty("--barra", document.querySelector(".barra").offsetHeight + "px");
+  const raiz = document.documentElement, caja = $("pseudo");
+  raiz.style.setProperty("--barra", document.querySelector(".barra").offsetHeight + "px");
+  const arriba = caja.getBoundingClientRect().top + window.scrollY;
+  raiz.style.setProperty("--alto-pseudo", Math.max(208, window.innerHeight - arriba - 62) + "px");
 }
 function pintar(){
   const t = traza(clave), p = t.pasos[i], n = t.pasos.length;
-  pintarArbol(t, p);
+  pintarFrase(t, i);
   marcarPseudo(p);
-  pintarVars(t, i);
-  $("frase").replaceChildren(span("chip", p.linea ? `línea ${p.linea}` : "sin línea"), p.frase);
+  pintarPila(t, i);
+  pintarArbol(t, i);
   const fin = i === n-1;
   $("resultado").classList.toggle("oculto", !fin);
   $("resultado").textContent = fin ? textoResultado(t) : "";
   $("desliz").value = i+1;
-  $("cuenta").textContent = `paso ${i+1}/${n}`;
-  $("desliz").setAttribute("aria-valuetext", `paso ${i+1} de ${n}`);
+  $("cuenta").textContent = `línea-paso ${i+1}/${n} · fila ${p.fila}/${t.filas}`;
+  $("desliz").setAttribute("aria-valuetext", `paso ${i+1} de ${n}, línea ${p.linea}, fila ${p.fila}`);
   $("ayuda").classList.toggle("oculto", i !== 0);
-  $("b-atras").disabled = i === 0;
-  if(fin && document.activeElement === $("b-adelante")) $("b-ini").focus();
-  $("b-adelante").disabled = fin;
-  try{ history.replaceState(null, "", `#${A_FRAG[clave]}-paso-${i+1}`); }catch(e){}
+  $("b-atras").disabled = $("b-fila-atras").disabled = i === 0;
+  if(fin && (document.activeElement === $("b-adelante") || document.activeElement === $("b-fila-adelante")))
+    $("b-ini").focus();
+  $("b-adelante").disabled = $("b-fila-adelante").disabled = fin;
+  try{ history.replaceState(null, "", `#${A_FRAG[clave]}-linea-${i+1}`); }catch(e){}
   medirBarra();
 }
 function elegir(c, paso){
@@ -931,30 +2752,45 @@ function elegir(c, paso){
   const nueva = c !== clave || !$("pseudo").children.length;
   clave = c;
   const t = traza(c);
-  i = Math.min(Math.max((paso || 1) - 1, 0), t.pasos.length - 1);
-  $("titulo").textContent = t.titulo + ".";
+  i = Math.min(Math.max(paso, 0), t.pasos.length - 1);
+  $("titulo").textContent = t.titulo + `: ${t.pasos.length} líneas ejecutadas, ${t.filas} filas en la tabla de la página.`;
   $("desliz").max = t.pasos.length;
   for(const b of $("modos").children) b.setAttribute("aria-pressed", String(b.dataset.modo === t.modo));
   const vs = VARIANTES[t.modo] || [];
   $("variantes").replaceChildren(...vs.map(([k, txt]) => {
     const b = document.createElement("button");
     b.textContent = txt; b.setAttribute("aria-pressed", String(k === c));
-    b.addEventListener("click", () => irA(k));
+    b.addEventListener("click", () => elegir(k, 0));
     return b;
   }));
   $("variantes").classList.toggle("oculto", !vs.length);
   if(nueva){ pintarPseudo(t); pintarLeyenda(t); }
   pintar();
 }
-function irA(c){ elegir(c); }
+// #modo, #modo-paso-N (N: fila de la tabla), #modo-linea-K (K: paso de linea)
 function desdeFragmento(){
   let h = "";
   try{ h = decodeURIComponent(location.hash.slice(1)).toLowerCase(); }catch(e){}
-  const m = h.match(/^(.*?)(?:-paso-(\d+))?$/) || ["", "", ""];
-  elegir(DE_FRAG[m[1]] || "minimax", m[2] ? Number(m[2]) : 1);
+  const m = h.match(/^(.*?)(?:-paso-(\d+))?(?:-linea-(\d+))?$/) || ["", "", "", ""];
+  const c = DE_FRAG[m[1]] || "minimax", t = D.trazas[c] ? traza(c) : null;
+  let paso = 0;
+  if(t && m[3]) paso = Number(m[3]) - 1;
+  else if(t && m[2]){
+    const f = Number(m[2]);
+    paso = f in t.cierre ? t.cierre[f] : (f > t.filas ? t.pasos.length - 1 : 0);
+  }
+  elegir(c, paso);
 }
 function mover(k){ const n = traza(clave).pasos.length;
   const j = Math.min(Math.max(i+k, 0), n-1); if(j !== i){ i = j; pintar(); } }
+// ▶▶: al paso que cierra la siguiente fila; ◀◀: al que cerro la anterior
+function moverFila(k){
+  const c = traza(clave).cierres;
+  let j = i;
+  if(k > 0){ const s = c.find(x => x > i); j = s === undefined ? traza(clave).pasos.length-1 : s; }
+  else { const a = c.filter(x => x < i); j = a.length ? a[a.length-1] : 0; }
+  if(j !== i){ i = j; pintar(); }
+}
 function rotularPlay(){
   $("b-play").textContent = reloj ? "❚❚ Pausa" : "▷ Reproducir";
 }
@@ -966,10 +2802,12 @@ function reproducir(){
   rotularPlay();
 }
 
-for(const b of $("modos").children) b.addEventListener("click", () => irA(POR_OMISION[b.dataset.modo]));
+for(const b of $("modos").children) b.addEventListener("click", () => elegir(POR_OMISION[b.dataset.modo], 0));
 $("b-ini").addEventListener("click", () => { parar(); i = 0; pintar(); });
 $("b-atras").addEventListener("click", () => { parar(); mover(-1); });
 $("b-adelante").addEventListener("click", () => { parar(); mover(1); });
+$("b-fila-atras").addEventListener("click", () => { parar(); moverFila(-1); });
+$("b-fila-adelante").addEventListener("click", () => { parar(); moverFila(1); });
 $("b-play").addEventListener("click", reproducir);
 $("desliz").addEventListener("input", e => { parar(); i = Number(e.target.value)-1; pintar(); });
 document.addEventListener("keydown", e => {
@@ -980,10 +2818,12 @@ document.addEventListener("keydown", e => {
     e.preventDefault(); reproducir();
   } else if(e.key === "ArrowRight" || e.key === "ArrowLeft"){
     if(e.target.closest && e.target.closest("input,select")) return;
-    e.preventDefault(); parar(); mover(e.key === "ArrowRight" ? 1 : -1);
+    e.preventDefault(); parar();
+    const d = e.key === "ArrowRight" ? 1 : -1;
+    if(e.shiftKey) moverFila(d); else mover(d);
   }
 });
-window.addEventListener("hashchange", desdeFragmento);
+window.addEventListener("hashchange", () => { if(!location.hash.includes(`#${A_FRAG[clave]}-linea-${i+1}`)) desdeFragmento(); });
 window.addEventListener("resize", medirBarra);
 desdeFragmento();
 </script>

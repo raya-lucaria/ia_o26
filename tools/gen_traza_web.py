@@ -2,8 +2,10 @@
 
 course/7_juegos/_assets/traza_arbol_t.html es una pagina autocontenida: su
 JavaScript solo pinta, no calcula nada. Los pasos que pinta salen de
-juegos.pasos_interactivos(modo, variante), la misma fuente que el cuaderno de
-la unidad, y este script los escribe dentro del HTML, en el bloque
+juegos.pasos_por_linea(modo, variante) -un paso por cada linea del
+pseudocodigo que se ejecuta, con la pila de llamadas y la fila de la tabla de
+la pagina a la que pertenece- y este script los escribe dentro del HTML, en
+el bloque
 
     <script type="application/json" id="trazas"> ... </script>
 
@@ -12,24 +14,27 @@ script no lo toca: solo reemplaza lo que hay entre esas dos marcas. Es
 idempotente: correrlo dos veces deja el archivo igual, y tras correrlo
 `git status` tiene que quedar limpio si nada cambio en tools/juegos.py.
 
-Los datos van compactados para que la pagina pese poco (sin compactar, las
-ocho trazas suman unos 230 KB, casi todo el estado de cada nodo repetido en
-cada paso). Se deja fuera solo un campo que la pagina no pinta, `evento`
-(se lee ya en la frase); todo lo demas se guarda sin perdida:
-expandir(compactar(x)) == x sin ese campo, y
-tools/test_traza_web.py lo comprueba para cada modo. Lo que cambia:
+Los datos van compactados para que la pagina pese poco: sin compactar, los
+777 pasos de las ocho trazas suman ~2 MB, casi todo el estado de cada nodo y
+la pila de llamadas repetidos en cada paso. Todo se guarda sin perdida:
+expandir(compactar(x)) == x, y tools/test_traza_web.py lo comprueba para
+cada modo. Lo que cambia:
 
 - pseudo, renglones y arbol se guardan una sola vez y cada traza los nombra
   por indice (alfa-beta T y T1 comparten pseudocodigo; corte d = 1, 2, 3
-  tambien; el arbol T sirve a cinco trazas).
+  tambien; el arbol T sirve a siete trazas).
 - cada paso es un par de listas planas [campos, estado]. `campos` trae solo
   los campos que cambiaron respecto del paso anterior, como pares
   (indice en `claves` de la traza, valor); `estado`, solo los nodos que
   cambiaron, como pares (id, valor), y el valor de un nodo es
   [estado, v, alfa, beta, cota] con el estado por indice en ESTADOS.
+- `marco` (la pila de llamadas) se guarda como la lista de sus marcos, cada
+  uno por indice en `valores`: los marcos de abajo se repiten paso tras
+  paso y se guardan una vez. Un marco es [func, nodo, args, locales] con
+  args y locales aplanados [nombre, valor, nombre, valor...].
 - cada valor de esos pares es un indice en `valores`, la lista de todos los
-  valores distintos de las ocho trazas (pilas, frases, «−∞»...): la misma
-  pila o la misma frase se repite en varias trazas y se guarda una vez.
+  valores distintos de las ocho trazas (frases, marcos, «−∞»...): la misma
+  frase o el mismo marco se repite en varias trazas y se guarda una vez.
 - n no se guarda: es la posicion del paso.
 
 El JavaScript de la pagina hace la misma expansion que expandir() aqui.
@@ -59,11 +64,11 @@ MODOS = [
     ("iterativa", "iterativa", None),
 ]
 
-ESTADOS = ["pormirar", "pila", "devuelto", "evaluado", "podado"]
+ESTADOS = ["pormirar", "generado", "pila", "devuelto", "evaluado", "podado"]
 CLAVES_ESTADO = ["estado", "v", "alfa", "beta", "cota"]
 CLAVES_NODO = ["id", "nombre", "tipo", "padre", "jugada", "hoja", "valor", "prob", "eval"]
 DERIVADAS = {"n", "estado"}
-FUERA = {"evento"}   # la pagina no lo pinta
+FUERA = set()        # campos que la pagina no pinta (hoy, ninguno)
 
 ABRE = '<script type="application/json" id="trazas">'
 CIERRA = "</script>"
@@ -81,8 +86,21 @@ def _nodo_compacto(e):
     return [ESTADOS.index(e["estado"]), e["v"], e["alfa"], e["beta"], 1 if e["cota"] else 0]
 
 
+def _marco_compacto(m):
+    if sorted(m) != ["args", "func", "locales", "nodo"]:
+        raise ValueError(f"marco con claves inesperadas: {sorted(m)}")
+    return [m["func"], m["nodo"], [x for par in m["args"] for x in par],
+            [x for par in m["locales"] for x in par]]
+
+
+def _marco_expandido(c):
+    func, nodo, args, loc = c
+    return {"func": func, "nodo": nodo, "args": [list(x) for x in zip(args[::2], args[1::2])],
+            "locales": [list(x) for x in zip(loc[::2], loc[1::2])]}
+
+
 def compactar(trazas):
-    """trazas: {clave: pasos_interactivos(...)} → el dict que va en el HTML."""
+    """trazas: {clave: pasos_por_linea(...)} → el dict que va en el HTML."""
     pseudos, arboles, salida, valores_, vistos = [], [], {}, [], {}
 
     def interna(v):
@@ -112,7 +130,8 @@ def compactar(trazas):
                 if antes.get(i) != e:
                     cambio += [i, interna(_nodo_compacto(e))]
             antes = p["estado"]
-            valores = [p[c] for c in claves]
+            valores = [[interna(_marco_compacto(m)) for m in p[c]] if c == "marco" else p[c]
+                       for c in claves]
             campos = []
             for c, v in enumerate(valores):
                 if previos is None or previos[c] != v:
@@ -131,7 +150,7 @@ def compactar(trazas):
 
 
 def expandir(datos):
-    """El inverso de compactar(): {clave: pasos_interactivos(...)}."""
+    """El inverso de compactar(): {clave: pasos_por_linea(...)}."""
     res = {}
     for clave, t in datos["trazas"].items():
         pseudo, renglones = datos["pseudos"][t["pseudo"]]
@@ -149,6 +168,8 @@ def expandir(datos):
                 e["cota"] = bool(e["cota"])
                 estado[i] = e
             p = dict(zip(t["claves"], valores))
+            if "marco" in p:
+                p["marco"] = [_marco_expandido(val[m]) for m in p["marco"]]
             p.update(n=k, estado=estado)
             pasos.append(p)
         res[clave] = {"modo": t["modo"], "variante": t["variante"], "titulo": t["titulo"],
@@ -164,7 +185,7 @@ def sin_fuera(trazas):
 
 
 def trazas_de_hoy():
-    return {clave: j.pasos_interactivos(modo, variante) for clave, modo, variante in MODOS}
+    return {clave: j.pasos_por_linea(modo, variante) for clave, modo, variante in MODOS}
 
 
 def _js(valor):

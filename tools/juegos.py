@@ -1121,7 +1121,8 @@ PRISIONERO_COL = [[-1, 0], [-10, -5]]
 # ------------------------------------- pasos para el cuaderno y la web ---
 #
 # pasos_interactivos(modo, variante) es la unica fuente de los pasos que
-# muestran el cuaderno de la unidad y la traza interactiva del arbol T. Un
+# muestra el cuaderno de la unidad (la traza interactiva del arbol T usa
+# pasos_por_linea, mas abajo, que se proyecta sobre estas filas). Un
 # paso es una fila de la traza tal como la escribe la pagina del modo: mismas
 # filas, misma linea, misma pila. Las filas salen de traza_decidir (minimax,
 # alfa-beta, corte, iterativa) o de traza_expectiminimax_t (azar); aqui solo
