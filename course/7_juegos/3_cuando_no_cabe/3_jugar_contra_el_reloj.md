@@ -49,6 +49,16 @@ queda**: en la raíz, la profundidad de toda la búsqueda.
 | **1** | B | · | · | · |
 :::
 
+> [!TIP]
+> **Míralo correr: profundización iterativa en el árbol T**
+>
+> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#iterativa)**: el árbol, la línea del
+>   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
+> - **Notebook en Colab**, sección 7: el mismo Python de esta página,
+>   corriendo; cámbiale un número y mira qué pasa.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
 ## 1 · Reconocer el efecto horizonte
 
 **Piensa: a profundidad 1, ¿qué no alcanzó a ver Blancas cuando eligió
