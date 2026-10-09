@@ -112,7 +112,7 @@ def compactar(trazas):
 
     for clave, d in trazas.items():
         if sorted(d) != sorted(["arbol", "modo", "pagina", "pasos", "pseudo", "renglones",
-                                "resultado", "titulo", "variante"]):
+                                "resultado", "tabla_en_pagina", "titulo", "variante"]):
             raise ValueError(f"{clave}: claves inesperadas {sorted(d)}")
         arbol = [[n[k] for k in CLAVES_NODO] for n in d["arbol"]["nodos"]]
         if any(sorted(n) != sorted(CLAVES_NODO) for n in d["arbol"]["nodos"]):
@@ -141,6 +141,7 @@ def compactar(trazas):
         salida[clave] = {
             "modo": d["modo"], "variante": d["variante"], "titulo": d["titulo"],
             "pagina": d["pagina"], "resultado": d["resultado"],
+            "tabla_en_pagina": d["tabla_en_pagina"],
             "pseudo": _indice(pseudos, [d["pseudo"], d["renglones"]]),
             "arbol": _indice(arboles, arbol),
             "claves": claves, "pasos": pasos,
@@ -174,6 +175,7 @@ def expandir(datos):
             pasos.append(p)
         res[clave] = {"modo": t["modo"], "variante": t["variante"], "titulo": t["titulo"],
                       "pagina": t["pagina"], "pseudo": pseudo, "renglones": renglones,
+                      "tabla_en_pagina": t["tabla_en_pagina"],
                       "arbol": {"nodos": nodos}, "pasos": pasos, "resultado": t["resultado"]}
     return res
 

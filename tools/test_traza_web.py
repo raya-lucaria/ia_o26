@@ -20,9 +20,9 @@ el HTML como file://, por eso hoy los datos van dentro.
 
 Las ultimas pruebas abren la pagina en un Chrome/Chromium sin pantalla
 (--dump-dom) y leen lo que el JavaScript pinto en varios pasos, incluidos los
-que enlazan las paginas (#alfa-beta-paso-12, #alfa-beta-paso-8: -paso-N es
-la FILA N de la tabla de la pagina). Se saltan si no hay navegador, como en
-CI.
+que enlazan las paginas (#alfa-beta-fila-12, #alfa-beta-fila-8: -fila-N
+abre en el paso que cierra la fila N; -paso-K es el paso K). Se saltan si
+no hay navegador, como en CI.
 """
 import html as html_mod
 import json
@@ -104,6 +104,10 @@ NAVEGADOR = next((shutil.which(n) for n in ("google-chrome", "google-chrome-stab
                                             "chromium", "chromium-browser", "chrome")
                   if shutil.which(n)), None)
 
+def _filas(t):
+    return max([p["fila"] for p in t["pasos"]] + [x for p in t["pasos"] for x in p["filas_x"]])
+
+
 def _paso_de_fila(pasos, fila):
     """El paso de linea en que se cierra la fila `fila` de la tabla."""
     return max(k for k, p in enumerate(pasos, 1) if p["fila"] == fila or fila in p["filas_x"])
@@ -112,15 +116,17 @@ def _paso_de_fila(pasos, fila):
 # (fragmento, clave de la traza, paso de linea que debe abrir, texto que
 # debe aparecer en la frase)
 CASOS_DOM = [
-    # los dos enlaces de 5_alfa_beta_como_algoritmo: -paso-N es la FILA N
-    ("alfa-beta-paso-12", "alfa-beta-T", ("fila", 12), "corte beta"),
-    ("alfa-beta-paso-8", "alfa-beta-T", ("fila", 8), "α ← max(3, 5) = 5"),
+    # los dos enlaces de 5_alfa_beta_como_algoritmo: -fila-N
+    ("alfa-beta-fila-12", "alfa-beta-T", ("fila", 12), "corte beta"),
+    ("alfa-beta-fila-8", "alfa-beta-T", ("fila", 8), "α ← max(3, 5) = 5"),
     # una fila ✗ abre en el return del corte que la deja fuera
-    ("iterativa-paso-34", "iterativa", ("fila", 34), "corte alfa"),
-    # -linea-K: el paso de linea K, el que reporto el profesor
-    ("alfa-beta-linea-2", "alfa-beta-T", ("linea", 2), "α ← −∞"),
-    ("alfa-beta-linea-5", "alfa-beta-T", ("linea", 5), "Entra a ALFA-BETA"),
-    ("corte-d1-linea-10", "corte-1", ("linea", 10), None),
+    ("iterativa-fila-34", "iterativa", ("fila", 34), "corte alfa"),
+    # -paso-K: el paso K, la K-esima linea que corre (-linea-K es su alias)
+    ("alfa-beta-paso-2", "alfa-beta-T", ("paso", 2), "α ← −∞"),
+    ("alfa-beta-linea-5", "alfa-beta-T", ("paso", 5), "Entra a ALFA-BETA"),
+    ("corte-d1-paso-10", "corte-1", ("paso", 10), None),
+    # el ultimo paso: la frase lleva el resultado dentro
+    ("azar-paso-108", "azar", ("paso", 108), "return mejor_jugada = der"),
 ]
 
 
@@ -135,6 +141,13 @@ def _dom(fragmento):
 def test_los_enlaces_de_las_paginas_abren_lo_que_prometen():
     """5_alfa_beta_como_algoritmo promete «el corte beta de C2» y «C y C1 a
     la vez en la pila, C1 sube su α en la línea 15»."""
+    pagina = (g.RAIZ / "course/7_juegos/2_mirar_todo_y_podar/5_alfa_beta_como_algoritmo.md"
+              ).read_text(encoding="utf-8")
+    enlaces = re.findall(r"traza_arbol_t\.html#([\w-]+)\)", pagina)
+    assert "alfa-beta-fila-12" in enlaces and "alfa-beta-fila-8" in enlaces
+    # -paso-N ya no es fila: ningun enlace de la unidad debe usarlo como tal
+    for md in (g.RAIZ / "course/7_juegos").rglob("*.md"):
+        assert not re.search(r"traza_arbol_t\.html#[\w-]+-paso-\d", md.read_text(encoding="utf-8")), md
     pasos = g.trazas_de_hoy()["alfa-beta-T"]["pasos"]
     p = pasos[_paso_de_fila(pasos, 12) - 1]
     assert p["nodo"] == "C2" and p["linea"] == 14 and "corte beta" in p["frase"]
@@ -151,27 +164,34 @@ def test_la_pagina_pinta_el_paso_pedido(fragmento, clave, cual, frase):
     dom = _dom(fragmento)
 
     cuenta = re.search(r'id="cuenta"[^>]*>([^<]*)<', dom).group(1)
-    assert cuenta.startswith(f"línea-paso {n}/{len(t['pasos'])} · fila {p['fila']}/")
+    assert cuenta == f"Paso {n} de {len(t['pasos'])} · fila {p['fila']} de {_filas(t)}"
 
-    texto_frase = re.search(r'id="frase"[^>]*>(.*?)</div></div>', dom, re.S).group(1)
+    texto_frase = dom[dom.index('id="frase"'):dom.index('id="col-pseudo"')]
     assert f">línea {p['linea']}<" in texto_frase
     assert html_mod.escape(p["frase"], quote=False) in texto_frase
     if frase:
         assert html_mod.escape(frase, quote=False) in texto_frase
 
-    # una sola linea del pseudocodigo marcada: la que corre
-    marcadas = {int(r) for r in re.findall(r'<div class="lin aqui" data-r="(\d+)"', dom)}
-    assert marcadas == {p["linea"]}
+    # una sola linea del pseudocodigo marcada: la que corre (con `parcial`,
+    # solo su primer renglon impreso)
+    marcadas = [int(r) for r in re.findall(r'<div class="lin aqui" data-r="(\d+)"', dom)]
+    assert set(marcadas) == {p["linea"]}
+    assert len(marcadas) == (1 if p["parcial"] else t["renglones"].count(p["linea"]))
 
     # la pila: una tarjeta por marco, la actual con su tabla de variables
     pila = dom[dom.index('id="pila"'):dom.index('id="col-arbol"')]
     assert pila.count('<li class="marco') == len(p["marco"])
     assert pila.count('<li class="marco actual"') == 1
-    for k, v in p["marco"][-1]["locales"]:
-        assert f"<td>{html_mod.escape(k, quote=False)}</td>" in pila
-    for i, k, _ in p["cambia"]:
-        if i == len(p["marco"]) - 1 and k in dict(p["marco"][-1]["locales"]):
-            assert re.search(r'<tr class="cambia"><td>' + re.escape(k) + "</td>", pila), k
+    locales = dict(p["marco"][-1]["locales"])
+    for k in locales:
+        assert f"<td>{html_mod.escape(k, quote=False)}" in pila
+    # una fila marcada por variable que la linea cambio de verdad; reasignar
+    # el mismo valor se dice («se reasignó, igual») pero no se marca
+    cambiadas = [k for i, k, antes in p["cambia"]
+                 if i == len(p["marco"]) - 1 and k in locales and antes != locales[k]]
+    assert pila.count('<tr class="cambia">') == len(cambiadas)
+    for k in cambiadas:
+        assert re.search(r'<tr class="cambia"><td>' + re.escape(k) + " <span", pila), k
 
     arbol = dom[dom.index('id="arbol"'):dom.index('id="leyenda"')]
     podados = sum(1 for e in p["estado"].values() if e["estado"] == "podado")
