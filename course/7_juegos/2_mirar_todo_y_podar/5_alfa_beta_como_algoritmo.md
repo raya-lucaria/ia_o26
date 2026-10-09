@@ -191,6 +191,8 @@ def alfa_beta(s, alfa, beta): # (7)
 
 ## 3 · Lo que hay en memoria
 
+> **▶ [Ve la pila en el corte beta de C2](../_assets/traza_arbol_t.html#alfa-beta-paso-12)** — abre la traza de T justo en ese paso.
+
 **Piensa: en la línea 15 de C1, ¿qué ve la pila que C no ve?**
 
 La traza de [[alfa-beta|Alfa-beta a mano]] tiene una fila por hijo. Aquí

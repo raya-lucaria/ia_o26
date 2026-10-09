@@ -240,6 +240,8 @@ regresa; las hojas van plegadas en la columna $w$.
 
 ## 4 · Etapa 1: el árbol T1
 
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#alfa-beta-t1)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+
 **Piensa: ¿en qué momento MAX ya sabe que la rama de la derecha no le
 sirve?**
 
@@ -300,6 +302,8 @@ I ve 3: ¿$3\le2$? No, así que no corta y genera también la hoja 6: se
 generan **los 7**.
 
 ## 5 · Etapa 2: se agrega el centro
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#alfa-beta)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
 
 **Piensa: si MIN también puede asegurarse algo, ¿quién corta entonces?**
 

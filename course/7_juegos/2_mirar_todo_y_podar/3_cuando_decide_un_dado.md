@@ -372,6 +372,8 @@ probabilidad $\tfrac12$. R, C1 y C2 siguen siendo de MAX.
 ![El árbol T con R de MAX arriba. I, C y D son nodos de azar con probabilidad un medio en cada flecha. I promedia 3 y 6 y vale 9/2; C promedia C1 = 5 y C2 = 8 y vale 13/2; D promedia 2 y 12 y vale 7. R elige der, la de mayor valor esperado](../_assets/jue-t-azar.svg)
 :::
 
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#azar)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+
 La traza de DECIDIR-EXPECTIMINIMAX(R), con el formato de
 [[minimax-como-algoritmo|Minimax como algoritmo]]: una fila al entrar a un
 nodo de azar (línea 22, $v=0$) y una por cada hijo que regresa (líneas
