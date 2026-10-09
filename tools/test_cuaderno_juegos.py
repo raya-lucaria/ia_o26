@@ -5,6 +5,8 @@ el repositorio: no puede importar tools/juegos.py, asi que trae su propia
 copia de cada algoritmo (el Python de la pagina, con `yield paso(...)` en
 cada fila de la traza). Esta prueba es lo que ata esa copia a la fuente:
 
+- el notebook comiteado es, byte a byte, el que tools/gen_cuaderno_juegos.py
+  produce hoy (se compara, no se sobrescribe);
 - el archivo es un nbformat 4 guardado sin salidas, y su primera celda
   lleva el badge de Colab con la URL de su propia ruta en main;
 - celdas cortas: 15 lineas en general, 36 para una celda «algoritmo» (una
@@ -99,6 +101,13 @@ def ns(nb):
         if "logica" in tags(c):
             ejecutar(c, i, espacio)
     return espacio
+
+
+def test_el_cuaderno_es_el_que_produce_el_generador():
+    import gen_cuaderno_juegos as gen
+    assert CUADERNO.read_text(encoding="utf-8") == gen.contenido(), (
+        "el notebook no es el que produce el generador: corre "
+        "python3 tools/gen_cuaderno_juegos.py y revisa el diff")
 
 
 def test_es_nbformat_4_sin_salidas(nb):
