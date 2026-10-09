@@ -473,16 +473,62 @@ def test_ninguna_letra_baja_de_12(nombre):
 def test_las_figuras_de_alfa_beta_en_t_citan_la_fila_de_la_pagina():
     """Las tablas de la pagina numeran tambien las filas ✗ (la hoja podada,
     que solo esta en la traza de minimax); traza_decidir no las tiene. El
-    aria-label cita el numero de la pagina, no el de la traza compacta."""
-    esperadas = {"jue-t1-ab-1": 5, "jue-t1-ab-2": 7, "jue-t1-ab-3": 10,
-                 "jue-t-ab-1": 5, "jue-t-ab-2": 10, "jue-t-ab-3": 12, "jue-t-ab-4": 17,
-                 "jue-t-ab-5": 20, "jue-t-ab-pila": 12}
-    for nombre, fila in esperadas.items():
+    aria-label cita el numero de la pagina, no el de la traza compacta. La
+    fila esperada sale de pasos_interactivos, que numera como la pagina, y
+    no de fila_pagina: asi las dos cuentas se vigilan una a otra."""
+    def fila(variante, pred):
+        return next(p["n"] for p in j.pasos_interactivos("alfa-beta", variante)["pasos"]
+                    if p["linea"] and pred(p))  # una fila ✗ no tiene linea
+
+    def ultima(variante):
+        return j.pasos_interactivos("alfa-beta", variante)["pasos"][-1]["n"]
+
+    raiz_i = lambda p: p["evento"] == "raiz" and p["hijo"] == "I"  # noqa: E731
+    esperadas = {
+        "jue-t1-ab-1": fila("T1", raiz_i),
+        "jue-t1-ab-2": fila("T1", lambda p: p["corta"] == "alfa"),
+        "jue-t1-ab-3": ultima("T1"),
+        "jue-t-ab-1": fila("T", raiz_i),
+        "jue-t-ab-2": fila("T", lambda p: p["nodo"] == "C" and p["hijo"] == "C1"),
+        "jue-t-ab-3": fila("T", lambda p: p["corta"] == "beta"),
+        "jue-t-ab-4": fila("T", lambda p: p["corta"] == "alfa"),
+        "jue-t-ab-5": ultima("T"),
+        "jue-t-ab-pila": fila("T", lambda p: p["corta"] == "beta"),
+    }
+    # Las que cita el texto de la pagina (4_alfa_beta.md): 5, 7, 10 y 5, 10,
+    # 12, 17, 20.
+    assert [esperadas[f"jue-t-ab-{k}"] for k in range(1, 6)] == [5, 10, 12, 17, 20]
+    for nombre, n in esperadas.items():
         etiqueta = re.match(r"<svg\b[^>]*>", _texto(nombre)).group()
-        assert re.findall(r"\(fila (\d+)", etiqueta) == [str(fila)], nombre
-    # La traza compacta tiene 18 filas en T y 9 en T1; la pagina, 20 y 10.
-    assert gen.fila_pagina(j.ARBOL_T, len(j.traza_decidir(j.ARBOL_T, poda=True)["filas"])) == 20
-    assert gen.fila_pagina(j.ARBOL_T1, len(j.traza_decidir(j.ARBOL_T1, poda=True)["filas"])) == 10
+        assert re.findall(r"\(fila (\d+)", etiqueta) == [str(n)], nombre
+
+
+_MUESTRA = re.compile(r'<rect x="([\d.]+)" y="([\d.]+)" width="(24|30)" height="(16|22|20)"')
+
+
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
+def test_ningun_texto_de_leyenda_invade_la_muestra_siguiente(nombre):
+    """Las muestras de las leyendas (cajitas de 24x16 o 30x22): ningun texto
+    de su renglon puede pisarlas. Se publico «el va[muestra]lor» en
+    jue-minimax-n1. Mide con DejaVu, como la prueba de los bordes."""
+    ImageFont = pytest.importorskip("PIL.ImageFont")
+    import html
+    import os
+    if not os.path.isdir(_DEJAVU):
+        pytest.skip("sin DejaVu")
+    svg = _texto(nombre)
+    muestras = [(float(x), float(y), float(w), float(h)) for x, y, w, h in _MUESTRA.findall(svg)]
+    patron = (r'<text x="([\d.-]+)" y="([\d.-]+)"[^>]*font-family="([^"]*)" '
+              r'font-size="([\d.]+)" font-weight="(\w+)" text-anchor="start">([^<]*)</text>')
+    for x, y, familia, tam, peso, contenido in re.findall(patron, svg):
+        archivo = (("DejaVuSansMono" if "mono" in familia else "DejaVuSans")
+                   + ("-Bold" if peso == "700" else "") + ".ttf")
+        x, y, t = float(x), float(y), float(tam)
+        w = ImageFont.truetype(_DEJAVU + archivo, round(t)).getlength(html.unescape(contenido))
+        for mx, my, mw, mh in muestras:
+            mismo_renglon = my < y and y - t < my + mh
+            if mismo_renglon and mx > x - 1:
+                assert x + w + 4 <= mx, (nombre, contenido, round(x + w), mx)
 
 
 @pytest.mark.parametrize("nombre", FIGURAS_T)

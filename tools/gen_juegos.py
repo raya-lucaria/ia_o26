@@ -214,9 +214,13 @@ def leyenda_svg(y, items, ancho_item=None):
     """Fila de muestras al pie: (tipo, texto) con tipo en
     {'expandido', 'sin', 'final', 'nuevo'}."""
     s = []
-    ancho_item = ancho_item or 200
+    x = X_PIE
     for k, (tipo, rotulo) in enumerate(items):
-        x = X_PIE + k * ancho_item
+        if k:
+            # Cada muestra empieza donde acaba el texto anterior, con aire:
+            # el ancho se estima por arriba (0.62 em por letra a 13 px), asi
+            # que un rotulo largo nunca invade la muestra siguiente.
+            x += ancho_item or (34 + 0.62 * 13 * len(items[k - 1][1]) + 26)
         if tipo == "final":
             s.append(caja(x - 3, y - 3, 30, 22, borde=COLOR_FINAL, grosor=1.5, radio=5))
             s.append(caja(x, y, 24, 16, borde=COLOR_FINAL, grosor=1.5, radio=4))
@@ -227,6 +231,7 @@ def leyenda_svg(y, items, ancho_item=None):
         else:
             s.append(caja(x, y, 24, 16, borde=SUAVE, grosor=2, radio=4))
         s.append(texto(x + 34, y + 13, rotulo, tam=13, color=SUAVE, anclaje="start"))
+    assert x + 34 + 0.62 * 13 * len(rotulo) <= ANCHO, items
     return "".join(s)
 
 
@@ -354,9 +359,9 @@ def jue_ciclo_partida():
     nx = izq + bw + 16
     for k, (renglon, peso) in enumerate([("Lo único que", "700"),
                                          ("no dan las", "700"),
-                                         ("reglas: es lo", "700"),
-                                         ("que queremos", "normal"),
-                                         ("decidir", "normal")]):
+                                         ("reglas:", "700"),
+                                         ("es lo que", "normal"),
+                                         ("queremos decidir", "normal")]):
         out.append(texto(nx, ys["elige"] - 36 + 22 * k, renglon, tam=16, color=ACENTO,
                          peso=peso, anclaje="start"))
     out.append(flecha(cx, ys["elige"] + 36, cx, ys["t"] - bh / 2 - 2, color=SUAVE,
@@ -438,7 +443,7 @@ def _paso_1():
     return "".join(out)
 
 
-def _xs_hijos(n, paso3=196, paso2=250):
+def _xs_hijos(n, paso3=200, paso2=250):
     paso_x = paso3 if n == 3 else paso2
     return [ANCHO / 2 + (k - (n - 1) / 2) * paso_x for k in range(n)]
 
@@ -463,10 +468,10 @@ def _paso_hijos(paso, previas, rotulo_padre, rotulos_hijos, notas):
         out.append(rastro_svg(y + 26, previas))
     for (nombre, t, p), x in zip(hs, xs_hijos):
         out.append(arista_svg(W / 2, y_padre, x, y_hijo, nombre, nueva=True, h=190))
-    out.append(nodo_svg(W / 2, y_padre, tp, pp, rotulo_padre, w=172, h=190, celda=32))
+    out.append(nodo_svg(W / 2, y_padre, tp, pp, rotulo_padre, w=180, h=190, celda=32))
     for (nombre, t, p), x in zip(hs, xs_hijos):
         out.append(nodo_svg(x, y_hijo, t, p, rotulos_hijos.get(nombre, f"T(·, {nombre})"),
-                            nuevo=True, expandido=bool(j.ganador(t, p)), w=172, h=190, celda=32))
+                            nuevo=True, expandido=bool(j.ganador(t, p)), w=180, h=190, celda=32))
     out.append(nota_svg(y_hijo + 135, notas))
     out.append(leyenda_svg(H - 34, [("nuevo", "nuevo en este paso"),
                                     ("sin", "sin expandir"),
@@ -703,11 +708,11 @@ def jue_minimax_paso(paso):
     for m, x in zip(hijos_, xs):
         out.append(arista_svg(W / 2, y_padre, x, y_hijo, nodos[m][3],
                               nueva=(n, m) in elegidas, h=190))
-    out.append(nodo_svg(W / 2, y_padre, tp, pp, f"n{n}", nuevo=True, w=172, h=190, celda=32,
+    out.append(nodo_svg(W / 2, y_padre, tp, pp, f"n{n}", nuevo=True, w=180, h=190, celda=32,
                         renglones=renglones_valor(tp, pp, valores[n])))
     for m, x in zip(hijos_, xs):
         t, p, _, _ = nodos[m]
-        out.append(nodo_svg(x, y_hijo, t, p, f"n{m}", w=172, h=190, celda=32,
+        out.append(nodo_svg(x, y_hijo, t, p, f"n{m}", w=180, h=190, celda=32,
                             renglones=renglones_valor(t, p, valores[m])))
     out.append(nota_svg(y_hijo + 140, notas))
     out.append(leyenda_svg(H - 34, [("nuevo", "se valora en este paso"),
@@ -896,12 +901,12 @@ def jue_azar_n3():
     for m, x in zip(hijos_, xs):
         out.append(arista_svg(W / 2, y_padre, x, y_hijo, f"{nodos[m][3]}: ⅓", h=190,
                               t=0.55))
-    out.append(nodo_svg(W / 2, y_padre, tp, pp, "n3", nuevo=True, w=172, h=190, celda=32,
+    out.append(nodo_svg(W / 2, y_padre, tp, pp, "n3", nuevo=True, w=180, h=190, celda=32,
                         color=COLOR_AZAR, radio=45,
                         renglones=("AZAR: nadie elige", f"V = {fmt(promedio)}")))
     for m, x in zip(hijos_, xs):
         t, p, _, _ = nodos[m]
-        out.append(nodo_svg(x, y_hijo, t, p, f"n{m}", w=172, h=190, celda=32,
+        out.append(nodo_svg(x, y_hijo, t, p, f"n{m}", w=180, h=190, celda=32,
                             renglones=renglones_valor(t, p, valores[m])))
     out.append(nota_svg(y_hijo + 140, ["Se promedia con las probabilidades:",
                                        "⅓(+1) + ⅓(+1) + ⅓(−1) = 1/3."]))
@@ -1099,9 +1104,9 @@ ETIQ_W = 74         # la etiqueta con α y β junto a un nodo en la pila
 # En el nivel 2 caben, de izquierda a derecha: dos hojas, C1, la etiqueta
 # de C2 (va a su izquierda), C2 y dos hojas; por eso C2 queda a la derecha
 # del centro.
-LUGARES_T = {(): 314, (0,): 68, (1,): 282, (2,): 519, (1, 0): 186, (1, 1): 378,
-             (0, 0): 38, (0, 1): 98, (1, 0, 0): 154, (1, 0, 1): 218,
-             (1, 1, 0): 346, (1, 1, 1): 410, (2, 0): 486, (2, 1): 552}
+LUGARES_T = {(): 314, (0,): 68, (1,): 286, (2,): 519, (1, 0): 190, (1, 1): 382,
+             (0, 0): 36, (0, 1): 100, (1, 0, 0): 158, (1, 0, 1): 222,
+             (1, 1, 0): 350, (1, 1, 1): 414, (2, 0): 486, (2, 1): 552}
 LUGARES_T1 = {(): 314, (0,): 160, (1,): 460, (0, 0): 106, (0, 1): 214,
               (1, 0): 406, (1, 1): 514}
 # De que lado va la etiqueta (α, β) de cada nodo interno.
@@ -1349,10 +1354,12 @@ def dibujar_t(out, arbol, estados, y0, resaltar=(), etiquetas=None, olvidar=Fals
         if rot:
             t = 0.42
             if rot == "½":
-                # Mas cerca del hijo: las dos aristas de I y de D nacen
-                # juntas, y a 0.42 sus dos «½» se enciman.
-                t = 0.66 if es_hoja(c) else t
-                out.append(_pastilla_t(x1 + (x2 - x1) * t, ya + (yb - ya) * t, rot, color,
+                # Las dos aristas de I (y de D) nacen juntas: a la altura del
+                # rotulo cada «½» se corre hacia afuera de su arista, para
+                # que no se encimen ni la tapen.
+                t = 0.45
+                dx = (-22 if c[-1] == 0 else 22) if es_hoja(c) else 0
+                out.append(_pastilla_t(x1 + (x2 - x1) * t + dx, ya + (yb - ya) * t, rot, color,
                                        tam=19, mono=False))
             else:
                 out.append(_pastilla_t(x1 + (x2 - x1) * t, ya + (yb - ya) * t, rot, color))
@@ -1881,10 +1888,12 @@ def jue_t_ab_pila():
         ("C2 · MAX", [f"α = {f(e_c2['alfa'])}", f"β = {f(e_c2['beta'])}", f"v = {f(e_c2['v'])}",
                       "v ≥ β: corta"]),
     ]
-    mw, gap, y1 = 180, 12, y + 20
+    # El de R es mas ancho: lleva «mejor_jugada = izq».
+    anchos, gap, y1 = (200, 168, 168), 20, y + 20
     alto = 46 + 26 * 4
     for i, (cab, filas_) in enumerate(marcos):
-        x = 12 + i * (mw + gap)
+        mw = anchos[i]
+        x = 12 + sum(anchos[:i]) + i * gap
         out.append(caja(x, y1, mw, alto, relleno=mezclar(ACENTO, 0.08), borde=ACENTO,
                         grosor=2.5 if i == 2 else 1.5, radio=8))
         out.append(texto(x + mw / 2, y1 + 26, cab, tam=T_FIG, peso="700"))
@@ -2678,6 +2687,8 @@ def jue_c3_profundizacion():
     y = encabezado(out, ["Profundizar mientras", "haya tiempo"])
     out.append(nota_svg(y + 26, ["El largo de cada barra: nodos que",
                                  "genera esa búsqueda"], tam=14))
+    # Dos relojes: uno que se acaba a media busqueda con d = 2 y otro con d = 3.
+    marcas = [(costos[0] + costos[1] // 2, 1), (costos[0] + costos[1] + costos[2] // 2, 2)]
     inicio, ys = 0, []
     for k, (d, c, (nombre, v)) in enumerate(zip(PROFUNDIDADES_RELOJ, costos, listas)):
         y = 130 + o + 95 * k
@@ -2689,15 +2700,19 @@ def jue_c3_profundizacion():
         lista = f"deja lista: {nombre}" + (" (gana)" if v == 100 else "")
         xt = xa + c * esc + 10
         if xt + 200 > W:
-            out.append(texto(xa + c * esc, y + 52, lista, tam=15, color=SERIE[0], peso="700",
-                             anclaje="end"))
+            # Abajo de la barra, y a la izquierda de la linea del reloj que
+            # cae en ella: la linea no lo cruza.
+            x_fin = xa + c * esc
+            for t_, ultima in marcas:
+                if ultima == k:
+                    x_fin = x0 + t_ * esc - 10
+            out.append(texto(round(x_fin, 1), y + 52, lista, tam=15, color=SERIE[0],
+                             peso="700", anclaje="end"))
         else:
             out.append(texto(xt, y + 21, lista, tam=15, color=SERIE[0], peso="700",
                              anclaje="start"))
         inicio += c
-    # Dos relojes: uno que se acaba a media busqueda con d = 2 y otro con d = 3.
     # Cada linea empieza bajo el rotulo de la busqueda en curso, para no taparlo.
-    marcas = [(costos[0] + costos[1] // 2, 1), (costos[0] + costos[1] + costos[2] // 2, 2)]
     yb = ys[-1] + 85
     for k, (t, ultima) in enumerate(marcas):
         x = x0 + t * esc
