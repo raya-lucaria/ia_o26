@@ -2,22 +2,27 @@
 
 course/7_juegos/_assets/traza_arbol_t.html lleva incrustados, entre dos
 marcas, los pasos de cada algoritmo que escribe tools/gen_traza_web.py desde
-juegos.pasos_interactivos(). A diferencia de las pruebas de los generadores
-de SVG, esta NO regenera: compara el bloque comiteado con lo que el
-generador produciria hoy, asi que un cambio en juegos.py sin volver a correr
-el generador falla aqui en vez de publicarse en silencio.
+juegos.pasos_por_linea(): un paso por cada linea del pseudocodigo que se
+ejecuta. A diferencia de las pruebas de los generadores de SVG, esta NO
+regenera: compara el bloque comiteado con lo que el generador produciria
+hoy, asi que un cambio en juegos.py sin volver a correr el generador falla
+aqui en vez de publicarse en silencio.
 
-El tope de peso (TOPE_BYTES, 80 KB) existe para que la pagina siga cargando
-al instante en un telefono. Hoy pesa ~60 KB, casi dos tercios de datos. Si un
-dia se llena -mas modos, frases mas largas-, la salida no es subir el tope a
-ciegas: es sacar el JSON a un archivo aparte en _assets/ (traza_arbol_t.json)
-que la pagina lea con fetch, y que esta prueba compare igual que hoy compara
-el bloque incrustado. Ojo: fetch no funciona abriendo el HTML como file://,
-por eso hoy los datos van dentro.
+El tope de peso (TOPE_BYTES, 150 KB) existe para que la pagina siga cargando
+al instante en un telefono. Era de 80 KB cuando un paso era una fila de la
+tabla (~60 KB); al pasar a un paso por linea (777 pasos en vez de 145, cada
+uno con su pila de llamadas) la pagina pesa ~128 KB aun compactada: ~92 KB de
+datos y ~36 KB de estilo y codigo. Si un dia se llena, la salida no es subir
+el tope a ciegas: es sacar el JSON a un archivo aparte en _assets/
+(traza_arbol_t.json) que la pagina lea con fetch, y que esta prueba compare
+igual que hoy compara el bloque incrustado. Ojo: fetch no funciona abriendo
+el HTML como file://, por eso hoy los datos van dentro.
 
 Las ultimas pruebas abren la pagina en un Chrome/Chromium sin pantalla
-(--dump-dom) y leen lo que el JavaScript pinto en tres pasos con poda. Se
-saltan si no hay navegador, como en CI.
+(--dump-dom) y leen lo que el JavaScript pinto en varios pasos, incluidos los
+que enlazan las paginas (#alfa-beta-fila-12, #alfa-beta-fila-8: -fila-N
+abre en el paso que cierra la fila N; -paso-K es el paso K). Se saltan si
+no hay navegador, como en CI.
 """
 import html as html_mod
 import json
@@ -30,7 +35,7 @@ import pytest
 import gen_traza_web as g
 
 HTML = g.HTML
-TOPE_BYTES = 80_000
+TOPE_BYTES = 150_000
 
 
 @pytest.fixture(scope="module")
@@ -43,10 +48,10 @@ def incrustado(html):
     return json.loads(g.bloque_incrustado(html))
 
 
-def test_el_bloque_incrustado_es_el_que_daria_hoy_pasos_interactivos(html):
+def test_el_bloque_incrustado_es_el_que_daria_hoy_pasos_por_linea(html):
     esperado = g.serializar(g.compactar(g.trazas_de_hoy()))
     assert g.bloque_incrustado(html) == esperado, (
-        "el JSON de traza_arbol_t.html ya no coincide con juegos.pasos_interactivos(): "
+        "el JSON de traza_arbol_t.html ya no coincide con juegos.pasos_por_linea(): "
         "corre python3 tools/gen_traza_web.py y comitea el HTML"
     )
 
@@ -99,11 +104,29 @@ NAVEGADOR = next((shutil.which(n) for n in ("google-chrome", "google-chrome-stab
                                             "chromium", "chromium-browser", "chrome")
                   if shutil.which(n)), None)
 
-# (fragmento, clave de la traza, paso, texto esperado en la fila de la comparacion)
+def _filas(t):
+    return max([p["fila"] for p in t["pasos"]] + [x for p in t["pasos"] for x in p["filas_x"]])
+
+
+def _paso_de_fila(pasos, fila):
+    """El paso de linea en que se cierra la fila `fila` de la tabla."""
+    return max(k for k, p in enumerate(pasos, 1) if p["fila"] == fila or fila in p["filas_x"])
+
+
+# (fragmento, clave de la traza, paso de linea que debe abrir, texto que
+# debe aparecer en la frase)
 CASOS_DOM = [
-    ("alfa-beta-paso-13", "alfa-beta-T", 13, "sí: 7 ≥ 5"),
-    ("corte-d1-paso-3", "corte-1", 3, None),
-    ("iterativa-paso-34", "iterativa", 34, "sí: 3 ≤ 5"),
+    # los dos enlaces de 5_alfa_beta_como_algoritmo: -fila-N
+    ("alfa-beta-fila-12", "alfa-beta-T", ("fila", 12), "corte beta"),
+    ("alfa-beta-fila-8", "alfa-beta-T", ("fila", 8), "α ← max(3, 5) = 5"),
+    # una fila ✗ abre en el return del corte que la deja fuera
+    ("iterativa-fila-34", "iterativa", ("fila", 34), "corte alfa"),
+    # -paso-K: el paso K, la K-esima linea que corre (-linea-K es su alias)
+    ("alfa-beta-paso-2", "alfa-beta-T", ("paso", 2), "α ← −∞"),
+    ("alfa-beta-linea-5", "alfa-beta-T", ("paso", 5), "Entra a ALFA-BETA"),
+    ("corte-d1-paso-10", "corte-1", ("paso", 10), None),
+    # el ultimo paso: la frase lleva el resultado dentro
+    ("azar-paso-108", "azar", ("paso", 108), "return mejor_jugada = der"),
 ]
 
 
@@ -115,25 +138,61 @@ def _dom(fragmento):
     return salida.stdout
 
 
+def test_los_enlaces_de_las_paginas_abren_lo_que_prometen():
+    """5_alfa_beta_como_algoritmo promete «el corte beta de C2» y «C y C1 a
+    la vez en la pila, C1 sube su α en la línea 15»."""
+    pagina = (g.RAIZ / "course/7_juegos/2_mirar_todo_y_podar/5_alfa_beta_como_algoritmo.md"
+              ).read_text(encoding="utf-8")
+    enlaces = re.findall(r"traza_arbol_t\.html#([\w-]+)\)", pagina)
+    assert "alfa-beta-fila-12" in enlaces and "alfa-beta-fila-8" in enlaces
+    # -paso-N ya no es fila: ningun enlace de la unidad debe usarlo como tal
+    for md in (g.RAIZ / "course/7_juegos").rglob("*.md"):
+        assert not re.search(r"traza_arbol_t\.html#[\w-]+-paso-\d", md.read_text(encoding="utf-8")), md
+    pasos = g.trazas_de_hoy()["alfa-beta-T"]["pasos"]
+    p = pasos[_paso_de_fila(pasos, 12) - 1]
+    assert p["nodo"] == "C2" and p["linea"] == 14 and "corte beta" in p["frase"]
+    p = pasos[_paso_de_fila(pasos, 8) - 1]
+    assert p["linea"] == 15 and [m["nodo"] for m in p["marco"]] == ["R", "C", "C1"]
+
+
 @pytest.mark.skipif(NAVEGADOR is None, reason="no hay Chrome ni Chromium")
-@pytest.mark.parametrize("fragmento,clave,paso,comparacion", CASOS_DOM)
-def test_la_pagina_pinta_el_paso_pedido(fragmento, clave, paso, comparacion):
+@pytest.mark.parametrize("fragmento,clave,cual,frase", CASOS_DOM)
+def test_la_pagina_pinta_el_paso_pedido(fragmento, clave, cual, frase):
     t = g.trazas_de_hoy()[clave]
-    p = t["pasos"][paso - 1]
+    n = _paso_de_fila(t["pasos"], cual[1]) if cual[0] == "fila" else cual[1]
+    p = t["pasos"][n - 1]
     dom = _dom(fragmento)
 
     cuenta = re.search(r'id="cuenta"[^>]*>([^<]*)<', dom).group(1)
-    assert cuenta == f"paso {paso}/{len(t['pasos'])}"
+    assert cuenta == f"Paso {n} de {len(t['pasos'])} · fila {p['fila']} de {_filas(t)}"
 
-    frase = re.search(r'id="frase"[^>]*><span class="chip">[^<]*</span>(.*?)</div>', dom).group(1)
-    assert html_mod.unescape(frase) == p["frase"]
+    texto_frase = dom[dom.index('id="frase"'):dom.index('id="col-pseudo"')]
+    assert f">línea {p['linea']}<" in texto_frase
+    assert html_mod.escape(p["frase"], quote=False) in texto_frase
+    if frase:
+        assert html_mod.escape(frase, quote=False) in texto_frase
 
-    marcadas = {int(r) for r in re.findall(r'<div class="lin aqui" data-r="(\d+)"', dom)}
-    assert marcadas == set(p["lineas"]) & {r for r in t["renglones"] if r is not None}
+    # una sola linea del pseudocodigo marcada: la que corre (con `parcial`,
+    # solo su primer renglon impreso)
+    marcadas = [int(r) for r in re.findall(r'<div class="lin aqui" data-r="(\d+)"', dom)]
+    assert set(marcadas) == {p["linea"]}
+    assert len(marcadas) == (1 if p["parcial"] else t["renglones"].count(p["linea"]))
+
+    # la pila: una tarjeta por marco, la actual con su tabla de variables
+    pila = dom[dom.index('id="pila"'):dom.index('id="col-arbol"')]
+    assert pila.count('<li class="marco') == len(p["marco"])
+    assert pila.count('<li class="marco actual"') == 1
+    locales = dict(p["marco"][-1]["locales"])
+    for k in locales:
+        assert f"<td>{html_mod.escape(k, quote=False)}" in pila
+    # una fila marcada por variable que la linea cambio de verdad; reasignar
+    # el mismo valor se dice («se reasignó, igual») pero no se marca
+    cambiadas = [k for i, k, antes in p["cambia"]
+                 if i == len(p["marco"]) - 1 and k in locales and antes != locales[k]]
+    assert pila.count('<tr class="cambia">') == len(cambiadas)
+    for k in cambiadas:
+        assert re.search(r'<tr class="cambia"><td>' + re.escape(k) + " <span", pila), k
 
     arbol = dom[dom.index('id="arbol"'):dom.index('id="leyenda"')]
     podados = sum(1 for e in p["estado"].values() if e["estado"] == "podado")
     assert arbol.count(">?</text>") == podados
-
-    if comparacion:
-        assert html_mod.escape(comparacion, quote=False) in dom
