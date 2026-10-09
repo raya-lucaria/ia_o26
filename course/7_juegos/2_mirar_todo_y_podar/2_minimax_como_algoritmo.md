@@ -95,33 +95,28 @@ INPUT   un estado s donde mueve MAX, y las
 OUTPUT  una jugada de A(s) que alcanza V(s).
 
  1 function DECIDIR-MINIMAX(s)
-     ▷ mueve MAX en s
  2   mejor_valor ← −∞ ; mejor_jugada ← ninguna
-     ▷ −∞ es menor que todo: la primera
-     ▷ jugada siempre gana
  3   for each a in A(s)
-       ▷ cuánto vale a si después los dos
-       ▷ juegan bien
+       # cuánto vale a con juego perfecto
  4     w ← MINIMAX(T(s, a))
-       ▷ estricto: en un empate se queda
-       ▷ la primera
+       # estricto: un empate deja la primera
  5     if w > mejor_valor:
          mejor_valor ← w ; mejor_jugada ← a
- 6   return mejor_jugada   ▷ la jugada, no w
+ 6   return mejor_jugada       # la jugada, no w
 
- 7 function MINIMAX(s)        ▷ devuelve V(s)
- 8   if s ∈ S_F: return U(s)  ▷ un final: su U
- 9   if Pl(s) = MAX           ▷ MAX: el mayor
-10     v ← −∞                 ▷ menor que todo
-11     for each a in A(s)     ▷ hijo por hijo
-12       w ← MINIMAX(T(s, a)) ▷ el hijo da w
-13       v ← max(v, w)        ▷ ¿mejora?
+ 7 function MINIMAX(s)         # devuelve V(s)
+ 8   if s ∈ S_F: return U(s)   # final: su U
+ 9   if Pl(s) = MAX
+10     v ← −∞                  # menor que todo
+11     for each a in A(s)
+12       w ← MINIMAX(T(s, a))  # el hijo da w
+13       v ← max(v, w)         # el mayor
 14     return v
-15   else                     ▷ MIN: el menor
-16     v ← +∞                 ▷ mayor que todo
-17     for each a in A(s)     ▷ hijo por hijo
-18       w ← MINIMAX(T(s, a)) ▷ el hijo da w
-19       v ← min(v, w)        ▷ ¿empeora?
+15   else                      # Pl(s) = MIN
+16     v ← +∞                  # mayor que todo
+17     for each a in A(s)
+18       w ← MINIMAX(T(s, a))
+19       v ← min(v, w)         # el menor
 20     return v
 ```
 

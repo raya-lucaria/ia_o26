@@ -265,42 +265,36 @@ OUTPUT  una jugada de A(s) con el mayor
         valor esperado.
 
  1 function DECIDIR-EXPECTIMINIMAX(s)
-     ▷ mueve MAX en s
  2   mejor_valor ← −∞ ; mejor_jugada ← ninguna
  3   for each a in A(s)
-       ▷ cuánto vale a, en promedio, si
-       ▷ después MAX y MIN juegan bien y
-       ▷ el azar sigue Pr
+       # cuánto vale a, en promedio
  4     w ← EXPECTIMINIMAX(T(s, a))
-       ▷ estricto: en un empate se queda
-       ▷ la primera
+       # estricto: un empate deja la primera
  5     if w > mejor_valor:
          mejor_valor ← w ; mejor_jugada ← a
- 6   return mejor_jugada   ▷ la jugada, no w
+ 6   return mejor_jugada      # la jugada, no w
 
  7 function EXPECTIMINIMAX(s)
- 8   if s ∈ S_F: return U(s)  ▷ un final: su U
- 9   if Pl(s) = MAX           ▷ optimiza
+ 8   if s ∈ S_F: return U(s)  # final: su U
+ 9   if Pl(s) = MAX
 10     v ← −∞
 11     for each a in A(s)
 12       w ← EXPECTIMINIMAX(T(s, a))
-13       v ← max(v, w)        ▷ el mayor
+13       v ← max(v, w)        # el mayor
 14     return v
-15   else if Pl(s) = MIN      ▷ optimiza
+15   else if Pl(s) = MIN
 16     v ← +∞
 17     for each a in A(s)
 18       w ← EXPECTIMINIMAX(T(s, a))
-19       v ← min(v, w)        ▷ el menor
+19       v ← min(v, w)        # el menor
 20     return v
-21   else                     ▷ AZAR
-       ▷ nadie elige. Un promedio empieza en
-       ▷ 0, no en ±∞: no busca al mejor hijo,
-       ▷ suma todos
-22     v ← 0
-23     for each a in A(s)     ▷ todos cuentan
+21   else                     # Pl(s) = AZAR
+     # nadie elige: se suman todos
+22     v ← 0                  # suma, no ±∞
+23     for each a in A(s)
 24       w ← EXPECTIMINIMAX(T(s, a))
-25       v ← v + Pr(a) · w    ▷ pesa su Pr
-26     return v               ▷ valor esperado
+25       v ← v + Pr(a) · w    # pesa su Pr
+26     return v               # valor esperado
 ```
 
 El mismo procedimiento en Python, línea por línea. `pr(s, a)` es

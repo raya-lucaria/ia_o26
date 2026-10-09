@@ -254,43 +254,34 @@ OUTPUT  una jugada de A(s), la mejor de la
         última búsqueda completa.
 
  1 function PROFUNDIZACIÓN-ITERATIVA(s)
-     ▷ siempre hay algo que entregar,
-     ▷ aunque sea malo
+     # siempre hay algo que entregar
  2   jugada ← cualquier a in A(s)
- 3   d ← 1                 ▷ primera búsqueda
-     ▷ cada vuelta: una búsqueda completa,
-     ▷ más honda
+ 3   d ← 1
+     # cada vuelta, una búsqueda más honda
  4   while quede tiempo
-       ▷ nada asegurado aún en esta búsqueda
  5     α ← −∞ ; mejor_jugada ← jugada
-       ▷ la jugada de la búsqueda anterior va
-       ▷ primero: si es buena, α sube pronto
-       ▷ y se poda más
+       # la anterior primero: α sube pronto
  6     for each a in A(s), jugada primero
-         ▷ le quedan d − 1 jugadas
  7       w ← ALFA-BETA-CON-CORTE(
                T(s, a), d − 1, α, +∞)
-         ▷ a medias: se descarta. El reloj se
-         ▷ revisa aquí, entre hijos de la raíz
+         # a medias no sirve: va la anterior
  8       if el tiempo se acabó: return jugada
-         ▷ victoria asegurada: nada es mejor
- 9       if w = 100: return a
-         ▷ mejor que todo lo visto: se guarda
+ 9       if w = 100: return a  # gana seguro
 10       if w > α: α ← w ; mejor_jugada ← a
-11     jugada ← mejor_jugada  ▷ ya terminó
-12     d ← d + 1              ▷ una jugada más
+11     jugada ← mejor_jugada   # ya terminó
+12     d ← d + 1
 13   return jugada
 
 14 function ALFA-BETA-CON-CORTE(s, d, α, β)
 15   if s ∈ S_F: return 100 · U(s)
-16   if d = 0: return EVAL(s)  ▷ se estima
+16   if d = 0: return EVAL(s)  # se estima
 17   if Pl(s) = MAX
 18     v ← −∞
 19     for each a in A(s)
 20       w ← ALFA-BETA-CON-CORTE(
                T(s, a), d − 1, α, β)
 21       v ← max(v, w)
-22       if v ≥ β: return v     ▷ corte beta
+22       if v ≥ β: return v    # corte beta
 23       α ← max(α, v)
 24     return v
 25   else
@@ -299,7 +290,7 @@ OUTPUT  una jugada de A(s), la mejor de la
 28       w ← ALFA-BETA-CON-CORTE(
                T(s, a), d − 1, α, β)
 29       v ← min(v, w)
-30       if v ≤ α: return v     ▷ corte alfa
+30       if v ≤ α: return v    # corte alfa
 31       β ← min(β, v)
 32     return v
 ```

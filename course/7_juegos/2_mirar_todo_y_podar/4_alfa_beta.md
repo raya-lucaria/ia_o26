@@ -67,49 +67,35 @@ INPUT   un estado s donde mueve MAX, y las
 OUTPUT  una jugada de A(s) que alcanza V(s).
 
  1 function DECIDIR-ALFA-BETA(s)
-       ▷ mueve MAX en s; α hace de
-       ▷ mejor_valor: lo que la raíz ya
-       ▷ tiene asegurado.
+     # α hace de mejor_valor
  2   α ← −∞ ; mejor_jugada ← ninguna
  3   for each a in A(s)
-       ▷ Pasa su α: el hijo corta contra él.
-       ▷ β = +∞: arriba de la raíz no hay
-       ▷ rival que tenga algo asegurado.
+       # sin rival arriba de la raíz: β = +∞
  4     w ← ALFA-BETA(T(s, a), α, +∞)
-       ▷ Estricto: un hijo que cortó
-       ▷ devuelve una cota; si empata con
-       ▷ α, puede valer menos.
+       # estricto: un empate puede ser cota
  5     if w > α: α ← w ; mejor_jugada ← a
- 6   return mejor_jugada      ▷ la jugada
+ 6   return mejor_jugada        # la jugada
 
- 7 function ALFA-BETA(s, α, β)  ▷ devuelve v
+ 7 function ALFA-BETA(s, α, β)  # devuelve v
  8   if s ∈ S_F: return U(s)
  9   if Pl(s) = MAX
 10     v ← −∞
 11     for each a in A(s)
-         ▷ el hijo hereda la ventana
 12       w ← ALFA-BETA(T(s, a), α, β)
 13       v ← max(v, w)
-         ▷ LEE el del rival: MIN ya tiene β
-         ▷ asegurado arriba; si aquí MAX
-         ▷ logra β o más, MIN no viene.
-14       if v ≥ β: return v  ▷ corte beta
-         ▷ ACTUALIZA el suyo: sube α
-15       α ← max(α, v)
-16     return v              ▷ valor o cota
-17   else                    ▷ Pl(s) = MIN
+         # compara v con β, el número de MIN
+14       if v ≥ β: return v     # corte beta
+15       α ← max(α, v)          # sube su α
+16     return v                 # valor o cota
+17   else                       # Pl(s) = MIN
 18     v ← +∞
 19     for each a in A(s)
-         ▷ el hijo hereda la ventana
 20       w ← ALFA-BETA(T(s, a), α, β)
 21       v ← min(v, w)
-         ▷ LEE el del rival: MAX ya tiene α
-         ▷ asegurado arriba; si aquí MIN lo
-         ▷ deja en α o menos, MAX no viene.
-22       if v ≤ α: return v  ▷ corte alfa
-         ▷ ACTUALIZA el suyo: baja β
-23       β ← min(β, v)
-24     return v              ▷ valor o cota
+         # compara v con α, el número de MAX
+22       if v ≤ α: return v     # corte alfa
+23       β ← min(β, v)          # baja su β
+24     return v                 # valor o cota
 ```
 
 El mismo código en Python; el número entre paréntesis es la línea del
