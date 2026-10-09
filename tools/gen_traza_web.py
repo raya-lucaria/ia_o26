@@ -14,9 +14,9 @@ idempotente: correrlo dos veces deja el archivo igual, y tras correrlo
 
 Los datos van compactados para que la pagina pese poco (sin compactar, las
 ocho trazas suman unos 230 KB, casi todo el estado de cada nodo repetido en
-cada paso). Se dejan fuera solo dos campos que la pagina no pinta, `evento` y
-`mejora` (los dos se leen ya en la frase); todo lo demas se guarda sin
-perdida: expandir(compactar(x)) == x sin esos dos campos, y
+cada paso). Se deja fuera solo un campo que la pagina no pinta, `evento`
+(se lee ya en la frase); todo lo demas se guarda sin perdida:
+expandir(compactar(x)) == x sin ese campo, y
 tools/test_traza_web.py lo comprueba para cada modo. Lo que cambia:
 
 - pseudo, renglones y arbol se guardan una sola vez y cada traza los nombra
@@ -63,7 +63,7 @@ ESTADOS = ["pormirar", "pila", "devuelto", "evaluado", "podado"]
 CLAVES_ESTADO = ["estado", "v", "alfa", "beta", "cota"]
 CLAVES_NODO = ["id", "nombre", "tipo", "padre", "jugada", "hoja", "valor", "prob", "eval"]
 DERIVADAS = {"n", "estado"}
-FUERA = {"evento", "mejora"}   # la pagina no los pinta
+FUERA = {"evento"}   # la pagina no lo pinta
 
 ABRE = '<script type="application/json" id="trazas">'
 CIERRA = "</script>"

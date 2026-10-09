@@ -13,15 +13,16 @@
      traza tal como la escribe la pagina del algoritmo.
 
      Fragmentos: #minimax, #azar, #alfa-beta (#alfa-beta-t1), #corte
-     (#corte-d1, #corte-d3), #iterativa. -->
+     (#corte-d1, #corte-d3), #iterativa; con -paso-N abre en el paso N
+     (#alfa-beta-paso-12). Al avanzar, la pagina reescribe el fragmento. -->
 
 <style>
   /* Paleta de skins/eva-cyberpunk.yaml, vigilada por tools/test_skin.py.
      --max, --min y --hoja son los colores de nodo de las figuras jue-t-*.svg
      (tools/gen_juegos.py). Los rellenos --f-* son esos colores ya fundidos
      contra --surface (al 16 % y al 7 %), como mezclar() en los generadores:
-     nada de fill-opacity. --trazo es --border aclarado hasta 4.5:1, solo para
-     bordes de panel y control; --border se usa para lo punteado del dibujo. */
+     nada de fill-opacity. --trazo es --border aclarado hasta 4.5:1: bordes de
+     panel y control, y lo que aun no se mira en el dibujo. */
   :root{
     --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
     --accent:#f04cff; --accent-soft:#42164f; --border:#78419e;
@@ -33,65 +34,69 @@
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--page);color:var(--text);
             font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-  .envoltura{max-width:1180px;margin:0 auto;padding:.9rem 16px 2rem}
-  h1{font-size:18px;margin:0 0 .15rem}
-  h2{font-size:12.5px;margin:0 0 .5rem;color:var(--muted);font-weight:600;
+  .envoltura{max-width:1240px;margin:0 auto;padding:.7rem 16px 2rem}
+  .cabeza{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .8rem;margin-bottom:.4rem}
+  h1{font-size:18px;margin:0}
+  h2{font-size:12.5px;margin:0 0 .4rem;color:var(--muted);font-weight:600;
      letter-spacing:.04em;text-transform:uppercase}
-  .sub{color:var(--muted);font-size:13.5px;margin:0 0 .7rem}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .sub{color:var(--muted);font-size:13.5px;margin:0}
   .panel{background:var(--surface);border:1px solid var(--trazo);border-radius:12px;
-         padding:.75rem;margin-bottom:.8rem;min-width:0}
-  @media (max-width:600px){ #col-arbol .panel:first-child{padding:.4rem} }
+         padding:.65rem;margin-bottom:.7rem;min-width:0}
+  @media (max-width:600px){ #p-arbol{padding:.35rem} }
   button{background:var(--surface);color:var(--text);border:1px solid var(--trazo);
-    border-radius:8px;padding:.42rem .7rem;font:inherit;font-size:14px;cursor:pointer;
+    border-radius:8px;padding:.38rem .7rem;font:inherit;font-size:14px;cursor:pointer;
     min-height:38px}
   button:hover:not(:disabled){border-color:var(--accent)}
-  button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--text);outline-offset:2px}
   /* inactivo: por debajo de 4.5:1 a proposito (WCAG 1.4.3 lo exime) */
   button:disabled{opacity:.5;cursor:default}
   button[aria-pressed=true]{background:var(--accent);color:#1b0025;border-color:var(--accent);
     font-weight:700}
-  .grupo{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.45rem}
-  .grupo button{padding:.3rem .6rem;min-height:34px;font-size:13.5px}
-  .barra{position:sticky;top:0;z-index:2;background:var(--page);padding:.45rem 0 .5rem;
-         border-bottom:1px solid var(--accent-soft);margin-bottom:.7rem}
+  .selector{display:flex;flex-wrap:wrap;gap:.3rem .9rem}
+  .grupo{display:flex;gap:.3rem;flex-wrap:wrap}
+  .grupo button{padding:.25rem .6rem;min-height:34px;font-size:13.5px}
+  .barra{position:sticky;top:0;z-index:2;background:var(--page);padding:.4rem 0;
+         border-bottom:1px solid var(--accent-soft);margin-bottom:.6rem}
   .controles{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}
   .controles button{min-width:42px;font-size:15px}
+  #b-play{min-width:8.2em}
   #desliz{flex:1 1 120px;min-width:100px;accent-color:var(--accent)}
   #cuenta{font:13px ui-monospace,Menlo,monospace;color:var(--muted);white-space:nowrap}
-  .reja{display:grid;grid-template-columns:minmax(0,1fr);gap:0 1rem}
+  .teclas{color:var(--muted);font-size:12.5px;margin:.25rem 0 0}
+  .teclas b{color:var(--text)}
+  .reja{display:grid;grid-template-columns:minmax(0,1fr);gap:0 .9rem}
   #arbol svg{width:100%;height:auto;display:block}
-  .leyenda{display:flex;flex-wrap:wrap;gap:.2rem .8rem;font-size:12.5px;color:var(--muted);
-           margin-top:.35rem}
+  .leyenda{display:flex;flex-wrap:wrap;gap:.15rem .8rem;font-size:13px;color:var(--muted);
+           margin-top:.3rem}
   .leyenda span{display:inline-flex;align-items:center;gap:.3rem}
-  .leyenda svg{width:22px;height:16px;flex:none}
-  .frase{padding:.6rem .7rem;border:1px solid var(--accent);border-radius:8px;
+  .leyenda svg{width:24px;height:18px;flex:none}
+  .nota{color:var(--muted);font-size:12.5px;margin:.35rem 0 0}
+  .frase{padding:.55rem .7rem;border:1px solid var(--accent);border-radius:8px;
          background:var(--page);font-size:15px;min-height:3.2em}
   .frase .chip{display:inline-block;font:12px ui-monospace,Menlo,monospace;
          color:var(--accent);border:1px solid var(--accent);border-radius:6px;
          padding:0 .35rem;margin-right:.4rem}
-  .est{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.25rem .8rem;margin:0;
+  .resultado{margin-top:.55rem;padding:.5rem .7rem;border:1px solid var(--hoja);
+             border-radius:8px;color:var(--hoja);font-size:14px}
+  .est{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.2rem .8rem;margin:0;
        font-size:14px;align-items:baseline}
   .est dt{color:var(--muted);font:12.5px ui-monospace,Menlo,monospace;white-space:nowrap}
   .est dd{margin:0;font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
   .est dd .de{color:var(--muted);font-size:12.5px}
   .est dd b{color:var(--accent)}
-  .resultado{margin-top:.7rem;padding:.55rem .7rem;border:1px solid var(--hoja);
-             border-radius:8px;color:var(--hoja);font-size:14px}
   #pseudo{position:relative;overflow:auto;max-height:24rem;background:var(--page);
           border-radius:8px;padding:.3rem 0}
   .lin{display:flex;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
        white-space:pre;padding:0 .5rem 0 0;border-left:3px solid transparent;
-       min-width:max-content}
+       min-width:max-content;min-height:1.55em}
   .lin .m{width:1.3em;flex:none;text-align:center;color:var(--accent);font-weight:700}
-  .lin.cab{color:var(--muted)}
-  .lin.com{color:var(--muted)}
+  .lin.cab,.lin.com{color:var(--muted)}
   .lin.aqui{background:var(--accent-soft);border-left-color:var(--accent);font-weight:700}
-  .nota{color:var(--muted);font-size:12.5px;margin:.5rem 0 0}
   @media (min-width:900px){
-    .reja{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
-    #col-pseudo .panel{position:sticky;top:calc(var(--barra,9rem) + .5rem)}
-    #pseudo{max-height:calc(100vh - var(--barra,9rem) - 7.5rem)}
+    .reja{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr)}
+    #arbol svg{max-height:52vh}
+    .est{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)}
+    #pseudo{max-height:max(13rem, calc(100vh - var(--barra,4rem) - 21rem))}
   }
   .oculto{display:none}
   @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
@@ -99,49 +104,54 @@
 </head>
 <body>
 <div class="envoltura">
-  <h1>Traza paso a paso en el árbol T</h1>
-  <p class="sub" id="titulo"></p>
-
-  <div class="grupo" role="group" aria-label="Algoritmo" id="modos">
+  <div class="cabeza">
+    <h1>Traza paso a paso en el árbol T</h1>
+    <p class="sub" id="titulo"></p>
+  </div>
+  <div class="selector">
+    <div class="grupo" role="group" aria-label="Algoritmo" id="modos">
       <button data-modo="minimax">Minimax</button>
       <button data-modo="azar">Con azar</button>
       <button data-modo="alfa-beta">Alfa-beta</button>
       <button data-modo="corte">Con corte</button>
       <button data-modo="iterativa">Contra el reloj</button>
     </div>
-  <div class="grupo" role="group" aria-label="Variante" id="variantes"></div>
+    <div class="grupo" role="group" aria-label="Variante" id="variantes"></div>
+  </div>
   <div class="barra">
     <div class="controles">
       <button id="b-ini" aria-label="Reiniciar: volver al paso 1">⟲</button>
       <button id="b-atras" aria-label="Paso atrás">◀</button>
       <button id="b-adelante" aria-label="Paso adelante">▶</button>
-      <button id="b-play" aria-label="Reproducir">▶▶</button>
+      <button id="b-play">▷ Reproducir</button>
       <input id="desliz" type="range" min="1" value="1" aria-label="Paso">
       <span id="cuenta" aria-hidden="true"></span>
     </div>
+    <p class="teclas" id="teclas"><span id="ayuda"><b>Pulsa ▶ para avanzar un paso.</b> </span>Teclado:
+      ← y → mueven un paso; espacio reproduce o pausa.</p>
   </div>
 
   <div class="reja">
     <div id="col-arbol">
-      <div class="panel">
+      <div class="panel" id="p-arbol">
         <div id="arbol"></div>
         <div class="leyenda" id="leyenda"></div>
+        <p class="nota oculto" id="nota-escala">En T, las hojas ya están en la escala 100·U.</p>
       </div>
       <div class="panel">
         <div class="frase" id="frase" aria-live="polite"></div>
         <div class="resultado oculto" id="resultado"></div>
       </div>
+    </div>
+    <div id="col-pseudo">
       <div class="panel">
         <h2>Variables</h2>
         <dl class="est" id="vars"></dl>
       </div>
-    </div>
-    <div id="col-pseudo">
       <div class="panel">
         <h2>Pseudocódigo</h2>
         <div id="pseudo"></div>
-        <p class="nota"><b style="color:var(--accent)">▸</b> marca las líneas que corren en
-        este paso. Teclado: ← y → mueven un paso; espacio reproduce o pausa.</p>
+        <p class="nota"><b style="color:var(--accent)">▸</b> marca las líneas que corren en este paso.</p>
       </div>
     </div>
   </div>
@@ -174,6 +184,7 @@ false,
 "2",
 [2],
 "ninguna",
+null,
 "R",
 ["R"],
 14,
@@ -203,6 +214,7 @@ false,
 "4–5",
 [4,5],
 "izq",
+true,
 "C es de MIN: v = +∞, mayor que todo.",
 5,
 "C",
@@ -346,7 +358,6 @@ false,
 "R recibe 2 de D, una cota: 2 > α = 5 es falso; mejor_jugada sigue en centro.",
 "Línea 6: R devuelve centro; α = 5 se queda dentro.",
 [3,"5","","",0],
-true,
 "R recibe EVAL(I) = 5: 5 > mejor_valor = −∞ → mejor_valor = 5, mejor_jugada = izq.",
 [3,"4","","",0],
 "R recibe EVAL(C) = 4: 4 > mejor_valor = 5 es falso; mejor_jugada sigue en izq.",
@@ -431,158 +442,158 @@ true,
 "4, 13",
 [4,13]],
 "trazas":{
-"minimax":{"modo":"minimax","variante":null,"titulo":"DECIDIR-MINIMAX en el árbol T","pagina":"2_mirar_todo_y_podar/2_minimax_como_algoritmo.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":0,"arbol":0,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,14,5,15,7,16,8,17,10,18,11,19,13,20],["I",13]],
-[[4,23,5,24,6,25,7,26,8,27,13,28,14,28],["I",21,"I-1",22]],
-[[4,30,5,31,6,32,14,33],["I-2",29]],
-[[4,34,6,18,7,35,8,36,9,37,10,9,11,10,14,28],["R",21,"I",22]],
-[[4,38,5,39,6,2,7,16,8,17,10,40,11,41,13,20,14,2],["C",13]],
-[[4,42,5,43,7,44,8,45,10,46,11,47,13,12],["C1",0]],
-[[4,50,5,51,6,52,7,53,8,54,13,55,14,55],["C1",48,"C1-1",49]],
-[[4,57,5,58,6,59,14,6],["C1-2",56]],
-[[4,60,6,46,7,26,8,27,10,40,11,41,14,55],["C",48,"C1",49]],
-[[4,61,5,62,6,2,7,44,8,45,10,63,11,64,13,12,14,2],["C2",0]],
-[[4,67,5,68,6,69,7,53,8,54,13,70,14,70],["C2",65,"C2-1",66]],
-[[4,73,5,74,6,75,13,76,14,76],["C2",71,"C2-2",72]],
-[[4,77,6,63,7,26,8,27,10,40,11,41,13,55],["C2",72]],
-[[4,78,6,40,7,35,8,36,9,79,10,9,11,10,14,55],["R",48,"C",49]],
-[[4,80,5,81,6,2,7,16,8,17,10,82,11,83,13,20,14,2],["D",13]],
-[[4,85,5,86,6,87,7,26,8,27,13,6,14,6],["D",84,"D-1",56]],
-[[4,89,5,11,6,90,14,91],["D-2",88]],
-[[4,92,6,82,7,35,8,36,10,9,11,10,13,55,14,6],["D",56]],
-[[4,93,6,2,7,33,8,94,14,2],["R",49]]]},
-"azar":{"modo":"azar","variante":null,"titulo":"DECIDIR-EXPECTIMINIMAX en el árbol T, con I, C y D de azar","pagina":"2_mirar_todo_y_podar/3_cuando_decide_un_dado.md","resultado":{"jugada":"der","valor":"7","generados":14,"total":14},"pseudo":1,"arbol":1,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,96,5,15,7,97,8,98,10,18,11,19,13,99],["I",95]],
-[[4,101,5,24,6,25,7,102,8,103,13,104,14,28],["I",100,"I-1",22]],
-[[4,106,5,31,6,32,13,107,14,33],["I",105,"I-2",29]],
-[[4,109,6,18,7,35,8,36,9,37,10,9,11,10,14,107],["R",105,"I",108]],
-[[4,110,5,39,6,2,7,97,8,98,10,40,11,41,13,99,14,2],["C",95]],
-[[4,112,5,58,6,46,7,102,8,103,13,113,14,55],["C",111,"C1",49,"C1-1",49,"C1-2",56]],
-[[4,115,5,74,6,63,13,116,14,76],["C",114,"C2",72,"C2-1",66,"C2-2",72]],
-[[4,118,6,40,7,35,8,36,9,79,10,9,11,10,14,116],["R",114,"C",117]],
-[[4,119,5,81,6,2,7,97,8,98,10,82,11,83,13,99,14,2],["D",95]],
-[[4,121,5,86,6,87,7,102,8,103,13,122,14,6],["D",120,"D-1",56]],
-[[4,123,5,11,6,90,13,70,14,91],["D",65,"D-2",88]],
-[[4,124,6,82,7,35,8,36,9,125,10,9,11,10,14,70],["R",65,"D",66]],
-[[4,126,6,2,7,33,8,94,14,2],["R",66]]]},
-"alfa-beta-T1":{"modo":"alfa-beta","variante":"T1","titulo":"DECIDIR-ALFA-BETA en el árbol T1","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"izq","valor":"3","generados":6,"total":7},"pseudo":2,"arbol":2,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,12,1,20,2,2,3,3,4,128,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,51,13,12,14,2],["R",127,"I",1,"I-1",1,"I-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,130,5,15,7,131,8,132,10,18,11,19,13,20],["I",129]],
-[[1,28,4,134,5,24,6,25,7,135,8,136,13,28,14,28],["I",133,"I-1",22]],
-[[4,137,5,31,6,32,14,33],["I-2",29]],
-[[0,28,1,20,4,139,6,18,7,35,8,36,9,37,10,9,11,10,14,28],["R",138,"I",22]],
-[[4,141,5,39,6,2,7,131,8,132,10,82,11,83,13,20,14,2],["D",140]],
-[[2,144,4,145,5,43,6,87,7,146,8,147,13,6,14,6],["D",142,"D-1",56,"D-2",143]],
-[[0,2,1,2,4,148,6,2,7,2,8,149,10,90,13,2,14,91],[]],
-[[0,28,1,20,2,2,4,151,6,82,7,35,8,36,10,9,11,10,13,28,14,6],["D",150]],
-[[4,152,6,2,7,33,8,94,14,2],["R",22]]]},
-"alfa-beta-T":{"modo":"alfa-beta","variante":"T","titulo":"DECIDIR-ALFA-BETA en el árbol T","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"centro","valor":"5","generados":12,"total":14},"pseudo":2,"arbol":0,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,12,1,20,2,2,3,3,4,128,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,2],["R",127,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,130,5,15,7,131,8,132,10,18,11,19,13,20],["I",129]],
-[[1,28,4,134,5,24,6,25,7,135,8,136,13,28,14,28],["I",133,"I-1",22]],
-[[4,137,5,31,6,32,14,33],["I-2",29]],
-[[0,28,1,20,4,139,6,18,7,35,8,36,9,37,10,9,11,10,14,28],["R",138,"I",22]],
-[[4,153,5,39,6,2,7,131,8,132,10,40,11,41,13,20,14,2],["C",140]],
-[[4,155,5,43,7,44,8,45,10,46,11,47,13,12],["C1",154]],
-[[0,55,4,157,5,51,6,52,7,158,8,159,13,55,14,55],["C1",156,"C1-1",49]],
-[[4,160,5,58,6,59,14,6],["C1-2",56]],
-[[0,28,1,55,4,162,6,46,7,135,8,136,10,40,11,41,14,55],["C",161,"C1",49]],
-[[4,164,5,62,6,2,7,44,8,45,10,63,11,64,13,12,14,2],["C2",163]],
-[[2,166,4,167,5,68,6,69,7,168,8,169,13,70,14,70],["C2",165,"C2-1",66,"C2-2",143]],
-[[0,2,1,2,4,170,6,2,7,2,8,149,10,75,13,2,14,76],[]],
-[[0,28,1,55,2,2,4,172,6,63,7,135,8,136,10,40,11,41,13,55,14,70],["C2",171]],
-[[0,55,1,20,4,173,6,40,7,35,8,36,9,79,10,9,11,10,14,55],["R",156,"C",49]],
-[[4,175,5,74,6,2,7,131,8,132,10,82,11,83,13,20,14,2],["D",174]],
-[[2,144,4,177,5,81,6,87,7,146,8,147,13,6,14,6],["D",176,"D-1",56,"D-2",143]],
-[[0,2,1,2,4,148,6,2,7,2,8,149,10,90,13,2,14,91],[]],
-[[0,55,1,20,2,2,4,178,6,82,7,35,8,36,10,9,11,10,13,55,14,6],["D",150]],
-[[4,179,6,2,7,33,8,94,14,2],["R",49]]]},
-"corte-1":{"modo":"corte","variante":1,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 1","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"der","valor":"7","generados":4,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[3,181,4,182,5,15,6,18,7,35,8,36,9,37,13,55,14,55],["R",48,"I",180]],
-[[4,184,5,24,6,40,14,185],["C",183]],
-[[4,187,5,31,6,82,9,125,13,70,14,70],["R",65,"D",186]],
-[[3,3,4,126,6,2,7,33,8,94,14,2],["R",66]]]},
-"corte-2":{"modo":"corte","variante":2,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 2","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"6","generados":10,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,14,5,15,7,188,8,189,10,18,11,19,13,20],["I",13]],
-[[4,23,5,24,6,25,7,190,8,191,13,28,14,28],["I",21,"I-1",22]],
-[[4,30,5,31,6,32,14,33],["I-2",29]],
-[[4,34,6,18,7,35,8,36,9,37,10,9,11,10,14,28],["R",21,"I",22]],
-[[4,38,5,39,6,2,7,188,8,189,10,40,11,41,13,20,14,2],["C",13]],
-[[3,181,4,194,5,43,6,46,7,190,8,191,13,33,14,33],["C",192,"C1",193]],
-[[4,196,5,51,6,63,14,197],["C2",195]],
-[[3,3,4,198,6,40,7,35,8,36,9,79,10,9,11,10,14,33],["R",192,"C",29]],
-[[4,80,5,58,6,2,7,188,8,189,10,82,11,83,13,20,14,2],["D",13]],
-[[4,85,5,62,6,87,7,190,8,191,13,6,14,6],["D",84,"D-1",56]],
-[[4,89,5,68,6,90,14,91],["D-2",88]],
-[[4,199,6,82,7,35,8,36,10,9,11,10,13,33,14,6],["D",56]],
-[[4,200,6,2,7,33,8,94,14,2],["R",29]]]},
-"corte-3":{"modo":"corte","variante":3,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 3","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[4,14,5,15,7,188,8,189,10,18,11,19,13,20],["I",13]],
-[[4,23,5,24,6,25,7,190,8,191,13,28,14,28],["I",21,"I-1",22]],
-[[4,30,5,31,6,32,14,33],["I-2",29]],
-[[4,34,6,18,7,35,8,36,9,37,10,9,11,10,14,28],["R",21,"I",22]],
-[[4,38,5,39,6,2,7,188,8,189,10,40,11,41,13,20,14,2],["C",13]],
-[[4,42,5,43,7,201,8,202,10,46,11,47,13,12],["C1",0]],
-[[4,50,5,51,6,52,7,203,8,204,13,55,14,55],["C1",48,"C1-1",49]],
-[[4,57,5,58,6,59,14,6],["C1-2",56]],
-[[4,60,6,46,7,190,8,191,10,40,11,41,14,55],["C",48,"C1",49]],
-[[4,61,5,62,6,2,7,201,8,202,10,63,11,64,13,12,14,2],["C2",0]],
-[[4,67,5,68,6,69,7,203,8,204,13,70,14,70],["C2",65,"C2-1",66]],
-[[4,73,5,74,6,75,13,76,14,76],["C2",71,"C2-2",72]],
-[[4,77,6,63,7,190,8,191,10,40,11,41,13,55],["C2",72]],
-[[4,78,6,40,7,35,8,36,9,79,10,9,11,10,14,55],["R",48,"C",49]],
-[[4,80,5,81,6,2,7,188,8,189,10,82,11,83,13,20,14,2],["D",13]],
-[[4,85,5,86,6,87,7,190,8,191,13,6,14,6],["D",84,"D-1",56]],
-[[4,89,5,11,6,90,14,91],["D-2",88]],
-[[4,92,6,82,7,35,8,36,10,9,11,10,13,55,14,6],["D",56]],
-[[4,93,6,2,7,33,8,94,14,2],["R",49]]]},
-"iterativa":{"modo":"iterativa","variante":null,"titulo":"PROFUNDIZACIÓN-ITERATIVA en el árbol T con d = 1, 2 y 3","pagina":"3_cuando_no_cabe/3_jugar_contra_el_reloj.md","resultado":{"jugada":"centro","valor":"5","generados":25,"total":42,"por_d":[{"d":1,"orden":["izq","centro","der"],"jugada":"der","valor":"7","generados":4,"w":[{"hijo":"I","w":"5","cota":false},{"hijo":"C","w":"4","cota":false},{"hijo":"D","w":"7","cota":false}]},{"d":2,"orden":["der","izq","centro"],"jugada":"centro","valor":"6","generados":10,"w":[{"hijo":"D","w":"2","cota":false},{"hijo":"I","w":"3","cota":false},{"hijo":"C","w":"6","cota":false}]},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":"5","generados":11,"w":[{"hijo":"C","w":"5","cota":false},{"hijo":"I","w":"3","cota":true},{"hijo":"D","w":"2","cota":true}]}]},"pseudo":4,"arbol":3,"claves":["alfa","beta","corta","d","evaluado","frase","generados","hijo","jugada","linea","lineas","mejor_jugada","nodo","pila","total","v","w"],"pasos":[
-[[0,2,1,2,2,2,3,5,4,3,5,206,6,5,7,2,8,37,9,207,10,208,11,8,12,9,13,10,14,11,15,2,16,2],["R",205,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
-[[0,12,1,20,5,209,9,55,10,210,11,37,15,12],["R",127]],
-[[0,55,4,181,5,211,6,15,7,18,9,212,10,213,15,55,16,55],["R",156,"I",180]],
-[[5,214,6,24,7,40,16,185],["C",183]],
-[[0,70,5,216,6,31,7,82,11,125,15,70,16,70],["R",215,"D",186]],
-[[4,3,5,217,7,2,8,125,9,218,10,219,16,2],["R",66]],
-[[0,12,3,15,5,220,6,5,9,55,10,210,15,12],["R",127,"I",1,"C",1,"D",1]],
-[[5,221,6,15,9,222,10,223,12,82,13,83,15,20],["D",129]],
-[[1,6,5,225,6,24,7,87,9,226,10,227,15,6,16,6],["D",224,"D-1",56]],
-[[5,228,6,31,7,90,16,91],["D-2",88]],
-[[0,6,1,20,5,230,7,82,9,212,10,213,12,9,13,10,16,6],["R",229,"D",56]],
-[[5,232,6,39,7,2,9,222,10,223,12,18,13,19,15,20,16,2],["I",231]],
-[[1,28,5,234,6,43,7,25,9,226,10,227,15,28,16,28],["I",233,"I-1",22]],
-[[5,235,6,51,7,32,16,33],["I-2",29]],
-[[0,28,1,20,5,236,7,18,9,212,10,213,11,37,12,9,13,10,16,28],["R",138,"I",22]],
-[[5,153,6,58,7,2,9,222,10,223,12,40,13,41,15,20,16,2],["C",140]],
-[[1,33,4,181,5,238,6,62,7,46,9,226,10,227,15,33,16,33],["C",237,"C1",193]],
-[[5,239,6,68,7,63,16,197],["C2",195]],
-[[0,33,1,20,4,3,5,241,7,40,9,212,10,213,11,79,12,9,13,10,16,33],["R",240,"C",29]],
-[[5,242,7,2,8,79,9,218,10,219,16,2],["R",29]],
-[[0,12,3,24,5,243,6,5,9,55,10,210,15,12],["R",127,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C2",1,"D",1,"D-1",1,"D-2",1]],
-[[5,244,6,15,9,222,10,223,12,40,13,41,15,20],["C",129]],
-[[5,245,6,24,9,131,10,132,12,46,13,47,15,12],["C1",127]],
-[[0,55,5,157,6,31,7,52,9,135,10,136,15,55,16,55],["C1",156,"C1-1",49]],
-[[5,160,6,39,7,59,16,6],["C1-2",56]],
-[[0,12,1,55,5,247,7,46,9,226,10,227,12,40,13,41,16,55],["C",246,"C1",49]],
-[[5,249,6,43,7,2,9,131,10,132,12,63,13,64,15,12,16,2],["C2",248]],
-[[2,166,5,167,6,51,7,69,9,146,10,147,15,70,16,70],["C2",250,"C2-1",66,"C2-2",143]],
-[[0,2,1,2,5,170,7,2,9,2,10,149,12,75,15,2,16,76],[]],
-[[0,12,1,55,2,2,5,251,7,63,9,226,10,227,12,40,13,41,15,55,16,70],["C2",171]],
-[[0,55,1,20,5,252,7,40,9,212,10,213,12,9,13,10,16,55],["R",156,"C",49]],
-[[5,253,6,58,7,2,9,222,10,223,12,18,13,19,15,20,16,2],["I",174]],
-[[2,144,5,255,6,62,7,25,9,256,10,257,15,28,16,28],["I",254,"I-1",22,"I-2",143]],
-[[0,2,1,2,5,258,7,2,9,2,10,149,12,32,15,2,16,33],[]],
-[[0,55,1,20,2,2,5,260,7,18,9,212,10,213,12,9,13,10,15,55,16,28],["I",259]],
-[[5,175,6,68,7,2,9,222,10,223,12,82,13,83,15,20,16,2],["D",174]],
-[[2,144,5,177,6,74,7,87,9,256,10,257,15,6,16,6],["D",176,"D-1",56,"D-2",143]],
-[[0,2,1,2,5,148,7,2,9,2,10,149,12,90,15,2,16,91],[]],
-[[0,55,1,20,2,2,5,178,7,82,9,212,10,213,12,9,13,10,15,55,16,6],["D",150]],
-[[5,261,7,2,9,218,10,219,16,2],["R",49]],
-[[5,262,9,263,10,264],[]]]}}}
+"minimax":{"modo":"minimax","variante":null,"titulo":"DECIDIR-MINIMAX en el árbol T","pagina":"2_mirar_todo_y_podar/2_minimax_como_algoritmo.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":0,"arbol":0,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[4,15,5,16,7,17,8,18,11,19,12,20,14,21],["I",14]],
+[[4,24,5,25,6,26,7,27,8,28,14,29,15,29],["I",22,"I-1",23]],
+[[4,31,5,32,6,33,15,34],["I-2",30]],
+[[4,35,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",22,"I",23]],
+[[4,40,5,41,6,2,7,17,8,18,10,9,11,42,12,43,14,21,15,2],["C",14]],
+[[4,44,5,45,7,46,8,47,11,48,12,49,14,13],["C1",0]],
+[[4,52,5,53,6,54,7,55,8,56,14,57,15,57],["C1",50,"C1-1",51]],
+[[4,59,5,60,6,61,15,6],["C1-2",58]],
+[[4,62,6,48,7,27,8,28,11,42,12,43,15,57],["C",50,"C1",51]],
+[[4,63,5,64,6,2,7,46,8,47,11,65,12,66,14,13,15,2],["C2",0]],
+[[4,69,5,70,6,71,7,55,8,56,14,72,15,72],["C2",67,"C2-1",68]],
+[[4,75,5,76,6,77,14,78,15,78],["C2",73,"C2-2",74]],
+[[4,79,6,65,7,27,8,28,11,42,12,43,14,57],["C2",74]],
+[[4,80,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,57],["R",50,"C",51]],
+[[4,82,5,83,6,2,7,17,8,18,10,9,11,84,12,85,14,21,15,2],["D",14]],
+[[4,87,5,88,6,89,7,27,8,28,14,6,15,6],["D",86,"D-1",58]],
+[[4,91,5,12,6,92,15,93],["D-2",90]],
+[[4,94,6,84,7,36,8,37,10,3,11,10,12,11,14,57,15,6],["D",58]],
+[[4,95,6,2,7,34,8,96,10,9,15,2],["R",51]]]},
+"azar":{"modo":"azar","variante":null,"titulo":"DECIDIR-EXPECTIMINIMAX en el árbol T, con I, C y D de azar","pagina":"2_mirar_todo_y_podar/3_cuando_decide_un_dado.md","resultado":{"jugada":"der","valor":"7","generados":14,"total":14},"pseudo":1,"arbol":1,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[4,98,5,16,7,99,8,100,11,19,12,20,14,101],["I",97]],
+[[4,103,5,25,6,26,7,104,8,105,14,106,15,29],["I",102,"I-1",23]],
+[[4,108,5,32,6,33,14,109,15,34],["I",107,"I-2",30]],
+[[4,111,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,109],["R",107,"I",110]],
+[[4,112,5,41,6,2,7,99,8,100,10,9,11,42,12,43,14,101,15,2],["C",97]],
+[[4,114,5,60,6,48,7,104,8,105,14,115,15,57],["C",113,"C1",51,"C1-1",51,"C1-2",58]],
+[[4,117,5,76,6,65,14,118,15,78],["C",116,"C2",74,"C2-1",68,"C2-2",74]],
+[[4,120,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,118],["R",116,"C",119]],
+[[4,121,5,83,6,2,7,99,8,100,10,9,11,84,12,85,14,101,15,2],["D",97]],
+[[4,123,5,88,6,89,7,104,8,105,14,124,15,6],["D",122,"D-1",58]],
+[[4,125,5,12,6,92,14,72,15,93],["D",67,"D-2",90]],
+[[4,126,6,84,7,36,8,37,9,127,10,39,11,10,12,11,15,72],["R",67,"D",68]],
+[[4,128,6,2,7,34,8,96,10,9,15,2],["R",68]]]},
+"alfa-beta-T1":{"modo":"alfa-beta","variante":"T1","titulo":"DECIDIR-ALFA-BETA en el árbol T1","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"izq","valor":"3","generados":6,"total":7},"pseudo":2,"arbol":2,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,13,1,21,2,2,3,3,4,130,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,53,14,13,15,2],["R",129,"I",1,"I-1",1,"I-2",1,"D",1,"D-1",1,"D-2",1]],
+[[4,132,5,16,7,133,8,134,11,19,12,20,14,21],["I",131]],
+[[1,29,4,136,5,25,6,26,7,137,8,138,14,29,15,29],["I",135,"I-1",23]],
+[[4,139,5,32,6,33,15,34],["I-2",30]],
+[[0,29,1,21,4,141,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",140,"I",23]],
+[[4,143,5,41,6,2,7,133,8,134,10,9,11,84,12,85,14,21,15,2],["D",142]],
+[[2,146,4,147,5,45,6,89,7,148,8,149,14,6,15,6],["D",144,"D-1",58,"D-2",145]],
+[[0,2,1,2,4,150,6,2,7,2,8,151,11,92,14,2,15,93],[]],
+[[0,29,1,21,2,2,4,153,6,84,7,36,8,37,10,3,11,10,12,11,14,29,15,6],["D",152]],
+[[4,154,6,2,7,34,8,96,10,9,15,2],["R",23]]]},
+"alfa-beta-T":{"modo":"alfa-beta","variante":"T","titulo":"DECIDIR-ALFA-BETA en el árbol T","pagina":"2_mirar_todo_y_podar/4_alfa_beta.md","resultado":{"jugada":"centro","valor":"5","generados":12,"total":14},"pseudo":2,"arbol":0,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,13,1,21,2,2,3,3,4,130,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",129,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[4,132,5,16,7,133,8,134,11,19,12,20,14,21],["I",131]],
+[[1,29,4,136,5,25,6,26,7,137,8,138,14,29,15,29],["I",135,"I-1",23]],
+[[4,139,5,32,6,33,15,34],["I-2",30]],
+[[0,29,1,21,4,141,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",140,"I",23]],
+[[4,155,5,41,6,2,7,133,8,134,10,9,11,42,12,43,14,21,15,2],["C",142]],
+[[4,157,5,45,7,46,8,47,11,48,12,49,14,13],["C1",156]],
+[[0,57,4,159,5,53,6,54,7,160,8,161,14,57,15,57],["C1",158,"C1-1",51]],
+[[4,162,5,60,6,61,15,6],["C1-2",58]],
+[[0,29,1,57,4,164,6,48,7,137,8,138,11,42,12,43,15,57],["C",163,"C1",51]],
+[[4,166,5,64,6,2,7,46,8,47,11,65,12,66,14,13,15,2],["C2",165]],
+[[2,168,4,169,5,70,6,71,7,170,8,171,14,72,15,72],["C2",167,"C2-1",68,"C2-2",145]],
+[[0,2,1,2,4,172,6,2,7,2,8,151,11,77,14,2,15,78],[]],
+[[0,29,1,57,2,2,4,174,6,65,7,137,8,138,11,42,12,43,14,57,15,72],["C2",173]],
+[[0,57,1,21,4,175,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,57],["R",158,"C",51]],
+[[4,177,5,76,6,2,7,133,8,134,10,9,11,84,12,85,14,21,15,2],["D",176]],
+[[2,146,4,179,5,83,6,89,7,148,8,149,14,6,15,6],["D",178,"D-1",58,"D-2",145]],
+[[0,2,1,2,4,150,6,2,7,2,8,151,11,92,14,2,15,93],[]],
+[[0,57,1,21,2,2,4,180,6,84,7,36,8,37,10,3,11,10,12,11,14,57,15,6],["D",152]],
+[[4,181,6,2,7,34,8,96,10,9,15,2],["R",51]]]},
+"corte-1":{"modo":"corte","variante":1,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 1","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"der","valor":"7","generados":4,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[3,39,4,183,5,16,6,19,7,36,8,37,9,38,10,39,14,57,15,57],["R",50,"I",182]],
+[[4,185,5,25,6,42,10,3,15,186],["C",184]],
+[[4,188,5,32,6,84,9,127,10,39,14,72,15,72],["R",67,"D",187]],
+[[3,3,4,128,6,2,7,34,8,96,10,9,15,2],["R",68]]]},
+"corte-2":{"modo":"corte","variante":2,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 2","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"6","generados":10,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[4,15,5,16,7,189,8,190,11,19,12,20,14,21],["I",14]],
+[[4,24,5,25,6,26,7,191,8,192,14,29,15,29],["I",22,"I-1",23]],
+[[4,31,5,32,6,33,15,34],["I-2",30]],
+[[4,35,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",22,"I",23]],
+[[4,40,5,41,6,2,7,189,8,190,10,9,11,42,12,43,14,21,15,2],["C",14]],
+[[3,39,4,195,5,45,6,48,7,191,8,192,14,34,15,34],["C",193,"C1",194]],
+[[4,197,5,53,6,65,15,198],["C2",196]],
+[[3,3,4,199,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,34],["R",193,"C",30]],
+[[4,82,5,60,6,2,7,189,8,190,10,9,11,84,12,85,14,21,15,2],["D",14]],
+[[4,87,5,64,6,89,7,191,8,192,14,6,15,6],["D",86,"D-1",58]],
+[[4,91,5,70,6,92,15,93],["D-2",90]],
+[[4,200,6,84,7,36,8,37,10,3,11,10,12,11,14,34,15,6],["D",58]],
+[[4,201,6,2,7,34,8,96,10,9,15,2],["R",30]]]},
+"corte-3":{"modo":"corte","variante":3,"titulo":"DECIDIR-CON-CORTE en el árbol T con d = 3","pagina":"3_cuando_no_cabe/2_minimax_con_corte.md","resultado":{"jugada":"centro","valor":"5","generados":14,"total":14},"pseudo":3,"arbol":3,"claves":["alfa","beta","corta","evaluado","frase","generados","hijo","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,2,1,2,2,2,3,3,4,4,5,5,6,2,7,6,8,7,9,8,10,9,11,10,12,11,13,12,14,13,15,2],["R",0,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[4,15,5,16,7,189,8,190,11,19,12,20,14,21],["I",14]],
+[[4,24,5,25,6,26,7,191,8,192,14,29,15,29],["I",22,"I-1",23]],
+[[4,31,5,32,6,33,15,34],["I-2",30]],
+[[4,35,6,19,7,36,8,37,9,38,10,39,11,10,12,11,15,29],["R",22,"I",23]],
+[[4,40,5,41,6,2,7,189,8,190,10,9,11,42,12,43,14,21,15,2],["C",14]],
+[[4,44,5,45,7,202,8,203,11,48,12,49,14,13],["C1",0]],
+[[4,52,5,53,6,54,7,204,8,205,14,57,15,57],["C1",50,"C1-1",51]],
+[[4,59,5,60,6,61,15,6],["C1-2",58]],
+[[4,62,6,48,7,191,8,192,11,42,12,43,15,57],["C",50,"C1",51]],
+[[4,63,5,64,6,2,7,202,8,203,11,65,12,66,14,13,15,2],["C2",0]],
+[[4,69,5,70,6,71,7,204,8,205,14,72,15,72],["C2",67,"C2-1",68]],
+[[4,75,5,76,6,77,14,78,15,78],["C2",73,"C2-2",74]],
+[[4,79,6,65,7,191,8,192,11,42,12,43,14,57],["C2",74]],
+[[4,80,6,42,7,36,8,37,9,81,10,39,11,10,12,11,15,57],["R",50,"C",51]],
+[[4,82,5,83,6,2,7,189,8,190,10,9,11,84,12,85,14,21,15,2],["D",14]],
+[[4,87,5,88,6,89,7,191,8,192,14,6,15,6],["D",86,"D-1",58]],
+[[4,91,5,12,6,92,15,93],["D-2",90]],
+[[4,94,6,84,7,36,8,37,10,3,11,10,12,11,14,57,15,6],["D",58]],
+[[4,95,6,2,7,34,8,96,10,9,15,2],["R",51]]]},
+"iterativa":{"modo":"iterativa","variante":null,"titulo":"PROFUNDIZACIÓN-ITERATIVA en el árbol T con d = 1, 2 y 3","pagina":"3_cuando_no_cabe/3_jugar_contra_el_reloj.md","resultado":{"jugada":"centro","valor":"5","generados":25,"total":42,"por_d":[{"d":1,"orden":["izq","centro","der"],"jugada":"der","valor":"7","generados":4,"w":[{"hijo":"I","w":"5","cota":false},{"hijo":"C","w":"4","cota":false},{"hijo":"D","w":"7","cota":false}]},{"d":2,"orden":["der","izq","centro"],"jugada":"centro","valor":"6","generados":10,"w":[{"hijo":"D","w":"2","cota":false},{"hijo":"I","w":"3","cota":false},{"hijo":"C","w":"6","cota":false}]},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":"5","generados":11,"w":[{"hijo":"C","w":"5","cota":false},{"hijo":"I","w":"3","cota":true},{"hijo":"D","w":"2","cota":true}]}]},"pseudo":4,"arbol":3,"claves":["alfa","beta","corta","d","evaluado","frase","generados","hijo","jugada","linea","lineas","mejor_jugada","mejora","nodo","pila","total","v","w"],"pasos":[
+[[0,2,1,2,2,2,3,5,4,3,5,207,6,5,7,2,8,38,9,208,10,209,11,8,12,9,13,10,14,11,15,12,16,2,17,2],["R",206,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C1-1",1,"C1-2",1,"C2",1,"C2-1",1,"C2-2",1,"D",1,"D-1",1,"D-2",1]],
+[[0,13,1,21,5,210,9,57,10,211,11,38,16,13],["R",129]],
+[[0,57,4,39,5,212,6,16,7,19,9,213,10,214,12,39,16,57,17,57],["R",158,"I",182]],
+[[5,215,6,25,7,42,12,3,17,186],["C",184]],
+[[0,72,5,217,6,32,7,84,11,127,12,39,16,72,17,72],["R",216,"D",187]],
+[[4,3,5,218,7,2,8,127,9,219,10,220,12,9,17,2],["R",68]],
+[[0,13,3,16,5,221,6,5,9,57,10,211,16,13],["R",129,"I",1,"C",1,"D",1]],
+[[5,222,6,16,9,223,10,224,13,84,14,85,16,21],["D",131]],
+[[1,6,5,226,6,25,7,89,9,227,10,228,16,6,17,6],["D",225,"D-1",58]],
+[[5,229,6,32,7,92,17,93],["D-2",90]],
+[[0,6,1,21,5,231,7,84,9,213,10,214,12,39,13,10,14,11,17,6],["R",230,"D",58]],
+[[5,233,6,41,7,2,9,223,10,224,12,9,13,19,14,20,16,21,17,2],["I",232]],
+[[1,29,5,235,6,45,7,26,9,227,10,228,16,29,17,29],["I",234,"I-1",23]],
+[[5,236,6,53,7,33,17,34],["I-2",30]],
+[[0,29,1,21,5,237,7,19,9,213,10,214,11,38,12,39,13,10,14,11,17,29],["R",140,"I",23]],
+[[5,155,6,60,7,2,9,223,10,224,12,9,13,42,14,43,16,21,17,2],["C",142]],
+[[1,34,4,39,5,239,6,64,7,48,9,227,10,228,16,34,17,34],["C",238,"C1",194]],
+[[5,240,6,70,7,65,17,198],["C2",196]],
+[[0,34,1,21,4,3,5,242,7,42,9,213,10,214,11,81,12,39,13,10,14,11,17,34],["R",241,"C",30]],
+[[5,243,7,2,8,81,9,219,10,220,12,9,17,2],["R",30]],
+[[0,13,3,25,5,244,6,5,9,57,10,211,16,13],["R",129,"I",1,"I-1",1,"I-2",1,"C",1,"C1",1,"C2",1,"D",1,"D-1",1,"D-2",1]],
+[[5,245,6,16,9,223,10,224,13,42,14,43,16,21],["C",131]],
+[[5,246,6,25,9,133,10,134,13,48,14,49,16,13],["C1",129]],
+[[0,57,5,159,6,32,7,54,9,137,10,138,16,57,17,57],["C1",158,"C1-1",51]],
+[[5,162,6,41,7,61,17,6],["C1-2",58]],
+[[0,13,1,57,5,248,7,48,9,227,10,228,13,42,14,43,17,57],["C",247,"C1",51]],
+[[5,250,6,45,7,2,9,133,10,134,13,65,14,66,16,13,17,2],["C2",249]],
+[[2,168,5,169,6,53,7,71,9,148,10,149,16,72,17,72],["C2",251,"C2-1",68,"C2-2",145]],
+[[0,2,1,2,5,172,7,2,9,2,10,151,13,77,16,2,17,78],[]],
+[[0,13,1,57,2,2,5,252,7,65,9,227,10,228,13,42,14,43,16,57,17,72],["C2",173]],
+[[0,57,1,21,5,253,7,42,9,213,10,214,12,39,13,10,14,11,17,57],["R",158,"C",51]],
+[[5,254,6,60,7,2,9,223,10,224,12,9,13,19,14,20,16,21,17,2],["I",176]],
+[[2,146,5,256,6,64,7,26,9,257,10,258,16,29,17,29],["I",255,"I-1",23,"I-2",145]],
+[[0,2,1,2,5,259,7,2,9,2,10,151,13,33,16,2,17,34],[]],
+[[0,57,1,21,2,2,5,261,7,19,9,213,10,214,12,3,13,10,14,11,16,57,17,29],["I",260]],
+[[5,177,6,70,7,2,9,223,10,224,12,9,13,84,14,85,16,21,17,2],["D",176]],
+[[2,146,5,179,6,76,7,89,9,257,10,258,16,6,17,6],["D",178,"D-1",58,"D-2",145]],
+[[0,2,1,2,5,150,7,2,9,2,10,151,13,92,16,2,17,93],[]],
+[[0,57,1,21,2,2,5,180,7,84,9,213,10,214,12,3,13,10,14,11,16,57,17,6],["D",152]],
+[[5,262,7,2,9,219,10,220,12,9,17,2],["R",51]],
+[[5,263,9,264,10,265],[]]]}}}
 </script>
 
 <script>
@@ -622,15 +633,25 @@ function traza(clave){
     t.claves.forEach((c,i) => p[c] = valores[i]);
     return p;
   });
-  return cache[clave] = Object.assign({}, t, {pseudo, renglones, nodos, pasos});
+  return cache[clave] = Object.assign({}, t, {pseudo, renglones, nodos, pasos,
+    porId: Object.fromEntries(nodos.map(n => [n.id, n])),
+    conAB: t.modo === "alfa-beta" || t.modo === "iterativa"});
 }
 
 let clave = "minimax", i = 0, reloj = null;
 const reducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const PAUSA_MS = 2500;
+
+// Un paso ✗: la hoja que un corte deja sin generar. Su «nodo» es la hoja; lo
+// que se lee (v, la ventana, el corte) es del nodo en el tope de la pila.
+const esPodado = p => p.linea === "" && p.estado[p.nodo] && p.estado[p.nodo].estado === "podado";
+const tope = p => p.pila[p.pila.length-1];
 
 // ---------- el arbol ----------
-const W = 480, DY = 108, Y0 = 40, BW = 100, R = 21;
-let BH = 56;   // 76 con alfa-beta: el tercer renglon es la ventana (α, β)
+// Medidas del viewBox. A 390 px el dibujo se reduce a ~0.7: 18 unidades dan
+// ~13 px en pantalla, el minimo de todo texto del dibujo.
+const W = 480, DY = 116, Y0 = 46, BW = 104, R = 22, LETRA = 18;
+let BH = 60;   // 84 con alfa-beta: el tercer renglon es la ventana (α, β) o «cota»
 function disposicion(nodos){
   const hijos = {}, pos = {}, prof = {};
   nodos.forEach(n => { (hijos[n.padre] = hijos[n.padre] || []).push(n.id); });
@@ -641,7 +662,7 @@ function disposicion(nodos){
   hojas.forEach((id,k) => pos[id] = paso*(k+.5));
   (function x(id){ const h = hijos[id] || []; if(!h.length) return pos[id];
     return pos[id] = h.map(x).reduce((a,b)=>a+b,0)/h.length; })(nodos[0].id);
-  return {hijos, pos, prof, alto: Y0 + DY*Math.max(...Object.values(prof)) + R + 30};
+  return {hijos, pos, prof, alto: Y0 + DY*Math.max(...Object.values(prof)) + R + 44};
 }
 function el(tag, attrs, texto){
   const e = document.createElementNS(SVGNS, tag);
@@ -653,11 +674,12 @@ const COLOR = {MAX:"var(--max)", MIN:"var(--min)", AZAR:"var(--azar)", HOJA:"var
 const FONDO = {MAX:["var(--f-max)","var(--f-max2)"], MIN:["var(--f-min)","var(--f-min2)"],
   AZAR:["var(--f-azar)","var(--f-azar2)"], HOJA:["var(--f-hoja)","var(--f-hoja2)"]};
 const NOMBRE_TIPO = {MAX:"MAX", MIN:"MIN", AZAR:"azar"};
+const MONO = "ui-monospace,Menlo,monospace";
 const fraccion = s => s === "1/2" ? "½" : s;
 
 // Nodos generados. En iterativa el contador de cada paso es el de la busqueda
 // en curso (vuelve a 1 al empezar cada d); el acumulado suma las anteriores.
-// Se compara con el tamano del arbol, no con p.total.
+// Se compara con el tamano del arbol, no con el total de la traza.
 function generados(t, p){
   const n = t.nodos.length;
   if(t.modo !== "iterativa") return {corto:`generados ${p.generados}/${n}`, largo:`${p.generados} de ${n}`};
@@ -665,30 +687,32 @@ function generados(t, p){
   return {corto:`d = ${p.d} · generados ${p.generados}/${n} · en total ${ac}`,
           largo:`${p.generados} de ${n} en esta búsqueda; ${ac} en total`};
 }
-
 function horizonte(t, p){
   if(t.modo === "corte") return t.variante;
   if(t.modo === "iterativa") return p.d;
   return null;
 }
+function texto(x, y, txt, extra){
+  return el("text", Object.assign({x, y, "text-anchor":"middle", "font-size":LETRA}, extra), txt);
+}
 
 function pintarArbol(t, p){
   const L = disposicion(t.nodos), y = id => Y0 + DY*L.prof[id], x = id => L.pos[id];
-  const conAB = t.modo === "alfa-beta" || t.modo === "iterativa";
-  BH = conAB ? 76 : 56;
-  const d = horizonte(t, p), alto = L.alto;
+  const conAB = t.conAB, d = horizonte(t, p), alto = L.alto;
+  BH = conAB ? 84 : 60;
   const fuera = id => d !== null && L.prof[id] > d;
   const svg = el("svg", {viewBox:`0 0 ${W} ${alto}`, width:W, height:alto, role:"img",
     "aria-label": `Árbol, paso ${p.n}: pila ${p.pila.join(", ")}; generados ${generados(t, p).largo}.`});
   svg.appendChild(el("rect", {x:0, y:0, width:W, height:alto, fill:"var(--surface)"}));
-  svg.appendChild(el("text", {x:4, y:alto-6, fill:"var(--muted)", "font-size":14,
-    "font-family":"ui-monospace,Menlo,monospace"}, generados(t, p).corto));
+  svg.appendChild(texto(4, alto-10, generados(t, p).corto,
+    {"text-anchor":"start", fill:"var(--muted)", "font-family":MONO, "font-size":17}));
   if(d !== null && d < 3){
-    const yh = Y0 + DY*d + DY/2 + 4;
+    const yh = Y0 + DY*d + DY/2 + 6;
     svg.appendChild(el("line", {x1:0, x2:W, y1:yh, y2:yh, stroke:"var(--muted)",
-      "stroke-width":1.2, "stroke-dasharray":"3 5"}));
-    svg.appendChild(el("text", {x:W-4, y:yh-5, "text-anchor":"end", fill:"var(--muted)",
-      "font-size":14}, `horizonte · d = ${d}`));
+      "stroke-width":1.4, "stroke-dasharray":"3 5"}));
+    svg.appendChild(texto(W-4, yh-6, `horizonte · d = ${d}`, {"text-anchor":"end",
+      fill:"var(--muted)", stroke:"var(--surface)", "stroke-width":6, "paint-order":"stroke",
+      "stroke-linejoin":"round"}));
   }
   const enPila = new Set(p.pila);
   // aristas
@@ -699,17 +723,16 @@ function pintarArbol(t, p){
     const camino = enPila.has(n.id) || vuelve;
     const tenue = e.estado === "pormirar" || e.estado === "podado";
     svg.appendChild(el("line", {x1, y1, x2, y2,
-      stroke: camino ? "var(--accent)" : (tenue ? "var(--border)" : "var(--muted)"),
-      "stroke-width": vuelve ? 3.5 : (camino ? 2.5 : 1.5),
-      "stroke-dasharray": tenue ? "5 5" : "none"}));
+      stroke: camino ? "var(--accent)" : (tenue ? "var(--trazo)" : "var(--muted)"),
+      "stroke-width": vuelve ? 4 : (camino ? 2.5 : 1.6),
+      "stroke-dasharray": tenue ? "6 5" : "none"}));
     const rot = n.prob ? fraccion(n.prob) : n.jugada;
     if(rot){
-      const mx = x1+(x2-x1)*.55, my = y1+(y2-y1)*.55, w = rot.length*8.6+10;
-      svg.appendChild(el("rect", {x:mx-w/2, y:my-10, width:w, height:20, rx:5,
-        fill:"var(--surface)", stroke: camino ? "var(--accent)" : "var(--border)"}));
-      svg.appendChild(el("text", {x:mx, y:my+5, "text-anchor":"middle", "font-size":14,
-        "font-family":"ui-monospace,Menlo,monospace",
-        fill: camino ? "var(--accent)" : "var(--muted)"}, rot));
+      const mx = x1+(x2-x1)*.55, my = y1+(y2-y1)*.55, w = rot.length*10.8+12;
+      svg.appendChild(el("rect", {x:mx-w/2, y:my-12, width:w, height:24, rx:6,
+        fill:"var(--surface)", stroke: camino ? "var(--accent)" : "var(--trazo)"}));
+      svg.appendChild(texto(mx, my+6, rot, {"font-family":MONO,
+        fill: camino ? "var(--accent)" : "var(--muted)"}));
     }
   });
   // nodos
@@ -717,67 +740,72 @@ function pintarArbol(t, p){
     const e = p.estado[n.id], cx = x(n.id), cy = y(n.id), g = el("g", {});
     const activo = p.nodo === n.id, est = e.estado;
     const nada = est === "pormirar" || est === "podado";
-    const guiones = fuera(n.id) ? "2 4" : (nada ? "6 5" : (est === "evaluado" ? "7 4" : "none"));
-    const borde = est === "pila" ? "var(--accent)" : (nada ? "var(--border)" : COLOR[n.tipo]);
+    const guiones = fuera(n.id) ? "2 4" : (nada ? "6 5" : (est === "evaluado" ? "8 4" : "none"));
+    const borde = est === "pila" ? "var(--accent)" : (nada ? "var(--trazo)" : COLOR[n.tipo]);
     const relleno = est === "pila" ? FONDO[n.tipo][0] : (nada ? "var(--surface)" : FONDO[n.tipo][1]);
     const grueso = activo ? 4 : (est === "pila" ? 3 : 2);
     if(n.hoja){
-      if(activo) g.appendChild(el("circle", {cx, cy, r:R+6, fill:"none", stroke:"var(--accent)", "stroke-width":1.5}));
-      else if(!nada) g.appendChild(el("circle", {cx, cy, r:R+4, fill:"none", stroke:"var(--hoja)", "stroke-width":1.2}));
+      if(activo) g.appendChild(el("circle", {cx, cy, r:R+6, fill:"none", stroke:"var(--accent)", "stroke-width":2}));
+      else if(!nada) g.appendChild(el("circle", {cx, cy, r:R+4, fill:"none", stroke:"var(--hoja)", "stroke-width":1.3}));
       g.appendChild(el("circle", {cx, cy, r:R, fill:relleno, stroke: activo ? "var(--accent)" : borde,
         "stroke-width":grueso, "stroke-dasharray":guiones}));
-      g.appendChild(el("text", {x:cx, y:cy+6.5, "text-anchor":"middle", "font-size":19, "font-weight":700,
-        fill: est === "podado" ? "var(--accent)" : (nada ? "var(--muted)" : "var(--text)")},
-        est === "podado" ? "?" : n.valor));
+      g.appendChild(texto(cx, cy+7, est === "podado" ? "?" : n.valor, {"font-size":20, "font-weight":700,
+        fill: est === "podado" ? "var(--accent)" : (nada ? "var(--muted)" : "var(--text)")}));
     } else {
       if(activo) g.appendChild(el("rect", {x:cx-BW/2-5, y:cy-BH/2-5, width:BW+10, height:BH+10, rx:12,
-        fill:"none", stroke:"var(--accent)", "stroke-width":1.5}));
+        fill:"none", stroke:"var(--accent)", "stroke-width":2}));
       g.appendChild(el("rect", {x:cx-BW/2, y:cy-BH/2, width:BW, height:BH, rx:9, fill:relleno,
         stroke:borde, "stroke-width":grueso, "stroke-dasharray":guiones}));
-      const y1 = conAB ? cy-16 : cy-7;
-      g.appendChild(el("text", {x:cx, y:y1, "text-anchor":"middle", "font-size":15, "font-weight":700,
-        fill: nada ? "var(--muted)" : COLOR[n.tipo]}, `${n.nombre} · ${NOMBRE_TIPO[n.tipo]}`));
+      const y1 = conAB ? cy-18 : cy-6;
+      g.appendChild(texto(cx, y1, `${n.nombre} · ${NOMBRE_TIPO[n.tipo]}`, {"font-weight":700,
+        fill: nada ? "var(--muted)" : COLOR[n.tipo]}));
       let r2 = "";
       if(est === "podado") r2 = "?";
       else if(est === "evaluado") r2 = `EVAL = ${e.v}`;
-      else if(e.v !== "") r2 = `v = ${e.v}` + (e.cota ? " · cota" : "");
-      g.appendChild(el("text", {x:cx, y:y1+23, "text-anchor":"middle", "font-weight":700,
-        "font-size": r2.length > 9 ? 14 : 18,
-        fill: est === "podado" ? "var(--accent)" : "var(--text)"}, r2));
-      if(conAB && est === "pila" && e.alfa !== ""){
-        g.appendChild(el("text", {x:cx, y:y1+45, "text-anchor":"middle", "font-size":15,
-          "font-family":"ui-monospace,Menlo,monospace", fill:"var(--accent)"},
-          `(${e.alfa}, ${e.beta})`));
-      }
+      else if(e.v !== "") r2 = `v = ${e.v}`;
+      g.appendChild(texto(cx, y1+24, r2, {"font-weight":700,
+        fill: est === "podado" ? "var(--accent)" : "var(--text)"}));
+      if(conAB && est === "pila" && e.alfa !== "")
+        g.appendChild(texto(cx, y1+48, `(${e.alfa}, ${e.beta})`, {"font-family":MONO, fill:"var(--text)"}));
+      else if(conAB && e.cota)
+        g.appendChild(texto(cx, y1+48, "cota", {"font-style":"italic", fill:"var(--muted)"}));
     }
     svg.appendChild(g);
   });
   $("arbol").replaceChildren(svg);
 }
 
-function muestra(forma, texto){
-  const s = el("svg", {viewBox:"0 0 22 16", "aria-hidden":"true"});
-  const a = {x:2, y:2, width:18, height:12, rx:3, fill:"var(--surface)", "stroke-width":2};
-  if(forma === "pila") Object.assign(a, {stroke:"var(--accent)", fill:"var(--f-acc)"});
-  if(forma === "devuelto") Object.assign(a, {stroke:"var(--min)", "stroke-width":1.5});
-  if(forma === "pormirar") Object.assign(a, {stroke:"var(--border)", "stroke-dasharray":"3 2"});
-  if(forma === "evaluado") Object.assign(a, {stroke:"var(--max)", "stroke-dasharray":"4 2"});
-  if(forma === "fuera") Object.assign(a, {stroke:"var(--border)", "stroke-dasharray":"1 2"});
-  if(forma === "podado") Object.assign(a, {stroke:"var(--border)", "stroke-dasharray":"3 2"});
-  s.appendChild(el("rect", a));
-  if(forma === "podado") s.appendChild(el("text", {x:11, y:12.5, "text-anchor":"middle",
-    "font-size":11, "font-weight":700, fill:"var(--accent)"}, "?"));
+// Muestras de la leyenda: neutras, distintas solo por el trazo (el color del
+// dibujo dice MAX, MIN o azar; la leyenda no lo repite).
+function muestra(forma, txt){
+  const s = el("svg", {viewBox:"0 0 24 18", "aria-hidden":"true"});
+  const a = {x:2, y:2, width:20, height:14, rx:3, fill:"var(--surface)", stroke:"var(--muted)",
+    "stroke-width":1.6};
+  if(forma === "pila") Object.assign(a, {stroke:"var(--accent)", "stroke-width":3});
+  if(forma === "pormirar" || forma === "podado") Object.assign(a, {stroke:"var(--trazo)", "stroke-dasharray":"4 3"});
+  if(forma === "evaluado") a["stroke-dasharray"] = "7 3";
+  if(forma === "fuera") Object.assign(a, {stroke:"var(--trazo)", "stroke-dasharray":"1.5 2.5"});
+  if(forma === "hoja"){
+    s.appendChild(el("circle", {cx:12, cy:9, r:8, fill:"none", stroke:"var(--muted)", "stroke-width":1.2}));
+    s.appendChild(el("circle", {cx:12, cy:9, r:5.5, fill:"var(--surface)", stroke:"var(--muted)", "stroke-width":1.6}));
+  } else if(forma === "cota"){
+    s.appendChild(el("text", {x:12, y:13, "text-anchor":"middle", "font-size":9, "font-style":"italic",
+      fill:"var(--muted)"}, "cota"));
+  } else s.appendChild(el("rect", a));
+  if(forma === "podado") s.appendChild(el("text", {x:12, y:13.5, "text-anchor":"middle",
+    "font-size":12, "font-weight":700, fill:"var(--accent)"}, "?"));
   const sp = document.createElement("span");
-  sp.append(s, texto);
+  sp.append(s, txt);
   return sp;
 }
 function pintarLeyenda(t){
-  const l = [muestra("pila","en la pila"), muestra("devuelto","ya devolvió"), muestra("pormirar","por mirar")];
-  if(t.modo === "corte" || t.modo === "iterativa"){
-    l.push(muestra("evaluado","estimado con EVAL"), muestra("fuera","más allá del horizonte"));
-  }
-  if(t.modo === "alfa-beta" || t.modo === "iterativa") l.push(muestra("podado","no se genera"));
+  const l = [muestra("pila","en la pila"), muestra("devuelto","ya devolvió"),
+    muestra("hoja","hoja generada"), muestra("pormirar","por mirar")];
+  if(t.modo === "corte" || t.modo === "iterativa")
+    l.push(muestra("evaluado","EVAL: estimado"), muestra("fuera","más allá del horizonte"));
+  if(t.conAB) l.push(muestra("podado","no se genera"), muestra("cota","cortó: su v es solo una cota"));
   $("leyenda").replaceChildren(...l);
+  $("nota-escala").classList.toggle("oculto", !(t.modo === "corte" || t.modo === "iterativa"));
 }
 
 // ---------- pseudocodigo ----------
@@ -785,11 +813,12 @@ function pintarPseudo(t){
   const caja = $("pseudo");
   caja.replaceChildren(...t.pseudo.map((txt, k) => {
     const d = document.createElement("div"), m = document.createElement("span");
-    const r = t.renglones[k];
+    const r = t.renglones[k], c = document.createElement("span");
     d.className = "lin" + (r === null ? (/^\s*#/.test(txt) ? " com" : " cab") : "");
     d.dataset.r = r === null ? "" : r;
     m.className = "m";
-    d.append(m, txt || " ");
+    c.textContent = txt || " ";   // un renglon vacio tambien ocupa su alto
+    d.append(m, c);
     return d;
   }));
   caja.scrollTop = 0;
@@ -817,24 +846,43 @@ function fila(dt, dd){ const a = document.createElement("dt"), b = document.crea
 function span(cls, txt){ const s = document.createElement(cls === "b" ? "b" : "span");
   if(cls !== "b") s.className = cls; s.textContent = txt; return s; }
 
-function pintarVars(t, p){
-  const porId = Object.fromEntries(t.nodos.map(n => [n.id, n]));
-  const conAB = t.modo === "alfa-beta" || t.modo === "iterativa";
+// La comparacion del paso, como en la columna «corta» de las tablas de la
+// pagina: el if del nodo (v ≥ β en MAX, v ≤ α en MIN) o, en la raiz, w > α.
+// El «sí» o «no» sale de los datos (corta, mejora), no de recalcular.
+function comparacion(t, k){
+  const p = t.pasos[k];
+  if(esPodado(p)){
+    const id = tope(p), e = p.estado[id], max = t.porId[id].tipo === "MAX";
+    return ["¿corta?", `sí: ${e.v} ${max ? "≥" : "≤"} ${max ? e.beta : e.alfa}`, true];
+  }
+  if(p.w === "") return ["¿corta?", "", false];
+  if(p.pila.length === 1){
+    const antes = k > 0 ? t.pasos[k-1].estado[p.pila[0]].alfa : "";
+    return ["¿w > α?", `${p.mejora ? "sí" : "no"}: ${p.w} > ${antes}`, p.mejora];
+  }
+  const max = t.porId[p.nodo].tipo === "MAX";
+  return ["¿corta?", `${p.corta ? "sí" : "no"}: ${p.v} ${max ? "≥" : "≤"} ${max ? p.beta : p.alfa}`, !!p.corta];
+}
+
+function pintarVars(t, k){
+  const p = t.pasos[k], conAB = t.conAB, podado = esPodado(p);
+  const de = podado ? p.estado[tope(p)] : {v:p.v, alfa:p.alfa, beta:p.beta};
   const out = [];
   if(t.modo === "iterativa") out.push(...fila("d", String(p.d)), ...fila("jugada", p.jugada || ""));
-  out.push(...fila("línea", p.linea || "ninguna: esta hoja no se genera"));
-  out.push(...fila("pila", p.pila.map(id => porId[id].nombre).join(" → ")));
+  out.push(...fila("pila", p.pila.map(id => t.porId[id].nombre).join(" → ")));
   if(p.pila.length === 1 && !conAB) out.push(...fila("mejor_valor", p.v));
-  else if(p.pila.length > 1 || !conAB) out.push(...fila("v", p.v));
+  else if(p.pila.length > 1 || !conAB) out.push(...fila("v", de.v));
   let w = [p.w || "—"];
-  if(p.w !== "" && p.hijo){
-    const h = porId[p.hijo];
-    w.push(span("de", p.evaluado ? `  ← EVAL(${h.nombre})` : (h.hoja ? "  ← de la hoja" : `  ← de ${h.nombre}`)));
-  } else if(p.w !== "" && porId[p.nodo] && porId[p.nodo].hoja) w.push(span("de", "  (la hoja que no se genera)"));
+  if(podado) w = ["— ", span("de", "(no se genera)")];
+  else if(p.w !== "" && p.hijo){
+    const h = t.porId[p.hijo];
+    w.push(span("de", p.evaluado ? "  ← EVAL(" + h.nombre + ")" : (h.hoja ? "  ← de la hoja" : "  ← de " + h.nombre)));
+  }
   out.push(...fila("w", w));
   if(conAB){
-    out.push(...fila("(α, β)", p.alfa === "" ? "" : `(${p.alfa}, ${p.beta})`));
-    out.push(...fila("¿corta?", p.corta ? [span("b", `sí: corte ${p.corta}`)] : "no"));
+    out.push(...fila("(α, β)", de.alfa === "" ? "" : `(${de.alfa}, ${de.beta})`));
+    const [rot, txt, si] = comparacion(t, k);
+    out.push(...fila(rot, si ? [span("b", txt)] : txt));
   }
   out.push(...fila("mejor_jugada", p.mejor_jugada));
   out.push(...fila("generados", generados(t, p).largo));
@@ -842,33 +890,38 @@ function pintarVars(t, p){
 }
 
 function textoResultado(t){
-  const r = t.resultado;
+  const r = t.resultado, n = t.nodos.length;
   if(t.modo === "iterativa"){
-    const s = r.por_d.map(x => x.generados).join(" + ");
+    const s = r.por_d.map(x => x.generados).join(" + "), tot = r.por_d.reduce((a,x) => a + x.generados, 0);
     return `Entrega ${r.jugada}, la jugada de la búsqueda con d = 3 (valor ${r.valor}). ` +
-      `Generó ${s} = ${r.generados} nodos en las tres búsquedas; el árbol tiene ${t.nodos.length}.`;
+      `Generó ${s} = ${tot} nodos en las tres búsquedas; el árbol tiene ${n}.`;
   }
   const v = t.modo === "corte" ? `valor con corte ${r.valor}` : `valor ${r.valor}`;
-  return `Resultado: juega ${r.jugada} (${v}). Generó ${r.generados} de ${t.nodos.length} nodos.`;
+  return `Resultado: juega ${r.jugada} (${v}). Generó ${r.generados} de ${n} nodos.`;
 }
 
 // ---------- estado de la pagina ----------
+function medirBarra(){
+  document.documentElement.style.setProperty("--barra", document.querySelector(".barra").offsetHeight + "px");
+}
 function pintar(){
   const t = traza(clave), p = t.pasos[i], n = t.pasos.length;
   pintarArbol(t, p);
   marcarPseudo(p);
-  pintarVars(t, p);
-  const f = $("frase");
-  f.replaceChildren(span("chip", p.linea ? `línea ${p.linea}` : "sin línea"), p.frase);
+  pintarVars(t, i);
+  $("frase").replaceChildren(span("chip", p.linea ? `línea ${p.linea}` : "sin línea"), p.frase);
   const fin = i === n-1;
   $("resultado").classList.toggle("oculto", !fin);
   $("resultado").textContent = fin ? textoResultado(t) : "";
   $("desliz").value = i+1;
   $("cuenta").textContent = `paso ${i+1}/${n}`;
   $("desliz").setAttribute("aria-valuetext", `paso ${i+1} de ${n}`);
+  $("ayuda").classList.toggle("oculto", i !== 0);
   $("b-atras").disabled = i === 0;
+  if(fin && document.activeElement === $("b-adelante")) $("b-ini").focus();
   $("b-adelante").disabled = fin;
-  document.documentElement.style.setProperty("--barra", document.querySelector(".barra").offsetHeight + "px");
+  try{ history.replaceState(null, "", `#${A_FRAG[clave]}-paso-${i+1}`); }catch(e){}
+  medirBarra();
 }
 function elegir(c, paso){
   parar();
@@ -891,25 +944,24 @@ function elegir(c, paso){
   if(nueva){ pintarPseudo(t); pintarLeyenda(t); }
   pintar();
 }
-function irA(c){
-  const f = "#" + A_FRAG[c];
-  if(location.hash !== f) location.hash = f; else elegir(c);
-}
+function irA(c){ elegir(c); }
 function desdeFragmento(){
-  const h = decodeURIComponent(location.hash.slice(1)).toLowerCase();
-  const m = h.match(/^(.*?)(?:-paso-(\d+))?$/);
+  let h = "";
+  try{ h = decodeURIComponent(location.hash.slice(1)).toLowerCase(); }catch(e){}
+  const m = h.match(/^(.*?)(?:-paso-(\d+))?$/) || ["", "", ""];
   elegir(DE_FRAG[m[1]] || "minimax", m[2] ? Number(m[2]) : 1);
 }
 function mover(k){ const n = traza(clave).pasos.length;
   const j = Math.min(Math.max(i+k, 0), n-1); if(j !== i){ i = j; pintar(); } }
-function parar(){ if(reloj){ clearInterval(reloj); reloj = null; }
-  $("b-play").textContent = "▶▶"; $("b-play").setAttribute("aria-label","Reproducir"); }
+function rotularPlay(){
+  $("b-play").textContent = reloj ? "❚❚ Pausa" : "▷ Reproducir";
+}
+function parar(){ if(reloj){ clearInterval(reloj); reloj = null; } rotularPlay(); }
 function reproducir(){
   if(reloj){ parar(); return; }
-  const n = traza(clave).pasos.length;
-  if(i === n-1){ i = 0; pintar(); }
-  $("b-play").textContent = "❚❚"; $("b-play").setAttribute("aria-label","Pausa");
-  reloj = setInterval(() => { mover(1); if(i === traza(clave).pasos.length-1) parar(); }, 1500);
+  if(i === traza(clave).pasos.length-1){ i = 0; pintar(); }
+  reloj = setInterval(() => { mover(1); if(i === traza(clave).pasos.length-1) parar(); }, PAUSA_MS);
+  rotularPlay();
 }
 
 for(const b of $("modos").children) b.addEventListener("click", () => irA(POR_OMISION[b.dataset.modo]));
@@ -920,12 +972,17 @@ $("b-play").addEventListener("click", reproducir);
 $("desliz").addEventListener("input", e => { parar(); i = Number(e.target.value)-1; pintar(); });
 document.addEventListener("keydown", e => {
   if(e.altKey || e.ctrlKey || e.metaKey) return;
-  const enDesliz = e.target && e.target.id === "desliz";
-  if(e.key === "ArrowRight" && !enDesliz){ e.preventDefault(); parar(); mover(1); }
-  else if(e.key === "ArrowLeft" && !enDesliz){ e.preventDefault(); parar(); mover(-1); }
-  else if(e.key === " "){ e.preventDefault(); reproducir(); }
+  const enControl = e.target && e.target.closest && e.target.closest("button,input,select,a");
+  if(e.key === " "){
+    if(enControl) return;            // espacio en un boton lo pulsa, como siempre
+    e.preventDefault(); reproducir();
+  } else if(e.key === "ArrowRight" || e.key === "ArrowLeft"){
+    if(e.target.closest && e.target.closest("input,select")) return;
+    e.preventDefault(); parar(); mover(e.key === "ArrowRight" ? 1 : -1);
+  }
 });
 window.addEventListener("hashchange", desdeFragmento);
+window.addEventListener("resize", medirBarra);
 desdeFragmento();
 </script>
 </body>
