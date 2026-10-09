@@ -185,11 +185,11 @@ def test_estan_las_figuras_de_alfa_beta_en_n1():
 
 @pytest.mark.parametrize("nombre", NUEVAS_AB)
 def test_las_figuras_de_alfa_beta_se_leen_en_un_telefono(nombre):
-    """Ancho de la columna y letra minima de 22: el sitio las escala a ~350 px.
-    La ventana mide 640, como las figuras de T (ver mas abajo)."""
+    """Ancho de la unidad y letra minima de 22: en un telefono se leen sin
+    acercarse."""
     svg = _texto(nombre)
     etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
-    ancho = 640 if nombre == "jue-ab-ventana" else 700
+    ancho = gen.ANCHO
     assert f'width="{ancho}"' in etiqueta and f'viewBox="0 0 {ancho} ' in etiqueta
     assert re.search(r'aria-label="[^"]{60,}"', etiqueta)
     # Toda la letra, salvo la B y la N de las piezas de los tableros.
@@ -260,7 +260,8 @@ def test_estan_todas_las_figuras_del_arbol_t():
 def test_las_figuras_de_t_caben_y_cada_numero_lleva_su_letra(nombre):
     svg = _texto(nombre)
     etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
-    assert 'width="640"' in etiqueta and re.search(r'aria-label="[^"]{120,}"', etiqueta)
+    assert f'width="{gen.ANCHO_T}"' in etiqueta
+    assert re.search(r'aria-label="[^"]{120,}"', etiqueta)
     tamanos = [float(t) for t in re.findall(r'font-size="([\d.]+)"', svg)]
     assert min(tamanos) >= 15, (nombre, min(tamanos))
     renglones = re.findall(r">([^<>]+)</text>", svg)
@@ -414,12 +415,13 @@ def test_el_arbol_t_no_dice_que_la_hoja_es_u():
 _DEJAVU = "/usr/share/fonts/truetype/dejavu/"
 
 
-@pytest.mark.parametrize("nombre", FIGURAS_T + ["jue-ab-ventana"])
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
 def test_nada_se_sale_y_el_titulo_y_el_pie_caben_en_un_telefono(nombre):
-    """A 1280 px la columna mide ~640: nada sale del lienzo. A 390 px la
-    figura se ve desde la izquierda: lo que va pegado al margen izquierdo
-    (titulo, pie, leyenda) cabe en ~340 px. Mide con DejaVu, la letra con que
-    el navegador de esta maquina resuelve system-ui; sin ella, se salta."""
+    """A 1280 px la columna util mide ~614: nada sale del lienzo de 600. A
+    390 px la figura se ve desde la izquierda: lo que va pegado al margen
+    izquierdo (titulo, pie, leyenda) cabe en ~340 px. Mide con DejaVu, la
+    letra con que el navegador de esta maquina resuelve system-ui; sin ella,
+    se salta. El texto girado (el carril del ciclo) no entra en la cuenta."""
     ImageFont = pytest.importorskip("PIL.ImageFont")
     import html
     import os
@@ -427,7 +429,7 @@ def test_nada_se_sale_y_el_titulo_y_el_pie_caben_en_un_telefono(nombre):
         pytest.skip("sin DejaVu")
     svg = _texto(nombre)
     ancho = float(re.search(r'width="([\d.]+)"', svg).group(1))
-    assert ancho <= 640
+    assert ancho <= 600
     patron = (r'<text x="([\d.-]+)" y="[\d.-]+"[^>]*font-family="([^"]*)" '
               r'font-size="([\d.]+)" font-weight="(\w+)" text-anchor="(\w+)">([^<]*)</text>')
     for x, familia, tam, peso, anclaje, contenido in re.findall(patron, svg):
@@ -440,3 +442,98 @@ def test_nada_se_sale_y_el_titulo_y_el_pie_caben_en_un_telefono(nombre):
         assert x0 >= 0 and x0 + w <= ancho, (nombre, contenido)
         if anclaje == "start" and x <= gen.X_PIE + 4:
             assert x0 + w <= 345, (nombre, contenido, round(x0 + w))
+
+
+# ------------------------------------------ todas caben en la columna ---
+
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
+def test_ninguna_figura_pasa_de_600_de_ancho(nombre):
+    """A 1280 px la columna util de una figura mide ~614 px, y por debajo de
+    ~1470 px el sitio no encoge los SVG (rich.css fija max-width: none para
+    no bajar de letra legible): lo que pase de ahi se corta por la derecha.
+    Asi se publicaron las figuras de 640 y 700 («n1…», «no gene…»). El
+    viewBox mide lo mismo que el width: la figura no se escala, se rediseña."""
+    etiqueta = re.match(r"<svg\b[^>]*>", _texto(nombre)).group()
+    ancho = float(re.search(r'\bwidth="([\d.]+)"', etiqueta).group(1))
+    caja = re.search(r'viewBox="0 0 ([\d.]+) ', etiqueta).group(1)
+    assert ancho <= 600, (nombre, ancho)
+    assert float(caja) == ancho, nombre
+
+
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
+def test_ninguna_letra_baja_de_12(nombre):
+    """Minimo legible a escala 1. Salvo la B y la N de las piezas (van dentro
+    de su circulo, en los tableros chicos) y los subindices (el F de S_F)."""
+    svg = _texto(nombre)
+    chicas = [(t, c) for t, c in re.findall(r'<text [^>]*font-size="([\d.]+)"[^>]*>([^<]*)<', svg)
+              if float(t) < 12 and c not in ("B", "N")]
+    assert not chicas, (nombre, chicas)
+
+
+def test_las_figuras_de_alfa_beta_en_t_citan_la_fila_de_la_pagina():
+    """Las tablas de la pagina numeran tambien las filas ✗ (la hoja podada,
+    que solo esta en la traza de minimax); traza_decidir no las tiene. El
+    aria-label cita el numero de la pagina, no el de la traza compacta. La
+    fila esperada sale de pasos_interactivos, que numera como la pagina, y
+    no de fila_pagina: asi las dos cuentas se vigilan una a otra."""
+    def fila(variante, pred):
+        return next(p["n"] for p in j.pasos_interactivos("alfa-beta", variante)["pasos"]
+                    if p["linea"] and pred(p))  # una fila ✗ no tiene linea
+
+    def ultima(variante):
+        return j.pasos_interactivos("alfa-beta", variante)["pasos"][-1]["n"]
+
+    raiz_i = lambda p: p["evento"] == "raiz" and p["hijo"] == "I"  # noqa: E731
+    esperadas = {
+        "jue-t1-ab-1": fila("T1", raiz_i),
+        "jue-t1-ab-2": fila("T1", lambda p: p["corta"] == "alfa"),
+        "jue-t1-ab-3": ultima("T1"),
+        "jue-t-ab-1": fila("T", raiz_i),
+        "jue-t-ab-2": fila("T", lambda p: p["nodo"] == "C" and p["hijo"] == "C1"),
+        "jue-t-ab-3": fila("T", lambda p: p["corta"] == "beta"),
+        "jue-t-ab-4": fila("T", lambda p: p["corta"] == "alfa"),
+        "jue-t-ab-5": ultima("T"),
+        "jue-t-ab-pila": fila("T", lambda p: p["corta"] == "beta"),
+    }
+    # Las que cita el texto de la pagina (4_alfa_beta.md): 5, 7, 10 y 5, 10,
+    # 12, 17, 20.
+    assert [esperadas[f"jue-t-ab-{k}"] for k in range(1, 6)] == [5, 10, 12, 17, 20]
+    for nombre, n in esperadas.items():
+        etiqueta = re.match(r"<svg\b[^>]*>", _texto(nombre)).group()
+        assert re.findall(r"\(fila (\d+)", etiqueta) == [str(n)], nombre
+
+
+_MUESTRA = re.compile(r'<rect x="([\d.]+)" y="([\d.]+)" width="(24|30)" height="(16|22|20)"')
+
+
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
+def test_ningun_texto_de_leyenda_invade_la_muestra_siguiente(nombre):
+    """Las muestras de las leyendas (cajitas de 24x16 o 30x22): ningun texto
+    de su renglon puede pisarlas. Se publico «el va[muestra]lor» en
+    jue-minimax-n1. Mide con DejaVu, como la prueba de los bordes."""
+    ImageFont = pytest.importorskip("PIL.ImageFont")
+    import html
+    import os
+    if not os.path.isdir(_DEJAVU):
+        pytest.skip("sin DejaVu")
+    svg = _texto(nombre)
+    muestras = [(float(x), float(y), float(w), float(h)) for x, y, w, h in _MUESTRA.findall(svg)]
+    patron = (r'<text x="([\d.-]+)" y="([\d.-]+)"[^>]*font-family="([^"]*)" '
+              r'font-size="([\d.]+)" font-weight="(\w+)" text-anchor="start">([^<]*)</text>')
+    for x, y, familia, tam, peso, contenido in re.findall(patron, svg):
+        archivo = (("DejaVuSansMono" if "mono" in familia else "DejaVuSans")
+                   + ("-Bold" if peso == "700" else "") + ".ttf")
+        x, y, t = float(x), float(y), float(tam)
+        w = ImageFont.truetype(_DEJAVU + archivo, round(t)).getlength(html.unescape(contenido))
+        for mx, my, mw, mh in muestras:
+            mismo_renglon = my < y and y - t < my + mh
+            if mismo_renglon and mx > x - 1:
+                assert x + w + 4 <= mx, (nombre, contenido, round(x + w), mx)
+
+
+@pytest.mark.parametrize("nombre", FIGURAS_T)
+def test_ningun_aria_label_deja_una_frase_vacia(nombre):
+    """En la fila final no hay comparacion: «Abajo, la recta numérica: .»
+    se publicaba vacia."""
+    etiqueta = re.match(r"<svg\b[^>]*>", _texto(nombre)).group()
+    assert not re.search(r":\s*\.", etiqueta), nombre
