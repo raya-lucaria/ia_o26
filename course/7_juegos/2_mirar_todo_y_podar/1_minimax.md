@@ -260,7 +260,8 @@ desde n6:
 
 - $\text{b2}\textbf{-}\text{b3}$ y $\text{b2}\textbf{x}\text{a3}$ llegan a
   la fila 3 **en la primera jugada**;
-- $\text{b1}\textbf{x}\text{c2}$ gana **en la tercera**: Negras responde
+- $\text{b1}\textbf{x}\text{c2}$ gana **en la tercera jugada**, contando
+  las de los dos: Negras responde
   $\text{a3}\textbf{x}\text{b2}$ y Blancas todavía tiene que avanzar.
 
 Preferir ganar rápido es razonable, pero **no está en el reglamento**: la
@@ -300,11 +301,13 @@ si alguna vez ganó quien empezó, alguien se equivocó en el camino.
 Y n1 viene justo de una equivocación. Tras $\text{a1}\textbf{-}\text{a2}$,
 Negras tenía tres respuestas:
 
+::: table {#jue-c2-respuestas-negras title="Tras a1-a2: las tres respuestas de Negras"}
 | Respuesta de Negras | Valor |
 |---|---:|
 | $\text{b3}\textbf{-}\text{b2}$, que lleva a n1 | +1 |
 | $\text{b3}\textbf{x}\text{a2}$ | −1 |
 | $\text{c3}\textbf{-}\text{c2}$ | +1 |
+:::
 
 Solo la captura gana para Negras. **Nuestro problema empezó con un error
 de Negras**, y por eso Blancas gana desde n1.

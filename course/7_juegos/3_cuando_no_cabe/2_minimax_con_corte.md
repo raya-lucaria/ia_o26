@@ -42,7 +42,8 @@ juzgar una posición sin terminar.
 > **Dado (lo que recibe):**
 >
 > - un estado $s$ donde mueve MAX;
-> - $d\ge1$, la profundidad: cuántas jugadas puede mirar desde $s$;
+> - $d\ge1$, la profundidad: cuántas jugadas puede mirar desde $s$. Es un
+>   número, no la columna d del tablero de $\text{d2}$ o $\text{d3}$;
 > - las reglas del juego: $S_F$ (@jue-c1-finales), $\mathrm{Pl}$
 >   (@jue-c1-pl), $A$ (@jue-c1-acciones), $T$ (@jue-c1-transicion) y $U$
 >   (@jue-c1-utilidad);
@@ -160,7 +161,8 @@ Respecto de DECIDIR-MINIMAX y MINIMAX de
   que cualquier estimación. Va **antes** que la 9: un final se reconoce
   aunque le quede $d=0$.
 - **Las demás son las mismas**, con $d-1$ en cada llamada (líneas 4, 13
-  y 19). Por eso las del MIN quedan en 16–21 y no en 15–20.
+  y 19). Como la 9 es nueva, todo lo que sigue se corre un lugar: las del
+  MAX quedan en 10–15 y las del MIN en 16–21, no en 9–14 y 15–20.
 
 Con $d=1$, $d=2$ y $d=3$, los valores $w$ de la línea 4 son las tres
 primeras columnas de la tabla de [[cortar-y-evaluar|la página anterior]].
@@ -194,10 +196,11 @@ final; solo si no lo es, mira cuánto vale $d$.
 Volvemos al árbol T de [[minimax-como-algoritmo|la clase 2]], con R de MAX,
 I, C y D de MIN, y C1 y C2 de MAX.
 
-- **Sus hojas son finales, y ya están en la escala de la línea 8.** La
-  hoja 3 es un final con $U=3/100$: la línea 8 devuelve $100\cdot U=3$.
-  Así, el número de cada hoja es justo lo que devuelve la línea 8, en la
-  misma escala que $\mathrm{EVAL}$.
+- **Sus hojas son finales, y su número ya está en la escala de la línea
+  8.** En hexapawn un final vale $U=\pm1$ y la línea 8 lo vuelve $\pm100$.
+  T es un árbol de juguete, sin un juego con $U=\pm1$ detrás: el número de
+  cada hoja se lee como lo que ya devolvió la línea 8, $100\cdot U$. Así
+  queda en la misma escala que $\mathrm{EVAL}$.
 - Le damos una $\mathrm{EVAL}$ a cada nodo interno:
 
 ::: table {#jue-c3-t-eval title="La evaluación de los nodos internos del árbol T"}

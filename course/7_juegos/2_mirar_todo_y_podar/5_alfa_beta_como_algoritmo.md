@@ -4,7 +4,7 @@ title: Alfa-beta como algoritmo
 nav_title: Alfa-beta como algoritmo
 summary: "DECIDIR-ALFA-BETA explicado línea por línea: qué cambia respecto a minimax, qué guarda la pila a media ejecución en el árbol T, cómo el orden decide el ahorro (n1 al revés, 8 de 13) y por qué los cortes son seguros."
 status: ready
-estimated_time: 35m
+estimated_time: 45m
 tags: [juegos, alfa-beta, poda, algoritmos]
 ---
 
@@ -45,8 +45,8 @@ Al terminar tendrás:
 **Piensa: ¿qué líneas de DECIDIR-MINIMAX y MINIMAX hay que tocar para
 cortar?**
 
-Pocas. Las líneas **1 a 13** son las de minimax, con $\alpha$ y $\beta$;
-hay **cuatro nuevas**, y las de `return` se recorren:
+Pocas, como viste en [[alfa-beta|Alfa-beta a mano]]: **cuatro nuevas**, y
+las de `return` se recorren. Así se alinean con las de minimax:
 
 | Alfa-beta | Minimax | Qué cambia |
 |---|---|---|
@@ -300,8 +300,9 @@ reflejados.
 ![De vuelta en n3, falta n4, de MAX, con (−∞, −1); su único hijo, n5, vale +1, y bajo n5 va la nota «en n4, +1 ≥ −1: corta, pero no ahorra». n3 devuelve v = −1. En la raíz, α pasa a −1. Su último hijo, n2, llega con (−1, +∞) y vale +1. La raíz devuelve +1](../_assets/jue-ab-invertido-parte-3.svg)
 :::
 
-- n3 empieza por n13, que vale $-1$: **n3 es de MIN: $-1\le\alpha=-\infty$
-  es falso → no corta**, y baja $\beta$ a $-1$ (línea 23).
+- n3 empieza por n13, que vale $-1$. **n3 es de MIN: compara su $v=-1$
+  con $\alpha=-\infty$, el número de MAX que heredó; $-1\le-\infty$ es
+  falso → no corta**, y baja $\beta$ a $-1$ (línea 23).
 - n6 hereda $(-\infty,-1)$ y su primer hijo, n12, vale $+1$. **n6 es de
   MAX: compara su $v=+1$ con $\beta=-1$, el número de MIN que heredó;
   $+1\ge-1$ → corte beta, línea 14.** n11, n7 y lo que cuelga de n7 no se
@@ -441,7 +442,7 @@ ALFA-BETA de memoria, decir qué líneas los distinguen de minimax, decir
 qué guarda cada marco de la pila, y llenar la traza de T en cualquier
 orden.
 
-## 6 · Para profundizar
+## Para profundizar
 
 ### Qué devuelve ALFA-BETA: el invariante
 
