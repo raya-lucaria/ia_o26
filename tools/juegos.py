@@ -1641,3 +1641,503 @@ def pasos_interactivos(modo, variante=None):
             "renglones": renglones_pseudo(pseudo),
             "arbol": arbol_interactivo(arbol, azar, evaluar),
             "pasos": pasos, "resultado": resultado}
+
+
+# ------------------------------------- pasos renglon por renglon ---
+#
+# pasos_interactivos da una fila de la tabla de traza por paso: salta de la
+# linea 2 a la 18 porque la tabla resume. pasos_por_linea(modo, variante)
+# ejecuta el mismo pseudocodigo de la pagina y da un paso por CADA linea que
+# corre, en el orden real de ejecucion, aunque se quede en el mismo nodo. Es
+# la fuente de la traza interactiva (traza_arbol_t.html); el cuaderno sigue
+# leyendo pasos_interactivos. test_pasos_por_linea.py comprueba que la
+# secuencia es una ejecucion valida y que, proyectada a filas, da la tabla.
+#
+# Semantica (una decision por renglon, la misma en los cinco pseudocodigos):
+# - Entrar a una funcion es un paso en su linea `function`, con los
+#   argumentos ya ligados. Las hojas tambien entran (7 → 8: return U(s)).
+# - Un `if` es un paso con la condicion evaluada; si su rama es un return
+#   en la misma linea (8, 14, 22...), el return es ese mismo paso. El `if`
+#   de la linea 5 con su asignacion tambien es un paso.
+# - `else` es un paso cuando se toma esa rama; `else if` (azar, 15) es un
+#   paso con su condicion.
+# - `for each` es un paso por cada hijo que toma, con `a` ya ligado. Cuando
+#   no quedan hijos no hay paso extra: sigue la linea de despues del bucle.
+# - Una llamada son dos pasos en su linea: «llama» (el hijo se GENERA aqui;
+#   su estado es «generado») y, tras los pasos del hijo, «w ← valor».
+# - Un nodo esta «pila» mientras su marco existe, incluido su return; pasa a
+#   «devuelto» (o «evaluado», si devolvio EVAL) en el paso «w ←» del padre.
+#   La raiz pasa a «devuelto» cuando su bucle termina (linea 6, u 11 en
+#   iterativa), como en la ultima fila de la tabla.
+# - Los podados no se llaman y no tienen pasos: el return del corte dice
+#   cuales quedan sin generar, y en `filas_x` lleva las filas ✗ de la tabla.
+# - El reloj de iterativa alcanza para d = 1, 2 y 3: el while (4) es «sí»
+#   tres veces y «no» la cuarta; la linea 8 siempre es «no». Al empezar cada
+#   busqueda (4 con «sí») el dibujo y el conteo de generados vuelven a cero.
+#
+# Cada paso: n, linea, fila (la fila de la tabla de la pagina que este paso
+# ayuda a cerrar: los pasos entre el fin de la fila k-1 y el de la fila k son
+# de la fila k), filas_x, nodo (el del marco actual), marco (la pila de
+# llamadas, del mas externo al actual: func, nodo, args y locales como pares
+# [nombre, valor ya formateado]), cambia (las variables que ESTA linea
+# acaba de escribir: [indice de marco, nombre, valor anterior]), estado (por
+# nodo, como en pasos_interactivos, mas «generado»), generados, frase (≤ 90
+# caracteres) y, en iterativa, d (la de la busqueda en curso).
+
+ORDINAL = ["primer", "segundo", "tercer"]
+
+
+class _PorLinea:
+    def __init__(self, modo, arbol, azar=(), evaluar=None, ab=False, orden_raiz=None):
+        self.modo, self.arbol, self.azar, self.ab = modo, arbol, azar, ab
+        self.evaluar = evaluar or {}
+        self.ids, self.nombres = ids_t(arbol), nombres_t(arbol)
+        self.pila, self.pasos, self.d, self.escritas = [], [], None, []
+        self.reiniciar()
+
+    def reiniciar(self):
+        self.estado = {c: dict(estado="pormirar", v=None, alfa=None, beta=None, cota=False)
+                       for c in self.ids}
+        self.generados = 1
+
+    # --- el arbol ---
+    def hoja(self, c):
+        return not isinstance(nodo_en(self.arbol, c), tuple)
+
+    def valor_hoja(self, c):
+        return nodo_en(self.arbol, c)
+
+    def hijos(self, c):
+        return [c + (i,) for i in range(len(nodo_en(self.arbol, c)))]
+
+    def tipo(self, c):
+        if self.hoja(c):
+            return "HOJA"
+        if self.nombres[c][0] in self.azar:
+            return "AZAR"
+        return "MAX" if len(c) % 2 == 0 else "MIN"
+
+    def N(self, c):
+        """El nombre en prosa: «C1» o «la hoja 3»."""
+        return f"la hoja {self.valor_hoja(c)}" if self.hoja(c) else self.ids[c]
+
+    def etiqueta(self, c):
+        """El nodo como argumento de una llamada: «C1» o «hoja 3»."""
+        return f"hoja {self.valor_hoja(c)}" if self.hoja(c) else self.ids[c]
+
+    def accion(self, c):
+        return self.nombres[c][1] or f"→{self.valor_hoja(c)}"
+
+    def descendientes(self, c):
+        res = [c]
+        if not self.hoja(c):
+            for h in self.hijos(c):
+                res += self.descendientes(h)
+        return res
+
+    # --- marcos ---
+    def asigna(self, nombre, valor):
+        """Escribe una variable del marco actual (argumento si lo es, si no
+        local) y la anota como escrita por la linea del proximo paso, aunque
+        conserve su valor (v ← min(3, 6) = 3 tambien escribe v)."""
+        m = self.pila[-1]
+        (m["args"] if nombre in m["args"] else m["loc"])[nombre] = valor
+        self.escritas.append([len(self.pila) - 1, nombre])
+
+    @property
+    def loc(self):
+        return self.pila[-1]["loc"]
+
+    @property
+    def args(self):
+        return self.pila[-1]["args"]
+
+    def entrar(self, func, c, args, linea, frase):
+        self.pila.append(dict(func=func, c=c, args=dict(args), loc={}))
+        e = self.estado[c]
+        e.update(estado="pila", v=None, alfa=None, beta=None, cota=False)
+        if self.ab and c != ():
+            e.update(alfa=args["α"], beta=args["β"])
+        self.paso(linea, frase)
+
+    def llamar(self, linea, c, frase):
+        self.generados += 1
+        self.estado[c]["estado"] = "generado"
+        self.paso(linea, frase)
+
+    def retorna(self, linea, frase, v, evaluado=False, cota=False, cierra=None):
+        self.paso(linea, frase, cierra=cierra)
+        marco = self.pila.pop()
+        return dict(v=v, c=marco["c"], evaluado=evaluado, cota=cota)
+
+    def recibe(self, linea, r, cierra=None):
+        """El paso «w ← valor» del padre, ya sin el marco del hijo."""
+        c = r["c"]
+        self.estado[c].update(estado="evaluado" if r["evaluado"] else "devuelto",
+                              v=r["v"], alfa=None, beta=None, cota=r["cota"])
+        self.asigna("w", r["v"])
+        if r["evaluado"]:
+            de = f"EVAL({self.ids[c]})"
+        elif self.hoja(c):
+            de = "la hoja"
+        else:
+            de = self.ids[c] + (", una cota" if r["cota"] else "")
+        self.paso(linea, f"w ← {fmt_t(r['v'])}: lo que devolvió {de}.", cierra=cierra)
+        return r["v"]
+
+    def podar(self, c, desde):
+        """Marca podados los hermanos que siguen a `desde`; devuelve las
+        raices de lo que no se genera."""
+        hs = self.hijos(c)
+        fuera = hs[hs.index(desde) + 1:]
+        for q in fuera:
+            for x in self.descendientes(q):
+                self.estado[x]["estado"] = "podado"
+        return fuera
+
+    def texto_fuera(self, fuera):
+        if not fuera:
+            return "no quedaban hijos"
+        quien = " y ".join(self.N(q) for q in fuera)
+        return f"{quien} no se genera" if len(fuera) == 1 else f"no se generan {quien}"
+
+    # --- un paso ---
+    def _fmt(self, v):
+        if v is None:
+            return "ninguna"
+        if isinstance(v, str):
+            return v
+        return fmt_t(v)
+
+    def paso(self, linea, frase, cierra=None):
+        if len(frase) > 90:
+            raise ValueError(f"frase de {len(frase)} caracteres: {frase}")
+        marco = [{"func": m["func"], "nodo": self.ids[m["c"]],
+                  "args": [[k, self._fmt(v)] for k, v in m["args"].items()],
+                  "locales": [[k, self._fmt(v)] for k, v in m["loc"].items()]}
+                 for m in self.pila]
+        estado = {self.ids[c]: dict(estado=e["estado"], v=fmt_t(e["v"]), alfa=fmt_t(e["alfa"]),
+                                    beta=fmt_t(e["beta"]), cota=bool(e["cota"]))
+                  for c, e in sorted(self.estado.items())}
+        p = {"linea": linea, "nodo": self.ids[self.pila[-1]["c"]], "marco": marco,
+             "estado": estado, "generados": self.generados, "frase": frase,
+             "_cierra": cierra, "_escritas": self.escritas}
+        self.escritas = []
+        if self.d is not None:
+            p["d"] = self.d
+        self.pasos.append(p)
+
+    def raiz_estado(self, valor):
+        e = self.estado[()]
+        e["v"] = valor
+        if self.ab:
+            e.update(alfa=valor, beta=INF)
+
+
+
+
+def _frase_for(x, c, k, padre):
+    if x.hoja(c):
+        return (f"Toma a = {x.accion(c)}, la jugada hacia la hoja {x.valor_hoja(c)}: "
+                f"el {ORDINAL[k]} hijo de {padre}.")
+    return f"Toma a = {x.accion(c)}: el {ORDINAL[k]} hijo de {padre} es {x.ids[c]}."
+
+
+def _texto_args(args):
+    return "".join(f", {k} = {fmt_t(v)}" for k, v in args.items())
+
+
+# Las lineas de cada funcion recursiva: function, s ∈ S_F, d = 0 (si hay
+# corte), Pl = MAX, la primera del caso MAX (v ← −∞) y el else (en azar, el
+# «else if Pl(s) = MIN»; su v ← +∞ es la siguiente). Tras cada v ← ...
+# vienen for (+1), la llamada (+2), v ← max/min (+3) y, con poda, el if del
+# corte (+4) y la ventana (+5); el return es +4 sin poda y +6 con ella.
+LINEAS_INTERNA = {
+    "minimax": dict(func=7, sf=8, d0=None, max=9, vmax=10, otro=15),
+    "azar": dict(func=7, sf=8, d0=None, max=9, vmax=10, otro=15, azar=21),
+    "alfa-beta": dict(func=7, sf=8, d0=None, max=9, vmax=10, otro=17),
+    "corte": dict(func=7, sf=8, d0=9, max=10, vmax=11, otro=16),
+    "iterativa": dict(func=14, sf=15, d0=16, max=17, vmax=18, otro=25),
+}
+FUNCION_INTERNA = {"minimax": "MINIMAX", "azar": "EXPECTIMINIMAX", "alfa-beta": "ALFA-BETA",
+                   "corte": "MINIMAX-CON-CORTE", "iterativa": "ALFA-BETA-CON-CORTE"}
+
+
+def _interna(x):
+    """La funcion recursiva del modo, renglon por renglon. Cada variable se
+    escribe ANTES de emitir el paso de su linea: un paso muestra el estado
+    justo despues de ejecutar su linea."""
+    modo = x.modo
+    L, func = LINEAS_INTERNA[modo], FUNCION_INTERNA[modo]
+    corte, ab, azar = L["d0"] is not None, x.ab, modo == "azar"
+
+    def interna(c, **args):
+        N = x.ids[c]
+        x.entrar(func, c, args, L["func"], f"Entra a {func}: s = {x.N(c)}{_texto_args(args)}.")
+        if x.hoja(c):
+            u = F(x.valor_hoja(c)) if azar else x.valor_hoja(c)
+            u_txt = "100·U(s)" if corte else "U(s)"
+            return x.retorna(L["sf"], f"s ∈ S_F? sí: la hoja es final → return {u_txt} = "
+                                      f"{fmt_t(u)}.", u)
+        x.paso(L["sf"], f"s ∈ S_F? no: {N} no es final.")
+        if corte:
+            if args["d"] == 0:
+                e = x.evaluar[x.nombres[c][0]]
+                return x.retorna(L["d0"], f"d = 0? sí → return EVAL({N}) = {fmt_t(e)}: "
+                                          f"aquí se estima.", e, evaluado=True)
+            x.paso(L["d0"], f"d = 0? no: d = {args['d']}, aún se mira más hondo.")
+        t = x.tipo(c)
+        if t == "MAX":
+            x.paso(L["max"], f"Pl({N}) = MAX? sí: en {N} elige MAX.")
+            base, ini, op = L["vmax"], -INF, max
+        else:
+            x.paso(L["max"], f"Pl({N}) = MAX? no.")
+            if azar and t == "MIN":
+                x.paso(L["otro"], f"Pl({N}) = MIN? sí: en {N} elige MIN.")
+                base, ini, op = L["otro"] + 1, INF, min
+            elif azar:
+                x.paso(L["otro"], f"Pl({N}) = MIN? no: {N} es de azar.")
+                x.paso(L["azar"], f"else: {N} es de azar; nadie elige.")
+                base, ini, op = L["azar"] + 1, F(0), None
+            else:
+                x.paso(L["otro"], f"else: en {N} elige MIN.")
+                base, ini, op = L["otro"] + 1, INF, min
+        # en azar, solo los nodos de azar tienen filas en la tabla
+        cz = 0 if (not azar or t == "AZAR") else None
+        x.asigna("v", ini)
+        x.estado[c]["v"] = ini
+        if op is None:
+            x.paso(base, "v ← 0: aquí se suma, no se compara.", cierra=cz)
+        else:
+            x.paso(base, f"v ← {fmt_t(ini)}: {'menor' if op is max else 'mayor'} que todo.",
+                   cierra=cz)
+        hs = x.hijos(c)
+        for k, h in enumerate(hs):
+            x.asigna("a", x.accion(h))
+            x.paso(base + 1, _frase_for(x, h, k, N))
+            ha = {}
+            if corte:
+                ha["d"] = args["d"] - 1
+            if ab:
+                ha["α"], ha["β"] = x.args["α"], x.args["β"]
+            x.llamar(base + 2, h, f"Genera {x.N(h)} y llama {func}({x.etiqueta(h)}{_texto_args(ha)}).")
+            w = x.recibe(base + 2, interna(h, **ha))
+            v0 = x.loc["v"]
+            if op is None:
+                p = F(1, len(hs))
+                v = v0 + p * w
+                x.asigna("v", v)
+                x.estado[c]["v"] = v
+                x.paso(base + 3, f"v ← {fmt_t(v0)} + {fmt_t(p)} · {fmt_t(w)} = {fmt_t(v)}.",
+                       cierra=cz)
+                continue
+            v = op(v0, w)
+            x.asigna("v", v)
+            x.estado[c]["v"] = v
+            nom = "max" if op is max else "min"
+            x.paso(base + 3, f"v ← {nom}({fmt_t(v0)}, {fmt_t(w)}) = {fmt_t(v)}.",
+                   cierra=None if ab else cz)
+            if not ab:
+                continue
+            es_max = op is max
+            borde, letra, signo = ((x.args["β"], "β", "≥") if es_max
+                                   else (x.args["α"], "α", "≤"))
+            corta = v >= borde if es_max else v <= borde
+            cond = f"v {signo} {letra}? {fmt_t(v)} {signo} {fmt_t(borde)}"
+            if corta:
+                fuera = x.podar(c, h)
+                tipo_corte = "beta" if es_max else "alfa"
+                return x.retorna(base + 4, f"{cond} sí → return {fmt_t(v)}, corte {tipo_corte}; "
+                                           f"{x.texto_fuera(fuera)}.",
+                                 v, cota=bool(fuera), cierra=len(fuera))
+            x.paso(base + 4, f"{cond} no: sigue.")
+            otra = "α" if es_max else "β"
+            a0 = x.args[otra]
+            a1 = max(a0, v) if es_max else min(a0, v)
+            x.asigna(otra, a1)
+            x.estado[c]["alfa" if es_max else "beta"] = a1
+            if a1 != a0:
+                cola = f"{otra} {'sube' if es_max else 'baja'}"
+            else:
+                cola = f"{otra} sigue igual"
+            x.paso(base + 5, f"{otra} ← {nom}({fmt_t(a0)}, {fmt_t(v)}) = {fmt_t(a1)}: {cola}.",
+                   cierra=0)
+        ret = base + (6 if ab else 4)
+        return x.retorna(ret, f"No quedan hijos: {N} devuelve v = {fmt_t(x.loc['v'])}.",
+                         x.loc["v"])
+    interna.nombre = func
+    return interna
+
+
+def _decidir_linea(x, func, d=None):
+    """DECIDIR-* (lineas 1–6), comun a minimax, azar, alfa-beta y corte."""
+    R, ab = (), x.ab
+    interna = _interna(x)
+    mv = "α" if ab else "mejor_valor"
+    args = {} if d is None else {"d": d}
+    x.entrar(func, R, args, 1, f"Empieza {func} en la raíz R{_texto_args(args)}.")
+    x.asigna(mv, -INF)
+    x.asigna("mejor_jugada", None)
+    x.raiz_estado(-INF)
+    x.paso(2, f"{mv} ← −∞ y mejor_jugada ← ninguna: aún no hay jugada.", cierra=0)
+    for k, c in enumerate(x.hijos(R)):
+        x.asigna("a", x.accion(c))
+        x.paso(3, _frase_for(x, c, k, "R"))
+        ha = {}
+        if d is not None:
+            ha["d"] = d - 1
+        if ab:
+            ha["α"], ha["β"] = x.loc["α"], INF
+        x.llamar(4, c, f"Genera {x.N(c)} y llama {interna.nombre}({x.etiqueta(c)}{_texto_args(ha)}).")
+        w = x.recibe(4, interna(c, **ha))
+        _compara_raiz(x, 5, w, c, mv)
+    x.estado[R].update(estado="devuelto", alfa=None, beta=None)
+    x.paso(6, f"Ya no quedan jugadas: return mejor_jugada = {x.loc['mejor_jugada']}.",
+           cierra=0)
+    return x.loc["mejor_jugada"], x.loc[mv]
+
+
+def _compara_raiz(x, linea, w, c, mv):
+    antes = x.loc[mv]
+    if w > antes:
+        x.asigna(mv, w)
+        x.asigna("mejor_jugada", x.accion(c))
+        x.raiz_estado(w)
+        f = (f"w > {mv}? {fmt_t(w)} > {fmt_t(antes)} sí → {mv} ← {fmt_t(w)}, "
+             f"mejor_jugada ← {x.accion(c)}.")
+    else:
+        f = (f"w > {mv}? {fmt_t(w)} > {fmt_t(antes)} no: mejor_jugada sigue en "
+             f"{x._fmt(x.loc['mejor_jugada'])}.")
+    x.paso(linea, f, cierra=0)
+
+
+def _iterativa_linea(x, busquedas=3):
+    """PROFUNDIZACIÓN-ITERATIVA (1–13) con ALFA-BETA-CON-CORTE (14–32). El
+    reloj alcanza para `busquedas` busquedas completas."""
+    R = ()
+    interna = _interna(x)
+    func = "PROFUNDIZACIÓN-ITERATIVA"
+    x.d = 1
+    x.estado[R]["estado"] = "pila"
+    x.entrar(func, R, {}, 1, f"Empieza {func} en la raíz R.")
+    hijos = x.hijos(R)
+    jugada = x.accion(hijos[0])
+    x.asigna("jugada", jugada)
+    x.paso(2, f"jugada ← {jugada}, una cualquiera: siempre hay algo que entregar.")
+    x.asigna("d", 1)
+    x.paso(3, "d ← 1: la primera búsqueda mira una sola jugada.", cierra=0)
+    por_d = []
+    d = 1
+    while True:
+        if d > busquedas:
+            x.paso(4, f"¿Queda tiempo? no: el reloj se acabó tras la búsqueda con d = {d - 1}.")
+            break
+        if d > 1:
+            x.reiniciar()
+            x.d = d
+            x.estado[R]["estado"] = "pila"
+        x.paso(4, f"¿Queda tiempo? sí → una búsqueda con d = {d}.")
+        x.asigna("α", -INF)
+        x.asigna("mejor_jugada", jugada)
+        x.raiz_estado(-INF)
+        x.paso(5, f"α ← −∞ y mejor_jugada ← {jugada}, la jugada lista.", cierra=0)
+        orden = sorted(hijos, key=lambda c: x.accion(c) != jugada)
+        for k, c in enumerate(orden):
+            x.asigna("a", x.accion(c))
+            if k == 0:
+                x.paso(6, f"Toma a = {x.accion(c)} primero: es la jugada lista.")
+            else:
+                x.paso(6, f"Toma a = {x.accion(c)}: el siguiente hijo de R es {x.ids[c]}.")
+            ha = {"d": d - 1, "α": x.loc["α"], "β": INF}
+            x.llamar(7, c, f"Genera {x.ids[c]} y llama ALFA-BETA-CON-CORTE({x.ids[c]}"
+                           f"{_texto_args(ha)}).")
+            w = x.recibe(7, interna(c, **ha))
+            x.paso(8, "¿Se acabó el tiempo? no: la búsqueda sigue.")
+            x.paso(9, f"w = 100? {fmt_t(w)} = 100 no: no es una victoria segura.")
+            _compara_raiz(x, 10, w, c, "α")
+        x.estado[R].update(estado="devuelto", alfa=None, beta=None)
+        jugada = x.loc["mejor_jugada"]
+        x.asigna("jugada", jugada)
+        x.paso(11, f"jugada ← {jugada}: la búsqueda con d = {d} terminó completa.")
+        por_d.append({"d": d, "orden": [x.accion(c) for c in orden], "jugada": jugada,
+                      "valor": fmt_t(x.loc["α"]), "generados": x.generados})
+        x.asigna("d", d + 1)
+        x.paso(12, f"d ← {d} + 1 = {d + 1}.", cierra=0)
+        d += 1
+    x.paso(13, f"return jugada = {jugada}: se entrega la de la búsqueda con d = {d - 1}.",
+           cierra=0)
+    return por_d
+
+
+def _numerar_filas(pasos):
+    """fila y filas_x de cada paso (ver la explicacion arriba); quita _cierra."""
+    fila, pendientes = 0, []
+    for p in pasos:
+        pendientes.append(p)
+        p["filas_x"] = []
+        c = p.pop("_cierra")
+        if c is None:
+            continue
+        fila += 1
+        for q in pendientes:
+            q["fila"] = fila
+        p["filas_x"] = list(range(fila + 1, fila + 1 + c))
+        fila += c
+        pendientes = []
+    if pendientes:
+        raise ValueError("hay pasos despues de la ultima fila")
+
+
+def _marcar_cambios(pasos):
+    """cambia: [indice de marco, variable, valor anterior] de cada variable que
+    el paso acaba de escribir (o ligar, al entrar a una funcion)."""
+    previo = []
+    for p in pasos:
+        cambia = []
+        for i, m in enumerate(p["marco"]):
+            antes = {}
+            if i < len(previo) and (previo[i]["func"], previo[i]["nodo"]) == (m["func"], m["nodo"]):
+                antes = dict(previo[i]["args"] + previo[i]["locales"])
+            for k, v in m["args"] + m["locales"]:
+                if antes.get(k) != v or [i, k] in p["_escritas"]:
+                    cambia.append([i, k, antes.get(k, "")])
+        p.pop("_escritas")
+        p["cambia"] = cambia
+        previo = p["marco"]
+
+
+def pasos_por_linea(modo, variante=None):
+    """Los pasos de un algoritmo sobre el arbol T, uno por cada linea del
+    pseudocodigo de la pagina que se ejecuta, en orden. Mismos modos y
+    variantes que pasos_interactivos; devuelve un dict con sus mismas claves
+    (pasos con otro formato: ver arriba)."""
+    base = pasos_interactivos(modo, variante)     # valida modo y variante
+    variante = base["variante"]
+    arbol, azar, evaluar = ARBOL_T, (), None
+    if modo == "alfa-beta" and variante == "T1":
+        arbol = ARBOL_T1
+    if modo == "azar":
+        azar = AZAR_T
+    if modo in ("corte", "iterativa"):
+        evaluar = EVAL_T
+    x = _PorLinea(modo, arbol, azar=azar, evaluar=evaluar,
+                  ab=modo in ("alfa-beta", "iterativa"))
+    if modo == "iterativa":
+        por_d = _iterativa_linea(x)
+        resultado = {"jugada": por_d[-1]["jugada"], "valor": por_d[-1]["valor"],
+                     "generados": sum(b["generados"] for b in por_d),
+                     "total": len(por_d) * contar_nodos(arbol), "por_d": por_d}
+    else:
+        jugada, valor = _decidir_linea(x, FUNCION_MODO[modo],
+                                       d=variante if modo == "corte" else None)
+        resultado = {"jugada": jugada, "valor": fmt_t(valor), "generados": x.generados,
+                     "total": contar_nodos(arbol)}
+    pasos = x.pasos
+    _numerar_filas(pasos)
+    _marcar_cambios(pasos)
+    for k, p in enumerate(pasos, 1):
+        p["n"] = k
+    return {"modo": modo, "variante": variante, "titulo": base["titulo"],
+            "pagina": base["pagina"], "pseudo": base["pseudo"],
+            "renglones": base["renglones"], "arbol": base["arbol"],
+            "pasos": pasos, "resultado": resultado}
