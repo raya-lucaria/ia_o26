@@ -203,6 +203,8 @@ traen la utilidad. Lo usan también las páginas que siguen.
 ![Árbol T. Arriba R, donde mueve MAX, con tres flechas: izq hacia I, centro hacia C y der hacia D; en los tres mueve MIN. I tiene dos hojas, 3 y 6. C tiene dos hijos donde mueve MAX: C1 por c1, con hojas 5 y 2, y C2 por c2, con hojas 7 y 8. D tiene dos hojas, 2 y 12. Los nodos internos todavía no tienen valor. Al pie: «Cada hoja es un final: su número es lo que vale ese final.»](../_assets/jue-t-arbol.svg)
 :::
 
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#minimax)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+
 **Cómo leer la traza:**
 
 - **Una fila al entrar a un nodo interno** y **una por cada hijo que

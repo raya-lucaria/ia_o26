@@ -114,6 +114,38 @@ algoritmo**, en general.
 5. [[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]]
 6. [[tarea-mirar-todo-y-podar|Tarea de refuerzo]]
 
+## El notebook y la traza interactiva
+
+Dos formas de ver correr los algoritmos de esta clase en el árbol T, sin
+escribir nada. No se cuentan en el tiempo de la clase y no hay nada que
+entregar.
+
+**La traza interactiva.** Una página con el árbol, el pseudocódigo con la
+línea que corre y el valor de cada variable; avanzas un paso con ▶ o con las
+flechas del teclado. Cada página de algoritmo la enlaza en su traza, y aquí
+están todas:
+
+- [Minimax](../_assets/traza_arbol_t.html#minimax)
+- [Con azar](../_assets/traza_arbol_t.html#azar)
+- [Alfa-beta](../_assets/traza_arbol_t.html#alfa-beta)
+
+**El notebook.** El mismo Python de las páginas, instrumentado para que cada
+paso muestre la fila de la traza y el árbol dibujado; un deslizador lo
+recorre. Cada sección cierra con un «Pruébalo» de una línea.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
+*Se abre en Google Colab, en otra pestaña.*
+
+**Dónde vive.** En este repositorio, en
+`course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb`. Colab lo ejecuta en
+el navegador sin instalar nada; en tu máquina necesitas `matplotlib` e
+`ipywidgets`. Para empezar: «Entorno de ejecución → Ejecutar todas».
+
+**Cuándo.** Después de cada página de algoritmo, su sección: minimax,
+expectiminimax y alfa-beta. Las secciones de corte y profundización iterativa
+son de la clase 3.
+
 ## Qué no cubre esta clase
 
 Aquí el árbol siempre cabe: llegamos a todos los finales. Qué hacer cuando

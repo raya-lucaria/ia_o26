@@ -694,8 +694,9 @@ jugada sigue siendo `centro`.
 
 </details>
 
-El ejercicio de la página —invertir el orden de los hijos— resuélvelo
-primero a mano. Después puedes revisarlo con `usar(ARBOL_T, al_reves=True)`.
+El ejercicio «Llena la traza con el orden invertido», de la página
+*Alfa-beta como algoritmo*, resuélvelo primero a mano. Después revísalo con
+`usar(ARBOL_T, al_reves=True)` y `ver(correr(decidir_alfa_beta("R"))[0], *AB)`.
 """)
 
 code("""

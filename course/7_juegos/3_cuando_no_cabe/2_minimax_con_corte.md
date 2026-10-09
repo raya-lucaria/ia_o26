@@ -223,6 +223,8 @@ $d=0$, pero **son finales**: las toma la **línea 8**, que va antes que la
 9, y devuelve su número. C1 y C2 llegan con $d=0$ y no son finales: los
 toma la **línea 9**, con 6 y 9.
 
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#corte)** — ahí puedes cambiar $d$ entre 1, 2 y 3 y ver cuándo cambia la jugada.
+
 La traza de DECIDIR-CON-CORTE(R, 2), con el formato de
 [[minimax-como-algoritmo|la clase 2]]: una fila al entrar a un nodo y una
 por cada hijo que regresa. En $w$, una hoja va sola y un nodo lleva su

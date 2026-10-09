@@ -231,7 +231,8 @@ regresa; las hojas van plegadas en la columna $w$.
 - **corta:** la comparación del `if`, **corte o no**: «3≤−∞ no», «7≥5 sí».
   En la raíz es la línea 5: «3>−∞ sí» cambia la jugada; «2>5 no», no.
 - **v:** en las filas de R es `mejor_valor`, que aquí se llama $\alpha$.
-- **jugada:** `mejor_jugada` en ese momento; «—» si todavía no hay.
+- **jugada:** `mejor_jugada` en ese momento; «—» si todavía no hay. En
+  una fila ✗ no corre nada, así que sus columnas van en «—».
 - **Fila ✗:** está en la traza de minimax y no en ésta: su hoja (en
   cursiva) no se genera. Así cada fila lleva el mismo número que en la
   traza de minimax del mismo árbol; la de T está en
@@ -239,6 +240,8 @@ regresa; las hojas van plegadas en la columna $w$.
   escribe: es la de T sin la rama del centro.
 
 ## 4 · Etapa 1: el árbol T1
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#alfa-beta-t1)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
 
 **Piensa: ¿en qué momento MAX ya sabe que la rama de la derecha no le
 sirve?**
@@ -300,6 +303,8 @@ I ve 3: ¿$3\le2$? No, así que no corta y genera también la hoja 6: se
 generan **los 7**.
 
 ## 5 · Etapa 2: se agrega el centro
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#alfa-beta)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
 
 **Piensa: si MIN también puede asegurarse algo, ¿quién corta entonces?**
 

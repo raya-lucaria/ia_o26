@@ -229,6 +229,8 @@ jugadas de la raíz; lo escribimos en la sección siguiente.
 
 ## 5 · Escribir la profundización iterativa
 
+> **▶ [Recorre las tres búsquedas paso a paso](../_assets/traza_arbol_t.html#iterativa)** — $d=1$, 2 y 3 seguidas, con la jugada anterior primero.
+
 Qué guarda cada nombre:
 
 - **$s$:** el estado donde le toca jugar a MAX.
