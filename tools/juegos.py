@@ -21,6 +21,7 @@ from fractions import Fraction as F
 from functools import lru_cache
 from itertools import product
 from pathlib import Path
+import copy
 import re
 
 COLUMNAS = "abcdefgh"
@@ -1139,7 +1140,10 @@ PRISIONERO_COL = [[-1, 0], [-10, -5]]
 # - En iterativa, el reloj se acaba despues de d = 3. Hay una fila antes de
 #   buscar (lineas 2–3), por cada busqueda una al empezar (5), una por hijo de
 #   la raiz (7–10: la llamada, el reloj, la salida temprana y la comparacion)
-#   y una al terminar (11–12), y una ultima al entregar (13).
+#   y una al terminar (11–12), y una ultima al entregar (4 y 13: el while ve
+#   que no queda tiempo y se devuelve jugada). La «d» de cada paso es la de la
+#   busqueda a la que pertenece; la entrega lleva d = 3. resultado.total es
+#   3 × 14: tres busquedas sobre el mismo arbol.
 
 LINEAS_EXPECTIMINIMAX = {"inicio": "2", "raiz": "4–5", "fin": "6",
                          "entra_MAX": "10", "entra_MIN": "16", "entra_AZAR": "22",
@@ -1151,7 +1155,7 @@ LINEAS_CORTE = {"inicio": "2", "raiz": "4–5", "fin": "6",
                 "regresa_MAX": "13–14", "regresa_MIN": "19–20"}
 # PROFUNDIZACION-ITERATIVA (1–13) con ALFA-BETA-CON-CORTE (14–32).
 LINEAS_RELOJ = {"antes": "2–3", "inicio": "5", "raiz": "7–10", "fin": "11–12",
-                "entrega": "13",
+                "entrega": "4, 13",
                 "entra_MAX": "18", "entra_MIN": "26",
                 "regresa_MAX": "20–23", "regresa_MIN": "28–31",
                 "corta_MAX": "20–22", "corta_MIN": "28–30"}
@@ -1200,13 +1204,17 @@ def renglones_pseudo(pseudo):
 
 
 def lineas_de(linea):
-    """«12–15» -> [12, 13, 14, 15]; «2» -> [2]; «» -> []."""
+    """«12–15» -> [12, 13, 14, 15]; «2» -> [2]; «4, 13» -> [4, 13]; «» -> []."""
     if not linea:
         return []
-    if "–" in linea:
-        a, b = linea.split("–")
-        return list(range(int(a), int(b) + 1))
-    return [int(linea)]
+    res = []
+    for tramo in linea.split(","):
+        if "–" in tramo:
+            a, b = tramo.split("–")
+            res += list(range(int(a), int(b) + 1))
+        else:
+            res.append(int(tramo))
+    return res
 
 
 def ids_t(arbol):
@@ -1328,12 +1336,14 @@ def _texto_hoja_o_nodo(ids, arbol, c):
     return f"la hoja {nodo}" if not isinstance(nodo, tuple) else ids[c]
 
 
-def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None):
+def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None,
+                    ultima=False):
     """Convierte las filas de una traza en pasos. Reconstruye que nodo es cada
     uno por su camino (las hojas se repiten de nombre) a partir de cuantos
     nodos se habian generado en cada fila. `primeros`: la mejor_jugada que
     hay antes de que regrese el primer hijo de la raiz (en iterativa, la
-    jugada lista; en los demas, ninguna)."""
+    jugada lista; en los demas, ninguna). `ultima`: en iterativa, si tras
+    esta busqueda se acaba el tiempo."""
     ids, nombres = ids_t(arbol), nombres_t(arbol)
     camino_de = {nombres[c][0]: c for c in nombres if isinstance(nodo_en(arbol, c), tuple)}
     caminos = traza["caminos_generados"]
@@ -1426,7 +1436,7 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None):
         # --- la frase ---
         if ev == "inicio":
             if modo == "iterativa":
-                frase = f"Búsqueda con d = {d}: α = −∞ y mejor_jugada = {mejor}, la lista."
+                frase = f"Búsqueda con d = {d}: α = −∞ y mejor_jugada = {mejor}, la jugada lista."
             elif poda:
                 frase = "R empieza: α = −∞, aún no hay jugada."
             else:
@@ -1481,13 +1491,17 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None):
                     frase = f"R recibe {txt_w(f, hijo_c)}: {w} > α = {antes} es falso; mejor_jugada sigue en {mejor}."
             else:
                 if f["mejora"]:
-                    frase = f"R recibe {txt_w(f, hijo_c)}: {w} > {antes} → mejor_jugada = {mejor}."
+                    frase = (f"R recibe {txt_w(f, hijo_c)}: {w} > mejor_valor = {antes} → "
+                             f"mejor_valor = {w}, mejor_jugada = {mejor}.")
                 else:
-                    frase = f"R recibe {txt_w(f, hijo_c)}: {w} > {antes} es falso; mejor_jugada sigue en {mejor}."
+                    frase = (f"R recibe {txt_w(f, hijo_c)}: {w} > mejor_valor = {antes} es falso; "
+                             f"mejor_jugada sigue en {mejor}.")
         else:  # fin
             mv = fmt(f["mejor_valor"])
             if modo == "iterativa":
                 frase = f"La búsqueda con d = {d} terminó: jugada = {mejor}; d pasa a {d + 1}."
+                if ultima:
+                    frase = f"La búsqueda con d = {d} terminó: jugada = {mejor}; ya no hay tiempo."
             elif poda:
                 frase = f"Línea 6: R devuelve {mejor}; α = {mv} se queda dentro."
             else:
@@ -1519,8 +1533,9 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None):
                 "w": fmt(nodo_en(arbol, q)) if leaf else "", "hijo": "",
                 "evaluado": False, "alfa": "", "beta": "", "corta": f["corta"],
                 "mejora": None, "mejor_jugada": mejor or "ninguna", "generados": g,
-                "total": total, "estado": paso["estado"],
-                "frase": f"{quien} no se genera: el corte {f['corta']} de {N} la deja fuera.",
+                "total": total, "estado": copy.deepcopy(paso["estado"]),
+                "frase": (f"{quien} no se genera: el corte {f['corta']} de {N} "
+                          f"{'la' if leaf else 'lo'} deja fuera."),
                 "_mv": f["mejor_valor"], **({"d": d} if d is not None else {})})
     return pasos
 
@@ -1536,19 +1551,20 @@ def pasos_interactivos(modo, variante=None):
     resultado. Cada valor va ya formateado con fmt_t."""
     if modo not in PAGINA_MODO:
         raise ValueError(f"modo desconocido: {modo}")
+    if modo in ("minimax", "azar", "iterativa") and variante is not None:
+        raise ValueError(f"{modo} no tiene variantes: {variante!r}")
     arbol, azar, evaluar = ARBOL_T, (), None
     if modo == "minimax":
-        variante = None
         traza = traza_decidir(ARBOL_T)
         pasos = _pasos_de_traza(arbol, traza, modo, False)
         titulo = "DECIDIR-MINIMAX en el árbol T"
     elif modo == "azar":
-        variante, azar = None, AZAR_T
+        azar = AZAR_T
         traza = traza_expectiminimax_t(ARBOL_T, AZAR_T)
         pasos = _pasos_de_traza(arbol, traza, modo, False, azar=AZAR_T)
         titulo = "DECIDIR-EXPECTIMINIMAX en el árbol T, con I, C y D de azar"
     elif modo == "alfa-beta":
-        variante = variante or "T"
+        variante = "T" if variante is None else variante
         if variante not in ("T", "T1"):
             raise ValueError(f"variante de alfa-beta desconocida: {variante}")
         arbol = ARBOL_T if variante == "T" else ARBOL_T1
@@ -1556,16 +1572,17 @@ def pasos_interactivos(modo, variante=None):
         pasos = _pasos_de_traza(arbol, traza, modo, True)
         titulo = f"DECIDIR-ALFA-BETA en el árbol {variante}"
     elif modo == "corte":
-        variante = int(variante or 2)
-        if variante not in (1, 2, 3):
-            raise ValueError(f"profundidad de corte desconocida: {variante}")
+        variante = 2 if variante is None else variante
+        if isinstance(variante, bool) or variante not in (1, 2, 3, "1", "2", "3"):
+            raise ValueError(f"profundidad de corte desconocida: {variante!r}")
+        variante = int(variante)
         evaluar = EVAL_T
         traza = traza_decidir(ARBOL_T, profundidad=variante, evaluar=EVAL_T,
                               lineas=LINEAS_CORTE)
         pasos = _pasos_de_traza(arbol, traza, modo, False)
         titulo = f"DECIDIR-CON-CORTE en el árbol T con d = {variante}"
     else:
-        variante, evaluar = None, EVAL_T
+        evaluar = EVAL_T
         jugada = nombres_t(ARBOL_T)[(0,)][1]      # linea 2: cualquiera, la primera
         ids = ids_t(ARBOL_T)
         estado0 = {i: dict(estado="pormirar", v="", alfa="", beta="", cota=False)
@@ -1584,7 +1601,8 @@ def pasos_interactivos(modo, variante=None):
             t = traza_decidir(ARBOL_T, poda=True, orden={"R": [
                 {"izq": "I", "centro": "C", "der": "D"}[a] for a in orden]},
                 profundidad=d, evaluar=EVAL_T, lineas=LINEAS_RELOJ)
-            ps = _pasos_de_traza(ARBOL_T, t, modo, True, d=d, primeros=jugada)
+            ps = _pasos_de_traza(ARBOL_T, t, modo, True, d=d, primeros=jugada,
+                                 ultima=d == 3)
             jugada = t["jugada"]
             pasos += ps
             por_d.append({"d": d, "orden": orden, "jugada": t["jugada"],
@@ -1599,7 +1617,8 @@ def pasos_interactivos(modo, variante=None):
                 lista = p["jugada"] if p["evento"] == "antes" else p["mejor_jugada"]
             p["jugada"] = lista
         ultimo = pasos[-1]
-        pasos.append(dict(ultimo, evento="entrega", linea=LINEAS_RELOJ["entrega"],
+        pasos.append(dict(copy.deepcopy(ultimo), evento="entrega",
+                          linea=LINEAS_RELOJ["entrega"],
                           lineas=lineas_de(LINEAS_RELOJ["entrega"]), w="", hijo="",
                           evaluado=False, corta="", mejora=None, d=3,
                           frase=f"Se acaba el tiempo: se entrega {lista}, "
@@ -1612,7 +1631,8 @@ def pasos_interactivos(modo, variante=None):
     if modo == "iterativa":
         resultado = {"jugada": por_d[-1]["jugada"], "valor": por_d[-1]["valor"],
                      "generados": sum(x["generados"] for x in por_d),
-                     "total": contar_nodos(ARBOL_T), "por_d": por_d}
+                     # tres busquedas sobre el mismo arbol: 3 × 14
+                     "total": len(por_d) * contar_nodos(ARBOL_T), "por_d": por_d}
     else:
         resultado = {"jugada": traza["jugada"], "valor": fmt_t(traza["valor"]),
                      "generados": traza["generados"], "total": contar_nodos(arbol)}

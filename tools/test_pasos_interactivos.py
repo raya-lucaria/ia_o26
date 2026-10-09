@@ -12,6 +12,7 @@ nunca por numero de renglon: las paginas se reordenan.
 """
 import json
 import re
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
@@ -161,7 +162,7 @@ def test_los_hechos_del_contrato():
         ("corte", 1): ("der", "7", 4, 14),
         ("corte", 2): ("centro", "6", 10, 14),
         ("corte", 3): ("centro", "5", 14, 14),
-        ("iterativa", None): ("centro", "5", 25, 14),
+        ("iterativa", None): ("centro", "5", 25, 42),
     }
     por_d = res[("iterativa", None)]["por_d"]
     assert [(x["d"], x["orden"], x["jugada"], x["generados"]) for x in por_d] == [
@@ -208,7 +209,7 @@ def test_la_iterativa_va_seguida_y_numerada_con_la_pagina_del_reloj():
     r = j.pasos_interactivos("iterativa")
     pasos = r["pasos"]
     assert [p["d"] for p in pasos] == sorted(p["d"] for p in pasos)
-    assert pasos[0]["linea"] == "2–3" and pasos[-1]["linea"] == "13"
+    assert pasos[0]["linea"] == "2–3" and pasos[-1]["linea"] == "4, 13"
     assert [p["linea"] for p in pasos if p["evento"] == "inicio"] == ["5"] * 3
     assert [p["linea"] for p in pasos if p["evento"] == "fin"] == ["11–12"] * 3
     assert {p["linea"] for p in pasos if p["evento"] == "raiz"} == {"7–10"}
@@ -278,7 +279,7 @@ def test_el_estado_de_cada_nodo_es_coherente(modo, variante):
         assert hechos == p["generados"], p["n"]
     final = r["pasos"][-1]["estado"]
     assert sum(x["estado"] == "podado" for x in final.values()) == (
-        r["resultado"]["total"] - r["pasos"][-1]["generados"]
+        r["pasos"][-1]["total"] - r["pasos"][-1]["generados"]
         if modo in ("alfa-beta", "iterativa") else 0)
 
 
@@ -289,3 +290,141 @@ def test_alfa_beta_tiene_el_mismo_pseudo_en_sus_dos_paginas():
         encoding="utf-8")
     bloques = re.findall(r"^```text\n(.*?)^```$", otra, re.S | re.M)
     assert "\n".join(j.pasos_interactivos("alfa-beta")["pseudo"]) + "\n" in bloques
+
+
+# La secuencia de lineas de los modos sin tabla fila por fila en su pagina.
+# Sale de la convencion de las tablas que si existen (una fila al entrar a un
+# nodo y una por hijo que regresa) con la numeracion de cada pagina.
+LINEAS_SIN_TABLA = {
+    ("corte", 1): ["2", "4–5", "4–5", "4–5", "6"],
+    ("corte", 3): ["2", "17", "19–20", "19–20", "4–5", "17", "11", "13–14", "13–14",
+                   "19–20", "11", "13–14", "13–14", "19–20", "4–5", "17", "19–20",
+                   "19–20", "4–5", "6"],
+    ("iterativa", None): (
+        ["2–3"]
+        + ["5", "7–10", "7–10", "7–10", "11–12"]
+        + ["5", "26", "28–31", "28–31", "7–10", "26", "28–31", "28–31", "7–10",
+           "26", "28–31", "28–31", "7–10", "11–12"]
+        + ["5", "26", "18", "20–23", "20–23", "28–31", "18", "20–22", "", "28–31",
+           "7–10", "26", "28–30", "", "7–10", "26", "28–30", "", "7–10", "11–12"]
+        + ["4, 13"]),
+}
+
+
+@pytest.mark.parametrize("modo,variante", list(LINEAS_SIN_TABLA), ids=lambda x: str(x))
+def test_la_secuencia_de_lineas_sin_tabla_queda_fija(modo, variante):
+    pasos = j.pasos_interactivos(modo, variante)["pasos"]
+    assert [p["linea"] for p in pasos] == LINEAS_SIN_TABLA[(modo, variante)]
+    if modo == "iterativa":
+        assert pasos[-1]["lineas"] == [4, 13] and pasos[-1]["d"] == 3
+        # mejor_jugada al empezar cada busqueda es la jugada lista (linea 5)
+        assert [p["mejor_jugada"] for p in pasos if p["evento"] == "inicio"] == [
+            "izq", "der", "centro"]
+        assert "pasa a 4" not in pasos[-2]["frase"]
+
+
+def _por_busqueda(pasos):
+    """Los pasos partidos por busqueda (en iterativa, una por d)."""
+    grupos = {}
+    for p in pasos:
+        grupos.setdefault(p.get("d"), []).append(p)
+    return list(grupos.values())
+
+
+@pytest.mark.parametrize("modo,variante", MODOS, ids=lambda x: str(x))
+def test_la_foto_concuerda_con_el_paso(modo, variante):
+    r = j.pasos_interactivos(modo, variante)
+    for grupo in _por_busqueda(r["pasos"]):
+        evaluados, con_cota = set(), set()
+        for p in grupo:
+            e = p["estado"]
+            if p["evaluado"]:
+                evaluados.add(p["hijo"])
+            # (b) «evaluado» exactamente en los hijos valorados con EVAL
+            assert {k for k, x in e.items() if x["estado"] == "evaluado"} == evaluados, p["n"]
+            # (a) la ventana del tope de la pila es la del paso
+            if p["evento"] in ("inicio", "entra", "regresa", "raiz"):
+                tope = e[p["pila"][-1]]
+                assert (tope["alfa"], tope["beta"]) == (p["alfa"], p["beta"]), p["n"]
+                assert tope["v"] == p["v"], p["n"]
+            # el hijo que regresa guarda su w, y es cota si cortó dejando hijos
+            if p["hijo"]:
+                assert e[p["hijo"]]["v"] == p["w"], p["n"]
+                assert e[p["hijo"]]["cota"] == (p["hijo"] in con_cota), p["n"]
+            if p["evento"] == "podado":
+                con_cota.add(p["pila"][-1])
+                assert e[p["nodo"]]["estado"] == "podado"
+
+
+@pytest.mark.parametrize("modo,variante", MODOS, ids=lambda x: str(x))
+def test_cada_paso_trae_su_propia_copia(modo, variante):
+    pasos = j.pasos_interactivos(modo, variante)["pasos"]
+    ids_estado = [id(p["estado"]) for p in pasos]
+    ids_pila = [id(p["pila"]) for p in pasos]
+    ids_nodo = [id(x) for p in pasos for x in p["estado"].values()]
+    assert len(set(ids_estado)) == len(pasos) and len(set(ids_pila)) == len(pasos)
+    assert len(set(ids_nodo)) == len(ids_nodo)
+
+
+@pytest.mark.parametrize("modo,variante", MODOS, ids=lambda x: str(x))
+def test_la_frase_dice_lo_que_paso(modo, variante):
+    r = j.pasos_interactivos(modo, variante)
+    tipo = {x["id"]: x["tipo"] for x in r["arbol"]["nodos"]}
+    prob = {x["id"]: x["prob"] for x in r["arbol"]["nodos"]}
+    poda = modo in ("alfa-beta", "iterativa")
+    for grupo in _por_busqueda(r["pasos"]):
+        ventana, previo_v = {}, {}
+        previo_r = "−∞"
+        for p in grupo:
+            f, t = p["frase"], tipo[p["pila"][-1]]
+            if p["evento"] == "regresa":
+                if p["corta"]:
+                    marca = "≥ β" if t == "MAX" else "≤ α"
+                    assert f"v = {p['v']} {marca} = " in f, f
+                    borde = p["beta"] if t == "MAX" else p["alfa"]
+                    assert f"{marca} = {borde} → corte {p['corta']}" in f, f
+                elif t == "AZAR":
+                    assert f"{prob[p['hijo']]} · {p['w']}" in f, f
+                    peso = Fraction(prob[p["hijo"]]) * Fraction(p["w"])
+                    assert f"v = {previo_v[p['nodo']]} + {j.fmt_t(peso)} = {p['v']}." in f, f
+                else:
+                    op = "max" if t == "MAX" else "min"
+                    assert f": v = {op}(" in f and f"= {p['v']}" in f, f
+                    if poda:
+                        a0, b0 = ventana[p["nodo"]]
+                        if t == "MAX":
+                            esperado = (f"α sube a {p['alfa']}" if p["alfa"] != a0
+                                        else f"α sigue en {p['alfa']}")
+                        else:
+                            esperado = (f"β baja a {p['beta']}" if p["beta"] != b0
+                                        else f"β sigue en {p['beta']}")
+                        assert esperado in f, f
+            if p["evento"] == "raiz":
+                nombre = "α" if poda else "mejor_valor"
+                if p["mejora"]:
+                    assert f"{p['w']} > {nombre} = {previo_r} → " in f, f
+                    assert f"mejor_jugada = {p['mejor_jugada']}" in f, f
+                else:
+                    assert f"{p['w']} > {nombre} = {previo_r} es falso" in f, f
+                    assert f"sigue en {p['mejor_jugada']}" in f, f
+            if p["evento"] == "podado":
+                hoja = tipo[p["nodo"]] == "HOJA"
+                assert f.endswith("la deja fuera." if hoja else "lo deja fuera."), f
+            if p["evento"] in ("inicio", "entra", "regresa"):
+                ventana[p["nodo"]] = (p["alfa"], p["beta"])
+                previo_v[p["nodo"]] = p["v"]
+            if p["pila"] == ["R"] and p["evento"] in ("inicio", "raiz"):
+                previo_r = p["v"]
+
+
+@pytest.mark.parametrize("modo,variante", [
+    ("corte", 0), ("corte", 4), ("corte", True), ("corte", "x"), ("alfa-beta", "T2"),
+    ("alfa-beta", ""), ("minimax", "T"), ("azar", 1), ("iterativa", 3)])
+def test_una_variante_invalida_da_value_error(modo, variante):
+    with pytest.raises(ValueError):
+        j.pasos_interactivos(modo, variante)
+
+
+def test_el_total_de_la_iterativa_cuenta_las_tres_busquedas():
+    r = j.pasos_interactivos("iterativa")["resultado"]
+    assert (r["generados"], r["total"]) == (25, 42)
