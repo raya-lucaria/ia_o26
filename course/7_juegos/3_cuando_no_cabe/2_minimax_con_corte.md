@@ -197,7 +197,7 @@ Volvemos al árbol T de [[minimax-como-algoritmo|la clase 2]], con R de MAX,
 I, C y D de MIN, y C1 y C2 de MAX.
 
 - **Sus hojas son finales, y su número ya está en la escala de la línea
-  8.** En hexapawn un final vale $U=\pm1$ y la línea 8 lo vuelve $\pm100$.
+  8.** En el 4×4, como en hexapawn, un final vale $U=\pm1$ y la línea 8 lo vuelve $\pm100$.
   T es un árbol de juguete, sin un juego con $U=\pm1$ detrás: el número de
   cada hoja se lee como lo que ya devolvió la línea 8, $100\cdot U$. Así
   queda en la misma escala que $\mathrm{EVAL}$.

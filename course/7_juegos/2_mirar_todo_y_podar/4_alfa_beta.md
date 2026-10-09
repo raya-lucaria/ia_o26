@@ -78,8 +78,8 @@ dice por qué.
 ::: definition {#jue-c2-t-regla title="La regla de alfa-beta"}
 1. **Hereda los dos.** Al generarse, cada nodo recibe el $\alpha$ y el
    $\beta$ que su padre tiene en ese momento (líneas 4, 12 y 20). **El suyo
-   también empieza heredado**: por ejemplo, en el árbol T de la sección 5,
-   C1, de MAX, arranca con el $\alpha=3$ que trae de la raíz.
+   también empieza heredado**: por ejemplo, un nodo de MAX debajo de uno
+   de MIN arranca con el $\alpha$ que viene de la raíz.
 2. **Lee el del rival.** Después de cada hijo compara su $v$ con el número
    del **rival**:
    - un nodo de **MAX** compara $v$ con $\beta$: si $v\ge\beta$, deja de
@@ -235,7 +235,8 @@ regresa; las hojas van plegadas en la columna $w$.
 - **Fila ✗:** está en la traza de minimax y no en ésta: su hoja (en
   cursiva) no se genera. Así cada fila lleva el mismo número que en la
   traza de minimax del mismo árbol; la de T está en
-  [[minimax-como-algoritmo|Minimax como algoritmo]].
+  [[minimax-como-algoritmo|Minimax como algoritmo]]. La de T1 no se
+  escribe: es la de T sin la rama del centro.
 
 ## 4 · Etapa 1: el árbol T1
 

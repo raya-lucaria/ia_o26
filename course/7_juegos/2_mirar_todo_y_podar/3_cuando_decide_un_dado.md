@@ -55,7 +55,7 @@ Lo demás se queda igual. Lo que cambia, pieza por pieza:
 | $\Pr(a)$ | **Nueva:** la probabilidad de cada resultado; suman 1 |
 | $S$, $s_0$, $S_F$, $T$, $U$ | Iguales que en la clase 1 |
 | $V(s)$ | Lo que MAX obtiene **en promedio**. *Antes, lo que asegura* |
-| Ser racional | Buscar la mayor utilidad **esperada**. *Antes, sin azar, esperar y asegurar coincidían* |
+| Ser racional | Buscar la mayor utilidad **esperada**. *Antes, sin azar, la utilidad esperada y la asegurada eran la misma* |
 :::
 
 > **Repaso de valor esperado.** Si un resultado aleatorio vale
@@ -415,8 +415,8 @@ C1 y C2 se valoran como en minimax y aquí solo devuelven su $w$.
 
 Con MIN en I, C y D, minimax jugaba **centro** (5): D valía 2, el peor de
 sus hijos. Con azar juega **der**, gracias a la **hoja 12**. A un MIN la
-hoja 12 no le cambia nada: con el 2 ya descarta D. A un promedio sí: cada
-hoja mueve el resultado.
+hoja 12 no le cambia nada: con el 2, D ya vale 2 y R se queda con
+centro. A un promedio sí: cada hoja mueve el resultado.
 **Guarda esta hoja: volverá.**
 
 ::: exercise {#jue-c2-t-ej-azar title="Cambia una moneda"}
@@ -499,7 +499,7 @@ explicar qué error comete quien confunde un rival con el azar.
 - Expectiminimax es DECIDIR y MINIMAX con un caso más, el del azar: $v$
   empieza en 0 y suma $\Pr(a)\cdot w$ de **todos** los hijos. En el
   árbol T con monedas juega der, gracias a la hoja 12, que a un MIN no le
-  cambiaba nada: con el 2 ya descartaba D.
+  cambiaba nada: con el 2, D ya valía 2 y R se quedaba con centro.
 - Con azar importan las distancias entre utilidades, no solo su orden.
 
 Continúa con [[alfa-beta|alfa-beta a mano]].

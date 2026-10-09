@@ -301,7 +301,7 @@ traen la utilidad. Lo usan también las páginas que siguen.
 
 **En resumen:** mejor_jugada pasó de **ninguna → izq → centro**, y der no
 la cambió porque su 2 no supera el 5 de centro. El recorrido generó los
-**14 nodos** del árbol: la raíz, que recorre DECIDIR, y los 13 debajo de
+**14 nodos** del árbol: la raíz, que DECIDIR recibe, y los 13 debajo de
 ella, que genera MINIMAX.
 
 ::: exercise {#jue-c2-ej-t-orden title="Llena la traza con los hijos al revés"}

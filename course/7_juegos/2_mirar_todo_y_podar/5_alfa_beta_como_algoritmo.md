@@ -45,8 +45,9 @@ Al terminar tendrás:
 **Piensa: ¿qué líneas de DECIDIR-MINIMAX y MINIMAX hay que tocar para
 cortar?**
 
-Pocas, como viste en [[alfa-beta|Alfa-beta a mano]]: **cuatro nuevas**, y
-las de `return` se recorren. Así se alinean con las de minimax:
+Pocas. Como viste en [[alfa-beta|Alfa-beta a mano]], hay **cuatro
+nuevas**; por eso las de `return` se recorren. Así se alinean con las de
+minimax:
 
 | Alfa-beta | Minimax | Qué cambia |
 |---|---|---|
