@@ -231,7 +231,8 @@ regresa; las hojas van plegadas en la columna $w$.
 - **corta:** la comparación del `if`, **corte o no**: «3≤−∞ no», «7≥5 sí».
   En la raíz es la línea 5: «3>−∞ sí» cambia la jugada; «2>5 no», no.
 - **v:** en las filas de R es `mejor_valor`, que aquí se llama $\alpha$.
-- **jugada:** `mejor_jugada` en ese momento; «—» si todavía no hay.
+- **jugada:** `mejor_jugada` en ese momento; «—» si todavía no hay. En
+  una fila ✗ no corre nada, así que sus columnas van en «—».
 - **Fila ✗:** está en la traza de minimax y no en ésta: su hoja (en
   cursiva) no se genera. Así cada fila lleva el mismo número que en la
   traza de minimax del mismo árbol; la de T está en

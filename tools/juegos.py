@@ -1499,13 +1499,13 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None,
         else:  # fin
             mv = fmt(f["mejor_valor"])
             if modo == "iterativa":
-                frase = f"La búsqueda con d = {d} terminó: jugada = {mejor}; d pasa a {d + 1}."
+                frase = f"La búsqueda con d = {d} terminó: jugada = {mejor}; la siguiente usará d = {d + 1}."
                 if ultima:
                     frase = f"La búsqueda con d = {d} terminó: jugada = {mejor}; ya no hay tiempo."
             elif poda:
-                frase = f"Línea 6: R devuelve {mejor}; α = {mv} se queda dentro."
+                frase = f"R devuelve {mejor}; α = {mv} se queda dentro."
             else:
-                frase = f"Línea 6: R devuelve {mejor}; el valor {mv} se queda dentro."
+                frase = f"R devuelve {mejor}; el valor {mv} se queda dentro."
         es_r = yo == ()
         paso = {
             "n": 0, "evento": ev, "linea": f["linea"], "lineas": lineas_de(f["linea"]),
