@@ -73,38 +73,31 @@ OUTPUT  una jugada de A(s) con el mayor
         valor con corte.
 
  1 function DECIDIR-CON-CORTE(s, d)
-     ▷ mueve MAX en s
  2   mejor_valor ← −∞ ; mejor_jugada ← ninguna
  3   for each a in A(s)
-       ▷ valora el hijo; ya se gastó una
-       ▷ jugada
+       # ya se gastó una jugada: d − 1
  4     w ← MINIMAX-CON-CORTE(T(s, a), d − 1)
-       ▷ estricto: en un empate se queda
-       ▷ la primera
+       # estricto: un empate deja la primera
  5     if w > mejor_valor:
          mejor_valor ← w ; mejor_jugada ← a
- 6   return mejor_jugada   ▷ la jugada, no w
+ 6   return mejor_jugada       # la jugada, no w
 
+   # d: las jugadas que quedan por mirar
  7 function MINIMAX-CON-CORTE(s, d)
-     ▷ d: las jugadas que quedan por mirar
-     ▷ un final vale su utilidad, en otra
-     ▷ escala: 100 pesa más que cualquier
-     ▷ estimación
+     # ×100: un final pesa más que EVAL
  8   if s ∈ S_F: return 100 · U(s)
-     ▷ ya no quedan jugadas: se estima
- 9   if d = 0: return EVAL(s)  ▷ nodo de corte
+ 9   if d = 0: return EVAL(s)  # se estima
 10   if Pl(s) = MAX
-11     v ← −∞                 ▷ menor que todo
+11     v ← −∞                  # menor que todo
 12     for each a in A(s)
-         ▷ al hijo le queda una jugada menos
 13       w ← MINIMAX-CON-CORTE(T(s, a), d − 1)
-14       v ← max(v, w)        ▷ el mayor
+14       v ← max(v, w)         # el mayor
 15     return v
-16   else                     ▷ Pl(s) = MIN
-17     v ← +∞                 ▷ mayor que todo
+16   else                      # Pl(s) = MIN
+17     v ← +∞                  # mayor que todo
 18     for each a in A(s)
 19       w ← MINIMAX-CON-CORTE(T(s, a), d − 1)
-20       v ← min(v, w)        ▷ el menor
+20       v ← min(v, w)         # el menor
 21     return v
 ```
 
