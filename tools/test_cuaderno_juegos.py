@@ -7,11 +7,12 @@ cada fila de la traza). Esta prueba es lo que ata esa copia a la fuente:
 
 - el archivo es un nbformat 4 guardado sin salidas, y su primera celda
   lleva el badge de Colab con la URL de su propia ruta en main;
-- celdas cortas: 15 lineas en general, 25 para una celda «algoritmo» (una
-  funcion de la pagina entera, con sus yield) y 32 para las dos de alfa-beta:
-  dos ramas con cuatro filas y dos cortes no caben en 25 sin quitar lineas
-  de la pagina; sin tope para la «maquinaria» plegada; 79 caracteres
-  siempre;
+- celdas cortas: 15 lineas en general, 36 para una celda «algoritmo» (una
+  funcion de la pagina entera, tal cual, mas sus yield), sin tope para la
+  «maquinaria» plegada; 79 caracteres siempre;
+- cada celda «algoritmo», sin sus lineas de instrumentacion y sin «yield
+  from», es renglon por renglon la funcion del bloque ```python de su
+  pagina: mismos comentarios, mismos marcadores, mismos saltos;
 - las celdas «logica» (solo biblioteca estandar) se ejecutan aqui, y sus
   pasos se comparan campo por campo con juegos.pasos_interactivos para cada
   modo y variante, y con juegos.traza_decidir en arboles con empates, donde
@@ -38,8 +39,7 @@ RUTA = "course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb"
 CUADERNO = REPO / RUTA
 URL = ("https://colab.research.google.com/github/raya-lucaria/ia_o26/"
        "blob/main/" + RUTA)
-MAX_LINEAS, ALGORITMO_MAX, MAX_ANCHO = 15, 25, 79
-ALFA_BETA_MAX = {"alfa_beta": 32, "alfa_beta_con_corte": 32}
+MAX_LINEAS, ALGORITMO_MAX, MAX_ANCHO = 15, 36, 79
 SOLO_EN_LA_WEB = ("matplotlib", "ipywidgets", "IPython", "plt.")
 
 MODOS = [("minimax", None), ("azar", None), ("alfa-beta", "T1"),
@@ -128,10 +128,7 @@ def test_cada_celda_de_codigo_es_corta(nb):
             assert c["metadata"].get("cellView") == "form"
             assert lineas[0].startswith("# @title"), lineas[0]
             continue
-        tope = MAX_LINEAS
-        if "algoritmo" in tags(c):
-            nombre = re.search(r"^def (\w+)", fuente(c), re.M).group(1)
-            tope = ALFA_BETA_MAX.get(nombre, ALGORITMO_MAX)
+        tope = ALGORITMO_MAX if "algoritmo" in tags(c) else MAX_LINEAS
         assert len(lineas) <= tope, (len(lineas), lineas[0])
 
 
@@ -146,6 +143,45 @@ def test_una_celda_por_funcion_de_la_pagina(nb):
     nombres = {re.search(r"^def (\w+)", fuente(c), re.M).group(1)
                for c in celdas(nb, "algoritmo")}
     assert nombres == {n for par in FUENTES.values() for n in par}
+
+
+def funciones_de_pagina(modo):
+    """{nombre: renglones} del bloque ```python de la pagina del modo. Una
+    funcion lleva los comentarios pegados encima de su def."""
+    texto = (j.UNIDAD_JUEGOS / j.PAGINA_MODO[modo]).read_text(encoding="utf-8")
+    bloque = re.search(r"^```python\n(.*?)^```$", texto, re.S | re.M).group(1)
+    res, actual, pegados = {}, None, []
+    for r in bloque.split("\n"):
+        if r.startswith("def "):
+            actual = re.match(r"def (\w+)", r).group(1)
+            res[actual], pegados = pegados + [r], []
+        elif r.startswith("#"):
+            pegados.append(r)
+        elif not r.strip():
+            pegados = []
+            if actual:
+                res[actual].append(r)
+        elif actual:
+            res[actual].append(r)
+    for renglones in res.values():
+        while renglones and not renglones[-1].strip():
+            renglones.pop()
+    return res
+
+
+def sin_instrumentar(texto):
+    return [r.replace("yield from ", "") for r in texto.split("\n")
+            if not re.search(r"yield paso\(|yield from corte\(", r)]
+
+
+@pytest.mark.parametrize("modo", sorted(FUENTES))
+def test_cada_funcion_es_la_de_la_pagina_tal_cual(nb, modo):
+    pagina = funciones_de_pagina(modo)
+    for c in celdas(nb, modo):
+        if "algoritmo" not in tags(c):
+            continue
+        nombre = re.search(r"^def (\w+)", fuente(c), re.M).group(1)
+        assert sin_instrumentar(fuente(c)) == pagina[nombre], nombre
 
 
 def test_las_celdas_de_logica_solo_usan_la_biblioteca_estandar(nb):
