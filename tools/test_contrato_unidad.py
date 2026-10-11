@@ -260,6 +260,9 @@ def test_el_ejercicio_completo_no_da_hallazgos():
 
 def test_ejercicio_sin_pista():
     assert reglas(ejercicio(pistas=0)) == ["ejercicio-sin-pista"]
+    # Media, no alta: un micro de un paso puede ir sin pista (ejercicios.md §
+    # Excepciones) y el script no sabe distinguirlo; la lente decide.
+    assert cu.SEVERIDAD["ejercicio-sin-pista"] == "media"
 
 
 def test_ejercicio_sin_respuesta_o_con_dos():

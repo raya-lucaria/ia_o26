@@ -18,6 +18,13 @@ Por cada página: captura de página completa a 390x844 y 1280x800 (cambia con
 --anchos), todos los <details> del artículo abiertos y MathJax terminado. Imprime una
 línea por captura con scrollWidth (> ancho = scroll horizontal) y los
 errores de consola o HTTP >= 400. Sale 1 si hubo scroll horizontal o errores.
+
+Cada captura se corta además en franjas de <= 2000 px de alto (con 80 px de
+traslape), <nombre>_<ancho>_fNN.png: son las que abre la lente Render, porque
+una captura de 30 000 px no cabe en una lectura de imagen. SALIDA/inventario.tsv
+lleva una fila por captura: página, ancho, figuras, tablas, fórmulas display,
+details del artículo (pistas y respuestas, sin los del grafo de conexiones),
+nº de franjas y sus nombres. Es el {{INVENTARIO}} de prompts/lente-render.md.
 Requiere playwright (python3 -c "import playwright"); usa google-chrome si está.
 Construye antes: raya build (ver referencias/verificacion.md).
 """
@@ -40,7 +47,14 @@ FONDO = "#211033"   # tokens.color.surface del skin (ver test_skin.py)
 
 # Solo los <details> del artículo (pistas, respuestas); los del marco del sitio
 # (índice, contexto) se quedan como están, o la captura mide 30 000 px.
-DETALLES = "#raya-article details, body > details"
+# Los del grafo de conexiones (raya-connection-preview) son del framework: ni se
+# abren ni se cuentan.
+DETALLES = "#raya-article details:not(.raya-connection-preview), body > details"
+FRANJA, TRASLAPE = 2000, 80
+CONTAR = """() => { const a = document.querySelector('#raya-article') || document.body;
+  const n = s => a.querySelectorAll(s).length;
+  return [n('.raya-numbered-object--figure'), n('table'),
+          n('mjx-container[display="true"]'), n('details:not(.raya-connection-preview)')]; }"""
 ABRIR = f"""() => {{ document.querySelectorAll('{DETALLES}').forEach(d => d.open = true); }}"""
 ESPERAR_MATH = """async () => {
   const mj = window.MathJax;
@@ -64,6 +78,21 @@ def servidor():
     return srv
 
 
+def franjas(png):
+    """Corta png en franjas <= FRANJA px de alto; devuelve sus nombres."""
+    from PIL import Image
+    im = Image.open(png)
+    w, h = im.size
+    nombres, y, k = [], 0, 1
+    while True:
+        f = png.with_name(f"{png.stem}_f{k:02d}.png")
+        im.crop((0, y, w, min(y + FRANJA, h))).save(f)
+        nombres.append(f.name)
+        if y + FRANJA >= h:
+            return nombres
+        y, k = y + FRANJA - TRASLAPE, k + 1
+
+
 def tam_svg(p):
     t = p.read_text(encoding="utf-8")[:2000]
     w = re.search(r'<svg[^>]*\bwidth="([\d.]+)', t)
@@ -82,6 +111,7 @@ def main():
     tams = [tuple(map(int, t.split("x"))) for t in a.anchos.replace(" ", ",").split(",") if t]
     srv = None
     malas = 0
+    inventario = ["pagina\tancho\tfiguras\ttablas\tformulas\tdetails\tn_franjas\tfranjas"]
     chrome = shutil.which("google-chrome")
     with sync_playwright() as pw:
         b = pw.chromium.launch(executable_path=chrome, args=["--no-sandbox"]) if chrome else pw.chromium.launch()
@@ -104,6 +134,8 @@ def main():
                 f2 = salida / f"{slug(base)}_390.png"
                 pg.screenshot(path=str(f2), full_page=True); pg.close()
                 envoltura.unlink()
+                fr = franjas(f2)
+                inventario.append(f"{base}\t390\t-\t-\t-\t-\t{len(fr)}\t{','.join(fr)}")
                 print(f"svg {w}x{h}  {f}  {f2}")
                 continue
             if base.endswith(".html"):
@@ -131,8 +163,11 @@ def main():
                 pg.wait_for_timeout(600)
                 sw = pg.evaluate("document.documentElement.scrollWidth")
                 n = pg.evaluate(f"document.querySelectorAll('{DETALLES}').length")
+                cuenta = pg.evaluate(CONTAR)
                 f = salida / f"{slug(ruta)}_{w}.png"
                 pg.screenshot(path=str(f), full_page=True)
+                fr = franjas(f)
+                inventario.append("\t".join([ruta, str(w), *map(str, cuenta), str(len(fr)), ",".join(fr)]))
                 mal = sw > w or errores
                 malas += bool(mal)
                 print(f"{'MAL' if mal else 'ok '} {w}px scrollWidth={sw} details={n} {f}"
@@ -141,6 +176,8 @@ def main():
         b.close()
     if srv:
         srv.shutdown()
+    (salida / "inventario.tsv").write_text("\n".join(inventario) + "\n", encoding="utf-8")
+    print(f"inventario: {salida / 'inventario.tsv'}")
     return 1 if malas else 0
 
 

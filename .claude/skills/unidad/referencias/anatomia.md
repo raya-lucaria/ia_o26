@@ -1,8 +1,7 @@
 # Anatomía: página, bloques por tipo e índices
 
 Abreviaturas de ruta: `J2/` = `course/7_juegos/2_mirar_todo_y_podar/`, `J1/` = `course/7_juegos/1_leer_y_escribir/`,
-`M/` = `course/6_optimizacion/5_practica_de_modelado/`. Frontmatter, ids, wikilinks y directivas: ver CLAUDE.md
-§ Authoring contract; aquí solo lo que el contrato de Raya no dice.
+`M/` = `course/6_optimizacion/5_practica_de_modelado/`. Frontmatter, ids, wikilinks y directivas: CLAUDE.md § Authoring contract.
 
 ## Núcleo común de toda página de contenido
 1. **DEBE** abrir con la **pregunta guía en negrita** tras el `#` (`J2/2_minimax_como_algoritmo.md:13`).

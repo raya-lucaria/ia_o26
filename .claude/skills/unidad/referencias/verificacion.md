@@ -8,7 +8,7 @@
 | 2 | `pytest tools/` | 3 y 5 (`-k` de lo tocado), 7 completo, antes de cada commit | 0 fallas y ningún skip prohibido |
 | 3 | `raya validate` y `raya build` | 4 tras cada ola (validate), 6 y 7 (build) | sin errores ni advertencias |
 | 4 | pruebas que leen `artifact/` | 7, después de 3 | 0 skips |
-| 5 | capturas 390/1280 miradas | 6 (lente Render), 7 sobre lo tocado | cada PNG visto, sin desborde |
+| 5 | capturas 390/1280 miradas | 6 (lente Render), 7 sobre lo tocado | cada franja vista, sin desborde; AVISO mirados |
 | 6 | mutaciones | 3, 5 u 8, cada vez que nace una guarda | la guarda falla con el defecto |
 | 7 | CI tras el merge | G3 | `checks` y `course-pages` verdes |
 | 8 | en vivo, Colab incluido | G3, tras el deploy | `en_vivo.sh` sale 0 |
@@ -48,8 +48,8 @@ UV_PROJECT_ENVIRONMENT=.venv-local uv run raya build    $R    # ~70 s; escribe $
 $S/capturas.sh $SCR/cap <ruta-del-sitio>/ … course/<unidad>/_assets/<id>.svg …
 $S/revisar_desborde.py --unidad <segmento-de-la-unidad>/              # medido, a 390 px
 ```
-- **DEBE**: cada página y SVG tocados, a 390 y 1280, con los `<details>` del artículo abiertos; abre cada PNG con Read (recorta con PIL si mide > 8000 px). Un SVG se mira en navegador, no con ImageMagick (CLAUDE.md § Computabilidad y complejidad).
-- **DEBE**: `revisar_desborde.py` sale 0: sin scroll de página, fórmula más ancha que su bloque, tramo partido en celda ni error de MathJax. Una figura o tabla con scroll propio no cuenta.
+- **DEBE**: cada página y SVG tocados, a 390 y 1280, con los `<details>` del artículo abiertos; se abren las **franjas** (`<nombre>_<ancho>_fNN.png`, ≤2000 px) con Read, contra `inventario.tsv`. Un SVG se mira en navegador, no con ImageMagick (CLAUDE.md § Computabilidad y complejidad).
+- **DEBE**: `revisar_desborde.py` sale 0: sin scroll de página, fórmula más ancha que su bloque, tramo partido en celda ni error de MathJax. Una figura o tabla con scroll propio no falla, pero sale como **AVISO** (ancho visible vs total) y se mira en su franja de 390: el scroll de una tabla de ejercicio de 7 columnas escondía justo las columnas a llenar.
 
 ## 6 · Mutaciones
 

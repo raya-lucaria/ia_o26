@@ -17,6 +17,7 @@ Cadena: **fuente → generadores → (notebook, animación) → pruebas**. Coman
 ## 1 · Fuente única de los números
 
 - **DEBE**: todo número que cite una página (prosa, tabla, figura, pie) sale de una función de `tools/<unidad>.py`, y una aserción de `test_<unidad>.py` lo fija con el valor escrito en la prosa (`tools/juegos.py:1`, `tools/test_juegos.py:19`). Cambiar una regla sin tocar la prosa tiene que romper la suite.
+- **DEBE**: esa prueba busca la cifra **en el texto de la página**, además de en la fuente: cambiar la prosa sin tocar la regla también tiene que romperla. Contraejemplo: `tools/test_juegos.py:91` se llama «números de la prosa» y no lee ninguna página (`defectos.md` #39).
 - **DEBE**: nada se copia a mano: figuras, notebook y animación leen de la fuente o de la página.
 - **DEBE**: los datos de tarea **no** entran a la fuente nueva (las tareas quedan fuera de alcance; ver SKILL.md).
 - **DEBE**: el bloque ```python de cada página corre y decide lo que la página dice: se extrae y se ejecuta (`tools/test_pseudocodigo_juegos.py:99`).

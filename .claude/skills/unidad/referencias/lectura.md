@@ -50,4 +50,5 @@ Lo que no se puede medir (definir, ordenar, repetir) lo revisa la **lente del al
 - **«Lo que traes» y «Lo que hay que llevarse»** no cuentan para ningún tope (repetición útil): ni frases, ni negrita, ni
   palabras por minuto.
 - **`**Piensa: …?**`**, uno por `##` explicativo, no cuenta para la negrita media ni para el tope por párrafo.
-- Una página >20 % sobre su tope de palabras por minuto no se recorta a ciegas: es disparador de pregunta (SKILL.md).
+- Una página >20 % sobre su tope de palabras por minuto no se recorta a ciegas: en `unidad` es disparador de pregunta
+  (SKILL.md); en `unidad-auditar` es hallazgo **media** con la cifra (pal/min contra tope).

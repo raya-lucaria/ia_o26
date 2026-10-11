@@ -13,6 +13,7 @@ Directivas `exercise`/`hint`/`answer` y su render: ver CLAUDE.md § Authoring co
 | 3 · Traza con huecos | Correr el algoritmo sin ver la solución | Misma tabla que la resuelta, con «?» | `J/2_minimax_como_algoritmo.md:319-420` |
 | 4 · Ejercicio final | Transferir la idea de la página | Preámbulo, 2 pistas, respuesta | `P/4_regresion_practica.md:570-663` |
 
+- **DEBE** llevar ejercicio final (nivel 4) cada página de **algoritmo** y de **modelado**; en **concepto a mano** es opcional; **índices** y **notación** no lo llevan (tipos: `anatomia.md`).
 - **DEBE** haber ≥1 micro por `##` explicativo; lo antecede «**Estamos aquí:**» si hay que ubicar el estado (`J/1_minimax.md:152`). La respuesta no está en el párrafo anterior.
 - **DEBE** la traza con huecos poner «?» solo en celdas que se deducen; su respuesta reimprime la tabla con **en negrita lo que faltaba** y lo dice: «En negrita, lo que era «?»» (`J/2_minimax_como_algoritmo.md:378`, `J/4_alfa_beta.md:525`).
 - **DEBE** el orden de directivas ser **exercise → hint → hint → answer**, contiguas y en la misma página (no como `course/6_optimizacion/4_entero/1_la_bitacora_del_taller.md:174`, que deja las respuestas en otra).
@@ -67,7 +68,7 @@ Directivas `exercise`/`hint`/`answer` y su render: ver CLAUDE.md § Authoring co
 
 ## Excepciones
 
-- Micro sin pista cuando la pregunta es un cálculo de un paso (`course/7_juegos/4_sin_turnos/1_jugar_a_la_vez.md:119-135`).
+- Micro sin pista cuando la pregunta es un cálculo de un paso (`course/7_juegos/4_sin_turnos/1_jugar_a_la_vez.md:119-135`). `tools/contrato_unidad.py` no lo distingue: marca todo `ejercicio-sin-pista` como **media** y la lente decide.
 - `##` sin micro: motivación, resumen, «Lo que hay que llevarse», y secciones cubiertas por una traza con huecos del mismo tramo.
 - Página de concepto o lectura sin traza con huecos: el nivel 3 no aplica.
 - La página de cierre de un bloque de práctica puede no tener ejercicio final (`P/0_index.md:77`: el juego no lleva).

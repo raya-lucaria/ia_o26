@@ -6,7 +6,7 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 
 | # | Síntoma | Cómo se vio | Qué no lo vio | Qué lo atrapa hoy |
 |---|---|---|---|---|
-| 1 | Prosa ≠ número (peor caso 2^(n+1)−1, big-M «ajustada» que no lo era) | `8de1808` tres lentes | pytest, validate | Pruebas que fijan cada cifra (`test_juegos.py::test_clase_3_numeros_de_la_prosa`); lente Corrección |
+| 1 | Prosa ≠ número (peor caso 2^(n+1)−1, big-M «ajustada» que no lo era) | `8de1808` tres lentes | pytest, validate | Pruebas que fijan cada cifra en la fuente (`test_juegos.py::test_clase_3_numeros_de_la_prosa`; la prosa no, #39); lente Corrección |
 | 2 | Prosa ≠ figura (pie dice «alfa-beta nunca la genera» en página previa; aria-label «fila 9» vs tabla «fila 10») | `b745adf`, `5645d82` | pytest | `test_gen_juegos.py::test_las_figuras_de_alfa_beta_en_t_citan_la_fila_de_la_pagina`; lente Corrección |
 | 3 | Hecho falso en prosa: «las hojas… todas son distintas» y la hoja 2 sale dos veces | auditoría, `course/7_juegos/2_mirar_todo_y_podar/2_minimax_como_algoritmo.md:210` | todo | Lente Corrección (cotejar cada afirmación con la fuente) |
 | 4 | El Python publicado no corría (imports faltantes, `linprog` con lista) | `8de1808` | validate, pytest | `test_pseudocodigo_juegos.py::test_cada_pseudocodigo_trae_su_python_y_define_lo_que_dice` (juegos); fuera de juegos, lente Corrección corre cada bloque |
@@ -44,6 +44,7 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 | 36 | Reemplazo de texto que no reemplazó nada y reportó éxito | `c25650d`, `6a7fd9b` | — | Afirmar cada reemplazo; `git diff` antes de reportar |
 | 37 | Suite roja que pasa por verde (`pytest … \| tail`) | `958fa25` | — | Leer el código de salida (`verificacion.md`) |
 | 38 | Contenido que se mueve o se sale de su tarjeta en la animación | `e62b8db`, recorrido Playwright | — | Lente Render (recorrido a 390 y 1280) |
+| 39 | La prueba fija la fuente, no la prosa: una cifra cambiada en la página no rompe nada | auditoría, `tools/test_juegos.py:91` (no lee páginas) | pytest verde | Nada (deuda); `codigo.md` § 1 exige leer la página |
 
 ## Mantenimiento
 

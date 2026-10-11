@@ -60,7 +60,7 @@ G1 intención ─► 1 leer ─► 2 plan ─► G2 aprobación ─► 3 calcula
 
 **5 · Código que acompaña** (paralelo tras calcular): figuras, notebook con Open in Colab (solo si la unidad tiene algoritmo ejecutable), animación (solo algoritmos). Ver `codigo.md`. Los generadores corren una vez, al final, desde ti.
 
-**6 · Revisar.** `revision.md`: tres lentes en paralelo, sin contexto previo, con errores sembrados; evidencia `archivo:línea` o captura; ≤3 rondas; rondas 2–3 solo sobre el diff. Arreglas, y lo que se repite se vuelve prueba.
+**6 · Revisar.** `revision.md`: tres lentes en paralelo (Render, una por cada ≤6 páginas), sin contexto previo, con errores sembrados; evidencia `archivo:línea` o franja; ≤3 rondas; rondas 2–3 solo sobre el diff. Arreglas, y lo que se repite se vuelve prueba.
 
 **7 · Verificar.** `verificacion.md`, en orden. Corre también `python3 tools/contrato_unidad.py <unidad>`; si la unidad está en `UNIDADES_CONTRATO`, 0 altas y medias.
 

@@ -19,10 +19,13 @@ Reglas, con su severidad
 regla                      severidad  qué mide
 =========================  =========  ==========================================
 imagen-fuera-de-figure     alta       `![…](…)` sin un `::: figure` que la envuelva
-ejercicio-sin-pista        alta       `::: exercise` sin ningún `::: hint of=` suyo
 ejercicio-respuestas       alta       un ejercicio con ≠ 1 `::: answer of=` suyo
 of-sin-ejercicio           alta       hint/answer sin `of=` o cuyo `of=` no es un
                                       exercise/problem de la misma página
+ejercicio-sin-pista        media      `::: exercise` sin ningún `::: hint of=` suyo
+                                      (media, no alta: el script no distingue un
+                                      micro de un paso, que puede ir sin pista,
+                                      ver referencias/ejercicios.md § Excepciones)
 orden-ejercicio            media      no va exercise → hint(s) → answer
 frase-larga                media      una frase > `frase_max` palabras
 frases-p90                 media      el p90 de las frases de la página > `frase_p90`
@@ -155,9 +158,9 @@ UNIDADES_CONTRATO: list[str] = []
 
 SEVERIDAD = {
     "imagen-fuera-de-figure": "alta",
-    "ejercicio-sin-pista": "alta",
     "ejercicio-respuestas": "alta",
     "of-sin-ejercicio": "alta",
+    "ejercicio-sin-pista": "media",   # micro de un paso puede ir sin pista
     "orden-ejercicio": "media",
     "frase-larga": "media",
     "frases-p90": "media",

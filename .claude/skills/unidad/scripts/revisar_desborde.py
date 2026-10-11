@@ -17,8 +17,13 @@ Por página, a 390 px (o --ancho), con los <details> del artículo abiertos:
   - TABLA      un tramo de >= 4 letras partido entre renglones dentro de una
                celda (cortar justo tras un guion o una raya no cuenta), o una fórmula que se sale de su celda;
   - MATHERR    MathJax no pudo componer una fórmula (\\boldsymbol y similares).
-Una tabla o figura ancha con scroll propio NO cuenta: es el diseño (ver
-referencias/figuras.md). Sale 1 si hay hallazgos. Requiere playwright.
+Una tabla o figura ancha con scroll propio NO es hallazgo (es el diseño, ver
+referencias/figuras.md), pero se lista como
+  - AVISO      contenedor con scroll horizontal propio: selector, ancho visible
+               vs total y qué tiene dentro (una tabla de 7 columnas cuyo scroll
+               esconde justo las columnas a llenar solo se ve así).
+La lente Render mira cada AVISO en su franja. Los avisos no cambian el código
+de salida. Sale 1 si hay hallazgos. Requiere playwright.
 Local: construye antes con raya build. Salida solo a stdout.
 """
 import argparse
@@ -85,7 +90,22 @@ JS = r"""
   });
   art.querySelectorAll('mjx-merror, [data-mjx-error]').forEach(e =>
     h.push(['MATHERR', e.getAttribute('data-mjx-error') || txt(e)]));
-  return h;
+  const av = [], vistos = new Set();
+  for (const el of art.querySelectorAll('*')) {
+    if (!['auto', 'scroll'].includes(getComputedStyle(el).overflowX) || el.scrollWidth <= el.clientWidth + 1) continue;
+    if (el.tagName.startsWith('MJX') || el.closest('mjx-container')) continue;  // fórmulas: ya las mide FORMULA
+    if ([...vistos].some(v => v.contains(el))) continue;
+    vistos.add(el);
+    const tb = el.querySelector('table') || (el.tagName === 'TABLE' ? el : null);
+    const obj = el.closest('.raya-numbered-object, .raya-static-environment');
+    const tit = obj ? txt(obj.querySelector('.raya-numbered-object-heading, .raya-static-environment-heading') || obj) : '';
+    const que = tb ? `tabla de ${tb.rows[0] ? tb.rows[0].cells.length : '?'} columnas` :
+                el.querySelector('img,svg') ? 'figura' : el.tagName === 'PRE' || el.querySelector('pre') ? 'código' : 'otro';
+    const sel = el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
+                (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/).join('.') : '');
+    av.push(['AVISO', `${que}, visible ${el.clientWidth}px de ${el.scrollWidth}px: ${sel}${tit ? ' · ' + tit : ''}`]);
+  }
+  return [h, av];
 }
 """
 
@@ -125,7 +145,7 @@ def main():
             sys.exit(f"no construidas: {faltan} (corre raya build)")
         srv = servidor()
         raiz = f"http://127.0.0.1:{srv.server_address[1]}/"
-    total = 0
+    total = n_avisos = 0
     chrome = shutil.which("google-chrome")
     with sync_playwright() as pw:
         b = pw.chromium.launch(executable_path=chrome, args=["--no-sandbox"]) if chrome else pw.chromium.launch()
@@ -137,13 +157,14 @@ def main():
             pg.evaluate("""async () => { const mj = window.MathJax;
                 if (mj && mj.startup && mj.startup.promise) { try { await mj.startup.promise; } catch (e) {} } }""")
             pg.wait_for_timeout(800)
-            hall = pg.evaluate(JS)
+            hall, avisos = pg.evaluate(JS)
             total += len(hall)
+            n_avisos += len(avisos)
             print(f"{'ok ' if not hall else 'MAL'} {r}")
-            for tipo, d in hall:
+            for tipo, d in hall + avisos:
                 print(f"    {tipo:8} {d}")
         b.close()
-    print(f"{len(rutas)} página(s) a {a.ancho}px, {total} hallazgo(s)")
+    print(f"{len(rutas)} página(s) a {a.ancho}px, {total} hallazgo(s), {n_avisos} aviso(s) de scroll propio")
     return 1 if total else 0
 
 
