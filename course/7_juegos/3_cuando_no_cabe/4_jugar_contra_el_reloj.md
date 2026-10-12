@@ -286,8 +286,8 @@ las demás se podan antes; lo viste en
 
 Para aprovecharlo, se abre la línea 5 de la versión corta: en vez de una
 sola llamada a DECIDIR-CON-CORTE, el ciclo sobre los hijos de la raíz
-queda a la vista. Ahí entran cuatro cambios. Van de uno en uno; los números de línea son los
-del bloque completo, más abajo.
+queda a la vista. Ahí entran cuatro cambios, y los números de línea son
+los del bloque completo.
 
 Los nombres nuevos:
 
@@ -297,27 +297,9 @@ Los nombres nuevos:
   DECIDIR.
 - **$w$:** lo que devuelve un hijo de la raíz.
 
-**Cambio 1 · Valorar cada hijo con alfa-beta.** La raíz recorre sus hijos
-como DECIDIR-ALFA-BETA. La línea 5 pone ${\alpha=-\infty}$. La línea 7
-valora cada hijo con ALFA-BETA-CON-CORTE y le pasa la ventana
-${(\alpha,+\infty)}$: el hijo recibe lo que la raíz ya asegura. Si ${w>\alpha}$,
-la línea 10 sube $\alpha$ y anota la jugada en `mejor_jugada`.
-
-**Cambio 2 · La jugada anterior primero.** La línea 6 recorre $A(s)$
-empezando por `jugada`, la que dejó lista la búsqueda anterior. Sin poda,
-el orden no cambiaba nada. Con alfa-beta, si esa jugada es buena, $\alpha$
-sube con el primer hijo y los demás se podan antes.
-
-**Cambio 3 · El reloj entre dos hijos.** La versión corta miraba el reloj
-solo al terminar cada búsqueda. La línea 8 lo mira tras cada hijo de la
-raíz. Si se acabó, la búsqueda en curso no cuenta y se entrega `jugada`.
-
-**Cambio 4 · La salida con 100.** Si un hijo devuelve 100, gana seguro y
-no hay nada mejor que buscar: la línea 9 lo entrega en ese momento.
-
-Con los cuatro cambios juntos queda PROFUNDIZACIÓN-ITERATIVA, en las
-líneas 1–13. Su auxiliar, ALFA-BETA-CON-CORTE, va en el mismo bloque, en
-las líneas 14–32.
+El bloque completo va primero: PROFUNDIZACIÓN-ITERATIVA, en las líneas
+1–13, y su auxiliar, ALFA-BETA-CON-CORTE, en las líneas 14–32. Debajo, los
+cuatro cambios lo recorren de uno en uno.
 
 ```text
 INPUT   un estado s donde mueve MAX; las
@@ -368,6 +350,24 @@ OUTPUT  una jugada de A(s), la mejor de la
 31       β ← min(β, v)
 32     return v
 ```
+
+**Cambio 1 · Valorar cada hijo con alfa-beta.** La raíz recorre sus hijos
+como DECIDIR-ALFA-BETA. La línea 5 pone ${\alpha=-\infty}$. La línea 7
+valora cada hijo con ALFA-BETA-CON-CORTE y le pasa la ventana
+${(\alpha,+\infty)}$: el hijo recibe lo que la raíz ya asegura. Si ${w>\alpha}$,
+la línea 10 sube $\alpha$ y anota la jugada en `mejor_jugada`.
+
+**Cambio 2 · La jugada anterior primero.** La línea 6 recorre $A(s)$
+empezando por `jugada`, la que dejó lista la búsqueda anterior. Sin poda,
+el orden no cambiaba nada. Con alfa-beta, si esa jugada es buena, $\alpha$
+sube con el primer hijo y los demás se podan antes.
+
+**Cambio 3 · El reloj entre dos hijos.** La versión corta miraba el reloj
+solo al terminar cada búsqueda. La línea 8 lo mira tras cada hijo de la
+raíz. Si se acabó, la búsqueda en curso no cuenta y se entrega `jugada`.
+
+**Cambio 4 · La salida con 100.** Si un hijo devuelve 100, gana seguro y
+no hay nada mejor que buscar: la línea 9 lo entrega en ese momento.
 
 El mismo procedimiento en Python, línea por línea. El reloj es una
 función, `queda_tiempo()`, que dice si sigue habiendo tiempo. El número
@@ -572,7 +572,11 @@ está la búsqueda y qué números maneja.
   queda con 5.
 - **Fila 10:** ${5>-\infty}$, así que la línea 10 sube $\alpha$ a 5.
 
-### Tramo 2 · Izq y der, por tu cuenta
+El estado al cerrar el tramo 1 es la rama de centro del tercer árbol de
+@jue-c3-t-fig-iterativa, más abajo: C vale 5, C1 vale 5 y C2 devolvió 7,
+con la hoja 8 podada.
+
+### Tramo 2 · Izq y der cortan con alfa en 5
 
 ::: exercise {#jue-c3-ej-traza-d3 title="Completa el tramo 2 de la búsqueda con d = 3"}
 Sigue la misma búsqueda desde la fila 11: R prueba izq y luego der.
@@ -580,12 +584,12 @@ Sigue la misma búsqueda desde la fila 11: R prueba izq y luego der.
 | # | línea · pila | $(\alpha,\beta)$ |
 |---:|---|---|
 | 11 | 26 · R›I | ? |
-| 12 | 28–30 · R›I | (5,+∞) |
+| 12 | 28–30 · R›I | ? |
 | 13 | 7–10 · R | (5,+∞) |
 | 14 | 26 · R›D | ? |
-| 15 | 28–30 · R›D | (5,+∞) |
+| 15 | 28–30 · R›D | ? |
 | 16 | 7–10 · R | (5,+∞) |
-| 17 | 11–12 · R | (5,+∞) |
+| 17 | 11–12 · R | ? |
 
 | # | $v$ | $w$ | compara |
 |---:|---:|---|---|
@@ -595,7 +599,7 @@ Sigue la misma búsqueda desde la fila 11: R prueba izq y luego der.
 | 14 | +∞ |  |  |
 | 15 | 2 | 2 | ? |
 | 16 | ? | 2 (D) | ? |
-| 17 | 5 |  |  |
+| 17 | ? |  |  |
 
 1. Llena los «?».
 2. ¿Qué hojas de I y de D no se generan? Contando el tramo 1, ¿cuántos
@@ -614,12 +618,12 @@ En negrita, lo que era «?».
 | # | línea · pila | $(\alpha,\beta)$ |
 |---:|---|---|
 | 11 | 26 · R›I | **(5,+∞)** |
-| 12 | 28–30 · R›I | (5,+∞) |
+| 12 | 28–30 · R›I | **(5,+∞)** |
 | 13 | 7–10 · R | (5,+∞) |
 | 14 | 26 · R›D | **(5,+∞)** |
-| 15 | 28–30 · R›D | (5,+∞) |
+| 15 | 28–30 · R›D | **(5,+∞)** |
 | 16 | 7–10 · R | (5,+∞) |
-| 17 | 11–12 · R | (5,+∞) |
+| 17 | 11–12 · R | **(5,+∞)** |
 
 | # | $v$ | $w$ | compara |
 |---:|---:|---|---|
@@ -629,7 +633,7 @@ En negrita, lo que era «?».
 | 14 | +∞ |  |  |
 | 15 | 2 | 2 | **2≤5: sí** |
 | 16 | **5** | 2 (D) | **2>5: no** |
-| 17 | 5 |  |  |
+| 17 | **5** |  |  |
 
 1. **I y D son de MIN** y llegan con ${\alpha=5}$. Su primera hoja, 3
    y 2, ya cumple ${v\le\alpha}$: corte alfa en la línea 30. En R, ni
@@ -857,8 +861,9 @@ según su ventana.
   de la **última búsqueda completa**. En la posición de la clase, un reloj
   que se acaba durante ${d=2}$ entrega $\text{d2}\textbf{x}\text{c3}$, que
   pierde; durante ${d=3}$, $\text{d2}\textbf{-}\text{d3}$, que gana.
-- Repetir cuesta cerca de ${1/(b-1)}$ de la última búsqueda: 16 nodos
-  contra 33 en la posición de la clase, sin poda.
+- Repetir cuesta poco frente a la última búsqueda: del orden de
+  ${1/(b-1)}$ de ella si $b$ es fijo. En la posición de la clase, sin poda,
+  16 nodos contra 33, porque ahí $b$ no es fijo.
 - La versión corta llama entera a DECIDIR-CON-CORTE. La completa usa
   alfa-beta con $\alpha$ compartido (7), prueba primero la jugada anterior
   (6), mira el reloj entre hijos (8) y sale con 100 (9).

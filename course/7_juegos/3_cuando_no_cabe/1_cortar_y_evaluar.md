@@ -1,7 +1,7 @@
 ---
 id: cortar-y-evaluar
 title: Cortar y evaluar a mano
-nav_title: Cortar y evaluar
+nav_title: Cortar y evaluar a mano
 summary: "Cuando no se puede llegar a los finales, se corta la búsqueda a cierta profundidad y se estima cada posición con una función de evaluación. A mano, en una posición de 4×4: a profundidad 1 se elige una jugada que pierde."
 status: ready
 estimated_time: 30m
@@ -112,8 +112,8 @@ Mucho más. La computadora contó los dos árboles completos:
 | Ajedrez | — | ${\approx10^{44}}$ |
 :::
 
-**Nodos** cuenta los del árbol completo; **estados**, los distintos, como
-en el grafo de la clase 1. Con juego perfecto, en el 3×3 (hexapawn) gana
+**Nodos** cuenta los del árbol completo; **estados**, los del grafo de la
+clase 1. Con juego perfecto, en el 3×3 (hexapawn) gana
 el segundo y en el 4×4 gana el primero. En el ajedrez nadie lo sabe.
 
 ::: exercise {#jue-c3-ej-crecimiento title="Compara los dos árboles"}
@@ -310,7 +310,7 @@ su fila de salida? ¿Qué parte de la fórmula mira el turno?
 
 El peón. Por eso hay que poner $U$ en la **misma escala** que
 $\mathrm{EVAL}$. En los finales usamos ${100\cdot U(s)}$: **100** si gana
-Blancas y **−100** si gana Negras.
+Blancas y **${-100}$** si gana Negras.
 
 Multiplicar por 100 solo cambia la escala; el orden entre finales es el
 mismo que con $U$. Y 100 es mayor que cualquier evaluación: la computadora
@@ -393,8 +393,8 @@ La peor para Blancas. Con ${d=2}$ en la raíz, miramos la jugada de Blancas,
 respuestas, elige la de menor $\mathrm{EVAL}$.
 
 - **$\text{a1}\textbf{-}\text{a2}$.** Negras puede responder
-  $\text{c3}\textbf{x}\text{d2}$ (−10), $\text{a4}\textbf{-}\text{a3}$
-  (1) o $\text{b4}\textbf{-}\text{b3}$ (1). Lo peor para Blancas: −10.
+  $\text{c3}\textbf{x}\text{d2}$ (${-10}$), $\text{a4}\textbf{-}\text{a3}$
+  (1) o $\text{b4}\textbf{-}\text{b3}$ (1). Lo peor para Blancas: ${-10}$.
 - **$\text{d2}\textbf{-}\text{d3}$.** El peón de c3 queda bloqueado por c2 y
   sin nada que capturar. Negras puede responder
   $\text{a4}\textbf{-}\text{a3}$ o $\text{b4}\textbf{-}\text{b3}$, las dos
@@ -429,7 +429,7 @@ ocupa cada una?
 2. Tras un avance: ${10\cdot(3-2)+(3-1)=12}$. Tras
    $\text{b4}\textbf{x}\text{c3}$ quedan dos peones por lado, con avance 1
    cada uno: ${\mathrm{EVAL}=0}$.
-3. Negras recaptura, así que la captura vale **0**. Blancas compara −10,
+3. Negras recaptura, así que la captura vale **0**. Blancas compara ${-10}$,
    1 y 0 y elige **$\text{d2}\textbf{-}\text{d3}$**.
 :::
 
@@ -500,19 +500,19 @@ Blancas llega a la fila 4.
 
 Ninguna, por sí sola. Para saber cuál es la correcta, la computadora
 recorrió el árbol del 4×4 hasta los finales: eso da el **valor exacto**,
-$V$. La última columna lo pone por 100, en la escala de las demás. Las
-otras dos ramas de la profundidad 3 también las hizo la computadora.
+$V$. Las otras dos ramas de la profundidad 3 también las hizo la
+computadora. En la tabla, P1, P2 y P3 son las profundidades 1, 2 y 3, y la
+última columna pone $V$ por 100, en la escala de las demás.
 
 ::: table {#jue-c3-profundidades title="Las tres jugadas a profundidad 1, 2 y 3, y su valor exacto"}
-| | P1 | P2 | P3 | 100V |
+| Jugada | P1 | P2 | P3 | $100\cdot V$ |
 |---|---:|---:|---:|---:|
 | $\text{a1}\textbf{-}\text{a2}$ | 2 | −10 | −9 | −100 |
 | $\text{d2}\textbf{-}\text{d3}$ | 2 | **1** | **100** | **100** |
 | $\text{d2}\textbf{x}\text{c3}$ | **13** | 0 | 1 | −100 |
 :::
 
-P1, P2 y P3 son las profundidades 1, 2 y 3; 100V, el valor exacto por
-100. En negrita, el máximo de cada columna: la jugada que elige Blancas.
+En negrita, el máximo de cada columna: la jugada que elige Blancas.
 
 ::: exercise {#jue-c3-ej-exacto title="Señala qué profundidad acierta"}
 1. ¿Con qué profundidades elige Blancas una jugada que gana?
@@ -528,7 +528,7 @@ esa jugada en la última columna?
 1. Con profundidad 2 y 3: las dos eligen $\text{d2}\textbf{-}\text{d3}$,
    que vale 100.
 2. Con profundidad 1: elige $\text{d2}\textbf{x}\text{c3}$ con 13, y esa
-   jugada vale −100. La sobreestima en **113 puntos**, ${13-(-100)}$.
+   jugada vale ${-100}$. La sobreestima en **113 puntos**, ${13-(-100)}$.
    **Capturar pierde y $\text{d2}\textbf{-}\text{d3}$ gana.**
 :::
 

@@ -1,7 +1,7 @@
 ---
 id: simular-en-vez-de-evaluar
 title: Simular en vez de evaluar
-nav_title: Simular
+nav_title: Simular en vez de evaluar
 summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando. Es la búsqueda de árbol Monte Carlo, la base de AlphaGo."
 status: ready
 estimated_time: 20m
@@ -18,7 +18,7 @@ Al terminar tendrás:
   de ganar, y por qué no es su valor $V$;
 - las cuentas de una **vuelta de MCTS** en sus cuatro pasos, cuando gana
   MAX y cuando pierde;
-- el **puntaje UCT** de tres jugadas con $c=1$, y por qué la que se explora
+- el **puntaje UCT** de tres jugadas con ${c=1}$, y por qué la que se explora
   no es la que se entrega;
 - el recorrido de la clase en tres programas: Deep Blue, AlphaGo y
   AlphaZero.
@@ -27,13 +27,13 @@ Al terminar tendrás:
 > (B) empieza con cuatro peones en la fila 1 y Negras (N), en la fila 4.
 > Empiezan Blancas. Un peón avanza una casilla si está vacía o
 > captura en diagonal hacia delante. Gana quien llega a la fila del rival,
-> captura todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$
+> captura todo o deja al rival sin jugada. ${U=+1}$ si gana Blancas y ${U=-1}$
 > si gana Negras.
 
 > **Las piezas que usa esta página.** Las de
 > [[escribir-el-juego|Escribir el juego]]: $S_F$ (@jue-c1-finales),
 > $\mathrm{Pl}(s)$ (@jue-c1-pl), $A(s)$ (@jue-c1-acciones), $T(s,a)$
-> (@jue-c1-transicion) y $U(s)$, $+1$ si gana MAX y $-1$ si gana MIN
+> (@jue-c1-transicion) y $U(s)$, ${+1}$ si gana MAX y ${-1}$ si gana MIN
 > (@jue-c1-utilidad).
 
 > **Supuestos de esta página.** Los de
@@ -67,7 +67,7 @@ sigue hasta un final, eligiendo en cada estado una jugada al azar de
 $A(s)$. Su resultado es la $U$ del final al que llega.
 
 **Qué significa:** el promedio de muchas simulaciones, $\bar u$, estima qué
-tan buena es $s$ para MAX, en la escala de $U$: entre $-1$ y $+1$.
+tan buena es $s$ para MAX, en la escala de $U$: entre ${-1}$ y ${+1}$.
 
 **Qué no es:** no es el valor $V(s)$. Un rival al azar no es un rival que
 piensa. Una posición puede ganarse en casi todas las simulaciones y
@@ -91,8 +91,8 @@ Desde un estado se juegan 5 simulaciones.
 :::
 
 ::: answer {#jue-c3-resp-cinco of="jue-c3-ej-cinco"}
-1. $\bar u=(3-2)/5=0.2$.
-2. $\bar u=(2-3)/5=-0.2$. Una sola partida que cambia de lado mueve el
+1. ${\bar u=(3-2)/5=0.2}$.
+2. ${\bar u=(2-3)/5=-0.2}$. Una sola partida que cambia de lado mueve el
    promedio $0.4$: con pocas simulaciones, el número todavía brinca mucho.
 :::
 
@@ -109,7 +109,7 @@ con su probabilidad, si **los dos** eligen al azar.
 La tabla lo pone junto a lo que ya conoces. La columna «Azar» es ese
 promedio límite. «Corte» es el valor con corte a profundidad 1, en la escala
 de $\mathrm{EVAL}$. «$V$» es el valor del juego. «Azar» y «$V$» van en la
-escala de $U$, entre −1 y +1. En [[cortar-y-evaluar|Cortar y evaluar]]
+escala de $U$, entre ${-1}$ y ${+1}$. En [[cortar-y-evaluar|Cortar y evaluar]]
 escribimos $V$ multiplicado por 100; aquí va sin multiplicar.
 
 ::: table {#jue-c3-simulaciones title="Promedio de infinitas simulaciones en la posición de la clase"}
@@ -126,33 +126,33 @@ que nadie le escriba una evaluación, la simulación «ve» que el peón de más
 se pierde. En las partidas al azar, Negras recaptura muchas veces.
 
 **Pero un promedio no es el valor.** En hexapawn, las tres aperturas de
-Blancas valen $-1$: Negras gana si juega bien. Sus promedios de simulación
+Blancas valen ${-1}$: Negras gana si juega bien. Sus promedios de simulación
 son los tres **positivos**.
 
 Ojo con un número que ya viste. En
 [[cuando-decide-un-dado|Cuando decide un dado]] solo Negras jugaba al azar
-y Blancas elegía lo mejor: ahí $\text{b1}\textbf{-}\text{b2}$ valía $3/4$.
-Aquí juegan al azar los dos, y vale $5/24$. En la tabla, «Ambos» es el
+y Blancas elegía lo mejor: ahí $\text{b1}\textbf{-}\text{b2}$ valía ${3/4}$.
+Aquí juegan al azar los dos, y vale ${5/24}$. En la tabla, «Ambos» es el
 promedio límite con los dos al azar y «Solo Negras», con solo Negras al azar.
 
 ::: table {#jue-c3-hexapawn-azar title="Hexapawn: las aperturas con uno o con los dos al azar"}
-| Apertura | Ambos | Solo Negras | $V$ |
-|---|---:|---:|---:|
-| $\text{a1}\textbf{-}\text{a2}$ | 7/36 | 5/9 | −1 |
-| $\text{b1}\textbf{-}\text{b2}$ | 5/24 | 3/4 | −1 |
-| $\text{c1}\textbf{-}\text{c2}$ | 7/36 | 5/9 | −1 |
+| Apertura | Ambos | Solo Negras |
+|---|---:|---:|
+| $\text{a1}\textbf{-}\text{a2}$ | 7/36 | 5/9 |
+| $\text{b1}\textbf{-}\text{b2}$ | 5/24 | 3/4 |
+| $\text{c1}\textbf{-}\text{c2}$ | 7/36 | 5/9 |
 :::
 
 ::: exercise {#jue-c3-ej-promedio title="Traduce un promedio a partidas ganadas"}
-Con $U=\pm1$, un promedio $\bar u$ y la probabilidad $p$ de que gane MAX
-cumplen $p=(\bar u+1)/2$, como en
+Con ${U=\pm1}$, un promedio $\bar u$ y la probabilidad $p$ de que gane MAX
+cumplen ${p=(\bar u+1)/2}$, como en
 [[cuando-decide-un-dado|Cuando decide un dado]].
 
 1. ¿Con qué probabilidad gana Blancas las partidas al azar que empiezan con
-   $\text{d2}\textbf{-}\text{d3}$, si el promedio es $8/9$?
+   $\text{d2}\textbf{-}\text{d3}$, si el promedio es ${8/9}$?
 2. Las de hexapawn que empiezan con $\text{b1}\textbf{-}\text{b2}$ tienen
-   promedio $5/24$. ¿Cuántas gana Blancas? ¿Por qué no contradice que
-   $\text{b1}\textbf{-}\text{b2}$ valga $-1$?
+   promedio ${5/24}$. ¿Cuántas gana Blancas? ¿Por qué no contradice que
+   $\text{b1}\textbf{-}\text{b2}$ valga ${-1}$?
 :::
 
 ::: hint {#jue-c3-pista-promedio-1 of="jue-c3-ej-promedio" title="Qué supone cada número"}
@@ -162,10 +162,10 @@ elige sus jugadas cada jugador en cada una?
 :::
 
 ::: answer {#jue-c3-resp-promedio of="jue-c3-ej-promedio"}
-1. $p=(8/9+1)/2=17/18$: Blancas gana 17 de cada 18 partidas al azar.
-2. $p=(5/24+1)/2=29/48$: un poco más de 6 de cada 10. No lo contradice:
-   en las simulaciones, Negras juega al azar y se equivoca seguido; $V=-1$
-   supone que Negras juega perfecto. Tampoco es el $3/4$ de la clase 2:
+1. ${p=(8/9+1)/2=17/18}$: Blancas gana 17 de cada 18 partidas al azar.
+2. ${p=(5/24+1)/2=29/48}$: un poco más de 6 de cada 10. No lo contradice:
+   en las simulaciones, Negras juega al azar y se equivoca seguido; ${V=-1}$
+   supone que Negras juega perfecto. Tampoco es el ${3/4}$ de la clase 2:
    ahí Blancas jugaba lo mejor y solo Negras al azar. Son tres supuestos
    sobre los jugadores, y tres números.
 :::
@@ -180,8 +180,8 @@ Nada. Esa es la diferencia con [[cortar-y-evaluar|cortar y evaluar]]:
 ::: table {#jue-c3-eval-contra-mcts title="Cortar y evaluar contra Monte Carlo"}
 | | Cortar y evaluar | Monte Carlo |
 |---|---|---|
-| Necesita | $\mathrm{EVAL}$ a mano | Solo $A$ y $T$ |
-| Para | En la profundidad $d$ | En los finales |
+| Pide | $\mathrm{EVAL}$ a mano | Solo $A$ y $T$ |
+| Para | En $d$ | En los finales |
 | Da | Minimax de $\mathrm{EVAL}$ | Promedio de $U$ |
 | Mejora con | Más $d$, mejor $\mathrm{EVAL}$ | Más simulaciones |
 :::
@@ -246,8 +246,8 @@ Cada vuelta tiene cuatro pasos:
 Si la selección llega a un final, no hay nada que expandir ni simular: su
 $U$ es el resultado de la vuelta.
 
-En la figura, cada caja dice $G/N$. La raíz es el estado de partida y no
-simula: sus cuentas son la suma de las de sus hijos, $2/4=2/3+0/1$. Cada
+En la figura, cada caja dice ${G/N}$. La raíz es el estado de partida y no
+simula: sus cuentas son la suma de las de sus hijos, ${2/4=2/3+0/1}$. Cada
 otro nodo suma su propia simulación más las de sus hijos.
 
 ::: figure {#jue-c3-fig-mcts title="Una vuelta de MCTS: la raíz pasa de 2/4 a 3/5"}
@@ -261,9 +261,9 @@ una jugada lista.
 
 ::: exercise {#jue-c3-ej-retro title="Completa la vuelta con una derrota"}
 Repite la vuelta de la figura con el mismo camino y el mismo hijo nuevo,
-pero la simulación termina en $U=-1$: gana MIN.
+pero la simulación termina en ${U=-1}$: gana MIN.
 
-1. ¿Qué $G/N$ quedan en los cuatro nodos del camino, de la raíz al nuevo?
+1. ¿Qué ${G/N}$ quedan en los cuatro nodos del camino, de la raíz al nuevo?
 2. ¿Cambia algún nodo fuera del camino?
 3. ¿Cuánto vale ahora $\bar u$ en la raíz?
 :::
@@ -274,11 +274,11 @@ pasaron por ahí y cuál solo algunas?
 :::
 
 ::: answer {#jue-c3-resp-retro of="jue-c3-ej-retro"}
-1. La raíz pasa de $2/4$ a $2/5$; el $2/3$, a $2/4$; el $0/1$ del camino,
-   a $0/2$; el nuevo, de $0/0$ a $0/1$. Todos suman una simulación y
-   ninguna victoria: un $U=-1$ no resta, solo deja de sumar.
-2. No: el $1/1$ y el otro $0/1$ no estaban en el camino.
-3. $\bar u=(2\cdot2-5)/5=-0.2$. Antes de la vuelta valía $0$.
+1. La raíz pasa de ${2/4}$ a ${2/5}$; el ${2/3}$, a ${2/4}$; el ${0/1}$ del camino,
+   a ${0/2}$; el nuevo, de ${0/0}$ a ${0/1}$. Todos suman una simulación y
+   ninguna victoria: un ${U=-1}$ no resta, solo deja de sumar.
+2. No: el ${1/1}$ y el otro ${0/1}$ no estaban en el camino.
+3. ${\bar u=(2\cdot2-5)/5=-0.2}$. Antes de la vuelta valía $0$.
 :::
 
 ## 5 · Explorar o aprovechar
@@ -300,15 +300,15 @@ $$\text{puntaje}(s')=\bar u(s')+c\sqrt{\frac{\ln N(s)}{N(s')}}.$$
 - $N(s)$ y $N(s')$ cuentan las simulaciones que pasaron por cada nodo.
 - $\ln$ es el logaritmo natural; aquí solo importa que crece muy despacio.
 - $c$ es un número positivo que elegimos: más grande, más exploración. En
-  esta página, $c=1$.
+  esta página, ${c=1}$.
 
 El primer término aprovecha; el segundo explora. Un hijo que nunca se ha
-probado tiene $N(s')=0$ y se prueba antes que los demás. Con muchas
+probado tiene ${N(s')=0}$ y se prueba antes que los demás. Con muchas
 simulaciones el bono se encoge y manda el promedio. Otros textos usan la
-fracción de victorias $G/N$ en lugar de $\bar u$, o $c=\sqrt2$. Los
+fracción de victorias ${G/N}$ en lugar de $\bar u$, o ${c=\sqrt2}$. Los
 puntajes cambian, y a veces también la elección.
 
-En la figura, MIN elige en el nodo $2/3$ y baja al $0/1$: con el signo
+En la figura, MIN elige en el nodo ${2/3}$ y baja al ${0/1}$: con el signo
 cambiado, es su mejor hijo. Así corrige MCTS lo que vimos
 en la sección 2. Donde ya construyó árbol, cada jugador elige por su
 puntaje y no al azar.
@@ -318,13 +318,13 @@ Más adelante veremos de dónde sale este bono.
 ::: exercise {#jue-c3-ej-mcts title="Calcula qué se explora y qué se entrega"}
 Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:
 
-- **x:** $N=60$ simulaciones, promedio $\bar u=0.5$;
-- **y:** $N=30$ simulaciones, promedio $\bar u=0.6$;
-- **z:** $N=10$ simulaciones, promedio $\bar u=0.2$.
+- **x:** ${N=60}$ simulaciones, promedio ${\bar u=0.5}$;
+- **y:** ${N=30}$ simulaciones, promedio ${\bar u=0.6}$;
+- **z:** ${N=10}$ simulaciones, promedio ${\bar u=0.2}$.
 
 1. Si el tiempo se acaba ahora, ¿qué jugada se entrega?
 2. Si queda tiempo para una vuelta más, calcula el puntaje de cada una con
-   $c=1$ y $\ln 100\approx4.61$. ¿Por cuál baja la selección?
+   ${c=1}$ y ${\ln 100\approx4.61}$. ¿Por cuál baja la selección?
 3. ¿Coinciden las dos respuestas? Explica por qué no hay contradicción.
 :::
 
@@ -338,9 +338,12 @@ quedan vueltas? ¿Qué número de la lista mira cada una?
 2. Los puntajes son
 
    $$\begin{aligned}
-   x&:\ 0.5+\sqrt{4.61/60}\approx0.5+0.28=0.78,\\
-   y&:\ 0.6+\sqrt{4.61/30}\approx0.6+0.39=0.99,\\
-   z&:\ 0.2+\sqrt{4.61/10}\approx0.2+0.68=0.88.
+   x&:\ 0.5+\sqrt{4.61/60}\\
+   &\approx0.5+0.28=0.78,\\[4pt]
+   y&:\ 0.6+\sqrt{4.61/30}\\
+   &\approx0.6+0.39=0.99,\\[4pt]
+   z&:\ 0.2+\sqrt{4.61/10}\\
+   &\approx0.2+0.68=0.88.
    \end{aligned}$$
 
    La selección baja por **y**. La z recibe el bono más grande, pero su
@@ -348,7 +351,7 @@ quedan vueltas? ¿Qué número de la lista mira cada una?
 3. **No coinciden, y está bien.** Entregar busca la jugada más confiable:
    60 partidas pesan más que 30. Seleccionar decide dónde gastar la vuelta
    que sigue, y y todavía tiene poca evidencia para lo bien que va. Con
-   $G/N$ o con $c=\sqrt2$ la selección iría a z: los números dependen de la
+   ${G/N}$ o con ${c=\sqrt2}$ la selección iría a z: los números dependen de la
    forma del puntaje.
 :::
 
@@ -374,12 +377,12 @@ La que estima lo que no se alcanza a calcular:
 
 ¿Sigue siendo MCTS sin simulaciones? Sí: conserva el árbol, las cuentas y
 la selección por puntaje. Lo que más cambia es el paso 3: la red valora el
-hijo nuevo, sin jugarlo al azar. Pero también guía la selección y la
-expansión. El puntaje premia la jugada que la red sugiere, y cada hijo entra
-con la probabilidad que ella le da.
+hijo nuevo, sin jugarlo al azar. También guía la selección y la expansión:
+su puntaje no es el UCT, porque suma un término que premia la jugada que la
+red sugiere.
 
 **Punto de control:** deberías poder dar una vuelta de MCTS a mano, con
-$G/N$ en cada nodo y cualquier resultado. También, calcular el puntaje UCT
+${G/N}$ en cada nodo y cualquier resultado. También, calcular el puntaje UCT
 de un hijo y decir por qué un promedio de simulaciones no es $V$.
 
 ## Lo que hay que llevarse
@@ -388,14 +391,14 @@ de un hijo y decir por qué un promedio de simulaciones no es $V$.
   promediando su $U$. No necesita $\mathrm{EVAL}$: solo las reglas.
 - Un promedio de simulaciones no es $V$: supone que **los dos** juegan al
   azar. En la posición de la clase acierta ($\text{d2}\textbf{-}\text{d3}$,
-  $8/9$, 17 de cada 18 partidas). En hexapawn, $\text{b1}\textbf{-}\text{b2}$
-  promedia $5/24$ aunque vale $-1$; con solo Negras al azar valía $3/4$.
+  ${8/9}$, 17 de cada 18 partidas). En hexapawn, $\text{b1}\textbf{-}\text{b2}$
+  promedia ${5/24}$ aunque vale ${-1}$; con solo Negras al azar valía ${3/4}$.
 - Cada vuelta tiene cuatro pasos: selección, expansión, simulación y
-  retropropagación. Cada nodo guarda $G/N$; la retropropagación suma 1 a
-  $N$ siempre y 1 a $G$ solo si gana MAX: la raíz pasa de $2/4$ a $3/5$, o
-  a $2/5$ si pierde.
-- El puntaje UCT, $\bar u+c\sqrt{\ln N(s)/N(s')}$, equilibra aprovechar y
-  explorar. Con x, y, z y $c=1$, la selección va a y, que puntúa 0.99; la
+  retropropagación. Cada nodo guarda ${G/N}$; la retropropagación suma 1 a
+  $N$ siempre y 1 a $G$ solo si gana MAX: la raíz pasa de ${2/4}$ a ${3/5}$, o
+  a ${2/5}$ si pierde.
+- El puntaje UCT, ${\bar u+c\sqrt{\ln N(s)/N(s')}}$, equilibra aprovechar y
+  explorar. Con x, y, z y ${c=1}$, la selección va a y, que puntúa 0.99; la
   entrega, a x, que tiene 60 simulaciones.
 - Deep Blue (1997) cortó y evaluó; AlphaGo (2016) combinó MCTS con redes;
   AlphaGo Zero y AlphaZero (2017) cambiaron la simulación por una red,

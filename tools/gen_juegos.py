@@ -1574,6 +1574,12 @@ def _leyenda_t(out, y, poda, devolvio=False, items=None):
                               marcador="p"))
         elif tipo == "pormirar":
             out.append(caja(x, yy, 30, 20, borde=LINEA, guiones="5 4", radio=4))
+        elif tipo.startswith("corte"):
+            # Nodo de corte de la clase 3: recibe EVAL. «corte_MIN» o «corte_MAX»
+            # da el color del nivel donde corta la figura.
+            color = COLOR_MIN if tipo == "corte_MIN" else COLOR_MAX
+            out.append(caja(x, yy, 30, 20, relleno=mezclar(color, 0.07), borde=color,
+                            guiones="5 4", radio=4))
         else:
             out.append(f'<circle cx="{x + 14}" cy="{yy + 10}" r="11" fill="{FONDO}" '
                        f'stroke="{LINEA}" stroke-width="2" stroke-dasharray="4 3"/>')
@@ -1968,7 +1974,8 @@ def jue_t_corte(d, tramo=None):
     """Minimax con corte a profundidad d en T: los nodos de la linea de corte
     reciben EVAL; lo de abajo no se genera (caja o circulo punteado con «?»,
     la marca de A_notacion). tramo=1 dibuja el estado al cerrar izq y centro
-    (la serie va de parcial a resuelta); None, el final."""
+    (la serie va de parcial a resuelta); tramo=2, el final de esa serie, con
+    su nombre; None, el final de una figura sin tramos."""
     arbol = j.ARBOL_T
     traza = j.traza_decidir(arbol, profundidad=d, evaluar=j.EVAL_T)
     exacta = j.traza_decidir(arbol)
@@ -1990,6 +1997,13 @@ def jue_t_corte(d, tramo=None):
         titulo = [f"Corte con d = {d}, tramo 1", f"{jugada} sube a {f(valor)}"]
         evento = (f"Tramo 1: R recibe w = {f(raiz[jugada_c])} de {jugada_c}, y mejor_jugada pasa "
                   f"de {anterior} a {jugada}.")
+    elif tramo == 2:
+        ultimo = next(f_ for f_ in reversed(traza["filas"]) if f_["evento"] == "raiz")
+        titulo = [f"Corte con d = {d}, tramo 2",
+                  f"{ultimo['hijo']} devuelve {f(ultimo['w'])}: sigue {jugada}"]
+        evento = (f"Tramo 2: R recibe w = {f(ultimo['w'])} de {ultimo['hijo']}, que no mejora "
+                  f"{f(valor)}: mejor_jugada sigue en {jugada}, y R juega {jugada}, "
+                  f"con {f(valor)}.")
     elif jugada != exacta["jugada"]:
         titulo = [f"Corte con d = {d}", f"{jugada} parece valer {f(valor)}"]
         evento = f"R juega {jugada}, con {f(valor)}."
@@ -2015,7 +2029,9 @@ def jue_t_corte(d, tramo=None):
     fondo = dibujar_t(out, arbol, estados, y0, resaltar=resaltar, renglones={(): "DECIDIR"},
                       rotulos_tenues=False,
                       recuadro=[f"mejor_jugada = {jugada}", f"mejor_valor = {f(valor)}"])
-    yh = ys[d] + NODO_T_H / 2 + 12
+    # La linea va a media distancia entre el nivel d y el siguiente: su
+    # rotulo no toca las cajas de arriba ni los nodos de abajo.
+    yh = (ys[d] + NODO_T_H / 2 + ys[d + 1] - NODO_T_H / 2) / 2
     out.append(linea(16, yh, ANCHO_T - 16, yh, color=ACENTO, grosor=2.5, guiones="10 7"))
     out.append(_pastilla_t(412 if d == 1 else 300, yh, f"corte (d = {d} en la raíz)", ACENTO,
                            tam=16, mono=False, relleno=FONDO))
@@ -2034,13 +2050,14 @@ def jue_t_corte(d, tramo=None):
     y = _pie_t(out, fondo + HOJA_T_R + 44, notas)
     items = ([("pila", "en la pila"), ("sube", "acaba de devolver"), ("pormirar", "por mirar")]
              if tramo == 1 else [])
-    y = _leyenda_t(out, y - 4, True, items=items + [("podado", "no se genera")])
+    corte = ("corte_MIN" if d % 2 else "corte_MAX", "de corte, con EVAL")
+    y = _leyenda_t(out, y - 4, True, items=items + [corte, ("podado", "no se genera")])
     return _svg_t(titulo, desc, y + 4, out, sep=SEP_C3)
 
 
 # ------------------------------------------------ profundizacion iterativa ---
 
-def _mini_arbol(out, arbol, traza, y0, gaps=(96, 80, 80)):
+def _mini_arbol(out, arbol, traza, y0, gaps=(136, 80, 80)):
     """Dibujo compacto de lo que una busqueda genero, con los hijos de cada
     nodo en el orden en que se visitaron. Las hojas podadas van con «?», y
     un nodo que corto lleva «cota» bajo su v: su valor real puede ser otro."""
@@ -2098,7 +2115,9 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(96, 80, 80)):
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
             out.append(linea(mx - 14, my, mx + 14, my, color=ACENTO, grosor=5))
         if len(c) == 1:
-            out.append(_pastilla_t(x1 + (x2 - x1) * 0.55, y1 + (y2 - y1) * 0.55, nombres[c][1],
+            # Primer nivel mas alto (136) y rotulo a 0.6: la arista casi vertical
+            # se ve arriba y abajo del rotulo, con su punta libre.
+            out.append(_pastilla_t(x1 + (x2 - x1) * 0.6, y1 + (y2 - y1) * 0.6, nombres[c][1],
                                    SUAVE))
     for c in dibujados:
         x, y = xs[c], ys[len(c)]
@@ -2679,7 +2698,7 @@ def jue_c3_corte_prof_2():
                         renglones=("Mueve Blancas · MAX", f"con corte: {fmt_eval(mejor)}")))
     for (nombre, t, p), x, v in zip(hs, xs_hijo, valores_hijo):
         out.append(nodo_svg(x, y_hijo, t, p, nombre, w=150, h=170, celda=19,
-                            renglones=("Mueve Negras · MIN", f"mínimo: {fmt_eval(v)}")))
+                            renglones=("Negras · MIN", f"mínimo: {fmt_eval(v)}")))
     for g, mis, v in zip(nietos, hojas, valores_hijo):
         for (n2, t2, p2), xh in zip(g, mis):
             out.append(caja(xh - wh / 2, y_hoja - hh / 2, wh, hh, relleno=FONDO,
@@ -2746,11 +2765,11 @@ def jue_c3_corte_prof_3():
                               marcador="p" if alcanza else "s"))
     out.append(nodo_svg(W / 2, y_rama, rama["tablero"], rama["turno"], f"tras {RAMA_PROF_3}",
                         w=170, h=170, celda=19,
-                        renglones=("Mueve Negras · MIN", f"mínimo: {fmt_eval(rama['valor'])}")))
+                        renglones=("Negras · MIN", f"mínimo: {fmt_eval(rama['valor'])}")))
     for r, x in zip(respuestas, xs_resp):
         out.append(nodo_svg(x, y_resp, r["tablero"], r["turno"], r["jugada"], w=150, h=170,
                             celda=19,
-                            renglones=("Mueve Blancas · MAX", f"máximo: {fmt_eval(r['valor'])}")))
+                            renglones=("Blancas · MAX", f"máximo: {fmt_eval(r['valor'])}")))
     for h, xh in zip(hojas, xs_hoja):
         x, yy = xh - wh / 2, y_hoja - hh / 2
         if h["final"]:
@@ -2919,7 +2938,7 @@ def jue_c3_mcts_pasos():
             "simulaciones que pasaron por él. La raíz no simula: sus cuentas son la suma de las "
             "de sus hijos; cada otro nodo, su propia simulación más las de sus hijos. "
             f"1, selección: desde la raíz, {_gn(antes['r'])}, se baja por el camino resaltado "
-            "eligiendo en cada nodo al hijo de mejor puntaje para quien mueve ahí: MAX en la "
+            "eligiendo en cada nodo al hijo de mejor promedio para quien mueve ahí: MAX en la "
             f"raíz elige {_gn(antes[camino[1]])}; MIN en ese nodo elige {_gn(antes[camino[2]])}, "
             "donde MAX ganó menos. 2, expansión: se agrega un hijo nuevo, 0/0. 3, simulación: "
             "desde ese hijo se juega una partida al azar hasta un final, que aquí gana MAX, "
@@ -2929,7 +2948,7 @@ def jue_c3_mcts_pasos():
                         for n in camino + ["nuevo"]) + ".")
     out = [marco(W, H, desc, titulo, desc)]
     encabezado(out, renglones)
-    paneles = [("1 · Selección", "baja por el mejor puntaje"),
+    paneles = [("1 · Selección", "baja por el mejor promedio"),
                ("2 · Expansión", "agrega un hijo nuevo"),
                ("3 · Simulación", "juega al azar hasta un final"),
                ("4 · Retropropagación", "sube el resultado")]
@@ -3020,7 +3039,7 @@ DIAGRAMAS = {
     "jue-t-azar": jue_t_azar,
     "jue-t-corte-d1": lambda: jue_t_corte(1),
     "jue-t-corte-d2-tramo-1": lambda: jue_t_corte(2, tramo=1),
-    "jue-t-corte-d2": lambda: jue_t_corte(2),
+    "jue-t-corte-d2": lambda: jue_t_corte(2, tramo=2),
     "jue-t-iterativa": jue_t_iterativa,
     "jue-c3-corte-prof-1": jue_c3_corte_prof_1,
     "jue-c3-corte-prof-2": jue_c3_corte_prof_2,

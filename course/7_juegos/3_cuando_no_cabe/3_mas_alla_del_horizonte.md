@@ -57,18 +57,19 @@ queda**.
 :::
 
 Éstos son los valores de @jue-c3-profundidades, en
-[[cortar-y-evaluar|Cortar y evaluar a mano]], copiados tal cual.
+[[cortar-y-evaluar|Cortar y evaluar a mano]], copiados tal cual. P1, P2 y
+P3 son las profundidades 1, 2 y 3, y la última columna es el valor exacto
+por 100.
 
 ::: table {#jue-c3-horizonte-valores title="Las tres jugadas a profundidad 1, 2 y 3, y su valor exacto"}
-| | P1 | P2 | P3 | 100V |
+| Jugada | P1 | P2 | P3 | $100\cdot V$ |
 |---|---:|---:|---:|---:|
 | $\text{a1}\textbf{-}\text{a2}$ | 2 | −10 | −9 | −100 |
 | $\text{d2}\textbf{-}\text{d3}$ | 2 | **1** | **100** | **100** |
 | $\text{d2}\textbf{x}\text{c3}$ | **13** | 0 | 1 | −100 |
 :::
 
-P1, P2 y P3 son las profundidades 1, 2 y 3; 100V, el valor exacto por
-100. En negrita, el máximo de cada columna: la jugada que elige Blancas.
+En negrita, el máximo de cada columna: la jugada que elige Blancas.
 
 ## 1 · Reconocer el efecto horizonte
 
@@ -121,21 +122,26 @@ pieza captura un peón defendido y el corte cae antes de la recaptura.
 En @jue-c3-horizonte-valores, $\text{d2}\textbf{-}\text{d3}$ vale 1 a
 profundidad 2 y 100 a profundidad 3.
 
-1. ¿Qué jugada queda detrás del horizonte de profundidad 2 y hace saltar
-   ese valor?
+1. Con ${d=2}$ en la raíz, ¿en qué nodos de la rama de
+   $\text{d2}\textbf{-}\text{d3}$ cae el corte, y qué $\mathrm{EVAL}$
+   recibe cada uno? ¿Qué jugada queda detrás del horizonte y hace saltar
+   el valor?
 2. ¿Cambia la jugada que Blancas elige a profundidad 2?
 :::
 
 ::: hint {#jue-c3-pista-detras-1 of="jue-c3-ej-detras" title="Qué agrega un nivel"}
-La profundidad 3 agrega una sola jugada, de Blancas. ¿Qué tendría que pasar
-en esa jugada para que el número salte de 1 a 100?
+Tras $\text{d2}\textbf{-}\text{d3}$ mueve Negras: ¿con qué $d$ llegan sus
+respuestas? La profundidad 3 agrega una sola jugada, de Blancas. ¿Qué
+tendría que pasar en esa jugada para que el número salte de 1 a 100?
 :::
 
 ::: answer {#jue-c3-resp-detras of="jue-c3-ej-detras"}
-1. **$\text{d3}\textbf{-}\text{d4}$.** Tras $\text{d2}\textbf{-}\text{d3}$,
-   Negras solo puede avanzar a3 o b3. Después, Blancas lleva el peón de d3
-   a la fila 4 y gana: ${100\cdot U=100}$. A profundidad 2, el corte cae
-   justo antes de esa jugada.
+1. Tras $\text{d2}\textbf{-}\text{d3}$, Negras solo puede avanzar:
+   $\text{a4}\textbf{-}\text{a3}$ o $\text{b4}\textbf{-}\text{b3}$. Esos
+   dos nodos llegan con ${d=0}$, no son finales, y reciben
+   ${\mathrm{EVAL}=1}$ los dos: la rama vale ${\min(1,1)=1}$. Detrás queda
+   **$\text{d3}\textbf{-}\text{d4}$**: Blancas lleva el peón de d3 a la
+   fila 4 y gana, ${100\cdot U=100}$.
 2. **No cambia.** A profundidad 2, $\text{d2}\textbf{-}\text{d3}$ ya era la
    mayor: 1 contra 0 y ${-10}$. El horizonte escondió **cuánto** vale, no
    **cuál** es la mejor. El efecto horizonte hace daño cuando cambia la
@@ -169,7 +175,7 @@ las capturas, y solo desde los nodos de corte.
 :::
 
 Quedarse representa las jugadas que no son captura: nadie está obligado a
-capturar, y la quietud no las mira. En DECIDIR-CON-CORTE solo cambia la
+capturar, y la quietud no las mira. En MINIMAX-CON-CORTE solo cambia la
 línea 9: en vez de devolver $\mathrm{EVAL}(s)$, llama a la búsqueda de
 quietud.
 
@@ -196,7 +202,7 @@ tienen ${\mathrm{EVAL}=2}$.
    Negras?
 2. ¿Qué valor recibe cada jugada con la búsqueda de quietud?
 3. Con los tres valores, ¿qué jugada elige Blancas? Compárala con la
-   columna 100V de @jue-c3-horizonte-valores.
+   columna $100\cdot V$ de @jue-c3-horizonte-valores.
 :::
 
 ::: hint {#jue-c3-pista-quietud-1 of="jue-c3-ej-quietud" title="Los mismos cuatro pasos"}
@@ -225,7 +231,7 @@ Mirar las capturas suele costar poco, porque en muchas posiciones hay
 pocas. Y en este juego la búsqueda de quietud siempre termina: cada captura
 quita un peón, y los peones se acaban.
 
-## 3 · Clasificar horizontes por tu cuenta
+## 3 · Poner a prueba la quietud por tu cuenta
 
 **Piensa: ¿la búsqueda de quietud arregla cualquier efecto horizonte?**
 
@@ -233,7 +239,9 @@ quita un peón, y los peones se acaban.
 pedir ayuda a ChatGPT.**
 
 ::: exercise {#jue-c3-ej-clasifica title="Pon a prueba la quietud en dos programas"}
-Los dos programas usan la búsqueda de quietud.
+Los dos programas usan la búsqueda de quietud. La idea nueva: **la quietud
+puede seguir varias capturas seguidas**, una tras otra, y toparse con un
+final en medio de ellas.
 
 **El programa de peones** busca a profundidad 1 en esta posición nueva del
 4×4. Mueven Blancas:
@@ -254,7 +262,7 @@ quietud, valen 2, 2, 13 y 2.
 sin remedio. En vez de aceptarlo, da un jaque tras otro, y con esos jaques
 la pérdida queda detrás del horizonte.
 
-1. Con quietud, $\text{a1}\textbf{-}\text{a2}$ vale −10 y
+1. Con quietud, $\text{a1}\textbf{-}\text{a2}$ vale ${-10}$ y
    $\text{c2}\textbf{-}\text{c3}$ vale 2. Calcula el valor con quietud
    de $\text{c2}\textbf{x}\text{b3}$ y de $\text{d2}\textbf{-}\text{d3}$.
 2. ¿Qué jugada elige el programa de peones con quietud, y cuál sin ella?
@@ -283,18 +291,19 @@ todas las capturas, del lado de quien mueve?
 
    **$\text{d2}\textbf{-}\text{d3}$ vale 1.** Mueven Negras, con
    ${\mathrm{EVAL}=2}$, y tienen dos capturas:
-   - **$\text{b3}\textbf{x}\text{c2}$:** mueven Blancas, con −10. Pero
+   - **$\text{b3}\textbf{x}\text{c2}$:** mueven Blancas, con ${-10}$. Pero
      $\text{d3}\textbf{x}\text{c4}$ llega a la fila 4: es un final y vale
      100. Blancas toma ${\max(-10,100)=100}$.
-   - **$\text{c4}\textbf{x}\text{d3}$:** mueven Blancas, con −11.
+   - **$\text{c4}\textbf{x}\text{d3}$:** mueven Blancas, con ${-11}$.
      $\text{c2}\textbf{x}\text{d3}$ deja una posición quieta con 1.
-     $\text{c2}\textbf{x}\text{b3}$ deja que Negras recapture con
-     $\text{a4}\textbf{x}\text{b3}$, y vale ${\min(1,-12)=-12}$. Blancas
+     $\text{c2}\textbf{x}\text{b3}$ deja una posición donde Negras puede
+     quedarse, con 1, o recapturar con $\text{a4}\textbf{x}\text{b3}$, con
+     ${-12}$: vale ${\min(1,-12)=-12}$. Blancas
      toma ${\max(-11,1,-12)=1}$.
 
    Negras toma ${\min(2,100,1)=1}$: la quietud siguió **tres capturas
    seguidas**.
-2. Con quietud los valores son −10, 2, 0 y 1: elige
+2. Con quietud los valores son ${-10}$, 2, 0 y 1: elige
    **$\text{c2}\textbf{-}\text{c3}$**. Sin ella elige
    $\text{c2}\textbf{x}\text{b3}$, con 13. La computadora comprobó que
    $\text{c2}\textbf{-}\text{c3}$ gana y $\text{c2}\textbf{x}\text{b3}$

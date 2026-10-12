@@ -93,7 +93,7 @@ renglón, en cursivas.
 | AZAR | «azar». Valor de $\mathrm{Pl}(s)$ en un nodo donde nadie elige: decide un dado o una moneda · *Cuando decide un dado* |
 | $\Pr(a)$ | «probabilidad de a». En un nodo de azar, la probabilidad de que salga el resultado $a$; suman 1 · *Cuando decide un dado* |
 | $\alpha$, $\beta$ | «alfa», «beta». Lo que MAX ($\alpha$) y lo que MIN ($\beta$) ya se aseguran con una jugada revisada en un nodo suyo del camino desde la raíz. $\alpha$ es un piso para MAX; $\beta$, un techo. MAX actualiza $\alpha$ y corta comparando su $v$ con $\beta$; MIN actualiza $\beta$ y corta comparando su $v$ con $\alpha$ · *Alfa-beta a mano* |
-| $(\alpha,\beta)$ | «la ventana alfa beta». Los valores que todavía importan en un nodo. Se escribe abierta porque tocar un extremo ya corta: lo que cae dentro es un valor exacto; lo que sale o toca un extremo puede ser una cota · *Alfa-beta a mano* |
+| $(\alpha,\beta)$ | «la ventana alfa beta». Los valores que todavía importan en un nodo. Se escribe abierta porque tocar un extremo ya corta: lo que cae dentro es su valor; lo que sale o toca un extremo puede ser una cota · *Alfa-beta a mano* |
 | $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual · *Cortar y evaluar a mano* |
 | $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ · *Cortar y evaluar a mano* |
 | $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación · *Cortar y evaluar a mano* |
@@ -159,6 +159,7 @@ renglón, en cursivas.
 | Simulación | Partida desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final | Simular en vez de evaluar |
 | MCTS, búsqueda de árbol Monte Carlo | Construye un árbol con vueltas de selección, expansión, simulación y retropropagación, y estima cada jugada por el promedio de sus simulaciones | Simular en vez de evaluar |
 | Explorar, aprovechar | Probar lo poco probado, o elegir lo que ya funcionó; la regla UCT equilibra los dos | Simular en vez de evaluar |
+| Promedio límite | El número al que se acerca el promedio de $U$ de las simulaciones desde un estado cuando son muchísimas: el promedio sobre todas las partidas, cada una con su probabilidad, si los dos eligen al azar. No es $V$ | Simular en vez de evaluar |
 
 ## En las figuras
 
@@ -172,6 +173,7 @@ renglón, en cursivas.
 | Caja o círculo punteado con «?» | Estado que el recorrido nunca genera |
 | Línea punteada de color | Dónde se corta la búsqueda; su pastilla dice el $d$ de la raíz. Desde «Más allá del horizonte» se llama horizonte |
 | Barra bajo un nodo | Ahí hubo un corte alfa o beta: los hermanos que siguen no se generan |
+| Etiqueta «cota» bajo el $v$ de un nodo | Su $v$ salió de la ventana: es un techo o un piso, no su valor |
 | Barras en el tiempo, línea «reloj k» | Cada barra es una búsqueda y su largo, los nodos que genera; la línea marca dónde se acaba el reloj |
 | Caja con G/N | En MCTS: victorias de MAX entre simulaciones de ese nodo |
 | Círculo con número | Orden en que un recorrido visita el nodo |

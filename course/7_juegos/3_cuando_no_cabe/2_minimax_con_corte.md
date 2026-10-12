@@ -1,7 +1,7 @@
 ---
 id: minimax-con-corte
 title: Minimax con corte como algoritmo
-nav_title: Minimax con corte
+nav_title: Minimax con corte como algoritmo
 summary: "El cálculo a mano escrito como procedimiento: qué recibe, qué genera, por qué termina, qué se puede afirmar de lo que devuelve, cuánto cuesta y qué preferencia expresa la evaluación."
 status: ready
 estimated_time: 40m
@@ -317,7 +317,8 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de
   si el padre es de MIN.
 - En $w$, una hoja va sola y un nodo lleva su nombre entre paréntesis.
 - **En las filas de R, la columna $v$ es mejor_valor.**
-- **elige** es mejor_jugada, con «—» mientras vale ninguna.
+- **elige** (en la clase 2, «jugada») es mejor_jugada, con «—» mientras
+  vale ninguna.
 
 ### Tramo 1 · Centro releva a izq
 
@@ -395,15 +396,15 @@ los «?» de DECIDIR-CON-CORTE(R, 2).
 | 2 | 17 · R›D | +∞ |  | — |
 | 3 | 19–⁠20 · R›D | ? | ? | — |
 | 4 | 19–⁠20 · R›D | ? | ? | — |
-| 5 | 4–⁠5 · R | ? | ? (D) | ? |
+| 5 | 4–⁠5 · R | ? | ? (D) | ? |
 | 6 | 17 · R›I | +∞ |  | ? |
 | 7 | 19–⁠20 · R›I | ? | ? | ? |
 | 8 | 19–⁠20 · R›I | ? | ? | ? |
-| 9 | 4–⁠5 · R | ? | ? (I) | ? |
+| 9 | 4–⁠5 · R | ? | ? (I) | ? |
 | 10 | 17 · R›C | +∞ |  | ? |
-| 11 | 19–⁠20 · R›C | ? | ? (C1) | ? |
-| 12 | 19–⁠20 · R›C | ? | ? (C2) | ? |
-| 13 | 4–⁠5 · R | ? | ? (C) | ? |
+| 11 | 19–⁠20 · R›C | ? | ? (C1) | ? |
+| 12 | 19–⁠20 · R›C | ? | ? (C2) | ? |
+| 13 | 4–⁠5 · R | ? | ? (C) | ? |
 | 14 | 6 · R | ? |  | ? |
 
 1. Llena los «?». ¿En qué filas cambia mejor_jugada, y qué devuelve?
@@ -437,12 +438,12 @@ era «?».
 | 13 | 4–⁠5 · R | **6** | **6** (C) | centro |
 | 14 | 6 · R | **6** |  | centro |
 
-1. mejor_jugada cambia tres veces: a der en la fila 5 (${2>-\infty}$), a
-   izq en la 9 (${3>2}$) y a centro en la 13 (${6>3}$). Devuelve
+1. mejor_jugada cambia tres veces: a der en la fila 5 ${(2>-\infty)}$, a
+   izq en la 9 ${(3>2)}$ y a centro en la 13 ${(6>3)}$. Devuelve
    **centro, con 6**, igual que con el orden de la página.
-2. **I, C y D.** Llegan con ${d=1}$ y no son finales, así que pasan de largo
-   las líneas 8 y 9 y los valora la rama de MIN, líneas 16–21. R tampoco:
-   lo recorre DECIDIR-CON-CORTE, líneas 1–6.
+2. **R, I, C y D.** I, C y D llegan con ${d=1}$ y no son finales, así que
+   pasan de largo las líneas 8 y 9 y los valora la rama de MIN, líneas
+   16–21. R lo recorre DECIDIR-CON-CORTE, líneas 1–6.
 :::
 
 ## 4 · Por qué termina y qué se puede afirmar
@@ -459,8 +460,9 @@ Si cada estado tiene un número finito de jugadas,
 MINIMAX-CON-CORTE$(s,d)$ termina, aunque el juego no termine.
 
 **Por qué:** cada llamada baja $d$ en uno, y la línea 9 ya no llama a
-nadie cuando ${d=0}$. La pila nunca pasa de $d$ niveles. A diferencia de
-minimax, que termine no depende de que las partidas terminen.
+nadie cuando ${d=0}$. La recursión baja a lo más $d$ niveles por
+debajo de $s$. A diferencia de minimax, que termine no depende de que las
+partidas terminen.
 :::
 
 ::: remark {#jue-c3-que-afirma title="Qué se puede afirmar de lo que devuelve"}
@@ -622,33 +624,36 @@ La [[mas-alla-del-horizonte|página siguiente]] hace otra cosa:
 una sola evaluación?**
 
 Antes de empezar, anota tu apuesta: ¿cuál de las dos crees que puede
-cambiar la jugada? El ejercicio lo pone a prueba en tres pasos: una traza,
+cambiar la jugada? El ejercicio lo pone a prueba en tres pasos: un empate,
 una variante y un costo.
 
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-::: exercise {#jue-c3-ej-final-corte title="Traza el árbol T con otro orden y otra evaluación"}
+::: exercise {#jue-c3-ej-final-corte title="Traza el árbol T con un empate y otra evaluación"}
 Usa el árbol T, sus hojas y las $\mathrm{EVAL}$ de la sección 3. La idea
-nueva: **R prueba sus jugadas al revés**, der,
-centro, izq. Dentro de I, C y D el orden no cambia, y la línea 5 sigue con
-${>}$ estricto.
+nueva: **un empate en la raíz**. En la sección 3, el orden no cambió la
+jugada porque ningún par de hijos de R valía lo mismo. Aquí cambias
+${\mathrm{EVAL}(\text{C1})=3}$ en vez de 6. Dentro de I, C y D el orden no
+cambia, y la línea 5 sigue con ${>}$ estricto.
 
-1. Escribe la traza de DECIDIR-CON-CORTE(R, 2) con ese orden, en el
-   formato de la sección 3. ¿Qué jugada devuelve, con qué valor, y en qué
-   filas cambia mejor_jugada?
-2. Vuelve al orden izq, centro, der y cambia **una** evaluación:
-   ${\mathrm{EVAL}(\text{C2})=1}$ en vez de 9. ¿Qué juega con ${d=1}$, ${d=2}$
-   y ${d=3}$?
+1. Con ${d=2}$ y el orden de la página, izq, centro, der, ¿qué juega, y con
+   qué valor? Escribe después la traza de DECIDIR-CON-CORTE(R, 2) con R al
+   revés, der, centro, izq, en el formato de la sección 3. ¿Qué jugada
+   devuelve, con qué valor, y en qué filas cambia mejor_jugada?
+2. Vuelve a ${\mathrm{EVAL}(\text{C1})=6}$ y al orden izq, centro, der, y
+   cambia otra evaluación: ${\mathrm{EVAL}(\text{C2})=1}$ en vez de 9. ¿Qué
+   juega con ${d=1}$, ${d=2}$ y ${d=3}$?
 3. ¿Cuántos nodos genera con ${d=1}$, 2 y 3 en la variante del inciso 2? ¿Y
-   con el orden del inciso 1? Explica por qué.
+   con la evaluación y el orden de la traza del inciso 1? Explica por qué.
 :::
 
 ::: hint {#jue-c3-pista-final-corte-1 of="jue-c3-ej-final-corte" title="Pista 1 · Qué se mueve de lugar"}
-Con R al revés, ¿cambian las filas de dentro de cada hijo, o solo su
-lugar en la traza? ¿Qué compara la línea 5 cada vez que un hijo regresa a
-R? Para el inciso 2: con cada $d$, ¿qué nodos llegan con ${d=0}$ sin ser
-finales?
+¿Cuánto vale C con ${\mathrm{EVAL}(\text{C1})=3}$, y cuánto I? Con R al
+revés, ¿cambian las filas de dentro de cada hijo, o solo su lugar en la
+traza? ¿Qué compara la línea 5 cuando un hijo regresa con el mismo número
+que mejor_valor? Para el inciso 2: con cada $d$, ¿qué nodos llegan con
+${d=0}$ sin ser finales?
 :::
 
 ::: hint {#jue-c3-pista-final-corte-2 of="jue-c3-ej-final-corte" title="Pista 2 · Revisa tu borrador"}
@@ -657,8 +662,10 @@ arriba de la línea de corte o justo en ella? ¿Cada fila de R compara su
 $w$ con el mejor_valor de la fila anterior de R, y no con el último $w$?
 :::
 
-::: answer {#jue-c3-resp-final-corte of="jue-c3-ej-final-corte" title="Respuesta · La traza, la variante y el costo"}
-**1. La traza con R al revés.**
+::: answer {#jue-c3-resp-final-corte of="jue-c3-ej-final-corte" title="Respuesta · El empate, la variante y el costo"}
+**1. El empate.** C vale ${\min(3,9)=3}$, igual que I. Con el orden de la
+página, izq llega primero con 3; en la fila de C, ${3>3}$ es falso, y
+juega **izq, con 3**. Con R al revés:
 
 | # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
@@ -668,18 +675,20 @@ $w$ con el mejor_valor de la fila anterior de R, y no con el último $w$?
 | 4 | 19–⁠20 · R›D | 2 | 12 | — |
 | 5 | 4–⁠5 · R | 2 | 2 (D) | der |
 | 6 | 17 · R›C | +∞ |  | der |
-| 7 | 19–⁠20 · R›C | 6 | 6 (C1) | der |
-| 8 | 19–⁠20 · R›C | 6 | 9 (C2) | der |
-| 9 | 4–⁠5 · R | 6 | 6 (C) | centro |
+| 7 | 19–⁠20 · R›C | 3 | 3 (C1) | der |
+| 8 | 19–⁠20 · R›C | 3 | 9 (C2) | der |
+| 9 | 4–⁠5 · R | 3 | 3 (C) | centro |
 | 10 | 17 · R›I | +∞ |  | centro |
 | 11 | 19–⁠20 · R›I | 3 | 3 | centro |
 | 12 | 19–⁠20 · R›I | 3 | 6 | centro |
-| 13 | 4–⁠5 · R | 6 | 3 (I) | centro |
-| 14 | 6 · R | 6 |  | centro |
+| 13 | 4–⁠5 · R | 3 | 3 (I) | centro |
+| 14 | 6 · R | 3 |  | centro |
 
-mejor_jugada pasa de ninguna a **der** en la fila 5 (${2>-\infty}$) y a
-**centro** en la fila 9 (${6>2}$). En la fila 13, ${3>6}$ es falso. Devuelve
-**centro, con 6**, como con el orden de la página.
+mejor_jugada pasa de ninguna a **der** en la fila 5 ${(2>-\infty)}$ y a
+**centro** en la fila 9 ${(3>2)}$. En la fila 13, ${3>3}$ es falso.
+Devuelve **centro, con 3**. Con un empate, el orden decide la jugada:
+con ${>}$ estricto se queda la primera que alcanzó el valor. Sin empate,
+como en la sección 3, el orden no la cambia.
 
 **2. La variante.** Con ${d=1}$, C2 no se genera: juega der, con 7.
 Con ${d=2}$, C2 es nodo de corte y C vale ${\min(6,1)=1}$. R compara izq 3,

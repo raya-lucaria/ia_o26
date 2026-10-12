@@ -559,7 +559,12 @@ def test_clase_3_traza_de_t_con_d_2_fila_por_fila():
 
 
 def test_clase_3_ejercicio_final_de_minimax_con_corte():
-    # (a) Los hijos de la raiz al reves: der, centro, izq.
+    # (a) El empate: EVAL(C1) = 3 iguala C con I; con «>» estricto, el orden
+    # de R decide la jugada (sin empate, el orden no la cambia).
+    assert j.EVAL_T_EMPATE == {"I": 5, "C": 4, "D": 7, "C1": 3, "C2": 9}
+    assert j.decidir_con_corte_t(2, evaluar=j.EVAL_T_EMPATE) == ("izq", 3, 10)
+    assert j.decidir_con_corte_t(2, orden=["D", "C", "I"], evaluar=j.EVAL_T_EMPATE) == (
+        "centro", 3, 10)
     assert j.decidir_con_corte_t(2, orden=["D", "C", "I"]) == ("centro", 6, 10)
     # (b) EVAL(C2) = 1 en vez de 9: cambia d = 2, no d = 1 ni d = 3.
     assert j.EVAL_T_VARIANTE == {"I": 5, "C": 4, "D": 7, "C1": 6, "C2": 1}
@@ -819,7 +824,7 @@ def _exacto_por_100():
 
 
 def _revisa_tabla_de_profundidades(texto, ident):
-    """Filas jugada | P1 | P2 | P3 | 100V; la negrita, en el maximo de cada columna."""
+    """Filas jugada | P1 | P2 | P3 | 100·V; la negrita, en el maximo de cada columna."""
     filas = _tabla(texto, ident)
     esperado = {d: _corte_en_la_posicion(d) for d in (1, 2, 3)}
     esperado[4] = _exacto_por_100()
@@ -1063,26 +1068,40 @@ def test_prosa_clase_3_p2_la_traza_con_huecos_y_su_respuesta():
     assert re.search(r"Devuelve (\w+), con (\d+)", _limpio(resp)).groups() == (jugada, str(valor))
 
 
-def test_prosa_clase_3_p2_ejercicio_final_otro_orden_y_otra_eval():
-    """#39 · El ejercicio final de «Minimax con corte»: la traza con R al
-    reves, la variante EVAL(C2) = 1 con d = 1, 2, 3 y los nodos 4, 10, 14."""
+def test_prosa_clase_3_p2_ejercicio_final_empate_y_otra_eval():
+    """#39 · El ejercicio final de «Minimax con corte»: el empate
+    EVAL(C1) = 3 (izq con el orden de la pagina, centro con R al reves, y la
+    traza de este), la variante EVAL(C2) = 1 con d = 1, 2, 3 y los nodos
+    4, 10, 14."""
     texto = _pagina(P2)
     ej = _limpio(_bloque(texto, "jue-c3-ej-final-corte"))
-    orden = _orden_de(re.search(r"al revés, (\w+),\s+(\w+), (\w+)", ej).groups())
+    assert [int(x) for x in re.search(r"EVAL\(C1\)=(\d+) en vez de (\d+)", ej).groups()] == [
+        j.EVAL_T_EMPATE["C1"], j.EVAL_T["C1"]]
+    pagina = _orden_de(re.search(r"el orden de la página, (\w+), (\w+), (\w+)", ej).groups())
+    orden = _orden_de(re.search(r"al\s+revés, (\w+), (\w+), (\w+)", ej).groups())
+    assert pagina == ["I", "C", "D"] and orden == pagina[::-1]
     assert [int(x) for x in re.search(r"EVAL\(C2\)=(\d+) en vez de (\d+)", ej).groups()] == [
         j.EVAL_T_VARIANTE["C2"], j.EVAL_T["C2"]]
     resp = _respuesta(texto, "jue-c3-ej-final-corte")
-    assert _filas(_tablas(resp)[0][1:]) == _esperado(j.filas_corte_t(2, orden=orden))
+    assert _filas(_tablas(resp)[0][1:]) == _esperado(
+        j.filas_corte_t(2, orden=orden, evaluar=j.EVAL_T_EMPATE))
     limpio = _limpio(resp)
-    jugada, valor, _ = j.decidir_con_corte_t(2, orden=orden)
-    assert re.search(r"Devuelve\s+(\w+), con (\d+)", limpio).groups() == (jugada, str(valor))
+    empate, variante_txt = limpio.split("2. La variante.")
+    c = j.EVAL_T_EMPATE
+    assert re.search(r"C vale \\min\((\d+),(\d+)\)=(\d+), igual que I", empate).groups() == (
+        str(c["C1"]), str(c["C2"]), str(min(c["C1"], c["C2"])))
+    jugada, valor, _ = j.decidir_con_corte_t(2, evaluar=c)
+    assert re.search(r"juega (\w+), con (\d+)", empate).groups() == (jugada, str(valor))
+    jugada, valor, _ = j.decidir_con_corte_t(2, orden=orden, evaluar=c)
+    assert re.search(r"Devuelve\s+(\w+), con (\d+)", empate).groups() == (jugada, str(valor))
+    assert jugada != j.decidir_con_corte_t(2, evaluar=c)[0]
     variante = [j.decidir_con_corte_t(d, evaluar=j.EVAL_T_VARIANTE) for d in (1, 2, 3)]
-    assert [(a, int(v)) for a, v in re.findall(r"juega (izq|centro|der), con (\d+)", limpio)] \
+    assert [(a, int(v)) for a, v in re.findall(r"juega (izq|centro|der), con (\d+)", variante_txt)] \
         == [v[:2] for v in variante]
     nodos = [int(x) for x in re.search(r"(\d+), (\d+) y (\d+) nodos en los dos casos",
-                                       limpio).groups()]
+                                       variante_txt).groups()]
     assert nodos == [v[2] for v in variante] == [
-        j.decidir_con_corte_t(d, orden=orden)[2] for d in (1, 2, 3)]
+        j.decidir_con_corte_t(d, orden=orden, evaluar=c)[2] for d in (1, 2, 3)]
 
 
 # ---- p3 · mas alla del horizonte
@@ -1311,11 +1330,16 @@ def test_prosa_clase_3_p5_simulaciones_contra_corte_y_valor():
     h = j.inicio()
     ambos = {j.nombre_jugada(h, m): j.promedio_simulaciones(j.mover(h, m), "N")
              for m in j.jugadas(h, "B")}
-    esperado = {k: (ambos[k], j.expectiminimax_rival_al_azar(j.mover(h, m), "N"),
-                    j.valor(j.mover(h, m), "N"))
+    esperado = {k: (ambos[k], j.expectiminimax_rival_al_azar(j.mover(h, m), "N"))
                 for k, m in zip(ambos, j.jugadas(h, "B"))}
     assert {_c(f[0]): tuple(_n(x) for x in f[1:])
             for f in _tabla(texto, "jue-c3-hexapawn-azar")[1:]} == esperado
+    # V salio de la tabla (a 390 escondia la columna): la prosa la dice.
+    assert {j.valor(j.mover(h, m), "N") for m in j.jugadas(h, "B")} == {-1}
+    prosa = _limpio(texto)
+    assert "las tres aperturas de Blancas valen -1" in prosa
+    assert "Sus promedios de simulación son los tres positivos" in prosa
+    assert all(x > 0 for par in esperado.values() for x in par)
     resp = _limpio(_respuesta(texto, "jue-c3-ej-promedio"))
     pares = [(F(a), F(b)) for a, b in re.findall(r"p=\((\d+/\d+)\+1\)/2=(\d+/\d+)", resp)]
     d2d3 = j.promedio_simulaciones(j.mover(t, jugadas[1]), "N", 4)
@@ -1370,7 +1394,7 @@ def test_prosa_clase_3_p5_uct_en_el_ejercicio():
     assert ln == round(math.log(total), 2)
     resp = _limpio(_respuesta(texto, "jue-c3-ej-mcts"))
     puntajes = j.uct_ejercicio(c=1)
-    filas = re.findall(r"([xyz])&:\\ (\d+(?:\.\d+)?)\+\\sqrt(\d+(?:\.\d+)?)/(\d+)≈(\d+(?:\.\d+)?)\+(\d+(?:\.\d+)?)=(\d+(?:\.\d+)?)",
+    filas = re.findall(r"([xyz])&:\\ (\d+(?:\.\d+)?)\+\\sqrt(\d+(?:\.\d+)?)/(\d+)\\\\ &≈(\d+(?:\.\d+)?)\+(\d+(?:\.\d+)?)=(\d+(?:\.\d+)?)",
                        resp)
     assert [f[0] for f in filas] == list(datos)
     for k, u, ln_, n, u2, bono, puntaje in filas:
@@ -1379,3 +1403,76 @@ def test_prosa_clase_3_p5_uct_en_el_ejercicio():
         assert float(puntaje) == round(puntajes[k], 2), k
     assert re.search(r"baja por ([xyz])", resp)[1] == max(puntajes, key=puntajes.get)
     assert re.search(r"1\. ([xyz]):", resp)[1] == j.mas_simulada(datos)
+
+
+# ---- cifras de respuestas que ninguna otra prueba leia (r2, correccion §6)
+
+def test_prosa_clase_3_p1_las_jugadas_tras_dos_avances():
+    """El tablero del ejercicio sale de b1-b2, c4-c3; la respuesta nombra
+    A(s) completo y su unica captura."""
+    texto = _pagina(P1)
+    ej = _bloque(texto, "jue-c3-ej-inicio")
+    tablero, turno = j.jugar_nombres(j.inicio(4), "B", ["b1-b2", "c4-c3"], 4)
+    assert _tablero(_tablas(ej)[0]) == tablero and turno == "B"
+    nombres = [j.nombre_jugada(tablero, m, 4) for m in j.jugadas(tablero, "B", 4)]
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-inicio"))
+    uno, dos = resp.split(" 2. ", 1)
+    assert sorted(re.findall(r"[a-d][1-4][-x][a-d][1-4]", uno)) == sorted(nombres)
+    assert uno.startswith("1. Cinco:") and len(nombres) == 5
+    capturas = [m for m in nombres if "x" in m]
+    assert dos.startswith("Una:") and re.findall(r"[a-d][1-4]x[a-d][1-4]", dos)[0] == capturas[0]
+    assert len(capturas) == 1
+
+
+def test_prosa_clase_3_p2_que_linea_valora_cada_estado():
+    """@jue-c3-ej-hoja: EVAL 0 tras d2xc3 b4xc3; 100 tras d2-d3 a4-a3 d3-d4
+    (final); EVAL 2 de ese final si la linea 9 fuera primero."""
+    resp = _limpio(_respuesta(_pagina(P2), "jue-c3-ej-hoja"))
+    t1, turno1 = j.jugar_nombres(j.POSICION_C3, "B", ["d2xc3", "b4xc3"], 4)
+    assert j.ganador(t1, turno1, 4) is None
+    t2, turno2 = j.jugar_nombres(j.POSICION_C3, "B", ["d2-d3", "a4-a3", "d3-d4"], 4)
+    assert j.ganador(t2, turno2, 4) == "B"
+    evals = [int(x) for x in re.findall(r"EVAL=(-?\d+)", resp)]
+    assert evals == [j.evaluar_peones(t1, 4), j.evaluar_peones(t2, 4)]
+    d = j.desglose_eval(t2, 4)
+    assert re.search(r"avance (\d+) contra (\d+)", resp).groups() == (
+        str(d["avance_b"]), str(d["avance_n"]))
+    assert d["peones_b"] == d["peones_n"] == 3 and "tres peones por lado" in resp
+
+
+def test_prosa_clase_3_p5_dos_promedios_y_otras_formas_del_puntaje():
+    """@jue-c3-ej-cinco (0.2, −0.2, mueve 0.4) y la frase de @jue-c3-resp-mcts:
+    con G/N o con c = √2 la seleccion iria a z."""
+    import math
+    texto = _pagina(P5)
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-cinco"))
+    ganadas = [(3, 2), (2, 3)]
+    leidos = re.findall(r"\\bar u=\((\d)-(\d)\)/(\d)=(-?\d+(?:\.\d+)?)", resp)
+    assert [(int(g), int(p)) for g, p, _, _ in leidos] == ganadas
+    for g, p, n, u in leidos:
+        assert int(n) == int(g) + int(p) and F(u) == F(int(g) - int(p), int(n))
+    salto = F(re.search(r"promedio (\d+(?:\.\d+)?)", resp)[1])
+    assert salto == abs(F(leidos[0][3]) - F(leidos[1][3]))
+    mcts = _limpio(_respuesta(texto, "jue-c3-ej-mcts"))
+    assert re.search(r"Con G/N o con c=\\sqrt2 la selección iría a ([xyz])", mcts)[1] == "z"
+    for puntajes in (j.uct_ejercicio(c=1, victorias=True), j.uct_ejercicio(c=math.sqrt(2))):
+        assert max(puntajes, key=puntajes.get) == "z"
+
+
+def test_prosa_clase_3_p3_lo_que_queda_detras_con_d_2():
+    """@jue-c3-resp-detras: con d = 2 el corte cae en las dos respuestas de
+    Negras a d2-d3, con su EVAL; detras, la jugada que llega a la fila 4."""
+    resp = _limpio(_respuesta(_pagina(P3), "jue-c3-ej-detras"))
+    rama = next(h for h in j.arbol_con_corte(j.POSICION_C3, "B", 2, 4)["hijos"]
+                if h["jugada"] == "d2-d3")
+    respuestas = [h["jugada"] for h in rama["hijos"]]
+    assert re.findall(r"[a-d][1-4]-[a-d][1-4]", resp.split("Esos")[0])[1:] == respuestas
+    evals = {h["valor"] for h in rama["hijos"]}
+    assert all(not h["final"] for h in rama["hijos"]) and len(evals) == 1
+    v = evals.pop()
+    assert f"EVAL={v} los dos" in resp and f"min({v},{v})={v}" in resp
+    assert rama["valor"] == v
+    profunda = next(h for h in j.arbol_con_corte(j.POSICION_C3, "B", 3, 4)["hijos"]
+                    if h["jugada"] == "d2-d3")
+    ganadoras = {h["jugada"] for r in profunda["hijos"] for h in r["hijos"] if h["final"]}
+    assert re.search(r"Detrás queda ([a-d][1-4]-[a-d][1-4])", resp)[1] in ganadoras

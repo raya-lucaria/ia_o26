@@ -2264,6 +2264,11 @@ def evals_tras_respuestas(tablero, turno, n):
 # la jugada (izq); con d = 1 no se mira C2 y con d = 3 no se evalua nada.
 EVAL_T_VARIANTE = {**EVAL_T, "C2": 1}
 
+# El empate del ejercicio final: EVAL(C1) = 3 en vez de 6. Con d = 2, C vale
+# min(3, 9) = 3 e iguala a I; con «>» estricto gana la que R prueba primero:
+# izq con el orden de la pagina, centro con R al reves.
+EVAL_T_EMPATE = {**EVAL_T, "C1": 3}
+
 
 def decidir_con_corte_t(d, orden=None, evaluar=None):
     """DECIDIR-CON-CORTE(R, d) en T: (jugada, valor, nodos generados). orden:

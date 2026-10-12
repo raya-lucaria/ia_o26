@@ -28,7 +28,8 @@ Figuras disponibles: {{FIGURAS}}   ← id del SVG | qué estado muestra
 
 ## Reglas que más se rompen (detalle en defectos.md)
 - Ninguna cifra que no esté en la tabla. Si te falta una, escribe
-  <!-- CIFRA: qué falta --> y repórtalo; no la inventes ni la estimes.
+  <!-- CIFRA: qué falta --> y repórtalo; no la inventes ni la estimes. Ese marcador
+  hace fallar la suite a propósito (Raya imprime los comentarios): no puede quedar al cerrar.
 - Ningún símbolo, término o algoritmo antes de presentarlo en esta página
   o en una anterior de la navegación.
 - Todo ejercicio lleva pista(s) y respuesta; la pista no nombra la respuesta.
