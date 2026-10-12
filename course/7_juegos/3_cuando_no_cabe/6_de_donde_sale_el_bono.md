@@ -172,7 +172,7 @@ random variables», *Journal of the American Statistical Association*,
 
 **¿Por qué esta desigualdad y no otra?** Por tres cosas que nos sirven:
 
-- **Solo pide resultados acotados.** No hay que saber la varianza ni la
+- **Solo pide resultados independientes y acotados.** No hay que saber la varianza ni la
   forma de la distribución: $U$ siempre está entre ${-1}$ y ${+1}$.
 - **Vale para todo $N(s')$**, también para 3 o 10. La aproximación normal
   solo sirve con muchas simulaciones, y MCTS decide con pocas.
@@ -411,7 +411,7 @@ es la $N(s')$ de x y cuál la de z?
   puntaje ${-0.33+2.07=1.74}$, con ${-1/3\approx-0.33}$.
 
 Elige **x**, por el empate con y. Gana por el bono: x lleva una simulación
-y z, tres. El bono de x, 3.59, es casi el doble del de z, 2.07, y compensa
+y z, tres. El bono de x, 3.59, es unas 1.7 veces el de z, 2.07 (${\sqrt3}$, porque z tiene el triple de simulaciones), y compensa
 su peor promedio. «Siempre el mejor promedio» se quedaba en z.
 
 Tras 12 vueltas la secuencia es x y z z z x y x y x y x, y quedan
@@ -439,7 +439,7 @@ salvo una vuelta de cada diez, que elige al azar.
 Con cualquier ${c>0}$, el bono de una jugada olvidada crece sin tope:
 ninguna se queda sin probar para siempre. Con ${c=0}$ eso sí puede pasar.
 Lo que la teoría acota, con ${c=2\sqrt2}$, es cuántas vueltas se pierden
-en las otras; con ${c=1}$ no hay esa cota, aunque aquí funcione mejor.
+en las otras; con ${c=1}$ la prueba de UCB1 no da esa cota, aunque aquí funcione mejor.
 
 ## 7 · Seleccionar no es entregar
 
@@ -498,8 +498,9 @@ algo que cambia con la búsqueda.
 Que cambie no basta para romper Hoeffding, que no pide la misma
 distribución en cada simulación; lo que la rompe es la dependencia. Por
 eso Hoeffding no se aplica al pie de la letra. Kocsis y Szepesvári (2006)
-demostraron aparte que UCT, con una $c$ bastante grande, llega a la mejor
-jugada con suficientes vueltas. Esa prueba no la cubrimos.
+demostraron aparte que UCT, con una $c$ bastante grande, llega con
+suficientes vueltas a la jugada que elegiría minimax, no a la de mayor
+$\mu(s')$. Esa prueba no la cubrimos.
 
 Lo que te llevas es la intuición: el bono es un margen de
 error, y se suma porque el optimismo se corrige solo.
@@ -544,8 +545,8 @@ para entregar?
 
 ::: answer {#jue-c3-resp-final-bono of="jue-c3-ej-final-bono" title="Respuesta · Optimismo desde el lado de MIN"}
 1. **El margen de p.** ${\varepsilon=\sqrt{2\cdot3.00/30}\approx0.45}$. A
-   MIN le importa que $\mu(p)$ sea **más bajo** de lo que parece, la otra
-   cola. Su piso optimista es ${-0.2-0.45=-0.65}$. Antes de simular, la
+   MIN le importa que $\mu(p)$ sea **más bajo** de lo que parece: la otra
+   cola, que @jue-c3-teo-hoeffding acota igual. Su piso optimista es ${-0.2-0.45=-0.65}$. Antes de simular, la
    probabilidad de que ese piso quede en $\mu(p)$ o por encima es a lo más
    5 %.
 2. **El puntaje con ${c=2\sqrt2}$.** MIN baja al hijo de piso
@@ -571,7 +572,7 @@ calcular el puntaje en un nodo de MAX o de MIN.
 ## Lo que hay que llevarse
 
 - **El bono es un margen de error.** Hoeffding acota cuánto falla un
-  promedio de resultados entre ${-1}$ y ${+1}$:
+  promedio de resultados independientes entre ${-1}$ y ${+1}$:
   ${e^{-N(s')\varepsilon^2/2}}$. Con la jugada y, ${\varepsilon=0.2}$ y
   ${N(s')=100}$, la cota es 13.5 % y lo simulado, 2.4 %.
 - **Despejar** da ${\varepsilon=\sqrt{2\ln(1/\delta)/N(s')}}$. Pedir

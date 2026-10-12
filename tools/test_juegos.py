@@ -2029,9 +2029,12 @@ def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
     final = ucb[-1]["N"]
     assert [int(v) for v in m.groups()[2:5]] == [final[k] for k in "xyz"]
     assert m[6] == max(final, key=final.get)
-    m = re.search(rf"[Ee]l bono de ([xyz]), ({_NUM}), es casi el doble del de ([xyz]), ({_NUM})",
+    m = re.search(rf"[Ee]l bono de ([xyz]), ({_NUM}), es unas ({_NUM}) veces el de ([xyz]), ({_NUM})",
                   resp)
-    assert (m[2], m[4]) == (_d(j.bono_ucb(n_padre, N[m[1]])), _d(j.bono_ucb(n_padre, N[m[3]])))
+    assert (m[2], m[5]) == (_d(j.bono_ucb(n_padre, N[m[1]])), _d(j.bono_ucb(n_padre, N[m[4]])))
+    # El cociente es la raiz del cociente de simulaciones (r3: decia «casi el doble»).
+    cociente = j.bono_ucb(n_padre, N[m[1]]) / j.bono_ucb(n_padre, N[m[4]])
+    assert m[3] == f"{cociente:.1f}" and round(cociente ** 2) == N[m[4]] // N[m[1]]
     assert re.search(r"«Siempre el mejor promedio» se quedaba en ([xyz])", resp)[1] \
         == mp[hasta]["jugada"]
 
