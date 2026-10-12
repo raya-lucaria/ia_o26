@@ -557,10 +557,11 @@ el mejor promedio salvo una vuelta de cada diez, al azar. Tres palabras:
 **¿Encuentra cada regla la mejor jugada?** En la primera figura cada
 punto es **una corrida**, en la fracción de sus 10 000 vueltas que fue a x:
 1 si casi todas, 0 si casi ninguna. Hay una fila de 40 puntos por regla, y
-una raya marca su promedio.
+una raya marca su promedio. Las corridas de valor cercano se apilan hacia
+arriba, en una columna.
 
 ::: figure {#jue-c3-fig-bandido-corridas title="Cada corrida, un punto: sin bono es todo o nada"}
-![Gráfica de puntos, una fila por regla: siempre el mejor promedio, a veces al azar (10 %), UCB con c = 2√2 y UCB con c = 1. Eje horizontal: fracción de las 10 000 vueltas de una corrida que fueron a x, de 0 a 1. Cada punto es una corrida, con μ de x, y, z: 0.6, 0.3, −0.2; 40 por fila, semillas 1 a 40; una raya marca el promedio de la fila. Siempre el mejor promedio: 34 corridas cerca de 1 y 6 atoradas cerca de 0, 5 en y y 1 en z; su promedio, 0.85, cae entre los dos grupos, donde no hay ninguna corrida. A veces al azar, UCB con c = 2√2 y UCB con c = 1: ninguna atorada; la corrida más baja de cada una deja en x 0.90, 0.92 y 0.96 de sus vueltas](../_assets/jue-c3-bandido-corridas.svg)
+![Gráfica de puntos, una fila por regla: siempre el mejor promedio, a veces al azar (10 %), UCB con c = 2√2 y UCB con c = 1. Eje horizontal: fracción de las 10 000 vueltas de una corrida que fueron a x, de 0 a 1. Cada punto es una corrida, con μ de x, y, z: 0.6, 0.3, −0.2; 40 por fila, semillas 1 a 40; las de valor cercano, apiladas en vertical; una raya marca el promedio de la fila. Siempre el mejor promedio: 34 corridas cerca de 1 y 6 atoradas cerca de 0, 5 en y y 1 en z; su promedio, 0.85, cae entre los dos grupos, donde no hay ninguna corrida. A veces al azar, UCB con c = 2√2 y UCB con c = 1: ninguna atorada; la corrida más baja de cada una deja en x 0.90, 0.92 y 0.96 de sus vueltas](../_assets/jue-c3-bandido-corridas.svg)
 :::
 
 - **Siempre el mejor promedio** es todo o nada: 34 corridas van casi
@@ -623,6 +624,8 @@ elige siempre lo mismo, coinciden las dos.
   10 000 el 98.8 % y el 100 % de sus elecciones van a x. El 1.2 % que
   falta a UCB ${c=2\sqrt2}$ es exploración; ninguna corrida se atora
   (@jue-c3-fig-bandido-corridas).
+- **La de ${c=2\sqrt2}$ sube a saltos**, con mesetas: explora en ráfagas,
+  cuando el bono de una jugada olvidada alcanza a las demás.
 
 **La lección: explorar cuesta un poco al principio y evita perder para
 siempre.** Sin bono se ganan las primeras vueltas, pero 6 de cada 40
@@ -630,16 +633,15 @@ búsquedas se quedan en una jugada peor. UCB paga unas vueltas de
 exploración y encuentra x en todas. Con ${c=0}$ no hay bono, y UCB es el
 mejor promedio: 0.543 y 85 %.
 
-La teoría acota, con ${c=2\sqrt2}$, cuántas vueltas se pierden en las
-otras; con ${c=1}$ no da esa cota, aunque aquí funcione mejor.
+Con ${c=2\sqrt2}$, la cota de UCB1 (Auer, Cesa-Bianchi y Fischer, 2002)
+garantiza que, en promedio sobre las corridas (en esperanza), las vueltas
+gastadas en una jugada peor crecen a lo más como ${\ln N(s)}$, mucho más
+despacio que $N(s)$.
 
-La cota de UCB1 (Auer, Cesa-Bianchi y Fischer, 2002) garantiza que, en cualquier
-bandido con resultados acotados, las vueltas gastadas en una jugada peor
-crecen a lo más como ${\ln N(s)}$, mucho más despacio que $N(s)$.
-
-Una $c$ chica no da esa garantía. Si la mejor tiene mala suerte en sus
-primeras simulaciones, su bono chico tarda mucho en compensar su mal
-promedio, y la búsqueda puede gastar miles de vueltas en otra antes de volver a ella.
+Una $c$ chica, como ${c=1}$, no da esa garantía, aunque aquí funcione
+mejor. Si la mejor tiene mala suerte en sus primeras simulaciones, su bono
+chico tarda mucho en compensar su mal promedio, y la búsqueda puede gastar
+miles de vueltas en otra antes de volver a ella.
 
 La búsqueda sí llega a la mejor jugada. Pero cuando se acaba el tiempo,
 ¿cuál se juega?

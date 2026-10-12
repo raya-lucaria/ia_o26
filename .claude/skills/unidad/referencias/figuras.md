@@ -76,6 +76,9 @@ cómo UCB la superaba. El profesor lo llamó un error grave: la gráfica era cor
   reporta el reparto («34 de 40 en la mejor, 6 atoradas»), y la prosa lo dice.
 - **DEBE** el texto **después** explicar por qué cada curva hace lo que hace, con la cuenta cuando la hay (el tope de
   «a veces al azar» es $0.9+0.1/3$), y toda cifra que cite estar en la figura o en una tabla.
+- **DEBE** un punto quedar **donde está su valor**: apilar para que no se encimen se hace en el otro eje, nunca
+  recorriendo la posición (`jue-c3-bandido-corridas` centró columnas en la mediana y pintó en 1.0 corridas de 0.92;
+  lo vio la ronda 3). Cada fila rotula su rango real, y una guarda comprueba la posición contra el dato.
 - **DEBE** la lente de corrección preguntar de cada gráfica agregada: «¿qué lectura equivocada permite?»; y la del
   alumno, explicar con sus palabras qué muestra antes de leer el texto que la sigue.
 
