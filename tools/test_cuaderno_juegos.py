@@ -381,3 +381,44 @@ def test_de_punta_a_punta_con_matplotlib(nb, monkeypatch):
     import matplotlib.pyplot as plt
     plt.close("all")
     assert espacio["RELOJ"]["nodos"] is None
+
+
+# --------------------------------- seccion 8: de donde sale el bono ---
+
+def test_las_secciones_van_en_orden_y_el_cierre_es_la_9(nb):
+    titulos = [re.match(r"## (\d+) · (.*)", fuente(c)).groups()
+               for c in celdas(nb, tipo="markdown")
+               if re.match(r"## \d+ · ", fuente(c))]
+    assert [int(n) for n, _ in titulos] == list(range(1, 10))
+    assert titulos[7][1] == "De dónde sale el bono"
+    assert titulos[8][1] == "Cierre"
+
+
+def test_el_bono_del_cuaderno_es_el_de_juegos(ns):
+    """Las celdas de la seccion 8 son copia, no importacion: aqui se atan a
+    juegos.py. Mismos μ, misma c, misma cota y mismo bono; la misma tabla de
+    frecuencias con la misma semilla; las mismas elecciones del bandido con
+    cada regla y semilla (la suerte de cada jugada y la del dado)."""
+    import math
+    assert ns["MU"] == {k: float(v) for k, v in j.MUS_HILO.items()}
+    assert ns["C_TEORIA"] == j.C_TEORIA
+    for n in (1, 10, 100):
+        assert ns["cota"](n, 0.2) == j.cota_hoeffding(n, 0.2)
+        assert ns["bono"](100, n) == j.bono_ucb(100, n)
+        assert ns["bono"](100, n, c=1) == j.bono_ucb(100, n, c=1)
+    assert ns["bono"](100, 0) == math.inf
+    nb_frec = ns["frecuencias"](ns["MU"]["y"], 0.2, 200, 1500)
+    fuente_frec = j.frecuencias_desvio(j.MU_HOEFFDING, range(1, 201),
+                                       j.EPS_HOEFFDING, 1500, 1)
+    assert nb_frec == {n: float(f) for n, f in fuente_frec.items()}
+    for regla in j.REGLAS_BANDIDO:
+        for semilla in (1, 7, j.SEMILLA_ATORA):
+            for c in (j.C_TEORIA, 1):
+                N, _, elecciones = ns["bandido"](regla, 400, semilla, c)
+                b = j.bandido(regla, j.MUS_HILO, 400, semilla, c)
+                assert elecciones == b["elecciones"], (regla, semilla, c)
+                assert N == b["N"]
+    marcas = (10, 100, 300)
+    for regla in j.REGLAS_BANDIDO:
+        nb_f = ns["en_la_mejor"](regla, marcas, corridas=5)
+        assert nb_f == j.fraccion_en_la_mejor(regla, j.MUS_HILO, marcas, 5)

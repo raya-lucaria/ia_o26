@@ -1482,3 +1482,181 @@ def test_prosa_clase_3_p3_lo_que_queda_detras_con_d_2():
                     if h["jugada"] == "d2-d3")
     ganadoras = {h["jugada"] for r in profunda["hijos"] for h in r["hijos"] if h["final"]}
     assert re.search(r"Detrás queda ([a-d][1-4]-[a-d][1-4])", resp)[1] in ganadoras
+
+
+# --------------------------- clase 3, p6: de donde sale el bono (UCB) ---
+#
+# Escala ±1 de la p5. Cada cifra que la p6 va a citar, fijada en la fuente.
+# Las que se escriben a mano aqui (1.92, 0.68, 83/10…) se comprobaron con la
+# formula cerrada antes de fijarlas; las simulaciones, contra la probabilidad
+# exacta de la binomial.
+
+import math as _m
+
+
+def test_clase_3_p6_hoeffding_margen_y_bono():
+    # La cota en la escala ±1: e^(−Nε²/2); con N = 100, ε = 0.2 da e^(−2).
+    assert _m.isclose(j.cota_hoeffding(100, 0.2), _m.exp(-2))
+    assert j.cota_hoeffding(0, 0.5) == 1
+    # El margen despeja la cota: con ese ε la cota vale justo δ.
+    for delta, n in ((0.05, 30), (0.01, 10), (1e-8, 60)):
+        assert _m.isclose(j.cota_hoeffding(n, j.margen(delta, n)), delta)
+    assert round(j.margen(0.05, 30), 2) == 0.45
+    # δ = N(s)^−4 ⇒ ε = 2√2·√(ln N(s)/N(s')): el bono con c = 2√2.
+    assert j.C_TEORIA == 2 * _m.sqrt(2)
+    for n_padre, n in ((100, 10), (100, 30), (100, 60), (5, 1), (10_000, 7)):
+        assert _m.isclose(j.bono_ucb(n_padre, n), j.margen(n_padre ** -4, n))
+        assert _m.isclose(j.bono_ucb(n_padre, n),
+                          _m.sqrt(8 * _m.log(n_padre) / n))
+    # Los micros: N(s) = 100 y N(s') = 10, 30, 60, con c = 2√2 y con c = 1.
+    assert [round(j.bono_ucb(100, n), 2) for n in (10, 30, 60)] == [1.92, 1.11, 0.78]
+    assert [round(j.bono_ucb(100, n, c=1), 2) for n in (10, 30, 60)] == [0.68, 0.39, 0.28]
+    # El de c = 1 es el de la p5 (mcts_puntaje con ū = 0).
+    for n in (10, 30, 60):
+        assert j.bono_ucb(100, n, c=1) == j.mcts_puntaje(0, n, 100, 1)
+    assert j.bono_ucb(100, 0) == j.INF
+
+
+def test_clase_3_p6_la_escala_pm1_con_2_raiz_2_ordena_como_g_n_con_raiz_2():
+    """ū = 2·(G/N) − 1, y el bono de ū con 2√2 es el doble del de G/N con √2:
+    el puntaje de ū es 2·(puntaje de G/N) − 1. Mismo orden, misma eleccion."""
+    con_u = j.puntajes_ucb(j.EJERCICIO_MCTS)
+    con_g = j.uct_ejercicio(c=_m.sqrt(2), victorias=True)
+    for k in con_u:
+        assert _m.isclose(con_u[k], 2 * con_g[k] - 1), k
+    assert sorted(con_u, key=con_u.get) == sorted(con_g, key=con_g.get) == ["x", "y", "z"]
+    # Puntajes del ejercicio de la p5 con c = 2√2: la seleccion cambia de y
+    # (c = 1, la p5) a z.
+    assert {k: round(v, 2) for k, v in con_u.items()} == {"x": 1.28, "y": 1.71, "z": 2.12}
+    assert j.mejor(con_u) == "z"
+    assert j.mejor(j.puntajes_ucb(j.EJERCICIO_MCTS, c=1)) == "y"
+    assert j.puntajes_ucb(j.EJERCICIO_MCTS, c=1) == j.uct_ejercicio(c=1)
+
+
+def test_clase_3_p6_un_nodo_de_min():
+    """MIN es optimista desde su lado: −ū + bono. Con c = 2√2 elige r, la poco
+    probada aunque para MIN sea la peor; con c = 1, p. Se entrega p."""
+    teoria = j.puntajes_ucb(j.EJEMPLO_MIN, mueve="MIN")
+    p5 = j.puntajes_ucb(j.EJEMPLO_MIN, c=1, mueve="MIN")
+    assert sum(n for n, _ in j.EJEMPLO_MIN.values()) == 50
+    assert {k: round(v, 2) for k, v in teoria.items()} == {"p": 1.22, "q": 1.44, "r": 2.1}
+    assert {k: round(v, 2) for k, v in p5.items()} == {"p": 0.56, "q": 0.51, "r": 0.48}
+    assert (j.mejor(teoria), j.mejor(p5), j.mas_simulada(j.EJEMPLO_MIN)) == ("r", "p", "p")
+    # Sin bono, MIN iria a la de menor ū: p.
+    assert j.mejor(j.puntajes_ucb(j.EJEMPLO_MIN, c=0, mueve="MIN")) == "p"
+
+
+def test_clase_3_p6_el_hilo_y_el_atoramiento():
+    """x es la mejor de verdad (μ = 0.6); con la semilla 36, «siempre el mejor
+    promedio» pierde la unica prueba de x y de y y se queda en z para siempre."""
+    assert j.MUS_HILO == {"x": F(3, 5), "y": F(3, 10), "z": F(-1, 5)}
+    assert max(j.MUS_HILO, key=j.MUS_HILO.get) == j.mas_simulada(j.EJERCICIO_MCTS) == "x"
+    assert j.prob_gana(j.MUS_HILO["x"]) == F(4, 5)
+    filas = j.filas_bandido("mejor_promedio", j.MUS_HILO, j.VUELTAS_MICRO, j.SEMILLA_ATORA)
+    assert "".join(f["jugada"] for f in filas) == "xyzzzzzzzzzz"
+    assert [f["U"] for f in filas] == [-1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, 1]
+    assert [f["u"]["z"] for f in filas[2:]] == [
+        1, 0, F(-1, 3), F(-1, 2), F(-1, 5), F(-1, 3), F(-1, 7), 0, F(-1, 9), 0]
+    assert filas[-1]["N"] == {"x": 1, "y": 1, "z": 10}
+    assert filas[-1]["u"] == {"x": -1, "y": -1, "z": 0}
+    b = j.bandido("mejor_promedio", j.MUS_HILO, j.VUELTAS_MICRO, j.SEMILLA_ATORA)
+    assert b["arrepentimiento"][-1] == F(83, 10)          # 0.3 + 0.8·10
+    # Para siempre: x y y quedan en ū = −1, el minimo, y z ya gano una vez.
+    assert j.bandido("mejor_promedio", j.MUS_HILO, 1000, j.SEMILLA_ATORA)["N"] == {
+        "x": 1, "y": 1, "z": 998}
+    # La misma suerte con UCB (c = 2√2): vuelve a x en la vuelta 6.
+    ucb = j.filas_bandido("ucb", j.MUS_HILO, j.VUELTAS_MICRO, j.SEMILLA_ATORA)
+    assert "".join(f["jugada"] for f in ucb) == "xyzzzxyxyxyx"
+    assert [f["U"] for f in ucb[:5]] == [f["U"] for f in filas[:5]]
+    assert ucb[-1]["N"] == {"x": 5, "y": 4, "z": 3}
+    assert j.bandido("ucb", j.MUS_HILO, j.VUELTAS_MICRO, j.SEMILLA_ATORA)[
+        "arrepentimiento"][-1] == F(18, 5)
+
+
+def test_clase_3_p6_las_reglas_hacen_lo_que_dicen():
+    # Todas prueban cada jugada una vez, en orden, antes de comparar.
+    for regla in j.REGLAS_BANDIDO:
+        for semilla in (1, 2, 3):
+            assert j.bandido(regla, j.MUS_HILO, 3, semilla)["elecciones"] == ["x", "y", "z"]
+    # «Siempre el mejor promedio» no se mueve de una jugada si su ū es el mayor.
+    for semilla in range(1, 30):
+        f = j.filas_bandido("mejor_promedio", j.MUS_HILO, 40, semilla)
+        for antes, ahora in zip(f[2:], f[3:]):
+            u = antes["u"]
+            assert ahora["jugada"] == max(u, key=u.get), (semilla, ahora["t"])
+    # «A veces al azar»: cerca de una vuelta de cada diez va al azar, asi que
+    # z (la peor) se elige al menos ~1/30 de las vueltas, aunque tarde.
+    b = j.bandido("a_veces_al_azar", j.MUS_HILO, 30_000, 5)
+    assert 0.025 < b["N"]["z"] / 30_000 < 0.045
+    # UCB con c = 0 es «siempre el mejor promedio».
+    for semilla in (1, 36):
+        assert (j.bandido("ucb", j.MUS_HILO, 200, semilla, c=0)["elecciones"]
+                == j.bandido("mejor_promedio", j.MUS_HILO, 200, semilla)["elecciones"])
+    # La suerte es de la jugada, no de la regla: la k-esima vez que se elige x
+    # da lo mismo con cualquier regla.
+    def de_x(regla):
+        b = j.bandido(regla, j.MUS_HILO, 300, 7)
+        return [r for a, r in zip(b["elecciones"], b["resultados"]) if a == "x"]
+    a, u = de_x("a_veces_al_azar"), de_x("ucb")
+    k = min(len(a), len(u))
+    assert k > 20 and a[:k] == u[:k]
+
+
+def test_clase_3_p6_frecuencia_contra_la_cota():
+    """La figura jue-c3-hoeffding: jugada y (μ = 0.3), ε = 0.2, 20 000 tiradas
+    de 200 simulaciones. Cada frecuencia queda bajo la cota y cerca de la
+    probabilidad exacta (binomial)."""
+    t = j.tabla_hoeffding()
+    assert (j.MU_HOEFFDING, j.EPS_HOEFFDING) == (j.MUS_HILO["y"], F(1, 5))
+    assert [t[n][0] for n in (10, 50, 100, 200)] == [
+        F(2469, 10000), F(1429, 20000), F(241, 10000), F(11, 5000)]
+    assert [round(t[n][1], 2) for n in (10, 50, 100, 200)] == [0.82, 0.37, 0.14, 0.02]
+    reps = j.REPS_HOEFFDING
+    for n, (frec, cota) in t.items():
+        assert frec <= cota, n
+        exacta = j.prob_desvio_exacta(j.MU_HOEFFDING, n, j.EPS_HOEFFDING)
+        error = _m.sqrt(float(exacta) * (1 - float(exacta)) / reps)
+        assert abs(float(frec - exacta)) <= 5 * error + 1e-9, n
+    # La exacta a mano en n = 1: ū = −1 ≤ 0.1 cuando sale −1, Pr = 0.35.
+    assert j.prob_desvio_exacta(F(3, 10), 1, F(1, 5)) == F(7, 20)
+    # ū ≤ μ − ε es «a lo mas»: en n = 10, ū = 0.1 cuenta (0.3 − 0.2 exacto).
+    assert j._umbral(0.3, 0.2, 10) == 1 and j._umbral(F(3, 10), F(1, 5), 10) == 1
+    # Una sola n, otra semilla: tambien cerca de la exacta.
+    una = j.frecuencia_desvio(F(3, 10), 50, F(1, 5), 4000, 3)
+    exacta = float(j.prob_desvio_exacta(F(3, 10), 50, F(1, 5)))
+    assert abs(float(una) - exacta) < 5 * _m.sqrt(exacta * (1 - exacta) / 4000)
+
+
+def test_clase_3_p6_la_convergencia_del_bandido():
+    """La figura jue-c3-bandido: 40 corridas de 10 000 vueltas por regla."""
+    t = j.tabla_bandido()
+    mp, az, ucb = (t[r] for r in j.REGLAS_BANDIDO)
+    fin = max(j.MARCAS_BANDIDO)
+    assert {r: round(t[r][fin], 2) for r in t} == {
+        "mejor_promedio": 0.85, "a_veces_al_azar": 0.93, "ucb": 0.94, "ucb_c1": 0.99}
+    # La c de la pagina 5 explora menos: en este bandido llega antes y mas alto.
+    c1 = t["ucb_c1"]
+    assert c1[fin] > ucb[fin] and c1[1000] > ucb[1000]
+    # UCB empieza abajo (explora) y termina arriba; sube en cada marca.
+    assert ucb[10] < az[10] and ucb[10] < mp[10] and ucb[fin] > az[fin] > mp[fin]
+    marcas = j.MARCAS_BANDIDO
+    assert all(ucb[a] < ucb[b] for a, b in zip(marcas, marcas[1:]))
+    # «Siempre el mejor promedio» se aplana: entre 1000 y 10 000 casi no sube.
+    assert mp[fin] - mp[1000] < 0.01
+    # «A veces al azar» no pasa de 0.9 + 0.1/3: sigue tirando al azar.
+    assert az[fin] < 0.9 + 0.1 / 3
+
+
+def test_clase_3_p6_c_es_una_perilla():
+    """Los valores del deslizador de c del interactivo (0, 1, 2√2, 5) y la
+    respuesta del Pruebalo del notebook: en este bandido c = 1 llega mas alto
+    que la teoria; c = 0 es «siempre el mejor promedio»."""
+    fin = max(j.MARCAS_BANDIDO)
+    f = {c: j.fraccion_en_la_mejor("ucb", j.MUS_HILO, j.MARCAS_BANDIDO,
+                                   j.CORRIDAS_BANDIDO, c)[fin]
+         for c in (0, 1, None, 5)}
+    assert {c: round(v, 2) for c, v in f.items()} == {0: 0.85, 1: 0.99, None: 0.94, 5: 0.87}
+    assert f[0] == j.tabla_bandido()["mejor_promedio"][fin]
+    # Con c = 1 y la semilla del micro, UCB vuelve a x en la vuelta 7.
+    assert "".join(j.bandido("ucb", j.MUS_HILO, 12, j.SEMILLA_ATORA, c=1)[
+        "elecciones"]) == "xyzzzzxxxxxx"

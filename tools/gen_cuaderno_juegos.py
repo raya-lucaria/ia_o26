@@ -146,7 +146,7 @@ md(f"""
 Cinco algoritmos en el mismo árbol de juguete: **minimax**,
 **expectiminimax**, **alfa-beta**, **minimax con corte** y **profundización
 iterativa**. El código es el Python de las páginas, con su número de línea
-`# (n)`.
+`# (n)`. La sección 8 sale del árbol: de dónde sale el bono de UCT.
 
 - Primero: **Entorno de ejecución → Ejecutar todas** (`Ctrl + F9`).
 - La sección 1 es maquinaria: no hace falta leerla.
@@ -825,7 +825,162 @@ completa, la de `d = 1`.
 
 # ================================================================ 8 ===
 md("""
-## 8 · Cierre
+## 8 · De dónde sale el bono
+
+La raíz de MCTS sin árbol debajo: tres jugadas, x, y, z, que se eligen una y
+otra vez. Cada simulación da $U = +1$ o $-1$; el promedio verdadero
+$\mu(s')$ de cada una está oculto (aquí, en `MU`). Las funciones son las de
+`tools/juegos.py`, con la misma semilla: dan los números de la página.
+""")
+
+code("""
+import math
+import random
+
+MU = {"x": 0.6, "y": 0.3, "z": -0.2}      # promedios verdaderos, ocultos
+C_TEORIA = 2 * math.sqrt(2)               # c de UCB1 en la escala ±1
+
+def simular(rng, mu):                     # U = +1 con prob. (1 + μ)/2
+    return 1 if rng.random() < (1 + mu) / 2 else -1
+
+def cota(n, eps):                         # Hoeffding, escala ±1
+    return math.exp(-n * eps ** 2 / 2)
+
+def bono(n_padre, n, c=C_TEORIA):         # c·√(ln N(s) / N(s'))
+    return math.inf if n == 0 else c * math.sqrt(math.log(n_padre) / n)
+""", "logica", "bono")
+
+md("""
+**Cuánto se equivoca un promedio.** Muchas tiradas de 200 simulaciones de
+y; en cada $N(s')$, la fracción de tiradas con $\\bar u(s') \\le \\mu - \\varepsilon$.
+""")
+
+code("""
+def frecuencias(mu, eps, tope, repeticiones, semilla=1):
+    rng = random.Random(semilla)
+    umbral = [math.floor(round((mu - eps) * n, 9)) for n in range(tope + 1)]
+    cuenta = [0] * (tope + 1)
+    for _ in range(repeticiones):
+        suma = 0
+        for n in range(1, tope + 1):
+            suma += simular(rng, mu)
+            if suma <= umbral[n]:
+                cuenta[n] += 1
+    return {n: cuenta[n] / repeticiones for n in range(1, tope + 1)}
+""", "logica", "bono")
+
+code("""
+import matplotlib.pyplot as plt
+
+EPS = 0.2
+frec = frecuencias(MU["y"], EPS, 200, 20000)
+ns = list(frec)
+plt.semilogy(ns, list(frec.values()), ".", label="observada")
+plt.semilogy(ns, [cota(n, EPS) for n in ns], label="cota de Hoeffding")
+plt.xlabel("N(s'): simulaciones de y")
+plt.ylabel("frecuencia de ū ≤ μ − ε")
+plt.legend()
+plt.show()
+for n in (10, 50, 100):
+    print(f"N(s') = {n:>3}: {frec[n]:.4f}  cota {cota(n, EPS):.4f}")
+""")
+
+md("""
+**El bandido.** Tres reglas: `"mejor_promedio"` (siempre el mejor
+$\\bar u$), `"a_veces_al_azar"` (una vuelta de cada diez, al azar) y
+`"ucb"` (el mejor $\\bar u$ más el bono). Todas prueban cada jugada una
+vez primero. La suerte es de la jugada: la k-ésima vez que se elige x da lo
+mismo con cualquier regla.
+""")
+
+code("""
+def elegir_jugada(regla, N, G, t, dado, c):
+    sin_probar = [a for a in N if N[a] == 0]
+    if (regla == "a_veces_al_azar" and not sin_probar
+            and dado.random() < 0.1):
+        return dado.choice(list(N))
+    if sin_probar:
+        return sin_probar[0]
+
+    def puntaje(a):
+        extra = bono(t, N[a], c) if regla == "ucb" else 0
+        return G[a] / N[a] + extra
+    return max(N, key=puntaje)
+""", "logica", "bono")
+
+code("""
+def bandido(regla, vueltas, semilla, c=C_TEORIA):
+    suerte = {a: random.Random(semilla * 1000 + i)
+              for i, a in enumerate(MU)}
+    dado = random.Random(semilla * 1000 + 999)
+    N, G, elecciones = {a: 0 for a in MU}, {a: 0 for a in MU}, []
+    for t in range(vueltas):
+        a = elegir_jugada(regla, N, G, t, dado, c)
+        N[a] += 1
+        G[a] += simular(suerte[a], MU[a])
+        elecciones.append(a)
+    return N, G, elecciones
+""", "logica", "bono")
+
+md("""
+**Se atora.** Con la semilla 36, x y y pierden su única prueba: quedan en
+$\\bar u = -1$, el mínimo, y «siempre el mejor promedio» no vuelve a ellas.
+""")
+
+code("""
+for regla in ("mejor_promedio", "ucb"):
+    N, G, elecciones = bandido(regla, 12, semilla=36)
+    print(f"{regla:<15}", "".join(elecciones), N)
+""")
+
+code("""
+def en_la_mejor(regla, marcas, corridas=40, c=C_TEORIA):
+    mejor = max(MU, key=MU.get)
+    suma = {m: 0 for m in marcas}
+    for semilla in range(1, corridas + 1):
+        elecciones = bandido(regla, max(marcas), semilla, c)[2]
+        veces = 0
+        for t, a in enumerate(elecciones, 1):
+            veces += a == mejor
+            if t in suma:
+                suma[t] += veces / t
+    return {m: suma[m] / corridas for m in marcas}
+""", "logica", "bono")
+
+code("""
+MARCAS = (10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
+for regla in ("mejor_promedio", "a_veces_al_azar", "ucb"):
+    fr = en_la_mejor(regla, MARCAS)         # unos segundos
+    plt.semilogx(MARCAS, list(fr.values()), "o-", label=regla)
+    print(f"{regla:<15} {fr[10]:.2f} → {fr[10000]:.2f}")
+plt.xlabel("N(s): vueltas")
+plt.ylabel("fracción de vueltas en x")
+plt.ylim(0, 1)
+plt.legend()
+plt.show()
+""")
+
+md("""
+**Pruébalo.** Corre `en_la_mejor("ucb", MARCAS, c=1)` y luego con `c=0`.
+¿Cuál llega más alto en 10 000 vueltas: c = 1, c = 2√2 o c = 0?
+
+<details><summary>Respuesta</summary>
+
+En este bandido, c = 1 (0.99) más que c = 2√2 (0.94): la teoría pide más
+exploración de la que este ejemplo necesita; c es una perilla. Con c = 0 no
+hay bono y UCB es «siempre el mejor promedio»: se aplana en 0.85.
+
+</details>
+""")
+
+code("""
+for c in (1, 0):
+    print(f"c = {c}:", round(en_la_mejor("ucb", MARCAS, c=c)[10000], 2))
+""")
+
+# ================================================================ 9 ===
+md("""
+## 9 · Cierre
 
 | algoritmo | jugada | nodos generados |
 |---|---|---|

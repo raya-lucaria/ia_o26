@@ -12,6 +12,7 @@ partir de las jugadas, asi que un cambio en las reglas cambia el dibujo.
 Los ids llevan prefijo "jue-": los ids de objeto numerado son unicos en todo
 el curso.
 """
+import math
 import sys
 from xml.sax.saxutils import escape
 
@@ -3011,6 +3012,260 @@ def jue_c3_mcts_pasos():
     return "".join(out)
 
 
+# ------------------------------------- p6: de donde sale el bono (UCB) ---
+#
+# Tres graficas con ejes: todo numero dibujado sale de juegos.py (las
+# simulaciones con su semilla fija), nada se escribe a mano. Miden ANCHO_UCB
+# de ancho; el nombre de cada eje va horizontal (el del eje y, arriba de el),
+# para leerse sin girar la cabeza.
+
+ANCHO_UCB = 520
+COLOR_COTA = ACENTO
+COLOR_FRECUENCIA = SERIE[1]
+# Una regla, un trazo y una marca: el color nunca es la unica senal.
+ESTILO_REGLA = {
+    "mejor_promedio": dict(color=SERIE[2], guiones="8 5", marca="cuadro",
+                           rotulo="siempre el mejor promedio"),
+    "a_veces_al_azar": dict(color=SERIE[1], guiones="2 4", marca="rombo",
+                            rotulo="a veces al azar (10 %)"),
+    "ucb": dict(color=ACENTO, guiones=None, marca="circulo", rotulo="UCB, c = 2√2"),
+    "ucb_c1": dict(color=COLOR_FINAL, guiones="10 4 2 4", marca="circulo", rotulo="UCB, c = 1"),
+}
+CURVAS_BONO = (100, 1000, 10000)            # N(s) de cada curva de jue-c3-bono
+COLOR_BONO = {100: SERIE[0], 1000: SERIE[1], 10000: SERIE[2]}
+GUIONES_BONO = {100: None, 1000: "9 5", 10000: "3 4"}
+MARCAS_MICRO_BONO = (10, 30, 60)            # los N(s') del micro, con N(s) = 100
+GUIONES_C1 = "10 4 2 4"                     # raya-punto: la curva de c = 1
+
+
+class Plano:
+    """Un rectangulo de grafica: de datos a pixeles, con eje x o y log."""
+
+    def __init__(self, x0, y0, w, h, xs, ys, xlog=False, ylog=False):
+        self.x0, self.y0, self.w, self.h = x0, y0, w, h
+        self.xs, self.ys, self.xlog, self.ylog = xs, ys, xlog, ylog
+
+    @staticmethod
+    def _t(v, rango, log):
+        a, b = rango
+        if log:
+            return (math.log10(v) - math.log10(a)) / (math.log10(b) - math.log10(a))
+        return (v - a) / (b - a)
+
+    def x(self, v):
+        return round(self.x0 + self.w * self._t(v, self.xs, self.xlog), 1)
+
+    def y(self, v):
+        return round(self.y0 + self.h * (1 - self._t(v, self.ys, self.ylog)), 1)
+
+
+def _num(v):
+    """Rotulo de una marca de escala: 0.001, 0.1, 1, 10 000."""
+    if v >= 1000:
+        return f"{v:,.0f}".replace(",", " ")
+    return f"{v:g}"
+
+
+def _ejes_ucb(out, pl, marcas_x, marcas_y, nombre_x, nombre_y, menores_y=()):
+    """Rejilla tenue en cada marca, ejes, rotulos de escala (14 px) y el
+    nombre de cada eje: el de x centrado abajo, el de y arriba a la izquierda."""
+    x1, y1 = pl.x0 + pl.w, pl.y0 + pl.h
+    for v in menores_y:
+        out.append(linea(pl.x0, pl.y(v), x1, pl.y(v), color=mezclar(LINEA, 0.35), grosor=1))
+    for v in marcas_y:
+        out.append(linea(pl.x0, pl.y(v), x1, pl.y(v), color=mezclar(LINEA, 0.7), grosor=1))
+        out.append(texto(pl.x0 - 8, pl.y(v) + 5, _num(v), tam=14, color=SUAVE, anclaje="end"))
+    for v in marcas_x:
+        out.append(linea(pl.x(v), pl.y0, pl.x(v), y1, color=mezclar(LINEA, 0.7), grosor=1))
+        out.append(texto(pl.x(v), y1 + 22, _num(v), tam=14, color=SUAVE))
+    out.append(linea(pl.x0, y1, x1, y1, color=SUAVE, grosor=2))
+    out.append(linea(pl.x0, pl.y0, pl.x0, y1, color=SUAVE, grosor=2))
+    out.append(texto(pl.x0 + pl.w / 2, y1 + 48, nombre_x, tam=15, color=TEXTO))
+    out.append(texto(X_PIE, pl.y0 - 16, nombre_y, tam=15, color=TEXTO, anclaje="start"))
+
+
+def _polilinea(puntos, color, grosor=3, guiones=None):
+    trazo = f' stroke-dasharray="{guiones}"' if guiones else ""
+    pts = " ".join(f"{x},{y}" for x, y in puntos)
+    return (f'<polyline points="{pts}" fill="none" stroke="{color}" '
+            f'stroke-width="{grosor}" stroke-linejoin="round"{trazo}/>')
+
+
+def _marca(x, y, forma, color, r=5):
+    if forma == "cuadro":
+        return (f'<rect x="{x - r}" y="{y - r}" width="{2 * r}" height="{2 * r}" '
+                f'fill="{FONDO}" stroke="{color}" stroke-width="2"/>')
+    if forma == "rombo":
+        return (f'<polygon points="{x},{y - r - 1} {x + r + 1},{y} {x},{y + r + 1} '
+                f'{x - r - 1},{y}" fill="{FONDO}" stroke="{color}" stroke-width="2"/>')
+    return f'<circle cx="{x}" cy="{y}" r="{r}" fill="{color}"/>'
+
+
+def _caja_leyenda(out, x, y, w, filas):
+    """Leyenda dentro de la grafica: [(muestra(x, y) -> svg, rotulo)]."""
+    out.append(caja(x, y, w, 14 + 26 * len(filas), relleno=FONDO, borde=LINEA, radio=8,
+                    grosor=1))
+    for k, (muestra, rotulo) in enumerate(filas):
+        yy = y + 20 + 26 * k
+        out.append(muestra(x + 12, yy))
+        out.append(texto(x + 52, yy + 5, rotulo, tam=14, color=TEXTO, anclaje="start"))
+
+
+def _dec(v):
+    """0.6, −0.2: con signo menos tipografico, como en las paginas."""
+    return f"{float(v):g}".replace("-", "−")
+
+
+def _pct(v):
+    return f"{100 * float(v):.1f}".rstrip("0").rstrip(".") + " %"
+
+
+def puntos_hoeffding(pl):
+    """[(n, x, y)] de cada frecuencia observada: n con frecuencia 0 no cabe
+    en el eje log y no se dibuja (no ocurre con la semilla de la figura)."""
+    t = j.tabla_hoeffding()
+    return [(n, pl.x(n), pl.y(float(f))) for n, (f, _) in t.items() if f > 0]
+
+
+def plano_hoeffding():
+    return Plano(78, 116, 412, 280, (0, 200), (0.001, 1), ylog=True)
+
+
+def jue_c3_hoeffding():
+    """Frecuencia observada de ū(s′) ≤ μ(s′) − ε contra N(s′) (puntos) y la
+    cota de Hoeffding (linea), eje y logaritmico. Jugada y: μ = 0.3, ε = 0.2."""
+    t = j.tabla_hoeffding()
+    mu, eps, reps = float(j.MU_HOEFFDING), float(j.EPS_HOEFFDING), j.REPS_HOEFFDING
+    pl = plano_hoeffding()
+    W, H = ANCHO_UCB, pl.y0 + pl.h + 210
+    renglones = ["Cuánto falla un promedio", f"jugada y: μ = {_dec(mu)}, ε = {_dec(eps)}"]
+    citas = ", ".join(f"con N(s′) = {n}, {_pct(t[n][0])} contra una cota de {_pct(t[n][1])}"
+                      for n in (10, 50, 100))
+    desc = (f"Gráfica con eje y logarítmico. Eje x: N(s′), simulaciones, de 0 a 200. Eje y: "
+            f"frecuencia con que el promedio ū(s′) queda en μ(s′) − ε o menos, de 0.001 a 1. "
+            f"Puntos: la frecuencia observada en {reps:,} tiradas de 200 simulaciones de la "
+            f"jugada y, con μ = {mu:g} y ε = {eps:g}. Línea: la cota de Hoeffding, "
+            f"exp(−N(s′)·ε²/2). Todos los puntos quedan bajo la línea: {citas}. "
+            "Los dos bajan con N(s′); la cota es holgada pero vale para todo N(s′).").replace(
+                ",000", " 000")
+    out = [marco(W, H, desc, " ".join(renglones), desc)]
+    encabezado(out, renglones)
+    _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0.001, 0.01, 0.1, 1),
+              "N(s′): simulaciones de la jugada",
+              "frecuencia de ū(s′) ≤ μ(s′) − ε (escala log)",
+              menores_y=[k * 10.0 ** e for e in (-3, -2, -1) for k in range(2, 10)])
+    out.append(_polilinea([(pl.x(n), pl.y(c)) for n, (_, c) in t.items()], COLOR_COTA,
+                          grosor=3))
+    for _, x, y in puntos_hoeffding(pl):
+        out.append(f'<circle cx="{x}" cy="{y}" r="2.6" fill="{COLOR_FRECUENCIA}"/>')
+    # Debajo de la grafica: dentro de ella, en cualquier esquina, tapaba
+    # puntos o la linea (visto renderizando).
+    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 300, [
+        (lambda x, y: f'<circle cx="{x + 14}" cy="{y}" r="4" fill="{COLOR_FRECUENCIA}"/>',
+         "observada (simulación)"),
+        (lambda x, y: linea(x, y, x + 30, y, color=COLOR_COTA, grosor=3),
+         "cota: exp(−N(s′)·ε²/2)")])
+    out.append(nota_svg(pl.y0 + pl.h + 162, [
+        f"{reps:,} tiradas de 200 simulaciones".replace(",", " "),
+        "de y, con semilla fija; un punto por N(s′)."], tam=14))
+    out.append(cierre())
+    return "".join(out)
+
+
+def plano_bono():
+    return Plano(78, 116, 412, 280, (0, 200), (0, 4))
+
+
+def jue_c3_bono():
+    """El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para N(s) = 100, 1000 y
+    10 000, y la curva de c = 1 (la de la p5) con N(s) = 100, punteada."""
+    pl = plano_bono()
+    W, H = ANCHO_UCB, pl.y0 + pl.h + 150
+    ns = list(range(5, 201))
+    renglones = ["El bono contra N(s′)", "c = 2√2, escala ±1"]
+    micro = ", ".join(f"{j.bono_ucb(100, n):.2f} con N(s′) = {n}" for n in MARCAS_MICRO_BONO)
+    desc = ("Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono "
+            "2√2·√(ln N(s)/N(s′)), de 0 a 4. Tres curvas, una por N(s): 100, 1 000 y 10 000; "
+            "las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Con N(s) = 100 "
+            f"el bono vale {micro}. Una cuarta curva, punteada y tenue: c = 1, la de la p5, "
+            f"con N(s) = 100: {j.bono_ucb(100, 10, c=1):.2f} con N(s′) = 10.")
+    out = [marco(W, H, desc, " ".join(renglones), desc)]
+    encabezado(out, renglones)
+    _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0, 1, 2, 3, 4),
+              "N(s′): simulaciones de la jugada", "bono (en unidades de ū)")
+    out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(100, n, c=1))) for n in ns], SUAVE,
+                          grosor=2, guiones=GUIONES_C1))
+    for n_padre in CURVAS_BONO:
+        out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(n_padre, n))) for n in ns],
+                              COLOR_BONO[n_padre], grosor=3, guiones=GUIONES_BONO[n_padre]))
+    # Sin rotulo junto al punto: las curvas de arriba lo cruzaban; los
+    # valores van en el pie.
+    for n in MARCAS_MICRO_BONO:
+        out.append(_marca(pl.x(n), pl.y(j.bono_ucb(100, n)), "circulo", COLOR_BONO[100], r=5))
+    filas = [(lambda x, y, n=n: linea(x, y, x + 30, y, color=COLOR_BONO[n], grosor=3,
+                                      guiones=GUIONES_BONO[n]),
+              f"N(s) = {_num(n)}") for n in CURVAS_BONO]
+    filas.append((lambda x, y: linea(x, y, x + 30, y, color=SUAVE, grosor=2, guiones=GUIONES_C1),
+                  "c = 1, N(s) = 100"))
+    _caja_leyenda(out, pl.x0 + pl.w - 200, pl.y0 + 10, 190, filas)
+    out.append(nota_svg(pl.y0 + pl.h + 86, [
+        "Puntos: N(s) = 100 y N(s′) = " + ", ".join(str(n) for n in MARCAS_MICRO_BONO) + ";",
+        "el bono vale " + ", ".join(f"{j.bono_ucb(100, n):.2f}" for n in MARCAS_MICRO_BONO)
+        + "."], tam=14))
+    out.append(cierre())
+    return "".join(out)
+
+
+def plano_bandido():
+    return Plano(78, 116, 412, 280, (10, 10000), (0, 1), xlog=True)
+
+
+def puntos_bandido(pl):
+    """{regla: [(N(s), x, y)]} de la figura del bandido."""
+    return {r: [(m, pl.x(m), pl.y(v)) for m, v in d.items()]
+            for r, d in j.tabla_bandido().items()}
+
+
+def jue_c3_bandido():
+    """Fraccion de vueltas en la mejor jugada (x) contra N(s), eje x log, con
+    las tres reglas; promedio de 40 corridas con semillas 1..40."""
+    t = j.tabla_bandido()
+    pl = plano_bandido()
+    W, H = ANCHO_UCB, pl.y0 + pl.h + 150
+    fin = max(j.MARCAS_BANDIDO)
+    mus = ", ".join(f"{k}: {_dec(v)}" for k, v in j.MUS_HILO.items())
+    renglones = ["Cuánto va a la mejor jugada",
+                 "μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values())]
+    finales = "; ".join(f"{ESTILO_REGLA[r]['rotulo']}, {t[r][10]:.2f} a {t[r][fin]:.2f}"
+                        for r in t)
+    desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
+            "fracción de las vueltas que fueron a la mejor jugada, x, de 0 a 1. Promedio de "
+            f"{j.CORRIDAS_BANDIDO} corridas con semilla fija; promedios verdaderos {mus}. "
+            f"De N(s) = 10 a N(s) = {fin:,}: {finales}. Siempre el mejor promedio se aplana; "
+            "a veces al azar no pasa de 0.93 porque sigue tirando al azar; UCB empieza "
+            "abajo, porque explora, y sigue subiendo; con c = 1 explora menos y llega antes.").replace(",000", " 000")
+    out = [marco(W, H, desc, " ".join(renglones), desc)]
+    encabezado(out, renglones)
+    _ejes_ucb(out, pl, (10, 100, 1000, 10000), (0, 0.25, 0.5, 0.75, 1),
+              "N(s): vueltas (escala log)", "fracción de vueltas en la mejor jugada (x)")
+    for r, pts in puntos_bandido(pl).items():
+        e = ESTILO_REGLA[r]
+        out.append(_polilinea([(x, y) for _, x, y in pts], e["color"], grosor=3,
+                              guiones=e["guiones"]))
+        for _, x, y in pts:
+            out.append(_marca(x, y, e["marca"], e["color"], r=4))
+    filas = [(lambda x, y, e=ESTILO_REGLA[r]: linea(x, y, x + 30, y, color=e["color"],
+                                                    grosor=3, guiones=e["guiones"])
+              + _marca(x + 15, y, e["marca"], e["color"], r=4), ESTILO_REGLA[r]["rotulo"])
+             for r in t]
+    _caja_leyenda(out, pl.x0 + pl.w - 262, pl.y0 + pl.h - 124, 252, filas)
+    out.append(nota_svg(pl.y0 + pl.h + 86, [
+        f"Promedio de {j.CORRIDAS_BANDIDO} corridas con semilla", "fija, de 10 000 vueltas cada una."],
+        tam=14))
+    out.append(cierre())
+    return "".join(out)
+
+
 DIAGRAMAS = {
     "jue-ciclo-partida": jue_ciclo_partida,
     **{f"jue-grafo-paso-{paso}": (lambda paso=paso: jue_grafo_paso(paso))
@@ -3047,6 +3302,9 @@ DIAGRAMAS = {
     "jue-c3-horizonte": jue_c3_horizonte,
     "jue-c3-profundizacion": jue_c3_profundizacion,
     "jue-c3-mcts-pasos": jue_c3_mcts_pasos,
+    "jue-c3-hoeffding": jue_c3_hoeffding,
+    "jue-c3-bono": jue_c3_bono,
+    "jue-c3-bandido": jue_c3_bandido,
 }
 
 

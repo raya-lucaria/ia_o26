@@ -53,3 +53,6 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-c3-horizonte.svg` | El efecto horizonte: la recaptura queda detrás del corte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-profundizacion.svg` | La profundización iterativa en el tiempo, con la jugada lista tras cada búsqueda | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-mcts-pasos.svg` | Una vuelta de MCTS: selección, expansión, simulación y retropropagación | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-hoeffding.svg` | Frecuencia observada de ū(s′) ≤ μ(s′) − ε contra N(s′), simulada con semilla fija, y la cota de Hoeffding; eje y logarítmico | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-bono.svg` | El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para tres N(s), y la curva de c = 1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-bandido.svg` | Fracción de vueltas en la mejor jugada contra N(s) con tres reglas (siempre el mejor promedio, a veces al azar, UCB); eje x logarítmico | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
