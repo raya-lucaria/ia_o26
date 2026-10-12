@@ -964,13 +964,14 @@ for regla in ("mejor_promedio", "ucb"):
 """)
 
 md("""
-**Dos preguntas, dos gráficas.** Se corren 40 corridas por regla (semillas
-1 a 40) de 10 000 vueltas. Primero: ¿cuánto gana cada regla? El pago por
+**Dos preguntas, dos gráficas.** Se corren 40 corridas (semillas 1 a 40)
+de 10 000 vueltas con cada una de las cuatro reglas de la página: las tres
+de arriba y UCB con $c = 1$. Primero: ¿cuánto gana cada regla? El pago por
 vuelta hasta $N(s)$ es el promedio de los $U$ de las vueltas 1 a $N(s)$; lo
-mejor posible es elegir siempre x, que paga $\\mu(x) = 0.6$. Segundo:
-¿cuántas corridas ya eligen x? Se cuenta, en las vueltas $N(s) - 9$ a
-$N(s)$, qué fracción de las elecciones de las 40 corridas fue a x: no es
-acumulado.
+mejor posible es elegir siempre x, que paga $\\mu(x) = 0.6$. Segundo: ¿qué
+tanto se elige x? Cada punto cuenta 400 elecciones, las de las vueltas
+$N(s) - 9$ a $N(s)$ de las 40 corridas, y dice qué fracción fue a x: no es
+acumulado, y son elecciones, no corridas.
 """)
 
 code("""
@@ -1007,10 +1008,15 @@ def eligen_x(por_corrida, marcas, ventana=10):   # NO acumulado
 
 code("""
 MARCAS = (10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
-REGLAS = ("mejor_promedio", "a_veces_al_azar", "ucb")
-por_regla = {r: corridas(r) for r in REGLAS}       # unos segundos
+FILAS = {"mejor_promedio": ("mejor_promedio", C_TEORIA),   # como la página
+         "a_veces_al_azar": ("a_veces_al_azar", C_TEORIA),
+         "ucb": ("ucb", C_TEORIA), "ucb_c1": ("ucb", 1)}
+por_regla = {f: corridas(r, c=c) for f, (r, c) in FILAS.items()}   # ~1 min
+""")
+
+code("""
 plt.figure()
-for regla in REGLAS:
+for regla in FILAS:
     p = pago(por_regla[regla], MARCAS)
     plt.semilogx(MARCAS, list(p.values()), "o-", label=regla)
     print(f"{regla:<15} {p[10]:.3f} → {p[10000]:.3f}")
@@ -1024,13 +1030,13 @@ plt.show()
 
 code("""
 plt.figure()
-for regla in REGLAS:
+for regla in FILAS:
     e = eligen_x(por_regla[regla], MARCAS)
     plt.semilogx(MARCAS, [100 * v for v in e.values()], "o-", label=regla)
-    print(f"{regla:<15} {e[100]:.1%} → {e[10000]:.1%}")   # 100 y 10 000
+    print(f"{regla:<15} {e[100]:.2%} → {e[10000]:.2%}")   # 100 y 10 000
 plt.xlabel("N(s): vueltas")
-plt.ylabel("% de corridas que eligen x en esa vuelta")
-plt.title("cada punto: 40 corridas, vueltas N(s) − 9 a N(s)")
+plt.ylabel("elecciones que van a x (%), en esas 10 vueltas")
+plt.title("cada punto: 40 corridas × 10 vueltas (N(s) − 9 a N(s))")
 plt.ylim(0, 100)
 plt.legend()
 plt.show()
@@ -1059,7 +1065,7 @@ def reparto(finales):
 """, "logica", "bono")
 
 code("""
-for regla in REGLAS:
+for regla in FILAS:
     at, mn, med, mx = reparto(finales(por_regla[regla]))
     print(f"{regla:<15} atoradas {at:>2} de 40   mín {mn:.4f}"
           f"   mediana {med:.4f}   máx {mx:.4f}")
@@ -1071,39 +1077,58 @@ print({a: en.count(a) for a in MU}, f"esperado {esperado / 40:.4f}")
 """)
 
 code("""
-plt.figure()
-for k, regla in enumerate(REGLAS):
+def apilar(f, paso=0.035, alto=10):       # columnas de 10, como la página
+    orden, grupos = sorted(f), [[]]
+    for i, b in enumerate(orden):         # un hueco grande: otro grupo
+        if i and b - orden[i - 1] > 0.25:
+            grupos.append([])
+        grupos[-1].append(b)
+    xs, filas = [], []
+    for g in grupos:
+        columnas = -(-len(g) // alto)
+        izq = g[(len(g) - 1) // 2] - paso * (columnas - 1) / 2
+        izq = max(0, min(izq, 1 - paso * (columnas - 1)))
+        for i in range(len(g)):
+            xs.append(izq + paso * (i // alto))
+            filas.append(i % alto)
+    return xs, filas
+""")
+
+code("""
+plt.figure(figsize=(6, 6))
+for k, regla in enumerate(FILAS):
     f = finales(por_regla[regla])
-    altura = [k + (i * 4 % 9 - 4) * 0.03 for i in range(len(f))]
-    plt.plot(f, altura, "o", alpha=0.6)
+    xs, filas = apilar(f)
+    plt.plot(xs, [k - 0.36 + 0.08 * i for i in filas], "o", ms=4)
     media = 0.0
     for x in f:                           # en orden, como juegos.py
         media += x
-    plt.vlines(media / len(f), k - 0.3, k + 0.3, colors="k")
-plt.yticks(range(len(REGLAS)), REGLAS)
+    plt.vlines(media / len(f), k - 0.42, k + 0.42, colors="k")
+plt.yticks(range(len(FILAS)), FILAS)
 plt.xlim(-0.02, 1.02)
 plt.xlabel("fracción de las 10 000 vueltas que fueron a x")
 plt.title("cada punto es una corrida; raya: el promedio")
+plt.tight_layout()                        # que se lean los nombres
 plt.show()
 """)
 
 md("""
-**Pruébalo.** Corre `pago(corridas("ucb", c=1), MARCAS)` y luego con `c=0`.
-¿Cuál paga más por vuelta en 10 000 vueltas: c = 1, c = 2√2 o c = 0?
+**Pruébalo.** En las gráficas, UCB con c = 1 paga más que con c = 2√2.
+Corre `pago(corridas("ucb", c=0), MARCAS)`: ¿a cuál de las cuatro reglas
+se parece, y por qué?
 
 <details><summary>Respuesta</summary>
 
-En este bandido, c = 1 (0.598) más que c = 2√2 (0.580): la teoría pide más
-exploración de la que este ejemplo necesita; c es una perilla. Con c = 0 no
-hay bono y UCB es «siempre el mejor promedio»: se queda en 0.543, porque 6
-de las 40 corridas se atoran.
+En este bandido, c = 1 (0.598) paga más que c = 2√2 (0.580): la teoría pide
+más exploración de la que este ejemplo necesita; c es una perilla. Con
+c = 0 no hay bono y UCB es «siempre el mejor promedio»: se queda en 0.543,
+porque 6 de las 40 corridas se atoran.
 
 </details>
 """)
 
 code("""
-for c in (1, 0):
-    print(f"c = {c}:", round(pago(corridas("ucb", c=c), MARCAS)[10000], 3))
+print("c = 0:", round(pago(corridas("ucb", c=0), MARCAS)[10000], 3))
 """)
 
 # ================================================================ 9 ===

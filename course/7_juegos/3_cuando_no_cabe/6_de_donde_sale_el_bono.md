@@ -4,7 +4,7 @@ title: De dónde sale el bono
 nav_title: De dónde sale el bono
 summary: "El bono de UCT es el margen de error de un promedio: sumado, da la cota optimista de cada jugada. Sale de la desigualdad de Hoeffding con una probabilidad de fallo que baja conforme avanza la búsqueda, y esa probabilidad es la c del puntaje. Se usa para seleccionar, no para entregar."
 status: ready
-estimated_time: 40m
+estimated_time: 43m
 tags: [juegos, mcts, exploracion]
 ---
 
@@ -535,6 +535,9 @@ Tras 12 vueltas la secuencia es x y z z z x y x y x y x, y quedan
 ${N=5,4,3}$: la mayoría en x.
 :::
 
+Déjala seguir hasta 1 000 vueltas, como la de la sección 1: x se lleva 817,
+y 145 y z 38. Sin bono, z se llevaba 998.
+
 Pero una corrida es suerte: con otra semilla, la regla sin bono pudo no
 atorarse. Hay que correr cada regla muchas veces.
 
@@ -547,8 +550,8 @@ el mejor promedio salvo una vuelta de cada diez, al azar. Tres palabras:
 - El **pago** de una vuelta es su $U$, +1 o −1. Su promedio de la vuelta
   1 a $N(s)$ es lo que la regla ganó por vuelta. Lo mejor posible es
   elegir siempre x, la mejor: en promedio, ${\mu(\text{x})=0.6}$.
-- **Eligiendo x en esa vuelta**: de las 40 corridas, cuántas eligieron x
-  en la vuelta $N(s)$. Es una foto de ese momento, no una suma desde la
+- **Eligiendo x en esa vuelta**: de las elecciones que hacen las 40
+  corridas en la vuelta $N(s)$, qué fracción va a x. Es una foto de ese momento, no una suma desde la
   vuelta 1.
 
 **¿Encuentra cada regla la mejor jugada?** En la primera figura cada
@@ -564,8 +567,9 @@ una raya marca su promedio.
   siempre a x y 6 se atoran lejos de ella, 5 en y y 1 en z. Su promedio,
   0.85 (casi ${34/40}$), no describe ninguna corrida: ninguna va a x el
   85 % de sus vueltas. Lo que dice es que 34 de 40 encontraron x.
-- **Las otras tres** no se atoran nunca. Su corrida más baja va a x 0.90,
-  0.92 y 0.96 de las vueltas.
+- **Las otras tres** no se atoran nunca. Su corrida más baja va a x 0.90
+  de las vueltas con a veces al azar, 0.92 con UCB ${c=2\sqrt2}$ y 0.96
+  con UCB ${c=1}$.
 
 **¿Cuánto gana cada regla?** En la segunda figura cada punto es el
 promedio de 40 corridas. El eje horizontal es la vuelta $N(s)$, en escala
@@ -577,7 +581,8 @@ en 0.6 es lo mejor posible.
 :::
 
 - **Al principio, sin bono gana más.** En la vuelta 10 paga 0.400, y UCB
-  con ${c=2\sqrt2}$, 0.295. Sin bono no se gastan vueltas en probar; UCB
+  con ${c=2\sqrt2}$, 0.295. Sin bono, tras probar cada una una vez, no
+  gasta más vueltas en probar; UCB
   reparte las primeras entre las tres, y las que van a y o a z pagan
   menos.
 - **Luego, sin bono se queda en 0.54 para siempre:** 0.544 en la vuelta
@@ -585,19 +590,23 @@ en 0.6 es lo mejor posible.
   pero 5 siguen en y (0.3) y 1 en z (−0.2). Se espera
   ${(34\cdot0.6+5\cdot0.3-0.2)/40=0.5425}$, y esas 6 no se corrigen nunca.
 - **Las UCB pagan su exploración y luego se acercan a 0.6.** La de
-  ${c=2\sqrt2}$ explora más: pasa a la regla sin bono entre las vueltas
-  2 000 y 5 000 y termina en 0.580. La de ${c=1}$ explora menos: la pasa
+  ${c=2\sqrt2}$ explora más: rebasa a la regla sin bono entre las vueltas
+  2 000 y 5 000 y termina en 0.580. La de ${c=1}$ explora menos: la rebasa
   entre las vueltas 100 y 200 y termina en 0.598.
 - **A veces al azar** queda en medio, 0.564: no se atora, pero sigue
   tirando al azar.
 
-**¿Por qué sin bono se queda abajo?** La tercera figura cuenta cuántas de
-las 40 corridas eligen x en esa vuelta. Para que no salte, cada punto
-promedia las vueltas ${N(s)-9}$ a $N(s)$. No es acumulado: la vuelta 1 ya
-no cuenta en la 1 000.
+**¿Por qué sin bono se queda abajo?** La tercera figura mide qué fracción
+de las elecciones va a x en esa vuelta. Para que no salte, cada punto
+promedia las vueltas ${N(s)-9}$ a $N(s)$ de las 40 corridas: 400
+elecciones.
 
-::: figure {#jue-c3-fig-eligiendo-x title="Cuántas corridas eligen x: sin bono, 85 % para siempre"}
-![Gráfica con eje horizontal logarítmico. Eje horizontal: N(s), vueltas, de 10 a 10 000. Eje vertical: porcentaje de las 40 corridas que eligen x en esa vuelta, no acumulado, con marcas de 40 a 100 %. Cada punto promedia las vueltas N(s) − 9 a N(s) de las 40 corridas, 400 elecciones; μ de x, y, z: 0.6, 0.3, −0.2. Cuatro curvas, en N(s) = 10, 100, 1 000 y 10 000: siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %, plana desde la vuelta 100; a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %; UCB con c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %; UCB con c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %](../_assets/jue-c3-eligiendo-x.svg)
+No es acumulado: la vuelta 1 ya no cuenta en la 1 000. Es una
+fracción de elecciones, no de corridas: solo sin bono, donde cada corrida
+elige siempre lo mismo, coinciden las dos.
+
+::: figure {#jue-c3-fig-eligiendo-x title="Qué tanto se elige x en cada vuelta: sin bono, 85 % para siempre"}
+![Gráfica con eje horizontal logarítmico. Eje horizontal: N(s), vueltas, de 10 a 10 000. Eje vertical: porcentaje de las elecciones que van a x en esa vuelta, no acumulado, con marcas de 40 a 100 %. Cada punto promedia las vueltas N(s) − 9 a N(s) de las 40 corridas, 400 elecciones; μ de x, y, z: 0.6, 0.3, −0.2. Cuatro curvas, en N(s) = 10, 100, 1 000 y 10 000: siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %, plana desde la vuelta 100; a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %; UCB con c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %; UCB con c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %](../_assets/jue-c3-eligiendo-x.svg)
 :::
 
 - **Siempre el mejor promedio** se aplana en 85 % desde la vuelta 100. Es
@@ -607,11 +616,13 @@ no cuenta en la 1 000.
 - **A veces al azar** sube hasta cerca de 93 %: 93 % en la vuelta 1 000 y
   92.5 % en la 10 000. Ya encontró x, pero una vuelta de cada diez elige
   al azar y le atina a x en una de cada tres: se espera
-  ${0.9+0.1/3\approx0.933}$, el 93.3 %. Es un promedio: en la vuelta 500
-  marca 93.8 %.
+  ${0.9+0.1/3\approx0.933}$, el 93.3 %. Es un promedio: en algunas vueltas
+  la curva queda por encima.
 - **Las dos UCB** empiezan abajo, 41.8 % y 54.5 % en la vuelta 10, porque
   prueban las tres. Su bono se encoge donde hay evidencia, y en la vuelta
-  10 000 eligen x 98.8 % y 100 % de las corridas.
+  10 000 el 98.8 % y el 100 % de sus elecciones van a x. El 1.2 % que
+  falta a UCB ${c=2\sqrt2}$ es exploración; ninguna corrida se atora
+  (@jue-c3-fig-bandido-corridas).
 
 **La lección: explorar cuesta un poco al principio y evita perder para
 siempre.** Sin bono se ganan las primeras vueltas, pero 6 de cada 40
@@ -621,6 +632,14 @@ mejor promedio: 0.543 y 85 %.
 
 La teoría acota, con ${c=2\sqrt2}$, cuántas vueltas se pierden en las
 otras; con ${c=1}$ no da esa cota, aunque aquí funcione mejor.
+
+La cota de UCB1 (Auer, Cesa-Bianchi y Fischer, 2002) garantiza que, en cualquier
+bandido con resultados acotados, las vueltas gastadas en una jugada peor
+crecen a lo más como ${\ln N(s)}$, mucho más despacio que $N(s)$.
+
+Una $c$ chica no da esa garantía. Si la mejor tiene mala suerte en sus
+primeras simulaciones, su bono chico tarda mucho en compensar su mal
+promedio, y la búsqueda puede gastar miles de vueltas en otra antes de volver a ella.
 
 La búsqueda sí llega a la mejor jugada. Pero cuando se acaba el tiempo,
 ¿cuál se juega?
@@ -683,9 +702,10 @@ $\mu(s')$ de la definición, que supone que los dos juegan al azar, sino
 algo que cambia con la búsqueda. Lo que rompe Hoeffding es la
 dependencia: por eso no se aplica al pie de la letra.
 
-Kocsis y Szepesvári (2006) demostraron aparte que UCT, con una $c$
-bastante grande, llega con suficientes vueltas a la jugada que elegiría
-minimax, no a la de mayor $\mu(s')$. Esa prueba no la cubrimos.
+Kocsis y Szepesvári (2006) demostraron aparte que, con una $c$ bastante
+grande, la probabilidad de que UCT elija en la raíz una jugada peor que la
+de minimax tiende a 0 conforme crecen las vueltas. Llega a la jugada que
+elegiría minimax, no a la de mayor $\mu(s')$. Esa prueba no la cubrimos.
 
 ## 9 · Aplicar el bono por tu cuenta
 
