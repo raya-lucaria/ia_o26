@@ -414,11 +414,18 @@ def test_el_bono_del_cuaderno_es_el_de_juegos(ns):
     for regla in j.REGLAS_BANDIDO:
         for semilla in (1, 7, j.SEMILLA_ATORA):
             for c in (j.C_TEORIA, 1):
-                N, _, elecciones = ns["bandido"](regla, 400, semilla, c)
+                N, _, elecciones, resultados = ns["bandido"](regla, 400, semilla, c)
                 b = j.bandido(regla, j.MUS_HILO, 400, semilla, c)
                 assert elecciones == b["elecciones"], (regla, semilla, c)
+                assert resultados == b["resultados"], (regla, semilla, c)
                 assert N == b["N"]
+    # Las dos graficas y el reparto: la misma aritmetica, bit a bit (la
+    # fuente en Fraction, el cuaderno con enteros y una division al final).
     marcas = (10, 100, 300)
     for regla in j.REGLAS_BANDIDO:
-        nb_f = ns["en_la_mejor"](regla, marcas, corridas=5)
-        assert nb_f == j.fraccion_en_la_mejor(regla, j.MUS_HILO, marcas, 5)
+        corr = ns["corridas"](regla, vueltas=300, n=5)
+        assert ns["pago"](corr, marcas) == {
+            m: float(v) for m, v in j.pago_por_vuelta(regla, j.MUS_HILO, marcas, 5).items()}
+        assert ns["eligen_x"](corr, marcas) == {
+            m: float(v) for m, v in j.eligiendo_la_mejor(regla, j.MUS_HILO, marcas, 5).items()}
+        assert ns["finales"](corr, fin=300) == j.fracciones_finales(regla, j.MUS_HILO, 300, 5)

@@ -941,13 +941,15 @@ def bandido(regla, vueltas, semilla, c=C_TEORIA):
               for i, a in enumerate(MU)}
     dado = random.Random(semilla * 1000 + 999)
     N, suma_u = {a: 0 for a in MU}, {a: 0 for a in MU}
-    elecciones = []
+    elecciones, resultados = [], []       # la jugada y su U, por vuelta
     for n_padre in range(vueltas):        # N(s): vueltas ya hechas
         a = elegir_jugada(regla, N, suma_u, n_padre, dado, c)
+        u = simular(suerte[a], MU[a])
         N[a] += 1
-        suma_u[a] += simular(suerte[a], MU[a])
+        suma_u[a] += u
         elecciones.append(a)
-    return N, suma_u, elecciones
+        resultados.append(u)
+    return N, suma_u, elecciones, resultados
 """, "logica", "bono")
 
 md("""
@@ -957,67 +959,100 @@ $\\bar u = -1$, el mínimo, y «siempre el mejor promedio» no vuelve a ellas.
 
 code("""
 for regla in ("mejor_promedio", "ucb"):
-    N, suma_u, elecciones = bandido(regla, 12, semilla=36)
+    N, suma_u, elecciones, _ = bandido(regla, 12, semilla=36)
     print(f"{regla:<15}", "".join(elecciones), "N(s′):", N)
 """)
 
+md("""
+**Dos preguntas, dos gráficas.** Se corren 40 corridas por regla (semillas
+1 a 40) de 10 000 vueltas. Primero: ¿cuánto gana cada regla? El pago por
+vuelta hasta $N(s)$ es el promedio de los $U$ de las vueltas 1 a $N(s)$; lo
+mejor posible es elegir siempre x, que paga $\\mu(x) = 0.6$. Segundo:
+¿cuántas corridas ya eligen x? Se cuenta, en las vueltas $N(s) - 9$ a
+$N(s)$, qué fracción de las elecciones de las 40 corridas fue a x: no es
+acumulado.
+""")
+
 code("""
-def fracciones(regla, marcas, corridas=40, c=C_TEORIA):
-    mejor = max(MU, key=MU.get)
-    salida = []                           # una entrada por corrida
-    for semilla in range(1, corridas + 1):
-        elecciones = bandido(regla, max(marcas), semilla, c)[2]
-        veces, f = 0, {}
-        for n_padre, a in enumerate(elecciones, 1):
-            veces += a == mejor           # acumulada desde la vuelta 1
-            if n_padre in marcas:
-                f[n_padre] = veces / n_padre
-        salida.append(f)
+def corridas(regla, vueltas=10000, n=40, c=C_TEORIA):
+    salida = []                           # por corrida: elecciones y U
+    for semilla in range(1, n + 1):
+        _, _, elecciones, resultados = bandido(regla, vueltas, semilla, c)
+        salida.append((elecciones, resultados))
     return salida
 """, "logica", "bono")
 
 code("""
-def promediar(por_corrida, marcas):
-    n, suma = len(por_corrida), {m: 0.0 for m in marcas}
-    for f in por_corrida:              # sumado en orden, como juegos.py: sum()
-        for m in marcas:               # redondea distinto desde Python 3.12
-            suma[m] += f[m]
-    return {m: suma[m] / n for m in marcas}
+def pago(por_corrida, marcas):            # pago por vuelta, vueltas 1..N(s)
+    total = {m: 0 for m in marcas}        # U es ±1: sumas enteras, exactas
+    for _, resultados in por_corrida:
+        suma = 0
+        for k, u in enumerate(resultados, 1):
+            suma += u
+            if k in total:
+                total[k] += suma
+    return {m: total[m] / (len(por_corrida) * m) for m in marcas}
+""", "logica", "bono")
 
-def en_la_mejor(regla, marcas, corridas=40, c=C_TEORIA):
-    return promediar(fracciones(regla, marcas, corridas, c), marcas)
+code("""
+def eligen_x(por_corrida, marcas, ventana=10):   # NO acumulado
+    mejor = max(MU, key=MU.get)
+    cuenta = {m: 0 for m in marcas}
+    for elecciones, _ in por_corrida:
+        for m in marcas:
+            cuenta[m] += elecciones[max(m - ventana, 0):m].count(mejor)
+    return {m: cuenta[m] / (len(por_corrida) * min(ventana, m))
+            for m in marcas}
 """, "logica", "bono")
 
 code("""
 MARCAS = (10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 REGLAS = ("mejor_promedio", "a_veces_al_azar", "ucb")
-corridas = {r: fracciones(r, MARCAS) for r in REGLAS}   # unos segundos
+por_regla = {r: corridas(r) for r in REGLAS}       # unos segundos
 plt.figure()
 for regla in REGLAS:
-    fr = promediar(corridas[regla], MARCAS)
-    plt.semilogx(MARCAS, list(fr.values()), "o-", label=regla)
-    print(f"{regla:<15} {fr[10]:.2f} → {fr[10000]:.2f}")
+    p = pago(por_regla[regla], MARCAS)
+    plt.semilogx(MARCAS, list(p.values()), "o-", label=regla)
+    print(f"{regla:<15} {p[10]:.3f} → {p[10000]:.3f}")
+plt.axhline(MU["x"], ls="--", color="gray", label="siempre x")
 plt.xlabel("N(s): vueltas")
-plt.ylabel("fracción de las primeras N(s) vueltas en x")
+plt.ylabel("pago promedio por vuelta, vueltas 1 a N(s)")
 plt.title("cada punto: promedio de 40 corridas")
-plt.ylim(0, 1)
+plt.legend()
+plt.show()
+""")
+
+code("""
+plt.figure()
+for regla in REGLAS:
+    e = eligen_x(por_regla[regla], MARCAS)
+    plt.semilogx(MARCAS, [100 * v for v in e.values()], "o-", label=regla)
+    print(f"{regla:<15} {e[100]:.1%} → {e[10000]:.1%}")   # 100 y 10 000
+plt.xlabel("N(s): vueltas")
+plt.ylabel("% de corridas que eligen x en esa vuelta")
+plt.title("cada punto: 40 corridas, vueltas N(s) − 9 a N(s)")
+plt.ylim(0, 100)
 plt.legend()
 plt.show()
 """)
 
 md("""
-**Qué esconde el promedio.** Cada punto de arriba promedia 40 corridas.
-Abajo, cada punto es **una** corrida: dónde terminó tras 10 000 vueltas.
-«Siempre el mejor promedio» no elige x en el 85 % de las vueltas de cada
-corrida: casi todas terminan cerca de 1 y unas pocas se atoran cerca de 0.
-Una corrida está atorada si dejó menos de la mitad de sus vueltas en x.
+**Qué esconde el promedio.** Sin bono, el 85 % de la gráfica de arriba no
+es «cada corrida elige x el 85 % de las veces»: 34 corridas eligen x casi
+siempre y 6 se atoran y no la vuelven a elegir. Cada punto de la gráfica siguiente es
+**una** corrida: dónde terminó tras 10 000 vueltas. Una corrida está atorada
+si dejó menos de la mitad de sus vueltas en x. Y el pago sin bono es lo que
+se espera de ese reparto: $(34 \\cdot 0.6 + 5 \\cdot 0.3 - 0.2)/40 = 0.5425$.
 """)
 
 code("""
 import statistics
 
-def reparto(por_corrida, fin=10000):
-    finales = [f[fin] for f in por_corrida]
+def finales(por_corrida, fin=10000):      # fracción de las vueltas en x
+    mejor = max(MU, key=MU.get)
+    return [e[:fin].count(mejor) / fin for e, _ in por_corrida]
+
+def reparto(finales):
     atoradas = sum(x < 0.5 for x in finales)
     return (atoradas, min(finales), statistics.median(finales),
             max(finales))
@@ -1025,18 +1060,26 @@ def reparto(por_corrida, fin=10000):
 
 code("""
 for regla in REGLAS:
-    at, mn, med, mx = reparto(corridas[regla])
+    at, mn, med, mx = reparto(finales(por_regla[regla]))
     print(f"{regla:<15} atoradas {at:>2} de 40   mín {mn:.4f}"
           f"   mediana {med:.4f}   máx {mx:.4f}")
+en = [max(MU, key=e.count) for e, _ in por_regla["mejor_promedio"]]
+esperado = 0.0                            # sumado en orden, nunca sum()
+for a in en:
+    esperado += MU[a]
+print({a: en.count(a) for a in MU}, f"esperado {esperado / 40:.4f}")
 """)
 
 code("""
 plt.figure()
 for k, regla in enumerate(REGLAS):
-    finales = [f[10000] for f in corridas[regla]]
-    altura = [k + (i * 4 % 9 - 4) * 0.03 for i in range(len(finales))]
-    plt.plot(finales, altura, "o", alpha=0.6)
-    plt.vlines(sum(finales) / len(finales), k - 0.3, k + 0.3, colors="k")
+    f = finales(por_regla[regla])
+    altura = [k + (i * 4 % 9 - 4) * 0.03 for i in range(len(f))]
+    plt.plot(f, altura, "o", alpha=0.6)
+    media = 0.0
+    for x in f:                           # en orden, como juegos.py
+        media += x
+    plt.vlines(media / len(f), k - 0.3, k + 0.3, colors="k")
 plt.yticks(range(len(REGLAS)), REGLAS)
 plt.xlim(-0.02, 1.02)
 plt.xlabel("fracción de las 10 000 vueltas que fueron a x")
@@ -1045,21 +1088,22 @@ plt.show()
 """)
 
 md("""
-**Pruébalo.** Corre `en_la_mejor("ucb", MARCAS, c=1)` y luego con `c=0`.
-¿Cuál llega más alto en 10 000 vueltas: c = 1, c = 2√2 o c = 0?
+**Pruébalo.** Corre `pago(corridas("ucb", c=1), MARCAS)` y luego con `c=0`.
+¿Cuál paga más por vuelta en 10 000 vueltas: c = 1, c = 2√2 o c = 0?
 
 <details><summary>Respuesta</summary>
 
-En este bandido, c = 1 (0.99) más que c = 2√2 (0.94): la teoría pide más
+En este bandido, c = 1 (0.598) más que c = 2√2 (0.580): la teoría pide más
 exploración de la que este ejemplo necesita; c es una perilla. Con c = 0 no
-hay bono y UCB es «siempre el mejor promedio»: se aplana en 0.85.
+hay bono y UCB es «siempre el mejor promedio»: se queda en 0.543, porque 6
+de las 40 corridas se atoran.
 
 </details>
 """)
 
 code("""
 for c in (1, 0):
-    print(f"c = {c}:", round(en_la_mejor("ucb", MARCAS, c=c)[10000], 2))
+    print(f"c = {c}:", round(pago(corridas("ucb", c=c), MARCAS)[10000], 3))
 """)
 
 # ================================================================ 9 ===

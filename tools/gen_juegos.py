@@ -14,6 +14,7 @@ el curso.
 """
 import math
 import sys
+from fractions import Fraction as F
 from xml.sax.saxutils import escape
 
 import juegos as j
@@ -3018,8 +3019,15 @@ def jue_c3_mcts_pasos():
 # simulaciones con su semilla fija), nada se escribe a mano. Miden ANCHO_UCB
 # de ancho; el nombre de cada eje va horizontal (el del eje y, arriba de el),
 # para leerse sin girar la cabeza.
+#
+# ANCHO_UCB = 300 y no 520: a 390 px el sitio no escala los SVG de figura y
+# el parrafo que los contiene mide 305 px; a 520 cada grafica se cortaba con
+# scroll horizontal y la leyenda o el final del eje x quedaban fuera (ronda 3
+# de render). Como jue-c3-bandido-corridas: titulo a 17, margen MARGEN_UCB,
+# leyenda y notas debajo, y lo que no cabe en un renglon va en dos.
 
-ANCHO_UCB = 520
+ANCHO_UCB = 300
+MARGEN_UCB = 12
 COLOR_COTA = ACENTO
 COLOR_FRECUENCIA = SERIE[1]
 # Una regla, un trazo y una marca: el color nunca es la unica senal.
@@ -3066,9 +3074,26 @@ def _num(v):
     return f"{v:g}"
 
 
-def _ejes_ucb(out, pl, marcas_x, marcas_y, nombre_x, nombre_y, menores_y=()):
+def _renglones(r):
+    return (r,) if isinstance(r, str) else tuple(r)
+
+
+def _encabezado_ucb(out, titulo, subtitulos):
+    """Titulo a 17 (a 20 no cabe en ANCHO_UCB) y subtitulos a 14, en
+    MARGEN_UCB. Devuelve la base del ultimo renglon."""
+    y = 30
+    out.append(texto(MARGEN_UCB, y, titulo, tam=17, peso="700", anclaje="start"))
+    for r in subtitulos:
+        y += 22
+        out.append(texto(MARGEN_UCB, y, r, tam=14, color=TEXTO, anclaje="start"))
+    return y
+
+
+def _ejes_ucb(out, pl, marcas_x, marcas_y, nombre_x, nombre_y, menores_y=(), margen=MARGEN_UCB):
     """Rejilla tenue en cada marca, ejes, rotulos de escala (14 px) y el
-    nombre de cada eje: el de x centrado abajo, el de y arriba a la izquierda."""
+    nombre de cada eje: el de x centrado abajo, el de y arriba a la izquierda.
+    Un nombre largo va en varios renglones (una tupla). Devuelve la base del
+    ultimo renglon del nombre del eje x."""
     x1, y1 = pl.x0 + pl.w, pl.y0 + pl.h
     for v in menores_y:
         out.append(linea(pl.x0, pl.y(v), x1, pl.y(v), color=mezclar(LINEA, 0.35), grosor=1))
@@ -3080,13 +3105,21 @@ def _ejes_ucb(out, pl, marcas_x, marcas_y, nombre_x, nombre_y, menores_y=()):
         out.append(texto(pl.x(v), y1 + 22, _num(v), tam=14, color=SUAVE))
     out.append(linea(pl.x0, y1, x1, y1, color=SUAVE, grosor=2))
     out.append(linea(pl.x0, pl.y0, pl.x0, y1, color=SUAVE, grosor=2))
-    out.append(texto(pl.x0 + pl.w / 2, y1 + 48, nombre_x, tam=15, color=TEXTO))
-    # Un nombre largo va en varios renglones (una tupla): a 390 px un solo
-    # renglon de mas de ~325 px se corta por la derecha.
-    renglones = (nombre_y,) if isinstance(nombre_y, str) else nombre_y
+    y = y1 + 26
+    for r in _renglones(nombre_x):
+        y += 22
+        out.append(texto(pl.x0 + pl.w / 2, y, r, tam=15, color=TEXTO))
+    renglones = _renglones(nombre_y)
     for k, r in enumerate(renglones):
-        out.append(texto(X_PIE, pl.y0 - 16 - 22 * (len(renglones) - 1 - k), r, tam=15,
+        out.append(texto(margen, pl.y0 - 16 - 22 * (len(renglones) - 1 - k), r, tam=15,
                          color=TEXTO, anclaje="start"))
+    return y
+
+
+def _nota_ucb(y, renglones):
+    """Renglones de 14 px en MARGEN_UCB, uno debajo de otro."""
+    return "".join(texto(MARGEN_UCB, y + 22 * k, r, tam=14, anclaje="start")
+                   for k, r in enumerate(renglones))
 
 
 def _polilinea(puntos, color, grosor=3, guiones=None):
@@ -3106,14 +3139,22 @@ def _marca(x, y, forma, color, r=5):
     return f'<circle cx="{x}" cy="{y}" r="{r}" fill="{color}"/>'
 
 
-def _caja_leyenda(out, x, y, w, filas):
-    """Leyenda dentro de la grafica: [(muestra(x, y) -> svg, rotulo)]."""
-    out.append(caja(x, y, w, 14 + 26 * len(filas), relleno=FONDO, borde=LINEA, radio=8,
-                    grosor=1))
+def _caja_leyenda(out, x, y, w, filas, dx_muestra=12, dx_texto=52):
+    """Leyenda debajo de la grafica: [(muestra(x, y) -> svg, rotulo)], la
+    muestra de 30 px. Devuelve el borde de abajo de la caja."""
+    alto = 14 + 26 * len(filas)
+    out.append(caja(x, y, w, alto, relleno=FONDO, borde=LINEA, radio=8, grosor=1))
     for k, (muestra, rotulo) in enumerate(filas):
         yy = y + 20 + 26 * k
-        out.append(muestra(x + 12, yy))
-        out.append(texto(x + 52, yy + 5, rotulo, tam=14, color=TEXTO, anclaje="start"))
+        out.append(muestra(x + dx_muestra, yy))
+        out.append(texto(x + dx_texto, yy + 5, rotulo, tam=14, color=TEXTO, anclaje="start"))
+    return y + alto
+
+
+def _leyenda_ucb(out, y, filas):
+    """_caja_leyenda a todo el ancho de ANCHO_UCB, en MARGEN_UCB."""
+    return _caja_leyenda(out, MARGEN_UCB, y, ANCHO_UCB - 2 * MARGEN_UCB + 6, filas,
+                         dx_muestra=8, dx_texto=46)
 
 
 def _dec(v):
@@ -3133,7 +3174,8 @@ def puntos_hoeffding(pl):
 
 
 def plano_hoeffding():
-    return Plano(78, 116, 412, 280, (0, 200), (0.001, 1), ylog=True)
+    # y0 = 126: arriba van titulo, subtitulo y el nombre del eje y en dos renglones.
+    return Plano(56, 126, 214, 240, (0, 200), (0.001, 1), ylog=True)
 
 
 def jue_c3_hoeffding():
@@ -3142,7 +3184,7 @@ def jue_c3_hoeffding():
     t = j.tabla_hoeffding()
     mu, eps, reps = float(j.MU_HOEFFDING), float(j.EPS_HOEFFDING), j.REPS_HOEFFDING
     pl = plano_hoeffding()
-    W, H = ANCHO_UCB, pl.y0 + pl.h + 210
+    W = ANCHO_UCB
     renglones = ["Cuánto falla un promedio", f"jugada y: μ = {_dec(mu)}, ε = {_dec(eps)}"]
     citas = ", ".join(f"con N(s′) = {n}, {_pct(t[n][0])} contra una cota de {_pct(t[n][1])}"
                       for n in (10, 50, 100))
@@ -3153,39 +3195,39 @@ def jue_c3_hoeffding():
             f"exp(−N(s′)·ε²/2). Todos los puntos quedan bajo la línea: {citas}. "
             "Los dos bajan con N(s′); la cota es holgada pero vale para todo N(s′).").replace(
                 ",000", " 000")
-    out = [marco(W, H, desc, " ".join(renglones), desc)]
-    encabezado(out, renglones)
-    _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0.001, 0.01, 0.1, 1),
-              "N(s′): simulaciones de la jugada",
-              "frecuencia de ū(s′) ≤ μ(s′) − ε (escala log)",
-              menores_y=[k * 10.0 ** e for e in (-3, -2, -1) for k in range(2, 10)])
+    out = []
+    _encabezado_ucb(out, renglones[0], renglones[1:])
+    y_pie = _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0.001, 0.01, 0.1, 1),
+                      "N(s′): simulaciones de la jugada",
+                      ("frecuencia de ū(s′) ≤ μ(s′) − ε", "(escala log)"),
+                      menores_y=[k * 10.0 ** e for e in (-3, -2, -1) for k in range(2, 10)])
     out.append(_polilinea([(pl.x(n), pl.y(c)) for n, (_, c) in t.items()], COLOR_COTA,
                           grosor=3))
     for _, x, y in puntos_hoeffding(pl):
         out.append(f'<circle cx="{x}" cy="{y}" r="2.6" fill="{COLOR_FRECUENCIA}"/>')
     # Debajo de la grafica: dentro de ella, en cualquier esquina, tapaba
     # puntos o la linea (visto renderizando).
-    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 300, [
+    y_pie = _leyenda_ucb(out, y_pie + 18, [
         (lambda x, y: f'<circle cx="{x + 14}" cy="{y}" r="4" fill="{COLOR_FRECUENCIA}"/>',
          "observada (simulación)"),
         (lambda x, y: linea(x, y, x + 30, y, color=COLOR_COTA, grosor=3),
          "cota: exp(−N(s′)·ε²/2)")])
-    out.append(nota_svg(pl.y0 + pl.h + 162, [
-        f"{reps:,} tiradas de 200 simulaciones".replace(",", " "),
-        "de y, con semilla fija; un punto por N(s′)."], tam=14))
-    out.append(cierre())
-    return "".join(out)
+    nota = [f"{reps:,} tiradas de 200 simulaciones".replace(",", " "),
+            "de y, con semilla fija; un punto", "por N(s′)."]
+    out.append(_nota_ucb(y_pie + 28, nota))
+    H = y_pie + 28 + 22 * (len(nota) - 1) + 18
+    return "".join([marco(W, H, desc, " ".join(renglones), desc)] + out + [cierre()])
 
 
 def plano_bono():
-    return Plano(78, 116, 412, 280, (0, 200), (0, 4))
+    return Plano(56, 100, 214, 240, (0, 200), (0, 4))
 
 
 def jue_c3_bono():
     """El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para N(s) = 100, 1000 y
     10 000, y la curva de c = 1 (la de la p5) con N(s) = 100, de raya y punto."""
     pl = plano_bono()
-    W, H = ANCHO_UCB, pl.y0 + pl.h + 262
+    W = ANCHO_UCB
     ns = list(range(5, 201))
     renglones = ["El bono contra N(s′)", "c = 2√2, escala ±1"]
     micro = ", ".join(f"{j.bono_ucb(100, n):.2f} con N(s′) = {n}" for n in MARCAS_MICRO_BONO)
@@ -3194,10 +3236,10 @@ def jue_c3_bono():
             "las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Con N(s) = 100 "
             f"el bono vale {micro}. Una cuarta curva, tenue y de raya y punto: c = 1, la de la p5, "
             f"con N(s) = 100: {j.bono_ucb(100, 10, c=1):.2f} con N(s′) = 10.")
-    out = [marco(W, H, desc, " ".join(renglones), desc)]
-    encabezado(out, renglones)
-    _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0, 1, 2, 3, 4),
-              "N(s′): simulaciones de la jugada", "bono (en unidades de ū)")
+    out = []
+    _encabezado_ucb(out, renglones[0], renglones[1:])
+    y_pie = _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0, 1, 2, 3, 4),
+                      "N(s′): simulaciones de la jugada", "bono (en unidades de ū)")
     out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(100, n, c=1))) for n in ns], SUAVE,
                           grosor=2, guiones=GUIONES_C1))
     for n_padre in CURVAS_BONO:
@@ -3215,81 +3257,187 @@ def jue_c3_bono():
     # Debajo del eje, a la izquierda, como en jue-c3-hoeffding: dentro de la
     # grafica, a la derecha, quedaba fuera de vista a 390 px (visto en la
     # ronda 1 de render) y era la unica clave de las cuatro curvas.
-    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 220, filas)
-    out.append(nota_svg(pl.y0 + pl.h + 214, [
-        "Puntos: N(s) = 100 y N(s′) = " + ", ".join(str(n) for n in MARCAS_MICRO_BONO) + ";",
-        "el bono vale " + ", ".join(f"{j.bono_ucb(100, n):.2f}" for n in MARCAS_MICRO_BONO)
-        + "."], tam=14))
-    out.append(cierre())
-    return "".join(out)
+    y_pie = _leyenda_ucb(out, y_pie + 18, filas)
+    nota = ["Puntos: N(s) = 100 y N(s′) = " + ", ".join(str(n) for n in MARCAS_MICRO_BONO) + ";",
+            "el bono vale " + ", ".join(f"{j.bono_ucb(100, n):.2f}" for n in MARCAS_MICRO_BONO)
+            + "."]
+    out.append(_nota_ucb(y_pie + 28, nota))
+    H = y_pie + 28 + 22 * (len(nota) - 1) + 18
+    return "".join([marco(W, H, desc, " ".join(renglones), desc)] + out + [cierre()])
 
 
-def plano_bandido():
-    # y0 = 160 y no 116: arriba van el subtitulo y el nombre del eje y en
-    # dos renglones.
-    return Plano(78, 160, 412, 280, (10, 10000), (0, 1), xlog=True)
+# ------------- jue-c3-pago y jue-c3-eligiendo-x: las dos preguntas ---
+#
+# Reemplazan a jue-c3-bandido, que graficaba la fraccion ACUMULADA de vueltas
+# en x promediada sobre 40 corridas: mezclaba el costo de explorar (las
+# primeras vueltas, que cuentan para siempre) con las corridas atoradas, y
+# el profesor no la entendio (2026-10-12). Cada una contesta una pregunta:
+# ¿cuanto gana cada regla? (pago por vuelta, con la referencia de siempre x)
+# y ¿cuantas corridas ya eligen x? (en esa vuelta, no acumulado). Miden
+# ANCHO_UCB, como las otras de la p6.
+
+MARCAS_X_BANDIDO = (10, 100, 1000, 10000)
+TITULO_PAGO = "¿Cuánto gana cada regla?"
+SUBTITULO_PAGO = (f"cada punto: promedio de {j.CORRIDAS_BANDIDO} corridas",
+                  "μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values()))
+EJE_Y_PAGO = ("pago promedio por vuelta,", "de la vuelta 1 a N(s)")
+ROTULO_SIEMPRE_X = "siempre x (lo mejor posible)"
+TITULO_ELIGIENDO = "¿Cuántas corridas eligen x?"
+SUBTITULO_ELIGIENDO = (f"cada punto: % de las {j.CORRIDAS_BANDIDO} corridas que",
+                       "eligen x en esa vuelta (promedio de",
+                       f"las vueltas N(s) − {j.VENTANA_ELIGIENDO - 1} a N(s))")
+EJE_Y_ELIGIENDO = ("corridas que eligen x (%),", "en esa vuelta, no acumulado")
+EJE_X_BANDIDO = "N(s): vueltas (escala log)"
 
 
-# El eje y de jue-c3-bandido es ACUMULADO: en N(s) = 10 000 cuenta tambien
-# las primeras vueltas. Se leia «en la vuelta N(s)» (2026-10-12).
-EJE_Y_BANDIDO = ("fracción de las primeras N(s) vueltas",
-                 "que fueron a x (acumulada)")
-SUBTITULO_BANDIDO = f"cada punto: promedio de {j.CORRIDAS_BANDIDO} corridas"
+def _redondeo(v, decimales):
+    """v (Fraction) redondeado hacia arriba en el medio: 0.9875 → 0.988, y
+    no lo que haga el binario mas cercano de un float."""
+    return math.floor(v * 10 ** decimales + F(1, 2)) / 10 ** decimales
 
 
-def puntos_bandido(pl):
-    """{regla: [(N(s), x, y)]} de la figura del bandido."""
-    return {r: [(m, pl.x(m), pl.y(v)) for m, v in d.items()]
-            for r, d in j.tabla_bandido().items()}
+def _f3(v):
+    return f"{_redondeo(v, 3):.3f}"
 
 
-def jue_c3_bandido():
-    """Fraccion de vueltas en la mejor jugada (x) contra N(s), eje x log, con
-    las tres reglas; promedio de 40 corridas con semillas 1..40."""
-    t = j.tabla_bandido()
-    pl = plano_bandido()
-    W, H = ANCHO_UCB, pl.y0 + pl.h + 262
-    fin = max(j.MARCAS_BANDIDO)
-    mus = ", ".join(f"{k}: {_dec(v)}" for k, v in j.MUS_HILO.items())
-    renglones = ["Cuánto va a la mejor jugada",
-                 "μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values())]
-    finales = "; ".join(f"{ESTILO_REGLA[r]['rotulo']}, {t[r][10]:.2f} a {t[r][fin]:.2f}"
-                        for r in t)
-    desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
-            "fracción de las primeras N(s) vueltas que fueron a la mejor jugada, x, de 0 a 1, "
-            "acumulada desde la vuelta 1. Cada punto es el promedio de "
-            f"{j.CORRIDAS_BANDIDO} corridas con semilla fija; promedios verdaderos {mus}. "
-            f"De N(s) = 10 a N(s) = {fin:,}: {finales}. Siempre el mejor promedio se aplana; "
-            "a veces al azar se queda cerca de 0.93 porque sigue tirando al azar; UCB empieza "
-            "abajo, porque explora, y sigue subiendo; con c = 1 explora menos y llega antes.").replace(",000", " 000")
-    out = [marco(W, H, desc, " ".join(renglones), desc)]
-    y = encabezado(out, renglones)
-    out.append(texto(X_PIE, y + 26, SUBTITULO_BANDIDO, tam=15, color=TEXTO, anclaje="start"))
-    _ejes_ucb(out, pl, (10, 100, 1000, 10000), (0, 0.25, 0.5, 0.75, 1),
-              "N(s): vueltas (escala log)", EJE_Y_BANDIDO)
-    for r, pts in puntos_bandido(pl).items():
+def _pct_f(v):
+    """Fraction → «85 %», «92.5 %», «98.8 %», «100 %»."""
+    return f"{_redondeo(v * 100, 1):g} %"
+
+
+def plano_pago():
+    # y0 = 150: arriba van titulo, dos subtitulos y el nombre del eje y en
+    # dos renglones. De 0.25 a 0.65: el peor punto es 0.295 y el rotulo de
+    # «siempre x» va entre 0.6 y el borde de arriba.
+    return Plano(56, 150, 214, 240, (10, 10000), (0.25, 0.65), xlog=True)
+
+
+def plano_eligiendo():
+    # Un subtitulo mas que plano_pago. De 40 % a 100 %: el peor punto es
+    # 41.8 % y las curvas de arriba quedan separadas (a 0–100 % se tapaban).
+    # y0 = 184 y no 172: a 172 el «100» de la escala quedaba pegado al
+    # nombre del eje (render r4).
+    return Plano(56, 184, 214, 240, (10, 10000), (40, 100), xlog=True)
+
+
+def puntos_pago(pl):
+    """{regla: [(N(s), x, y)]} de jue-c3-pago."""
+    return {r: [(m, pl.x(m), pl.y(float(v))) for m, v in d.items()]
+            for r, d in j.tabla_pago().items()}
+
+
+def puntos_eligiendo(pl):
+    """{regla: [(N(s), x, y)]} de jue-c3-eligiendo-x (y en %)."""
+    return {r: [(m, pl.x(m), pl.y(float(v * 100))) for m, v in d.items()]
+            for r, d in j.tabla_eligiendo_x().items()}
+
+
+def _curvas_reglas(out, puntos):
+    for r, pts in puntos.items():
         e = ESTILO_REGLA[r]
         out.append(_polilinea([(x, y) for _, x, y in pts], e["color"], grosor=3,
                               guiones=e["guiones"]))
         for _, x, y in pts:
             out.append(_marca(x, y, e["marca"], e["color"], r=4))
-    filas = [(lambda x, y, e=ESTILO_REGLA[r]: linea(x, y, x + 30, y, color=e["color"],
-                                                    grosor=3, guiones=e["guiones"])
-              + _marca(x + 15, y, e["marca"], e["color"], r=4),
-              f"{ESTILO_REGLA[r]['rotulo']}: {t[r][fin]:.2f}")
-             for r in t]
-    # Debajo del eje, a la izquierda: a 390 px la de la derecha quedaba
-    # recortada y no se sabia cual UCB era c = 2√2 y cual c = 1. Cada fila
-    # lleva su valor final: en N(s) = 10 000 el circulo de UCB (0.94) tapa
-    # el rombo de «a veces al azar» (0.93) y el dibujo solo no dice cual va
-    # arriba (ronda 2 de render).
-    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 300, filas)
-    out.append(nota_svg(pl.y0 + pl.h + 214, [
-        f"Promedio de {j.CORRIDAS_BANDIDO} corridas de 10 000 vueltas;",
-        "el número de cada regla es su valor final."],
-        tam=14))
-    out.append(cierre())
-    return "".join(out)
+
+
+def _leyenda_reglas(out, y, valores):
+    """La leyenda de las cuatro reglas, cada una con su valor final: en
+    N(s) = 10 000 las marcas quedan a ~10 px y el dibujo solo no dice cual
+    va arriba (ronda 2 de render de jue-c3-bandido)."""
+    filas = [(lambda x, yy, e=ESTILO_REGLA[r]: linea(x, yy, x + 30, yy, color=e["color"],
+                                                     grosor=3, guiones=e["guiones"])
+              + _marca(x + 15, yy, e["marca"], e["color"], r=4),
+              f"{ESTILO_REGLA[r]['rotulo']}: {v}")
+             for r, v in valores.items()]
+    # Mas ancha y con la muestra mas pegada que _leyenda_ucb: con el valor,
+    # «siempre el mejor promedio: 0.543» tocaba el borde (render r4, 1x).
+    return _caja_leyenda(out, MARGEN_UCB, y, ANCHO_UCB - MARGEN_UCB - 4, filas,
+                         dx_muestra=6, dx_texto=40)
+
+
+def _cifras(t, fmt):
+    """«siempre el mejor promedio, 0.400, 0.533, 0.544 y 0.543; …» en
+    N(s) = 10, 100, 1 000 y 10 000, para el aria-label."""
+    return "; ".join(f"{ESTILO_REGLA[r]['rotulo']}, "
+                     + ", ".join(fmt(d[m]) for m in MARCAS_X_BANDIDO[:-1])
+                     + f" y {fmt(d[MARCAS_X_BANDIDO[-1]])}" for r, d in t.items())
+
+
+def jue_c3_pago():
+    """Pago promedio por vuelta de las primeras N(s) vueltas contra N(s), eje
+    x log, cuatro reglas, promedio de 40 corridas; la referencia μ(x) = 0.6."""
+    t = j.tabla_pago()
+    e = j.pago_esperado_reparto()
+    pl = plano_pago()
+    W, fin, mu_x = ANCHO_UCB, max(j.MARCAS_BANDIDO), j.MUS_HILO["x"]
+    en = e["en"]
+    cuenta = " + ".join(f"{en[a]}·{_dec(j.MUS_HILO[a])}" if en[a] > 1 else _dec(j.MUS_HILO[a])
+                        for a in j.MUS_HILO if en[a])
+    cuenta = cuenta.replace("+ −", "− ")
+    reparto = (f"Sin bono, {en['x']} corridas se quedan en x, {en['y']} en y y {en['z']} en z: "
+               f"se espera ({cuenta})/{j.CORRIDAS_BANDIDO} = {float(e['esperado']):g}; "
+               f"simulado, {_f3(t['mejor_promedio'][fin])}.")
+    desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
+            "pago promedio por vuelta, el promedio de los U de las vueltas 1 a N(s), de 0.25 "
+            f"a 0.65. Cada punto es el promedio de {j.CORRIDAS_BANDIDO} corridas con semilla "
+            "fija; μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values())
+            + f". Una raya horizontal en {_dec(mu_x)}: siempre x, lo mejor posible. "
+            f"En N(s) = 10, 100, 1 000 y 10 000: {_cifras(t, _f3)}. "
+            "UCB empieza abajo, porque explora, y termina arriba; ninguna llega a "
+            f"{_dec(mu_x)}. {reparto}")
+    out = []
+    y = _encabezado_ucb(out, TITULO_PAGO, SUBTITULO_PAGO)
+    y_pie = _ejes_ucb(out, pl, MARCAS_X_BANDIDO, (0.3, 0.4, 0.5, 0.6), EJE_X_BANDIDO,
+                      EJE_Y_PAGO)
+    # La referencia, de raya fina y con su rotulo arriba a la izquierda: ahi
+    # las curvas van en 0.3–0.4, lejos.
+    y_ref = pl.y(float(mu_x))
+    out.append(linea(pl.x0, y_ref, pl.x0 + pl.w, y_ref, color=TEXTO, grosor=2, guiones="6 4"))
+    out.append(texto(pl.x0 + 6, y_ref - 8, ROTULO_SIEMPRE_X, tam=14, color=TEXTO,
+                     anclaje="start"))
+    _curvas_reglas(out, puntos_pago(pl))
+    y_pie = _leyenda_reglas(out, y_pie + 18, {r: _f3(d[fin]) for r, d in t.items()})
+    nota = [f"Sin bono, {en['x']} corridas se quedan en x,",
+            f"{en['y']} en y y {en['z']} en z; se espera",
+            f"({cuenta})/{j.CORRIDAS_BANDIDO} = {float(e['esperado']):g}."]
+    out.append(_nota_ucb(y_pie + 28, nota))
+    H = y_pie + 28 + 22 * (len(nota) - 1) + 18
+    titulo = " ".join((TITULO_PAGO,) + SUBTITULO_PAGO)
+    return "".join([marco(W, H, desc, titulo, desc)] + out + [cierre()])
+
+
+def jue_c3_eligiendo_x():
+    """Porcentaje de las 40 corridas que eligen x en la vuelta N(s) (ventana
+    de VENTANA_ELIGIENDO vueltas, no acumulado) contra N(s), eje x log."""
+    t = j.tabla_eligiendo_x()
+    pl = plano_eligiendo()
+    W, fin = ANCHO_UCB, max(j.MARCAS_BANDIDO)
+    n, v = j.CORRIDAS_BANDIDO, j.VENTANA_ELIGIENDO
+    atoradas = j.reparto_bandido()["mejor_promedio"]["atoradas"]
+    tope = j.tope_a_veces_al_azar()
+    desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
+            f"porcentaje de las {n} corridas que eligen x en esa vuelta, no acumulado, de "
+            f"40 % a 100 %; cada punto cuenta las vueltas N(s) − {v - 1} a N(s) de las {n} "
+            f"corridas, {n * v} elecciones. En N(s) = 10, 100, 1 000 y 10 000: "
+            f"{_cifras(t, _pct_f)}. Siempre el mejor promedio se aplana en "
+            f"{n - atoradas} de {n}, {_pct_f(F(n - atoradas, n))}: las {atoradas} atoradas "
+            "nunca eligen x. A veces al azar se queda cerca de 0.9 + 0.1/3 = "
+            f"{_pct_f(tope)}. Las dos UCB suben hacia 100 %.")
+    out = []
+    _encabezado_ucb(out, TITULO_ELIGIENDO, SUBTITULO_ELIGIENDO)
+    y_pie = _ejes_ucb(out, pl, MARCAS_X_BANDIDO, (40, 55, 70, 85, 100), EJE_X_BANDIDO,
+                      EJE_Y_ELIGIENDO)
+    _curvas_reglas(out, puntos_eligiendo(pl))
+    y_pie = _leyenda_reglas(out, y_pie + 18, {r: _pct_f(d[fin]) for r, d in t.items()})
+    nota = [f"Sin bono se aplana en {n - atoradas} de {n} = "
+            f"{_pct_f(F(n - atoradas, n))}:",
+            f"las {atoradas} atoradas nunca eligen x. A veces",
+            f"al azar: cerca de 0.9 + 0.1/3 = {_pct_f(tope)}."]
+    out.append(_nota_ucb(y_pie + 28, nota))
+    H = y_pie + 28 + 22 * (len(nota) - 1) + 18
+    titulo = " ".join((TITULO_ELIGIENDO,) + SUBTITULO_ELIGIENDO)
+    return "".join([marco(W, H, desc, titulo, desc)] + out + [cierre()])
 
 
 # ---------------- jue-c3-bandido-corridas: lo que el promedio esconde ---
@@ -3298,24 +3446,37 @@ def jue_c3_bandido():
 # promedio» en jue-c3-bandido son 34 corridas casi en 1 y 6 casi en 0, y el
 # alumno leia «elige la mejor el 85 % de las veces» (2026-10-12).
 
-FILA_CORRIDAS = 74          # alto de cada fila
-Y_FILAS = 96                # donde empieza la primera fila
+# A 390 px el sitio no escala los SVG de figura: los pone a su ancho natural
+# con scroll propio, y a 520 px se veia solo de 0 a ~0.6 (justo lo que
+# importa, cerca de 1, quedaba fuera). Por eso esta figura mide ANCHO_CORRIDAS:
+# el parrafo de la figura mide 305 px a 390 (medido en el sitio construido),
+# y cada fila apila nombre, promedio y banda. Margen propio, MARGEN_CORRIDAS,
+# mas angosto que X_PIE.
+ANCHO_CORRIDAS = 300
+MARGEN_CORRIDAS = 12
+FILA_CORRIDAS = 96          # alto de cada fila
+Y_FILAS = 100               # donde empieza la primera fila
 SALTO_CORRIDAS = 2.6        # px entre niveles del desplazamiento vertical
 NIVELES_CORRIDAS = 9        # niveles: de −4 a +4 veces SALTO_CORRIDAS
 EJE_X_CORRIDAS = (f"fracción de las {_num(max(j.MARCAS_BANDIDO))} vueltas"
                   " que fueron a x")
+# Los mismos textos partidos en renglones que caben en ANCHO_CORRIDAS.
+EJE_X_CORRIDAS_RENGLONES = (f"fracción de las {_num(max(j.MARCAS_BANDIDO))} vueltas",
+                            "que fueron a x")
 SUBTITULO_CORRIDAS = (f"cada punto es una corrida de {_num(max(j.MARCAS_BANDIDO))}"
                       " vueltas")
+SUBTITULO_CORRIDAS_RENGLONES = ("cada punto es una corrida",
+                                f"de {_num(max(j.MARCAS_BANDIDO))} vueltas")
 
 
 def plano_corridas():
     n = len(j.FILAS_BANDIDO)
-    return Plano(40, Y_FILAS, 450, FILA_CORRIDAS * n, (0, 1), (0, n))
+    return Plano(20, Y_FILAS, 260, FILA_CORRIDAS * n, (0, 1), (0, n))
 
 
 def centro_fila(pl, k):
     """La y del centro de la banda de puntos de la fila k (0 arriba)."""
-    return round(pl.y0 + FILA_CORRIDAS * k + 46, 1)
+    return round(pl.y0 + FILA_CORRIDAS * k + 64, 1)
 
 
 def desplazamiento(rango):
@@ -3367,8 +3528,8 @@ def jue_c3_bandido_corridas():
     el promedio de jue-c3-bandido esconde."""
     r = j.reparto_bandido()
     pl = plano_corridas()
-    W, y1 = ANCHO_UCB, pl.y0 + pl.h
-    H = y1 + 160
+    W, y1 = ANCHO_CORRIDAS, pl.y0 + pl.h
+    H = y1 + 186
     renglones = ["Dónde termina cada corrida"]
     filas = ". ".join(f"{ESTILO_REGLA[f]['rotulo'][:1].upper()}{ESTILO_REGLA[f]['rotulo'][1:]}: "
                       f"{resumen_corridas(d)}" for f, d in r.items())
@@ -3378,9 +3539,11 @@ def jue_c3_bandido_corridas():
             f"con semillas 1 a {n}; una raya vertical marca el promedio de la fila. "
             f"Atorada: menos de la mitad de sus vueltas en x. {filas}.")
     out = [marco(W, H, desc, " ".join(renglones + [SUBTITULO_CORRIDAS]), desc)]
-    y = encabezado(out, renglones)
-    # A 14 y no a 15: a 15 pasaba de los ~325 px que se ven en un telefono.
-    out.append(texto(X_PIE, y + 26, SUBTITULO_CORRIDAS, tam=14, color=TEXTO, anclaje="start"))
+    # El titulo a 17 y no a los 20 de encabezado(): a 20 no cabe en ANCHO_CORRIDAS.
+    y = 34
+    out.append(texto(MARGEN_CORRIDAS, y, renglones[0], tam=17, peso="700", anclaje="start"))
+    for i, r_ in enumerate(SUBTITULO_CORRIDAS_RENGLONES):
+        out.append(texto(MARGEN_CORRIDAS, y + 24 + 20 * i, r_, tam=14, color=TEXTO, anclaje="start"))
     # Rejilla y separadores primero: los puntos van encima.
     for v in (0, 0.25, 0.5, 0.75, 1):
         out.append(linea(pl.x(v), pl.y0, pl.x(v), y1, color=mezclar(LINEA, 0.7), grosor=1))
@@ -3389,16 +3552,24 @@ def jue_c3_bandido_corridas():
         yy = pl.y0 + FILA_CORRIDAS * k
         out.append(linea(pl.x0, yy, pl.x0 + pl.w, yy, color=mezclar(LINEA, 0.35), grosor=1))
     out.append(linea(pl.x0, y1, pl.x0 + pl.w, y1, color=SUAVE, grosor=2))
-    out.append(texto(pl.x0 + pl.w / 2, y1 + 48, EJE_X_CORRIDAS, tam=15, color=TEXTO))
+    for i, r_ in enumerate(EJE_X_CORRIDAS_RENGLONES):
+        out.append(texto(pl.x0 + pl.w / 2, y1 + 46 + 20 * i, r_, tam=15, color=TEXTO))
     puntos = puntos_corridas(pl)
     for k, (fila, d) in enumerate(r.items()):
         e = ESTILO_REGLA[fila]
         top, cy = pl.y0 + FILA_CORRIDAS * k, centro_fila(pl, k)
-        out.append(_marca(X_PIE + 10, top + 16, e["marca"], e["color"], r=5))
-        out.append(texto(X_PIE + 24, top + 21, e["rotulo"], tam=15, color=TEXTO, anclaje="start",
+        # Tres renglones por fila: nombre, promedio junto a su raya, y la
+        # banda de puntos con «N de 40 atoradas» en el hueco de la izquierda.
+        out.append(_marca(MARGEN_CORRIDAS + 6, top + 17, e["marca"], e["color"], r=5))
+        out.append(texto(MARGEN_CORRIDAS + 20, top + 22, e["rotulo"], tam=15, color=TEXTO, anclaje="start",
                          peso="700"))
-        out.append(texto(pl.x(0.06), cy + 5, rotulo_atoradas(d), tam=14, color=TEXTO,
-                         anclaje="start"))
+        # «6 de 40 atoradas: 5 en y, 1 en z» en dos renglones: en uno llegaba
+        # a la raya del promedio 0.85.
+        partes = rotulo_atoradas(d).split(": ")
+        partes = [partes[0] + ":", partes[1]] if len(partes) == 2 else partes
+        for i, p_ in enumerate(partes):
+            out.append(texto(pl.x(0.06), cy + 5 + 18 * i - 9 * (len(partes) - 1), p_, tam=14,
+                             color=TEXTO, anclaje="start"))
         for _, _, x, yy in puntos[fila]:
             out.append(_marca(x, yy, e["marca"], e["color"], r=4))
         # La raya del promedio va encima de los puntos y sobresale de la
@@ -3406,12 +3577,15 @@ def jue_c3_bandido_corridas():
         # dibujada antes y del mismo alto, no se veia (ronda 1 de render).
         xm = pl.x(d["promedio"])
         out.append(linea(xm, cy - 22, xm, cy + 22, color=TEXTO, grosor=2))
-        out.append(texto(xm + 4, top + 21, f"promedio {_f2(d['promedio'])}", tam=14,
+        out.append(texto(xm - 5, top + 42, f"promedio {_f2(d['promedio'])}", tam=14,
                          color=TEXTO, anclaje="end"))
-    out.append(nota_svg(y1 + 84, [
-        "Atorada: termina debajo de 0.5.",
-        f"Raya vertical: el promedio de las {n} corridas,",
-        "el valor final de la gráfica acumulada."], tam=14))
+    # Sin «el valor final de la grafica acumulada»: esa figura
+    # (jue-c3-bandido) se quito.
+    nota = ["Atorada: termina debajo de 0.5.",
+            f"Raya vertical: el promedio de las {n}",
+            "corridas de la fila."]
+    for i, r_ in enumerate(nota):
+        out.append(texto(MARGEN_CORRIDAS, y1 + 106 + 22 * i, r_, tam=14, anclaje="start"))
     out.append(cierre())
     return "".join(out)
 
@@ -3454,7 +3628,8 @@ DIAGRAMAS = {
     "jue-c3-mcts-pasos": jue_c3_mcts_pasos,
     "jue-c3-hoeffding": jue_c3_hoeffding,
     "jue-c3-bono": jue_c3_bono,
-    "jue-c3-bandido": jue_c3_bandido,
+    "jue-c3-pago": jue_c3_pago,
+    "jue-c3-eligiendo-x": jue_c3_eligiendo_x,
     "jue-c3-bandido-corridas": jue_c3_bandido_corridas,
 }
 

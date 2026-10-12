@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 189m
+estimated_time: 192m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -97,7 +97,7 @@ primero **a mano** y después **como algoritmo**.
 | 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 20m |
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 35m |
 | 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 27m |
-| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 37m |
+| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 40m |
 | 7 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
 

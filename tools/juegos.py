@@ -2728,21 +2728,25 @@ def filas_bandido(regla, mus, vueltas, semilla, c=None):
 
 @lru_cache(maxsize=None)
 def _corridas(regla, mus_items, vueltas, corridas, c):
-    """Una entrada por semilla 1..corridas: (veces, N). veces[k] cuenta
-    cuantas de las primeras k vueltas fueron a la mejor jugada (veces[0] = 0);
-    N es {jugada: N(s′)} al terminar. La figura del promedio y la de las
-    corridas leen de aqui: las 160 corridas de 10 000 vueltas se simulan una
-    sola vez."""
+    """Una entrada por semilla 1..corridas: (veces, N, pagos). veces[k]
+    cuenta cuantas de las primeras k vueltas fueron a la mejor jugada
+    (veces[0] = 0); pagos[k] es la suma de los U de las primeras k vueltas
+    (enteros: U es ±1, asi que los promedios salen exactos); N es
+    {jugada: N(s′)} al terminar. Todas las figuras del bandido leen de aqui:
+    las 160 corridas de 10 000 vueltas se simulan una sola vez."""
     mus = dict(mus_items)
     la_mejor = max(mus, key=mus.get)
     salida = []
     for semilla in range(1, corridas + 1):
         b = bandido(regla, mus, vueltas, semilla, c)
         veces, k = array("l", [0]), 0
-        for a in b["elecciones"]:
+        pagos, total = array("l", [0]), 0
+        for a, u in zip(b["elecciones"], b["resultados"]):
             k += a == la_mejor
+            total += u
             veces.append(k)
-        salida.append((veces, b["N"]))
+            pagos.append(total)
+        salida.append((veces, b["N"], pagos))
     return tuple(salida)
 
 
@@ -2752,7 +2756,7 @@ def fraccion_en_la_mejor(regla, mus, marcas, corridas, c=None):
     Es acumulada: en N(s) = 10 000 cuenta tambien las primeras vueltas."""
     por_corrida = _corridas(regla, tuple(mus.items()), max(marcas), corridas, c)
     suma = {m: 0.0 for m in marcas}
-    for veces, _ in por_corrida:
+    for veces, _, _ in por_corrida:
         for m in marcas:
             suma[m] += veces[m] / m
     return {m: suma[m] / corridas for m in marcas}
@@ -2763,7 +2767,42 @@ def fracciones_finales(regla, mus, vueltas, corridas, c=None):
     semilla 1..corridas]: lo que promedia fraccion_en_la_mejor en su ultima
     marca, sin promediar."""
     return [veces[vueltas] / vueltas
-            for veces, _ in _corridas(regla, tuple(mus.items()), vueltas, corridas, c)]
+            for veces, _, _ in _corridas(regla, tuple(mus.items()), vueltas, corridas, c)]
+
+
+def pago_por_vuelta(regla, mus, marcas, corridas, c=None):
+    """{N(s): pago promedio por vuelta de las primeras N(s) vueltas (la suma
+    de sus U entre N(s)), promediado sobre `corridas` corridas con semillas
+    1..corridas}. Exacto: suma de enteros entre corridas·N(s), en Fraction
+    (sin floats que sumar, no depende de como redondee cada Python)."""
+    por_corrida = _corridas(regla, tuple(mus.items()), max(marcas), corridas, c)
+    total = {m: 0 for m in marcas}
+    for _, _, pagos in por_corrida:
+        for m in marcas:
+            total[m] += pagos[m]
+    return {m: F(total[m], corridas * m) for m in marcas}
+
+
+def pagos_finales(regla, mus, vueltas, corridas, c=None):
+    """[pago promedio por vuelta de las `vueltas` vueltas, por semilla
+    1..corridas]: lo que promedia pago_por_vuelta en su ultima marca."""
+    return [F(pagos[vueltas], vueltas)
+            for _, _, pagos in _corridas(regla, tuple(mus.items()), vueltas, corridas, c)]
+
+
+def eligiendo_la_mejor(regla, mus, marcas, corridas, c=None, ventana=None):
+    """{N(s): fraccion de las elecciones que fueron a la mejor jugada en las
+    vueltas N(s) − ventana + 1 .. N(s), contando las `corridas` corridas}.
+    NO es acumulada: mira solo esas vueltas. Con ventana = 1 es «cuantas
+    corridas eligen la mejor en la vuelta N(s)»; la ventana de 10 quita el
+    ruido de una sola vuelta. Exacto, en Fraction."""
+    ventana = ventana or VENTANA_ELIGIENDO
+    por_corrida = _corridas(regla, tuple(mus.items()), max(marcas), corridas, c)
+    cuenta = {m: 0 for m in marcas}
+    for veces, _, _ in por_corrida:
+        for m in marcas:
+            cuenta[m] += veces[m] - veces[max(m - ventana, 0)]
+    return {m: F(cuenta[m], corridas * min(ventana, m)) for m in marcas}
 
 
 # El hilo de la p6: las tres jugadas del ejercicio de la p5 (x, y, z), ahora
@@ -2780,6 +2819,9 @@ NS_HOEFFDING = tuple(range(1, 201))
 # La figura del bandido: 40 corridas de 10 000 vueltas por regla.
 MARCAS_BANDIDO = (10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 CORRIDAS_BANDIDO = 40
+# jue-c3-eligiendo-x mira las vueltas N(s) − 9 .. N(s): una sola vuelta de
+# 40 corridas salta de 33 a 40 entre marcas vecinas en «a veces al azar».
+VENTANA_ELIGIENDO = 10
 
 
 @lru_cache(maxsize=None)
@@ -2805,6 +2847,36 @@ def tabla_bandido():
             for f, (r, c) in FILAS_BANDIDO.items()}
 
 
+def tabla_pago():
+    """{regla: {N(s): pago promedio por vuelta}} de la figura jue-c3-pago."""
+    return {f: pago_por_vuelta(r, MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO, c)
+            for f, (r, c) in FILAS_BANDIDO.items()}
+
+
+def tabla_eligiendo_x():
+    """{regla: {N(s): fraccion de corridas que eligen x}} de la figura
+    jue-c3-eligiendo-x (ventana VENTANA_ELIGIENDO, no acumulada)."""
+    return {f: eligiendo_la_mejor(r, MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO, c)
+            for f, (r, c) in FILAS_BANDIDO.items()}
+
+
+def pago_esperado_reparto(fila="mejor_promedio", vueltas=None, corridas=CORRIDAS_BANDIDO):
+    """El pago por vuelta que se espera de una regla si cada corrida se
+    queda en la jugada que mas eligio: dict(en=Counter {jugada: corridas},
+    esperado=Σ corridas·μ / total). Para «siempre el mejor promedio»: 34 en
+    x, 5 en y, 1 en z, (34·0.6 + 5·0.3 − 0.2)/40 = 217/400 = 0.5425. No
+    cuenta las primeras vueltas, que exploran: por eso lo simulado queda un
+    poco abajo o arriba."""
+    vueltas = vueltas or max(MARCAS_BANDIDO)
+    r, c = FILAS_BANDIDO[fila]
+    en = Counter(max(N, key=N.get)
+                 for _, N, _ in _corridas(r, tuple(MUS_HILO.items()), vueltas, corridas, c))
+    total = 0
+    for a, k in en.items():
+        total += k * MUS_HILO[a]
+    return dict(en=en, esperado=F(total) / corridas)
+
+
 def reparto_bandido(vueltas=None, corridas=CORRIDAS_BANDIDO):
     """{fila: reparto} de la figura jue-c3-bandido-corridas: lo que el
     promedio de jue-c3-bandido esconde. Por fila: n (corridas), fracciones
@@ -2815,8 +2887,8 @@ def reparto_bandido(vueltas=None, corridas=CORRIDAS_BANDIDO):
     salida = {}
     for f, (r, c) in FILAS_BANDIDO.items():
         corr = _corridas(r, tuple(MUS_HILO.items()), vueltas, corridas, c)
-        fr = [veces[vueltas] / vueltas for veces, _ in corr]
-        atoradas = [max(N, key=N.get) for (_, N), x in zip(corr, fr) if x < UMBRAL_ATORADA]
+        fr = [veces[vueltas] / vueltas for veces, _, _ in corr]
+        atoradas = [max(N, key=N.get) for (_, N, _), x in zip(corr, fr) if x < UMBRAL_ATORADA]
         suma = 0.0
         for x in fr:
             suma += x

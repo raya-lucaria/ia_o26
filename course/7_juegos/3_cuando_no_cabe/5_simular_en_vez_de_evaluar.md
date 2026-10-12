@@ -317,10 +317,10 @@ pasaron por ahí y cuál solo algunas?
 
 La regla provisional de la selección tiene un hueco. En la figura, el
 ${0/1}$ que cuelga de la raíz lleva ${\bar u=-1}$ tras **una sola**
-partida. Bajando siempre por el mayor $\bar u$, MAX no vuelve a él salvo
-que el ${2/3}$ caiga también a ${-1}$. Una mala suerte en su primera
-simulación lo condena. ¿Cómo darle otra oportunidad sin repartir las
-vueltas a ciegas?
+partida. Bajando siempre por el mayor $\bar u$, MAX no vuelve a él nunca:
+el ${2/3}$ ya ganó dos, y su $\bar u$ no puede bajar a ${-1}$. Una mala
+suerte en su primera simulación lo condena. ¿Cómo darle otra oportunidad
+sin repartir las vueltas a ciegas?
 
 ## 5 · Explorar o aprovechar
 
@@ -366,19 +366,22 @@ Así corrige MCTS el defecto de la sección 2, el **rival al azar**. Donde ya
 construyó árbol, MIN elige su mejor respuesta por puntaje, no al azar. Solo
 la simulación, debajo del árbol, sigue jugando al azar.
 
-**El bono es un margen de error del promedio:** cuánto podría estar
-subestimada una jugada con pocas partidas. Por eso se encoge al crecer
-$N(s')$. Crece despacio con ${\ln N(s)}$: conforme avanza la búsqueda, se
-pide más confianza antes de dar una jugada por mala. Y $c$ fija cuánta. La
-página siguiente muestra que ${c=\sqrt{2k}}$ si se tolera un riesgo
-${\delta=N(s)^{-k}}$ de subestimar. Nuestra ${c=1}$ pide
-${\delta=1/\sqrt{N(s)}}$: 10 % con ${N(s)=100}$.
+**El bono es un margen de error del promedio:** cuánto podría errar una
+jugada con pocas partidas, del lado que le importa a quien elige (abajo
+para MAX, arriba para MIN). Por eso se encoge al crecer $N(s')$. Crece
+despacio con ${\ln N(s)}$: conforme avanza la búsqueda, se pide más
+confianza antes de dar una jugada por mala. Y $c$ fija cuánta.
+
+La página siguiente lo deriva: ${c=\sqrt{2k}}$ si se tolera una
+probabilidad $\delta$ de subestimar que baja como ${\delta=N(s)^{-k}}$,
+con ${k>0}$. Nuestra ${c=1}$ pide ${\delta=1/\sqrt{N(s)}}$: 10 % con
+${N(s)=100}$.
 
 Muchos textos usan la fracción de victorias ${G/N}$ en vez de $\bar u$.
-Como ${\bar u=2\,G/N-1}$, con ${b=\sqrt{\ln N(s)/N(s')}}$ queda
-${\bar u+c\,b=2\,(G/N+\tfrac c2\,b)-1}$. Usar ${G/N}$ con la misma $c$
-equivale a duplicar $c$: la ${c=\sqrt2}$ de esos textos, con ${G/N}$, es
-${c=2\sqrt2}$ con $\bar u$.
+Como ${\bar u=2\,G/N-1}$, el puntaje es
+${\bar u+c\sqrt{\ln N(s)/N(s')}=2\,\bigl(G/N+\tfrac c2\sqrt{\ln N(s)/N(s')}\bigr)-1}$.
+Usar ${G/N}$ con la misma $c$ equivale a duplicar $c$: la ${c=\sqrt2}$ de
+esos textos, con ${G/N}$, es ${c=2\sqrt2}$ con $\bar u$.
 
 ::: exercise {#jue-c3-ej-mcts title="Calcula qué se explora y qué se entrega"}
 Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:

@@ -4,7 +4,7 @@ title: De dónde sale el bono
 nav_title: De dónde sale el bono
 summary: "El bono de UCT es el margen de error de un promedio: sumado, da la cota optimista de cada jugada. Sale de la desigualdad de Hoeffding con una probabilidad de fallo que baja conforme avanza la búsqueda, y esa probabilidad es la c del puntaje. Se usa para seleccionar, no para entregar."
 status: ready
-estimated_time: 37m
+estimated_time: 40m
 tags: [juegos, mcts, exploracion]
 ---
 
@@ -23,8 +23,9 @@ Al terminar tendrás:
   elige la más alta y cómo la usa MIN;
 - la $c$ del puntaje leída como un $\delta$ que baja con $N(s)$:
   ${c=\sqrt{2k}}$ si ${\delta=N(s)^{-k}}$;
-- cuatro reglas comparadas en 40 corridas, y el bono usado al
-  **seleccionar** pero no al **entregar**.
+- cuatro reglas comparadas en 40 corridas, por lo que ganan y por
+  cuántas eligen la mejor; y el bono usado al **seleccionar** pero no al
+  **entregar**.
 
 > **Lo que traes de [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].**
 > Una simulación (@jue-c3-simulacion) termina en ${U=+1}$ o ${U=-1}$. Cada
@@ -34,11 +35,15 @@ Al terminar tendrás:
 > ${c\sqrt{\ln N(s)/N(s')}}$, donde $s$ es el padre; en un nodo de MIN,
 > ${-\bar u(s')}$ más el bono. Allá usamos ${c=1}$.
 
-> **El juego de esta página.** Tres jugadas en la raíz, x, y, z, como en el
-> ejercicio de MCTS (@jue-c3-ej-mcts). Cada vuelta elige una, juega una
-> simulación y anota ${U=\pm1}$. No hay árbol debajo: solo esta elección,
-> repetida. La regla de UCT en un solo nodo se llama **UCB1**; UCT es UCB1
-> repetida en cada nodo del árbol, y vuelve en la sección 8.
+> **El juego de esta página.** Tres jugadas en la raíz, x, y, z: los
+> nombres del ejercicio de MCTS (@jue-c3-ej-mcts), en otro escenario. Aquí
+> fijamos sus promedios verdaderos; los $N$ y $\bar u$ de aquel ejercicio
+> no salen de ellos.
+>
+> Cada vuelta elige una, juega una simulación y anota ${U=\pm1}$. No hay
+> árbol debajo: solo esta elección, repetida. La regla de UCT en un solo
+> nodo se llama **UCB1**; UCT es UCB1 repetida en cada nodo del árbol, y
+> vuelve en la sección 8.
 
 > **Supuestos de esta página.** Las simulaciones de una misma jugada son
 > independientes. En la sección 8 vemos qué pasa cuando hay árbol y esto
@@ -112,7 +117,8 @@ llegar ahí una jugada que ya ganó una vez?
 :::
 
 La regla se atoró porque **creyó** un promedio hecho con una sola
-simulación. Le falta dudar. Pero ¿cuánto debería dudar de un promedio?
+simulación. Es el ${0/1}$ de la figura de MCTS (@jue-c3-fig-mcts), en
+grande. Le falta dudar. Pero ¿cuánto debería dudar de un promedio?
 Para contestarlo hay que medir cuánto puede fallar uno.
 
 ## 2 · Medir cuánto falla un promedio
@@ -153,7 +159,7 @@ En la gráfica, cada punto es la frecuencia de fallo de una $N(s')$,
 contada en las 20 000 tiradas; la línea es la cota.
 
 ::: figure {#jue-c3-fig-hoeffding title="Todos los puntos quedan bajo la cota"}
-![Gráfica con eje y logarítmico. Eje x: N(s′), simulaciones de la jugada y, de 0 a 200. Eje y: frecuencia con que ū(s′) queda en μ(s′) − ε o menos, de 0.001 a 1, con μ = 0.3 y ε = 0.2. Los puntos, la frecuencia observada en 20 000 tiradas, bajan en zigzag; la línea, la cota exp(−N(s′)·ε²/2), baja recta y queda siempre por encima de los puntos: con N(s′) = 10, 24.7 % contra 81.9 %; con 50, 7.1 % contra 36.8 %; con 100, 2.4 % contra 13.5 %](../_assets/jue-c3-hoeffding.svg)
+![Gráfica con eje vertical logarítmico. Eje horizontal: N(s′), simulaciones de la jugada y, de 0 a 200. Eje vertical: frecuencia con que ū(s′) queda en μ(s′) − ε o menos, de 0.001 a 1, con μ = 0.3 y ε = 0.2. Los puntos, la frecuencia observada en 20 000 tiradas, bajan en zigzag; la línea, la cota exp(−N(s′)·ε²/2), baja recta y queda siempre por encima de los puntos: con N(s′) = 10, 24.7 % contra 81.9 %; con 50, 7.1 % contra 36.8 %; con 100, 2.4 % contra 13.5 %](../_assets/jue-c3-hoeffding.svg)
 :::
 
 Los puntos zigzaguean de verdad, no por ruido. El promedio solo toma
@@ -425,9 +431,9 @@ otra $c$.
 > **En otros textos** el promedio se llama $Q(s,a)$, y verás
 > ${c=\sqrt2}$ con la tasa ${G/N}$, de 0 a 1. Como
 > ${\bar u=2\,G/N-1}$, cada puntaje nuestro es el doble del de ellos menos 1
-> cuando ellos usan la mitad de nuestra $c$. Con ${b=\sqrt{\ln N(s)/N(s')}}$:
+> cuando ellos usan la mitad de nuestra $c$:
 >
-> $$\bar u+c\,b=2\Bigl(\frac GN+\frac c2\,b\Bigr)-1.$$
+> $$\bar u+c\sqrt{\frac{\ln N(s)}{N(s')}}=2\Bigl(\frac GN+\frac c2\sqrt{\frac{\ln N(s)}{N(s')}}\Bigr)-1.$$
 >
 > Doblar y restar 1 no cambia el orden: su ${c=\sqrt2}$ es nuestra
 > ${c=2\sqrt2}$, la misma regla. Con la **misma** $c$ en las dos escalas,
@@ -446,8 +452,12 @@ otra $c$.
 | 60 | 0.78 | 0.28 |
 :::
 
+¿Qué le pasa al bono de una jugada que deja de elegirse? En la figura,
+cada curva es un $N(s)$; con $N(s')$ fijo, el bono sube de una curva a la
+siguiente.
+
 ::: figure {#jue-c3-fig-bono title="El bono baja con N(s′) y sube con N(s)"}
-![Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono 2√2·√(ln N(s)/N(s′)), en unidades de ū, de 0 a 4. Tres curvas, una por N(s): 100 continua, 1 000 con rayas y 10 000 con puntos; las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Puntos sobre la curva de 100 en N(s′) = 10, 30 y 60: el bono vale 1.92, 1.11 y 0.78. Una cuarta curva, tenue y de raya y punto, c = 1 con N(s) = 100, queda muy por debajo: 0.68 en N(s′) = 10](../_assets/jue-c3-bono.svg)
+![Gráfica. Eje horizontal: N(s′), simulaciones de la jugada, de 0 a 200. Eje vertical: el bono 2√2·√(ln N(s)/N(s′)), en unidades de ū, de 0 a 4. Tres curvas, una por N(s): 100 continua, 1 000 con rayas y 10 000 con puntos; las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Puntos sobre la curva de 100 en N(s′) = 10, 30 y 60: el bono vale 1.92, 1.11 y 0.78. Una cuarta curva, tenue y de raya y punto, c = 1 con N(s) = 100, queda muy por debajo: 0.68 en N(s′) = 10](../_assets/jue-c3-bono.svg)
 :::
 
 Los bonos con ${c=2\sqrt2}$ salen grandes porque ${\delta=N(s)^{-4}}$ pide
@@ -479,11 +489,12 @@ Con cualquier ${c>0}$ ninguna jugada queda olvidada para siempre. Pero
 
 ## 6 · Verlo converger
 
-**Piensa: ¿cómo se compara una regla de selección con otra?**
+**Piensa: ¿la regla con bono gana más que la que se atora? ¿Desde
+cuándo?**
 
-Contando cuántas vueltas van a la mejor jugada. Volvamos a la corrida de la
-sección 1, con la misma semilla, pero eligiendo por puntaje con
-${c=2\sqrt2}$. Las vueltas 1 a 5 salen igual: x, y, z, z, z.
+Primero, una sola corrida: la de la sección 1, con la misma semilla, pero
+eligiendo por puntaje con ${c=2\sqrt2}$. Las vueltas 1 a 5 salen igual: x,
+y, z, z, z.
 
 ¿Por qué igual? Las vueltas 1 a 3 prueban cada jugada una vez. En la 4,
 las tres llevan una simulación y el mismo bono, así que gana el mejor
@@ -524,57 +535,92 @@ Tras 12 vueltas la secuencia es x y z z z x y x y x y x, y quedan
 ${N=5,4,3}$: la mayoría en x.
 :::
 
-Una corrida es suerte: con otra semilla, la regla sin bono pudo no
-atorarse. Para comparar reglas hay que correr cada una muchas veces. Las
-dos figuras que siguen comparan cuatro reglas en 40 corridas de 10 000
-vueltas cada una, con las semillas 1 a 40. «A veces al azar (10 %)» elige
-el mejor promedio, salvo una vuelta de cada diez, que elige al azar.
+Pero una corrida es suerte: con otra semilla, la regla sin bono pudo no
+atorarse. Hay que correr cada regla muchas veces.
 
-**La primera figura contesta: ¿cada regla encuentra la mejor jugada en
-cada corrida?** Cada punto es **una corrida**. Su posición en el eje x es
-la fracción de sus 10 000 vueltas que fue a x, la mejor: 1 si casi todas,
-0 si casi ninguna. Hay una fila de 40 puntos por regla, y una raya marca
-el promedio de la fila.
+**Lo que vamos a medir.** Cuatro reglas: siempre el mejor promedio, UCB
+con ${c=2\sqrt2}$, UCB con ${c=1}$ y «a veces al azar (10 %)», que elige
+el mejor promedio salvo una vuelta de cada diez, al azar. Tres palabras:
+
+- Una **corrida** es una búsqueda completa: 10 000 vueltas con una
+  semilla. Cada regla corre 40 veces, con las semillas 1 a 40.
+- El **pago** de una vuelta es su $U$, +1 o −1. Su promedio de la vuelta
+  1 a $N(s)$ es lo que la regla ganó por vuelta. Lo mejor posible es
+  elegir siempre x, la mejor: en promedio, ${\mu(\text{x})=0.6}$.
+- **Eligiendo x en esa vuelta**: de las 40 corridas, cuántas eligieron x
+  en la vuelta $N(s)$. Es una foto de ese momento, no una suma desde la
+  vuelta 1.
+
+**¿Encuentra cada regla la mejor jugada?** En la primera figura cada
+punto es **una corrida**, en la fracción de sus 10 000 vueltas que fue a x:
+1 si casi todas, 0 si casi ninguna. Hay una fila de 40 puntos por regla, y
+una raya marca su promedio.
 
 ::: figure {#jue-c3-fig-bandido-corridas title="Cada corrida, un punto: sin bono es todo o nada"}
-![Gráfica de puntos, una fila por regla: siempre el mejor promedio, a veces al azar (10 %), UCB con c = 2√2 y UCB con c = 1. Eje x: fracción de las 10 000 vueltas de una corrida que fueron a x, de 0 a 1. Cada punto es una corrida, con μ de x, y, z: 0.6, 0.3, −0.2; 40 por fila, semillas 1 a 40; una raya marca el promedio de la fila. Siempre el mejor promedio: 34 corridas cerca de 1 y 6 atoradas cerca de 0, 5 en y y 1 en z; su promedio, 0.85, cae entre los dos grupos, donde no hay ninguna corrida. A veces al azar, UCB con c = 2√2 y UCB con c = 1: ninguna atorada; la corrida más baja de cada una deja en x 0.90, 0.92 y 0.96 de sus vueltas](../_assets/jue-c3-bandido-corridas.svg)
+![Gráfica de puntos, una fila por regla: siempre el mejor promedio, a veces al azar (10 %), UCB con c = 2√2 y UCB con c = 1. Eje horizontal: fracción de las 10 000 vueltas de una corrida que fueron a x, de 0 a 1. Cada punto es una corrida, con μ de x, y, z: 0.6, 0.3, −0.2; 40 por fila, semillas 1 a 40; una raya marca el promedio de la fila. Siempre el mejor promedio: 34 corridas cerca de 1 y 6 atoradas cerca de 0, 5 en y y 1 en z; su promedio, 0.85, cae entre los dos grupos, donde no hay ninguna corrida. A veces al azar, UCB con c = 2√2 y UCB con c = 1: ninguna atorada; la corrida más baja de cada una deja en x 0.90, 0.92 y 0.96 de sus vueltas](../_assets/jue-c3-bandido-corridas.svg)
 :::
 
 - **Siempre el mejor promedio** es todo o nada: 34 corridas van casi
   siempre a x y 6 se atoran lejos de ella, 5 en y y 1 en z. Su promedio,
-  0.85 (casi ${34/40}$), no es «elige bien el 85 % de las veces»: en
-  ninguna corrida pasa eso.
+  0.85 (casi ${34/40}$), no describe ninguna corrida: ninguna va a x el
+  85 % de sus vueltas. Lo que dice es que 34 de 40 encontraron x.
 - **Las otras tres** no se atoran nunca. Su corrida más baja va a x 0.90,
   0.92 y 0.96 de las vueltas.
 
-**La segunda figura contesta: ¿qué tan pronto llega cada regla?** La figura
-promedia 40 corridas de 10 000 vueltas, pero mira cada momento de la
-búsqueda. El eje x es la
-vuelta $N(s)$. El eje y es la fracción **acumulada**: de las vueltas 1 a
-$N(s)$, cuántas fueron a x. Una vuelta perdida al inicio pesa en toda la
-curva.
+**¿Cuánto gana cada regla?** En la segunda figura cada punto es el
+promedio de 40 corridas. El eje horizontal es la vuelta $N(s)$, en escala
+logarítmica; el vertical, el pago promedio por vuelta hasta $N(s)$. La raya
+en 0.6 es lo mejor posible.
 
-::: figure {#jue-c3-fig-bandido title="La fracción acumulada: UCB paga al principio lo que explora"}
-![Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: fracción acumulada de las vueltas que fueron a la mejor jugada, x, desde la vuelta 1 hasta N(s), de 0 a 1. Promedio de 40 corridas, con μ de x, y, z: 0.6, 0.3, −0.2. Cuatro curvas: siempre el mejor promedio sube de 0.61 a 0.85 y se aplana; a veces al azar (10 %) sube de 0.60 a 0.93 y se queda cerca de ahí; UCB con c = 2√2 empieza más abajo, en 0.42, y llega a 0.94; UCB con c = 1 sube más rápido y llega a 0.99](../_assets/jue-c3-bandido.svg)
+::: figure {#jue-c3-fig-pago title="Cuánto gana cada regla: sin bono se queda abajo"}
+![Gráfica con eje horizontal logarítmico. Eje horizontal: N(s), vueltas, de 10 a 10 000. Eje vertical: pago promedio por vuelta, el promedio de los U de las vueltas 1 a N(s), con marcas de 0.3 a 0.6. Cada punto es el promedio de 40 corridas, con μ de x, y, z: 0.6, 0.3, −0.2. Una raya horizontal en 0.6: siempre x, lo mejor posible. Cuatro curvas, con su pago en N(s) = 10, 100, 1 000 y 10 000: siempre el mejor promedio, 0.400, 0.533, 0.544 y 0.543; a veces al azar (10 %), 0.385, 0.522, 0.561 y 0.564; UCB con c = 2√2, 0.295, 0.397, 0.519 y 0.580; UCB con c = 1, 0.340, 0.514, 0.583 y 0.598. Sin bono, 34 corridas se quedan en x, 5 en y y 1 en z, y se espera (34·0.6 + 5·0.3 − 0.2)/40 = 0.5425](../_assets/jue-c3-pago.svg)
 :::
 
-- **Siempre el mejor promedio** se queda en 0.85: las 6 corridas atoradas
-  ya no suben, y las otras 34 ya están arriba.
-- **A veces al azar** llega a 0.93 y se queda cerca de ahí: aunque ya
-  sepa cuál es la mejor, una vuelta de cada diez la sigue tirando al azar.
-  Le atina a x en una de cada tres, así que en promedio se espera
-  ${0.9+0.1/3\approx0.93}$; 14 de las 40 corridas lo pasan un poco.
-- **UCB con ${c=2\sqrt2}$** empieza en 0.42, porque explora, y llega a
-  0.94. Empieza abajo porque las primeras vueltas se reparten entre las
-  tres, y el acumulado arrastra ese costo. Sigue subiendo: su bono se
-  encoge donde ya hay evidencia.
-- **UCB con ${c=1}$**, el de la página anterior, llega a 0.99: aquí llega
-  antes, porque explora menos. Con ${c=0}$ no hay bono y es el mejor
-  promedio, 0.85.
+- **Al principio, sin bono gana más.** En la vuelta 10 paga 0.400, y UCB
+  con ${c=2\sqrt2}$, 0.295. Sin bono no se gastan vueltas en probar; UCB
+  reparte las primeras entre las tres, y las que van a y o a z pagan
+  menos.
+- **Luego, sin bono se queda en 0.54 para siempre:** 0.544 en la vuelta
+  1 000, 0.543 en la 10 000. Sus 34 corridas buenas pagan cerca de 0.6,
+  pero 5 siguen en y (0.3) y 1 en z (−0.2). Se espera
+  ${(34\cdot0.6+5\cdot0.3-0.2)/40=0.5425}$, y esas 6 no se corrigen nunca.
+- **Las UCB pagan su exploración y luego se acercan a 0.6.** La de
+  ${c=2\sqrt2}$ explora más: pasa a la regla sin bono entre las vueltas
+  2 000 y 5 000 y termina en 0.580. La de ${c=1}$ explora menos: la pasa
+  entre las vueltas 100 y 200 y termina en 0.598.
+- **A veces al azar** queda en medio, 0.564: no se atora, pero sigue
+  tirando al azar.
 
-Lo que la teoría acota, con ${c=2\sqrt2}$, es cuántas vueltas se pierden
-en las otras; con ${c=1}$ la prueba de UCB1 no da esa cota, aunque aquí
-funcione mejor.
+**¿Por qué sin bono se queda abajo?** La tercera figura cuenta cuántas de
+las 40 corridas eligen x en esa vuelta. Para que no salte, cada punto
+promedia las vueltas ${N(s)-9}$ a $N(s)$. No es acumulado: la vuelta 1 ya
+no cuenta en la 1 000.
+
+::: figure {#jue-c3-fig-eligiendo-x title="Cuántas corridas eligen x: sin bono, 85 % para siempre"}
+![Gráfica con eje horizontal logarítmico. Eje horizontal: N(s), vueltas, de 10 a 10 000. Eje vertical: porcentaje de las 40 corridas que eligen x en esa vuelta, no acumulado, con marcas de 40 a 100 %. Cada punto promedia las vueltas N(s) − 9 a N(s) de las 40 corridas, 400 elecciones; μ de x, y, z: 0.6, 0.3, −0.2. Cuatro curvas, en N(s) = 10, 100, 1 000 y 10 000: siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %, plana desde la vuelta 100; a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %; UCB con c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %; UCB con c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %](../_assets/jue-c3-eligiendo-x.svg)
+:::
+
+- **Siempre el mejor promedio** se aplana en 85 % desde la vuelta 100. Es
+  ${34/40}$: las 34 corridas buenas eligen x en cada vuelta, y las 6
+  atoradas no la eligen nunca. Es el reparto de la primera figura, visto
+  vuelta a vuelta.
+- **A veces al azar** sube hasta cerca de 93 %: 93 % en la vuelta 1 000 y
+  92.5 % en la 10 000. Ya encontró x, pero una vuelta de cada diez elige
+  al azar y le atina a x en una de cada tres: se espera
+  ${0.9+0.1/3\approx0.933}$, el 93.3 %. Es un promedio: en la vuelta 500
+  marca 93.8 %.
+- **Las dos UCB** empiezan abajo, 41.8 % y 54.5 % en la vuelta 10, porque
+  prueban las tres. Su bono se encoge donde hay evidencia, y en la vuelta
+  10 000 eligen x 98.8 % y 100 % de las corridas.
+
+**La lección: explorar cuesta un poco al principio y evita perder para
+siempre.** Sin bono se ganan las primeras vueltas, pero 6 de cada 40
+búsquedas se quedan en una jugada peor. UCB paga unas vueltas de
+exploración y encuentra x en todas. Con ${c=0}$ no hay bono, y UCB es el
+mejor promedio: 0.543 y 85 %.
+
+La teoría acota, con ${c=2\sqrt2}$, cuántas vueltas se pierden en las
+otras; con ${c=1}$ no da esa cota, aunque aquí funcione mejor.
 
 La búsqueda sí llega a la mejor jugada. Pero cuando se acaba el tiempo,
 ¿cuál se juega?
@@ -634,20 +680,12 @@ del árbol. Pero debajo de cada hijo hay otros bandidos que van aprendiendo.
 Así que los resultados de un hijo ya no son independientes: lo que se
 elige abajo depende de lo que salió antes. Lo que promedian tampoco es el
 $\mu(s')$ de la definición, que supone que los dos juegan al azar, sino
-algo que cambia con la búsqueda.
-
-Que cambie no basta para romper Hoeffding. El teorema no pide que todos
-los resultados salgan de la misma forma de jugar: si sus promedios
-verdaderos difieren, $\mu(s')$ es el promedio de ellos. Lo que lo rompe es
-la dependencia. Por eso Hoeffding no se aplica al pie de la letra.
+algo que cambia con la búsqueda. Lo que rompe Hoeffding es la
+dependencia: por eso no se aplica al pie de la letra.
 
 Kocsis y Szepesvári (2006) demostraron aparte que UCT, con una $c$
 bastante grande, llega con suficientes vueltas a la jugada que elegiría
 minimax, no a la de mayor $\mu(s')$. Esa prueba no la cubrimos.
-
-Lo que te llevas es la intuición: el bono es un margen de error, la cota
-optimista se elige porque el optimismo se corrige solo, y $c$ dice cuánta
-confianza se pide.
 
 ## 9 · Aplicar el bono por tu cuenta
 
@@ -683,8 +721,8 @@ de quién elige?
 
 ::: hint {#jue-c3-pista-final-bono-2 of="jue-c3-ej-final-bono" title="Pista 2 · Revisa tu borrador"}
 Comprueba tu propuesta con dos preguntas. ¿El hijo menos probado recibió
-el bono más grande? ¿Usaste el puntaje solo para seleccionar, y otra cosa
-para entregar?
+el bono más grande? ¿Qué número miraste en el inciso 4, y es el mismo que
+en el 2?
 :::
 
 ::: answer {#jue-c3-resp-final-bono of="jue-c3-ej-final-bono" title="Respuesta · Optimismo desde el lado de MIN"}
@@ -722,7 +760,7 @@ calcular la cota optimista en un nodo de MAX o de MIN.
   jugada y, ${\varepsilon=0.2}$ y ${N(s')=100}$, la cota es 13.5 % y lo
   simulado, 2.4 %.
 - **Despejar** da ${\varepsilon=\sqrt{2\ln(1/\delta)/N(s')}}$: el margen
-  que solo falla con probabilidad $\delta$.
+  que falla con probabilidad a lo más $\delta$, antes de simular.
 - **La cota optimista** ${\bar u+\varepsilon}$ es lo más que la jugada
   podría valer sin que los datos lo desmientan; se elige la más alta,
   porque el optimismo se corrige solo. MIN usa ${\bar u-\varepsilon}$ y
@@ -731,9 +769,11 @@ calcular la cota optimista en un nodo de MAX o de MIN.
   UCB1 pide ${\delta=N(s)^{-4}}$, y da ${c=2\sqrt2\approx2.83}$; con la
   tasa ${G/N}$ es ${c=\sqrt2}$, la misma regla. La ${c=1}$ de la página
   anterior es ${k=1/2}$.
-- **Converge.** En 40 corridas, la regla sin bono es todo o nada: 34 en
-  la mejor y 6 atoradas. A 10 000 vueltas, en la mejor: mejor promedio
-  0.85, a veces al azar 0.93, UCB con ${c=2\sqrt2}$ 0.94, con ${c=1}$ 0.99.
+- **Explorar cuesta al principio y evita perder para siempre.** En 40
+  corridas, la regla sin bono es todo o nada: 34 en la mejor y 6 atoradas.
+  Por eso paga 0.543 por vuelta, cerca del 0.5425 que se espera, y solo el
+  85 % de las corridas elige x. A 10 000 vueltas, UCB con ${c=2\sqrt2}$
+  paga 0.580 y con ${c=1}$, 0.598, cerca del 0.6 de siempre x.
 - **Seleccionar usa el bono; entregar, no.** En el ejercicio de MCTS, con
   ${c=2\sqrt2}$ la selección va a z (2.12) y con ${c=1}$ a y; se entrega
   x, con 60 simulaciones.
