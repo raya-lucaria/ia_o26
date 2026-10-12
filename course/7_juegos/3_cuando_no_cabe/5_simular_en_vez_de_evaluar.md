@@ -4,7 +4,7 @@ title: Simular en vez de evaluar
 nav_title: Simular en vez de evaluar
 summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando. Es la búsqueda de árbol Monte Carlo, la base de AlphaGo."
 status: ready
-estimated_time: 20m
+estimated_time: 27m
 tags: [juegos, busqueda-adversarial, monte-carlo]
 ---
 
@@ -96,6 +96,9 @@ Desde un estado se juegan 5 simulaciones.
    promedio $0.4$: con pocas simulaciones, el número todavía brinca mucho.
 :::
 
+Un promedio así no pide saber nada del juego. ¿Elige bien en la posición
+de la clase?
+
 ## 2 · Simular en la posición de la clase
 
 **Piensa: en la posición de la clase, ¿qué jugada parecería mejor si solo
@@ -170,6 +173,9 @@ elige sus jugadas cada jugador en cada una?
    sobre los jugadores, y tres números.
 :::
 
+El promedio se equivoca cuando el rival al azar no se parece al rival de
+verdad. ¿Qué se gana a cambio de ese defecto?
+
 ## 3 · Qué cambia respecto de la evaluación
 
 **Piensa: ¿qué necesita saber del juego este método, además de las
@@ -210,6 +216,10 @@ persona pensando en las reglas viejas?
    Minimax y el corte no cambian; la estimación sí hay que revisarla.
 :::
 
+Monte Carlo solo pide las reglas. Pero, tal como va, reparte las
+simulaciones a ciegas y deja que el rival juegue al azar. MCTS, en
+las dos secciones que siguen, ataca las dos cosas.
+
 ## 4 · Dar una vuelta de MCTS
 
 **Piensa: si tienes tiempo para 1000 simulaciones y tres jugadas, ¿las
@@ -221,41 +231,65 @@ simulaciones a las jugadas que van mejor.
 
 Cada nodo $s'$ del árbol guarda dos números. $N(s')$ cuenta las
 simulaciones que pasaron por él; aquí $N$ no es Negras. $G(s')$ cuenta en
-cuántas de ellas ganó MAX; aquí $G$ no es el grafo de la clase 1. Las demás
-las ganó MIN, así que el promedio de $U$ es
+cuántas de ellas ganó MAX, sea quien sea el que mueve en $s'$; aquí $G$ no
+es el grafo de la clase 1.
 
-$$\bar u(s')=\frac{G(s')-\bigl(N(s')-G(s')\bigr)}{N(s')},$$
+De esos dos números sale el promedio de $U$. En este juego no hay
+empates: cada simulación la gana MAX, con ${U=+1}$, o la gana MIN, con
+${U=-1}$. De las $N(s')$ partidas, MAX ganó $G(s')$ y MIN las otras
+${N(s')-G(s')}$. La suma de las $U$ es victorias menos derrotas: la misma
+cuenta que el ${7\cdot(+1)+3\cdot(-1)}$ de la sección 1. Entre $N(s')$, da
+el promedio:
 
-que, al juntar las $G$, queda
+$$\begin{aligned}
+\bar u(s')&=\frac{G(s')-\bigl(N(s')-G(s')\bigr)}{N(s')}\\
+&=\frac{2G(s')-N(s')}{N(s')}=2\,\frac{G(s')}{N(s')}-1.
+\end{aligned}$$
 
-$$\bar u(s')=\frac{2G(s')-N(s')}{N(s')}.$$
+En palabras: ${G/N}$ es la fracción de partidas que ganó MAX, y $\bar u$
+la pasa a la escala de $U$. Es la relación ${p=(\bar u+1)/2}$ de la
+sección 2, despejada, con $p$ medida en vez de calculada. $\bar u$ se mide
+**siempre desde MAX**, también donde mueve MIN. En la raíz de la figura de
+abajo, ${G/N=2/4}$: MAX ganó la mitad, y ${\bar u=2\cdot\tfrac24-1=0}$.
 
 Cada vuelta tiene cuatro pasos:
 
-1. **Selección.** Desde la raíz, baja por el árbol ya construido hasta un
-   nodo con alguna jugada que aún no está en él. Por ahora, MAX baja al
-   hijo de mayor $\bar u$ y MIN al de menor; la sección 5 afina la regla.
-2. **Expansión.** Agrega al árbol un hijo nuevo: $T(s,a)$ para una de esas
-   jugadas $a$.
-3. **Simulación.** Desde ese hijo, juega una partida al azar hasta un final
-   y anota su $U$.
+1. **Selección.** Desde la raíz, baja por el árbol ya construido y para en
+   el **primer nodo al que le falta algún hijo**: una jugada que todavía no
+   está en el árbol. Por ahora, MAX baja al hijo de mayor $\bar u$ y MIN al
+   de menor; la sección 5 cambia esta regla.
+2. **Expansión.** Agrega al árbol un hijo nuevo bajo el nodo donde paró la
+   selección: $T(s,a)$, con $s$ ese nodo y $a$ una de las jugadas que
+   faltaban.
+3. **Simulación.** Desde el hijo nuevo, juega una partida al azar hasta un
+   final y anota su $U$. Es la primera simulación del hijo: cada nodo nace
+   con la suya.
 4. **Retropropagación.** Sube por el camino recorrido hasta la raíz. Cada
    nodo del camino, incluido el nuevo, suma 1 a sus simulaciones y, si
-   ganó MAX, 1 a sus victorias.
+   ganó MAX, 1 a sus victorias. Eso vale también en los nodos de MIN.
 
 Si la selección llega a un final, no hay nada que expandir ni simular: su
 $U$ es el resultado de la vuelta.
 
-En la figura, cada caja dice ${G/N}$. La raíz es el estado de partida y no
-simula: sus cuentas son la suma de las de sus hijos, ${2/4=2/3+0/1}$. Cada
-otro nodo suma su propia simulación más las de sus hijos.
+En la figura, cada caja dice ${G/N}$. La raíz y el ${2/3}$ ya tienen todas
+sus jugadas en el árbol, dos cada uno, así que la selección pasa por ellos.
+El ${0/1}$ al que baja MIN no tiene ningún hijo todavía: ahí para, y bajo
+él nace el ${0/0}$.
+
+Las cuentas salen de cómo nace cada nodo. La raíz es el estado de partida:
+no nació en una expansión y no simula. Sus cuentas suman las de sus hijos,
+${2/4=2/3+0/1}$. Cada otro nodo suma la suya y las de sus hijos: el
+${2/3}$ es su simulación, que ganó MAX (${1/1}$), más ${1/1}$ y ${0/1}$.
+Ahí mueve MIN, y su 2 cuenta igual victorias de MAX.
 
 ::: figure {#jue-c3-fig-mcts title="Una vuelta de MCTS: la raíz pasa de 2/4 a 3/5"}
 ![Cuatro paneles con el mismo árbol; cada caja dice G/N, victorias de MAX entre simulaciones que pasaron por ella. 1, selección: desde la raíz, 2/4, donde mueve MAX, se baja a 2/3; ahí mueve MIN y baja a 0/1, donde MAX ganó menos. 2, expansión: aparece un hijo nuevo, 0/0, bajo ese 0/1. 3, simulación: desde el hijo nuevo, una línea quebrada llega a un final con U = +1. 4, retropropagación: cada nodo del camino suma una simulación y una victoria; 2/4 pasa a 3/5, 2/3 a 3/4, 0/1 a 1/2 y 0/0 a 1/1. Los nodos fuera del camino, 1/1 y el otro 0/1, no cambian](../_assets/jue-c3-mcts-pasos.svg)
 :::
 
 Las vueltas se repiten mientras haya tiempo. Al final se juega la jugada de
-la raíz **por la que pasaron más simulaciones**. Como la profundización
+la raíz **por la que pasaron más simulaciones**, no la de mejor promedio.
+Un promedio de pocas partidas puede ir alto por suerte; el de la más
+simulada es el que tiene más evidencia detrás. Como la profundización
 iterativa de [[jugar-contra-el-reloj|Jugar contra el reloj]], siempre tiene
 una jugada lista.
 
@@ -281,6 +315,13 @@ pasaron por ahí y cuál solo algunas?
 3. ${\bar u=(2\cdot2-5)/5=-0.2}$. Antes de la vuelta valía $0$.
 :::
 
+La regla provisional de la selección tiene un hueco. En la figura, el
+${0/1}$ que cuelga de la raíz lleva ${\bar u=-1}$ tras **una sola**
+partida. Bajando siempre por el mayor $\bar u$, MAX no vuelve a él salvo
+que el ${2/3}$ caiga también a ${-1}$. Una mala suerte en su primera
+simulación lo condena. ¿Cómo darle otra oportunidad sin repartir las
+vueltas a ciegas?
+
 ## 5 · Explorar o aprovechar
 
 **Piensa: ¿conviene seguir probando la jugada que va mejor, o darle otra
@@ -293,27 +334,51 @@ cada promedio un bono que crece si la jugada se ha probado poco:
 
 $$\text{puntaje}(s')=\bar u(s')+c\sqrt{\frac{\ln N(s)}{N(s')}}.$$
 
-- $s$ es el nodo donde se elige y $s'$, uno de sus hijos.
-- $\bar u(s')$ es el promedio de $U$ de las simulaciones que pasaron por
-  $s'$, visto desde el jugador $\mathrm{Pl}(s)$: si es MIN, se le cambia el
-  signo.
+- $s$ es el nodo donde se elige y $s'$, uno de sus hijos. Aquí $s$ ya no es
+  solo la raíz del problema: es cualquier nodo por el que baja la selección.
+- $\bar u(s')$ es el de la sección 4: el promedio de $U$ de las simulaciones
+  que pasaron por $s'$, siempre desde MAX.
 - $N(s)$ y $N(s')$ cuentan las simulaciones que pasaron por cada nodo.
 - $\ln$ es el logaritmo natural; aquí solo importa que crece muy despacio.
 - $c$ es un número positivo que elegimos: más grande, más exploración. En
   esta página, ${c=1}$.
 
-El primer término aprovecha; el segundo explora. Un hijo que nunca se ha
-probado tiene ${N(s')=0}$ y se prueba antes que los demás. Con muchas
-simulaciones el bono se encoge y manda el promedio. Otros textos usan la
-fracción de victorias ${G/N}$ en lugar de $\bar u$, o ${c=\sqrt2}$. Los
-puntajes cambian, y a veces también la elección.
+Así escrito es el puntaje de MAX, que quiere $\bar u$ alto. MIN lo quiere
+bajo, así que en un nodo de MIN el primer término es $-\bar u(s')$:
 
-En la figura, MIN elige en el nodo ${2/3}$ y baja al ${0/1}$: con el signo
-cambiado, es su mejor hijo. Así corrige MCTS lo que vimos
-en la sección 2. Donde ya construyó árbol, cada jugador elige por su
-puntaje y no al azar.
+$$\text{puntaje}(s')=-\bar u(s')+c\sqrt{\frac{\ln N(s)}{N(s')}}.$$
 
-De dónde sale este bono, y por qué $c$ es una perilla, lo verás en [[de-donde-sale-el-bono|la página siguiente]].
+Elegir el mayor de estos es elegir el hijo de ${\bar u-\text{bono}}$ más
+bajo. El bono suma en los dos casos: explorar no tiene lado.
+
+El primer término aprovecha; el segundo explora y se encoge con muchas
+simulaciones. Un hijo con ${N(s')=0}$ tendría bono infinito, pero en el
+árbol no los hay: cada nodo nace con su simulación. ${N=0}$ es una jugada
+aún no expandida. Por eso la selección para en el primer nodo al que le
+falta un hijo: ese hijo ganaría a cualquiera.
+
+En la figura, MIN elige en el ${2/3}$, con ${N(s)=3}$, entre el ${1/1}$
+(${\bar u=+1}$) y el ${0/1}$ (${\bar u=-1}$). Los dos llevan una
+simulación, así que su bono es el mismo, ${\sqrt{\ln 3}\approx1.05}$. Sus
+puntajes son ${-1+1.05=0.05}$ y ${+1+1.05=2.05}$: MIN baja al ${0/1}$.
+
+Así corrige MCTS el defecto de la sección 2, el **rival al azar**. Donde ya
+construyó árbol, MIN elige su mejor respuesta por puntaje, no al azar. Solo
+la simulación, debajo del árbol, sigue jugando al azar.
+
+**El bono es un margen de error del promedio:** cuánto podría estar
+subestimada una jugada con pocas partidas. Por eso se encoge al crecer
+$N(s')$. Crece despacio con ${\ln N(s)}$: conforme avanza la búsqueda, se
+pide más confianza antes de dar una jugada por mala. Y $c$ fija cuánta. La
+página siguiente muestra que ${c=\sqrt{2k}}$ si se tolera un riesgo
+${\delta=N(s)^{-k}}$ de subestimar. Nuestra ${c=1}$ pide
+${\delta=1/\sqrt{N(s)}}$: 10 % con ${N(s)=100}$.
+
+Muchos textos usan la fracción de victorias ${G/N}$ en vez de $\bar u$.
+Como ${\bar u=2\,G/N-1}$, con ${b=\sqrt{\ln N(s)/N(s')}}$ queda
+${\bar u+c\,b=2\,(G/N+\tfrac c2\,b)-1}$. Usar ${G/N}$ con la misma $c$
+equivale a duplicar $c$: la ${c=\sqrt2}$ de esos textos, con ${G/N}$, es
+${c=2\sqrt2}$ con $\bar u$.
 
 ::: exercise {#jue-c3-ej-mcts title="Calcula qué se explora y qué se entrega"}
 Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:
@@ -351,9 +416,14 @@ quedan vueltas? ¿Qué número de la lista mira cada una?
 3. **No coinciden, y está bien.** Entregar busca la jugada más confiable:
    60 partidas pesan más que 30. Seleccionar decide dónde gastar la vuelta
    que sigue, y y todavía tiene poca evidencia para lo bien que va. Con
-   ${G/N}$ o con ${c=\sqrt2}$ la selección iría a z: los números dependen de la
-   forma del puntaje.
+   ${G/N}$ o con ${c=\sqrt2}$ la selección iría a z: las dos le dan más
+   peso al bono que nuestra ${c=1}$ (con ${G/N}$ es como usar ${c=2}$), y el
+   bono favorece a z.
 :::
+
+Queda abierta la pregunta que esta sección pasó de largo: **¿de dónde sale
+ese bono, y cuánto debe valer $c$?** La contesta
+[[de-donde-sale-el-bono|la página siguiente]].
 
 ## 6 · Ubicar MCTS en la historia
 
@@ -394,11 +464,13 @@ de un hijo y decir por qué un promedio de simulaciones no es $V$.
   ${8/9}$, 17 de cada 18 partidas). En hexapawn, $\text{b1}\textbf{-}\text{b2}$
   promedia ${5/24}$ aunque vale ${-1}$; con solo Negras al azar valía ${3/4}$.
 - Cada vuelta tiene cuatro pasos: selección, expansión, simulación y
-  retropropagación. Cada nodo guarda ${G/N}$; la retropropagación suma 1 a
+  retropropagación. Cada nodo guarda ${G/N}$, y ${\bar u=2\,G/N-1}$ desde
+  MAX: victorias menos derrotas entre $N$. La retropropagación suma 1 a
   $N$ siempre y 1 a $G$ solo si gana MAX: la raíz pasa de ${2/4}$ a ${3/5}$, o
   a ${2/5}$ si pierde.
 - El puntaje UCT, ${\bar u+c\sqrt{\ln N(s)/N(s')}}$, equilibra aprovechar y
-  explorar. Con x, y, z y ${c=1}$, la selección va a y, que puntúa 0.99; la
+  explorar; MIN usa $-\bar u$. El bono es un margen de error del promedio.
+  Con x, y, z y ${c=1}$, la selección va a y, que puntúa 0.99; la
   entrega, a x, que tiene 60 simulaciones.
 - Deep Blue (1997) cortó y evaluó; AlphaGo (2016) combinó MCTS con redes;
   AlphaGo Zero y AlphaZero (2017) cambiaron la simulación por una red,

@@ -626,7 +626,7 @@ def test_ningun_aria_label_deja_una_frase_vacia(nombre):
 
 # ------------------------------- clase 3, p6: de donde sale el bono ---
 
-UCB = ["jue-c3-hoeffding", "jue-c3-bono", "jue-c3-bandido"]
+UCB = ["jue-c3-hoeffding", "jue-c3-bono", "jue-c3-bandido", "jue-c3-bandido-corridas"]
 
 
 @pytest.mark.parametrize("nombre", UCB)
@@ -639,12 +639,15 @@ def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
                                  "frecuencia de ū(s′) ≤ μ(s′) − ε (escala log)"),
             "jue-c3-bono": ("N(s′): simulaciones de la jugada", "bono (en unidades de ū)"),
             "jue-c3-bandido": ("N(s): vueltas (escala log)",
-                               "fracción de vueltas en la mejor jugada (x)")}[nombre]
+                               "fracción de las primeras N(s) vueltas",
+                               "que fueron a x (acumulada)"),
+            "jue-c3-bandido-corridas": ("fracción de las 10 000 vueltas que fueron a x",)}[nombre]
     for e in ejes:
         assert escape(e) in renglones, e
     marcas = {"jue-c3-hoeffding": ["0.001", "0.01", "0.1", "1", "0", "50", "200"],
               "jue-c3-bono": ["0", "1", "2", "3", "4", "50", "200"],
-              "jue-c3-bandido": ["10", "100", "1 000", "10 000", "0.25", "1"]}[nombre]
+              "jue-c3-bandido": ["10", "100", "1 000", "10 000", "0.25", "1"],
+              "jue-c3-bandido-corridas": ["0", "0.25", "0.5", "0.75", "1"]}[nombre]
     for m in marcas:
         assert m in renglones, m
     assert ANCHO_UCB_MAX >= float(re.search(r'width="([\d.]+)"', svg).group(1))
@@ -713,3 +716,52 @@ def test_el_bandido_dibuja_las_tres_reglas():
     aria = re.match(r"<svg\b[^>]*>", svg).group()
     assert "UCB, c = 2√2, 0.42 a 0.94" in aria
     assert "μ de x, y, z: 0.6, 0.3, −0.2" in svg
+
+
+def test_el_bandido_dice_que_es_acumulado_y_que_es_un_punto():
+    """Se leia «el 85 % de las veces en la vuelta N(s)»: el eje dice que es
+    acumulado desde la vuelta 1 y el subtitulo que cada punto promedia 40
+    corridas, en el dibujo y en el aria-label."""
+    svg = _texto("jue-c3-bandido")
+    renglones = re.findall(r">([^<>]+)</text>", svg)
+    assert "cada punto: promedio de 40 corridas" in renglones
+    aria = re.match(r"<svg\b[^>]*>", svg).group()
+    assert "acumulada desde la vuelta 1" in aria
+    assert f"Cada punto es el promedio de {j.CORRIDAS_BANDIDO} corridas" in aria
+
+
+def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
+    """jue-c3-bandido-corridas: 40 marcas por fila, en la x de su fraccion
+    final y con la marca de su regla; la raya del promedio en la x del valor
+    final de jue-c3-bandido; el rotulo de atoradas con sus cifras."""
+    svg = _texto("jue-c3-bandido-corridas")
+    pl = gen.plano_corridas()
+    r, t = j.reparto_bandido(), j.tabla_bandido()
+    pts = gen.puntos_corridas(pl)
+    assert list(pts) == list(j.FILAS_BANDIDO)
+    for k, (fila, lista) in enumerate(pts.items()):
+        e = gen.ESTILO_REGLA[fila]
+        assert len(lista) == j.CORRIDAS_BANDIDO == 40
+        assert [f for _, f, _, _ in lista] == r[fila]["fracciones"]
+        for _, f, x, y in lista:
+            assert x == pl.x(f)
+            assert abs(y - gen.centro_fila(pl, k)) <= 4 * gen.SALTO_CORRIDAS + 1e-9
+            assert gen._marca(x, y, e["marca"], e["color"], r=4) in svg, (fila, f)
+        xm = pl.x(t[fila][max(j.MARCAS_BANDIDO)])
+        assert f'<line x1="{xm}" y1="{gen.centro_fila(pl, k) - 22}" x2="{xm}"' in svg, fila
+        assert f"promedio {t[fila][max(j.MARCAS_BANDIDO)]:.2f}" in svg
+        assert e["rotulo"] in svg
+    # El desplazamiento es determinista y no apila vecinos en el mismo nivel.
+    assert [gen.desplazamiento(i) for i in range(3)] == [-10.4, 0.0, 10.4]
+    renglones = re.findall(r">([^<>]+)</text>", svg)
+    assert "6 de 40 atoradas: 5 en y, 1 en z" in renglones
+    assert renglones.count("0 de 40 atoradas") == 3
+    assert "cada punto es una corrida de 10 000 vueltas" in renglones
+    aria = re.match(r"<svg\b[^>]*>", svg).group()
+    for frase in ("Cada punto es una corrida de 10 000 vueltas",
+                  "Siempre el mejor promedio: 34 corridas en 0.99 o más y 6 atoradas en "
+                  "0.001 o menos (5 en y, 1 en z), promedio 0.85",
+                  "A veces al azar (10 %): ninguna atorada, de 0.903 a 0.938, promedio 0.93",
+                  "UCB, c = 2√2: ninguna atorada, de 0.923 a 0.959, promedio 0.94",
+                  "UCB, c = 1: ninguna atorada, de 0.955 a 0.999, promedio 0.99"):
+        assert frase in aria, frase

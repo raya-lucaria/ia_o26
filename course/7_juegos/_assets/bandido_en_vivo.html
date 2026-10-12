@@ -172,9 +172,9 @@
     <div id="jugadas"></div>
     <p class="estado" id="estado" aria-live="polite"></p>
     <p class="entrega" id="entrega"></p>
-    <p class="nota">Barra: ū(s′). Bigote (solo UCB): hasta el techo ū(s′) + bono; una
-    jugada sin probar tiene bono ∞ y se prueba primero. Un techo arriba de 1 no
-    dice nada de μ(s′), que nunca pasa de 1: solo la empuja a ser elegida.</p>
+    <p class="nota">Barra: ū(s′). Bigote (solo UCB): hasta la cota optimista ū(s′) + bono; una
+    jugada sin probar tiene bono ∞ y se prueba primero. Una cota arriba de 1 no
+    estorba: μ(s′) nunca pasa de 1, pero lo que decide es el orden entre cotas.</p>
   </div>
 
   <div class="graficas">
@@ -410,14 +410,14 @@ function pintarJugadas(){
     if (revelado) pista += `<span class="mu" style="left:calc(${pos(b.mus[i], r)}% - 1px)" title="μ verdadero"></span>`;
     // cada par etiqueta–valor en su span, sin partirse al cambiar de renglón
     const datos = [`N(s′) <b>${miles(n)}</b>`, `ū(s′) <b>${u === null ? "—" : fmt(u, 2)}</b>`];
-    if (ucb) datos.push(`techo <b>${techo === Infinity ? "∞" : fmt(techo, 2)}</b>`);
+    if (ucb) datos.push(`cota <b>${techo === Infinity ? "∞" : fmt(techo, 2)}</b>`);
     if (revelado) datos.push(`μ(s′) <b>${fmt(b.mus[i], 2)}</b>`);
     const ins = (i === sel ? `<span class="insignia sel">se selecciona${b.regla === "a_veces_al_azar" && !b.N.some(x => x === 0) ? " (salvo vuelta al azar)" : ""}</span>` : "") +
                 (i === ent ? `<span class="insignia ent">se entregaría</span>` : "");
     return `<div class="jugada${i === sel ? " elegida" : ""}">` +
       `<div class="nombre" style="color:${col}">${nombre}</div>` +
       `<div class="pista" role="img" aria-label="${nombre}: ${n} simulaciones, promedio ${u === null ? "sin probar" : fmt(u, 2)}` +
-      `${ucb ? ", techo " + (techo === Infinity ? "infinito" : fmt(techo, 2)) : ""}">${pista}</div>` +
+      `${ucb ? ", cota optimista " + (techo === Infinity ? "infinito" : fmt(techo, 2)) : ""}">${pista}</div>` +
       `<div class="datos">${datos.map(d => `<span>${d}</span>`).join("")}${ins}</div></div>`;
   });
   $("jugadas").innerHTML = filas.join("");

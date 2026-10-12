@@ -37,7 +37,12 @@ No despaches subagentes.
 5. Repetición: ¿recuerda algo útil («Lo que traes», «Lo que hay que llevarse») o es relleno?
 6. Legibilidad: frases largas, negritas que no marcan la idea clave, listas que deberían ser tabla y
    al revés, «ver arriba» sin enlace.
-7. Recursos: si la página tiene animación o notebook, ¿los encuentras sin buscarlos?
+7. Hilo: escribe la pregunta guía de la página y, por cada `##`, qué pregunta contesta y de cuál
+   anterior nace. Donde no puedas, es hallazgo (pedagogia.md § Hilo narrativo). Por cada fórmula: ¿sabes
+   de dónde sale, qué significa y un número? Por cada objeto que viste en una página previa: ¿se liga?
+8. Figuras: antes de leer el texto que la sigue, di qué muestra y qué es un punto. Si te equivocas o no
+   puedes, es hallazgo alto.
+9. Recursos: si la página tiene animación o notebook, ¿los encuentras sin buscarlos?
 Un paso que no aplica al tipo de página: «no aplica: <por qué>». Un defecto abierto de defectos.md
 que sigue ahí: una línea, «[conocido #N] ruta:línea», sin re-argumentar. Una línea citada como modelo
 en las referencias lo es solo de su patrón: el resto de la página se revisa igual.

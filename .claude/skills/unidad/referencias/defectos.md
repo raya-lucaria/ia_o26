@@ -46,6 +46,8 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 | 38 | Contenido que se mueve o se sale de su tarjeta en la animación | `e62b8db`, recorrido Playwright | — | Lente Render (recorrido a 390 y 1280) |
 | 39 | La prueba fija la fuente, no la prosa: una cifra cambiada en la página no rompe nada | auditoría, `tools/test_juegos.py:91` (no lee páginas) | pytest verde | 7.3: `test_juegos.py::test_prosa_clase_3_*` (`d99ef99`, 22 mutaciones muertas); resto del curso: nada (deuda) |
 | 40 | Comentario HTML `<!-- … -->` en una página: Raya lo publica como texto (la skill lo pedía para la fila de la tarea) | `a32660a`, lente Render | validate, build | `test_aceptacion.py::test_extra_ninguna_pagina_lleva_un_comentario_html` |
+| 41 | Página fragmentada: cada sección correcta, sin hilo; fórmula sin de dónde sale; objeto de dos páginas sin ligar ($c$ en p5, $\delta$ en p6) | el profesor, sitio desplegado, `aclarar-bono-y-mcts` | pytest, validate, 3 rondas de lentes | Lente Alumno § Hilo (`pedagogia.md` § Hilo narrativo) |
+| 42 | Gráfica que promedia corridas de todo o nada: 0.85 = 34 en ≈1 y 6 en ≈0; enseña lo contrario | el profesor, `jue-c3-bandido`, `aclarar-bono-y-mcts` | pytest, lentes | Calculista mira la distribución; lente Corrección § 9 (`figuras.md` § Gráficas de datos) |
 
 ## Mantenimiento
 
@@ -55,5 +57,5 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 - **DEBE**: cuando una prueba lo cubre, «Qué lo atrapa hoy» apunta a
   `archivo::prueba`. Una fila que solo atrapa una lente y aparece 2 veces →
   se propone guarda (`revision.md` § Aprender).
-- **DEBE**: tope 40 filas. Para hacer lugar sale primero la fila cuya guarda
+- **DEBE**: tope 45 filas (era 40; se subió el 2026-10-12 para no borrar guardas vigentes). Para hacer lugar sale primero la fila cuya guarda
   cubre todo el curso (no solo una unidad) y lleva tiempo sin morder.
