@@ -978,8 +978,11 @@ def fracciones(regla, marcas, corridas=40, c=C_TEORIA):
 
 code("""
 def promediar(por_corrida, marcas):
-    n = len(por_corrida)
-    return {m: sum(f[m] for f in por_corrida) / n for m in marcas}
+    n, suma = len(por_corrida), {m: 0.0 for m in marcas}
+    for f in por_corrida:              # sumado en orden, como juegos.py: sum()
+        for m in marcas:               # redondea distinto desde Python 3.12
+            suma[m] += f[m]
+    return {m: suma[m] / n for m in marcas}
 
 def en_la_mejor(regla, marcas, corridas=40, c=C_TEORIA):
     return promediar(fracciones(regla, marcas, corridas, c), marcas)
