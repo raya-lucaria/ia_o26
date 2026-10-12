@@ -101,8 +101,8 @@ renglón, en cursivas.
 | $\bar u(s')$ | «u barra». En MCTS: el promedio de $U$ en las simulaciones que pasaron por $s'$ · *Simular en vez de evaluar* |
 | $\mu(s')$ | «mu de ese prima». El promedio verdadero de $U$ en las simulaciones que pasan por $s'$: el que daría con infinitas. $\bar u(s')$ lo estima · *De dónde sale el bono* |
 | $\varepsilon$ | «épsilon». El margen: cuánto puede quedar $\bar u(s')$ por debajo de $\mu(s')$, en la escala de $U$ · *De dónde sale el bono* |
-| $\delta$ | «delta». La probabilidad de fallo que se tolera: que $\bar u(s')$ quede más de $\varepsilon$ por debajo de $\mu(s')$ · *De dónde sale el bono* |
-| $c$, puntaje$(s')$ | «ce». En la regla UCT, el peso de explorar; el puntaje es $\bar u(s')+c\sqrt{\ln N(s)/N(s')}$, y la selección baja al hijo de mayor puntaje · *Simular en vez de evaluar* |
+| $\delta$ | «delta». La probabilidad de fallo que se tolera: que $\bar u(s')$ quede $\varepsilon$ o más por debajo de $\mu(s')$ · *De dónde sale el bono* |
+| $c$, puntaje$(s')$ | «ce». En la regla UCT, el peso de explorar; el puntaje es $\bar u(s')+c\sqrt{\ln N(s)/N(s')}$ (en un nodo de MIN, con $-\bar u(s')$), y la selección baja al hijo de mayor puntaje · *Simular en vez de evaluar* |
 | $\ln$ | «logaritmo natural» · *Simular en vez de evaluar* |
 
 ## Términos

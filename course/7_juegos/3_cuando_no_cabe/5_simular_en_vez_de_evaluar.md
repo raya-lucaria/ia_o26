@@ -313,7 +313,7 @@ cambiado, es su mejor hijo. Así corrige MCTS lo que vimos
 en la sección 2. Donde ya construyó árbol, cada jugador elige por su
 puntaje y no al azar.
 
-De dónde sale este bono, y por qué $c$ es una perilla, lo ve la página siguiente: [[de-donde-sale-el-bono|de dónde sale el bono]].
+De dónde sale este bono, y por qué $c$ es una perilla, lo verás en [[de-donde-sale-el-bono|la página siguiente]].
 
 ::: exercise {#jue-c3-ej-mcts title="Calcula qué se explora y qué se entrega"}
 Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:

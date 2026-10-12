@@ -3180,7 +3180,7 @@ def jue_c3_bono():
     """El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para N(s) = 100, 1000 y
     10 000, y la curva de c = 1 (la de la p5) con N(s) = 100, punteada."""
     pl = plano_bono()
-    W, H = ANCHO_UCB, pl.y0 + pl.h + 150
+    W, H = ANCHO_UCB, pl.y0 + pl.h + 262
     ns = list(range(5, 201))
     renglones = ["El bono contra N(s′)", "c = 2√2, escala ±1"]
     micro = ", ".join(f"{j.bono_ucb(100, n):.2f} con N(s′) = {n}" for n in MARCAS_MICRO_BONO)
@@ -3207,8 +3207,11 @@ def jue_c3_bono():
               f"N(s) = {_num(n)}") for n in CURVAS_BONO]
     filas.append((lambda x, y: linea(x, y, x + 30, y, color=SUAVE, grosor=2, guiones=GUIONES_C1),
                   "c = 1, N(s) = 100"))
-    _caja_leyenda(out, pl.x0 + pl.w - 200, pl.y0 + 10, 190, filas)
-    out.append(nota_svg(pl.y0 + pl.h + 86, [
+    # Debajo del eje, a la izquierda, como en jue-c3-hoeffding: dentro de la
+    # grafica, a la derecha, quedaba fuera de vista a 390 px (visto en la
+    # ronda 1 de render) y era la unica clave de las cuatro curvas.
+    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 220, filas)
+    out.append(nota_svg(pl.y0 + pl.h + 214, [
         "Puntos: N(s) = 100 y N(s′) = " + ", ".join(str(n) for n in MARCAS_MICRO_BONO) + ";",
         "el bono vale " + ", ".join(f"{j.bono_ucb(100, n):.2f}" for n in MARCAS_MICRO_BONO)
         + "."], tam=14))
@@ -3231,7 +3234,7 @@ def jue_c3_bandido():
     las tres reglas; promedio de 40 corridas con semillas 1..40."""
     t = j.tabla_bandido()
     pl = plano_bandido()
-    W, H = ANCHO_UCB, pl.y0 + pl.h + 150
+    W, H = ANCHO_UCB, pl.y0 + pl.h + 262
     fin = max(j.MARCAS_BANDIDO)
     mus = ", ".join(f"{k}: {_dec(v)}" for k, v in j.MUS_HILO.items())
     renglones = ["Cuánto va a la mejor jugada",
@@ -3258,8 +3261,10 @@ def jue_c3_bandido():
                                                     grosor=3, guiones=e["guiones"])
               + _marca(x + 15, y, e["marca"], e["color"], r=4), ESTILO_REGLA[r]["rotulo"])
              for r in t]
-    _caja_leyenda(out, pl.x0 + pl.w - 262, pl.y0 + pl.h - 124, 252, filas)
-    out.append(nota_svg(pl.y0 + pl.h + 86, [
+    # Debajo del eje, a la izquierda: a 390 px la de la derecha quedaba
+    # recortada y no se sabia cual UCB era c = 2√2 y cual c = 1.
+    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 270, filas)
+    out.append(nota_svg(pl.y0 + pl.h + 214, [
         f"Promedio de {j.CORRIDAS_BANDIDO} corridas con semilla", "fija, de 10 000 vueltas cada una."],
         tam=14))
     out.append(cierre())

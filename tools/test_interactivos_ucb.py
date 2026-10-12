@@ -200,13 +200,17 @@ def test_el_bandido_elige_lo_mismo_que_juegos(tmp_path, regla, semilla, c):
     datos = _correr(BANDIDO, f"""
 const b = new L.Bandido({json.dumps(regla)}, {semilla}, {cjs});
 for (let t = 0; t < {vueltas}; t++) b.paso();
-console.log(JSON.stringify({{e: b.elecciones.join(""), N: b.N, r: b.arrepentimiento(),
-  hN: [0, 1, 2].map(i => b.historiaN[i][{vueltas}])}}));
+console.log(JSON.stringify({{e: b.elecciones.join(""), N: b.N, n: b.nPadre,
+  hN: [0, 1, 2].map(i => b.historiaN[i][{vueltas}]),
+  fx: [10, 100, {vueltas}].map(k => b.fraccionEnX(k))}}));
 """, tmp_path)
     py = juegos.bandido(regla, juegos.MUS_HILO, vueltas, semilla, c)
     assert datos["e"] == "".join(py["elecciones"])
     assert datos["N"] == [py["N"][a] for a in "xyz"] == datos["hN"]
-    assert math.isclose(datos["r"], float(py["arrepentimiento"][-1]), abs_tol=1e-9)
+    assert datos["n"] == vueltas
+    # la segunda gráfica: la fracción de vueltas en x, la de la figura
+    for k, f in zip((10, 100, vueltas), datos["fx"]):
+        assert math.isclose(f, py["elecciones"][:k].count("x") / k, rel_tol=1e-12)
 
 
 def test_con_la_semilla_36_el_mejor_promedio_se_atora_en_z(tmp_path):
@@ -216,12 +220,12 @@ for (let t = 0; t < 1000; t++) b.paso();
 const u = new L.Bandido("ucb", L.SEMILLA_INICIAL, L.C_TEORIA);
 for (let t = 0; t < 12; t++) u.paso();
 console.log(JSON.stringify({N: b.N, doce: b.elecciones.slice(0, 12).join(""),
-  ucb: u.elecciones.join(""), r12: Math.round(u.arrepentimiento() * 10) / 10}));
+  ucb: u.elecciones.join(""), N12: u.N}));
 """, tmp_path)
     assert datos["N"] == [1, 1, 998]
     assert datos["doce"] == "xyzzzzzzzzzz"
     assert datos["ucb"] == "xyzzzxyxyxyx"
-    assert datos["r12"] == 3.6
+    assert datos["N12"] == [5, 4, 3]
 
 
 def test_el_bono_es_el_de_juegos(tmp_path):
@@ -235,3 +239,43 @@ console.log(JSON.stringify({{t: casos.map(([p, n]) => L.bonoUcb(p, n, L.C_TEORIA
         assert math.isclose(v, juegos.bono_ucb(p, n), rel_tol=1e-12)
         assert math.isclose(u, juegos.bono_ucb(p, n, c=1), rel_tol=1e-12)
     assert datos["cero"]
+
+
+# ------------------------------------------- lo que el alumno lee ---
+
+@pytest.mark.parametrize("ruta", PAGINAS, ids=lambda r: r.name)
+def test_los_numeros_van_con_el_formato_del_curso(ruta):
+    """Punto decimal y espacio de miles, como la página («10 000»): nada de
+    toLocaleString (pone coma de miles), ni notación e-9, ni «10 mil»."""
+    html = _texto(ruta)
+    assert "toLocaleString" not in html
+    assert "toPrecision" not in html and "toExponential" not in html
+    assert '" mil"' not in html
+    assert "const miles = " in html
+
+
+@pytest.mark.parametrize("ruta", PAGINAS, ids=lambda r: r.name)
+def test_escribe_n_de_s_con_prima_y_sin_vocabulario_ajeno(ruta):
+    """N(s′) con la prima de la página, nunca con apóstrofo recto; y nada de
+    «arrepentimiento» ni μ*, que la página no define (r1, alumno H11)."""
+    html = _texto(ruta)
+    assert "(s')" not in html
+    assert "arrepent" not in html.lower() and "μ*" not in html
+
+
+@pytest.mark.parametrize("ruta", PAGINAS, ids=lambda r: r.name)
+def test_miles_pone_espacio_de_miles(ruta, tmp_path):
+    linea = re.search(r"^const miles = .*?;(?=\s*(?://.*)?$)", _texto(ruta), re.M).group(0)
+    datos = _correr(ruta, f"""
+{linea}
+console.log(JSON.stringify([7, 1000, 9468, 10000, 369600].map(miles)));
+""", tmp_path)
+    assert [d.replace("\u00a0", " ") for d in datos] == ["7", "1 000", "9 468", "10 000", "369 600"]
+    assert all(" " not in d for d in datos), "el espacio de miles no debe partirse"
+
+
+def test_el_control_de_c_dice_que_solo_es_de_ucb_y_que_reinicia():
+    html = _texto(BANDIDO)
+    etiqueta = re.search(r'<label for="c">(.*?)</label>', html, re.S).group(1)
+    assert "solo UCB" in etiqueta and "reinicia" in etiqueta
+    assert 'id="aviso-c"' in html

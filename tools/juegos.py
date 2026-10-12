@@ -2561,8 +2561,8 @@ def mas_simulada(datos):
 
 # ------------------------------------- p6: de donde sale el bono (UCB) ---
 #
-# Escala de la p5: cada simulacion da U = +1 o −1, y ū(s') es su promedio,
-# en [−1, 1]. μ(s') es el promedio verdadero: lo que daria ū(s') con
+# Escala de la p5: cada simulacion da U = +1 o −1, y ū(s′) es su promedio,
+# en [−1, 1]. μ(s′) es el promedio verdadero: lo que daria ū(s′) con
 # infinitas simulaciones. Hoeffding (citado, no demostrado) para resultados
 # independientes en [a, b]: Pr(ū ≤ μ − ε) ≤ exp(−2Nε²/(b − a)²); con
 # b − a = 2 queda exp(−Nε²/2). Todo con la biblioteca estandar y semilla
@@ -2582,16 +2582,16 @@ def margen(delta, n):
 
 
 def bono_ucb(n_padre, n, c=None):
-    """c·√(ln N(s)/N(s')); c=None es el de la teoria, 2√2 (margen con
-    δ = N(s)^−4). Una jugada sin probar (N(s') = 0) tiene bono infinito."""
+    """c·√(ln N(s)/N(s′)); c=None es el de la teoria, 2√2 (margen con
+    δ = N(s)^−4). Una jugada sin probar (N(s′) = 0) tiene bono infinito."""
     if n == 0:
         return INF
     return (C_TEORIA if c is None else c) * math.sqrt(math.log(n_padre) / n)
 
 
 def puntajes_ucb(datos, c=None, mueve="MAX"):
-    """{jugada: puntaje} con datos = {jugada: (N(s'), ū(s'))}, ū medido desde
-    MAX. MIN es optimista desde su lado: usa −ū. N(s) = suma de los N(s')."""
+    """{jugada: puntaje} con datos = {jugada: (N(s′), ū(s′))}, ū medido desde
+    MAX. MIN es optimista desde su lado: usa −ū. N(s) = suma de los N(s′)."""
     signo = 1 if mueve == "MAX" else -1
     total = sum(n for n, _ in datos.values())
     return {k: signo * float(u) + bono_ucb(total, n, c) for k, (n, u) in datos.items()}
@@ -2664,55 +2664,62 @@ def bandido(regla, mus, vueltas, semilla, c=None, al_azar=AL_AZAR):
       elige siempre la de mayor ū; en empate, la primera.
     - "a_veces_al_azar": igual, pero con probabilidad al_azar elige una al
       azar (puede caer en la mejor).
-    - "ucb": sin probar = bono infinito; luego mayor ū + bono_ucb(N(s), N(s'), c),
-      con N(s) = vueltas ya hechas.
+    - "ucb": sin probar = bono infinito; luego mayor ū(s′) + c·√(ln N(s)/N(s′)),
+      con N(s) = vueltas ya hechas (n_padre) y N(s′) = N[a].
 
     La suerte de cada jugada es su propia fila de tiradas (la k-esima vez que
     se elige x da siempre el mismo resultado, sea cual sea la regla), y las
     decisiones al azar usan otra: asi las tres reglas comparten la suerte.
-    Devuelve dict(N, u, elecciones, resultados, arrepentimiento), donde
-    arrepentimiento[t] = (t+1)·μ* − suma de los μ elegidos hasta la vuelta t."""
+    Devuelve dict(N, u, elecciones, resultados, arrepentimiento): N[a] es
+    N(s′) y u[a] es ū(s′) de cada jugada; arrepentimiento[k] es lo que se
+    perdio en las primeras k + 1 vueltas por no elegir siempre la mejor: la
+    suma de μ(mejor) − μ(elegida). La pagina no lo usa (mira la fraccion de
+    vueltas en x); las pruebas si."""
     if regla not in REGLAS_BANDIDO:
         raise ValueError(regla)
     nombres = list(mus)
     suerte = {a: random.Random(semilla * 1000 + i) for i, a in enumerate(nombres)}
     dado = random.Random(semilla * 1000 + 999)
     N = {a: 0 for a in nombres}
-    G = {a: 0 for a in nombres}             # suma de U
+    # suma_u[a]: la suma de los U de a, asi ū(s′) = suma_u[a] / N[a]. No es
+    # G(s′) de la p5 (victorias): con ±1, ū = 2·G/N − 1.
+    suma_u = {a: 0 for a in nombres}
     mu_max = max(mus.values())
     p = {a: float(prob_gana(mus[a])) for a in nombres}
     elecciones, resultados, arrep, perdido = [], [], [], 0
-    for t in range(vueltas):
+    for n_padre in range(vueltas):          # N(s): vueltas ya hechas
         sin_probar = [a for a in nombres if N[a] == 0]
         if regla == "a_veces_al_azar" and not sin_probar and dado.random() < al_azar:
             a = dado.choice(nombres)
         elif sin_probar:
             a = sin_probar[0]
         elif regla == "ucb":
-            a = mejor({b: G[b] / N[b] + bono_ucb(t, N[b], c) for b in nombres})
+            a = mejor({b: suma_u[b] / N[b] + bono_ucb(n_padre, N[b], c)
+                       for b in nombres})
         else:
-            a = mejor({b: G[b] / N[b] for b in nombres})
+            a = mejor({b: suma_u[b] / N[b] for b in nombres})
         r = _resultado(suerte[a], p[a])
         N[a] += 1
-        G[a] += r
+        suma_u[a] += r
         perdido += mu_max - mus[a]
         elecciones.append(a)
         resultados.append(r)
         arrep.append(perdido)
-    return dict(N=N, u={a: (F(G[a], N[a]) if N[a] else None) for a in nombres},
+    return dict(N=N, u={a: (F(suma_u[a], N[a]) if N[a] else None) for a in nombres},
                 elecciones=elecciones, resultados=resultados, arrepentimiento=arrep)
 
 
 def filas_bandido(regla, mus, vueltas, semilla, c=None):
-    """La corrida de `bandido`, vuelta por vuelta, para una tabla: dict(t,
-    jugada, U, N, u), con N y ū de cada jugada DESPUES de esa vuelta."""
+    """La corrida de `bandido`, vuelta por vuelta, para una tabla: dict(vuelta,
+    jugada, U, N, u), con N(s′) y ū(s′) de cada jugada DESPUES de esa vuelta;
+    `vuelta` es N(s) tras ella."""
     b = bandido(regla, mus, vueltas, semilla, c)
-    N, G, filas = {a: 0 for a in mus}, {a: 0 for a in mus}, []
-    for t, (a, r) in enumerate(zip(b["elecciones"], b["resultados"]), 1):
+    N, suma_u, filas = {a: 0 for a in mus}, {a: 0 for a in mus}, []
+    for n_padre, (a, r) in enumerate(zip(b["elecciones"], b["resultados"]), 1):
         N[a] += 1
-        G[a] += r
-        filas.append(dict(t=t, jugada=a, U=r, N=dict(N),
-                          u={k: (F(G[k], N[k]) if N[k] else None) for k in mus}))
+        suma_u[a] += r
+        filas.append(dict(vuelta=n_padre, jugada=a, U=r, N=dict(N),
+                          u={k: (F(suma_u[k], N[k]) if N[k] else None) for k in mus}))
     return filas
 
 
@@ -2724,10 +2731,10 @@ def _fraccion_en_la_mejor(regla, mus_items, marcas, corridas, c):
     for semilla in range(1, corridas + 1):
         elecciones = bandido(regla, mus, max(marcas), semilla, c)["elecciones"]
         veces = 0
-        for t, a in enumerate(elecciones, 1):
+        for n_padre, a in enumerate(elecciones, 1):       # N(s) tras la vuelta
             veces += a == la_mejor
-            if t in suma:
-                suma[t] += veces / t
+            if n_padre in suma:
+                suma[n_padre] += veces / n_padre
     return {m: suma[m] / corridas for m in marcas}
 
 
@@ -2770,7 +2777,7 @@ def tabla_bandido():
     return t
 
 
-# Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s'), ū(s'))},
+# Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s′), ū(s′))},
 # ū medido desde MAX. Con c = 2√2 la seleccion va a r (poco probada); con
 # c = 1, a p. Se entrega p, la mas simulada.
 EJEMPLO_MIN = {"p": (30, F(-1, 5)), "q": (15, F(0)), "r": (5, F(2, 5))}

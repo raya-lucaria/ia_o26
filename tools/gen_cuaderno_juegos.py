@@ -831,6 +831,10 @@ La raíz de MCTS sin árbol debajo: tres jugadas, x, y, z, que se eligen una y
 otra vez. Cada simulación da $U = +1$ o $-1$; el promedio verdadero
 $\mu(s')$ de cada una está oculto (aquí, en `MU`). Las funciones son las de
 `tools/juegos.py`, con la misma semilla: dan los números de la página.
+
+Los nombres son los de la página: `n_padre` es $N(s)$, `N[a]` es $N(s')$
+de la jugada `a`, `c` es $c$. `suma_u[a]` es la suma de sus $U$, así que
+$\\bar u(s') =$ `suma_u[a] / N[a]`; no es $G(s')$, que cuenta victorias.
 """)
 
 code("""
@@ -846,7 +850,7 @@ def simular(rng, mu):                     # U = +1 con prob. (1 + μ)/2
 def cota(n, eps):                         # Hoeffding, escala ±1
     return math.exp(-n * eps ** 2 / 2)
 
-def bono(n_padre, n, c=C_TEORIA):         # c·√(ln N(s) / N(s'))
+def bono(n_padre, n, c=C_TEORIA):         # c·√(ln N(s) / N(s′))
     return math.inf if n == 0 else c * math.sqrt(math.log(n_padre) / n)
 """, "logica", "bono")
 
@@ -877,12 +881,12 @@ frec = frecuencias(MU["y"], EPS, 200, 20000)
 ns = list(frec)
 plt.semilogy(ns, list(frec.values()), ".", label="observada")
 plt.semilogy(ns, [cota(n, EPS) for n in ns], label="cota de Hoeffding")
-plt.xlabel("N(s'): simulaciones de y")
-plt.ylabel("frecuencia de ū ≤ μ − ε")
+plt.xlabel("N(s′): simulaciones de y")
+plt.ylabel("frecuencia de ū(s′) ≤ μ(s′) − ε")
 plt.legend()
 plt.show()
 for n in (10, 50, 100):
-    print(f"N(s') = {n:>3}: {frec[n]:.4f}  cota {cota(n, EPS):.4f}")
+    print(f"N(s′) = {n:>3}: {frec[n]:.4f}  cota {cota(n, EPS):.4f}")
 """)
 
 md("""
@@ -894,7 +898,7 @@ mismo con cualquier regla.
 """)
 
 code("""
-def elegir_jugada(regla, N, G, t, dado, c):
+def elegir_jugada(regla, N, suma_u, n_padre, dado, c):
     sin_probar = [a for a in N if N[a] == 0]
     if (regla == "a_veces_al_azar" and not sin_probar
             and dado.random() < 0.1):
@@ -902,9 +906,9 @@ def elegir_jugada(regla, N, G, t, dado, c):
     if sin_probar:
         return sin_probar[0]
 
-    def puntaje(a):
-        extra = bono(t, N[a], c) if regla == "ucb" else 0
-        return G[a] / N[a] + extra
+    def puntaje(a):                       # ū(s′), más el bono en UCB
+        extra = bono(n_padre, N[a], c) if regla == "ucb" else 0
+        return suma_u[a] / N[a] + extra
     return max(N, key=puntaje)
 """, "logica", "bono")
 
@@ -913,13 +917,14 @@ def bandido(regla, vueltas, semilla, c=C_TEORIA):
     suerte = {a: random.Random(semilla * 1000 + i)
               for i, a in enumerate(MU)}
     dado = random.Random(semilla * 1000 + 999)
-    N, G, elecciones = {a: 0 for a in MU}, {a: 0 for a in MU}, []
-    for t in range(vueltas):
-        a = elegir_jugada(regla, N, G, t, dado, c)
+    N, suma_u = {a: 0 for a in MU}, {a: 0 for a in MU}
+    elecciones = []
+    for n_padre in range(vueltas):        # N(s): vueltas ya hechas
+        a = elegir_jugada(regla, N, suma_u, n_padre, dado, c)
         N[a] += 1
-        G[a] += simular(suerte[a], MU[a])
+        suma_u[a] += simular(suerte[a], MU[a])
         elecciones.append(a)
-    return N, G, elecciones
+    return N, suma_u, elecciones
 """, "logica", "bono")
 
 md("""
@@ -929,8 +934,8 @@ $\\bar u = -1$, el mínimo, y «siempre el mejor promedio» no vuelve a ellas.
 
 code("""
 for regla in ("mejor_promedio", "ucb"):
-    N, G, elecciones = bandido(regla, 12, semilla=36)
-    print(f"{regla:<15}", "".join(elecciones), N)
+    N, suma_u, elecciones = bandido(regla, 12, semilla=36)
+    print(f"{regla:<15}", "".join(elecciones), "N(s′):", N)
 """)
 
 code("""
@@ -940,10 +945,10 @@ def en_la_mejor(regla, marcas, corridas=40, c=C_TEORIA):
     for semilla in range(1, corridas + 1):
         elecciones = bandido(regla, max(marcas), semilla, c)[2]
         veces = 0
-        for t, a in enumerate(elecciones, 1):
+        for n_padre, a in enumerate(elecciones, 1):
             veces += a == mejor
-            if t in suma:
-                suma[t] += veces / t
+            if n_padre in suma:
+                suma[n_padre] += veces / n_padre
     return {m: suma[m] / corridas for m in marcas}
 """, "logica", "bono")
 

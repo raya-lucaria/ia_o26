@@ -1583,7 +1583,7 @@ def test_clase_3_p6_las_reglas_hacen_lo_que_dicen():
         f = j.filas_bandido("mejor_promedio", j.MUS_HILO, 40, semilla)
         for antes, ahora in zip(f[2:], f[3:]):
             u = antes["u"]
-            assert ahora["jugada"] == max(u, key=u.get), (semilla, ahora["t"])
+            assert ahora["jugada"] == max(u, key=u.get), (semilla, ahora["vuelta"])
     # «A veces al azar»: cerca de una vuelta de cada diez va al azar, asi que
     # z (la peor) se elige al menos ~1/30 de las vueltas, aunque tarde.
     b = j.bandido("a_veces_al_azar", j.MUS_HILO, 30_000, 5)

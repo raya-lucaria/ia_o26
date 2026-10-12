@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hoeffding en vivo — cuánto falla un promedio</title>
 
-<!-- Clase 7.3, «De dónde sale el bono». Genera promedios de N(s') simulaciones
+<!-- Clase 7.3, «De dónde sale el bono». Genera promedios de N(s′) simulaciones
      ±1 con Pr(+1) = (1 + μ)/2 y cuenta cuántos caen en la cola ū ≤ μ − ε,
-     contra la cota de Hoeffding exp(−N(s')·ε²/2).
+     contra la cota de Hoeffding exp(−N(s′)·ε²/2).
 
      La suerte sale del mismo generador que tools/juegos.py (el Mersenne
      Twister de Python, sembrado igual, con random() de 53 bits), así que con
@@ -79,6 +79,8 @@
   .leyenda .l-eps::before{border-top-style:dashed}
   .leyenda .l-cola{color:var(--danger)}
   .leyenda .l-cola::before{height:10px;border:0;background:var(--danger)}
+  .leyenda .l-cero{color:var(--danger)}
+  .leyenda .l-cero::before{content:none}
   .nota{color:var(--muted);font-size:13.5px;margin:.5rem 0 0}
   .nota b{color:var(--text)}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -88,8 +90,8 @@
 <div class="envoltura">
   <h1>Hoeffding en vivo</h1>
   <p class="sub">Cada <b>promedio ū(s′)</b> junta N(s′) simulaciones que dan +1 con
-  probabilidad (1 + μ(s′))/2 y −1 si no. ¿Cuántas veces queda el promedio a más de
-  ε por debajo de la verdad? Hoeffding dice: a lo más <b>exp(−N(s′)·ε²/2)</b>.</p>
+  probabilidad (1 + μ(s′))/2 y −1 si no. ¿Cuántas veces queda el promedio ε o
+  más por debajo de la verdad? Hoeffding dice: a lo más <b>exp(−N(s′)·ε²/2)</b>.</p>
 
   <div class="panel">
     <div class="deslizadores">
@@ -125,6 +127,8 @@
         <span class="l-mu">μ(s′)</span><span class="l-eps">μ(s′) − ε</span>
         <span class="l-cola">cola: ū(s′) ≤ μ(s′) − ε</span>
       </div>
+      <p class="nota">Altura de cada barra: cuántos promedios dieron ese ū(s′),
+      relativa a la barra más alta.</p>
       <dl class="cuentas">
         <dt>Promedios hechos</dt><dd id="c-hechos">0</dd>
         <dt>Cayeron en la cola</dt><dd id="c-cola">0</dd>
@@ -141,6 +145,7 @@
       <p id="d-barrido" class="sr"></p>
       <div class="leyenda" aria-hidden="true">
         <span class="l-obs">observada (un punto por cada N(s′) que corriste)</span>
+        <span class="l-cero">▽ ninguno en la cola (al piso)</span>
         <span class="l-cota">cota</span>
       </div>
       <p class="nota">Eje vertical en escala log. Mueve N(s′) o pulsa «Barrer»; la
@@ -290,12 +295,14 @@ const leerSemilla = () => {
   return Number.isFinite(s) ? Math.min(s, 999999) : 1;
 };
 const fmt = (x, d) => x.toFixed(d).replace("-", "−");
+// Un solo formato en todo el panel, el del curso: punto decimal, dos
+// decimales en los porcentajes, espacio de miles («369 600», «10 000»).
 const pct = f => {
   if (f === 0) return "0 %";
   const v = 100 * f;
-  return (v >= 10 ? v.toFixed(1) : v >= 0.1 ? v.toFixed(2) : v.toPrecision(2)) + " %";
+  return v < 0.005 ? "< 0.01 %" : v.toFixed(2) + " %";
 };
-const miles = k => k.toLocaleString("es-MX");
+const miles = k => String(Math.round(k)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");   // espacio que no parte «10 000»
 
 function nuevaCorrida(){
   corrida = new Corrida(leerMuC(), leerN(), leerEpsC(), leerSemilla());
@@ -323,15 +330,14 @@ function preparar(lienzo){
 
 function dibujarHistograma(){
   const {g, w, h} = preparar($("hist"));
-  const m = {i:14, d:14, a:30, b:36};
+  const m = {i:26, d:14, a:30, b:36};
   const pw = w - m.i - m.d, ph = h - m.a - m.b;
   const X = u => m.i + (u + 1) / 2 * pw;
   const c = corrida, n = c.n, mu = c.muC / 100, corte = (c.muC - c.epsC) / 100;
   // la cola: todo ū ≤ μ − ε, sombreada antes de las barras
+  // termina justo en la línea μ − ε, no en el borde de la última barra
   if (corte >= -1){
-    const paso = pw / n;
-    const xc = Math.min(X(corte) + Math.min(paso * 0.45, 20), m.i + pw);
-    g.fillStyle = COL.fcola; g.fillRect(m.i, m.a, xc - m.i, ph);
+    g.fillStyle = COL.fcola; g.fillRect(m.i, m.a, X(corte) - m.i, ph);
   }
   // rejilla y eje
   g.strokeStyle = COL.rejilla; g.lineWidth = 1; g.font = FUENTE;
@@ -341,6 +347,9 @@ function dibujarHistograma(){
     g.fillText(fmt(u, u % 1 ? 1 : 0), Math.min(Math.max(X(u), m.i + 8), m.i + pw - 8), m.a + ph + 5);
   }
   g.fillText("ū(s′): el promedio de N(s′) simulaciones", m.i + pw / 2, m.a + ph + 20);
+  // eje vertical: sin escala numérica, la altura es relativa
+  g.save(); g.translate(9, m.a + ph / 2); g.rotate(-Math.PI / 2);
+  g.textBaseline = "middle"; g.fillText("cuántos promedios", 0, 0); g.restore();
   g.strokeStyle = COL.trazo;
   g.beginPath(); g.moveTo(m.i, m.a + ph + .5); g.lineTo(m.i + pw, m.a + ph + .5); g.stroke();
   // barras: una por valor posible de ū (k victorias de n)
@@ -368,20 +377,23 @@ function dibujarHistograma(){
     g.setLineDash([]); g.fillStyle = COL.aviso;
     g.textAlign = X(corte) < m.i + 64 ? "left" : "right";
     g.fillText("μ − ε = " + fmt(corte, 2), X(corte) + (g.textAlign === "left" ? 4 : -4), m.a + 12);
-  } else {
-    g.fillStyle = COL.aviso; g.textAlign = "left";
-    g.fillText("μ − ε = " + fmt(corte, 2) + " < −1: la cola está vacía", m.i + 2, m.a + 12);
   }
+  // (si μ − ε < −1 no hay cola: lo dice el recuadro del veredicto)
   if (!c.hechos){
+    // en el tramo libre más ancho, para no cruzar ninguna línea
+    const cortes = [m.i, ...(corte >= -1 ? [X(corte)] : []), X(mu), m.i + pw];
+    let a = 0;
+    for (let k = 1; k < cortes.length - 1; k++)
+      if (cortes[k + 1] - cortes[k] > cortes[a + 1] - cortes[a]) a = k;
     g.fillStyle = COL.muted; g.font = FUENTE; g.textAlign = "center";
-    g.fillText("Aún no hay promedios", m.i + pw / 2, m.a + ph / 2);
+    g.fillText("Aún no hay promedios", (cortes[a] + cortes[a + 1]) / 2, m.a + ph / 2);
   }
   g.lineWidth = 1;
 }
 
 function dibujarBarrido(){
   const {g, w, h} = preparar($("barrido"));
-  const m = {i:50, d:12, a:12, b:36};
+  const m = {i:64, d:12, a:12, b:36};
   const pw = w - m.i - m.d, ph = h - m.a - m.b;
   const PISO = -4;                                  // 10^−4 = 0.01 %
   const X = n => m.i + n / 200 * pw;
@@ -399,6 +411,8 @@ function dibujarBarrido(){
     g.fillText(String(n), Math.min(X(n), m.i + pw - 10), m.a + ph + 5);
   }
   g.fillText("N(s′)", m.i + pw / 2, m.a + ph + 20);
+  g.save(); g.translate(9, m.a + ph / 2); g.rotate(-Math.PI / 2);
+  g.textBaseline = "middle"; g.fillText("frecuencia (log)", 0, 0); g.restore();
   // la cota de Hoeffding con la ε de hoy
   const eps = leerEpsC() / 100;
   g.strokeStyle = COL.aviso; g.lineWidth = 2; g.beginPath();
@@ -430,9 +444,15 @@ function dibujarBarrido(){
       g.lineWidth = 1;
     }
   }
-  g.fillStyle = COL.muted; g.textAlign = "left"; g.textBaseline = "top";
-  if (![...registro.values()].some(r => r.hechos >= 200))
-    g.fillText("Corre al menos 200 promedios", m.i + 8, m.a + ph - 22);
+  // el aviso, a la derecha y del lado que la cota deja libre
+  if (![...registro.values()].some(r => r.hechos >= 200)){
+    const abajo = cotaHoeffding(200, eps) > 1e-3;
+    const aviso = "Corre al menos 200 promedios", ancho = g.measureText(aviso).width;
+    const xa = m.i + pw - 6, ya = abajo ? m.a + ph - 22 : m.a + 4;
+    g.fillStyle = COL.surface; g.fillRect(xa - ancho - 4, ya, ancho + 8, 18);   // sobre la línea de N(s′)
+    g.fillStyle = COL.muted; g.textAlign = "right"; g.textBaseline = "top";
+    g.fillText(aviso, xa, ya + 3);
+  }
 }
 
 // ---------------------------------------------------------- números ---
@@ -444,11 +464,16 @@ function pintarCuentas(anunciar){
   $("c-obs").textContent = f === null ? "—" : pct(f);
   $("c-cota").textContent = pct(cota);
   const v = $("veredicto");
+  const vacia = c.muC - c.epsC < -100;
   let texto;
-  if (f === null){ texto = "Pulsa «Correr» o «+100 promedios»."; v.classList.remove("alerta"); }
+  if (vacia){
+    texto = `μ(s′) − ε = ${fmt((c.muC - c.epsC) / 100, 2)} < −1: la cola está vacía, ` +
+      `porque ū(s′) nunca baja de −1. Ningún promedio puede caer en ella.`;
+    v.classList.remove("alerta");
+  } else if (f === null){ texto = "Pulsa «Correr» o «+100 promedios»."; v.classList.remove("alerta"); }
   else if (f <= cota){
     texto = `La cota queda arriba: ${pct(cota)} contra ${pct(f)} observado` +
-      (f > 0 ? ` (${(cota / f).toFixed(1)} veces más).` : ".");
+      (f > 0 ? ` (${fmt(cota / f, 1)} veces más).` : ".");
     v.classList.remove("alerta");
   } else {
     texto = `Por ahora lo observado (${pct(f)}) pasa la cota (${pct(cota)}): con ` +
