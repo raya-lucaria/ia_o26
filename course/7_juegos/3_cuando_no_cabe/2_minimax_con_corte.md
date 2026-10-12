@@ -639,7 +639,7 @@ ejercicio lo pide en tres pasos: una traza, una variante y un costo.
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-::: exercise {#jue-c3-ej-final title="Traza el árbol T con otro orden y otra evaluación"}
+::: exercise {#jue-c3-ej-final-corte title="Traza el árbol T con otro orden y otra evaluación"}
 Usa el árbol T, sus hojas y las $\mathrm{EVAL}$ de la sección 3. La idea
 nueva: **R prueba sus jugadas al revés**, der,
 centro, izq. Dentro de I, C y D el orden no cambia, y la línea 5 sigue con
@@ -655,20 +655,20 @@ $>$ estricto.
    con el orden del inciso 1? Explica por qué.
 :::
 
-::: hint {#jue-c3-pista-final-1 of="jue-c3-ej-final" title="Pista 1 · Qué se mueve de lugar"}
+::: hint {#jue-c3-pista-final-corte-1 of="jue-c3-ej-final-corte" title="Pista 1 · Qué se mueve de lugar"}
 Con R al revés, ¿cambian las filas de dentro de cada hijo, o solo su
 lugar en la traza? ¿Qué compara la línea 5 cada vez que un hijo regresa a
 R? Para el inciso 2: con cada $d$, ¿qué nodos llegan con $d=0$ sin ser
 finales?
 :::
 
-::: hint {#jue-c3-pista-final-2 of="jue-c3-ej-final" title="Pista 2 · Revisa tu borrador"}
+::: hint {#jue-c3-pista-final-corte-2 of="jue-c3-ej-final-corte" title="Pista 2 · Revisa tu borrador"}
 Comprueba tu propuesta con dos preguntas. ¿Cada nodo que contaste está
 arriba de la línea de corte o justo en ella? ¿Cada fila de R compara su
 $w$ con el mejor_valor de la fila anterior de R, y no con el último $w$?
 :::
 
-::: answer {#jue-c3-resp-final of="jue-c3-ej-final" title="Respuesta · El orden mueve el camino; la evaluación, la jugada"}
+::: answer {#jue-c3-resp-final-corte of="jue-c3-ej-final-corte" title="Respuesta · El orden mueve el camino; la evaluación, la jugada"}
 **1. La traza con R al revés.**
 
 | # | línea · pila | v | w | jugada |

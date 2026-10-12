@@ -699,7 +699,7 @@ jugada que se entrega o lo que cuesta llegar a ella?**
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-::: exercise {#jue-c3-ej-final title="Corre la iterativa con otro orden y un reloj"}
+::: exercise {#jue-c3-ej-final-reloj title="Corre la iterativa con otro orden y un reloj"}
 Mismo árbol T y misma $\mathrm{EVAL}$ (I 5, C 4, D 7, C1 6, C2 9). Lo que
 cambia es el orden de $A(R)$: **der, centro, izq**. Así la línea 2 deja
 $\text{jugada}=\text{der}$. Dentro de C, primero C1, como siempre.
@@ -719,18 +719,18 @@ las líneas 4 y 8: se acaba cuando la cuenta llega al tope.
    con uno de 20?
 :::
 
-::: hint {#jue-c3-pista-final-1 of="jue-c3-ej-final" title="Pista 1 · Qué va primero"}
+::: hint {#jue-c3-pista-final-reloj-1 of="jue-c3-ej-final-reloj" title="Pista 1 · Qué va primero"}
 Antes de cada búsqueda, ¿qué jugada está lista y dónde la pone la línea
 6? Después, para cada hijo de R, ¿con qué $\alpha$ llega?
 :::
 
-::: hint {#jue-c3-pista-final-2 of="jue-c3-ej-final" title="Pista 2 · Revisa la cuenta del reloj"}
+::: hint {#jue-c3-pista-final-reloj-2 of="jue-c3-ej-final-reloj" title="Pista 2 · Revisa la cuenta del reloj"}
 Comprueba tu respuesta con dos preguntas. ¿Cuántos nodos llevas en total
 cada vez que un hijo de R devuelve su $w$? Cuando la cuenta llega al tope,
 ¿la búsqueda en curso ya había terminado?
 :::
 
-::: answer {#jue-c3-resp-final of="jue-c3-ej-final"}
+::: answer {#jue-c3-resp-final-reloj of="jue-c3-ej-final-reloj"}
 **1. Las tres búsquedas.**
 
 | $d$ | Orden de R | Lista | Nodos |
