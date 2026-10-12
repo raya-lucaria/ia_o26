@@ -32,6 +32,9 @@ Las hojas de notación del curso: `course/3_computabilidad/A_notacion.md`, `cour
 - **DEBE** una fórmula importada nombra sus supuestos (acotado en $[0,1]$, independientes…) y qué cambia al
   pasarla a la escala del curso; si cambia una constante, se dice y se calcula (p. ej. $c$ al pasar de $[0,1]$ a $\pm1$).
 - **DEBERÍA** distinguir en la definición lo que se parece y no es (bloque «Qué no es»: $\mathrm{EVAL}$ no es $V$).
+- **DEBE** una probabilidad se dice sobre lo que aún es azar: «antes de simular, la probabilidad de que el techo
+  quede bajo $\mu$ es a lo más $\delta$», nunca «con probabilidad 0.95, $\mu>-0.65$» tras ver los datos ni «casi
+  seguro» (que significa probabilidad 1). Lo vio la lente matemática en `6_de_donde_sale_el_bono.md` (r1 H4, r2 H3).
 
 ## Quién lo vigila
 - Escritor: busca y traduce antes de escribir; pide la fila de `A_notacion` en su reporte.
