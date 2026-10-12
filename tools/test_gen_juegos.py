@@ -9,6 +9,7 @@ Como alla, el fixture regenera antes de leer: lo que ata el archivo
 comiteado a su generador es correr el generador y ver `git status` limpio.
 """
 import re
+from collections import Counter
 import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape
 
@@ -643,8 +644,8 @@ def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
             "jue-c3-bono": ("N(s′): simulaciones de la jugada", "bono (en unidades de ū)"),
             "jue-c3-pago": ("N(s): vueltas (escala log)", "pago promedio por vuelta,",
                             "de la vuelta 1 a N(s)"),
-            "jue-c3-eligiendo-x": ("N(s): vueltas (escala log)", "corridas que eligen x (%),",
-                                   "en esa vuelta, no acumulado"),
+            "jue-c3-eligiendo-x": ("N(s): vueltas (escala log)", "elecciones que van a x (%),",
+                                   "en esas 10 vueltas"),
             "jue-c3-bandido-corridas": ("fracción de las 10 000 vueltas", "que fueron a x")}[nombre]
     for e in ejes:
         assert escape(e) in renglones, e
@@ -759,26 +760,34 @@ def test_eligiendo_x_dibuja_cada_regla_sin_acumular():
     t = j.tabla_eligiendo_x()
     _curvas_de(svg, pl, t, escala=100)
     renglones = re.findall(r">([^<>]+)</text>", svg)
-    # Que es un punto, y que no es acumulado, en el dibujo.
-    for r_ in ("cada punto: % de las 40 corridas que", "eligen x en esa vuelta (promedio de",
-               "las vueltas N(s) − 9 a N(s))", "en esa vuelta, no acumulado"):
+    # Que es un punto (elecciones, no corridas: lente de correccion r2, H5)
+    # y que no es acumulado, en el dibujo.
+    for r_ in ("¿Qué tanto se elige x?", "cada punto: 40 corridas × 10 vueltas",
+               "(de N(s) − 9 a N(s)), no acumulado", "elecciones que van a x (%),",
+               "en esas 10 vueltas"):
         assert r_ in renglones, r_
+    assert not [r_ for r_ in renglones if "corridas que eligen" in r_]
     for fila in ("siempre el mejor promedio: 85 %", "a veces al azar (10 %): 92.5 %",
                  "UCB, c = 2√2: 98.8 %", "UCB, c = 1: 100 %"):
         assert fila in renglones, fila
-    assert "Sin bono se aplana en 34 de 40 = 85 %:" in renglones
-    assert "al azar: cerca de 0.9 + 0.1/3 = 93.3 %." in renglones
+    # Sin bono, y solo ahi, el porcentaje de elecciones es el de corridas.
+    assert "Sin bono, 85 % son justo 34 corridas" in renglones
+    assert "de 40: las 6 atoradas nunca eligen x." in renglones
+    assert "0.9 + 0.1/3 = 93.3 %." in renglones
     # La meseta de 85 % es una recta: desde N(s) = 100, la misma y.
     ys = {y for m, _, y in gen.puntos_eligiendo(pl)["mejor_promedio"] if m >= 100}
     assert ys == {pl.y(85)}
     aria = re.match(r"<svg\b[^>]*>", svg).group()
-    for frase in ("porcentaje de las 40 corridas que eligen x en esa vuelta, no acumulado",
-                  "las vueltas N(s) − 9 a N(s) de las 40 corridas, 400 elecciones",
+    assert "corridas que eligen" not in aria
+    for frase in ("porcentaje de las elecciones que van a x, no acumulado",
+                  "cada punto cuenta 400 elecciones: las vueltas N(s) − 9 a N(s) de cada una "
+                  "de las 40 corridas",
                   "siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %",
                   "a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %",
                   "UCB, c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %",
                   "UCB, c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %",
-                  "se aplana en 34 de 40, 85 %: las 6 atoradas nunca eligen x",
+                  "se aplana en 85 %, que aquí sí son 34 de 40 corridas: las 6 atoradas "
+                  "nunca eligen x y las otras 34 siempre",
                   "0.9 + 0.1/3 = 93.3 %"):
         assert frase in aria, frase
 
@@ -789,10 +798,11 @@ def test_las_reglas_se_distinguen_sin_color():
 
 
 def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
-    """jue-c3-bandido-corridas: 40 marcas por fila, en la x de su fraccion
-    final y con la marca de su regla; la raya del promedio en la x del valor
-    final de tabla_bandido (la figura acumulada ya no se dibuja, pero su
-    ultima marca es este promedio); el rotulo de atoradas con sus cifras."""
+    """jue-c3-bandido-corridas: 40 marcas por fila, cerca de la x de su
+    fraccion final, con la marca de su regla y ninguna encima de otra; la
+    raya del promedio en la x del valor final de tabla_bandido (la figura
+    acumulada ya no se dibuja, pero su ultima marca es este promedio); el
+    rotulo de atoradas y el de las buenas con sus cifras."""
     svg = _texto("jue-c3-bandido-corridas")
     pl = gen.plano_corridas()
     r, t = j.reparto_bandido(), j.tabla_bandido()
@@ -803,16 +813,33 @@ def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
         assert len(lista) == j.CORRIDAS_BANDIDO == 40
         assert [f for _, f, _, _ in lista] == r[fila]["fracciones"]
         for _, f, x, y in lista:
-            assert x == pl.x(f)
-            assert abs(y - gen.centro_fila(pl, k)) <= 4 * gen.SALTO_CORRIDAS + 1e-9
-            assert gen._marca(x, y, e["marca"], e["color"], r=4) in svg, (fila, f)
+            # Corrido a lo mas 3 columnas de su valor (las 34 de «siempre el
+            # mejor promedio» se recargan en 1), y dentro de 0 a 1.
+            assert abs(x - pl.x(f)) <= 3 * gen.PASO_CORRIDAS, (fila, f)
+            assert pl.x(0) <= x <= pl.x(1)
+            assert abs(y - gen.centro_fila(pl, k)) <= gen.PASO_CORRIDAS * (gen.FILAS_COLUMNA - 1) / 2
+            assert gen.marca_corrida(x, y, e["marca"], e["color"]) in svg, (fila, f)
+        # Ninguna marca encima de otra (lente de correccion r2, H4): a 9 px
+        # en x o en y. Y el orden de las columnas es el de las fracciones.
+        lugares = [(x, y) for _, _, x, y in lista]
+        assert all(max(abs(a[0] - b[0]), abs(a[1] - b[1])) >= gen.PASO_CORRIDAS - 1e-9
+                   for i, a in enumerate(lugares) for b in lugares[i + 1:]), fila
+        por_x = sorted(lista, key=lambda p: (p[1], p[0]))
+        assert [p[2] for p in por_x] == sorted(p[2] for p in por_x), fila
         xm = pl.x(t[fila][max(j.MARCAS_BANDIDO)])
-        assert f'<line x1="{xm}" y1="{gen.centro_fila(pl, k) - 22}" x2="{xm}"' in svg, fila
+        assert f'<line x1="{xm}" y1="{pl.y0 + gen.FILA_CORRIDAS * k + 48}" x2="{xm}"' in svg, fila
         assert f"promedio {t[fila][max(j.MARCAS_BANDIDO)]:.2f}" in svg
         assert e["rotulo"] in svg
-    # El desplazamiento es determinista y no apila vecinos en el mismo nivel.
-    assert [gen.desplazamiento(i) for i in range(3)] == [-10.4, 0.0, 10.4]
+    # 34 en x: tres columnas de 10 y una de 4, en la x de 1; las 6 atoradas,
+    # una columna en 0.
+    mejor = pts["mejor_promedio"]
+    columnas = Counter(x for _, f, x, _ in mejor if f >= j.UMBRAL_ATORADA)
+    assert sorted(columnas.values()) == [4, 10, 10, 10] and max(columnas) == pl.x(1)
+    atoradas = Counter(x for _, f, x, _ in mejor if f < j.UMBRAL_ATORADA)
+    assert list(atoradas.values()) == [6] and abs(next(iter(atoradas)) - pl.x(0)) < 1
     renglones = re.findall(r">([^<>]+)</text>", svg)
+    assert renglones.count("34 en x") == 1 and not [r_ for r_ in renglones if r_.endswith(" en x")
+                                                    and r_ != "34 en x"]
     # «6 de 40 atoradas: 5 en y, 1 en z» va en dos renglones: en uno llegaba
     # a la raya del promedio 0.85; igual el subtitulo, por el ancho.
     assert ["6 de 40 atoradas:", "5 en y, 1 en z"] == [

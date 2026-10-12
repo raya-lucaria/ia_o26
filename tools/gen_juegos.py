@@ -3282,11 +3282,14 @@ SUBTITULO_PAGO = (f"cada punto: promedio de {j.CORRIDAS_BANDIDO} corridas",
                   "μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values()))
 EJE_Y_PAGO = ("pago promedio por vuelta,", "de la vuelta 1 a N(s)")
 ROTULO_SIEMPRE_X = "siempre x (lo mejor posible)"
-TITULO_ELIGIENDO = "¿Cuántas corridas eligen x?"
-SUBTITULO_ELIGIENDO = (f"cada punto: % de las {j.CORRIDAS_BANDIDO} corridas que",
-                       "eligen x en esa vuelta (promedio de",
-                       f"las vueltas N(s) − {j.VENTANA_ELIGIENDO - 1} a N(s))")
-EJE_Y_ELIGIENDO = ("corridas que eligen x (%),", "en esa vuelta, no acumulado")
+# Un punto de jue-c3-eligiendo-x cuenta ELECCIONES, no corridas: 40 corridas
+# × 10 vueltas = 400. Con «corridas que eligen x», el 98.8 % de UCB se leia
+# como «1 de 40 corridas no eligio x», y ninguna se atora (lente de
+# correccion r2, H5). Solo sin bono coinciden: 85 % son justo 34 corridas.
+TITULO_ELIGIENDO = "¿Qué tanto se elige x?"
+SUBTITULO_ELIGIENDO = (f"cada punto: {j.CORRIDAS_BANDIDO} corridas × {j.VENTANA_ELIGIENDO} vueltas",
+                       f"(de N(s) − {j.VENTANA_ELIGIENDO - 1} a N(s)), no acumulado")
+EJE_Y_ELIGIENDO = ("elecciones que van a x (%),", f"en esas {j.VENTANA_ELIGIENDO} vueltas")
 EJE_X_BANDIDO = "N(s): vueltas (escala log)"
 
 
@@ -3313,11 +3316,11 @@ def plano_pago():
 
 
 def plano_eligiendo():
-    # Un subtitulo mas que plano_pago. De 40 % a 100 %: el peor punto es
+    # Dos subtitulos, como plano_pago. De 40 % a 100 %: el peor punto es
     # 41.8 % y las curvas de arriba quedan separadas (a 0–100 % se tapaban).
-    # y0 = 184 y no 172: a 172 el «100» de la escala quedaba pegado al
-    # nombre del eje (render r4).
-    return Plano(56, 184, 214, 240, (10, 10000), (40, 100), xlog=True)
+    # y0 = 162, 12 mas que plano_pago: el «100» de la escala va en el borde
+    # de arriba y a 12 px menos quedaba pegado al nombre del eje (render r4).
+    return Plano(56, 162, 214, 240, (10, 10000), (40, 100), xlog=True)
 
 
 def puntos_pago(pl):
@@ -3417,12 +3420,13 @@ def jue_c3_eligiendo_x():
     atoradas = j.reparto_bandido()["mejor_promedio"]["atoradas"]
     tope = j.tope_a_veces_al_azar()
     desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
-            f"porcentaje de las {n} corridas que eligen x en esa vuelta, no acumulado, de "
-            f"40 % a 100 %; cada punto cuenta las vueltas N(s) − {v - 1} a N(s) de las {n} "
-            f"corridas, {n * v} elecciones. En N(s) = 10, 100, 1 000 y 10 000: "
+            f"porcentaje de las elecciones que van a x, no acumulado, de 40 % a 100 %; "
+            f"cada punto cuenta {n * v} elecciones: las vueltas N(s) − {v - 1} a N(s) de "
+            f"cada una de las {n} corridas. En N(s) = 10, 100, 1 000 y 10 000: "
             f"{_cifras(t, _pct_f)}. Siempre el mejor promedio se aplana en "
-            f"{n - atoradas} de {n}, {_pct_f(F(n - atoradas, n))}: las {atoradas} atoradas "
-            "nunca eligen x. A veces al azar se queda cerca de 0.9 + 0.1/3 = "
+            f"{_pct_f(F(n - atoradas, n))}, que aquí sí son {n - atoradas} de {n} corridas: "
+            f"las {atoradas} atoradas nunca eligen x y las otras {n - atoradas} siempre. "
+            "A veces al azar se queda cerca de 0.9 + 0.1/3 = "
             f"{_pct_f(tope)}. Las dos UCB suben hacia 100 %.")
     out = []
     _encabezado_ucb(out, TITULO_ELIGIENDO, SUBTITULO_ELIGIENDO)
@@ -3430,10 +3434,12 @@ def jue_c3_eligiendo_x():
                       EJE_Y_ELIGIENDO)
     _curvas_reglas(out, puntos_eligiendo(pl))
     y_pie = _leyenda_reglas(out, y_pie + 18, {r: _pct_f(d[fin]) for r, d in t.items()})
-    nota = [f"Sin bono se aplana en {n - atoradas} de {n} = "
-            f"{_pct_f(F(n - atoradas, n))}:",
-            f"las {atoradas} atoradas nunca eligen x. A veces",
-            f"al azar: cerca de 0.9 + 0.1/3 = {_pct_f(tope)}."]
+    # Sin bono, y solo ahi, el porcentaje de elecciones es tambien el de
+    # corridas: las atoradas nunca eligen x y las demas siempre.
+    nota = [f"Sin bono, {_pct_f(F(n - atoradas, n))} son justo {n - atoradas} corridas",
+            f"de {n}: las {atoradas} atoradas nunca eligen x.",
+            "A veces al azar se queda cerca de",
+            f"0.9 + 0.1/3 = {_pct_f(tope)}."]
     out.append(_nota_ucb(y_pie + 28, nota))
     H = y_pie + 28 + 22 * (len(nota) - 1) + 18
     titulo = " ".join((TITULO_ELIGIENDO,) + SUBTITULO_ELIGIENDO)
@@ -3454,10 +3460,18 @@ def jue_c3_eligiendo_x():
 # mas angosto que X_PIE.
 ANCHO_CORRIDAS = 300
 MARGEN_CORRIDAS = 12
-FILA_CORRIDAS = 96          # alto de cada fila
+# Un punto por corrida y ninguno encima de otro (lente de correccion r2, H4):
+# con un desplazamiento vertical de 9 niveles, las 34 corridas en ≈1 de
+# «siempre el mejor promedio» caian en 9 alturas, hasta 4 por lugar, y se
+# leian igual que las 6 atoradas. Ahora cada grupo de valores cercanos se
+# apila en columnas de FILAS_COLUMNA puntos, a PASO_CORRIDAS px: 34 son
+# tres columnas de 10 y una de 4, contables, contra una sola de 6.
+FILA_CORRIDAS = 150         # alto de cada fila
 Y_FILAS = 100               # donde empieza la primera fila
-SALTO_CORRIDAS = 2.6        # px entre niveles del desplazamiento vertical
-NIVELES_CORRIDAS = 9        # niveles: de −4 a +4 veces SALTO_CORRIDAS
+PASO_CORRIDAS = 9           # px entre centros de puntos vecinos
+FILAS_COLUMNA = 10          # puntos por columna
+R_CORRIDAS = 3              # radio de la marca: a r = 4 se tocaban a 9 px
+SEPARA_GRUPOS = 0.25        # un hueco mayor en la fraccion parte el grupo
 EJE_X_CORRIDAS = (f"fracción de las {_num(max(j.MARCAS_BANDIDO))} vueltas"
                   " que fueron a x")
 # Los mismos textos partidos en renglones que caben en ANCHO_CORRIDAS.
@@ -3476,25 +3490,59 @@ def plano_corridas():
 
 def centro_fila(pl, k):
     """La y del centro de la banda de puntos de la fila k (0 arriba)."""
-    return round(pl.y0 + FILA_CORRIDAS * k + 64, 1)
+    return round(pl.y0 + FILA_CORRIDAS * k + 56 + PASO_CORRIDAS * (FILAS_COLUMNA - 1) / 2, 1)
 
 
-def desplazamiento(rango):
-    """Desplazamiento vertical del punto con ese rango (0 = el menor) en su
-    fila: determinista, y vecinos en x quedan en niveles distintos."""
-    return round(((rango * 4) % NIVELES_CORRIDAS - NIVELES_CORRIDAS // 2) * SALTO_CORRIDAS, 1)
+def fondo_fila(pl, k):
+    """La y de la fila de puntos de mas abajo de la fila k: las columnas
+    crecen hacia arriba desde aqui, como un histograma de puntos."""
+    return round(pl.y0 + FILA_CORRIDAS * k + 56 + PASO_CORRIDAS * (FILAS_COLUMNA - 1), 1)
+
+
+def grupos_corridas(fr):
+    """Los indices de fr ordenados por (fraccion, semilla) y partidos donde
+    dos fracciones consecutivas distan mas de SEPARA_GRUPOS."""
+    orden = sorted(range(len(fr)), key=lambda s: (fr[s], s))
+    grupos = [[orden[0]]]
+    for a, b in zip(orden, orden[1:]):
+        if fr[b] - fr[a] > SEPARA_GRUPOS:
+            grupos.append([])
+        grupos[-1].append(b)
+    return grupos
+
+
+def _x_columnas(pl, fr, grupo):
+    """La x de cada columna de un grupo: centradas en la mediana del grupo y
+    corridas lo justo para no salir de 0 a 1."""
+    n_col = -(-len(grupo) // FILAS_COLUMNA)
+    medio = pl.x(fr[grupo[(len(grupo) - 1) // 2]])
+    x_izq = medio - PASO_CORRIDAS * (n_col - 1) / 2
+    x_izq = max(pl.x(0), min(x_izq, pl.x(1) - PASO_CORRIDAS * (n_col - 1)))
+    return [round(x_izq + PASO_CORRIDAS * c, 1) for c in range(n_col)]
 
 
 def puntos_corridas(pl):
-    """{fila: [(semilla, fraccion, x, y)]} de jue-c3-bandido-corridas."""
+    """{fila: [(semilla, fraccion, x, y)]} de jue-c3-bandido-corridas, en
+    orden de semilla. Cada grupo va en columnas de FILAS_COLUMNA, de la
+    fraccion menor (columna de la izquierda, abajo) a la mayor."""
     r = j.reparto_bandido()
     salida = {}
     for k, fila in enumerate(r):
         fr = r[fila]["fracciones"]
-        rango = {s: i for i, s in enumerate(sorted(range(len(fr)), key=lambda s: (fr[s], s)))}
-        salida[fila] = [(s + 1, f, pl.x(f), round(centro_fila(pl, k) + desplazamiento(rango[s]), 1))
-                        for s, f in enumerate(fr)]
+        lugar = {}
+        for g in grupos_corridas(fr):
+            xs = _x_columnas(pl, fr, g)
+            for i, s in enumerate(g):
+                lugar[s] = (xs[i // FILAS_COLUMNA],
+                            round(fondo_fila(pl, k) - PASO_CORRIDAS * (i % FILAS_COLUMNA), 1))
+        salida[fila] = [(s + 1, f, *lugar[s]) for s, f in enumerate(fr)]
     return salida
+
+
+def marca_corrida(x, y, forma, color):
+    """La marca de una corrida: el rombo un punto mas chico, porque sus
+    puntas sobresalen y a 9 px tocaban las del vecino."""
+    return _marca(x, y, forma, color, r=R_CORRIDAS - (forma == "rombo"))
 
 
 def rotulo_atoradas(d):
@@ -3529,14 +3577,15 @@ def jue_c3_bandido_corridas():
     r = j.reparto_bandido()
     pl = plano_corridas()
     W, y1 = ANCHO_CORRIDAS, pl.y0 + pl.h
-    H = y1 + 186
+    H = y1 + 192
     renglones = ["Dónde termina cada corrida"]
     filas = ". ".join(f"{ESTILO_REGLA[f]['rotulo'][:1].upper()}{ESTILO_REGLA[f]['rotulo'][1:]}: "
                       f"{resumen_corridas(d)}" for f, d in r.items())
     n = j.CORRIDAS_BANDIDO
     desc = (f"Gráfica de puntos, una fila por regla. Eje x: {EJE_X_CORRIDAS}, de 0 a 1. "
             f"Cada punto es una corrida de {_num(max(j.MARCAS_BANDIDO))} vueltas: {n} por fila, "
-            f"con semillas 1 a {n}; una raya vertical marca el promedio de la fila. "
+            f"con semillas 1 a {n}, apiladas en columnas de {FILAS_COLUMNA} para que ninguna "
+            "tape a otra; una raya vertical marca el promedio de la fila. "
             f"Atorada: menos de la mitad de sus vueltas en x. {filas}.")
     out = [marco(W, H, desc, " ".join(renglones + [SUBTITULO_CORRIDAS]), desc)]
     # El titulo a 17 y no a los 20 de encabezado(): a 20 no cabe en ANCHO_CORRIDAS.
@@ -3571,19 +3620,31 @@ def jue_c3_bandido_corridas():
             out.append(texto(pl.x(0.06), cy + 5 + 18 * i - 9 * (len(partes) - 1), p_, tam=14,
                              color=TEXTO, anclaje="start"))
         for _, _, x, yy in puntos[fila]:
-            out.append(_marca(x, yy, e["marca"], e["color"], r=4))
+            out.append(marca_corrida(x, yy, e["marca"], e["color"]))
         # La raya del promedio va encima de los puntos y sobresale de la
         # banda: en las tres reglas que no se atoran cae dentro del montón y,
         # dibujada antes y del mismo alto, no se veia (ronda 1 de render).
         xm = pl.x(d["promedio"])
-        out.append(linea(xm, cy - 22, xm, cy + 22, color=TEXTO, grosor=2))
-        out.append(texto(xm - 5, top + 42, f"promedio {_f2(d['promedio'])}", tam=14,
+        out.append(linea(xm, top + 48, xm, fondo_fila(pl, k) + 8, color=TEXTO, grosor=2))
+        y_prom = top + 42
+        # «34 en x» arriba de su grupo, como «6 de 40 atoradas» junto al
+        # suyo: la cuenta de las buenas tambien se lee en el dibujo (lente
+        # del alumno r2, H9). Solo en la fila que se parte; ahi el promedio
+        # baja a la banda, en el hueco entre los dos grupos (en el mismo
+        # renglon, a 6 px, se leia «promedio 0.85 34 en x», render r5).
+        if d["atoradas"]:
+            xs = sorted({x for _, f, x, _ in puntos[fila] if f >= j.UMBRAL_ATORADA})
+            out.append(texto((xs[0] + xs[-1]) / 2, top + 42,
+                             f"{n - d['atoradas']} en x", tam=14, color=TEXTO))
+            y_prom = top + 68
+        out.append(texto(xm - 5, y_prom, f"promedio {_f2(d['promedio'])}", tam=14,
                          color=TEXTO, anclaje="end"))
     # Sin «el valor final de la grafica acumulada»: esa figura
     # (jue-c3-bandido) se quito.
     nota = ["Atorada: termina debajo de 0.5.",
             f"Raya vertical: el promedio de las {n}",
-            "corridas de la fila."]
+            "corridas de la fila. Puntos de valor",
+            f"cercano: apilados de {FILAS_COLUMNA} en {FILAS_COLUMNA}."]
     for i, r_ in enumerate(nota):
         out.append(texto(MARGEN_CORRIDAS, y1 + 106 + 22 * i, r_, tam=14, anclaje="start"))
     out.append(cierre())
