@@ -1660,3 +1660,474 @@ def test_clase_3_p6_c_es_una_perilla():
     # Con c = 1 y la semilla del micro, UCB vuelve a x en la vuelta 7.
     assert "".join(j.bandido("ucb", j.MUS_HILO, 12, j.SEMILLA_ATORA, c=1)[
         "elecciones"]) == "xyzzzzxxxxxx"
+
+
+# ------------------- clase 3, p6: la prosa de «De donde sale el bono» ---
+#
+# #39 para la p6: cada cifra que la pagina escribe se lee de la prosa (por id
+# de tabla, figura, ejercicio o respuesta, o por la seccion «## n ·») y se
+# compara con la funcion de juegos.py que la calcula. Los datos de entrada
+# (μ, N, ū, δ, N(s)) tambien se leen del enunciado; las cifras de dos
+# decimales se comparan como texto, con el formato con que la pagina las
+# imprime («2.10», no 2.1). Los ejes de las figuras vienen de gen_juegos.
+
+P6 = "6_de_donde_sale_el_bono.md"
+_NUM = r"[+-]?\d+(?: \d{3})*(?:\.\d+)?"
+_PALABRAS = {"una": 1, "tres": 3, "diez": 10, "doble": 2, "la mitad": F(1, 2),
+             "un tercio": F(1, 3)}
+
+
+def _x(s):
+    """«1 000» → 1000, «0.6» → F(3, 5), «-1/3» → F(-1, 3), «una» → 1."""
+    s = s.strip()
+    if s in _PALABRAS:
+        return F(_PALABRAS[s])
+    return F(s.replace(" ", "").lstrip("+"))
+
+
+def _d(x, k=2):
+    return f"{float(x):.{k}f}"
+
+
+def _pc(x):
+    """Una probabilidad como la imprime la pagina: «24.7 %»."""
+    return f"{100 * float(x):.1f} %"
+
+
+def _seccion(texto, n):
+    m = re.search(rf"^## {n} ·.*?$(.*?)(?=^## )", texto, re.M | re.S)
+    assert m, f"no encuentro la seccion {n}"
+    return _limpio(m.group(1))
+
+
+def _llevarse(texto):
+    return _limpio(texto[texto.index("## Lo que hay que llevarse"):])
+
+
+def _ln(texto):
+    """{n: «ln n» como lo escribe el texto}: \\ln5≈1.61 → {5: "1.61"}."""
+    return {int(n): v for n, v in re.findall(r"\\ln ?(\d+)≈(\d+\.\d+)", texto)}
+
+
+def _c_de(s):
+    """La c de la pagina: «2\\sqrt2» es la de la teoria (None en juegos.py)."""
+    return None if s.replace(" ", "") in ("2\\sqrt2", "2√2") else _x(s)
+
+
+def _corrida(regla, c=None):
+    return j.filas_bandido(regla, j.MUS_HILO, j.VUELTAS_MICRO, j.SEMILLA_ATORA, c)
+
+
+def test_prosa_clase_3_p6_las_tres_jugadas_y_la_corrida_que_se_atora():
+    """#39 · μ = 0.6, 0.3, −0.2; 0.8, 0.65, 0.4; las tres primeras vueltas de
+    la semilla fija; @jue-c3-ej-atora (ū = −1, −1, +1; z; 998 de 1 000)."""
+    texto = _pagina(P6)
+    uno = _seccion(texto, 1)
+    mus = {k: _x(v) for k, v in re.findall(rf"\\mu\(([xyz])\)=({_NUM})", uno)}
+    assert mus == j.MUS_HILO
+    mejor_de_verdad = max(mus, key=mus.get)
+    assert re.search(r"La mejor es ([xyz]), la que el ejercicio de MCTS entregaba", uno)[1] \
+        == mejor_de_verdad == j.mas_simulada(j.EJERCICIO_MCTS)
+    m = re.search(rf"x gana con probabilidad ({_NUM}), y con ({_NUM}) y z con ({_NUM})\.", uno)
+    assert [_x(v) for v in m.groups()] == [j.prob_gana(mus[k]) for k in "xyz"]
+    filas = _corrida("mejor_promedio")
+    tres = re.search(r"las tres primeras vueltas salen así: (.*?)\.", uno)[1]
+    assert re.findall(r"([xyz]) (pierde|gana)", tres) == [
+        (f["jugada"], "gana" if f["U"] == 1 else "pierde") for f in filas[:3]]
+    ej = _limpio(_bloque(texto, "jue-c3-ej-atora"))
+    assert {k: _x(v) for k, v in re.findall(rf"\\bar u\(([xyz])\)=({_NUM})", ej)} \
+        == filas[2]["u"]
+    assert int(re.search(r"en la vuelta (\d+)", ej)[1]) == filas[3]["vuelta"]
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-atora"))
+    m = re.search(rf"1\. ([xyz]), con \\bar u=({_NUM})", resp)
+    assert m[1] == filas[3]["jugada"] and _x(m[2]) == filas[2]["u"][m[1]]
+    piso = min(f["U"] for f in filas)
+    assert _x(re.search(rf"se quedan en ({_NUM}), el mínimo", resp)[1]) == piso
+    assert _x(re.search(rf"nunca baja a ({_NUM})", resp)[1]) == piso
+    m = re.search(rf"tras ({_NUM}) vueltas, x e y tienen (\w+) simulación cada una y z, ({_NUM})",
+                  resp)
+    vueltas = int(_x(m[1]))
+    n = j.bandido("mejor_promedio", j.MUS_HILO, vueltas, j.SEMILLA_ATORA)["N"]
+    assert (n["x"], n["y"], n["z"]) == (_x(m[2]), _x(m[2]), _x(m[3]))
+    m = re.search(rf"({_NUM}) de ({_NUM}) vueltas en ([xyz]), la peor", _llevarse(texto))
+    assert (_x(m[1]), _x(m[2])) == (n[m[3]], vueltas) and m[3] == min(mus, key=mus.get)
+
+
+def test_prosa_clase_3_p6_la_tabla_y_la_figura_de_hoeffding():
+    """#39 · @jue-c3-tabla-hoeffding (24.7/81.9 … 0.2/1.8 %), su alt, μ = 0.3,
+    ε = 0.2, el umbral 0.1, las 20 000 tiradas y @jue-c3-ej-fila-cota."""
+    import gen_juegos as gen
+    texto = _pagina(P6)
+    dos = _seccion(texto, 2)
+    assert _x(re.search(rf"Toma la jugada y, con \\mu=({_NUM})", dos)[1]) \
+        == j.MUS_HILO["y"] == j.MU_HOEFFDING
+    assert _x(re.search(rf"repite todo ({_NUM}) veces", dos)[1]) == j.REPS_HOEFFDING
+    eps = _x(re.search(rf"Con \\varepsilon=({_NUM}), fallar es sacar \\bar u≤({_NUM})", dos)[1])
+    assert eps == j.EPS_HOEFFDING
+    umbral = j.MU_HOEFFDING - j.EPS_HOEFFDING
+    assert _x(re.search(rf"fallar es sacar \\bar u≤({_NUM})", dos)[1]) == umbral
+    assert _x(re.search(rf"el umbral ({_NUM}) cae", dos)[1]) == umbral
+    t = j.tabla_hoeffding()
+    filas = _tabla(texto, "jue-c3-tabla-hoeffding")
+    assert [_c(x) for x in filas[0][1:]] == ["Simulado", "Cota"]
+    leidas = [(int(_c(f[0])), _c(f[1]), _c(f[2])) for f in filas[1:]]
+    assert leidas == [(n, _pc(t[n][0]), _pc(t[n][1])) for n, _, _ in leidas]
+    assert all(frec <= cota for frec, cota in t.values())
+    alt = _alt(texto, "jue-c3-fig-hoeffding")
+    pl = gen.plano_hoeffding()
+    m = re.search(rf"simulaciones de la jugada y, de ({_NUM}) a ({_NUM})\.", alt)
+    assert (_x(m[1]), _x(m[2])) == pl.xs and pl.xs[1] == max(j.NS_HOEFFDING)
+    m = re.search(rf"o menos, de ({_NUM}) a ({_NUM}), con μ = ({_NUM}) y ε = ({_NUM})\.", alt)
+    assert (_x(m[1]), _x(m[2])) == tuple(_x(repr(v)) for v in pl.ys)
+    assert (_x(m[3]), _x(m[4])) == (j.MU_HOEFFDING, j.EPS_HOEFFDING)
+    assert _x(re.search(rf"observada en ({_NUM}) tiradas", alt)[1]) == j.REPS_HOEFFDING
+    trios = re.findall(rf"con (?:N\(s′\) = )?({_NUM}), ({_NUM} %) contra ({_NUM} %)", alt)
+    assert len(trios) == 3
+    assert trios == [(n, _pc(t[int(n)][0]), _pc(t[int(n)][1])) for n, _, _ in trios]
+    # El ejercicio: la cota con N(s') = 100 y ε = 0.2, a mano.
+    ej = _limpio(_bloque(texto, "jue-c3-ej-fila-cota"))
+    m = re.search(rf"Con N\(s'\)=({_NUM}) y \\varepsilon=({_NUM})", ej)
+    n, e = int(m[1]), _x(m[2])
+    assert e == j.EPS_HOEFFDING and n in t
+    assert re.search(rf"Lo simulado fue ({_NUM} %)", ej)[1] == _pc(t[n][0])
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-fila-cota"))
+    m = re.search(rf"1\. ({_NUM})·({_NUM})/2=({_NUM}), y e\^-({_NUM})≈({_NUM}): el ({_NUM} %)",
+                  resp)
+    assert (int(m[1]), _x(m[2]), _x(m[3]), _x(m[4])) == (n, e ** 2, n * e ** 2 / 2, n * e ** 2 / 2)
+    assert m[5] == _d(j.cota_hoeffding(n, float(e))) and m[6] == _pc(t[n][1])
+    m = re.search(rf"2\. No\..*?: ({_NUM} %) está muy por debajo de ({_NUM} %)", resp)
+    assert m.groups() == (_pc(t[n][0]), _pc(t[n][1]))
+    m = re.search(rf"\\varepsilon=({_NUM}) y N\(s'\)=({_NUM}), la cota es ({_NUM} %) y lo "
+                  rf"simulado, ({_NUM} %)", _llevarse(texto))
+    assert (_x(m[1]), int(m[2])) == (j.EPS_HOEFFDING, n)
+    assert (m[3], m[4]) == (_pc(t[n][1]), _pc(t[n][0]))
+
+
+def test_prosa_clase_3_p6_despejar_el_margen():
+    """#39 · §3: δ = e^−2 ≈ 0.14 da ε = 0.2 con N(s') = 100; el 5 % da 0.24
+    con ln 20 ≈ 3.00; @jue-c3-ej-despeja (÷2 al cuadruplicar N, un tercio
+    más al pedir diez veces menos fallo)."""
+    texto = _pagina(P6)
+    tres = _seccion(texto, 3)
+    m = re.search(rf"con \\delta=e\^-({_NUM})≈({_NUM}) y N\(s'\)=({_NUM}), el margen es "
+                  rf"\\sqrt({_NUM})·({_NUM})/({_NUM})=({_NUM}): la fila de ({_NUM}) de la tabla",
+                  tres)
+    k, n = _x(m[1]), int(m[3])
+    delta = _m.exp(-k)
+    assert m[2] == _d(delta)
+    assert (_x(m[4]), _x(m[5]), int(m[6])) == (2, _x(_d(_m.log(1 / delta), 0)), n)
+    assert _x(m[7]) == _x(_d(j.margen(delta, n), 1)) == j.EPS_HOEFFDING
+    assert _isclose_f(j.cota_hoeffding(int(m[8]), float(_x(m[7]))), delta)
+    pct = _x(re.search(rf"con probabilidad ({_NUM}) %", _seccion(texto, 3))[1])
+    m = re.search(rf"Con el ({_NUM}) % de la pregunta y N\(s'\)=({_NUM}), "
+                  rf"\\sqrt({_NUM})·({_NUM})/({_NUM})≈({_NUM}), porque \\ln({_NUM})≈({_NUM})",
+                  tres)
+    delta, n = _x(m[1]) / 100, int(m[2])
+    assert _x(m[1]) == pct and int(m[5]) == n and _x(m[3]) == 2
+    assert _x(m[7]) == 1 / delta and m[4] == m[8] == _d(_m.log(1 / delta))
+    assert m[6] == _d(j.margen(float(delta), n))
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-despeja"))
+    veces = _x(re.search(rf"se multiplica por ({_NUM})", _limpio(
+        _bloque(texto, "jue-c3-ej-despeja")))[1])
+    m = re.search(rf"1\. Se divide entre ({_NUM}):.*?\\sqrt({_NUM})=({_NUM})", resp)
+    assert _x(m[2]) == veces and _x(m[1]) == _x(m[3]) == F(_m.isqrt(int(veces)))
+    assert _isclose_f(j.margen(0.05, 100) / j.margen(0.05, 100 * int(veces)), _x(m[1]))
+    m = re.search(rf"Pedir (\w+) veces menos fallo, de ({_NUM}) a ({_NUM}), hace crecer el "
+                  rf"margen solo (un tercio)", resp)
+    antes, despues = float(_x(m[2])), float(_x(m[3]))
+    assert _x(m[1]) == _x(m[2]) / _x(m[3])
+    crece = j.margen(despues, 100) / j.margen(antes, 100) - 1
+    assert round(crece, 2) == round(float(_x(m[4])), 2)
+
+
+def _isclose_f(a, b):
+    return _m.isclose(float(a), float(b), rel_tol=1e-9)
+
+
+def test_prosa_clase_3_p6_delta_n_a_la_menos_4_y_c_2_raiz_2():
+    """#39 · §4: δ = 1/N(s)^4, ln(1/δ) = 4 ln N(s), √(8 ln N(s)/N(s')),
+    c = 2√2 ≈ 2.83 (en toda la pagina); en otros textos c = √2 con G/N,
+    ū = 2G/N − 1, e^(−2Nε²) en [0, 1]; N(s') = 0 da bono infinito; y
+    @jue-c3-ej-optimismo."""
+    texto = _pagina(P6)
+    cuatro = _seccion(texto, 4)
+    k = int(re.search(r"\\delta=\\frac1N\(s\)\^(\d+)", cuatro)[1])
+    assert int(re.search(r"\\ln\(1/\\delta\)=(\d+)\\ln N\(s\)", cuatro)[1]) == k
+    assert int(re.search(r"El (\d+) es una elección", cuatro)[1]) == k
+    ocho = int(re.search(r"\\sqrt\\frac(\d+)\\ln N\(s\)N\(s'\)", cuatro)[1])
+    assert ocho == 2 * k and _isclose_f(_m.sqrt(ocho), j.C_TEORIA)
+    assert int(re.search(r"\\delta=N\(s\)\^-(\d+)", _llevarse(texto))[1]) == k
+    for n_padre, n in ((100, 10), (5, 1), (50, 30), (10_000, 7)):
+        assert _isclose_f(j.bono_ucb(n_padre, n), j.margen(n_padre ** -k, n))
+    # «2√2 ≈ 2.83» en §4, en los dos ejercicios que la usan y en el resumen.
+    aprox = re.findall(r"2\\sqrt2≈(\d+\.\d+)", _limpio(texto))
+    assert len(aprox) == 4 and set(aprox) == {_d(j.C_TEORIA)}
+    # En otros textos: c = √2 con G/N, y ū = 2·G/N − 1: puntaje = 2·(el de G/N) − 1.
+    assert re.search(r"c=\\sqrt(\d+) con la tasa G/N", cuatro)[1] == "2"
+    assert re.search(r"con la tasa G/N es c=\\sqrt(\d+)", _llevarse(texto))[1] == "2"
+    m = re.search(r"\\bar u=(\d+)G/N-(\d+), cada puntaje nuestro es el (\w+) del de ellos "
+                  r"menos (\d+)", cuatro)
+    a, b = int(m[1]), int(m[2])
+    assert (_x(m[3]), int(m[4])) == (a, b)
+    con_u = j.puntajes_ucb(j.EJERCICIO_MCTS)
+    con_g = j.uct_ejercicio(c=_m.sqrt(2), victorias=True)
+    assert all(_isclose_f(con_u[x], a * con_g[x] - b) for x in con_u)
+    for x, (n, u) in j.EJERCICIO_MCTS.items():
+        assert a * (u + 1) / 2 - b == u, x
+    # Con resultados en [0, 1], ε en [0, 1] es 2ε en ±1: e^(−2Nε²).
+    m = re.search(r"Hoeffding se escribe e\^-(\d+)N\\varepsilon\^2: el intervalo es (la mitad)",
+                  cuatro)
+    for n, e in ((10, 0.1), (100, 0.2)):
+        assert _isclose_f(j.cota_hoeffding(n, e / _x(m[2])), _m.exp(-int(m[1]) * n * e ** 2))
+    # Sin probar: bono infinito.
+    cinco = _seccion(texto, 5)
+    assert int(re.search(r"tiene N\(s'\)=(\d+): el bono divide entre (\d+) y\s+vale infinito",
+                         cinco)[1]) == 0
+    assert j.bono_ucb(100, 0) == j.INF
+    ej = _limpio(_bloque(texto, "jue-c3-ej-optimismo"))
+    m = re.search(rf"tienen \\bar u=({_NUM})\. Una lleva (\d+) simulación; la otra, (\d+)\.", ej)
+    ns = (int(m[2]), int(m[3]))
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-optimismo"))
+    elegida = int(re.search(r"1\. La de (\d+) simulación", resp)[1])
+    for n_padre in (sum(ns), 1000):
+        techo = {n: float(_x(m[1])) + j.bono_ucb(n_padre, n) for n in ns}
+        assert elegida == max(techo, key=techo.get)
+
+
+def test_prosa_clase_3_p6_tabla_y_figura_del_bono():
+    """#39 · @jue-c3-tabla-bono (1.92, 1.11, 0.78 / 0.68, 0.39, 0.28 con
+    N(s) = 100) y el alt de @jue-c3-fig-bono (ejes, curvas, puntos, c = 1)."""
+    import gen_juegos as gen
+    texto = _pagina(P6)
+    n_padre = int(re.search(r"N\(s\) = (\d+)", _titulo(texto, "jue-c3-tabla-bono"))[1])
+    prosa = _seccion(texto, 4)
+    assert int(re.search(r"usó c=1, que explora menos.*?Con N\(s\)=(\d+):", prosa)[1]) == n_padre
+    filas = _tabla(texto, "jue-c3-tabla-bono")
+    cs = [_c_de(re.fullmatch(r"c=(.+)", _c(x))[1]) for x in filas[0][1:]]
+    assert cs == [None, 1]
+    tabla = {int(_c(f[0])): [_c(x) for x in f[1:]] for f in filas[1:]}
+    assert tabla == {n: [_d(j.bono_ucb(n_padre, n, c)) for c in cs] for n in tabla}
+    assert tuple(tabla) == gen.MARCAS_MICRO_BONO
+    alt = _alt(texto, "jue-c3-fig-bono")
+    pl = gen.plano_bono()
+    m = re.search(rf"simulaciones de la jugada, de ({_NUM}) a ({_NUM})\.", alt)
+    assert (_x(m[1]), _x(m[2])) == pl.xs
+    assert tuple(_x(v) for v in re.search(rf"en unidades de ū, de ({_NUM}) a ({_NUM})\.",
+                                          alt).groups()) == pl.ys
+    curvas = re.search(r"una por N\(s\): (.*?); las tres", alt)[1]
+    assert tuple(int(_x(v)) for v in re.findall(rf"({_NUM}) (?:continua|con)", curvas)) \
+        == gen.CURVAS_BONO
+    for n in (10, 30, 60):
+        bonos = [j.bono_ucb(np, n) for np in gen.CURVAS_BONO]
+        assert bonos == sorted(bonos), "con más N(s) quedan más arriba"
+    m = re.search(rf"Puntos sobre la curva de ({_NUM}) en N\(s′\) = ({_NUM}), ({_NUM}) y "
+                  rf"({_NUM}): el bono vale ({_NUM}), ({_NUM}) y ({_NUM})\.", alt)
+    assert int(m[1]) == n_padre
+    assert dict(zip((int(v) for v in m.groups()[1:4]), m.groups()[4:])) == {
+        n: v[0] for n, v in tabla.items()}
+    m = re.search(rf"c = ({_NUM}) con N\(s\) = ({_NUM}), queda muy por debajo: ({_NUM}) en "
+                  rf"N\(s′\) = ({_NUM})", alt)
+    assert (_x(m[1]), int(m[2])) == (1, n_padre)
+    assert m[3] == _d(j.bono_ucb(n_padre, int(m[4]), 1)) == tabla[int(m[4])][1]
+
+
+def _datos_mcts(ej):
+    return {k: (int(n), _x(u)) for k, n, u in re.findall(
+        rf"([xyz])(?: tenía|,) N=(\d+) y (?:\\bar u=)?({_NUM})", ej)}
+
+
+def test_prosa_clase_3_p6_el_ejercicio_de_mcts_con_la_c_de_la_teoria():
+    """#39 · @jue-c3-ej-teoria (x 0.5+0.78=1.28, y 0.6+1.11=1.71, z 0.2+1.92=2.12;
+    de y a z), @jue-c3-ej-entregar (se entrega x, 60; y con 30, la mitad) y el
+    resumen (z con 2.12, y con c = 1, x con 60)."""
+    texto = _pagina(P6)
+    ej = _limpio(_bloque(texto, "jue-c3-ej-teoria"))
+    datos = _datos_mcts(ej)
+    assert datos == j.EJERCICIO_MCTS
+    total = int(re.search(r"N\(s\)=(\d+)\.", ej)[1])
+    assert total == sum(n for n, _ in datos.values())
+    teoria, p5 = j.puntajes_ucb(datos), j.puntajes_ucb(datos, c=1)
+    assert re.search(r"Con c=1 la selección iba a ([xyz])", ej)[1] == j.mejor(p5)
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-teoria"))
+    sumas = re.findall(rf"([xyz]): ({_NUM})\+({_NUM})=({_NUM})", resp)
+    assert [s[0] for s in sumas] == list(datos)
+    for k, u, bono, puntaje in sumas:
+        n, media = datos[k]
+        assert (_x(u), bono, puntaje) == (media, _d(j.bono_ucb(total, n)), _d(teoria[k])), k
+    assert re.search(r"2\. ([xyz])\.", resp)[1] == j.mejor(teoria)
+    assert re.search(r"la selección cambia de ([xyz]) a ([xyz])", resp).groups() == (
+        j.mejor(p5), j.mejor(teoria))
+    # Entregar.
+    ej = _limpio(_bloque(texto, "jue-c3-ej-entregar"))
+    assert _datos_mcts(ej) == datos
+    assert re.search(r"Con c=2\\sqrt2 la selección iba a ([xyz])", ej)[1] == j.mejor(teoria)
+    por_u = max(datos, key=lambda k: datos[k][1])
+    assert re.search(r"([xyz]) tiene el mejor promedio", ej)[1] == por_u
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-entregar"))
+    entrega = j.mas_simulada(datos)
+    m = re.search(r"1\. ([xyz]), la de más simulaciones, (\d+)\. Ni ([xyz]), la que "
+                  r"seleccionaba, ni ([xyz])\.", resp)
+    assert (m[1], int(m[2]), m[3], m[4]) == (entrega, datos[entrega][0], j.mejor(teoria), por_u)
+    m = re.search(rf"El ({_NUM}) de ([xyz]) descansa en (\d+) simulaciones, (la mitad) que "
+                  rf"([xyz])", resp)
+    assert (_x(m[1]), m[2], int(m[3]), m[5]) == (datos[por_u][1], por_u, datos[por_u][0], entrega)
+    assert _x(m[4]) == F(datos[por_u][0], datos[entrega][0])
+    m = re.search(rf"con c=2\\sqrt2 la selección va a ([xyz]) \(({_NUM})\) y con c=1 a ([xyz]); "
+                  r"se entrega ([xyz]), con (\d+) simulaciones", _llevarse(texto))
+    assert m.groups() == (j.mejor(teoria), _d(teoria[j.mejor(teoria)]), j.mejor(p5), entrega,
+                          str(datos[entrega][0]))
+
+
+def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
+    """#39 · §6 con la semilla de la §1 y c = 2√2: x, y, z, z, z; el estado
+    antes de la vuelta 6 (ū = −1, −1, −1/3; N(s) = 5); @jue-c3-ej-vuelta-seis
+    (ln 5 ≈ 1.61, x: −1 + 3.59 = 2.59, z: −0.33 + 2.07 = 1.74, empate con y,
+    las 12 vueltas y N = 5, 4, 3)."""
+    texto = _pagina(P6)
+    seis = _seccion(texto, 6)
+    ucb, mp = _corrida("ucb"), _corrida("mejor_promedio")
+    m = re.search(r"Las vueltas 1 a (\d+) salen igual: ((?:[xyz], )*[xyz])\.", seis)
+    hasta = int(m[1])
+    assert m[2].split(", ") == [f["jugada"] for f in ucb[:hasta]] == [
+        f["jugada"] for f in mp[:hasta]]
+    antes = ucb[hasta - 1]
+    m = re.search(rf"En la vuelta (\d+), x e y tienen \\bar u=({_NUM}) con (\w+) simulación "
+                  rf"cada una; z tiene \\bar u=({_NUM}(?:/\d+)?) con (\w+)\. N\(s\)=(\d+)\.", seis)
+    assert int(m[1]) == hasta + 1 and int(m[6]) == antes["vuelta"] == hasta
+    assert antes["u"] == {"x": _x(m[2]), "y": _x(m[2]), "z": _x(m[4])}
+    assert antes["N"] == {"x": _x(m[3]), "y": _x(m[3]), "z": _x(m[5])}
+    n_padre, N, u = antes["vuelta"], antes["N"], antes["u"]
+    ej = _limpio(_bloque(texto, "jue-c3-ej-vuelta-seis"))
+    ln = _ln(ej)
+    assert list(ln) == [n_padre] and ln[n_padre] == _d(_m.log(n_padre))
+    assert re.search(r"2\\sqrt2≈(\d+\.\d+)", ej)[1] == _d(j.C_TEORIA)
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-vuelta-seis"))
+    cuentas = re.findall(rf"([xyz]): ({_NUM}(?:/\d+)?)\+({_NUM})\\sqrt({_NUM})/(\d+)≈({_NUM})"
+                         rf"\+({_NUM})=({_NUM})", resp)
+    assert [c[0] for c in cuentas] == ["x", "z"]
+    puntaje = {k: float(u[k]) + j.bono_ucb(n_padre, N[k]) for k in u}
+    for k, u1, c, dentro, n, u2, bono, p in cuentas:
+        assert _x(u1) == u[k] and c == _d(j.C_TEORIA) and dentro == ln[n_padre], k
+        assert int(n) == N[k] and _x(u2) == _x(_d(u[k])), k
+        assert bono == _d(j.bono_ucb(n_padre, N[k])), k
+        # La cuenta intermedia, con los redondeos que da el enunciado.
+        assert bono == _d(float(_x(c)) * _m.sqrt(float(_x(dentro)) / N[k])), k
+        assert p == _d(puntaje[k]), k
+    elegida = re.search(r"Elige ([xyz]), por el empate con ([xyz])", resp)
+    assert elegida[1] == j.mejor(puntaje) == ucb[hasta]["jugada"]
+    assert puntaje[elegida[1]] == puntaje[elegida[2]]
+    assert re.search(r"y empata con x", ej) and puntaje["y"] == puntaje["x"]
+    m = re.search(r"Tras (\d+) vueltas la secuencia es ((?:[xyz] )*[xyz]), y quedan "
+                  r"N=(\d+),(\d+),(\d+): la mayoría en ([xyz])", resp)
+    assert int(m[1]) == len(ucb) == j.VUELTAS_MICRO
+    assert m[2].split() == [f["jugada"] for f in ucb]
+    final = ucb[-1]["N"]
+    assert [int(v) for v in m.groups()[2:5]] == [final[k] for k in "xyz"]
+    assert m[6] == max(final, key=final.get)
+    m = re.search(rf"el bono de ([xyz]), ({_NUM}), es casi el doble del de ([xyz]), ({_NUM})",
+                  resp)
+    assert (m[2], m[4]) == (_d(j.bono_ucb(n_padre, N[m[1]])), _d(j.bono_ucb(n_padre, N[m[3]])))
+    assert re.search(r"«Siempre el mejor promedio» se quedaba en ([xyz])", resp)[1] \
+        == mp[hasta]["jugada"]
+
+
+def test_prosa_clase_3_p6_la_figura_del_bandido_y_sus_vinetas():
+    """#39 · @jue-c3-fig-bandido (40 corridas, 10 a 10 000, μ, 0.61→0.85,
+    0.60→0.93, 0.42→0.94, →0.99), las viñetas de §6 (c = 0 da 0.85, c = 5 da
+    0.87) y el resumen."""
+    import gen_juegos as gen
+    texto = _pagina(P6)
+    t = j.tabla_bandido()
+    ini, fin = min(j.MARCAS_BANDIDO), max(j.MARCAS_BANDIDO)
+    seis = _seccion(texto, 6)
+    m = re.search(rf"promedia ({_NUM}) corridas de ({_NUM}) vueltas", seis)
+    assert (_x(m[1]), _x(m[2])) == (j.CORRIDAS_BANDIDO, fin)
+    pct = j._exacto(j.AL_AZAR) * 100
+    assert _x(re.search(rf"«A veces al azar \(({_NUM}) %\)»", seis)[1]) == pct
+    assert [_x(v) for v in re.findall(r"una vuelta de cada (\w+)", seis)] == [
+        1 / j._exacto(j.AL_AZAR)] * 2
+    alt = _alt(texto, "jue-c3-fig-bandido")
+    m = re.search(rf"Eje x: N\(s\), vueltas, de ({_NUM}) a ({_NUM})\.", alt)
+    assert (_x(m[1]), _x(m[2])) == (ini, fin) == gen.plano_bandido().xs
+    assert _x(re.search(rf"Promedio de ({_NUM}) corridas", alt)[1]) == j.CORRIDAS_BANDIDO
+    mus = re.search(rf"μ de x, y, z: ({_NUM}), ({_NUM}), ({_NUM})\.", alt).groups()
+    assert [_x(v) for v in mus] == [j.MUS_HILO[k] for k in "xyz"]
+    curvas = [
+        ("mejor_promedio", rf"siempre el mejor promedio sube de ({_NUM}) a ({_NUM}) y"),
+        ("a_veces_al_azar", rf"a veces al azar \(\d+ %\) sube de ({_NUM}) a ({_NUM}) y"),
+        ("ucb", rf"UCB con c = 2√2 empieza más abajo, en ({_NUM}), y llega a ({_NUM});"),
+    ]
+    for r, patron in curvas:
+        assert re.search(patron, alt).groups() == (_d(t[r][ini]), _d(t[r][fin])), r
+    assert re.search(rf"UCB con c = 1 sube más rápido y llega a ({_NUM})$", alt)[1] \
+        == _d(t["ucb_c1"][fin])
+    assert t["ucb_c1"][ini] > t["ucb"][ini]
+    assert _x(re.search(rf"a veces al azar \(({_NUM}) %\)", alt)[1]) == pct
+    # Las viñetas.
+    assert re.search(rf"Siempre el mejor promedio se queda en ({_NUM})", seis)[1] \
+        == _d(t["mejor_promedio"][fin])
+    assert re.search(rf"A veces al azar llega a ({_NUM})", seis)[1] \
+        == _d(t["a_veces_al_azar"][fin])
+    assert re.search(rf"UCB con c=2\\sqrt2 empieza en ({_NUM}), porque explora, y llega a "
+                     rf"({_NUM})", seis).groups() == (_d(t["ucb"][ini]), _d(t["ucb"][fin]))
+    assert re.search(rf"UCB con c=1, el de la página anterior, llega a ({_NUM})", seis)[1] \
+        == _d(t["ucb_c1"][fin])
+    for c, v in re.findall(rf"con c=({_NUM}) (?:no hay bono y es el mejor promedio|explora de "
+                           rf"más y llega a),? ({_NUM})", seis, re.I):
+        f = j.fraccion_en_la_mejor("ucb", j.MUS_HILO, j.MARCAS_BANDIDO, j.CORRIDAS_BANDIDO,
+                                   int(c))
+        assert v == _d(f[fin]), c
+    assert len(re.findall(r"[Cc]on c=(0|5) ", seis)) >= 2
+    m = re.search(rf"A ({_NUM}) vueltas, en la mejor: mejor promedio ({_NUM}), a veces al azar "
+                  rf"({_NUM}), UCB con c=2\\sqrt2 ({_NUM}), con c=1 ({_NUM})", _llevarse(texto))
+    assert _x(m[1]) == fin
+    assert m.groups()[1:] == tuple(_d(t[r][fin]) for r in (*j.REGLAS_BANDIDO, "ucb_c1"))
+
+
+def test_prosa_clase_3_p6_el_nodo_de_min():
+    """#39 · @jue-c3-ej-final-bono: N(s) = 50, p/q/r, ln 50 ≈ 3.91, ln 20 ≈
+    3.00, ε = 0.45 y el piso −0.65 con δ = 0.05; bonos 1.02/1.44/2.50 y
+    puntajes 1.22/1.44/2.10 (r); con c = 1, 0.36/0.51/0.88 y 0.56/0.51/0.48
+    (p); se entrega p, con 30."""
+    texto = _pagina(P6)
+    ej = _limpio(_bloque(texto, "jue-c3-ej-final-bono"))
+    n_padre = int(re.search(r"lleva N\(s\)=(\d+) vueltas", ej)[1])
+    datos = {k: (int(n), _x(u)) for k, n, u in re.findall(
+        rf"([pqr]): N=(\d+), \\bar u=({_NUM})", ej)}
+    assert datos == j.EJEMPLO_MIN and n_padre == sum(n for n, _ in datos.values())
+    delta = _x(re.search(rf"Con \\delta=({_NUM}), calcula el margen de p", ej)[1])
+    ln = _ln(ej)
+    assert set(ln) == {n_padre, int(1 / delta)}
+    assert all(v == _d(_m.log(n)) for n, v in ln.items())
+    assert re.search(r"2\\sqrt2≈(\d+\.\d+)", ej)[1] == _d(j.C_TEORIA)
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-final-bono"))
+    m = re.search(rf"\\varepsilon=\\sqrt({_NUM})·({_NUM})/(\d+)≈({_NUM})", resp)
+    eps = j.margen(float(delta), datos["p"][0])
+    assert (_x(m[1]), m[2], int(m[3]), m[4]) == (2, ln[int(1 / delta)], datos["p"][0], _d(eps))
+    m = re.search(rf"Su piso optimista es ({_NUM})-({_NUM})=({_NUM})", resp)
+    assert (_x(m[1]), m[2], m[3]) == (datos["p"][1], _d(eps), _d(float(datos["p"][1]) - eps))
+    assert _x(re.search(rf"o por encima es a lo más ({_NUM}) %", resp)[1]) == delta * 100
+    for c, trozo in ((None, resp.split(" 2. ")[1].split(" 3. ")[0]),
+                     (1, resp.split(" 3. ")[1].split(" 4. ")[0])):
+        puntajes = j.puntajes_ucb(datos, c=c, mueve="MIN")
+        bonos = {k: j.bono_ucb(n_padre, n, c) for k, (n, _) in datos.items()}
+        assert _c_de(re.search(r"El puntaje con c=(\S+?)\.", trozo)[1]) == c
+        if c is None:
+            assert dict(re.findall(rf"([pqr]) ({_NUM})",
+                                   re.search(r"Bonos: (.*?)\. Puntajes", trozo)[1])) \
+                == {k: _d(v) for k, v in bonos.items()}
+            sumas = re.findall(rf"([pqr]) ({_NUM})\+({_NUM})=({_NUM})", trozo)
+            assert [s[0] for s in sumas] == list(datos)
+            for k, menos_u, b, p in sumas:
+                assert (_x(menos_u), b, p) == (-datos[k][1], _d(bonos[k]), _d(puntajes[k])), k
+            m = re.search(r"Baja por ([pqr]): .*?con solo (\d+) simulaciones", trozo)
+            assert int(m[2]) == datos[m[1]][0] == min(n for n, _ in datos.values())
+        else:
+            m = re.search(rf"Bonos ({_NUM}), ({_NUM}) y ({_NUM}); puntajes ({_NUM}), ({_NUM}) "
+                          rf"y ({_NUM})\.", trozo)
+            assert m.groups() == tuple(_d(bonos[k]) for k in datos) + tuple(
+                _d(puntajes[k]) for k in datos)
+        assert re.search(r"Baja por ([pqr])", trozo)[1] == j.mejor(puntajes), c
+    entrega = j.mas_simulada(datos)
+    m = re.search(r"4\. Lo que se entrega\. ([pqr]), la de más simulaciones, (\d+)\.", resp)
+    assert (m[1], int(m[2])) == (entrega, datos[entrega][0])
