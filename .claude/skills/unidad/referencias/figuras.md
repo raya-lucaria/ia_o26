@@ -63,6 +63,22 @@ Aquí: qué se dibuja, en qué orden y cómo se nombra.
 - **DEBE** revisarse **renderizada en Chrome headless, nunca con ImageMagick** (pierde flechas y subíndices; comando en
   CLAUDE.md, sección de computabilidad y complejidad), a 390 y a 1280 px.
 
+## Gráficas de datos: qué es un punto y qué esconde un promedio
+
+Se vio en `jue-c3-bandido` (2026-10-12): la curva promediaba 40 corridas, y «siempre el mejor promedio» daba 0.85
+porque 34 corridas iban ≈1.0 y 6 se atoraban en ≈0. El alumno leyó «elige la mejor el 85 % de las veces» y no entendió
+cómo UCB la superaba. El profesor lo llamó un error grave: la gráfica era correcta y enseñaba lo contrario.
+
+- **DEBE** el texto **antes** de una gráfica decir qué pregunta contesta, qué es **un punto** (una corrida, el promedio
+  de 40, una frecuencia en 20 000 tiradas) y qué mide cada eje en palabras (acumulado desde la vuelta 1 o por vuelta).
+- **DEBE** el calculista mirar la **distribución** antes de promediar (mín, mediana, máx y cuántas corridas quedan lejos de
+  la media). Si es bimodal o de todo o nada, **no basta el promedio**: se grafica cada corrida (puntos por regla) o se
+  reporta el reparto («34 de 40 en la mejor, 6 atoradas»), y la prosa lo dice.
+- **DEBE** el texto **después** explicar por qué cada curva hace lo que hace, con la cuenta cuando la hay (el tope de
+  «a veces al azar» es $0.9+0.1/3$), y toda cifra que cite estar en la figura o en una tabla.
+- **DEBE** la lente de corrección preguntar de cada gráfica agregada: «¿qué lectura equivocada permite?»; y la del
+  alumno, explicar con sus palabras qué muestra antes de leer el texto que la sigue.
+
 ## Excepciones
 
 - **Concepto a mano** sin tabla de traza: la serie va figura → viñetas («Paso 1: valorar n6»,

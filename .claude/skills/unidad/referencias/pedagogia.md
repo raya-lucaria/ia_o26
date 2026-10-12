@@ -44,6 +44,27 @@ Rutas desde la raíz; `J/` = `course/7_juegos/`, `P/` = `course/6_optimizacion/5
 - **DEBERÍA** explicarse cada símbolo antes de usarse; bloques de 5–8 minutos; ≈1 **Piensa** por `##`.
 - **CRITERIO** orden **motivación → ejemplo → definición → general**: relato (`P/1_salones_practica.md:20`), Piensa (`:52`), definición de $x_{cs}$ (`:54`), generalización (`:60`). En algoritmos, el ejemplo a mano va antes del pseudocódigo (`spec:247-257`).
 
+## Hilo narrativo: cada sección nace de la anterior
+
+La página es **un argumento**, no una lista de hechos. Se vio en `course/7_juegos/3_cuando_no_cabe/6_de_donde_sale_el_bono.md`
+(2026-10-12): cada sección era correcta por separado y el profesor dijo «se perdió totalmente la narrativa, está fragmentada».
+
+- **DEBE** la página abrir con **una pregunta guía** y cada `##` responder una parte de ella. El primer párrafo de cada
+  `##` retoma lo que dejó abierto la anterior («La regla se atora porque no duda; ¿cuánto debería dudar?»), y el último
+  deja la pregunta que contesta la siguiente. Si una sección no se puede enlazar así, sobra o está fuera de orden.
+- **DEBE** todo símbolo o fórmula nueva traer tres cosas: **de dónde sale** (la cuenta, o un enlace a donde se deriva),
+  **qué significa en palabras**, y **un número del hilo**. Contraejemplo: $\bar u=(2G-N)/N$ sin decir que es
+  victorias (+1) menos derrotas (−1) entre $N$ (`5_simular_en_vez_de_evaluar.md`, antes de 2026-10-12).
+- **DEBE** un objeto que aparece en dos páginas **ligarse en las dos**: la primera anuncia de dónde saldrá y la segunda
+  parte de la forma que el alumno ya vio y muestra la equivalencia. Contraejemplo: el puntaje de p5 con $c$ y $N(s)$, y p6
+  que llega por $\delta$ sin decir que $c=\sqrt{2k}$ cuando $\delta=N(s)^{-k}$.
+- **DEBE** no haber dos frases que el alumno lea como contradicción entre páginas («con $G/N$ cambia la elección» /
+  «es la misma regla»). Si las dos son ciertas, la cuenta que las reconcilia va escrita.
+- **DEBE** cada concepto con nombre tener su **intuición antes de su fórmula**: qué pregunta contesta y qué haría el
+  alumno sin él. Contraejemplo: «techo» definido en una línea, sin decir qué protege ni mostrarlo en números.
+- **DEBERÍA** la página cerrar recorriendo el argumento en orden («Lo que hay que llevarse» sigue la pregunta guía,
+  no es una lista de cifras sueltas).
+
 ## Repetición útil y relleno
 
 - **CRITERIO útil**: «Lo que traes»; «Lo que hay que llevarse» con los números concretos (`J/2_mirar_todo_y_podar/2_minimax_como_algoritmo.md:674-684`); el modelo dos veces, construcción y resumen (`P/1_salones_practica.md:222`); una columna que se repite para verla viajar (`J/2_mirar_todo_y_podar/2_minimax_como_algoritmo.md:228-230`). No cuenta para topes (ver `lectura.md`).

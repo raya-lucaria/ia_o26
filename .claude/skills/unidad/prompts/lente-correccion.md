@@ -41,6 +41,8 @@ Alcance: {{ALCANCE}}   ← «toda la unidad» | «sección <ruta>» | «diff: <a
 7. Respuestas de ejercicios: resuélvelos tú antes de leer la respuesta.
 8. Pruebas: ¿alguna cifra de la PROSA no tiene prueba que la lea en la página? ¿alguna prueba fija
    solo la fuente y no fallaría si la prosa cambiara? (dilo; no mutes la rama).
+9. Cada gráfica de datos: ¿qué es un punto? ¿el promedio esconde una distribución partida (corre la
+   fuente y mira las corridas una por una)? ¿qué lectura equivocada permite? Ver figuras.md § Gráficas.
 Defectos ya vistos: .claude/skills/unidad/referencias/defectos.md — uno abierto que sigue ahí va en
 una línea, «[conocido #N] ruta:línea», sin re-argumentar.
 

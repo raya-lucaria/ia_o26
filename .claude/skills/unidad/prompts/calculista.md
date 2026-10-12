@@ -38,7 +38,10 @@ Notebook / animación: {{INTERACTIVOS}}  ← «no» si el plan no los pide
    (`git status --short` igual antes y después). No hagas commit.
 5. Mutación: cambia una comparación o un dato de la fuente en una copia o
    con monkeypatch; al menos una prueba debe fallar. Anota cuáles.
-6. Si una cifra NO es la que el plan esperaba: no la ajustes ni ajustes el
+6. Antes de promediar corridas o tiradas, reporta su distribución (mín, mediana, máx, cuántas lejos de
+   la media). Si es bimodal o de todo o nada, dilo en el reporte y grafica cada corrida o el reparto,
+   no solo el promedio (`referencias/figuras.md` § Gráficas de datos).
+7. Si una cifra NO es la que el plan esperaba: no la ajustes ni ajustes el
    assert para que pase. Repórtala: eso reabre G2.
 
 ## Antes de reportar
