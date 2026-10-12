@@ -3081,7 +3081,12 @@ def _ejes_ucb(out, pl, marcas_x, marcas_y, nombre_x, nombre_y, menores_y=()):
     out.append(linea(pl.x0, y1, x1, y1, color=SUAVE, grosor=2))
     out.append(linea(pl.x0, pl.y0, pl.x0, y1, color=SUAVE, grosor=2))
     out.append(texto(pl.x0 + pl.w / 2, y1 + 48, nombre_x, tam=15, color=TEXTO))
-    out.append(texto(X_PIE, pl.y0 - 16, nombre_y, tam=15, color=TEXTO, anclaje="start"))
+    # Un nombre largo va en varios renglones (una tupla): a 390 px un solo
+    # renglon de mas de ~325 px se corta por la derecha.
+    renglones = (nombre_y,) if isinstance(nombre_y, str) else nombre_y
+    for k, r in enumerate(renglones):
+        out.append(texto(X_PIE, pl.y0 - 16 - 22 * (len(renglones) - 1 - k), r, tam=15,
+                         color=TEXTO, anclaje="start"))
 
 
 def _polilinea(puntos, color, grosor=3, guiones=None):
@@ -3220,7 +3225,16 @@ def jue_c3_bono():
 
 
 def plano_bandido():
-    return Plano(78, 116, 412, 280, (10, 10000), (0, 1), xlog=True)
+    # y0 = 160 y no 116: arriba van el subtitulo y el nombre del eje y en
+    # dos renglones.
+    return Plano(78, 160, 412, 280, (10, 10000), (0, 1), xlog=True)
+
+
+# El eje y de jue-c3-bandido es ACUMULADO: en N(s) = 10 000 cuenta tambien
+# las primeras vueltas. Se leia «en la vuelta N(s)» (2026-10-12).
+EJE_Y_BANDIDO = ("fracción de las primeras N(s) vueltas",
+                 "que fueron a x (acumulada)")
+SUBTITULO_BANDIDO = f"cada punto: promedio de {j.CORRIDAS_BANDIDO} corridas"
 
 
 def puntos_bandido(pl):
@@ -3242,15 +3256,17 @@ def jue_c3_bandido():
     finales = "; ".join(f"{ESTILO_REGLA[r]['rotulo']}, {t[r][10]:.2f} a {t[r][fin]:.2f}"
                         for r in t)
     desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
-            "fracción de las vueltas que fueron a la mejor jugada, x, de 0 a 1. Promedio de "
+            "fracción de las primeras N(s) vueltas que fueron a la mejor jugada, x, de 0 a 1, "
+            "acumulada desde la vuelta 1. Cada punto es el promedio de "
             f"{j.CORRIDAS_BANDIDO} corridas con semilla fija; promedios verdaderos {mus}. "
             f"De N(s) = 10 a N(s) = {fin:,}: {finales}. Siempre el mejor promedio se aplana; "
-            "a veces al azar no pasa de 0.93 porque sigue tirando al azar; UCB empieza "
+            "a veces al azar se queda cerca de 0.93 porque sigue tirando al azar; UCB empieza "
             "abajo, porque explora, y sigue subiendo; con c = 1 explora menos y llega antes.").replace(",000", " 000")
     out = [marco(W, H, desc, " ".join(renglones), desc)]
-    encabezado(out, renglones)
+    y = encabezado(out, renglones)
+    out.append(texto(X_PIE, y + 26, SUBTITULO_BANDIDO, tam=15, color=TEXTO, anclaje="start"))
     _ejes_ucb(out, pl, (10, 100, 1000, 10000), (0, 0.25, 0.5, 0.75, 1),
-              "N(s): vueltas (escala log)", "fracción de vueltas en la mejor jugada (x)")
+              "N(s): vueltas (escala log)", EJE_Y_BANDIDO)
     for r, pts in puntos_bandido(pl).items():
         e = ESTILO_REGLA[r]
         out.append(_polilinea([(x, y) for _, x, y in pts], e["color"], grosor=3,
@@ -3272,6 +3288,130 @@ def jue_c3_bandido():
         f"Promedio de {j.CORRIDAS_BANDIDO} corridas de 10 000 vueltas;",
         "el número de cada regla es su valor final."],
         tam=14))
+    out.append(cierre())
+    return "".join(out)
+
+
+# ---------------- jue-c3-bandido-corridas: lo que el promedio esconde ---
+#
+# Una fila por regla, un punto por corrida: el 0.85 de «siempre el mejor
+# promedio» en jue-c3-bandido son 34 corridas casi en 1 y 6 casi en 0, y el
+# alumno leia «elige la mejor el 85 % de las veces» (2026-10-12).
+
+FILA_CORRIDAS = 74          # alto de cada fila
+Y_FILAS = 96                # donde empieza la primera fila
+SALTO_CORRIDAS = 2.6        # px entre niveles del desplazamiento vertical
+NIVELES_CORRIDAS = 9        # niveles: de −4 a +4 veces SALTO_CORRIDAS
+EJE_X_CORRIDAS = (f"fracción de las {_num(max(j.MARCAS_BANDIDO))} vueltas"
+                  " que fueron a x")
+SUBTITULO_CORRIDAS = (f"cada punto es una corrida de {_num(max(j.MARCAS_BANDIDO))}"
+                      " vueltas")
+
+
+def plano_corridas():
+    n = len(j.FILAS_BANDIDO)
+    return Plano(40, Y_FILAS, 450, FILA_CORRIDAS * n, (0, 1), (0, n))
+
+
+def centro_fila(pl, k):
+    """La y del centro de la banda de puntos de la fila k (0 arriba)."""
+    return round(pl.y0 + FILA_CORRIDAS * k + 46, 1)
+
+
+def desplazamiento(rango):
+    """Desplazamiento vertical del punto con ese rango (0 = el menor) en su
+    fila: determinista, y vecinos en x quedan en niveles distintos."""
+    return round(((rango * 4) % NIVELES_CORRIDAS - NIVELES_CORRIDAS // 2) * SALTO_CORRIDAS, 1)
+
+
+def puntos_corridas(pl):
+    """{fila: [(semilla, fraccion, x, y)]} de jue-c3-bandido-corridas."""
+    r = j.reparto_bandido()
+    salida = {}
+    for k, fila in enumerate(r):
+        fr = r[fila]["fracciones"]
+        rango = {s: i for i, s in enumerate(sorted(range(len(fr)), key=lambda s: (fr[s], s)))}
+        salida[fila] = [(s + 1, f, pl.x(f), round(centro_fila(pl, k) + desplazamiento(rango[s]), 1))
+                        for s, f in enumerate(fr)]
+    return salida
+
+
+def rotulo_atoradas(d):
+    """«6 de 40 atoradas: 5 en y, 1 en z» o «0 de 40 atoradas»."""
+    base = f"{d['atoradas']} de {d['n']} atoradas"
+    if not d["atoradas"]:
+        return base
+    return base + ": " + ", ".join(f"{v} en {a}" for a, v in sorted(d["en"].items()))
+
+
+def _f2(v):
+    return f"{v:.2f}"
+
+
+def resumen_corridas(d):
+    """La frase del aria-label de una fila, con sus cifras."""
+    if d["atoradas"]:
+        buenas = [f for f in d["fracciones"] if f >= j.UMBRAL_ATORADA]
+        malas = [f for f in d["fracciones"] if f < j.UMBRAL_ATORADA]
+        return (f"{len(buenas)} corridas en {math.floor(min(buenas) * 100) / 100:g} o más "
+                f"y {len(malas)} atoradas en {math.ceil(max(malas) * 1000) / 1000:g} o menos "
+                f"({', '.join(f'{v} en {a}' for a, v in sorted(d['en'].items()))}), "
+                f"promedio {_f2(d['promedio'])}")
+    return (f"ninguna atorada, de {d['minimo']:.3f} a {d['maximo']:.3f}, "
+            f"promedio {_f2(d['promedio'])}")
+
+
+def jue_c3_bandido_corridas():
+    """Fraccion final en x de cada una de las 40 corridas de 10 000 vueltas,
+    una fila por regla, con el promedio de la fila marcado: el reparto que
+    el promedio de jue-c3-bandido esconde."""
+    r = j.reparto_bandido()
+    pl = plano_corridas()
+    W, y1 = ANCHO_UCB, pl.y0 + pl.h
+    H = y1 + 160
+    renglones = ["Dónde termina cada corrida"]
+    filas = ". ".join(f"{ESTILO_REGLA[f]['rotulo'][:1].upper()}{ESTILO_REGLA[f]['rotulo'][1:]}: "
+                      f"{resumen_corridas(d)}" for f, d in r.items())
+    n = j.CORRIDAS_BANDIDO
+    desc = (f"Gráfica de puntos, una fila por regla. Eje x: {EJE_X_CORRIDAS}, de 0 a 1. "
+            f"Cada punto es una corrida de {_num(max(j.MARCAS_BANDIDO))} vueltas: {n} por fila, "
+            f"con semillas 1 a {n}; una raya vertical marca el promedio de la fila. "
+            f"Atorada: menos de la mitad de sus vueltas en x. {filas}.")
+    out = [marco(W, H, desc, " ".join(renglones + [SUBTITULO_CORRIDAS]), desc)]
+    y = encabezado(out, renglones)
+    # A 14 y no a 15: a 15 pasaba de los ~325 px que se ven en un telefono.
+    out.append(texto(X_PIE, y + 26, SUBTITULO_CORRIDAS, tam=14, color=TEXTO, anclaje="start"))
+    # Rejilla y separadores primero: los puntos van encima.
+    for v in (0, 0.25, 0.5, 0.75, 1):
+        out.append(linea(pl.x(v), pl.y0, pl.x(v), y1, color=mezclar(LINEA, 0.7), grosor=1))
+        out.append(texto(pl.x(v), y1 + 22, _num(v), tam=14, color=SUAVE))
+    for k in range(1, len(r)):
+        yy = pl.y0 + FILA_CORRIDAS * k
+        out.append(linea(pl.x0, yy, pl.x0 + pl.w, yy, color=mezclar(LINEA, 0.35), grosor=1))
+    out.append(linea(pl.x0, y1, pl.x0 + pl.w, y1, color=SUAVE, grosor=2))
+    out.append(texto(pl.x0 + pl.w / 2, y1 + 48, EJE_X_CORRIDAS, tam=15, color=TEXTO))
+    puntos = puntos_corridas(pl)
+    for k, (fila, d) in enumerate(r.items()):
+        e = ESTILO_REGLA[fila]
+        top, cy = pl.y0 + FILA_CORRIDAS * k, centro_fila(pl, k)
+        out.append(_marca(X_PIE + 10, top + 16, e["marca"], e["color"], r=5))
+        out.append(texto(X_PIE + 24, top + 21, e["rotulo"], tam=15, color=TEXTO, anclaje="start",
+                         peso="700"))
+        out.append(texto(pl.x(0.06), cy + 5, rotulo_atoradas(d), tam=14, color=TEXTO,
+                         anclaje="start"))
+        for _, _, x, yy in puntos[fila]:
+            out.append(_marca(x, yy, e["marca"], e["color"], r=4))
+        # La raya del promedio va encima de los puntos y sobresale de la
+        # banda: en las tres reglas que no se atoran cae dentro del montón y,
+        # dibujada antes y del mismo alto, no se veia (ronda 1 de render).
+        xm = pl.x(d["promedio"])
+        out.append(linea(xm, cy - 22, xm, cy + 22, color=TEXTO, grosor=2))
+        out.append(texto(xm + 4, top + 21, f"promedio {_f2(d['promedio'])}", tam=14,
+                         color=TEXTO, anclaje="end"))
+    out.append(nota_svg(y1 + 84, [
+        "Atorada: termina debajo de 0.5.",
+        f"Raya vertical: el promedio de las {n} corridas,",
+        "el valor final de la gráfica acumulada."], tam=14))
     out.append(cierre())
     return "".join(out)
 
@@ -3315,6 +3455,7 @@ DIAGRAMAS = {
     "jue-c3-hoeffding": jue_c3_hoeffding,
     "jue-c3-bono": jue_c3_bono,
     "jue-c3-bandido": jue_c3_bandido,
+    "jue-c3-bandido-corridas": jue_c3_bandido_corridas,
 }
 
 

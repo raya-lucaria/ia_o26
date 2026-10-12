@@ -116,7 +116,9 @@ Mucho más. La computadora contó los dos árboles completos:
 cada nodo guarda el camino por el que llegó, así que un mismo tablero con el
 mismo turno aparece una vez por cada orden de jugadas que lo alcanza.
 **Estados** cuenta los del grafo de la clase 1, que guarda cada uno una sola
-vez. Con juego perfecto, en el 3×3 (hexapawn) gana
+vez.
+
+Con juego perfecto, en el 3×3 (hexapawn) gana
 el segundo y en el 4×4 gana el primero. En el ajedrez nadie lo sabe.
 
 ::: exercise {#jue-c3-ej-crecimiento title="Compara los dos árboles"}

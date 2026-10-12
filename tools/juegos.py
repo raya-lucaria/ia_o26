@@ -17,6 +17,8 @@ Convenciones de hexapawn (las mismas que la bitacora de la clase 1):
 - Orden de las jugadas: por casilla de origen (a1, b1, ..., luego fila 2...),
   y para cada peon: avanzar, capturar a la izquierda, capturar a la derecha.
 """
+from array import array
+from collections import Counter
 from fractions import Fraction as F
 from functools import lru_cache
 from itertools import product
@@ -25,6 +27,7 @@ import copy
 import math
 import random
 import re
+import statistics
 
 COLUMNAS = "abcdefgh"
 
@@ -2724,24 +2727,43 @@ def filas_bandido(regla, mus, vueltas, semilla, c=None):
 
 
 @lru_cache(maxsize=None)
-def _fraccion_en_la_mejor(regla, mus_items, marcas, corridas, c):
+def _corridas(regla, mus_items, vueltas, corridas, c):
+    """Una entrada por semilla 1..corridas: (veces, N). veces[k] cuenta
+    cuantas de las primeras k vueltas fueron a la mejor jugada (veces[0] = 0);
+    N es {jugada: N(s′)} al terminar. La figura del promedio y la de las
+    corridas leen de aqui: las 160 corridas de 10 000 vueltas se simulan una
+    sola vez."""
     mus = dict(mus_items)
     la_mejor = max(mus, key=mus.get)
-    suma = {m: 0.0 for m in marcas}
+    salida = []
     for semilla in range(1, corridas + 1):
-        elecciones = bandido(regla, mus, max(marcas), semilla, c)["elecciones"]
-        veces = 0
-        for n_padre, a in enumerate(elecciones, 1):       # N(s) tras la vuelta
-            veces += a == la_mejor
-            if n_padre in suma:
-                suma[n_padre] += veces / n_padre
-    return {m: suma[m] / corridas for m in marcas}
+        b = bandido(regla, mus, vueltas, semilla, c)
+        veces, k = array("l", [0]), 0
+        for a in b["elecciones"]:
+            k += a == la_mejor
+            veces.append(k)
+        salida.append((veces, b["N"]))
+    return tuple(salida)
 
 
 def fraccion_en_la_mejor(regla, mus, marcas, corridas, c=None):
     """{N(s): fraccion de las primeras N(s) vueltas que fueron a la mejor
-    jugada, promediada sobre `corridas` corridas con semillas 1..corridas}."""
-    return _fraccion_en_la_mejor(regla, tuple(mus.items()), tuple(marcas), corridas, c)
+    jugada, promediada sobre `corridas` corridas con semillas 1..corridas}.
+    Es acumulada: en N(s) = 10 000 cuenta tambien las primeras vueltas."""
+    por_corrida = _corridas(regla, tuple(mus.items()), max(marcas), corridas, c)
+    suma = {m: 0.0 for m in marcas}
+    for veces, _ in por_corrida:
+        for m in marcas:
+            suma[m] += veces[m] / m
+    return {m: suma[m] / corridas for m in marcas}
+
+
+def fracciones_finales(regla, mus, vueltas, corridas, c=None):
+    """[fraccion de las `vueltas` vueltas que fueron a la mejor jugada, por
+    semilla 1..corridas]: lo que promedia fraccion_en_la_mejor en su ultima
+    marca, sin promediar."""
+    return [veces[vueltas] / vueltas
+            for veces, _ in _corridas(regla, tuple(mus.items()), vueltas, corridas, c)]
 
 
 # El hilo de la p6: las tres jugadas del ejercicio de la p5 (x, y, z), ahora
@@ -2768,13 +2790,73 @@ def tabla_hoeffding():
     return {n: (f[n], cota_hoeffding(n, float(EPS_HOEFFDING))) for n in NS_HOEFFDING}
 
 
+# Las cuatro filas de las figuras del bandido: {fila: (regla, c)}. ucb_c1 es
+# la c de la pagina 5: explora menos que la teorica y aqui converge antes.
+FILAS_BANDIDO = {"mejor_promedio": ("mejor_promedio", None),
+                 "a_veces_al_azar": ("a_veces_al_azar", None),
+                 "ucb": ("ucb", None), "ucb_c1": ("ucb", 1)}
+# Una corrida «atorada» dejo menos de la mitad de sus vueltas en la mejor.
+UMBRAL_ATORADA = F(1, 2)
+
+
 def tabla_bandido():
     """{regla: {N(s): fraccion en la mejor}} de la figura jue-c3-bandido."""
-    t = {r: fraccion_en_la_mejor(r, MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO)
-         for r in REGLAS_BANDIDO}
-    # La c de la pagina 5: explora menos que la teorica y aqui converge antes.
-    t["ucb_c1"] = fraccion_en_la_mejor("ucb", MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO, c=1)
-    return t
+    return {f: fraccion_en_la_mejor(r, MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO, c)
+            for f, (r, c) in FILAS_BANDIDO.items()}
+
+
+def reparto_bandido(vueltas=None, corridas=CORRIDAS_BANDIDO):
+    """{fila: reparto} de la figura jue-c3-bandido-corridas: lo que el
+    promedio de jue-c3-bandido esconde. Por fila: n (corridas), fracciones
+    (una por semilla), atoradas (cuantas con fraccion < 1/2), en (Counter de
+    la jugada que mas eligio cada atorada), minimo, mediana, maximo y
+    promedio (el mismo numero que tabla_bandido en su ultima marca)."""
+    vueltas = vueltas or max(MARCAS_BANDIDO)
+    salida = {}
+    for f, (r, c) in FILAS_BANDIDO.items():
+        corr = _corridas(r, tuple(MUS_HILO.items()), vueltas, corridas, c)
+        fr = [veces[vueltas] / vueltas for veces, _ in corr]
+        atoradas = [max(N, key=N.get) for (_, N), x in zip(corr, fr) if x < UMBRAL_ATORADA]
+        suma = 0.0
+        for x in fr:
+            suma += x
+        salida[f] = dict(n=corridas, fracciones=fr, atoradas=len(atoradas),
+                         en=Counter(atoradas), minimo=min(fr),
+                         mediana=statistics.median(fr), maximo=max(fr),
+                         promedio=suma / corridas)
+    return salida
+
+
+def tope_a_veces_al_azar(n_jugadas=3, al_azar=AL_AZAR):
+    """Lo que se espera que «a veces al azar» deje en la mejor cuando ya la
+    encontro: la elige en las vueltas sin azar (1 − al_azar) y en 1 de cada
+    n_jugadas de las de azar. Con 3 jugadas y 10 %: 0.9 + 0.1/3 = 14/15. Es
+    un valor esperado, no un techo: una corrida con menos tiradas al azar de
+    lo esperado lo pasa."""
+    a = _exacto(al_azar)
+    return (1 - a) + a / n_jugadas
+
+
+def exponente_de_c(c):
+    """El k de δ = N(s)^−k que da el bono con esa c: ε = √(2·ln(1/δ)/N(s′))
+    = √(2k)·√(ln N(s)/N(s′)), asi que c = √(2k) y k = c²/2."""
+    return c * c / 2
+
+
+def delta_de_c(c, n_padre):
+    """La δ que esconde una c con N(s) = n_padre: N(s)^(−c²/2)."""
+    return n_padre ** (-exponente_de_c(c))
+
+
+def puntajes_ucb_en_vuelta(vuelta, semilla=SEMILLA_ATORA, c=None, mus=MUS_HILO):
+    """(N(s), {jugada: puntaje}) justo antes de elegir en la vuelta `vuelta`
+    (la primera es la 1) de la corrida de UCB con esa semilla y esa c: los
+    datos son los de las vuelta − 1 vueltas ya hechas, como en `bandido`."""
+    datos = {a: (0, F(0)) for a in mus}
+    if vuelta > 1:
+        ultima = filas_bandido("ucb", mus, vuelta - 1, semilla, c)[-1]
+        datos = {a: (ultima["N"][a], ultima["u"][a] or F(0)) for a in mus}
+    return vuelta - 1, puntajes_ucb(datos, c)
 
 
 # Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s′), ū(s′))},

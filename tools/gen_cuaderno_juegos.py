@@ -890,6 +890,29 @@ for n in (10, 50, 100):
 """)
 
 md("""
+**c es δ disfrazada.** Si se pide $\\delta = N(s)^{-k}$, el margen
+$\\varepsilon = \\sqrt{2 \\ln(1/\\delta) / N(s')}$ queda
+$\\sqrt{2k} \\cdot \\sqrt{\\ln N(s) / N(s')}$: es el bono con $c = \\sqrt{2k}$,
+o sea $k = c^2/2$. Con $N(s) = 100$, $c = 1$ pide $\\delta = 0.1$ y
+$c = 2\\sqrt2$ pide $\\delta = 10^{-8}$.
+""")
+
+code("""
+def delta_de_c(c, n_padre):               # δ = N(s)^(−c²/2)
+    return n_padre ** (-c * c / 2)
+
+def margen(delta, n):                     # ε = √(2·ln(1/δ) / N(s′))
+    return math.sqrt(2 * math.log(1 / delta) / n)
+""", "logica", "bono")
+
+code("""
+for c in (1, C_TEORIA):
+    d = delta_de_c(c, 100)
+    print(f"c = {c:.2f}: k = {c * c / 2:g}, δ = {d:.0e};",
+          f"margen {margen(d, 10):.3f} = bono {bono(100, 10, c):.3f}")
+""")
+
+md("""
 **El bandido.** Tres reglas: `"mejor_promedio"` (siempre el mejor
 $\\bar u$), `"a_veces_al_azar"` (una vuelta de cada diez, al azar) y
 `"ucb"` (el mejor $\\bar u$ más el bono). Todas prueban cada jugada una
@@ -939,29 +962,82 @@ for regla in ("mejor_promedio", "ucb"):
 """)
 
 code("""
-def en_la_mejor(regla, marcas, corridas=40, c=C_TEORIA):
+def fracciones(regla, marcas, corridas=40, c=C_TEORIA):
     mejor = max(MU, key=MU.get)
-    suma = {m: 0 for m in marcas}
+    salida = []                           # una entrada por corrida
     for semilla in range(1, corridas + 1):
         elecciones = bandido(regla, max(marcas), semilla, c)[2]
-        veces = 0
+        veces, f = 0, {}
         for n_padre, a in enumerate(elecciones, 1):
-            veces += a == mejor
-            if n_padre in suma:
-                suma[n_padre] += veces / n_padre
-    return {m: suma[m] / corridas for m in marcas}
+            veces += a == mejor           # acumulada desde la vuelta 1
+            if n_padre in marcas:
+                f[n_padre] = veces / n_padre
+        salida.append(f)
+    return salida
+""", "logica", "bono")
+
+code("""
+def promediar(por_corrida, marcas):
+    n = len(por_corrida)
+    return {m: sum(f[m] for f in por_corrida) / n for m in marcas}
+
+def en_la_mejor(regla, marcas, corridas=40, c=C_TEORIA):
+    return promediar(fracciones(regla, marcas, corridas, c), marcas)
 """, "logica", "bono")
 
 code("""
 MARCAS = (10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
-for regla in ("mejor_promedio", "a_veces_al_azar", "ucb"):
-    fr = en_la_mejor(regla, MARCAS)         # unos segundos
+REGLAS = ("mejor_promedio", "a_veces_al_azar", "ucb")
+corridas = {r: fracciones(r, MARCAS) for r in REGLAS}   # unos segundos
+plt.figure()
+for regla in REGLAS:
+    fr = promediar(corridas[regla], MARCAS)
     plt.semilogx(MARCAS, list(fr.values()), "o-", label=regla)
     print(f"{regla:<15} {fr[10]:.2f} → {fr[10000]:.2f}")
 plt.xlabel("N(s): vueltas")
-plt.ylabel("fracción de vueltas en x")
+plt.ylabel("fracción de las primeras N(s) vueltas en x")
+plt.title("cada punto: promedio de 40 corridas")
 plt.ylim(0, 1)
 plt.legend()
+plt.show()
+""")
+
+md("""
+**Qué esconde el promedio.** Cada punto de arriba promedia 40 corridas.
+Abajo, cada punto es **una** corrida: dónde terminó tras 10 000 vueltas.
+«Siempre el mejor promedio» no elige x en el 85 % de las vueltas de cada
+corrida: casi todas terminan cerca de 1 y unas pocas se atoran cerca de 0.
+Una corrida está atorada si dejó menos de la mitad de sus vueltas en x.
+""")
+
+code("""
+import statistics
+
+def reparto(por_corrida, fin=10000):
+    finales = [f[fin] for f in por_corrida]
+    atoradas = sum(x < 0.5 for x in finales)
+    return (atoradas, min(finales), statistics.median(finales),
+            max(finales))
+""", "logica", "bono")
+
+code("""
+for regla in REGLAS:
+    at, mn, med, mx = reparto(corridas[regla])
+    print(f"{regla:<15} atoradas {at:>2} de 40   mín {mn:.4f}"
+          f"   mediana {med:.4f}   máx {mx:.4f}")
+""")
+
+code("""
+plt.figure()
+for k, regla in enumerate(REGLAS):
+    finales = [f[10000] for f in corridas[regla]]
+    altura = [k + (i * 4 % 9 - 4) * 0.03 for i in range(len(finales))]
+    plt.plot(finales, altura, "o", alpha=0.6)
+    plt.vlines(sum(finales) / len(finales), k - 0.3, k + 0.3, colors="k")
+plt.yticks(range(len(REGLAS)), REGLAS)
+plt.xlim(-0.02, 1.02)
+plt.xlabel("fracción de las 10 000 vueltas que fueron a x")
+plt.title("cada punto es una corrida; raya: el promedio")
 plt.show()
 """)
 

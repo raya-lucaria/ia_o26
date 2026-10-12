@@ -1853,12 +1853,12 @@ def _isclose_f(a, b):
 
 
 def test_prosa_clase_3_p6_delta_n_a_la_menos_4_y_c_2_raiz_2():
-    """#39 · §4: δ = 1/N(s)^4, ln(1/δ) = 4 ln N(s), √(8 ln N(s)/N(s')),
+    """#39 · §5: δ = 1/N(s)^4, ln(1/δ) = 4 ln N(s), √(8 ln N(s)/N(s')),
     c = 2√2 ≈ 2.83 (en toda la pagina); en otros textos c = √2 con G/N,
-    ū = 2G/N − 1, e^(−2Nε²) en [0, 1]; N(s') = 0 da bono infinito; y
+    ū = 2G/N − 1, e^(−2Nε²) en [0, 1]; N(s') = 0 da bono infinito (§4); y
     @jue-c3-ej-optimismo."""
     texto = _pagina(P6)
-    cuatro = _seccion(texto, 4)
+    cuatro = _seccion(texto, 5)  # el nombre es historico: δ = N(s)^−4 paso a la §5
     k = int(re.search(r"\\delta=\\frac1N\(s\)\^(\d+)", cuatro)[1])
     assert int(re.search(r"\\ln\(1/\\delta\)=(\d+)\\ln N\(s\)", cuatro)[1]) == k
     assert int(re.search(r"El (\d+) es una elección", cuatro)[1]) == k
@@ -1867,7 +1867,7 @@ def test_prosa_clase_3_p6_delta_n_a_la_menos_4_y_c_2_raiz_2():
     assert int(re.search(r"\\delta=N\(s\)\^-(\d+)", _llevarse(texto))[1]) == k
     for n_padre, n in ((100, 10), (5, 1), (50, 30), (10_000, 7)):
         assert _isclose_f(j.bono_ucb(n_padre, n), j.margen(n_padre ** -k, n))
-    # «2√2 ≈ 2.83» en §4, en los dos ejercicios que la usan y en el resumen.
+    # «2√2 ≈ 2.83» en §5, en los dos ejercicios que la usan y en el resumen.
     aprox = re.findall(r"2\\sqrt2≈(\d+\.\d+)", _limpio(texto))
     assert len(aprox) == 4 and set(aprox) == {_d(j.C_TEORIA)}
     # En otros textos: c = √2 con G/N, y ū = 2·G/N − 1: puntaje = 2·(el de G/N) − 1.
@@ -1887,8 +1887,8 @@ def test_prosa_clase_3_p6_delta_n_a_la_menos_4_y_c_2_raiz_2():
                   cuatro)
     for n, e in ((10, 0.1), (100, 0.2)):
         assert _isclose_f(j.cota_hoeffding(n, e / _x(m[2])), _m.exp(-int(m[1]) * n * e ** 2))
-    # Sin probar: bono infinito.
-    cinco = _seccion(texto, 5)
+    # Sin probar: bono infinito (§4, elegir con optimismo).
+    cinco = _seccion(texto, 4)
     assert int(re.search(r"tiene N\(s'\)=(\d+): el bono divide entre (\d+) y\s+vale infinito",
                          cinco)[1]) == 0
     assert j.bono_ucb(100, 0) == j.INF
@@ -1908,7 +1908,7 @@ def test_prosa_clase_3_p6_tabla_y_figura_del_bono():
     import gen_juegos as gen
     texto = _pagina(P6)
     n_padre = int(re.search(r"N\(s\) = (\d+)", _titulo(texto, "jue-c3-tabla-bono"))[1])
-    prosa = _seccion(texto, 4)
+    prosa = _seccion(texto, 5)
     assert int(re.search(r"usó c=1, que explora menos.*?Con N\(s\)=(\d+):", prosa)[1]) == n_padre
     filas = _tabla(texto, "jue-c3-tabla-bono")
     cs = [_c_de(re.fullmatch(r"c=(.+)", _c(x))[1]) for x in filas[0][1:]]
@@ -2026,9 +2026,13 @@ def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
     # El promedio de z, −1/3, redondeado como entra a la suma.
     m = re.search(rf"con ({_NUM})/(\d+)≈({_NUM})", resp)
     assert _x(m[1]) / int(m[2]) == u["z"] and _x(m[3]) == _x(_d(u["z"]))
-    elegida = re.search(r"Elige ([xyz]), por el empate con ([xyz])", resp)
+    elegida = re.search(rf"Elige ([xyz]): empata con ([xyz]), ({_NUM}) las dos, y va primero",
+                        resp)
     assert elegida[1] == j.mejor(puntaje) == ucb[hasta]["jugada"]
     assert puntaje[elegida[1]] == puntaje[elegida[2]]
+    assert elegida[3] == _d(puntaje[elegida[2]]) == _d(j.puntajes_ucb_en_vuelta(hasta + 1)[1][
+        elegida[2]])
+    assert list(u).index(elegida[1]) < list(u).index(elegida[2])
     assert re.search(r"y empata con x", ej) and puntaje["y"] == puntaje["x"]
     m = re.search(r"Tras (\d+) vueltas la secuencia es ((?:[xyz] )*[xyz]), y quedan "
                   r"N=(\d+),(\d+),(\d+): la mayoría en ([xyz])", resp)
@@ -2049,8 +2053,8 @@ def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
 
 def test_prosa_clase_3_p6_la_figura_del_bandido_y_sus_vinetas():
     """#39 · @jue-c3-fig-bandido (40 corridas, 10 a 10 000, μ, 0.61→0.85,
-    0.60→0.93, 0.42→0.94, →0.99), las viñetas de §6 (c = 0 da 0.85, c = 5 da
-    0.87) y el resumen."""
+    0.60→0.93, 0.42→0.94, →0.99), las viñetas de §6 (c = 0 da 0.85) y el
+    resumen."""
     import gen_juegos as gen
     texto = _pagina(P6)
     t = j.tabla_bandido()
@@ -2088,12 +2092,11 @@ def test_prosa_clase_3_p6_la_figura_del_bandido_y_sus_vinetas():
                      rf"({_NUM})", seis).groups() == (_d(t["ucb"][ini]), _d(t["ucb"][fin]))
     assert re.search(rf"UCB con c=1, el de la página anterior, llega a ({_NUM})", seis)[1] \
         == _d(t["ucb_c1"][fin])
-    for c, v in re.findall(rf"con c=({_NUM}) (?:no hay bono y es el mejor promedio|explora de "
-                           rf"más y llega a),? ({_NUM})", seis, re.I):
-        f = j.fraccion_en_la_mejor("ucb", j.MUS_HILO, j.MARCAS_BANDIDO, j.CORRIDAS_BANDIDO,
-                                   int(c))
-        assert v == _d(f[fin]), c
-    assert len(re.findall(r"[Cc]on c=(0|5) ", seis)) >= 2
+    cero = re.findall(rf"con c=({_NUM}) no hay bono y es el mejor promedio, ({_NUM})", seis,
+                      re.I)
+    assert len(cero) == 1 and _x(cero[0][0]) == 0
+    f = j.fraccion_en_la_mejor("ucb", j.MUS_HILO, j.MARCAS_BANDIDO, j.CORRIDAS_BANDIDO, 0)
+    assert cero[0][1] == _d(f[fin]) == _d(t["mejor_promedio"][fin])
     m = re.search(rf"A ({_NUM}) vueltas, en la mejor: mejor promedio ({_NUM}), a veces al azar "
                   rf"({_NUM}), UCB con c=2\\sqrt2 ({_NUM}), con c=1 ({_NUM})", _llevarse(texto))
     assert _x(m[1]) == fin
@@ -2120,7 +2123,7 @@ def test_prosa_clase_3_p6_el_nodo_de_min():
     m = re.search(rf"\\varepsilon=\\sqrt({_NUM})·({_NUM})/(\d+)≈({_NUM})", resp)
     eps = j.margen(float(delta), datos["p"][0])
     assert (_x(m[1]), m[2], int(m[3]), m[4]) == (2, ln[int(1 / delta)], datos["p"][0], _d(eps))
-    m = re.search(rf"Su piso optimista es ({_NUM})-({_NUM})=({_NUM})", resp)
+    m = re.search(rf"Su cota optimista, un piso, es ({_NUM})-({_NUM})=({_NUM})", resp)
     assert (_x(m[1]), m[2], m[3]) == (datos["p"][1], _d(eps), _d(float(datos["p"][1]) - eps))
     assert _x(re.search(rf"o por encima es a lo más ({_NUM}) %", resp)[1]) == delta * 100
     for c, trozo in ((None, resp.split(" 2. ")[1].split(" 3. ")[0]),
@@ -2155,3 +2158,295 @@ def test_prosa_clase_3_p6_el_nodo_de_min():
     entrega = j.mas_simulada(datos)
     m = re.search(r"4\. Lo que se entrega\. ([pqr]), la de más simulaciones, (\d+)\.", resp)
     assert (m[1], int(m[2])) == (entrega, datos[entrega][0])
+
+
+def test_prosa_clase_3_p6_tabla_c_delta():
+    """#39 · @jue-c3-tabla-c-delta (c = 1: k = 1/2, δ = N(s)^−1/2, 10 %;
+    c = 2√2: k = 4, δ = N(s)^−4, 10^−8 con N(s) = 100), «una vez de cada
+    diez» con 100 vueltas, y el k = 1/2 del resumen."""
+    texto = _pagina(P6)
+    filas = _tabla(texto, "jue-c3-tabla-c-delta")
+    n_padre = int(re.search(r"con N\(s\)=(\d+)", _c(filas[0][3]))[1])
+    vistas = []
+    for f in filas[1:]:
+        c = _c_de(_c(f[0]))
+        cf = j.C_TEORIA if c is None else float(c)
+        vistas.append(c)
+        k = _x(_c(f[1]))
+        assert _isclose_f(j.exponente_de_c(cf), k), f
+        assert _x(re.fullmatch(r"N\(s\)\^-(\S+)", _c(f[2]))[1]) == k, f
+        celda = _c(f[3])
+        m = re.fullmatch(rf"({_NUM}) %", celda) or re.fullmatch(r"10\^(-\d+)", celda)
+        assert m, celda
+        leido = float(_x(m[1])) / 100 if "%" in celda else 10.0 ** int(m[1])
+        assert _isclose_f(j.delta_de_c(cf, n_padre), leido), f
+    assert vistas == [1, None]
+    cinco = _seccion(texto, 5)
+    m = re.search(rf"La c=1 de la página anterior es k=({_NUM}/\d+): con ({_NUM}) vueltas "
+                  r"tolera fallar una vez de cada (\w+)\.", cinco)
+    assert _x(m[1]) == j.exponente_de_c(1) and int(m[2]) == n_padre
+    assert _isclose_f(j.delta_de_c(1, int(m[2])), 1 / _x(m[3]))
+    m = re.search(rf"La c=1 de la página anterior es k=({_NUM}/\d+)", _llevarse(texto))
+    assert _x(m[1]) == j.exponente_de_c(1)
+
+
+def test_prosa_clase_3_p6_la_cota_optimista_en_la_corrida():
+    """#39 · §4: tras cinco vueltas x tiene ū = −1 con una y z, −1/3 con tres;
+    δ = 1/625, ln 625 ≈ 6.44; márgenes 3.59 y 2.07, cotas 2.59 y 1.74; la
+    más alta es x. §5: N(s) = 5 y 5^−4 = 1/625."""
+    texto = _pagina(P6)
+    cuatro = _seccion(texto, 4)
+    mp = _corrida("mejor_promedio")
+    m = re.search(rf"Tras (\w+) vueltas, x tiene \\bar u=({_NUM}) con (\w+) simulación; z, "
+                  rf"\\bar u=({_NUM}/\d+) con (\w+)\.", cuatro)
+    vueltas = {"cinco": 5}[m[1]]
+    estado = mp[vueltas - 1]
+    assert estado["vuelta"] == vueltas
+    assert (_x(m[2]), _x(m[3])) == (estado["u"]["x"], estado["N"]["x"])
+    assert (_x(m[4]), _x(m[5])) == (estado["u"]["z"], estado["N"]["z"])
+    assert re.search(r"«Siempre el mejor promedio» sigue en ([xyz])", cuatro)[1] == mp[vueltas]["jugada"]
+    delta = _x(re.search(rf"Toma un \\delta muy chico, ({_NUM}/\d+)", cuatro)[1])
+    assert _isclose_f(j.delta_de_c(j.C_TEORIA, vueltas), delta)
+    ln = _ln(cuatro)
+    assert list(ln) == [int(1 / delta)] and ln[int(1 / delta)] == _d(_m.log(1 / delta))
+    cotas = {}
+    for k, dos, l, n, eps, u, eps2, cota in re.findall(
+            rf"([xz]): margen \\sqrt({_NUM})·({_NUM})/(\d+)≈({_NUM}), cota ({_NUM})\+({_NUM})="
+            rf"({_NUM})", cuatro):
+        e = j.margen(float(delta), estado["N"][k])
+        assert (_x(dos), l, int(n)) == (2, ln[int(1 / delta)], estado["N"][k]), k
+        assert eps == eps2 == _d(e), k
+        assert _x(u) == _x(_d(estado["u"][k])), k
+        assert cota == _d(float(estado["u"][k]) + e), k
+        cotas[k] = float(estado["u"][k]) + e
+    assert list(cotas) == ["x", "z"]
+    assert re.search(r"La cota de ([xyz]) es la más alta", cuatro)[1] == max(cotas, key=cotas.get)
+    m = re.search(r"En la corrida de la sección 4, N\(s\)=(\d+), y (\d+)\^-(\d+)=1/(\d+)",
+                  _seccion(texto, 5))
+    assert int(m[1]) == int(m[2]) == vueltas and int(m[4]) == int(1 / delta)
+    assert _isclose_f(float(vueltas) ** -int(m[3]), delta)
+
+
+def test_prosa_clase_3_p6_la_vuelta_5_con_ucb():
+    """#39 · §6, vuelta 5 de la corrida 36 con c = 2√2: N(s) = 4, z con ū = 0
+    en dos, x e y con −1 en una; z gana 2.35 contra 2.33, con x e y
+    empatadas."""
+    texto = _pagina(P6)
+    seis = _seccion(texto, 6)
+    n_padre, p = j.puntajes_ucb_en_vuelta(5)
+    estado = _corrida("ucb")[n_padre - 1]
+    m = re.search(rf"En la (\d+), N\(s\)=(\d+): z lleva \\bar u=({_NUM}) con (\w+); x e y, "
+                  rf"({_NUM}) con (\w+)\. z gana por poco, ≈({_NUM}) contra ≈({_NUM}) de x y de y, "
+                  r"empatadas\.", seis)
+    assert int(m[1]) == n_padre + 1 and int(m[2]) == n_padre == estado["vuelta"]
+    assert (_x(m[3]), _x({"dos": "2"}.get(m[4], m[4]))) == (estado["u"]["z"], estado["N"]["z"])
+    for k in "xy":
+        assert (_x(m[5]), _x(m[6])) == (estado["u"][k], estado["N"][k]), k
+    assert m[7] == _d(p["z"]) and m[8] == _d(p["x"]) == _d(p["y"])
+    assert p["x"] == p["y"] and j.mejor(p) == "z" == _corrida("ucb")[n_padre]["jugada"]
+
+
+def test_prosa_clase_3_p6_las_corridas_una_por_punto():
+    """#39 · @jue-c3-fig-bandido-corridas y sus viñetas: 34 cerca de 1 y 6
+    atoradas (5 en y, 1 en z), promedio 0.85 (casi 34/40); las otras tres
+    sin atoradas, con mínimos 0.90, 0.92, 0.96; y el resumen (34 y 6)."""
+    texto = _pagina(P6)
+    r = j.reparto_bandido()
+    mp = r["mejor_promedio"]
+    otras = ("a_veces_al_azar", "ucb", "ucb_c1")
+    seis = _seccion(texto, 6)
+    alt = _alt(texto, "jue-c3-fig-bandido-corridas")
+    m = re.search(rf"({_NUM}) por fila, semillas ({_NUM}) a ({_NUM})", alt)
+    assert (_x(m[1]), _x(m[2]), _x(m[3])) == (mp["n"], 1, j.CORRIDAS_BANDIDO)
+    assert _x(re.search(rf"fracción de las ({_NUM}) vueltas", alt)[1]) == max(j.MARCAS_BANDIDO)
+    m = re.search(rf"Siempre el mejor promedio: ({_NUM}) corridas cerca de 1 y ({_NUM}) atoradas "
+                  rf"cerca de 0, ({_NUM}) en y y ({_NUM}) en z; su promedio, ({_NUM}),", alt)
+    reparto = (mp["n"] - mp["atoradas"], mp["atoradas"], mp["en"]["y"], mp["en"]["z"])
+    assert tuple(int(v) for v in m.groups()[:4]) == reparto
+    assert m[5] == _d(mp["promedio"])
+    assert all(x < 0.01 or x > 0.99 for x in mp["fracciones"])
+    m = re.search(rf"la corrida más baja de cada una deja en x ({_NUM}), ({_NUM}) y ({_NUM})", alt)
+    assert m.groups() == tuple(_d(r[f]["minimo"]) for f in otras)
+    assert "ninguna atorada" in alt and all(r[f]["atoradas"] == 0 for f in otras)
+    m = re.search(rf"todo o nada: ({_NUM}) corridas van casi siempre a x y ({_NUM}) se atoran lejos "
+                  rf"de ella, ({_NUM}) en y y ({_NUM}) en z\. Su promedio, ({_NUM}) \(casi "
+                  rf"({_NUM})/({_NUM})\)", seis)
+    assert tuple(int(v) for v in m.groups()[:4]) == reparto
+    assert (int(m[6]), int(m[7])) == (reparto[0], mp["n"])
+    assert m[5] == _d(mp["promedio"]) == _d(F(int(m[6]), int(m[7])))
+    assert _x(re.search(rf"elige bien el ({_NUM}) % de las veces", seis)[1]) == _x(m[5]) * 100
+    m = re.search(rf"Su corrida más baja va a x ({_NUM}), ({_NUM}) y ({_NUM}) de las vueltas", seis)
+    assert m.groups() == tuple(_d(r[f]["minimo"]) for f in otras)
+    m = re.search(rf"En ({_NUM}) corridas, la regla sin bono es todo o nada: ({_NUM}) en la mejor "
+                  rf"y ({_NUM}) atoradas", _llevarse(texto))
+    assert tuple(int(v) for v in m.groups()) == (mp["n"], *reparto[:2])
+
+
+def test_prosa_clase_3_p6_a_veces_al_azar_se_espera_no_se_topa():
+    """#39 · §6: 0.9 + 0.1/3 ≈ 0.93 con «una de cada tres»; «14 de las 40
+    corridas lo pasan un poco»; y ninguna frase lo vuelve techo."""
+    texto = _pagina(P6)
+    seis = _seccion(texto, 6)
+    tope = j.tope_a_veces_al_azar()
+    m = re.search(rf"Le atina a x en una de cada (\w+), así que en promedio se espera "
+                  rf"({_NUM})\+({_NUM})/(\d+)≈({_NUM}); ({_NUM}) de las ({_NUM}) corridas lo "
+                  r"pasan un poco\.", seis)
+    n_jugadas = len(j.MUS_HILO)
+    assert _x(m[1]) == int(m[4]) == n_jugadas
+    assert (_x(m[2]), _x(m[3])) == (1 - j._exacto(j.AL_AZAR), j._exacto(j.AL_AZAR))
+    assert _x(m[2]) + _x(m[3]) / int(m[4]) == tope and m[5] == _d(tope)
+    az = j.reparto_bandido()["a_veces_al_azar"]
+    assert int(m[6]) == sum(x > tope for x in az["fracciones"]) > 0
+    assert int(m[7]) == az["n"]
+    assert az["promedio"] < tope < az["maximo"]
+    alt = _alt(texto, "jue-c3-fig-bandido")
+    for trozo in (seis, alt):
+        assert not re.search(r"no pasa de|se detiene|techo|tope", trozo), trozo[:60]
+
+
+def test_prosa_clase_3_p5_la_raiz_el_bono_de_min_y_la_c_como_delta():
+    """#39 · p5: en la raíz G/N = 2/4 y ū = 2·2/4 − 1 = 0; el 2/3 es su
+    simulación más 1/1 y 0/1; MIN en el 2/3 (N(s) = 3): bono √(ln 3) ≈ 1.05,
+    puntajes −1 + 1.05 = 0.05 y +1 + 1.05 = 2.05, baja al 0/1; c = 1 pide
+    δ = 1/√N(s), 10 % con N(s) = 100; G/N con c = 1 es como c = 2."""
+    texto = _pagina(P5)
+    vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
+    antes = vuelta["antes"]
+    cuatro = _seccion(texto, 4)
+    m = re.search(r"En la raíz de la figura de abajo, G/N=(\d+)/(\d+): MAX ganó (la mitad), y "
+                  r"\\bar u=(\d+)·\\tfrac(\d)(\d)-(\d+)=(-?\d+)\.", cuatro)
+    g, n = antes["r"]
+    assert (int(m[1]), int(m[2])) == (g, n) and _x(m[3]) == F(g, n)
+    assert (int(m[4]), int(m[5]), int(m[6]), int(m[7])) == (2, g, n, 1)
+    assert int(m[8]) == 2 * F(g, n) - 1 == F(2 * g - n, n)
+    m = re.search(r"el (\d+)/(\d+) es su simulación, que ganó MAX \((\d+)/(\d+)\), más (\d+)/(\d+) "
+                  r"y (\d+)/(\d+)\.", cuatro)
+    _, _, u_a = j.MCTS_ARBOL["a"]
+    assert (int(m[1]), int(m[2])) == antes["a"]
+    assert (int(m[3]), int(m[4])) == ((u_a + 1) // 2, 1)
+    assert [(int(m[5]), int(m[6])), (int(m[7]), int(m[8]))] == [antes["a1"], antes["a2"]]
+    cinco = _seccion(texto, 5)
+    m = re.search(r"MIN elige en el (\d+)/(\d+), con N\(s\)=(\d+), entre el (\d+)/(\d+) "
+                  r"\(\\bar u=([+-]\d+)\) y el (\d+)/(\d+) \(\\bar u=([+-]\d+)\)\.", cinco)
+    assert (int(m[1]), int(m[2])) == antes["a"] and int(m[3]) == antes["a"][1]
+    hijos = {"a1": (int(m[4]), int(m[5]), int(m[6])), "a2": (int(m[7]), int(m[8]), int(m[9]))}
+    for h, (gg, nn, u) in hijos.items():
+        assert (gg, nn) == antes[h] and u == F(2 * gg - nn, nn), h
+    datos = {h: (nn, F(u)) for h, (gg, nn, u) in hijos.items()}
+    bono = j.bono_ucb(antes["a"][1], 1, 1)
+    m = re.search(rf"su bono es el mismo, \\sqrt\\ln (\d+)≈({_NUM})\. Sus puntajes son "
+                  rf"({_NUM})\+({_NUM})=({_NUM}) y ({_NUM})\+({_NUM})=({_NUM}): MIN baja al "
+                  r"(\d+)/(\d+)", cinco)
+    assert int(m[1]) == antes["a"][1] and m[2] == _d(bono)
+    # N(s) = 3 cuenta la simulacion propia del 2/3: no es la suma de sus hijos
+    # (puntajes_ucb la supondria), asi que el puntaje sale de mcts_vuelta.
+    puntajes = vuelta["puntajes"]["a"]
+    assert all(_isclose_f(puntajes[h], -datos[h][1] + bono) for h in puntajes)
+    for h, (u, b, p) in zip(("a1", "a2"), ((m[3], m[4], m[5]), (m[6], m[7], m[8]))):
+        assert (_x(u), b, p) == (-datos[h][1], _d(bono), _d(puntajes[h])), h
+    elegido = j.mejor(puntajes)
+    assert elegido == vuelta["camino"][2] and (int(m[9]), int(m[10])) == antes[elegido]
+    m = re.search(rf"Nuestra c=1 pide \\delta=1/\\sqrtN\(s\): ({_NUM}) % con N\(s\)=(\d+)\.", cinco)
+    assert j.exponente_de_c(1) == F(1, 2)
+    assert _isclose_f(j.delta_de_c(1, int(m[2])) * 100, _x(m[1]))
+    resp = _limpio(_respuesta(texto, "jue-c3-ej-mcts"))
+    doble = int(re.search(r"con G/N es como usar c=(\d+)", resp)[1])
+    con_g = j.uct_ejercicio(c=1, victorias=True)
+    con_u = j.puntajes_ucb(j.EJERCICIO_MCTS, c=doble)
+    assert all(_isclose_f(2 * con_g[k] - 1, con_u[k]) for k in con_u)
+
+
+# ---- p6 · corridas y c↔δ (aclarar-bono-y-mcts)
+#
+# Pruebas de FUENTE: fijan contra juegos.py las cifras nuevas de la p6 (el
+# reparto por corrida que esconde el promedio de jue-c3-bandido, el tope de
+# «a veces al azar», la δ que esconde cada c, y los puntajes de las vueltas
+# 5 y 6 de la corrida que se atora). Las de prosa las agregan las paginas.
+
+import math  # noqa: E402
+
+def test_p6_corridas_siempre_el_mejor_promedio_es_todo_o_nada():
+    """El 0.85 de jue-c3-bandido no es «85 % en x»: son 34 corridas casi en
+    1 y 6 atoradas casi en 0 (5 en y, 1 en z)."""
+    r = j.reparto_bandido()
+    mp = r["mejor_promedio"]
+    assert mp["n"] == len(mp["fracciones"]) == j.CORRIDAS_BANDIDO == 40
+    assert mp["atoradas"] == 6 and mp["n"] - mp["atoradas"] == 34
+    assert mp["en"] == {"y": 5, "z": 1}
+    # Todo o nada: ninguna corrida entre 0.01 y 0.99.
+    assert all(x < 0.01 or x > 0.99 for x in mp["fracciones"])
+    assert round(mp["minimo"], 4) == 0.0001 and round(mp["maximo"], 4) == 0.9998
+    assert round(mp["mediana"], 4) == 0.9996
+    assert round(mp["promedio"], 2) == 0.85
+
+
+def test_p6_corridas_las_otras_tres_reglas_no_se_atoran():
+    r = j.reparto_bandido()
+    esperado = {  # (mín, mediana, máx) a 3 decimales
+        "a_veces_al_azar": (0.903, 0.932, 0.938),
+        "ucb": (0.923, 0.945, 0.959),
+        "ucb_c1": (0.955, 0.994, 0.999)}
+    for fila, (mn, med, mx) in esperado.items():
+        d = r[fila]
+        assert d["atoradas"] == 0 and not d["en"], fila
+        assert (round(d["minimo"], 3), round(d["mediana"], 3), round(d["maximo"], 3)) \
+            == (mn, med, mx), fila
+
+
+def test_p6_corridas_el_promedio_es_el_de_la_figura_acumulada():
+    """El reparto y jue-c3-bandido leen las mismas corridas: el promedio de
+    las fracciones finales es, bit a bit, la ultima marca de tabla_bandido."""
+    r, t = j.reparto_bandido(), j.tabla_bandido()
+    fin = max(j.MARCAS_BANDIDO)
+    assert list(r) == list(t) == list(j.FILAS_BANDIDO)
+    for fila, (regla, c) in j.FILAS_BANDIDO.items():
+        assert r[fila]["promedio"] == t[fila][fin], fila
+        assert r[fila]["fracciones"] == j.fracciones_finales(
+            regla, j.MUS_HILO, fin, j.CORRIDAS_BANDIDO, c)
+    # Una corrida suelta: la fraccion final es N(x)/vueltas de bandido.
+    b = j.bandido("mejor_promedio", j.MUS_HILO, fin, j.SEMILLA_ATORA)
+    assert r["mejor_promedio"]["fracciones"][j.SEMILLA_ATORA - 1] == b["N"]["x"] / fin
+    assert max(b["N"], key=b["N"].get) == "z"
+
+
+def test_p6_el_tope_de_a_veces_al_azar_es_esperado_no_un_techo():
+    """0.9 + 0.1/3 = 14/15: el promedio de las 40 corridas queda debajo, pero
+    14 corridas lo pasan (tiraron al azar menos de 1 de cada 10)."""
+    tope = j.tope_a_veces_al_azar()
+    assert tope == F(14, 15) and f"{float(tope):.4f}" == "0.9333"
+    assert j.tope_a_veces_al_azar(n_jugadas=2, al_azar=0.2) == F(9, 10)
+    az = j.reparto_bandido()["a_veces_al_azar"]
+    assert az["promedio"] < tope
+    assert sum(x > tope for x in az["fracciones"]) == 14
+
+
+def test_p6_c_es_delta_disfrazada():
+    """δ = N(s)^−k da el margen c·√(ln N(s)/N(s′)) con c = √(2k)."""
+    assert j.exponente_de_c(1) == F(1, 2)
+    assert math.isclose(j.exponente_de_c(j.C_TEORIA), 4)
+    assert math.isclose(j.exponente_de_c(math.sqrt(2)), 1)
+    assert j.delta_de_c(1, 100) == 0.1
+    assert math.isclose(j.delta_de_c(j.C_TEORIA, 100), 1e-8)
+    for c in (0.5, 1, math.sqrt(2), 2, j.C_TEORIA, 5):
+        for n_padre in (4, 100, 1000, 10_000):
+            for n in (1, 3, 10, 30, 60):
+                assert math.isclose(j.margen(j.delta_de_c(c, n_padre), n),
+                                    j.bono_ucb(n_padre, n, c)), (c, n_padre, n)
+
+
+def test_p6_puntajes_de_las_vueltas_5_y_6_de_la_corrida_36():
+    """UCB con c = 2√2, semilla 36. Vuelta 5 (N(s) = 4): z gana por poco,
+    2.35 contra 2.33 de x y de y. Vuelta 6 (N(s) = 5): x 2.59 (empatada con
+    y; gana x por ir primero) contra z 1.74."""
+    n5, p5 = j.puntajes_ucb_en_vuelta(5)
+    n6, p6 = j.puntajes_ucb_en_vuelta(6)
+    assert (n5, n6) == (4, 5)
+    assert {a: f"{v:.2f}" for a, v in p5.items()} == {"x": "2.33", "y": "2.33", "z": "2.35"}
+    assert {a: f"{v:.2f}" for a, v in p6.items()} == {"x": "2.59", "y": "2.59", "z": "1.74"}
+    assert p5["x"] == p5["y"] and p6["x"] == p6["y"]
+    # Es la corrida de verdad: la jugada de mayor puntaje es la que eligio.
+    elecciones = j.bandido("ucb", j.MUS_HILO, 6, j.SEMILLA_ATORA)["elecciones"]
+    assert (j.mejor(p5), j.mejor(p6)) == (elecciones[4], elecciones[5]) == ("z", "x")
+    # A mano: x en la vuelta 5 es −1 + 2√2·√(ln 4 / 1).
+    assert math.isclose(p5["x"], -1 + j.C_TEORIA * math.sqrt(math.log(4)))
+    assert math.isclose(p5["z"], 0 + j.C_TEORIA * math.sqrt(math.log(4) / 2))
