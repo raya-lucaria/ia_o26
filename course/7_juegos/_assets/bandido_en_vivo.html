@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bandido en vivo — elegir entre x, y, z</title>
+
+<!-- Clase 7.3, «De dónde sale el bono». Las tres jugadas x, y, z del hilo de
+     la página con su μ verdadero oculto, y tres reglas para elegir: siempre el
+     mejor promedio, a veces al azar (10 %) y UCB con c ajustable.
+
+     Las reglas, el orden de desempate y la suerte son los de juegos.bandido:
+     una fila de tiradas por jugada (random.Random(semilla·1000 + i)) y otra
+     para el azar de la regla (semilla·1000 + 999), con el Mersenne Twister de
+     Python reimplementado aquí. Con la misma semilla, las elecciones son las
+     de tools/juegos.py; tools/test_interactivos_ucb.py lo comprueba con node. -->
+
+<style>
+  /* Paleta de skins/eva-cyberpunk.yaml, vigilada por tools/test_skin.py.
+     x, y, z usan graph.group_3, group_4 y group_6 del skin. --trazo es
+     --border aclarado hasta 4.5:1 sobre --surface, como en traza_arbol_t.html. */
+  :root{
+    --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
+    --accent:#f04cff; --accent-soft:#42164f; --border:#78419e;
+    --ok:#a8ff5a; --aviso:#ffd166; --danger:#ff6f91;
+    --jx:#55ddff; --jy:#ffd166; --jz:#ff8fab;
+    --trazo:#a273d6; --rejilla:#3a2255;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--page);color:var(--text);
+            font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .envoltura{max-width:1100px;margin:0 auto;padding:.8rem 16px 1.5rem}
+  h1{font-size:19px;margin:0 0 .2rem}
+  h2{font-size:12px;margin:0 0 .5rem;color:var(--muted);font-weight:600;
+     letter-spacing:.02em}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 .8rem}
+  .sub b{color:var(--text)}
+  .panel{background:var(--surface);border:1px solid var(--trazo);border-radius:12px;
+         padding:.8rem;margin-bottom:.8rem;min-width:0}
+  fieldset{border:0;margin:0;padding:0;min-width:0}
+  legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:.3rem}
+  .reglas{display:flex;flex-wrap:wrap;gap:.35rem}
+  .reglas label{display:flex;align-items:center;gap:.35rem;border:1px solid var(--trazo);
+     border-radius:8px;padding:.3rem .65rem;min-height:38px;cursor:pointer;font-size:14px}
+  .reglas label:has(input:checked){border:2px solid var(--accent);font-weight:700}
+  .reglas input{accent-color:var(--accent);margin:0}
+  .fila-c{display:grid;grid-template-columns:minmax(0,1fr);gap:.3rem;margin-top:.7rem}
+  .fila-c label{display:flex;justify-content:space-between;gap:.5rem;font-size:13px;color:var(--muted)}
+  .fila-c output{font:700 16px var(--mono);color:var(--accent)}
+  /* apagada: los controles se atenúan, pero la etiqueta y el aviso se leen */
+  .fila-c.apagada input,.fila-c.apagada .marcas,.fila-c.apagada output{opacity:.55}
+  .aviso-c{display:none;margin:0;font-size:13px;color:var(--aviso)}
+  .fila-c.apagada .aviso-c{display:block}
+  input[type=range]{width:100%;accent-color:var(--accent);margin:0;min-height:28px}
+  .marcas{display:flex;flex-wrap:wrap;gap:.3rem}
+  .marcas button{min-height:32px;padding:.1rem .55rem;font:13px var(--mono)}
+  .botones{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-top:.8rem}
+  button,select,input[type=number]{background:var(--surface);color:var(--text);
+    border:1px solid var(--trazo);border-radius:8px;padding:.35rem .7rem;font:inherit;
+    font-size:14px;min-height:38px}
+  button,select{cursor:pointer}
+  button:hover:not(:disabled),select:hover{border-color:var(--accent)}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--text);
+    outline-offset:2px}
+  .reglas label:focus-within{outline:2px solid var(--text);outline-offset:2px}
+  button:disabled{opacity:.5;cursor:default}
+  button[aria-pressed=true]{background:var(--accent);color:#1b0025;border-color:var(--accent);
+    font-weight:700}
+  .chico{display:flex;align-items:center;gap:.35rem;font-size:13px;color:var(--muted)}
+  .chico input{width:6.5em;font-family:var(--mono)}
+
+  /* --- las tres jugadas --- */
+  .jugada{display:grid;grid-template-columns:2.2rem minmax(0,1fr);gap:.2rem .6rem;
+          align-items:center;padding:.45rem .5rem;border:1px solid var(--rejilla);
+          border-radius:10px;margin-bottom:.4rem}
+  .jugada.elegida{border:2px solid var(--accent);padding:calc(.45rem - 1px) calc(.5rem - 1px)}
+  .jugada .nombre{font:700 22px var(--mono);text-align:center;grid-row:span 2}
+  .pista{position:relative;height:30px;background:var(--page);border-radius:6px}
+  .pista .cero{position:absolute;top:0;bottom:0;width:1px;background:var(--trazo)}
+  .pista .tick{position:absolute;bottom:-1px;height:6px;width:1px;background:var(--muted)}
+  .pista .barra{position:absolute;top:8px;height:14px;border-radius:3px}
+  .pista .bigote{position:absolute;top:14px;height:2px}
+  .pista .tapa{position:absolute;top:7px;height:16px;width:2px}
+  .pista .mas{position:absolute;top:4px;right:2px;font:700 13px var(--mono)}
+  .pista .mu{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed var(--text)}
+  .pista .vacia{position:absolute;left:8px;top:5px;font-size:12.5px;color:var(--muted)}
+  /* la etiqueta en letra normal (en monoespaciada la prima de N(s′) parece
+     un apóstrofo recto); el valor, en monoespaciada */
+  .datos{display:flex;flex-wrap:wrap;gap:.1rem .9rem;font-size:13px;color:var(--muted)}
+  .datos b{font-family:var(--mono)}
+  .datos>span{white-space:nowrap}
+  .datos b{color:var(--text);font-weight:600}
+  .insignia{display:inline-block;white-space:nowrap;font:700 11.5px system-ui,sans-serif;letter-spacing:.04em;
+            border-radius:999px;padding:.05rem .5rem;text-transform:uppercase}
+  .insignia.sel{background:var(--accent);color:#1b0025}
+  .insignia.ent{border:1px solid var(--ok);color:var(--ok)}
+  .eje{display:grid;grid-template-columns:2.2rem minmax(0,1fr);gap:.6rem;padding:0 .5rem;
+       font:11.5px var(--mono);color:var(--muted)}
+  .eje .marcas-eje{position:relative;height:1.2em}
+  .eje .marcas-eje span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+  .eje .marcas-eje span:first-child{transform:none}
+  .eje .marcas-eje span:last-child{transform:translateX(-100%)}
+  .estado{margin:.5rem 0 0;font-size:14px}
+  .estado b{color:var(--accent)}
+  .entrega{margin:.3rem 0 0;font-size:14px;color:var(--ok)}
+
+  /* --- gráficas --- */
+  .graficas{display:grid;grid-template-columns:minmax(0,1fr);gap:.8rem}
+  @media (min-width:760px){ .graficas{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+  canvas{display:block;width:100%;height:220px;background:var(--surface)}
+  .leyenda{display:flex;flex-wrap:wrap;gap:.1rem .9rem;font-size:12.5px;color:var(--muted);margin-top:.35rem}
+  .leyenda span::before{content:"";display:inline-block;width:16px;height:0;
+           border-top:3px solid currentColor;vertical-align:middle;margin-right:.3rem}
+  .leyenda .lx{color:var(--jx)} .leyenda .ly{color:var(--jy)} .leyenda .lz{color:var(--jz)}
+  .leyenda .ly::before{border-top-style:dashed} .leyenda .lz::before{border-top-style:dotted}
+  .leyenda .lf{color:var(--jx)}
+  .nota{color:var(--muted);font-size:13.5px;margin:.5rem 0 0}
+  .nota b{color:var(--text)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <h1>Bandido en vivo</h1>
+  <p class="sub">Tres jugadas, <b>x, y, z</b>, cada una con un promedio verdadero μ(s′)
+  que no ves. Cada vuelta se elige una, se simula una vez (+1 o −1) y su ū(s′) se
+  actualiza. ¿Qué regla encuentra la mejor sin quemar vueltas en las malas?</p>
+
+  <div class="panel">
+    <fieldset>
+      <legend>Regla para elegir · cambiarla reinicia</legend>
+      <div class="reglas" id="reglas">
+        <label><input type="radio" name="regla" value="mejor_promedio" checked> siempre el mejor promedio</label>
+        <label><input type="radio" name="regla" value="a_veces_al_azar"> a veces al azar (10 %)</label>
+        <label><input type="radio" name="regla" value="ucb"> UCB: ū(s′) + bono</label>
+      </div>
+    </fieldset>
+    <div class="fila-c" id="fila-c">
+      <label for="c"><span>c: peso del bono, en c·√(ln N(s) / N(s′)) · solo UCB; cambiarla reinicia</span><output id="o-c" for="c">2.83</output></label>
+      <input type="range" id="c" min="0" max="5" step="0.01" value="2.83">
+      <div class="marcas" role="group" aria-label="valores de c">
+        <button type="button" data-c="0">c = 0</button>
+        <button type="button" data-c="1">c = 1</button>
+        <button type="button" data-c="teoria">c = 2√2 ≈ 2.83</button>
+        <button type="button" data-c="5">c = 5</button>
+      </div>
+      <p class="aviso-c" id="aviso-c">c no se usa con esta regla: solo UCB suma un bono.
+      Elige «UCB» para moverla.</p>
+    </div>
+    <div class="botones">
+      <button type="button" id="b-paso">Paso</button>
+      <button type="button" id="b-correr" aria-pressed="false">▶ Correr</button>
+      <label class="chico" for="velocidad">velocidad
+        <select id="velocidad">
+          <option value="2">2 vueltas/s</option>
+          <option value="10" selected>10 vueltas/s</option>
+          <option value="60">60 vueltas/s</option>
+          <option value="600">600 vueltas/s</option>
+          <option value="5000">5 000 vueltas/s</option>
+        </select></label>
+      <button type="button" id="b-reiniciar">↺ Reiniciar</button>
+      <label class="chico" for="semilla">semilla
+        <input type="number" id="semilla" min="0" max="999999" step="1" value="36"></label>
+      <button type="button" id="b-revelar" aria-pressed="false">Revelar μ</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Las tres jugadas</h2>
+    <div class="eje" aria-hidden="true"><span></span><div class="marcas-eje" id="eje"></div></div>
+    <div id="jugadas"></div>
+    <p class="estado" id="estado" aria-live="polite"></p>
+    <p class="entrega" id="entrega"></p>
+    <p class="nota">Barra: ū(s′). Bigote (solo UCB): hasta el techo ū(s′) + bono; una
+    jugada sin probar tiene bono ∞ y se prueba primero. Un techo arriba de 1 no
+    dice nada de μ(s′), que nunca pasa de 1: solo la empuja a ser elegida.</p>
+  </div>
+
+  <div class="graficas">
+    <div class="panel">
+      <h2 id="t-n">N(s′) de cada jugada contra N(s)</h2>
+      <canvas id="g-n" role="img" aria-labelledby="t-n" aria-describedby="d-n"></canvas>
+      <p class="sr" id="d-n"></p>
+      <div class="leyenda" aria-hidden="true"><span class="lx">x</span><span class="ly">y</span><span class="lz">z</span></div>
+    </div>
+    <div class="panel">
+      <h2 id="t-r">Fracción de vueltas en x contra N(s)</h2>
+      <canvas id="g-r" role="img" aria-labelledby="t-r" aria-describedby="d-r"></canvas>
+      <p class="sr" id="d-r"></p>
+      <div class="leyenda" aria-hidden="true"><span class="lf">N(s′) de x / N(s): la medida de la figura «UCB empieza abajo y termina arriba» (allí, promedio de 40 corridas y eje log)</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="nota" style="margin:0"><b>Qué probar.</b> Con la semilla 36 y «siempre el
+    mejor promedio», x e y pierden su primera simulación y nunca se vuelven a probar:
+    se atora en z. En UCB, <b>c = 0</b> es la misma regla y se atora igual;
+    <b>c = 1</b> vuelve pronto a x; <b>c = 2√2</b> (la de la teoría) explora más;
+    <b>c = 5</b> explora de más y la fracción en x sube más despacio. La semilla es la de
+    <code>tools/juegos.py</code>: misma semilla, mismas elecciones que la página.</p>
+  </div>
+</div>
+
+<script id="logica">
+"use strict";
+// ---- Lógica pura, sin DOM: tools/test_interactivos_ucb.py la corre con node. ----
+
+const MUS = {x: 0.6, y: 0.3, z: -0.2};     // μ verdaderos, ocultos; la mejor es x
+const JUGADAS = Object.keys(MUS);
+const C_TEORIA = 2 * Math.SQRT2;           // 2√2: UCB1 en la escala ±1 (√2 con G/N)
+const AL_AZAR = 0.1;                       // «a veces al azar»: una vuelta de cada diez
+const SEMILLA_INICIAL = 36;                // «siempre el mejor promedio» se atora en z
+const VUELTAS_MAX = 10000;
+
+// El Mersenne Twister de CPython (random.Random), igual que en
+// hoeffding_en_vivo.html: init_by_array, random() de 53 bits y getrandbits.
+class PyRandom {
+  constructor(semilla){
+    this.mt = new Uint32Array(624);
+    this.mti = 625;
+    let n = Math.abs(Math.floor(semilla));
+    const clave = [];
+    while (n > 0){ clave.push(n % 4294967296); n = Math.floor(n / 4294967296); }
+    if (!clave.length) clave.push(0);
+    this.porArreglo(clave);
+  }
+  inicial(s){
+    const mt = this.mt;
+    mt[0] = s >>> 0;
+    for (let i = 1; i < 624; i++){
+      const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+      mt[i] = (Math.imul(1812433253, prev) + i) >>> 0;
+    }
+    this.mti = 624;
+  }
+  porArreglo(clave){
+    const mt = this.mt;
+    this.inicial(19650218);
+    let i = 1, j = 0;
+    for (let k = Math.max(624, clave.length); k; k--){
+      const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+      mt[i] = ((mt[i] ^ Math.imul(prev, 1664525)) + clave[j] + j) >>> 0;
+      i++; j++;
+      if (i >= 624){ mt[0] = mt[623]; i = 1; }
+      if (j >= clave.length) j = 0;
+    }
+    for (let k = 623; k; k--){
+      const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+      mt[i] = ((mt[i] ^ Math.imul(prev, 1566083941)) - i) >>> 0;
+      i++;
+      if (i >= 624){ mt[0] = mt[623]; i = 1; }
+    }
+    mt[0] = 0x80000000;
+  }
+  uint32(){
+    const mt = this.mt;
+    if (this.mti >= 624){
+      let kk = 0, y;
+      for (; kk < 227; kk++){
+        y = (mt[kk] & 0x80000000) | (mt[kk + 1] & 0x7fffffff);
+        mt[kk] = mt[kk + 397] ^ (y >>> 1) ^ ((y & 1) ? 0x9908b0df : 0);
+      }
+      for (; kk < 623; kk++){
+        y = (mt[kk] & 0x80000000) | (mt[kk + 1] & 0x7fffffff);
+        mt[kk] = mt[kk - 227] ^ (y >>> 1) ^ ((y & 1) ? 0x9908b0df : 0);
+      }
+      y = (mt[623] & 0x80000000) | (mt[0] & 0x7fffffff);
+      mt[623] = mt[396] ^ (y >>> 1) ^ ((y & 1) ? 0x9908b0df : 0);
+      this.mti = 0;
+    }
+    let y = mt[this.mti++];
+    y ^= y >>> 11;
+    y ^= (y << 7) & 0x9d2c5680;
+    y ^= (y << 15) & 0xefc60000;
+    y ^= y >>> 18;
+    return y >>> 0;
+  }
+  random(){
+    const a = this.uint32() >>> 5, b = this.uint32() >>> 6;
+    return (a * 67108864 + b) / 9007199254740992;
+  }
+  // random.choice(lista) de Python: _randbelow con getrandbits y rechazo
+  eleccion(lista){
+    const n = lista.length, k = Math.floor(Math.log2(n)) + 1;
+    let r = this.uint32() >>> (32 - k);
+    while (r >= n) r = this.uint32() >>> (32 - k);
+    return lista[r];
+  }
+}
+
+// Pr(U = +1) = (1 + μ)/2, con μ en milésimas para que salga el mismo doble
+// que float(Fraction) en juegos.prob_gana.
+function probGana(mu){ return Math.round((1 + mu) * 1000) / 2000; }
+// c·√(ln N(s)/N(s′)); sin probar (N(s′) = 0), bono infinito.
+function bonoUcb(nPadre, n, c){ return n === 0 ? Infinity : c * Math.sqrt(Math.log(nPadre) / n); }
+// la de mayor valor; en empate, la primera en el orden x, y, z
+function mejor(valores){
+  let a = 0;
+  for (let i = 1; i < valores.length; i++) if (valores[i] > valores[a]) a = i;
+  return a;
+}
+
+// Un bandido: regla ∈ {mejor_promedio, a_veces_al_azar, ucb}.
+class Bandido {
+  constructor(regla, semilla, c, mus){
+    this.regla = regla; this.c = c;
+    this.mus = JUGADAS.map(a => (mus || MUS)[a]);
+    this.p = this.mus.map(probGana);
+    this.suerte = JUGADAS.map((_, i) => new PyRandom(semilla * 1000 + i));
+    this.dado = new PyRandom(semilla * 1000 + 999);
+    // N[i] es N(s′) de cada jugada; sumaU[i], la suma de sus U, así que
+    // ū(s′) = sumaU[i] / N[i]; nPadre es N(s), las vueltas ya hechas.
+    this.N = [0, 0, 0]; this.sumaU = [0, 0, 0];
+    this.nPadre = 0;
+    this.elecciones = []; this.resultados = [];
+    this.historiaN = JUGADAS.map(() => new Int32Array(VUELTAS_MAX + 1));
+  }
+  promedio(i){ return this.N[i] ? this.sumaU[i] / this.N[i] : null; }
+  bono(i){ return bonoUcb(this.nPadre, this.N[i], this.c); }
+  // la que la regla elegiría sin tirar el dado del 10 %
+  candidata(){
+    const sinProbar = this.N.findIndex(n => n === 0);
+    if (sinProbar >= 0) return sinProbar;
+    if (this.regla === "ucb") return mejor(this.N.map((_, i) => this.promedio(i) + this.bono(i)));
+    return mejor(this.N.map((_, i) => this.promedio(i)));
+  }
+  paso(){
+    const sinProbar = this.N.some(n => n === 0);
+    let a, alAzar = false;
+    if (this.regla === "a_veces_al_azar" && !sinProbar && this.dado.random() < AL_AZAR){
+      a = this.dado.eleccion([0, 1, 2]); alAzar = true;
+    } else a = this.candidata();
+    const r = this.suerte[a].random() < this.p[a] ? 1 : -1;
+    this.N[a]++; this.sumaU[a] += r; this.nPadre++;
+    this.elecciones.push(JUGADAS[a]); this.resultados.push(r);
+    if (this.nPadre <= VUELTAS_MAX)
+      for (let i = 0; i < 3; i++) this.historiaN[i][this.nPadre] = this.N[i];
+    return {a, r, alAzar};
+  }
+  // fracción de las primeras k vueltas que fueron a x (la mejor): la de la figura
+  fraccionEnX(k){ return k ? this.historiaN[0][k] / k : 0; }
+  // la que se entregaría: la más simulada (empate: la primera)
+  masSimulada(){ return mejor(this.N); }
+}
+
+if (typeof module !== "undefined")
+  module.exports = {MUS, JUGADAS, C_TEORIA, AL_AZAR, SEMILLA_INICIAL, PyRandom, probGana, bonoUcb, Bandido};
+</script>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = getComputedStyle(document.documentElement);
+const C = nombre => css.getPropertyValue(nombre).trim();
+const COL = {surface:C("--surface"), text:C("--text"), muted:C("--muted"), accent:C("--accent"),
+  danger:C("--danger"), rejilla:C("--rejilla"), trazo:C("--trazo"),
+  jug:[C("--jx"), C("--jy"), C("--jz")]};
+const GUION = [[], [7, 4], [2, 3]];
+const FUENTE = '12px system-ui,-apple-system,"Segoe UI",sans-serif';
+
+let b = null, corriendo = false, revelado = false, cExacto = C_TEORIA, ultimo = null;
+let reloj = 0, acumulado = 0;
+
+const regla = () => document.querySelector('input[name=regla]:checked').value;
+const leerSemilla = () => {
+  const s = Math.floor(Math.abs(Number($("semilla").value)));
+  return Number.isFinite(s) ? Math.min(s, 999999) : SEMILLA_INICIAL;
+};
+const fmt = (x, d) => x.toFixed(d).replace("-", "−");
+// el formato del curso: punto decimal y espacio de miles («10 000», «9 468»)
+const miles = k => String(Math.round(k)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");   // espacio que no parte «10 000»
+const signo = r => r > 0 ? "+1" : "−1";
+
+function reiniciar(){
+  b = new Bandido(regla(), leerSemilla(), regla() === "ucb" ? cExacto : 0);
+  ultimo = null;
+}
+
+// ------------------------------------------------------- las jugadas ---
+function rango(){ return regla() === "ucb" ? [-1, 3] : [-1, 1]; }
+const pos = (v, [lo, hi]) => 100 * (Math.min(Math.max(v, lo), hi) - lo) / (hi - lo);
+
+function pintarEje(){
+  const r = rango(), marcas = [];
+  for (let v = r[0]; v <= r[1]; v++) marcas.push(`<span style="left:${pos(v, r)}%">${fmt(v, 0)}</span>`);
+  $("eje").innerHTML = marcas.join("");
+}
+
+function pintarJugadas(){
+  const r = rango(), ucb = regla() === "ucb";
+  const sel = b.nPadre < VUELTAS_MAX ? b.candidata() : -1, ent = b.nPadre ? b.masSimulada() : -1;
+  const filas = JUGADAS.map((nombre, i) => {
+    const u = b.promedio(i), n = b.N[i], col = COL.jug[i];
+    const bono = b.bono(i), techo = u === null ? Infinity : u + bono;
+    let pista = `<span class="cero" style="left:${pos(0, r)}%"></span>`;
+    for (let v = r[0] + 1; v < r[1]; v++) pista += `<span class="tick" style="left:${pos(v, r)}%"></span>`;
+    if (u === null){
+      pista += `<span class="vacia">sin probar${ucb ? " · bono ∞" : ""}</span>`;
+    } else {
+      const a = pos(Math.min(u, 0), r), z = pos(Math.max(u, 0), r);
+      pista += `<span class="barra" style="left:${a}%;width:${Math.max(z - a, .6)}%;background:${col}"></span>`;
+      if (ucb && bono > 0){
+        const fin = pos(techo, r), ini = pos(u, r);
+        pista += `<span class="bigote" style="left:${ini}%;width:${fin - ini}%;background:${col}"></span>`;
+        if (techo <= r[1]) pista += `<span class="tapa" style="left:calc(${fin}% - 1px);background:${col}"></span>`;
+        else pista += `<span class="mas" style="color:${col}">→</span>`;
+      }
+    }
+    if (revelado) pista += `<span class="mu" style="left:calc(${pos(b.mus[i], r)}% - 1px)" title="μ verdadero"></span>`;
+    // cada par etiqueta–valor en su span, sin partirse al cambiar de renglón
+    const datos = [`N(s′) <b>${miles(n)}</b>`, `ū(s′) <b>${u === null ? "—" : fmt(u, 2)}</b>`];
+    if (ucb) datos.push(`techo <b>${techo === Infinity ? "∞" : fmt(techo, 2)}</b>`);
+    if (revelado) datos.push(`μ(s′) <b>${fmt(b.mus[i], 2)}</b>`);
+    const ins = (i === sel ? `<span class="insignia sel">se selecciona${b.regla === "a_veces_al_azar" && !b.N.some(x => x === 0) ? " (salvo vuelta al azar)" : ""}</span>` : "") +
+                (i === ent ? `<span class="insignia ent">se entregaría</span>` : "");
+    return `<div class="jugada${i === sel ? " elegida" : ""}">` +
+      `<div class="nombre" style="color:${col}">${nombre}</div>` +
+      `<div class="pista" role="img" aria-label="${nombre}: ${n} simulaciones, promedio ${u === null ? "sin probar" : fmt(u, 2)}` +
+      `${ucb ? ", techo " + (techo === Infinity ? "infinito" : fmt(techo, 2)) : ""}">${pista}</div>` +
+      `<div class="datos">${datos.map(d => `<span>${d}</span>`).join("")}${ins}</div></div>`;
+  });
+  $("jugadas").innerHTML = filas.join("");
+  let estado;
+  if (!b.nPadre) estado = `Vuelta 0. Primero se prueba cada jugada una vez: x, y, z.`;
+  else {
+    const nombre = JUGADAS[ultimo ? ultimo.a : 0];
+    estado = `Vuelta <b>${miles(b.nPadre)}</b>: ` + (ultimo ? `eligió ${nombre}${ultimo.alAzar ? " (al azar)" : ""}, salió ${signo(ultimo.r)}. ` : "") +
+      `En x: ${miles(b.N[0])} de ${miles(b.nPadre)} vueltas (${fmt(b.fraccionEnX(b.nPadre), 2)}).`;
+    if (b.nPadre >= VUELTAS_MAX) estado += ` Llegó al tope de ${miles(VUELTAS_MAX)} vueltas.`;
+  }
+  $("estado").innerHTML = corriendo ? $("estado").innerHTML : estado;
+  $("estado").dataset.texto = estado;
+  $("entrega").textContent = b.nPadre
+    ? `Si hubiera que jugar ya, se entregaría la más simulada: ${JUGADAS[ent]} (${miles(b.N[ent])} de ${miles(b.nPadre)} vueltas).`
+    : "Se entregaría la más simulada; aún no hay ninguna.";
+}
+
+// ---------------------------------------------------------- gráficas ---
+function preparar(lienzo){
+  const r = window.devicePixelRatio || 1;
+  const w = lienzo.clientWidth, h = lienzo.clientHeight;
+  if (lienzo.width !== Math.round(w * r) || lienzo.height !== Math.round(h * r)){
+    lienzo.width = Math.round(w * r); lienzo.height = Math.round(h * r);
+  }
+  const g = lienzo.getContext("2d");
+  g.setTransform(r, 0, 0, r, 0, 0);
+  g.fillStyle = COL.surface; g.fillRect(0, 0, w, h);
+  return {g, w, h};
+}
+// topes que se parten en cuatro marcas enteras
+function tope(v){
+  for (const m of [4, 8, 20, 40, 100, 200, 400, 1000, 2000, 4000, 10000, 20000, 40000]) if (v <= m) return m;
+  return v;
+}
+const marca = v => Number.isInteger(v) ? miles(v) : String(v);
+
+function ejes(g, w, h, xMax, yMax, nombreY){
+  const m = {i:60, d:14, a:12, b:36};
+  const pw = w - m.i - m.d, ph = h - m.a - m.b;
+  g.font = FUENTE; g.lineWidth = 1;
+  g.textAlign = "right"; g.textBaseline = "middle";
+  for (let k = 0; k <= 4; k++){
+    const v = yMax * k / 4, y = m.a + ph - ph * k / 4;
+    g.strokeStyle = COL.rejilla; g.beginPath(); g.moveTo(m.i, Math.round(y) + .5); g.lineTo(m.i + pw, Math.round(y) + .5); g.stroke();
+    g.fillStyle = COL.muted; g.fillText(marca(v), m.i - 5, y);
+  }
+  g.textAlign = "center"; g.textBaseline = "top";
+  for (let k = 0; k <= 4; k++){
+    const v = xMax * k / 4, x = m.i + pw * k / 4;
+    g.fillText(marca(v), Math.min(Math.max(x, m.i + 6), m.i + pw - 18), m.a + ph + 5);
+  }
+  g.fillText("N(s): vueltas", m.i + pw / 2, m.a + ph + 20);
+  // el nombre del eje vertical, girado, a la izquierda de sus marcas
+  g.save(); g.translate(9, m.a + ph / 2); g.rotate(-Math.PI / 2);
+  g.textBaseline = "middle"; g.fillText(nombreY, 0, 0); g.restore();
+  return {m, pw, ph, X: k => m.i + k / xMax * pw, Y: v => m.a + ph - v / yMax * ph};
+}
+
+// la curva de valor(k) para k = desde..n vueltas
+function linea(g, X, Y, n, valor, color, guion, desde = 0){
+  if (n < desde) return;
+  g.strokeStyle = color; g.lineWidth = 2; g.setLineDash(guion);
+  g.beginPath(); g.moveTo(X(desde), Y(valor(desde)));
+  const salto = Math.max(1, Math.floor(n / 600));
+  for (let k = desde + 1; k <= n; k += salto) g.lineTo(X(k), Y(valor(k)));
+  g.lineTo(X(n), Y(valor(n)));
+  g.stroke(); g.setLineDash([]); g.lineWidth = 1;
+}
+
+function pintarGraficas(){
+  const n = Math.min(b.nPadre, VUELTAS_MAX), xMax = tope(Math.max(n, 20));
+  {
+    const {g, w, h} = preparar($("g-n"));
+    const e = ejes(g, w, h, xMax, tope(Math.max(...b.N, 8)), "N(s′)");
+    JUGADAS.forEach((nombre, i) => linea(g, e.X, e.Y, n, k => b.historiaN[i][k], COL.jug[i], GUION[i]));
+    if (n){
+      // el nombre al final de cada línea: el de más abajo no baja del eje y
+      // los demás quedan al menos 16 px arriba del anterior
+      const marcas = JUGADAS.map((nombre, i) => ({nombre, i, y: e.Y(b.historiaN[i][n])}))
+        .sort((p, q) => q.y - p.y);
+      marcas[0].y = Math.min(marcas[0].y, e.m.a + e.ph - 8);
+      for (let k = 1; k < 3; k++) marcas[k].y = Math.min(marcas[k].y, marcas[k - 1].y - 16);
+      g.font = "700 " + FUENTE; g.textAlign = "left"; g.textBaseline = "middle";
+      const x = Math.min(e.X(n) + 4, w - 12);
+      for (const mk of marcas){ g.fillStyle = COL.jug[mk.i]; g.fillText(mk.nombre, x, mk.y); }
+    }
+  }
+  {
+    const {g, w, h} = preparar($("g-r"));
+    const e = ejes(g, w, h, xMax, 1, "fracción en x");
+    linea(g, e.X, e.Y, n, k => b.fraccionEnX(k), COL.jug[0], [], 1);
+  }
+  const resumenN = JUGADAS.map((a, i) => `${a}: ${miles(b.N[i])}`).join(", ");
+  $("d-n").textContent = `Tras ${miles(b.nPadre)} vueltas, N(s′) de cada jugada: ${resumenN}.`;
+  $("d-r").textContent = `Tras ${miles(b.nPadre)} vueltas, fracción en x: ${fmt(b.fraccionEnX(b.nPadre), 2)}.`;
+}
+
+function pintar(){
+  $("o-c").textContent = fmt(cExacto, 2);
+  $("fila-c").classList.toggle("apagada", regla() !== "ucb");
+  for (const el of $("fila-c").querySelectorAll("input,button")) el.disabled = regla() !== "ucb";
+  pintarEje(); pintarJugadas(); pintarGraficas();
+}
+
+// ----------------------------------------------------------- tiempo ---
+function avanzar(k){
+  for (let j = 0; j < k && b.nPadre < VUELTAS_MAX; j++) ultimo = b.paso();
+  if (b.nPadre >= VUELTAS_MAX && corriendo) ponerCorriendo(false);
+}
+function cuadro(ahora){
+  if (!corriendo) return;
+  const dt = Math.min((ahora - reloj) / 1000, 0.25); reloj = ahora;
+  acumulado += dt * Number($("velocidad").value);
+  const k = Math.floor(acumulado); acumulado -= k;
+  if (k) { avanzar(k); pintar(); }
+  if (corriendo) requestAnimationFrame(cuadro);
+}
+function ponerCorriendo(si){
+  corriendo = si;
+  $("b-correr").setAttribute("aria-pressed", String(si));
+  $("b-correr").textContent = si ? "❚❚ Pausar" : "▶ Correr";
+  if (si){ reloj = performance.now(); acumulado = 0; requestAnimationFrame(cuadro); }
+  else { pintar(); $("estado").innerHTML = $("estado").dataset.texto; }
+}
+
+$("b-paso").addEventListener("click", () => {
+  if (corriendo) ponerCorriendo(false);
+  avanzar(1); pintar(); $("estado").innerHTML = $("estado").dataset.texto;
+});
+$("b-correr").addEventListener("click", () => {
+  if (b.nPadre >= VUELTAS_MAX) { reiniciar(); }
+  ponerCorriendo(!corriendo);
+});
+function empezarDeNuevo(){
+  if (corriendo) ponerCorriendo(false);
+  reiniciar(); pintar(); $("estado").innerHTML = $("estado").dataset.texto;
+}
+$("b-reiniciar").addEventListener("click", empezarDeNuevo);
+$("semilla").addEventListener("change", empezarDeNuevo);
+for (const r of document.querySelectorAll("input[name=regla]")) r.addEventListener("change", empezarDeNuevo);
+$("c").addEventListener("input", () => { cExacto = Number($("c").value); empezarDeNuevo(); });
+for (const bt of document.querySelectorAll("button[data-c]")){
+  bt.addEventListener("click", () => {
+    cExacto = bt.dataset.c === "teoria" ? C_TEORIA : Number(bt.dataset.c);
+    $("c").value = cExacto.toFixed(2); empezarDeNuevo();
+  });
+}
+$("b-revelar").addEventListener("click", () => {
+  revelado = !revelado;
+  $("b-revelar").setAttribute("aria-pressed", String(revelado));
+  $("b-revelar").textContent = revelado ? "Ocultar μ" : "Revelar μ";
+  pintar(); if (!corriendo) $("estado").innerHTML = $("estado").dataset.texto;
+});
+let espera = 0;
+window.addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(pintarGraficas, 60); });
+
+reiniciar(); pintar(); $("estado").innerHTML = $("estado").dataset.texto;
+</script>
+</body>
+</html>

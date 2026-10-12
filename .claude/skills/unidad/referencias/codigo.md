@@ -68,3 +68,5 @@ Cadena: **fuente → generadores → (notebook, animación) → pruebas**. Coman
 - Los cuatro notebooks de `course/6_optimizacion/_assets/` no tienen generador: heredados; no se retrofitan salvo que la auditoría lo ponga en el plan.
 - `tools/test_juegos.py:32` fija números de una tarea: heredado, solo lectura.
 - Complejidad y computabilidad usan la clase «regenera»: no se migran de paso.
+- **DEBE** en las páginas HTML de `_assets/`, nada de `text-transform` sobre texto con símbolos: convierte
+  N(s) en N(S) y x en X, que el curso no tiene (`hoeffding_en_vivo.html`, `bandido_en_vivo.html`, `cd58ed7`).

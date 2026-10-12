@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 145m
+estimated_time: 175m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -17,10 +17,12 @@ página verás que ya no se puede llegar a los finales: hay que detenerse
 antes y **estimar**.
 
 > [!TIP]
-> **Esta clase tiene animaciones y un notebook.** Minimax con corte y profundización iterativa, corriendo en el árbol T:
+> **Esta clase tiene animaciones, dos simulaciones en vivo y un notebook.** Minimax con corte y profundización iterativa, corriendo en el árbol T, y el bono de UCT:
 >
 > - **▶ Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
 >   algoritmo abre la suya en un recuadro como éste.
+> - **▶ Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
+>   la página «De dónde sale el bono».
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -36,7 +38,7 @@ a su página.
 | $V(s)$ | El valor: lo que MAX asegura desde $s$ si MIN es racional | Minimax a mano |
 | DECIDIR-MINIMAX | Elige la jugada de la raíz con el máximo de $V$ | Minimax como algoritmo |
 | Árbol T | Juguete: R de MAX; I, C, D de MIN; C1 y C2 de MAX; hojas 3, 6 · 5, 2 · 7, 8 · 2, 12 | Minimax como algoritmo |
-| $b$, $m$ | Ramificación y profundidad máxima; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
+| $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
 | $\alpha$, $\beta$ | Lo que MAX y MIN ya tienen asegurado en el camino | Alfa-beta a mano |
 | Corte | Dejar de generar hermanos que no cambian la respuesta | Alfa-beta a mano |
 | Cota | Lo que devuelve un nodo que cortó: «al menos» o «a lo más», no su valor | Alfa-beta a mano |
@@ -61,6 +63,9 @@ Las páginas de la clase 2:
   el tiempo y por qué repetir búsquedas cuesta poco.
 - Explicar la idea de la búsqueda de árbol Monte Carlo: estimar una jugada
   simulando partidas al azar, sin función de evaluación.
+- Explicar el bono de UCT como margen de error de un promedio: por qué se
+  suma, de dónde sale su tamaño, y que se usa para seleccionar, no para
+  entregar.
 
 La utilidad no cambia: sigue siendo la de las clases 1 y 2, $U=+1$ si gana
 Blancas y $U=-1$ si gana Negras. Lo nuevo es lo que se hace cuando la
@@ -68,17 +73,20 @@ búsqueda se corta antes de llegar a un final.
 
 ## El hilo de la clase
 
-Dos ejemplos, cada uno con su papel:
+Tres ejemplos, cada uno con su papel:
 
 - **Una posición de peones de 4×4**, para las ideas. A profundidad 1 se
   elige ahí una jugada que pierde, y cada página muestra una manera
   distinta de no caer en eso.
 - **El árbol T de la clase 2**, para los algoritmos: es tan chico que cada
   línea del pseudocódigo se sigue a mano.
+- **Tres jugadas x, y, z de MCTS**, en las páginas 5 y 6: primero
+  con promedios simulados y después como un bandido, con su promedio
+  verdadero oculto, para ver de dónde sale el bono.
 
 ## Recorrido
 
-Cinco páginas, en orden. Las dos primeras van en par, como en la clase 2:
+Seis páginas, en orden. Las dos primeras van en par, como en la clase 2:
 primero **a mano** y después **como algoritmo**.
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
@@ -89,7 +97,8 @@ primero **a mano** y después **como algoritmo**.
 | 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 20m |
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 35m |
 | 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 20m |
-| 6 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
+| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 30m |
+| 7 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
 
 1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
@@ -97,28 +106,35 @@ primero **a mano** y después **como algoritmo**.
 3. [[mas-alla-del-horizonte|Más allá del horizonte]]
 4. [[jugar-contra-el-reloj|Jugar contra el reloj]]
 5. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
+6. [[de-donde-sale-el-bono|De dónde sale el bono]]
 
 ## Las animaciones y el notebook
 
-Los mismos de la clase 2, con dos secciones más: minimax con corte y
-profundización iterativa, en el árbol T. No se cuentan en el tiempo de la
-clase.
+Los mismos de la clase 2, con tres secciones más: minimax con corte y
+profundización iterativa, en el árbol T, y de dónde sale el bono. Además,
+dos simulaciones en vivo. No se cuentan en el tiempo de la clase.
 
 - [La animación con corte](../_assets/traza_arbol_t.html#corte): cambia $d$ entre
   1, 2 y 3.
 - [La animación de la profundización iterativa](../_assets/traza_arbol_t.html#iterativa): las
   tres búsquedas seguidas.
+- [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html): miles de promedios a
+  la vez, contra la cota.
+- [Bandido en vivo](../_assets/bandido_en_vivo.html): x, y, z con su promedio
+  oculto; mueve $c$.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
 
-*Se abre en Google Colab, en otra pestaña. Las secciones 6 y 7 son las de esta
+*Se abre en Google Colab, en otra pestaña. Las secciones 6, 7 y 8 son las de esta
 clase.*
 
 ## Qué no cubre esta clase
 
 - **MCTS** solo se presenta: su idea, sus cuatro pasos y su regla de
-  selección, que calculas una vez con números. No escribimos su
-  pseudocódigo.
+  selección, que calculas con números. No escribimos su pseudocódigo.
+- **De dónde sale el bono** se explica con simulaciones; la desigualdad de
+  Hoeffding se cita, no se demuestra, y tampoco demostramos que UCT
+  converge.
 - **AlphaGo y AlphaZero** se mencionan, no se desarrollan.
 - **La evaluación** la escribimos a mano; no la aprendemos de partidas.
 - **La búsqueda de quietud** se explica con un ejemplo, sin sus detalles

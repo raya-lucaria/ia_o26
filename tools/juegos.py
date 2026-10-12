@@ -23,6 +23,7 @@ from itertools import product
 from pathlib import Path
 import copy
 import math
+import random
 import re
 
 COLUMNAS = "abcdefgh"
@@ -2556,3 +2557,227 @@ def uct_ejercicio(c, victorias=False, datos=None):
 
 def mas_simulada(datos):
     return max(datos, key=lambda k: datos[k][0])
+
+
+# ------------------------------------- p6: de donde sale el bono (UCB) ---
+#
+# Escala de la p5: cada simulacion da U = +1 o −1, y ū(s′) es su promedio,
+# en [−1, 1]. μ(s′) es el promedio verdadero: lo que daria ū(s′) con
+# infinitas simulaciones. Hoeffding (citado, no demostrado) para resultados
+# independientes en [a, b]: Pr(ū ≤ μ − ε) ≤ exp(−2Nε²/(b − a)²); con
+# b − a = 2 queda exp(−Nε²/2). Todo con la biblioteca estandar y semilla
+# fija: el mismo llamado da siempre los mismos numeros.
+
+C_TEORIA = 2 * math.sqrt(2)      # el c de UCB1 en la escala ±1 (√2 con G/N)
+
+
+def cota_hoeffding(n, eps):
+    """Cota de Hoeffding para la escala ±1: Pr(ū ≤ μ − ε) ≤ e^(−n·ε²/2)."""
+    return math.exp(-n * eps ** 2 / 2)
+
+
+def margen(delta, n):
+    """El ε que deja la cota en δ: e^(−nε²/2) = δ ⇒ ε = √(2·ln(1/δ)/n)."""
+    return math.sqrt(2 * math.log(1 / delta) / n)
+
+
+def bono_ucb(n_padre, n, c=None):
+    """c·√(ln N(s)/N(s′)); c=None es el de la teoria, 2√2 (margen con
+    δ = N(s)^−4). Una jugada sin probar (N(s′) = 0) tiene bono infinito."""
+    if n == 0:
+        return INF
+    return (C_TEORIA if c is None else c) * math.sqrt(math.log(n_padre) / n)
+
+
+def puntajes_ucb(datos, c=None, mueve="MAX"):
+    """{jugada: puntaje} con datos = {jugada: (N(s′), ū(s′))}, ū medido desde
+    MAX. MIN es optimista desde su lado: usa −ū. N(s) = suma de los N(s′)."""
+    signo = 1 if mueve == "MAX" else -1
+    total = sum(n for n, _ in datos.values())
+    return {k: signo * float(u) + bono_ucb(total, n, c) for k, (n, u) in datos.items()}
+
+
+def mejor(puntajes):
+    """La de mayor puntaje; en empate, la primera en el orden de los datos."""
+    return max(puntajes, key=puntajes.get)
+
+
+def prob_gana(mu):
+    """Pr(U = +1) para que el promedio verdadero sea μ: (1 + μ)/2."""
+    return (1 + mu) / 2
+
+
+def _resultado(rng, p):
+    """Una simulacion: +1 con probabilidad p, si no −1."""
+    return 1 if rng.random() < p else -1
+
+
+def _exacto(x):
+    """0.3 como 3/10, no como el binario mas cercano: F(0.3) no es 3/10."""
+    return x if isinstance(x, (int, F)) else F(repr(x))
+
+
+def _umbral(mu, eps, k):
+    """El mayor total de U con ū ≤ μ − ε tras k simulaciones: ⌊(μ − ε)·k⌋,
+    en fracciones exactas (0.3 − 0.2 en coma flotante no es 0.1)."""
+    return math.floor((_exacto(mu) - _exacto(eps)) * k)
+
+
+def frecuencias_desvio(mu, ns, eps, repeticiones, semilla):
+    """{n: fraccion de las repeticiones con ū ≤ μ − ε tras n simulaciones}.
+    Cada repeticion es UNA tirada de max(ns) simulaciones; se mira su
+    promedio parcial en cada n de ns. Asi la tabla sale en una pasada."""
+    rng = random.Random(semilla)
+    ns = sorted(set(ns))
+    tope, cuenta = ns[-1], {n: 0 for n in ns}
+    umbral = {n: _umbral(mu, eps, n) for n in ns}
+    p = float(prob_gana(_exacto(mu)))
+    for _ in range(repeticiones):
+        suma = 0
+        for k in range(1, tope + 1):
+            suma += _resultado(rng, p)
+            if k in umbral and suma <= umbral[k]:
+                cuenta[k] += 1
+    return {n: F(cuenta[n], repeticiones) for n in ns}
+
+
+def frecuencia_desvio(mu, n, eps, repeticiones, semilla):
+    """Fraccion de `repeticiones` promedios de n simulaciones con ū ≤ μ − ε."""
+    return frecuencias_desvio(mu, [n], eps, repeticiones, semilla)[n]
+
+
+def prob_desvio_exacta(mu, n, eps):
+    """Pr(ū ≤ μ − ε) exacta: ū = (2K − n)/n con K ~ Binomial(n, (1+μ)/2)."""
+    p = prob_gana(_exacto(mu))
+    return sum(math.comb(n, k) * p ** k * (1 - p) ** (n - k)
+               for k in range(n + 1) if 2 * k - n <= _umbral(mu, eps, n))
+
+
+REGLAS_BANDIDO = ("mejor_promedio", "a_veces_al_azar", "ucb")
+AL_AZAR = 0.1                    # «a veces al azar»: una vuelta de cada diez
+
+
+def bandido(regla, mus, vueltas, semilla, c=None, al_azar=AL_AZAR):
+    """Elige entre las jugadas de `mus` ({jugada: μ}) `vueltas` veces.
+
+    - "mejor_promedio": prueba cada una una vez (en el orden de mus) y luego
+      elige siempre la de mayor ū; en empate, la primera.
+    - "a_veces_al_azar": igual, pero con probabilidad al_azar elige una al
+      azar (puede caer en la mejor).
+    - "ucb": sin probar = bono infinito; luego mayor ū(s′) + c·√(ln N(s)/N(s′)),
+      con N(s) = vueltas ya hechas (n_padre) y N(s′) = N[a].
+
+    La suerte de cada jugada es su propia fila de tiradas (la k-esima vez que
+    se elige x da siempre el mismo resultado, sea cual sea la regla), y las
+    decisiones al azar usan otra: asi las tres reglas comparten la suerte.
+    Devuelve dict(N, u, elecciones, resultados, arrepentimiento): N[a] es
+    N(s′) y u[a] es ū(s′) de cada jugada; arrepentimiento[k] es lo que se
+    perdio en las primeras k + 1 vueltas por no elegir siempre la mejor: la
+    suma de μ(mejor) − μ(elegida). La pagina no lo usa (mira la fraccion de
+    vueltas en x); las pruebas si."""
+    if regla not in REGLAS_BANDIDO:
+        raise ValueError(regla)
+    nombres = list(mus)
+    suerte = {a: random.Random(semilla * 1000 + i) for i, a in enumerate(nombres)}
+    dado = random.Random(semilla * 1000 + 999)
+    N = {a: 0 for a in nombres}
+    # suma_u[a]: la suma de los U de a, asi ū(s′) = suma_u[a] / N[a]. No es
+    # G(s′) de la p5 (victorias): con ±1, ū = 2·G/N − 1.
+    suma_u = {a: 0 for a in nombres}
+    mu_max = max(mus.values())
+    p = {a: float(prob_gana(mus[a])) for a in nombres}
+    elecciones, resultados, arrep, perdido = [], [], [], 0
+    for n_padre in range(vueltas):          # N(s): vueltas ya hechas
+        sin_probar = [a for a in nombres if N[a] == 0]
+        if regla == "a_veces_al_azar" and not sin_probar and dado.random() < al_azar:
+            a = dado.choice(nombres)
+        elif sin_probar:
+            a = sin_probar[0]
+        elif regla == "ucb":
+            a = mejor({b: suma_u[b] / N[b] + bono_ucb(n_padre, N[b], c)
+                       for b in nombres})
+        else:
+            a = mejor({b: suma_u[b] / N[b] for b in nombres})
+        r = _resultado(suerte[a], p[a])
+        N[a] += 1
+        suma_u[a] += r
+        perdido += mu_max - mus[a]
+        elecciones.append(a)
+        resultados.append(r)
+        arrep.append(perdido)
+    return dict(N=N, u={a: (F(suma_u[a], N[a]) if N[a] else None) for a in nombres},
+                elecciones=elecciones, resultados=resultados, arrepentimiento=arrep)
+
+
+def filas_bandido(regla, mus, vueltas, semilla, c=None):
+    """La corrida de `bandido`, vuelta por vuelta, para una tabla: dict(vuelta,
+    jugada, U, N, u), con N(s′) y ū(s′) de cada jugada DESPUES de esa vuelta;
+    `vuelta` es N(s) tras ella."""
+    b = bandido(regla, mus, vueltas, semilla, c)
+    N, suma_u, filas = {a: 0 for a in mus}, {a: 0 for a in mus}, []
+    for n_padre, (a, r) in enumerate(zip(b["elecciones"], b["resultados"]), 1):
+        N[a] += 1
+        suma_u[a] += r
+        filas.append(dict(vuelta=n_padre, jugada=a, U=r, N=dict(N),
+                          u={k: (F(suma_u[k], N[k]) if N[k] else None) for k in mus}))
+    return filas
+
+
+@lru_cache(maxsize=None)
+def _fraccion_en_la_mejor(regla, mus_items, marcas, corridas, c):
+    mus = dict(mus_items)
+    la_mejor = max(mus, key=mus.get)
+    suma = {m: 0.0 for m in marcas}
+    for semilla in range(1, corridas + 1):
+        elecciones = bandido(regla, mus, max(marcas), semilla, c)["elecciones"]
+        veces = 0
+        for n_padre, a in enumerate(elecciones, 1):       # N(s) tras la vuelta
+            veces += a == la_mejor
+            if n_padre in suma:
+                suma[n_padre] += veces / n_padre
+    return {m: suma[m] / corridas for m in marcas}
+
+
+def fraccion_en_la_mejor(regla, mus, marcas, corridas, c=None):
+    """{N(s): fraccion de las primeras N(s) vueltas que fueron a la mejor
+    jugada, promediada sobre `corridas` corridas con semillas 1..corridas}."""
+    return _fraccion_en_la_mejor(regla, tuple(mus.items()), tuple(marcas), corridas, c)
+
+
+# El hilo de la p6: las tres jugadas del ejercicio de la p5 (x, y, z), ahora
+# con un promedio verdadero oculto. La mejor de verdad es x, la que la p5
+# entrega por ser la mas simulada, aunque su ū (0.5) sea menor que el de y
+# (0.6 en 30 simulaciones, con suerte). z es mala de verdad.
+MUS_HILO = {"x": F(3, 5), "y": F(3, 10), "z": F(-1, 5)}
+SEMILLA_ATORA = 36          # «siempre el mejor promedio» se queda en z
+VUELTAS_MICRO = 12
+# La figura de Hoeffding: la jugada y (μ = 0.3), ε = 0.2.
+MU_HOEFFDING, EPS_HOEFFDING = F(3, 10), F(1, 5)
+REPS_HOEFFDING, SEMILLA_HOEFFDING = 20000, 1
+NS_HOEFFDING = tuple(range(1, 201))
+# La figura del bandido: 40 corridas de 10 000 vueltas por regla.
+MARCAS_BANDIDO = (10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
+CORRIDAS_BANDIDO = 40
+
+
+@lru_cache(maxsize=None)
+def tabla_hoeffding():
+    """{n: (frecuencia observada, cota)} de la figura jue-c3-hoeffding."""
+    f = frecuencias_desvio(MU_HOEFFDING, NS_HOEFFDING, EPS_HOEFFDING,
+                           REPS_HOEFFDING, SEMILLA_HOEFFDING)
+    return {n: (f[n], cota_hoeffding(n, float(EPS_HOEFFDING))) for n in NS_HOEFFDING}
+
+
+def tabla_bandido():
+    """{regla: {N(s): fraccion en la mejor}} de la figura jue-c3-bandido."""
+    t = {r: fraccion_en_la_mejor(r, MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO)
+         for r in REGLAS_BANDIDO}
+    # La c de la pagina 5: explora menos que la teorica y aqui converge antes.
+    t["ucb_c1"] = fraccion_en_la_mejor("ucb", MUS_HILO, MARCAS_BANDIDO, CORRIDAS_BANDIDO, c=1)
+    return t
+
+
+# Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s′), ū(s′))},
+# ū medido desde MAX. Con c = 2√2 la seleccion va a r (poco probada); con
+# c = 1, a p. Se entrega p, la mas simulada.
+EJEMPLO_MIN = {"p": (30, F(-1, 5)), "q": (15, F(0)), "r": (5, F(2, 5))}

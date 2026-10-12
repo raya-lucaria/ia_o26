@@ -622,3 +622,94 @@ def test_ningun_aria_label_deja_una_frase_vacia(nombre):
     se publicaba vacia."""
     etiqueta = re.match(r"<svg\b[^>]*>", _texto(nombre)).group()
     assert not re.search(r":\s*\.", etiqueta), nombre
+
+
+# ------------------------------- clase 3, p6: de donde sale el bono ---
+
+UCB = ["jue-c3-hoeffding", "jue-c3-bono", "jue-c3-bandido"]
+
+
+@pytest.mark.parametrize("nombre", UCB)
+def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
+    """Ejes con nombre, marcas de escala de 14 px o mas, y el eje log dicho
+    en el nombre del eje que lo es."""
+    svg = _texto(nombre)
+    renglones = re.findall(r">([^<>]+)</text>", svg)
+    ejes = {"jue-c3-hoeffding": ("N(s′): simulaciones de la jugada",
+                                 "frecuencia de ū(s′) ≤ μ(s′) − ε (escala log)"),
+            "jue-c3-bono": ("N(s′): simulaciones de la jugada", "bono (en unidades de ū)"),
+            "jue-c3-bandido": ("N(s): vueltas (escala log)",
+                               "fracción de vueltas en la mejor jugada (x)")}[nombre]
+    for e in ejes:
+        assert escape(e) in renglones, e
+    marcas = {"jue-c3-hoeffding": ["0.001", "0.01", "0.1", "1", "0", "50", "200"],
+              "jue-c3-bono": ["0", "1", "2", "3", "4", "50", "200"],
+              "jue-c3-bandido": ["10", "100", "1 000", "10 000", "0.25", "1"]}[nombre]
+    for m in marcas:
+        assert m in renglones, m
+    assert ANCHO_UCB_MAX >= float(re.search(r'width="([\d.]+)"', svg).group(1))
+    assert not re.findall(r'<text [^>]*font-size="(1[0-3](?:\.\d+)?)"', svg)
+
+
+ANCHO_UCB_MAX = 520
+
+
+def test_hoeffding_dibuja_la_simulacion_y_la_cota():
+    svg = _texto("jue-c3-hoeffding")
+    pl = gen.plano_hoeffding()
+    puntos = gen.puntos_hoeffding(pl)
+    t = j.tabla_hoeffding()
+    assert len(puntos) == len(j.NS_HOEFFDING) == 200      # ninguna frecuencia es 0
+    circulos = re.findall(r'<circle cx="([\d.]+)" cy="([\d.]+)" r="2.6"', svg)
+    # Cada punto es la frecuencia de la fuente (no la cota ni otra cosa)…
+    esperados = [(pl.x(n), pl.y(float(t[n][0]))) for n in j.NS_HOEFFDING]
+    assert [(float(x), float(y)) for x, y in circulos] == esperados
+    assert [(x, y) for _, x, y in puntos] == esperados
+    # …y queda bajo la cota (en pixeles: y mayor es mas abajo).
+    for n, x, y in puntos:
+        assert y >= pl.y(t[n][1]), n
+    # La linea de la cota pasa por exp(−n·ε²/2) en cada n.
+    linea_cota = re.search(rf'<polyline points="([^"]+)" fill="none" stroke="{gen.COLOR_COTA}"',
+                           svg).group(1).split()
+    assert linea_cota[99] == f"{pl.x(100)},{pl.y(j.cota_hoeffding(100, 0.2))}"
+    # El aria-label cita lo que la pagina puede citar: n = 10, 50, 100.
+    aria = re.match(r"<svg\b[^>]*>", svg).group()
+    for n in (10, 50, 100):
+        assert f"con N(s′) = {n}, {gen._pct(t[n][0])} contra una cota de {gen._pct(t[n][1])}" in aria
+    assert "con N(s′) = 10, 24.7 % contra una cota de 81.9 %" in aria
+
+
+def test_el_bono_dibuja_la_formula():
+    svg = _texto("jue-c3-bono")
+    pl = gen.plano_bono()
+    for n in gen.MARCAS_MICRO_BONO:
+        b = j.bono_ucb(100, n)
+        assert f'<circle cx="{pl.x(n)}" cy="{pl.y(b)}" r="5"' in svg, n
+    assert "el bono vale 1.92, 1.11, 0.78." in svg
+    # Cuatro curvas: tres de c = 2√2 y la de c = 1; cada una baja con N(s′).
+    curvas = re.findall(r'<polyline points="([^"]+)"', svg)
+    assert len(curvas) == 4
+    for c in curvas:
+        ys = [float(p.split(",")[1]) for p in c.split()]
+        assert all(a <= b for a, b in zip(ys, ys[1:]))   # en pixeles, hacia abajo
+    # Con mas N(s), mas bono: la curva de 10 000 va arriba de la de 100.
+    primera = {n: j.bono_ucb(n, 5) for n in gen.CURVAS_BONO}
+    assert primera[100] < primera[1000] < primera[10000] < 4
+
+
+def test_el_bandido_dibuja_las_tres_reglas():
+    svg = _texto("jue-c3-bandido")
+    pl = gen.plano_bandido()
+    pts = gen.puntos_bandido(pl)
+    t = j.tabla_bandido()
+    assert set(pts) == set(j.REGLAS_BANDIDO) | {"ucb_c1"}
+    for r, lista in pts.items():
+        e = gen.ESTILO_REGLA[r]
+        assert e["rotulo"] in svg
+        esperado = " ".join(f"{pl.x(m)},{pl.y(t[r][m])}" for m in j.MARCAS_BANDIDO)
+        assert f'<polyline points="{esperado}"' in svg, r
+    # Cada regla con su trazo y su marca: el color no es la unica senal.
+    assert len({(e["guiones"], e["marca"]) for e in gen.ESTILO_REGLA.values()}) == len(gen.ESTILO_REGLA)
+    aria = re.match(r"<svg\b[^>]*>", svg).group()
+    assert "UCB, c = 2√2, 0.42 a 0.94" in aria
+    assert "μ de x, y, z: 0.6, 0.3, −0.2" in svg

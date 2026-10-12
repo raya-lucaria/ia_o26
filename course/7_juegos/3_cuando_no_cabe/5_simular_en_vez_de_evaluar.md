@@ -313,7 +313,7 @@ cambiado, es su mejor hijo. Así corrige MCTS lo que vimos
 en la sección 2. Donde ya construyó árbol, cada jugador elige por su
 puntaje y no al azar.
 
-Más adelante veremos de dónde sale este bono.
+De dónde sale este bono, y por qué $c$ es una perilla, lo verás en [[de-donde-sale-el-bono|la página siguiente]].
 
 ::: exercise {#jue-c3-ej-mcts title="Calcula qué se explora y qué se entrega"}
 Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:
@@ -404,4 +404,4 @@ de un hijo y decir por qué un promedio de simulaciones no es $V$.
   AlphaGo Zero y AlphaZero (2017) cambiaron la simulación por una red,
   que además guía la selección.
 
-Continúa con [[juegos-sin-turnos|la clase 4, cuando no hay turnos]].
+Continúa con [[de-donde-sale-el-bono|de dónde sale el bono]].
