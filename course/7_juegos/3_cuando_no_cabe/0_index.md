@@ -38,7 +38,7 @@ a su página.
 | $V(s)$ | El valor: lo que MAX asegura desde $s$ si MIN es racional | Minimax a mano |
 | DECIDIR-MINIMAX | Elige la jugada de la raíz con el máximo de $V$ | Minimax como algoritmo |
 | Árbol T | Juguete: R de MAX; I, C, D de MIN; C1 y C2 de MAX; hojas 3, 6 · 5, 2 · 7, 8 · 2, 12 | Minimax como algoritmo |
-| $b$, $m$ | Ramificación y profundidad máxima; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
+| $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
 | $\alpha$, $\beta$ | Lo que MAX y MIN ya tienen asegurado en el camino | Alfa-beta a mano |
 | Corte | Dejar de generar hermanos que no cambian la respuesta | Alfa-beta a mano |
 | Cota | Lo que devuelve un nodo que cortó: «al menos» o «a lo más», no su valor | Alfa-beta a mano |

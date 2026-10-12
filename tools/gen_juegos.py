@@ -3178,7 +3178,7 @@ def plano_bono():
 
 def jue_c3_bono():
     """El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para N(s) = 100, 1000 y
-    10 000, y la curva de c = 1 (la de la p5) con N(s) = 100, punteada."""
+    10 000, y la curva de c = 1 (la de la p5) con N(s) = 100, de raya y punto."""
     pl = plano_bono()
     W, H = ANCHO_UCB, pl.y0 + pl.h + 262
     ns = list(range(5, 201))
@@ -3187,7 +3187,7 @@ def jue_c3_bono():
     desc = ("Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono "
             "2√2·√(ln N(s)/N(s′)), de 0 a 4. Tres curvas, una por N(s): 100, 1 000 y 10 000; "
             "las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Con N(s) = 100 "
-            f"el bono vale {micro}. Una cuarta curva, punteada y tenue: c = 1, la de la p5, "
+            f"el bono vale {micro}. Una cuarta curva, tenue y de raya y punto: c = 1, la de la p5, "
             f"con N(s) = 100: {j.bono_ucb(100, 10, c=1):.2f} con N(s′) = 10.")
     out = [marco(W, H, desc, " ".join(renglones), desc)]
     encabezado(out, renglones)
@@ -3259,13 +3259,18 @@ def jue_c3_bandido():
             out.append(_marca(x, y, e["marca"], e["color"], r=4))
     filas = [(lambda x, y, e=ESTILO_REGLA[r]: linea(x, y, x + 30, y, color=e["color"],
                                                     grosor=3, guiones=e["guiones"])
-              + _marca(x + 15, y, e["marca"], e["color"], r=4), ESTILO_REGLA[r]["rotulo"])
+              + _marca(x + 15, y, e["marca"], e["color"], r=4),
+              f"{ESTILO_REGLA[r]['rotulo']}: {t[r][fin]:.2f}")
              for r in t]
     # Debajo del eje, a la izquierda: a 390 px la de la derecha quedaba
-    # recortada y no se sabia cual UCB era c = 2√2 y cual c = 1.
-    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 270, filas)
+    # recortada y no se sabia cual UCB era c = 2√2 y cual c = 1. Cada fila
+    # lleva su valor final: en N(s) = 10 000 el circulo de UCB (0.94) tapa
+    # el rombo de «a veces al azar» (0.93) y el dibujo solo no dice cual va
+    # arriba (ronda 2 de render).
+    _caja_leyenda(out, X_PIE, pl.y0 + pl.h + 66, 300, filas)
     out.append(nota_svg(pl.y0 + pl.h + 214, [
-        f"Promedio de {j.CORRIDAS_BANDIDO} corridas con semilla", "fija, de 10 000 vueltas cada una."],
+        f"Promedio de {j.CORRIDAS_BANDIDO} corridas de 10 000 vueltas;",
+        "el número de cada regla es su valor final."],
         tam=14))
     out.append(cierre())
     return "".join(out)

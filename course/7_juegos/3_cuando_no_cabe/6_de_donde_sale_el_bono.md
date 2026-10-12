@@ -20,8 +20,8 @@ Al terminar tendrás:
   que la comprueba;
 - el bono despejado paso a paso, de un margen con probabilidad de fallo
   $\delta$ hasta ${c=2\sqrt2}$;
-- tres reglas comparadas en las mismas tres jugadas: cuál se atora y cuál
-  llega a la mejor;
+- cuatro reglas comparadas en las mismas tres jugadas: cuál se atora y
+  cuál llega a la mejor;
 - cuándo se usa el bono (al **seleccionar**) y cuándo no (al
   **entregar**), también en un nodo de MIN.
 
@@ -38,8 +38,8 @@ Al terminar tendrás:
 > repetida.
 
 > **Supuestos de esta página.** Las simulaciones de una misma jugada son
-> independientes y salen todas de la misma forma de jugar. En la sección 8
-> vemos qué pasa cuando hay árbol y esto deja de valer.
+> independientes. En la sección 8 vemos qué pasa cuando hay árbol y esto
+> deja de valer.
 
 > [!TIP]
 > **Míralo correr: el margen y las tres jugadas**
@@ -104,7 +104,7 @@ llegar ahí una jugada que ya ganó una vez?
 1. **z**, con ${\bar u=+1}$.
 2. **Nunca.** x e y no se vuelven a probar, así que se quedan en ${-1}$, el
    mínimo posible. z ya ganó una vez: su promedio nunca baja a ${-1}$. En
-   esta corrida, tras 1 000 vueltas, x e y tienen una simulación cada una y
+   esta corrida, tras 1 000 vueltas, x e y tienen una simulación cada una y
    z, 998. La regla se atoró en la peor jugada.
 :::
 
@@ -117,7 +117,7 @@ simulación. Eso es lo que hace el bono.
 debajo del verdadero?**
 
 Se puede medir. Toma la jugada y, con ${\mu=0.3}$. Juega $N(s')$
-simulaciones, saca su promedio y repite todo 20 000 veces. Cuenta en
+simulaciones, saca su promedio y repite todo 20 000 veces. Cuenta en
 cuántas el promedio quedó al menos $\varepsilon$ por debajo.
 
 ::: definition {#jue-c3-margen title="El margen y el fallo"}
@@ -133,10 +133,10 @@ la frecuencia simulada con una cota que veremos enseguida.
 ::: table {#jue-c3-tabla-hoeffding title="La jugada y: el fallo baja rápido con N(s′)"}
 | $N(s')$ | Simulado | Cota |
 |---:|---:|---:|
-| 10 | 24.7 % | 81.9 % |
-| 50 | 7.1 % | 36.8 % |
-| 100 | 2.4 % | 13.5 % |
-| 200 | 0.2 % | 1.8 % |
+| 10 | 24.7 % | 81.9 % |
+| 50 | 7.1 % | 36.8 % |
+| 100 | 2.4 % | 13.5 % |
+| 200 | 0.2 % | 1.8 % |
 :::
 
 ::: figure {#jue-c3-fig-hoeffding title="Todos los puntos quedan bajo la cota"}
@@ -185,7 +185,7 @@ qué es el error que el bono tiene que cubrir.
 ::: exercise {#jue-c3-ej-fila-cota title="Calcula una fila de la cota"}
 1. Con ${N(s')=100}$ y ${\varepsilon=0.2}$, calcula la cota de Hoeffding.
    ¿Coincide con la tabla?
-2. Lo simulado fue 2.4 %. ¿Contradice eso la cota?
+2. Lo simulado fue 2.4 %. ¿Contradice eso la cota?
 :::
 
 ::: hint {#jue-c3-pista-fila-cota-1 of="jue-c3-ej-fila-cota" title="El exponente"}
@@ -193,14 +193,14 @@ qué es el error que el bono tiene que cubrir.
 :::
 
 ::: answer {#jue-c3-resp-fila-cota of="jue-c3-ej-fila-cota"}
-1. ${100\cdot0.04/2=2}$, y ${e^{-2}\approx0.14}$: el 13.5 % de la tabla.
-2. No. La cota dice «a lo más»: 2.4 % está muy por debajo de 13.5 %. La
+1. ${100\cdot0.04/2=2}$, y ${e^{-2}\approx0.14}$: el 13.5 % de la tabla.
+2. No. La cota dice «a lo más»: 2.4 % está muy por debajo de 13.5 %. La
    cota es **holgada**, y a cambio vale para cualquier jugada acotada.
 :::
 
 ## 3 · Despejar el margen
 
-**Piensa: si aceptas equivocarte con probabilidad 5 %, ¿cuánto margen
+**Piensa: si aceptas equivocarte con probabilidad 5 %, ¿cuánto margen
 necesitas?**
 
 Ponle nombre a esa probabilidad.
@@ -226,7 +226,7 @@ aquí es un margen de error.
 
 Por ejemplo, con ${\delta=e^{-2}\approx0.14}$ y ${N(s')=100}$, el margen es
 ${\sqrt{2\cdot2/100}=0.2}$: la fila de 100 de la tabla, leída al revés.
-Con el 5 % de la pregunta y ${N(s')=100}$,
+Con el 5 % de la pregunta y ${N(s')=100}$,
 ${\sqrt{2\cdot3.00/100}\approx0.24}$, porque ${\ln20\approx3.00}$.
 
 ::: exercise {#jue-c3-ej-despeja title="Mueve una perilla a la vez"}
@@ -250,12 +250,12 @@ función envuelve a ${1/\delta}$?
 
 ## 4 · Pedir más confianza mientras avanza
 
-**Piensa: ¿sirve un mismo $\delta$, digamos 5 %, durante toda la
+**Piensa: ¿sirve un mismo $\delta$, digamos 5 %, durante toda la
 búsqueda?**
 
 No. Con $\delta$ fijo, el margen de una jugada solo depende de su propia
 $N(s')$. Si deja de elegirse, su techo **se congela**. Y la búsqueda hace
-miles de vueltas: un 5 % de mala suerte pasa muchas veces. Basta una
+miles de vueltas: un 5 % de mala suerte pasa muchas veces. Basta una
 racha mala al inicio para que la mejor quede con un techo bajo, congelado,
 y no se vuelva a probar.
 
@@ -277,10 +277,14 @@ no se elige ya no se congela. Su $N(s')$ se queda quieta, pero $N(s)$
 sigue creciendo, y su bono también: despacio, por el logaritmo, pero sin
 tope. Tarde o temprano vuelve a probarse.
 
-El 4 es una **elección**, no una ley: hace que los fallos se vuelvan raros
-lo bastante rápido. Otro exponente daría otra $c$.
+El 4 es una **elección**, no una ley. Cuántas veces se prueba cada jugada
+lo decide la regla con lo que ya salió, así que el margen no se usa una
+vez sino en cada vuelta. El 4 hace que los fallos sean tan raros que,
+sumados sobre todas las vueltas, siguen siendo pocos. Otro exponente daría
+otra $c$.
 
-> **En otros textos** verás $Q(s,a)$ y ${c=\sqrt2}$ con la tasa ${G/N}$.
+> **En otros textos** el promedio se llama $Q(s,a)$, y verás
+> ${c=\sqrt2}$ con la tasa ${G/N}$.
 > Aquí ${\bar u\in[-1,1]}$ y ${c=2\sqrt2}$: es la misma regla. Como
 > ${\bar u=2\,G/N-1}$, cada puntaje nuestro es el doble del de ellos menos 1,
 > y el orden no cambia. Por lo mismo, con resultados entre 0 y 1 la cota de
@@ -299,11 +303,13 @@ lo bastante rápido. Otro exponente daría otra $c$.
 :::
 
 ::: figure {#jue-c3-fig-bono title="El bono baja con N(s′) y sube con N(s)"}
-![Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono 2√2·√(ln N(s)/N(s′)), en unidades de ū, de 0 a 4. Tres curvas, una por N(s): 100 continua, 1 000 con rayas y 10 000 con puntos; las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Puntos sobre la curva de 100 en N(s′) = 10, 30 y 60: el bono vale 1.92, 1.11 y 0.78. Una cuarta curva tenue, c = 1 con N(s) = 100, queda muy por debajo: 0.68 en N(s′) = 10](../_assets/jue-c3-bono.svg)
+![Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono 2√2·√(ln N(s)/N(s′)), en unidades de ū, de 0 a 4. Tres curvas, una por N(s): 100 continua, 1 000 con rayas y 10 000 con puntos; las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Puntos sobre la curva de 100 en N(s′) = 10, 30 y 60: el bono vale 1.92, 1.11 y 0.78. Una cuarta curva, tenue y de raya y punto, c = 1 con N(s) = 100, queda muy por debajo: 0.68 en N(s′) = 10](../_assets/jue-c3-bono.svg)
 :::
 
-Un techo de más de 1 no informa nada: $\mu(s')$ nunca pasa de 1. La cota
-es holgada a propósito, y por eso **$c$ es una perilla** que se ajusta.
+Un techo de más de 1 no informa nada: $\mu(s')$ nunca pasa de 1. Los
+bonos salen tan grandes porque pedir ${\delta=N(s)^{-4}}$ es pedir mucha
+confianza, a propósito. Por eso **$c$ es una perilla** que se ajusta: una
+$c$ más chica pide menos confianza y explora menos.
 
 ::: exercise {#jue-c3-ej-teoria title="Recalcula el ejercicio de MCTS con la c de la teoría"}
 En el ejercicio de MCTS (@jue-c3-ej-mcts), x tenía ${N=60}$ y
@@ -389,10 +395,8 @@ ${\bar u=-1/3}$ con tres. ${N(s)=5}$.
 ::: exercise {#jue-c3-ej-vuelta-seis title="Decide la vuelta 6"}
 Usa ${\ln5\approx1.61}$ y ${2\sqrt2\approx2.83}$.
 
-1. Calcula el puntaje de x y el de z. y empata con x; si hay empate, gana
-   la primera en orden x, y, z. ¿Qué jugada elige UCB?
-2. z tiene mejor promedio que x. ¿Qué parte del puntaje hace que x la
-   rebase?
+Calcula el puntaje de x y el de z. y empata con x; si hay empate, gana la
+primera en orden x, y, z. ¿Qué jugada elige UCB?
 :::
 
 ::: hint {#jue-c3-pista-vuelta-seis-1 of="jue-c3-ej-vuelta-seis" title="Qué va en cada raíz"}
@@ -401,17 +405,21 @@ es la $N(s')$ de x y cuál la de z?
 :::
 
 ::: answer {#jue-c3-resp-vuelta-seis of="jue-c3-ej-vuelta-seis"}
-1. x: ${-1+2.83\sqrt{1.61/1}\approx-1+3.59=2.59}$. z:
-   ${-1/3+2.83\sqrt{1.61/3}\approx-0.33+2.07=1.74}$. Elige **x**, por el
-   empate con y. Tras 12 vueltas la secuencia es x y z z z x y x y x y x,
-   y quedan ${N=5,4,3}$: la mayoría en x.
-2. **El bono.** x lleva una simulación y z, tres: el bono de x, 3.59, es
-   casi el doble del de z, 2.07, y compensa su peor promedio. «Siempre el
-   mejor promedio» se quedaba en z.
+- **x:** bono ${2.83\sqrt{1.61/1}\approx3.59}$;
+  puntaje ${-1+3.59=2.59}$.
+- **z:** bono ${2.83\sqrt{1.61/3}\approx2.07}$;
+  puntaje ${-0.33+2.07=1.74}$, con ${-1/3\approx-0.33}$.
+
+Elige **x**, por el empate con y. Gana por el bono: x lleva una simulación
+y z, tres. El bono de x, 3.59, es casi el doble del de z, 2.07, y compensa
+su peor promedio. «Siempre el mejor promedio» se quedaba en z.
+
+Tras 12 vueltas la secuencia es x y z z z x y x y x y x, y quedan
+${N=5,4,3}$: la mayoría en x.
 :::
 
-Una corrida es suerte. La figura promedia 40 corridas de 10 000 vueltas
-y compara cuatro reglas. «A veces al azar (10 %)» elige el mejor promedio,
+Una corrida es suerte. La figura promedia 40 corridas de 10 000 vueltas
+y compara cuatro reglas. «A veces al azar (10 %)» elige el mejor promedio,
 salvo una vuelta de cada diez, que elige al azar.
 
 ::: figure {#jue-c3-fig-bandido title="UCB empieza abajo y termina arriba"}
@@ -441,7 +449,7 @@ puntaje?**
 No. Al terminar, el bono **se quita**:
 
 ::: table {#jue-c3-tabla-seleccionar title="Seleccionar no es entregar"}
-| | Seleccionar | Entregar |
+| | Selección | Entrega |
 |---|---|---|
 | Cuándo | Cada vuelta | Al final |
 | Mira | Puntaje | $N(s')$ |
@@ -462,8 +470,7 @@ acaba el tiempo.
 :::
 
 ::: hint {#jue-c3-pista-entregar-1 of="jue-c3-ej-entregar" title="Promedio y evidencia"}
-De los dos números de cada jugada, ¿cuál dice cuánta evidencia hay
-detrás del otro?
+¿Qué cambia entre seleccionar y entregar: qué número mira cada uno?
 :::
 
 ::: answer {#jue-c3-resp-entregar of="jue-c3-ej-entregar"}
@@ -477,19 +484,22 @@ detrás del otro?
 ## 8 · Pasar del bandido al árbol
 
 **Piensa: en MCTS, ¿las simulaciones que pasan por un nodo siguen siendo
-independientes, con un mismo promedio verdadero?**
+independientes?**
 
 No del todo. MCTS pone un bandido **en cada nodo** del árbol: elige entre
 sus hijos con el mismo puntaje. Eso es **UCT**: UCB1 aplicado a árboles.
-Pero debajo de cada hijo hay otros bandidos que van aprendiendo. Lo que
-elijan abajo depende de los resultados anteriores y cambia con las
-vueltas.
+Pero debajo de cada hijo hay otros bandidos que van aprendiendo.
 
-Así que los resultados de un hijo ya no son independientes, y su promedio
-verdadero se mueve: Hoeffding no se aplica al pie de la letra. Kocsis y
-Szepesvári (2006) demostraron aparte que UCT, con una $c$ bastante grande,
-llega a la mejor jugada con suficientes vueltas. Esa prueba no la
-cubrimos.
+Así que los resultados de un hijo ya no son independientes: lo que se
+elige abajo depende de lo que salió antes. Lo que promedian tampoco es el
+$\mu(s')$ de la definición, que supone que los dos juegan al azar, sino
+algo que cambia con la búsqueda.
+
+Que cambie no basta para romper Hoeffding, que no pide la misma
+distribución en cada simulación; lo que la rompe es la dependencia. Por
+eso Hoeffding no se aplica al pie de la letra. Kocsis y Szepesvári (2006)
+demostraron aparte que UCT, con una $c$ bastante grande, llega a la mejor
+jugada con suficientes vueltas. Esa prueba no la cubrimos.
 
 Lo que te llevas es la intuición: el bono es un margen de
 error, y se suma porque el optimismo se corrige solo.
@@ -537,7 +547,7 @@ para entregar?
    MIN le importa que $\mu(p)$ sea **más bajo** de lo que parece, la otra
    cola. Su piso optimista es ${-0.2-0.45=-0.65}$. Antes de simular, la
    probabilidad de que ese piso quede en $\mu(p)$ o por encima es a lo más
-   5 %.
+   5 %.
 2. **El puntaje con ${c=2\sqrt2}$.** MIN baja al hijo de piso
    ${\bar u-\text{bono}}$ más bajo. Es lo mismo que cambiar el signo, como
    en [[simular-en-vez-de-evaluar|Simular en vez de evaluar]], y elegir el
@@ -545,6 +555,9 @@ para entregar?
    Puntajes: p ${0.2+1.02=1.22}$, q ${0+1.44=1.44}$, r
    ${-0.4+2.50=2.10}$. Baja por **r**: el peor promedio para MIN, pero
    con solo 5 simulaciones.
+
+   El bono de p, 1.02, es más del doble del margen del inciso 1: con
+   ${c=2\sqrt2}$ se pide ${\delta=1/50^4}$, mucho menos que 5 %.
 3. **El puntaje con ${c=1}$.** Bonos 0.36, 0.51 y 0.88; puntajes 0.56,
    0.51 y 0.48. Baja por **p**: la $c$ chica casi no explora.
 4. **Lo que se entrega.** **p**, la de más simulaciones, 30. Entregar no
@@ -560,7 +573,7 @@ calcular el puntaje en un nodo de MAX o de MIN.
 - **El bono es un margen de error.** Hoeffding acota cuánto falla un
   promedio de resultados entre ${-1}$ y ${+1}$:
   ${e^{-N(s')\varepsilon^2/2}}$. Con la jugada y, ${\varepsilon=0.2}$ y
-  ${N(s')=100}$, la cota es 13.5 % y lo simulado, 2.4 %.
+  ${N(s')=100}$, la cota es 13.5 % y lo simulado, 2.4 %.
 - **Despejar** da ${\varepsilon=\sqrt{2\ln(1/\delta)/N(s')}}$. Pedir
   ${\delta=N(s)^{-4}}$, cada vez más confianza, da el bono de UCT con
   ${c=2\sqrt2\approx2.83}$; con la tasa ${G/N}$ es ${c=\sqrt2}$, la misma
@@ -568,8 +581,8 @@ calcular el puntaje en un nodo de MAX o de MIN.
 - **Se suma por optimismo:** creer buena una mala se corrige al probarla;
   creer mala una buena, nunca. MIN usa el piso, ${\bar u-\text{bono}}$;
   una jugada sin probar tiene bono infinito.
-- **Siempre el mejor promedio se atora:** con una semilla, 998 de 1000
-  vueltas en z, la peor. A 10 000 vueltas, en la mejor: mejor promedio
+- **Siempre el mejor promedio se atora:** con una semilla, 998 de 1 000
+  vueltas en z, la peor. A 10 000 vueltas, en la mejor: mejor promedio
   0.85, a veces al azar 0.93, UCB con ${c=2\sqrt2}$ 0.94, con ${c=1}$ 0.99.
   $c$ es una perilla.
 - **Seleccionar usa el bono; entregar, no.** En el ejercicio de MCTS, con

@@ -2002,17 +2002,22 @@ def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
     assert list(ln) == [n_padre] and ln[n_padre] == _d(_m.log(n_padre))
     assert re.search(r"2\\sqrt2≈(\d+\.\d+)", ej)[1] == _d(j.C_TEORIA)
     resp = _limpio(_respuesta(texto, "jue-c3-ej-vuelta-seis"))
-    cuentas = re.findall(rf"([xyz]): ({_NUM}(?:/\d+)?)\+({_NUM})\\sqrt({_NUM})/(\d+)≈({_NUM})"
-                         rf"\+({_NUM})=({_NUM})", resp)
+    # Una viñeta por jugada, con el bono y el puntaje en dos fórmulas cortas
+    # (a 390 px la fórmula entera se cortaba: r2 de render, H1).
+    cuentas = re.findall(rf"([xyz]): bono ({_NUM})\\sqrt({_NUM})/(\d+)≈({_NUM}); "
+                         rf"puntaje ({_NUM})\+({_NUM})=({_NUM})", resp)
     assert [c[0] for c in cuentas] == ["x", "z"]
     puntaje = {k: float(u[k]) + j.bono_ucb(n_padre, N[k]) for k in u}
-    for k, u1, c, dentro, n, u2, bono, p in cuentas:
-        assert _x(u1) == u[k] and c == _d(j.C_TEORIA) and dentro == ln[n_padre], k
-        assert int(n) == N[k] and _x(u2) == _x(_d(u[k])), k
+    for k, c, dentro, n, bono, u2, bono2, p in cuentas:
+        assert c == _d(j.C_TEORIA) and dentro == ln[n_padre], k
+        assert int(n) == N[k] and _x(u2) == _x(_d(u[k])) and bono2 == bono, k
         assert bono == _d(j.bono_ucb(n_padre, N[k])), k
         # La cuenta intermedia, con los redondeos que da el enunciado.
         assert bono == _d(float(_x(c)) * _m.sqrt(float(_x(dentro)) / N[k])), k
         assert p == _d(puntaje[k]), k
+    # El promedio de z, −1/3, redondeado como entra a la suma.
+    m = re.search(rf"con ({_NUM})/(\d+)≈({_NUM})", resp)
+    assert _x(m[1]) / int(m[2]) == u["z"] and _x(m[3]) == _x(_d(u["z"]))
     elegida = re.search(r"Elige ([xyz]), por el empate con ([xyz])", resp)
     assert elegida[1] == j.mejor(puntaje) == ucb[hasta]["jugada"]
     assert puntaje[elegida[1]] == puntaje[elegida[2]]
@@ -2024,7 +2029,7 @@ def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
     final = ucb[-1]["N"]
     assert [int(v) for v in m.groups()[2:5]] == [final[k] for k in "xyz"]
     assert m[6] == max(final, key=final.get)
-    m = re.search(rf"el bono de ([xyz]), ({_NUM}), es casi el doble del de ([xyz]), ({_NUM})",
+    m = re.search(rf"[Ee]l bono de ([xyz]), ({_NUM}), es casi el doble del de ([xyz]), ({_NUM})",
                   resp)
     assert (m[2], m[4]) == (_d(j.bono_ucb(n_padre, N[m[1]])), _d(j.bono_ucb(n_padre, N[m[3]])))
     assert re.search(r"«Siempre el mejor promedio» se quedaba en ([xyz])", resp)[1] \
@@ -2122,6 +2127,14 @@ def test_prosa_clase_3_p6_el_nodo_de_min():
                 assert (_x(menos_u), b, p) == (-datos[k][1], _d(bonos[k]), _d(puntajes[k])), k
             m = re.search(r"Baja por ([pqr]): .*?con solo (\d+) simulaciones", trozo)
             assert int(m[2]) == datos[m[1]][0] == min(n for n, _ in datos.values())
+            # Los dos pisos de p: el bono pide δ = N(s)^−4, no el 5 % del inciso 1.
+            m = re.search(rf"El bono de p, ({_NUM}), es más del (doble) del margen del inciso 1: "
+                          rf"con c=2\\sqrt2 se pide \\delta=1/(\d+)\^(\d+), mucho menos que "
+                          rf"({_NUM}) %", trozo)
+            assert m[1] == _d(bonos["p"]) and bonos["p"] > _x(m[2]) * eps
+            assert int(m[3]) == n_padre and _isclose_f(
+                j.margen(float(n_padre) ** -int(m[4]), datos["p"][0]), bonos["p"])
+            assert _x(m[5]) == delta * 100 and float(n_padre) ** -int(m[4]) < delta
         else:
             m = re.search(rf"Bonos ({_NUM}), ({_NUM}) y ({_NUM}); puntajes ({_NUM}), ({_NUM}) "
                           rf"y ({_NUM})\.", trozo)

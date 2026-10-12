@@ -33,7 +33,7 @@
   .envoltura{max-width:1100px;margin:0 auto;padding:.8rem 16px 1.5rem}
   h1{font-size:19px;margin:0 0 .2rem}
   h2{font-size:12px;margin:0 0 .5rem;color:var(--muted);font-weight:600;
-     letter-spacing:.06em;text-transform:uppercase}
+     letter-spacing:.02em}
   .sub{color:var(--muted);font-size:13.5px;margin:0 0 .8rem}
   .sub b{color:var(--text)}
   .panel{background:var(--surface);border:1px solid var(--trazo);border-radius:12px;
@@ -129,10 +129,10 @@
 
   <div class="panel">
     <fieldset>
-      <legend>Regla para elegir</legend>
+      <legend>Regla para elegir · cambiarla reinicia</legend>
       <div class="reglas" id="reglas">
         <label><input type="radio" name="regla" value="mejor_promedio" checked> siempre el mejor promedio</label>
-        <label><input type="radio" name="regla" value="a_veces_al_azar"> a veces al azar (10 %)</label>
+        <label><input type="radio" name="regla" value="a_veces_al_azar"> a veces al azar (10 %)</label>
         <label><input type="radio" name="regla" value="ucb"> UCB: ū(s′) + bono</label>
       </div>
     </fieldset>
@@ -188,7 +188,7 @@
       <h2 id="t-r">Fracción de vueltas en x contra N(s)</h2>
       <canvas id="g-r" role="img" aria-labelledby="t-r" aria-describedby="d-r"></canvas>
       <p class="sr" id="d-r"></p>
-      <div class="leyenda" aria-hidden="true"><span class="lf">N(s′) de x / N(s): la de la figura de la página</span></div>
+      <div class="leyenda" aria-hidden="true"><span class="lf">N(s′) de x / N(s): la medida de la figura «UCB empieza abajo y termina arriba» (allí, promedio de 40 corridas y eje log)</span></div>
     </div>
   </div>
 
@@ -411,7 +411,7 @@ function pintarJugadas(){
     // cada par etiqueta–valor en su span, sin partirse al cambiar de renglón
     const datos = [`N(s′) <b>${miles(n)}</b>`, `ū(s′) <b>${u === null ? "—" : fmt(u, 2)}</b>`];
     if (ucb) datos.push(`techo <b>${techo === Infinity ? "∞" : fmt(techo, 2)}</b>`);
-    if (revelado) datos.push(`μ(s′) <b>${fmt(b.mus[i], 1)}</b>`);
+    if (revelado) datos.push(`μ(s′) <b>${fmt(b.mus[i], 2)}</b>`);
     const ins = (i === sel ? `<span class="insignia sel">se selecciona${b.regla === "a_veces_al_azar" && !b.N.some(x => x === 0) ? " (salvo vuelta al azar)" : ""}</span>` : "") +
                 (i === ent ? `<span class="insignia ent">se entregaría</span>` : "");
     return `<div class="jugada${i === sel ? " elegida" : ""}">` +

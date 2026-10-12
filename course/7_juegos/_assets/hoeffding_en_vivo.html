@@ -33,7 +33,7 @@
   .envoltura{max-width:1100px;margin:0 auto;padding:.8rem 16px 1.5rem}
   h1{font-size:19px;margin:0 0 .2rem}
   h2{font-size:12px;margin:0 0 .5rem;color:var(--muted);font-weight:600;
-     letter-spacing:.06em;text-transform:uppercase}
+     letter-spacing:.02em}
   .sub{color:var(--muted);font-size:13.5px;margin:0 0 .8rem}
   .sub b{color:var(--text)}
   .panel{background:var(--surface);border:1px solid var(--trazo);border-radius:12px;
@@ -81,6 +81,8 @@
   .leyenda .l-cola::before{height:10px;border:0;background:var(--danger)}
   .leyenda .l-cero{color:var(--danger)}
   .leyenda .l-cero::before{content:none}
+  .leyenda .l-casi{color:var(--danger)}
+  .leyenda .l-casi::before{content:none}
   .nota{color:var(--muted);font-size:13.5px;margin:.5rem 0 0}
   .nota b{color:var(--text)}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -146,6 +148,7 @@
       <div class="leyenda" aria-hidden="true">
         <span class="l-obs">observada (un punto por cada N(s′) que corriste)</span>
         <span class="l-cero">▽ ninguno en la cola (al piso)</span>
+        <span class="l-casi">○ menos de 0.01 % (al piso)</span>
         <span class="l-cota">cota</span>
       </div>
       <p class="nota">Eje vertical en escala log. Mueve N(s′) o pulsa «Barrer»; la
@@ -155,9 +158,10 @@
 
   <div class="panel">
     <p class="nota" style="margin:0"><b>Qué mirar.</b> Con suficientes promedios la
-    frecuencia queda <b>siempre debajo</b> de la cota: la cota es <b>floja</b> (a veces
-    diez veces arriba) pero <b>segura</b>. Barre N(s′) con ε fijo: las dos caen en
-    línea recta en escala log, es decir, <b>exponencialmente</b> con N(s′).
+    frecuencia queda <b>siempre debajo</b> de la cota: la cota es <b>holgada</b> (a veces
+    diez veces arriba) pero <b>segura</b>. Barre N(s′) con ε fijo: la cota cae en
+    línea recta en escala log; los puntos también bajan <b>exponencialmente</b> con
+    N(s′), pero en zigzag.
     La semilla repite exactamente la misma corrida.</p>
   </div>
 </div>
@@ -298,9 +302,9 @@ const fmt = (x, d) => x.toFixed(d).replace("-", "−");
 // Un solo formato en todo el panel, el del curso: punto decimal, dos
 // decimales en los porcentajes, espacio de miles («369 600», «10 000»).
 const pct = f => {
-  if (f === 0) return "0 %";
+  if (f === 0) return "0\u00a0%";
   const v = 100 * f;
-  return v < 0.005 ? "< 0.01 %" : v.toFixed(2) + " %";
+  return v < 0.005 ? "<\u00a00.01\u00a0%" : v.toFixed(2) + "\u00a0%";   // el «%» no se separa de su número
 };
 const miles = k => String(Math.round(k)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");   // espacio que no parte «10 000»
 
@@ -361,7 +365,9 @@ function dibujarHistograma(){
       if (!c.hist[k]) continue;
       const u = (2 * k - n) / n, alto = Math.max(1, c.hist[k] / tope * (ph - 4));
       g.fillStyle = (2 * k - n) <= c.tope ? COL.danger : COL.info;
-      g.fillRect(X(u) - ancho / 2, m.a + ph - alto, ancho, alto);
+      // recortada a [−1, 1]: las barras de ū = ±1 no salen del eje
+      const izq = Math.max(X(u) - ancho / 2, m.i), der = Math.min(X(u) + ancho / 2, m.i + pw);
+      g.fillRect(izq, m.a + ph - alto, der - izq, alto);
     }
   }
   // las dos líneas, con su nombre arriba
@@ -432,15 +438,17 @@ function dibujarBarrido(){
     if (r.hechos < 200) continue;
     const f = r.enCola / r.hechos, x = X(n);
     g.fillStyle = COL.danger; g.strokeStyle = COL.danger;
-    if (f > 0 && f >= 1e-4){
+    if (f >= 1e-4){
       g.beginPath(); g.arc(x, Y(f), 4, 0, 2 * Math.PI); g.fill();
+    } else if (f > 0){                                 // algunos, pero menos de 0.01 %: círculo hueco en el piso
+      g.beginPath(); g.arc(x, m.a + ph - 5, 4, 0, 2 * Math.PI); g.stroke();
     } else {                                           // cero en la cola: triángulo en el piso
       const y = m.a + ph;
       g.beginPath(); g.moveTo(x - 4, y - 8); g.lineTo(x + 4, y - 8); g.lineTo(x, y - 1); g.closePath(); g.stroke();
     }
     if (n === leerN()){
       g.strokeStyle = COL.text; g.lineWidth = 1.5;
-      g.beginPath(); g.arc(x, f > 0 && f >= 1e-4 ? Y(f) : m.a + ph - 5, 7, 0, 2 * Math.PI); g.stroke();
+      g.beginPath(); g.arc(x, f >= 1e-4 ? Y(f) : m.a + ph - 5, 7, 0, 2 * Math.PI); g.stroke();
       g.lineWidth = 1;
     }
   }
