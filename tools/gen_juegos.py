@@ -1133,8 +1133,10 @@ def _pie_t(out, y, renglones, tam=T_FIG, peso="normal"):
     return y
 
 
-def _svg_t(titulo, desc, H, out):
-    nombre = titulo[0] + (". " + " ".join(titulo[1:]) if len(titulo) > 1 else "")
+def _svg_t(titulo, desc, H, out, sep=". "):
+    """sep une los renglones del titulo en el <title>. Las figuras de la
+    clase 3 usan « · »: «. » dejaba una minuscula tras el punto."""
+    nombre = titulo[0] + (sep + " ".join(titulo[1:]) if len(titulo) > 1 else "")
     return "".join([marco(ANCHO_T, round(H), desc, nombre, desc)] + out
                    + [cierre()])
 
@@ -1549,14 +1551,16 @@ def _rival(fila):
     return "beta" if len(fila["pila"]) % 2 == 1 else "alfa"
 
 
-def _leyenda_t(out, y, poda, devolvio=False):
-    """Leyenda en dos columnas a la izquierda. Devuelve la y de abajo."""
-    items = [("pila", "en la pila"), ("devuelto", "ya devolvió")]
-    if devolvio:
-        items.append(("sube", "acaba de devolver"))
-    items.append(("pormirar", "por mirar"))
-    if poda:
-        items.append(("podado", "no se genera"))
+def _leyenda_t(out, y, poda, devolvio=False, items=None):
+    """Leyenda en dos columnas a la izquierda. Devuelve la y de abajo.
+    items: [(tipo, rotulo)] en vez de los de la traza (clase 3)."""
+    if items is None:
+        items = [("pila", "en la pila"), ("devuelto", "ya devolvió")]
+        if devolvio:
+            items.append(("sube", "acaba de devolver"))
+        items.append(("pormirar", "por mirar"))
+        if poda:
+            items.append(("podado", "no se genera"))
     for k, (tipo, rot) in enumerate(items):
         x, yy = 16 + (k % 2) * 200, y + (k // 2) * 30
         if tipo == "pila":
@@ -1951,50 +1955,87 @@ def jue_t_azar():
 
 # -------------------------------------------- T con corte por profundidad ---
 
-def jue_t_corte(d):
-    """Minimax con corte a profundidad d en T: los nodos del horizonte
-    reciben EVAL; lo de abajo no se mira."""
+SEP_C3 = " · "     # une los renglones del <title> en las figuras de la clase 3
+
+
+def _fila_tramo_1(traza):
+    """La fila que cierra el tramo 1 de la traza con corte: R recibe el w de C
+    (cerro izq y centro). Se busca por evento, no por numero."""
+    return next(f["n"] for f in traza["filas"] if f["evento"] == "raiz" and f["hijo"] == "C")
+
+
+def jue_t_corte(d, tramo=None):
+    """Minimax con corte a profundidad d en T: los nodos de la linea de corte
+    reciben EVAL; lo de abajo no se genera (caja o circulo punteado con «?»,
+    la marca de A_notacion). tramo=1 dibuja el estado al cerrar izq y centro
+    (la serie va de parcial a resuelta); None, el final."""
     arbol = j.ARBOL_T
     traza = j.traza_decidir(arbol, profundidad=d, evaluar=j.EVAL_T)
     exacta = j.traza_decidir(arbol)
-    k = len(traza["filas"])
+    k = _fila_tramo_1(traza) if tramo == 1 else len(traza["filas"])
+    fila = traza["filas"][k - 1]
     estados = _fotos_por_camino(arbol, traza, k)
+    nunca = set(_orden_caminos(arbol)) - set(traza["caminos_generados"])
+    for c in nunca:
+        estados[c]["estado"] = "podado"
     nombres = j.nombres_t(arbol)
     f = j.fmt_t
-    evaluados = [c for c in estados if estados[c]["estado"] == "evaluado"]
-    raiz = {f_["hijo"]: f_["w"] for f_ in traza["filas"] if f_["evento"] == "raiz"}
+    evaluados = [c for c in _orden_caminos(arbol) if estados[c]["estado"] == "evaluado"]
+    raiz = {f_["hijo"]: f_["w"] for f_ in traza["filas"][:k] if f_["evento"] == "raiz"}
     reales = {f_["hijo"]: f_["w"] for f_ in exacta["filas"] if f_["evento"] == "raiz"}
-    titulo = [f"Corte a profundidad {d}", f"juega {traza['jugada']}"]
-    desc = (f"El árbol T con corte a profundidad {d}. Una línea punteada, el horizonte, pasa "
-            f"bajo el nivel {d}; lo que queda debajo no se mira y va tenue. "
+    jugada, valor = fila["mejor_jugada"], fila["mejor_valor"]
+    jugada_c = next(n for c, (n, a) in nombres.items() if a == jugada)
+    if tramo == 1:
+        anterior = traza["filas"][k - 2]["mejor_jugada"]
+        titulo = [f"Corte con d = {d}, tramo 1", f"{jugada} sube a {f(valor)}"]
+        evento = (f"Tramo 1: R recibe w = {f(raiz[jugada_c])} de {jugada_c}, y mejor_jugada pasa "
+                  f"de {anterior} a {jugada}.")
+    elif jugada != exacta["jugada"]:
+        titulo = [f"Corte con d = {d}", f"{jugada} parece valer {f(valor)}"]
+        evento = f"R juega {jugada}, con {f(valor)}."
+    else:
+        titulo = [f"Corte con d = {d}", f"juega {jugada}, con {f(valor)}"]
+        evento = f"R juega {jugada}, con {f(valor)}."
+    por_mirar = [nombres[c][0] for c in _orden_caminos(arbol)
+                 if estados[c]["estado"] == "pormirar" and isinstance(j.nodo_en(arbol, c), tuple)]
+    desc = (f"El árbol T con corte a profundidad {d}. Una línea punteada marca dónde se corta, "
+            f"bajo el nivel {d}; lo que queda debajo no se genera y va en caja o círculo "
+            f"punteado con «?». "
             + "; ".join(f"{nombres[c][0]} recibe EVAL = {f(estados[c]['v'])}" for c in evaluados)
             + ". " + "; ".join(f"{n} vale {f(v)}" for n, v in raiz.items())
-            + f". R juega {traza['jugada']}, con {f(traza['valor'])}. Se generan "
-            f"{traza['generados']} de 14 nodos.")
+            + (f"; {', '.join(por_mirar)} todavía por mirar" if por_mirar else "")
+            + f". {evento} Se han generado {fila['generados']} de 14 nodos.")
     out = []
     y = _titulo_t(out, titulo) + 8
-    y = _info(out, y, f"{traza['generados']} de 14 nodos")
+    y = _info(out, y, f"{fila['generados']} de 14 nodos"
+              + (" hasta aquí" if tramo == 1 else ""))
     y0 = y + 30 + NODO_T_H / 2
     ys = _niveles(y0)
-    fondo = dibujar_t(out, arbol, estados, y0, renglones={(): "DECIDIR"},
+    resaltar = [(1,)] if tramo == 1 else []
+    fondo = dibujar_t(out, arbol, estados, y0, resaltar=resaltar, renglones={(): "DECIDIR"},
                       rotulos_tenues=False,
-                      recuadro=[f"mejor_jugada = {traza['jugada']}",
-                                f"mejor_valor = {f(traza['valor'])}"])
+                      recuadro=[f"mejor_jugada = {jugada}", f"mejor_valor = {f(valor)}"])
     yh = ys[d] + NODO_T_H / 2 + 12
     out.append(linea(16, yh, ANCHO_T - 16, yh, color=ACENTO, grosor=2.5, guiones="10 7"))
-    out.append(_pastilla_t(412 if d == 1 else 280, yh, f"horizonte: d = {d}", ACENTO, tam=16,
-                           mono=False, relleno=FONDO))
-    jugada_c = next(n for c, (n, a) in nombres.items() if a == traza["jugada"])
-    if traza["jugada"] != exacta["jugada"]:
-        notas = [f"{traza['jugada']} parece valer {f(raiz[jugada_c])} (EVAL);",
+    out.append(_pastilla_t(412 if d == 1 else 300, yh, f"corte (d = {d} en la raíz)", ACENTO,
+                           tam=16, mono=False, relleno=FONDO))
+    if tramo == 1:
+        notas = [f"Tras izq y centro: {jugada} vale {f(valor)};",
+                 f"su valor real es {f(reales[jugada_c])}. D todavía",
+                 "no se mira: es el tramo 2."]
+    elif jugada != exacta["jugada"]:
+        notas = [f"{jugada} parece valer {f(raiz[jugada_c])} (EVAL);",
                  f"su valor real es {f(reales[jugada_c])}.",
-                 "El horizonte esconde lo que pasa", "abajo: es una trampa."]
+                 "Lo que queda bajo el corte", "no se genera: es una trampa."]
     else:
-        notas = [f"Con este horizonte, {traza['jugada']} vale {f(raiz[jugada_c])};",
+        notas = [f"Con este corte, {jugada} vale {f(raiz[jugada_c])};",
                  f"su valor real es {f(reales[jugada_c])}.",
                  "La jugada ya es la de minimax", f"sin corte: {exacta['jugada']}."]
     y = _pie_t(out, fondo + HOJA_T_R + 44, notas)
-    return _svg_t(titulo, desc, y - 10, out)
+    items = ([("pila", "en la pila"), ("sube", "acaba de devolver"), ("pormirar", "por mirar")]
+             if tramo == 1 else [])
+    y = _leyenda_t(out, y - 4, True, items=items + [("podado", "no se genera")])
+    return _svg_t(titulo, desc, y + 4, out, sep=SEP_C3)
 
 
 # ------------------------------------------------ profundizacion iterativa ---
@@ -2084,7 +2125,7 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(96, 80, 80)):
             rot = f"{n} · v = {j.fmt_t(e['v'])}"
         alto = bh + (16 if cota else 0)
         out.append(caja(x - bw / 2, y - bh / 2, bw, alto, relleno=mezclar(color, 0.07),
-                        borde=ACENTO if c == () else color, grosor=2.5 if c == () else 2,
+                        borde=color, grosor=2,
                         guiones="6 4" if e["estado"] == "evaluado" else None, radio=7))
         out.append(texto(x, y + (0 if cota else 6), rot, tam=15 if len(rot) > 11 else 16,
                          peso="700", color=TEXTO))
@@ -2099,7 +2140,14 @@ def jue_t_iterativa():
     arbol = j.ARBOL_T
     corridas = j.profundizacion_iterativa_t(arbol)
     f = j.fmt_t
-    titulo = ["Profundización iterativa", "en T, con alfa-beta"]
+    listas = [t["jugada"] for _, _, t in corridas]
+    cambia = next((d for (d, _, t), antes in zip(corridas[1:], listas) if t["jugada"] != antes),
+                  None)
+    if cambia:
+        titulo = ["Profundización iterativa", f"en T: {listas[0]} con d = 1,",
+                  f"{listas[-1]} desde d = {cambia}"]
+    else:
+        titulo = ["Profundización iterativa", f"en T: {listas[-1]} desde d = 1"]
     partes = []
     for d, orden, t in corridas:
         cortes = ", ".join(f"corte {tipo} en {n}" for tipo, n, *_ in t["cortes"]) or "ningún corte"
@@ -2126,7 +2174,7 @@ def jue_t_iterativa():
                             "Punteada con barra: rama podada.",
                             "«cota»: ese nodo cortó; su v no es",
                             "su valor, solo un techo o un piso."], tam=16)
-    return _svg_t(titulo, desc, y - 10, out)
+    return _svg_t(titulo, desc, y - 10, out, sep=SEP_C3)
 
 
 def jue_ab_ventana():
@@ -2509,7 +2557,7 @@ def jue_ab_invertido_parte(parte):
 # La posicion de la clase 3 en el tablero de 4x4: mueven Blancas. Las
 # figuras de cortar y evaluar se dibujan sobre ella.
 
-POSICION_C3 = "B..." + "..BB" + "..N." + "NN.."
+POSICION_C3 = j.POSICION_C3
 N4 = 4
 
 
@@ -2522,33 +2570,55 @@ def ev(tablero):
     return j.evaluar_peones(tablero, N4)
 
 
-def _nodo_corte(cx, cy, tablero, turno, rotulo, w=150, h=170, celda=19, nuevo=False):
+def fmt_eval(v):
+    """Un EVAL o un 100·U como lo escriben las paginas: sin «+», con «−»."""
+    v = int(v)
+    return f"−{-v}" if v < 0 else str(v)
+
+
+def _nodo_corte(cx, cy, tablero, turno, rotulo, w=150, h=170, celda=19):
     """Un nodo de corte: existe, pero la busqueda no lo expande; recibe EVAL.
     Lleva el borde punteado de «todavia no se expande» de la clase 1."""
-    return nodo_svg(cx, cy, tablero, turno, rotulo, expandido=False, nuevo=nuevo, w=w, h=h,
-                    celda=celda, renglones=("Nodo de corte", f"EVAL = {fmt(ev(tablero))}"))
+    return nodo_svg(cx, cy, tablero, turno, rotulo, expandido=False, w=w, h=h,
+                    celda=celda, renglones=("Nodo de corte", f"EVAL = {fmt_eval(ev(tablero))}"))
+
+
+def _no_generado(cx, cy, w, h, rotulo, tam=15):
+    """Un estado que la busqueda nunca genera: caja punteada con «?», la marca
+    de A_notacion (la misma que _caja_nodo_t da a un nodo podado de T)."""
+    return (caja(cx - w / 2, cy - h / 2, w, h, relleno=FONDO, borde=LINEA, grosor=2,
+                 guiones="8 6")
+            + texto(cx, cy - h / 2 + 24, rotulo, tam=tam, color=SUAVE, peso="700", fuente=MONO)
+            + texto(cx, cy + 14, "?", tam=40, color=LINEA, peso="700")
+            + texto(cx, cy + h / 2 - 14, "no se genera", tam=13, color=SUAVE))
 
 
 def jue_c3_corte_prof_1():
-    """Profundidad 1: las tres jugadas de Blancas y su EVAL. Gana la captura."""
+    """Profundidad 1: las tres jugadas de Blancas y su EVAL. Gana la captura.
+    La eleccion va en la flecha resaltada; ningun nodo lleva borde de «nuevo»."""
     W, H = ANCHO, 700
     hs = hijos4(POSICION_C3, "B")
     valores = [ev(t) for _, t, _ in hs]
     mejor = max(valores)
-    titulo = "Profundidad 1: mirar una jugada y evaluar"
+    elegida = hs[valores.index(mejor)][0]
+    renglones = ["Profundidad 1:", f"{elegida} parece la mejor, con {fmt_eval(mejor)}"]
+    titulo = " ".join(renglones)
     desc = ("La posición de la clase arriba, donde mueve Blancas. Sus tres jugadas llevan a "
             "nodos de corte, con borde punteado porque ahí la búsqueda se detiene: "
-            + "; ".join(f"{nombre} da EVAL = {fmt(v)}" for (nombre, _, _), v in zip(hs, valores))
-            + f". Blancas toma el máximo, {fmt(mejor)}: la captura, resaltada.")
+            + "; ".join(f"{nombre} da EVAL = {fmt_eval(v)}"
+                        for (nombre, _, _), v in zip(hs, valores))
+            + f". Blancas toma el máximo, {fmt_eval(mejor)}: la flecha de {elegida} va "
+            "resaltada.")
     out = [marco(W, H, desc, titulo, desc)]
-    encabezado(out, ["Profundidad 1:", "mirar una jugada y evaluar"])
+    encabezado(out, renglones)
     y_raiz, y_hijo, xs = 185, 470, _xs_hijos(3, paso3=190)
     for (nombre, t, p), x, v in zip(hs, xs, valores):
         out.append(arista_svg(W / 2, y_raiz, x, y_hijo, nombre, nueva=v == mejor, h=170))
-    out.append(nodo_svg(W / 2, y_raiz, POSICION_C3, "B", "La posición", w=200, h=170, celda=19, escala=1.1,
-                        renglones=("Mueve Blancas · MAX", f"con corte: {fmt(mejor)}")))
+    out.append(nodo_svg(W / 2, y_raiz, POSICION_C3, "B", "La posición", w=200, h=170, celda=19,
+                        escala=1.1,
+                        renglones=("Mueve Blancas · MAX", f"con corte: {fmt_eval(mejor)}")))
     for (nombre, t, p), x in zip(hs, xs):
-        out.append(_nodo_corte(x, y_hijo, t, p, nombre, nuevo=ev(t) == mejor))
+        out.append(_nodo_corte(x, y_hijo, t, p, nombre))
     out.append(nota_svg(H - 98, ["d = 1 en la raíz: tras la jugada de",
                                  "Blancas queda d = 0, y la búsqueda",
                                  "estima con EVAL en vez de seguir."]))
@@ -2558,27 +2628,37 @@ def jue_c3_corte_prof_1():
 
 def jue_c3_corte_prof_2():
     """Profundidad 2: la jugada de Blancas, todas las respuestas de Negras y
-    EVAL en las hojas. Negras toma el minimo; Blancas, el maximo."""
+    EVAL en las hojas. Negras toma el minimo; Blancas, el maximo. La eleccion
+    va solo en las flechas resaltadas."""
     W = ANCHO
     hs = hijos4(POSICION_C3, "B")
     nietos = [hijos4(t, p) for _, t, p in hs]
     total = sum(len(g) for g in nietos)
     paso = (W - 60) / total
     slots = [30 + paso / 2 + k * paso for k in range(total)]
-    y_raiz, y_hijo, y_hoja = 185, 450, 660
+    y_raiz, y_hijo, y_hoja = 210, 475, 685
     H = y_hoja + 110
     valores_hijo = [min(ev(t) for _, t, _ in g) for g in nietos]
     mejor = max(valores_hijo)
-    titulo = "Profundidad 2: mirar también la respuesta"
+    elegida = hs[valores_hijo.index(mejor)][0]
+    # La jugada que gustaba a profundidad 1 y la respuesta que la deshace.
+    antes = max(hs, key=lambda h: ev(h[1]))[0]
+    g_antes = nietos[[h[0] for h in hs].index(antes)]
+    respuesta = min(g_antes, key=lambda h: ev(h[1]))[0]
+    verbo = "recaptura con" if "x" in respuesta else "responde"
+    renglones = [f"Profundidad 2: tras {antes},", f"Negras {verbo} {respuesta}",
+                 f"y Blancas elige {elegida}"]
+    titulo = " ".join(renglones)
     desc = ("La posición de la clase, sus tres jugadas y todas las respuestas de Negras, "
             "que son nodos de corte con su EVAL. "
             + " ".join(f"Tras {nombre}, Negras puede "
-                       + ", ".join(f"{n2} ({fmt(ev(t2))})" for n2, t2, _ in g)
-                       + f": el mínimo es {fmt(v)}."
+                       + ", ".join(f"{n2} ({fmt_eval(ev(t2))})" for n2, t2, _ in g)
+                       + f": el mínimo es {fmt_eval(v)}."
                        for (nombre, _, _), g, v in zip(hs, nietos, valores_hijo))
-            + f" Blancas toma el máximo, {fmt(mejor)}, con d2-d3.")
+            + f" Blancas toma el máximo, {fmt_eval(mejor)}, con {elegida}: las flechas "
+            "resaltadas.")
     out = [marco(W, H, desc, titulo, desc)]
-    encabezado(out, ["Profundidad 2:", "mirar también la respuesta"])
+    encabezado(out, renglones)
     k, xs_hijo, hojas = 0, [], []
     for g in nietos:
         mis = slots[k:k + len(g)]
@@ -2590,64 +2670,145 @@ def jue_c3_corte_prof_2():
     wh, hh = paso - 8, 74
     for x, g, mis, v in zip(xs_hijo, nietos, hojas, valores_hijo):
         for (n2, t2, p2), xh in zip(g, mis):
-            elegida = ev(t2) == v
+            alcanza = ev(t2) == v
             out.append(flecha(x, y_hijo + 85, xh, y_hoja - hh / 2 - 8,
-                              color=ACENTO if elegida else SUAVE, grosor=3 if elegida else 2,
-                              marcador="p" if elegida else "s"))
-    out.append(nodo_svg(W / 2, y_raiz, POSICION_C3, "B", "La posición", w=200, h=170, celda=19, escala=1.1,
-                        renglones=("Mueve Blancas · MAX", f"con corte: {fmt(mejor)}")))
+                              color=ACENTO if alcanza else SUAVE, grosor=3 if alcanza else 2,
+                              marcador="p" if alcanza else "s"))
+    out.append(nodo_svg(W / 2, y_raiz, POSICION_C3, "B", "La posición", w=200, h=170, celda=19,
+                        escala=1.1,
+                        renglones=("Mueve Blancas · MAX", f"con corte: {fmt_eval(mejor)}")))
     for (nombre, t, p), x, v in zip(hs, xs_hijo, valores_hijo):
-        out.append(nodo_svg(x, y_hijo, t, p, nombre, w=150, h=170, celda=19, nuevo=v == mejor,
-                            renglones=("Mueve Negras · MIN", f"mínimo: {fmt(v)}")))
+        out.append(nodo_svg(x, y_hijo, t, p, nombre, w=150, h=170, celda=19,
+                            renglones=("Mueve Negras · MIN", f"mínimo: {fmt_eval(v)}")))
     for g, mis, v in zip(nietos, hojas, valores_hijo):
         for (n2, t2, p2), xh in zip(g, mis):
-            elegida = ev(t2) == v
             out.append(caja(xh - wh / 2, y_hoja - hh / 2, wh, hh, relleno=FONDO,
-                            borde=ACENTO if elegida else LINEA, grosor=3 if elegida else 2,
-                            guiones="7 5"))
+                            borde=LINEA, grosor=2, guiones="7 5"))
             out.append(texto(xh, y_hoja - 10, n2, tam=14, peso="700", fuente=MONO))
-            out.append(texto(xh, y_hoja + 20, fmt(ev(t2)), tam=18, peso="700",
-                             color=ACENTO if elegida else TEXTO))
+            out.append(texto(xh, y_hoja + 20, fmt_eval(ev(t2)), tam=18, peso="700"))
     out.append(texto(X_PIE, y_hoja + hh / 2 + 32, "Hojas: nodos de corte, con su EVAL",
                      tam=14, color=SUAVE, anclaje="start"))
     out.append(cierre())
     return "".join(out)
 
 
+# La rama que la pagina dibuja a profundidad 3: la jugada que gana.
+RAMA_PROF_3 = "d2-d3"
+
+
+def jue_c3_corte_prof_3():
+    """Profundidad 3, solo la rama d2-d3: las dos respuestas de Negras y, bajo
+    cada una, las jugadas de Blancas, con EVAL o 100·U. En las dos, d3-d4
+    llega a la fila 4: la rama vale 100. Mide 520 de ancho."""
+    W = 520
+    raiz = j.arbol_con_corte(POSICION_C3, "B", 3, N4)
+    rama = next(h for h in raiz["hijos"] if h["jugada"] == RAMA_PROF_3)
+    respuestas = rama["hijos"]
+    hojas = [h for r in respuestas for h in r["hijos"]]
+    wh, gap = 88, 8
+    x0 = (W - (len(hojas) * wh + (len(hojas) - 1) * gap)) / 2 + wh / 2
+    xs_hoja = [x0 + k * (wh + gap) for k in range(len(hojas))]
+    xs_resp, k = [], 0
+    for r in respuestas:
+        mis = xs_hoja[k:k + len(r["hijos"])]
+        xs_resp.append(sum(mis) / len(mis))
+        k += len(r["hijos"])
+    ganadoras = sorted({h["jugada"] for h in hojas if h["final"]})
+    renglones = ["Profundidad 3, rama d2-d3:", f"{' y '.join(ganadoras)} llega a la fila 4"]
+    titulo = " ".join(renglones)
+    partes = []
+    for r in respuestas:
+        partes.append(f"Tras {r['jugada']}, Blancas puede "
+                      + ", ".join(f"{h['jugada']} ({fmt_eval(h['valor'])}"
+                                  + (", final: gana Blancas)" if h["final"] else ", EVAL)")
+                                  for h in r["hijos"])
+                      + f": el máximo es {fmt_eval(r['valor'])}.")
+    desc = (f"Solo la rama {RAMA_PROF_3} del árbol con d = 3 en la raíz. Tras {RAMA_PROF_3} "
+            f"mueve Negras, que tiene {len(respuestas)} respuestas. " + " ".join(partes)
+            + f" Negras toma el mínimo, {fmt_eval(rama['valor'])}: {RAMA_PROF_3} vale "
+            f"{fmt_eval(rama['valor'])}. La rama tiene {j.contar_con_corte(rama)} nodos.")
+    out = [marco(W, 0, desc, titulo, desc)]
+    y = encabezado(out, renglones)
+    y_rama = y + 120
+    y_resp = y_rama + 265
+    y_hoja = y_resp + 215
+    hh = 96
+    H = round(y_hoja + hh / 2 + 70)
+    out[0] = marco(W, H, desc, titulo, desc)
+    for r, x in zip(respuestas, xs_resp):
+        out.append(arista_svg(W / 2, y_rama, x, y_resp, r["jugada"],
+                              nueva=r["valor"] == rama["valor"], h=170))
+    for r, x, k0 in zip(respuestas, xs_resp, [0, len(respuestas[0]["hijos"])]):
+        for h, xh in zip(r["hijos"], xs_hoja[k0:k0 + len(r["hijos"])]):
+            alcanza = h["valor"] == r["valor"]
+            out.append(flecha(x, y_resp + 85, xh, y_hoja - hh / 2 - (13 if h["final"] else 8),
+                              color=ACENTO if alcanza else SUAVE, grosor=3 if alcanza else 2,
+                              marcador="p" if alcanza else "s"))
+    out.append(nodo_svg(W / 2, y_rama, rama["tablero"], rama["turno"], f"tras {RAMA_PROF_3}",
+                        w=170, h=170, celda=19,
+                        renglones=("Mueve Negras · MIN", f"mínimo: {fmt_eval(rama['valor'])}")))
+    for r, x in zip(respuestas, xs_resp):
+        out.append(nodo_svg(x, y_resp, r["tablero"], r["turno"], r["jugada"], w=150, h=170,
+                            celda=19,
+                            renglones=("Mueve Blancas · MAX", f"máximo: {fmt_eval(r['valor'])}")))
+    for h, xh in zip(hojas, xs_hoja):
+        x, yy = xh - wh / 2, y_hoja - hh / 2
+        if h["final"]:
+            out.append(caja(x - 5, yy - 5, wh + 10, hh + 10, borde=COLOR_FINAL, grosor=2))
+            out.append(caja(x, yy, wh, hh, relleno=mezclar(COLOR_FINAL, 0.07),
+                            borde=COLOR_FINAL, grosor=2))
+            tipo, color = "final", COLOR_FINAL
+        else:
+            out.append(caja(x, yy, wh, hh, relleno=FONDO, borde=LINEA, grosor=2, guiones="7 5"))
+            tipo, color = "EVAL", SUAVE
+        out.append(texto(xh, yy + 26, h["jugada"], tam=14, peso="700", fuente=MONO))
+        out.append(texto(xh, yy + 58, fmt_eval(h["valor"]), tam=20, peso="700"))
+        out.append(texto(xh, yy + 82, tipo, tam=13, color=color, peso="700"))
+    out.append(nota_svg(y_hoja + hh / 2 + 34, ["Borde doble: final, 100 · U = 100.",
+                                                "Punteado: nodo de corte, con su EVAL."],
+                        tam=14))
+    out.append(cierre())
+    return "".join(out)
+
+
 def jue_c3_horizonte():
     """La captura a profundidad 1: lo que se ve antes del horizonte y la
-    recaptura que queda detras."""
-    W, H = ANCHO, 860
+    recaptura que queda detras, que nunca se genera (caja punteada con «?»)."""
+    W, H = ANCHO, 830
     nombre_c, t1, p1 = [h for h in hijos4(POSICION_C3, "B") if h[0] == "d2xc3"][0]
     nombre_r, t2, p2 = [h for h in hijos4(t1, p1) if "x" in h[0]][0]
-    titulo = "El efecto horizonte"
-    desc = (f"A profundidad 1, la búsqueda ve la captura {nombre_c} y evalúa en {fmt(ev(t1))}: "
-            f"un peón de más. Una línea punteada marca el horizonte, donde se corta. Detrás, "
-            f"sin que la búsqueda la vea, está la recaptura {nombre_r}, que deja EVAL = {fmt(ev(t2))}.")
+    renglones = ["El efecto horizonte:", "la recaptura queda detrás"]
+    titulo = " ".join(renglones)
+    desc = (f"A profundidad 1, la búsqueda ve la captura {nombre_c} y evalúa en "
+            f"{fmt_eval(ev(t1))}: un peón de más. Una línea punteada marca el horizonte, donde "
+            f"se corta con d = 1 en la raíz. Detrás está la recaptura {nombre_r}, en una caja "
+            f"punteada con «?»: la búsqueda no la genera. Con ella, EVAL bajaría a "
+            f"{fmt_eval(ev(t2))}.")
     out = [marco(W, H, desc, titulo, desc)]
-    encabezado(out, titulo)
-    x, y0, y1, y2, yh = 190, 175, 440, 720, 585
+    encabezado(out, renglones)
+    x, y0, y1, y2, yh = 190, 200, 465, 735, 610
     out.append(arista_svg(x, y0, x, y1, nombre_c, nueva=True, h=170))
-    out.append(nodo_svg(x, y0, POSICION_C3, "B", "La posición", w=200, h=170, celda=19, escala=1.1,
-                        renglones=("Mueve Blancas · MAX", f"EVAL = {fmt(ev(POSICION_C3))}")))
-    out.append(_nodo_corte(x, y1, t1, p1, f"tras {nombre_c}", w=170, nuevo=True))
+    out.append(nodo_svg(x, y0, POSICION_C3, "B", "La posición", w=200, h=170, celda=19,
+                        escala=1.1,
+                        renglones=("Mueve Blancas · MAX", f"EVAL = {fmt_eval(ev(POSICION_C3))}")))
+    out.append(_nodo_corte(x, y1, t1, p1, f"tras {nombre_c}", w=170))
     out.append(linea(30, yh, W - 30, yh, color=ACENTO, grosor=3, guiones="12 8"))
-    out.append(texto(W - 30, yh - 12, "horizonte: con d = 1 se corta aquí", tam=15,
+    out.append(texto(W - 30, yh - 12, "horizonte (d = 1 en la raíz)", tam=15,
                      color=ACENTO, peso="700", anclaje="end"))
-    out.append(linea(x, y1 + 85, x, y2 - 93, color=LINEA, grosor=2, guiones="4 6"))
-    out.append(texto(x + 12, (y1 + y2) / 2 + 52, nombre_r, tam=15, color=SUAVE, peso="700",
+    out.append(linea(x, y1 + 85, x, y2 - 70, color=LINEA, grosor=2, guiones="6 5"))
+    out.append(texto(x + 12, (y1 + y2) / 2 + 40, nombre_r, tam=15, color=SUAVE, peso="700",
                      fuente=MONO, anclaje="start"))
-    out.append(nodo_svg(x, y2, t2, p2, f"tras {nombre_r}", expandido=False, w=170, h=170, celda=19,
-                        color=SUAVE, renglones=("No se ve", f"EVAL = {fmt(ev(t2))}")))
+    out.append(_no_generado(x, y2, 170, 140, f"tras {nombre_r}"))
     nx = 320
     for k, (renglon, color, peso) in enumerate([
             ("Lo que la búsqueda ve:", TEXTO, "700"),
-            (f"EVAL = {fmt(ev(t1))}, un peón de más.", TEXTO, "normal"),
+            (f"EVAL = {fmt_eval(ev(t1))}, un peón de más.", TEXTO, "normal"),
             ("", TEXTO, "normal"),
             ("Lo que queda detrás:", SUAVE, "700"),
-            (f"Negras recaptura y", SUAVE, "normal"),
-            (f"EVAL baja a {fmt(ev(t2))}.", SUAVE, "normal")]):
-        out.append(texto(nx, 400 + 24 * k if k < 3 else 650 + 24 * (k - 3), renglon, tam=16,
+            (f"Negras recaptura con {nombre_r}", SUAVE, "normal"),
+            (f"(EVAL = {fmt_eval(ev(t2))}); la búsqueda", SUAVE, "normal"),
+            ("no lo genera.", SUAVE, "normal")]):
+        out.append(texto(nx, 425 + 24 * k if k < 3 else 690 + 24 * (k - 3), renglon, tam=16,
                          color=color, peso=peso, anclaje="start"))
     out.append(cierre())
     return "".join(out)
@@ -2668,23 +2829,28 @@ def jugada_lista(d):
 
 def jue_c3_profundizacion():
     """Gantt de la profundizacion iterativa: cada busqueda empieza cuando
-    termina la anterior, y cada una deja lista una jugada."""
+    termina la anterior, y cada una deja lista una jugada. Cada reloj es una
+    linea con su nombre escrito («reloj 1»): el circulo con numero es, en la
+    unidad, el orden de visita."""
     o = 46  # el titulo y el subtitulo en dos renglones cada uno
     W, H = ANCHO, 580 + o
     costos = [j.nodos_con_corte(POSICION_C3, "B", d, N4) for d in PROFUNDIDADES_RELOJ]
     total = sum(costos)
     x0, ancho = 40, W - 80
     esc = ancho / total
-    titulo = "Profundizar mientras haya tiempo"
+    renglones = ["El reloj decide", "qué jugada se entrega"]
+    titulo = " ".join(renglones)
     listas = [jugada_lista(d) for d in PROFUNDIDADES_RELOJ]
     desc = ("Tres búsquedas seguidas sobre la posición de la clase, con d = 1, 2 y 3; el largo "
             "de cada barra es el número de nodos que genera: "
             + ", ".join(f"{c} con d = {d}" for d, c in zip(PROFUNDIDADES_RELOJ, costos))
             + ". Cada búsqueda completa deja lista una jugada: "
-            + ", ".join(f"d = {d}: {n} ({fmt(v)})" for d, (n, v) in zip(PROFUNDIDADES_RELOJ, listas))
-            + ". Si el reloj se acaba a media búsqueda, se entrega la jugada de la anterior.")
+            + ", ".join(f"d = {d}: {n} ({fmt_eval(v)})"
+                        for d, (n, v) in zip(PROFUNDIDADES_RELOJ, listas))
+            + ". Dos líneas punteadas, reloj 1 y reloj 2, marcan dos momentos en que se acaba "
+            "el tiempo; se entrega la jugada de la última búsqueda completa.")
     out = [marco(W, H, desc, titulo, desc)]
-    y = encabezado(out, ["Profundizar mientras", "haya tiempo"])
+    y = encabezado(out, renglones)
     out.append(nota_svg(y + 26, ["El largo de cada barra: nodos que",
                                  "genera esa búsqueda"], tam=14))
     # Dos relojes: uno que se acaba a media busqueda con d = 2 y otro con d = 3.
@@ -2717,8 +2883,8 @@ def jue_c3_profundizacion():
     for k, (t, ultima) in enumerate(marcas):
         x = x0 + t * esc
         out.append(linea(x, ys[ultima] - 2, x, yb, color=ACENTO, grosor=2, guiones="6 5"))
-        out.append(f'<circle cx="{x:.1f}" cy="{yb + 14}" r="13" fill="{ACENTO}"/>')
-        out.append(texto(round(x, 1), yb + 19, str(k + 1), tam=14, color=FONDO, peso="700"))
+        out.append(texto(round(x, 1), yb + 20, f"reloj {k + 1}", tam=15, color=ACENTO,
+                         peso="700"))
         entrega = listas[ultima - 1][0]
         for r, renglon in enumerate([f"Reloj {k + 1}: se acaba durante d = {ultima + 1},",
                                      f"así que entrega {entrega}"]):
@@ -2728,78 +2894,100 @@ def jue_c3_profundizacion():
     return "".join(out)
 
 
+def _gn(cuenta):
+    g, n = cuenta
+    return f"{g}/{n}"
+
+
 def jue_c3_mcts_pasos():
-    """Las cuatro fases de una vuelta de MCTS, en cuatro paneles. Es un
-    esquema: los numeros de cada nodo (victorias / simulaciones) son de
-    ejemplo y solo muestran como cambian en la vuelta."""
+    """Las cuatro fases de una vuelta de MCTS, en cuatro paneles. Los conteos
+    (G/N: victorias de MAX / simulaciones) salen de juegos.mcts_vuelta: la raiz
+    suma los de sus hijos, cada otro nodo vale 1 (su simulacion) mas los de
+    sus hijos, la seleccion usa UCT con c = 1 y la vuelta dibujada actualiza
+    el camino con U = +1."""
+    vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
+    antes = {**vuelta["antes"], "nuevo": (0, 0)}
+    despues = vuelta["despues"]
+    camino = vuelta["camino"]
     o = 24
-    W, H = ANCHO, 940 + o + 22
-    titulo = "Una vuelta de MCTS, en cuatro pasos"
-    desc = ("Cuatro paneles con el mismo árbol; cada nodo dice victorias de MAX entre "
-            "simulaciones. 1, selección: desde la raíz se baja por el camino resaltado, "
-            "eligiendo en cada nodo al hijo con mejor puntaje para quien mueve ahí: MAX en la "
-            "raíz, MIN en el nodo 3/6, que baja por 0/2, donde MAX ganó menos. 2, expansión: se agrega un hijo "
-            "nuevo, 0/0. 3, simulación: desde ese hijo se juega una partida al azar hasta un "
-            "final, que aquí gana MAX, U = +1. 4, retropropagación: el resultado sube por el "
-            "camino y cada nodo suma una simulación y una victoria: 4/10 pasa a 5/11.")
+    pw, ph = 282, 420
+    fin_paneles = 90 + o + 2 * ph + 16
+    W, H = ANCHO, fin_paneles + 100
+    renglones = ["Una vuelta de MCTS:", f"la raíz pasa de {_gn(antes['r'])} a {_gn(despues['r'])}"]
+    titulo = " ".join(renglones)
+    desc = ("Cuatro paneles con el mismo árbol; cada nodo dice G/N: victorias de MAX entre "
+            "simulaciones que pasaron por él. La raíz no simula: sus cuentas son la suma de las "
+            "de sus hijos; cada otro nodo, su propia simulación más las de sus hijos. "
+            f"1, selección: desde la raíz, {_gn(antes['r'])}, se baja por el camino resaltado "
+            "eligiendo en cada nodo al hijo de mejor puntaje para quien mueve ahí: MAX en la "
+            f"raíz elige {_gn(antes[camino[1]])}; MIN en ese nodo elige {_gn(antes[camino[2]])}, "
+            "donde MAX ganó menos. 2, expansión: se agrega un hijo nuevo, 0/0. 3, simulación: "
+            "desde ese hijo se juega una partida al azar hasta un final, que aquí gana MAX, "
+            "U = +1. 4, retropropagación: cada nodo del camino suma una simulación y, como ganó "
+            "MAX, una victoria: "
+            + ", ".join(f"{_gn(antes[n])} pasa a {_gn(despues[n])}"
+                        for n in camino + ["nuevo"]) + ".")
     out = [marco(W, H, desc, titulo, desc)]
-    encabezado(out, ["Una vuelta de MCTS,", "en cuatro pasos"])
+    encabezado(out, renglones)
     paneles = [("1 · Selección", "baja por el mejor puntaje"),
                ("2 · Expansión", "agrega un hijo nuevo"),
                ("3 · Simulación", "juega al azar hasta un final"),
                ("4 · Retropropagación", "sube el resultado")]
-    rel = {"r": (0, 0), "a": (-55, 65), "b": (55, 65), "a1": (-95, 130), "a2": (-15, 130),
-           "nuevo": (-15, 195)}
-    camino = ["r", "a", "a2"]
-    # La raiz es de MAX y sus hijos, de MIN: MIN baja por el hijo donde MAX
-    # gana menos (a2, 0/2), como pide UCT con el signo cambiado. Cada cuenta
-    # suma las de sus hijos mas la simulacion que se hizo desde el propio nodo.
-    antes = {"r": "4/10", "a": "3/6", "b": "1/4", "a1": "2/3", "a2": "0/2", "nuevo": "0/0"}
-    despues = {"r": "5/11", "a": "4/7", "b": "1/4", "a1": "2/3", "a2": "1/3", "nuevo": "1/1"}
-    aristas = [("r", "a"), ("r", "b"), ("a", "a1"), ("a", "a2"), ("a2", "nuevo")]
-    pw, ph = 282, 400
+    rel = {"r": (0, 0), "a": (-55, 70), "b": (60, 70), "a1": (-100, 140), "a2": (-10, 140),
+           "nuevo": (-10, 210)}
+    assert camino == ["r", "a", "a2"] and vuelta["padre_nuevo"] == "a2", camino
+    aristas = [(p, n) for n, (p, _, _) in j.MCTS_ARBOL.items() if p] + [("a2", "nuevo")]
+    bw, bh = 56, 30
     for k, (nombre, sub) in enumerate(paneles):
-        px, py = 12 + (k % 2) * (pw + 12), 66 + o + (k // 2) * (ph + 16)
+        px, py = 12 + (k % 2) * (pw + 12), 90 + o + (k // 2) * (ph + 16)
         out.append(caja(px, py, pw, ph, relleno=mezclar(LINEA, 0.12), borde=LINEA, radio=12))
         out.append(texto(px + pw / 2, py + 32, nombre, tam=19, peso="700"))
         out.append(texto(px + pw / 2, py + 56, sub, tam=15, color=SUAVE))
         cx, cy = px + pw / 2 + 15, py + 105
         pos = {n: (cx + dx, cy + dy) for n, (dx, dy) in rel.items()}
         visibles = [n for n in rel if k >= 1 or n != "nuevo"]
-        resaltados = {0: set(camino), 1: {"nuevo"}, 2: {"nuevo"}, 3: set(camino) | {"nuevo"}}[k]
+        # El camino de la seleccion va en las aristas; el borde de acento,
+        # solo en lo nuevo de cada paso: el hijo que se agrega (2) y los
+        # nodos cuyas cuentas cambian (4).
+        aristas_fuertes = {0: set(zip(camino, camino[1:])), 1: {("a2", "nuevo")}, 2: set(),
+                           3: set(zip(camino, camino[1:])) | {("a2", "nuevo")}}[k]
+        nuevos = {0: set(), 1: {"nuevo"}, 2: set(), 3: set(camino) | {"nuevo"}}[k]
         for u, v in aristas:
             if v not in visibles:
                 continue
-            fuerte = (k in (0, 3) and u in resaltados and v in resaltados) or \
-                     (k == 1 and v == "nuevo")
+            fuerte = (u, v) in aristas_fuertes
             out.append(linea(*pos[u], *pos[v], color=ACENTO if fuerte else SUAVE,
                              grosor=3 if fuerte else 2))
         for n in visibles:
             x, y = pos[n]
-            fuerte = n in resaltados
-            out.append(f'<circle cx="{x}" cy="{y}" r="24" fill="{FONDO}" '
-                       f'stroke="{ACENTO if fuerte else SERIE[1]}" stroke-width="{3 if fuerte else 2}"/>')
-            etiqueta = (despues if k == 3 else antes)[n]
-            out.append(texto(x, y + 5, etiqueta, tam=14, peso="700",
-                             color=ACENTO if (k == 3 and fuerte) else TEXTO))
+            fuerte = n in nuevos
+            out.append(caja(x - bw / 2, y - bh / 2, bw, bh, relleno=FONDO,
+                            borde=ACENTO if fuerte else SERIE[1], grosor=3 if fuerte else 2,
+                            radio=3))
+            out.append(texto(x, y + 6, _gn((despues if k == 3 else antes)[n]), tam=15,
+                             peso="700", color=TEXTO))
         if k == 2:
             x, y = pos["nuevo"]
-            pts = " ".join(f"{x + (10 if i % 2 else -10):.0f},{y + 26 + 9 * i:.0f}" for i in range(6))
+            pts = " ".join(f"{x + (10 if i % 2 else -10):.0f},{y + bh / 2 + 4 + 9 * i:.0f}"
+                           for i in range(6))
             out.append(f'<polyline points="{pts}" fill="none" stroke="{ACENTO}" stroke-width="2"/>')
-            out.append(caja(x - 45, y + 76, 90, 28, borde=COLOR_FINAL, radio=6, grosor=2))
-            out.append(texto(x, y + 96, "U = +1", tam=15, color=COLOR_FINAL, peso="700"))
+            out.append(caja(x - 45, y + bh / 2 + 54, 90, 28, borde=COLOR_FINAL, radio=6, grosor=2))
+            out.append(texto(x, y + bh / 2 + 74, "U = +1", tam=15, color=COLOR_FINAL, peso="700"))
         if k == 3:
-            for n in ["nuevo", "a2", "a", "r"]:
+            for n in ["nuevo"] + camino[::-1]:
                 x, y = pos[n]
-                out.append(flecha(x + 38, y + 14, x + 38, y - 12, color=ACENTO, grosor=2))
-            out.append(texto(px + pw / 2, py + ph - 40, "el camino suma 1 victoria",
+                out.append(flecha(x + bw / 2 + 12, y + 12, x + bw / 2 + 12, y - 12, color=ACENTO,
+                                  grosor=2))
+            out.append(texto(px + pw / 2, py + ph - 40, "cada nodo del camino suma",
                              tam=13, color=SUAVE))
-            out.append(texto(px + pw / 2, py + ph - 20, "y 1 simulación", tam=13, color=SUAVE))
+            out.append(texto(px + pw / 2, py + ph - 20, "1 simulación y 1 victoria",
+                             tam=13, color=SUAVE))
         if k == 0:
             out.append(texto(px + pw / 2, py + ph - 22, "el árbol que ya se construyó", tam=13,
                              color=SUAVE))
-    out.append(nota_svg(H - 36, ["En cada nodo: victorias de MAX /",
-                                 "simulaciones que pasaron por él"], tam=14))
+    out.append(nota_svg(fin_paneles + 30, ["En cada nodo: G/N, victorias de MAX /",
+                                 "simulaciones que pasaron por él. La raíz",
+                                 "suma sus hijos; los demás, 1 más sus hijos."], tam=14))
     out.append(cierre())
     return "".join(out)
 
@@ -2831,10 +3019,12 @@ DIAGRAMAS = {
     "jue-t-ab-pila": jue_t_ab_pila,
     "jue-t-azar": jue_t_azar,
     "jue-t-corte-d1": lambda: jue_t_corte(1),
+    "jue-t-corte-d2-tramo-1": lambda: jue_t_corte(2, tramo=1),
     "jue-t-corte-d2": lambda: jue_t_corte(2),
     "jue-t-iterativa": jue_t_iterativa,
     "jue-c3-corte-prof-1": jue_c3_corte_prof_1,
     "jue-c3-corte-prof-2": jue_c3_corte_prof_2,
+    "jue-c3-corte-prof-3": jue_c3_corte_prof_3,
     "jue-c3-horizonte": jue_c3_horizonte,
     "jue-c3-profundizacion": jue_c3_profundizacion,
     "jue-c3-mcts-pasos": jue_c3_mcts_pasos,

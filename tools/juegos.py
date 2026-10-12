@@ -22,6 +22,7 @@ from functools import lru_cache
 from itertools import product
 from pathlib import Path
 import copy
+import math
 import re
 
 COLUMNAS = "abcdefgh"
@@ -1167,7 +1168,7 @@ PAGINA_MODO = {
     "azar": "2_mirar_todo_y_podar/3_cuando_decide_un_dado.md",
     "alfa-beta": "2_mirar_todo_y_podar/4_alfa_beta.md",
     "corte": "3_cuando_no_cabe/2_minimax_con_corte.md",
-    "iterativa": "3_cuando_no_cabe/3_jugar_contra_el_reloj.md",
+    "iterativa": "3_cuando_no_cabe/4_jugar_contra_el_reloj.md",
 }
 FUNCION_MODO = {"minimax": "DECIDIR-MINIMAX", "azar": "DECIDIR-EXPECTIMINIMAX",
                 "alfa-beta": "DECIDIR-ALFA-BETA", "corte": "DECIDIR-CON-CORTE",
@@ -2171,3 +2172,382 @@ def pasos_por_linea(modo, variante=None):
 
 # Las trazas que su pagina no escribe fila por fila (solo en resumen).
 SIN_TABLA_EN_PAGINA = {("corte", 1), ("corte", 3), ("iterativa", None)}
+
+
+# ================================ clase 3: cifras de la reescritura (G2) ===
+#
+# Lo que citan las paginas de «Cuando el arbol no cabe» tras la reescritura
+# de 2026-10: micros de EVAL, la rama de profundidad 3, la traza de T con
+# d = 2 tal como la escribe la pagina, las variantes de los ejercicios
+# finales, la tabla unica de nodos generados, la clase de cada valor en una
+# tabla de transposicion y una vuelta de MCTS cuyos conteos cuadran. Las
+# funciones de arriba no cambian: la animacion y el notebook leen de ellas.
+
+# ---------------------------------------------- p1: cortar y evaluar ---
+
+# Una posicion sencilla con material desigual, para el micro de EVAL: desde
+# el inicio del 4x4, Blancas gana un peon en c3. Mueven Negras.
+CAMINO_MICRO_EVAL = ["b1-b2", "c4-c3", "b2xc3"]
+
+
+def jugar_nombres(tablero, turno, nombres, n=3):
+    """Aplica jugadas por nombre («b1-b2», «b2xc3»); devuelve (tablero, turno)."""
+    for nombre in nombres:
+        opciones = {nombre_jugada(tablero, m, n): m for m in jugadas(tablero, turno, n)}
+        tablero, turno = mover(tablero, opciones[nombre]), otro(turno)
+    return tablero, turno
+
+
+def desglose_eval(tablero, n):
+    """Las piezas de EVAL = 10·material + avance, lado por lado."""
+    peones_b, peones_n = tablero.count("B"), tablero.count("N")
+    avance_b = sum(i // n for i, p in enumerate(tablero) if p == "B")
+    avance_n = sum(n - 1 - i // n for i, p in enumerate(tablero) if p == "N")
+    res = dict(peones_b=peones_b, peones_n=peones_n, avance_b=avance_b, avance_n=avance_n,
+               material=peones_b - peones_n, avance=avance_b - avance_n)
+    res["eval"] = 10 * res["material"] + res["avance"]
+    assert res["eval"] == evaluar_peones(tablero, n)
+    return res
+
+
+def arbol_con_corte(tablero, turno, d, n, jugada=None):
+    """El arbol que recorre minimax con corte con d en la raiz, nodo por nodo:
+    dict(jugada, tablero, turno, final ('B', 'N' o None), corte (si se
+    estima con EVAL), valor (100·U, EVAL o el max/min de sus hijos), hijos)."""
+    g = ganador(tablero, turno, n)
+    nodo = dict(jugada=jugada, tablero=tablero, turno=turno, final=g, corte=False, hijos=[])
+    if g:
+        nodo["valor"] = 100 * utilidad_simple(g, 0)
+    elif d == 0:
+        nodo.update(corte=True, valor=evaluar_peones(tablero, n))
+    else:
+        nodo["hijos"] = [arbol_con_corte(mover(tablero, m), otro(turno), d - 1, n,
+                                         nombre_jugada(tablero, m, n))
+                         for m in jugadas(tablero, turno, n)]
+        vs = [h["valor"] for h in nodo["hijos"]]
+        nodo["valor"] = max(vs) if turno == "B" else min(vs)
+    return nodo
+
+
+def contar_con_corte(nodo):
+    """Nodos de un arbol_con_corte, contando su raiz."""
+    return 1 + sum(contar_con_corte(h) for h in nodo["hijos"])
+
+
+def ramificacion_maxima(nodo, camino=()):
+    """(b, caminos): el mayor numero de jugadas de un nodo que se expande, y
+    los caminos (listas de jugadas desde la raiz) de los nodos que lo tienen."""
+    b, donde = len(nodo["hijos"]), [list(camino)] if nodo["hijos"] else []
+    for h in nodo["hijos"]:
+        bh, dh = ramificacion_maxima(h, camino + (h["jugada"],))
+        if bh > b:
+            b, donde = bh, dh
+        elif bh == b and bh:
+            donde += dh
+    return b, donde
+
+
+def evals_tras_respuestas(tablero, turno, n):
+    """{jugada: {respuesta: EVAL}}: la tabla de profundidad 2, completa."""
+    res = {}
+    for m in jugadas(tablero, turno, n):
+        t = mover(tablero, m)
+        res[nombre_jugada(tablero, m, n)] = {
+            nombre_jugada(t, r, n): evaluar_peones(mover(t, r), n)
+            for r in jugadas(t, otro(turno), n)}
+    return res
+
+
+# --------------------------------------------- p2: minimax con corte ---
+
+# La variante del ejercicio final: EVAL(C2) = 1 en vez de 9. Con d = 2 cambia
+# la jugada (izq); con d = 1 no se mira C2 y con d = 3 no se evalua nada.
+EVAL_T_VARIANTE = {**EVAL_T, "C2": 1}
+
+
+def decidir_con_corte_t(d, orden=None, evaluar=None):
+    """DECIDIR-CON-CORTE(R, d) en T: (jugada, valor, nodos generados). orden:
+    los hijos de R en el orden de visita, por nombre («D», «C», «I»)."""
+    t = traza_decidir(ARBOL_T, profundidad=d, evaluar=evaluar or EVAL_T,
+                      orden={"R": orden} if orden else None)
+    return t["jugada"], t["valor"], t["generados"]
+
+
+def filas_corte_t(d=2, orden=None, evaluar=None):
+    """La traza de DECIDIR-CON-CORTE(R, d) en T con las columnas de la pagina:
+    (#, «línea · pila», v, w, jugada). En w, una hoja va sola y un nodo lleva
+    su nombre; jugada es mejor_jugada, «—» si ninguna."""
+    t = traza_decidir(ARBOL_T, profundidad=d, evaluar=evaluar or EVAL_T,
+                      orden={"R": orden} if orden else None, lineas=LINEAS_CORTE)
+    res = []
+    for f in t["filas"]:
+        v = f["mejor_valor"] if f["nodo"] == "R" else f["v"]
+        w = ""
+        if f["w"] is not None:
+            w = fmt_t(f["w"]) if f["hijo"] == str(f["w"]) else f"{fmt_t(f['w'])} ({f['hijo']})"
+        res.append((f["n"], f"{f['linea']} · {'›'.join(f['pila'])}", fmt_t(v), w,
+                    f["mejor_jugada"] or "—"))
+    return res
+
+
+# -------------------------------------------- p4: jugar contra el reloj ---
+
+JUGADA_A_NOMBRE = {"izq": "I", "centro": "C", "der": "D"}
+
+
+def iterativa_sin_poda_t(profundidades=(1, 2, 3), evaluar=None, anterior_primero=False):
+    """Profundizacion iterativa con DECIDIR-CON-CORTE (sin poda) en T:
+    [(d, orden de la raiz, jugada lista, valor, nodos generados)]. Sin poda,
+    el orden solo cambia algo si hay empates."""
+    res, jugada = [], None
+    for d in profundidades:
+        orden = ["izq", "centro", "der"]
+        if anterior_primero and jugada:
+            orden = [jugada] + [a for a in orden if a != jugada]
+        jugada, valor, nodos = decidir_con_corte_t(d, [JUGADA_A_NOMBRE[a] for a in orden],
+                                                   evaluar)
+        res.append((d, orden, jugada, valor, nodos))
+    return res
+
+
+def llamadas_alfa_beta(traza):
+    """Una fila por llamada a ALFA-BETA-CON-CORTE en un nodo interno, en el
+    orden en que entra: (nodo, α al llegar, β al llegar, v que devuelve,
+    corte o None)."""
+    res, abiertas = [], {}
+    for f in traza["filas"]:
+        if f["evento"] == "entra":
+            abiertas[f["nodo"]] = len(res)
+            res.append([f["nodo"], f["alfa"], f["beta"], None, None])
+        elif f["evento"] == "regresa":
+            fila = res[abiertas[f["nodo"]]]
+            fila[3], fila[4] = f["v"], f["corta"]
+    return [tuple(r) for r in res]
+
+
+def clase_de_valor(alfa, beta, v):
+    """Lo que vale v para una tabla de transposicion, segun la ventana con que
+    se llamo al nodo: exacto si α < v < β; piso si v ≥ β; techo si v ≤ α."""
+    if v >= beta:
+        return "piso"
+    if v <= alfa:
+        return "techo"
+    return "exacto"
+
+
+def clases_transposicion(traza):
+    """{nodo: (α, β, v, clase)} para cada llamada de una traza de alfa-beta."""
+    return {n: (a, b, v, clase_de_valor(a, b, v)) for n, a, b, v, _ in llamadas_alfa_beta(traza)}
+
+
+def _ab_t(arbol, camino, d, a, b, evaluar, nombres, cuenta):
+    """ALFA-BETA-CON-CORTE en T (el nodo en `camino` ya se conto)."""
+    nodo = nodo_en(arbol, camino)
+    if not isinstance(nodo, tuple):
+        return nodo
+    if d == 0:
+        return evaluar[nombres[camino][0]]
+    es_max = len(camino) % 2 == 0
+    v = -INF if es_max else INF
+    for i in range(len(nodo)):
+        cuenta[0] += 1
+        w = _ab_t(arbol, camino + (i,), d - 1, a, b, evaluar, nombres, cuenta)
+        if es_max:
+            v = max(v, w)
+            if v >= b:
+                return v
+            a = max(a, v)
+        else:
+            v = min(v, w)
+            if v <= a:
+                return v
+            b = min(b, v)
+    return v
+
+
+def iterativa_con_reloj_t(acciones, tope=None, profundidades=(1, 2, 3), evaluar=None):
+    """PROFUNDIZACION-ITERATIVA (las 32 lineas de la pagina) en T, con A(R) en
+    el orden `acciones` y un reloj que se acaba cuando se han generado `tope`
+    nodos, contando todas las busquedas. El reloj se mira donde lo mira el
+    pseudocodigo: en la linea 4 (antes de cada busqueda) y en la 8 (tras cada
+    hijo de la raiz). Sin tope, se acaba al terminar la ultima profundidad.
+
+    Devuelve (corridas, entrega): corridas = [dict(d, orden, jugada,
+    generados)] de las busquedas completas; entrega = dict(jugada, d,
+    generados, linea, despues_de) con d la busqueda en curso y despues_de el
+    hijo de la raiz tras el que se miro el reloj (None en la linea 4/13)."""
+    evaluar = evaluar or EVAL_T
+    nombres = nombres_t(ARBOL_T)
+    camino_de = {a: c for c, (_, a) in nombres.items() if len(c) == 1}
+    cuenta = [0]
+    acabado = lambda: tope is not None and cuenta[0] >= tope  # noqa: E731
+    jugada, corridas = acciones[0], []                          # linea 2
+    for d in profundidades:                                     # lineas 3, 4, 12
+        if acabado():
+            return corridas, dict(jugada=jugada, d=d, generados=cuenta[0], linea=4,
+                                  despues_de=None)
+        cuenta[0] += 1                                          # R
+        alfa, mejor = -INF, jugada                              # linea 5
+        orden = [jugada] + [a for a in acciones if a != jugada]  # linea 6
+        inicio = cuenta[0] - 1
+        for a in orden:
+            cuenta[0] += 1
+            w = _ab_t(ARBOL_T, camino_de[a], d - 1, alfa, INF, evaluar, nombres, cuenta)
+            if acabado():                                       # linea 8
+                return corridas, dict(jugada=jugada, d=d, generados=cuenta[0], linea=8,
+                                      despues_de=a)
+            if w == 100:                                        # linea 9
+                mejor = a
+                break
+            if w > alfa:                                        # linea 10
+                alfa, mejor = w, a
+        jugada = mejor                                          # linea 11
+        corridas.append(dict(d=d, orden=orden, jugada=jugada, generados=cuenta[0] - inicio))
+    return corridas, dict(jugada=jugada, d=profundidades[-1], generados=cuenta[0], linea=13,
+                          despues_de=None)
+
+
+def decidir_alfa_beta_con_corte(tablero, turno, d, n):
+    """DECIDIR-ALFA-BETA con corte en un tablero de peones: α compartido entre
+    los hijos de la raiz, jugadas en el orden fijo y sin la salida temprana
+    con 100. Devuelve (jugada, valor, nodos generados contando la raiz)."""
+    def ab(t, p, d, a, b, c):
+        c[0] += 1
+        g = ganador(t, p, n)
+        if g:
+            return 100 * utilidad_simple(g, 0)
+        if d == 0:
+            return evaluar_peones(t, n)
+        v = -INF if p == "B" else INF
+        for m in jugadas(t, p, n):
+            h = ab(mover(t, m), otro(p), d - 1, a, b, c)
+            if p == "B":
+                v = max(v, h)
+                if v >= b:
+                    return v
+                a = max(a, v)
+            else:
+                v = min(v, h)
+                if v <= a:
+                    return v
+                b = min(b, v)
+        return v
+    c, alfa, mejor = [1], -INF, None
+    for m in jugadas(tablero, turno, n):
+        w = ab(mover(tablero, m), otro(turno), d - 1, alfa, INF, c)
+        if w > alfa:
+            alfa, mejor = w, m
+    return nombre_jugada(tablero, mejor, n), alfa, c[0]
+
+
+# La posicion de la clase 3 (fila 1 primero); mueven Blancas.
+POSICION_C3 = "B..." + "..BB" + "..N." + "NN.."
+
+
+def tabla_nodos_generados(profundidades=(1, 2, 3)):
+    """Nodos generados (contando la raiz) por arbol y algoritmo, para cada d.
+
+    - T: sin poda = DECIDIR-CON-CORTE; alfa-beta = DECIDIR-ALFA-BETA con
+      corte, hijos en el orden dado (izq, centro, der); iterativa = la de la
+      pagina, con la jugada lista de la busqueda anterior primero.
+    - 4x4 (la posicion de la clase): las jugadas en el orden fijo de la unidad
+      (por casilla de origen: a1-a2, d2-d3, d2xc3); alfa-beta sin la salida
+      temprana; iterativa = profundizacion_iterativa, con la anterior primero
+      y la salida en 100."""
+    ds = list(profundidades)
+    return {
+        ("T", "sin poda"): [decidir_con_corte_t(d)[2] for d in ds],
+        ("T", "alfa-beta"): [traza_decidir(ARBOL_T, poda=True, profundidad=d,
+                                           evaluar=EVAL_T)["generados"] for d in ds],
+        ("T", "iterativa"): [t["generados"] for _, _, t in
+                             profundizacion_iterativa_t(ARBOL_T, ds, EVAL_T)],
+        ("4x4", "sin poda"): [nodos_con_corte(POSICION_C3, "B", d, 4) for d in ds],
+        ("4x4", "alfa-beta"): [decidir_alfa_beta_con_corte(POSICION_C3, "B", d, 4)[2]
+                               for d in ds],
+        ("4x4", "iterativa"): [c for _, c, _ in profundizacion_iterativa(POSICION_C3, ds, 4)],
+    }
+
+
+# ----------------------------------------------- p5: simular (MCTS) ---
+#
+# El arbol de la figura de MCTS, antes de la vuelta: {nodo: (padre, quien
+# mueve, U de la simulacion que se hizo al crearlo)}. La raiz no simula
+# (es el estado de partida): sus cuentas son la suma de sus hijos. Cada otro
+# nodo: su simulacion mas las de sus hijos. Asi los conteos salen de los
+# cuatro pasos de la pagina y no se escriben a mano.
+MCTS_ARBOL = {
+    "r": (None, "MAX", None),
+    "a": ("r", "MIN", 1),
+    "b": ("r", "MIN", -1),
+    "a1": ("a", "MAX", 1),
+    "a2": ("a", "MAX", -1),
+}
+
+
+def victorias(n, media):
+    """G a partir de N simulaciones y su promedio de U (U = ±1): (media+1)/2·N."""
+    g = F(media + 1) / 2 * n
+    assert g.denominator == 1
+    return int(g)
+
+
+def mcts_cuentas(arbol):
+    """{nodo: (G, N)}: victorias de MAX y simulaciones que pasaron por el."""
+    hijos = {n: [h for h, (p, _, _) in arbol.items() if p == n] for n in arbol}
+
+    def cuenta(n):
+        _, _, u = arbol[n]
+        g, s = (0, 0) if u is None else (1 if u == 1 else 0, 1)
+        for h in hijos[n]:
+            gh, sh = cuenta(h)
+            g, s = g + gh, s + sh
+        return g, s
+    return {n: cuenta(n) for n in arbol}
+
+
+def mcts_puntaje(media, n, n_padre, c):
+    """UCT: media + c·sqrt(ln N(s) / N(s')). media ya vista desde quien elige."""
+    return float(media) + float(c) * math.sqrt(math.log(n_padre) / n)
+
+
+def mcts_vuelta(arbol, c, u):
+    """Una vuelta de MCTS sobre `arbol`: seleccion con UCT (MIN cambia el signo
+    del promedio de U), expansion de un hijo «nuevo» bajo el nodo sin hijos al
+    que llega, simulacion con resultado u y retropropagacion. Devuelve
+    dict(camino, padre_nuevo, antes, despues, puntajes)."""
+    antes = mcts_cuentas(arbol)
+    hijos = {n: [h for h, (p, _, _) in arbol.items() if p == n] for n in arbol}
+    camino, n, puntajes = ["r"], "r", {}
+    while hijos[n]:
+        _, pl, _ = arbol[n]
+        signo = 1 if pl == "MAX" else -1
+        p = {}
+        for h in hijos[n]:
+            g, s = antes[h]
+            p[h] = mcts_puntaje(signo * F(2 * g - s, s), s, antes[n][1], c)
+        puntajes[n] = p
+        n = max(hijos[n], key=lambda h: p[h])
+        camino.append(n)
+    pl_nuevo = "MIN" if arbol[n][1] == "MAX" else "MAX"
+    nuevo = {**arbol, "nuevo": (n, pl_nuevo, u)}
+    return dict(camino=camino, padre_nuevo=n, antes=antes, despues=mcts_cuentas(nuevo),
+                puntajes=puntajes)
+
+
+# El ejercicio «Decide qué jugada entrega MCTS»: {jugada: (N, promedio de U)}
+# tras 100 vueltas en la raiz, donde mueve MAX.
+EJERCICIO_MCTS = {"x": (60, F(1, 2)), "y": (30, F(3, 5)), "z": (10, F(1, 5))}
+
+
+def uct_ejercicio(c, victorias=False, datos=None):
+    """{jugada: puntaje UCT} en la raiz del ejercicio, con N(s) = suma de los
+    N. Con victorias=True el primer termino es G/N (entre 0 y 1) en vez del
+    promedio de U (entre −1 y 1)."""
+    datos = datos or EJERCICIO_MCTS
+    total = sum(n for n, _ in datos.values())
+    return {k: mcts_puntaje((media + 1) / 2 if victorias else media, n, total, c)
+            for k, (n, media) in datos.items()}
+
+
+def mas_simulada(datos):
+    return max(datos, key=lambda k: datos[k][0])

@@ -33,8 +33,16 @@ PAGINAS = {
         "alfa_beta", "decidir_alfa_beta"],
     CLASE_3 / "2_minimax_con_corte.md": [
         "minimax_con_corte", "decidir_con_corte"],
-    CLASE_3 / "3_jugar_contra_el_reloj.md": [
+    CLASE_3 / "4_jugar_contra_el_reloj.md": [
         "alfa_beta_con_corte", "profundizacion_iterativa"],
+}
+
+
+# Bloques ```text que son solo pseudocodigo, sin gemelo Python: la version
+# corta que la pagina presenta antes de la completa. Se nombran por su
+# funcion para que la excepcion no tape un bloque nuevo sin Python.
+SOLO_PSEUDO = {
+    CLASE_3 / "4_jugar_contra_el_reloj.md": ["PROFUNDIZAR-SIN-PODA"],
 }
 
 
@@ -98,6 +106,10 @@ def jugada(tablero, nombre, turno="B", n=3):
 @pytest.mark.parametrize("pagina", sorted(PAGINAS), ids=lambda p: p.name)
 def test_cada_pseudocodigo_trae_su_python_y_define_lo_que_dice(pagina):
     pseudo, python = bloques_pseudocodigo(pagina), bloques_python(pagina)
+    for nombre in SOLO_PSEUDO.get(pagina, []):
+        solos = [b for b in pseudo if f"function {nombre}(" in b]
+        assert len(solos) == 1, (pagina.name, nombre)
+        pseudo.remove(solos[0])
     assert pseudo, pagina.name
     assert len(python) == len(pseudo), pagina.name
     ns, _ = cargar(pagina)
@@ -281,7 +293,7 @@ def reloj(presupuesto, contador):
     (10 ** 5, "d2-d3"),  # sale en la linea 9 mucho antes de agotarlo
 ])
 def test_profundizacion_iterativa_en_python(presupuesto, entrega):
-    pagina = CLASE_3 / "3_jugar_contra_el_reloj.md"
+    pagina = CLASE_3 / "4_jugar_contra_el_reloj.md"
     ns, c = cargar(pagina, n=4)
     ns["queda_tiempo"] = reloj(presupuesto, c)
     a = ns["profundizacion_iterativa"]((HORIZONTE, "B"))
@@ -289,7 +301,7 @@ def test_profundizacion_iterativa_en_python(presupuesto, entrega):
 
 
 def test_profundizacion_iterativa_en_python_genera_4_10_y_9():
-    pagina = CLASE_3 / "3_jugar_contra_el_reloj.md"
+    pagina = CLASE_3 / "4_jugar_contra_el_reloj.md"
     ns, c = cargar(pagina, n=4)
     # Un reloj holgado: si la linea 9 se rompe, la prueba falla en vez de
     # profundizar para siempre.

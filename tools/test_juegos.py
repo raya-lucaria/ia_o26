@@ -474,3 +474,223 @@ def test_clase_2_sin_el_igual_se_pierde_la_poda():
     # Sin el igual, el juego completo pierde casi toda la poda: 228 y 171.
     assert j.alfa_beta(j.inicio(), "B", estricto=True)[:2] == (-1, 228)
     assert j.alfa_beta(j.inicio(), "B", invertir=True, estricto=True)[:2] == (-1, 171)
+
+
+# ------------------------------------- clase 3: cifras de la reescritura ---
+#
+# Cada cifra que las paginas de «Cuando el arbol no cabe» van a citar tras la
+# reescritura de 2026-10 (plan G2): una funcion de juegos.py y una asercion
+# aqui. Las que antes nadie fijaba (EVAL de la raiz, el cociente de 16 000,
+# cada EVAL de profundidad 2) tambien.
+
+INF = float("inf")
+
+
+def test_clase_3_micro_de_eval():
+    inicio = j.desglose_eval(j.inicio(4), 4)
+    assert inicio == dict(peones_b=4, peones_n=4, avance_b=0, avance_n=0,
+                          material=0, avance=0, eval=0)
+    # La posicion de la clase: 3 contra 3, avance 2 contra 1, EVAL = 1.
+    assert j.desglose_eval(HORIZONTE, 4) == dict(peones_b=3, peones_n=3, avance_b=2,
+                                                 avance_n=1, material=0, avance=1, eval=1)
+    # La del micro: b1-b2, c4-c3, b2xc3 desde el inicio; mueven Negras.
+    t, turno = j.jugar_nombres(j.inicio(4), "B", j.CAMINO_MICRO_EVAL, 4)
+    assert j.CAMINO_MICRO_EVAL == ["b1-b2", "c4-c3", "b2xc3"]
+    assert t == "B.BB" + "...." + "..B." + "NN.N" and turno == "N"
+    assert j.desglose_eval(t, 4) == dict(peones_b=4, peones_n=3, avance_b=2, avance_n=0,
+                                         material=1, avance=2, eval=12)
+    assert (t, turno) in _no_finales_4x4()
+
+
+def test_clase_3_crece_mas_de_16000_veces():
+    nodos_3, _ = j.contar_arbol()
+    nodos_4, _ = j.contar_arbol(n=4)
+    assert nodos_4 // nodos_3 == 16658 and nodos_4 / nodos_3 > 16000
+
+
+def test_clase_3_cada_eval_de_profundidad_2():
+    assert j.evals_tras_respuestas(HORIZONTE, "B", 4) == {
+        "a1-a2": {"c3xd2": -10, "a4-a3": 1, "b4-b3": 1},
+        "d2-d3": {"a4-a3": 1, "b4-b3": 1},
+        "d2xc3": {"a4-a3": 12, "b4-b3": 12, "b4xc3": 0}}
+
+
+def test_clase_3_la_rama_d2_d3_a_profundidad_3():
+    rama = j.arbol_con_corte(HORIZONTE, "B", 3, 4)["hijos"][1]
+    assert rama["jugada"] == "d2-d3" and rama["valor"] == 100
+    vistas = {r["jugada"]: {h["jugada"]: (h["valor"], h["final"]) for h in r["hijos"]}
+              for r in rama["hijos"]}
+    assert vistas == {"a4-a3": {"a1-a2": (2, None), "d3-d4": (100, "B")},
+                      "b4-b3": {"a1-a2": (2, None), "c2xb3": (13, None),
+                                "d3-d4": (100, "B")}}
+    assert [r["valor"] for r in rama["hijos"]] == [100, 100]
+    # La rama tiene 8 nodos contando el de d2-d3; 7 debajo de el.
+    assert j.contar_con_corte(rama) == 8
+    # Y los tres valores de la raiz con d = 3 siguen siendo -9, 100 y 1.
+    raiz = j.arbol_con_corte(HORIZONTE, "B", 3, 4)
+    assert [h["valor"] for h in raiz["hijos"]] == [-9, 100, 1]
+    assert j.contar_con_corte(raiz) == 33
+
+
+def test_clase_3_b_es_5_en_el_arbol_de_profundidad_3():
+    b, donde = j.ramificacion_maxima(j.arbol_con_corte(HORIZONTE, "B", 3, 4))
+    assert b == 5 and donde == [["a1-a2", "b4-b3"]]
+    assert [j.ramificacion_maxima(j.arbol_con_corte(HORIZONTE, "B", d, 4))[0]
+            for d in (1, 2)] == [3, 3]
+
+
+def test_clase_3_traza_de_t_con_d_2_fila_por_fila():
+    filas = j.filas_corte_t(2)
+    assert [tuple(f) for f in filas] == [
+        (1, "2 · R", "−∞", "", "—"),
+        (2, "17 · R›I", "+∞", "", "—"),
+        (3, "19–20 · R›I", "3", "3", "—"),
+        (4, "19–20 · R›I", "3", "6", "—"),
+        (5, "4–5 · R", "3", "3 (I)", "izq"),
+        (6, "17 · R›C", "+∞", "", "izq"),
+        (7, "19–20 · R›C", "6", "6 (C1)", "izq"),
+        (8, "19–20 · R›C", "6", "9 (C2)", "izq"),
+        (9, "4–5 · R", "6", "6 (C)", "centro"),
+        (10, "17 · R›D", "+∞", "", "centro"),
+        (11, "19–20 · R›D", "2", "2", "centro"),
+        (12, "19–20 · R›D", "2", "12", "centro"),
+        (13, "4–5 · R", "6", "2 (D)", "centro"),
+        (14, "6 · R", "6", "", "centro")]
+
+
+def test_clase_3_ejercicio_final_de_minimax_con_corte():
+    # (a) Los hijos de la raiz al reves: der, centro, izq.
+    assert j.decidir_con_corte_t(2, orden=["D", "C", "I"]) == ("centro", 6, 10)
+    # (b) EVAL(C2) = 1 en vez de 9: cambia d = 2, no d = 1 ni d = 3.
+    assert j.EVAL_T_VARIANTE == {"I": 5, "C": 4, "D": 7, "C1": 6, "C2": 1}
+    assert [j.decidir_con_corte_t(d, evaluar=j.EVAL_T_VARIANTE)[:2] for d in (1, 2, 3)] == [
+        ("der", 7), ("izq", 3), ("centro", 5)]
+    assert [j.decidir_con_corte_t(d)[:2] for d in (1, 2, 3)] == [
+        ("der", 7), ("centro", 6), ("centro", 5)]
+    # (c) Nodos generados con d = 1, 2, 3.
+    assert [j.decidir_con_corte_t(d)[2] for d in (1, 2, 3)] == [4, 10, 14]
+
+
+def test_clase_3_iterativa_sin_poda_en_t():
+    for anterior_primero in (False, True):
+        corridas = j.iterativa_sin_poda_t(anterior_primero=anterior_primero)
+        assert [(d, jugada, valor, nodos) for d, _, jugada, valor, nodos in corridas] == [
+            (1, "der", 7, 4), (2, "centro", 6, 10), (3, "centro", 5, 14)]
+        assert sum(c[4] for c in corridas) == 28
+    assert [c[1] for c in j.iterativa_sin_poda_t(anterior_primero=True)] == [
+        ["izq", "centro", "der"], ["der", "izq", "centro"], ["centro", "izq", "der"]]
+
+
+def test_clase_3_traza_de_alfa_beta_con_corte_d_3_centro_primero():
+    t = j.traza_decidir(j.ARBOL_T, poda=True, orden={"R": ["C", "I", "D"]}, profundidad=3,
+                        evaluar=j.EVAL_T, lineas=j.LINEAS_RELOJ)
+    assert j.llamadas_alfa_beta(t) == [
+        ("C", -INF, INF, 5, None),
+        ("C1", -INF, INF, 5, None),
+        ("C2", -INF, 5, 7, "beta"),
+        ("I", 5, INF, 3, "alfa"),
+        ("D", 5, INF, 2, "alfa")]
+    assert (t["jugada"], t["valor"], t["generados"]) == ("centro", 5, 11)
+    assert t["orden_generados"] == ["R", "C", "C1", "5", "2", "C2", "7", "I", "3", "D", "2"]
+
+
+def test_clase_3_iterativa_con_otro_orden_y_un_reloj():
+    corridas, entrega = j.iterativa_con_reloj_t(["der", "centro", "izq"])
+    assert [(c["d"], c["orden"], c["jugada"], c["generados"]) for c in corridas] == [
+        (1, ["der", "centro", "izq"], "der", 4),
+        (2, ["der", "centro", "izq"], "centro", 9),
+        (3, ["centro", "der", "izq"], "centro", 11)]
+    assert entrega["jugada"] == "centro" and entrega["generados"] == 24
+    # El orden de la pagina da 4, 10 y 11, y entrega centro.
+    corridas, entrega = j.iterativa_con_reloj_t(["izq", "centro", "der"])
+    assert [c["generados"] for c in corridas] == [4, 10, 11] and entrega["generados"] == 25
+    # Un reloj de 10 nodos se acaba en d = 2, tras valorar centro: entrega der.
+    _, entrega = j.iterativa_con_reloj_t(["der", "centro", "izq"], tope=10)
+    assert entrega == dict(jugada="der", d=2, generados=11, linea=8, despues_de="centro")
+    _, entrega = j.iterativa_con_reloj_t(["der", "centro", "izq"], tope=20)
+    assert entrega == dict(jugada="centro", d=3, generados=20, linea=8, despues_de="centro")
+
+
+def test_clase_3_tabla_unica_de_nodos_generados():
+    tabla = j.tabla_nodos_generados()
+    assert tabla == {
+        ("T", "sin poda"): [4, 10, 14],
+        ("T", "alfa-beta"): [4, 9, 12],
+        ("T", "iterativa"): [4, 10, 11],
+        ("4x4", "sin poda"): [4, 12, 33],
+        ("4x4", "alfa-beta"): [4, 12, 22],
+        ("4x4", "iterativa"): [4, 10, 9]}
+    totales = {k: sum(v) for k, v in tabla.items()}
+    assert totales[("T", "iterativa")] == 25 == 4 + 10 + 11
+    assert totales[("T", "sin poda")] == 28 == 4 + 10 + 14
+    assert totales[("T", "alfa-beta")] == 25
+    assert totales[("4x4", "sin poda")] == 49 and totales[("4x4", "alfa-beta")] == 38
+    assert totales[("4x4", "iterativa")] == 23
+    # El orden de jugadas en la posicion 4x4: por casilla de origen.
+    assert [j.nombre_jugada(HORIZONTE, m, 4) for m in j.jugadas(HORIZONTE, "B", 4)] == [
+        "a1-a2", "d2-d3", "d2xc3"]
+
+
+def test_clase_3_tabla_de_transposicion_por_la_ventana():
+    assert j.clase_de_valor(-INF, INF, 5) == "exacto"
+    assert j.clase_de_valor(-INF, 5, 7) == "piso" and j.clase_de_valor(3, 5, 5) == "piso"
+    assert j.clase_de_valor(5, INF, 3) == "techo" and j.clase_de_valor(5, INF, 5) == "techo"
+    *_, (_, _, t) = j.profundizacion_iterativa_t()
+    assert j.clases_transposicion(t) == {
+        "C": (-INF, INF, 5, "exacto"), "C1": (-INF, INF, 5, "exacto"),
+        "C2": (-INF, 5, 7, "piso"), "I": (5, INF, 3, "techo"), "D": (5, INF, 2, "techo")}
+    fijo = j.traza_decidir(j.ARBOL_T, poda=True, profundidad=3, evaluar=j.EVAL_T)
+    assert j.clases_transposicion(fijo) == {
+        "I": (-INF, INF, 3, "exacto"), "C": (3, INF, 5, "exacto"),
+        "C1": (3, INF, 5, "exacto"), "C2": (3, 5, 7, "piso"), "D": (5, INF, 2, "techo")}
+
+
+def test_clase_3_la_vuelta_de_mcts_cuadra():
+    antes = j.mcts_cuentas(j.MCTS_ARBOL)
+    assert antes == {"r": (2, 4), "a": (2, 3), "b": (0, 1), "a1": (1, 1), "a2": (0, 1)}
+    # Cada nodo que no es la raiz: su simulacion mas las de sus hijos.
+    for n, (padre, _, _) in j.MCTS_ARBOL.items():
+        hijos = [h for h, (p, _, _) in j.MCTS_ARBOL.items() if p == n]
+        propia = 0 if padre is None else 1
+        assert antes[n][1] == propia + sum(antes[h][1] for h in hijos), n
+    vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
+    assert vuelta["camino"] == ["r", "a", "a2"] and vuelta["padre_nuevo"] == "a2"
+    assert vuelta["despues"] == {"r": (3, 5), "a": (3, 4), "b": (0, 1), "a1": (1, 1),
+                                 "a2": (1, 2), "nuevo": (1, 1)}
+    # Con U = -1: el camino suma simulaciones, no victorias.
+    menos = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=-1)
+    assert menos["despues"] == {"r": (2, 5), "a": (2, 4), "b": (0, 1), "a1": (1, 1),
+                                "a2": (0, 2), "nuevo": (0, 1)}
+    # Los puntajes con c = 1: MAX elige a en la raiz; MIN, a2 en a.
+    assert {k: round(v, 2) for k, v in vuelta["puntajes"]["r"].items()} == {
+        "a": 1.01, "b": 0.18}
+    assert {k: round(v, 2) for k, v in vuelta["puntajes"]["a"].items()} == {
+        "a1": 0.05, "a2": 2.05}
+
+
+def test_clase_3_uct_en_el_ejercicio():
+    # Con el promedio de U (el de la pagina) y c = 1: la vuelta siguiente
+    # baja por y; se entrega x, la mas simulada.
+    p = j.uct_ejercicio(c=1)
+    assert {k: round(v, 2) for k, v in p.items()} == {"x": 0.78, "y": 0.99, "z": 0.88}
+    assert max(p, key=p.get) == "y" and j.mas_simulada(j.EJERCICIO_MCTS) == "x"
+    # Con G/N (victorias entre simulaciones) y c = 1, gana z; y gana si c < 0.69.
+    g = j.uct_ejercicio(c=1, victorias=True)
+    assert {k: round(v, 2) for k, v in g.items()} == {"x": 1.03, "y": 1.19, "z": 1.28}
+    assert max(g, key=g.get) == "z"
+    assert max(j.uct_ejercicio(c=F(1, 2), victorias=True).items(), key=lambda kv: kv[1])[0] == "y"
+    assert {k: j.victorias(n, m) for k, (n, m) in j.EJERCICIO_MCTS.items()} == {
+        "x": 45, "y": 24, "z": 6}
+
+
+def test_clase_3_simular_con_solo_negras_al_azar():
+    jugadas = j.jugadas(HORIZONTE, "B", 4)
+    solo_negras = [j.expectiminimax_rival_al_azar(j.mover(HORIZONTE, m), "N", 4)
+                   for m in jugadas]
+    ambos = [j.promedio_simulaciones(j.mover(HORIZONTE, m), "N", 4) for m in jugadas]
+    assert solo_negras == [F(2, 3), F(1), F(1, 3)]
+    assert ambos == [F(1097, 5184), F(8, 9), F(11, 72)]
+    # Hexapawn: 5/9, 3/4, 5/9 (la clase 2) contra 7/36, 5/24, 7/36.
+    apertura = j.jugadas(j.inicio(), "B")
+    assert [j.expectiminimax_rival_al_azar(j.mover(j.inicio(), m), "N") for m in apertura] == [
+        F(5, 9), F(3, 4), F(5, 9)]

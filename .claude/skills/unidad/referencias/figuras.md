@@ -50,8 +50,8 @@ Aquí: qué se dibuja, en qué orden y cómo se nombra.
 - **DEBE** toda imagen ir en `::: figure {#id title="…"}` (ver `lectura.md`); el `id` lleva el **prefijo de la unidad**
   y es único en el curso (`jue-c2-…`, `opt-ent-…`; ver CLAUDE.md § Authoring contract).
 - **DEBE** los *small multiples* (varios estados que se comparan lado a lado) ser **una figura compuesta**, no varias
-  figuras: «Una vuelta de MCTS, en cuatro pasos» (`course/7_juegos/3_cuando_no_cabe/4_simular_en_vez_de_evaluar.md:163`),
-  «Profundizar mientras haya tiempo» (`course/7_juegos/3_cuando_no_cabe/3_jugar_contra_el_reloj.md:200`).
+  figuras: «Una vuelta de MCTS, en cuatro pasos» (`course/7_juegos/3_cuando_no_cabe/5_simular_en_vez_de_evaluar.md:163`),
+  «Profundizar mientras haya tiempo» (`course/7_juegos/3_cuando_no_cabe/4_jugar_contra_el_reloj.md:200`).
 
 ## Figuras generadas
 

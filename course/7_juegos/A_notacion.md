@@ -97,7 +97,10 @@ renglón, en cursivas.
 | $d$ | «de». La profundidad que queda: cuántas jugadas más, de los dos jugadores, se pueden mirar desde el estado actual · *Cortar y evaluar a mano* |
 | $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ · *Cortar y evaluar a mano* |
 | $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación · *Cortar y evaluar a mano* |
-| $\bar u(s')$, $N(s')$ | «u barra», «ene». En MCTS: promedio de las simulaciones que pasaron por $s'$ y cuántas fueron · *Simular en vez de evaluar* |
+| $N(s')$, $G(s')$ | «ene de ese prima», «ge de ese prima». En MCTS: cuántas simulaciones pasaron por $s'$, y en cuántas ganó MAX. Esta $N$ no es Negras · *Simular en vez de evaluar* |
+| $\bar u(s')$ | «u barra». En MCTS: el promedio de $U$ en las simulaciones que pasaron por $s'$ · *Simular en vez de evaluar* |
+| $c$, puntaje$(s')$ | «ce». En la regla UCT, el peso de explorar; el puntaje es $\bar u(s')+c\sqrt{\ln N(s)/N(s')}$, y la selección baja al hijo de mayor puntaje · *Simular en vez de evaluar* |
+| $\ln$ | «logaritmo natural» · *Simular en vez de evaluar* |
 
 ## Términos
 
@@ -127,7 +130,7 @@ renglón, en cursivas.
 | DECIDIR-MINIMAX | Lo que el agente corre en su turno: valora cada jugada con MINIMAX y devuelve la **jugada** de mayor valor, no el número. DECIDIR-ALFA-BETA hace lo mismo pasando $\alpha$ a los hijos | Minimax como algoritmo |
 | Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
 | Pila | Las llamadas abiertas, de la raíz al nodo activo; se escribe R›C›C2. Es todo lo que el recorrido tiene en memoria | Minimax como algoritmo |
-| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la profundidad que quedaba y si el número es exacto, un piso o un techo | Minimax como algoritmo; lo de exacto, piso o techo, en Jugar contra el reloj |
+| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la profundidad que quedaba y si el número es exacto ($\alpha<v<\beta$ en la ventana con que se llamó), un piso ($v\ge\beta$) o un techo ($v\le\alpha$) | Minimax como algoritmo; lo de exacto, piso o techo, en Jugar contra el reloj |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad | Cuando decide un dado |
 | Utilidad esperada | El valor esperado de la utilidad. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
@@ -146,8 +149,12 @@ renglón, en cursivas.
 | Nodo de corte | Estado no final al que se llega con $d=0$: se evalúa con $\mathrm{EVAL}$ y no se expande | Cortar y evaluar a mano |
 | Valor con corte | El minimax del árbol cortado a $d$ jugadas, con $\mathrm{EVAL}$ en los nodos de corte; no es el valor del juego | Cortar y evaluar a mano |
 | Material, avance | Peones blancos menos negros; filas avanzadas por los blancos menos las de los negros | Cortar y evaluar a mano |
-| Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Jugar contra el reloj |
-| Posición quieta, búsqueda de quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar | Jugar contra el reloj |
+| Horizonte | La línea donde la búsqueda se corta: lo que queda debajo no se genera | Más allá del horizonte |
+| Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Más allá del horizonte |
+| Posición quieta, búsqueda de quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar | Más allá del horizonte |
+| DECIDIR-CON-CORTE, MINIMAX-CON-CORTE | DECIDIR-MINIMAX y su auxiliar con dos líneas más: un final vale $100\cdot U$ y, con $d=0$, un estado no final vale su $\mathrm{EVAL}$ | Minimax con corte como algoritmo |
+| PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Jugar contra el reloj |
+| ALFA-BETA-CON-CORTE | Alfa-beta con las mismas dos líneas de corte | Jugar contra el reloj |
 | Profundización iterativa | Buscar con $d=1,2,3,\dots$ mientras haya tiempo y entregar la jugada de la última búsqueda completa | Jugar contra el reloj |
 | Simulación | Partida desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final | Simular en vez de evaluar |
 | MCTS, búsqueda de árbol Monte Carlo | Construye un árbol con vueltas de selección, expansión, simulación y retropropagación, y estima cada jugada por el promedio de sus simulaciones | Simular en vez de evaluar |
@@ -162,7 +169,11 @@ renglón, en cursivas.
 | Borde grueso de color | Lo nuevo de ese paso |
 | Flecha resaltada | Una jugada que alcanza el valor de su padre |
 | Esquinas redondas | Nodo de azar |
-| Caja punteada con «?» | Estado que el recorrido nunca genera |
+| Caja o círculo punteado con «?» | Estado que el recorrido nunca genera |
+| Línea punteada de color | Dónde se corta la búsqueda; su pastilla dice el $d$ de la raíz. Desde «Más allá del horizonte» se llama horizonte |
+| Barra bajo un nodo | Ahí hubo un corte alfa o beta: los hermanos que siguen no se generan |
+| Barras en el tiempo, línea «reloj k» | Cada barra es una búsqueda y su largo, los nodos que genera; la línea marca dónde se acaba el reloj |
+| Caja con G/N | En MCTS: victorias de MAX entre simulaciones de ese nodo |
 | Círculo con número | Orden en que un recorrido visita el nodo |
 
 Cada clase agrega sus símbolos a esta hoja.
