@@ -851,6 +851,10 @@ def test_prosa_clase_3_p1_el_4x4_y_cuanto_crece_su_arbol():
         ("3×3", nodos_3, estados_3), ("4×4", nodos_4, estados_4)]
     m = re.search(r"(\d+)/(\d+)≈(\d+)", _limpio(_respuesta(texto, "jue-c3-ej-crecimiento")))
     assert (int(m[1]), int(m[2]), int(m[3])) == (nodos_4, nodos_3, round(nodos_4 / nodos_3))
+    por_estado = [(int(a), int(b), float(c)) for a, b, c in re.findall(
+        r"(\d+)/(\d+)≈(\d+(?:\.\d)?)", _limpio(_respuesta(texto, "jue-c3-ej-crecimiento")))[1:]]
+    assert por_estado == [(nodos_3, estados_3, round(nodos_3 / estados_3, 1)),
+                          (nodos_4, estados_4, round(nodos_4 / estados_4))]
     assert int(re.search(r"Su árbol tiene (\d+) nodos", limpio).group(1)) == nodos_4
 
 
