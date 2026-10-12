@@ -44,10 +44,12 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-t-ab-pila.svg` | ALFA-BETA a media ejecución en T: la pila R›C›C2 y sus marcos en el instante del corte beta en C2 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-t-azar.svg` | T con I, C y D como volados parejos: 9/2, 13/2 y 7; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-t-corte-d1.svg` | T con corte a profundidad 1: EVAL en I, C y D; juega der, la trampa del horizonte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-corte-d2-tramo-1.svg` | T con corte a profundidad 2, al cerrar el tramo 1: I y centro ya devolvieron, mejor_jugada = centro con 6; D todavía por mirar | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-t-corte-d2.svg` | T con corte a profundidad 2: EVAL en C1 y C2; juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-t-iterativa.svg` | Profundización iterativa en T: d = 1, 2, 3 con la jugada anterior primero; 4, 10 y 11 nodos; en d = 3, I, D y C2 devuelven cotas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-1.svg` | Minimax con corte a profundidad 1 en la posición de la clase 3: la captura parece la mejor | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-2.svg` | Minimax con corte a profundidad 2: las respuestas de Negras y el cambio de decisión | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-corte-prof-3.svg` | Minimax con corte a profundidad 3, solo la rama d2-d3: tras a4-a3 o b4-b3, d3-d4 llega a la fila 4 y la rama vale 100 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-horizonte.svg` | El efecto horizonte: la recaptura queda detrás del corte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-profundizacion.svg` | La profundización iterativa en el tiempo, con la jugada lista tras cada búsqueda | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-mcts-pasos.svg` | Una vuelta de MCTS: selección, expansión, simulación y retropropagación | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |

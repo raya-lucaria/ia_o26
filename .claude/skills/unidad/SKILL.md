@@ -12,7 +12,7 @@ Esta skill **sustituye** en este repo a brainstorming, writing-plans y subagent-
 
 - **Subagentes: solo `model: opus`.** Paralelo cuando sus archivos son disjuntos; serie en lo compartido.
 - **Alcance:** contenido (índices de unidad y clase, páginas, `A_notacion`) + código que acompaña.
-  **Fuera:** `_official/`, páginas `N_tarea.md`, calendario de `course/0_index.md`, cuadernillos, ilustraciones generadas (cuestan dinero). En el recorrido de la clase, la tarea es una fila «aparte» **sin enlace** con `<!-- TAREA: la dispara el usuario -->`. Una tarea que ya exista es de solo lectura: si sus números cambian, se avisa en G3.
+  **Fuera:** `_official/`, páginas `N_tarea.md`, calendario de `course/0_index.md`, cuadernillos, ilustraciones generadas (cuestan dinero). En el recorrido de la clase, la tarea es una fila «aparte» **sin enlace** y fuera de la lista numerada (nada de comentarios HTML: Raya los imprime como texto). Una tarea que ya exista es de solo lectura: si sus números cambian, se avisa en G3.
 - **Git:** worktree `.worktrees/<rama-en-español>`; commits en inglés con cuerpo que explica el porqué; nunca `git add -A` en el checkout principal (el usuario tiene cambios sin commit); nunca editar `artifact/` ni archivos generados a mano.
 - **Commits los haces tú,** al cerrar cada fase verde; los subagentes no hacen commit (comparten worktree) ni despachan subagentes.
 - **Contrato de Raya y del repo:** `CLAUDE.md` (Authoring contract, unidades) y `tools/README.md`. No lo repitas: cárgalo.
@@ -22,6 +22,7 @@ Esta skill **sustituye** en este repo a brainstorming, writing-plans y subagent-
 | Archivo en `referencias/` | Para quién |
 |---|---|
 | `anatomia.md`, `lectura.md` | planear, escribir, lente alumno |
+| `notacion.md` | planear, escribir, calcular, lentes alumno y consistencia |
 | `pedagogia.md`, `ejercicios.md` | planear, escribir, lente alumno |
 | `figuras.md`, `codigo.md` | calcular, generar, lente corrección |
 | `verificacion.md` | tú, al cerrar cada fase |
@@ -31,7 +32,7 @@ Plantillas de prompt en `prompts/` (escritor, calculista, lente-correccion, lent
 
 ## Capas de reglas
 
-- **DEBE** (no negociable, verificable): alcance; ids únicos con prefijo de unidad; wikilinks `[[id|texto]]` en una línea y nunca en celdas; sin enlaces ni LaTeX en encabezados; `summary` con dos puntos entre comillas; `\mathbf`, nunca `\boldsymbol`; toda imagen en `::: figure`; todo número citado sale de una función y una prueba lo fija; generadores → `git status` limpio; todo ejercicio con pista(s) y respuesta; minutos que cuadran; pytest + validate + build verdes; capturas 390/1280 miradas; plan aprobado en G2.
+- **DEBE** (no negociable, verificable): alcance; notación unificada y definida (`notacion.md`); ids únicos con prefijo de unidad; wikilinks `[[id|texto]]` en una línea y nunca en celdas; sin enlaces ni LaTeX en encabezados; `summary` con dos puntos entre comillas; `\mathbf`, nunca `\boldsymbol`; toda imagen en `::: figure`; todo número citado sale de una función y una prueba lo fija; generadores → `git status` limpio; todo ejercicio con pista(s) y respuesta; minutos que cuadran; pytest + validate + build verdes; capturas 390/1280 miradas; plan aprobado en G2.
 - **DEBERÍA:** lo que dicen las referencias con esa etiqueta; lo vigilan las lentes.
 - **CRITERIO:** guía con ejemplos del repo; decides tú y lo anotas.
 

@@ -497,6 +497,44 @@ def test_extra_ningun_encabezado_lleva_un_enlace_dentro():
     )
 
 
+def test_extra_ninguna_pagina_lleva_un_comentario_html():
+    """Raya no oculta los comentarios HTML: «<!-- TAREA: … -->» se publico
+    como texto visible en el indice de la clase 7.3. Lo vio la lente de render
+    en las capturas; raya validate y build pasaban. Una nota para el autor va
+    en .superpowers/, no en la pagina.
+    """
+    con_comentario = []
+    for ruta in sorted((RAIZ / "course").rglob("*.md")):
+        if "_assets" in ruta.parts:
+            continue
+        for numero, linea in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            if "<!--" in linea:
+                con_comentario.append(f"{ruta.relative_to(RAIZ)}:{numero}: {linea.strip()}")
+    assert not con_comentario, (
+        "comentarios HTML en paginas (Raya los imprime):\n" + "\n".join(con_comentario)
+    )
+
+
+def test_extra_ningun_objeto_numerado_repite_id():
+    """Los ids de objetos numerados son unicos en todo el curso. raya validate
+    dejo pasar «jue-c3-ej-final» definido en dos paginas de la clase 7.3; solo
+    raya build lo rechazo. Esta guarda lo ve sin construir.
+    """
+    vistos = {}
+    repetidos = []
+    for ruta in sorted((RAIZ / "course").rglob("*.md")):
+        if "_assets" in ruta.parts:
+            continue
+        for numero, linea in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            for id_ in re.findall(r"^::: [a-z]+ \{#([A-Za-z0-9_-]+)", linea):
+                lugar = f"{ruta.relative_to(RAIZ)}:{numero}"
+                if id_ in vistos:
+                    repetidos.append(f"{id_}: {vistos[id_]} y {lugar}")
+                else:
+                    vistos[id_] = lugar
+    assert not repetidos, "ids de objetos numerados repetidos:\n" + "\n".join(repetidos)
+
+
 def test_extra_ningun_encabezado_lleva_matematicas():
     """Misma familia que la guarda de arriba, con LaTeX en vez de enlaces.
 

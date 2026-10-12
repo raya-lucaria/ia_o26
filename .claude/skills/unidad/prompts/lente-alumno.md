@@ -20,7 +20,7 @@ worktree desechable: git worktree add --detach <scratch>/lente-<n> HEAD, y al fi
 No despaches subagentes.
 
 ## Carga primero
-.claude/skills/unidad/referencias/lectura.md, pedagogia.md, ejercicios.md, defectos.md (consulta)
+.claude/skills/unidad/referencias/lectura.md, notacion.md, pedagogia.md, ejercicios.md, defectos.md (consulta)
 
 ## Qué buscar
 1. Orden: ¿algún símbolo, término, figura o algoritmo se usa antes de presentarse (en esta página o

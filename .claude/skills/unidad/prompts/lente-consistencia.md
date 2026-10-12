@@ -11,7 +11,7 @@ otro. No elogies. Si todo cuadra, demuéstralo con la lista de lo comprobado.
 Raíz: {{RAIZ}}   Páginas, en orden de navegación: {{PAGINAS_EN_ORDEN}}
 Generadores de figuras y notebook: {{GENERADORES}}   Alcance: {{ALCANCE}}   ← «toda la unidad» |
   «sección <ruta>» | «diff: <archivo>»
-Carga: .claude/skills/unidad/referencias/anatomia.md, figuras.md, codigo.md, ejercicios.md, defectos.md
+Carga: .claude/skills/unidad/referencias/notacion.md, anatomia.md, figuras.md, codigo.md, ejercicios.md, defectos.md
 Solo lectura. Scripts propios (grep, conteos) al scratchpad, ≤60 líneas c/u. Si corres algo que
 escribe, en un worktree desechable: git worktree add --detach <scratch>/lente-<n> HEAD, y lo borras.
 No despaches subagentes.

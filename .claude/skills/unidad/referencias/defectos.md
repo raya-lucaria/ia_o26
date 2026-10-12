@@ -25,8 +25,8 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 | 17 | Concepto usado antes de presentarlo (código antes de la regla α/β; L, x̄ sin definir) | `4d21c13`, `5a303f4`, `2dac49c` | validate, pytest | Lente Alumno; vocabulario de árbol: `test_aceptacion.py::test_extra_el_vocabulario_de_arbol_no_se_usa_antes_de_presentarlo` |
 | 18 | Figura o pie que nombra un algoritmo que viene después | `b745adf` | — | Lente Alumno |
 | 19 | Una letra para dos cosas (P nodo y pivotes; k índice y conteo) | `5a303f4`, `0794808` | — | Lente Alumno; `A_notacion.md` |
-| 20 | Matemáticas en un encabezado | `958fa25` | pytest entubado a `tail` | `test_aceptacion.py::test_extra_ningun_encabezado_lleva_matematicas` |
-| 21 | Enlace en un encabezado | CLAUDE.md § Authoring contract | validate | `test_aceptacion.py::test_extra_ningun_encabezado_lleva_un_enlace_dentro` |
+| 20 | Matemáticas o enlace en un encabezado: «On This Page» imprime la sintaxis | `958fa25`; CLAUDE.md § Authoring contract | validate; pytest entubado a `tail` | `test_aceptacion.py::test_extra_ningun_encabezado_lleva_matematicas` y `::test_extra_ningun_encabezado_lleva_un_enlace_dentro` |
+| 21 | Id de objeto numerado repetido en dos páginas: `validate` pasa, solo `build` lo rechaza | `08f92a2` (`jue-c3-ej-final` en p2 y p4) | validate | `test_aceptacion.py::test_extra_ningun_objeto_numerado_repite_id` |
 | 22 | Wikilink sin etiqueta imprime el id estable | `758c1bc` | validate | `test_aceptacion.py::test_extra_ningun_wikilink_va_sin_etiqueta` |
 | 23 | Wikilink partido por salto de línea, corchetes a la vista | `ed76aa0`, sitio desplegado | validate | `test_aceptacion.py::test_extra_ningun_wikilink_queda_partido_por_un_salto_de_linea` |
 | 24 | `\boldsymbol` rompe el build | `6a7fd9b` | validate | `raya build` (compuerta); usar `\mathbf` |
@@ -44,7 +44,8 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 | 36 | Reemplazo de texto que no reemplazó nada y reportó éxito | `c25650d`, `6a7fd9b` | — | Afirmar cada reemplazo; `git diff` antes de reportar |
 | 37 | Suite roja que pasa por verde (`pytest … \| tail`) | `958fa25` | — | Leer el código de salida (`verificacion.md`) |
 | 38 | Contenido que se mueve o se sale de su tarjeta en la animación | `e62b8db`, recorrido Playwright | — | Lente Render (recorrido a 390 y 1280) |
-| 39 | La prueba fija la fuente, no la prosa: una cifra cambiada en la página no rompe nada | auditoría, `tools/test_juegos.py:91` (no lee páginas) | pytest verde | Nada (deuda); `codigo.md` § 1 exige leer la página |
+| 39 | La prueba fija la fuente, no la prosa: una cifra cambiada en la página no rompe nada | auditoría, `tools/test_juegos.py:91` (no lee páginas) | pytest verde | 7.3: `test_juegos.py::test_prosa_clase_3_*` (`d99ef99`, 22 mutaciones muertas); resto del curso: nada (deuda) |
+| 40 | Comentario HTML `<!-- … -->` en una página: Raya lo publica como texto (la skill lo pedía para la fila de la tarea) | `a32660a`, lente Render | validate, build | `test_aceptacion.py::test_extra_ninguna_pagina_lleva_un_comentario_html` |
 
 ## Mantenimiento
 

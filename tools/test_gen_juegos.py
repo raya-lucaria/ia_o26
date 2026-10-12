@@ -248,12 +248,12 @@ def test_las_partes_del_orden_invertido_dibujan_su_traza():
 FIGURAS_T = (["jue-t-arbol"] + [f"jue-t-minimax-{k}" for k in gen.PASOS_MINIMAX_T]
              + [f"jue-t1-ab-{k}" for k in gen.PASOS_AB_T1]
              + [f"jue-t-ab-{k}" for k in gen.PASOS_AB_T]
-             + ["jue-t-ab-pila", "jue-t-azar", "jue-t-corte-d1", "jue-t-corte-d2",
-                "jue-t-iterativa"])
+             + ["jue-t-ab-pila", "jue-t-azar", "jue-t-corte-d1",
+                "jue-t-corte-d2-tramo-1", "jue-t-corte-d2", "jue-t-iterativa"])
 
 
 def test_estan_todas_las_figuras_del_arbol_t():
-    assert len(FIGURAS_T) == 18 and set(FIGURAS_T) <= set(gen.DIAGRAMAS)
+    assert len(FIGURAS_T) == 19 and set(FIGURAS_T) <= set(gen.DIAGRAMAS)
 
 
 @pytest.mark.parametrize("nombre", FIGURAS_T)
@@ -331,21 +331,44 @@ def test_azar_corte_e_iterativa_en_t():
 def test_las_figuras_de_corte_dibujan_las_evaluaciones_calculadas():
     p1 = _texto("jue-c3-corte-prof-1")
     for nombre, t, p in gen.hijos4(gen.POSICION_C3, "B"):
-        assert f"EVAL = {gen.fmt(gen.ev(t))}" in p1
-    assert "con corte: +13" in p1
+        assert f">EVAL = {gen.fmt_eval(gen.ev(t))}<" in p1
+    assert ">con corte: 13<" in p1
     p2 = _texto("jue-c3-corte-prof-2")
     minimos = [min(gen.ev(t2) for _, t2, _ in gen.hijos4(t, p))
                for _, t, p in gen.hijos4(gen.POSICION_C3, "B")]
     assert minimos == [-10, 1, 0]
     for v in minimos:
-        assert f"mínimo: {gen.fmt(v)}" in p2
-    assert "con corte: +1" in p2
+        assert f">mínimo: {gen.fmt_eval(v)}<" in p2
+    assert ">con corte: 1<" in p2
+    # Cada EVAL de las hojas, sin signo de mas.
+    for _, t, p in gen.hijos4(gen.POSICION_C3, "B"):
+        for n2, t2, _ in gen.hijos4(t, p):
+            assert f">{gen.fmt_eval(gen.ev(t2))}<" in p2
+    assert ">−10<" in p2 and ">12<" in p2
+
+
+def test_profundidad_3_dibuja_la_rama_d2_d3():
+    svg = _texto("jue-c3-corte-prof-3")
+    etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
+    assert 'width="520"' in etiqueta
+    rama = next(h for h in j.arbol_con_corte(gen.POSICION_C3, "B", 3, 4)["hijos"]
+                if h["jugada"] == gen.RAMA_PROF_3)
+    for r in rama["hijos"]:
+        assert f">{r['jugada']}<" in svg and ">máximo: 100<" in svg
+        for h in r["hijos"]:
+            assert f">{h['jugada']}<" in svg
+    assert svg.count(">100<") == 2 and svg.count(">final<") == 2
+    assert svg.count(">2<") == 2 and ">13<" in svg and ">mínimo: 100<" in svg
+    assert "La rama tiene 8 nodos" in etiqueta
 
 
 def test_el_horizonte_esconde_la_recaptura():
     svg = _texto("jue-c3-horizonte")
     assert "tras d2xc3" in svg and "tras b4xc3" in svg
-    assert "EVAL = +13" in svg and "EVAL = 0" in svg
+    assert ">EVAL = 13<" in svg and "(EVAL = 0)" in svg
+    # La recaptura no se genera: la caja punteada con «?», no un nodo.
+    assert ">?<" in svg and ">no se genera<" in svg and "No se ve" not in svg
+    assert ">horizonte (d = 1 en la raíz)<" in svg
 
 
 def test_la_profundizacion_dibuja_lo_que_cada_busqueda_deja_listo():
@@ -355,13 +378,75 @@ def test_la_profundizacion_dibuja_lo_que_cada_busqueda_deja_listo():
     for d, c in zip(gen.PROFUNDIDADES_RELOJ, (4, 12, 33)):
         assert f"d = {d} · {c} nodos" in svg
     assert "entrega d2xc3" in svg and "entrega d2-d3" in svg
+    # Cada reloj se nombra con texto: el circulo con numero es el orden de
+    # visita en la leyenda de la unidad.
+    assert "<circle" not in svg and ">reloj 1<" in svg and ">reloj 2<" in svg
 
 
 def test_mcts_tiene_sus_cuatro_pasos():
     svg = _texto("jue-c3-mcts-pasos")
     for paso in ("Selección", "Expansión", "Simulación", "Retropropagación"):
         assert paso in svg
-    assert "5/11" in svg and "U = +1" in svg
+    vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
+    # Antes de la vuelta (tres paneles) y despues (uno), cada nodo con su G/N.
+    for n, (g, s) in vuelta["antes"].items():
+        assert svg.count(f">{g}/{s}<") >= 3, n
+    for n in vuelta["camino"] + ["nuevo"]:
+        g, s = vuelta["despues"][n]
+        assert f">{g}/{s}<" in svg, n
+    assert ">0/0<" in svg and "U = +1" in svg and "<circle" not in svg
+    assert "la raíz pasa de 2/4 a 3/5" in svg
+
+
+C3 = ["jue-c3-corte-prof-1", "jue-c3-corte-prof-2", "jue-c3-corte-prof-3",
+      "jue-c3-horizonte", "jue-c3-profundizacion", "jue-c3-mcts-pasos",
+      "jue-t-corte-d1", "jue-t-corte-d2-tramo-1", "jue-t-corte-d2", "jue-t-iterativa"]
+
+
+@pytest.mark.parametrize("nombre", C3)
+def test_las_marcas_de_la_clase_3(nombre):
+    """Las marcas de la clase 3 (lente de consistencia, 2026-10): ningun EVAL
+    ni 100·U con «+»; el <title> no corta frases con «. »; y el horizonte
+    dice que su d es la de la raiz."""
+    svg = _texto(nombre)
+    renglones = [r.strip() for r in re.findall(r">([^<>]+)</text>", svg)]
+    assert not [r for r in renglones if re.search(r"(EVAL|corte|mínimo|máximo)\D*\+\d", r)]
+    assert not [r for r in renglones if re.fullmatch(r"\+\d+", r)], nombre
+    titulo = re.search(r"<title>([^<]*)</title>", svg).group(1)
+    assert not re.search(r"\. [a-záéíóú]", titulo), titulo
+    if nombre.startswith("jue-t-corte"):
+        # Se ven en «Minimax con corte», antes de que «Más allá del horizonte»
+        # presente la palabra: la línea se llama corte, no horizonte.
+        assert re.search(r">corte \(d = \d en la raíz\)<", svg), nombre
+        assert "horizonte" not in svg, nombre
+
+
+@pytest.mark.parametrize("nombre", ["jue-c3-corte-prof-1", "jue-c3-corte-prof-2",
+                                    "jue-c3-corte-prof-3", "jue-c3-horizonte"])
+def test_en_los_peones_de_la_clase_3_ningun_nodo_lleva_el_borde_de_nuevo(nombre):
+    """La eleccion va en la flecha resaltada; el borde grueso de acento es
+    «lo nuevo de ese paso», y estas figuras no son pasos de una serie."""
+    svg = _texto(nombre)
+    assert not re.search(rf'<rect [^>]*stroke="{gen.ACENTO}" stroke-width="3(\.5)?"', svg)
+
+
+def test_el_tramo_1_de_d_2_es_parcial_y_el_final_resuelto():
+    t1, fin = _texto("jue-t-corte-d2-tramo-1"), _texto("jue-t-corte-d2")
+    traza = j.traza_decidir(j.ARBOL_T, profundidad=2, evaluar=j.EVAL_T)
+    k = gen._fila_tramo_1(traza)
+    assert k == 9 and traza["filas"][k - 1]["generados"] == 7
+    assert "7 de 14 nodos hasta aquí" in t1 and "10 de 14 nodos" in fin
+    assert ">mejor_jugada = centro<" in t1 and ">mejor_valor = 6<" in t1
+    assert "Corte con d = 2, tramo 1 · centro sube a 6" in t1
+    # D todavia por mirar (punteado, sin «?»); las hojas de C1 y C2, «?».
+    assert ">D · MIN<" in t1 and t1.count(">?<") == 4 + 1      # mas la leyenda
+    assert fin.count(">?<") == 4 + 1
+    assert "D todavía por mirar" in re.match(r"<svg\b[^>]*>", t1).group()
+    for svg in (t1, fin):
+        assert ">corte (d = 2 en la raíz)<" in svg
+    # Misma geometria: el mismo arbol en los mismos lugares.
+    xy = lambda s: re.findall(r'<rect x="([\d.]+)" y="([\d.]+)" width="108"', s)  # noqa: E731
+    assert xy(t1) == xy(fin)
 
 
 # ------------------------------------------ arbol T: ronda 2 de revision ---
