@@ -798,48 +798,48 @@ def test_las_reglas_se_distinguen_sin_color():
 
 
 def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
-    """jue-c3-bandido-corridas: 40 marcas por fila, cerca de la x de su
-    fraccion final, con la marca de su regla y ninguna encima de otra; la
-    raya del promedio en la x del valor final de tabla_bandido (la figura
-    acumulada ya no se dibuja, pero su ultima marca es este promedio); el
-    rotulo de atoradas y el de las buenas con sus cifras."""
+    """jue-c3-bandido-corridas: 40 marcas por fila, con la marca de su regla
+    y ninguna encima de otra; la raya del promedio en la x del valor final
+    de tabla_bandido; el rotulo de atoradas y el de las buenas con sus
+    cifras."""
     svg = _texto("jue-c3-bandido-corridas")
     pl = gen.plano_corridas()
     r, t = j.reparto_bandido(), j.tabla_bandido()
     pts = gen.puntos_corridas(pl)
+    filas_px = gen.filas_corridas()
     assert list(pts) == list(j.FILAS_BANDIDO)
     for k, (fila, lista) in enumerate(pts.items()):
         e = gen.ESTILO_REGLA[fila]
+        top, fondo, alto = filas_px[k]
         assert len(lista) == j.CORRIDAS_BANDIDO == 40
         assert [f for _, f, _, _ in lista] == r[fila]["fracciones"]
         for _, f, x, y in lista:
-            # Corrido a lo mas 3 columnas de su valor (las 34 de «siempre el
-            # mejor promedio» se recargan en 1), y dentro de 0 a 1.
-            assert abs(x - pl.x(f)) <= 3 * gen.PASO_CORRIDAS, (fila, f)
-            assert pl.x(0) <= x <= pl.x(1)
-            assert abs(y - gen.centro_fila(pl, k)) <= gen.PASO_CORRIDAS * (gen.FILAS_COLUMNA - 1) / 2
+            assert top < y <= fondo and fondo + 14 <= top + alto, (fila, f)
             assert gen.marca_corrida(x, y, e["marca"], e["color"]) in svg, (fila, f)
-        # Ninguna marca encima de otra (lente de correccion r2, H4): a 9 px
-        # en x o en y. Y el orden de las columnas es el de las fracciones.
+        # Ninguna marca encima de otra: a un paso en x o en y.
         lugares = [(x, y) for _, _, x, y in lista]
-        assert all(max(abs(a[0] - b[0]), abs(a[1] - b[1])) >= gen.PASO_CORRIDAS - 1e-9
+        assert all(max(abs(a[0] - b[0]), abs(a[1] - b[1])) >= gen.PASO_CORRIDAS - 0.11
                    for i, a in enumerate(lugares) for b in lugares[i + 1:]), fila
-        por_x = sorted(lista, key=lambda p: (p[1], p[0]))
-        assert [p[2] for p in por_x] == sorted(p[2] for p in por_x), fila
+        # y el punto (2·R) cabe en el paso con hueco.
+        assert 2 * gen.R_CORRIDAS + 0.6 <= gen.PASO_CORRIDAS
         xm = pl.x(t[fila][max(j.MARCAS_BANDIDO)])
-        assert f'<line x1="{xm}" y1="{pl.y0 + gen.FILA_CORRIDAS * k + 48}" x2="{xm}"' in svg, fila
+        assert f'<line x1="{xm}" y1=' in svg, fila
         assert f"promedio {t[fila][max(j.MARCAS_BANDIDO)]:.2f}" in svg
         assert e["rotulo"] in svg
-    # 34 en x: tres columnas de 10 y una de 4, en la x de 1; las 6 atoradas,
-    # una columna en 0.
+    # 34 en x: una columna en la x de 1; las 6 atoradas, una columna en 0.
     mejor = pts["mejor_promedio"]
     columnas = Counter(x for _, f, x, _ in mejor if f >= j.UMBRAL_ATORADA)
-    assert sorted(columnas.values()) == [4, 10, 10, 10] and max(columnas) == pl.x(1)
+    assert dict(columnas) == {pl.x(1): 34}
     atoradas = Counter(x for _, f, x, _ in mejor if f < j.UMBRAL_ATORADA)
-    assert list(atoradas.values()) == [6] and abs(next(iter(atoradas)) - pl.x(0)) < 1
+    assert dict(atoradas) == {pl.x(0): 6}
+    # El promedio 0.85 cae en el hueco: lejos de las dos columnas.
+    xm = pl.x(r["mejor_promedio"]["promedio"])
+    assert pl.x(0) + 20 < xm < pl.x(1) - 20
     renglones = re.findall(r">([^<>]+)</text>", svg)
-    assert renglones.count("34 en x") == 1 and not [r_ for r_ in renglones if r_.endswith(" en x")
-                                                    and r_ != "34 en x"]
+    assert renglones.count("34 en x, 0.99 o más") == 1
+    # Cada fila sin atoradas rotula su rango real (lente r3, H3).
+    for r_ in ("de 0.90 a 0.94", "de 0.92 a 0.96", "de 0.96 a 1.00"):
+        assert renglones.count(r_) == 1, r_
     # «6 de 40 atoradas: 5 en y, 1 en z» va en dos renglones: en uno llegaba
     # a la raya del promedio 0.85; igual el subtitulo, por el ancho.
     assert ["6 de 40 atoradas:", "5 en y, 1 en z"] == [
@@ -848,9 +848,31 @@ def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
     assert "cada punto es una corrida" in renglones and "de 10 000 vueltas" in renglones
     aria = re.match(r"<svg\b[^>]*>", svg).group()
     for frase in ("Cada punto es una corrida de 10 000 vueltas",
+                  "La posición horizontal de cada punto es su valor, a ±0.01",
                   "Siempre el mejor promedio: 34 corridas en 0.99 o más y 6 atoradas en "
                   "0.001 o menos (5 en y, 1 en z), promedio 0.85",
                   "A veces al azar (10 %): ninguna atorada, de 0.903 a 0.938, promedio 0.93",
                   "UCB, c = 2√2: ninguna atorada, de 0.923 a 0.959, promedio 0.94",
                   "UCB, c = 1: ninguna atorada, de 0.955 a 0.999, promedio 0.99"):
         assert frase in aria, frase
+    assert "corridas de la fila. Una columna junta" in renglones and "las corridas a 0.01 o menos de su x," in renglones
+
+
+def test_cada_corrida_se_dibuja_en_su_valor():
+    """La x de cada punto de jue-c3-bandido-corridas esta a ±0.01 de su
+    fraccion (lente r3, H3): el apilado anterior las centraba en la mediana
+    del grupo y pintaba de 0.88 filas que empiezan en 0.90. Se mide en el SVG
+    publicado, no en puntos_corridas: cada marca, por su color y su y."""
+    svg = _texto("jue-c3-bandido-corridas")
+    pl = gen.plano_corridas()
+    tol = 0.01 * pl.w + 0.1             # 0.01 en pixeles, mas el redondeo
+    for fila, lista in gen.puntos_corridas(pl).items():
+        e = gen.ESTILO_REGLA[fila]
+        for _, f, x, y in lista:
+            assert abs(x - (pl.x0 + pl.w * f)) <= tol, (fila, f, x)
+            assert gen.marca_corrida(x, y, e["marca"], e["color"]) in svg
+        # y la fila ocupa en x lo que su rango, a ±0.01 en cada punta.
+        xs = [x for _, _, x, _ in lista]
+        d = j.reparto_bandido()[fila]
+        assert abs(min(xs) - (pl.x0 + pl.w * d["minimo"])) <= tol
+        assert abs(max(xs) - (pl.x0 + pl.w * d["maximo"])) <= tol

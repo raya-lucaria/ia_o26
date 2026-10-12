@@ -2246,6 +2246,10 @@ def test_prosa_clase_3_p6_la_figura_eligiendo_x_y_sus_vinetas():
                   rf"({_NUM}) el ({_NUM}) % y el ({_NUM}) % de sus elecciones van a x\. El "
                   rf"({_NUM}) % que falta a UCB c=2\\sqrt2 es exploración; ninguna corrida se "
                   rf"atora \(@jue-c3-fig-bandido-corridas\)\.", seis)
+    # La meseta de c=2√2 entre las vueltas 200 y 500 (lente r3, H6): sin
+    # cifras, porque esas marcas no van rotuladas en la figura.
+    assert "La de c=2\\sqrt2 sube a saltos, con mesetas: explora en ráfagas" in seis
+    assert t["ucb"][500] <= t["ucb"][200]
     assert _x(m[3]) == ini and _x(m[4]) == fin
     assert (m[1], m[2]) == (pc(t["ucb"][ini]), pc(t["ucb_c1"][ini]))
     assert (m[5], m[6]) == (pc(t["ucb"][fin]), pc(t["ucb_c1"][fin]))
@@ -2454,10 +2458,13 @@ def test_prosa_clase_3_p6_lo_que_garantizan_auer_y_kocsis():
     sin más (lente alumno r2, H4; lente de corrección r2, H6)."""
     texto = _pagina(P6)
     seis, ocho = _seccion(texto, 6), _seccion(texto, 8)
-    assert re.search(r"La cota de UCB1 \(Auer, Cesa-Bianchi y Fischer, 2002\) garantiza que, en "
-                     r"cualquier bandido con resultados acotados, las vueltas gastadas en una "
-                     r"jugada peor crecen a lo más como \\ln N\(s\)", seis)
-    assert re.search(r"Una c chica no da esa garantía\. Si la mejor tiene mala suerte en sus primeras simulaciones, su bono chico "
+    # En esperanza, no en cada corrida (lente r3, H4), y en un solo párrafo
+    # con c=2√2 (H5: «la teoría acota… con c=1 no» se leía dos veces).
+    assert re.search(r"Con c=2\\sqrt2, la cota de UCB1 \(Auer, Cesa-Bianchi y Fischer, 2002\) "
+                     r"garantiza que, en promedio sobre las corridas \(en esperanza\), las vueltas "
+                     r"gastadas en una jugada peor crecen a lo más como \\ln N\(s\)", seis)
+    assert "La teoría acota" not in seis and "en cualquier bandido" not in seis
+    assert re.search(r"Una c chica, como c=1, no da esa garantía, aunque aquí funcione mejor\. Si la mejor tiene mala suerte en sus primeras simulaciones, su bono chico "
                      r"tarda mucho", seis)
     assert re.search(r"la probabilidad de que UCT elija en la raíz una jugada peor que la de "
                      r"minimax tiende a 0", ocho)
