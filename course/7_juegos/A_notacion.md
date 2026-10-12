@@ -130,7 +130,7 @@ renglón, en cursivas.
 | DECIDIR-MINIMAX | Lo que el agente corre en su turno: valora cada jugada con MINIMAX y devuelve la **jugada** de mayor valor, no el número. DECIDIR-ALFA-BETA hace lo mismo pasando $\alpha$ a los hijos | Minimax como algoritmo |
 | Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
 | Pila | Las llamadas abiertas, de la raíz al nodo activo; se escribe R›C›C2. Es todo lo que el recorrido tiene en memoria | Minimax como algoritmo |
-| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la profundidad que quedaba y si el número es exacto ($\alpha<v<\beta$ en la ventana con que se llamó), un piso ($v\ge\beta$) o un techo ($v\le\alpha$) | Minimax como algoritmo; lo de exacto, piso o techo, en Jugar contra el reloj |
+| Tabla de transposición | Tabla que guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la profundidad que quedaba y si el número es un valor (cayó dentro de la ventana con que se llamó: $\alpha<v<\beta$), un piso ($v\ge\beta$) o un techo ($v\le\alpha$) | Minimax como algoritmo; lo de valor, piso o techo, en Jugar contra el reloj |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad | Cuando decide un dado |
 | Utilidad esperada | El valor esperado de la utilidad. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de azar, el valor esperado de sus hijos | Cuando decide un dado |
@@ -152,9 +152,9 @@ renglón, en cursivas.
 | Horizonte | La línea donde la búsqueda se corta: lo que queda debajo no se genera | Más allá del horizonte |
 | Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Más allá del horizonte |
 | Posición quieta, búsqueda de quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar | Más allá del horizonte |
-| DECIDIR-CON-CORTE, MINIMAX-CON-CORTE | DECIDIR-MINIMAX y su auxiliar con dos líneas más: un final vale $100\cdot U$ y, con $d=0$, un estado no final vale su $\mathrm{EVAL}$ | Minimax con corte como algoritmo |
+| DECIDIR-CON-CORTE, MINIMAX-CON-CORTE | DECIDIR-MINIMAX y su auxiliar con una línea más (con $d=0$, un estado no final vale su $\mathrm{EVAL}$) y los finales en la escala $100\cdot U$ | Minimax con corte como algoritmo |
 | PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Jugar contra el reloj |
-| ALFA-BETA-CON-CORTE | Alfa-beta con las mismas dos líneas de corte | Jugar contra el reloj |
+| ALFA-BETA-CON-CORTE | Alfa-beta con los mismos cambios: con $d=0$ se estima y los finales valen $100\cdot U$ | Jugar contra el reloj |
 | Profundización iterativa | Buscar con $d=1,2,3,\dots$ mientras haya tiempo y entregar la jugada de la última búsqueda completa | Jugar contra el reloj |
 | Simulación | Partida desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final | Simular en vez de evaluar |
 | MCTS, búsqueda de árbol Monte Carlo | Construye un árbol con vueltas de selección, expansión, simulación y retropropagación, y estima cada jugada por el promedio de sus simulaciones | Simular en vez de evaluar |

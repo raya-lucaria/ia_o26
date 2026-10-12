@@ -64,15 +64,16 @@ y «Cada clase cambia una sola cosa» con tabla qué cambia / herramienta (`:46`
 «Lo que traes» en `::: table` ≤12 filas con enlace a su definición (`:32`) → «Qué vas a poder hacer» (`:80`) →
 «El hilo de la clase» (`:95`) → «Recorrido» con `::: table` de páginas y minutos + lista numerada de wikilinks (`:102–124`)
 → «Las animaciones y el notebook» si hay (`:126`) → «Qué no cubre» (`:158`) → `Empieza por` (`:165`).
-- **DEBE** la tarea ser fila «aparte» **sin wikilink** y sin entrada en la lista, con el comentario
-  `<!-- TAREA: la dispara el usuario -->` junto a la fila. (`J2/0_index.md:116` y `:124` son el formato viejo, con enlace.)
+- **DEBE** la tarea ser fila «aparte» **sin wikilink** y sin entrada en la lista (`J3/0_index.md`, fila 6).
+  **Nunca** un comentario `<!-- … -->` en una página: Raya lo publica como texto (defectos #40).
+  (`J2/0_index.md:116` y `:124` son el formato viejo, con enlace.)
 - **DEBE** la última página de contenido de la clase continuar al siguiente índice de clase, no a la tarea.
 
 ## Convenciones de notación del repo
 - **DEBE** jugadas como $\text{c1}\textbf{-}\text{c2}$ y $\text{c1}\textbf{x}\text{b2}$ (`J2/0_index.md:46`); jugador de turno
   $\mathrm{Pl}$, nunca $P$ (`tools/test_juegos.py::test_la_unidad_escribe_pl_y_no_p`); óptimo con ∗ unicode, $a^{∗}$
   (`J2/2_minimax_como_algoritmo.md:68`); `\mathbf`, nunca `\boldsymbol` (el renderizador lo rechaza; CLAUDE.md § Authoring contract).
-- **DEBE** cada símbolo nuevo aparecer en `A_notacion.md` de la unidad (`course/7_juegos/A_notacion.md:23–102`).
+- **DEBE** cada símbolo nuevo aparecer en `A_notacion.md` de la unidad; unificar, elegir y definir: `notacion.md`.
 
 ## Excepciones
 - Página de cronología o de lectura: sin `## N ·` numerado ni Piensa por sección (`3_arco_historico.md:53`).

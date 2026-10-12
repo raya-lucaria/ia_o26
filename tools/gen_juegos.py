@@ -2172,7 +2172,7 @@ def jue_t_iterativa():
         y = fondo + 18 + 34
     y = _pie_t(out, y + 4, [f"En total, {total} nodos.",
                             "Punteada con barra: rama podada.",
-                            "«cota»: ese nodo cortó; su v no es",
+                            "«cota»: su v salió de la ventana; no es",
                             "su valor, solo un techo o un piso."], tam=16)
     return _svg_t(titulo, desc, y - 10, out, sep=SEP_C3)
 
@@ -2979,11 +2979,11 @@ def jue_c3_mcts_pasos():
                 out.append(flecha(x + bw / 2 + 12, y + 12, x + bw / 2 + 12, y - 12, color=ACENTO,
                                   grosor=2))
             out.append(texto(px + pw / 2, py + ph - 40, "cada nodo del camino suma",
-                             tam=13, color=SUAVE))
+                             tam=14, color=SUAVE))
             out.append(texto(px + pw / 2, py + ph - 20, "1 simulación y 1 victoria",
-                             tam=13, color=SUAVE))
+                             tam=14, color=SUAVE))
         if k == 0:
-            out.append(texto(px + pw / 2, py + ph - 22, "el árbol que ya se construyó", tam=13,
+            out.append(texto(px + pw / 2, py + ph - 22, "el árbol que ya se construyó", tam=14,
                              color=SUAVE))
     out.append(nota_svg(fin_paneles + 30, ["En cada nodo: G/N, victorias de MAX /",
                                  "simulaciones que pasaron por él. La raíz",

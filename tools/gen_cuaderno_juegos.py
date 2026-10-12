@@ -710,10 +710,11 @@ print("jugada:", jugada, "·", len(filas[-1]["hechos"]), "nodos")
 md("""
 ## 6 · Minimax con corte
 
-Si el árbol no cabe, se mira solo `d` jugadas adelante; donde se acaba el
-horizonte, el nodo vale `EVAL(s)`, una estimación. Desde aquí el árbol usa
-la escala de la clase 3: la hoja 3 es un final con $U = 3/100$, y la línea
-8 devuelve $100 \\cdot U = 3$.
+Si el árbol no cabe, se mira solo `d` jugadas adelante; donde se corta la
+búsqueda, el nodo vale `EVAL(s)`, una estimación. Los números de T son de
+juguete: la línea 8 devuelve $100 \\cdot U$, así que el código guarda la
+hoja 3 como $U = 3/100$ para que la línea 8 devuelva 3, el número de la
+hoja tal cual.
 """)
 
 algoritmo_de("corte", "decidir_con_corte")
@@ -738,7 +739,7 @@ Con `d = 1` cae en una trampa: `der` parece valer 7, pero D vale 2. Con
 
 <details><summary>Qué pasa</summary>
 
-`centro`, con 8. Con el horizonte tan corto, la jugada la decide la
+`centro`, con 8. Con un corte tan corto, la jugada la decide la
 estimación, no el juego.
 
 </details>

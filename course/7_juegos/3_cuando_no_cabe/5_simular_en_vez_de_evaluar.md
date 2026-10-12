@@ -12,11 +12,6 @@ tags: [juegos, busqueda-adversarial, monte-carlo]
 
 **¿Se puede estimar una posición sin escribir una función de evaluación?**
 
-Sí: jugando partidas al azar y promediando. Es la **búsqueda de árbol
-Monte Carlo**, o **MCTS** (del inglés *Monte Carlo tree search*). Esta
-página es un adelanto: la ves funcionar en números pequeños, sin calcularla
-entera a mano.
-
 Al terminar tendrás:
 
 - el **promedio de simulaciones** de una jugada, leído como probabilidad
@@ -54,6 +49,10 @@ Al terminar tendrás:
 > **Encontrar:** una jugada para $s$, lo mejor posible con el tiempo que
 > haya.
 
+Esta página es un adelanto de la **búsqueda de árbol Monte Carlo**, o
+**MCTS** (del inglés *Monte Carlo tree search*). La ves funcionar en números
+pequeños, sin calcularla entera a mano.
+
 ## 1 · Jugar al azar y promediar
 
 **Piensa: si no sabes cuánto vale una posición, ¿cómo lo averiguarías sin
@@ -71,7 +70,7 @@ $A(s)$. Su resultado es la $U$ del final al que llega.
 tan buena es $s$ para MAX, en la escala de $U$: entre $-1$ y $+1$.
 
 **Qué no es:** no es el valor $V(s)$. Un rival al azar no es un rival que
-piensa: una posición puede ganarse en casi todas las simulaciones y
+piensa. Una posición puede ganarse en casi todas las simulaciones y
 perderse contra quien encuentra la única respuesta buena.
 :::
 
@@ -103,28 +102,28 @@ Desde un estado se juegan 5 simulaciones.
 promediaras partidas al azar?**
 
 Con muchísimas simulaciones, el promedio de cada jugada se acerca a un
-número fijo. La computadora puede calcular ese número exacto: el promedio
-de $U$ sobre todas las partidas posibles, si **los dos** jugadores eligen
-cada jugada al azar.
+número fijo: su **promedio límite**. La computadora puede calcularlo sin
+simular. Es el promedio de $U$ sobre todas las partidas posibles, cada una
+con su probabilidad, si **los dos** eligen al azar.
 
-La tabla lo pone junto a lo que ya conoces. La columna «Con corte» es el
-valor con corte a profundidad 1, en la escala de $\mathrm{EVAL}$. Las otras
-dos van en la escala de $U$, entre $-1$ y $+1$. En
-[[cortar-y-evaluar|Cortar y evaluar]] escribimos $V$ multiplicado por 100;
-aquí va sin multiplicar.
+La tabla lo pone junto a lo que ya conoces. La columna «Azar» es ese
+promedio límite. «Corte» es el valor con corte a profundidad 1, en la escala
+de $\mathrm{EVAL}$. «$V$» es el valor del juego. «Azar» y «$V$» van en la
+escala de $U$, entre −1 y +1. En [[cortar-y-evaluar|Cortar y evaluar]]
+escribimos $V$ multiplicado por 100; aquí va sin multiplicar.
 
 ::: table {#jue-c3-simulaciones title="Promedio de infinitas simulaciones en la posición de la clase"}
-| Jugada | Promedio al azar | Con corte, $d=1$ | Valor exacto ($V$) |
+| Jugada | Azar | Corte | $V$ |
 |---|---:|---:|---:|
-| $\text{a1}\textbf{-}\text{a2}$ | 0.21 | 2 | $-1$ |
-| $\text{d2}\textbf{-}\text{d3}$ | **0.89** | 2 | $+1$ |
-| $\text{d2}\textbf{x}\text{c3}$ | 0.15 | **13** | $-1$ |
+| $\text{a1}\textbf{-}\text{a2}$ | 0.21 | 2 | −1 |
+| $\text{d2}\textbf{-}\text{d3}$ | **0.89** | 2 | +1 |
+| $\text{d2}\textbf{x}\text{c3}$ | 0.15 | **13** | −1 |
 :::
 
 **Aquí simular acierta.** La jugada con mejor promedio es
 $\text{d2}\textbf{-}\text{d3}$, la que gana, y la captura queda última. Sin
 que nadie le escriba una evaluación, la simulación «ve» que el peón de más
-se pierde: en las partidas al azar, Negras recaptura muchas veces.
+se pierde. En las partidas al azar, Negras recaptura muchas veces.
 
 **Pero un promedio no es el valor.** En hexapawn, las tres aperturas de
 Blancas valen $-1$: Negras gana si juega bien. Sus promedios de simulación
@@ -133,14 +132,15 @@ son los tres **positivos**.
 Ojo con un número que ya viste. En
 [[cuando-decide-un-dado|Cuando decide un dado]] solo Negras jugaba al azar
 y Blancas elegía lo mejor: ahí $\text{b1}\textbf{-}\text{b2}$ valía $3/4$.
-Aquí juegan al azar los dos, y vale $5/24$.
+Aquí juegan al azar los dos, y vale $5/24$. En la tabla, «Ambos» es el
+promedio límite con los dos al azar y «Solo Negras», con solo Negras al azar.
 
 ::: table {#jue-c3-hexapawn-azar title="Hexapawn: las aperturas con uno o con los dos al azar"}
-| Apertura | Los dos al azar | Solo Negras al azar | Valor exacto ($V$) |
+| Apertura | Ambos | Solo Negras | $V$ |
 |---|---:|---:|---:|
-| $\text{a1}\textbf{-}\text{a2}$ | 7/36 | 5/9 | $-1$ |
-| $\text{b1}\textbf{-}\text{b2}$ | 5/24 | 3/4 | $-1$ |
-| $\text{c1}\textbf{-}\text{c2}$ | 7/36 | 5/9 | $-1$ |
+| $\text{a1}\textbf{-}\text{a2}$ | 7/36 | 5/9 | −1 |
+| $\text{b1}\textbf{-}\text{b2}$ | 5/24 | 3/4 | −1 |
+| $\text{c1}\textbf{-}\text{c2}$ | 7/36 | 5/9 | −1 |
 :::
 
 ::: exercise {#jue-c3-ej-promedio title="Traduce un promedio a partidas ganadas"}
@@ -180,10 +180,10 @@ Nada. Esa es la diferencia con [[cortar-y-evaluar|cortar y evaluar]]:
 ::: table {#jue-c3-eval-contra-mcts title="Cortar y evaluar contra Monte Carlo"}
 | | Cortar y evaluar | Monte Carlo |
 |---|---|---|
-| Necesita | Una $\mathrm{EVAL}$ escrita a mano | Solo las reglas: $A$ y $T$ |
-| Se detiene | En la profundidad $d$ | En los finales |
-| Da | El minimax de $\mathrm{EVAL}$ | Un promedio de $U$ |
-| Mejora con | Más $d$ o mejor $\mathrm{EVAL}$ | Más simulaciones |
+| Necesita | $\mathrm{EVAL}$ a mano | Solo $A$ y $T$ |
+| Para | En la profundidad $d$ | En los finales |
+| Da | Minimax de $\mathrm{EVAL}$ | Promedio de $U$ |
+| Mejora con | Más $d$, mejor $\mathrm{EVAL}$ | Más simulaciones |
 :::
 
 Por eso sirve en juegos donde nadie sabe escribir una buena evaluación.
@@ -221,16 +221,20 @@ simulaciones a las jugadas que van mejor.
 
 Cada nodo $s'$ del árbol guarda dos números. $N(s')$ cuenta las
 simulaciones que pasaron por él; aquí $N$ no es Negras. $G(s')$ cuenta en
-cuántas de ellas ganó MAX. Las demás las ganó MIN, así que el promedio de
-$U$ es
+cuántas de ellas ganó MAX; aquí $G$ no es el grafo de la clase 1. Las demás
+las ganó MIN, así que el promedio de $U$ es
 
-$$\bar u(s')=\frac{G(s')-\bigl(N(s')-G(s')\bigr)}{N(s')}=\frac{2G(s')-N(s')}{N(s')}.$$
+$$\bar u(s')=\frac{G(s')-\bigl(N(s')-G(s')\bigr)}{N(s')},$$
+
+que, al juntar las $G$, queda
+
+$$\bar u(s')=\frac{2G(s')-N(s')}{N(s')}.$$
 
 Cada vuelta tiene cuatro pasos:
 
-1. **Selección.** Desde la raíz, baja por el árbol ya construido. En cada
-   nodo elige al hijo con mejor puntaje (sección 5), hasta llegar a un
-   nodo con alguna jugada que todavía no está en el árbol.
+1. **Selección.** Desde la raíz, baja por el árbol ya construido hasta un
+   nodo con alguna jugada que aún no está en él. Por ahora, MAX baja al
+   hijo de mayor $\bar u$ y MIN al de menor; la sección 5 afina la regla.
 2. **Expansión.** Agrega al árbol un hijo nuevo: $T(s,a)$ para una de esas
    jugadas $a$.
 3. **Simulación.** Desde ese hijo, juega una partida al azar hasta un final
@@ -283,9 +287,9 @@ pasaron por ahí y cuál solo algunas?
 oportunidad a una que casi no se ha probado?**
 
 Las dos cosas. **Aprovechar** es elegir lo que ya funcionó; **explorar** es
-probar lo poco probado, por si es mejor. La regla más usada, llamada
-**UCT**, le suma a cada promedio un bono que crece si la jugada se ha
-probado poco:
+probar lo poco probado, por si es mejor. La regla más usada se llama
+**UCT** (del inglés *upper confidence bounds applied to trees*). Le suma a
+cada promedio un bono que crece si la jugada se ha probado poco:
 
 $$\text{puntaje}(s')=\bar u(s')+c\sqrt{\frac{\ln N(s)}{N(s')}}.$$
 
@@ -301,13 +305,15 @@ $$\text{puntaje}(s')=\bar u(s')+c\sqrt{\frac{\ln N(s)}{N(s')}}.$$
 El primer término aprovecha; el segundo explora. Un hijo que nunca se ha
 probado tiene $N(s')=0$ y se prueba antes que los demás. Con muchas
 simulaciones el bono se encoge y manda el promedio. Otros textos usan la
-fracción de victorias $G/N$ en lugar de $\bar u$, o $c=\sqrt2$: con eso los
+fracción de victorias $G/N$ en lugar de $\bar u$, o $c=\sqrt2$. Los
 puntajes cambian, y a veces también la elección.
 
-En la figura, MIN elige en el nodo $2/3$ y por eso baja al $0/1$: con el
-signo cambiado, ese hijo es el mejor para MIN. Así corrige MCTS lo que vimos
+En la figura, MIN elige en el nodo $2/3$ y baja al $0/1$: con el signo
+cambiado, es su mejor hijo. Así corrige MCTS lo que vimos
 en la sección 2. Donde ya construyó árbol, cada jugador elige por su
 puntaje y no al azar.
+
+Más adelante veremos de dónde sale este bono.
 
 ::: exercise {#jue-c3-ej-mcts title="Calcula qué se explora y qué se entrega"}
 Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:
@@ -322,22 +328,21 @@ Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:
 3. ¿Coinciden las dos respuestas? Explica por qué no hay contradicción.
 :::
 
-::: hint {#jue-c3-pista-mcts-1 of="jue-c3-ej-mcts" title="Pista 1 · Cuándo se usa cada regla"}
+::: hint {#jue-c3-pista-mcts-1 of="jue-c3-ej-mcts" title="Cuándo se usa cada regla"}
 ¿Qué regla se aplica cuando el tiempo ya se acabó, y cuál mientras todavía
 quedan vueltas? ¿Qué número de la lista mira cada una?
-:::
-
-::: hint {#jue-c3-pista-mcts-2 of="jue-c3-ej-mcts" title="Pista 2 · Revisa tus puntajes"}
-¿Cada puntaje quedó por encima de su promedio? Si ordenas las tres jugadas
-por promedio y luego por puntaje, ¿el orden es el mismo?
 :::
 
 ::: answer {#jue-c3-resp-mcts of="jue-c3-ej-mcts"}
 1. **x:** al final se entrega la jugada con más simulaciones, y x tiene 60.
 2. Los puntajes son
-   $x: 0.5+\sqrt{4.61/60}\approx0.5+0.28=0.78$;
-   $y: 0.6+\sqrt{4.61/30}\approx0.6+0.39=0.99$;
-   $z: 0.2+\sqrt{4.61/10}\approx0.2+0.68=0.88$.
+
+   $$\begin{aligned}
+   x&:\ 0.5+\sqrt{4.61/60}\approx0.5+0.28=0.78,\\
+   y&:\ 0.6+\sqrt{4.61/30}\approx0.6+0.39=0.99,\\
+   z&:\ 0.2+\sqrt{4.61/10}\approx0.2+0.68=0.88.
+   \end{aligned}$$
+
    La selección baja por **y**. La z recibe el bono más grande, pero su
    promedio bajo la deja segunda.
 3. **No coinciden, y está bien.** Entregar busca la jugada más confiable:
@@ -368,8 +373,10 @@ La que estima lo que no se alcanza a calcular:
   posiciones.
 
 ¿Sigue siendo MCTS sin simulaciones? Sí: conserva el árbol, las cuentas y
-la selección por puntaje. Lo único que cambia es el paso 3: el hijo nuevo
-no se juega al azar, lo valora la red.
+la selección por puntaje. Lo que más cambia es el paso 3: la red valora el
+hijo nuevo, sin jugarlo al azar. Pero también guía la selección y la
+expansión. El puntaje premia la jugada que la red sugiere, y cada hijo entra
+con la probabilidad que ella le da.
 
 **Punto de control:** deberías poder dar una vuelta de MCTS a mano, con
 $G/N$ en cada nodo y cualquier resultado. También, calcular el puntaje UCT
@@ -388,9 +395,10 @@ de un hijo y decir por qué un promedio de simulaciones no es $V$.
   $N$ siempre y 1 a $G$ solo si gana MAX: la raíz pasa de $2/4$ a $3/5$, o
   a $2/5$ si pierde.
 - El puntaje UCT, $\bar u+c\sqrt{\ln N(s)/N(s')}$, equilibra aprovechar y
-  explorar. Con x, y, z y $c=1$: la selección va a y ($0.99$), la entrega
-  a x (60 simulaciones).
+  explorar. Con x, y, z y $c=1$, la selección va a y, que puntúa 0.99; la
+  entrega, a x, que tiene 60 simulaciones.
 - Deep Blue (1997) cortó y evaluó; AlphaGo (2016) combinó MCTS con redes;
-  AlphaGo Zero y AlphaZero (2017) cambiaron la simulación por la red.
+  AlphaGo Zero y AlphaZero (2017) cambiaron la simulación por una red,
+  que además guía la selección.
 
 Continúa con [[juegos-sin-turnos|la clase 4, cuando no hay turnos]].

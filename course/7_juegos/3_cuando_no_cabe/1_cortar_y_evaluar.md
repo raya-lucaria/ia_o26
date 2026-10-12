@@ -25,7 +25,7 @@ Al terminar tendrás:
 > (B) empieza con cuatro peones en la fila 1, y Negras (N) con cuatro en la
 > 4. Empiezan Blancas. Un peón avanza una casilla si está vacía o
 > captura en diagonal hacia delante. Gana quien llega a la fila del rival,
-> captura todo o deja al rival sin jugada: $U=+1$ si gana Blancas y $U=-1$
+> captura todo o deja al rival sin jugada: ${U=+1}$ si gana Blancas y ${U=-1}$
 > si gana Negras.
 
 > **Las piezas que usa esta página.** Las siete de
@@ -52,7 +52,7 @@ más:
   Blancas.
 - **No cambian $S_F$, $\mathrm{Pl}$, $A$, $T$ ni $U$**: se llega a la fila
   del rival, se captura todo o se deja al rival sin jugada; $\mathrm{Pl}$
-  lee el turno guardado; $U=\pm1$.
+  lee el turno guardado; ${U=\pm1}$.
 
 Hay un detalle que la clase 1 dejó anunciado. En el 3×3, el turno se
 podía deducir del tablero, aunque lo guardábamos por principio. **En el 4×4
@@ -68,8 +68,18 @@ turnos. Guardar el turno en el estado era necesario.
 | **1** | B | B | B | B |
 :::
 
-::: exercise {#jue-c3-ej-inicio title="Escribe las jugadas del inicio"}
-1. Escribe $A(s_0)$: las jugadas de Blancas en el tablero de arriba.
+::: exercise {#jue-c3-ej-inicio title="Escribe las jugadas tras dos avances"}
+Desde el inicio se jugó $\text{b1}\textbf{-}\text{b2}$ y
+$\text{c4}\textbf{-}\text{c3}$. Mueven Blancas:
+
+| | a | b | c | d |
+|---|:---:|:---:|:---:|:---:|
+| **4** | N | N | · | N |
+| **3** | · | · | N | · |
+| **2** | · | B | · | · |
+| **1** | B | · | B | B |
+
+1. Escribe $A(s)$: todas las jugadas de Blancas en este tablero.
 2. ¿Alguna es una captura?
 :::
 
@@ -79,11 +89,12 @@ hacia delante? ¿Quién ocupa cada una?
 :::
 
 ::: answer {#jue-c3-resp-inicio of="jue-c3-ej-inicio"}
-1. $\text{a1}\textbf{-}\text{a2}$, $\text{b1}\textbf{-}\text{b2}$,
-   $\text{c1}\textbf{-}\text{c2}$ y $\text{d1}\textbf{-}\text{d2}$: cuatro
-   avances.
-2. Ninguna. Las diagonales de enfrente están en la fila 2, vacía: los
-   peones negros están tres filas más arriba.
+1. Cinco: $\text{a1}\textbf{-}\text{a2}$, $\text{b2}\textbf{-}\text{b3}$,
+   $\text{b2}\textbf{x}\text{c3}$, $\text{c1}\textbf{-}\text{c2}$ y
+   $\text{d1}\textbf{-}\text{d2}$.
+2. Una: $\text{b2}\textbf{x}\text{c3}$. El peón de b2 tiene al de c3 en
+   una diagonal de enfrente. Los demás peones blancos no tienen ningún peón
+   negro en diagonal: solo avanzan.
 :::
 
 ## 2 · Medir cuánto crece el árbol
@@ -94,12 +105,16 @@ triple o más?**
 Mucho más. La computadora contó los dos árboles completos:
 
 ::: table {#jue-c3-crecimiento title="Del tablero de 3×3 al ajedrez"}
-| Juego | Nodos del árbol | Estados distintos | Con juego perfecto |
-|---|---:|---:|---|
-| Hexapawn, 3×3 | 252 | 135 | Gana el segundo |
-| Peones en 4×4 | 4 197 973 | 20 286 | Gana el primero |
-| Ajedrez | — | del orden de $10^{44}$ | Nadie lo sabe |
+| Tablero | Nodos | Estados |
+|---|---:|---:|
+| 3×3 | 252 | 135 |
+| 4×4 | 4 197 973 | 20 286 |
+| Ajedrez | — | ${\approx10^{44}}$ |
 :::
+
+**Nodos** cuenta los del árbol completo; **estados**, los distintos, como
+en el grafo de la clase 1. Con juego perfecto, en el 3×3 (hexapawn) gana
+el segundo y en el 4×4 gana el primero. En el ajedrez nadie lo sabe.
 
 ::: exercise {#jue-c3-ej-crecimiento title="Compara los dos árboles"}
 1. ¿Cuántas veces más nodos tiene el árbol del 4×4 que el de hexapawn?
@@ -107,12 +122,12 @@ Mucho más. La computadora contó los dos árboles completos:
 :::
 
 ::: hint {#jue-c3-pista-crecimiento-1 of="jue-c3-ej-crecimiento" title="Qué es un nodo"}
-Un nodo del árbol es un camino desde el inicio. ¿Pueden dos caminos
-distintos terminar en el mismo tablero con el mismo turno?
+¿Qué cuenta un nodo del árbol, y qué cuenta un estado del grafo de la
+clase 1?
 :::
 
 ::: answer {#jue-c3-resp-crecimiento of="jue-c3-ej-crecimiento"}
-1. $4\,197\,973/252\approx16\,659$: **más de 16 000 veces**, por una fila y
+1. ${4\,197\,973/252\approx16\,659}$: **más de 16 000 veces**, por una fila y
    una columna más.
 2. El árbol repite cada estado una vez por cada camino que llega a él. El
    grafo de la clase 1 lo guarda una sola vez.
@@ -122,7 +137,7 @@ El 4×4 todavía lo resuelve una computadora, pero ya no una persona con
 lápiz.
 
 El ajedrez está en otra escala. Tromp y Österlund estimaron en 2021 que
-tiene cerca de $4.8\times10^{44}$ posiciones legales, y Claude Shannon
+tiene cerca de ${4.8\times10^{44}}$ posiciones legales, y Claude Shannon
 estimó en 1950 que hay unas $10^{120}$ partidas. **Ni recordando cada
 posición cabe**: no hay memoria para $10^{44}$ estados, y menos tiempo para
 recorrerlos.
@@ -173,7 +188,7 @@ corte hace lo mismo, con dos cambios:
 1. Lleva la cuenta de **la profundidad que queda**, $d$: cuántas jugadas
    más, contando las de los dos jugadores, puede mirar. En la raíz, $d$ es
    el presupuesto; cada jugada la baja en uno.
-2. Donde llega a $d=0$, en lugar de la utilidad $U(s)$, que no conoce, usa
+2. Donde llega a ${d=0}$, en lugar de la utilidad $U(s)$, que no conoce, usa
    una **estimación** $\mathrm{EVAL}(s)$.
 
 Ojo con la letra: $d$, en cursiva, es siempre esta profundidad. No tiene
@@ -191,17 +206,17 @@ $s$**, sin buscar hacia delante.
 nosotros, y puede equivocarse.
 :::
 
-Un **nodo de corte** es un estado no final al que se llega con $d=0$: ahí
-la búsqueda se detiene y estima. En las figuras lleva el borde punteado de
-la clase 1, el de un estado que existe pero no se expande. Los finales que
-aparezcan antes del corte se siguen valorando con su utilidad.
+Los finales que aparezcan antes de llegar a ${d=0}$ se siguen valorando con
+su utilidad: ahí no hay nada que estimar.
 
 ::: exercise {#jue-c3-ej-presupuesto title="Sigue la profundidad que queda"}
-El presupuesto es $d=3$ en la raíz, donde mueve Blancas.
+El presupuesto es ${d=3}$ en la raíz, donde mueve Blancas.
 
 1. ¿Cuánto vale $d$ tras la primera jugada de Blancas, tras la respuesta
    de Negras y tras la segunda jugada de Blancas?
-2. ¿En cuál de esos niveles se usa $\mathrm{EVAL}$? ¿Hay alguna excepción?
+2. ¿En cuál de esos niveles se usa $\mathrm{EVAL}$?
+3. Si la primera jugada de Blancas llegara a la fila 4, ¿con qué número
+   se valoraría ese nodo?
 :::
 
 ::: hint {#jue-c3-pista-presupuesto-1 of="jue-c3-ej-presupuesto" title="Un renglón por jugada"}
@@ -210,11 +225,11 @@ de quién es la jugada para lo que le pasa a $d$?
 :::
 
 ::: answer {#jue-c3-resp-presupuesto of="jue-c3-ej-presupuesto"}
-1. $d=2$, luego $d=1$, luego $d=0$: cada jugada la baja en uno, sea de
+1. ${d=2}$, luego ${d=1}$, luego ${d=0}$: cada jugada la baja en uno, sea de
    quien sea.
-2. Tras la segunda jugada de Blancas, donde $d=0$. La excepción: si una
-   jugada anterior ya termina la partida, ese final vale su utilidad y no
-   se estima.
+2. Tras la segunda jugada de Blancas, donde ${d=0}$.
+3. Con su utilidad, ${U=+1}$: ese nodo es un final, y no se estima aunque
+   le queden dos jugadas por mirar.
 :::
 
 ## 5 · Escribir una evaluación para los peones
@@ -250,7 +265,7 @@ Blancas: la evaluación, igual que $U$, se mide en puntos de MAX.
 | | Blancas | Negras |
 |---|---|---|
 | Peones | a1, c2, d2: **3** | a4, b4, c3: **3** |
-| Avance | $0+1+1=$ **2** | $0+0+1=$ **1** |
+| Avance | ${0+1+1=}$ **2** | ${0+0+1=}$ **1** |
 :::
 
 $$\mathrm{EVAL}=10\cdot(3-3)+(2-1)=1.$$
@@ -259,8 +274,8 @@ Van parejos en peones, y Blancas está un poco más avanzada.
 
 ::: exercise {#jue-c3-ej-eval title="Calcula dos evaluaciones"}
 Desde el inicio se jugó $\text{b1}\textbf{-}\text{b2}$,
-$\text{c4}\textbf{-}\text{c3}$ y $\text{b2}\textbf{x}\text{c3}$. Ahora
-mueven Negras:
+$\text{c4}\textbf{-}\text{c3}$ y $\text{b2}\textbf{x}\text{c3}$, la
+captura del primer ejercicio. Ahora mueven Negras:
 
 | | a | b | c | d |
 |---|:---:|:---:|:---:|:---:|
@@ -281,20 +296,20 @@ su fila de salida? ¿Qué parte de la fórmula mira el turno?
 
 ::: answer {#jue-c3-resp-eval of="jue-c3-ej-eval"}
 1. Cuatro peones por lado, ninguno avanzado:
-   $\mathrm{EVAL}(s_0)=10\cdot0+0=0$.
+   ${\mathrm{EVAL}(s_0)=10\cdot0+0=0}$.
 2. Blancas tiene a1, c1, d1 y c3: **4** peones, con avance 2 (el de c3).
    Negras tiene a4, b4 y d4: **3**, con avance 0. Entonces
-   $\mathrm{EVAL}=10\cdot1+2=12$. No cambiaría: $\mathrm{EVAL}$ mira solo
+   ${\mathrm{EVAL}=10\cdot1+2=12}$. No cambiaría: $\mathrm{EVAL}$ mira solo
    el tablero, no a quién le toca.
 :::
 
 ## 6 · Pesar los finales más que cualquier estimación
 
-**Piensa: si una victoria valiera $+1$ y un peón de más valiera $10$,
+**Piensa: si una victoria valiera ${+1}$ y un peón de más valiera $10$,
 ¿qué preferiría el algoritmo?**
 
 El peón. Por eso hay que poner $U$ en la **misma escala** que
-$\mathrm{EVAL}$. En los finales usamos $100\cdot U(s)$: **100** si gana
+$\mathrm{EVAL}$. En los finales usamos ${100\cdot U(s)}$: **100** si gana
 Blancas y **−100** si gana Negras.
 
 Multiplicar por 100 solo cambia la escala; el orden entre finales es el
@@ -310,17 +325,17 @@ una posición «buena» a una victoria segura.
 :::
 
 ::: exercise {#jue-c3-ej-escala title="Encuentra una escala que no alcanza"}
-Alguien propone usar $30\cdot U$ en los finales en vez de $100\cdot U$.
+Alguien propone usar ${30\cdot U}$ en los finales en vez de ${100\cdot U}$.
 ¿Respeta el orden de los finales? Usa la cifra de arriba.
 :::
 
 ::: hint {#jue-c3-pista-escala-1 of="jue-c3-ej-escala" title="Compara dos números"}
-¿Cuánto puede valer, como mucho, un nodo de corte? ¿Y una victoria con esa
-escala?
+¿Cuánto puede valer, como mucho, la $\mathrm{EVAL}$ de una posición sin
+terminar? ¿Y una victoria con esa escala?
 :::
 
 ::: answer {#jue-c3-resp-escala of="jue-c3-ej-escala"}
-No. Una posición sin terminar puede tener $\mathrm{EVAL}=36$, más que los
+No. Una posición sin terminar puede tener ${\mathrm{EVAL}=36}$, más que los
 30 de una victoria. El programa podría preferir esa posición a ganar. Con
 100, ninguna estimación alcanza a un final.
 :::
@@ -331,13 +346,18 @@ No. Una posición sin terminar puede tener $\mathrm{EVAL}=36$, más que los
 avanzar o capturar?**
 
 Lo que diga $\mathrm{EVAL}$ justo después. **Estamos aquí:** la posición de
-la clase, con $\mathrm{EVAL}=1$. Blancas tiene tres jugadas:
+la clase, con ${\mathrm{EVAL}=1}$. Blancas tiene tres jugadas:
 $\text{a1}\textbf{-}\text{a2}$, $\text{d2}\textbf{-}\text{d3}$ y
 $\text{d2}\textbf{x}\text{c3}$. El peón de c2 no puede moverse: tiene c3
 enfrente y nada que capturar en b3 ni en d3.
 
-Con $d=1$ en la raíz, cada jugada de Blancas deja $d=0$: sin esperar la
+Con ${d=1}$ en la raíz, cada jugada de Blancas deja ${d=0}$: sin esperar la
 respuesta de Negras, se evalúa.
+
+Esos tres hijos son **nodos de corte**: estados no finales a los que se
+llega con ${d=0}$. Ahí la búsqueda se detiene y estima. En las figuras llevan
+el borde punteado de la clase 1, el de un estado que existe pero no se
+expande.
 
 ::: exercise {#jue-c3-ej-prof-1 title="Calcula la jugada a profundidad 1"}
 1. Calcula $\mathrm{EVAL}$ después de cada una de las tres jugadas.
@@ -351,9 +371,9 @@ En cada jugada, ¿cambia el número de peones de alguno de los dos lados?
 
 ::: answer {#jue-c3-resp-prof-1 of="jue-c3-ej-prof-1"}
 1. $\text{a1}\textbf{-}\text{a2}$ y $\text{d2}\textbf{-}\text{d3}$:
-   $10\cdot0+(3-1)=2$. $\text{d2}\textbf{x}\text{c3}$: quedan 3 peones
+   ${10\cdot0+(3-1)=2}$. $\text{d2}\textbf{x}\text{c3}$: quedan 3 peones
    blancos contra 2 negros, con avance $3$ contra $0$:
-   $10\cdot1+(3-0)=13$.
+   ${10\cdot1+(3-0)=13}$.
 2. **$\text{d2}\textbf{x}\text{c3}$**, con 13: gana un peón.
 :::
 
@@ -368,7 +388,7 @@ A profundidad 1, Blancas **captura**. Parece obvio: un peón de más.
 **Piensa: si Blancas mira también la respuesta de Negras, ¿cuál de sus
 respuestas supone?**
 
-La peor para Blancas. Con $d=2$ en la raíz, miramos la jugada de Blancas,
+La peor para Blancas. Con ${d=2}$ en la raíz, miramos la jugada de Blancas,
 **todas las respuestas de Negras**, y evaluamos. Negras es MIN: de sus
 respuestas, elige la de menor $\mathrm{EVAL}$.
 
@@ -406,9 +426,9 @@ ocupa cada una?
 ::: answer {#jue-c3-resp-prof-2 of="jue-c3-ej-prof-2"}
 1. $\text{a4}\textbf{-}\text{a3}$, $\text{b4}\textbf{-}\text{b3}$ y
    **$\text{b4}\textbf{x}\text{c3}$**: el peón de b4 captura en diagonal.
-2. Tras un avance: $10\cdot(3-2)+(3-1)=12$. Tras
+2. Tras un avance: ${10\cdot(3-2)+(3-1)=12}$. Tras
    $\text{b4}\textbf{x}\text{c3}$ quedan dos peones por lado, con avance 1
-   cada uno: $\mathrm{EVAL}=0$.
+   cada uno: ${\mathrm{EVAL}=0}$.
 3. Negras recaptura, así que la captura vale **0**. Blancas compara −10,
    1 y 0 y elige **$\text{d2}\textbf{-}\text{d3}$**.
 :::
@@ -431,7 +451,7 @@ profundidad 2.
 
 ::: exercise {#jue-c3-ej-prof-3 title="Calcula la rama d2-d3 a profundidad 3"}
 Tras $\text{d2}\textbf{-}\text{d3}$, el tablero es éste y mueven Negras,
-con $d=2$:
+con ${d=2}$:
 
 | | a | b | c | d |
 |---|:---:|:---:|:---:|:---:|
@@ -484,14 +504,15 @@ $V$. La última columna lo pone por 100, en la escala de las demás. Las
 otras dos ramas de la profundidad 3 también las hizo la computadora.
 
 ::: table {#jue-c3-profundidades title="Las tres jugadas a profundidad 1, 2 y 3, y su valor exacto"}
-| Jugada | Prof. 1 | Prof. 2 | Prof. 3 | Exacto, $100\cdot V$ |
+| | P1 | P2 | P3 | 100V |
 |---|---:|---:|---:|---:|
 | $\text{a1}\textbf{-}\text{a2}$ | 2 | −10 | −9 | −100 |
 | $\text{d2}\textbf{-}\text{d3}$ | 2 | **1** | **100** | **100** |
 | $\text{d2}\textbf{x}\text{c3}$ | **13** | 0 | 1 | −100 |
 :::
 
-En negrita, el máximo de cada columna: la jugada que elige Blancas.
+P1, P2 y P3 son las profundidades 1, 2 y 3; 100V, el valor exacto por
+100. En negrita, el máximo de cada columna: la jugada que elige Blancas.
 
 ::: exercise {#jue-c3-ej-exacto title="Señala qué profundidad acierta"}
 1. ¿Con qué profundidades elige Blancas una jugada que gana?
@@ -507,8 +528,8 @@ esa jugada en la última columna?
 1. Con profundidad 2 y 3: las dos eligen $\text{d2}\textbf{-}\text{d3}$,
    que vale 100.
 2. Con profundidad 1: elige $\text{d2}\textbf{x}\text{c3}$ con 13, y esa
-   jugada vale −100. **Capturar pierde y $\text{d2}\textbf{-}\text{d3}$
-   gana.**
+   jugada vale −100. La sobreestima en **113 puntos**, ${13-(-100)}$.
+   **Capturar pierde y $\text{d2}\textbf{-}\text{d3}$ gana.**
 :::
 
 La profundidad 2 acierta sin ver la victoria: solo vio que capturar salía
@@ -518,7 +539,7 @@ búsqueda cortada tiene nombre propio.
 ::: definition {#jue-c3-valor-con-corte title="Valor con corte"}
 El **valor con corte** de un estado, cuando quedan $d$ jugadas por mirar,
 es el minimax del árbol cortado a $d$ jugadas, con $\mathrm{EVAL}$ en los
-nodos de corte y $100\cdot U$ en los finales.
+nodos de corte y ${100\cdot U}$ en los finales.
 
 **Qué significa:** es **el minimax de la evaluación**.
 
@@ -532,11 +553,11 @@ decir por qué puede no coincidir con el valor exacto.
 ## Lo que hay que llevarse
 
 - El 4×4 es el mismo juego con más casillas: cambian $S$ y $s_0$, y ahora
-  sí hace falta guardar el turno. Su árbol tiene 4 197 973 nodos: ya no se
+  sí hace falta guardar el turno. Su árbol tiene 4 197 973 nodos: ya no se
   recorre a mano.
 - Si el árbol no cabe, se corta cuando la profundidad que queda llega a
-  $d=0$ y se usa $\mathrm{EVAL}=10\cdot\text{material}+\text{avance}$ en ese
-  nodo de corte. Los finales valen $100\cdot U$, que gana a cualquier
+  ${d=0}$ y se usa ${\mathrm{EVAL}=10\cdot\text{material}+\text{avance}}$ en ese
+  nodo de corte. Los finales valen ${100\cdot U}$, que gana a cualquier
   estimación (nunca pasa de 36).
 - El valor con corte es el minimax de $\mathrm{EVAL}$, no el del juego. En
   la posición de la clase, la captura vale **13** a profundidad 1 y **0** a

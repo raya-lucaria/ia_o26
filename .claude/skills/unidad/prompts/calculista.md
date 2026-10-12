@@ -17,7 +17,7 @@ Prohibido: {{ARCHIVOS_PROHIBIDOS}}. Nunca páginas .md de course/, _official/,
 artifact/, ni pruebas o generadores de otras unidades.
 
 ## Carga primero
-.claude/skills/unidad/referencias/codigo.md, figuras.md, verificacion.md,
+.claude/skills/unidad/referencias/codigo.md, notacion.md, figuras.md, verificacion.md,
 defectos.md. Patrón a imitar: {{PATRON}} (p. ej. tools/juegos.py +
 tools/gen_juegos.py + tools/test_juegos.py).
 

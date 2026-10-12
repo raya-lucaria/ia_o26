@@ -26,7 +26,7 @@ Al terminar tendrás:
 > (B) tiene cuatro peones en la fila 1, Negras (N) cuatro en la fila 4, y
 > empiezan Blancas. Un peón avanza una casilla si está vacía o captura en
 > diagonal hacia delante. Gana quien llega a la fila del rival, captura
-> todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$ si gana
+> todo o deja al rival sin jugada. ${U=+1}$ si gana Blancas y ${U=-1}$ si gana
 > Negras.
 
 > **Las piezas que usa esta página.** Las de
@@ -65,7 +65,7 @@ juzgar una posición sin terminar.
 > **Dado (lo que recibe):**
 >
 > - un estado $s$ donde mueve MAX;
-> - $d\ge1$, la profundidad: cuántas jugadas puede mirar desde $s$. Es un
+> - ${d\ge1}$, la profundidad: cuántas jugadas puede mirar desde $s$. Es un
 >   número, no la columna d del tablero de $\text{d2}$ o $\text{d3}$;
 > - las reglas del juego: $S_F$ (@jue-c1-finales), $\mathrm{Pl}$
 >   (@jue-c1-pl), $A$ (@jue-c1-acciones), $T$ (@jue-c1-transicion) y $U$
@@ -93,11 +93,12 @@ calcula sus hijos.
 :::
 
 ::: exercise {#jue-c3-ej-genera title="Cuenta qué genera con una sola jugada"}
-Con $d=1$ en la raíz, en la posición de la tabla:
+Con ${d=1}$ en la raíz, en la posición de la tabla:
 
 1. ¿Qué nodos genera minimax con corte? ¿Cuántos son, contando la raíz?
 2. ¿Cuál se expande y cuáles se evalúan?
-3. ¿Se genera alguna respuesta de Negras?
+3. Con ${d=2}$ genera 12 nodos. ¿Cuántos de ellos se expanden, y cuántos se
+   evalúan?
 :::
 
 ::: hint {#jue-c3-pista-genera-1 of="jue-c3-ej-genera" title="Cuenta las jugadas"}
@@ -111,8 +112,9 @@ Con $d=1$ en la raíz, en la posición de la tabla:
    $\text{d2}\textbf{x}\text{c3}$.
 2. Solo se expande la raíz. Los tres hijos llegan sin jugadas por mirar y
    no son finales: se evalúan, con 2, 2 y 13.
-3. **No.** Las respuestas de Negras serían hijos de los nodos de corte, y
-   esos no se expanden.
+3. Se expanden **4**: la raíz y sus tres hijos, que ahora llegan con
+   ${d=1}$. Los otros **8** son las respuestas de Negras (3, 2 y 3), que
+   llegan con ${d=0}$ y se evalúan.
 :::
 
 ## 2 · El procedimiento
@@ -120,7 +122,7 @@ Con $d=1$ en la raíz, en la posición de la tabla:
 **Piensa: ¿qué línea hay que agregarle a MINIMAX para que se detenga?**
 
 Una sola, la 9. Lo demás es DECIDIR-MINIMAX y MINIMAX de
-[[minimax-como-algoritmo|la clase 2]], con $d$ como argumento y $d-1$ en
+[[minimax-como-algoritmo|la clase 2]], con $d$ como argumento y ${d-1}$ en
 cada hijo:
 
 ```text
@@ -217,23 +219,23 @@ Respecto de DECIDIR-MINIMAX y MINIMAX de
   estima.
 - **La línea 8 solo cambia la escala** de $U$, para que un final pese más
   que cualquier estimación. Va antes que la 9.
-- **Las demás son las mismas**, con $d-1$ en cada llamada (líneas 4, 13
+- **Las demás son las mismas**, con ${d-1}$ en cada llamada (líneas 4, 13
   y 19). Como la 9 es nueva, todo lo que sigue se corre un lugar: las del
   MAX quedan en 10–15 y las del MIN en 16–21, no en 9–14 y 15–20.
 
-Con $d=1$, $d=2$ y $d=3$, los valores $w$ de la línea 4 son las tres
+Con ${d=1}$, ${d=2}$ y ${d=3}$, los valores $w$ de la línea 4 son las tres
 primeras columnas de la tabla de [[cortar-y-evaluar|la página anterior]].
 
 ::: exercise {#jue-c3-ej-hoja title="Señala qué línea valora cada estado"}
 Para cada estado, di con qué $d$ llega, qué línea devuelve su valor y
 cuánto devuelve.
 
-1. Con $d=2$ en la raíz: el estado tras $\text{d2}\textbf{x}\text{c3}$ y
+1. Con ${d=2}$ en la raíz: el estado tras $\text{d2}\textbf{x}\text{c3}$ y
    la respuesta $\text{b4}\textbf{x}\text{c3}$.
-2. Con $d=4$ en la raíz: el estado tras $\text{d2}\textbf{-}\text{d3}$,
+2. Con ${d=4}$ en la raíz: el estado tras $\text{d2}\textbf{-}\text{d3}$,
    $\text{a4}\textbf{-}\text{a3}$ y $\text{d3}\textbf{-}\text{d4}$.
-3. El mismo estado del inciso 2, ahora con $d=3$ en la raíz. ¿Qué pasaría
-   si las líneas 8 y 9 estuvieran en el orden contrario?
+3. El mismo estado del inciso 2, ahora con ${d=3}$ en la raíz. Si las
+   líneas 8 y 9 estuvieran en el orden contrario, ¿cuánto devolvería?
 :::
 
 ::: hint {#jue-c3-pista-hoja-1 of="jue-c3-ej-hoja" title="Cuenta hacia abajo"}
@@ -242,13 +244,14 @@ quitó cada una a $d$? Después, ¿alguien gana en ese tablero?
 :::
 
 ::: answer {#jue-c3-resp-hoja of="jue-c3-ej-hoja"}
-1. Llega con $d=0$ y no es final: lo toma la **línea 9**, que devuelve
-   $\mathrm{EVAL}=0$.
-2. Llega con $d=1$. Blancas llegó a la fila 4: es final. Lo toma la
-   **línea 8**, que devuelve $100\cdot(+1)=100$. La 9 ni se consulta.
-3. Llega con $d=0$ **y** es final. La línea 8 va primero y devuelve 100.
+1. Llega con ${d=0}$ y no es final: lo toma la **línea 9**, que devuelve
+   ${\mathrm{EVAL}=0}$.
+2. Llega con ${d=1}$. Blancas llegó a la fila 4: es final. Lo toma la
+   **línea 8**, que devuelve ${100\cdot(+1)=100}$. La 9 ni se consulta.
+3. Llega con ${d=0}$ **y** es final. La línea 8 va primero y devuelve 100.
    Con el orden contrario, la 9 lo evaluaría como un tablero sin terminar:
-   **una victoria segura se leería como una estimación**.
+   tres peones por lado y avance 4 contra 2, así que ${\mathrm{EVAL}=2}$.
+   **Una victoria segura se leería como una posición casi pareja.**
 :::
 
 ## 3 · El corte en el árbol T
@@ -263,10 +266,14 @@ C2 de MAX.
 ![Árbol T. Arriba R, donde mueve MAX, con tres flechas: izq hacia I, centro hacia C y der hacia D; en los tres mueve MIN. I tiene dos hojas, 3 y 6. C tiene dos hijos donde mueve MAX: C1 por c1, con hojas 5 y 2, y C2 por c2, con hojas 7 y 8. D tiene dos hojas, 2 y 12. Los nodos internos todavía no tienen valor. Al pie: «Cada hoja es un final: su número es lo que vale ese final.»](../_assets/jue-t-arbol.svg)
 :::
 
+**Los números de T son de juguete.** En el 4×4 un final vale ${100\cdot U}$,
+o sea ${\pm100}$; aquí las hojas valen entre 2 y 12. T no sirve para ver
+quién gana. Sirve para ver **qué línea actúa** en cada nodo.
+
 - Las hojas, de izquierda a derecha: 3 y 6 bajo I; 5 y 2 bajo C1; 7 y 8
   bajo C2; 2 y 12 bajo D. **Hay dos hojas 2**: la de C1 y la de D.
-- **Las hojas son finales.** Su número se lee como lo que ya devolvió la
-  línea 8.
+- **Las hojas son finales.** Su número de juguete se toma tal cual, como
+  lo que ya devolvió la línea 8.
 - Le damos una $\mathrm{EVAL}$ a cada nodo interno. Junto a ella va $V$,
   el valor del juego, calculado en la clase 2:
 
@@ -280,15 +287,13 @@ C2 de MAX.
 | C2 | 9 | 8 |
 :::
 
-**Los números de T son de juguete.** En el 4×4 un final vale $100\cdot U$,
-o sea $\pm100$; aquí las hojas valen entre 2 y 12. Por eso T **no
-cumple** @jue-c3-orden-finales, y a propósito: la $\mathrm{EVAL}$ de C2,
-9, es mayor que la hoja 2 de D, que es final. T no sirve para ver quién
-gana. Sirve para ver **qué línea actúa** en cada nodo.
+Con estos números de juguete, T **no cumple** @jue-c3-orden-finales, y a
+propósito: la $\mathrm{EVAL}$ de C2, 9, es mayor que la hoja 2 de D, que
+es final.
 
 ### Con d = 1, der parece la mejor
 
-I, C y D llegan con $d=0$ y no son finales: los valora la **línea 9**, con
+I, C y D llegan con ${d=0}$ y no son finales: los valora la **línea 9**, con
 5, 4 y 7. DECIDIR-CON-CORTE juega der. Es una trampa: D vale 2, porque MIN
 responde con la hoja 2 de D, que quedó debajo de la línea de corte.
 
@@ -311,29 +316,30 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de
   no tiene fila propia. Su $w$ aparece en la fila del padre: líneas 19–20
   si el padre es de MIN.
 - En $w$, una hoja va sola y un nodo lleva su nombre entre paréntesis.
-- **jugada** es mejor_jugada, con «—» mientras vale ninguna.
+- **En las filas de R, la columna $v$ es mejor_valor.**
+- **elige** es mejor_jugada, con «—» mientras vale ninguna.
 
 ### Tramo 1 · Centro releva a izq
 
 ::: table {#jue-c3-t-traza-d2 title="Traza de DECIDIR-CON-CORTE en el árbol T con d = 2, tramo 1"}
-| # | línea · pila | v | w | jugada |
+| # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
 | 2 | 17 · R›I | +∞ |  | — |
-| 3 | 19–20 · R›I | 3 | 3 | — |
-| 4 | 19–20 · R›I | 3 | 6 | — |
-| 5 | 4–5 · R | 3 | 3 (I) | izq |
+| 3 | 19–⁠20 · R›I | 3 | 3 | — |
+| 4 | 19–⁠20 · R›I | 3 | 6 | — |
+| 5 | 4–⁠5 · R | 3 | 3 (I) | izq |
 | 6 | 17 · R›C | +∞ |  | izq |
-| 7 | 19–20 · R›C | 6 | 6 (C1) | izq |
-| 8 | 19–20 · R›C | 6 | 9 (C2) | izq |
-| 9 | 4–5 · R | 6 | 6 (C) | centro |
+| 7 | 19–⁠20 · R›C | 6 | 6 (C1) | izq |
+| 8 | 19–⁠20 · R›C | 6 | 9 (C2) | izq |
+| 9 | 4–⁠5 · R | 6 | 6 (C) | centro |
 :::
 
 - **Filas 3 y 4:** las hojas 3 y 6 son finales. La línea 8 las valora
   dentro del hijo, y su número llega como $w$ a la fila de I.
-- **Filas 7 y 8:** C1 y C2 no son finales y llegan con $d=0$. La línea 9
+- **Filas 7 y 8:** C1 y C2 no son finales y llegan con ${d=0}$. La línea 9
   devuelve su $\mathrm{EVAL}$, 6 y 9. Nadie genera sus hojas.
-- **Fila 9:** $6>3$, así que mejor_jugada pasa de izq a **centro**.
+- **Fila 9:** ${6>3}$, así que mejor_jugada pasa de izq a **centro**.
 
 ::: figure {#jue-c3-t-fig-d2-tramo-1 title="Tramo 1: C devuelve 6 y R pasa a centro"}
 ![El árbol T con corte a profundidad 2, al cerrar el tramo 1. I vale 3, con sus hojas 3 y 6. C acaba de devolver 6: C1 y C2 llevan su EVAL, 6 y 9, y sus hojas van en círculo punteado con «?», porque no se generan. D y sus hojas están por mirar. En el recuadro, mejor_jugada = centro y mejor_valor = 6. Se han generado 7 de 14 nodos](../_assets/jue-t-corte-d2-tramo-1.svg)
@@ -342,27 +348,27 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de
 ### Tramo 2 · D no mejora a centro
 
 ::: table {#jue-c3-t-traza-d2-tramo-2 title="Traza de DECIDIR-CON-CORTE en el árbol T con d = 2, tramo 2"}
-| # | línea · pila | v | w | jugada |
+| # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 10 | 17 · R›D | +∞ |  | centro |
-| 11 | 19–20 · R›D | 2 | 2 | centro |
-| 12 | 19–20 · R›D | 2 | 12 | centro |
-| 13 | 4–5 · R | 6 | 2 (D) | centro |
+| 11 | 19–⁠20 · R›D | 2 | 2 | centro |
+| 12 | 19–⁠20 · R›D | 2 | 12 | centro |
+| 13 | 4–⁠5 · R | 6 | 2 (D) | centro |
 | 14 | 6 · R | 6 |  | centro |
 :::
 
 - **Filas 11 y 12:** la hoja 2 de D y la hoja 12 son finales, como las de
   I.
-- **Fila 13:** $2>6$ es falso: mejor_jugada se queda en **centro**, y la
+- **Fila 13:** ${2>6}$ es falso: mejor_jugada se queda en **centro**, y la
   línea 6 la devuelve.
 
-::: figure {#jue-c3-t-fig-d2 title="Tramo 2: D devuelve 2, que no mejora 6"}
-![El árbol T con corte a profundidad 2, resuelto. I vale 3 y D vale 2, calculados con sus hojas finales; C1 y C2 llevan su EVAL, 6 y 9, y C vale 6. R elige centro con 6. Debajo de la línea de corte, las hojas de C1 y C2 van en círculo punteado con «?»: no se generan. Al lado: centro vale 6, su valor real es 5. Se han generado 10 de 14 nodos](../_assets/jue-t-corte-d2.svg)
+::: figure {#jue-c3-t-fig-d2-tramo-2 title="Tramo 2: D devuelve 2, que no mejora 6"}
+![El árbol T con corte a profundidad 2, al cerrar el tramo 2: la traza está resuelta. I vale 3 y D vale 2, calculados con sus hojas finales; C1 y C2 llevan su EVAL, 6 y 9, y C vale 6. R elige centro con 6. Debajo de la línea de corte, las hojas de C1 y C2 van en círculo punteado con «?»: no se generan. Al lado: centro vale 6, su valor real es 5. Se han generado 10 de 14 nodos](../_assets/jue-t-corte-d2.svg)
 :::
 
 ### Con d = 3, ya no hay corte
 
-Ningún nodo llega con $d=0$ sin ser final: toda hoja la toma la línea 8.
+Ningún nodo llega con ${d=0}$ sin ser final: toda hoja la toma la línea 8.
 El valor con corte coincide con $V$, y DECIDIR-CON-CORTE juega centro con
 5, como en la clase 2.
 
@@ -374,91 +380,69 @@ El valor con corte coincide con $V$, y DECIDIR-CON-CORTE juega centro con
 | 3 | 3 · 5 · 2 | centro | 14 |
 :::
 
-Los nodos generados cuentan la raíz. Con $d=1$, der es la trampa. Con
-$d=2$, centro vale 6 y no 5: el 6 es una estimación, pero aquí alcanza
+Los nodos generados cuentan la raíz. Con ${d=1}$, der es la trampa. Con
+${d=2}$, centro vale 6 y no 5: el 6 es una estimación, pero aquí alcanza
 para elegir bien.
 
-::: exercise {#jue-c3-ej-traza-d2 title="Llena la traza de d = 2 sin mirarla"}
-Sin volver a la traza de arriba, llena los «?» de
-DECIDIR-CON-CORTE(R, 2).
+::: exercise {#jue-c3-ej-traza-d2 title="Completa la traza con der primero"}
+Ahora R prueba sus jugadas en otro orden: **der, izq, centro**. Dentro de
+I, C y D el orden no cambia, y la línea 5 sigue con ${>}$ estricto. Llena
+los «?» de DECIDIR-CON-CORTE(R, 2).
 
-| # | línea · pila | v | w | jugada |
+| # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
-| 2 | 17 · R›I | +∞ |  | — |
-| 3 | 19–20 · R›I | 3 | ? | — |
-| 4 | 19–20 · R›I | 3 | ? | — |
-| 5 | 4–5 · R | 3 | 3 (I) | izq |
-| 6 | 17 · R›C | +∞ |  | izq |
-| 7 | 19–20 · R›C | ? | ? (C1) | izq |
-| 8 | 19–20 · R›C | ? | ? (C2) | izq |
-| 9 | 4–5 · R | ? | ? (C) | ? |
-| 10 | 17 · R›D | +∞ |  | ? |
-| 11 | 19–20 · R›D | 2 | ? | ? |
-| 12 | 19–20 · R›D | 2 | ? | ? |
-| 13 | 4–5 · R | ? | 2 (D) | ? |
+| 2 | 17 · R›D | +∞ |  | — |
+| 3 | 19–⁠20 · R›D | ? | ? | — |
+| 4 | 19–⁠20 · R›D | ? | ? | — |
+| 5 | 4–⁠5 · R | ? | ? (D) | ? |
+| 6 | 17 · R›I | +∞ |  | ? |
+| 7 | 19–⁠20 · R›I | ? | ? | ? |
+| 8 | 19–⁠20 · R›I | ? | ? | ? |
+| 9 | 4–⁠5 · R | ? | ? (I) | ? |
+| 10 | 17 · R›C | +∞ |  | ? |
+| 11 | 19–⁠20 · R›C | ? | ? (C1) | ? |
+| 12 | 19–⁠20 · R›C | ? | ? (C2) | ? |
+| 13 | 4–⁠5 · R | ? | ? (C) | ? |
 | 14 | 6 · R | ? |  | ? |
 
-1. Llena los «?».
-2. En las filas 3, 4, 7, 8, 11 y 12, ¿qué línea, la 8 o la 9, produjo
-   el $w$?
+1. Llena los «?». ¿En qué filas cambia mejor_jugada, y qué devuelve?
+2. En esta traza, ¿qué nodos no los valora ni la línea 8 ni la 9? ¿Qué
+   líneas los valoran?
 :::
 
 ::: hint {#jue-c3-pista-traza-d2-1 of="jue-c3-ej-traza-d2" title="Qué llega a cada fila"}
 En cada fila de I, C o D, ¿quién regresa: una hoja o un nodo? ¿Con qué
-$d$ llega, y es final? En las filas de R, ¿qué compara la línea 5?
+$d$ llega, y es final? En las filas de R, ¿con qué compara la línea 5?
 :::
 
 ::: answer {#jue-c3-resp-traza-d2 of="jue-c3-ej-traza-d2"}
-En negrita, lo que era «?».
+En negrita, lo que era «?»; en la columna elige, desde la fila 5 todo
+era «?».
 
-| # | línea · pila | v | w | jugada |
+| # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
-| 2 | 17 · R›I | +∞ |  | — |
-| 3 | 19–20 · R›I | 3 | **3** | — |
-| 4 | 19–20 · R›I | 3 | **6** | — |
-| 5 | 4–5 · R | 3 | 3 (I) | izq |
-| 6 | 17 · R›C | +∞ |  | izq |
-| 7 | 19–20 · R›C | **6** | **6 (C1)** | izq |
-| 8 | 19–20 · R›C | **6** | **9 (C2)** | izq |
-| 9 | 4–5 · R | **6** | **6 (C)** | **centro** |
-| 10 | 17 · R›D | +∞ |  | **centro** |
-| 11 | 19–20 · R›D | 2 | **2** | **centro** |
-| 12 | 19–20 · R›D | 2 | **12** | **centro** |
-| 13 | 4–5 · R | **6** | 2 (D) | **centro** |
-| 14 | 6 · R | **6** |  | **centro** |
+| 2 | 17 · R›D | +∞ |  | — |
+| 3 | 19–⁠20 · R›D | **2** | **2** | — |
+| 4 | 19–⁠20 · R›D | **2** | **12** | — |
+| 5 | 4–⁠5 · R | **2** | **2** (D) | der |
+| 6 | 17 · R›I | +∞ |  | der |
+| 7 | 19–⁠20 · R›I | **3** | **3** | der |
+| 8 | 19–⁠20 · R›I | **3** | **6** | der |
+| 9 | 4–⁠5 · R | **3** | **3** (I) | izq |
+| 10 | 17 · R›C | +∞ |  | izq |
+| 11 | 19–⁠20 · R›C | **6** | **6** (C1) | izq |
+| 12 | 19–⁠20 · R›C | **6** | **9** (C2) | izq |
+| 13 | 4–⁠5 · R | **6** | **6** (C) | centro |
+| 14 | 6 · R | **6** |  | centro |
 
-1. La tabla de arriba.
-2. **Línea 8** en las filas 3, 4, 11 y 12: regresan hojas, que son
-   finales. **Línea 9** en las filas 7 y 8: regresan C1 y C2, que llegan
-   con $d=0$ sin ser finales.
-:::
-
-::: exercise {#jue-c3-ej-corte title="Completa qué línea valora cada nodo"}
-Con $d=2$ en la raíz. En la tabla, las hojas van por su número; $d$ es
-la profundidad con que llega el nodo; **línea**, la que lo valora (8, 9
-o ninguna de las dos); y $w$, lo que devuelve.
-
-| Nodo | Final | $d$ | Línea | $w$ |
-|---|---|---|---|---|
-| 3 | sí | 0 | 8 | 3 |
-| C1 | ? | ? | ? | ? |
-| 12 | ? | ? | ? | ? |
-| C | ? | ? | ? | ? |
-:::
-
-::: hint {#jue-c3-pista-corte-1 of="jue-c3-ej-corte" title="Primero, si es final"}
-Para cada nodo, ¿es final? Si no lo es, ¿le quedan jugadas por mirar? Si
-le quedan, ¿qué líneas recorre?
-:::
-
-::: answer {#jue-c3-resp-corte of="jue-c3-ej-corte"}
-- **C1:** no es final y llega con $d=0$: lo valora la **línea 9** y
-  devuelve 6.
-- **Hoja 12:** es final y llega con $d=0$: la **línea 8**, que devuelve 12.
-- **C:** no es final y llega con $d=1$. **Ninguna de las dos:** pasa a la
-  rama de MIN, líneas 16–21, y devuelve $\min(6,9)=6$.
+1. mejor_jugada cambia tres veces: a der en la fila 5 (${2>-\infty}$), a
+   izq en la 9 (${3>2}$) y a centro en la 13 (${6>3}$). Devuelve
+   **centro, con 6**, igual que con el orden de la página.
+2. **I, C y D.** Llegan con ${d=1}$ y no son finales, así que pasan de largo
+   las líneas 8 y 9 y los valora la rama de MIN, líneas 16–21. R tampoco:
+   lo recorre DECIDIR-CON-CORTE, líneas 1–6.
 :::
 
 ## 4 · Por qué termina y qué se puede afirmar
@@ -475,7 +459,7 @@ Si cada estado tiene un número finito de jugadas,
 MINIMAX-CON-CORTE$(s,d)$ termina, aunque el juego no termine.
 
 **Por qué:** cada llamada baja $d$ en uno, y la línea 9 ya no llama a
-nadie cuando $d=0$. La pila nunca pasa de $d$ niveles. A diferencia de
+nadie cuando ${d=0}$. La pila nunca pasa de $d$ niveles. A diferencia de
 minimax, que termine no depende de que las partidas terminen.
 :::
 
@@ -484,22 +468,24 @@ MINIMAX-CON-CORTE$(s,d)$ devuelve el valor con corte de $s$
 (@jue-c3-valor-con-corte), no $V(s)$. Con el mismo argumento de
 inducción que minimax, es el minimax del árbol cortado.
 
-En el 4×4, $|\mathrm{EVAL}|\le36$ en las posiciones alcanzables que no
+En el 4×4, ${|\mathrm{EVAL}|\le36}$ en las posiciones alcanzables que no
 son finales. Así, **un 100 solo puede venir de finales ganados**: Blancas
 tiene una victoria asegurada dentro de las $d$ jugadas, responda lo que
-responda Negras. Lo mismo vale para $-100$ y Negras. **Cualquier otro
+responda Negras. Lo mismo vale para ${-100}$ y Negras. **Cualquier otro
 número es una estimación.**
 :::
 
 Si una hoja de corte está mal estimada, el error sube por el árbol, como
-la trampa de der con $d=1$.
+la trampa de der con ${d=1}$.
 
 ::: exercise {#jue-c3-ej-afirma title="Separa lo seguro de lo estimado"}
-Con $d=3$ en la raíz de la posición de la clase, MINIMAX-CON-CORTE
-devuelve $-9$ para $\text{a1}\textbf{-}\text{a2}$, $100$ para
+Con ${d=3}$ en la raíz de la posición de la clase, MINIMAX-CON-CORTE
+devuelve ${-9}$ para $\text{a1}\textbf{-}\text{a2}$, $100$ para
 $\text{d2}\textbf{-}\text{d3}$ y $1$ para $\text{d2}\textbf{x}\text{c3}$.
 
-1. ¿Cuál de los tres números es seguro, y qué asegura?
+1. ¿Cuál de los tres números es seguro? ¿En cuántas jugadas, a lo más y
+   contando la primera, asegura la victoria, y contra cuántas respuestas de
+   Negras lo comprobó la búsqueda?
 2. Un compañero dice: «con $\text{a1}\textbf{-}\text{a2}$, Blancas pierde
    un peón seguro». ¿Qué se puede afirmar de verdad?
 :::
@@ -510,10 +496,12 @@ línea 8?
 :::
 
 ::: answer {#jue-c3-resp-afirma of="jue-c3-ej-afirma"}
-1. **El 100.** Ninguna evaluación llega a 100, así que viene de finales:
-   tras $\text{d2}\textbf{-}\text{d3}$, Blancas gana en a lo más tres
-   jugadas, responda lo que responda Negras.
-2. **Nada seguro.** El $-9$ es el minimax de evaluaciones, no de finales.
+1. **El 100.** Ninguna evaluación llega a 100, así que viene de finales.
+   Blancas gana en a lo más **tres jugadas desde la raíz**, contando
+   $\text{d2}\textbf{-}\text{d3}$. La búsqueda lo comprobó contra las
+   **dos** respuestas de Negras, $\text{a4}\textbf{-}\text{a3}$ y
+   $\text{b4}\textbf{-}\text{b3}$: no hay otras.
+2. **Nada seguro.** El ${-9}$ es el minimax de evaluaciones, no de finales.
    Dice que, mirando tres jugadas, la evaluación prefiere poco esa jugada.
 :::
 
@@ -534,30 +522,30 @@ mismo tiempo se mira cerca del doble de profundo. El valor en la raíz es el
 mismo con o sin poda.
 :::
 
-En la posición de la clase, DECIDIR-CON-CORTE genera **4 nodos** con $d=1$,
-**12** con $d=2$ y **33** con $d=3$, contando la raíz. Cada nivel multiplica
-el trabajo, aunque aquí por menos de $b=5$. Ese 5 es el máximo de jugadas
-de un nodo que se expande con $d=3$: varios estados tienen menos jugadas,
+En la posición de la clase, DECIDIR-CON-CORTE genera **4 nodos** con ${d=1}$,
+**12** con ${d=2}$ y **33** con ${d=3}$, contando la raíz. Cada nivel multiplica
+el trabajo, aunque aquí por menos de ${b=5}$. Ese 5 es el máximo de jugadas
+de un nodo que se expande con ${d=3}$: varios estados tienen menos jugadas,
 o son finales.
 
 Por eso $d$ se elige según el **tiempo disponible**, no según el juego: es
 el tema de [[jugar-contra-el-reloj|Jugar contra el reloj]].
 
 ::: exercise {#jue-c3-ej-cota title="Compara la cota con el árbol cortado"}
-En el árbol T, ningún nodo tiene más de 3 jugadas: $b=3$.
+En el árbol T, ningún nodo tiene más de 3 jugadas: ${b=3}$.
 
-1. Con $d=2$, ¿cuántas hojas permite a lo más la cota $b^d$?
+1. Con ${d=2}$, ¿cuántas hojas permite a lo más la cota $b^d$?
 2. ¿Cuántas hojas tiene de verdad el árbol cortado, contando nodos de
    corte y finales? ¿Por qué menos?
 :::
 
 ::: hint {#jue-c3-pista-cota-1 of="jue-c3-ej-cota" title="Dónde termina cada rama"}
-Recorre las tres ramas de R. ¿Dónde se detiene cada una con $d=2$, y
+Recorre las tres ramas de R. ¿Dónde se detiene cada una con ${d=2}$, y
 cuántos hijos tiene cada nodo de MIN?
 :::
 
 ::: answer {#jue-c3-resp-cota of="jue-c3-ej-cota"}
-1. $3^2=9$.
+1. ${3^2=9}$.
 2. **6:** las hojas 3 y 6 de I, C1 y C2, y las hojas 2 y 12 de D. Son
    menos porque I, C y D tienen 2 jugadas, no 3. Con la raíz e I, C y D,
    suman los 10 nodos de la tabla.
@@ -565,7 +553,7 @@ cuántos hijos tiene cada nodo de MIN?
 
 ## 6 · Leer qué preferencia expresa la evaluación
 
-**Piensa: ¿qué dice la suma $10\cdot\text{material}+\text{avance}$ sobre
+**Piensa: ¿qué dice la suma ${10\cdot\text{material}+\text{avance}}$ sobre
 lo que importa?**
 
 $\mathrm{EVAL}$ no viene del reglamento: **la escribimos nosotros**. Es una
@@ -614,18 +602,18 @@ de cada color: ¿qué peones tienen un rival en una diagonal de enfrente?
 ::: answer {#jue-c3-resp-rasgo of="jue-c3-ej-rasgo"}
 1. **«No ve si un peón está a punto de ser capturado».**
 2. Tras $\text{a1}\textbf{-}\text{a2}$, Negras puede capturar en d2 y
-   Blancas en c3: $2-10+10=2$. Tras $\text{d2}\textbf{-}\text{d3}$, nadie
+   Blancas en c3: ${2-10+10=2}$. Tras $\text{d2}\textbf{-}\text{d3}$, nadie
    puede capturar: 2. Tras $\text{d2}\textbf{x}\text{c3}$, Negras puede
-   capturar en c3, pero el peón de c3 también amenaza a b4: $13-10+10=13$.
+   capturar en c3, pero el peón de c3 también amenaza a b4: ${13-10+10=13}$.
    **No cambia nada**: las dos amenazas se cancelan, porque el rasgo no
    sabe a quién le toca.
-3. Contando solo las de Negras: $2-10=-8$, $2$ y $13-10=3$. **Sigue
+3. Contando solo las de Negras: ${2-10=-8}$, $2$ y ${13-10=3}$. **Sigue
    eligiendo la captura**, por poco: tras la recaptura también cambia el
    avance, y el rasgo no lo ve.
 
 Adivinar las capturas con rasgos es frágil: cada arreglo deja otro hueco.
-La [[mas-alla-del-horizonte|página siguiente]] hace otra cosa,
-**mirarlas**: la búsqueda de quietud.
+La [[mas-alla-del-horizonte|página siguiente]] hace otra cosa:
+**mirarlas**.
 :::
 
 ## 7 · Trazar el árbol T por tu cuenta
@@ -633,8 +621,9 @@ La [[mas-alla-del-horizonte|página siguiente]] hace otra cosa,
 **Piensa: ¿qué cambia en la decisión si cambia el orden de las jugadas, o
 una sola evaluación?**
 
-Una de las dos cosas puede cambiar la jugada; la otra, solo el camino. El
-ejercicio lo pide en tres pasos: una traza, una variante y un costo.
+Antes de empezar, anota tu apuesta: ¿cuál de las dos crees que puede
+cambiar la jugada? El ejercicio lo pone a prueba en tres pasos: una traza,
+una variante y un costo.
 
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
@@ -643,22 +632,22 @@ pedir ayuda a ChatGPT.**
 Usa el árbol T, sus hojas y las $\mathrm{EVAL}$ de la sección 3. La idea
 nueva: **R prueba sus jugadas al revés**, der,
 centro, izq. Dentro de I, C y D el orden no cambia, y la línea 5 sigue con
-$>$ estricto.
+${>}$ estricto.
 
 1. Escribe la traza de DECIDIR-CON-CORTE(R, 2) con ese orden, en el
    formato de la sección 3. ¿Qué jugada devuelve, con qué valor, y en qué
    filas cambia mejor_jugada?
 2. Vuelve al orden izq, centro, der y cambia **una** evaluación:
-   $\mathrm{EVAL}(\text{C2})=1$ en vez de 9. ¿Qué juega con $d=1$, $d=2$
-   y $d=3$?
-3. ¿Cuántos nodos genera con $d=1$, 2 y 3 en la variante del inciso 2? ¿Y
+   ${\mathrm{EVAL}(\text{C2})=1}$ en vez de 9. ¿Qué juega con ${d=1}$, ${d=2}$
+   y ${d=3}$?
+3. ¿Cuántos nodos genera con ${d=1}$, 2 y 3 en la variante del inciso 2? ¿Y
    con el orden del inciso 1? Explica por qué.
 :::
 
 ::: hint {#jue-c3-pista-final-corte-1 of="jue-c3-ej-final-corte" title="Pista 1 · Qué se mueve de lugar"}
 Con R al revés, ¿cambian las filas de dentro de cada hijo, o solo su
 lugar en la traza? ¿Qué compara la línea 5 cada vez que un hijo regresa a
-R? Para el inciso 2: con cada $d$, ¿qué nodos llegan con $d=0$ sin ser
+R? Para el inciso 2: con cada $d$, ¿qué nodos llegan con ${d=0}$ sin ser
 finales?
 :::
 
@@ -668,33 +657,33 @@ arriba de la línea de corte o justo en ella? ¿Cada fila de R compara su
 $w$ con el mejor_valor de la fila anterior de R, y no con el último $w$?
 :::
 
-::: answer {#jue-c3-resp-final-corte of="jue-c3-ej-final-corte" title="Respuesta · El orden mueve el camino; la evaluación, la jugada"}
+::: answer {#jue-c3-resp-final-corte of="jue-c3-ej-final-corte" title="Respuesta · La traza, la variante y el costo"}
 **1. La traza con R al revés.**
 
-| # | línea · pila | v | w | jugada |
+| # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
 | 2 | 17 · R›D | +∞ |  | — |
-| 3 | 19–20 · R›D | 2 | 2 | — |
-| 4 | 19–20 · R›D | 2 | 12 | — |
-| 5 | 4–5 · R | 2 | 2 (D) | der |
+| 3 | 19–⁠20 · R›D | 2 | 2 | — |
+| 4 | 19–⁠20 · R›D | 2 | 12 | — |
+| 5 | 4–⁠5 · R | 2 | 2 (D) | der |
 | 6 | 17 · R›C | +∞ |  | der |
-| 7 | 19–20 · R›C | 6 | 6 (C1) | der |
-| 8 | 19–20 · R›C | 6 | 9 (C2) | der |
-| 9 | 4–5 · R | 6 | 6 (C) | centro |
+| 7 | 19–⁠20 · R›C | 6 | 6 (C1) | der |
+| 8 | 19–⁠20 · R›C | 6 | 9 (C2) | der |
+| 9 | 4–⁠5 · R | 6 | 6 (C) | centro |
 | 10 | 17 · R›I | +∞ |  | centro |
-| 11 | 19–20 · R›I | 3 | 3 | centro |
-| 12 | 19–20 · R›I | 3 | 6 | centro |
-| 13 | 4–5 · R | 6 | 3 (I) | centro |
+| 11 | 19–⁠20 · R›I | 3 | 3 | centro |
+| 12 | 19–⁠20 · R›I | 3 | 6 | centro |
+| 13 | 4–⁠5 · R | 6 | 3 (I) | centro |
 | 14 | 6 · R | 6 |  | centro |
 
-mejor_jugada pasa de ninguna a **der** en la fila 5 ($2>-\infty$) y a
-**centro** en la fila 9 ($6>2$). En la fila 13, $3>6$ es falso. Devuelve
+mejor_jugada pasa de ninguna a **der** en la fila 5 (${2>-\infty}$) y a
+**centro** en la fila 9 (${6>2}$). En la fila 13, ${3>6}$ es falso. Devuelve
 **centro, con 6**, como con el orden de la página.
 
-**2. La variante.** Con $d=1$, C2 no se genera: juega der, con 7.
-Con $d=2$, C2 es nodo de corte y C vale $\min(6,1)=1$. R compara izq 3,
-centro 1 y der 2, y juega izq, con 3. Con $d=3$ no se evalúa ningún
+**2. La variante.** Con ${d=1}$, C2 no se genera: juega der, con 7.
+Con ${d=2}$, C2 es nodo de corte y C vale ${\min(6,1)=1}$. R compara izq 3,
+centro 1 y der 2, y juega izq, con 3. Con ${d=3}$ no se evalúa ningún
 nodo interno: juega centro, con 5. **Una sola evaluación mala cambia la
 jugada**, pero solo con la profundidad en que ese nodo es de corte.
 
@@ -717,14 +706,14 @@ orden ni de los números. Con poda, el orden sí importaría.
   una jugada. Genera los estados solo hasta $d$ jugadas y evalúa los nodos
   de corte sin expandirlos.
 - Es DECIDIR y MINIMAX con una línea más, la 9. La 8 va antes: un final
-  se reconoce aunque llegue con $d=0$. Termina siempre, porque $d$ baja en
+  se reconoce aunque llegue con ${d=0}$. Termina siempre, porque $d$ baja en
   cada llamada.
-- Elige con el valor con corte, no con $V$: solo los $\pm100$ son seguros.
-  En el árbol T, $d=1$ cae en la trampa de der (7, y vale 2); $d=2$ ya
-  juega centro, con 6; $d=3$ juega centro, con 5. Con $d=1$, 2 y 3
+- Elige con el valor con corte, no con $V$: solo los ${\pm100}$ son seguros.
+  En el árbol T, ${d=1}$ cae en la trampa de der (7, y vale 2); ${d=2}$ ya
+  juega centro, con 6; ${d=3}$ juega centro, con 5. Con ${d=1}$, 2 y 3
   genera **4, 10 y 14** nodos.
 - Cuesta $O(b^d)$: en la posición de la clase, **4, 12 y 33** nodos con
-  $d=1$, 2 y 3.
+  ${d=1}$, 2 y 3.
 - $\mathrm{EVAL}$ es un modelo: sus pesos expresan una preferencia y dejan
   cosas fuera.
 

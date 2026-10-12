@@ -15,8 +15,8 @@ Nunca: course/**/_official/, *_tarea.md, artifact/, calendario, ilustraciones.
 Si necesitas cambiar un archivo que no es tuyo, NO lo cambies: pídelo en el reporte.
 
 ## Carga primero
-.claude/skills/unidad/referencias/: anatomia.md, lectura.md, pedagogia.md,
-ejercicios.md, figuras.md, {{REFERENCIAS_EXTRA}}
+.claude/skills/unidad/referencias/: anatomia.md, lectura.md, notacion.md,
+pedagogia.md, ejercicios.md, figuras.md, {{REFERENCIAS_EXTRA}}
 Modelo de tono y forma: {{PAGINAS_MODELO}}
 
 ## Plan aprobado (G2) para tus páginas

@@ -30,7 +30,8 @@ def texto(modo):
 
 def limpia(celda):
     """Una celda de la pagina en texto plano y sin espacios."""
-    c = celda.replace("$", "").replace("**", "")
+    # U+2060 (word joiner) y U+202F (espacio estrecho) solo evitan cortes a 390 px.
+    c = celda.replace("\u2060", "").replace("\u202f", " ").replace("$", "").replace("**", "")
     c = re.sub(r"\\(?:textit|textbf|mathbf|text)\{([^{}]*)\}", r"\1", c)
     c = re.sub(r"\\(?:textit|textbf|mathbf|text)\{([^{}]*)\}", r"\1", c)
     c = (c.replace("\\infty", "∞").replace("\\le", "≤").replace("\\ge", "≥")

@@ -92,8 +92,6 @@ primero **a mano** y después **como algoritmo**.
 | 6 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
 
-<!-- TAREA: la dispara el usuario -->
-
 1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
 2. [[minimax-con-corte|Minimax con corte como algoritmo]]
 3. [[mas-alla-del-horizonte|Más allá del horizonte]]
