@@ -279,3 +279,31 @@ def test_el_control_de_c_dice_que_solo_es_de_ucb_y_que_reinicia():
     etiqueta = re.search(r'<label for="c">(.*?)</label>', html, re.S).group(1)
     assert "solo UCB" in etiqueta and "reinicia" in etiqueta
     assert 'id="aviso-c"' in html
+
+
+def test_el_estado_dice_la_vuelta_actual_tambien_corriendo():
+    """«Vuelta N» se congelaba mientras corría (decía «Vuelta 0» junto a
+    barras de 7 554 vueltas), y tras el tope Correr reiniciaba sin repintar:
+    «Vuelta 10 000» junto a la corrida nueva (ronda 1 de render, H5)."""
+    html = _texto(BANDIDO)
+    cuerpo = re.search(r"function pintarJugadas\(\)\{(.*?)\n\}", html, re.S).group(1)
+    assert '$("estado").innerHTML = estado;' in cuerpo
+    assert "corriendo ?" not in cuerpo, "el estado no debe congelarse al correr"
+    # Correr tras el tope reinicia y repinta antes de arrancar.
+    correr = re.search(r'\$\("b-correr"\)\.addEventListener\("click", \(\) => \{(.*?)\n\}\);',
+                       html, re.S).group(1)
+    assert re.search(r"reiniciar\(\);\s*pintar\(\);", correr)
+    # Al correr se apaga aria-live (no se lee cada cuadro) y al parar se prende.
+    assert '$("estado").setAttribute("aria-live", si ? "off" : "polite");' in html
+
+
+def test_las_figuras_que_cita_existen_en_la_pagina():
+    """La leyenda citaba «UCB empieza abajo y termina arriba», un título que
+    ya no existía (ronda 1 de render, H6). Toda figura citada por título
+    tiene que ser el title de una figura de la página 6."""
+    titulos = set(re.findall(r'^::: figure \{#[^ ]+ title="([^"]+)"\}', _texto(PAGINA_P6), re.M))
+    for ruta in PAGINAS:
+        citadas = re.findall(r"figura «([^»]+)»", _texto(ruta))
+        for c in citadas:
+            assert c in titulos, (ruta.name, c)
+    assert re.findall(r"figura «([^»]+)»", _texto(BANDIDO))

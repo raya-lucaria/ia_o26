@@ -188,7 +188,7 @@
       <h2 id="t-r">Fracción de vueltas en x contra N(s)</h2>
       <canvas id="g-r" role="img" aria-labelledby="t-r" aria-describedby="d-r"></canvas>
       <p class="sr" id="d-r"></p>
-      <div class="leyenda" aria-hidden="true"><span class="lf">N(s′) de x / N(s): la medida de la figura «UCB empieza abajo y termina arriba» (allí, promedio de 40 corridas y eje log)</span></div>
+      <div class="leyenda" aria-hidden="true"><span class="lf">N(s′) de x / N(s), acumulada, de esta sola corrida; lo que eso paga, en promedio de 40 corridas y eje log, está en la figura «Cuánto gana cada regla: sin bono se queda abajo»</span></div>
     </div>
   </div>
 
@@ -338,7 +338,7 @@ class Bandido {
       for (let i = 0; i < 3; i++) this.historiaN[i][this.nPadre] = this.N[i];
     return {a, r, alAzar};
   }
-  // fracción de las primeras k vueltas que fueron a x (la mejor): la de la figura
+  // fracción acumulada de las primeras k vueltas que fueron a x (la mejor)
   fraccionEnX(k){ return k ? this.historiaN[0][k] / k : 0; }
   // la que se entregaría: la más simulada (empate: la primera)
   masSimulada(){ return mejor(this.N); }
@@ -429,7 +429,10 @@ function pintarJugadas(){
       `En x: ${miles(b.N[0])} de ${miles(b.nPadre)} vueltas (${fmt(b.fraccionEnX(b.nPadre), 2)}).`;
     if (b.nPadre >= VUELTAS_MAX) estado += ` Llegó al tope de ${miles(VUELTAS_MAX)} vueltas.`;
   }
-  $("estado").innerHTML = corriendo ? $("estado").innerHTML : estado;
+  // Se escribe en cada cuadro, también corriendo: congelada mostraba «Vuelta 0»
+  // junto a barras de 7 554 vueltas. Para no inundar al lector de pantalla,
+  // ponerCorriendo() apaga aria-live mientras corre y lo vuelve a prender al parar.
+  $("estado").innerHTML = estado;
   $("estado").dataset.texto = estado;
   $("entrega").textContent = b.nPadre
     ? `Si hubiera que jugar ya, se entregaría la más simulada: ${JUGADAS[ent]} (${miles(b.N[ent])} de ${miles(b.nPadre)} vueltas).`
@@ -540,6 +543,7 @@ function ponerCorriendo(si){
   corriendo = si;
   $("b-correr").setAttribute("aria-pressed", String(si));
   $("b-correr").textContent = si ? "❚❚ Pausar" : "▶ Correr";
+  $("estado").setAttribute("aria-live", si ? "off" : "polite");
   if (si){ reloj = performance.now(); acumulado = 0; requestAnimationFrame(cuadro); }
   else { pintar(); $("estado").innerHTML = $("estado").dataset.texto; }
 }
@@ -549,7 +553,9 @@ $("b-paso").addEventListener("click", () => {
   avanzar(1); pintar(); $("estado").innerHTML = $("estado").dataset.texto;
 });
 $("b-correr").addEventListener("click", () => {
-  if (b.nPadre >= VUELTAS_MAX) { reiniciar(); }
+  // Tras el tope, Correr empieza una corrida nueva: se repinta ya, o el estado
+  // seguía diciendo «Vuelta 10 000» junto a las barras de la corrida nueva.
+  if (b.nPadre >= VUELTAS_MAX) { reiniciar(); pintar(); }
   ponerCorriendo(!corriendo);
 });
 function empezarDeNuevo(){

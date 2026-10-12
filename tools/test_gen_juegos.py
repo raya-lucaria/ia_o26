@@ -626,7 +626,8 @@ def test_ningun_aria_label_deja_una_frase_vacia(nombre):
 
 # ------------------------------- clase 3, p6: de donde sale el bono ---
 
-UCB = ["jue-c3-hoeffding", "jue-c3-bono", "jue-c3-bandido", "jue-c3-bandido-corridas"]
+UCB = ["jue-c3-hoeffding", "jue-c3-bono", "jue-c3-pago", "jue-c3-eligiendo-x",
+       "jue-c3-bandido-corridas"]
 
 
 @pytest.mark.parametrize("nombre", UCB)
@@ -635,18 +636,23 @@ def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
     en el nombre del eje que lo es."""
     svg = _texto(nombre)
     renglones = re.findall(r">([^<>]+)</text>", svg)
+    # Los nombres largos van partidos en renglones: las figuras miden 300 px
+    # (ver ANCHO_UCB_MAX abajo).
     ejes = {"jue-c3-hoeffding": ("N(s′): simulaciones de la jugada",
-                                 "frecuencia de ū(s′) ≤ μ(s′) − ε (escala log)"),
+                                 "frecuencia de ū(s′) ≤ μ(s′) − ε", "(escala log)"),
             "jue-c3-bono": ("N(s′): simulaciones de la jugada", "bono (en unidades de ū)"),
-            "jue-c3-bandido": ("N(s): vueltas (escala log)",
-                               "fracción de las primeras N(s) vueltas",
-                               "que fueron a x (acumulada)"),
-            "jue-c3-bandido-corridas": ("fracción de las 10 000 vueltas que fueron a x",)}[nombre]
+            "jue-c3-pago": ("N(s): vueltas (escala log)", "pago promedio por vuelta,",
+                            "de la vuelta 1 a N(s)"),
+            "jue-c3-eligiendo-x": ("N(s): vueltas (escala log)", "corridas que eligen x (%),",
+                                   "en esa vuelta, no acumulado"),
+            "jue-c3-bandido-corridas": ("fracción de las 10 000 vueltas", "que fueron a x")}[nombre]
     for e in ejes:
         assert escape(e) in renglones, e
     marcas = {"jue-c3-hoeffding": ["0.001", "0.01", "0.1", "1", "0", "50", "200"],
               "jue-c3-bono": ["0", "1", "2", "3", "4", "50", "200"],
-              "jue-c3-bandido": ["10", "100", "1 000", "10 000", "0.25", "1"],
+              "jue-c3-pago": ["10", "100", "1 000", "10 000", "0.3", "0.4", "0.5", "0.6"],
+              "jue-c3-eligiendo-x": ["10", "100", "1 000", "10 000", "40", "55", "70", "85",
+                                     "100"],
               "jue-c3-bandido-corridas": ["0", "0.25", "0.5", "0.75", "1"]}[nombre]
     for m in marcas:
         assert m in renglones, m
@@ -654,7 +660,12 @@ def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
     assert not re.findall(r'<text [^>]*font-size="(1[0-3](?:\.\d+)?)"', svg)
 
 
-ANCHO_UCB_MAX = 520
+# A 390 px el sitio no escala los SVG: los pone a su ancho natural con scroll
+# propio, y a 520 px jue-c3-bandido-corridas solo mostraba de 0 a ~0.6 (lo
+# que importa esta cerca de 1); las otras tres perdian la leyenda o el final
+# del eje x. El parrafo de la figura mide 305 px a 390 (medido en el sitio
+# construido). Vale para todas las graficas de la p6.
+ANCHO_UCB_MAX = 305
 
 
 def test_hoeffding_dibuja_la_simulacion_y_la_cota():
@@ -700,40 +711,88 @@ def test_el_bono_dibuja_la_formula():
     assert primera[100] < primera[1000] < primera[10000] < 4
 
 
-def test_el_bandido_dibuja_las_tres_reglas():
-    svg = _texto("jue-c3-bandido")
-    pl = gen.plano_bandido()
-    pts = gen.puntos_bandido(pl)
-    t = j.tabla_bandido()
-    assert set(pts) == set(j.REGLAS_BANDIDO) | {"ucb_c1"}
-    for r, lista in pts.items():
-        e = gen.ESTILO_REGLA[r]
-        assert e["rotulo"] in svg
-        esperado = " ".join(f"{pl.x(m)},{pl.y(t[r][m])}" for m in j.MARCAS_BANDIDO)
+# jue-c3-pago y jue-c3-eligiendo-x reemplazan a jue-c3-bandido (la fraccion
+# ACUMULADA en x, promediada sobre 40 corridas, mezclaba el costo de explorar
+# con las corridas atoradas; el profesor no la entendio, 2026-10-12).
+
+def _curvas_de(svg, pl, tabla, escala=1):
+    for r, d in tabla.items():
+        esperado = " ".join(f"{pl.x(m)},{pl.y(float(v * escala))}" for m, v in d.items())
         assert f'<polyline points="{esperado}"' in svg, r
-    # Cada regla con su trazo y su marca: el color no es la unica senal.
-    assert len({(e["guiones"], e["marca"]) for e in gen.ESTILO_REGLA.values()}) == len(gen.ESTILO_REGLA)
-    aria = re.match(r"<svg\b[^>]*>", svg).group()
-    assert "UCB, c = 2√2, 0.42 a 0.94" in aria
-    assert "μ de x, y, z: 0.6, 0.3, −0.2" in svg
 
 
-def test_el_bandido_dice_que_es_acumulado_y_que_es_un_punto():
-    """Se leia «el 85 % de las veces en la vuelta N(s)»: el eje dice que es
-    acumulado desde la vuelta 1 y el subtitulo que cada punto promedia 40
-    corridas, en el dibujo y en el aria-label."""
-    svg = _texto("jue-c3-bandido")
+def test_el_pago_dibuja_cada_regla_y_la_referencia():
+    svg = _texto("jue-c3-pago")
+    pl = gen.plano_pago()
+    t = j.tabla_pago()
+    assert list(t) == list(gen.ESTILO_REGLA) == list(j.FILAS_BANDIDO)
+    _curvas_de(svg, pl, t)
+    assert gen.puntos_pago(pl)["ucb"][0] == (10, pl.x(10), pl.y(float(t["ucb"][10])))
+    # La referencia «siempre x» en μ(x) = 0.6, y ninguna curva la pasa.
+    y_ref = pl.y(0.6)
+    assert f'<line x1="{pl.x0}" y1="{y_ref}" x2="{pl.x0 + pl.w}" y2="{y_ref}"' in svg
     renglones = re.findall(r">([^<>]+)</text>", svg)
+    assert "siempre x (lo mejor posible)" in renglones
+    assert all(y > y_ref for pts in gen.puntos_pago(pl).values() for _, _, y in pts)
+    # Lo que es un punto, en el dibujo; la leyenda con el valor final.
     assert "cada punto: promedio de 40 corridas" in renglones
+    for fila in ("siempre el mejor promedio: 0.543", "a veces al azar (10 %): 0.564",
+                 "UCB, c = 2√2: 0.580", "UCB, c = 1: 0.598"):
+        assert fila in renglones, fila
+    assert "(34·0.6 + 5·0.3 − 0.2)/40 = 0.5425." in renglones
     aria = re.match(r"<svg\b[^>]*>", svg).group()
-    assert "acumulada desde la vuelta 1" in aria
-    assert f"Cada punto es el promedio de {j.CORRIDAS_BANDIDO} corridas" in aria
+    for frase in ("Cada punto es el promedio de 40 corridas",
+                  "pago promedio por vuelta, el promedio de los U de las vueltas 1 a N(s)",
+                  "Una raya horizontal en 0.6: siempre x, lo mejor posible",
+                  "siempre el mejor promedio, 0.400, 0.533, 0.544 y 0.543",
+                  "a veces al azar (10 %), 0.385, 0.522, 0.561 y 0.564",
+                  "UCB, c = 2√2, 0.295, 0.397, 0.519 y 0.580",
+                  "UCB, c = 1, 0.340, 0.514, 0.583 y 0.598",
+                  "34 corridas se quedan en x, 5 en y y 1 en z",
+                  "(34·0.6 + 5·0.3 − 0.2)/40 = 0.5425; simulado, 0.543"):
+        assert frase in aria, frase
+
+
+def test_eligiendo_x_dibuja_cada_regla_sin_acumular():
+    svg = _texto("jue-c3-eligiendo-x")
+    pl = gen.plano_eligiendo()
+    t = j.tabla_eligiendo_x()
+    _curvas_de(svg, pl, t, escala=100)
+    renglones = re.findall(r">([^<>]+)</text>", svg)
+    # Que es un punto, y que no es acumulado, en el dibujo.
+    for r_ in ("cada punto: % de las 40 corridas que", "eligen x en esa vuelta (promedio de",
+               "las vueltas N(s) − 9 a N(s))", "en esa vuelta, no acumulado"):
+        assert r_ in renglones, r_
+    for fila in ("siempre el mejor promedio: 85 %", "a veces al azar (10 %): 92.5 %",
+                 "UCB, c = 2√2: 98.8 %", "UCB, c = 1: 100 %"):
+        assert fila in renglones, fila
+    assert "Sin bono se aplana en 34 de 40 = 85 %:" in renglones
+    assert "al azar: cerca de 0.9 + 0.1/3 = 93.3 %." in renglones
+    # La meseta de 85 % es una recta: desde N(s) = 100, la misma y.
+    ys = {y for m, _, y in gen.puntos_eligiendo(pl)["mejor_promedio"] if m >= 100}
+    assert ys == {pl.y(85)}
+    aria = re.match(r"<svg\b[^>]*>", svg).group()
+    for frase in ("porcentaje de las 40 corridas que eligen x en esa vuelta, no acumulado",
+                  "las vueltas N(s) − 9 a N(s) de las 40 corridas, 400 elecciones",
+                  "siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %",
+                  "a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %",
+                  "UCB, c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %",
+                  "UCB, c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %",
+                  "se aplana en 34 de 40, 85 %: las 6 atoradas nunca eligen x",
+                  "0.9 + 0.1/3 = 93.3 %"):
+        assert frase in aria, frase
+
+
+def test_las_reglas_se_distinguen_sin_color():
+    """Cada regla con su trazo y su marca: el color no es la unica senal."""
+    assert len({(e["guiones"], e["marca"]) for e in gen.ESTILO_REGLA.values()}) == len(gen.ESTILO_REGLA)
 
 
 def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
     """jue-c3-bandido-corridas: 40 marcas por fila, en la x de su fraccion
     final y con la marca de su regla; la raya del promedio en la x del valor
-    final de jue-c3-bandido; el rotulo de atoradas con sus cifras."""
+    final de tabla_bandido (la figura acumulada ya no se dibuja, pero su
+    ultima marca es este promedio); el rotulo de atoradas con sus cifras."""
     svg = _texto("jue-c3-bandido-corridas")
     pl = gen.plano_corridas()
     r, t = j.reparto_bandido(), j.tabla_bandido()
@@ -754,9 +813,12 @@ def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
     # El desplazamiento es determinista y no apila vecinos en el mismo nivel.
     assert [gen.desplazamiento(i) for i in range(3)] == [-10.4, 0.0, 10.4]
     renglones = re.findall(r">([^<>]+)</text>", svg)
-    assert "6 de 40 atoradas: 5 en y, 1 en z" in renglones
+    # «6 de 40 atoradas: 5 en y, 1 en z» va en dos renglones: en uno llegaba
+    # a la raya del promedio 0.85; igual el subtitulo, por el ancho.
+    assert ["6 de 40 atoradas:", "5 en y, 1 en z"] == [
+        r_ for r_ in renglones if r_.startswith("6 de 40") or r_ == "5 en y, 1 en z"]
     assert renglones.count("0 de 40 atoradas") == 3
-    assert "cada punto es una corrida de 10 000 vueltas" in renglones
+    assert "cada punto es una corrida" in renglones and "de 10 000 vueltas" in renglones
     aria = re.match(r"<svg\b[^>]*>", svg).group()
     for frase in ("Cada punto es una corrida de 10 000 vueltas",
                   "Siempre el mejor promedio: 34 corridas en 0.99 o más y 6 atoradas en "
