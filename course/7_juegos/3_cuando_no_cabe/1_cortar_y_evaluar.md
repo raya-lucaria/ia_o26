@@ -112,25 +112,30 @@ Mucho más. La computadora contó los dos árboles completos:
 | Ajedrez | — | ${\approx10^{44}}$ |
 :::
 
-**Nodos** cuenta los del árbol completo; **estados**, los del grafo de la
-clase 1. Con juego perfecto, en el 3×3 (hexapawn) gana
+**Nodos** cuenta los del árbol completo, que no junta estados repetidos:
+cada nodo guarda el camino por el que llegó, así que un mismo tablero con el
+mismo turno aparece una vez por cada orden de jugadas que lo alcanza.
+**Estados** cuenta los del grafo de la clase 1, que guarda cada uno una sola
+vez. Con juego perfecto, en el 3×3 (hexapawn) gana
 el segundo y en el 4×4 gana el primero. En el ajedrez nadie lo sabe.
 
 ::: exercise {#jue-c3-ej-crecimiento title="Compara los dos árboles"}
 1. ¿Cuántas veces más nodos tiene el árbol del 4×4 que el de hexapawn?
-2. En los dos juegos hay muchos más nodos que estados distintos. ¿Por qué?
+2. ¿Cuántos nodos hay por cada estado, en promedio, en cada tablero? ¿En
+   cuál se repiten más los estados?
 :::
 
 ::: hint {#jue-c3-pista-crecimiento-1 of="jue-c3-ej-crecimiento" title="Qué es un nodo"}
-¿Qué cuenta un nodo del árbol, y qué cuenta un estado del grafo de la
-clase 1?
+Divide los nodos entre los estados de cada fila de la tabla
+@jue-c3-crecimiento.
 :::
 
 ::: answer {#jue-c3-resp-crecimiento of="jue-c3-ej-crecimiento"}
 1. ${4\,197\,973/252\approx16\,659}$: **más de 16 000 veces**, por una fila y
    una columna más.
-2. El árbol repite cada estado una vez por cada camino que llega a él. El
-   grafo de la clase 1 lo guarda una sola vez.
+2. En el 3×3, ${252/135\approx1.9}$ nodos por estado; en el 4×4,
+   ${4\,197\,973/20\,286\approx207}$. Se repiten mucho más en el 4×4: con
+   más jugadas hay muchos más órdenes distintos que llegan al mismo estado.
 :::
 
 El 4×4 todavía lo resuelve una computadora, pero ya no una persona con
