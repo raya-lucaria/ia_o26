@@ -1403,6 +1403,12 @@ def test_prosa_clase_3_p5_uct_en_el_ejercicio():
         assert float(puntaje) == round(puntajes[k], 2), k
     assert re.search(r"baja por ([xyz])", resp)[1] == max(puntajes, key=puntajes.get)
     assert re.search(r"1\. ([xyz]):", resp)[1] == j.mas_simulada(datos)
+    # El resumen repite el puntaje de la seleccion: una lente de la ronda 3 no
+    # vio 0.99→0.97 ahi, y ninguna prueba lo leia.
+    resumen = _limpio(texto[texto.index("## Lo que hay que llevarse"):])
+    elegido = max(puntajes, key=puntajes.get)
+    m = re.search(r"la selección va a ([xyz]), que puntúa (\d+(?:\.\d+)?)", resumen)
+    assert m and m[1] == elegido and float(m[2]) == round(puntajes[elegido], 2)
 
 
 # ---- cifras de respuestas que ninguna otra prueba leia (r2, correccion §6)

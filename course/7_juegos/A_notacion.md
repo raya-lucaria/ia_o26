@@ -173,7 +173,7 @@ renglón, en cursivas.
 | Caja o círculo punteado con «?» | Estado que el recorrido nunca genera |
 | Línea punteada de color | Dónde se corta la búsqueda; su pastilla dice el $d$ de la raíz. Desde «Más allá del horizonte» se llama horizonte |
 | Barra bajo un nodo | Ahí hubo un corte alfa o beta: los hermanos que siguen no se generan |
-| Etiqueta «cota» bajo el $v$ de un nodo | Su $v$ salió de la ventana: es un techo o un piso, no su valor |
+| Etiqueta «cota» bajo el $v$ de un nodo | Su $v$ salió de la ventana: solo garantiza un techo o un piso de su valor (puede coincidir con él, pero no se sabe) |
 | Barras en el tiempo, línea «reloj k» | Cada barra es una búsqueda y su largo, los nodos que genera; la línea marca dónde se acaba el reloj |
 | Caja con G/N | En MCTS: victorias de MAX entre simulaciones de ese nodo |
 | Círculo con número | Orden en que un recorrido visita el nodo |

@@ -556,11 +556,11 @@ está la búsqueda y qué números maneja.
 | 3 | −∞ |  |  |
 | 4 | 5 | 5 | 5≥+∞: no |
 | 5 | 5 | 2 | 5≥+∞: no |
-| 6 | 5 | 5 (C1) | 5≤−∞: no |
+| 6 | 5 | 5 (C1) | 5≤−∞: no |
 | 7 | −∞ |  |  |
 | 8 | 7 | 7 | 7≥5: sí |
-| 9 | 5 | 7 (C2) | 5≤−∞: no |
-| 10 | 5 | 5 (C) | 5>−∞: sí |
+| 9 | 5 | 7 (C2) | 5≤−∞: no |
+| 10 | 5 | 5 (C) | 5>−∞: sí |
 :::
 
 - **Fila 1:** la línea 5 pone ${\alpha=-\infty}$ y
@@ -572,11 +572,10 @@ está la búsqueda y qué números maneja.
   queda con 5.
 - **Fila 10:** ${5>-\infty}$, así que la línea 10 sube $\alpha$ a 5.
 
-El estado al cerrar el tramo 1 es la rama de centro del tercer árbol de
-@jue-c3-t-fig-iterativa, más abajo: C vale 5, C1 vale 5 y C2 devolvió 7,
-con la hoja 8 podada.
+Al cerrar el tramo 1, C vale 5, C1 vale 5 y C2 devolvió 7, con la hoja 8
+podada.
 
-### Tramo 2 · Izq y der cortan con alfa en 5
+### Tramo 2 · Izq y der, con alfa en 5
 
 ::: exercise {#jue-c3-ej-traza-d3 title="Completa el tramo 2 de la búsqueda con d = 3"}
 Sigue la misma búsqueda desde la fila 11: R prueba izq y luego der.
@@ -595,10 +594,10 @@ Sigue la misma búsqueda desde la fila 11: R prueba izq y luego der.
 |---:|---:|---|---|
 | 11 | +∞ |  |  |
 | 12 | ? | 3 | ? |
-| 13 | 5 | 3 (I) | ? |
+| 13 | 5 | 3 (I) | ? |
 | 14 | +∞ |  |  |
 | 15 | 2 | 2 | ? |
-| 16 | ? | 2 (D) | ? |
+| 16 | ? | 2 (D) | ? |
 | 17 | ? |  |  |
 
 1. Llena los «?».
@@ -629,10 +628,10 @@ En negrita, lo que era «?».
 |---:|---:|---|---|
 | 11 | +∞ |  |  |
 | 12 | **3** | 3 | **3≤5: sí** |
-| 13 | 5 | 3 (I) | **3>5: no** |
+| 13 | 5 | 3 (I) | **3>5: no** |
 | 14 | +∞ |  |  |
 | 15 | 2 | 2 | **2≤5: sí** |
-| 16 | **5** | 2 (D) | **2>5: no** |
+| 16 | **5** | 2 (D) | **2>5: no** |
 | 17 | **5** |  |  |
 
 1. **I y D son de MIN** y llegan con ${\alpha=5}$. Su primera hoja, 3

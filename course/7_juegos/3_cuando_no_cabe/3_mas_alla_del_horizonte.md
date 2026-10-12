@@ -62,7 +62,7 @@ P3 son las profundidades 1, 2 y 3, y la última columna es el valor exacto
 por 100.
 
 ::: table {#jue-c3-horizonte-valores title="Las tres jugadas a profundidad 1, 2 y 3, y su valor exacto"}
-| Jugada | P1 | P2 | P3 | $100\cdot V$ |
+| Jugada | P1 | P2 | P3 | ${100\cdot V}$ |
 |---|---:|---:|---:|---:|
 | $\text{a1}\textbf{-}\text{a2}$ | 2 | −10 | −9 | −100 |
 | $\text{d2}\textbf{-}\text{d3}$ | 2 | **1** | **100** | **100** |
@@ -202,7 +202,7 @@ tienen ${\mathrm{EVAL}=2}$.
    Negras?
 2. ¿Qué valor recibe cada jugada con la búsqueda de quietud?
 3. Con los tres valores, ¿qué jugada elige Blancas? Compárala con la
-   columna $100\cdot V$ de @jue-c3-horizonte-valores.
+   columna ${100\cdot V}$ de @jue-c3-horizonte-valores.
 :::
 
 ::: hint {#jue-c3-pista-quietud-1 of="jue-c3-ej-quietud" title="Los mismos cuatro pasos"}

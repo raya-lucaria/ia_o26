@@ -2191,8 +2191,8 @@ def jue_t_iterativa():
         y = fondo + 18 + 34
     y = _pie_t(out, y + 4, [f"En total, {total} nodos.",
                             "Punteada con barra: rama podada.",
-                            "«cota»: su v salió de la ventana; no es",
-                            "su valor, solo un techo o un piso."], tam=16)
+                            "«cota»: su v salió de la ventana; solo",
+                            "es un techo o un piso de su valor."], tam=16)
     return _svg_t(titulo, desc, y - 10, out, sep=SEP_C3)
 
 

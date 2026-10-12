@@ -505,7 +505,7 @@ computadora. En la tabla, P1, P2 y P3 son las profundidades 1, 2 y 3, y la
 última columna pone $V$ por 100, en la escala de las demás.
 
 ::: table {#jue-c3-profundidades title="Las tres jugadas a profundidad 1, 2 y 3, y su valor exacto"}
-| Jugada | P1 | P2 | P3 | $100\cdot V$ |
+| Jugada | P1 | P2 | P3 | ${100\cdot V}$ |
 |---|---:|---:|---:|---:|
 | $\text{a1}\textbf{-}\text{a2}$ | 2 | −10 | −9 | −100 |
 | $\text{d2}\textbf{-}\text{d3}$ | 2 | **1** | **100** | **100** |

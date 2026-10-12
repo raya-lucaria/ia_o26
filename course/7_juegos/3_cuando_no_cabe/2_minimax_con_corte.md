@@ -329,11 +329,11 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de
 | 2 | 17 · R›I | +∞ |  | — |
 | 3 | 19–⁠20 · R›I | 3 | 3 | — |
 | 4 | 19–⁠20 · R›I | 3 | 6 | — |
-| 5 | 4–⁠5 · R | 3 | 3 (I) | izq |
+| 5 | 4–⁠5 · R | 3 | 3 (I) | izq |
 | 6 | 17 · R›C | +∞ |  | izq |
-| 7 | 19–⁠20 · R›C | 6 | 6 (C1) | izq |
-| 8 | 19–⁠20 · R›C | 6 | 9 (C2) | izq |
-| 9 | 4–⁠5 · R | 6 | 6 (C) | centro |
+| 7 | 19–⁠20 · R›C | 6 | 6 (C1) | izq |
+| 8 | 19–⁠20 · R›C | 6 | 9 (C2) | izq |
+| 9 | 4–⁠5 · R | 6 | 6 (C) | centro |
 :::
 
 - **Filas 3 y 4:** las hojas 3 y 6 son finales. La línea 8 las valora
@@ -354,7 +354,7 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de
 | 10 | 17 · R›D | +∞ |  | centro |
 | 11 | 19–⁠20 · R›D | 2 | 2 | centro |
 | 12 | 19–⁠20 · R›D | 2 | 12 | centro |
-| 13 | 4–⁠5 · R | 6 | 2 (D) | centro |
+| 13 | 4–⁠5 · R | 6 | 2 (D) | centro |
 | 14 | 6 · R | 6 |  | centro |
 :::
 
@@ -427,15 +427,15 @@ era «?».
 | 2 | 17 · R›D | +∞ |  | — |
 | 3 | 19–⁠20 · R›D | **2** | **2** | — |
 | 4 | 19–⁠20 · R›D | **2** | **12** | — |
-| 5 | 4–⁠5 · R | **2** | **2** (D) | der |
+| 5 | 4–⁠5 · R | **2** | **2** (D) | der |
 | 6 | 17 · R›I | +∞ |  | der |
 | 7 | 19–⁠20 · R›I | **3** | **3** | der |
 | 8 | 19–⁠20 · R›I | **3** | **6** | der |
-| 9 | 4–⁠5 · R | **3** | **3** (I) | izq |
+| 9 | 4–⁠5 · R | **3** | **3** (I) | izq |
 | 10 | 17 · R›C | +∞ |  | izq |
-| 11 | 19–⁠20 · R›C | **6** | **6** (C1) | izq |
-| 12 | 19–⁠20 · R›C | **6** | **9** (C2) | izq |
-| 13 | 4–⁠5 · R | **6** | **6** (C) | centro |
+| 11 | 19–⁠20 · R›C | **6** | **6** (C1) | izq |
+| 12 | 19–⁠20 · R›C | **6** | **9** (C2) | izq |
+| 13 | 4–⁠5 · R | **6** | **6** (C) | centro |
 | 14 | 6 · R | **6** |  | centro |
 
 1. mejor_jugada cambia tres veces: a der en la fila 5 ${(2>-\infty)}$, a
@@ -673,15 +673,15 @@ juega **izq, con 3**. Con R al revés:
 | 2 | 17 · R›D | +∞ |  | — |
 | 3 | 19–⁠20 · R›D | 2 | 2 | — |
 | 4 | 19–⁠20 · R›D | 2 | 12 | — |
-| 5 | 4–⁠5 · R | 2 | 2 (D) | der |
+| 5 | 4–⁠5 · R | 2 | 2 (D) | der |
 | 6 | 17 · R›C | +∞ |  | der |
-| 7 | 19–⁠20 · R›C | 3 | 3 (C1) | der |
-| 8 | 19–⁠20 · R›C | 3 | 9 (C2) | der |
-| 9 | 4–⁠5 · R | 3 | 3 (C) | centro |
+| 7 | 19–⁠20 · R›C | 3 | 3 (C1) | der |
+| 8 | 19–⁠20 · R›C | 3 | 9 (C2) | der |
+| 9 | 4–⁠5 · R | 3 | 3 (C) | centro |
 | 10 | 17 · R›I | +∞ |  | centro |
 | 11 | 19–⁠20 · R›I | 3 | 3 | centro |
 | 12 | 19–⁠20 · R›I | 3 | 6 | centro |
-| 13 | 4–⁠5 · R | 3 | 3 (I) | centro |
+| 13 | 4–⁠5 · R | 3 | 3 (I) | centro |
 | 14 | 6 · R | 3 |  | centro |
 
 mejor_jugada pasa de ninguna a **der** en la fila 5 ${(2>-\infty)}$ y a

@@ -31,6 +31,8 @@ Las lentes buscan **romper** la unidad, no aprobarla (casi nada de `defectos.md`
   no lista `siembra-*` ni `lente-*`.
 - **DEBE**: si la lente no reporta el sembrado, **la ronda no cuenta**: lente nueva, otro sembrado; dos fallos
   seguidos → se reescribe su prompt. El hallazgo del sembrado se descarta al adjudicar.
+- **DEBE**: en rondas sobre diff, la lente lee **la copia sembrada**, no el parche: el parche sale de la rama y no
+  trae el sembrado (7.3, ronda 3: la lente leyó el parche y no vio 0.99→0.97). El parche solo dice dónde mirar.
 
 ## Evidencia y formato
 - **DEBE**: todo hallazgo trae `ruta:línea` o `franja.png` + zona; sin evidencia se descarta. «Sin hallazgos» solo
