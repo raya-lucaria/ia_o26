@@ -1748,6 +1748,10 @@ def test_prosa_clase_3_p6_las_tres_jugadas_y_la_corrida_que_se_atora():
     piso = min(f["U"] for f in filas)
     assert _x(re.search(rf"se quedan en ({_NUM}), el mínimo", resp)[1]) == piso
     assert _x(re.search(rf"nunca baja a ({_NUM})", resp)[1]) == piso
+    dos = _limpio(_seccion(texto, 2))
+    m = re.search(rf"x vale de verdad \\mu=({_NUM}), su única simulación la dejó en ({_NUM})", dos)
+    assert _x(m[1]) == mus["x"] and _x(m[2]) == filas[2]["u"]["x"] == piso
+    assert filas[-1]["N"]["x"] == 1
     m = re.search(rf"tras ({_NUM}) vueltas, x e y tienen (\w+) simulación cada una y z, ({_NUM})",
                   resp)
     vueltas = int(_x(m[1]))

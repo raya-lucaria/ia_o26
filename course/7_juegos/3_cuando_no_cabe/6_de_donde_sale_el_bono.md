@@ -120,6 +120,12 @@ Se puede medir. Toma la jugada y, con ${\mu=0.3}$. Juega $N(s')$
 simulaciones, saca su promedio y repite todo 20 000 veces. Cuenta en
 cuántas el promedio quedó al menos $\varepsilon$ por debajo.
 
+**¿Por qué por debajo?** Es el error que atoró la regla de la sección 1:
+x vale de verdad ${\mu=0.6}$, su única simulación la dejó en ${-1}$, y
+nadie la volvió a probar. Un promedio que se pasa por arriba se corrige
+solo, porque la regla lo sigue eligiendo y junta simulaciones. Uno que se
+queda corto no se corrige nunca.
+
 ::: definition {#jue-c3-margen title="El margen y el fallo"}
 El **margen** $\varepsilon$ es un número positivo, en la escala de $U$.
 Decimos que el promedio **falla por debajo** si
@@ -179,8 +185,8 @@ random variables», *Journal of the American Statistical Association*,
 - **Cae exponencialmente** con $N(s')$. Otras cotas generales bajan solo
   como ${1/N(s')}$.
 
-Mira solo **una cola**: el promedio por debajo. La sección 5 explica por
-qué es el error que el bono tiene que cubrir.
+Mira solo **una cola**: el promedio por debajo, el error que no se corrige
+solo. La sección 5 lo convierte en la regla del bono.
 
 ::: exercise {#jue-c3-ej-fila-cota title="Calcula una fila de la cota"}
 1. Con ${N(s')=100}$ y ${\varepsilon=0.2}$, calcula la cota de Hoeffding.
