@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 145m
+estimated_time: 175m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -78,7 +78,7 @@ Dos ejemplos, cada uno con su papel:
 
 ## Recorrido
 
-Cinco páginas, en orden. Las dos primeras van en par, como en la clase 2:
+Seis páginas, en orden. Las dos primeras van en par, como en la clase 2:
 primero **a mano** y después **como algoritmo**.
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
@@ -89,7 +89,8 @@ primero **a mano** y después **como algoritmo**.
 | 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 20m |
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 35m |
 | 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 20m |
-| 6 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
+| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 30m |
+| 7 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
 
 1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
@@ -97,6 +98,7 @@ primero **a mano** y después **como algoritmo**.
 3. [[mas-alla-del-horizonte|Más allá del horizonte]]
 4. [[jugar-contra-el-reloj|Jugar contra el reloj]]
 5. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
+6. [[de-donde-sale-el-bono|De dónde sale el bono]]
 
 ## Las animaciones y el notebook
 
@@ -111,7 +113,7 @@ clase.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
 
-*Se abre en Google Colab, en otra pestaña. Las secciones 6 y 7 son las de esta
+*Se abre en Google Colab, en otra pestaña. Las secciones 6, 7 y 8 son las de esta
 clase.*
 
 ## Qué no cubre esta clase
@@ -119,6 +121,9 @@ clase.*
 - **MCTS** solo se presenta: su idea, sus cuatro pasos y su regla de
   selección, que calculas una vez con números. No escribimos su
   pseudocódigo.
+- **De dónde sale el bono** se explica con simulaciones; la desigualdad de
+  Hoeffding se cita, no se demuestra, y tampoco demostramos que UCT
+  converge.
 - **AlphaGo y AlphaZero** se mencionan, no se desarrollan.
 - **La evaluación** la escribimos a mano; no la aprendemos de partidas.
 - **La búsqueda de quietud** se explica con un ejemplo, sin sus detalles

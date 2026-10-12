@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoeffding en vivo — cuánto falla un promedio</title>
+
+<!-- Clase 7.3, «De dónde sale el bono». Genera promedios de N(s') simulaciones
+     ±1 con Pr(+1) = (1 + μ)/2 y cuenta cuántos caen en la cola ū ≤ μ − ε,
+     contra la cota de Hoeffding exp(−N(s')·ε²/2).
+
+     La suerte sale del mismo generador que tools/juegos.py (el Mersenne
+     Twister de Python, sembrado igual, con random() de 53 bits), así que con
+     la misma semilla una corrida de K promedios da exactamente lo que da
+     juegos.frecuencia_desvio(μ, N, ε, K, semilla).
+     tools/test_interactivos_ucb.py lo comprueba con node. -->
+
+<style>
+  /* Paleta de skins/eva-cyberpunk.yaml, vigilada por tools/test_skin.py.
+     --f-cola es --danger fundido contra --surface al 22 % (nada de opacidad
+     sobre el lienzo: el color ya viene mezclado). --trazo es --border
+     aclarado hasta 4.5:1 sobre --surface, como en traza_arbol_t.html. */
+  :root{
+    --page:#12061f; --surface:#211033; --text:#f7f2ff; --muted:#c8b9d8;
+    --accent:#f04cff; --accent-soft:#42164f; --border:#78419e;
+    --ok:#a8ff5a; --info:#55ddff; --aviso:#ffd166; --danger:#ff6f91;
+    --f-cola:#53203f; --trazo:#a273d6; --rejilla:#3a2255;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--page);color:var(--text);
+            font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .envoltura{max-width:1100px;margin:0 auto;padding:.8rem 16px 1.5rem}
+  h1{font-size:19px;margin:0 0 .2rem}
+  h2{font-size:12px;margin:0 0 .5rem;color:var(--muted);font-weight:600;
+     letter-spacing:.06em;text-transform:uppercase}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 .8rem}
+  .sub b{color:var(--text)}
+  .panel{background:var(--surface);border:1px solid var(--trazo);border-radius:12px;
+         padding:.8rem;margin-bottom:.8rem;min-width:0}
+  .deslizadores{display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem 1.2rem}
+  @media (min-width:700px){ .deslizadores{grid-template-columns:repeat(3,minmax(0,1fr))} }
+  .control label{display:flex;justify-content:space-between;gap:.5rem;font-size:13px;
+                 color:var(--muted)}
+  .control output{font:700 16px var(--mono);color:var(--accent)}
+  input[type=range]{width:100%;accent-color:var(--accent);margin:.25rem 0 0;min-height:28px}
+  .botones{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-top:.7rem}
+  button,input[type=number]{background:var(--surface);color:var(--text);
+    border:1px solid var(--trazo);border-radius:8px;padding:.35rem .7rem;font:inherit;
+    font-size:14px;min-height:38px}
+  button{cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+  button[aria-pressed=true]{background:var(--accent);color:#1b0025;border-color:var(--accent);
+    font-weight:700}
+  .semilla{display:flex;align-items:center;gap:.35rem;font-size:13px;color:var(--muted)}
+  .semilla input{width:6.5em;font-family:var(--mono)}
+  .reja{display:grid;grid-template-columns:minmax(0,1fr);gap:0 .8rem}
+  @media (min-width:900px){ .reja{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)} }
+  canvas{display:block;width:100%;background:var(--surface)}
+  #hist{height:270px}
+  #barrido{height:230px}
+  .cuentas{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .8rem;
+           margin:.7rem 0 0;font-size:14px}
+  .cuentas dt{color:var(--muted)}
+  .cuentas dd{margin:0;font:600 14px var(--mono);text-align:right;white-space:nowrap}
+  .cuentas .cota{color:var(--aviso)}
+  .cuentas .obs{color:var(--danger)}
+  .veredicto{margin:.6rem 0 0;padding:.45rem .65rem;border:1px solid var(--ok);
+             border-radius:8px;color:var(--ok);font-size:14px}
+  .veredicto.alerta{border-color:var(--aviso);color:var(--aviso)}
+  .leyenda{display:flex;flex-wrap:wrap;gap:.1rem .9rem;font-size:12.5px;color:var(--muted);
+           margin-top:.4rem}
+  .leyenda span::before{content:"";display:inline-block;width:14px;height:0;
+           border-top:3px solid currentColor;vertical-align:middle;margin-right:.3rem}
+  .leyenda .l-cota{color:var(--aviso)} .leyenda .l-obs{color:var(--danger)}
+  .leyenda .l-obs::before{width:9px;height:9px;border:0;border-radius:50%;background:currentColor}
+  .leyenda .l-mu{color:var(--text)} .leyenda .l-eps{color:var(--aviso)}
+  .leyenda .l-eps::before{border-top-style:dashed}
+  .leyenda .l-cola{color:var(--danger)}
+  .leyenda .l-cola::before{height:10px;border:0;background:var(--danger)}
+  .nota{color:var(--muted);font-size:13.5px;margin:.5rem 0 0}
+  .nota b{color:var(--text)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <h1>Hoeffding en vivo</h1>
+  <p class="sub">Cada <b>promedio ū(s′)</b> junta N(s′) simulaciones que dan +1 con
+  probabilidad (1 + μ(s′))/2 y −1 si no. ¿Cuántas veces queda el promedio a más de
+  ε por debajo de la verdad? Hoeffding dice: a lo más <b>exp(−N(s′)·ε²/2)</b>.</p>
+
+  <div class="panel">
+    <div class="deslizadores">
+      <div class="control">
+        <label for="mu"><span>μ(s′): promedio verdadero</span><output id="o-mu" for="mu">0.3</output></label>
+        <input type="range" id="mu" min="-0.8" max="0.8" step="0.1" value="0.3">
+      </div>
+      <div class="control">
+        <label for="n"><span>N(s′): simulaciones por promedio</span><output id="o-n" for="n">50</output></label>
+        <input type="range" id="n" min="1" max="200" step="1" value="50">
+      </div>
+      <div class="control">
+        <label for="eps"><span>ε: margen</span><output id="o-eps" for="eps">0.20</output></label>
+        <input type="range" id="eps" min="0.05" max="0.8" step="0.05" value="0.2">
+      </div>
+    </div>
+    <div class="botones">
+      <button type="button" id="b-correr" aria-pressed="false">▶ Correr</button>
+      <button type="button" id="b-paso">+100 promedios</button>
+      <button type="button" id="b-barrer" aria-pressed="false">Barrer N(s′)</button>
+      <button type="button" id="b-reiniciar">↺ Reiniciar</button>
+      <label class="semilla" for="semilla">semilla
+        <input type="number" id="semilla" min="0" max="999999" step="1" value="1"></label>
+    </div>
+  </div>
+
+  <div class="reja">
+    <div class="panel">
+      <h2 id="t-hist">Dónde caen los promedios</h2>
+      <canvas id="hist" role="img" aria-labelledby="t-hist" aria-describedby="d-hist"></canvas>
+      <p id="d-hist" class="sr"></p>
+      <div class="leyenda" aria-hidden="true">
+        <span class="l-mu">μ(s′)</span><span class="l-eps">μ(s′) − ε</span>
+        <span class="l-cola">cola: ū(s′) ≤ μ(s′) − ε</span>
+      </div>
+      <dl class="cuentas">
+        <dt>Promedios hechos</dt><dd id="c-hechos">0</dd>
+        <dt>Cayeron en la cola</dt><dd id="c-cola">0</dd>
+        <dt>Frecuencia observada</dt><dd id="c-obs" class="obs">—</dd>
+        <dt>Cota exp(−N(s′)·ε²/2)</dt><dd id="c-cota" class="cota">—</dd>
+      </dl>
+      <p class="veredicto" id="veredicto">Pulsa «Correr».</p>
+      <p class="sr" id="anuncio" aria-live="polite"></p>
+    </div>
+
+    <div class="panel">
+      <h2 id="t-barrido">Frecuencia contra N(s′)</h2>
+      <canvas id="barrido" role="img" aria-labelledby="t-barrido" aria-describedby="d-barrido"></canvas>
+      <p id="d-barrido" class="sr"></p>
+      <div class="leyenda" aria-hidden="true">
+        <span class="l-obs">observada (un punto por cada N(s′) que corriste)</span>
+        <span class="l-cota">cota</span>
+      </div>
+      <p class="nota">Eje vertical en escala log. Mueve N(s′) o pulsa «Barrer»; la
+      gráfica se borra al cambiar μ(s′), ε o la semilla.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="nota" style="margin:0"><b>Qué mirar.</b> Con suficientes promedios la
+    frecuencia queda <b>siempre debajo</b> de la cota: la cota es <b>floja</b> (a veces
+    diez veces arriba) pero <b>segura</b>. Barre N(s′) con ε fijo: las dos caen en
+    línea recta en escala log, es decir, <b>exponencialmente</b> con N(s′).
+    La semilla repite exactamente la misma corrida.</p>
+  </div>
+</div>
+
+<script id="logica">
+"use strict";
+// ---- Lógica pura, sin DOM: tools/test_interactivos_ucb.py la corre con node. ----
+
+// El Mersenne Twister de CPython (random.Random): init_by_array con la semilla
+// partida en palabras de 32 bits, y random() de 53 bits. Mismo generador,
+// mismos números que tools/juegos.py.
+class PyRandom {
+  constructor(semilla){
+    this.mt = new Uint32Array(624);
+    this.mti = 625;
+    let n = Math.abs(Math.floor(semilla));
+    const clave = [];
+    while (n > 0){ clave.push(n % 4294967296); n = Math.floor(n / 4294967296); }
+    if (!clave.length) clave.push(0);
+    this.porArreglo(clave);
+  }
+  inicial(s){
+    const mt = this.mt;
+    mt[0] = s >>> 0;
+    for (let i = 1; i < 624; i++){
+      const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+      mt[i] = (Math.imul(1812433253, prev) + i) >>> 0;
+    }
+    this.mti = 624;
+  }
+  porArreglo(clave){
+    const mt = this.mt;
+    this.inicial(19650218);
+    let i = 1, j = 0;
+    for (let k = Math.max(624, clave.length); k; k--){
+      const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+      mt[i] = ((mt[i] ^ Math.imul(prev, 1664525)) + clave[j] + j) >>> 0;
+      i++; j++;
+      if (i >= 624){ mt[0] = mt[623]; i = 1; }
+      if (j >= clave.length) j = 0;
+    }
+    for (let k = 623; k; k--){
+      const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+      mt[i] = ((mt[i] ^ Math.imul(prev, 1566083941)) - i) >>> 0;
+      i++;
+      if (i >= 624){ mt[0] = mt[623]; i = 1; }
+    }
+    mt[0] = 0x80000000;
+  }
+  uint32(){
+    const mt = this.mt;
+    if (this.mti >= 624){
+      let kk = 0, y;
+      for (; kk < 227; kk++){
+        y = (mt[kk] & 0x80000000) | (mt[kk + 1] & 0x7fffffff);
+        mt[kk] = mt[kk + 397] ^ (y >>> 1) ^ ((y & 1) ? 0x9908b0df : 0);
+      }
+      for (; kk < 623; kk++){
+        y = (mt[kk] & 0x80000000) | (mt[kk + 1] & 0x7fffffff);
+        mt[kk] = mt[kk - 227] ^ (y >>> 1) ^ ((y & 1) ? 0x9908b0df : 0);
+      }
+      y = (mt[623] & 0x80000000) | (mt[0] & 0x7fffffff);
+      mt[623] = mt[396] ^ (y >>> 1) ^ ((y & 1) ? 0x9908b0df : 0);
+      this.mti = 0;
+    }
+    let y = mt[this.mti++];
+    y ^= y >>> 11;
+    y ^= (y << 7) & 0x9d2c5680;
+    y ^= (y << 15) & 0xefc60000;
+    y ^= y >>> 18;
+    return y >>> 0;
+  }
+  random(){
+    const a = this.uint32() >>> 5, b = this.uint32() >>> 6;
+    return (a * 67108864 + b) / 9007199254740992;
+  }
+}
+
+// μ y ε llegan en centésimas enteras (los deslizadores van de 0.1 y 0.05 en
+// 0.05), para que el umbral y Pr(+1) salgan exactos, como las fracciones de
+// juegos.py: 0.3 − 0.2 en coma flotante no es 0.1.
+function probGana(muC){ return (100 + muC) / 200; }          // (1 + μ)/2
+function cotaHoeffding(n, eps){ return Math.exp(-n * eps * eps / 2); }
+// El mayor total de U (suma de los ±1) con ū ≤ μ − ε: ⌊(μ − ε)·N⌋.
+function umbral(muC, epsC, n){ return Math.floor(((muC - epsC) * n) / 100); }
+
+// Una corrida: promedios de n simulaciones, uno tras otro, de un solo
+// generador. hist[k] cuenta los promedios con k victorias (ū = (2k − n)/n).
+class Corrida {
+  constructor(muC, n, epsC, semilla){
+    this.muC = muC; this.n = n; this.epsC = epsC;
+    this.rng = new PyRandom(semilla);
+    this.p = probGana(muC);
+    this.tope = umbral(muC, epsC, n);
+    this.hist = new Float64Array(n + 1);
+    this.hechos = 0; this.enCola = 0;
+  }
+  promedios(cuantos){
+    const rng = this.rng, p = this.p, n = this.n;
+    for (let r = 0; r < cuantos; r++){
+      let suma = 0;
+      for (let k = 0; k < n; k++) suma += rng.random() < p ? 1 : -1;
+      this.hist[(suma + n) / 2]++;
+      if (suma <= this.tope) this.enCola++;
+      this.hechos++;
+    }
+  }
+}
+
+if (typeof module !== "undefined") module.exports = {PyRandom, probGana, cotaHoeffding, umbral, Corrida};
+</script>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = getComputedStyle(document.documentElement);
+const C = nombre => css.getPropertyValue(nombre).trim();
+const COL = {surface:C("--surface"), text:C("--text"), muted:C("--muted"), accent:C("--accent"),
+  info:C("--info"), aviso:C("--aviso"), danger:C("--danger"), fcola:C("--f-cola"),
+  rejilla:C("--rejilla"), trazo:C("--trazo")};
+const FUENTE = '12px system-ui,-apple-system,"Segoe UI",sans-serif';
+const MONO = '12px ui-monospace,SFMono-Regular,Menlo,monospace';
+const PRESUPUESTO = 120000;      // simulaciones por cuadro mientras corre
+const POR_PUNTO = 4000;          // promedios por N(s′) al barrer
+const BARRIDO = [1, 2, 5, 10, 20, 30, 50, 75, 100, 125, 150, 200];
+
+const ctl = {mu:$("mu"), n:$("n"), eps:$("eps"), semilla:$("semilla")};
+let corrida = null, corriendo = false, barriendo = null, registro = new Map();
+
+const leerMuC = () => Math.round(Number(ctl.mu.value) * 100);
+const leerEpsC = () => Math.round(Number(ctl.eps.value) * 100);
+const leerN = () => Number(ctl.n.value);
+const leerSemilla = () => {
+  const s = Math.floor(Math.abs(Number(ctl.semilla.value)));
+  return Number.isFinite(s) ? Math.min(s, 999999) : 1;
+};
+const fmt = (x, d) => x.toFixed(d).replace("-", "−");
+const pct = f => {
+  if (f === 0) return "0 %";
+  const v = 100 * f;
+  return (v >= 10 ? v.toFixed(1) : v >= 0.1 ? v.toFixed(2) : v.toPrecision(2)) + " %";
+};
+const miles = k => k.toLocaleString("es-MX");
+
+function nuevaCorrida(){
+  corrida = new Corrida(leerMuC(), leerN(), leerEpsC(), leerSemilla());
+}
+function borrarRegistro(){ registro = new Map(); }
+
+function anotar(){
+  const viejo = registro.get(corrida.n);
+  if (!viejo || viejo.hechos <= corrida.hechos)
+    registro.set(corrida.n, {hechos:corrida.hechos, enCola:corrida.enCola});
+}
+
+// ------------------------------------------------------------ lienzos ---
+function preparar(lienzo){
+  const r = window.devicePixelRatio || 1;
+  const w = lienzo.clientWidth, h = lienzo.clientHeight;
+  if (lienzo.width !== Math.round(w * r) || lienzo.height !== Math.round(h * r)){
+    lienzo.width = Math.round(w * r); lienzo.height = Math.round(h * r);
+  }
+  const g = lienzo.getContext("2d");
+  g.setTransform(r, 0, 0, r, 0, 0);
+  g.fillStyle = COL.surface; g.fillRect(0, 0, w, h);
+  return {g, w, h};
+}
+
+function dibujarHistograma(){
+  const {g, w, h} = preparar($("hist"));
+  const m = {i:14, d:14, a:30, b:36};
+  const pw = w - m.i - m.d, ph = h - m.a - m.b;
+  const X = u => m.i + (u + 1) / 2 * pw;
+  const c = corrida, n = c.n, mu = c.muC / 100, corte = (c.muC - c.epsC) / 100;
+  // la cola: todo ū ≤ μ − ε, sombreada antes de las barras
+  if (corte >= -1){
+    const paso = pw / n;
+    const xc = Math.min(X(corte) + Math.min(paso * 0.45, 20), m.i + pw);
+    g.fillStyle = COL.fcola; g.fillRect(m.i, m.a, xc - m.i, ph);
+  }
+  // rejilla y eje
+  g.strokeStyle = COL.rejilla; g.lineWidth = 1; g.font = FUENTE;
+  g.fillStyle = COL.muted; g.textAlign = "center"; g.textBaseline = "top";
+  for (const u of [-1, -0.5, 0, 0.5, 1]){
+    g.beginPath(); g.moveTo(X(u) + .5, m.a); g.lineTo(X(u) + .5, m.a + ph); g.stroke();
+    g.fillText(fmt(u, u % 1 ? 1 : 0), Math.min(Math.max(X(u), m.i + 8), m.i + pw - 8), m.a + ph + 5);
+  }
+  g.fillText("ū(s′): el promedio de N(s′) simulaciones", m.i + pw / 2, m.a + ph + 20);
+  g.strokeStyle = COL.trazo;
+  g.beginPath(); g.moveTo(m.i, m.a + ph + .5); g.lineTo(m.i + pw, m.a + ph + .5); g.stroke();
+  // barras: una por valor posible de ū (k victorias de n)
+  let tope = 0;
+  for (let k = 0; k <= n; k++) tope = Math.max(tope, c.hist[k]);
+  const ancho = pw / n < 4 ? pw / n + .5 : Math.min(pw / n * 0.82, 40);   // sin huecos si son delgadas
+  if (tope > 0){
+    for (let k = 0; k <= n; k++){
+      if (!c.hist[k]) continue;
+      const u = (2 * k - n) / n, alto = Math.max(1, c.hist[k] / tope * (ph - 4));
+      g.fillStyle = (2 * k - n) <= c.tope ? COL.danger : COL.info;
+      g.fillRect(X(u) - ancho / 2, m.a + ph - alto, ancho, alto);
+    }
+  }
+  // las dos líneas, con su nombre arriba
+  g.textBaseline = "bottom"; g.font = "600 " + MONO;
+  g.lineWidth = 2;
+  g.setLineDash([]); g.strokeStyle = COL.text;
+  g.beginPath(); g.moveTo(X(mu), m.a - 2); g.lineTo(X(mu), m.a + ph); g.stroke();
+  g.fillStyle = COL.text; g.textAlign = X(mu) > m.i + pw - 40 ? "right" : "left";
+  g.fillText("μ = " + fmt(mu, 1), X(mu) + (g.textAlign === "left" ? 4 : -4), m.a - 4);
+  if (corte >= -1){
+    g.setLineDash([5, 4]); g.strokeStyle = COL.aviso;
+    g.beginPath(); g.moveTo(X(corte), m.a + 14); g.lineTo(X(corte), m.a + ph); g.stroke();
+    g.setLineDash([]); g.fillStyle = COL.aviso;
+    g.textAlign = X(corte) < m.i + 64 ? "left" : "right";
+    g.fillText("μ − ε = " + fmt(corte, 2), X(corte) + (g.textAlign === "left" ? 4 : -4), m.a + 12);
+  } else {
+    g.fillStyle = COL.aviso; g.textAlign = "left";
+    g.fillText("μ − ε = " + fmt(corte, 2) + " < −1: la cola está vacía", m.i + 2, m.a + 12);
+  }
+  if (!c.hechos){
+    g.fillStyle = COL.muted; g.font = FUENTE; g.textAlign = "center";
+    g.fillText("Aún no hay promedios", m.i + pw / 2, m.a + ph / 2);
+  }
+  g.lineWidth = 1;
+}
+
+function dibujarBarrido(){
+  const {g, w, h} = preparar($("barrido"));
+  const m = {i:50, d:12, a:12, b:36};
+  const pw = w - m.i - m.d, ph = h - m.a - m.b;
+  const PISO = -4;                                  // 10^−4 = 0.01 %
+  const X = n => m.i + n / 200 * pw;
+  const Y = f => m.a + (Math.log10(f) / PISO) * ph;
+  g.font = FUENTE; g.lineWidth = 1;
+  g.textAlign = "right"; g.textBaseline = "middle";
+  const rotulos = ["100 %", "10 %", "1 %", "0.1 %", "0.01 %"];
+  for (let d = 0; d >= PISO; d--){
+    const yy = Y(Math.pow(10, d));
+    g.strokeStyle = COL.rejilla; g.beginPath(); g.moveTo(m.i, yy + .5); g.lineTo(m.i + pw, yy + .5); g.stroke();
+    g.fillStyle = COL.muted; g.fillText(rotulos[-d], m.i - 5, yy);
+  }
+  g.textAlign = "center"; g.textBaseline = "top";
+  for (const n of [0, 50, 100, 150, 200]){
+    g.fillText(String(n), Math.min(X(n), m.i + pw - 10), m.a + ph + 5);
+  }
+  g.fillText("N(s′)", m.i + pw / 2, m.a + ph + 20);
+  // la cota de Hoeffding con la ε de hoy
+  const eps = leerEpsC() / 100;
+  g.strokeStyle = COL.aviso; g.lineWidth = 2; g.beginPath();
+  let empezo = false;
+  for (let n = 1; n <= 200; n++){
+    const f = cotaHoeffding(n, eps);
+    if (f < 1e-4){ if (empezo){ g.lineTo(X(n), Y(1e-4)); } break; }
+    if (!empezo){ g.moveTo(X(n), Y(f)); empezo = true; } else g.lineTo(X(n), Y(f));
+  }
+  g.stroke(); g.lineWidth = 1;
+  // la N de hoy
+  g.strokeStyle = COL.trazo; g.setLineDash([3, 3]);
+  g.beginPath(); g.moveTo(X(leerN()) + .5, m.a); g.lineTo(X(leerN()) + .5, m.a + ph); g.stroke();
+  g.setLineDash([]);
+  // los puntos observados (al menos 200 promedios para dibujarse)
+  for (const [n, r] of registro){
+    if (r.hechos < 200) continue;
+    const f = r.enCola / r.hechos, x = X(n);
+    g.fillStyle = COL.danger; g.strokeStyle = COL.danger;
+    if (f > 0 && f >= 1e-4){
+      g.beginPath(); g.arc(x, Y(f), 4, 0, 2 * Math.PI); g.fill();
+    } else {                                           // cero en la cola: triángulo en el piso
+      const y = m.a + ph;
+      g.beginPath(); g.moveTo(x - 4, y - 8); g.lineTo(x + 4, y - 8); g.lineTo(x, y - 1); g.closePath(); g.stroke();
+    }
+    if (n === leerN()){
+      g.strokeStyle = COL.text; g.lineWidth = 1.5;
+      g.beginPath(); g.arc(x, f > 0 && f >= 1e-4 ? Y(f) : m.a + ph - 5, 7, 0, 2 * Math.PI); g.stroke();
+      g.lineWidth = 1;
+    }
+  }
+  g.fillStyle = COL.muted; g.textAlign = "left"; g.textBaseline = "top";
+  if (![...registro.values()].some(r => r.hechos >= 200))
+    g.fillText("Corre al menos 200 promedios", m.i + 8, m.a + ph - 22);
+}
+
+// ---------------------------------------------------------- números ---
+function pintarCuentas(anunciar){
+  const c = corrida, eps = c.epsC / 100, cota = cotaHoeffding(c.n, eps);
+  $("c-hechos").textContent = miles(c.hechos);
+  $("c-cola").textContent = miles(c.enCola);
+  const f = c.hechos ? c.enCola / c.hechos : null;
+  $("c-obs").textContent = f === null ? "—" : pct(f);
+  $("c-cota").textContent = pct(cota);
+  const v = $("veredicto");
+  let texto;
+  if (f === null){ texto = "Pulsa «Correr» o «+100 promedios»."; v.classList.remove("alerta"); }
+  else if (f <= cota){
+    texto = `La cota queda arriba: ${pct(cota)} contra ${pct(f)} observado` +
+      (f > 0 ? ` (${(cota / f).toFixed(1)} veces más).` : ".");
+    v.classList.remove("alerta");
+  } else {
+    texto = `Por ahora lo observado (${pct(f)}) pasa la cota (${pct(cota)}): con ` +
+      `${miles(c.hechos)} promedios la frecuencia aún brinca. Deja correr.`;
+    v.classList.add("alerta");
+  }
+  v.textContent = texto;
+  const resumen = `μ(s′) = ${fmt(c.muC / 100, 1)}, N(s′) = ${c.n}, ε = ${fmt(eps, 2)}. ` +
+    `${miles(c.hechos)} promedios, ${miles(c.enCola)} en la cola. ${texto}`;
+  $("d-hist").textContent = resumen;
+  const pts = [...registro].filter(([, r]) => r.hechos >= 200).sort((a, b) => a[0] - b[0]);
+  $("d-barrido").textContent = pts.length
+    ? "Frecuencia observada contra cota: " + pts.map(([n, r]) =>
+        `N(s′) = ${n}: ${pct(r.enCola / r.hechos)} contra ${pct(cotaHoeffding(n, eps))}`).join("; ") + "."
+    : "Aún no hay puntos.";
+  if (anunciar) $("anuncio").textContent = resumen;
+}
+
+function pintar(anunciar){
+  $("o-mu").textContent = fmt(leerMuC() / 100, 1);
+  $("o-n").textContent = leerN();
+  $("o-eps").textContent = fmt(leerEpsC() / 100, 2);
+  dibujarHistograma(); dibujarBarrido(); pintarCuentas(anunciar);
+}
+
+// ----------------------------------------------------------- tiempo ---
+function cuadro(){
+  if (!corriendo && !barriendo) return;
+  if (barriendo){
+    const falta = POR_PUNTO - corrida.hechos;
+    corrida.promedios(Math.min(falta, Math.max(1, Math.floor(PRESUPUESTO / corrida.n))));
+    anotar();
+    if (corrida.hechos >= POR_PUNTO){
+      barriendo.i++;
+      if (barriendo.i >= BARRIDO.length){ terminarBarrido(); pintar(true); return; }
+      ctl.n.value = BARRIDO[barriendo.i]; nuevaCorrida();
+    }
+  } else {
+    corrida.promedios(Math.max(1, Math.floor(PRESUPUESTO / corrida.n)));
+    anotar();
+  }
+  pintar(false);
+  requestAnimationFrame(cuadro);
+}
+
+function ponerCorriendo(si){
+  corriendo = si;
+  $("b-correr").setAttribute("aria-pressed", String(si));
+  $("b-correr").textContent = si ? "❚❚ Pausar" : "▶ Correr";
+  if (si) requestAnimationFrame(cuadro); else pintar(true);
+}
+function terminarBarrido(){
+  barriendo = null;
+  $("b-barrer").setAttribute("aria-pressed", "false");
+  $("b-barrer").textContent = "Barrer N(s′)";
+}
+
+$("b-correr").addEventListener("click", () => {
+  if (barriendo) terminarBarrido();
+  ponerCorriendo(!corriendo);
+});
+$("b-paso").addEventListener("click", () => {
+  if (barriendo) terminarBarrido();
+  if (corriendo) ponerCorriendo(false);
+  corrida.promedios(100); anotar(); pintar(true);
+});
+$("b-reiniciar").addEventListener("click", () => {
+  if (barriendo) terminarBarrido();
+  if (corriendo) ponerCorriendo(false);
+  borrarRegistro(); nuevaCorrida(); pintar(true);
+});
+$("b-barrer").addEventListener("click", () => {
+  if (barriendo){ terminarBarrido(); pintar(true); return; }
+  if (corriendo) ponerCorriendo(false);
+  barriendo = {i:0};
+  $("b-barrer").setAttribute("aria-pressed", "true");
+  $("b-barrer").textContent = "■ Detener barrido";
+  ctl.n.value = BARRIDO[0]; nuevaCorrida();
+  requestAnimationFrame(cuadro);
+});
+// mover N(s′) empieza otra corrida y conserva los puntos; mover μ o ε los borra
+ctl.n.addEventListener("input", () => { if (barriendo) terminarBarrido(); nuevaCorrida(); pintar(false); });
+for (const k of ["mu", "eps"]){
+  ctl[k].addEventListener("input", () => {
+    if (barriendo) terminarBarrido(); borrarRegistro(); nuevaCorrida(); pintar(false);
+  });
+}
+ctl.semilla.addEventListener("change", () => {
+  if (barriendo) terminarBarrido(); borrarRegistro(); nuevaCorrida(); pintar(true);
+});
+for (const k of ["mu", "n", "eps"]) ctl[k].addEventListener("change", () => pintar(true));
+let espera = 0;
+window.addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(() => pintar(false), 60); });
+
+nuevaCorrida();
+pintar(false);
+</script>
+</body>
+</html>

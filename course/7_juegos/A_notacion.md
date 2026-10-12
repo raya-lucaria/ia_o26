@@ -99,6 +99,9 @@ renglón, en cursivas.
 | $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación · *Cortar y evaluar a mano* |
 | $N(s')$, $G(s')$ | «ene de ese prima», «ge de ese prima». En MCTS: cuántas simulaciones pasaron por $s'$, y en cuántas ganó MAX. Esta $N$ no es Negras · *Simular en vez de evaluar* |
 | $\bar u(s')$ | «u barra». En MCTS: el promedio de $U$ en las simulaciones que pasaron por $s'$ · *Simular en vez de evaluar* |
+| $\mu(s')$ | «mu de ese prima». El promedio verdadero de $U$ en las simulaciones que pasan por $s'$: el que daría con infinitas. $\bar u(s')$ lo estima · *De dónde sale el bono* |
+| $\varepsilon$ | «épsilon». El margen: cuánto puede quedar $\bar u(s')$ por debajo de $\mu(s')$, en la escala de $U$ · *De dónde sale el bono* |
+| $\delta$ | «delta». La probabilidad de fallo que se tolera: que $\bar u(s')$ quede más de $\varepsilon$ por debajo de $\mu(s')$ · *De dónde sale el bono* |
 | $c$, puntaje$(s')$ | «ce». En la regla UCT, el peso de explorar; el puntaje es $\bar u(s')+c\sqrt{\ln N(s)/N(s')}$, y la selección baja al hijo de mayor puntaje · *Simular en vez de evaluar* |
 | $\ln$ | «logaritmo natural» · *Simular en vez de evaluar* |
 
@@ -159,6 +162,10 @@ renglón, en cursivas.
 | Simulación | Partida desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final | Simular en vez de evaluar |
 | MCTS, búsqueda de árbol Monte Carlo | Construye un árbol con vueltas de selección, expansión, simulación y retropropagación, y estima cada jugada por el promedio de sus simulaciones | Simular en vez de evaluar |
 | Explorar, aprovechar | Probar lo poco probado, o elegir lo que ya funcionó; la regla UCT equilibra los dos | Simular en vez de evaluar |
+| Bandido | Elegir muchas veces entre unas pocas jugadas cuyo promedio verdadero no se conoce; cada prueba da un resultado al azar. Es la raíz de MCTS sin árbol debajo | De dónde sale el bono |
+| Techo optimista | $\bar u(s')$ más el bono: un valor que $\mu(s')$ casi seguro no pasa. UCB elige la jugada con el techo más alto | De dónde sale el bono |
+| UCB1, UCT | UCB1: la regla del techo optimista en un bandido (Auer, Cesa-Bianchi y Fischer, 2002). UCT: la misma regla en cada nodo del árbol de MCTS | De dónde sale el bono |
+| A veces al azar | Elegir el mejor promedio, salvo una fracción fija de las veces (10 % aquí), en que se elige al azar | De dónde sale el bono |
 | Promedio límite | El número al que se acerca el promedio de $U$ de las simulaciones desde un estado cuando son muchísimas: el promedio sobre todas las partidas, cada una con su probabilidad, si los dos eligen al azar. No es $V$ | Simular en vez de evaluar |
 
 ## En las figuras
