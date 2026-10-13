@@ -227,3 +227,70 @@ def test_9_continua_a_la_clase_4():
     assert texto.rstrip().endswith(
         "Continúa con [[juegos-sin-turnos|la clase 4, cuando no hay turnos]].")
     assert "[[que-numero-da-cada-uno|" in texto
+
+
+def test_9_la_regla_del_menos_uno_se_cobra_en_la_seccion_3():
+    """p8 cierra la regla de dejar de buscar con «supone suma cero; la página
+    siguiente lo pone en duda». La sección 3 la cobra: el −1 de MAX es el
+    máximo de MIN, y con pagos propios MIN tendría que seguir mirando. Y el
+    ix=-1 que cita es el de p8 (la hoja de I que hace parar a MIN)."""
+    tres = _limpio(_texto().split("## 3 ·")[1].split("## 4 ·")[0])
+    m = re.search(r"Y por lo mismo vale la regla de dejar de buscar de \[\[que-numero-da-cada-uno\|"
+                  rf"Qué número da cada uno\]\]: en I, MIN para al ver (\w+)=({_Q}) porque el "
+                  r"-1 de MAX es el máximo de MIN\.", tres)
+    assert m and m[1] == j.ids_tpm()[(0, 1)] and int(m[2]) == j.nodo_en(j.ARBOL_TPM, (0, 1)) == -1
+    assert ("un final malo para MAX no le diría a MIN que deje de buscar: puede no ser el "
+            "mejor para MIN, y tendría que seguir mirando") in tres
+    p8 = (CLASE_3 / "8_que_numero_da_cada_uno.md").read_text(encoding="utf-8")
+    assert "en I, MIN ve\n${\\text{ix}=-1}$ y ya no necesita mirar i1" in p8
+    assert "Esta regla supone **suma cero**" in p8
+    # La suma cero se retoma en su página de la clase 4, no en el índice.
+    assert "La clase 4 lo retoma en [[cuando-no-es-suma-cero|Cuando no es suma cero]]" in tres
+    assert "La clase 4 lo retoma: [[juegos-sin-turnos" not in _texto()
+    cuatro = CLASE_3.parent / "4_sin_turnos" / "3_cuando_no_es_suma_cero.md"
+    assert "id: cuando-no-es-suma-cero" in cuatro.read_text(encoding="utf-8")
+
+
+def test_9_la_rama_2_sin_eval_va_a_simular():
+    dos = _seccion(_texto(), 2)
+    assert ("No cabe: ¿hay dados? Sí, con una EVAL: corte con nodos de azar, que se "
+            "promedian, como TD-Gammon. Sí, sin EVAL: la rama 4, que también "
+            "simula los dados.") in dos
+    assert "4. ¿No la hay? MCTS con UCT. Solo pide las reglas, para simular." in dos
+
+
+def test_9_monte_carlo_plano_supone_a_ambos_al_azar():
+    costo = {_c(f[0]): _c(f[1]) for f in _tabla(_texto(), "jue-c3-cmp-cuesta")[1:]}
+    assert costo["Monte Carlo plano"] == "Supone a ambos al azar"
+    assert "rivales al azar" not in _texto()
+
+
+def test_9_la_tabla_de_no_suma_cero():
+    """Pedido del profesor: una tabla de suma cero y otra de no suma cero. Tres
+    columnas, celdas cortas (390 px), sin U_1/U_2, en el orden de la prosa de
+    abajo; los hechos son los de las filas 29–31 del registro."""
+    texto = _texto()
+    filas = _tabla(texto, "jue-c3-cmp-no-suma-cero")
+    assert "{#jue-c3-cmp-no-suma-cero title=\"Si no es suma cero, para ubicar\"}" in texto
+    assert [_c(x) for x in filas[0]] == ["Algoritmo", "Cada rival elige", "¿Poda?"]
+    tabla = {_c(f[0]): (_c(f[1]), _c(f[2])) for f in filas[1:]}
+    assert tabla == {"\\max^n": ("Lo mejor para él", "Casi no"),
+                     "Paranoico": ("Lo peor para ti", "Sí: alfa-beta"),
+                     "MCTS con varios jugadores": ("Por su propio promedio", "No: simula")}
+    for f in filas[1:]:
+        assert len(f) == 3 and all(len(_c(x).split()) <= 4 for x in f), f
+    assert "U_1" not in texto and "U_2" not in texto
+    tres = _limpio(texto.split("## 3 ·")[1].split("## 4 ·")[0])
+    assert ("Cuando mueves tú, eliges por el tuyo; lo que cambia es qué se supone de los "
+            "rivales") in tres
+    for cita in ("Luckhardt e Irani (1986), y Korf (1991) mostró que casi no poda",
+                 "El paranoico (Sturtevant y Korf, 2000)",
+                 "MCTS con varios jugadores (Sturtevant, 2008)"):
+        assert cita in tres
+    registro = (CLASE_3.parents[2] / "docs" / "verificacion" / "juegos" /
+                "0_index.md").read_text(encoding="utf-8")
+    for fuente in ("Multi-player alpha-beta pruning", "On Pruning Techniques for Multi-Player",
+                   "An Analysis of UCT in Multi-Player Games"):
+        assert fuente in registro
+    # Los ejercicios remiten a «para ubicar», ya no a «la lista».
+    assert "la lista «para ubicar»" not in texto

@@ -128,10 +128,29 @@ def test_8_el_ejercicio_cambia_una_hoja():
     assert (_q(m[1]), m[2]) == (v, jm) and _q(m[4]) == vs["der"] == j.minimax_tpm()[2]["der"]
     assert ids[(2, d.index(min(d)))] == m[3]
     je, ve = j.expectiminimax_tpm(arbol=arbol)
-    m = re.search(rf"2\. D vale \(({_Q})({_Q})\+({_Q})\)/3=({_Q})\. Ahora der queda debajo "
+    # El inciso 2 no se contesta copiando @jue-c3-cmp-ej-dado (d3=-1): pregunta
+    # por qué sale lo mismo. Y sale lo mismo de verdad: D y la jugada coinciden.
+    p7 = (CLASE_3 / "7_un_arbol_todos_los_algoritmos.md").read_text(encoding="utf-8")
+    m = re.search(rf"Cambia (\w+) de ({_Q}) a ({_Q}), con el dado parejo en D",
+                  _limpio(_bloque(p7, "jue-c3-cmp-ej-dado")))
+    otro = next(c for c, n in ids.items() if n == m[1])
+    assert otro != camino and otro[0] == camino[0] and int(_q(m[3])) == int(_q(re.search(
+        rf"ahora \w+=({_Q})", ej)[1]))
+    d7 = list(j.ARBOL_TPM[otro[0]])
+    d7[otro[1]] = int(_q(m[3]))
+    arbol7 = tuple(tuple(d7) if i == otro[0] else h for i, h in enumerate(j.ARBOL_TPM))
+    je7, ve7 = j.expectiminimax_tpm(arbol=arbol7)
+    assert (je7, ve7["D"], ve7["R"]) == (je, ve["D"], ve["R"]) and sorted(d7) == sorted(d)
+    assert ("Sale lo mismo que en @jue-c3-cmp-ej-dado, donde cambiabas d3. ¿Por qué, si "
+            "cambiaste otra hoja?") in ej
+    m = re.search(rf"2\. Porque un promedio no mira cuál hoja es cuál\. Con (\w+) o con (\w+) "
+                  rf"en ({_Q}), D tiene dos hojas en ({_Q}) y una en ({_Q}): vale "
+                  rf"\(({_Q})({_Q})\+({_Q})\)/3=({_Q})\. Ahora der queda debajo "
                   rf"del ({_Q}) de centro, y MAX juega (\w+) con V=({_Q})\.", resp)
-    assert [_q(x) for x in m.groups()[:3]] == d and _q(m[4]) == ve["D"]
-    assert _q(m[5]) == ve["C"] > ve["D"] and (m[6], _q(m[7])) == (je, ve["R"])
+    assert {m[1], m[2]} == {ids[camino], ids[otro]} and _q(m[3]) == min(d)
+    assert [d.count(_q(m[4])), d.count(_q(m[5]))] == [2, 1]
+    assert [_q(x) for x in m.groups()[5:8]] == d and _q(m[9]) == ve["D"]
+    assert _q(m[10]) == ve["C"] > ve["D"] and (m[11], _q(m[12])) == (je, ve["R"])
     assert ve["R"] == v and j.expectiminimax_tpm()[1]["R"] != v   # casualidad nueva
     jt, mu = j.todos_al_azar_tpm(arbol)
     m = re.search(rf"3\. (\w+)\. Su μ=({_Q}) no cambia, centro sigue en ({_Q}) y der baja a "
@@ -164,6 +183,17 @@ def test_8_la_tabla_de_que_supone_cada_numero():
     assert dan == [a["nombre"] for a in resumen.ALGORITMOS]
 
 
+def test_8_garantiza_v_quien_llega_a_los_finales_o_prueba_que_no_cambia_nada():
+    """El resumen de la sección 2 dice las dos mitades, como la respuesta al
+    «Piensa» de arriba: alfa-beta garantiza V y no llega a todos los finales."""
+    dos = _seccion(_texto(), 2)
+    assert "Llegar a los finales, o probar que lo que no mira no cambia nada" in dos
+    assert ("Por eso garantiza V quien supone que todos eligen lo mejor y llega a los "
+            "finales, o prueba que lo que no mira no cambia nada.") in dos
+    _, _, generados, podados = j.alfa_beta_tpm("dado")
+    assert podados and generados < j.contar_nodos(j.ARBOL_TPM)
+
+
 def test_8_la_garantia_de_v_se_remite_a_la_tabla_de_p7():
     """p8 no repite la tabla «¿Garantiza V?»: la cita. Y su salvedad del corte
     es real en T±: con d=3 (y la iterativa) el valor con corte es 100·V."""
@@ -178,6 +208,9 @@ def test_8_la_garantia_de_v_se_remite_a_la_tabla_de_p7():
 def test_8_el_ejercicio_ponle_nombre():
     texto = _texto()
     ej = _limpio(_bloque(texto, "jue-c3-cmp-ej-ponle-nombre"))
+    # A 390 px, un paréntesis pegado a una fórmula se parte de ella (render r2).
+    assert not re.search(r"\(\$|\$\)", _bloque(texto, "jue-c3-cmp-ej-ponle-nombre"))
+    assert "di cuál de los tres es: V, valor con corte o \\bar u, y si es el V" in ej
     items = dict(re.findall(rf"(\d)\. ({_Q}), de", ej))
     items.update(dict(re.findall(rf"(\d)\. ({_Q}), el \\bar u", ej)))
     assert _q(items["1"]) == j.alfa_beta_tpm("al revés")[1]

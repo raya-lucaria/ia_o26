@@ -84,7 +84,7 @@ Dónde se usó cada uno, en el mismo orden:
 | Expectiminimax | Cada dado multiplica las ramas |
 | Alfa-beta | Hasta $b^m$, menos ordenando bien |
 | Corte, quietud e iterativa | Escribir $\mathrm{EVAL}$; el horizonte |
-| Monte Carlo plano | Supone rivales al azar |
+| Monte Carlo plano | Supone a ambos al azar |
 | MCTS con UCT | Muchas simulaciones; elegir $c$ |
 :::
 
@@ -143,8 +143,9 @@ El mapa, en orden:
 1. **¿Cabe el árbol en el tiempo que hay?** Sí, sin dados: alfa-beta. Da
    $V$ y la jugada de minimax, con menos nodos que minimax. Sí, con dados:
    expectiminimax, que da el $V$ del juego con dado.
-2. **No cabe: ¿hay dados?** Sí: corte con nodos de azar, que se promedian,
-   como TD-Gammon.
+2. **No cabe: ¿hay dados?** Sí, con una $\mathrm{EVAL}$: corte con nodos
+   de azar, que se promedian, como TD-Gammon. Sí, sin $\mathrm{EVAL}$: la
+   rama 4, que también simula los dados.
 3. **¿Hay una $\mathrm{EVAL}$ buena?** Sí: alfa-beta con corte. Con
    capturas, quietud; con reloj, profundización iterativa, que entrega la
    última búsqueda completa.
@@ -213,6 +214,12 @@ Minimizar lo de MAX es maximizar lo suyo, como viste en
 Alfa-beta poda por lo mismo. Lo que MAX ya tiene asegurado es justo lo que
 MIN ya no le puede quitar, porque los dos miden con el mismo número.
 
+Y por lo mismo vale la regla de dejar de buscar de
+[[que-numero-da-cada-uno|Qué número da cada uno]]: en I, MIN para al ver
+${\text{ix}=-1}$ porque el ${-1}$ de MAX es el máximo de MIN. Si cada uno
+tuviera su propio pago, un final malo para MAX no le diría a MIN que deje de
+buscar: puede no ser el mejor para MIN, y tendría que seguir mirando.
+
 **Con tres jugadores eso se rompe.** Un final en el que tú pierdes puede ser
 victoria de B o de C, y a B le importa cuál. Un número ya no basta: cada
 final necesita uno por jugador, y lo peor para ti deja de ser lo mejor para
@@ -229,15 +236,15 @@ Los cuatro supuestos de la unidad, y qué los rompe:
 - **Dos jugadores.** Con tres o más no hay un MIN: hay varios rivales, cada
   uno con su meta.
 - **Suma cero.** Si cada uno tiene su propio pago, suponer que el otro
-  quiere dañarte es un error de modelado. La clase 4 lo retoma:
-  [[juegos-sin-turnos|Cuando no hay turnos]].
+  quiere dañarte es un error de modelado. La clase 4 lo retoma en
+  [[cuando-no-es-suma-cero|Cuando no es suma cero]].
 - **Por turnos.** Si eligen a la vez, ya no hay árbol donde uno responde al
   otro. También es la clase 4.
 - **Todo a la vista.** En póker no ves las cartas del rival: no sabes en qué
   nodo estás. Es información oculta, y queda fuera de esta unidad.
 
-**Para ubicar.** Lo que se usa cuando falla un supuesto, o cuando se le
-pide más a MCTS. Una línea cada uno; no se estudian en el curso.
+**Para ubicar.** Lo que se usa cuando se le pide más a MCTS, o cuando no
+es suma cero. Una línea cada uno; no se estudian en el curso.
 
 - **MCTS-Solver** (Winands, Björnsson y Saito, 2008): propaga hacia arriba
   las victorias y derrotas ya demostradas. No demuestra empates.
@@ -245,19 +252,27 @@ pide más a MCTS. Una línea cada uno; no se estudian en el curso.
   de valor con una simulación; un peso, λ, decide cuánto cuenta la
   simulación. AlphaGo Zero (2017) y AlphaZero ya no simulan: solo la red,
   y seleccionan con PUCT, un puntaje que suma lo que la red sugiere.
-- **$\max^n$** (Luckhardt e Irani, 1986): cada final lleva un número por
-  jugador y cada jugador maximiza el suyo. Ahí alfa-beta casi no poda
-  (Korf, 1991).
-- **Paranoico** (Sturtevant y Korf, 2000): supone que todos los rivales se
-  aliaron en tu contra. Vuelven a ser dos bandos y alfa-beta poda otra vez,
-  a costa de un supuesto falso.
-- **MCTS con varios jugadores** (Sturtevant, 2008): cada nodo guarda un
-  promedio por jugador. Lo probó, entre otros juegos, en damas chinas.
+
+Si no es suma cero, cada final lleva un número por jugador. Cuando mueves
+tú, eliges por el tuyo; lo que cambia es qué se supone de los rivales:
+
+::: table {#jue-c3-cmp-no-suma-cero title="Si no es suma cero, para ubicar"}
+| Algoritmo | Cada rival elige | ¿Poda? |
+|---|---|---|
+| $\max^n$ | Lo mejor para él | Casi no |
+| Paranoico | Lo peor para ti | Sí: alfa-beta |
+| MCTS con varios jugadores | Por su propio promedio | No: simula |
+:::
+
+$\max^n$ es de Luckhardt e Irani (1986), y Korf (1991) mostró que casi no
+poda. El paranoico (Sturtevant y Korf, 2000) vuelve a dos bandos, a costa
+de un supuesto falso. MCTS con varios jugadores (Sturtevant, 2008) guarda un
+promedio por jugador en cada nodo; lo probó, entre otros, en damas chinas.
 
 ::: exercise {#jue-c3-cmp-ej-cartas title="Señala qué supuestos rompe"}
 Un juego de cartas para tres: cada uno ve solo su mano, se juega por turnos
 y quien hace más puntos gana. ¿Qué supuestos de la unidad rompe, y cuál de
-ellos lo deja fuera incluso de la lista «para ubicar»?
+ellos lo deja fuera incluso de «para ubicar»?
 :::
 
 ::: hint {#jue-c3-cmp-pista-cartas of="jue-c3-cmp-ej-cartas" title="Uno por uno"}
@@ -268,7 +283,7 @@ ve cada uno?
 ::: answer {#jue-c3-cmp-resp-cartas of="jue-c3-cmp-ej-cartas"}
 Rompe **dos jugadores** (son tres) y **todo a la vista** (las manos están
 ocultas). Sigue siendo por turnos. Las herramientas de varios jugadores de
-la lista suponen todo a la vista; **la información oculta** lo deja fuera,
+la tabla suponen todo a la vista; **la información oculta** lo deja fuera,
 como el póker.
 :::
 
@@ -302,7 +317,7 @@ tuyo, y una variante tiene tres jugadores.
    respalda. ¿Es $V$?
 4. Variante: el tablero es de 3×3. ¿Cambia tu elección?
 5. Variante: juegan Rojo, Azul y Verde, por turnos. ¿Qué supuesto se rompe,
-   y qué buscarías en la lista «para ubicar»?
+   y qué buscarías en «para ubicar»?
 :::
 
 ::: hint {#jue-c3-cmp-pista-fronteras-1 of="jue-c3-cmp-ej-fronteras" title="Pista 1 · Qué dato contesta cada pregunta"}
@@ -339,7 +354,7 @@ cambia la primera respuesta del mapa, y con ella todo lo demás.
 
 **5. Tres jugadores.** Se rompe **dos jugadores**: no hay un solo MIN, y
 cada final necesita un número por jugador. Como no hay $\mathrm{EVAL}$
-buena, lo cercano de la lista es **MCTS con varios jugadores**. $\max^n$ y
+buena, lo cercano de la tabla es **MCTS con varios jugadores**. $\max^n$ y
 el paranoico llegan a los finales si el árbol cabe; aquí tendrían que
 cortar y estimar con una $\mathrm{EVAL}$, y no hay con qué.
 :::

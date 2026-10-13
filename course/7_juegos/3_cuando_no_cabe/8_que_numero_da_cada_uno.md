@@ -98,23 +98,27 @@ En T±, cambia una sola hoja: ahora ${\text{d2}=-1}$, y las demás quedan
 igual.
 
 1. ¿Cambia $V$? ¿Por qué jugada?
-2. Con D como dado, ¿cuánto vale D? ¿Qué juega MAX, y con qué valor?
+2. Con D como dado, ¿cuánto vale D, y qué juega MAX? Sale lo mismo que en
+   @jue-c3-cmp-ej-dado, donde cambiabas d3. ¿Por qué, si cambiaste otra
+   hoja?
 3. ¿Qué elige Monte Carlo plano con muchas simulaciones? ¿Cuánto vale esa
    jugada para un MIN racional?
 :::
 
 ::: hint {#jue-c3-cmp-pista-cambia-hoja of="jue-c3-cmp-ej-cambia-hoja" title="Una pregunta por número"}
-¿Qué hoja elegía MIN en D antes del cambio? Para el dado, promedia las
-tres hojas nuevas. Para Monte Carlo plano, compara los tres $\mu$:
-¿cuáles no tocan D?
+¿Qué hoja elegía MIN en D antes del cambio? Para el dado, cuenta las
+hojas de D en ${-1}$, aquí y con d3 cambiada. Para Monte Carlo plano,
+compara los tres $\mu$: ¿cuáles no tocan D?
 :::
 
 ::: answer {#jue-c3-cmp-resp-cambia-hoja of="jue-c3-cmp-ej-cambia-hoja"}
 1. **No: ${V=0}$ por centro.** MIN ya respondía d1 en D, así que der
    seguía valiendo ${-1}$.
-2. **D vale ${(-1-1+1)/3=-1/3}$.** Ahora der queda debajo del 0 de
-   centro, y MAX juega centro con ${V=0}$. Coincide con el $V$ sin dado
-   por casualidad: el dado ya no paga más que centro.
+2. **Porque un promedio no mira cuál hoja es cuál.** Con d2 o con d3 en
+   ${-1}$, D tiene dos hojas en ${-1}$ y una en ${+1}$: vale
+   ${(-1-1+1)/3=-1/3}$. Ahora der queda debajo del 0 de centro, y MAX
+   juega centro con ${V=0}$. Coincide con el $V$ sin dado por casualidad:
+   el dado ya no paga más que centro.
 3. **Izq.** Su ${\mu=0}$ no cambia, centro sigue en ${-1/4}$ y der baja a
    ${-1/3}$. Pero izq vale ${-1}$: MIN responde ix. Monte Carlo plano
    cambió de jugada y sigue eligiendo una que pierde.
@@ -160,12 +164,12 @@ En MCTS, dentro del árbol se elige por puntaje; al azar se juega solo
 debajo.
 
 Por eso garantiza $V$ quien supone que todos eligen lo mejor y llega a los
-finales. Un corte trae $\mathrm{EVAL}$, y un dado del algoritmo trae
+finales, o prueba que lo que no mira no cambia nada. Un corte trae $\mathrm{EVAL}$, y un dado del algoritmo trae
 $\bar u$.
 
 ::: exercise {#jue-c3-cmp-ej-ponle-nombre title="Ponle nombre a cada número"}
-Cinco números que salieron de T±. Para cada uno, di cuál de los tres es
-($V$, valor con corte o $\bar u$) y si es el $V$ del juego sin dado.
+Cinco números que salieron de T±. Para cada uno, di cuál de los tres es:
+$V$, valor con corte o $\bar u$, y si es el $V$ del juego sin dado.
 
 1. 0, de alfa-beta con los hijos al revés.
 2. 60, del corte a ${d=1}$.
