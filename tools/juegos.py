@@ -3086,12 +3086,17 @@ def corte_tpm(d, evaluar=None, arbol=ARBOL_TPM):
     return t["jugada"], t["valor"], ws, t["generados"]
 
 
-def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM):
+def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM, valores=None):
     """MINIMAX-CON-CORTE con busqueda de quietud en T± (finales 100·U): en un
     nodo de corte, el que mueve elige entre quedarse con EVAL o seguir una de
     sus capturas, y solo las capturas se generan. (jugada, valor,
-    {izq/centro/der: valor}, generados, caminos generados)."""
+    {izq/centro/der: valor}, generados, caminos generados).
+
+    Si `valores` es un dict, se llena con {camino: valor} de cada nodo
+    interno generado (R incluida); no cambia nada de lo que devuelve."""
     evaluar = evaluar or EVAL_TPM
+    if valores is None:
+        valores = {}
     nombres = nombres_t(arbol)
     generados = [()]
 
@@ -3106,6 +3111,7 @@ def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM):
                 generados.append(camino + (i,))
                 h = quieta(camino + (i,))
                 v = max(v, h) if es_max else min(v, h)
+        valores[camino] = v
         return v
 
     def valor(camino, prof):
@@ -3118,12 +3124,14 @@ def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM):
         for i in range(len(nodo)):
             generados.append(camino + (i,))
             hs.append(valor(camino + (i,), prof + 1))
-        return max(hs) if len(camino) % 2 == 0 else min(hs)
+        valores[camino] = max(hs) if len(camino) % 2 == 0 else min(hs)
+        return valores[camino]
 
     ws = []
     for i in range(len(arbol)):
         generados.append((i,))
         ws.append(valor((i,), 1))
+    valores[()] = max(ws)
     return (_jugada_estricta(ws), max(ws), dict(zip(JUGADAS_RAIZ, ws)), len(generados),
             generados)
 
@@ -3236,10 +3244,11 @@ def uct_tpm(c, vueltas, semilla, arbol=ARBOL_TPM):
     ū es el promedio de U (con empates, no 2G/N − 1).
 
     Devuelve dict(N, S: {camino: N y suma de U}, mas_simulada: la de la raiz
-    tras cada vuelta, empate → la primera en el orden dado; caminos)."""
+    tras cada vuelta, empate → la primera en el orden dado; caminos; U: el
+    U que retropropago cada vuelta)."""
     rng = random.Random(semilla)
     N, S = {(): 0}, {(): 0}
-    mas, caminos = [], []
+    mas, caminos, us = [], [], []
     for _ in range(vueltas):
         camino = [()]
         nodo = arbol
@@ -3268,9 +3277,10 @@ def uct_tpm(c, vueltas, semilla, arbol=ARBOL_TPM):
             N[x] += 1
             S[x] += u
         caminos.append(tuple(camino))
+        us.append(u)
         raiz = [(i,) for i in range(len(arbol))]
         mas.append(JUGADAS_RAIZ[max(raiz, key=lambda h: N.get(h, 0))[0]])
-    return dict(N=N, S=S, mas_simulada=mas, caminos=caminos)
+    return dict(N=N, S=S, mas_simulada=mas, caminos=caminos, U=us)
 
 
 VUELTAS_UCT_TPM = 200        # «para siempre» = hasta esta vuelta (con 2000 da lo mismo)
@@ -3405,6 +3415,70 @@ def _tocados_mc(k, semilla, arbol=ARBOL_TPM):
     return tocados
 
 
+def intervalos_tpm(generados, profundidad=None, evaluar=None, escala=1, arbol=ARBOL_TPM):
+    """Lo que una busqueda sabe de cada nodo interno que genero, como
+    intervalo {camino: (lo, hi)}: un final generado vale escala·U; un nodo
+    interno a `profundidad` vale EVAL (no se expande); un hijo que no se
+    genero puede valer cualquier cosa (−∞, +∞); MAX toma el maximo de los
+    dos extremos y MIN el minimo. lo == hi es un valor; hi = +∞, una cota
+    «≥ lo»; lo = −∞, una cota «≤ hi». No reproduce el fail-soft: dice lo que
+    los nodos generados demuestran, y la prueba coteja que coincida con lo
+    que devuelve alfa-beta."""
+    generados = set(map(tuple, generados))
+    evaluar = evaluar or {}
+    ids = ids_tpm(arbol)
+    res = {}
+
+    def iv(camino):
+        if camino not in generados:
+            return (-INF, INF)
+        nodo = nodo_en(arbol, camino)
+        if not isinstance(nodo, tuple):
+            return (escala * nodo, escala * nodo)
+        if profundidad is not None and len(camino) == profundidad:
+            e = evaluar[ids[camino]]
+            res[camino] = (e, e)
+            return (e, e)
+        hs = [iv(camino + (i,)) for i in range(len(nodo))]
+        f = max if len(camino) % 2 == 0 else min
+        res[camino] = (f(h[0] for h in hs), f(h[1] for h in hs))
+        return res[camino]
+    iv(())
+    return res
+
+
+def _valores_ids(intervalos, profundidad=None, arbol=ARBOL_TPM):
+    """{id: [tipo, valor]} para el interactivo: tipo «=» (un valor), «≥» o
+    «≤» (una cota) o «EVAL» (nodo donde corto la busqueda)."""
+    ids = ids_tpm(arbol)
+    res = {}
+    for c, (lo, hi) in sorted(intervalos.items(), key=lambda x: (len(x[0]), x[0])):
+        if profundidad is not None and len(c) == profundidad:
+            res[ids[c]] = ["EVAL", lo]
+        elif lo == hi:
+            res[ids[c]] = ["=", lo]
+        elif hi == INF:
+            res[ids[c]] = ["≥", lo]
+        elif lo == -INF:
+            res[ids[c]] = ["≤", hi]
+        else:
+            raise ValueError(f"intervalo acotado de los dos lados en {ids[c]}: {lo}, {hi}")
+    return res
+
+
+def uct_por_vuelta_tpm(c, vueltas, semilla, arbol=ARBOL_TPM):
+    """Tras cada vuelta de la corrida de uct_tpm: {camino: (N, suma de U)},
+    reconstruido sumando 1 y el U de la vuelta a cada nodo de su camino."""
+    u = uct_tpm(c, vueltas, semilla, arbol)
+    N, S, res = {}, {}, []
+    for camino, x in zip(u["caminos"], u["U"]):
+        for nodo in camino:
+            N[nodo] = N.get(nodo, 0) + 1
+            S[nodo] = S.get(nodo, 0) + x
+        res.append({k: (N[k], S[k]) for k in N})
+    return res
+
+
 def datos_interactivo_tpm(arbol=ARBOL_TPM):
     """Todo lo que el interactivo de 7.3.7 necesita, serializable a JSON
     (fracciones como «1/3»). Sin azar en el navegador: las corridas de MC
@@ -3422,38 +3496,55 @@ def datos_interactivo_tpm(arbol=ARBOL_TPM):
                           captura=c in CAPTURAS_TPM))
     algs = {}
     jm, v, hijos, _ = minimax_tpm(arbol)
-    algs["minimax"] = dict(visitados=_ids(traza_decidir(arbol)["caminos_generados"]),
-                           jugada=jm, valor=v, raiz=hijos)
+    gen = traza_decidir(arbol)["caminos_generados"]
+    algs["minimax"] = dict(visitados=_ids(gen), jugada=jm, valor=v, raiz=hijos,
+                           valores=_valores_ids(intervalos_tpm(gen, arbol=arbol), arbol=arbol))
     for orden in ("dado", "al revés"):
         j_, v_, g, pod = alfa_beta_tpm(orden, arbol)
-        algs[f"alfa-beta, {orden}"] = dict(visitados=_ids(_generados_alfa_beta(orden, arbol)),
-                                           podados=_ids(pod), jugada=j_, valor=v_)
+        gen = _generados_alfa_beta(orden, arbol)
+        algs[f"alfa-beta, {orden}"] = dict(
+            visitados=_ids(gen), podados=_ids(pod), jugada=j_, valor=v_,
+            valores=_valores_ids(intervalos_tpm(gen, arbol=arbol), arbol=arbol))
     je, ve = expectiminimax_tpm(DADO_TPM, arbol)
     algs["expectiminimax"] = dict(azar=list(DADO_TPM), jugada=je,
                                   valores={k: s(x) for k, x in ve.items()})
     for d in (1, 2, 3):
         t = traza_decidir(escalar_arbol(arbol, 100), profundidad=d, evaluar=EVAL_TPM)
         jc, vc, ws, _ = corte_tpm(d, arbol=arbol)
-        algs[f"corte d = {d}"] = dict(visitados=_ids(t["caminos_generados"]), jugada=jc,
-                                      valor=vc, raiz=ws)
-    jq, vq, ws, _, gen = quietud_tpm(1, arbol=arbol)
-    algs["quietud d = 1"] = dict(visitados=_ids(gen), jugada=jq, valor=vq, raiz=ws)
+        algs[f"corte d = {d}"] = dict(
+            visitados=_ids(t["caminos_generados"]), jugada=jc, valor=vc, raiz=ws,
+            valores=_valores_ids(intervalos_tpm(t["caminos_generados"], d, EVAL_TPM, 100, arbol),
+                                 d, arbol))
+    vals = {}
+    jq, vq, ws, _, gen = quietud_tpm(1, arbol=arbol, valores=vals)
+    algs["quietud d = 1"] = dict(
+        visitados=_ids(gen), jugada=jq, valor=vq, raiz=ws,
+        valores={ids[c]: ["quietud" if len(c) == 1 else "=", x]
+                 for c, x in sorted(vals.items(), key=lambda x: (len(x[0]), x[0]))})
     it = profundizacion_iterativa_t(escalar_arbol(arbol, 100), (1, 2, 3), EVAL_TPM)
-    algs["profundización iterativa"] = [dict(d=d, orden=orden, jugada=t["jugada"],
-                                             valor=t["valor"], nodos=t["generados"],
-                                             visitados=_ids(t["caminos_generados"]))
-                                        for d, orden, t in it]
+    algs["profundización iterativa"] = [
+        dict(d=d, orden=orden, jugada=t["jugada"], valor=t["valor"], nodos=t["generados"],
+             visitados=_ids(t["caminos_generados"]),
+             valores=_valores_ids(intervalos_tpm(t["caminos_generados"], d, EVAL_TPM, 100, arbol),
+                                  d, arbol))
+        for d, orden, t in it]
     jl, mu = todos_al_azar_tpm(arbol)
     algs["Monte Carlo plano"] = dict(
         limite=dict(jugada=jl, mu={a: s(x) for a, x in mu.items()}),
         corridas={k: dict(sumas=mc_plano_tpm(k, SEMILLA_TPM, arbol)[1],
-                          jugada=mc_plano_tpm(k, SEMILLA_TPM, arbol)[0])
+                          jugada=mc_plano_tpm(k, SEMILLA_TPM, arbol)[0],
+                          nodos=len(_tocados_mc(k, SEMILLA_TPM, arbol)))
                   for k in SIMS_MC_TPM},
         reparto={k: reparto_mc_plano_tpm(k, SEMILLAS_MC_TPM, arbol)[0] for k in SIMS_MC_TPM})
     u = uct_tpm(1, VUELTAS_PAGINA_TPM, SEMILLA_TPM, arbol)
     algs["UCT"] = dict(c=1, semilla=SEMILLA_TPM, mas_simulada=u["mas_simulada"],
                        caminos=[_ids(cm[1:]) for cm in u["caminos"]],
                        N={ids[c]: n for c, n in u["N"].items()},
-                       S={ids[c]: x for c, x in u["S"].items()})
+                       S={ids[c]: x for c, x in u["S"].items()},
+                       U=u["U"],
+                       por_vuelta=[{ids[c]: list(ns) for c, ns in sorted(
+                                       v.items(), key=lambda x: (len(x[0]), x[0]))}
+                                   for v in uct_por_vuelta_tpm(1, VUELTAS_PAGINA_TPM,
+                                                               SEMILLA_TPM, arbol)])
     return dict(nodos=nodos, jugadas_raiz=list(JUGADAS_RAIZ),
                 algoritmos=algs, tabla=[{k: s(x) for k, x in f.items()} for f in tabla_t_pm(arbol)])

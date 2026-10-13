@@ -210,17 +210,17 @@
 {"id":"c2b","padre":"C2","tipo":"final","U":-1,"EVAL":null,"captura":false}],
 "jugadas_raiz":["izq","centro","der"],
 "algoritmos":{
-"minimax":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","c2b","D","d1","d2","d3"],"jugada":"centro","valor":0,"raiz":{"izq":-1,"centro":0,"der":-1}},
-"alfa-beta, dado":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","D","d1"],"podados":["c2b","d2","d3"],"jugada":"centro","valor":0},
-"alfa-beta, al revés":{"visitados":["R","D","d3","d2","d1","C","C2","c2b","c2a","C1","c1b","c1a","I","ix"],"podados":["i1"],"jugada":"centro","valor":0},
+"minimax":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","c2b","D","d1","d2","d3"],"jugada":"centro","valor":0,"raiz":{"izq":-1,"centro":0,"der":-1},"valores":{"R":["=",0],"I":["=",-1],"C":["=",0],"D":["=",-1],"C1":["=",0],"C2":["=",1]}},
+"alfa-beta, dado":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","D","d1"],"podados":["c2b","d2","d3"],"jugada":"centro","valor":0,"valores":{"R":["=",0],"I":["=",-1],"C":["=",0],"D":["≤",-1],"C1":["=",0],"C2":["≥",1]}},
+"alfa-beta, al revés":{"visitados":["R","D","d3","d2","d1","C","C2","c2b","c2a","C1","c1b","c1a","I","ix"],"podados":["i1"],"jugada":"centro","valor":0,"valores":{"R":["=",0],"I":["≤",-1],"C":["=",0],"D":["=",-1],"C1":["=",0],"C2":["=",1]}},
 "expectiminimax":{"azar":["D"],"jugada":"der","valores":{"I":"-1","C1":"0","C2":"1","C":"0","D":"1/3","R":"1/3"}},
-"corte d = 1":{"visitados":["R","I","C","D"],"jugada":"izq","valor":60,"raiz":{"izq":60,"centro":20,"der":10}},
-"corte d = 2":{"visitados":["R","I","i1","ix","C","C1","C2","D","d1","d2","d3"],"jugada":"centro","valor":10,"raiz":{"izq":-100,"centro":10,"der":-100}},
-"corte d = 3":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","c2b","D","d1","d2","d3"],"jugada":"centro","valor":0,"raiz":{"izq":-100,"centro":0,"der":-100}},
-"quietud d = 1":{"visitados":["R","I","ix","C","D"],"jugada":"centro","valor":20,"raiz":{"izq":-100,"centro":20,"der":10}},
-"profundización iterativa":[{"d":1,"orden":["izq","centro","der"],"jugada":"izq","valor":60,"nodos":4,"visitados":["R","I","C","D"]},{"d":2,"orden":["izq","centro","der"],"jugada":"centro","valor":10,"nodos":9,"visitados":["R","I","i1","ix","C","C1","C2","D","d1"]},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":0,"nodos":12,"visitados":["R","C","C1","c1a","c1b","C2","c2a","I","i1","ix","D","d1"]}],
-"Monte Carlo plano":{"limite":{"jugada":"der","mu":{"izq":"0","centro":"-1/4","der":"1/3"}},"corridas":{"5":{"sumas":{"izq":-3,"centro":-2,"der":3},"jugada":"der"},"10":{"sumas":{"izq":-6,"centro":1,"der":4},"jugada":"der"},"50":{"sumas":{"izq":-4,"centro":-3,"der":24},"jugada":"der"}},"reparto":{"5":{"izq":353,"centro":106,"der":541},"10":{"izq":269,"centro":53,"der":678},"50":{"izq":39,"centro":1,"der":960}}},
-"UCT":{"c":1,"semilla":0,"mas_simulada":["izq","izq","izq","centro","centro","centro","centro","der","der","der","der","der","der","der","der","der","der","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro"],"caminos":[["I"],["C"],["D"],["C","C1"],["D","d1"],["C","C2"],["D","d2"],["D","d3"],["D","d1"],["D","d1"],["D","d1"],["C","C1","c1a"],["I","i1"],["I","ix"],["I","ix"],["C","C2","c2a"],["C","C1","c1b"],["C","C1","c1a"],["C","C1","c1a"],["D","d1"],["C","C1","c1a"],["C","C2","c2b"],["I","ix"],["D","d1"],["C","C2","c2a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C2","c2a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1b"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C2","c2a"],["C","C1","c1a"]],"N":{"R":40,"I":5,"C":26,"D":9,"C1":19,"d1":6,"C2":6,"d2":1,"d3":1,"c1a":16,"i1":1,"ix":3,"c2a":4,"c1b":2,"c2b":1},"S":{"R":-6,"I":-3,"C":0,"D":-3,"C1":-3,"d1":-6,"C2":2,"d2":1,"d3":1,"c1a":0,"i1":1,"ix":-3,"c2a":4,"c1b":-2,"c2b":-1}}},
+"corte d = 1":{"visitados":["R","I","C","D"],"jugada":"izq","valor":60,"raiz":{"izq":60,"centro":20,"der":10},"valores":{"R":["=",60],"I":["EVAL",60],"C":["EVAL",20],"D":["EVAL",10]}},
+"corte d = 2":{"visitados":["R","I","i1","ix","C","C1","C2","D","d1","d2","d3"],"jugada":"centro","valor":10,"raiz":{"izq":-100,"centro":10,"der":-100},"valores":{"R":["=",10],"I":["=",-100],"C":["=",10],"D":["=",-100],"C1":["EVAL",10],"C2":["EVAL",50]}},
+"corte d = 3":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","c2b","D","d1","d2","d3"],"jugada":"centro","valor":0,"raiz":{"izq":-100,"centro":0,"der":-100},"valores":{"R":["=",0],"I":["=",-100],"C":["=",0],"D":["=",-100],"C1":["=",0],"C2":["=",100]}},
+"quietud d = 1":{"visitados":["R","I","ix","C","D"],"jugada":"centro","valor":20,"raiz":{"izq":-100,"centro":20,"der":10},"valores":{"R":["=",20],"I":["quietud",-100],"C":["quietud",20],"D":["quietud",10]}},
+"profundización iterativa":[{"d":1,"orden":["izq","centro","der"],"jugada":"izq","valor":60,"nodos":4,"visitados":["R","I","C","D"],"valores":{"R":["=",60],"I":["EVAL",60],"C":["EVAL",20],"D":["EVAL",10]}},{"d":2,"orden":["izq","centro","der"],"jugada":"centro","valor":10,"nodos":9,"visitados":["R","I","i1","ix","C","C1","C2","D","d1"],"valores":{"R":["=",10],"I":["=",-100],"C":["=",10],"D":["≤",-100],"C1":["EVAL",10],"C2":["EVAL",50]}},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":0,"nodos":12,"visitados":["R","C","C1","c1a","c1b","C2","c2a","I","i1","ix","D","d1"],"valores":{"R":["=",0],"I":["=",-100],"C":["=",0],"D":["≤",-100],"C1":["=",0],"C2":["≥",100]}}],
+"Monte Carlo plano":{"limite":{"jugada":"der","mu":{"izq":"0","centro":"-1/4","der":"1/3"}},"corridas":{"5":{"sumas":{"izq":-3,"centro":-2,"der":3},"jugada":"der","nodos":15},"10":{"sumas":{"izq":-6,"centro":1,"der":4},"jugada":"der","nodos":15},"50":{"sumas":{"izq":-4,"centro":-3,"der":24},"jugada":"der","nodos":15}},"reparto":{"5":{"izq":353,"centro":106,"der":541},"10":{"izq":269,"centro":53,"der":678},"50":{"izq":39,"centro":1,"der":960}}},
+"UCT":{"c":1,"semilla":0,"mas_simulada":["izq","izq","izq","centro","centro","centro","centro","der","der","der","der","der","der","der","der","der","der","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro"],"caminos":[["I"],["C"],["D"],["C","C1"],["D","d1"],["C","C2"],["D","d2"],["D","d3"],["D","d1"],["D","d1"],["D","d1"],["C","C1","c1a"],["I","i1"],["I","ix"],["I","ix"],["C","C2","c2a"],["C","C1","c1b"],["C","C1","c1a"],["C","C1","c1a"],["D","d1"],["C","C1","c1a"],["C","C2","c2b"],["I","ix"],["D","d1"],["C","C2","c2a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C2","c2a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1b"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C2","c2a"],["C","C1","c1a"]],"N":{"R":40,"I":5,"C":26,"D":9,"C1":19,"d1":6,"C2":6,"d2":1,"d3":1,"c1a":16,"i1":1,"ix":3,"c2a":4,"c1b":2,"c2b":1},"S":{"R":-6,"I":-3,"C":0,"D":-3,"C1":-3,"d1":-6,"C2":2,"d2":1,"d3":1,"c1a":0,"i1":1,"ix":-3,"c2a":4,"c1b":-2,"c2b":-1},"U":[-1,1,1,-1,-1,-1,1,1,-1,-1,-1,0,1,-1,-1,1,-1,0,0,-1,0,-1,-1,-1,1,0,0,0,1,0,0,-1,0,0,0,0,0,0,1,0],"por_vuelta":[{"R":[1,-1],"I":[1,-1]},{"R":[2,0],"I":[1,-1],"C":[1,1]},{"R":[3,1],"I":[1,-1],"C":[1,1],"D":[1,1]},{"R":[4,0],"I":[1,-1],"C":[2,0],"D":[1,1],"C1":[1,-1]},{"R":[5,-1],"I":[1,-1],"C":[2,0],"D":[2,0],"C1":[1,-1],"d1":[1,-1]},{"R":[6,-2],"I":[1,-1],"C":[3,-1],"D":[2,0],"C1":[1,-1],"C2":[1,-1],"d1":[1,-1]},{"R":[7,-1],"I":[1,-1],"C":[3,-1],"D":[3,1],"C1":[1,-1],"C2":[1,-1],"d1":[1,-1],"d2":[1,1]},{"R":[8,0],"I":[1,-1],"C":[3,-1],"D":[4,2],"C1":[1,-1],"C2":[1,-1],"d1":[1,-1],"d2":[1,1],"d3":[1,1]},{"R":[9,-1],"I":[1,-1],"C":[3,-1],"D":[5,1],"C1":[1,-1],"C2":[1,-1],"d1":[2,-2],"d2":[1,1],"d3":[1,1]},{"R":[10,-2],"I":[1,-1],"C":[3,-1],"D":[6,0],"C1":[1,-1],"C2":[1,-1],"d1":[3,-3],"d2":[1,1],"d3":[1,1]},{"R":[11,-3],"I":[1,-1],"C":[3,-1],"D":[7,-1],"C1":[1,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1]},{"R":[12,-3],"I":[1,-1],"C":[4,-1],"D":[7,-1],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[13,-2],"I":[2,0],"C":[4,-1],"D":[7,-1],"i1":[1,1],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[14,-3],"I":[3,-1],"C":[4,-1],"D":[7,-1],"i1":[1,1],"ix":[1,-1],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[15,-4],"I":[4,-2],"C":[4,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[16,-3],"I":[4,-2],"C":[5,0],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[2,-1],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0],"c2a":[1,1]},{"R":[17,-4],"I":[4,-2],"C":[6,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[3,-2],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[18,-4],"I":[4,-2],"C":[7,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[4,-2],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[2,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[19,-4],"I":[4,-2],"C":[8,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[5,-2],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[3,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[20,-5],"I":[4,-2],"C":[8,-1],"D":[8,-2],"i1":[1,1],"ix":[2,-2],"C1":[5,-2],"C2":[2,0],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[3,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[21,-5],"I":[4,-2],"C":[9,-1],"D":[8,-2],"i1":[1,1],"ix":[2,-2],"C1":[6,-2],"C2":[2,0],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[22,-6],"I":[4,-2],"C":[10,-2],"D":[8,-2],"i1":[1,1],"ix":[2,-2],"C1":[6,-2],"C2":[3,-1],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1],"c2b":[1,-1]},{"R":[23,-7],"I":[5,-3],"C":[10,-2],"D":[8,-2],"i1":[1,1],"ix":[3,-3],"C1":[6,-2],"C2":[3,-1],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1],"c2b":[1,-1]},{"R":[24,-8],"I":[5,-3],"C":[10,-2],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[6,-2],"C2":[3,-1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1],"c2b":[1,-1]},{"R":[25,-7],"I":[5,-3],"C":[11,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[6,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[26,-7],"I":[5,-3],"C":[12,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[7,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[5,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[27,-7],"I":[5,-3],"C":[13,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[8,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[6,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[28,-7],"I":[5,-3],"C":[14,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[9,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[7,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[29,-6],"I":[5,-3],"C":[15,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[9,-2],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[7,0],"c1b":[1,-1],"c2a":[3,3],"c2b":[1,-1]},{"R":[30,-6],"I":[5,-3],"C":[16,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[10,-2],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[8,0],"c1b":[1,-1],"c2a":[3,3],"c2b":[1,-1]},{"R":[31,-6],"I":[5,-3],"C":[17,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[11,-2],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[9,0],"c1b":[1,-1],"c2a":[3,3],"c2b":[1,-1]},{"R":[32,-7],"I":[5,-3],"C":[18,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[12,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[9,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[33,-7],"I":[5,-3],"C":[19,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[13,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[10,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[34,-7],"I":[5,-3],"C":[20,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[14,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[11,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[35,-7],"I":[5,-3],"C":[21,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[15,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[12,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[36,-7],"I":[5,-3],"C":[22,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[16,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[13,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[37,-7],"I":[5,-3],"C":[23,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[17,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[14,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[38,-7],"I":[5,-3],"C":[24,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[18,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[15,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[39,-6],"I":[5,-3],"C":[25,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[18,-3],"C2":[6,2],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[15,0],"c1b":[2,-2],"c2a":[4,4],"c2b":[1,-1]},{"R":[40,-6],"I":[5,-3],"C":[26,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[19,-3],"C2":[6,2],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[16,0],"c1b":[2,-2],"c2a":[4,4],"c2b":[1,-1]}]}},
 "tabla":[
 {"algoritmo":"minimax","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":15,"exacto":true,"nota":""},
 {"algoritmo":"alfa-beta, orden dado","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":12,"exacto":true,"nota":""},
@@ -384,16 +384,19 @@ function valoresHojas(mirados, fila) {
   return v;
 }
 
-function valoresRaiz(raiz, v) {
-  for (const j in raiz) v[HIJO_DE[j]] = [signo(raiz[j])];
-}
-
-/* los nodos internos donde se cortó la búsqueda muestran su EVAL */
-function valoresCorte(mirados, d, v) {
-  D.nodos.forEach(n => {
-    if (n.tipo !== "final" && PROF[n.id] === d && mirados.has(n.id) && n.EVAL !== null && !v[n.id])
-      v[n.id] = [`EVAL ${n.EVAL}`];
-  });
+/* el valor (o la cota) que cada algoritmo deja en cada nodo interno:
+   «=» un valor, «≥»/«≤» una cota tras un corte, «EVAL» donde cortó la
+   búsqueda, «quietud» donde siguió solo las capturas */
+function valoresInternos(valores, v, prefijoRaiz) {
+  for (const id in valores) {
+    const [tipo, x] = valores[id], n = NODOS[id];
+    if (id === RAIZ) v[id] = [`${prefijoRaiz}${signo(x)}`];
+    else if (tipo === "EVAL") v[id] = [`EVAL ${signo(x)}`];
+    else if (tipo === "quietud")
+      v[id] = x === n.EVAL ? [`EVAL ${signo(x)}`] : [`EVAL ${signo(n.EVAL)}`, `→ ${signo(x)}`];
+    else if (tipo === "=") v[id] = [signo(x)];
+    else v[id] = [`${tipo} ${signo(x)}`];
+  }
 }
 
 function vista(b) {
@@ -402,14 +405,13 @@ function vista(b) {
              extra:[], nota:"", fila};
   if (clave === "minimax") {
     r.mirados = new Set(alg.visitados);
-    valoresRaiz(alg.raiz, r.valores);
-    r.valores[RAIZ] = [`V ${signo(alg.valor)}`];
+    valoresInternos(alg.valores, r.valores, "V ");
     Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, exacto:fila.exacto});
     r.nota = "Mira todos los nodos y devuelve V: lo mejor que MAX asegura contra un MIN que no se equivoca.";
   } else if (clave.startsWith("alfa-beta")) {
     r.mirados = new Set(alg.visitados);
     r.podados = new Set(alg.podados);
-    r.valores[RAIZ] = [`V ${signo(alg.valor)}`];
+    valoresInternos(alg.valores, r.valores, "V ");
     Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, exacto:fila.exacto});
     r.extra.push(["Podados (no los genera)", alg.podados.join(", ")]);
     r.nota = "El mismo V que minimax con menos nodos; cuántos se ahorra depende del orden en que mira a los hijos.";
@@ -422,10 +424,8 @@ function vista(b) {
   } else if (clave.startsWith("corte") || clave.startsWith("quietud")) {
     r.mirados = new Set(alg.visitados);
     r.valores = valoresHojas(r.mirados, fila);
-    valoresRaiz(alg.raiz, r.valores);
     const d = Number(clave.match(/d = (\d)/)[1]);
-    valoresCorte(r.mirados, d, r.valores);
-    r.valores[RAIZ] = [signo(alg.valor)];
+    valoresInternos(alg.valores, r.valores, "");
     Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, exacto:fila.exacto});
     r.nota = clave.startsWith("quietud")
       ? "En el corte sigue solo las capturas: ve ix y deja de creerle a EVAL(I). Arregla la jugada; el valor sigue siendo una estimación."
@@ -435,8 +435,7 @@ function vista(b) {
     const k = Number(b.dataset.iter), it = alg[k];
     r.mirados = new Set(it.visitados);
     r.valores = valoresHojas(r.mirados, fila);
-    valoresCorte(r.mirados, it.d, r.valores);
-    r.valores[RAIZ] = [signo(it.valor)];
+    valoresInternos(it.valores, r.valores, "");
     const total = fila.nodos;
     Object.assign(r, {jugada:it.jugada, valor:signo(it.valor), nodos:it.nodos,
       nodosTexto:`${it.nodos} de ${TOTAL} en esta búsqueda · ${total} sumando las tres`,
@@ -448,10 +447,8 @@ function vista(b) {
     const kk = b.dataset.k, c = alg.corridas[kk], n = Number(kk);
     D.jugadas_raiz.forEach(j => { r.valores[HIJO_DE[j]] = [`ū ${fraccion(c.sumas[j], n)}`, `N ${n}`]; });
     r.valores[RAIZ] = [`N ${n * D.jugadas_raiz.length}`];
-    const propia = fila.algoritmo === `Monte Carlo plano, ${kk} por jugada`;
     Object.assign(r, {jugada:c.jugada, valor:fraccion(c.sumas[c.jugada], n),
-      nodos:propia ? fila.nodos : null, exacto:fila.exacto});
-    if (!propia) r.nodosTexto = "no se registró para esta corrida (solo para 5 por jugada)";
+      nodos:c.nodos, exacto:fila.exacto});
     r.extra.push(["Sumas de U", D.jugadas_raiz.map(j => `${j} ${signo(c.sumas[j])}`).join(" · ")]);
     const rep = alg.reparto[kk], sem = D.jugadas_raiz.reduce((s, j) => s + rep[j], 0);
     r.extra.push([`En ${sem} semillas entrega`, D.jugadas_raiz.map(j => `${j} ${rep[j]}`).join(" · ")]);
@@ -460,19 +457,22 @@ function vista(b) {
     r.nota = "Simula partidas con todos al azar, también MAX debajo de la raíz, y no guarda árbol: el árbol no se ilumina. Promedia contra un rival que no elige.";
   } else if (clave === "UCT") {
     const t = Number(document.getElementById("vuelta").value), ult = alg.caminos.length;
-    const N = {[RAIZ]: t};
-    alg.caminos.slice(0, t).forEach(cm => cm.forEach(id => { N[id] = (N[id] || 0) + 1; }));
-    r.mirados = new Set(Object.keys(N));
+    const tras = alg.por_vuelta[t - 1], N = {};
+    for (const id in tras) N[id] = tras[id][0];
+    r.mirados = new Set(Object.keys(tras));
     const jug = alg.mas_simulada[t - 1];
-    for (const id in N) {
-      r.valores[id] = t === ult && id !== RAIZ ? [`N ${N[id]}`, `ū ${fraccion(alg.S[id], alg.N[id])}`] : [`N ${N[id]}`];
+    for (const id in tras) {
+      const [n, s] = tras[id];
+      r.valores[id] = id !== RAIZ ? [`N ${n}`, `ū ${fraccion(s, n)}`] : [`N ${n}`];
     }
     const h = HIJO_DE[jug];
     Object.assign(r, {jugada:jug, nodos:r.mirados.size, exacto:fila.exacto,
-      valor:t === ult ? fraccion(alg.S[h], alg.N[h]) : null});
+      valor:fraccion(tras[h][1], tras[h][0])});
     r.nombreExtra = ` · vuelta ${t} de ${ult}`;
-    if (t !== ult) r.valorTexto = `ū: la corrida guarda los promedios solo al final (vuelta ${ult}); aquí, N(s′) = ${N[h]} de ${t}`;
+    r.extra.push([`U de la vuelta ${t}`, `${conSigno(alg.U[t - 1])} (camino ${alg.caminos[t - 1].join(" › ")})`]);
     r.extra.push(["N(s′) en la raíz", D.jugadas_raiz.map(j => `${j} ${N[HIJO_DE[j]] || 0}`).join(" · ")]);
+    r.extra.push(["ū(s′) en la raíz", D.jugadas_raiz.map(j => HIJO_DE[j] in tras
+      ? `${j} ${fraccion(tras[HIJO_DE[j]][1], tras[HIJO_DE[j]][0])}` : `${j} —`).join(" · ")]);
     if (D.jugadas_raiz.filter(j => (N[HIJO_DE[j]] || 0) === N[h]).length > 1)
       r.extra.push(["Empate en N(s′)", `entrega la primera en el orden ${D.jugadas_raiz.join(", ")}`]);
     r.nota = t === ult

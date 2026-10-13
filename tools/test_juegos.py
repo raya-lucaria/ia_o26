@@ -2919,3 +2919,82 @@ def test_tpm_datos_del_interactivo():
     assert a["Monte Carlo plano"]["reparto"][5] == {"izq": 353, "centro": 106, "der": 541}
     assert a["UCT"]["mas_simulada"][-1] == "centro"
     assert len(d["tabla"]) == len(j.tabla_t_pm())
+
+
+def test_tpm_el_interactivo_trae_el_valor_de_cada_nodo_interno():
+    """Minimax: V de los seis nodos internos, a mano: C1 = max(0, −1) = 0,
+    C2 = max(+1, −1) = +1, C = min(0, +1) = 0, I = min(+1, −1) = −1,
+    D = min(−1, +1, +1) = −1, R = 0."""
+    a = j.datos_interactivo_tpm()["algoritmos"]
+    V = {"R": 0, "I": -1, "C": 0, "D": -1, "C1": 0, "C2": 1}
+    assert a["minimax"]["valores"] == {k: ["=", v] for k, v in V.items()}
+    for c, n in j.ids_tpm().items():
+        if n in V:
+            assert V[n] == j.minimax_arbol(j.nodo_en(j.ARBOL_TPM, c), len(c) % 2 == 0)
+    # alfa-beta: D (orden dado) e I (al revés) quedan como cota tras su corte.
+    assert a["alfa-beta, dado"]["valores"] == {
+        "R": ["=", 0], "I": ["=", -1], "C": ["=", 0], "D": ["≤", -1],
+        "C1": ["=", 0], "C2": ["≥", 1]}
+    assert a["alfa-beta, al revés"]["valores"] == {
+        "R": ["=", 0], "I": ["≤", -1], "C": ["=", 0], "D": ["=", -1],
+        "C1": ["=", 0], "C2": ["=", 1]}
+    # Cada valor o cota es el que devolvio alfa-beta fail-soft, y no contradice a V.
+    for orden in ("dado", "al revés"):
+        r = j.alfa_beta_arbol(j.ARBOL_TPM, invertir=(orden == "al revés"))
+        ids = j.ids_tpm()
+        devuelto = {ids[c]: v for c, tipo, _, _, v, _ in r["traza"] if tipo != "hoja"}
+        for n, (tipo, x) in a[f"alfa-beta, {orden}"]["valores"].items():
+            assert devuelto[n] == x, (orden, n)
+            assert {"=": V[n] == x, "≥": V[n] >= x, "≤": V[n] <= x}[tipo], (orden, n)
+    # corte: arriba del corte, minimax sobre EVAL; en el corte, EVAL.
+    assert a["corte d = 1"]["valores"] == {
+        "R": ["=", 60], "I": ["EVAL", 60], "C": ["EVAL", 20], "D": ["EVAL", 10]}
+    assert a["corte d = 2"]["valores"] == {
+        "R": ["=", 10], "I": ["=", -100], "C": ["=", 10], "D": ["=", -100],
+        "C1": ["EVAL", 10], "C2": ["EVAL", 50]}
+    assert a["corte d = 3"]["valores"] == {k: ["=", 100 * v] for k, v in V.items()}
+    for d in (1, 2, 3):
+        ws = j.corte_tpm(d)[2]
+        for jug, n in zip(j.JUGADAS_RAIZ, "ICD"):
+            assert a[f"corte d = {d}"]["valores"][n][1] == ws[jug]
+    # quietud: I deja de valer EVAL(I) = 60 al ver la captura ix.
+    assert a["quietud d = 1"]["valores"] == {
+        "R": ["=", 20], "I": ["quietud", -100], "C": ["quietud", 20], "D": ["quietud", 10]}
+    # iterativa: el valor (o cota) que deja en cada nodo la traza de alfa-beta con corte.
+    it = j.profundizacion_iterativa_t(j.escalar_arbol(j.ARBOL_TPM, 100), (1, 2, 3), j.EVAL_TPM)
+    for x, (d, _, t) in zip(a["profundización iterativa"], it):
+        estado = t["filas"][-1]["estado"]
+        for n, (tipo, v) in x["valores"].items():
+            assert estado[n]["v"] == v, (d, n)
+    assert a["profundización iterativa"][2]["valores"] == {
+        "R": ["=", 0], "I": ["=", -100], "C": ["=", 0], "D": ["≤", -100],
+        "C1": ["=", 0], "C2": ["≥", 100]}
+
+
+def test_tpm_el_interactivo_trae_los_nodos_de_cada_corrida_de_mc_plano():
+    c = j.datos_interactivo_tpm()["algoritmos"]["Monte Carlo plano"]["corridas"]
+    assert {k: x["nodos"] for k, x in c.items()} == {5: 15, 10: 15, 50: 15}
+    fila = next(f for f in j.tabla_t_pm() if f["algoritmo"].startswith("Monte Carlo"))
+    assert c[5]["nodos"] == fila["nodos"]
+
+
+def test_tpm_el_interactivo_trae_uct_vuelta_por_vuelta():
+    u = j.datos_interactivo_tpm()["algoritmos"]["UCT"]
+    corrida = j.uct_tpm(1, j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM)
+    ids = j.ids_tpm()
+    assert len(u["U"]) == len(u["por_vuelta"]) == j.VUELTAS_PAGINA_TPM
+    assert set(u["U"]) <= {-1, 0, 1}
+    # La ultima vuelta es la corrida entera de uct_tpm.
+    assert u["por_vuelta"][-1] == {ids[c]: [corrida["N"][c], corrida["S"][c]]
+                                   for c in corrida["N"]}
+    # Cada vuelta es la de una corrida mas corta con la misma semilla.
+    for t in (1, 5, 18, 40):
+        corta = j.uct_tpm(1, t, j.SEMILLA_TPM)
+        assert u["por_vuelta"][t - 1] == {ids[c]: [corta["N"][c], corta["S"][c]]
+                                          for c in corta["N"] if corta["N"][c]}
+    # Lo que la pagina cita: vuelta 18, centro y der con N = 7; al final centro 26 con ū 0.
+    v18 = u["por_vuelta"][17]
+    assert v18["C"] == [7, -1] and v18["D"] == [7, -1] and v18["R"] == [18, -4]
+    assert u["por_vuelta"][4] == {"R": [5, -1], "I": [1, -1], "C": [2, 0], "D": [2, 0],
+                                  "C1": [1, -1], "d1": [1, -1]}
+    assert u["por_vuelta"][-1]["C"] == [26, 0]

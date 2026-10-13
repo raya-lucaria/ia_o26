@@ -267,3 +267,56 @@ def test_la_vuelta_18_de_uct_entrega_centro_y_la_17_no():
     mas = j.uct_tpm(1, j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM)["mas_simulada"]
     assert t18.split()[0] == mas[17] == "centro"
     assert t17.split()[0] == mas[16] != "centro"
+
+
+def _svg_textos(fragmento):
+    """Los textos del árbol pintado, en orden de nodo (id del nodo, luego sus
+    renglones de valor)."""
+    dom = _dom(fragmento)
+    svg = re.search(r'<svg[^>]*id="arbol".*?</svg>', dom, re.S).group(0)
+    return [_norm(t) for t in re.findall(r"<text[^>]*>([^<]*)</text>", svg)]
+
+
+def _tras(textos, nodo, n=2):
+    """Los n textos que siguen al nombre de un nodo interno (tipo y valores)."""
+    i = textos.index(nodo)
+    return textos[i + 1:i + 1 + n]
+
+
+def test_minimax_y_alfa_beta_pintan_el_valor_de_cada_nodo_interno(datos):
+    t = _svg_textos("minimax")
+    for n, (_, v) in datos["algoritmos"]["minimax"]["valores"].items():
+        esperado = f"V {v}" if n == "R" else str(v)
+        assert _tras(t, n)[1] == esperado.replace("-", "−"), n
+    t = _svg_textos("alfa-beta-dado")
+    assert _tras(t, "D")[1] == "≤ −1" and _tras(t, "C2")[1] == "≥ 1"
+    t = _svg_textos("quietud")
+    assert _tras(t, "I", 3)[1:] == ["EVAL 60", "→ −100"]
+
+
+@pytest.mark.parametrize("k", [10, 50])
+def test_mc_plano_cuenta_los_nodos_de_cada_corrida(k, datos):
+    t = {i: _norm(v) for i, v in _leer(f"mc-{k}").por_id.items()}
+    c = datos["algoritmos"]["Monte Carlo plano"]["corridas"][str(k)]
+    assert t["t-nodos"] == f"{c['nodos']} de 15"
+    assert "registr" not in _dom(f"mc-{k}")
+
+
+# vuelta, jugada, ū de la jugada (de juegos.uct_tpm con t vueltas)
+VUELTAS = [(5, "centro", "0"), (18, "centro", "−1/7"), (40, "centro", "0")]
+
+
+@pytest.mark.parametrize("t, jugada, ubarra", VUELTAS, ids=[f"uct-{v[0]}" for v in VUELTAS])
+def test_el_deslizador_de_uct_muestra_u_barra_en_cada_vuelta(t, jugada, ubarra):
+    u = j.uct_tpm(1, t, j.SEMILLA_TPM)
+    h = (j.JUGADAS_RAIZ.index(jugada),)
+    assert u["mas_simulada"][-1] == jugada
+    assert j.fmt_t(j.F(u["S"][h], u["N"][h])).replace("-", "−") == ubarra
+    p = _leer(f"uct-{t}")
+    tx = {i: _norm(v) for i, v in p.por_id.items()}
+    assert tx["t-jugada"].split()[0] == jugada
+    assert tx["t-valor"].split()[0] == ubarra and "ū" in tx["t-valor"]
+    assert f"U de la vuelta {t}" in tx["t-extra"]
+    svg = _svg_textos(f"uct-{t}")
+    nombre = j.ids_tpm()[h]
+    assert _tras(svg, nombre, 3)[1:] == [f"N {u['N'][h]}", f"ū {ubarra}"]
