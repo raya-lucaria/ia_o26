@@ -38,23 +38,36 @@ def _posicion():
 
 
 def test_9_la_tabla_de_cuando_conviene_con_los_juegos_corregidos():
-    filas = _tabla(_texto(), "jue-c3-cmp-cuando")
-    assert [_c(x) for x in filas[0]] == ["Algoritmo", "Conviene cuando", "Le cuesta",
-                                         "Juego real"]
-    assert all(len(f) == 4 for f in filas)
-    juego = {_c(f[0]): _c(f[3]) for f in filas[1:]}
-    assert list(juego) == ["Minimax y alfa-beta", "Expectiminimax",
-                           "Alfa-beta con corte, quietud e iterativa", "Monte Carlo plano",
-                           "MCTS con UCT"]
-    exacto = juego["Minimax y alfa-beta"]
-    assert "Conecta 4, resuelto en 1988" in exacto
-    assert "Deep Blue" not in exacto and "Chinook" not in exacto
+    texto = _texto()
+    filas = _tabla(texto, "jue-c3-cmp-cuando")
+    assert [_c(x) for x in filas[0]] == ["Algoritmo", "Conviene cuando"]
+    orden = ["Minimax", "Expectiminimax", "Alfa-beta", "Corte, quietud e iterativa",
+             "Monte Carlo plano", "MCTS con UCT"]
+    cuando = {_c(f[0]): _c(f[1]) for f in filas[1:]}
+    assert list(cuando) == orden  # el orden del curso
+    # El mapa pregunta por los dados dentro de «¿cabe?»: la tabla dice lo mismo.
+    assert cuando["Expectiminimax"] == "Cabe y hay dados"
+    assert cuando["Minimax"] == cuando["Alfa-beta"] == "Cabe y no hay dados"
+    costo = _tabla(texto, "jue-c3-cmp-cuesta")
+    assert [_c(x) for x in costo[0]] == ["Algoritmo", "Le cuesta"]
+    assert [_c(f[0]) for f in costo[1:]] == orden
+    # Dos columnas y celdas cortas, para que quepan a 390 px.
+    for f in filas[1:] + costo[1:]:
+        assert len(f) == 2 and all(len(_c(x).split()) <= 5 for x in f), f
+    # El juego real va en una lista, en el mismo orden que las tablas.
+    lista = texto.split("Dónde se usó cada uno, en el mismo orden:")[1].split("::: table")[0]
+    juego = dict(re.findall(r"^- \*\*([^*]+):\*\* (.*?)(?=^- |\Z)", lista, re.M | re.S))
+    juego = {k: _limpio(v).strip() for k, v in juego.items()}
+    assert list(juego) == orden
+    assert juego["Alfa-beta"] == "Conecta 4, resuelto en 1988."
+    assert "volado" not in texto  # el juguete no va como juego real
     assert "TD-Gammon (1992) miraba dos jugadas" in juego["Expectiminimax"]
-    corte = juego["Alfa-beta con corte, quietud e iterativa"]
-    assert "Deep Blue, 1997" in corte and "Chinook, con bases de finales" in corte
-    assert "de 1993 a 2005" in juego["Monte Carlo plano"]
-    assert juego["MCTS con UCT"] == "Go (MoGo, 2006); Hex (MoHex)"
-    assert "Crazy Stone" not in _texto()
+    assert juego["Corte, quietud e iterativa"] == ("ajedrez (Deep Blue, 1997) y damas "
+                                                   "(Chinook, con bases de finales).")
+    assert all("Deep Blue" not in juego[a] for a in ("Minimax", "Alfa-beta"))
+    assert juego["Monte Carlo plano"] == "Go, de 1993 a 2005."
+    assert juego["MCTS con UCT"] == "Go (MoGo, 2006) y Hex (MoHex)."
+    assert "Crazy Stone" not in texto
     uno = _seccion(_texto(), 1)
     # Los matices de rev-hechos: quietud no arregla todo; UCT converge con c
     # grande, y la del curso queda debajo de la hipotesis.
@@ -67,7 +80,7 @@ def test_9_el_mapa_en_t_pm():
     dos = _seccion(_texto(), 2)
     t_pm = dos.split("En T±.")[1].split("En la posición de la clase.")[0]
     jm, v, _, nodos = j.minimax_tpm()
-    m = re.search(rf"Tiene (\d+) nodos: cabe, rama 1\. Alfa-beta juega (\w+) con "
+    m = re.search(rf"Tiene (\d+) nodos y no tiene dados: cabe, rama 1\. Alfa-beta juega (\w+) con "
                   rf"V=({_Q}) y genera (\d+)", t_pm)
     ja, va, generados, _ = j.alfa_beta_tpm("dado")
     assert m and (int(m[1]), m[2], int(m[3]), int(m[4])) == (nodos, ja, va, generados)
@@ -77,7 +90,8 @@ def test_9_el_mapa_en_t_pm():
                   t_pm)
     assert m and (m[1], int(m[2]), m[3]) == (jc, vc, j.todos_al_azar_tpm()[0])
     je, ve = j.expectiminimax_tpm()
-    m = re.search(rf"expectiminimax juega (\w+), que vale ({_Q})", t_pm)
+    m = re.search(rf"Si D fuera un dado, seguiría en la rama 1, ahora con dados: "
+                  rf"expectiminimax juega (\w+), que vale ({_Q})", t_pm)
     assert m and (m[1], F(m[2])) == (je, ve["R"])
 
 
@@ -109,8 +123,36 @@ def test_9_el_mapa_en_la_posicion_de_la_clase():
     assert m and max(quieta, key=quieta.get) == m[1]
     medias = {j.nombre_jugada(t, a, 4): j.promedio_simulaciones(j.mover(t, a), "N", 4)
               for a in jugadas}
-    m = re.search(rf"([a-d]\d-[a-d]\d) promedia ({_Q}) en las simulaciones", pos)
+    m = re.search(rf"si desde ([a-d]\d-[a-d]\d) los dos juegan al azar hasta el final, U "
+                  rf"promedia ({_Q}), lo más alto de las (\w+) jugadas", pos)
+    assert m and m[3] == "tres" and len(medias) == 3
     assert m and max(medias, key=medias.get) == m[1] and medias[m[1]] == F(m[2])
+
+
+def test_9_el_mapa_pregunta_por_los_dados_dentro_de_cabe():
+    dos = _seccion(_texto(), 2)
+    assert "Sí, sin dados: alfa-beta" in dos and "Sí, con dados: expectiminimax" in dos
+    assert "No cabe: ¿hay dados?" in dos and "nada más importa" not in dos
+    assert "No tiene dados, y en la computadora sí cabe, así que es la rama 1" in dos
+
+
+def test_9_cuatro_supuestos_en_el_recuadro_y_en_la_seccion_3():
+    texto = _limpio(_texto().replace("\n> ", "\n"))
+    recuadro = texto.split("Supuestos de esta página.")[1].split("El azar")[0]
+    assert "Los cuatro de toda la unidad: dos jugadores, suma cero, por turnos y todo a " \
+           "la vista" in recuadro
+    tres = _texto().split("## 3 ·")[1].split("## 4 ·")[0]
+    lista = re.findall(r"^- \*\*([^*]+?)\.\*\*", tres.split("Los cuatro supuestos")[1]
+                       .split("Para ubicar")[0], re.M)
+    assert lista == ["Dos jugadores", "Suma cero", "Por turnos", "Todo a la vista"]
+    assert "toda partida termina" not in texto
+    # Suma no cero con dos: un ejemplo en palabras, sin pagos por jugador.
+    assert "Con dos jugadores también se rompe, si cada uno tiene su propio pago" in texto
+    assert "rompecabezas" in texto
+    # max^n y el paranoico no cortan siempre: cortarían en un árbol que no cabe.
+    resp = _limpio(_respuesta(_texto(), "jue-c3-cmp-ej-fronteras"))
+    assert "pero cortan y estiman" not in resp
+    assert "el paranoico llegan a los finales si el árbol cabe" in resp
 
 
 def test_9_el_ejercicio_del_mapa_cita_los_252_nodos_de_hexapawn():

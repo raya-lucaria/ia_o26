@@ -680,7 +680,7 @@ Antes de cerrar, minimax en siete rasgos. Cada algoritmo de la unidad tendrá su
 |---|---|
 | Hasta dónde mira | Hasta los finales, en todas las ramas |
 | ¿Genera todo el árbol? | Sí: cada nodo, una vez |
-| ¿Da $V$ exacto? | Sí, en cada nodo |
+| ¿Garantiza $V$? | Sí, en cada nodo |
 | Con qué estima | Con nada: no estima. Solo lee la $U$ de los finales |
 | ¿Quién tira dados? | Nadie |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor $V$. Interrumpido, deja hijos de la raíz sin valorar: lo que lleve no está garantizado |
@@ -690,9 +690,9 @@ Antes de cerrar, minimax en siete rasgos. Cada algoritmo de la unidad tendrá su
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | **Minimax (estás aquí)** | **Los finales** | **$V$ exacto** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | **Minimax (estás aquí)** | **$V$; lo garantiza** |
 >
 > **Lo que viene.**
 >

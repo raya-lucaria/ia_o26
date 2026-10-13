@@ -863,7 +863,7 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
 |---|---|
 | Hasta dónde mira | $d=1$, luego 2, luego 3, mientras haya reloj |
 | ¿Genera todo el árbol? | No: repite lo de arriba en cada búsqueda y, con alfa-beta, poda |
-| ¿Da $V$ exacto? | No: el valor con corte de la última búsqueda completa |
+| ¿Garantiza $V$? | No, salvo si la última búsqueda llega a los finales. Da su valor con corte |
 | Con qué estima | Con $\mathrm{EVAL}$, en los nodos de corte |
 | ¿Quién tira dados? | Nadie |
 | Qué entrega, y si se puede interrumpir | La jugada de la última búsqueda completa. Sí se puede interrumpir: siempre hay una lista |
@@ -873,14 +873,14 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | Minimax | Los finales | $V$ exacto |
-> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
-> | Alfa-beta | Los finales, sin las ramas que ya no deciden | $V$ exacto en la raíz |
-> | Minimax con corte | $d$ jugadas | Valor con corte ($\mathrm{EVAL}$); no es $V$ |
-> | Búsqueda de quietud | $d$ jugadas, luego solo capturas | Valor con corte, en posiciones quietas |
-> | **Profundización iterativa (estás aquí)** | **$d=1,2,3,\dots$ mientras haya reloj** | **Valor con corte de la última búsqueda** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales |
+> | **Profundización iterativa (estás aquí)** | **Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales** |
 >
 > **Lo que viene.**
 >

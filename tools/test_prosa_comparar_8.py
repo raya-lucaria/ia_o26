@@ -107,46 +107,72 @@ def test_8_v_con_dado_y_u_dan_el_mismo_tercio_en_der():
     assert _q(m[1]) == j.minimax_tpm()[2]["der"]
 
 
-def test_8_el_ejercicio_del_rival_al_azar():
+def test_8_el_ejercicio_cambia_una_hoja():
+    """d2 = −1: V no se mueve, el dado ya no paga más que centro, y MC plano
+    cambia a izq, que también pierde. Todo con las funciones de T± sobre el
+    árbol cambiado; la respuesta no está en la página anterior."""
     texto = _texto()
-    jr, vr = j.rival_al_azar_tpm()
-    resp = _limpio(_respuesta(texto, "jue-c3-cmp-ej-rival-al-azar"))
-    m = re.search(rf"1\. Centro vale ({_Q})\. MAX elige c1a en C1, que vale ({_Q}), y c2a en "
-                  rf"C2, que vale ({_Q})\. El volado de MIN en C da \(({_Q})\+({_Q})\)/2=({_Q})",
-                  resp)
-    c1, c2 = (max(h) for h in j.ARBOL_TPM[1])
-    assert _q(m[1]) == _q(m[6]) == vr["centro"] == (c1 + c2) / F(2)
-    assert (_q(m[2]), _q(m[3]), _q(m[4]), _q(m[5])) == (c1, c2, c1, c2)
-    m = re.search(rf"2\. (\w+), porque izq vale ({_Q}) y der ({_Q})\. Monte Carlo plano "
-                  rf"elige (\w+)", resp)
-    assert m[1].lower() == jr and (_q(m[2]), _q(m[3])) == (vr["izq"], vr["der"])
-    assert m[4] == j.todos_al_azar_tpm()[0]
-    m = re.search(rf"por eso centro baja a ({_Q})", resp)
-    assert _q(m[1]) == j.todos_al_azar_tpm()[1]["centro"]
+    ej = _limpio(_bloque(texto, "jue-c3-cmp-ej-cambia-hoja"))
+    m = re.search(rf"cambia una sola hoja: ahora (\w+)=({_Q})", ej)
+    ids = j.ids_tpm()
+    camino = next(c for c, n in ids.items() if n == m[1])
+    assert j.nodo_en(j.ARBOL_TPM, camino) != _q(m[2])
+    d = list(j.ARBOL_TPM[camino[0]])
+    d[camino[1]] = int(_q(m[2]))
+    arbol = tuple(tuple(d) if i == camino[0] else h for i, h in enumerate(j.ARBOL_TPM))
+    jm, v, vs, _ = j.minimax_tpm(arbol)
+    assert (jm, v) == j.minimax_tpm()[:2]
+    resp = _limpio(_respuesta(texto, "jue-c3-cmp-ej-cambia-hoja"))
+    m = re.search(rf"1\. No: V=({_Q}) por (\w+)\. MIN ya respondía (\w+) en D, así que der "
+                  rf"seguía valiendo ({_Q})\.", resp)
+    assert (_q(m[1]), m[2]) == (v, jm) and _q(m[4]) == vs["der"] == j.minimax_tpm()[2]["der"]
+    assert ids[(2, d.index(min(d)))] == m[3]
+    je, ve = j.expectiminimax_tpm(arbol=arbol)
+    m = re.search(rf"2\. D vale \(({_Q})({_Q})\+({_Q})\)/3=({_Q})\. Ahora der queda debajo "
+                  rf"del ({_Q}) de centro, y MAX juega (\w+) con V=({_Q})\.", resp)
+    assert [_q(x) for x in m.groups()[:3]] == d and _q(m[4]) == ve["D"]
+    assert _q(m[5]) == ve["C"] > ve["D"] and (m[6], _q(m[7])) == (je, ve["R"])
+    assert ve["R"] == v and j.expectiminimax_tpm()[1]["R"] != v   # casualidad nueva
+    jt, mu = j.todos_al_azar_tpm(arbol)
+    m = re.search(rf"3\. (\w+)\. Su μ=({_Q}) no cambia, centro sigue en ({_Q}) y der baja a "
+                  rf"({_Q})\. Pero izq vale ({_Q}): MIN responde (\w+)\.", resp.replace("\\mu", "μ"))
+    assert m[1].lower() == jt != j.todos_al_azar_tpm()[0]
+    assert (_q(m[2]), _q(m[3]), _q(m[4])) == (mu["izq"], mu["centro"], mu["der"])
+    assert mu["izq"] == j.todos_al_azar_tpm()[1]["izq"]
+    assert mu["centro"] == j.todos_al_azar_tpm()[1]["centro"]
+    assert _q(m[5]) == vs["izq"] < v and ids[(0, 1)] == m[6]
 
 
-def test_8_la_tabla_de_como_busca_coincide_con_el_recuadro():
-    """La columna «Hasta dónde mira» es la del recuadro «Lo que ya viste»
-    (gen_resumen_juegos.ALGORITMOS), en el mismo orden: una sola fuente."""
-    filas = _tabla(_texto(), "jue-c3-cmp-como-busca")
-    assert [c.strip() for c in filas[0]] == [
-        "Algoritmo", "Hasta dónde mira", "¿Genera todo?", "¿Quién tira dados?"]
-    assert [(f[0], f[1]) for f in filas[1:]] == [(a["nombre"], a["mira"])
-                                                 for a in resumen.ALGORITMOS]
-    dados = {f[0]: f[3] for f in filas[1:]}
-    assert dados["Expectiminimax"] == "El juego"
-    assert [n for n, d in dados.items() if d.startswith("El algoritmo")] == [
-        "Monte Carlo plano", "MCTS con UCT"]
+# Nombres cortos de la prosa sobre la tabla «Qué supone cada número»
+_CORTOS = {"minimax": "Minimax", "expectiminimax": "Expectiminimax",
+           "alfa-beta": "Alfa-beta", "el corte": "Minimax con corte",
+           "la quietud": "Búsqueda de quietud", "la iterativa": "Profundización iterativa",
+           "Monte Carlo plano": "Monte Carlo plano", "MCTS": "MCTS con UCT"}
 
 
-def test_8_la_tabla_de_que_numero_da():
-    filas = _tabla(_texto(), "jue-c3-cmp-que-numero")
-    assert [c.strip() for c in filas[0]] == ["Algoritmo", "Número", "¿Es V?", "Qué entrega"]
-    assert [f[0] for f in filas[1:]] == [a["nombre"] for a in resumen.ALGORITMOS]
-    es_v = {f[0]: _c(f[2]).startswith("Sí") for f in filas[1:]}
-    assert [n for n, s in es_v.items() if s] == ["Minimax", "Expectiminimax", "Alfa-beta"]
-    entrega = {f[0]: _c(f[3]) for f in filas[1:]}
-    assert entrega["MCTS con UCT"] == "La jugada más simulada"
+def test_8_la_tabla_de_que_supone_cada_numero():
+    """Tres filas, una por número, a dos columnas (cabe a 390 px). La frase
+    de arriba reparte los ocho algoritmos entre los tres números, en el
+    orden del curso, sin repetir ni olvidar ninguno."""
+    texto = _texto()
+    filas = _tabla(texto, "jue-c3-cmp-num-supone")
+    assert [c.strip() for c in filas[0]] == ["Número", "Supone que"]
+    assert [_c(f[0]) for f in filas[1:]] == ["V", "Valor con corte", "\\bar u"]
+    m = re.search(r"V lo dan (.+?)\. El valor con corte lo dan (.+?)\. Y \\bar u, (.+?)\.",
+                  _seccion(texto, 2))
+    dan = [_CORTOS[n] for g in m.groups() for n in re.split(r", | y ", g)]
+    assert dan == [a["nombre"] for a in resumen.ALGORITMOS]
+
+
+def test_8_la_garantia_de_v_se_remite_a_la_tabla_de_p7():
+    """p8 no repite la tabla «¿Garantiza V?»: la cita. Y su salvedad del corte
+    es real en T±: con d=3 (y la iterativa) el valor con corte es 100·V."""
+    texto = _texto()
+    assert "@jue-c3-cmp-garantiza" in texto and "¿Garantiza" not in texto
+    p7 = (CLASE_3 / "7_un_arbol_todos_los_algoritmos.md").read_text(encoding="utf-8")
+    assert "{#jue-c3-cmp-garantiza " in p7
+    assert j.corte_tpm(3)[1] == 100 * j.minimax_tpm()[1] != j.corte_tpm(1)[1]
+    assert j.iterativa_tpm()[0][-1][3] == 100 * j.minimax_tpm()[1]
 
 
 def test_8_el_ejercicio_ponle_nombre():
@@ -176,14 +202,14 @@ def test_8_el_ejercicio_ponle_nombre():
 
 
 def test_8_la_linea_9_es_la_de_la_pagina_del_reloj():
-    """El renglón citado es, tal cual, la línea 9 del pseudocódigo de
-    PROFUNDIZACIÓN-ITERATIVA en Jugar contra el reloj."""
-    texto = _texto()
-    citado = re.search(r"```text\n(.*?)\n```", _seccion_cruda(texto, 3), re.S)[1]
+    """El renglón citado es, sin número ni comentario, la línea 9 del
+    pseudocódigo de PROFUNDIZACIÓN-ITERATIVA en Jugar contra el reloj."""
+    tres = _seccion_cruda(_texto(), 3)
+    m = re.search(r"lo hace la línea (\d+) de\s+PROFUNDIZACIÓN-ITERATIVA, `([^`]+)`", tres)
     reloj = (CLASE_3 / "4_jugar_contra_el_reloj.md").read_text(encoding="utf-8")
-    assert citado in reloj.splitlines()
-    assert re.match(r"\s*9\s", citado)
-    assert "lo hace la línea 9 de" in _limpio(_seccion_cruda(texto, 3))
+    assert m[1] == "9" and "100" in m[2]
+    assert re.search(rf"^ ?{m[1]}\s+{re.escape(m[2])}  # gana seguro$", reloj, re.M)
+    assert "```" not in tres
 
 
 def _seccion_cruda(texto, n):
@@ -210,15 +236,13 @@ def test_8_cuando_dejar_de_buscar_en_t_pm():
                   rf"raíz ya asegura ({_Q})", tres)
     assert (_q(m[1]), _q(m[2])) == (cortes["C2"][0], cortes["C2"][2])
     assert (_q(m[3]), _q(m[4])) == (cortes["D"][0], cortes["D"][1])
-    # Al revés poda solo i1; con ix primero, alfa-beta genera i1 igual
-    _, _, n_reves, podados_reves = j.alfa_beta_tpm("al revés")
-    m = re.search(r"Con los hijos al revés, alfa-beta poda (\w+) y genera (\d+) nodos", tres)
-    assert [m[1]] == [ids[c] for c in podados_reves] and int(m[2]) == n_reves
-    assert j.alfa_beta_tpm("dado")[0:2] == j.alfa_beta_tpm("al revés")[0:2]
+    # Con ix primero en I (primer hijo de la raíz, ventana abierta), alfa-beta
+    # genera i1 igual; la regla del −1 no lo necesita.
+    assert "Supón que ix fuera la primera hoja de I" in tres
     ix_primero = (tuple(reversed(j.ARBOL_TPM[0])),) + j.ARBOL_TPM[1:]
     _, _, _, podados_ix = j.alfa_beta_tpm("dado", arbol=ix_primero)
     assert (0, 1) not in podados_ix and j.nodo_en(ix_primero, (0, 1)) == 1   # i1, generado
-    assert "Si ix fuera su primera hoja, alfa-beta generaría i1 igual" in tres
+    assert "Alfa-beta generaría i1 igual. La regla no: en I, MIN ve ix=-1" in tres
 
 
 def test_8_el_ejercicio_puede_salir():

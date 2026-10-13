@@ -14,8 +14,8 @@ tags: [juegos, busqueda-adversarial, mcts]
 
 Al terminar tendrás:
 
-- una tabla con **cuándo conviene** cada algoritmo de la unidad, qué le
-  cuesta y en qué juego real se usó;
+- dos tablas con **cuándo conviene** cada algoritmo de la unidad y qué le
+  cuesta, y en qué juego real se usó;
 - un **mapa de decisión** de cuatro preguntas, aplicado al árbol T± y a la
   posición de peones de la clase;
 - los cuatro **supuestos** que comparten todos, y qué se usa cuando falla
@@ -33,9 +33,9 @@ Al terminar tendrás:
 > I, C y D, de MIN. Los finales valen ${+1}$, ${-1}$ y hay un solo empate,
 > 0. Minimax juega centro con ${V=0}$.
 
-> **Supuestos de esta página.** Los de toda la unidad: dos jugadores por
-> turnos, todo a la vista, toda partida termina y suma cero. El azar, solo
-> donde hay dados. La sección 3 los revisa uno por uno.
+> **Supuestos de esta página.** Los cuatro de toda la unidad: dos
+> jugadores, suma cero, por turnos y todo a la vista. El azar, solo donde
+> hay dados. La sección 3 los revisa uno por uno.
 
 ## 1 · Elegir por lo que tiene el juego
 
@@ -50,23 +50,51 @@ razonable que se escribe a mano: contar piezas, con su valor. En Go no hay
 una cuenta tan sencilla: un grupo de piedras puede valer mucho o nada según
 cómo termine la partida. **Lo que el juego ofrece decide el algoritmo.**
 
-En la tabla, cada fila es un algoritmo de la unidad. «Conviene cuando» dice
-qué tiene que ofrecer el juego; «Le cuesta», qué paga a cambio.
+En las dos tablas, cada fila es un algoritmo de la unidad. «Conviene
+cuando» dice qué tiene que ofrecer el juego; «Le cuesta», qué paga a cambio.
+«Cabe» quiere decir que el árbol entero se recorre en el tiempo que hay.
 
 ::: table {#jue-c3-cmp-cuando title="Cuándo conviene cada algoritmo"}
-| Algoritmo | Conviene cuando | Le cuesta | Juego real |
-|---|---|---|---|
-| Minimax y alfa-beta | El árbol cabe entero en el tiempo que hay | Del orden de $b^m$ nodos; alfa-beta ahorra si el orden es bueno | Gato, hexapawn; Conecta 4, resuelto en 1988 |
-| Expectiminimax | Hay dados y el árbol cabe | Cada dado multiplica las ramas por sus resultados | Hexapawn con volado. Backgammon no cabe: TD-Gammon (1992) miraba dos jugadas y estimaba con una red |
-| Alfa-beta con corte, quietud e iterativa | No cabe, hay una $\mathrm{EVAL}$ buena y hay reloj | Escribir $\mathrm{EVAL}$; el horizonte | Ajedrez (Deep Blue, 1997); damas (Chinook, con bases de finales) |
-| Monte Carlo plano | No cabe y no hay una $\mathrm{EVAL}$ buena | Promedia como si los dos jugaran al azar: puede elegir mal | Go experimental, de 1993 a 2005 |
-| MCTS con UCT | No cabe, no hay una $\mathrm{EVAL}$ buena y hay reloj | Muchas simulaciones; elegir $c$ | Go (MoGo, 2006); Hex (MoHex) |
+| Algoritmo | Conviene cuando |
+|---|---|
+| Minimax | Cabe y no hay dados |
+| Expectiminimax | Cabe y hay dados |
+| Alfa-beta | Cabe y no hay dados |
+| Corte, quietud e iterativa | No cabe; hay $\mathrm{EVAL}$ buena |
+| Monte Carlo plano | No cabe; no hay $\mathrm{EVAL}$ |
+| MCTS con UCT | No cabe; no hay $\mathrm{EVAL}$ |
 :::
 
-Tres matices que la tabla no alcanza a decir:
+Dónde se usó cada uno, en el mismo orden:
+
+- **Minimax:** gato.
+- **Expectiminimax:** ningún juego de dados famoso cabe; en la clase, el
+  ejemplo es T± con un dado en D. El backgammon no cabe: TD-Gammon (1992)
+  miraba dos jugadas, promediaba los dados y estimaba con una red.
+- **Alfa-beta:** Conecta 4, resuelto en 1988.
+- **Corte, quietud e iterativa:** ajedrez (Deep Blue, 1997) y damas
+  (Chinook, con bases de finales).
+- **Monte Carlo plano:** Go, de 1993 a 2005.
+- **MCTS con UCT:** Go (MoGo, 2006) y Hex (MoHex).
+
+::: table {#jue-c3-cmp-cuesta title="Qué le cuesta a cada algoritmo"}
+| Algoritmo | Le cuesta |
+|---|---|
+| Minimax | Del orden de $b^m$ nodos |
+| Expectiminimax | Cada dado multiplica las ramas |
+| Alfa-beta | Hasta $b^m$, menos ordenando bien |
+| Corte, quietud e iterativa | Escribir $\mathrm{EVAL}$; el horizonte |
+| Monte Carlo plano | Supone rivales al azar |
+| MCTS con UCT | Muchas simulaciones; elegir $c$ |
+:::
+
+Monte Carlo plano promedia como si los dos jugaran al azar, y por eso puede
+elegir mal. La iterativa y MCTS son las que se interrumpen con el reloj.
+
+Tres matices que las tablas no alcanzan a decir:
 
 - **Deep Blue y Chinook no buscaban hasta los finales**: cortaban y
-  estimaban, y por eso no están en la primera fila. Las damas sí se
+  estimaban, y por eso no están en las filas de minimax y alfa-beta. Las damas sí se
   resolvieron, en 2007: con juego perfecto son tablas. Tampoco fue
   alfa-beta sola: combinó varias búsquedas con bases de finales.
 - **La quietud arregla los intercambios a medias, no todo.** Lo que no es
@@ -78,10 +106,10 @@ Tres matices que la tabla no alcanza a decir:
   [[de-donde-sale-el-bono|De dónde sale el bono]].
 
 ::: exercise {#jue-c3-cmp-ej-tdgammon title="Ubica a TD-Gammon en la tabla"}
-TD-Gammon aparece en la fila de expectiminimax, pero no buscaba hasta los
-finales.
+TD-Gammon aparece junto a expectiminimax, porque el backgammon tiene
+dados, pero no buscaba hasta los finales.
 
-1. ¿Qué fila describe mejor lo que hacía?
+1. ¿Qué fila de la primera tabla describe mejor lo que hacía?
 2. ¿Qué número daba su búsqueda: $V$, valor con corte o $\bar u$?
 :::
 
@@ -91,7 +119,7 @@ de la tabla hace lo mismo?
 :::
 
 ::: answer {#jue-c3-cmp-resp-tdgammon of="jue-c3-cmp-ej-tdgammon"}
-1. La del **corte**, la tercera, pero con nodos de azar: miraba dos
+1. La de **corte, quietud e iterativa**, pero con nodos de azar: miraba dos
    jugadas, promediaba los dados como expectiminimax y estimaba debajo del
    corte con su red, que hacía de $\mathrm{EVAL}$.
 2. **Valor con corte**, no $V$. Promediar los dados no lo vuelve exacto: lo
@@ -105,17 +133,18 @@ falta lo contrario: ¿en qué orden se hacen las preguntas?
 
 **Piensa: de todas las preguntas de la tabla, ¿cuál hay que hacer primero?**
 
-La de si cabe. Si el árbol cabe, la respuesta es exacta y nada más importa:
-ninguna estimación supera a $V$. Las otras preguntas solo se hacen cuando no
-cabe. En [[diagnosticar-el-juego|Diagnosticar el juego]] ya era la quinta
+La de si cabe. Si el árbol cabe, la búsqueda es exacta: ninguna estimación
+supera a $V$. Solo falta saber si hay dados, para elegir cuál búsqueda
+exacta. Las otras preguntas solo se hacen cuando no cabe. En [[diagnosticar-el-juego|Diagnosticar el juego]] ya era la quinta
 pregunta, la que decide el método.
 
 El mapa, en orden:
 
-1. **¿Cabe el árbol en el tiempo que hay?** Sí: alfa-beta. Da $V$ y la
-   jugada de minimax, con menos nodos que minimax.
-2. **¿Hay dados?** Sí: los nodos de azar se quedan y se promedian. Si cabe,
-   expectiminimax; si no, con corte, como TD-Gammon.
+1. **¿Cabe el árbol en el tiempo que hay?** Sí, sin dados: alfa-beta. Da
+   $V$ y la jugada de minimax, con menos nodos que minimax. Sí, con dados:
+   expectiminimax, que da el $V$ del juego con dado.
+2. **No cabe: ¿hay dados?** Sí: corte con nodos de azar, que se promedian,
+   como TD-Gammon.
 3. **¿Hay una $\mathrm{EVAL}$ buena?** Sí: alfa-beta con corte. Con
    capturas, quietud; con reloj, profundización iterativa, que entrega la
    última búsqueda completa.
@@ -125,22 +154,25 @@ El mapa, en orden:
 Monte Carlo plano es la versión sin árbol de la rama 4: más simple, y puede
 elegir mal.
 
-**En T±.** Tiene 15 nodos: cabe, rama 1. Alfa-beta juega centro con
+**En T±.** Tiene 15 nodos y no tiene dados: cabe, rama 1. Alfa-beta juega centro con
 ${V=0}$ y genera 12. Los demás habrían pagado por nada, o algo peor: el corte
 a ${d=1}$ elige izq, con 60, y Monte Carlo plano elige der. Si D fuera un
-dado, sería la rama 2: expectiminimax juega der, que vale ${1/3}$.
+dado, seguiría en la rama 1, ahora con dados: expectiminimax juega der, que vale ${1/3}$.
 
 **En la posición de la clase.** La tratamos como si no cupiera, para hacer
-las cuentas a mano. En la computadora sí cabe: su árbol completo tiene 389
+las cuentas a mano. No tiene dados, y en la computadora sí cabe, así que es
+la rama 1: su árbol completo tiene 389
 nodos, y alfa-beta lo resuelve generando 78. Juega
 $\text{d2}\textbf{-}\text{d3}$, que gana: ${V=+1}$. El tablero de 4×4
 entero, con 4 197 973 nodos, también cabe; así se sabe que gana el
 primero.
 
-Si no cupiera, la posición tiene $\mathrm{EVAL}$: es la rama 3. El corte a
+Si no cupiera, la posición tiene $\mathrm{EVAL}$: sería la rama 3. El corte a
 ${d=1}$ elige $\text{d2}\textbf{x}\text{c3}$, con 13, que pierde. Con
-quietud elige $\text{d2}\textbf{-}\text{d3}$. La rama 4 también acierta:
-$\text{d2}\textbf{-}\text{d3}$ promedia ${8/9}$ en las simulaciones.
+quietud elige $\text{d2}\textbf{-}\text{d3}$. Sin $\mathrm{EVAL}$, Monte
+Carlo plano también acierta: si desde $\text{d2}\textbf{-}\text{d3}$ los dos
+juegan al azar hasta el final, $U$ promedia ${8/9}$, lo más alto de las tres
+jugadas.
 
 ::: exercise {#jue-c3-cmp-ej-mapa title="Corre el mapa en tres juegos"}
 Recorre las cuatro preguntas para cada juego y di en qué rama acaba.
@@ -156,7 +188,7 @@ Recorre las cuatro preguntas para cada juego y di en qué rama acaba.
 :::
 
 ::: answer {#jue-c3-cmp-resp-mapa of="jue-c3-cmp-ej-mapa"}
-1. **Hexapawn: rama 1.** Cabe; alfa-beta da $V$ exacto.
+1. **Hexapawn: rama 1.** Cabe y no hay dados; alfa-beta da $V$ exacto.
 2. **Ajedrez: rama 3.** No cabe, no hay dados y contar piezas es una
    $\mathrm{EVAL}$ razonable. Alfa-beta con corte, quietud por las capturas
    e iterativa por el reloj: lo de Deep Blue.
@@ -184,7 +216,13 @@ MIN ya no le puede quitar, porque los dos miden con el mismo número.
 **Con tres jugadores eso se rompe.** Un final en el que tú pierdes puede ser
 victoria de B o de C, y a B le importa cuál. Un número ya no basta: cada
 final necesita uno por jugador, y lo peor para ti deja de ser lo mejor para
-cada rival. Con dos jugadores y un pago propio cada uno, pasa lo mismo.
+cada rival.
+
+**Con dos jugadores también se rompe, si cada uno tiene su propio pago.**
+Dos amigos arman por turnos un rompecabezas, y los dos ganan si lo terminan.
+Lo que le conviene a uno le conviene al otro. Minimax supondría que el
+compañero quiere arruinarlo, y descartaría una jugada buena solo porque él
+podría echarla a perder, aunque nunca lo haría.
 
 Los cuatro supuestos de la unidad, y qué los rompe:
 
@@ -302,8 +340,8 @@ cambia la primera respuesta del mapa, y con ella todo lo demás.
 **5. Tres jugadores.** Se rompe **dos jugadores**: no hay un solo MIN, y
 cada final necesita un número por jugador. Como no hay $\mathrm{EVAL}$
 buena, lo cercano de la lista es **MCTS con varios jugadores**. $\max^n$ y
-el paranoico también buscan en árbol, pero cortan y estiman, y aquí no hay
-con qué.
+el paranoico llegan a los finales si el árbol cabe; aquí tendrían que
+cortar y estimar con una $\mathrm{EVAL}$, y no hay con qué.
 :::
 
 **Punto de control:** deberías poder decir, para un juego nuevo, si cabe,
@@ -321,10 +359,10 @@ reconocer cuándo un juego rompe los supuestos de la unidad.
 - **Qué número da cada uno.** $V$ es el valor del juego. El valor con corte
   y $\bar u$ lo estiman, cada uno con su supuesto: $\mathrm{EVAL}$ donde se
   corta, o los dos jugando al azar.
-- **Cuándo conviene.** Si cabe, alfa-beta: gato, hexapawn. Si no cabe y hay
-  una $\mathrm{EVAL}$ buena, corte, quietud e iterativa: Deep Blue, Chinook.
-  Si no la hay, MCTS con UCT: MoGo, MoHex. Con dados, nodos de azar:
-  TD-Gammon.
+- **Cuándo conviene.** Si cabe, alfa-beta, o expectiminimax si hay dados:
+  gato, Conecta 4. Si no cabe y hay una $\mathrm{EVAL}$ buena, corte,
+  quietud e iterativa: Deep Blue, Chinook. Si no la hay, MCTS con UCT:
+  MoGo, MoHex. Sin caber y con dados, corte con nodos de azar: TD-Gammon.
 - **El mapa empieza por «¿cabe?».** La posición de la clase sí cabía en la
   computadora: 389 nodos, 78 con alfa-beta, y $\text{d2}\textbf{-}\text{d3}$
   gana. El corte a ${d=1}$ elegía $\text{d2}\textbf{x}\text{c3}$, con 13.

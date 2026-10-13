@@ -570,7 +570,7 @@ Antes de cerrar, la ficha de alfa-beta. Frente a la de [[minimax-como-algoritmo|
 |---|---|
 | Hasta dónde mira | Hasta los finales |
 | ¿Genera todo el árbol? | No: salta las ramas que ya no pueden cambiar la decisión. Cuántas, lo decide el orden |
-| ¿Da $V$ exacto? | Sí en la raíz, el mismo que minimax. Un nodo que cortó solo da una cota |
+| ¿Garantiza $V$? | Sí, en la raíz: el mismo que minimax. Un nodo que cortó solo da una cota |
 | Con qué estima | Con nada: no estima |
 | ¿Quién tira dados? | Nadie |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor $V$, como minimax. Interrumpido, tampoco garantiza nada |
@@ -580,11 +580,11 @@ Antes de cerrar, la ficha de alfa-beta. Frente a la de [[minimax-como-algoritmo|
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | Minimax | Los finales | $V$ exacto |
-> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
-> | **Alfa-beta (estás aquí)** | **Los finales, sin las ramas que ya no deciden** | **$V$ exacto en la raíz** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | **Alfa-beta (estás aquí)** | **$V$ en la raíz; lo garantiza** |
 >
 > **Lo que viene.**
 >

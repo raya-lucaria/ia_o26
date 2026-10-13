@@ -17,6 +17,7 @@ import json
 import re
 import shutil
 import subprocess
+from html import unescape as html_unescape
 from html.parser import HTMLParser
 
 import pytest
@@ -85,8 +86,8 @@ def test_la_tabla_incrustada_tiene_las_cifras_de_tabla_t_pm(datos):
     for f, e in zip(datos["tabla"], esperado):
         assert f["jugada"] == e["jugada"], f["algoritmo"]
         assert f["valor"] == (j.fmt_t(e["valor"]) if isinstance(e["valor"], j.F) else e["valor"])
-        assert (f["tipo"], f["escala"], f["nodos"], f["exacto"]) == \
-               (e["tipo"], e["escala"], e["nodos"], e["exacto"]), f["algoritmo"]
+        assert (f["tipo"], f["escala"], f["nodos"], f["garantiza"], f["da_v_aqui"]) == \
+               (e["tipo"], e["escala"], e["nodos"], e["garantiza"], e["da_v_aqui"]), f["algoritmo"]
 
 
 def test_los_nodos_mirados_coinciden_con_la_cuenta_de_la_tabla(datos):
@@ -203,61 +204,174 @@ def _norm(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
-# (fragmento, jugada, valor de la raíz, nodos mirados, ¿exacto?)
+# «¿Garantiza V?» y «¿y aquí da V?» vienen de tabla_t_pm() (campos
+# `garantiza` y `da_v_aqui`); la página no los deduce. La tabla pintada solo
+# abrevia tres textos para caber a 390 px (ABREVIA del JavaScript).
+ABREVIA = {
+    "Sí, el V del juego con dado": "Sí, el del juego con dado",
+    "No, salvo si llega a los finales": "No, salvo finales",
+    "No (converge a él con c suficientemente grande)": "No; converge",
+}
+
+# (fragmento, jugada, valor de la raíz, nodos mirados, ¿garantiza V?, ¿y aquí da V?)
 CASOS = [
-    ("minimax", "centro", "0", "15 de 15", "sí"),
-    ("alfa-beta-dado", "centro", "0", "12 de 15", "sí"),
-    ("alfa-beta-al-reves", "centro", "0", "14 de 15", "sí"),
-    ("dado", "der", "1/3", "15 de 15", "no"),
-    ("corte-d1", "izq", "60", "4 de 15", "no"),
-    ("corte-d2", "centro", "10", "11 de 15", "no"),
-    ("corte-d3", "centro", "0", "15 de 15", "sí"),
-    ("quietud", "centro", "20", "5 de 15", "no"),
-    ("iterativa-d3", "centro", "0", "12 de 15", "sí"),
-    ("mc-5", "der", "3/5", "15 de 15", "no"),
-    ("uct", "centro", "0", "15 de 15", "no"),
+    ("minimax", "centro", "0", "15 de 15", "Sí", "sí"),
+    ("alfa-beta-dado", "centro", "0", "12 de 15", "Sí, en la raíz", "sí"),
+    ("alfa-beta-al-reves", "centro", "0", "14 de 15", "Sí, en la raíz", "sí"),
+    ("dado", "der", "1/3", "15 de 15", "Sí, el V del juego con dado", "sí: 1/3 es el V del juego con dado"),
+    ("corte-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
+    ("corte-d2", "centro", "10", "11 de 15", "No, salvo si llega a los finales", "no"),
+    ("corte-d3", "centro", "0", "15 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales"),
+    ("quietud", "centro", "20", "5 de 15", "No, salvo si llega a los finales", "no"),
+    ("iterativa-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
+    ("iterativa-d3", "centro", "0", "12 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales"),
+    ("mc-5", "der", "3/5", "15 de 15", "No", "no"),
+    ("mc-50", "der", "12/25", "15 de 15", "No", "no"),
+    ("uct", "centro", "0", "15 de 15", "No (converge a él con c suficientemente grande)", "sí, por casualidad"),
+    ("uct-18", "centro", "−1/7", "14 de 15", "No (converge a él con c suficientemente grande)", "no"),
 ]
 
 
-@pytest.mark.parametrize("frag, jugada, valor, nodos, exacto", CASOS, ids=[c[0] for c in CASOS])
-def test_la_tarjeta_dice_lo_que_dicen_los_datos(frag, jugada, valor, nodos, exacto):
+@pytest.mark.parametrize("frag, jugada, valor, nodos, garantiza, aqui", CASOS, ids=[c[0] for c in CASOS])
+def test_la_tarjeta_dice_lo_que_dicen_los_datos(frag, jugada, valor, nodos, garantiza, aqui):
     t = {k: _norm(v) for k, v in _leer(frag).por_id.items()}
     assert t["t-jugada"].startswith(jugada), t["t-jugada"]
     assert t["t-valor"].split()[0] == valor, t["t-valor"]
     assert t["t-nodos"].startswith(nodos), t["t-nodos"]
-    assert t["t-exacto"].startswith(exacto), t["t-exacto"]
+    assert t["t-garantiza"] == garantiza, t["t-garantiza"]
+    assert t["t-aqui"].startswith(aqui), t["t-aqui"]
     assert ("✓" in t["t-jugada"]) == (jugada == j.minimax_tpm()[0])
     assert t["anuncio"], "el aria-live quedó vacío"
 
 
 def test_la_tarjeta_coincide_con_la_tabla_de_la_fuente():
-    """Los CASOS de arriba son las cifras de tabla_t_pm(), no otras."""
+    """Los CASOS de arriba son las cifras de tabla_t_pm(), no otras: la
+    garantía es su `garantiza` y «¿y aquí da V?» su `da_v_aqui`."""
     filas = {f["algoritmo"]: f for f in j.tabla_t_pm()}
     por_frag = {"minimax": "minimax", "alfa-beta-dado": "alfa-beta, orden dado",
                 "alfa-beta-al-reves": "alfa-beta, orden al revés",
                 "dado": "expectiminimax, D es un dado", "corte-d1": "corte d = 1",
                 "corte-d2": "corte d = 2", "corte-d3": "corte d = 3", "quietud": "quietud, d = 1",
-                "mc-5": "Monte Carlo plano, 5 por jugada", "uct": "UCT, c = 1, 40 vueltas"}
-    for frag, jugada, valor, nodos, exacto in CASOS:
-        if frag not in por_frag:
+                "mc-5": "Monte Carlo plano, 5 por jugada",
+                "mc-50": "Monte Carlo plano, 50 por jugada", "uct": "UCT, c = 1, 40 vueltas"}
+    iterativa = filas["profundización iterativa, d = 1, 2, 3"]
+    for frag, jugada, valor, nodos, garantiza, aqui in CASOS:
+        if frag.startswith("iterativa") or frag == "uct-18":
+            fam = iterativa if frag.startswith("iterativa") else filas["UCT, c = 1, 40 vueltas"]
+            assert garantiza == fam["garantiza"], frag
             continue
         f = filas[por_frag[frag]]
         v = j.fmt_t(f["valor"]) if isinstance(f["valor"], j.F) else str(f["valor"])
-        assert (jugada, valor, nodos, exacto) == \
-               (f["jugada"], v, f"{f['nodos']} de 15", "sí" if f["exacto"] else "no"), frag
+        assert (jugada, valor, nodos) == (f["jugada"], v, f"{f['nodos']} de 15"), frag
+        assert garantiza == f["garantiza"], frag
+        assert aqui.startswith("sí") == f["da_v_aqui"], frag
+    # la última búsqueda de la iterativa es la fila de la tabla
+    assert ("centro", "0") == (iterativa["jugada"], str(iterativa["valor"])) and iterativa["da_v_aqui"]
 
 
-def test_la_tabla_pintada_tiene_las_cifras_de_tabla_t_pm():
+def test_la_tabla_pintada_va_en_el_orden_de_la_fuente_con_sus_cifras():
+    """El orden del curso lo da tabla_t_pm(); la página no reordena."""
     filas = _leer("minimax").filas
     esperado = j.tabla_t_pm()
     assert [f[0] for f in filas] == [e["algoritmo"] for e in esperado]
     for f, e in zip(filas, esperado):
-        _, _, jugada, valor, nodos, exacto = (_norm(x) for x in f)
+        _, _, jugada, valor, nodos, garantiza = (_norm(x) for x in f)
         v = j.fmt_t(e["valor"]) if isinstance(e["valor"], j.F) else str(e["valor"])
         assert jugada.split()[0] == e["jugada"], e["algoritmo"]
-        assert valor.split()[0] == v.replace("-", "−"), e["algoritmo"]
+        assert valor == v.replace("-", "−"), e["algoritmo"]
         assert nodos == str(e["nodos"]), e["algoritmo"]
-        assert exacto == ("sí" if e["exacto"] else "no"), e["algoritmo"]
+        assert garantiza == ABREVIA.get(e["garantiza"], e["garantiza"]), e["algoritmo"]
+
+
+def _fila_actual(fragmento):
+    dom = _dom(fragmento)
+    filas = re.findall(r'<tr data-algoritmo="([^"]+)"([^>]*)>(.*?)</tr>', dom, re.S)
+    actuales = [(a, [_norm(html_unescape(re.sub(r"<[^>]+>", "", c))) for c in re.findall(r"<td[^>]*>(.*?)</td>", cuerpo, re.S)])
+                for a, atr, cuerpo in filas if 'class="actual"' in atr]
+    assert len(actuales) == 1, fragmento
+    return actuales[0]
+
+
+@pytest.mark.parametrize("k", [5, 10, 50])
+def test_la_fila_marcada_de_monte_carlo_es_la_corrida_elegida(k, datos):
+    """Alumno H8: con 50, la fila marcada no puede decir 5 y 3/5."""
+    c = datos["algoritmos"]["Monte Carlo plano"]["corridas"][str(k)]
+    _, celdas = _fila_actual(f"mc-{k}")
+    assert celdas[0] == f"Monte Carlo plano, {k} por jugada"
+    assert celdas[1].split()[0] == c["jugada"]
+    assert celdas[2] == j.fmt_t(j.F(c["sumas"][c["jugada"]], k)).replace("-", "−")
+    assert celdas[3] == str(c["nodos"])
+
+
+@pytest.mark.parametrize("t", [18, 40])
+def test_la_fila_marcada_de_uct_es_la_vuelta_del_deslizador(t):
+    """Render H10: a la vuelta 18 la fila marcada no puede traer los números de la 40."""
+    u = j.uct_tpm(1, t, j.SEMILLA_TPM)
+    jug = u["mas_simulada"][-1]
+    h = (j.JUGADAS_RAIZ.index(jug),)
+    _, celdas = _fila_actual(f"uct-{t}")
+    assert celdas[0] == f"UCT, c = 1, vuelta {t} de {j.VUELTAS_PAGINA_TPM}"
+    assert celdas[1].split()[0] == jug
+    assert celdas[2] == j.fmt_t(j.F(u["S"][h], u["N"][h])).replace("-", "−")
+    assert celdas[3] == str(len(u["N"]))
+
+
+def test_uct_agrega_a_lo_mas_un_nodo_por_vuelta(datos):
+    """Alumno H11: tras 18 vueltas hay 14 nodos, no 19; la tarjeta dice cuáles
+    vueltas no agregaron (bajaron a un final que ya estaba en el árbol)."""
+    pv = datos["algoritmos"]["UCT"]["por_vuelta"]
+    tamanos = [1] + [len(x) for x in pv]
+    assert all(b - a in (0, 1) for a, b in zip(tamanos, tamanos[1:]))
+    sin = [k for k in range(1, 19) if tamanos[k] == tamanos[k - 1]]
+    assert tamanos[18] == 14 and sin == [9, 10, 11, 15, 18]
+    extra = _norm(_leer("uct-18").por_id["t-extra"])
+    assert "Nodos en el árbol (a lo más uno nuevo por vuelta): R + 13 en 18 vueltas; " \
+        "no agregaron las vueltas 9, 10, 11, 15 y 18" in extra
+
+
+def test_la_nota_de_uct_dice_cuando_un_nodo_elige_por_puntaje(datos):
+    """Corrección H14: elige por puntaje solo con todos sus hijos en el árbol."""
+    tras = datos["algoritmos"]["UCT"]["por_vuelta"][17]
+    hijos = {}
+    for n in datos["nodos"]:
+        if n["padre"]:
+            hijos.setdefault(n["padre"], []).append(n["id"])
+    completos = [i for i in hijos if i in tras and all(x in tras for x in hijos[i])]
+    assert completos == ["R", "I", "C", "D", "C1"]
+    nota = _norm(_leer("uct-18").por_id["t-nota"])
+    assert "solo cuando ya los tiene todos" in nota
+    assert "ya eligen por puntaje: R, I, C, D y C1." in nota
+
+
+def _podados_por_cota(visitados, valores, nodos):
+    """La regla del JavaScript: hijos sin mirar de un nodo que quedó con cota."""
+    vis = set(visitados)
+    return sorted(n["id"] for n in nodos if n["padre"] in valores
+                  and valores[n["padre"]][0] in ("≤", "≥") and n["id"] not in vis)
+
+
+def test_los_podados_de_la_iterativa_vienen_de_la_fuente(datos):
+    """La iterativa trae `podados` como alfa-beta (los hijos sin generar de
+    cada nodo que cortó, no lo que quedó bajo el horizonte). Contraprueba:
+    la regla «hijo sin mirar de un nodo con cota» da lo mismo en las tres."""
+    a = datos["algoritmos"]
+    for clave in ("alfa-beta, dado", "alfa-beta, al revés"):
+        assert _podados_por_cota(a[clave]["visitados"], a[clave]["valores"], datos["nodos"]) \
+            == sorted(a[clave]["podados"]), clave
+    it = a["profundización iterativa"]
+    assert [x["podados"] for x in it] == [[], ["d2", "d3"], ["c2b", "d2", "d3"]]
+    assert [_podados_por_cota(x["visitados"], x["valores"], datos["nodos"]) for x in it] == \
+        [sorted(x["podados"]) for x in it]
+
+
+@pytest.mark.parametrize("frag, podados", [("iterativa-d1", ""), ("iterativa-d2", "podó d2, d3; "),
+                                           ("iterativa-d3", "podó c2b, d2, d3; ")])
+def test_la_iterativa_tacha_lo_que_podo(frag, podados):
+    """Render H8: una marca, un significado; lo podado va tachado también aquí."""
+    titulo = _norm(_leer(frag).por_id["arbol-titulo"])
+    assert ("podó" in titulo) == bool(podados)
+    if podados:
+        assert podados.strip() in titulo
 
 
 def test_la_vuelta_18_de_uct_entrega_centro_y_la_17_no():

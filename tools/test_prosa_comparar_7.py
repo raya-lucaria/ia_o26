@@ -138,6 +138,8 @@ def test_comparar_7_corte_quietud_e_iterativa():
     filas, total = j.iterativa_tpm()
     leidas = re.findall(r"d=(\d): (\w+), con (\d+)", cuatro)
     assert [(int(d), a, int(g)) for d, a, g in leidas] == [(d, a, g) for d, _, a, _, g in filas]
+    m = re.search(r"d=2: \w+, con (\d+), y no (\d+) como el corte solo: alfa-beta poda", cuatro)
+    assert (int(m[1]), int(m[2])) == (filas[1][4], j.corte_tpm(2)[3]) and m[1] != m[2]
     assert int(re.search(r"Son (\d+) nodos en total, más que los (\d+)", cuatro)[1]) == total
     resp = _limpio(_respuesta(texto, "jue-c3-cmp-ej-reloj"))
     m = re.search(r"1\. (\w+), con (\d+): la de d=(\d)", resp)
@@ -176,14 +178,51 @@ def test_comparar_7_monte_carlo_plano():
     filas = _tabla(texto, "jue-c3-cmp-reparto-mc")
     assert [_c(x) for x in filas[0][1:4]] == list(j.JUGADAS_RAIZ)
     leido = {int(_c(f[0])): [int(_c(x)) for x in f[1:]] for f in filas[1:]}
-    esperado = {}
+    esperado, por_empate = {}, []
     for kk in j.SIMS_MC_TPM:
         cuenta, empates = j.reparto_mc_plano_tpm(kk, j.SEMILLAS_MC_TPM)
-        esperado[kk] = [cuenta[a] for a in j.JUGADAS_RAIZ] + [empates]
+        esperado[kk] = [cuenta[a] for a in j.JUGADAS_RAIZ]
+        por_empate.append(empates)
     assert leido == esperado
+    m = re.search(r"Por empate se decidieron (\d+), (\d+) y (\d+) de esas corridas", cinco)
+    assert [int(x) for x in m.groups()] == por_empate
     resp = _limpio(_respuesta(texto, "jue-c3-cmp-ej-mas-sims"))
-    m = re.search(rf"^(\w+): .*?der tiene el mayor, ({_FR})\..*?centro vale ({_FR})", resp)
-    assert (m[1].lower(), _fr(m[2]), _fr(m[3])) == (jl, mu["der"], rival["centro"])
+    m = re.search(rf"^(\w+): .*?der tiene el mayor, ({_FR})\.", resp)
+    assert (m[1].lower(), _fr(m[2])) == (jl, mu["der"])
+    _comparar_7_lo_que_deja_el_azar(resp, jl, mu)
+
+
+_NODOS_AZAR = ("I", "C", "D", "C1", "C2")
+
+
+def _eligen(*quienes):
+    """Expectiminimax con todos al azar salvo `quienes`, que eligen."""
+    return j.expectiminimax_tpm(tuple(n for n in _NODOS_AZAR if n not in quienes))
+
+
+def _comparar_7_lo_que_deja_el_azar(resp, jl, mu):
+    """La segunda parte de la respuesta de mas-sims, contra expectiminimax con
+    distintos nodos al azar: ningún nodo solo basta; C1 y C2, o I y D, sí;
+    solo D deja izq arriba."""
+    import itertools
+    m = re.search(r"Ningún nodo solo basta para entregar (\w+): tienen que dejar el azar al "
+                  r"menos (\w+)\.", resp)
+    centro = j.minimax_tpm()[0]
+    assert m[1] == centro
+    assert all(_eligen(n)[0] != centro for n in _NODOS_AZAR)
+    assert any(_eligen(*par)[0] == centro for par in itertools.combinations(_NODOS_AZAR, 2))
+    assert m[2] == "dos"
+    m = re.search(rf"Si MAX elige en C1 y en C2, centro vale ({_FR}), más que el ({_FR}) de der\.",
+                  resp)
+    jj, v = _eligen("C1", "C2")
+    assert jj == centro and (_fr(m[1]), _fr(m[2])) == (v["C"], v["D"]) and v["C"] > v["D"]
+    m = re.search(rf"Si MIN elige en I y en D, izq y der caen a ({_FR})\.", resp)
+    jj, v = _eligen("I", "D")
+    assert jj == centro and _fr(m[1]) == v["I"] == v["D"]
+    m = re.search(rf"Que MIN elija solo en D no alcanza: der cae, pero izq, con ({_FR}), sigue "
+                  rf"arriba del ({_FR}) de centro\.", resp)
+    jj, v = _eligen("D")
+    assert jj == "izq" and (_fr(m[1]), _fr(m[2])) == (v["I"], v["C"]) == (mu["izq"], mu["centro"])
 
 
 def test_comparar_7_uct():
@@ -231,30 +270,102 @@ def test_comparar_7_uct():
     m = re.search(r"1\. (\w+): es la más simulada de la vuelta (\d+) a la (\d+)", resp)
     assert m[1].lower() == mas[vuelta - 1]
     assert set(mas[int(m[2]) - 1:int(m[3])]) == {mas[vuelta - 1]}
-    assert vuelta < len(j.ids_tpm()) - 1    # «con 12, el árbol todavía no cubre T±»
+    m = re.search(r"Tras (\d+) vueltas hay (\d+) de los (\d+) nodos, contando R", resp)
+    en_arbol = len(j.uct_tpm(1, vuelta, j.SEMILLA_TPM)["N"])
+    assert (int(m[1]), int(m[2]), int(m[3])) == (vuelta, en_arbol, len(j.ids_tpm()))
+    assert en_arbol < vuelta + 1    # «a lo más un nodo»: hubo vueltas que no agregaron
 
 
-def _valor(celda):
-    return _fr(_c(celda))
+# El orden del curso, y el nombre corto con que la tabla abre cada fila.
+ORDEN_CURSO = ["Minimax", "Expectiminimax", "Alfa-beta", "Corte", "Quietud", "Iterativa",
+               "Monte Carlo plano", "UCT"]
+
+def _sin_corte(celda):
+    """La celda sin los guiones suaves (U+00AD) que dejan partir «Expecti­minimax»
+    y «suficiente­mente» a 390 px."""
+    return _c(celda).replace("\u00ad", "")
+
+
+def _familia(algoritmo):
+    """«corte d = 2» → «Corte»; «profundización iterativa, …» → «Iterativa»."""
+    a = algoritmo.lower().replace("\u00ad", "")
+    for nombre in ORDEN_CURSO:
+        if a.startswith(nombre.lower()) or a.startswith("profundización " + nombre.lower()):
+            return nombre
+    raise KeyError(algoritmo)
+
+
+# La convención única de «¿Garantiza V?» (brief de arreglos r1): si el
+# algoritmo, por cómo funciona, devuelve el valor de minimax. Es un rasgo de
+# cada algoritmo, igual en p7, p8, p9, las fichas y el interactivo; su texto
+# vive en juegos.GARANTIZA_TPM y llega aquí por tabla_t_pm().
+GARANTIZA = {_familia(f["algoritmo"]): f["garantiza"] for f in j.tabla_t_pm()}
+
+
+def _filas_de_la_pagina():
+    """tabla_t_pm() sin las corridas de Monte Carlo plano que la página no
+    lista: su tabla trae solo la de SIMS_MC_TPM[0] simulaciones por jugada."""
+    return [e for e in j.tabla_t_pm() if _familia(e["algoritmo"]) != "Monte Carlo plano"
+            or e["algoritmo"] == f"Monte Carlo plano, {j.SIMS_MC_TPM[0]} por jugada"]
 
 
 def test_comparar_7_la_tabla_de_resultados():
-    """@jue-c3-cmp-resultados = tabla_t_pm(), fila por fila."""
+    """@jue-c3-cmp-resultados = tabla_t_pm(), fila por fila, en el orden del
+    curso (minimax, expectiminimax, alfa-beta, corte, quietud, iterativa,
+    MC plano, UCT); cada fila se empareja por su nombre, no por su posición."""
     texto = _texto()
     filas = _tabla(texto, "jue-c3-cmp-resultados")
-    assert [_c(x) for x in filas[0]] == ["Algoritmo", "Jugada", "Valor", "Nodos", "¿Exacto?"]
-    esperadas = j.tabla_t_pm()
+    assert [_c(x) for x in filas[0]] == ["Algoritmo", "Jugada, valor", "Nodos"]
+    esperadas = _filas_de_la_pagina()
     assert len(filas) - 1 == len(esperadas)
-    for f, e in zip(filas[1:], esperadas):
-        assert _c(f[1]) == e["jugada"], f
-        assert _valor(f[2]) == e["valor"], f
-        assert int(_c(f[3])) == e["nodos"], f
-        exacto = "otro juego" if e["tipo"] == "V con dado" else ("sí" if e["exacto"] else "no")
-        assert _c(f[4]) == exacto, f
+    familias = [_familia(_sin_corte(f[0])) for f in filas[1:]]
+    assert familias == sorted(familias, key=ORDEN_CURSO.index)
+    assert sorted(familias, key=ORDEN_CURSO.index) == sorted(
+        (_familia(e["algoritmo"]) for e in esperadas), key=ORDEN_CURSO.index)
+    pendientes = list(esperadas)
+    for f in filas[1:]:
+        nombre = _sin_corte(f[0]).lower().replace("expectiminimax, dado en d", "expectiminimax, d es un dado")
+        variante = nombre.split(", ", 1)[-1].replace(" ", "")
+        candidatas = [e for e in pendientes if _familia(e["algoritmo"]) == _familia(nombre)
+                      and (", " not in nombre or
+                           e["algoritmo"].lower().replace(" ", "").endswith(variante))]
+        assert len(candidatas) == 1, (f, candidatas)
+        e = candidatas[0]
+        pendientes.remove(e)
+        jugada, valor = _c(f[1]).split(", ")
+        assert jugada == e["jugada"], f
+        assert _fr(valor) == e["valor"], f
+        assert int(_c(f[2])) == e["nodos"], f
+    nota = _limpio(texto.split("jue-c3-cmp-resultados", 1)[1].split("Tres filas", 1)[0])
+    m = re.search(r"la semilla (\d+): (\d+) simulaciones por jugada, y (\d+) vueltas con c=(\d+)",
+                  nota)
+    assert [int(x) for x in m.groups()] == [j.SEMILLA_TPM, j.SIMS_MC_TPM[0],
+                                            j.VUELTAS_PAGINA_TPM, 1]
     aciertan = sum(e["jugada"] == j.minimax_tpm()[0] for e in esperadas)
     m = re.search(r"Tres filas no dicen centro.*?Los otros (\w+) aciertan",
                   _seccion(texto + "\n## ", 7))
     assert len(esperadas) - aciertan == 3 and m[1] == {8: "ocho"}[aciertan]
+
+
+def test_comparar_7_la_tabla_de_garantias():
+    """@jue-c3-cmp-garantiza: un renglón por algoritmo, en el orden del curso,
+    con el texto de la convención; y la nota de las tres filas que dan 0 sin
+    garantía, contra tabla_t_pm()."""
+    texto = _texto()
+    filas = _tabla(texto, "jue-c3-cmp-garantiza")
+    assert [_c(x) for x in filas[0]] == ["Algoritmo", "¿Garantiza V?"]
+    assert {_sin_corte(f[0]): _sin_corte(f[1]) for f in filas[1:]} == GARANTIZA
+    assert [_sin_corte(f[0]) for f in filas[1:]] == ORDEN_CURSO
+    v = j.minimax_tpm()[1]
+    assert list(GARANTIZA) == ORDEN_CURSO
+    sin_garantia = [e for e in _filas_de_la_pagina()
+                    if e["garantiza"].startswith("No") and e["da_v_aqui"]]
+    assert [_familia(e["algoritmo"]) for e in sin_garantia] == ["Corte", "Iterativa", "UCT"]
+    assert [e["algoritmo"] for e in sin_garantia][0] == "corte d = 3"
+    nota = _limpio(texto.split("jue-c3-cmp-garantiza", 1)[1])
+    m = re.search(r"En T±, (\w+) filas de la primera tabla dan el (\d+) de minimax sin esa "
+                  r"garantía\. El corte a d=(\d) y la iterativa, .*?UCT, por casualidad", nota)
+    assert {"tres": 3}[m[1]] == len(sin_garantia) and int(m[2]) == v and int(m[3]) == 3
 
 
 def test_comparar_7_lo_que_hay_que_llevarse():

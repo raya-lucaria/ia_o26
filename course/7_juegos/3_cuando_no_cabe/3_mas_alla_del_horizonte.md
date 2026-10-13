@@ -330,23 +330,23 @@ Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-cor
 |---|---|
 | Hasta dónde mira | $d$ jugadas, y después del corte solo capturas, hasta posiciones quietas |
 | ¿Genera todo el árbol? | No: arriba del corte, todo; debajo, solo las capturas |
-| ¿Da $V$ exacto? | No: valor con corte, sin el engaño de los intercambios a medias. Lo que no es captura sigue detrás del horizonte |
+| ¿Garantiza $V$? | No, salvo si llega a los finales. Da el valor con corte, sin el engaño de los intercambios a medias |
 | Con qué estima | Con $\mathrm{EVAL}$, solo en posiciones quietas |
 | ¿Quién tira dados? | Nadie |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con corte. Interrumpida, como minimax con corte, no garantiza nada |
-| Cuándo conviene | Juegos con capturas, donde $\mathrm{EVAL}$ cambia mucho a mitad de un intercambio. En ajedrez la propuso Shannon en 1950 y la usaba Deep Blue |
+| Cuándo conviene | Juegos con capturas, donde $\mathrm{EVAL}$ cambia mucho a mitad de un intercambio. En ajedrez la usaba Deep Blue |
 :::
 
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | Minimax | Los finales | $V$ exacto |
-> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
-> | Alfa-beta | Los finales, sin las ramas que ya no deciden | $V$ exacto en la raíz |
-> | Minimax con corte | $d$ jugadas | Valor con corte ($\mathrm{EVAL}$); no es $V$ |
-> | **Búsqueda de quietud (estás aquí)** | **$d$ jugadas, luego solo capturas** | **Valor con corte, en posiciones quietas** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | **Búsqueda de quietud (estás aquí)** | **Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales** |
 >
 > **Lo que viene.**
 >

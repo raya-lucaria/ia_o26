@@ -30,15 +30,23 @@ J2 = "2_mirar_todo_y_podar"
 J3 = "3_cuando_no_cabe"
 
 # Orden del curso. `archivo`: la página que lleva su ficha (relativa a la
-# unidad). `mira`, `numero`: las celdas del recuadro (el número dice si es exacto;
-# tres columnas para que quepan a 390 px). `viene`: la
-# línea de «Lo que viene» que leen las páginas anteriores, sin símbolos.
+# unidad). `numero`: la celda «Qué número da» del recuadro; dice qué número
+# sale y si el algoritmo garantiza $V$, con la convención de la fila
+# «¿Garantiza $V$?» de las fichas. `garantiza`: «Sí» o «No», el arranque de
+# esa fila en la ficha y de la segunda mitad de `numero` (la prueba los ata).
+# El recuadro tiene dos columnas: dentro del callout, a 390 px, quedan ~298 px
+# y una tercera se escondía tras el scroll. `mira` ya no sale en el recuadro:
+# la lee la tabla «Cómo busca cada algoritmo» de «Qué número da cada uno»
+# (test_prosa_comparar_8.py), y la ficha la dice en su primera fila.
+# `viene`: la línea de «Lo que viene» que leen las páginas anteriores, sin
+# símbolos.
 ALGORITMOS = [
     dict(
         nombre="Minimax",
         archivo=f"{J2}/2_minimax_como_algoritmo.md",
         mira="Los finales",
-        numero="$V$ exacto",
+        numero="$V$; lo garantiza",
+        garantiza="Sí",
         viene="mirar todo el árbol hasta los finales",
         clase=2, enlace="minimax-como-algoritmo", titulo="Minimax como algoritmo",
     ),
@@ -46,7 +54,8 @@ ALGORITMOS = [
         nombre="Expectiminimax",
         archivo=f"{J2}/3_cuando_decide_un_dado.md",
         mira="Los finales",
-        numero="$V$ exacto, promediando el azar",
+        numero="El $V$ del juego con dado; lo garantiza",
+        garantiza="Sí",
         viene="lo mismo cuando un dado o una moneda decide algunas jugadas; "
               "ahí se promedia en vez de elegir",
         clase=2, enlace="cuando-decide-un-dado", titulo="Cuando decide un dado",
@@ -55,7 +64,8 @@ ALGORITMOS = [
         nombre="Alfa-beta",
         archivo=f"{J2}/5_alfa_beta_como_algoritmo.md",
         mira="Los finales, sin las ramas que ya no deciden",
-        numero="$V$ exacto en la raíz",
+        numero="$V$ en la raíz; lo garantiza",
+        garantiza="Sí",
         viene="la misma jugada que mirar todo, sin generar las ramas que ya "
               "no pueden cambiar la decisión",
         clase=2, enlace="alfa-beta", titulo="Alfa-beta a mano",
@@ -64,7 +74,8 @@ ALGORITMOS = [
         nombre="Minimax con corte",
         archivo=f"{J3}/2_minimax_con_corte.md",
         mira="$d$ jugadas",
-        numero="Valor con corte ($\\mathrm{EVAL}$); no es $V$",
+        numero="Valor con corte; no garantiza $V$, salvo si llega a los finales",
+        garantiza="No",
         viene="mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, "
               "para cuando el árbol no cabe",
         clase=3, enlace="cortar-y-evaluar", titulo="Cortar y evaluar a mano",
@@ -73,7 +84,9 @@ ALGORITMOS = [
         nombre="Búsqueda de quietud",
         archivo=f"{J3}/3_mas_alla_del_horizonte.md",
         mira="$d$ jugadas, luego solo capturas",
-        numero="Valor con corte, en posiciones quietas",
+        numero="Valor con corte en posiciones quietas; no garantiza $V$, salvo si "
+               "llega a los finales",
+        garantiza="No",
         viene="no detenerse a estimar a mitad de un intercambio de capturas",
         clase=3, enlace="mas-alla-del-horizonte", titulo="Más allá del horizonte",
     ),
@@ -81,7 +94,9 @@ ALGORITMOS = [
         nombre="Profundización iterativa",
         archivo=f"{J3}/4_jugar_contra_el_reloj.md",
         mira="$d=1,2,3,\\dots$ mientras haya reloj",
-        numero="Valor con corte de la última búsqueda",
+        numero="Valor con corte de la última búsqueda; no garantiza $V$, salvo si "
+               "llega a los finales",
+        garantiza="No",
         viene="buscar cada vez un poco más hondo, con una jugada siempre "
               "lista para cuando se acabe el tiempo",
         clase=3, enlace="jugar-contra-el-reloj", titulo="Jugar contra el reloj",
@@ -90,7 +105,8 @@ ALGORITMOS = [
         nombre="Monte Carlo plano",
         archivo=f"{J3}/5_simular_en_vez_de_evaluar.md",
         mira="Los finales, jugando al azar; sin árbol",
-        numero="$\\bar u$: estimación, no $V$",
+        numero="$\\bar u$; no garantiza $V$",
+        garantiza="No",
         viene="estimar cada jugada jugando muchas partidas al azar hasta el "
               "final, sin escribir ninguna estimación",
         clase=3, enlace="simular-en-vez-de-evaluar", titulo="Simular en vez de evaluar",
@@ -99,7 +115,8 @@ ALGORITMOS = [
         nombre="MCTS con UCT",
         archivo=f"{J3}/5_simular_en_vez_de_evaluar.md",
         mira="Un árbol que crece; debajo, partidas al azar",
-        numero="$\\bar u$: estimación, no $V$",
+        numero="$\\bar u$; no garantiza $V$ (converge a él con $c$ grande)",
+        garantiza="No",
         viene="lo mismo, pero mandando más partidas a las jugadas que van "
               "mejor, sin dejar de probar las otras",
         clase=3, enlace="simular-en-vez-de-evaluar", titulo="Simular en vez de evaluar",
@@ -114,7 +131,7 @@ SIN_PENDIENTES = ("Ya viste todos los algoritmos de la clase. "
                   "[[de-donde-sale-el-bono|De dónde sale el bono]] explica la "
                   "regla con que MCTS reparte las partidas.")
 
-ENCABEZADO = "| Algoritmo | Hasta dónde mira | Qué número da |"
+ENCABEZADO = "| Algoritmo | Qué número da |"
 INICIO = "> [!NOTE]"
 TITULO = "> **Lo que ya viste"
 CIERRE = "## Lo que hay que llevarse"
@@ -135,7 +152,7 @@ def _negrita(celda: str) -> str:
 
 
 def fila(alg: dict, aqui: bool) -> str:
-    celdas = [alg["nombre"], alg["mira"], alg["numero"]]
+    celdas = [alg["nombre"], alg["numero"]]
     if aqui:
         celdas[0] += " (estás aquí)"
         celdas = [_negrita(c) for c in celdas]
@@ -150,7 +167,7 @@ def bloque(archivo: str) -> str:
         "en el orden del curso.",
         ">",
         "> " + ENCABEZADO,
-        "> |---|---|---|",
+        "> |---|---|",
     ]
     lineas += ["> " + fila(a, a["archivo"] == archivo) for a in vistos(archivo)]
     lineas += [">", "> **Lo que viene.**", ">"]

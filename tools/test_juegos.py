@@ -2883,23 +2883,31 @@ def test_tpm_la_corrida_de_uct_de_la_pagina():
 
 
 def test_tpm_tabla_de_la_pagina():
-    filas = {f["algoritmo"]: f for f in j.tabla_t_pm()}
-    corto = {a: (f["jugada"], f["valor"], f["tipo"], f["nodos"], f["exacto"])
-             for a, f in filas.items()}
-    assert corto == {
-        "minimax": ("centro", 0, "V", 15, True),
-        "alfa-beta, orden dado": ("centro", 0, "V", 12, True),
-        "alfa-beta, orden al revés": ("centro", 0, "V", 14, True),
-        "expectiminimax, D es un dado": ("der", F(1, 3), "V con dado", 15, False),
-        "corte d = 1": ("izq", 60, "valor con corte", 4, False),
-        "corte d = 2": ("centro", 10, "valor con corte", 11, False),
-        "corte d = 3": ("centro", 0, "valor con corte", 15, True),
-        "quietud, d = 1": ("centro", 20, "valor con corte", 5, False),
-        "profundización iterativa, d = 1, 2, 3": ("centro", 0, "valor con corte", 25, True),
-        "Monte Carlo plano, 5 por jugada": ("der", F(3, 5), "ū", 15, False),
-        "UCT, c = 1, 40 vueltas": ("centro", 0, "ū", 15, False),
-    }
-    assert filas["Monte Carlo plano, 5 por jugada"]["nota"] == "límite: der con μ = 1/3"
+    """En el orden del curso; «garantiza» es el rasgo del algoritmo y
+    «da_v_aqui» si el número coincide con V (0, o 1/3 con dado) en T±."""
+    filas = j.tabla_t_pm()
+    corto = [(f["algoritmo"], f["jugada"], f["valor"], f["tipo"], f["nodos"], f["da_v_aqui"])
+             for f in filas]
+    assert corto == [
+        ("minimax", "centro", 0, "V", 15, True),
+        ("expectiminimax, D es un dado", "der", F(1, 3), "V con dado", 15, True),
+        ("alfa-beta, orden dado", "centro", 0, "V", 12, True),
+        ("alfa-beta, orden al revés", "centro", 0, "V", 14, True),
+        ("corte d = 1", "izq", 60, "valor con corte", 4, False),
+        ("corte d = 2", "centro", 10, "valor con corte", 11, False),
+        ("corte d = 3", "centro", 0, "valor con corte", 15, True),
+        ("quietud, d = 1", "centro", 20, "valor con corte", 5, False),
+        ("profundización iterativa, d = 1, 2, 3", "centro", 0, "valor con corte", 25, True),
+        ("Monte Carlo plano, 5 por jugada", "der", F(3, 5), "ū", 15, False),
+        ("Monte Carlo plano, 10 por jugada", "der", F(2, 5), "ū", 15, False),
+        ("Monte Carlo plano, 50 por jugada", "der", F(12, 25), "ū", 15, False),
+        ("UCT, c = 1, 40 vueltas", "centro", 0, "ū", 15, True),
+    ]
+    assert [f["garantiza"] for f in filas] == [
+        "Sí", "Sí, el V del juego con dado", "Sí, en la raíz", "Sí, en la raíz"] + \
+        ["No, salvo si llega a los finales"] * 5 + ["No"] * 3 + \
+        ["No (converge a él con c suficientemente grande)"]
+    assert filas[9]["nota"] == "límite: der con μ = 1/3"
 
 
 def test_tpm_datos_del_interactivo():
@@ -2916,6 +2924,9 @@ def test_tpm_datos_del_interactivo():
     assert a["alfa-beta, al revés"]["podados"] == ["i1"]
     assert a["quietud d = 1"]["visitados"] == ["R", "I", "ix", "C", "D"]
     assert [x["nodos"] for x in a["profundización iterativa"]] == [4, 9, 12]
+    # la iterativa poda donde corta (D en d = 2; C2 y D en d = 3), no bajo el horizonte
+    assert [x["podados"] for x in a["profundización iterativa"]] == [
+        [], ["d2", "d3"], ["c2b", "d2", "d3"]]
     assert a["Monte Carlo plano"]["reparto"][5] == {"izq": 353, "centro": 106, "der": 541}
     assert a["UCT"]["mas_simulada"][-1] == "centro"
     assert len(d["tabla"]) == len(j.tabla_t_pm())

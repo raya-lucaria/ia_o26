@@ -44,9 +44,9 @@
   input[type=range]{width:100%;accent-color:var(--accent);margin:0;min-height:28px}
 
   .principal{display:grid;grid-template-columns:minmax(0,1fr);gap:.8rem}
-  @media (min-width:820px){ .principal{grid-template-columns:minmax(0,380px) minmax(0,1fr)} }
+  @media (min-width:820px){ .principal{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)} }
   .principal .panel{margin-bottom:0}
-  svg#arbol{display:block;width:100%;max-width:360px;height:auto;margin:0 auto}
+  svg#arbol{display:block;width:100%;max-width:600px;height:auto;margin:0 auto}
   .leyenda{display:flex;flex-wrap:wrap;gap:.15rem .9rem;font-size:12.5px;color:var(--muted);margin:.4rem 0 0}
   .leyenda span{white-space:nowrap}
 
@@ -67,12 +67,13 @@
   .extra b{color:var(--text);font-family:var(--mono)}
 
   /* --- la tabla --- */
-  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-  col.c-alg{width:37%} col.c-jug{width:19%} col.c-val{width:19%} col.c-nod{width:14%} col.c-ex{width:11%}
-  @media (max-width:520px){ table{font-size:12px} th,td{padding:.3rem .15rem} }
+  table{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+  col.c-alg{width:26%} col.c-jug{width:20%} col.c-val{width:14%} col.c-nod{width:14%} col.c-ex{width:26%}
+  @media (max-width:520px){ table{font-size:12.5px} th,td{padding:.3rem .2rem} th{font-size:12px} }
   th,td{text-align:left;padding:.35rem .3rem;border-bottom:1px solid var(--rejilla);vertical-align:top;overflow-wrap:anywhere}
   th{color:var(--muted);font-weight:600;overflow-wrap:normal}
-  td.n{font-family:var(--mono)}
+  td.n{font-family:var(--mono);white-space:nowrap;overflow-wrap:normal}
+  td.j{white-space:nowrap}
   td small{display:block;color:var(--muted);font-size:12px}
   tr.actual td{background:var(--accent-soft)}
   tr.actual td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
@@ -91,8 +92,8 @@
     <h2 id="t-algoritmo">Algoritmo</h2>
     <div class="botones" role="group" aria-labelledby="t-algoritmo" id="familias">
       <button type="button" data-familia="minimax">Minimax</button>
-      <button type="button" data-familia="alfa-beta">Alfa-beta</button>
       <button type="button" data-familia="dado">Con dado en D</button>
+      <button type="button" data-familia="alfa-beta">Alfa-beta</button>
       <button type="button" data-familia="corte">Con corte</button>
       <button type="button" data-familia="quietud">Quietud</button>
       <button type="button" data-familia="iterativa">Profundización iterativa</button>
@@ -136,8 +137,8 @@
       <p class="titulo">Simulaciones por jugada (semilla 0)</p>
       <div class="botones">
         <button type="button" data-v="mc-5" data-nombre="Monte Carlo plano, 5 por jugada" data-clave="Monte Carlo plano" data-k="5" data-fila="Monte Carlo plano, 5 por jugada">5</button>
-        <button type="button" data-v="mc-10" data-nombre="Monte Carlo plano, 10 por jugada" data-clave="Monte Carlo plano" data-k="10" data-fila="Monte Carlo plano, 5 por jugada">10</button>
-        <button type="button" data-v="mc-50" data-nombre="Monte Carlo plano, 50 por jugada" data-clave="Monte Carlo plano" data-k="50" data-fila="Monte Carlo plano, 5 por jugada">50</button>
+        <button type="button" data-v="mc-10" data-nombre="Monte Carlo plano, 10 por jugada" data-clave="Monte Carlo plano" data-k="10" data-fila="Monte Carlo plano, 10 por jugada">10</button>
+        <button type="button" data-v="mc-50" data-nombre="Monte Carlo plano, 50 por jugada" data-clave="Monte Carlo plano" data-k="50" data-fila="Monte Carlo plano, 50 por jugada">50</button>
       </div>
     </div>
     <div class="variantes" data-de="uct" hidden>
@@ -156,7 +157,7 @@
       <p class="leyenda" aria-hidden="true">
         <span>Relleno y borde lleno: lo miró</span>
         <span>Punteado con «?»: no lo miró</span>
-        <span>Tachado: podado</span>
+        <span>Tachado: podado por alfa-beta</span>
         <span>Esquinas redondas: dado</span>
         <span>Flecha gruesa: la jugada que entrega</span>
       </p>
@@ -168,7 +169,8 @@
         <dt>Jugada que entrega</dt><dd id="t-jugada">—</dd>
         <dt>Valor de la raíz</dt><dd id="t-valor">—</dd>
         <dt>Nodos mirados</dt><dd id="t-nodos">—</dd>
-        <dt>¿Es V exacto?</dt><dd id="t-exacto">—</dd>
+        <dt>¿Garantiza V?</dt><dd id="t-garantiza">—</dd>
+        <dt>¿Y aquí da V?</dt><dd id="t-aqui">—</dd>
       </dl>
       <ul class="extra" id="t-extra"></ul>
       <p class="nota" id="t-nota"></p>
@@ -179,12 +181,16 @@
     <h2>Todos, en una tabla</h2>
     <table>
       <colgroup><col class="c-alg"><col class="c-jug"><col class="c-val"><col class="c-nod"><col class="c-ex"></colgroup>
-      <thead><tr><th scope="col">Algoritmo</th><th scope="col">Jugada</th><th scope="col">Valor</th><th scope="col">Nodos</th><th scope="col">¿V?</th></tr></thead>
+      <thead><tr><th scope="col">Algoritmo</th><th scope="col">Jugada</th><th scope="col">Valor</th><th scope="col">Nodos</th><th scope="col">¿Garantiza V?</th></tr></thead>
       <tbody id="tabla"></tbody>
     </table>
-    <p class="nota">Nodos: los que generó, contando R; en Monte Carlo plano y UCT, los
-    distintos que tocó la corrida de la semilla 0. ✓ marca la jugada de minimax y ✗ las
-    demás. «¿V?»: si el valor es el V exacto de minimax (en su escala).</p>
+    <p class="nota">En el orden del curso. ✓ marca la jugada de minimax y ✗ las demás.
+    <b>Valor:</b> corte, quietud e iterativa lo dan en 100·U, la escala de EVAL (V = 0 en
+    las dos); expectiminimax, el V del juego con dado; Monte Carlo y UCT, ū.
+    <b>Nodos:</b> los que generó, contando R; en Monte Carlo plano y UCT, los distintos
+    que tocó la corrida de la semilla 0. <b>¿Garantiza V?:</b> si el algoritmo, por cómo
+    funciona, devuelve el valor de minimax; si en T± lo da por casualidad, lo dice la
+    tarjeta, no esta columna. La fila marcada es la de la tarjeta, con sus números.</p>
   </div>
 
   <p class="sr" aria-live="polite" id="anuncio"></p>
@@ -218,21 +224,23 @@
 "corte d = 2":{"visitados":["R","I","i1","ix","C","C1","C2","D","d1","d2","d3"],"jugada":"centro","valor":10,"raiz":{"izq":-100,"centro":10,"der":-100},"valores":{"R":["=",10],"I":["=",-100],"C":["=",10],"D":["=",-100],"C1":["EVAL",10],"C2":["EVAL",50]}},
 "corte d = 3":{"visitados":["R","I","i1","ix","C","C1","c1a","c1b","C2","c2a","c2b","D","d1","d2","d3"],"jugada":"centro","valor":0,"raiz":{"izq":-100,"centro":0,"der":-100},"valores":{"R":["=",0],"I":["=",-100],"C":["=",0],"D":["=",-100],"C1":["=",0],"C2":["=",100]}},
 "quietud d = 1":{"visitados":["R","I","ix","C","D"],"jugada":"centro","valor":20,"raiz":{"izq":-100,"centro":20,"der":10},"valores":{"R":["=",20],"I":["quietud",-100],"C":["quietud",20],"D":["quietud",10]}},
-"profundización iterativa":[{"d":1,"orden":["izq","centro","der"],"jugada":"izq","valor":60,"nodos":4,"visitados":["R","I","C","D"],"valores":{"R":["=",60],"I":["EVAL",60],"C":["EVAL",20],"D":["EVAL",10]}},{"d":2,"orden":["izq","centro","der"],"jugada":"centro","valor":10,"nodos":9,"visitados":["R","I","i1","ix","C","C1","C2","D","d1"],"valores":{"R":["=",10],"I":["=",-100],"C":["=",10],"D":["≤",-100],"C1":["EVAL",10],"C2":["EVAL",50]}},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":0,"nodos":12,"visitados":["R","C","C1","c1a","c1b","C2","c2a","I","i1","ix","D","d1"],"valores":{"R":["=",0],"I":["=",-100],"C":["=",0],"D":["≤",-100],"C1":["=",0],"C2":["≥",100]}}],
+"profundización iterativa":[{"d":1,"orden":["izq","centro","der"],"jugada":"izq","valor":60,"nodos":4,"visitados":["R","I","C","D"],"podados":[],"valores":{"R":["=",60],"I":["EVAL",60],"C":["EVAL",20],"D":["EVAL",10]}},{"d":2,"orden":["izq","centro","der"],"jugada":"centro","valor":10,"nodos":9,"visitados":["R","I","i1","ix","C","C1","C2","D","d1"],"podados":["d2","d3"],"valores":{"R":["=",10],"I":["=",-100],"C":["=",10],"D":["≤",-100],"C1":["EVAL",10],"C2":["EVAL",50]}},{"d":3,"orden":["centro","izq","der"],"jugada":"centro","valor":0,"nodos":12,"visitados":["R","C","C1","c1a","c1b","C2","c2a","I","i1","ix","D","d1"],"podados":["c2b","d2","d3"],"valores":{"R":["=",0],"I":["=",-100],"C":["=",0],"D":["≤",-100],"C1":["=",0],"C2":["≥",100]}}],
 "Monte Carlo plano":{"limite":{"jugada":"der","mu":{"izq":"0","centro":"-1/4","der":"1/3"}},"corridas":{"5":{"sumas":{"izq":-3,"centro":-2,"der":3},"jugada":"der","nodos":15},"10":{"sumas":{"izq":-6,"centro":1,"der":4},"jugada":"der","nodos":15},"50":{"sumas":{"izq":-4,"centro":-3,"der":24},"jugada":"der","nodos":15}},"reparto":{"5":{"izq":353,"centro":106,"der":541},"10":{"izq":269,"centro":53,"der":678},"50":{"izq":39,"centro":1,"der":960}}},
 "UCT":{"c":1,"semilla":0,"mas_simulada":["izq","izq","izq","centro","centro","centro","centro","der","der","der","der","der","der","der","der","der","der","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro","centro"],"caminos":[["I"],["C"],["D"],["C","C1"],["D","d1"],["C","C2"],["D","d2"],["D","d3"],["D","d1"],["D","d1"],["D","d1"],["C","C1","c1a"],["I","i1"],["I","ix"],["I","ix"],["C","C2","c2a"],["C","C1","c1b"],["C","C1","c1a"],["C","C1","c1a"],["D","d1"],["C","C1","c1a"],["C","C2","c2b"],["I","ix"],["D","d1"],["C","C2","c2a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C2","c2a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1b"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C1","c1a"],["C","C2","c2a"],["C","C1","c1a"]],"N":{"R":40,"I":5,"C":26,"D":9,"C1":19,"d1":6,"C2":6,"d2":1,"d3":1,"c1a":16,"i1":1,"ix":3,"c2a":4,"c1b":2,"c2b":1},"S":{"R":-6,"I":-3,"C":0,"D":-3,"C1":-3,"d1":-6,"C2":2,"d2":1,"d3":1,"c1a":0,"i1":1,"ix":-3,"c2a":4,"c1b":-2,"c2b":-1},"U":[-1,1,1,-1,-1,-1,1,1,-1,-1,-1,0,1,-1,-1,1,-1,0,0,-1,0,-1,-1,-1,1,0,0,0,1,0,0,-1,0,0,0,0,0,0,1,0],"por_vuelta":[{"R":[1,-1],"I":[1,-1]},{"R":[2,0],"I":[1,-1],"C":[1,1]},{"R":[3,1],"I":[1,-1],"C":[1,1],"D":[1,1]},{"R":[4,0],"I":[1,-1],"C":[2,0],"D":[1,1],"C1":[1,-1]},{"R":[5,-1],"I":[1,-1],"C":[2,0],"D":[2,0],"C1":[1,-1],"d1":[1,-1]},{"R":[6,-2],"I":[1,-1],"C":[3,-1],"D":[2,0],"C1":[1,-1],"C2":[1,-1],"d1":[1,-1]},{"R":[7,-1],"I":[1,-1],"C":[3,-1],"D":[3,1],"C1":[1,-1],"C2":[1,-1],"d1":[1,-1],"d2":[1,1]},{"R":[8,0],"I":[1,-1],"C":[3,-1],"D":[4,2],"C1":[1,-1],"C2":[1,-1],"d1":[1,-1],"d2":[1,1],"d3":[1,1]},{"R":[9,-1],"I":[1,-1],"C":[3,-1],"D":[5,1],"C1":[1,-1],"C2":[1,-1],"d1":[2,-2],"d2":[1,1],"d3":[1,1]},{"R":[10,-2],"I":[1,-1],"C":[3,-1],"D":[6,0],"C1":[1,-1],"C2":[1,-1],"d1":[3,-3],"d2":[1,1],"d3":[1,1]},{"R":[11,-3],"I":[1,-1],"C":[3,-1],"D":[7,-1],"C1":[1,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1]},{"R":[12,-3],"I":[1,-1],"C":[4,-1],"D":[7,-1],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[13,-2],"I":[2,0],"C":[4,-1],"D":[7,-1],"i1":[1,1],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[14,-3],"I":[3,-1],"C":[4,-1],"D":[7,-1],"i1":[1,1],"ix":[1,-1],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[15,-4],"I":[4,-2],"C":[4,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[2,-1],"C2":[1,-1],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0]},{"R":[16,-3],"I":[4,-2],"C":[5,0],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[2,-1],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0],"c2a":[1,1]},{"R":[17,-4],"I":[4,-2],"C":[6,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[3,-2],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[1,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[18,-4],"I":[4,-2],"C":[7,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[4,-2],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[2,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[19,-4],"I":[4,-2],"C":[8,-1],"D":[7,-1],"i1":[1,1],"ix":[2,-2],"C1":[5,-2],"C2":[2,0],"d1":[4,-4],"d2":[1,1],"d3":[1,1],"c1a":[3,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[20,-5],"I":[4,-2],"C":[8,-1],"D":[8,-2],"i1":[1,1],"ix":[2,-2],"C1":[5,-2],"C2":[2,0],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[3,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[21,-5],"I":[4,-2],"C":[9,-1],"D":[8,-2],"i1":[1,1],"ix":[2,-2],"C1":[6,-2],"C2":[2,0],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1]},{"R":[22,-6],"I":[4,-2],"C":[10,-2],"D":[8,-2],"i1":[1,1],"ix":[2,-2],"C1":[6,-2],"C2":[3,-1],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1],"c2b":[1,-1]},{"R":[23,-7],"I":[5,-3],"C":[10,-2],"D":[8,-2],"i1":[1,1],"ix":[3,-3],"C1":[6,-2],"C2":[3,-1],"d1":[5,-5],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1],"c2b":[1,-1]},{"R":[24,-8],"I":[5,-3],"C":[10,-2],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[6,-2],"C2":[3,-1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[1,1],"c2b":[1,-1]},{"R":[25,-7],"I":[5,-3],"C":[11,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[6,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[4,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[26,-7],"I":[5,-3],"C":[12,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[7,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[5,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[27,-7],"I":[5,-3],"C":[13,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[8,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[6,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[28,-7],"I":[5,-3],"C":[14,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[9,-2],"C2":[4,0],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[7,0],"c1b":[1,-1],"c2a":[2,2],"c2b":[1,-1]},{"R":[29,-6],"I":[5,-3],"C":[15,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[9,-2],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[7,0],"c1b":[1,-1],"c2a":[3,3],"c2b":[1,-1]},{"R":[30,-6],"I":[5,-3],"C":[16,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[10,-2],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[8,0],"c1b":[1,-1],"c2a":[3,3],"c2b":[1,-1]},{"R":[31,-6],"I":[5,-3],"C":[17,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[11,-2],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[9,0],"c1b":[1,-1],"c2a":[3,3],"c2b":[1,-1]},{"R":[32,-7],"I":[5,-3],"C":[18,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[12,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[9,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[33,-7],"I":[5,-3],"C":[19,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[13,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[10,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[34,-7],"I":[5,-3],"C":[20,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[14,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[11,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[35,-7],"I":[5,-3],"C":[21,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[15,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[12,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[36,-7],"I":[5,-3],"C":[22,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[16,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[13,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[37,-7],"I":[5,-3],"C":[23,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[17,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[14,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[38,-7],"I":[5,-3],"C":[24,-1],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[18,-3],"C2":[5,1],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[15,0],"c1b":[2,-2],"c2a":[3,3],"c2b":[1,-1]},{"R":[39,-6],"I":[5,-3],"C":[25,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[18,-3],"C2":[6,2],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[15,0],"c1b":[2,-2],"c2a":[4,4],"c2b":[1,-1]},{"R":[40,-6],"I":[5,-3],"C":[26,0],"D":[9,-3],"i1":[1,1],"ix":[3,-3],"C1":[19,-3],"C2":[6,2],"d1":[6,-6],"d2":[1,1],"d3":[1,1],"c1a":[16,0],"c1b":[2,-2],"c2a":[4,4],"c2b":[1,-1]}]}},
 "tabla":[
-{"algoritmo":"minimax","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":15,"exacto":true,"nota":""},
-{"algoritmo":"alfa-beta, orden dado","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":12,"exacto":true,"nota":""},
-{"algoritmo":"alfa-beta, orden al revés","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":14,"exacto":true,"nota":""},
-{"algoritmo":"expectiminimax, D es un dado","jugada":"der","valor":"1/3","tipo":"V con dado","escala":"U","nodos":15,"exacto":false,"nota":"exacto para el juego con dado, que es otro"},
-{"algoritmo":"corte d = 1","jugada":"izq","valor":60,"tipo":"valor con corte","escala":"100·U","nodos":4,"exacto":false,"nota":""},
-{"algoritmo":"corte d = 2","jugada":"centro","valor":10,"tipo":"valor con corte","escala":"100·U","nodos":11,"exacto":false,"nota":""},
-{"algoritmo":"corte d = 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":15,"exacto":true,"nota":""},
-{"algoritmo":"quietud, d = 1","jugada":"centro","valor":20,"tipo":"valor con corte","escala":"100·U","nodos":5,"exacto":false,"nota":""},
-{"algoritmo":"profundización iterativa, d = 1, 2, 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":25,"exacto":true,"nota":"d = 1: izq (4) · d = 2: centro (9) · d = 3: centro (12)"},
-{"algoritmo":"Monte Carlo plano, 5 por jugada","jugada":"der","valor":"3/5","tipo":"ū","escala":"U","nodos":15,"exacto":false,"nota":"límite: der con μ = 1/3"},
-{"algoritmo":"UCT, c = 1, 40 vueltas","jugada":"centro","valor":"0","tipo":"ū","escala":"U","nodos":15,"exacto":false,"nota":"N = 26 de 40"}]}
+{"algoritmo":"minimax","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":15,"garantiza":"Sí","da_v_aqui":true,"nota":""},
+{"algoritmo":"expectiminimax, D es un dado","jugada":"der","valor":"1/3","tipo":"V con dado","escala":"U","nodos":15,"garantiza":"Sí, el V del juego con dado","da_v_aqui":true,"nota":"exacto para el juego con dado, que es otro"},
+{"algoritmo":"alfa-beta, orden dado","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":12,"garantiza":"Sí, en la raíz","da_v_aqui":true,"nota":""},
+{"algoritmo":"alfa-beta, orden al revés","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":14,"garantiza":"Sí, en la raíz","da_v_aqui":true,"nota":""},
+{"algoritmo":"corte d = 1","jugada":"izq","valor":60,"tipo":"valor con corte","escala":"100·U","nodos":4,"garantiza":"No, salvo si llega a los finales","da_v_aqui":false,"nota":""},
+{"algoritmo":"corte d = 2","jugada":"centro","valor":10,"tipo":"valor con corte","escala":"100·U","nodos":11,"garantiza":"No, salvo si llega a los finales","da_v_aqui":false,"nota":""},
+{"algoritmo":"corte d = 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":15,"garantiza":"No, salvo si llega a los finales","da_v_aqui":true,"nota":""},
+{"algoritmo":"quietud, d = 1","jugada":"centro","valor":20,"tipo":"valor con corte","escala":"100·U","nodos":5,"garantiza":"No, salvo si llega a los finales","da_v_aqui":false,"nota":""},
+{"algoritmo":"profundización iterativa, d = 1, 2, 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":25,"garantiza":"No, salvo si llega a los finales","da_v_aqui":true,"nota":"d = 1: izq (4) · d = 2: centro (9) · d = 3: centro (12)"},
+{"algoritmo":"Monte Carlo plano, 5 por jugada","jugada":"der","valor":"3/5","tipo":"ū","escala":"U","nodos":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con μ = 1/3"},
+{"algoritmo":"Monte Carlo plano, 10 por jugada","jugada":"der","valor":"2/5","tipo":"ū","escala":"U","nodos":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con μ = 1/3"},
+{"algoritmo":"Monte Carlo plano, 50 por jugada","jugada":"der","valor":"12/25","tipo":"ū","escala":"U","nodos":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con μ = 1/3"},
+{"algoritmo":"UCT, c = 1, 40 vueltas","jugada":"centro","valor":"0","tipo":"ū","escala":"U","nodos":15,"garantiza":"No (converge a él con c suficientemente grande)","da_v_aqui":true,"nota":"N = 26 de 40"}]}
 </script>
 
 <script>
@@ -253,6 +261,31 @@ D.nodos.forEach(n => { PROF[n.id] = n.padre === null ? 0 : PROF[n.padre] + 1; })
 const FILA = {};
 D.tabla.forEach(f => { FILA[f.algoritmo] = f; });
 const JUGADA_MINIMAX = A.minimax.jugada;
+const V = A.minimax.valor;
+
+/* «¿Garantiza V?» viene de los datos (fila.garantiza): un rasgo del
+   algoritmo, la misma convención que las fichas. Si en T± el número
+   coincide con V lo dice fila.da_v_aqui, aparte. Aquí solo se abrevia para
+   que la columna de la tabla quepa a 390 px; la tarjeta lo da completo. */
+const ABREVIA = {
+  "Sí, el V del juego con dado": "Sí, el del juego con dado",
+  "No, salvo si llega a los finales": "No, salvo finales",
+  "No (converge a él con c suficientemente grande)": "No; converge",
+};
+/* nombres cortos para que la tabla quepa a 390 px */
+const ETIQUETA = {
+  "minimax": "Minimax",
+  "expectiminimax, D es un dado": "Expecti\u00adminimax, D dado",
+  "alfa-beta, orden dado": "Alfa-beta, orden dado",
+  "alfa-beta, orden al revés": "Alfa-beta, al revés",
+  "corte d = 1": "Corte, d = 1", "corte d = 2": "Corte, d = 2", "corte d = 3": "Corte, d = 3",
+  "quietud, d = 1": "Quietud, d = 1",
+  "profundización iterativa, d = 1, 2, 3": "Iterativa, d = 1, 2, 3",
+};
+/* ¿todas las ramas que miró terminaron en finales? (sin EVAL en ninguna) */
+function llegoAFinales(valores) {
+  return Object.values(valores).every(([tipo]) => tipo !== "EVAL" && tipo !== "quietud");
+}
 
 /* Solo dibujo: dónde va cada nodo (viewBox de 360 de ancho). */
 const POS = {R:[180,32], I:[60,118], C:[175,118], D:[300,118],
@@ -269,6 +302,7 @@ function fraccion(num, den) {           /* num/den reducida, como fmt_t */
   return signo(d === 1 ? String(n) : `${n}/${d}`);
 }
 function conSigno(u) { return u > 0 ? `+${u}` : signo(u); }
+function lista(xs) { return xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} y ${xs[xs.length - 1]}`; }
 
 /* ------------------------------------------------------------ el SVG --- */
 const NS = "http://www.w3.org/2000/svg";
@@ -406,27 +440,29 @@ function vista(b) {
   if (clave === "minimax") {
     r.mirados = new Set(alg.visitados);
     valoresInternos(alg.valores, r.valores, "V ");
-    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, exacto:fila.exacto});
+    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, daV:fila.da_v_aqui});
     r.nota = "Mira todos los nodos y devuelve V: lo mejor que MAX asegura contra un MIN que no se equivoca.";
   } else if (clave.startsWith("alfa-beta")) {
     r.mirados = new Set(alg.visitados);
     r.podados = new Set(alg.podados);
     valoresInternos(alg.valores, r.valores, "V ");
-    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, exacto:fila.exacto});
+    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, daV:fila.da_v_aqui});
     r.extra.push(["Podados (no los genera)", alg.podados.join(", ")]);
     r.nota = "El mismo V que minimax con menos nodos; cuántos se ahorra depende del orden en que mira a los hijos.";
   } else if (clave === "expectiminimax") {
     r.mirados = new Set(D.nodos.map(n => n.id));
     r.azar = new Set(alg.azar);
     for (const k in alg.valores) r.valores[k] = [k === RAIZ ? `V ${signo(alg.valores[k])}` : signo(alg.valores[k])];
-    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valores[RAIZ]), nodos:fila.nodos, exacto:fila.exacto});
+    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valores[RAIZ]), nodos:fila.nodos,
+      daV:fila.da_v_aqui});
     r.nota = "Otro juego: en D ya no elige MIN, tira un dado parejo y D vale el promedio de sus finales.";
   } else if (clave.startsWith("corte") || clave.startsWith("quietud")) {
     r.mirados = new Set(alg.visitados);
     r.valores = valoresHojas(r.mirados, fila);
     const d = Number(clave.match(/d = (\d)/)[1]);
     valoresInternos(alg.valores, r.valores, "");
-    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos, exacto:fila.exacto});
+    Object.assign(r, {jugada:alg.jugada, valor:signo(alg.valor), nodos:fila.nodos,
+      daV:fila.da_v_aqui, llego:llegoAFinales(alg.valores)});
     r.nota = clave.startsWith("quietud")
       ? "En el corte sigue solo las capturas: ve ix y deja de creerle a EVAL(I). Arregla la jugada; el valor sigue siendo una estimación."
       : (d === 1 ? "El horizonte no deja ver la captura ix: EVAL(I) parece ir ganando."
@@ -434,13 +470,17 @@ function vista(b) {
   } else if (clave === "profundización iterativa") {
     const k = Number(b.dataset.iter), it = alg[k];
     r.mirados = new Set(it.visitados);
+    r.podados = new Set(it.podados);
     r.valores = valoresHojas(r.mirados, fila);
     valoresInternos(it.valores, r.valores, "");
     const total = fila.nodos;
     Object.assign(r, {jugada:it.jugada, valor:signo(it.valor), nodos:it.nodos,
       nodosTexto:`${it.nodos} de ${TOTAL} en esta búsqueda · ${total} sumando las tres`,
-      exacto:it.valor === 100 * A.minimax.valor});
+      /* la fila es la de la última búsqueda; las anteriores se comparan con V aquí */
+      daV:k === alg.length - 1 ? fila.da_v_aqui : it.valor === 100 * V,
+      llego:llegoAFinales(it.valores)});
     r.extra.push(["Orden de la raíz", it.orden.join(", ")]);
+    if (r.podados.size) r.extra.push(["Podados (no los genera)", [...r.podados].join(", ")]);
     r.extra.push(["Las tres búsquedas", alg.map(x => `d = ${x.d}: ${x.jugada} (${x.nodos})`).join(" · ")]);
     r.nota = "Cada búsqueda es alfa-beta con corte; la jugada que ganó la anterior va primero.";
   } else if (clave === "Monte Carlo plano") {
@@ -448,7 +488,7 @@ function vista(b) {
     D.jugadas_raiz.forEach(j => { r.valores[HIJO_DE[j]] = [`ū ${fraccion(c.sumas[j], n)}`, `N ${n}`]; });
     r.valores[RAIZ] = [`N ${n * D.jugadas_raiz.length}`];
     Object.assign(r, {jugada:c.jugada, valor:fraccion(c.sumas[c.jugada], n),
-      nodos:c.nodos, exacto:fila.exacto});
+      nodos:c.nodos, daV:fila.da_v_aqui});
     r.extra.push(["Sumas de U", D.jugadas_raiz.map(j => `${j} ${signo(c.sumas[j])}`).join(" · ")]);
     const rep = alg.reparto[kk], sem = D.jugadas_raiz.reduce((s, j) => s + rep[j], 0);
     r.extra.push([`En ${sem} semillas entrega`, D.jugadas_raiz.map(j => `${j} ${rep[j]}`).join(" · ")]);
@@ -466,18 +506,35 @@ function vista(b) {
       r.valores[id] = id !== RAIZ ? [`N ${n}`, `ū ${fraccion(s, n)}`] : [`N ${n}`];
     }
     const h = HIJO_DE[jug];
-    Object.assign(r, {jugada:jug, nodos:r.mirados.size, exacto:fila.exacto,
+    /* la fila es la de la vuelta final; a media corrida se compara con V aquí */
+    Object.assign(r, {jugada:jug, nodos:r.mirados.size,
+      daV:t === ult ? fila.da_v_aqui : tras[h][1] === 0,
       valor:fraccion(tras[h][1], tras[h][0])});
     r.nombreExtra = ` · vuelta ${t} de ${ult}`;
+    r.filaVista = {etiqueta:`UCT, c = 1, vuelta ${t} de ${ult}`, jugada:jug, valor:r.valor,
+      nodos:r.mirados.size};
+    /* a lo más un nodo nuevo por vuelta: las que llegan a un final que ya
+       estaba en el árbol no agregan ninguno */
+    const sinNuevo = [];
+    for (let k = 1; k <= t; k++)
+      if (Object.keys(alg.por_vuelta[k - 1]).length === (k === 1 ? 1 : Object.keys(alg.por_vuelta[k - 2]).length))
+        sinNuevo.push(k);
+    r.extra.push(["Nodos en el árbol (a lo más uno nuevo por vuelta)", `R + ${r.mirados.size - 1} en ${t} vueltas` +
+      (sinNuevo.length === 0 ? ""
+        : sinNuevo.length <= 6 ? `; no agregaron las vueltas ${lista(sinNuevo)}`
+        : `; ${sinNuevo.length} vueltas no agregaron`)]);
+    const completos = Object.keys(HIJOS).filter(id => id in tras && HIJOS[id].every(x => x in tras));
     r.extra.push([`U de la vuelta ${t}`, `${conSigno(alg.U[t - 1])} (camino ${alg.caminos[t - 1].join(" › ")})`]);
     r.extra.push(["N(s′) en la raíz", D.jugadas_raiz.map(j => `${j} ${N[HIJO_DE[j]] || 0}`).join(" · ")]);
     r.extra.push(["ū(s′) en la raíz", D.jugadas_raiz.map(j => HIJO_DE[j] in tras
       ? `${j} ${fraccion(tras[HIJO_DE[j]][1], tras[HIJO_DE[j]][0])}` : `${j} —`).join(" · ")]);
     if (D.jugadas_raiz.filter(j => (N[HIJO_DE[j]] || 0) === N[h]).length > 1)
       r.extra.push(["Empate en N(s′)", `entrega la primera en el orden ${D.jugadas_raiz.join(", ")}`]);
-    r.nota = t === ult
-      ? "Entrega la más simulada. Su ū = 0 coincide con V por casualidad: es un promedio de simulaciones, no V."
-      : "Entrega la más simulada hasta ahora. MIN deja de jugar al azar en cuanto su nodo entra al árbol.";
+    r.nota = "Entrega la más simulada. Fuera del árbol, todos juegan al azar (la simulación); "
+      + "dentro, un nodo agrega a sus hijos en el orden dado, uno cada vez que pasa por él, y elige por puntaje "
+      + "(MIN, con −ū) solo cuando ya los tiene todos. "
+      + (completos.length ? `Tras la vuelta ${t} ya eligen por puntaje: ${lista(completos)}.`
+                          : `Tras la vuelta ${t}, ninguno elige todavía por puntaje.`);
   }
   return r;
 }
@@ -489,12 +546,23 @@ function jugadaHTML(j) {
     ? `<span class="num bien">${j}</span> <span class="bien">✓ la de minimax</span>`
     : `<span class="num mal">${j}</span> <span class="mal">✗ no es la de minimax (${JUGADA_MINIMAX})</span>`;
 }
-const POR_QUE = {
-  "V": "V de minimax",
-  "V con dado": "V de otro juego: el de D con dado",
-  "valor con corte": "valor con corte: EVAL donde corta",
-  "ū": "ū: promedio de simulaciones, no V",
-};
+/* ¿el número de esta corrida es V (0, en U y en 100·U)? Aparte de la
+   garantía: aquí se dice si coincide y por qué. */
+function aqui(fam, r, f) {
+  const v = `<span class="num">${r.valor}</span>`;
+  if (fam === "minimax" || fam === "alfa-beta")
+    return r.daV ? `<b>sí</b>: ${v} es V` : `<b>no</b>: ${v}, y V es ${signo(V)}`;
+  if (fam === "dado")
+    return r.daV ? `<b>sí</b>: ${v} es el V del juego con dado; el de T± sin dado es ${signo(V)}`
+                 : `<b>no</b>: ${v}`;
+  if (fam === "corte" || fam === "quietud" || fam === "iterativa") {
+    if (r.daV && r.llego) return `<b>sí</b>: ${v} (100·U) es V, porque esta vez llegó a los finales en todas sus ramas`;
+    if (r.daV) return `<b>sí, por casualidad</b>: ${v} (100·U) coincide con V, pero salió de EVAL`;
+    return `<b>no</b>: ${v} en 100·U, y V es ${signo(V)}`;
+  }
+  if (r.daV) return `<b>sí, por casualidad</b>: su ū = ${r.valor} coincide con V, pero es un promedio de simulaciones`;
+  return `<b>no</b>: ū = ${v}, y V es ${signo(V)}`;
+}
 
 function pintar(b) {
   const r = vista(b), f = r.fila;
@@ -509,10 +577,10 @@ function pintar(b) {
   $("t-nodos").innerHTML = r.nodosTexto
     ? (r.nodos === null ? r.nodosTexto : `<span class="num">${r.nodosTexto}</span>`)
     : `<span class="num">${r.nodos} de ${TOTAL}</span>`;
-  const ex = r.exacto;
-  $("t-exacto").innerHTML = `<b>${ex ? "sí" : "no"}</b> · ` + (ex && f.tipo !== "V"
-    ? `${f.tipo}, que aquí coincide con V${f.escala === "100·U" ? " (en 100·U)" : ""}` : POR_QUE[f.tipo])
-    + (f.tipo === "V con dado" ? " (exacto para ese juego)" : "");
+  const fam = b.dataset.familia, g = f.garantiza;
+  const g0 = g.split(/[,;(]/)[0].trimEnd();
+  $("t-garantiza").innerHTML = `<b>${g0}</b>${g.slice(g0.length)}`;
+  $("t-aqui").innerHTML = aqui(fam, r, f);
   $("t-extra").innerHTML = r.extra.map(([k, v]) => `<li>${k}: <b>${v}</b></li>`).join("");
   $("t-nota").textContent = r.nota;
   const svgTxt = `T± con ${nombre}: ` + (r.mirados === null ? "sin árbol guardado; " :
@@ -520,29 +588,33 @@ function pintar(b) {
     (r.podados.size ? `podó ${[...r.podados].join(", ")}; ` : "") + `entrega ${r.jugada}.`;
   $("arbol-titulo").textContent = svgTxt;
   $("anuncio").textContent = `${nombre}: entrega ${r.jugada}` +
-    (r.valorTexto ? "" : `, valor ${r.valor} (${f.tipo})`) + `, ${ex ? "V exacto" : "no es V exacto"}.`;
-  document.querySelectorAll("#tabla tr").forEach(tr => {
-    const actual = tr.dataset.algoritmo === f.algoritmo;
-    tr.classList.toggle("actual", actual);
-    if (actual) tr.setAttribute("aria-current", "true"); else tr.removeAttribute("aria-current");
-  });
+    (r.valorTexto ? "" : `, valor ${r.valor} (${f.tipo})`) + `; ¿garantiza V? ${g}.`;
+  pintarTabla(f.algoritmo, r.filaVista);
 }
 
 /* --------------------------------------------------------- la tabla --- */
-(function tabla() {
+/* En el orden del curso. La fila de la variante elegida se marca y, si la
+   corrida no es la de la tabla (UCT a media corrida), muestra los números
+   de la tarjeta, no los de la fila fija. */
+const FILAS = D.tabla;    /* ya en el orden del curso: el de tabla_t_pm() */
+function pintarTabla(actual, vistaActual) {
   const tb = $("tabla");
-  D.tabla.forEach(f => {
+  tb.textContent = "";
+  FILAS.forEach(f => {
+    const es = f.algoritmo === actual, w = es && vistaActual ? vistaActual : null;
+    const jugada = w ? w.jugada : f.jugada, valor = w ? w.valor : signo(f.valor);
     const tr = document.createElement("tr");
     tr.dataset.algoritmo = f.algoritmo;
-    const marca = f.jugada === JUGADA_MINIMAX ? " ✓" : " ✗";
-    const esc = f.escala === "100·U" ? " (100·U)" : "";
-    tr.innerHTML = `<td>${f.algoritmo}${f.nota ? ` <small>${f.nota}</small>` : ""}</td>`
-      + `<td class="n">${f.jugada}${marca}</td>`
-      + `<td><span class="num">${signo(f.valor)}</span> <small>${f.tipo}${esc}</small></td>`
-      + `<td class="n">${f.nodos}</td><td>${f.exacto ? "sí" : "no"}</td>`;
+    const marca = jugada === JUGADA_MINIMAX ? " ✓" : " ✗";
+    const etiqueta = (w ? w.etiqueta : (ETIQUETA[f.algoritmo] || f.algoritmo)).replace(/ = /g, "\u00a0=\u00a0");
+    tr.innerHTML = `<td>${etiqueta}</td>`
+      + `<td class="j">${jugada}${marca}</td>`
+      + `<td class="n">${valor}</td>`
+      + `<td class="n">${w ? w.nodos : f.nodos}</td><td>${ABREVIA[f.garantiza] || f.garantiza}</td>`;
+    if (es) { tr.classList.add("actual"); tr.setAttribute("aria-current", "true"); }
     tb.appendChild(tr);
   });
-})();
+}
 
 /* ------------------------------------------------------- controles --- */
 const VARIANTES = [...document.querySelectorAll("[data-v]")];

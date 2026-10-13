@@ -718,7 +718,7 @@ Antes de cerrar, la ficha de minimax con corte. Frente a la de [[minimax-como-al
 |---|---|
 | Hasta dónde mira | $d$ jugadas desde la raíz, o menos si llega antes a un final |
 | ¿Genera todo el árbol? | No: solo lo que queda arriba de la línea de corte, eso sí completo |
-| ¿Da $V$ exacto? | No: da el valor con corte. Solo es seguro un número que viene de finales |
+| ¿Garantiza $V$? | No, salvo si llega a los finales. Da el valor con corte |
 | Con qué estima | Con $\mathrm{EVAL}$, en los nodos de corte |
 | ¿Quién tira dados? | Nadie. Con dados se le suma el promedio de expectiminimax |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con corte. $d$ se fija antes: interrumpido, no garantiza nada |
@@ -728,12 +728,12 @@ Antes de cerrar, la ficha de minimax con corte. Frente a la de [[minimax-como-al
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | Minimax | Los finales | $V$ exacto |
-> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
-> | Alfa-beta | Los finales, sin las ramas que ya no deciden | $V$ exacto en la raíz |
-> | **Minimax con corte (estás aquí)** | **$d$ jugadas** | **Valor con corte ($\mathrm{EVAL}$); no es $V$** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | **Minimax con corte (estás aquí)** | **Valor con corte; no garantiza $V$, salvo si llega a los finales** |
 >
 > **Lo que viene.**
 >

@@ -17,12 +17,13 @@ página verás que ya no se puede llegar a los finales: hay que detenerse
 antes y **estimar**.
 
 > [!TIP]
-> **Esta clase tiene animaciones, dos simulaciones en vivo y un notebook.** Minimax con corte y profundización iterativa, corriendo en el árbol T, y el bono de UCT:
+> **Esta clase tiene animaciones, tres interactivos y un notebook.** Minimax con corte y profundización iterativa, corriendo en el árbol T, y el bono de UCT:
 >
 > - **▶ Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
 >   algoritmo abre la suya en un recuadro como éste.
 > - **▶ Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
 >   la página «De dónde sale el bono».
+> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol T± y compara qué miró y qué devolvió; lo abre la página «Un árbol, todos los algoritmos».
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -118,7 +119,8 @@ primero **a mano** y después **como algoritmo**.
 
 Los mismos de la clase 2, con tres secciones más: minimax con corte y
 profundización iterativa, en el árbol T, y de dónde sale el bono. Además,
-dos simulaciones en vivo. No se cuentan en el tiempo de la clase.
+dos simulaciones en vivo y un interactivo que compara los algoritmos. No se
+cuentan en el tiempo de la clase.
 
 - [La animación con corte](../_assets/traza_arbol_t.html#corte): cambia $d$ entre
   1, 2 y 3.
@@ -128,6 +130,8 @@ dos simulaciones en vivo. No se cuentan en el tiempo de la clase.
   la vez, contra la cota.
 - [Bandido en vivo](../_assets/bandido_en_vivo.html): x, y, z con su promedio
   oculto; mueve $c$.
+- [El mismo árbol, todos los algoritmos](../_assets/un_arbol_todos.html): elige
+  un algoritmo y mira qué nodos genera y qué número devuelve en el árbol T±.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
 

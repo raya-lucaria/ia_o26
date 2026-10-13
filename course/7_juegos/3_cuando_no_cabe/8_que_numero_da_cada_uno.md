@@ -2,7 +2,7 @@
 id: que-numero-da-cada-uno
 title: Qué número da cada uno
 nav_title: Qué número da cada uno
-summary: "Minimax da V, el corte da un valor con corte y las simulaciones dan ū: tres números que no miden lo mismo. Cómo leer cada uno en T±, dos tablas para comparar los algoritmos, y cuándo un número permite dejar de buscar."
+summary: "Minimax da V, el corte da un valor con corte y las simulaciones dan ū: tres números que no miden lo mismo. Cómo leer cada uno en T±, qué supone cada uno sobre los jugadores, y cuándo un número permite dejar de buscar."
 status: ready
 estimated_time: 20m
 tags: [juegos, busqueda-adversarial, comparacion]
@@ -17,8 +17,8 @@ Al terminar tendrás:
 - los **tres números** de la unidad, $V$, el valor con corte y $\bar u$, y
   de qué jugadores habla cada uno;
 - por qué en T± el 0, el 60 y los dos $1/3$ no se contradicen;
-- dos tablas para poner los algoritmos lado a lado: **cómo busca** cada uno
-  y **qué número da**;
+- qué **supone** cada número, y por qué eso decide si un algoritmo
+  **garantiza** $V$;
 - la regla para **dejar de buscar** al ver lo mejor posible, y cuándo no se
   vale.
 
@@ -93,28 +93,31 @@ cuenta. Pero uno es el valor de un juego con dado, y el otro, el de un MIN
 que juega al azar en un juego sin dado, donde ${V(\text{der})=-1}$.
 :::
 
-::: exercise {#jue-c3-cmp-ej-rival-al-azar title="Calcula con solo el rival al azar"}
-Un error común al leer $\mu$: creer que solo el **rival** juega al azar.
-Supón que en T± MIN elige al azar en I, C y D, y MAX sigue eligiendo lo
-mejor en C1 y C2.
+::: exercise {#jue-c3-cmp-ej-cambia-hoja title="Cambia una hoja y mira quién se mueve"}
+En T±, cambia una sola hoja: ahora ${\text{d2}=-1}$, y las demás quedan
+igual.
 
-1. ¿Cuánto vale centro así?
-2. ¿Qué jugada elegiría MAX en la raíz? ¿Coincide con lo que elige Monte
-   Carlo plano con muchas simulaciones?
+1. ¿Cambia $V$? ¿Por qué jugada?
+2. Con D como dado, ¿cuánto vale D? ¿Qué juega MAX, y con qué valor?
+3. ¿Qué elige Monte Carlo plano con muchas simulaciones? ¿Cuánto vale esa
+   jugada para un MIN racional?
 :::
 
-::: hint {#jue-c3-cmp-pista-rival-al-azar-1 of="jue-c3-cmp-ej-rival-al-azar" title="Pista 1 · De abajo hacia arriba"}
-¿Cuánto vale C1 si MAX elige ahí? ¿Y C2? ¿Qué hace luego MIN en C, si tira
-un volado entre los dos?
+::: hint {#jue-c3-cmp-pista-cambia-hoja of="jue-c3-cmp-ej-cambia-hoja" title="Una pregunta por número"}
+¿Qué hoja elegía MIN en D antes del cambio? Para el dado, promedia las
+tres hojas nuevas. Para Monte Carlo plano, compara los tres $\mu$:
+¿cuáles no tocan D?
 :::
 
-::: answer {#jue-c3-cmp-resp-rival-al-azar of="jue-c3-cmp-ej-rival-al-azar"}
-1. **Centro vale $1/2$.** MAX elige c1a en C1, que vale 0, y c2a en C2,
-   que vale ${+1}$. El volado de MIN en C da ${(0+1)/2=1/2}$.
-2. **Centro**, porque izq vale 0 y der ${1/3}$. Monte Carlo plano elige
-   der: también MAX juega al azar en C1 y C2, y por eso centro baja a
-   ${-1/4}$. El límite de $\bar u$ es «todos al azar», no «el rival al
-   azar».
+::: answer {#jue-c3-cmp-resp-cambia-hoja of="jue-c3-cmp-ej-cambia-hoja"}
+1. **No: ${V=0}$ por centro.** MIN ya respondía d1 en D, así que der
+   seguía valiendo ${-1}$.
+2. **D vale ${(-1-1+1)/3=-1/3}$.** Ahora der queda debajo del 0 de
+   centro, y MAX juega centro con ${V=0}$. Coincide con el $V$ sin dado
+   por casualidad: el dado ya no paga más que centro.
+3. **Izq.** Su ${\mu=0}$ no cambia, centro sigue en ${-1/4}$ y der baja a
+   ${-1/3}$. Pero izq vale ${-1}$: MIN responde ix. Monte Carlo plano
+   cambió de jugada y sigue eligiendo una que pierde.
 :::
 
 Tres números, tres preguntas. Falta ponerlos junto a la forma en que cada
@@ -125,41 +128,40 @@ algoritmo busca, porque de ahí sale qué número puede dar.
 **Piensa: ¿qué tiene que hacer un algoritmo para que su número sea $V$?**
 
 Llegar a los finales, o probar que lo que no mira no cambia nada, y no
-tirar dados. La primera tabla dice cómo busca cada uno. Repite filas de
-las fichas de cada página, ahora juntas.
+tirar dados. Hasta dónde mira cada algoritmo, quién tira dados y qué
+entrega ya están en su ficha:
 
-::: table {#jue-c3-cmp-como-busca title="Cómo busca cada algoritmo"}
-| Algoritmo | Hasta dónde mira | ¿Genera todo? | ¿Quién tira dados? |
-|---|---|---|---|
-| Minimax | Los finales | Sí | Nadie |
-| Expectiminimax | Los finales | Sí | El juego |
-| Alfa-beta | Los finales, sin las ramas que ya no deciden | No | Nadie |
-| Minimax con corte | $d$ jugadas | Solo arriba del corte | Nadie |
-| Búsqueda de quietud | $d$ jugadas, luego solo capturas | No | Nadie |
-| Profundización iterativa | $d=1,2,3,\dots$ mientras haya reloj | No | Nadie |
-| Monte Carlo plano | Los finales, jugando al azar; sin árbol | Solo lo que simula | El algoritmo |
-| MCTS con UCT | Un árbol que crece; debajo, partidas al azar | No | El algoritmo, al simular |
+- [[minimax-como-algoritmo|Minimax como algoritmo]];
+- [[cuando-decide-un-dado|Cuando decide un dado]], para expectiminimax;
+- [[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]];
+- [[minimax-con-corte|Minimax con corte como algoritmo]];
+- [[mas-alla-del-horizonte|Más allá del horizonte]], para la quietud;
+- [[jugar-contra-el-reloj|Jugar contra el reloj]], para la iterativa;
+- [[simular-en-vez-de-evaluar|Simular en vez de evaluar]], para Monte
+  Carlo plano y MCTS.
+
+Y si cada uno **garantiza** $V$ está en la @jue-c3-cmp-garantiza, de
+[[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]. Lo que
+ninguna de esas tablas junta es qué supone cada número sobre los jugadores.
+$V$ lo dan minimax, expectiminimax y alfa-beta. El valor con corte lo
+dan el corte, la quietud y la iterativa. Y $\bar u$, Monte Carlo plano y
+MCTS.
+
+::: table {#jue-c3-cmp-num-supone title="Qué supone cada número"}
+| Número | Supone que |
+|---|---|
+| $V$ | Todos eligen lo mejor |
+| Valor con corte | $\mathrm{EVAL}$ acierta en el corte |
+| $\bar u$ | Se juega al azar |
 :::
 
-La segunda dice qué número sale de esa búsqueda, si es $V$, y qué
-entrega el algoritmo al final.
+Dos matices. En expectiminimax, el dado del juego no elige: se promedia.
+En MCTS, dentro del árbol se elige por puntaje; al azar se juega solo
+debajo.
 
-::: table {#jue-c3-cmp-que-numero title="Qué número da cada algoritmo"}
-| Algoritmo | Número | ¿Es V? | Qué entrega |
-|---|---|---|---|
-| Minimax | $V$ | Sí | Una jugada de mayor $V$ |
-| Expectiminimax | $V$ con dado | Sí, el del juego con dado | Una jugada de mayor utilidad esperada |
-| Alfa-beta | $V$ en la raíz; abajo, valor o cota | Sí, en la raíz | Lo mismo que minimax |
-| Minimax con corte | Valor con corte | No, salvo si viene de finales | Una jugada de mayor valor con corte |
-| Búsqueda de quietud | Valor con corte, en posiciones quietas | No | Una jugada de mayor valor con corte |
-| Profundización iterativa | Valor con corte de la última búsqueda completa | No | La jugada de esa búsqueda |
-| Monte Carlo plano | $\bar u$, que se acerca a $\mu$ | No | La jugada de mayor $\bar u$ |
-| MCTS con UCT | $\bar u$ de cada nodo | No | La jugada más simulada |
-:::
-
-Las dos tablas se leen juntas. Donde la primera mira hasta los finales y
-el algoritmo no tira dados, la segunda dice $V$. Un $d$ trae
-$\mathrm{EVAL}$, y un dado del algoritmo trae $\bar u$.
+Por eso garantiza $V$ quien supone que todos eligen lo mejor y llega a los
+finales. Un corte trae $\mathrm{EVAL}$, y un dado del algoritmo trae
+$\bar u$.
 
 ::: exercise {#jue-c3-cmp-ej-ponle-nombre title="Ponle nombre a cada número"}
 Cinco números que salieron de T±. Para cada uno, di cuál de los tres es
@@ -172,9 +174,9 @@ Cinco números que salieron de T±. Para cada uno, di cuál de los tres es
 5. 0, el $\bar u$ de centro tras 40 vueltas de UCT.
 :::
 
-::: hint {#jue-c3-cmp-pista-ponle-nombre-1 of="jue-c3-cmp-ej-ponle-nombre" title="Pista 1 · Las dos columnas de en medio"}
-En la tabla de cómo busca, ¿hasta dónde miró cada uno y quién tiró
-dados? ¿En qué escala está su número?
+::: hint {#jue-c3-cmp-pista-ponle-nombre-1 of="jue-c3-cmp-ej-ponle-nombre" title="Qué algoritmo lo dio"}
+¿Qué número da ese algoritmo, según la tabla de qué supone cada número?
+¿Llegó a los finales esa vez? ¿En qué escala está su número?
 :::
 
 ::: answer {#jue-c3-cmp-resp-ponle-nombre of="jue-c3-cmp-ej-ponle-nombre"}
@@ -199,11 +201,7 @@ sirve para algo más que valorar: puede decir que ya no hace falta buscar.
 devuelve 100. ¿Por qué no se pierde nada?**
 
 En [[jugar-contra-el-reloj|Jugar contra el reloj]] lo hace la línea 9 de
-PROFUNDIZACIÓN-ITERATIVA:
-
-```text
- 9       if w = 100: return a  # gana seguro
-```
+PROFUNDIZACIÓN-ITERATIVA, `if w = 100: return a`.
 
 Ningún final paga más que ${100\cdot U=100}$. Si una jugada ya lo
 asegura, ninguna otra puede superarla. Es una regla general: **quien mueve
@@ -225,11 +223,11 @@ la ventana: C2 ve ${\text{c2a}=+1}$ cuando C ya asegura 0, y D ve
 ${\text{d1}=-1}$ cuando la raíz ya asegura 0. La regla llega a lo mismo
 sin mirar la ventana: ${+1}$ es lo más para MAX, ${-1}$ lo más para MIN.
 
-La diferencia se ve en I. Con los hijos al revés, alfa-beta poda i1 y
-genera 14 nodos. Pero lo poda porque la raíz ya asegura 0. Con el orden
-dado, I es el primer hijo de la raíz y llega con la ventana abierta. Si ix
-fuera su primera hoja, alfa-beta generaría i1 igual. La regla no: **en I,
-MIN ve ${\text{ix}=-1}$ y ya no necesita mirar i1**.
+Pero la regla poda algo que alfa-beta no puede. Alfa-beta necesita la
+ventana; la regla, no. Se ve en I. Supón que ix fuera la primera hoja de
+I. I es el primer hijo de la raíz, así que llega con la ventana abierta.
+Alfa-beta generaría i1 igual. La regla no: **en I, MIN ve
+${\text{ix}=-1}$ y ya no necesita mirar i1**.
 
 Esta regla supone **suma cero**: lo mejor para MIN es lo peor para MAX.
 La página siguiente lo pone en duda.
@@ -246,7 +244,7 @@ qué.
 4. T± con D como dado: en D sale primero ${\text{d1}=-1}$.
 :::
 
-::: hint {#jue-c3-cmp-pista-puede-salir-1 of="jue-c3-cmp-ej-puede-salir" title="Pista 1 · Dos preguntas por caso"}
+::: hint {#jue-c3-cmp-pista-puede-salir-1 of="jue-c3-cmp-ej-puede-salir" title="Dos preguntas por caso"}
 ¿El número es lo más que puede pagar el juego a quien mueve? ¿Salió de
 finales, o es una estimación o un promedio? Y en el caso 4: ¿quién mueve
 en D?

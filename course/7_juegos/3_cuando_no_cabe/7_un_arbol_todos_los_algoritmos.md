@@ -155,7 +155,8 @@ juega izq**, con 60, y genera 4 nodos. Es el efecto horizonte
 (@jue-c3-efecto-horizonte): la captura ix queda detrás del corte, e I vale
 de verdad ${-100}$ en esta escala.
 
-Con más profundidad, el engaño desaparece:
+El corte no poda: genera todo hasta $d$. Con más profundidad, el engaño
+desaparece:
 
 - **${d=2}$** ya ve los finales de I y D, los dos en ${-100}$. En C corta
   en C1 y C2, con 10 y 50. Juega **centro**, con 10, y genera 11 nodos.
@@ -198,7 +199,7 @@ y la jugada anterior primero. Cada búsqueda deja una jugada lista:
 
 - **${d=1}$:** izq, con 4 nodos. Si el reloj se acaba aquí, entrega la del
   horizonte.
-- **${d=2}$:** centro, con 9.
+- **${d=2}$:** centro, con 9, y no 11 como el corte solo: alfa-beta poda.
 - **${d=3}$:** centro, con 12, porque prueba centro primero y poda.
 
 Son 25 nodos en total, más que los 15 de minimax. En un árbol tan chico,
@@ -254,18 +255,20 @@ las sumas de $U$ son ${-3}$, ${-2}$ y ${+3}$. Los promedios, ${-3/5}$,
 ${-2/5}$ y ${3/5}$: entrega der.
 
 ¿Fue suerte? Cada fila de la tabla repite Monte Carlo plano con 1000
-semillas distintas; cada semilla es una corrida. Las columnas cuentan
-cuántas corridas entregaron cada jugada. Si dos promedios empatan, entrega
-la primera en el orden izq, centro, der. «Por empate» cuenta las corridas
-que se decidieron así.
+semillas distintas; cada semilla es una corrida. «Sims» son las
+simulaciones por jugada, y las columnas izq, centro y der cuentan cuántas
+corridas entregaron cada jugada. Si dos promedios empatan, entrega la
+primera en el orden izq, centro, der.
 
 ::: table {#jue-c3-cmp-reparto-mc title="Monte Carlo plano en T±: qué entrega en 1000 corridas"}
-| Por jugada | izq | centro | der | Por empate |
-|---:|---:|---:|---:|---:|
-| 5 | 353 | 106 | 541 | 233 |
-| 10 | 269 | 53 | 678 | 157 |
-| 50 | 39 | 1 | 960 | 15 |
+| Sims | izq | centro | der |
+|---:|---:|---:|---:|
+| 5 | 353 | 106 | 541 |
+| 10 | 269 | 53 | 678 |
+| 50 | 39 | 1 | 960 |
 :::
+
+Por empate se decidieron 233, 157 y 15 de esas corridas, fila por fila.
 
 Con pocas simulaciones, el ruido y el desempate reparten las corridas. Con
 50, casi todas van a der. **Más simulaciones no lo arreglan**: lo vuelven
@@ -285,9 +288,13 @@ jugada? ¿Quién elige al azar en ese número?
 ::: answer {#jue-c3-cmp-resp-mas-sims of="jue-c3-cmp-ej-mas-sims"}
 **Der**: cada $\bar u$ se acerca a su $\mu$, y der tiene el mayor,
 ${1/3}$. El defecto no es el ruido, es el supuesto: los dos juegan al
-azar. Para entregar centro tendrían que dejar de jugar al azar al menos
-MAX en C2 (con solo MIN al azar, centro vale ${1/2}$) o MIN en D, que
-elegiría d1.
+azar.
+
+Ningún nodo solo basta para entregar centro: tienen que dejar el azar al
+menos dos. Si MAX elige en C1 y en C2, centro vale ${1/2}$, más que el
+${1/3}$ de der. Si MIN elige en I y en D, izq y der caen a ${-1}$. Que MIN
+elija solo en D no alcanza: der cae, pero izq, con $0$, sigue arriba del
+${-1/4}$ de centro.
 :::
 
 El defecto es el rival al azar, y también el MAX al azar. ¿Qué cambia si,
@@ -299,8 +306,8 @@ donde ya hay árbol, los dos eligen?
 con UCT?**
 
 No. Donde ya hay árbol, UCT elige por puntaje, y en un nodo de MIN baja al
-hijo de menor $\bar u$, con bono. Si d2 y d3 le dan derrotas, MIN baja
-por d1. Lo mismo hace MAX en C1 y C2. T± tiene 15 nodos: pronto el árbol lo
+hijo de menor $\bar u$, con bono. Si d2 y d3 le dan victorias a MAX,
+MIN baja por d1. Lo mismo hace MAX en C1 y C2. T± tiene 15 nodos: pronto el árbol lo
 cubre entero, y nadie juega al azar.
 
 **La corrida de la página**, con ${c=1}$ y la semilla 0. Al final de cada
@@ -323,8 +330,10 @@ la que centro queda como la más simulada**, sin soltarlo, hasta la 200:
 - con ${c=1}$, las 500 terminan en centro. La vuelta va de 4 a 34. La
   mediana es 18, como la semilla 0; el 10 % llega en la 8 o antes, y el
   90 %, en la 31 o antes;
-- con ${c=2\sqrt2}$, la de ${G/N}$ con ${c=\sqrt2}$, también llegan todas,
-  más tarde: la mediana es 29.
+- con ${c=2\sqrt2}$, también llegan todas, más tarde: la mediana es 29.
+  Es la $c$ que sale en [[de-donde-sale-el-bono|De dónde sale el bono]]. En
+  la escala ${G/N}$, de 0 a 1, se escribe ${c=\sqrt2}$: pasar a la escala
+  de ${-1}$ a ${+1}$ dobla los puntajes, y con ellos $c$.
 
 Es lo medido en este árbol, no una garantía para cualquier $c$.
 
@@ -342,8 +351,10 @@ los 15 nodos pueden estar en el árbol?
 
 ::: answer {#jue-c3-cmp-resp-uct of="jue-c3-cmp-ej-uct"}
 1. **Der**: es la más simulada de la vuelta 8 a la 17.
-2. Cada vuelta agrega un nodo. Con 12, el árbol todavía no cubre T±, y
-   abajo se sigue simulando con los dos al azar. UCT corrige **con
+2. Cada vuelta agrega **a lo más** un nodo: una vuelta que baja a un
+   final que ya está en el árbol no agrega nada. Tras 12 vueltas hay 10 de
+   los 15 nodos, contando R. El árbol todavía no cubre T±, y abajo se sigue
+   simulando con los dos al azar. UCT corrige **con
    vueltas**: cuantas más, menos azar queda arriba.
 :::
 
@@ -351,32 +362,52 @@ los 15 nodos pueden estar en el árbol?
 
 Ya corrió cada uno. La tabla los junta, en el orden del curso.
 
+::: table {#jue-c3-cmp-resultados title="Todos los algoritmos en T±"}
+| Algoritmo | Jugada, valor | Nodos |
+|---|---|---:|
+| Minimax | centro, 0 | 15 |
+| Expecti­minimax, dado en D | der, 1/3 | 15 |
+| Alfa-beta, orden dado | centro, 0 | 12 |
+| Alfa-beta, al revés | centro, 0 | 14 |
+| Corte, d=1 | izq, 60 | 4 |
+| Corte, d=2 | centro, 10 | 11 |
+| Corte, d=3 | centro, 0 | 15 |
+| Quietud, d=1 | centro, 20 | 5 |
+| Iterativa, d=1, 2, 3 | centro, 0 | 25 |
+| Monte Carlo plano | der, 3/5 | 15 |
+| UCT | centro, 0 | 15 |
+:::
+
 - **Valor:** en la escala de cada uno. Los de corte usan ${100\cdot U}$,
   como $\mathrm{EVAL}$; los demás, la de $U$.
 - **Nodos:** los generados, contando R. En Monte Carlo plano y UCT, los
-  nodos distintos que tocó la corrida de la semilla 0.
-- **¿Exacto?:** si el valor es el de minimax en T± ($0$ en las dos
-  escalas).
-
-::: table {#jue-c3-cmp-resultados title="Todos los algoritmos en T±"}
-| Algoritmo | Jugada | Valor | Nodos | ¿Exacto? |
-|---|---|---:|---:|---|
-| Minimax | centro | 0 | 15 | sí |
-| Alfa-beta, orden dado | centro | 0 | 12 | sí |
-| Alfa-beta, al revés | centro | 0 | 14 | sí |
-| Expectiminimax, dado en D | der | 1/3 | 15 | otro juego |
-| Corte, d = 1 | izq | 60 | 4 | no |
-| Corte, d = 2 | centro | 10 | 11 | no |
-| Corte, d = 3 | centro | 0 | 15 | sí |
-| Quietud, d = 1 | centro | 20 | 5 | no |
-| Iterativa, d = 1, 2, 3 | centro | 0 | 25 | sí |
-| Monte Carlo plano, 5 por jugada | der | 3/5 | 15 | no |
-| UCT, c = 1, 40 vueltas | centro | 0 | 15 | no |
-:::
+  nodos distintos que tocó la corrida de la semilla 0: 5 simulaciones por
+  jugada, y 40 vueltas con ${c=1}$.
 
 Tres filas no dicen centro, y cada una por una razón distinta: el dado
 cambia el juego, el corte a ${d=1}$ no ve la captura y Monte Carlo plano
 supone que los dos juegan al azar. Los otros ocho aciertan.
+
+Acertar la jugada no es lo mismo que garantizar el valor. La segunda
+tabla dice, de cada algoritmo, si **por cómo funciona** devuelve $V$, el
+valor de minimax.
+
+::: table {#jue-c3-cmp-garantiza title="Qué algoritmo garantiza V"}
+| Algoritmo | ¿Garantiza V? |
+|---|---|
+| Minimax | Sí |
+| Expecti­minimax | Sí, el V del juego con dado |
+| Alfa-beta | Sí, en la raíz |
+| Corte | No, salvo si llega a los finales |
+| Quietud | No, salvo si llega a los finales |
+| Iterativa | No, salvo si llega a los finales |
+| Monte Carlo plano | No |
+| UCT | No (converge a él con c suficiente­mente grande) |
+:::
+
+En T±, tres filas de la primera tabla dan el $0$ de minimax sin esa
+garantía. El corte a ${d=3}$ y la iterativa, porque su última búsqueda
+llega a los finales. UCT, por casualidad: su $0$ es un promedio.
 
 ::: exercise {#jue-c3-cmp-ej-tabla title="Compara dos filas que dicen 0"}
 Minimax y UCT entregan centro con valor $0$.

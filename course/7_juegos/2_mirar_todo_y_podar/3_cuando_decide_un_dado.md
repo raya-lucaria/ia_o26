@@ -506,7 +506,7 @@ Antes de cerrar, la ficha de expectiminimax, con las mismas siete filas que la d
 |---|---|
 | Hasta dónde mira | Hasta los finales, en todas las ramas |
 | ¿Genera todo el árbol? | Sí; en un nodo de azar, todos sus resultados |
-| ¿Da $V$ exacto? | Sí: el $V$ con azar, la mayor utilidad esperada si MIN es racional |
+| ¿Garantiza $V$? | Sí, el $V$ del juego con dado: la mayor utilidad esperada si MIN es racional |
 | Con qué estima | Con nada: no estima. Promedia con las $\Pr$ que da el juego |
 | ¿Quién tira dados? | El juego, en los nodos de azar. El algoritmo no tira nada |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor utilidad esperada. Interrumpido, como minimax, no garantiza nada |
@@ -516,10 +516,10 @@ Antes de cerrar, la ficha de expectiminimax, con las mismas siete filas que la d
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | Minimax | Los finales | $V$ exacto |
-> | **Expectiminimax (estás aquí)** | **Los finales** | **$V$ exacto, promediando el azar** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | **Expectiminimax (estás aquí)** | **El $V$ del juego con dado; lo garantiza** |
 >
 > **Lo que viene.**
 >

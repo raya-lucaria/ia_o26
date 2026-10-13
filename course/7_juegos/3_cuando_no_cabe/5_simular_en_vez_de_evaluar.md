@@ -460,33 +460,47 @@ de un hijo y decir por qué un promedio de simulaciones no es $V$.
 
 ## Ficha: Monte Carlo plano y MCTS con UCT
 
-Antes de cerrar, dos fichas lado a lado. **Monte Carlo plano** es lo de las secciones 1 a 3: simular desde cada jugada de la raíz, sin construir árbol. MCTS con UCT es lo de las secciones 4 y 5.
+Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo de las secciones 1 a 3: simular desde cada jugada de la raíz, sin construir árbol.
 
-::: table {#jue-ficha-simular title="Monte Carlo plano y MCTS con UCT en siete rasgos"}
-| Rasgo | Monte Carlo plano | MCTS con UCT |
-|---|---|---|
-| Hasta dónde mira | Hasta los finales, jugando al azar | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
-| ¿Genera todo el árbol? | No: solo las partidas que simula | No: un nodo nuevo por vuelta, más su partida |
-| ¿Da $V$ exacto? | No: $\bar u$ se acerca al promedio con los dos al azar, no a $V$ | No con tiempo finito. Con $c$ suficientemente grande y tiempo sin límite, su jugada tiende a la de minimax |
-| Con qué estima | Con $\bar u$ de simulaciones | Con $\bar u$ de simulaciones |
-| ¿Quién tira dados? | El algoritmo, en cada simulación | El algoritmo, solo en las simulaciones; dentro del árbol elige por puntaje |
-| Qué entrega, y si se puede interrumpir | La jugada de mayor $\bar u$. Sí se puede interrumpir | La jugada más simulada, no la de mayor puntaje. Sí se puede interrumpir |
-| Cuándo conviene | Sin $\mathrm{EVAL}$ confiable: Go experimental, de 1993 a 2005 (Brügmann, 1993) | Sin $\mathrm{EVAL}$ confiable y con árboles enormes: Go (MoGo, 2006), Hex (MoHex) |
+::: table {#jue-ficha-mc-plano title="Monte Carlo plano en siete rasgos"}
+| Rasgo | Monte Carlo plano |
+|---|---|
+| Hasta dónde mira | Hasta los finales, jugando al azar |
+| ¿Genera todo el árbol? | No: solo las partidas que simula |
+| ¿Garantiza $V$? | No: $\bar u$ se acerca al promedio con los dos al azar, no a $V$ |
+| Con qué estima | Con $\bar u$ de simulaciones |
+| ¿Quién tira dados? | El algoritmo, en cada simulación |
+| Qué entrega, y si se puede interrumpir | La jugada de mayor $\bar u$. Sí se puede interrumpir |
+| Cuándo conviene | Sin $\mathrm{EVAL}$ confiable: Go experimental, de 1993 a 2005 (Brügmann, 1993) |
+:::
+
+**MCTS con UCT** es lo de las secciones 4 y 5: el mismo $\bar u$, pero con un árbol que reparte las partidas.
+
+::: table {#jue-ficha-uct title="MCTS con UCT en siete rasgos"}
+| Rasgo | MCTS con UCT |
+|---|---|
+| Hasta dónde mira | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
+| ¿Genera todo el árbol? | No: a lo más un nodo nuevo por vuelta, más su partida |
+| ¿Garantiza $V$? | No. Con $c$ suficientemente grande y tiempo sin límite, converge a él |
+| Con qué estima | Con $\bar u$ de simulaciones |
+| ¿Quién tira dados? | El algoritmo, solo en las simulaciones; dentro del árbol no sortea nada |
+| Qué entrega, y si se puede interrumpir | La jugada más simulada, no la de mayor puntaje. Sí se puede interrumpir |
+| Cuándo conviene | Sin $\mathrm{EVAL}$ confiable y con árboles enormes: Go (MoGo, 2006), Hex (MoHex) |
 :::
 
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
 >
-> | Algoritmo | Hasta dónde mira | Qué número da |
-> |---|---|---|
-> | Minimax | Los finales | $V$ exacto |
-> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
-> | Alfa-beta | Los finales, sin las ramas que ya no deciden | $V$ exacto en la raíz |
-> | Minimax con corte | $d$ jugadas | Valor con corte ($\mathrm{EVAL}$); no es $V$ |
-> | Búsqueda de quietud | $d$ jugadas, luego solo capturas | Valor con corte, en posiciones quietas |
-> | Profundización iterativa | $d=1,2,3,\dots$ mientras haya reloj | Valor con corte de la última búsqueda |
-> | **Monte Carlo plano (estás aquí)** | **Los finales, jugando al azar; sin árbol** | **$\bar u$: estimación, no $V$** |
-> | **MCTS con UCT (estás aquí)** | **Un árbol que crece; debajo, partidas al azar** | **$\bar u$: estimación, no $V$** |
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales |
+> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
+> | **Monte Carlo plano (estás aquí)** | **$\bar u$; no garantiza $V$** |
+> | **MCTS con UCT (estás aquí)** | **$\bar u$; no garantiza $V$ (converge a él con $c$ grande)** |
 >
 > **Lo que viene.**
 >
