@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 203m
+estimated_time: 273m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -86,7 +86,7 @@ Tres ejemplos, cada uno con su papel:
 
 ## Recorrido
 
-Seis páginas, en orden. Las dos primeras van en par, como en la clase 2:
+Nueve páginas, en orden. Las tres últimas comparan todos los algoritmos de la unidad en un mismo árbol. Las dos primeras van en par, como en la clase 2:
 primero **a mano** y después **como algoritmo**.
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
@@ -98,7 +98,10 @@ primero **a mano** y después **como algoritmo**.
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 37m |
 | 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 29m |
 | 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 43m |
-| 7 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
+| 7 | Un árbol, todos los algoritmos | Correr cada algoritmo en el mismo árbol y ver qué hace distinto | 25m |
+| 8 | Qué número da cada uno | Distinguir $V$, el valor con corte y $\bar u$, y cuándo dejar de buscar | 20m |
+| 9 | Elegir el algoritmo | Diagnosticar un juego y elegir con qué buscar | 25m |
+| 10 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
 
 1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
@@ -107,6 +110,9 @@ primero **a mano** y después **como algoritmo**.
 4. [[jugar-contra-el-reloj|Jugar contra el reloj]]
 5. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
 6. [[de-donde-sale-el-bono|De dónde sale el bono]]
+7. [[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]
+8. [[que-numero-da-cada-uno|Qué número da cada uno]]
+9. [[elegir-el-algoritmo|Elegir el algoritmo]]
 
 ## Las animaciones y el notebook
 
