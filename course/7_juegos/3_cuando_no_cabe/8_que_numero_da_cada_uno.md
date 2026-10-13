@@ -117,8 +117,8 @@ compara los tres $\mu$: ¿cuáles no tocan D?
 2. **Porque un promedio no mira cuál hoja es cuál.** Con d2 o con d3 en
    ${-1}$, D tiene dos hojas en ${-1}$ y una en ${+1}$: vale
    ${(-1-1+1)/3=-1/3}$. Ahora der queda debajo del 0 de centro, y MAX
-   juega centro con ${V=0}$. Coincide con el $V$ sin dado por casualidad:
-   el dado ya no paga más que centro.
+   juega centro con ${V=0}$. Coincide con el $V$ sin dado porque MAX vuelve
+   a centro, donde no hay dado.
 3. **Izq.** Su ${\mu=0}$ no cambia, centro sigue en ${-1/4}$ y der baja a
    ${-1/3}$. Pero izq vale ${-1}$: MIN responde ix. Monte Carlo plano
    cambió de jugada y sigue eligiendo una que pierde.
@@ -233,8 +233,9 @@ I. I es el primer hijo de la raíz, así que llega con la ventana abierta.
 Alfa-beta generaría i1 igual. La regla no: **en I, MIN ve
 ${\text{ix}=-1}$ y ya no necesita mirar i1**.
 
-Esta regla supone **suma cero**: lo mejor para MIN es lo peor para MAX.
-La página siguiente lo pone en duda.
+Para MIN, la regla lee su tope en el número de MAX, y eso supone **suma
+cero**: lo mejor para MIN es lo peor para MAX. Si no lo es, MIN tiene que
+seguir mirando; la página siguiente dice por qué.
 
 ::: exercise {#jue-c3-cmp-ej-puede-salir title="Señala dónde se puede dejar de buscar"}
 En cada caso, ¿puede quien mueve dejar de mirar sus otras jugadas? Di por
@@ -282,8 +283,9 @@ puede dejar de buscar.
   por casualidad.
 - **Qué número da depende de cómo busca.** Hasta los finales y sin dados
   del algoritmo, $V$; con $d$, $\mathrm{EVAL}$; con simulaciones, $\bar u$.
-- **Se deja de buscar con lo máximo posible**, si la utilidad es acotada y
-  el número salió de finales. La línea 9 de la iterativa sale con 100; en
+- **Se deja de buscar con lo máximo posible**, si la utilidad es acotada,
+  el número salió de finales y, para que MIN pare con un ${-1}$, el juego es
+  de suma cero. La línea 9 de la iterativa sale con 100; en
   I, ix basta. Un ${\bar u=-1}$ no basta: x valía 0.6.
 
 Todo esto supone cosas del juego. ¿Cuáles, y qué uso en cada caso?

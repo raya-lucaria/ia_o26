@@ -48,6 +48,8 @@ lo arregló (`git show <hash>` cuenta la historia). Las lentes de
 | 40 | Comentario HTML `<!-- … -->` en una página: Raya lo publica como texto (la skill lo pedía para la fila de la tarea) | `a32660a`, lente Render | validate, build | `test_aceptacion.py::test_extra_ninguna_pagina_lleva_un_comentario_html` |
 | 41 | Página fragmentada: cada sección correcta, sin hilo; fórmula sin de dónde sale; objeto de dos páginas sin ligar ($c$ en p5, $\delta$ en p6) | el profesor, sitio desplegado, `aclarar-bono-y-mcts` | pytest, validate, 3 rondas de lentes | Lente Alumno § Hilo (`pedagogia.md` § Hilo narrativo) |
 | 42 | Gráfica que promedia corridas de todo o nada: 0.85 = 34 en ≈1 y 6 en ≈0; enseña lo contrario | el profesor, `jue-c3-bandido`, `aclarar-bono-y-mcts` | pytest, lentes | Calculista mira la distribución; lente Corrección § 9 (`figuras.md` § Gráficas de datos) |
+| 43 | Una misma columna de comparación con dos significados entre páginas («¿Exacto?» = coincide aquí / = garantiza $V$): UCT con $\bar u=0$ salía «no» en una tabla y «sí» en otra | lentes ronda 1, `comparar-algoritmos` | pytest | Una convención escrita (`GARANTIZA_TPM` en `tools/juegos.py`) que leen fichas, recuadro, tablas e interactivo; lo que coincide por casualidad va aparte |
+| 44 | Ordenar páginas por nombre: `10_tarea.md` cae antes que `1_…` y la prueba de minutos compara la fila equivocada | `comparar-algoritmos`, `test_tiempos_juegos.py` | — | Ordenar por el prefijo numérico (`paginas_de`) |
 
 ## Mantenimiento
 

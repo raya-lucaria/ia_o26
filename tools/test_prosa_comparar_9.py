@@ -236,14 +236,14 @@ def test_9_la_regla_del_menos_uno_se_cobra_en_la_seccion_3():
     ix=-1 que cita es el de p8 (la hoja de I que hace parar a MIN)."""
     tres = _limpio(_texto().split("## 3 ·")[1].split("## 4 ·")[0])
     m = re.search(r"Y por lo mismo vale la regla de dejar de buscar de \[\[que-numero-da-cada-uno\|"
-                  rf"Qué número da cada uno\]\]: en I, MIN para al ver (\w+)=({_Q}) porque el "
+                  rf"Qué número da cada uno\]\]: en I, si ix fuera su primera hoja, MIN pararía al ver (\w+)=({_Q}) porque el "
                   r"-1 de MAX es el máximo de MIN\.", tres)
     assert m and m[1] == j.ids_tpm()[(0, 1)] and int(m[2]) == j.nodo_en(j.ARBOL_TPM, (0, 1)) == -1
     assert ("un final malo para MAX no le diría a MIN que deje de buscar: puede no ser el "
             "mejor para MIN, y tendría que seguir mirando") in tres
     p8 = (CLASE_3 / "8_que_numero_da_cada_uno.md").read_text(encoding="utf-8")
     assert "en I, MIN ve\n${\\text{ix}=-1}$ y ya no necesita mirar i1" in p8
-    assert "Esta regla supone **suma cero**" in p8
+    assert "y eso supone **suma\ncero**" in p8
     # La suma cero se retoma en su página de la clase 4, no en el índice.
     assert "La clase 4 lo retoma en [[cuando-no-es-suma-cero|Cuando no es suma cero]]" in tres
     assert "La clase 4 lo retoma: [[juegos-sin-turnos" not in _texto()
@@ -271,7 +271,7 @@ def test_9_la_tabla_de_no_suma_cero():
     abajo; los hechos son los de las filas 29–31 del registro."""
     texto = _texto()
     filas = _tabla(texto, "jue-c3-cmp-no-suma-cero")
-    assert "{#jue-c3-cmp-no-suma-cero title=\"Si no es suma cero, para ubicar\"}" in texto
+    assert "{#jue-c3-cmp-no-suma-cero title=\"Más de dos jugadores o sin suma cero, para ubicar\"}" in texto
     assert [_c(x) for x in filas[0]] == ["Algoritmo", "Cada rival elige", "¿Poda?"]
     tabla = {_c(f[0]): (_c(f[1]), _c(f[2])) for f in filas[1:]}
     assert tabla == {"\\max^n": ("Lo mejor para él", "Casi no"),

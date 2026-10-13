@@ -215,9 +215,10 @@ Alfa-beta poda por lo mismo. Lo que MAX ya tiene asegurado es justo lo que
 MIN ya no le puede quitar, porque los dos miden con el mismo número.
 
 Y por lo mismo vale la regla de dejar de buscar de
-[[que-numero-da-cada-uno|Qué número da cada uno]]: en I, MIN para al ver
-${\text{ix}=-1}$ porque el ${-1}$ de MAX es el máximo de MIN. Si cada uno
-tuviera su propio pago, un final malo para MAX no le diría a MIN que deje de
+[[que-numero-da-cada-uno|Qué número da cada uno]]: en I, si ix fuera su primera
+hoja, MIN pararía al ver ${\text{ix}=-1}$ porque el ${-1}$ de MAX es el máximo de MIN.
+
+Si cada uno tuviera su propio pago, un final malo para MAX no le diría a MIN que deje de
 buscar: puede no ser el mejor para MIN, y tendría que seguir mirando.
 
 **Con tres jugadores eso se rompe.** Un final en el que tú pierdes puede ser
@@ -243,8 +244,8 @@ Los cuatro supuestos de la unidad, y qué los rompe:
 - **Todo a la vista.** En póker no ves las cartas del rival: no sabes en qué
   nodo estás. Es información oculta, y queda fuera de esta unidad.
 
-**Para ubicar.** Lo que se usa cuando se le pide más a MCTS, o cuando no
-es suma cero. Una línea cada uno; no se estudian en el curso.
+**Para ubicar.** Lo que se usa cuando se le pide más a MCTS, o cuando hay
+más de dos jugadores o el juego no es de suma cero. Una línea cada uno; no se estudian en el curso.
 
 - **MCTS-Solver** (Winands, Björnsson y Saito, 2008): propaga hacia arriba
   las victorias y derrotas ya demostradas. No demuestra empates.
@@ -253,10 +254,11 @@ es suma cero. Una línea cada uno; no se estudian en el curso.
   simulación. AlphaGo Zero (2017) y AlphaZero ya no simulan: solo la red,
   y seleccionan con PUCT, un puntaje que suma lo que la red sugiere.
 
-Si no es suma cero, cada final lleva un número por jugador. Cuando mueves
+Con tres o más jugadores, o si no es suma cero, cada final lleva un número
+por jugador. Cuando mueves
 tú, eliges por el tuyo; lo que cambia es qué se supone de los rivales:
 
-::: table {#jue-c3-cmp-no-suma-cero title="Si no es suma cero, para ubicar"}
+::: table {#jue-c3-cmp-no-suma-cero title="Más de dos jugadores o sin suma cero, para ubicar"}
 | Algoritmo | Cada rival elige | ¿Poda? |
 |---|---|---|
 | $\max^n$ | Lo mejor para él | Casi no |
