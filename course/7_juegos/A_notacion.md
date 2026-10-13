@@ -98,7 +98,7 @@ renglón, en cursivas.
 | $\mathrm{EVAL}(s)$ | «eval de ese». La función de evaluación: estima qué tan bueno es $s$ para MAX mirando solo $s$. En la clase 3, $10\cdot\text{material}+\text{avance}$ · *Cortar y evaluar a mano* |
 | $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación · *Cortar y evaluar a mano* |
 | $N(s')$, $G(s')$ | «ene de ese prima», «ge de ese prima». En MCTS: cuántas simulaciones pasaron por $s'$, y en cuántas ganó MAX. Esta $N$ no es Negras · *Simular en vez de evaluar* |
-| $\bar u(s')$ | «u barra». En MCTS: el promedio de $U$ en las simulaciones que pasaron por $s'$, siempre visto desde MAX: ${(2G(s')-N(s'))/N(s')}$, victorias menos derrotas entre simulaciones · *Simular en vez de evaluar* |
+| $\bar u(s')$ | «u barra». En MCTS: el promedio de $U$ en las simulaciones que pasaron por $s'$, siempre visto desde MAX: ${(2G(s')-N(s'))/N(s')}$, victorias menos derrotas entre simulaciones; si hay empates, el promedio de $U$ a secas · *Simular en vez de evaluar* |
 | $\mu(s')$ | «mu de ese prima». El promedio verdadero de $U$ en las simulaciones que pasan por $s'$, con los dos al azar: el que daría con infinitas. $\bar u(s')$ lo estima · *De dónde sale el bono* |
 | $\varepsilon$ | «épsilon». El margen: cuánto puede quedar $\bar u(s')$ por debajo de $\mu(s')$, en la escala de $U$ · *De dónde sale el bono* |
 | $\delta$ | «delta». La probabilidad de fallo que se tolera: que $\bar u(s')$ quede $\varepsilon$ o más por debajo de $\mu(s')$. Si baja como ${N(s)^{-k}}$, el margen es el bono con ${c=\sqrt{2k}}$ · *De dónde sale el bono* |
@@ -164,6 +164,7 @@ renglón, en cursivas.
 | Explorar, aprovechar | Probar lo poco probado, o elegir lo que ya funcionó; la regla UCT equilibra los dos | Simular en vez de evaluar |
 | Bandido | Elegir muchas veces entre unas pocas jugadas cuyo promedio verdadero no se conoce; cada prueba da un resultado al azar. Es la raíz de MCTS sin árbol debajo | De dónde sale el bono |
 | Cota optimista | $\bar u(s')$ más el margen: lo más que $\mu(s')$ podría valer sin que los datos lo desmientan. Que quede en $\mu(s')$ o por debajo es fallar por debajo, y pasa con probabilidad a lo más $\delta$. UCB1 elige la jugada con la cota más alta; en un nodo de MIN, la cota es $\bar u(s')$ menos el margen y se elige la más baja. No es el techo de la tabla de transposición | De dónde sale el bono |
+| Árbol T± | El árbol T con finales en $U$ (+1, 0 o −1, con un solo empate), una captura de MIN (ix) y $\mathrm{EVAL}$ en los nodos internos; D tiene tres hijos. Lo corren todos los algoritmos de la unidad | Un árbol, todos los algoritmos |
 | UCB1, UCT | UCB1: la regla de la cota optimista en un bandido (Auer, Cesa-Bianchi y Fischer, 2002). UCT: la misma regla en cada nodo del árbol de MCTS | De dónde sale el bono |
 | A veces al azar | Elegir el mejor promedio, salvo una fracción fija de las veces (10 % aquí), en que se elige al azar | De dónde sale el bono |
 | Promedio límite | El número al que se acerca el promedio de $U$ de las simulaciones desde un estado cuando son muchísimas: el promedio sobre todas las partidas, cada una con su probabilidad, si los dos eligen al azar. No es $V$ | Simular en vez de evaluar |
@@ -184,5 +185,6 @@ renglón, en cursivas.
 | Barras en el tiempo, línea «reloj k» | Cada barra es una búsqueda y su largo, los nodos que genera; la línea marca dónde se acaba el reloj |
 | Caja con G/N | En MCTS: victorias de MAX entre simulaciones de ese nodo |
 | Círculo con número | Orden en que un recorrido visita el nodo |
+| Arista gruesa del color de MIN, nombre en negrita con «x» | Una captura: la jugada que la búsqueda de quietud no deja sin mirar |
 
 Cada clase agrega sus símbolos a esta hoja.

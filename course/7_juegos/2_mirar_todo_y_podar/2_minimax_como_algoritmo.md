@@ -4,7 +4,7 @@ title: Minimax como algoritmo
 nav_title: Minimax como algoritmo
 summary: "El agente recibe un estado y devuelve una jugada: DECIDIR-MINIMAX y su auxiliar MINIMAX, trazados línea por línea en el árbol T, por qué son correctos y un subárbol de Negras para resolver por tu cuenta."
 status: ready
-estimated_time: 45m
+estimated_time: 47m
 tags: [juegos, minimax, algoritmos]
 ---
 
@@ -670,6 +670,39 @@ cuántas jugadas van, dos caminos al mismo tablero podrían valer distinto.
 | Muchos caminos llegan al mismo estado | Una tabla de transposición ahorra mucho, a cambio de memoria |
 | Un final cambia de utilidad | Hay que recalcular sus antecesores; el costo no cambia |
 :::
+
+## Ficha: minimax
+
+Antes de cerrar, minimax en siete rasgos. Cada algoritmo de la unidad tendrá su ficha con las mismas siete filas, para que puedas ponerlos lado a lado.
+
+::: table {#jue-ficha-minimax title="Minimax en siete rasgos"}
+| Rasgo | Minimax |
+|---|---|
+| Hasta dónde mira | Hasta los finales, en todas las ramas |
+| ¿Genera todo el árbol? | Sí: cada nodo, una vez |
+| ¿Garantiza $V$? | Sí, en cada nodo |
+| Con qué estima | Con nada: no estima. Solo lee la $U$ de los finales |
+| ¿Quién tira dados? | Nadie |
+| Qué entrega, y si se puede interrumpir | Una jugada de mayor $V$. Interrumpido, deja hijos de la raíz sin valorar: lo que lleve no está garantizado |
+| Cuándo conviene | Cuando el árbol entero cabe en el tiempo que hay: gato, hexapawn |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | **Minimax (estás aquí)** | **$V$; lo garantiza** |
+>
+> **Lo que viene.**
+>
+> - **Expectiminimax**: lo mismo cuando un dado o una moneda decide algunas jugadas; ahí se promedia en vez de elegir. Clase 2, [[cuando-decide-un-dado|Cuando decide un dado]].
+> - **Alfa-beta**: la misma jugada que mirar todo, sin generar las ramas que ya no pueden cambiar la decisión. Clase 2, [[alfa-beta|Alfa-beta a mano]].
+> - **Minimax con corte**: mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, para cuando el árbol no cabe. Clase 3, [[cortar-y-evaluar|Cortar y evaluar a mano]].
+> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
+> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

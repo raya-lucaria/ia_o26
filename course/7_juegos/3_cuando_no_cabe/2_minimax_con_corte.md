@@ -4,7 +4,7 @@ title: Minimax con corte como algoritmo
 nav_title: Minimax con corte como algoritmo
 summary: "El cálculo a mano escrito como procedimiento: qué recibe, qué genera, por qué termina, qué se puede afirmar de lo que devuelve, cuánto cuesta y qué preferencia expresa la evaluación."
 status: ready
-estimated_time: 40m
+estimated_time: 42m
 tags: [juegos, busqueda-adversarial, evaluacion, algoritmos]
 ---
 
@@ -708,6 +708,39 @@ orden ni de los números. Con poda, el orden sí importaría.
 - decir qué línea valora cada nodo: la 8, la 9 o ninguna;
 - explicar por qué termina aunque el juego no termine;
 - decir qué número de su salida es seguro.
+
+## Ficha: minimax con corte
+
+Antes de cerrar, la ficha de minimax con corte. Frente a la de [[minimax-como-algoritmo|minimax]], lo que más cambia son las cuatro primeras filas: es el precio de que el árbol no quepa.
+
+::: table {#jue-ficha-corte title="Minimax con corte en siete rasgos"}
+| Rasgo | Minimax con corte |
+|---|---|
+| Hasta dónde mira | $d$ jugadas desde la raíz, o menos si llega antes a un final |
+| ¿Genera todo el árbol? | No: solo lo que queda arriba de la línea de corte, eso sí completo |
+| ¿Garantiza $V$? | No, salvo si llega a los finales. Da el valor con corte |
+| Con qué estima | Con $\mathrm{EVAL}$, en los nodos de corte |
+| ¿Quién tira dados? | Nadie. Con dados se le suma el promedio de expectiminimax |
+| Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con corte. $d$ se fija antes: interrumpido, no garantiza nada |
+| Cuándo conviene | Árboles que no caben, con una $\mathrm{EVAL}$ razonable escrita a mano. Con alfa-beta: ajedrez (Deep Blue), damas (Chinook, que además usa tablas de finales). Con dados: backgammon (TD-Gammon) |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | **Minimax con corte (estás aquí)** | **Valor con corte; no garantiza $V$, salvo si llega a los finales** |
+>
+> **Lo que viene.**
+>
+> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
+> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

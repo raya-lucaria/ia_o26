@@ -4,7 +4,7 @@ title: Jugar contra el reloj
 nav_title: Jugar contra el reloj
 summary: "Si no sabes cuánto tiempo queda, buscas con d = 1, luego con 2, luego con 3, y entregas lo de la última búsqueda completa. Primero sin poda; después con alfa-beta, la jugada anterior primero y una tabla que guarda si cada número es un valor, un piso o un techo."
 status: ready
-estimated_time: 35m
+estimated_time: 37m
 tags: [juegos, busqueda-adversarial, evaluacion, algoritmos]
 ---
 
@@ -853,6 +853,39 @@ PROFUNDIZACIÓN-ITERATIVA si el reloj se acaba entre dos hijos de la raíz
 (línea 8) y si un hijo devuelve 100 (línea 9). También, por qué la jugada
 lista va primero, y si un número guardado es un valor, un piso o un techo
 según su ventana.
+
+## Ficha: profundización iterativa
+
+Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cambia la sexta fila: siempre tiene una jugada para entregar.
+
+::: table {#jue-ficha-iterativa title="Profundización iterativa en siete rasgos"}
+| Rasgo | Profundización iterativa |
+|---|---|
+| Hasta dónde mira | $d=1$, luego 2, luego 3, mientras haya reloj |
+| ¿Genera todo el árbol? | No: repite lo de arriba en cada búsqueda y, con alfa-beta, poda |
+| ¿Garantiza $V$? | No, salvo si la última búsqueda llega a los finales. Da su valor con corte |
+| Con qué estima | Con $\mathrm{EVAL}$, en los nodos de corte |
+| ¿Quién tira dados? | Nadie |
+| Qué entrega, y si se puede interrumpir | La jugada de la última búsqueda completa. Sí se puede interrumpir: siempre hay una lista |
+| Cuándo conviene | Cuando hay reloj y no se sabe hasta qué $d$ alcanza: ajedrez de torneo (Deep Blue) |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales |
+> | **Profundización iterativa (estás aquí)** | **Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales** |
+>
+> **Lo que viene.**
+>
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

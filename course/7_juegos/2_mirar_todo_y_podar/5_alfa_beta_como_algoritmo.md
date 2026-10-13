@@ -4,7 +4,7 @@ title: Alfa-beta como algoritmo
 nav_title: Alfa-beta como algoritmo
 summary: "DECIDIR-ALFA-BETA explicado línea por línea: qué cambia respecto a minimax, qué guarda la pila a media ejecución en el árbol T, cómo el orden decide el ahorro (n1 al revés, 8 de 13) y por qué los cortes son seguros."
 status: ready
-estimated_time: 45m
+estimated_time: 47m
 tags: [juegos, alfa-beta, poda, algoritmos]
 ---
 
@@ -560,6 +560,39 @@ Alfa-beta es [[ramificar-y-acotar|ramificar y acotar]] con dos jugadores:
   $v\ge\beta$.
 - **Un nodo cerrado no tiene su óptimo calculado** → un nodo donde se cortó
   solo tiene una cota.
+
+## Ficha: alfa-beta
+
+Antes de cerrar, la ficha de alfa-beta. Frente a la de [[minimax-como-algoritmo|minimax]], cambian la segunda y la tercera filas: el resultado en la raíz es el mismo y el trabajo, menor.
+
+::: table {#jue-ficha-alfa-beta title="Alfa-beta en siete rasgos"}
+| Rasgo | Alfa-beta |
+|---|---|
+| Hasta dónde mira | Hasta los finales |
+| ¿Genera todo el árbol? | No: salta las ramas que ya no pueden cambiar la decisión. Cuántas, lo decide el orden |
+| ¿Garantiza $V$? | Sí, en la raíz: el mismo que minimax. Un nodo que cortó solo da una cota |
+| Con qué estima | Con nada: no estima |
+| ¿Quién tira dados? | Nadie |
+| Qué entrega, y si se puede interrumpir | Una jugada de mayor $V$, como minimax. Interrumpido, tampoco garantiza nada |
+| Cuándo conviene | Siempre que minimax sirva: misma jugada, menos nodos. Gato, hexapawn. En ajedrez y damas es la base, ya con corte: clase 3 |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | **Alfa-beta (estás aquí)** | **$V$ en la raíz; lo garantiza** |
+>
+> **Lo que viene.**
+>
+> - **Minimax con corte**: mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, para cuando el árbol no cabe. Clase 3, [[cortar-y-evaluar|Cortar y evaluar a mano]].
+> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
+> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

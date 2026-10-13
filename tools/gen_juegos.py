@@ -3662,6 +3662,111 @@ def jue_c3_bandido_corridas():
     return "".join(out)
 
 
+# ------------------------------- 7.3.7: el arbol T± (un arbol, todos) ---
+#
+# Figura de problema, angosta: a 390 px el sitio no escala los SVG y el
+# parrafo mide ~305, asi que mide ANCHO_TPM. Las hojas van a su profundidad
+# real (las de I y D junto a C1 y C2), como en jue-t-arbol.
+
+ANCHO_TPM = 300
+LUGARES_TPM = {(): 134, (0,): 38, (1,): 134, (2,): 248,
+               (0, 0): 22, (0, 1): 54, (1, 0): 101, (1, 1): 167,
+               (2, 0): 216, (2, 1): 248, (2, 2): 280,
+               (1, 0, 0): 85, (1, 0, 1): 117, (1, 1, 0): 151, (1, 1, 1): 183}
+YS_TPM = (0, 132, 238, 336)          # y de cada nivel, desde la raiz
+NODO_TPM_W, NODO_TPM_H, HOJA_TPM_R = 62, 66, 13
+COLOR_CAPTURA = COLOR_MIN            # la captura la hace MIN
+PIE_TPM = ["Cada hoja es un final con su U:", "+1 gana MAX y −1 gana MIN;",
+           "0 es empate.", "En I, C, D, C1 y C2: su EVAL,", "en la escala 100·U.",
+           "La x de ix: es una captura de MIN.", "D tiene tres hijos; en T, dos."]
+
+
+def _signo(u):
+    return {1: "+1", -1: "−1", 0: "0"}[u]
+
+
+def jue_t_pm_arbol():
+    """T±: la forma de T con finales en U, una hoja mas en D, la EVAL de los
+    nodos internos y la captura ix marcada. Figura de problema."""
+    arbol = j.ARBOL_TPM
+    ids = j.ids_tpm(arbol)
+    caminos = _orden_caminos(arbol)
+    es_hoja = {c: not isinstance(j.nodo_en(arbol, c), tuple) for c in caminos}
+    hojas = {c: j.nodo_en(arbol, c) for c in caminos if es_hoja[c]}
+    jugadas_raiz = {(i,): a for i, a in enumerate(j.JUGADAS_RAIZ)}
+    titulo = ["El árbol T±", "T con finales en U"]
+
+    def hojas_de(c):
+        xs = [f"{ids[h]} = {_signo(hojas[h])}" for h in caminos if h[:-1] == c and es_hoja[h]]
+        return ", ".join(xs[:-1]) + " y " + xs[-1]
+    n_hojas = {c: len(j.nodo_en(arbol, c)) for c in caminos if not es_hoja[c]}
+    captura = ", ".join(ids[c] for c in sorted(j.CAPTURAS_TPM))
+    desc = (f"El árbol T±: la forma del árbol T, con {j.contar_nodos(arbol)} nodos porque D "
+            f"tiene {n_hojas[(2,)]} hijos y no 2. La raíz R es de MAX; izq lleva a I, centro a "
+            f"C y der a D, los tres de MIN. I tiene las hojas {hojas_de((0,))}; {captura} es "
+            f"una captura de MIN. C tiene dos hijos de MAX: C1, con {hojas_de((1, 0))}, y C2, "
+            f"con {hojas_de((1, 1))}. D tiene las hojas {hojas_de((2,))}. Cada hoja es un "
+            "final con su U: +1 gana MAX, −1 gana MIN, 0 empate. La EVAL de los nodos "
+            "internos, en la escala 100·U: "
+            + ", ".join(f"{n} = {v}" for n, v in j.EVAL_TPM.items()) + ".")
+    out = []
+    y = _titulo_t(out, titulo)
+    y0 = y + 30 + 25
+    ys = [y0 + d for d in YS_TPM]
+
+    def pos(c):
+        return LUGARES_TPM[c], ys[len(c)]
+
+    def medio(c):
+        return HOJA_TPM_R + 2.5 if es_hoja[c] else NODO_TPM_H / 2
+
+    for c in caminos[1:]:
+        (x1, y1), (x2, y2) = pos(c[:-1]), pos(c)
+        if c[:-1] == ():
+            x1 += 36 * (c[0] - 1)    # las tres aristas de R salen separadas
+        ya = y1 + (25 if c[:-1] == () else NODO_TPM_H / 2)
+        yb = y2 - medio(c) - 6
+        if c in j.CAPTURAS_TPM:
+            # La captura: un trazo ancho del color de MIN bajo la flecha comun
+            # (el marcador crece con el grosor; asi la punta no cambia).
+            out.append(linea(x1, ya, x2, yb, color=COLOR_CAPTURA, grosor=6))
+        out.append(flecha(x1, ya, x2, yb, color=SUAVE, grosor=2, marcador="s"))
+        if c in jugadas_raiz:
+            t = 0.5
+            out.append(_pastilla_t(x1 + (x2 - x1) * t, ya + (yb - ya) * t, jugadas_raiz[c],
+                                   SUAVE, tam=14))
+    # R: una sola caja ancha.
+    x, yr = pos(())
+    out.append(caja(x - 50, yr - 25, 100, 50, relleno=mezclar(COLOR_MAX, 0.07),
+                    borde=COLOR_MAX))
+    out.append(texto(x, yr + 6, "R · MAX", tam=17, color=COLOR_MAX, peso="700"))
+    for c in caminos[1:]:
+        x, yc = pos(c)
+        if es_hoja[c]:
+            u = hojas[c]
+            out.append(f'<circle cx="{x}" cy="{yc}" r="{HOJA_TPM_R + 2.5}" fill="none" '
+                       f'stroke="{COLOR_FINAL}" stroke-width="1.5"/>'
+                       f'<circle cx="{x}" cy="{yc}" r="{HOJA_TPM_R}" '
+                       f'fill="{mezclar(COLOR_FINAL, 0.07)}" stroke="{COLOR_FINAL}" '
+                       f'stroke-width="2"/>')
+            out.append(texto(x, yc + 5, _signo(u), tam=14, peso="700"))
+            captura = c in j.CAPTURAS_TPM
+            out.append(texto(x, yc + 34, ids[c], tam=14, peso="700" if captura else "normal",
+                             color=COLOR_CAPTURA if captura else SUAVE, fuente=MONO))
+            continue
+        tipo = "MAX" if len(c) % 2 == 0 else "MIN"
+        color = COLOR_MAX if tipo == "MAX" else COLOR_MIN
+        w, h = NODO_TPM_W, NODO_TPM_H
+        out.append(caja(x - w / 2, yc - h / 2, w, h, relleno=mezclar(color, 0.07), borde=color))
+        out.append(texto(x, yc - 13, f"{ids[c]}", tam=17, color=color, peso="700"))
+        out.append(texto(x, yc + 5, tipo, tam=14, color=color, peso="700"))
+        out.append(texto(x, yc + 24, f"EVAL {j.EVAL_TPM[ids[c]]}", tam=14))
+    fondo = ys[3] + HOJA_TPM_R + 34
+    y = _pie_t(out, fondo + 34, PIE_TPM, tam=15)
+    nombre = titulo[0] + SEP_C3 + titulo[1]
+    return "".join([marco(ANCHO_TPM, round(y - 10), desc, nombre, desc)] + out + [cierre()])
+
+
 DIAGRAMAS = {
     "jue-ciclo-partida": jue_ciclo_partida,
     **{f"jue-grafo-paso-{paso}": (lambda paso=paso: jue_grafo_paso(paso))
@@ -3703,6 +3808,7 @@ DIAGRAMAS = {
     "jue-c3-pago": jue_c3_pago,
     "jue-c3-eligiendo-x": jue_c3_eligiendo_x,
     "jue-c3-bandido-corridas": jue_c3_bandido_corridas,
+    "jue-t-pm-arbol": jue_t_pm_arbol,
 }
 
 

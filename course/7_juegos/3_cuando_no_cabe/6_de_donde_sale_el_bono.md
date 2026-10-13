@@ -802,4 +802,4 @@ calcular la cota optimista en un nodo de MAX o de MIN.
 - **En el árbol**, UCT es UCB1 en cada nodo; Hoeffding ya no vale al pie de
   la letra, pero la intuición sí.
 
-Continúa con [[juegos-sin-turnos|la clase 4, cuando no hay turnos]].
+Continúa con [[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]: el mismo árbol corrido por cada algoritmo que viste.

@@ -50,7 +50,9 @@ def filas(pagina, id_tabla):
 
 
 def paginas_de(clase):
-    return sorted(p for p in clase.glob("*.md") if p.name != "0_index.md")
+    # Por el prefijo numérico, no por el nombre: «10_tarea» va después de «9_…».
+    return sorted((p for p in clase.glob("*.md") if p.name != "0_index.md"),
+                  key=lambda p: int(p.name.split("_", 1)[0]))
 
 
 def numero(clase):
