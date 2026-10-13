@@ -4,7 +4,7 @@ title: Cuando decide un dado
 nav_title: Cuando decide un dado
 summary: "Un nodo que no decide nadie se valora con un promedio, no con un máximo ni un mínimo. En hexapawn: un volado para empezar y un rival que mueve al azar. Tratar al azar como rival, o a un rival como azar, es un error de modelado."
 status: ready
-estimated_time: 30m
+estimated_time: 32m
 tags: [juegos, azar, expectiminimax]
 ---
 
@@ -496,6 +496,39 @@ los tres casos; lo que cambia la decisión es la distancia entre ellos.
 **Punto de control:** deberías poder valorar un árbol con nodos MAX, MIN y
 de azar, decir para cada nodo si se maximiza, se minimiza o se promedia, y
 explicar qué error comete quien confunde un rival con el azar.
+
+## Ficha: expectiminimax
+
+Antes de cerrar, la ficha de expectiminimax, con las mismas siete filas que la de [[minimax-como-algoritmo|minimax]]. La fila nueva es la quinta: aquí sí hay quien tira dados.
+
+::: table {#jue-ficha-expectiminimax title="Expectiminimax en siete rasgos"}
+| Rasgo | Expectiminimax |
+|---|---|
+| Hasta dónde mira | Hasta los finales, en todas las ramas |
+| ¿Genera todo el árbol? | Sí; en un nodo de azar, todos sus resultados |
+| ¿Da $V$ exacto? | Sí: el $V$ con azar, la mayor utilidad esperada si MIN es racional |
+| Con qué estima | Con nada: no estima. Promedia con las $\Pr$ que da el juego |
+| ¿Quién tira dados? | El juego, en los nodos de azar. El algoritmo no tira nada |
+| Qué entrega, y si se puede interrumpir | Una jugada de mayor utilidad esperada. Interrumpido, como minimax, no garantiza nada |
+| Cuándo conviene | Juegos chicos con dado o volado, que caben enteros: hexapawn con volado. En backgammon no cabe: TD-Gammon miraba dos jugadas y estimaba el resto, como en la clase 3 |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Hasta dónde mira | Qué número da |
+> |---|---|---|
+> | Minimax | Los finales | $V$ exacto |
+> | **Expectiminimax (estás aquí)** | **Los finales** | **$V$ exacto, promediando el azar** |
+>
+> **Lo que viene.**
+>
+> - **Alfa-beta**: la misma jugada que mirar todo, sin generar las ramas que ya no pueden cambiar la decisión. Clase 2, [[alfa-beta|Alfa-beta a mano]].
+> - **Minimax con corte**: mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, para cuando el árbol no cabe. Clase 3, [[cortar-y-evaluar|Cortar y evaluar a mano]].
+> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
+> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

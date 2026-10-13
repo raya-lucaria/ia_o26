@@ -4,7 +4,7 @@ title: Simular en vez de evaluar
 nav_title: Simular en vez de evaluar
 summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando. Es la búsqueda de árbol Monte Carlo, la base de AlphaGo."
 status: ready
-estimated_time: 27m
+estimated_time: 29m
 tags: [juegos, busqueda-adversarial, monte-carlo]
 ---
 
@@ -457,6 +457,40 @@ red sugiere.
 **Punto de control:** deberías poder dar una vuelta de MCTS a mano, con
 ${G/N}$ en cada nodo y cualquier resultado. También, calcular el puntaje UCT
 de un hijo y decir por qué un promedio de simulaciones no es $V$.
+
+## Ficha: Monte Carlo plano y MCTS con UCT
+
+Antes de cerrar, dos fichas lado a lado. **Monte Carlo plano** es lo de las secciones 1 a 3: simular desde cada jugada de la raíz, sin construir árbol. MCTS con UCT es lo de las secciones 4 y 5.
+
+::: table {#jue-ficha-simular title="Monte Carlo plano y MCTS con UCT en siete rasgos"}
+| Rasgo | Monte Carlo plano | MCTS con UCT |
+|---|---|---|
+| Hasta dónde mira | Hasta los finales, jugando al azar | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
+| ¿Genera todo el árbol? | No: solo las partidas que simula | No: un nodo nuevo por vuelta, más su partida |
+| ¿Da $V$ exacto? | No: $\bar u$ se acerca al promedio con los dos al azar, no a $V$ | No con tiempo finito. Con $c$ suficientemente grande y tiempo sin límite, su jugada tiende a la de minimax |
+| Con qué estima | Con $\bar u$ de simulaciones | Con $\bar u$ de simulaciones |
+| ¿Quién tira dados? | El algoritmo, en cada simulación | El algoritmo, solo en las simulaciones; dentro del árbol elige por puntaje |
+| Qué entrega, y si se puede interrumpir | La jugada de mayor $\bar u$. Sí se puede interrumpir | La jugada más simulada, no la de mayor puntaje. Sí se puede interrumpir |
+| Cuándo conviene | Sin $\mathrm{EVAL}$ confiable: Go experimental, de 1993 a 2005 (Brügmann, 1993) | Sin $\mathrm{EVAL}$ confiable y con árboles enormes: Go (MoGo, 2006), Hex (MoHex) |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Hasta dónde mira | Qué número da |
+> |---|---|---|
+> | Minimax | Los finales | $V$ exacto |
+> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
+> | Alfa-beta | Los finales, sin las ramas que ya no deciden | $V$ exacto en la raíz |
+> | Minimax con corte | $d$ jugadas | Valor con corte ($\mathrm{EVAL}$); no es $V$ |
+> | Búsqueda de quietud | $d$ jugadas, luego solo capturas | Valor con corte, en posiciones quietas |
+> | Profundización iterativa | $d=1,2,3,\dots$ mientras haya reloj | Valor con corte de la última búsqueda |
+> | **Monte Carlo plano (estás aquí)** | **Los finales, jugando al azar; sin árbol** | **$\bar u$: estimación, no $V$** |
+> | **MCTS con UCT (estás aquí)** | **Un árbol que crece; debajo, partidas al azar** | **$\bar u$: estimación, no $V$** |
+>
+> **Lo que viene.**
+>
+> Ya viste todos los algoritmos de la clase. [[de-donde-sale-el-bono|De dónde sale el bono]] explica la regla con que MCTS reparte las partidas.
 
 ## Lo que hay que llevarse
 

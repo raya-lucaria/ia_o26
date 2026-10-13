@@ -2746,3 +2746,176 @@ def test_p6_eligiendo_x_no_es_acumulada():
         assert abs(float(v) - acum[m]) < 1e-12
     assert j.eligiendo_la_mejor("ucb", j.MUS_HILO, (100,), 5)[100] != \
         j.eligiendo_la_mejor("ucb", j.MUS_HILO, (100,), 5, ventana=100)[100]
+
+
+# ------------------------- 7.3.7: un arbol, todos los algoritmos (T±) ---
+#
+# Cada cifra de la tabla de la pagina 7.3.7 y del interactivo, recalculada.
+# Las convenciones (desempates, orden, semillas) estan en los docstrings de
+# juegos.py; si cambian, estas cifras cambian y la prosa tambien.
+
+def test_tpm_es_t_con_una_hoja_mas_en_d():
+    """Misma forma que T salvo D: tres hijos. 15 nodos, finales en {−1, 0, +1}
+    con un solo empate, y una sola captura, ix."""
+    assert [len(h) for h in j.ARBOL_TPM] == [len(h) for h in j.ARBOL_T][:2] + [3]
+    assert [len(c) for c in j.ARBOL_TPM[1]] == [len(c) for c in j.ARBOL_T[1]]
+    assert j.contar_nodos(j.ARBOL_TPM) == j.contar_nodos(j.ARBOL_T) + 1 == 15
+    hojas = [j.nodo_en(j.ARBOL_TPM, c) for c in j.nombres_hojas_tpm()]
+    assert set(hojas) <= {-1, 0, 1} and hojas.count(0) == 1
+    assert sorted(j.ids_tpm().values()) == sorted(
+        ["R", "I", "C", "D", "C1", "C2", "i1", "ix", "c1a", "c1b", "c2a", "c2b",
+         "d1", "d2", "d3"])
+    assert [j.ids_tpm()[c] for c in j.CAPTURAS_TPM] == ["ix"]
+    assert j.nodo_en(j.ARBOL_TPM, (0, 1)) == -1      # la captura gana para MIN
+    assert j.EVAL_TPM == {"I": 60, "C": 20, "D": 10, "C1": 10, "C2": 50}
+
+
+def test_tpm_con_la_forma_exacta_de_t_ningun_dado_cambia_la_jugada():
+    """Por que D tiene tres hojas: con dos, un volado entre −1 y +1 vale 0 y
+    a lo mas empata. Busqueda exhaustiva sobre {−1, 0, +1}^8."""
+    assert j.dados_que_cambian_la_jugada_forma_t(2) == 0
+    # Con tres hojas en D si se puede: T± es uno (test_tpm_el_dado_en_d...).
+
+
+def test_tpm_minimax_y_alfa_beta():
+    assert j.minimax_tpm() == ("centro", 0, {"izq": -1, "centro": 0, "der": -1}, 15)
+    # En el orden dado, d1 = −1 llega con α = 0 y corta d2 y d3; c2a = +1
+    # corta c2b. Al reves, la unica hoja que se ahorra es i1.
+    assert j.alfa_beta_tpm("dado") == ("centro", 0, 12, [(1, 1, 1), (2, 1), (2, 2)])
+    assert j.alfa_beta_tpm("al revés") == ("centro", 0, 14, [(0, 0)])
+    assert j.alfa_beta_tpm("centro primero")[:3] == ("centro", 0, 12)
+
+
+def test_tpm_el_dado_en_d_cambia_la_jugada():
+    jugada, v = j.expectiminimax_tpm()
+    assert jugada == "der"
+    assert (v["I"], v["C"], v["D"], v["R"]) == (-1, 0, F(1, 3), F(1, 3))
+    assert j.minimax_tpm()[0] != jugada
+
+
+def test_tpm_el_horizonte_engana_a_d_1_y_la_quietud_lo_arregla():
+    assert j.corte_tpm(1) == ("izq", 60, {"izq": 60, "centro": 20, "der": 10}, 4)
+    assert j.corte_tpm(2) == ("centro", 10, {"izq": -100, "centro": 10, "der": -100}, 11)
+    assert j.corte_tpm(3) == ("centro", 0, {"izq": -100, "centro": 0, "der": -100}, 15)
+    jugada, valor, ws, nodos, generados = j.quietud_tpm(1)
+    assert (jugada, valor, ws, nodos) == ("centro", 20,
+                                          {"izq": -100, "centro": 20, "der": 10}, 5)
+    assert [j.ids_tpm()[c] for c in generados] == ["R", "I", "ix", "C", "D"]
+    assert nodos < j.corte_tpm(2)[3]
+    # La quietud arregla la jugada, no el valor: centro vale 0, no 20.
+    assert valor != 100 * j.minimax_tpm()[1]
+
+
+def test_tpm_profundizacion_iterativa():
+    filas, total = j.iterativa_tpm()
+    assert [(d, jugada, valor, nodos) for d, _, jugada, valor, nodos in filas] == [
+        (1, "izq", 60, 4), (2, "centro", 10, 9), (3, "centro", 0, 12)]
+    assert [orden[0] for _, orden, _, _, _ in filas] == ["izq", "izq", "centro"]
+    assert total == 25
+
+
+def test_tpm_monte_carlo_plano_es_todos_al_azar():
+    """El limite de MC plano es expectiminimax con TODOS al azar, tambien C1 y
+    C2 (de MAX): juega der. Con solo el rival al azar juega centro."""
+    jugada, mu = j.todos_al_azar_tpm()
+    assert (jugada, mu) == ("der", {"izq": 0, "centro": F(-1, 4), "der": F(1, 3)})
+    for a, h in zip(j.JUGADAS_RAIZ, j.ARBOL_TPM):
+        d = j.distribucion_simulacion(h)
+        assert sum(u * p for u, p in d.items()) == mu[a]
+    assert j.rival_al_azar_tpm() == ("centro", {"izq": 0, "centro": F(1, 2), "der": F(1, 3)})
+
+
+# {k simulaciones por jugada: (semillas que entregan izq, centro, der en
+# 1000, de ellas cuantas por empate de promedios)}
+REPARTO_MC_TPM = {5: ((353, 106, 541), 233), 10: ((269, 53, 678), 157),
+                  50: ((39, 1, 960), 15)}
+
+
+def test_tpm_reparto_de_monte_carlo_plano():
+    assert j.SIMS_MC_TPM == (5, 10, 50) and j.SEMILLAS_MC_TPM == 1000
+    for k, (cuentas, empates) in REPARTO_MC_TPM.items():
+        reparto, e = j.reparto_mc_plano_tpm(k)
+        assert tuple(reparto.values()) == cuentas and e == empates, k
+    assert j.mc_plano_tpm(5, j.SEMILLA_TPM) == ("der", {"izq": -3, "centro": -2, "der": 3})
+
+
+def test_tpm_probabilidad_exacta_de_monte_carlo_plano():
+    p5 = j.prob_mc_plano_tpm(5)
+    assert p5 == {"izq": F(487919, 1327104), "centro": F(41723, 442368),
+                  "der": F(22313, 41472)}
+    assert sum(p5.values()) == 1
+    pct = {k: {a: round(float(x) * 100, 1) for a, x in j.prob_mc_plano_tpm(k).items()}
+           for k in (5, 10, 50)}
+    assert pct == {5: {"izq": 36.8, "centro": 9.4, "der": 53.8},
+                   10: {"izq": 27.6, "centro": 4.7, "der": 67.7},
+                   50: {"izq": 5.4, "centro": 0.0, "der": 94.6}}
+    # Las 1000 semillas caen cerca de la probabilidad exacta.
+    for k, (cuentas, _) in REPARTO_MC_TPM.items():
+        for a, n in zip(j.JUGADAS_RAIZ, cuentas):
+            assert abs(n / 1000 - float(j.prob_mc_plano_tpm(k)[a])) < 0.03, (k, a)
+
+
+def test_tpm_uct_acaba_en_centro():
+    """La vuelta desde la que centro es la mas simulada hasta la 200, en 500
+    semillas. Ninguna se queda fuera."""
+    assert (j.VUELTAS_UCT_TPM, j.SEMILLAS_UCT_TPM) == (200, 500)
+    esperado = {1: (4, 8, 18, 31, 34), j.C_TEORIA: (4, 13, 29, 36, 39)}
+    for c, cifras in esperado.items():
+        r = j.reparto_uct_tpm(c)
+        assert (r["minimo"], r["p10"], r["mediana"], r["p90"], r["maximo"]) == cifras, c
+        assert r["nunca"] == 0
+        # Con c = 1, 47 semillas ponen a centro arriba desde la vuelta 6 o
+        # antes: el alumno no veria el error de MC plano en ellas.
+        assert sum(v <= 6 for v in r["vueltas"]) == {1: 47, j.C_TEORIA: 15}[c]
+
+
+def test_tpm_la_corrida_de_uct_de_la_pagina():
+    u = j.uct_tpm(1, j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM)
+    assert "".join(a[0] for a in u["mas_simulada"]) == (
+        "iii" + "cccc" + "d" * 10 + "c" * 23)
+    assert j.vuelta_desde_la_que_tpm(1, j.SEMILLA_TPM) == 18
+    raiz = {a: (u["N"][(i,)], u["S"][(i,)]) for i, a in enumerate(j.JUGADAS_RAIZ)}
+    assert raiz == {"izq": (5, -3), "centro": (26, 0), "der": (9, -3)}
+    assert len(u["N"]) == 15
+    # En la vuelta 18 centro y der empatan con 7: entrega la primera, centro.
+    u18 = j.uct_tpm(1, 18, j.SEMILLA_TPM)
+    assert u18["N"][(1,)] == u18["N"][(2,)] == 7 and u18["mas_simulada"][-1] == "centro"
+
+
+def test_tpm_tabla_de_la_pagina():
+    filas = {f["algoritmo"]: f for f in j.tabla_t_pm()}
+    corto = {a: (f["jugada"], f["valor"], f["tipo"], f["nodos"], f["exacto"])
+             for a, f in filas.items()}
+    assert corto == {
+        "minimax": ("centro", 0, "V", 15, True),
+        "alfa-beta, orden dado": ("centro", 0, "V", 12, True),
+        "alfa-beta, orden al revés": ("centro", 0, "V", 14, True),
+        "expectiminimax, D es un dado": ("der", F(1, 3), "V con dado", 15, False),
+        "corte d = 1": ("izq", 60, "valor con corte", 4, False),
+        "corte d = 2": ("centro", 10, "valor con corte", 11, False),
+        "corte d = 3": ("centro", 0, "valor con corte", 15, True),
+        "quietud, d = 1": ("centro", 20, "valor con corte", 5, False),
+        "profundización iterativa, d = 1, 2, 3": ("centro", 0, "valor con corte", 25, True),
+        "Monte Carlo plano, 5 por jugada": ("der", F(3, 5), "ū", 15, False),
+        "UCT, c = 1, 40 vueltas": ("centro", 0, "ū", 15, False),
+    }
+    assert filas["Monte Carlo plano, 5 por jugada"]["nota"] == "límite: der con μ = 1/3"
+
+
+def test_tpm_datos_del_interactivo():
+    import json
+    d = j.datos_interactivo_tpm()
+    texto = json.dumps(d, ensure_ascii=False)
+    assert json.loads(texto) == json.loads(json.dumps(d, ensure_ascii=False))
+    assert len(d["nodos"]) == 15
+    assert [n["id"] for n in d["nodos"] if n["captura"]] == ["ix"]
+    a = d["algoritmos"]
+    assert len(a["minimax"]["visitados"]) == 15
+    assert len(a["alfa-beta, dado"]["visitados"]) == 12
+    assert a["alfa-beta, dado"]["podados"] == ["c2b", "d2", "d3"]
+    assert a["alfa-beta, al revés"]["podados"] == ["i1"]
+    assert a["quietud d = 1"]["visitados"] == ["R", "I", "ix", "C", "D"]
+    assert [x["nodos"] for x in a["profundización iterativa"]] == [4, 9, 12]
+    assert a["Monte Carlo plano"]["reparto"][5] == {"izq": 353, "centro": 106, "der": 541}
+    assert a["UCT"]["mas_simulada"][-1] == "centro"
+    assert len(d["tabla"]) == len(j.tabla_t_pm())

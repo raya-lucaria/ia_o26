@@ -876,3 +876,42 @@ def test_cada_corrida_se_dibuja_en_su_valor():
         d = j.reparto_bandido()[fila]
         assert abs(min(xs) - (pl.x0 + pl.w * d["minimo"])) <= tol
         assert abs(max(xs) - (pl.x0 + pl.w * d["maximo"])) <= tol
+
+
+# ------------------------- 7.3.7: el arbol T± (un arbol, todos) ---
+
+def test_el_arbol_t_pm_cabe_en_la_columna_de_un_telefono():
+    """A 390 px el sitio no escala los SVG y el parrafo mide ~305: la figura
+    mide 300 o menos, y ninguna letra baja de 14."""
+    svg = _texto("jue-t-pm-arbol")
+    etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
+    assert float(re.search(r'\bwidth="([\d.]+)"', etiqueta).group(1)) <= 300
+    tams = [float(t) for t in re.findall(r'<text [^>]*font-size="([\d.]+)"', svg)]
+    assert tams and min(tams) >= 14
+
+
+def test_el_arbol_t_pm_dibuja_el_arbol_de_la_fuente():
+    svg = _texto("jue-t-pm-arbol")
+    aria = re.search(r'aria-label="([^"]*)"', svg).group(1)
+    ids = j.ids_tpm()
+    signo = {1: "+1", -1: "−1", 0: "0"}
+    for c, nombre in j.nombres_hojas_tpm().items():
+        u = signo[j.nodo_en(j.ARBOL_TPM, c)]
+        assert f"{nombre} = {u}" in aria, nombre
+        assert f">{nombre}<" in svg
+    for nombre, v in j.EVAL_TPM.items():
+        assert f"{nombre} = {v}" in aria and f">EVAL {v}<" in svg, nombre
+    assert f"con {j.contar_nodos(j.ARBOL_TPM)} nodos" in aria
+    # Cada hoja con su borde doble: dos circulos por final.
+    assert svg.count("<circle") == 2 * len(j.nombres_hojas_tpm())
+    for nombre in ("I", "C", "D"):
+        assert f">{nombre}<" in svg
+    assert svg.count(">MIN<") == 3 and svg.count(">MAX<") == 2 and ">R · MAX<" in svg
+    # La captura: su nombre en negritas del color de MIN y un trazo ancho de
+    # ese color, uno por captura; el pie lo dice en palabras.
+    capturas = [ids[c] for c in j.CAPTURAS_TPM]
+    for nombre in capturas:
+        assert re.search(rf'fill="{gen.COLOR_CAPTURA}"[^>]*font-weight="700"[^>]*>{nombre}<', svg)
+        assert f"{nombre} es una captura de MIN" in aria
+    assert svg.count(f'stroke="{gen.COLOR_CAPTURA}" stroke-width="6"') == len(capturas)
+    assert ">La x de ix: es una captura de MIN.<" in svg

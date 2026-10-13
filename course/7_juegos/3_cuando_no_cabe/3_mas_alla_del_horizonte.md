@@ -4,7 +4,7 @@ title: Más allá del horizonte
 nav_title: Más allá del horizonte
 summary: "Una búsqueda cortada no ve lo que queda detrás del corte: el efecto horizonte. Mirar las capturas antes de evaluar, la búsqueda de quietud, arregla los intercambios, pero no todo."
 status: ready
-estimated_time: 20m
+estimated_time: 22m
 tags: [juegos, busqueda-adversarial, evaluacion]
 ---
 
@@ -320,6 +320,39 @@ todas las capturas, del lado de quien mueve?
 **Punto de control:** deberías poder señalar qué jugada queda detrás del
 horizonte en una posición de peones. Y decir si la posición donde se corta es
 quieta, y calcular a mano su valor con quietud.
+
+## Ficha: búsqueda de quietud
+
+Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-corte|minimax con corte]] con un cambio: lo que pasa debajo del horizonte.
+
+::: table {#jue-ficha-quietud title="Búsqueda de quietud en siete rasgos"}
+| Rasgo | Búsqueda de quietud |
+|---|---|
+| Hasta dónde mira | $d$ jugadas, y después del corte solo capturas, hasta posiciones quietas |
+| ¿Genera todo el árbol? | No: arriba del corte, todo; debajo, solo las capturas |
+| ¿Da $V$ exacto? | No: valor con corte, sin el engaño de los intercambios a medias. Lo que no es captura sigue detrás del horizonte |
+| Con qué estima | Con $\mathrm{EVAL}$, solo en posiciones quietas |
+| ¿Quién tira dados? | Nadie |
+| Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con corte. Interrumpida, como minimax con corte, no garantiza nada |
+| Cuándo conviene | Juegos con capturas, donde $\mathrm{EVAL}$ cambia mucho a mitad de un intercambio. En ajedrez la propuso Shannon en 1950 y la usaba Deep Blue |
+:::
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Hasta dónde mira | Qué número da |
+> |---|---|---|
+> | Minimax | Los finales | $V$ exacto |
+> | Expectiminimax | Los finales | $V$ exacto, promediando el azar |
+> | Alfa-beta | Los finales, sin las ramas que ya no deciden | $V$ exacto en la raíz |
+> | Minimax con corte | $d$ jugadas | Valor con corte ($\mathrm{EVAL}$); no es $V$ |
+> | **Búsqueda de quietud (estás aquí)** | **$d$ jugadas, luego solo capturas** | **Valor con corte, en posiciones quietas** |
+>
+> **Lo que viene.**
+>
+> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 
