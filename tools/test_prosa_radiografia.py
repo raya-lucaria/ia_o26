@@ -79,8 +79,15 @@ def test_cada_ficha_tiene_su_formula_en_negrita():
 
 def test_la_ficha_de_uct_va_tal_cual_la_aprobo_el_profesor_mas_la_linea_de_min():
     """La ficha aprobada vive fuera del repo (`.superpowers/`, gitignorada):
-    en un clon limpio esta parte se salta sola y quedan las anclas literales."""
+    en un clon limpio esta parte se salta sola y quedan las anclas literales.
+
+    El 2026-10-14 el profesor pidió, por legibilidad, la utilidad $U$ escrita
+    como fórmula por casos junto a «Final del juego» (con su frase de entrada),
+    subtítulos `#####` dentro de la exploración y un separador `---` entre
+    fichas. La comparación literal quita esas tres cosas y nada más: el resto
+    de la ficha tiene que seguir siendo, palabra por palabra, la aprobada."""
     uct = _fichas(_texto(P6))[FICHAS[4]]
+    assert r"\mathbf{U(s)=\begin{cases}+1 & \text{si gana MAX}" in uct
     assert "la regla del **hijo más visitado (*robust child*)**" in uct
     assert "el artículo original usa la de mayor promedio" in uct
     assert ("Elegir el menor $\\bar u(s')-\\text{bono}$ equivale a elegir el mayor "
@@ -90,7 +97,12 @@ def test_la_ficha_de_uct_va_tal_cual_la_aprobo_el_profesor_mas_la_linea_de_min()
             "### UCT (*Upper Confidence bounds applied to Trees*)", "### " + FICHAS[4])
         sin_figuras = re.sub(r"\n*::: figure.*?\n:::", "", uct, flags=re.S).strip()
         sin_linea = re.sub(r" Elegir el menor .*?\]\]\.", "", sin_figuras)
-        assert sin_linea == aprobada
+        sin_formula_u = re.sub(
+            r"\n\n\*\*Lo que promedia UCT es esa utilidad\*\*[^\n]*\n\n\$\$\n.*?\n\$\$", "",
+            sin_linea, flags=re.S)
+        sin_subtitulos = re.sub(r"\n\n##### [^\n]*", "", sin_formula_u)
+        sin_separador = re.sub(r"\n+---\s*$", "", sin_subtitulos)
+        assert sin_separador == aprobada
 
 
 def test_la_figura_base_de_t_mas_menos_no_lleva_eval_y_va_antes_que_las_fichas():
