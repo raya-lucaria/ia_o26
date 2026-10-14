@@ -49,6 +49,28 @@ def filas(pagina, id_tabla):
     return celdas
 
 
+def encabezado(pagina, id_tabla):
+    """Las celdas del encabezado de una tabla `::: table {#id_tabla …}`."""
+    texto = pagina.read_text(encoding="utf-8")
+    m = re.search(r"^::: table \{#" + re.escape(id_tabla) + r"\b.*?\n(\|.*?)$", texto, re.M)
+    assert m, f"{pagina.name} no tiene la tabla {id_tabla}"
+    return [c.strip() for c in m.group(1).strip("|").split("|")]
+
+
+def ruta(clase):
+    """Las filas de `jue-ruta-N` como (número de página, minutos en texto).
+
+    La columna de minutos se busca por su encabezado «Minutos», no por
+    posición: va segunda, con la página y lo que resuelve juntos en la
+    tercera, para que a 390 px la tabla quepa sin desplazamiento lateral y
+    los minutos no queden escondidos."""
+    id_tabla = f"jue-ruta-{numero(clase)}"
+    cabeza = encabezado(clase / "0_index.md", id_tabla)
+    assert "Minutos" in cabeza, f"{clase.name}: {id_tabla} no tiene columna «Minutos»"
+    col = cabeza.index("Minutos")
+    return [(f[0], f[col]) for f in filas(clase / "0_index.md", id_tabla)]
+
+
 def paginas_de(clase):
     # Por el prefijo numérico, no por el nombre: «10_tarea» va después de «9_…».
     return sorted((p for p in clase.glob("*.md") if p.name != "0_index.md"),
@@ -61,18 +83,17 @@ def numero(clase):
 
 @pytest.mark.parametrize("clase", CLASES, ids=lambda c: c.name)
 def test_cada_pagina_lleva_en_la_tabla_de_su_clase_los_minutos_de_su_frontmatter(clase):
-    tabla = filas(clase / "0_index.md", f"jue-ruta-{numero(clase)}")
+    tabla = ruta(clase)
     paginas = paginas_de(clase)
-    assert [int(f[0]) for f in tabla] == list(range(1, len(paginas) + 1))
-    for fila, pagina in zip(tabla, paginas):
-        assert minutos(fila[-1]) == estimado(pagina), (
-            f"{pagina.name}: la tabla dice {fila[-1]}, el frontmatter otra cosa")
+    assert [int(n) for n, _ in tabla] == list(range(1, len(paginas) + 1))
+    for (_, tiempo), pagina in zip(tabla, paginas):
+        assert minutos(tiempo) == estimado(pagina), (
+            f"{pagina.name}: la tabla dice {tiempo}, el frontmatter otra cosa")
 
 
 @pytest.mark.parametrize("clase", CLASES, ids=lambda c: c.name)
 def test_la_clase_dura_la_suma_de_sus_paginas_sin_la_tarea(clase):
-    tabla = filas(clase / "0_index.md", f"jue-ruta-{numero(clase)}")
-    suma = sum(minutos(f[-1]) for f in tabla if "aparte" not in f[-1])
+    suma = sum(minutos(t) for _, t in ruta(clase) if "aparte" not in t)
     assert estimado(clase / "0_index.md") == suma
 
 
@@ -95,8 +116,7 @@ def test_la_unidad_dura_la_suma_de_sus_clases_en_el_frontmatter_y_en_la_prosa():
 def test_las_tareas_suman_lo_que_dice_la_unidad_redondeado_a_horas():
     aparte = 0
     for clase in CLASES:
-        tabla = filas(clase / "0_index.md", f"jue-ruta-{numero(clase)}")
-        aparte += sum(minutos(f[-1]) for f in tabla if "aparte" in f[-1])
+        aparte += sum(minutos(t) for _, t in ruta(clase) if "aparte" in t)
     texto = (UNIDAD / "0_index.md").read_text(encoding="utf-8")
     m = re.search(r"tareas suman unas \*\*(.+?)\*\*", texto)
     assert m, "la prosa de la unidad ya no declara el total de las tareas"

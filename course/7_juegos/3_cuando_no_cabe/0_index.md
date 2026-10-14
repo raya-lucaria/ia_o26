@@ -97,17 +97,17 @@ Ocho páginas de lectura y una tarea, en orden. La 6 compara los cinco algoritmo
 primero **a mano** y después **como algoritmo**.
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
-| | Página | Qué resuelve | Minutos |
-|---|---|---|---:|
-| 1 | Cortar y evaluar a mano | Cortar la búsqueda y estimar, a profundidad 1, 2 y 3 | 30m |
-| 2 | Minimax con corte como algoritmo | Qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta | 42m |
-| 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 22m |
-| 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 37m |
-| 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 31m |
-| 6 | Radiografía: un árbol, cinco algoritmos | Cómo explora cada algoritmo, qué número da, qué juega y cuánto cuesta | 89m |
-| 7 | Monte Carlo y UCT en un árbol grande | Simular caminos al azar y hacer crecer un árbol desigual | 30m |
-| 8 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 46m |
-| 9 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
+| | Minutos | Página y qué resuelve |
+|---|---:|---|
+| 1 | 30m | **Cortar y evaluar a mano.** Cortar la búsqueda y estimar, a profundidad 1, 2 y 3 |
+| 2 | 42m | **Minimax con corte como algoritmo.** Qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta |
+| 3 | 22m | **Más allá del horizonte.** Por qué un corte fijo engaña, y buscar más donde hay capturas |
+| 4 | 37m | **Jugar contra el reloj.** Qué jugada entregar cuando se acaba el tiempo |
+| 5 | 31m | **Simular en vez de evaluar.** Estimar con partidas al azar, sin escribir una evaluación |
+| 6 | 89m | **Radiografía: un árbol, cinco algoritmos.** Cómo explora cada algoritmo, qué número da, qué juega y cuánto cuesta |
+| 7 | 30m | **Monte Carlo y UCT en un árbol grande.** Simular caminos al azar y hacer crecer un árbol desigual |
+| 8 | 46m | **De dónde sale el bono.** Por qué UCT suma ese bono: el margen de error de un promedio |
+| 9 | 50m, aparte | **Tarea de refuerzo.** Proponer y usar una evaluación de gato, y otra posición de peones |
 :::
 
 1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
