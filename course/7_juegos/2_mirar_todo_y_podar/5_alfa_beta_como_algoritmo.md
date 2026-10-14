@@ -569,12 +569,12 @@ Antes de cerrar, la ficha de alfa-beta. Frente a la de [[minimax-como-algoritmo|
 | Rasgo | Alfa-beta |
 |---|---|
 | Hasta dónde mira | Hasta los finales |
-| ¿Genera todo el árbol? | No: salta las ramas que ya no pueden cambiar la decisión. Cuántas, lo decide el orden |
+| ¿Genera todo el árbol? | Puede generarlo completo; salta las ramas que las cotas permiten, y cuántas depende del orden |
 | ¿Garantiza $V$? | Sí, en la raíz: el mismo que minimax. Un nodo que cortó solo da una cota |
 | Con qué estima | Con nada: no estima |
 | ¿Quién tira dados? | Nadie |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor $V$, como minimax. Interrumpido, tampoco garantiza nada |
-| Cuándo conviene | Siempre que minimax sirva: misma jugada, menos nodos. Gato, hexapawn. En ajedrez y damas es la base, ya con corte: clase 3 |
+| Cuándo conviene | Siempre que minimax sirva: misma jugada, nunca más nodos que minimax; con buen orden, muchos menos. Gato, hexapawn. En ajedrez y damas es la base, ya con corte: clase 3 |
 :::
 
 > [!NOTE]
@@ -592,7 +592,7 @@ Antes de cerrar, la ficha de alfa-beta. Frente a la de [[minimax-como-algoritmo|
 > - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
 > - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
 > - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
-> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

@@ -193,6 +193,10 @@ def test_8_garantiza_v_quien_llega_a_los_finales_o_prueba_que_no_cambia_nada():
     «Piensa» de arriba: alfa-beta garantiza V y no llega a todos los finales."""
     dos = _seccion(_texto(), 2)
     assert "Llegar a los finales, o probar que lo que no mira no cambia nada" in dos
+    # Brief r2 W3-7: el orden al azar no rompe la exactitud; lo que la rompe
+    # es que los jugadores dejen de elegir.
+    assert ("y no cambiar las decisiones de los jugadores por jugadas al azar.") in dos
+    assert "no tirar dados" not in dos
     assert ("Por eso garantiza V quien supone que todos eligen lo mejor y llega a los "
             "finales, o prueba que lo que no mira no cambia nada.") in dos
     _, _, generados, podados = j.alfa_beta_tpm("dado")
@@ -287,12 +291,44 @@ def test_8_cuando_dejar_de_buscar_en_t_pm():
     assert m
     u = sorted({x for h in j.ARBOL_TPM for x in h if not isinstance(x, tuple)}
                | {x for h in j.ARBOL_TPM for c in h if isinstance(c, tuple) for x in c})
-    m = re.search(rf"abrir la ventana en los límites de U, \(({_Q}),({_Q})\): con esa ventana, "
-                  r"alfa-beta hace esta misma poda", tres)
+    # Brief r2 W3-5: abrir la ventana ahí INCLUYE la regla; alfa-beta además
+    # poda por las cotas que hereda.
+    m = re.search(rf"Abrir la ventana en los límites de U, \(({_Q}),({_Q})\), incluye la regla: "
+                  r"con esa ventana, alfa-beta hace esta misma poda, y además poda por las "
+                  r"cotas que hereda\.", tres)
     lo, hi = _q(m[1]), _q(m[2])
     assert (lo, hi) == (u[0], u[-1]) == (-1, 1)
     con_limites = j.alfa_beta_arbol(ix_primero, alfa=lo, beta=hi)
     assert (0, 1) in con_limites["podados"] and con_limites["valor"] == j.minimax_tpm()[1]
+    # «además»: en T (hojas de 2 a 12), alfa-beta poda la segunda hoja de C2
+    # tras ver 7, que no es el máximo, 12: esa poda viene de la cota heredada
+    # (C ya tiene 5), no de la regla.
+    en_t = j.alfa_beta_arbol(j.ARBOL_T)
+    assert (1, 1, 1) in en_t["podados"]
+    assert j.nodo_en(j.ARBOL_T, (1, 1, 0)) < max(max(h) if not isinstance(h[0], tuple) else
+                                                 max(max(x) for x in h) for h in j.ARBOL_T)
+    # La trampa: con α = −1 al inicio y «if w > α», si todas las jugadas
+    # pierden, la raíz se queda sin jugada; empezando con la primera, no.
+    assert ("Si \\alpha empieza en -1 y todas las jugadas pierden, ninguna lo supera, y la "
+            "raíz se queda sin jugada. Por eso `mejor_jugada` empieza con la primera jugada, "
+            "no con ninguna.") in _limpio(_seccion_cruda(_texto(), 3))
+    pierde = ((1, -1), ((-1, -1), (1, -1)), (-1, 1, 1))     # c1a = -1: todo pierde
+    assert set(j.minimax_tpm(pierde)[2].values()) == {-1}
+    assert j.decidir_con_ventana_tpm(lo, hi, pierde)[0] is None
+    assert j.decidir_con_ventana_tpm(lo, hi, pierde, primera=True)[0] == j.JUGADAS_RAIZ[0]
+    assert j.decidir_con_ventana_tpm(float("-inf"), float("inf"), pierde)[0] is not None
+    assert j.decidir_con_ventana_tpm(lo, hi)[0] == j.minimax_tpm()[0]
+    # r3: en la raíz hay que salir cuando α llega a +1; si no, se siguen
+    # buscando hijos con la ventana cerrada.
+    m = re.search(rf"En la raíz falta una salida: cuando \\alpha llega a ({_Q}), se deja de "
+                  rf"buscar\. Si no, se siguen buscando hijos con la ventana cerrada, "
+                  rf"\(({_Q}),({_Q})\)", tres)
+    assert _q(m[1]) == _q(m[2]) == _q(m[3]) == hi
+    gana_izq = ((1, 1),) + j.ARBOL_TPM[1:]                  # I vale +1
+    assert j.decidir_con_ventana_tpm(lo, hi, gana_izq) == ("izq", hi, ["izq"])
+    assert j.decidir_con_ventana_tpm(float("-inf"), float("inf"), gana_izq)[2] == \
+        list(j.JUGADAS_RAIZ)
+    assert j.decidir_con_ventana_tpm(lo, hi)[2] == list(j.JUGADAS_RAIZ)
 
 
 def test_8_el_ejercicio_puede_salir():
@@ -307,8 +343,15 @@ def test_8_el_ejercicio_puede_salir():
     assert re.findall(r"(\d)\. (Sí|No)\.", resp) == [("1", "No"), ("2", "No"), ("3", "Sí"),
                                                      ("4", "No")]
     # La objeción de la cota (fail-soft): un MIN que corta devuelve algo ≤ α; +1 no lo es.
-    assert ("3. Sí. Un hijo de la raíz que devuelve más que \\alpha no cortó: +1 es su valor, y "
-            "sale de finales. Si hubiera cortado, devolvería algo ≤\\alpha, y +1 no lo es.") in resp
+    # Brief r2 W3-6: los dos casos. Si +1 supera a α, es valor; si α ya era
+    # +1, puede ser cota (I con α = +1 devuelve +1 y vale −1), pero otra
+    # jugada ya ganaba.
+    assert ("3. Sí. Si +1 supera a \\alpha, ese hijo no cortó: si hubiera cortado, devolvería "
+            "algo ≤\\alpha. Entonces +1 es su valor, sale de finales y es lo más que paga el "
+            "juego. Si \\alpha ya era +1, este +1 puede ser solo una cota. Pero entonces una "
+            "jugada anterior ya ganaba, y desde ella se podía dejar de buscar.") in resp
+    como_cota = j.alfa_beta_arbol(j.ARBOL_TPM[0], es_max=False, alfa=1)
+    assert como_cota["valor"] == 1 != j.minimax_arbol(j.ARBOL_TPM[0], False)
     assert int(re.search(r"2\. No\. (\d+) es una estimación", resp)[1]) == cota
     cuantas = re.search(r"el promedio de las (\w+) hojas", resp)[1]
     assert {"dos": 2, "tres": 3, "cuatro": 4}[cuantas] == len(j.ARBOL_TPM[2])

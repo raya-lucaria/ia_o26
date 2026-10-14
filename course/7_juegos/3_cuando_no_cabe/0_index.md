@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 275m
+estimated_time: 278m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -36,7 +36,7 @@ a su página.
 ::: table {#jue-c3-repaso title="Lo que se usa de la clase 2"}
 | | Qué es | Dónde se vio |
 |---|---|---|
-| $V(s)$ | El valor: lo que MAX asegura desde $s$ si MIN es racional | Minimax a mano |
+| $V(s)$ | El valor: sin azar, lo que MAX asegura desde $s$ si MIN juega lo mejor; con dados, el valor esperado con los dos jugando lo mejor | Minimax a mano y Cuando decide un dado |
 | DECIDIR-MINIMAX | Elige la jugada de la raíz con el máximo de $V$ | Minimax como algoritmo |
 | Árbol T | Juguete: R de MAX; I, C, D de MIN; C1 y C2 de MAX; hojas 3, 6 · 5, 2 · 7, 8 · 2, 12 | Minimax como algoritmo |
 | $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
@@ -105,8 +105,8 @@ primero **a mano** y después **como algoritmo**.
 | 2 | Minimax con corte como algoritmo | Qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta | 42m |
 | 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 22m |
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 37m |
-| 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 30m |
-| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 44m |
+| 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 31m |
+| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 46m |
 | 7 | Un árbol, todos los algoritmos | Correr cada algoritmo en el mismo árbol y ver qué hace distinto | 25m |
 | 8 | Qué número da cada uno | Distinguir $V$, el valor con corte y $\bar u$, y cuándo dejar de buscar | 20m |
 | 9 | Elegir el algoritmo | Diagnosticar un juego y elegir con qué buscar | 25m |

@@ -778,13 +778,15 @@ def test_eligiendo_x_dibuja_cada_regla_sin_acumular():
         assert fila in renglones, fila
     # Sin bono, y solo ahi, el porcentaje de elecciones es el de corridas.
     assert "Sin bono, 85 % son justo 34 corridas" in renglones
-    assert "de 40: las 6 atoradas nunca eligen x." in renglones
+    assert "de 40: entre las vueltas 100 y 10 000," in renglones
+    assert "las 6 atoradas no eligen x." in renglones
+    assert not [r_ for r_ in renglones if "nunca eligen" in r_]
     assert "0.9 + 0.1/3 = 93.3 %." in renglones
     # La meseta de 85 % es una recta: desde N(s) = 100, la misma y.
     ys = {y for m, _, y in gen.puntos_eligiendo(pl)["mejor_promedio"] if m >= 100}
     assert ys == {pl.y(85)}
     aria = re.match(r"<svg\b[^>]*>", svg).group()
-    assert "corridas que eligen" not in aria
+    assert "corridas que eligen" not in aria and "nunca eligen" not in aria
     for frase in ("porcentaje de las elecciones que van a x, no acumulado",
                   "cada punto cuenta 400 elecciones: las vueltas N(s) − 9 a N(s) de cada una "
                   "de las 40 corridas",
@@ -792,8 +794,8 @@ def test_eligiendo_x_dibuja_cada_regla_sin_acumular():
                   "a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %",
                   "UCB, c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %",
                   "UCB, c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %",
-                  "se aplana en 85 %, que aquí sí son 34 de 40 corridas: las 6 atoradas "
-                  "nunca eligen x y las otras 34 siempre",
+                  "se aplana en 85 %, que aquí sí son 34 de 40 corridas: entre las vueltas "
+                  "100 y 10 000, las 6 atoradas no eligen x y las otras 34 sí",
                   "0.9 + 0.1/3 = 93.3 %"):
         assert frase in aria, frase
 

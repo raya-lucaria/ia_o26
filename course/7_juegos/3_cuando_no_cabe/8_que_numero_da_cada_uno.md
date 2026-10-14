@@ -136,7 +136,8 @@ algoritmo busca, porque de ahí sale qué número puede dar.
 **Piensa: ¿qué tiene que hacer un algoritmo para que su número sea $V$?**
 
 Llegar a los finales, o probar que lo que no mira no cambia nada, y no
-tirar dados. Hasta dónde mira cada algoritmo, quién tira dados y qué
+cambiar las decisiones de los jugadores por jugadas al azar. Hasta dónde
+mira cada algoritmo, quién tira dados y qué
 entrega ya están en su ficha:
 
 - [[minimax-como-algoritmo|Minimax como algoritmo]];
@@ -238,10 +239,19 @@ de la raíz, así que llega con la ventana inicial, ${(-\infty,+\infty)}$.
 Con esa ventana, alfa-beta generaría i1 igual. La regla no: **en I, MIN ve
 ${\text{ix}=-1}$ y ya no necesita mirar i1**.
 
-La regla equivale a abrir la
-ventana en los límites de $U$, ${(-1,+1)}$: con esa ventana, alfa-beta hace
-esta misma poda. Por eso pide utilidad acotada: sin un máximo conocido, no
-hay límites donde abrir la ventana.
+Abrir la ventana en los límites de $U$, ${(-1,+1)}$, incluye la regla:
+con esa ventana, alfa-beta hace esta misma poda, y además poda por las
+cotas que hereda. Por eso la regla pide utilidad acotada: sin un máximo
+conocido, no hay límites donde abrir la ventana.
+
+Eso cubre la regla dentro de la búsqueda. En la raíz falta una salida:
+cuando $\alpha$ llega a ${+1}$, se deja de buscar. Si no, se siguen
+buscando hijos con la ventana cerrada, ${(+1,+1)}$, sin nada que ganar.
+
+Una trampa al abrirla ahí. La raíz cambia de jugada solo si un hijo
+devuelve **más** que $\alpha$. Si $\alpha$ empieza en ${-1}$ y todas las
+jugadas pierden, ninguna lo supera, y la raíz se queda sin jugada. Por eso
+`mejor_jugada` empieza con la primera jugada, no con ninguna.
 
 Para MIN, la regla lee su tope en el número de MAX, y eso supone **suma
 cero**: lo mejor para MIN es lo peor para MAX. Si no lo es, MIN tiene que
@@ -270,9 +280,11 @@ en D?
    se atoraba x con una sola simulación.
 2. **No.** 36 es una estimación, y está debajo de 100: otra jugada puede
    llevar a un final ganado.
-3. **Sí.** Un hijo de la raíz que devuelve más que $\alpha$ no cortó:
-   ${+1}$ es su valor, y sale de finales. Si hubiera cortado, devolvería
-   algo ${\le\alpha}$, y ${+1}$ no lo es.
+3. **Sí.** Si ${+1}$ supera a $\alpha$, ese hijo no cortó: si hubiera
+   cortado, devolvería algo ${\le\alpha}$. Entonces ${+1}$ es su valor,
+   sale de finales y es lo más que paga el juego. Si $\alpha$ ya era
+   ${+1}$, este ${+1}$ puede ser solo una cota. Pero entonces una jugada
+   anterior ya ganaba, y desde ella se podía dejar de buscar.
 4. **No.** En D no mueve nadie: decide el dado. Su valor es el promedio
    de las tres hojas, y hacen falta todas.
 :::

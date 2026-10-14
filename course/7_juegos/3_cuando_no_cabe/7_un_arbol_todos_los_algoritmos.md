@@ -43,14 +43,19 @@ Al terminar tendrás:
 **Piensa: T ya corrió minimax, el dado, alfa-beta, el corte y la
 iterativa. ¿Por qué no sirve para todos?**
 
-Sus hojas van de 2 a 12. Ninguna dice quién ganó, y ninguna jugada es una
-captura. La quietud no tendría nada que mirar, y una simulación no sabría
-cuándo ganó MAX. Este ejemplo nuevo entra porque **el hilo no muestra la
-idea**: hace falta un árbol donde se separen los algoritmos.
+Sus hojas van de 2 a 12. Son finales, y una simulación podría
+promediarlas, pero no dicen si MAX ganó, empató o perdió. Sin eso no se
+ve la regla de dejar de buscar al tener lo más que paga el juego, ni se
+cuentan victorias. Ninguna jugada de T es una captura: la quietud no
+tendría nada que mirar.
 
-**T±** es T con una idea cambiada: **las hojas son finales**, con su $U$.
-La forma se queda: R, I, C, D, C1 y C2, con los mismos nombres de jugadas.
-Lo que trae esa idea:
+En T, el corte a ${d=1}$ y el límite de Monte Carlo plano (con
+simulaciones sin fin) eligen der, la misma jugada equivocada; con los
+dados de la clase 2, der es la óptima. Este ejemplo nuevo entra porque **el hilo no muestra la idea**: hace falta un
+árbol donde se separen los algoritmos.
+
+**T±** parte de T: conserva sus nodos internos y las jugadas de la raíz,
+y cambia estos datos y una rama:
 
 - **Finales en $U$.** Cada hoja vale ${+1}$ si gana MAX, ${-1}$ si gana MIN
   y $0$ si es empate. Hay un solo empate, c1a.
@@ -332,8 +337,9 @@ la que centro queda como la más simulada**, sin soltarlo, hasta la 200:
   90 %, en la 31 o antes;
 - con ${c=2\sqrt2}$, también llegan todas, más tarde: la mediana es 29.
   Es la $c$ que sale en [[de-donde-sale-el-bono|De dónde sale el bono]]. En
-  la escala ${G/N}$, de 0 a 1, se escribe ${c=\sqrt2}$: pasar a la escala
-  de ${-1}$ a ${+1}$ dobla los puntajes, y con ellos $c$.
+  la escala ${(U+1)/2}$, de 0 a 1 (victorias más medio empate, entre $N$;
+  sin empates es ${G/N}$), se escribe ${c=\sqrt2}$: pasar a la escala de
+  ${-1}$ a ${+1}$ dobla los puntajes, y con ellos $c$.
 
 Es lo medido en este árbol, no una garantía. Con tiempo sin límite,
 cualquier ${c>0}$ termina en la jugada de minimax; cuánto tarda depende
@@ -382,9 +388,12 @@ Ya corrió cada uno. La tabla los junta, en el orden del curso.
 
 - **Valor:** en la escala de cada uno. Los de corte usan ${100\cdot U}$,
   como $\mathrm{EVAL}$; los demás, la de $U$.
-- **Nodos:** los generados, contando R. En Monte Carlo plano y UCT, los
-  nodos distintos que tocó la corrida de la semilla 0: 5 simulaciones por
-  jugada, y 40 vueltas con ${c=1}$.
+- **Nodos:** no miden el mismo trabajo en todas las filas. En las
+  búsquedas, los generados, contando R; la iterativa suma sus tres
+  búsquedas, con repeticiones. En Monte Carlo plano, los nodos distintos
+  que tocaron sus simulaciones; en UCT, los que quedaron en su árbol. Las
+  dos corridas son las de la semilla 0: Monte Carlo plano jugó 15
+  simulaciones, 5 por jugada; UCT, 40, una por vuelta con ${c=1}$.
 
 Tres filas no dicen centro, y cada una por una razón distinta: el dado
 cambia el juego, el corte a ${d=1}$ no ve la captura y Monte Carlo plano
@@ -401,7 +410,7 @@ valor de minimax.
 | Expecti­minimax | Sí, el V del juego con dado |
 | Alfa-beta | Sí, en la raíz |
 | Corte | No, salvo si llega a los finales |
-| Quietud | No, salvo si llega a los finales |
+| Quietud | No, salvo si llega a los finales antes de cortar |
 | Iterativa | No, salvo si llega a los finales |
 | Monte Carlo plano | No |
 | UCT | No (con tiempo sin límite converge a él, con cualquier c > 0) |

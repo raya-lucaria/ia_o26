@@ -80,7 +80,7 @@ renglón, en cursivas.
 
 | Símbolo | Cómo se lee y qué es |
 |---|---|
-| $V(s)$ | «ve de ese». El valor: la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo · *El juego como grafo y Minimax a mano* |
+| $V(s)$ | «ve de ese». El valor. Sin azar, la utilidad que MAX puede garantizar desde $s$ si MIN responde siempre con lo peor para MAX; con dados, el valor esperado con los dos jugando lo mejor. En un final, $V(s)=U(s)$; en un nodo de MAX, el máximo de sus hijos; en uno de MIN, el mínimo; en uno de azar, el promedio ponderado por $\Pr$ · *El juego como grafo, Minimax a mano y Cuando decide un dado* |
 | $\max_{a\in A(s)} f(a)$ | «máximo de efe». El número más alto que alcanza $f$ entre las jugadas de $A(s)$ · *Diagnosticar el juego* |
 | $\operatorname*{arg\,max}_{a\in A(s)} f(a)$ | «arg max de efe». El conjunto de jugadas que alcanzan ese máximo; puede tener varias · *Diagnosticar el juego* |
 | $a^{∗}$ | «a estrella». Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias · *Minimax a mano* |
@@ -99,7 +99,7 @@ renglón, en cursivas.
 | $100\cdot U(s)$ | «cien por u de ese». La utilidad de un final en la escala de $\mathrm{EVAL}$: pesa más que cualquier estimación · *Cortar y evaluar a mano* |
 | $N(s')$, $G(s')$ | «ene de ese prima», «ge de ese prima». En MCTS: cuántas simulaciones pasaron por $s'$, y en cuántas ganó MAX. Esta $N$ no es Negras · *Simular en vez de evaluar* |
 | $\bar u(s')$ | «u barra». En MCTS: el promedio de $U$ en las simulaciones que pasaron por $s'$, siempre visto desde MAX: ${(2G(s')-N(s'))/N(s')}$, victorias menos derrotas entre simulaciones; si hay empates, el promedio de $U$ a secas · *Simular en vez de evaluar* |
-| $\mu(s')$ | «mu de ese prima». El promedio verdadero de $U$ en las simulaciones que pasan por $s'$, con los dos al azar: el que daría con infinitas. $\bar u(s')$ lo estima · *De dónde sale el bono* |
+| $\mu(s')$ | «mu de ese prima». El promedio verdadero de $U$ en las simulaciones desde $s'$, con los dos al azar: el que daría con infinitas. En Monte Carlo plano y en el bandido, $\bar u(s')$ lo estima; en UCT no, porque arriba de la hoja se elige por puntaje y eso cambia con las vueltas: ahí $\bar u(s')$ tiende a $V(s')$ · *De dónde sale el bono* |
 | $\varepsilon$ | «épsilon». El margen: cuánto puede quedar $\bar u(s')$ por debajo de $\mu(s')$, en la escala de $U$ · *De dónde sale el bono* |
 | $\delta$ | «delta». La probabilidad de fallo que se tolera: que $\bar u(s')$ quede $\varepsilon$ o más por debajo de $\mu(s')$. Si baja como ${N(s)^{-k}}$, el margen es el bono con ${c=\sqrt{2k}}$ · *De dónde sale el bono* |
 | $c$, puntaje$(s')$ | «ce». En la regla UCT, el peso de explorar; el puntaje es $\bar u(s')+c\sqrt{\ln N(s)/N(s')}$ (en un nodo de MIN, con $-\bar u(s')$), y la selección baja al hijo de mayor puntaje · *Simular en vez de evaluar* |
@@ -154,7 +154,7 @@ renglón, en cursivas.
 | Material, avance | Peones blancos menos negros; filas avanzadas por los blancos menos las de los negros | Cortar y evaluar a mano |
 | Horizonte | La línea donde la búsqueda se corta: lo que queda debajo no se genera | Más allá del horizonte |
 | Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Más allá del horizonte |
-| Posición quieta, búsqueda de quietud, valor con quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar; el valor con quietud es el valor con corte extendiendo las capturas hasta posiciones quietas | Más allá del horizonte |
+| Posición quieta, búsqueda de quietud, valor con quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, no devolver sin más la $\mathrm{EVAL}$: usarla como opción de quedarse (una aproximación llamada *stand pat*) y compararla con las capturas, cada una seguida hasta un final o una posición quieta; el valor con quietud es el número que resulta | Más allá del horizonte |
 | DECIDIR-CON-CORTE, MINIMAX-CON-CORTE | DECIDIR-MINIMAX y su auxiliar con una línea más (con $d=0$, un estado no final vale su $\mathrm{EVAL}$) y los finales en la escala $100\cdot U$ | Minimax con corte como algoritmo |
 | PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Jugar contra el reloj |
 | ALFA-BETA-CON-CORTE | Alfa-beta con los mismos cambios: con $d=0$ se estima y los finales valen $100\cdot U$ | Jugar contra el reloj |

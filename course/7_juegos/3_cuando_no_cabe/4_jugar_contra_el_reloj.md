@@ -151,25 +151,36 @@ ${d=1}$, el programa captura y pierde.**
 **Piensa: buscar con ${d=1}$, luego con ${d=2}$ y luego con ${d=3}$, ¿no es
 trabajar tres veces?**
 
-Sí se repite trabajo, pero poco. Con ramificación $b$ —a lo más $b$ jugadas
-por estado—, la búsqueda con $d$ en la raíz tiene del orden de $b^d$ hojas.
-Todas las búsquedas anteriores juntas suman
+Sí se repite trabajo, pero poco, **si la búsqueda crece parejo**. Supón
+que cada búsqueda es unas $B$ veces más grande que la anterior (${B>1}$):
+la de $d$ en la raíz cuesta del orden de $B^d$, y todas las anteriores
+juntas suman
 
-$$b+b^2+\dots+b^{d-1}=\frac{b^d-b}{b-1}<\frac{b^d}{b-1}.$$
+$$B+B^2+\dots+B^{d-1}=\frac{B^d-B}{B-1}<\frac{B^d}{B-1}.$$
+
+En un árbol uniforme, con exactamente $b$ jugadas en cada estado, ${B=b}$.
 
 ::: remark {#jue-c3-costo-iterativa title="Costo de la profundización iterativa"}
-Si la última búsqueda completa llega a $d$ en la raíz, las anteriores juntas
-cuestan cerca de ${1/(b-1)}$ de esa última. El tiempo total es
+Si cada búsqueda es unas $B$ veces más grande que la anterior (${B>1}$, un
+crecimiento parejo) y la última completa llega a $d$ en la raíz, las
+anteriores juntas cuestan cerca de ${1/(B-1)}$ de esa última. El tiempo
+total es
 
-$$\text{tiempo}=O\!\left(b^d\cdot\frac{b}{b-1}\right)=O(b^d),$$
+$$\text{tiempo}=O\!\left(B^d\cdot\frac{B}{B-1}\right)=O(B^d),$$
 
-el mismo orden que una sola búsqueda a profundidad $d$. Con ${b=10}$, repetir
-añade cerca de una novena parte. Con ${b=2}$, las anteriores cuestan casi lo
-mismo que la última, y el total es cerca del doble.
+el mismo orden que una sola búsqueda a profundidad $d$. Con ${B=10}$, repetir
+añade cerca de una novena parte. Con ${B=2}$, las anteriores cuestan casi lo
+mismo que la última, y el total es cerca del doble. En un árbol uniforme,
+${B=b}$.
+
+Sin ese crecimiento, repetir puede costar más. Que haya a lo más $b$
+jugadas por estado no lo asegura: si tras la raíz casi todo es forzado,
+cada búsqueda agrega apenas unos nodos a la anterior, y las anteriores
+juntas pueden costar varias veces la última.
 :::
 
-La última búsqueda domina el costo. Repetir las otras es casi gratis cuando
-$b$ es grande.
+Cuando la búsqueda crece parejo, la última domina el costo. Repetir las
+otras es casi gratis cuando $B$ es grande.
 
 ::: exercise {#jue-c3-ej-costo title="Calcula lo que se repite"}
 Usa las barras de la figura: 4, 12 y 33 nodos.
@@ -188,9 +199,10 @@ habría hecho? Lo demás es lo que se repite.
 1. ${4+12+33=}$ **49** nodos.
 2. Se repiten las búsquedas con ${d=1}$ y ${d=2}$: ${4+12=}$ **16** nodos,
    **menos de la mitad** de los 33 de la última. La cuenta de
-   ${1/(b-1)}$ usa cuánto crece la búsqueda de un nivel al siguiente. Aquí
-   no crece por el máximo, ${b=5}$ jugadas: su último paso crece por ${33/12=2.75}$, y
-   ${1/(2.75-1)\approx0.57}$ se acerca a lo medido, ${16/33\approx0.48}$.
+   ${1/(B-1)}$ es una guía, no una ley: supone que cada búsqueda crece
+   parejo. Aquí no crece por el máximo, ${b=5}$ jugadas. Con el crecimiento
+   medido aquí en el último paso, ${33/12=2.75}$, da ${1/(2.75-1)\approx0.57}$,
+   cerca de lo medido, ${16/33\approx0.48}$.
 :::
 
 ## 3 · Escribir la versión sin poda
@@ -233,8 +245,9 @@ OUTPUT  una jugada de A(s), la mejor de la
   sin cambiar nada.
 - La línea 6 mira el reloj **solo al terminar** cada búsqueda. Si se acabó
   mientras corría, esa búsqueda no cuenta y se entrega la anterior. Por
-  eso la última puede pasarse del límite: cuesta del orden de ${b-1}$
-  veces lo ya gastado. En la posición de la clase, 33 nodos contra 16.
+  eso la última puede pasarse del límite: si la búsqueda crece parejo,
+  cuesta del orden de ${B-1}$ veces lo ya gastado. En la posición de la
+  clase, 33 nodos contra 16.
 
 **En el árbol T.** Con la $\mathrm{EVAL}$ de
 [[minimax-con-corte|Minimax con corte]]: I 5, C 4, D 7, C1 6 y C2 9. Las
@@ -483,6 +496,12 @@ Termina cuando un hijo gana seguro (línea 9) o cuando se
 acaba el reloj (línea 8 o 4). Si ninguna jugada gana, la 9 nunca actúa.
 Cuando $d$ ya alcanza todos los finales, cada vuelta repite la misma
 búsqueda: gasta el tiempo, pero no cambia la jugada.
+
+Ojo: este pseudocódigo solo mira el reloj entre búsquedas (línea 4) y
+entre hijos de la raíz (línea 8). ALFA-BETA-CON-CORTE no recibe el reloj,
+así que un hijo que tarda mucho puede pasarse del límite. Un corte duro
+pide que la búsqueda recursiva también mire el reloj y abandone la
+búsqueda en curso.
 :::
 
 ::: exercise {#jue-c3-ej-linea title="Señala qué línea actúa"}
@@ -735,12 +754,16 @@ cosas:
 
 - **El número** que devolvió la búsqueda.
 - **La profundidad que quedaba**, $d$. Un número calculado con ${d=1}$ no
-  sirve a una búsqueda que llega con ${d=3}$: miró menos. Solo se reutiliza
-  si se calculó con al menos la profundidad que queda ahora.
+  sirve a una búsqueda que llega con ${d=3}$: miró menos. Los programas
+  lo reutilizan si se calculó con al menos la profundidad que queda ahora.
+
+  Si se calculó con más, ya no es exactamente el valor con corte de esta
+  búsqueda, sino uno que miró más hondo: en T, C vale 6 con un nivel debajo
+  y 5 con dos. Se acepta porque mirar más hondo suele estimar mejor.
 - **Qué tipo de número es**, según la ventana $(\alpha,\beta)$ con que se
   llamó al nodo y el $v$ que devolvió:
   - **valor**, si ${\alpha<v<\beta}$: cae dentro de la ventana y es su
-    valor con corte;
+    valor con corte a la profundidad con que se calculó;
   - **piso**, si ${v\ge\beta}$: el valor es **al menos** $v$;
   - **techo**, si ${v\le\alpha}$: el valor es **a lo más** $v$.
 
@@ -876,7 +899,7 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
 | ¿Garantiza $V$? | No, salvo si la última búsqueda llega a los finales. Da su valor con corte |
 | Con qué estima | Con $\mathrm{EVAL}$, en los nodos de corte |
 | ¿Quién tira dados? | Nadie |
-| Qué entrega, y si se puede interrumpir | La jugada de la última búsqueda completa. Sí se puede interrumpir: siempre hay una lista |
+| Qué entrega, y si se puede interrumpir | La jugada de la última búsqueda completa. Siempre tiene una lista; este pseudocódigo solo mira el reloj entre hijos de la raíz y puede pasarse, y un corte duro pide que la búsqueda recursiva mire el reloj |
 | Cuándo conviene | Cuando hay reloj y no se sabe hasta qué $d$ alcanza: ajedrez de torneo (Deep Blue) |
 :::
 
@@ -889,13 +912,13 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
 > | **Profundización iterativa (estás aquí)** | **Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales** |
 >
 > **Lo que viene.**
 >
 > - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
-> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 
@@ -903,10 +926,11 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
   de la **última búsqueda completa**. En la posición de la clase, un reloj
   que se acaba durante ${d=2}$ entrega $\text{d2}\textbf{x}\text{c3}$, que
   pierde; durante ${d=3}$, $\text{d2}\textbf{-}\text{d3}$, que gana.
-- Repetir cuesta poco frente a la última búsqueda: del orden de
-  ${1/(b-1)}$ de ella si $b$ es fijo. En la posición de la clase, sin poda,
-  16 nodos contra 33: la búsqueda crece por ${33/12=2.75}$, no por ${b=5}$,
-  y ${1/(2.75-1)\approx0.57}$.
+- Repetir cuesta poco frente a la última búsqueda si crece parejo: cerca
+  de ${1/(B-1)}$ de ella, si cada búsqueda es unas $B$ veces la anterior
+  (${B=b}$ en un árbol uniforme). En la posición de la clase, sin poda,
+  16 nodos contra 33: el crecimiento medido aquí, ${33/12=2.75}$, no ${b=5}$,
+  da ${1/(2.75-1)\approx0.57}$.
 - La versión corta llama entera a DECIDIR-CON-CORTE. La completa usa
   alfa-beta con $\alpha$ compartido (7), prueba primero la jugada anterior
   (6), mira el reloj entre hijos (8) y sale con 100 (9).

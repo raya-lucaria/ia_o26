@@ -85,7 +85,7 @@ ALGORITMOS = [
         archivo=f"{J3}/3_mas_alla_del_horizonte.md",
         mira="$d$ jugadas, luego solo capturas",
         numero="Valor con quietud; no garantiza $V$, salvo si "
-               "llega a los finales",
+               "llega a los finales antes de cortar",
         garantiza="No",
         viene="no detenerse a estimar a mitad de un intercambio de capturas",
         clase=3, enlace="mas-alla-del-horizonte", titulo="Más allá del horizonte",
@@ -118,8 +118,9 @@ ALGORITMOS = [
         numero="$\\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, "
                "con cualquier $c>0$)",
         garantiza="No",
-        viene="lo mismo, pero mandando más partidas a las jugadas que van "
-              "mejor, sin dejar de probar las otras",
+        viene="construye un árbol: elige por puntaje dentro de él, lo hace "
+              "crecer, simula desde la hoja y sube el resultado; manda más "
+              "partidas a lo que va mejor sin dejar de probar lo otro",
         clase=3, enlace="simular-en-vez-de-evaluar", titulo="Simular en vez de evaluar",
     ),
 ]
