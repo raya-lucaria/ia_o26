@@ -37,12 +37,12 @@ de la clase verás también cuándo esa herramienta deja de ser la adecuada.
 Tres páginas, en orden, y una tarea de refuerzo al final.
 
 ::: table {#jue-ruta-4 title="Las páginas de esta clase"}
-| | Página | Qué resuelve | Minutos |
-|---|---|---|---:|
-| 1 | Jugar a la vez | Qué cambia si el rival no ve tu jugada, y por qué conviene mezclar | 25m |
-| 2 | Maximin como programa lineal | Cómo se elige la mejor mezcla, con dibujo y sin él | 35m |
-| 3 | Cuando no es suma cero | Qué pasa si lo que gana uno no es lo que pierde el otro | 20m |
-| 4 | Tarea de refuerzo | Modelar el saque en tenis y diagnosticar el juego de la gallina | 50m, aparte |
+| | Minutos | Página y qué resuelve |
+|---|---:|---|
+| 1 | 25m | **Jugar a la vez.** Qué cambia si el rival no ve tu jugada, y por qué conviene mezclar |
+| 2 | 35m | **Maximin como programa lineal.** Cómo se elige la mejor mezcla, con dibujo y sin él |
+| 3 | 20m | **Cuando no es suma cero.** Qué pasa si lo que gana uno no es lo que pierde el otro |
+| 4 | 50m, aparte | **Tarea de refuerzo.** Modelar el saque en tenis y diagnosticar el juego de la gallina |
 :::
 
 1. [[jugar-a-la-vez|Jugar a la vez]]

@@ -106,14 +106,14 @@ algoritmos van en pares: primero **a mano**, con números, y después **como
 algoritmo**, en general.
 
 ::: table {#jue-ruta-2 title="Las páginas de esta clase"}
-| | Página | Qué resuelve | Minutos |
-|---|---|---|---:|
-| 1 | Minimax a mano | Valorar n1 desde los finales y saber quién gana hexapawn | 25m |
-| 2 | Minimax como algoritmo | Elegir la jugada con DECIDIR-MINIMAX, paso a paso en el árbol T, y por qué es correcto | 47m |
-| 3 | Cuando decide un dado | El problema con azar, en general, y qué cambia si un nodo no lo decide nadie | 32m |
-| 4 | Alfa-beta a mano | α, β y la regla de cada corte, en el árbol T que crece, y el recorrido de n1 en orden fijo | 35m |
-| 5 | Alfa-beta como algoritmo | DECIDIR-ALFA-BETA línea por línea, por qué los cortes son seguros y por qué el orden importa | 47m |
-| 6 | Tarea de refuerzo | Resolver monedas en fila y hexapawn con empate | 45m, aparte |
+| | Minutos | Página y qué resuelve |
+|---|---:|---|
+| 1 | 25m | **Minimax a mano.** Valorar n1 desde los finales y saber quién gana hexapawn |
+| 2 | 47m | **Minimax como algoritmo.** Elegir la jugada con DECIDIR-MINIMAX, paso a paso en el árbol T, y por qué es correcto |
+| 3 | 32m | **Cuando decide un dado.** El problema con azar, en general, y qué cambia si un nodo no lo decide nadie |
+| 4 | 35m | **Alfa-beta a mano.** α, β y la regla de cada corte, en el árbol T que crece, y el recorrido de n1 en orden fijo |
+| 5 | 47m | **Alfa-beta como algoritmo.** DECIDIR-ALFA-BETA línea por línea, por qué los cortes son seguros y por qué el orden importa |
+| 6 | 45m, aparte | **Tarea de refuerzo.** Resolver monedas en fila y hexapawn con empate |
 :::
 
 1. [[minimax|Minimax a mano]]

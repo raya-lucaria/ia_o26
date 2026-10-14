@@ -51,13 +51,13 @@ vuelven en la primera página y en la clase 2.
 Cuatro páginas, en orden, y una tarea de refuerzo al final.
 
 ::: table {#jue-ruta-1 title="Las páginas de esta clase"}
-| | Página | Qué resuelve | Minutos |
-|---|---|---|---:|
-| 1 | Leer el reglamento | Qué dicen de verdad unas reglas explicadas con prisa | 15m |
-| 2 | Escribir el juego | Las siete piezas de cualquier juego por turnos, una partida escrita con ellas, qué es ser racional y el problema de la unidad | 45m |
-| 3 | El juego como grafo | El grafo completo, árbol contra grafo y qué recibe y qué genera cada método | 30m |
-| 4 | Diagnosticar el juego | Qué tipo de juego es y qué modelo le toca | 20m |
-| 5 | Tarea de refuerzo | Escribir gato desde cero y cambiar una regla de hexapawn | 40m, aparte |
+| | Minutos | Página y qué resuelve |
+|---|---:|---|
+| 1 | 15m | **Leer el reglamento.** Qué dicen de verdad unas reglas explicadas con prisa |
+| 2 | 45m | **Escribir el juego.** Las siete piezas de cualquier juego por turnos, una partida escrita con ellas, qué es ser racional y el problema de la unidad |
+| 3 | 30m | **El juego como grafo.** El grafo completo, árbol contra grafo y qué recibe y qué genera cada método |
+| 4 | 20m | **Diagnosticar el juego.** Qué tipo de juego es y qué modelo le toca |
+| 5 | 40m, aparte | **Tarea de refuerzo.** Escribir gato desde cero y cambiar una regla de hexapawn |
 :::
 
 1. [[leer-el-reglamento|Leer el reglamento]]

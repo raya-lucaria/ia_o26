@@ -403,7 +403,12 @@ promedio no tiene un blanco fijo.
 
 Muchos textos usan la fracción de victorias ${G/N}$ en vez de $\bar u$.
 Como ${\bar u=2\,G/N-1}$, el puntaje es
-${\bar u+c\sqrt{\ln N(s)/N(s')}=2\,\bigl(G/N+\tfrac c2\sqrt{\ln N(s)/N(s')}\bigr)-1}$.
+
+$$\begin{aligned}
+&\bar u+c\sqrt{\ln N(s)/N(s')}\\
+&\quad=2\,\bigl(G/N+\tfrac c2\sqrt{\ln N(s)/N(s')}\bigr)-1.
+\end{aligned}$$
+
 Usar ${G/N}$ con la misma $c$ equivale a duplicar $c$: la ${c=\sqrt2}$ de
 esos textos, con ${G/N}$, es ${c=2\sqrt2}$ con $\bar u$.
 

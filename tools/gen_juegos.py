@@ -2920,20 +2920,32 @@ def _gn(cuenta):
     return f"{g}/{n}"
 
 
+ANCHO_MCTS = 300
+
+
 def jue_c3_mcts_pasos():
     """Las cuatro fases de una vuelta de MCTS, en cuatro paneles. Los conteos
     (G/N: victorias de MAX / simulaciones) salen de juegos.mcts_vuelta: la raiz
     suma los de sus hijos, cada otro nodo vale 1 (su simulacion) mas los de
     sus hijos, la seleccion usa UCT con c = 1 y la vuelta dibujada actualiza
-    el camino con U = +1."""
+    el camino con U = +1.
+
+    Una columna de ANCHO_MCTS: a 390 px el sitio no escala los SVG y el
+    parrafo de la figura mide ~305; en dos columnas de 600, el lector del
+    telefono veia solo los paneles 1 y 3 y tenia que desplazarse de lado
+    para la expansion y la retropropagacion (ronda de render a 390)."""
     vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
     antes = {**vuelta["antes"], "nuevo": (0, 0)}
     despues = vuelta["despues"]
     camino = vuelta["camino"]
     o = 24
-    pw, ph = 282, 420
-    fin_paneles = 90 + o + 2 * ph + 16
-    W, H = ANCHO, fin_paneles + 100
+    pw = ANCHO_MCTS - 24
+    # Cada panel mide lo que su arbol: el 1 no tiene hijo nuevo, el 3 lleva
+    # la partida al azar y su final, el 4 sus dos renglones de pie.
+    phs = (320, 350, 425, 405)
+    pys = [90 + o + sum(phs[:k]) + 16 * k for k in range(4)]
+    fin_paneles = pys[-1] + phs[-1]
+    W, H = ANCHO_MCTS, fin_paneles + 112
     renglones = ["Una vuelta de MCTS:", f"la raíz pasa de {_gn(antes['r'])} a {_gn(despues['r'])}"]
     titulo = " ".join(renglones)
     desc = ("Cuatro paneles con el mismo árbol; cada nodo dice G/N: victorias de MAX entre "
@@ -2960,7 +2972,7 @@ def jue_c3_mcts_pasos():
     aristas = [(p, n) for n, (p, _, _) in j.MCTS_ARBOL.items() if p] + [("a2", "nuevo")]
     bw, bh = 56, 30
     for k, (nombre, sub) in enumerate(paneles):
-        px, py = 12 + (k % 2) * (pw + 12), 90 + o + (k // 2) * (ph + 16)
+        px, py, ph = 12, pys[k], phs[k]
         out.append(caja(px, py, pw, ph, relleno=mezclar(LINEA, 0.12), borde=LINEA, radio=12))
         out.append(texto(px + pw / 2, py + 32, nombre, tam=19, peso="700"))
         out.append(texto(px + pw / 2, py + 56, sub, tam=15, color=SUAVE))
@@ -3006,9 +3018,10 @@ def jue_c3_mcts_pasos():
         if k == 0:
             out.append(texto(px + pw / 2, py + ph - 22, "el árbol que ya se construyó", tam=14,
                              color=SUAVE))
-    out.append(nota_svg(fin_paneles + 30, ["En cada nodo: G/N, victorias de MAX /",
-                                 "simulaciones que pasaron por él. La raíz",
-                                 "suma sus hijos; los demás, 1 más sus hijos."], tam=14))
+    out.append(nota_svg(fin_paneles + 30, ["En cada nodo: G/N, victorias de",
+                                           "MAX / simulaciones que pasaron",
+                                           "por él. La raíz suma sus hijos;",
+                                           "los demás, 1 más sus hijos."], tam=14))
     out.append(cierre())
     return "".join(out)
 
