@@ -175,3 +175,20 @@ def test_quien_garantiza_v_es_lo_que_dice_la_convencion():
     salvedad = [a["nombre"] for a in gen.ALGORITMOS if "salvo si llega a los finales" in a["numero"]]
     assert salvedad == ["Minimax con corte", "Búsqueda de quietud", "Profundización iterativa"]
     assert "converge" in gen.ALGORITMOS[-1]["numero"]
+
+
+def test_la_quietud_y_mcts_dicen_lo_que_hacen():
+    """Brief r2 W3: la salvedad de la quietud es «antes de cortar», la misma
+    de GARANTIZA_TPM (aun con capturas hasta los finales, quedarse usa EVAL);
+    y «Lo que viene» de MCTS dice que construye un árbol, no «lo mismo» que
+    Monte Carlo plano."""
+    import juegos as j
+    por = {a["nombre"]: a for a in gen.ALGORITMOS}
+    assert por["Búsqueda de quietud"]["numero"].endswith(
+        "salvo si llega a los finales antes de cortar")
+    assert j.GARANTIZA_TPM["quietud"] == "No, salvo si llega a los finales antes de cortar"
+    assert por["MCTS con UCT"]["viene"] == (
+        "construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la "
+        "hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar "
+        "lo otro")
+    assert "menos nodos" not in " ".join(a["viene"] + a["numero"] for a in gen.ALGORITMOS)

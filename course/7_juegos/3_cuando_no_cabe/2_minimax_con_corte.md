@@ -145,7 +145,7 @@ OUTPUT  una jugada de A(s) con el mayor
 
    # d: las jugadas que quedan por mirar
  7 function MINIMAX-CON-CORTE(s, d)
-     # ×100: un final pesa más que EVAL
+     # ×100 supera a EVAL: pide |EVAL| < 100
  8   if s ∈ S_F: return 100 · U(s)
  9   if d = 0: return EVAL(s)  # se estima
 10   if Pl(s) = MAX
@@ -188,7 +188,7 @@ def decidir_con_corte(s, d):    # (1)
     return mejor_jugada         # (6) jugada
 
 def minimax_con_corte(s, d):    # (7)
-    # (8) Un final vale 100 veces su U.
+    # (8) 100·U supera a EVAL si |EVAL| < 100.
     if es_final(s):
         return 100 * utilidad(s)
     # (9) Nodo de corte: se estima.
@@ -218,7 +218,9 @@ Respecto de DECIDIR-MINIMAX y MINIMAX de
 - **La línea 9 es la nueva:** cuando ya no quedan jugadas por mirar, se
   estima.
 - **La línea 8 solo cambia la escala** de $U$, para que un final pese más
-  que cualquier estimación. Va antes que la 9.
+  que cualquier estimación. Va antes que la 9. Eso pide que
+  ${|\mathrm{EVAL}|<100}$ en todo estado que no es final; con otra
+  $\mathrm{EVAL}$, el 100 se cambia por un $M$ con ${|\mathrm{EVAL}|<M}$.
 - **Las demás son las mismas**, con ${d-1}$ en cada llamada (líneas 4, 13
   y 19). Como la 9 es nueva, todo lo que sigue se corre un lugar: las del
   MAX quedan en 10–15 y las del MIN en 16–21, no en 9–14 y 15–20.
@@ -503,8 +505,13 @@ línea 8?
    $\text{d2}\textbf{-}\text{d3}$. La búsqueda lo comprobó contra las
    **dos** respuestas de Negras, $\text{a4}\textbf{-}\text{a3}$ y
    $\text{b4}\textbf{-}\text{b3}$: no hay otras.
-2. **Nada seguro.** El ${-9}$ es el minimax de evaluaciones, no de finales.
-   Dice que, mirando tres jugadas, la evaluación prefiere poco esa jugada.
+2. **Que lo pierde dentro del horizonte, no qué tanto importa.** La
+   búsqueda sí ve que Negras responde $\text{c3}\textbf{x}\text{d2}$, gana
+   un peón y lo conserva tras las dos respuestas de Blancas,
+   $\text{a2}\textbf{-}\text{a3}$ y $\text{c2}\textbf{-}\text{c3}$: las
+   dos valen ${-9}$. Lo que no es seguro es cuánto vale esa ventaja para el
+   resultado: el ${-9}$ es el minimax de evaluaciones, no de finales, y no
+   dice quién gana.
 :::
 
 ## 5 · Cuánto cuesta
@@ -740,7 +747,7 @@ Antes de cerrar, la ficha de minimax con corte. Frente a la de [[minimax-como-al
 > - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
 > - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
 > - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
-> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 
@@ -750,10 +757,11 @@ Antes de cerrar, la ficha de minimax con corte. Frente a la de [[minimax-como-al
 - Es DECIDIR y MINIMAX con una línea más, la 9. La 8 va antes: un final
   se reconoce aunque llegue con ${d=0}$. Termina siempre, porque $d$ baja en
   cada llamada.
-- Elige con el valor con corte, no con $V$: solo los ${\pm100}$ son seguros.
+- Elige con el valor con corte, no con $V$. En el 4×4, mientras la búsqueda
+  no llegue a todos los finales, solo los ${\pm100}$ son seguros.
   En el árbol T, ${d=1}$ cae en la trampa de der (7, y vale 2); ${d=2}$ ya
-  juega centro, con 6; ${d=3}$ juega centro, con 5. Con ${d=1}$, 2 y 3
-  genera **4, 10 y 14** nodos.
+  juega centro, con 6; ${d=3}$ llega a todos los finales y juega centro,
+  con 5, que es exacto. Con ${d=1}$, 2 y 3 genera **4, 10 y 14** nodos.
 - Cuesta $O(b^d)$: en la posición de la clase, **4, 12 y 33** nodos con
   ${d=1}$, 2 y 3.
 - $\mathrm{EVAL}$ es un modelo: sus pesos expresan una preferencia y dejan

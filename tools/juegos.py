@@ -822,9 +822,12 @@ def es_captura(tablero, jugada):
 
 
 def minimax_con_quietud(tablero, turno, profundidad, n, escala=100):
-    """Minimax con corte que, al llegar a d = 0, no evalua en seco: sigue
-    mirando solo capturas hasta una posicion quieta. En cada paso de la
-    quietud el jugador de turno puede no capturar y quedarse con EVAL."""
+    """Minimax con corte que, al llegar a d = 0, no devuelve la EVAL en seco:
+    la usa como valor de «quedarse» y la compara con las capturas, cada una
+    seguida hasta un final o una posicion quieta. Quedarse (stand pat) no es
+    una jugada legal de pasar: es una aproximacion del algoritmo, que supone
+    que el jugador de turno tiene alguna jugada sin captura al menos tan buena
+    como la EVAL; falla si no la tiene (ver @jue-c3-quedarse-falla)."""
     def quieta(t, j):
         g = ganador(t, j, n)
         if g:
@@ -2363,6 +2366,15 @@ def clases_transposicion(traza):
     return {n: (a, b, v, clase_de_valor(a, b, v)) for n, a, b, v, _ in llamadas_alfa_beta(traza)}
 
 
+def valor_con_corte_hijo_t(hijo, niveles, evaluar=None):
+    """El valor con corte (sin poda) del hijo de R en T («I», «C» o «D»)
+    cuando le quedan `niveles` jugadas por mirar. Para la tabla de
+    transposicion: una entrada guardada con mas profundidad no da el valor
+    con corte de una busqueda menos honda (C vale 6 con un nivel, 5 con dos)."""
+    t = traza_decidir(ARBOL_T, profundidad=niveles + 1, evaluar=evaluar or EVAL_T)
+    return {f["hijo"]: f["w"] for f in t["filas"] if f["evento"] == "raiz"}[hijo]
+
+
 def _ab_t(arbol, camino, d, a, b, evaluar, nombres, cuenta):
     """ALFA-BETA-CON-CORTE en T (el nodo en `camino` ya se conto)."""
     nodo = nodo_en(arbol, camino)
@@ -2947,8 +2959,69 @@ def puntajes_ucb_en_vuelta(vuelta, semilla=SEMILLA_ATORA, c=None, mus=MUS_HILO):
 
 # Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s′), ū(s′))},
 # ū medido desde MAX. Con c = 2√2 la seleccion va a r (poco probada); con
-# c = 1, a p. Se entrega p, la mas simulada.
-EJEMPLO_MIN = {"p": (30, F(-1, 5)), "q": (15, F(0)), "r": (5, F(2, 5))}
+# c = 1, a p. Se entrega p, la mas simulada. Cada ū sale de partidas enteras
+# (victorias_de): la version vieja, q con N = 15 y ū = 0, pedia 7.5 victorias.
+EJEMPLO_MIN = {"p": (30, F(-1, 5)), "q": (16, F(1, 4)), "r": (4, F(1, 2))}
+
+
+def victorias_de(n, u):
+    """G(s′) = N(s′)·(ū + 1)/2: las victorias de MAX que dan ese promedio con
+    pagos ±1 y sin empates. ValueError si no es entero: ese ū no puede salir
+    de N(s′) partidas. ValueError tambien si n no es un entero positivo."""
+    if isinstance(n, bool) or not isinstance(n, int) or n <= 0:
+        raise ValueError(f"N(s′) = {n!r} no es un numero de partidas: pide un entero > 0")
+    g = F(n) * (_exacto(u) + 1) / 2
+    if g.denominator != 1 or not 0 <= g <= n:
+        raise ValueError(f"ū = {u} no sale de {n} partidas con U = ±1: G = {g}")
+    return int(g)
+
+
+def regreso_de_atoradas(vueltas=None, corridas=CORRIDAS_BANDIDO, mus=MUS_HILO):
+    """{semilla: dict(en, ultima_x, u_x, puede_volver)} de las corridas de
+    «siempre el mejor promedio» que no se quedaron en la mejor jugada (x).
+    Solo para el hilo de la p6: `mus` tiene que ser MUS_HILO (ValueError si
+    no), porque el razonamiento de puede_volver supone que x es la mejor y
+    la primera en los desempates.
+    ultima_x es la ultima vuelta que eligio x; u_x, el ū con que x quedo
+    congelada. puede_volver dice si x PODRIA volver a elegirse en alguna
+    vuelta futura: la jugada atorada, con al menos una victoria, nunca baja
+    a ū = −1, y en empate gana x (va primero); asi que x solo queda fuera
+    para siempre si su ū congelado es −1 y la atorada ya gano alguna vez.
+    Si no, una racha mala de la atorada podria devolver la eleccion a x."""
+    if list(mus.items()) != list(MUS_HILO.items()):  # tambien el orden: x primero
+        raise ValueError("regreso_de_atoradas solo vale para MUS_HILO")
+    vueltas = vueltas or max(MARCAS_BANDIDO)
+    la_mejor = "x"
+    salida = {}
+    for semilla in range(1, corridas + 1):
+        b = bandido("mejor_promedio", mus, vueltas, semilla)
+        en = max(b["N"], key=b["N"].get)
+        if en == la_mejor:
+            continue
+        ganadas = sum(r == 1 for a, r in zip(b["elecciones"], b["resultados"]) if a == en)
+        u_x = b["u"][la_mejor]
+        salida[semilla] = dict(
+            en=en, u_x=u_x, ganadas_atorada=ganadas,
+            ultima_x=max(i for i, a in enumerate(b["elecciones"], 1) if a == la_mejor),
+            puede_volver=not (u_x == -1 and ganadas > 0))
+    return salida
+
+
+def ultimo_cambio_de_eleccion(fila="mejor_promedio", vueltas=None,
+                              corridas=CORRIDAS_BANDIDO):
+    """{semilla: la ultima vuelta (la primera es la 1) cuya eleccion difiere
+    de la de la vuelta anterior; 0 si nunca cambia}, por regla de
+    FILAS_BANDIDO. Sin bono, la mayor es la 89 (semilla 9): en las ventanas
+    de jue-c3-eligiendo-x desde N(s) = 100 (vueltas 91 a 100 en adelante)
+    cada corrida repite una sola jugada."""
+    vueltas = vueltas or max(MARCAS_BANDIDO)
+    r, c = FILAS_BANDIDO[fila]
+    salida = {}
+    for semilla in range(1, corridas + 1):
+        e = bandido(r, MUS_HILO, vueltas, semilla, c)["elecciones"]
+        salida[semilla] = max((i + 1 for i in range(1, len(e)) if e[i] != e[i - 1]),
+                              default=0)
+    return salida
 
 
 # ------------------------- 7.3.7: un arbol, todos los algoritmos (T±) ---
@@ -3148,6 +3221,50 @@ def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM, valores
     valores[()] = max(ws)
     return (_jugada_estricta(ws), max(ws), dict(zip(JUGADAS_RAIZ, ws)), len(generados),
             generados)
+
+
+def quietud_con_todo_captura_tpm(d=1, arbol=ARBOL_TPM):
+    """quietud_tpm(d) en T± con TODAS las jugadas bajo la profundidad d
+    marcadas como captura: las capturas llegan a todos los finales, y aun
+    asi en cada nodo de corte la opcion de quedarse vale EVAL y puede
+    decidir. Con d = 1 da centro con 10, no el 0 de minimax: por eso
+    GARANTIZA_TPM["quietud"] dice «antes de cortar». Mismo formato que
+    quietud_tpm."""
+    capturas = frozenset(c for c in ids_tpm(arbol) if len(c) > d)
+    return quietud_tpm(d, capturas=capturas, arbol=arbol)
+
+
+def decidir_con_ventana_tpm(alfa, beta, arbol=ARBOL_TPM, primera=False):
+    """El ciclo de la raiz de DECIDIR-ALFA-BETA (lineas 2-6) con α inicial
+    `alfa` y la ventana (α, beta) para los hijos: cambia de jugada solo si
+    un hijo devuelve w > α. Con primera=True, mejor_jugada arranca en la
+    primera jugada en vez de en «ninguna». Sale del ciclo cuando α llega a
+    beta: con la ventana en (−1, +1), al ver un +1 ya no hay nada mejor, y
+    seguir buscaria hijos con la ventana cerrada. (jugada o None, α final,
+    [jugadas de la raiz que se buscaron]).
+
+    Con α = −1 (abrir la ventana en los limites de U) y todas las jugadas
+    perdiendo, ningun w supera a α y, sin primera=True, no hay jugada."""
+    mejor = JUGADAS_RAIZ[0] if primera else None
+    buscadas = []
+    for a, hijo in zip(JUGADAS_RAIZ, arbol):
+        buscadas.append(a)
+        w = alfa_beta_arbol(hijo, es_max=False, alfa=alfa, beta=beta)["valor"]
+        if w > alfa:
+            alfa, mejor = w, a
+        if alfa >= beta:
+            break
+    return mejor, alfa, buscadas
+
+
+def posiciones_fronteras(lado):
+    """Posiciones distintas de Fronteras (7.3.9) en un tablero lado×lado:
+    tras k jugadas hay k casillas pintadas, ceil(k/2) de Rojo (empieza) y
+    floor(k/2) de Azul. Es lo que recorreria una busqueda que guarda cada
+    posicion una sola vez (tabla de transposicion), en vez de los lado²!
+    ordenes de jugadas."""
+    n = lado * lado
+    return sum(math.comb(n, k) * math.comb(k, (k + 1) // 2) for k in range(n + 1))
 
 
 def iterativa_tpm(profundidades=(1, 2, 3), evaluar=None, arbol=ARBOL_TPM):
@@ -3365,13 +3482,15 @@ def _generados_alfa_beta(orden, arbol=ARBOL_TPM):
 
 # «¿Garantiza V?»: un rasgo del algoritmo, no de la corrida (la convencion
 # unica de las tablas de 7.3.7-7.3.9, las fichas y el interactivo): si, por
-# como funciona, devuelve el valor minimax.
+# como funciona, devuelve el valor minimax. La quietud dice «antes de cortar»:
+# aunque sus capturas lleguen a todos los finales, en cada nodo de corte la
+# opcion de quedarse vale EVAL y puede decidir (quietud_con_todo_captura_tpm).
 GARANTIZA_TPM = {
     "minimax": "Sí",
     "expectiminimax": "Sí, el V del juego con dado",
     "alfa-beta": "Sí, en la raíz",
     "corte": "No, salvo si llega a los finales",
-    "quietud": "No, salvo si llega a los finales",
+    "quietud": "No, salvo si llega a los finales antes de cortar",
     "iterativa": "No, salvo si llega a los finales",
     "Monte Carlo plano": "No",
     "UCT": "No (con tiempo sin límite converge a él, con cualquier c > 0)",
@@ -3383,13 +3502,20 @@ def tabla_t_pm(arbol=ARBOL_TPM):
     orden del curso (minimax, expectiminimax, alfa-beta en orden dado y al
     revés, corte d = 1..3, quietud, iterativa, Monte Carlo plano con 5, 10 y
     50 simulaciones por jugada, UCT):
-    dict(algoritmo, jugada, valor, tipo, escala, nodos, garantiza, da_v_aqui, nota).
+    dict(algoritmo, jugada, valor, tipo, escala, nodos, simulaciones, garantiza,
+    da_v_aqui, nota).
 
     tipo: «V» (minimax y alfa-beta), «V con dado» (otro juego: D es azar),
-    «valor con corte» (EVAL donde corta, 100·U en los finales), «ū»
-    (promedio de simulaciones; el limite μ va en la nota). nodos: nodos
-    generados contando R; en MC plano y UCT, nodos distintos que toco la
-    corrida de la pagina (semilla SEMILLA_TPM). garantiza: el texto de la
+    «valor con corte» (EVAL donde corta, 100·U en los finales), «valor con
+    quietud» (en el corte, lo mejor entre quedarse con EVAL y seguir las
+    capturas), «ū» (promedio de simulaciones; el limite μ va en la nota).
+    nodos: NO miden el mismo trabajo en todas las filas. En las busquedas,
+    nodos generados contando R (con repeticion en la iterativa, que suma sus
+    tres busquedas); en MC plano, nodos distintos que tocaron sus
+    simulaciones; en UCT, nodos que quedaron guardados en su arbol (corrida
+    de la pagina, semilla SEMILLA_TPM). simulaciones: partidas al azar
+    jugadas hasta un final (k por jugada en MC plano, una por vuelta en
+    UCT); None en las busquedas. garantiza: el texto de la
     convencion GARANTIZA_TPM, igual para toda fila de una familia.
     da_v_aqui: si en T± el numero coincide con el V que le corresponde —el
     de minimax, 0, en su escala (U o 100·U); en expectiminimax, el V del
@@ -3397,11 +3523,13 @@ def tabla_t_pm(arbol=ARBOL_TPM):
     jm, v, _, n = minimax_tpm(arbol)
     G = GARANTIZA_TPM
 
-    def fila(familia, algoritmo, jugada, valor, tipo, escala, nodos, nota="", da_v=None):
+    def fila(familia, algoritmo, jugada, valor, tipo, escala, nodos, nota="", da_v=None,
+             simulaciones=None):
         if da_v is None:
             da_v = valor == (100 * v if escala == "100·U" else v)
         return dict(algoritmo=algoritmo, jugada=jugada, valor=valor, tipo=tipo, escala=escala,
-                    nodos=nodos, garantiza=G[familia], da_v_aqui=da_v, nota=nota)
+                    nodos=nodos, simulaciones=simulaciones, garantiza=G[familia],
+                    da_v_aqui=da_v, nota=nota)
 
     filas = [fila("minimax", "minimax", jm, v, "V", "U", n)]
     je, ve = expectiminimax_tpm(DADO_TPM, arbol)
@@ -3416,7 +3544,7 @@ def tabla_t_pm(arbol=ARBOL_TPM):
         jc, vc, _, g = corte_tpm(d, arbol=arbol)
         filas.append(fila("corte", f"corte d = {d}", jc, vc, "valor con corte", "100·U", g))
     jq, vq, _, g, _ = quietud_tpm(1, arbol=arbol)
-    filas.append(fila("quietud", "quietud, d = 1", jq, vq, "valor con corte", "100·U", g))
+    filas.append(fila("quietud", "quietud, d = 1", jq, vq, "valor con quietud", "100·U", g))
     it, total = iterativa_tpm(arbol=arbol)
     filas.append(fila("iterativa", "profundización iterativa, d = 1, 2, 3", it[-1][2],
                       it[-1][3], "valor con corte", "100·U", total,
@@ -3426,13 +3554,15 @@ def tabla_t_pm(arbol=ARBOL_TPM):
         jp, sumas = mc_plano_tpm(k, SEMILLA_TPM, arbol)
         filas.append(fila("Monte Carlo plano", f"Monte Carlo plano, {k} por jugada", jp,
                           F(sumas[jp], k), "ū", "U", len(_tocados_mc(k, SEMILLA_TPM, arbol)),
-                          nota=f"límite: {jl} con μ = {fmt_t(mu[jl])}"))
+                          nota=f"límite: {jl} con μ = {fmt_t(mu[jl])}",
+                          simulaciones=k * len(arbol)))
     u = uct_tpm(1, VUELTAS_PAGINA_TPM, SEMILLA_TPM, arbol)
     ju = u["mas_simulada"][-1]
     h = (JUGADAS_RAIZ.index(ju),)
     filas.append(fila("UCT", f"UCT, c = 1, {VUELTAS_PAGINA_TPM} vueltas", ju,
                       F(u["S"][h], u["N"][h]), "ū", "U", len(u["N"]),
-                      nota=f"N = {u['N'][h]} de {VUELTAS_PAGINA_TPM}"))
+                      nota=f"N = {u['N'][h]} de {VUELTAS_PAGINA_TPM}",
+                      simulaciones=sum(u["N"][(i,)] for i in range(len(arbol)))))
     return filas
 
 

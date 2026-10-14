@@ -4,7 +4,7 @@ title: Simular en vez de evaluar
 nav_title: Simular en vez de evaluar
 summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando, que es Monte Carlo plano. La búsqueda de árbol Monte Carlo, la base de AlphaGo, construye además un árbol: dentro de él elige por puntaje, y solo debajo simula al azar."
 status: ready
-estimated_time: 30m
+estimated_time: 31m
 tags: [juegos, busqueda-adversarial, monte-carlo]
 ---
 
@@ -274,7 +274,11 @@ Cada vuelta tiene cuatro pasos:
    ganó MAX, 1 a sus victorias. Eso vale también en los nodos de MIN.
 
 Si la selección llega a un final, no hay nada que expandir ni simular: su
-$U$ es el resultado de la vuelta.
+$U$ es el resultado de la vuelta, y cuenta como una simulación más.
+
+Así, cada vuelta aporta un resultado, y decimos que esa simulación «pasó
+por» cada nodo del camino. Pero solo el tramo debajo del hijo nuevo se
+jugó al azar: arriba, el camino lo eligió la selección.
 
 En la figura, cada caja dice ${G/N}$. La raíz y el ${2/3}$ ya tienen todas
 sus jugadas en el árbol, dos cada uno, así que la selección pasa por ellos.
@@ -291,10 +295,14 @@ Ahí mueve MIN, y su 2 cuenta igual victorias de MAX.
 ![Cuatro paneles con el mismo árbol; cada caja dice G/N, victorias de MAX entre simulaciones que pasaron por ella. 1, selección: desde la raíz, 2/4, donde mueve MAX, se baja a 2/3; ahí mueve MIN y baja a 0/1, donde MAX ganó menos. 2, expansión: aparece un hijo nuevo, 0/0, bajo ese 0/1. 3, simulación: desde el hijo nuevo, una línea quebrada llega a un final con U = +1. 4, retropropagación: cada nodo del camino suma una simulación y una victoria; 2/4 pasa a 3/5, 2/3 a 3/4, 0/1 a 1/2 y 0/0 a 1/1. Los nodos fuera del camino, 1/1 y el otro 0/1, no cambian](../_assets/jue-c3-mcts-pasos.svg)
 :::
 
-Las vueltas se repiten mientras haya tiempo. Al final se juega la jugada de
-la raíz **por la que pasaron más simulaciones**, no la de mejor promedio.
-Un promedio de pocas partidas puede ir alto por suerte; el de la más
-simulada es el que tiene más evidencia detrás. Como la profundización
+Las vueltas se repiten mientras haya tiempo. Al final, en esta versión, se
+juega la jugada de la raíz **por la que pasaron más simulaciones**, no la de
+mejor promedio. Un promedio de pocas partidas puede ir alto por suerte; el
+de la más simulada es el que tiene más evidencia detrás.
+
+Es la convención
+más común, no la única: otras versiones entregan la de mayor promedio.
+Como la profundización
 iterativa de [[jugar-contra-el-reloj|Jugar contra el reloj]], siempre tiene
 una jugada lista.
 
@@ -368,20 +376,30 @@ simulación, así que su bono es el mismo, ${\sqrt{\ln 3}\approx1.05}$. Sus
 puntajes son ${-1+1.05=0.05}$ y ${+1+1.05=2.05}$: MIN baja al ${0/1}$.
 
 Así corrige MCTS el defecto de la sección 2, el **rival al azar**. Donde ya
-construyó árbol, MIN elige su mejor respuesta por puntaje, no al azar. Solo
-la simulación, debajo del árbol, sigue jugando al azar.
+construyó árbol, MIN elige por puntaje, no al azar: lo que parece mejor para
+él, más un bono para lo poco probado. Con suficientes vueltas se concentra
+en su mejor respuesta. Solo la simulación, debajo del árbol, sigue jugando
+al azar.
 
-**El bono es un margen de error del promedio:** cuánto podría errar una
-jugada con pocas partidas, del lado que le importa a quien elige (abajo
-para MAX, arriba para MIN). Por eso se encoge al crecer $N(s')$. Crece
-despacio con ${\ln N(s)}$: conforme avanza la búsqueda, se pide más
-confianza antes de dar una jugada por mala. Y $c$ fija cuánta.
+**La idea del bono viene del bandido:** elegir una y otra vez entre
+jugadas que pagan al azar, sin árbol debajo. Ahí el bono es un margen de
+error del promedio: cuánto podría errar una jugada con pocas partidas, del
+lado que le importa a quien elige (abajo para MAX, arriba para MIN).
 
-La página siguiente dice de dónde sale $c$. En corto: $\delta$ es la
-probabilidad de que el promedio quede por debajo de su promedio límite en
-más que el bono. Esa $\delta$ baja conforme crece $N(s)$, y $c$ fija qué
-tan rápido. Nuestra ${c=1}$ pide
-${\delta=1/\sqrt{N(s)}}$: 10 % con ${N(s)=100}$.
+Por eso se encoge al crecer $N(s')$. Crece despacio con ${\ln N(s)}$: conforme
+avanza la búsqueda, se pide más confianza antes de dar una jugada por mala.
+Y $c$ fija cuánta.
+
+La página siguiente dice de dónde sale $c$. En corto: si $N(s')$ se
+fijara antes de ver los resultados, $\delta$ acotaría la probabilidad de
+que el promedio quedara por debajo de su promedio límite en más que el
+bono. Esa $\delta$ baja conforme crece $N(s)$, y $c$ fija qué tan rápido.
+Nuestra ${c=1}$ pide ${\delta=1/\sqrt{N(s)}}$: 10 % con ${N(s)=100}$.
+
+En la regla UCB, $N(s')$ depende de lo que salió: $\delta$ guía la
+elección de $c$, pero no es una probabilidad garantizada. En UCT, además,
+el blanco cambia: lo que se juega debajo de cada nodo va cambiando, y el
+promedio no tiene un blanco fijo.
 
 Muchos textos usan la fracción de victorias ${G/N}$ en vez de $\bar u$.
 Como ${\bar u=2\,G/N-1}$, el puntaje es
@@ -452,13 +470,14 @@ La que estima lo que no se alcanza a calcular:
   valía una posición. Al valorar un nodo nuevo, AlphaGo mezclaba esa
   estimación, mitad y mitad (${\lambda=0.5}$), con el resultado de una
   simulación rápida guiada por una política rápida y sencilla.
-- **AlphaGo Zero y AlphaZero, en 2017, quitaron las simulaciones:**
-  una red que aprende jugando contra sí misma sugiere jugadas y valora
-  posiciones.
+- **AlphaGo Zero y AlphaZero, en 2017, quitaron las partidas simuladas
+  hasta el final** (en inglés, *rollouts*): una red que aprende jugando
+  contra sí misma sugiere jugadas y valora posiciones.
 
-¿Sigue siendo MCTS sin simulaciones? Sí: conserva el árbol, las cuentas y
-la selección por puntaje. Lo que más cambia es el paso 3: la red valora el
-hijo nuevo, sin jugarlo al azar. También guía la selección y la expansión:
+¿Sigue siendo MCTS sin esas partidas? Sí: sigue dando vueltas de MCTS, con
+el árbol, las cuentas y la selección por puntaje. Lo que más cambia es el
+paso 3: la red valora el hijo nuevo, sin jugar desde él una partida al
+azar. También guía la selección y la expansión:
 su puntaje no es el UCT, porque suma un término que premia la jugada que la
 red sugiere.
 
@@ -488,11 +507,11 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 | Rasgo | MCTS con UCT |
 |---|---|
 | Hasta dónde mira | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
-| ¿Genera todo el árbol? | No: a lo más un nodo nuevo por vuelta, más su partida |
+| ¿Genera todo el árbol? | No necesita: agrega a lo más un nodo por vuelta, más su partida. Con suficientes vueltas expande todo un árbol finito (el árbol T± de «Un árbol, todos los algoritmos», de 15 nodos, con 40) |
 | ¿Garantiza $V$? | No. Con tiempo sin límite converge a él, con cualquier $c>0$ |
 | Con qué estima | Con $\bar u$ de simulaciones |
-| ¿Quién tira dados? | El algoritmo, solo en las simulaciones; dentro del árbol no sortea nada |
-| Qué entrega, y si se puede interrumpir | La jugada más simulada, no la de mayor puntaje. Sí se puede interrumpir |
+| ¿Quién tira dados? | El algoritmo, en las simulaciones. Esta versión expande y desempata en orden fijo, así que dentro del árbol no sortea; otras sí |
+| Qué entrega, y si se puede interrumpir | Aquí, la jugada más simulada, no la de mayor puntaje; otras versiones entregan la de mayor promedio. Sí se puede interrumpir |
 | Cuándo conviene | Sin $\mathrm{EVAL}$ confiable y con árboles enormes: Go (MoGo, 2006), Hex (MoHex) |
 :::
 
@@ -505,7 +524,7 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
 > | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
 > | **Monte Carlo plano (estás aquí)** | **$\bar u$; no garantiza $V$** |
 > | **MCTS con UCT (estás aquí)** | **$\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, con cualquier $c>0$)** |
@@ -532,11 +551,12 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
   $N$ siempre y 1 a $G$ solo si gana MAX: la raíz pasa de ${2/4}$ a ${3/5}$, o
   a ${2/5}$ si pierde.
 - El puntaje UCT, ${\bar u+c\sqrt{\ln N(s)/N(s')}}$, equilibra aprovechar y
-  explorar; MIN usa $-\bar u$. El bono es un margen de error del promedio.
+  explorar; MIN usa $-\bar u$. El bono viene del margen de error de un
+  promedio en el bandido.
   Con x, y, z y ${c=1}$, la selección va a y, que puntúa 0.99; la
   entrega, a x, que tiene 60 simulaciones.
 - Deep Blue (1997) cortó y evaluó; AlphaGo (2016) combinó MCTS con redes;
-  AlphaGo Zero y AlphaZero (2017) cambiaron la simulación por una red,
-  que además guía la selección.
+  AlphaGo Zero y AlphaZero (2017) cambiaron la partida simulada hasta el
+  final por una red que valora la hoja, y que además guía la selección.
 
 Continúa con [[de-donde-sale-el-bono|de dónde sale el bono]].

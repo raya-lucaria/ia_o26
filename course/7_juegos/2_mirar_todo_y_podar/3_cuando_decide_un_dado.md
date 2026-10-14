@@ -528,7 +528,7 @@ Antes de cerrar, la ficha de expectiminimax, con las mismas siete filas que la d
 > - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
 > - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
 > - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
-> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 

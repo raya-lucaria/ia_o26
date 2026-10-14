@@ -2,9 +2,9 @@
 id: de-donde-sale-el-bono
 title: De dónde sale el bono
 nav_title: De dónde sale el bono
-summary: "El bono de UCT es el margen de error de un promedio: sumado, da la cota optimista de cada jugada. Sale de la desigualdad de Hoeffding con una probabilidad de fallo que baja conforme avanza la búsqueda; la c del puntaje fija qué tan rápido baja. Se usa para seleccionar, no para entregar."
+summary: "El bono de UCB1 es el margen de error de un promedio: sumado, da la cota optimista de cada jugada, y UCT usa la misma forma en cada nodo del árbol. Sale de la desigualdad de Hoeffding con una probabilidad de fallo que baja conforme avanza la búsqueda; la c del puntaje fija qué tan rápido baja. Se usa para seleccionar, no para entregar."
 status: ready
-estimated_time: 44m
+estimated_time: 46m
 tags: [juegos, mcts, exploracion]
 ---
 
@@ -196,8 +196,10 @@ random variables», *Journal of the American Statistical Association*,
 - **Cae exponencialmente** con $N(s')$. Otras cotas generales bajan solo
   como ${1/N(s')}$.
 
-Nos basta **una cola**: el promedio por debajo, el error que no se corrige
-solo. La otra cola sirve a MIN, en la sección 4.
+Para construir la cota de MAX basta **una cola**: el promedio por debajo,
+el error que no se corrige solo. La prueba de UCB1 (sección 5) usa también
+la otra, que una jugada peor parezca mejor; y en un nodo de MIN los papeles
+se invierten (sección 4).
 
 ::: exercise {#jue-c3-ej-fila-cota title="Calcula una fila de la cota"}
 1. Con ${N(s')=100}$ y ${\varepsilon=0.2}$, calcula la cota de Hoeffding.
@@ -343,11 +345,11 @@ Dos casos extremos:
   cola, que @jue-c3-teo-hoeffding acota igual.
 
 ::: exercise {#jue-c3-ej-optimismo title="Compara dos jugadas empatadas"}
-Dos jugadas de MAX tienen ${\bar u=0.3}$. Una lleva 1 simulación; la
+Dos jugadas de MAX tienen ${\bar u=0}$. Una lleva 2 simulaciones; la
 otra, 100.
 
 1. ¿Cuál tiene la cota optimista más alta?
-2. Si la de 1 simulación era en realidad mala, ¿qué pasa al probarla
+2. Si la de 2 simulaciones era en realidad mala, ¿qué pasa al probarla
    unas veces?
 :::
 
@@ -357,10 +359,11 @@ parte cuando una jugada mala se prueba más?
 :::
 
 ::: answer {#jue-c3-resp-optimismo of="jue-c3-ej-optimismo"}
-1. La de **1 simulación**: mismo promedio, margen mucho mayor.
-2. Su $\bar u$ baja hacia su $\mu$ y su margen se encoge con cada prueba.
-   Su cota cae debajo de la de la otra y la selección vuelve a ella. El
-   error costó unas cuantas vueltas, no la partida.
+1. La de **2 simulaciones**: mismo promedio, margen mucho mayor.
+2. Si de verdad tiene una $\mu$ menor, al seguirla probando su $\bar u$
+   se acerca a esa $\mu$ (al principio puede subir o bajar).
+   Su margen se encoge. Con suficiente evidencia su cota deja de ser la
+   mayor y la selección vuelve a la otra.
 :::
 
 Falta escoger $\delta$. ¿Sirve uno fijo, como el 5 %? ¿Y de dónde salió
@@ -406,6 +409,13 @@ sección 4.
 La ${c=1}$ de la página anterior es ${k=1/2}$: con 100 vueltas tolera
 fallar una vez de cada diez. Pide poca confianza, y explora poco.
 
+Esa lectura es una guía para elegir $c$, no una garantía. Hoeffding habla
+de un número de partidas fijado de antemano, y aquí $N(s')$ depende de lo
+que salió: una jugada se prueba más si va bien. La cuenta exacta la hace la
+prueba de UCB1, que suma sobre todos los $N(s')$ posibles; no la cubrimos.
+En UCT, además, el promedio no tiene un
+blanco fijo (sección 8).
+
 La regla **UCB1** de Auer, Cesa-Bianchi y Fischer (2002) toma ${k=4}$:
 
 $$\delta=\frac{1}{N(s)^4}.$$
@@ -417,7 +427,8 @@ $$\begin{aligned}
 &=2\sqrt2\,\sqrt{\frac{\ln N(s)}{N(s')}}.
 \end{aligned}$$
 
-**Es el bono de UCT, con ${c=2\sqrt2\approx2.83}$.** En la corrida de la
+**Es el bono de UCB1, con ${c=2\sqrt2\approx2.83}$;** UCT usa la misma
+forma en cada nodo del árbol. En la corrida de la
 sección 4, ${N(s)=5}$, y ${5^{-4}=1/625}$: de ahí salía ese $\delta$.
 Ahora una jugada que no se elige ya no se congela. Su $N(s')$ se queda
 quieta, pero $N(s)$ sigue creciendo, y su bono también: despacio, por el
@@ -587,10 +598,16 @@ en 0.6 es lo mejor posible.
   gasta más vueltas en probar; UCB
   reparte las primeras entre las tres, y las que van a y o a z pagan
   menos.
-- **Luego, sin bono se queda en 0.54 para siempre:** 0.544 en la vuelta
+- **Luego, sin bono se queda en 0.54:** 0.544 en la vuelta
   1 000, 0.543 en la 10 000. Sus 34 corridas buenas pagan cerca de 0.6,
   pero 5 siguen en y (0.3) y 1 en z (−0.2). Se espera
-  ${(34\cdot0.6+5\cdot0.3-0.2)/40=0.5425}$, y esas 6 no se corrigen nunca.
+  ${(34\cdot0.6+5\cdot0.3-0.2)/40=0.5425}$, y hasta la vuelta 10 000
+  ninguna de esas 6 se corrigió.
+
+  En la semilla 36, la de la sección 1, se ve
+  que x no puede volver: quedó en ${\bar u=-1}$ y z ya ganó alguna vez. En
+  las otras 5, x quedó en $0$ o en ${-0.2}$, y una racha mala muy larga de y
+  podría devolverla.
 - **Las UCB pagan su exploración y luego se acercan a 0.6.** La de
   ${c=2\sqrt2}$ explora más: rebasa a la regla sin bono entre las vueltas
   2 000 y 5 000 y termina en 0.580. La de ${c=1}$ explora menos: la rebasa
@@ -604,16 +621,17 @@ promedia las vueltas ${N(s)-9}$ a $N(s)$ de las 40 corridas: 400
 elecciones.
 
 No es acumulado: la vuelta 1 ya no cuenta en la 1 000. Es una
-fracción de elecciones, no de corridas: solo sin bono, donde cada corrida
-elige siempre lo mismo, coinciden las dos.
+fracción de elecciones, no de corridas. Coinciden las dos solo sin bono,
+en las ventanas desde ${N(s)=100}$: ahí cada una de las 40 corridas repite
+una sola jugada.
 
-::: figure {#jue-c3-fig-eligiendo-x title="Qué tanto se elige x en cada vuelta: sin bono, 85 % para siempre"}
+::: figure {#jue-c3-fig-eligiendo-x title="Qué tanto se elige x en cada vuelta: sin bono, 85 % desde la vuelta 100"}
 ![Gráfica con eje horizontal logarítmico. Eje horizontal: N(s), vueltas, de 10 a 10 000. Eje vertical: porcentaje de las elecciones que van a x en esa vuelta, no acumulado, con marcas de 40 a 100 %. Cada punto promedia las vueltas N(s) − 9 a N(s) de las 40 corridas, 400 elecciones; μ de x, y, z: 0.6, 0.3, −0.2. Cuatro curvas, en N(s) = 10, 100, 1 000 y 10 000: siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %, plana desde la vuelta 100; a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %; UCB con c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %; UCB con c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %](../_assets/jue-c3-eligiendo-x.svg)
 :::
 
 - **Siempre el mejor promedio** se aplana en 85 % desde la vuelta 100. Es
   ${34/40}$: las 34 corridas buenas eligen x en cada vuelta, y las 6
-  atoradas no la eligen nunca. Es el reparto de la primera figura, visto
+  atoradas ya no la eligen: la última vez fue en la vuelta 20 o antes. Es el reparto de la primera figura, visto
   vuelta a vuelta.
 - **A veces al azar** sube hasta cerca de 93 %: 93 % en la vuelta 1 000 y
   92.5 % en la 10 000. Ya encontró x, pero una vuelta de cada diez elige
@@ -628,8 +646,7 @@ elige siempre lo mismo, coinciden las dos.
 - **La de ${c=2\sqrt2}$ sube a saltos**, con mesetas: explora en ráfagas,
   cuando el bono de una jugada olvidada alcanza a las demás.
 
-**La lección: explorar cuesta un poco al principio y evita perder para
-siempre.** Sin bono se ganan las primeras vueltas, pero 6 de cada 40
+**La lección: explorar cuesta un poco al principio y evita atorarse.** Sin bono se ganan las primeras vueltas, pero 6 de cada 40
 búsquedas se quedan en una jugada peor. UCB paga unas vueltas de
 exploración y encuentra x en todas. Con ${c=0}$ no hay bono, y UCB es el
 mejor promedio: 0.543 y 85 %.
@@ -665,7 +682,11 @@ No. Al terminar, el bono **se quita**:
 :::
 
 El bono premia la ignorancia, y eso sirve para aprender. Para jugar de
-verdad se quiere evidencia: la jugada con más simulaciones.
+verdad se quiere evidencia: aquí, la jugada con más simulaciones. Es una
+convención, la más usada, no la única: otras versiones entregan la de mayor
+promedio, sin bono, y esa es la que analizan Kocsis y Szepesvári (sección 8).
+Elegimos la más simulada porque un promedio de pocas partidas puede ir alto
+por suerte.
 
 ::: exercise {#jue-c3-ej-entregar title="Señala qué se entrega"}
 En el ejercicio de MCTS, x tenía ${N=60}$ y ${\bar u=0.5}$; y, ${N=30}$ y
@@ -708,8 +729,12 @@ dependencia: por eso no se aplica al pie de la letra.
 
 Kocsis y Szepesvári (2006) demostraron aparte que, con una $c$ bastante
 grande, la probabilidad de que UCT elija en la raíz una jugada peor que la
-de minimax tiende a 0 conforme crecen las vueltas. Llega a la jugada que
-elegiría minimax, no a la de mayor $\mu(s')$. Esa prueba no la cubrimos.
+de minimax tiende a 0 conforme crecen las vueltas.
+
+Llega a la jugada que
+elegiría minimax, no a la de mayor $\mu(s')$. Su bono tiene la misma
+forma, pero su constante no es la $2\sqrt2$ de UCB1: la ajustan a cuánto
+se mueven los promedios de abajo. Esa prueba no la cubrimos.
 
 Llegar no pide una $c$ grande. Con cualquier ${c>0}$, en un árbol finito, el
 bono de una jugada poco probada sigue creciendo con ${\ln N(s)}$: UCT
@@ -727,8 +752,8 @@ Un nodo $s$ donde **mueve MIN** lleva ${N(s)=50}$ vueltas. Sus tres hijos
 tienen, con $\bar u$ medido desde MAX:
 
 - **p:** ${N=30}$, ${\bar u=-0.2}$;
-- **q:** ${N=15}$, ${\bar u=0}$;
-- **r:** ${N=5}$, ${\bar u=0.4}$.
+- **q:** ${N=16}$, ${\bar u=0.25}$;
+- **r:** ${N=4}$, ${\bar u=0.5}$.
 
 Trata a cada hijo como una jugada del bandido: no importa qué pasa debajo
 de él, ni cómo se llegó a esos números.
@@ -765,14 +790,14 @@ en el 2?
    ${\bar u-\text{bono}}$ más baja. Es lo mismo que elegir el mayor
    puntaje ${-\bar u+\text{bono}}$, como en
    [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]. Bonos: p 1.02,
-   q 1.44, r 2.50. Puntajes: p ${0.2+1.02=1.22}$, q ${0+1.44=1.44}$, r
-   ${-0.4+2.50=2.10}$. Baja por **r**: el peor promedio para MIN, pero
-   con solo 5 simulaciones.
+   q 1.40, r 2.80. Puntajes: p ${0.2+1.02=1.22}$, q ${-0.25+1.40=1.15}$, r
+   ${-0.5+2.80=2.30}$. Baja por **r**: el peor promedio para MIN, pero
+   con solo 4 simulaciones.
 
    El bono de p, 1.02, es más del doble del margen del inciso 1: con
    ${c=2\sqrt2}$ se pide ${\delta=1/50^4}$, mucho menos que 5 %.
-3. **El puntaje con ${c=1}$.** Bonos 0.36, 0.51 y 0.88; puntajes 0.56,
-   0.51 y 0.48. Baja por **p**: la $c$ chica casi no explora.
+3. **El puntaje con ${c=1}$.** Bonos 0.36, 0.49 y 0.99; puntajes 0.56,
+   0.24 y 0.49. Baja por **p**: la $c$ chica casi no explora.
 4. **Lo que se entrega.** **p**, la de más simulaciones, 30. Entregar no
    usa el bono.
 :::
@@ -800,7 +825,7 @@ calcular la cota optimista en un nodo de MAX o de MIN.
   UCB1 pide ${\delta=N(s)^{-4}}$, y da ${c=2\sqrt2\approx2.83}$; con la
   tasa ${G/N}$ es ${c=\sqrt2}$, la misma regla. La ${c=1}$ de la página
   anterior es ${k=1/2}$.
-- **Explorar cuesta al principio y evita perder para siempre.** En 40
+- **Explorar cuesta al principio y evita atorarse.** En 40
   corridas, la regla sin bono es todo o nada: 34 en la mejor y 6 atoradas.
   Por eso paga 0.543 por vuelta, cerca del 0.5425 que se espera, y solo el
   85 % de las corridas elige x. A 10 000 vueltas, UCB con ${c=2\sqrt2}$

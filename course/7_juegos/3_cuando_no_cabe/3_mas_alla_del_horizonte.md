@@ -113,10 +113,11 @@ pieza captura un peón defendido y el corte cae antes de la recaptura.
 :::
 
 > [!WARNING]
-> **Subir la profundidad no elimina el efecto horizonte: lo mueve.** A
-> profundidad 2 la recaptura ya se ve, pero el horizonte sigue ahí, una
-> jugada más abajo. A cualquier profundidad fija puede quedar algo
-> importante justo detrás.
+> **Mientras el corte no llegue a todos los finales, subir la profundidad
+> no elimina el efecto horizonte: lo mueve.** A profundidad 2 la recaptura
+> ya se ve, pero el horizonte sigue ahí, una jugada más abajo. Si el corte
+> llega a todos los finales, el efecto desaparece; en un juego grande no
+> suele haber una profundidad práctica que lo logre en toda posición.
 
 ::: exercise {#jue-c3-ej-detras title="Encuentra lo que queda detrás a profundidad 2"}
 En @jue-c3-horizonte-valores, $\text{d2}\textbf{-}\text{d3}$ vale 1 a
@@ -163,25 +164,36 @@ Una posición es **quieta** si el jugador de turno no tiene ninguna captura
 disponible. En ella, $\mathrm{EVAL}$ es más confiable.
 
 La **búsqueda de quietud** cambia lo que pasa en un nodo de corte que no
-es quieto. En vez de evaluar ahí, sigue mirando **solo las capturas** hasta
-llegar a posiciones quietas, y evalúa en ellas. En cada paso, el jugador de
-turno elige entre capturar o **quedarse** con la $\mathrm{EVAL}$ de la
+es quieto. No devuelve sin más la $\mathrm{EVAL}$ del nodo de corte: la usa
+como opción de **quedarse** y la compara con **las capturas**; cada captura
+sigue hasta un final o una posición quieta.
+
+En cada paso, el jugador de
+turno elige entre capturar o quedarse con la $\mathrm{EVAL}$ de la
 posición, aunque esta todavía tenga capturas.
 
-El número que da es el **valor con quietud**: el valor con corte, pero
-extendiendo las capturas hasta posiciones quietas. Sigue siendo un valor
-con corte: estima con $\mathrm{EVAL}$, solo que más abajo.
+El número que da es el **valor con quietud**: como el valor con corte,
+pero en los nodos de corte compara quedarse (la $\mathrm{EVAL}$ ahí) con
+seguir las capturas hasta posiciones quietas. Sigue estimando con
+$\mathrm{EVAL}$, y puede devolver la de una posición que no es quieta, si
+quedarse sale mejor.
 
-**Qué significa:** el corte ya no cae en medio de un intercambio.
+**Qué significa:** reduce los cortes a mitad de un intercambio.
 
 **Qué no es:** no es buscar una jugada más en todas partes. Solo se siguen
 las capturas, y solo desde los nodos de corte.
 :::
 
-Quedarse representa las jugadas que no son captura: nadie está obligado a
-capturar, y la quietud no las mira. En MINIMAX-CON-CORTE solo cambia la
-línea 9: en vez de devolver $\mathrm{EVAL}(s)$, llama a la búsqueda de
-quietud.
+Quedarse no es una jugada legal: es una aproximación, que en inglés se
+llama *stand pat* («plantarse»). Supone que el jugador de turno tiene
+alguna jugada que no captura y que es al menos tan buena para quien mueve
+como quedarse: para MAX, ${\geq \mathrm{EVAL}}$; para MIN,
+${\leq \mathrm{EVAL}}$. La quietud no mira esas jugadas.
+
+Puede fallar si esa jugada no existe —por ejemplo, si todas son
+capturas— o si toda jugada empeora su posición. En
+MINIMAX-CON-CORTE solo cambia la línea 9: en vez de devolver
+$\mathrm{EVAL}(s)$, llama a la búsqueda de quietud.
 
 **Ejemplo: la captura, a profundidad 1.**
 
@@ -236,6 +248,23 @@ de la búsqueda: en los programas de ajedrez, los nodos de quietud suelen ser
 muchos. Y en este juego la búsqueda de quietud siempre termina: cada captura
 quita un peón, y los peones se acaban.
 
+::: remark {#jue-c3-quedarse-falla title="Cuando quedarse engaña"}
+Desde el inicio del 4×4 se juega $\text{a1}\textbf{-}\text{a2}$,
+$\text{b4}\textbf{-}\text{b3}$, $\text{d1}\textbf{-}\text{d2}$,
+$\text{b3}\textbf{-}\text{b2}$, $\text{a2}\textbf{-}\text{a3}$,
+$\text{c4}\textbf{-}\text{c3}$, $\text{d2}\textbf{-}\text{d3}$ y
+$\text{c3}\textbf{-}\text{c2}$. Quedan Blancas en b1, c1, a3 y d3, Negras
+en b2, c2, a4 y d4, y mueven Blancas.
+
+Blancas solo tiene dos jugadas, $\text{b1}\textbf{x}\text{c2}$ y
+$\text{c1}\textbf{x}\text{b2}$: las dos son capturas, y tras cualquiera
+Negras llega a la fila 1 en la jugada siguiente. Si el corte cae aquí, la
+quietud compara quedarse, con ${\mathrm{EVAL}=0}$, contra esas dos
+capturas, que valen ${-100}$, y devuelve **0**. El valor exacto es
+${100\cdot V=-100}$: quedarse supuso una jugada tranquila que Blancas no
+tiene.
+:::
+
 ## 3 · Poner a prueba la quietud por tu cuenta
 
 **Piensa: ¿la búsqueda de quietud arregla cualquier efecto horizonte?**
@@ -264,7 +293,7 @@ $\text{d2}\textbf{-}\text{d3}$. Con $\mathrm{EVAL}$ en seco, sin
 quietud, valen 2, 2, 13 y 2.
 
 **El programa de ajedrez** busca a profundidad fija. Va a perder la dama
-sin remedio. En vez de aceptarlo, da un jaque tras otro, y con esos jaques
+sin remedio. En vez de aceptarlo, da un jaque tras otro, ninguno con captura, y con esos jaques
 la pérdida queda detrás del horizonte.
 
 1. Con quietud, $\text{a1}\textbf{-}\text{a2}$ vale ${-10}$ y
@@ -314,12 +343,17 @@ todas las capturas, del lado de quien mueve?
    $\text{c2}\textbf{-}\text{c3}$ gana y $\text{c2}\textbf{x}\text{b3}$
    pierde. Aquí el horizonte caía en medio de un intercambio, y eso sí lo
    arregla la quietud.
-3. **Los jaques no son capturas**: la quietud no los sigue, y el corte
-   puede caer a mitad de la serie. Buscar dos jugadas más **no
-   necesariamente** basta: si le queda un jaque, el programa lo da y la
-   pérdida vuelve a quedar detrás. Es el caso clásico: el propio programa
-   aplaza la pérdida. Mientras haya jugadas para aplazar, ninguna
-   profundidad fija alcanza.
+3. **Los jaques sin captura quedan fuera de esta versión**, que solo sigue
+   capturas, y el corte puede caer a mitad de la serie. La de los
+   programas de ajedrez puede seguir también jaques y otras jugadas
+   forzadas (Deep Blue lo hacía), y aun así no quita todo efecto
+   horizonte.
+
+   Buscar dos jugadas más **no necesariamente** basta: si le
+   queda un jaque, el programa lo da y la pérdida vuelve a quedar detrás.
+   Es el caso clásico: el propio programa aplaza la pérdida. Mientras le
+   queden jugadas para aplazar y el corte no llegue a los finales, subir
+   la profundidad solo mueve el horizonte.
 :::
 
 **Punto de control:** deberías poder señalar qué jugada queda detrás del
@@ -335,7 +369,7 @@ Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-cor
 |---|---|
 | Hasta dónde mira | $d$ jugadas, y después del corte solo capturas, hasta posiciones quietas |
 | ¿Genera todo el árbol? | No: arriba del corte, todo; debajo, solo las capturas |
-| ¿Garantiza $V$? | No, salvo si llega a los finales. Da el valor con quietud, sin el engaño de los intercambios a medias |
+| ¿Garantiza $V$? | No, salvo si llega a los finales antes de cortar. Da el valor con quietud: corrige muchos intercambios a medias, no todos |
 | Con qué estima | Con $\mathrm{EVAL}$: en las posiciones quietas y, como valor de quedarse, también en las que tienen capturas |
 | ¿Quién tira dados? | Nadie |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con quietud. Interrumpida, como minimax con corte, no garantiza nada |
@@ -351,13 +385,13 @@ Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-cor
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | **Búsqueda de quietud (estás aquí)** | **Valor con quietud; no garantiza $V$, salvo si llega a los finales** |
+> | **Búsqueda de quietud (estás aquí)** | **Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar** |
 >
 > **Lo que viene.**
 >
 > - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
 > - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
-> - **MCTS con UCT**: lo mismo, pero mandando más partidas a las jugadas que van mejor, sin dejar de probar las otras. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 
@@ -367,9 +401,9 @@ Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-cor
 - **Dos formas.** La simple: una respuesta queda detrás. La clásica, que
   nombró Berliner en 1973: el programa aplaza una pérdida inevitable hasta
   sacarla del horizonte.
-- **Subir la profundidad mueve el horizonte, no lo quita.** A profundidad
-  2, $\text{d2}\textbf{-}\text{d3}$ vale 1 y la victoria, 100, sigue
-  detrás.
+- **Subir la profundidad mueve el horizonte, no lo quita**, mientras el
+  corte no llegue a todos los finales. A profundidad 2,
+  $\text{d2}\textbf{-}\text{d3}$ vale 1 y la victoria, 100, sigue detrás.
 - **La búsqueda de quietud** sigue solo las capturas desde los nodos de
   corte. A profundidad 1 da ${-10}$, 2 y 0, y elige
   $\text{d2}\textbf{-}\text{d3}$, la jugada que gana. No ve lo que no es

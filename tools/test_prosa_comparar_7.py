@@ -51,6 +51,31 @@ def test_comparar_7_el_arbol_t_pm():
     uno = _seccion(texto, 1)
     hojas = _hojas()
     empates = [n for n, u in hojas.items() if u == 0]
+    # Brief r2 W3-3: por qué T no basta. Sus hojas ya eran finales; lo que
+    # falta es ganar/empatar/perder, capturas, y que los errores se separen:
+    # en T el corte a d=1, los dados de la clase 2 (I, C y D) y Monte Carlo
+    # plano eligen todos der. r3: con dados, der es la óptima de ESE juego
+    # (no falla), y Monte Carlo plano finito puede elegir otra: lo que elige
+    # der es su límite.
+    assert "las hojas son finales" not in uno
+    assert "una simulación no sabría" not in uno
+    assert "fallan igual" not in uno
+    m = re.search(r"En T, el corte a d=1 y el límite de Monte Carlo plano \(con simulaciones sin "
+                  r"fin\) eligen (\w+), la misma jugada equivocada; con los dados de la clase 2, "
+                  r"(\w+) es la óptima\.", uno)
+    t = j.ARBOL_T
+    assert m[1] == m[2] == j.traza_decidir(t, profundidad=1, evaluar=j.EVAL_T)["jugada"] \
+        == j.expectiminimax_tpm(("I", "C", "D"), t)[0] == j.todos_al_azar_tpm(t)[0] \
+        != j.minimax_tpm(t)[0]
+    assert j.mc_plano_tpm(5, 0, t)[0] != m[1]  # finito, puede elegir otra
+    # r3: T± no es «T con una idea cambiada» con la misma forma: D gana un
+    # hijo, las hojas cambian de nombre, ix captura y hay EVAL.
+    assert "T± es T con una idea cambiada" not in uno and "La forma se queda" not in uno
+    assert re.search(r"T± parte de T: conserva sus nodos internos y las jugadas de la raíz, y "
+                     r"cambia estos datos y una rama:", uno)
+    m = re.search(rf"Cada hoja vale ({_FR}) si gana MAX, ({_FR}) si gana MIN y ({_FR}) si es "
+                  r"empate\.", uno)
+    assert {_fr(x) for x in m.groups()} == set(_hojas().values()) == {-1, 0, 1}
     m = re.search(r"Hay un solo empate, (\w+)\.", uno)
     assert [m[1]] == empates
     capturas = [j.nombres_hojas_tpm()[c] for c in j.CAPTURAS_TPM]
@@ -264,6 +289,10 @@ def test_comparar_7_uct():
     r2 = j.reparto_uct_tpm(j.C_TEORIA)
     m = re.search(r"con c=2\\sqrt2, .*?también llegan todas, más tarde: la mediana es (\d+)", seis)
     assert r2["nunca"] == 0 and int(m[1]) == r2["mediana"] > r["mediana"]
+    # Con empates, G/N no es (U+1)/2 (brief r2 W3-2).
+    assert ("En la escala (U+1)/2, de 0 a 1 (victorias más medio empate, entre N; sin empates "
+            "es G/N), se escribe c=\\sqrt2") in seis
+    assert "En la escala G/N" not in seis
     resp = _limpio(_respuesta(texto, "jue-c3-cmp-ej-uct"))
     vuelta = int(re.search(r"al terminar la vuelta (\d+)",
                            _limpio(_bloque(texto, "jue-c3-cmp-ej-uct")))[1])
@@ -337,10 +366,17 @@ def test_comparar_7_la_tabla_de_resultados():
         assert _fr(valor) == e["valor"], f
         assert int(_c(f[2])) == e["nodos"], f
     nota = _limpio(texto.split("jue-c3-cmp-resultados", 1)[1].split("Tres filas", 1)[0])
-    m = re.search(r"la semilla (\d+): (\d+) simulaciones por jugada, y (\d+) vueltas con c=(\d+)",
-                  nota)
-    assert [int(x) for x in m.groups()] == [j.SEMILLA_TPM, j.SIMS_MC_TPM[0],
-                                            j.VUELTAS_PAGINA_TPM, 1]
+    # Brief r2 W3-4: los nodos no miden lo mismo en todas las filas; las de
+    # simulación dicen también cuántas partidas jugaron (tabla_t_pm()).
+    assert "Nodos: no miden el mismo trabajo en todas las filas." in nota
+    assert "la iterativa suma sus tres búsquedas, con repeticiones" in nota
+    assert "en UCT, los que quedaron en su árbol" in nota
+    m = re.search(r"la semilla (\d+): Monte Carlo plano jugó (\d+) simulaciones, (\d+) por "
+                  r"jugada; UCT, (\d+), una por vuelta con c=(\d+)", nota)
+    sims = {_familia(e["algoritmo"]): e["simulaciones"] for e in esperadas}
+    assert [int(x) for x in m.groups()] == [j.SEMILLA_TPM, sims["Monte Carlo plano"],
+                                            j.SIMS_MC_TPM[0], sims["UCT"], 1]
+    assert sims["UCT"] == j.VUELTAS_PAGINA_TPM
     aciertan = sum(e["jugada"] == j.minimax_tpm()[0] for e in esperadas)
     m = re.search(r"Tres filas no dicen centro.*?Los otros (\w+) aciertan",
                   _seccion(texto + "\n## ", 7))

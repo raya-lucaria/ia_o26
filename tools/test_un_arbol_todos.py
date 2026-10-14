@@ -210,6 +210,7 @@ def _norm(s):
 ABREVIA = {
     "Sí, el V del juego con dado": "Sí, el del juego con dado",
     "No, salvo si llega a los finales": "No, salvo finales",
+    "No, salvo si llega a los finales antes de cortar": "No, salvo finales antes del corte",
     "No (con tiempo sin límite converge a él, con cualquier c > 0)": "No; converge",
 }
 
@@ -222,7 +223,7 @@ CASOS = [
     ("corte-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
     ("corte-d2", "centro", "10", "11 de 15", "No, salvo si llega a los finales", "no"),
     ("corte-d3", "centro", "0", "15 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales en todas sus ramas"),
-    ("quietud", "centro", "20", "5 de 15", "No, salvo si llega a los finales", "no"),
+    ("quietud", "centro", "20", "5 de 15", "No, salvo si llega a los finales antes de cortar", "no"),
     ("iterativa-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
     ("iterativa-d3", "centro", "0", "12 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales en todas las ramas que no podó"),
     ("mc-5", "der", "3/5", "15 de 15", "No", "no"),
@@ -412,8 +413,27 @@ def test_minimax_y_alfa_beta_pintan_el_valor_de_cada_nodo_interno(datos):
 def test_mc_plano_cuenta_los_nodos_de_cada_corrida(k, datos):
     t = {i: _norm(v) for i, v in _leer(f"mc-{k}").por_id.items()}
     c = datos["algoritmos"]["Monte Carlo plano"]["corridas"][str(k)]
-    assert t["t-nodos"] == f"{c['nodos']} de 15"
+    sims = next(f["simulaciones"] for f in datos["tabla"]
+                if f["algoritmo"] == f"Monte Carlo plano, {k} por jugada")
+    assert sims == k * len(j.JUGADAS_RAIZ)
+    assert t["t-nodos"] == f"{c['nodos']} de 15 distintos, tocados por {sims} simulaciones"
     assert "registr" not in _dom(f"mc-{k}")
+
+
+@pytest.mark.parametrize("t", [18, 40])
+def test_uct_cuenta_los_nodos_de_su_arbol_y_sus_simulaciones(t):
+    """Brief r2 W3-4: los nodos de UCT son los guardados en el árbol, no los
+    generados de una búsqueda; la tarjeta lo rotula y da las simulaciones."""
+    u = j.uct_tpm(1, t, j.SEMILLA_TPM)
+    tx = _norm(_leer(f"uct-{t}").por_id["t-nodos"])
+    assert tx == f"{len(u['N'])} de 15 en el árbol, tras {u['N'][()]} simulaciones"
+    assert u["N"][()] == t
+
+
+def test_la_nota_de_la_tabla_dice_que_los_nodos_no_miden_lo_mismo(html):
+    nota = _norm(re.sub(r"<[^>]+>", "", html.split('id="tabla"', 1)[1].split("</p>", 1)[0]))
+    assert "Nodos: no miden el mismo trabajo en todas las filas." in nota
+    assert "en UCT, los que quedaron en su árbol" in nota
 
 
 # vuelta, jugada, ū de la jugada (de juegos.uct_tpm con t vueltas)

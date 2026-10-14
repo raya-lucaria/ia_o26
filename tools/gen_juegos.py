@@ -3430,7 +3430,8 @@ def jue_c3_eligiendo_x():
             f"cada una de las {n} corridas. En N(s) = 10, 100, 1 000 y 10 000: "
             f"{_cifras(t, _pct_f)}. Siempre el mejor promedio se aplana en "
             f"{_pct_f(F(n - atoradas, n))}, que aquí sí son {n - atoradas} de {n} corridas: "
-            f"las {atoradas} atoradas nunca eligen x y las otras {n - atoradas} siempre. "
+            f"entre las vueltas 100 y {_num(fin)}, las {atoradas} atoradas no eligen x "
+            f"y las otras {n - atoradas} sí. "
             "A veces al azar se queda cerca de 0.9 + 0.1/3 = "
             f"{_pct_f(tope)}. Las dos UCB suben hacia 100 %.")
     out = []
@@ -3440,9 +3441,12 @@ def jue_c3_eligiendo_x():
     _curvas_reglas(out, puntos_eligiendo(pl))
     y_pie = _leyenda_reglas(out, y_pie + 18, {r: _pct_f(d[fin]) for r, d in t.items()})
     # Sin bono, y solo ahi, el porcentaje de elecciones es tambien el de
-    # corridas: las atoradas nunca eligen x y las demas siempre.
+    # corridas: en las ventanas desde N(s) = 100, las atoradas no eligen x y
+    # las demas siempre (antes, alguna atorada aun probo x: la semilla 20
+    # hasta la vuelta 20).
     nota = [f"Sin bono, {_pct_f(F(n - atoradas, n))} son justo {n - atoradas} corridas",
-            f"de {n}: las {atoradas} atoradas nunca eligen x.",
+            f"de {n}: entre las vueltas 100 y {_num(fin)},",
+            f"las {atoradas} atoradas no eligen x.",
             "A veces al azar se queda cerca de",
             f"0.9 + 0.1/3 = {_pct_f(tope)}."]
     out.append(_nota_ucb(y_pie + 28, nota))

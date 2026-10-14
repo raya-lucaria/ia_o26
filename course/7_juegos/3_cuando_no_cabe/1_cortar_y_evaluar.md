@@ -50,9 +50,9 @@ más:
 - **Cambian $S$ y $s_0$.** Un estado sigue siendo un par (tablero, turno),
   ahora con 16 casillas. Al empezar hay cuatro peones por lado y mueve
   Blancas.
-- **No cambian $S_F$, $\mathrm{Pl}$, $A$, $T$ ni $U$**: se llega a la fila
-  del rival, se captura todo o se deja al rival sin jugada; $\mathrm{Pl}$
-  lee el turno guardado; ${U=\pm1}$.
+- **Las reglas que definen $S_F$, $\mathrm{Pl}$, $A$, $T$ y $U$ no
+  cambian**: se llega a la fila del rival, se captura todo o se deja al
+  rival sin jugada; $\mathrm{Pl}$ lee el turno guardado; ${U=\pm1}$.
 
 Hay un detalle que la clase 1 dejó anunciado. En el 3×3, el turno se
 podía deducir del tablero, aunque lo guardábamos por principio. **En el 4×4

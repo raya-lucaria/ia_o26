@@ -47,7 +47,13 @@ def test_9_la_tabla_de_cuando_conviene_con_los_juegos_corregidos():
     assert list(cuando) == orden  # el orden del curso
     # El mapa pregunta por los dados dentro de «¿cabe?»: la tabla dice lo mismo.
     assert cuando["Expectiminimax"] == "Cabe y hay dados"
-    assert cuando["Minimax"] == cuando["Alfa-beta"] == "Cabe y no hay dados"
+    assert cuando["Alfa-beta"] == "Cabe y no hay dados"
+    # r3: con «cabe» = la búsqueda exacta CON poda termina, minimax pide más:
+    # recorrer todo el árbol, sin poda.
+    # La celda va corta (cinco palabras, abajo); la prosa de arriba lo dice.
+    assert cuando["Minimax"] == "Cabe sin poda, sin dados"
+    assert "Minimax pide más: que quepa recorrer todo el árbol, sin poda." in \
+        " ".join(texto.split())
     costo = _tabla(texto, "jue-c3-cmp-cuesta")
     assert [_c(x) for x in costo[0]] == ["Algoritmo", "Le cuesta"]
     assert [_c(f[0]) for f in costo[1:]] == orden
@@ -140,6 +146,14 @@ def test_9_el_mapa_en_la_posicion_de_la_clase():
 
 def test_9_el_mapa_pregunta_por_los_dados_dentro_de_cabe():
     dos = _seccion(_texto(), 2)
+    # «Cabe» es que la búsqueda exacta termine, no que se recorra todo el
+    # árbol (brief r2 W3-9); y el mapa es para las versiones de la unidad:
+    # MCTS también puede usar una evaluación (brief r2 W3-10).
+    assert ("«Cabe» quiere decir que una búsqueda exacta (alfa-beta, con tablas de "
+            "transposición) termina en el tiempo que hay, aunque no recorra todo el "
+            "árbol.") in _seccion(_texto(), 1)
+    assert ("Las ramas 3 y 4 eligen entre las versiones de esta unidad. Fuera de ella, MCTS "
+            "también puede usar una evaluación: AlphaGo valoraba sus hojas con una red") in dos
     assert "Sí, sin dados: alfa-beta" in dos and "Sí, con dados: expectiminimax" in dos
     assert "No cabe: ¿hay dados?" in dos and "nada más importa" not in dos
     assert "No tiene dados, y en la computadora sí cabe, así que es la rama 1" in dos
@@ -178,6 +192,17 @@ def test_9_fronteras_cuantas_partidas():
     assert int(m[3]) == len(str(math.factorial(int(m[2]))))
     assert ("Con tiempo sin límite, y cualquier c>0, tendería a la de minimax; 10 segundos no "
             "son tiempo sin límite.") in resp
+    # Con tabla de transposición no se recorren órdenes sino posiciones; aun
+    # así no cabe (brief r2 W3-9).
+    m = re.search(r"Aun contando cada posición una sola vez, como hace una tabla de "
+                  r"transposición, son un número de (\d+) cifras", resp)
+    assert m and int(m[1]) == len(str(j.posiciones_fronteras(11)))
+    # «No se tiene una EVAL confiable», no «no hay EVAL buena» (brief r2 W3-12).
+    assert ("No se tiene una EVAL confiable: la obvia, el grupo más grande, engaña según "
+            "quienes lo juegan, y no hay otra.") in resp
+    assert "No hay EVAL buena" not in resp
+    assert "Nadie tiene otra estimación a la mano." in _limpio(
+        _bloque(_texto(), "jue-c3-cmp-ej-fronteras"))
     m = re.search(r"Son (\d+) jugadas: (\d+)!= ([\d ]+) partidas", resp)
     assert m and int(m[1]) == int(m[2]) == 3 * 3
     assert _numero(m[3]) == math.factorial(9)
@@ -298,9 +323,16 @@ def test_9_la_tabla_de_no_suma_cero():
     for f in filas[1:]:
         assert len(f) == 3 and all(len(_c(x).split()) <= 4 for x in f), f
     assert "U_1" not in texto and "U_2" not in texto
-    # PUCT ya venía de AlphaGo (registro, fila 28); Zero y AlphaZero solo quitan la simulación.
-    assert "ya no simulan: solo la red (la selección con PUCT" in _limpio(texto)
+    # PUCT ya venía de AlphaGo (registro, fila 28); Zero y AlphaZero quitan
+    # las partidas simuladas hasta el final, no las vueltas de MCTS (brief r2 W3-11).
+    assert ("AlphaGo Zero (2017) y AlphaZero ya no juegan partidas simuladas hasta el final: "
+            "cada vuelta de MCTS valora la hoja con la red (la selección con PUCT") in _limpio(texto)
+    assert "ya no simulan" not in _limpio(texto)
     assert "ya venía de AlphaGo)" in _limpio(texto)
+    # max^n necesita una regla de desempate (brief r2 W3-13).
+    assert ("También pide una regla de desempate: si un rival tiene dos jugadas que le dan lo "
+            "mismo a él pero no a ti, el resultado depende de cuál supongas que elige.") in \
+        _limpio(texto.split("## 3 ·")[1].split("## 4 ·")[0])
     # MCTS no juega todo al azar: por puntaje en el árbol, al azar debajo.
     traes = _limpio(texto.split("Lo que traes de")[1].split("T±, en tres líneas")[0].replace("\n> ", "\n"))
     assert ("en Monte Carlo plano los dos juegan al azar; en MCTS, eligen por puntaje dentro "

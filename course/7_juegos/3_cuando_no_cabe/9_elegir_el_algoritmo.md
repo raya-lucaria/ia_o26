@@ -53,12 +53,14 @@ cómo termine la partida. **Lo que el juego ofrece decide el algoritmo.**
 
 En las dos tablas, cada fila es un algoritmo de la unidad. «Conviene
 cuando» dice qué tiene que ofrecer el juego; «Le cuesta», qué paga a cambio.
-«Cabe» quiere decir que el árbol entero se recorre en el tiempo que hay.
+«Cabe» quiere decir que una búsqueda exacta (alfa-beta, con tablas de
+transposición) termina en el tiempo que hay, aunque no recorra todo el
+árbol. Minimax pide más: que quepa recorrer todo el árbol, sin poda.
 
 ::: table {#jue-c3-cmp-cuando title="Cuándo conviene cada algoritmo"}
 | Algoritmo | Conviene cuando |
 |---|---|
-| Minimax | Cabe y no hay dados |
+| Minimax | Cabe sin poda, sin dados |
 | Expectiminimax | Cabe y hay dados |
 | Alfa-beta | Cabe y no hay dados |
 | Corte, quietud e iterativa | No cabe; hay $\mathrm{EVAL}$ buena |
@@ -145,7 +147,8 @@ pregunta, la que decide el método.
 El mapa, en orden:
 
 1. **¿Cabe el árbol en el tiempo que hay?** Sí, sin dados: alfa-beta. Da
-   $V$ y la jugada de minimax, con menos nodos que minimax. Sí, con dados:
+   $V$ y la jugada de minimax, y nunca genera más nodos que minimax; con
+   buen orden, muchos menos. Sí, con dados:
    expectiminimax, que da el $V$ del juego con dado.
 2. **No cabe: ¿hay dados?** Sí, con una $\mathrm{EVAL}$: corte con nodos
    de azar, que se promedian, como TD-Gammon. Sí, sin $\mathrm{EVAL}$: la
@@ -158,6 +161,10 @@ El mapa, en orden:
 
 Monte Carlo plano es la versión sin árbol de la rama 4: más simple, y puede
 elegir mal.
+
+Las ramas 3 y 4 eligen entre las versiones de esta unidad. Fuera de ella,
+MCTS también puede usar una evaluación: AlphaGo valoraba sus hojas con una
+red, como verás en «para ubicar».
 
 **En T±.** Tiene 15 nodos y no tiene dados: cabe, rama 1. Alfa-beta juega centro con
 ${V=0}$ y genera 12. Los demás habrían pagado por nada, o algo peor: el corte
@@ -257,7 +264,8 @@ más de dos jugadores o el juego no es de suma cero. Una línea cada uno; no se 
   las victorias y derrotas ya demostradas. No demuestra empates.
 - **MCTS con evaluación.** AlphaGo (2016) valora cada hoja mezclando una red
   de valor con una simulación; un peso, λ, decide cuánto cuenta la
-  simulación. AlphaGo Zero (2017) y AlphaZero ya no simulan: solo la red
+  simulación. AlphaGo Zero (2017) y AlphaZero ya no juegan partidas
+  simuladas hasta el final: cada vuelta de MCTS valora la hoja con la red
   (la selección con PUCT, un puntaje que suma lo que la red sugiere, ya
   venía de AlphaGo).
 
@@ -274,7 +282,11 @@ tú, eliges por el tuyo; lo que cambia es qué se supone de los rivales:
 :::
 
 $\max^n$ es de Luckhardt e Irani (1986), y Korf (1991) mostró que casi no
-poda. El paranoico (Sturtevant y Korf, 2000) vuelve a dos bandos, a costa
+poda. También pide una regla de desempate: si un rival tiene dos jugadas
+que le dan lo mismo a él pero no a ti, el resultado depende de cuál
+supongas que elige.
+
+El paranoico (Sturtevant y Korf, 2000) vuelve a dos bandos, a costa
 de un supuesto falso. MCTS con varios jugadores (Sturtevant, 2008) guarda un
 promedio por jugador en cada nodo; lo probó, entre otros, en damas chinas.
 
@@ -314,7 +326,7 @@ su color unidas por un lado. Si los dos grupos miden igual, es empate.
 Simplificaciones: no hay dados ni cartas, los dos ven el tablero, y cada
 jugada tiene 10 segundos de reloj. Los que lo juegan dicen que contar el
 grupo más grande a mitad de partida engaña: un grupo chico bien puesto
-termina uniendo dos grandes.
+termina uniendo dos grandes. Nadie tiene otra estimación a la mano.
 
 Lo nuevo frente a la página: no hay tabla ni árbol dados; el diagnóstico es
 tuyo, y una variante tiene tres jugadores.
@@ -342,12 +354,16 @@ el enunciado no te da? Con tres jugadores, ¿quién haría de MIN?
 ::: answer {#jue-c3-cmp-resp-fronteras of="jue-c3-cmp-ej-fronteras" title="Respuesta · Simular, porque no hay con qué estimar"}
 **1. Las cinco respuestas.** No cabe: hay 121 jugadas y la partida siempre
 las juega todas, así que hay ${121!}$ órdenes posibles, un número de 201
-cifras. No hay dados. No hay $\mathrm{EVAL}$ buena: la obvia, el grupo más
-grande, engaña según quienes lo juegan. Hay reloj: 10 segundos. Y sí es
+cifras. Aun contando cada posición una sola vez, como hace una tabla de
+transposición, son un número de 57 cifras.
+
+No hay dados. No se tiene una
+$\mathrm{EVAL}$ confiable: la obvia, el grupo más grande, engaña según
+quienes lo juegan, y no hay otra. Hay reloj: 10 segundos. Y sí es
 suma cero entre dos: ${U=+1}$, ${-1}$ o 0, y lo que gana uno lo pierde el
 otro.
 
-**2. El mapa.** No cabe, no hay dados, no hay $\mathrm{EVAL}$: **rama 4,
+**2. El mapa.** No cabe, no hay dados, no se tiene $\mathrm{EVAL}$: **rama 4,
 MCTS con UCT**. Simular es fácil: se llena al azar lo que queda y se cuentan
 los grupos. Toda simulación acaba, a lo más en 121 jugadas. Es el caso de
 Go y Hex en la tabla.
@@ -362,8 +378,8 @@ Cabe: rama 1, alfa-beta, y la jugada sale con su $V$ exacto. El tamaño
 cambia la primera respuesta del mapa, y con ella todo lo demás.
 
 **5. Tres jugadores.** Se rompe **dos jugadores**: no hay un solo MIN, y
-cada final necesita un número por jugador. Como no hay $\mathrm{EVAL}$
-buena, lo cercano de la tabla es **MCTS con varios jugadores**. $\max^n$ y
+cada final necesita un número por jugador. Como no se tiene una
+$\mathrm{EVAL}$ confiable, lo cercano de la tabla es **MCTS con varios jugadores**. $\max^n$ y
 el paranoico llegan a los finales si el árbol cabe; aquí tendrían que
 cortar y estimar con una $\mathrm{EVAL}$, y no hay con qué.
 :::
