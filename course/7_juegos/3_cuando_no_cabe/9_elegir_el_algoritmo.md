@@ -26,8 +26,9 @@ Al terminar tendrás:
 > Tres números distintos. $V$ es el valor exacto del juego; con dados,
 > promedia el azar del juego con jugadores óptimos. El valor con corte
 > estima con $\mathrm{EVAL}$ donde se corta. $\bar u$ promedia
-> simulaciones en las que los dos juegan al azar. Solo $V$ es el valor del
-> juego.
+> simulaciones: en Monte Carlo plano los dos juegan al azar; en MCTS,
+> eligen por puntaje dentro del árbol y al azar solo debajo. Solo $V$ es
+> el valor del juego.
 
 > **T±, en tres líneas.** La raíz R es de MAX, con izq, centro y der hacia
 > I, C y D, de MIN. Los finales valen ${+1}$, ${-1}$ y hay un solo empate,
@@ -71,7 +72,8 @@ Dónde se usó cada uno, en el mismo orden:
 - **Expectiminimax:** ningún juego de dados famoso cabe; en la clase, el
   ejemplo es T± con un dado en D. El backgammon no cabe: TD-Gammon (1992)
   miraba dos jugadas, promediaba los dados y estimaba con una red.
-- **Alfa-beta:** Conecta 4, resuelto en 1988.
+- **Alfa-beta:** Conecta 4, resuelto en 1988 con búsqueda y reglas; hoy
+  alfa-beta con tablas de transposición lo resuelve sola.
 - **Corte, quietud e iterativa:** ajedrez (Deep Blue, 1997) y damas
   (Chinook, con bases de finales).
 - **Monte Carlo plano:** Go, de 1993 a 2005.
@@ -89,7 +91,8 @@ Dónde se usó cada uno, en el mismo orden:
 :::
 
 Monte Carlo plano promedia como si los dos jugaran al azar, y por eso puede
-elegir mal. La iterativa y MCTS son las que se interrumpen con el reloj.
+elegir mal. La iterativa, Monte Carlo plano y MCTS son las que se
+interrumpen con el reloj.
 
 Tres matices que las tablas no alcanzan a decir:
 
@@ -100,9 +103,10 @@ Tres matices que las tablas no alcanzan a decir:
 - **La quietud arregla los intercambios a medias, no todo.** Lo que no es
   captura sigue detrás del horizonte, como viste en
   [[mas-alla-del-horizonte|Más allá del horizonte]].
-- **UCT tiende a la jugada de minimax con una $c$ suficientemente grande y
-  tiempo sin límite.** La ${c=1}$ del curso queda debajo de esa hipótesis:
-  funcionó, pero sin la garantía. Lo viste en
+- **UCT tiende a la jugada de minimax con tiempo sin límite, con
+  cualquier ${c>0}$ en un árbol finito.** Kocsis y Szepesvári acotaron
+  qué tan rápido, con una $c$ grande; la ${c=1}$ del curso no tiene esa
+  cota, aunque aquí funcionó. De dónde sale la cota de UCB1 lo viste en
   [[de-donde-sale-el-bono|De dónde sale el bono]].
 
 ::: exercise {#jue-c3-cmp-ej-tdgammon title="Ubica a TD-Gammon en la tabla"}
@@ -219,7 +223,9 @@ Y por lo mismo vale la regla de dejar de buscar de
 hoja, MIN pararía al ver ${\text{ix}=-1}$ porque el ${-1}$ de MAX es el máximo de MIN.
 
 Si cada uno tuviera su propio pago, un final malo para MAX no le diría a MIN que deje de
-buscar: puede no ser el mejor para MIN, y tendría que seguir mirando.
+buscar: puede no ser el mejor para MIN, y tendría que seguir mirando. Por
+ejemplo, un final que para MAX vale ${-1}$ pero para MIN solo 0, mientras
+otra hoja le da ${+1}$ a MIN: MIN no se detiene en ese final.
 
 **Con tres jugadores eso se rompe.** Un final en el que tú pierdes puede ser
 victoria de B o de C, y a B le importa cuál. Un número ya no basta: cada
@@ -251,8 +257,9 @@ más de dos jugadores o el juego no es de suma cero. Una línea cada uno; no se 
   las victorias y derrotas ya demostradas. No demuestra empates.
 - **MCTS con evaluación.** AlphaGo (2016) valora cada hoja mezclando una red
   de valor con una simulación; un peso, λ, decide cuánto cuenta la
-  simulación. AlphaGo Zero (2017) y AlphaZero ya no simulan: solo la red,
-  y seleccionan con PUCT, un puntaje que suma lo que la red sugiere.
+  simulación. AlphaGo Zero (2017) y AlphaZero ya no simulan: solo la red
+  (la selección con PUCT, un puntaje que suma lo que la red sugiere, ya
+  venía de AlphaGo).
 
 Con tres o más jugadores, o si no es suma cero, cada final lleva un número
 por jugador. Cuando mueves
@@ -347,8 +354,8 @@ Go y Hex en la tabla.
 
 **3. Lo que entrega.** Al acabarse los 10 segundos, la jugada **más
 simulada**. La respalda $\bar u$, un promedio de simulaciones, no $V$. Con
-tiempo sin límite y una $c$ suficientemente grande tendería a la de
-minimax; 10 segundos no son tiempo sin límite.
+tiempo sin límite, y cualquier ${c>0}$, tendería a la de minimax; 10
+segundos no son tiempo sin límite.
 
 **4. Tablero de 3×3.** Son 9 jugadas: ${9!=}$ 362 880 partidas.
 Cabe: rama 1, alfa-beta, y la jugada sale con su $V$ exacto. El tamaño
@@ -375,7 +382,7 @@ reconocer cuándo un juego rompe los supuestos de la unidad.
   ${1/3}$.
 - **Qué número da cada uno.** $V$ es el valor del juego. El valor con corte
   y $\bar u$ lo estiman, cada uno con su supuesto: $\mathrm{EVAL}$ donde se
-  corta, o los dos jugando al azar.
+  corta, o los dos jugando al azar (en MCTS, solo debajo del árbol).
 - **Cuándo conviene.** Si cabe, alfa-beta, o expectiminimax si hay dados:
   gato, Conecta 4. Si no cabe y hay una $\mathrm{EVAL}$ buena, corte,
   quietud e iterativa: Deep Blue, Chinook. Si no la hay, MCTS con UCT:

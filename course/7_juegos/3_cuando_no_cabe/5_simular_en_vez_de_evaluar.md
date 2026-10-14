@@ -2,9 +2,9 @@
 id: simular-en-vez-de-evaluar
 title: Simular en vez de evaluar
 nav_title: Simular en vez de evaluar
-summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando. Es la búsqueda de árbol Monte Carlo, la base de AlphaGo."
+summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando, que es Monte Carlo plano. La búsqueda de árbol Monte Carlo, la base de AlphaGo, construye además un árbol: dentro de él elige por puntaje, y solo debajo simula al azar."
 status: ready
-estimated_time: 29m
+estimated_time: 30m
 tags: [juegos, busqueda-adversarial, monte-carlo]
 ---
 
@@ -60,6 +60,10 @@ escribir ninguna regla sobre el juego?**
 
 Jugando. Desde esa posición, juega muchas partidas eligiendo cada jugada al
 azar, hasta el final. Anota la $U$ de cada una y promedia.
+
+Esta idea se llama **Monte Carlo plano**: simula desde cada jugada, sin
+construir ningún árbol. Las secciones 1 a 3 son eso. Desde la sección 4,
+MCTS lo mejora construyendo un árbol.
 
 ::: definition {#jue-c3-simulacion title="Simulación"}
 Una **simulación** desde un estado $s$ es una partida que empieza en $s$ y
@@ -183,10 +187,10 @@ reglas?**
 
 Nada. Esa es la diferencia con [[cortar-y-evaluar|cortar y evaluar]]:
 
-::: table {#jue-c3-eval-contra-mcts title="Cortar y evaluar contra Monte Carlo"}
-| | Cortar y evaluar | Monte Carlo |
+::: table {#jue-c3-eval-contra-mcts title="Cortar y evaluar contra Monte Carlo plano"}
+| | Cortar y evaluar | Monte Carlo plano |
 |---|---|---|
-| Pide | $\mathrm{EVAL}$ a mano | Solo $A$ y $T$ |
+| Pide | $\mathrm{EVAL}$ a mano | Solo las reglas: $A$, $T$, $S_F$ y $U$ |
 | Para | En $d$ | En los finales |
 | Da | Minimax de $\mathrm{EVAL}$ | Promedio de $U$ |
 | Mejora con | Más $d$, mejor $\mathrm{EVAL}$ | Más simulaciones |
@@ -209,14 +213,15 @@ persona pensando en las reglas viejas?
 :::
 
 ::: answer {#jue-c3-resp-cambio of="jue-c3-ej-cambio"}
-1. **Monte Carlo.** Solo usa $A$ y $T$, y esas ya son las reglas nuevas:
+1. **Monte Carlo plano.** Solo usa las reglas ($A$, $T$, $S_F$ y $U$), y esas
+   ya son las nuevas:
    las simulaciones juegan el juego nuevo sin que nadie las toque.
 2. **La $\mathrm{EVAL}$ de cortar y evaluar.** Se escribió a mano para el
    juego viejo: con peones más rápidos, cuánto vale avanzar puede cambiar.
    Minimax y el corte no cambian; la estimación sí hay que revisarla.
 :::
 
-Monte Carlo solo pide las reglas. Pero, tal como va, reparte las
+Monte Carlo plano solo pide las reglas. Pero, tal como va, reparte las
 simulaciones a ciegas y deja que el rival juegue al azar. MCTS, en
 las dos secciones que siguen, ataca las dos cosas.
 
@@ -259,8 +264,8 @@ Cada vuelta tiene cuatro pasos:
    está en el árbol. Por ahora, MAX baja al hijo de mayor $\bar u$ y MIN al
    de menor; la sección 5 cambia esta regla.
 2. **Expansión.** Agrega al árbol un hijo nuevo bajo el nodo donde paró la
-   selección: $T(s,a)$, con $s$ ese nodo y $a$ una de las jugadas que
-   faltaban.
+   selección: $T(s,a)$, con $s$ ese nodo y $a$ la primera de las jugadas
+   que faltaban, en un orden fijo.
 3. **Simulación.** Desde el hijo nuevo, juega una partida al azar hasta un
    final y anota su $U$. Es la primera simulación del hijo: cada nodo nace
    con la suya.
@@ -372,10 +377,11 @@ para MAX, arriba para MIN). Por eso se encoge al crecer $N(s')$. Crece
 despacio con ${\ln N(s)}$: conforme avanza la búsqueda, se pide más
 confianza antes de dar una jugada por mala. Y $c$ fija cuánta.
 
-La página siguiente lo deriva: ${c=\sqrt{2k}}$ si se tolera una
-probabilidad $\delta$ de subestimar que baja como ${\delta=N(s)^{-k}}$,
-con ${k>0}$. Nuestra ${c=1}$ pide ${\delta=1/\sqrt{N(s)}}$: 10 % con
-${N(s)=100}$.
+La página siguiente dice de dónde sale $c$. En corto: $\delta$ es la
+probabilidad de que el promedio quede por debajo de su promedio límite en
+más que el bono. Esa $\delta$ baja conforme crece $N(s)$, y $c$ fija qué
+tan rápido. Nuestra ${c=1}$ pide
+${\delta=1/\sqrt{N(s)}}$: 10 % con ${N(s)=100}$.
 
 Muchos textos usan la fracción de victorias ${G/N}$ en vez de $\bar u$.
 Como ${\bar u=2\,G/N-1}$, el puntaje es
@@ -443,8 +449,10 @@ La que estima lo que no se alcanza a calcular:
 - **En marzo de 2016, AlphaGo**, de DeepMind, venció 4 a 1 a Lee Sedol, uno
   de los mejores jugadores de Go del mundo. Combinaba MCTS con **redes
   neuronales**: una sugería qué jugadas explorar y otra estimaba cuánto
-  valía una posición.
-- **AlphaGo Zero y AlphaZero, en 2017, quitaron las simulaciones al azar:**
+  valía una posición. Al valorar un nodo nuevo, AlphaGo mezclaba esa
+  estimación, mitad y mitad (${\lambda=0.5}$), con el resultado de una
+  simulación rápida guiada por una política rápida y sencilla.
+- **AlphaGo Zero y AlphaZero, en 2017, quitaron las simulaciones:**
   una red que aprende jugando contra sí misma sugiere jugadas y valora
   posiciones.
 
@@ -481,7 +489,7 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 |---|---|
 | Hasta dónde mira | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
 | ¿Genera todo el árbol? | No: a lo más un nodo nuevo por vuelta, más su partida |
-| ¿Garantiza $V$? | No. Con $c$ suficientemente grande y tiempo sin límite, converge a él |
+| ¿Garantiza $V$? | No. Con tiempo sin límite converge a él, con cualquier $c>0$ |
 | Con qué estima | Con $\bar u$ de simulaciones |
 | ¿Quién tira dados? | El algoritmo, solo en las simulaciones; dentro del árbol no sortea nada |
 | Qué entrega, y si se puede interrumpir | La jugada más simulada, no la de mayor puntaje. Sí se puede interrumpir |
@@ -497,10 +505,10 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | Búsqueda de quietud | Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales |
 > | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
 > | **Monte Carlo plano (estás aquí)** | **$\bar u$; no garantiza $V$** |
-> | **MCTS con UCT (estás aquí)** | **$\bar u$; no garantiza $V$ (converge a él con $c$ grande)** |
+> | **MCTS con UCT (estás aquí)** | **$\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, con cualquier $c>0$)** |
 >
 > **Lo que viene.**
 >
@@ -508,12 +516,16 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 
 ## Lo que hay que llevarse
 
-- MCTS estima una jugada simulando partidas al azar hasta el final y
-  promediando su $U$. No necesita $\mathrm{EVAL}$: solo las reglas.
-- Un promedio de simulaciones no es $V$: supone que **los dos** juegan al
+- **Monte Carlo plano** estima una jugada simulando partidas al azar hasta
+  el final y promediando su $U$. No necesita $\mathrm{EVAL}$: solo las
+  reglas.
+- Ese promedio no es $V$: supone que **los dos** juegan al
   azar. En la posición de la clase acierta ($\text{d2}\textbf{-}\text{d3}$,
   ${8/9}$, 17 de cada 18 partidas). En hexapawn, $\text{b1}\textbf{-}\text{b2}$
   promedia ${5/24}$ aunque vale ${-1}$; con solo Negras al azar valía ${3/4}$.
+- **MCTS** construye un árbol: dentro de él cada jugador elige por puntaje,
+  y solo debajo se simula al azar. Por eso su $\bar u$ no es ese promedio
+  con los dos al azar; con UCT y más vueltas, se acerca a $V$.
 - Cada vuelta tiene cuatro pasos: selección, expansión, simulación y
   retropropagación. Cada nodo guarda ${G/N}$, y ${\bar u=2\,G/N-1}$ desde
   MAX: victorias menos derrotas entre $N$. La retropropagación suma 1 a

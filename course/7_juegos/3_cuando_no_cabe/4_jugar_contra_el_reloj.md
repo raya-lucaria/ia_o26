@@ -131,6 +131,9 @@ De la última de ellas, ¿qué columna tiene el número mayor?
    vale 100.
 
 Una búsqueda a medias no se usa: puede no haber revisado la mejor jugada.
+Es la elección simple y segura, no la única. Los programas reales prueban
+primero la jugada anterior, y si la búsqueda a medias ya encontró una que
+la supera, la usan.
 :::
 
 La figura lo dibuja en el tiempo. Cada barra es una búsqueda **sin poda**,
@@ -184,9 +187,10 @@ habría hecho? Lo demás es lo que se repite.
 ::: answer {#jue-c3-resp-costo of="jue-c3-ej-costo"}
 1. ${4+12+33=}$ **49** nodos.
 2. Se repiten las búsquedas con ${d=1}$ y ${d=2}$: ${4+12=}$ **16** nodos,
-   **menos de la mitad** de los 33 de la última. Aquí $b$ no es fijo
-   —ningún nodo de estas búsquedas tiene más de 5 jugadas—, así que la
-   cuenta de ${1/(b-1)}$ es una guía, no una igualdad.
+   **menos de la mitad** de los 33 de la última. La cuenta de
+   ${1/(b-1)}$ usa cuánto crece la búsqueda de un nivel al siguiente. Aquí
+   no crece por el máximo, ${b=5}$ jugadas: su último paso crece por ${33/12=2.75}$, y
+   ${1/(2.75-1)\approx0.57}$ se acerca a lo medido, ${16/33\approx0.48}$.
 :::
 
 ## 3 · Escribir la versión sin poda
@@ -228,7 +232,9 @@ OUTPUT  una jugada de A(s), la mejor de la
 - La línea 5 es la búsqueda de [[minimax-con-corte|Minimax con corte]],
   sin cambiar nada.
 - La línea 6 mira el reloj **solo al terminar** cada búsqueda. Si se acabó
-  mientras corría, esa búsqueda no cuenta y se entrega la anterior.
+  mientras corría, esa búsqueda no cuenta y se entrega la anterior. Por
+  eso la última puede pasarse del límite: cuesta del orden de ${b-1}$
+  veces lo ya gastado. En la posición de la clase, 33 nodos contra 16.
 
 **En el árbol T.** Con la $\mathrm{EVAL}$ de
 [[minimax-con-corte|Minimax con corte]]: I 5, C 4, D 7, C1 6 y C2 9. Las
@@ -502,6 +508,10 @@ jugadas se habían valorado cuando eso pasó?
    mismo, $\text{d2}\textbf{x}\text{c3}$, porque es la primera que se
    probó. Pero `mejor_jugada` no lo sabe: $\text{d2}\textbf{-}\text{d3}$,
    la que gana, estaba sin valorar.
+
+   Entregar `jugada` es lo simple y
+   seguro, no lo único: los programas reales usan la de la búsqueda a
+   medias si ya superó a la anterior, que prueban primero.
 :::
 
 ## 5 · Trazar la tercera búsqueda en T
@@ -879,7 +889,7 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | Búsqueda de quietud | Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales |
 > | **Profundización iterativa (estás aquí)** | **Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales** |
 >
 > **Lo que viene.**
@@ -895,7 +905,8 @@ Antes de cerrar, la ficha de la profundización iterativa. Es la primera que cam
   pierde; durante ${d=3}$, $\text{d2}\textbf{-}\text{d3}$, que gana.
 - Repetir cuesta poco frente a la última búsqueda: del orden de
   ${1/(b-1)}$ de ella si $b$ es fijo. En la posición de la clase, sin poda,
-  16 nodos contra 33, porque ahí $b$ no es fijo.
+  16 nodos contra 33: la búsqueda crece por ${33/12=2.75}$, no por ${b=5}$,
+  y ${1/(2.75-1)\approx0.57}$.
 - La versión corta llama entera a DECIDIR-CON-CORTE. La completa usa
   alfa-beta con $\alpha$ compartido (7), prueba primero la jugada anterior
   (6), mira el reloj entre hijos (8) y sale con 100 (9).

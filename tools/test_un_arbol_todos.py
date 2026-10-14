@@ -210,7 +210,7 @@ def _norm(s):
 ABREVIA = {
     "Sí, el V del juego con dado": "Sí, el del juego con dado",
     "No, salvo si llega a los finales": "No, salvo finales",
-    "No (converge a él con c suficientemente grande)": "No; converge",
+    "No (con tiempo sin límite converge a él, con cualquier c > 0)": "No; converge",
 }
 
 # (fragmento, jugada, valor de la raíz, nodos mirados, ¿garantiza V?, ¿y aquí da V?)
@@ -221,14 +221,14 @@ CASOS = [
     ("dado", "der", "1/3", "15 de 15", "Sí, el V del juego con dado", "sí: 1/3 es el V del juego con dado"),
     ("corte-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
     ("corte-d2", "centro", "10", "11 de 15", "No, salvo si llega a los finales", "no"),
-    ("corte-d3", "centro", "0", "15 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales"),
+    ("corte-d3", "centro", "0", "15 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales en todas sus ramas"),
     ("quietud", "centro", "20", "5 de 15", "No, salvo si llega a los finales", "no"),
     ("iterativa-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
-    ("iterativa-d3", "centro", "0", "12 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales"),
+    ("iterativa-d3", "centro", "0", "12 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales en todas las ramas que no podó"),
     ("mc-5", "der", "3/5", "15 de 15", "No", "no"),
     ("mc-50", "der", "12/25", "15 de 15", "No", "no"),
-    ("uct", "centro", "0", "15 de 15", "No (converge a él con c suficientemente grande)", "sí, por casualidad"),
-    ("uct-18", "centro", "−1/7", "14 de 15", "No (converge a él con c suficientemente grande)", "no"),
+    ("uct", "centro", "0", "15 de 15", "No (con tiempo sin límite converge a él, con cualquier c > 0)", "sí, por casualidad"),
+    ("uct-18", "centro", "−1/7", "14 de 15", "No (con tiempo sin límite converge a él, con cualquier c > 0)", "no"),
 ]
 
 

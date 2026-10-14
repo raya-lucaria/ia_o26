@@ -742,7 +742,14 @@ def profundizacion_iterativa_t(arbol=ARBOL_T, profundidades=(1, 2, 3), evaluar=N
     """PROFUNDIZACION-ITERATIVA sobre T, sin reloj: para cada d, DECIDIR-
     ALFA-BETA con corte a profundidad d, con la jugada que dejo lista la
     iteracion anterior primero en la raiz (las demas, en el orden dado).
-    Devuelve [(d, orden de la raiz, traza)]."""
+    Devuelve [(d, orden de la raiz, traza)].
+
+    La linea 9 del pseudocodigo, `if w = 100: return a`: si un hijo de la
+    raiz devuelve 100, la busqueda en curso se detiene en ese hijo y no hay
+    profundidades siguientes. El orden que se devuelve es el que tenia
+    planeado; su traza, la de la raiz recorrida solo hasta ese hijo
+    (alfa-beta no mira hermanos posteriores para valorar los anteriores, asi
+    que es el mismo prefijo), y su jugada es la de ese hijo."""
     evaluar = evaluar or EVAL_T
     nombres = nombres_t(arbol)
     raiz = [nombres[(i,)] for i in range(len(arbol))]
@@ -754,6 +761,13 @@ def profundizacion_iterativa_t(arbol=ARBOL_T, profundidades=(1, 2, 3), evaluar=N
             orden_raiz = [primero] + [n for n in orden_raiz if n != primero]
         t = traza_decidir(arbol, poda=True, orden={"R": orden_raiz}, profundidad=d,
                           evaluar=evaluar)
+        gana = next((f["hijo"] for f in t["filas"]
+                     if f["evento"] == "raiz" and f["w"] == 100), None)
+        if gana is not None:                                    # linea 9
+            t = traza_decidir(arbol, poda=True, profundidad=d, evaluar=evaluar,
+                              orden={"R": orden_raiz[:orden_raiz.index(gana) + 1]})
+            res.append((d, [dict(raiz)[n] for n in orden_raiz], t))
+            return res
         res.append((d, [dict(raiz)[n] for n in orden_raiz], t))
         jugada = t["jugada"]
     return res
@@ -3360,7 +3374,7 @@ GARANTIZA_TPM = {
     "quietud": "No, salvo si llega a los finales",
     "iterativa": "No, salvo si llega a los finales",
     "Monte Carlo plano": "No",
-    "UCT": "No (converge a él con c suficientemente grande)",
+    "UCT": "No (con tiempo sin límite converge a él, con cualquier c > 0)",
 }
 
 

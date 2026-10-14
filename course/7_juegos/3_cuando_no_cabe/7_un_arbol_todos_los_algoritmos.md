@@ -335,7 +335,9 @@ la que centro queda como la más simulada**, sin soltarlo, hasta la 200:
   la escala ${G/N}$, de 0 a 1, se escribe ${c=\sqrt2}$: pasar a la escala
   de ${-1}$ a ${+1}$ dobla los puntajes, y con ellos $c$.
 
-Es lo medido en este árbol, no una garantía para cualquier $c$.
+Es lo medido en este árbol, no una garantía. Con tiempo sin límite,
+cualquier ${c>0}$ termina en la jugada de minimax; cuánto tarda depende
+del árbol y de $c$.
 
 ::: exercise {#jue-c3-cmp-ej-uct title="Corta la corrida antes"}
 En la corrida de la semilla 0, el tiempo se acaba al terminar la vuelta 12.
@@ -402,12 +404,12 @@ valor de minimax.
 | Quietud | No, salvo si llega a los finales |
 | Iterativa | No, salvo si llega a los finales |
 | Monte Carlo plano | No |
-| UCT | No (converge a él con c suficiente­mente grande) |
+| UCT | No (con tiempo sin límite converge a él, con cualquier c > 0) |
 :::
 
-En T±, tres filas de la primera tabla dan el $0$ de minimax sin esa
-garantía. El corte a ${d=3}$ y la iterativa, porque su última búsqueda
-llega a los finales. UCT, por casualidad: su $0$ es un promedio.
+En T±, tres filas que en general no garantizan $V$ dan el $0$ de
+minimax. El corte a ${d=3}$ y la iterativa, porque esta vez llegan a los
+finales, y entonces sí es $V$. UCT, por casualidad: su $0$ es un promedio.
 
 ::: exercise {#jue-c3-cmp-ej-tabla title="Compara dos filas que dicen 0"}
 Minimax y UCT entregan centro con valor $0$.

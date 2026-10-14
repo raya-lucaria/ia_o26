@@ -707,6 +707,12 @@ def test_el_bono_dibuja_la_formula():
     for c in curvas:
         ys = [float(p.split(",")[1]) for p in c.split()]
         assert all(a <= b for a, b in zip(ys, ys[1:]))   # en pixeles, hacia abajo
+    # Ninguna curva pasa de N(s′) = N(s): un hijo no lleva mas simulaciones
+    # que su padre (la de 100 llegaba a 200; auditoria de la 7.3). Orden de
+    # dibujo: c = 1 con N(s) = 100, y luego CURVAS_BONO.
+    ultimo_x = [float(c.split()[-1].split(",")[0]) for c in curvas]
+    padres = [100, *gen.CURVAS_BONO]
+    assert ultimo_x == [pl.x(min(n, pl.xs[1])) for n in padres]
     # Con mas N(s), mas bono: la curva de 10 000 va arriba de la de 100.
     primera = {n: j.bono_ucb(n, 5) for n in gen.CURVAS_BONO}
     assert primera[100] < primera[1000] < primera[10000] < 4

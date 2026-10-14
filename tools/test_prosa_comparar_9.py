@@ -59,7 +59,9 @@ def test_9_la_tabla_de_cuando_conviene_con_los_juegos_corregidos():
     juego = dict(re.findall(r"^- \*\*([^*]+):\*\* (.*?)(?=^- |\Z)", lista, re.M | re.S))
     juego = {k: _limpio(v).strip() for k, v in juego.items()}
     assert list(juego) == orden
-    assert juego["Alfa-beta"] == "Conecta 4, resuelto en 1988."
+    # Allis (1988) usó reglas y búsqueda, no alfa-beta pura (registro, fila 2b).
+    assert juego["Alfa-beta"] == ("Conecta 4, resuelto en 1988 con búsqueda y reglas; hoy "
+                                  "alfa-beta con tablas de transposición lo resuelve sola.")
     assert "volado" not in texto  # el juguete no va como juego real
     assert "TD-Gammon (1992) miraba dos jugadas" in juego["Expectiminimax"]
     assert juego["Corte, quietud e iterativa"] == ("ajedrez (Deep Blue, 1997) y damas "
@@ -69,11 +71,18 @@ def test_9_la_tabla_de_cuando_conviene_con_los_juegos_corregidos():
     assert juego["MCTS con UCT"] == "Go (MoGo, 2006) y Hex (MoHex)."
     assert "Crazy Stone" not in texto
     uno = _seccion(_texto(), 1)
-    # Los matices de rev-hechos: quietud no arregla todo; UCT converge con c
-    # grande, y la del curso queda debajo de la hipotesis.
+    # Los matices de rev-hechos: quietud no arregla todo; UCT llega con
+    # cualquier c > 0 en un árbol finito, y lo que pide una c grande es la cota
+    # de Kocsis y Szepesvári, que la c=1 del curso no tiene.
     assert "La quietud arregla los intercambios a medias, no todo" in uno
-    assert "c suficientemente grande y tiempo sin límite" in uno
-    assert "La c=1 del curso queda debajo de esa hipótesis" in uno
+    assert ("UCT tiende a la jugada de minimax con tiempo sin límite, con cualquier c>0 en "
+            "un árbol finito. Kocsis y Szepesvári acotaron qué tan rápido, con una c grande; "
+            "la c=1 del curso no tiene esa cota, aunque aquí funcionó. De dónde sale la cota "
+            "de UCB1 lo viste en [[de-donde-sale-el-bono|") in uno
+    assert "suficientemente grande" not in _texto()
+    assert j.GARANTIZA_TPM["UCT"] == "No (con tiempo sin límite converge a él, con cualquier c > 0)"
+    # Monte Carlo plano también se interrumpe con el reloj (su ficha lo dice).
+    assert "La iterativa, Monte Carlo plano y MCTS son las que se interrumpen con el reloj" in uno
 
 
 def test_9_el_mapa_en_t_pm():
@@ -167,6 +176,8 @@ def test_9_fronteras_cuantas_partidas():
                   r"(\d+)! órdenes posibles, un número de (\d+) cifras", resp)
     assert m and int(m[1]) == int(m[2]) == 11 * 11
     assert int(m[3]) == len(str(math.factorial(int(m[2]))))
+    assert ("Con tiempo sin límite, y cualquier c>0, tendería a la de minimax; 10 segundos no "
+            "son tiempo sin límite.") in resp
     m = re.search(r"Son (\d+) jugadas: (\d+)!= ([\d ]+) partidas", resp)
     assert m and int(m[1]) == int(m[2]) == 3 * 3
     assert _numero(m[3]) == math.factorial(9)
@@ -241,6 +252,13 @@ def test_9_la_regla_del_menos_uno_se_cobra_en_la_seccion_3():
     assert m and m[1] == j.ids_tpm()[(0, 1)] and int(m[2]) == j.nodo_en(j.ARBOL_TPM, (0, 1)) == -1
     assert ("un final malo para MAX no le diría a MIN que deje de buscar: puede no ser el "
             "mejor para MIN, y tendría que seguir mirando") in tres
+    # La promesa de p8 («la página siguiente dice por qué»), con un caso concreto:
+    # el final es el mínimo de MAX pero no el máximo de MIN.
+    m = re.search(rf"un final que para MAX vale ({_Q}) pero para MIN solo ({_Q}), mientras otra "
+                  rf"hoja le da ({_Q}) a MIN: MIN no se detiene en ese final", tres)
+    assert m and int(m[1]) == min(j.nodo_en(j.ARBOL_TPM, c) for c in j.ids_tpm()
+                                  if not isinstance(j.nodo_en(j.ARBOL_TPM, c), tuple))
+    assert int(m[2]) < int(m[3])
     p8 = (CLASE_3 / "8_que_numero_da_cada_uno.md").read_text(encoding="utf-8")
     assert "en I, MIN ve\n${\\text{ix}=-1}$ y ya no necesita mirar i1" in p8
     assert "y eso supone **suma\ncero**" in p8
@@ -280,6 +298,14 @@ def test_9_la_tabla_de_no_suma_cero():
     for f in filas[1:]:
         assert len(f) == 3 and all(len(_c(x).split()) <= 4 for x in f), f
     assert "U_1" not in texto and "U_2" not in texto
+    # PUCT ya venía de AlphaGo (registro, fila 28); Zero y AlphaZero solo quitan la simulación.
+    assert "ya no simulan: solo la red (la selección con PUCT" in _limpio(texto)
+    assert "ya venía de AlphaGo)" in _limpio(texto)
+    # MCTS no juega todo al azar: por puntaje en el árbol, al azar debajo.
+    traes = _limpio(texto.split("Lo que traes de")[1].split("T±, en tres líneas")[0].replace("\n> ", "\n"))
+    assert ("en Monte Carlo plano los dos juegan al azar; en MCTS, eligen por puntaje dentro "
+            "del árbol y al azar solo debajo") in traes
+    assert "o los dos jugando al azar (en MCTS, solo debajo del árbol)" in _llevarse(texto)
     tres = _limpio(texto.split("## 3 ·")[1].split("## 4 ·")[0])
     assert ("Cuando mueves tú, eliges por el tuyo; lo que cambia es qué se supone de los "
             "rivales") in tres

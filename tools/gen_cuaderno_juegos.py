@@ -890,7 +890,7 @@ for n in (10, 50, 100):
 """)
 
 md("""
-**c es δ disfrazada.** Si se pide $\\delta = N(s)^{-k}$, el margen
+**Cada c fija qué tan rápido baja δ.** Si se pide $\\delta = N(s)^{-k}$, el margen
 $\\varepsilon = \\sqrt{2 \\ln(1/\\delta) / N(s')}$ queda
 $\\sqrt{2k} \\cdot \\sqrt{\\ln N(s) / N(s')}$: es el bono con $c = \\sqrt{2k}$,
 o sea $k = c^2/2$. Con $N(s) = 100$, $c = 1$ pide $\\delta = 0.1$ y
