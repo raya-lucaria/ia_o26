@@ -2,7 +2,7 @@
 id: un-arbol-todos-los-algoritmos
 title: "Radiografía: un árbol, cinco algoritmos"
 nav_title: "Radiografía: un árbol, cinco algoritmos"
-summary: "Minimax, alfa-beta, el corte por nivel o por reloj, Monte Carlo plano y UCT, cada uno en una ficha con el mismo orden: cómo explora, qué jugada juega y sus propiedades. Los cinco corren sobre el mismo árbol, T±, y al final se comparan en dos tablas."
+summary: "Minimax, alfa-beta, el corte por nivel o por reloj, Monte Carlo plano y UCT, cada uno en una ficha con el mismo orden: cómo explora, qué jugada juega y sus propiedades. Los cinco corren sobre el mismo árbol, T±, y al final se comparan en cuatro tablas cortas."
 status: ready
 estimated_time: 85m
 tags: [juegos, busqueda-adversarial, comparacion]

@@ -444,7 +444,10 @@ otra $c$.
 > ${\bar u=2\,G/N-1}$, cada puntaje nuestro es el doble del de ellos menos 1
 > cuando ellos usan la mitad de nuestra $c$:
 >
-> $$\bar u+c\sqrt{\frac{\ln N(s)}{N(s')}}=2\Bigl(\frac GN+\frac c2\sqrt{\frac{\ln N(s)}{N(s')}}\Bigr)-1.$$
+> $$\begin{aligned}
+> &\bar u+c\sqrt{\frac{\ln N(s)}{N(s')}}\\
+> &\quad=2\Bigl(\frac GN+\frac c2\sqrt{\frac{\ln N(s)}{N(s')}}\Bigr)-1.
+> \end{aligned}$$
 >
 > Doblar y restar 1 no cambia el orden: su ${c=\sqrt2}$ es nuestra
 > ${c=2\sqrt2}$, la misma regla. Con la **misma** $c$ en las dos escalas,
