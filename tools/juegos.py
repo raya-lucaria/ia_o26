@@ -3322,6 +3322,23 @@ def mc_plano_tpm(k, semilla, arbol=ARBOL_TPM):
     return _jugada_estricta(list(sumas.values())), sumas
 
 
+def simulaciones_mc_plano_tpm(k, semilla, arbol=ARBOL_TPM):
+    """Las simulaciones de mc_plano_tpm(k, semilla), una por una y con el
+    mismo generador en el mismo orden: [(jugada de la raiz, camino hasta el
+    final, U)]. Es lo que dibuja la radiografia de Monte Carlo plano: por
+    donde paso cada partida, que no se guarda."""
+    rng = random.Random(semilla)
+    res = []
+    for i, (a, h) in enumerate(zip(JUGADAS_RAIZ, arbol)):
+        for _ in range(k):
+            camino, nodo = (i,), h
+            while isinstance(nodo, tuple):
+                m = rng.randrange(len(nodo))
+                camino, nodo = camino + (m,), nodo[m]
+            res.append((a, camino, nodo))
+    return res
+
+
 @lru_cache(maxsize=None)
 def reparto_mc_plano_tpm(k, semillas=1000, arbol=ARBOL_TPM):
     """{jugada: en cuantas de las semillas 0..semillas−1 la entrega MC plano}

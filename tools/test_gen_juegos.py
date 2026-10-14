@@ -907,8 +907,9 @@ def test_el_arbol_t_pm_dibuja_el_arbol_de_la_fuente():
         u = signo[j.nodo_en(j.ARBOL_TPM, c)]
         assert f"{nombre} = {u}" in aria, nombre
         assert f">{nombre}<" in svg
-    for nombre, v in j.EVAL_TPM.items():
-        assert f"{nombre} = {v}" in aria and f">EVAL {v}<" in svg, nombre
+    # Sin EVAL (spec de la radiografia, §3.2): el arbol del juego solo tiene
+    # jugadas y finales; la EVAL vive en las figuras de corte.
+    assert "EVAL" not in svg
     assert f"con {j.contar_nodos(j.ARBOL_TPM)} nodos" in aria
     # Cada hoja con su borde doble: dos circulos por final.
     assert svg.count("<circle") == 2 * len(j.nombres_hojas_tpm())
@@ -923,3 +924,164 @@ def test_el_arbol_t_pm_dibuja_el_arbol_de_la_fuente():
         assert f"{nombre} es una captura de MIN" in aria
     assert svg.count(f'stroke="{gen.COLOR_CAPTURA}" stroke-width="6"') == len(capturas)
     assert ">La x de ix: es una captura de MIN.<" in svg
+
+
+# ------------------ 7.3.6: radiografia (un arbol, cinco algoritmos) ---
+
+RX_ARBOLES = ["jue-c3-rx-minimax", "jue-c3-rx-alfa-beta", "jue-c3-rx-corte",
+              "jue-c3-rx-quietud", "jue-c3-rx-iterativa", "jue-c3-rx-mc-plano",
+              "jue-c3-rx-uct-12", "jue-c3-rx-uct-40"]
+RX_FLUJOS = [f"jue-c3-rx-flujo-{n}" for n in ("minimax", "alfa-beta", "corte", "mc-plano", "uct")]
+MCG = ["jue-c3-mcg-arbol", "jue-c3-mcg-mc-plano", "jue-c3-mcg-uct-fases",
+       "jue-c3-mcg-uct-crece"]
+
+
+def _aria(nombre):
+    return re.search(r'aria-label="([^"]*)"', _texto(nombre)).group(1)
+
+
+def _renglones(nombre):
+    import html
+    return [html.unescape(r) for r in re.findall(r">([^<>]+)</text>", _texto(nombre))]
+
+
+def test_estan_las_figuras_de_la_radiografia():
+    for nombre in RX_ARBOLES + RX_FLUJOS + MCG:
+        assert nombre in gen.DIAGRAMAS, nombre
+
+
+@pytest.mark.parametrize("nombre", RX_ARBOLES + RX_FLUJOS + MCG)
+def test_la_radiografia_cabe_en_un_telefono(nombre):
+    """Como jue-t-pm-arbol: a 390 px el parrafo mide ~305 y el sitio no
+    escala los SVG, asi que miden 300 o menos; la letra no baja de 12 (las
+    hojas 100·U, en su pastilla) y casi todo va a 13 o mas."""
+    svg = _texto(nombre)
+    etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
+    assert float(re.search(r'\bwidth="([\d.]+)"', etiqueta).group(1)) <= 300
+    tams = [float(t) for t in re.findall(r'<text [^>]*font-size="([\d.]+)"', svg)]
+    assert min(tams) >= 12
+    assert sum(t < 13 for t in tams) <= 12, nombre
+
+
+@pytest.mark.parametrize("nombre", RX_ARBOLES)
+def test_cada_arbol_de_la_radiografia_marca_la_jugada_que_entrega(nombre):
+    jugada = {"jue-c3-rx-minimax": j.minimax_tpm()[0],
+              "jue-c3-rx-alfa-beta": j.alfa_beta_tpm("dado")[0],
+              "jue-c3-rx-corte": j.corte_tpm(1)[0],
+              "jue-c3-rx-quietud": j.quietud_tpm(1)[0],
+              "jue-c3-rx-iterativa": j.iterativa_tpm()[0][-1][2],
+              "jue-c3-rx-mc-plano": j.mc_plano_tpm(5, j.SEMILLA_TPM)[0],
+              "jue-c3-rx-uct-12": j.uct_tpm(1, 12, j.SEMILLA_TPM)["mas_simulada"][-1],
+              "jue-c3-rx-uct-40": j.uct_tpm(1, 40, j.SEMILLA_TPM)["mas_simulada"][-1]}[nombre]
+    assert f"juega {jugada}" in _renglones(nombre)
+    assert f"Juega {jugada}" in _aria(nombre) or f"juega {jugada}" in _aria(nombre)
+
+
+def test_la_radiografia_dibuja_los_numeros_de_juegos():
+    """Los datos de §7.1 del spec, leidos de juegos.py y buscados en cada
+    figura: nodos, valores, cotas, podas, sumas y visitas."""
+    jm, v, raiz, n = j.minimax_tpm()
+    assert (jm, v, n) == ("centro", 0, 15)
+    r = _renglones("jue-c3-rx-minimax")
+    assert f"genera los {n} nodos" in r and not [x for x in r if "EVAL" in x and "Sin" not in x]
+
+    ja, va, na, pod = j.alfa_beta_tpm("dado")
+    r = _renglones("jue-c3-rx-alfa-beta")
+    assert f"orden dado: {na} de {n} nodos" in r and na == 12
+    assert "≥ +1" in r and "≤ −1" in r and "poda α" in r and "poda β" in r
+    assert "C2: v = +1 ≥ β = 0, poda β." in r and "D: v = −1 ≤ α = 0, poda α." in r
+    # cada hoja podada lleva su tachado (dos lineas de acento) y no su U
+    assert _texto("jue-c3-rx-alfa-beta").count(f'stroke="{gen.ACENTO}" stroke-width="2.5"') \
+        >= 2 * len(pod)
+
+    jc, vc, ws, nc = j.corte_tpm(1)
+    r = _renglones("jue-c3-rx-corte")
+    assert (jc, vc, nc) == ("izq", 60, 4) and f"genera {nc} nodos y estima" in r
+    for nombre in ("I", "C", "D"):
+        assert f"EVAL {j.EVAL_TPM[nombre]}" in r
+    assert "corte d = 1" in r and "−100" in r     # ix, detras del horizonte
+
+    jq, vq, wq, nq, _ = j.quietud_tpm(1)
+    r = _renglones("jue-c3-rx-quietud")
+    assert (jq, vq, nq) == ("centro", 20, 5) and f"{nq} nodos: sigue la captura" in r
+    assert "quedarse (EVAL 60) con" in r and "el menor, −100." in r
+
+    filas, total = j.iterativa_tpm()
+    r = _renglones("jue-c3-rx-iterativa")
+    assert [f[2] for f in filas] == ["izq", "centro", "centro"] and total == 25
+    for d, _, _, _, g in filas:
+        assert f"d = {d} · {g} nodos" in r
+    assert "4 + 9 + 12 = 25 nodos en total." in r
+    assert "orden en la raíz: centro, izq, der" in r and "≥ 100" in r
+
+    jp, sumas = j.mc_plano_tpm(5, j.SEMILLA_TPM)
+    r = _renglones("jue-c3-rx-mc-plano")
+    assert "izq −3, centro −2, der +3." in r and jp == "der"
+    assert r.count("N 5") == 3 and {"ū −0.6", "ū −0.4", "ū +0.6"} <= set(r)
+    sims = j.simulaciones_mc_plano_tpm(5, j.SEMILLA_TPM)
+    assert sum(int(x[1:]) for x in r if re.fullmatch(r"×\d+", x)) == len(sims) == 15
+
+    for vueltas, (nodos, ns, jugada) in {12: (10, (1, 4, 7), "der"),
+                                        40: (15, (5, 26, 9), "centro")}.items():
+        u = j.uct_tpm(1, vueltas, j.SEMILLA_TPM)
+        assert len(u["N"]) == nodos and tuple(u["N"][(i,)] for i in range(3)) == ns
+        r = _renglones(f"jue-c3-rx-uct-{vueltas}")
+        assert f"c = 1, semilla 0: {nodos} nodos" in r and f"juega {jugada}" in r
+        assert f"izq {ns[0]}, centro {ns[1]}, der {ns[2]}." in r
+        # lo que aun no entra a su arbol va rayado: uno por nodo que falta
+        faltan = 15 - nodos
+        assert _texto(f"jue-c3-rx-uct-{vueltas}").count('stroke-dasharray="6 5"') >= 2 * faltan
+
+
+def test_las_hojas_del_corte_van_en_100_u_sin_mas():
+    """Las de corte cuentan los finales como 100·U, sin «+» (la convencion de
+    las figuras de la clase 3), y las de U llevan su signo."""
+    for nombre in ("jue-c3-rx-corte", "jue-c3-rx-quietud", "jue-c3-rx-iterativa"):
+        r = _renglones(nombre)
+        assert not [x for x in r if re.fullmatch(r"[≥≤]? ?\+\d+", x)], nombre
+        assert not [x for x in r if re.search(r"EVAL \+", x)], nombre
+    assert "+1" in _renglones("jue-c3-rx-minimax")
+
+
+@pytest.mark.parametrize("nombre", RX_FLUJOS)
+def test_cada_flujo_tiene_de_3_a_6_cajas_y_acaba_en_la_jugada(nombre):
+    f = gen.FLUJOS[nombre.removeprefix("jue-c3-rx-flujo-")]
+    cajas = [p for p in f["pasos"] if "caja" in p]
+    assert 3 <= len(cajas) <= 6 and len(f["pasos"]) <= 7
+    assert f["pasos"][-1].get("fin") and f["pasos"][-1]["caja"][0].startswith("Juega")
+    r = _renglones(nombre)
+    for p in f["pasos"]:
+        for x in p.get("caja", p.get("rombo")):
+            assert x in r, x
+
+
+def test_el_flujo_de_uct_es_un_ciclo_de_cuatro_fases():
+    r = _renglones("jue-c3-rx-flujo-uct")
+    for fase in ("1 · Selección", "2 · Expansión", "3 · Simulación", "4 · Retropropagación"):
+        assert fase in r
+    assert "el tiempo?" in r and "no: otra vuelta" in r and "de la raíz más visitada" in r
+
+
+def test_las_figuras_del_arbol_grande_no_llevan_cifras():
+    """§9.5: simbolicas. Ningun digito en lo que se ve, salvo los de los
+    numeros de fase («1 · Selección»)."""
+    for nombre in MCG:
+        r = [x for x in _renglones(nombre) if not re.match(r"\d · ", x)]
+        assert not [x for x in r if re.search(r"\d", x)], nombre
+
+
+def test_uct_en_el_arbol_grande_trae_el_caso_del_final():
+    r = _renglones("jue-c3-mcg-uct-fases")
+    assert "a un final ya en su árbol:" in r and "solo retropropaga su U" in r
+    assert "frontera" in r
+
+
+def test_la_frontera_de_uct_sigue_el_contorno_de_su_arbol():
+    """No es una linea pareja: en las dos instantaneas con mas vueltas la
+    frontera baja mas en una rama que en otra."""
+    svg = _texto("jue-c3-mcg-uct-crece")
+    lineas = re.findall(r'<polyline points="([^"]+)" fill="none" stroke="'
+                        + gen.ACENTO + r'" stroke-width="2.5" stroke-dasharray="7 4"/>', svg)
+    assert len(lineas) == len(gen.CRECE_UCT)
+    alturas = [len({p.split(",")[1] for p in l.split()}) for l in lineas]
+    assert alturas[0] == 1 and all(a >= 3 for a in alturas[1:]), alturas

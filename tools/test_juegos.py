@@ -3140,6 +3140,25 @@ def test_tpm_reparto_de_monte_carlo_plano():
     assert j.mc_plano_tpm(5, j.SEMILLA_TPM) == ("der", {"izq": -3, "centro": -2, "der": 3})
 
 
+def test_tpm_las_simulaciones_de_monte_carlo_plano_son_las_de_su_corrida():
+    """La radiografia dibuja cada partida de la corrida de la pagina: con el
+    mismo generador suman lo mismo que mc_plano_tpm, tocan los mismos nodos
+    que _tocados_mc, cada camino acaba en un final y su U es el de ese final."""
+    for k in j.SIMS_MC_TPM:
+        sims = j.simulaciones_mc_plano_tpm(k, j.SEMILLA_TPM)
+        _, sumas = j.mc_plano_tpm(k, j.SEMILLA_TPM)
+        assert len(sims) == k * len(j.ARBOL_TPM)
+        assert {a: sum(u for b, _, u in sims if b == a) for a in j.JUGADAS_RAIZ} == sumas
+        tocados = {()} | {c[:m] for _, c, _ in sims for m in range(1, len(c) + 1)}
+        assert tocados == j._tocados_mc(k, j.SEMILLA_TPM)
+        for a, c, u in sims:
+            assert j.JUGADAS_RAIZ[c[0]] == a and j.nodo_en(j.ARBOL_TPM, c) == u
+    # La corrida de la radiografia, partida por partida.
+    finales = [j.ids_tpm()[c] for _, c, _ in j.simulaciones_mc_plano_tpm(5, j.SEMILLA_TPM)]
+    assert finales == ["ix", "ix", "i1", "ix", "ix", "c2b", "c2b", "c1a", "c2a", "c1b",
+                       "d3", "d3", "d3", "d1", "d2"]
+
+
 def test_tpm_probabilidad_exacta_de_monte_carlo_plano():
     p5 = j.prob_mc_plano_tpm(5)
     assert p5 == {"izq": F(487919, 1327104), "centro": F(41723, 442368),
