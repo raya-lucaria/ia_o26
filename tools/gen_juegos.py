@@ -3881,14 +3881,21 @@ def _pild(cx, cy, rotulo, borde, tam=14, relleno=FONDO, color_texto=None, mono=F
 
 
 def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
-              raiz_filas=(), horizonte=None, podas=(), captura_tenue=False):
+              raiz_filas=(), horizonte=None, podas=(), captura_tenue=False, marcos=None):
     """Dibuja T± con raiz en y0 y devuelve la y mas baja ocupada.
 
     nodos: {camino: dict(estado, filas=[...], hoja=texto o None,
     bajo=[renglones bajo el id], eval=numero o None)}; los caminos que
     falten se dibujan «visto» sin numeros. escala: 1 (hojas en circulo, U) o
     100 (hojas en pastilla, 100·U). jugada: la jugada de la raiz que entrega.
-    horizonte: d del corte (dibuja la linea). podas: [(caminos, rotulo)]."""
+    horizonte: d del corte (dibuja la linea). podas: [(caminos, rotulo)].
+    marcos: si es un dict, se llena con la caja de cada nodo dibujado
+    ({camino: ("r", x0, y0, x1, y1) o, en las hojas en circulo, ("c", cx, cy,
+    r)}, la insignia de EVAL incluida) y la de la
+    pastilla «juega …» (clave "jugada"), para la capa animada; no cambia
+    nada de lo que se dibuja."""
+    if marcos is None:
+        marcos = {}
     arbol = j.ARBOL_TPM
     ids = j.ids_tpm(arbol)
     caminos = _orden_caminos(arbol)
@@ -3961,6 +3968,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
     x, yr = pos(())
     out.append(caja(x - RX_RAIZ_W / 2, yr - rh / 2, RX_RAIZ_W, rh,
                     relleno=mezclar(COLOR_MAX, 0.07), borde=COLOR_MAX))
+    marcos[()] = ("r", x - RX_RAIZ_W / 2, yr - rh / 2, x + RX_RAIZ_W / 2, yr + rh / 2)
     out.append(texto(x, yr - rh / 2 + 24, "R · MAX", tam=17, color=COLOR_MAX, peso="700"))
     for k, f in enumerate(raiz_filas):
         out.append(texto(x, yr - rh / 2 + 44 + 19 * k, f, tam=15, peso="700"))
@@ -3970,6 +3978,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
         ancho = round(0.58 * 13 * len(f"juega {jugada}") + 14)
         out.append(_pild(RX_W - 10 - ancho / 2, yr, f"juega {jugada}", ACENTO, tam=13,
                          relleno=ACENTO, color_texto=FONDO, alto=26))
+        marcos["jugada"] = ("r", RX_W - 10 - ancho, yr - 13, RX_W - 10, yr + 13)
     # Nodos.
     for c in caminos[1:]:
         x, yc = pos(c)
@@ -3983,6 +3992,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
             rot = n.get("hoja")
             if escala == 100:
                 w, h = PILA_HOJA_W, 22
+                marcos[c] = ("r", x - w / 2, yc - h / 2, x + w / 2, yc + h / 2)
                 if tenue:
                     out.append(caja(x - w / 2, yc - h / 2, w, h, relleno=FONDO, borde=borde,
                                     radio=6, grosor=1.5, guiones=guiones))
@@ -4002,6 +4012,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
                 y_id = yc + 30
             else:
                 r = HOJA_TPM_R
+                marcos[c] = ("c", x, yc, r + 2.5)
                 if tenue:
                     out.append(f'<circle cx="{x}" cy="{yc}" r="{r}" fill="{FONDO}" '
                                f'stroke="{borde}" stroke-width="1.5" '
@@ -4029,6 +4040,9 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
         color = COLOR_MAX if tipo == "MAX" else COLOR_MIN
         w = NODO_TPM_W
         top = yc - nh / 2
+        # con EVAL, la caja abarca tambien su insignia (alto 22, centrada a +15)
+        marcos[c] = ("r", x - w / 2, top, x + w / 2,
+                     top + nh + (26 if n.get("eval") is not None else 0))
         if tenue:
             out.append(caja(x - w / 2, top, w, nh, relleno=FONDO, borde=borde, grosor=1.5,
                             guiones=guiones))
@@ -4141,7 +4155,89 @@ def _nodos_por_intervalos(valores, fmt, generados, podados, d=None):
     return nodos
 
 
-def jue_c3_rx_minimax():
+# La animacion de las radiografias (spec §7.3): una capa SMIL, sin
+# JavaScript, que resalta en orden los nodos que genera el algoritmo y acaba
+# en la jugada que juega; luego reinicia. Es un solo <g class="rx-anima">
+# insertado ANTES del arbol: los halos son formas de acento un poco mas
+# grandes que cada nodo, asi que el nodo (opaco) los tapa por dentro y solo
+# asoma un borde; nunca quedan encima de un texto. Cada halo empieza y acaba
+# el ciclo con opacidad 0, y su atributo estatico es 0: en t = 0, en una
+# captura o en un navegador que no anima, la figura es la estatica. Sin la
+# capa, el SVG es identico al de antes (test_gen_juegos lo fija).
+PASO_RX = 1.0        # s por nodo generado
+JUGADA_RX = 3.0      # s marcando la jugada que juega
+ENTRADA_RX = 1.0     # s en blanco al empezar el ciclo
+PAUSA_RX = 1.5       # s en blanco al acabar
+RASTRO_RX = 0.35     # opacidad del halo de un nodo ya generado
+HALO_RX = 6          # px de halo alrededor de cada nodo
+CLASE_ANIMA_RX = "rx-anima"
+ORDEN_ANIMA_RX = {"jue-c3-rx-minimax": "minimax", "jue-c3-rx-alfa-beta": "alfa-beta",
+                  "jue-c3-rx-corte": "corte", "jue-c3-rx-quietud": "quietud",
+                  "jue-c3-rx-iterativa": "iterativa"}
+
+
+def _halo_rx(m, margen=HALO_RX, ancho=None):
+    # El halo no se sale del viewBox: junto al borde se encoge (Codex sol vio
+    # el de d3 cortado 1.5 px en la orilla derecha).
+    ancho = RX_W if ancho is None else ancho
+    if m[0] == "c":
+        _, cx, cy, r = m
+        margen = max(0, min(margen, cx - r, ancho - cx - r))
+        return f'<circle cx="{cx}" cy="{cy}" r="{r + margen}" fill="{ACENTO}"/>'
+    _, x0, y0, x1, y1 = m
+    margen = max(0, min(margen, x0, ancho - x1))
+    return (f'<rect x="{x0 - margen:g}" y="{y0 - margen:g}" width="{x1 - x0 + 2 * margen:g}" '
+            f'height="{y1 - y0 + 2 * margen:g}" rx="{6 + margen}" fill="{ACENTO}"/>')
+
+
+def _pasos_rx(orden, marcos, jugada, prefijo=""):
+    """[(tipo, nombre, [marcos])]: un paso por nodo generado, en el orden de
+    `orden`, y al final la jugada (el hijo de la raiz y su pastilla)."""
+    ids = j.ids_tpm()
+    pasos = [("nodo", prefijo + ids[c], [marcos[c]]) for c in orden]
+    hijo = (j.JUGADAS_RAIZ.index(jugada),)
+    pasos.append(("jugada", prefijo + ids[hijo], [marcos[hijo], marcos["jugada"]]))
+    return pasos
+
+
+def _capa_rx(pasos):
+    """La capa animada: un <g> por paso, con su <animate> discreto sobre un
+    ciclo comun. El halo de un nodo queda como rastro tenue hasta que
+    empieza la jugada siguiente."""
+    inicios, t = [], ENTRADA_RX
+    for tipo, _, _ in pasos:
+        inicios.append(t)
+        t += PASO_RX if tipo == "nodo" else JUGADA_RX
+    total = t + PAUSA_RX
+
+    def kt(x):
+        return f"{x / total:.4f}"
+
+    partes = [f'<g class="{CLASE_ANIMA_RX}" aria-hidden="true"><style>'
+              f'@media (prefers-reduced-motion: reduce) {{ .{CLASE_ANIMA_RX} '
+              '{ display: none } }</style>']
+    for k, ((tipo, nombre, marcos), s) in enumerate(zip(pasos, inicios)):
+        if tipo == "nodo":
+            fin = next(i for (tp, _, _), i in zip(pasos[k:], inicios[k:]) if tp == "jugada")
+            valores, tiempos = ["0", "1"], [0, s]
+            if s + PASO_RX < fin:
+                valores.append(f"{RASTRO_RX:g}")
+                tiempos.append(s + PASO_RX)
+            valores.append("0")
+            tiempos.append(fin)
+        else:
+            valores, tiempos = ["0", "1", "0"], [0, s, s + JUGADA_RX]
+        partes.append(
+            f'<g opacity="0" data-paso="{k}" data-tipo="{tipo}" data-nodo="{nombre}">'
+            + "".join(_halo_rx(m) for m in marcos)
+            + f'<animate attributeName="opacity" calcMode="discrete" '
+            f'values="{";".join(valores)}" keyTimes="{";".join(kt(x) for x in tiempos)}" '
+            f'dur="{total:g}s" repeatCount="indefinite"/></g>')
+    partes.append("</g>")
+    return "".join(partes)
+
+
+def jue_c3_rx_minimax(animar=True):
     """Minimax en T±: genera los 15 nodos, V en cada uno, juega centro."""
     jugada, v, raiz, n = j.minimax_tpm()
     gen = j.traza_decidir(j.ARBOL_TPM)["caminos_generados"]
@@ -4150,7 +4246,10 @@ def jue_c3_rx_minimax():
     titulo = ["Minimax en T±", f"genera los {n} nodos"]
     out = []
     y = _titulo_rx(out, titulo)
-    fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[_u_txt(v)])
+    i0, marcos = len(out), {}
+    fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[_u_txt(v)], marcos=marcos)
+    if animar:
+        out.insert(i0, _capa_rx(_pasos_rx(j.orden_generados_tpm("minimax"), marcos, jugada)))
     y = _leyenda_rx(out, fondo + 20, [("visto", "generado; su número es V"),
                                        ("jugada", f"la jugada que juega: {jugada}")])
     y = _pie_t(out, y + 6, [f"V de cada jugada: izq {_u_txt(raiz['izq'])},",
@@ -4171,7 +4270,7 @@ def _poda_ab():
     return [(c, corte, a, b, v) for c, _, a, b, v, corte in r["traza"] if corte]
 
 
-def jue_c3_rx_alfa_beta():
+def jue_c3_rx_alfa_beta(animar=True):
     """Alfa-beta en T±, orden dado: 12 nodos, poda c2b (β) y d2, d3 (α)."""
     jugada, v, n, podados = j.alfa_beta_tpm("dado")
     gen = j._generados_alfa_beta("dado")
@@ -4186,7 +4285,12 @@ def jue_c3_rx_alfa_beta():
     titulo = ["Alfa-beta en T±", f"orden dado: {n} de {j.contar_nodos(j.ARBOL_TPM)} nodos"]
     out = []
     y = _titulo_rx(out, titulo)
-    fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[_u_txt(v)], podas=podas)
+    i0, marcos = len(out), {}
+    fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[_u_txt(v)], podas=podas,
+                      marcos=marcos)
+    if animar:
+        out.insert(i0, _capa_rx(_pasos_rx(j.orden_generados_tpm("alfa-beta"), marcos,
+                                          jugada)))
     y = _leyenda_rx(out, fondo + 16, [("visto", "generado"),
                                        ("podado", "podado: no se genera"),
                                        ("jugada", f"la jugada que juega: {jugada}")])
@@ -4213,7 +4317,7 @@ def jue_c3_rx_alfa_beta():
     return _svg_rx(titulo, desc, out, y)
 
 
-def jue_c3_rx_corte():
+def jue_c3_rx_corte(animar=True):
     """Minimax con corte d = 1 en T±: 4 nodos, EVAL en I, C y D, juega izq;
     la captura ix queda detras del horizonte."""
     d = 1
@@ -4228,8 +4332,11 @@ def jue_c3_rx_corte():
     titulo = ["Corte a d = 1 en T±", f"genera {n} nodos y estima"]
     out = []
     y = _titulo_rx(out, titulo)
+    i0, marcos = len(out), {}
     fondo = _arbol_rx(out, y + 50, nodos, escala=100, jugada=jugada, raiz_filas=[_c_txt(v)],
-                      horizonte=d)
+                      horizonte=d, marcos=marcos)
+    if animar:
+        out.insert(i0, _capa_rx(_pasos_rx(j.orden_generados_tpm("corte", d), marcos, jugada)))
     y = _leyenda_rx(out, fondo + 16, [("visto", "generado"),
                                        ("eval", "EVAL: estima 100·V"),
                                        ("horizonte", "detrás del horizonte"),
@@ -4249,7 +4356,7 @@ def jue_c3_rx_corte():
     return _svg_rx(titulo, desc, out, y)
 
 
-def jue_c3_rx_quietud():
+def jue_c3_rx_quietud(animar=True):
     """Quietud a d = 1 en T±: 5 nodos; en I compara EVAL con la captura ix."""
     d = 1
     vals = {}
@@ -4272,8 +4379,12 @@ def jue_c3_rx_quietud():
     titulo = ["Quietud a d = 1 en T±", f"{n} nodos: sigue la captura"]
     out = []
     y = _titulo_rx(out, titulo)
+    i0, marcos = len(out), {}
     fondo = _arbol_rx(out, y + 50, nodos, escala=100, jugada=jugada, raiz_filas=[_c_txt(v)],
-                      horizonte=d)
+                      horizonte=d, marcos=marcos)
+    if animar:
+        out.insert(i0, _capa_rx(_pasos_rx(j.orden_generados_tpm("quietud", d), marcos,
+                                          jugada)))
     y = _leyenda_rx(out, fondo + 16, [("visto", "generado"),
                                        ("eval", "EVAL: opción de quedarse"),
                                        ("captura", "captura: se sigue"),
@@ -4299,7 +4410,7 @@ YS_RX_PANEL = (0, 118, 214, 304)
 VUELTAS_RX_UCT = (12, 40)    # las dos instantaneas de UCT (spec §7.1)
 
 
-def jue_c3_rx_iterativa():
+def jue_c3_rx_iterativa(animar=True):
     """Profundizacion iterativa en T± (alfa-beta con corte, la jugada de la
     busqueda anterior primero), d = 1, 2, 3: una tira de tres paneles
     apilados."""
@@ -4311,7 +4422,9 @@ def jue_c3_rx_iterativa():
     out = []
     y = _titulo_rx(out, titulo)
     partes = []
-    for (d, orden, jugada, v, g), (_, _, t) in zip(filas, trazas):
+    i0, pasos = len(out), []
+    ordenes = j.orden_generados_tpm("iterativa")
+    for (d, orden, jugada, v, g), (_, _, t), orden_gen in zip(filas, trazas, ordenes):
         gen = t["caminos_generados"]
         podados = set(j._podados_iterativa(t))
         valores = j._valores_ids(j.intervalos_tpm(gen, d, j.EVAL_TPM, 100), d)
@@ -4333,12 +4446,15 @@ def jue_c3_rx_iterativa():
         hay_abajo = any(len(c) > d for c in ids)
         fondo = _arbol_rx(out, y + 44, nodos, ys=YS_RX_PANEL, escala=100, jugada=jugada,
                           raiz_filas=[_c_txt(v)], horizonte=d if d < 3 and hay_abajo else None,
-                          podas=podas)
+                          podas=podas, marcos=(marcos := {}))
+        pasos += _pasos_rx(orden_gen, marcos, jugada, prefijo=f"d={d}:")
         y = fondo
         partes.append(f"Con d = {d} busca en el orden {', '.join(orden)}, genera {g} nodos"
                       + (", poda " + _y([ids[p] for gr, _ in podas for p in gr])
                          if podas else "")
                       + f" y deja lista {jugada}, con {_c_txt(v)}.")
+    if animar:
+        out.insert(i0, _capa_rx(pasos))
     y = _leyenda_rx(out, y + 16, [("eval", "EVAL en el corte"),
                                    ("podado", "podado: no se genera"),
                                    ("horizonte", "detrás del horizonte"),

@@ -1157,3 +1157,88 @@ def test_la_frontera_de_uct_sigue_el_contorno_de_su_arbol():
     assert len(lineas) == len(gen.CRECE_UCT)
     alturas = [len({p.split(",")[1] for p in l.split()}) for l in lineas]
     assert alturas[0] == 1 and all(a >= 3 for a in alturas[1:]), alturas
+
+
+# ------------------ 7.3.6: la animacion de las radiografias (spec §7.3) ---
+
+RX_ANIMADAS = sorted(gen.ORDEN_ANIMA_RX)
+_CAPA_RX = re.compile(r'<g class="rx-anima".*?</g></g>', re.S)
+
+
+def _pasos_animados(nombre):
+    """[(inicio en fraccion del ciclo, tipo, nodo)] de la capa, por inicio."""
+    raiz = ET.fromstring(_texto(nombre))
+    ns = "{http://www.w3.org/2000/svg}"
+    (capa,) = [g for g in raiz.iter(f"{ns}g") if g.get("class") == gen.CLASE_ANIMA_RX]
+    pasos, durs, begins = [], set(), set()
+    for k, g in enumerate(capa.findall(f"{ns}g")):
+        assert g.get("opacity") == "0" and g.get("data-paso") == str(k)
+        (a,) = g.findall(f"{ns}animate")
+        valores = a.get("values").split(";")
+        tiempos = [float(x) for x in a.get("keyTimes").split(";")]
+        assert a.get("calcMode") == "discrete" and a.get("repeatCount") == "indefinite"
+        # un solo reloj: misma duración y mismo arranque en todos los pasos, para
+        # que comparar keyTimes sea comparar tiempos reales
+        durs.add(a.get("dur")); begins.add(a.get("begin", "0s"))
+        assert a.get("attributeName") == "opacity"
+        assert len(valores) == len(tiempos) and tiempos == sorted(tiempos)
+        # opacidad 0 al empezar y al acabar el ciclo: en t = 0 se ve la estatica
+        assert tiempos[0] == 0 and valores[0] == valores[-1] == "0" and tiempos[1] > 0
+        assert tiempos[-1] < 1 and valores[1] == "1"
+        pasos.append((tiempos[1], g.get("data-tipo"), g.get("data-nodo")))
+    assert [p[0] for p in pasos] == sorted(p[0] for p in pasos)
+    assert len(durs) == 1 and len(begins) == 1, (nombre, durs, begins)
+    return pasos
+
+
+def test_las_radiografias_animadas_son_las_de_orden_determinista():
+    assert RX_ANIMADAS == sorted(["jue-c3-rx-minimax", "jue-c3-rx-alfa-beta",
+                                  "jue-c3-rx-corte", "jue-c3-rx-quietud",
+                                  "jue-c3-rx-iterativa"])
+    for nombre in RX_ARBOLES + RX_FLUJOS + MCG + RX_SIMBOLICAS:
+        if nombre not in RX_ANIMADAS:
+            assert "<animate" not in _texto(nombre) and "rx-anima" not in _texto(nombre)
+
+
+@pytest.mark.parametrize("nombre", RX_ANIMADAS)
+def test_la_animacion_recorre_el_orden_de_juegos_y_acaba_en_la_jugada(nombre):
+    ids = j.ids_tpm()
+    algoritmo = gen.ORDEN_ANIMA_RX[nombre]
+    if algoritmo == "iterativa":
+        tramos = [(f"d={d}:", o, f[2]) for d, o, f in
+                  zip((1, 2, 3), j.orden_generados_tpm("iterativa"), j.iterativa_tpm()[0])]
+    else:
+        jugada = {"minimax": j.minimax_tpm()[0], "alfa-beta": j.alfa_beta_tpm("dado")[0],
+                  "corte": j.corte_tpm(1)[0], "quietud": j.quietud_tpm(1)[0]}[algoritmo]
+        tramos = [("", j.orden_generados_tpm(algoritmo), jugada)]
+    esperado = []
+    for prefijo, orden, jugada in tramos:
+        esperado += [("nodo", prefijo + ids[c]) for c in orden]
+        esperado.append(("jugada", prefijo + ids[(j.JUGADAS_RAIZ.index(jugada),)]))
+    pasos = _pasos_animados(nombre)
+    assert [(t, n) for _, t, n in pasos] == esperado
+    # el ultimo paso marca la jugada que juega la figura (la de su pastilla)
+    _, tipo, nodo = pasos[-1]
+    jugada = tramos[-1][2]
+    assert tipo == "jugada" and nodo.split(":")[-1] == "ICD"[j.JUGADAS_RAIZ.index(jugada)]
+    assert f"juega {jugada}" in _renglones(nombre)
+
+
+@pytest.mark.parametrize("nombre", RX_ANIMADAS)
+def test_sin_la_capa_animada_la_figura_es_la_estatica(nombre):
+    """La animacion es una capa aislada: quitarla deja byte a byte lo que
+    dibuja la funcion con animar=False, y la capa no trae texto (no tapa
+    ni agrega nada que se lea) y respeta prefers-reduced-motion."""
+    svg = _texto(nombre)
+    capas = _CAPA_RX.findall(svg)
+    assert len(capas) == 1
+    estatica = {"jue-c3-rx-minimax": gen.jue_c3_rx_minimax,
+                "jue-c3-rx-alfa-beta": gen.jue_c3_rx_alfa_beta,
+                "jue-c3-rx-corte": gen.jue_c3_rx_corte,
+                "jue-c3-rx-quietud": gen.jue_c3_rx_quietud,
+                "jue-c3-rx-iterativa": gen.jue_c3_rx_iterativa}[nombre](animar=False)
+    assert _CAPA_RX.sub("", svg) == estatica
+    assert "<animate" not in estatica and "<text" not in capas[0]
+    assert "prefers-reduced-motion: reduce" in capas[0] and 'aria-hidden="true"' in capas[0]
+    # la capa va detras del arbol: antes del primer nodo dibujado
+    assert svg.index(capas[0]) < svg.index("R · MAX")

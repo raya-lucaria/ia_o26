@@ -3276,6 +3276,35 @@ def iterativa_tpm(profundidades=(1, 2, 3), evaluar=None, arbol=ARBOL_TPM):
     return filas, sum(f[4] for f in filas)
 
 
+ALGORITMOS_ORDEN_TPM = ("minimax", "alfa-beta", "corte", "quietud", "iterativa")
+
+
+def orden_generados_tpm(algoritmo, d=1, arbol=ARBOL_TPM):
+    """Los caminos de T± en el orden en que `algoritmo` los genera, la raiz
+    primero: lo que recorre la animacion de las radiografias (7.3.6).
+
+    - "minimax": DECIDIR-MINIMAX, los 15 en profundidad;
+    - "alfa-beta": DECIDIR-ALFA-BETA con el orden dado;
+    - "corte": DECIDIR-CON-CORTE(R, d), finales en 100·U con EVAL_TPM;
+    - "quietud": quietud_tpm(d): tras cada nodo de corte, sus capturas;
+    - "iterativa": una lista por busqueda (d = 1, 2, 3), cada una con la
+      jugada de la anterior primero.
+    Los caminos van en el orden *dado* del arbol aunque se recorra en otro."""
+    if algoritmo == "minimax":
+        return list(traza_decidir(arbol)["caminos_generados"])
+    if algoritmo == "alfa-beta":
+        return list(_generados_alfa_beta("dado", arbol))
+    if algoritmo == "corte":
+        return list(traza_decidir(escalar_arbol(arbol, 100), profundidad=d,
+                                  evaluar=EVAL_TPM)["caminos_generados"])
+    if algoritmo == "quietud":
+        return list(quietud_tpm(d, arbol=arbol)[4])
+    if algoritmo == "iterativa":
+        return [list(t["caminos_generados"]) for _, _, t in profundizacion_iterativa_t(
+            escalar_arbol(arbol, 100), (1, 2, 3), EVAL_TPM)]
+    raise ValueError(algoritmo)
+
+
 def todos_al_azar_tpm(arbol=ARBOL_TPM):
     """Expectiminimax con TODOS los nodos bajo la raiz como dados parejos,
     tambien los de MAX (C1 y C2): el limite de Monte Carlo plano. La raiz

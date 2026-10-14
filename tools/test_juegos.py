@@ -6,6 +6,8 @@ fallar esta suite.
 """
 from fractions import Fraction as F
 
+import pytest
+
 import juegos as j
 
 # El subarbol de la clase 2: tras a1-a2 y b3-b2, mueven Blancas.
@@ -3374,3 +3376,34 @@ def test_tpm_el_interactivo_trae_uct_vuelta_por_vuelta():
     assert u["por_vuelta"][4] == {"R": [5, -1], "I": [1, -1], "C": [2, 0], "D": [2, 0],
                                   "C1": [1, -1], "d1": [1, -1]}
     assert u["por_vuelta"][-1]["C"] == [26, 0]
+
+
+def test_tpm_orden_en_que_cada_algoritmo_genera_los_nodos():
+    """El orden que recorre la animacion de las radiografias (7.3.6), por
+    nombre: preorden de izquierda a derecha, sin lo podado ni lo que queda
+    detras del horizonte; la quietud mete la captura ix justo tras I; la
+    iterativa, a d = 3, empieza por centro (la jugada de d = 2)."""
+    ids = j.ids_tpm()
+
+    def nombres(algoritmo):
+        return [ids[c] for c in j.orden_generados_tpm(algoritmo)]
+
+    assert nombres("minimax") == ["R", "I", "i1", "ix", "C", "C1", "c1a", "c1b",
+                                  "C2", "c2a", "c2b", "D", "d1", "d2", "d3"]
+    assert nombres("alfa-beta") == ["R", "I", "i1", "ix", "C", "C1", "c1a", "c1b",
+                                    "C2", "c2a", "D", "d1"]
+    assert nombres("corte") == ["R", "I", "C", "D"]
+    assert nombres("quietud") == ["R", "I", "ix", "C", "D"]
+    assert [[ids[c] for c in o] for o in j.orden_generados_tpm("iterativa")] == [
+        ["R", "I", "C", "D"],
+        ["R", "I", "i1", "ix", "C", "C1", "C2", "D", "d1"],
+        ["R", "C", "C1", "c1a", "c1b", "C2", "c2a", "I", "i1", "ix", "D", "d1"]]
+    # y cuadra con los conteos de cada algoritmo
+    assert len(nombres("minimax")) == j.minimax_tpm()[3]
+    assert len(nombres("alfa-beta")) == j.alfa_beta_tpm("dado")[2]
+    assert len(nombres("corte")) == j.corte_tpm(1)[3]
+    assert len(nombres("quietud")) == j.quietud_tpm(1)[3]
+    assert [len(o) for o in j.orden_generados_tpm("iterativa")] == [
+        f[4] for f in j.iterativa_tpm()[0]]
+    with pytest.raises(ValueError):
+        j.orden_generados_tpm("uct")
