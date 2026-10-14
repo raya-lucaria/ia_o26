@@ -4,13 +4,21 @@ title: "Radiografía: un árbol, cinco algoritmos"
 nav_title: "Radiografía: un árbol, cinco algoritmos"
 summary: "Minimax, alfa-beta, el corte por nivel o por reloj, Monte Carlo plano y UCT, cada uno en una ficha con el mismo orden: cómo explora, qué jugada juega y sus propiedades. Los cinco corren sobre el mismo árbol, T±, y al final se comparan en cuatro tablas cortas."
 status: ready
-estimated_time: 85m
+estimated_time: 89m
 tags: [juegos, busqueda-adversarial, comparacion]
 ---
 
 # Radiografía: un árbol, cinco algoritmos
 
 Esta página pone lado a lado los cinco algoritmos de búsqueda de la unidad. Cada uno tiene una ficha con las mismas tres partes, **cómo explora, qué jugada juega y sus propiedades**, y sus figuras sobre el mismo árbol.
+
+**Al final del día, lo que se busca es el valor $V(s)$ de cada estado**: lo que MAX se asegura desde $s$ si los dos juegan lo mejor. **Sobre todo, el $V$ de cada jugada de la raíz**, para jugar la mejor. Cada algoritmo es una manera distinta de **obtenerlo, acotarlo o estimarlo**:
+
+- **Minimax** lo calcula exacto.
+- **Alfa-beta** lo calcula exacto para la jugada que elige, con menos trabajo; de las demás puede dar solo cotas.
+- **El corte** lo estima: donde se detiene, pone la EVAL.
+- **Monte Carlo plano** estima otro número, $\mu$: el promedio si los dos juegan al azar.
+- **UCT** da una estimación que, en un árbol finito y con vueltas sin límite, se acerca a $V$.
 
 > [!TIP]
 > **Míralo correr**
@@ -21,25 +29,47 @@ Esta página pone lado a lado los cinco algoritmos de búsqueda de la unidad. Ca
 
 Casi todos ya aparecieron en la unidad; son nuevos $\mu$, $k$, $h$ y $n$. Todos están también en [[notacion-juegos|la hoja de notación]].
 
-- $S$: los estados del juego; $s$ es uno cualquiera.
-- $s_0$: el estado donde MAX decide; la **raíz** de la búsqueda.
-- $A(s)$: las jugadas permitidas en un estado no final $s$.
-- $T(s,a)$: el estado al que lleva la jugada $a$ desde $s$; un **hijo** de $s$, que se escribe $s'$.
-- $U(s)$: el resultado de un final, siempre desde MAX: $+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan. Solo existe en los finales.
-- $V(s)$: lo que MAX se asegura desde $s$ si los dos juegan lo mejor. En un final, $V(s)=U(s)$.
-- $\mathrm{EVAL}(s)$: una estimación de $100\cdot V(s)$ que mira solo $s$, sin generar nada debajo.
-- $d$: la profundidad que queda: cuántas jugadas más, de los dos, se pueden mirar.
-- $b$: el máximo de jugadas permitidas en un estado.
-- $m$: el largo máximo de una partida, en jugadas.
-- $\alpha$: lo que MAX ya se asegura con una jugada revisada en un nodo suyo del camino; un piso.
-- $\beta$: lo mismo para MIN; para MAX, un techo.
-- $N(s)$: cuántas simulaciones, o vueltas, pasaron por $s$.
-- $\bar u(s)$: el promedio de $U$ en esas simulaciones, medido siempre desde MAX.
-- $\mu(s)$: el **promedio límite** de $U$ si **los dos** juegan al azar desde $s$. En general no es $V(s)$.
-- $k$: simulaciones por jugada de la raíz en Monte Carlo plano.
-- $n$: simulaciones, o vueltas, **en total**.
-- $c>0$: el peso de explorar en el puntaje UCT.
-- $h$: la profundidad que alcanzó el árbol de UCT; a lo más $m$.
+**El juego**
+
+::: table {#jue-c3-rx-tab-notacion-juego title="Notación: el juego"}
+| Símbolo | Qué es |
+|---|---|
+| $S$, $s$ | Los estados del juego; $s$ es uno cualquiera |
+| $s_0$ | Donde MAX decide: la **raíz** de la búsqueda |
+| $A(s)$ | Las jugadas permitidas en un estado no final $s$ |
+| $T(s,a)$ | Adonde lleva la jugada $a$ desde $s$: un **hijo** $s'$ |
+| $U(s)$ | Resultado de un final, desde MAX: $+1$, $-1$ o $0$. Solo en finales |
+| $V(s)$ | Lo que MAX se asegura desde $s$ si los dos juegan lo mejor |
+| $b$ | El máximo de jugadas permitidas en un estado |
+| $m$ | El largo máximo de una partida, en jugadas |
+:::
+
+En un final, $V(s)=U(s)$: $+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan.
+
+**La búsqueda con corte y poda**
+
+::: table {#jue-c3-rx-tab-notacion-busqueda title="Notación: corte y poda"}
+| Símbolo | Qué es |
+|---|---|
+| $\mathrm{EVAL}(s)$ | Estimación de $100\cdot V(s)$ que mira solo $s$, sin generar nada debajo |
+| $d$ | La profundidad que queda: cuántas jugadas más, de los dos, se miran |
+| $\alpha$ | Lo que MAX ya se asegura en un nodo suyo del camino: un **piso** |
+| $\beta$ | Lo mismo para MIN; para MAX, un **techo** |
+:::
+
+**La simulación**
+
+::: table {#jue-c3-rx-tab-notacion-simulacion title="Notación: simulación"}
+| Símbolo | Qué es |
+|---|---|
+| $N(s)$ | Cuántas simulaciones, o vueltas, pasaron por $s$ |
+| $\bar u(s)$ | El promedio de $U$ en esas simulaciones, siempre desde MAX |
+| $\mu(s)$ | El **promedio límite** de $U$ si **los dos** juegan al azar; en general no es $V(s)$ |
+| $k$ | Simulaciones por jugada de la raíz, en Monte Carlo plano |
+| $n$ | Simulaciones, o vueltas, **en total** |
+| $c>0$ | El peso de explorar en el puntaje UCT |
+| $h$ | La profundidad que alcanzó el árbol de UCT; a lo más $m$ |
+:::
 
 ## El problema: un juego, dos dibujos
 
@@ -80,13 +110,13 @@ Los cinco hacen lo mismo **en dos tiempos**:
 
 Cambia cómo exploran, qué número sale ($V$ exacto, una cota, el valor con corte o un promedio $\bar u$) y con qué regla eligen. Por eso cada ficha separa «1 · Exploración» de «2 · Elección». **Explorar una jugada no obliga a jugarla:** un algoritmo puede gastar trabajo en una jugada poco probada y al final jugar otra.
 
-Cuando los hijos se recorren en un orden, es el dado, de izquierda a derecha, salvo que la ficha diga otro. Un empate en la raíz lo gana la primera jugada en el orden que usó esa búsqueda.
+**El orden y los empates.** Cuando los hijos se recorren en un orden, es el dado, de izquierda a derecha, salvo que la ficha diga otro. Un empate en la raíz lo gana la primera jugada en el orden que usó esa búsqueda.
 
 ## Las cinco fichas
 
 ### Minimax (minimax)
 
-Es la búsqueda exacta para juegos de dos jugadores por turnos, de suma cero, sin azar, con todo a la vista y con árbol finito. Recorre el árbol completo hasta los finales y sube los resultados: cada nodo vale lo que MAX puede asegurar desde ahí.
+Es la búsqueda exacta para juegos de dos jugadores por turnos, de suma cero, sin azar, con todo a la vista y con árbol finito. **Recorre el árbol completo hasta los finales y sube los resultados**: cada nodo vale lo que MAX puede asegurar desde ahí.
 
 #### 1 · Exploración: cómo construye su estimación
 
@@ -95,12 +125,16 @@ Minimax no estima: **calcula el valor exacto de cada jugada de la raíz** con el
 - **El resultado de un final, $U(s)$, lo dan las reglas:** $U=+1$ si gana MAX, $U=-1$ si gana MIN y $U=0$ si empatan.
 - **El valor de un nodo, $V(s)$, es lo que MAX puede asegurar desde $s$** si MIN responde siempre lo peor para MAX. No es lo que pasará en una partida real: si MIN se equivoca, MAX puede obtener más; nunca menos.
 
+##### Los pasos
+
 El recorrido es **en profundidad** (*depth-first search*), con los hijos en el orden dado, de izquierda a derecha:
 
 1. **Bajar.** Desde la raíz, genera las jugadas legales del nodo y baja por la primera. Repite en cada nodo nuevo hasta llegar a un final del juego.
 2. **Valorar el final.** Un final no se calcula: su valor es su resultado, $V(s)=U(s)$.
 3. **Subir el valor (*backup*).** Regresa al padre con el valor del hijo y lo compara con lo mejor que llevaba. Si al padre le quedan jugadas sin revisar, baja por la siguiente.
 4. **Cerrar el nodo.** Cuando revisó todos sus hijos, el valor del padre queda fijo y se lo entrega a su propio padre. **Ningún nodo se valora antes de conocer todos sus hijos.**
+
+##### La regla
 
 **La regla para valorar un nodo.** Sea $A(s)$ el conjunto de jugadas legales en $s$ y $T(s,a)$ el hijo al que lleva la jugada $a$. Los finales dan el punto de partida; los demás nodos toman su valor de sus hijos:
 
@@ -119,6 +153,8 @@ Cada parte tiene su papel:
 - **El valor del hijo ya incluye las respuestas que vienen después:** no basta con que haya un final favorable debajo de una jugada.
 - **$V$ aparece a los dos lados del igual:** la regla se usa a sí misma, y por eso se calcula de abajo hacia arriba. Todos los valores se miden desde MAX; **el signo no cambia al subir**.
 
+##### Ejemplo
+
 **Ejemplo en un nodo de MAX.** Tiene dos hijos de MIN, cada uno con dos finales debajo.
 
 | Jugada de MAX | Finales debajo | Valor del hijo |
@@ -128,7 +164,9 @@ Cada parte tiene su papel:
 
 MAX juega $b$ y asegura el empate, aunque debajo de $a$ haya una victoria: MIN nunca lo dejaría llegar a ella. Los dos pares de finales promedian $0$, y aun así sus valores son distintos. Si los finales de $a$ fueran $+1$ y $+1$, $a$ valdría $+1$ y MAX jugaría $a$. **Decide lo que MAX puede asegurar, no el mejor final que hay debajo ni el promedio.**
 
-Al terminar el recorrido, minimax generó **todos los nodos del árbol** y la raíz conoce el valor exacto de cada una de sus jugadas. Para calcularlo no tuvo que conservar el árbol entero en memoria: cada nodo cerrado se descarta en cuanto entrega su valor.
+##### Al terminar
+
+**Al terminar el recorrido, minimax generó **todos los nodos del árbol** y la raíz conoce el valor exacto de cada una de sus jugadas.** Para calcularlo no tuvo que conservar el árbol entero en memoria: cada nodo cerrado se descarta en cuanto entrega su valor.
 
 #### 2 · Elección: qué jugada juega
 
@@ -158,13 +196,17 @@ Aquí explorar y elegir usan **el mismo número, $V$**. La elección es la regla
 ![Diagrama de flujo de minimax: baja un nivel; si es final, vale U; si quedan jugadas, baja por la siguiente; al subir, MAX toma el mayor; al final juega la jugada de mayor V](../_assets/jue-c3-rx-flujo-minimax.svg)
 :::
 
+---
+
 ### Alfa-beta (alpha-beta pruning)
 
-Es minimax con poda (*pruning*). Hace el mismo recorrido, pero deja de generar una rama en cuanto lo ya revisado basta para saber que no cambia la jugada de la raíz. Con el mismo orden y desempate, entrega la misma jugada y el mismo $V$ que minimax, y puede generar menos nodos.
+Es minimax con poda (*pruning*). **Hace el mismo recorrido, pero deja de generar una rama** en cuanto lo ya revisado basta para saber que no cambia la jugada de la raíz. Con el mismo orden y desempate, entrega la misma jugada y el mismo $V$ que minimax, y puede generar menos nodos.
 
 #### 1 · Exploración: cómo construye su estimación
 
 Alfa-beta recorre el árbol del juego **en profundidad, hijo por hijo y en el orden dado**, como minimax. Cuando llega a un final del juego, devuelve su $U$.
+
+##### La ventana
 
 La diferencia es que cada nodo lleva **dos números** de lo que ya pasó arriba, en el camino desde la raíz. **Los dos se miden desde MAX**, como $U$:
 
@@ -173,6 +215,8 @@ La diferencia es que cada nodo lleva **dos números** de lo que ya pasó arriba,
 
 El par $(\alpha,\beta)$ se llama **ventana** (*window*). En la raíz empieza en $(-\infty,+\infty)$: todavía no hay nada asegurado.
 
+##### Los pasos
+
 En cada nodo de MAX que no es final, el recorrido sigue estos pasos:
 
 1. **Inicio (*initialization*).** Recibe la ventana que tiene su padre en ese momento y empieza con $v=-\infty$. En $v$ guardará el mayor número que le devuelvan sus hijos.
@@ -180,6 +224,8 @@ En cada nodo de MAX que no es final, el recorrido sigue estos pasos:
 3. **Poda (*cutoff*).** Compara $v$ con $\beta$. Si $v\ge\beta$, **deja de generar sus hijos restantes** y devuelve $v$.
 4. **Actualización (*update*).** Si no poda, sube $\alpha$ a $\max(\alpha,v)$ y pasa al siguiente hijo. Su $\beta$ no cambia.
 5. **Regreso (*return*).** Al terminar sus hijos, devuelve $v$. **Al padre solo sube ese número:** la ventana que el nodo modificó se pierde, y el padre sigue con la suya.
+
+##### La regla
 
 **La regla de poda en un nodo de MAX:**
 
@@ -201,6 +247,8 @@ $$
 
 **Lo podado no se genera:** ni sus estados ni sus jugadas legales. De ahí sale el ahorro.
 
+##### Ejemplo
+
 **Ejemplo en un nodo de MAX** que llega con $\beta=4$: más arriba, MIN ya tiene una jugada que le da $4$.
 
 | Caso | 1.er hijo | ¿Poda? | Devuelve |
@@ -215,9 +263,11 @@ $$
 
 **Decide la comparación con $\beta$, no qué tan grande es el número.**
 
-Al repetir, unas ramas quedan sin generar y otras se revisan hasta los finales. Los cortes beta devuelven cotas inferiores («al menos»); los cortes alfa, cotas superiores («a lo más»).
+##### Qué se repite
 
-La raíz es de MAX y no tiene rival arriba: su $\beta$ es $+\infty$, así que **revisa todos sus hijos**. Las podas ocurren dentro de sus ramas. Su $\alpha$ sube cada vez que encuentra una jugada mejor.
+**Al repetir, unas ramas quedan sin generar** y otras se revisan hasta los finales. Los cortes beta devuelven cotas inferiores («al menos»); los cortes alfa, cotas superiores («a lo más»).
+
+**La raíz es de MAX y no tiene rival arriba:** su $\beta$ es $+\infty$, así que **revisa todos sus hijos**. Las podas ocurren dentro de sus ramas. Su $\alpha$ sube cada vez que encuentra una jugada mejor.
 
 #### 2 · Elección: qué jugada juega
 
@@ -249,9 +299,11 @@ La jugada elegida trae su **$V$ exacto**. Las demás pueden traer su valor exact
 ![Diagrama de flujo de alfa-beta: el de minimax con una pregunta más, si v es mayor o igual que beta; si lo es, poda y no genera los hijos restantes](../_assets/jue-c3-rx-flujo-alfa-beta.svg)
 :::
 
+---
+
 ### Corte por nivel o por reloj (depth-limited search, iterative deepening)
 
-Es minimax que deja de bajar al agotarse la profundidad y usa EVAL para estimar donde se detiene. Por nivel, fija cuánto mirar; por reloj, repite búsquedas cada vez más profundas mientras quede tiempo.
+Es minimax que deja de bajar al agotarse la profundidad y **usa EVAL para estimar donde se detiene**. Por nivel, fija cuánto mirar; por reloj, repite búsquedas cada vez más profundas mientras quede tiempo.
 
 #### 1 · Exploración: cómo construye su estimación
 
@@ -262,12 +314,16 @@ Recorre el árbol en profundidad y distingue dos clases de hojas:
 
 Como $|\mathrm{EVAL}|<100$, una victoria confirmada vale más que cualquier estimación y una derrota confirmada vale menos.
 
+##### Por nivel
+
 **Por nivel (*depth-limited search*).** La raíz empieza con una profundidad fija $d\ge1$. En cada nodo sigue estos pasos:
 
 1. **Comprobar el final (*terminal test*).** Primero revisa si la partida terminó. Si terminó, devuelve $100\cdot U$, aunque ya no quede profundidad.
 2. **Aplicar el corte (*cutoff*).** Si el nodo no es final y $d=0$, devuelve EVAL y no genera hijos.
 3. **Expandir (*expansion*).** Si queda profundidad, genera y valora los hijos en el orden dado. Cada hijo recibe $d-1$.
 4. **Subir el valor (*backup*).** Al terminar de valorar los hijos, un nodo de MAX devuelve el mayor valor.
+
+##### La regla
 
 **La regla del corte.** Llamemos $v_d(s)$ al **valor con corte** del estado $s$ cuando quedan $d$ jugadas. Es el valor de minimax en el árbol cortado, con EVAL en sus hojas no finales. Los casos se revisan en este orden:
 
@@ -284,6 +340,8 @@ Cada parte tiene su papel:
 - **La transición lleva al hijo.** $T(s,a)$ es la posición que deja la jugada $a$; se valora con un nivel menos.
 - **El máximo y el mínimo conservan la regla de minimax.** Cambia dónde se detiene la búsqueda, pero todos los valores siguen medidos desde MAX.
 
+##### Ejemplo
+
 **Ejemplo en un nodo de MAX con $d=1$.**
 
 | Hijo | Tipo | Valor |
@@ -293,7 +351,11 @@ Cada parte tiene su papel:
 
 Elige $b$. Si revisara primero la profundidad y evaluara ese final con $30$, elegiría $a$ y dejaría pasar una victoria. Además, el $40$ de $a$ podría ocultar una derrota detrás del corte. **Un final se reconoce antes de evaluar; una EVAL es una estimación, no un resultado.**
 
+##### Con poda
+
 **Con poda (*pruning*) es alfa-beta con corte.** Aplica las mismas cotas $\alpha$ y $\beta$ al árbol cortado. Da el mismo valor en la raíz. Con el mismo orden de hijos, nunca genera más nodos que minimax con corte, aunque puede generar los mismos.
+
+##### Por reloj
 
 **Por reloj: profundización iterativa (*iterative deepening*).** Repite búsquedas de alfa-beta con corte con $d=1,2,3,\dots$:
 
@@ -302,6 +364,8 @@ Elige $b$. Si revisara primero la profundidad y evaluara ese final con $30$, ele
 3. **Revisar el reloj.** Antes de cada búsqueda y después de valorar cada hijo de la raíz, comprueba si queda tiempo, **sin interrumpir la exploración de ese hijo**. Si se acabó, descarta la búsqueda en curso y entrega la jugada guardada. Si el subárbol de un hijo tarda, la respuesta llega después del plazo: el límite de tiempo no es estricto.
 4. **Reconocer una victoria.** Si todavía queda tiempo y el hijo devuelve $+100$, entrega esa jugada de inmediato. Como ninguna EVAL alcanza $100$, ese valor demuestra una victoria asegurada dentro de la profundidad buscada.
 5. **Guardar y profundizar.** Si termina la búsqueda, guarda su mejor jugada, aumenta $d$ en uno y vuelve a empezar.
+
+##### Horizonte y quietud
 
 **Dos particularidades del corte.**
 
@@ -341,7 +405,7 @@ La salida con $+100$ no rompe la regla: ya demostró una victoria y ninguna otra
 - **Complejidad con quietud:** el peor caso alcanza tiempo $O(b^m)$ y memoria $O(bm)$, donde $m$ es el largo máximo de una partida.
 - **Frente a minimax y alfa-beta sin corte:** permite buscar cuando no alcanza para llegar a los finales. A cambio, la decisión depende de la calidad de EVAL y de la profundidad alcanzada.
 
-En las figuras de esta ficha, T± lleva una EVAL inventada: I $60$, C $20$ y D $10$; con $d=2$, también C1 $10$ y C2 $50$. La de I es mala a propósito: no ve que la captura ix pierde.
+**En las figuras de esta ficha, T± lleva una EVAL inventada:** I $60$, C $20$ y D $10$; con $d=2$, también C1 $10$ y C2 $50$. La de I es mala a propósito: no ve que la captura ix pierde.
 
 ::: figure {#jue-c3-rx-fig-corte title="Corte a d = 1 en T±: 4 nodos, juega izq"}
 ![Minimax con corte a profundidad 1 en T±: genera la raíz y sus tres hijos, que valen su EVAL, 60, 20 y 10; juega izq, aunque detrás del horizonte está la captura ix, que pierde](../_assets/jue-c3-rx-corte.svg)
@@ -359,13 +423,17 @@ En las figuras de esta ficha, T± lleva una EVAL inventada: I $60$, C $20$ y D $
 ![Diagrama de flujo del corte: baja un nivel; si es final, vale 100·U; si se acabó d, vale EVAL; al subir, MAX toma el mayor; juega la mejor de la raíz](../_assets/jue-c3-rx-flujo-corte.svg)
 :::
 
+---
+
 ### Monte Carlo plano (flat Monte Carlo)
 
-Estima cada jugada de la raíz jugando muchas partidas al azar desde ella y promediando sus resultados. No construye un árbol de búsqueda: conserva solo un contador y una suma por jugada de la raíz.
+Estima cada jugada de la raíz **jugando muchas partidas al azar desde ella y promediando sus resultados**. No construye un árbol de búsqueda: conserva solo un contador y una suma por jugada de la raíz.
 
 #### 1 · Exploración: cómo construye su estimación
 
 Monte Carlo plano recorre **caminos del árbol del juego hasta los finales**, sin guardarlos. Antes de empezar, fija un número entero de simulaciones por jugada, $k\ge 1$.
+
+##### Los pasos
 
 Para cada jugada $a$ de la raíz, en el orden dado, llama $s'=T(s_0,a)$ al estado que resulta y completa estos pasos:
 
@@ -381,6 +449,14 @@ $$
 
 Aquí, $|A(s_0)|$ es la cantidad de jugadas legales en la raíz y $b$ es el máximo de jugadas legales en cualquier estado.
 
+##### La regla
+
+**Lo que se promedia es la utilidad $U$ de cada final**, siempre desde MAX. Solo está definida en los finales:
+
+$$
+\mathbf{U(s)=\begin{cases}+1 & \text{si gana MAX}\\-1 & \text{si gana MIN}\\0 & \text{si empatan}\end{cases}}
+$$
+
 **El número de cada jugada.** Al terminar, calcula su promedio:
 
 $$
@@ -391,6 +467,8 @@ $$
 - **El contador dice cuántas partidas se promediaron.** Al completar el presupuesto, cada jugada tiene $N(s')=k$.
 - **El promedio se mide siempre desde MAX.** Una victoria aporta $+1$; una derrota, $-1$; un empate, $0$.
 
+##### Lo que estima
+
 **Lo que estima ese promedio.** El **promedio límite $\mu(s')$** es el promedio de $U$ sobre todas las partidas posibles desde $s'$, cada una con su probabilidad, cuando **los dos jugadores eligen al azar**.
 
 Elegir uniformemente en cada estado no hace igual de probables todas las hojas. **Cada camino pesa el producto de $1/|A(s)|$ en cada estado que cruza.** Por eso $\mu(s')$ no es, en general, el promedio simple de las hojas. Tampoco es el valor $V(s')$, que supone que ambos jugadores eligen lo mejor para sí.
@@ -400,6 +478,8 @@ Elegir uniformemente en cada estado no hace igual de probables todas las hojas. 
 - **Con alta probabilidad, $\bar u(s')$ cae dentro de un margen alrededor de $\mu(s')$**, el promedio de jugar al azar; no alrededor de $V(s')$.
 - **Con la misma confianza, ese margen se encoge como $1/\sqrt{N(s')}$.** Para reducirlo a la mitad hacen falta cuatro veces más simulaciones.
 - **El promedio no mejora necesariamente en cada simulación.** Una partida más puede alejarlo de $\mu(s')$. Lo que se reduce es el margen probable; con pocas partidas, el promedio todavía puede engañar.
+
+##### Ejemplo
 
 **Ejemplo: dos jugadas de MAX.** Después de cada jugada, una respuesta de MIN termina la partida. Cada número de la segunda columna corresponde a una respuesta distinta.
 
@@ -412,7 +492,9 @@ Con respuestas al azar, MAX gana en dos de las tres continuaciones de $a$, mient
 
 **Más simulaciones no corrigen esa decisión.** El promedio de $a$ se acerca a $1/3$, no a $-1$. El problema persiste aunque desaparezca el error por haber simulado pocas partidas: se está estimando el resultado contra un rival al azar.
 
-Al repetir, el reparto sigue siendo uniforme: una jugada que parece mala recibe tantas simulaciones como una que parece buena. **Solo quedan las sumas y los contadores de la raíz; los caminos simulados se descartan.**
+##### Qué se repite
+
+**Al repetir, el reparto sigue siendo uniforme:** una jugada que parece mala recibe tantas simulaciones como una que parece buena. **Solo quedan las sumas y los contadores de la raíz; los caminos simulados se descartan.**
 
 #### 2 · Elección: qué jugada juega
 
@@ -442,6 +524,8 @@ El reparto se fija antes de ver los resultados; la elección usa los promedios o
 ![Diagrama de flujo de Monte Carlo plano: para cada jugada de la raíz, juega k partidas al azar hasta un final, promedia su U y al final juega la de mayor promedio](../_assets/jue-c3-rx-flujo-mc-plano.svg)
 :::
 
+---
+
 ### UCT (Upper Confidence bounds applied to Trees)
 
 Es una variante de búsqueda en árbol de Monte Carlo (*Monte Carlo Tree Search*, MCTS). Aquí simula al azar hasta un final del juego y elige la jugada por número de visitas.
@@ -453,12 +537,22 @@ UCT construye **su propio árbol de búsqueda: una parte del árbol del juego**,
 - **Hoja de su árbol:** todavía no tiene hijos agregados, pero puede tener jugadas legales pendientes.
 - **Final del juego:** ya tiene resultado: $U=+1$ si gana MAX, $U=-1$ si gana MIN y $U=0$ si empatan.
 
+**Lo que promedia UCT es esa utilidad**, definida solo en los finales:
+
+$$
+\mathbf{U(s)=\begin{cases}+1 & \text{si gana MAX}\\-1 & \text{si gana MIN}\\0 & \text{si empatan}\end{cases}}
+$$
+
+##### Los pasos
+
 Cada **vuelta** (*iteration*) tiene cuatro fases:
 
 1. **Selección (*selection*).** Desde la raíz, baja por los nodos que ya están en su árbol, eligiendo en cada uno un hijo con el puntaje UCT. Se detiene al encontrar una jugada todavía sin agregar —la **frontera** de su árbol— o al llegar a un final del juego.
 2. **Expansión (*expansion*).** Si hay una jugada sin agregar, la agrega como **un hijo nuevo**. Si llegó a un final, no agrega nada: toma su $U$ y pasa directo a la retropropagación.
 3. **Simulación (*rollout* o *playout*).** Desde el hijo nuevo, elige jugadas legales **al azar, para los dos jugadores, hasta llegar a un final del juego**. Los nodos de esa partida no se agregan al árbol. **No usa EVAL:** el resultado sale de terminar la partida, no de estimar dónde paró la búsqueda.
 4. **Retropropagación (*backpropagation*).** Sube ese mismo $U$ por el camino hasta la raíz. Cada nodo del camino suma una visita a $N(s)$ y mete el resultado en su promedio $\bar u(s)$. **El signo no cambia al subir:** todos los promedios se miden desde MAX.
+
+##### La regla
 
 **El puntaje de la selección.** En cada nodo $s$, UCT combina el promedio de cada hijo $s'$ con un bono que premia explorar:
 
@@ -481,6 +575,8 @@ Las dos partes hacen cosas distintas:
 - **El bono explora (*exploration*):** es mayor para el hijo menos visitado. Si un hijo deja de recibir visitas mientras su padre sigue recibiéndolas, su bono crece hasta que vuelve a ser atractivo.
 - **La constante $c>0$ regula el balance:** con $c$ grande pesa más explorar; con $c$ chica, el promedio. La fórmula nunca se calcula con $N(s')=0$: una jugada sin visitas se atiende primero en la expansión.
 
+##### Ejemplo
+
 **Ejemplo en un nodo de MAX.**
 
 | Hijo | Promedio | Bono | Suma |
@@ -489,6 +585,8 @@ Las dos partes hacen cosas distintas:
 | $b$ | $0.2$ | $0.3$ | $0.5$ |
 
 Elige $a$, aunque $b$ tenga más bono. Si el bono de $b$ fuera $0.6$, sumaría $0.8$ y elegiría $b$, aunque el promedio de $a$ siga siendo mayor. **Decide la suma de las dos partes.**
+
+##### Qué se repite
 
 Al repetir, UCT concentra vueltas en lo que se ve mejor **según el puntaje de selección de cada nodo**, sin dejar de revisar lo demás. Su árbol crece desigual: dentro, se elige con el puntaje; desde la frontera hacia abajo, al azar.
 
@@ -523,6 +621,8 @@ Elegir por visitas evita fiarse de un promedio alto que salió de pocas partidas
 ::: figure {#jue-c3-rx-fig-flujo-uct title="UCT, en palabras"}
 ![Diagrama de flujo de UCT: un ciclo de selección, expansión, simulación y retropropagación; cuando se acaba el tiempo, juega la jugada más visitada](../_assets/jue-c3-rx-flujo-uct.svg)
 :::
+
+---
 
 ## Comparación
 
