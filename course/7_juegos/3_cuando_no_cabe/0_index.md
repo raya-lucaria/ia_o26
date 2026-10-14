@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 273m
+estimated_time: 275m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -63,10 +63,18 @@ Las páginas de la clase 2:
 - Explicar la profundización iterativa: qué jugada entregar cuando se acaba
   el tiempo y por qué repetir búsquedas cuesta poco.
 - Explicar la idea de la búsqueda de árbol Monte Carlo: estimar una jugada
-  simulando partidas al azar, sin función de evaluación.
+  simulando partidas, sin función de evaluación. Monte Carlo plano juega
+  todo al azar. MCTS elige por puntaje dentro de su árbol, y al azar solo
+  debajo.
 - Explicar el bono de UCT como margen de error de un promedio: por qué se
   suma, de dónde sale su tamaño, y que se usa para seleccionar, no para
   entregar.
+- Correr todos los algoritmos de la unidad en un mismo árbol y comparar qué
+  jugada entrega cada uno y cuántos nodos genera.
+- Distinguir los tres números que devuelven: $V$, el valor con corte y
+  $\bar u$. Y decir cuándo uno de ellos permite dejar de buscar.
+- Elegir el algoritmo para un juego nuevo según si cabe, si tiene dados, si
+  hay una evaluación buena y si hay reloj.
 
 La utilidad no cambia: sigue siendo la de las clases 1 y 2, $U=+1$ si gana
 Blancas y $U=-1$ si gana Negras. Lo nuevo es lo que se hace cuando la
@@ -97,8 +105,8 @@ primero **a mano** y después **como algoritmo**.
 | 2 | Minimax con corte como algoritmo | Qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta | 42m |
 | 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 22m |
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 37m |
-| 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 29m |
-| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 43m |
+| 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 30m |
+| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 44m |
 | 7 | Un árbol, todos los algoritmos | Correr cada algoritmo en el mismo árbol y ver qué hace distinto | 25m |
 | 8 | Qué número da cada uno | Distinguir $V$, el valor con corte y $\bar u$, y cuándo dejar de buscar | 20m |
 | 9 | Elegir el algoritmo | Diagnosticar un juego y elegir con qué buscar | 25m |

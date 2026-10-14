@@ -3233,17 +3233,22 @@ def jue_c3_bono():
     micro = ", ".join(f"{j.bono_ucb(100, n):.2f} con N(s′) = {n}" for n in MARCAS_MICRO_BONO)
     desc = ("Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono "
             "2√2·√(ln N(s)/N(s′)), de 0 a 4. Tres curvas, una por N(s): 100, 1 000 y 10 000; "
-            "las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Con N(s) = 100 "
+            "las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Las de N(s) = 100 "
+            "acaban en N(s′) = 100: una jugada no lleva más simulaciones que su padre. Con "
+            "N(s) = 100 "
             f"el bono vale {micro}. Una cuarta curva, tenue y de raya y punto: c = 1, la de la p5, "
             f"con N(s) = 100: {j.bono_ucb(100, 10, c=1):.2f} con N(s′) = 10.")
     out = []
     _encabezado_ucb(out, renglones[0], renglones[1:])
     y_pie = _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0, 1, 2, 3, 4),
                       "N(s′): simulaciones de la jugada", "bono (en unidades de ū)")
-    out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(100, n, c=1))) for n in ns], SUAVE,
-                          grosor=2, guiones=GUIONES_C1))
+    # Cada curva acaba en N(s′) = N(s): un hijo no lleva más simulaciones que
+    # su padre (la de 100 llegaba a 200, imposible; auditoría de la 7.3).
+    out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(100, n, c=1))) for n in ns if n <= 100],
+                          SUAVE, grosor=2, guiones=GUIONES_C1))
     for n_padre in CURVAS_BONO:
-        out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(n_padre, n))) for n in ns],
+        out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(n_padre, n))) for n in ns
+                               if n <= n_padre],
                               COLOR_BONO[n_padre], grosor=3, guiones=GUIONES_BONO[n_padre]))
     # Sin rotulo junto al punto: las curvas de arriba lo cruzaban; los
     # valores van en el pie.

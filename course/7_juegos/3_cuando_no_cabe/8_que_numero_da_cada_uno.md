@@ -62,7 +62,7 @@ El corte a ${d=1}$ eligió izq con 60. Ese 60 no es una utilidad: es
 $\mathrm{EVAL}(\text{I})$, una estimación en la escala ${100\cdot U}$. Debajo
 de I está ix, y en realidad izq vale ${-1}$, o ${-100}$ en esa escala.
 
-El valor con corte se vuelve exacto solo cuando todo lo que suma viene de
+El valor con corte se garantiza exacto cuando todo lo que suma viene de
 finales. Con ${d=2}$ da 10; con ${d=3}$ ya llega a todos los finales y da
 0, que es ${100\cdot V}$. La quietud con ${d=1}$ elige centro, la jugada
 buena, pero con 20: **arregla la jugada, no el valor**.
@@ -85,11 +85,15 @@ ${1/83}$.
 **Qué es cada uno.** $V$ con dado promedia el azar **del juego**: el dado
 existe, y los jugadores eligen lo mejor en sus nodos. $\bar u$ promedia el
 azar **del algoritmo**: el juego no tiene dado, pero las simulaciones
-juegan como si cada jugador tirara uno.
+juegan como si cada jugador tirara uno. En MCTS, solo debajo del árbol.
 
-**Qué no es:** $\bar u$ no es $V$, ni con muchas simulaciones. Su límite
-$\mu$ supone jugadores al azar. En der, los dos dan $1/3$ por la misma
-cuenta. Pero uno es el valor de un juego con dado, y el otro, el de un MIN
+**Qué no es:** el $\bar u$ de Monte Carlo plano no es $V$, ni con muchas
+simulaciones. Su límite $\mu$ supone jugadores al azar. El de MCTS, que
+dentro del árbol elige por puntaje, tiende a $V$ conforme crecen las
+vueltas.
+
+En der, $V$ con dado y el $\mu$ de Monte Carlo plano dan $1/3$ por la
+misma cuenta. Pero uno es el valor de un juego con dado, y el otro, el de un MIN
 que juega al azar en un juego sin dado, donde ${V(\text{der})=-1}$.
 :::
 
@@ -147,21 +151,22 @@ entrega ya están en su ficha:
 Y si cada uno **garantiza** $V$ está en la @jue-c3-cmp-garantiza, de
 [[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]. Lo que
 ninguna de esas tablas junta es qué supone cada número sobre los jugadores.
+
 $V$ lo dan minimax, expectiminimax y alfa-beta. El valor con corte lo
 dan el corte, la quietud y la iterativa. Y $\bar u$, Monte Carlo plano y
-MCTS.
+MCTS. La quietud da una variante del valor con corte: el valor con
+quietud.
 
 ::: table {#jue-c3-cmp-num-supone title="Qué supone cada número"}
 | Número | Supone que |
 |---|---|
 | $V$ | Todos eligen lo mejor |
 | Valor con corte | $\mathrm{EVAL}$ acierta en el corte |
-| $\bar u$ | Se juega al azar |
+| $\bar u$ | Se juega al azar (en MCTS, solo debajo del árbol) |
 :::
 
-Dos matices. En expectiminimax, el dado del juego no elige: se promedia.
-En MCTS, dentro del árbol se elige por puntaje; al azar se juega solo
-debajo.
+Un matiz en la fila de $V$: en expectiminimax, el dado del juego no
+elige, se promedia.
 
 Por eso garantiza $V$ quien supone que todos eligen lo mejor y llega a los
 finales, o prueba que lo que no mira no cambia nada. Un corte trae $\mathrm{EVAL}$, y un dado del algoritmo trae
@@ -225,13 +230,18 @@ La regla pide dos condiciones.
 En T± con el orden dado, alfa-beta ya se ahorra c2b, d2 y d3. Ahí lo hace
 la ventana: C2 ve ${\text{c2a}=+1}$ cuando C ya asegura 0, y D ve
 ${\text{d1}=-1}$ cuando la raíz ya asegura 0. La regla llega a lo mismo
-sin mirar la ventana: ${+1}$ es lo más para MAX, ${-1}$ lo más para MIN.
+sin llevar la ventana: ${+1}$ es lo más para MAX, ${-1}$ lo más para MIN.
 
-Pero la regla poda algo que alfa-beta no puede. Alfa-beta necesita la
-ventana; la regla, no. Se ve en I. Supón que ix fuera la primera hoja de
-I. I es el primer hijo de la raíz, así que llega con la ventana abierta.
-Alfa-beta generaría i1 igual. La regla no: **en I, MIN ve
+Pero la regla poda algo que alfa-beta, tal como la escribimos, no poda.
+Se ve en I. Supón que ix fuera la primera hoja de I. I es el primer hijo
+de la raíz, así que llega con la ventana inicial, ${(-\infty,+\infty)}$.
+Con esa ventana, alfa-beta generaría i1 igual. La regla no: **en I, MIN ve
 ${\text{ix}=-1}$ y ya no necesita mirar i1**.
+
+La regla equivale a abrir la
+ventana en los límites de $U$, ${(-1,+1)}$: con esa ventana, alfa-beta hace
+esta misma poda. Por eso pide utilidad acotada: sin un máximo conocido, no
+hay límites donde abrir la ventana.
 
 Para MIN, la regla lee su tope en el número de MAX, y eso supone **suma
 cero**: lo mejor para MIN es lo peor para MAX. Si no lo es, MIN tiene que
@@ -260,8 +270,9 @@ en D?
    se atoraba x con una sola simulación.
 2. **No.** 36 es una estimación, y está debajo de 100: otra jugada puede
    llevar a un final ganado.
-3. **Sí.** Alfa-beta sin corte da valores de finales, y ${+1}$ es lo más
-   que paga el juego.
+3. **Sí.** Un hijo de la raíz que devuelve más que $\alpha$ no cortó:
+   ${+1}$ es su valor, y sale de finales. Si hubiera cortado, devolvería
+   algo ${\le\alpha}$, y ${+1}$ no lo es.
 4. **No.** En D no mueve nadie: decide el dado. Su valor es el promedio
    de las tres hojas, y hacen falta todas.
 :::
@@ -278,9 +289,10 @@ puede dejar de buscar.
 - **El valor con corte estima.** El corte a ${d=1}$ da 60 por izq, que
   vale ${-1}$. Con ${d=3}$ llega a los finales y da 0. La quietud elige
   centro con 20: arregla la jugada, no el valor.
-- **$\bar u$ supone a todos al azar.** Su límite en der es ${1/3}$, y
-  ${V(\text{der})=-1}$. El ${\bar u=0}$ de UCT en centro coincide con $V$
-  por casualidad.
+- **El $\bar u$ de Monte Carlo plano supone a todos al azar.** Su límite
+  en der es ${1/3}$, y ${V(\text{der})=-1}$. UCT elige por puntaje dentro
+  del árbol y al azar solo debajo; su ${\bar u=0}$ en centro coincide con
+  $V$ por casualidad.
 - **Qué número da depende de cómo busca.** Hasta los finales y sin dados
   del algoritmo, $V$; con $d$, $\mathrm{EVAL}$; con simulaciones, $\bar u$.
 - **Se deja de buscar con lo máximo posible**, si la utilidad es acotada,

@@ -240,7 +240,7 @@
 {"algoritmo":"Monte Carlo plano, 5 por jugada","jugada":"der","valor":"3/5","tipo":"ū","escala":"U","nodos":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con μ = 1/3"},
 {"algoritmo":"Monte Carlo plano, 10 por jugada","jugada":"der","valor":"2/5","tipo":"ū","escala":"U","nodos":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con μ = 1/3"},
 {"algoritmo":"Monte Carlo plano, 50 por jugada","jugada":"der","valor":"12/25","tipo":"ū","escala":"U","nodos":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con μ = 1/3"},
-{"algoritmo":"UCT, c = 1, 40 vueltas","jugada":"centro","valor":"0","tipo":"ū","escala":"U","nodos":15,"garantiza":"No (converge a él con c suficientemente grande)","da_v_aqui":true,"nota":"N = 26 de 40"}]}
+{"algoritmo":"UCT, c = 1, 40 vueltas","jugada":"centro","valor":"0","tipo":"ū","escala":"U","nodos":15,"garantiza":"No (con tiempo sin límite converge a él, con cualquier c > 0)","da_v_aqui":true,"nota":"N = 26 de 40"}]}
 </script>
 
 <script>
@@ -270,7 +270,7 @@ const V = A.minimax.valor;
 const ABREVIA = {
   "Sí, el V del juego con dado": "Sí, el del juego con dado",
   "No, salvo si llega a los finales": "No, salvo finales",
-  "No (converge a él con c suficientemente grande)": "No; converge",
+  "No (con tiempo sin límite converge a él, con cualquier c > 0)": "No; converge",
 };
 /* nombres cortos para que la tabla quepa a 390 px */
 const ETIQUETA = {
@@ -556,7 +556,7 @@ function aqui(fam, r, f) {
     return r.daV ? `<b>sí</b>: ${v} es el V del juego con dado; el de T± sin dado es ${signo(V)}`
                  : `<b>no</b>: ${v}`;
   if (fam === "corte" || fam === "quietud" || fam === "iterativa") {
-    if (r.daV && r.llego) return `<b>sí</b>: ${v} (100·U) es V, porque esta vez llegó a los finales en todas sus ramas`;
+    if (r.daV && r.llego) return `<b>sí</b>: ${v} (100·U) es V, porque esta vez llegó a los finales en todas ${r.podados.size ? "las ramas que no podó" : "sus ramas"}`;
     if (r.daV) return `<b>sí, por casualidad</b>: ${v} (100·U) coincide con V, pero salió de EVAL`;
     return `<b>no</b>: ${v} en 100·U, y V es ${signo(V)}`;
   }

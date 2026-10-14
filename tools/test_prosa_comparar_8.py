@@ -101,7 +101,7 @@ def test_8_el_promedio_de_simulaciones_y_uct():
 
 def test_8_v_con_dado_y_u_dan_el_mismo_tercio_en_der():
     rem = _limpio(_bloque(_texto(), "jue-c3-cmp-v-no-es-u"))
-    m = re.search(rf"En der, los dos dan ({_Q}) por la misma cuenta", rem)
+    m = re.search(rf"En der, V con dado y el \\mu de Monte Carlo plano dan ({_Q}) por la misma cuenta", rem)
     assert _q(m[1]) == j.expectiminimax_tpm()[1]["D"] == j.todos_al_azar_tpm()[1]["der"]
     m = re.search(rf"donde V\(der\)=({_Q})", rem)
     assert _q(m[1]) == j.minimax_tpm()[2]["der"]
@@ -177,6 +177,11 @@ def test_8_la_tabla_de_que_supone_cada_numero():
     filas = _tabla(texto, "jue-c3-cmp-num-supone")
     assert [c.strip() for c in filas[0]] == ["Número", "Supone que"]
     assert [_c(f[0]) for f in filas[1:]] == ["V", "Valor con corte", "\\bar u"]
+    # Monte Carlo plano juega todo al azar; MCTS, solo debajo del árbol.
+    assert _c(filas[3][1]) == "Se juega al azar (en MCTS, solo debajo del árbol)"
+    rem = _limpio(_bloque(texto, "jue-c3-cmp-v-no-es-u"))
+    assert "el \\bar u de Monte Carlo plano no es V, ni con muchas simulaciones" in rem
+    assert "El de MCTS, que dentro del árbol elige por puntaje, tiende a V conforme crecen las vueltas" in rem
     m = re.search(r"V lo dan (.+?)\. El valor con corte lo dan (.+?)\. Y \\bar u, (.+?)\.",
                   _seccion(texto, 2))
     dan = [_CORTOS[n] for g in m.groups() for n in re.split(r", | y ", g)]
@@ -269,13 +274,25 @@ def test_8_cuando_dejar_de_buscar_en_t_pm():
                   rf"raíz ya asegura ({_Q})", tres)
     assert (_q(m[1]), _q(m[2])) == (cortes["C2"][0], cortes["C2"][2])
     assert (_q(m[3]), _q(m[4])) == (cortes["D"][0], cortes["D"][1])
-    # Con ix primero en I (primer hijo de la raíz, ventana abierta), alfa-beta
-    # genera i1 igual; la regla del −1 no lo necesita.
+    # Con ix primero en I (primer hijo de la raíz), alfa-beta con la ventana
+    # inicial (−∞, +∞) genera i1 igual; la regla del −1 no lo necesita. Y la
+    # regla es abrir la ventana en los límites de U: con (−1, +1), alfa-beta
+    # poda i1 tras ix.
     assert "Supón que ix fuera la primera hoja de I" in tres
     ix_primero = (tuple(reversed(j.ARBOL_TPM[0])),) + j.ARBOL_TPM[1:]
     _, _, _, podados_ix = j.alfa_beta_tpm("dado", arbol=ix_primero)
     assert (0, 1) not in podados_ix and j.nodo_en(ix_primero, (0, 1)) == 1   # i1, generado
-    assert "Alfa-beta generaría i1 igual. La regla no: en I, MIN ve ix=-1" in tres
+    m = re.search(r"llega con la ventana inicial, \((-∞),\+(∞)\)\. Con esa ventana, alfa-beta "
+                  r"generaría i1 igual\. La regla no: en I, MIN ve ix=-1", tres)
+    assert m
+    u = sorted({x for h in j.ARBOL_TPM for x in h if not isinstance(x, tuple)}
+               | {x for h in j.ARBOL_TPM for c in h if isinstance(c, tuple) for x in c})
+    m = re.search(rf"abrir la ventana en los límites de U, \(({_Q}),({_Q})\): con esa ventana, "
+                  r"alfa-beta hace esta misma poda", tres)
+    lo, hi = _q(m[1]), _q(m[2])
+    assert (lo, hi) == (u[0], u[-1]) == (-1, 1)
+    con_limites = j.alfa_beta_arbol(ix_primero, alfa=lo, beta=hi)
+    assert (0, 1) in con_limites["podados"] and con_limites["valor"] == j.minimax_tpm()[1]
 
 
 def test_8_el_ejercicio_puede_salir():
@@ -289,6 +306,9 @@ def test_8_el_ejercicio_puede_salir():
     resp = _limpio(_respuesta(texto, "jue-c3-cmp-ej-puede-salir"))
     assert re.findall(r"(\d)\. (Sí|No)\.", resp) == [("1", "No"), ("2", "No"), ("3", "Sí"),
                                                      ("4", "No")]
+    # La objeción de la cota (fail-soft): un MIN que corta devuelve algo ≤ α; +1 no lo es.
+    assert ("3. Sí. Un hijo de la raíz que devuelve más que \\alpha no cortó: +1 es su valor, y "
+            "sale de finales. Si hubiera cortado, devolvería algo ≤\\alpha, y +1 no lo es.") in resp
     assert int(re.search(r"2\. No\. (\d+) es una estimación", resp)[1]) == cota
     cuantas = re.search(r"el promedio de las (\w+) hojas", resp)[1]
     assert {"dos": 2, "tres": 3, "cuatro": 4}[cuantas] == len(j.ARBOL_TPM[2])
@@ -306,7 +326,9 @@ def test_8_lo_que_hay_que_llevarse():
     assert (m[2], int(m[1])) == j.corte_tpm(1)[:2] and _q(m[3]) == vs[m[2]]
     assert int(m[4]) == j.corte_tpm(3)[1]
     assert (m[5], int(m[6])) == j.quietud_tpm(1)[:2]
-    m = re.search(rf"Su límite en der es ({_Q}), y V\(der\)=({_Q})\. El \\bar u=({_Q}) de UCT", ll)
+    assert "El \\bar u de Monte Carlo plano supone a todos al azar." in ll
+    m = re.search(rf"Su límite en der es ({_Q}), y V\(der\)=({_Q})\. UCT elige por puntaje dentro "
+                  rf"del árbol y al azar solo debajo; su \\bar u=({_Q}) en centro", ll)
     u = j.uct_tpm(1, j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM)
     assert (_q(m[1]), _q(m[2]), _q(m[3])) == (
         j.todos_al_azar_tpm()[1]["der"], vs["der"], F(u["S"][(1,)], u["N"][(1,)]))

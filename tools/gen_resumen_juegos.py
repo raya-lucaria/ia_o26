@@ -84,7 +84,7 @@ ALGORITMOS = [
         nombre="Búsqueda de quietud",
         archivo=f"{J3}/3_mas_alla_del_horizonte.md",
         mira="$d$ jugadas, luego solo capturas",
-        numero="Valor con corte en posiciones quietas; no garantiza $V$, salvo si "
+        numero="Valor con quietud; no garantiza $V$, salvo si "
                "llega a los finales",
         garantiza="No",
         viene="no detenerse a estimar a mitad de un intercambio de capturas",
@@ -115,7 +115,8 @@ ALGORITMOS = [
         nombre="MCTS con UCT",
         archivo=f"{J3}/5_simular_en_vez_de_evaluar.md",
         mira="Un árbol que crece; debajo, partidas al azar",
-        numero="$\\bar u$; no garantiza $V$ (converge a él con $c$ grande)",
+        numero="$\\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, "
+               "con cualquier $c>0$)",
         garantiza="No",
         viene="lo mismo, pero mandando más partidas a las jugadas que van "
               "mejor, sin dejar de probar las otras",

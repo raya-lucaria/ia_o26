@@ -154,7 +154,7 @@ renglón, en cursivas.
 | Material, avance | Peones blancos menos negros; filas avanzadas por los blancos menos las de los negros | Cortar y evaluar a mano |
 | Horizonte | La línea donde la búsqueda se corta: lo que queda debajo no se genera | Más allá del horizonte |
 | Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Más allá del horizonte |
-| Posición quieta, búsqueda de quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar | Más allá del horizonte |
+| Posición quieta, búsqueda de quietud, valor con quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, seguir mirando solo capturas antes de evaluar; el valor con quietud es el valor con corte extendiendo las capturas hasta posiciones quietas | Más allá del horizonte |
 | DECIDIR-CON-CORTE, MINIMAX-CON-CORTE | DECIDIR-MINIMAX y su auxiliar con una línea más (con $d=0$, un estado no final vale su $\mathrm{EVAL}$) y los finales en la escala $100\cdot U$ | Minimax con corte como algoritmo |
 | PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Jugar contra el reloj |
 | ALFA-BETA-CON-CORTE | Alfa-beta con los mismos cambios: con $d=0$ se estima y los finales valen $100\cdot U$ | Jugar contra el reloj |
@@ -163,9 +163,9 @@ renglón, en cursivas.
 | MCTS, búsqueda de árbol Monte Carlo | Construye un árbol con vueltas de selección, expansión, simulación y retropropagación, y estima cada jugada por el promedio de sus simulaciones | Simular en vez de evaluar |
 | Explorar, aprovechar | Probar lo poco probado, o elegir lo que ya funcionó; la regla UCT equilibra los dos | Simular en vez de evaluar |
 | Bandido | Elegir muchas veces entre unas pocas jugadas cuyo promedio verdadero no se conoce; cada prueba da un resultado al azar. Es la raíz de MCTS sin árbol debajo | De dónde sale el bono |
-| Cota optimista | $\bar u(s')$ más el margen: lo más que $\mu(s')$ podría valer sin que los datos lo desmientan. Que quede en $\mu(s')$ o por debajo es fallar por debajo, y pasa con probabilidad a lo más $\delta$. UCB1 elige la jugada con la cota más alta; en un nodo de MIN, la cota es $\bar u(s')$ menos el margen y se elige la más baja. No es el techo de la tabla de transposición | De dónde sale el bono |
+| Cota optimista | $\bar u(s')$ más el margen: lo más que $\mu(s')$ podría valer sin que los datos lo desmientan. Que quede en $\mu(s')$ o por debajo es fallar por debajo, y pasa con probabilidad a lo más $\delta$. La regla UCB elige la jugada con la cota más alta; en un nodo de MIN, la cota es $\bar u(s')$ menos el margen y se elige la más baja. No es el techo de la tabla de transposición | De dónde sale el bono |
 | Árbol T± | El árbol T con finales en $U$ (+1, 0 o −1, con un solo empate), una captura de MIN (ix) y $\mathrm{EVAL}$ en los nodos internos; D tiene tres hijos. Lo corren todos los algoritmos de la unidad | Un árbol, todos los algoritmos |
-| UCB1, UCT | UCB1: la regla de la cota optimista en un bandido (Auer, Cesa-Bianchi y Fischer, 2002). UCT: la misma regla en cada nodo del árbol de MCTS | De dónde sale el bono |
+| Regla UCB, UCB1, UCT | Regla UCB: la de la cota optimista en un bandido. UCB1: esa regla con ${c=2\sqrt2}$ (Auer, Cesa-Bianchi y Fischer, 2002). UCT: la regla UCB en cada nodo del árbol de MCTS | De dónde sale el bono |
 | A veces al azar | Elegir el mejor promedio, salvo una fracción fija de las veces (10 % aquí), en que se elige al azar | De dónde sale el bono |
 | Promedio límite | El número al que se acerca el promedio de $U$ de las simulaciones desde un estado cuando son muchísimas: el promedio sobre todas las partidas, cada una con su probabilidad, si los dos eligen al azar. No es $V$ | Simular en vez de evaluar |
 

@@ -470,6 +470,22 @@ def test_clase_3_el_arbol_t_con_corte_y_contra_el_reloj():
     assert [c[:2] for c in pi[2][2]["cortes"]] == [("beta", "C2"), ("alfa", "I"), ("alfa", "D")]
 
 
+def test_clase_3_la_iterativa_sale_con_100_como_la_linea_9():
+    """`if w = 100: return a`: con I = (+1, +1), a d = 2 izq (la anterior,
+    primero) devuelve 100 y la búsqueda acaba ahí: no mira C ni D, y no hay
+    d = 3. En T y T± ningún hijo de la raíz llega a 100, y nada cambia."""
+    gana = j.escalar_arbol(((1, 1),) + j.ARBOL_TPM[1:], 100)
+    pi = j.profundizacion_iterativa_t(gana, (1, 2, 3), j.EVAL_TPM)
+    assert [(d, orden, t["jugada"], t["valor"], t["generados"]) for d, orden, t in pi] == [
+        (1, ["izq", "centro", "der"], "izq", 60, 4),
+        (2, ["izq", "centro", "der"], "izq", 100, 4)]
+    assert pi[-1][2]["orden_generados"] == ["R", "I", "100", "100"]
+    for arbol, evaluar in ((j.ARBOL_T, j.EVAL_T), (j.escalar_arbol(j.ARBOL_TPM, 100), j.EVAL_TPM)):
+        pi = j.profundizacion_iterativa_t(arbol, (1, 2, 3), evaluar)
+        assert len(pi) == 3 and all(f["w"] != 100 for _, _, t in pi for f in t["filas"]
+                                    if f["evento"] == "raiz")
+
+
 def test_clase_2_sin_el_igual_se_pierde_la_poda():
     # Sin el igual, el juego completo pierde casi toda la poda: 228 y 171.
     assert j.alfa_beta(j.inicio(), "B", estricto=True)[:2] == (-1, 228)
@@ -1151,11 +1167,31 @@ def test_prosa_clase_3_p4_el_reloj_en_la_posicion():
     assert [int(x) for x in re.findall(r"genera (\d+)", alt)] == nodos
     ej = _limpio(_bloque(texto, "jue-c3-ej-costo"))
     assert [int(x) for x in re.search(r"(\d+), (\d+) y (\d+) nodos", ej).groups()] == nodos
+    # La version corta se pasa del limite: la ultima contra lo ya gastado.
+    m = re.search(r"En la posición de la clase, (\d+) nodos contra (\d+)\.", _limpio(texto))
+    assert m and (int(m[1]), int(m[2])) == (nodos[2], sum(nodos[:2]))
     resp = _limpio(_respuesta(texto, "jue-c3-ej-costo"))
     assert [int(x) for x in re.search(r"(\d+)\+(\d+)\+(\d+)= (\d+)", resp).groups()] == \
         nodos + [sum(nodos)]
     assert [int(x) for x in re.search(r"(?<![\d+])(\d+)\+(\d+)= (\d+)", resp).groups()] == \
         nodos[:2] + [sum(nodos[:2])]
+    # 1/(b-1) con el crecimiento por nivel medido (33/12), no con el b maximo.
+    b, _ = j.ramificacion_maxima(j.arbol_con_corte(j.POSICION_C3, "B", 3, 4))
+    crece = F(nodos[2], nodos[1])
+    guia = f"{float(1 / (crece - 1)):.2f}"
+    medido = f"{float(F(sum(nodos[:2]), nodos[2])):.2f}"
+    x = r"(\d+(?:\.\d+)?)"
+    m = re.search(rf"el máximo, b=(\d+) jugadas: su último paso crece por (\d+)/(\d+)={x}, y "
+                  rf"1/\({x}-1\)≈{x} se acerca a lo medido, (\d+)/(\d+)≈{x}", resp)
+    assert m and m.groups() == (str(b), str(nodos[2]), str(nodos[1]), f"{float(crece):g}",
+                                f"{float(crece):g}", guia, str(sum(nodos[:2])),
+                                str(nodos[2]), medido)
+    llevarse = _limpio(texto.split("## Lo que hay que llevarse")[1])
+    m = re.search(rf"(\d+) nodos contra (\d+): la búsqueda crece por (\d+)/(\d+)={x}, "
+                  rf"no por b=(\d+), y 1/\({x}-1\)≈{x}", llevarse)
+    assert m and m.groups() == (str(sum(nodos[:2])), str(nodos[2]), str(nodos[2]),
+                                str(nodos[1]), f"{float(crece):g}", str(b),
+                                f"{float(crece):g}", guia)
 
 
 def test_prosa_clase_3_p4_profundizar_sin_poda_en_t():
@@ -2255,9 +2291,12 @@ def test_prosa_clase_3_p6_la_figura_eligiendo_x_y_sus_vinetas():
     assert (m[5], m[6]) == (pc(t["ucb"][fin]), pc(t["ucb_c1"][fin]))
     assert _x(m[7]) == 100 - _x(m[5]) and j.reparto_bandido()["ucb"]["atoradas"] == 0
     # Lo que define la página: una foto de la vuelta, no acumulada.
-    assert re.search(r"Eligiendo x en esa vuelta: de las elecciones que hacen las 40 corridas en "
-                     r"la vuelta N\(s\), qué fracción va a x\. Es una foto de ese momento, no "
-                     r"una suma", seis)
+    # La definición ya trae la ventana que promedia la figura (auditoría de
+    # la 7.3): antes decía «en la vuelta N(s)» y la ventana salía después.
+    m = re.search(r"Eligiendo x en esa vuelta: de las elecciones que hacen las 40 corridas en "
+                  r"las vueltas N\(s\)-(\d+) a N\(s\), qué fracción va a x\. Es una foto de "
+                  r"ese momento, no una suma", seis)
+    assert m and int(m[1]) == j.VENTANA_ELIGIENDO - 1
     m = re.search(rf"de las ({_NUM}) corridas: ({_NUM}) elecciones\.", seis)
     assert _x(m[1]) == j.CORRIDAS_BANDIDO and _x(m[2]) == j.VENTANA_ELIGIENDO * j.CORRIDAS_BANDIDO
     assert "Es una fracción de elecciones, no de corridas: solo sin bono" in seis
@@ -2468,6 +2507,12 @@ def test_prosa_clase_3_p6_lo_que_garantizan_auer_y_kocsis():
                      r"tarda mucho", seis)
     assert re.search(r"la probabilidad de que UCT elija en la raíz una jugada peor que la de "
                      r"minimax tiende a 0", ocho)
+    # Llegar no pide la c grande (auditoría de la 7.3): con cualquier c > 0,
+    # en un árbol finito, toda jugada se prueba sin fin; la c grande da la
+    # cota de rapidez. Y la «garantía» que c = 1 no da es la de ln N(s).
+    assert re.search(r"Llegar no pide una c grande\. Con cualquier c>0, en un árbol finito", ocho)
+    assert "es la que les da una cota de qué tan rápido baja la probabilidad de error" in ocho
+    assert "Pero vuelve: lo que pierde es la cota de \\ln N(s), no la llegada" in seis
     ver = (UNIDAD.parent.parent / "docs/verificacion/juegos/0_index.md").read_text(encoding="utf-8")
     assert "teorema 6" in ver and "la probabilidad de fallo en la raíz" in ver
     assert "Su teorema 1" in ver and "8\\ln n/\\Delta^2" in ver
@@ -2549,6 +2594,49 @@ def test_prosa_clase_3_p5_la_raiz_el_bono_de_min_y_la_c_como_delta():
     assert all(_isclose_f(2 * con_g[k] - 1, con_u[k]) for k in con_u)
 
 
+def test_prosa_clase_3_p5_monte_carlo_plano_no_es_mcts():
+    """Auditoría de la 7.3: la p5 no aplana MCTS a «promedio de partidas al
+    azar». Nombra Monte Carlo plano en §1 (las secciones 1 a 3), el summary
+    dice los dos pasos, y «Lo que hay que llevarse» separa: plano supone a
+    los dos al azar; MCTS elige por puntaje dentro del árbol. Además: lo que
+    pide son las reglas (A, T, S_F y U), la expansión toma la primera jugada
+    que falta (como uct_tpm), la fila «¿Garantiza V?» de UCT dice «cualquier
+    c > 0», y AlphaGo mezcla red y simulación con λ = 0.5 (verificación, fila 28)."""
+    texto = _pagina(P5)
+    resumen = texto.split("\n---", 1)[0]
+    assert re.search(r'^summary: ".*Monte Carlo plano.*elige por puntaje, y solo debajo simula '
+                     r'al azar\."$', resumen, re.M)
+    uno = _seccion(texto, 1)
+    assert "Esta idea se llama Monte Carlo plano" in uno
+    assert "Las secciones 1 a 3 son eso. Desde la sección 4, MCTS lo mejora" in uno
+    llevarse = _llevarse(texto)
+    assert llevarse.startswith("## Lo que hay que llevarse - Monte Carlo plano estima")
+    assert "MCTS estima una jugada simulando" not in llevarse
+    assert re.search(r"- MCTS construye un árbol: dentro de él cada jugador elige por puntaje,\s+"
+                     r"y solo debajo se simula al azar\. Por eso su \\bar u no es ese promedio",
+                     llevarse)
+    # Lo que pide: todas las piezas de las reglas, no solo A y T.
+    tabla = _tabla(texto, "jue-c3-eval-contra-mcts")
+    assert _c(tabla[1][2]) == "Solo las reglas: A, T, S_F y U"
+    assert "Solo usa las reglas (A, T, S_F y U)" in _limpio(_respuesta(texto, "jue-c3-ej-cambio"))
+    assert "Solo $A$ y $T$" not in texto and "Solo usa $A$ y $T$" not in texto
+    # La expansión, en orden fijo: uct_tpm agrega el primer hijo que falta.
+    assert "la primera de las jugadas que faltaban, en un orden fijo" in " ".join(
+        _seccion(texto, 4).split())
+    raiz = len(j.ARBOL_TPM)
+    assert [c[-1] for c in j.uct_tpm(1, raiz, 1)["caminos"]] == [(i,) for i in range(raiz)]
+    # UCT llega con cualquier c > 0; la c grande es la cota de Kocsis y Szepesvári.
+    ficha = _tabla(texto, "jue-ficha-uct")
+    fila = {_c(f[0]): f[1].strip() for f in ficha[1:]}
+    assert fila["¿Garantiza V?"] == "No. Con tiempo sin límite converge a él, con cualquier $c>0$"
+    # AlphaGo: λ = 0.5, la fila 28 de la verificación.
+    ver = (UNIDAD.parent.parent / "docs/verificacion/juegos/0_index.md").read_text(encoding="utf-8")
+    lam = re.search(r"λ = (\d+(?:\.\d+)?) fue la mejor", ver)[1]
+    seis = _seccion(texto, 6)
+    assert re.search(r"mitad y mitad \(\\lambda=(\d+(?:\.\d+)?)\)", seis)[1] == lam
+    assert F(lam) == F(1, 2)
+
+
 # ---- p6 · corridas y c↔δ (aclarar-bono-y-mcts)
 #
 # Pruebas de FUENTE: fijan contra juegos.py las cifras nuevas de la p6 (el
@@ -2614,7 +2702,12 @@ def test_p6_el_tope_de_a_veces_al_azar_es_esperado_no_un_techo():
 
 
 def test_p6_c_es_delta_disfrazada():
-    """δ = N(s)^−k da el margen c·√(ln N(s)/N(s′)) con c = √(2k)."""
+    """δ = N(s)^−k da el margen c·√(ln N(s)/N(s′)) con c = √(2k).
+    La prosa ya no dice «δ disfrazada»: c fija el exponente k, y δ sigue
+    cambiando con N(s) (auditoría de la 7.3)."""
+    texto = _pagina(P6)
+    assert "disfrazada" not in texto
+    assert "Cada c fija con qué rapidez baja \\delta: k=c^2/2." in _seccion(texto, 5)
     assert j.exponente_de_c(1) == F(1, 2)
     assert math.isclose(j.exponente_de_c(j.C_TEORIA), 4)
     assert math.isclose(j.exponente_de_c(math.sqrt(2)), 1)
@@ -2906,7 +2999,7 @@ def test_tpm_tabla_de_la_pagina():
     assert [f["garantiza"] for f in filas] == [
         "Sí", "Sí, el V del juego con dado", "Sí, en la raíz", "Sí, en la raíz"] + \
         ["No, salvo si llega a los finales"] * 5 + ["No"] * 3 + \
-        ["No (converge a él con c suficientemente grande)"]
+        ["No (con tiempo sin límite converge a él, con cualquier c > 0)"]
     assert filas[9]["nota"] == "límite: der con μ = 1/3"
 
 

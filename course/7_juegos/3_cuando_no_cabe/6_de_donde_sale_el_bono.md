@@ -2,9 +2,9 @@
 id: de-donde-sale-el-bono
 title: De dónde sale el bono
 nav_title: De dónde sale el bono
-summary: "El bono de UCT es el margen de error de un promedio: sumado, da la cota optimista de cada jugada. Sale de la desigualdad de Hoeffding con una probabilidad de fallo que baja conforme avanza la búsqueda, y esa probabilidad es la c del puntaje. Se usa para seleccionar, no para entregar."
+summary: "El bono de UCT es el margen de error de un promedio: sumado, da la cota optimista de cada jugada. Sale de la desigualdad de Hoeffding con una probabilidad de fallo que baja conforme avanza la búsqueda; la c del puntaje fija qué tan rápido baja. Se usa para seleccionar, no para entregar."
 status: ready
-estimated_time: 43m
+estimated_time: 44m
 tags: [juegos, mcts, exploracion]
 ---
 
@@ -42,8 +42,9 @@ Al terminar tendrás:
 >
 > Cada vuelta elige una, juega una simulación y anota ${U=\pm1}$. No hay
 > árbol debajo: solo esta elección, repetida. La regla de UCT en un solo
-> nodo se llama **UCB1**; UCT es UCB1 repetida en cada nodo del árbol, y
-> vuelve en la sección 8.
+> nodo es **la regla UCB**; UCT es la regla UCB repetida en cada nodo del
+> árbol, y vuelve en la sección 8. Con ${c=2\sqrt2}$ se llama **UCB1**
+> (sección 5).
 
 > **Supuestos de esta página.** Las simulaciones de una misma jugada son
 > independientes. En la sección 8 vemos qué pasa cuando hay árbol y esto
@@ -391,9 +392,9 @@ $$\begin{aligned}
 &=\sqrt{2k}\,\sqrt{\frac{\ln N(s)}{N(s')}}.
 \end{aligned}$$
 
-**Es el bono del puntaje, con ${c=\sqrt{2k}}$.** La $c$ es $\delta$
-disfrazada: cada $c$ pide un $\delta$, y al revés, ${k=c^2/2}$. El puntaje
-es la cota optimista de la sección 4.
+**Es el bono del puntaje, con ${c=\sqrt{2k}}$.** Cada $c$ fija con qué
+rapidez baja $\delta$: ${k=c^2/2}$. El puntaje es la cota optimista de la
+sección 4.
 
 ::: table {#jue-c3-tabla-c-delta title="La c del puntaje y el δ que pide"}
 | $c$ | $k$ | $\delta$ | $\delta$ con ${N(s)=100}$ |
@@ -457,7 +458,7 @@ cada curva es un $N(s)$; con $N(s')$ fijo, el bono sube de una curva a la
 siguiente.
 
 ::: figure {#jue-c3-fig-bono title="El bono baja con N(s′) y sube con N(s)"}
-![Gráfica. Eje horizontal: N(s′), simulaciones de la jugada, de 0 a 200. Eje vertical: el bono 2√2·√(ln N(s)/N(s′)), en unidades de ū, de 0 a 4. Tres curvas, una por N(s): 100 continua, 1 000 con rayas y 10 000 con puntos; las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Puntos sobre la curva de 100 en N(s′) = 10, 30 y 60: el bono vale 1.92, 1.11 y 0.78. Una cuarta curva, tenue y de raya y punto, c = 1 con N(s) = 100, queda muy por debajo: 0.68 en N(s′) = 10](../_assets/jue-c3-bono.svg)
+![Gráfica. Eje horizontal: N(s′), simulaciones de la jugada, de 0 a 200. Eje vertical: el bono 2√2·√(ln N(s)/N(s′)), en unidades de ū, de 0 a 4. Tres curvas, una por N(s): 100 continua, 1 000 con rayas y 10 000 con puntos; las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Las de N(s) = 100 acaban en N(s′) = 100: una jugada no lleva más simulaciones que su padre. Puntos sobre la curva de 100 en N(s′) = 10, 30 y 60: el bono vale 1.92, 1.11 y 0.78. Una cuarta curva, tenue y de raya y punto, c = 1 con N(s) = 100, queda muy por debajo: 0.68 en N(s′) = 10](../_assets/jue-c3-bono.svg)
 :::
 
 Los bonos con ${c=2\sqrt2}$ salen grandes porque ${\delta=N(s)^{-4}}$ pide
@@ -551,8 +552,8 @@ el mejor promedio salvo una vuelta de cada diez, al azar. Tres palabras:
   1 a $N(s)$ es lo que la regla ganó por vuelta. Lo mejor posible es
   elegir siempre x, la mejor: en promedio, ${\mu(\text{x})=0.6}$.
 - **Eligiendo x en esa vuelta**: de las elecciones que hacen las 40
-  corridas en la vuelta $N(s)$, qué fracción va a x. Es una foto de ese momento, no una suma desde la
-  vuelta 1.
+  corridas en las vueltas ${N(s)-9}$ a $N(s)$, qué fracción va a x. Es una
+  foto de ese momento, no una suma desde la vuelta 1.
 
 **¿Encuentra cada regla la mejor jugada?** En la primera figura cada
 punto es **una corrida**, en la fracción de sus 10 000 vueltas que fue a x:
@@ -641,7 +642,8 @@ despacio que $N(s)$.
 Una $c$ chica, como ${c=1}$, no da esa garantía, aunque aquí funcione
 mejor. Si la mejor tiene mala suerte en sus primeras simulaciones, su bono
 chico tarda mucho en compensar su mal promedio, y la búsqueda puede gastar
-miles de vueltas en otra antes de volver a ella.
+miles de vueltas en otra antes de volver a ella. Pero vuelve: lo que
+pierde es la cota de ${\ln N(s)}$, no la llegada (sección 8).
 
 La búsqueda sí llega a la mejor jugada. Pero cuando se acaba el tiempo,
 ¿cuál se juega?
@@ -695,8 +697,8 @@ debajo?
 independientes?**
 
 No del todo. MCTS pone un bandido **en cada nodo** del árbol: elige entre
-sus hijos con el mismo puntaje. Eso es **UCT**: UCB1 aplicado en cada nodo
-del árbol. Pero debajo de cada hijo hay otros bandidos que van aprendiendo.
+sus hijos con el mismo puntaje. Eso es **UCT**: la regla UCB aplicada en
+cada nodo del árbol. Pero debajo de cada hijo hay otros bandidos que van aprendiendo.
 
 Así que los resultados de un hijo ya no son independientes: lo que se
 elige abajo depende de lo que salió antes. Lo que promedian tampoco es el
@@ -708,6 +710,12 @@ Kocsis y Szepesvári (2006) demostraron aparte que, con una $c$ bastante
 grande, la probabilidad de que UCT elija en la raíz una jugada peor que la
 de minimax tiende a 0 conforme crecen las vueltas. Llega a la jugada que
 elegiría minimax, no a la de mayor $\mu(s')$. Esa prueba no la cubrimos.
+
+Llegar no pide una $c$ grande. Con cualquier ${c>0}$, en un árbol finito, el
+bono de una jugada poco probada sigue creciendo con ${\ln N(s)}$: UCT
+termina probando todas las jugadas de cada nodo, una y otra vez, y llega
+igual. La $c$ grande de Kocsis y Szepesvári es la que les da una cota de
+qué tan rápido baja la probabilidad de error.
 
 ## 9 · Aplicar el bono por tu cuenta
 
@@ -787,7 +795,8 @@ calcular la cota optimista en un nodo de MAX o de MIN.
   podría valer sin que los datos lo desmientan; se elige la más alta,
   porque el optimismo se corrige solo. MIN usa ${\bar u-\varepsilon}$ y
   elige la más baja; una jugada sin probar tiene bono infinito.
-- **$c$ es $\delta$ disfrazada.** Con ${\delta=N(s)^{-k}}$, ${c=\sqrt{2k}}$.
+- **$c$ fija qué tan rápido baja $\delta$.** Con ${\delta=N(s)^{-k}}$,
+  ${c=\sqrt{2k}}$.
   UCB1 pide ${\delta=N(s)^{-4}}$, y da ${c=2\sqrt2\approx2.83}$; con la
   tasa ${G/N}$ es ${c=\sqrt2}$, la misma regla. La ${c=1}$ de la página
   anterior es ${k=1/2}$.
@@ -799,7 +808,7 @@ calcular la cota optimista en un nodo de MAX o de MIN.
 - **Seleccionar usa el bono; entregar, no.** En el ejercicio de MCTS, con
   ${c=2\sqrt2}$ la selección va a z (2.12) y con ${c=1}$ a y; se entrega
   x, con 60 simulaciones.
-- **En el árbol**, UCT es UCB1 en cada nodo; Hoeffding ya no vale al pie de
+- **En el árbol**, UCT es la regla UCB en cada nodo; Hoeffding ya no vale al pie de
   la letra, pero la intuición sí.
 
 Continúa con [[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]: el mismo árbol corrido por cada algoritmo que viste.

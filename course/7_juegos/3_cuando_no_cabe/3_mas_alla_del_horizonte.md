@@ -94,8 +94,8 @@ esa consecuencia, y la valora mal.
 **Qué significa:** el número del nodo de corte describe una posición a
 mitad de algo que todavía no termina.
 
-**El caso clásico.** Hans Berliner le dio nombre en 1973 pensando en otra
-forma: una **pérdida inevitable que el programa aplaza**. El programa
+**El caso clásico.** Hans Berliner le dio nombre en 1973; la forma más
+citada es otra: una **pérdida inevitable que el programa aplaza**. El programa
 intercala jugadas que el rival tiene que contestar, y cada una empuja la
 pérdida dos jugadas más lejos. Cuando sale del horizonte, el programa cree
 que la evitó.
@@ -166,7 +166,11 @@ La **búsqueda de quietud** cambia lo que pasa en un nodo de corte que no
 es quieto. En vez de evaluar ahí, sigue mirando **solo las capturas** hasta
 llegar a posiciones quietas, y evalúa en ellas. En cada paso, el jugador de
 turno elige entre capturar o **quedarse** con la $\mathrm{EVAL}$ de la
-posición.
+posición, aunque esta todavía tenga capturas.
+
+El número que da es el **valor con quietud**: el valor con corte, pero
+extendiendo las capturas hasta posiciones quietas. Sigue siendo un valor
+con corte: estima con $\mathrm{EVAL}$, solo que más abajo.
 
 **Qué significa:** el corte ya no cae en medio de un intercambio.
 
@@ -227,8 +231,9 @@ captura, ¿la posición que deja es quieta para Blancas?
    perdedora.
 :::
 
-Mirar las capturas suele costar poco, porque en muchas posiciones hay
-pocas. Y en este juego la búsqueda de quietud siempre termina: cada captura
+Cada posición agrega pocas capturas, pero en total pueden ser buena parte
+de la búsqueda: en los programas de ajedrez, los nodos de quietud suelen ser
+muchos. Y en este juego la búsqueda de quietud siempre termina: cada captura
 quita un peón, y los peones se acaban.
 
 ## 3 · Poner a prueba la quietud por tu cuenta
@@ -330,10 +335,10 @@ Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-cor
 |---|---|
 | Hasta dónde mira | $d$ jugadas, y después del corte solo capturas, hasta posiciones quietas |
 | ¿Genera todo el árbol? | No: arriba del corte, todo; debajo, solo las capturas |
-| ¿Garantiza $V$? | No, salvo si llega a los finales. Da el valor con corte, sin el engaño de los intercambios a medias |
-| Con qué estima | Con $\mathrm{EVAL}$, solo en posiciones quietas |
+| ¿Garantiza $V$? | No, salvo si llega a los finales. Da el valor con quietud, sin el engaño de los intercambios a medias |
+| Con qué estima | Con $\mathrm{EVAL}$: en las posiciones quietas y, como valor de quedarse, también en las que tienen capturas |
 | ¿Quién tira dados? | Nadie |
-| Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con corte. Interrumpida, como minimax con corte, no garantiza nada |
+| Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con quietud. Interrumpida, como minimax con corte, no garantiza nada |
 | Cuándo conviene | Juegos con capturas, donde $\mathrm{EVAL}$ cambia mucho a mitad de un intercambio. En ajedrez la usaba Deep Blue |
 :::
 
@@ -346,7 +351,7 @@ Antes de cerrar, la ficha de la búsqueda de quietud. Es la de [[minimax-con-cor
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | **Búsqueda de quietud (estás aquí)** | **Valor con corte en posiciones quietas; no garantiza $V$, salvo si llega a los finales** |
+> | **Búsqueda de quietud (estás aquí)** | **Valor con quietud; no garantiza $V$, salvo si llega a los finales** |
 >
 > **Lo que viene.**
 >

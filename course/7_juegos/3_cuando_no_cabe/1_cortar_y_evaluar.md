@@ -213,8 +213,8 @@ $s$**, sin buscar hacia delante.
 nosotros, y puede equivocarse.
 :::
 
-Los finales que aparezcan antes de llegar a ${d=0}$ se siguen valorando con
-su utilidad: ahí no hay nada que estimar.
+Los finales que aparezcan antes de llegar a ${d=0}$, o justo en ${d=0}$, se
+siguen valorando con su utilidad: ahí no hay nada que estimar.
 
 ::: exercise {#jue-c3-ej-presupuesto title="Sigue la profundidad que queda"}
 El presupuesto es ${d=3}$ en la raíz, donde mueve Blancas.
@@ -235,8 +235,8 @@ de quién es la jugada para lo que le pasa a $d$?
 1. ${d=2}$, luego ${d=1}$, luego ${d=0}$: cada jugada la baja en uno, sea de
    quien sea.
 2. Tras la segunda jugada de Blancas, donde ${d=0}$.
-3. Con su utilidad, ${U=+1}$: ese nodo es un final, y no se estima aunque
-   le queden dos jugadas por mirar.
+3. Con su utilidad, ${U=+1}$ (en la escala de la sección 6, 100): ese nodo
+   es un final, y no se estima aunque le queden dos jugadas por mirar.
 :::
 
 ## 5 · Escribir una evaluación para los peones
@@ -505,10 +505,13 @@ Blancas llega a la fila 4.
 
 **Piensa: ¿alguna de estas profundidades garantiza la jugada correcta?**
 
-Ninguna, por sí sola. Para saber cuál es la correcta, la computadora
-recorrió el árbol del 4×4 hasta los finales: eso da el **valor exacto**,
-$V$. Las otras dos ramas de la profundidad 3 también las hizo la
-computadora. En la tabla, P1, P2 y P3 son las profundidades 1, 2 y 3, y la
+Ninguna lo garantiza en general; aquí la 3 sí, porque su 100 sale de
+finales: lo verás en la página siguiente.
+
+Para saber cuál es la correcta,
+la computadora recorrió el árbol del 4×4 hasta los finales: eso da el
+**valor exacto**, $V$. Las otras dos ramas de la profundidad 3 también
+las hizo la computadora. En la tabla, P1, P2 y P3 son las profundidades 1, 2 y 3, y la
 última columna pone $V$ por 100, en la escala de las demás.
 
 ::: table {#jue-c3-profundidades title="Las tres jugadas a profundidad 1, 2 y 3, y su valor exacto"}

@@ -287,9 +287,9 @@ quién gana. Sirve para ver **qué línea actúa** en cada nodo.
 | C2 | 9 | 8 |
 :::
 
-Con estos números de juguete, T **no cumple** @jue-c3-orden-finales, y a
-propósito: la $\mathrm{EVAL}$ de C2, 9, es mayor que la hoja 2 de D, que
-es final.
+En T las hojas son números de juguete, no victorias ni derrotas, así que
+@jue-c3-orden-finales **no se aplica**. Por eso una $\mathrm{EVAL}$ puede
+quedar dentro del rango de las hojas, de 2 a 12, como el 9 de C2.
 
 ### Con d = 1, der parece la mejor
 
@@ -722,7 +722,7 @@ Antes de cerrar, la ficha de minimax con corte. Frente a la de [[minimax-como-al
 | Con qué estima | Con $\mathrm{EVAL}$, en los nodos de corte |
 | ¿Quién tira dados? | Nadie. Con dados se le suma el promedio de expectiminimax |
 | Qué entrega, y si se puede interrumpir | Una jugada de mayor valor con corte. $d$ se fija antes: interrumpido, no garantiza nada |
-| Cuándo conviene | Árboles que no caben, con una $\mathrm{EVAL}$ razonable escrita a mano. Con alfa-beta: ajedrez (Deep Blue), damas (Chinook, que además usa tablas de finales). Con dados: backgammon (TD-Gammon) |
+| Cuándo conviene | Árboles que no caben, con una $\mathrm{EVAL}$ razonable escrita a mano. Con alfa-beta: ajedrez (Deep Blue), damas (Chinook, que además usa tablas de finales). Con dados: backgammon (TD-Gammon, con una $\mathrm{EVAL}$ aprendida por una red) |
 :::
 
 > [!NOTE]

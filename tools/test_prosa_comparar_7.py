@@ -363,9 +363,20 @@ def test_comparar_7_la_tabla_de_garantias():
     assert [_familia(e["algoritmo"]) for e in sin_garantia] == ["Corte", "Iterativa", "UCT"]
     assert [e["algoritmo"] for e in sin_garantia][0] == "corte d = 3"
     nota = _limpio(texto.split("jue-c3-cmp-garantiza", 1)[1])
-    m = re.search(r"En T±, (\w+) filas de la primera tabla dan el (\d+) de minimax sin esa "
-                  r"garantía\. El corte a d=(\d) y la iterativa, .*?UCT, por casualidad", nota)
+    # «sin garantía» es en general: el corte a d=3 y la iterativa sí llegan a
+    # los finales esta vez (su salvedad «salvo si llega»), y entonces es V.
+    m = re.search(r"En T±, (\w+) filas que en general no garantizan V dan el (\d+) de minimax\. "
+                  r"El corte a d=(\d) y la iterativa, porque esta vez llegan a los finales, y "
+                  r"entonces sí es V\. UCT, por casualidad", nota)
     assert {"tres": 3}[m[1]] == len(sin_garantia) and int(m[2]) == v and int(m[3]) == 3
+    assert j.corte_tpm(int(m[3]))[3] == j.contar_nodos(j.ARBOL_TPM)
+    assert j.iterativa_tpm()[0][-1][0] == int(m[3])
+    # UCT llega con cualquier c > 0 y tiempo sin límite (la convención de
+    # GARANTIZA_TPM); lo medido en T± es cuánto tarda, no una garantía.
+    assert "No (con tiempo sin límite converge a él, con cualquier c > 0)" == GARANTIZA["UCT"]
+    assert ("Es lo medido en este árbol, no una garantía. Con tiempo sin límite, cualquier "
+            "c>0 termina en la jugada de minimax; cuánto tarda depende del árbol y de c.") \
+        in _limpio(texto)
 
 
 def test_comparar_7_lo_que_hay_que_llevarse():
