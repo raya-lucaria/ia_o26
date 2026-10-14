@@ -12,7 +12,7 @@ tags: [juegos, busqueda-adversarial, comparacion]
 
 Esta página pone lado a lado los cinco algoritmos de búsqueda de la unidad. Cada uno tiene una ficha con las mismas tres partes, **cómo explora, qué jugada juega y sus propiedades**, y sus figuras sobre el mismo árbol.
 
-**Al final del día, lo que se busca es el valor $V(s)$ de cada estado**: lo que MAX se asegura desde $s$ si los dos juegan lo mejor. **Sobre todo, el $V$ de cada jugada de la raíz**, para jugar la mejor. Cada algoritmo es una manera distinta de **obtenerlo, acotarlo o estimarlo**:
+**Al final del día, lo que se busca es el valor $V(s)$ de cada estado**: lo que MAX se asegura desde $s$ si los dos juegan lo mejor. **Sobre todo, el $V$ de cada jugada de la raíz**, para jugar la mejor. Cada algoritmo trata de **obtenerlo, acotarlo o estimarlo**, y uno, Monte Carlo plano, termina estimando otro número:
 
 - **Minimax** lo calcula exacto.
 - **Alfa-beta** lo calcula exacto para la jugada que elige, con menos trabajo; de las demás puede dar solo cotas.
@@ -166,7 +166,7 @@ MAX juega $b$ y asegura el empate, aunque debajo de $a$ haya una victoria: MIN n
 
 ##### Al terminar
 
-**Al terminar el recorrido, minimax generó **todos los nodos del árbol** y la raíz conoce el valor exacto de cada una de sus jugadas.** Para calcularlo no tuvo que conservar el árbol entero en memoria: cada nodo cerrado se descarta en cuanto entrega su valor.
+Al terminar el recorrido, minimax generó **todos los nodos del árbol** y la raíz conoce el valor exacto de cada una de sus jugadas. Para calcularlo no tuvo que conservar el árbol entero en memoria: cada nodo cerrado se descarta en cuanto entrega su valor.
 
 #### 2 · Elección: qué jugada juega
 
