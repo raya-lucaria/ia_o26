@@ -1117,7 +1117,7 @@ def test_el_valor_de_una_jugada_vive_en_el_hijo():
         assert clave in r, clave
     # La leyenda: que numero guarda cada algoritmo, en el orden de la pagina.
     for alg, num in [("minimax", "V"), ("alfa-beta", "V o cota"), ("corte", "valor con corte"),
-                     ("Monte Carlo plano", "ū → μ"), ("UCT", "ū → V")]:
+                     ("Monte Carlo plano", "ū estima μ"), ("UCT", "ū estima V")]:
         i = r.index(alg)
         assert r[i + 1] == num, alg
     assert "EVAL" not in _texto("jue-c3-rx-estado-y-jugada")

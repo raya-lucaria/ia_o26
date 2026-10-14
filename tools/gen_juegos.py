@@ -5120,8 +5120,8 @@ def jue_c3_mcg_uct_crece():
 
 # Que numero guarda cada algoritmo en el hijo: (algoritmo, numero).
 NUMERO_EN_EL_HIJO = [("minimax", "V"), ("alfa-beta", "V o cota"),
-                     ("corte", "valor con corte"), ("Monte Carlo plano", "ū → μ"),
-                     ("UCT", "ū → V")]
+                     ("corte", "valor con corte"), ("Monte Carlo plano", "ū estima μ"),
+                     ("UCT", "ū estima V")]
 
 
 def jue_c3_rx_estado_y_jugada():
@@ -5163,8 +5163,8 @@ def jue_c3_rx_estado_y_jugada():
             "T(s, A) y el estado T(s, B). Dentro de cada hijo va el número de esa jugada. "
             "El valor de la jugada es el valor del hijo al que lleva: Q(s, a) = V(T(s, a)). "
             "Qué número guarda ahí cada algoritmo: minimax, V; alfa-beta, V o una cota; el "
-            "corte, el valor con corte; Monte Carlo plano, ū, que tiende a μ; UCT, ū, que "
-            "tiende a V.")
+            "corte, el valor con corte (o una cota, con poda); Monte Carlo plano, ū, que estima μ; "
+            "UCT, ū, que estima V y, en un árbol finito con vueltas sin límite, tiende a V.")
     return _svg_rx(titulo, desc, out, y + 4)
 
 

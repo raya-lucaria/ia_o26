@@ -78,7 +78,7 @@ Dos números se parecen y conviene no confundirlos. Los dos se miden desde MAX:
 - **El valor de un estado, $V(s)$, es lo que vale estar en $s$:** lo que MAX se asegura desde ahí si los dos juegan lo mejor.
 - **El valor de una jugada $a$ desde $s$ es lo que vale elegirla**, si después los dos juegan lo mejor. Otros textos lo escriben $Q(s,a)$.
 
-**En los juegos de esta unidad, sin azar, los dos coinciden:**
+**En los juegos de esta unidad, sin azar, el valor de una jugada es el valor del estado hijo al que lleva**, no el del estado desde donde se elige:
 
 $$
 \mathbf{Q(s,a)=V(T(s,a))}
@@ -87,8 +87,8 @@ $$
 - **Una jugada lleva a un solo hijo**, $T(s,a)$. Elegirla es pasar a ese hijo, así que la jugada vale lo que vale el hijo.
 - **Por eso las fichas guardan el número de cada jugada en el nodo hijo**, no en la arista. «El $V$ de cada jugada de la raíz» es el $V$ de cada hijo de la raíz.
 - **El estado vale lo que su mejor jugada.** Donde mueve MAX, $\mathbf{V(s)=\max_{a\in A(s)}Q(s,a)}$; donde mueve MIN, el mínimo. Una jugada puede valer menos que el estado desde donde se elige.
-- **Con azar dejan de coincidir:** una jugada puede llevar a varios hijos, y su valor mezcla los de todos.
-- **Dos jugadas que llevan al mismo estado sí valen lo mismo.** Pero un árbol que junte ese estado en un solo nodo mezclaría las visitas de las dos. Con azar, o en ese árbol, se guarda un número por jugada, en la arista. Nada de eso pasa en esta clase: cada hijo corresponde a una sola jugada de su padre.
+- **Si una jugada puede llevar a varios hijos al azar, la igualdad cambia:** su valor es el promedio de los de esos hijos, pesados por su probabilidad. Si el azar se dibuja como un nodo AZAR hijo, la igualdad sigue valiendo: ese hijo ya promedia.
+- **Dos jugadas que llevan al mismo estado sí valen lo mismo.** Pero un árbol que junte ese estado en un solo nodo mezclaría las visitas de las dos. En esos casos conviene guardar los números por jugada, en la arista; es una elección de cómo representar el árbol. Nada de eso pasa en esta clase: cada hijo corresponde a una sola jugada de su padre.
 
 **Lo que cambia es qué número pone cada algoritmo en ese lugar.** Minimax guarda $V$; alfa-beta, $V$ o una cota; el corte, el valor con corte o, con poda, una cota; Monte Carlo plano y UCT, un promedio $\bar u$. El lugar es el mismo; el significado del número, no.
 
@@ -101,7 +101,7 @@ $$
 |---|---|---|---|
 | Minimax | $V$ | Cada nodo, al recorrerlo | Máximo o mínimo de los hijos |
 | Alfa-beta | $V$ o una cota | Cada nodo, al recorrerlo | Máximo o mínimo, con poda |
-| Corte | Valor con corte o cota | Cada nodo, al recorrerlo | Máximo o mínimo; EVAL al cortar |
+| Corte | Valor con corte (o con quietud), o cota | Cada nodo, al recorrerlo | Máximo o mínimo; EVAL al cortar |
 | Monte Carlo plano | $N$ y suma | Solo hijos de la raíz | No sube: promedia simulaciones |
 | UCT | $N$ y $\bar u$ | Cada nodo de su árbol | Promedio del mismo $U$ |
 :::
@@ -353,7 +353,7 @@ La jugada elegida trae su **$V$ exacto**. Las demás pueden traer su valor exact
 
 Es minimax que deja de bajar al agotarse la profundidad y **usa EVAL para estimar donde se detiene**. Por nivel, fija cuánto mirar; por reloj, repite búsquedas cada vez más profundas mientras quede tiempo.
 
-- **Qué valor rastrea:** el valor con corte de cada estado: el de minimax en el árbol cortado, con EVAL donde se detiene. Estima $100\cdot V(s)$, y el de una jugada es el de su hijo. Con poda, algunos son solo cotas.
+- **Qué valor rastrea:** el valor con corte de cada estado: el de minimax en el árbol cortado, con EVAL donde se detiene. Con quietud, el valor con quietud. Estima $100\cdot V(s)$, y el de una jugada es el de su hijo. Con poda, algunos son solo cotas.
 - **Dónde lo guarda:** en cada nodo, mientras lo recorre, hasta la profundidad del corte. Solo la búsqueda de quietud, que sigue capturas, puede pasar de ahí.
 - **Cómo sube y a qué converge:** con el máximo o el mínimo de los hijos, como minimax; en los nodos de corte, el número de partida es la EVAL. No es un promedio que converja: es exacto para el árbol cortado, y coincide con $100\cdot V$ si la profundidad alcanza los finales sin aplicar EVAL ni activar la quietud.
 
