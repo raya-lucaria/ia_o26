@@ -24,6 +24,7 @@ Esta página pone lado a lado los cinco algoritmos de búsqueda de la unidad. Ca
 > **Míralo correr**
 >
 > - **▶ [El mismo árbol, todos los algoritmos](../_assets/un_arbol_todos.html)**: elige un algoritmo y mira qué nodos genera, qué jugada entrega y con qué valor.
+> - **Las figuras de minimax, alfa-beta, el corte, la quietud y la profundización iterativa se animan:** un halo recorre los nodos en el orden en que el algoritmo los genera y termina en la jugada que juega.
 
 ## La notación de esta página
 
