@@ -4176,11 +4176,16 @@ ORDEN_ANIMA_RX = {"jue-c3-rx-minimax": "minimax", "jue-c3-rx-alfa-beta": "alfa-b
                   "jue-c3-rx-iterativa": "iterativa"}
 
 
-def _halo_rx(m, margen=HALO_RX):
+def _halo_rx(m, margen=HALO_RX, ancho=None):
+    # El halo no se sale del viewBox: junto al borde se encoge (Codex sol vio
+    # el de d3 cortado 1.5 px en la orilla derecha).
+    ancho = RX_W if ancho is None else ancho
     if m[0] == "c":
         _, cx, cy, r = m
+        margen = max(0, min(margen, cx - r, ancho - cx - r))
         return f'<circle cx="{cx}" cy="{cy}" r="{r + margen}" fill="{ACENTO}"/>'
     _, x0, y0, x1, y1 = m
+    margen = max(0, min(margen, x0, ancho - x1))
     return (f'<rect x="{x0 - margen:g}" y="{y0 - margen:g}" width="{x1 - x0 + 2 * margen:g}" '
             f'height="{y1 - y0 + 2 * margen:g}" rx="{6 + margen}" fill="{ACENTO}"/>')
 

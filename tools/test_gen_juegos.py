@@ -1170,13 +1170,16 @@ def _pasos_animados(nombre):
     raiz = ET.fromstring(_texto(nombre))
     ns = "{http://www.w3.org/2000/svg}"
     (capa,) = [g for g in raiz.iter(f"{ns}g") if g.get("class") == gen.CLASE_ANIMA_RX]
-    pasos = []
+    pasos, durs, begins = [], set(), set()
     for k, g in enumerate(capa.findall(f"{ns}g")):
         assert g.get("opacity") == "0" and g.get("data-paso") == str(k)
         (a,) = g.findall(f"{ns}animate")
         valores = a.get("values").split(";")
         tiempos = [float(x) for x in a.get("keyTimes").split(";")]
         assert a.get("calcMode") == "discrete" and a.get("repeatCount") == "indefinite"
+        # un solo reloj: misma duración y mismo arranque en todos los pasos, para
+        # que comparar keyTimes sea comparar tiempos reales
+        durs.add(a.get("dur")); begins.add(a.get("begin", "0s"))
         assert a.get("attributeName") == "opacity"
         assert len(valores) == len(tiempos) and tiempos == sorted(tiempos)
         # opacidad 0 al empezar y al acabar el ciclo: en t = 0 se ve la estatica
@@ -1184,6 +1187,7 @@ def _pasos_animados(nombre):
         assert tiempos[-1] < 1 and valores[1] == "1"
         pasos.append((tiempos[1], g.get("data-tipo"), g.get("data-nodo")))
     assert [p[0] for p in pasos] == sorted(p[0] for p in pasos)
+    assert len(durs) == 1 and len(begins) == 1, (nombre, durs, begins)
     return pasos
 
 
