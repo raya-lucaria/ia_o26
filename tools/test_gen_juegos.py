@@ -1073,8 +1073,10 @@ def test_en_los_flujos_recursivos_todo_valor_vuelve_al_padre(nombre):
     for p in pasos:
         if "lado" in p and p["lado"][1][0] in ("vale", "poda:"):
             assert p.get("regresa"), p
-    assert any(p.get("regresa") and p.get("caja", [""])[0] == "Vuelve al padre"
+    # «Vuelve al padre» lleva su condición: la raíz no tiene padre, y ahí se juega.
+    assert any(p.get("regresa") and p.get("caja", [""])[:2] == ["Si no es la raíz:", "vuelve al padre"]
                for p in pasos)
+    assert any(p.get("fin") and p.get("tenue") == "si es la raíz" for p in pasos)
     baja = next(k for k, p in enumerate(pasos) if p.get("caja", [""])[0].startswith("Baja"))
     assert (baja, 0) in [(d, h) for d, h, _ in f["vueltas"]]
     r = _renglones(f"jue-c3-rx-flujo-{nombre}")

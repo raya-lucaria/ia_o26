@@ -4699,8 +4699,10 @@ def _desc_rec(nombre, pasos, vueltas):
 
 
 _VOLVER = {"rombo": ["¿Quedan", "hijos?"], "abajo": "no"}
-_AL_PADRE = {"caja": ["Vuelve al padre", "con su valor"], "regresa": True}
-_JUEGA = {"caja": ["Juega la jugada", "de mayor valor"], "fin": True, "tenue": "en la raíz"}
+# La raíz no tiene padre: «Vuelve al padre» solo vale fuera de ella, y en la
+# raíz la salida es jugar (lo señaló Codex sol en la ronda 2).
+_AL_PADRE = {"caja": ["Si no es la raíz:", "vuelve al padre", "con su valor"], "regresa": True}
+_JUEGA = {"caja": ["Juega la jugada", "de mayor valor"], "fin": True, "tenue": "si es la raíz"}
 
 FLUJOS = {
     "minimax": dict(
