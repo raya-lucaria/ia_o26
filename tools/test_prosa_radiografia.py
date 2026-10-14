@@ -84,8 +84,11 @@ def test_la_ficha_de_uct_va_tal_cual_la_aprobo_el_profesor_mas_la_linea_de_min()
     El 2026-10-14 el profesor pidió, por legibilidad, la utilidad $U$ escrita
     como fórmula por casos junto a «Final del juego» (con su frase de entrada),
     subtítulos `#####` dentro de la exploración y un separador `---` entre
-    fichas. La comparación literal quita esas tres cosas y nada más: el resto
-    de la ficha tiene que seguir siendo, palabra por palabra, la aprobada."""
+    fichas. Ese mismo día pidió además, al inicio de cada ficha, la lista de
+    tres puntos «Qué valor rastrea / Dónde lo guarda / Cómo sube y a qué
+    converge», igual en las cinco para comparar. La comparación literal quita
+    esas cuatro cosas y nada más: el resto de la ficha tiene que seguir siendo,
+    palabra por palabra, la aprobada."""
     uct = _fichas(_texto(P6))[FICHAS[4]]
     assert r"\mathbf{U(s)=\begin{cases}+1 & \text{si gana MAX}" in uct
     assert "la regla del **hijo más visitado (*robust child*)**" in uct
@@ -100,7 +103,10 @@ def test_la_ficha_de_uct_va_tal_cual_la_aprobo_el_profesor_mas_la_linea_de_min()
         sin_formula_u = re.sub(
             r"\n\n\*\*Lo que promedia UCT es esa utilidad\*\*[^\n]*\n\n\$\$\n.*?\n\$\$", "",
             sin_linea, flags=re.S)
-        sin_subtitulos = re.sub(r"\n\n##### [^\n]*", "", sin_formula_u)
+        sin_bloque = re.sub(
+            r"\n\n- \*\*Qué valor rastrea:\*\*[^\n]*\n- \*\*Dónde lo guarda:\*\*[^\n]*"
+            r"\n- \*\*Cómo sube y a qué converge:\*\*[^\n]*", "", sin_formula_u)
+        sin_subtitulos = re.sub(r"\n\n##### [^\n]*", "", sin_bloque)
         sin_separador = re.sub(r"\n+---\s*$", "", sin_subtitulos)
         assert sin_separador == aprobada
 

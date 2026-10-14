@@ -933,7 +933,9 @@ RX_ARBOLES = ["jue-c3-rx-minimax", "jue-c3-rx-alfa-beta", "jue-c3-rx-corte",
               "jue-c3-rx-uct-12", "jue-c3-rx-uct-40"]
 RX_FLUJOS = [f"jue-c3-rx-flujo-{n}" for n in ("minimax", "alfa-beta", "corte", "mc-plano", "uct")]
 MCG = ["jue-c3-mcg-arbol", "jue-c3-mcg-mc-plano", "jue-c3-mcg-uct-fases",
-       "jue-c3-mcg-uct-crece"]
+       "jue-c3-mcg-uct-crece", "jue-c3-mcg-mezcla"]
+# Figuras simbolicas sueltas de la radiografia: sin arbol T± ni jugada que marcar.
+RX_SIMBOLICAS = ["jue-c3-rx-estado-y-jugada"]
 
 
 def _aria(nombre):
@@ -946,11 +948,12 @@ def _renglones(nombre):
 
 
 def test_estan_las_figuras_de_la_radiografia():
-    for nombre in RX_ARBOLES + RX_FLUJOS + MCG:
+    for nombre in RX_ARBOLES + RX_FLUJOS + MCG + RX_SIMBOLICAS:
         assert nombre in gen.DIAGRAMAS, nombre
+        assert (gen.ASSETS / f"{nombre}.svg").exists(), nombre
 
 
-@pytest.mark.parametrize("nombre", RX_ARBOLES + RX_FLUJOS + MCG)
+@pytest.mark.parametrize("nombre", RX_ARBOLES + RX_FLUJOS + MCG + RX_SIMBOLICAS)
 def test_la_radiografia_cabe_en_un_telefono(nombre):
     """Como jue-t-pm-arbol: a 390 px el parrafo mide ~305 y el sitio no
     escala los SVG, asi que miden 300 o menos; la letra no baja de 12 (las
@@ -1094,10 +1097,49 @@ def test_el_flujo_de_uct_es_un_ciclo_de_cuatro_fases():
 
 def test_las_figuras_del_arbol_grande_no_llevan_cifras():
     """§9.5: simbolicas. Ningun digito en lo que se ve, salvo los de los
-    numeros de fase («1 · Selección»)."""
-    for nombre in MCG:
+    numeros de fase («1 · Selección»). La mezcla es la excepcion acotada:
+    dibuja dos finales y el promedio de sus U, y +1, −1 y 0 son la escala de
+    utilidades, no datos de una corrida; ahi se borran solo esas tres
+    (como numeros sueltos) antes de buscar digitos, asi que cualquier otra
+    cifra (un conteo, un 0.6) sigue fallando. La figura de estado y jugada
+    va sin ninguna."""
+    for nombre in MCG + RX_SIMBOLICAS:
         r = [x for x in _renglones(nombre) if not re.match(r"\d · ", x)]
+        if nombre == "jue-c3-mcg-mezcla":
+            r = [re.sub(r"(?<![\d.,])(?:[+−]1|0)(?![\d.,])", "", x) for x in r]
         assert not [x for x in r if re.search(r"\d", x)], nombre
+
+
+def test_el_valor_de_una_jugada_vive_en_el_hijo():
+    r = _renglones("jue-c3-rx-estado-y-jugada")
+    for clave in ("jugada A", "jugada B", "T(s, A)", "T(s, B)", "número de A", "número de B",
+                  "valor de la jugada = valor del hijo:", "Q(s,a) = V(T(s,a))", "s", "MAX"):
+        assert clave in r, clave
+    # La leyenda: que numero guarda cada algoritmo, en el orden de la pagina.
+    for alg, num in [("minimax", "V"), ("alfa-beta", "V o cota"), ("corte", "valor con corte"),
+                     ("Monte Carlo plano", "ū → μ"), ("UCT", "ū → V")]:
+        i = r.index(alg)
+        assert r[i + 1] == num, alg
+    assert "EVAL" not in _texto("jue-c3-rx-estado-y-jugada")
+    assert "Q(s, a) = V(T(s, a))" in _aria("jue-c3-rx-estado-y-jugada")
+
+
+def test_la_mezcla_pasa_de_mitad_y_mitad_a_casi_todas_a_menos_uno():
+    r = _renglones("jue-c3-mcg-mezcla")
+    for clave in ("Pocas vueltas", "Muchas vueltas", "ū(A) ≈ 0", "ū(A) → −1", "+1", "−1",
+                  "jugada A", "MIN", "Proporciones ilustrativas:"):
+        assert clave in r, clave
+    assert "≈ mitad" in r and "casi todas" in r and "a −1" in r
+    assert r.index("Pocas vueltas") < r.index("ū(A) ≈ 0") < r.index("Muchas vueltas") \
+        < r.index("ū(A) → −1")
+    # El grosor dice las visitas: parejo con pocas vueltas, la rama a −1
+    # mucho mas gruesa con muchas.
+    grosores = [float(g) for g in re.findall(r'stroke-width="([\d.]+)" stroke-linecap="round"',
+                                             _texto("jue-c3-mcg-mezcla"))]
+    assert len(grosores) == 4
+    pocas_mas, pocas_menos, muchas_mas, muchas_menos = grosores
+    assert abs(pocas_mas - pocas_menos) <= 1
+    assert muchas_menos >= 4 * muchas_mas
 
 
 def test_uct_en_el_arbol_grande_trae_el_caso_del_final():

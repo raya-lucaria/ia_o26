@@ -5112,6 +5112,108 @@ def jue_c3_mcg_uct_crece():
     return _svg_rx(titulo, desc, out, y)
 
 
+# --------------- 7.3.6 y 7.3.7: el valor de una jugada vive en el hijo ---
+#
+# Dos figuras simbolicas mas. La de la pagina 6 no lleva cifras; la de la
+# pagina 7 solo lleva utilidades (+1, −1, 0), que son la escala U, no datos
+# de una corrida: las proporciones del grosor son ilustrativas.
+
+# Que numero guarda cada algoritmo en el hijo: (algoritmo, numero).
+NUMERO_EN_EL_HIJO = [("minimax", "V"), ("alfa-beta", "V o cota"),
+                     ("corte", "valor con corte"), ("Monte Carlo plano", "ū → μ"),
+                     ("UCT", "ū → V")]
+
+
+def jue_c3_rx_estado_y_jugada():
+    """Q(s, a) = V(T(s, a)): el numero de una jugada es el del hijo al que
+    lleva; cada algoritmo guarda ahi un numero distinto."""
+    titulo = ["El valor de una jugada", "vive en el hijo al que lleva"]
+    out = []
+    y0 = _titulo_rx(out, titulo) + 36
+    xr, y1 = 150, y0 + 118
+    hijos = [(78, "A"), (222, "B")]
+    for x, a in hijos:
+        out.append(linea(xr, y0 + 16, x, y1 - 34, color=SUAVE, grosor=2.5))
+    for x, a in hijos:
+        out.append(_pild((xr + x) / 2 + (-14 if x < xr else 14), (y0 + y1) / 2 - 10,
+                         f"jugada {a}", ACENTO, tam=14))
+    out.append(_nodo_mcg(xr, y0, "MAX", r=16))
+    out.append(texto(xr, y0 + 5, "s", tam=16, peso="700", color=COLOR_MAX))
+    out.append(texto(xr + 24, y0 + 5, "MAX", tam=14, color=SUAVE, anclaje="start"))
+    for x, a in hijos:
+        out.append(caja(x - 62, y1 - 34, 124, 72, relleno=mezclar(COLOR_MIN, 0.12),
+                        borde=COLOR_MIN))
+        out.append(texto(x, y1 - 10, f"T(s, {a})", tam=15, peso="700", color=COLOR_MIN))
+        out.append(linea(x - 50, y1 + 2, x + 50, y1 + 2, color=LINEA, grosor=1.5))
+        out.append(texto(x, y1 + 25, f"número de {a}", tam=14, peso="700"))
+    y = y1 + 76
+    out.append(texto(X_PIE, y, "valor de la jugada = valor del hijo:", tam=15,
+                     anclaje="start"))
+    out.append(_pild(150, y + 30, "Q(s,a) = V(T(s,a))", ACENTO, tam=15, mono=True, alto=28))
+    y += 82
+    out.append(linea(X_PIE, y - 22, RX_W - X_PIE, y - 22, color=LINEA, grosor=1.5))
+    out.append(texto(X_PIE, y, "Qué número guarda ahí", tam=16, peso="700", anclaje="start"))
+    out.append(texto(X_PIE, y + 20, "cada algoritmo:", tam=16, peso="700", anclaje="start"))
+    y += 50
+    for alg, num in NUMERO_EN_EL_HIJO:
+        out.append(texto(X_PIE, y, alg, tam=15, color=SUAVE, anclaje="start"))
+        out.append(texto(RX_W - X_PIE, y, num, tam=15, peso="700", anclaje="end"))
+        y += 24
+    desc = ("Un estado s, de MAX, con dos jugadas, A y B, cada una hacia un hijo: el estado "
+            "T(s, A) y el estado T(s, B). Dentro de cada hijo va el número de esa jugada. "
+            "El valor de la jugada es el valor del hijo al que lleva: Q(s, a) = V(T(s, a)). "
+            "Qué número guarda ahí cada algoritmo: minimax, V; alfa-beta, V o una cota; el "
+            "corte, el valor con corte; Monte Carlo plano, ū, que tiende a μ; UCT, ū, que "
+            "tiende a V.")
+    return _svg_rx(titulo, desc, out, y + 4)
+
+
+# Los dos paneles de la mezcla: (titulo, grosor a +1, grosor a −1, rotulo, ū).
+PANELES_MEZCLA = [("Pocas vueltas", 6, 6, "≈ mitad y mitad", "ū(A) ≈ 0"),
+                  ("Muchas vueltas", 2, 14, "casi todas a −1", "ū(A) → −1")]
+
+
+def jue_c3_mcg_mezcla():
+    """En el nodo MIN bajo la jugada A, UCT mezcla al principio sus dos
+    respuestas y despues casi solo juega la buena para MIN: el promedio ū(A)
+    pasa de ≈ 0 a −1, el minimo."""
+    titulo = ["Un promedio que", "se vuelve un mínimo"]
+    out = []
+    y = _titulo_rx(out, titulo) + 30
+    for nombre, g_mas, g_menos, rotulo, u in PANELES_MEZCLA:
+        out.append(linea(X_PIE, y - 6, RX_W - X_PIE, y - 6, color=LINEA, grosor=1.5))
+        out.append(texto(X_PIE, y + 20, nombre, tam=17, peso="700", anclaje="start"))
+        yr, ya, yf = y + 56, y + 122, y + 226
+        xa = 110
+        out.append(linea(xa, yr, xa, ya, color=SUAVE, grosor=2.5))
+        out.append(_pild(xa + 46, (yr + ya) / 2, "jugada A", ACENTO, tam=14))
+        for xf, g in ((52, g_mas), (168, g_menos)):
+            out.append(f'<line x1="{xa}" y1="{ya}" x2="{xf}" y2="{yf}" stroke="{SUAVE}" '
+                       f'stroke-width="{g}" stroke-linecap="round"/>')
+        out.append(_nodo_mcg(xa, yr, "MAX", r=13, rotulo="s"))
+        out.append(_nodo_mcg(xa, ya, "MIN", r=16, rotulo="A"))
+        out.append(texto(xa + 26, ya + 5, "MIN", tam=14, color=SUAVE, anclaje="start"))
+        out.append(_nodo_mcg(52, yf, "final", r=16, rotulo="+1"))
+        out.append(_nodo_mcg(168, yf, "final", r=16, rotulo="−1"))
+        # Rotulo a la derecha, en dos renglones.
+        partes = rotulo.split(" ")
+        r1, r2 = " ".join(partes[:2]), " ".join(partes[2:])
+        out.append(texto(196, (ya + yf) / 2 - 4, r1, tam=14, peso="700", anclaje="start"))
+        out.append(texto(196, (ya + yf) / 2 + 14, r2, tam=14, peso="700", anclaje="start"))
+        out.append(_pild(110, yf + 46, u, ACENTO, tam=16, alto=28))
+        y = yf + 96
+    y = _pie_t(out, y, ["Proporciones ilustrativas:", "UCT elige cada vez más la",
+                        "respuesta buena para MIN."], tam=15)
+    desc = ("Dos paneles del mismo nodo de MIN, al que lleva la jugada A, con sus dos "
+            "respuestas: una a un final +1 y otra a un final −1. El grosor de cada rama es "
+            "cuántas vueltas pasaron por ella. Con pocas vueltas, las dos ramas tienen grosor "
+            "parecido, mitad y mitad, y el promedio ū(A) es cercano a 0. Con muchas vueltas, la "
+            "rama a −1 es muy gruesa y la de +1 delgada: casi todas van a −1, y ū(A) tiende a "
+            "−1, el mínimo. Las proporciones son ilustrativas: UCT elige cada vez más la "
+            "respuesta buena para MIN.")
+    return _svg_rx(titulo, desc, out, y)
+
+
 DIAGRAMAS = {
     "jue-ciclo-partida": jue_ciclo_partida,
     **{f"jue-grafo-paso-{paso}": (lambda paso=paso: jue_grafo_paso(paso))
@@ -5166,6 +5268,8 @@ DIAGRAMAS = {
     "jue-c3-mcg-mc-plano": jue_c3_mcg_mc_plano,
     "jue-c3-mcg-uct-fases": jue_c3_mcg_uct_fases,
     "jue-c3-mcg-uct-crece": jue_c3_mcg_uct_crece,
+    "jue-c3-rx-estado-y-jugada": jue_c3_rx_estado_y_jugada,
+    "jue-c3-mcg-mezcla": jue_c3_mcg_mezcla,
 }
 
 
