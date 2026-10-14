@@ -332,8 +332,7 @@ el orden, y una cota alta solo dice «aún no sé casi nada de esta jugada».
 
 Si el optimismo se equivoca, probarla lo arregla. Sin margen pasa lo mismo
 que con pesimismo: en la sección 1, x quedó creída mala tras una derrota y
-nada la corrigió. Sumar el margen es lo que hace el bono de la página
-anterior.
+nada la corrigió. Sumar el margen es lo que hace el bono de *Simular en vez de evaluar*.
 
 Dos casos extremos:
 
@@ -382,7 +381,7 @@ y no se vuelva a probar.
 
 El arreglo es pedir **más confianza conforme avanza**. El reloj de la
 búsqueda es $N(s)$, las vueltas que ya pasaron por el padre. Mira otra vez
-el puntaje de la página anterior:
+el puntaje de *Simular en vez de evaluar*:
 
 $$\bar u(s')+c\sqrt{\frac{\ln N(s)}{N(s')}}.$$
 
@@ -406,7 +405,7 @@ sección 4.
 | $2\sqrt2$ | $4$ | $N(s)^{-4}$ | $10^{-8}$ |
 :::
 
-La ${c=1}$ de la página anterior es ${k=1/2}$: con 100 vueltas tolera
+La ${c=1}$ de *Simular en vez de evaluar* es ${k=1/2}$: con 100 vueltas tolera
 fallar una vez de cada diez. Pide poca confianza, y explora poco.
 
 Esa lectura es una guía para elegir $c$, no una garantía. Hoeffding habla
@@ -823,8 +822,7 @@ calcular la cota optimista en un nodo de MAX o de MIN.
 - **$c$ fija qué tan rápido baja $\delta$.** Con ${\delta=N(s)^{-k}}$,
   ${c=\sqrt{2k}}$.
   UCB1 pide ${\delta=N(s)^{-4}}$, y da ${c=2\sqrt2\approx2.83}$; con la
-  tasa ${G/N}$ es ${c=\sqrt2}$, la misma regla. La ${c=1}$ de la página
-  anterior es ${k=1/2}$.
+  tasa ${G/N}$ es ${c=\sqrt2}$, la misma regla. La ${c=1}$ de *Simular en vez de evaluar* es ${k=1/2}$.
 - **Explorar cuesta al principio y evita atorarse.** En 40
   corridas, la regla sin bono es todo o nada: 34 en la mejor y 6 atoradas.
   Por eso paga 0.543 por vuelta, cerca del 0.5425 que se espera, y solo el
@@ -836,4 +834,4 @@ calcular la cota optimista en un nodo de MAX o de MIN.
 - **En el árbol**, UCT es la regla UCB en cada nodo; Hoeffding ya no vale al pie de
   la letra, pero la intuición sí.
 
-Continúa con [[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]: el mismo árbol corrido por cada algoritmo que viste.
+Continúa con la [[tarea-cuando-no-cabe|tarea de la clase]].

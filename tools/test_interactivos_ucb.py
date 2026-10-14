@@ -32,7 +32,7 @@ ASSETS = RAIZ / "course/7_juegos/_assets"
 HOEFFDING = ASSETS / "hoeffding_en_vivo.html"
 BANDIDO = ASSETS / "bandido_en_vivo.html"
 PAGINAS = (HOEFFDING, BANDIDO)
-PAGINA_P6 = RAIZ / "course/7_juegos/3_cuando_no_cabe/6_de_donde_sale_el_bono.md"
+PAGINA_P6 = RAIZ / "course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md"
 
 
 def _texto(ruta):
