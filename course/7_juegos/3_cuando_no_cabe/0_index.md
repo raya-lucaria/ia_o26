@@ -23,7 +23,7 @@ antes y **estimar**.
 >   algoritmo abre la suya en un recuadro como éste.
 > - **▶ Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
 >   la página «De dónde sale el bono».
-> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol T± y compara qué miró y qué devolvió; lo abre la página «Radiografía: un árbol, cinco algoritmos».
+> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol T± y compara qué miró y qué devolvió. Lo abre la página «Radiografía: un árbol, cinco algoritmos».
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -69,12 +69,10 @@ Las páginas de la clase 2:
 - Explicar el bono de UCT como margen de error de un promedio: por qué se
   suma, de dónde sale su tamaño, y que se usa para seleccionar, no para
   entregar.
-- Comparar cinco algoritmos en un mismo árbol: cómo explora cada uno, qué
-  número da ($V$, una cota, el valor con corte o $\bar u$), qué jugada juega,
-  si usa evaluación y cuánto cuesta.
-- Explicar, en un árbol que no cabe, por qué Monte Carlo plano estima el
-  promedio con los dos al azar y cómo el árbol de UCT crece hondo en lo
-  prometedor.
+- Comparar cinco algoritmos en un mismo árbol. De cada uno: cómo explora,
+  qué número da, qué jugada juega, si usa evaluación y cuánto cuesta.
+- Explicar qué estima Monte Carlo plano en un árbol que no cabe. Y cómo
+  crece el árbol de UCT: hondo en lo prometedor.
 
 La utilidad no cambia: sigue siendo la de las clases 1 y 2, $U=+1$ si gana
 Blancas y $U=-1$ si gana Negras. Lo nuevo es lo que se hace cuando la
@@ -95,7 +93,7 @@ Tres ejemplos, cada uno con su papel:
 
 ## Recorrido
 
-Ocho páginas, en orden. La 6 y la 7 comparan los algoritmos de la clase: los cinco en un mismo árbol y, los dos Monte Carlo, en uno grande. Las dos primeras van en par, como en la clase 2:
+Ocho páginas de lectura y una tarea, en orden. La 6 compara los cinco algoritmos en un mismo árbol. La 7 mira los dos Monte Carlo en uno grande. Las dos primeras van en par, como en la clase 2:
 primero **a mano** y después **como algoritmo**.
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}

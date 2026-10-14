@@ -19,7 +19,7 @@ Esta página pone lado a lado los cinco algoritmos de búsqueda de la unidad. Ca
 
 ## La notación de esta página
 
-Todos ya aparecieron en la unidad, salvo $h$ y $n$; también están en [[notacion-juegos|la hoja de notación]].
+Casi todos ya aparecieron en la unidad; son nuevos $\mu$, $k$, $h$ y $n$. Todos están también en [[notacion-juegos|la hoja de notación]].
 
 - $S$: los estados del juego; $s$ es uno cualquiera.
 - $s_0$: el estado donde MAX decide; la **raíz** de la búsqueda.
@@ -57,7 +57,7 @@ Los cinco algoritmos resuelven el mismo problema. **Dado** un estado $s_0$ donde
 - **Tiene una captura.** La segunda respuesta de MIN en I, ix, captura una pieza; eso importa para la búsqueda de quietud.
 - **D tiene tres hijos**, no dos. En total, el árbol tiene 15 nodos.
 
-Este dibujo lleva solo las jugadas y los finales en $U$. **No lleva EVAL:** de los cinco algoritmos, solo el corte la necesita.
+Este dibujo lleva solo las jugadas y los finales en $U$. **No lleva EVAL:** de los cinco algoritmos, solo el corte, con su búsqueda de quietud, la necesita.
 
 ::: figure {#jue-c3-rx-arbol-tpm title="El árbol T±: jugadas y finales en U, sin EVAL"}
 ![El árbol T±, con 15 nodos. La raíz R es de MAX; izq lleva a I, centro a C y der a D, los tres de MIN. I tiene los finales i1 = +1 y ix = −1, y ix es una captura. C tiene dos hijos de MAX: C1, con c1a = 0 y c1b = −1, y C2, con c2a = +1 y c2b = −1. D tiene los finales d1 = −1, d2 = +1 y d3 = +1](../_assets/jue-t-pm-arbol.svg)
@@ -71,8 +71,6 @@ Cuando el árbol no cabe, la búsqueda **se corta** a cierta profundidad. En cad
 - **Un final se reconoce antes de cortar.** Aunque ya no quede profundidad, un final vale su $100\cdot U$; nunca se estima.
 - **Si un algoritmo no usa EVAL, trabaja directo con $U$**, entre $-1$ y $+1$.
 
-De los cinco, solo el corte, por nivel o por reloj, usa EVAL. Minimax, alfa-beta, Monte Carlo plano y UCT trabajan con $U$.
-
 ## Explorar contra jugar
 
 Los cinco hacen lo mismo **en dos tiempos**:
@@ -80,13 +78,13 @@ Los cinco hacen lo mismo **en dos tiempos**:
 1. **Exploran.** Recorren o construyen una parte del árbol para ponerle **un número a cada jugada de la raíz**.
 2. **Juegan.** Con esos números eligen **una sola** jugada de la raíz, y la juegan. Cuando el rival responde, vuelven a empezar desde el estado nuevo.
 
-Cambia cómo exploran, qué número sale ($V$ exacto, una cota, el valor con corte o un promedio $\bar u$) y con qué regla eligen. **Explorar una jugada no obliga a jugarla:** UCT, por ejemplo, puede gastar una vuelta en una jugada poco probada y al final jugar otra.
+Cambia cómo exploran, qué número sale ($V$ exacto, una cota, el valor con corte o un promedio $\bar u$) y con qué regla eligen. Por eso cada ficha separa «1 · Exploración» de «2 · Elección». **Explorar una jugada no obliga a jugarla:** un algoritmo puede gastar trabajo en una jugada poco probada y al final jugar otra.
 
-En todos, los hijos van en el orden dado, de izquierda a derecha, y un empate en la raíz lo gana la primera. Por eso cada ficha separa «1 · Exploración» de «2 · Elección».
+Cuando los hijos se recorren en un orden, es el dado, de izquierda a derecha, salvo que la ficha diga otro. Un empate en la raíz lo gana la primera jugada en el orden que usó esa búsqueda.
 
 ## Las cinco fichas
 
-### Minimax (*minimax*)
+### Minimax (minimax)
 
 Es la búsqueda exacta para juegos de dos jugadores por turnos, de suma cero, sin azar, con todo a la vista y con árbol finito. Recorre el árbol completo hasta los finales y sube los resultados: cada nodo vale lo que MAX puede asegurar desde ahí.
 
@@ -150,7 +148,7 @@ Aquí explorar y elegir usan **el mismo número, $V$**. La elección es la regla
 - **Garantía:** sí: entrega el $V$ de la raíz y una jugada que lo alcanza. Si MAX sigue jugando así en cada turno, obtiene exactamente $V$ contra un MIN que juega bien, y al menos $V$ contra cualquier otro.
 - **Se puede interrumpir (*anytime*):** no. Hasta cerrar la raíz no tiene una jugada fiable: una jugada que aún no revisó puede valer más que todas las anteriores.
 - **Complejidad:** sean $b$ las jugadas máximas por nodo y $m$ el largo máximo de una partida. Genera hasta $1+b+b^2+\dots+b^m$ nodos, y generar las jugadas de cada nodo cuesta $O(b)$ más: tiempo $O(b^m)$. En memoria solo guarda el camino de la raíz al nodo actual: a lo más $m$ niveles, cada uno con hasta $b$ jugadas pendientes. Memoria: $O(bm)$.
-- **Frente a los demás:** es la referencia. Su $V$ es el número que los demás algoritmos de esta página calculan con menos trabajo o aproximan. Su costo exponencial es lo que los obliga a existir.
+- **Frente a los demás:** es la referencia, y su costo exponencial es lo que obliga a buscar otros. Otro algoritmo puede conservar su $V$ con menos trabajo, estimarlo, o estimar un número distinto.
 
 ::: figure {#jue-c3-rx-fig-minimax title="Minimax en T±: genera los 15 nodos y juega centro"}
 ![Minimax en T±: genera los 15 nodos; I vale −1, C vale 0 y D vale −1, así que la raíz vale 0 y juega centro](../_assets/jue-c3-rx-minimax.svg)
@@ -160,7 +158,7 @@ Aquí explorar y elegir usan **el mismo número, $V$**. La elección es la regla
 ![Diagrama de flujo de minimax: baja un nivel; si es final, vale U; si quedan jugadas, baja por la siguiente; al subir, MAX toma el mayor; al final juega la jugada de mayor V](../_assets/jue-c3-rx-flujo-minimax.svg)
 :::
 
-### Alfa-beta (*alpha-beta pruning*)
+### Alfa-beta (alpha-beta pruning)
 
 Es minimax con poda (*pruning*). Hace el mismo recorrido, pero deja de generar una rama en cuanto lo ya revisado basta para saber que no cambia la jugada de la raíz. Con el mismo orden y desempate, entrega la misma jugada y el mismo $V$ que minimax, y puede generar menos nodos.
 
@@ -189,14 +187,14 @@ $$
 \mathbf{v\ge\beta\;\Rightarrow\;\text{no genera sus hijos restantes}}
 $$
 
-- **$v$** es lo que este nodo ya le asegura a MAX: al menos $v$, sin importar lo que haya en los hijos que faltan.
+- **$v$** es el mayor número que le han devuelto sus hijos revisados. Cuando llega a $v\ge\beta$, sí asegura que el nodo vale **al menos $v$**, sin importar lo que haya en los hijos que faltan. Antes de eso, $v$ puede venir de una cota superior de un hijo podado y no es todavía un valor asegurado.
 - **$\beta$** es lo que MIN ya tiene asegurado más arriba, con otra jugada. Si este nodo ya vale $v\ge\beta$, MIN nunca dejaría que la partida llegara aquí: le basta tomar la jugada que le da $\beta$.
 - **Los hijos que faltan no cambian eso:** solo podrían subir $v$, y un $v$ más alto le da a MIN todavía más razones para no venir. Por eso no hace falta mirarlos.
 - **El igual también poda:** con $v=\beta$, a MIN le da lo mismo, así que esta rama tampoco cambia la jugada de arriba.
 
 Éste es el **corte beta** (*beta cutoff*): se llama como el número que lo provoca. En MIN, $v$ empieza en $+\infty$, guarda el menor número recibido y la regla cambia de papeles:
 
-| Quién mueve | Poda si | Se llama | Si no poda |
+| Mueve | Poda si | Nombre | Si no poda |
 |---|---|---|---|
 | MAX | $\mathbf{v\ge\beta}$ | Corte beta | $\alpha\leftarrow\max(\alpha,v)$ |
 | MIN | $\mathbf{v\le\alpha}$ | Corte alfa | $\beta\leftarrow\min(\beta,v)$ |
@@ -205,10 +203,10 @@ $$
 
 **Ejemplo en un nodo de MAX** que llega con $\beta=4$: más arriba, MIN ya tiene una jugada que le da $4$.
 
-| Caso | Primer hijo | ¿Poda? | Qué devuelve |
+| Caso | 1.er hijo | ¿Poda? | Devuelve |
 |---|---|---|---|
-| $a$ | $6$ | Sí: $6\ge 4$ | $6$, que significa «$\ge 6$» |
-| $b$ | $4$ | Sí: $4\ge 4$ | $4$, que significa «$\ge 4$» |
+| $a$ | $6$ | Sí: $6\ge 4$ | $6$: «$\ge 6$» |
+| $b$ | $4$ | Sí: $4\ge 4$ | $4$: «$\ge 4$» |
 | $c$ | $3$ | No: $3<4$ | Sigue con el segundo |
 
 - **En el caso $a$, el segundo hijo no se genera.** Podría valer mucho más y a MAX le encantaría, pero MIN ya escogió no venir aquí.
@@ -225,7 +223,7 @@ La raíz es de MAX y no tiene rival arriba: su $\beta$ es $+\infty$, así que **
 
 **Al terminar el recorrido**, juega la jugada de la raíz con **el mayor número devuelto**, igual que minimax. La raíz cambia de jugada solo cuando el número $w$ de un hijo supera estrictamente a su $\alpha$: **$w>\alpha$**. Ante un empate, conserva la primera en el orden dado.
 
-| Decisión | Qué compara | Regla |
+| Decisión | Compara | Regla |
 |---|---|---|
 | Poda en un nodo de MAX | $v$ con $\beta$ | $\mathbf{v\ge\beta}$ |
 | Elección en la raíz | $w$ con $\alpha$ | $\mathbf{w>\alpha}$ |
@@ -241,7 +239,7 @@ La jugada elegida trae su **$V$ exacto**. Las demás pueden traer su valor exact
 - **Garantía:** sí, en la raíz. En un árbol finito, al terminar da el mismo $V$ y la misma jugada que minimax, con el mismo orden y desempate.
 - **Se puede interrumpir (*anytime*):** no. Si se interrumpe a medio recorrido no garantiza haber visto la mejor jugada; la garantía llega al terminar.
 - **Complejidad:** sean $b$ las jugadas máximas por nodo y $m$ el largo máximo de una partida. **Con el mismo orden, nunca genera más nodos que minimax, pero puede generar los mismos.** El tiempo va de $O(b^{m/2})$ con **orden perfecto** —la mejor jugada para quien mueve aparece siempre primero— a $O(b^m)$ con el peor orden. Memoria $O(bm)$: guarda el camino actual y las jugadas de sus nodos, igual que minimax.
-- **Frente a minimax:** la misma respuesta, con menos trabajo o, en el peor caso, el mismo. El orden de los hijos decide cuánto ahorra: con orden perfecto, en el mismo tiempo puede mirar aproximadamente el doble de hondo.
+- **Frente a minimax:** la misma respuesta, con menos trabajo o, en el peor caso, el mismo. El orden de los hijos decide cuánto ahorra: con orden perfecto revisa del orden de $b^{m/2}$ nodos en lugar de $b^m$. Con corte, eso permite mirar cerca del doble de hondo en el mismo tiempo.
 
 ::: figure {#jue-c3-rx-fig-alfa-beta title="Alfa-beta en T±: 12 de 15 nodos, la misma jugada"}
 ![Alfa-beta en T± con el orden dado: genera 12 de 15 nodos. Poda c2b porque C2 ya vale al menos +1, que es mayor o igual que beta = 0, y poda d2 y d3 porque D ya vale a lo más −1, que es menor o igual que alfa = 0. Juega centro, como minimax](../_assets/jue-c3-rx-alfa-beta.svg)
@@ -251,7 +249,7 @@ La jugada elegida trae su **$V$ exacto**. Las demás pueden traer su valor exact
 ![Diagrama de flujo de alfa-beta: el de minimax con una pregunta más, si v es mayor o igual que beta; si lo es, poda y no genera los hijos restantes](../_assets/jue-c3-rx-flujo-alfa-beta.svg)
 :::
 
-### Corte por nivel o por reloj (*depth-limited search*, *iterative deepening*)
+### Corte por nivel o por reloj (depth-limited search, iterative deepening)
 
 Es minimax que deja de bajar al agotarse la profundidad y usa EVAL para estimar donde se detiene. Por nivel, fija cuánto mirar; por reloj, repite búsquedas cada vez más profundas mientras quede tiempo.
 
@@ -301,18 +299,18 @@ Elige $b$. Si revisara primero la profundidad y evaluara ese final con $30$, ele
 
 1. **Guardar un respaldo.** Antes de buscar, guarda la primera jugada legal. Así tiene algo que entregar si no alcanza a terminar la primera búsqueda.
 2. **Buscar con la profundidad actual.** Mientras quede tiempo, empieza desde la raíz y prueba primero la jugada guardada. Después recorre las demás en el orden dado. Si la primera es buena, sube $\alpha$ pronto y permite podar más.
-3. **Revisar el reloj.** Después de valorar cada hijo de la raíz, comprueba si queda tiempo. Si se acabó, descarta la búsqueda en curso y entrega la jugada guardada.
+3. **Revisar el reloj.** Antes de cada búsqueda y después de valorar cada hijo de la raíz, comprueba si queda tiempo, **sin interrumpir la exploración de ese hijo**. Si se acabó, descarta la búsqueda en curso y entrega la jugada guardada. Si el subárbol de un hijo tarda, la respuesta llega después del plazo: el límite de tiempo no es estricto.
 4. **Reconocer una victoria.** Si todavía queda tiempo y el hijo devuelve $+100$, entrega esa jugada de inmediato. Como ninguna EVAL alcanza $100$, ese valor demuestra una victoria asegurada dentro de la profundidad buscada.
 5. **Guardar y profundizar.** Si termina la búsqueda, guarda su mejor jugada, aumenta $d$ en uno y vuelve a empezar.
-
-El reloj se consulta antes de cada búsqueda y después de cada hijo de la raíz, **sin interrumpir la exploración de ese hijo**. Si su subárbol tarda, la respuesta puede llegar después del plazo: el límite de tiempo no es estricto.
 
 **Dos particularidades del corte.**
 
 - **Efecto horizonte (*horizon effect*): una consecuencia decisiva queda justo detrás del corte y la estimación engaña.** Aumentar $d$ mueve el horizonte, pero no elimina el problema.
 - **Búsqueda de quietud (*quiescence search*): prolonga la búsqueda desde los nodos de corte que todavía tienen capturas disponibles.** Una posición es quieta si quien mueve no tiene capturas. En cada posición no quieta de esta prolongación, MAX compara quedarse con su EVAL contra seguir cada captura. Solo genera esas capturas y continúa hasta posiciones quietas o finales. En MIN se toma el menor valor, siempre medido desde MAX.
 
-Quedarse se llama *stand pat*: **es una aproximación, no una jugada legal**. Supone que hay una jugada sin captura tan buena como su EVAL para quien mueve. Puede fallar si esa jugada no existe. Por ejemplo, con EVAL $20$, MAX prefiere una captura que llega a una posición quieta con EVAL $50$. Si esa captura llevara a $-10$, devolvería $20$, aunque la posición actual todavía tuviera capturas.
+Quedarse se llama *stand pat*: **es una aproximación, no una jugada legal**.
+
+Por ejemplo, con EVAL $20$: si una captura llega a una posición quieta con EVAL $50$, MAX la sigue y el nodo vale $50$; si la única captura lleva a $-10$, MAX se planta y el nodo vale $20$. Ese $20$ supone que MAX tiene alguna jugada sin captura que conserve el $20$. Si todas las que tiene pierden, el $20$ es demasiado optimista.
 
 El resultado es el **valor con quietud**. Solo garantiza $100\cdot V$ si la búsqueda llega a los finales antes de activar la quietud. Incluso si todas las capturas llegan a finales, la opción de quedarse puede alterar el resultado. Además, ya no está limitada a $d$; una cadena de capturas puede alcanzar el final de la partida.
 
@@ -326,10 +324,11 @@ El resultado es el **valor con quietud**. Solo garantiza $100\cdot V$ si la bús
 |---|---|---|
 | Por nivel | Mayor valor con corte | Al terminar |
 | Por reloj | Última búsqueda completa | Al vencer el plazo |
+| Por reloj, con $+100$ | Esa jugada | Al encontrarla |
 
 En ambos casos, ante empate conserva la primera jugada **en el orden de esa búsqueda**: solo cambia si otra devuelve un valor estrictamente mayor. Por reloj, la mejor anterior va primero y conserva los empates.
 
-Una búsqueda interrumpida se descarta aunque haya encontrado una jugada aparentemente mejor. La salida anticipada con $+100$ es distinta: ya demostró una victoria y ninguna otra jugada puede superarla.
+La salida con $+100$ no rompe la regla: ya demostró una victoria y ninguna otra jugada puede superarla.
 
 #### 3 · Propiedades
 
@@ -342,12 +341,14 @@ Una búsqueda interrumpida se descarta aunque haya encontrado una jugada aparent
 - **Complejidad con quietud:** el peor caso alcanza tiempo $O(b^m)$ y memoria $O(bm)$, donde $m$ es el largo máximo de una partida.
 - **Frente a minimax y alfa-beta sin corte:** permite buscar cuando no alcanza para llegar a los finales. A cambio, la decisión depende de la calidad de EVAL y de la profundidad alcanzada.
 
+En las figuras de esta ficha, T± lleva una EVAL inventada: I $60$, C $20$ y D $10$; con $d=2$, también C1 $10$ y C2 $50$. La de I es mala a propósito: no ve que la captura ix pierde.
+
 ::: figure {#jue-c3-rx-fig-corte title="Corte a d = 1 en T±: 4 nodos, juega izq"}
 ![Minimax con corte a profundidad 1 en T±: genera la raíz y sus tres hijos, que valen su EVAL, 60, 20 y 10; juega izq, aunque detrás del horizonte está la captura ix, que pierde](../_assets/jue-c3-rx-corte.svg)
 :::
 
 ::: figure {#jue-c3-rx-fig-quietud title="Búsqueda de quietud a d = 1 en T±: juega centro"}
-![Búsqueda de quietud a profundidad 1 en T±: I no es quieto, así que MIN compara su EVAL, 60, con la captura ix, que vale −100, y se queda con −100; genera 5 nodos y juega centro, con 20](../_assets/jue-c3-rx-quietud.svg)
+![Búsqueda de quietud a profundidad 1 en T±: I no es quieto, así que MIN compara su EVAL, 60, con la captura ix, que vale −100, y toma el menor, −100; genera 5 nodos y juega centro, con 20](../_assets/jue-c3-rx-quietud.svg)
 :::
 
 ::: figure {#jue-c3-rx-fig-iterativa title="Profundización iterativa en T±: d = 1, 2, 3"}
@@ -358,7 +359,7 @@ Una búsqueda interrumpida se descarta aunque haya encontrado una jugada aparent
 ![Diagrama de flujo del corte: baja un nivel; si es final, vale 100·U; si se acabó d, vale EVAL; al subir, MAX toma el mayor; juega la mejor de la raíz](../_assets/jue-c3-rx-flujo-corte.svg)
 :::
 
-### Monte Carlo plano (*flat Monte Carlo*)
+### Monte Carlo plano (flat Monte Carlo)
 
 Estima cada jugada de la raíz jugando muchas partidas al azar desde ella y promediando sus resultados. No construye un árbol de búsqueda: conserva solo un contador y una suma por jugada de la raíz.
 
@@ -392,7 +393,7 @@ $$
 
 **Lo que estima ese promedio.** El **promedio límite $\mu(s')$** es el promedio de $U$ sobre todas las partidas posibles desde $s'$, cada una con su probabilidad, cuando **los dos jugadores eligen al azar**.
 
-Elegir uniformemente en cada estado no hace igual de probables todas las hojas. **Cada camino pesa según las elecciones necesarias para recorrerlo**. Por eso $\mu(s')$ no es, en general, el promedio simple de las hojas. Tampoco es el valor $V(s')$, que supone que ambos jugadores eligen lo mejor para sí.
+Elegir uniformemente en cada estado no hace igual de probables todas las hojas. **Cada camino pesa el producto de $1/|A(s)|$ en cada estado que cruza.** Por eso $\mu(s')$ no es, en general, el promedio simple de las hojas. Tampoco es el valor $V(s')$, que supone que ambos jugadores eligen lo mejor para sí.
 
 **Cuánto se puede confiar en el promedio (intuición de Hoeffding, sin demostración).** Supón que las simulaciones de una jugada son **independientes**, siguen **siempre la misma regla al azar** y cada $U$ está entre $-1$ y $+1$. Entonces:
 
@@ -429,7 +430,7 @@ El reparto se fija antes de ver los resultados; la elección usa los promedios o
 - **Número que da:** entrega, para cada jugada de la raíz, su promedio $\bar u$. Es una estimación de $\mu$, el promedio con ambos jugadores al azar; no es una estimación del valor de minimax en general.
 - **Usa EVAL:** no la necesita. Le bastan las reglas para generar jugadas, reconocer finales y obtener su utilidad. Trabaja en la escala de $U$, sin el ×100.
 - **Garantía:** no garantiza $V$. Bajo las condiciones de independencia y regla fija descritas, cuando $k\to\infty$ cada $\bar u$ converge con probabilidad 1 a su $\mu$. Ese promedio puede favorecer una jugada equivocada porque supone que tanto el rival como el propio MAX juegan al azar.
-- **Se puede interrumpir (*anytime*):** puede recomendar una jugada cuando todas las jugadas de la raíz tienen al menos una simulación completa. Con el reparto por bloques descrito, eso ocurre al completar la primera simulación de la última jugada. Una variante por rondas —una simulación por jugada en cada ronda— permite recomendar desde las primeras $|A(s_0)|$ simulaciones.
+- **Se puede interrumpir (*anytime*):** puede recomendar una jugada cuando todas las jugadas de la raíz tienen al menos una simulación completa. Con el reparto por bloques descrito, eso ocurre al completar la primera simulación de la última jugada.
 - **Complejidad:** sean $b$ las jugadas máximas por nodo y $m$ el largo máximo de una partida. Con una jugada al azar de costo $O(1)$, cada simulación cuesta $O(m)$ y las $n$ simulaciones cuestan $O(nm)$. Guarda un contador y una suma por jugada de la raíz, además del estado de la partida en curso. Memoria: $O(b)$, si cada estado ocupa espacio constante.
 - **Frente a minimax y el corte:** como minimax, toma sus resultados de finales del juego, y a diferencia del corte no necesita EVAL. Pero minimax supone que cada jugador elige lo mejor y calcula $V$; Monte Carlo plano supone que los dos eligen al azar y estima $\mu$. Por eso le basta $O(nm)$ en vez de $O(b^m)$, y por eso puede elegir mal.
 
@@ -441,7 +442,7 @@ El reparto se fija antes de ver los resultados; la elección usa los promedios o
 ![Diagrama de flujo de Monte Carlo plano: para cada jugada de la raíz, juega k partidas al azar hasta un final, promedia su U y al final juega la de mayor promedio](../_assets/jue-c3-rx-flujo-mc-plano.svg)
 :::
 
-### UCT (*Upper Confidence bounds applied to Trees*)
+### UCT (Upper Confidence bounds applied to Trees)
 
 Es una variante de búsqueda en árbol de Monte Carlo (*Monte Carlo Tree Search*, MCTS). Aquí simula al azar hasta un final del juego y elige la jugada por número de visitas.
 
@@ -525,17 +526,29 @@ Elegir por visitas evita fiarse de un promedio alto que salió de pocas partidas
 
 ## Comparación
 
-Las cinco fichas, lado a lado. La primera tabla dice qué hace cada algoritmo; la segunda, cuánto le cuesta y cuándo conviene.
+Las cinco fichas, lado a lado. Las dos primeras tablas dicen qué hace cada algoritmo; las otras dos, cuánto le cuesta y cuándo conviene. «Corte» es por nivel o por reloj.
 
 **Qué hace cada uno**
 
-| Algoritmo | Usa EVAL | Número que da | Juega | Garantiza $V$ |
-|---|---|---|---|---|
-| Minimax | No | $V$ de cada jugada | La de mayor $V$ | Sí |
-| Alfa-beta | No | $V$ de la elegida; cotas | La misma que minimax | Sí, en la raíz |
-| Corte, por nivel o reloj | Sí | Valor con corte | La de mayor valor | Solo si llega a finales |
-| Monte Carlo plano | No | Promedio $\bar u$ | La de mayor $\bar u$ | No |
-| UCT | No | Visitas $N$ y promedio $\bar u$ | La más visitada | No |
+::: table {#jue-c3-rx-tab-numero title="Qué número da cada uno y si usa EVAL"}
+| Algoritmo | Usa EVAL | Número que da |
+|---|---|---|
+| Minimax | No | $V$ de cada jugada |
+| Alfa-beta | No | $V$ de la elegida; cotas |
+| Corte | Sí | Valor con corte |
+| Monte Carlo plano | No | Promedio $\bar u$ |
+| UCT | No | $N$ y promedio $\bar u$ |
+:::
+
+::: table {#jue-c3-rx-tab-juega title="Qué jugada juega cada uno y si garantiza V"}
+| Algoritmo | Juega | Garantiza $V$ |
+|---|---|---|
+| Minimax | La de mayor $V$ | Sí |
+| Alfa-beta | La de minimax | Sí, en la raíz |
+| Corte | La de mayor valor | Si llega a finales |
+| Monte Carlo plano | La de mayor $\bar u$ | No |
+| UCT | La más visitada | No |
+:::
 
 - **En el corte por reloj**, la jugada es la de la **última búsqueda completa**; la búsqueda que el reloj interrumpe se descarta.
 - **En Monte Carlo plano**, con simulaciones independientes y la misma regla al azar, $\bar u$ se acerca a $\mu$, el promedio con los dos al azar, y no a $V$.
@@ -545,17 +558,30 @@ Las cinco fichas, lado a lado. La primera tabla dice qué hace cada algoritmo; l
 
 El costo cuenta una unidad por nodo generado o por jugada simulada, con recorrido en profundidad y sin tabla de transposición.
 
-| Algoritmo | Tiempo | Memoria | *Anytime* | Cuándo conviene |
-|---|---|---|---|---|
-| Minimax | $O(b^m)$ | $O(bm)$ | No | Cabe todo el árbol |
-| Alfa-beta | $O(b^{m/2})$ a $O(b^m)$ | $O(bm)$ | No | Cabe todo, con poda |
-| Corte, por nivel o reloj | $O(b^d)$ sin poda | $O(bd)$ | Por reloj, sí | Hay buena EVAL |
-| Monte Carlo plano | $O(nm)$ | $O(b)$ | Tras simular cada jugada | Sin EVAL, como base |
-| UCT | $O(n(bh+m))$ | $O(n)$ | Desde la primera vuelta | Sin EVAL, árbol enorme |
+::: table {#jue-c3-rx-tab-costo title="Cuánto cuesta cada uno"}
+| Algoritmo | Tiempo | Memoria |
+|---|---|---|
+| Minimax | $O(b^m)$ | $O(bm)$ |
+| Alfa-beta | $O(b^{m/2})$ a $O(b^m)$ | $O(bm)$ |
+| Corte | $O(b^d)$ sin poda | $O(bd)$ |
+| Monte Carlo plano | $O(nm)$ | $O(b)$ |
+| UCT | $O(n(bh+m))$ | $O(n)$ |
+:::
+
+::: table {#jue-c3-rx-tab-cuando title="Cuándo se puede interrumpir y cuándo conviene"}
+| Algoritmo | *Anytime* | Conviene si |
+|---|---|---|
+| Minimax | No | Cabe todo el árbol |
+| Alfa-beta | No | Cabe todo, con poda |
+| Corte | Por reloj, sí | Hay buena EVAL |
+| Monte Carlo plano | Tras simular cada jugada | Sin EVAL, como base |
+| UCT | Desde la primera vuelta | Sin EVAL, árbol enorme |
+:::
 
 - **En alfa-beta**, $O(b^{m/2})$ es con el **orden perfecto** de los hijos y $O(b^m)$, con el peor. Con el mismo orden, nunca genera más nodos que minimax, pero puede generar los mismos.
-- **En el corte con alfa-beta** y orden perfecto, el tiempo baja a $O(b^{d/2})$. La versión por reloj repite búsquedas con $d=1,2,3,\dots$: si cada una cuesta $B>1$ veces la anterior, todas juntas cuestan menos de $B/(B-1)$ veces la última.
+- **En el corte con alfa-beta** y orden perfecto, el tiempo baja a $O(b^{d/2})$. La versión por reloj repite búsquedas con $d=1,2,3,\dots$: si cada una cuesta $B>1$ veces la anterior, todas juntas cuestan aproximadamente $B/(B-1)$ veces la última.
 - **En Monte Carlo plano**, $n=|A(s_0)|\,k\le b\,k$: cada jugada de la raíz recibe $k$ simulaciones.
+- **Las filas del corte no incluyen la quietud.** Con ella, el peor caso cuesta $O(b^m)$ en tiempo y $O(bm)$ en memoria, y la garantía exige llegar a los finales antes de activarla.
 - **Poder interrumpir no es garantizar.** Un algoritmo *anytime* siempre tiene una jugada que entregar, pero con poco tiempo puede ser mala.
 
 **La EVAL no es lo que decide entre alfa-beta y MCTS:** se pueden combinar. Un MCTS puede valorar el hijo nuevo con una estimación en lugar de simular, o junto con la simulación, como hacía AlphaGo.

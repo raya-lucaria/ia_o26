@@ -12,7 +12,7 @@ tags: [juegos, mcts, comparacion]
 
 ## Un árbol que no cabe
 
-T± tiene 15 nodos: cabe en una hoja, y cualquier algoritmo lo recorre entero. Para ver el mecanismo de Monte Carlo plano y de UCT hace falta un árbol que **no** quepa.
+T± tiene 15 nodos: cabe en un dibujo y permite calcular minimax completo. Es demasiado chico para ver cómo trabajan Monte Carlo plano y UCT con un presupuesto limitado; para eso hace falta un árbol que **no** quepa.
 
 Este es un árbol abstracto. En la raíz mueve MAX y los niveles alternan MAX y MIN. Cada nodo tiene hasta $b$ jugadas, y ninguna partida pasa de $m$ jugadas. Los «…» dicen que el dibujo sigue a lo ancho y a lo hondo. Los finales quedan muy abajo, cada uno con su $U$.
 
@@ -28,7 +28,7 @@ Los métodos de la unidad ya tienen respuesta para un árbol así, y cada una pi
 - **Alfa-beta**, con el orden perfecto de los hijos, baja a cerca de $b^{m/2}$. Sigue creciendo exponencialmente: con $m$ grande, tampoco cabe.
 - **El corte** se detiene a profundidad $d$, pero necesita una **EVAL buena**. Si la EVAL se equivoca, el valor con corte se equivoca con ella.
 
-Sin una EVAL confiable queda una pieza que siempre está: **las reglas**. Con ellas se puede jugar una partida hasta un final, al azar, y ver quién gana. Explorar todas las continuaciones es imposible, pero jugar **una** es barato. Eso es simular.
+Sin una EVAL confiable queda una pieza que siempre está: **las reglas**. Con ellas se puede jugar una partida hasta un final, al azar, y ver quién gana. Explorar todas las continuaciones es imposible, pero jugar **una** cuesta del orden de $m$ jugadas, no de $b^m$. Eso es simular, y aquí se supone que caben suficientes partidas en el presupuesto.
 
 ## Monte Carlo plano en el árbol grande
 
@@ -39,7 +39,7 @@ Monte Carlo plano (*flat Monte Carlo*) no construye árbol. Desde cada jugada de
 - **Cada simulación es un camino, no un subárbol.** Baja eligiendo una jugada al azar en cada nivel, hasta un final lejano, y anota su $U$.
 - **En la raíz guarda solo dos números por jugada:** cuántas simulaciones recibió, $N$, y la suma de sus $U$.
 - **Debajo de la raíz no guarda nada.** Al terminar una simulación, los estados de su camino se olvidan; solo queda su $U$ sumado al contador.
-- **Dos simulaciones pueden repetir camino**, pero en un árbol grande casi siempre recorren continuaciones distintas.
+- **Dos simulaciones pueden repetir camino.** Qué tan seguido pasa depende de la probabilidad de cada camino, no solo del tamaño del árbol.
 
 Con esos dos números saca el promedio de cada jugada:
 
@@ -56,7 +56,7 @@ $$
 
 ### Hacia dónde va su promedio
 
-Mientras más simulaciones recibe una jugada, más se acerca su $\bar u$ al **promedio límite** $\mu$: el promedio de $U$ si los dos juegan al azar desde ahí. Esto pide una condición: que las simulaciones de esa jugada sean **independientes** y sigan **siempre la misma regla al azar**. Con ella, la **intuición de Hoeffding** dice cuánto se puede fiar uno de un promedio antes de llegar al límite:
+El **promedio límite** $\mu$ es el promedio de $U$ si los dos juegan al azar desde ahí. Pide una condición: que las simulaciones de una jugada sean **independientes** y sigan **siempre la misma regla al azar**. Entonces su $\bar u$ converge a $\mu$ con probabilidad 1 cuando $N$ crece. Con esa misma condición, la **intuición de Hoeffding** dice cuánto se puede fiar uno de un promedio antes de llegar al límite:
 
 - **El promedio cae cerca de $\mu$, con alta probabilidad.** Para un número de simulaciones fijado de antemano, hay un margen alrededor de $\mu$ donde el promedio cae casi siempre.
 - **Ese margen se encoge como $1/\sqrt N$.** Con cuatro veces más simulaciones, la mitad de margen.
@@ -65,7 +65,7 @@ Mientras más simulaciones recibe una jugada, más se acerca su $\bar u$ al **pr
 
 ### Qué juega, y por qué puede fallar
 
-Al terminar, Monte Carlo plano juega la jugada de la raíz con **mayor $\bar u$**; ante un empate, la primera en el orden dado. Con muchísimas simulaciones, eso es la jugada de mayor $\mu$. Pero $\mu$ supone que **MIN también juega al azar**, y un rival que piensa no lo hace.
+Al terminar, Monte Carlo plano juega la jugada de la raíz con **mayor $\bar u$**; ante un empate, la primera en el orden dado. Con simulaciones independientes y cada vez más, la probabilidad de que esa sea la jugada de mayor $\mu$ tiende a 1. Pero $\mu$ supone que **MIN también juega al azar**, y un rival que piensa no lo hace.
 
 Un ejemplo mínimo: MAX tiene dos jugadas, y tras cualquiera de ellas la respuesta de MIN termina la partida.
 
@@ -76,7 +76,7 @@ Un ejemplo mínimo: MAX tiene dos jugadas, y tras cualquiera de ellas la respues
 
 - **En $a$, MIN tiene una refutación:** de sus tres respuestas, una le gana. Al azar la elige una vez de cada tres, así que $\mu=(1+1-1)/3=1/3$. Pero un MIN que piensa siempre la juega, y $V=-1$.
 - **En $b$, el empate es seguro:** $\mu=V=0$.
-- **Monte Carlo plano juega $a$, y pierde.** Minimax jugaría $b$.
+- **Con muchas simulaciones, Monte Carlo plano juega $a$ casi siempre, y entonces pierde** contra la mejor respuesta. Minimax jugaría $b$. Con pocas, el azar también puede llevarlo a $b$.
 - **Con más respuestas buenas para MAX y una sola refutación, la distancia crece:** $\mu$ se acerca a $+1$ mientras $V$ sigue en $-1$.
 
 Más simulaciones no lo arreglan. El promedio converge, pero **al número equivocado**: estima cada vez mejor lo que pasaría si el rival jugara al azar.
@@ -95,9 +95,9 @@ Antes de las fases, tres cosas que no hay que confundir:
 
 Cada vuelta (*iteration*) tiene cuatro fases:
 
-1. **Selección (*selection*).** Desde la raíz, baja por los nodos guardados. En un nodo con todos sus hijos agregados, elige uno con el puntaje UCT. Se detiene en el primer nodo que todavía tiene una jugada sin agregar, la frontera, o al llegar a un final.
-2. **Expansión (*expansion*).** Agrega la primera jugada pendiente, en el orden dado, como **un hijo nuevo**. Es a lo más un nodo por vuelta.
-3. **Simulación (*simulation*).** Desde el hijo nuevo, juega al azar, para los dos, hasta un final. Es un camino como los de Monte Carlo plano, y tampoco se guarda. Si el hijo nuevo ya es un final, toma su $U$ sin simular.
+1. **Selección (*selection*).** Desde la raíz, baja por los nodos guardados. En un nodo con todos sus hijos agregados, elige uno con el puntaje UCT. Se detiene en el primer nodo que todavía tiene una jugada sin agregar —una jugada de la frontera— o al llegar a un final.
+2. **Expansión (*expansion*).** Si encontró una jugada pendiente, agrega la primera, en el orden dado, como **un hijo nuevo**: a lo más un nodo por vuelta. Si llegó a un final, no agrega nada y pasa directo a la retropropagación.
+3. **Simulación (*rollout* o *playout*).** Desde el hijo nuevo, juega al azar, para los dos, hasta un final. Es un camino como los de Monte Carlo plano, y tampoco se guarda. Si el hijo nuevo ya es un final, toma su $U$ sin simular.
 4. **Retropropagación (*backpropagation*).** Sube ese $U$ por el camino hasta la raíz. Cada nodo del camino suma una visita a $N(s)$ y mete el resultado en su promedio $\bar u(s)$. **El signo no cambia al subir:** todo se mide desde MAX.
 
 **El puntaje de la selección.** En un nodo $s$ de MAX, el puntaje de cada hijo $s'$ es
@@ -132,17 +132,17 @@ Vuelta tras vuelta, el árbol de UCT crece **desigual**: hondo por las jugadas q
 
 Así se arregla el ejemplo de la refutación. Bajo la jugada $a$, el árbol de UCT agrega las respuestas de MIN. La refutación junta resultados de $-1$ y, por el puntaje, MIN la elige cada vez más: ya no depende de que el azar la encuentre. Con suficientes vueltas, el promedio de $a$ deja de parecerse a $\mu$ y baja hacia $V=-1$.
 
-**Esa convergencia tiene condiciones:** un árbol finito, $c>0$ fija, sin podar ramas y con vueltas sin límite. Con esas condiciones, los promedios se acercan a $V$. Con un presupuesto fijo, una refutación todavía puede pasar inadvertida.
+**Esa convergencia tiene condiciones:** un árbol finito, $c>0$ fija y vueltas sin límite. Con esas condiciones, los promedios se acercan a $V$. Con un presupuesto fijo, una refutación todavía puede pasar inadvertida.
 
 ### Por qué el bono hace natural explorar
 
 El bono es ${c\sqrt{\ln N(s)/N(s')}}$, y cada parte tiene una razón:
 
 - **$\sqrt{1/N(s')}$ tiene la forma del margen de un promedio.** Es la misma forma que en Monte Carlo plano: con pocas visitas, $\bar u(s')$ todavía puede estar lejos de lo que valdría con muchas. El bono le da a cada hijo el beneficio de la duda, en proporción a esa duda.
-- **$\ln N(s)$ pide más confianza con el tiempo.** Si un hijo deja de recibir visitas mientras su padre sigue recibiéndolas, su bono **crece**, despacio. Tarde o temprano supera al de los demás y el hijo vuelve a probarse.
+- **$\ln N(s)$ hace crecer el bono de un hijo olvidado.** Si un hijo deja de recibir visitas mientras su padre sigue recibiéndolas, su bono **crece**, despacio. Tarde o temprano supera al de los demás y el hijo vuelve a probarse.
 - **$c$ fija cuánto pesa esa duda** frente al promedio.
 
-En un árbol finito, con vueltas sin límite, eso hace que **ninguna jugada se abandone para siempre**: las que van mal se prueban cada vez con menos frecuencia, pero se siguen probando.
+En un árbol finito, con vueltas sin límite, **ninguna jugada se abandona para siempre**. Las que van mal se prueban cada vez con menos frecuencia, pero se siguen probando.
 
 **Esto es intuición, no garantía.** El margen de Monte Carlo plano pedía simulaciones independientes con una regla fija. En UCT no se cumple:
 
@@ -153,9 +153,9 @@ El bono sigue la forma del margen, pero ese margen, aquí, no se aplica directo.
 
 ### Por qué juega la más visitada
 
-Al acabarse el tiempo o las vueltas, UCT juega la jugada de la raíz con **más visitas $N(s')$**, la regla del **hijo más visitado (*robust child*)**; ante un empate, la primera en el orden dado.
+Al acabarse el tiempo o las vueltas, UCT juega la jugada de la raíz con **más visitas $N(s')$**: la regla del **hijo más visitado (*robust child*)**. Ante un empate, juega la primera en el orden dado.
 
-- **Las visitas resumen la búsqueda.** La selección manda una vuelta a un hijo solo si su puntaje es el mayor; que lo haga muchas veces quiere decir que se probó mucho y siguió viéndose bien.
+- **Las visitas resumen la búsqueda.** La selección manda una vuelta a un hijo solo si su puntaje es el mayor. Que lo haga muchas veces quiere decir que se probó mucho y siguió viéndose bien.
 - **Un promedio alto con pocas visitas puede ser suerte.** Su margen todavía es ancho.
 - **Más visitas no demuestran más valor.** También influyen el bono, el orden y los primeros resultados. Con poco presupuesto, la regla puede equivocarse.
 

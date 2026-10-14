@@ -16,12 +16,13 @@ P6 = CLASE_3 / "6_un_arbol_todos_los_algoritmos.md"
 P7 = CLASE_3 / "7_monte_carlo_en_un_arbol_grande.md"
 FICHA_UCT = Path("/home/uumami/itam/ia_o26/.superpowers/unidad/juegos/radiografia/ficha-uct-v4.md")
 
+# Sin cursivas en el título: el índice «On this page» imprime los asteriscos.
 FICHAS = [
-    "Minimax (*minimax*)",
-    "Alfa-beta (*alpha-beta pruning*)",
-    "Corte por nivel o por reloj (*depth-limited search*, *iterative deepening*)",
-    "Monte Carlo plano (*flat Monte Carlo*)",
-    "UCT (*Upper Confidence bounds applied to Trees*)",
+    "Minimax (minimax)",
+    "Alfa-beta (alpha-beta pruning)",
+    "Corte por nivel o por reloj (depth-limited search, iterative deepening)",
+    "Monte Carlo plano (flat Monte Carlo)",
+    "UCT (Upper Confidence bounds applied to Trees)",
 ]
 PARTES = [
     "#### 1 · Exploración: cómo construye su estimación",
@@ -85,7 +86,8 @@ def test_la_ficha_de_uct_va_tal_cual_la_aprobo_el_profesor_mas_la_linea_de_min()
     assert ("Elegir el menor $\\bar u(s')-\\text{bono}$ equivale a elegir el mayor "
             "$-\\bar u(s')+\\text{bono}$") in uct
     if FICHA_UCT.exists():
-        aprobada = FICHA_UCT.read_text(encoding="utf-8").strip()
+        aprobada = FICHA_UCT.read_text(encoding="utf-8").strip().replace(
+            "### UCT (*Upper Confidence bounds applied to Trees*)", "### " + FICHAS[4])
         sin_figuras = re.sub(r"\n*::: figure.*?\n:::", "", uct, flags=re.S).strip()
         sin_linea = re.sub(r" Elegir el menor .*?\]\]\.", "", sin_figuras)
         assert sin_linea == aprobada
@@ -160,3 +162,12 @@ def test_la_navegacion_va_de_la_5_a_la_6_a_la_7_al_bono_a_la_tarea():
                        "5_simular_en_vez_de_evaluar.md", "6_un_arbol_todos_los_algoritmos.md",
                        "7_monte_carlo_en_un_arbol_grande.md", "8_de_donde_sale_el_bono.md",
                        "9_tarea.md"]
+
+
+def test_ningun_titulo_de_las_dos_paginas_lleva_enfasis():
+    """El índice lateral toma el texto crudo del encabezado: «Minimax (*minimax*)»
+    se publicaba con los asteriscos (se vio en las capturas a 1280 px)."""
+    for p in (P6, P7):
+        for linea in _texto(p).splitlines():
+            if linea.startswith("#"):
+                assert "*" not in linea, (p.name, linea)

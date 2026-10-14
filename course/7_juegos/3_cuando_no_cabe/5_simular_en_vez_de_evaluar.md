@@ -390,7 +390,7 @@ Por eso se encoge al crecer $N(s')$. Crece despacio con ${\ln N(s)}$: conforme
 avanza la búsqueda, se pide más confianza antes de dar una jugada por mala.
 Y $c$ fija cuánta.
 
-La página siguiente dice de dónde sale $c$. En corto: si $N(s')$ se
+[[de-donde-sale-el-bono|De dónde sale el bono]] dice de dónde sale $c$. En corto: si $N(s')$ se
 fijara antes de ver los resultados, $\delta$ acotaría la probabilidad de
 que el promedio quedara por debajo de su promedio límite en más que el
 bono. Esa $\delta$ baja conforme crece $N(s)$, y $c$ fija qué tan rápido.
@@ -450,7 +450,7 @@ quedan vueltas? ¿Qué número de la lista mira cada una?
 
 Queda abierta la pregunta que esta sección pasó de largo: **¿de dónde sale
 ese bono, y cuánto debe valer $c$?** La contesta
-[[de-donde-sale-el-bono|De dónde sale el bono]], después de comparar los algoritmos.
+[[de-donde-sale-el-bono|De dónde sale el bono]].
 
 ## 6 · Ubicar MCTS en la historia
 
@@ -531,7 +531,7 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 >
 > **Lo que viene.**
 >
-> Ya viste todos los algoritmos de la clase. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]] los pone lado a lado en un mismo árbol, y [[de-donde-sale-el-bono|De dónde sale el bono]] explica después la regla con que MCTS reparte las partidas.
+> Ya viste todos los algoritmos de la clase. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]] los pone lado a lado.
 
 ## Lo que hay que llevarse
 

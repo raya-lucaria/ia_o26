@@ -69,6 +69,7 @@ La página es **un argumento**, no una lista de hechos. Se vio en `course/7_jueg
 
 - **CRITERIO útil**: «Lo que traes»; «Lo que hay que llevarse» con los números concretos (`J/2_mirar_todo_y_podar/2_minimax_como_algoritmo.md:674-684`); el modelo dos veces, construcción y resumen (`P/1_salones_practica.md:222`); una columna que se repite para verla viajar (`J/2_mirar_todo_y_podar/2_minimax_como_algoritmo.md:228-230`). No cuenta para topes (ver `lectura.md`).
 - **CRITERIO relleno**: repetir sin número ni enlace nuevo, re-explicar una definición ya enlazada, un resumen más largo que lo que resume.
+- **DEBE (regla del profesor, 2026-10-14): no toda repetición es mala.** Repetir una fórmula o una definición donde se vuelve a usar, o lo que ayuda a comparar sin tener que subir en la página (p. ej. fichas que se comparan lado a lado), **se queda**. Se quita solo lo repetido sin sentido: la misma frase dos veces seguidas, un paso repetido dentro de la misma sección. Ante un hallazgo de «repetición», la pregunta es si ayuda a leer o comparar en ese punto.
 
 ## Error típico y «Qué no es»
 
