@@ -390,7 +390,7 @@ Por eso se encoge al crecer $N(s')$. Crece despacio con ${\ln N(s)}$: conforme
 avanza la búsqueda, se pide más confianza antes de dar una jugada por mala.
 Y $c$ fija cuánta.
 
-La página siguiente dice de dónde sale $c$. En corto: si $N(s')$ se
+[[de-donde-sale-el-bono|De dónde sale el bono]] dice de dónde sale $c$. En corto: si $N(s')$ se
 fijara antes de ver los resultados, $\delta$ acotaría la probabilidad de
 que el promedio quedara por debajo de su promedio límite en más que el
 bono. Esa $\delta$ baja conforme crece $N(s)$, y $c$ fija qué tan rápido.
@@ -450,7 +450,7 @@ quedan vueltas? ¿Qué número de la lista mira cada una?
 
 Queda abierta la pregunta que esta sección pasó de largo: **¿de dónde sale
 ese bono, y cuánto debe valer $c$?** La contesta
-[[de-donde-sale-el-bono|la página siguiente]].
+[[de-donde-sale-el-bono|De dónde sale el bono]].
 
 ## 6 · Ubicar MCTS en la historia
 
@@ -507,7 +507,7 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 | Rasgo | MCTS con UCT |
 |---|---|
 | Hasta dónde mira | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
-| ¿Genera todo el árbol? | No necesita: agrega a lo más un nodo por vuelta, más su partida. Con suficientes vueltas expande todo un árbol finito (el árbol T± de «Un árbol, todos los algoritmos», de 15 nodos, con 40) |
+| ¿Genera todo el árbol? | No necesita: agrega a lo más un nodo por vuelta, más su partida. Con suficientes vueltas expande todo un árbol finito (el árbol T± de «Radiografía: un árbol, cinco algoritmos», de 15 nodos, con 40) |
 | ¿Garantiza $V$? | No. Con tiempo sin límite converge a él, con cualquier $c>0$ |
 | Con qué estima | Con $\bar u$ de simulaciones |
 | ¿Quién tira dados? | El algoritmo, en las simulaciones. Esta versión expande y desempata en orden fijo, así que dentro del árbol no sortea; otras sí |
@@ -531,7 +531,7 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
 >
 > **Lo que viene.**
 >
-> Ya viste todos los algoritmos de la clase. [[de-donde-sale-el-bono|De dónde sale el bono]] explica la regla con que MCTS reparte las partidas.
+> Ya viste todos los algoritmos de la clase. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]] los pone lado a lado.
 
 ## Lo que hay que llevarse
 
@@ -559,4 +559,4 @@ Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo 
   AlphaGo Zero y AlphaZero (2017) cambiaron la partida simulada hasta el
   final por una red que valora la hoja, y que además guía la selección.
 
-Continúa con [[de-donde-sale-el-bono|de dónde sale el bono]].
+Continúa con [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]].

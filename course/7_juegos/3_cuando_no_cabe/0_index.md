@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 278m
+estimated_time: 318m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -23,7 +23,7 @@ antes y **estimar**.
 >   algoritmo abre la suya en un recuadro como éste.
 > - **▶ Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
 >   la página «De dónde sale el bono».
-> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol T± y compara qué miró y qué devolvió; lo abre la página «Un árbol, todos los algoritmos».
+> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol T± y compara qué miró y qué devolvió. Lo abre la página «Radiografía: un árbol, cinco algoritmos».
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -69,12 +69,10 @@ Las páginas de la clase 2:
 - Explicar el bono de UCT como margen de error de un promedio: por qué se
   suma, de dónde sale su tamaño, y que se usa para seleccionar, no para
   entregar.
-- Correr todos los algoritmos de la unidad en un mismo árbol y comparar qué
-  jugada entrega cada uno y cuántos nodos genera.
-- Distinguir los tres números que devuelven: $V$, el valor con corte y
-  $\bar u$. Y decir cuándo uno de ellos permite dejar de buscar.
-- Elegir el algoritmo para un juego nuevo según si cabe, si tiene dados, si
-  hay una evaluación buena y si hay reloj.
+- Comparar cinco algoritmos en un mismo árbol. De cada uno: cómo explora,
+  qué número da, qué jugada juega, si usa evaluación y cuánto cuesta.
+- Explicar qué estima Monte Carlo plano en un árbol que no cabe. Y cómo
+  crece el árbol de UCT: hondo en lo prometedor.
 
 La utilidad no cambia: sigue siendo la de las clases 1 y 2, $U=+1$ si gana
 Blancas y $U=-1$ si gana Negras. Lo nuevo es lo que se hace cuando la
@@ -89,13 +87,13 @@ Tres ejemplos, cada uno con su papel:
   distinta de no caer en eso.
 - **El árbol T de la clase 2**, para los algoritmos: es tan chico que cada
   línea del pseudocódigo se sigue a mano.
-- **Tres jugadas x, y, z de MCTS**, en las páginas 5 y 6: primero
+- **Tres jugadas x, y, z de MCTS**, en las páginas 5 y 8: primero
   con promedios simulados y después como un bandido, con su promedio
   verdadero oculto, para ver de dónde sale el bono.
 
 ## Recorrido
 
-Nueve páginas, en orden. Las tres últimas comparan todos los algoritmos de la unidad en un mismo árbol. Las dos primeras van en par, como en la clase 2:
+Ocho páginas de lectura y una tarea, en orden. La 6 compara los cinco algoritmos en un mismo árbol. La 7 mira los dos Monte Carlo en uno grande. Las dos primeras van en par, como en la clase 2:
 primero **a mano** y después **como algoritmo**.
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
@@ -106,11 +104,10 @@ primero **a mano** y después **como algoritmo**.
 | 3 | Más allá del horizonte | Por qué un corte fijo engaña, y buscar más donde hay capturas | 22m |
 | 4 | Jugar contra el reloj | Qué jugada entregar cuando se acaba el tiempo | 37m |
 | 5 | Simular en vez de evaluar | Estimar con partidas al azar, sin escribir una evaluación | 31m |
-| 6 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 46m |
-| 7 | Un árbol, todos los algoritmos | Correr cada algoritmo en el mismo árbol y ver qué hace distinto | 25m |
-| 8 | Qué número da cada uno | Distinguir $V$, el valor con corte y $\bar u$, y cuándo dejar de buscar | 20m |
-| 9 | Elegir el algoritmo | Diagnosticar un juego y elegir con qué buscar | 25m |
-| 10 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
+| 6 | Radiografía: un árbol, cinco algoritmos | Cómo explora cada algoritmo, qué número da, qué juega y cuánto cuesta | 85m |
+| 7 | Monte Carlo y UCT en un árbol grande | Simular caminos al azar y hacer crecer un árbol desigual | 25m |
+| 8 | De dónde sale el bono | Por qué UCT suma ese bono: el margen de error de un promedio | 46m |
+| 9 | Tarea de refuerzo | Proponer y usar una evaluación de gato, y otra posición de peones | 50m, aparte |
 :::
 
 1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
@@ -118,10 +115,9 @@ primero **a mano** y después **como algoritmo**.
 3. [[mas-alla-del-horizonte|Más allá del horizonte]]
 4. [[jugar-contra-el-reloj|Jugar contra el reloj]]
 5. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
-6. [[de-donde-sale-el-bono|De dónde sale el bono]]
-7. [[un-arbol-todos-los-algoritmos|Un árbol, todos los algoritmos]]
-8. [[que-numero-da-cada-uno|Qué número da cada uno]]
-9. [[elegir-el-algoritmo|Elegir el algoritmo]]
+6. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]]
+7. [[monte-carlo-en-un-arbol-grande|Monte Carlo y UCT en un árbol grande]]
+8. [[de-donde-sale-el-bono|De dónde sale el bono]]
 
 ## Las animaciones y el notebook
 

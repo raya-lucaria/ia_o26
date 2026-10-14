@@ -130,8 +130,8 @@ PAGINAS = list(dict.fromkeys(a["archivo"] for a in ALGORITMOS))
 
 # Cuando ya no queda ningún algoritmo por ver.
 SIN_PENDIENTES = ("Ya viste todos los algoritmos de la clase. "
-                  "[[de-donde-sale-el-bono|De dónde sale el bono]] explica la "
-                  "regla con que MCTS reparte las partidas.")
+                  "[[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]] "
+                  "los pone lado a lado.")
 
 ENCABEZADO = "| Algoritmo | Qué número da |"
 INICIO = "> [!NOTE]"

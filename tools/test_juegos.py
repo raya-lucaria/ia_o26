@@ -1822,7 +1822,7 @@ def test_clase_3_p6_c_es_una_perilla():
 # decimales se comparan como texto, con el formato con que la pagina las
 # imprime («2.10», no 2.1). Los ejes de las figuras vienen de gen_juegos.
 
-P6 = "6_de_donde_sale_el_bono.md"
+P6 = "8_de_donde_sale_el_bono.md"
 _NUM = r"[+-]?\d+(?: \d{3})*(?:\.\d+)?"
 _PALABRAS = {"una": 1, "tres": 3, "diez": 10, "doble": 2, "la mitad": F(1, 2),
              "un tercio": F(1, 3)}
@@ -2550,7 +2550,7 @@ def test_prosa_clase_3_p5_p6_r2_lo_que_no_se_garantiza():
     assert "Con un presupuesto finito, no" not in p5
     m = re.search(r"\| ¿Genera todo el árbol\? \| No necesita: agrega a lo más un nodo por vuelta, "
                   r"más su partida\. Con suficientes vueltas expande todo un árbol finito "
-                  r"\(el árbol T± de «Un árbol, todos los algoritmos», de (\d+) nodos, con (\d+)\) \|",
+                  r"\(el árbol T± de «Radiografía: un árbol, cinco algoritmos», de (\d+) nodos, con (\d+)\) \|",
                   p5)
     nodos, vueltas = int(m[1]), int(m[2])
     assert len(j.uct_tpm(1, vueltas, j.SEMILLA_TPM)["N"]) == nodos == j.contar_nodos(j.ARBOL_TPM)
@@ -2585,11 +2585,11 @@ def test_prosa_clase_3_p6_tabla_c_delta():
         assert _isclose_f(j.delta_de_c(cf, n_padre), leido), f
     assert vistas == [1, None]
     cinco = _seccion(texto, 5)
-    m = re.search(rf"La c=1 de la página anterior es k=({_NUM}/\d+): con ({_NUM}) vueltas "
+    m = re.search(rf"La c=1 de \*?Simular en vez de evaluar\*? es k=({_NUM}/\d+): con ({_NUM}) vueltas "
                   r"tolera fallar una vez de cada (\w+)\.", cinco)
     assert _x(m[1]) == j.exponente_de_c(1) and int(m[2]) == n_padre
     assert _isclose_f(j.delta_de_c(1, int(m[2])), 1 / _x(m[3]))
-    m = re.search(rf"La c=1 de la página anterior es k=({_NUM}/\d+)", _llevarse(texto))
+    m = re.search(rf"La c=1 de \*?Simular en vez de evaluar\*? es k=({_NUM}/\d+)", _llevarse(texto))
     assert _x(m[1]) == j.exponente_de_c(1)
 
 
@@ -3140,6 +3140,25 @@ def test_tpm_reparto_de_monte_carlo_plano():
     assert j.mc_plano_tpm(5, j.SEMILLA_TPM) == ("der", {"izq": -3, "centro": -2, "der": 3})
 
 
+def test_tpm_las_simulaciones_de_monte_carlo_plano_son_las_de_su_corrida():
+    """La radiografia dibuja cada partida de la corrida de la pagina: con el
+    mismo generador suman lo mismo que mc_plano_tpm, tocan los mismos nodos
+    que _tocados_mc, cada camino acaba en un final y su U es el de ese final."""
+    for k in j.SIMS_MC_TPM:
+        sims = j.simulaciones_mc_plano_tpm(k, j.SEMILLA_TPM)
+        _, sumas = j.mc_plano_tpm(k, j.SEMILLA_TPM)
+        assert len(sims) == k * len(j.ARBOL_TPM)
+        assert {a: sum(u for b, _, u in sims if b == a) for a in j.JUGADAS_RAIZ} == sumas
+        tocados = {()} | {c[:m] for _, c, _ in sims for m in range(1, len(c) + 1)}
+        assert tocados == j._tocados_mc(k, j.SEMILLA_TPM)
+        for a, c, u in sims:
+            assert j.JUGADAS_RAIZ[c[0]] == a and j.nodo_en(j.ARBOL_TPM, c) == u
+    # La corrida de la radiografia, partida por partida.
+    finales = [j.ids_tpm()[c] for _, c, _ in j.simulaciones_mc_plano_tpm(5, j.SEMILLA_TPM)]
+    assert finales == ["ix", "ix", "i1", "ix", "ix", "c2b", "c2b", "c1a", "c2a", "c1b",
+                       "d3", "d3", "d3", "d1", "d2"]
+
+
 def test_tpm_probabilidad_exacta_de_monte_carlo_plano():
     p5 = j.prob_mc_plano_tpm(5)
     assert p5 == {"izq": F(487919, 1327104), "centro": F(41723, 442368),
@@ -3219,7 +3238,7 @@ def test_tpm_tabla_de_la_pagina():
 
 
 def test_alfa_beta_nunca_genera_mas_que_minimax_y_puede_generarlo_todo():
-    """Ficha de alfa-beta (7.2) y mapa de 7.3.9: «nunca más nodos que
+    """Ficha de alfa-beta (7.2) y Radiografía (7.3.6): «nunca más nodos que
     minimax; con buen orden, muchos menos», y «puede generarlo completo».
     En T±, en cualquier orden de los hijos, a lo más los 15 de minimax; y en
     un árbol con el peor orden, alfa-beta los genera todos."""
@@ -3237,10 +3256,10 @@ def test_alfa_beta_nunca_genera_mas_que_minimax_y_puede_generarlo_todo():
             "permiten, y cuántas depende del orden |") in ficha
     assert "misma jugada, nunca más nodos que minimax; con buen orden, muchos menos." in ficha
     assert "misma jugada, menos nodos" not in ficha
-    p9 = _limpio((CLASE_3 / "9_elegir_el_algoritmo.md").read_text(encoding="utf-8"))
-    assert ("Da V y la jugada de minimax, y nunca genera más nodos que minimax; con buen orden, "
-            "muchos menos.") in p9
-    assert "con menos nodos que minimax" not in p9
+    p6 = _limpio((CLASE_3 / "6_un_arbol_todos_los_algoritmos.md").read_text(encoding="utf-8"))
+    assert ("Con el mismo orden, nunca genera más nodos que minimax, pero puede generar "
+            "los mismos.") in p6
+    assert "con menos nodos que minimax" not in p6
 
 
 def test_tpm_la_quietud_no_garantiza_v_aunque_sus_capturas_lleguen_a_los_finales():
