@@ -76,3 +76,5 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-c3-mcg-mc-plano.svg` | Monte Carlo plano en el árbol grande: partidas al azar como caminos quebrados y solo N y ū en la raíz | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-mcg-uct-fases.svg` | Las cuatro fases de UCT en el árbol grande, y el caso en que la selección llega a un final ya en su árbol | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-mcg-uct-crece.svg` | Tres instantáneas del árbol de UCT creciendo desigual, con la frontera siguiendo su contorno | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-rx-estado-y-jugada.svg` | El valor de una jugada vive en el hijo al que lleva: Q(s,a) = V(T(s,a)), y qué número guarda ahí cada algoritmo; simbólica, sin cifras | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-mcg-mezcla.svg` | Un promedio que se vuelve un mínimo: el nodo MIN bajo la jugada A con pocas y con muchas vueltas de UCT, ū(A) de ≈ 0 a −1; proporciones ilustrativas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |

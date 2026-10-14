@@ -71,6 +71,46 @@ En un final, $V(s)=U(s)$: $+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan.
 | $h$ | La profundidad que alcanzó el árbol de UCT; a lo más $m$ |
 :::
 
+## Valor de un estado y valor de una jugada
+
+Dos números se parecen y conviene no confundirlos. Los dos se miden desde MAX:
+
+- **El valor de un estado, $V(s)$, es lo que vale estar en $s$:** lo que MAX se asegura desde ahí si los dos juegan lo mejor.
+- **El valor de una jugada $a$ desde $s$ es lo que vale elegirla**, si después los dos juegan lo mejor. Otros textos lo escriben $Q(s,a)$.
+
+**En los juegos de esta unidad, sin azar, el valor de una jugada es el valor del estado hijo al que lleva**, no el del estado desde donde se elige:
+
+$$
+\mathbf{Q(s,a)=V(T(s,a))}
+$$
+
+- **Una jugada lleva a un solo hijo**, $T(s,a)$. Elegirla es pasar a ese hijo, así que la jugada vale lo que vale el hijo.
+- **Por eso las fichas guardan el número de cada jugada en el nodo hijo**, no en la arista. «El $V$ de cada jugada de la raíz» es el $V$ de cada hijo de la raíz.
+- **El estado vale lo que su mejor jugada.** Donde mueve MAX, $\mathbf{V(s)=\max_{a\in A(s)}Q(s,a)}$; donde mueve MIN, el mínimo. Una jugada puede valer menos que el estado desde donde se elige.
+- **Si una jugada puede llevar a varios hijos al azar, la igualdad cambia:** su valor es el promedio de los de esos hijos, pesados por su probabilidad. Si el azar se dibuja como un nodo AZAR hijo, la igualdad sigue valiendo: ese hijo ya promedia.
+- **Dos jugadas que llevan al mismo estado sí valen lo mismo.** Pero un árbol que junte ese estado en un solo nodo mezclaría las visitas de las dos. En esos casos conviene guardar los números por jugada, en la arista; es una elección de cómo representar el árbol. Nada de eso pasa en esta clase: cada hijo corresponde a una sola jugada de su padre.
+
+**Lo que cambia es qué número pone cada algoritmo en ese lugar.** Minimax guarda $V$; alfa-beta, $V$ o una cota; el corte, el valor con corte o, con poda, una cota; Monte Carlo plano y UCT, un promedio $\bar u$. El lugar es el mismo; el significado del número, no.
+
+::: figure {#jue-c3-rx-fig-estado-y-jugada title="El valor de una jugada vive en el hijo al que lleva"}
+![Raíz de MAX con dos jugadas, A y B, como aristas hacia sus hijos; el número de cada jugada está guardado en el nodo hijo, con la nota «valor de la jugada = valor del hijo». Debajo, cada algoritmo pone ahí un número distinto: V, una cota, el valor con corte o un promedio ū](../_assets/jue-c3-rx-estado-y-jugada.svg)
+:::
+
+::: table {#jue-c3-rx-tab-que-guarda title="Qué guarda cada algoritmo, dónde y cómo sube"}
+| Algoritmo | Qué guarda | Dónde | Cómo sube |
+|---|---|---|---|
+| Minimax | $V$ | Cada nodo, al recorrerlo | Máximo o mínimo de los hijos |
+| Alfa-beta | $V$ o una cota | Cada nodo, al recorrerlo | Máximo o mínimo, con poda |
+| Corte | Valor con corte (o con quietud), o cota | Cada nodo, al recorrerlo | Máximo o mínimo; EVAL al cortar |
+| Monte Carlo plano | $N$ y suma | Solo hijos de la raíz | No sube: promedia simulaciones |
+| UCT | $N$ y $\bar u$ | Cada nodo de su árbol | Promedio del mismo $U$ |
+:::
+
+- **Los tres primeros calculan:** el valor de un nodo sale del máximo o el mínimo de sus hijos, según quién mueve. Parten de los finales; el corte, además, de la EVAL donde se detiene. Nunca promedian.
+- **Los dos Monte Carlo promedian resultados de finales:** Monte Carlo plano, solo en la jugada de la raíz que inició la simulación; UCT, en cada nodo del camino. Ninguno toma el máximo ni el mínimo de los hijos para valorar al padre.
+- **Monte Carlo plano converge al promedio de jugar al azar.** Con simulaciones independientes, la misma regla al azar y simulaciones sin límite, $\bar u$ converge a $\mu$, que en general no es $V$.
+- **UCT converge al valor de minimax.** En un árbol finito, con $c>0$ fija y vueltas sin límite, $\bar u$ converge a $V$. No es porque promedie un máximo, sino porque elige cada vez mejor. Las jugadas peores para quien mueve reciben una fracción de visitas que tiende a cero, y las partidas bien jugadas por los dos terminan pesando casi todo en cada promedio. Con un presupuesto fijo puede equivocarse.
+
 ## El problema: un juego, dos dibujos
 
 Los cinco algoritmos resuelven el mismo problema. **Dado** un estado $s_0$ donde mueve MAX y las reglas del juego, **encontrar** una jugada de $A(s_0)$, lo mejor posible con el tiempo que haya.
@@ -117,6 +157,10 @@ Cambia cómo exploran, qué número sale ($V$ exacto, una cota, el valor con cor
 ### Minimax (minimax)
 
 Es la búsqueda exacta para juegos de dos jugadores por turnos, de suma cero, sin azar, con todo a la vista y con árbol finito. **Recorre el árbol completo hasta los finales y sube los resultados**: cada nodo vale lo que MAX puede asegurar desde ahí.
+
+- **Qué valor rastrea:** el de cada estado, $V(s)$. El de una jugada es el de su hijo: $Q(s,a)=V(T(s,a))$.
+- **Dónde lo guarda:** en cada nodo, mientras lo recorre. Al cerrarlo, entrega el número a su padre y lo descarta.
+- **Cómo sube y a qué converge:** con el máximo o el mínimo de los hijos, según quién mueve; nunca con un promedio. No necesita converger: en un árbol finito, al terminar, cada número es exacto.
 
 #### 1 · Exploración: cómo construye su estimación
 
@@ -201,6 +245,10 @@ Aquí explorar y elegir usan **el mismo número, $V$**. La elección es la regla
 ### Alfa-beta (alpha-beta pruning)
 
 Es minimax con poda (*pruning*). **Hace el mismo recorrido, pero deja de generar una rama** en cuanto lo ya revisado basta para saber que no cambia la jugada de la raíz. Con el mismo orden y desempate, entrega la misma jugada y el mismo $V$ que minimax, y puede generar menos nodos.
+
+- **Qué valor rastrea:** el mismo $V(s)$ que minimax, y el de una jugada es el de su hijo: $Q(s,a)=V(T(s,a))$. Un nodo en el que poda devuelve solo una cota: «al menos» o «a lo más».
+- **Dónde lo guarda:** en cada nodo que genera, mientras lo recorre, junto con la ventana $(\alpha,\beta)$ del camino.
+- **Cómo sube y a qué converge:** con el máximo o el mínimo de los hijos, como minimax, pero deja de generar hijos que ya no pueden cambiar la jugada de la raíz. No necesita converger: al terminar, la jugada elegida trae su $V$ exacto.
 
 #### 1 · Exploración: cómo construye su estimación
 
@@ -304,6 +352,10 @@ La jugada elegida trae su **$V$ exacto**. Las demás pueden traer su valor exact
 ### Corte por nivel o por reloj (depth-limited search, iterative deepening)
 
 Es minimax que deja de bajar al agotarse la profundidad y **usa EVAL para estimar donde se detiene**. Por nivel, fija cuánto mirar; por reloj, repite búsquedas cada vez más profundas mientras quede tiempo.
+
+- **Qué valor rastrea:** el valor con corte de cada estado: el de minimax en el árbol cortado, con EVAL donde se detiene. Con quietud, el valor con quietud. Estima $100\cdot V(s)$, y el de una jugada es el de su hijo. Con poda, algunos son solo cotas.
+- **Dónde lo guarda:** en cada nodo, mientras lo recorre, hasta la profundidad del corte. Solo la búsqueda de quietud, que sigue capturas, puede pasar de ahí.
+- **Cómo sube y a qué converge:** con el máximo o el mínimo de los hijos, como minimax; en los nodos de corte, el número de partida es la EVAL. No es un promedio que converja: es exacto para el árbol cortado, y coincide con $100\cdot V$ si la profundidad alcanza los finales sin aplicar EVAL ni activar la quietud.
 
 #### 1 · Exploración: cómo construye su estimación
 
@@ -429,6 +481,10 @@ La salida con $+100$ no rompe la regla: ya demostró una victoria y ninguna otra
 
 Estima cada jugada de la raíz **jugando muchas partidas al azar desde ella y promediando sus resultados**. No construye un árbol de búsqueda: conserva solo un contador y una suma por jugada de la raíz.
 
+- **Qué valor rastrea:** el de cada jugada de la raíz, a través de su hijo $s'=T(s_0,a)$. Pero no es $V(s')$: es $\mu(s')$, el promedio si los dos juegan al azar.
+- **Dónde lo guarda:** solo en los hijos de la raíz: un contador $N(s')$ y una suma. Los estados que cruza una simulación no guardan nada.
+- **Cómo sube y a qué converge:** no sube. El $U$ de cada simulación va directo a la suma de la jugada donde empezó, y el número es el promedio $\bar u(s')$. Con simulaciones independientes, la misma regla al azar y simulaciones sin límite, converge a $\mu(s')$ con probabilidad 1, no a $V(s')$.
+
 #### 1 · Exploración: cómo construye su estimación
 
 Monte Carlo plano recorre **caminos del árbol del juego hasta los finales**, sin guardarlos. Antes de empezar, fija un número entero de simulaciones por jugada, $k\ge 1$.
@@ -529,6 +585,10 @@ El reparto se fija antes de ver los resultados; la elección usa los promedios o
 ### UCT (Upper Confidence bounds applied to Trees)
 
 Es una variante de búsqueda en árbol de Monte Carlo (*Monte Carlo Tree Search*, MCTS). Aquí simula al azar hasta un final del juego y elige la jugada por número de visitas.
+
+- **Qué valor rastrea:** el de cada estado de su árbol, con un promedio $\bar u(s)$ medido desde MAX. El de una jugada es el de su hijo: $Q(s,a)=V(T(s,a))$, y el $\bar u$ del hijo lo estima; con pocas visitas puede estar lejos.
+- **Dónde lo guarda:** en cada nodo de su árbol: sus visitas $N(s)$ y su promedio $\bar u(s)$. Los estados que cruza la simulación al azar no guardan nada.
+- **Cómo sube y a qué converge:** sube el mismo $U$ por el camino y cada nodo lo promedia; nunca toma el máximo ni el mínimo de los hijos. En un árbol finito, con $c>0$ fija y vueltas sin límite, los promedios convergen a $V$: la selección elige cada vez mejor, y las partidas bien jugadas pesan casi todo. Con presupuesto fijo puede equivocarse.
 
 #### 1 · Exploración: cómo construye su estimación
 

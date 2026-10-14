@@ -4,7 +4,7 @@ title: Monte Carlo y UCT en un árbol grande
 nav_title: Monte Carlo y UCT en un árbol grande
 summary: "En un árbol que no cabe, Monte Carlo plano simula caminos al azar y guarda solo contadores en la raíz, y por eso estima el promedio con los dos al azar. UCT construye su propio árbol, elige con el puntaje dentro de él y al azar solo debajo de su frontera, y crece hondo en lo prometedor."
 status: ready
-estimated_time: 25m
+estimated_time: 30m
 tags: [juegos, mcts, comparacion]
 ---
 
@@ -42,6 +42,10 @@ Sin una EVAL confiable queda una pieza que siempre está: **las reglas**. Con el
 ---
 
 ## Monte Carlo plano en el árbol grande
+
+- **Qué rastrea:** un $N$ y una suma de $U$ por cada jugada de la raíz. En un juego sin azar, cada jugada lleva a un solo hijo. Por eso es lo mismo que un $N$ y una suma por cada hijo de la raíz. De los estados que siguen en la partida no guarda nada.
+- **Cómo sube:** no sube. Cada simulación suma una visita a $N$ y su $U$ a la suma, solo en la jugada de la raíz donde empezó.
+- **A qué converge:** al promedio $\mu$ de $U$ si los dos juegan al azar desde esa jugada. En general, $\mu$ no es el valor de minimax $V$. Pide simulaciones independientes que sigan siempre la misma regla al azar, y que $N$ crezca sin límite.
 
 ### Cómo explora
 
@@ -100,6 +104,11 @@ Un ejemplo mínimo: MAX tiene dos jugadas, y tras cualquiera de ellas la respues
 
 UCT corrige justo eso. Construye **su propio árbol de búsqueda: una parte del árbol del juego**, que empieza con solo la raíz. Dentro de ese árbol, también MIN elige por puntaje, no al azar; solo fuera de él se juega al azar.
 
+- **Qué rastrea:** en **cada nodo** $s$ de su árbol, sus visitas $N(s)$ y su promedio $\bar u(s)$. El valor de una jugada $a$ desde $s$ es el del hijo al que lleva, $T(s,a)$. En un juego sin azar, cada jugada lleva a un solo hijo. 
+- **Otra notación:** otros textos guardan esos números en la jugada. Escriben las visitas $N(s,a)=N(T(s,a))$ y llaman $Q(s,a)$ al promedio, aunque es una estimación. Aquí $Q(s,a)$ es el valor exacto, y el promedio, $\bar u$.
+- **Cómo sube:** el **mismo $U$** de cada vuelta sube por todo el camino, desde abajo hasta la raíz. Cada nodo del camino lo mete en su promedio. Promedia; no toma máximos ni mínimos.
+- **A qué converge:** cada promedio $\bar u(s)$, al valor de minimax $V(s)$, en un árbol finito, con $c>0$ fija y vueltas sin límite. Con un presupuesto fijo, no hay garantía.
+
 ### Tres cosas que no hay que confundir
 
 Antes de las fases, tres palabras que se parecen:
@@ -133,6 +142,11 @@ $$
 
 y MAX baja al de mayor puntaje. El primer término es lo que ya se vio de ese hijo; el segundo, el **bono**, premia lo poco visitado. En un nodo de MIN, se baja al de menor $\bar u(s')-\text{bono}$; el promedio guardado sigue medido desde MAX. La fórmula nunca se calcula con $N(s')=0$: una jugada sin visitas se atiende en la expansión.
 
+> [!NOTE]
+> **Con esta sola función, el ciclo de UCT hace nacer solas la búsqueda, la información y la estimación.** El puntaje decide a qué hijo bajar: eso es la búsqueda. La simulación y la retropropagación suman una visita en $N$ a cada nodo del camino: eso es la información, cuánto se ha probado.
+>
+> Cada vuelta deja también un resultado que se promedia en $\bar u$: eso es la estimación. El bono cierra el círculo: donde falta información, es grande y atrae la búsqueda.
+
 ::: figure {#jue-c3-mcg-fig-uct-fases title="Las fases de UCT en un árbol grande"}
 ![Las cuatro fases de UCT en el árbol grande: selección por el árbol guardado hasta la frontera, expansión de un hijo nuevo, simulación al azar hasta un final y retropropagación por el mismo camino; y el caso en que la selección llega a un final ya guardado, que solo retropropaga](../_assets/jue-c3-mcg-uct-fases.svg)
 :::
@@ -162,6 +176,34 @@ Vuelta tras vuelta, el árbol de UCT crece **desigual**: hondo por las jugadas q
 **Así se arregla el ejemplo de la refutación.** Bajo la jugada $a$, el árbol de UCT agrega las respuestas de MIN. La refutación junta resultados de $-1$ y, por el puntaje, MIN la elige cada vez más: ya no depende de que el azar la encuentre. Con suficientes vueltas, el promedio de $a$ deja de parecerse a $\mu$ y baja hacia $V=-1$.
 
 **Esa convergencia tiene condiciones:** un árbol finito, $c>0$ fija y vueltas sin límite. Con esas condiciones, los promedios se acercan a $V$. Con un presupuesto fijo, una refutación todavía puede pasar inadvertida.
+
+### Cómo un promedio llega a parecerse a un mínimo
+
+Minimax sube valores con máximos y mínimos; UCT solo promedia. Aun así, sus promedios se acercan a $V$.
+
+Un ejemplo abstracto muestra cómo: MAX elige entre las jugadas $A$ y $B$. Tras $A$, MIN elige entre un final de $+1$ y uno de $-1$. La jugada $B$ lleva a un final de $-0.2$.
+
+Para este ejemplo, deja que un final valga cualquier número entre $-1$ y $+1$; en los juegos de la unidad, $U$ solo toma $+1$, $-1$ o $0$, y nada de lo que sigue depende de eso.
+
+- **Minimax juega $B$.** $V(A)=\min(+1,-1)=-1$ y $V(B)=-0.2$, así que $B$ es mejor para MAX.
+- **Al principio, las respuestas de MIN bajo $A$ van casi parejas**, cerca de 50 % y 50 %. Entonces $\bar u(A)\approx 0$, y $A$ parece mejor que $B$.
+- **Después, UCT favorece la respuesta buena para MIN.** El $-1$ tiene el promedio más bajo, y la selección de MIN lo elige cada vez más. Cada $-1$ sube también al promedio de $A$. Con proporciones ilustrativas, no medidas: si de 1000 vueltas por $A$ solo 10 fueron al $+1$, entonces $\bar u(A)=\frac{10(+1)+990(-1)}{1000}=-0.98$.
+- **Lo viejo sigue en el promedio, pero pesa cada vez menos.** Las vueltas de cuando MIN repartía parejo no se borran; las nuevas las diluyen, y $\bar u(A)$ se acerca a $-1$.
+- **MAX elige $A$ cada vez menos.** Con $\bar u(A)$ por debajo de $-0.2$, la raíz manda casi todas las vueltas a $B$. El bono sigue probando $A$ de vez en cuando. El promedio de la raíz tiende a $-0.2$, que es $V$.
+- **Lo mismo ocurre en cada nivel.** En un árbol hondo, el efecto sube desde los finales hacia la raíz. Cuando los promedios de los hijos se acercan a sus valores de minimax, las jugadas mejores para quien mueve, juntas, se llevan casi todas las visitas. Entonces el promedio del padre se acerca al suyo.
+
+::: figure {#jue-c3-mcg-fig-mezcla title="Un promedio que se vuelve un mínimo"}
+![Un nodo de MIN bajo la jugada A, con sus dos respuestas, +1 y −1. Con pocas vueltas, las dos ramas tienen grosor parecido y el promedio de A queda cerca de 0. Con muchas, casi todas las visitas van a −1 y el promedio de A se acerca a −1. Proporciones ilustrativas](../_assets/jue-c3-mcg-mezcla.svg)
+:::
+
+**UCT no reemplaza el promedio por un máximo o un mínimo: elige cada vez mejor, y así las partidas de buen juego dominan los promedios.**
+
+**El promedio del padre y los promedios de los hijos.**
+
+- **El padre mezcla:** el $\bar u(s)$ de un nodo junta los resultados de las jugadas que ya eligió desde ahí. Cada una pesa según cuántas veces la eligió. Incluye también la simulación de cuando era nuevo.
+- **La selección no usa esa mezcla:** en un nodo de MAX, compara cada hijo por su promedio más su bono.
+- **La mezcla sigue a las elecciones:** al mejorar las elecciones, el promedio del padre se acerca al de su mejor hijo.
+- **La jugada final tampoco sale de ese promedio:** es la de la raíz con más visitas.
 
 ### Por qué el bono hace natural explorar
 
