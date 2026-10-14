@@ -3952,8 +3952,11 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
     for k, f in enumerate(raiz_filas):
         out.append(texto(x, yr - rh / 2 + 44 + 19 * k, f, tam=15, peso="700"))
     if jugada:
-        out.append(_pild(RX_W - 58, yr, f"juega {jugada}", ACENTO, tam=14, relleno=ACENTO,
-                         color_texto=FONDO, alto=26))
+        # pegada al borde derecho con 10 px de aire, y a 13: «juega centro»
+        # a 14 llegaba al borde del SVG
+        ancho = round(0.58 * 13 * len(f"juega {jugada}") + 14)
+        out.append(_pild(RX_W - 10 - ancho / 2, yr, f"juega {jugada}", ACENTO, tam=13,
+                         relleno=ACENTO, color_texto=FONDO, alto=26))
     # Nodos.
     for c in caminos[1:]:
         x, yc = pos(c)
@@ -3975,8 +3978,14 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
                                     relleno=mezclar(COLOR_FINAL, 0.1), borde=COLOR_FINAL,
                                     radio=6, grosor=2))
                 if rot:
-                    out.append(texto(x, yc + 4.5, rot, tam=12, peso="700", fuente=MONO,
-                                     color=TENUE_TXT if tenue else TEXTO))
+                    t = texto(x, yc + 4.5, rot, tam=12, peso="700", fuente=MONO,
+                              color=TENUE_TXT if tenue else TEXTO)
+                    if len(rot) >= 4:
+                        # «−100» a 12 llenaba la pastilla de 31 (las hojas van
+                        # a 32 px, no cabe una mas ancha): se aprieta a 25 px
+                        t = t.replace("<text ", '<text textLength="25" '
+                                      'lengthAdjust="spacingAndGlyphs" ', 1)
+                    out.append(t)
                 y_id = yc + 30
             else:
                 r = HOJA_TPM_R
@@ -3991,7 +4000,8 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
                                f'fill="{mezclar(COLOR_FINAL, 0.07)}" stroke="{COLOR_FINAL}" '
                                f'stroke-width="2"/>')
                 if rot:
-                    out.append(texto(x, yc + 5, rot, tam=14, peso="700",
+                    # a 13, «+1» queda dentro del anillo (a 14 lo tocaba)
+                    out.append(texto(x, yc + 4.5, rot, tam=13, peso="700",
                                      color=TENUE_TXT if tenue else TEXTO))
                 y_id = yc + 34
             if e == "podado":
@@ -4016,7 +4026,12 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
         out.append(texto(x, top + 21, ids[c], tam=17, color=tc, peso="700"))
         out.append(texto(x, top + 38, tipo, tam=14, color=tc, peso="700"))
         for k, f in enumerate(n.get("filas", ())):
-            out.append(texto(x, top + 58 + 19 * k, f, tam=14 if len(f) <= 6 else 13,
+            # «ū −0.25» a 13 (y «ū −0.6» a 14) tocaban el borde de la caja de
+            # 62: los ū bajan un punto (no cabe una caja mas ancha: C2 queda a
+            # 4 px de d1).
+            out.append(texto(x, top + 58 + 19 * k, f,
+                             tam=(13 if len(f) <= 6 else 12) if f.startswith("ū")
+                             else (14 if len(f) <= 6 else 13),
                              peso="700"))
         if n.get("eval") is not None:
             out.append(_pild(x, top + nh + 15, f"EVAL {_c_txt(n['eval'])}", TEXTO, tam=13,
@@ -4247,7 +4262,7 @@ def jue_c3_rx_quietud():
     fondo = _arbol_rx(out, y + 50, nodos, escala=100, jugada=jugada, raiz_filas=[_c_txt(v)],
                       horizonte=d)
     y = _leyenda_rx(out, fondo + 16, [("visto", "generado"),
-                                       ("eval", ["EVAL: quedarse", "(stand pat)"]),
+                                       ("eval", "EVAL: opción de quedarse"),
                                        ("captura", "captura: se sigue"),
                                        ("horizonte", "detrás del horizonte"),
                                        ("jugada", f"la jugada que juega: {jugada}")])
@@ -4532,33 +4547,199 @@ def _figura_flujo(nombre, titulo, pasos, vueltas, pie):
                   + (" " + " ".join(pie) if pie else ""))
 
 
+# Los tres de minimax (minimax, alfa-beta, corte) son recursivos, y el flujo
+# lineal de arriba no lo deja ver: «¿Es final? —no→ sube su valor» se saltaba
+# el descenso, y las cajas «vale U» quedaban sin salida. Estos llevan dos
+# carriles: el izquierdo, las vueltas («baja al hijo y repite desde arriba»,
+# «quedan hijos: el siguiente»); el derecho, el regreso al padre, que entra en
+# la caja «Al volver…». Toda caja de valor (las del lado y «Vuelve al padre»)
+# lleva flecha a ese carril.
+
+FR_X0, FR_X1 = 40, 258                # las cajas de la columna
+FR_RCX, FR_RMX = 100, 58              # el rombo
+FR_LADO_X = 174                       # cajas del lado (vale U, poda)
+FR_IZQ, FR_DER = 24, 276              # carriles: vueltas y regreso al padre
+FR_GAP = 32
+
+
+def _flujo_rec(titulo, pasos, vueltas, pie, desc):
+    """pasos: como en _flujo, mas «regresa»: True (la caja, o la del lado de
+    un rombo, vuelve al padre por el carril derecho) y «destino»: True (la
+    caja «Al volver…», a donde entra ese carril). «tenue»: True en un paso
+    pide que la flecha que llega a el vaya punteada, con ese rotulo.
+    vueltas: [(desde, hasta, rotulo)] por el carril izquierdo."""
+    out = []
+    y = _titulo_rx(out, titulo) + 6
+    out.append(texto(FR_X0, y + 8, "Empieza en la raíz", tam=14, peso="700", color=SUAVE,
+                     anclaje="start"))
+    y += 40
+    out.append(flecha(FR_RCX, y - 22, FR_RCX, y - 4, color=SUAVE, grosor=2, marcador="s"))
+    geo = []        # por paso: (arriba, abajo, y de entrada/salida en los carriles)
+    regresos = []   # y de cada salida hacia el carril derecho
+    destino = None
+    for k, p in enumerate(pasos):
+        if k:
+            y0 = y - FR_GAP
+            if p.get("tenue"):
+                out.append(f'<line x1="{FR_RCX}" y1="{y0}" x2="{FR_RCX}" y2="{y - 4}" '
+                           f'stroke="{SUAVE}" stroke-width="2" stroke-dasharray="4 4" '
+                           f'marker-end="url(#s)"/>')
+                out.append(texto(FR_RCX + 10, y0 + 20, p["tenue"], tam=14, color=SUAVE,
+                                 anclaje="start", peso="700"))
+            else:
+                out.append(flecha(FR_RCX, y0, FR_RCX, y - 4, color=SUAVE, grosor=2,
+                                  marcador="s"))
+                rot = pasos[k - 1].get("abajo")
+                if "rombo" in pasos[k - 1] and rot:
+                    out.append(texto(FR_RCX + 10, y0 + 20, rot, tam=14, color=SUAVE,
+                                     anclaje="start", peso="700"))
+        if "caja" in p:
+            rs = p["caja"]
+            h = 18 + 21 * len(rs)
+            fin = p.get("fin")
+            out.append(caja(FR_X0, y, FR_X1 - FR_X0, h,
+                            relleno=mezclar(ACENTO if fin else LINEA, 0.14 if fin else 0.18),
+                            borde=ACENTO if fin else SUAVE, grosor=2.5 if fin else 1.5))
+            for i, r in enumerate(rs):
+                out.append(texto(FR_X0 + 10, y + 25 + 21 * i, r, tam=15,
+                                 peso="700" if i == 0 else "normal", anclaje="start"))
+            geo.append((y, y + h, y + h / 2))
+            if p.get("regresa"):
+                out.append(linea(FR_X1, y + h / 2, FR_DER, y + h / 2, color=SUAVE))
+                regresos.append(y + h / 2)
+            if p.get("destino"):
+                destino = y + h / 2
+            y += h + FR_GAP
+        else:
+            rs = p["rombo"]
+            my = 26 + 10 * len(rs)
+            cy = y + my
+            out.append(_rombo(FR_RCX, cy, FR_RMX, my, mezclar(COLOR_MAX, 0.08),
+                              borde=COLOR_MAX))
+            for i, r in enumerate(rs):
+                out.append(texto(FR_RCX, cy + 5 - 10 * (len(rs) - 1) + 20 * i, r, tam=15,
+                                 peso="700"))
+            if p.get("lado"):
+                rot, lineas = p["lado"]
+                hl = 14 + 19 * len(lineas)
+                out.append(flecha(FR_RCX + FR_RMX, cy, FR_LADO_X - 3, cy,
+                                  color=SUAVE, grosor=2, marcador="s"))
+                out.append(texto((FR_RCX + FR_RMX + FR_LADO_X) / 2, cy - 8, rot,
+                                 tam=14, color=SUAVE, peso="700"))
+                out.append(caja(FR_LADO_X, cy - hl / 2, FR_X1 - FR_LADO_X, hl,
+                                relleno=mezclar(COLOR_FINAL, 0.08), borde=COLOR_FINAL,
+                                grosor=1.5))
+                for i, r in enumerate(lineas):
+                    out.append(texto((FR_LADO_X + FR_X1) / 2, cy - hl / 2 + 21 + 19 * i, r,
+                                     tam=14, peso="700" if len(r) <= 6 else "normal"))
+                if p.get("regresa"):
+                    out.append(linea(FR_X1, cy, FR_DER, cy, color=SUAVE))
+                    regresos.append(cy)
+            geo.append((y, y + 2 * my, cy))
+            y += 2 * my + FR_GAP
+    # El carril derecho: de cada caja de valor a «Al volver…».
+    arriba = [r for r in regresos if r < destino]
+    abajo = [r for r in regresos if r > destino]
+    for grupo, sentido in ((arriba, 1), (abajo, -1)):
+        if not grupo:
+            continue
+        lejos = min(grupo) if sentido == 1 else max(grupo)
+        out.append(linea(FR_DER, lejos, FR_DER, destino, color=SUAVE))
+        # una punta a media bajada (o subida) para que se lea el sentido
+        ym = (lejos + destino) / 2
+        out.append(flecha(FR_DER, ym - 8 * sentido, FR_DER, ym + 4 * sentido, color=SUAVE,
+                          grosor=2, marcador="s"))
+    out.append(flecha(FR_DER, destino, FR_X1 + 3, destino, color=SUAVE, grosor=2,
+                      marcador="s"))
+    ym = (min(regresos) + destino) / 2 if min(regresos) < destino else \
+        (max(regresos) + destino) / 2
+    out.append(f'<text x="{FR_DER + 12}" y="{ym}" fill="{SUAVE}" '
+               f'font-family="{FUENTE}" font-size="14" font-weight="700" '
+               f'text-anchor="middle" transform="rotate(90 {FR_DER + 12} {ym})">'
+               f'vuelve al padre</text>')
+    # El carril izquierdo: las vueltas. Sale de una caja por arriba de su
+    # mitad y entra por abajo, para que dos vueltas no se pisen.
+    for desde, hasta, rot in vueltas:
+        ta, ba, ca = geo[desde]
+        tb, bb, cb = geo[hasta]
+        ya = ca if "rombo" in pasos[desde] else ta + (ba - ta) * 0.3
+        yb = cb if "rombo" in pasos[hasta] else tb + (bb - tb) * 0.72
+        xa = FR_RCX - FR_RMX if "rombo" in pasos[desde] else FR_X0
+        xb = FR_RCX - FR_RMX if "rombo" in pasos[hasta] else FR_X0
+        out.append(f'<polyline points="{xa},{ya} {FR_IZQ},{ya} {FR_IZQ},{yb}" '
+                   f'fill="none" stroke="{SUAVE}" stroke-width="2"/>')
+        out.append(flecha(FR_IZQ, yb, xb - 3, yb, color=SUAVE, grosor=2, marcador="s"))
+        ym = (ya + yb) / 2
+        out.append(f'<text x="{FR_IZQ - 9}" y="{ym}" fill="{SUAVE}" '
+                   f'font-family="{FUENTE}" font-size="14" font-weight="700" '
+                   f'text-anchor="middle" transform="rotate(-90 {FR_IZQ - 9} {ym})">'
+                   f'{escape(rot)}</text>')
+    y = _pie_t(out, y - FR_GAP + 34, pie, tam=15) if pie else y - FR_GAP + 20
+    return _svg_rx(titulo, desc, out, y)
+
+
+def _desc_rec(nombre, pasos, vueltas):
+    partes = ["Empieza en la raíz."]
+    for k, p in enumerate(pasos):
+        if "caja" in p:
+            s = f"{k + 1}: " + " ".join(p["caja"]) + "."
+            if p.get("regresa"):
+                s += " Vuelve al padre: a su paso «Al volver»."
+        else:
+            s = f"{k + 1}, pregunta: " + " ".join(p["rombo"])
+            if p.get("lado"):
+                s += f" Si {p['lado'][0]}: " + " ".join(p["lado"][1]) + ","
+                s += " y vuelve al padre: a su paso «Al volver»." if p.get("regresa") else "."
+            if p.get("abajo"):
+                s += f" Si {p['abajo']}, sigue abajo."
+        partes.append(s)
+    for desde, hasta, rot in vueltas:
+        partes.append(f"Desde el paso {desde + 1} ({rot}), vuelve al paso {hasta + 1}.")
+    return f"Diagrama de flujo de {nombre}, en palabras. " + " ".join(partes)
+
+
+_VOLVER = {"rombo": ["¿Quedan", "hijos?"], "abajo": "no"}
+_AL_PADRE = {"caja": ["Vuelve al padre", "con su valor"], "regresa": True}
+_JUEGA = {"caja": ["Juega la jugada", "de mayor valor"], "fin": True, "tenue": "en la raíz"}
+
 FLUJOS = {
     "minimax": dict(
+        rec=True,
         titulo=["Minimax, en palabras", "recorre todo el árbol"],
-        pasos=[{"caja": ["Baja un nivel", "por la siguiente jugada"]},
-               {"rombo": ["¿Es un final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"])},
-               {"caja": ["Sube su valor", "MAX toma el mayor;", "MIN, el menor"]},
-               {"caja": ["Juega la jugada", "de la raíz con mayor V"], "fin": True}],
-        vueltas=[(2, 0, "quedan jugadas")],
-        pie=["Al bajar de un nodo que no es", "final, repite los mismos pasos", "con sus hijos."]),
+        pasos=[{"rombo": ["¿Es final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"]),
+                "regresa": True},
+               {"caja": ["Baja al siguiente", "hijo y repite con él", "desde arriba"]},
+               {"caja": ["Al volver de él:", "MAX se queda con el", "mayor; MIN, el menor"],
+                "destino": True, "tenue": "cuando vuelve"},
+               _VOLVER, _AL_PADRE, _JUEGA],
+        vueltas=[(1, 0, "con el hijo"), (3, 1, "sí")],
+        pie=[]),
     "alfa-beta": dict(
+        rec=True,
         titulo=["Alfa-beta, en palabras", "minimax que deja de generar"],
-        pasos=[{"caja": ["Baja un nivel", "y lleva α y β"]},
-               {"rombo": ["¿Es un final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"])},
-               {"caja": ["Sube su valor v", "MAX toma el mayor", "y sube α si lo supera"]},
+        pasos=[{"rombo": ["¿Es final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"]),
+                "regresa": True},
+               {"caja": ["Baja al siguiente", "hijo con α y β, y", "repite desde arriba"]},
+               {"caja": ["Al volver con v:", "MAX se queda con el",
+                         "mayor y sube α si", "lo supera"],
+                "destino": True, "tenue": "cuando vuelve"},
                {"rombo": ["¿v ≥ β?"], "abajo": "no",
-                "lado": ("sí", ["poda:", "no genera", "los demás"])},
-               {"caja": ["Juega la jugada", "de la raíz con mayor V"], "fin": True}],
-        vueltas=[(3, 0, "quedan jugadas")],
-        pie=["En un nodo de MIN: baja β,", "y poda si v ≤ α."]),
+                "lado": ("sí", ["poda:", "no genera", "los demás"]), "regresa": True},
+               _VOLVER, _AL_PADRE, _JUEGA],
+        vueltas=[(1, 0, "con el hijo"), (4, 1, "sí")],
+        pie=["En un nodo de MIN: se queda", "con el menor, baja β, y poda", "si v ≤ α."]),
     "corte": dict(
+        rec=True,
         titulo=["Corte, en palabras", "minimax que para en d"],
-        pasos=[{"caja": ["Baja un nivel", "y resta 1 a d"]},
-               {"rombo": ["¿Es un final?"], "abajo": "no", "lado": ("sí", ["vale", "100·U"])},
-               {"rombo": ["¿Se acabó d?"], "abajo": "no", "lado": ("sí", ["vale", "EVAL"])},
-               {"caja": ["Sube su valor", "MAX toma el mayor;", "MIN, el menor"]},
-               {"caja": ["Juega la mejor", "jugada de la raíz"], "fin": True}],
-        vueltas=[(3, 0, "quedan jugadas")],
+        pasos=[{"rombo": ["¿Es final?"], "abajo": "no", "lado": ("sí", ["vale", "100·U"]),
+                "regresa": True},
+               {"rombo": ["¿d = 0?"], "abajo": "no", "lado": ("sí", ["vale", "EVAL"]),
+                "regresa": True},
+               {"caja": ["Baja al siguiente", "hijo con d − 1 y", "repite desde arriba"]},
+               {"caja": ["Al volver de él:", "MAX se queda con el", "mayor; MIN, el menor"],
+                "destino": True, "tenue": "cuando vuelve"},
+               _VOLVER, _AL_PADRE, _JUEGA],
+        vueltas=[(2, 0, "con el hijo"), (4, 2, "sí")],
         pie=["Por reloj: repite con d = 1, 2,", "3… y juega la de la última", "búsqueda completa."]),
     "mc-plano": dict(
         titulo=["Monte Carlo plano,", "en palabras"],
@@ -4573,7 +4754,8 @@ FLUJOS = {
         pasos=[{"caja": ["1 · Selección", "baja por su árbol", "con el puntaje UCT"]},
                {"caja": ["2 · Expansión", "agrega un hijo nuevo", "(en un final, salta a 4)"]},
                {"caja": ["3 · Simulación", "al azar hasta un final;", "no se guarda"]},
-               {"caja": ["4 · Retropropagación", "cada nodo del camino suma", "1 a N y su U a ū"]},
+               {"caja": ["4 · Retropropagación", "cada nodo del camino suma",
+                         "una visita a N y", "actualiza su promedio", "ū con la U"]},
                {"rombo": ["¿Se acabó", "el tiempo?"], "abajo": "sí"},
                {"caja": ["Juega la jugada", "de la raíz más visitada"], "fin": True}],
         vueltas=[(4, 0, "no: otra vuelta")],
@@ -4583,6 +4765,10 @@ FLUJOS = {
 
 def jue_c3_rx_flujo(nombre):
     f = FLUJOS[nombre]
+    if f.get("rec"):
+        return _flujo_rec(f["titulo"], f["pasos"], f["vueltas"], f["pie"],
+                          _desc_rec(nombre, f["pasos"], f["vueltas"])
+                          + (" " + " ".join(f["pie"]) if f["pie"] else ""))
     return _figura_flujo(nombre if nombre != "mc-plano" else "Monte Carlo plano",
                          f["titulo"], f["pasos"], f["vueltas"], f["pie"])
 
@@ -4709,13 +4895,15 @@ def jue_c3_mcg_mc_plano():
                          anclaje="start"))
     out.append(texto(xa, yf + 5, "finales", tam=14, color=SUAVE, anclaje="start"))
     y = _pie_t(out, yf + 50, ["Cada final suma su U al", "contador de su jugada, y la",
-                              "partida se olvida. Con más", "partidas, ū se acerca a μ:",
-                              "el promedio con todos al", "azar, no V."], tam=15)
+                              "partida se olvida. Con", "partidas independientes y la",
+                              "misma regla, ū converge a μ", "(el promedio con todos al",
+                              "azar), no a V."], tam=15)
     desc = ("Monte Carlo plano en un árbol grande, sin números: en la raíz s₀, cada jugada a₁, "
             "a₂, …, a_b tiene solo dos contadores, N y ū. Desde cada jugada bajan caminos "
             "quebrados, partidas jugadas al azar para los dos, hasta finales lejanos con su U; "
             "esos caminos no se guardan. Cada final suma su U al contador de su jugada. Con más "
-            "partidas, ū se acerca a μ, el promedio con todos al azar, que no es V.")
+            "partidas independientes y la misma regla, ū converge a μ, el promedio con todos al "
+            "azar, no a V.")
     return _svg_rx(titulo, desc, out, y)
 
 
@@ -4867,7 +5055,7 @@ def jue_c3_mcg_uct_crece():
     """Tres instantaneas del arbol de UCT: crece desigual, hondo en lo
     prometedor; la frontera sigue su contorno; arriba se elige con el
     puntaje, abajo se juega al azar."""
-    titulo = ["UCT: su árbol crece", "desigual, hondo en lo mejor"]
+    titulo = ["UCT: su árbol crece", "desigual, hondo en", "lo prometedor"]
     out = []
     y = _titulo_rx(out, titulo) + 30
     dy, prof_max = 40, 4

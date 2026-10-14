@@ -1045,9 +1045,15 @@ def test_las_hojas_del_corte_van_en_100_u_sin_mas():
 
 @pytest.mark.parametrize("nombre", RX_FLUJOS)
 def test_cada_flujo_tiene_de_3_a_6_cajas_y_acaba_en_la_jugada(nombre):
+    """§7.2 pide 3 a 6 cajas «y, si hace falta, un rombo». Los tres de la
+    familia minimax son recursivos y necesitan mas de un rombo (¿final?,
+    ¿quedan hijos?, y ¿d = 0? o ¿v ≥ β?) para que siguiendo las flechas se
+    vea el descenso y el regreso al padre; por eso el tope es de pasos de la
+    columna, cajas + rombos ≤ 8 (las cajas del lado de un rombo no cuentan:
+    son su salida «sí»)."""
     f = gen.FLUJOS[nombre.removeprefix("jue-c3-rx-flujo-")]
     cajas = [p for p in f["pasos"] if "caja" in p]
-    assert 3 <= len(cajas) <= 6 and len(f["pasos"]) <= 7
+    assert 3 <= len(cajas) <= 6 and len(f["pasos"]) <= 8
     assert f["pasos"][-1].get("fin") and f["pasos"][-1]["caja"][0].startswith("Juega")
     r = _renglones(nombre)
     for p in f["pasos"]:
@@ -1055,11 +1061,33 @@ def test_cada_flujo_tiene_de_3_a_6_cajas_y_acaba_en_la_jugada(nombre):
             assert x in r, x
 
 
+@pytest.mark.parametrize("nombre", ["minimax", "alfa-beta", "corte"])
+def test_en_los_flujos_recursivos_todo_valor_vuelve_al_padre(nombre):
+    """Antes «vale U» quedaba sin salida y «¿Es un final? —no→ Sube su
+    valor» se saltaba el descenso. Toda caja de valor (las del lado de un
+    rombo y «Vuelve al padre») regresa a la unica caja «Al volver…», y hay
+    una vuelta de «Baja al siguiente hijo» al primer rombo."""
+    f = gen.FLUJOS[nombre]
+    pasos = f["pasos"]
+    assert [p.get("destino", False) for p in pasos].count(True) == 1
+    for p in pasos:
+        if "lado" in p and p["lado"][1][0] in ("vale", "poda:"):
+            assert p.get("regresa"), p
+    assert any(p.get("regresa") and p.get("caja", [""])[0] == "Vuelve al padre"
+               for p in pasos)
+    baja = next(k for k, p in enumerate(pasos) if p.get("caja", [""])[0].startswith("Baja"))
+    assert (baja, 0) in [(d, h) for d, h, _ in f["vueltas"]]
+    r = _renglones(f"jue-c3-rx-flujo-{nombre}")
+    assert "vuelve al padre" in r and "Empieza en la raíz" in r
+
+
 def test_el_flujo_de_uct_es_un_ciclo_de_cuatro_fases():
     r = _renglones("jue-c3-rx-flujo-uct")
     for fase in ("1 · Selección", "2 · Expansión", "3 · Simulación", "4 · Retropropagación"):
         assert fase in r
     assert "el tiempo?" in r and "no: otra vuelta" in r and "de la raíz más visitada" in r
+    # ū es un promedio: no se le «suma» U
+    assert "actualiza su promedio" in r and not [x for x in r if "U a ū" in x]
 
 
 def test_las_figuras_del_arbol_grande_no_llevan_cifras():
