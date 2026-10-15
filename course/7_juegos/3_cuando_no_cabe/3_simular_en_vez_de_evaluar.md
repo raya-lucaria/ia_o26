@@ -1,229 +1,891 @@
 ---
 id: simular-en-vez-de-evaluar
-title: Simular en vez de evaluar
-nav_title: Simular en vez de evaluar
-summary: "La otra respuesta cuando el árbol no cabe: estimar cuánto vale una jugada jugando muchas partidas al azar hasta el final y promediando, que es Monte Carlo plano. La búsqueda de árbol Monte Carlo, la base de AlphaGo, construye además un árbol: dentro de él elige por puntaje, y solo debajo simula al azar."
+title: "Simular partidas: promedios y actualización minimax"
+nav_title: Simular partidas
+summary: "Cuando el árbol no cabe y no hay EVAL, se juegan partidas al azar hasta el final. Monte Carlo plano promedia su U por jugada de la raíz y converge a Q_azar, lo que paga jugar si los dos eligen al azar. La actualización minimax usa las mismas partidas, guarda lo que descubre y sube máximos y mínimos: converge a V en un árbol finito."
 status: ready
-estimated_time: 31m
+estimated_time: 48m
 tags: [juegos, busqueda-adversarial, monte-carlo]
 ---
 
-# Simular en vez de evaluar
+# Simular partidas: promedios y actualización minimax
 
-**¿Se puede estimar una posición sin escribir una función de evaluación?**
+**¿Cómo puedes elegir una jugada sin recorrer todo el árbol ni escribir una función de evaluación?**
 
-Al terminar tendrás:
+Puedes simular partidas hasta un final. El número que obtengas dependerá de cómo uses sus resultados.
 
-- el **promedio de simulaciones** de una jugada, leído como probabilidad
-  de ganar, y por qué no es su valor $V$;
-- las cuentas de una **vuelta de MCTS** en sus cuatro pasos, cuando gana
-  MAX y cuando pierde;
-- el **puntaje UCT** de tres jugadas con ${c=1}$, y por qué la que se explora
-  no es la que se entrega;
-- el recorrido de la clase en tres programas: Deep Blue, AlphaGo y
-  AlphaZero.
+- **Con Monte Carlo plano**, calcularás promedios que estiman el resultado de jugar al azar.
+- **Con actualización minimax**, guardarás lo descubierto y subirás máximos y mínimos.
+- **Con las trazas**, distinguirás una estimación, una jugada desconocida y un valor demostrado.
 
-> **Las reglas, en el tablero de 4×4.** Columnas a–d y filas 1–4; Blancas
-> (B) empieza con cuatro peones en la fila 1 y Negras (N), en la fila 4.
-> Empiezan Blancas. Un peón avanza una casilla si está vacía o
-> captura en diagonal hacia delante. Gana quien llega a la fila del rival,
-> captura todo o deja al rival sin jugada. ${U=+1}$ si gana Blancas y ${U=-1}$
-> si gana Negras.
+## Lo que traes
 
-> **Las piezas que usa esta página.** Las de
-> [[escribir-el-juego|Escribir el juego]]: $S_F$ (@jue-c1-finales),
-> $\mathrm{Pl}(s)$ (@jue-c1-pl), $A(s)$ (@jue-c1-acciones), $T(s,a)$
-> (@jue-c1-transicion) y $U(s)$, ${+1}$ si gana MAX y ${-1}$ si gana MIN
-> (@jue-c1-utilidad).
+- **Las reglas generan el juego.** $S_F$ reconoce finales (@jue-c1-finales); $\mathrm{Pl}(s)$ lee quién mueve (@jue-c1-pl); $A(s)$ enumera jugadas (@jue-c1-acciones); $T(s,a)$ produce el siguiente estado (@jue-c1-transicion); $U$ paga los finales (@jue-c1-utilidad): $+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan.
+- **El valor se mide desde MAX.** $V(s)$ supone juego óptimo de ambos; $Q(s,a)=V(T(s,a))$ valora una jugada (@jue-c1-valor-jugada-estrategia).
+- **Cada turno tiene su operador.** MAX elige el mayor $Q$; MIN, el menor; AZAR promedia con $\Pr(a\mid s)$ (@jue-c2-valor-esperado).
+- **El corte necesita una evaluación.** En [[cortar-y-evaluar|Cortar y evaluar]], $\mathrm{EVAL}$ estima lo que queda debajo de la frontera.
 
-> **Supuestos de esta página.** Los de
-> [[cortar-y-evaluar|Cortar y evaluar a mano]]: no se puede llegar a los
-> finales con minimax. Pero sí se puede jugar **una** partida hasta el final,
-> eligiendo cada jugada al azar: eso es barato.
-
-> **El problema de esta página.**
+> **Las reglas del 4×4.** Las columnas son a–d y las filas, 1–4. Blancas (B, MAX) empieza con cuatro peones en la fila 1; Negras (N, MIN), en la fila 4.
 >
-> **Dado:** un estado $s$ donde mueve MAX y las reglas del juego. **Sin**
-> función de evaluación.
->
-> **Encontrar:** una jugada para $s$, lo mejor posible con el tiempo que
-> haya.
+> Empiezan Blancas. Un peón avanza una casilla vacía o captura en diagonal hacia delante. Gana quien llega a la fila rival, captura todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$ si gana Negras.
 
-Esta página es un adelanto de la **búsqueda de árbol Monte Carlo**, o
-**MCTS** (del inglés *Monte Carlo tree search*). La ves funcionar en números
-pequeños, sin calcularla entera a mano.
+> **Supuestos.** Son juegos por turnos, deterministas y de información perfecta. Buscar todos los finales cuesta demasiado y no tenemos una $\mathrm{EVAL}$ confiable. Jugar una partida al azar hasta el final sí resulta barato.
 
-## 1 · Jugar al azar y promediar
+---
 
-**Piensa: si no sabes cuánto vale una posición, ¿cómo lo averiguarías sin
-escribir ninguna regla sobre el juego?**
+## 1 · Un árbol que no cabe
 
-Jugando. Desde esa posición, juega muchas partidas eligiendo cada jugada al
-azar, hasta el final. Anota la $U$ de cada una y promedia.
+**Piensa: sin EVAL y sin tiempo para explorar todo, ¿qué sigue disponible?**
 
-Esta idea se llama **Monte Carlo plano**: simula desde cada jugada, sin
-construir ningún árbol. Las secciones 1 a 3 son eso. Desde la sección 4,
-MCTS lo mejora construyendo un árbol.
+Las reglas: permiten terminar una partida y leer su pago.
 
-::: definition {#jue-c3-simulacion title="Simulación"}
-Una **simulación** desde un estado $s$ es una partida que empieza en $s$ y
-sigue hasta un final, eligiendo en cada estado una jugada al azar de
-$A(s)$. Su resultado es la $U$ del final al que llega.
+En este árbol, MAX y MIN alternan. Cada nodo tiene hasta $b$ jugadas y ninguna partida supera $m$. Los «…» indican que el dibujo continúa.
 
-**Qué significa:** el promedio de muchas simulaciones, $\bar u$, estima qué
-tan buena es $s$ para MAX, en la escala de $U$: entre ${-1}$ y ${+1}$.
+$$
+\mathbf{U(s)}=
+\begin{cases}
++1 & \text{si gana MAX},\\
+0 & \text{si empatan},\\
+-1 & \text{si gana MIN}.
+\end{cases}
+$$
 
-**Qué no es:** no es el valor $V(s)$. Un rival al azar no es un rival que
-piensa. Una posición puede ganarse en casi todas las simulaciones y
-perderse contra quien encuentra la única respuesta buena.
+- **El pago existe solo en los finales.** Un estado intermedio tiene valor $V$, pero todavía no tiene $U$.
+- **La perspectiva permanece fija.** $+1$ favorece a MAX y $-1$ favorece a MIN, sin importar quién mueve.
+
+::: figure {#jue-c3-mcg-fig-arbol title="Un árbol de juego grande"}
+![Árbol con hasta b jugadas por nodo y m niveles. Los puntos suspensivos indican las ramas omitidas; los finales tienen su pago U.](../_assets/jue-c3-mcg-arbol.svg)
 :::
 
-Por ejemplo, supón que de 10 simulaciones desde $s$ MAX gana 7 y pierde 3.
-El promedio es
+### Qué cuesta cada alternativa
 
-$$\bar u=\frac{7\cdot(+1)+3\cdot(-1)}{10}=0.4.$$
+- **Minimax recorre todo.** Examina del orden de $b^m$ nodos.
+- **Alfa-beta ahorra mediante poda.** Con orden perfecto baja a cerca de $b^{m/2}$; el crecimiento sigue siendo exponencial.
+- **El corte reduce la profundidad.** Se detiene en $d$, pero depende de una buena $\mathrm{EVAL}$.
+
+Una partida cuesta del orden de $m$ jugadas, frente a $b^m$ para explorar todas las continuaciones. Aquí suponemos que el presupuesto alcanza para muchas partidas.
+
+> **Dado:** un estado no final $s_{\text{raíz}}$ donde mueve MAX, las reglas y un presupuesto de simulaciones. No hay función de evaluación.
+>
+> **Encontrar:** una jugada para MAX con la información reunida antes de agotar el presupuesto.
+
+---
+
+## 2 · Tres preguntas sobre una jugada
+
+**Piensa: ¿qué significa decir que una jugada «vale» cierto número?**
+
+Depende de cómo continuarán los dos jugadores. Llama $s'=T(s,a)$ al estado que resulta de jugar $a$ desde $s$.
+
+| Pregunta | Número | Continuación |
+|---|---|---|
+| ¿Cuánto asegura MAX? | $Q(s,a)=V(s')$ | Ambos juegan óptimamente |
+| ¿Cuánto paga al azar? | $Q_{\text{azar}}(s,a)$ | Ambos eligen uniformemente |
+| ¿Qué estima el algoritmo? | $\widehat Q(s,a)$ | Depende de lo observado |
+
+- **Los números sin gorro son exactos.** $Q$ y $Q_{\text{azar}}$ responden preguntas distintas sobre el mismo juego.
+- **El gorro indica una estimación.** Cada algoritmo debe declarar qué valor intenta estimar y cómo cambia con los datos.
+
+Para calcular $Q_{\text{azar}}$, tratamos a ambos jugadores como dados uniformes después de la jugada inicial:
+
+$$
+\mathbf{
+V_{\text{azar}}(s)=
+\begin{cases}
+U(s) & \text{si }s\in S_F,\\
+\displaystyle\sum_{a\in A(s)}
+\frac{V_{\text{azar}}(T(s,a))}{|A(s)|}
+& \text{si }s\notin S_F,
+\end{cases}}
+$$
+
+$$
+\mathbf{Q_{\text{azar}}(s,a)=V_{\text{azar}}(s')=E[U\mid s']}.
+$$
+
+La esperanza supone jugadas uniformes desde $s'$. **Cada camino pesa el producto de $1/|A(s)|$** en los estados que atraviesa. Por eso, en general, no basta promediar las hojas sin ponderarlas.
+
+---
+
+## 3 · Ficha A: Monte Carlo plano
+
+**Piensa: ¿qué puedes aprender jugando muchas partidas al azar desde la misma jugada?**
+
+Su pago promedio contra continuaciones al azar. Monte Carlo plano guarda ese promedio por jugada de la raíz, sin construir un árbol de búsqueda.
+
+### El mapa
+
+- **Qué rastrea.** $\widehat Q(s_{\text{raíz}},a)$ estima $Q_{\text{azar}}(s_{\text{raíz}},a)$.
+- **Dónde lo guarda.** Conserva un contador $N(s_{\text{raíz}},a)$ y una suma de pagos por jugada de la raíz.
+- **Cómo sube.** No respalda valores entre estados: cada pago actualiza únicamente la jugada inicial.
+- **A qué converge.** Cada promedio converge a $Q_{\text{azar}}$ con probabilidad 1, si recibe infinitas simulaciones independientes bajo la misma regla de continuación.
+
+::: figure {#jue-c3-fig-flujo-mc-plano title="Monte Carlo plano, en palabras"}
+![Para cada jugada de la raíz, simula k partidas hasta un final y promedia sus pagos. Al terminar, entrega la jugada de mayor promedio.](../_assets/jue-c3-rx-flujo-mc-plano.svg)
+:::
+
+::: definition {#jue-c3-simulacion title="Simulación"}
+**Qué es.** Una simulación (*rollout*) recorre una partida desde un estado hasta un final. En cada turno elige uniformemente entre las jugadas legales.
+
+**Cómo se calcula.** Su resultado es el pago $U$ del final. El promedio de muchas simulaciones desde $s'=T(s_{\text{raíz}},a)$ es $\widehat Q(s_{\text{raíz}},a)$.
+
+**Qué significa.** Estima $Q_{\text{azar}}$: lo que paga la jugada cuando después ambos juegan al azar.
+
+**Qué no es.** No demuestra cuánto asegura MAX. Una jugada puede ganar casi todas las simulaciones y perder contra una respuesta certera.
+:::
+
+Una **simulación** recorre una partida; una **corrida** ejecuta el algoritmo completo, con todas sus simulaciones.
+
+### Exploración: la regla
+
+Fija un entero $k\ge1$. Para cada jugada $a$, en el orden dado, calcula $s'=T(s_{\text{raíz}},a)$ y repite:
+
+1. **Simula hasta un final.** Desde $s'$, ambos eligen uniformemente; al terminar, lee $U$. Si $s'$ ya es final, toma directamente su pago.
+2. **Actualiza la jugada inicial.** Suma $U$ a su acumulado y aumenta $N(s_{\text{raíz}},a)$ en una visita.
+3. **Completa el presupuesto.** Repite hasta reunir $k$ simulaciones de esa jugada; después pasa a la siguiente.
+
+$$
+\mathbf{n=|A(s_{\text{raíz}})|\,k\le b\,k},
+\qquad
+\mathbf{\widehat Q(s_{\text{raíz}},a)=
+\frac{\sum U}{N(s_{\text{raíz}},a)}}.
+$$
+
+- **La suma incluye solo las partidas de $a$.** Una victoria aporta $+1$; una derrota, $-1$; un empate, $0$.
+- **Cada simulación recorre un camino.** Los estados intermedios se olvidan; distintos recorridos pueden repetir exactamente las mismas jugadas.
+- **El invariante está en la raíz.** El contador y la suma corresponden a todas las simulaciones terminadas de esa jugada, siempre desde MAX.
+
+::: figure {#jue-c3-mcg-fig-mc-plano title="Monte Carlo plano en un árbol grande"}
+![Las simulaciones recorren caminos hasta finales lejanos. En la raíz quedan N y Q̂ por jugada; debajo no se conservan estados.](../_assets/jue-c3-mcg-mc-plano.svg)
+:::
+
+---
+
+### El recorrido: calcular un promedio
+
+**Piensa: MAX gana 7 de 10 simulaciones y pierde 3. ¿Qué promedio obtiene?**
+
+Obtiene $0.4$, porque cada victoria suma $+1$ y cada derrota suma $-1$:
+
+$$
+\widehat Q=\frac{7\cdot(+1)+3\cdot(-1)}{10}=0.4.
+$$
 
 ::: exercise {#jue-c3-ej-cinco title="Calcula dos promedios"}
-Desde un estado se juegan 5 simulaciones.
+Desde una jugada se completan 5 simulaciones.
 
-1. Si MAX gana 3 y pierde 2, ¿cuánto vale $\bar u$?
-2. ¿Y si gana 2 y pierde 3?
+1. **Primera muestra.** MAX gana 3 y pierde 2. ¿Cuánto vale $\widehat Q$?
+2. **Segunda muestra.** MAX gana 2 y pierde 3. ¿Cuánto vale ahora?
 :::
 
 ::: hint {#jue-c3-pista-cinco-1 of="jue-c3-ej-cinco" title="Qué suma cada partida"}
-¿Cuánto aporta a la suma una partida ganada, y cuánto una perdida?
+Escribe primero cuánto aporta una victoria y cuánto aporta una derrota.
 :::
 
 ::: answer {#jue-c3-resp-cinco of="jue-c3-ej-cinco"}
-1. ${\bar u=(3-2)/5=0.2}$.
-2. ${\bar u=(2-3)/5=-0.2}$. Una sola partida que cambia de lado mueve el
-   promedio $0.4$: con pocas simulaciones, el número todavía brinca mucho.
+1. **La primera da $0.2$.** $\widehat Q=(3-2)/5=0.2$.
+2. **La segunda da $-0.2$.** $\widehat Q=(2-3)/5=-0.2$.
+
+Cambiar una sola victoria por derrota mueve el promedio $0.4$. **Con pocas simulaciones, el número todavía brinca mucho.**
 :::
 
-Un promedio así no pide saber nada del juego. ¿Elige bien en la posición
-de la clase?
+### El recorrido: la posición de la clase
 
-## 2 · Simular en la posición de la clase
+**Piensa: ¿la jugada con mejor promedio al azar también gana contra Negras jugando bien?**
 
-**Piensa: en la posición de la clase, ¿qué jugada parecería mejor si solo
-promediaras partidas al azar?**
+Aquí sí: $\text{d2}\mathbf{-}\text{d3}$.
 
-Con muchísimas simulaciones, el promedio de cada jugada se acerca a un
-número fijo: su **promedio límite**. La computadora puede calcularlo sin
-simular. Es el promedio de $U$ sobre todas las partidas posibles, cada una
-con su probabilidad, si **los dos** eligen al azar.
+La tabla calcula $Q_{\text{azar}}$ exactamente, sin muestrear, y muestra sus decimales redondeados. «Corte» usa profundidad 1 y la escala de $\mathrm{EVAL}$, con finales multiplicados por 100.
 
-La tabla lo pone junto a lo que ya conoces. La columna «Azar» es ese
-promedio límite. «Corte» es el valor con corte a profundidad 1, en la escala
-de $\mathrm{EVAL}$. «$V$» es el valor del juego. «Azar» y «$V$» van en la
-escala de $U$, entre ${-1}$ y ${+1}$. En [[cortar-y-evaluar|Cortar y evaluar]]
-escribimos $V$ multiplicado por 100; aquí va sin multiplicar.
-
-::: table {#jue-c3-simulaciones title="Promedio de infinitas simulaciones en la posición de la clase"}
-| Jugada | Azar | Corte | $V$ |
+::: table {#jue-c3-simulaciones title="Lo que paga cada jugada al azar en la posición de la clase"}
+| Jugada | $Q_{\text{azar}}(s,a)$ | Corte | $Q(s,a)$ |
 |---|---:|---:|---:|
-| $\text{a1}\textbf{-}\text{a2}$ | 0.21 | 2 | −1 |
-| $\text{d2}\textbf{-}\text{d3}$ | **0.89** | 2 | +1 |
-| $\text{d2}\textbf{x}\text{c3}$ | 0.15 | **13** | −1 |
+| $\text{a1}\mathbf{-}\text{a2}$ | 0.21 | 2 | −1 |
+| $\text{d2}\mathbf{-}\text{d3}$ | **0.89** | 2 | +1 |
+| $\text{d2}\mathbf{x}\text{c3}$ | 0.15 | **13** | −1 |
 :::
 
-**Aquí simular acierta.** La jugada con mejor promedio es
-$\text{d2}\textbf{-}\text{d3}$, la que gana, y la captura queda última. Sin
-que nadie le escriba una evaluación, la simulación «ve» que el peón de más
-se pierde. En las partidas al azar, Negras recaptura muchas veces.
+$Q_{\text{azar}}$ y $Q$ están en la escala de $U$, entre $-1$ y $+1$. La columna «Corte» está en otra escala.
 
-**Pero un promedio no es el valor.** En hexapawn, las tres aperturas de
-Blancas valen ${-1}$: Negras gana si juega bien. Sus promedios de simulación
-son los tres **positivos**.
+**Aquí simular acierta:** favorece el avance ganador y deja última la captura. Las partidas incluyen muchas recapturas de Negras; así revelan que el peón adicional no dura.
 
-Ojo con un número que ya viste. En
-[[cuando-decide-un-dado|Cuando decide un dado]] solo Negras jugaba al azar
-y Blancas elegía lo mejor: ahí $\text{b1}\textbf{-}\text{b2}$ valía ${3/4}$.
-Aquí juegan al azar los dos, y vale ${5/24}$. En la tabla, «Ambos» es el
-promedio límite con los dos al azar y «Solo Negras», con solo Negras al azar.
+### El recorrido: el árbol de resultados
 
-::: table {#jue-c3-hexapawn-azar title="Hexapawn: las aperturas con uno o con los dos al azar"}
-| Apertura | Ambos | Solo Negras |
+**Piensa: ¿puede el promedio más alto recomendar una jugada que pierde?**
+
+Sí. En este árbol recomendará der, aunque MAX debe jugar centro.
+
+- **La raíz R pertenece a MAX.** Sus jugadas izq, centro y der llevan a I, C y D, donde mueve MIN.
+- **I ofrece dos finales.** Sus pagos son $\text{i1}=+1$ e $\text{ix}=-1$.
+- **C ofrece dos estados de MAX.** C1 tiene $\text{c1a}=0$ y $\text{c1b}=-1$; C2 tiene $\text{c2a}=+1$ y $\text{c2b}=-1$.
+- **D ofrece tres finales.** Sus pagos son $\text{d1}=-1$, $\text{d2}=+1$ y $\text{d3}=+1$.
+
+| Jugada | Cálculo con ambos al azar | $Q_{\text{azar}}$ | $Q$ |
+|---|---|---:|---:|
+| izq | $(1-1)/2$ | $0$ | $-1$ |
+| centro | $((-1/2)+0)/2$ | $-1/4$ | $0$ |
+| der | $(-1+1+1)/3$ | $1/3$ | $-1$ |
+
+En centro, C1 promedia $(0-1)/2=-1/2$ y C2 promedia $(1-1)/2=0$. MAX se equivoca la mitad de las veces en ambos.
+
+Con juego óptimo, MIN responde ix en I y d1 en D. En C elige C1, donde MAX asegura el empate con c1a.
+
+**La cuenta que tienta:** si solo MIN jugara al azar, C1 valdría $0$ y C2 valdría $+1$. Centro daría $1/2$ y sería preferible a der. Las simulaciones uniformes también hacen jugar al azar a MAX.
+
+> **Dado:** este árbol, 5 simulaciones por jugada, semilla 0 y orden izq, centro, der.
+>
+> **Encontrar:** los promedios y la jugada entregada. Cada tramo muestra el acumulado de una jugada.
+
+#### Tramo 1 · Simular izq
+
+| # | Final | $U$ | Suma | $\widehat Q$ |
+|---:|---|---:|---:|---:|
+| 1 | ix | −1 | −1 | $-1$ |
+| 2 | ix | −1 | −2 | $-1$ |
+| 3 | i1 | +1 | −1 | $-1/3$ |
+| 4 | ix | −1 | −2 | $-1/2$ |
+| 5 | ix | −1 | −3 | $-3/5$ |
+
+**Fila 3:** una victoria sube el promedio, aunque MIN conserva la respuesta ix que hace perder a MAX.
+
+#### Tramo 2 · Simular centro
+
+| # | Final | $U$ | Suma | $\widehat Q$ |
+|---:|---|---:|---:|---:|
+| 6 | c2b | −1 | −1 | $-1$ |
+| 7 | c2b | −1 | −2 | $-1$ |
+| 8 | c1a | 0 | −2 | $-2/3$ |
+| 9 | c2a | +1 | −1 | $-1/4$ |
+| 10 | c1b | −1 | −2 | $-2/5$ |
+
+**Fila 10:** centro termina con $-2/5$, por encima del $-3/5$ de izq. El promedio incluye errores de MAX, como elegir c1b.
+
+#### Tramo 3 · Simular der y elegir
+
+| # | Final | $U$ | Suma | $\widehat Q$ |
+|---:|---|---:|---:|---:|
+| 11 | d3 | +1 | +1 | $1$ |
+| 12 | d3 | +1 | +2 | $1$ |
+| 13 | d3 | +1 | +3 | $1$ |
+| 14 | d1 | −1 | +2 | $1/2$ |
+| 15 | d2 | +1 | +3 | $3/5$ |
+
+**Fila 14:** apareció la refutación d1, pero solo redujo el promedio. Al terminar, las sumas son $-3,-2,+3$ y los promedios, $-3/5,-2/5,3/5$. **Entrega der.**
+
+::: figure {#jue-c3-fig-resultados-mc-plano title="Monte Carlo plano: 5 simulaciones por jugada, juega der"}
+![Corrida con semilla 0: izq suma −3, centro suma −2 y der suma +3. Cada jugada recibió 5 simulaciones; der tiene el mayor promedio.](../_assets/jue-c3-rx-mc-plano.svg)
+:::
+
+#### Repetir la corrida
+
+**Piensa: ¿más simulaciones corregirán esta elección?**
+
+No. La tabla reúne 1000 corridas con semillas distintas. «Sims» indica simulaciones por jugada; cada celda cuenta las corridas que entregaron esa jugada.
+
+::: table {#jue-c3-cmp-reparto-mc title="Qué entrega Monte Carlo plano en 1000 corridas"}
+| Sims | izq | centro | der |
+|---:|---:|---:|---:|
+| 5 | 353 | 106 | 541 |
+| 10 | 269 | 53 | 678 |
+| 50 | 39 | 1 | 960 |
+:::
+
+Por empate se decidieron 233, 157 y 15 corridas, respectivamente. El desempate favorece la primera jugada en el orden izq, centro, der.
+
+Con pocas simulaciones influyen el ruido y los empates. Con 50, casi todas entregan der: **más simulaciones lo vuelven más seguro de la jugada equivocada.**
+
+---
+
+### Elección: qué jugada juega
+
+Al terminar, MAX entrega la jugada de mayor $\widehat Q(s_{\text{raíz}},a)$. En empate, entrega la primera en el orden dado.
+
+| Decisión | Qué compara | Usa resultados |
+|---|---|---|
+| Explorar | Completa $k$ por jugada | No |
+| Jugar | Elige el mayor promedio | Sí |
+
+- **El reparto es fijo.** Una jugada que parece mala recibe tantas simulaciones como una que parece buena.
+- **Una interrupción deja cantidades desiguales.** Compara promedios entre jugadas muestreadas, nunca sumas; una jugada sin muestras sigue desconocida.
+
+### Propiedades y supuestos
+
+- **Número que da.** Estima $Q_{\text{azar}}$ por jugada de la raíz; en general, no estima $Q$.
+- **Uso de EVAL.** No la necesita: genera jugadas, reconoce finales y lee $U$, sin multiplicar por 100.
+- **Garantía.** Con regla fija, muestras independientes y $k\to\infty$, los promedios convergen a $Q_{\text{azar}}$. Ningún presupuesto finito garantiza la jugada minimax.
+- **Interrupción.** Puede recomendar una jugada con lo observado (*anytime*); una comparación que incluya todas requiere al menos una simulación por jugada.
+- **Tiempo.** Si elegir y aplicar una jugada cuesta $O(1)$, una simulación cuesta $O(m)$; las $n$ cuestan $O(nm)$.
+- **Memoria.** Los contadores y sumas ocupan $O(b)$, más el estado de la partida activa. Esta cota supone avanzar sin almacenar todo el camino.
+- **Frente a otros métodos.** Usa finales, como minimax, pero muestrea en lugar de recorrer $O(b^m)$ nodos. Evita diseñar EVAL a cambio de responder otra pregunta.
+- **Cuándo sirve.** Es una alternativa cuando falta una buena evaluación. Brügmann exploró Monte Carlo en Go en 1993; fue una vía experimental entre 1993 y 2005.
+
+::: table {#jue-c3-eval-contra-mcts title="Cortar y evaluar contra Monte Carlo plano"}
+| Rasgo | Cortar y evaluar | Monte Carlo plano |
+|---|---|---|
+| Necesita | Reglas y $\mathrm{EVAL}$ | Reglas: $A,T,S_F,U$ |
+| Se detiene | En profundidad $d$ | En finales |
+| Calcula | Minimax del árbol truncado | Estimación de $Q_{\text{azar}}$ |
+| Se afina con | Más $d$; mejor $\mathrm{EVAL}$ | Más simulaciones |
+:::
+
+Aumentar las simulaciones afina $Q_{\text{azar}}$; no lo convierte en $Q$. El Go ilustra por qué interesa prescindir de una evaluación escrita a mano.
+
+- **Suma cero o constante.** Con dos jugadores, un pago desde MAX permite comparar sus intereses opuestos.
+- **Otros intereses.** Con suma no constante o más jugadores, puede promediar $(U_1,\dots,U_n)$ contra políticas fijas. Eso no es $\max^n$ ni garantiza un equilibrio.
+
+### Casos borde
+
+- **Una sola jugada.** Ya está decidida; simularla solo estima cuánto paga con continuaciones al azar.
+- **Un hijo final.** Todas sus simulaciones devuelven el mismo $U$; su valor es exacto desde la primera visita.
+- **Empate de promedios.** Gana la primera jugada; así se decidieron 233 de las 1000 corridas con 5 simulaciones.
+- **Una jugada no visitada.** No tiene promedio; asignarle 0 inventaría un dato.
+- **Una respuesta certera tardía.** Actualiza el promedio en $1/N$ de la distancia al nuevo pago, aunque esa respuesta refute la jugada.
+- **Finales a distinta profundidad.** Cada simulación termina al reconocer su final; igual $k$ puede costar distinto tiempo. No se favorece ganar pronto, salvo que $U$ lo indique.
+- **Un final frente a EVAL.** Aquí siempre se usa $U$; la comparación entre $\mathrm{EVAL}$ y $100\cdot U$ pertenece al método con corte.
+- **Ciclos sin terminación.** Una simulación podría no terminar. Hace falta una regla del juego que determine cómo termina y qué paga.
+
+---
+
+### Intuición: precisión y refutación
+
+**Piensa: ¿qué hace más confiable un promedio, y qué deja sin resolver?**
+
+Más muestras reducen su incertidumbre sobre $Q_{\text{azar}}$. No cambian el supuesto de que ambos juegan al azar.
+
+La intuición de Hoeffding requiere pagos acotados, muestras independientes y una continuación fija. También fija de antemano el número de muestras.
+
+- **El margen rodea $Q_{\text{azar}}$.** No mide la distancia al valor minimax.
+- **El margen decrece como $1/\sqrt N$.** Cuatro veces más simulaciones permiten la mitad de margen, manteniendo la misma confianza.
+- **El error observado puede aumentar.** Una nueva partida puede alejar el promedio, aunque el margen probable se reduzca.
+- **Pocas muestras pueden engañar.** Una jugada mediocre puede encabezar la comparación por suerte.
+
+Ahora MAX elige $a$ o $b$; después MIN elige un final:
+
+| Jugada | Finales de MIN | $Q_{\text{azar}}$ | $Q$ |
+|---|---|---:|---:|
+| $a$ | $+1,+1,-1$ | $1/3$ | $-1$ |
+| $b$ | $0,0$ | $0$ | $0$ |
+
+- **La refutación gana.** MIN puede elegir $-1$ en $a$; su frecuencia durante las simulaciones no cambia esa posibilidad.
+- **El promedio favorece $a$.** $(1+1-1)/3=1/3>0$; con muchas simulaciones la elige casi siempre y pierde contra MIN.
+- **Más respuestas favorables agrandan la distancia.** Con una sola refutación, $Q_{\text{azar}}$ se acerca a $+1$ mientras $Q$ permanece en $-1$.
+
+**Converge, pero al número equivocado para decidir contra juego óptimo.**
+
+### Intuición: quién juega al azar
+
+**Piensa: las tres aperturas de hexapawn valen $-1$. ¿Sus promedios al azar también son negativos?**
+
+No: los tres son positivos. Negras puede asegurar la victoria, pero se equivoca seguido al elegir uniformemente.
+
+::: table {#jue-c3-hexapawn-azar title="Hexapawn: uno o ambos jugadores al azar"}
+| Apertura | Ambos al azar: $Q_{\text{azar}}$ | Solo Negras al azar |
 |---|---:|---:|
-| $\text{a1}\textbf{-}\text{a2}$ | 7/36 | 5/9 |
-| $\text{b1}\textbf{-}\text{b2}$ | 5/24 | 3/4 |
-| $\text{c1}\textbf{-}\text{c2}$ | 7/36 | 5/9 |
+| $\text{a1}\mathbf{-}\text{a2}$ | 7/36 | 5/9 |
+| $\text{b1}\mathbf{-}\text{b2}$ | 5/24 | 3/4 |
+| $\text{c1}\mathbf{-}\text{c2}$ | 7/36 | 5/9 |
 :::
 
-::: exercise {#jue-c3-ej-promedio title="Traduce un promedio a partidas ganadas"}
-Con ${U=\pm1}$, un promedio $\bar u$ y la probabilidad $p$ de que gane MAX
-cumplen ${p=(\bar u+1)/2}$, como en
-[[cuando-decide-un-dado|Cuando decide un dado]].
+En la última columna Blancas elige lo mejor, como en [[cuando-decide-un-dado|Cuando decide un dado]]. Por eso $\text{b1}\mathbf{-}\text{b2}$ tiene tres números: $-1$, $5/24$ y $3/4$.
 
-1. ¿Con qué probabilidad gana Blancas las partidas al azar que empiezan con
-   $\text{d2}\textbf{-}\text{d3}$, si el promedio es ${8/9}$?
-2. Las de hexapawn que empiezan con $\text{b1}\textbf{-}\text{b2}$ tienen
-   promedio ${5/24}$. ¿Cuántas gana Blancas? ¿Por qué no contradice que
-   $\text{b1}\textbf{-}\text{b2}$ valga ${-1}$?
+::: remark {#jue-c3-cmp-v-no-es-u title="El azar del juego y el azar del algoritmo"}
+**El ejemplo mínimo.** MIN elige entre finales $+1$ y $-1$. Su valor es $V=-1$, pero $V_{\text{azar}}=0$: el promedio uniforme sí converge, a 0.
+
+**El azar del juego.** Expectiminimax promedia transiciones que las reglas asignan a un dado. En los turnos de los jugadores mantiene sus elecciones óptimas.
+
+**El azar del algoritmo.** Monte Carlo plano simula decisiones aleatorias, aunque el juego no tenga dados. Su límite es $Q_{\text{azar}}$, que puede diferir de $Q$.
+
+**La misma cuenta puede responder otra pregunta.** En D, el promedio $1/3$ sería su valor si decidiera un dado uniforme. Con MIN decidiendo, $Q(\text{der})=-1$.
+:::
+
+---
+
+### Ejercicios: interpretar y cambiar el modelo
+
+::: exercise {#jue-c3-ej-promedio title="Traduce una esperanza a partidas ganadas"}
+Sin empates, $U=\pm1$ y $p=(Q_{\text{azar}}+1)/2$, donde $p$ es la probabilidad de victoria de MAX.
+
+1. **El avance ganador.** Si $\text{d2}\mathbf{-}\text{d3}$ tiene $Q_{\text{azar}}=8/9$, ¿con qué probabilidad gana Blancas al azar?
+2. **La apertura de hexapawn.** Si $\text{b1}\mathbf{-}\text{b2}$ tiene $Q_{\text{azar}}=5/24$, ¿qué fracción gana? ¿Por qué es compatible con $Q=-1$?
+3. **Una muestra observada.** Si sustituyes $Q_{\text{azar}}$ por $\widehat Q$, ¿qué representa la cuenta?
 :::
 
 ::: hint {#jue-c3-pista-promedio-1 of="jue-c3-ej-promedio" title="Qué supone cada número"}
-Para el inciso 2: cada uno de los tres números de la fila de
-$\text{b1}\textbf{-}\text{b2}$ responde a una pregunta distinta. ¿Cómo
-elige sus jugadas cada jugador en cada una?
+Identifica primero quién juega al azar. Después distingue una esperanza exacta de un promedio calculado con una muestra.
 :::
 
 ::: answer {#jue-c3-resp-promedio of="jue-c3-ej-promedio"}
-1. ${p=(8/9+1)/2=17/18}$: Blancas gana 17 de cada 18 partidas al azar.
-2. ${p=(5/24+1)/2=29/48}$: un poco más de 6 de cada 10. No lo contradice:
-   en las simulaciones, Negras juega al azar y se equivoca seguido; ${V=-1}$
-   supone que Negras juega perfecto. Tampoco es el ${3/4}$ de la clase 2:
-   ahí Blancas jugaba lo mejor y solo Negras al azar. Son tres supuestos
-   sobre los jugadores, y tres números.
+1. **La probabilidad es $17/18$.** $(8/9+1)/2=17/18$: gana 17 de cada 18 partidas en promedio, sin garantizar esa frecuencia en cada muestra.
+2. **La probabilidad es $29/48$.** $(5/24+1)/2=29/48$, un poco más de 6 de cada 10; $Q=-1$ supone que Negras responde óptimamente.
+3. **Sale una proporción observada.** Es la fracción de victorias en esa muestra; no la probabilidad verdadera.
+
+El $3/4$ de la clase 2 corresponde a otro supuesto: Blancas elige óptimamente y solo Negras juega al azar.
 :::
-
-El promedio se equivoca cuando el rival al azar no se parece al rival de
-verdad. ¿Qué se gana a cambio de ese defecto?
-
-## 3 · Qué cambia respecto de la evaluación
-
-**Piensa: ¿qué necesita saber del juego este método, además de las
-reglas?**
-
-Nada. Esa es la diferencia con [[cortar-y-evaluar|cortar y evaluar]]:
-
-::: table {#jue-c3-eval-contra-mcts title="Cortar y evaluar contra Monte Carlo plano"}
-| | Cortar y evaluar | Monte Carlo plano |
-|---|---|---|
-| Pide | $\mathrm{EVAL}$ a mano | Solo las reglas: $A$, $T$, $S_F$ y $U$ |
-| Para | En $d$ | En los finales |
-| Da | Minimax de $\mathrm{EVAL}$ | Promedio de $U$ |
-| Mejora con | Más $d$, mejor $\mathrm{EVAL}$ | Más simulaciones |
-:::
-
-Por eso sirve en juegos donde nadie sabe escribir una buena evaluación.
-El ejemplo clásico es el **Go**.
 
 ::: exercise {#jue-c3-ej-cambio title="Señala qué método hay que rehacer"}
-Cambias una regla del 4×4: ahora un peón también puede avanzar dos
-casillas en su primera jugada.
+Cambia una regla del 4×4: cada peón puede avanzar dos casillas en su primera jugada.
 
-1. ¿Cuál de los dos métodos sigue funcionando tal cual?
-2. ¿Qué tendrías que revisar en el otro, y por qué?
+1. **Monte Carlo plano.** Con las reglas actualizadas, ¿puede conservar su procedimiento?
+2. **Cortar y evaluar.** ¿Qué pieza debes revisar y por qué?
 :::
 
 ::: hint {#jue-c3-pista-cambio-1 of="jue-c3-ej-cambio" title="Quién escribió cada pieza"}
-En cada método, ¿qué pieza sale de las reglas y cuál la escribió una
-persona pensando en las reglas viejas?
+Distingue el procedimiento de búsqueda, las reglas que consulta y la evaluación diseñada para el juego anterior.
 :::
 
 ::: answer {#jue-c3-resp-cambio of="jue-c3-ej-cambio"}
-1. **Monte Carlo plano.** Solo usa las reglas ($A$, $T$, $S_F$ y $U$), y esas
-   ya son las nuevas:
-   las simulaciones juegan el juego nuevo sin que nadie las toque.
-2. **La $\mathrm{EVAL}$ de cortar y evaluar.** Se escribió a mano para el
-   juego viejo: con peones más rápidos, cuánto vale avanzar puede cambiar.
-   Minimax y el corte no cambian; la estimación sí hay que revisarla.
+1. **Sí.** Si $A,T,S_F,U$ describen el juego nuevo, sus simulaciones ya lo siguen.
+2. **Debes revisar EVAL.** Un peón más rápido puede cambiar el valor de avanzar. El procedimiento minimax con corte sigue siendo el mismo.
 :::
 
-Monte Carlo plano solo pide las reglas. Pero, tal como va, reparte las
-simulaciones a ciegas y deja que el rival juegue al azar. MCTS, en
-las dos secciones que siguen, ataca las dos cosas.
+::: exercise {#jue-c3-cmp-ej-cambia-hoja title="Cambia una hoja y mira quién se mueve"}
+En el árbol de resultados, cambia solo $\text{d2}$ a $-1$.
+
+1. **Juego óptimo.** ¿Cambia $V$ o la jugada que lo alcanza?
+2. **D como dado uniforme.** ¿Cuánto vale D y qué juega MAX? ¿Por qué cambiar d3 produciría lo mismo?
+3. **Monte Carlo plano.** Con muchas simulaciones, ¿qué entrega y cuánto vale contra MIN?
+:::
+
+::: hint {#jue-c3-cmp-pista-cambia-hoja of="jue-c3-cmp-ej-cambia-hoja" title="Una pregunta por número"}
+MIN ya podía responder d1. Para el dado, cuenta los pagos; para Monte Carlo plano, compara los tres $Q_{\text{azar}}$.
+:::
+
+::: answer {#jue-c3-cmp-resp-cambia-hoja of="jue-c3-cmp-ej-cambia-hoja"}
+1. **No cambia.** $V=0$ por centro; der sigue valiendo $-1$ porque MIN ya elegía d1.
+2. **D vale $-1/3$.** $(-1-1+1)/3=-1/3$, así que MAX elige centro y obtiene $0$. Cambiar d3 deja la misma distribución de pagos.
+3. **Entrega izq.** Sus límites son $0,-1/4,-1/3$; gana el primero. Sin embargo, izq vale $-1$ contra la respuesta ix.
+:::
+
+::: exercise {#jue-c3-cmp-ej-mas-sims title="Predice con un millón de simulaciones"}
+Con un millón de simulaciones por jugada, ¿qué entregaría Monte Carlo plano en casi todas las corridas del árbol de resultados? ¿Qué nodos deben dejar de elegir al azar para favorecer centro?
+:::
+
+::: hint {#jue-c3-cmp-pista-mas-sims-1 of="jue-c3-cmp-ej-mas-sims" title="A dónde se acerca cada promedio"}
+Compara $0,-1/4,1/3$. Después cambia quién decide en C1 y C2, o en I y D.
+:::
+
+::: answer {#jue-c3-cmp-resp-mas-sims of="jue-c3-cmp-ej-mas-sims"}
+**Entregaría der**, cuyo $Q_{\text{azar}}=1/3$ es el mayor. El problema persiste cuando desaparece el ruido.
+
+- **MAX decide en C1 y C2.** Centro sube a $1/2$ y supera el $1/3$ de der.
+- **MIN decide en I y D.** Izq y der bajan a $-1$, por debajo del $-1/4$ de centro.
+- **Un solo nodo no basta.** Si únicamente MIN decide en D, der baja, pero izq conserva $0$ y supera a centro.
+:::
+
+**La pregunta cambia:** podemos usar el azar para descubrir continuaciones y mantener las elecciones de MAX y MIN al valorar lo descubierto.
+
+---
+
+## 4 · Ficha B: Monte Carlo con actualización minimax
+
+**Piensa: ¿puedes conservar las mismas partidas al azar y valorar sus respuestas como lo harían MAX y MIN?**
+
+Sí: guarda los estados descubiertos y sube máximos y mínimos. Kocsis y Szepesvári (2006) llaman a esta variante MMMC, *Monte-Carlo planning with minimax value update*.
+
+### El mapa
+
+- **Qué rastrea.** Guarda $\widehat Q(s,a)$ por jugada visitada y $\widehat V(s)$ por estado descubierto; estima $Q$ y $V$.
+- **Dónde lo guarda.** Construye un árbol de búsqueda desde $s_{\text{raíz}}$, incorporando los estados recorridos.
+- **Cómo sube.** Copia el valor del hijo y combina con máximo en MAX o mínimo en MIN.
+- **A qué converge.** Converge casi seguramente a $V$ bajo el contrato de sus supuestos, que exige un árbol finito y determinista.
+
+::: figure {#jue-c3-fig-flujo-mmmc title="Monte Carlo con actualización minimax, en palabras"}
+![Simula uniformemente desde la raíz hasta un final. Guarda los estados descubiertos, asigna U al final y sube máximos y mínimos entre jugadas visitadas. Al terminar, entrega la mayor Q̂ disponible.](../_assets/jue-rx-flujo-mmmc.svg)
+:::
+
+::: definition {#jue-c3-actualizacion-minimax title="Monte Carlo con actualización minimax"}
+**Qué es.** Muestrea partidas uniformemente, conserva lo descubierto y aplica minimax sobre las continuaciones visitadas.
+
+**Cómo se calcula.** En un final $z$, $\widehat V(z)=U(z)$. Una jugada visitada copia $\widehat Q(s,a)=\widehat V(T(s,a))$; cada padre toma máximo o mínimo según su turno.
+
+**Qué significa.** El azar decide qué se descubre. El respaldo representa las elecciones de los jugadores sobre la parte conocida.
+
+**Qué no es.** No promedia el $U$ crudo por jugada. Esos promedios seguirían estimando $Q_{\text{azar}}$, aunque después eligieras el mayor.
+:::
+
+### Exploración: la regla
+
+Cada repetición realiza estos pasos:
+
+1. **Simula uniformemente.** Desde la raíz, ambos jugadores eligen entre todas sus jugadas legales hasta alcanzar un final real $z$.
+2. **Conserva lo descubierto.** Agrega los estados nuevos del camino sin borrar los anteriores.
+3. **Respalda desde el final.** Asigna $\widehat V(z)=U(z)$ y recalcula los antecesores hasta la raíz mediante respaldo minimax (*minimax backup*).
+
+$$
+\mathbf{\widehat Q(s,a)=\widehat V(T(s,a))}
+\quad\text{para cada jugada visitada.}
+$$
+
+| Quién mueve | Regla de respaldo |
+|---|---|
+| MAX | $\mathbf{\widehat V(s)=\max_{a\text{ visitada}}\widehat Q(s,a)}$ |
+| MIN | $\mathbf{\widehat V(s)=\min_{a\text{ visitada}}\widehat Q(s,a)}$ |
+
+- **El invariante conserva la perspectiva.** Todo número mide el pago de MAX; el signo nunca cambia al subir.
+- **Lo desconocido sigue desconocido.** Una jugada no visitada se marca «?», nunca 0; si ninguna se conoce, también $\widehat V$ es desconocido.
+- **El respaldo suele ser provisional.** Faltan alternativas que podrían cambiarlo; una prueba de resolución permite declararlo exacto antes de descubrirlas todas.
+
+**Ejemplo mínimo:** MIN tiene tres jugadas y los pagos posibles están entre $-1$ y $+1$.
+
+- **Primer caso.** Visita un final $+1$: $\widehat V=+1$ es provisional. Las otras dos jugadas podrían ofrecer menos.
+- **Segundo caso.** Descubre un final $-1$: $\widehat V=\min(+1,-1)=-1$ ya es exacto. Ninguna respuesta desconocida puede bajarlo.
+
+Si las desconocidas valieran 0, el primer caso devolvería $\widehat V=0$: un número que ninguna visita aportó.
+
+---
+
+### El recorrido: una refutación tardía
+
+**Piensa: después de 29 partidas favorables aparece una respuesta que derrota a MAX. ¿Cuánto cambia la jugada?**
+
+El respaldo incorpora esa respuesta de inmediato. Un promedio solo añade otra observación.
+
+> **Dado:** MAX elige A o B. A lleva a MIN, que elige p ($+10$), q ($+10$) o r. Tras r está x, donde MAX solo puede ir a un final $-30$.
+>
+> B termina con $-10$. Esta escala de pagos es propia del ejemplo.
+>
+> **Encontrar:** qué entrega cada método al descubrir r.
+
+La decisión correcta es B:
+
+$$
+Q(A)=\min(10,10,-30)=-30,\qquad Q(B)=-10,\qquad V=-10.
+$$
+
+Monte Carlo plano acaba prefiriendo A:
+
+$$
+Q_{\text{azar}}(A)=\frac{10+10-30}{3}=-\frac{10}{3}>-10.
+$$
+
+Con presupuesto finito puede entregar B por azar. Su límite favorece A.
+
+#### Tramo 1 · Las partidas favorables
+
+La siguiente es una **secuencia impuesta de 31 simulaciones**, no una corrida aleatoria. Ambos operadores reciben exactamente los mismos caminos.
+
+::: table {#jue-c3-tab-refutacion title="Secuencia impuesta: descubrir tarde la refutación"}
+| Simulaciones | Camino y pago | Promedio de A | Minimax de A | Entregan |
+|---|---|---:|---:|---|
+| 1 | B: $-10$ | ? | ? | B · B |
+| 2 a 30 | A: $+10$ | $10$ | $10$ | A · A |
+| 31 | A, r, x: $-30$ | $26/3\approx8.67$ | $-30$ | A · B |
+:::
+
+Las 29 partidas favorables alternan p y q. La última hace que el promedio pase a $(29\cdot10-30)/30=26/3\approx8.67$.
+
+**En la simulación 31**, el respaldo minimax salta a $-30$ y entrega B. El promedio conserva A; incluso su límite $-10/3$ seguirá por encima de B.
+
+#### Tramo 2 · Subir la respuesta certera
+
+::: table {#jue-c3-tab-propagacion title="Respaldo de la simulación 31"}
+| Estado | Turno | Antes | Después | ¿Resuelto? |
+|---|---|---|---|---|
+| x | MAX | ? | $-30$ | Sí: única jugada final |
+| Tras A | MIN | $10$ | $\min(10,10,-30)=-30$ | Sí: mínimo posible |
+| Raíz | MAX | $10$: A | $\max(-30,-10)=-10$: B | Sí: ambos hijos exactos |
+:::
+
+- **El final fija su arista.** La jugada que llega directamente a él tiene $\widehat Q=U$ desde la primera visita.
+- **El antecesor requiere una prueba.** Antes de la simulación 31, A parecía valer $10$ porque faltaba la respuesta r.
+
+#### Tramo 3 · Comparar una corrida real
+
+Con semilla 0 y 60 simulaciones, la primera visita a r ocurre en la novena. Aquí la raíz también se muestrea uniformemente; no se fija $k$ por jugada.
+
+- **La actualización minimax cambia a B.** En la novena, A pasa de $10$ a $-30$; entrega B hasta la simulación 60.
+- **El promedio empata en la novena.** A recibió $+10$ y $-30$, por lo que vale $-10$; el desempate con B favorece A.
+- **El promedio termina prefiriendo A.** Tras 60 simulaciones, A recibió 29 y su media es $-150/29\approx-5.17$.
+
+::: figure {#jue-c3-fig-refutacion title="La refutación descubierta tarde: promedio, actualización minimax y UCT"}
+![Tres paneles con los mismos ejes sobre el árbol de la refutación (A con +10, +10 y −30; B con −10). Primero, el promedio de la secuencia impuesta: Q̂(A) se queda en 10 y baja a 8.67 tras el −30, con su límite −10/3 marcado arriba de B. Segundo, la actualización minimax: Q̂(A) salta de 10 a −30 y la jugada entregada cambia a B. Tercero, una corrida real de UCT con los pagos divididos entre 30, c = 1, semilla 0 y 60 vueltas: su promedio de A baja poco a poco desde la vuelta 5, queda debajo del de B en la vuelta 13 y llega a −20; B es la más visitada desde la vuelta 15](../_assets/jue-c3-refutacion-tres.svg)
+:::
+
+El panel de UCT usa pagos divididos entre 30, rango $[-1,1]$, $c=1$, semilla 0 y 60 vueltas. Descubre $-30$ en la vuelta 5; su promedio de A queda debajo del de B en la vuelta 13.
+
+UCT cambia la selección de las continuaciones y sigue promediando. **Descubrir una refutación no convierte ese promedio en un mínimo.**
+
+### El recorrido: el árbol de resultados
+
+**Piensa: ¿qué entrega el respaldo minimax con partidas uniformes en el árbol de resultados?**
+
+Centro desde la primera simulación de esta corrida. Su valor queda demostrado en la 12; la raíz completa queda resuelta en la 17.
+
+> **Dado:** el árbol de resultados, semilla 0 y simulaciones uniformes desde la raíz.
+>
+> **Encontrar:** las estimaciones tras cada simulación y cuándo quedan resueltas.
+
+Cada fila es una simulación. Las columnas izq, centro y der muestran $\widehat Q(R,a)$; «?» significa desconocida y ✓ significa exacta. En empate se entrega la primera jugada conocida.
+
+#### Tramo 1 · Aparecen centro y der
+
+| # | Final · $U$ | izq | centro | der | Entrega |
+|---:|---|---:|---:|---:|---|
+| 1 | c2a · $+1$ | ? | 1 | ? | centro |
+| 2 | c2b · $-1$ | ? | 1 | ? | centro |
+| 3 | c2b · $-1$ | ? | 1 | ? | centro |
+| 4 | d1 · $-1$ | ? | 1 | $-1$ ✓ | centro |
+| 5 | d1 · $-1$ | ? | 1 | $-1$ ✓ | centro |
+| 6 | c1a · $0$ | ? | 0 | $-1$ ✓ | centro |
+
+- **Fila 1.** C2 queda resuelto en $+1$, el máximo posible. C solo conoce ese hijo y conserva un $1$ provisional.
+- **Fila 2.** $\max(1,-1)=1$: C2 no cambia. Un promedio sí habría bajado.
+- **Fila 4.** D queda resuelto en $-1$: MIN encontró el mínimo posible sin visitar d2 ni d3.
+- **Fila 6.** C1 recibe un $0$ provisional; C toma $\min(0,1)=0$.
+
+#### Tramo 2 · Centro queda resuelto
+
+| # | Final · $U$ | izq | centro | der | Entrega |
+|---:|---|---:|---:|---:|---|
+| 7 | d2 · $+1$ | ? | 0 | $-1$ ✓ | centro |
+| 8 | d3 · $+1$ | ? | 0 | $-1$ ✓ | centro |
+| 9 | d1 · $-1$ | ? | 0 | $-1$ ✓ | centro |
+| 10 | c1a · $0$ | ? | 0 | $-1$ ✓ | centro |
+| 11 | d2 · $+1$ | ? | 0 | $-1$ ✓ | centro |
+| 12 | c1b · $-1$ | ? | 0 ✓ | $-1$ ✓ | centro |
+
+- **Filas 7 y 8.** Los nuevos $+1$ no cambian el mínimo de D. Un promedio habría subido.
+- **Fila 12.** C1 completa sus hijos: $\max(0,-1)=0$ es exacto. Como C2 ya estaba resuelto, C también queda resuelto.
+
+#### Tramo 3 · La raíz queda resuelta
+
+| # | Final · $U$ | izq | centro | der | Entrega |
+|---:|---|---:|---:|---:|---|
+| 13 | c2a · $+1$ | ? | 0 ✓ | $-1$ ✓ | centro |
+| 14 | d2 · $+1$ | ? | 0 ✓ | $-1$ ✓ | centro |
+| 15 | c2a · $+1$ | ? | 0 ✓ | $-1$ ✓ | centro |
+| 16 | d1 · $-1$ | ? | 0 ✓ | $-1$ ✓ | centro |
+| 17 | ix · $-1$ | $-1$ ✓ | 0 ✓ | $-1$ ✓ | centro |
+
+- **Filas 13 a 16.** Nada cambia: el muestreo uniforme sigue entrando en ramas resueltas.
+- **Fila 17.** Ix resuelve I en $-1$; las tres jugadas ya son exactas y $\widehat V(R)=0=V(R)$.
+
+El resultado es $\widehat Q=(-1,0,-1)=Q$. No hizo falta visitar i1; el árbol completo aparece hasta la simulación 23.
+
+Con las mismas 17 partidas, Monte Carlo plano obtiene $(-1,0,0)$ y entrega centro por desempate. Sus límites $(0,-1/4,1/3)$ favorecen der; coincidir ahora no significa converger al mismo objetivo.
+
+La figura congela la corrida tras la fila 10: izq desconocida y centro todavía provisional.
+
+::: figure {#jue-c3-fig-mmmc-arbol title="Actualización minimax en el árbol de resultados tras 10 simulaciones (semilla 0)"}
+![El árbol de resultados tras las 10 primeras simulaciones de la traza: guarda 11 estados. D vale −1 y está resuelto; C vale 0 y C1 vale 0, los dos provisionales; C2 vale +1, resuelto. I, i1, ix y c1b no se han visitado: su Q̂ es desconocida, con «?». En la raíz, izq ?, centro 0 y der −1: entrega centro](../_assets/jue-rx-mmmc.svg)
+:::
+
+---
+
+### Elección: qué jugada juega
+
+MAX entrega la jugada con mayor $\widehat Q$ disponible en la raíz.
+
+::: table {#jue-c3-tab-eleccion-mc title="Explorar y jugar con actualización minimax"}
+| Decisión | Regla | Usa resultados |
+|---|---|---|
+| Explorar | Muestrea jugadas uniformemente | No |
+| Jugar | Elige la mayor $\widehat Q$ conocida | Sí |
+:::
+
+- **Un empate conserva el orden.** Entrega la primera jugada que alcanza el mejor valor.
+- **Sin muestras hay una salida definida.** Entrega la primera jugada legal.
+- **Una desconocida no compite.** Por eso la primera fila entrega centro aunque izq y der sigan en «?».
+
+### Propiedades y supuestos
+
+- **Número que da.** Estima $Q$ y $V$ mediante respaldos del árbol descubierto; los valores resueltos son exactos.
+- **Uso de EVAL.** No la utiliza: lee pagos terminales exactos en la escala de $U$.
+- **Garantía.** Converge casi seguramente a $V$ si cumple todo el contrato siguiente. Con presupuesto finito, puede equivocarse.
+- **Interrupción.** Siempre puede entregar la jugada definida por su regla, aunque todavía no tenga pruebas de su valor.
+- **Tiempo.** Simular cuesta $O(m)$; revisar hasta $b$ hijos por estado del camino cuesta $O(bm)$. Con $n$ simulaciones, cuesta $O(nbm)$.
+- **Memoria.** Cada simulación descubre a lo más $m+1$ estados; guarda $O(nm)$, sin superar el árbol completo.
+- **Frente a minimax.** Descubre caminos al azar y conserva los estados, pero aplica el mismo respaldo. En el peor caso necesita descubrir todo; no realiza poda alfa-beta.
+- **Presupuesto limitado.** En los experimentos de Kocsis y Szepesvári (2006), esta variante falló más que Monte Carlo plano, pese a su convergencia eventual.
+
+**El contrato de convergencia** exige estas condiciones simultáneas:
+
+1. **El árbol es finito.** El juego es determinista y tiene ramificación finita.
+2. **Ninguna jugada queda oculta.** $A(s)$ enumera todas las legales; el muestreo uniforme mantiene positiva y fija la probabilidad de cada una.
+3. **Las partidas terminan realmente.** Toda simulación llega a un final con pago exacto.
+4. **Lo descubierto se conserva.** Los respaldos reutilizan los estados y sus valores.
+5. **La frontera no queda sustituida por EVAL.** Un corte permanente cambiaría el problema resuelto.
+
+Cada camino tiene probabilidad positiva de aparecer en cada simulación. En un árbol finito, casi seguramente se descubren todos; entonces el respaldo calcula minimax exacto.
+
+- **Suma cero o constante.** Con dos jugadores, MIN minimiza el pago de MAX.
+- **Suma no constante o más jugadores.** El respaldo se generaliza a $\max^n$: quien mueve maximiza su componente y copia el vector elegido.
+- **El desempate debe ser fijo.** En árboles finitos de información perfecta y por turnos, ese respaldo vectorial permite obtener un equilibrio, sin la garantía escalar de minimax.
+
+### Casos borde
+
+- **Una jugada termina directamente.** Su $\widehat Q=U$ es exacta desde la primera visita, incluso si el final ya estaba guardado.
+- **Solo hay una jugada.** Se copia el valor del hijo, como en x; su exactitud depende de la del hijo.
+- **Aparece una respuesta certera.** Se incorpora en ese mismo respaldo; solo cambia los antecesores cuyo máximo o mínimo resulte afectado.
+- **Falta una jugada.** Se mantiene desconocida; introducir 0 puede elevar artificialmente un máximo o reducir un mínimo.
+- **Hay varios óptimos.** $\widehat V$ puede converger aunque existan empates; el orden fija la jugada entregada.
+- **Los finales tienen distinta profundidad.** El algoritmo no prefiere ganar pronto, salvo que $U$ lo indique; sí cambia el costo del recorrido.
+- **Se impone una frontera con EVAL.** El límite es el minimax truncado. En la escala normalizada del corte, un final se revisa primero y aporta $100\cdot U$.
+- **Hay ciclos.** Hace falta una regla de terminación que produzca un árbol finito. Sin ella, no se afirma convergencia.
+
+#### Cuándo queda resuelto un nodo
+
+**Piensa: ¿un $-1$ basta para dejar de buscar?**
+
+En un nodo de MIN, sí, si es un valor demostrado y $-1$ es el menor pago posible. Para MAX, la condición equivalente usa $+1$.
+
+- **Todos los hijos son exactos.** Su máximo o mínimo también lo es.
+- **Un hijo exacto alcanza el extremo favorable.** Ya determina el valor del padre, aunque falten otras jugadas.
+- **Un promedio extremo no demuestra nada.** La frecuencia observada no descarta respuestas todavía desconocidas.
+
+La implementación mantiene estas marcas, pero sigue muestreando hasta completar el presupuesto. Reconocer un nodo resuelto permite detener su búsqueda; no significa que toda corrida lo haga automáticamente.
+
+La profundización iterativa puede detenerse con una victoria demostrada de 100. Alfa-beta puede hacer la poda correspondiente con ventana $(-1,+1)$ en la escala de $U$.
+
+MCTS-Solver, de Winands, Björnsson y Saito (2008), incorpora pruebas de valores resueltos a MCTS. La interpretación de un mínimo como interés del rival requiere suma cero o constante.
+
+#### El máximo también puede engañar
+
+::: remark {#jue-c3-sesgo-maximo title="El sesgo del máximo"}
+**Qué ocurre.** El máximo de estimaciones insesgadas puede quedar sesgado hacia arriba; el mínimo, hacia abajo. Elegir la muestra más favorable selecciona también su suerte.
+
+**Ejemplo mínimo.** Dos jugadas tienen media 0. Cada una produce independientemente una muestra $+1$ o $-1$, con igual probabilidad.
+
+Entre los cuatro pares posibles, el máximo vale $-1$ una vez y $+1$ tres veces:
+
+$$
+E[\max]=\frac{-1+1+1+1}{4}=\frac12,
+\qquad E[\min]=-\frac12.
+$$
+
+**Qué significa.** El máximo verdadero de las medias es 0, pero el máximo observado tiene esperanza $1/2$. Esto importa al respaldar promedios ruidosos.
+
+**Qué no ocurre en un final determinista.** Su pago exacto no tiene ese ruido. En nuestra variante, el riesgo provisional viene de las continuaciones todavía desconocidas.
+:::
+
+---
+
+### Intuición: una respuesta no es un voto
+
+- **El promedio cuenta frecuencias.** Una refutación pesa como una observación entre todas las anteriores.
+- **Minimax representa decisiones.** MIN puede elegir la refutación cada vez, aunque el muestreo apenas la haya descubierto.
+- **Un salto puede ser informativo.** Una hoja nueva puede cambiar varios respaldos de inmediato; antes del salto, sus valores eran provisionales.
+
+### Ejercicios: reconocer pruebas y respaldar
+
+::: exercise {#jue-c3-cmp-ej-puede-salir title="Señala dónde se puede dejar de buscar"}
+En cada caso, decide si pueden omitirse las demás alternativas y explica por qué.
+
+1. **Monte Carlo plano.** Una jugada de la raíz lleva 3 simulaciones ganadas y $\widehat Q=+1$.
+2. **Minimax con corte.** Un hijo devuelve 36, la mayor $\mathrm{EVAL}$ de la posición de la clase.
+3. **Alfa-beta sin corte.** Un hijo de la raíz de MAX devuelve $+1$, en un juego con pagos entre $-1$ y $+1$.
+4. **D como dado.** En el árbol de resultados, el primer resultado examinado de D es $\text{d1}=-1$.
+:::
+
+::: hint {#jue-c3-cmp-pista-puede-salir-1 of="jue-c3-cmp-ej-puede-salir" title="Dos preguntas por caso"}
+¿El número acredita el mejor pago posible para quien decide? ¿Proviene de un respaldo exacto, una cota suficiente, una evaluación o un promedio?
+:::
+
+::: answer {#jue-c3-cmp-resp-puede-salir of="jue-c3-cmp-ej-puede-salir"}
+1. **No.** Tres victorias no descartan una respuesta que refute la jugada.
+2. **No.** 36 es una estimación y está debajo del pago terminal ganador de 100.
+3. **Sí.** Si $+1>\alpha$, el retorno acredita el máximo posible: es exacto o una cota inferior suficiente. Si $\alpha$ ya era $+1$, una jugada previa ya acreditaba la victoria.
+4. **No.** D no elige el resultado favorable: promedia sus tres resultados. Falta conocer los demás pagos.
+:::
+
+::: exercise {#jue-c3-ej-mmmc title="Llena las dos estimaciones con las mismas partidas"}
+Cuatro simulaciones del árbol de resultados terminan en d2 ($+1$), c1a ($0$), d1 ($-1$) y d3 ($+1$), en ese orden.
+
+1. **Traza los respaldos.** Escribe $\widehat Q$ para izq, centro y der después de cada simulación; usa «?» para lo desconocido.
+2. **Decide y certifica.** ¿Qué entrega tras la cuarta y qué números son exactos?
+3. **Cambia el operador.** ¿Qué entrega Monte Carlo plano con las mismas partidas?
+:::
+
+::: hint {#jue-c3-pista-mmmc-1 of="jue-c3-ej-mmmc" title="Quién mueve en D"}
+D pertenece a MIN. Compara lo que sabe tras d2 con lo que sabe al aparecer d1; después calcula el promedio de esos pagos.
+:::
+
+::: answer {#jue-c3-resp-mmmc of="jue-c3-ej-mmmc"}
+| # | Final | izq | centro | der |
+|---:|---|---:|---:|---:|
+| 1 | d2 | ? | ? | 1 |
+| 2 | c1a | ? | 0 | 1 |
+| 3 | d1 | ? | 0 | $-1$ ✓ |
+| 4 | d3 | ? | 0 | $-1$ ✓ |
+
+1. **La traza está arriba.** D cambia al descubrir d1; d3 ya no puede modificar su mínimo.
+2. **Entrega centro.** Solo der es exacta; centro sigue provisional porque faltan c1b y C2.
+3. **El promedio entrega der.** $(1-1+1)/3=1/3$ supera el $0$ de centro. Tras la tercera simulación empataban en 0 y entregaba centro por orden.
+:::
+
+---
+
+## 5 · Converge a lo que simulas
+
+**Piensa: si todos usan pagos terminales, ¿por qué sus límites pueden diferir?**
+
+Porque importan tanto las continuaciones que seleccionan como la forma de actualizar sus valores.
+
+::: table {#jue-c3-tab-que-guarda-mc title="Converge a lo que simulas"}
+| Algoritmo | Qué guarda | Cómo sube | Límite |
+|---|---|---|---|
+| Monte Carlo plano | $N$ y suma en la raíz | No respalda entre estados | $Q_{\text{azar}}$ |
+| Actualización minimax | $\widehat Q$ y $\widehat V$ | Máximo y mínimo | $Q$ y $V$, bajo su contrato |
+| UCT | $N(s,a),\widehat Q(s,a),N(s)$ | Promedia el mismo $U$ | $Q$ y $V$, bajo condiciones |
+:::
+
+**El promedio al azar sí converge, pero al valor de jugar al azar.** La actualización minimax converge a $V$ bajo su contrato, aunque puede requerir descubrir todo el árbol.
+
+UCT pertenece a MCTS, la búsqueda en árbol de Monte Carlo. Construye su árbol con **vueltas**, guarda visitas y promedios por arista y promedia el mismo $U$, sin máximos ni mínimos: lo que cambia es que reparte las vueltas hacia lo que va mejor.
+
+En el árbol de resultados, con $c=1$ y semilla 0, centro tiene $N=26$ y $\widehat Q=0$ tras 40 vueltas. Coincide con $Q=0$ por casualidad: en la vuelta 100, su promedio es $1/83$.
+
+::: figure {#jue-c3-fig-tres-mc title="Los tres Monte Carlo en el árbol de resultados"}
+![Los tres Monte Carlo en el árbol de resultados, por jugada de la raíz izq, centro y der. Exactos: Q = −1, 0, −1 y Q_azar = 0, −1/4, 1/3. Con 40 simulaciones o vueltas y semilla 0: Monte Carlo plano da +0.75, 0 y +0.22 y entrega izq; la actualización minimax, con las mismas partidas, da −1, 0, −1 y entrega centro; UCT con c = 1 da −0.6, 0 y −0.33 y entrega centro, la más visitada. Con más simulaciones, el plano iría a der](../_assets/jue-c3-tres-mc.svg)
+:::
+
+**Punto de control:** calcula ambos respaldos para una lista de simulaciones. Distingue valores desconocidos, provisionales y exactos; explica qué entrega cada método y a qué número converge.
+
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
+> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
+> | **Monte Carlo plano (estás aquí)** | **$\bar u$; no garantiza $V$** |
+> | **MCTS con UCT (estás aquí)** | **$\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, con cualquier $c>0$)** |
+>
+> **Lo que viene.**
+>
+> Ya viste todos los algoritmos de la clase. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]] los pone lado a lado.
+
+## Lo que hay que llevarse
+
+- **Monte Carlo plano** estima cada jugada de la raíz con el promedio de
+  simulaciones al azar hasta el final. No necesita $\mathrm{EVAL}$: solo
+  las reglas.
+- **Ese promedio converge a $Q_{\text{azar}}$**, expectiminimax con los dos
+  como dados, no a $Q$. En la posición de la clase acierta
+  ($\text{d2}\textbf{-}\text{d3}$, ${8/9}$, 17 de cada 18 partidas); en
+  hexapawn, $\text{b1}\textbf{-}\text{b2}$ da ${5/24}$ aunque vale ${-1}$.
+- **Más simulaciones no arreglan una refutación.** En el árbol de
+  resultados entrega der (${1/3}$; 960 de 1000 corridas con 50
+  simulaciones), que vale ${-1}$. En la refutación, el promedio pasa de 10 a
+  8.67, y su límite, ${-10/3}$, sigue arriba de ${-10}$.
+- **La actualización minimax** usa las mismas partidas, guarda lo
+  descubierto y sube: ${\widehat V(z)=U(z)}$, ${\widehat Q(s,a)=\widehat V(T(s,a))}$,
+  máximo en MAX y mínimo en MIN. Las jugadas no visitadas son desconocidas,
+  nunca cero. La refutación la lleva a ${-30}$ en el mismo respaldo.
+- **Converge a $V$** en un árbol finito, determinista y de ramificación
+  finita, con todas las jugadas posibles, finales reales y lo descubierto
+  guardado. En el árbol de resultados queda resuelta en 17 simulaciones;
+  en el peor caso hay que descubrir todo el árbol.
+- **Muestrear parejo es caro:** las dos reparten las simulaciones sin mirar
+  lo que ya saben. ¿Y si se gastaran donde importa?
+
+Continúa con [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
+
+---
 
 ## 4 · Dar una vuelta de MCTS
 
@@ -490,168 +1152,3 @@ red sugiere.
 ${G/N}$ en cada nodo y cualquier resultado. También, calcular el puntaje UCT
 de un hijo y decir por qué un promedio de simulaciones no es $V$.
 
-## Ficha: Monte Carlo plano y MCTS con UCT
-
-Antes de cerrar, dos fichas, una debajo de la otra. **Monte Carlo plano** es lo de las secciones 1 a 3: simular desde cada jugada de la raíz, sin construir árbol.
-
-::: table {#jue-ficha-mc-plano title="Monte Carlo plano en siete rasgos"}
-| Rasgo | Monte Carlo plano |
-|---|---|
-| Hasta dónde mira | Hasta los finales, jugando al azar |
-| ¿Genera todo el árbol? | No: solo las partidas que simula |
-| ¿Garantiza $V$? | No: $\bar u$ se acerca al promedio con los dos al azar, no a $V$ |
-| Con qué estima | Con $\bar u$ de simulaciones |
-| ¿Quién tira dados? | El algoritmo, en cada simulación |
-| Qué entrega, y si se puede interrumpir | La jugada de mayor $\bar u$. Sí se puede interrumpir |
-| Cuándo conviene | Sin $\mathrm{EVAL}$ confiable: Go experimental, de 1993 a 2005 (Brügmann, 1993) |
-:::
-
-**MCTS con UCT** es lo de las secciones 4 y 5: el mismo $\bar u$, pero con un árbol que reparte las partidas.
-
-::: table {#jue-ficha-uct title="MCTS con UCT en siete rasgos"}
-| Rasgo | MCTS con UCT |
-|---|---|
-| Hasta dónde mira | Un árbol que crece hacia lo que va mejor; debajo, partidas al azar hasta los finales |
-| ¿Genera todo el árbol? | No necesita: agrega a lo más un nodo por vuelta, más su partida. Con suficientes vueltas expande todo un árbol finito (el árbol T± de «Radiografía: un árbol, cinco algoritmos», de 15 nodos, con 40) |
-| ¿Garantiza $V$? | No. Con tiempo sin límite converge a él, con cualquier $c>0$ |
-| Con qué estima | Con $\bar u$ de simulaciones |
-| ¿Quién tira dados? | El algoritmo, en las simulaciones. Esta versión expande y desempata en orden fijo, así que dentro del árbol no sortea; otras sí |
-| Qué entrega, y si se puede interrumpir | Aquí, la jugada más simulada, no la de mayor puntaje; otras versiones entregan la de mayor promedio. Sí se puede interrumpir |
-| Cuándo conviene | Sin $\mathrm{EVAL}$ confiable y con árboles enormes: Go (MoGo, 2006), Hex (MoHex) |
-:::
-
-> [!NOTE]
-> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
->
-> | Algoritmo | Qué número da |
-> |---|---|
-> | Minimax | $V$; lo garantiza |
-> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
-> | Alfa-beta | $V$ en la raíz; lo garantiza |
-> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
-> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
-> | **Monte Carlo plano (estás aquí)** | **$\bar u$; no garantiza $V$** |
-> | **MCTS con UCT (estás aquí)** | **$\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, con cualquier $c>0$)** |
->
-> **Lo que viene.**
->
-> Ya viste todos los algoritmos de la clase. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]] los pone lado a lado.
-
-## Lo que hay que llevarse
-
-- **Monte Carlo plano** estima una jugada simulando partidas al azar hasta
-  el final y promediando su $U$. No necesita $\mathrm{EVAL}$: solo las
-  reglas.
-- Ese promedio no es $V$: supone que **los dos** juegan al
-  azar. En la posición de la clase acierta ($\text{d2}\textbf{-}\text{d3}$,
-  ${8/9}$, 17 de cada 18 partidas). En hexapawn, $\text{b1}\textbf{-}\text{b2}$
-  promedia ${5/24}$ aunque vale ${-1}$; con solo Negras al azar valía ${3/4}$.
-- **MCTS** construye un árbol: dentro de él cada jugador elige por puntaje,
-  y solo debajo se simula al azar. Por eso su $\bar u$ no es ese promedio
-  con los dos al azar; con UCT y más vueltas, se acerca a $V$.
-- Cada vuelta tiene cuatro pasos: selección, expansión, simulación y
-  retropropagación. Cada nodo guarda ${G/N}$, y ${\bar u=2\,G/N-1}$ desde
-  MAX: victorias menos derrotas entre $N$. La retropropagación suma 1 a
-  $N$ siempre y 1 a $G$ solo si gana MAX: la raíz pasa de ${2/4}$ a ${3/5}$, o
-  a ${2/5}$ si pierde.
-- El puntaje UCT, ${\bar u+c\sqrt{\ln N(s)/N(s')}}$, equilibra aprovechar y
-  explorar; MIN usa $-\bar u$. El bono viene del margen de error de un
-  promedio en el bandido.
-  Con x, y, z y ${c=1}$, la selección va a y, que puntúa 0.99; la
-  entrega, a x, que tiene 60 simulaciones.
-- Deep Blue (1997) cortó y evaluó; AlphaGo (2016) combinó MCTS con redes;
-  AlphaGo Zero y AlphaZero (2017) cambiaron la partida simulada hasta el
-  final por una red que valora la hoja, y que además guía la selección.
-
----
-
-## Un árbol que no cabe
-
-T± tiene 15 nodos: cabe en un dibujo y permite calcular minimax completo. Es demasiado chico para ver cómo trabajan Monte Carlo plano y UCT con un presupuesto limitado; para eso hace falta un árbol que **no** quepa.
-
-Este es un árbol abstracto. En la raíz mueve MAX y los niveles alternan MAX y MIN. Cada nodo tiene hasta $b$ jugadas, y ninguna partida pasa de $m$ jugadas. Los «…» dicen que el dibujo sigue a lo ancho y a lo hondo. Los finales quedan muy abajo, cada uno con su **utilidad** $U$:
-
-$$
-\mathbf{U(s)}=\begin{cases}+1 & \text{si gana MAX}\\-1 & \text{si gana MIN}\\0 & \text{si empatan}\end{cases}
-$$
-
-- **$U$ está definida solo en los finales:** un estado a media partida no tiene $U$; hay que llegar a un final para leerla.
-- **Se mide desde MAX:** $+1$ es lo mejor para MAX y $-1$ lo peor.
-
-::: figure {#jue-c3-mcg-fig-arbol title="Un árbol de juego grande"}
-![Árbol abstracto grande: b jugadas a lo ancho y m niveles a lo hondo, con puntos suspensivos en las dos direcciones y los finales al fondo](../_assets/jue-c3-mcg-arbol.svg)
-:::
-
----
-
-## Por qué no basta con lo anterior
-
-Los métodos de la unidad ya tienen respuesta para un árbol así, y cada una pide algo que aquí falta:
-
-- **Minimax** genera todo el árbol: del orden de $b^m$ nodos.
-- **Alfa-beta**, con el orden perfecto de los hijos, baja a cerca de $b^{m/2}$. Sigue creciendo exponencialmente: con $m$ grande, tampoco cabe.
-- **El corte** se detiene a profundidad $d$, pero necesita una **EVAL buena**. Si la EVAL se equivoca, el valor con corte se equivoca con ella.
-
-Sin una EVAL confiable queda una pieza que siempre está: **las reglas**. Con ellas se puede jugar una partida hasta un final, al azar, y ver quién gana. Explorar todas las continuaciones es imposible, pero jugar **una** cuesta del orden de $m$ jugadas, no de $b^m$. Eso es **simular**, y aquí se supone que caben suficientes partidas en el presupuesto.
-
----
-
-## Monte Carlo plano en el árbol grande
-
-- **Qué rastrea:** un $N$ y una suma de $U$ por cada jugada de la raíz. En un juego sin azar, cada jugada lleva a un solo hijo. Por eso es lo mismo que un $N$ y una suma por cada hijo de la raíz. De los estados que siguen en la partida no guarda nada.
-- **Cómo sube:** no sube. Cada simulación suma una visita a $N$ y su $U$ a la suma, solo en la jugada de la raíz donde empezó.
-- **A qué converge:** al promedio $\mu$ de $U$ si los dos juegan al azar desde esa jugada. En general, $\mu$ no es el valor de minimax $V$. Pide simulaciones independientes que sigan siempre la misma regla al azar, y que $N$ crezca sin límite.
-
-### Cómo explora
-
-Monte Carlo plano (*flat Monte Carlo*) no construye árbol. Desde cada jugada de la raíz juega $k$ simulaciones (*rollouts* o *playouts*): partidas en las que **los dos** eligen al azar, entre sus jugadas permitidas, hasta un final.
-
-- **Cada simulación es un camino, no un subárbol.** Baja eligiendo una jugada al azar en cada nivel, hasta un final lejano, y anota su $U$: $+1$, $-1$ o $0$.
-- **En la raíz guarda solo dos números por jugada:** cuántas simulaciones recibió, $N$, y la suma de sus $U$.
-- **Debajo de la raíz no guarda nada.** Al terminar una simulación, los estados de su camino se olvidan; solo queda su $U$ sumado al contador.
-- **Dos simulaciones pueden repetir camino.** Qué tan seguido pasa depende de la probabilidad de cada camino, no solo del tamaño del árbol.
-
-Con esos dos números saca el promedio de cada jugada:
-
-$$
-\mathbf{\bar u=\frac{1}{N}\sum U}
-$$
-
-- **La suma recorre las $N$ simulaciones de esa jugada.** Cada una aporta $+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan.
-- **El promedio se mide desde MAX:** entre más alto, mejor le fue a MAX en esas partidas.
-
-::: figure {#jue-c3-mcg-fig-mc-plano title="Monte Carlo plano en un árbol grande"}
-![Monte Carlo plano en el árbol grande: desde cada jugada de la raíz bajan simulaciones como caminos quebrados hasta finales lejanos; en la raíz solo hay N y ū por jugada, y debajo no se guarda nada](../_assets/jue-c3-mcg-mc-plano.svg)
-:::
-
-### Hacia dónde va su promedio
-
-El **promedio límite** $\mu$ es el promedio de $U$ si los dos juegan al azar desde ahí. Pide una condición: que las simulaciones de una jugada sean **independientes** y sigan **siempre la misma regla al azar**. Entonces su $\bar u$ converge a $\mu$ con probabilidad 1 cuando $N$ crece. Con esa misma condición, la **intuición de Hoeffding** dice cuánto se puede fiar uno de un promedio antes de llegar al límite:
-
-- **El promedio cae cerca de $\mu$, con alta probabilidad.** Para un número de simulaciones fijado de antemano, hay un margen alrededor de $\mu$ donde el promedio cae casi siempre.
-- **Ese margen se encoge como $1/\sqrt N$.** Con cuatro veces más simulaciones, la mitad de margen.
-- **No mejora en cada simulación.** Una partida de suerte puede alejar el promedio. Lo que se achica es el margen probable, no cada error.
-- **Con pocas simulaciones, puede engañar.** El margen todavía es ancho, y una jugada mediocre puede ir arriba por suerte.
-
-### Qué juega, y por qué puede fallar
-
-Al terminar, Monte Carlo plano juega la jugada de la raíz con **mayor $\bar u$**; ante un empate, la primera en el orden dado. Con simulaciones independientes y cada vez más, la probabilidad de que esa sea la jugada de mayor $\mu$ tiende a 1. Pero $\mu$ supone que **MIN también juega al azar**, y un rival que piensa no lo hace.
-
-#### Un ejemplo: la refutación
-
-Un ejemplo mínimo: MAX tiene dos jugadas, y tras cualquiera de ellas la respuesta de MIN termina la partida.
-
-| Jugada | Finales tras MIN | $\mu$ | $V$ |
-|---|---|---|---|
-| $a$ | $+1$, $+1$, $-1$ | $1/3$ | $-1$ |
-| $b$ | $0$, $0$ | $0$ | $0$ |
-
-- **En $a$, MIN tiene una refutación:** de sus tres respuestas, una le gana. Al azar la elige una vez de cada tres, así que $\mu=(1+1-1)/3=1/3$. Pero un MIN que piensa siempre la juega, y $V=-1$.
-- **En $b$, el empate es seguro:** $\mu=V=0$.
-- **Con muchas simulaciones, Monte Carlo plano juega $a$ casi siempre, y entonces pierde** contra la mejor respuesta. Minimax jugaría $b$. Con pocas, el azar también puede llevarlo a $b$.
-- **Con más respuestas buenas para MAX y una sola refutación, la distancia crece:** $\mu$ se acerca a $+1$ mientras $V$ sigue en $-1$.
-
-**Más simulaciones no lo arreglan.** El promedio converge, pero **al número equivocado**: estima cada vez mejor lo que pasaría si el rival jugara al azar.
-
-Continúa con [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]].
