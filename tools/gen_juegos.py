@@ -2204,12 +2204,31 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(136, 80, 80)):
     return ys[max(len(c) for c in dibujados)]
 
 
+def _cotas_por_ventana(traza):
+    """Copia de la traza con el «cota» de la foto final puesto por la ventana
+    con que llego cada nodo (v ≤ α o v ≥ β), como juegos._valores_ventana,
+    y no por si su corte dejo hermanos sin generar (el flag de traza_decidir,
+    que alimenta las otras figuras y trazas y no se toca). En la iterativa con
+    d = 3, I llega con (0, +∞), corta en su ultimo hijo y devuelve −100: es
+    un techo, como dice la pagina, aunque no haya podado nada."""
+    ventana = {f["nodo"]: (f["alfa"], f["beta"]) for f in traza["filas"]
+               if f["evento"] == "entra"}
+    final = {n: dict(e) for n, e in traza["filas"][-1]["estado"].items()}
+    for n, e in final.items():
+        if n in ventana and e["estado"] == "devuelto":
+            a, b = ventana[n]
+            e["cota"] = e["v"] <= a or e["v"] >= b
+    filas = traza["filas"][:-1] + [dict(traza["filas"][-1], estado=final)]
+    return dict(traza, filas=filas)
+
+
 def jue_t_iterativa():
     """Profundizacion iterativa en el arbol de resultados (finales en 100·U,
     EVAL de EVAL_TPM): tres busquedas de alfa-beta con corte, cada una con la
     jugada que dejo lista la anterior primero. Cifras de juegos.iterativa_tpm."""
     arbol = j.ARBOL_TPM_100
-    corridas = j.profundizacion_iterativa_t(arbol, (1, 2, 3), j.EVAL_TPM)
+    corridas = [(d, o, _cotas_por_ventana(t))
+                for d, o, t in j.profundizacion_iterativa_t(arbol, (1, 2, 3), j.EVAL_TPM)]
     filas, total = j.iterativa_tpm()
     assert [(d, o, t["jugada"], t["generados"]) for d, o, t in corridas] == [
         (d, o, jg, n) for d, o, jg, _, n in filas]
@@ -2227,7 +2246,8 @@ def jue_t_iterativa():
     for d, orden, t in corridas:
         cortes = ", ".join(f"corte {tipo} en {n}" for tipo, n, *_ in t["cortes"]) or "ninguna poda"
         cotas = [n for n, e in t["filas"][-1]["estado"].items() if e.get("cota")]
-        cotas_ = (f"; {', '.join(cotas)} devuelven una cota, no su valor" if cotas else "")
+        cotas_ = (f"; {_y(cotas)} {'devuelven' if len(cotas) > 1 else 'devuelve'} "
+                  "una cota, no su valor" if cotas else "")
         partes.append(f"d = {d}: la raíz mira {', '.join(orden)}; {t['generados']} nodos; "
                       f"{cortes}{cotas_}; deja lista {t['jugada']} ({f(t['valor'])})")
     desc = ("Tres búsquedas de alfa-beta con corte sobre el árbol de resultados, con sus finales "
@@ -4189,7 +4209,7 @@ def jue_c3_rx_iterativa(animar=True):
     for (d, orden, jugada, v, g), (_, _, t), orden_gen in zip(filas, trazas, ordenes):
         gen = t["caminos_generados"]
         podados = set(j._podados_iterativa(t))
-        valores = j._valores_ids(j.intervalos_tpm(gen, d, j.EVAL_TPM, 100), d)
+        valores = j._valores_ventana(t, d, j.EVAL_TPM, 100)
         nodos = _nodos_por_intervalos(valores, _c_txt, gen, podados)
         podas = []
         for tipo, nombre, *_ in t["cortes"]:

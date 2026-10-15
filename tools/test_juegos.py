@@ -3321,8 +3321,10 @@ def test_tpm_el_interactivo_trae_el_valor_de_cada_nodo_interno():
         estado = t["filas"][-1]["estado"]
         for n, (tipo, v) in x["valores"].items():
             assert estado[n]["v"] == v, (d, n)
+    # El tipo lo da la ventana: I llega con (0, +∞) y devuelve −100 ≤ 0, un
+    # techo, aunque generó sus dos hijos (Codex sol, ronda 6).
     assert a["profundización iterativa"][2]["valores"] == {
-        "R": ["=", 0], "I": ["=", -100], "C": ["=", 0], "D": ["≤", -100],
+        "R": ["=", 0], "I": ["≤", -100], "C": ["=", 0], "D": ["≤", -100],
         "C1": ["=", 0], "C2": ["≥", 100]}
 
 

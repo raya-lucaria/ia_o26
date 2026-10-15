@@ -594,8 +594,9 @@ $>$ de la línea 5 es estricto.
   probabilidades conocidas. Siguiendo su jugada, MAX obtiene al menos $V$
   en esperanza contra cualquier MIN; no garantiza el resultado de una
   partida.
-- **Se puede interrumpir:** no es *anytime*. Como minimax, entrega solo al
-  cerrar la raíz; interrumpido, no garantiza nada.
+- **Se puede interrumpir:** no es *anytime*, por la misma razón que minimax:
+  tras cerrar un hijo de la raíz tiene una jugada, sin garantía de que sea
+  la óptima; antes, ni eso.
 - **Complejidad:** genera cada nodo una vez: tiempo $O(b^m)$ y memoria
   $O(bm)$, donde $b$ cuenta también resultados del azar y $m$, decisiones
   y tiradas.

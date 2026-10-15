@@ -376,7 +376,7 @@ La salida es no elegir: **buscar con ${d=1}$, luego con ${d=2}$, luego con ${d=3
 
 - **Qué valor rastrea:** el valor con corte $V_d$ de la última búsqueda completa; con poda, exacto solo para la jugada elegida.
 - **Dónde lo guarda:** la pila de la búsqueda en curso, más la jugada lista de la anterior.
-- **Cómo sube:** como alfa-beta con corte, dentro de cada búsqueda.
+- **Cómo sube:** como el corte, dentro de cada búsqueda: sin poda en la primera versión y como alfa-beta con corte en la segunda.
 - **A qué converge:** a $M\cdot V$ cuando la última búsqueda completa llega a todos los finales.
 
 > **Dado:** un estado $s$ donde mueve MAX, las reglas del juego (@jue-c1-finales, @jue-c1-pl, @jue-c1-acciones, @jue-c1-transicion, @jue-c1-utilidad), $\mathrm{EVAL}$ (@jue-c3-evaluacion) y un reloj que nadie sabe cuándo se acaba.
@@ -848,7 +848,7 @@ La tabla resume las tres búsquedas.
 - **${d=1}$ deja lista la trampa**, izq, y por la línea 6 izq va primero con ${d=2}$. Ahí ya se ve que vale ${-100}$: la búsqueda corrige la jugada.
 
 ::: figure {#jue-c3-t-fig-iterativa title="Profundización iterativa en el árbol de resultados: izq con d = 1, centro desde d = 2"}
-![Tres búsquedas de alfa-beta con corte sobre el árbol de resultados, finales en 100·U, cada una con la jugada que dejó lista la anterior primero. Con d = 1, la raíz prueba izq, centro y der, ve sus EVAL 60, 20 y 10, genera 4 nodos y deja lista izq, con 60. Con d = 2 prueba izq, centro y der; I vale −100, C vale 10 y D se poda tras d1; genera 9 nodos y deja lista centro, con 10. Con d = 3 prueba centro primero y ve 0; poda c2b con un corte beta en C2 y d2 y d3 con un corte alfa en D; I y D devuelven una cota. Genera 12 nodos y deja lista centro, con 0. En total, 25 nodos](../_assets/jue-t-iterativa.svg)
+![Tres búsquedas de alfa-beta con corte sobre el árbol de resultados, finales en 100·U, cada una con la jugada que dejó lista la anterior primero. Con d = 1, la raíz prueba izq, centro y der, ve sus EVAL 60, 20 y 10, genera 4 nodos y deja lista izq, con 60. Con d = 2 prueba izq, centro y der; I vale −100, C vale 10 y D se poda tras d1; genera 9 nodos y deja lista centro, con 10. Con d = 3 prueba centro primero y ve 0; poda c2b con un corte beta en C2 y d2 y d3 con un corte alfa en D; I y D devuelven un techo y C2, un piso. Genera 12 nodos y deja lista centro, con 0. En total, 25 nodos](../_assets/jue-t-iterativa.svg)
 :::
 
 **En la posición de la clase.** Con ${d=3}$ se prueba primero $\text{d2}\textbf{-}\text{d3}$, la jugada que dejó lista ${d=2}$. Vale 100, y la línea 9 la entrega sin mirar las otras dos. Los valores $-9$ y 1 de @jue-c3-horizonte-valores están ahí para comparar, pero el programa ya no los calcula.

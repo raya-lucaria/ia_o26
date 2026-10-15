@@ -25,7 +25,7 @@ Primero lo usarás tal cual y verás qué hace. Después lo sacarás de una desi
 - **UCT selecciona con un puntaje.** MAX baja por el mayor $\widehat Q(s,a)+\text{bono}$ y MIN por el menor $\widehat Q(s,a)-\text{bono}$. Al final se juega la jugada con más visitas, sin bono.
 - **Los pagos van de $-1$ a $+1$.** $U=+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan.
 
-> **Supuestos de esta página.** Del bloque 1 al 5 hay **una sola decisión**, repetida: elegir entre unas pocas jugadas cuyas simulaciones son independientes y siguen una regla fija. El bloque 6 vuelve al árbol, donde eso deja de valer.
+> **Supuestos de esta página.** Las cuentas de los bloques 2 a 5 son de **una sola decisión**, repetida: elegir entre unas pocas jugadas cuyas simulaciones son independientes y siguen una regla fija. El bloque 6 vuelve al árbol, donde eso deja de valer.
 
 ---
 

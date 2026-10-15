@@ -13,8 +13,9 @@ prerequisites: [juegos-mirar-todo-y-podar]
 
 **En la clase 2, alfa-beta resolvió hexapawn completo. ¿Cuántos nodos
 tendría el árbol si el tablero fuera de 4×4? ¿Y en ajedrez?** En la primera
-página verás que ya no se puede llegar a los finales: hay que detenerse
-antes y **estimar**.
+página verás que una computadora todavía resuelve el 4×4, aunque ya no se
+pueda a mano; en ajedrez no se puede llegar a todos los finales, así que hay
+que detenerse antes y **estimar**.
 
 > [!TIP]
 > **Esta clase tiene animaciones, tres interactivos y un notebook.** Minimax con corte y profundización iterativa en el árbol de resultados, el bono de UCT y todos los algoritmos en un mismo árbol:
@@ -43,7 +44,7 @@ a su página.
 | $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
 | $\alpha$, $\beta$ | Lo que MAX y MIN ya tienen asegurado en el camino | Alfa-beta a mano |
 | Poda | Dejar de generar hermanos que no cambian la respuesta: un corte alfa o un corte beta | Alfa-beta a mano |
-| Cota | Lo que devuelve un nodo cuyo valor tocó o salió de su ventana de entrada: «al menos» o «a lo más», no su valor. Puede pasar aunque ese nodo no pode | Alfa-beta a mano |
+| Cota | Lo que devuelve un nodo cuyo retorno tocó o salió de su ventana de entrada: la ventana solo certifica «al menos» o «a lo más». Puede coincidir con el valor exacto si otra cosa lo demuestra, y puede pasar aunque ese nodo no pode | Alfa-beta a mano |
 | DECIDIR-ALFA-BETA | Minimax con podas; el orden de las jugadas cambia cuántos nodos genera | Alfa-beta como algoritmo |
 :::
 
@@ -65,9 +66,10 @@ Las páginas de la clase 2:
 - Explicar la profundización iterativa: qué jugada entregar cuando se acaba
   el tiempo y por qué repetir búsquedas cuesta poco.
 - Estimar una jugada **simulando partidas**, sin función de evaluación.
-  Monte Carlo plano converge a $Q_{\text{azar}}$; la actualización minimax
-  mantiene $\widehat Q$ por jugada y $\widehat V$ por estado, y su raíz
-  converge a $V$.
+  Monte Carlo plano converge a $Q_{\text{azar}}$ con muestras independientes
+  bajo una regla fija; la actualización minimax mantiene $\widehat Q$ por
+  jugada y $\widehat V$ por estado, y su raíz converge a $V$ bajo el contrato
+  de su página.
 - Explicar **MCTS** como familia de búsquedas en cuatro fases, y **UCT**
   como su miembro que selecciona con un bono. Calcular una vuelta a mano y
   decir qué jugada entrega.
@@ -109,7 +111,7 @@ algoritmos tiene su propia sección, al final de la unidad:
 |---|---:|---|
 | 1 | 72m | **Cortar y evaluar.** Detenerse a cierta profundidad y estimar con EVAL, a mano en la posición de 4×4 y como algoritmo en el árbol de resultados |
 | 2 | 72m | **Hasta dónde mirar.** El efecto horizonte, la búsqueda de quietud, la profundización iterativa contra el reloj y la tabla de transposición |
-| 3 | 51m | **Simular partidas.** Monte Carlo plano promedia y converge a $Q_{\text{azar}}$; la actualización minimax guarda lo descubierto y converge a $V$ |
+| 3 | 51m | **Simular partidas.** Monte Carlo plano promedia y converge a $Q_{\text{azar}}$ con muestras independientes bajo una regla fija; la actualización minimax guarda lo descubierto y converge a $V$ bajo su contrato |
 | 4 | 45m | **MCTS con UCT.** Las cuatro fases de cada vuelta, la regla de selección con bono y la jugada más visitada |
 | 5 | 40m | **De dónde sale el bono.** El margen de error de un promedio: Hoeffding, la constante de UCB1, MIN y la elección de $c$ |
 | 6 | 70m, aparte | **Tarea de refuerzo.** Una evaluación de gato, otra posición de peones y tres Monte Carlo ante una respuesta certera |

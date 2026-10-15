@@ -3715,6 +3715,30 @@ def _valores_ids(intervalos, profundidad=None, arbol=ARBOL_TPM):
     return res
 
 
+def _valores_ventana(traza, profundidad=None, evaluar=None, escala=1, arbol=ARBOL_TPM):
+    """Como _valores_ids(intervalos_tpm(...)), pero el tipo es el que
+    certifica la ventana (α, β) con que llego cada nodo a una busqueda de
+    alfa-beta: v ≤ α es un techo «≤ v», v ≥ β un piso «≥ v», y solo dentro
+    de la ventana es un valor «=». Los intervalos no bastan: un nodo que
+    corta en su ultimo hijo genero todos y su intervalo es exacto, pero la
+    ventana solo certifica la cota (en la iterativa con d = 3, I llega con
+    (0, +∞) y devuelve −100: es «I ≤ −100», como dice la pagina, aunque por
+    la escala ese −100 tambien sea su valor). La raiz va con (−∞, +∞)."""
+    res = _valores_ids(intervalos_tpm(traza["caminos_generados"], profundidad, evaluar,
+                                      escala, arbol), profundidad, arbol)
+    ventana = {f["nodo"]: (f["alfa"], f["beta"]) for f in traza["filas"]
+               if f["evento"] == "entra"}
+    for nombre, (tipo, v) in res.items():
+        if tipo == "EVAL" or nombre not in ventana:
+            continue
+        a, b = ventana[nombre]
+        nuevo = "≤" if v <= a else "≥" if v >= b else "="
+        # una cota que demuestran los nodos generados la certifica tambien la ventana
+        assert tipo == "=" or tipo == nuevo, (nombre, tipo, nuevo)
+        res[nombre] = [nuevo, v]
+    return res
+
+
 def uct_por_vuelta_tpm(c, vueltas, semilla, arbol=ARBOL_TPM):
     """Tras cada vuelta de la corrida de uct_tpm: {camino: (N, suma de U)},
     reconstruido sumando 1 y el U de la vuelta a cada nodo de su camino."""
@@ -3774,8 +3798,7 @@ def datos_interactivo_tpm(arbol=ARBOL_TPM):
     algs["profundización iterativa"] = [
         dict(d=d, orden=orden, jugada=t["jugada"], valor=t["valor"], nodos=t["generados"],
              visitados=_ids(t["caminos_generados"]), podados=_ids(_podados_iterativa(t, arbol)),
-             valores=_valores_ids(intervalos_tpm(t["caminos_generados"], d, EVAL_TPM, 100, arbol),
-                                  d, arbol))
+             valores=_valores_ventana(t, d, EVAL_TPM, 100, arbol))
         for d, orden, t in it]
     jl, mu = todos_al_azar_tpm(arbol)
     algs["Monte Carlo plano"] = dict(

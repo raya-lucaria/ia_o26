@@ -196,7 +196,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | DECIDIR-MINIMAX | Lo que el agente corre en su turno: valora cada jugada con MINIMAX y devuelve la **jugada** de mayor valor, no el número. DECIDIR-ALFA-BETA hace lo mismo pasando $\alpha$ a los hijos | Minimax como algoritmo |
 | Altura | Jugadas de la continuación más larga desde un nodo hasta un final; un final tiene altura 0 | Minimax como algoritmo |
 | Pila | Las llamadas abiertas, de la raíz al nodo activo; se escribe R›C›C2. Es todo lo que el recorrido tiene en memoria | Minimax como algoritmo |
-| Tabla de transposición | Guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la $d$ que quedaba y si el número es un valor ($\alpha_0<v<\beta_0$), un piso ($v\ge\beta_0$) o un techo ($v\le\alpha_0$) | Minimax como algoritmo; lo de valor, piso o techo, en Hasta dónde mirar |
+| Tabla de transposición | Guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la $d$ que quedaba y si el número que devolvió, $w$, es un valor ($\alpha_0<w<\beta_0$), un piso ($w\ge\beta_0$) o un techo ($w\le\alpha_0$) | Minimax como algoritmo; lo de valor, piso o techo, en Hasta dónde mirar |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad: $E[\cdot]$ | Cuando decide un dado |
 | Utilidad esperada | El valor esperado del pago. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
 | DECIDIR-EXPECTIMINIMAX | DECIDIR-MINIMAX con nodos de AZAR: valora cada jugada con EXPECTIMINIMAX y devuelve la de mayor valor esperado | Cuando decide un dado |
@@ -222,7 +222,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Hasta dónde mirar |
 | Posición quieta, búsqueda de quietud, valor con quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, no devolver sin más la $\mathrm{EVAL}$: usarla como opción de quedarse (una aproximación llamada *stand pat*) y compararla con las capturas, cada una seguida hasta un final o una posición quieta. Quedarse no es una jugada legal. El valor con quietud es el número que resulta | Hasta dónde mirar |
 | Profundización iterativa | Buscar con $d=1,2,3,\dots$ mientras haya tiempo y entregar la jugada de la última búsqueda completa | Hasta dónde mirar |
-| *Anytime* | Que tiene una jugada lista si se le interrumpe | Minimax como algoritmo |
+| *Anytime* | Que tiene una jugada lista tras muy poco trabajo (un respaldo legal o una simulación) y la mejora mientras sigue; si se le interrumpe, la entrega. Minimax y alfa-beta no lo son: su primera jugada llega al cerrar un hijo entero de la raíz | Minimax como algoritmo |
 | PROFUNDIZACIÓN-ITERATIVA | La versión completa: alfa-beta con corte en cada $d$, la jugada anterior primero y una jugada lista desde antes de buscar; entrega la de la última búsqueda completa | Hasta dónde mirar |
 | PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Hasta dónde mirar |
 | ALFA-BETA-CON-CORTE | Alfa-beta con los mismos cambios: con $d=0$ se estima y los finales valen $M\cdot U$ | Hasta dónde mirar |

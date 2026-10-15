@@ -2762,7 +2762,7 @@ function pintarLeyenda(t){
     muestra("devuelto","ya devolvió"), muestra("hoja","hoja generada"), muestra("pormirar","por mirar")];
   if(t.modo === "corte" || t.modo === "iterativa")
     l.push(muestra("evaluado","EVAL: estimado"), muestra("fuera","debajo de la línea de corte"));
-  if(t.conAB) l.push(muestra("podado","no se genera"), muestra("cota","podó: su v es solo una cota"));
+  if(t.conAB) l.push(muestra("podado","no se genera"), muestra("cota","retorno que tocó o salió de su ventana: techo o piso"));
   $("leyenda").replaceChildren(...l);
   $("nota-escala").classList.toggle("oculto", !(t.modo === "corte" || t.modo === "iterativa"));
 }

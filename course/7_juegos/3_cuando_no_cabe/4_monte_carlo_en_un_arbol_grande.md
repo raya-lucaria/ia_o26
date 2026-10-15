@@ -2,7 +2,7 @@
 id: monte-carlo-en-un-arbol-grande
 title: MCTS con UCT
 nav_title: MCTS con UCT
-summary: "MCTS es la familia de búsquedas que construyen un árbol con vueltas de cuatro fases: selección, expansión, simulación y retropropagación. UCT es su miembro que selecciona con UCB: guarda por arista N(s,a) y Q̂(s,a), elige el mayor Q̂ + bono en MAX y el menor Q̂ − bono en MIN, y promedia el mismo U por todo el camino. Al terminar juega la jugada más visitada. En un árbol finito, con c > 0 fija y vueltas sin límite, sus promedios tienden a los valores de minimax; con presupuesto fijo, no hay garantía."
+summary: "MCTS es la familia de búsquedas que construyen un árbol con vueltas de cuatro fases: selección, expansión, simulación y retropropagación. UCT es su miembro que selecciona con UCB: guarda por arista N(s,a) y Q̂(s,a), y por estado N(s) y V̂(s); elige el mayor Q̂ + bono en MAX y el menor Q̂ − bono en MIN, y promedia el mismo U por todo el camino. Al terminar juega la jugada más visitada. En un árbol finito, con c > 0 fija y vueltas sin límite, sus promedios tienden a los valores de minimax; con presupuesto fijo, no hay garantía."
 status: ready
 estimated_time: 45m
 tags: [juegos, mcts, busqueda-adversarial]
@@ -149,7 +149,7 @@ En un árbol finito con vueltas sin límite, **ninguna jugada se abandona para s
 
 - **No expande:** ese final ya es parte del árbol.
 - **No simula:** las reglas ya dan su $U$; no hay nada que estimar.
-- **Sí cuenta como vuelta:** sube ese $U$, y cada arista del camino suma una visita y actualiza su promedio.
+- **Sí cuenta como vuelta:** sube ese $U$; cada estado y cada arista del camino suman una visita y actualizan su promedio.
 
 ---
 

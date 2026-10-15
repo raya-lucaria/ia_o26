@@ -194,7 +194,7 @@ $$
 
 **El orden y los empates.** Los hijos se recorren en el orden del dibujo, de izquierda a derecha, salvo que la ficha diga otro. Un empate en la raíz lo gana la primera jugada en el orden que usó esa búsqueda.
 
-**Se puede interrumpir (*anytime*)** un algoritmo que, si se le detiene, ya tiene una jugada que entregar. Tenerla no garantiza que sea buena.
+**Se puede interrumpir (*anytime*)** un algoritmo que tiene una jugada lista tras muy poco trabajo y la mejora mientras sigue; si se le detiene, la entrega. Tenerla no garantiza que sea buena.
 
 ---
 
@@ -466,7 +466,7 @@ $$
 
 **Horizonte y quietud.**
 
-- **El efecto horizonte (*horizon effect*) oculta una consecuencia decisiva detrás del corte.** Aumentar $d$ lo desplaza, sin eliminarlo.
+- **El efecto horizonte (*horizon effect*) oculta una consecuencia decisiva detrás del corte.** Mientras el corte no llegue a todos los finales, aumentar $d$ lo desplaza, sin eliminarlo.
 - **La búsqueda de quietud (*quiescence search*) sigue capturas desde el corte**, hasta estados quietos o finales. Quien mueve compara cada captura con su EVAL actual.
 - **Quedarse con EVAL (*stand pat*) es una aproximación, no una jugada legal.** Puede suponer una jugada tranquila inexistente cuando todas las jugadas sin captura pierden.
 
@@ -486,7 +486,8 @@ $$
 - **Usa EVAL:** sí; reserva $M\cdot U$ para finales.
 - **Garantía:** obtiene $M\cdot V$ y una jugada óptima si alcanza los finales sin aplicar EVAL ni activar quietud.
 - **Se puede interrumpir:** por nivel, no; por reloj, sí, con respaldo legal.
-- **Complejidad:** cuesta $O(b^d)$ sin poda y entre $O(b^{d/2})$ y $O(b^d)$ con alfa-beta; usa memoria $O(bd)$. Si cada profundidad cuesta $B>1$ veces la anterior, repetir cuesta cerca de $B/(B-1)$ veces la última: con $B=10$, un 11 % más. Si no crece parejo puede costar más: en el árbol de resultados, las búsquedas con $d=1$ y $d=2$ suman 13 nodos y la última, 12.
+- **Complejidad:** cuesta $O(b^d)$ sin poda y entre $O(b^{d/2})$ y $O(b^d)$ con alfa-beta; usa memoria $O(bd)$.
+- **Costo de repetir:** si cada profundidad cuesta $B>1$ veces la anterior, lo repetido cuesta cerca de $1/(B-1)$ de la última y el total, cerca de $B/(B-1)$ veces la última: con $B=10$, un 11 % más. Si no crece parejo puede costar más: en el árbol de resultados, las búsquedas con $d=1$ y $d=2$ suman 13 nodos y la última, 12.
 - **Frente a los demás:** permite decidir sin alcanzar finales, pero depende de EVAL. La quietud puede costar $O(b^m)$ y usar memoria $O(bm)$.
 - **Supuestos:** comparte los de minimax; más jugadores requieren pagos y EVAL vectoriales (@jue-rx-nota-suma-cero).
 

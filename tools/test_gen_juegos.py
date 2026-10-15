@@ -541,10 +541,17 @@ def test_el_nodo_que_evalua_su_if_compara_el_numero_del_rival():
 
 
 def test_la_iterativa_marca_las_cotas_de_d3():
+    # «cota» lo pone la ventana con que llego cada nodo (v ≤ α o v ≥ β), como
+    # en la pagina y en juegos._valores_ventana, no el flag de traza_decidir
+    # (que solo marca un corte que dejo hermanos sin generar). Con d = 3, I
+    # llega con (0, +∞), corta en ix, su ultimo hijo, y devuelve −100: techo
+    # aunque no pode nada (Codex sol, ronda 6). El flag sigue sin marcarlo.
     corridas = j.profundizacion_iterativa_t(j.ARBOL_TPM_100, (1, 2, 3), j.EVAL_TPM)
-    cotas = [sorted(n for n, e in t["filas"][-1]["estado"].items() if e.get("cota"))
-             for _, _, t in corridas]
-    assert cotas == [[], ["D"], ["C2", "D"]]
+    assert [sorted(n for n, e in t["filas"][-1]["estado"].items() if e.get("cota"))
+            for _, _, t in corridas] == [[], ["D"], ["C2", "D"]]
+    cotas = [sorted(n for n, e in gen._cotas_por_ventana(t)["filas"][-1]["estado"].items()
+                    if e.get("cota")) for _, _, t in corridas]
+    assert cotas == [[], ["D"], ["C2", "D", "I"]]
     assert _texto("jue-t-iterativa").count(">· cota<") == sum(map(len, cotas))
 
 

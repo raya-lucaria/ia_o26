@@ -509,6 +509,18 @@ def test_los_podados_de_la_iterativa_vienen_de_la_fuente(datos):
         [sorted(x["podados"]) for x in it]
 
 
+def test_la_iterativa_clasifica_por_la_ventana_de_cada_nodo(datos):
+    """El tipo de cada nodo es el que certifica la ventana con que llegó, como
+    en la página (tabla jue-c3-transposicion-iterativa: I y D, (0,+∞), techo).
+    Con d = 3, I genera sus dos hijos y su −100 es exacto por la escala, pero
+    llegó con (0, +∞) y devolvió −100 ≤ 0: es «I ≤ −100», no «I = −100»
+    (Codex sol, ronda 6). Con d = 2, I abre la búsqueda con (−∞, +∞): «=»."""
+    it = {x["d"]: x["valores"] for x in datos["algoritmos"]["profundización iterativa"]}
+    assert it[3] == {"R": ["=", 0], "I": ["≤", -100], "C": ["=", 0], "D": ["≤", -100],
+                     "C1": ["=", 0], "C2": ["≥", 100]}
+    assert it[2]["I"] == ["=", -100] and it[2]["D"] == ["≤", -100]
+
+
 @pytest.mark.parametrize("frag, podados", [("iterativa-d1", ""), ("iterativa-d2", "podó d2, d3; "),
                                            ("iterativa-d3", "podó c2b, d2, d3; ")])
 def test_la_iterativa_tacha_lo_que_podo(frag, podados):
