@@ -738,7 +738,8 @@ def expectiminimax_t(arbol=ARBOL_T, azar=("I", "C", "D")):
     return jugada, valores, generados
 
 
-def profundizacion_iterativa_t(arbol=ARBOL_T, profundidades=(1, 2, 3), evaluar=None):
+def profundizacion_iterativa_t(arbol=ARBOL_T, profundidades=(1, 2, 3), evaluar=None,
+                               anterior_primero=True):
     """PROFUNDIZACION-ITERATIVA sobre T, sin reloj: para cada d, DECIDIR-
     ALFA-BETA con corte a profundidad d, con la jugada que dejo lista la
     iteracion anterior primero en la raiz (las demas, en el orden dado).
@@ -749,14 +750,17 @@ def profundizacion_iterativa_t(arbol=ARBOL_T, profundidades=(1, 2, 3), evaluar=N
     profundidades siguientes. El orden que se devuelve es el que tenia
     planeado; su traza, la de la raiz recorrida solo hasta ese hijo
     (alfa-beta no mira hermanos posteriores para valorar los anteriores, asi
-    que es el mismo prefijo), y su jugada es la de ese hijo."""
+    que es el mismo prefijo), y su jugada es la de ese hijo.
+
+    anterior_primero=False: cada busqueda recorre la raiz en el orden dado
+    (para comparar cuanto ahorra poner primero la jugada anterior)."""
     evaluar = evaluar or EVAL_T
     nombres = nombres_t(arbol)
     raiz = [nombres[(i,)] for i in range(len(arbol))]
     res, jugada = [], None
     for d in profundidades:
         orden_raiz = [n for n, a in raiz]
-        if jugada:
+        if jugada and anterior_primero:
             primero = next(n for n, a in raiz if a == jugada)
             orden_raiz = [primero] + [n for n in orden_raiz if n != primero]
         t = traza_decidir(arbol, poda=True, orden={"R": orden_raiz}, profundidad=d,
@@ -2400,7 +2404,8 @@ def _ab_t(arbol, camino, d, a, b, evaluar, nombres, cuenta):
     return v
 
 
-def iterativa_con_reloj_t(acciones, tope=None, profundidades=(1, 2, 3), evaluar=None):
+def iterativa_con_reloj_t(acciones, tope=None, profundidades=(1, 2, 3), evaluar=None,
+                          arbol=None):
     """PROFUNDIZACION-ITERATIVA (las 32 lineas de la pagina) en T, con A(R) en
     el orden `acciones` y un reloj que se acaba cuando se han generado `tope`
     nodos, contando todas las busquedas. El reloj se mira donde lo mira el
@@ -2410,9 +2415,13 @@ def iterativa_con_reloj_t(acciones, tope=None, profundidades=(1, 2, 3), evaluar=
     Devuelve (corridas, entrega): corridas = [dict(d, orden, jugada,
     generados)] de las busquedas completas; entrega = dict(jugada, d,
     generados, linea, despues_de) con d la busqueda en curso y despues_de el
-    hijo de la raiz tras el que se miro el reloj (None en la linea 4/13)."""
+    hijo de la raiz tras el que se miro el reloj (None en la linea 4/13).
+
+    arbol: otro arbol con la forma de T (por omision, ARBOL_T); el arbol de
+    resultados entra con sus finales en 100·U (iterativa_con_reloj_tpm)."""
     evaluar = evaluar or EVAL_T
-    nombres = nombres_t(ARBOL_T)
+    arbol = ARBOL_T if arbol is None else arbol
+    nombres = nombres_t(arbol)
     camino_de = {a: c for c, (_, a) in nombres.items() if len(c) == 1}
     cuenta = [0]
     acabado = lambda: tope is not None and cuenta[0] >= tope  # noqa: E731
@@ -2427,7 +2436,7 @@ def iterativa_con_reloj_t(acciones, tope=None, profundidades=(1, 2, 3), evaluar=
         inicio = cuenta[0] - 1
         for a in orden:
             cuenta[0] += 1
-            w = _ab_t(ARBOL_T, camino_de[a], d - 1, alfa, INF, evaluar, nombres, cuenta)
+            w = _ab_t(arbol, camino_de[a], d - 1, alfa, INF, evaluar, nombres, cuenta)
             if acabado():                                       # linea 8
                 return corridas, dict(jugada=jugada, d=d, generados=cuenta[0], linea=8,
                                       despues_de=a)
@@ -3774,3 +3783,391 @@ def datos_interactivo_tpm(arbol=ARBOL_TPM):
                                                                SEMILLA_TPM, arbol)])
     return dict(nodos=nodos, jugadas_raiz=list(JUGADAS_RAIZ),
                 algoritmos=algs, tabla=[{k: s(x) for k, x in f.items()} for f in tabla_t_pm(arbol)])
+
+
+# ------------------------------- homologacion: el arbol de resultados en 7.3 ---
+#
+# Las trazas de corte y de profundizacion iterativa de 7.3 pasan del arbol
+# base (ARBOL_T, hojas 2–12) al arbol de resultados (ARBOL_TPM, finales
+# +1/0/−1; plan de homologacion, decision 2). Un corte compara EVAL con
+# finales en la escala 100·U, asi que todo se corre sobre ARBOL_TPM_100 con
+# EVAL_TPM. Las funciones de ARBOL_T se quedan como estaban.
+
+ARBOL_TPM_100 = escalar_arbol(ARBOL_TPM, 100)
+
+
+def decidir_con_corte_tpm(d, orden=None, evaluar=None):
+    """DECIDIR-CON-CORTE(R, d) en el arbol de resultados (finales 100·U, EVAL
+    de EVAL_TPM): (jugada, valor, nodos generados). orden: los hijos de R en
+    el orden de visita, por nombre («C», «I», «D»)."""
+    t = traza_decidir(ARBOL_TPM_100, profundidad=d, evaluar=evaluar or EVAL_TPM,
+                      orden={"R": orden} if orden else None)
+    return t["jugada"], t["valor"], t["generados"]
+
+
+def valores_con_corte_tpm(d, evaluar=None):
+    """{nombre: valor con corte} de cada nodo interno que DECIDIR-CON-CORTE(R,
+    d) genera en el arbol de resultados: EVAL donde corta, el max/min de sus
+    hijos (finales en 100·U) donde no. R vale lo que devuelve."""
+    t = traza_decidir(ARBOL_TPM_100, profundidad=d, evaluar=evaluar or EVAL_TPM)
+    ultimo = t["filas"][-1]["estado"]
+    return {n: e["v"] for n, e in ultimo.items()
+            if e["estado"] in ("devuelto", "evaluado") and n[0] in "RICD"}
+
+
+def filas_corte_tpm(d=2, orden=None, evaluar=None):
+    """La traza de DECIDIR-CON-CORTE(R, d) en el arbol de resultados con las
+    columnas de filas_corte_t: (#, «línea · pila», v, w, jugada). Una hoja va
+    por su valor en 100·U («-100»)."""
+    t = traza_decidir(ARBOL_TPM_100, profundidad=d, evaluar=evaluar or EVAL_TPM,
+                      orden={"R": orden} if orden else None, lineas=LINEAS_CORTE)
+    res = []
+    for f in t["filas"]:
+        v = f["mejor_valor"] if f["nodo"] == "R" else f["v"]
+        w = ""
+        if f["w"] is not None:
+            w = fmt_t(f["w"]) if f["hijo"] == str(f["w"]) else f"{fmt_t(f['w'])} ({f['hijo']})"
+        res.append((f["n"], f"{f['linea']} · {'›'.join(f['pila'])}", fmt_t(v), w,
+                    f["mejor_jugada"] or "—"))
+    return res
+
+
+def iterativa_sin_poda_tpm(profundidades=(1, 2, 3), evaluar=None, anterior_primero=False):
+    """Profundizacion iterativa con DECIDIR-CON-CORTE (sin poda) en el arbol de
+    resultados: [(d, orden de la raiz, jugada lista, valor, nodos generados)].
+    Sin poda el orden solo cambia algo si hay empates."""
+    res, jugada = [], None
+    for d in profundidades:
+        orden = list(JUGADAS_RAIZ)
+        if anterior_primero and jugada:
+            orden = [jugada] + [a for a in orden if a != jugada]
+        jugada, valor, nodos = decidir_con_corte_tpm(d, [JUGADA_A_NOMBRE[a] for a in orden],
+                                                     evaluar)
+        res.append((d, orden, jugada, valor, nodos))
+    return res
+
+
+def iterativa_alfa_beta_tpm(profundidades=(1, 2, 3), evaluar=None, anterior_primero=True):
+    """Profundizacion iterativa con alfa-beta y corte en el arbol de
+    resultados, con o sin la jugada anterior primero en la raiz:
+    ([(d, orden de la raiz, jugada, valor, nodos generados)], total). Con
+    anterior_primero=True es iterativa_tpm."""
+    filas = [(d, orden, t["jugada"], t["valor"], t["generados"])
+             for d, orden, t in profundizacion_iterativa_t(
+                 ARBOL_TPM_100, profundidades, evaluar or EVAL_TPM,
+                 anterior_primero=anterior_primero)]
+    return filas, sum(f[4] for f in filas)
+
+
+def traza_iterativa_tpm(d=3, evaluar=None):
+    """La traza de la busqueda de profundidad d de la profundizacion iterativa
+    en el arbol de resultados (alfa-beta con corte, la anterior primero), con
+    la numeracion de lineas de PROFUNDIZACION-ITERATIVA (LINEAS_RELOJ)."""
+    _, orden, _ = profundizacion_iterativa_t(ARBOL_TPM_100, tuple(range(1, d + 1)),
+                                             evaluar or EVAL_TPM)[-1]
+    return traza_decidir(ARBOL_TPM_100, poda=True, orden={"R": [JUGADA_A_NOMBRE[a] for a in orden]},
+                         profundidad=d, evaluar=evaluar or EVAL_TPM, lineas=LINEAS_RELOJ)
+
+
+def valor_con_corte_hijo_tpm(hijo, niveles, evaluar=None):
+    """El valor con corte (sin poda) del hijo de R («I», «C» o «D») en el arbol
+    de resultados cuando le quedan `niveles` jugadas por mirar."""
+    t = traza_decidir(ARBOL_TPM_100, profundidad=niveles + 1, evaluar=evaluar or EVAL_TPM)
+    return {f["hijo"]: f["w"] for f in t["filas"] if f["evento"] == "raiz"}[hijo]
+
+
+def iterativa_con_reloj_tpm(acciones, tope=None, profundidades=(1, 2, 3), evaluar=None):
+    """iterativa_con_reloj_t (las 32 lineas de la pagina) en el arbol de
+    resultados, finales en 100·U y EVAL_TPM. Mismo formato."""
+    return iterativa_con_reloj_t(acciones, tope, profundidades, evaluar or EVAL_TPM,
+                                 arbol=ARBOL_TPM_100)
+
+
+def tabla_nodos_generados_tpm(profundidades=(1, 2, 3)):
+    """Nodos generados (contando R) en el arbol de resultados para cada d: sin
+    poda, alfa-beta en el orden dado, e iterativa con y sin la anterior
+    primero (cada busqueda por separado)."""
+    ds = tuple(profundidades)
+    return {
+        "sin poda": [decidir_con_corte_tpm(d)[2] for d in ds],
+        "alfa-beta": [traza_decidir(ARBOL_TPM_100, poda=True, profundidad=d,
+                                    evaluar=EVAL_TPM)["generados"] for d in ds],
+        "iterativa": [f[4] for f in iterativa_alfa_beta_tpm(ds)[0]],
+        "iterativa sin la anterior primero": [
+            f[4] for f in iterativa_alfa_beta_tpm(ds, anterior_primero=False)[0]],
+    }
+
+
+# ------------------------------- homologacion: los tres Monte Carlo ---
+#
+# Tres formas de usar partidas simuladas, sobre arboles de tuplas (raiz MAX,
+# niveles alternados; un numero es un final con su U desde MAX):
+#
+# - Monte Carlo plano: promedia el U crudo por jugada de la raiz. Converge a
+#   Q_azar, el valor si los dos juegan al azar (= expectiminimax con todos
+#   los nodos bajo la raiz como dados parejos), no a V.
+# - Monte Carlo con actualizacion minimax (MMMC; Kocsis, Szepesvari y
+#   Willemson 2006): muestrea igual, pero guarda los estados descubiertos y
+#   sube max/min: Q̂(s,a) = V̂(T(s,a)). Converge a V en un arbol finito,
+#   determinista y de ramificacion finita.
+# - UCT: uct_tpm, promedio del mismo U por arista con la seleccion UCB.
+#
+# El arbol de juguete de la refutacion (plan §6.2): MAX elige A o B; tras A,
+# MIN elige p (+10), q (+10) o r, que lleva a x (MAX) con una sola jugada a
+# un final −30; B es un final −10. V = −10, y lo correcto es B.
+
+ARBOL_REFUTACION = ((10, 10, (-30,)), -10)
+JUGADAS_REFUTACION = ("A", "B")
+ESCALA_REFUTACION = 30        # UCT corre con los pagos entre 30: rango [−1, 1]
+C_REFUTACION = 1              # la c de la corrida de UCT (escala ±1)
+SEMILLA_REFUTACION = 0
+VUELTAS_REFUTACION = 60       # vueltas de la corrida de la figura
+# La secuencia impuesta para comparar operadores (no es una corrida): B una
+# vez, luego 29 partidas por A que terminan en +10 (p y q alternadas) y, al
+# final, la que descubre r, x, −30.
+BUENAS_REFUTACION = 29
+
+
+def acciones_arbol(nodo):
+    """Las jugadas legales de un nodo interno de un arbol de tuplas: todos sus
+    hijos, en el orden dado."""
+    return list(range(len(nodo)))
+
+
+def valor_minimax_arbol(arbol):
+    """V exacto de un arbol de tuplas con raiz MAX (fracciones si las hay)."""
+    return minimax_arbol(arbol, True)
+
+
+def q_minimax_arbol(arbol):
+    """[Q(s₀, a)] exactos de la raiz: el V de cada hijo, que mueve MIN."""
+    return [minimax_arbol(h, False) for h in arbol]
+
+
+def q_azar_arbol(arbol):
+    """[Q_azar(s₀, a)] exactos: el pago esperado de cada jugada de la raiz si
+    despues los dos juegan al azar, cada jugada legal con la misma
+    probabilidad. Es el limite de Monte Carlo plano."""
+    return [sum((u * p for u, p in distribucion_simulacion(h).items()), F(0)) for h in arbol]
+
+
+def _primera_mejor(valores, es_max=True):
+    """El indice de la mejor de `valores` (None = desconocida, no cuenta);
+    empate → la primera; si ninguna se conoce, la primera jugada legal (0)."""
+    mejor, k = None, 0
+    for i, x in enumerate(valores):
+        if x is None:
+            continue
+        if mejor is None or (x > mejor if es_max else x < mejor):
+            mejor, k = x, i
+    return k
+
+
+def _respaldo_minimax(es_max, qs):
+    """V̂ de un nodo a partir de sus Q̂: max en MAX, min en MIN, solo sobre las
+    jugadas visitadas. Una jugada no visitada (None) es desconocida, nunca
+    cero; si ninguna se conoce, V̂ tambien es desconocido. El resultado es
+    provisional mientras falte alguna."""
+    conocidas = [q for q in qs if q is not None]
+    if not conocidas:
+        return None
+    return max(conocidas) if es_max else min(conocidas)
+
+
+def partida_uniforme(arbol, rng):
+    """Una partida desde la raiz eligiendo cada jugada legal con la misma
+    probabilidad, hasta un final: el camino (tupla de indices)."""
+    camino, nodo = (), arbol
+    while isinstance(nodo, tuple):
+        a = rng.choice(acciones_arbol(nodo))
+        camino, nodo = camino + (a,), nodo[a]
+    return camino
+
+
+def _rango_arbol(arbol):
+    if not isinstance(arbol, tuple):
+        return arbol, arbol
+    rs = [_rango_arbol(h) for h in arbol]
+    return min(r[0] for r in rs), max(r[1] for r in rs)
+
+
+def mc_minimax(arbol, iteraciones, semilla=0, caminos=None, rango=None):
+    """Monte Carlo con actualizacion minimax (MMMC) sobre un arbol de tuplas.
+
+    Contrato (plan de homologacion §6.2): cada iteracion elige jugadas legales
+    uniformemente hasta un final (random.Random(semilla)) y agrega al arbol
+    guardado los estados que descubre. En un final z, V̂(z) = U(z), exacto.
+    Para una arista visitada, Q̂(s,a) = V̂(T(s,a)); luego V̂(s) = max en MAX,
+    min en MIN, solo sobre las jugadas visitadas: una no visitada es
+    desconocida (None), nunca cero, y ese max/min es provisional. No se
+    promedia el U crudo. Entrega la mejor Q̂ de la raiz (empate → la primera;
+    sin muestras, la primera jugada legal).
+
+    caminos: en vez de muestrear, una lista de partidas impuestas (cada una
+    un camino legal hasta un final); sirve para comparar operadores sobre la
+    misma secuencia. rango: (U minimo, U maximo) que declara el juego (por
+    omision, el menor y el mayor final del arbol); solo decide cuando un nodo
+    queda resuelto antes de conocer a todos sus hijos.
+
+    Devuelve dict:
+    - V: {camino: V̂} de cada estado guardado;
+    - N: {camino: visitas};
+    - exacto: {camino: bool}: un final es exacto; un nodo interno lo es si
+      todos sus hijos se conocen y son exactos, o si un hijo exacto ya da el
+      mejor U posible para quien mueve (rango);
+    - Q: [Q̂(s₀, a) o None] al final; jugada: el indice entregado;
+    - historia: una entrada por iteracion: dict(camino, U, Q, jugada,
+      nuevos: cuantos estados se agregaron)."""
+    rng = random.Random(semilla)
+    lo, hi = rango if rango is not None else _rango_arbol(arbol)
+    V, N, exacto, historia = {}, {}, {}, []
+    pendientes = list(caminos) if caminos is not None else None
+    total = iteraciones if pendientes is None else len(pendientes)
+    for it in range(total):
+        camino = partida_uniforme(arbol, rng) if pendientes is None else tuple(pendientes[it])
+        z = nodo_en(arbol, camino)
+        if isinstance(z, tuple):
+            raise ValueError(f"la partida {camino} no termina en un final")
+        nuevos = sum(1 for k in range(len(camino) + 1) if camino[:k] not in V)
+        V[camino], exacto[camino] = z, True
+        for k in range(len(camino) + 1):
+            N[camino[:k]] = N.get(camino[:k], 0) + 1
+        for k in range(len(camino) - 1, -1, -1):
+            s = camino[:k]
+            nodo = nodo_en(arbol, s)
+            es_max = k % 2 == 0
+            hijos = [s + (a,) for a in acciones_arbol(nodo)]
+            qs = [V.get(h) for h in hijos]
+            V[s] = _respaldo_minimax(es_max, qs)
+            mejor_posible = hi if es_max else lo
+            exacto[s] = (all(exacto.get(h, False) for h in hijos)
+                         or any(exacto.get(h, False) and V[h] == mejor_posible for h in hijos))
+        qs = [V.get((a,)) for a in acciones_arbol(arbol)]
+        historia.append(dict(camino=camino, U=z, Q=qs, jugada=_primera_mejor(qs), nuevos=nuevos))
+    qs = [V.get((a,)) for a in acciones_arbol(arbol)]
+    return dict(V=V, N=N, exacto=exacto, Q=qs, jugada=_primera_mejor(qs), historia=historia)
+
+
+def mc_plano_uniforme(arbol, iteraciones, semilla=0, caminos=None):
+    """Monte Carlo plano sobre las MISMAS partidas que mc_minimax con la misma
+    semilla (o los mismos caminos impuestos): guarda N y la suma de U por
+    jugada de la raiz y nada mas; Q̂(s₀,a) = suma/N, el promedio del U crudo.
+    Converge a Q_azar. Devuelve dict(N, S: listas por jugada, Q: [Q̂ o None],
+    jugada, historia: [dict(camino, U, Q, jugada)])."""
+    rng = random.Random(semilla)
+    n = len(arbol)
+    Ns, Ss, historia = [0] * n, [0] * n, []
+    pendientes = list(caminos) if caminos is not None else None
+    total = iteraciones if pendientes is None else len(pendientes)
+    for it in range(total):
+        camino = partida_uniforme(arbol, rng) if pendientes is None else tuple(pendientes[it])
+        u = nodo_en(arbol, camino)
+        Ns[camino[0]] += 1
+        Ss[camino[0]] += u
+        qs = [F(Ss[a], Ns[a]) if Ns[a] else None for a in range(n)]
+        historia.append(dict(camino=camino, U=u, Q=qs, jugada=_primera_mejor(qs)))
+    qs = [F(Ss[a], Ns[a]) if Ns[a] else None for a in range(n)]
+    return dict(N=Ns, S=Ss, Q=qs, jugada=_primera_mejor(qs), historia=historia)
+
+
+def caminos_refutacion(buenas=BUENAS_REFUTACION):
+    """La secuencia impuesta: B una vez, `buenas` partidas por A que terminan
+    en +10 (p y q alternadas) y la que descubre r, x, −30."""
+    return [(1,)] + [(0, k % 2) for k in range(buenas)] + [(0, 2, 0)]
+
+
+def operadores_ante_la_refutacion(buenas=BUENAS_REFUTACION):
+    """Promedio contra actualizacion minimax sobre la secuencia impuesta del
+    arbol de la refutacion (no es una corrida). dict con Q̂(A) antes y despues
+    de la ultima partida y la jugada que entrega cada uno despues:
+    promedio: 10 → 26/3 (sigue en A); minimax: 10 → −30 (cambia a B)."""
+    caminos = caminos_refutacion(buenas)
+    plano = mc_plano_uniforme(ARBOL_REFUTACION, None, caminos=caminos)
+    mm = mc_minimax(ARBOL_REFUTACION, None, caminos=caminos)
+    hp, hm = plano["historia"], mm["historia"]
+    return dict(
+        promedio_antes=hp[-2]["Q"][0], promedio_despues=hp[-1]["Q"][0],
+        jugada_promedio=JUGADAS_REFUTACION[hp[-1]["jugada"]],
+        minimax_antes=hm[-2]["Q"][0], minimax_despues=hm[-1]["Q"][0],
+        jugada_minimax=JUGADAS_REFUTACION[hm[-1]["jugada"]])
+
+
+def corridas_refutacion(iteraciones=VUELTAS_REFUTACION, semilla=SEMILLA_REFUTACION):
+    """Corridas REALES de Monte Carlo plano y de la actualizacion minimax en el
+    arbol de la refutacion, con las mismas partidas uniformes (misma semilla):
+    dict(descubre: la iteracion (desde 1) que pasa por primera vez por r,
+    plano: [Q̂(A), Q̂(B)] tras cada iteracion, minimax: lo mismo, jugada_plano,
+    jugada_minimax: lo que entrega cada uno tras cada iteracion)."""
+    p = mc_plano_uniforme(ARBOL_REFUTACION, iteraciones, semilla)
+    m = mc_minimax(ARBOL_REFUTACION, iteraciones, semilla)
+    descubre = next((i + 1 for i, h in enumerate(m["historia"]) if h["camino"][:2] == (0, 2)),
+                    None)
+    return dict(descubre=descubre,
+                plano=[h["Q"] for h in p["historia"]],
+                minimax=[h["Q"] for h in m["historia"]],
+                jugada_plano=[JUGADAS_REFUTACION[h["jugada"]] for h in p["historia"]],
+                jugada_minimax=[JUGADAS_REFUTACION[h["jugada"]] for h in m["historia"]])
+
+
+def uct_refutacion(c=C_REFUTACION, vueltas=VUELTAS_REFUTACION, semilla=SEMILLA_REFUTACION):
+    """Una corrida REAL de UCT (uct_tpm, sus mismas reglas) en el arbol de la
+    refutacion con los pagos divididos entre ESCALA_REFUTACION (rango
+    [−1, 1], donde c = 1 y c = 2√2 tienen su sentido de siempre).
+
+    dict(descubre: la vuelta cuyo U es por primera vez −30/30 = −1;
+    Q: [(Q̂(A), Q̂(B))] tras cada vuelta, en escala ±1, None si no hay
+    visitas; N: [(N(A), N(B))] tras cada vuelta; cambia: la primera vuelta
+    con Q̂(A) < Q̂(B); mas_visitada: la jugada que se entregaria (A o B)
+    tras cada vuelta, empate → la primera)."""
+    arbol = escalar_arbol(ARBOL_REFUTACION, F(1, ESCALA_REFUTACION))
+    u = uct_tpm(c, vueltas, semilla, arbol)
+    por_vuelta = uct_por_vuelta_tpm(c, vueltas, semilla, arbol)
+    Q, Ns = [], []
+    for v in por_vuelta:
+        Q.append(tuple(F(v[(a,)][1], v[(a,)][0]) if (a,) in v else None for a in (0, 1)))
+        Ns.append(tuple(v.get((a,), (0, 0))[0] for a in (0, 1)))
+    descubre = next((i + 1 for i, x in enumerate(u["U"]) if x == -1), None)
+    cambia = next((i + 1 for i, (qa, qb) in enumerate(Q)
+                   if qa is not None and qb is not None and qa < qb), None)
+    mas = [JUGADAS_REFUTACION[0 if na >= nb else 1] for na, nb in Ns]
+    return dict(descubre=descubre, Q=Q, N=Ns, cambia=cambia, mas_visitada=mas)
+
+
+def sesgo_del_maximo():
+    """Dos jugadas de media 0, cada una con una sola muestra ±1 (parejas):
+    (E[max], E[min]) exactos = (1/2, −1/2), aunque el maximo real es 0."""
+    pares = list(product((-1, 1), repeat=2))
+    return (sum((F(max(p)) for p in pares), F(0)) / len(pares),
+            sum((F(min(p)) for p in pares), F(0)) / len(pares))
+
+
+# ------------------------------- homologacion: Hoeffding y la c de UCB1 ---
+
+EPS_HOEFFDING_HOMOLOGACION = (0.1, 0.2, 0.4)
+N_HOEFFDING_HOMOLOGACION = 100
+
+
+def cota_hoeffding_cola(n, eps, ancho=2):
+    """Una cola de Hoeffding para n muestras independientes en un intervalo de
+    ancho `ancho`, con n fijado de antemano: Pr(Q̂ ≤ Q − ε) ≤ e^(−2nε²/ancho²).
+    En la escala ±1 (ancho 2) es e^(−nε²/2), cota_hoeffding."""
+    return math.exp(-2 * n * eps ** 2 / ancho ** 2)
+
+
+def margen_hoeffding(delta, n, ancho=2):
+    """El ε que deja esa cola en δ: ε = ancho·√(ln(1/δ)/(2n)); en ±1,
+    √(2·ln(1/δ)/n), como margen."""
+    return ancho * math.sqrt(math.log(1 / delta) / (2 * n))
+
+
+def c_ucb1(ancho=2, exponente=4):
+    """La c de UCB1 que sale de pedir δ = N(s)^(−exponente) en el margen:
+    ε = ancho·√(exponente·ln N(s)/(2·N(s,a))), asi que c = ancho·√(exponente/2).
+    Con δ = N(s)^−4: 2√2 en ±1 (ancho 2), √2 en [0, 1] (ancho 1)."""
+    return ancho * math.sqrt(exponente / 2)
+
+
+def tabla_hoeffding_epsilon(n=N_HOEFFDING_HOMOLOGACION, epsilones=EPS_HOEFFDING_HOMOLOGACION):
+    """[(ε, cota en %)] con n muestras en ±1: 0.1 / 0.2 / 0.4 con n = 100 dan
+    60.65 % / 13.53 % / 0.0335 %."""
+    return [(e, 100 * cota_hoeffding_cola(n, e)) for e in epsilones]

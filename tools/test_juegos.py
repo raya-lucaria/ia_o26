@@ -3407,3 +3407,236 @@ def test_tpm_orden_en_que_cada_algoritmo_genera_los_nodos():
         f[4] for f in j.iterativa_tpm()[0]]
     with pytest.raises(ValueError):
         j.orden_generados_tpm("uct")
+
+
+# ------------------------------- homologacion de la unidad 7 (Ola 0) ---
+#
+# Cifras nuevas del plan de homologacion (§2 decision 2, §6.2, §6.4): las
+# trazas de 7.3 sobre el arbol de resultados, los tres Monte Carlo y
+# Hoeffding. Las pruebas de contrato de la actualizacion minimax se corren
+# tambien contra mutantes (monkeypatch) para comprobar que detectan la regla
+# rota: respaldo por promedio, desconocido como cero, jugada legal oculta.
+
+
+def test_homologacion_corte_en_el_arbol_de_resultados():
+    """Minimax con corte a d = 1, 2, 3 en el árbol de resultados (finales en
+    100·U, EVAL_TPM): jugada, valor de R, nodos y valores de cada nodo."""
+    assert [j.decidir_con_corte_tpm(d) for d in (1, 2, 3)] == [
+        ("izq", 60, 4), ("centro", 10, 11), ("centro", 0, 15)]
+    assert [j.decidir_con_corte_tpm(d)[:2] for d in (1, 2, 3)] == [
+        j.corte_tpm(d)[:2] for d in (1, 2, 3)]
+    assert j.valores_con_corte_tpm(1) == {"R": 60, "I": 60, "C": 20, "D": 10}
+    assert j.valores_con_corte_tpm(2) == {"R": 10, "I": -100, "C": 10, "C1": 10, "C2": 50,
+                                          "D": -100}
+    assert j.valores_con_corte_tpm(3) == {"R": 0, "I": -100, "C": 0, "C1": 0, "C2": 100,
+                                          "D": -100}
+    # Con d = 3 alcanza todos los finales: devuelve 100·V, no V.
+    assert j.valores_con_corte_tpm(3)["R"] == 100 * j.minimax_tpm()[1]
+    filas = j.filas_corte_tpm(2)
+    assert filas[0] == (1, "2 · R", "−∞", "", "—")
+    assert filas[-1][2:] == ("10", "", "centro")
+    assert [f[3] for f in filas if f[1].endswith("· R") and f[3]] == [
+        "-100 (I)", "10 (C)", "-100 (D)"]
+    # La traza tiene una fila por evento: entra/regresa de I, C, C1, C2, D,
+    # mas inicio, tres de la raiz y fin.
+    t = j.traza_decidir(j.ARBOL_TPM_100, profundidad=2, evaluar=j.EVAL_TPM)
+    assert len(filas) == len(t["filas"])
+
+
+def test_homologacion_iterativa_en_el_arbol_de_resultados():
+    """Profundización iterativa sin poda y con alfa-beta, con y sin la jugada
+    anterior primero, en el árbol de resultados."""
+    for anterior_primero in (False, True):
+        corridas = j.iterativa_sin_poda_tpm(anterior_primero=anterior_primero)
+        assert [(d, jugada, valor, nodos) for d, _, jugada, valor, nodos in corridas] == [
+            (1, "izq", 60, 4), (2, "centro", 10, 11), (3, "centro", 0, 15)]
+        assert sum(c[4] for c in corridas) == 30
+    assert [c[1] for c in j.iterativa_sin_poda_tpm(anterior_primero=True)] == [
+        ["izq", "centro", "der"], ["izq", "centro", "der"], ["centro", "izq", "der"]]
+    con, total = j.iterativa_alfa_beta_tpm()
+    assert (con, total) == j.iterativa_tpm()
+    assert con == [(1, ["izq", "centro", "der"], "izq", 60, 4),
+                   (2, ["izq", "centro", "der"], "centro", 10, 9),
+                   (3, ["centro", "izq", "der"], "centro", 0, 12)] and total == 25
+    sin, total_sin = j.iterativa_alfa_beta_tpm(anterior_primero=False)
+    assert [f[1] for f in sin] == [["izq", "centro", "der"]] * 3
+    assert [(f[2], f[3], f[4]) for f in sin] == [("izq", 60, 4), ("centro", 10, 9),
+                                                 ("centro", 0, 12)] and total_sin == 25
+    # En este árbol poner primero la anterior no ahorra nodos con d = 3.
+    assert j.tabla_nodos_generados_tpm() == {
+        "sin poda": [4, 11, 15], "alfa-beta": [4, 9, 12], "iterativa": [4, 9, 12],
+        "iterativa sin la anterior primero": [4, 9, 12]}
+    # La búsqueda con d = 3, centro primero: llamadas, ventanas y tipos.
+    t = j.traza_iterativa_tpm(3)
+    assert j.llamadas_alfa_beta(t) == [
+        ("C", -INF, INF, 0, None), ("C1", -INF, INF, 0, None), ("C2", -INF, 0, 100, "beta"),
+        ("I", 0, INF, -100, "alfa"), ("D", 0, INF, -100, "alfa")]
+    assert {n: k for n, (*_, k) in j.clases_transposicion(t).items()} == {
+        "C": "exacto", "C1": "exacto", "C2": "piso", "I": "techo", "D": "techo"}
+    assert t["orden_generados"] == ["R", "C", "C1", "0", "-100", "C2", "100", "I", "100",
+                                    "-100", "D", "-100"]
+    assert [j.valor_con_corte_hijo_tpm("C", k) for k in (0, 1, 2)] == [20, 10, 0]
+    corridas, entrega = j.iterativa_con_reloj_tpm(["izq", "centro", "der"])
+    assert [(c["d"], c["jugada"], c["generados"]) for c in corridas] == [
+        (1, "izq", 4), (2, "centro", 9), (3, "centro", 12)]
+    assert entrega == dict(jugada="centro", d=3, generados=25, linea=13, despues_de=None)
+    # El parámetro nuevo no cambia el árbol T.
+    assert j.iterativa_con_reloj_t(["izq", "centro", "der"]) == j.iterativa_con_reloj_t(
+        ["izq", "centro", "der"], arbol=j.ARBOL_T)
+
+
+def test_homologacion_expectiminimax_con_dado_en_d_y_q_azar():
+    """Expectiminimax con un dado parejo en D (la ficha de la radiografía) y
+    Q_azar = expectiminimax con los dos como dados."""
+    assert j.expectiminimax_tpm() == ("der", {"I": -1, "C1": 0, "C2": 1, "C": 0,
+                                              "D": F(1, 3), "R": F(1, 3)})
+    q = j.q_azar_arbol(j.ARBOL_TPM)
+    assert q == [0, F(-1, 4), F(1, 3)]
+    _, todos = j.expectiminimax_tpm(("I", "C", "D", "C1", "C2"))
+    assert q == [todos[n] for n in "ICD"]
+    assert q == [j.todos_al_azar_tpm()[1][a] for a in j.JUGADAS_RAIZ]
+    assert q != j.q_minimax_arbol(j.ARBOL_TPM) == [-1, 0, -1]
+    # En el árbol de la refutación: Q_azar(A) = −10/3 > −10 = Q_azar(B).
+    assert j.q_azar_arbol(j.ARBOL_REFUTACION) == [F(-10, 3), -10]
+    assert j.expectiminimax_t(j.ARBOL_REFUTACION, ("I", "I3"))[1]["I"] == F(-10, 3)
+    assert j.q_minimax_arbol(j.ARBOL_REFUTACION) == [-30, -10]
+    assert j.valor_minimax_arbol(j.ARBOL_REFUTACION) == -10
+
+
+def _violaciones_mc_minimax():
+    """Las reglas del contrato de la actualización minimax (§6.2) que se
+    rompen; [] si ninguna. Se corre normal y contra mutantes."""
+    malas = []
+    # 1. Respaldo max/min, no promedio: la refutación impuesta lleva Q̂(A) a −30.
+    op = j.operadores_ante_la_refutacion()
+    if (op["minimax_antes"], op["minimax_despues"], op["jugada_minimax"]) != (10, -30, "B"):
+        malas.append("respaldo")
+    # 2. Desconocido no es cero: tras una sola partida por A→p, MIN solo
+    #    conoce p (+10); su V̂ es 10 (provisional) y B sigue desconocida.
+    m = j.mc_minimax(j.ARBOL_REFUTACION, None, caminos=[(0, 0)])
+    if m["V"][(0,)] != 10 or m["Q"] != [10, None] or m["exacto"][(0,)] or m["exacto"][()]:
+        malas.append("desconocido")
+    # 3. Todas las jugadas legales: con tiempo descubre el árbol entero y
+    #    converge a V en cada nodo.
+    for semilla in range(5):
+        r = j.mc_minimax(j.ARBOL_TPM, 300, semilla)
+        completo = set(j.ids_tpm()) | {()}
+        if set(r["V"]) != completo or any(
+                r["V"][c] != j.minimax_arbol(j.nodo_en(j.ARBOL_TPM, c), len(c) % 2 == 0)
+                for c in completo):
+            malas.append("legales")
+            break
+    return malas
+
+
+def test_homologacion_mc_minimax_cumple_el_contrato():
+    assert _violaciones_mc_minimax() == []
+
+
+def test_homologacion_mc_minimax_mutante_promedio(monkeypatch):
+    def promedio(es_max, qs):
+        conocidas = [q for q in qs if q is not None]
+        return F(sum(conocidas), len(conocidas)) if conocidas else None
+    monkeypatch.setattr(j, "_respaldo_minimax", promedio)
+    assert "respaldo" in _violaciones_mc_minimax()
+
+
+def test_homologacion_mc_minimax_mutante_desconocido_cero(monkeypatch):
+    def cero(es_max, qs):
+        qs = [0 if q is None else q for q in qs]
+        return max(qs) if es_max else min(qs)
+    monkeypatch.setattr(j, "_respaldo_minimax", cero)
+    assert "desconocido" in _violaciones_mc_minimax()
+
+
+def test_homologacion_mc_minimax_mutante_oculta_una_jugada(monkeypatch):
+    original = j.acciones_arbol
+    monkeypatch.setattr(j, "acciones_arbol", lambda nodo: original(nodo)[:-1] or original(nodo))
+    assert "legales" in _violaciones_mc_minimax()
+
+
+def test_homologacion_mc_minimax_finales_exactos_y_entrega():
+    """Un final da su Q exacta en la primera visita; un antecesor queda
+    resuelto solo cuando lo conocido basta; sin muestras, la primera jugada."""
+    m = j.mc_minimax(j.ARBOL_REFUTACION, None, caminos=[(1,)])
+    assert m["Q"] == [None, -10] and m["exacto"][(1,)] and not m["exacto"][()]
+    assert m["jugada"] == 1
+    m = j.mc_minimax(j.ARBOL_REFUTACION, None, caminos=[(0, 2, 0)])
+    # x tiene una sola jugada, final −30: exacto, y MIN en A ya no puede bajar más.
+    assert m["V"][(0, 2)] == -30 and m["exacto"][(0, 2)] and m["exacto"][(0,)]
+    assert m["Q"] == [-30, None] and not m["exacto"][()]
+    assert j.mc_minimax(j.ARBOL_REFUTACION, 0)["jugada"] == 0          # sin muestras
+    # Empate entre conocidas: la primera.
+    assert j.mc_minimax(((1,), (1,)), None, caminos=[(1, 0), (0, 0)])["jugada"] == 0
+    # En T±, un MIN con un final −1 queda resuelto en esa visita; la raíz no.
+    m = j.mc_minimax(j.ARBOL_TPM, None, caminos=[(0, 1)])
+    assert m["V"][(0,)] == -1 and m["exacto"][(0,)] and not m["exacto"][()]
+    assert m["Q"] == [-1, None, None]
+    m = j.mc_minimax(j.ARBOL_TPM, None, caminos=[(0, 0)])
+    assert m["V"][(0,)] == 1 and not m["exacto"][(0,)]               # provisional
+    # Semilla fija: el mismo llamado da lo mismo.
+    assert j.mc_minimax(j.ARBOL_TPM, 50, 3) == j.mc_minimax(j.ARBOL_TPM, 50, 3)
+    r = j.mc_minimax(j.ARBOL_TPM, 300, 0)
+    assert r["Q"] == [-1, 0, -1] and j.JUGADAS_RAIZ[r["jugada"]] == "centro"
+    assert r["exacto"][()]
+    with pytest.raises(ValueError):
+        j.mc_minimax(j.ARBOL_TPM, None, caminos=[(1,)])
+
+
+def test_homologacion_refutacion_descubierta_tarde():
+    """Las cifras de §6.2: la secuencia impuesta (29 × +10 y luego −30) y las
+    corridas reales de Monte Carlo plano, actualización minimax y UCT."""
+    assert j.ARBOL_REFUTACION == ((10, 10, (-30,)), -10)
+    op = j.operadores_ante_la_refutacion()
+    assert op == dict(promedio_antes=10, promedio_despues=F(26, 3), jugada_promedio="A",
+                      minimax_antes=10, minimax_despues=-30, jugada_minimax="B")
+    assert round(float(op["promedio_despues"]), 2) == 8.67
+    caminos = j.caminos_refutacion()
+    assert len(caminos) == 31 and sum(c[0] == 0 for c in caminos) == 30
+    # Corridas reales, mismas partidas uniformes (semilla 0, 60 iteraciones).
+    r = j.corridas_refutacion()
+    d = r["descubre"]
+    assert d == 9
+    assert r["minimax"][d - 2][0] == 10 and r["minimax"][d - 1][0] == -30
+    assert r["jugada_minimax"][d - 2] == "A" and r["jugada_minimax"][d - 1:] == ["B"] * (60 - d + 1)
+    assert r["plano"][d - 1][0] == -10 and r["plano"][-1] == [F(-150, 29), -10]
+    assert r["jugada_plano"][-1] == "A"
+    assert r["minimax"][-1] == [-30, -10]
+    # UCT real: pagos entre 30, c = 1, semilla 0.
+    assert (j.ESCALA_REFUTACION, j.C_REFUTACION, j.SEMILLA_REFUTACION,
+            j.VUELTAS_REFUTACION) == (30, 1, 0, 60)
+    u = j.uct_refutacion()
+    assert u["descubre"] == 5 and u["cambia"] == 13
+    qa = [q[0] for q in u["Q"]]
+    assert qa[u["descubre"] - 2:u["descubre"]] == [F(1, 3), 0]   # un −1 más en el promedio
+    assert qa[u["descubre"] - 1] != -1                            # promedio, no min
+    assert all(qa[i + 1] <= qa[i] for i in range(u["descubre"] - 1, len(qa) - 1))
+    assert u["Q"][-1] == (F(-2, 3), F(-1, 3)) and u["N"][-1] == (12, 48)
+    assert u["mas_visitada"][-1] == "B"
+    assert j.uct_refutacion() == u
+
+
+def test_homologacion_sesgo_del_maximo():
+    assert j.sesgo_del_maximo() == (F(1, 2), F(-1, 2))
+
+
+def test_homologacion_hoeffding_y_c_de_ucb1():
+    tabla = j.tabla_hoeffding_epsilon()
+    assert [e for e, _ in tabla] == [0.1, 0.2, 0.4]
+    assert [round(p, 2) for _, p in tabla[:2]] == [60.65, 13.53]
+    assert round(tabla[2][1], 4) == 0.0335
+    for n in (1, 10, 100):
+        for e in (0.1, 0.3):
+            assert _m.isclose(j.cota_hoeffding_cola(n, e), j.cota_hoeffding(n, e))
+            assert _m.isclose(j.cota_hoeffding_cola(n, e / 2, ancho=1), j.cota_hoeffding(n, e))
+        for delta in (0.2, 0.05, 0.01):
+            assert _m.isclose(j.margen_hoeffding(delta, n), j.margen(delta, n))
+            assert _m.isclose(j.cota_hoeffding_cola(n, j.margen_hoeffding(delta, n, 1), 1),
+                              delta)
+    assert _m.isclose(j.c_ucb1(), 2 * _m.sqrt(2)) and _m.isclose(j.c_ucb1(), j.C_TEORIA)
+    assert _m.isclose(j.c_ucb1(ancho=1), _m.sqrt(2))
+    assert _m.isclose(j.c_ucb1(ancho=200), 200 * _m.sqrt(2))
+    # δ = N(s)^−4 en el margen da el bono de UCB1.
+    for n_padre, n in ((100, 10), (1000, 30)):
+        assert _m.isclose(j.margen_hoeffding(n_padre ** -4, n),
+                          j.c_ucb1() * _m.sqrt(_m.log(n_padre) / n))
