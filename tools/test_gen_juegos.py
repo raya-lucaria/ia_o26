@@ -877,8 +877,11 @@ def test_la_radiografia_dibuja_los_numeros_de_juegos():
     ja, va, na, pod = j.alfa_beta_tpm("dado")
     r = _renglones("jue-c3-rx-alfa-beta")
     assert f"orden dado: {na} de {n} nodos" in r and na == 12
-    assert "≥ +1" in r and "≤ −1" in r and "poda α" in r and "poda β" in r
-    assert "C2: v = +1 ≥ β = 0, poda β." in r and "D: v = −1 ≤ α = 0, poda α." in r
+    # decisión 5: el NOMBRE es corte alfa/beta; la operación, poda
+    assert "≥ +1" in r and "≤ −1" in r and "corte α" in r and "corte β" in r
+    assert "C2: v = +1 ≥ β = 0, corte β." in r and "D: v = −1 ≤ α = 0, corte α." in r
+    for nombre in ("jue-c3-rx-alfa-beta", "jue-c3-rx-iterativa"):
+        assert "poda α" not in _texto(nombre) and "poda β" not in _texto(nombre), nombre
     # cada hoja podada lleva su tachado (dos lineas de acento) y no su U
     assert _texto("jue-c3-rx-alfa-beta").count(f'stroke="{gen.ACENTO}" stroke-width="2.5"') \
         >= 2 * len(pod)
@@ -1326,6 +1329,33 @@ def test_las_figuras_quitadas_no_vuelven():
     assert (sin_bono["n"] - sin_bono["atoradas"], sin_bono["en"]["y"], sin_bono["en"]["z"]) == (
         34, 5, 1)
     assert j.tabla_eligiendo_x()["mejor_promedio"][10000] == F(17, 20)
+
+
+def test_la_ventana_dice_que_el_igual_poda_con_el_umbral_del_rival():
+    """Ola 4, r1: «v = α o v = β ya poda» era falso (C1 puede tener v = α y
+    seguir). La igualdad poda solo con el umbral del rival."""
+    r = _renglones("jue-ab-ventana")
+    assert "v = β poda en MAX;" in r and "v = α poda en MIN." in r
+    assert "Igualar el propio no basta." in r
+    assert not [x for x in r if "ya poda" in x]
+    assert "umbral del rival" in _aria("jue-ab-ventana")
+
+
+def test_el_final_de_alfa_beta_en_el_arbol_base_cuenta_podas():
+    """Ola 4, r1: «Dos cortes» nombraba la operación; la operación es poda."""
+    r = _renglones("jue-t-ab-5")
+    assert "Dos podas, dos hojas sin generar:" in r
+    assert not [x for x in r if "Dos cortes" in x]
+
+
+@pytest.mark.parametrize("nombre, palabra", [("jue-t-minimax-2", "tramo 2"),
+                                             ("jue-t-ab-3", "tramo 3"),
+                                             ("jue-t1-ab-2", "fila 7")])
+def test_las_trazas_dicen_tramo_o_fila_como_la_pagina(nombre, palabra):
+    """Auditoría J #25: la página habla de tramos y filas, no de pasos."""
+    visibles = " ".join(_renglones(nombre)) + " " + _aria(nombre)
+    assert palabra in visibles, nombre
+    assert not re.search(r"\bpaso \d", visibles), nombre
 
 
 def test_las_figuras_del_arbol_base_y_del_reducido_se_nombran():

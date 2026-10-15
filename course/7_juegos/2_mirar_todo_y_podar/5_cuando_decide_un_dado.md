@@ -57,7 +57,7 @@ Al terminar tendrás:
 >
 > - **[Animación paso a paso](../_assets/traza_arbol_t.html#azar)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
-> - **Notebook en Colab**, sección 4: el mismo Python de esta página,
+> - **Notebook en Colab**, sección 5: el mismo Python de esta página,
 >   corriendo; cámbiale un número y mira qué pasa.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -758,15 +758,6 @@ explicar qué error comete quien confunde un rival con el azar.
 > | Minimax | $V$; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | **Expectiminimax (estás aquí)** | **El $V$ del juego con dado; lo garantiza** |
->
-> **Lo que viene.**
->
-> - **Minimax con corte**: mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, para cuando el árbol no cabe. Clase 3, [[cortar-y-evaluar|Cortar y evaluar]].
-> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]].
-> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]].
-> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin diseñar una función EVAL. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
-> - **Monte Carlo con actualización minimax**: simular igual que el plano, pero guardar los estados que descubre y subir por ellos el mejor resultado de quien mueve, como minimax. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
-> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
 
 ## Lo que hay que llevarse
 

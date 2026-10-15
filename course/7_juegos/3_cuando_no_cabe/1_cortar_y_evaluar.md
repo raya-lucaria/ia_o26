@@ -1048,15 +1048,7 @@ mejor_jugada pasa de ninguna a **der** en la fila 2 ${(10>-\infty)}$ y a **centr
 > | Minimax | $V$; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
-> | **Minimax con corte (estás aquí)** | **Valor con corte; no garantiza $V$, salvo si llega a los finales** |
->
-> **Lo que viene.**
->
-> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]].
-> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]].
-> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin diseñar una función EVAL. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
-> - **Monte Carlo con actualización minimax**: simular igual que el plano, pero guardar los estados que descubre y subir por ellos el mejor resultado de quien mueve, como minimax. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
-> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
+> | **Minimax con corte (estás aquí)** | **Valor con corte; no garantiza $V$. Con todos los finales, da $M\cdot V$** |
 
 ## Lo que hay que llevarse
 

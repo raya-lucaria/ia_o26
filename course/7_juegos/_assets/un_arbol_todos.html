@@ -95,9 +95,9 @@
       <button type="button" data-familia="minimax">Minimax</button>
       <button type="button" data-familia="alfa-beta">Alfa-beta</button>
       <button type="button" data-familia="dado">Expectiminimax (dado en D)</button>
-      <button type="button" data-familia="corte">Con corte</button>
+      <button type="button" data-familia="corte">Minimax con corte</button>
       <button type="button" data-familia="mc">Monte Carlo plano</button>
-      <button type="button" data-familia="mmmc">Actualización minimax</button>
+      <button type="button" data-familia="mmmc">Monte Carlo con actualización minimax</button>
       <button type="button" data-familia="uct">UCT</button>
     </div>
 
@@ -112,18 +112,18 @@
       </div>
     </div>
     <div class="variantes" data-de="dado" hidden>
-      <button type="button" data-v="dado" data-nombre="Expectiminimax, D es un dado" data-clave="expectiminimax" data-fila="expectiminimax, D es un dado">D es un dado parejo</button>
+      <button type="button" data-v="dado" data-nombre="Expectiminimax (dado en D)" data-clave="expectiminimax" data-fila="expectiminimax, D es un dado">D es un dado parejo</button>
     </div>
     <div class="variantes" data-de="corte" hidden>
       <p class="titulo">Corte por nivel: profundidad d</p>
       <div class="botones">
-        <button type="button" data-v="corte-d1" data-nombre="Con corte, d = 1" data-clave="corte d = 1" data-fila="corte d = 1">d = 1</button>
-        <button type="button" data-v="corte-d2" data-nombre="Con corte, d = 2" data-clave="corte d = 2" data-fila="corte d = 2">d = 2</button>
-        <button type="button" data-v="corte-d3" data-nombre="Con corte, d = 3" data-clave="corte d = 3" data-fila="corte d = 3">d = 3</button>
+        <button type="button" data-v="corte-d1" data-nombre="Minimax con corte, d = 1" data-clave="corte d = 1" data-fila="corte d = 1">d = 1</button>
+        <button type="button" data-v="corte-d2" data-nombre="Minimax con corte, d = 2" data-clave="corte d = 2" data-fila="corte d = 2">d = 2</button>
+        <button type="button" data-v="corte-d3" data-nombre="Minimax con corte, d = 3" data-clave="corte d = 3" data-fila="corte d = 3">d = 3</button>
       </div>
-      <p class="titulo">Con búsqueda de quietud</p>
+      <p class="titulo">Búsqueda de quietud</p>
       <div class="botones">
-        <button type="button" data-v="quietud" data-nombre="Quietud, d = 1" data-clave="quietud d = 1" data-fila="quietud, d = 1">quietud, d = 1</button>
+        <button type="button" data-v="quietud" data-nombre="Búsqueda de quietud, d = 1" data-clave="quietud d = 1" data-fila="quietud, d = 1">quietud, d = 1</button>
       </div>
       <p class="titulo">Profundización iterativa: cada búsqueda, una tras otra (la jugada anterior va primero)</p>
       <div class="botones">
@@ -142,9 +142,9 @@
     </div>
     <div class="variantes" data-de="mmmc" hidden>
       <div class="fila-vuelta">
-        <label for="partida"><span>Partida de la corrida (semilla 0)</span><output id="o-partida" for="partida">40</output></label>
-        <input type="range" id="partida" min="1" max="40" step="1" value="40">
-        <span class="sr" id="b-mmmc" data-v="mmmc" data-nombre="Actualización minimax" data-clave="actualización minimax" data-fila="actualización minimax, 40 partidas"></span>
+        <label for="partida"><span>Partida de la corrida (semilla 0)</span><output id="o-partida" for="partida">10</output></label>
+        <input type="range" id="partida" min="1" max="40" step="1" value="10">
+        <span class="sr" id="b-mmmc" data-v="mmmc" data-nombre="Monte Carlo con actualización minimax" data-clave="actualización minimax" data-fila="actualización minimax, 10 partidas"></span>
       </div>
     </div>
     <div class="variantes" data-de="uct" hidden>
@@ -191,7 +191,10 @@
       <thead><tr><th scope="col">Algoritmo</th><th scope="col">Jugada</th><th scope="col">Valor</th><th scope="col">Nodos</th><th scope="col">¿Garantiza V?</th></tr></thead>
       <tbody id="tabla"></tbody>
     </table>
-    <p class="nota">En el orden de la radiografía. ✓ marca la jugada de minimax y ✗ las demás.
+    <p class="nota">En el orden de la radiografía y con sus corridas: la actualización minimax,
+    10 partidas (el deslizador sigue hasta 40, el presupuesto de UCT); UCT, 40 vueltas. Monte
+    Carlo plano agrega 10 y 50 simulaciones por jugada a las 5 de la radiografía.
+    ✓ marca la jugada de minimax y ✗ las demás.
     <b>Valor:</b> corte, quietud e iterativa lo dan en 100·U, la escala de EVAL (V = 0 en
     las dos); expectiminimax, el V del juego con dado; los dos Monte Carlo y UCT, la Q̂
     de la jugada que entregan.
@@ -245,16 +248,16 @@
 {"algoritmo":"alfa-beta, orden dado","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":12,"simulaciones":null,"garantiza":"Sí, en la raíz","da_v_aqui":true,"nota":""},
 {"algoritmo":"alfa-beta, orden al revés","jugada":"centro","valor":0,"tipo":"V","escala":"U","nodos":14,"simulaciones":null,"garantiza":"Sí, en la raíz","da_v_aqui":true,"nota":""},
 {"algoritmo":"expectiminimax, D es un dado","jugada":"der","valor":"1/3","tipo":"V con dado","escala":"U","nodos":15,"simulaciones":null,"garantiza":"Sí, el V del juego con dado","da_v_aqui":true,"nota":"exacto para el juego con dado, que es otro"},
-{"algoritmo":"corte d = 1","jugada":"izq","valor":60,"tipo":"valor con corte","escala":"100·U","nodos":4,"simulaciones":null,"garantiza":"No, salvo si llega a los finales","da_v_aqui":false,"nota":""},
-{"algoritmo":"corte d = 2","jugada":"centro","valor":10,"tipo":"valor con corte","escala":"100·U","nodos":11,"simulaciones":null,"garantiza":"No, salvo si llega a los finales","da_v_aqui":false,"nota":""},
-{"algoritmo":"corte d = 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":15,"simulaciones":null,"garantiza":"No, salvo si llega a los finales","da_v_aqui":true,"nota":""},
-{"algoritmo":"quietud, d = 1","jugada":"centro","valor":20,"tipo":"valor con quietud","escala":"100·U","nodos":5,"simulaciones":null,"garantiza":"No, salvo si llega a los finales antes de cortar","da_v_aqui":false,"nota":""},
-{"algoritmo":"profundización iterativa, d = 1, 2, 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":25,"simulaciones":null,"garantiza":"No, salvo si llega a los finales","da_v_aqui":true,"nota":"d = 1: izq (4) · d = 2: centro (9) · d = 3: centro (12)"},
+{"algoritmo":"corte d = 1","jugada":"izq","valor":60,"tipo":"valor con corte","escala":"100·U","nodos":4,"simulaciones":null,"garantiza":"No; si llega a todos los finales, da M·V (aquí M = 100)","da_v_aqui":false,"nota":""},
+{"algoritmo":"corte d = 2","jugada":"centro","valor":10,"tipo":"valor con corte","escala":"100·U","nodos":11,"simulaciones":null,"garantiza":"No; si llega a todos los finales, da M·V (aquí M = 100)","da_v_aqui":false,"nota":""},
+{"algoritmo":"corte d = 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":15,"simulaciones":null,"garantiza":"No; si llega a todos los finales, da M·V (aquí M = 100)","da_v_aqui":true,"nota":""},
+{"algoritmo":"quietud, d = 1","jugada":"centro","valor":20,"tipo":"valor con quietud","escala":"100·U","nodos":5,"simulaciones":null,"garantiza":"No; si llega a todos los finales antes de activar la quietud, da M·V (aquí M = 100)","da_v_aqui":false,"nota":""},
+{"algoritmo":"profundización iterativa, d = 1, 2, 3","jugada":"centro","valor":0,"tipo":"valor con corte","escala":"100·U","nodos":25,"simulaciones":null,"garantiza":"No; si llega a todos los finales, da M·V (aquí M = 100)","da_v_aqui":true,"nota":"d = 1: izq (4) · d = 2: centro (9) · d = 3: centro (12)"},
 {"algoritmo":"Monte Carlo plano, 5 por jugada","jugada":"der","valor":"3/5","tipo":"Q̂","escala":"U","nodos":15,"simulaciones":15,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con Q_azar = 1/3"},
 {"algoritmo":"Monte Carlo plano, 10 por jugada","jugada":"der","valor":"2/5","tipo":"Q̂","escala":"U","nodos":15,"simulaciones":30,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con Q_azar = 1/3"},
 {"algoritmo":"Monte Carlo plano, 50 por jugada","jugada":"der","valor":"12/25","tipo":"Q̂","escala":"U","nodos":15,"simulaciones":150,"garantiza":"No","da_v_aqui":false,"nota":"límite: der con Q_azar = 1/3"},
-{"algoritmo":"actualización minimax, 40 partidas","jugada":"centro","valor":0,"tipo":"Q̂","escala":"U","nodos":15,"simulaciones":40,"garantiza":"No (en un árbol finito, con partidas sin límite llega a él)","da_v_aqui":true,"nota":"raíz exacta: ya descubrió lo que decide"},
-{"algoritmo":"UCT, c = 1, 40 vueltas","jugada":"centro","valor":"0","tipo":"Q̂","escala":"U","nodos":15,"simulaciones":40,"garantiza":"No (con tiempo sin límite converge a él, con cualquier c > 0)","da_v_aqui":true,"nota":"N = 26 de 40"}]}
+{"algoritmo":"actualización minimax, 10 partidas","jugada":"centro","valor":0,"tipo":"Q̂","escala":"U","nodos":11,"simulaciones":10,"garantiza":"No (en un árbol finito, con todas las jugadas, finales reales y partidas sin límite, converge a él)","da_v_aqui":true,"nota":"raíz provisional"},
+{"algoritmo":"UCT, c = 1, 40 vueltas","jugada":"centro","valor":"0","tipo":"Q̂","escala":"U","nodos":15,"simulaciones":40,"garantiza":"No (en un árbol finito, con c > 0 fija y vueltas sin límite, converge a él)","da_v_aqui":true,"nota":"N = 26 de 40"}]}
 </script>
 
 <script>
@@ -283,21 +286,21 @@ const V = A.minimax.valor;
    que la columna de la tabla quepa a 390 px; la tarjeta lo da completo. */
 const ABREVIA = {
   "Sí, el V del juego con dado": "Sí, el del juego con dado",
-  "No, salvo si llega a los finales": "No, salvo finales",
-  "No, salvo si llega a los finales antes de cortar": "No, salvo finales antes del corte",
-  "No (con tiempo sin límite converge a él, con cualquier c > 0)": "No; converge",
-  "No (en un árbol finito, con partidas sin límite llega a él)": "No; llega a él",
+  "No; si llega a todos los finales, da M·V (aquí M = 100)": "No; con finales, M·V",
+  "No; si llega a todos los finales antes de activar la quietud, da M·V (aquí M = 100)": "No; con finales, M·V",
+  "No (en un árbol finito, con c > 0 fija y vueltas sin límite, converge a él)": "No; converge",
+  "No (en un árbol finito, con todas las jugadas, finales reales y partidas sin límite, converge a él)": "No; converge",
 };
 /* nombres cortos para que la tabla quepa a 390 px */
 const ETIQUETA = {
   "minimax": "Minimax",
-  "expectiminimax, D es un dado": "Expecti\u00adminimax, D dado",
+  "expectiminimax, D es un dado": "Expecti\u00adminimax, dado en D",
   "alfa-beta, orden dado": "Alfa-beta, orden dado",
   "alfa-beta, orden al revés": "Alfa-beta, al revés",
   "corte d = 1": "Corte, d = 1", "corte d = 2": "Corte, d = 2", "corte d = 3": "Corte, d = 3",
   "quietud, d = 1": "Quietud, d = 1",
   "profundización iterativa, d = 1, 2, 3": "Iterativa, d = 1, 2, 3",
-  "actualización minimax, 40 partidas": "Act. minimax, 40 partidas",
+  "actualización minimax, 10 partidas": "Act. minimax, 10 partidas",
 };
 /* ¿todas las ramas que miró terminaron en finales? (sin EVAL en ninguna) */
 function llegoAFinales(valores) {
@@ -575,7 +578,7 @@ function vista(b) {
       ? `${j} ${fraccion(tras[HIJO_DE[j]][1], tras[HIJO_DE[j]][0])}` : `${j} —`).join(" · ")]);
     if (D.jugadas_raiz.filter(j => (N[HIJO_DE[j]] || 0) === N[h]).length > 1)
       r.extra.push(["Empate en N(s, a)", `entrega la primera en el orden ${D.jugadas_raiz.join(", ")}`]);
-    r.nota = "Entrega la más simulada. Fuera del árbol, todos juegan al azar (la simulación); "
+    r.nota = "Entrega la más visitada. Fuera del árbol, todos juegan al azar (la simulación); "
       + "dentro, un nodo agrega a sus hijos en el orden dado, uno cada vez que pasa por él, y elige por puntaje "
       + "(MAX, el mayor Q̂ + bono; MIN, el menor Q̂ − bono) solo cuando ya los tiene todos. "
       + (completos.length ? `Tras la vuelta ${t} ya eligen por puntaje: ${lista(completos)}.`
@@ -601,9 +604,9 @@ function aqui(fam, r, f) {
     return r.daV ? `<b>sí</b>: ${v} es el V del juego con dado; el del árbol sin dado es ${signo(V)}`
                  : `<b>no</b>: ${v}`;
   if (fam === "corte" || fam === "quietud" || fam === "iterativa") {
-    if (r.daV && r.llego) return `<b>sí</b>: ${v} (100·U) es V, porque esta vez llegó a los finales en todas ${r.podados.size ? "las ramas que no podó" : "sus ramas"}`;
-    if (r.daV) return `<b>sí, por casualidad</b>: ${v} (100·U) coincide con V, pero salió de EVAL`;
-    return `<b>no</b>: ${v} en 100·U, y V es ${signo(V)}`;
+    if (r.daV && r.llego) return `<b>sí</b>: ${v} = 100·V (M·V con M = 100), porque esta vez llegó a los finales en todas ${r.podados.size ? "las ramas que no podó" : "sus ramas"}`;
+    if (r.daV) return `<b>sí, por casualidad</b>: ${v} coincide con 100·V, pero salió de EVAL`;
+    return `<b>no</b>: ${v} en 100·U, y 100·V es ${signo(100 * V)}`;
   }
   if (fam === "mmmc") {
     if (r.daV && r.exacto) return `<b>sí</b>: ${v} es V, y ya es exacto: descubrió todo lo que decide la raíz`;

@@ -41,7 +41,7 @@ Al terminar tendrás:
 >
 > - **[Animación paso a paso](../_assets/traza_arbol_t.html#alfa-beta)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
-> - **Notebook en Colab**, sección 5: el código de alfa-beta en Python,
+> - **Notebook en Colab**, sección 4: el código de alfa-beta en Python,
 >   corriendo; cámbiale un número y mira qué pasa.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)

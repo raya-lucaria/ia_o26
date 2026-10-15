@@ -396,6 +396,9 @@ def test_las_secciones_van_en_orden_y_el_cierre_es_la_9(nb):
                for c in celdas(nb, tipo="markdown")
                if re.match(r"## \d+ · ", fuente(c))]
     assert [int(n) for n, _ in titulos] == list(range(1, 10))
+    # el orden de las páginas de la clase 2 (plan §4): alfa-beta antes que el dado
+    assert titulos[2][1] == "Minimax" and titulos[3][1] == "Alfa-beta"
+    assert titulos[4][1] == "Cuando decide un dado: expectiminimax"
     assert titulos[7][1] == "De dónde sale el bono"
     assert titulos[8][1] == "Cierre"
 

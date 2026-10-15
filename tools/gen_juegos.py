@@ -1745,19 +1745,19 @@ def _pasos_minimax_t():
     p3 = _fila_minimax(lambda f: f["evento"] == "raiz" and f["hijo"] == "C")
     p4 = _fila_minimax(lambda f: f["evento"] == "raiz" and f["hijo"] == "D")
     return {
-        1: (p1, ["Minimax en el árbol base", "paso 1 · I devuelve 3:", "mejor_jugada = izq"],
-            "DECIDIR-MINIMAX sobre el árbol base, paso 1 (fila %d de la traza)." % p1,
+        1: (p1, ["Minimax en el árbol base", "tramo 1 · I devuelve 3:", "mejor_jugada = izq"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 1 (fila %d de la traza)." % p1,
             ["Primera jugada de R:", "izq vale 3, y 3 > −∞."]),
-        2: (p2, ["Minimax en el árbol base", "paso 2 · a media ejecución:", "pila R›C›C2"],
-            "DECIDIR-MINIMAX sobre el árbol base, paso 2 (fila %d de la traza): a media "
+        2: (p2, ["Minimax en el árbol base", "tramo 2 · a media ejecución:", "pila R›C›C2"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 2 (fila %d de la traza): a media "
             "ejecución, con la pila R, C, C2." % p2,
             ["En la pila, solo el camino R, C, C2.", "C1 ya devolvió 5: su llamada",
              "terminó; en C solo queda su v = 5."]),
-        3: (p3, ["Minimax en el árbol base", "paso 3 · C devuelve 5:", "mejor_jugada = centro"],
-            "DECIDIR-MINIMAX sobre el árbol base, paso 3 (fila %d de la traza)." % p3,
+        3: (p3, ["Minimax en el árbol base", "tramo 3 · C devuelve 5:", "mejor_jugada = centro"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 3 (fila %d de la traza)." % p3,
             ["centro vale 5, y 5 > 3:", "R cambia de jugada."]),
-        4: (p4, ["Minimax en el árbol base", "paso 4 · D devuelve 2:", "2 > 5 es falso"],
-            "DECIDIR-MINIMAX sobre el árbol base, paso 4 (fila %d de la traza), el último "
+        4: (p4, ["Minimax en el árbol base", "tramo 4 · D devuelve 2:", "2 > 5 es falso"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 4 (fila %d de la traza), el último "
             "antes de devolver la jugada." % p4,
             ["der vale 2, y 2 > 5 es falso:", "mejor_jugada sigue en centro.",
              "DECIDIR-MINIMAX devuelve centro", "(línea 6). Se generaron 14 nodos."]),
@@ -1799,14 +1799,14 @@ def _pasos_ab_t1():
     n, total = t["generados"], j.contar_nodos(j.ARBOL_T1)
     fp = {p: fila_pagina(j.ARBOL_T1, p) for p in (p1, p2, p3)}
     return {
-        1: (p1, ["Alfa-beta, árbol reducido", "paso 1 · I devuelve 3: α = 3"],
-            f"DECIDIR-ALFA-BETA sobre el árbol reducido, paso 1 (fila {fp[p1]} de la traza).",
+        1: (p1, ["Alfa-beta, árbol reducido", f"fila {fp[p1]} · I devuelve 3: α = 3"],
+            f"DECIDIR-ALFA-BETA sobre el árbol reducido (fila {fp[p1]} de la traza).",
             ["R ya tiene asegurado 3:", "a D le pasa α = 3."]),
-        2: (p2, ["Alfa-beta, árbol reducido", "paso 2 · corte alfa en D"],
-            f"DECIDIR-ALFA-BETA sobre el árbol reducido, paso 2 (fila {fp[p2]} de la traza).",
+        2: (p2, ["Alfa-beta, árbol reducido", f"fila {fp[p2]} · corte alfa en D"],
+            f"DECIDIR-ALFA-BETA sobre el árbol reducido (fila {fp[p2]} de la traza).",
             ["D valdrá a lo más 2, y R ya tiene 3:", "la hoja 12 no se genera."]),
-        3: (p3, ["Alfa-beta, árbol reducido", f"paso 3 · {n} de {total} nodos,", "juega izq"],
-            f"DECIDIR-ALFA-BETA sobre el árbol reducido, paso 3: el final (fila {fp[p3]}).",
+        3: (p3, ["Alfa-beta, árbol reducido", f"fila {fp[p3]} · {n} de {total} nodos,", "juega izq"],
+            f"DECIDIR-ALFA-BETA sobre el árbol reducido: el final (fila {fp[p3]}).",
             ["D devolvió 2, una cota;", "2 > 3 es falso.", f"Se generaron {n} de {total} nodos."]),
     }
 
@@ -1822,23 +1822,23 @@ def _pasos_ab_t():
     exacto_c2 = j.minimax_arbol(j.ARBOL_T[1][1])
     fp = {p: fila_pagina(j.ARBOL_T, p) for p in (p1, p2, p3, p4, p5)}
     return {
-        1: (p1, ["Alfa-beta en el árbol base", "paso 1 · I devuelve 3: α = 3"],
-            f"DECIDIR-ALFA-BETA sobre el árbol base, paso 1 (fila {fp[p1]} de la traza).",
+        1: (p1, ["Alfa-beta en el árbol base", "tramo 1 · I devuelve 3: α = 3"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 1 (fila {fp[p1]} de la traza).",
             ["R ya tiene asegurado 3:", "a C le pasa α = 3."]),
-        2: (p2, ["Alfa-beta en el árbol base", "paso 2 · C1 devuelve 5:", "en C, β = 5"],
-            f"DECIDIR-ALFA-BETA sobre el árbol base, paso 2 (fila {fp[p2]} de la traza).",
+        2: (p2, ["Alfa-beta en el árbol base", "tramo 2 · C1 devuelve 5:", "en C, β = 5"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 2 (fila {fp[p2]} de la traza).",
             ["C1 subió su α a 5, pero ese α se", "perdió al regresar: a C le llegó",
              "w = 5, y C actualiza su β."]),
-        3: (p3, ["Alfa-beta en el árbol base", "paso 3 · corte beta en C2"],
-            f"DECIDIR-ALFA-BETA sobre el árbol base, paso 3 (fila {fp[p3]} de la traza).",
+        3: (p3, ["Alfa-beta en el árbol base", "tramo 3 · corte beta en C2"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 3 (fila {fp[p3]} de la traza).",
             ["C2 devuelve 7: una cota", f"(su valor exacto es {exacto_c2}).",
              "A C le basta: con 7 ≥ 5,", "C no cambia su 5."]),
-        4: (p4, ["Alfa-beta en el árbol base", "paso 4 · corte alfa en D"],
-            f"DECIDIR-ALFA-BETA sobre el árbol base, paso 4 (fila {fp[p4]} de la traza).",
+        4: (p4, ["Alfa-beta en el árbol base", "tramo 4 · corte alfa en D"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 4 (fila {fp[p4]} de la traza).",
             ["D valdrá a lo más 2, y R ya tiene 5:", "la hoja 12 no se genera."]),
-        5: (p5, ["Alfa-beta en el árbol base", f"paso 5 · {n} de {total} nodos,", "juega centro"],
-            f"DECIDIR-ALFA-BETA sobre el árbol base, paso 5: el final (fila {fp[p5]}).",
-            ["Dos cortes, dos hojas sin generar:", f"{n} de {total} nodos. La misma",
+        5: (p5, ["Alfa-beta en el árbol base", f"tramo 5 · {n} de {total} nodos,", "juega centro"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 5: el final (fila {fp[p5]}).",
+            ["Dos podas, dos hojas sin generar:", f"{n} de {total} nodos. La misma",
              "jugada que minimax: centro."]),
     }
 
@@ -2253,8 +2253,10 @@ def jue_t_iterativa():
 
 
 def jue_ab_ventana():
-    """La ventana (α, β) como una banda en la recta: tocar un extremo o salir
-    de ella poda. Los dos ejemplos de abajo son los dos cortes del arbol base."""
+    """La ventana (α, β) como una banda en la recta: salir de ella poda, y
+    la igualdad poda solo con el umbral del rival (v ≥ β en MAX, v ≤ α en
+    MIN); igualar el umbral propio no basta. Los dos ejemplos de abajo son
+    los dos cortes del arbol base."""
     W = ANCHO_T
     t = j.traza_decidir(j.ARBOL_T, poda=True)
     beta_f = next(f for f in t["filas"] if f["corta"] == "beta")
@@ -2264,7 +2266,8 @@ def jue_ab_ventana():
     desc = ("Una recta numérica de −∞ a +∞ con dos marcas, α y β. La banda entre ellas va "
             "resaltada: aquí el valor importa. A la izquierda de α, o en α, v ≤ α: corte alfa, "
             "en un nodo de MIN. A la derecha de β, o en β, v ≥ β: corte beta, en un nodo de "
-            "MAX. El igual cuenta. Abajo, los dos cortes del árbol base: D llega con "
+            "MAX. El igual cuenta solo con el umbral del rival: v = β poda en MAX y v = α "
+            "poda en MIN; igualar el umbral propio no basta. Abajo, los dos cortes del árbol base: D llega con "
             f"({f(alfa_f['alfa'])}, {f(alfa_f['beta'])}) y su hoja {f(alfa_f['w'])} cae a la "
             f"izquierda de α; C2 llega con ({f(beta_f['alfa'])}, {f(beta_f['beta'])}) y su hoja "
             f"{f(beta_f['w'])} cae a la derecha de β.")
@@ -2288,8 +2291,14 @@ def jue_ab_ventana():
         out.append(texto(cx, y - 46, r1, tam=T_VAL, peso="700"))
         out.append(texto(cx, y - 16, r2, tam=T_TXT, color=ACENTO, peso="700"))
         out.append(texto(cx, y + 78, r3, tam=T_TXT, color=SUAVE))
-    out.append(texto(X_PIE, y + 120, "El igual cuenta:", tam=T_TXT, anclaje="start"))
-    out.append(texto(X_PIE, y + 150, "v = α o v = β ya poda.", tam=T_TXT, anclaje="start"))
+    # en renglones de ≤ 345 px: a 390 el sitio no escala la figura
+    out.append(texto(X_PIE, y + 120, "El igual cuenta, pero solo con", tam=T_TXT,
+                     anclaje="start"))
+    out.append(texto(X_PIE, y + 150, "el umbral del rival:", tam=T_TXT, anclaje="start"))
+    out.append(texto(X_PIE, y + 180, "v = β poda en MAX;", tam=T_TXT, anclaje="start"))
+    out.append(texto(X_PIE, y + 210, "v = α poda en MIN.", tam=T_TXT, anclaje="start"))
+    out.append(texto(X_PIE, y + 240, "Igualar el propio no basta.", tam=T_TXT,
+                     color=SUAVE, anclaje="start"))
 
     # Los dos cortes de T, cada uno en su recta (0 a 12, con colas para ±∞).
     def xv(v):
@@ -2318,13 +2327,13 @@ def jue_ab_ventana():
 
     a_, b_ = alfa_f["alfa"], alfa_f["beta"]
     assert alfa_f["v"] <= a_
-    out.append(recta(y + 290, f"D llega con ({f(a_)}, {f(b_)})", a_, b_, alfa_f["v"],
+    out.append(recta(y + 370, f"D llega con ({f(a_)}, {f(b_)})", a_, b_, alfa_f["v"],
                      f"{f(alfa_f['v'])} ≤ {f(a_)}: corte alfa"))
     a_, b_ = beta_f["alfa"], beta_f["beta"]
     assert beta_f["v"] >= b_
-    out.append(recta(y + 460, f"C2 llega con ({f(a_)}, {f(b_)})", a_, b_, beta_f["v"],
+    out.append(recta(y + 540, f"C2 llega con ({f(a_)}, {f(b_)})", a_, b_, beta_f["v"],
                      f"{f(beta_f['v'])} ≥ {f(b_)}: corte beta"))
-    H = y + 520
+    H = y + 600
     return "".join([marco(W, H, desc, titulo, desc)] + out + [cierre()])
 
 
@@ -2517,8 +2526,11 @@ def jue_ab_fijo_parte(parte):
                  5: _fila_final(True),
                  6: dict(modo="fantasma", lineas=["y lo que", "cuelga"]),
                  13: dict(modo="fantasma")}
-        aristas = [_a(1, 2), _a(1, 3, "nueva", (ventana3, True)),
-                   _a(3, 4, "nueva", (ventana4, True)),
+        # jugada y ventana más arriba que en _a: a 0.82 la ventana tapaba la
+        # punta de flecha de c1xb2 y de a3xb2 (ronda de render).
+        aristas = [_a(1, 2, t_jugada=0.55),
+                   _a(1, 3, "nueva", (ventana3, True), t_jugada=0.33, t_ventana=0.66),
+                   _a(3, 4, "nueva", (ventana4, True), t_jugada=0.4, t_ventana=0.7),
                    _a(4, 5, "nueva"),
                    _a(3, 6, "tenue", t_jugada=0.7), _a(3, 13, "tenue", t_jugada=0.7)]
         cortes = [(3, [6, 13], "corte alfa", "der", 0.28)]
@@ -3103,7 +3115,7 @@ def jue_c3_mcts_pasos():
 # ANCHO_UCB = 300 y no 520: a 390 px el sitio no escala los SVG de figura y
 # el parrafo que los contiene mide 305 px; a 520 cada grafica se cortaba con
 # scroll horizontal y la leyenda o el final del eje x quedaban fuera (ronda 3
-# de render). Como jue-c3-bandido-corridas: titulo a 17, margen MARGEN_UCB,
+# de render). Como las figuras del bono: titulo a 17, margen MARGEN_UCB,
 # leyenda y notas debajo, y lo que no cabe en un renglon va en dos.
 
 ANCHO_UCB = 300
@@ -4022,7 +4034,7 @@ def jue_c3_rx_alfa_beta(animar=True):
     podas = []
     for c, tipo, a, b, vc in cortes:
         hijos = [p for p in podados if p[:-1] == c]
-        podas.append((hijos, f"poda {'β' if tipo == 'beta' else 'α'}"))
+        podas.append((hijos, f"corte {'β' if tipo == 'beta' else 'α'}"))
     titulo = ["Alfa-beta", "árbol de resultados", f"orden dado: {n} de {j.contar_nodos(j.ARBOL_TPM)} nodos"]
     out = []
     y = _titulo_rx(out, titulo)
@@ -4038,9 +4050,9 @@ def jue_c3_rx_alfa_beta(animar=True):
     renglones = []
     for c, tipo, a, b, vc in cortes:
         if tipo == "beta":
-            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≥ β = {_u_txt(b)}, poda β.")
+            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≥ β = {_u_txt(b)}, corte β.")
         else:
-            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≤ α = {_u_txt(a)}, poda α.")
+            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≤ α = {_u_txt(a)}, corte α.")
     cotas = [f"{n} «{_cota_txt(t, x, _u_txt)}»" for n, (t, x) in valores.items()
              if t in ("≥", "≤")]
     renglones += ["Por eso da cotas, no valores", "exactos: " + ", ".join(cotas) + "."]
@@ -4048,8 +4060,8 @@ def jue_c3_rx_alfa_beta(animar=True):
     desc = (f"Alfa-beta en el árbol de resultados con el orden dado: genera {n} nodos de "
             f"{j.contar_nodos(j.ARBOL_TPM)}. "
             + " ".join(f"En {ids[c]} el valor llega a {_u_txt(vc)}, "
-                       + (f"mayor o igual que β = {_u_txt(b)}: poda β"
-                          if tipo == "beta" else f"menor o igual que α = {_u_txt(a)}: poda α")
+                       + (f"mayor o igual que β = {_u_txt(b)}: corte beta"
+                          if tipo == "beta" else f"menor o igual que α = {_u_txt(a)}: corte alfa")
                        + ", y no genera " + " ni ".join(ids[p] for p in podados if p[:-1] == c)
                        + "." for c, tipo, a, b, vc in cortes)
             + " Valores: " + ", ".join(f"{nombre} {_cota_txt(t, x, _u_txt)}"
@@ -4175,7 +4187,7 @@ def jue_c3_rx_iterativa(animar=True):
             c = next(k for k, x in ids.items() if x == nombre)
             hijos = sorted(p for p in podados if p[:-1] == c)
             if hijos:      # un corte en el ultimo hijo no deja nada sin generar
-                podas.append((hijos, f"poda {'β' if tipo == 'beta' else 'α'}"))
+                podas.append((hijos, f"corte {'β' if tipo == 'beta' else 'α'}"))
         y += 14
         out.append(linea(X_PIE, y, RX_W - X_PIE, y, color=LINEA, grosor=1.5))
         y += 28

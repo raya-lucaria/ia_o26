@@ -71,13 +71,19 @@ def _fichas(texto):
     return {titulo: _ficha(texto, titulo) for titulo in FICHAS}
 
 
-def _revisa_esqueleto(ficha, cual):
-    bloque = ficha[:ficha.index(PARTES[0])]
+# En la radiografía (versión colapsada) las cuatro partes son párrafos en
+# negrita, no `####`, para que el índice lateral no tenga 47 entradas (ola 4,
+# r1, render #1); las páginas a detalle conservan los `####`.
+PARTES_RX = ["**" + p[len("#### "):] + "**" for p in PARTES]
+
+
+def _revisa_esqueleto(ficha, cual, partes_=PARTES):
+    bloque = ficha[:ficha.index(partes_[0])]
     posiciones = [bloque.index(b) for b in BLOQUE]
     assert posiciones == sorted(posiciones), cual
-    partes = [ficha.index(p) for p in PARTES]
+    partes = [ficha.index(p) for p in partes_]
     assert partes == sorted(partes), cual
-    propiedades = ficha[ficha.index(PARTES[2]):ficha.index(PARTES[3])]
+    propiedades = ficha[ficha.index(partes_[2]):ficha.index(partes_[3])]
     posiciones = [propiedades.index(p) for p in PROPIEDADES]
     assert posiciones == sorted(posiciones), cual
     assert "#####" not in ficha, cual
@@ -99,7 +105,8 @@ def test_las_siete_fichas_van_en_orden_con_las_mismas_cuatro_partes_y_siete_prop
     assert t.count("\n### ", t.index("## Las siete fichas"),
                    t.index("\n## ", t.index("## Las siete fichas") + 1)) == 7
     for titulo, ficha in _fichas(t).items():
-        _revisa_esqueleto(ficha, titulo)
+        _revisa_esqueleto(ficha, titulo, PARTES_RX)
+        assert "\n#### " not in ficha, titulo
 
 
 def test_las_fichas_a_detalle_llevan_el_mismo_esqueleto_que_la_radiografia():

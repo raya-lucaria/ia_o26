@@ -145,7 +145,7 @@ md(f"""
 # Notebook · Decidir en los árboles de la unidad
 
 Cinco algoritmos en dos árboles de juguete: **minimax**,
-**expectiminimax** y **alfa-beta** en el árbol base (y el reducido), y
+**alfa-beta** y **expectiminimax** en el árbol base (y el reducido), y
 **minimax con corte** y **profundización iterativa** en el árbol de
 resultados. El código es el Python de las páginas, con su número de línea
 `# (n)`. La sección 8 sale del árbol: de dónde sale el bono de UCT.
@@ -599,47 +599,7 @@ print("jugada:", correr(decidir_minimax("R"))[1])
 
 # ================================================================ 4 ===
 md("""
-## 4 · Cuando decide un dado: expectiminimax
-
-Ahora I, C y D son **volados parejos**: cada hijo sale con probabilidad ½.
-Un nodo de azar no elige: suma `Pr · w` de todos sus hijos. La tabla sigue
-solo a los nodos de azar; C1 y C2 se valoran por dentro, sin filas.
-""")
-
-algoritmo_de("azar", "decidir_expectiminimax")
-
-algoritmo_de("azar", "expectiminimax")
-
-code("""
-usar(ARBOL_T, azar=("I", "C", "D"))
-filas_az, jugada = correr(decidir_expectiminimax("R"))
-for f in filas_az:
-    if f["evento"] == "raiz":
-        print(f"{f['hijo']} vale {fmt(f['w'])}")
-print("jugada:", jugada, "  (minimax decía centro)")
-ver(filas_az, decidir_expectiminimax, expectiminimax)
-""")
-
-md("""
-**Pruébalo.** Cambia el 12 de D por un 4: ¿sigue ganando `der`?
-
-<details><summary>Qué pasa</summary>
-
-D vale $\\tfrac12\\cdot 2 + \\tfrac12\\cdot 4 = 3$, menos que $13/2$: gana
-`centro`. Con azar cuenta cada hoja, no solo la peor.
-
-</details>
-""")
-
-code("""
-prueba = ((3, 6), ((5, 2), (7, 8)), (2, 12))     # cambia el 12
-usar(prueba, azar=("I", "C", "D"))
-print("jugada:", correr(decidir_expectiminimax("R"))[1])
-""")
-
-# ================================================================ 5 ===
-md("""
-## 5 · Alfa-beta
+## 4 · Alfa-beta
 
 - **α**: lo que MAX ya tiene asegurado en el camino. Solo sube.
 - **β**: lo que MIN ya tiene asegurado en el camino. Solo baja.
@@ -711,6 +671,46 @@ filas, jugada = correr(decidir_alfa_beta("R"))
 print("jugada:", jugada, "·", len(filas[-1]["hechos"]), "nodos")
 """)
 
+# ================================================================ 5 ===
+md("""
+## 5 · Cuando decide un dado: expectiminimax
+
+Ahora I, C y D son **volados parejos**: cada hijo sale con probabilidad ½.
+Un nodo de azar no elige: suma `Pr · w` de todos sus hijos. La tabla sigue
+solo a los nodos de azar; C1 y C2 se valoran por dentro, sin filas.
+""")
+
+algoritmo_de("azar", "decidir_expectiminimax")
+
+algoritmo_de("azar", "expectiminimax")
+
+code("""
+usar(ARBOL_T, azar=("I", "C", "D"))
+filas_az, jugada = correr(decidir_expectiminimax("R"))
+for f in filas_az:
+    if f["evento"] == "raiz":
+        print(f"{f['hijo']} vale {fmt(f['w'])}")
+print("jugada:", jugada, "  (minimax decía centro)")
+ver(filas_az, decidir_expectiminimax, expectiminimax)
+""")
+
+md("""
+**Pruébalo.** Cambia el 12 de D por un 4: ¿sigue ganando `der`?
+
+<details><summary>Qué pasa</summary>
+
+D vale $\\tfrac12\\cdot 2 + \\tfrac12\\cdot 4 = 3$, menos que $13/2$: gana
+`centro`. Con azar cuenta cada hoja, no solo la peor.
+
+</details>
+""")
+
+code("""
+prueba = ((3, 6), ((5, 2), (7, 8)), (2, 12))     # cambia el 12
+usar(prueba, azar=("I", "C", "D"))
+print("jugada:", correr(decidir_expectiminimax("R"))[1])
+""")
+
 # ================================================================ 6 ===
 md("""
 ## 6 · Minimax con corte
@@ -766,7 +766,7 @@ md("""
 No sabes cuánto tiempo queda. Busca con `d = 1`, luego `d = 2`, `d = 3`…
 y entrega la jugada de **la última búsqueda completa**. La jugada anterior
 va primero: α sube pronto y se poda más. Debajo de R corre el alfa-beta de
-la sección 5, con `d`, en el árbol de resultados. Un 100 es $100\cdot U$
+la sección 4, con `d`, en el árbol de resultados. Un 100 es $100\cdot U$
 con $U = 1$: una victoria segura (línea 9).
 """)
 
@@ -1146,8 +1146,8 @@ md("""
 | algoritmo | jugada | nodos generados |
 |---|---|---|
 | minimax (árbol base) | centro (5) | 14 de 14 |
-| expectiminimax (I, C, D de azar) | der (7) | 14 de 14 |
 | alfa-beta: reducido / base | izq (3) / centro (5) | 6 de 7 / 12 de 14 |
+| expectiminimax (I, C, D de azar) | der (7) | 14 de 14 |
 | con corte (árbol de resultados), d = 1, 2, 3 | izq, centro, centro | 4, 11, 15 de 15 |
 | profundización iterativa (árbol de resultados) | centro | 4 + 9 + 12 |
 
@@ -1162,9 +1162,9 @@ def resumen(nombre, algoritmo, arbol=ARBOL_T, **reglas):
     nodos = " + ".join(str(len(f["hechos"])) for f in fines)
     print(f"{nombre:<14} {jugada:<7} {nodos} nodos")
 resumen("minimax", lambda: decidir_minimax("R"))
-resumen("azar", lambda: decidir_expectiminimax("R"), azar="ICD")
 resumen("alfa-beta red.", lambda: decidir_alfa_beta("R"), ARBOL_T1)
 resumen("alfa-beta base", lambda: decidir_alfa_beta("R"))
+resumen("azar", lambda: decidir_expectiminimax("R"), azar="ICD")
 R = dict(arbol=ARBOL_R, cien=True)        # el árbol de resultados
 for d in (1, 2, 3):
     resumen(f"corte d = {d}", lambda: decidir_con_corte("R", d), **R)

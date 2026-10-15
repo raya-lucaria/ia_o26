@@ -2,10 +2,11 @@
 
 Siete páginas de `course/7_juegos/` (nueve algoritmos) cierran, justo antes de «## Lo que hay
 que llevarse», con un recuadro visible que resume los algoritmos vistos hasta
-ahí y lista los que vienen. El texto sale de UNA fuente, `ALGORITMOS`, en el
-orden del curso: cada página muestra el prefijo de la lista que termina en su
-algoritmo, con su fila en negrita y «(estás aquí)», y en «Lo que viene» los
-que siguen, en palabras llanas y sin símbolos que aún no se presentan.
+ahí. El texto sale de UNA fuente, `ALGORITMOS`, en el orden del curso: cada
+página muestra el prefijo de la lista que termina en su algoritmo, con su
+fila en negrita y «(estás aquí)». No anuncia los que vienen (nombraba
+conceptos aún no enseñados); la última página, sin pendientes, manda a la
+radiografía.
 
 El bloque se reconoce sin comentarios HTML (Raya los publica): empieza en el
 renglón `> [!NOTE]` cuyo siguiente renglón empieza con `> **Lo que ya viste`,
@@ -35,12 +36,13 @@ J3 = "3_cuando_no_cabe"
 # la unidad). `ficha`: el encabezado `### …` de esa ficha en la página.
 # `numero`: la celda «Qué número da» del recuadro; dice qué número sale y si
 # el algoritmo garantiza $V$. `garantiza`: «Sí» o «No», la mitad de `numero`
-# después del punto y coma (la prueba lo ata). `garantia`: un trozo literal de
+# después del punto y coma. Si no, la salvedad va con la escala de la
+# radiografía: el corte que llega a todos los finales da $M\cdot V$, no $V$;
+# los que convergen, con sus condiciones. `garantia`: un trozo literal de
 # la viñeta «**Garantía:**» de la ficha que dice lo mismo (la prueba lo busca
 # ahí). El recuadro tiene dos columnas: dentro del callout, a 390 px, quedan
 # ~298 px y una tercera se escondía tras el scroll. `mira` ya no sale en el
-# recuadro; la ficha lo dice en su exploración. `viene`: la línea de «Lo que
-# viene» que leen las páginas anteriores, sin símbolos. `enlace`/`titulo`: la
+# recuadro; la ficha lo dice en su exploración. `enlace`/`titulo`: la
 # página que se lee primero para ese algoritmo, con su `title` real.
 ALGORITMOS = [
     dict(
@@ -51,7 +53,6 @@ ALGORITMOS = [
         numero="$V$; lo garantiza",
         garantiza="Sí",
         garantia="entrega $V$ y una jugada que lo alcanza",
-        viene="mirar todo el árbol hasta los finales",
         clase=2, enlace="minimax-como-algoritmo", titulo="Minimax como algoritmo",
     ),
     dict(
@@ -62,8 +63,6 @@ ALGORITMOS = [
         numero="$V$ en la raíz; lo garantiza",
         garantiza="Sí",
         garantia="el mismo $V$ que minimax",
-        viene="la misma jugada que mirar todo, sin generar las ramas que ya "
-              "no pueden cambiar la decisión",
         clase=2, enlace="alfa-beta", titulo="Alfa-beta a mano",
     ),
     dict(
@@ -74,8 +73,6 @@ ALGORITMOS = [
         numero="El $V$ del juego con dado; lo garantiza",
         garantiza="Sí",
         garantia="calcula exactamente la utilidad esperada óptima",
-        viene="mirar todo el árbol cuando un dado o una moneda decide algunas "
-              "jugadas; ahí se promedia en vez de elegir",
         clase=2, enlace="cuando-decide-un-dado",
         titulo="Cuando decide un dado: expectiminimax",
     ),
@@ -84,11 +81,9 @@ ALGORITMOS = [
         archivo=f"{J3}/1_cortar_y_evaluar.md",
         ficha="Minimax con corte",
         mira="$d$ jugadas",
-        numero="Valor con corte; no garantiza $V$, salvo si llega a los finales",
+        numero="Valor con corte; no garantiza $V$. Con todos los finales, da $M\\cdot V$",
         garantiza="No",
         garantia="si no, nada asegura la jugada",
-        viene="mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, "
-              "para cuando el árbol no cabe",
         clase=3, enlace="cortar-y-evaluar", titulo="Cortar y evaluar",
     ),
     dict(
@@ -96,11 +91,10 @@ ALGORITMOS = [
         archivo=f"{J3}/2_jugar_contra_el_reloj.md",
         ficha="Búsqueda de quietud",
         mira="$d$ jugadas, luego solo capturas",
-        numero="Valor con quietud; no garantiza $V$, salvo si "
-               "llega a los finales antes de cortar",
+        numero="Valor con quietud; no garantiza $V$. Con todos los finales "
+               "antes de activar la quietud, da $M\\cdot V$",
         garantiza="No",
         garantia="solo si llega a los finales **antes de activar la quietud**",
-        viene="no detenerse a estimar a mitad de un intercambio de capturas",
         clase=3, enlace="jugar-contra-el-reloj",
         titulo="Hasta dónde mirar: profundidad, tiempo y horizonte",
     ),
@@ -109,12 +103,10 @@ ALGORITMOS = [
         archivo=f"{J3}/2_jugar_contra_el_reloj.md",
         ficha="Profundización iterativa",
         mira="$d=1,2,3,\\dots$ mientras haya reloj",
-        numero="Valor con corte de la última búsqueda; no garantiza $V$, salvo si "
-               "llega a los finales",
+        numero="Valor con corte de la última búsqueda; no garantiza $V$. Con "
+               "todos los finales, da $M\\cdot V$",
         garantiza="No",
         garantia="no garantiza $V$, salvo si la última búsqueda completa llega a los finales",
-        viene="buscar cada vez un poco más hondo, con una jugada siempre "
-              "lista para cuando se acabe el tiempo",
         clase=3, enlace="jugar-contra-el-reloj",
         titulo="Hasta dónde mirar: profundidad, tiempo y horizonte",
     ),
@@ -126,8 +118,6 @@ ALGORITMOS = [
         numero="$\\widehat Q$, que estima $Q_{\\text{azar}}$; no garantiza $V$",
         garantiza="No",
         garantia="Ningún presupuesto garantiza la jugada minimax",
-        viene="estimar cada jugada jugando muchas partidas al azar hasta el "
-              "final, sin diseñar una función EVAL",
         clase=3, enlace="simular-en-vez-de-evaluar",
         titulo="Simular partidas: promedios y actualización minimax",
     ),
@@ -136,13 +126,10 @@ ALGORITMOS = [
         archivo=f"{J3}/3_simular_en_vez_de_evaluar.md",
         ficha="Monte Carlo con actualización minimax",
         mira="Los finales, jugando al azar; guarda lo descubierto",
-        numero="$\\widehat Q$ y $\\widehat V$; no garantiza $V$ (con partidas "
-               "sin límite converge a él)",
+        numero="$\\widehat Q$ y $\\widehat V$; no garantiza $V$ (converge a él "
+               "bajo su contrato: árbol finito, todas las jugadas, finales reales)",
         garantiza="No",
         garantia="Con presupuesto finito puede equivocarse",
-        viene="simular igual que el plano, pero guardar los estados que "
-              "descubre y subir por ellos el mejor resultado de quien mueve, "
-              "como minimax",
         clase=3, enlace="simular-en-vez-de-evaluar",
         titulo="Simular partidas: promedios y actualización minimax",
     ),
@@ -151,13 +138,10 @@ ALGORITMOS = [
         archivo=f"{J3}/4_monte_carlo_en_un_arbol_grande.md",
         ficha="UCT",
         mira="Un árbol que crece; debajo, partidas al azar",
-        numero="$\\widehat Q$; no garantiza $V$ (con vueltas sin límite converge "
-               "a él, con cualquier $c>0$)",
+        numero="$\\widehat Q$; no garantiza $V$ (en un árbol finito, con $c>0$ "
+               "fija y vueltas sin límite, converge a él)",
         garantiza="No",
         garantia="Con presupuesto fijo, ninguna",
-        viene="construye un árbol: elige por puntaje dentro de él, lo hace "
-              "crecer, simula desde la hoja y sube el resultado; manda más "
-              "partidas a lo que va mejor sin dejar de probar lo otro",
         clase=3, enlace="monte-carlo-en-un-arbol-grande", titulo="MCTS con UCT",
     ),
 ]
@@ -209,16 +193,11 @@ def bloque(archivo: str) -> str:
         "> |---|---|",
     ]
     lineas += ["> " + fila(a, a["archivo"] == archivo) for a in vistos(archivo)]
-    lineas += [">", "> **Lo que viene.**", ">"]
-    resto = pendientes(archivo)
-    if resto:
-        for a in resto:
-            lineas.append(
-                f"> - **{a['nombre']}**: {a['viene']}. Clase {a['clase']}, "
-                f"[[{a['enlace']}|{a['titulo']}]]."
-            )
-    else:
-        lineas.append("> " + SIN_PENDIENTES)
+    # Sin «Lo que viene»: listaba conceptos que el alumno aún no ha visto
+    # (EVAL, quietud, UCT) en cada página (ola 4, r1). El cierre de cada página
+    # ya dice cuál sigue; solo la última, sin algoritmos por ver, manda al mapa.
+    if not pendientes(archivo):
+        lineas += [">", "> " + SIN_PENDIENTES]
     return "\n".join(lineas)
 
 

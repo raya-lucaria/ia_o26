@@ -67,28 +67,28 @@ interrumpir, complejidad, frente a los demás y supuestos).
 
 **Copias de una misma tabla.**
 
-- `jue-c3-posicion-corte` (`2_minimax_con_corte.md:86`) y
-  `jue-c3-posicion-reloj` (`4_jugar_contra_el_reloj.md:59`): eran la cuarta y
+- `jue-c3-posicion-corte` (`course/7_juegos/3_cuando_no_cabe/2_minimax_con_corte.md:86`) y
+  `jue-c3-posicion-reloj` (`course/7_juegos/3_cuando_no_cabe/4_jugar_contra_el_reloj.md:59`): eran la cuarta y
   la tercera copia de la posición de la clase. Quedan `jue-c3-posicion`, en
   «Cortar y evaluar», y `jue-c3-posicion-horizonte`, en «Hasta dónde mirar».
-- `jue-c3-reloj-por-d` (`4_jugar_contra_el_reloj.md:104`): la misma tabla que
+- `jue-c3-reloj-por-d` (`course/7_juegos/3_cuando_no_cabe/4_jugar_contra_el_reloj.md:104`): la misma tabla que
   `jue-c3-horizonte-valores`, transpuesta.
-- `jue-c3-t-sin-poda` (`4_jugar_contra_el_reloj.md:257`): los mismos números
+- `jue-c3-t-sin-poda` (`course/7_juegos/3_cuando_no_cabe/4_jugar_contra_el_reloj.md:257`): los mismos números
   que `jue-c3-t-por-profundidad`, en «Cortar y evaluar».
 
 **Ejercicios del bono que repetían cuentas.** Cada uno se archiva con su
 pista y su respuesta. La auditoría de la clase 3 los marcó porque duplican
 cuentas o contenido que la página ya hace.
 
-- `jue-c3-ej-optimismo` (`8_de_donde_sale_el_bono.md:346`): repetía el
+- `jue-c3-ej-optimismo` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:346`): repetía el
   cálculo de la cota optimista que el bloque 3 hace con la corrida de cinco
   vueltas.
-- `jue-c3-ej-teoria` (`8_de_donde_sale_el_bono.md:481`): recalculaba los
+- `jue-c3-ej-teoria` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:481`): recalculaba los
   puntajes de MCTS con la $c$ de la teoría; la tabla de $c$ y $\delta$ ya lo
   muestra.
-- `jue-c3-ej-vuelta-seis` (`8_de_donde_sale_el_bono.md:521`): seguía una
+- `jue-c3-ej-vuelta-seis` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:521`): seguía una
   vuelta más de la corrida sembrada que el bloque 3 ya traza.
-- `jue-c3-ej-entregar` (`8_de_donde_sale_el_bono.md:693`): «seleccionar no
+- `jue-c3-ej-entregar` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:693`): «seleccionar no
   es entregar». La tabla `jue-c3-tabla-seleccionar` y la frase «la más
   visitada es la que la búsqueda confirmó más veces» pasaron a «MCTS con
   UCT». La pregunta sobre seleccionar frente a entregar la retoma el
@@ -99,23 +99,28 @@ entrada en el catálogo de `tools/gen_juegos.py` y su fila de créditos; las
 funciones de `tools/juegos.py` que daban sus cifras se quedan, porque
 alimentan las tablas.
 
-- `jue-c3-fig-bandido-corridas` (`8_de_donde_sale_el_bono.md:577`): su
+- `jue-c3-fig-bandido-corridas` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:577`): su
   conclusión, 34, 5 y 1 corridas atoradas contra 40, 0 y 0, y el 85 %, vive
   en `jue-c3-tabla-corridas`.
-- `jue-c3-fig-pago` (`8_de_donde_sale_el_bono.md:594`): los pagos finales
+- `jue-c3-fig-pago` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:594`): los pagos finales
   0.543, 0.564, 0.580 y 0.598 contra 0.6, y el 0.5425 esperado, viven en
   `jue-c3-tabla-pagos-finales`.
-- `jue-c3-fig-eligiendo-x` (`8_de_donde_sale_el_bono.md:630`): el 93.3 % de
+- `jue-c3-fig-eligiendo-x` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:630`): el 93.3 % de
   «a veces al azar» vive en el bloque de elegir $c$.
 
 **Piezas de los borradores de comparación.**
 
 - `jue-c3-cmp-arbol`, `jue-c3-cmp-ej-poda` y `jue-c3-cmp-ej-reloj` (con sus
-  pistas y respuestas), en `_drafts/7_un_arbol_todos_los_algoritmos.md:71`,
-  `:98` y `:214`. Los cubren la radiografía, «Alfa-beta como algoritmo» y
-  «Hasta dónde mirar».
-- `jue-c3-cmp-num-arbol`, en `_drafts/8_que_numero_da_cada_uno.md:36`: otra
-  figura del mismo árbol.
+  pistas y respuestas), en
+  `course/7_juegos/3_cuando_no_cabe/_drafts/7_un_arbol_todos_los_algoritmos.md:71`,
+  `:98` y `:214` del tag; aquí, en
+  `3_cuando_no_cabe__borrador_7_un_arbol_todos_los_algoritmos.md.txt`, mismas
+  líneas. Los cubren la radiografía, «Alfa-beta como algoritmo» y «Hasta dónde
+  mirar».
+- `jue-c3-cmp-num-arbol`, en
+  `course/7_juegos/3_cuando_no_cabe/_drafts/8_que_numero_da_cada_uno.md:36` del
+  tag; aquí, en `3_cuando_no_cabe__borrador_8_que_numero_da_cada_uno.md.txt`,
+  misma línea: otra figura del mismo árbol.
 
 **Páginas cuyo id dejó de ser de una página.**
 

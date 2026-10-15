@@ -2610,10 +2610,10 @@ def mas_simulada(datos):
 
 # ------------------------------------- p6: de donde sale el bono (UCB) ---
 #
-# Escala de la p5: cada simulacion da U = +1 o −1, y ū(s′) es su promedio,
-# en [−1, 1]. μ(s′) es el promedio verdadero: lo que daria ū(s′) con
+# Escala de la p5: cada simulacion da U = +1 o −1, y Q̂(s,a) es su promedio,
+# en [−1, 1]. Q_azar(s,a) es el promedio verdadero: lo que daria Q̂(s,a) con
 # infinitas simulaciones. Hoeffding (citado, no demostrado) para resultados
-# independientes en [a, b]: Pr(ū ≤ μ − ε) ≤ exp(−2Nε²/(b − a)²); con
+# independientes en [a, b]: Pr(Q̂ ≤ Q_azar − ε) ≤ exp(−2Nε²/(b − a)²); con
 # b − a = 2 queda exp(−Nε²/2). Todo con la biblioteca estandar y semilla
 # fija: el mismo llamado da siempre los mismos numeros.
 
@@ -2621,7 +2621,7 @@ C_TEORIA = 2 * math.sqrt(2)      # el c de UCB1 en la escala ±1 (√2 con G/N)
 
 
 def cota_hoeffding(n, eps):
-    """Cota de Hoeffding para la escala ±1: Pr(ū ≤ μ − ε) ≤ e^(−n·ε²/2)."""
+    """Cota de Hoeffding para la escala ±1: Pr(Q̂ ≤ Q_azar − ε) ≤ e^(−n·ε²/2)."""
     return math.exp(-n * eps ** 2 / 2)
 
 
@@ -2631,16 +2631,16 @@ def margen(delta, n):
 
 
 def bono_ucb(n_padre, n, c=None):
-    """c·√(ln N(s)/N(s′)); c=None es el de la teoria, 2√2 (margen con
-    δ = N(s)^−4). Una jugada sin probar (N(s′) = 0) tiene bono infinito."""
+    """c·√(ln N(s)/N(s,a)); c=None es el de la teoria, 2√2 (margen con
+    δ = N(s)^−4). Una jugada sin probar (N(s,a) = 0) tiene bono infinito."""
     if n == 0:
         return INF
     return (C_TEORIA if c is None else c) * math.sqrt(math.log(n_padre) / n)
 
 
 def puntajes_ucb(datos, c=None, mueve="MAX"):
-    """{jugada: puntaje} con datos = {jugada: (N(s′), ū(s′))}, ū medido desde
-    MAX. MIN es optimista desde su lado: usa −ū. N(s) = suma de los N(s′)."""
+    """{jugada: puntaje} con datos = {jugada: (N(s,a), Q̂(s,a))}, Q̂ medido desde
+    MAX. MIN es optimista desde su lado: usa −Q̂. N(s) = suma de los N(s,a)."""
     signo = 1 if mueve == "MAX" else -1
     total = sum(n for n, _ in datos.values())
     return {k: signo * float(u) + bono_ucb(total, n, c) for k, (n, u) in datos.items()}
@@ -2652,7 +2652,7 @@ def mejor(puntajes):
 
 
 def prob_gana(mu):
-    """Pr(U = +1) para que el promedio verdadero sea μ: (1 + μ)/2."""
+    """Pr(U = +1) para que el promedio verdadero sea Q_azar: (1 + Q_azar)/2."""
     return (1 + mu) / 2
 
 
@@ -2667,13 +2667,13 @@ def _exacto(x):
 
 
 def _umbral(mu, eps, k):
-    """El mayor total de U con ū ≤ μ − ε tras k simulaciones: ⌊(μ − ε)·k⌋,
+    """El mayor total de U con Q̂ ≤ Q_azar − ε tras k simulaciones: ⌊(Q_azar − ε)·k⌋,
     en fracciones exactas (0.3 − 0.2 en coma flotante no es 0.1)."""
     return math.floor((_exacto(mu) - _exacto(eps)) * k)
 
 
 def frecuencias_desvio(mu, ns, eps, repeticiones, semilla):
-    """{n: fraccion de las repeticiones con ū ≤ μ − ε tras n simulaciones}.
+    """{n: fraccion de las repeticiones con Q̂ ≤ Q_azar − ε tras n simulaciones}.
     Cada repeticion es UNA tirada de max(ns) simulaciones; se mira su
     promedio parcial en cada n de ns. Asi la tabla sale en una pasada."""
     rng = random.Random(semilla)
@@ -2691,12 +2691,12 @@ def frecuencias_desvio(mu, ns, eps, repeticiones, semilla):
 
 
 def frecuencia_desvio(mu, n, eps, repeticiones, semilla):
-    """Fraccion de `repeticiones` promedios de n simulaciones con ū ≤ μ − ε."""
+    """Fraccion de `repeticiones` promedios de n simulaciones con Q̂ ≤ Q_azar − ε."""
     return frecuencias_desvio(mu, [n], eps, repeticiones, semilla)[n]
 
 
 def prob_desvio_exacta(mu, n, eps):
-    """Pr(ū ≤ μ − ε) exacta: ū = (2K − n)/n con K ~ Binomial(n, (1+μ)/2)."""
+    """Pr(Q̂ ≤ Q_azar − ε) exacta: Q̂ = (2K − n)/n con K ~ Binomial(n, (1+Q_azar)/2)."""
     p = prob_gana(_exacto(mu))
     return sum(math.comb(n, k) * p ** k * (1 - p) ** (n - k)
                for k in range(n + 1) if 2 * k - n <= _umbral(mu, eps, n))
@@ -2707,22 +2707,22 @@ AL_AZAR = 0.1                    # «a veces al azar»: una vuelta de cada diez
 
 
 def bandido(regla, mus, vueltas, semilla, c=None, al_azar=AL_AZAR):
-    """Elige entre las jugadas de `mus` ({jugada: μ}) `vueltas` veces.
+    """Elige entre las jugadas de `mus` ({jugada: Q_azar}) `vueltas` veces.
 
     - "mejor_promedio": prueba cada una una vez (en el orden de mus) y luego
-      elige siempre la de mayor ū; en empate, la primera.
+      elige siempre la de mayor Q̂; en empate, la primera.
     - "a_veces_al_azar": igual, pero con probabilidad al_azar elige una al
       azar (puede caer en la mejor).
-    - "ucb": sin probar = bono infinito; luego mayor ū(s′) + c·√(ln N(s)/N(s′)),
-      con N(s) = vueltas ya hechas (n_padre) y N(s′) = N[a].
+    - "ucb": sin probar = bono infinito; luego mayor Q̂(s,a) + c·√(ln N(s)/N(s,a)),
+      con N(s) = vueltas ya hechas (n_padre) y N(s,a) = N[a].
 
     La suerte de cada jugada es su propia fila de tiradas (la k-esima vez que
     se elige x da siempre el mismo resultado, sea cual sea la regla), y las
     decisiones al azar usan otra: asi las tres reglas comparten la suerte.
     Devuelve dict(N, u, elecciones, resultados, arrepentimiento): N[a] es
-    N(s′) y u[a] es ū(s′) de cada jugada; arrepentimiento[k] es lo que se
+    N(s,a) y u[a] es Q̂(s,a) de cada jugada; arrepentimiento[k] es lo que se
     perdio en las primeras k + 1 vueltas por no elegir siempre la mejor: la
-    suma de μ(mejor) − μ(elegida). La pagina no lo usa (mira la fraccion de
+    suma de Q_azar(mejor) − Q_azar(elegida). La pagina no lo usa (mira la fraccion de
     vueltas en x); las pruebas si."""
     if regla not in REGLAS_BANDIDO:
         raise ValueError(regla)
@@ -2730,8 +2730,8 @@ def bandido(regla, mus, vueltas, semilla, c=None, al_azar=AL_AZAR):
     suerte = {a: random.Random(semilla * 1000 + i) for i, a in enumerate(nombres)}
     dado = random.Random(semilla * 1000 + 999)
     N = {a: 0 for a in nombres}
-    # suma_u[a]: la suma de los U de a, asi ū(s′) = suma_u[a] / N[a]. No es
-    # G(s′) de la p5 (victorias): con ±1, ū = 2·G/N − 1.
+    # suma_u[a]: la suma de los U de a, asi Q̂(s,a) = suma_u[a] / N[a]. No es
+    # G(s,a) de la p5 (victorias): con ±1, Q̂ = 2·G/N − 1.
     suma_u = {a: 0 for a in nombres}
     mu_max = max(mus.values())
     p = {a: float(prob_gana(mus[a])) for a in nombres}
@@ -2760,7 +2760,7 @@ def bandido(regla, mus, vueltas, semilla, c=None, al_azar=AL_AZAR):
 
 def filas_bandido(regla, mus, vueltas, semilla, c=None):
     """La corrida de `bandido`, vuelta por vuelta, para una tabla: dict(vuelta,
-    jugada, U, N, u), con N(s′) y ū(s′) de cada jugada DESPUES de esa vuelta;
+    jugada, U, N, u), con N(s,a) y Q̂(s,a) de cada jugada DESPUES de esa vuelta;
     `vuelta` es N(s) tras ella."""
     b = bandido(regla, mus, vueltas, semilla, c)
     N, suma_u, filas = {a: 0 for a in mus}, {a: 0 for a in mus}, []
@@ -2778,7 +2778,7 @@ def _corridas(regla, mus_items, vueltas, corridas, c):
     cuenta cuantas de las primeras k vueltas fueron a la mejor jugada
     (veces[0] = 0); pagos[k] es la suma de los U de las primeras k vueltas
     (enteros: U es ±1, asi que los promedios salen exactos); N es
-    {jugada: N(s′)} al terminar. Todas las figuras del bandido leen de aqui:
+    {jugada: N(s,a)} al terminar. Todas las figuras del bandido leen de aqui:
     las 160 corridas de 10 000 vueltas se simulan una sola vez."""
     mus = dict(mus_items)
     la_mejor = max(mus, key=mus.get)
@@ -2853,12 +2853,12 @@ def eligiendo_la_mejor(regla, mus, marcas, corridas, c=None, ventana=None):
 
 # El hilo de la p6: las tres jugadas del ejercicio de la p5 (x, y, z), ahora
 # con un promedio verdadero oculto. La mejor de verdad es x, la que la p5
-# entrega por ser la mas simulada, aunque su ū (0.5) sea menor que el de y
+# entrega por ser la mas simulada, aunque su Q̂ (0.5) sea menor que el de y
 # (0.6 en 30 simulaciones, con suerte). z es mala de verdad.
 MUS_HILO = {"x": F(3, 5), "y": F(3, 10), "z": F(-1, 5)}
 SEMILLA_ATORA = 36          # «siempre el mejor promedio» se queda en z
 VUELTAS_MICRO = 12
-# La figura de Hoeffding: la jugada y (μ = 0.3), ε = 0.2.
+# La figura de Hoeffding: la jugada y (Q_azar = 0.3), ε = 0.2.
 MU_HOEFFDING, EPS_HOEFFDING = F(3, 10), F(1, 5)
 REPS_HOEFFDING, SEMILLA_HOEFFDING = 20000, 1
 NS_HOEFFDING = tuple(range(1, 201))
@@ -2909,7 +2909,7 @@ def tabla_eligiendo_x():
 def pago_esperado_reparto(fila="mejor_promedio", vueltas=None, corridas=CORRIDAS_BANDIDO):
     """El pago por vuelta que se espera de una regla si cada corrida se
     queda en la jugada que mas eligio: dict(en=Counter {jugada: corridas},
-    esperado=Σ corridas·μ / total). Para «siempre el mejor promedio»: 34 en
+    esperado=Σ corridas·Q_azar / total). Para «siempre el mejor promedio»: 34 en
     x, 5 en y, 1 en z, (34·0.6 + 5·0.3 − 0.2)/40 = 217/400 = 0.5425. No
     cuenta las primeras vueltas, que exploran: por eso lo simulado queda un
     poco abajo o arriba."""
@@ -2956,8 +2956,8 @@ def tope_a_veces_al_azar(n_jugadas=3, al_azar=AL_AZAR):
 
 
 def exponente_de_c(c):
-    """El k de δ = N(s)^−k que da el bono con esa c: ε = √(2·ln(1/δ)/N(s′))
-    = √(2k)·√(ln N(s)/N(s′)), asi que c = √(2k) y k = c²/2."""
+    """El k de δ = N(s)^−k que da el bono con esa c: ε = √(2·ln(1/δ)/N(s,a))
+    = √(2k)·√(ln N(s)/N(s,a)), asi que c = √(2k) y k = c²/2."""
     return c * c / 2
 
 
@@ -2977,17 +2977,17 @@ def puntajes_ucb_en_vuelta(vuelta, semilla=SEMILLA_ATORA, c=None, mus=MUS_HILO):
     return vuelta - 1, puntajes_ucb(datos, c)
 
 
-# Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s′), ū(s′))},
-# ū medido desde MAX. Con c = 2√2 la seleccion va a r (poco probada); con
-# c = 1, a p. Se entrega p, la mas simulada. Cada ū sale de partidas enteras
-# (victorias_de): la version vieja, q con N = 15 y ū = 0, pedia 7.5 victorias.
+# Un nodo donde mueve MIN, para el ejercicio final: {jugada: (N(s,a), Q̂(s,a))},
+# Q̂ medido desde MAX. Con c = 2√2 la seleccion va a r (poco probada); con
+# c = 1, a p. Se entrega p, la mas simulada. Cada Q̂ sale de partidas enteras
+# (victorias_de): la version vieja, q con N = 15 y Q̂ = 0, pedia 7.5 victorias.
 EJEMPLO_MIN = {"p": (30, F(-1, 5)), "q": (16, F(1, 4)), "r": (4, F(1, 2))}
 
 
 def victorias_de(n, u):
-    """G(s′) = N(s′)·(ū + 1)/2: las victorias de MAX que dan ese promedio con
-    pagos ±1 y sin empates. ValueError si no es entero: ese ū no puede salir
-    de N(s′) partidas. ValueError tambien si n no es un entero positivo."""
+    """G(s,a) = N(s,a)·(Q̂ + 1)/2: las victorias de MAX que dan ese promedio con
+    pagos ±1 y sin empates. ValueError si no es entero: ese Q̂ no puede salir
+    de N(s,a) partidas. ValueError tambien si n no es un entero positivo."""
     if isinstance(n, bool) or not isinstance(n, int) or n <= 0:
         raise ValueError(f"N(s′) = {n!r} no es un numero de partidas: pide un entero > 0")
     g = F(n) * (_exacto(u) + 1) / 2
@@ -3002,11 +3002,11 @@ def regreso_de_atoradas(vueltas=None, corridas=CORRIDAS_BANDIDO, mus=MUS_HILO):
     Solo para el hilo de la p6: `mus` tiene que ser MUS_HILO (ValueError si
     no), porque el razonamiento de puede_volver supone que x es la mejor y
     la primera en los desempates.
-    ultima_x es la ultima vuelta que eligio x; u_x, el ū con que x quedo
+    ultima_x es la ultima vuelta que eligio x; u_x, el Q̂ con que x quedo
     congelada. puede_volver dice si x PODRIA volver a elegirse en alguna
     vuelta futura: la jugada atorada, con al menos una victoria, nunca baja
-    a ū = −1, y en empate gana x (va primero); asi que x solo queda fuera
-    para siempre si su ū congelado es −1 y la atorada ya gano alguna vez.
+    a Q̂ = −1, y en empate gana x (va primero); asi que x solo queda fuera
+    para siempre si su Q̂ congelado es −1 y la atorada ya gano alguna vez.
     Si no, una racha mala de la atorada podria devolver la eleccion a x."""
     if list(mus.items()) != list(MUS_HILO.items()):  # tambien el orden: x primero
         raise ValueError("regreso_de_atoradas solo vale para MUS_HILO")
@@ -3044,9 +3044,10 @@ def ultimo_cambio_de_eleccion(fila="mejor_promedio", vueltas=None,
     return salida
 
 
-# ------------------------- 7.3.7: un arbol, todos los algoritmos (T±) ---
+# ------------------- 7.3.7: un arbol, todos los algoritmos (arbol de resultados) ---
 #
-# T± es el arbol T con finales en la escala de U (+1 gana MAX, −1 gana MIN,
+# El arbol de resultados es el arbol base (ARBOL_T) con finales en la escala
+# de U (+1 gana MAX, −1 gana MIN,
 # 0 empate) y UN cambio de forma: D tiene tres hijos en vez de dos (15
 # nodos en vez de 14). Con dos hijos por nodo de MIN, un volado parejo
 # entre −1 y lo mejor que puede haber (+1) vale 0: a lo mas empata con una
@@ -3063,7 +3064,7 @@ def ultimo_cambio_de_eleccion(fila="mejor_promedio", vueltas=None,
 # - Monte Carlo plano promedia con TODOS al azar y tambien juega der;
 # - UCT construye arbol, MIN deja de jugar al azar y acaba en centro.
 ARBOL_TPM = ((1, -1), ((0, -1), (1, -1)), (-1, 1, 1))
-# EVAL de T± en la escala 100·U, para los nodos internos que puede tocar un
+# EVAL del árbol de resultados en la escala 100·U, para los nodos internos que puede tocar un
 # corte. Es un dato, como EVAL_T: I parece ir ganando (60) porque la
 # estimacion no ve la captura ix; C1 y C2 se estiman por debajo de 100.
 EVAL_TPM = {"I": 60, "C": 20, "D": 10, "C1": 10, "C2": 50}
@@ -3078,7 +3079,7 @@ def dados_que_cambian_la_jugada_forma_t(hojas_d=2):
     """Cuantos arboles con la forma de T (D con `hojas_d` hojas) y finales en
     {−1, 0, +1}, con una sola jugada de minimax en la raiz, cambian de jugada
     (sin empate) al convertir uno de I, C o D en un dado parejo. Con
-    hojas_d = 2 (la forma exacta de T) son 0: por eso T± tiene tres en D."""
+    hojas_d = 2 (la forma exacta de T) son 0: por eso el árbol de resultados tiene tres en D."""
     total = 0
     for hojas in product((-1, 0, 1), repeat=6 + hojas_d):
         arbol = (hojas[:2], (hojas[2:4], hojas[4:6]), hojas[6:])
@@ -3141,7 +3142,7 @@ ORDENES_TPM = ("dado", "al revés", "centro primero")
 
 
 def alfa_beta_tpm(orden="dado", arbol=ARBOL_TPM):
-    """DECIDIR-ALFA-BETA en T± con tres ordenes: el dado; «al revés» (todos
+    """DECIDIR-ALFA-BETA en el árbol de resultados con tres ordenes: el dado; «al revés» (todos
     los hijos invertidos, como jue-alfa-beta-invertido); «centro primero»
     (solo la raiz cambia: la jugada de minimax va primero, como la deja la
     profundizacion iterativa). (jugada, valor, generados, caminos podados)."""
@@ -3184,7 +3185,7 @@ def expectiminimax_tpm(azar=DADO_TPM, arbol=ARBOL_TPM):
 
 
 def corte_tpm(d, evaluar=None, arbol=ARBOL_TPM):
-    """DECIDIR-CON-CORTE(R, d) en T± (finales 100·U): (jugada, valor,
+    """DECIDIR-CON-CORTE(R, d) en el árbol de resultados (finales 100·U): (jugada, valor,
     {izq/centro/der: valor con corte}, generados)."""
     t = traza_decidir(escalar_arbol(arbol, 100), profundidad=d,
                       evaluar=evaluar or EVAL_TPM)
@@ -3194,7 +3195,7 @@ def corte_tpm(d, evaluar=None, arbol=ARBOL_TPM):
 
 
 def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM, valores=None):
-    """MINIMAX-CON-CORTE con busqueda de quietud en T± (finales 100·U): en un
+    """MINIMAX-CON-CORTE con busqueda de quietud en el árbol de resultados (finales 100·U): en un
     nodo de corte, el que mueve elige entre quedarse con EVAL o seguir una de
     sus capturas, y solo las capturas se generan. (jugada, valor,
     {izq/centro/der: valor}, generados, caminos generados).
@@ -3244,7 +3245,7 @@ def quietud_tpm(d, evaluar=None, capturas=CAPTURAS_TPM, arbol=ARBOL_TPM, valores
 
 
 def quietud_con_todo_captura_tpm(d=1, arbol=ARBOL_TPM):
-    """quietud_tpm(d) en T± con TODAS las jugadas bajo la profundidad d
+    """quietud_tpm(d) en el árbol de resultados con TODAS las jugadas bajo la profundidad d
     marcadas como captura: las capturas llegan a todos los finales, y aun
     asi en cada nodo de corte la opcion de quedarse vale EVAL y puede
     decidir. Con d = 1 da centro con 10, no el 0 de minimax: por eso
@@ -3288,7 +3289,7 @@ def posiciones_fronteras(lado):
 
 
 def iterativa_tpm(profundidades=(1, 2, 3), evaluar=None, arbol=ARBOL_TPM):
-    """PROFUNDIZACION-ITERATIVA en T± (alfa-beta con corte, la jugada anterior
+    """PROFUNDIZACION-ITERATIVA en el árbol de resultados (alfa-beta con corte, la jugada anterior
     primero): [(d, orden de la raiz, jugada, valor, generados)] y el total."""
     filas = [(d, orden, t["jugada"], t["valor"], t["generados"])
              for d, orden, t in profundizacion_iterativa_t(
@@ -3300,7 +3301,7 @@ ALGORITMOS_ORDEN_TPM = ("minimax", "alfa-beta", "corte", "quietud", "iterativa")
 
 
 def orden_generados_tpm(algoritmo, d=1, arbol=ARBOL_TPM):
-    """Los caminos de T± en el orden en que `algoritmo` los genera, la raiz
+    """Los caminos del árbol de resultados en el orden en que `algoritmo` los genera, la raiz
     primero: lo que recorre la animacion de las radiografias (7.3.6).
 
     - "minimax": DECIDIR-MINIMAX, los 15 en profundidad;
@@ -3328,7 +3329,7 @@ def orden_generados_tpm(algoritmo, d=1, arbol=ARBOL_TPM):
 def todos_al_azar_tpm(arbol=ARBOL_TPM):
     """Expectiminimax con TODOS los nodos bajo la raiz como dados parejos,
     tambien los de MAX (C1 y C2): el limite de Monte Carlo plano. La raiz
-    sigue eligiendo el maximo. (jugada, {izq/centro/der: μ exacto})."""
+    sigue eligiendo el maximo. (jugada, {izq/centro/der: Q_azar exacto})."""
     jugada, valores = expectiminimax_tpm(("I", "C", "D", "C1", "C2"), arbol)
     return jugada, {a: valores[n] for a, n in zip(JUGADAS_RAIZ, "ICD")}
 
@@ -3361,7 +3362,7 @@ def distribucion_simulacion(nodo):
 
 
 def mc_plano_tpm(k, semilla, arbol=ARBOL_TPM):
-    """Monte Carlo plano en T±: k simulaciones por jugada de la raiz, en el
+    """Monte Carlo plano en el árbol de resultados: k simulaciones por jugada de la raiz, en el
     orden izq, centro, der, con un solo generador random.Random(semilla).
     Entrega la de mayor promedio; en un empate, la primera en ese orden.
     (jugada, {jugada: suma de U})."""
@@ -3432,13 +3433,13 @@ def prob_mc_plano_tpm(k, arbol=ARBOL_TPM):
 
 
 def uct_tpm(c, vueltas, semilla, arbol=ARBOL_TPM):
-    """MCTS con UCT en T±, con las reglas de «Simular en vez de evaluar»:
+    """MCTS con UCT en el árbol de resultados, con las reglas de «Simular en vez de evaluar»:
     la seleccion baja mientras el nodo tenga todos sus hijos en el arbol,
-    por el de mayor ū + c·√(ln N(s)/N(s′)) (MIN usa −ū; empate → el primero);
+    por el de mayor Q̂ + c·√(ln N(s)/N(s,a)) (MIN usa −Q̂; empate → el primero);
     la expansion agrega el primer hijo que falta, en el orden dado; la
     simulacion juega al azar desde el hijo nuevo (un final da su U); la
     retropropagacion suma 1 y U a cada nodo del camino. La raiz no simula.
-    ū es el promedio de U (con empates, no 2G/N − 1).
+    Q̂ es el promedio de U (con empates, no 2G/N − 1).
 
     Devuelve dict(N, S: {camino: N y suma de U}, mas_simulada: la de la raiz
     tras cada vuelta, empate → la primera en el orden dado; caminos; U: el
@@ -3526,7 +3527,7 @@ VUELTAS_PAGINA_TPM = 40      # la corrida de UCT que muestra la pagina
 
 
 def ids_tpm(arbol=ARBOL_TPM):
-    """{camino: id} para todos los nodos de T±: R, I, C, D, C1, C2 y las
+    """{camino: id} para todos los nodos del árbol de resultados: R, I, C, D, C1, C2 y las
     hojas por la jugada que lleva a ellas (i1, …, d3)."""
     res = {c: n for c, (n, _) in nombres_t(arbol).items()
            if isinstance(nodo_en(arbol, c), tuple)}
@@ -3564,7 +3565,7 @@ GARANTIZA_TPM = {
 
 
 def tabla_t_pm(arbol=ARBOL_TPM):
-    """Una fila por algoritmo corrido sobre T±, para la tabla de 7.3.7, en el
+    """Una fila por algoritmo corrido sobre el árbol de resultados, para la tabla de 7.3.7, en el
     orden del curso (minimax, expectiminimax, alfa-beta en orden dado y al
     revés, corte d = 1..3, quietud, iterativa, Monte Carlo plano con 5, 10 y
     50 simulaciones por jugada, UCT):
@@ -3574,7 +3575,9 @@ def tabla_t_pm(arbol=ARBOL_TPM):
     tipo: «V» (minimax y alfa-beta), «V con dado» (otro juego: D es azar),
     «valor con corte» (EVAL donde corta, 100·U en los finales), «valor con
     quietud» (en el corte, lo mejor entre quedarse con EVAL y seguir las
-    capturas), «ū» (promedio de simulaciones; el limite μ va en la nota).
+    capturas), «ū» (promedio de simulaciones, Q̂ en la notacion de la unidad:
+    gen_un_arbol_todos.py lo rotula asi; el limite, Q_azar, va en la nota
+    con el simbolo viejo μ).
     nodos: NO miden el mismo trabajo en todas las filas. En las busquedas,
     nodos generados contando R (con repeticion en la iterativa, que suma sus
     tres busquedas); en MC plano, nodos distintos que tocaron sus
@@ -3583,7 +3586,7 @@ def tabla_t_pm(arbol=ARBOL_TPM):
     jugadas hasta un final (k por jugada en MC plano, una por vuelta en
     UCT); None en las busquedas. garantiza: el texto de la
     convencion GARANTIZA_TPM, igual para toda fila de una familia.
-    da_v_aqui: si en T± el numero coincide con el V que le corresponde —el
+    da_v_aqui: si en el árbol de resultados el numero coincide con el V que le corresponde —el
     de minimax, 0, en su escala (U o 100·U); en expectiminimax, el V del
     juego con dado—, garantizado o por casualidad."""
     jm, v, _, n = minimax_tpm(arbol)
@@ -3917,8 +3920,10 @@ def tabla_nodos_generados_tpm(profundidades=(1, 2, 3)):
 # - Monte Carlo plano: promedia el U crudo por jugada de la raiz. Converge a
 #   Q_azar, el valor si los dos juegan al azar (= expectiminimax con todos
 #   los nodos bajo la raiz como dados parejos), no a V.
-# - Monte Carlo con actualizacion minimax (MMMC; Kocsis, Szepesvari y
-#   Willemson 2006): muestrea igual, pero guarda los estados descubiertos y
+# - Monte Carlo con actualizacion minimax: Kocsis y Szepesvari (2006), *Bandit
+#   based Monte-Carlo Planning* (el articulo de UCT), llaman a este metodo
+#   «Monte-Carlo planning with minimax value update» (MMMC). Muestrea igual,
+#   pero guarda los estados descubiertos y
 #   sube max/min: Q̂(s,a) = V̂(T(s,a)). Converge a V en un arbol finito,
 #   determinista y de ramificacion finita.
 # - UCT: uct_tpm, promedio del mismo U por arista con la seleccion UCB.

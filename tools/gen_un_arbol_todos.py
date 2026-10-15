@@ -37,8 +37,26 @@ CIERRA = "</script>"
 
 
 CLAVE_MMMC = "actualización minimax"
-FILA_MMMC = f"actualización minimax, {j.VUELTAS_PAGINA_TPM} partidas"
-GARANTIZA_MMMC = "No (en un árbol finito, con partidas sin límite llega a él)"
+# La fila de la tabla es la corrida de la radiografía (jue-c3-cmp-resultados):
+# 10 partidas, 11 estados guardados, raíz aún provisional. El deslizador sigue
+# llegando a VUELTAS_PAGINA_TPM, el presupuesto de UCT.
+PARTIDAS_FILA_MMMC = j.ITERACIONES_MMMC_TPM
+FILA_MMMC = f"actualización minimax, {PARTIDAS_FILA_MMMC} partidas"
+GARANTIZA_MMMC = ("No (en un árbol finito, con todas las jugadas, finales reales y partidas "
+                  "sin límite, converge a él)")
+
+# «¿Garantiza V?» con la convención de la radiografía (plan §5.1): el corte que
+# alcanza todos los finales da M·V, no V; UCT converge con sus condiciones
+# completas. juegos.GARANTIZA_TPM conserva los textos viejos (los fija
+# test_juegos.py); aquí se homologan para lo que ve el alumno.
+GARANTIZA_HOMOLOGADA = {
+    "No, salvo si llega a los finales":
+        "No; si llega a todos los finales, da M·V (aquí M = 100)",
+    "No, salvo si llega a los finales antes de cortar":
+        "No; si llega a todos los finales antes de activar la quietud, da M·V (aquí M = 100)",
+    "No (con tiempo sin límite converge a él, con cualquier c > 0)":
+        "No (en un árbol finito, con c > 0 fija y vueltas sin límite, converge a él)",
+}
 
 # El orden de la radiografia (plan §5.2): la tabla de la pagina va asi, no en
 # el de tabla_t_pm(), que pone expectiminimax antes que alfa-beta.
@@ -77,7 +95,7 @@ def datos_mmmc(arbol=j.ARBOL_TPM, partidas=j.VUELTAS_PAGINA_TPM, semilla=j.SEMIL
                 por_partida=por_partida)
 
 
-def fila_mmmc(arbol=j.ARBOL_TPM, partidas=j.VUELTAS_PAGINA_TPM, semilla=j.SEMILLA_TPM):
+def fila_mmmc(arbol=j.ARBOL_TPM, partidas=PARTIDAS_FILA_MMMC, semilla=j.SEMILLA_TPM):
     """Su fila de la tabla, con los campos de tabla_t_pm(): valor = Q̂ de la
     jugada entregada; nodos = los estados que guardo; da_v_aqui = si ese
     numero es V (0 en el arbol de resultados)."""
@@ -103,12 +121,19 @@ def _homologar(texto):
     return texto
 
 
+def garantiza(texto):
+    """El «¿Garantiza V?» de una fila, con la convención de la radiografía."""
+    return GARANTIZA_HOMOLOGADA.get(texto, texto)
+
+
 def datos_de_hoy():
     """juegos.datos_interactivo_tpm() con la actualizacion minimax agregada,
     la tabla en el orden de la radiografia y la notacion de §5.1 (Q̂ por ū,
-    Q_azar por μ) en los textos que trae la fuente."""
+    Q_azar por μ; «¿Garantiza V?» con M·V y condiciones completas) en los
+    textos que trae la fuente."""
     d = j.datos_interactivo_tpm()
-    d["tabla"] = [dict(f, tipo=_homologar(f["tipo"]), nota=_homologar(f["nota"])) for f in d["tabla"]]
+    d["tabla"] = [dict(f, tipo=_homologar(f["tipo"]), nota=_homologar(f["nota"]),
+                       garantiza=garantiza(f["garantiza"])) for f in d["tabla"]]
     mc = d["algoritmos"]["Monte Carlo plano"]
     limite = mc["limite"]
     mc["limite"] = dict(jugada=limite["jugada"], q_azar=limite["mu"])

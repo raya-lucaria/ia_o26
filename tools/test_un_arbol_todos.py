@@ -82,7 +82,8 @@ def test_cada_variante_del_selector_existe_en_los_datos(html, datos):
 
 
 SIETE = [("minimax", "Minimax"), ("alfa-beta", "Alfa-beta"), ("dado", "Expectiminimax (dado en D)"),
-         ("corte", "Con corte"), ("mc", "Monte Carlo plano"), ("mmmc", "Actualización minimax"),
+         ("corte", "Minimax con corte"), ("mc", "Monte Carlo plano"),
+         ("mmmc", "Monte Carlo con actualización minimax"),
          ("uct", "UCT")]
 
 
@@ -120,12 +121,14 @@ def test_la_tabla_incrustada_tiene_las_cifras_de_tabla_t_pm(datos):
         assert f["valor"] == (j.fmt_t(e["valor"]) if isinstance(e["valor"], j.F) else e["valor"])
         tipo = "Q̂" if e["tipo"] == "ū" else e["tipo"]
         assert (f["tipo"], f["escala"], f["nodos"], f["garantiza"], f["da_v_aqui"]) == \
-               (tipo, e["escala"], e["nodos"], e["garantiza"], e["da_v_aqui"]), f["algoritmo"]
+               (tipo, e["escala"], e["nodos"], g.garantiza(e["garantiza"]),
+                e["da_v_aqui"]), f["algoritmo"]
 
 
 def test_la_actualizacion_minimax_es_la_de_mc_minimax(datos):
     """Cada foto del deslizador es mc_minimax con t partidas (semilla 0); la
-    fila de la tabla, la de 40: centro, Q̂ = 0 = V, los 15 estados, exacta."""
+    fila de la tabla, la de la radiografía (10 partidas): centro, Q̂ = 0 = V,
+    11 estados guardados, raíz aún provisional."""
     m = datos["algoritmos"][g.CLAVE_MMMC]
     ids = j.ids_tpm()
     assert len(m["por_partida"]) == j.VUELTAS_PAGINA_TPM
@@ -137,7 +140,9 @@ def test_la_actualizacion_minimax_es_la_de_mc_minimax(datos):
         assert m["Q"][t - 1] == r["Q"]
     assert m["Q"][9] == [None, 0, -1] and len(m["por_partida"][9]) == 11
     fila = next(f for f in datos["tabla"] if f["algoritmo"] == g.FILA_MMMC)
-    assert (fila["jugada"], fila["valor"], fila["nodos"], fila["da_v_aqui"]) == ("centro", 0, 15, True)
+    assert g.FILA_MMMC == f"actualización minimax, {j.ITERACIONES_MMMC_TPM} partidas"
+    assert (fila["jugada"], fila["valor"], fila["nodos"], fila["da_v_aqui"]) == ("centro", 0, 11, True)
+    assert fila["nota"] == "raíz provisional"
     assert fila["garantiza"] == g.GARANTIZA_MMMC
 
 
@@ -260,10 +265,11 @@ def _norm(s):
 # abrevia tres textos para caber a 390 px (ABREVIA del JavaScript).
 ABREVIA = {
     "Sí, el V del juego con dado": "Sí, el del juego con dado",
-    "No, salvo si llega a los finales": "No, salvo finales",
-    "No, salvo si llega a los finales antes de cortar": "No, salvo finales antes del corte",
-    "No (con tiempo sin límite converge a él, con cualquier c > 0)": "No; converge",
-    "No (en un árbol finito, con partidas sin límite llega a él)": "No; llega a él",
+    "No; si llega a todos los finales, da M·V (aquí M = 100)": "No; con finales, M·V",
+    "No; si llega a todos los finales antes de activar la quietud, da M·V (aquí M = 100)":
+        "No; con finales, M·V",
+    "No (en un árbol finito, con c > 0 fija y vueltas sin límite, converge a él)": "No; converge",
+    g.GARANTIZA_MMMC: "No; converge",
 }
 
 # (fragmento, jugada, valor de la raíz, nodos mirados, ¿garantiza V?, ¿y aquí da V?)
@@ -272,18 +278,19 @@ CASOS = [
     ("alfa-beta-dado", "centro", "0", "12 de 15", "Sí, en la raíz", "sí"),
     ("alfa-beta-al-reves", "centro", "0", "14 de 15", "Sí, en la raíz", "sí"),
     ("dado", "der", "1/3", "15 de 15", "Sí, el V del juego con dado", "sí: 1/3 es el V del juego con dado"),
-    ("corte-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
-    ("corte-d2", "centro", "10", "11 de 15", "No, salvo si llega a los finales", "no"),
-    ("corte-d3", "centro", "0", "15 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales en todas sus ramas"),
-    ("quietud", "centro", "20", "5 de 15", "No, salvo si llega a los finales antes de cortar", "no"),
-    ("iterativa-d1", "izq", "60", "4 de 15", "No, salvo si llega a los finales", "no"),
-    ("iterativa-d3", "centro", "0", "12 de 15", "No, salvo si llega a los finales", "sí: 0 (100·U) es V, porque esta vez llegó a los finales en todas las ramas que no podó"),
+    ("corte-d1", "izq", "60", "4 de 15", "No; si llega a todos los finales, da M·V (aquí M = 100)", "no"),
+    ("corte-d2", "centro", "10", "11 de 15", "No; si llega a todos los finales, da M·V (aquí M = 100)", "no"),
+    ("corte-d3", "centro", "0", "15 de 15", "No; si llega a todos los finales, da M·V (aquí M = 100)", "sí: 0 = 100·V (M·V con M = 100), porque esta vez llegó a los finales en todas sus ramas"),
+    ("quietud", "centro", "20", "5 de 15", "No; si llega a todos los finales antes de activar la quietud, da M·V (aquí M = 100)", "no"),
+    ("iterativa-d1", "izq", "60", "4 de 15", "No; si llega a todos los finales, da M·V (aquí M = 100)", "no"),
+    ("iterativa-d3", "centro", "0", "12 de 15", "No; si llega a todos los finales, da M·V (aquí M = 100)", "sí: 0 = 100·V (M·V con M = 100), porque esta vez llegó a los finales en todas las ramas que no podó"),
     ("mc-5", "der", "3/5", "15 de 15", "No", "no"),
     ("mc-50", "der", "12/25", "15 de 15", "No", "no"),
-    ("uct", "centro", "0", "15 de 15", "No (con tiempo sin límite converge a él, con cualquier c > 0)", "sí, por casualidad"),
-    ("uct-18", "centro", "−1/7", "14 de 15", "No (con tiempo sin límite converge a él, con cualquier c > 0)", "no"),
-    ("mmmc", "centro", "0", "15 de 15", "No (en un árbol finito, con partidas sin límite llega a él)", "sí: 0 es V, y ya es exacto"),
-    ("mmmc-10", "centro", "0", "11 de 15", "No (en un árbol finito, con partidas sin límite llega a él)", "sí, por ahora"),
+    ("uct", "centro", "0", "15 de 15", "No (en un árbol finito, con c > 0 fija y vueltas sin límite, converge a él)", "sí, por casualidad"),
+    ("uct-18", "centro", "−1/7", "14 de 15", "No (en un árbol finito, con c > 0 fija y vueltas sin límite, converge a él)", "no"),
+    ("mmmc", "centro", "0", "11 de 15", "No (en un árbol finito, con todas las jugadas, finales reales y partidas sin límite, converge a él)", "sí, por ahora"),
+    ("mmmc-10", "centro", "0", "11 de 15", "No (en un árbol finito, con todas las jugadas, finales reales y partidas sin límite, converge a él)", "sí, por ahora"),
+    ("mmmc-40", "centro", "0", "15 de 15", "No (en un árbol finito, con todas las jugadas, finales reales y partidas sin límite, converge a él)", "sí: 0 es V, y ya es exacto"),
 ]
 
 
@@ -313,17 +320,17 @@ def test_la_tarjeta_coincide_con_la_tabla_de_la_fuente():
     filas[g.FILA_MMMC] = g.fila_mmmc()
     por_frag["mmmc"] = g.FILA_MMMC
     for frag, jugada, valor, nodos, garantiza, aqui in CASOS:
-        if frag == "mmmc-10":
+        if frag in ("mmmc-10", "mmmc-40"):
             assert garantiza == g.GARANTIZA_MMMC
             continue
         if frag.startswith("iterativa") or frag == "uct-18":
             fam = iterativa if frag.startswith("iterativa") else filas["UCT, c = 1, 40 vueltas"]
-            assert garantiza == fam["garantiza"], frag
+            assert garantiza == g.garantiza(fam["garantiza"]), frag
             continue
         f = filas[por_frag[frag]]
         v = j.fmt_t(f["valor"]) if isinstance(f["valor"], j.F) else str(f["valor"])
         assert (jugada, valor, nodos) == (f["jugada"], v, f"{f['nodos']} de 15"), frag
-        assert garantiza == f["garantiza"], frag
+        assert garantiza == g.garantiza(f["garantiza"]), frag
         assert aqui.startswith("sí") == f["da_v_aqui"], frag
     # la última búsqueda de la iterativa es la fila de la tabla
     assert ("centro", "0") == (iterativa["jugada"], str(iterativa["valor"])) and iterativa["da_v_aqui"]
@@ -394,6 +401,20 @@ def test_ni_el_marcado_ni_el_codigo_usan_la_notacion_vieja(html):
     for viejo in VIEJOS:
         assert viejo not in html, viejo
     assert "árbol de resultados" in html
+
+
+def test_los_nombres_y_la_garantia_son_los_de_la_radiografia(html):
+    """Plan §5.2: «la más visitada», no «la más simulada»; y §5.1: el corte que
+    alcanza los finales da M·V, no V (la radiografía, jue-c3-rx-tab-juega)."""
+    visible = re.sub(r'<script type="application/json".*?</script>', "", html, flags=re.S)
+    assert "Entrega la más visitada" in visible and "más simulada" not in visible
+    assert "salvo si llega a los finales" not in html
+    assert "con cualquier c > 0" not in html
+    for nombre in ('data-nombre="Expectiminimax (dado en D)"', 'data-nombre="Minimax con corte, d = 1"',
+                   'data-nombre="Búsqueda de quietud, d = 1"',
+                   'data-nombre="Profundización iterativa, búsqueda d = 1"',
+                   'data-nombre="Monte Carlo con actualización minimax"'):
+        assert nombre in html, nombre
 
 
 @pytest.mark.parametrize("frag", ["minimax", "dado", "mc-50", "mmmc-10", "uct-18", "corte-d2"])

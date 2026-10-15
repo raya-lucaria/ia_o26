@@ -354,10 +354,12 @@ def test_cada_ejercicio_de_las_clases_2_y_3_trae_pista_y_respuesta():
 
 
 def test_la_clase_2_usa_la_utilidad_de_la_clase_1():
-    """±(10−k) solo aparece en el aviso que explica por qué no se usa."""
+    """±(10−j) solo aparece en el aviso que explica por qué no se usa (era
+    10−k; la k quedó para Monte Carlo plano, ola 4 r1)."""
     for pagina in UNIDAD.rglob("*.md"):
         texto = pagina.read_text(encoding="utf-8")
-        apariciones = re.findall(r"10\s*-\s*k", texto)
+        assert not re.findall(r"10\s*-\s*k\b", texto), pagina.name
+        apariciones = re.findall(r"10\s*-\s*j\b", texto)
         if pagina.name == "1_minimax.md":
             assert len(apariciones) == 1
         else:
@@ -2716,8 +2718,11 @@ def test_prosa_clase_3_p5_monte_carlo_plano_no_es_mcts():
     texto = _pagina(P5)
     mcts = _pagina(P5b)
     resumen = texto.split("\n---", 1)[0]
+    # el summary lo dice en palabras (ola 4 r1); el símbolo, en el cuerpo
     assert re.search(r'^summary: ".*Monte Carlo plano promedia su U por jugada de la raíz y '
-                     r'converge a Q_azar', resumen, re.M)
+                     r'converge a lo que paga jugar si los dos eligen al azar', resumen, re.M)
+    assert r"$\widehat Q(s_{\text{raíz}},a)$ estima $Q_{\text{azar}}(s_{\text{raíz}},a)$" \
+        in texto
     assert re.search(r'^summary: ".*elige el mayor Q̂ \+ bono en MAX y el menor Q̂ − bono en MIN',
                      mcts.split("\n---", 1)[0], re.M)
     assert "Monte Carlo plano guarda ese promedio por jugada de la raíz, sin construir un árbol" \

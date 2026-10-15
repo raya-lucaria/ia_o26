@@ -506,14 +506,12 @@ D es de MIN y $-1$ es el menor pago posible. Un promedio cuenta frecuencias; un 
 > | Minimax | $V$; lo garantiza |
 > | Alfa-beta | $V$ en la raíz; lo garantiza |
 > | Expectiminimax | El $V$ del juego con dado; lo garantiza |
-> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
-> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
-> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
+> | Minimax con corte | Valor con corte; no garantiza $V$. Con todos los finales, da $M\cdot V$ |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$. Con todos los finales antes de activar la quietud, da $M\cdot V$ |
+> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$. Con todos los finales, da $M\cdot V$ |
 > | Monte Carlo plano | $\widehat Q$, que estima $Q_{\text{azar}}$; no garantiza $V$ |
-> | Monte Carlo con actualización minimax | $\widehat Q$ y $\widehat V$; no garantiza $V$ (con partidas sin límite converge a él) |
-> | **MCTS con UCT (estás aquí)** | **$\widehat Q$; no garantiza $V$ (con vueltas sin límite converge a él, con cualquier $c>0$)** |
->
-> **Lo que viene.**
+> | Monte Carlo con actualización minimax | $\widehat Q$ y $\widehat V$; no garantiza $V$ (converge a él bajo su contrato: árbol finito, todas las jugadas, finales reales) |
+> | **MCTS con UCT (estás aquí)** | **$\widehat Q$; no garantiza $V$ (en un árbol finito, con $c>0$ fija y vueltas sin límite, converge a él)** |
 >
 > Ya viste todos los algoritmos de la unidad. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, todos los algoritmos]] los pone lado a lado.
 

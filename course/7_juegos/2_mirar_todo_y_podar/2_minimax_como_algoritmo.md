@@ -838,17 +838,6 @@ qué paso de la demostración se usa que el rival juega bien.
 > | Algoritmo | Qué número da |
 > |---|---|
 > | **Minimax (estás aquí)** | **$V$; lo garantiza** |
->
-> **Lo que viene.**
->
-> - **Alfa-beta**: la misma jugada que mirar todo, sin generar las ramas que ya no pueden cambiar la decisión. Clase 2, [[alfa-beta|Alfa-beta a mano]].
-> - **Expectiminimax**: mirar todo el árbol cuando un dado o una moneda decide algunas jugadas; ahí se promedia en vez de elegir. Clase 2, [[cuando-decide-un-dado|Cuando decide un dado: expectiminimax]].
-> - **Minimax con corte**: mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, para cuando el árbol no cabe. Clase 3, [[cortar-y-evaluar|Cortar y evaluar]].
-> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]].
-> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]].
-> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin diseñar una función EVAL. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
-> - **Monte Carlo con actualización minimax**: simular igual que el plano, pero guardar los estados que descubre y subir por ellos el mejor resultado de quien mueve, como minimax. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
-> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
 
 ## Lo que hay que llevarse
 

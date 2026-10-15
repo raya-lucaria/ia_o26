@@ -99,17 +99,17 @@ def test_ninguna_fila_nombra_un_algoritmo_posterior(archivo):
 
 
 @pytest.mark.parametrize("archivo", PAGINAS)
-def test_lo_que_viene_va_en_palabras_llanas_y_solo_trae_lo_que_falta(archivo):
+def test_el_recuadro_no_anuncia_lo_que_viene(archivo):
+    """Ola 4, r1: «Lo que viene» listaba EVAL, quietud, Monte Carlo y UCT antes
+    de enseñarlos. El recuadro solo trae lo visto; la última página, sin
+    pendientes, manda a la radiografía."""
     bloque = bloque_actual(archivo)
-    k = bloque.index("> **Lo que viene.**")
-    viene = [s for s in bloque[k + 1:] if s.startswith("> - ")]
-    pendientes = gen.pendientes(archivo)
-    assert len(viene) == len(pendientes)
-    for linea, alg in zip(viene, pendientes):
-        assert linea.startswith(f"> - **{alg['nombre']}**")
-        assert "$" not in linea, f"«Lo que viene» usa un símbolo: {linea}"
-    if not pendientes:
-        assert any(gen.SIN_PENDIENTES in s for s in bloque[k + 1:])
+    todo = "\n".join(bloque)
+    assert "Lo que viene" not in todo
+    assert not [s for s in bloque if s.startswith("> - ")]
+    for alg in gen.pendientes(archivo):
+        assert f"**{alg['nombre']}**" not in todo, alg["nombre"]
+    assert (gen.SIN_PENDIENTES in todo) == (not gen.pendientes(archivo))
 
 
 def tramos_de_ficha(lineas, archivo):
@@ -203,7 +203,7 @@ def test_ficha_y_recuadro_dicen_lo_mismo_de_si_garantiza_v(archivo):
             assert "no garantiza $V$" not in celda, alg["nombre"]
         else:
             assert "no garantiza $V$" in alg["numero"], alg["nombre"]
-            assert "salvo si" not in alg["numero"] or "finales" in celda, alg["nombre"]
+            assert "M\\cdot V" not in alg["numero"] or "finales" in celda, alg["nombre"]
             assert "converge" not in alg["numero"] or re.search(
                 r"converge|tienden", celda), alg["nombre"]
 
@@ -212,7 +212,9 @@ def test_quien_garantiza_v_es_lo_que_dice_la_convencion():
     garantiza = {a["nombre"]: a["garantiza"] for a in gen.ALGORITMOS}
     assert [n for n, g in garantiza.items() if g == "Sí"] == [
         "Minimax", "Alfa-beta", "Expectiminimax"]
-    salvedad = [a["nombre"] for a in gen.ALGORITMOS if "salvo si llega a los finales" in a["numero"]]
+    # el corte que llega a todos los finales da M·V, no V (plan §5.1)
+    salvedad = [a["nombre"] for a in gen.ALGORITMOS
+                if "Con todos los finales" in a["numero"] and "M\\cdot V" in a["numero"]]
     assert salvedad == ["Minimax con corte", "Búsqueda de quietud", "Profundización iterativa"]
     convergen = [a["nombre"] for a in gen.ALGORITMOS if "converge" in a["numero"]]
     assert convergen == ["Monte Carlo con actualización minimax", "MCTS con UCT"]
@@ -221,7 +223,7 @@ def test_quien_garantiza_v_es_lo_que_dice_la_convencion():
 
 def test_el_orden_es_el_de_la_navegacion_y_cada_enlace_lleva_el_titulo_real():
     """R14 de la homologación: el orden de ALGORITMOS es el de las páginas, y
-    «Lo que viene» enlaza a una página que existe con el `title` de su
+    cada `enlace` de ALGORITMOS apunta a una página que existe con el `title` de su
     frontmatter (no a una URL perdida como `mas-alla-del-horizonte`)."""
     import yaml
     assert [a["nombre"] for a in gen.ALGORITMOS] == [
@@ -250,17 +252,17 @@ def test_ninguna_celda_usa_la_notacion_retirada():
 
 
 def test_la_quietud_y_mcts_dicen_lo_que_hacen():
-    """Brief r2 W3: la salvedad de la quietud es «antes de cortar», la misma
-    de GARANTIZA_TPM (aun con capturas hasta los finales, quedarse usa EVAL);
-    y «Lo que viene» de MCTS dice que construye un árbol, no «lo mismo» que
-    Monte Carlo plano."""
+    """Brief r2 W3: la salvedad de la quietud es «antes de activar la
+    quietud», la misma de GARANTIZA_TPM («antes de cortar»: aun con capturas
+    hasta los finales, quedarse usa EVAL); UCT declara las condiciones de su
+    convergencia (árbol finito, c > 0 fija, vueltas sin límite)."""
     import juegos as j
     por = {a["nombre"]: a for a in gen.ALGORITMOS}
     assert por["Búsqueda de quietud"]["numero"].endswith(
-        "salvo si llega a los finales antes de cortar")
+        "antes de activar la quietud, da $M\\cdot V$")
     assert j.GARANTIZA_TPM["quietud"] == "No, salvo si llega a los finales antes de cortar"
-    assert por["MCTS con UCT"]["viene"] == (
-        "construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la "
-        "hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar "
-        "lo otro")
-    assert "menos nodos" not in " ".join(a["viene"] + a["numero"] for a in gen.ALGORITMOS)
+    assert "árbol finito" in por["MCTS con UCT"]["numero"]
+    assert "$c>0$ fija" in por["MCTS con UCT"]["numero"]
+    assert "cualquier" not in por["MCTS con UCT"]["numero"]
+    assert not any("viene" in a for a in gen.ALGORITMOS)
+    assert "menos nodos" not in " ".join(a["numero"] for a in gen.ALGORITMOS)

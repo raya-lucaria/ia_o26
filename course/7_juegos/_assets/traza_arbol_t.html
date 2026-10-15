@@ -213,22 +213,22 @@
     <div class="selector">
       <div class="grupo" role="group" aria-label="Algoritmo" id="modos">
         <button data-modo="minimax">Minimax</button>
-        <button data-modo="azar">Con azar</button>
+        <button data-modo="azar">Expectiminimax (dado)</button>
         <button data-modo="alfa-beta">Alfa-beta</button>
-        <button data-modo="corte">Con corte</button>
-        <button data-modo="iterativa">Contra el reloj</button>
+        <button data-modo="corte">Minimax con corte</button>
+        <button data-modo="iterativa">Profundización iterativa</button>
       </div>
       <div class="grupo" role="group" aria-label="Variante" id="variantes"></div>
     </div>
     <select id="sel" aria-label="Algoritmo">
       <option value="minimax">Minimax</option>
-      <option value="azar">Con azar</option>
+      <option value="azar">Expectiminimax (dado)</option>
       <option value="alfa-beta-T1">Alfa-beta · árbol reducido</option>
       <option value="alfa-beta-T">Alfa-beta · árbol base</option>
-      <option value="corte-1">Con corte · d = 1</option>
-      <option value="corte-2">Con corte · d = 2</option>
-      <option value="corte-3">Con corte · d = 3</option>
-      <option value="iterativa">Contra el reloj</option>
+      <option value="corte-1">Minimax con corte · d = 1</option>
+      <option value="corte-2">Minimax con corte · d = 2</option>
+      <option value="corte-3">Minimax con corte · d = 3</option>
+      <option value="iterativa">Profundización iterativa</option>
     </select>
     <p class="sub" id="titulo"></p>
   </div>
