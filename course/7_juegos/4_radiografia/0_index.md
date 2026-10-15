@@ -2,9 +2,9 @@
 id: juegos-radiografia
 title: Radiografía de los algoritmos
 nav_title: Radiografía
-summary: "Todos los algoritmos de la unidad en un mismo árbol pequeño: cómo explora cada uno, qué número da, qué jugada entrega y cuánto cuesta. Y cómo elegir el algoritmo para un juego nuevo."
+summary: "Los siete algoritmos de la unidad en un mismo árbol pequeño: cómo explora cada uno, qué número da, qué jugada entrega y cuánto cuesta. Y cómo elegir el algoritmo para un juego nuevo."
 status: ready
-estimated_time: 114m
+estimated_time: 90m
 tags: [juegos, busqueda-adversarial, minimax, mcts]
 prerequisites: [juegos-cuando-no-cabe]
 ---
@@ -13,15 +13,30 @@ prerequisites: [juegos-cuando-no-cabe]
 
 **Ya viste cada algoritmo por separado. ¿En qué se parecen y en qué no?**
 
-Esta sección es de consulta: pone los algoritmos de las clases 2 y 3 sobre un
-mismo árbol pequeño para compararlos, y después usa esa comparación para
-elegir el algoritmo de un juego. No tiene tarea.
+Esta sección es **de consulta**: vuelve a ella en cualquier momento. Pone
+los algoritmos de las clases 2 y 3 sobre el árbol de resultados para
+compararlos. Después usa esa comparación para elegir el algoritmo de un
+juego. No tiene tarea.
+
+## Qué vas a poder hacer al terminar
+
+- Leer la ficha de cada algoritmo. Todas siguen el mismo orden: qué valor
+  rastrea, cómo obtiene su número, qué juega, propiedades y casos borde.
+- Decir si un número es $V$, un valor con corte o una estimación
+  $\widehat Q$. Y a qué converge cada Monte Carlo.
+- Elegir el algoritmo de un juego nuevo con cuatro preguntas. ¿Cabe el
+  árbol? ¿Hay dados? ¿Hay una buena EVAL? ¿Hay reloj?
+
+> [!TIP]
+> **▶ [El mismo árbol, todos los algoritmos](../_assets/un_arbol_todos.html).** Elige un algoritmo. Mira qué nodos genera, qué jugada entrega y con qué valor.
+
+## Recorrido
 
 ::: table {#jue-ruta-4 title="Las páginas de esta sección"}
 | | Minutos | Página y qué resuelve |
 |---|---:|---|
-| 1 | 89m | **Radiografía: un árbol, todos los algoritmos.** Cómo explora cada algoritmo, qué número da, qué juega y cuánto cuesta |
-| 2 | 25m | **Elegir el algoritmo.** Unas cuantas preguntas sobre el juego que deciden qué algoritmo usar |
+| 1 | 60m | **Radiografía: un árbol, todos los algoritmos.** Siete fichas en el árbol de resultados y las tablas que los comparan |
+| 2 | 30m | **Elegir el algoritmo.** Cuatro preguntas sobre el juego que deciden qué algoritmo usar, y lo que suponen todos |
 :::
 
 1. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, todos los algoritmos]]

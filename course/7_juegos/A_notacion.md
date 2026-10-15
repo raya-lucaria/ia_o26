@@ -78,7 +78,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | $A(s)$ | «a de ese». Las jugadas permitidas en un estado no final; nunca está vacío | Escribir el juego |
 | $T(s,a)$ | «te de ese, a». El estado al que lleva la jugada $a$ desde $s$; es determinista dado $a$, y el azar, si lo hay, está en $\Pr(a\mid s)$. Dominio: $\{(s,a): s\in S\setminus S_F,\ a\in A(s)\}$ | Escribir el juego |
 | $U(s)$ | «u de ese». El **pago terminal que define cada juego, siempre desde MAX**. Hexapawn: $+1$ o $-1$, sin empates; gato y el árbol de resultados suman el $0$ del empate; otros juegos declaran su escala. Con suma cero, para MIN vale $-U(s)$ | Escribir el juego |
-| $(U_1,\dots,U_n)$ | «u uno a u ene». Un pago por jugador: hace falta con más de dos jugadores o con suma no constante | Diagnosticar el juego |
+| $(U_1,\dots,U_n)$ | «u uno a u ene». Un pago por jugador: hace falta con más de dos jugadores o con suma no constante | Escribir el juego; con $\max^n$, en Diagnosticar el juego |
 
 ## Valor y decisión
 
@@ -131,10 +131,10 @@ con muestras lleva gorro, como $\widehat Q$.
 |---|---|---|
 | $\widehat Q(s,a)$ | «cu gorro». Estimación de una jugada. En Monte Carlo plano y en UCT, el promedio de los pagos de las simulaciones o vueltas que tomaron $a$; en la actualización minimax, $\widehat V(T(s,a))$ | Simular partidas |
 | $\widehat V(s)$ | «ve gorro». Estimación de un estado. En la actualización minimax, el máximo (MAX) o el mínimo (MIN) de sus $\widehat Q$; en UCT, el promedio de las vueltas que pasaron por $s$ | Simular partidas |
-| $N(s)$, $N(s,a)$ | «ene de ese», «ene de ese, a». Visitas: cuántas vueltas pasaron por el nodo $s$, y cuántas tomaron la arista $a$. Esta $N$ no es Negras | Simular partidas |
+| $N(s)$, $N(s,a)$ | «ene de ese», «ene de ese, a». Visitas: cuántas vueltas pasaron por el nodo $s$, y cuántas tomaron la arista $a$. Esta $N$ no es Negras | MCTS con UCT |
 | $k$ | «ka». Cuántas simulaciones recibe cada jugada de la raíz en Monte Carlo plano | Simular partidas |
-| $n$ | «ene». Simulaciones, o vueltas de UCT, **en total**. En Monte Carlo plano, ${n=\lvert A(s_{\text{raíz}})\rvert\,k}$ | Radiografía |
-| $h$ | «hache». La profundidad que alcanzó el árbol de UCT; a lo más $m$. Una vuelta cuesta $O(bh+m)$ | Radiografía |
+| $n$ | «ene». Simulaciones, o vueltas de UCT, **en total**. En Monte Carlo plano, ${n=\lvert A(s_{\text{raíz}})\rvert\,k}$ | Simular partidas |
+| $h$ | «hache». La profundidad que alcanzó el árbol de UCT; a lo más $m$. Una vuelta cuesta $O(bh+m)$ | MCTS con UCT |
 | $c$ | «ce». El peso de explorar en la regla UCB; nunca cambia de signo, tampoco en MIN | MCTS con UCT |
 | bono | $c\sqrt{\ln N(s)/N(s,a)}$: crece con las visitas del padre y baja con las de la jugada. Solo se calcula con $N(s,a)>0$: una jugada sin visitas se prueba antes | MCTS con UCT |
 | Puntaje de exploración | $\widehat Q(s,a)+\text{bono}$ en MAX, que elige el mayor; $\widehat Q(s,a)-\text{bono}$ en MIN, que elige el menor. **No es un pago:** como EVAL, guía la búsqueda; a diferencia de EVAL, no estima ningún valor | MCTS con UCT |
@@ -219,7 +219,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | Efecto horizonte | Una consecuencia decisiva queda justo detrás del corte, y la búsqueda valora mal la jugada | Hasta dónde mirar |
 | Posición quieta, búsqueda de quietud, valor con quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, no devolver sin más la $\mathrm{EVAL}$: usarla como opción de quedarse (una aproximación llamada *stand pat*) y compararla con las capturas, cada una seguida hasta un final o una posición quieta. Quedarse no es una jugada legal. El valor con quietud es el número que resulta | Hasta dónde mirar |
 | Profundización iterativa | Buscar con $d=1,2,3,\dots$ mientras haya tiempo y entregar la jugada de la última búsqueda completa | Hasta dónde mirar |
-| *Anytime* | Que tiene una jugada lista si se le interrumpe | Hasta dónde mirar |
+| *Anytime* | Que tiene una jugada lista si se le interrumpe | Minimax como algoritmo |
 | PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Hasta dónde mirar |
 | ALFA-BETA-CON-CORTE | Alfa-beta con los mismos cambios: con $d=0$ se estima y los finales valen $M\cdot U$ | Hasta dónde mirar |
 | Simulación | Recorrido desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final. En inglés, *rollout* | Simular partidas |
@@ -232,9 +232,9 @@ con muestras lleva gorro, como $\widehat Q$.
 | UCT | El miembro de MCTS que selecciona con la regla UCB en cada nodo del árbol. Sube el mismo $U$ y promedia, nunca toma máximo ni mínimo. En un árbol finito, con $c>0$ fija y vueltas sin límite, sus $\widehat Q$ tienden a $Q$, no a $Q_{\text{azar}}$ | MCTS con UCT |
 | Explorar, aprovechar | Probar lo poco probado, o elegir lo que ya funcionó; la regla UCB equilibra los dos | MCTS con UCT |
 | *Robust child* | La jugada con más visitas: la que se entrega al final, sin bono | MCTS con UCT |
-| Bandido | Elegir muchas veces entre unas pocas opciones inciertas, cuya esperanza no se conoce; cada prueba da un resultado al azar. Es la raíz de MCTS sin árbol debajo | De dónde sale el bono |
+| Bandido | Elegir muchas veces entre unas pocas opciones inciertas, cuya esperanza no se conoce; cada prueba da un resultado al azar. Es la raíz de MCTS sin árbol debajo | MCTS con UCT; a fondo, en De dónde sale el bono |
 | Cota optimista | $\widehat Q$ más el margen: lo más que la esperanza podría valer sin que los datos lo desmientan. Que la cota quede en la esperanza o por debajo es fallar, y pasa con probabilidad a lo más $\delta$. Es un puntaje, no un pago. En MIN, $\widehat Q$ menos el margen, y se elige la menor. No es el techo de la tabla de transposición | De dónde sale el bono |
-| Regla UCB, UCB1 | Regla UCB: la de la cota optimista en un bandido. UCB1: esa regla con ${c=2\sqrt2}$ para pagos en $[-1,1]$ en el bandido estacionario (Auer, Cesa-Bianchi y Fischer, 2002) | De dónde sale el bono |
+| Regla UCB, UCB1 | Regla UCB: la de la cota optimista en un bandido. UCB1: esa regla con ${c=2\sqrt2}$ para pagos en $[-1,1]$ en el bandido estacionario (Auer, Cesa-Bianchi y Fischer, 2002) | Regla UCB, en MCTS con UCT; UCB1, en De dónde sale el bono |
 | A veces al azar | Elegir el mejor promedio, salvo una fracción fija de las veces (10 % aquí), en que se elige al azar | De dónde sale el bono |
 
 ## En las figuras
@@ -247,7 +247,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | Flecha resaltada | Una jugada que alcanza el valor de su padre |
 | Esquinas redondas | Nodo de azar |
 | Caja o círculo punteado con «?» | Estado que el recorrido nunca genera; en la actualización minimax, una jugada desconocida |
-| Nodo marcado como resuelto | En la actualización minimax: su valor ya es exacto |
+| Etiqueta «exacto» bajo el $\widehat V$ de un nodo | En la actualización minimax: su valor ya no cambia, el nodo está resuelto. Sin la etiqueta, el $\widehat V$ todavía puede cambiar |
 | Línea punteada de color | Dónde se corta la búsqueda; su pastilla dice el $d$ de la raíz. Desde «Hasta dónde mirar» se llama horizonte |
 | Barra bajo un nodo | Ahí hubo una poda (un corte alfa o beta): los hermanos que siguen no se generan |
 | Etiqueta «cota» bajo el $v$ de un nodo | Su $v$ tocó o salió de la ventana de entrada: solo garantiza un techo o un piso de su valor (puede coincidir con él, pero no se sabe) |

@@ -2,9 +2,9 @@
 id: juegos-cuando-no-cabe
 title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
-summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
+summary: "Si no se puede llegar a los finales, hay dos salidas: cortar la búsqueda y estimar cada posición con una evaluación, o simular partidas hasta el final. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 238m
+estimated_time: 277m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -17,13 +17,13 @@ página verás que ya no se puede llegar a los finales: hay que detenerse
 antes y **estimar**.
 
 > [!TIP]
-> **Esta clase tiene animaciones, tres interactivos y un notebook.** Minimax con corte y profundización iterativa, corriendo en el árbol T, y el bono de UCT:
+> **Esta clase tiene animaciones, tres interactivos y un notebook.** Minimax con corte y profundización iterativa en el árbol de resultados, el bono de UCT y todos los algoritmos en un mismo árbol:
 >
 > - **▶ Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
 >   algoritmo abre la suya en un recuadro como éste.
 > - **▶ Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
 >   la página «De dónde sale el bono».
-> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol T± y compara qué miró y qué devolvió. Lo abre la página «Radiografía: un árbol, cinco algoritmos».
+> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol de resultados. Lo abren «MCTS con UCT» y la radiografía.
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -36,47 +36,48 @@ a su página.
 ::: table {#jue-c3-repaso title="Lo que se usa de la clase 2"}
 | | Qué es | Dónde se vio |
 |---|---|---|
-| $V(s)$ | El valor: sin azar, lo que MAX asegura desde $s$ si MIN juega lo mejor; con dados, el valor esperado con los dos jugando lo mejor | Minimax a mano y Cuando decide un dado |
-| DECIDIR-MINIMAX | Elige la jugada de la raíz con el máximo de $V$ | Minimax como algoritmo |
-| Árbol T | Juguete: R de MAX; I, C, D de MIN; C1 y C2 de MAX; hojas 3, 6 · 5, 2 · 7, 8 · 2, 12 | Minimax como algoritmo |
+| $V(s)$ | El valor de un estado, desde MAX: sin azar, el pago si los dos juegan lo mejor; con dados, el valor esperado con los dos jugando lo mejor | Diagnosticar el juego y Cuando decide un dado |
+| $Q(s,a)$ | El valor de una jugada: $Q(s,a)=V(T(s,a))$ | Diagnosticar el juego y Minimax a mano |
+| DECIDIR-MINIMAX | Elige la jugada de la raíz con el mayor $Q$ | Minimax como algoritmo |
+| Árbol de resultados | Juguete con la forma del árbol base: R de MAX; I, C y D de MIN; finales $+1$, $0$ o $-1$ | Minimax como algoritmo |
 | $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
 | $\alpha$, $\beta$ | Lo que MAX y MIN ya tienen asegurado en el camino | Alfa-beta a mano |
-| Corte | Dejar de generar hermanos que no cambian la respuesta | Alfa-beta a mano |
-| Cota | Lo que devuelve un nodo que cortó: «al menos» o «a lo más», no su valor | Alfa-beta a mano |
-| DECIDIR-ALFA-BETA | Minimax con cortes; el orden de las jugadas cambia cuántos nodos genera | Alfa-beta como algoritmo |
+| Poda | Dejar de generar hermanos que no cambian la respuesta: un corte alfa o un corte beta | Alfa-beta a mano |
+| Cota | Lo que devuelve un nodo que podó: «al menos» o «a lo más», no su valor | Alfa-beta a mano |
+| DECIDIR-ALFA-BETA | Minimax con podas; el orden de las jugadas cambia cuántos nodos genera | Alfa-beta como algoritmo |
 :::
 
 Las páginas de la clase 2:
 [[minimax|Minimax a mano]] ·
 [[minimax-como-algoritmo|Minimax como algoritmo]] ·
 [[alfa-beta|Alfa-beta a mano]] ·
-[[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]].
+[[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]] ·
+[[cuando-decide-un-dado|Cuando decide un dado]].
 
 ## Qué vas a poder hacer al terminar esta clase
 
 - Explicar por qué minimax completo no sirve para un juego como el ajedrez.
 - Escribir una función de evaluación y decir qué preferencia expresa y qué
   deja fuera.
-- Calcular a mano minimax con corte de profundidad en una posición pequeña.
-- Distinguir el valor con corte del valor exacto del juego.
+- Calcular a mano minimax con **corte** de profundidad, con los finales en
+  la escala $M\cdot U$. Y distinguir el valor con corte del valor exacto.
 - Reconocer el efecto horizonte y explicar qué hace la búsqueda de quietud.
 - Explicar la profundización iterativa: qué jugada entregar cuando se acaba
   el tiempo y por qué repetir búsquedas cuesta poco.
-- Explicar la idea de la búsqueda de árbol Monte Carlo: estimar una jugada
-  simulando partidas, sin función de evaluación. Monte Carlo plano juega
-  todo al azar. MCTS elige por puntaje dentro de su árbol, y al azar solo
-  debajo.
-- Explicar el bono de UCT como margen de error de un promedio: por qué se
-  suma, de dónde sale su tamaño, y que se usa para seleccionar, no para
+- Estimar una jugada **simulando partidas**, sin función de evaluación.
+  Monte Carlo plano converge a $Q_{\text{azar}}$; la actualización minimax,
+  a $Q$.
+- Explicar **MCTS** como familia de búsquedas en cuatro fases, y **UCT**
+  como su miembro que selecciona con un bono. Calcular una vuelta a mano y
+  decir qué jugada entrega.
+- Explicar el bono de UCT como margen de error de un promedio. Por qué se
+  suma y de dónde sale su tamaño. Y por qué sirve para seleccionar, no para
   entregar.
-- Comparar cinco algoritmos en un mismo árbol. De cada uno: cómo explora,
-  qué número da, qué jugada juega, si usa evaluación y cuánto cuesta.
-- Explicar qué estima Monte Carlo plano en un árbol que no cabe. Y cómo
-  crece el árbol de UCT: hondo en lo prometedor.
 
-La utilidad no cambia: sigue siendo la de las clases 1 y 2, $U=+1$ si gana
-Blancas y $U=-1$ si gana Negras. Lo nuevo es lo que se hace cuando la
-búsqueda se corta antes de llegar a un final.
+La utilidad no cambia: un final paga $U$ desde MAX, $+1$ si gana, $-1$ si
+pierde y $0$ si hay empate. Lo nuevo es lo que se hace cuando la búsqueda se detiene antes de un final.
+
+---
 
 ## El hilo de la clase
 
@@ -85,42 +86,43 @@ Tres ejemplos, cada uno con su papel:
 - **Una posición de peones de 4×4**, para las ideas. A profundidad 1 se
   elige ahí una jugada que pierde, y cada página muestra una manera
   distinta de no caer en eso.
-- **El árbol T de la clase 2**, para los algoritmos: es tan chico que cada
-  línea del pseudocódigo se sigue a mano.
-- **Tres jugadas x, y, z de MCTS**, en las páginas 5 y 8: primero
-  con promedios simulados y después como un bandido, con su promedio
-  verdadero oculto, para ver de dónde sale el bono.
+- **El árbol de resultados**, para los algoritmos. Es tan chico que cada
+  línea del pseudocódigo se sigue a mano. Lo corren todos: el corte, la
+  quietud, la iterativa, los Monte Carlo y UCT.
+- **Un bandido de tres jugadas, x, y, z**, en la última página. Su
+  esperanza está oculta para la regla, y sirve para ver de dónde sale el
+  bono.
 
 ## Recorrido
 
-Cinco páginas de lectura y una tarea, en orden. La radiografía que compara
-todos los algoritmos en un mismo árbol tiene su propia sección, al final
-de la unidad: [[juegos-radiografia|Radiografía de los algoritmos]].
+Cinco páginas de lectura y una tarea, en orden. Las dos primeras **cortan y
+estiman**; las tres siguientes **simulan**. La comparación de todos los
+algoritmos tiene su propia sección, al final de la unidad:
+[[juegos-radiografia|Radiografía de los algoritmos]].
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
 | | Minutos | Página y qué resuelve |
 |---|---:|---|
-| 1 | 72m | **Cortar y evaluar.** Cortar la búsqueda, estimar posiciones a profundidad 1, 2 y 3, y escribirlo como algoritmo: qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta |
-| 2 | 59m | **Jugar contra el reloj.** Qué jugada entregar cuando se acaba el tiempo, por qué un corte fijo engaña y buscar más donde hay capturas |
-| 3 | 31m | **Simular en vez de evaluar.** Estimar con partidas al azar, sin escribir una evaluación |
-| 4 | 30m | **Monte Carlo y UCT en un árbol grande.** Simular caminos al azar y hacer crecer un árbol desigual |
-| 5 | 46m | **De dónde sale el bono.** Por qué UCT suma ese bono: el margen de error de un promedio |
-| 6 | 50m, aparte | **Tarea de refuerzo.** Proponer y usar una evaluación de gato, y otra posición de peones |
+| 1 | 72m | **Cortar y evaluar.** Detenerse a cierta profundidad y estimar con EVAL, a mano en la posición de 4×4 y como algoritmo en el árbol de resultados |
+| 2 | 70m | **Hasta dónde mirar.** El efecto horizonte, la búsqueda de quietud, la profundización iterativa contra el reloj y la tabla de transposición |
+| 3 | 50m | **Simular partidas.** Monte Carlo plano promedia y converge a $Q_{\text{azar}}$; la actualización minimax guarda lo descubierto y converge a $V$ |
+| 4 | 45m | **MCTS con UCT.** Las cuatro fases de cada vuelta, la regla de selección con bono y la jugada más visitada |
+| 5 | 40m | **De dónde sale el bono.** El margen de error de un promedio: Hoeffding, la constante de UCB1, MIN y la elección de $c$ |
+| 6 | 70m, aparte | **Tarea de refuerzo.** Una evaluación de gato, otra posición de peones y tres Monte Carlo ante una respuesta certera |
 :::
 
 1. [[cortar-y-evaluar|Cortar y evaluar]]
-2. [[jugar-contra-el-reloj|Jugar contra el reloj]]
-3. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
-4. [[monte-carlo-en-un-arbol-grande|Monte Carlo y UCT en un árbol grande]]
+2. [[jugar-contra-el-reloj|Hasta dónde mirar: profundidad, tiempo y horizonte]]
+3. [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]]
+4. [[monte-carlo-en-un-arbol-grande|MCTS con UCT]]
 5. [[de-donde-sale-el-bono|De dónde sale el bono]]
 6. [[tarea-cuando-no-cabe|Tarea de refuerzo]]
 
 ## Las animaciones y el notebook
 
-Los mismos de la clase 2, con tres secciones más: minimax con corte y
-profundización iterativa, en el árbol T, y de dónde sale el bono. Además,
-dos simulaciones en vivo y un interactivo que compara los algoritmos. No se
-cuentan en el tiempo de la clase.
+Los mismos de la clase 2, con tres secciones más. Además, dos simulaciones
+en vivo y un interactivo que compara los algoritmos. No se cuentan en el
+tiempo de la clase.
 
 - [La animación con corte](../_assets/traza_arbol_t.html#corte): cambia $d$ entre
   1, 2 y 3.
@@ -128,26 +130,26 @@ cuentan en el tiempo de la clase.
   tres búsquedas seguidas.
 - [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html): miles de promedios a
   la vez, contra la cota.
-- [Bandido en vivo](../_assets/bandido_en_vivo.html): x, y, z con su promedio
-  oculto; mueve $c$.
+- [Bandido en vivo](../_assets/bandido_en_vivo.html): x, y, z con su esperanza
+  oculta; mueve $c$.
 - [El mismo árbol, todos los algoritmos](../_assets/un_arbol_todos.html): elige
-  un algoritmo y mira qué nodos genera y qué número devuelve en el árbol T±.
+  un algoritmo y mira qué nodos genera y qué número devuelve.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
 
-*Se abre en Google Colab, en otra pestaña. Las secciones 6, 7 y 8 son las de esta
-clase.*
+*Se abre en Google Colab, en otra pestaña.* Las secciones de esta clase son
+la 6, la 7 y la 8. Van con las páginas 1, 2 y 5.
 
 ## Qué no cubre esta clase
 
-- **MCTS** solo se presenta: su idea, sus cuatro pasos y su regla de
+- **MCTS y UCT** se presentan con su mapa, sus cuatro fases y su regla de
   selección, que calculas con números. No escribimos su pseudocódigo.
-- **De dónde sale el bono** se explica con simulaciones; la desigualdad de
+- **De dónde sale el bono** se explica con simulaciones. La desigualdad de
   Hoeffding se cita, no se demuestra, y tampoco demostramos que UCT
   converge.
 - **AlphaGo y AlphaZero** se mencionan, no se desarrollan.
 - **La evaluación** la escribimos a mano; no la aprendemos de partidas.
-- **La búsqueda de quietud** se explica con un ejemplo, sin sus detalles
-  de implementación.
+- **Comparar todos los algoritmos** y elegir uno para un juego nuevo es la
+  [[juegos-radiografia|radiografía]], al final de la unidad.
 
-Empieza por [[cortar-y-evaluar|cortar y evaluar a mano]].
+Empieza por [[cortar-y-evaluar|cortar y evaluar]].
