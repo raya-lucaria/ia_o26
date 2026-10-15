@@ -3718,7 +3718,7 @@ def jue_t_pm_arbol():
     es_hoja = {c: not isinstance(j.nodo_en(arbol, c), tuple) for c in caminos}
     hojas = {c: j.nodo_en(arbol, c) for c in caminos if es_hoja[c]}
     jugadas_raiz = {(i,): a for i, a in enumerate(j.JUGADAS_RAIZ)}
-    titulo = ["El árbol de resultados", "el árbol base, finales en U"]
+    titulo = ["El árbol de resultados", "finales en U"]
 
     def hojas_de(c):
         xs = [f"{ids[h]} = {_signo(hojas[h])}" for h in caminos if h[:-1] == c and es_hoja[h]]
@@ -5284,10 +5284,15 @@ def jue_c3_mcg_uct_crece():
 # pagina 7 solo lleva utilidades (+1, −1, 0), que son la escala U, no datos
 # de una corrida: las proporciones del grosor son ilustrativas.
 
-# Que numero guarda cada algoritmo en el hijo: (algoritmo, numero).
-NUMERO_EN_EL_HIJO = [("minimax", "V"), ("alfa-beta", "V o cota"),
-                     ("corte", "valor con corte"), ("Monte Carlo plano", "Q̂ estima Q_azar"),
-                     ("UCT", "Q̂ estima V")]
+# Que numero guarda cada algoritmo en el hijo, en el orden de la pagina:
+# (algoritmo, a su derecha, renglon de abajo alineado a la derecha). Lo que no
+# cabe junto al nombre baja al renglon siguiente.
+NUMERO_EN_EL_HIJO = [("minimax", "V", None), ("alfa-beta", "V o cota", None),
+                     ("expectiminimax", "E[·]", "V del juego con azar"),
+                     ("corte", "valor con corte", "o cota"),
+                     ("Monte Carlo plano", None, "Q̂ estima Q_azar"),
+                     ("actualización minimax", None, "Q̂ → Q, bajo su contrato"),
+                     ("UCT", "Q̂ → Q", None)]
 
 
 def jue_c3_rx_estado_y_jugada():
@@ -5321,22 +5326,25 @@ def jue_c3_rx_estado_y_jugada():
     out.append(texto(X_PIE, y, "Qué número guarda ahí", tam=16, peso="700", anclaje="start"))
     out.append(texto(X_PIE, y + 20, "cada algoritmo:", tam=16, peso="700", anclaje="start"))
     y += 50
-    for alg, num in NUMERO_EN_EL_HIJO:
+    for alg, junto, abajo in NUMERO_EN_EL_HIJO:
         out.append(texto(X_PIE, y, alg, tam=15, color=SUAVE, anclaje="start"))
-        if num.endswith("Q_azar"):
-            # «Monte Carlo plano» y «Q̂ estima Q_azar» no caben en un renglon
+        if junto:
+            out.append(texto(RX_W - X_PIE, y, junto, tam=15, peso="700", anclaje="end"))
+        if abajo:
             y += 22
-            out.append(_q_azar_sub(RX_W - X_PIE, y, antes=num.removesuffix("Q_azar"),
-                                   anclaje="end"))
-        else:
-            out.append(texto(RX_W - X_PIE, y, num, tam=15, peso="700", anclaje="end"))
+            if abajo.endswith("Q_azar"):
+                out.append(_q_azar_sub(RX_W - X_PIE, y, antes=abajo.removesuffix("Q_azar"),
+                                       anclaje="end"))
+            else:
+                out.append(texto(RX_W - X_PIE, y, abajo, tam=15, peso="700", anclaje="end"))
         y += 24
     desc = ("Un estado s, de MAX, con dos jugadas, A y B, cada una hacia un hijo: el estado "
             "T(s, A) y el estado T(s, B). Dentro de cada hijo va el número de esa jugada. "
             "El valor de la jugada es el valor del hijo al que lleva: Q(s, a) = V(T(s, a)). "
-            "Qué número guarda ahí cada algoritmo: minimax, V; alfa-beta, V o una cota; el "
-            "corte, el valor con corte (o una cota, con poda); Monte Carlo plano, Q̂, que estima Q_azar; "
-            "UCT, Q̂, que estima V y, en un árbol finito con vueltas sin límite, tiende a V.")
+            "Qué número guarda ahí cada algoritmo: minimax, V; alfa-beta, V o una cota; "
+            "expectiminimax, un valor esperado, E[·], que es V del juego con azar; el corte, "
+            "el valor con corte o una cota, con poda; Monte Carlo plano, Q̂, que estima Q_azar; "
+            "la actualización minimax, Q̂, que tiende a Q bajo su contrato; UCT, Q̂, que tiende a Q.")
     return _svg_rx(titulo, desc, out, y + 4)
 
 
@@ -5745,11 +5753,11 @@ def filas_tres_mc():
 
 
 ROTULOS_TRES_MC = {
-    "V": (["V"], "juego óptimo"),
+    "V": (["Q"], "juego óptimo"),
     "Q_azar": (None, "los dos al azar"),
     "plano": (["Monte Carlo", "plano"], "Q_azar"),
-    "minimax": (["Actualización", "minimax"], "V"),
-    "uct": (["UCT, c = 1"], "V"),
+    "minimax": (["Actualización", "minimax"], "Q"),
+    "uct": (["UCT, c = 1"], "Q"),
 }
 
 
@@ -5772,6 +5780,9 @@ def jue_c3_tres_mc():
     for k, (clave, vals, ns, i) in enumerate(filas):
         if k == 2:
             y = seccion(y - 20, f"{n} partidas, semilla {s}")
+            out.append(texto(X_PIE, y - 6, f"{n} partidas; la raíz también al azar", tam=13,
+                             color=SUAVE, anclaje="start"))
+            y += 18
         rots, abajo = ROTULOS_TRES_MC[clave]
         if rots is None:
             out.append(_q_azar_sub(X_PIE, y, tam=16))
@@ -5810,13 +5821,13 @@ def jue_c3_tres_mc():
         return ", ".join(f"{a} {('?' if q is None else fmt(q))}"
                          for a, q in zip(j.JUGADAS_RAIZ, vals))
     (_, v, _, iv), (_, qa, _, iq), (_, qp, np_, ip), (_, qm, nm, im), (_, qu, nu, iu) = filas
-    desc = ("Los tres Monte Carlo en el árbol de resultados, por jugada de la raíz. Exactos: V, "
+    desc = ("Los tres Monte Carlo en el árbol de resultados, por jugada de la raíz. Exactos: Q(s_raíz, a), "
             f"con juego óptimo: {lista(v, _u_txt)}; Q_azar, si los dos juegan al azar: "
             f"{lista(qa, _u_txt)}. Con {n} partidas o vueltas y semilla {s}: Monte Carlo plano, "
             f"que tiende a Q_azar: {lista(qp, _dec_txt)}, con N {', '.join(map(str, np_))}; "
-            f"entrega {j.JUGADAS_RAIZ[ip]}. Actualización minimax, que tiende a V: "
+            f"entrega {j.JUGADAS_RAIZ[ip]}. Actualización minimax, que tiende a Q: "
             f"{lista(qm, _dec_txt)}, con N {', '.join(map(str, nm))}; entrega "
-            f"{j.JUGADAS_RAIZ[im]}. UCT con c = 1, que tiende a V: {lista(qu, _dec_txt)}, con "
+            f"{j.JUGADAS_RAIZ[im]}. UCT con c = 1, que tiende a Q: {lista(qu, _dec_txt)}, con "
             f"N {', '.join(map(str, nu))}; entrega {j.JUGADAS_RAIZ[iu]}, la más visitada. Con "
             "más partidas, el plano iría a der; los otros dos, a centro.")
     return _svg_h(titulo, desc, out, y)

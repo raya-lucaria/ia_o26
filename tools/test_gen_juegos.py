@@ -908,6 +908,9 @@ def test_el_arbol_t_pm_dibuja_el_arbol_de_la_fuente():
         u = signo[j.nodo_en(j.ARBOL_TPM, c)]
         assert f"{nombre} = {u}" in aria, nombre
         assert f">{nombre}<" in svg
+    # «árbol base» es el de la 7.2, no este: el subtitulo no lo nombra
+    assert "árbol base" not in "".join(_renglones("jue-t-pm-arbol"))
+    assert "finales en U" in _renglones("jue-t-pm-arbol")
     # Sin EVAL (spec de la radiografia, §3.2): el arbol del juego solo tiene
     # jugadas y finales; la EVAL vive en las figuras de corte.
     assert "EVAL" not in svg
@@ -1118,11 +1121,18 @@ def test_el_valor_de_una_jugada_vive_en_el_hijo():
     for clave in ("jugada A", "jugada B", "T(s, A)", "T(s, B)", "número de A", "número de B",
                   "valor de la jugada = valor del hijo:", "Q(s,a) = V(T(s,a))", "s", "MAX"):
         assert clave in r, clave
-    # La leyenda: que numero guarda cada algoritmo, en el orden de la pagina.
-    for alg, num in [("minimax", "V"), ("alfa-beta", "V o cota"), ("corte", "valor con corte"),
-                     ("UCT", "Q̂ estima V")]:
+    # La leyenda: que numero guarda cada algoritmo (los siete), en el orden de la pagina.
+    for alg, sigue in [("minimax", ["V"]), ("alfa-beta", ["V o cota"]),
+                       ("expectiminimax", ["E[·]", "V del juego con azar"]),
+                       ("corte", ["valor con corte", "o cota"]),
+                       ("actualización minimax", ["Q̂ → Q, bajo su contrato"]),
+                       ("UCT", ["Q̂ → Q"])]:
         i = r.index(alg)
-        assert r[i + 1] == num, alg
+        assert r[i + 1:i + 1 + len(sigue)] == sigue, alg
+    assert "Q̂ estima V" not in r
+    assert [a for a, *_ in gen.NUMERO_EN_EL_HIJO] == [
+        "minimax", "alfa-beta", "expectiminimax", "corte", "Monte Carlo plano",
+        "actualización minimax", "UCT"]
     # el de Monte Carlo plano lleva Q_azar con subindice (notacion §5.1, sin ū ni μ)
     assert ("<tspan>Q̂ estima </tspan><tspan>Q</tspan><tspan dy=\"4.5\" font-size=\"10.8\">"
             "azar</tspan>") in _texto("jue-c3-rx-estado-y-jugada")
@@ -1376,6 +1386,9 @@ def test_los_tres_monte_carlo_dibujan_sus_limites():
             assert fmt(q) in r, (clave, q)
         for n in ns or ():
             assert f"N {n}" in r
-    assert "tiende a V" in r and "juego óptimo" in r and "los dos al azar" in r
+    assert "tiende a Q" in r and "juego óptimo" in r and "los dos al azar" in r
+    # la fila exacta es Q(s_raiz, a), no V
+    assert "Q" in r and "V" not in r and "tiende a V" not in r
+    assert f"{j.VUELTAS_PAGINA_TPM} partidas; la raíz también al azar" in r
     aria = _aria("jue-c3-tres-mc")
     assert "entrega izq" in aria and "entrega centro" in aria
