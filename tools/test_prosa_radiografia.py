@@ -149,8 +149,11 @@ def test_los_titulos_de_las_figuras_dicen_la_jugada_que_calcula_el_codigo():
 
 def test_la_pagina_7_trae_sus_figuras_simbolicas_y_los_casos_que_pide_el_spec():
     t = _texto(P7)
-    for svg in ["jue-c3-mcg-arbol", "jue-c3-mcg-mc-plano", "jue-c3-mcg-uct-fases",
-                "jue-c3-mcg-uct-crece"]:
+    # El árbol grande y Monte Carlo plano en él pasaron a «Simular partidas» (destinos.md R2).
+    simular = _texto(P7.parent / "3_simular_en_vez_de_evaluar.md")
+    for svg in ["jue-c3-mcg-arbol", "jue-c3-mcg-mc-plano"]:
+        assert f"(../_assets/{svg}.svg)" in simular, svg
+    for svg in ["jue-c3-mcg-uct-fases", "jue-c3-mcg-uct-crece"]:
         assert f"(../_assets/{svg}.svg)" in t, svg
     assert "**Cuando la selección llega a un final que ya está en el árbol, solo retropropaga.**" in t
     assert "**Esto es intuición, no garantía.**" in t
