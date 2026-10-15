@@ -330,6 +330,16 @@ def test_el_bandido_usa_n_de_s_a_y_puntaje():
     assert "cota optimista" not in html
 
 
+def test_el_bandido_entrega_la_mas_visitada_y_cuenta_vueltas():
+    """Plan §5.2: se entrega «la más visitada», no «la más simulada» (ola 4,
+    r2: la r1 solo lo corrigió en un_arbol_todos.html); y N(s,a) cuenta
+    vueltas también en el aria-label de las barras."""
+    html = _texto(BANDIDO)
+    assert "más simulada" not in html and "masSimulada" not in html
+    assert "se entregaría la más visitada:" in html
+    assert "${n} vueltas, promedio" in html
+
+
 @pytest.mark.parametrize("ruta", PAGINAS, ids=lambda r: r.name)
 def test_miles_pone_espacio_de_miles(ruta, tmp_path):
     linea = re.search(r"^const miles = .*?;(?=\s*(?://.*)?$)", _texto(ruta), re.M).group(0)

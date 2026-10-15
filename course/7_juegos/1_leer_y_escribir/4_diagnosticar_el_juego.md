@@ -142,12 +142,12 @@ Stuart Russell, uno de los autores de ese libro, lo llamó **racionalidad limita
 ::: table {#jue-c1-racional-limites title="Lo racional depende de lo que tiene el jugador"}
 | Lo que tiene | Lo racional |
 |---|---|
-| Tiempo para todo el árbol | La jugada que asegura más contra cualquier respuesta |
+| Tiempo para todo el árbol y el supuesto de un rival óptimo | La jugada que asegura más contra cualquier respuesta |
 | Un segundo por jugada | La mejor que encuentra en ese segundo |
 | Una tabla con una jugada por tablero | Lo que dice la tabla para ese tablero |
 :::
 
-**La jugada perfecta es una regla para medir, no una exigencia.** Lo que sí se exige es no desperdiciar: si con tu información y tu tiempo podías ver que otra jugada asegura más y elegiste la que asegura menos, eso sí es irracional.
+**La jugada perfecta es una regla para medir, no una exigencia, y mide bajo un supuesto: que el rival responde lo mejor que puede.** Con ese supuesto, lo que sí se exige es no desperdiciar: si con tu información y tu tiempo podías ver que otra jugada asegura más y elegiste la que asegura menos, eso sí es irracional. Con otro modelo del rival, lo racional puede ser otra jugada.
 
 ### Lo que racional no quiere decir
 
@@ -155,7 +155,7 @@ Stuart Russell, uno de los autores de ese libro, lo llamó **racionalidad limita
 | No es | Por qué no |
 |---|---|
 | Ganar siempre | En hexapawn, Blancas pierde aun jugando perfecto |
-| Ser inteligente o humano | Una máquina hecha de cajas de cerillos puede serlo |
+| Ser inteligente o humano | Una máquina que solo sigue una tabla puede serlo |
 | Saberlo o calcularlo todo | Elige con lo que sabe y alcanza a calcular |
 | Querer lo que queremos | Persigue **su** $U$, sea cual sea |
 :::

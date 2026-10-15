@@ -119,7 +119,7 @@ Su pago promedio contra continuaciones al azar. Monte Carlo plano guarda ese pro
 
 - **Qué valor rastrea:** $\widehat Q(s_{\text{raíz}},a)$ estima $Q_{\text{azar}}(s_{\text{raíz}},a)$.
 - **Dónde lo guarda:** conserva un contador $N(s_{\text{raíz}},a)$ y una suma de pagos por jugada de la raíz.
-- **Cómo sube:** no respalda valores entre estados: cada pago actualiza únicamente la jugada inicial.
+- **Cómo sube:** no sube valores entre estados: cada pago actualiza únicamente la jugada inicial.
 - **A qué converge:** cada promedio converge a $Q_{\text{azar}}$ con probabilidad 1, si recibe infinitas simulaciones independientes bajo la misma regla de continuación.
 
 ::: figure {#jue-c3-fig-flujo-mc-plano title="Monte Carlo plano, en palabras"}
@@ -499,7 +499,7 @@ Converge casi seguramente a $V$ en un árbol finito, determinista y de ramificac
 
 **Cómo se calcula.** En un final $z$, $\widehat V(z)=U(z)$. Una jugada visitada copia $\widehat Q(s,a)=\widehat V(T(s,a))$; cada padre toma máximo o mínimo según su turno.
 
-**Qué significa.** El azar decide qué se descubre. El respaldo representa las elecciones de los jugadores sobre la parte conocida.
+**Qué significa.** El azar decide qué se descubre. La actualización minimax representa las elecciones de los jugadores sobre la parte conocida.
 
 **Qué no es.** No promedia el $U$ crudo por jugada. Esos promedios seguirían estimando $Q_{\text{azar}}$, aunque después eligieras el mayor.
 :::
@@ -510,7 +510,7 @@ Converge casi seguramente a $V$ en un árbol finito, determinista y de ramificac
 
 1. **Simula uniformemente.** Desde la raíz, ambos jugadores eligen entre todas sus jugadas legales hasta alcanzar un final real $z$.
 2. **Conserva lo descubierto.** Agrega los estados nuevos del camino sin borrar los anteriores.
-3. **Respalda desde el final.** Asigna $\widehat V(z)=U(z)$ y recalcula los antecesores hasta la raíz mediante respaldo minimax (*minimax backup*).
+3. **Sube desde el final.** Asigna $\widehat V(z)=U(z)$ y recalcula los antecesores hasta la raíz mediante actualización minimax (*minimax backup*).
 
 Para cada jugada visitada:
 
@@ -518,14 +518,14 @@ $$
 \mathbf{\widehat Q(s,a)=\widehat V(T(s,a))}
 $$
 
-| Quién mueve | Regla de respaldo |
+| Quién mueve | Regla para subir |
 |---|---|
 | MAX | $\mathbf{\widehat V(s)=\max_{a\text{ visitada}}\widehat Q(s,a)}$ |
 | MIN | $\mathbf{\widehat V(s)=\min_{a\text{ visitada}}\widehat Q(s,a)}$ |
 
 - **El invariante conserva la perspectiva.** Todo número mide el pago de MAX; el signo nunca cambia al subir.
 - **Lo desconocido sigue desconocido.** Una jugada no visitada se marca «?», nunca 0; si ninguna se conoce, también $\widehat V$ es desconocido.
-- **El respaldo suele ser provisional.** Faltan alternativas que podrían cambiarlo. A veces se puede declarar exacto antes de verlas todas: lo explica «Cuándo queda resuelto un nodo», en esta misma página.
+- **El valor que sube suele ser provisional.** Faltan alternativas que podrían cambiarlo. A veces se puede declarar exacto antes de verlas todas: lo explica «Cuándo queda resuelto un nodo», en esta misma página.
 
 **Ejemplo mínimo:** MIN tiene tres jugadas y los pagos posibles están entre $-1$ y $+1$.
 
@@ -540,7 +540,7 @@ Si las desconocidas valieran 0, el primer caso devolvería $\widehat V=0$: un n�
 
 **Piensa: después de 29 partidas favorables aparece una respuesta que derrota a MAX. ¿Cuánto cambia la jugada?**
 
-El respaldo incorpora esa respuesta de inmediato. Un promedio solo añade otra observación.
+La actualización minimax incorpora esa respuesta de inmediato. Un promedio solo añade otra observación.
 
 > **Dado:** MAX elige A o B. A lleva a MIN, que elige p ($+10$), q ($+10$) o r. Tras r está x, donde MAX solo puede ir a un final $-30$.
 >
@@ -580,11 +580,11 @@ La siguiente es una **secuencia impuesta de 31 simulaciones**, no una corrida al
 
 Las 29 partidas favorables alternan p y q. De la simulación 2 a la 30, los dos entregan A; la primera simulación, con solo B conocida, entrega B. La 31 lleva el promedio a $(29\cdot10-30)/30=26/3\approx8.67$.
 
-**En la simulación 31**, el respaldo minimax salta a $-30$ y entrega B. El promedio conserva A; incluso su límite $-10/3$ seguirá por encima de B.
+**En la simulación 31**, la actualización minimax salta a $-30$ y entrega B. El promedio conserva A; incluso su límite $-10/3$ seguirá por encima de B.
 
 **Tramo 2 · Subir la respuesta certera.**
 
-::: table {#jue-c3-tab-propagacion title="Respaldo de la simulación 31"}
+::: table {#jue-c3-tab-propagacion title="La actualización de la simulación 31"}
 | Estado | Antes | Después | Resuelto |
 |---|---|---|---|
 | x (MAX, una jugada) | ? | $-30$ | Sí: un final |
@@ -604,7 +604,7 @@ Con semilla 0 y 60 simulaciones, la primera visita a r ocurre en la novena. Aqu�
 - **El promedio empata en la novena.** A recibió $+10$ y $-30$, por lo que vale $-10$; el desempate con B favorece A.
 - **El promedio termina prefiriendo A.** Tras 60 simulaciones, A recibió 29 y su media es $-150/29\approx-5.17$.
 
-**Un anticipo de UCT.** El tercer panel es UCT, que se estudia en [[monte-carlo-en-un-arbol-grande|MCTS con UCT]]. Cada **vuelta** baja por su árbol: MAX elige el mayor $\widehat Q+\text{bono}$ y MIN el menor $\widehat Q-\text{bono}$, con un bono de peso $c>0$. Después simula hasta un final y promedia ese pago en el camino. Al final entrega la jugada más visitada.
+**Un anticipo.** El tercer panel pertenece al método de la página siguiente, [[monte-carlo-en-un-arbol-grande|MCTS con UCT]]. Por ahora basta observar que UCT también promedia: **descubrir una refutación no convierte ese promedio en un mínimo.**
 
 ::: figure {#jue-c3-fig-refutacion title="La refutación descubierta tarde: promedio, actualización minimax y UCT"}
 ![Tres paneles con los mismos ejes sobre el árbol de la refutación (A con +10, +10 y −30; B con −10). Primero, el promedio de la secuencia impuesta: Q̂(A) se queda en 10 y baja a 8.67 tras el −30, con su límite −10/3 marcado arriba de B. Segundo, la actualización minimax: Q̂(A) salta de 10 a −30 y la jugada entregada cambia a B. Tercero, una corrida real de UCT con pagos divididos entre 30, c = 1, semilla 0 y 60 vueltas, dibujada de vuelta en la escala del juego. Su promedio de A baja poco a poco desde la vuelta 5 y queda debajo del de B en la 13; termina en −20. B es la más visitada desde la vuelta 15](../_assets/jue-c3-refutacion-tres.svg)
@@ -612,11 +612,9 @@ Con semilla 0 y 60 simulaciones, la primera visita a r ocurre en la novena. Aqu�
 
 El panel de UCT usa pagos divididos entre 30, rango $[-1,1]$, $c=1$, semilla 0 y 60 vueltas. Descubre $-30$ en la vuelta 5; su promedio de A queda debajo del de B en la vuelta 13.
 
-UCT cambia la selección de las continuaciones y sigue promediando. **Descubrir una refutación no convierte ese promedio en un mínimo.**
-
 **Recorrido: el árbol de resultados.**
 
-**Piensa: ¿qué entrega el respaldo minimax con partidas uniformes en el árbol de resultados?**
+**Piensa: ¿qué entrega la actualización minimax con partidas uniformes en el árbol de resultados?**
 
 Centro desde la primera simulación de esta corrida. Su valor queda demostrado en la 12; la raíz completa queda resuelta en la 17.
 
@@ -714,13 +712,13 @@ MAX entrega la jugada con mayor $\widehat Q$ disponible en la raíz.
 
 #### 3 · Propiedades
 
-- **Número que da:** estima $Q$ y $V$ con respaldos del árbol descubierto; los valores resueltos son exactos.
+- **Número que da:** estima $Q$ y $V$ subiendo valores por el árbol descubierto; los valores resueltos son exactos.
 - **Usa EVAL:** no. Lee pagos terminales exactos en la escala de $U$.
 - **Garantía:** converge casi seguramente a $V$ bajo esas condiciones. Con presupuesto finito puede equivocarse: en los experimentos de Kocsis y Szepesvári, falló más que Monte Carlo plano, pese a su convergencia eventual.
 - **Se puede interrumpir:** sí, desde la primera simulación, con la mayor $\widehat Q$ conocida; sin ninguna, entrega la primera jugada legal.
 - **Complejidad:** simular cuesta $O(m)$ y revisar hasta $b$ hijos por estado del camino, $O(bm)$; con $n$ simulaciones, $O(nbm)$. Cada una descubre a lo más $m+1$ estados: memoria $O(nm)$, sin superar el árbol completo.
-- **Frente a los demás:** muestrea como Monte Carlo plano y respalda como minimax. En el peor caso necesita descubrir todo el árbol, y no poda como alfa-beta.
-- **Supuestos:** con dos jugadores y suma cero o constante, MIN minimiza el pago de MAX. Con suma no constante o más jugadores, el respaldo se generaliza a $\max^n$: quien mueve maximiza su componente y copia el vector elegido, con un desempate fijo.
+- **Frente a los demás:** muestrea como Monte Carlo plano y sube los valores como minimax. En el peor caso necesita descubrir todo el árbol, y no poda como alfa-beta.
+- **Supuestos:** con dos jugadores y suma cero o constante, MIN minimiza el pago de MAX. Con suma no constante o más jugadores, la actualización se generaliza a $\max^n$: quien mueve maximiza su componente y copia el vector elegido, con un desempate fijo.
 
 Esa generalización da un equilibrio en árboles finitos de información perfecta y por turnos, sin la garantía escalar de minimax.
 
@@ -729,16 +727,16 @@ Esa generalización da un equilibrio en árboles finitos de información perfect
 1. **El árbol es finito.** El juego es determinista y tiene ramificación finita.
 2. **Ninguna jugada queda oculta.** $A(s)$ enumera todas las legales; el muestreo uniforme mantiene positiva y fija la probabilidad de cada una.
 3. **Las partidas terminan realmente.** Toda simulación llega a un final con pago exacto.
-4. **Lo descubierto se conserva.** Los respaldos reutilizan los estados y sus valores.
+4. **Lo descubierto se conserva.** Cada actualización reutiliza los estados y sus valores.
 5. **La frontera no queda sustituida por EVAL.** Un corte permanente cambiaría el problema resuelto.
 
-Cada camino tiene probabilidad positiva de aparecer en cada simulación. En un árbol finito, casi seguramente se descubren todos; entonces el respaldo calcula minimax exacto.
+Cada camino tiene probabilidad positiva de aparecer en cada simulación. En un árbol finito, casi seguramente se descubren todos; entonces la actualización calcula minimax exacto.
 
 #### 4 · Casos borde
 
 - **Una jugada termina directamente.** Su $\widehat Q=U$ es exacta desde la primera visita, incluso si el final ya estaba guardado.
 - **Solo hay una jugada.** Se copia el valor del hijo, como en x; su exactitud depende de la del hijo.
-- **Aparece una respuesta certera.** Se incorpora en ese mismo respaldo; solo cambia los antecesores cuyo máximo o mínimo resulte afectado.
+- **Aparece una respuesta certera.** Se incorpora en esa misma actualización; solo cambia los antecesores cuyo máximo o mínimo resulte afectado.
 - **Falta una jugada.** Se mantiene desconocida; introducir 0 puede elevar artificialmente un máximo o reducir un mínimo.
 - **Hay varios óptimos.** $\widehat V$ puede converger aunque existan empates; el orden fija la jugada entregada.
 - **Los finales tienen distinta profundidad.** El algoritmo no prefiere ganar pronto, salvo que $U$ lo indique; sí cambia el costo del recorrido.
@@ -753,7 +751,7 @@ Cada camino tiene probabilidad positiva de aparecer en cada simulación. En un �
 
 - **El promedio cuenta frecuencias.** Una refutación pesa como una observación entre todas las anteriores.
 - **Minimax representa decisiones.** MIN puede elegir la refutación cada vez, aunque el muestreo apenas la haya descubierto.
-- **Un salto puede ser informativo.** Una hoja nueva puede cambiar varios respaldos de inmediato; antes del salto, sus valores eran provisionales.
+- **Un salto puede ser informativo.** Una hoja nueva puede cambiar varios valores de inmediato; antes del salto, sus valores eran provisionales.
 
 **El máximo también puede engañar.**
 
@@ -772,7 +770,7 @@ $$
 E[\min]=-\frac12
 $$
 
-**Qué significa.** El máximo verdadero de las medias es 0, pero el máximo observado tiene esperanza $1/2$. Esto importa al respaldar promedios ruidosos.
+**Qué significa.** El máximo verdadero de las medias es 0, pero el máximo observado tiene esperanza $1/2$. Esto importa al subir el máximo de promedios ruidosos.
 
 **Qué no ocurre en un final determinista.** Su pago exacto no tiene ese ruido. En nuestra variante, el riesgo provisional viene de las continuaciones todavía desconocidas.
 :::
@@ -789,7 +787,7 @@ En cada caso, decide si pueden omitirse las demás alternativas y explica por qu
 :::
 
 ::: hint {#jue-c3-cmp-pista-puede-salir-1 of="jue-c3-cmp-ej-puede-salir" title="Dos preguntas por caso"}
-¿El número acredita el mejor pago posible para quien decide? ¿Proviene de un respaldo exacto, una cota suficiente, una evaluación o un promedio?
+¿El número acredita el mejor pago posible para quien decide? ¿Proviene de un valor exacto subido por minimax, una cota suficiente, una evaluación o un promedio?
 :::
 
 ::: answer {#jue-c3-cmp-resp-puede-salir of="jue-c3-cmp-ej-puede-salir"}
@@ -802,7 +800,7 @@ En cada caso, decide si pueden omitirse las demás alternativas y explica por qu
 ::: exercise {#jue-c3-ej-mmmc title="Llena las dos estimaciones con las mismas partidas"}
 Cuatro simulaciones del árbol de resultados terminan en d2 ($+1$), c1a ($0$), d1 ($-1$) y d3 ($+1$), en ese orden.
 
-1. **Traza los respaldos.** Escribe $\widehat Q$ para izq, centro y der después de cada simulación; usa «?» para lo desconocido.
+1. **Traza las actualizaciones.** Escribe $\widehat Q$ para izq, centro y der después de cada simulación; usa «?» para lo desconocido.
 2. **Decide y certifica.** ¿Qué entrega tras la cuarta y qué números son exactos?
 3. **Cambia el operador.** ¿Qué entrega Monte Carlo plano con las mismas partidas?
 :::
@@ -835,22 +833,20 @@ Porque importan tanto las continuaciones que seleccionan como la forma de actual
 ::: table {#jue-c3-tab-que-guarda-mc title="Converge a lo que simulas"}
 | Algoritmo | Qué guarda | Cómo sube | Límite |
 |---|---|---|---|
-| Monte Carlo plano | $N$ y suma en la raíz | No respalda entre estados | $Q_{\text{azar}}$ |
+| Monte Carlo plano | $N$ y suma en la raíz | No sube entre estados | $Q_{\text{azar}}$ |
 | Actualización minimax | $\widehat Q$ y $\widehat V$ | Máximo y mínimo | $Q$ y $V$, bajo su contrato |
-| UCT | $N(s,a),\widehat Q(s,a),N(s)$ | Promedia el mismo $U$ | $Q$ y $V$: árbol finito, $c>0$ fija, vueltas sin límite |
+| UCT (página siguiente) | — | Promedia, pero selecciona mejor | Se explica en la página siguiente |
 :::
 
 **El promedio al azar sí converge, pero al valor de jugar al azar.** La actualización minimax converge a $V$ bajo su contrato, aunque puede requerir descubrir todo el árbol.
 
-UCT pertenece a MCTS, la búsqueda en árbol de Monte Carlo. Construye su árbol con **vueltas**, guarda visitas y promedios por arista y promedia el mismo $U$, sin máximos ni mínimos: lo que cambia es que reparte las vueltas hacia lo que va mejor.
-
-En el árbol de resultados, con $c=1$ y semilla 0, centro tiene $N=26$ y $\widehat Q=0$ tras 40 vueltas. Coincide con $Q=0$ por casualidad: en la vuelta 100, su promedio es $1/83$.
+El panel de UCT de la figura es otro anticipo: sus cifras se explican en la página siguiente.
 
 ::: figure {#jue-c3-fig-tres-mc title="Los tres Monte Carlo en el árbol de resultados"}
 ![Los tres Monte Carlo en el árbol de resultados, por jugada de la raíz izq, centro y der. Exactos: Q = −1, 0, −1 y Q_azar = 0, −1/4, 1/3. Con 40 partidas o vueltas y semilla 0. Monte Carlo plano, en una variante con la raíz también al azar (N 8, 14 y 18; la ficha usa k fijo por jugada), da +0.75, 0 y +0.22 y entrega izq. La actualización minimax, con las mismas partidas, da −1, 0, −1 y entrega centro; UCT con c = 1 da −0.6, 0 y −0.33 y entrega centro, la más visitada. Con más simulaciones, el plano iría a der](../_assets/jue-c3-tres-mc.svg)
 :::
 
-**Punto de control:** calcula ambos respaldos para una lista de simulaciones. Distingue valores desconocidos, provisionales y exactos; explica qué entrega cada método y a qué número converge.
+**Punto de control:** calcula el promedio y la actualización minimax para una lista de simulaciones. Distingue valores desconocidos, provisionales y exactos; explica qué entrega cada método y a qué número converge.
 
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
@@ -882,7 +878,7 @@ En el árbol de resultados, con $c=1$ y semilla 0, centro tiene $N=26$ y $\wideh
 - **La actualización minimax** usa las mismas partidas, guarda lo
   descubierto y sube: ${\widehat V(z)=U(z)}$, ${\widehat Q(s,a)=\widehat V(T(s,a))}$,
   máximo en MAX y mínimo en MIN. Las jugadas no visitadas son desconocidas,
-  nunca cero. La refutación la lleva a ${-30}$ en el mismo respaldo.
+  nunca cero. La refutación la lleva a ${-30}$ en esa misma actualización.
 - **Converge a $V$** en un árbol finito, determinista y de ramificación
   finita, con todas las jugadas posibles, finales reales y lo descubierto
   guardado. En el árbol de resultados, con semilla 0, queda resuelta en 17 simulaciones;

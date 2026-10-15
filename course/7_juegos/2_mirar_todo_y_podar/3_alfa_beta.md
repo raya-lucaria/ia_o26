@@ -53,8 +53,9 @@ Al terminar tendrás:
 **Alfa-beta es minimax con poda (*pruning*):** deja de generar una rama en
 cuanto lo ya revisado basta para saber que no cambia la decisión de arriba.
 
-- **Qué valor rastrea:** el mismo $V$ que minimax. Un nodo que poda
-  devuelve solo una cota: «al menos» o «a lo más».
+- **Qué valor rastrea:** el mismo $V$ que minimax. Una llamada devuelve
+  su valor exacto o solo una cota, «al menos» o «a lo más». Que no pode
+  no garantiza que su número sea exacto.
 - **Dónde lo guarda:** cada llamada guarda su $v$ y dos umbrales que
   hereda del camino, $\alpha$ y $\beta$, mientras recorre sus hijos.
 - **Cómo sube:** como en minimax, con el máximo en MAX y el mínimo en MIN.

@@ -664,9 +664,9 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de [[minimax-como-algoritmo|M
 - **En las filas de R, la columna $v$ es mejor_valor.**
 - **La columna elige es mejor_jugada**, con «—» mientras vale ninguna.
 
-**Tramo 1 · Centro releva a izq.**
+**Tramo 1, filas 1 a 5 · I deja izq como primera candidata.**
 
-::: table {#jue-c3-t-traza-d2 title="Traza de DECIDIR-CON-CORTE en el árbol de resultados con d = 2, tramo 1"}
+::: table {#jue-c3-t-traza-d2 title="Traza de DECIDIR-CON-CORTE en el árbol de resultados con d = 2, tramo 1, filas 1 a 5"}
 | # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
@@ -674,14 +674,22 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de [[minimax-como-algoritmo|M
 | 3 | 19–⁠20 · R›I | 100 | 100 | — |
 | 4 | 19–⁠20 · R›I | −100 | −100 | — |
 | 5 | 4–⁠5 · R | −100 | −100 (I) | izq |
+:::
+
+- **Filas 3 y 4:** i1 e ix son finales. La línea 8 los valora dentro del hijo con ${100\cdot U}$, 100 y ${-100}$, y MIN se queda con ${-100}$.
+- **Fila 5:** ${-100>-\infty}$, así que mejor_jugada pasa a izq, aunque vale lo peor posible.
+
+**Tramo 1, filas 6 a 9 · Centro releva a izq.**
+
+::: table {#jue-c3-t-traza-d2-tramo-1b title="Traza de DECIDIR-CON-CORTE en el árbol de resultados con d = 2, tramo 1, filas 6 a 9"}
+| # | línea · pila | v | w | elige |
+|---:|---|---:|---|---|
 | 6 | 17 · R›C | +∞ |  | izq |
 | 7 | 19–⁠20 · R›C | 10 | 10 (C1) | izq |
 | 8 | 19–⁠20 · R›C | 10 | 50 (C2) | izq |
 | 9 | 4–⁠5 · R | 10 | 10 (C) | centro |
 :::
 
-- **Filas 3 y 4:** i1 e ix son finales. La línea 8 los valora dentro del hijo con ${100\cdot U}$, 100 y ${-100}$, y MIN se queda con ${-100}$.
-- **Fila 5:** ${-100>-\infty}$, así que mejor_jugada pasa a izq, aunque vale lo peor posible.
 - **Filas 7 y 8:** C1 y C2 no son finales y llegan con ${d=0}$. La línea 9 devuelve su $\mathrm{EVAL}$, 10 y 50. Nadie genera sus hijos.
 - **Fila 9:** ${10>-100}$, así que mejor_jugada pasa de izq a **centro**.
 
@@ -940,6 +948,8 @@ Adivinar las capturas con rasgos es frágil: cada arreglo deja otro hueco. La al
 ::: exercise {#jue-c3-ej-traza-d2 title="Completa la traza con der primero"}
 Ahora R prueba sus jugadas en otro orden: **der, izq, centro**. Dentro de I, C y D el orden no cambia, y la línea 5 sigue con ${>}$ estricto. Llena los «?» de DECIDIR-CON-CORTE(R, 2) en el árbol de resultados.
 
+**Tramo 1 · D, filas 1 a 6.**
+
 | # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
@@ -948,10 +958,20 @@ Ahora R prueba sus jugadas en otro orden: **der, izq, centro**. Dentro de I, C y
 | 4 | 19–⁠20 · R›D | ? | ? | — |
 | 5 | 19–⁠20 · R›D | ? | ? | — |
 | 6 | 4–⁠5 · R | ? | ? (D) | ? |
+
+**Tramo 2 · I, filas 7 a 10.**
+
+| # | línea · pila | v | w | elige |
+|---:|---|---:|---|---|
 | 7 | 17 · R›I | +∞ |  | ? |
 | 8 | 19–⁠20 · R›I | ? | ? | ? |
 | 9 | 19–⁠20 · R›I | ? | ? | ? |
 | 10 | 4–⁠5 · R | ? | ? (I) | ? |
+
+**Tramo 3 · C y la salida, filas 11 a 15.**
+
+| # | línea · pila | v | w | elige |
+|---:|---|---:|---|---|
 | 11 | 17 · R›C | +∞ |  | ? |
 | 12 | 19–⁠20 · R›C | ? | ? (C1) | ? |
 | 13 | 19–⁠20 · R›C | ? | ? (C2) | ? |
@@ -969,6 +989,8 @@ En cada fila de I, C o D, ¿quién regresa: un final o un nodo? ¿Con qué $d$ l
 ::: answer {#jue-c3-resp-traza-d2 of="jue-c3-ej-traza-d2"}
 En negrita, lo que era «?»; en la columna elige, desde la fila 6 todo era «?».
 
+**Tramo 1 · D deja der como primera candidata.**
+
 | # | línea · pila | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
@@ -977,10 +999,20 @@ En negrita, lo que era «?»; en la columna elige, desde la fila 6 todo era «?�
 | 4 | 19–⁠20 · R›D | **−100** | **100** | — |
 | 5 | 19–⁠20 · R›D | **−100** | **100** | — |
 | 6 | 4–⁠5 · R | **−100** | **−100** (D) | der |
+
+**Tramo 2 · I empata y conserva der.**
+
+| # | línea · pila | v | w | elige |
+|---:|---|---:|---|---|
 | 7 | 17 · R›I | +∞ |  | der |
 | 8 | 19–⁠20 · R›I | **100** | **100** | der |
 | 9 | 19–⁠20 · R›I | **−100** | **−100** | der |
 | 10 | 4–⁠5 · R | **−100** | **−100** (I) | der |
+
+**Tramo 3 · C mejora el valor y cambia a centro.**
+
+| # | línea · pila | v | w | elige |
+|---:|---|---:|---|---|
 | 11 | 17 · R›C | +∞ |  | der |
 | 12 | 19–⁠20 · R›C | **10** | **10** (C1) | der |
 | 13 | 19–⁠20 · R›C | **10** | **50** (C2) | der |

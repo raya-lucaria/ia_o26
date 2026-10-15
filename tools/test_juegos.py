@@ -1061,17 +1061,24 @@ def test_prosa_clase_3_p2_evaluacion_y_traza_de_t_con_d_2():
     """#39 · @jue-c3-t-eval (EVAL y 100·V de cada nodo interno), los dos tramos
     de la traza de DECIDIR-CON-CORTE(R, 2) y los «n de 15 nodos» de las figuras.
     Ola 3: re-anclada del arbol base (ARBOL_T, 14 nodos) al arbol de resultados
-    (ARBOL_TPM, finales en 100·U, EVAL_TPM; destinos D.2.1)."""
+    (ARBOL_TPM, finales en 100·U, EVAL_TPM; destinos D.2.1). Ola 4: el
+    tramo 1 se parte en dos tablas, filas 1 a 5 y 6 a 9."""
     texto = _pagina(P2)
     exacto = j.valores_con_corte_tpm(3)
     assert {_c(f[0]): (_n(f[1]), _n(f[2])) for f in _tabla(texto, "jue-c3-t-eval")[1:]} == {
         k: (j.EVAL_TPM[k], exacto[k]) for k in j.EVAL_TPM}
-    leidas = _filas(_tabla(texto, "jue-c3-t-traza-d2")[1:] +
-                    _tabla(texto, "jue-c3-t-traza-d2-tramo-2")[1:])
+    # El tramo 1 va partido en dos tablas (filas 1 a 5 y 6 a 9); su titulo
+    # declara el rango y tiene que ser el de sus filas.
+    partes = ["jue-c3-t-traza-d2", "jue-c3-t-traza-d2-tramo-1b", "jue-c3-t-traza-d2-tramo-2"]
+    tablas = [_tabla(texto, t)[1:] for t in partes]
+    for t, filas_t in zip(partes[:2], tablas[:2]):
+        rango = re.search(r"filas (\d+) a (\d+)", _titulo(texto, t)).groups()
+        assert rango == (_c(filas_t[0][0]), _c(filas_t[-1][0])), t
+    leidas = _filas(tablas[0] + tablas[1] + tablas[2])
     assert leidas == _esperado(j.filas_corte_tpm(2))
     total = j.contar_nodos(j.ARBOL_TPM)
     filas = j.traza_decidir(j.ARBOL_TPM_100, profundidad=2, evaluar=j.EVAL_TPM)["filas"]
-    tramo_1 = len(_tabla(texto, "jue-c3-t-traza-d2")) - 1
+    tramo_1 = len(tablas[0]) + len(tablas[1])
     for figura, generados in [("jue-c3-t-fig-d1", j.decidir_con_corte_tpm(1)[2]),
                               ("jue-c3-t-fig-d2-tramo-1", filas[tramo_1 - 1]["generados"]),
                               ("jue-c3-t-fig-d2-tramo-2", j.decidir_con_corte_tpm(2)[2])]:
@@ -1107,9 +1114,23 @@ def test_prosa_clase_3_p2_la_traza_con_huecos_y_su_respuesta():
     ej = _bloque(texto, "jue-c3-ej-traza-d2")
     orden = _orden_de(re.search(r"otro orden: (\w+), (\w+), (\w+)", _limpio(ej)).groups())
     esperado = _esperado(j.filas_corte_tpm(2, orden=orden))
-    _con_huecos(_filas(_tablas(ej)[0][1:]), esperado)
+    # La traza va en tres tramos, uno por hijo de R en ese orden; cada
+    # encabezado del enunciado declara su hijo y su rango de filas, y la
+    # respuesta parte en los mismos puntos.
+    tramos = re.findall(r"Tramo (\d) · (\w)(?: y la salida)?, filas (\d+) a (\d+)", _limpio(ej))
+    partes_ej = _tablas(ej)[:3]
+    assert [int(t[0]) for t in tramos] == [1, 2, 3] and len(_tablas(ej)) == 3
+    assert [t[1] for t in tramos] == orden
+    for (_, hijo, a, b), tabla in zip(tramos, partes_ej):
+        cuerpo = tabla[1:]
+        assert (a, b) == (_c(cuerpo[0][0]), _c(cuerpo[-1][0]))
+        dentro = [_c(f[1]).split(" · ")[1] for f in cuerpo if "›" in f[1]]
+        assert dentro and set(dentro) == {f"R›{hijo}"}, (hijo, dentro)
+    _con_huecos(_filas([f for t in partes_ej for f in t[1:]]), esperado)
     resp = _respuesta(texto, "jue-c3-ej-traza-d2")
-    assert _filas(_tablas(resp)[0][1:]) == esperado
+    partes_resp = _tablas(resp)[:3]
+    assert [len(t) for t in partes_resp] == [len(t) for t in partes_ej]
+    assert _filas([f for t in partes_resp for f in t[1:]]) == esperado
     jugada, valor, _ = j.decidir_con_corte_tpm(2, orden=orden)
     assert re.search(r"Devuelve (\w+), con (\d+)", _limpio(resp)).groups() == (jugada, str(valor))
 
@@ -1299,16 +1320,24 @@ def test_prosa_clase_3_p4_el_reloj_en_la_posicion():
                                 str(nodos[2]), medido)
     # Ola 3: el resumen ya no repite la cuenta 33/12 (vive en la respuesta de
     # arriba); dice lo repetido contra la ultima, sin poda, y con alfa-beta e
-    # iterativa en el arbol de resultados y en la clase.
+    # iterativa en el arbol de resultados y en la clase. Ola 4: el contraejemplo
+    # del crecimiento disparejo (en el arbol de resultados, con iterativa, las
+    # dos primeras busquedas suman mas que la ultima) va en la misma vineta, y
+    # el ahorro de la poda pasa a una vineta propia.
     llevarse = _limpio(texto.split("## Lo que hay que llevarse")[-1])
-    m = re.search(r"sin poda, (\d+) nodos contra (\d+)\. Con alfa-beta y la jugada anterior "
-                  r"primero: (\d+) contra (\d+) en el árbol de resultados, y (\d+) contra (\d+) "
-                  r"en la clase", llevarse)
+    m = re.search(r"En la clase, sin poda, (\d+) nodos contra (\d+)\. Si no crece parejo puede "
+                  r"costar más: en el árbol de resultados, con alfa-beta y la jugada anterior "
+                  r"primero, las dos primeras búsquedas suman "
+                  r"(\d+) nodos contra (\d+) de la última\. - La poda y la jugada anterior "
+                  r"primero ahorran: (\d+) nodos contra (\d+) en el árbol de resultados, y "
+                  r"(\d+) contra (\d+) en la clase", llevarse)
     tpm = j.tabla_nodos_generados_tpm()
     clase = j.tabla_nodos_generados()
+    t_it = tpm["iterativa"]
     assert m and [int(v) for v in m.groups()] == [
-        sum(nodos[:2]), nodos[2], j.iterativa_tpm()[1], sum(tpm["sin poda"]),
-        sum(clase[("4x4", "iterativa")]), sum(nodos)]
+        sum(nodos[:2]), nodos[2], sum(t_it[:2]), t_it[-1], j.iterativa_tpm()[1],
+        sum(tpm["sin poda"]), sum(clase[("4x4", "iterativa")]), sum(nodos)]
+    assert sum(t_it[:2]) > t_it[-1] and sum(nodos[:2]) < nodos[2]
 
 
 def test_prosa_clase_3_p4_profundizar_sin_poda_en_t():
@@ -1455,9 +1484,9 @@ def test_prosa_clase_3_p4_iterativa_en_t_y_nodos_generados():
         leido = {k: [_n(f[i + 1]) for f in filas[1:]] for i, k in enumerate(claves)}
         assert leido == {k: fuente[k] + [sum(fuente[k])] for k in claves}, ident
     llevarse = _limpio(texto.split("## Lo que hay que llevarse")[-1])
-    m = re.search(r"(\d+) contra (\d+) en el árbol de resultados, y (\d+) contra (\d+) en la "
-                  r"clase", llevarse)
-    assert [int(x) for x in m.groups()] == [sum(t_it), sum(t_sp),
+    m = re.search(r"La poda y la jugada anterior primero ahorran: (\d+) nodos contra (\d+) en "
+                  r"el árbol de resultados, y (\d+) contra (\d+) en la clase", llevarse)
+    assert m and [int(x) for x in m.groups()] == [sum(t_it), sum(t_sp),
                                             sum(tabla[("4x4", "iterativa")]),
                                             sum(tabla[("4x4", "sin poda")])]
 
@@ -2227,7 +2256,9 @@ def test_prosa_clase_3_p6_el_ejercicio_de_mcts_con_la_c_de_la_teoria():
     (duplicaban cuentas, destinos R18). Lo que sobrevive vive en la
     respuesta de @jue-c3-ej-mcts de «MCTS con UCT»: con c = 2√2 la
     selección va a z con 2.12 contra 1.71 de y (antes 1.28/1.71/2.12), con
-    c = 1 a y; se entrega x, con 60, y no y, la de mejor promedio con 30."""
+    c = 1 a y; se entrega x, con 60, y no y, la de mejor promedio con 30
+    (Ola 4: «entregar compara visitas y elige x; seleccionar compara puntajes
+    y elige y»)."""
     texto = _pagina(P5b)
     datos = {k: (int(n), F(u)) for k, n, u in re.findall(
         r"([xyz]): N=(\d+) visitas, \\widehat Q=(\d+(?:\.\d+)?)",
@@ -2245,8 +2276,14 @@ def test_prosa_clase_3_p6_el_ejercicio_de_mcts_con_la_c_de_la_teoria():
     m = re.search(r"1\. ([xyz]): al final se entrega la jugada con más visitas, y \1 tiene (\d+)",
                   resp)
     assert (m[1], int(m[2])) == (entrega, datos[entrega][0])
-    m = re.search(r"(\d+) vueltas pesan más que (\d+)", resp)
-    assert (int(m[1]), int(m[2])) == (datos[entrega][0], datos[por_u][0]) and por_u != entrega
+    # Ola 4: el inciso 3 ya no pesa visitas («60 vueltas pesan más que 30»,
+    # que vendia las visitas como prueba); dice que cada regla compara otra
+    # cosa: entregar, visitas (x); seleccionar, puntajes (y, que es tambien la
+    # de mejor promedio, con menos visitas que x).
+    m = re.search(r"3\. No coinciden\. Entregar compara visitas y elige ([xyz]); seleccionar "
+                  r"compara puntajes y elige ([xyz])\.", resp)
+    assert m and (m[1], m[2]) == (entrega, j.mejor(p5)) and m[1] != m[2]
+    assert por_u != entrega and datos[por_u][0] < datos[entrega][0]
 
 
 def test_prosa_clase_3_p6_la_corrida_sembrada_con_ucb_y_la_vuelta_6():
@@ -3713,11 +3750,12 @@ def test_ola3_w18_el_bloque_de_simulacion_de_la_tarea_de_la_clase_3():
     resp = _limpio(_respuesta(texto, "jue-tarea-3-ej-simular"))
     q, qa = j.q_minimax_arbol(arbol), j.q_azar_arbol(arbol)
     assert (q, qa) == ([-1, 0], [F(1, 2), F(1, 4)])
-    m = re.search(r"Q\(A\)=\\min\(1,1,1,-1\)=(-\d),\\qquad Q\(B\)=\\min\\bigl\(0,\\max\(0,1\)"
-                  r"\\bigr\)=(\d)", resp)
+    # Ola 4: cada par va en un bloque aligned, una igualdad por renglon.
+    m = re.search(r"\\beginaligned Q\(A\)&=\\min\(1,1,1,-1\)=(-\d),\\\\ Q\(B\)&=\\min"
+                  r"\\bigl\(0,\\max\(0,1\)\\bigr\)=(\d)\. \\endaligned", resp)
     assert [int(m[1]), int(m[2])] == q
-    m = re.search(r"Q_azar\(A\)=\\frac1\+1\+1-14=\\frac(\d)(\d),\\qquad Q_azar\(B\)=\\frac0\+"
-                  r"\\tfrac122=\\frac(\d)(\d)", resp)
+    m = re.search(r"\\beginaligned Q_azar\(A\)&=\\frac1\+1\+1-14=\\frac(\d)(\d),\\\\ "
+                  r"Q_azar\(B\)&=\\frac0\+\\tfrac122=\\frac(\d)(\d)\. \\endaligned", resp)
     assert [F(int(m[1]), int(m[2])), F(int(m[3]), int(m[4]))] == qa
     # 2 · Las mismas 11 partidas.
     ej = _limpio(_bloque(texto, "jue-tarea-3-ej-simular"))

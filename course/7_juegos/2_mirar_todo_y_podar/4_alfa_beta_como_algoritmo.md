@@ -479,7 +479,8 @@ $Q$.
 
 - **Número que da:** el $V$ exacto de la raíz y el $Q$ exacto de la jugada
   elegida; de las descartadas, a veces solo una cota.
-- **Usa EVAL:** no. Solo lee la $U$ de los finales, como minimax.
+- **Usa EVAL:** no. Como minimax, no estima posiciones: trabaja con los
+  pagos $U$ de los finales.
 - **Garantía:** el mismo $V$ que minimax y, con el mismo orden y
   desempate, la misma jugada. Cada número que devuelve una llamada se lee
   contra su ventana de entrada (@jue-c2-invariante).

@@ -101,13 +101,13 @@ Tras esas tres vueltas, $\widehat Q(\text{x})=-1$, $\widehat Q(\text{y})=-1$ y $
 2. **Nunca, en esta corrida.** x e y no se vuelven a probar y se quedan en $-1$, el mínimo posible. z ya ganó una vez, así que su promedio nunca baja a $-1$. Tras 1000 vueltas, x e y llevan una simulación cada una y z, 998: la regla se atoró en la peor jugada.
 :::
 
-**Los dos errores no cuestan lo mismo.** Un promedio que se pasa por arriba se sigue probando, y converge a su esperanza aunque no baje en cada muestra; uno que se queda corto puede dejar de probarse y quedar congelado.
+**Los dos errores no cuestan lo mismo.** Un promedio solo se corrige si sigue recibiendo muestras: sin límite de muestras converge a su esperanza. La regla del mejor promedio puede abandonar una jugada antes de corregirla, incluso si todavía la sobreestima.
 
 ::: table {#jue-c3-tabla-optimismo title="Equivocarse por arriba o por abajo"}
-| Error | Qué pasa |
+| Error | Qué puede pasar |
 |---|---|
-| Creer buena una mala | Se sigue probando: su $\widehat Q$ tiende a su esperanza, **se corrige sola** |
-| Creer mala una buena | Deja de probarse: **puede quedar congelada** |
+| Creer buena una mala | Mientras encabece los promedios recibe muestras y su $\widehat Q$ se acerca a su esperanza; si deja de elegirse, **queda congelada** |
+| Creer mala una buena | Puede dejar de probarse y **conservar para siempre** una subestimación |
 :::
 
 **Moraleja: sin bono, la regla cree un promedio hecho con una sola simulación.** El bono le enseña a dudar; falta decir cuánto.

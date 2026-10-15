@@ -588,8 +588,8 @@ $>$ de la línea 5 es estricto.
 - **Número que da:** el $Q$ esperado exacto de cada jugada de la raíz y
   $V(s_{\text{raíz}})$ del juego con azar. El algoritmo no tira dados:
   enumera todos los resultados con su $\Pr(a\mid s)$.
-- **Usa EVAL:** no. Solo lee la $U$ de los finales; su escala importa,
-  porque se promedia.
+- **Usa EVAL:** no. No estima posiciones: trabaja con los pagos $U$ de
+  los finales; su escala importa, porque se promedia.
 - **Garantía:** calcula exactamente la utilidad esperada óptima con
   probabilidades conocidas. Siguiendo su jugada, MAX obtiene al menos $V$
   en esperanza contra cualquier MIN; no garantiza el resultado de una

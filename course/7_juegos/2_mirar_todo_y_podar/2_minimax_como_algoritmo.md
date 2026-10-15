@@ -589,8 +589,9 @@ estrictamente más.
 - **Número que da:** MINIMAX calcula el $Q$ exacto de **cada** jugada de
   la raíz y $V(s_{\text{raíz}})$, sin estimar ni acotar. DECIDIR entrega
   una jugada, no esos números.
-- **Usa EVAL:** no. No estima nada: solo lee la $U$ de los finales, en su
-  propia escala.
+- **Usa EVAL:** no. No necesita estimar cuánto vale una posición a medio
+  camino (eso haría una función de evaluación, EVAL): trabaja con los
+  pagos $U$ de los finales, en su propia escala.
 - **Garantía:** entrega $V$ y una jugada que lo alcanza. Si MAX sigue
   eligiendo así en cada turno, obtiene $V$ contra un MIN que juega bien y
   al menos $V$ contra cualquier otro.

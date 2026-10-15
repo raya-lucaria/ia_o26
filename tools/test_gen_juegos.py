@@ -976,6 +976,23 @@ def test_en_los_flujos_recursivos_todo_valor_vuelve_al_padre(nombre):
     assert "vuelve al padre" in r and "Empieza en la raíz" in r
 
 
+def test_el_flujo_de_alfa_beta_sigue_el_orden_del_codigo():
+    """Ola 4, r2: la figura decía «Al volver con v: … y sube α» antes de
+    «¿v ≥ β?». El código (y 3_alfa_beta.md) mezcla v con la w del hijo,
+    pregunta primero si poda y solo si no poda sube α; v y w no se mezclan."""
+    pasos = gen.FLUJOS["alfa-beta"]["pasos"]
+    textos = [" ".join(p.get("caja", p.get("rombo"))) for p in pasos]
+    volver = next(k for k, t in enumerate(textos) if t.startswith("Al volver"))
+    poda = textos.index("¿v ≥ β?")
+    sube = next(k for k, t in enumerate(textos) if t.startswith("Sube α"))
+    assert volver < poda < sube
+    assert "w" in textos[volver] and "max(v, w)" in textos[volver]
+    assert "α" not in textos[volver]
+    r = _renglones("jue-c3-rx-flujo-alfa-beta")
+    assert "Al volver con w:" in r and "Al volver con v:" not in r
+    assert "con el menor, poda si v ≤ α" in r and "y, si no, baja β." in r
+
+
 def test_el_flujo_de_uct_es_un_ciclo_de_cuatro_fases():
     r = _renglones("jue-c3-rx-flujo-uct")
     for fase in ("1 · Selección", "2 · Expansión", "3 · Simulación", "4 · Retropropagación"):

@@ -548,12 +548,14 @@ def test_mc_plano_cuenta_los_nodos_de_cada_corrida(k, datos):
 
 
 @pytest.mark.parametrize("t", [18, 40])
-def test_uct_cuenta_los_nodos_de_su_arbol_y_sus_simulaciones(t):
+def test_uct_cuenta_los_nodos_de_su_arbol_y_sus_vueltas(t):
     """Brief r2 W3-4: los nodos de UCT son los guardados en el árbol, no los
-    generados de una búsqueda; la tarjeta lo rotula y da las simulaciones."""
+    generados de una búsqueda; la tarjeta lo rotula y da las vueltas. N(R)
+    cuenta vueltas, no simulaciones: una vuelta que llega a un final no
+    simula (plan §5.2; ola 4, r2)."""
     u = j.uct_tpm(1, t, j.SEMILLA_TPM)
     tx = _norm(_leer(f"uct-{t}").por_id["t-nodos"])
-    assert tx == f"{len(u['N'])} de 15 en el árbol, tras {u['N'][()]} simulaciones"
+    assert tx == f"{len(u['N'])} de 15 en el árbol, tras {u['N'][()]} vueltas"
     assert u["N"][()] == t
 
 

@@ -330,24 +330,29 @@ compara $\widehat Q+\text{bono}$; entregar compara solo $N(s,a)$. Al
 promediar, cada pago pesa $1/N$, sea cual sea quién lo eligió.
 :::
 
-::: answer {#jue-tarea-3-resp-simular of="jue-tarea-3-ej-simular" title="Respuesta · Solo el respaldo minimax cambia en el acto"}
+::: answer {#jue-tarea-3-resp-simular of="jue-tarea-3-ej-simular" title="Respuesta · Solo la actualización minimax cambia en el acto"}
 **1. Valores exactos.** MIN responde a4 en A y b1 en B:
 
 $$
-Q(\text{A})=\min(1,1,1,-1)=-1,\qquad Q(\text{B})=\min\bigl(0,\max(0,1)\bigr)=0.
+\begin{aligned}
+Q(\text{A})&=\min(1,1,1,-1)=-1,\\
+Q(\text{B})&=\min\bigl(0,\max(0,1)\bigr)=0.
+\end{aligned}
 $$
 
 La correcta es **B**, con $V=0$. Con todos al azar:
 
 $$
-Q_{\text{azar}}(\text{A})=\frac{1+1+1-1}{4}=\frac12,\qquad
-Q_{\text{azar}}(\text{B})=\frac{0+\tfrac12}{2}=\frac14.
+\begin{aligned}
+Q_{\text{azar}}(\text{A})&=\frac{1+1+1-1}{4}=\frac12,\\
+Q_{\text{azar}}(\text{B})&=\frac{0+\tfrac12}{2}=\frac14.
+\end{aligned}
 $$
 
 Monte Carlo plano termina prefiriendo **A**, que pierde contra a4.
 
 **2. Las mismas 11 partidas.** «Plano» promedia el $U$ crudo; «minimax»
-respalda máximos y mínimos sobre lo descubierto:
+sube máximos y mínimos sobre lo descubierto:
 
 | Tras | Plano A | Plano B | Minimax A | Minimax B |
 |---:|---:|---:|---:|---:|
@@ -383,7 +388,7 @@ $(-1+1+1+1)/4=1/2$: la respuesta certera pesa como una observación más.
 
 El promedio de A baja porque la selección de MIN **concentra** las vueltas en
 a4, no porque UCT tome un mínimo. La actualización minimax, con un solo a4,
-habría fijado $-1$ en ese mismo respaldo.
+habría fijado $-1$ en esa misma actualización.
 
 **5. A qué converge cada uno.**
 

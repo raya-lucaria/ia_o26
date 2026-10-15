@@ -555,7 +555,7 @@ function vista(b) {
     const h = HIJO_DE[jug];
     /* la fila es la de la vuelta final; a media corrida se compara con V aquí */
     Object.assign(r, {jugada:jug, nodos:r.mirados.size,
-      nodosTexto:`${r.mirados.size} de ${TOTAL} en el árbol, tras ${tras[RAIZ][0]} simulaciones`,
+      nodosTexto:`${r.mirados.size} de ${TOTAL} en el árbol, tras ${tras[RAIZ][0]} vueltas`,
       daV:t === ult ? fila.da_v_aqui : tras[h][1] === 0,
       valor:fraccion(tras[h][1], tras[h][0])});
     r.nombreExtra = ` · vuelta ${t} de ${ult}`;
@@ -613,7 +613,7 @@ function aqui(fam, r, f) {
     if (r.daV) return `<b>sí, por ahora</b>: ${v} coincide con V, pero la raíz sigue provisional`;
     return `<b>no</b>: Q̂ = ${v}, provisional, y V es ${signo(V)}`;
   }
-  if (r.daV) return `<b>sí, por casualidad</b>: su Q̂ = ${r.valor} coincide con V, pero es un promedio de simulaciones`;
+  if (r.daV) return `<b>sí, por casualidad</b>: su Q̂ = ${r.valor} coincide con V, pero es un promedio de pagos`;
   return `<b>no</b>: Q̂ = ${v}, y V es ${signo(V)}`;
 }
 

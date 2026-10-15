@@ -89,9 +89,12 @@ cuentas o contenido que la página ya hace.
 - `jue-c3-ej-vuelta-seis` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:521`): seguía una
   vuelta más de la corrida sembrada que el bloque 3 ya traza.
 - `jue-c3-ej-entregar` (`course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md:693`): «seleccionar no
-  es entregar». La tabla `jue-c3-tabla-seleccionar` y la frase «la más
-  visitada es la que la búsqueda confirmó más veces» pasaron a «MCTS con
-  UCT». La pregunta sobre seleccionar frente a entregar la retoma el
+  es entregar». La tabla `jue-c3-tabla-seleccionar` pasó a «MCTS con UCT».
+  La frase «la más visitada es la que la búsqueda confirmó más veces» pasó
+  con ella y luego se reescribió, porque las visitas también cuentan la
+  expansión y la exploración por el bono: hoy dice que entregar la más
+  visitada es la regla de esta versión y que «las visitas no son pruebas de
+  que una jugada sea mejor». La pregunta sobre seleccionar frente a entregar la retoma el
   ejercicio 3 de la tarea de la clase 3.
 
 **Tres figuras del bono que decían lo mismo.** Se quitaron el SVG, su

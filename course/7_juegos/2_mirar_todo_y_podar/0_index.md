@@ -58,7 +58,7 @@ Y tres palabras que no son símbolos:
 - **Estrategia:** una jugada para **cada** estado donde le toca a un
   jugador, no solo para el actual.
 - **Supuestos:** por turnos, sin azar, todo a la vista, toda partida
-  termina y lo que gana uno lo pierde el otro.
+  termina y suma cero (o constante): lo que gana uno lo pierde el otro.
 
 El problema de la unidad (@jue-c1-problema), escrito completo:
 
@@ -164,7 +164,7 @@ el navegador sin instalar nada; en tu máquina necesitas `matplotlib` e
 `ipywidgets`. Para empezar: «Entorno de ejecución → Ejecutar todas».
 
 **Cuándo.** Después de cada página de algoritmo, su sección: 3 · Minimax,
-5 · Alfa-beta y 4 · Cuando decide un dado. Las secciones 6 a 8 son de la
+4 · Alfa-beta y 5 · Cuando decide un dado. Las secciones 6 a 8 son de la
 clase 3.
 
 ## Qué no cubre esta clase

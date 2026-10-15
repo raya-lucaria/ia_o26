@@ -901,7 +901,7 @@ Por reloj, la jugada de la **última búsqueda completa**; si no terminó ningun
 - **Número que da:** el valor con corte de la última búsqueda completa. Con alfa-beta, solo el de la jugada elegida es exacto en ese árbol; los demás pueden ser cotas.
 - **Usa EVAL:** sí, en los nodos de corte; los finales valen $M\cdot U$, en la misma escala.
 - **Garantía:** no garantiza $V$, salvo si la última búsqueda completa llega a los finales sin evaluar. Entonces da $M\cdot V$.
-- **Se puede interrumpir:** sí (*anytime*): tiene un respaldo legal desde el inicio, y una jugada respaldada por una búsqueda completa desde que termina $d=1$.
+- **Se puede interrumpir:** sí (*anytime*): tiene un respaldo legal desde el inicio, y la jugada de una búsqueda completa desde que termina $d=1$.
 - **Complejidad:** cada búsqueda cuesta lo de alfa-beta con corte, entre $O(b^{d/2})$ y $O(b^d)$. Repetir las anteriores cuesta poco si la búsqueda crece parejo (@jue-c3-costo-iterativa). Sin tabla de transposición, la memoria es $O(bd)$; con tabla, crece con lo que se guarde.
 - **Frente a los demás:** juega con lo que dé el tiempo y aprovecha cada búsqueda para ordenar la siguiente. Es lo que usan los programas de ajedrez de torneo, como Deep Blue.
 - **Supuestos:** los del corte y de alfa-beta. La salida con $+M$ usa que $M$ es el mayor pago posible para MAX. Con suma no constante o más jugadores hacen falta pagos vectoriales y $\max^n$; ni la poda ordinaria ni esa salida se trasladan directo.
@@ -922,7 +922,7 @@ el mismo orden que una sola búsqueda a profundidad $d$.
 | $B=10$ | $1/9$, cerca de 11 % | $10/9$ de la última |
 | $B=2$ | casi otra búsqueda | casi el doble |
 
-En un árbol uniforme, con exactamente $b$ jugadas en cada estado, ${B=b}$.
+Sin poda, en un árbol uniforme con exactamente $b>1$ jugadas en cada estado, ${B=b}$. Con alfa-beta, el crecimiento depende también del orden y de las ramas podadas: no se deduce $B=b$ solo de la ramificación.
 
 Sin ese crecimiento, repetir puede costar más. Que haya a lo más $b$ jugadas por estado no lo asegura: si tras la raíz casi todo es forzado, cada búsqueda agrega apenas unos nodos a la anterior, y las anteriores juntas pueden costar varias veces la última.
 :::
@@ -1094,7 +1094,8 @@ Para cada nodo, ¿su $v$ cae dentro de la ventana, o toca o pasa uno de los extr
 - **Subir la profundidad mueve el horizonte, no lo quita**, mientras el corte no llegue a todos los finales. Con $d=2$, $\text{d2}\textbf{-}\text{d3}$ vale 1 y la victoria, 100, sigue detrás.
 - **La búsqueda de quietud** sigue solo las capturas desde los nodos de corte, y quedarse con $\mathrm{EVAL}$ es una aproximación, no una jugada. Con $d=1$ da ${-10}$, 2 y 0 en la clase, y elige $\text{d2}\textbf{-}\text{d3}$; en el árbol de resultados juega centro con 20. **Arregla la jugada, no el valor.**
 - **La profundización iterativa** busca con ${d=1,2,3,\dots}$ y entrega lo mejor de la **última búsqueda completa**. Un reloj que se acaba durante ${d=2}$ entrega $\text{d2}\textbf{x}\text{c3}$, que pierde; durante ${d=3}$, $\text{d2}\textbf{-}\text{d3}$, que gana.
-- **Repetir cuesta poco si crece parejo:** cerca de ${1/(B-1)}$ de la última búsqueda. En la clase, sin poda, 16 nodos contra 33. Con alfa-beta y la jugada anterior primero: 25 contra 30 en el árbol de resultados, y 23 contra 49 en la clase.
+- **Repetir cuesta poco si crece parejo:** cerca de ${1/(B-1)}$ de la última búsqueda. En la clase, sin poda, 16 nodos contra 33. Si no crece parejo puede costar más: en el árbol de resultados, con alfa-beta y la jugada anterior primero, las dos primeras búsquedas suman 13 nodos contra 12 de la última.
+- **La poda y la jugada anterior primero ahorran:** 25 nodos contra 30 en el árbol de resultados, y 23 contra 49 en la clase.
 - **La tabla de transposición** guarda número, profundidad y tipo según la ventana: valor si ${\alpha_0<v<\beta_0}$, piso si ${v\ge\beta_0}$, techo si ${v\le\alpha_0}$, con $(\alpha_0,\beta_0)$ la ventana con que se llamó al nodo.
 
 Continúa con [[simular-en-vez-de-evaluar|Simular partidas]].

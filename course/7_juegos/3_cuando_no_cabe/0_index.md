@@ -43,7 +43,7 @@ a su página.
 | $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
 | $\alpha$, $\beta$ | Lo que MAX y MIN ya tienen asegurado en el camino | Alfa-beta a mano |
 | Poda | Dejar de generar hermanos que no cambian la respuesta: un corte alfa o un corte beta | Alfa-beta a mano |
-| Cota | Lo que devuelve un nodo que podó: «al menos» o «a lo más», no su valor | Alfa-beta a mano |
+| Cota | Lo que devuelve un nodo cuyo valor tocó o salió de su ventana de entrada: «al menos» o «a lo más», no su valor. Puede pasar aunque ese nodo no pode | Alfa-beta a mano |
 | DECIDIR-ALFA-BETA | Minimax con podas; el orden de las jugadas cambia cuántos nodos genera | Alfa-beta como algoritmo |
 :::
 

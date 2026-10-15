@@ -2,7 +2,7 @@
 id: elegir-el-algoritmo
 title: Elegir el algoritmo
 nav_title: Elegir el algoritmo
-summary: "Dado un juego, cuatro preguntas eligen entre los siete algoritmos de la radiografía: si el árbol cabe, si hay dados, si hay una buena EVAL y si hay reloj. Con el juego real donde se usó cada uno, el número que respalda su jugada y lo que suponen todos: dos jugadores, suma cero o constante, por turnos y todo a la vista."
+summary: "Dado un juego, cuatro preguntas eligen entre los siete algoritmos de la radiografía: si el árbol cabe, si hay dados, si hay una buena EVAL y si hay reloj. Con el juego real donde se usó cada uno, el número que sostiene su jugada y lo que suponen todos: dos jugadores, suma cero o constante, por turnos y todo a la vista."
 status: ready
 estimated_time: 30m
 tags: [juegos, busqueda-adversarial, mcts]
@@ -14,7 +14,7 @@ tags: [juegos, busqueda-adversarial, mcts]
 
 Depende de lo que el juego ofrece: si su árbol cabe, si tiene dados, si hay con qué estimar y cuánto tiempo hay. Al terminar podrás:
 
-- **Ponerle nombre al número** que respalda cada jugada: un valor exacto, un valor con corte o una estimación.
+- **Ponerle nombre al número** que sostiene cada jugada: un valor exacto, un valor con corte o una estimación.
 - **Elegir con dos tablas** cuál de los siete algoritmos conviene, qué le cuesta y en qué juego real se usó.
 - **Recorrer un mapa de cuatro preguntas** en el árbol de resultados y en la posición de la clase.
 - **Reconocer los cuatro supuestos** que comparten todos, y qué se usa cuando falla alguno.
@@ -99,7 +99,7 @@ Porque sus juegos no ofrecen lo mismo. En ajedrez hay una estimación razonable 
 - **Expectiminimax:** en la unidad, el ejemplo exacto es el árbol de resultados con un dado en D. El árbol completo del backgammon no cabe: TD-Gammon (1992) miraba dos jugadas, promediaba los dados y estimaba con una red.
 - **Minimax con corte:** ajedrez (Deep Blue, 1997) y damas (Chinook, con bases de finales).
 - **Monte Carlo plano:** Go, de 1993 a 2005.
-- **Actualización minimax:** Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, llaman a este método *Monte-Carlo planning with minimax value update* (MMMC) y lo compararon con UCT en árboles de juego aleatorios. Con presupuestos prácticos falló más que el promedio.
+- **Actualización minimax:** Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, llaman a este método *Monte-Carlo planning with minimax value update* (MMMC) y lo compararon con UCT en árboles de juego aleatorios. Con presupuestos prácticos falló más que Monte Carlo plano.
 - **UCT:** Go (MoGo, 2006) y Hex (MoHex).
 
 ::: table {#jue-c3-cmp-cuesta title="Qué le cuesta a cada algoritmo"}
@@ -158,7 +158,7 @@ La de si cabe. Si el árbol cabe, la búsqueda exacta calcula $V$, y ninguna est
 3. **Sin dados, ¿hay una EVAL buena?** Sí: alfa-beta con corte. Con capturas, quietud; si hay reloj, profundización iterativa, que entrega la última búsqueda completa.
 4. **Sin dados ni EVAL:** UCT, de la familia MCTS. Solo pide las reglas, para simular. Con reloj o sin él, se interrumpe cuando sea y entrega la jugada más visitada.
 
-**En el caso sin dados, las otras dos simulaciones son variantes de la rama 4.** Monte Carlo plano es la versión sin árbol: más simple, y puede elegir mal. La actualización minimax converge a $V$, pero guarda todo lo que descubre y, con poco presupuesto, suele jugar peor.
+**En el caso sin dados, las otras dos simulaciones son variantes de la rama 4.** Monte Carlo plano es la versión sin árbol: más simple, y puede elegir mal. La actualización minimax converge a $V$, pero guarda todo lo que descubre y, con poco presupuesto, puede jugar peor.
 
 **Las ramas 3 y 4 eligen entre las versiones de esta unidad.** Fuera de ella, MCTS también puede usar una evaluación: AlphaGo valoraba sus hojas con una red y con simulaciones.
 
@@ -278,7 +278,7 @@ Lo nuevo frente a la página: no hay tabla ni árbol dados; el diagnóstico es t
 
 1. Contesta: ¿cabe el árbol?, ¿hay dados?, ¿hay una EVAL buena?, ¿hay reloj?, ¿es de suma cero entre dos?
 2. Recorre el mapa de la sección 3 y di en qué rama acabas.
-3. Di qué jugada entrega tu algoritmo al acabarse el reloj, y qué número la respalda. ¿Es $V$?
+3. Di qué jugada entrega tu algoritmo al acabarse el reloj, y qué número la sostiene. ¿Es $V$?
 4. Variante: el tablero es de 3×3. ¿Cambia tu elección?
 5. Variante: juegan Rojo, Azul y Verde, por turnos. ¿Qué supuesto se rompe, y qué buscarías en «para ubicar»?
 :::
@@ -300,14 +300,14 @@ No hay dados. No se tiene una EVAL confiable: la obvia, el grupo más grande, en
 
 La actualización minimax también es de la rama 4, pero tendría que guardar todo lo descubierto, y en 10 segundos un máximo con pocas muestras engaña.
 
-**3. Lo que entrega.** Al acabarse los 10 segundos, la jugada **más visitada**. La respalda $\widehat Q$, un promedio de vueltas, no $V$. Con vueltas sin límite y cualquier $c>0$, tendería a la de minimax; 10 segundos no son tiempo sin límite.
+**3. Lo que entrega.** Al acabarse los 10 segundos, la jugada **más visitada**. La sostiene $\widehat Q$, un promedio de vueltas, no $V$. Con vueltas sin límite y cualquier $c>0$, tendería a la de minimax; 10 segundos no son tiempo sin límite.
 
 **4. Tablero de 3×3.** Son 9 jugadas: $9!=$ 362 880 partidas. Cabe: rama 1, alfa-beta, y la jugada sale con su $V$ exacto. El tamaño cambia la primera respuesta del mapa, y con ella todo lo demás.
 
 **5. Tres jugadores.** Se rompe **dos jugadores**: no hay un solo MIN, y cada final necesita un número por jugador. Como no se tiene una EVAL confiable, lo cercano de la tabla es **UCT con vectores**. $\max^n$ y el paranoico llegan a los finales si el árbol cabe; aquí tendrían que cortar y estimar con una EVAL, y no hay con qué.
 :::
 
-**Punto de control:** deberías poder decir, para un juego nuevo, si cabe, si tiene dados, si hay una EVAL buena y si hay reloj. Con eso eliges el algoritmo con el mapa y dices qué número respalda su jugada. También deberías reconocer cuándo un juego rompe los supuestos de la unidad.
+**Punto de control:** deberías poder decir, para un juego nuevo, si cabe, si tiene dados, si hay una EVAL buena y si hay reloj. Con eso eliges el algoritmo con el mapa y dices qué número sostiene su jugada. También deberías reconocer cuándo un juego rompe los supuestos de la unidad.
 
 ## Lo que hay que llevarse
 

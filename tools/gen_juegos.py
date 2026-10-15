@@ -3638,7 +3638,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
     es_hoja = {c: not isinstance(j.nodo_en(arbol, c), tuple) for c in caminos}
     # Bajo el corte, los niveles bajan para dejar sitio a la linea (y bajo
     # d = 2, tambien al rotulo de una poda en el nivel 2).
-    baja = 40 if horizonte == 1 else 54
+    baja = 58 if horizonte == 1 else 54
     ys = [y0 + d + (baja if horizonte is not None and k > horizonte else 0)
           for k, d in enumerate(ys)]
     n_filas = max([len(nodos.get(c, {}).get("filas", ())) for c in caminos if not es_hoja[c]
@@ -3705,10 +3705,19 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
     if horizonte is not None:
         yl = ys[horizonte] + nh / 2 + baja
         out.append(linea(6, yl, RX_W - 6, yl, color=TENUE, grosor=1.5, guiones="10 6"))
-        # El rotulo va donde la linea no cruza nodos: a la derecha bajo D
-        # (d = 1), a la izquierda bajo I (d = 2, donde I ya acabo).
-        xr = RX_W - 56 if horizonte == 1 else 56
-        out.append(_pild(xr, yl, f"corte d = {horizonte}", TENUE_TXT, tam=13))
+        # El rotulo, sin pastilla y fuera de toda arista (ola 4, r2: la
+        # pastilla sobre la linea tapaba el arranque de las aristas de D y
+        # de C1): con d = 1, encima de la linea, en el hueco entre las
+        # aristas de C y las de D (por eso baja 58 y no 40: deja aire bajo
+        # las insignias EVAL); con d = 2, debajo, a la izquierda, bajo las
+        # hojas de I, donde ya no hay nada.
+        if horizonte == 1:
+            xr = (LUGARES_TPM[(1,)] + LUGARES_TPM[(2,)]) / 2
+            out.append(texto(xr, yl - 8, f"corte d = {horizonte}", tam=13, peso="700",
+                             color=TENUE_TXT))
+        else:
+            out.append(texto(8, yl + 18, f"corte d = {horizonte}", tam=13, peso="700",
+                             color=TENUE_TXT, anclaje="start"))
     # Raiz.
     x, yr = pos(())
     out.append(caja(x - RX_RAIZ_W / 2, yr - rh / 2, RX_RAIZ_W, rh,
@@ -4276,7 +4285,7 @@ def jue_c3_rx_mc_plano():
 
 def jue_c3_rx_uct(vueltas):
     """UCT con c = 1 y semilla 0 en T±, tras `vueltas` vueltas: su arbol con
-    N y ū, lo que aun no agrega, y la jugada mas visitada."""
+    N y Q̂, lo que aun no agrega, y la jugada mas visitada."""
     c_uct, semilla = 1, j.SEMILLA_TPM
     u = j.uct_tpm(c_uct, vueltas, semilla)
     N, S = u["N"], u["S"]
@@ -4311,7 +4320,8 @@ def jue_c3_rx_uct(vueltas):
     faltan = [ids[c] for c in ids if c and c not in N]
     desc = (f"UCT en el árbol de resultados con c = {c_uct} y semilla {semilla}, tras {vueltas} vueltas: su árbol "
             f"tiene {len(N)} nodos. Visitas y promedios: "
-            + ", ".join(f"{ids[c]} N {N[c]} Q̂ {_dec_txt(F(S[c], N[c]))}"
+            # la raiz no tiene arista: su promedio es V̂, no Q̂ (ola 4, r2)
+            + ", ".join(f"{ids[c]} N {N[c]} {'V̂' if c == () else 'Q̂'} {_dec_txt(F(S[c], N[c]))}"
                         for c in sorted(N, key=lambda x: (len(x), x)))
             + ". " + (f"Aún no agrega: {', '.join(faltan)}. " if faltan else
                       "Ya agregó todos los nodos. ")
@@ -4618,14 +4628,16 @@ FLUJOS = {
         pasos=[{"rombo": ["¿Es final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"]),
                 "regresa": True},
                {"caja": ["Baja al siguiente", "hijo con α y β, y", "repite desde arriba"]},
-               {"caja": ["Al volver con v:", "MAX se queda con el",
-                         "mayor y sube α si", "lo supera"],
+               # El orden es el del código (ola 4, r2): el hijo devuelve w,
+               # v = max(v, w), primero ¿poda?, y solo si no poda sube α.
+               {"caja": ["Al volver con w:", "MAX se queda con", "v = max(v, w)"],
                 "destino": True, "tenue": "cuando vuelve"},
                {"rombo": ["¿v ≥ β?"], "abajo": "no",
                 "lado": ("sí", ["poda:", "no genera", "los demás"]), "regresa": True},
+               {"caja": ["Sube α a v", "si v lo supera"]},
                _VOLVER, _AL_PADRE, _JUEGA],
-        vueltas=[(1, 0, "con el hijo"), (4, 1, "sí")],
-        pie=["En un nodo de MIN: se queda", "con el menor, baja β, y poda", "si v ≤ α."]),
+        vueltas=[(1, 0, "con el hijo"), (5, 1, "sí")],
+        pie=["En un nodo de MIN: se queda", "con el menor, poda si v ≤ α", "y, si no, baja β."]),
     "corte": dict(
         rec=True,
         titulo=["Corte, en palabras", "minimax que para en d"],

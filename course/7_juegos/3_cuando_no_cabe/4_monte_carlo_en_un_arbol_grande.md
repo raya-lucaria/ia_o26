@@ -325,7 +325,7 @@ No. Al terminar, el bono **se quita**: UCT juega la jugada de la raíz con **má
 :::
 
 - **El bono premia la ignorancia.** Eso sirve para aprender, no para jugar de verdad.
-- **Las visitas resumen la búsqueda.** La selección manda una vuelta a una jugada solo si su puntaje es el mejor: **la más visitada es la que la búsqueda confirmó más veces.**
+- **Las visitas resumen el presupuesto recibido.** Incluyen la expansión y la exploración por el bono, además de las vueltas a jugadas prometedoras. Entregar la más visitada es la regla de esta versión: **las visitas no son pruebas de que una jugada sea mejor.**
 - **Un promedio alto con pocas visitas puede ser suerte.** Su margen todavía es ancho.
 - **Más visitas no demuestran más valor.** También influyen el bono, el orden y los primeros resultados; con poco presupuesto, la regla puede fallar.
 
@@ -372,7 +372,7 @@ Tras 100 vueltas, las tres jugadas de la raíz, donde mueve MAX, tienen:
    \end{aligned}$$
 
    La z recibe el bono más grande, pero su promedio bajo la deja segunda.
-3. **No coinciden, y está bien.** Entregar busca la jugada más confiable: 60 vueltas pesan más que 30. Seleccionar decide dónde gastar la siguiente, y y tiene poca evidencia para lo bien que va.
+3. **No coinciden.** Entregar compara visitas y elige x; seleccionar compara puntajes y elige y. Son reglas para decisiones distintas: una dice qué jugar, la otra dónde gastar la siguiente vuelta.
 
 Una $c$ mayor le da más peso al bono. Con $c=\sqrt2$ la selección ya iría a z, por poco: $1.160$ contra $1.154$. Con $c=2\sqrt2$, con holgura: $2.12$ contra $1.71$.
 :::

@@ -1,7 +1,7 @@
 ---
 id: un-arbol-todos-los-algoritmos
 title: "Radiografía: un árbol, todos los algoritmos"
-nav_title: "Radiografía: un árbol, todos los algoritmos"
+nav_title: "Un árbol, todos los algoritmos"
 summary: "Minimax, alfa-beta, expectiminimax, el corte por nivel o por reloj, Monte Carlo plano, Monte Carlo con actualización minimax y UCT, cada uno en una ficha con el mismo orden: qué valor rastrea, cómo obtiene su número, qué jugada juega, sus propiedades y sus casos borde. Los siete corren sobre el árbol de resultados y al final se comparan en tablas cortas."
 status: ready
 estimated_time: 60m
@@ -132,7 +132,7 @@ $$
 | Algoritmo | Sube | Converge a |
 |---|---|---|
 | MC plano | No sube | $Q_{\text{azar}}$ |
-| Act. minimax | Máx. o mín. | $V$ |
+| Act. minimax | Máx. o mín. | $Q$ y $V$ |
 | UCT | Promedio | $Q$ y $V$ |
 :::
 
@@ -142,7 +142,7 @@ $$
 - **Con presupuesto fijo, ninguno garantiza $V$.**
 
 ::: figure {#jue-rx-fig-tres-mc title="Los tres Monte Carlo en el árbol de resultados"}
-![Por jugada de la raíz, izq, centro y der: V vale −1, 0 y −1; Q_azar, 0, −1/4 y 1/3. Con 40 partidas y semilla 0, Monte Carlo plano entrega izq; la actualización minimax y UCT, centro](../_assets/jue-c3-tres-mc.svg)
+![Por jugada de la raíz, izq, centro y der: Q vale −1, 0 y −1; Q_azar, 0, −1/4 y 1/3. Con 40 partidas y semilla 0, Monte Carlo plano entrega izq; la actualización minimax y UCT, centro](../_assets/jue-c3-tres-mc.svg)
 :::
 
 **La figura usa una variante:** Monte Carlo plano reparte 40 partidas eligiendo también al azar en la raíz. Sus $N$ son 8, 14 y 18; la ficha usa $k=5$ por jugada.
@@ -265,7 +265,7 @@ $$
 
 - **Empate:** todas las jugadas empatadas son óptimas; juega la primera.
 - **Una sola jugada:** queda forzada, y $V(s)=Q(s,a)$.
-- **Final ya en el árbol, o la raíz misma final:** vale su $U$ y no genera hijos.
+- **Final ya en el árbol:** vale su $U$ y no genera hijos. Si la raíz misma es final, no hay jugada que entregar.
 - **Finales a distintas profundidades:** no prefiere ganar pronto ni perder tarde, salvo que $U$ lo codifique.
 
 ::: figure {#jue-c3-rx-fig-minimax title="Minimax en el árbol de resultados: genera los 15 nodos y juega centro"}
@@ -340,7 +340,7 @@ $$
 - **Usa EVAL:** no; trabaja con $U$.
 - **Garantía:** obtiene el mismo $V$ y, con igual orden y desempate, la misma jugada que minimax.
 - **Se puede interrumpir:** esta versión entrega solo al terminar el recorrido.
-- **Complejidad:** cuesta $O(b^{m/2})$ con orden perfecto y $O(b^m)$ con el peor; usa memoria $O(bm)$. El orden perfecto prueba primero la mejor jugada para quien mueve.
+- **Complejidad:** en un árbol aproximadamente uniforme, cuesta $O(b^{m/2})$ con orden perfecto y $O(b^m)$ con el peor; usa memoria $O(bm)$. El orden perfecto prueba primero la mejor jugada para quien mueve.
 - **Frente a los demás:** conserva la respuesta de minimax con igual o menos trabajo. Con corte y orden perfecto permite mirar cerca del doble de hondo.
 - **Supuestos:** comparte los de minimax; con más jugadores requiere otras reglas de poda (@jue-rx-nota-suma-cero).
 
@@ -393,18 +393,18 @@ $$
 
 **2 · Elección: qué jugada juega**
 
-**Juega la de mayor $Q$ esperado**, con el desempate por orden.
+**Juega la de mayor $Q$ del juego con dado**, con el desempate por orden.
 
 **Con dado, D vale $(-1+1+1)/3=1/3$:** supera el $0$ de centro y el $-1$ de I. Juega der y genera los 15 nodos. **El valor es exacto para otro juego:** con MIN en D, der vale $-1$. Con dos hijos, el dado no cambiaba la jugada; por eso D tiene tres.
 
 **3 · Propiedades**
 
-- **Número que da:** entrega el $Q$ esperado exacto de cada jugada.
+- **Número que da:** entrega el $Q$ exacto de cada jugada en el juego con dado.
 - **Usa EVAL:** no; trabaja con $U$. Solo las transformaciones afines positivas, como $2U+1$, preservan siempre la elección.
 - **Garantía:** maximiza el pago esperado contra MIN óptimo y las $\Pr$ del juego, no el resultado de cada partida.
 - **Se puede interrumpir:** esta versión entrega al cerrar la raíz.
 - **Complejidad:** cuesta $O(b^m)$ y usa memoria $O(bm)$; $b$ incluye resultados del azar y $m$, decisiones y tiradas. La poda en AZAR requiere cotas conocidas de los pagos.
-- **Frente a los demás:** con probabilidades $0$ o $1$, el azar se vuelve determinista. Monte Carlo plano estima $Q_{\text{azar}}$: el expectiminimax que sustituye por azar todas las decisiones posteriores a la jugada evaluada.
+- **Frente a los demás:** con un solo resultado, de probabilidad $1$, el azar se vuelve determinista. Monte Carlo plano estima $Q_{\text{azar}}$: el expectiminimax que sustituye por azar todas las decisiones posteriores a la jugada evaluada.
 - **Supuestos:** dos jugadores de suma cero o constante, más un azar con probabilidades conocidas (@jue-rx-nota-suma-cero).
 
 **4 · Casos borde**
@@ -486,7 +486,7 @@ $$
 - **Usa EVAL:** sí; reserva $M\cdot U$ para finales.
 - **Garantía:** obtiene $M\cdot V$ y una jugada óptima si alcanza los finales sin aplicar EVAL ni activar quietud.
 - **Se puede interrumpir:** por nivel, no; por reloj, sí, con respaldo legal.
-- **Complejidad:** cuesta $O(b^d)$ sin poda y entre $O(b^{d/2})$ y $O(b^d)$ con alfa-beta; usa memoria $O(bd)$. Si cada profundidad cuesta $B>1$ veces la anterior, repetir cuesta cerca de $B/(B-1)$ veces la última: con $B=10$, un 11 % más.
+- **Complejidad:** cuesta $O(b^d)$ sin poda y entre $O(b^{d/2})$ y $O(b^d)$ con alfa-beta; usa memoria $O(bd)$. Si cada profundidad cuesta $B>1$ veces la anterior, repetir cuesta cerca de $B/(B-1)$ veces la última: con $B=10$, un 11 % más. Si no crece parejo puede costar más: en el árbol de resultados, 13 contra 12.
 - **Frente a los demás:** permite decidir sin alcanzar finales, pero depende de EVAL. La quietud puede costar $O(b^m)$ y usar memoria $O(bm)$.
 - **Supuestos:** comparte los de minimax; más jugadores requieren pagos y EVAL vectoriales (@jue-rx-nota-suma-cero).
 
@@ -512,7 +512,7 @@ $$
 :::
 
 ::: figure {#jue-c3-rx-fig-flujo-corte title="El corte, en palabras"}
-![Flujo del corte: un final vale M·U; si se acabó d, vale EVAL; al subir, MAX toma el mayor](../_assets/jue-c3-rx-flujo-corte.svg)
+![Flujo del corte: un final vale 100·U (M = 100); si se acabó d, vale EVAL; al subir, MAX toma el mayor](../_assets/jue-c3-rx-flujo-corte.svg)
 :::
 
 ---
@@ -565,6 +565,7 @@ $$
 - **Una jugada que lleva directo a un final:** cada simulación da el mismo $U$, así que su $\widehat Q$ es exacta desde la primera.
 - **Finales a distintas profundidades:** el mismo número de simulaciones no cuesta lo mismo en todas las jugadas.
 - **Una respuesta certera descubierta tarde:** en el promedio pesa solo $1/N$, y no cambia hacia dónde converge.
+- **Jugada no visitada:** sin promedio; no vale $0$.
 
 ::: figure {#jue-c3-rx-fig-mc-plano title="Monte Carlo plano en el árbol de resultados: 5 simulaciones por jugada, juega der"}
 ![Monte Carlo plano, 5 simulaciones por jugada y semilla 0: sumas −3, −2 y +3, Q̂ de −3/5, −2/5 y 3/5; juega der, que contra un MIN que piensa pierde](../_assets/jue-c3-rx-mc-plano.svg)
@@ -619,7 +620,7 @@ $$
 - **Número que da:** entrega una $\widehat Q$ provisional por jugada visitada; es exacta cuando el subárbol queda resuelto.
 - **Usa EVAL:** no; una frontera permanente de EVAL cambia el objetivo al minimax del árbol cortado.
 - **Garantía:** converge casi seguramente a $V$ en un árbol finito, determinista y de ramificación finita, conservando lo descubierto. En cada estado enumera todas las jugadas; las partidas independientes muestrean uniformemente hasta finales reales con pagos exactos.
-- **Se puede interrumpir:** entrega desde la primera iteración.
+- **Se puede interrumpir:** entrega desde la primera partida.
 - **Complejidad:** cada iteración simula $O(m)$ jugadas y revisa hasta $b$ hijos por nivel: cuesta $O(bm)$. Añade hasta $m+1$ estados; la memoria es $O(nm)$, limitada por el árbol completo.
 - **Frente a los demás:** cambia el operador de Monte Carlo plano y puede jugar peor con poco presupuesto. Muestrea uniforme y sube máximos o mínimos; UCT mejora la selección y promedia.
 - **Supuestos:** comparte los de minimax; con más jugadores, la extensión natural usa max$^n$ (@jue-rx-nota-suma-cero). Los ciclos requieren una regla que vuelva finito el árbol.
@@ -712,6 +713,7 @@ $$
 - **Respuesta certera descubierta tarde:** entra como una observación más y mueve el promedio en proporción a $1/N$; la corrección es gradual.
 - **Óptimos empatados:** las respuestas óptimas acumulan, juntas, casi todas las visitas, y la más visitada puede alternar entre ellas.
 - **Una sola jugada:** queda forzada; sigue acumulando evidencia en su subárbol.
+- **Jugada no visitada:** desconocida, no cero; se expande antes de usar el bono.
 
 **En la figura de 12 vueltas, d1 ya dio $-1$ cuatro veces.** Aun así, $\widehat Q(s_{\text{raíz}},\text{der})=-1/7$ y der es la más visitada: el $-1$ certero de MIN pesa como un pago más.
 
@@ -765,7 +767,7 @@ $$
 |---|---|---|
 | Minimax | No | $Q$ de cada jugada |
 | Alfa-beta | No | $Q$ de la elegida; cotas |
-| Expectiminimax | No | $Q$ esperado, otro juego |
+| Expectiminimax | No | $Q$ del juego con dado |
 | Corte | Sí | $V_d$ |
 | MC plano | No | $\widehat Q$ de $Q_{\text{azar}}$ |
 | Act. minimax | No | $\widehat Q$ por máx. o mín. |
@@ -777,11 +779,11 @@ $$
 |---|---|---|
 | Minimax | Mayor $Q$ | Sí |
 | Alfa-beta | La de minimax | Sí, en la raíz |
-| Expectiminimax | Mayor $Q$ esperado | El del juego con dado |
+| Expectiminimax | Mayor $Q$ | Sí, el $V$ del juego con dado |
 | Corte | Mayor valor con corte | Con finales: $M\cdot V$ |
 | MC plano | Mayor $\widehat Q$ | No |
-| Act. minimax | Mayor $\widehat Q$ | No; converge |
-| UCT | Más visitada | No; converge |
+| Act. minimax | Mayor $\widehat Q$ | No con presupuesto finito; converge bajo el contrato de su ficha |
+| UCT | Más visitada | No con presupuesto finito; en un árbol finito, con $c>0$ fija y vueltas sin límite, converge |
 :::
 
 - **En el corte, «con finales» excluye EVAL y quietud:** obtiene $M\cdot V$ y una jugada óptima.
@@ -812,7 +814,7 @@ $$
 | Expectiminimax | No | Hay dados y cabe |
 | Corte | Por reloj, sí | Hay buena EVAL |
 | MC plano | Desde la 1.ª muestra | Sin EVAL, como base |
-| Act. minimax | Desde la 1.ª iteración | Sin EVAL; cabe en memoria |
+| Act. minimax | Desde la 1.ª partida | Sin EVAL; cabe en memoria |
 | UCT | Desde la 1.ª vuelta | Sin EVAL, árbol enorme |
 :::
 
@@ -836,7 +838,7 @@ $$
 | Iterativa | No; con finales, $M\cdot V$ |
 | Monte Carlo plano | No |
 | Actualización minimax | No; converge a él en su contrato |
-| UCT | No; converge a él con $c>0$ |
+| UCT | No; en un árbol finito, con $c>0$ fija y vueltas sin límite, converge a $V$ |
 :::
 
 **Cuatro métodos sin garantía general coinciden aquí en el $0$.** Corte a $d=3$ e iterativa alcanzan finales: devuelven $0=M\cdot V$ y juegan óptimamente. La actualización minimax mantiene C provisional; el $0$ de UCT es un promedio que coincide por casualidad.
