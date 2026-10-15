@@ -284,6 +284,18 @@ def test_la_banda_es_el_pseudocodigo_canonico():
     svg = _texto("jue-t-ab-3")
     for n in (12, 13, 14):
         assert escape(j.PSEUDO_ALFA_BETA[n]) in svg
+    # «canonico» = el de la pagina: el codigo de alfa-beta vive una sola vez,
+    # en «Alfa-beta como algoritmo» (juegos.PAGINA_MODO), y cada linea de la
+    # banda es su linea n, tal cual
+    pagina = {}
+    for renglon in j.pseudo_de_pagina("alfa-beta"):
+        m = re.match(r"^\s*(\d+)\s+(.*?)\s*$", renglon)
+        if m:
+            pagina[int(m.group(1))] = m.group(2)
+    assert j.PAGINA_MODO["alfa-beta"].endswith("4_alfa_beta_como_algoritmo.md")
+    assert sorted(pagina) == sorted(j.PSEUDO_ALFA_BETA)
+    for n, linea in j.PSEUDO_ALFA_BETA.items():
+        assert pagina[n].startswith(linea), (n, pagina[n], linea)
 
 
 def test_minimax_en_t_dibuja_su_traza():

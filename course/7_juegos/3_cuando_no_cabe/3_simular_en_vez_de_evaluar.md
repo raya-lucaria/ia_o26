@@ -852,6 +852,24 @@ En el árbol de resultados, con $c=1$ y semilla 0, centro tiene $N=26$ y $\wideh
 
 **Punto de control:** calcula ambos respaldos para una lista de simulaciones. Distingue valores desconocidos, provisionales y exactos; explica qué entrega cada método y a qué número converge.
 
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
+> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
+> | **Monte Carlo plano (estás aquí)** | **$\widehat Q$, que estima $Q_{\text{azar}}$; no garantiza $V$** |
+> | **Monte Carlo con actualización minimax (estás aquí)** | **$\widehat Q$ y $\widehat V$; no garantiza $V$ (con partidas sin límite converge a él)** |
+>
+> **Lo que viene.**
+>
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
+
 ## Lo que hay que llevarse
 
 - **Monte Carlo plano** estima cada jugada de la raíz con el promedio de

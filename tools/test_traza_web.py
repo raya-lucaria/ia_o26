@@ -1,4 +1,4 @@
-"""La traza interactiva del arbol T muestra los pasos que juegos.py da hoy.
+"""La traza interactiva de la unidad 7 muestra los pasos que juegos.py da hoy.
 
 course/7_juegos/_assets/traza_arbol_t.html lleva incrustados, entre dos
 marcas, los pasos de cada algoritmo que escribe tools/gen_traza_web.py desde
@@ -10,8 +10,8 @@ aqui en vez de publicarse en silencio.
 
 El tope de peso (TOPE_BYTES, 150 KB) existe para que la pagina siga cargando
 al instante en un telefono. Era de 80 KB cuando un paso era una fila de la
-tabla (~60 KB); al pasar a un paso por linea (777 pasos en vez de 145, cada
-uno con su pila de llamadas) la pagina pesa ~128 KB aun compactada: ~92 KB de
+tabla (~60 KB); al pasar a un paso por linea (823 pasos en vez de 145, cada
+uno con su pila de llamadas) la pagina pesa ~140 KB aun compactada: ~100 KB de
 datos y ~36 KB de estilo y codigo. Si un dia se llena, la salida no es subir
 el tope a ciegas: es sacar el JSON a un archivo aparte en _assets/
 (traza_arbol_t.json) que la pagina lea con fetch, y que esta prueba compare
@@ -116,11 +116,12 @@ def _paso_de_fila(pasos, fila):
 # (fragmento, clave de la traza, paso de linea que debe abrir, texto que
 # debe aparecer en la frase)
 CASOS_DOM = [
-    # los dos enlaces de 5_alfa_beta_como_algoritmo: -fila-N
+    # los dos enlaces de 4_alfa_beta_como_algoritmo: -fila-N
     ("alfa-beta-fila-12", "alfa-beta-T", ("fila", 12), "corte beta"),
     ("alfa-beta-fila-8", "alfa-beta-T", ("fila", 8), "α ← max(3, 5) = 5"),
-    # una fila ✗ abre en el return del corte que la deja fuera
-    ("iterativa-fila-34", "iterativa", ("fila", 34), "corte alfa"),
+    # una fila ✗ abre en el return del corte que la deja fuera (en el arbol
+    # de resultados: D con d = 3, tras d1, deja fuera d2 y d3)
+    ("iterativa-fila-39", "iterativa", ("fila", 39), "corte alfa"),
     # -paso-K: el paso K, la K-esima linea que corre (-linea-K es su alias)
     ("alfa-beta-paso-2", "alfa-beta-T", ("paso", 2), "α ← −∞"),
     ("alfa-beta-linea-5", "alfa-beta-T", ("paso", 5), "Entra a ALFA-BETA"),
@@ -139,7 +140,7 @@ def _dom(fragmento):
 
 
 def test_los_enlaces_de_las_paginas_abren_lo_que_prometen():
-    """5_alfa_beta_como_algoritmo promete «el corte beta de C2» y «C y C1 a
+    """4_alfa_beta_como_algoritmo promete «el corte beta de C2» y «C y C1 a
     la vez en la pila, C1 sube su α en la línea 15»."""
     pagina = (g.RAIZ / "course/7_juegos/2_mirar_todo_y_podar/4_alfa_beta_como_algoritmo.md"
               ).read_text(encoding="utf-8")

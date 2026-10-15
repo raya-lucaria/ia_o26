@@ -503,6 +503,25 @@ D es de MIN y $-1$ es el menor pago posible. Un promedio cuenta frecuencias; un 
 
 **Punto de control:** deberías poder dar una vuelta de UCT a mano, con $N$ y $\widehat V$ en cada nodo y cualquier resultado. También, calcular el puntaje de una jugada en MAX y en MIN, distinguir seleccionar de entregar, y explicar por qué un promedio de vueltas no es $V$.
 
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | Búsqueda de quietud | Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar |
+> | Profundización iterativa | Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales |
+> | Monte Carlo plano | $\widehat Q$, que estima $Q_{\text{azar}}$; no garantiza $V$ |
+> | Monte Carlo con actualización minimax | $\widehat Q$ y $\widehat V$; no garantiza $V$ (con partidas sin límite converge a él) |
+> | **MCTS con UCT (estás aquí)** | **$\widehat Q$; no garantiza $V$ (con vueltas sin límite converge a él, con cualquier $c>0$)** |
+>
+> **Lo que viene.**
+>
+> Ya viste todos los algoritmos de la unidad. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, todos los algoritmos]] los pone lado a lado.
+
 ## Lo que hay que llevarse
 
 - **MCTS es la familia; UCT, su miembro con UCB.** Cada vuelta selecciona, expande a lo más un nodo, simula al azar y retropropaga el mismo $U$.

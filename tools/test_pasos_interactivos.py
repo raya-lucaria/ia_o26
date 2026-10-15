@@ -9,6 +9,13 @@ w (y quien lo devuelve), la ventana (α, β), si corta, y mejor_jugada.
 Las tablas se localizan por su id de directiva (::: table {#...}) cuando lo
 tienen, o por su forma (la primera corrida de filas 1, 2, 3... sin «?»),
 nunca por numero de renglon: las paginas se reordenan.
+
+Alfa-beta tiene dos fuentes desde la homologacion de la unidad 7: el
+pseudocodigo (y el Python) viven una sola vez en «Alfa-beta como algoritmo»
+(juegos.PAGINA_MODO), y las trazas completas en los arboles reducido y base,
+en «Alfa-beta» a mano (PAGINA_TRAZA). Por eso se retiro la prueba que exigia
+el mismo pseudocodigo en las dos paginas: el codigo ya no se repite, y
+test_el_pseudo_es_el_bloque_de_la_pagina lo compara contra su unica casa.
 """
 import json
 import re
@@ -24,8 +31,19 @@ MODOS = [("minimax", None), ("azar", None), ("alfa-beta", "T1"), ("alfa-beta", "
          ("corte", 1), ("corte", 2), ("corte", 3), ("iterativa", None)]
 
 
+# La pagina que escribe las trazas fila por fila, cuando no es la del
+# pseudocodigo (juegos.PAGINA_MODO).
+PAGINA_TRAZA = {"alfa-beta": "2_mirar_todo_y_podar/3_alfa_beta.md"}
+
+
 def texto(modo):
+    """La pagina del pseudocodigo del modo."""
     return (UNIDAD / j.PAGINA_MODO[modo]).read_text(encoding="utf-8")
+
+
+def texto_trazas(modo):
+    """La pagina que escribe las trazas del modo fila por fila."""
+    return (UNIDAD / PAGINA_TRAZA.get(modo, j.PAGINA_MODO[modo])).read_text(encoding="utf-8")
 
 
 def limpia(celda):
@@ -37,6 +55,8 @@ def limpia(celda):
     c = (c.replace("\\infty", "∞").replace("\\le", "≤").replace("\\ge", "≥")
           .replace("\\alpha", "α").replace("\\beta", "β"))
     c = c.replace("-∞", "−∞").replace(" ", "")
+    # el signo menos de la pagina (−100) es el guion de fmt_t (-100)
+    c = re.sub(r"−(?=\d)", "-", c)
     return c
 
 
@@ -68,14 +88,14 @@ def corridas(lineas):
 
 
 def corrida_tras_id(modo, id_):
-    t = texto(modo)
+    t = texto_trazas(modo)
     i = t.index("{#" + id_)
     return corridas(t[i:].split("\n"))[0]
 
 
 def corridas_completas(modo):
     """Las corridas de la pagina sin «?» (las de los ejercicios por llenar)."""
-    return [c for c in corridas(texto(modo).split("\n"))
+    return [c for c in corridas(texto_trazas(modo).split("\n"))
             if not any("?" in x for _, _, cs in c for x in cs)]
 
 
@@ -116,7 +136,7 @@ def test_cada_paso_es_una_fila_de_la_tabla_de_la_pagina(modo, variante):
     tipo = {x["id"]: x["tipo"] for x in r["arbol"]["nodos"]}
     for (n, tachada, cs), p in zip(tabla, pasos):
         assert p["n"] == n
-        donde = f"{j.PAGINA_MODO[modo]} fila {n}"
+        donde = f"{PAGINA_TRAZA.get(modo, j.PAGINA_MODO[modo])} fila {n}"
         if poda:
             linea_pila, ventana, v, w, corta, jugada = map(limpia, cs)
         else:
@@ -160,16 +180,24 @@ def test_los_hechos_del_contrato():
         ("azar", None): ("der", "7", 14, 14),
         ("alfa-beta", "T1"): ("izq", "3", 6, 7),
         ("alfa-beta", "T"): ("centro", "5", 12, 14),
-        ("corte", 1): ("der", "7", 4, 14),
-        ("corte", 2): ("centro", "6", 10, 14),
-        ("corte", 3): ("centro", "5", 14, 14),
-        ("iterativa", None): ("centro", "5", 25, 42),
+        # corte e iterativa: el arbol de resultados de 7.3, finales en 100·U
+        ("corte", 1): ("izq", "60", 4, 15),
+        ("corte", 2): ("centro", "10", 11, 15),
+        ("corte", 3): ("centro", "0", 15, 15),
+        ("iterativa", None): ("centro", "0", 25, 45),
     }
+    # las mismas cifras que las funciones del arbol de resultados
+    for d in (1, 2, 3):
+        jugada, valor, generados = j.decidir_con_corte_tpm(d)
+        assert corto[("corte", d)][:3] == (jugada, j.fmt_t(valor), generados)
     por_d = res[("iterativa", None)]["por_d"]
     assert [(x["d"], x["orden"], x["jugada"], x["generados"]) for x in por_d] == [
-        (1, ["izq", "centro", "der"], "der", 4),
-        (2, ["der", "izq", "centro"], "centro", 10),
-        (3, ["centro", "izq", "der"], "centro", 11)]
+        (1, ["izq", "centro", "der"], "izq", 4),
+        (2, ["izq", "centro", "der"], "centro", 9),
+        (3, ["centro", "izq", "der"], "centro", 12)]
+    filas, total = j.iterativa_alfa_beta_tpm()
+    assert [(d, o, a, n) for d, o, a, _, n in filas] == [
+        (x["d"], x["orden"], x["jugada"], x["generados"]) for x in por_d] and total == 25
     # Los valores de I, C y D con azar: 9/2, 13/2 y 7.
     azar = j.pasos_interactivos("azar")
     assert [(p["hijo"], p["w"]) for p in azar["pasos"] if p["evento"] == "raiz"] == [
@@ -202,7 +230,13 @@ def test_corte_y_reloj_coinciden_con_las_tablas_resumen():
     r = j.pasos_interactivos("iterativa")
     for (d, orden_w, lista), x in zip(filas, r["resultado"]["por_d"], strict=True):
         assert int(d) == x["d"]
-        ws = "·".join(f"{w['hijo']}{'≤' if w['cota'] else ''}{w['w']}" for w in x["w"])
+        # «≤» marca al hijo de R que regreso por una poda: la pagina lo lee
+        # como cota aunque la poda llegue en su ultimo hijo (I con d = 3)
+        podaron = {p["pila"][-1] for p in r["pasos"]
+                   if p.get("d") == x["d"] and p["evento"] == "regresa" and p["corta"]}
+        assert {w["hijo"] for w in x["w"] if w["cota"]} <= podaron
+        ws = "·".join(f"{w['hijo']}{'≤' if w['hijo'] in podaron else ''}{w['w']}"
+                      for w in x["w"])
         assert (orden_w, lista) == (ws, x["jugada"])
 
 
@@ -215,13 +249,14 @@ def test_la_iterativa_va_seguida_y_numerada_con_la_pagina_del_reloj():
     assert [p["linea"] for p in pasos if p["evento"] == "fin"] == ["11–12"] * 3
     assert {p["linea"] for p in pasos if p["evento"] == "raiz"} == {"7–10"}
     cortes = [(p["corta"], p["pila"][-1]) for p in pasos if p["evento"] == "regresa" and p["corta"]]
-    assert cortes == [("beta", "C2"), ("alfa", "I"), ("alfa", "D")]
+    # d = 2 poda en D; d = 3, en C2, I y D (traza_iterativa_tpm(3))
+    assert cortes == [("alfa", "D"), ("beta", "C2"), ("alfa", "I"), ("alfa", "D")]
     assert {p["linea"] for p in pasos if p["evento"] == "regresa" and p["corta"]} == {
         "20–22", "28–30"}
     # «jugada», la lista, cambia solo al terminar cada busqueda.
     listas = [p["jugada"] for p in pasos]
     assert listas[0] == "izq" and listas[-1] == "centro"
-    assert [p["jugada"] for p in pasos if p["evento"] == "fin"] == ["der", "centro", "centro"]
+    assert [p["jugada"] for p in pasos if p["evento"] == "fin"] == ["izq", "centro", "centro"]
 
 
 @pytest.mark.parametrize("modo,variante", MODOS, ids=lambda x: str(x))
@@ -284,30 +319,22 @@ def test_el_estado_de_cada_nodo_es_coherente(modo, variante):
         if modo in ("alfa-beta", "iterativa") else 0)
 
 
-def test_alfa_beta_tiene_el_mismo_pseudo_en_sus_dos_paginas():
-    """El modo alfa-beta lo enlazan 4_alfa_beta y 5_alfa_beta_como_algoritmo;
-    su pseudo sale de la primera y tiene que ser el de la segunda."""
-    otra = (UNIDAD / "2_mirar_todo_y_podar/4_alfa_beta_como_algoritmo.md").read_text(
-        encoding="utf-8")
-    bloques = re.findall(r"^```text\n(.*?)^```$", otra, re.S | re.M)
-    assert "\n".join(j.pasos_interactivos("alfa-beta")["pseudo"]) + "\n" in bloques
-
-
 # La secuencia de lineas de los modos sin tabla fila por fila en su pagina.
 # Sale de la convencion de las tablas que si existen (una fila al entrar a un
 # nodo y una por hijo que regresa) con la numeracion de cada pagina.
 LINEAS_SIN_TABLA = {
+    # en el arbol de resultados: D tiene tres finales
     ("corte", 1): ["2", "4–5", "4–5", "4–5", "6"],
     ("corte", 3): ["2", "17", "19–20", "19–20", "4–5", "17", "11", "13–14", "13–14",
                    "19–20", "11", "13–14", "13–14", "19–20", "4–5", "17", "19–20",
-                   "19–20", "4–5", "6"],
+                   "19–20", "19–20", "4–5", "6"],
     ("iterativa", None): (
         ["2–3"]
         + ["5", "7–10", "7–10", "7–10", "11–12"]
         + ["5", "26", "28–31", "28–31", "7–10", "26", "28–31", "28–31", "7–10",
-           "26", "28–31", "28–31", "7–10", "11–12"]
+           "26", "28–30", "", "", "7–10", "11–12"]
         + ["5", "26", "18", "20–23", "20–23", "28–31", "18", "20–22", "", "28–31",
-           "7–10", "26", "28–30", "", "7–10", "26", "28–30", "", "7–10", "11–12"]
+           "7–10", "26", "28–31", "28–30", "7–10", "26", "28–30", "", "", "7–10", "11–12"]
         + ["4, 13"]),
 }
 
@@ -320,7 +347,7 @@ def test_la_secuencia_de_lineas_sin_tabla_queda_fija(modo, variante):
         assert pasos[-1]["lineas"] == [4, 13] and pasos[-1]["d"] == 3
         # mejor_jugada al empezar cada busqueda es la jugada lista (linea 5)
         assert [p["mejor_jugada"] for p in pasos if p["evento"] == "inicio"] == [
-            "izq", "der", "centro"]
+            "izq", "izq", "centro"]
         assert "pasa a 4" not in pasos[-2]["frase"]
 
 
@@ -428,4 +455,5 @@ def test_una_variante_invalida_da_value_error(modo, variante):
 
 def test_el_total_de_la_iterativa_cuenta_las_tres_busquedas():
     r = j.pasos_interactivos("iterativa")["resultado"]
-    assert (r["generados"], r["total"]) == (25, 42)
+    # tres busquedas sobre el arbol de resultados (15 nodos): 4 + 9 + 12 de 45
+    assert (r["generados"], r["total"]) == (25, 45)

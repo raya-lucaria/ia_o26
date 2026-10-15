@@ -1191,7 +1191,7 @@ UNIDAD_JUEGOS = Path(__file__).resolve().parent.parent / "course/7_juegos"
 PAGINA_MODO = {
     "minimax": "2_mirar_todo_y_podar/2_minimax_como_algoritmo.md",
     "azar": "2_mirar_todo_y_podar/5_cuando_decide_un_dado.md",
-    "alfa-beta": "2_mirar_todo_y_podar/3_alfa_beta.md",
+    "alfa-beta": "2_mirar_todo_y_podar/4_alfa_beta_como_algoritmo.md",
     "corte": "3_cuando_no_cabe/1_cortar_y_evaluar.md",
     "iterativa": "3_cuando_no_cabe/2_jugar_contra_el_reloj.md",
 }
@@ -1490,7 +1490,10 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None,
                 if f["corta"]:
                     signo, borde, nombre_corte = (("≥", "β", f["beta"]) if t == "MAX"
                                                   else ("≤", "α", f["alfa"]))
-                    if fuera:
+                    if fuera and len(fuera) > 1 and all(es_hoja(q) for q in fuera):
+                        # no «la hoja 100 y la hoja 100»: la frase cabe en 90
+                        cola = f"{len(fuera)} hojas sin generar"
+                    elif fuera:
                         quien = " y ".join(_texto_hoja_o_nodo(ids, arbol, q) for q in fuera)
                         cola = f"{quien} no se genera" if len(fuera) == 1 else f"no se generan {quien}"
                     else:
@@ -1506,6 +1509,8 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None,
                         cambio = (f"β baja a {fmt(f['beta'])}" if f["beta"] != b0
                                   else f"β sigue en {fmt(f['beta'])}")
                         frase = f"{base}; {v} ≤ α = {fmt(f['alfa'])} es falso, {cambio}."
+                        if len(frase) > 90:      # finales en 100·U: la frase no cabe
+                            frase = f"{base}; sin poda, {cambio}."
                 else:
                     frase = base + "."
         elif ev == "raiz":
@@ -1568,7 +1573,7 @@ def _pasos_de_traza(arbol, traza, modo, poda, azar=(), d=None, primeros=None,
 
 
 def pasos_interactivos(modo, variante=None):
-    """Los pasos de un algoritmo sobre el arbol T, para el cuaderno y la web.
+    """Los pasos de un algoritmo sobre un arbol de juguete (base o reducido en 7.2; de resultados, con finales en 100·U, en corte e iterativa), para el cuaderno y la web.
 
     modo: "minimax", "azar" (I, C y D de azar, cada hijo a 1/2), "alfa-beta"
     (variante "T1" o "T", T por omision), "corte" (variante d = 1, 2 o 3, 2
@@ -1584,12 +1589,12 @@ def pasos_interactivos(modo, variante=None):
     if modo == "minimax":
         traza = traza_decidir(ARBOL_T)
         pasos = _pasos_de_traza(arbol, traza, modo, False)
-        titulo = "DECIDIR-MINIMAX en el árbol T"
+        titulo = "DECIDIR-MINIMAX en el árbol base"
     elif modo == "azar":
         azar = AZAR_T
         traza = traza_expectiminimax_t(ARBOL_T, AZAR_T)
         pasos = _pasos_de_traza(arbol, traza, modo, False, azar=AZAR_T)
-        titulo = "DECIDIR-EXPECTIMINIMAX en el árbol T, con I, C y D de azar"
+        titulo = "DECIDIR-EXPECTIMINIMAX en el árbol base, con I, C y D de azar"
     elif modo == "alfa-beta":
         variante = "T" if variante is None else variante
         if variante not in ("T", "T1"):
@@ -1597,21 +1602,23 @@ def pasos_interactivos(modo, variante=None):
         arbol = ARBOL_T if variante == "T" else ARBOL_T1
         traza = traza_decidir(arbol, poda=True)
         pasos = _pasos_de_traza(arbol, traza, modo, True)
-        titulo = f"DECIDIR-ALFA-BETA en el árbol {variante}"
+        titulo = ("DECIDIR-ALFA-BETA en el árbol " +
+                  ("base" if variante == "T" else "reducido"))
     elif modo == "corte":
         variante = 2 if variante is None else variante
         if isinstance(variante, bool) or variante not in (1, 2, 3, "1", "2", "3"):
             raise ValueError(f"profundidad de corte desconocida: {variante!r}")
         variante = int(variante)
-        evaluar = EVAL_T
-        traza = traza_decidir(ARBOL_T, profundidad=variante, evaluar=EVAL_T,
+        # 7.3 corre el corte en el arbol de resultados, finales en 100·U
+        arbol, evaluar = ARBOL_TPM_100, EVAL_TPM
+        traza = traza_decidir(arbol, profundidad=variante, evaluar=evaluar,
                               lineas=LINEAS_CORTE)
         pasos = _pasos_de_traza(arbol, traza, modo, False)
-        titulo = f"DECIDIR-CON-CORTE en el árbol T con d = {variante}"
+        titulo = f"DECIDIR-CON-CORTE en el árbol de resultados con d = {variante}"
     else:
-        evaluar = EVAL_T
-        jugada = nombres_t(ARBOL_T)[(0,)][1]      # linea 2: cualquiera, la primera
-        ids = ids_t(ARBOL_T)
+        arbol, evaluar = ARBOL_TPM_100, EVAL_TPM
+        jugada = nombres_t(arbol)[(0,)][1]      # linea 2: cualquiera, la primera
+        ids = ids_t(arbol)
         estado0 = {i: dict(estado="pormirar", v="", alfa="", beta="", cota=False)
                    for i in ids.values()}
         estado0["R"]["estado"] = "pila"
@@ -1619,16 +1626,16 @@ def pasos_interactivos(modo, variante=None):
                   "lineas": lineas_de(LINEAS_RELOJ["antes"]), "pila": ["R"], "nodo": "R",
                   "v": "", "w": "", "hijo": "", "evaluado": False, "alfa": "", "beta": "",
                   "corta": "", "mejora": None, "mejor_jugada": "ninguna", "jugada": jugada,
-                  "generados": 1, "total": contar_nodos(ARBOL_T), "estado": estado0,
+                  "generados": 1, "total": contar_nodos(arbol), "estado": estado0,
                   "frase": f"Antes de buscar: jugada = {jugada}, una cualquiera, y d = 1.",
                   "d": 1}]
         por_d = []
-        for d, orden, t in profundizacion_iterativa_t(ARBOL_T, (1, 2, 3), EVAL_T):
+        for d, orden, t in profundizacion_iterativa_t(arbol, (1, 2, 3), evaluar):
             # la misma busqueda, con la numeracion de la pagina del reloj
-            t = traza_decidir(ARBOL_T, poda=True, orden={"R": [
+            t = traza_decidir(arbol, poda=True, orden={"R": [
                 {"izq": "I", "centro": "C", "der": "D"}[a] for a in orden]},
-                profundidad=d, evaluar=EVAL_T, lineas=LINEAS_RELOJ)
-            ps = _pasos_de_traza(ARBOL_T, t, modo, True, d=d, primeros=jugada,
+                profundidad=d, evaluar=evaluar, lineas=LINEAS_RELOJ)
+            ps = _pasos_de_traza(arbol, t, modo, True, d=d, primeros=jugada,
                                  ultima=d == 3)
             jugada = t["jugada"]
             pasos += ps
@@ -1650,7 +1657,7 @@ def pasos_interactivos(modo, variante=None):
                           evaluado=False, corta="", mejora=None, d=3,
                           frase=f"Se acaba el tiempo: se entrega {lista}, "
                                 f"de la búsqueda con d = 3."))
-        titulo = "PROFUNDIZACIÓN-ITERATIVA en el árbol T con d = 1, 2 y 3"
+        titulo = "PROFUNDIZACIÓN-ITERATIVA en el árbol de resultados con d = 1, 2 y 3"
     for k, p in enumerate(pasos, 1):
         p["n"] = k
         p.pop("_mv", None)
@@ -1658,8 +1665,8 @@ def pasos_interactivos(modo, variante=None):
     if modo == "iterativa":
         resultado = {"jugada": por_d[-1]["jugada"], "valor": por_d[-1]["valor"],
                      "generados": sum(x["generados"] for x in por_d),
-                     # tres busquedas sobre el mismo arbol: 3 × 14
-                     "total": len(por_d) * contar_nodos(ARBOL_T), "por_d": por_d}
+                     # tres busquedas sobre el mismo arbol: 3 × 15
+                     "total": len(por_d) * contar_nodos(arbol), "por_d": por_d}
     else:
         resultado = {"jugada": traza["jugada"], "valor": fmt_t(traza["valor"]),
                      "generados": traza["generados"], "total": contar_nodos(arbol)}
@@ -1835,7 +1842,11 @@ class _PorLinea:
     def texto_fuera(self, fuera):
         if not fuera:
             return "no quedaban hijos"
-        quien = " y ".join(self.N(q) for q in fuera)
+        nombres = [self.N(q) for q in fuera]
+        if len(nombres) > 1 and all(x.startswith("la hoja ") for x in nombres):
+            # no «la hoja 100 y la hoja 100»
+            return "no se generan las hojas " + " y ".join(x[8:] for x in nombres)
+        quien = " y ".join(nombres)
         return f"{quien} no se genera" if len(fuera) == 1 else f"no se generan {quien}"
 
     # --- un paso ---
@@ -2154,7 +2165,7 @@ def _marcar_cambios(pasos):
 
 
 def pasos_por_linea(modo, variante=None):
-    """Los pasos de un algoritmo sobre el arbol T, uno por cada linea del
+    """Los pasos de un algoritmo sobre su arbol de juguete, uno por cada linea del
     pseudocodigo de la pagina que se ejecuta, en orden. Mismos modos y
     variantes que pasos_interactivos; devuelve un dict con sus mismas claves
     (pasos con otro formato: ver arriba)."""
@@ -2166,7 +2177,7 @@ def pasos_por_linea(modo, variante=None):
     if modo == "azar":
         azar = AZAR_T
     if modo in ("corte", "iterativa"):
-        evaluar = EVAL_T
+        arbol, evaluar = ARBOL_TPM_100, EVAL_TPM
     x = _PorLinea(modo, arbol, azar=azar, evaluar=evaluar,
                   ab=modo in ("alfa-beta", "iterativa"))
     if modo == "iterativa":
@@ -4223,3 +4234,40 @@ EVAL_TPM_EMPATE = {**EVAL_TPM, "C": 60}
 # - Otra EVAL que cambia la jugada: EVAL(I) = 0 (una EVAL que ya sospecha de
 #   la captura ix) hace que d = 1 juegue centro; d = 2 y d = 3 no cambian.
 EVAL_TPM_VARIANTE = {**EVAL_TPM, "I": 0}
+
+
+# ------------------------------------------------------ Ola 3 · integración ---
+#
+# Cifras de las tareas homologadas que todavia no tenian fuente.
+
+def monedas_esperanza(fila, p):
+    """El inciso de azar de monedas en fila (tarea de la 7.2): MAX elige y el
+    rival tira un volado, toma la izquierda con probabilidad p y la derecha
+    con 1 − p (con una sola moneda, la toma). Devuelve {«izq», «der»}: E[U]
+    en pesos desde MAX (lo de MAX menos lo del rival) tras cada primera
+    jugada de MAX, con MAX eligiendo lo mejor en sus turnos siguientes.
+    Con (2, 1, 5, 3): E[tomar 2] = 3 y E[tomar 3] = 6p − 1."""
+    fila, p = tuple(fila), F(p)
+
+    @lru_cache(maxsize=None)
+    def v(i, j, mueve_max):
+        if i > j:
+            return F(0)
+        if mueve_max:
+            return max(fila[i] + v(i + 1, j, False), fila[j] + v(i, j - 1, False))
+        if i == j:
+            return -fila[i] + v(i + 1, j, True)
+        return p * (-fila[i] + v(i + 1, j, True)) + (1 - p) * (-fila[j] + v(i, j - 1, True))
+
+    n = len(fila) - 1
+    return {"izq": fila[0] + v(1, n, False), "der": fila[n] + v(0, n - 1, False)}
+
+
+# El arbol del bloque de simulacion de la tarea de la 7.3 (jue-tarea-3-ej-simular):
+# MAX elige A o B; tras A, MIN tiene a1 = a2 = a3 = +1 y a4 = −1; tras B,
+# MIN elige b1 = 0 o E, donde MAX elige e1 = 0 o e2 = +1. Las corridas de la
+# respuesta salen de mc_minimax, mc_plano_uniforme y uct_tpm con semilla 0.
+ARBOL_TAREA_SIMULAR = ((1, 1, 1, -1), (0, (0, 1)))
+NOMBRES_TAREA_SIMULAR = {(0, 0): "a1", (0, 1): "a2", (0, 2): "a3", (0, 3): "a4",
+                         (1, 0): "b1", (1, 1, 0): "e1", (1, 1, 1): "e2"}
+SEMILLA_TAREA_SIMULAR = 0

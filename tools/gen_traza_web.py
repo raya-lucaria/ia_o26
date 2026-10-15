@@ -1,4 +1,4 @@
-"""Incrusta en la traza interactiva del arbol T los pasos de cada algoritmo.
+"""Incrusta en la traza interactiva de la unidad 7 los pasos de cada algoritmo.
 
 course/7_juegos/_assets/traza_arbol_t.html es una pagina autocontenida: su
 JavaScript solo pinta, no calcula nada. Los pasos que pinta salen de
@@ -15,14 +15,16 @@ idempotente: correrlo dos veces deja el archivo igual, y tras correrlo
 `git status` tiene que quedar limpio si nada cambio en tools/juegos.py.
 
 Los datos van compactados para que la pagina pese poco: sin compactar, los
-777 pasos de las ocho trazas suman ~2 MB, casi todo el estado de cada nodo y
+823 pasos de las ocho trazas suman ~2 MB, casi todo el estado de cada nodo y
 la pila de llamadas repetidos en cada paso. Todo se guarda sin perdida:
 expandir(compactar(x)) == x, y tools/test_traza_web.py lo comprueba para
 cada modo. Lo que cambia:
 
 - pseudo, renglones y arbol se guardan una sola vez y cada traza los nombra
   por indice (alfa-beta T y T1 comparten pseudocodigo; corte d = 1, 2, 3
-  tambien; el arbol T sirve a siete trazas).
+  tambien; el arbol base sirve a minimax, azar y alfa-beta T, el reducido
+  a alfa-beta T1 y el de resultados, con finales en 100·U, a corte e
+  iterativa).
 - cada paso es un par de listas planas [campos, estado]. `campos` trae solo
   los campos que cambiaron respecto del paso anterior, como pares
   (indice en `claves` de la traza, valor); `estado`, solo los nodos que

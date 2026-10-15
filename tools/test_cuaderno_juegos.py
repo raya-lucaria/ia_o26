@@ -202,14 +202,18 @@ def test_las_celdas_de_logica_solo_usan_la_biblioteca_estandar(nb):
 def test_el_arbol_es_el_de_juegos(ns):
     assert ns["ARBOL_T"] == j.ARBOL_T
     assert ns["ARBOL_T1"] == j.ARBOL_T1
-    assert ns["EVAL_T"] == j.EVAL_T
+    # corte e iterativa: el arbol de resultados de la clase 3, en 100·U
+    assert ns["ARBOL_R"] == j.ARBOL_TPM_100
+    assert ns["EVAL_R"] == j.EVAL_TPM
 
 
 def correr(ns, modo, variante=None, arbol=None, azar=(), evaluar=None):
-    ns["EVAL_T"].clear()
-    ns["EVAL_T"].update(evaluar or j.EVAL_T)
+    ns["EVAL_R"].clear()
+    ns["EVAL_R"].update(evaluar or j.EVAL_TPM)
     if arbol is None:
         arbol = ns["ARBOL_T1"] if variante == "T1" else ns["ARBOL_T"]
+        if modo in ("corte", "iterativa"):
+            arbol = ns["ARBOL_R"]
         azar = j.AZAR_T if modo == "azar" else ()
     ns["usar"](arbol, azar, cien=modo in ("corte", "iterativa"))
     ns["RELOJ"]["nodos"] = None
@@ -326,14 +330,16 @@ def test_con_empate_en_la_raiz_el_azar_deja_la_primera(ns):
 def test_el_reloj_de_nodos_entrega_la_ultima_busqueda_completa(ns):
     correr(ns, "iterativa")
     entregas = {}
-    for n in (4, 5, 14, 15, 25):
+    for n in (4, 5, 12, 13, 14, 25):
         ns["RELOJ"]["nodos"] = n
         entregas[n] = ns["correr"](ns["profundizacion_iterativa"]("R"))[1]
     ns["RELOJ"]["nodos"] = None
-    # d = 1 genera 4 nodos, d = 2 diez mas (14) y d = 3 once mas (25); R
-    # mira el reloj cada vez que vuelve un hijo.
-    assert entregas == {4: "izq", 5: "der", 14: "der", 15: "centro",
-                        25: "centro"}
+    # En el arbol de resultados, d = 1 genera 4 nodos y deja lista izq, d = 2
+    # nueve mas y deja centro, d = 3 doce mas (25); R mira el reloj cada vez
+    # que vuelve un hijo, y la cuenta suma uno por cada busqueda que empieza.
+    assert entregas == {4: "izq", 5: "izq", 12: "izq", 13: "izq",
+                        14: "centro", 25: "centro"}
+    assert [x[4] for x in j.iterativa_alfa_beta_tpm()[0]] == [4, 9, 12]
 
 
 @pytest.mark.parametrize("modo", sorted(j.PAGINA_MODO))

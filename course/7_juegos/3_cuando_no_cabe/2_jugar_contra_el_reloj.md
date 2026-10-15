@@ -1076,6 +1076,24 @@ Para cada nodo, ¿su $v$ cae dentro de la ventana, o toca o pasa uno de los extr
 - **decir** qué entrega PROFUNDIZACIÓN-ITERATIVA si el reloj se acaba entre dos hijos de la raíz (línea 8) o si un hijo devuelve 100 (línea 9), y por qué la jugada lista va primero;
 - **clasificar** un número guardado como valor, piso o techo según su ventana.
 
+> [!NOTE]
+> **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
+>
+> | Algoritmo | Qué número da |
+> |---|---|
+> | Minimax | $V$; lo garantiza |
+> | Alfa-beta | $V$ en la raíz; lo garantiza |
+> | Expectiminimax | El $V$ del juego con dado; lo garantiza |
+> | Minimax con corte | Valor con corte; no garantiza $V$, salvo si llega a los finales |
+> | **Búsqueda de quietud (estás aquí)** | **Valor con quietud; no garantiza $V$, salvo si llega a los finales antes de cortar** |
+> | **Profundización iterativa (estás aquí)** | **Valor con corte de la última búsqueda; no garantiza $V$, salvo si llega a los finales** |
+>
+> **Lo que viene.**
+>
+> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin diseñar una función EVAL. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
+> - **Monte Carlo con actualización minimax**: simular igual que el plano, pero guardar los estados que descubre y subir por ellos el mejor resultado de quien mueve, como minimax. Clase 3, [[simular-en-vez-de-evaluar|Simular partidas: promedios y actualización minimax]].
+> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
+
 ## Lo que hay que llevarse
 
 - **El horizonte es la línea donde se corta.** Con $d=1$, $\text{d2}\textbf{x}\text{c3}$ valía 13 porque la recaptura $\text{b4}\textbf{x}\text{c3}$, que la deja en 0, quedaba detrás. La forma clásica, que nombró Berliner en 1973: el programa aplaza una pérdida inevitable.
