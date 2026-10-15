@@ -5,13 +5,19 @@ de `course/7_juegos/_assets/`: JS plano, sin red. Su lógica vive en un
 `<script id="logica">` sin DOM, que esta prueba corre con node (si está
 instalado; si no, se salta) y compara con `tools/juegos.py`:
 
-- las constantes (los μ de x, y, z, el c de la teoría, el 10 % al azar, la
-  semilla que atora) se leen del JS con expresiones regulares;
+- las constantes (las Q_azar de x, y, z, el c de la teoría, el 10 % al azar,
+  la semilla que atora) se leen del JS con expresiones regulares;
 - el generador es el Mersenne Twister de Python, sembrado igual que
   `juegos.bandido` y `juegos.frecuencia_desvio`, así que las elecciones del
   bandido y los conteos de la cola tienen que coincidir **exactamente**, no
   solo en distribución. Si alguien cambia la siembra en un lado, esto falla.
+  La cola de arriba (la de MIN) y el modo «δ fijo» de Hoeffding se cotejan
+  con la misma cuenta hecha aquí en Python y con juegos.margen_hoeffding.
 
+Notación (plan de homologación §5.1): Q_azar, Q̂(s,a), N(s), N(s,a); nada
+de μ, ū, N(s′) ni G/N en ninguna de las dos páginas.
+
+Si falta la página del bono, la prueba que la lee falla (no se salta).
 Lo que no mira: el dibujo. Eso se revisó a mano en Chrome a 390 y 1280 px.
 """
 import glob
@@ -32,7 +38,7 @@ ASSETS = RAIZ / "course/7_juegos/_assets"
 HOEFFDING = ASSETS / "hoeffding_en_vivo.html"
 BANDIDO = ASSETS / "bandido_en_vivo.html"
 PAGINAS = (HOEFFDING, BANDIDO)
-PAGINA_P6 = RAIZ / "course/7_juegos/3_cuando_no_cabe/5_de_donde_sale_el_bono.md"
+PAGINA_BONO = RAIZ / "course/7_juegos/3_cuando_no_cabe/5_de_donde_sale_el_bono.md"
 
 
 def _texto(ruta):
@@ -104,16 +110,16 @@ def test_cada_control_tiene_su_etiqueta(ruta):
         assert re.search(rf'<label[^>]*for="{ident}"', html), f"#{ident} sin <label for>"
 
 
-def test_la_pagina_6_enlaza_los_dos_interactivos():
-    assert PAGINA_P6.exists(), f"falta la página del bono: {PAGINA_P6}"
-    texto = _texto(PAGINA_P6)
+def test_la_pagina_del_bono_enlaza_los_dos_interactivos():
+    assert PAGINA_BONO.exists(), f"falta la página del bono: {PAGINA_BONO}"
+    texto = _texto(PAGINA_BONO)
     for ruta in PAGINAS:
-        assert f"../_assets/{ruta.name}" in texto, f"la página 6 no enlaza {ruta.name}"
+        assert f"../_assets/{ruta.name}" in texto, f"la página del bono no enlaza {ruta.name}"
 
 
 # ------------------------------------------- constantes contra juegos ---
 
-def test_los_mu_del_bandido_son_los_del_hilo():
+def test_las_q_azar_del_bandido_son_las_del_hilo():
     m = re.search(r"const MUS = \{([^}]*)\}", _logica(BANDIDO))
     assert m
     mus = {k: float(v) for k, v in re.findall(r"(\w+):\s*(-?[\d.]+)", m.group(1))}
@@ -134,9 +140,14 @@ def test_c_por_defecto_azar_y_semilla_son_los_de_juegos():
 
 def test_los_deslizadores_de_hoeffding_tienen_el_rango_pedido():
     html = _texto(HOEFFDING)
-    for ident, lo, hi in (("mu", "-0.8", "0.8"), ("n", "1", "200"), ("eps", "0.05", "0.8")):
+    for ident, lo, hi in (("mu", "-0.8", "0.8"), ("n", "1", "200"), ("eps", "0.05", "0.8"),
+                          ("delta", "0.005", "0.5")):
         m = re.search(rf'<input type="range" id="{ident}" min="([^"]+)" max="([^"]+)"', html)
         assert m and m.groups() == (lo, hi), ident
+    # los dos modos: qué se fija (ε o δ) y qué cola se cuenta (MAX abajo, MIN arriba)
+    for nombre, valores in (("fijo", ("eps", "delta")), ("cola", ("abajo", "arriba"))):
+        for v in valores:
+            assert re.search(rf'<label><input type="radio" name="{nombre}" value="{v}"', html), (nombre, v)
 
 
 # --------------------------------------------- la lógica, con node ---
@@ -185,6 +196,46 @@ console.log(JSON.stringify([c.enCola, c.hechos, suma]));
 """, tmp_path)
     esperado = juegos.frecuencia_desvio(F(mu, 100), n, F(eps, 100), reps, semilla) * reps
     assert datos == [esperado, reps, reps]
+
+
+def _cola_arriba_en_python(mu, n, eps, reps, semilla):
+    """La cuenta de juegos.frecuencias_desvio, pero en la otra cola:
+    Q̂ ≥ Q_azar + ε, es decir, total de U ≥ ⌈(Q_azar + ε)·n⌉."""
+    import random
+    from fractions import Fraction as F
+    rng = random.Random(semilla)
+    p = float(juegos.prob_gana(F(mu, 100)))
+    tope = math.ceil((F(mu, 100) + F(eps, 100)) * n)
+    return sum(sum(juegos._resultado(rng, p) for _ in range(n)) >= tope for _ in range(reps))
+
+
+@pytest.mark.parametrize("mu, n, eps, reps, semilla",
+                         [(30, 100, 20, 5000, 1), (-50, 37, 15, 3000, 7), (80, 3, 5, 2000, 3),
+                          (30, 10, 20, 4000, 2)])
+def test_la_cola_de_arriba_cuenta_lo_que_cuenta_python(tmp_path, mu, n, eps, reps, semilla):
+    datos = _correr(HOEFFDING, f"""
+const c = new L.Corrida({mu}, {n}, {eps}, {semilla}, "arriba");
+c.promedios({reps});
+console.log(JSON.stringify([c.enCola, c.hechos, L.umbralArriba({mu}, {eps}, {n})]));
+""", tmp_path)
+    from fractions import Fraction as F
+    assert datos[0] == _cola_arriba_en_python(mu, n, eps, reps, semilla)
+    assert datos[1] == reps
+    assert datos[2] == math.ceil((F(mu, 100) + F(eps, 100)) * n)
+
+
+def test_con_delta_fijo_el_margen_es_el_de_juegos_y_la_cota_es_delta(tmp_path):
+    casos = [(0.05, 10), (0.05, 100), (0.005, 100), (0.5, 1), (0.2, 200)]
+    datos = _correr(HOEFFDING, f"""
+const casos = {json.dumps(casos)};
+console.log(JSON.stringify(casos.map(([d, n]) => {{
+  const e = L.margenDelta(n, d); return [e, L.cotaHoeffding(n, e)]; }})));
+""", tmp_path)
+    for (d, n), (e, cota) in zip(casos, datos):
+        assert math.isclose(e, juegos.margen_hoeffding(d, n), rel_tol=1e-12)
+        assert math.isclose(cota, d, rel_tol=1e-9)
+    # con 100 muestras: 0.245 y 0.326, las de la figura de la página
+    assert [round(datos[i][0], 3) for i in (1, 2)] == [0.245, 0.326]
 
 
 CASOS_BANDIDO = [(regla, semilla, None) for regla in juegos.REGLAS_BANDIDO
@@ -254,12 +305,29 @@ def test_los_numeros_van_con_el_formato_del_curso(ruta):
 
 
 @pytest.mark.parametrize("ruta", PAGINAS, ids=lambda r: r.name)
-def test_escribe_n_de_s_con_prima_y_sin_vocabulario_ajeno(ruta):
-    """N(s′) con la prima de la página, nunca con apóstrofo recto; y nada de
-    «arrepentimiento» ni μ*, que la página no define (r1, alumno H11)."""
+def test_escribe_la_notacion_de_la_unidad_y_sin_vocabulario_ajeno(ruta):
+    """Plan de homologación §5.1: Q_azar (la esperanza si todos juegan al
+    azar), Q̂(s,a) (el promedio), N(s) y N(s,a). μ, ū, N(s′) y G/N ya no
+    existen en la unidad: ni en rótulos, ni en ayudas, ni en el JavaScript que
+    los escribe. Y nada de «arrepentimiento», que la página no define (r1,
+    alumno H11)."""
     html = _texto(ruta)
-    assert "(s')" not in html
-    assert "arrepent" not in html.lower() and "μ*" not in html
+    for viejo in ("μ", "ū", "s′", "(s')", "G/N", "T±"):
+        assert viejo not in html, (ruta.name, viejo)
+    assert "arrepent" not in html.lower()
+    assert "Q<sub>azar</sub>" in html and "Q̂" in html
+    visible = re.sub(r"<script.*?</script>|<style.*?</style>", "", html, flags=re.S)
+    assert "Q<sub>azar</sub>" in visible and "Q̂" in visible
+
+
+def test_el_bandido_usa_n_de_s_a_y_puntaje():
+    """N(s,a) cuenta las vueltas de cada jugada; Q̂ + bono es un puntaje, no
+    una cota del pago (§5.1: el puntaje no es un pago)."""
+    html = _texto(BANDIDO)
+    assert "N(s,a) de cada jugada contra N(s)" in html
+    assert "c·√(ln N(s) / N(s,a))" in html
+    assert "UCB: Q̂(s,a) + bono" in html
+    assert "cota optimista" not in html
 
 
 @pytest.mark.parametrize("ruta", PAGINAS, ids=lambda r: r.name)
@@ -296,13 +364,17 @@ def test_el_estado_dice_la_vuelta_actual_tambien_corriendo():
     assert '$("estado").setAttribute("aria-live", si ? "off" : "polite");' in html
 
 
-def test_las_figuras_que_cita_existen_en_la_pagina():
+def test_las_figuras_y_tablas_que_cita_existen_en_la_pagina():
     """La leyenda citaba «UCB empieza abajo y termina arriba», un título que
-    ya no existía (ronda 1 de render, H6). Toda figura citada por título
-    tiene que ser el title de una figura de la página 6."""
-    titulos = set(re.findall(r'^::: figure \{#[^ ]+ title="([^"]+)"\}', _texto(PAGINA_P6), re.M))
+    ya no existía (ronda 1 de render, H6), y luego «Cuánto gana cada regla»,
+    una figura que la homologación quitó (sus cifras pasaron a una tabla).
+    Toda figura o tabla citada por título tiene que ser el title de una
+    figura o tabla de la página del bono, y el bandido cita al menos una."""
+    texto = _texto(PAGINA_BONO)
+    titulos = {k: set(re.findall(rf'^::: {k} \{{#[^ ]+ title="([^"]+)"\}}', texto, re.M))
+               for k in ("figure", "table")}
     for ruta in PAGINAS:
-        citadas = re.findall(r"figura «([^»]+)»", _texto(ruta))
-        for c in citadas:
-            assert c in titulos, (ruta.name, c)
-    assert re.findall(r"figura «([^»]+)»", _texto(BANDIDO))
+        for clase, c in re.findall(r"(figura|tabla) «([^»]+)»", _texto(ruta)):
+            assert c in titulos["figure" if clase == "figura" else "table"], (ruta.name, c)
+    assert re.findall(r"(?:figura|tabla) «([^»]+)»", _texto(BANDIDO))
+    assert "Cuánto gana cada regla" not in _texto(BANDIDO)
