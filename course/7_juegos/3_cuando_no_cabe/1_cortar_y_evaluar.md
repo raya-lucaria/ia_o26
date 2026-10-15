@@ -663,18 +663,18 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de [[minimax-como-algoritmo|M
 - **En $w$, un final va solo** y un nodo lleva su nombre entre paréntesis.
 - **En las filas de R, la columna $v$ es mejor_valor.**
 - **La columna elige es mejor_jugada**, con «—» mientras vale ninguna.
-- **La columna lín. · nodo** da la línea del pseudocódigo y el nodo que la ejecuta; la pila siempre es R y ese nodo.
+- **La columna lín. · nodo** da la línea del pseudocódigo y el nodo que la ejecuta. En I, C o D la pila completa es R›nodo y se omite la R; en las filas de la raíz, la pila es solo R.
 
 **Tramo 1, primera parte · I deja izq como primera candidata, filas 1 a 5.**
 
 ::: table {#jue-c3-t-traza-d2 title="Traza de DECIDIR-CON-CORTE en el árbol de resultados con d = 2, tramo 1, filas 1 a 5"}
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
 | 2 | 17 · I | +∞ |  | — |
 | 3 | 19–⁠20 · I | 100 | 100 | — |
 | 4 | 19–⁠20 · I | −100 | −100 | — |
-| 5 | 4–⁠5 · R | −100 | −100 (I) | izq |
+| 5 | 4–⁠5 · R | −100 | −100 (I) | izq |
 :::
 
 - **Filas 3 y 4:** i1 e ix son finales. La línea 8 los valora dentro del hijo con ${100\cdot U}$, 100 y ${-100}$, y MIN se queda con ${-100}$.
@@ -683,12 +683,12 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de [[minimax-como-algoritmo|M
 **Tramo 1, segunda parte · Centro releva a izq, filas 6 a 9.**
 
 ::: table {#jue-c3-t-traza-d2-tramo-1b title="Traza de DECIDIR-CON-CORTE en el árbol de resultados con d = 2, tramo 1, filas 6 a 9"}
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 6 | 17 · C | +∞ |  | izq |
-| 7 | 19–⁠20 · C | 10 | 10 (C1) | izq |
-| 8 | 19–⁠20 · C | 10 | 50 (C2) | izq |
-| 9 | 4–⁠5 · R | 10 | 10 (C) | centro |
+| 7 | 19–⁠20 · C | 10 | 10 (C1) | izq |
+| 8 | 19–⁠20 · C | 10 | 50 (C2) | izq |
+| 9 | 4–⁠5 · R | 10 | 10 (C) | centro |
 :::
 
 - **Filas 7 y 8:** C1 y C2 no son finales y llegan con ${d=0}$. La línea 9 devuelve su $\mathrm{EVAL}$, 10 y 50. Nadie genera sus hijos.
@@ -701,13 +701,13 @@ La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de [[minimax-como-algoritmo|M
 **Tramo 2 · D no mejora a centro, filas 10 a 15.**
 
 ::: table {#jue-c3-t-traza-d2-tramo-2 title="Traza de DECIDIR-CON-CORTE en el árbol de resultados con d = 2, tramo 2"}
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 10 | 17 · D | +∞ |  | centro |
 | 11 | 19–⁠20 · D | −100 | −100 | centro |
 | 12 | 19–⁠20 · D | −100 | 100 | centro |
 | 13 | 19–⁠20 · D | −100 | 100 | centro |
-| 14 | 4–⁠5 · R | 10 | −100 (D) | centro |
+| 14 | 4–⁠5 · R | 10 | −100 (D) | centro |
 | 15 | 6 · R | 10 |  | centro |
 :::
 
@@ -951,32 +951,32 @@ Ahora R prueba sus jugadas en otro orden: **der, izq, centro**. Dentro de I, C y
 
 **Tramo 1 · D, filas 1 a 6.**
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
 | 2 | 17 · D | +∞ |  | — |
 | 3 | 19–⁠20 · D | ? | ? | — |
 | 4 | 19–⁠20 · D | ? | ? | — |
 | 5 | 19–⁠20 · D | ? | ? | — |
-| 6 | 4–⁠5 · R | ? | ? (D) | ? |
+| 6 | 4–⁠5 · R | ? | ? (D) | ? |
 
 **Tramo 2 · I, filas 7 a 10.**
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 7 | 17 · I | +∞ |  | ? |
 | 8 | 19–⁠20 · I | ? | ? | ? |
 | 9 | 19–⁠20 · I | ? | ? | ? |
-| 10 | 4–⁠5 · R | ? | ? (I) | ? |
+| 10 | 4–⁠5 · R | ? | ? (I) | ? |
 
 **Tramo 3 · C y la salida, filas 11 a 15.**
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 11 | 17 · C | +∞ |  | ? |
-| 12 | 19–⁠20 · C | ? | ? (C1) | ? |
-| 13 | 19–⁠20 · C | ? | ? (C2) | ? |
-| 14 | 4–⁠5 · R | ? | ? (C) | ? |
+| 12 | 19–⁠20 · C | ? | ? (C1) | ? |
+| 13 | 19–⁠20 · C | ? | ? (C2) | ? |
+| 14 | 4–⁠5 · R | ? | ? (C) | ? |
 | 15 | 6 · R | ? |  | ? |
 
 1. Llena los «?». ¿En qué filas cambia mejor_jugada, por qué no cambia en la fila 10, y qué devuelve?
@@ -992,32 +992,32 @@ En negrita, lo que era «?»; en la columna elige, desde la fila 6 todo era «?�
 
 **Tramo 1 · D deja der como primera candidata, filas 1 a 6.**
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
 | 2 | 17 · D | +∞ |  | — |
 | 3 | 19–⁠20 · D | **−100** | **−100** | — |
 | 4 | 19–⁠20 · D | **−100** | **100** | — |
 | 5 | 19–⁠20 · D | **−100** | **100** | — |
-| 6 | 4–⁠5 · R | **−100** | **−100** (D) | der |
+| 6 | 4–⁠5 · R | **−100** | **−100** (D) | der |
 
 **Tramo 2 · I empata y conserva der, filas 7 a 10.**
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 7 | 17 · I | +∞ |  | der |
 | 8 | 19–⁠20 · I | **100** | **100** | der |
 | 9 | 19–⁠20 · I | **−100** | **−100** | der |
-| 10 | 4–⁠5 · R | **−100** | **−100** (I) | der |
+| 10 | 4–⁠5 · R | **−100** | **−100** (I) | der |
 
 **Tramo 3 · C mejora el valor y cambia a centro, filas 11 a 15.**
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 11 | 17 · C | +∞ |  | der |
-| 12 | 19–⁠20 · C | **10** | **10** (C1) | der |
-| 13 | 19–⁠20 · C | **10** | **50** (C2) | der |
-| 14 | 4–⁠5 · R | **10** | **10** (C) | centro |
+| 12 | 19–⁠20 · C | **10** | **10** (C1) | der |
+| 13 | 19–⁠20 · C | **10** | **50** (C2) | der |
+| 14 | 4–⁠5 · R | **10** | **10** (C) | centro |
 | 15 | 6 · R | **10** |  | centro |
 
 1. mejor_jugada cambia dos veces: a der en la fila 6 ${(-100>-\infty)}$ y a centro en la 14 ${(10>-100)}$. En la fila 10, ${-100>-100}$ es falso: izq empata con der y se queda la primera. Devuelve **centro, con 10**, igual que con el orden de la página.
@@ -1051,12 +1051,12 @@ Comprueba tu propuesta con dos preguntas. ¿Cada nodo que contaste está arriba 
 ::: answer {#jue-c3-resp-final-corte of="jue-c3-ej-final-corte" title="Respuesta · El empate, la variante y el costo"}
 **1. El empate.** Con ${d=1}$, I y C valen 60 y D vale 10. Con el orden de la página, izq llega primero con 60; en la fila de C, ${60>60}$ es falso, y juega **izq, con 60**. Con R al revés:
 
-| # | lín. · nodo | v | w | elige |
+| # | lín. · nodo | v | w | elige |
 |---:|---|---:|---|---|
 | 1 | 2 · R | −∞ |  | — |
-| 2 | 4–⁠5 · R | 10 | 10 (D) | der |
-| 3 | 4–⁠5 · R | 60 | 60 (C) | centro |
-| 4 | 4–⁠5 · R | 60 | 60 (I) | centro |
+| 2 | 4–⁠5 · R | 10 | 10 (D) | der |
+| 3 | 4–⁠5 · R | 60 | 60 (C) | centro |
+| 4 | 4–⁠5 · R | 60 | 60 (I) | centro |
 | 5 | 6 · R | 60 |  | centro |
 
 mejor_jugada pasa de ninguna a **der** en la fila 2 ${(10>-\infty)}$ y a **centro** en la fila 3 ${(60>10)}$. En la fila 4, ${60>60}$ es falso. Devuelve **centro, con 60**. Con un empate, el orden decide la jugada: con ${>}$ estricto se queda la primera que alcanzó el valor. Aquí el orden salva a MAX por suerte: izq vale ${-100}$ y centro, 0.

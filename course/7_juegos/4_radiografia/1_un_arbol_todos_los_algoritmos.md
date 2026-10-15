@@ -119,7 +119,7 @@ $$
 | Corte | $V_d$ o cota | Nodo | Máx. o mín.; EVAL |
 | MC plano | $N$ y suma | Raíz | No sube |
 | Act. minimax | $\widehat V(s)$, $\widehat Q(s,a)$ | Lo descubierto | Máx. o mín. |
-| UCT | $N$, $\widehat Q(s,a)$; $N$, $\widehat V(s)$ | Arista; estado | Promedio |
+| UCT | $N(s,a)$, $\widehat Q(s,a)$; $N(s)$, $\widehat V(s)$ | Arista; estado | Promedio |
 :::
 
 - **Los cuatro primeros calculan desde los hijos.** Solo expectiminimax promedia, en AZAR.

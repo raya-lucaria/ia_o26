@@ -157,7 +157,7 @@ En un árbol finito con vueltas sin límite, **ninguna jugada se abandona para s
 
 **Piensa: tras cuatro vueltas, ¿por dónde baja la quinta y qué cambia al terminar?**
 
-Baja por la jugada de MAX con mejor puntaje y luego por la respuesta de MIN con menor puntaje. Al subir, solo cambian las aristas del camino.
+Baja por la jugada de MAX con mejor puntaje y luego por la respuesta de MIN con menor puntaje. Al subir, se actualizan las visitas y los promedios de los estados y las aristas del camino.
 
 > **Dado:** el árbol de la figura, con $c=1$. La raíz R es de MAX; sus hijos a y b son de MIN; a1 y a2, hijos de a, son de MAX. Cada nodo muestra $N$ y $\widehat V$.
 >
@@ -518,7 +518,7 @@ D es de MIN y $-1$ es el menor pago posible. Un promedio cuenta frecuencias; un 
 ## Lo que hay que llevarse
 
 - **MCTS es la familia; UCT, su miembro con UCB.** Cada vuelta selecciona, expande a lo más un nodo, simula al azar y retropropaga el mismo $U$.
-- **UCT guarda por arista** $N(s,a)$ y $\widehat Q(s,a)$, y $N(s)$ por estado. MAX elige el mayor $\widehat Q+\text{bono}$ y MIN el menor $\widehat Q-\text{bono}$, con $\text{bono}=c\sqrt{\ln N(s)/N(s,a)}$.
+- **UCT guarda por arista** $N(s,a)$ y $\widehat Q(s,a)$, y por estado $N(s)$ y $\widehat V(s)$. MAX elige el mayor $\widehat Q+\text{bono}$ y MIN el menor $\widehat Q-\text{bono}$, con $\text{bono}=c\sqrt{\ln N(s)/N(s,a)}$.
 - **Pago, estimación y puntaje son distintos.** $U$ paga un final, $\widehat Q$ estima $Q$ y el puntaje solo guía la búsqueda.
 - **Un promedio se parece a un mínimo** porque MIN concentra sus visitas en su mejor respuesta. El promedio del padre, en cambio, no es el de sus hijos.
 - **La exploración emerge del bono.** En el árbol de resultados, izq vuelve en la vuelta 13; UCT entrega der hasta la 17 y centro desde la 18.

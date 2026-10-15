@@ -21,7 +21,7 @@ Primero lo usarás tal cual y verás qué hace. Después lo sacarás de una desi
 ## Lo que traes
 
 - **El valor se mide desde MAX.** $Q(s,a)=V(T(s,a))$ supone juego óptimo de ambos; $Q_{\text{azar}}(s,a)$ supone que los dos eligen al azar (@jue-c3-simulacion).
-- **UCT guarda por arista.** Cada jugada lleva sus visitas $N(s,a)$ y su promedio $\widehat Q(s,a)$; el estado lleva $N(s)$. Lo viste en [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
+- **UCT guarda por arista y por estado.** Cada jugada lleva sus visitas $N(s,a)$ y su promedio $\widehat Q(s,a)$; cada estado, $N(s)$ y $\widehat V(s)$. Lo viste en [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
 - **UCT selecciona con un puntaje.** MAX baja por el mayor $\widehat Q(s,a)+\text{bono}$ y MIN por el menor $\widehat Q(s,a)-\text{bono}$. Al final se juega la jugada con más visitas, sin bono.
 - **Los pagos van de $-1$ a $+1$.** $U=+1$ si gana MAX, $-1$ si gana MIN y $0$ si empatan.
 

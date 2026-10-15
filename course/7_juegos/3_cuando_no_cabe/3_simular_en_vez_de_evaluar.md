@@ -610,7 +610,7 @@ Con semilla 0 y 60 simulaciones, la primera visita a r ocurre en la novena. Aqu�
 ![Tres paneles con los mismos ejes sobre el árbol de la refutación (A con +10, +10 y −30; B con −10). Primero, el promedio de la secuencia impuesta: Q̂(A) se queda en 10 y baja a 8.67 tras el −30, con su límite −10/3 marcado arriba de B. Segundo, la actualización minimax: Q̂(A) salta de 10 a −30 y la jugada entregada cambia a B. Tercero, una corrida real de UCT con pagos divididos entre 30, c = 1, semilla 0 y 60 vueltas, dibujada de vuelta en la escala del juego. Su promedio de A baja poco a poco desde la vuelta 5 y queda debajo del de B en la 13; termina en −20. B es la más visitada desde la vuelta 15](../_assets/jue-c3-refutacion-tres.svg)
 :::
 
-En el panel de UCT, cada **vuelta** primero selecciona por el árbol con un bono de peso $c=1$. Si expande un hijo no final, desde ahí completa una simulación; si llega a un final guardado, no simula. Los pagos van divididos entre 30.
+En el panel de UCT, cada **vuelta** primero selecciona por el árbol con un bono de peso $c=1$. Si agrega un hijo no final, simula desde ahí hasta un final; si el hijo nuevo ya es final o la selección llega a un final guardado, toma su $U$ sin simular. Los pagos van divididos entre 30.
 
 UCT encuentra el $-30$ en la vuelta 5 y, aun promediando, entrega B desde la 15: MIN manda cada vez más vueltas a la refutación. Por qué lo hace se ve en la página siguiente.
 
