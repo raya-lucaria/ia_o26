@@ -1328,15 +1328,20 @@ def test_prosa_clase_3_p4_el_reloj_en_la_posicion():
     m = re.search(r"En la clase, sin poda, (\d+) nodos contra (\d+)\. Si no crece parejo puede "
                   r"costar más: en el árbol de resultados, con alfa-beta y la jugada anterior "
                   r"primero, las dos primeras búsquedas suman "
-                  r"(\d+) nodos contra (\d+) de la última\. - La poda y la jugada anterior "
-                  r"primero ahorran: (\d+) nodos contra (\d+) en el árbol de resultados, y "
-                  r"(\d+) contra (\d+) en la clase", llevarse)
+                  r"(\d+) nodos contra (\d+) de la última\. - La poda ahorra siempre; la jugada "
+                  r"anterior primero, solo a veces: en el árbol de resultados, (\d+) nodos contra "
+                  r"(\d+) sin poda, y la iterativa empata con alfa-beta de orden fijo\. En la "
+                  r"clase, (\d+) contra (\d+) de alfa-beta fijo y (\d+) sin poda", llevarse)
     tpm = j.tabla_nodos_generados_tpm()
     clase = j.tabla_nodos_generados()
     t_it = tpm["iterativa"]
     assert m and [int(v) for v in m.groups()] == [
         sum(nodos[:2]), nodos[2], sum(t_it[:2]), t_it[-1], j.iterativa_tpm()[1],
-        sum(tpm["sin poda"]), sum(clase[("4x4", "iterativa")]), sum(nodos)]
+        sum(tpm["sin poda"]), sum(clase[("4x4", "iterativa")]),
+        sum(clase[("4x4", "alfa-beta")]), sum(nodos)]
+    # R3: el empate en el arbol de resultados y el ahorro del orden en la clase.
+    assert sum(t_it) == sum(tpm["alfa-beta"])
+    assert sum(clase[("4x4", "iterativa")]) < sum(clase[("4x4", "alfa-beta")])
     assert sum(t_it[:2]) > t_it[-1] and sum(nodos[:2]) < nodos[2]
 
 
@@ -1484,11 +1489,14 @@ def test_prosa_clase_3_p4_iterativa_en_t_y_nodos_generados():
         leido = {k: [_n(f[i + 1]) for f in filas[1:]] for i, k in enumerate(claves)}
         assert leido == {k: fuente[k] + [sum(fuente[k])] for k in claves}, ident
     llevarse = _limpio(texto.split("## Lo que hay que llevarse")[-1])
-    m = re.search(r"La poda y la jugada anterior primero ahorran: (\d+) nodos contra (\d+) en "
-                  r"el árbol de resultados, y (\d+) contra (\d+) en la clase", llevarse)
+    m = re.search(r"en el árbol de resultados, (\d+) nodos contra (\d+) sin poda, y la iterativa "
+                  r"empata con alfa-beta de orden fijo\. En la clase, (\d+) contra (\d+) de "
+                  r"alfa-beta fijo y (\d+) sin poda", llevarse)
     assert m and [int(x) for x in m.groups()] == [sum(t_it), sum(t_sp),
                                             sum(tabla[("4x4", "iterativa")]),
+                                            sum(tabla[("4x4", "alfa-beta")]),
                                             sum(tabla[("4x4", "sin poda")])]
+    assert sum(t_it) == sum(tpm["alfa-beta"])
 
 
 def test_prosa_clase_3_p4_valor_piso_y_techo():

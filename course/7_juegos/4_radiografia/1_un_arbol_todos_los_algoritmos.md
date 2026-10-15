@@ -104,7 +104,7 @@ $$
 - **Si decide el azar, el estado promedia.** Con $\mathrm{Pl}(s)=$ AZAR, $V(s)=\sum_a \Pr(a\mid s)\,Q(s,a)$; dibujado el azar como un nodo hijo, $Q(s,a)=V(T(s,a))$ sigue valiendo.
 - **Dos jugadas que llevan al mismo estado valen lo mismo.** Pero sus visitas son de aristas distintas; por eso las estadísticas de simulación se guardan por jugada.
 
-**Las estadísticas de UCT pertenecen a aristas.** Se dibujan junto a $s'=T(s,a)$ porque aquí cada hijo tiene un solo padre.
+**Las estadísticas de UCT pertenecen a aristas.** Se dibujan junto a $s'=T(s,a)$ porque aquí cada hijo tiene un solo padre: el $\widehat V$ del hijo es el $\widehat Q$ de la jugada que lleva a él.
 
 ::: figure {#jue-c3-rx-fig-estado-y-jugada title="El valor de una jugada vive en el hijo al que lleva"}
 ![Raíz de MAX con dos jugadas, A y B; el número de cada jugada se dibuja junto a su hijo. Cada algoritmo pone ahí V, una cota, el valor con corte o una estimación Q̂](../_assets/jue-c3-rx-estado-y-jugada.svg)
@@ -486,7 +486,7 @@ $$
 - **Usa EVAL:** sí; reserva $M\cdot U$ para finales.
 - **Garantía:** obtiene $M\cdot V$ y una jugada óptima si alcanza los finales sin aplicar EVAL ni activar quietud.
 - **Se puede interrumpir:** por nivel, no; por reloj, sí, con respaldo legal.
-- **Complejidad:** cuesta $O(b^d)$ sin poda y entre $O(b^{d/2})$ y $O(b^d)$ con alfa-beta; usa memoria $O(bd)$. Si cada profundidad cuesta $B>1$ veces la anterior, repetir cuesta cerca de $B/(B-1)$ veces la última: con $B=10$, un 11 % más. Si no crece parejo puede costar más: en el árbol de resultados, 13 contra 12.
+- **Complejidad:** cuesta $O(b^d)$ sin poda y entre $O(b^{d/2})$ y $O(b^d)$ con alfa-beta; usa memoria $O(bd)$. Si cada profundidad cuesta $B>1$ veces la anterior, repetir cuesta cerca de $B/(B-1)$ veces la última: con $B=10$, un 11 % más. Si no crece parejo puede costar más: en el árbol de resultados, las búsquedas con $d=1$ y $d=2$ suman 13 nodos y la última, 12.
 - **Frente a los demás:** permite decidir sin alcanzar finales, pero depende de EVAL. La quietud puede costar $O(b^m)$ y usar memoria $O(bm)$.
 - **Supuestos:** comparte los de minimax; más jugadores requieren pagos y EVAL vectoriales (@jue-rx-nota-suma-cero).
 
@@ -662,7 +662,7 @@ $$
 1. **Selección (*selection*).** Baja con UCT hasta una jugada sin agregar o un final.
 2. **Expansión (*expansion*).** Agrega el primer hijo pendiente; un final pasa directo a retropropagación.
 3. **Simulación.** Desde el hijo nuevo juega al azar hasta un final, sin agregar esos estados ni usar EVAL.
-4. **Retropropagación (*backpropagation*).** Cada estado suma una visita a $N(s)$; cada arista incrementa $N(s,a)$ e incorpora el mismo $U$ en $\widehat Q(s,a)$.
+4. **Retropropagación (*backpropagation*).** Cada estado suma una visita a $N(s)$ y mete $U$ en su $\widehat V(s)$; cada arista incrementa $N(s,a)$ e incorpora el mismo $U$ en $\widehat Q(s,a)$.
 
 **El puntaje de la selección**, con $\text{bono}=c\sqrt{\ln N(s)/N(s,a)}$:
 
@@ -782,13 +782,13 @@ $$
 | Expectiminimax | Mayor $Q$ | Sí, el $V$ del juego con dado |
 | Corte | Mayor valor con corte | Con finales: $M\cdot V$ |
 | MC plano | Mayor $\widehat Q$ | No |
-| Act. minimax | Mayor $\widehat Q$ | No con presupuesto finito; converge bajo el contrato de su ficha |
-| UCT | Más visitada | No con presupuesto finito; en un árbol finito, con $c>0$ fija y vueltas sin límite, converge |
+| Act. minimax | Mayor $\widehat Q$ | No; converge |
+| UCT | Más visitada | No; converge |
 :::
 
 - **En el corte, «con finales» excluye EVAL y quietud:** obtiene $M\cdot V$ y una jugada óptima.
 - **Por reloj, entrega la última búsqueda completa.**
-- **Los Monte Carlo convergen bajo los contratos de sus fichas.** Eso no garantiza exactitud con presupuesto fijo.
+- **«Converge» lleva condiciones:** con presupuesto finito, ninguno de los dos garantiza $V$. La actualización minimax converge bajo el contrato de su ficha; UCT, en un árbol finito con $c>0$ fija y vueltas sin límite.
 
 ### Cuánto cuesta y cuándo conviene
 

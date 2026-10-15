@@ -142,7 +142,7 @@ Stuart Russell, uno de los autores de ese libro, lo llamó **racionalidad limita
 ::: table {#jue-c1-racional-limites title="Lo racional depende de lo que tiene el jugador"}
 | Lo que tiene | Lo racional |
 |---|---|
-| Tiempo para todo el árbol y el supuesto de un rival óptimo | La jugada que asegura más contra cualquier respuesta |
+| Tiempo para todo el árbol | La jugada que asegura más contra cualquier respuesta |
 | Un segundo por jugada | La mejor que encuentra en ese segundo |
 | Una tabla con una jugada por tablero | Lo que dice la tabla para ese tablero |
 :::

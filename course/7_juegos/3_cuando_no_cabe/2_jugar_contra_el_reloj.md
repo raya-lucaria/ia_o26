@@ -827,7 +827,7 @@ En negrita, lo que era «?».
 
    Las ventanas guardan lo último que corrió: I devuelve en la línea 30 sin bajar $\beta$ a ${-100}$, y D, sin tocar su $+\infty$.
 2. I genera sus dos hojas: el corte alfa llega cuando ya no le quedan. De D no se generan d2 ni d3; en el tramo 2 tampoco se generó c2b. Se generan **12** nodos: R, C, C1, c1a, c1b, C2, c2a, I, i1, ix, D y d1.
-3. **Cotas.** I y D devuelven ${-100}$, pero la búsqueda solo sabe que valen **a lo más** eso. Basta para saber que no superan a centro. Aquí la cota coincide con el valor, porque ningún pago baja de ${-100}$.
+3. **Cotas.** I y D devuelven ${-100}$, y la ventana solo certifica que valen **a lo más** eso. Basta para saber que no superan a centro. Aquí, además, ese techo demuestra el valor: ningún pago baja de ${-100}$.
 :::
 
 > **▶ [Recorre las tres búsquedas paso a paso](../_assets/traza_arbol_t.html#iterativa)** — ${d=1}$, 2 y 3 seguidas, con la jugada anterior primero.
@@ -1047,9 +1047,9 @@ El tipo se lee de la ventana **de entrada**, no de los extremos que el nodo movi
 | D | (0,+∞) | −100 | techo |
 :::
 
-Un techo de ${-100}$ en I no dice «I vale ${-100}$»: dice «a lo más ${-100}$». Sirve para descartar I en cualquier búsqueda donde MAX ya asegure ${-100}$ o más. Aquí coincide con el valor solo porque ningún pago baja de ${-100}$.
+Un techo de ${-100}$ en I no dice «I vale ${-100}$»: dice «a lo más ${-100}$». Sirve para descartar I en cualquier búsqueda donde MAX ya asegure ${-100}$ o más. Aquí, además, demuestra el valor, porque ningún pago baja de ${-100}$: eso no lo dice la ventana, lo dice la escala.
 
-**Caso borde: guardar una cota como si fuera un valor.** Aquí acertaría por suerte, porque las tres cotas tocan un extremo de la escala. Con un techo que no toca el extremo, una búsqueda posterior usaría como exacto un número que solo acota, y podría elegir mal.
+**Caso borde: guardar una cota como si fuera un valor.** La ventana solo certifica techos y pisos. Aquí guardarlos como exactos no falla, porque las tres cotas tocan un extremo de la escala, ${-100}$ o 100, y eso las demuestra. Con un techo que no toca el extremo, una búsqueda posterior usaría como exacto un número que solo acota, y podría elegir mal.
 
 ::: exercise {#jue-c3-ej-clase title="Clasifica lo que se guarda"}
 Ahora alfa-beta con ${d=3}$ y el orden fijo: R prueba izq, centro, der. I llega con ${(-\infty,+\infty)}$ y devuelve ${-100}$. C2 llega con $(-100,0)$ y devuelve 100. D llega con ${(0,+\infty)}$ y devuelve ${-100}$.
@@ -1064,7 +1064,7 @@ Para cada nodo, ¿su $v$ cae dentro de la ventana, o toca o pasa uno de los extr
 
 ::: answer {#jue-c3-resp-clase of="jue-c3-ej-clase"}
 1. **I: valor**, porque ${-100}$ cae dentro de ${(-\infty,+\infty)}$. **C2: piso**, porque ${100\ge0}$. **D: techo**, porque ${-100\le0}$.
-2. Con el orden fijo, I va primero y llega sin nada asegurado: su ${-100}$ es su valor. Con centro primero, I llega con ${\alpha=0}$, y su ${-100}$ solo es un techo. **El mismo nodo, con el mismo número, cambia de tipo porque cambió la ventana con que se llamó.**
+2. Con el orden fijo, I va primero y llega sin nada asegurado: su ${-100}$ es su valor. Con centro primero, I llega con ${\alpha=0}$, y la ventana solo certifica que su ${-100}$ es un techo; que también sea su valor lo demuestra la escala, no la ventana. **El mismo nodo, con el mismo número, cambia de tipo porque cambió la ventana con que se llamó.**
 :::
 
 ---
@@ -1095,7 +1095,7 @@ Para cada nodo, ¿su $v$ cae dentro de la ventana, o toca o pasa uno de los extr
 - **La búsqueda de quietud** sigue solo las capturas desde los nodos de corte, y quedarse con $\mathrm{EVAL}$ es una aproximación, no una jugada. Con $d=1$ da ${-10}$, 2 y 0 en la clase, y elige $\text{d2}\textbf{-}\text{d3}$; en el árbol de resultados juega centro con 20. **Arregla la jugada, no el valor.**
 - **La profundización iterativa** busca con ${d=1,2,3,\dots}$ y entrega lo mejor de la **última búsqueda completa**. Un reloj que se acaba durante ${d=2}$ entrega $\text{d2}\textbf{x}\text{c3}$, que pierde; durante ${d=3}$, $\text{d2}\textbf{-}\text{d3}$, que gana.
 - **Repetir cuesta poco si crece parejo:** cerca de ${1/(B-1)}$ de la última búsqueda. En la clase, sin poda, 16 nodos contra 33. Si no crece parejo puede costar más: en el árbol de resultados, con alfa-beta y la jugada anterior primero, las dos primeras búsquedas suman 13 nodos contra 12 de la última.
-- **La poda y la jugada anterior primero ahorran:** 25 nodos contra 30 en el árbol de resultados, y 23 contra 49 en la clase.
+- **La poda ahorra siempre; la jugada anterior primero, solo a veces:** en el árbol de resultados, 25 nodos contra 30 sin poda, y la iterativa empata con alfa-beta de orden fijo. En la clase, 23 contra 38 de alfa-beta fijo y 49 sin poda.
 - **La tabla de transposición** guarda número, profundidad y tipo según la ventana: valor si ${\alpha_0<v<\beta_0}$, piso si ${v\ge\beta_0}$, techo si ${v\le\alpha_0}$, con $(\alpha_0,\beta_0)$ la ventana con que se llamó al nodo.
 
 Continúa con [[simular-en-vez-de-evaluar|Simular partidas]].

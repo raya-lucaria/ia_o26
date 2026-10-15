@@ -3816,7 +3816,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
             # 4 px de d1).
             out.append(texto(x, top + 58 + 19 * k, f,
                              tam=(13 if len(f.replace("\u0302", "")) <= 6 else 12)
-                             if f.startswith(("ū", "Q̂"))
+                             if f.startswith(("ū", "Q̂")) or n.get("promedio")
                              else (14 if len(f) <= 6 else 13),
                              peso="700"))
         if n.get("eval") is not None:
@@ -4285,7 +4285,9 @@ def jue_c3_rx_mc_plano():
 
 def jue_c3_rx_uct(vueltas):
     """UCT con c = 1 y semilla 0 en T±, tras `vueltas` vueltas: su arbol con
-    N y Q̂, lo que aun no agrega, y la jugada mas visitada."""
+    N y V̂ en cada nodo bajo la raiz (A_notacion: Q̂ es de la arista, y el Q̂
+    de una jugada es el V̂ del hijo al que lleva; ola 4, r3), lo que aun no
+    agrega, y la jugada mas visitada. La raiz, solo N."""
     c_uct, semilla = 1, j.SEMILLA_TPM
     u = j.uct_tpm(c_uct, vueltas, semilla)
     N, S = u["N"], u["S"]
@@ -4301,7 +4303,9 @@ def jue_c3_rx_uct(vueltas):
         elif es_hoja:
             nodos[c] = {"hoja": _u_txt(j.nodo_en(j.ARBOL_TPM, c)), "bajo": [str(N[c])]}
         else:
-            nodos[c] = {"filas": [f"N {N[c]}", f"Q̂ {_dec_txt(F(S[c], N[c]))}"]}
+            # «promedio»: la fila V̂ con decimales va a 13/12, como iba la Q̂
+            nodos[c] = {"filas": [f"N {N[c]}", f"V̂ {_dec_txt(F(S[c], N[c]))}"],
+                        "promedio": True}
     titulo = [f"UCT: vuelta {vueltas}", "árbol de resultados", f"c = {c_uct}, semilla {semilla}: "
               f"{len(N)} nodos"]
     out = []
@@ -4309,21 +4313,24 @@ def jue_c3_rx_uct(vueltas):
     fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[f"N {N[()]}"],
                       ys=(0, 140, 262, 366))
     raiz = {a: N.get((i,), 0) for i, a in enumerate(j.JUGADAS_RAIZ)}
-    y = _leyenda_rx(out, fondo + 16, [("visto", "en su árbol, con N y Q̂"),
+    y = _leyenda_rx(out, fondo + 16, [("visto", "en su árbol, con N y V̂"),
                                        ("noexp", ["aún no está en su árbol", "(frontera)"]),
                                        ("jugada", ["juega la más visitada,", jugada])])
     y = _pie_t(out, y + 6, ["Visitas N en la raíz:",
                             ", ".join(f"{a} {n}" for a, n in raiz.items()) + ".",
                             "Bajo cada final: su N.",
-                            "Q̂: promedio de U desde MAX,",
-                            "a dos decimales."], tam=15)
+                            "V̂: promedio de U desde MAX,",
+                            "a dos decimales. El Q̂ de",
+                            "una jugada es el V̂ del",
+                            "nodo al que lleva."], tam=15)
     faltan = [ids[c] for c in ids if c and c not in N]
     desc = (f"UCT en el árbol de resultados con c = {c_uct} y semilla {semilla}, tras {vueltas} vueltas: su árbol "
             f"tiene {len(N)} nodos. Visitas y promedios: "
-            # la raiz no tiene arista: su promedio es V̂, no Q̂ (ola 4, r2)
-            + ", ".join(f"{ids[c]} N {N[c]} {'V̂' if c == () else 'Q̂'} {_dec_txt(F(S[c], N[c]))}"
+            # en un nodo, N y V̂; Q̂ es de la arista. La raiz dibuja solo N: su
+            # V̂ (un promedio) no es el valor que entrega, y no se nombra (ola 4, r3)
+            + ", ".join(f"{ids[c]} N {N[c]}" + ("" if c == () else f" V̂ {_dec_txt(F(S[c], N[c]))}")
                         for c in sorted(N, key=lambda x: (len(x), x)))
-            + ". " + (f"Aún no agrega: {', '.join(faltan)}. " if faltan else
+            + ". El Q̂ de una jugada es el V̂ del nodo al que lleva. " + (f"Aún no agrega: {', '.join(faltan)}. " if faltan else
                       "Ya agregó todos los nodos. ")
             + f"Al acabarse las vueltas, juega {jugada}: la jugada de la raíz con más visitas, "
             f"con N = {raiz[jugada]}.")
@@ -4664,8 +4671,9 @@ FLUJOS = {
         pasos=[{"caja": ["1 · Selección", "baja por su árbol", "con el puntaje UCT"]},
                {"caja": ["2 · Expansión", "agrega un hijo nuevo", "(en un final, salta a 4)"]},
                {"caja": ["3 · Simulación", "al azar hasta un final;", "no se guarda"]},
-               {"caja": ["4 · Retropropagación", "cada nodo del camino suma",
-                         "una visita a N y", "actualiza su promedio", "Q̂ con la U"]},
+               {"caja": ["4 · Retropropagación", "con la U, cada estado",
+                         "del camino actualiza", "N(s) y su promedio V̂(s);",
+                         "cada arista, N(s,a) y Q̂(s,a)"]},
                {"rombo": ["¿Se acabó", "el tiempo?"], "abajo": "sí"},
                {"caja": ["Juega la jugada", "de la raíz más visitada"], "fin": True}],
         vueltas=[(4, 0, "no: otra vuelta")],
@@ -4889,7 +4897,10 @@ def _panel_fases(out, py, titulo, sub, fase):
             x2, y2 = P[b]
             out.append(_flecha_paralela(x1, y1, x2, y2, off=-14))
         out.append(texto(172, yn + 2, "una visita más", tam=14, peso="700", anclaje="start"))
-        out.append(texto(172, yn + 21, "U entra en Q̂", tam=14, peso="700", anclaje="start"))
+        out.append(texto(172, yn + 21, "U entra en V̂", tam=14, peso="700", anclaje="start"))
+        out.append(texto(172, yn + 40, "y en el Q̂ de", tam=14, peso="700", anclaje="start"))
+        out.append(texto(172, yn + 59, "cada arista", tam=14, peso="700", anclaje="start"))
+        alto = 230      # dos renglones mas: no tocan la raya del panel siguiente
     if fase == "final":
         x, y = P["C"]
         out.append(_flecha_paralela(x, y, *P["R"], off=-14))
@@ -4923,8 +4934,8 @@ def jue_c3_mcg_uct_fases():
             "frontera. 1, selección: baja por el camino resaltado eligiendo con el puntaje UCT "
             "hasta un nodo con una jugada sin agregar. 2, expansión: la agrega como un hijo "
             "nuevo. 3, simulación: desde el hijo nuevo juega al azar hasta un final, y esa "
-            "partida no se guarda. 4, retropropagación: sube ese U por el camino; cada nodo "
-            "suma una visita a N y mete U en su promedio Q̂. Último panel: si la selección llega "
+            "partida no se guarda. 4, retropropagación: sube ese U por el camino; cada estado "
+            "del camino actualiza N(s) y V̂(s); cada arista actualiza N(s,a) y Q̂(s,a). Último panel: si la selección llega "
             "a un final que ya está en su árbol, no agrega nada ni simula: retropropaga su U "
             "directamente.")
     return _svg_rx(titulo, desc, out, y)

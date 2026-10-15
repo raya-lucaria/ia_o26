@@ -998,9 +998,36 @@ def test_el_flujo_de_uct_es_un_ciclo_de_cuatro_fases():
     for fase in ("1 · Selección", "2 · Expansión", "3 · Simulación", "4 · Retropropagación"):
         assert fase in r
     assert "el tiempo?" in r and "no: otra vuelta" in r and "de la raíz más visitada" in r
-    # Q̂ es un promedio: no se le «suma» U
-    assert "actualiza su promedio" in r and "Q̂ con la U" in r
-    assert not [x for x in r if "U a Q̂" in x or "ū" in x]
+    # Q̂ es un promedio: no se le «suma» U. Y es de la arista; el estado
+    # guarda N(s) y V̂(s) (A_notacion; ola 4, r3)
+    assert "N(s) y su promedio V̂(s);" in r and "cada arista, N(s,a) y Q̂(s,a)" in r
+    assert not [x for x in r if "U a Q̂" in x or "ū" in x or "su promedio Q̂" in x]
+
+
+@pytest.mark.parametrize("nombre", ["jue-c3-rx-uct-12", "jue-c3-rx-uct-40"])
+def test_en_los_nodos_de_uct_van_n_y_v_gorro(nombre):
+    """A_notacion: N y V̂ en un nodo, Q̂ junto a una arista. Ningun nodo de
+    los arboles de UCT imprime Q̂; el aria-label dice N y V̂ de cada nodo
+    bajo la raiz, y de la raiz solo N, como el dibujo (ola 4, r3: sol #2,
+    opus M3)."""
+    r, aria = _renglones(nombre), _aria(nombre)
+    assert not [x for x in r if x.startswith("Q̂ ")]
+    u = j.uct_tpm(1, int(nombre.rsplit("-", 1)[1]), j.SEMILLA_TPM)
+    for c, n in u["N"].items():
+        if c:
+            assert f"N {n} V̂ {gen._dec_txt(F(u['S'][c], n))}" in aria, c
+    assert f"R N {u['N'][()]}, " in aria
+    assert "Q̂" not in aria.split("El Q̂ de una jugada")[0]
+    assert "en su árbol, con N y V̂" in r and "V̂: promedio de U desde MAX," in r
+
+
+def test_la_retropropagacion_de_uct_pone_v_en_el_estado_y_q_en_la_arista():
+    r = _renglones("jue-c3-mcg-uct-fases")
+    assert "U entra en V̂" in r and "y en el Q̂ de" in r and "cada arista" in r
+    aria = _aria("jue-c3-mcg-uct-fases")
+    assert ("cada estado del camino actualiza N(s) y V̂(s); cada arista actualiza "
+            "N(s,a) y Q̂(s,a)") in aria
+    assert "su promedio Q̂" not in aria
 
 
 def test_las_figuras_del_arbol_grande_no_llevan_cifras():

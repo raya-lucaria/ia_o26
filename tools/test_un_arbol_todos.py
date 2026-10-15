@@ -394,6 +394,23 @@ def test_la_actualizacion_minimax_marca_exacto_y_provisional():
     assert "Exactos (✓): D y C2" in extra
 
 
+@pytest.mark.parametrize("t", [12, 40])
+def test_en_los_nodos_de_uct_van_n_y_v_gorro(t):
+    """A_notacion: N y V̂ en un nodo, Q̂ junto a una arista (ola 4, r3: sol
+    #2, opus M3). En la rama UCT ningún nodo pinta Q̂; cada nodo interno de
+    su árbol bajo la raíz lleva N y V̂ (la raíz, solo N), y Q̂(s, a) queda en
+    la tarjeta."""
+    u = j.uct_tpm(1, t, j.SEMILLA_TPM)
+    textos = _svg_textos(f"uct-{t}")
+    assert not [x for x in textos if x.startswith("Q̂")]
+    ids = j.ids_tpm()
+    for c, n in u["N"].items():
+        if c and isinstance(j.nodo_en(j.ARBOL_TPM, c), tuple):
+            fila = _tras(textos, ids[c], 3)[1:]
+            assert fila[0] == f"N {n}" and fila[1].startswith("V̂ "), (ids[c], fila)
+    assert "Q̂(s, a) en la raíz" in _norm(_leer(f"uct-{t}").por_id["t-extra"])
+
+
 VIEJOS = ("μ", "ū", "T±", "G/N", "s′", "DADO")
 
 
@@ -582,4 +599,6 @@ def test_el_deslizador_de_uct_muestra_q_gorro_en_cada_vuelta(t, jugada, ubarra):
     assert f"U de la vuelta {t}" in tx["t-extra"]
     svg = _svg_textos(f"uct-{t}")
     nombre = j.ids_tpm()[h]
-    assert _tras(svg, nombre, 3)[1:] == [f"N {u['N'][h]}", f"Q̂ {ubarra}"]
+    # la tarjeta da el Q̂ de la jugada; el nodo al que lleva pinta el mismo
+    # número como su V̂ (N y V̂ en un nodo, Q̂ en la arista; ola 4, r3)
+    assert _tras(svg, nombre, 3)[1:] == [f"N {u['N'][h]}", f"V̂ {ubarra}"]

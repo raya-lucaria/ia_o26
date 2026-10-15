@@ -580,7 +580,7 @@ La siguiente es una **secuencia impuesta de 31 simulaciones**, no una corrida al
 
 Las 29 partidas favorables alternan p y q. De la simulación 2 a la 30, los dos entregan A; la primera simulación, con solo B conocida, entrega B. La 31 lleva el promedio a $(29\cdot10-30)/30=26/3\approx8.67$.
 
-**En la simulación 31**, la actualización minimax salta a $-30$ y entrega B. El promedio conserva A; incluso su límite $-10/3$ seguirá por encima de B.
+**En la simulación 31**, la actualización minimax fija $\widehat Q(A)=-30$ y entrega B. El promedio conserva A; incluso su límite $-10/3$ seguirá por encima de B.
 
 **Tramo 2 · Subir la respuesta certera.**
 
@@ -610,7 +610,7 @@ Con semilla 0 y 60 simulaciones, la primera visita a r ocurre en la novena. Aqu�
 ![Tres paneles con los mismos ejes sobre el árbol de la refutación (A con +10, +10 y −30; B con −10). Primero, el promedio de la secuencia impuesta: Q̂(A) se queda en 10 y baja a 8.67 tras el −30, con su límite −10/3 marcado arriba de B. Segundo, la actualización minimax: Q̂(A) salta de 10 a −30 y la jugada entregada cambia a B. Tercero, una corrida real de UCT con pagos divididos entre 30, c = 1, semilla 0 y 60 vueltas, dibujada de vuelta en la escala del juego. Su promedio de A baja poco a poco desde la vuelta 5 y queda debajo del de B en la 13; termina en −20. B es la más visitada desde la vuelta 15](../_assets/jue-c3-refutacion-tres.svg)
 :::
 
-El panel de UCT usa pagos divididos entre 30, rango $[-1,1]$, $c=1$, semilla 0 y 60 vueltas. Descubre $-30$ en la vuelta 5; su promedio de A queda debajo del de B en la vuelta 13.
+En el panel de UCT, cada **vuelta** es una simulación que primero elige por el árbol, con un bono de peso $c=1$; los pagos van divididos entre 30. Encuentra el $-30$ en la vuelta 5 y, aun promediando, entrega B desde la 15: MIN manda cada vez más vueltas a la refutación. Por qué lo hace se ve en la página siguiente.
 
 **Recorrido: el árbol de resultados.**
 
@@ -835,7 +835,6 @@ Porque importan tanto las continuaciones que seleccionan como la forma de actual
 |---|---|---|---|
 | Monte Carlo plano | $N$ y suma en la raíz | No sube entre estados | $Q_{\text{azar}}$ |
 | Actualización minimax | $\widehat Q$ y $\widehat V$ | Máximo y mínimo | $Q$ y $V$, bajo su contrato |
-| UCT (página siguiente) | — | Promedia, pero selecciona mejor | Se explica en la página siguiente |
 :::
 
 **El promedio al azar sí converge, pero al valor de jugar al azar.** La actualización minimax converge a $V$ bajo su contrato, aunque puede requerir descubrir todo el árbol.
@@ -878,7 +877,8 @@ El panel de UCT de la figura es otro anticipo: sus cifras se explican en la pág
 - **La actualización minimax** usa las mismas partidas, guarda lo
   descubierto y sube: ${\widehat V(z)=U(z)}$, ${\widehat Q(s,a)=\widehat V(T(s,a))}$,
   máximo en MAX y mínimo en MIN. Las jugadas no visitadas son desconocidas,
-  nunca cero. La refutación la lleva a ${-30}$ en esa misma actualización.
+  nunca cero. Al descubrir la refutación, ${\widehat Q(A)}$ baja a ${-30}$ en esa
+  misma actualización.
 - **Converge a $V$** en un árbol finito, determinista y de ramificación
   finita, con todas las jugadas posibles, finales reales y lo descubierto
   guardado. En el árbol de resultados, con semilla 0, queda resuelta en 17 simulaciones;

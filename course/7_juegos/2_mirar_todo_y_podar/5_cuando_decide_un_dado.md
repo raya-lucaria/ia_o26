@@ -567,15 +567,15 @@ Cambia d3, la tercera hoja de D, de ${+1}$ a ${-1}$, con el dado parejo en D.
 
 #### 2 · Elección: qué jugada juega
 
-**Cuando la raíz cerró todas sus jugadas**, juega la de **mayor $Q$
-esperado**. Si varias empatan, juega la primera en el orden de $A(s)$: el
+**Cuando la raíz cerró todas sus jugadas**, juega la de **mayor $Q$**. Si
+varias empatan, juega la primera en el orden de $A(s)$: el
 $>$ de la línea 5 es estricto.
 
 ::: table {#jue-c2-tab-eleccion-azar title="Explorar y jugar con expectiminimax"}
 | Decisión | Qué compara | Cuándo |
 |---|---|---|
 | Explorar | $Q$; máximo, mínimo o esperanza | En cada nodo |
-| Jugar | $Q$ esperado; mejora estricta | Al cerrar la raíz |
+| Jugar | $Q$; mejora estricta | Al cerrar la raíz |
 :::
 
 - **Explorar y jugar usan el mismo número.** La elección es la regla del
@@ -585,7 +585,7 @@ $>$ de la línea 5 es estricto.
 
 #### 3 · Propiedades
 
-- **Número que da:** el $Q$ esperado exacto de cada jugada de la raíz y
+- **Número que da:** el $Q$ exacto de cada jugada de la raíz y
   $V(s_{\text{raíz}})$ del juego con azar. El algoritmo no tira dados:
   enumera todos los resultados con su $\Pr(a\mid s)$.
 - **Usa EVAL:** no. No estima posiciones: trabaja con los pagos $U$ de

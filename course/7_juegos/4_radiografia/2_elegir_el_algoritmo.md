@@ -278,7 +278,7 @@ Lo nuevo frente a la página: no hay tabla ni árbol dados; el diagnóstico es t
 
 1. Contesta: ¿cabe el árbol?, ¿hay dados?, ¿hay una EVAL buena?, ¿hay reloj?, ¿es de suma cero entre dos?
 2. Recorre el mapa de la sección 3 y di en qué rama acabas.
-3. Di qué jugada entrega tu algoritmo al acabarse el reloj, y qué número la sostiene. ¿Es $V$?
+3. Di qué jugada entrega tu algoritmo al acabarse el reloj, qué número usa para entregarla y qué valor estima. ¿Alguno de esos valores es $V$?
 4. Variante: el tablero es de 3×3. ¿Cambia tu elección?
 5. Variante: juegan Rojo, Azul y Verde, por turnos. ¿Qué supuesto se rompe, y qué buscarías en «para ubicar»?
 :::
@@ -300,7 +300,7 @@ No hay dados. No se tiene una EVAL confiable: la obvia, el grupo más grande, en
 
 La actualización minimax también es de la rama 4, pero tendría que guardar todo lo descubierto, y en 10 segundos un máximo con pocas muestras engaña.
 
-**3. Lo que entrega.** Al acabarse los 10 segundos, la jugada **más visitada**. La sostiene $\widehat Q$, un promedio de vueltas, no $V$. Con vueltas sin límite y cualquier $c>0$, tendería a la de minimax; 10 segundos no son tiempo sin límite.
+**3. Lo que entrega.** Al acabarse los 10 segundos, UCT entrega la jugada **más visitada**: compara $N(s_{\text{raíz}},a)$, no $\widehat Q$. El $\widehat Q(s_{\text{raíz}},a)$ asociado estima el valor de la jugada, pero no decide la entrega y, con presupuesto finito, no es $Q$ ni $V$. En un árbol finito, con una $c>0$ fija y vueltas sin límite, la jugada más visitada tendería a una de minimax; 10 segundos no son tiempo sin límite.
 
 **4. Tablero de 3×3.** Son 9 jugadas: $9!=$ 362 880 partidas. Cabe: rama 1, alfa-beta, y la jugada sale con su $V$ exacto. El tamaño cambia la primera respuesta del mapa, y con ella todo lo demás.
 

@@ -550,7 +550,9 @@ function vista(b) {
     const jug = alg.mas_simulada[t - 1];
     for (const id in tras) {
       const [n, s] = tras[id];
-      r.valores[id] = id !== RAIZ ? [`N ${n}`, `Q̂ ${fraccion(s, n)}`] : [`N ${n}`];
+      /* en un nodo, N y V̂; Q̂ es de la arista y va en la tarjeta. La raíz,
+         solo N: su V̂ promedio no es el valor que entrega */
+      r.valores[id] = id !== RAIZ ? [`N ${n}`, `V̂ ${fraccion(s, n)}`] : [`N ${n}`];
     }
     const h = HIJO_DE[jug];
     /* la fila es la de la vuelta final; a media corrida se compara con V aquí */

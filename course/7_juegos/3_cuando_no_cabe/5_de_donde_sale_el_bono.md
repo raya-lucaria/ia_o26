@@ -101,12 +101,12 @@ Tras esas tres vueltas, $\widehat Q(\text{x})=-1$, $\widehat Q(\text{y})=-1$ y $
 2. **Nunca, en esta corrida.** x e y no se vuelven a probar y se quedan en $-1$, el mínimo posible. z ya ganó una vez, así que su promedio nunca baja a $-1$. Tras 1000 vueltas, x e y llevan una simulación cada una y z, 998: la regla se atoró en la peor jugada.
 :::
 
-**Los dos errores no cuestan lo mismo.** Un promedio solo se corrige si sigue recibiendo muestras: sin límite de muestras converge a su esperanza. La regla del mejor promedio puede abandonar una jugada antes de corregirla, incluso si todavía la sobreestima.
+**Los dos errores no cuestan lo mismo.** Un promedio solo se corrige si sigue recibiendo muestras. Una jugada sobreestimada estorba mientras encabeza, y mientras encabeza recibe muestras que la bajan; si se congela, es porque otra la rebasó, y ya no decide nada. Una jugada subestimada puede no volver a probarse nunca.
 
 ::: table {#jue-c3-tabla-optimismo title="Equivocarse por arriba o por abajo"}
 | Error | Qué puede pasar |
 |---|---|
-| Creer buena una mala | Mientras encabece los promedios recibe muestras y su $\widehat Q$ se acerca a su esperanza; si deja de elegirse, **queda congelada** |
+| Creer buena una mala | Mientras encabece recibe muestras y su $\widehat Q$ baja hacia su esperanza; si otra la rebasa puede quedar congelada, pero ya no es la elegida |
 | Creer mala una buena | Puede dejar de probarse y **conservar para siempre** una subestimación |
 :::
 
@@ -247,7 +247,7 @@ $$
 **Qué no es.** No es un pago: es un **puntaje**. Puede pasar de $+1$, y no es la $\beta$ de alfa-beta ni una cota segura de la tabla de transposición.
 :::
 
-**Con $\delta$ fijo, la cota se congela.** Su margen depende solo de su propia $N(s,a)$: si deja de elegirse, su cota no se mueve. Y en miles de vueltas, un 5 % de mala suerte ocurre muchas veces.
+**Con $\delta$ fijo, la cota puede quedarse congelada.** Su margen depende solo de su propia $N(s,a)$: si la jugada deja de elegirse, su cota no se mueve. Y el 5 % acota el fallo de **una** comprobación con $N$ fijo; no es una frecuencia. En miles de vueltas se hacen miles de comprobaciones, y la probabilidad de que alguna falle ya no queda acotada por ese 5 %.
 
 **El arreglo: pedir más confianza conforme avanza el reloj.** Con $\delta=N(s)^{-4}$, $\ln(1/\delta)=4\ln N(s)$ y el margen queda
 

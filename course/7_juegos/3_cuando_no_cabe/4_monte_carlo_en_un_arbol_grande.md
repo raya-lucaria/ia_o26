@@ -89,13 +89,13 @@ Los ejemplos con otra escala de pagos la declaran.
 Uno por jugada: cuántas veces la tomó y cuánto pagaron, en promedio, esas vueltas.
 
 - **Qué valor rastrea:** $\widehat Q(s,a)$, el promedio de los pagos de las vueltas que tomaron la jugada $a$ en $s$; estima $Q(s,a)$, siempre desde MAX.
-- **Dónde lo guarda:** por arista, $N(s,a)$ y $\widehat Q(s,a)$; por estado, las visitas $N(s)$ del padre. Empieza con solo la raíz.
+- **Dónde lo guarda:** por arista, $N(s,a)$ y $\widehat Q(s,a)$; por estado, $N(s)$ y $\widehat V(s)$, el promedio de los pagos de las vueltas que pasaron por $s$. Empieza con solo la raíz.
 - **Cómo sube:** el **mismo $U$** de cada vuelta entra en el promedio de cada arista del camino. Promedia; no toma máximos ni mínimos.
 - **A qué converge:** en un árbol finito, con $c>0$ fija y vueltas sin límite, cada $\widehat Q(s,a)$ tiende a $Q(s,a)$. Con un presupuesto fijo, no hay garantía.
 
 **Otra notación.** Otros textos escriben $Q(s,a)$ para el promedio. Aquí $Q$ es el valor exacto y el gorro marca la estimación.
 
-**Un dibujo, dos lecturas.** En nuestros árboles cada hijo tiene un solo padre. Por eso $N(s,a)$ y $\widehat Q(s,a)$ pueden dibujarse junto a $s'=T(s,a)$: es una representación, no otra definición.
+**Un dibujo, dos lecturas.** En nuestros árboles cada hijo tiene un solo padre: las vueltas que cruzan la arista $(s,a)$ son las mismas que pasan por $s'=T(s,a)$. Por eso $N(s,a)=N(s')$ y $\widehat Q(s,a)=\widehat V(s')$, y las figuras dibujan junto al hijo su $N$ y su $\widehat V$: es una representación, no otra definición.
 
 ::: figure {#jue-c3-fig-flujo-uct title="UCT, en palabras"}
 ![Flujo de UCT: selección, expansión, simulación y retropropagación en ciclo; al acabarse el tiempo, juega la más visitada](../_assets/jue-c3-rx-flujo-uct.svg)
@@ -108,7 +108,7 @@ Uno por jugada: cuántas veces la tomó y cuánto pagaron, en promedio, esas vue
 1. **Selección (*selection*).** Desde la raíz, baja por los nodos guardados. En un nodo con todos sus hijos agregados, elige con el puntaje UCT. Se detiene en el primer nodo con una jugada sin agregar, o en un final.
 2. **Expansión (*expansion*).** Agrega la primera jugada pendiente, en el orden dado, como **un hijo nuevo**: a lo más un nodo por vuelta. Si llegó a un final, no agrega nada.
 3. **Simulación (*rollout*).** Desde el hijo nuevo, juega al azar para los dos hasta un final. Ese camino no se guarda, como en Monte Carlo plano. Si el hijo nuevo ya es final, toma su $U$ sin simular.
-4. **Retropropagación (*backpropagation*).** Sube ese $U$ hasta la raíz. Cada estado del camino suma una visita a $N(s)$; cada arista suma una a $N(s,a)$ y mete $U$ en su $\widehat Q(s,a)$.
+4. **Retropropagación (*backpropagation*).** Sube ese $U$ hasta la raíz. Cada estado del camino suma una visita a $N(s)$ y mete $U$ en su $\widehat V(s)$; cada arista suma una a $N(s,a)$ y mete $U$ en su $\widehat Q(s,a)$.
 
 **El signo no cambia al subir:** todo se mide desde MAX, también donde mueve MIN.
 
@@ -185,7 +185,7 @@ $\widehat V(s)$ es el promedio de las vueltas que pasaron por $s$, no el máximo
 | a2 | $1$, $-1$ | $2$, $0$ |
 | nuevo | — | $1$, $+1$ |
 
-Cada pago mueve un promedio $1/N$ de la distancia hacia ese pago, con $N$ ya incrementado. **Fuera del camino**, a1 y b no cambian. Cada vuelta aporta un resultado, y decimos que esa simulación «pasó por» cada nodo del camino. Pero solo el tramo debajo del hijo nuevo se jugó al azar: arriba, el camino lo eligió la selección.
+Cada pago mueve un promedio $1/N$ de la distancia hacia ese pago, con $N$ ya incrementado. **Fuera del camino**, a1 y b no cambian. Cada vuelta aporta un pago, que se retropropaga por cada estado y arista del camino. Solo el tramo desde el hijo nuevo hasta el final es la simulación: arriba, la selección eligió el camino.
 
 ::: figure {#jue-c3-fig-mcts title="Una vuelta de UCT: la raíz pasa de N 4 a N 5"}
 ![Cuatro paneles con el mismo árbol; cada nodo dice N, sus visitas, y V̂, el promedio de U de las vueltas que pasaron por él, desde MAX. La raíz es de MAX; sus dos hijos, de MIN. 1, selección: desde la raíz, N 4 y V̂ 0, MAX baja al hijo de N 3 y V̂ +0.33; ahí MIN baja al de N 1 y V̂ −1. 2, expansión: aparece un hijo nuevo bajo ese nodo. 3, simulación: desde el hijo nuevo, una línea quebrada llega a un final con U = +1. 4, retropropagación: cada nodo del camino suma una visita y mete U en su promedio; la raíz pasa a N 5 y V̂ +0.2. Los nodos fuera del camino no cambian](../_assets/jue-c3-mcts-pasos.svg)

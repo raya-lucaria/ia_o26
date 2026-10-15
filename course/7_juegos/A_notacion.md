@@ -252,9 +252,9 @@ con muestras lleva gorro, como $\widehat Q$.
 | Esquinas redondas | Nodo de azar |
 | Caja o círculo punteado con «?» | Estado que el recorrido nunca genera; en la actualización minimax, una jugada desconocida |
 | Etiqueta «exacto» bajo el $\widehat V$ de un nodo | En la actualización minimax: su valor ya no cambia, el nodo está resuelto. Sin la etiqueta, el $\widehat V$ todavía puede cambiar |
-| Línea punteada de color | Dónde se corta la búsqueda; su pastilla dice el $d$ de la raíz. Desde «Hasta dónde mirar» se llama horizonte |
+| Línea punteada de color | Dónde se corta la búsqueda; su etiqueta indica el $d$ de la raíz. Desde «Hasta dónde mirar» se llama horizonte |
 | Barra bajo un nodo | Ahí hubo una poda (un corte alfa o beta): los hermanos que siguen no se generan |
-| Etiqueta «cota» bajo el $v$ de un nodo | Lo que devuelve (su $v$, que el padre recibe como $w$) tocó o salió de la ventana de entrada: solo garantiza un techo o un piso de su valor (puede coincidir con él, pero no se sabe) |
+| Etiqueta «cota» bajo el $v$ de un nodo | Lo que devuelve (su $v$, que el padre recibe como $w$) tocó o salió de la ventana de entrada: la ventana solo certifica un techo o un piso de su valor. Coincide con el valor exacto cuando otra cosa lo demuestra, como un techo que ya es el pago más bajo posible; si no, guardarlo como exacto puede hacer elegir mal |
 | Barras en el tiempo, línea del reloj | Cada barra es una búsqueda y su largo, los nodos que genera; la línea marca dónde se acaba el reloj |
 | $N$ y $\widehat V$ en un nodo, $\widehat Q$ junto a una arista | En MCTS: visitas y estimación del estado; estimación de la jugada |
 | Círculo con número | Orden en que un recorrido visita el nodo |

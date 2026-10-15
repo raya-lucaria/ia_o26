@@ -62,8 +62,8 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-c3-rx-quietud.svg` | Radiografía de la búsqueda de quietud a d = 1 en el árbol de resultados: sigue la captura ix, I pasa de EVAL 60 a −100; juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-iterativa.svg` | Radiografía de la profundización iterativa en el árbol de resultados: tres paneles, d = 1, 2 y 3, con 4, 9 y 12 nodos y los cortes α y β rotulados | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-mc-plano.svg` | Radiografía de Monte Carlo plano en el árbol de resultados (5 partidas por jugada, semilla 0): por dónde pasaron las partidas, que no se guardan, y los contadores de la raíz; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-rx-uct-12.svg` | Radiografía de UCT en el árbol de resultados (c = 1, semilla 0) tras 12 vueltas: su árbol de 10 nodos con N y Q̂, lo que aún no agrega; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-rx-uct-40.svg` | Radiografía de UCT en el árbol de resultados (c = 1, semilla 0) tras 40 vueltas: su árbol de 15 nodos con N y Q̂; juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-rx-uct-12.svg` | Radiografía de UCT en el árbol de resultados (c = 1, semilla 0) tras 12 vueltas: su árbol de 10 nodos con N y V̂, lo que aún no agrega; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-rx-uct-40.svg` | Radiografía de UCT en el árbol de resultados (c = 1, semilla 0) tras 40 vueltas: su árbol de 15 nodos con N y V̂; juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-flujo-minimax.svg` | Diagrama de flujo de minimax, en palabras | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-flujo-alfa-beta.svg` | Diagrama de flujo de alfa-beta, en palabras | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-flujo-corte.svg` | Diagrama de flujo del corte por profundidad, en palabras | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
