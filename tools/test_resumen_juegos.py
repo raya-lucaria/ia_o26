@@ -108,13 +108,24 @@ def test_lo_que_viene_va_en_palabras_llanas_y_solo_trae_lo_que_falta(archivo):
         assert any(gen.SIN_PENDIENTES in s for s in bloque[k + 1:])
 
 
+def tramos_de_ficha(lineas):
+    """(i_ficha, i_cierre) de cada «## Ficha: …», con el cierre que la sigue.
+
+    Una página que absorbió a otra trae una ficha y un cierre por cada parte;
+    cada ficha se mide contra su propio cierre, no contra el primero."""
+    tramos = []
+    for i, s in enumerate(lineas):
+        if s.startswith("## Ficha: "):
+            tramos.append((i, lineas.index(gen.CIERRE, i)))
+    assert tramos, "la página no tiene «## Ficha: …»"
+    return tramos
+
+
 def fichas(archivo):
     """{nombre del algoritmo: {rasgo: celda}} de cada `::: table {#jue-ficha-…}`
-    entre «## Ficha: …» y el cierre, en orden."""
+    entre cada «## Ficha: …» y su cierre, en el orden de la página."""
     lineas = texto(archivo).split("\n")
-    i_ficha = next(i for i, s in enumerate(lineas) if s.startswith("## Ficha: "))
-    i_cierre = lineas.index(gen.CIERRE)
-    tramo = "\n".join(lineas[i_ficha:i_cierre])
+    tramo = "\n\n".join("\n".join(lineas[i:k]) for i, k in tramos_de_ficha(lineas))
     salida = {}
     for m in re.finditer(r"^::: table \{#jue-ficha-[a-z-]+ title=\"[^\"]+\"\}\n(.*?)^:::",
                          tramo, re.M | re.S):
@@ -134,19 +145,26 @@ def fichas(archivo):
 def test_la_ficha_va_antes_del_cierre_con_sus_siete_rasgos(archivo):
     t = texto(archivo)
     lineas = t.split("\n")
-    i_ficha = next(i for i, s in enumerate(lineas) if s.startswith("## Ficha: "))
-    i_cierre = lineas.index(gen.CIERRE)
-    assert i_ficha < i_cierre
-    assert not re.search(r"\$|\[\[", lineas[i_ficha]), "la ficha no lleva LaTeX ni enlaces en su encabezado"
+    tramos = tramos_de_ficha(lineas)
+    lugares = gen.localizar_todos(lineas)
+    for i_ficha, i_cierre in tramos:
+        assert i_ficha < i_cierre
+        assert not re.search(r"\$|\[\[", lineas[i_ficha]), "la ficha no lleva LaTeX ni enlaces en su encabezado"
+        # El recuadro va justo después de la ficha, antes de su cierre.
+        assert any(i_ficha < i < i_cierre for i, _ in lugares), (
+            f"{archivo}: la ficha de la línea {i_ficha + 1} no lleva su recuadro antes del cierre")
     f = fichas(archivo)
     assert f, f"{archivo}: la ficha no está en un ::: table {{#jue-ficha-…}}"
     propios = [a["nombre"] for a in gen.ALGORITMOS if a["archivo"] == archivo]
-    assert list(f) == propios, "una ficha por algoritmo de la página, en el orden del curso"
+    # Una ficha por algoritmo de la página. En una página que absorbió a otra
+    # van en el orden de la página (la de «Jugar contra el reloj» trae
+    # iterativa y luego quietud); el orden del curso lo fija el recuadro.
+    assert sorted(f) == sorted(propios) and len(f) == len(propios), (
+        "una ficha por algoritmo de la página")
+    if len(tramos) == 1:
+        assert list(f) == propios, "una ficha por algoritmo de la página, en el orden del curso"
     for nombre, rasgos in f.items():
         assert rasgos["_orden"] == RASGOS, nombre
-    # El recuadro va justo después de la ficha.
-    lugar = gen.localizar(lineas)
-    assert lugar and i_ficha < lugar[0] < i_cierre
 
 
 @pytest.mark.parametrize("archivo", PAGINAS)

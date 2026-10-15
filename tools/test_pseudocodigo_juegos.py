@@ -27,13 +27,13 @@ HORIZONTE = "B..." + "..BB" + "..N." + "NN.."  # la posicion de la clase 3
 
 PAGINAS = {
     CLASE_2 / "2_minimax_como_algoritmo.md": ["minimax", "decidir_minimax"],
-    CLASE_2 / "3_cuando_decide_un_dado.md": [
+    CLASE_2 / "5_cuando_decide_un_dado.md": [
         "expectiminimax", "decidir_expectiminimax"],
-    CLASE_2 / "5_alfa_beta_como_algoritmo.md": [
+    CLASE_2 / "4_alfa_beta_como_algoritmo.md": [
         "alfa_beta", "decidir_alfa_beta"],
-    CLASE_3 / "2_minimax_con_corte.md": [
+    CLASE_3 / "1_cortar_y_evaluar.md": [
         "minimax_con_corte", "decidir_con_corte"],
-    CLASE_3 / "4_jugar_contra_el_reloj.md": [
+    CLASE_3 / "2_jugar_contra_el_reloj.md": [
         "alfa_beta_con_corte", "profundizacion_iterativa"],
 }
 
@@ -42,7 +42,7 @@ PAGINAS = {
 # corta que la pagina presenta antes de la completa. Se nombran por su
 # funcion para que la excepcion no tape un bloque nuevo sin Python.
 SOLO_PSEUDO = {
-    CLASE_3 / "4_jugar_contra_el_reloj.md": ["PROFUNDIZAR-SIN-PODA"],
+    CLASE_3 / "2_jugar_contra_el_reloj.md": ["PROFUNDIZAR-SIN-PODA"],
 }
 
 
@@ -145,7 +145,7 @@ def test_minimax_en_python():
 
 
 def test_expectiminimax_en_python():
-    pagina = CLASE_2 / "3_cuando_decide_un_dado.md"
+    pagina = CLASE_2 / "5_cuando_decide_un_dado.md"
     ns, _ = cargar(pagina, azar=True)
     e = ns["expectiminimax"]
     n3 = j.mover(SUBARBOL, jugada(SUBARBOL, "c1xb2"))
@@ -171,7 +171,7 @@ def test_expectiminimax_en_python():
     (j.inicio(), True, -1, 72),
 ])
 def test_alfa_beta_en_python(tablero, invertir, valor, nodos):
-    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    pagina = CLASE_2 / "4_alfa_beta_como_algoritmo.md"
     ns, c = cargar(pagina, invertir=invertir)
     inf = float("inf")
     assert ns["alfa_beta"]((tablero, "B"), -inf, inf) == valor
@@ -188,7 +188,7 @@ def test_alfa_beta_en_python(tablero, invertir, valor, nodos):
 def test_decidir_alfa_beta_en_python(tablero, invertir, entrega, nodos):
     """DECIDIR-ALFA-BETA genera lo mismo que ALFA-BETA en la raiz y, en n1,
     entrega c1-c2 en los dos ordenes."""
-    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    pagina = CLASE_2 / "4_alfa_beta_como_algoritmo.md"
     ns, c = cargar(pagina, invertir=invertir)
     a = ns["decidir_alfa_beta"]((tablero, "B"))
     assert j.nombre_jugada(tablero, a) == entrega
@@ -198,7 +198,7 @@ def test_decidir_alfa_beta_en_python(tablero, invertir, entrega, nodos):
 def test_en_la_raiz_una_cota_que_empata_no_gana():
     """La regla del empate: en orden fijo, c1xb2 devuelve +1 (una cota) y su
     valor exacto es -1. Con >= en la linea 5, DECIDIR elegiria c1xb2."""
-    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    pagina = CLASE_2 / "4_alfa_beta_como_algoritmo.md"
     ns, _ = cargar(pagina)
     n3 = (j.mover(SUBARBOL, jugada(SUBARBOL, "c1xb2")), "N")
     assert ns["alfa_beta"](n3, 1, float("inf")) == 1
@@ -214,7 +214,7 @@ def test_en_la_raiz_una_cota_que_empata_no_gana():
 def test_sin_el_igual_se_pierde_casi_toda_la_poda():
     """El ejercicio «Decide si importa el igual»: con < y > estrictos en las
     lineas 14 y 22, n1 genera los 13 y el juego completo 228 y 171."""
-    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    pagina = CLASE_2 / "4_alfa_beta_como_algoritmo.md"
     codigo = bloques_python(pagina)[0]
     assert "if v >= beta:" in codigo and "if v <= alfa:" in codigo
     estricto = codigo.replace("if v >= beta:", "if v > beta:").replace(
@@ -233,7 +233,7 @@ def test_sin_el_igual_se_pierde_casi_toda_la_poda():
 
 def test_alfa_beta_en_python_con_ventana_estrecha():
     """Con alfa = -1 y beta = +1, como en «Para profundizar»."""
-    pagina = CLASE_2 / "5_alfa_beta_como_algoritmo.md"
+    pagina = CLASE_2 / "4_alfa_beta_como_algoritmo.md"
     for tablero, invertir in [(SUBARBOL, False), (j.inicio(), False),
                               (j.inicio(), True)]:
         ns, c = cargar(pagina, invertir=invertir)
@@ -243,7 +243,7 @@ def test_alfa_beta_en_python_con_ventana_estrecha():
 
 
 def test_minimax_con_corte_en_python():
-    pagina = CLASE_3 / "2_minimax_con_corte.md"
+    pagina = CLASE_3 / "1_cortar_y_evaluar.md"
     ns, c = cargar(pagina, n=4)
     m = ns["minimax_con_corte"]
     # Valor de cada jugada de la raiz con d = 3: -9, 100 y 1.
@@ -293,7 +293,7 @@ def reloj(presupuesto, contador):
     (10 ** 5, "d2-d3"),  # sale en la linea 9 mucho antes de agotarlo
 ])
 def test_profundizacion_iterativa_en_python(presupuesto, entrega):
-    pagina = CLASE_3 / "4_jugar_contra_el_reloj.md"
+    pagina = CLASE_3 / "2_jugar_contra_el_reloj.md"
     ns, c = cargar(pagina, n=4)
     ns["queda_tiempo"] = reloj(presupuesto, c)
     a = ns["profundizacion_iterativa"]((HORIZONTE, "B"))
@@ -301,7 +301,7 @@ def test_profundizacion_iterativa_en_python(presupuesto, entrega):
 
 
 def test_profundizacion_iterativa_en_python_genera_4_10_y_9():
-    pagina = CLASE_3 / "4_jugar_contra_el_reloj.md"
+    pagina = CLASE_3 / "2_jugar_contra_el_reloj.md"
     ns, c = cargar(pagina, n=4)
     # Un reloj holgado: si la linea 9 se rompe, la prueba falla en vez de
     # profundizar para siempre.
@@ -346,9 +346,9 @@ def _reglas_arbol():
 @pytest.mark.parametrize("pagina, decidir, invertido, nodos", [
     (CLASE_2 / "2_minimax_como_algoritmo.md", "decidir_minimax", False, 14),
     (CLASE_2 / "2_minimax_como_algoritmo.md", "decidir_minimax", True, 14),
-    (CLASE_2 / "5_alfa_beta_como_algoritmo.md", "decidir_alfa_beta",
+    (CLASE_2 / "4_alfa_beta_como_algoritmo.md", "decidir_alfa_beta",
      False, 12),
-    (CLASE_2 / "5_alfa_beta_como_algoritmo.md", "decidir_alfa_beta",
+    (CLASE_2 / "4_alfa_beta_como_algoritmo.md", "decidir_alfa_beta",
      True, 14),
 ], ids=lambda x: str(x) if not isinstance(x, Path) else x.stem)
 def test_decidir_en_el_arbol_t_juega_centro(pagina, decidir, invertido,
@@ -368,7 +368,7 @@ def test_alfa_beta_en_el_arbol_t_devuelve_cotas():
     """C2 llega con (3, 5) y devuelve 7 aunque vale 8; D llega con
     (5, +inf) y devuelve 2."""
     ns, _ = _reglas_arbol()
-    exec(bloques_python(CLASE_2 / "5_alfa_beta_como_algoritmo.md")[0], ns)
+    exec(bloques_python(CLASE_2 / "4_alfa_beta_como_algoritmo.md")[0], ns)
     c2 = ARBOL_T[1][1][1][1]
     assert ns["alfa_beta"](c2, 3, 5) == 7 and max(c2[1]) == 8
     assert ns["alfa_beta"](ARBOL_T[1][2], 5, float("inf")) == 2

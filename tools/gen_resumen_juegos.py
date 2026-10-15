@@ -52,7 +52,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="Expectiminimax",
-        archivo=f"{J2}/3_cuando_decide_un_dado.md",
+        archivo=f"{J2}/5_cuando_decide_un_dado.md",
         mira="Los finales",
         numero="El $V$ del juego con dado; lo garantiza",
         garantiza="Sí",
@@ -62,7 +62,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="Alfa-beta",
-        archivo=f"{J2}/5_alfa_beta_como_algoritmo.md",
+        archivo=f"{J2}/4_alfa_beta_como_algoritmo.md",
         mira="Los finales, sin las ramas que ya no deciden",
         numero="$V$ en la raíz; lo garantiza",
         garantiza="Sí",
@@ -72,7 +72,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="Minimax con corte",
-        archivo=f"{J3}/2_minimax_con_corte.md",
+        archivo=f"{J3}/1_cortar_y_evaluar.md",
         mira="$d$ jugadas",
         numero="Valor con corte; no garantiza $V$, salvo si llega a los finales",
         garantiza="No",
@@ -82,7 +82,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="Búsqueda de quietud",
-        archivo=f"{J3}/3_mas_alla_del_horizonte.md",
+        archivo=f"{J3}/2_jugar_contra_el_reloj.md",
         mira="$d$ jugadas, luego solo capturas",
         numero="Valor con quietud; no garantiza $V$, salvo si "
                "llega a los finales antes de cortar",
@@ -92,7 +92,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="Profundización iterativa",
-        archivo=f"{J3}/4_jugar_contra_el_reloj.md",
+        archivo=f"{J3}/2_jugar_contra_el_reloj.md",
         mira="$d=1,2,3,\\dots$ mientras haya reloj",
         numero="Valor con corte de la última búsqueda; no garantiza $V$, salvo si "
                "llega a los finales",
@@ -103,7 +103,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="Monte Carlo plano",
-        archivo=f"{J3}/5_simular_en_vez_de_evaluar.md",
+        archivo=f"{J3}/3_simular_en_vez_de_evaluar.md",
         mira="Los finales, jugando al azar; sin árbol",
         numero="$\\bar u$; no garantiza $V$",
         garantiza="No",
@@ -113,7 +113,7 @@ ALGORITMOS = [
     ),
     dict(
         nombre="MCTS con UCT",
-        archivo=f"{J3}/5_simular_en_vez_de_evaluar.md",
+        archivo=f"{J3}/3_simular_en_vez_de_evaluar.md",
         mira="Un árbol que crece; debajo, partidas al azar",
         numero="$\\bar u$; no garantiza $V$ (con tiempo sin límite converge a él, "
                "con cualquier $c>0$)",
@@ -185,27 +185,45 @@ def bloque(archivo: str) -> str:
     return "\n".join(lineas)
 
 
-def localizar(lineas: list[str]) -> tuple[int, int] | None:
-    """(inicio, fin) del bloque actual, fin exclusivo; None si no hay."""
-    for i, s in enumerate(lineas[:-1]):
-        if s.rstrip() == INICIO and lineas[i + 1].startswith(TITULO):
+def localizar_todos(lineas: list[str]) -> list[tuple[int, int]]:
+    """(inicio, fin) de cada bloque de la página, fin exclusivo, en orden.
+
+    Una página que absorbió a otra (la topología de la homologación concatena
+    páginas enteras) puede traer más de un recuadro: uno por ficha."""
+    lugares = []
+    i = 0
+    while i < len(lineas) - 1:
+        if lineas[i].rstrip() == INICIO and lineas[i + 1].startswith(TITULO):
             j = i + 1
             while j < len(lineas) and lineas[j].strip():
                 j += 1
-            return i, j
-    return None
+            lugares.append((i, j))
+            i = j
+        else:
+            i += 1
+    return lugares
+
+
+def localizar(lineas: list[str]) -> tuple[int, int] | None:
+    """(inicio, fin) del primer bloque, fin exclusivo; None si no hay."""
+    lugares = localizar_todos(lineas)
+    return lugares[0] if lugares else None
 
 
 def contenido(archivo: str, texto: str) -> str:
-    """El texto de la página con su recuadro al día. Pura."""
+    """El texto de la página con sus recuadros al día. Pura.
+
+    Todos los recuadros de la página llevan el mismo bloque: el prefijo que
+    termina en el último algoritmo de la página."""
     lineas = texto.split("\n")
     nuevo = bloque(archivo).split("\n")
-    lugar = localizar(lineas)
-    if lugar:
-        i, j = lugar
-        lineas[i:j] = nuevo
+    lugares = localizar_todos(lineas)
+    if lugares:
+        for i, j in reversed(lugares):
+            lineas[i:j] = nuevo
     else:
-        k = lineas.index(CIERRE)
+        fichas = [i for i, s in enumerate(lineas) if s.startswith("## Ficha: ")]
+        k = lineas.index(CIERRE, fichas[0] if fichas else 0)
         while k > 0 and not lineas[k - 1].strip():
             k -= 1
         lineas[k:k] = [""] + nuevo

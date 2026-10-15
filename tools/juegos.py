@@ -1190,10 +1190,10 @@ LINEAS_RELOJ = {"antes": "2–3", "inicio": "5", "raiz": "7–10", "fin": "11–
 UNIDAD_JUEGOS = Path(__file__).resolve().parent.parent / "course/7_juegos"
 PAGINA_MODO = {
     "minimax": "2_mirar_todo_y_podar/2_minimax_como_algoritmo.md",
-    "azar": "2_mirar_todo_y_podar/3_cuando_decide_un_dado.md",
-    "alfa-beta": "2_mirar_todo_y_podar/4_alfa_beta.md",
-    "corte": "3_cuando_no_cabe/2_minimax_con_corte.md",
-    "iterativa": "3_cuando_no_cabe/4_jugar_contra_el_reloj.md",
+    "azar": "2_mirar_todo_y_podar/5_cuando_decide_un_dado.md",
+    "alfa-beta": "2_mirar_todo_y_podar/3_alfa_beta.md",
+    "corte": "3_cuando_no_cabe/1_cortar_y_evaluar.md",
+    "iterativa": "3_cuando_no_cabe/2_jugar_contra_el_reloj.md",
 }
 FUNCION_MODO = {"minimax": "DECIDIR-MINIMAX", "azar": "DECIDIR-EXPECTIMINIMAX",
                 "alfa-beta": "DECIDIR-ALFA-BETA", "corte": "DECIDIR-CON-CORTE",

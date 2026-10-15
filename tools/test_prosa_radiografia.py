@@ -12,8 +12,8 @@ from pathlib import Path
 import juegos as j
 
 CLASE_3 = Path(__file__).resolve().parent.parent / "course/7_juegos/3_cuando_no_cabe"
-P6 = CLASE_3 / "6_un_arbol_todos_los_algoritmos.md"
-P7 = CLASE_3 / "7_monte_carlo_en_un_arbol_grande.md"
+P6 = CLASE_3.parent / "4_radiografia" / "1_un_arbol_todos_los_algoritmos.md"
+P7 = CLASE_3 / "4_monte_carlo_en_un_arbol_grande.md"
 FICHA_UCT = Path("/home/uumami/itam/ia_o26/.superpowers/unidad/juegos/radiografia/ficha-uct-v4.md")
 
 # Sin cursivas en el título: el índice «On this page» imprime los asteriscos.
@@ -167,19 +167,17 @@ def test_las_dos_paginas_van_sin_ejercicios_ni_referencias_hacia_adelante():
 
 def test_la_navegacion_va_de_la_5_a_la_6_a_la_7_al_bono_a_la_tarea():
     cierre = lambda p: _texto(p).rstrip().splitlines()[-1]
-    assert cierre(CLASE_3 / "5_simular_en_vez_de_evaluar.md") == (
+    assert cierre(CLASE_3 / "3_simular_en_vez_de_evaluar.md") == (
         "Continúa con [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]].")
     assert cierre(P6) == (
-        "Continúa con [[monte-carlo-en-un-arbol-grande|Monte Carlo y UCT en un árbol grande]].")
+        "Continúa con [[elegir-el-algoritmo|Elegir el algoritmo]].")
     assert "[[de-donde-sale-el-bono|De dónde sale el bono]]" in cierre(P7)
-    assert cierre(CLASE_3 / "8_de_donde_sale_el_bono.md") == (
+    assert cierre(CLASE_3 / "5_de_donde_sale_el_bono.md") == (
         "Continúa con la [[tarea-cuando-no-cabe|tarea de la clase]].")
     nombres = sorted(p.name for p in CLASE_3.glob("*.md"))
-    assert nombres == ["0_index.md", "1_cortar_y_evaluar.md", "2_minimax_con_corte.md",
-                       "3_mas_alla_del_horizonte.md", "4_jugar_contra_el_reloj.md",
-                       "5_simular_en_vez_de_evaluar.md", "6_un_arbol_todos_los_algoritmos.md",
-                       "7_monte_carlo_en_un_arbol_grande.md", "8_de_donde_sale_el_bono.md",
-                       "9_tarea.md"]
+    assert nombres == ["0_index.md", "1_cortar_y_evaluar.md", "2_jugar_contra_el_reloj.md",
+                       "3_simular_en_vez_de_evaluar.md", "4_monte_carlo_en_un_arbol_grande.md",
+                       "5_de_donde_sale_el_bono.md", "6_tarea.md"]
 
 
 def test_ningun_titulo_de_las_dos_paginas_lleva_enfasis():

@@ -747,4 +747,4 @@ El costo cuenta una unidad por nodo generado o por jugada simulada, con recorrid
 
 **La EVAL no es lo que decide entre alfa-beta y MCTS:** se pueden combinar. Un MCTS puede valorar el hijo nuevo con una estimación en lugar de simular, o junto con la simulación, como hacía AlphaGo.
 
-Continúa con [[monte-carlo-en-un-arbol-grande|Monte Carlo y UCT en un árbol grande]].
+Continúa con [[elegir-el-algoritmo|Elegir el algoritmo]].

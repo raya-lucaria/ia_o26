@@ -141,7 +141,7 @@ def _dom(fragmento):
 def test_los_enlaces_de_las_paginas_abren_lo_que_prometen():
     """5_alfa_beta_como_algoritmo promete «el corte beta de C2» y «C y C1 a
     la vez en la pila, C1 sube su α en la línea 15»."""
-    pagina = (g.RAIZ / "course/7_juegos/2_mirar_todo_y_podar/5_alfa_beta_como_algoritmo.md"
+    pagina = (g.RAIZ / "course/7_juegos/2_mirar_todo_y_podar/4_alfa_beta_como_algoritmo.md"
               ).read_text(encoding="utf-8")
     enlaces = re.findall(r"traza_arbol_t\.html#([\w-]+)\)", pagina)
     assert "alfa-beta-fila-12" in enlaces and "alfa-beta-fila-8" in enlaces

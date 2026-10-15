@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, se corta la búsqueda y se estima cada posición. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 327m
+estimated_time: 238m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -93,31 +93,27 @@ Tres ejemplos, cada uno con su papel:
 
 ## Recorrido
 
-Ocho páginas de lectura y una tarea, en orden. La 6 compara los cinco algoritmos en un mismo árbol. La 7 mira los dos Monte Carlo en uno grande. Las dos primeras van en par, como en la clase 2:
-primero **a mano** y después **como algoritmo**.
+Cinco páginas de lectura y una tarea, en orden. La radiografía que compara
+todos los algoritmos en un mismo árbol tiene su propia sección, al final
+de la unidad: [[juegos-radiografia|Radiografía de los algoritmos]].
 
 ::: table {#jue-ruta-3 title="Las páginas de esta clase"}
 | | Minutos | Página y qué resuelve |
 |---|---:|---|
-| 1 | 30m | **Cortar y evaluar a mano.** Cortar la búsqueda y estimar, a profundidad 1, 2 y 3 |
-| 2 | 42m | **Minimax con corte como algoritmo.** Qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta |
-| 3 | 22m | **Más allá del horizonte.** Por qué un corte fijo engaña, y buscar más donde hay capturas |
-| 4 | 37m | **Jugar contra el reloj.** Qué jugada entregar cuando se acaba el tiempo |
-| 5 | 31m | **Simular en vez de evaluar.** Estimar con partidas al azar, sin escribir una evaluación |
-| 6 | 89m | **Radiografía: un árbol, cinco algoritmos.** Cómo explora cada algoritmo, qué número da, qué juega y cuánto cuesta |
-| 7 | 30m | **Monte Carlo y UCT en un árbol grande.** Simular caminos al azar y hacer crecer un árbol desigual |
-| 8 | 46m | **De dónde sale el bono.** Por qué UCT suma ese bono: el margen de error de un promedio |
-| 9 | 50m, aparte | **Tarea de refuerzo.** Proponer y usar una evaluación de gato, y otra posición de peones |
+| 1 | 72m | **Cortar y evaluar.** Cortar la búsqueda, estimar posiciones a profundidad 1, 2 y 3, y escribirlo como algoritmo: qué recibe, qué jugada devuelve, qué garantiza y cuánto cuesta |
+| 2 | 59m | **Jugar contra el reloj.** Qué jugada entregar cuando se acaba el tiempo, por qué un corte fijo engaña y buscar más donde hay capturas |
+| 3 | 31m | **Simular en vez de evaluar.** Estimar con partidas al azar, sin escribir una evaluación |
+| 4 | 30m | **Monte Carlo y UCT en un árbol grande.** Simular caminos al azar y hacer crecer un árbol desigual |
+| 5 | 46m | **De dónde sale el bono.** Por qué UCT suma ese bono: el margen de error de un promedio |
+| 6 | 50m, aparte | **Tarea de refuerzo.** Proponer y usar una evaluación de gato, y otra posición de peones |
 :::
 
-1. [[cortar-y-evaluar|Cortar y evaluar a mano]]
-2. [[minimax-con-corte|Minimax con corte como algoritmo]]
-3. [[mas-alla-del-horizonte|Más allá del horizonte]]
-4. [[jugar-contra-el-reloj|Jugar contra el reloj]]
-5. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
-6. [[un-arbol-todos-los-algoritmos|Radiografía: un árbol, cinco algoritmos]]
-7. [[monte-carlo-en-un-arbol-grande|Monte Carlo y UCT en un árbol grande]]
-8. [[de-donde-sale-el-bono|De dónde sale el bono]]
+1. [[cortar-y-evaluar|Cortar y evaluar]]
+2. [[jugar-contra-el-reloj|Jugar contra el reloj]]
+3. [[simular-en-vez-de-evaluar|Simular en vez de evaluar]]
+4. [[monte-carlo-en-un-arbol-grande|Monte Carlo y UCT en un árbol grande]]
+5. [[de-donde-sale-el-bono|De dónde sale el bono]]
+6. [[tarea-cuando-no-cabe|Tarea de refuerzo]]
 
 ## Las animaciones y el notebook
 

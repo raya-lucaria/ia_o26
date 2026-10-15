@@ -279,4 +279,4 @@ elegida al subir la profundidad.
   elección puede cambiar varias veces, y esos cambios delatan lo que estaba
   detrás del horizonte.
 
-Continúa con [[juegos-sin-turnos|la clase 4]], donde los dos jugadores eligen a la vez.
+Continúa con [[juegos-radiografia|la radiografía de los algoritmos]].

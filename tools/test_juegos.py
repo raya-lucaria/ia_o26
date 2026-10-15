@@ -732,9 +732,9 @@ def test_clase_3_simular_con_solo_negras_al_azar():
 # dos lados, falla.
 
 CLASE_3 = UNIDAD / "3_cuando_no_cabe"
-P1, P2, P3, P4, P5 = ("1_cortar_y_evaluar.md", "2_minimax_con_corte.md",
-                      "3_mas_alla_del_horizonte.md", "4_jugar_contra_el_reloj.md",
-                      "5_simular_en_vez_de_evaluar.md")
+P1, P2, P3, P4, P5 = ("1_cortar_y_evaluar.md", "1_cortar_y_evaluar.md",
+                      "2_jugar_contra_el_reloj.md", "2_jugar_contra_el_reloj.md",
+                      "3_simular_en_vez_de_evaluar.md")
 _JUGADA = r"[a-d][1-4][-x][a-d][1-4]"
 
 
@@ -1084,7 +1084,7 @@ def test_prosa_clase_3_p2_t_con_cada_profundidad():
     assert leido == esperado
     resp = _limpio(_respuesta(texto, "jue-c3-ej-cota"))
     assert int(re.search(r"suman los (\d+) nodos", resp)[1]) == j.decidir_con_corte_t(2)[2]
-    llevarse = _limpio(texto.split("## Lo que hay que llevarse")[1])
+    llevarse = _limpio(texto.split("## Lo que hay que llevarse")[-1])
     assert [int(x) for x in re.search(r"genera (\d+), (\d+) y (\d+) nodos", llevarse).groups()] \
         == [j.decidir_con_corte_t(d)[2] for d in (1, 2, 3)]
 
@@ -1824,7 +1824,7 @@ def test_clase_3_p6_c_es_una_perilla():
 # decimales se comparan como texto, con el formato con que la pagina las
 # imprime («2.10», no 2.1). Los ejes de las figuras vienen de gen_juegos.
 
-P6 = "8_de_donde_sale_el_bono.md"
+P6 = "5_de_donde_sale_el_bono.md"
 _NUM = r"[+-]?\d+(?: \d{3})*(?:\.\d+)?"
 _PALABRAS = {"una": 1, "tres": 3, "diez": 10, "doble": 2, "la mitad": F(1, 2),
              "un tercio": F(1, 3)}
@@ -3252,13 +3252,13 @@ def test_alfa_beta_nunca_genera_mas_que_minimax_y_puede_generarlo_todo():
     peor = ((1, 2), (3, 4))      # el segundo MIN ve 3 y 4, los dos sobre α = 1: no corta
     assert j.alfa_beta_arbol(peor)["generados"] == j.contar_nodos(peor) == 7
     assert j.alfa_beta_arbol(((3, 4), (1, 2)))["generados"] < 7
-    ficha = (CLASE_3.parent / "2_mirar_todo_y_podar" / "5_alfa_beta_como_algoritmo.md").read_text(
+    ficha = (CLASE_3.parent / "2_mirar_todo_y_podar" / "4_alfa_beta_como_algoritmo.md").read_text(
         encoding="utf-8")
     assert ("| ¿Genera todo el árbol? | Puede generarlo completo; salta las ramas que las cotas "
             "permiten, y cuántas depende del orden |") in ficha
     assert "misma jugada, nunca más nodos que minimax; con buen orden, muchos menos." in ficha
     assert "misma jugada, menos nodos" not in ficha
-    p6 = _limpio((CLASE_3 / "6_un_arbol_todos_los_algoritmos.md").read_text(encoding="utf-8"))
+    p6 = _limpio((CLASE_3.parent / "4_radiografia" / "1_un_arbol_todos_los_algoritmos.md").read_text(encoding="utf-8"))
     assert ("Con el mismo orden, nunca genera más nodos que minimax, pero puede generar "
             "los mismos.") in p6
     assert "con menos nodos que minimax" not in p6

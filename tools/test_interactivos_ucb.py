@@ -32,7 +32,7 @@ ASSETS = RAIZ / "course/7_juegos/_assets"
 HOEFFDING = ASSETS / "hoeffding_en_vivo.html"
 BANDIDO = ASSETS / "bandido_en_vivo.html"
 PAGINAS = (HOEFFDING, BANDIDO)
-PAGINA_P6 = RAIZ / "course/7_juegos/3_cuando_no_cabe/8_de_donde_sale_el_bono.md"
+PAGINA_P6 = RAIZ / "course/7_juegos/3_cuando_no_cabe/5_de_donde_sale_el_bono.md"
 
 
 def _texto(ruta):
@@ -105,8 +105,7 @@ def test_cada_control_tiene_su_etiqueta(ruta):
 
 
 def test_la_pagina_6_enlaza_los_dos_interactivos():
-    if not PAGINA_P6.exists():
-        pytest.skip("la página 6 aún no está escrita")
+    assert PAGINA_P6.exists(), f"falta la página del bono: {PAGINA_P6}"
     texto = _texto(PAGINA_P6)
     for ruta in PAGINAS:
         assert f"../_assets/{ruta.name}" in texto, f"la página 6 no enlaza {ruta.name}"

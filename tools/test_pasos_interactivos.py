@@ -287,7 +287,7 @@ def test_el_estado_de_cada_nodo_es_coherente(modo, variante):
 def test_alfa_beta_tiene_el_mismo_pseudo_en_sus_dos_paginas():
     """El modo alfa-beta lo enlazan 4_alfa_beta y 5_alfa_beta_como_algoritmo;
     su pseudo sale de la primera y tiene que ser el de la segunda."""
-    otra = (UNIDAD / "2_mirar_todo_y_podar/5_alfa_beta_como_algoritmo.md").read_text(
+    otra = (UNIDAD / "2_mirar_todo_y_podar/4_alfa_beta_como_algoritmo.md").read_text(
         encoding="utf-8")
     bloques = re.findall(r"^```text\n(.*?)^```$", otra, re.S | re.M)
     assert "\n".join(j.pasos_interactivos("alfa-beta")["pseudo"]) + "\n" in bloques

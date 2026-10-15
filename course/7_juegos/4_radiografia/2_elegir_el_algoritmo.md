@@ -22,7 +22,7 @@ Al terminar tendrás:
   alguno;
 - un juego nuevo, diagnosticado por ti, con su algoritmo justificado.
 
-> **Lo que traes de [[que-numero-da-cada-uno|Qué número da cada uno]].**
+> **Lo que traes de [[un-arbol-todos-los-algoritmos|la radiografía]].**
 > Tres números distintos. $V$ es el valor exacto del juego; con dados,
 > promedia el azar del juego con jugadores óptimos. El valor con corte
 > estima con $\mathrm{EVAL}$ donde se corta. $\bar u$ promedia
@@ -104,7 +104,7 @@ Tres matices que las tablas no alcanzan a decir:
   alfa-beta sola: combinó varias búsquedas con bases de finales.
 - **La quietud arregla los intercambios a medias, no todo.** Lo que no es
   captura sigue detrás del horizonte, como viste en
-  [[mas-alla-del-horizonte|Más allá del horizonte]].
+  [[jugar-contra-el-reloj|Más allá del horizonte]].
 - **UCT tiende a la jugada de minimax con tiempo sin límite, con
   cualquier ${c>0}$ en un árbol finito.** Kocsis y Szepesvári acotaron
   qué tan rápido, con una $c$ grande; la ${c=1}$ del curso no tiene esa
@@ -226,7 +226,7 @@ Alfa-beta poda por lo mismo. Lo que MAX ya tiene asegurado es justo lo que
 MIN ya no le puede quitar, porque los dos miden con el mismo número.
 
 Y por lo mismo vale la regla de dejar de buscar de
-[[que-numero-da-cada-uno|Qué número da cada uno]]: en I, si ix fuera su primera
+[[jugar-contra-el-reloj|Hasta dónde mirar]]: en I, si ix fuera su primera
 hoja, MIN pararía al ver ${\text{ix}=-1}$ porque el ${-1}$ de MAX es el máximo de MIN.
 
 Si cada uno tuviera su propio pago, un final malo para MAX no le diría a MIN que deje de
@@ -250,10 +250,10 @@ Los cuatro supuestos de la unidad, y qué los rompe:
 - **Dos jugadores.** Con tres o más no hay un MIN: hay varios rivales, cada
   uno con su meta.
 - **Suma cero.** Si cada uno tiene su propio pago, suponer que el otro
-  quiere dañarte es un error de modelado. La clase 4 lo retoma en
-  [[cuando-no-es-suma-cero|Cuando no es suma cero]].
+  quiere dañarte es un error de modelado. Lo resume
+  [[un-arbol-todos-los-algoritmos|la nota de suma cero de la radiografía]].
 - **Por turnos.** Si eligen a la vez, ya no hay árbol donde uno responde al
-  otro. También es la clase 4.
+  otro. Queda fuera de esta unidad.
 - **Todo a la vista.** En póker no ves las cartas del rival: no sabes en qué
   nodo estás. Es información oculta, y queda fuera de esta unidad.
 
@@ -411,4 +411,4 @@ reconocer cuándo un juego rompe los supuestos de la unidad.
   pagos propios eso se rompe, y entran $\max^n$, el paranoico o MCTS con
   varios jugadores.
 
-Continúa con [[juegos-sin-turnos|la clase 4, cuando no hay turnos]].
+Vuelve al [[juegos|índice de la unidad]].

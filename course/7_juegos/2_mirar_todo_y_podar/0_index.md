@@ -110,17 +110,17 @@ algoritmo**, en general.
 |---|---:|---|
 | 1 | 25m | **Minimax a mano.** Valorar n1 desde los finales y saber quién gana hexapawn |
 | 2 | 47m | **Minimax como algoritmo.** Elegir la jugada con DECIDIR-MINIMAX, paso a paso en el árbol T, y por qué es correcto |
-| 3 | 32m | **Cuando decide un dado.** El problema con azar, en general, y qué cambia si un nodo no lo decide nadie |
-| 4 | 35m | **Alfa-beta a mano.** α, β y la regla de cada corte, en el árbol T que crece, y el recorrido de n1 en orden fijo |
-| 5 | 47m | **Alfa-beta como algoritmo.** DECIDIR-ALFA-BETA línea por línea, por qué los cortes son seguros y por qué el orden importa |
+| 3 | 35m | **Alfa-beta a mano.** α, β y la regla de cada corte, en el árbol T que crece, y el recorrido de n1 en orden fijo |
+| 4 | 47m | **Alfa-beta como algoritmo.** DECIDIR-ALFA-BETA línea por línea, por qué los cortes son seguros y por qué el orden importa |
+| 5 | 32m | **Cuando decide un dado.** El problema con azar, en general, y qué cambia si un nodo no lo decide nadie |
 | 6 | 45m, aparte | **Tarea de refuerzo.** Resolver monedas en fila y hexapawn con empate |
 :::
 
 1. [[minimax|Minimax a mano]]
 2. [[minimax-como-algoritmo|Minimax como algoritmo]]
-3. [[cuando-decide-un-dado|Cuando decide un dado]]
-4. [[alfa-beta|Alfa-beta a mano]]
-5. [[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]]
+3. [[alfa-beta|Alfa-beta a mano]]
+4. [[alfa-beta-como-algoritmo|Alfa-beta como algoritmo]]
+5. [[cuando-decide-un-dado|Cuando decide un dado]]
 6. [[tarea-mirar-todo-y-podar|Tarea de refuerzo]]
 
 ## Las animaciones y el notebook
