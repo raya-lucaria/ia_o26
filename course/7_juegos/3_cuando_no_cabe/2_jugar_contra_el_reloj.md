@@ -29,7 +29,7 @@ Las dos preguntas tienen la misma raíz: el corte decide hasta dónde se mira. A
 
 > **Las reglas del 4×4** son las de [[cortar-y-evaluar|Cortar y evaluar]]. Un peón avanza una casilla vacía o captura en diagonal hacia delante. Gana quien llega a la fila rival, captura todo o deja al rival sin jugada. Blancas (B) es MAX y Negras (N) es MIN: $U=+1$ si gana Blancas y $U=-1$ si gana Negras.
 
-> **Supuestos.** Los de [[cortar-y-evaluar|Cortar y evaluar]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero. No alcanza para llegar a los finales, y hay uno más: **hay un reloj**. El tablero espera a que juegues; el tiempo para decidir, no.
+> **Supuestos.** Los de [[cortar-y-evaluar|Cortar y evaluar]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero (o constante). No alcanza para llegar a los finales, y hay uno más: **hay un reloj**. El tablero espera a que juegues; el tiempo para decidir, no.
 
 > [!TIP]
 > **Míralo correr: profundización iterativa en el árbol de resultados**
@@ -477,7 +477,7 @@ OUTPUT  una jugada de A(s), la mejor de la
 - **La línea 2 guarda el respaldo:** la primera jugada legal.
 - **La línea 5 es la búsqueda de [[cortar-y-evaluar|Cortar y evaluar]]**, sin cambiar nada.
 - **La línea 6 mira el reloj solo al terminar** cada búsqueda. Si se acabó mientras corría, esa búsqueda no cuenta y se entrega la anterior.
-- **Por eso la última puede pasarse del límite:** si la búsqueda crece parejo, cuesta del orden de ${B-1}$ veces lo ya gastado. En la posición de la clase, 33 nodos contra 16.
+- **Por eso la última puede pasarse del límite:** si cada búsqueda cuesta unas $B$ veces la anterior, la última cuesta cerca de ${B-1}$ veces todo lo ya gastado. En la posición de la clase, 33 nodos contra 16.
 
 **En el árbol de resultados**, R prueba sus hijos en el orden izq, centro, der:
 
@@ -1022,7 +1022,7 @@ Con corte y con poda, guardar «el estado y su valor» no basta. Cada entrada gu
 - **El número** que devolvió la búsqueda.
 - **La profundidad que quedaba**, $d$. Un número calculado con ${d=1}$ no sirve a una búsqueda que llega con ${d=3}$: miró menos. Los programas lo reutilizan si se calculó con al menos la profundidad que queda ahora.
 
-  Si se calculó con más, ya no es exactamente el valor con corte de esta búsqueda, sino uno que miró más hondo. En el árbol de resultados, C vale 20 sin nada debajo, 10 con un nivel y 0 con dos. Se acepta porque mirar más hondo suele estimar mejor.
+  Si se calculó con más, ya no es exactamente el valor con corte de esta búsqueda, sino uno que miró más hondo. En el árbol de resultados, C vale 20 sin nada debajo, 10 con un nivel y 0 con dos. Se acepta porque mirar más hondo suele estimar mejor, aunque el resultado ya no es exactamente $V_d$ y la jugada puede cambiar frente a una búsqueda sin tabla.
 - **Qué tipo de número es**, según la ventana de entrada $(\alpha_0,\beta_0)$, con $\alpha_0<\beta_0$, y el $v$ que devolvió el nodo.
 
 | Si | Tipo | Qué garantiza |
@@ -1033,7 +1033,7 @@ Con corte y con poda, guardar «el estado y su valor» no basta. Cada entrada gu
 
 Un **valor** cae dentro de la ventana y es el valor con corte a la profundidad con que se calculó. Un **piso** dice «al menos»; un **techo**, «a lo más».
 
-Ojo con los nombres: en [[alfa-beta|Alfa-beta a mano]], $\alpha$ era un piso y $\beta$ un techo. Aquí piso y techo describen el número guardado, no la ventana: tocar $\beta$ deja un piso.
+Ojo con los nombres: piso y techo describen el número guardado, no la ventana. $\alpha$ y $\beta$ son alternativas del camino; un nodo que toca $\beta_0$ deja guardado un piso.
 
 El tipo se lee de la ventana **de entrada**, no de los extremos que el nodo movió ni de si podó. Un nodo puede devolver una cota sin haber podado él: basta con que poden sus hijos y le devuelvan cotas.
 
@@ -1101,6 +1101,6 @@ Para cada nodo, ¿su $v$ cae dentro de la ventana, o toca o pasa uno de los extr
 - **La búsqueda de quietud** sigue solo las capturas desde los nodos de corte, y quedarse con $\mathrm{EVAL}$ es una aproximación, no una jugada. Con $d=1$ da ${-10}$, 2 y 0 en la clase, y elige $\text{d2}\textbf{-}\text{d3}$; en el árbol de resultados juega centro con 20. **Arregla la jugada, no el valor.**
 - **La profundización iterativa** busca con ${d=1,2,3,\dots}$ y entrega lo mejor de la **última búsqueda completa**. Un reloj que se acaba durante ${d=2}$ entrega $\text{d2}\textbf{x}\text{c3}$, que pierde; durante ${d=3}$, $\text{d2}\textbf{-}\text{d3}$, que gana.
 - **Repetir cuesta poco si crece parejo:** cerca de ${1/(B-1)}$ de la última búsqueda. En la clase, sin poda, 16 nodos contra 33. Con alfa-beta y la jugada anterior primero: 25 contra 30 en el árbol de resultados, y 23 contra 49 en la clase.
-- **La tabla de transposición** guarda número, profundidad y tipo según la ventana: valor si ${\alpha<v<\beta}$, piso si ${v\ge\beta}$, techo si ${v\le\alpha}$.
+- **La tabla de transposición** guarda número, profundidad y tipo según la ventana: valor si ${\alpha_0<v<\beta_0}$, piso si ${v\ge\beta_0}$, techo si ${v\le\alpha_0}$, con $(\alpha_0,\beta_0)$ la ventana con que se llamó al nodo.
 
 Continúa con [[simular-en-vez-de-evaluar|Simular partidas]].

@@ -19,11 +19,11 @@ antes y **estimar**.
 > [!TIP]
 > **Esta clase tiene animaciones, tres interactivos y un notebook.** Minimax con corte y profundización iterativa en el árbol de resultados, el bono de UCT y todos los algoritmos en un mismo árbol:
 >
-> - **▶ Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
+> - **Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
 >   algoritmo abre la suya en un recuadro como éste.
-> - **▶ Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
+> - **Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
 >   la página «De dónde sale el bono».
-> - **▶ El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol de resultados. Lo abren «MCTS con UCT» y la radiografía.
+> - **El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol de resultados. Lo abren «MCTS con UCT» y la radiografía.
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -34,12 +34,12 @@ Todo lo que usa esta clase, en una tabla. Si un renglón no te suena, vuelve
 a su página.
 
 ::: table {#jue-c3-repaso title="Lo que se usa de la clase 2"}
-| | Qué es | Dónde se vio |
+| Término | Qué es | Dónde se vio |
 |---|---|---|
 | $V(s)$ | El valor de un estado, desde MAX: sin azar, el pago si los dos juegan lo mejor; con dados, el valor esperado con los dos jugando lo mejor | Diagnosticar el juego y Cuando decide un dado |
 | $Q(s,a)$ | El valor de una jugada: $Q(s,a)=V(T(s,a))$ | Diagnosticar el juego y Minimax a mano |
 | DECIDIR-MINIMAX | Elige la jugada de la raíz con el mayor $Q$ | Minimax como algoritmo |
-| Árbol de resultados | Juguete con la forma del árbol base: R de MAX; I, C y D de MIN; finales $+1$, $0$ o $-1$ | Minimax como algoritmo |
+| Árbol de resultados | Juguete con la forma del árbol base, salvo que D tiene tres hijos: R de MAX; I, C y D de MIN; finales $+1$, $0$ o $-1$ | Minimax como algoritmo |
 | $b$, $m$ | $b$: el máximo de jugadas en un estado; $m$: la partida más larga; minimax genera del orden de $b^m$ nodos | Minimax como algoritmo |
 | $\alpha$, $\beta$ | Lo que MAX y MIN ya tienen asegurado en el camino | Alfa-beta a mano |
 | Poda | Dejar de generar hermanos que no cambian la respuesta: un corte alfa o un corte beta | Alfa-beta a mano |
@@ -65,8 +65,9 @@ Las páginas de la clase 2:
 - Explicar la profundización iterativa: qué jugada entregar cuando se acaba
   el tiempo y por qué repetir búsquedas cuesta poco.
 - Estimar una jugada **simulando partidas**, sin función de evaluación.
-  Monte Carlo plano converge a $Q_{\text{azar}}$; la actualización minimax,
-  a $Q$.
+  Monte Carlo plano converge a $Q_{\text{azar}}$; la actualización minimax
+  mantiene $\widehat Q$ por jugada y $\widehat V$ por estado, y su raíz
+  converge a $V$.
 - Explicar **MCTS** como familia de búsquedas en cuatro fases, y **UCT**
   como su miembro que selecciona con un bono. Calcular una vuelta a mano y
   decir qué jugada entrega.
@@ -74,21 +75,24 @@ Las páginas de la clase 2:
   suma y de dónde sale su tamaño. Y por qué sirve para seleccionar, no para
   entregar.
 
-La utilidad no cambia: un final paga $U$ desde MAX, $+1$ si gana, $-1$ si
-pierde y $0$ si hay empate. Lo nuevo es lo que se hace cuando la búsqueda se detiene antes de un final.
+En el 4×4 y en el árbol de resultados, un final paga $U$ desde MAX: $+1$ si
+gana, $-1$ si pierde y $0$ si hay empate. Cada juego define su propia escala;
+la refutación, por ejemplo, usa $+10$, $-10$ y $-30$. Lo nuevo es lo que se hace cuando la búsqueda se detiene antes de un final.
 
 ---
 
 ## El hilo de la clase
 
-Tres ejemplos, cada uno con su papel:
+Cuatro ejemplos, cada uno con su papel:
 
 - **Una posición de peones de 4×4**, para las ideas. A profundidad 1 se
-  elige ahí una jugada que pierde, y cada página muestra una manera
-  distinta de no caer en eso.
+  elige ahí una jugada que pierde; las páginas comparan profundidad,
+  quietud y simulación para no caer en eso.
 - **El árbol de resultados**, para los algoritmos. Es tan chico que cada
   línea del pseudocódigo se sigue a mano. Lo corren todos: el corte, la
   quietud, la iterativa, los Monte Carlo y UCT.
+- **La refutación A/B**, en las páginas 3 y 4, para comparar un promedio,
+  la actualización minimax y UCT cuando la respuesta decisiva aparece tarde.
 - **Un bandido de tres jugadas, x, y, z**, en la última página. Su
   esperanza está oculta para la regla, y sirve para ver de dónde sale el
   bono.

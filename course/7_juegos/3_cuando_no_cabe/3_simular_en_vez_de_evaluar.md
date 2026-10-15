@@ -2,7 +2,7 @@
 id: simular-en-vez-de-evaluar
 title: "Simular partidas: promedios y actualización minimax"
 nav_title: Simular partidas
-summary: "Cuando el árbol no cabe y no hay EVAL, se juegan partidas al azar hasta el final. Monte Carlo plano promedia su U por jugada de la raíz y converge a Q_azar, lo que paga jugar si los dos eligen al azar. La actualización minimax usa las mismas partidas, guarda lo que descubre y sube máximos y mínimos. Converge casi seguramente a V en un árbol finito, determinista y de ramificación finita, con simulaciones sin límite que eligen al azar entre todas las jugadas legales, finales exactos y lo descubierto guardado."
+summary: "Cuando el árbol no cabe y no hay EVAL, se juegan partidas al azar hasta el final. Monte Carlo plano promedia su U por jugada de la raíz y converge a lo que paga jugar si los dos eligen al azar. La actualización minimax usa las mismas partidas, guarda lo que descubre y sube máximos y mínimos. Converge casi seguramente a V en un árbol finito, determinista y de ramificación finita, con simulaciones sin límite que eligen al azar entre todas las jugadas legales, finales exactos y lo descubierto guardado."
 status: ready
 estimated_time: 51m
 tags: [juegos, busqueda-adversarial, monte-carlo]
@@ -29,7 +29,7 @@ Puedes simular partidas hasta un final. El número que obtengas dependerá de c�
 >
 > Empiezan Blancas. Un peón avanza una casilla vacía o captura en diagonal hacia delante. Gana quien llega a la fila rival, captura todo o deja al rival sin jugada. $U=+1$ si gana Blancas y $U=-1$ si gana Negras.
 
-> **Supuestos.** Son juegos por turnos, deterministas y de información perfecta. Buscar todos los finales cuesta demasiado y no tenemos una $\mathrm{EVAL}$ confiable. Jugar una partida al azar hasta el final sí resulta barato.
+> **Supuestos.** Son juegos de dos jugadores por turnos, deterministas, de información perfecta y de suma cero (o constante). Buscar todos los finales cuesta demasiado y no tenemos una $\mathrm{EVAL}$ confiable. Jugar una partida al azar hasta el final sí resulta barato.
 
 ---
 
@@ -196,16 +196,16 @@ Cambiar una sola victoria por derrota mueve el promedio $0.4$. **Con pocas simul
 
 **Piensa: ¿la jugada con mejor promedio al azar también gana contra Negras jugando bien?**
 
-Aquí sí: $\text{d2}\mathbf{-}\text{d3}$.
+Aquí sí: $\text{d2}\textbf{-}\text{d3}$.
 
 La tabla calcula $Q_{\text{azar}}$ exactamente, sin muestrear, y muestra sus decimales redondeados. «Corte» usa profundidad 1 y la escala de $\mathrm{EVAL}$, con finales multiplicados por 100.
 
 ::: table {#jue-c3-simulaciones title="Lo que paga cada jugada al azar en la posición de la clase"}
 | Jugada | $Q_{\text{azar}}(s,a)$ | Corte | $Q(s,a)$ |
 |---|---:|---:|---:|
-| $\text{a1}\mathbf{-}\text{a2}$ | 0.21 | 2 | −1 |
-| $\text{d2}\mathbf{-}\text{d3}$ | **0.89** | 2 | +1 |
-| $\text{d2}\mathbf{x}\text{c3}$ | 0.15 | **13** | −1 |
+| $\text{a1}\textbf{-}\text{a2}$ | 0.21 | 2 | −1 |
+| $\text{d2}\textbf{-}\text{d3}$ | **0.89** | 2 | +1 |
+| $\text{d2}\textbf{x}\text{c3}$ | 0.15 | **13** | −1 |
 :::
 
 $Q_{\text{azar}}$ y $Q$ están en la escala de $U$, entre $-1$ y $+1$. La columna «Corte» está en otra escala.
@@ -353,7 +353,7 @@ Aumentar las simulaciones afina $Q_{\text{azar}}$; no lo convierte en $Q$. El Go
 
 Más muestras reducen su incertidumbre sobre $Q_{\text{azar}}$. No cambian el supuesto de que ambos juegan al azar.
 
-La cota de Hoeffding ([[de-donde-sale-el-bono|De dónde sale el bono]]) requiere pagos acotados, muestras independientes y una continuación fija. También fija de antemano el número de muestras.
+La cota de Hoeffding, que da el margen de error de un promedio, requiere pagos acotados, muestras independientes, una continuación fija y un número de muestras fijado de antemano.
 
 - **El margen rodea $Q_{\text{azar}}$.** No mide la distancia al valor minimax.
 - **El margen decrece como $1/\sqrt N$.** Cuatro veces más simulaciones permiten la mitad de margen, manteniendo la misma confianza.
@@ -382,12 +382,12 @@ No: los tres son positivos. Negras puede asegurar la victoria, pero se equivoca 
 ::: table {#jue-c3-hexapawn-azar title="Hexapawn: uno o ambos jugadores al azar"}
 | Apertura | Ambos al azar: $Q_{\text{azar}}$ | Solo Negras al azar |
 |---|---:|---:|
-| $\text{a1}\mathbf{-}\text{a2}$ | 7/36 | 5/9 |
-| $\text{b1}\mathbf{-}\text{b2}$ | 5/24 | 3/4 |
-| $\text{c1}\mathbf{-}\text{c2}$ | 7/36 | 5/9 |
+| $\text{a1}\textbf{-}\text{a2}$ | 7/36 | 5/9 |
+| $\text{b1}\textbf{-}\text{b2}$ | 5/24 | 3/4 |
+| $\text{c1}\textbf{-}\text{c2}$ | 7/36 | 5/9 |
 :::
 
-En la última columna Blancas elige lo mejor, como en [[cuando-decide-un-dado|Cuando decide un dado]]. Por eso $\text{b1}\mathbf{-}\text{b2}$ tiene tres números: $-1$, $5/24$ y $3/4$.
+En la última columna Blancas elige lo mejor, como en [[cuando-decide-un-dado|Cuando decide un dado]]. Por eso $\text{b1}\textbf{-}\text{b2}$ tiene tres números: $-1$, $5/24$ y $3/4$.
 
 ::: remark {#jue-c3-cmp-v-no-es-u title="El azar del juego y el azar del algoritmo"}
 **El ejemplo mínimo.** MIN elige entre finales $+1$ y $-1$. Su valor es $V=-1$, pero $V_{\text{azar}}=0$: el promedio uniforme sí converge, a 0.
@@ -406,8 +406,8 @@ En la última columna Blancas elige lo mejor, como en [[cuando-decide-un-dado|Cu
 ::: exercise {#jue-c3-ej-promedio title="Traduce una esperanza a partidas ganadas"}
 Sin empates, $U=\pm1$ y $p=(Q_{\text{azar}}+1)/2$, donde $p$ es la probabilidad de victoria de MAX.
 
-1. **El avance ganador.** Si $\text{d2}\mathbf{-}\text{d3}$ tiene $Q_{\text{azar}}=8/9$, ¿con qué probabilidad gana Blancas al azar?
-2. **La apertura de hexapawn.** Si $\text{b1}\mathbf{-}\text{b2}$ tiene $Q_{\text{azar}}=5/24$, ¿qué fracción gana? ¿Por qué es compatible con $Q=-1$?
+1. **El avance ganador.** Si $\text{d2}\textbf{-}\text{d3}$ tiene $Q_{\text{azar}}=8/9$, ¿con qué probabilidad gana Blancas al azar?
+2. **La apertura de hexapawn.** Si $\text{b1}\textbf{-}\text{b2}$ tiene $Q_{\text{azar}}=5/24$, ¿qué fracción gana? ¿Por qué es compatible con $Q=-1$?
 3. **Una muestra observada.** Si sustituyes $Q_{\text{azar}}$ por $\widehat Q$, ¿qué representa la cuenta?
 :::
 
@@ -481,7 +481,7 @@ Compara $0,-1/4,1/3$. Después cambia quién decide en C1 y C2, o en I y D.
 
 **Piensa: ¿puedes conservar las mismas partidas al azar y valorar sus respuestas como lo harían MAX y MIN?**
 
-Sí: guarda los estados descubiertos y sube máximos y mínimos. Es la variante MMMC de Kocsis y Szepesvári (2006), *Monte-Carlo planning with minimax value update*.
+Sí: guarda los estados descubiertos y sube máximos y mínimos. Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, llaman a este método *Monte-Carlo planning with minimax value update* (MMMC).
 
 Converge casi seguramente a $V$ en un árbol finito, determinista y de ramificación finita, con simulaciones independientes y sin límite que eligen al azar entre todas las jugadas legales. Cada simulación llega a un final real con pago exacto, se conserva lo descubierto y la frontera no se sustituye por EVAL.
 
@@ -525,7 +525,7 @@ $$
 
 - **El invariante conserva la perspectiva.** Todo número mide el pago de MAX; el signo nunca cambia al subir.
 - **Lo desconocido sigue desconocido.** Una jugada no visitada se marca «?», nunca 0; si ninguna se conoce, también $\widehat V$ es desconocido.
-- **El respaldo suele ser provisional.** Faltan alternativas que podrían cambiarlo; una prueba de resolución permite declararlo exacto antes de descubrirlas todas.
+- **El respaldo suele ser provisional.** Faltan alternativas que podrían cambiarlo. A veces se puede declarar exacto antes de verlas todas: lo explica «Cuándo queda resuelto un nodo», en esta misma página.
 
 **Ejemplo mínimo:** MIN tiene tres jugadas y los pagos posibles están entre $-1$ y $+1$.
 
@@ -716,7 +716,7 @@ MAX entrega la jugada con mayor $\widehat Q$ disponible en la raíz.
 
 - **Número que da:** estima $Q$ y $V$ con respaldos del árbol descubierto; los valores resueltos son exactos.
 - **Usa EVAL:** no. Lee pagos terminales exactos en la escala de $U$.
-- **Garantía:** converge casi seguramente a $V$ bajo esas condiciones. Con presupuesto finito puede equivocarse: en los experimentos de Kocsis y Szepesvári (2006), *Monte-Carlo planning with minimax value update*, falló más que Monte Carlo plano, pese a su convergencia eventual.
+- **Garantía:** converge casi seguramente a $V$ bajo esas condiciones. Con presupuesto finito puede equivocarse: en los experimentos de Kocsis y Szepesvári, falló más que Monte Carlo plano, pese a su convergencia eventual.
 - **Se puede interrumpir:** sí, desde la primera simulación, con la mayor $\widehat Q$ conocida; sin ninguna, entrega la primera jugada legal.
 - **Complejidad:** simular cuesta $O(m)$ y revisar hasta $b$ hijos por estado del camino, $O(bm)$; con $n$ simulaciones, $O(nbm)$. Cada una descubre a lo más $m+1$ estados: memoria $O(nm)$, sin superar el árbol completo.
 - **Frente a los demás:** muestrea como Monte Carlo plano y respalda como minimax. En el peor caso necesita descubrir todo el árbol, y no poda como alfa-beta.
@@ -889,7 +889,7 @@ En el árbol de resultados, con $c=1$ y semilla 0, centro tiene $N=26$ y $\wideh
   nunca cero. La refutación la lleva a ${-30}$ en el mismo respaldo.
 - **Converge a $V$** en un árbol finito, determinista y de ramificación
   finita, con todas las jugadas posibles, finales reales y lo descubierto
-  guardado. En el árbol de resultados queda resuelta en 17 simulaciones;
+  guardado. En el árbol de resultados, con semilla 0, queda resuelta en 17 simulaciones;
   en el peor caso hay que descubrir todo el árbol.
 - **Muestrear parejo es caro:** las dos reparten las simulaciones sin mirar
   lo que ya saben. ¿Y si se gastaran donde importa?

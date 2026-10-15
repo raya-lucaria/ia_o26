@@ -32,7 +32,7 @@ Al terminar tendrás:
 >
 > Un peón avanza una casilla si está vacía o captura en diagonal hacia delante. Gana quien llega a la fila del rival, captura todo o deja al rival sin jugada: ${U=+1}$ si gana Blancas y ${U=-1}$ si gana Negras. En el 4×4 no hay empates.
 
-> **Supuestos de esta página.** Los de [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero. Uno nuevo: **no nos alcanza el tiempo para llegar a los finales**.
+> **Supuestos de esta página.** Los de [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero (o constante). Uno nuevo: **no nos alcanza el tiempo para llegar a los finales**.
 
 > [!TIP]
 > **Míralo correr: minimax con corte, con d = 1, 2 o 3**
@@ -57,7 +57,7 @@ Casi ninguna. Las reglas son las de la clase 1 con una fila y una columna más:
 - **Cambian $S$ y $s_0$.** Un estado sigue siendo un par (tablero, turno), ahora con 16 casillas. Al empezar hay cuatro peones por lado y mueve Blancas.
 - **Las reglas que definen $S_F$, $\mathrm{Pl}$, $A$, $T$ y $U$ no cambian.** Se llega a la fila del rival, se captura todo o se deja al rival sin jugada; $\mathrm{Pl}$ lee el turno guardado; ${U=\pm1}$.
 
-Hay un detalle que la clase 1 dejó anunciado. En el 3×3, el turno se podía deducir del tablero, aunque lo guardábamos por principio. **En el 4×4 ya no:** la computadora encontró 2925 tableros que se alcanzan con los dos turnos. Guardar el turno en el estado era necesario.
+La clase 1 dijo que en el 3×3 el turno se podía deducir del tablero, aunque lo guardábamos por principio. **En el 4×4 ya no:** la computadora encontró 2925 tableros que se alcanzan con los dos turnos. Guardar el turno en el estado era necesario.
 
 ::: table {#jue-c3-octapawn-inicio title="El tablero de 4×4 al empezar"}
 | | a | b | c | d |
@@ -164,6 +164,8 @@ Las **juzgas**. Una persona que juega ajedrez no calcula hasta el final: mira un
 2. **Donde llega a ${d=0}$ usa una estimación $\mathrm{EVAL}(s)$**, en lugar de $V(s)$, que exigiría recorrer todo lo de abajo.
 
 Ojo con la letra: $d$, en cursiva, es siempre esta profundidad. Es un número, no la columna d del tablero, la de $\text{d2}\textbf{-}\text{d3}$.
+
+Ojo también con la palabra: **corte** es dejar de mirar a cierta profundidad y estimar; lo que hace alfa-beta se llama **poda**.
 
 ::: definition {#jue-c3-evaluacion title="Función de evaluación"}
 **Qué es.** Una **función de evaluación** $\mathrm{EVAL}(s)$ asigna a un estado no final $s$ un número que estima $100\cdot V(s)$, siempre desde MAX.
@@ -283,13 +285,15 @@ El minimax de ese árbol cortado. Se llama **valor con corte**, y es lo que este
 
 $$
 \mathbf{
-V_d(s)=
-\begin{cases}
+\begin{aligned}
+&V_d(s)=\\
+&\begin{cases}
 M\cdot U(s) & \text{si } s\in S_F,\\
-\mathrm{EVAL}(s) & \text{si } d=0 \text{ y } s\notin S_F,\\
+\mathrm{EVAL}(s) & \text{si } d=0,\\
 \max_{a\in A(s)} V_{d-1}(T(s,a)) & \text{si } \mathrm{Pl}(s)=\text{MAX},\\
 \min_{a\in A(s)} V_{d-1}(T(s,a)) & \text{si } \mathrm{Pl}(s)=\text{MIN}.
-\end{cases}}
+\end{cases}
+\end{aligned}}
 $$
 
 **Qué significa.** Es **el minimax de la evaluación**. No lleva gorro: no es una estadística, sino una cuenta exacta sobre otro árbol.
@@ -745,7 +749,7 @@ DECIDIR-CON-CORTE explora y elige; MINIMAX-CON-CORTE solo valora.
 - **Se puede interrumpir:** no (no es *anytime*). $d$ se fija antes de buscar, y una búsqueda a medias no ha comparado todas las jugadas.
 - **Complejidad:** tiempo $O(b^d)$. Memoria $O(bd)$: a lo más $d$ llamadas abiertas, cada una con sus hasta $b$ jugadas.
 - **Frente a los demás:** es minimax con una línea más. Con poda es alfa-beta con corte: el mismo valor en la raíz y, con el mismo orden, nunca más nodos. Así juegan Deep Blue (ajedrez) y Chinook (damas, que además usa tablas de finales); con dados, TD-Gammon (backgammon), con una $\mathrm{EVAL}$ aprendida por una red.
-- **Supuestos:** con dos jugadores y suma cero o constante, un número desde MAX basta y MIN minimiza lo de MAX. Con suma no constante o más jugadores, pagos y $\mathrm{EVAL}$ son vectores $(U_1,\dots,U_n)$, y el respaldo pasa a $\max^n$.
+- **Supuestos:** con dos jugadores y suma cero o constante, un número desde MAX basta y MIN minimiza lo de MAX. Con suma no constante o más jugadores, pagos y $\mathrm{EVAL}$ son vectores $(U_1,\dots,U_n)$, y la regla para subir valores pasa a $\max^n$.
 
 En $\max^n$, quien mueve maximiza su componente y copia el vector elegido, con un desempate fijo. En un árbol finito resuelto hasta los finales da un equilibrio, sin la garantía escalar de minimax; con $\mathrm{EVAL}$, solo del árbol cortado.
 

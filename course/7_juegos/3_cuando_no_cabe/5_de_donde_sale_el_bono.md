@@ -2,7 +2,7 @@
 id: de-donde-sale-el-bono
 title: De dónde sale el bono
 nav_title: De dónde sale el bono
-summary: "El bono de UCT se usa primero por fe: premia lo poco probado y hace volver a lo olvidado. Luego se justifica: la desigualdad de Hoeffding da el margen de un promedio con N fijo, y pedir un fallo δ = N(s)^−4 da la constante de UCB1 en el bandido estacionario. MIN usa la otra cola sin cambiar c; en la práctica c se afina; en el árbol, la cuenta es solo intuición."
+summary: "El bono de UCT se usa primero por fe: premia lo poco probado y hace volver a lo olvidado. Luego se justifica: la desigualdad de Hoeffding da el margen de un promedio con N fijo, y pedir un fallo δ = N(s)⁻⁴ da la constante de UCB1 en el bandido estacionario. MIN usa la otra cola sin cambiar c; en la práctica c se afina; en el árbol, la cuenta es solo intuición."
 status: ready
 estimated_time: 40m
 tags: [juegos, mcts, exploracion]
@@ -101,12 +101,12 @@ Tras esas tres vueltas, $\widehat Q(\text{x})=-1$, $\widehat Q(\text{y})=-1$ y $
 2. **Nunca, en esta corrida.** x e y no se vuelven a probar y se quedan en $-1$, el mínimo posible. z ya ganó una vez, así que su promedio nunca baja a $-1$. Tras 1000 vueltas, x e y llevan una simulación cada una y z, 998: la regla se atoró en la peor jugada.
 :::
 
-**Los dos errores no cuestan lo mismo.** Un promedio que se pasa por arriba se corrige solo; uno que se queda corto puede quedar congelado.
+**Los dos errores no cuestan lo mismo.** Un promedio que se pasa por arriba se sigue probando, y converge a su esperanza aunque no baje en cada muestra; uno que se queda corto puede dejar de probarse y quedar congelado.
 
 ::: table {#jue-c3-tabla-optimismo title="Equivocarse por arriba o por abajo"}
 | Error | Qué pasa |
 |---|---|
-| Creer buena una mala | Se prueba, su $\widehat Q$ baja: **se corrige sola** |
+| Creer buena una mala | Se sigue probando: su $\widehat Q$ tiende a su esperanza, **se corrige sola** |
 | Creer mala una buena | Deja de probarse: **puede quedar congelada** |
 :::
 
@@ -244,7 +244,7 @@ $$
 
 **Qué significa.** Es un límite probabilístico para $N$ fijo: al repetir el muestreo, la esperanza lo supera con probabilidad a lo más $\delta$, porque $Q_{\text{azar}}>\widehat Q+\varepsilon$ es un caso del fallo por debajo. Elegir con **optimismo** es elegir la cota más alta.
 
-**Qué no es.** No es un pago: es un **puntaje**. Puede pasar de $+1$, y no es el techo $\beta$ de alfa-beta ni una cota segura de la tabla de transposición.
+**Qué no es.** No es un pago: es un **puntaje**. Puede pasar de $+1$, y no es la $\beta$ de alfa-beta ni una cota segura de la tabla de transposición.
 :::
 
 **Con $\delta$ fijo, la cota se congela.** Su margen depende solo de su propia $N(s,a)$: si deja de elegirse, su cota no se mueve. Y en miles de vueltas, un 5 % de mala suerte ocurre muchas veces.
@@ -446,7 +446,7 @@ No. UCT pone un bandido en cada nodo, y debajo de cada jugada hay otros bandidos
 
 **El bono conserva la forma del margen, pero ese margen, aquí, no se aplica directo.**
 
-**Lo que sí se demostró, aparte.** Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo planning*, probaron que, con una constante bastante grande, la probabilidad de que UCT elija en la raíz una jugada peor que la de minimax tiende a 0 al crecer las vueltas.
+**Lo que sí se demostró, aparte.** Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, probaron que, con una constante bastante grande, la probabilidad de que UCT elija en la raíz una jugada peor que la de minimax tiende a 0 al crecer las vueltas.
 
 - **Llega a la jugada de minimax**, no a la de mayor $Q_{\text{azar}}$.
 - **Su constante no es la $2\sqrt2$ de UCB1.** La ajustan para cubrir cuánto se mueven los promedios de abajo.

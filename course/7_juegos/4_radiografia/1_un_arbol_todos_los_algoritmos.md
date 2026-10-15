@@ -138,7 +138,7 @@ $$
 
 - **Monte Carlo plano converge a $Q_{\text{azar}}$**, con muestras independientes y una regla al azar fija.
 - **La actualización minimax converge a $V$ porque sube máximos y mínimos**, bajo su contrato.
-- **UCT converge porque mejora su selección, no porque promedie un máximo.** Bajo su contrato, la fracción de visitas a jugadas inferiores tiende a cero.
+- **UCT converge porque mejora su selección, no porque promedie un máximo.** En un árbol finito, con $c>0$ fija y vueltas sin límite, la fracción de visitas a jugadas inferiores tiende a cero.
 - **Con presupuesto fijo, ninguno garantiza $V$.**
 
 ::: figure {#jue-rx-fig-tres-mc title="Los tres Monte Carlo en el árbol de resultados"}
@@ -226,7 +226,7 @@ $$
 - **Cómo sube:** toma el máximo en MAX y el mínimo en MIN.
 - **A qué converge:** no requiere convergencia; termina con valores exactos.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **Recorre en profundidad** (*depth-first search*), en el orden del dibujo. Un final vale su pago; un nodo se cierra cuando conoce todos sus hijos.
 
@@ -247,11 +247,11 @@ $$
 
 **MAX asegura el empate con $b$:** MIN evita la victoria bajo $a$. Ambos pares promedian $0$, pero valen distinto. **Decide lo que MAX puede asegurar, no el mejor final que hay debajo ni el promedio.**
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 **Juega la de mayor $Q$ al cerrar la raíz**, con el desempate por orden. Explorar y elegir usan el mismo número.
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** entrega el $Q$ exacto de cada jugada.
 - **Usa EVAL:** no; trabaja con pagos terminales $U$.
@@ -261,7 +261,7 @@ $$
 - **Frente a los demás:** sirve de referencia; su costo exponencial obliga a buscar alternativas.
 - **Supuestos:** requiere un árbol finito, dos jugadores, turnos, todo a la vista, suma cero o constante y ausencia de azar. Con más jugadores, corresponde max$^n$ (@jue-rx-nota-suma-cero).
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Empate:** todas las jugadas empatadas son óptimas; juega la primera.
 - **Una sola jugada:** queda forzada, y $V(s)=Q(s,a)$.
@@ -287,7 +287,7 @@ $$
 - **Cómo sube:** toma máximos o mínimos y poda.
 - **A qué converge:** no requiere convergencia; termina con el valor exacto de la jugada elegida.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **La ventana reúne alternativas del camino:** $\alpha$ para MAX y $\beta$ para MIN, medidas desde MAX. No acota por sí sola este nodo; la raíz empieza con $(-\infty,+\infty)$.
 
@@ -325,7 +325,7 @@ $$
 
 **Decide la comparación con $\beta$.** En $a$, omite el segundo hijo y devuelve la cota inferior $6$; en $c$, debe seguir.
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 **Juega la mejor jugada demostrada en la raíz.** Solo la cambia si $w>\alpha$; empatar con $\alpha$ podría indicar una cota superior.
 
@@ -334,7 +334,7 @@ $$
 | Poda en un nodo de MAX | $v$ con $\beta$ | $\mathbf{v\ge\beta}$ |
 | Elección en la raíz | $w$ con $\alpha$ | $\mathbf{w>\alpha}$ |
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** entrega el $Q$ exacto de la elegida; las descartadas pueden tener solo cotas.
 - **Usa EVAL:** no; trabaja con $U$.
@@ -344,7 +344,7 @@ $$
 - **Frente a los demás:** conserva la respuesta de minimax con igual o menos trabajo. Con corte y orden perfecto permite mirar cerca del doble de hondo.
 - **Supuestos:** comparte los de minimax; con más jugadores requiere otras reglas de poda (@jue-rx-nota-suma-cero).
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Empate en la raíz:** $w>\alpha$ conserva la primera jugada empatada, como minimax.
 - **Un final entre los primeros hijos** puede provocar la poda de inmediato, si su $U$ alcanza la ventana.
@@ -369,7 +369,7 @@ $$
 - **Cómo sube:** toma máximos en MAX, mínimos en MIN y esperanzas en AZAR.
 - **A qué converge:** no requiere convergencia; calcula esperanzas exactas, sin muestrear.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **Recorre el árbol entero como minimax;** solo cambia la regla de los nodos AZAR, que necesitan **todos** sus hijos.
 
@@ -391,13 +391,13 @@ $$
 
 **Donde decide un rival se toma el mínimo; donde decide el azar, el promedio.**
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 **Juega la de mayor $Q$ esperado**, con el desempate por orden.
 
 **Con dado, D vale $(-1+1+1)/3=1/3$:** supera el $0$ de centro y el $-1$ de I. Juega der y genera los 15 nodos. **El valor es exacto para otro juego:** con MIN en D, der vale $-1$. Con dos hijos, el dado no cambiaba la jugada; por eso D tiene tres.
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** entrega el $Q$ esperado exacto de cada jugada.
 - **Usa EVAL:** no; trabaja con $U$. Solo las transformaciones afines positivas, como $2U+1$, preservan siempre la elección.
@@ -407,7 +407,7 @@ $$
 - **Frente a los demás:** con probabilidades $0$ o $1$, el azar se vuelve determinista. Monte Carlo plano estima $Q_{\text{azar}}$: el expectiminimax que sustituye por azar todas las decisiones posteriores a la jugada evaluada.
 - **Supuestos:** dos jugadores de suma cero o constante, más un azar con probabilidades conocidas (@jue-rx-nota-suma-cero).
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Un dado con una sola cara** es una jugada forzada: vale lo que su único hijo.
 - **Un cambio de escala no afín** puede cambiar la jugada aunque conserve el orden de los finales. Aquí, con pagos $\pm1$ y $0$, elevar al cubo no cambia nada; en un juego con otros pagos, sí puede.
@@ -432,7 +432,7 @@ $$
 - **Cómo sube:** toma máximos o mínimos desde EVAL o pagos terminales.
 - **A qué converge:** no promedia; obtiene $M\cdot V$ si alcanza los finales sin EVAL ni quietud.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **Los casos se revisan en este orden**, con $d$ las decisiones que quedan:
 
@@ -470,7 +470,7 @@ $$
 - **La búsqueda de quietud (*quiescence search*) sigue capturas desde el corte**, hasta estados quietos o finales. Quien mueve compara cada captura con su EVAL actual.
 - **Quedarse con EVAL (*stand pat*) es una aproximación, no una jugada legal.** Puede suponer una jugada tranquila inexistente cuando todas las jugadas sin captura pierden.
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 | Versión | Jugada disponible | Cuándo |
 |---|---|---|
@@ -480,7 +480,7 @@ $$
 
 **Por reloj, la búsqueda que el plazo interrumpe se descarta;** si no terminó ninguna, entrega el respaldo. Ante empate conserva la primera jugada en el orden de esa búsqueda.
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** calcula valores exactos del árbol cortado, como estimaciones de $M\cdot V$. Con poda, solo garantiza exactitud para la elegida.
 - **Usa EVAL:** sí; reserva $M\cdot U$ para finales.
@@ -490,7 +490,7 @@ $$
 - **Frente a los demás:** permite decidir sin alcanzar finales, pero depende de EVAL. La quietud puede costar $O(b^m)$ y usar memoria $O(bm)$.
 - **Supuestos:** comparte los de minimax; más jugadores requieren pagos y EVAL vectoriales (@jue-rx-nota-suma-cero).
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Un final con $d=0$:** vale $M\cdot U$, no su EVAL.
 - **Finales a distintas profundidades:** el que cae antes del corte vale $M\cdot U$; el que queda detrás no se ve.
@@ -526,7 +526,7 @@ $$
 - **Cómo sube:** envía cada $U$ directamente a esa suma.
 - **A qué converge:** con muestras independientes, regla al azar fija y presupuesto ilimitado, $\widehat Q$ converge casi seguramente a $Q_{\text{azar}}$.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **Simula $k$ partidas por jugada $a$**, desde $s'=T(s_{\text{raíz}},a)$ hasta un final (*rollout*). Ambos jugadores eligen al azar y parejo; acumula $U$, sin EVAL ni caminos guardados. El total es $n=|A(s_{\text{raíz}})|\,k\le b\,k$.
 
@@ -546,11 +546,11 @@ $$
 
 **Monte Carlo plano acaba prefiriendo $a$:** al azar, MAX gana dos de tres continuaciones. MIN puede elegir la derrota; $b$ asegura el empate. **Más simulaciones no lo corrigen:** el promedio de $a$ converge a $1/3$, no a $-1$.
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 **Juega la de mayor $\widehat Q$**, con el desempate por orden; el reparto de muestras no depende de los resultados. Si se interrumpe, compara promedios aunque haya cantidades distintas por jugada.
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** entrega $\widehat Q$ por jugada, como estimación de $Q_{\text{azar}}$.
 - **Usa EVAL:** no; necesita reglas, detección de finales y pagos.
@@ -560,7 +560,7 @@ $$
 - **Frente a los demás:** usa pagos terminales como minimax, pero ahorra trabajo suponiendo juego al azar.
 - **Supuestos:** admite pagos vectoriales; estima continuaciones al azar, no max$^n$ (@jue-rx-nota-suma-cero).
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Una jugada que lleva directo a un final:** cada simulación da el mismo $U$, así que su $\widehat Q$ es exacta desde la primera.
 - **Finales a distintas profundidades:** el mismo número de simulaciones no cuesta lo mismo en todas las jugadas.
@@ -578,14 +578,14 @@ $$
 
 ### Monte Carlo con actualización minimax
 
-**Simula al azar, conserva lo descubierto y sube máximos y mínimos.** Es el MMMC de Kocsis y Szepesvári (2006), *Monte-Carlo planning with minimax value update*. El recorrido está en [[simular-en-vez-de-evaluar|Simular partidas]].
+**Simula al azar, conserva lo descubierto y sube máximos y mínimos.** Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, llaman a este método *Monte-Carlo planning with minimax value update* (MMMC). El recorrido está en [[simular-en-vez-de-evaluar|Simular partidas]].
 
 - **Qué valor rastrea:** estima el minimax de lo descubierto con $\widehat V(s)$ y $\widehat Q(s,a)=\widehat V(T(s,a))$.
 - **Dónde lo guarda:** conserva el árbol descubierto.
 - **Cómo sube:** toma máximos en MAX y mínimos en MIN, sobre jugadas visitadas.
 - **A qué converge:** converge casi seguramente a $V$, bajo su contrato.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **Cada iteración juega una partida al azar y parejo hasta un final real**, agrega los estados nuevos y sube por el camino:
 
@@ -610,11 +610,11 @@ $$
 
 **La secuencia impuesta de [[simular-en-vez-de-evaluar|Simular partidas]] muestra lo mismo:** después de 29 pagos $+10$ por A y uno de $-30$, su promedio queda en $8.67$. Sigue superando a B, de $-10$; la actualización minimax salta a $-30$ y cambia a B.
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 **Juega la de mayor $\widehat Q$ disponible**, con el desempate por orden; sin muestras, entrega la primera legal. Una jugada no visitada es desconocida, nunca cero.
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** entrega una $\widehat Q$ provisional por jugada visitada; es exacta cuando el subárbol queda resuelto.
 - **Usa EVAL:** no; una frontera permanente de EVAL cambia el objetivo al minimax del árbol cortado.
@@ -626,7 +626,7 @@ $$
 
 **Con presupuesto fijo no garantiza $V$.** En el peor caso necesita descubrir todo el árbol.
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Final directo:** la $\widehat Q$ de esa jugada es su $U$, exacta desde que se descubre.
 - **Jugada no visitada:** desconocida, no cero. Tomarla como cero haría que un máximo provisional pudiera preferirla sin haberla visto.
@@ -654,7 +654,7 @@ $$
 - **Cómo sube:** promedia el mismo $U$ en todo el camino.
 - **A qué converge:** en un árbol finito, con $c>0$ fija y vueltas sin límite, sus $\widehat Q(s,a)$ tienden a $Q(s,a)$ y el valor de la raíz a $V$.
 
-#### 1 · Exploración: cómo obtiene su número
+**1 · Exploración: cómo obtiene su número**
 
 **Construye su propio árbol, que empieza con solo la raíz.** Cada **vuelta** tiene cuatro fases:
 
@@ -685,7 +685,7 @@ $$
 
 **El promedio se acerca al mínimo porque MIN concentra visitas en sus mejores respuestas.** Si se dibuja $\widehat V(s)$, promedia las vueltas que pasaron por $s$; no toma máximos ni mínimos de sus $\widehat Q$.
 
-#### 2 · Elección: qué jugada juega
+**2 · Elección: qué jugada juega**
 
 **Juega la de más visitas $N(s_{\text{raíz}},a)$**, el hijo más visitado (*robust child*). El curso usa esta regla; el artículo original elige el mayor promedio.
 
@@ -694,19 +694,19 @@ $$
 | Selección: dónde gastar otra vuelta | Puntajes UCT | Sí |
 | Elección: qué jugar | Visitas $N(s_{\text{raíz}},a)$ | No |
 
-**Seleccionar no es entregar.** Las visitas reducen la confianza en promedios altos con pocas muestras; aun así, la elección puede fallar.
+**Seleccionar no es entregar.** La jugada más visitada es la que recibió más presupuesto, no necesariamente la de mayor $\widehat Q$. Este curso la entrega sin bono; con presupuesto finito todavía puede fallar.
 
-#### 3 · Propiedades
+**3 · Propiedades**
 
 - **Número que da:** entrega visitas y promedios $\widehat Q$, como estimaciones de minimax.
 - **Usa EVAL:** no; necesita reglas, detección de finales y pagos.
-- **Garantía:** con presupuesto fijo, ninguna; la convergencia bajo su contrato puede tardar mucho.
+- **Garantía:** con presupuesto fijo, ninguna; la convergencia, en un árbol finito con $c>0$ fija y vueltas sin límite, puede tardar mucho.
 - **Se puede interrumpir:** recomienda desde la primera vuelta.
 - **Complejidad:** cuesta $O(bh+m)$ por vuelta y $O(n(bh+m))$ en total. Guarda hasta $n+1$ nodos: memoria $O(n)$.
 - **Frente a los demás:** usa azar solo debajo de su frontera; Monte Carlo plano lo usa en toda la continuación. La actualización minimax muestrea uniforme y sube máximos o mínimos; UCT mejora la selección y promedia.
 - **Supuestos:** requiere dos jugadores y suma cero o constante; la variante vectorial se describe en @jue-rx-nota-suma-cero.
 
-#### 4 · Casos borde
+**4 · Casos borde**
 
 - **Final ya en su árbol:** no se expande ni se simula; se retropropaga su $U$ exacto.
 - **Respuesta certera descubierta tarde:** entra como una observación más y mueve el promedio en proporción a $1/N$; la corrección es gradual.

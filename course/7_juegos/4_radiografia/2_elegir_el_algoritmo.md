@@ -2,7 +2,7 @@
 id: elegir-el-algoritmo
 title: Elegir el algoritmo
 nav_title: Elegir el algoritmo
-summary: "Dado un juego, cuatro preguntas eligen entre los siete algoritmos de la radiografía: si el árbol cabe, si hay dados, si hay una buena EVAL y si hay reloj. Con el juego real donde se usó cada uno, el número que respalda su jugada y lo que suponen todos: dos jugadores, suma cero, por turnos y todo a la vista."
+summary: "Dado un juego, cuatro preguntas eligen entre los siete algoritmos de la radiografía: si el árbol cabe, si hay dados, si hay una buena EVAL y si hay reloj. Con el juego real donde se usó cada uno, el número que respalda su jugada y lo que suponen todos: dos jugadores, suma cero o constante, por turnos y todo a la vista."
 status: ready
 estimated_time: 30m
 tags: [juegos, busqueda-adversarial, mcts]
@@ -25,12 +25,12 @@ Depende de lo que el juego ofrece: si su árbol cabe, si tiene dados, si hay con
 - **Siete algoritmos, un mapa.** En [[un-arbol-todos-los-algoritmos|la radiografía]] corrieron minimax, alfa-beta, expectiminimax, minimax con corte, Monte Carlo plano, Monte Carlo con actualización minimax y UCT. Cada uno tiene su ficha.
 - **El valor exacto se mide desde MAX.** $V(s)$ supone que los dos juegan lo mejor, y $Q(s,a)=V(T(s,a))$ valora una jugada. Con dados, $V$ promedia el azar con sus probabilidades.
 - **El valor con corte usa otra escala.** $V_d$ toma EVAL donde se corta y $M\cdot U$ en los finales, con $M=100$ y $|\mathrm{EVAL}|<M$. Estima $M\cdot V$.
-- **La estimación lleva gorro.** $\widehat Q$ sale de partidas simuladas: en Monte Carlo plano estima $Q_{\text{azar}}$, lo que paga la jugada si los dos siguen al azar; en la actualización minimax y en UCT estima $Q$, bajo su contrato.
+- **La estimación lleva gorro.** $\widehat Q$ sale de partidas simuladas: en Monte Carlo plano estima $Q_{\text{azar}}$, lo que paga la jugada si los dos siguen al azar; en la actualización minimax y en UCT estima $Q$, con las condiciones de su ficha.
 - **Solo $V$ es el valor del juego.** $Q_{\text{azar}}$ también es exacto, pero contesta otra pregunta.
 
 > **El árbol de resultados, en tres líneas.** La raíz R es de MAX, con izq, centro y der hacia I, C y D, de MIN. Los finales valen $+1$ o $-1$, y hay un solo empate, $0$. Minimax juega centro con $V=0$.
 
-> **Supuestos de esta página.** Los cuatro de toda la unidad: dos jugadores, suma cero, por turnos y todo a la vista. El azar, solo donde hay dados. La sección 4 los revisa uno por uno.
+> **Supuestos de esta página.** Los cuatro de toda la unidad: dos jugadores, suma cero (o constante), por turnos y todo a la vista. El azar, solo donde hay dados. La sección 4 los revisa uno por uno.
 
 ---
 
@@ -96,10 +96,10 @@ Porque sus juegos no ofrecen lo mismo. En ajedrez hay una estimación razonable 
 
 - **Minimax:** gato.
 - **Alfa-beta:** Conecta 4, resuelto en 1988 con búsqueda y reglas. Hoy alfa-beta con tablas de transposición lo resuelve sola.
-- **Expectiminimax:** ningún juego de dados famoso cabe; en la unidad, el ejemplo es el árbol de resultados con un dado en D. El backgammon no cabe: TD-Gammon (1992) miraba dos jugadas, promediaba los dados y estimaba con una red.
+- **Expectiminimax:** en la unidad, el ejemplo exacto es el árbol de resultados con un dado en D. El árbol completo del backgammon no cabe: TD-Gammon (1992) miraba dos jugadas, promediaba los dados y estimaba con una red.
 - **Minimax con corte:** ajedrez (Deep Blue, 1997) y damas (Chinook, con bases de finales).
 - **Monte Carlo plano:** Go, de 1993 a 2005.
-- **Actualización minimax:** Kocsis y Szepesvári (2006) la compararon con UCT en árboles de juego aleatorios. Con presupuestos prácticos falló más que el promedio.
+- **Actualización minimax:** Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, llaman a este método *Monte-Carlo planning with minimax value update* (MMMC) y lo compararon con UCT en árboles de juego aleatorios. Con presupuestos prácticos falló más que el promedio.
 - **UCT:** Go (MoGo, 2006) y Hex (MoHex).
 
 ::: table {#jue-c3-cmp-cuesta title="Qué le cuesta a cada algoritmo"}
@@ -123,7 +123,7 @@ Porque sus juegos no ofrecen lo mismo. En ajedrez hay una estimación razonable 
 
 - **Deep Blue y Chinook no buscaban hasta los finales.** Cortaban y estimaban; por eso no están en las filas de minimax y alfa-beta. Las damas sí se resolvieron en 2007, combinando varias búsquedas con bases de finales: con juego perfecto son tablas.
 - **La quietud arregla los intercambios a medias, no todo.** Lo que no es captura sigue detrás del horizonte, como viste en [[jugar-contra-el-reloj|Hasta dónde mirar]].
-- **UCT tiende a la jugada de minimax con vueltas sin límite**, con cualquier $c>0$ fija en un árbol finito. Con presupuesto fijo no garantiza acertar. Kocsis y Szepesvári acotaron qué tan rápido, con una $c$ grande; la $c=1$ del curso no tiene esa cota, aunque aquí funcionó. De dónde sale la de UCB1 lo viste en [[de-donde-sale-el-bono|De dónde sale el bono]].
+- **UCT tiende a la jugada de minimax con vueltas sin límite**, con cualquier $c>0$ fija en un árbol finito. Con presupuesto fijo no garantiza acertar. En el mismo artículo, Kocsis y Szepesvári acotaron qué tan rápido, con una $c$ grande; la $c=1$ del curso no tiene esa cota, aunque aquí funcionó. De dónde sale la de UCB1 lo viste en [[de-donde-sale-el-bono|De dónde sale el bono]].
 
 ::: exercise {#jue-c3-cmp-ej-tdgammon title="Ubica a TD-Gammon en la tabla"}
 TD-Gammon aparece junto a expectiminimax, porque el backgammon tiene dados, pero no buscaba hasta los finales.
@@ -149,16 +149,16 @@ La tabla se lee de algoritmo a juego. Con un juego nuevo en la mano hace falta l
 
 **Piensa: de todas las preguntas de la tabla, ¿cuál hay que hacer primero?**
 
-La de si cabe. Si el árbol cabe, la búsqueda es exacta, y ninguna estimación supera a $V$. Solo falta saber si hay dados, para elegir cuál búsqueda exacta. Las otras preguntas solo se hacen cuando no cabe. En [[diagnosticar-el-juego|Diagnosticar el juego]] ya era la quinta pregunta, la que decide el método.
+La de si cabe. Si el árbol cabe, la búsqueda exacta calcula $V$, y ninguna estimación es más fiable que ese valor exacto. Solo falta saber si hay dados, para elegir cuál búsqueda exacta. Las otras preguntas solo se hacen cuando no cabe. En [[diagnosticar-el-juego|Diagnosticar el juego]] ya era la quinta pregunta, la que decide el método.
 
-**El mapa, en orden:**
+**El mapa, en orden.** Tres preguntas eligen la rama: ¿cabe?, ¿hay dados?, ¿hay una EVAL buena? La cuarta, ¿hay reloj?, elige la versión dentro de la rama:
 
 1. **¿Cabe el árbol en el tiempo que hay?** Sin dados: alfa-beta. Da $V$ y la jugada de minimax, y nunca genera más nodos que minimax; con buen orden, muchos menos. Con dados: expectiminimax, que da el $V$ del juego con dado.
-2. **No cabe: ¿hay dados?** Con una EVAL: corte con nodos de azar, que se promedian, como TD-Gammon. Sin EVAL: la rama 4, que también simula los dados.
-3. **¿Hay una EVAL buena?** Sí: alfa-beta con corte. Con capturas, quietud; con reloj, profundización iterativa, que entrega la última búsqueda completa.
-4. **¿No la hay?** UCT, de la familia MCTS. Solo pide las reglas, para simular. Se interrumpe cuando sea y entrega la jugada más visitada.
+2. **No cabe: ¿hay dados?** Con una EVAL: corte con nodos de azar, que se promedian, como TD-Gammon. Sin EVAL, ninguna de las siete fichas cubre ese caso: haría falta extender MCTS con nodos de AZAR, por ejemplo sorteando cada resultado con su $\Pr(a\mid s)$. Esa variante no se desarrolla en esta unidad.
+3. **Sin dados, ¿hay una EVAL buena?** Sí: alfa-beta con corte. Con capturas, quietud; si hay reloj, profundización iterativa, que entrega la última búsqueda completa.
+4. **Sin dados ni EVAL:** UCT, de la familia MCTS. Solo pide las reglas, para simular. Con reloj o sin él, se interrumpe cuando sea y entrega la jugada más visitada.
 
-**Las otras dos simulaciones son variantes de la rama 4.** Monte Carlo plano es la versión sin árbol: más simple, y puede elegir mal. La actualización minimax converge a $V$, pero guarda todo lo que descubre y, con poco presupuesto, suele jugar peor.
+**En el caso sin dados, las otras dos simulaciones son variantes de la rama 4.** Monte Carlo plano es la versión sin árbol: más simple, y puede elegir mal. La actualización minimax converge a $V$, pero guarda todo lo que descubre y, con poco presupuesto, suele jugar peor.
 
 **Las ramas 3 y 4 eligen entre las versiones de esta unidad.** Fuera de ella, MCTS también puede usar una evaluación: AlphaGo valoraba sus hojas con una red y con simulaciones.
 
@@ -229,7 +229,7 @@ Porque en suma cero no le hace falta. Cada final tiene un solo número, y lo que
 
 **Lo que se usa cuando se le pide más a MCTS, o cuando hay más de dos jugadores o la suma no es constante.** Una línea cada uno; no se estudian en el curso.
 
-- **MCTS-Solver** (Winands, Björnsson y Saito, 2008): sube hacia arriba las victorias y derrotas ya demostradas, con máximo o mínimo, dentro de UCT. No demuestra empates.
+- **MCTS-Solver** (Winands, Björnsson y Saito, 2008): sube hacia arriba las victorias y derrotas ya demostradas, con máximo o mínimo, dentro de UCT. La versión original no trataba empates demostrados, porque eran raros en *Lines of Action*, el juego donde se probó.
 - **MCTS con evaluación.** AlphaGo (2016) valora cada hoja mezclando una red de valor con una simulación; un peso, $\lambda$, decide cuánto cuenta la simulación.
 - **Sin simulaciones hasta el final.** AlphaGo Zero (2017) y AlphaZero valoran la hoja de cada vuelta con la red. La selección con PUCT, un puntaje que suma lo que la red sugiere, ya venía de AlphaGo.
 
@@ -312,9 +312,9 @@ La actualización minimax también es de la rama 4, pero tendría que guardar to
 ## Lo que hay que llevarse
 
 - **Un árbol, siete algoritmos.** En el árbol de resultados, minimax juega centro con $V=0$ en 15 nodos, y alfa-beta lo mismo en 12. El corte a $d=1$ elige izq, con $60$, y la quietud lo corrige: centro. Monte Carlo plano elige der; la actualización minimax y UCT vuelven a centro. Con un dado en D, la jugada es der, que vale $1/3$.
-- **Qué número da cada uno.** $V$ es el valor del juego. El valor con corte lo estima con EVAL donde se corta. $\widehat Q$ lo estima simulando: Monte Carlo plano converge a $Q_{\text{azar}}$; la actualización minimax y UCT, a $Q$, bajo su contrato.
+- **Qué número da cada uno.** $V$ es el valor del juego. El valor con corte lo estima con EVAL donde se corta. $\widehat Q$ lo estima simulando: Monte Carlo plano converge a $Q_{\text{azar}}$; la actualización minimax y UCT, a $Q$, con las condiciones de su ficha.
 - **Cuándo conviene.** Si cabe, alfa-beta, o expectiminimax si hay dados: gato, Conecta 4. Si no cabe y hay una EVAL buena, minimax con corte: Deep Blue, Chinook. Si no la hay, UCT: MoGo, MoHex. Sin caber y con dados, corte con nodos de azar: TD-Gammon.
 - **El mapa empieza por «¿cabe?».** La posición de la clase sí cabía en la computadora: 389 nodos, 78 con alfa-beta, y $\text{d2}\textbf{-}\text{d3}$ gana. El corte a $d=1$ elegía $\text{d2}\textbf{x}\text{c3}$, con $13$.
-- **Todo supone dos jugadores, suma cero, por turnos y todo a la vista.** En suma cero, el $-1$ de MAX es el máximo de MIN. Con pagos propios o tres jugadores eso se rompe: cada final lleva un vector, y entran $\max^n$, el paranoico o UCT con vectores.
+- **Todo supone dos jugadores, suma cero o constante, por turnos y todo a la vista.** En suma cero, el $-1$ de MAX es el máximo de MIN. Con pagos propios o tres jugadores eso se rompe: cada final lleva un vector, y entran $\max^n$, el paranoico o UCT con vectores.
 
 Vuelve al [[juegos|índice de la unidad]].

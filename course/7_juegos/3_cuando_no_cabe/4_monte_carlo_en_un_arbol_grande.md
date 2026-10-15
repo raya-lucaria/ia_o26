@@ -120,8 +120,8 @@ Uno por jugada: cuántas veces la tomó y cuánto pagaron, en promedio, esas vue
 
 | Quién mueve | Elige | Puntaje |
 |---|---|---|
-| MAX | El mayor | $\mathbf{\widehat Q(s,a)+c\sqrt{\frac{\ln N(s)}{N(s,a)}}}$ |
-| MIN | El menor | $\mathbf{\widehat Q(s,a)-c\sqrt{\frac{\ln N(s)}{N(s,a)}}}$ |
+| MAX | El mayor | $\mathbf{\widehat Q(s,a)+c\sqrt{\ln N(s)/N(s,a)}}$ |
+| MIN | El menor | $\mathbf{\widehat Q(s,a)-c\sqrt{\ln N(s)/N(s,a)}}$ |
 
 - **El promedio aprovecha (*exploitation*).** Es lo que ya se vio de esa jugada.
 - **El bono explora (*exploration*).** Premia lo poco visitado y se encoge al crecer $N(s,a)$.
@@ -137,12 +137,7 @@ Uno por jugada: cuántas veces la tomó y cuánto pagaron, en promedio, esas vue
 
 **Decide la suma:** MAX selecciona $a$, aunque $b$ tenga más bono. Con bono $0.6$, $b$ sumaría $0.8$ y sería la seleccionada.
 
-**UCB por fe: qué hace cada parte del bono.**
-
-- **$\sqrt{1/N(s,a)}$ tiene la forma del margen de un promedio.** Con pocas visitas, $\widehat Q$ todavía puede estar lejos; el bono le da el beneficio de la duda en proporción a esa duda.
-- **$\ln N(s)$ hace crecer el bono de una jugada olvidada.** Si el padre sigue recibiendo vueltas y la jugada no, su bono crece despacio, hasta que vuelve a probarse.
-- **$c$ fija cuánto pesa esa duda** frente al promedio. En esta página, $c=1$.
-- **$s$ es cualquier nodo por el que baja la selección**, no solo la raíz; $\ln$ es el logaritmo natural, que crece muy despacio.
+**El bono, en corto.** Es grande con pocas visitas, y crece despacio si el padre sigue recibiendo vueltas y la jugada no: así vuelve a probarse una jugada olvidada. $c$ fija cuánto pesa (aquí, $c=1$); $s$ es cualquier nodo por el que baja la selección, y $\ln$ es el logaritmo natural.
 
 **La idea viene del bandido:** elegir una y otra vez entre opciones inciertas, sin árbol debajo. Ahí el bono es un margen de error del promedio, del lado que le importa a quien elige.
 
@@ -386,7 +381,7 @@ Una $c$ mayor le da más peso al bono. Con $c=\sqrt2$ la selección ya iría a z
 
 - **Número que da:** visitas y promedios $\widehat Q(s,a)$, que estiman los $Q$ de minimax; entrega la jugada más visitada.
 - **Usa EVAL:** no. Necesita reglas, detección de finales y pagos $U$.
-- **Garantía:** en un árbol finito, con $c>0$ fija y vueltas sin límite, los promedios tienden a los valores de minimax (Kocsis y Szepesvári, 2006, *Bandit based Monte-Carlo planning*). Con presupuesto fijo, ninguna.
+- **Garantía:** en un árbol finito, con $c>0$ fija y vueltas sin límite, los promedios tienden a los valores de minimax. Kocsis y Szepesvári (2006), *Bandit based Monte-Carlo Planning*, lo probaron con una $c$ bastante grande y acotaron qué tan rápido (ver [[de-donde-sale-el-bono|De dónde sale el bono]]). Con presupuesto fijo, ninguna.
 - **Se puede interrumpir:** sí (*anytime*); recomienda desde la primera vuelta. Como la profundización iterativa de [[jugar-contra-el-reloj|Hasta dónde mirar]], siempre tiene una jugada lista.
 - **Complejidad:** con $b$ jugadas por estado, $h$ la profundidad del árbol guardado y $m$ el largo de una partida, una vuelta cuesta $O(bh+m)$ y $n$ vueltas, $O(n(bh+m))$. Guarda hasta $n+1$ nodos: memoria $O(n)$.
 - **Frente a los demás:** usa azar solo debajo de su frontera; Monte Carlo plano lo usa en toda la continuación. La actualización minimax muestrea parejo y sube máximos o mínimos; UCT mejora su selección y promedia.
@@ -436,7 +431,7 @@ Un ejemplo abstracto: MAX elige entre $A$ y $B$. Tras $A$, MIN elige entre un fi
 - **Minimax juega $B$.** $Q(s,A)=\min(+1,-1)=-1$ y $Q(s,B)=-0.2$, así que $V(s)=-0.2$.
 - **Al principio, MIN reparte casi parejo bajo $A$.** Entonces $\widehat Q(s,A)\approx0$ y $A$ parece mejor que $B$.
 - **Después, MIN favorece su respuesta buena.** El $-1$ tiene el menor puntaje y cada $-1$ entra también en el promedio de $A$.
-- **Con proporciones ilustrativas, no medidas:** si de 1000 vueltas por $A$ solo 10 fueron al $+1$, entonces $\widehat Q(s,A)=\frac{10(+1)+990(-1)}{1000}=-0.98$.
+- **Con proporciones ilustrativas, no medidas:** si de 1000 vueltas por $A$ solo 10 fueron al $+1$, entonces $\widehat Q(s,A)=(10(+1)+990(-1))/1000=-0.98$.
 - **Lo viejo pesa cada vez menos.** Las vueltas de cuando MIN repartía parejo no se borran; las nuevas las diluyen.
 - **MAX elige $A$ cada vez menos.** Con $\widehat Q(s,A)$ debajo de $-0.2$, casi todas las vueltas van a $B$; el bono sigue probando $A$ de vez en cuando.
 - **El promedio de la raíz tiende a $-0.2$**, que es $V(s)$.

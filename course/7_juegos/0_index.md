@@ -46,31 +46,25 @@ algoritmo se sigue a mano:
 - **El árbol base**, con hojas de puntos del 2 al 12, para minimax, alfa-beta
   y los dados.
 - **El árbol de resultados**, con finales $+1$, $0$ y $-1$, para el corte y
-  los Monte Carlo. En la radiografía lo corren todos los algoritmos.
+  los Monte Carlo; la clase 2 ya lo usa al cerrar cada algoritmo. En la
+  radiografía lo corren todos.
 
 No necesitas saber jugar ajedrez. El ajedrez aparece solo como comparación:
 es el juego real que **no** cabe. Por eso los programas que lo juegan tienen
 que estimar.
 
 **Cada clase cambia una sola cosa**, y ese cambio obliga a una herramienta
-nueva:
-
-| Clase | Qué cambia | Herramienta |
-|---|---|---|
-| 1 | Pasamos de unas reglas en palabras a un modelo | Las siete piezas de un juego, su grafo, y el valor $V$ de un estado y $Q$ de una jugada |
-| 2 | El juego cabe completo | Minimax, alfa-beta y expectiminimax |
-| 3 | El juego ya no cabe | Corte con evaluación, quietud y profundización iterativa; Monte Carlo y UCT |
-| 4 | Nada en el juego: se comparan los algoritmos | La radiografía en un mismo árbol y cómo elegir |
+nueva. La tabla de la sección siguiente lo resume.
 
 ## Las clases
 
 ::: table {#jue-clases title="Las clases de la unidad"}
-| Sección | Título | Qué trabaja | Minutos |
+| Sección | Qué cambia | Qué trabaja | Minutos |
 |---|---|---|---:|
-| 1 | Leer y escribir el juego | Ordenar unas reglas confusas, escribir el juego, construir su grafo, diagnosticarlo y definir $V$ y $Q$ | 121m |
-| 2 | Mirar todo y podar | Calcular la mejor jugada con minimax, podar con alfa-beta y promediar dados con expectiminimax | 203m |
-| 3 | Cuando el árbol no cabe | Cortar y evaluar, decidir hasta dónde mirar, simular partidas, MCTS con UCT y de dónde sale su bono | 280m |
-| 4 | Radiografía de los algoritmos | Los siete algoritmos en un mismo árbol: qué número da cada uno, qué juega y cuánto cuesta; y cómo elegir uno | 90m |
+| 1 | Pasamos de unas reglas en palabras a un modelo | Ordenar unas reglas confusas, escribir el juego, construir su grafo, diagnosticarlo y definir $V$ y $Q$ | 121m |
+| 2 | El juego cabe completo | Calcular la mejor jugada con minimax, podar con alfa-beta y promediar dados con expectiminimax | 203m |
+| 3 | El juego ya no cabe | Cortar y evaluar, decidir hasta dónde mirar, simular partidas, MCTS con UCT y de dónde sale su bono | 280m |
+| 4 | Nada en el juego: se comparan los algoritmos | Los siete algoritmos en un mismo árbol: qué número da cada uno, qué juega y cuánto cuesta; y cómo elegir uno | 90m |
 :::
 
 - [[juegos-leer-y-escribir|Clase 1 · Leer y escribir el juego]]
@@ -82,7 +76,7 @@ nueva:
 El recorrido de lectura suma **11 horas y 34 minutos**.
 
 Las clases 1 a 3 terminan con una **tarea de refuerzo**. Trae ejercicios con
-pistas y respuestas plegadas: uno con un juego nuevo y otro que modifica lo
+pistas y respuestas plegadas, sobre juegos nuevos y sobre variantes de lo
 que ya viste. Las tres tareas suman unas **3 horas más**. No se entregan;
 sirven para comprobar que puedes hacerlo sin ayuda.
 
