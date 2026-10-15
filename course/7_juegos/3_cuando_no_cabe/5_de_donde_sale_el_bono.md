@@ -101,12 +101,12 @@ Tras esas tres vueltas, $\widehat Q(\text{x})=-1$, $\widehat Q(\text{y})=-1$ y $
 2. **Nunca, en esta corrida.** x e y no se vuelven a probar y se quedan en $-1$, el mínimo posible. z ya ganó una vez, así que su promedio nunca baja a $-1$. Tras 1000 vueltas, x e y llevan una simulación cada una y z, 998: la regla se atoró en la peor jugada.
 :::
 
-**Los dos errores no cuestan lo mismo.** Un promedio solo se corrige si sigue recibiendo muestras. Una jugada sobreestimada estorba mientras encabeza, y mientras encabeza recibe muestras que la bajan; si se congela, es porque otra la rebasó, y ya no decide nada. Una jugada subestimada puede no volver a probarse nunca.
+**Los dos errores no cuestan lo mismo.** Mientras una jugada sobreestimada encabeza, sigue recibiendo muestras: su promedio puede subir o bajar y, si recibe muestras sin límite, converge a su esperanza con probabilidad 1. Si deja de elegirse, puede quedar congelada, pero ya no es la elegida. Una jugada subestimada puede no volver a probarse nunca.
 
 ::: table {#jue-c3-tabla-optimismo title="Equivocarse por arriba o por abajo"}
 | Error | Qué puede pasar |
 |---|---|
-| Creer buena una mala | Mientras encabece recibe muestras y su $\widehat Q$ baja hacia su esperanza; si otra la rebasa puede quedar congelada, pero ya no es la elegida |
+| Creer buena una mala | Mientras encabece recibe muestras; su $\widehat Q$ puede subir o bajar. Con muestras sin límite converge a su esperanza; si deja de elegirse puede quedar congelada, pero ya no es la elegida |
 | Creer mala una buena | Puede dejar de probarse y **conservar para siempre** una subestimación |
 :::
 

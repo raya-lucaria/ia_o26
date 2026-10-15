@@ -1003,6 +1003,18 @@ def _esperado(filas):
     return [tuple(_c(x) for x in f) for f in filas]
 
 
+def _a_nodo(filas):
+    """Las trazas de Cortar nombran solo el nodo en «lín. · nodo»: con d <= 2
+    la pila es siempre R o R›nodo, y aqui se exige antes de quitar la R."""
+    res = []
+    for f in filas:
+        lin, pila = f[1].split(" · ")
+        partes = pila.split("›")
+        assert partes[0] == "R" and len(partes) <= 2, f
+        res.append((f[0], f"{lin} · {partes[-1]}") + tuple(f[2:]))
+    return res
+
+
 def _con_huecos(leidas, esperadas):
     """Cada celda leida coincide con la esperada; un «?» vale por cualquier
     texto no vacio."""
@@ -1075,7 +1087,7 @@ def test_prosa_clase_3_p2_evaluacion_y_traza_de_t_con_d_2():
         rango = re.search(r"filas (\d+) a (\d+)", _titulo(texto, t)).groups()
         assert rango == (_c(filas_t[0][0]), _c(filas_t[-1][0])), t
     leidas = _filas(tablas[0] + tablas[1] + tablas[2])
-    assert leidas == _esperado(j.filas_corte_tpm(2))
+    assert leidas == _esperado(_a_nodo(j.filas_corte_tpm(2)))
     total = j.contar_nodos(j.ARBOL_TPM)
     filas = j.traza_decidir(j.ARBOL_TPM_100, profundidad=2, evaluar=j.EVAL_TPM)["filas"]
     tramo_1 = len(tablas[0]) + len(tablas[1])
@@ -1113,7 +1125,7 @@ def test_prosa_clase_3_p2_la_traza_con_huecos_y_su_respuesta():
     texto = _pagina(P2)
     ej = _bloque(texto, "jue-c3-ej-traza-d2")
     orden = _orden_de(re.search(r"otro orden: (\w+), (\w+), (\w+)", _limpio(ej)).groups())
-    esperado = _esperado(j.filas_corte_tpm(2, orden=orden))
+    esperado = _esperado(_a_nodo(j.filas_corte_tpm(2, orden=orden)))
     # La traza va en tres tramos, uno por hijo de R en ese orden; cada
     # encabezado del enunciado declara su hijo y su rango de filas, y la
     # respuesta parte en los mismos puntos.
@@ -1124,8 +1136,8 @@ def test_prosa_clase_3_p2_la_traza_con_huecos_y_su_respuesta():
     for (_, hijo, a, b), tabla in zip(tramos, partes_ej):
         cuerpo = tabla[1:]
         assert (a, b) == (_c(cuerpo[0][0]), _c(cuerpo[-1][0]))
-        dentro = [_c(f[1]).split(" · ")[1] for f in cuerpo if "›" in f[1]]
-        assert dentro and set(dentro) == {f"R›{hijo}"}, (hijo, dentro)
+        dentro = [_c(f[1]).split(" · ")[1] for f in cuerpo if _c(f[1]).split(" · ")[1] != "R"]
+        assert dentro and set(dentro) == {hijo}, (hijo, dentro)
     _con_huecos(_filas([f for t in partes_ej for f in t[1:]]), esperado)
     resp = _respuesta(texto, "jue-c3-ej-traza-d2")
     partes_resp = _tablas(resp)[:3]
@@ -1154,7 +1166,7 @@ def test_prosa_clase_3_p2_ejercicio_final_empate_y_otra_eval():
     resp = _respuesta(texto, "jue-c3-ej-final-corte")
     c = j.EVAL_TPM_EMPATE
     assert _filas(_tablas(resp)[0][1:]) == _esperado(
-        j.filas_corte_tpm(1, orden=orden, evaluar=c))
+        _a_nodo(j.filas_corte_tpm(1, orden=orden, evaluar=c)))
     limpio = _limpio(resp)
     empate, resto = limpio.split("2. La variante.")
     variante_txt, costo = resto.split("3. El costo.")
@@ -1328,10 +1340,11 @@ def test_prosa_clase_3_p4_el_reloj_en_la_posicion():
     m = re.search(r"En la clase, sin poda, (\d+) nodos contra (\d+)\. Si no crece parejo puede "
                   r"costar más: en el árbol de resultados, con alfa-beta y la jugada anterior "
                   r"primero, las dos primeras búsquedas suman "
-                  r"(\d+) nodos contra (\d+) de la última\. - La poda ahorra siempre; la jugada "
-                  r"anterior primero, solo a veces: en el árbol de resultados, (\d+) nodos contra "
-                  r"(\d+) sin poda, y la iterativa empata con alfa-beta de orden fijo\. En la "
-                  r"clase, (\d+) contra (\d+) de alfa-beta fijo y (\d+) sin poda", llevarse)
+                  r"(\d+) nodos contra (\d+) de la última\. - La poda nunca cuesta más, pero no "
+                  r"siempre ahorra; la jugada anterior primero, solo a veces: en el árbol de "
+                  r"resultados, (\d+) nodos contra (\d+) sin poda, y la iterativa empata con "
+                  r"alfa-beta de orden fijo\. En la clase, (\d+) con la jugada anterior primero "
+                  r"y la salida en 100, contra (\d+) de alfa-beta fijo y (\d+) sin poda", llevarse)
     tpm = j.tabla_nodos_generados_tpm()
     clase = j.tabla_nodos_generados()
     t_it = tpm["iterativa"]
@@ -1490,7 +1503,8 @@ def test_prosa_clase_3_p4_iterativa_en_t_y_nodos_generados():
         assert leido == {k: fuente[k] + [sum(fuente[k])] for k in claves}, ident
     llevarse = _limpio(texto.split("## Lo que hay que llevarse")[-1])
     m = re.search(r"en el árbol de resultados, (\d+) nodos contra (\d+) sin poda, y la iterativa "
-                  r"empata con alfa-beta de orden fijo\. En la clase, (\d+) contra (\d+) de "
+                  r"empata con alfa-beta de orden fijo\. En la clase, (\d+) con la jugada "
+                  r"anterior primero y la salida en 100, contra (\d+) de "
                   r"alfa-beta fijo y (\d+) sin poda", llevarse)
     assert m and [int(x) for x in m.groups()] == [sum(t_it), sum(t_sp),
                                             sum(tabla[("4x4", "iterativa")]),

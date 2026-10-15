@@ -124,6 +124,16 @@ def nombre(r, id_):
     return {x["id"]: x["nombre"] for x in r["arbol"]["nodos"]}[id_]
 
 
+def _pila_en_pagina(modo, pila):
+    """Como la escribe la página. En «Cortar y evaluar» (d = 2) la columna es
+    «lín. · nodo»: la pila siempre es R o R›nodo, así que solo se escribe el
+    nodo; se exige esa forma antes de recortar la R."""
+    if modo != "corte":
+        return "›".join(pila)
+    assert pila[0] == "R" and len(pila) <= 2, pila
+    return pila[-1]
+
+
 @pytest.mark.parametrize("modo,variante", [m for m in MODOS if tabla_de(*m)],
                          ids=lambda x: str(x))
 def test_cada_paso_es_una_fila_de_la_tabla_de_la_pagina(modo, variante):
@@ -147,7 +157,7 @@ def test_cada_paso_es_una_fila_de_la_tabla_de_la_pagina(modo, variante):
             assert w == p["w"] == nombre(r, p["nodo"]), donde
             continue
         linea, pila = linea_pila.split("·")
-        assert (linea, pila) == (p["linea"], "›".join(p["pila"])), donde
+        assert (linea, pila) == (p["linea"], _pila_en_pagina(modo, p["pila"])), donde
         assert v == p["v"], donde
         valor_w, quien = separa_w(w)
         assert valor_w == p["w"], donde

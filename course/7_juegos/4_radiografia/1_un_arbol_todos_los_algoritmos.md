@@ -104,7 +104,7 @@ $$
 - **Si decide el azar, el estado promedia.** Con $\mathrm{Pl}(s)=$ AZAR, $V(s)=\sum_a \Pr(a\mid s)\,Q(s,a)$; dibujado el azar como un nodo hijo, $Q(s,a)=V(T(s,a))$ sigue valiendo.
 - **Dos jugadas que llevan al mismo estado valen lo mismo.** Pero sus visitas son de aristas distintas; por eso las estadísticas de simulación se guardan por jugada.
 
-**Las estadísticas de UCT pertenecen a aristas.** Se dibujan junto a $s'=T(s,a)$ porque aquí cada hijo tiene un solo padre: el $\widehat V$ del hijo es el $\widehat Q$ de la jugada que lleva a él.
+**En UCT, $N(s,a)$ y $\widehat Q(s,a)$ son de la arista; $N(s)$ y $\widehat V(s)$, del estado.** Aquí cada hijo tiene un solo padre, así que $\widehat Q(s,a)=\widehat V(T(s,a))$: las figuras dibujan junto al hijo su $N$ y su $\widehat V$.
 
 ::: figure {#jue-c3-rx-fig-estado-y-jugada title="El valor de una jugada vive en el hijo al que lleva"}
 ![Raíz de MAX con dos jugadas, A y B; el número de cada jugada se dibuja junto a su hijo. Cada algoritmo pone ahí V, una cota, el valor con corte o una estimación Q̂](../_assets/jue-c3-rx-estado-y-jugada.svg)
@@ -119,7 +119,7 @@ $$
 | Corte | $V_d$ o cota | Nodo | Máx. o mín.; EVAL |
 | MC plano | $N$ y suma | Raíz | No sube |
 | Act. minimax | $\widehat V(s)$, $\widehat Q(s,a)$ | Lo descubierto | Máx. o mín. |
-| UCT | $N(s,a)$, $\widehat Q(s,a)$ | Arista | Promedio |
+| UCT | $N$, $\widehat Q(s,a)$; $N$, $\widehat V(s)$ | Arista; estado | Promedio |
 :::
 
 - **Los cuatro primeros calculan desde los hijos.** Solo expectiminimax promedia, en AZAR.
@@ -651,7 +651,7 @@ $$
 **UCT (*Upper Confidence bounds applied to Trees*) selecciona con UCB.** Pertenece a MCTS, la búsqueda en árbol de Monte Carlo (*Monte Carlo Tree Search*). Simula desde su frontera y juega por visitas; el recorrido está en [[monte-carlo-en-un-arbol-grande|MCTS con UCT]].
 
 - **Qué valor rastrea:** estima $Q(s,a)$ promediando los pagos de las vueltas que tomaron esa jugada, desde MAX.
-- **Dónde lo guarda:** conserva $N(s,a)$ y $\widehat Q(s,a)$ por arista, y $N(s)$ por estado.
+- **Dónde lo guarda:** conserva $N(s,a)$ y $\widehat Q(s,a)$ por arista, y $N(s)$ y $\widehat V(s)$ por estado.
 - **Cómo sube:** promedia el mismo $U$ en todo el camino.
 - **A qué converge:** en un árbol finito, con $c>0$ fija y vueltas sin límite, sus $\widehat Q(s,a)$ tienden a $Q(s,a)$ y el valor de la raíz a $V$.
 
@@ -684,7 +684,7 @@ $$
 
 **Decide la suma:** elige $a$, aunque $b$ tenga más bono. Con bono $0.6$, $b$ sumaría $0.8$ y sería elegida.
 
-**El promedio se acerca al mínimo porque MIN concentra visitas en sus mejores respuestas.** Si se dibuja $\widehat V(s)$, promedia las vueltas que pasaron por $s$; no toma máximos ni mínimos de sus $\widehat Q$.
+**El promedio se acerca al mínimo porque MIN concentra visitas en sus mejores respuestas.** El $\widehat V(s)$ que dibujan las figuras promedia las vueltas que pasaron por $s$; no toma máximos ni mínimos de sus $\widehat Q$.
 
 **2 · Elección: qué jugada juega**
 

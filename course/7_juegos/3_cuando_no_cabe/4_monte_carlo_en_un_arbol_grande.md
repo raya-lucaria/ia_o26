@@ -10,7 +10,7 @@ tags: [juegos, mcts, busqueda-adversarial]
 
 # MCTS con UCT
 
-**¿Cómo gastas un presupuesto de simulaciones donde más importa?**
+**¿Cómo gastas un presupuesto de vueltas donde más importa?**
 
 Construyes un árbol poco a poco y mandas más vueltas a lo que va mejor, sin dejar de probar lo demás.
 
@@ -35,9 +35,9 @@ Construyes un árbol poco a poco y mandas más vueltas a lo que va mejor, sin de
 
 ## 1 · Gastar donde importa
 
-**Piensa: si tienes tiempo para 1000 simulaciones y tres jugadas, ¿las repartirías por igual?**
+**Piensa: si tienes tiempo para 1000 vueltas y tres jugadas, ¿las repartirías por igual?**
 
-No conviene. Repartir parejo gasta lo mismo en jugadas buenas y malas. MCTS **construye un árbol poco a poco** y manda más simulaciones a lo que va mejor.
+No conviene. Repartir parejo gasta lo mismo en jugadas buenas y malas. MCTS **construye un árbol poco a poco** y manda más vueltas a lo que va mejor.
 
 ::: definition {#jue-c3-uct title="MCTS y UCT"}
 **Qué es.** MCTS, la búsqueda en árbol de Monte Carlo (*Monte Carlo Tree Search*), es una familia de algoritmos. Cada **vuelta** recorre cuatro fases: selección, expansión, simulación y retropropagación.
@@ -90,7 +90,7 @@ Uno por jugada: cuántas veces la tomó y cuánto pagaron, en promedio, esas vue
 
 - **Qué valor rastrea:** $\widehat Q(s,a)$, el promedio de los pagos de las vueltas que tomaron la jugada $a$ en $s$; estima $Q(s,a)$, siempre desde MAX.
 - **Dónde lo guarda:** por arista, $N(s,a)$ y $\widehat Q(s,a)$; por estado, $N(s)$ y $\widehat V(s)$, el promedio de los pagos de las vueltas que pasaron por $s$. Empieza con solo la raíz.
-- **Cómo sube:** el **mismo $U$** de cada vuelta entra en el promedio de cada arista del camino. Promedia; no toma máximos ni mínimos.
+- **Cómo sube:** el **mismo $U$** de cada vuelta entra en el promedio de cada estado y de cada arista del camino. Promedia; no toma máximos ni mínimos.
 - **A qué converge:** en un árbol finito, con $c>0$ fija y vueltas sin límite, cada $\widehat Q(s,a)$ tiende a $Q(s,a)$. Con un presupuesto fijo, no hay garantía.
 
 **Otra notación.** Otros textos escriben $Q(s,a)$ para el promedio. Aquí $Q$ es el valor exacto y el gorro marca la estimación.
