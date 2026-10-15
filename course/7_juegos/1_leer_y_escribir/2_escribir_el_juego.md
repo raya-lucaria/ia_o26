@@ -37,7 +37,9 @@ mismas siete sirven para gato o ajedrez.
 > - **determinista:** no hay azar;
 > - **información perfecta:** cada jugador ve el estado completo y todas las
 >   jugadas anteriores;
-> - **finito:** toda partida termina;
+> - **finito:** cada estado admite un número finito de jugadas y toda
+>   partida termina, así que el árbol de partidas tiene un número finito de
+>   nodos;
 > - **suma cero:** lo que gana uno lo pierde el otro.
 >
 > En [[diagnosticar-el-juego|Diagnosticar el juego]] se revisa qué cambia
@@ -314,8 +316,8 @@ $\mathrm{Pl}(s)$ solo lee el turno guardado en $s$.
 **Qué no es:** la etiqueta no dice quién va ganando; solo quién elige la
 siguiente jugada.
 
-**Qué significa:** en el grafo, cada nodo que no es hoja lleva la etiqueta
-MAX o MIN. «Nodo de MAX», «mueve MAX» y «$\mathrm{Pl}(s)=\text{MAX}$» dicen
+**Qué significa:** en el grafo, cada nodo que no es final lleva la etiqueta
+MAX o MIN, aunque todavía no se haya expandido. «Nodo de MAX», «mueve MAX» y «$\mathrm{Pl}(s)=\text{MAX}$» dicen
 lo mismo.
 :::
 
@@ -536,7 +538,7 @@ o **pago**: **lo que vale ese resultado para MAX**.
 **Dominio:** solo los finales; un estado a medio juego no tiene utilidad.
 **Codominio:** los números reales.
 
-**Qué significa:** en el grafo, cada hoja lleva escrito su $U$. No cambia
+**Qué significa:** en el grafo, cada final lleva escrito su $U$. No cambia
 con quién movió último: $+1$ siempre favorece a MAX.
 
 **Por qué basta un número:** como el juego es de suma cero, para MIN ese
@@ -682,11 +684,11 @@ fila del tablero.
 
 | Estado | Fila 3 | Fila 2 | Fila 1 | Turno |
 |---|:---:|:---:|:---:|:---:|
-| $s_0$ | N N N | · · · | B B B | B |
-| $s_1$ | N N N | B · · | · B B | N |
-| $s_2$ | N · N | N · · | · B B | B |
-| $s_3$ | N · N | N B · | · · B | N |
-| $s_4$ | N · N | · B · | N · B | B |
+| $s_0$ | N N N | · · · | B B B | B |
+| $s_1$ | N N N | B · · | · B B | N |
+| $s_2$ | N · N | N · · | · B B | B |
+| $s_3$ | N · N | N B · | · · B | N |
+| $s_4$ | N · N | · B · | N · B | B |
 
 Ahora, la partida, vuelta por vuelta:
 
@@ -726,7 +728,7 @@ ellas.
   juego de esta clase.
 - **Cada pieza dibuja algo del grafo:** los estados son los nodos,
   $\mathrm{Pl}$ los etiqueta, $A$ y $T$ trazan las flechas y $U$ pone
-  números en las hojas.
+  números en los finales.
 - **Quién mueve es parte del estado:** $s=(\tau,\text{turno})$ y
   $\mathrm{Pl}(s)$ solo lee el turno.
 - **La utilidad copia el reglamento y se mide desde MAX.** En hexapawn,

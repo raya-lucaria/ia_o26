@@ -127,7 +127,7 @@ Es la misma medida de desempeño de [[desempeno-en-peas|la unidad de agentes]]. 
 - **MAX racional** elige para que $U$ quede lo más alto posible.
 - **MIN racional** elige para que **su** utilidad, $-U$, quede lo más alta posible. Es decir, para que $U$ quede lo más bajo posible.
 
-**Por eso, y solo porque son dos y es suma cero, «lo mejor para MIN» es «lo peor para MAX».** Sin esos supuestos, la equivalencia deja de valer (@jue-c1-nota-jugadores).
+**Por eso, y solo porque son dos y es suma cero o constante, «lo mejor para MIN» es «lo peor para MAX».** Sin esos supuestos, la equivalencia deja de valer (@jue-c1-nota-jugadores).
 
 ### No hay racionalidad perfecta
 
@@ -144,10 +144,10 @@ Stuart Russell, uno de los autores de ese libro, lo llamó **racionalidad limita
 |---|---|
 | Tiempo para todo el árbol | La jugada que asegura más contra cualquier respuesta |
 | Un segundo por jugada | La mejor que encuentra en ese segundo |
-| Una tabla de 24 cajas | Lo que dice la caja de ese tablero |
+| Una tabla con una jugada por tablero | Lo que dice la tabla para ese tablero |
 :::
 
-**La jugada perfecta es una regla para medir, no una exigencia.** Lo que sí se exige es no desperdiciar: si tenías tiempo de ver que una jugada pierde y la hiciste, eso sí es irracional.
+**La jugada perfecta es una regla para medir, no una exigencia.** Lo que sí se exige es no desperdiciar: si con tu información y tu tiempo podías ver que otra jugada asegura más y elegiste la que asegura menos, eso sí es irracional.
 
 ### Lo que racional no quiere decir
 
@@ -155,7 +155,7 @@ Stuart Russell, uno de los autores de ese libro, lo llamó **racionalidad limita
 | No es | Por qué no |
 |---|---|
 | Ganar siempre | En hexapawn, Blancas pierde aun jugando perfecto |
-| Ser inteligente o humano | La máquina de cerillos de Gardner son cajas |
+| Ser inteligente o humano | Una máquina hecha de cajas de cerillos puede serlo |
 | Saberlo o calcularlo todo | Elige con lo que sabe y alcanza a calcular |
 | Querer lo que queremos | Persigue **su** $U$, sea cual sea |
 :::
@@ -213,7 +213,7 @@ $$\mathbf{Q(s,a)=V\bigl(T(s,a)\bigr)}.$$
 
 **El estado vale lo que la mejor jugada de quien mueve:**
 
-$$\mathbf{V(s)=\begin{cases}U(s) & \text{si } s\in S_F,\\[2pt] \max_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MAX},\\[2pt] \min_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MIN}.\end{cases}}$$
+$$\mathbf{V(s)=\begin{cases}U(s) & \text{si } s\in S_F,\\[2pt] \max\limits_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MAX},\\[2pt] \min\limits_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MIN}.\end{cases}}$$
 
 **Una jugada** es una acción $a\in A(s)$: lo que haces ahora.
 
@@ -231,7 +231,7 @@ Como $+1$ es el pago más alto que existe en hexapawn, ninguna jugada supera a e
 
 ### El número y la jugada
 
-**El valor no es una jugada: dice cuánto vale el estado, no qué hacer.** Ya lo viste en la unidad de optimización, con $Q$ como la función que se optimiza:
+**El valor no es una jugada: dice cuánto vale el estado, no qué hacer.** La distinción entre $\max$ y $\operatorname{arg\,max}$ ya la viste en la unidad de optimización; aquí la función que se optimiza es $Q$:
 
 - **$\max_{a\in A(s)} Q(s,a)$ es el número** más alto que se alcanza.
 - **$\operatorname*{arg\,max}_{a\in A(s)} Q(s,a)$ es el conjunto de jugadas** que lo alcanzan. Es un conjunto porque puede haber empates.
@@ -275,7 +275,7 @@ Para cada juego, contesta las cuatro preguntas de la sección 1 y di qué modelo
 :::
 
 ::: hint {#jue-c1-pista-diagnostico of="jue-c1-ej-diagnostico" title="Antes de las cuatro preguntas"}
-Para cada juego, pregúntate primero si algún jugador **elige** algo. Si nadie elige, no hay nada que calcular para un jugador. Después busca qué no ve cada jugador y cuántos juegan.
+Para cada juego, pregúntate primero si algún jugador **elige** algo. Después busca qué no ve cada jugador y cuántos juegan.
 :::
 
 ::: answer {#jue-c1-resp-diagnostico of="jue-c1-ej-diagnostico"}

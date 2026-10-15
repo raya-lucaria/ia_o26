@@ -55,6 +55,20 @@ vuelven en la primera página y en la clase 2.
 
 ---
 
+## El hilo de la clase
+
+Toda la clase usa **hexapawn**, el juego que acabas de jugar:
+
+- **Leer el reglamento** ordena sus reglas.
+- **Escribir el juego** las vuelve siete piezas y escribe con ellas una
+  partida.
+- **El juego como grafo** cuenta sus 135 estados y dibuja el subgrafo de **n1**,
+  el estado donde se decide en la clase 2.
+- **Diagnosticar el juego** lo compara con otros juegos y define $V$ y $Q$,
+  con un primer ejemplo en n1.
+
+---
+
 ## Recorrido
 
 Cuatro páginas, en orden, y una tarea de refuerzo al final.
@@ -77,8 +91,9 @@ Cuatro páginas, en orden, y una tarea de refuerzo al final.
 
 ## Qué no cubre esta clase
 
-- **No se calcula ningún valor.** $V$ y $Q$ se definen aquí; calcularlos y
-  saber quién gana con juego perfecto es la clase 2.
+- **No se calcula el valor de un árbol entero.** $V$ y $Q$ se definen
+  aquí, y solo se leen los que salen directo de un final. Calcularlos
+  recorriendo el árbol, y saber quién gana con juego perfecto, es la clase 2.
 - **Azar, jugadas simultáneas y más jugadores** solo se diagnostican. La
   página 4 dice qué modelo pediría cada uno y cuáles quedan fuera de la
   unidad.

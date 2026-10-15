@@ -21,7 +21,7 @@ Al terminar podrás:
 
 > **Las reglas, en cuatro líneas.** Tablero de 3×3; Blancas (B) abajo en la fila 1 y Negras (N) arriba en la fila 3. Empiezan Blancas. Un peón avanza una casilla si está vacía o captura en diagonal hacia delante. Gana quien llega a la fila del rival, captura todos los peones rivales o deja al rival sin jugada; ganar vale $+1$ y perder, $-1$.
 
-> **Supuestos de esta página.** Los mismos de [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero.
+> **Supuestos de esta página.** Los mismos de [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin azar, todo a la vista, finito (cada estado tiene un número finito de jugadas y toda partida termina) y suma cero.
 
 ---
 
@@ -42,7 +42,7 @@ Cada arista va de $s$ a $T(s,a)$ y lleva el nombre de su jugada $a$. Cada nodo l
 - si $s\in S_F$, su pago $U(s)$.
 :::
 
-- **Una arista por jugada, no por hijo.** Si dos jugadas distintas llevan al mismo estado, son dos aristas con nombres distintos. El dibujo puede abreviarlas en una flecha, pero el grafo guarda las dos.
+- **Una arista por jugada, no por hijo.** Por eso aquí cada arista es una terna $(s,a,T(s,a))$ y no un par $(u,v)$: lleva el nombre de su jugada. Si dos jugadas distintas llevan al mismo estado, son dos aristas con nombres distintos. El dibujo puede abreviarlas en una flecha, pero el grafo guarda las dos.
 
 **Tres propiedades se leen directamente de la definición:**
 

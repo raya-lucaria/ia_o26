@@ -85,7 +85,7 @@ Aquí X y O son las marcas del gato, no conjuntos; X será MAX y O será MIN.
 | $\mathrm{Pl}$ | $S\setminus S_F$ | Lee el turno: X es MAX, O es MIN |
 | $A$ | $S\setminus S_F$ | Las casillas vacías |
 | $T$ | $s\notin S_F$, $a\in A(s)$ | Pone en $a$ la marca del turno y lo pasa |
-| $U$ | $S_F$ | $+1$ si X hizo línea, $-1$ si O, $0$ si se llenó |
+| $U$ | $S_F$ | $+1$ si X hizo línea, $-1$ si O, $0$ si se llenó sin línea |
 
 **3 · Guardar el turno.**
 
@@ -98,10 +98,10 @@ Aquí X y O son las marcas del gato, no conjuntos; X será MAX y O será MIN.
 
 | Pregunta | Gato |
 |---|---|
-| ¿Cómo se elige? | Por turnos. |
-| ¿Hay azar? | No. |
-| ¿Qué información se ve? | Todo lo que importa. |
-| ¿Cómo son los pagos? | De suma cero. |
+| ¿Por turnos o a la vez? | Por turnos |
+| ¿Decide el azar algo? | No |
+| ¿Cada uno ve todo? | Sí |
+| ¿Son dos y uno pierde lo que gana el otro? | Sí: suma cero |
 
 Le toca un **árbol con nodos MAX y MIN**, como a hexapawn.
 
@@ -125,7 +125,7 @@ Cada tablero alcanzable tiene un único turno compatible con las reglas, así qu
 
 **7 · Reconocer un límite.**
 
-**El análisis minimax supone juego óptimo de ambos.** No dice cómo aprovechar a un rival que se equivoca seguido.
+**El valor $V$ supone juego óptimo de ambos.** No dice cómo aprovechar a un rival que se equivoca seguido.
 :::
 
 ---

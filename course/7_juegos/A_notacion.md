@@ -89,12 +89,14 @@ con muestras lleva gorro, como $\widehat Q$.
 | $V$ por casos | $V(s)=U(s)$ si $s$ es final; $\max_a Q(s,a)$ si mueve MAX; $\min_a Q(s,a)$ si mueve MIN; $\sum_a\Pr(a\mid s)\,Q(s,a)$ si mueve AZAR | Diagnosticar el juego; el caso de AZAR, en Cuando decide un dado |
 | $\max_{a\in A(s)} Q(s,a)$ | «máximo de cu». El número más alto que alcanza $Q(s,a)$ entre las jugadas de $A(s)$; $\min$, el más bajo | Diagnosticar el juego |
 | $\operatorname*{arg\,max}_{a\in A(s)} Q(s,a)$ | «arg max de cu». El conjunto de jugadas que alcanzan ese máximo; puede tener varias. MIN usa $\operatorname{arg\,min}$ | Diagnosticar el juego |
-| $a^{∗}$ | «a estrella». Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{∗}\in\operatorname{arg\,max}$ porque puede haber varias | Minimax a mano |
+| $a^{*}$ | «a estrella». Una jugada elegida del $\operatorname{arg\,max}$; se escribe $a^{*}\in\operatorname{arg\,max}$ porque puede haber varias | Diagnosticar el juego |
 | $v$ | «ve». En un procedimiento: un acumulador, el mejor valor visto hasta ahora entre los hijos del nodo actual; en AZAR, una suma ponderada | Minimax como algoritmo |
 | $w$ | «doble ve». En un procedimiento: lo que devuelve **un** hijo, recién calculado: un valor, un valor con corte o una **cota**. Luego se compara con $v$ (o, en la raíz, con mejor_valor) | Minimax como algoritmo |
 | mejor_valor | En DECIDIR, el mayor $w$ que ha devuelto hasta ahora un hijo de la raíz; empieza en $-\infty$. En DECIDIR-ALFA-BETA hace ese papel $\alpha$ | Minimax como algoritmo |
 | mejor_jugada | En DECIDIR, la jugada que dio mejor_valor; empieza en «ninguna». Es lo que el agente entrega | Minimax como algoritmo |
 | $-\infty$, $+\infty$ | «menos infinito», «más infinito». Marcas menores y mayores que cualquier pago: el primer hijo siempre las reemplaza | Minimax como algoritmo |
+| $\Delta$ | «delta». En la tarea de monedas en fila, los pesos acumulados por MAX menos los del rival; es parte del estado | Tarea de la clase 2 |
+| $W(\text{tramo})$ | «doble ve del tramo». En la misma tarea, la diferencia futura que asegura quien mueve, contando solo las monedas restantes. Cambia de perspectiva con el turno; $V$ siempre se mide desde MAX | Tarea de la clase 2 |
 | $b$, $m$ | «be», «eme». Factor de ramificación (el máximo de jugadas en un estado) y profundidad máxima (la partida más larga) | Minimax como algoritmo |
 
 ## Azar
@@ -111,7 +113,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | Símbolo | Cómo se lee y qué es | Se presenta en |
 |---|---|---|
 | $\alpha$, $\beta$ | «alfa», «beta». Umbrales heredados del camino: lo que MAX ($\alpha$) y MIN ($\beta$) ya se aseguran con una jugada revisada en un nodo suyo arriba. MAX actualiza $\alpha$ y poda comparando su $v$ con $\beta$; MIN actualiza $\beta$ y poda comparando con $\alpha$ | Alfa-beta a mano |
-| $(\alpha,\beta)$ | «la ventana alfa beta». Los valores que todavía importan en un nodo. Se escribe abierta porque tocar un extremo ya poda | Alfa-beta a mano |
+| $(\alpha,\beta)$ | «la ventana alfa beta». Los valores que todavía importan en un nodo. Se escribe abierta porque igualar el umbral del rival ya poda: $v\le\alpha$ en MIN, $v\ge\beta$ en MAX. Igualar el propio no basta | Alfa-beta a mano |
 | $(\alpha_0,\beta_0)$ | «la ventana de entrada». La ventana con que se llamó al nodo. Para lo que devuelve, $w$: si $w\le\alpha_0$, $V\le w$; si $\alpha_0<w<\beta_0$, $V=w$; si $w\ge\beta_0$, $V\ge w$ | Alfa-beta a mano |
 
 ## Corte y evaluación
@@ -131,7 +133,7 @@ con muestras lleva gorro, como $\widehat Q$.
 |---|---|---|
 | $\widehat Q(s,a)$ | «cu gorro». Estimación de una jugada. En Monte Carlo plano y en UCT, el promedio de los pagos de las simulaciones o vueltas que tomaron $a$; en la actualización minimax, $\widehat V(T(s,a))$ | Simular partidas |
 | $\widehat V(s)$ | «ve gorro». Estimación de un estado. En la actualización minimax, el máximo (MAX) o el mínimo (MIN) de sus $\widehat Q$; en UCT, el promedio de las vueltas que pasaron por $s$ | Simular partidas |
-| $N(s)$, $N(s,a)$ | «ene de ese», «ene de ese, a». Visitas: cuántas vueltas pasaron por el nodo $s$, y cuántas tomaron la arista $a$. Esta $N$ no es Negras | MCTS con UCT |
+| $N(s)$, $N(s,a)$ | «ene de ese», «ene de ese, a». Visitas: cuántas vueltas pasaron por el nodo $s$, y cuántas tomaron la arista $a$. Esta $N$ no es Negras | $N(s_{\text{raíz}},a)$, en Simular partidas; en todo el árbol, MCTS con UCT |
 | $k$ | «ka». Cuántas simulaciones recibe cada jugada de la raíz en Monte Carlo plano | Simular partidas |
 | $n$ | «ene». Simulaciones, o vueltas de UCT, **en total**. En Monte Carlo plano, ${n=\lvert A(s_{\text{raíz}})\rvert\,k}$ | Simular partidas |
 | $h$ | «hache». La profundidad que alcanzó el árbol de UCT; a lo más $m$. Una vuelta cuesta $O(bh+m)$ | MCTS con UCT |
@@ -152,7 +154,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | Camino | Sucesión de nodos donde cada uno es hijo del anterior | Escribir el juego |
 | Hoja | Nodo sin hijos en el árbol que se considera | Escribir el juego |
 | Final ≠ hoja | Un final es un estado donde terminó el juego. Una hoja puede no ser final: un nodo de corte o un nodo aún sin expandir | Escribir el juego |
-| Raíz | Nodo desde el que hay un camino a todos los demás | Escribir el juego |
+| Raíz | En un árbol, el nodo sin padre, desde el que se alcanzan todos los demás | Escribir el juego |
 | Árbol | Grafo con raíz donde la raíz no tiene padre, cada otro nodo tiene exactamente uno y todos se alcanzan desde la raíz | Escribir el juego |
 | Ciclo | Camino que vuelve a su primer nodo | Escribir el juego |
 | Nodo de MAX, de MIN | Estado con $\mathrm{Pl}(s)=\text{MAX}$, o con $\mathrm{Pl}(s)=\text{MIN}$ | Escribir el juego |
@@ -160,7 +162,7 @@ con muestras lleva gorro, como $\widehat Q$.
 | Posición perdida | Una en la que el rival puede asegurarte la derrota, hagas lo que hagas. «Posición» es el nombre coloquial de un estado | Escribir el juego |
 | Jugada, acción | Lo mismo: lo que el jugador de turno elige. En un nodo de AZAR, un resultado | Escribir el juego |
 | Tupla | Lista ordenada de piezas | Escribir el juego |
-| Por turnos, determinista, información perfecta, finito, dos jugadores, suma cero | Los supuestos de la clase 1: uno mueve a la vez; sin azar; cada uno ve el estado y las jugadas anteriores; toda partida termina; juegan dos; lo que gana uno lo pierde el otro | Escribir el juego |
+| Por turnos, determinista, información perfecta, finito, dos jugadores, suma cero | Los supuestos de la clase 1: uno mueve a la vez; sin azar; cada uno ve el estado y las jugadas anteriores; cada estado admite un número finito de jugadas y toda partida termina, así que el árbol de partidas es finito; juegan dos; lo que gana uno lo pierde el otro | Escribir el juego |
 | Subgrafo de un estado | Los estados que se alcanzan desde él, con sus aristas | El juego como grafo |
 | Árbol de partidas, grafo de estados | En el árbol, un nodo por camino; en el grafo, un nodo por estado | El juego como grafo |
 | Transposición | Dos caminos distintos que llegan al mismo estado | El juego como grafo |
@@ -183,7 +185,7 @@ con muestras lleva gorro, como $\widehat Q$.
 |---|---|---|
 | Árbol base | El árbol de juguete de la clase 2: MAX en la raíz, tres ramas y hojas de puntos, de 2 a 12 | Minimax como algoritmo |
 | Árbol reducido | El árbol base sin su rama del centro: siete nodos, para la primera poda | Alfa-beta a mano |
-| Árbol de resultados | Finales en $U$ ($+1$, $0$ o $-1$, con un solo empate), una captura de MIN (ix) y $\mathrm{EVAL}$ en los nodos internos; D tiene tres hijos. Lo corren todos los algoritmos de la unidad | Minimax como algoritmo |
+| Árbol de resultados | Finales en $U$ ($+1$, $0$ o $-1$, con un solo empate), una captura de MIN (ix) y D con tres hijos; para el corte se le agrega una $\mathrm{EVAL}$ inventada en los nodos internos. Lo corren todos los algoritmos de la unidad | Minimax como algoritmo |
 
 ### Mirar todo y podar
 
@@ -197,11 +199,12 @@ con muestras lleva gorro, como $\widehat Q$.
 | Tabla de transposición | Guarda el valor de cada estado ya calculado, para no recalcularlo si se llega por otro camino. Con corte y alfa-beta guarda también la $d$ que quedaba y si el número es un valor ($\alpha_0<v<\beta_0$), un piso ($v\ge\beta_0$) o un techo ($v\le\alpha_0$) | Minimax como algoritmo; lo de valor, piso o techo, en Hasta dónde mirar |
 | Valor esperado | Promedio de los resultados posibles, cada uno pesado por su probabilidad: $E[\cdot]$ | Cuando decide un dado |
 | Utilidad esperada | El valor esperado del pago. Con azar, un jugador racional busca la mayor utilidad esperada | Cuando decide un dado |
+| DECIDIR-EXPECTIMINIMAX | DECIDIR-MINIMAX con nodos de AZAR: valora cada jugada con EXPECTIMINIMAX y devuelve la de mayor valor esperado | Cuando decide un dado |
 | Expectiminimax | Minimax con un caso más: en un nodo de AZAR, el valor esperado de sus hijos. Si solo hay MAX y AZAR, se llama expectimax | Cuando decide un dado |
 | Alfa-beta | Minimax que deja de generar las jugadas que ya no pueden cambiar la decisión de arriba: eso es **podar** | Alfa-beta a mano |
 | Poda ≠ corte | **Poda** es lo que hace alfa-beta: no genera lo que ya no importa. **Corte** es dejar de mirar a cierta profundidad y estimar | Cortar y evaluar |
-| Corte alfa, corte beta | Los dos tipos de poda. El corte alfa ocurre en un nodo de MIN, cuando $v\le\alpha$; el corte beta, en uno de MAX, cuando $v\ge\beta$. Cada uno se llama como la cota que usa | Alfa-beta a mano |
-| Cota | Lo que devuelve un nodo cuyo $w$ salió de su ventana de entrada. Si $w\le\alpha_0$, cota superior: su valor es a lo más $w$. Si $w\ge\beta_0$, cota inferior: al menos $w$ | Alfa-beta a mano |
+| Corte alfa, corte beta | Los dos tipos de poda. El corte alfa ocurre en un nodo de MIN, cuando $v\le\alpha$; el corte beta, en uno de MAX, cuando $v\ge\beta$. Cada uno se llama como el umbral con que compara | Alfa-beta a mano |
+| Cota | Lo que devuelve un nodo cuyo $w$ tocó o salió de su ventana de entrada. Si $w\le\alpha_0$, cota superior: su valor es a lo más $w$. Si $w\ge\beta_0$, cota inferior: al menos $w$ | Alfa-beta a mano |
 | Ventana | El intervalo $(\alpha,\beta)$ con que llega un nodo. Empieza en $(-\infty,+\infty)$ en la raíz y al bajar solo se encoge | Alfa-beta a mano |
 | Regla del empate en la raíz | Con alfa-beta, la raíz cambia de jugada solo si el $w$ de un hijo supera estrictamente a $\alpha$: un hijo que devolvió una cota no gana un empate | Alfa-beta a mano |
 | *Fail-soft* | La versión de alfa-beta que, al podar, devuelve su $v$ tal cual aunque caiga fuera de la ventana, en vez de recortarlo a $\alpha$ o $\beta$ | Alfa-beta como algoritmo |
@@ -220,10 +223,11 @@ con muestras lleva gorro, como $\widehat Q$.
 | Posición quieta, búsqueda de quietud, valor con quietud | Posición sin capturas disponibles; en un nodo de corte que no es quieto, no devolver sin más la $\mathrm{EVAL}$: usarla como opción de quedarse (una aproximación llamada *stand pat*) y compararla con las capturas, cada una seguida hasta un final o una posición quieta. Quedarse no es una jugada legal. El valor con quietud es el número que resulta | Hasta dónde mirar |
 | Profundización iterativa | Buscar con $d=1,2,3,\dots$ mientras haya tiempo y entregar la jugada de la última búsqueda completa | Hasta dónde mirar |
 | *Anytime* | Que tiene una jugada lista si se le interrumpe | Minimax como algoritmo |
+| PROFUNDIZACIÓN-ITERATIVA | La versión completa: alfa-beta con corte en cada $d$, la jugada anterior primero y una jugada lista desde antes de buscar; entrega la de la última búsqueda completa | Hasta dónde mirar |
 | PROFUNDIZAR-SIN-PODA | La profundización iterativa en su forma corta: llama a DECIDIR-CON-CORTE con $d=1,2,3,\dots$ y, cuando se acaba el reloj, entrega la jugada de la última búsqueda completa | Hasta dónde mirar |
 | ALFA-BETA-CON-CORTE | Alfa-beta con los mismos cambios: con $d=0$ se estima y los finales valen $M\cdot U$ | Hasta dónde mirar |
 | Simulación | Recorrido desde un estado hasta un final, con jugadas al azar; su resultado es la $U$ del final. En inglés, *rollout* | Simular partidas |
-| Vuelta ≠ simulación ≠ corrida | Una vuelta es una iteración de MCTS; una simulación, el recorrido hasta un final; una corrida, la ejecución completa del algoritmo | Simular partidas |
+| Vuelta ≠ simulación ≠ corrida | Una vuelta es una iteración de MCTS; una simulación, el recorrido hasta un final; una corrida, la ejecución completa del algoritmo | MCTS con UCT |
 | Monte Carlo plano | Estimar cada jugada de la raíz por el promedio de $k$ simulaciones al azar. Converge a $Q_{\text{azar}}$, no a $Q$ | Simular partidas |
 | Monte Carlo con actualización minimax | Simular al azar, guardar los estados descubiertos y subir los resultados con máximo en MAX y mínimo en MIN. En la literatura, MMMC | Simular partidas |
 | Jugada desconocida | En la actualización minimax, una jugada que no se ha visitado: no vale cero, no se sabe cuánto vale | Simular partidas |
