@@ -4,7 +4,7 @@ title: "Hasta dónde mirar: profundidad, tiempo y horizonte"
 nav_title: Hasta dónde mirar
 summary: "Un corte a profundidad fija puede dejar detrás la respuesta decisiva: es el efecto horizonte. La búsqueda de quietud sigue las capturas desde los nodos de corte; la profundización iterativa busca con d = 1, 2, 3 mientras haya reloj y entrega la jugada de la última búsqueda completa, primero sin poda y después con alfa-beta y la jugada anterior primero. Una tabla de transposición guarda si cada número es un valor, un piso o un techo."
 status: ready
-estimated_time: 70m
+estimated_time: 72m
 tags: [juegos, busqueda-adversarial, evaluacion, algoritmos]
 aliases: [mas-alla-del-horizonte]
 ---

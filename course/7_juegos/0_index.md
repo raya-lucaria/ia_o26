@@ -4,7 +4,7 @@ title: Jugar contra alguien que también piensa
 nav_title: Juegos
 summary: "Cómo decide una IA cuando otro agente también decide: escribir un juego, calcular la mejor jugada, estimarla cuando el juego no cabe y comparar todos los algoritmos en un mismo árbol."
 status: ready
-estimated_time: 11h31m
+estimated_time: 11h34m
 tags: [juegos, busqueda-adversarial, minimax, alfa-beta]
 prerequisites: [optimizacion]
 ---
@@ -69,7 +69,7 @@ nueva:
 |---|---|---|---:|
 | 1 | Leer y escribir el juego | Ordenar unas reglas confusas, escribir el juego, construir su grafo, diagnosticarlo y definir $V$ y $Q$ | 121m |
 | 2 | Mirar todo y podar | Calcular la mejor jugada con minimax, podar con alfa-beta y promediar dados con expectiminimax | 203m |
-| 3 | Cuando el árbol no cabe | Cortar y evaluar, decidir hasta dónde mirar, simular partidas, MCTS con UCT y de dónde sale su bono | 277m |
+| 3 | Cuando el árbol no cabe | Cortar y evaluar, decidir hasta dónde mirar, simular partidas, MCTS con UCT y de dónde sale su bono | 280m |
 | 4 | Radiografía de los algoritmos | Los siete algoritmos en un mismo árbol: qué número da cada uno, qué juega y cuánto cuesta; y cómo elegir uno | 90m |
 :::
 
@@ -79,7 +79,7 @@ nueva:
 - [[juegos-radiografia|Radiografía de los algoritmos]]: **de consulta**,
   para volver a ella en cualquier momento.
 
-El recorrido de lectura suma **11 horas y 31 minutos**.
+El recorrido de lectura suma **11 horas y 34 minutos**.
 
 Las clases 1 a 3 terminan con una **tarea de refuerzo**. Trae ejercicios con
 pistas y respuestas plegadas: uno con un juego nuevo y otro que modifica lo

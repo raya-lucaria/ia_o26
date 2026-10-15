@@ -4,7 +4,7 @@ title: "Clase 3 · Cuando el árbol no cabe"
 nav_title: Cuando no cabe
 summary: "Si no se puede llegar a los finales, hay dos salidas: cortar la búsqueda y estimar cada posición con una evaluación, o simular partidas hasta el final. La jugada que sale ya no es segura, y hay que entregarla antes de que se acabe el tiempo."
 status: ready
-estimated_time: 277m
+estimated_time: 280m
 tags: [juegos, busqueda-adversarial, evaluacion]
 prerequisites: [juegos-mirar-todo-y-podar]
 ---
@@ -104,8 +104,8 @@ algoritmos tiene su propia sección, al final de la unidad:
 | | Minutos | Página y qué resuelve |
 |---|---:|---|
 | 1 | 72m | **Cortar y evaluar.** Detenerse a cierta profundidad y estimar con EVAL, a mano en la posición de 4×4 y como algoritmo en el árbol de resultados |
-| 2 | 70m | **Hasta dónde mirar.** El efecto horizonte, la búsqueda de quietud, la profundización iterativa contra el reloj y la tabla de transposición |
-| 3 | 50m | **Simular partidas.** Monte Carlo plano promedia y converge a $Q_{\text{azar}}$; la actualización minimax guarda lo descubierto y converge a $V$ |
+| 2 | 72m | **Hasta dónde mirar.** El efecto horizonte, la búsqueda de quietud, la profundización iterativa contra el reloj y la tabla de transposición |
+| 3 | 51m | **Simular partidas.** Monte Carlo plano promedia y converge a $Q_{\text{azar}}$; la actualización minimax guarda lo descubierto y converge a $V$ |
 | 4 | 45m | **MCTS con UCT.** Las cuatro fases de cada vuelta, la regla de selección con bono y la jugada más visitada |
 | 5 | 40m | **De dónde sale el bono.** El margen de error de un promedio: Hoeffding, la constante de UCB1, MIN y la elección de $c$ |
 | 6 | 70m, aparte | **Tarea de refuerzo.** Una evaluación de gato, otra posición de peones y tres Monte Carlo ante una respuesta certera |

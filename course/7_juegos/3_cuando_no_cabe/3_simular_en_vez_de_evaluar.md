@@ -4,7 +4,7 @@ title: "Simular partidas: promedios y actualización minimax"
 nav_title: Simular partidas
 summary: "Cuando el árbol no cabe y no hay EVAL, se juegan partidas al azar hasta el final. Monte Carlo plano promedia su U por jugada de la raíz y converge a Q_azar, lo que paga jugar si los dos eligen al azar. La actualización minimax usa las mismas partidas, guarda lo que descubre y sube máximos y mínimos. Converge casi seguramente a V en un árbol finito, determinista y de ramificación finita, con simulaciones sin límite que eligen al azar entre todas las jugadas legales, finales exactos y lo descubierto guardado."
 status: ready
-estimated_time: 50m
+estimated_time: 51m
 tags: [juegos, busqueda-adversarial, monte-carlo]
 ---
 
