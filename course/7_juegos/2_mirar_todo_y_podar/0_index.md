@@ -23,7 +23,7 @@ aprenderemos a **podar**: dejar ramas sin generar sin cambiar la respuesta.
 > [!TIP]
 > **Esta clase tiene animaciones y un notebook.** Minimax, alfa-beta y expectiminimax, corriendo en el árbol base:
 >
-> - **▶ Animaciones paso a paso:** [minimax](../_assets/traza_arbol_t.html#minimax) · [alfa-beta](../_assets/traza_arbol_t.html#alfa-beta) · [con dados](../_assets/traza_arbol_t.html#azar). Cada página de
+> - **Animaciones paso a paso:** [minimax](../_assets/traza_arbol_t.html#minimax) · [alfa-beta](../_assets/traza_arbol_t.html#alfa-beta) · [con dados](../_assets/traza_arbol_t.html#azar). Cada página de
 >   algoritmo abre la suya en un recuadro como éste.
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
@@ -67,11 +67,11 @@ El problema de la unidad (@jue-c1-problema), escrito completo:
 >
 > **Encontrar:** en cada estado $s$ donde le toca a MAX, una jugada
 >
-> $$a^{∗}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),$$
+> $$a^{*}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),$$
 >
 > es decir, la jugada que lleva al hijo de mayor valor.
 >
-> **Qué significa:** si MAX juega $a^{∗}$ y sigue eligiendo así en cada
+> **Qué significa:** si MAX juega $a^{*}$ y sigue eligiendo así en cada
 > turno, se asegura al menos $V(s)$ contra cualquier respuesta de MIN, y
 > exactamente $V(s)$ si MIN juega lo mejor.
 
@@ -98,17 +98,19 @@ primera página.
 
 ## El hilo de la clase
 
-Todo pasa en el subgrafo de **n1**, el que dibujaste en
-[[el-juego-como-grafo|El juego como grafo]]. Son trece estados, numerados en
-el orden en que los visita minimax. La utilidad es la de la clase 1: $+1$ si
-gana Blancas y $-1$ si gana Negras.
+El juego de la clase es hexapawn, y su ejemplo, el subgrafo de **n1**, el
+que dibujaste en [[el-juego-como-grafo|El juego como grafo]]. Son trece
+estados, numerados en el orden en que los visita minimax. La utilidad es la
+de la clase 1: $+1$ si gana Blancas y $-1$ si gana Negras.
 
-Los algoritmos se siguen línea por línea en dos árboles de juguete:
+Los algoritmos se siguen línea por línea en tres árboles de juguete:
 
 - **El árbol base**, con MAX en la raíz, tres ramas y hojas de 2 a 12. Lo
   usan minimax, alfa-beta y los dados.
 - **El árbol reducido**, el árbol base sin su rama del centro. Es la primera
   poda de alfa-beta, con siete nodos.
+- **El árbol de resultados**, con finales $+1$, $0$ y $-1$. Cada página de
+  algoritmo lo corre al final, para compararlos después en la radiografía.
 
 ## Recorrido
 

@@ -23,7 +23,7 @@ Lo decide el valor de cada estado, calculado desde los finales hacia arriba. Al 
 - **El estado incluye el turno.** $S_F$ reconoce los finales (@jue-c1-finales); $\mathrm{Pl}(s)$ lee del estado quién mueve: Blancas es MAX y Negras es MIN (@jue-c1-pl).
 - **Las jugadas y adónde llevan.** $A(s)$ son las jugadas permitidas (@jue-c1-acciones) y $T(s,a)$ el estado al que lleva $a$ (@jue-c1-transicion).
 - **El pago de un final.** Cada juego define $U(s)$ desde MAX (@jue-c1-utilidad). Solo existe en los finales.
-- **El valor y la jugada.** $V(s)$ y $Q(s,a)$ se definieron con palabras en @jue-c1-valor-jugada-estrategia; esta página da la regla para calcularlos.
+- **El valor y la jugada.** $V(s)$ y $Q(s,a)$ se definieron en @jue-c1-valor-jugada-estrategia, con su regla; esta página la aplica de los finales hacia arriba.
 
 La tabla completa, con el problema escrito, está en [[juegos-mirar-todo-y-podar|la página de la clase]].
 
@@ -33,7 +33,7 @@ La tabla completa, con el problema escrito, está en [[juegos-mirar-todo-y-podar
 >
 > **El pago, desde MAX:** $U=+1$ si gana Blancas y $U=-1$ si gana Negras. Hexapawn no tiene empates.
 
-> **Supuestos de esta página.** Los mismos de [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero.
+> **Supuestos de esta página.** Los mismos de [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin azar, todo a la vista, toda partida termina y suma cero (o constante).
 
 ---
 
@@ -75,7 +75,7 @@ En cada estado de MAX, la jugada que le asegura más si los dos juegan lo mejor 
 >
 > **Dado:** el juego de hexapawn, con sus siete piezas, y el estado n1.
 >
-> **Encontrar:** cuánto asegura Blancas desde n1, $V(\text{n1})$, y con cuál de sus dos jugadas, $\text{c1}\textbf{-}\text{c2}$ o $\text{c1}\textbf{x}\text{b2}$. Es decir, una jugada $a^{∗}\in\operatorname*{arg\,max}_{a\in A(\text{n1})} Q(\text{n1},a)$.
+> **Encontrar:** cuánto asegura Blancas desde n1, $V(\text{n1})$, y con cuál de sus dos jugadas, $\text{c1}\textbf{-}\text{c2}$ o $\text{c1}\textbf{x}\text{b2}$. Es decir, una jugada $a^{*}\in\operatorname*{arg\,max}_{a\in A(\text{n1})} Q(\text{n1},a)$.
 
 El subgrafo entero de n1 ya lo dibujaste en [[el-juego-como-grafo|El juego como grafo]]. Aquí está otra vez:
 
@@ -83,7 +83,7 @@ El subgrafo entero de n1 ya lo dibujaste en [[el-juego-como-grafo|El juego como 
 ![Trece nodos numerados n1 a n13. De n1 (MAX) salen c1-c2 hacia n2, final con U = +1, y c1xb2 hacia n3 (MIN). De n3 salen a3xb2 hacia n4, c3-c2 hacia n6 y c3xb2 hacia n13, final con U = −1. n4 lleva a n5, final +1. n6 lleva a n7, n11 y n12; n11 y n12 son finales +1. n7 lleva a n8, y n8 a n9 y n10, finales +1](../_assets/jue-subgrafo-n1.svg)
 :::
 
-Las hojas ya tienen su número, $U$. Los nodos de en medio todavía no. Esta página les pone uno a cada uno.
+Los finales ya tienen su número, $U$. Los nodos de en medio todavía no. Esta página les pone uno a cada uno.
 
 ---
 
@@ -94,7 +94,7 @@ Las hojas ya tienen su número, $U$. Los nodos de en medio todavía no. Esta pá
 Depende de quién mueve. Si mueve MAX, elige el hijo que más vale; si mueve MIN, el que menos. Y un final ya tiene su número.
 
 ::: definition {#jue-c2-valor title="Valor minimax"}
-**Qué es:** el **valor** $V(s)$ es el pago para MAX si los dos juegan lo mejor desde $s$. Ya lo definimos con palabras en @jue-c1-valor-jugada-estrategia; aquí va **cómo se calcula**.
+**Qué es:** el **valor** $V(s)$ es el pago para MAX si los dos juegan lo mejor desde $s$. Ya lo definimos en @jue-c1-valor-jugada-estrategia; aquí lo retomamos para **calcularlo** nodo por nodo.
 
 **Cómo se calcula.** Primero la jugada: vale lo que vale el hijo al que lleva,
 
@@ -102,7 +102,7 @@ $$\mathbf{Q(s,a)=V\bigl(T(s,a)\bigr)}.$$
 
 Después el estado, según quién mueve:
 
-$$\mathbf{V(s)=\begin{cases}U(s) & \text{si } s\in S_F,\\[2pt] \max_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MAX},\\[2pt] \min_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MIN}.\end{cases}}$$
+$$\mathbf{V(s)=\begin{cases}U(s) & \text{si } s\in S_F,\\[2pt] \max\limits_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MAX},\\[2pt] \min\limits_{a\in A(s)} Q(s,a) & \text{si } \mathrm{Pl}(s)=\text{MIN}.\end{cases}}$$
 
 **MAX elige el mayor $Q$ y MIN el menor.** Los dos números se miden desde MAX: el signo no cambia al subir.
 
@@ -121,7 +121,7 @@ Por eso se calcula **de abajo hacia arriba**: un nodo se valora solo cuando ya s
 
 ## 3 · Empezar por los finales
 
-**Piensa: ¿qué número le toca a cada hoja?**
+**Piensa: ¿qué número le toca a cada final?**
 
 Ninguno se calcula: los da $U$. En el subgrafo hay 7 finales.
 
@@ -215,7 +215,7 @@ No: dice cuánto asegura. Primero, los $Q$ de sus dos jugadas, que ya conoces:
 
 En n1 mueve Blancas, así que toma el mayor:
 
-$$V(\text{n1})=\max_{a\in A(\text{n1})} Q(\text{n1},a)=\max\{+1,\ -1\}=+1.$$
+$$\begin{aligned}V(\text{n1})&=\max_{a\in A(\text{n1})} Q(\text{n1},a)\\&=\max\{+1,\ -1\}=+1.\end{aligned}$$
 
 ::: figure {#jue-c2-paso-3 title="Paso 3: valorar n1"}
 ![n1 arriba, donde mueve Blancas (MAX), con V = +1 resaltado. Abajo sus dos hijos: n2, final que gana Blancas con U = +1, y n3, donde mueve Negras, con V = −1. La flecha c1-c2 va resaltada](../_assets/jue-minimax-paso-3.svg)
@@ -223,7 +223,7 @@ $$V(\text{n1})=\max_{a\in A(\text{n1})} Q(\text{n1},a)=\max\{+1,\ -1\}=+1.$$
 
 El $+1$ **no** es una jugada: es lo que Blancas asegura. La jugada es la que lo alcanza. Se escribe con el $\operatorname{arg\,max}$ de [[diagnosticar-el-juego|Diagnosticar el juego]], el conjunto de jugadas que dan el máximo:
 
-$$a^{∗}\in\operatorname*{arg\,max}_{a\in A(\text{n1})} Q(\text{n1},a)=\{\text{c1}\textbf{-}\text{c2}\}.$$
+$$a^{*}\in\operatorname*{arg\,max}_{a\in A(\text{n1})} Q(\text{n1},a)=\{\text{c1}\textbf{-}\text{c2}\}.$$
 
 La estrella marca la jugada elegida, y se escribe $\in$ porque podría haber varias. Aquí hay una sola: **Blancas debe jugar $\text{c1}\textbf{-}\text{c2}$**. Deja a Negras sin jugada y gana en ese momento.
 
@@ -258,11 +258,11 @@ Para el valor, sí: las tres ganan. Pero no ganan igual de rápido. Contando des
 Preferir ganar rápido es razonable, pero **no está en el reglamento**: el pago solo dice quién gana (@jue-c1-utilidad). Por eso no lo cambiamos. Lo usamos solo para **desempatar** dentro del $\operatorname{arg\,max}$, como hacen los programas de ajedrez con el mate más corto. La justificación es práctica: una partida más corta deja menos jugadas en las que equivocarse.
 
 > [!WARNING]
-> Meter «ganar rápido» en el pago, por ejemplo con $U=\pm(10-k)$ donde $k$ cuenta las jugadas, tiene tres costos.
+> Meter «ganar rápido» en el pago, por ejemplo con $U=\pm(10-j)$ donde $j$ cuenta las jugadas, tiene tres costos.
 >
-> - **$U$ dejaría de leerse del estado** $(\text{tablero},\text{turno})$: habría que guardar también $k$.
+> - **$U$ dejaría de leerse del estado** $(\text{tablero},\text{turno})$: habría que guardar también $j$.
 > - **El problema cambiaría:** ya no preguntaría quién gana, sino cuánto tarda.
-> - **La constante tiene que superar la duración máxima.** Con $k\ge 10$, ganar valdría $0$ o menos y perder, $0$ o más. En hexapawn no pasa: ninguna partida dura más de 7 jugadas.
+> - **La constante tiene que superar la duración máxima.** Con $j\ge 10$, ganar valdría $0$ o menos y perder, $0$ o más. En hexapawn no pasa: ninguna partida dura más de 7 jugadas.
 >
 > El desempate da la misma preferencia sin tocar el modelo.
 

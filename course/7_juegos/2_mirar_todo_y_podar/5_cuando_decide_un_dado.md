@@ -55,7 +55,7 @@ Al terminar tendrás:
 > [!TIP]
 > **Míralo correr: expectiminimax en el árbol base**
 >
-> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#azar)**: el árbol, la línea del
+> - **[Animación paso a paso](../_assets/traza_arbol_t.html#azar)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
 > - **Notebook en Colab**, sección 4: el mismo Python de esta página,
 >   corriendo; cámbiale un número y mira qué pasa.
@@ -112,16 +112,17 @@ probabilidades conocidas.
 
 **Encontrar:** en cada estado no final $s$ donde le toca a MAX, una jugada
 
-$$a^{∗}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),\qquad Q(s,a)=V\bigl(T(s,a)\bigr),$$
+$$\begin{gathered}a^{*}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),\\ Q(s,a)=V\bigl(T(s,a)\bigr),\end{gathered}$$
 
 donde $V$ toma el máximo en los nodos de MAX, el mínimo en los de MIN y la
 **esperanza** en los de azar. La regla @jue-c2-valor-esperado lo escribe
 completo.
 
 **Qué significa:** MAX elige la jugada con la mayor utilidad **esperada**,
-suponiendo que MIN es racional y que el azar sigue sus probabilidades. Es
-la definición de racional de @jue-c1-racional, que ya decía «la jugada que
-**espera** que le dé la mayor utilidad»: con azar, esa palabra trabaja.
+suponiendo que MIN juega óptimamente y que el azar sigue sus
+probabilidades. MAX es racional en el sentido de @jue-c1-racional, que ya
+decía «la jugada que **espera** que le dé la mayor utilidad»: con azar,
+esa palabra trabaja.
 
 **Qué no es:** no garantiza ganar ninguna partida concreta. Un dado puede
 salir mal; lo que se maximiza es la utilidad esperada.
@@ -265,7 +266,7 @@ sol, Negras:
 
 Como nadie elige, se **promedia**:
 
-$$V(s_0)=\tfrac12V(s_B)+\tfrac12V(s_N)=\tfrac12(-1)+\tfrac12(+1)=0.$$
+$$\begin{aligned}V(s_0)&=\tfrac12V(s_B)+\tfrac12V(s_N)\\&=\tfrac12(-1)+\tfrac12(+1)=0.\end{aligned}$$
 
 El volado vuelve **justo** un juego que no lo era: ninguno de los dos tiene
 ventaja antes de tirar la moneda.
@@ -547,7 +548,7 @@ cambiada: **en D decide un dado parejo de tres caras**, no MIN.
   jugada.
 
 ::: exercise {#jue-c3-cmp-ej-dado title="Calcula el dado con otra hoja"}
-Cambia d3 de ${+1}$ a ${-1}$, con el dado parejo en D.
+Cambia d3, la tercera hoja de D, de ${+1}$ a ${-1}$, con el dado parejo en D.
 
 1. ¿Cuánto vale D?
 2. ¿Qué jugada entrega expectiminimax?
@@ -660,16 +661,15 @@ Hay dos maneras de equivocarse, una en cada dirección:
   lo que hacía mejor a $\text{b1}\textbf{-}\text{b2}$. Supones lo peor de
   algo que no quiere nada.
 - **Tratar al rival como azar:** crees que ganas con probabilidad $7/8$ y,
-  contra Negras perfecta, pierdes siempre. Le das a un rival de verdad la torpeza de
-  un dado.
+  contra Negras perfecta, pierdes siempre. Le das a un rival de verdad la
+  torpeza de un dado.
 
- La regla es la de la definición: **quien
-tiene intereses, optimiza; lo que no los tiene, se promedia.**
+La regla es la de la definición: **quien tiene intereses, optimiza; lo que
+no los tiene, se promedia.**
 
-El segundo error tiene un pariente con nombre: **Monte Carlo plano**, que
-estima jugando partidas al azar, supone que el rival mueve al azar, y
-también MAX después de su primera jugada. Su número es el de ese juego, no
-$V$.
+El segundo error lo comete también quien estima una jugada jugando partidas
+al azar hasta el final: supone que el rival mueve al azar, y también MAX
+después de su primera jugada. Su número es el de ese juego, no $V$.
 
 **Con azar importan las distancias.**
 
@@ -732,7 +732,7 @@ valor de la tabla.
 
 ::: exercise {#jue-c2-ej-escala title="Decide si tiras el volado"}
 Ganar vale $+1$ y empatar, 0. ¿Para qué valores de perder, $-L$ con $L>0$,
-conviene el volado sobre el empate seguro? ¿Qué pasa en el límite?
+conviene el volado sobre el empate seguro? ¿Qué pasa justo en $L=1$?
 :::
 
 ::: hint {#jue-c2-pista-escala of="jue-c2-ej-escala" title="Compara con cero"}

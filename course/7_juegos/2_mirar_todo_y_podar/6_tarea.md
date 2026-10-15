@@ -29,7 +29,7 @@ Esta tarea no se entrega. Sirve para comprobar que puedes hacerlo **sin ayuda** 
 
 ::: exercise {#jue-tarea-2-ej-monedas title="Escribe y resuelve monedas en fila"}
 
-1. **Escribe las siete piezas.** Define qué guarda un estado ($S$), $s_0$, $S_F$, $\mathrm{Pl}$, $A$, $T$ y $U$; declara la escala de $U$.
+1. **Escribe las siete piezas.** Define qué guarda un estado $(S)$, $s_0$, $S_F$, $\mathrm{Pl}$, $A$, $T$ y $U$; declara la escala de $U$.
 2. **Escribe el problema.** Separa lo **dado** de lo que hay que **encontrar**.
 3. **Cuenta el árbol completo.** ¿Cuántos nodos tiene y cuántos son finales?
 4. **Resuelve con minimax.** Calcula $V(s_0)$, elige la primera moneda de MAX y di con cuántos pesos termina cada jugador bajo juego perfecto.
@@ -151,11 +151,11 @@ Si MAX toma el 3, deja $(2,1,5)$ al rival, que toma el 5. Después MAX toma el 2
 
 **6 · Los subproblemas que se reutilizan.**
 
-Hay $4+3+2+1=10$ tramos con monedas, más el vacío: **11 subproblemas en el grafo cociente de intervalos**, frente a los 23 nodos del árbol.
+Hay $4+3+2+1=10$ tramos con monedas, más el vacío: **11 subproblemas: uno por tramo**, frente a los 23 nodos del árbol.
 
 - **Los 11 subproblemas no son los estados del modelo.** Dos estados con el mismo tramo y distinta $\Delta$ son distintos y pueden tener distinto $V$.
 - **El valor reutilizado es $W$.** Depende del tramo; cada estado recupera su $V$ sumando o restando ese $W$ a su propia $\Delta$, según quién mueve.
-- **El grafo cociente guarda un nodo por tramo.** Omite $\Delta$ y el turno porque resuelve la diferencia futura desde quien mueve; la tabla anterior calcula esos valores.
+- **Basta un nodo por tramo.** Se omiten $\Delta$ y el turno porque $W$ mide la diferencia futura desde quien mueve; la tabla anterior calcula esos valores.
 
 **7 · El ahorro de alfa-beta.**
 
@@ -215,7 +215,7 @@ Retoma la regla de la [[tarea-leer-y-escribir|tarea de la clase 1]]: todo sigue 
 >
 > Un peón avanza una casilla vacía o captura en diagonal hacia delante. Gana quien llega a la fila rival o captura todos los peones rivales.
 >
-> **El pago, siempre desde MAX:** $U=+1$ si gana Blancas, $U=-1$ si gana Negras y $U=0$ si el jugador de turno se queda sin jugada.
+> **El pago, siempre desde MAX:** $U=+1$ si Blancas llegó a la fila rival o capturó todos los peones negros; $U=-1$ en los casos simétricos. Solo si nadie llegó ni capturó todo, quedarse sin jugada es empate: $U=0$.
 
 Usa el subgrafo de n1 de [[minimax|Minimax a mano]], con la misma numeración. El **orden fijo** es el del dibujo; el **invertido** revierte la lista de hijos en cada nodo.
 

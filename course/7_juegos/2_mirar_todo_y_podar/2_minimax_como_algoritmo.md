@@ -45,12 +45,12 @@ Al terminar tendrás:
 
 > **Supuestos de esta página.** Los mismos de
 > [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin
-> azar, todo a la vista, toda partida termina y suma cero.
+> azar, todo a la vista, toda partida termina y suma cero (o constante).
 
 > [!TIP]
 > **Míralo correr: minimax en el árbol base**
 >
-> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#minimax)**: el árbol, la línea del
+> - **[Animación paso a paso](../_assets/traza_arbol_t.html#minimax)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
 > - **Notebook en Colab**, sección 3: el mismo Python de esta página,
 >   corriendo; cámbiale un número y mira qué pasa.
@@ -80,7 +80,7 @@ elegirla, no el fin.
 >
 > **Encontrar (lo que devuelve):** **una jugada**
 >
-> $$a^{∗}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),\qquad Q(s,a)=V\bigl(T(s,a)\bigr),$$
+> $$\begin{gathered}a^{*}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),\\ Q(s,a)=V\bigl(T(s,a)\bigr),\end{gathered}$$
 >
 > la que lleva al hijo de mayor valor. Para compararlas hace falta
 > $V$ de @jue-c2-valor en cada hijo: eso lo calcula el auxiliar.
@@ -556,8 +556,8 @@ de juguete, con la forma del árbol base y tres cambios:
 
 - **Sus finales dicen quién gana:** cada hoja vale $+1$, $-1$ o $0$, y hay
   un solo empate.
-- **Tiene una captura:** la segunda respuesta de MIN en I, ix, captura una
-  pieza.
+- **Tiene una jugada marcada como captura:** ix, la segunda respuesta de
+  MIN en I. Minimax la trata como a cualquier otra.
 - **D tiene tres hijos**, no dos: en total son 15 nodos.
 
 ::: figure {#jue-c2-fig-resultados-minimax title="Minimax en el árbol de resultados: genera los 15 nodos y juega centro"}
@@ -775,8 +775,8 @@ $\text{c3}\textbf{x}\text{b2}$ y $\text{a1}\textbf{x}\text{b2}$. Mueve
 :::
 
 ::: hint {#jue-c2-pista-propio-a of="jue-c2-ej-propio" title="Pista 1 · Las jugadas de Negras"}
-Empieza con $A(\text{e1})$. El peón de b3 tiene b2 ocupada enfrente y nada
-que capturar. El de a3 puede avanzar o capturar.
+Empieza con $A(\text{e1})$. Para cada peón negro, ¿qué casilla tiene
+enfrente y qué hay en sus dos diagonales hacia delante?
 :::
 
 ::: hint {#jue-c2-pista-propio-b of="jue-c2-ej-propio" title="Pista 2 · Las respuestas de Blancas"}

@@ -34,17 +34,21 @@ Al terminar tendrás:
 - **El árbol base.** Su raíz R es $s_{\text{raíz}}$; minimax genera sus 14
   nodos, R vale 5 y juega centro.
 - **Supuestos:** dos jugadores por turnos, sin azar, todo a la vista y suma
-  cero. Lo que MIN busca es lo peor para MAX.
+  cero (o constante). Lo que MIN busca es lo peor para MAX.
 
 > [!TIP]
 > **Míralo correr: alfa-beta en el árbol base**
 >
-> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#alfa-beta)**: el árbol, la línea del
+> - **[Animación paso a paso](../_assets/traza_arbol_t.html#alfa-beta)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
 > - **Notebook en Colab**, sección 5: el código de alfa-beta en Python,
 >   corriendo; cámbiale un número y mira qué pasa.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
+---
+
+## El mapa de alfa-beta
 
 **Alfa-beta es minimax con poda (*pruning*):** deja de generar una rama en
 cuanto lo ya revisado basta para saber que no cambia la decisión de arriba.
@@ -234,7 +238,7 @@ $\text{izq}$ llega a I (MIN), con hojas 3 y 6; con $\text{der}$, a D
 (MIN), con hojas 2 y 12. Minimax: I vale 3, D vale 2, R vale **3** y juega
 **izq**.
 
-### Tramo 1 · La rama izq
+**Tramo 1 · La rama izq**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -253,7 +257,7 @@ $\text{izq}$ llega a I (MIN), con hojas 3 y 6; con $\text{der}$, a D
 - **Fila 5:** R recibe $w=3$; $3>-\infty$, así que $\alpha\leftarrow3$ y
   `mejor_jugada ← izq` (línea 5).
 
-### Tramo 2 · D poda
+**Tramo 2 · D poda**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -306,7 +310,7 @@ C = 5, D = 2; R vale **5** y juega **centro**.
 La traza tiene las 20 filas de la de DECIDIR-MINIMAX en el árbol base, dos
 de ellas con ✗.
 
-### Tramo 1 · La rama izq
+**Tramo 1 · La rama izq**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -323,7 +327,7 @@ de ellas con ✗.
 Igual que en el árbol reducido: I devuelve 3, y en la fila 5 R pasa a
 $\alpha=3$ con **izq**.
 
-### Tramo 2 · C1, y el α que se pierde
+**Tramo 2 · C1, y el α que se pierde**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -347,7 +351,7 @@ $\alpha=3$ con **izq**.
 **C es de MIN: compara su $v=5$ con $\alpha=3$; $5\le3$ es falso → no
 poda, y baja su $\beta$ a 5 (línea 23).** C queda con $(3,5)$.
 
-### Tramo 3 · El corte beta en C2
+**Tramo 3 · El corte beta en C2**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -366,7 +370,7 @@ heredó; $7\ge5$ → corte beta, línea 14.**
   c1. MIN nunca dejará que la partida llegue a C2.
 - **Fila 13 ✗: la hoja 8 no se genera.** C2 devuelve 7.
 
-### Tramo 4 · C devuelve 5 y D poda
+**Tramo 4 · C devuelve 5 y D poda**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -388,7 +392,7 @@ heredó; $7\ge5$ → corte beta, línea 14.**
   MAX que heredó; $2\le5$ → corte alfa, línea 22. En la fila 18 ✗, la hoja
   12 no se genera; D devuelve 2.
 
-### Tramo 5 · La raíz decide
+**Tramo 5 · La raíz decide**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -438,7 +442,8 @@ valores que todavía importan.
 - **La ventana $(\alpha,\beta)$ son los valores estrictamente entre
   $\alpha$ y $\beta$**: los únicos que pueden cambiar la decisión de
   arriba. Se escribe con paréntesis porque **los extremos no están
-  dentro**: tocar uno ya poda.
+  dentro**: igualar el umbral del **rival** ya poda ($v\le\alpha$ en MIN,
+  $v\ge\beta$ en MAX). Igualar el propio no basta.
 - **Sale por la izquierda** ($v\le\alpha$) en un nodo de MIN: corte alfa.
   **Sale por la derecha** ($v\ge\beta$) en uno de MAX: corte beta.
 - **En la raíz** es $(-\infty,+\infty)$. **Al bajar solo se encoge**: el
@@ -494,8 +499,11 @@ decide cuánto se ahorra.
 
 ::: exercise {#jue-c2-t-ej-tabla title="Completa la traza del árbol base con el centro primero"}
 Mismo árbol base, pero R revisa sus jugadas en el orden **centro, izq,
-der** (dentro de C, C1 y C2, nada cambia). La numeración es la de la traza
-de minimax en ese mismo orden. Las filas 1–11 van a medio llenar.
+der** (dentro de C, C1 y C2, nada cambia). Las filas se numeran en el
+orden en que se abren los nodos, contando también las hojas ✗. Las filas
+1–11 van a medio llenar.
+
+**Filas 1–5**
 
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
@@ -504,6 +512,11 @@ de minimax en ese mismo orden. Las filas 1–11 van a medio llenar.
 | 3 | 10 · R›C›C1 | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
 | 4 | 12–15 · R›C›C1 | ? | 5 | 5 | ? | — |
 | 5 | 12–15 · R›C›C1 | $(5,+\infty)$ | 5 | 2 | $5\ge +\infty$ no | — |
+
+**Filas 6–11**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 6 | 20–23 · R›C | ? | 5 | 5 (C1) | ? | — |
 | 7 | 10 · R›C›C2 | ? | $-\infty$ |  |  | — |
 | 8 | ? · R›C›C2 | $(-\infty,5)$ | 7 | 7 | ? | — |
@@ -527,6 +540,8 @@ línea.
 ::: answer {#jue-c2-t-resp-tabla of="jue-c2-t-ej-tabla"}
 En negrita, lo que era «?»; las filas 12–20 son las que faltaban.
 
+**Filas 1–5**
+
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
 | 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
@@ -534,16 +549,31 @@ En negrita, lo que era «?»; las filas 12–20 son las que faltaban.
 | 3 | 10 · R›C›C1 | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
 | 4 | 12–15 · R›C›C1 | $\mathbf{(5,+\infty)}$ | 5 | 5 | **5≥+∞ no** | — |
 | 5 | 12–15 · R›C›C1 | $(5,+\infty)$ | 5 | 2 | $5\ge +\infty$ no | — |
+
+**Filas 6–10**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 6 | 20–23 · R›C | $\mathbf{(-\infty,5)}$ | 5 | 5 (C1) | **5≤−∞ no** | — |
 | 7 | 10 · R›C›C2 | $\mathbf{(-\infty,5)}$ | $-\infty$ |  |  | — |
 | 8 | $\textbf{12–14}$ · R›C›C2 | $(-\infty,5)$ | 7 | 7 | **7≥5 sí** | — |
 | 9 ✗ | R›C›C2 | — | — | $\textit{8}$ | — | — |
 | 10 | 20–23 · R›C | $(-\infty,5)$ | 5 | 7 (C2) | $5\le -\infty$ no | — |
+
+**Filas 11–15**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 11 | 4–5 · R | $\mathbf{(5,+\infty)}$ | 5 | 5 (C) | **5>−∞ sí** | $\textbf{centro}$ |
 | 12 | 18 · R›I | $(5,+\infty)$ | $+\infty$ |  |  | centro |
 | 13 | 20–22 · R›I | $(5,+\infty)$ | 3 | 3 | $3\le 5$ sí | centro |
 | 14 ✗ | R›I | — | — | $\textit{6}$ | — | — |
 | 15 | 4–5 · R | $(5,+\infty)$ | 5 | 3 (I) | $3>5$ no | centro |
+
+**Filas 16–20**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 16 | 18 · R›D | $(5,+\infty)$ | $+\infty$ |  |  | centro |
 | 17 | 20–22 · R›D | $(5,+\infty)$ | 2 | 2 | $2\le 5$ sí | centro |
 | 18 ✗ | R›D | — | — | $\textit{12}$ | — | — |
@@ -573,7 +603,7 @@ Lo demás queda igual.
 3. ¿Y si la línea 5 dijera `if w ≥ α`? ¿Cuánto obtendría MAX?
 :::
 
-::: hint {#jue-c2-t-pista-empate-raiz of="jue-c2-t-ej-empate-raiz" title="El igual poda abajo, no arriba"}
+::: hint {#jue-c2-t-pista-empate-raiz of="jue-c2-t-ej-empate-raiz" title="¿Dónde cuenta el igual?"}
 D es de MIN y hereda el $\alpha$ de R después de C. Recuerda que en la
 línea 22 el igual cuenta. Después, compara lo que D devuelve con el
 $\alpha$ de R.
@@ -603,7 +633,7 @@ cotas.
   padre solo sube $v$.
 - **$\alpha$ y $\beta$ son umbrales del camino**, en puntos de MAX: lo que
   MAX y MIN ya tienen asegurado con otra jugada. La ventana no incluye sus
-  extremos: **el igual poda**.
+  extremos: **igualar el umbral del rival poda**.
 - **Lo que devuelve un nodo se lee contra su ventana de entrada:** al
   menos, a lo más o exacto. C2 devolvió 7 y vale 8. Por eso la raíz cambia
   de jugada solo con $w>\alpha$.

@@ -45,7 +45,8 @@ Al terminar tendrás:
 - **n1:** la posición de hexapawn, con Blancas (MAX) por mover; sus pagos
   son $+1$ y $-1$.
 - **Supuestos:** dos jugadores por turnos, sin azar, todo a la vista, toda
-  partida termina y suma cero. Ésa es la clase de juegos de esta página.
+  partida termina y suma cero (o constante). Ésa es la clase de juegos de
+  esta página.
 
 > **Dado:** un estado no final $s_{\text{raíz}}$ donde mueve MAX y las
 > reglas $S_F$, $\mathrm{Pl}$, $A$, $T$ y $U$.
@@ -56,7 +57,7 @@ Al terminar tendrás:
 > [!TIP]
 > **Míralo correr: alfa-beta en el árbol base**
 >
-> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#alfa-beta)**: el árbol, la línea del
+> - **[Animación paso a paso](../_assets/traza_arbol_t.html#alfa-beta)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
 > - **Notebook en Colab**, sección 5: el mismo Python de esta página,
 >   corriendo; cámbiale un número y mira qué pasa.
@@ -96,8 +97,10 @@ número del rival; **15 y 23 actualizan** el propio.
 **Alfa-beta es minimax con poda:** deja de generar los hijos que faltan
 en cuanto sabe que el nodo no cambia la decisión de arriba.
 
-- **Qué valor rastrea:** el mismo $V$ que minimax. Un nodo que poda, o que
-  recibe una cota, devuelve solo una cota: «al menos» o «a lo más».
+- **Qué valor rastrea:** el mismo $V$ que minimax. Una llamada devuelve un
+  valor exacto o una cota, «al menos» o «a lo más»; se distingue leyendo su
+  retorno contra su ventana de entrada. Recibir una cota de un hijo no
+  impide devolver un valor exacto.
 - **Dónde lo guarda:** en la $v$ de cada llamada abierta, junto con su
   ventana $(\alpha,\beta)$; en la raíz, $\alpha$ hace de `mejor_valor`.
 - **Cómo sube:** con el máximo en MAX y el mínimo en MIN, como minimax. Al
@@ -292,7 +295,7 @@ traza.
 Cada llamada abierta ocupa un **marco** de la pila (*stack frame*): los
 datos de esa llamada mientras espera a sus hijos.
 
-**Tramo a · C1: su α nace heredado y sube**
+**Tramo 1 · C1: su α nace heredado y sube**
 
 | línea | pila | ejecuta | queda |
 |---|---|---|---|
@@ -311,7 +314,7 @@ datos de esa llamada mientras espera a sus hijos.
   y el de C, que sigue en 3. C1 es de MAX: el $\alpha$ es **suyo**, aunque
   empezó heredado.
 
-**Tramo b · C1 revisa su segunda hoja y regresa**
+**Tramo 2 · C1 revisa su segunda hoja y regresa**
 
 | línea | pila | ejecuta | queda |
 |---|---|---|---|
@@ -321,7 +324,7 @@ datos de esa llamada mientras espera a sus hijos.
 | 15 | R›C›C1 | α ← max(5, $5)$ | α = 5 |
 | 16 | R›C›C1 | devuelve 5 |  |
 
-**Tramo c · C actualiza su β**
+**Tramo 3 · C actualiza su β**
 
 | línea | pila | ejecuta | queda |
 |---|---|---|---|
@@ -338,7 +341,7 @@ datos de esa llamada mientras espera a sus hijos.
   perdió con su marco. C es de MIN: compara 5 con **su** $\alpha=3$ (línea
   22, «5≤3 no») y baja **su** $\beta$ a 5 (línea 23).
 
-**Tramo d · C2 poda**
+**Tramo 4 · C2 poda**
 
 | línea | pila | ejecuta | queda |
 |---|---|---|---|
@@ -365,7 +368,7 @@ datos de esa llamada mientras espera a sus hijos.
 abiertos, cada uno con a lo más $b$ jugadas pendientes. Nunca se guarda el
 árbol entero.
 
-**Tramo e · C devuelve 5 y la raíz cambia de jugada**
+**Tramo 5 · C devuelve 5 y la raíz cambia de jugada**
 
 | línea | pila | ejecuta | queda |
 |---|---|---|---|
@@ -435,12 +438,12 @@ no puede podar contra nada.
 |---|---:|---:|---:|
 | Minimax | 14 | 13 | 252 |
 | Alfa-beta, orden dado | 12 | 5 | 82 |
-| Alfa-beta, orden invertido | 14 | 8 | 72 |
+| Alfa-beta, orden invertido | ? | 8 | 72 |
 :::
 
-- **Cuanto antes aparece una buena jugada, más se poda.** En el árbol base
-  y en n1 gana el orden dado; en el juego completo, el invertido. Ningún
-  orden es el mejor siempre.
+- **Cuanto antes aparece una buena jugada, más se poda.** En n1 gana el
+  orden dado; en el juego completo, el invertido. Ningún orden es el mejor
+  siempre. El «?» lo calculas en @jue-c2-t-ej-invertido.
 - **Nadie conoce de antemano la mejor jugada:** los programas reales
   **adivinan un buen orden**, por ejemplo, capturas primero.
 
@@ -571,8 +574,8 @@ Con $b\ge2$ jugadas por estado y profundidad $m$:
 - **Con tabla de transposición** hay que guardar si el número es un valor
   exacto, una cota «al menos» o una «a lo más». Guardar una cota como
   exacta es un error clásico.
-- **Sin suma cero, o con más de dos jugadores,** la poda ordinaria deja de
-  valer. Con $\max^n$ solo queda una **poda superficial**, con cotas por
+- **Con suma no constante, o con más de dos jugadores,** la poda ordinaria
+  deja de valer. Con $\max^n$ solo queda una **poda superficial**, con cotas por
   jugador y sobre la suma (Korf, 1991), sin el ahorro de alfa-beta.
 - **El paranoico (*Paranoid*)** junta a los demás en una coalición MIN y recupera
   alfa-beta, pero resuelve un juego más pesimista.
@@ -600,8 +603,9 @@ Con $b\ge2$ jugadas por estado y profundidad $m$:
 - **`mejor`, el valor de un plan que ya tenemos** → $\alpha$ para MAX y
   $\beta$ para MIN.
 - **La cota de un subproblema** → lo que devuelve un nodo, leído contra su
-  ventana de entrada (@jue-c2-invariante). Su $v$ a medio camino no es
-  cota de nada todavía.
+  ventana de entrada (@jue-c2-invariante). Su $v$ a medio camino depende
+  de lo recibido: si todo fue exacto, es cota inferior en MAX y superior en
+  MIN; si llegó una cota, puede no serlo.
 - **Cerrar si la cota no supera `mejor`** → podar si $v\le\alpha$ o si
   $v\ge\beta$.
 - **Un nodo cerrado no tiene su óptimo calculado** → un nodo que podó solo
@@ -623,9 +627,8 @@ lo más $-1$» ya son exactas.
 
 **DECIDIR-ALFA-BETA no tiene línea 14.** Para aprovechar lo mismo y
 entregar la jugada, su `for` tendría que terminar en cuanto un $w$ vale
-$+1$. Así lo hace la línea 9 de PROFUNDIZACIÓN-ITERATIVA, en
-[[jugar-contra-el-reloj|Hasta dónde mirar]]. La misma idea, conocer las
-cotas de $U$, es la que permite podar en árboles con azar.
+$+1$, el mejor pago posible. La misma idea, conocer las cotas de $U$, es la
+que permite podar en árboles con azar.
 
 ---
 
@@ -637,6 +640,8 @@ der, centro, izq; D ve 12 y luego 2; C ve C2 y luego C1. C2 ve 8 y luego
 7; C1, 2 y luego 5; I, 6 y luego 3. La tabla es la de la traza por hijo de
 [[alfa-beta|Alfa-beta a mano]]. Llena los «?».
 
+**Filas 1–5**
+
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
 | 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
@@ -644,16 +649,31 @@ der, centro, izq; D ve 12 y luego 2; C ve C2 y luego C1. C2 ve 8 y luego
 | 3 | 20–23 · R›D | $(-\infty,12)$ | 12 | 12 | $12\le -\infty$ no | — |
 | 4 | 20–23 · R›D | $(-\infty,2)$ | 2 | 2 | $2\le -\infty$ no | — |
 | 5 | 4–5 · R | ? | ? | ? | ? | ? |
+
+**Filas 6–10**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 6 | 18 · R›C | ? | $+\infty$ |  |  | ? |
 | 7 | 10 · R›C›C2 | ? | $-\infty$ |  |  | ? |
 | 8 | ? · R›C›C2 | ? | ? | 8 | ? | ? |
 | 9 | ? · R›C›C2 | ? | ? | 7 | ? | ? |
 | 10 | ? · R›C | ? | ? | ? | ? | ? |
+
+**Filas 11–15**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 11 | 10 · R›C›C1 | ? | $-\infty$ |  |  | ? |
 | 12 | ? · R›C›C1 | ? | ? | 2 | ? | ? |
 | 13 | ? · R›C›C1 | ? | ? | 5 | ? | ? |
 | 14 | ? · R›C | ? | ? | ? | ? | ? |
 | 15 | 4–5 · R | ? | ? | ? | ? | ? |
+
+**Filas 16–20**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 16 | 18 · R›I | ? | $+\infty$ |  |  | ? |
 | 17 | ? · R›I | ? | ? | 6 | ? | ? |
 | 18 | ? · R›I | ? | ? | 3 | ? | ? |
@@ -672,6 +692,8 @@ decide si la línea 22 regresa o la 23 baja $\beta$.
 :::
 
 ::: answer {#jue-c2-t-resp-invertido of="jue-c2-t-ej-invertido"}
+**Filas 1–5**
+
 | # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
 |---|---|---|---|---|---|---|
 | 1 | 2 · R | $(-\infty,+\infty)$ | $-\infty$ |  |  | — |
@@ -679,16 +701,31 @@ decide si la línea 22 regresa o la 23 baja $\beta$.
 | 3 | 20–23 · R›D | $(-\infty,12)$ | 12 | 12 | $12\le -\infty$ no | — |
 | 4 | 20–23 · R›D | $(-\infty,2)$ | 2 | 2 | $2\le -\infty$ no | — |
 | 5 | 4–5 · R | $(2,+\infty)$ | 2 | 2 (D) | $2>-\infty$ sí | der |
+
+**Filas 6–10**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 6 | 18 · R›C | $(2,+\infty)$ | $+\infty$ |  |  | der |
 | 7 | 10 · R›C›C2 | $(2,+\infty)$ | $-\infty$ |  |  | der |
 | 8 | 12–15 · R›C›C2 | $(8,+\infty)$ | 8 | 8 | $8\ge +\infty$ no | der |
 | 9 | 12–15 · R›C›C2 | $(8,+\infty)$ | 8 | 7 | $8\ge +\infty$ no | der |
 | 10 | 20–23 · R›C | $(2,8)$ | 8 | 8 (C2) | $8\le 2$ no | der |
+
+**Filas 11–15**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 11 | 10 · R›C›C1 | $(2,8)$ | $-\infty$ |  |  | der |
 | 12 | 12–15 · R›C›C1 | $(2,8)$ | 2 | 2 | $2\ge 8$ no | der |
 | 13 | 12–15 · R›C›C1 | $(5,8)$ | 5 | 5 | $5\ge 8$ no | der |
 | 14 | 20–23 · R›C | $(2,5)$ | 5 | 5 (C1) | $5\le 2$ no | der |
 | 15 | 4–5 · R | $(5,+\infty)$ | 5 | 5 (C) | $5>2$ sí | centro |
+
+**Filas 16–20**
+
+| # | línea · pila | $(\alpha ,\beta )$ | $v$ | $w$ | poda | jugada |
+|---|---|---|---|---|---|---|
 | 16 | 18 · R›I | $(5,+\infty)$ | $+\infty$ |  |  | centro |
 | 17 | 20–23 · R›I | $(5,6)$ | 6 | 6 | $6\le 5$ no | centro |
 | 18 | 20–22 · R›I | $(5,6)$ | 3 | 3 | $3\le 5$ sí | centro |
@@ -743,7 +780,9 @@ ellos poda con las condiciones estrictas.
 :::
 
 ::: answer {#jue-c2-resp-igualdad of="jue-c2-ej-igualdad"}
-1. No: $+1<+1$ es falso.
+1. No tras su primer hijo: $+1<+1$ es falso. Tras el último, n13, sí:
+   $-1<+1$. La condición se cumple, pero ya no quedan hijos y no ahorra
+   nada.
 2. Los **13**. Sin la poda en n3, el recorrido genera n6 y n13, y ninguna
    otra condición estricta deja hijos sin generar.
 3. No: la raíz sigue dando $+1$. Pero con pagos $\pm1$ los empates son la
@@ -790,4 +829,4 @@ cualquier orden. Y leer cada número devuelto contra su ventana de entrada.
 - **El orden decide el ahorro:** 12 de 14 en el árbol base, 5 u 8 de 13 en
   n1; $O(b^{m/2})$ con orden perfecto.
 
-Continúa con la [[tarea-mirar-todo-y-podar|tarea de refuerzo]].
+Continúa con [[cuando-decide-un-dado|Cuando decide un dado: expectiminimax]].
