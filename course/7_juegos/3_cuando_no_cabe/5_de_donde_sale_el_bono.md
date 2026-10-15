@@ -667,53 +667,6 @@ pierde es la cota de ${\ln N(s)}$, no la llegada (sección 8).
 La búsqueda sí llega a la mejor jugada. Pero cuando se acaba el tiempo,
 ¿cuál se juega?
 
-## 7 · Seleccionar no es entregar
-
-**Piensa: cuando se acaba el tiempo, ¿se entrega la jugada de mayor
-puntaje?**
-
-No. Al terminar, el bono **se quita**:
-
-::: table {#jue-c3-tabla-seleccionar title="Seleccionar no es entregar"}
-| | Selección | Entrega |
-|---|---|---|
-| Cuándo | Cada vuelta | Al final |
-| Mira | Puntaje | $N(s')$ |
-| Bono | Sí | No |
-| Busca | Qué probar | Lo más probado |
-:::
-
-El bono premia la ignorancia, y eso sirve para aprender. Para jugar de
-verdad se quiere evidencia: aquí, la jugada con más simulaciones. Es una
-convención, la más usada, no la única: otras versiones entregan la de mayor
-promedio, sin bono, y esa es la que analizan Kocsis y Szepesvári (sección 8).
-Elegimos la más simulada porque un promedio de pocas partidas puede ir alto
-por suerte.
-
-::: exercise {#jue-c3-ej-entregar title="Señala qué se entrega"}
-En el ejercicio de MCTS, x tenía ${N=60}$ y ${\bar u=0.5}$; y, ${N=30}$ y
-${0.6}$; z, ${N=10}$ y ${0.2}$. Con ${c=2\sqrt2}$ la selección iba a z. Se
-acaba el tiempo.
-
-1. ¿Qué jugada se entrega?
-2. y tiene el mejor promedio. ¿Por qué no se entrega y?
-:::
-
-::: hint {#jue-c3-pista-entregar-1 of="jue-c3-ej-entregar" title="Promedio y evidencia"}
-¿Qué cambia entre seleccionar y entregar: qué número mira cada uno?
-:::
-
-::: answer {#jue-c3-resp-entregar of="jue-c3-ej-entregar"}
-1. **x**, la de más simulaciones, 60. Ni z, la que seleccionaba, ni y.
-2. El 0.6 de y descansa en 30 simulaciones, la mitad que x: su margen es
-   mayor y su promedio, menos confiable. Además, la selección manda más
-   vueltas a lo que parece mejor, así que la más simulada es la que la
-   búsqueda confirmó más veces.
-:::
-
-Todo esto pasó en un solo nodo, la raíz. ¿Qué cambia cuando hay árbol
-debajo?
-
 ## 8 · Pasar del bandido al árbol
 
 **Piensa: en MCTS, ¿las simulaciones que pasan por un nodo siguen siendo
