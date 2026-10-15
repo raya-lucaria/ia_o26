@@ -3652,3 +3652,68 @@ def test_homologacion_la_corrida_de_la_figura_de_mmmc_muestra_lo_provisional():
     assert not m["exacto"][(1,)] and not m["exacto"][()]
     # con una partida menos o mas el retrato cambia: la cifra es deliberada
     assert j.mc_minimax(j.ARBOL_TPM, j.ITERACIONES_MMMC_TPM + 2, j.SEMILLA_TPM)["exacto"][(1,)]
+
+
+# ------------------------------- homologacion (Ola 2): cifras de figuras ---
+
+def test_homologacion_el_margen_crece_un_tercio_al_pedir_diez_veces_menos_fallo():
+    """Panel B de jue-c3-hoeffding: dos δ, uno diez veces menor; el margen
+    crece √(ln 200 / ln 20) ≈ 1.33 para todo N, y baja como 1/√N."""
+    d1, d2 = j.DELTAS_HOEFFDING_HOMOLOGACION
+    assert (d1, d2) == (0.05, 0.005) and _m.isclose(d1 / d2, 10)
+    m = j.margenes_hoeffding((10, 40, 100, 200))
+    for (n, e1), (n2, e2) in zip(m[d1], m[d2]):
+        assert n == n2 and _m.isclose(e2 / e1, _m.sqrt(_m.log(200) / _m.log(20)))
+        assert _m.isclose(e1, j.margen(d1, n))
+    assert round(m[d1][2][1], 3) == 0.245 and round(m[d2][2][1], 3) == 0.326
+    # cuatro veces mas muestras parten el margen a la mitad
+    assert _m.isclose(m[d1][0][1] / m[d1][1][1], 2)
+
+
+def test_homologacion_min_volteado_usa_la_misma_c_y_voltea_el_lado():
+    v = j.min_volteado()
+    f = v["filas"]
+    assert v["N_padre"] == 50 and _m.isclose(v["c"], 2 * _m.sqrt(2))
+    assert [f[k]["N"] for k in "pqr"] == [30, 16, 4]
+    assert [f[k]["Q"] for k in "pqr"] == [F(-1, 5), F(1, 4), F(1, 2)]
+    assert [round(f[k]["bono"], 2) for k in "pqr"] == [1.02, 1.40, 2.80]
+    assert [round(f[k]["arriba"], 2) for k in "pqr"] == [0.82, 1.65, 3.30]
+    assert [round(f[k]["abajo"], 2) for k in "pqr"] == [-1.22, -1.15, -2.30]
+    assert (v["max"], v["min"]) == ("r", "r")
+    # MIN elige el menor Q̂ − bono = el mayor puntaje de puntajes_ucb con −Q̂
+    assert v["min"] == j.mejor(j.puntajes_ucb(j.EJEMPLO_MIN, mueve="MIN"))
+    # con c = 1 el bono pesa menos y MIN se queda con la de menor Q̂: p
+    assert j.min_volteado(c=1)["min"] == "p"
+
+
+def test_homologacion_mcts_en_n_y_v_gorro():
+    """jue-c3-mcts-pasos sin G/N: raíz N 4, V̂ 0 → N 5, V̂ +0.2."""
+    vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
+    antes, despues = j.mcts_nv(vuelta["antes"]), j.mcts_nv(vuelta["despues"])
+    assert antes["r"] == (4, 0) and despues["r"] == (5, F(1, 5))
+    assert antes["a"] == (3, F(1, 3)) and despues["a"] == (4, F(1, 2))
+    assert antes["a2"] == (1, -1) and despues["a2"] == (2, 0) and despues["nuevo"] == (1, 1)
+    assert antes["b"] == despues["b"] == (1, -1) and antes["a1"] == (1, 1)
+    assert j.mcts_nv({"x": (0, 0)})["x"] == (0, None)
+
+
+def test_homologacion_variantes_del_ejercicio_final_de_corte():
+    """jue-c3-ej-final-corte en el árbol de resultados: el empate con d = 1,
+    la EVAL que cambia la jugada y el costo (no depende de la EVAL)."""
+    assert j.EVAL_TPM_EMPATE == {**j.EVAL_TPM, "C": 60}
+    assert j.decidir_con_corte_tpm(1, evaluar=j.EVAL_TPM_EMPATE) == ("izq", 60, 4)
+    assert j.decidir_con_corte_tpm(1, orden=["D", "C", "I"],
+                                   evaluar=j.EVAL_TPM_EMPATE) == ("centro", 60, 4)
+    assert j.decidir_con_corte_tpm(1, orden=["D", "C", "I"]) == ("izq", 60, 4)
+    assert j.EVAL_TPM_VARIANTE == {**j.EVAL_TPM, "I": 0}
+    assert [j.decidir_con_corte_tpm(d, evaluar=j.EVAL_TPM_VARIANTE) for d in (1, 2, 3)] == [
+        ("centro", 20, 4), ("centro", 10, 11), ("centro", 0, 15)]
+    assert [j.decidir_con_corte_tpm(d) for d in (1, 2, 3)] == [
+        ("izq", 60, 4), ("centro", 10, 11), ("centro", 0, 15)]
+    assert [j.corte_tpm(d)[2] for d in (1, 2, 3)] == [
+        {"izq": 60, "centro": 20, "der": 10}, {"izq": -100, "centro": 10, "der": -100},
+        {"izq": -100, "centro": 0, "der": -100}]
+    filas, total = j.iterativa_tpm()
+    assert [(d, o, jg, n) for d, o, jg, _, n in filas] == [
+        (1, ["izq", "centro", "der"], "izq", 4), (2, ["izq", "centro", "der"], "centro", 9),
+        (3, ["centro", "izq", "der"], "centro", 12)] and total == 25

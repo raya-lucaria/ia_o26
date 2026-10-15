@@ -226,7 +226,7 @@ def test_las_partes_del_orden_fijo_dibujan_su_traza():
     _, _, a3, b3, v3 = visitas[3]
     assert (a3, b3, v3) == (1, float("inf"), 1) and gen.valores_n1()[3] == -1
     assert "(+1, +∞)" in p2
-    assert ">v ≤ α: corta<" in p2 and ">v = +1 (cota)<" in p2 and ">v = +1<" in p2
+    assert ">v ≤ α: poda<" in p2 and ">v = +1 (cota)<" in p2 and ">v = +1<" in p2
     assert "corte alfa" in p2 and p2.count(">?<") == 2 and "5 de 13" in p2
 
 
@@ -237,7 +237,7 @@ def test_las_partes_del_orden_invertido_dibujan_su_traza():
     # n13 vale −1, y es lo primero que ve n3: β pasa de +∞ a −1.
     assert visitas[13][4] == -1 and visitas[6][3] == -1
     assert ">β: +∞ → −1<" in p1 and ">U = −1<" in p1 and "corte" not in p1
-    assert "(−∞, −1)" in p2 and ">v ≥ β: corta<" in p2 and ">v = +1 (cota)<" in p2
+    assert "(−∞, −1)" in p2 and ">v ≥ β: poda<" in p2 and ">v = +1 (cota)<" in p2
     assert "corte beta" in p2 and p2.count(">?<") == 2
     assert visitas[3][4] == -1 and visitas[2][2:4] == (-1, float("inf"))
     # La raiz ya no mete «α = −1» y un «= +1» suelto en la misma caja.
@@ -246,6 +246,10 @@ def test_las_partes_del_orden_invertido_dibujan_su_traza():
 
 
 # ------------------------------------------------------------ el arbol T ---
+
+def _aria_de(svg):
+    return re.match(r"<svg\b[^>]*>", svg).group()
+
 
 FIGURAS_T = (["jue-t-arbol"] + [f"jue-t-minimax-{k}" for k in gen.PASOS_MINIMAX_T]
              + [f"jue-t1-ab-{k}" for k in gen.PASOS_AB_T1]
@@ -308,7 +312,7 @@ def test_alfa_beta_en_t1_y_t_dibuja_sus_cortes():
 def test_la_pila_de_alfa_beta_es_la_del_corte_en_c2():
     svg = _texto("jue-t-ab-pila")
     for rot in ("R · DECIDIR", "C · MIN", "C2 · MAX", "mejor_jugada = izq", "va en: c2",
-                "v ≥ β: corta", "devolvió 3", "devolvió 5", "se perdió al regresar"):
+                "v ≥ β: poda", "devolvió 3", "devolvió 5", "se perdió al regresar"):
         assert rot in svg, rot
     assert svg.count(">?<") == 1
 
@@ -317,15 +321,33 @@ def test_azar_corte_e_iterativa_en_t():
     azar = _texto("jue-t-azar")
     for rot in ("v = 9/2", "v = 13/2", "v = 7", "mejor_jugada = der"):
         assert rot in azar, rot
+    # El corte y la iterativa, sobre el árbol de resultados (destinos §E.3):
+    # finales en 100·U y EVAL de EVAL_TPM; cifras de juegos.corte_tpm.
     d1, d2 = _texto("jue-t-corte-d1"), _texto("jue-t-corte-d2")
-    assert "EVAL = 5" in d1 and "EVAL = 4" in d1 and "EVAL = 7" in d1
-    assert "mejor_jugada = der" in d1 and "4 de 14 nodos" in d1
-    assert "EVAL = 6" in d2 and "EVAL = 9" in d2 and "mejor_jugada = centro" in d2
-    assert "10 de 14 nodos" in d2
+    total = j.contar_nodos(j.ARBOL_TPM)
+    for d, svg in ((1, d1), (2, d2)):
+        jugada, valor, ws, gen_ = j.corte_tpm(d)
+        assert f">mejor_jugada = {jugada}<" in svg and f">mejor_valor = {gen._fmt_t(valor)}<" in svg
+        assert f"{gen_} de {total} nodos" in svg
+        for a, w in ws.items():
+            assert f"{j.JUGADA_A_NOMBRE[a]} vale {gen._fmt_t(w)}" in _aria_de(svg), (d, a)
+    for n in ("I", "C", "D"):
+        assert f">EVAL = {j.EVAL_TPM[n]}<" in d1
+    for n in ("C1", "C2"):
+        assert f">EVAL = {j.EVAL_TPM[n]}<" in d2
+    assert (j.corte_tpm(1)[:2], j.corte_tpm(2)[:2]) == (("izq", 60), ("centro", 10))
+    assert "4 de 15 nodos" in d1 and "11 de 15 nodos" in d2
+    assert "izq parece valer 60" in d1 and "su valor real es −100: la captura" in d1
+    assert ">−100<" in d2 and "-100" not in d2          # signo menos tipografico
     it = _texto("jue-t-iterativa")
-    for rot in ("orden: izq, centro, der · 4 nodos", "orden: der, izq, centro · 10 nodos",
-                "orden: centro, izq, der · 11 nodos", "En total, 25 nodos"):
-        assert rot in it, rot
+    filas, total_it = j.iterativa_tpm()
+    for d, orden, jugada, _, n in filas:
+        assert f"orden: {', '.join(orden)} · {n} nodos" in it, d
+        assert f"d = {d} · lista: {jugada}" in it, d
+    assert total_it == 25 and f"En total, {total_it} nodos" in it
+    assert "izq con d = 1," in it and "centro desde d = 2" in it
+    for svg in (d1, d2, it):
+        assert "Finales en la escala 100·U." in svg and "árbol de resultados" in svg
 
 
 # ------------------------------------------------------------- clase 3 ---
@@ -386,19 +408,35 @@ def test_la_profundizacion_dibuja_lo_que_cada_busqueda_deja_listo():
 
 
 def test_mcts_tiene_sus_cuatro_pasos():
+    """Rehecha (destinos §E.1 #9): N y V̂ en cada nodo, sin G/N; raíz N 4,
+    V̂ 0 → N 5, V̂ +0.2. Cifras de juegos.mcts_vuelta y mcts_nv."""
     svg = _texto("jue-c3-mcts-pasos")
-    for paso in ("Selección", "Expansión", "Simulación", "Retropropagación"):
-        assert paso in svg
+    for paso in ("1 · Selección", "2 · Expansión", "3 · Simulación", "4 · Retropropagación"):
+        assert f">{paso}<" in svg
     vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
-    # Antes de la vuelta (tres paneles) y despues (uno), cada nodo con su G/N.
-    for n, (g, s) in vuelta["antes"].items():
-        assert svg.count(f">{g}/{s}<") >= 3, n
+    antes, despues = j.mcts_nv(vuelta["antes"]), j.mcts_nv(vuelta["despues"])
+    renglones = re.findall(r">([^<>]+)</text>", svg)
+    # Antes de la vuelta (tres paneles) y despues (uno), cada nodo con N y V̂.
+    for n, (k, v) in antes.items():
+        assert renglones.count(f"N {k}") >= 3 and f"V̂ {gen._dec_txt(v)}" in renglones, n
     for n in vuelta["camino"] + ["nuevo"]:
-        g, s = vuelta["despues"][n]
-        assert f">{g}/{s}<" in svg, n
-    assert ">0/0<" in svg and "U = +1" in svg and "<circle" not in svg
-    assert "la raíz pasa de 2/4 a 3/5" in svg
-
+        k, v = despues[n]
+        assert f"N {k}" in renglones and f"V̂ {gen._dec_txt(v)}" in renglones, n
+    assert "N 0" in renglones and "V̂ ?" in renglones and "U = +1:" in renglones
+    assert (antes["r"], despues["r"]) == ((4, 0), (5, F(1, 5)))
+    titulo = re.search(r"<title>([^<]*)</title>", svg).group(1)
+    assert "la raíz pasa de N 4, V̂ 0 a N 5, V̂ +0.2" in titulo
+    assert f"{vuelta['puntajes']['r']['a']:.2f}" in renglones
+    # MAX y MIN marcados por nivel, con su color
+    assert re.search(rf'fill="{gen.COLOR_MAX}"[^>]*>MAX<', svg)
+    assert re.search(rf'fill="{gen.COLOR_MIN}"[^>]*>MIN<', svg)
+    assert "G/N" not in svg and not re.search(r">\d+/\d+<", svg)
+    # nodos rotulados (lo pide la prosa de 3.4): R, a, b, a1, a2 y «nuevo»
+    for nombre in ("R", "a", "b", "a1", "a2", "nuevo"):
+        assert renglones.count(nombre) >= 3, nombre
+    assert (antes["a"], antes["b"], antes["a1"], antes["a2"]) == (
+        (3, F(1, 3)), (1, -1), (1, 1), (1, -1))
+    assert (despues["a2"], despues["nuevo"]) == ((2, 0), (1, 1))
 
 C3 = ["jue-c3-corte-prof-1", "jue-c3-corte-prof-2", "jue-c3-corte-prof-3",
       "jue-c3-horizonte", "jue-c3-profundizacion", "jue-c3-mcts-pasos",
@@ -434,12 +472,15 @@ def test_en_los_peones_de_la_clase_3_ningun_nodo_lleva_el_borde_de_nuevo(nombre)
 
 def test_el_tramo_1_de_d_2_es_parcial_y_el_final_resuelto():
     t1, fin = _texto("jue-t-corte-d2-tramo-1"), _texto("jue-t-corte-d2")
-    traza = j.traza_decidir(j.ARBOL_T, profundidad=2, evaluar=j.EVAL_T)
+    traza = j.traza_decidir(j.ARBOL_TPM_100, profundidad=2, evaluar=j.EVAL_TPM)
     k = gen._fila_tramo_1(traza)
-    assert k == 9 and traza["filas"][k - 1]["generados"] == 7
-    assert "7 de 14 nodos hasta aquí" in t1 and "10 de 14 nodos" in fin
-    assert ">mejor_jugada = centro<" in t1 and ">mejor_valor = 6<" in t1
-    assert "Corte con d = 2, tramo 1 · centro sube a 6" in t1
+    assert traza["filas"][k - 1]["generados"] == 7 and traza["generados"] == 11
+    assert "7 de 15 nodos hasta aquí" in t1 and "11 de 15 nodos" in fin
+    assert ">mejor_jugada = centro<" in t1 and ">mejor_valor = 10<" in t1
+    assert "Corte con d = 2, tramo 1 · centro sube a 10" in t1
+    # el tramo se corta donde cambia la jugada: de izq a centro
+    assert traza["filas"][k - 2]["mejor_jugada"] == "izq"
+    assert "Corte con d = 2, tramo 2 · D devuelve −100: sigue centro" in fin
     # D todavia por mirar (punteado, sin «?»); las hojas de C1 y C2, «?».
     assert ">D · MIN<" in t1 and t1.count(">?<") == 4 + 1      # mas la leyenda
     assert fin.count(">?<") == 4 + 1
@@ -488,10 +529,11 @@ def test_el_nodo_que_evalua_su_if_compara_el_numero_del_rival():
 
 
 def test_la_iterativa_marca_las_cotas_de_d3():
-    *_, (d, orden, t) = j.profundizacion_iterativa_t(j.ARBOL_T)
-    cotas = sorted(n for n, e in t["filas"][-1]["estado"].items() if e.get("cota"))
-    assert d == 3 and cotas == ["C2", "D", "I"]
-    assert _texto("jue-t-iterativa").count(">· cota<") == len(cotas)
+    corridas = j.profundizacion_iterativa_t(j.ARBOL_TPM_100, (1, 2, 3), j.EVAL_TPM)
+    cotas = [sorted(n for n, e in t["filas"][-1]["estado"].items() if e.get("cota"))
+             for _, _, t in corridas]
+    assert cotas == [[], ["D"], ["C2", "D"]]
+    assert _texto("jue-t-iterativa").count(">· cota<") == sum(map(len, cotas))
 
 
 def test_el_arbol_t_no_dice_que_la_hoja_es_u():
@@ -628,8 +670,7 @@ def test_ningun_aria_label_deja_una_frase_vacia(nombre):
 
 # ------------------------------- clase 3, p6: de donde sale el bono ---
 
-UCB = ["jue-c3-hoeffding", "jue-c3-bono", "jue-c3-pago", "jue-c3-eligiendo-x",
-       "jue-c3-bandido-corridas"]
+UCB = ["jue-c3-hoeffding", "jue-c3-bono"]
 
 
 @pytest.mark.parametrize("nombre", UCB)
@@ -640,22 +681,15 @@ def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
     renglones = re.findall(r">([^<>]+)</text>", svg)
     # Los nombres largos van partidos en renglones: las figuras miden 300 px
     # (ver ANCHO_UCB_MAX abajo).
-    ejes = {"jue-c3-hoeffding": ("N(s′): simulaciones de la jugada",
-                                 "frecuencia de ū(s′) ≤ μ(s′) − ε", "(escala log)"),
-            "jue-c3-bono": ("N(s′): simulaciones de la jugada", "bono (en unidades de ū)"),
-            "jue-c3-pago": ("N(s): vueltas (escala log)", "pago promedio por vuelta,",
-                            "de la vuelta 1 a N(s)"),
-            "jue-c3-eligiendo-x": ("N(s): vueltas (escala log)", "elecciones que van a x (%),",
-                                   "en esas 10 vueltas"),
-            "jue-c3-bandido-corridas": ("fracción de las 10 000 vueltas", "que fueron a x")}[nombre]
+    ejes = {"jue-c3-hoeffding": ("ε: el margen pedido", "cota de la probabilidad de",
+                                 "que Q̂ quede ε o más abajo", "N: muestras de la jugada",
+                                 "ε: el margen que falla", "con prob. ≤ δ"),
+            "jue-c3-bono": ("N(s,a): visitas de la jugada", "bono, en la escala de U",
+                            "(de −1 a +1)")}[nombre]
     for e in ejes:
         assert escape(e) in renglones, e
-    marcas = {"jue-c3-hoeffding": ["0.001", "0.01", "0.1", "1", "0", "50", "200"],
-              "jue-c3-bono": ["0", "1", "2", "3", "4", "50", "200"],
-              "jue-c3-pago": ["10", "100", "1 000", "10 000", "0.3", "0.4", "0.5", "0.6"],
-              "jue-c3-eligiendo-x": ["10", "100", "1 000", "10 000", "40", "55", "70", "85",
-                                     "100"],
-              "jue-c3-bandido-corridas": ["0", "0.25", "0.5", "0.75", "1"]}[nombre]
+    marcas = {"jue-c3-hoeffding": ["0", "0.1", "0.2", "0.4", "0.5", "1", "50", "200", "1.2"],
+              "jue-c3-bono": ["0", "1", "2", "3", "4", "50", "200"]}[nombre]
     for m in marcas:
         assert m in renglones, m
     assert ANCHO_UCB_MAX >= float(re.search(r'width="([\d.]+)"', svg).group(1))
@@ -670,30 +704,34 @@ def test_las_graficas_de_la_p6_nombran_sus_ejes_y_su_escala(nombre):
 ANCHO_UCB_MAX = 305
 
 
-def test_hoeffding_dibuja_la_simulacion_y_la_cota():
+def test_hoeffding_dibuja_la_cota_contra_eps_y_el_margen_contra_n():
+    """Rehecha (destinos §E.1 #8): (A) la cota e^(−N·ε²/2) contra ε con
+    N = 100, sus tres puntos 60.65 / 13.53 / 0.0335 %; (B) el margen
+    contra N para dos δ. Cifras de juegos."""
     svg = _texto("jue-c3-hoeffding")
-    pl = gen.plano_hoeffding()
-    puntos = gen.puntos_hoeffding(pl)
-    t = j.tabla_hoeffding()
-    assert len(puntos) == len(j.NS_HOEFFDING) == 200      # ninguna frecuencia es 0
-    circulos = re.findall(r'<circle cx="([\d.]+)" cy="([\d.]+)" r="2.6"', svg)
-    # Cada punto es la frecuencia de la fuente (no la cota ni otra cosa)…
-    esperados = [(pl.x(n), pl.y(float(t[n][0]))) for n in j.NS_HOEFFDING]
-    assert [(float(x), float(y)) for x, y in circulos] == esperados
-    assert [(x, y) for _, x, y in puntos] == esperados
-    # …y queda bajo la cota (en pixeles: y mayor es mas abajo).
-    for n, x, y in puntos:
-        assert y >= pl.y(t[n][1]), n
-    # La linea de la cota pasa por exp(−n·ε²/2) en cada n.
-    linea_cota = re.search(rf'<polyline points="([^"]+)" fill="none" stroke="{gen.COLOR_COTA}"',
-                           svg).group(1).split()
-    assert linea_cota[99] == f"{pl.x(100)},{pl.y(j.cota_hoeffding(100, 0.2))}"
-    # El aria-label cita lo que la pagina puede citar: n = 10, 50, 100.
-    aria = re.match(r"<svg\b[^>]*>", svg).group()
-    for n in (10, 50, 100):
-        assert f"con N(s′) = {n}, {gen._pct(t[n][0])} contra una cota de {gen._pct(t[n][1])}" in aria
-    assert "con N(s′) = 10, 24.7 % contra una cota de 81.9 %" in aria
-
+    renglones = re.findall(r">([^<>]+)</text>", svg)
+    tabla = j.tabla_hoeffding_epsilon()
+    assert [gen._pct_h(p) for _, p in tabla] == ["60.65 %", "13.53 %", "0.0335 %"]
+    for _, p in tabla:
+        assert gen._pct_h(p) in renglones
+    assert ">A · La cota contra ε<" in svg and ">B · El margen contra N<" in svg
+    assert f"con N = {j.N_HOEFFDING_HOMOLOGACION} muestras" in renglones
+    # cada punto de A, sobre la curva, en (ε, cota)
+    y_a = float(re.search(r'<text x="12" y="([\d.]+)"[^>]*>A · La cota', svg).group(1))
+    pl = gen.plano_hoeffding_a(y_a - 40 + 128)
+    for e, p in tabla:
+        assert f'<circle cx="{pl.x(e)}" cy="{pl.y(p / 100)}" r="5"' in svg, e
+    # B: una curva por δ, con su valor en N = 100
+    d1, d2 = j.DELTAS_HOEFFDING_HOMOLOGACION
+    for d in (d1, d2):
+        assert f"δ = {d:g}" in renglones
+        assert gen._dos(j.margen_hoeffding(d, 100)) in renglones
+    assert "0.24" in renglones and "0.33" in renglones
+    assert svg.count("<polyline") == 3
+    aria = _aria_de(svg)
+    assert "con ε = 0.1, 60.65 %, con ε = 0.2, 13.53 %, con ε = 0.4, 0.0335 %" in aria
+    assert "regla de continuación fija" in aria and "1.33 veces" in aria
+    assert "Es una cota, no una tasa." in aria
 
 def test_el_bono_dibuja_la_formula():
     svg = _texto("jue-c3-bono")
@@ -717,174 +755,6 @@ def test_el_bono_dibuja_la_formula():
     # Con mas N(s), mas bono: la curva de 10 000 va arriba de la de 100.
     primera = {n: j.bono_ucb(n, 5) for n in gen.CURVAS_BONO}
     assert primera[100] < primera[1000] < primera[10000] < 4
-
-
-# jue-c3-pago y jue-c3-eligiendo-x reemplazan a jue-c3-bandido (la fraccion
-# ACUMULADA en x, promediada sobre 40 corridas, mezclaba el costo de explorar
-# con las corridas atoradas; el profesor no la entendio, 2026-10-12).
-
-def _curvas_de(svg, pl, tabla, escala=1):
-    for r, d in tabla.items():
-        esperado = " ".join(f"{pl.x(m)},{pl.y(float(v * escala))}" for m, v in d.items())
-        assert f'<polyline points="{esperado}"' in svg, r
-
-
-def test_el_pago_dibuja_cada_regla_y_la_referencia():
-    svg = _texto("jue-c3-pago")
-    pl = gen.plano_pago()
-    t = j.tabla_pago()
-    assert list(t) == list(gen.ESTILO_REGLA) == list(j.FILAS_BANDIDO)
-    _curvas_de(svg, pl, t)
-    assert gen.puntos_pago(pl)["ucb"][0] == (10, pl.x(10), pl.y(float(t["ucb"][10])))
-    # La referencia «siempre x» en μ(x) = 0.6, y ninguna curva la pasa.
-    y_ref = pl.y(0.6)
-    assert f'<line x1="{pl.x0}" y1="{y_ref}" x2="{pl.x0 + pl.w}" y2="{y_ref}"' in svg
-    renglones = re.findall(r">([^<>]+)</text>", svg)
-    assert "siempre x (lo mejor posible)" in renglones
-    assert all(y > y_ref for pts in gen.puntos_pago(pl).values() for _, _, y in pts)
-    # Lo que es un punto, en el dibujo; la leyenda con el valor final.
-    assert "cada punto: promedio de 40 corridas" in renglones
-    for fila in ("siempre el mejor promedio: 0.543", "a veces al azar (10 %): 0.564",
-                 "UCB, c = 2√2: 0.580", "UCB, c = 1: 0.598"):
-        assert fila in renglones, fila
-    assert "(34·0.6 + 5·0.3 − 0.2)/40 = 0.5425." in renglones
-    aria = re.match(r"<svg\b[^>]*>", svg).group()
-    for frase in ("Cada punto es el promedio de 40 corridas",
-                  "pago promedio por vuelta, el promedio de los U de las vueltas 1 a N(s)",
-                  "Una raya horizontal en 0.6: siempre x, lo mejor posible",
-                  "siempre el mejor promedio, 0.400, 0.533, 0.544 y 0.543",
-                  "a veces al azar (10 %), 0.385, 0.522, 0.561 y 0.564",
-                  "UCB, c = 2√2, 0.295, 0.397, 0.519 y 0.580",
-                  "UCB, c = 1, 0.340, 0.514, 0.583 y 0.598",
-                  "34 corridas se quedan en x, 5 en y y 1 en z",
-                  "(34·0.6 + 5·0.3 − 0.2)/40 = 0.5425; simulado, 0.543"):
-        assert frase in aria, frase
-
-
-def test_eligiendo_x_dibuja_cada_regla_sin_acumular():
-    svg = _texto("jue-c3-eligiendo-x")
-    pl = gen.plano_eligiendo()
-    t = j.tabla_eligiendo_x()
-    _curvas_de(svg, pl, t, escala=100)
-    renglones = re.findall(r">([^<>]+)</text>", svg)
-    # Que es un punto (elecciones, no corridas: lente de correccion r2, H5)
-    # y que no es acumulado, en el dibujo.
-    for r_ in ("¿Qué tanto se elige x?", "cada punto: 40 corridas × 10 vueltas",
-               "(de N(s) − 9 a N(s)), no acumulado", "elecciones que van a x (%),",
-               "en esas 10 vueltas"):
-        assert r_ in renglones, r_
-    assert not [r_ for r_ in renglones if "corridas que eligen" in r_]
-    for fila in ("siempre el mejor promedio: 85 %", "a veces al azar (10 %): 92.5 %",
-                 "UCB, c = 2√2: 98.8 %", "UCB, c = 1: 100 %"):
-        assert fila in renglones, fila
-    # Sin bono, y solo ahi, el porcentaje de elecciones es el de corridas.
-    assert "Sin bono, 85 % son justo 34 corridas" in renglones
-    assert "de 40: entre las vueltas 100 y 10 000," in renglones
-    assert "las 6 atoradas no eligen x." in renglones
-    assert not [r_ for r_ in renglones if "nunca eligen" in r_]
-    assert "0.9 + 0.1/3 = 93.3 %." in renglones
-    # La meseta de 85 % es una recta: desde N(s) = 100, la misma y.
-    ys = {y for m, _, y in gen.puntos_eligiendo(pl)["mejor_promedio"] if m >= 100}
-    assert ys == {pl.y(85)}
-    aria = re.match(r"<svg\b[^>]*>", svg).group()
-    assert "corridas que eligen" not in aria and "nunca eligen" not in aria
-    for frase in ("porcentaje de las elecciones que van a x, no acumulado",
-                  "cada punto cuenta 400 elecciones: las vueltas N(s) − 9 a N(s) de cada una "
-                  "de las 40 corridas",
-                  "siempre el mejor promedio, 61.3 %, 85 %, 85 % y 85 %",
-                  "a veces al azar (10 %), 60.3 %, 84 %, 93 % y 92.5 %",
-                  "UCB, c = 2√2, 41.8 %, 65 %, 91.8 % y 98.8 %",
-                  "UCB, c = 1, 54.5 %, 83.3 %, 99.5 % y 100 %",
-                  "se aplana en 85 %, que aquí sí son 34 de 40 corridas: entre las vueltas "
-                  "100 y 10 000, las 6 atoradas no eligen x y las otras 34 sí",
-                  "0.9 + 0.1/3 = 93.3 %"):
-        assert frase in aria, frase
-
-
-def test_las_reglas_se_distinguen_sin_color():
-    """Cada regla con su trazo y su marca: el color no es la unica senal."""
-    assert len({(e["guiones"], e["marca"]) for e in gen.ESTILO_REGLA.values()}) == len(gen.ESTILO_REGLA)
-
-
-def test_las_corridas_dibujan_cada_corrida_y_su_promedio():
-    """jue-c3-bandido-corridas: 40 marcas por fila, con la marca de su regla
-    y ninguna encima de otra; la raya del promedio en la x del valor final
-    de tabla_bandido; el rotulo de atoradas y el de las buenas con sus
-    cifras."""
-    svg = _texto("jue-c3-bandido-corridas")
-    pl = gen.plano_corridas()
-    r, t = j.reparto_bandido(), j.tabla_bandido()
-    pts = gen.puntos_corridas(pl)
-    filas_px = gen.filas_corridas()
-    assert list(pts) == list(j.FILAS_BANDIDO)
-    for k, (fila, lista) in enumerate(pts.items()):
-        e = gen.ESTILO_REGLA[fila]
-        top, fondo, alto = filas_px[k]
-        assert len(lista) == j.CORRIDAS_BANDIDO == 40
-        assert [f for _, f, _, _ in lista] == r[fila]["fracciones"]
-        for _, f, x, y in lista:
-            assert top < y <= fondo and fondo + 14 <= top + alto, (fila, f)
-            assert gen.marca_corrida(x, y, e["marca"], e["color"]) in svg, (fila, f)
-        # Ninguna marca encima de otra: a un paso en x o en y.
-        lugares = [(x, y) for _, _, x, y in lista]
-        assert all(max(abs(a[0] - b[0]), abs(a[1] - b[1])) >= gen.PASO_CORRIDAS - 0.11
-                   for i, a in enumerate(lugares) for b in lugares[i + 1:]), fila
-        # y el punto (2·R) cabe en el paso con hueco.
-        assert 2 * gen.R_CORRIDAS + 0.6 <= gen.PASO_CORRIDAS
-        xm = pl.x(t[fila][max(j.MARCAS_BANDIDO)])
-        assert f'<line x1="{xm}" y1=' in svg, fila
-        assert f"promedio {t[fila][max(j.MARCAS_BANDIDO)]:.2f}" in svg
-        assert e["rotulo"] in svg
-    # 34 en x: una columna en la x de 1; las 6 atoradas, una columna en 0.
-    mejor = pts["mejor_promedio"]
-    columnas = Counter(x for _, f, x, _ in mejor if f >= j.UMBRAL_ATORADA)
-    assert dict(columnas) == {pl.x(1): 34}
-    atoradas = Counter(x for _, f, x, _ in mejor if f < j.UMBRAL_ATORADA)
-    assert dict(atoradas) == {pl.x(0): 6}
-    # El promedio 0.85 cae en el hueco: lejos de las dos columnas.
-    xm = pl.x(r["mejor_promedio"]["promedio"])
-    assert pl.x(0) + 20 < xm < pl.x(1) - 20
-    renglones = re.findall(r">([^<>]+)</text>", svg)
-    assert renglones.count("34 en x, 0.99 o más") == 1
-    # Cada fila sin atoradas rotula su rango real (lente r3, H3).
-    for r_ in ("de 0.90 a 0.94", "de 0.92 a 0.96", "de 0.96 a 1.00"):
-        assert renglones.count(r_) == 1, r_
-    # «6 de 40 atoradas: 5 en y, 1 en z» va en dos renglones: en uno llegaba
-    # a la raya del promedio 0.85; igual el subtitulo, por el ancho.
-    assert ["6 de 40 atoradas:", "5 en y, 1 en z"] == [
-        r_ for r_ in renglones if r_.startswith("6 de 40") or r_ == "5 en y, 1 en z"]
-    assert renglones.count("0 de 40 atoradas") == 3
-    assert "cada punto es una corrida" in renglones and "de 10 000 vueltas" in renglones
-    aria = re.match(r"<svg\b[^>]*>", svg).group()
-    for frase in ("Cada punto es una corrida de 10 000 vueltas",
-                  "La posición horizontal de cada punto es su valor, a ±0.01",
-                  "Siempre el mejor promedio: 34 corridas en 0.99 o más y 6 atoradas en "
-                  "0.001 o menos (5 en y, 1 en z), promedio 0.85",
-                  "A veces al azar (10 %): ninguna atorada, de 0.903 a 0.938, promedio 0.93",
-                  "UCB, c = 2√2: ninguna atorada, de 0.923 a 0.959, promedio 0.94",
-                  "UCB, c = 1: ninguna atorada, de 0.955 a 0.999, promedio 0.99"):
-        assert frase in aria, frase
-    assert "corridas de la fila. Una columna junta" in renglones and "las corridas a 0.01 o menos de su x," in renglones
-
-
-def test_cada_corrida_se_dibuja_en_su_valor():
-    """La x de cada punto de jue-c3-bandido-corridas esta a ±0.01 de su
-    fraccion (lente r3, H3): el apilado anterior las centraba en la mediana
-    del grupo y pintaba de 0.88 filas que empiezan en 0.90. Se mide en el SVG
-    publicado, no en puntos_corridas: cada marca, por su color y su y."""
-    svg = _texto("jue-c3-bandido-corridas")
-    pl = gen.plano_corridas()
-    tol = 0.01 * pl.w + 0.1             # 0.01 en pixeles, mas el redondeo
-    for fila, lista in gen.puntos_corridas(pl).items():
-        e = gen.ESTILO_REGLA[fila]
-        for _, f, x, y in lista:
-            assert abs(x - (pl.x0 + pl.w * f)) <= tol, (fila, f, x)
-            assert gen.marca_corrida(x, y, e["marca"], e["color"]) in svg
-        # y la fila ocupa en x lo que su rango, a ±0.01 en cada punta.
-        xs = [x for _, _, x, _ in lista]
-        d = j.reparto_bandido()[fila]
-        assert abs(min(xs) - (pl.x0 + pl.w * d["minimo"])) <= tol
-        assert abs(max(xs) - (pl.x0 + pl.w * d["maximo"])) <= tol
 
 
 # ------------------------- 7.3.7: el arbol T± (un arbol, todos) ---
@@ -1266,7 +1136,8 @@ def test_sin_la_capa_animada_la_figura_es_la_estatica(nombre):
 # ------------------------------ homologacion (Ola 1): figuras nuevas ---
 
 HOMOLOGACION_300 = ["jue-rx-expectiminimax", "jue-rx-flujo-expectiminimax", "jue-rx-mmmc",
-                    "jue-rx-flujo-mmmc", "jue-c3-refutacion-tres", "jue-c3-tres-mc"]
+                    "jue-rx-flujo-mmmc", "jue-c3-refutacion-tres", "jue-c3-tres-mc",
+                    "jue-c3-min-volteado", "jue-c3-hoeffding", "jue-c3-mcts-pasos"]
 
 
 def test_la_lista_cerrada_de_300_es_la_del_generador():
@@ -1392,3 +1263,77 @@ def test_los_tres_monte_carlo_dibujan_sus_limites():
     assert f"{j.VUELTAS_PAGINA_TPM} partidas; la raíz también al azar" in r
     aria = _aria("jue-c3-tres-mc")
     assert "entrega izq" in aria and "entrega centro" in aria
+
+
+# ------------------------------ homologacion (Ola 2): figuras nuevas ---
+
+def test_min_volteado_dibuja_el_bono_a_los_dos_lados():
+    """destinos §E.1 #7: p, q, r con Q̂ −0.2, 0.25, 0.5; N(s,a) 30, 16, 4;
+    N(s) = 50; c = 2√2; bonos 1.02, 1.40, 2.80. MAX miraría Q̂ + bono; MIN
+    mira Q̂ − bono. Cifras de juegos.min_volteado."""
+    m = j.min_volteado()
+    f = m["filas"]
+    svg = _texto("jue-c3-min-volteado")
+    r = _renglones("jue-c3-min-volteado")
+    assert f"N(s) = {m['N_padre']}, c = 2√2. Bajo s mueve MIN." in r
+    for k, d in f.items():
+        assert (f"{k}: Q̂ {gen._dec_txt(d['Q'])} · N(s,a) {d['N']} · bono "
+                f"{gen._dos_s(d['bono'])}") in r
+        for lado in ("arriba", "abajo"):
+            assert gen._dos_s(d[lado]) in r, (k, lado)
+            # el bigote acaba en Q̂ ± bono
+            assert f'x1="{gen._x_vol(d[lado])}"' in svg or f'x2="{gen._x_vol(d[lado])}"' in svg
+    assert [gen._dos_s(f[k]["bono"]) for k in "pqr"] == ["1.02", "1.40", "2.80"]
+    assert f"elige el mayor: {m['max']}, {gen._dos_s(f[m['max']]['arriba'])}" in r
+    assert f"elige el menor: {m['min']}, {gen._dos_s(f[m['min']]['abajo'])}" in r
+    assert "Si eligiera MAX: Q̂ + bono" in r and "Elige MIN: Q̂ − bono" in r
+    assert "MIN no cambia el signo de c:" in r
+    aria = _aria("jue-c3-min-volteado")
+    assert "elige el menor, r" in aria and "elegiría el mayor, r" in aria
+    assert "MIN no les cambia el signo" in aria
+
+
+@pytest.mark.parametrize("nombre", sorted(gen.DIAGRAMAS))
+def test_ninguna_figura_usa_la_notacion_retirada(nombre):
+    """plan §5.1 y destinos §E.4: ni ū, μ, G/N, N(s′) ni T± en ninguna figura;
+    los árboles de juguete se nombran «árbol base», «árbol reducido» y
+    «árbol de resultados» (la T queda solo para T(s, a))."""
+    svg = _texto(nombre)
+    for viejo in ("ū", "μ", "G/N", "T±", "N(s′)", "árbol T", "unidades de ū"):
+        assert viejo not in svg, (nombre, viejo)
+    visibles = " ".join(re.findall(r">([^<>]+)<", svg)) + " " + _aria(nombre)
+    assert not re.findall(r"(?<![\w(])T1?(?![\w(])", visibles.replace("A y T sirven", "")), nombre
+
+
+def test_las_figuras_quitadas_no_vuelven():
+    """destinos §E.2: sus conclusiones quedan en juegos.py para las tablas."""
+    for n in ("jue-c3-bandido-corridas", "jue-c3-pago", "jue-c3-eligiendo-x"):
+        assert n not in gen.DIAGRAMAS and not (ASSETS_JUEGOS / f"{n}.svg").exists()
+    reparto = j.reparto_bandido()
+    sin_bono = reparto["mejor_promedio"]
+    assert (sin_bono["n"] - sin_bono["atoradas"], sin_bono["en"]["y"], sin_bono["en"]["z"]) == (
+        34, 5, 1)
+    assert j.tabla_eligiendo_x()["mejor_promedio"][10000] == F(17, 20)
+
+
+def test_las_figuras_del_arbol_base_y_del_reducido_se_nombran():
+    for nombre in FIGURAS_T:
+        aria = _aria(nombre)
+        if nombre.startswith("jue-t1-"):
+            assert "árbol reducido" in aria, nombre
+        elif nombre.startswith(("jue-t-corte", "jue-t-iterativa")):
+            assert "árbol de resultados" in aria, nombre
+        else:
+            assert "árbol base" in aria, nombre
+
+
+@pytest.mark.parametrize("nombre", [n for n in sorted(gen.DIAGRAMAS)
+                                    if n.startswith(("jue-ab-", "jue-alfa-beta-", "jue-t-ab",
+                                                     "jue-t1-ab"))])
+def test_en_alfa_beta_la_operacion_se_llama_poda(nombre):
+    """plan §2.5 y §5.2: «poda» para la operación de alfa-beta; «corte alfa» y
+    «corte beta» solo como nombres. Ningún «corta» en lo visible ni en el alt."""
+    svg = _texto(nombre)
+    visibles = " ".join(re.findall(r">([^<>]+)<", svg)) + " " + _aria(nombre)
+    assert not re.search(r"\bcorta\b", visibles), nombre
+    assert "árbol T" not in visibles

@@ -4177,3 +4177,49 @@ def tabla_hoeffding_epsilon(n=N_HOEFFDING_HOMOLOGACION, epsilones=EPS_HOEFFDING_
     """[(ε, cota en %)] con n muestras en ±1: 0.1 / 0.2 / 0.4 con n = 100 dan
     60.65 % / 13.53 % / 0.0335 %."""
     return [(e, 100 * cota_hoeffding_cola(n, e)) for e in epsilones]
+
+
+# ------------------------------- homologacion (Ola 2): cifras de figuras ---
+
+# El panel B de jue-c3-hoeffding: el margen contra N para dos δ, uno diez
+# veces menor que el otro. Pedir diez veces menos fallo agranda el margen
+# √(ln 200/ln 20) ≈ 1.33 veces: un tercio, para todo N.
+DELTAS_HOEFFDING_HOMOLOGACION = (0.05, 0.005)
+
+
+def margenes_hoeffding(ns, deltas=DELTAS_HOEFFDING_HOMOLOGACION):
+    """{δ: [(N, ε)]} con ε = margen_hoeffding(δ, N) en la escala ±1."""
+    return {d: [(n, margen_hoeffding(d, n)) for n in ns] for d in deltas}
+
+
+def min_volteado(datos=EJEMPLO_MIN, c=None):
+    """El ejercicio final del bono (p, q, r bajo un nodo de MIN), con el bono
+    de cada jugada a los dos lados: {jugada: dict(N, Q, bono, arriba =
+    Q̂ + bono, abajo = Q̂ − bono)}, mas «max» (la que elegiria MAX: el mayor
+    Q̂ + bono) y «min» (la que elige MIN: el menor Q̂ − bono). La c es la
+    misma en los dos lados: MIN no le cambia el signo."""
+    total = sum(n for n, _ in datos.values())
+    filas = {}
+    for k, (n, q) in datos.items():
+        b = bono_ucb(total, n, c)
+        filas[k] = dict(N=n, Q=q, bono=b, arriba=float(q) + b, abajo=float(q) - b)
+    return dict(filas=filas, N_padre=total, c=C_TEORIA if c is None else c,
+                max=max(filas, key=lambda k: filas[k]["arriba"]),
+                min=min(filas, key=lambda k: filas[k]["abajo"]))
+
+
+def mcts_nv(cuentas):
+    """{nodo: (N, V̂)} desde {nodo: (G, N)} de mcts_cuentas, con U = ±1: la
+    suma de los U es 2G − N y V̂ = suma/N, desde MAX (None si N = 0)."""
+    return {n: (s, F(2 * g - s, s) if s else None) for n, (g, s) in cuentas.items()}
+
+
+# El ejercicio final de «Cortar y evaluar» en el arbol de resultados (destinos
+# B 3.1, jue-c3-ej-final-corte): los mismos tres objetivos que tenia en el
+# arbol base.
+# - El empate: EVAL(C) = 60 iguala a I con d = 1; con «>» estricto gana la que
+#   R prueba primero: izq en el orden de la pagina, centro con R al reves.
+EVAL_TPM_EMPATE = {**EVAL_TPM, "C": 60}
+# - Otra EVAL que cambia la jugada: EVAL(I) = 0 (una EVAL que ya sospecha de
+#   la captura ix) hace que d = 1 juegue centro; d = 2 y d = 3 no cambian.
+EVAL_TPM_VARIANTE = {**EVAL_TPM, "I": 0}

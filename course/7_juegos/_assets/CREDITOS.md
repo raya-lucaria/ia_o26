@@ -22,42 +22,39 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-azar-n3.svg` | n3 como nodo de azar: una Negras que elige al azar vale 1/3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-alfa-beta-fijo.svg` | Alfa-beta desde n1 con el orden fijo: 5 estados generados, un corte alfa y n3 con la cota v = +1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-alfa-beta-invertido.svg` | Alfa-beta desde n1 con el orden invertido: 8 estados generados y un corte beta | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-ab-ventana.svg` | La ventana (α, β) como banda en la recta: en un extremo o fuera, corte alfa o corte beta; los dos cortes del árbol T | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-ab-ventana.svg` | La ventana (α, β) como banda en la recta: en un extremo o fuera, corte alfa o corte beta; los dos cortes del árbol base | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-fijo-parte-1.svg` | Alfa-beta desde n1 en orden fijo, parte 1: n2 vale +1 y la raíz toma α = +1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-fijo-parte-2.svg` | Alfa-beta desde n1 en orden fijo, parte 2: corte alfa en n3, que devuelve v = +1, una cota | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-invertido-parte-1.svg` | Alfa-beta desde n1 en orden invertido, parte 1: n13 vale −1 y n3 toma β = −1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-invertido-parte-2.svg` | Alfa-beta desde n1 en orden invertido, parte 2: corte beta en n6 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-ab-invertido-parte-3.svg` | Alfa-beta desde n1 en orden invertido, parte 3: n4, n3 devuelve v = −1, n2 y la raíz v = +1; 8 de 13 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-arbol.svg` | El árbol T, el problema: R de MAX con izq, centro y der; C con C1 y C2; las ocho hojas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-minimax-1.svg` | Minimax en T, paso 1: I devuelve 3 y mejor_jugada = izq (fila 5 de la traza) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-minimax-2.svg` | Minimax en T, paso 2: a media ejecución, pila R›C›C2 con C2 en v = 7 (fila 12) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-minimax-3.svg` | Minimax en T, paso 3: C devuelve 5 y mejor_jugada = centro (fila 15) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-minimax-4.svg` | Minimax en T, paso 4: D devuelve 2 y 2 > 5 es falso; DECIDIR devuelve centro (fila 19) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t1-ab-1.svg` | Alfa-beta en T1, paso 1: I devuelve 3, α = 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t1-ab-2.svg` | Alfa-beta en T1, paso 2: D llega con (3, +∞), v = 2 ≤ α = 3, corte alfa; la hoja 12 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t1-ab-3.svg` | Alfa-beta en T1, paso 3: el final, 6 de 7 nodos, juega izq | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-ab-1.svg` | Alfa-beta en T, paso 1: I devuelve 3, α = 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-ab-2.svg` | Alfa-beta en T, paso 2: C1 devuelve 5; C compara v = 5 con α = 3, el número del rival, y baja su β a 5 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-ab-3.svg` | Alfa-beta en T, paso 3: corte beta en C2, v = 7 ≥ β = 5; la hoja 8 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-ab-4.svg` | Alfa-beta en T, paso 4: corte alfa en D, v = 2 ≤ α = 5; la hoja 12 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-ab-5.svg` | Alfa-beta en T, paso 5: el final, 12 de 14 nodos, juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-ab-pila.svg` | ALFA-BETA a media ejecución en T: la pila R›C›C2 y sus marcos en el instante del corte beta en C2 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-azar.svg` | T con I, C y D como volados parejos: 9/2, 13/2 y 7; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-corte-d1.svg` | T con corte a profundidad 1: EVAL en I, C y D; juega der, la trampa del horizonte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-corte-d2-tramo-1.svg` | T con corte a profundidad 2, al cerrar el tramo 1: I y centro ya devolvieron, mejor_jugada = centro con 6; D todavía por mirar | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-corte-d2.svg` | T con corte a profundidad 2: EVAL en C1 y C2; juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-t-iterativa.svg` | Profundización iterativa en T: d = 1, 2, 3 con la jugada anterior primero; 4, 10 y 11 nodos; en d = 3, I, D y C2 devuelven cotas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-arbol.svg` | El árbol base, el problema: R de MAX con izq, centro y der; C con C1 y C2; las ocho hojas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-1.svg` | Minimax en el árbol base, paso 1: I devuelve 3 y mejor_jugada = izq (fila 5 de la traza) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-2.svg` | Minimax en el árbol base, paso 2: a media ejecución, pila R›C›C2 con C2 en v = 7 (fila 12) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-3.svg` | Minimax en el árbol base, paso 3: C devuelve 5 y mejor_jugada = centro (fila 15) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-minimax-4.svg` | Minimax en el árbol base, paso 4: D devuelve 2 y 2 > 5 es falso; DECIDIR devuelve centro (fila 19) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t1-ab-1.svg` | Alfa-beta en el árbol reducido, paso 1: I devuelve 3, α = 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t1-ab-2.svg` | Alfa-beta en el árbol reducido, paso 2: D llega con (3, +∞), v = 2 ≤ α = 3, corte alfa; la hoja 12 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t1-ab-3.svg` | Alfa-beta en el árbol reducido, paso 3: el final, 6 de 7 nodos, juega izq | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-1.svg` | Alfa-beta en el árbol base, paso 1: I devuelve 3, α = 3 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-2.svg` | Alfa-beta en el árbol base, paso 2: C1 devuelve 5; C compara v = 5 con α = 3, el número del rival, y baja su β a 5 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-3.svg` | Alfa-beta en el árbol base, paso 3: corte beta en C2, v = 7 ≥ β = 5; la hoja 8 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-4.svg` | Alfa-beta en el árbol base, paso 4: corte alfa en D, v = 2 ≤ α = 5; la hoja 12 no se genera | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-5.svg` | Alfa-beta en el árbol base, paso 5: el final, 12 de 14 nodos, juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-ab-pila.svg` | ALFA-BETA a media ejecución en el árbol base: la pila R›C›C2 y sus marcos en el instante del corte beta en C2 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-azar.svg` | El árbol base con I, C y D como volados parejos: 9/2, 13/2 y 7; juega der | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-corte-d1.svg` | El árbol de resultados con corte a profundidad 1 (finales en 100·U): EVAL 60, 20 y 10 en I, C y D; izq parece valer 60 y vale −100: la trampa del horizonte; 4 de 15 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-corte-d2-tramo-1.svg` | El árbol de resultados con corte a profundidad 2, al cerrar el tramo 1: I devolvió −100 y C 10, mejor_jugada = centro con 10; D todavía por mirar | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-corte-d2.svg` | El árbol de resultados con corte a profundidad 2: EVAL 10 y 50 en C1 y C2; izq y der −100, centro 10; juega centro; 11 de 15 nodos | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-t-iterativa.svg` | Profundización iterativa en el árbol de resultados (alfa-beta con corte, la jugada anterior primero): izq con d = 1, centro desde d = 2; 4, 9 y 12 nodos, 25 en total; las cotas marcadas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-1.svg` | Minimax con corte a profundidad 1 en la posición de la clase 3: la captura parece la mejor | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-2.svg` | Minimax con corte a profundidad 2: las respuestas de Negras y el cambio de decisión | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-corte-prof-3.svg` | Minimax con corte a profundidad 3, solo la rama d2-d3: tras a4-a3 o b4-b3, d3-d4 llega a la fila 4 y la rama vale 100 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-horizonte.svg` | El efecto horizonte: la recaptura queda detrás del corte | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-profundizacion.svg` | La profundización iterativa en el tiempo, con la jugada lista tras cada búsqueda | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-mcts-pasos.svg` | Una vuelta de MCTS: selección, expansión, simulación y retropropagación | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-hoeffding.svg` | Frecuencia observada de ū(s′) ≤ μ(s′) − ε contra N(s′), simulada con semilla fija, y la cota de Hoeffding; eje y logarítmico | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-bono.svg` | El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para tres N(s), y la curva de c = 1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-pago.svg` | Pago promedio por vuelta de las primeras N(s) vueltas contra N(s), promedio de 40 corridas, con cuatro reglas (siempre el mejor promedio, a veces al azar, UCB con c = 2√2 y c = 1) y la referencia μ(x) = 0.6; eje x logarítmico | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-eligiendo-x.svg` | Porcentaje de las 40 corridas que eligen la mejor jugada en la vuelta N(s) (ventana de 10 vueltas, no acumulado) contra N(s), con las mismas cuatro reglas; eje x logarítmico | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
-| `jue-c3-bandido-corridas.svg` | Fracción final en la mejor jugada de cada una de las 40 corridas de 10 000 vueltas, una fila por regla, con el promedio marcado y las corridas atoradas contadas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-mcts-pasos.svg` | Una vuelta de UCT (c = 1) en cuatro paneles, cada nodo con N y V̂ desde MAX: selección, expansión, simulación (U = +1) y retropropagación; la raíz pasa de N 4, V̂ 0 a N 5, V̂ +0.2 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-hoeffding.svg` | Hoeffding en la escala ±1 en dos paneles: la cota e^(−N·ε²/2) contra ε con N = 100 (60.65 %, 13.53 %, 0.0335 % en ε = 0.1, 0.2, 0.4) y el margen √(2·ln(1/δ)/N) contra N para δ = 0.05 y 0.005 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-bono.svg` | El bono 2√2·√(ln N(s)/N(s,a)) contra N(s,a) para tres N(s), en la escala de U, y la curva de c = 1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-t-pm-arbol.svg` | El árbol de resultados, el problema de la radiografía: la forma del árbol base con finales en U (+1, 0, −1), tres hojas en D y la captura ix marcada; solo jugadas y finales, sin EVAL | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-minimax.svg` | Radiografía de minimax en el árbol de resultados: genera los 15 nodos, el V de cada uno y juega centro | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-rx-alfa-beta.svg` | Radiografía de alfa-beta en el árbol de resultados, orden dado: 12 nodos, c2b, d2 y d3 tachados por las podas β y α, cotas ≥ +1 y ≤ −1 | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
@@ -84,3 +81,4 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-rx-flujo-mmmc.svg` | Diagrama de flujo de la actualización minimax: partida uniforme hasta un final, guarda lo nuevo, V̂(z) = U(z), sube con máximo y mínimo | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-refutacion-tres.svg` | La refutación descubierta tarde en tres paneles con el mismo eje: promedio (10 → 8.67, límite −10/3) y actualización minimax (10 → −30) sobre una secuencia impuesta, y una corrida real de UCT (c = 1, semilla 0, 60 vueltas, pagos ÷30) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-tres-mc.svg` | Los tres Monte Carlo en el árbol de resultados por jugada de la raíz: V y Q_azar exactos; Monte Carlo plano, actualización minimax y UCT con 40 partidas o vueltas (semilla 0) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-c3-min-volteado.svg` | MIN volteado: p, q y r (Q̂ −0.2, +0.25, +0.5; N(s,a) 30, 16, 4; N(s) = 50; c = 2√2; bonos 1.02, 1.40, 2.80) con el bigote del bono a la derecha (si eligiera MAX) y a la izquierda (elige MIN) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
