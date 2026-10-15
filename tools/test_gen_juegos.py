@@ -10,6 +10,7 @@ comiteado a su generador es correr el generador y ver `git status` limpio.
 """
 import re
 from collections import Counter
+from fractions import Fraction as F
 import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape
 
@@ -1020,7 +1021,8 @@ def test_la_radiografia_dibuja_los_numeros_de_juegos():
     jp, sumas = j.mc_plano_tpm(5, j.SEMILLA_TPM)
     r = _renglones("jue-c3-rx-mc-plano")
     assert "izq −3, centro −2, der +3." in r and jp == "der"
-    assert r.count("N 5") == 3 and {"ū −0.6", "ū −0.4", "ū +0.6"} <= set(r)
+    assert r.count("N 5") == 3 and {"Q̂ −0.6", "Q̂ −0.4", "Q̂ +0.6"} <= set(r)
+    assert not [x for x in r if "ū" in x or "T±" in x]
     sims = j.simulaciones_mc_plano_tpm(5, j.SEMILLA_TPM)
     assert sum(int(x[1:]) for x in r if re.fullmatch(r"×\d+", x)) == len(sims) == 15
 
@@ -1091,8 +1093,9 @@ def test_el_flujo_de_uct_es_un_ciclo_de_cuatro_fases():
     for fase in ("1 · Selección", "2 · Expansión", "3 · Simulación", "4 · Retropropagación"):
         assert fase in r
     assert "el tiempo?" in r and "no: otra vuelta" in r and "de la raíz más visitada" in r
-    # ū es un promedio: no se le «suma» U
-    assert "actualiza su promedio" in r and not [x for x in r if "U a ū" in x]
+    # Q̂ es un promedio: no se le «suma» U
+    assert "actualiza su promedio" in r and "Q̂ con la U" in r
+    assert not [x for x in r if "U a Q̂" in x or "ū" in x]
 
 
 def test_las_figuras_del_arbol_grande_no_llevan_cifras():
@@ -1117,21 +1120,27 @@ def test_el_valor_de_una_jugada_vive_en_el_hijo():
         assert clave in r, clave
     # La leyenda: que numero guarda cada algoritmo, en el orden de la pagina.
     for alg, num in [("minimax", "V"), ("alfa-beta", "V o cota"), ("corte", "valor con corte"),
-                     ("Monte Carlo plano", "ū estima μ"), ("UCT", "ū estima V")]:
+                     ("UCT", "Q̂ estima V")]:
         i = r.index(alg)
         assert r[i + 1] == num, alg
+    # el de Monte Carlo plano lleva Q_azar con subindice (notacion §5.1, sin ū ni μ)
+    assert ("<tspan>Q̂ estima </tspan><tspan>Q</tspan><tspan dy=\"4.5\" font-size=\"10.8\">"
+            "azar</tspan>") in _texto("jue-c3-rx-estado-y-jugada")
+    assert r.index("Monte Carlo plano") < r.index("UCT")
+    assert "ū" not in _texto("jue-c3-rx-estado-y-jugada") and "μ" not in _texto(
+        "jue-c3-rx-estado-y-jugada")
     assert "EVAL" not in _texto("jue-c3-rx-estado-y-jugada")
     assert "Q(s, a) = V(T(s, a))" in _aria("jue-c3-rx-estado-y-jugada")
 
 
 def test_la_mezcla_pasa_de_mitad_y_mitad_a_casi_todas_a_menos_uno():
     r = _renglones("jue-c3-mcg-mezcla")
-    for clave in ("Pocas vueltas", "Muchas vueltas", "ū(A) ≈ 0", "ū(A) → −1", "+1", "−1",
+    for clave in ("Pocas vueltas", "Muchas vueltas", "Q̂(A) ≈ 0", "Q̂(A) → −1", "+1", "−1",
                   "jugada A", "MIN", "Proporciones ilustrativas:"):
         assert clave in r, clave
     assert "≈ mitad" in r and "casi todas" in r and "a −1" in r
-    assert r.index("Pocas vueltas") < r.index("ū(A) ≈ 0") < r.index("Muchas vueltas") \
-        < r.index("ū(A) → −1")
+    assert r.index("Pocas vueltas") < r.index("Q̂(A) ≈ 0") < r.index("Muchas vueltas") \
+        < r.index("Q̂(A) → −1")
     # El grosor dice las visitas: parejo con pocas vueltas, la rama a −1
     # mucho mas gruesa con muchas.
     grosores = [float(g) for g in re.findall(r'stroke-width="([\d.]+)" stroke-linecap="round"',
@@ -1242,3 +1251,131 @@ def test_sin_la_capa_animada_la_figura_es_la_estatica(nombre):
     assert "prefers-reduced-motion: reduce" in capas[0] and 'aria-hidden="true"' in capas[0]
     # la capa va detras del arbol: antes del primer nodo dibujado
     assert svg.index(capas[0]) < svg.index("R · MAX")
+
+
+# ------------------------------ homologacion (Ola 1): figuras nuevas ---
+
+HOMOLOGACION_300 = ["jue-rx-expectiminimax", "jue-rx-flujo-expectiminimax", "jue-rx-mmmc",
+                    "jue-rx-flujo-mmmc", "jue-c3-refutacion-tres", "jue-c3-tres-mc"]
+
+
+def test_la_lista_cerrada_de_300_es_la_del_generador():
+    assert list(gen.HOMOLOGACION_300) == HOMOLOGACION_300
+    assert gen.ANCHO == 600 and gen.ANCHO_HOMOLOGACION == 300
+
+
+@pytest.mark.parametrize("nombre", HOMOLOGACION_300)
+def test_las_figuras_nuevas_miden_300_y_hablan_espanol(nombre):
+    """destinos §E.1: las nuevas a 300 px exactos (ANCHO = 600 no se toca),
+    aria-label en español y notación §5.1: nada de ū, μ, G/N ni T±."""
+    assert nombre in gen.DIAGRAMAS and (gen.ASSETS / f"{nombre}.svg").exists()
+    svg = _texto(nombre)
+    etiqueta = re.match(r"<svg\b[^>]*>", svg).group()
+    assert re.search(r'\bwidth="300"', etiqueta) and 'viewBox="0 0 300 ' in etiqueta
+    aria = _aria(nombre)
+    assert len(aria) > 150 and re.search(r"\b(el|la|de|en|y)\b", aria)
+    for viejo in ("ū", "μ", "G/N", "T±", "N(s′)"):
+        assert viejo not in svg, (nombre, viejo)
+    tams = [float(t) for t in re.findall(r'<text [^>]*font-size="([\d.]+)"', svg)]
+    assert min(tams) >= 13
+
+
+def test_expectiminimax_dibuja_el_dado_en_d():
+    jugada, valores = j.expectiminimax_tpm()
+    assert jugada == "der" and valores["D"] == F(1, 3) == valores["R"]
+    r = _renglones("jue-rx-expectiminimax")
+    assert "otro juego: dado en D" in r and "AZAR" in r and r.count("⅓") == 3
+    assert "juega der" in r and "+1/3" in r and "Q en la raíz: izq −1," in r
+    assert f"jugaría {j.minimax_tpm()[0]}." in r
+    for n in ("I", "C", "C1", "C2"):
+        assert gen._u_txt(valores[n]) in r
+    # el nodo de AZAR: esquinas redondas (rx 22) con el color del azar
+    assert re.search(rf'rx="22" fill="[^"]+" stroke="{gen.COLOR_AZAR}"', _texto("jue-rx-expectiminimax"))
+    assert "juega der" in _aria("jue-rx-expectiminimax")
+
+
+def test_el_flujo_de_expectiminimax_es_el_de_minimax_con_la_rama_de_azar():
+    f = gen.FLUJO_EXPECTIMINIMAX
+    r = _renglones("jue-rx-flujo-expectiminimax")
+    for p in f["pasos"]:
+        for x in p.get("caja", p.get("rombo")):
+            assert x in r, x
+    assert "¿AZAR?" in r and "Pr(a|s)·w" in r and "vuelve al padre" in r
+    assert f["pasos"][-1].get("fin") and [p.get("destino") for p in f["pasos"]].count(True) == 1
+    # la rama de azar entra en «¿Quedan hijos?»
+    azar = next(p for p in f["pasos"] if p.get("rombo") == ["¿AZAR?"])
+    assert f["pasos"][azar["une"]]["rombo"] == ["¿Quedan", "hijos?"]
+
+
+def test_la_actualizacion_minimax_dibuja_su_corrida():
+    m = j.mc_minimax(j.ARBOL_TPM, j.ITERACIONES_MMMC_TPM, j.SEMILLA_TPM)
+    r = _renglones("jue-rx-mmmc")
+    ids = j.ids_tpm()
+    assert f"{j.ITERACIONES_MMMC_TPM} partidas, semilla {j.SEMILLA_TPM}" in r
+    jugada = j.JUGADAS_RAIZ[m["jugada"]]
+    assert f"juega {jugada}" in r and jugada == "centro"
+    qs = ", ".join(f"{a} {'?' if q is None else gen._u_txt(q)}"
+                   for a, q in zip(j.JUGADAS_RAIZ, m["Q"]))
+    assert qs + "." in r and "izq ?" in qs
+    exactos = [c for c in m["V"] if c and m["exacto"][c] and isinstance(j.nodo_en(j.ARBOL_TPM, c), tuple)]
+    assert r.count("exacto") == len(exactos) + (1 if m["exacto"][()] else 0) >= 2
+    for c in m["V"]:
+        if c and isinstance(j.nodo_en(j.ARBOL_TPM, c), tuple):
+            assert f"V̂ {gen._u_txt(m['V'][c])}" in r, ids[c]
+    # una «?» por jugada sin visitar cuyo padre ya esta guardado
+    frontera = [c for c in ids if c and c not in m["V"] and c[:-1] in m["V"]]
+    assert r.count("?") == len(frontera) and len(frontera) == 2
+    assert "desconocida" in _aria("jue-rx-mmmc")
+
+
+def test_el_flujo_de_la_actualizacion_minimax_sube_max_y_min():
+    r = _renglones("jue-rx-flujo-mmmc")
+    for x in ("V̂(z) = U(z), exacto", "Q̂(s,a) = V̂(T(s,a));", "V̂(s): máximo en MAX,",
+              "mínimo en MIN, solo", "no: otra partida", "de la raíz con mayor Q̂",
+              "desconocida, nunca cero."):
+        assert x in r, x
+    assert not [x for x in r if "promedi" in x]
+
+
+def test_la_refutacion_dibuja_los_tres_operadores():
+    o = j.operadores_ante_la_refutacion()
+    u = j.uct_refutacion()
+    s = gen.series_refutacion()
+    assert (s["promedio"]["A"][-2], s["promedio"]["A"][-1]) == (o["promedio_antes"],
+                                                                o["promedio_despues"])
+    assert (s["minimax"]["A"][-2], s["minimax"]["A"][-1]) == (o["minimax_antes"],
+                                                              o["minimax_despues"])
+    assert s["uct"]["descubre"] == u["descubre"] and s["uct"]["jugada"] == u["mas_visitada"][-1]
+    assert all(x == s["uct"]["jugada"] for x in u["mas_visitada"][s["uct"]["desde"] - 1:])
+    assert u["mas_visitada"][s["uct"]["desde"] - 2] != s["uct"]["jugada"]
+    r = _renglones("jue-c3-refutacion-tres")
+    assert "Q̂(A) baja de 10 a 8.67:" in r and "sigue en A. Entrega A." in r
+    assert "Q̂(A) salta de 10 a −30:" in r and "cambia. Entrega B." in r
+    assert f"Entrega {u['mas_visitada'][-1]}, la más visitada," in r
+    assert f"c = {j.C_REFUTACION}, semilla {j.SEMILLA_REFUTACION}, {j.VUELTAS_REFUTACION} vueltas;" in r
+    assert f"corre con los pagos ÷{j.ESCALA_REFUTACION}" in r
+    assert (f"<tspan dy=\"-4.2\">(A) = {gen._u_txt(j.q_azar_arbol(j.ARBOL_REFUTACION)[0])}"
+            "</tspan>") in _texto("jue-c3-refutacion-tres")
+    assert "−10/3" in _aria("jue-c3-refutacion-tres")
+    # tres paneles, cada uno con Q̂(A) y Q̂(B)
+    assert _texto("jue-c3-refutacion-tres").count("<polyline") == 6
+
+
+def test_los_tres_monte_carlo_dibujan_sus_limites():
+    filas = gen.filas_tres_mc()
+    assert [f[0] for f in filas] == ["V", "Q_azar", "plano", "minimax", "uct"]
+    assert filas[0][1] == j.q_minimax_arbol(j.ARBOL_TPM) == [-1, 0, -1]
+    assert filas[1][1] == j.q_azar_arbol(j.ARBOL_TPM) == [0, F(-1, 4), F(1, 3)]
+    u = j.uct_tpm(1, j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM)
+    assert filas[4][2] == [u["N"][(a,)] for a in range(3)] == [5, 26, 9]
+    assert filas[3][1] == [-1, 0, -1]          # la actualizacion minimax ya llego a V
+    r = _renglones("jue-c3-tres-mc")
+    for clave, vals, ns, i in filas:
+        fmt = gen._u_txt if clave in ("V", "Q_azar") else gen._dec_txt
+        for q in vals:
+            assert fmt(q) in r, (clave, q)
+        for n in ns or ():
+            assert f"N {n}" in r
+    assert "tiende a V" in r and "juego óptimo" in r and "los dos al azar" in r
+    aria = _aria("jue-c3-tres-mc")
+    assert "entrega izq" in aria and "entrega centro" in aria

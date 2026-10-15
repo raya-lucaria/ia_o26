@@ -3922,6 +3922,12 @@ ESCALA_REFUTACION = 30        # UCT corre con los pagos entre 30: rango [−1, 1
 C_REFUTACION = 1              # la c de la corrida de UCT (escala ±1)
 SEMILLA_REFUTACION = 0
 VUELTAS_REFUTACION = 60       # vueltas de la corrida de la figura
+# La corrida de la figura de la actualizacion minimax en el arbol de
+# resultados (semilla SEMILLA_TPM): con 10 partidas, izq aun no se visita (su
+# Q̂ es desconocida), D y C2 ya son exactos y C sigue provisional; entrega
+# centro. Los tres Monte Carlo se comparan con el presupuesto de la pagina,
+# VUELTAS_PAGINA_TPM partidas o vueltas cada uno.
+ITERACIONES_MMMC_TPM = 10
 # La secuencia impuesta para comparar operadores (no es una corrida): B una
 # vez, luego 29 partidas por A que terminan en +10 (p y q alternadas) y, al
 # final, la que descubre r, x, −30.

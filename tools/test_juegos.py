@@ -3640,3 +3640,15 @@ def test_homologacion_hoeffding_y_c_de_ucb1():
     for n_padre, n in ((100, 10), (1000, 30)):
         assert _m.isclose(j.margen_hoeffding(n_padre ** -4, n),
                           j.c_ucb1() * _m.sqrt(_m.log(n_padre) / n))
+
+
+def test_homologacion_la_corrida_de_la_figura_de_mmmc_muestra_lo_provisional():
+    """La figura jue-rx-mmmc usa j.ITERACIONES_MMMC_TPM partidas: tienen que
+    quedar a la vez una jugada sin visitar (izq), nodos exactos (D, C2) y uno
+    provisional (C), y entregar centro con la mayor Q̂ disponible."""
+    m = j.mc_minimax(j.ARBOL_TPM, j.ITERACIONES_MMMC_TPM, j.SEMILLA_TPM)
+    assert m["Q"] == [None, 0, -1] and j.JUGADAS_RAIZ[m["jugada"]] == "centro"
+    assert m["exacto"][(2,)] and m["exacto"][(1, 1)]
+    assert not m["exacto"][(1,)] and not m["exacto"][()]
+    # con una partida menos o mas el retrato cambia: la cifra es deliberada
+    assert j.mc_minimax(j.ARBOL_TPM, j.ITERACIONES_MMMC_TPM + 2, j.SEMILLA_TPM)["exacto"][(1,)]
