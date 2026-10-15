@@ -348,7 +348,7 @@ Usa el nodo del ejemplo. Trata a cada hijo como una jugada del bandido: no impor
 
 ---
 
-## 5 · ¿Cuál $c$?
+## 5 · ¿Qué constante c usar?
 
 **Piensa: si $2\sqrt2$ sale de la cuenta de UCB1, ¿es la que mejor juega?**
 
