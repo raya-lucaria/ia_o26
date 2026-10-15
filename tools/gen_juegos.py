@@ -2246,8 +2246,8 @@ def jue_t_iterativa():
     for d, orden, t in corridas:
         cortes = ", ".join(f"corte {tipo} en {n}" for tipo, n, *_ in t["cortes"]) or "ninguna poda"
         cotas = [n for n, e in t["filas"][-1]["estado"].items() if e.get("cota")]
-        cotas_ = (f"; {_y(cotas)} {'devuelven' if len(cotas) > 1 else 'devuelve'} "
-                  "una cota, no su valor" if cotas else "")
+        cotas_ = (f"; en {_y(cotas)}, la ventana solo certifica un techo o un piso"
+                  if cotas else "")
         partes.append(f"d = {d}: la raíz mira {', '.join(orden)}; {t['generados']} nodos; "
                       f"{cortes}{cotas_}; deja lista {t['jugada']} ({f(t['valor'])})")
     desc = ("Tres búsquedas de alfa-beta con corte sobre el árbol de resultados, con sus finales "
