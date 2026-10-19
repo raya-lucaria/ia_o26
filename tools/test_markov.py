@@ -530,6 +530,18 @@ def test_p3_el_teorema_de_recuperar_trae_su_condicion():
     assert r"N(s)\to\infty" in m_teo.group(1)
 
 
+def test_las_dos_afirmaciones_que_sostienen_la_clase_siguen_en_su_lugar():
+    """Dos errores sembrados en la revisión pasaron toda la suite: «una
+    columna de P también suma 1» en la definición de la matriz y el error
+    estándar dividido entre n en vez de raíz de n. Las cifras estaban bien;
+    lo que cambió fue la afirmación. Esta prueba lee las dos."""
+    texto = _pagina("2_la_cadena_en_general.md")
+    assert "una columna no es, en general, una distribución" in texto
+    assert "también es una distribución" not in texto
+    texto = _pagina(P4)
+    assert r"\text{error estándar}=\sqrt{\frac{p(1-p)}{n}}" in texto
+
+
 def test_p5_un_contexto_nunca_visto_usa_la_fila_uniforme():
     tabla = {"a": [0.0, 1.0]}
     rng = random.Random(1)

@@ -756,7 +756,7 @@ En la probabilidad del destino $s_j$, ¿qué índice de $P$ debe quedar fijo y c
 ¿Tu propuesta reproduce la fórmula escalar del paso siguiente? ¿Al sumar todas sus entradas recuperas uno?
 :::
 
-::: answer {#mkv-c1-resp-convencion-columna of="mkv-c1-ej-convencion-columna" title="Respuesta · Trasponer el producto completo"}
+::: answer {#mkv-c1-resp-convencion-columna of="mkv-c1-ej-convencion-columna" title="Respuesta · Orientar el producto"}
 **1. Diagnostica.** El producto existe:
 
 $$
