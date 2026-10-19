@@ -47,8 +47,9 @@ Ve primero el repaso y después la historia. Reserva el tercer video para el pun
 > aquí se escribe $\mu$: el video dice $\pi P=\pi$ y nosotros, **$\mu P=\mu$**.
 
 **Páralos cuando reconozcas algo de la clase.** Si un número de un video no
-coincide con el de una página, quédate con el de la página: los nuestros
-salen del texto ruso como lo contó Markov y de nuestro *Quijote*.
+coincide con el de una página, revisa primero qué datos, evento y
+normalización usa cada uno. Los nuestros salen del texto ruso como lo contó
+Markov (con su registro de fuentes) y de nuestro *Quijote*.
 
 ### Con qué llegas a clase
 

@@ -19,8 +19,8 @@ programa que escribe texto «a su estilo».
 > [!TIP]
 > **Míralo correr: el generador de texto.** Escribe texto del *Quijote*
 > símbolo por símbolo, con memoria 0, 1, 2 o 3. Para cada símbolo muestra
-> el contexto, su fila de probabilidades, el uniforme $u$ sorteado y dónde
-> cae en la suma acumulada.
+> qué letras anteriores consulta, qué continuaciones puede elegir y cómo
+> hace el sorteo.
 >
 > **▶ [Abre el generador](../_assets/generador_texto.html#h=2&semilla=2034&largo=200&paso=148)**. La página 6 lo explica.
 

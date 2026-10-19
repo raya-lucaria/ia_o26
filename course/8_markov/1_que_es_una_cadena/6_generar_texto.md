@@ -492,8 +492,8 @@ $$
 
 ### Medir la escasez
 
-La @mkv-c1-ceros ya midió la escasez entre la primera mitad y la segunda del corpus.
-Al generar, interesa qué ausencia activa la fila uniforme.
+La @mkv-c1-ceros cuenta pares de la segunda mitad del corpus no vistos en la primera.
+GENERAR usa la uniforme solo si ${N(c)=0}$; si ${N(c)>0}$ y ${N(c,z)=0}$, conserva ${\widehat p(z\mid c)=0}$. Las barras no miden cuántas veces se usa la uniforme.
 
 ::: figure {#mkv-c1-ceros-generar title="Lo que nunca se vio, por memoria"}
 ![Barras horizontales por memoria, con la fracción de transiciones de la segunda mitad del corpus nunca vistas en la primera. Memoria 0: 0 %, 0 de 998 564, contextos vistos 1 de 1. Memoria 1: 0.003 %, 29 de 998 563, contextos vistos 27 de 28. Memoria 2: 0.072 %, 718 de 998 562, contextos vistos 379 de 784. Memoria 3: 0.570 %, 5 694 de 998 561, contextos vistos 3 328 de 21 952. Las barras están a escala de la mayor (memoria 3). Al pie: solo diagnostica escasez, no elige la memoria](../_assets/mkv-c1-ceros.svg)

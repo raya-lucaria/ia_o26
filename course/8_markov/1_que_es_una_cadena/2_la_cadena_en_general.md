@@ -52,7 +52,7 @@ P_{ij}&\ge0,\qquad
 \end{aligned}
 $$
 
-Para una transición regida por $P$:
+$P(s_j\mid s_i)$ es un número del modelo. Coincide con una probabilidad de eventos cuando estar en $s_i$ es posible:
 
 $$
 \begin{aligned}
@@ -191,8 +191,8 @@ $$
 $$
 
 - **Qué es:** una sucesión de estados aleatorios descrita por estados posibles, distribución inicial y matriz de transición.
-- **Cómo se calcula:** la primera igualdad elimina la historia anterior al presente; es la propiedad de Markov.
-- **Qué significa:** la segunda igualdad usa la misma $P$ en todo paso; eso es homogeneidad.
+- **Markov:** la primera igualdad elimina la historia anterior al presente.
+- **Homogeneidad:** la segunda igualdad usa la misma $P$ en todo paso.
 - **Qué no es:** «sin memoria» significa independencia condicional del pasado dado el presente (@mkv-c1-independencia-condicional), no independencia entre estados consecutivos.
 :::
 
@@ -217,7 +217,7 @@ Dos historias de probabilidad positiva terminan en $s_2$, en el mismo paso. ¿Pu
 :::
 
 ::: hint {#mkv-c1-pista-historias-mismo-final of="mkv-c1-ej-historias-mismo-final" title="¿Qué conserva la condición?"}
-Después de aplicar la propiedad de Markov, ¿qué información de cada historia permanece?
+¿Qué tienen en común las dos historias en el último paso?
 :::
 
 ::: answer {#mkv-c1-resp-historias-mismo-final of="mkv-c1-ej-historias-mismo-final"}
@@ -331,7 +331,7 @@ Aquí $P^t$ multiplica $P$ por sí misma $t$ veces; $P^0=I_k$, la identidad de t
 - **Producto:** la entrada $j$ combina la fila $\mu_t$ con la columna $j$ de $P$.
 
 ::: proof {#mkv-c1-dem-predecir of="mkv-c1-teo-predecir"}
-**Probabilidad total.** Los eventos $\{S_t=s_i\}$ forman una partición (@mkv-c1-teo-total). Conserva primero solo los de probabilidad positiva:
+**Probabilidad total.** Los eventos ${\{S_t=s_i\}}$ forman una partición (@mkv-c1-teo-total). Conserva primero solo los de probabilidad positiva:
 
 $$
 J_t=\{i:\mu_t(s_i)>0\}.
@@ -583,7 +583,7 @@ $$
 - **Una llegada:** la distribución reúne todos los caminos que terminan en $s_3$.
 
 ::: exercise {#mkv-c1-ej-trayectoria-y-marginal title="Compara el camino con la llegada"}
-¿Puede la probabilidad del camino $s_1\to s_2\to s_3$ superar $\mu_2(s_3)$, con inicio fijo en $s_1$? Justifica.
+¿Puede la probabilidad del camino ${s_1\to s_2\to s_3}$ superar $\mu_2(s_3)$, con inicio fijo en $s_1$? Justifica.
 :::
 
 ::: hint {#mkv-c1-pista-trayectoria-y-marginal of="mkv-c1-ej-trayectoria-y-marginal" title="¿Qué signos tienen las otras contribuciones?"}
