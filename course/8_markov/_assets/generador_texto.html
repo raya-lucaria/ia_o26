@@ -132,7 +132,7 @@
 </head>
 <body>
 <div class="envoltura">
-  <h1>Generador de texto con memoria <i>h</i></h1>
+  <h1>Generador de texto con memoria&nbsp;<i>h</i></h1>
   <p class="sub">Los conteos son los del <i>Quijote</i> completo (27 letras y el espacio,
   |Σ| = 28). Con memoria <b><i>h</i></b>, el contexto son los <i>h</i> símbolos anteriores;
   cada paso sortea un <b><i>u</i></b> en [0, 1) y MUESTREAR-FILA elige el primer símbolo
@@ -182,11 +182,11 @@
 
   <div class="panel">
     <p class="nota" style="margin:0"><b>Qué probar.</b> Con memoria 0 sale una sopa de letras
-    con la frecuencia de cada símbolo en el libro; con 1 ya alternan vocales y consonantes; con
-    2 y 3 aparecen palabras cortas que existen («que», «de», «el»). La semilla fija la suerte: con las de la página
+    con la frecuencia de cada símbolo en el libro; con 1 alternan vocales y consonantes y ya salen
+    palabras cortas que existen («de», «lo», «que»); con 2 y 3, sílabas y palabras más largas. La semilla fija la suerte: con las de la página
     (memoria 0: <b>2032</b>, 1: <b>2033</b>, 2: <b>2034</b>, 3: <b>2035</b>) y largo 200,
     el texto es el mismo que imprime la página, porque este generador y
-    <code>tools/markov.py</code> sortean igual. Si se llegara a un contexto nunca visto, la
+    el Python de la página sortean igual. Si se llegara a un contexto nunca visto, la
     fila sería la uniforme, 1/28 por símbolo (Laplace con conteos 0), sin reiniciar, y aquí
     se marcaría. Con el libro completo no pasa con ninguna memoria de 0 a 3: todo contexto
     al que se llega aparece en el libro con un símbolo después.</p>
@@ -385,12 +385,12 @@ function autoprueba(){
   const n = (DATOS.autoprueba || []).length;
   if (!n || malas.length){
     caja.className = "autoprueba mal";
-    caja.textContent = "autoprueba: FALLA — este generador ya no escribe lo mismo que tools/markov.py. " +
+    caja.textContent = "autoprueba: FALLA — este generador ya no escribe lo mismo que la página. " +
       (n ? malas.join(" · ") : "No hay textos de referencia incrustados.");
   } else {
     caja.className = "autoprueba ok";
     caja.innerHTML = `autoprueba: <b>ok</b> — con ${n} semillas de la página y ${DATOS.autoprueba[0].largo} ` +
-      `símbolos, este generador escribe lo mismo que <code>tools/markov.py</code>.`;
+      `símbolos, este generador escribe lo mismo que la página.`;
   }
 }
 

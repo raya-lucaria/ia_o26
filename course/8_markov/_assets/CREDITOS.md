@@ -24,4 +24,4 @@ captura; entonces se vuelve a tomar.
 | `mkv-c1-recuperar-p.svg` | El error de la matriz estimada contra la longitud de la trayectoria, en réplicas de una matriz conocida | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c1-ceros.svg` | La fracción de transiciones de prueba nunca vistas al contar, por memoria 0 a 3 | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c1-rachas.svg` | Las rachas de consonantes del corpus contra lo que dan, simuladas, una cadena y letras independientes | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
-| `mkv-c1-generador.png` | Vista previa del generador de texto con memoria 2, semilla 2034, a 148 de 198 símbolos: contexto «ce», sale «s» con u = 0.7149 | Capturado de `generador_texto.html` con `tools/gen_vista_generador.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-generador.png` | Vista previa del generador de texto con memoria 2, semilla 2034, en el símbolo 150 de 200: contexto «ce», sale «s» con u = 0.7149 | Capturado de `generador_texto.html` con `tools/gen_vista_generador.py` | Propio, CC BY-SA 4.0 |

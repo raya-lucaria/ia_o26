@@ -4,7 +4,7 @@ title: Cadenas de Markov
 nav_title: Markov
 summary: "Un modelo de qué sigue que solo mira el estado actual: qué es una cadena de Markov, cómo se ajusta contando en un texto, cómo predice y cómo genera."
 status: ready
-estimated_time: 160m
+estimated_time: 167m
 tags: [markov, probabilidad, cadenas]
 prerequisites: [juegos]
 ---
@@ -31,7 +31,8 @@ predice, se simula y se genera.
 
 Y es una de las ideas más viejas para estudiar el lenguaje con números. En
 1913, Andréi Markov contó a mano vocales y consonantes en un poema ruso.
-Quería mostrar que cada letra depende de la anterior. En 1948, Claude
+Midió cuánto depende la clase de cada letra, vocal o consonante, de la
+anterior. En 1948, Claude
 Shannon usó la misma idea para escribir texto «parecido al inglés».
 
 ## El hilo de la unidad
@@ -46,14 +47,14 @@ $k$ estados y cualquier alfabeto. Y se corre en el libro completo.
 ## Las clases
 
 ::: table {#mkv-clases title="Las clases de la unidad"}
-| Sección | Qué cambia | Qué trabaja | Minutos |
+| Clase | Qué cambia | Qué trabaja | Minutos |
 |---|---|---|---:|
-| 1 | La cadena se ve | Probabilidad que se necesita, el problema de Markov, ajustar contando, predecir y generar texto | 160m |
+| 1 | La cadena se ve en los datos: se define, se ajusta, predice y genera | Probabilidad que se necesita, el problema de Markov, ajustar contando, predecir y generar texto | 167m |
 :::
 
 - [[markov-que-es-una-cadena|Clase 1 · Qué es una cadena]]
 
-El recorrido de lectura suma **2 horas y 40 minutos**.
+El recorrido de lectura suma **2 horas y 47 minutos**.
 
 Y una hoja de consulta, aparte del recorrido:
 

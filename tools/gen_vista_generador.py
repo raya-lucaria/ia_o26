@@ -38,7 +38,9 @@ from unidades import ASSETS_MARKOV
 RAIZ = Path(__file__).resolve().parent.parent
 HTML = ASSETS_MARKOV / "generador_texto.html"
 HUELLA = RAIZ / "tools/vista_generador.json"
-ANCHO, ALTO = 1280, 900
+# 600 px y no 1280: la figura se ve al ancho de la columna de texto (unos 700 px
+# a 1280 y 358 a 390); tomada a 1280 su texto quedaba en 5 o 6 px.
+ANCHO, ALTO = 600, 1000
 
 # (archivo, fragmento). Memoria 2 con la semilla de la página, a media
 # generación (148 de 198 símbolos): el texto ya tiene palabras, y en el paso
@@ -97,11 +99,17 @@ def capturar():
             sys.exit(f"la autoprueba no dice ok: {autoprueba!r} {errores}")
         print(autoprueba)
         # hasta el borde inferior de los dos paneles de la reja, con margen
-        fondo = pagina.evaluate(
-            "Math.max(...[...document.querySelectorAll('.reja .panel')]"
-            ".map(e => e.getBoundingClientRect().bottom))")
-        alto = min(ALTO, int(fondo) + 10)
-        png = pagina.screenshot(clip={"x": 0, "y": 0, "width": ANCHO, "height": alto})
+        # desde el borde superior de la reja (el texto y el paso), sin los
+        # controles: es lo que la figura tiene que dejar leer
+        arriba, fondo = pagina.evaluate(
+            "[Math.min(...[...document.querySelectorAll('.reja .panel')]"
+            ".map(e => e.getBoundingClientRect().top + window.scrollY)),"
+            " Math.max(...[...document.querySelectorAll('.reja .panel')]"
+            ".map(e => e.getBoundingClientRect().bottom + window.scrollY))]")
+        arriba = max(0, int(arriba) - 10)
+        alto = min(ALTO, int(fondo) + 10 - arriba)
+        png = pagina.screenshot(clip={"x": 0, "y": arriba, "width": ANCHO, "height": alto},
+                                full_page=True)
         navegador.close()
     img = Image.open(BytesIO(png)).convert("RGB").quantize(
         colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)

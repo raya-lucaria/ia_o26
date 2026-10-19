@@ -213,7 +213,7 @@ def test_ceros_dibuja_las_cuatro_memorias():
 
 def test_rachas_dibuja_reales_y_los_dos_modelos():
     aria = _aria("mkv-c1-rachas")
-    assert "q = 0.290 (círculos)" in aria and "q = 0.536 (cuadrados)" in aria
+    assert "q = 0.290 (rombos)" in aria and "q = 0.536 (triángulos)" in aria
     assert "ℓ = 1: reales 384 971" in aria
     assert "ℓ = 4: reales 323" in aria and "ℓ = 5: reales 3," in aria
     reales = m.rachas_corpus()
@@ -221,9 +221,11 @@ def test_rachas_dibuja_reales_y_los_dos_modelos():
     for ell in range(1, 6):
         assert f"ℓ = {ell}: reales {gen.miles(reales.get(ell, 0))}, cadena " \
                f"{gen.miles(sim[ell][0])}" in aria
-    # marcas distintas, no solo color: circulo (cadena) y cuadro (independientes)
+    # marcas distintas, no solo color, y que no son las de V y C (círculo y
+    # cuadrado): rombo (cadena) y triángulo (independientes)
     svg = _svg("mkv-c1-rachas")
-    assert svg.count("<circle") == 5 + 1
+    assert svg.count("<circle") == 0
+    assert svg.count("<polygon") == 2 * (5 + 1)
 
 
 @pytest.mark.parametrize("clave", sorted(gen.FLUJOS))

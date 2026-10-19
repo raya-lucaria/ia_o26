@@ -4,7 +4,7 @@ title: "Ajustar contando"
 nav_title: "Ajustar contando"
 summary: "Si solo tienes el texto: contar transiciones da la matriz que hace más probable lo observado. El algoritmo trazado en la frase, una simulación que recupera una matriz conocida, qué hacer con lo que nunca se vio y cuánta memoria aguantan los datos del Quijote."
 status: ready
-estimated_time: 35m
+estimated_time: 37m
 tags: [markov]
 ---
 
@@ -28,7 +28,7 @@ Al terminar tendrás:
 - **La trayectoria.** Con propiedad de Markov y homogeneidad, su probabilidad es $\mu_0(s_0)\prod_{j=0}^{t-1}P(s_{j+1}\mid s_j)$.
 - **La frase y el muestreo.** En «Con la iglesia hemos dado, Sancho», una vocal siguió a otra 2 de 11 veces; tras consonante, 2 de cada 3. MUESTREAR-FILA simula cada paso con la fila acumulada y un uniforme $u$.
 
-> **Modelo y datos.** El texto es una trayectoria observada. Que lo haya generado una cadena finita y homogénea es una hipótesis útil, no un hecho: $\widehat P$ será la cadena de memoria 1 que mejor explica lo que leímos.
+> **Modelo y datos.** El texto es una trayectoria observada. Que lo haya generado una cadena finita y homogénea es una hipótesis útil, no un hecho: $\widehat P$ será la cadena que solo mira la letra anterior y que mejor explica lo que leímos.
 
 ---
 
@@ -154,10 +154,10 @@ $$
 \end{aligned}
 $$
 
-- **Filas de ½.** Dan $(1/2)^{26}\approx1.49\times10^{-8}$; $\widehat P$ hace la frase 26 veces más probable.
-- **Una matriz cercana.** Con filas $(0.181,\ 0.819)$ y $(0.710,\ 0.290)$ da $\approx3.63\times10^{-7}$; $\widehat P$ alcanza 1.07 veces ese valor.
+- **Filas de ½.** Dan ${(1/2)^{26}\approx1.49\times10^{-8}}$; $\widehat P$ hace la frase 26 veces más probable.
+- **Una matriz cercana.** Con filas $(0.181,\ 0.819)$ y $(0.710,\ 0.290)$ da ${\approx3.63\times10^{-7}}$; $\widehat P$ alcanza 1.07 veces ese valor.
 
-**A mano, una fila.** La fila V aporta $p^2(1-p)^9$, donde $p=P(V\mid V)$ y $1-p=P(C\mid V)$. El logaritmo conserva el máximo:
+**A mano, una fila.** La fila V aporta ${p^2(1-p)^9}$, donde ${p=P(V\mid V)}$ y ${1-p=P(C\mid V)}$. El logaritmo conserva el máximo:
 
 $$
 \begin{aligned}
@@ -169,12 +169,14 @@ $$
 
 Para $0<p<1$ la segunda derivada es negativa, y en los extremos la fila vale 0: $2/11$ es el máximo.
 
-**Con $k$ estados, cada fila se maximiza sola.** La verosimilitud separa sus factores por filas, cada una con $k-1$ números libres. Para una fila fija se maximiza $\sum_{s'}N(s,s')\log P(s'\mid s)$ con la condición de que sume 1. El multiplicador, como en [[el-multiplicador|El multiplicador]], hace las probabilidades proporcionales a los conteos; normalizar da $N(s,s')/N(s)$, y los conteos 0 reciben 0.
+**Con $k$ estados, cada fila se maximiza sola.** La verosimilitud separa sus factores por filas, cada una con $k-1$ números libres. Para una fila fija se maximiza ${\sum_{s'}N(s,s')\log P(s'\mid s)}$ con la condición de que sume 1.
+
+Entre los siguientes observados, el multiplicador, como en [[el-multiplicador|El multiplicador]], hace las probabilidades proporcionales a los conteos; normalizar da ${N(s,s')/N(s)}$. Un siguiente con conteo 0 no aporta factor: darle probabilidad solo quita masa a los observados y baja $\mathcal L$, así que el máximo le da 0.
 
 ::: theorem {#mkv-c1-teo-maximo title="Contar da la matriz más verosímil"}
 En una cadena finita y homogénea, condicionamos a $S_0=s_0$. Cada fila de $P$ queda libre, con entradas no negativas que suman 1.
 
-Si $N(s)>0$, su máximo de verosimilitud se alcanza en $P(s'\mid s)=N(s,s')/N(s)$.
+Si $N(s)>0$, su máximo de verosimilitud se alcanza en ${P(s'\mid s)=N(s,s')/N(s)}$.
 
 Si $N(s)=0$, cualquier fila de probabilidades da el mismo máximo: los datos no la determinan.
 :::
@@ -182,10 +184,10 @@ Si $N(s)=0$, cualquier fila de probabilidades da el mismo máximo: los datos no 
 La condición sobre el inicio importa. Si su distribución dependiera de $P$ y no condicionáramos, habría otro factor que podría cambiar el máximo.
 
 ::: exercise {#mkv-c1-ej-fila-c title="Maximiza la fila C"}
-La fila C aporta $p^{10}(1-p)^5$, con $p=P(V\mid C)$. ¿Qué $p$ maximiza ese factor?
+La fila C aporta ${p^{10}(1-p)^5}$, con ${p=P(V\mid C)}$. ¿Qué $p$ maximiza ese factor?
 :::
 
-::: hint {#mkv-c1-pista-fila-c of="mkv-c1-ej-fila-c" title="Copia la cuenta de la fila V"}
+::: hint {#mkv-c1-pista-fila-c of="mkv-c1-ej-fila-c" title="Los exponentes de la fila C"}
 Al derivar el logaritmo, ¿qué números sustituyen al 2 y al 9?
 :::
 
@@ -356,7 +358,7 @@ Completa los pasos 18 a 25. Los pasos 16 a 25 corresponden a «sdadosancho».
 - **Costo:** contar requiere tiempo proporcional a $T$; formar la matriz requiere hasta $k^2$ divisiones. Guarda hasta $k^2$ conteos y $k$ salidas; al formar la matriz, hasta $k^2$ probabilidades más.
 - **Supuestos:** recibe una trayectoria convertida en estados. La interpretación de máxima verosimilitud supone Markov, homogeneidad y filas libres; el conteo no necesita $\mu_0$.
 
-**Corriendo el algoritmo en el corpus.** Con V y C, las 1 620 532 letras del *Quijote* dan 4 conteos y 2 salidas:
+**Corriendo el algoritmo en el corpus.** Con V y C, las 1 620 532 letras del *Quijote* dan 4 conteos y 2 salidas:
 
 $$
 N=\begin{pmatrix}
@@ -385,30 +387,30 @@ Sí, bajo condiciones. Para verlo, comparamos con una $P$ conocida.
 - **Matriz generadora.** Usamos la matriz V/C del corpus redondeada a tres decimales: filas $(0.181,\ 0.819)$ y $(0.710,\ 0.290)$.
 - **Réplica.** Simulamos una trayectoria independiente de $T$ pasos desde C. Cada paso usa MUESTREAR-FILA con un uniforme nuevo.
 - **Error.** Medimos la mayor diferencia entre entradas: $\max_{s,s'}|\widehat P(s'\mid s)-P(s'\mid s)|$.
-- **Experimento.** Hacemos $n=200$ réplicas por largo $T$, en pasos: 10, 30, 100, 300, 1 000, 3 000 y 10 000 pasos. Usamos la semilla 2028.
+- **Experimento.** Hacemos $n=200$ réplicas por largo $T$, en pasos: 10, 30, 100, 300, 1 000, 3 000 y 10 000 pasos. Usamos la semilla 2028.
 
-**Una réplica, a mano.** `CVCCVV`, la trayectoria muestreada a mano en la página 2, da filas $(1/2,\ 1/2)$ y $(2/3,\ 1/3)$. La mayor diferencia con la matriz generadora es $|0.5-0.181|=0.319$: ese es el error de esa réplica.
+**Una réplica, a mano.** Aplica a la matriz generadora, desde C, los uniformes 0.40, 0.75, 0.90, 0.25 y 0.10 que usaste a mano en la página 2. Salen otra vez `CVCCVV`, ahora como réplica de este experimento, con $T=5$. Sus filas estimadas son $(1/2,\ 1/2)$ y $(2/3,\ 1/3)$. La mayor diferencia con la matriz generadora es ${|0.5-0.181|=0.319}$: ese es el error de esa réplica.
 
-**Un punto es la mediana de los errores para un mismo $T$.** La franja abarca del 5 % al 95 %. Con $T=10$, la mediana es 0.210 y la franja va de 0.069 a 0.319.
+**Un punto es la mediana de los errores para un mismo $T$.** La franja abarca del 5 % al 95 %. Con $T=10$, la mediana es 0.210 y la franja va de 0.069 a 0.319. Con tan pocos pasos el error solo toma unos cuantos valores: muchas réplicas no ven ningún V→V y estiman ${\widehat P(V\mid V)=0}$; de ellas sale el error más frecuente, 0.181.
 
 ::: figure {#mkv-c1-recuperar-p title="Contar recupera una matriz conocida: el error baja al crecer el largo T, en pasos"}
 ![Error de la matriz estimada contra el largo T de la trayectoria, en pasos, con T en escala logarítmica, en 200 réplicas de una cadena conocida que empiezan en C. La mediana del error baja de 0.210 con T = 10 a 0.006 con T = 10 000. La franja del 5 % al 95 % va de 0.069 a 0.319 con T = 10 y de 0.002 a 0.013 con T = 10 000. Ninguna réplica se quedó sin salidas de un estado](../_assets/mkv-c1-recuperar-p.svg)
 :::
 
-- **Trayectorias largas.** Con $T=10\,000$, la mediana es 0.006 y la franja va de 0.002 a 0.013.
+- **Trayectorias largas.** Con ${T=10\,000}$, la mediana es 0.006 y la franja va de 0.002 a 0.013.
 - **Variabilidad.** Las franjas de $T=100$ y $T=300$ son 0.025–0.130 y 0.009–0.071. Se traslapan: más pasos no garantizan menos error en cada réplica.
 - **Filas sin estimar.** Ninguna réplica quedó sin salidas de algún estado, ni con $T=10$. Si ocurriera, se reportaría aparte.
 
 ::: theorem {#mkv-c1-teo-recuperar title="Contar recupera la matriz"}
 Si los datos proceden de una cadena finita y homogénea con matriz $P$, y cada $N(s)\to\infty$, entonces $\widehat P\to P$ con probabilidad 1.
 
-Estas condiciones son suficientes. La probabilidad se refiere a las trayectorias que genera la cadena.
+Estas condiciones bastan, pero no son las únicas posibles. Por ejemplo, si desde cada estado se puede llegar a cualquier otro (la cadena es irreducible), cada $N(s)$ crece sin límite. La probabilidad se refiere a las trayectorias que genera la cadena.
 :::
 
-**Sin la condición falla.** Si V y C fueran absorbentes —de cada uno solo se vuelve a sí mismo— y empiezas en C, toda trayectoria es solo C: aunque $T$ crezca, $N(V)=0$ y la fila V nunca se recupera.
+**Sin la condición $N(s)\to\infty$ falla.** Si V y C fueran absorbentes —de cada uno solo se vuelve a sí mismo— y empiezas en C, toda trayectoria es solo C: aunque $T$ crezca, $N(V)=0$ y la fila V nunca se recupera.
 
 > [!WARNING]
-> **Confundir recuperación con validación.** La simulación comprueba el procedimiento bajo el modelo supuesto. **No demuestra que el texto sea una cadena de memoria 1.** En el *Quijote*, contar da la cadena de memoria 1 que hace más probable el texto, no «la matriz del español».
+> **Confundir recuperación con validación.** La simulación comprueba el procedimiento bajo el modelo supuesto. **No demuestra que el texto sea una cadena que solo mira la letra anterior.** En el *Quijote*, contar da la cadena de ese tipo que hace más probable el texto, no «la matriz del español».
 
 ::: exercise {#mkv-c1-ej-sin-salidas title="Imagina una réplica sin vocales"}
 Una réplica de $T=10$ empieza en C y nunca pasa por V.
@@ -491,12 +493,14 @@ Esta operación tiene nombre:
 ::: definition {#mkv-c1-laplace title="Suavizado aditivo de conteos (Laplace)"}
 **Qué es.** El suavizado aditivo de conteos suma 1 por símbolo siguiente antes de dividir. La estimación suavizada se escribe $\widetilde p$.
 
-**Cómo se calcula.** Para el estado actual $s$, cada símbolo siguiente $s'$ recibe:
+**Cómo se calcula.** Para el estado actual $s$, cada símbolo siguiente $z\in\Sigma$ recibe:
 
 $$
-\widetilde p(s'\mid s)=
-\frac{N(s,s')+1}{N(s)+|\Sigma|}.
+\widetilde p(z\mid s)=
+\frac{N(s,z)+1}{N(s)+|\Sigma|}.
 $$
+
+Con memoria 1, $z$ es también el estado siguiente; en la sección 7 dejan de coincidir.
 
 **Qué significa.** Agrega una observación de cada siguiente posible. Los conteos 0 reciben probabilidad positiva; una fila sin datos queda uniforme.
 
@@ -521,7 +525,7 @@ En `conla`, $N(V,V)=0$ y $N(V,C)=1$.
 2. **Aplica Laplace.** ¿Cuál es su fila de $\widetilde p$, con $|\Sigma|=2$?
 :::
 
-::: hint {#mkv-c1-pista-laplace of="mkv-c1-ej-laplace" title="Suma uno arriba y dos abajo"}
+::: hint {#mkv-c1-pista-laplace of="mkv-c1-ej-laplace" title="Qué cambia en la cuenta"}
 Si cada siguiente gana 1, ¿cuánto aumenta el denominador?
 :::
 
@@ -552,25 +556,33 @@ Puedes incluir más pasado en el estado. **Qué es el estado lo decides tú:** e
 
 Un estado sin observaciones es ahora un contexto sin observaciones.
 
-**La tabla útil tiene $|\Sigma|^h$ filas y $|\Sigma|$ columnas.** Cada fila corresponde a un contexto; cada columna, al símbolo siguiente. Con memoria 2 son 784 contextos por 28 siguientes.
+**La tabla útil tiene $|\Sigma|^h$ filas y $|\Sigma|$ columnas.** Cada fila corresponde a un contexto; cada columna, al símbolo siguiente. Con memoria 2 son $28^2=784$ contextos por 28 siguientes. Es otra vez 784, pero ahora cuenta contextos, no entradas.
 
-La cadena sobre contextos sí tiene matriz cuadrada. De «la» solo puede pasar a un contexto que empiece con «a».
+**La cadena sobre contextos sí tiene matriz cuadrada.** Sus estados son los 784 contextos. De «la» solo puede pasar a un contexto que empiece con «a»: «aa», «ab», «ac»…
 
-**Laplace se aplica por símbolo siguiente.** Escribimos $\widetilde p(z\mid s)=\dfrac{N(s,z)+1}{N(s)+|\Sigma|}$, con $s$ el contexto y $z\in\Sigma$ el símbolo siguiente: se suma 1 en cada una de las $|\Sigma|$ columnas. El siguiente contexto $s'$ se obtiene deslizando $s$ y agregando $z$. Sumar 1 a las 784 columnas de contextos permitiría «la»→«de», una transición imposible.
+**Laplace se aplica por símbolo siguiente.** Con $s$ el contexto y $z\in\Sigma$ el símbolo siguiente, es la misma regla de la sección 6:
 
-**Para diagnosticar escasez, contamos en la primera mitad del corpus y probamos en la segunda.** Esta aporta cerca de un millón de transiciones (998 563 con memoria 1). Cada barra de @mkv-c1-ceros mide qué fracción de pares (contexto, siguiente) de prueba no apareció al contar.
+$$
+\widetilde p(z\mid s)=\frac{N(s,z)+1}{N(s)+|\Sigma|}.
+$$
+
+Se suma 1 en cada una de las $|\Sigma|$ columnas. El siguiente contexto $s'$ se obtiene deslizando $s$ y agregando $z$.
+
+Sumar 1 a las 784 columnas de la matriz de contextos permitiría «la»→«de», una transición imposible.
+
+**Para diagnosticar escasez, contamos en la primera mitad del corpus y probamos en la segunda.** Esta aporta cerca de un millón de transiciones (998 563 con memoria 1). Cada barra de @mkv-c1-ceros mide qué fracción de pares (contexto, siguiente) de prueba no apareció al contar.
 
 ::: figure {#mkv-c1-ceros title="Lo que nunca se vio, por memoria"}
 ![Barras horizontales por memoria, con la fracción de transiciones de la segunda mitad del corpus nunca vistas en la primera. Memoria 0: 0 %, 0 de 998 564, contextos vistos 1 de 1. Memoria 1: 0.003 %, 29 de 998 563, contextos vistos 27 de 28. Memoria 2: 0.072 %, 718 de 998 562, contextos vistos 379 de 784. Memoria 3: 0.570 %, 5 694 de 998 561, contextos vistos 3 328 de 21 952. Las barras están a escala de la mayor (memoria 3). Al pie: solo diagnostica escasez, no elige la memoria](../_assets/mkv-c1-ceros.svg)
 :::
 
-- **Las fracciones aumentan en este corpus.** Son 0.003 %, 0.072 % y 0.570 % para memorias 1, 2 y 3.
+- **Las fracciones aumentan en este corpus.** Son 0.003 %, 0.072 % y 0.570 % para memorias 1, 2 y 3.
 - **Es poca, todavía.** Con memoria 3, menos de una transición de cada 100 es nueva: el *Quijote* es largo.
-- **Los contextos crecen rápidamente.** Se observaron 379 de 784 con memoria 2; con memoria 3, 3 328 de 21 952.
+- **Los contextos crecen rápidamente.** Se observaron 379 de 784 con memoria 2; con memoria 3, 3 328 de 21 952.
 - **Algunas ausencias son estructurales.** Tres espacios seguidos no existen tras normalizar.
 
 > [!WARNING]
-> **Elegir memoria por los ceros.** Memoria 0 tiene 0 % de transiciones no vistas, pero ignora la letra anterior. **La figura @mkv-c1-ceros diagnostica escasez; no elige la memoria.**
+> **Elegir memoria por los ceros.** Memoria 0 tiene 0 % de transiciones no vistas, pero ignora la letra anterior. **La @mkv-c1-ceros diagnostica escasez; no elige la memoria.**
 
 ::: exercise {#mkv-c1-ej-contexto title="Desliza el contexto"}
 Recorre `conlaiglesia` con memoria 2.
@@ -598,7 +610,7 @@ Con esto tienes todo para ajustar una cadena por tu cuenta.
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Observaste `abacabbcabac`, un texto con símbolos a, b y c. **Cambia una idea:** usa tres estados en lugar de dos, con memoria 1.
+Observaste `abacabbcabac`, un texto con símbolos a, b y c. **Cambia una idea:** el texto es tan corto que una fila, la de c, se apoya en solo dos salidas.
 
 1. **Cuenta.** Indica cuántas transiciones hay, construye la tabla $3\times3$ y calcula las salidas de cada símbolo.
 2. **Estima.** Escribe $\widehat P$.
@@ -606,7 +618,7 @@ Observaste `abacabbcabac`, un texto con símbolos a, b y c. **Cambia una idea:**
 4. **Suaviza.** Aplica Laplace a las filas a y c.
 :::
 
-::: hint {#mkv-c1-pista-tres-simbolos-1 of="mkv-c1-ej-tres-simbolos" title="Pista 1 · ¿Qué letra no tiene siguiente?"}
+::: hint {#mkv-c1-pista-tres-simbolos-1 of="mkv-c1-ej-tres-simbolos" title="Pista 1 · ¿Cuántos pares salen?"}
 ¿Qué pares obtienes al recorrer el texto? ¿Qué aparición no aporta una salida?
 :::
 
@@ -648,7 +660,7 @@ $$
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Usa @mkv-c1-ceros. **Cambia una idea:** cuenta solo con unas páginas de la primera mitad y conserva la segunda como prueba. Responde 1–3 con la figura, y 4 con esa idea.
+Usa @mkv-c1-ceros. **Cambia una idea:** cuenta solo con unas páginas de la primera mitad y conserva la segunda como prueba. Responde 1–3 y 5 con la figura, y 4 con esa idea.
 
 1. **Lee la fracción.** ¿Qué memoria tiene más transiciones no vistas y qué tan grande es su proporción?
 2. **Compara los contextos.** Con memoria 2, ¿se observó más o menos de la mitad de los posibles?
@@ -666,15 +678,15 @@ Usa @mkv-c1-ceros. **Cambia una idea:** cuenta solo con unas páginas de la prim
 :::
 
 ::: answer {#mkv-c1-resp-ceros of="mkv-c1-ej-ceros" title="Respuesta · Escasez sí, elección no"}
-**1. Memoria 3.** Tiene 0.570 %: menos de una transición de cada 100.
+**1. Memoria 3.** Tiene 0.570 %: menos de una transición de cada 100.
 
 **2. Menos de la mitad.** Se observaron 379 de 784; la mitad sería 392.
 
 **3. Dos ausencias distintas.** Tres espacios seguidos son imposibles tras normalizar. «kia» es un contexto sin observaciones en este corpus, que no contiene «k»; podría aparecer en otro texto.
 
-**4. Las fracciones no pueden bajar.** Quitar datos de conteo no agrega pares vistos; pueden quedar iguales. Lo esperable es que suban, sobre todo con memoria alta: hay 21 952 contextos posibles con memoria 3. Incluso memoria 0 puede dejar de ver algún símbolo.
+**4. Las fracciones no pueden bajar.** Quitar datos de conteo no agrega pares vistos; pueden quedar iguales. Lo esperable es que suban, sobre todo con memoria alta: hay 21 952 contextos posibles con memoria 3. Incluso memoria 0 puede dejar de ver algún símbolo.
 
-**5. No basta.** Memoria 0 tiene 0 % de transiciones no vistas, pero ignora la dependencia entre «q» y «u». Elegir requiere evaluar predicciones en datos reservados.
+**5. No basta.** Memoria 0 tiene 0 % de transiciones no vistas, pero ignora la dependencia entre «q» y «u». Elegir requiere evaluar predicciones en datos reservados.
 :::
 
 **Punto de control:** deberías poder contar pares, estimar filas con salidas y justificar su máxima verosimilitud condicionada. También, distinguir los tres casos de ausencia, aplicar Laplace y explicar el costo de aumentar la memoria.
@@ -696,8 +708,8 @@ Ajusta y suaviza cada memoria con la primera mitad. En la segunda, promedia $-\l
 
 - **A mano y con algoritmo.** Las 26 transiciones dan filas $(2/11,\ 9/11)$ y $(2/3,\ 1/3)$. La regla general es $N(s,s')/N(s)$, solo si $N(s)>0$.
 - **Máxima verosimilitud.** Con Markov, homogeneidad, filas libres e inicio condicionado, contar maximiza $\mathcal L$. En la frase da $3.88\times10^{-7}$, frente a $1.49\times10^{-8}$ con filas de ½.
-- **Simulación.** En 200 réplicas por longitud, la mediana del error pasa de 0.210 ($T=10$) a 0.006 ($T=10\,000$). Si los datos vienen de esa cadena homogénea y cada $N(s)$ crece sin límite, contar recupera $P$ con probabilidad 1. Estas condiciones son suficientes.
+- **Simulación.** En 200 réplicas por longitud, la mediana del error pasa de 0.210 (${T=10}$) a 0.006 (${T=10\,000}$). Si los datos vienen de esa cadena homogénea y cada $N(s)$ crece sin límite, contar recupera $P$ con probabilidad 1; basta, por ejemplo, que la cadena sea irreducible.
 - **Ausencias y suavizado.** Con 28 símbolos hay 784 entradas posibles y 393 conteos 0; «k» queda sin fila estimada. Laplace sesga hacia la uniforme: q→u baja a $\frac{32\,156}{32\,183}$.
-- **Memoria.** En el corpus, las transiciones no vistas pasan de 0.003 % a 0.570 % entre memorias 1 y 3. Los contextos posibles llegan a 21 952; la figura diagnostica escasez, sin elegir memoria.
+- **Memoria.** En el corpus, las transiciones no vistas pasan de 0.003 % a 0.570 % entre memorias 1 y 3. Los contextos posibles llegan a 21 952; la figura diagnostica escasez, sin elegir memoria.
 
 Continúa con [[mkv-predecir|Predecir]].

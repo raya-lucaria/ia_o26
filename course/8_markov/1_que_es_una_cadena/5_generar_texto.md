@@ -4,7 +4,7 @@ title: "Generar texto"
 nav_title: "Generar texto"
 summary: "Escribir texto al estilo del Quijote muestreando una fila tras otra: GENERAR trazado a mano y en Python, salidas con semilla de memoria 0 a 3, la traducción de las aproximaciones de Shannon y lo que gana y arriesga más memoria."
 status: ready
-estimated_time: 28m
+estimated_time: 31m
 tags: [markov]
 ---
 
@@ -19,6 +19,11 @@ Al terminar tendrás:
 - **Cuatro salidas con semilla,** de memoria 0 a 3, y una de palabras.
 - **La traducción** entre los órdenes de Shannon (1948) y nuestra memoria.
 - **Lo que gana y lo que arriesga** subir la memoria, medido en el *Quijote*.
+
+> [!TIP]
+> **Míralo correr: el generador de texto**
+>
+> - **▶ [El generador](../_assets/generador_texto.html#h=2&semilla=2034&largo=200&paso=148)**: escribe con memoria 0, 1, 2 o 3 y, para cada símbolo, muestra el contexto, su fila y dónde cae el $u$ sorteado. Cambia la memoria y la semilla, y avanza un símbolo a la vez.
 
 ## Lo que traes
 
@@ -110,68 +115,91 @@ Solo el contexto: los últimos $h$ símbolos escritos. Con memoria 1 el contexto
 - **Qué devuelve al terminar:** entrega el contexto inicial seguido de los símbolos generados.
 
 ::: figure {#mkv-c1-flujo-generar title="Generar, en palabras"}
-![Diagrama de flujo de generar texto: empieza con un contexto de h símbolos; pregunta si se vio el contexto, y si no, usa la fila suavizada; muestrea su fila con un u nuevo; escribe el símbolo y desliza el contexto; pregunta si llegaste al largo, y si no, vuelve a la pregunta del contexto con otro símbolo; si sí, devuelve el texto. Al pie: un contexto nunca visto no se reinicia, su fila suavizada da 1/|Σ| a cada símbolo](../_assets/mkv-c1-flujo-generar.svg)
+![Diagrama de flujo de generar texto: empieza con un contexto de h símbolos; pregunta si faltan símbolos, y si no, devuelve el texto; si sí, pregunta si se vio el contexto, y si no, usa la fila suavizada; muestrea su fila con un u nuevo; escribe el símbolo, desliza el contexto y vuelve a preguntar si faltan símbolos. Con largo = 0 devuelve el contexto sin escribir nada. Al pie: un contexto nunca visto no se reinicia, su fila suavizada da 1/|Σ| a cada símbolo](../_assets/mkv-c1-flujo-generar.svg)
 :::
 
 ```text
-INPUT   el alfabeto Σ; una tabla con una fila
-        sobre Σ por cada contexto visto; un
-        contexto inicial de h símbolos; un
-        largo ≥ 0.
-OUTPUT  el contexto inicial seguido de largo
+INPUT   el alfabeto Σ; una tabla
+        con una fila sobre Σ
+        por cada contexto visto;
+        un contexto inicial de h
+        símbolos; un largo ≥ 0.
+OUTPUT  el contexto inicial
+        seguido de largo
         símbolos generados.
 
- 1 function GENERAR(Σ, tabla, contexto, largo)
- 2   texto ← contexto ; h ← |contexto|
- 3   for j ← 0 to largo − 1   # un símbolo por paso
- 4     s ← últimos h símbolos de texto
- 5     if s está en la tabla  # contexto visto
- 6       fila ← tabla[s]      # su fila de P̂
- 7     else                   # nunca visto
- 8       fila ← 1/|Σ| en cada z  # Laplace, N = 0
- 9     u ← uniforme en [0, 1)    # un u nuevo
-10     z ← Σ[MUESTREAR-FILA(fila, u)]
-11     texto ← texto seguido de z  # desliza
+ 1 function GENERAR(Σ, tabla,
+              contexto, largo)
+ 2   texto ← contexto
+     h ← |contexto|
+ 3   for j ← 0 to largo − 1
+ 4     s ← últimos h de texto
+ 5     if s está en la tabla
+ 6       fila ← tabla[s]  # P̂
+ 7     else       # nunca visto
+ 8       fila ← 1/|Σ| en cada z
+ 9     u ← uniforme en [0, 1)
+10     z ← Σ[MUESTREAR-FILA(
+              fila, u)]
+11     texto ← texto seguido de z
 12   return texto
 ```
 
-**Gemelo Python.** Los comentarios indican la línea del pseudocódigo. `muestrear_fila` es la de la página 2, y `rng` da los uniformes con `rng.random()`.
+**Gemelo Python.** Los comentarios `# (n)` indican la línea del pseudocódigo. Antes de correrlo, pega la `muestrear_fila` de la página 2; `rng` da los uniformes con `rng.random()`.
 
 ```python
-def generar(tabla, alfabeto, contexto, largo, rng):  # (1)
-    texto, h = contexto, len(contexto)                # (2)
-    for j in range(largo):                            # (3)
-        s = texto[len(texto) - h:]                    # (4)
-        if s in tabla:                                # (5)
-            fila = tabla[s]                           # (6)
-        else:                                         # (7)
-            fila = [1 / len(alfabeto)] * len(alfabeto)  # (8)
-        u = rng.random()                              # (9)
-        z = alfabeto[muestrear_fila(fila, u)]         # (10)
-        texto = texto + z                             # (11)
-    return texto                                      # (12)
+from fractions import Fraction
 
-class UsDados:            # da los u de la traza a mano
+# (1)
+def generar(tabla, alfabeto,
+            contexto, largo,
+            rng):
+    texto = contexto       # (2)
+    h = len(contexto)      # (2)
+    for j in range(largo): # (3)
+        # (4)
+        s = texto[len(texto)-h:]
+        if s in tabla:     # (5)
+            # (6)
+            fila = tabla[s]
+        else:              # (7)
+            # (8)
+            k = len(alfabeto)
+            fila = [1 / k] * k
+        u = rng.random()   # (9)
+        # (10)
+        i = muestrear_fila(
+            fila, u)
+        z = alfabeto[i]
+        texto = texto + z  # (11)
+    return texto           # (12)
+
+class UsDados:
+    # da los u de la traza a mano
     def __init__(self, us):
         self.us = list(us)
 
     def random(self):
         return self.us.pop(0)
 
-tabla = {"V": [Fraction(1, 11), Fraction(7, 11),
-               Fraction(3, 11)],
-         "C": [Fraction(2, 3), Fraction(1, 5),
-               Fraction(2, 15)],
-         "_": [Fraction(1, 5), Fraction(4, 5),
-               Fraction(0)]}
-print(generar(tabla, "VC_", "C", 3,
-              UsDados([0.90, 0.55, 0.30])))
+F = Fraction
+tabla = {
+    "V": [F(1, 11), F(7, 11),
+          F(3, 11)],
+    "C": [F(2, 3), F(1, 5),
+          F(2, 15)],
+    "_": [F(1, 5), F(4, 5),
+          F(0)],
+}
+us = UsDados([0.90, 0.55, 0.30])
+print(generar(tabla, "VC_", "C",
+              3, us))
 # C_CV
 ```
 
 **Cada pieza, en su línea:**
 
-- **Línea 4.** Toma los últimos $h$ símbolos. En Python, `texto[len(texto) - h:]` da la cadena vacía con $h=0$; `texto[-0:]` daría todo el texto.
+- **Línea 4.** Toma los últimos $h$ símbolos. En Python, `texto[len(texto)-h:]` da la cadena vacía con $h=0$; `texto[-0:]` daría todo el texto.
 - **Líneas 5 a 8.** Usan la fila de $\widehat P$ si el contexto se vio, y la uniforme si no.
 - **Línea 9.** Gasta exactamente un $u$ por símbolo. Con una semilla fija, `random.Random(semilla)` da siempre los mismos $u$, y por eso el mismo texto.
 - **Línea 11.** Agregar $z$ desliza el contexto: la línea 4 del paso siguiente ya no ve el primer símbolo.
@@ -198,7 +226,7 @@ Lee el contexto vacío, siempre el mismo. Usa en cada paso la fila de frecuencia
 
 **Lo que no generaliza del juguete.** En la traza, cada estado era un símbolo y la matriz era cuadrada, $3\times3$. Con memoria $h$, la tabla útil tiene $|\Sigma|^h$ filas y $|\Sigma|$ columnas. Con el *Quijote*, $|\Sigma|=28$.
 
-GENERAR ya corre con cualquier tabla. ¿Qué escribe con las del *Quijote*?
+El pseudocódigo de GENERAR corre con cualquier tabla; el Python, con símbolos de un carácter. Para palabras, el texto sería una lista y cada contexto, una tupla de las últimas $h$ palabras. ¿Qué escribe con las tablas del *Quijote*?
 
 ---
 
@@ -208,65 +236,73 @@ GENERAR ya corre con cualquier tabla. ¿Qué escribe con las del *Quijote*?
 
 En estas cuatro réplicas, primero aparecen sílabas, luego palabras cortas, y con memoria 3 frases casi legibles. Cada salida es una simulación: una réplica de la cadena de memoria $h$ ajustada en el corpus completo.
 
-- **La tabla.** Contamos con los 28 símbolos normalizados del *Quijote* y dividimos cada fila entre sus salidas.
+- **La tabla.** Contamos con los 28 símbolos normalizados del *Quijote*: las 27 letras sin acentos, con la ñ, y el espacio; todo lo que no es letra separa palabras. Su orden es `abcdefghijklmnñopqrstuvwxyz` y el espacio al final, y con una semilla fija el orden cambia la salida. Dividimos cada fila entre sus salidas.
 - **El inicio.** El contexto inicial son los primeros $h$ símbolos de «en un lugar»; con memoria 0 es vacío.
-- **El largo.** Cada salida tiene 200 símbolos en total, contexto incluido.
+- **El largo.** Cada salida tiene 200 símbolos en total, contexto incluido. En GENERAR, largo cuenta solo los generados, así que cada salida es GENERAR con largo = 200 − $h$.
 - **Las semillas.** Usamos 2032 para memoria 0, 2033 para 1, 2034 para 2 y 2035 para 3.
 
-Cada salida se corta en renglones para que quepa; el texto es una sola línea.
+Cada salida se corta en renglones, en un espacio, para que quepa; el texto es una sola línea.
 
-**Memoria 0 · semilla 2032** (empieza con un espacio: no hay contexto)
+**Memoria 0 · semilla 2032** (el primer símbolo sorteado fue un espacio; con memoria 0 el contexto es vacío)
 
 ```text
- pusnve dprate duuutesrsacee insi qlsao
-iamsopaa ceecae do vnoov  oausu q i etg
-anls oalilanosll y  grcgiiypeo ldes eees
-eebdessatoes uoed nn enlea aa oehtbo
-mehs n naoeesiaya ysitrn laa  muercltsoi
-n
+ pusnve dprate duuutesrsacee insi
+qlsao iamsopaa ceecae do
+vnoov  oausu q i etg anls
+oalilanosll y  grcgiiypeo ldes
+eees eebdessatoes uoed nn enlea
+aa oehtbo mehs n naoeesiaya
+ysitrn laa  muercltsoi n
 ```
 
 **Memoria 1 · semilla 2033**
 
 ```text
-er gonos sesel usiava lera cuecive de lo
-ta ques pera a lodasijeralgosper ene l y
-y mabera y tidelerla tia quenoncalerela
-tre dandaue cr s quede en ve sin suieo e
-a cuestadui des que pa fe y mbesctrta
+er gonos sesel usiava lera
+cuecive de lo ta ques pera a
+lodasijeralgosper ene l y y
+mabera y tidelerla tia
+quenoncalerela tre dandaue cr s
+quede en ve sin suieo e a
+cuestadui des que pa fe y
+mbesctrta
 ```
 
 **Memoria 2 · semilla 2034**
 
 ```text
-enchombolaso aquisia veasagionallegar
-que parespel er arovicino pro es
-quecienes do la dos mues y fue el minto
-acaba queño as dejote noco a y
-dechacescuanajabese lle nos hano de
-encera quesar y pue ma
+enchombolaso aquisia
+veasagionallegar que parespel er
+arovicino pro es quecienes do la
+dos mues y fue el minto acaba
+queño as dejote noco a y
+dechacescuanajabese lle nos hano
+de encera quesar y pue ma
 ```
 
 **Memoria 3 · semilla 2035**
 
 ```text
 en su amosura en el dijote espero
-otrastilla paremostan de señor como
-acomo el cuerte lo en cuandoliconvies
-sustra y un gran vizcaidad del fio
-hacenca que pros de burrespondios en
-loco de tendicen otr
+otrastilla paremostan de señor
+como acomo el cuerte lo en
+cuandoliconvies sustra y un gran
+vizcaidad del fio hacenca que
+pros de burrespondios en loco de
+tendicen otr
 ```
 
 - **Memoria 0.** Las letras salen con su frecuencia y sin orden: «duuutesrsacee». El espacio también sale con su frecuencia, y por eso hay «palabras» de largo creíble.
 - **Memoria 1.** Vocales y consonantes alternan, y aparecen palabras reales cortas: «de», «lo», «que», «sin».
-- **Memoria 2.** Hay sílabas del español y palabras de tres o cuatro letras: «la», «y fue el», «acaba».
+- **Memoria 2.** Hay sílabas del español y palabras cortas reales: «la», «y fue el», «acaba».
 - **Memoria 3.** Casi todo se lee: «en su amosura», «de señor como», «un gran vizcaidad». «dijote» no existe, pero cada tramo de cuatro letras sí.
 
-**Míralo escribir, símbolo por símbolo.** El generador de texto corre lo mismo con memoria 0, 1, 2 o 3. Para cada símbolo muestra el contexto, su fila, el $u$ sorteado y dónde cae en la suma acumulada. Con la semilla de cada ejemplo y largo 200 escribe el mismo texto, porque sortea igual que el Python de esta página.
+**Míralo escribir, símbolo por símbolo.** El generador de texto corre lo mismo con memoria 0, 1, 2 o 3. Para cada símbolo muestra el contexto, su fila, el $u$ sorteado y dónde cae en la suma acumulada.
+
+Su largo cuenta el total, contexto incluido. Con la semilla de cada ejemplo y largo 200 escribe el mismo texto que la sección 3: sortea igual que el Python de esta página con largo = 200 − $h$.
 
 ::: figure {#mkv-c1-generador title="El generador escribiendo con memoria 2"}
-[![Captura del generador de texto con memoria 2 y semilla 2034, a 148 de 198 símbolos. El panel del paso muestra el contexto «ce», con 6 942 salidas; las más probables son r 0.260, d 0.196, s 0.162, espacio 0.153 y n 0.099, y el resto suma 0.129. El u sorteado, 0.7149, cae en el tramo de «s», de 0.6788 a 0.8410, y se escribe «s».](../_assets/mkv-c1-generador.png)](../_assets/generador_texto.html#h=2&semilla=2034&largo=200&paso=148)
+[![Captura del generador de texto con memoria 2 y semilla 2034, en el símbolo 150 de 200. El panel del paso muestra el contexto «ce», con 6 942 salidas; las más probables son r 0.260, d 0.196, s 0.162, espacio 0.153 y n 0.099, y el resto suma 0.129. El u sorteado, 0.7149, cae en el pedazo de «s», de 0.6788 a 0.8410, y se escribe «s».](../_assets/mkv-c1-generador.png)](../_assets/generador_texto.html#h=2&semilla=2034&largo=200&paso=148)
 :::
 
 > **▶ [Abre el generador](../_assets/generador_texto.html#h=2&semilla=2034&largo=200&paso=148)**: pulsa la imagen o este enlace. Cambia la memoria y la semilla, y avanza un símbolo a la vez.
@@ -299,15 +335,15 @@ Estas salidas tienen un antecedente famoso, hecho sin computadora.
 
 Sí: Claude Shannon lo hizo a mano en 1948, en «Una teoría matemática de la comunicación» (*A Mathematical Theory of Communication*), publicado en el *Bell System Technical Journal*. En la parte I, sección 3, presenta una serie de aproximaciones al inglés con un alfabeto de 27 símbolos: 26 letras y el espacio.
 
-**Shannon numera uno arriba.** Su «orden» cuenta las letras del bloque que se cuenta, $h+1$; nuestra memoria cuenta las del contexto, $h$.
+**Shannon numera uno arriba.** Desde su primer orden, el «orden» cuenta las letras del bloque que se cuenta, $h+1$; nuestra memoria cuenta las del contexto, $h$. Su orden cero no cuenta ningún bloque: todos los símbolos son igual de probables.
 
 ::: table {#mkv-c1-shannon title="Los órdenes de Shannon, en memoria"}
-| Shannon (1948) | Qué usa | Aquí |
+| Shannon (1948) | Aquí | Qué usa |
 |---|---|---|
-| Orden cero | Símbolos equiprobables | Fila uniforme |
-| Primer orden | Frecuencias de letras | Memoria 0 |
-| Segundo orden | Pares de letras | Memoria 1 |
-| Tercer orden | Tríos de letras | Memoria 2 |
+| Orden cero | Fila uniforme | Símbolos equiprobables |
+| Primer orden | Memoria 0 | Frecuencias de letras |
+| Segundo orden | Memoria 1 | Pares de letras |
+| Tercer orden | Memoria 2 | Tríos de letras |
 :::
 
 **Cómo lo hizo, a mano.** Para el primer orden usó una tabla de frecuencias de letras y un libro de números aleatorios. Desde el segundo, abría un libro al azar y elegía una letra de la página. Luego abría otra página, leía hasta encontrar esa letra y anotaba la que la seguía.
@@ -320,7 +356,7 @@ Las salidas de la sección 3 son nuestras: el *Quijote*, una computadora y semil
 ¿Con qué orden llamaría Shannon a nuestra salida de memoria 3?
 :::
 
-::: hint {#mkv-c1-pista-orden-shannon of="mkv-c1-ej-orden-shannon" title="Cuenta el bloque"}
+::: hint {#mkv-c1-pista-orden-shannon of="mkv-c1-ej-orden-shannon" title="Las dos numeraciones"}
 Con memoria 3, ¿cuántas letras tiene cada bloque (contexto, siguiente)?
 :::
 
@@ -346,8 +382,8 @@ Porque los datos son finitos. Más memoria representa más, pero cada contexto s
 ![Barras horizontales por memoria, con la fracción de transiciones de la segunda mitad del corpus nunca vistas en la primera. Memoria 0: 0 %, 0 de 998 564, contextos vistos 1 de 1. Memoria 1: 0.003 %, 29 de 998 563, contextos vistos 27 de 28. Memoria 2: 0.072 %, 718 de 998 562, contextos vistos 379 de 784. Memoria 3: 0.570 %, 5 694 de 998 561, contextos vistos 3 328 de 21 952. Las barras están a escala de la mayor (memoria 3). Al pie: solo diagnostica escasez, no elige la memoria](../_assets/mkv-c1-ceros.svg)
 :::
 
-- **Las fracciones suben.** Son 0.003 %, 0.072 % y 0.570 % para memorias 1, 2 y 3.
-- **Los contextos posibles crecen más rápido.** Con memoria 3 se vieron 3 328 de 21 952.
+- **Las fracciones suben.** Son 0.003 %, 0.072 % y 0.570 % para memorias 1, 2 y 3.
+- **Los contextos posibles crecen más rápido.** Con memoria 3 se vieron 3 328 de 21 952.
 
 **Lo que arriesga, después: repetir fragmentos del corpus.** Para cada salida de la sección 3 medimos dos cosas:
 
@@ -355,20 +391,22 @@ Porque los datos son finitos. Más memoria representa más, pero cada contexto s
 - **Los 8-gramas copiados.** Un 8-grama es un tramo de 8 caracteres seguidos. Contamos qué fracción de los de la salida está en el corpus.
 
 ::: table {#mkv-c1-tabla-copiar title="Cuánto copia cada salida del corpus"}
-| Memoria | Subcadena más larga | 8-gramas en el corpus |
+| Memoria | Subcadena más larga | 8-gramas copiados |
 |---:|---:|---:|
-| 0 | 6 | 0 % |
-| 1 | 10 | 9 % |
-| 2 | 11 | 20 % |
-| 3 | 13 | 42 % |
+| 0 | 6 | 0 % |
+| 1 | 10 | 9 % |
+| 2 | 11 | 20 % |
+| 3 | 13 | 42 % |
 :::
 
 Cada fila es **una sola réplica**: con otra semilla, las cifras pueden cambiar.
 
-**No es inevitable.** Lo que copia es una fila con una sola continuación observada. En el extremo, si cada contexto apareciera una vez, cada fila tendría un 1 y GENERAR copiaría el corpus letra por letra. Si cada contexto se vio seguido de muchos símbolos distintos, la salida puede combinar trozos sin repetir tramos largos.
+**No es inevitable.** La copia no exige filas con una sola continuación: cada contexto del tramo de 13 de memoria 3 se vio seguido de varios símbolos distintos. Basta que los sorteos elijan, varias veces seguidas, continuaciones que el corpus ya encadena; es más fácil cuando cada contexto tiene pocas continuaciones y una domina.
+
+En el extremo, si cada contexto visitado tuviera una sola continuación observada, GENERAR seguiría el corpus letra por letra hasta llegar a un contexto sin salidas, donde usaría la fila uniforme. Cuantos más símbolos distintos y parejos siguen a cada contexto, más fácil es combinar trozos sin repetir tramos largos.
 
 > [!WARNING]
-> **Confundir que se lea bien con que sea nuevo.** De estas cuatro, la salida de memoria 3 es la más legible, y 42 % de sus 8-gramas están literales en el *Quijote*. **Parte de lo que se lee bien es copia.**
+> **Confundir que se lea bien con que sea nuevo.** De estas cuatro, la salida de memoria 3 es la más legible, y 42 % de sus 8-gramas están literales en el *Quijote*. **Parte de lo que se lee bien es copia.**
 
 ::: exercise {#mkv-c1-ej-subcadena-minima title="Acota la copia por abajo"}
 La salida de memoria 3 empieza en un contexto visto. ¿Por qué su subcadena literal más larga no puede medir menos de 4?
@@ -392,7 +430,7 @@ Ya puedes generar a mano, con el algoritmo y con el corpus, y leer qué arriesga
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Una cadena de memoria 1 tiene $\Sigma$ = {a, n, espacio}, en ese orden. **Cambia una idea:** los estados son letras y espacio, no clases, y una fila tiene un cero al inicio. Las filas son:
+Una cadena de memoria 1 tiene $\Sigma$ = {a, n, espacio}, en ese orden. **Cambia una idea:** el cero de una fila está al inicio, no al final, así que la primera suma parcial no crece. Las filas son:
 
 - **Desde a:** (0, 1/2, 1/2).
 - **Desde n:** (3/4, 0, 1/4).
@@ -442,7 +480,7 @@ pedir ayuda a ChatGPT.**
 
 Un videojuego necesita letreros de relleno «con sabor a *Quijote*». **Cambia una idea:** ahora hay una restricción de uso, no copiar tramos largos del libro. Usa @mkv-c1-ceros-generar, la tabla de copia y las salidas de la sección 3. La respuesta desarrolla una opción.
 
-1. **Lee la escasez.** ¿Qué memoria tiene más transiciones no vistas, y cuántas?
+1. **Lee la escasez.** Con memoria 3, ¿cuántas transiciones de prueba no se vieron y cuántos contextos se vieron? ¿Esa escasez basta para descartarla en este uso?
 2. **Compara dos salidas.** Contrasta memoria 1 y memoria 3 en lo que se lee y en lo que copian.
 3. **Elige.** Escoge una memoria y justifícala con dos cifras.
 4. **Planea la comprobación.** ¿Qué medirías antes de confiar en tu elección?
@@ -457,11 +495,11 @@ Un videojuego necesita letreros de relleno «con sabor a *Quijote*». **Cambia u
 :::
 
 ::: answer {#mkv-c1-resp-elegir-memoria of="mkv-c1-ej-elegir-memoria" title="Respuesta · Legible sin copiar"}
-**1. Escasez.** Memoria 3: 0.570 % de transiciones no vistas, y 3 328 de 21 952 contextos vistos. Aun así, es poca: el corpus es largo.
+**1. Escasez.** No se vieron 5 694 de 998 561 transiciones de prueba, el 0.570 %. Aparte, se vieron 3 328 de 21 952 contextos posibles. No basta para descartarla: el corpus es largo y los huecos son pocos; el riesgo para los letreros es la copia.
 
-**2. Dos salidas.** Memoria 1 da palabras cortas reales entre ruido, y 9 % de 8-gramas copiados. En esta réplica, memoria 3 casi se lee, pero copia 42 % y su tramo literal más largo mide 13.
+**2. Dos salidas.** Memoria 1 da palabras cortas reales entre ruido, y 9 % de 8-gramas copiados. En esta réplica, memoria 3 casi se lee, pero copia 42 % y su tramo literal más largo mide 13.
 
-**3. Elección.** Memoria 2: ya forma sílabas y palabras cortas, y copia 20 %, con un tramo máximo de 11. Estas cifras justifican probarla; no garantizan que otras salidas copien poco.
+**3. Elección.** Memoria 2: ya forma sílabas y palabras cortas, y copia 20 %, con un tramo máximo de 11. Estas cifras justifican probarla; no garantizan que otras salidas copien poco.
 
 **4. Comprobación.** Generar muchas réplicas con semillas distintas y mirar el reparto de la fracción copiada, no una sola salida. Descartar los letreros con un tramo literal largo.
 :::
@@ -476,6 +514,6 @@ Un videojuego necesita letreros de relleno «con sabor a *Quijote*». **Cambia u
 - **El algoritmo.** GENERAR gasta un $u$ por símbolo y desliza el contexto. Un contexto nunca visto usa la fila uniforme, $1/|\Sigma|$; no se reinicia.
 - **Las salidas.** Con semillas 2032 a 2035, memoria 0 da letras sueltas y memoria 3 frases casi legibles.
 - **Shannon (1948).** Su primer orden es nuestra memoria 0; su segundo, memoria 1. Lo hizo a mano, con tablas y abriendo un libro al azar.
-- **Ganar y arriesgar.** Más memoria representa más y no empeora el ajuste en los datos. Con datos limitados, las transiciones no vistas suben a 0.570 % en memoria 3. La copia de 8-gramas pasa de 0 % a 42 %, y el tramo literal más largo de 6 a 13.
+- **Ganar y arriesgar.** Más memoria representa más: sin suavizar y sobre las mismas transiciones con que se cuenta, la verosimilitud máxima no baja. Con datos limitados, las transiciones no vistas suben a 0.570 % en memoria 3. La copia de 8-gramas pasa de 0 % a 42 %, y el tramo literal más largo de 6 a 13.
 
 Continúa con [[markov|Cadenas de Markov]], el índice de la unidad, o repasa los símbolos en [[notacion-markov|la hoja de notación]].

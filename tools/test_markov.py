@@ -516,6 +516,17 @@ def test_p5_lo_que_la_pagina_dice_de_las_salidas():
         assert inventada not in vocabulario and inventada in "".join(GENERADOS.values())
 
 
+def test_p3_el_teorema_de_recuperar_trae_su_condicion():
+    """El teorema de recuperar la matriz es falso sin «cada N(s) crece sin
+    límite» (plan de unidad §5). Un sembrado de la revisión lo quitó y ninguna
+    prueba lo vio: esta lee el enunciado."""
+    texto = _pagina(P3)
+    m_teo = re.search(r"^::: theorem \{#mkv-c1-teo-recuperar[^}]*\}\n(.*?)^:::$", texto,
+                      re.S | re.M)
+    assert m_teo, "falta el teorema mkv-c1-teo-recuperar"
+    assert r"N(s)\to\infty" in m_teo.group(1)
+
+
 def test_p5_un_contexto_nunca_visto_usa_la_fila_uniforme():
     tabla = {"a": [0.0, 1.0]}
     rng = random.Random(1)
@@ -689,6 +700,8 @@ def _cifras():
         ("3.88", P3, "Por qué contar", lambda: _mantisa(P)),
         ("1.49", P3, "Por qué contar", lambda: _mantisa(m.P_MITADES)),
         ("3.63", P3, "Por qué contar", lambda: _mantisa(m.redondear_matriz(Pc))),
+        ("26 veces", P3, "Por qué contar", lambda: f"{float(m.verosimilitud(P, m.frase_vc()) / m.verosimilitud(m.P_MITADES, m.frase_vc())):.0f} veces"),
+        ("1.07 veces", P3, "Por qué contar", lambda: f"{float(m.verosimilitud(P, m.frase_vc()) / m.verosimilitud(m.redondear_matriz(Pc), m.frase_vc())):.2f} veces"),
         ("26", P3, "Algoritmo", lambda: str(len(m.traza_contar(m.frase_vc())))),
         ("200", P3, "Simul", lambda: str(m.REPLICAS_RECUPERAR)),
         ("0.210", P3, "Simul", lambda: _rp(10, "mediana")),
@@ -743,6 +756,28 @@ def _cifras():
         ("0.352", P4, "Ejercicios", lambda: dec(sim4()["simulada"][2])),
         ("0.334", P4, "Ejercicios", lambda: dec(sim4()["cuenta"][2])),
         ("0.024", P4, "Ejercicios", lambda: dec(sim4()["ee"][2])),
+        ("0.693", P4, "Ejercicios", lambda: dec(sim4()["simulada"][1])),
+        ("0.512", P4, "Ejercicios", lambda: dec(sim4()["simulada"][3])),
+        ("0.023", P4, "Ejercicios", lambda: dec(sim4()["ee"][1])),
+        ("0.025", P4, "Ejercicios", lambda: dec(sim4()["ee"][3])),
+        ("2.0", P4, "Simul", lambda: f"{m.diferencia_maxima_mu_t()[1]:.1f}"),
+        # el contraejemplo C C V: la cadena predice 1/4 donde el proceso da 1/2
+        # una vocal más al final de la frase: el renglón V pasa a 3 de 12
+        ("3/12", P2, "Contar", lambda: "/".join(map(str, m.matriz_conteos(
+            m.frase_vc() + "V", m.ESTADOS_VC)[0][:1] + [sum(m.matriz_conteos(
+                m.frase_vc() + "V", m.ESTADOS_VC)[0])]))),
+        ("3 de largo 5", P2, "Rachas", lambda: f"{r()['reales'][5]} de largo 5"),
+        ("1/4", P4, "Derivar", lambda: fr(m.predecir([[F(0), F(1)], [F(1, 2), F(1, 2)]],
+                                                    [F(0), F(1)], 2)[0])),
+        # la réplica trazada con los uniformes de la página 2 y el error más frecuente con T = 10
+        ("CVCCVV", P3, "Simul", lambda: m.trayectoria_a_mano(
+            m.redondear_matriz(Pc), "C", m.U_A_MANO)[1]),
+        ("0.181", P3, "Simul", lambda: dec(max(set(m.recuperar_p()[10]["errores"]),
+                                               key=m.recuperar_p()[10]["errores"].count))),
+        ("5 694", P5, "Ejercicios", lambda: miles(m.fraccion_no_vista(3)["no_vistas"])),
+        ("998 561", P5, "Ejercicios", lambda: miles(m.fraccion_no_vista(3)["total"])),
+        ("13", P5, "arriesga", lambda: str(m.subcadena_mas_larga_en_corpus(m.generar(3)))),
+        ("11", P5, "arriesga", lambda: str(m.subcadena_mas_larga_en_corpus(m.generar(2)))),
         # --- p5
         ("0.90", P5, "mano", lambda: f"{m.U_GENERAR_A_MANO[0]:.2f}"),
         ("0.55", P5, "mano", lambda: f"{m.U_GENERAR_A_MANO[1]:.2f}"),
@@ -859,8 +894,11 @@ def _bloques_python(pagina):
 
 def _cargar(pagina):
     """Ejecuta en orden los bloques ```python de la pagina en un espacio
-    propio. La pagina 5 recibe muestrear_fila de la pagina 2 (lo que trae)."""
-    ns = {"__name__": "pagina", "random": random, "Fraction": F}
+    propio. La pagina 5 recibe muestrear_fila de la pagina 2 (lo que trae).
+    Nada mas se inyecta: si un bloque usa Fraction o random, los importa,
+    porque el alumno lo copia tal cual (un NameError en p5 paso la suite
+    cuando la prueba inyectaba Fraction)."""
+    ns = {"__name__": "pagina"}
     if pagina == P5:
         ns["muestrear_fila"] = m.muestrear_fila
     for codigo in _bloques_python(pagina):

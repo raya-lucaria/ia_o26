@@ -116,16 +116,22 @@ FL_CARRIL = 22
 FL_GAP = 34
 
 
-def _flujo(titulo, pasos, vueltas=(), notas=()):
+FL_CARRIL_DER = 293
+
+
+def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
     """pasos: dicts con «caja» (renglones; el primero en negritas; fin=True
     en la salida) o «rombo» (renglones), «abajo» (rotulo de la salida de
     abajo) y «lado» (rotulo, renglones): caja a la derecha que baja a la
-    entrada del paso siguiente. vueltas: [(desde, hasta, rotulo)]."""
+    entrada del paso siguiente. vueltas: [(desde, hasta, rotulo)] suben por
+    el carril izquierdo. salidas: [(rombo, hasta, rotulo)] bajan por el
+    carril derecho desde la punta del rombo hasta un paso posterior, que
+    lleva sin_flecha=True si no se llega a el desde el anterior."""
     out = []
     y = encabezado(out, titulo) + 8
     geo = []
     for k, p in enumerate(pasos):
-        if k:
+        if k and not p.get("sin_flecha"):
             y0 = y - FL_GAP
             out.append(_flecha(FL_CX, y0, FL_CX, y - 3))
             ant = pasos[k - 1]
@@ -157,7 +163,7 @@ def _flujo(titulo, pasos, vueltas=(), notas=()):
                 rot, lineas = p["lado"]
                 hl = 12 + 18 * len(lineas)
                 out.append(_flecha(FL_CX + FL_MX, cy, FL_LADO_X0 - 3, cy))
-                out.append(texto((FL_CX + FL_MX + FL_LADO_X0) / 2, cy - 9, rot, tam=13,
+                out.append(texto((FL_CX + FL_MX + FL_LADO_X0) / 2, cy - 15, rot, tam=13,
                                  color=SUAVE, peso="700"))
                 out.append(caja(FL_LADO_X0, _n(cy - hl / 2), FL_X1 - FL_LADO_X0, _n(hl),
                                 relleno=mezclar(COLOR_REAL, 0.08), borde=COLOR_REAL,
@@ -179,13 +185,22 @@ def _flujo(titulo, pasos, vueltas=(), notas=()):
                    f'{FL_CARRIL},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
         out.append(_flecha(FL_CARRIL, yb, xb - 3, yb))
         out.append(girado(FL_CARRIL - 8, (ya + yb) / 2, rot))
+    for desde, hasta, rot in salidas:
+        _, _, ya = geo[desde]
+        _, _, yb = geo[hasta]
+        xa = FL_CX + FL_MX
+        out.append(f'<polyline points="{_n(xa)},{_n(ya)} {FL_CARRIL_DER},{_n(ya)} '
+                   f'{FL_CARRIL_DER},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
+        out.append(_flecha(FL_CARRIL_DER, yb, FL_X1 + 3, yb))
+        out.append(texto(xa + 10, ya - 8, rot, tam=13, color=SUAVE, anclaje="start",
+                         peso="700"))
     y = y - FL_GAP + 26
     if notas:
         y = pie(out, y, notas)
     return out, y - 8
 
 
-def _desc_flujo(nombre, pasos, vueltas, notas=()):
+def _desc_flujo(nombre, pasos, vueltas, notas=(), salidas=()):
     partes = []
     for k, p in enumerate(pasos):
         if "caja" in p:
@@ -199,6 +214,8 @@ def _desc_flujo(nombre, pasos, vueltas, notas=()):
             partes.append(s)
     for desde, hasta, rot in vueltas:
         partes.append(f"Desde el paso {desde + 1}, si {rot}, vuelve al paso {hasta + 1}.")
+    for desde, hasta, rot in salidas:
+        partes.append(f"Desde el paso {desde + 1}, si {rot}, salta al paso {hasta + 1}.")
     return (f"Diagrama de flujo de {nombre}, en palabras. " + " ".join(partes)
             + (" " + " ".join(notas) if notas else ""))
 
@@ -228,23 +245,28 @@ FLUJOS = {
     "predecir": dict(
         nombre="predecir",
         titulo=["Predecir, en palabras", "t multiplicaciones"],
+        # pregunta antes de multiplicar: con t = 0 devuelve μ₀
         pasos=[{"caja": ["Empieza con μ₀", "(un vector fila)"]},
+               {"rombo": ["¿Faltan", "pasos?"], "abajo": "sí"},
                {"caja": ["Multiplica por P̂:", "μ ← μ P̂"]},
-               {"rombo": ["¿Ya van", "t pasos?"], "abajo": "sí"},
-               {"caja": ["Devuelve μₜ"], "fin": True}],
-        vueltas=[(2, 1, "no: otro paso")],
+               {"caja": ["Devuelve μₜ"], "fin": True, "sin_flecha": True}],
+        vueltas=[(2, 1, "otro paso")],
+        salidas=[(1, 3, "no")],
         notas=["Cada paso cuesta k² productos", "con k estados."]),
     "generar": dict(
         nombre="generar texto",
         titulo=["Generar, en palabras", "con memoria h"],
+        # un ciclo «mientras»: con largo = 0 no escribe nada, como el
+        # pseudocódigo de la página
         pasos=[{"caja": ["Empieza con un", "contexto de h símbolos"]},
+               {"rombo": ["¿Faltan", "símbolos?"], "abajo": "sí"},
                {"rombo": ["¿Se vio el", "contexto?"], "abajo": "sí",
                 "lado": ("no", ["usa la fila", "suavizada"])},
                {"caja": ["Muestrea su fila", "con un u nuevo"]},
                {"caja": ["Escribe el símbolo", "y desliza el contexto"]},
-               {"rombo": ["¿Llegaste", "al largo?"], "abajo": "sí"},
-               {"caja": ["Devuelve el texto"], "fin": True}],
-        vueltas=[(4, 1, "no: otro símbolo")],
+               {"caja": ["Devuelve el texto"], "fin": True, "sin_flecha": True}],
+        vueltas=[(4, 1, "otro símbolo")],
+        salidas=[(1, 5, "no")],
         notas=["Un contexto nunca visto no se", "reinicia: su fila suavizada da",
                "1/|Σ| a cada símbolo."]),
 }
@@ -252,9 +274,10 @@ FLUJOS = {
 
 def flujo(clave):
     f = FLUJOS[clave]
-    out, alto = _flujo(f["titulo"], f["pasos"], f["vueltas"], f["notas"])
-    return svg(f["titulo"], _desc_flujo(f["nombre"], f["pasos"], f["vueltas"], f["notas"]),
-               out, alto)
+    salidas = f.get("salidas", ())
+    out, alto = _flujo(f["titulo"], f["pasos"], f["vueltas"], f["notas"], salidas)
+    return svg(f["titulo"], _desc_flujo(f["nombre"], f["pasos"], f["vueltas"], f["notas"],
+                                        salidas), out, alto)
 
 
 # ------------------------------------------------------- el grafo V/C ---
@@ -368,6 +391,14 @@ def _marca(forma, x, y, color, r=4.5):
     if forma == "cuadro":
         return (f'<rect x="{_n(x - r)}" y="{_n(y - r)}" width="{_n(2 * r)}" '
                 f'height="{_n(2 * r)}" fill="{color}" stroke="{color}" stroke-width="1"/>')
+    if forma == "rombo":
+        return (f'<polygon points="{_n(x)},{_n(y - r - 1)} {_n(x + r + 1)},{_n(y)} '
+                f'{_n(x)},{_n(y + r + 1)} {_n(x - r - 1)},{_n(y)}" fill="{FONDO}" '
+                f'stroke="{color}" stroke-width="2"/>')
+    if forma == "triangulo":
+        return (f'<polygon points="{_n(x)},{_n(y - r - 1)} {_n(x + r + 1)},{_n(y + r)} '
+                f'{_n(x - r - 1)},{_n(y + r)}" fill="{color}" stroke="{color}" '
+                f'stroke-width="1"/>')
     raise ValueError(forma)
 
 
@@ -458,9 +489,10 @@ def mkv_c1_mu_t():
     out.append(texto((MU_X0 + MU_X1) / 2, top2 + alto2 + 38, "paso t", tam=13, peso="700"))
     peor, peor_z = m.diferencia_maxima_mu_t()
     y = pie(out, top2 + alto2 + 62, [
-        f"Franja: ±2 errores estándar (±{dec(banda)}).",
-        f"La mayor diferencia: {dec(peor)}, unos",
-        f"{peor_z:.1f} errores estándar."])
+        f"Franja: ±{dec(banda)}, dos errores estándar",
+        "en el peor caso (p = 0.5). La mayor",
+        f"diferencia: {dec(peor)}, unos {peor_z:.1f} errores",
+        "estándar: en el borde de la franja."])
     desc = ("Probabilidad de estar en V en el paso t, de t = 0 a 8, con la matriz del corpus. "
             "Arriba, la cuenta μ₀P̂ᵗ (línea) y la fracción de "
             f"{miles(n)} réplicas en V (marcas). Desde V: cuenta "
@@ -468,8 +500,8 @@ def mkv_c1_mu_t():
             + ", ".join(dec(p) for p in datos["V"]["simulada"]) + ". Desde C: cuenta "
             + ", ".join(dec(p) for p in datos["C"]["cuenta"]) + "; réplicas "
             + ", ".join(dec(p) for p in datos["C"]["simulada"])
-            + f". Abajo, réplicas menos cuenta, con una franja de ±2 errores estándar "
-            f"(±{dec(banda)}); la mayor diferencia es {dec(peor)}, unos {peor_z:.1f} errores "
+            + f". Abajo, réplicas menos cuenta, con una franja de ±{dec(banda)}, dos errores "
+            f"estándar en el peor caso (p = 0.5); la mayor diferencia es {dec(peor)}, unos {peor_z:.1f} errores "
             "estándar. En esta matriz las dos curvas se acercan.")
     return svg(titulo, desc, out, y)
 
@@ -590,9 +622,9 @@ def mkv_c1_rachas():
         (lambda x, yy: f'<rect x="{_n(x - 7)}" y="{_n(yy - 8)}" width="14" height="16" '
                        f'fill="{mezclar(COLOR_REAL, 0.35)}" stroke="{COLOR_REAL}" '
                        f'stroke-width="1.5"/>', "reales, en el corpus"),
-        (lambda x, yy: _marca("circulo", x, yy, COLOR_V),
+        (lambda x, yy: _marca("rombo", x, yy, ACENTO),
          f"cadena (q = {dec(r['q_markov'])})"),
-        (lambda x, yy: _marca("cuadro", x, yy, COLOR_C, r=4),
+        (lambda x, yy: _marca("triangulo", x, yy, TEXTO, r=4),
          f"independientes (q = {dec(r['q_independiente'])})"),
     ])
     top, alto = y + 28, 180
@@ -611,13 +643,15 @@ def mkv_c1_rachas():
         out.append(f'<rect x="{_n(xc - 15)}" y="{_n(yr)}" width="14" height="{_n(base - yr)}" '
                    f'fill="{mezclar(COLOR_REAL, 0.35)}" stroke="{COLOR_REAL}" '
                    f'stroke-width="1.5"/>')
-        for modelo, dx, forma, color in (("markov", 6, "circulo", COLOR_V),
-                                         ("independiente", 16, "cuadro", COLOR_C)):
+        # rombo y triángulo, no círculo y cuadrado: esas marcas son V y C en
+        # toda la unidad, y aquí no se dibujan estados
+        for modelo, dx, forma, color in (("markov", 6, "rombo", ACENTO),
+                                         ("independiente", 16, "triangulo", TEXTO)):
             med, p5, p95 = sim[modelo][ell]
             out.append(linea(_n(xc + dx), _n(_y_log(p95, top, alto)), _n(xc + dx),
                              _n(_y_log(p5, top, alto)), color=color, grosor=1.5))
             out.append(_marca(forma, xc + dx, _y_log(med, top, alto), color,
-                              r=4.5 if forma == "circulo" else 4))
+                              r=4.5 if forma == "rombo" else 4))
         out.append(texto(xc, top + alto + 18, str(ell), tam=12, color=SUAVE))
     out.append(texto(170, top + alto + 38, "largo ℓ de la racha", tam=13, peso="700"))
     y = pie(out, top + alto + 62, [
@@ -628,8 +662,8 @@ def mkv_c1_rachas():
     desc = ("Número de rachas de consonantes de cada largo ℓ, de 1 a 5, en escala "
             "logarítmica: las reales del corpus (barras) contra la mediana de "
             f"{m.N_RACHAS} réplicas del largo del corpus de una cadena con q = "
-            f"{dec(r['q_markov'])} (círculos) y de letras independientes con q = "
-            f"{dec(r['q_independiente'])} (cuadrados). " + "; ".join(
+            f"{dec(r['q_markov'])} (rombos) y de letras independientes con q = "
+            f"{dec(r['q_independiente'])} (triángulos). " + "; ".join(
                 f"ℓ = {ell}: reales {miles(reales.get(ell, 0))}, cadena "
                 f"{miles(sim['markov'][ell][0])}, independientes "
                 f"{miles(sim['independiente'][ell][0])}" for ell in ells)

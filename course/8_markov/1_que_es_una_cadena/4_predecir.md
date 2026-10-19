@@ -17,7 +17,7 @@ Al terminar tendrás:
 - **Una predicción a mano.** Calcularás la probabilidad de cada estado en el paso $t$, con un árbol y un vector fila.
 - **La regla de un paso.** Derivarás $\mu_{t+1}=\mu_t\widehat P$ con probabilidad total, propiedad de Markov y homogeneidad.
 - **El algoritmo PREDECIR.** Seguirás su pseudocódigo, su Python y su traza; justificarás el costo $t\cdot k^2$.
-- **Una comprobación por simulación.** Compararás la cuenta con 10 000 réplicas y su error estándar.
+- **Una comprobación por simulación.** Compararás la cuenta con 10 000 réplicas y su error estándar.
 - **El alcance del resultado.** Distinguirás una predicción de la cadena ajustada de una afirmación sobre el idioma.
 
 ## Lo que traes
@@ -53,7 +53,7 @@ $$
 $$
 
 ::: exercise {#mkv-c1-ej-hojas-c title="Suma las otras hojas"}
-Con el mismo árbol, calcula $\Pr(S_2=C\mid S_0=C)$. ¿Cuánto suman las cuatro hojas?
+Con el mismo árbol, calcula ${\Pr(S_2=C\mid S_0=C)}$. ¿Cuánto suman las cuatro hojas?
 :::
 
 ::: hint {#mkv-c1-pista-hojas-c of="mkv-c1-ej-hojas-c" title="Mira el último estado"}
@@ -61,14 +61,14 @@ Con el mismo árbol, calcula $\Pr(S_2=C\mid S_0=C)$. ¿Cuánto suman las cuatro 
 :::
 
 ::: answer {#mkv-c1-resp-hojas-c of="mkv-c1-ej-hojas-c"}
-Terminan en C los caminos C, V, C y C, C, C. Sus probabilidades suman $\tfrac{6}{11}+\tfrac{1}{9}=\tfrac{65}{99}$.
+Terminan en C los caminos C, V, C y C, C, C. Sus probabilidades suman ${\tfrac{6}{11}+\tfrac{1}{9}=\tfrac{65}{99}}$.
 
-Las cuatro hojas suman $\tfrac{34}{99}+\tfrac{65}{99}=1$: en el paso 2 la cadena está en algún estado.
+Las cuatro hojas suman ${\tfrac{34}{99}+\tfrac{65}{99}=1}$: en el paso 2 la cadena está en algún estado.
 :::
 
 **El árbol crece demasiado.** Con tres pasos tiene $2^3$ hojas; con $k$ estados y $t$ pasos, hasta $k^t$. Por la propiedad de Markov, los caminos que llegan al mismo estado en el mismo paso comparten sus probabilidades siguientes. Basta guardar cuánta probabilidad llega a cada estado.
 
-**Guardamos un vector fila.** En el orden V, C, empezar en C se escribe $\mu_0=(0,\ 1)$. La matriz conserva ese orden: fila = desde dónde; columna = hacia dónde.
+**Guardamos un vector fila.** En el orden V, C, empezar en C se escribe ${\mu_0=(0,\ 1)}$. La matriz conserva ese orden: fila = desde dónde; columna = hacia dónde.
 
 Para obtener cada entrada del paso 1, multiplicamos el renglón por una columna: entrada por entrada, y sumamos.
 
@@ -80,10 +80,10 @@ $$
 \end{aligned}
 $$
 
-- **Entrada V.** Usa la columna V: $0\cdot\tfrac{2}{11}+1\cdot\tfrac{2}{3}=\tfrac{2}{3}$.
-- **Entrada C.** Usa la columna C: $0\cdot\tfrac{9}{11}+1\cdot\tfrac{1}{3}=\tfrac{1}{3}$.
+- **Entrada V.** Usa la columna V: ${0\cdot\tfrac{2}{11}+1\cdot\tfrac{2}{3}=\tfrac{2}{3}}$.
+- **Entrada C.** Usa la columna C: ${0\cdot\tfrac{9}{11}+1\cdot\tfrac{1}{3}=\tfrac{1}{3}}$.
 
-**Desde un estado seguro, el primer paso copia su fila.** Para el paso 2, usamos $\mu_1$:
+**Si empiezas seguro en un estado, el primer paso copia su fila.** «Seguro» quiere decir que $\mu_0$ tiene un 1 en ese estado y 0 en los demás. Para el paso 2, usamos $\mu_1$:
 
 $$
 \begin{aligned}
@@ -96,7 +96,7 @@ $$
 \end{aligned}
 $$
 
-**Da lo mismo que el árbol.** Cada producto corresponde a una hoja; sumamos las que terminan en el mismo estado. Así, $\mu_2=(34/99,\ 65/99)$.
+**Da lo mismo que el árbol.** Cada producto corresponde a una hoja; sumamos las que terminan en el mismo estado. Así, ${\mu_2=(34/99,\ 65/99)}$.
 
 **El paso 3 responde la pregunta.** Multiplicamos $\mu_2$ por cada columna:
 
@@ -139,19 +139,19 @@ La propiedad de Markov y la homogeneidad permiten usar una matriz fija. La proba
 
 $$
 \begin{aligned}
-\Pr(S_{t+1}=s')
-&=\sum_s\Pr(S_t=s)\,
+&\Pr(S_{t+1}=s')\\
+&\quad=\sum_s\Pr(S_t=s)\,
   \Pr(S_{t+1}=s'\mid S_t=s)\\
-&=\sum_s\mu_t(s)\,P(s'\mid s).
+&\quad=\sum_s\mu_t(s)\,P(s'\mid s).
 \end{aligned}
 $$
 
 - **Probabilidad total.** Los eventos $\{S_t=s\}$ son disjuntos y cubren todo. Omitimos los de probabilidad 0: no aportan y su condicional no está definida.
-- **Propiedad de Markov.** Dado $S_t=s$, conocer la historia anterior no cambia la probabilidad del siguiente estado.
+- **Propiedad de Markov.** Dado ${S_t=s}$, conocer la historia anterior no cambia la probabilidad del siguiente estado.
 - **Homogeneidad.** Esa probabilidad es la misma en cada paso: $P(s'\mid s)$.
 
 ::: theorem {#mkv-c1-teo-predecir title="La distribución avanza multiplicando por la matriz"}
-En una cadena finita y homogénea con matriz $P$, para todo $t\ge0$:
+En una cadena finita y homogénea con matriz $P$, para todo ${t\ge0}$:
 
 $$
 \begin{aligned}
@@ -160,16 +160,18 @@ $$
 \end{aligned}
 $$
 
-Estas condiciones son suficientes. $P^t$ es $P$ multiplicada por sí misma $t$ veces; con $t=0$, conservamos $\mu_0$.
+Lo que se usa es que cada paso dependa solo del estado actual (Markov) y con la misma $P$ (homogeneidad). $P^t$ es $P$ multiplicada por sí misma $t$ veces; con $t=0$, conservamos $\mu_0$.
 :::
 
-**En la frase,** $\mu_3=\mu_0\widehat P^{\,3}$ reproduce la cuenta a mano. El teorema se aplica a la cadena ajustada, cuya matriz es $\widehat P$.
+**En la frase,** ${\mu_3=\mu_0\widehat P^{\,3}}$ reproduce la cuenta a mano. El teorema se aplica a la cadena ajustada, cuya matriz es $\widehat P$.
 
-**Sin una fila fija, falla la regla.** En el proceso que repite C C V, las dos C tienen siguientes distintos. Saber «estoy en C» no basta para elegir una fila que describa ambos pasos.
+**Sin una fila fija, falla la regla.** Un proceso repite C C V sin fin y empieza en una de sus dos C, cada una con probabilidad 1/2. Las dos C tienen siguientes distintos: la primera va a C y la segunda a V.
+
+Su tabla de un paso desde C tiene fila C $(1/2,\ 1/2)$ y fila V $(0,\ 1)$. Esa tabla predice ${\Pr(S_2=V)=1/4}$, pero el proceso da $1/2$: solo desde la primera C llega a V en dos pasos. Saber «estoy en C» no basta para elegir una fila que describa ambas C.
 
 **Con $k$ estados, hacemos la misma cuenta.** $\mu_t$ tiene $k$ entradas y $P$ mide $k\times k$. Cada entrada nueva suma $k$ productos: un paso requiere $k^2$ multiplicaciones. El árbol tiene hasta $k^t$ hojas; el vector conserva $k$ números.
 
-**El vector va a la izquierda.** Aquí usamos vectores fila y multiplicamos $\mu_tP$. Algunos libros usan vectores columna: multiplican $P^{\mathsf T}$ por el vector.
+**El vector va a la izquierda.** Aquí usamos vectores fila y multiplicamos $\mu_tP$. Algunos libros usan vectores columna: multiplican por el vector la traspuesta $P^{\mathsf T}$, que intercambia filas y columnas. Esa $\mathsf T$ indica trasposición; no es el largo $T$ de una trayectoria.
 
 **El atajo de dos estados tiene un límite.** Basta conocer $\Pr(S_t=V)$ porque la otra entrada es su complemento. Con $k$ estados hacen falta $k-1$ números.
 
@@ -210,15 +212,18 @@ Debe conservar el vector actual y la matriz. En la cadena finita y homogénea, e
 - **Qué devuelve al terminar:** entrega $\mu_t$ después de exactamente $t$ multiplicaciones de vector por matriz.
 
 ::: figure {#mkv-c1-flujo-predecir title="Predecir, en palabras"}
-![Diagrama de flujo de predecir, en palabras: empieza con μ₀, un vector fila; multiplica por P̂, μ ← μ P̂; pregunta si ya van t pasos; si no, vuelve a multiplicar; si sí, devuelve μₜ. Al pie: cada paso cuesta k² productos con k estados](../_assets/mkv-c1-flujo-predecir.svg)
+![Diagrama de flujo de predecir, en palabras: empieza con μ₀, un vector fila; pregunta si faltan pasos; si sí, multiplica por P̂, μ ← μ P̂, y vuelve a preguntar con otro paso; si no, devuelve μₜ. Con t = 0 devuelve μ₀ sin multiplicar. Al pie: cada paso cuesta k² productos con k estados](../_assets/mkv-c1-flujo-predecir.svg)
 :::
 
 ```text
-INPUT   los k estados de 𝒮, en un orden fijo
-        (V, C en la frase); P, de k×k, con filas
-        y columnas en ese orden; μ_0, un vector
-        fila de k entradas que suma 1; t ≥ 0.
-OUTPUT  μ_t, la distribución en el paso t.
+INPUT   los k estados de 𝒮, en un
+        orden fijo (V, C en la frase);
+        P, de k×k, con filas y
+        columnas en ese orden; μ_0,
+        vector fila de k entradas
+        que suma 1; un entero t ≥ 0.
+OUTPUT  μ_t, la distribución del
+        estado en el paso t.
 
  1 function PREDECIR(P, μ_0, t)
  2   μ ← μ_0                  # el paso 0
@@ -226,7 +231,8 @@ OUTPUT  μ_t, la distribución en el paso t.
  4     nuevo ← k ceros        # el μ del paso j
  5     for each s′ in 𝒮       # una columna
  6       for each s in 𝒮      # un renglón
- 7         nuevo(s′) ← nuevo(s′) + μ(s)·P(s′ | s)
+ 7         nuevo(s′) ← nuevo(s′)
+                 + μ(s)·P(s′ | s)
  8     μ ← nuevo              # ahora μ = μ_j
  9   return μ                 # μ_t
 ```
@@ -261,15 +267,19 @@ print(predecir(P_gorro, [0, 1], 3))
 
 **Cómo leer la traza.** Usamos la matriz de la frase y empezamos en C. El renglón 0 muestra la inicialización; cada renglón siguiente muestra $\mu$ al terminar la vuelta $j$.
 
-| j | μ(V) | μ(C) | Qué pasó |
-|---:|---|---|---|
-| 0 | 0 | 1 | Línea 2: empieza en C |
-| 1 | 2/3 | 1/3 | Copia la fila C |
-| 2 | 34/99 | 65/99 | Suma las hojas del árbol |
-| 3 | 1634/3267 | 1633/3267 | Responde la pregunta |
+**Tramo único · De C al paso 3**
 
-- **Paso 1.** El 1 de $\mu_0$ está en C, así que el producto conserva solo esa fila.
-- **Paso 3.** Devuelve $(1634/3267,\ 1633/3267)$; las entradas siguen sumando 1.
+| j | μ(V) | μ(C) |
+|---:|---|---|
+| 0 | 0 | 1 |
+| 1 | 2/3 | 1/3 |
+| 2 | 34/99 | 65/99 |
+| 3 | 1634/3267 | 1633/3267 |
+
+- **Paso 0.** La línea 2 empieza en C.
+- **Paso 1.** El 1 de $\mu_0$ está en C, así que el producto copia la fila C.
+- **Paso 2.** Suma las hojas que terminan en cada estado, como en la @mkv-c1-arbol-2-pasos.
+- **Paso 3.** Responde la pregunta: devuelve $(1634/3267,\ 1633/3267)$, y las entradas siguen sumando 1.
 
 ::: exercise {#mkv-c1-ej-traspuesta title="Encuentra el índice cambiado"}
 Alguien escribió la línea 7 con $P(s\mid s')$ en lugar de $P(s'\mid s)$. Corre una vuelta con la matriz de la frase desde $\mu_0=(0,\ 1)$.
@@ -301,18 +311,20 @@ La cuenta con fracciones es exacta; la simulación permite contrastarla mediante
 
 ## 4 · Simular réplicas para comprobar la cuenta
 
-**Piensa: si no confiaras en la multiplicación, ¿cómo estimarías $\Pr(S_3=V)$?**
+**Piensa: si no confiaras en la multiplicación, ¿cómo estimarías ${\Pr(S_3=V)}$?**
 
 Simularías la cadena muchas veces y contarías cuántas réplicas terminan en V en ese paso. Para un paso fijo, la ley de los grandes números permite aproximar su probabilidad con réplicas independientes del mismo modelo.
 
 **El experimento usa la matriz del corpus:**
 
-- **Matriz.** Usamos $\widehat P$ del *Quijote*, con filas $(0.181,\ 0.819)$ y $(0.710,\ 0.290)$.
-- **Réplicas.** Simulamos $n=10\,000$ trayectorias independientes de 8 pasos desde C, con semilla 2030; otras 10 000 empiezan en V, con semilla 2029. Cada paso usa MUESTREAR-FILA con un $u$ nuevo.
+- **Matriz.** Usamos $\widehat P$ del *Quijote*. Redondeadas, sus filas son $(0.181,\ 0.819)$ y $(0.710,\ 0.290)$; la cuenta y la simulación usan las fracciones exactas de los conteos.
+- **Réplicas.** Simulamos $n=10\,000$ trayectorias independientes de 8 pasos desde C, con semilla 2030; otras 10 000 empiezan en V, con semilla 2029. Cada réplica gasta un $u$ para sortear $S_0$ con $\mu_0$, aunque el inicio sea seguro, y cada paso usa MUESTREAR-FILA con un $u$ nuevo.
 - **Un punto.** Muestra la fracción de réplicas que están en V en el paso $t$.
 - **Una línea.** Muestra la cuenta $\mu_0\widehat P^{\,t}$ de PREDECIR, con la misma matriz e inicio.
 
 **Cuánto ruido esperar.** En un paso fijo, cada réplica está en V con probabilidad $p$. La fracción simulada varía alrededor de $p$.
+
+**De dónde sale el tamaño del ruido.** Cada réplica aporta 1 si está en V y 0 si no. Ese 0 o 1 se aleja de $p$, típicamente, $\sqrt{p(1-p)}$: nada si $p$ vale 0 o 1, y lo más con $p=1/2$. Promediar $n$ réplicas independientes divide esa dispersión entre $\sqrt n$.
 
 ::: definition {#mkv-c1-error-estandar title="El error estándar de una fracción simulada"}
 **Qué es.** El error estándar (*standard error*) mide el tamaño típico de la diferencia entre la fracción simulada y la probabilidad $p$.
@@ -323,18 +335,19 @@ $$
 \sqrt{\frac{p(1-p)}{n}}.
 $$
 
-**Qué significa.** Con el mismo $p$, cuadruplicar $n$ reduce el error estándar a la mitad. Como $p(1-p)\le1/4$, con $n=10\,000$ el error estándar no supera $0.005$. Diferencias de uno o dos errores estándar son lo esperable.
+**Qué significa.** Con el mismo $p$, cuadruplicar $n$ reduce el error estándar a la mitad. Como ${p(1-p)\le1/4}$, con ${n=10\,000}$ el error estándar no supera $0.005$; con $p=0.533$, el del paso 3 desde C, vale ${\approx0.005}$. Diferencias de uno o dos errores estándar son lo esperable.
 
 **Qué no es.** No es una cota para la diferencia observada: puede superar uno o dos errores estándar. Tampoco mide si el modelo describe el texto.
 :::
 
 ::: figure {#mkv-c1-mu-t title="La cuenta y las réplicas coinciden dentro del error, paso a paso"}
-![Probabilidad de estar en V en el paso t, de t = 0 a 8, con la matriz del corpus. Arriba, la cuenta μ₀P̂ᵗ como línea y la fracción de 10 000 réplicas en V como marcas. Desde V: cuenta 1.000, 0.181, 0.615, 0.385, 0.507, 0.442, 0.476, 0.458, 0.468; réplicas 1.000, 0.180, 0.611, 0.392, 0.498, 0.438, 0.476, 0.460, 0.464. Desde C: cuenta 0.000, 0.710, 0.334, 0.533, 0.428, 0.484, 0.454, 0.470, 0.462; réplicas 0.000, 0.712, 0.326, 0.543, 0.424, 0.485, 0.452, 0.467, 0.470. Abajo, réplicas menos cuenta, con una franja de ±2 errores estándar (±0.010); la mayor diferencia es 0.010, unos 2.0 errores estándar](../_assets/mkv-c1-mu-t.svg)
+![Probabilidad de estar en V en el paso t, de t = 0 a 8, con la matriz del corpus. Arriba, la cuenta μ₀P̂ᵗ como línea y la fracción de 10 000 réplicas en V como marcas. Desde V: cuenta 1.000, 0.181, 0.615, 0.385, 0.507, 0.442, 0.476, 0.458, 0.468; réplicas 1.000, 0.180, 0.611, 0.392, 0.498, 0.438, 0.476, 0.460, 0.464. Desde C: cuenta 0.000, 0.710, 0.334, 0.533, 0.428, 0.484, 0.454, 0.470, 0.462; réplicas 0.000, 0.712, 0.326, 0.543, 0.424, 0.485, 0.452, 0.467, 0.470. Abajo, réplicas menos cuenta, con una franja de ±0.010, dos errores estándar en el peor caso (p = 0.5); la mayor diferencia es 0.010, unos 2.0 errores estándar, en el paso 3 desde C, justo en el borde de la franja](../_assets/mkv-c1-mu-t.svg)
 :::
 
 - **Cuenta desde C.** En los pasos 1, 2 y 3 da 0.710, 0.334 y 0.533. Con la cadena del corpus, la respuesta para el paso 3 es 0.533.
 - **Réplicas desde C.** Las fracciones son 0.712, 0.326 y 0.543 en esos mismos pasos.
-- **Mayor diferencia observada.** Es 0.010, en el paso 3 desde C: unos 2.0 errores estándar. Ningún punto se sale de la franja del panel inferior.
+- **La franja del panel inferior.** Mide ±0.010: dos errores estándar en el peor caso, $p=0.5$. En los demás puntos el error estándar es menor, así que la franja es una cota, no el ancho exacto de cada punto.
+- **Mayor diferencia observada.** Es 0.010, en el paso 3 desde C: unos 2.0 errores estándar. Ningún punto se sale de la franja, pero ese queda en su borde.
 - **Paso 0.** Es exacto porque todas las réplicas de cada grupo empiezan en el mismo estado.
 
 **La simulación se aproxima, no coincide.** En este experimento, las diferencias son del tamaño que anticipa el error estándar.
@@ -366,7 +379,7 @@ Ya puedes calcular una predicción y contrastarla con réplicas; toca aplicar am
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Una cadena homogénea tiene estados x, y, z, en ese orden. **Cambia una idea:** usa tres estados; el inicio se reparte entre dos de ellos.
+Una cadena homogénea tiene estados 1, 2, 3, en ese orden. **Cambia una idea:** el inicio ya no es seguro; se reparte entre dos estados.
 
 $$
 P=\begin{pmatrix}
@@ -374,7 +387,9 @@ P=\begin{pmatrix}
 1/3 & 0 & 2/3\\
 0 & 1/2 & 1/2
 \end{pmatrix},
-\qquad
+$$
+
+$$
 \mu_0=\left(\tfrac12,\ \tfrac12,\ 0\right).
 $$
 
@@ -394,15 +409,15 @@ $$
 :::
 
 ::: answer {#mkv-c1-resp-tres-estados of="mkv-c1-ej-tres-estados" title="Respuesta · Dos pasos con tres estados"}
-**1. Ceros.** $P(y\mid y)=0$ impide quedarse en y; $P(x\mid z)=0$ impide pasar de z a x. Ambas transiciones son imposibles en el modelo.
+**1. Ceros.** ${P(2\mid 2)=0}$ impide quedarse en 2; ${P(1\mid 3)=0}$ impide pasar de 3 a 1. Ambas transiciones son imposibles en el modelo.
 
-**2. Primer paso.** La fila z no aporta porque $\mu_0(z)=0$:
+**2. Primer paso.** La fila 3 no aporta porque ${\mu_0(3)=0}$:
 
 $$
 \begin{aligned}
-\mu_1(x)&=\tfrac12\cdot\tfrac12+\tfrac12\cdot\tfrac13=\tfrac{5}{12},\\
-\mu_1(y)&=\tfrac12\cdot\tfrac14+\tfrac12\cdot0=\tfrac18,\\
-\mu_1(z)&=\tfrac12\cdot\tfrac14+\tfrac12\cdot\tfrac23=\tfrac{11}{24}.
+\mu_1(1)&=\tfrac12\cdot\tfrac12+\tfrac12\cdot\tfrac13=\tfrac{5}{12},\\
+\mu_1(2)&=\tfrac12\cdot\tfrac14+\tfrac12\cdot0=\tfrac18,\\
+\mu_1(3)&=\tfrac12\cdot\tfrac14+\tfrac12\cdot\tfrac23=\tfrac{11}{24}.
 \end{aligned}
 $$
 
@@ -410,34 +425,34 @@ $$
 
 $$
 \begin{aligned}
-\mu_2(x)
+\mu_2(1)
 &=\tfrac{5}{12}\cdot\tfrac12+\tfrac18\cdot\tfrac13+\tfrac{11}{24}\cdot0\\
 &=\tfrac14,\\
-\mu_2(y)
+\mu_2(2)
 &=\tfrac{5}{12}\cdot\tfrac14+\tfrac18\cdot0+\tfrac{11}{24}\cdot\tfrac12\\
 &=\tfrac13,\\
-\mu_2(z)
+\mu_2(3)
 &=\tfrac{5}{12}\cdot\tfrac14+\tfrac18\cdot\tfrac23+\tfrac{11}{24}\cdot\tfrac12\\
 &=\tfrac{5}{12}.
 \end{aligned}
 $$
 
-Así, $\mu_2=(1/4,\ 1/3,\ 5/12)$, que suma 1.
+Así, ${\mu_2=(1/4,\ 1/3,\ 5/12)}$, que suma 1.
 
-**4. General.** Como la cadena es finita y homogénea, $\mu_t=\mu_0P^t$. PREDECIR requiere $k^2=3^2$ multiplicaciones por paso: $t\cdot3^2$ en total.
+**4. General.** Como la cadena es finita y homogénea, ${\mu_t=\mu_0P^t}$. PREDECIR requiere ${k^2=3^2}$ multiplicaciones por paso: ${t\cdot3^2}$ en total.
 :::
 
 ::: exercise {#mkv-c1-ej-leer-simulacion title="Lee una simulación con pocas réplicas"}
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Repetiste la simulación desde C con la matriz del corpus. **Cambia una idea:** usaste $n=400$ réplicas independientes en lugar de 10 000, con semilla 2031.
+Repetiste la simulación desde C con la matriz del corpus. **Cambia una idea:** usaste $n=400$ réplicas independientes en lugar de 10 000, con semilla 2031.
 
 La fracción en V fue 0.693, 0.352 y 0.512 en los pasos 1, 2 y 3. La cuenta da 0.710, 0.334 y 0.533.
 
 1. **Calcula el error estándar.** Usa $p$ igual a la cuenta de cada paso.
 2. **Compara.** ¿Cada diferencia cabe en dos errores estándar? ¿En uno?
-3. **Explica el tamaño.** ¿Por qué los errores estándar son mayores que con 10 000 réplicas? ¿Cuánto mayores?
+3. **Explica el tamaño.** ¿Por qué los errores estándar son mayores que con 10 000 réplicas? ¿Cuánto mayores?
 4. **Delimita.** ¿Esta concordancia dice algo sobre el *Quijote*?
 
 :::
@@ -451,30 +466,30 @@ La fracción en V fue 0.693, 0.352 y 0.512 en los pasos 1, 2 y 3. La cuenta da 0
 :::
 
 ::: answer {#mkv-c1-resp-leer-simulacion of="mkv-c1-ej-leer-simulacion" title="Respuesta · Dentro del error, con menos precisión"}
-**1. Errores estándar.** Con $n=400$ réplicas independientes, dan 0.023, 0.024 y 0.025. En el paso 2, $\sqrt{0.334\cdot(1-0.334)/400}\approx0.024$.
+**1. Errores estándar.** Con $n=400$ réplicas independientes, dan 0.023, 0.024 y 0.025. En el paso 2, ${\sqrt{0.334\cdot(1-0.334)/400}\approx0.024}$.
 
 **2. Comparación.** Las tres diferencias caben incluso en un error estándar:
 
-- **Paso 1.** La diferencia cumple $|0.693-0.710|<0.023$.
-- **Paso 2.** La diferencia cumple $|0.352-0.334|<0.024$.
-- **Paso 3.** La diferencia cumple $|0.512-0.533|<0.025$.
+- **Paso 1.** La diferencia cumple ${|0.693-0.710|<0.023}$.
+- **Paso 2.** La diferencia cumple ${|0.352-0.334|<0.024}$.
+- **Paso 3.** La diferencia cumple ${|0.512-0.533|<0.025}$.
 
-**3. Tamaño.** Para el mismo $p$, el error estándar cambia como $1/\sqrt n$. Con 25 veces menos réplicas, es $\sqrt{25}=5$ veces mayor: de a lo más 0.005 a cerca de 0.025.
+**3. Tamaño.** Para el mismo $p$, el error estándar cambia como $1/\sqrt n$. Con 25 veces menos réplicas, es ${\sqrt{25}=5}$ veces mayor: de a lo más 0.005 a cerca de 0.025.
 
 **4. Límite.** Las réplicas salen de $\widehat P$. La concordancia comprueba la cuenta y el muestreo; no aporta evidencia independiente sobre el texto.
 :::
 
-**Punto de control:** deberías poder predecir con un árbol y un vector fila, y justificar $\mu_{t+1}=\mu_tP$ con sus supuestos. También, correr PREDECIR, dar su costo y comparar una simulación con su error estándar.
+**Punto de control:** deberías poder predecir con un árbol y un vector fila, y justificar ${\mu_{t+1}=\mu_tP}$ con sus supuestos. También, correr PREDECIR, dar su costo y comparar una simulación con su error estándar.
 
 ---
 
 ## Lo que hay que llevarse
 
-- **A mano.** Con la matriz de la frase y desde C, el árbol da $4/33+2/9=34/99$ para V en el paso 2. El vector fila por la matriz suma los mismos caminos.
-- **La respuesta.** Desde C, la cadena de la frase da $\mu_3=(1634/3267,\ 1633/3267)$. La cadena del corpus da $\Pr(S_3=V)=0.533$.
-- **La regla.** En una cadena finita y homogénea, $\mu_{t+1}=\mu_tP$ y $\mu_t=\mu_0P^t$. La propiedad de Markov y la homogeneidad son condiciones suficientes.
-- **El algoritmo.** PREDECIR usa $t\cdot k^2$ multiplicaciones; guarda la matriz y dos vectores de $k$ entradas. El árbol tendría hasta $k^t$ hojas.
-- **El tamaño del vector.** Con dos estados basta conocer una probabilidad; con $k$, hacen falta $k-1$.
-- **La simulación.** Con 10 000 réplicas independientes por inicio, el error estándar no supera 0.005; la mayor diferencia observada fue 0.010. Son unos 2 errores estándar: la comparación comprueba el procedimiento, no valida el modelo.
+- **A mano.** Con la matriz de la frase y desde C, el árbol da ${4/33+2/9=34/99}$ para V en el paso 2. El vector fila por la matriz suma los mismos caminos.
+- **La respuesta.** Desde C, la cadena de la frase da ${\mu_3=(1634/3267,\ 1633/3267)}$. La cadena del corpus da ${\Pr(S_3=V)=0.533}$.
+- **La regla.** En una cadena finita y homogénea, ${\mu_{t+1}=\mu_tP}$ y ${\mu_t=\mu_0P^t}$. Se apoya en la propiedad de Markov y la homogeneidad.
+- **El algoritmo.** PREDECIR usa ${t\cdot k^2}$ multiplicaciones; guarda la matriz y dos vectores de $k$ entradas. El árbol tendría hasta $k^t$ hojas.
+- **El tamaño del vector.** Con dos estados basta conocer una probabilidad; con $k$, hacen falta ${k-1}$.
+- **La simulación.** Con 10 000 réplicas independientes por inicio, el error estándar no supera 0.005; la mayor diferencia observada fue 0.010. Son unos 2 errores estándar, en el borde de la franja de ±0.010: la comparación comprueba el procedimiento, no valida el modelo.
 
 Continúa con [[mkv-generar-texto|Generar texto]].
