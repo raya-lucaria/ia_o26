@@ -438,7 +438,7 @@ $$
 - **Qué no es.** La independencia sin condición y la independencia dado $B$ no se implican entre sí.
 :::
 
-- **Datos.** La frase tiene 27 letras; contrastamos el supuesto con el *Quijote* completo, normalizado como V/C.
+- **Datos.** La frase tiene 27 letras; contrastamos el supuesto con el *Quijote* completo: minúsculas, vocales sin acento, sin espacios ni signos. La ñ y la «y» cuentan como consonantes.
 - **Experimento.** Sortea una posición del libro con al menos dos letras siguientes; observa las tres.
 - **Nombres.** La sorteada es $S_{t-1}$; la siguiente, $S_t$; la última, $S_{t+1}$.
 - **Estimaciones.** Usamos el libro como datos de un modelo; sus frecuencias llevan gorro: $\widehat{\Pr}$.

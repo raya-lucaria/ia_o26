@@ -36,6 +36,10 @@ De [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]]:
 
 ## 1 · Leer los estados y la matriz
 
+**Piensa: ¿cómo organizas las probabilidades de pasar entre estados?**
+
+En una matriz cuadrada: cada fila fija el origen y cada columna, el destino.
+
 ::: definition {#mkv-c1-matriz-transicion title="Matriz de transición estocástica por filas"}
 $$
 \begin{aligned}
@@ -96,7 +100,7 @@ $$
 
 - **Lectura:** multiplicar por esa columna suma cada fila.
 
-**Ejemplo abstracto: tres estados.**
+**Ejemplo abstracto: tres estados.** Escribimos $p_{ij}=P_{ij}$ para las entradas de esta matriz simbólica.
 
 $$
 \begin{aligned}
@@ -146,9 +150,15 @@ En la matriz de tres estados, ¿qué significa $p_{31}$? Si vale cero, ¿tambié
 - **Sentido contrario:** $p_{13}$ puede ser positivo; las dos flechas tienen probabilidades distintas.
 :::
 
+La matriz describe las transiciones; falta precisar cómo gobierna una sucesión de estados.
+
 ---
 
 ## 2 · Definir la cadena
+
+**Piensa: ¿qué falta, además de la matriz, para definir una cadena?**
+
+Faltan la distribución inicial y las condiciones que permiten usar la misma fila después de cualquier historia.
 
 ::: definition {#mkv-c1-cadena title="Cadena de Markov finita y homogénea"}
 $$
@@ -214,9 +224,15 @@ Después de aplicar la propiedad de Markov, ¿qué información de cada historia
 **No:** ambas probabilidades valen $p_{23}$. Una diferencia violaría la propiedad de Markov para esos estados.
 :::
 
+La cadena ya está definida; representemos la incertidumbre sobre su estado en cada paso.
+
 ---
 
 ## 3 · Escribir distribuciones como filas
+
+**Piensa: ¿cómo describes dónde puede estar la cadena en un paso?**
+
+Con un vector fila que asigna una probabilidad a cada estado.
 
 ::: definition {#mkv-c1-distribucion title="La distribución en el paso t"}
 $$
@@ -286,9 +302,15 @@ $$
 $$
 :::
 
+Con la distribución escrita como fila, podemos calcular cómo cambia al dar un paso.
+
 ---
 
 ## 4 · Avanzar un paso multiplicando
+
+**Piensa: ¿cómo obtienes la distribución del paso siguiente?**
+
+Multiplicas la distribución actual por la matriz de transición, con la fila a la izquierda.
 
 ::: theorem {#mkv-c1-teo-predecir title="La distribución avanza multiplicando por la matriz"}
 En una cadena finita y homogénea de @mkv-c1-cadena, para todo entero $t\ge0$:
@@ -364,7 +386,7 @@ $$
 $$
 
 - **Motivo:** las dimensiones interiores no coinciden. Con un solo estado, ambas matrices son $1\times1$.
-- **Otra convención:** los libros con distribuciones columna trasponen también la matriz:
+- **Otra convención:** el superíndice $\mathsf T$ indica trasposición: intercambia filas y columnas. Con distribuciones columna, el producto se escribe:
 
 $$
 \begin{aligned}
@@ -418,9 +440,15 @@ $$
 **Llegadas:** una desde $s_1$ y otra desde $s_3$; el origen $s_2$ tiene peso cero.
 :::
 
+Repetir el producto de un paso lleva a las potencias de la matriz.
+
 ---
 
 ## 5 · Avanzar varios pasos con potencias
+
+**Piensa: ¿cómo reúnes varias transiciones en una sola matriz?**
+
+Con una potencia de la matriz de transición.
 
 ::: theorem {#mkv-c1-teo-potencias title="Las potencias describen transiciones de varios pasos"}
 Para una cadena finita y homogénea y enteros $t,t_1,t_2\ge0$:
@@ -504,9 +532,15 @@ $$
 **Sí:** el camino pasa por $s_2$, aunque la transición directa sea imposible.
 :::
 
+Las potencias reúnen caminos posibles; distingamos esa distribución de un camino realizado.
+
 ---
 
 ## 6 · Distinguir distribución y trayectoria
+
+**Piensa: ¿calcular la distribución produce un camino de la cadena?**
+
+No: la distribución reúne probabilidades; una trayectoria elige un estado en cada paso.
 
 Para la cadena de @mkv-c1-cadena y una secuencia de índices $i_0,\dots,i_t$:
 
@@ -571,9 +605,15 @@ $$
 **No:** ese camino es una de las posibilidades de llegada. Las demás contribuciones son no negativas.
 :::
 
+Todos estos objetos tienen una forma fija; revisarla detecta un producto mal escrito.
+
 ---
 
 ## 7 · Comprobar las dimensiones
+
+**Piensa: ¿cómo compruebas que cada producto tiene sentido?**
+
+Revisas que coincidan las dimensiones interiores y que todos los objetos usen el mismo orden de estados.
 
 Para una cadena finita y homogénea, con el mismo orden de estados en todos los objetos:
 
@@ -635,6 +675,8 @@ $$
 \end{aligned}
 $$
 :::
+
+Con estas formas puedes comprobar los productos de los ejercicios siguientes.
 
 ---
 

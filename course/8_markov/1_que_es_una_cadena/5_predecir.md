@@ -23,8 +23,8 @@ Al terminar tendrás:
 ## Lo que traes
 
 - **Probabilidad total.** [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]] presenta @mkv-c1-teo-total y el promedio de repeticiones independientes, @mkv-c1-teo-promedio.
-- **La cadena.** [[mkv-cadena-en-general|La cadena de Markov, en general]] define ${(\mathcal S,\mu_0,P)}$ en @mkv-c1-cadena. Una trayectoria tiene probabilidad ${\mu_0(s_0)\prod_{j=0}^{t-1}P(s_{j+1}\mid s_j)}$, bajo Markov y homogeneidad.
-- **El muestreo.** MUESTREAR-FILA elige el siguiente estado con un uniforme $u$. Una réplica es una trayectoria simulada, independiente de las demás.
+- **La predicción.** En [[mkv-cadena-en-general|La cadena de Markov, en general]], $\mu_t=\mu_0P^t$ para la cadena de @mkv-c1-cadena (@mkv-c1-teo-predecir).
+- **El muestreo.** En [[mkv-el-problema-de-markov|El problema de Markov]], MUESTREAR-FILA elige el siguiente estado con un uniforme $u$. Una réplica es una trayectoria simulada, independiente de las demás.
 - **Las matrices ajustadas.** [[mkv-ajustar-contando|Ajustar contando]] obtuvo filas ${(2/11,\ 9/11)}$ y ${(2/3,\ 1/3)}$ para la frase. Para el *Quijote*, redondeadas: ${(0.181,\ 0.819)}$ y ${(0.710,\ 0.290)}$.
 
 > **Modelo y datos.** Trabajamos con cadenas finitas y homogéneas. Usamos la matriz estimada $\widehat P$ para predecir lo que haría esa cadena.
@@ -46,7 +46,6 @@ $$
 \end{aligned}
 $$
 
-- **Lectura.** $\mu_t$ (@mkv-c1-distribucion) es una fila; cada paso la multiplica por la misma $P$ y sigue siendo ${1\times k}$.
 - **Aquí.** Con la frase, ${k=2}$, $P=\widehat P$ y ${\mu_0=\mathbf e_2}$. Primero lo vemos con un árbol, después con el vector.
 
 ### El árbol de la frase
@@ -140,24 +139,26 @@ $$
 - **Tamaño del árbol.** Tres pasos dan $2^3$ hojas; con $k$ estados y $t$ pasos, hasta $k^t$. El vector guarda solo $k$ números.
 - **Lo que no generaliza.** Con dos estados basta ${\mu_t(V)}$, porque ${\mu_t(C)=1-\mu_t(V)}$. Con $k$ estados hacen falta ${k-1}$ números.
 
+La cuenta usa la misma matriz en cada paso; veamos qué falla cuando el presente no basta.
+
 ---
 
 ## 2 · Derivar el contraejemplo
 
 **Piensa: ¿basta una tabla de un paso para predecir con potencias?**
 
-No. La prueba de @mkv-c1-teo-predecir usa, en cada paso $t$, la propiedad de Markov y la homogeneidad:
+No. La prueba de @mkv-c1-teo-predecir usa, en cada paso $t$, la propiedad de Markov y la homogeneidad de @mkv-c1-cadena, con $H_t$ la historia hasta $t$:
 
 $$
 \begin{aligned}
-&\Pr(S_{t+1}=s'\mid S_t=s,\ \text{historia})\\
-&\quad=P(s'\mid s).
+&\Pr(S_{t+1}=s_j\mid H_t)\\
+&\quad=P_{i_tj}.
 \end{aligned}
 $$
 
-- **Si vale.** Cada paso usa la fila de $s$ y nada más; en la frase, ${\mu_3=\mu_0\widehat P^{\,3}}$ reproduce la cuenta a mano.
-- **Contraejemplo.** Un proceso repite C C V sin fin. Empieza en cualquiera de sus dos C, cada una con probabilidad $1/2$.
-- **Dos posiciones distintas.** La primera C va a C; la segunda va a V. Su tabla de un paso, en orden V, C, es:
+- **Si vale.** Cada paso usa la fila del estado actual y nada más; en la frase, ${\mu_3=\mu_0\widehat P^{\,3}}$ reproduce la cuenta a mano.
+- **Contraejemplo.** Retomamos C C V de [[mkv-el-problema-de-markov|El problema de Markov]], empezando en cualquiera de sus dos C, cada una con probabilidad $1/2$.
+- **Matriz candidata.** La fila C mezcla esas dos posiciones; desde V siempre se va a C. En el orden V, C:
 
 $$
 P=\begin{pmatrix}0&1\\1/2&1/2\end{pmatrix},
@@ -201,6 +202,8 @@ $$
 
 Cada paso conserva su matriz. Sin homogeneidad, la potencia ${\mu_0\widehat P^{\,2}}$ ya no está garantizada.
 :::
+
+Con las condiciones identificadas, podemos escribir la multiplicación repetida como algoritmo.
 
 ---
 
@@ -323,6 +326,8 @@ Con ${\mu=(0,\ 1)}$, ¿qué entradas de $\widehat P$ se multiplican por 1?
 - **Costo:** $k^2$ multiplicaciones por vuelta, ${t\cdot k^2}$ en total. Guarda $k^2$ entradas de la matriz y dos vectores de $k$ entradas.
 - **Supuestos:** $\mu_0$ es una distribución; $P$ es fija, tiene entradas en ${[0,1]}$ y cada fila suma 1.
 
+El algoritmo da la distribución; las réplicas permiten comprobar la cuenta contando estados.
+
 ---
 
 ## 4 · Simular réplicas para comprobar la cuenta
@@ -393,6 +398,8 @@ Desde C, el punto del paso 0 vale 0.000 en la cuenta y en las réplicas. ¿Por q
 ::: answer {#mkv-c1-resp-paso-cero of="mkv-c1-ej-paso-cero"}
 Todas las réplicas empiezan en C, así que ninguna está en V. Con ${p=0}$, el error estándar es ${\sqrt{0\cdot1/n}=0}$.
 :::
+
+Aplica la predicción y la lectura del error a los dos problemas siguientes.
 
 ---
 

@@ -41,8 +41,9 @@ El hilo es **texto**: el *Quijote* completo, con 1 620 532 letras. Para
 seguir cada cuenta a mano usamos una frase suya, **«Con la iglesia hemos
 dado, Sancho»**. Tiene solo dos estados: vocal y consonante.
 
-El juguete existe para trazar. Cada idea se dice después en general, con
-$k$ estados y cualquier alfabeto. Y se corre en el libro completo.
+Cada idea se dice primero **en general**, con $k$ estados y cualquier
+alfabeto. Después se traza a mano en la frase y se corre en el libro
+completo.
 
 ## Las clases
 

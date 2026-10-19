@@ -37,18 +37,18 @@ Al terminar tendrás:
 Cada par (actual, siguiente) y las salidas de cada estado.
 
 ::: definition {#mkv-c1-conteos title="Conteos, salidas y matriz estimada"}
-**Qué es.** Para ${\mathcal S=\{s_1,\dots,s_k\}}$ y una trayectoria ${s_0,\dots,s_T}$, con ${T\ge1}$, definimos:
+**Qué es.** Para $\mathcal S=\{s_1,\dots,s_k\}$ y una trayectoria $s_{i_0},\dots,s_{i_T}$, con $T\ge1$, definimos:
 
 $$
 \begin{aligned}
 N(s_i,s_j)
 &=\#\{t\in\{0,\dots,T-1\}:\\
-&\qquad s_t=s_i,\ s_{t+1}=s_j\},\\
+&\qquad i_t=i,\ i_{t+1}=j\},\\
 N(s_i)&=\sum_{j=1}^k N(s_i,s_j).
 \end{aligned}
 $$
 
-$\#$ cuenta elementos; $i,j$ nombran estados y $t$ indica pasos. $T$ cuenta transiciones, no es la ${T(s,a)}$ de juegos.
+$\#$ cuenta elementos; $i,j$ enumeran estados e $i_t$ identifica el visitado en el paso $t$. $T$ cuenta transiciones, no es la $T(s,a)$ de juegos.
 
 **Cómo se calcula.** Suma 1 por cada par y divide cada fila entre sus salidas:
 
@@ -133,17 +133,17 @@ No, bajo Markov y homogeneidad, con filas libres e inicio condicionado.
 ::: definition {#mkv-c1-verosimilitud title="La verosimilitud de una matriz"}
 **Qué es.** La verosimilitud (*likelihood*) ${\mathcal L(P)}$ es la probabilidad de los datos observados, vista como función de $P$.
 
-**Cómo se calcula.** Para ${P\in[0,1]^{k\times k}}$ estocástica por filas. Bajo Markov y homogeneidad, condicionamos a ${S_0=s_0}$:
+**Cómo se calcula.** Para $P\in[0,1]^{k\times k}$ estocástica por filas, bajo Markov y homogeneidad, condicionamos a $S_0=s_{i_0}$:
 
 $$
 \begin{aligned}
 \mathcal L(P)
-&=\prod_{t=0}^{T-1}P(s_{t+1}\mid s_t)\\
+&=\prod_{t=0}^{T-1}P_{i_ti_{t+1}}\\
 &=\prod_{i=1}^k\prod_{j=1}^kP_{ij}^{N(s_i,s_j)}.
 \end{aligned}
 $$
 
-**Qué significa.** Los datos quedan fijos; cambia $P$. Cada par aporta tantos factores como indica su conteo; condicionar elimina ${\mu_0(s_0)}$.
+**Qué significa.** Los datos quedan fijos; cambia $P$. Agrupar transiciones iguales produce los exponentes; condicionar elimina $\mu_0(s_{i_0})$.
 
 **Qué no es.** No es la probabilidad de que $P$ sea verdadera.
 :::
@@ -158,7 +158,7 @@ $$
 Se omiten términos con conteo 0; asignar probabilidad 0 a un par observado da ${\log\mathcal L(P)=-\infty}$.
 
 ::: theorem {#mkv-c1-teo-maximo title="Contar da la matriz más verosímil"}
-En una cadena finita y homogénea, condicionamos a ${S_0=s_0}$ y dejamos libres las filas de ${P\in[0,1]^{k\times k}}$.
+En una cadena finita y homogénea, condicionamos a $S_0=s_{i_0}$ y dejamos libres las filas de $P\in[0,1]^{k\times k}$.
 
 Para cada fila $i$:
 
@@ -254,9 +254,11 @@ Falta escribirlo para cualquier texto.
 
 Primero acumulas cada par; después divides las filas con salidas.
 
-> **Dado:** una trayectoria ${s_0,\dots,s_T}$, con ${T\ge1}$, sobre ${\mathcal S=\{s_1,\dots,s_k\}}$.
+> **Dado:** una trayectoria $s_{i_0},\dots,s_{i_T}$, con $T\ge1$, sobre $\mathcal S=\{s_1,\dots,s_k\}$.
 >
-> **Encontrar:** $\widehat P$ (@mkv-c1-conteos), de ${k\times k}$, estimando únicamente las filas con salidas.
+> **Encontrar:** $\widehat P$ (@mkv-c1-conteos), de $k\times k$, estimando únicamente las filas con salidas.
+
+En el pseudocódigo, $s_j$ abrevia el estado observado $s_{i_j}$: el subíndice $j$ recorre la trayectoria.
 
 ### El mapa de CONTAR-TRANSICIONES
 
@@ -516,7 +518,7 @@ $$
 \lvert\widehat P_{ij}-P_{ij}\rvert.
 $$
 
-**Sin salidas no hay recuperación.** Si V y C fueran absorbentes y empezaras en C, siempre observarías C. Aunque $T$ creciera, ${N(V)=0}$.
+**Sin salidas no hay recuperación.** Si V y C fueran absorbentes —desde cada uno solo se puede permanecer ahí— y empezaras en C, siempre observarías C. Aunque $T$ creciera, $N(V)=0$.
 
 **El experimento:**
 
@@ -580,24 +582,22 @@ En V/C, cada fila tiene datos de sobra. ¿Y si cada letra es un estado?
 
 ---
 
-## 5 · Generalizar a k estados
+## 5 · Generalizar a todo el alfabeto
 
 **Piensa: ¿qué cambia si cada letra es un estado?**
 
 Aumenta el tamaño de la matriz y los datos se reparten entre más filas.
 
-**Con $k$ estados**, si todas las filas tienen salidas:
+El ajuste sigue siendo $\widehat P_{ij}=N(s_i,s_j)/N(s_i)$ para $N(s_i)>0$ (@mkv-c1-conteos).
 
 $$
 \begin{aligned}
-\widehat P&\in[0,1]^{k\times k},\\
-\sum_{j=1}^k\widehat P_{ij}&=1,\\
 \text{entradas}&=k^2,\\
 \text{números libres}&=k(k-1).
 \end{aligned}
 $$
 
-Cada fila tiene ${k-1}$ números libres: la suma fija el último. Se estima con ${N(s_i,s_j)/N(s_i)}$; sin salidas queda indeterminada.
+La suma de cada fila fija su última entrada: quedan $k-1$ números libres por fila.
 
 **En el texto.** $\Sigma$ es el alfabeto de símbolos posibles: conservamos 27 letras y el espacio, con ${|\Sigma|=28}$.
 
@@ -725,17 +725,17 @@ Puedes incluir más pasado en el estado.
 ::: definition {#mkv-c1-memoria title="La memoria de un modelo de texto"}
 **Qué es.** La memoria $h$ indica cuántos símbolos forman el contexto usado como estado.
 
-**Cómo se calcula.** Para símbolos ${x_0,\dots,x_T\in\Sigma}$, con ${1\le h\le T}$, el contexto $c_t$ se desliza:
+**Cómo se calcula.** Para símbolos $z_0,\dots,z_T\in\Sigma$, con $1\le h\le T$, el contexto $c_t$ se desliza:
 
 $$
 \begin{aligned}
-c_t&=(x_{t-h+1},\dots,x_t)\in\Sigma^h,\\
-c_{t+1}&=(x_{t-h+2},\dots,x_{t+1}),\\
+c_t&=(z_{t-h+1},\dots,z_t)\in\Sigma^h,\\
+c_{t+1}&=(z_{t-h+2},\dots,z_{t+1}),\\
 t&=h-1,\dots,T-1.
 \end{aligned}
 $$
 
-Se cuentan pares ${(c_t,x_{t+1})}$:
+Se cuentan pares $(c_t,z_{t+1})$:
 
 $$
 \begin{aligned}
@@ -757,14 +757,7 @@ Un estado sin observaciones es ahora un contexto sin observaciones.
 
 **La cadena sobre contextos sí es cuadrada**, de ${|\Sigma|^h\times|\Sigma|^h}$. Sus transiciones deben respetar el deslizamiento.
 
-**Laplace cuenta símbolos siguientes.** Con ${s=c_t}$ y ${z\in\Sigma}$:
-
-$$
-\widetilde p(z\mid s)
-=\frac{N(s,z)+1}{N(s)+|\Sigma|}.
-$$
-
-Se suma 1 en cada columna de símbolos; el contexto siguiente se obtiene deslizando $s$ y agregando $z$.
+**Laplace por contexto:** $\widetilde p(z\mid c_t)=[N(c_t,z)+1]/[N(c_t)+|\Sigma|]$ (@mkv-c1-laplace). Se suavizan símbolos siguientes; cada símbolo determina el contexto siguiente.
 
 **En el texto:**
 
@@ -899,6 +892,10 @@ Usa @mkv-c1-ceros. **Cambia una idea:** cuenta solo con unas páginas de la prim
 ---
 
 ## Para profundizar
+
+**Piensa: ¿cómo comparas memorias sin decidir solo por sus ceros?**
+
+Comparas su pérdida promedio en datos reservados: menor pérdida significa mejores predicciones de esos datos.
 
 ### Elegir la memoria con datos reservados
 

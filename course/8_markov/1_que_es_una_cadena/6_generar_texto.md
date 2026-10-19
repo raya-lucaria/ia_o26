@@ -39,44 +39,47 @@ Al terminar tendrás:
 
 **Piensa: ¿cómo convierte una fila de probabilidades en texto cualquier modelo con memoria?**
 
+Sortea un símbolo con la fila del contexto y conserva los últimos $h$ símbolos (@mkv-c1-memoria).
+
+$Z_j$ es el símbolo aleatorio; $z_j$, su valor. $\operatorname{suf}_h(w)$ toma los últimos $h$ símbolos de $w$; con $h=0$, devuelve $()$.
+
 $$
 \begin{aligned}
 c_0&\in\Sigma^h,\\
-c_j&=\text{últimos }h\text{ símbolos}\\
-   &\qquad\text{de }c_0z_1\cdots z_j,\\
-\Pr(z_{j+1}=z\mid c_j)
-   &=P(z\mid c_j),\qquad z\in\Sigma.
+c_{j+1}&=\operatorname{suf}_h(c_jz_{j+1}),\\
+p(\cdot\mid c)&\in\mathbb R^{1\times|\Sigma|},\\
+p(z\mid c)&\ge0,\qquad
+\sum_{z\in\Sigma}p(z\mid c)=1.
 \end{aligned}
 $$
 
-- **Contexto:** $c_j$ son los últimos $h$ símbolos; $z_j$ es el símbolo $j$ de la continuación.
-- **Trayectoria:** desde $c_0$ se sortea ${z_1,z_2,\ldots}$, cada uno con la fila del contexto actual.
+### La tabla y la matriz
 
-### La fila y la tabla
+La tabla por símbolos guarda $|\Sigma|^h\times|\Sigma|$ probabilidades. La matriz $P$ entre contextos sigue siendo cuadrada:
 
 $$
 \begin{aligned}
-P(\cdot\mid c)&\in
-  \mathbb R^{1\times\lvert\Sigma\rvert},\\
-\sum_{z\in\Sigma}P(z\mid c)&=1,\\
-\text{tabla}:\ \lvert\Sigma\rvert^h
-  &\times\lvert\Sigma\rvert.
+P(c'\mid c)
+&=\sum_{\substack{z\in\Sigma:\\
+\operatorname{suf}_h(cz)=c'}}p(z\mid c),\\
+P&\in\mathbb R^{|\Sigma|^h\times|\Sigma|^h}.
 \end{aligned}
 $$
 
-- **Fila = contexto, columna = símbolo siguiente** (@mkv-c1-memoria). Con ${h=1}$ es la matriz ${k\times k}$ de siempre, ${k=\lvert\Sigma\rvert}$; con ${h\ge2}$ no es cuadrada.
+Con memoria 1, $p(z\mid c)=P(z\mid c)$; con memoria 0, $P=(1)$ y los símbolos se sortean de una sola fila.
 
 ### La probabilidad del texto
 
+$S_j$ es el contexto aleatorio; $c_j$, su valor. Fijamos el inicio $S_0=c_0$. Con filas fijas y un uniforme independiente por paso:
+
 $$
 \begin{aligned}
-&\Pr(z_1,\ldots,z_T\mid c_0)\\
-&\qquad=\prod_{j=0}^{T-1}P(z_{j+1}\mid c_j).
+&\Pr(Z_1=z_1,\ldots,Z_T=z_T\mid S_0=c_0)\\
+&\qquad=\prod_{j=0}^{T-1}p(z_{j+1}\mid c_j).
 \end{aligned}
 $$
 
-- **Lectura:** una entrada por paso, la de la fila del contexto. Es el producto de una trayectoria de @mkv-c1-cadena con el contexto como estado.
-- **Condiciones:** Markov de memoria $h$ y homogeneidad. Un factor cero vuelve imposible el texto.
+La regla del producto (@mkv-c1-teo-producto) multiplica las probabilidades por símbolo. Los contextos forman los estados de @mkv-c1-cadena.
 
 ### La matriz de V, C y espacio
 
@@ -124,7 +127,7 @@ Ninguno. La fila acumulada es (1/5, 1, 1): la entrada de `_` vale 0 y la suma no
 Todo ${u<1}$ ya eligió V o C. Es el cero estructural de la normalización: tras un espacio nunca hay otro.
 :::
 
-La traza usó una fila por paso. Con cualquier alfabeto y memoria, falta decir cómo se desliza el contexto y qué fila usa uno nunca visto.
+El deslizamiento ya fija el contexto siguiente; para programar la generación falta completar las filas sin datos.
 
 ---
 
@@ -132,53 +135,30 @@ La traza usó una fila por paso. Con cualquier alfabeto y memoria, falta decir c
 
 **Piensa: ¿cómo cambia el contexto y qué fila usas si nunca se observó?**
 
-$$
-\begin{aligned}
-h\ge1:\quad
-c_j&=(x_1,\ldots,x_h),\\
-z_{j+1}&=z,\\
-c_{j+1}&=(x_2,\ldots,x_h,z).
-\end{aligned}
-$$
-
-$$
-h=0:\qquad c_j=c_{j+1}=().
-$$
-
-- **Deslizar:** quitas el primer símbolo y agregas el recién sorteado; con memoria 0, el contexto siempre es vacío.
-- **Memoria 1:** al quitar el único símbolo, el nuevo contexto contiene solo $z$.
+Deslizas el contexto con la regla anterior; si no tuvo salidas, usas una fila uniforme.
 
 ### Un contexto nunca visto
 
-$$
-\begin{aligned}
-N(c)&=\sum_{z\in\Sigma}N(c,z),\\
-\widetilde p(z\mid c)
-&=\frac{N(c,z)+1}{N(c)+\lvert\Sigma\rvert},\\
-N(c)=0&\ \Longrightarrow\
-\widetilde p(z\mid c)=\frac1{\lvert\Sigma\rvert}.
-\end{aligned}
-$$
-
-- **Por símbolo siguiente:** Laplace agrega 1 a cada columna de símbolos, como en [[mkv-ajustar-contando|Ajustar contando]].
-- **Regla elegida:** las filas vistas se usan **sin suavizar**; solo un contexto sin salidas recibe la uniforme:
+Con $N(c)=\sum_{z\in\Sigma}N(c,z)$, elegimos:
 
 $$
-P(z\mid c)=
+p(z\mid c)=
 \begin{cases}
-\widehat P(z\mid c)=\dfrac{N(c,z)}{N(c)},
+\widehat p(z\mid c)=\dfrac{N(c,z)}{N(c)},
    &N(c)>0,\\[4pt]
-\dfrac1{\lvert\Sigma\rvert},&N(c)=0.
+\dfrac1{|\Sigma|},&N(c)=0.
 \end{cases}
 $$
 
+Para $N(c)=0$, Laplace también da $\widetilde p(z\mid c)=1/|\Sigma|$ (@mkv-c1-laplace).
+
+- **Filas vistas:** se usan sin suavizar; un siguiente no observado conserva probabilidad 0.
+- **Filas ausentes:** la «k» no aparece en el *Quijote*; con memoria 1, recibe la uniforme.
 - **Sin reinicio:** se conserva el texto y se sigue deslizando el contexto.
-- **Ejemplo:** la «k» no aparece en el *Quijote*; con memoria 1, su fila es la uniforme.
-- **Ceros vistos:** un siguiente ausente de una fila con datos conserva probabilidad 0.
 
 ::: definition {#mkv-c1-generar title="Generar con una cadena"}
 - **Qué es:** producir una trayectoria desde $c_0$, sorteando un símbolo por paso.
-- **Cómo se calcula:** muestrear ${P(\cdot\mid c_j)}$, escribir $z$ y actualizar $c_j$ con la regla anterior.
+- **Cómo se calcula:** muestrear $p(\cdot\mid c_j)$, escribir $z_{j+1}$ y actualizar $c_j$ con la regla anterior.
 - **Qué significa:** cada salida es una réplica del modelo; en la traza fue `C_CV`.
 - **Qué no es:** no calcula $\mu_t$ ni elige el máximo de cada fila; sortea según sus probabilidades.
 :::
@@ -282,7 +262,7 @@ print(generar(tabla, "VC_", "C",
 **Cada pieza, en su línea:**
 
 - **Línea 4:** `texto[len(texto)-h:]` da el contexto vacío con ${h=0}$; `texto[-0:]` daría todo el texto.
-- **Líneas 5 a 8:** usan $\widehat P$ para contextos vistos y la uniforme para los ausentes.
+- **Líneas 5 a 8:** usan las frecuencias $\widehat p$ para contextos vistos y la uniforme para los ausentes; con memoria 1, esas frecuencias forman $\widehat P$.
 - **Líneas 9 y 11:** un uniforme por símbolo; al agregar $z$, la línea 4 siguiente lee el contexto desplazado.
 
 ### Lo que garantiza y cuánto cuesta
@@ -317,16 +297,14 @@ GENERAR corre con cualquier tabla. ¿Qué escribe con las tablas del *Quijote*?
 
 **Piensa: ¿qué conserva del corpus cada fragmento generado?**
 
+Desde una fila vista sin suavizar, cada continuación conserva un bloque observado de $h+1$ símbolos:
+
 $$
-\begin{aligned}
-\widehat P(z\mid c)>0
-  &\Longrightarrow N(c,z)>0,\\
-\text{bloque }(c,z)&:\ h+1\text{ símbolos}.
-\end{aligned}
+\widehat p(z\mid c)>0
+\quad\Longrightarrow\quad N(c,z)>0.
 $$
 
-- **Bloques observados:** desde una fila vista sin suavizar, cada continuación reproduce un bloque del corpus.
-- **Alcance:** eso asegura bloques locales observados; la palabra o la frase completa puede ser nueva.
+La palabra o la frase completa puede ser nueva.
 
 ### Las condiciones del experimento
 
@@ -448,14 +426,16 @@ Estas salidas tienen un antecedente famoso, hecho sin computadora.
 
 **Piensa: ¿cómo se relacionan el tamaño del bloque y la memoria del contexto?**
 
+El bloque contiene el contexto y el símbolo siguiente: mide $h+1$.
+
 $$
 \begin{aligned}
 \text{tamaño del bloque}&=h+1,\\
-\text{orden de Shannon}&=h+1.
+\text{orden de Shannon}&=h+1
+\quad\text{desde el primer orden}.
 \end{aligned}
 $$
 
-- **Desde el primer orden:** la memoria mide el contexto; el orden de Shannon, el bloque con su siguiente.
 - **Orden cero:** es la excepción; usa símbolos independientes y equiprobables.
 - **Shannon (1948):** presentó aproximaciones al inglés en «Una teoría matemática de la comunicación» (*A Mathematical Theory of Communication*).
 - **Fuente:** *Bell System Technical Journal*, parte I, sección 3.
@@ -496,25 +476,25 @@ Memoria 3 se lee mejor que memoria 2. ¿Por qué no subirla sin límite?
 
 **Piensa: si memoria 3 se lee mejor, ¿por qué no usar memoria 10?**
 
+Porque reparte los mismos datos entre más contextos: mejorar el ajuste no garantiza mejores textos nuevos.
+
 $$
 \begin{aligned}
 \text{contextos con memoria }h
-   &: \lvert\Sigma\rvert^h,\\
+   &: |\Sigma|^h,\\
 \text{contextos con memoria }h+1
-   &: \lvert\Sigma\rvert^{h+1},\\
+   &: |\Sigma|^{h+1},\\
 \max\mathcal L_{h+1}&\ge\max\mathcal L_h.
 \end{aligned}
 $$
 
-- **Ganancia:** $\mathcal L_h$ es la verosimilitud con memoria $h$; recordar más permite representar más dependencias locales.
-- **Condición:** comparamos las mismas transiciones, condicionando al mismo inicio, con filas libres y sin suavizar.
-- **Razón:** el modelo de memoria ${h+1}$ puede ignorar el símbolo adicional e imitar al de memoria $h$.
-- **Riesgo:** los mismos datos se reparten entre más contextos posibles; mejorar el ajuste no garantiza mejores textos nuevos.
+- **Condición:** $\mathcal L_h$ es la verosimilitud con memoria $h$, sobre las mismas transiciones, el mismo inicio y filas libres sin suavizar.
+- **Razón:** la memoria $h+1$ puede ignorar el símbolo adicional e imitar a la memoria $h$.
 
 ### Medir la escasez
 
-- **Experimento:** contar en la primera mitad y probar en la segunda, como en [[mkv-ajustar-contando|Ajustar contando]].
-- **Cada barra:** fracción de transiciones de prueba cuyo par (contexto, siguiente) nunca apareció al contar.
+Retomamos la comparación de @mkv-c1-ceros entre la primera mitad y la segunda del corpus.
+Aquí interesa distinguir qué ausencia activa la fila uniforme.
 
 ::: figure {#mkv-c1-ceros-generar title="Lo que nunca se vio, por memoria"}
 ![Barras horizontales por memoria, con la fracción de transiciones de la segunda mitad del corpus nunca vistas en la primera. Memoria 0: 0 %, 0 de 998 564, contextos vistos 1 de 1. Memoria 1: 0.003 %, 29 de 998 563, contextos vistos 27 de 28. Memoria 2: 0.072 %, 718 de 998 562, contextos vistos 379 de 784. Memoria 3: 0.570 %, 5 694 de 998 561, contextos vistos 3 328 de 21 952. Las barras están a escala de la mayor (memoria 3). Al pie: solo diagnostica escasez, no elige la memoria](../_assets/mkv-c1-ceros.svg)
@@ -560,6 +540,8 @@ La salida de memoria 3 empieza en un contexto visto. ¿Por qué su subcadena lit
 El primer símbolo sale de una fila vista sin suavizar, con conteo positivo.
 Ese bloque de ${h+1=4}$ letras apareció en el corpus: la subcadena más larga mide al menos 4. Aquí mide 13.
 :::
+
+Los ejercicios reúnen ambas decisiones: cómo generar cada símbolo y cómo elegir la memoria según el uso.
 
 ---
 
@@ -668,16 +650,16 @@ Traduce los órdenes de Shannon y justifica una memoria con evidencia de escasez
 
 $$
 \begin{aligned}
-\Pr(z_{j+1}=z\mid c_j)&=P(z\mid c_j),\\
-c_{j+1}&=(x_2,\ldots,x_h,z_{j+1}),\\
-P(\cdot\mid c)&\in\mathbb R^{1\times\lvert\Sigma\rvert}.
+Z_{j+1}&\sim p(\cdot\mid c_j),\\
+c_{j+1}&=\operatorname{suf}_h(c_jz_{j+1}),\\
+p(\cdot\mid c)&\in\mathbb R^{1\times\lvert\Sigma\rvert}.
 \end{aligned}
 $$
 
 - **El algoritmo.** GENERAR muestrea, escribe y desliza, un $u$ por símbolo. Un contexto nunca visto usa ${1/\lvert\Sigma\rvert}$; no se reinicia.
 - **A mano.** Desde C, con $u$ = 0.90, 0.55 y 0.30, sale `C_CV`. El cero de `_`→`_` nunca sale.
 - **Las salidas.** Con semillas 2032 a 2035, memoria 0 da letras sueltas y memoria 3 frases casi legibles.
-- **Shannon (1948).** Su primer orden es nuestra memoria 0; su segundo, memoria 1. Lo hizo a mano, abriendo un libro al azar.
+- **Shannon (1948).** Su primer orden es nuestra memoria 0; su segundo, memoria 1. Usó números aleatorios para el primero y continuaciones de un libro para el segundo.
 - **Ganar y arriesgar.** Más memoria no baja la verosimilitud máxima, pero las transiciones no vistas suben a 0.570 % en memoria 3. La copia de 8-gramas pasa de 0 % a 42 %, y el tramo literal más largo de 6 a 13.
 
-Continúa con [[markov|Cadenas de Markov]], el índice de la unidad, o repasa [[notacion-markov|la hoja de notación]].
+Continúa con [[tarea-que-es-una-cadena|la tarea de la clase 1]]. Para consultar símbolos, usa [[notacion-markov|la hoja de notación]].

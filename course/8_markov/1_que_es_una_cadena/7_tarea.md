@@ -21,9 +21,8 @@ próxima sesión: sirve para comprobar que puedes hacerlo solo.
 
 ## 1 · Ver tres videos
 
-Los tres están en inglés; los subtítulos automáticos ayudan si los
-necesitas. Velos en este orden: el primero repasa, el segundo cuenta la
-historia y la abre, y el tercero adelanta la próxima clase.
+Los tres están en inglés; los subtítulos automáticos ayudan si los necesitas.
+Ve primero el repaso y después la historia. Reserva el tercer video para el punto 5 del último ejercicio.
 
 1. **[Markov Chains: Data Science Basics](https://www.youtube.com/watch?v=prZMpThbU3E)**
    — ritvikmath, unos diez minutos. **Repaso:** estados, la matriz de
@@ -94,9 +93,9 @@ ejemplo, y su enunciado dice cuál.
 
 **Piensa: si dejas correr la cadena mucho tiempo, ¿importa dónde empezó?**
 
-La clase solo predijo tres pasos. Este ejercicio deja correr la cadena más
-lejos y plantea la pregunta de la próxima clase. No tiene que salirte la
-explicación: basta con que veas qué pasa y lo digas.
+Puede dejar de importar, pero no ocurre con toda matriz.
+La cuenta a mano llegó a tres pasos; @mkv-c1-mu-t mostró ocho con la matriz del corpus.
+Aquí compararás inicios con la matriz de la frase y con otra que siempre cambia de estado.
 
 ::: exercise {#mkv-c1-ej-a-la-larga title="Deja correr la cadena"}
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin

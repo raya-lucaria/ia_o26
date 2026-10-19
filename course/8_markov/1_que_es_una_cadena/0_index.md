@@ -71,14 +71,14 @@ matriz estimada, $\widehat P$. Que el texto lo haya generado una cadena es
 una hipótesis útil, no un hecho. La matriz que contamos es la de la cadena
 que solo mira la letra anterior y que hace más probable lo que leímos.
 
-Todo se sigue a mano en una frase del *Quijote*: **«Con la iglesia hemos
-dado, Sancho»**. Tiene dos estados, V (vocal) y C (consonante), en ese
-orden. Cada idea se dice después **en general**, con $k$ estados y cualquier
-alfabeto, y se corre en el libro completo.
+Cada idea se dice primero **en general**, con $k$ estados y cualquier
+alfabeto. Después se sigue a mano en una frase del *Quijote*, **«Con la
+iglesia hemos dado, Sancho»**, con dos estados, V (vocal) y C (consonante),
+en ese orden. Y se corre en el libro completo.
 
-**Cada idea se resuelve de tres formas:** a mano en la frase, con un
-algoritmo que sirve para cualquier tamaño, y simulando. La primera página es
-de conceptos y va sin simulación.
+**Las páginas 1 y 2 son de conceptos,** sin simulación. Desde la 3, cada
+idea se resuelve de tres formas: a mano en la frase, con un algoritmo que
+sirve para cualquier tamaño y simulando.
 
 ## Recorrido
 
@@ -94,7 +94,7 @@ tiempo aparte, que no está en la tabla.
 |---|---:|---|
 | 1 | 33m | **Lo que necesitas de probabilidad.** Evento, probabilidad condicional, independencia e independencia condicional, contadas en la frase |
 | 2 | 30m | **La cadena de Markov, en general.** La definición formal, la matriz $k\times k$, las distribuciones como vectores fila, las dimensiones de cada producto, $P^t$ y cómo se mueve una cadena |
-| 3 | 37m | **El problema de Markov.** Por qué las letras no son tiradas de un dado; la definición de cadena, su matriz, su grafo y cómo se muestrea una fila |
+| 3 | 37m | **El problema de Markov.** Por qué las letras no son tiradas de un dado; la cadena V/C, la probabilidad de una trayectoria, matrices de 2 y 3 estados, cómo se muestrea una fila y las rachas |
 | 4 | 38m | **Ajustar contando.** Contar transiciones da la matriz más verosímil; lo que nunca se vio, el suavizado y cuánta memoria aguantan los datos |
 | 5 | 30m | **Predecir.** La probabilidad de cada estado exactamente $t$ pasos después: con un árbol, con un vector por una matriz y simulando |
 | 6 | 31m | **Generar texto.** Escribir al estilo del corpus muestreando fila tras fila, con más o menos memoria |
@@ -107,6 +107,8 @@ tiempo aparte, que no está en la tabla.
 4. [[mkv-ajustar-contando|Ajustar contando]]
 5. [[mkv-predecir|Predecir]]
 6. [[mkv-generar-texto|Generar texto]]
+
+Aparte del recorrido: [[tarea-que-es-una-cadena|la tarea de la clase 1]].
 
 ## El generador de texto
 

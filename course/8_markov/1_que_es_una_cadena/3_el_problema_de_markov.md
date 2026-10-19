@@ -16,14 +16,14 @@ Al terminar tendrás:
 
 - **La pregunta de Markov, contada** en la frase, el *Eugenio Oneguin* y el *Quijote*.
 - **Una aplicación de @mkv-c1-cadena:** la cadena V/C con inicio fijo en C.
-- **El producto de una trayectoria,** derivado en general y calculado para `conla`.
+- **La probabilidad de una trayectoria,** aplicada a la secuencia de clases de `conla`.
 - **La lectura de matrices concretas** con 2 y 3 estados.
 - **MUESTREAR-FILA y las rachas,** con fórmulas, traza y comparación contra datos.
 
 ## Lo que traes
 
 - **La cadena y sus formas.** [[mkv-cadena-en-general|La cadena, en general]] presenta $(\mathcal S,\mu_0,P)$ en @mkv-c1-cadena: $\mu_0$ es $1\times k$ y $P$, $k\times k$.
-- **La anatomía de P y el producto de una trayectoria.** Filas desde, columnas hacia; cada fila suma 1. Allí está también la derivación de $\Pr(s_0,\dots,s_t)$.
+- **La matriz y la trayectoria.** @mkv-c1-matriz-transicion: filas desde, columnas hacia; cada fila suma 1. La probabilidad de una trayectoria está en la sección «Distinguir distribución y trayectoria» de esa página.
 - **Las herramientas de probabilidad.** [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]] aporta la condicional (@mkv-c1-prob-condicional), el producto (@mkv-c1-teo-producto) y la independencia condicional (@mkv-c1-independencia-condicional).
 
 ---
@@ -31,6 +31,8 @@ Al terminar tendrás:
 ## 1 · Contar vocales y consonantes en la frase
 
 **Piensa: si la letra actual es vocal, ¿cambia la probabilidad de que la siguiente también lo sea?**
+
+Sí: la frecuencia condicional (@mkv-c1-prob-condicional) cambia según la letra actual. Para cualquier par de estados:
 
 $$
 \begin{aligned}
@@ -40,7 +42,7 @@ $$
 \end{aligned}
 $$
 
-Sí: las frecuencias condicionales cambian según la letra actual. El denominador cuenta apariciones de $s$ con siguiente; el numerador, las que van a $s'$.
+El denominador cuenta apariciones de $s$ con siguiente; el numerador, las que van a $s'$.
 
 **En la frase**, quitamos espacios y puntuación:
 
@@ -48,8 +50,6 @@ Sí: las frecuencias condicionales cambian según la letra actual. El denominado
 conlaiglesiahemosdadosancho
 CVCCVVCCVCVVCVCVCCVCVCVCCCV
 ```
-
-Para el *Quijote*, una vocal acentuada cuenta como su vocal; la ñ y la «y», como consonantes.
 
 Hay 26 pares. La «o» final no tiene siguiente: de las 12 vocales, solo 11 cuentan.
 
@@ -139,19 +139,9 @@ Contar muestra que la letra actual importa. Usemos esa información en una caden
 
 **Piensa: ¿qué piezas necesitas para convertir los conteos en una cadena?**
 
-$$
-\begin{aligned}
-\mathcal S&=\{s_1,\dots,s_k\},\\
-\mu_0&\in\mathbb R^{1\times k},\\
-P&\in\mathbb R^{k\times k}.
-\end{aligned}
-$$
+Los estados, el inicio y las transiciones: $(\mathcal S,\mu_0,P)$, con las condiciones de @mkv-c1-cadena.
 
-Necesitas los estados, la distribución inicial y las transiciones, con las condiciones de @mkv-c1-cadena.
-
-La cadena de la frase es un caso de @mkv-c1-cadena con $k=2$, $\mathcal S=\{V,C\}$ y $\mu_0=\mathbf e_2=(0,1)$.
-
-En el orden V, C:
+En la frase, $k=2$, $\mathcal S=\{V,C\}$ en ese orden, $\mu_0=\mathbf e_2=(0,1)$ y:
 
 $$
 \widehat P=
@@ -189,17 +179,18 @@ Las tres piezas permiten calcular la probabilidad de un trozo completo.
 
 **Piensa: ¿qué probabilidad le da la cadena a una secuencia completa de estados?**
 
+La probabilidad inicial por una entrada de $P$ en cada paso, como en [[mkv-cadena-en-general|La cadena, en general]]:
+
 $$
 \begin{aligned}
-&\Pr(s_0,\dots,s_t)\\
-&\quad=\mu_0(s_0)
-\prod_{j=0}^{t-1}P(s_{j+1}\mid s_j).
+&\Pr(S_0=s_{i_0},\dots,S_t=s_{i_t})\\
+&\quad=\mu_0(s_{i_0})
+\prod_{j=0}^{t-1}P_{i_ji_{j+1}}.
 \end{aligned}
 $$
 
-La probabilidad inicial por una entrada de $P$ en cada paso. $\Pr(s_0,\dots,s_t)$ abrevia $\Pr(S_0=s_0,\dots,S_t=s_t)$.
-
-- **De dónde sale:** @mkv-c1-teo-producto encadena un factor por paso; Markov y homogeneidad vuelven cada factor una entrada de $P$. La derivación está en [[mkv-cadena-en-general|La cadena, en general]].
+- **De dónde sale:** @mkv-c1-teo-producto encadena un factor por paso; Markov y homogeneidad (@mkv-c1-cadena) vuelven cada factor una entrada de $P$.
+- **Notación corta:** con estados concretos escribimos $\Pr(C,V,\dots)$ por $\Pr(S_0=C,S_1=V,\dots)$.
 - **Camino imposible:** si el inicio o una transición vale 0, el producto da 0.
 
 **A mano, `conla`.** Es C V C C V, con $\mu_0=(0,1)$ y $\widehat P$ de la frase:
@@ -249,14 +240,7 @@ Cada factor salió de una fila de $\widehat P$. ¿Qué dice el resto de sus entr
 
 **Piensa: ¿qué dice cada fila, cada columna y cada cero de estas matrices?**
 
-$$
-\begin{aligned}
-P&\in\mathbb R^{k\times k},\qquad P_{ij}=P(s_j\mid s_i),\\
-\textstyle\sum_j P_{ij}&=1,\qquad \mu_t\in\mathbb R^{1\times k}.
-\end{aligned}
-$$
-
-Cada fila distribuye las salidas; cada columna reúne las llegadas; un cero descarta una transición en el modelo. La anatomía completa está en [[mkv-cadena-en-general|La cadena, en general]].
+Cada fila distribuye las salidas; cada columna reúne las llegadas; un cero descarta una transición en el modelo (@mkv-c1-matriz-transicion).
 
 **Con V y C**, en la $\widehat P$ de la sección 3:
 
@@ -321,15 +305,17 @@ La matriz resume los pares. Falta decidir si describe las dependencias del texto
 
 **Piensa: ¿el texto «es» una cadena de Markov?**
 
+No se deduce de los conteos: la propiedad de @mkv-c1-cadena es un supuesto que hay que contrastar. Para toda historia de probabilidad positiva, con dos letras de pasado:
+
 $$
 \begin{aligned}
-&\Pr(S_{t+1}=s'\mid S_t=s,\\
-&\qquad S_{t-1}=s_{t-1})\\
-&\qquad\stackrel{?}{=}P(s'\mid s).
+&\Pr(S_{t+1}=s_j\mid S_t=s_i,\\
+&\qquad S_{t-1}=s_l)\\
+&\qquad\stackrel{?}{=}P_{ij}.
 \end{aligned}
 $$
 
-No se deduce de los conteos: hay que contrastar el supuesto. La igualdad debe cumplirse para historias de probabilidad positiva; una desigualdad basta para refutarla.
+Una desigualdad basta para refutarla.
 
 **Contraejemplo.** Un proceso repite C C V C C V C C V… Empieza al azar en cualquiera de las tres letras del bloque.
 
@@ -364,6 +350,8 @@ Para contrastarla, generamos réplicas y las comparamos con el texto. Cada paso 
 
 **Piensa: ¿cómo eliges un estado con las probabilidades de cualquier fila?**
 
+Partes $[0,1)$ en intervalos de largos $p_i$ y eliges el que contiene al uniforme $u$.
+
 $$
 \begin{aligned}
 (p_1,\dots,p_k)&\in\mathbb R^{1\times k},\\
@@ -375,7 +363,7 @@ I_i&=\left[\sum_{j=1}^{i-1}p_j,\
 \end{aligned}
 $$
 
-Partes $[0,1)$ en intervalos de largo $p_i$ y devuelves el estado cuyo intervalo contiene al uniforme $u$. Eso es **muestrear** (*sampling*); la suma vacía del primer extremo vale 0.
+Eso es **muestrear** (*sampling*); la suma vacía del primer extremo vale 0.
 
 > **Dado:** una fila $(p_1,\dots,p_k)$ de $P$, ordenada como $s_1,\dots,s_k$, y un uniforme $u\in[0,1)$.
 >
@@ -517,27 +505,20 @@ Podemos generar réplicas del largo del *Quijote* y comparar sus rachas.
 
 **Piensa: si la cadena V/C fuera un buen modelo del texto, ¿qué debería reproducir?**
 
-$$
-\begin{aligned}
-\Pr(L=\ell)&=(1-q)q^{\ell-1},\\
-\ell&\ge1,\qquad 0\le q<1.
-\end{aligned}
-$$
+Entre otras cosas, la distribución del largo de las rachas de consonantes.
 
-Entre otras cosas, la distribución del largo de las rachas de consonantes. $L$ cuenta desde la primera consonante; $\ell$ es un largo concreto.
-
-**Derivación.** Para terminar con largo $\ell$, deben seguir $\ell-1$ consonantes y después una vocal:
+$L$ cuenta desde la primera consonante y $\ell$ es un largo concreto. $q$ es la probabilidad de que a una C le siga otra, igual en cada paso. Una racha de largo $\ell$ son $\ell-1$ continuaciones y después una vocal:
 
 $$
 \begin{aligned}
 \Pr(L=\ell)
-&=\underbrace{q\cdots q}_{\ell-1\text{ continuaciones}}
-  (1-q)\\
-&=(1-q)q^{\ell-1}.
+&=\underbrace{q\cdots q}_{\ell-1\text{ continuaciones}}(1-q)\\
+&=(1-q)q^{\ell-1},\\
+\ell&\ge1,\qquad 0\le q<1.
 \end{aligned}
 $$
 
-- **Cadena homogénea:** $q=P_{CC}=P(C\mid C)$; Markov permite repetir el mismo factor.
+- **Cadena homogénea:** $q=P_{CC}=P(C\mid C)$; Markov y homogeneidad (@mkv-c1-cadena) repiten el mismo factor.
 - **Letras independientes:** con la misma distribución en cada paso, $q=\Pr(C)$.
 - **Condición:** $q<1$; con $q=1$, la racha no termina.
 - **Datos:** descartamos las rachas truncadas por el principio o el final del texto.
@@ -675,7 +656,7 @@ $$
 
 - **La pregunta:** tras V y C, la frase da $2/11$ y $2/3$; las 20 000 letras del *Oneguin*, 0.128 y 0.663. El *Quijote* da 0.181 y 0.710.
 - **La cadena:** aplica @mkv-c1-cadena, $(\mathcal S,\mu_0,P)$, con independencia condicional y transiciones homogéneas.
-- **La trayectoria:** bajo esas condiciones, $\mu_0(s_0)\prod_{j=0}^{t-1}P(s_{j+1}\mid s_j)$; `conla` da $4/33$.
+- **La trayectoria:** $\mu_0(s_{i_0})\prod_{j=0}^{t-1}P_{i_ji_{j+1}}$ (@mkv-c1-teo-producto, @mkv-c1-cadena); `conla` da $4/33$.
 - **La matriz:** $k\times k$, filas desde y columnas hacia. Con 2 estados basta un número por fila; con $k$, hacen falta $k-1$.
 - **Muestrear:** desde C, los uniformes 0.40, 0.75, 0.90, 0.25 y 0.10 producen `CVCCVV`.
 - **Contrastar:** las rachas de largo 1 dan 0.624 real, 0.710 Markov y 0.464 independiente. De largo 4 hay 323 reales, contra miles simuladas.
