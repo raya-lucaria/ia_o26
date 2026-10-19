@@ -139,4 +139,22 @@ publica y juegan con las mismas reglas y límites que tú.
 **Un consejo del repositorio:** usa un agente de IA para programar, pero la
 estrategia es tuya. Lo que gana es tu idea, medida con partidas.
 
+## Sigue en el repositorio
+
+Desde aquí, todo está en el repositorio del torneo:
+
+- [README](https://github.com/raya-lucaria/ia_o26_torneo_adversarial#readme):
+  el proyecto completo, en una página.
+- [Reglas y motor](https://github.com/raya-lucaria/ia_o26_torneo_adversarial/blob/main/docs/reglas.md):
+  reglas con ejemplos resueltos y qué ofrece el motor.
+- [Empezar](https://github.com/raya-lucaria/ia_o26_torneo_adversarial/blob/main/docs/empezar.md):
+  GitHub, repo privado, Docker y Codespaces desde cero.
+- [Probar](https://github.com/raya-lucaria/ia_o26_torneo_adversarial/blob/main/docs/probar.md):
+  comandos, visor y cómo depurar.
+- [Entregar](https://github.com/raya-lucaria/ia_o26_torneo_adversarial/blob/main/docs/entregar.md):
+  carpeta, `equipo.toml`, `INFORME.md`, SHA y *pull request*.
+- [Calificación](https://github.com/raya-lucaria/ia_o26_torneo_adversarial/blob/main/docs/calificacion.md):
+  liga, desempates y qué es trampa.
+- [Preguntas frecuentes](https://github.com/raya-lucaria/ia_o26_torneo_adversarial/blob/main/docs/preguntas.md).
+
 Regresa a [[juegos|la unidad]].
