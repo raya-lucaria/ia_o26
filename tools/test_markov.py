@@ -497,6 +497,25 @@ def test_p5_repetir_fragmentos_del_corpus():
     assert [f"{float(x) * 100:.0f}" for x in fracciones] == ["0", "9", "20", "42"]
 
 
+def test_p5_lo_que_la_pagina_dice_de_las_salidas():
+    """La página 5 afirma tres cosas cualitativas de las salidas: cada bloque
+    (contexto, siguiente) está en el corpus, cada par de palabras seguidas
+    también, y las palabras inventadas que cita no existen en el Quijote."""
+    texto = m.caracteres_corpus()
+    for h in range(1, 4):
+        g = m.generar(h)
+        for i in range(len(g) - h):
+            assert g[i:i + h + 1] in texto, (h, g[i:i + h + 1])
+    palabras = m.palabras_corpus()
+    pares = set(zip(palabras, palabras[1:]))
+    salida = GENERADO_PALABRAS.split()
+    assert all(par in pares for par in zip(salida, salida[1:]))
+    assert GENERADO_PALABRAS not in " ".join(palabras)
+    vocabulario = set(palabras)
+    for inventada in ("dijote", "vizcaidad", "veasagionallegar"):
+        assert inventada not in vocabulario and inventada in "".join(GENERADOS.values())
+
+
 def test_p5_un_contexto_nunca_visto_usa_la_fila_uniforme():
     tabla = {"a": [0.0, 1.0]}
     rng = random.Random(1)
@@ -604,6 +623,11 @@ def _cifras():
         ("6/11", P1, "Ejercicios", lambda: fr(vce(m.FRASE_ESPACIOS)[2][1][0])),
         ("3/11", P1, "Ejercicios", lambda: fr(vce(m.FRASE_ESPACIOS)[2][1][2])),
         ("4/5", P1, "Ejercicios", lambda: fr(vce(m.FRASE_ESPACIOS)[2][2][1])),
+        # cocientes que la página deriva de los mismos conteos
+        ("10/26", P1, "condicional", lambda: _cuenta(e()["A"] - e()["AyB"], 26)),
+        ("24", P1, "Ejercicios", lambda: str(len(vce(m.FRASE_ESPACIOS)[0]))),
+        ("7/23", P1, "Ejercicios", lambda: _cuenta(
+            F(vce(m.FRASE_ESPACIOS)[0][1:].count("V"), 23), 23)),
         # --- p2
         ("2/11", P2, "Contar", lambda: fr(P[0][0])),
         ("2/3", P2, "Contar", lambda: fr(P[1][0])),
@@ -639,6 +663,14 @@ def _cifras():
         ("323", P2, "Rachas", lambda: miles(r()["reales"][4])),
         ("0.624", P2, "Rachas", lambda: dec(F(r()["reales"][1], r()["total"]))),
         ("0.464", P2, "Rachas", lambda: dec(r()["pr_independiente"][1])),
+        ("0.344", P2, "Rachas", lambda: dec(F(r()["reales"][2], r()["total"]))),
+        ("0.031", P2, "Rachas", lambda: dec(F(r()["reales"][3], r()["total"]))),
+        ("0.710", P2, "Rachas", lambda: dec(m.rachas_geometrica(r()["q_markov"], 1))),
+        ("0.206", P2, "Rachas", lambda: dec(m.rachas_geometrica(r()["q_markov"], 2))),
+        ("0.060", P2, "Rachas", lambda: dec(m.rachas_geometrica(r()["q_markov"], 3))),
+        ("0.249", P2, "Rachas", lambda: dec(m.rachas_geometrica(r()["q_independiente"], 2))),
+        ("0.133", P2, "Rachas", lambda: dec(m.rachas_geometrica(r()["q_independiente"], 3))),
+        ("2/9", P2, "trayectoria", lambda: fr(m.arbol_dos_pasos(P)[("C", "V")])),
         ("1/8", P2, "Ejercicios", lambda: fr(m.probabilidad_trayectoria(
             m.EJ_P2_P, m.EJ_P2_MU0, m.EJ_P2_TRAYECTORIA, m.EJ_P2_ESTADOS))),
         ("1/4", P2, "Ejercicios", lambda: fr(m.ejercicio_p2_e()["P"][0][0])),

@@ -28,6 +28,7 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $\widehat{\Pr}(A)$ | «probabilidad estimada de a». La frecuencia con que $A$ ocurrió en los datos | Lo que necesitas de probabilidad |
 | $A\cap B$ | «a y be». El evento de que ocurran los dos | Lo que necesitas de probabilidad |
 | $\Pr(A\mid B)$ | «probabilidad de a dado be». La probabilidad de $A$ si ya sabes que ocurrió $B$: $\Pr(A\cap B)/\Pr(B)$, definida solo si $\Pr(B)>0$ | Lo que necesitas de probabilidad |
+| $\prod$, $\sum$ | «producto», «suma». Multiplicar o sumar todos los términos que indica el índice de abajo a arriba | Lo que necesitas de probabilidad |
 | $\Pr(S_0=a, S_1=b)$ | La coma se lee «y»: que ocurran las dos cosas | Lo que necesitas de probabilidad |
 | $n$ | «ene». El número de réplicas de una simulación | Lo que necesitas de probabilidad |
 
@@ -45,8 +46,10 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $P(s'\mid s)$, $P_{ss'}$ | «pe de ese prima dado ese». La entrada de la fila $s$ y columna $s'$: $\Pr(S_{t+1}=s'\mid S_t=s)$ | El problema de Markov |
 | $\mu_0$ | «mu cero». La distribución del estado inicial, un vector fila que suma 1. No es el $\mu$ de KKT | El problema de Markov |
 | $\mu_t$ | «mu sub te». La distribución del estado en el paso $t$: $\mu_t(s)=\Pr(S_t=s)$ | Predecir |
-| $j$ | «jota». Índice de un producto o una suma: $\prod_{j=0}^{t-1}$ | El problema de Markov |
+| $P^t$, $\widehat P^{\,t}$ | «pe a la te». La matriz multiplicada por sí misma $t$ veces: $\mu_t=\mu_0P^t$ | Predecir |
+| $j$ | «jota». Índice de un producto o una suma: $\prod_{j=0}^{t-1}$ | Lo que necesitas de probabilidad |
 | $u$ | «u». Un número uniforme en $[0,1)$ con que MUESTREAR-FILA elige el siguiente estado | El problema de Markov |
+| $L$ | «ele». La longitud de una racha de consonantes, todavía aleatoria; $\ell$ es un valor: $\Pr(L=\ell)$ | El problema de Markov |
 | $\ell$, $q$ | «ele», «cu». La longitud de una racha de consonantes y la probabilidad de seguir en consonante | El problema de Markov |
 | $T$ | «te mayúscula». El largo de una trayectoria, en pasos | Ajustar contando |
 
@@ -67,6 +70,15 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 
 | Término | Qué significa aquí | Se presenta en |
 |---|---|---|
+| Experimento | Un procedimiento con azar; aquí, sortear una posición de la frase | Lo que necesitas de probabilidad |
+| Evento | Un conjunto de resultados del experimento: «la siguiente es vocal» | Lo que necesitas de probabilidad |
+| Probabilidad conjunta | La de que ocurran dos eventos a la vez, $\Pr(A\cap B)$ | Lo que necesitas de probabilidad |
+| Independencia | $\Pr(A\cap B)=\Pr(A)\Pr(B)$: saber uno no cambia la probabilidad del otro | Lo que necesitas de probabilidad |
+| Independencia condicional | $\Pr(A\mid B,C)=\Pr(A\mid C)$: dado $C$, saber $B$ ya no agrega nada | Lo que necesitas de probabilidad |
+| Partición | Casos que no se traslapan y cubren todo | Lo que necesitas de probabilidad |
+| Ley de los grandes números | El promedio de muchas repeticiones independientes se acerca a la probabilidad | Lo que necesitas de probabilidad |
+| Estado | Lo que el modelo recuerda en cada paso; en el juguete, si la letra es vocal o consonante | El problema de Markov |
+| Muestrear una fila | Elegir el siguiente estado con las probabilidades de la fila del actual, con un uniforme $u$ y la fila acumulada | El problema de Markov |
 | Trayectoria | La secuencia de estados $S_0,\dots,S_T$; un texto es una trayectoria observada | El problema de Markov |
 | Réplica | Una trayectoria simulada, independiente de las demás | El problema de Markov |
 | Salidas | Las transiciones que parten de un estado, $N(s)$; la última letra no tiene salida | Ajustar contando |
@@ -76,6 +88,9 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | Estado sin observaciones | Un estado con $N(s)=0$: los datos no determinan su fila. La «k» en el *Quijote* | Ajustar contando |
 | Contexto | Los $h$ símbolos anteriores, que forman el estado con memoria $h$ | Ajustar contando |
 | Suavizado aditivo de conteos | Sumar 1 a cada conteo por símbolo siguiente antes de dividir (Laplace) | Ajustar contando |
+| Error estándar | Cuánto se espera que una fracción de $n$ réplicas se aleje de la probabilidad $p$: $\sqrt{p(1-p)/n}$ | Predecir |
+| Semilla | El número que fija la sucesión de uniformes $u$: misma semilla, misma réplica | Generar texto |
+| Generar | Producir una trayectoria muestreando una fila tras otra y deslizando el contexto | Generar texto |
 | Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0 | Ajustar contando |
 
 ## En las figuras

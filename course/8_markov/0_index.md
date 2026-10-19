@@ -4,7 +4,7 @@ title: Cadenas de Markov
 nav_title: Markov
 summary: "Un modelo de qué sigue que solo mira el estado actual: qué es una cadena de Markov, cómo se ajusta contando en un texto, cómo predice y cómo genera."
 status: ready
-estimated_time: 150m
+estimated_time: 160m
 tags: [markov, probabilidad, cadenas]
 prerequisites: [juegos]
 ---
@@ -48,12 +48,12 @@ $k$ estados y cualquier alfabeto. Y se corre en el libro completo.
 ::: table {#mkv-clases title="Las clases de la unidad"}
 | Sección | Qué cambia | Qué trabaja | Minutos |
 |---|---|---|---:|
-| 1 | La cadena se ve | Probabilidad que se necesita, el problema de Markov, ajustar contando, predecir y generar texto | 150m |
+| 1 | La cadena se ve | Probabilidad que se necesita, el problema de Markov, ajustar contando, predecir y generar texto | 160m |
 :::
 
 - [[markov-que-es-una-cadena|Clase 1 · Qué es una cadena]]
 
-El recorrido de lectura suma **2 horas y 30 minutos**.
+El recorrido de lectura suma **2 horas y 40 minutos**.
 
 Y una hoja de consulta, aparte del recorrido:
 

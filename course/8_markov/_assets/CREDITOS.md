@@ -6,6 +6,12 @@ cifra de una figura sale de `tools/markov.py`, que la calcula sobre la frase
 «Con la iglesia hemos dado, Sancho» o sobre el corte del *Quijote* versionado
 en `tools/datos/quijote/` (dominio público; ver su `README.md`).
 
+La vista previa `mkv-c1-generador.png` no se dibuja: es una captura del
+interactivo `generador_texto.html` (que escribe `tools/gen_generador_markov.py`),
+tomada con Chrome sin interfaz por `tools/gen_vista_generador.py`.
+`tools/test_generador_markov.py` falla si el interactivo cambió desde la última
+captura; entonces se vuelve a tomar.
+
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
 | `mkv-c1-flujo-muestrear.svg` | Muestrear una fila, en palabras: sortear u, recorrer la fila sumando y quedarse con el primer estado cuya suma pasa a u | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
@@ -18,3 +24,4 @@ en `tools/datos/quijote/` (dominio público; ver su `README.md`).
 | `mkv-c1-recuperar-p.svg` | El error de la matriz estimada contra la longitud de la trayectoria, en réplicas de una matriz conocida | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c1-ceros.svg` | La fracción de transiciones de prueba nunca vistas al contar, por memoria 0 a 3 | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c1-rachas.svg` | Las rachas de consonantes del corpus contra lo que dan, simuladas, una cadena y letras independientes | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-generador.png` | Vista previa del generador de texto con memoria 2, semilla 2034, a 148 de 198 símbolos: contexto «ce», sale «s» con u = 0.7149 | Capturado de `generador_texto.html` con `tools/gen_vista_generador.py` | Propio, CC BY-SA 4.0 |
