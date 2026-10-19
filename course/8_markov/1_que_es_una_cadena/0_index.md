@@ -13,13 +13,13 @@ prerequisites: [juegos]
 
 **En español, después de una «q» casi siempre viene una «u». ¿Cuánto de un
 texto se explica mirando solo la letra anterior, y qué se puede hacer con
-eso?** Al final de la clase tendrás la respuesta contada en el *Quijote*
-completo, y un programa que escribe texto «a su estilo».
+eso?** Al final tendrás la respuesta contada en el *Quijote* completo. Y un
+programa que escribe texto «a su estilo».
 
 ## Lo que traes
 
-Esta clase usa tres cosas de unidades anteriores. Si un renglón no te suena,
-vuelve a su página.
+Esta clase usa tres cosas de unidades anteriores. Si un renglón no te
+suena, vuelve a su página.
 
 - **Una probabilidad dentro de un modelo.** En
   [[cuando-decide-un-dado|Cuando decide un dado]], $\Pr(a\mid s)$ decía qué
@@ -46,10 +46,10 @@ números de una frase.
   independencia.
 - **Ajustar una cadena contando** en un texto, decir qué maximiza ese
   conteo y qué pasa con lo que nunca se vio.
-- Elegir **qué es el estado** (memoria 0, 1 o 2) y explicar qué gana y qué
+- Elegir **qué es el estado**: memoria 0, 1 o 2. Y explicar qué gana y qué
   pierde una memoria mayor con datos limitados.
-- **Predecir** con $\mu_t=\mu_0\widehat P^{\,t}$ la probabilidad de estar en
-  cada estado exactamente $t$ pasos después: a mano, con el algoritmo y
+- **Predecir** con $\mu_t=\mu_0\widehat P^{\,t}$ la probabilidad de cada
+  estado exactamente $t$ pasos después. A mano, con el algoritmo y
   simulando réplicas con su error.
 - **Generar texto** con la cadena ajustada y relacionarlo con las
   aproximaciones de Shannon.
@@ -60,11 +60,11 @@ números de una frase.
 
 **El texto es una trayectoria observada.** Contar en él da frecuencias y una
 matriz estimada, $\widehat P$. Que el texto lo haya generado una cadena es
-**una hipótesis útil**, no un hecho: $\widehat P$ es la cadena de memoria 1
-que hace más probable lo que leímos.
+una hipótesis útil, no un hecho. $\widehat P$ es la cadena de memoria 1 que
+hace más probable lo que leímos.
 
-Todo se sigue a mano en una frase del *Quijote*, **«Con la iglesia hemos
-dado, Sancho»**, con dos estados: **V** (vocal) y **C** (consonante), en ese
+Todo se sigue a mano en una frase del *Quijote*: **«Con la iglesia hemos
+dado, Sancho»**. Tiene dos estados, V (vocal) y C (consonante), en ese
 orden. Cada idea se dice después **en general**, con $k$ estados y cualquier
 alfabeto, y se corre en el libro completo.
 
@@ -95,9 +95,9 @@ son algoritmos.
 
 ## Qué no cubre esta clase
 
-- **Qué pasa a la larga.** Si la distribución se estabiliza, si olvida de
-  dónde salió y bajo qué condiciones: aquí solo se observa, en una matriz,
-  y se deja como pregunta abierta.
+- **Qué pasa a la larga.** Si la distribución se estabiliza o si olvida de
+  dónde salió. Aquí solo se observa en una matriz y queda como pregunta
+  abierta.
 - **Decidir** entre varias matrices y **estados que no se ven** tampoco
   están aquí.
 

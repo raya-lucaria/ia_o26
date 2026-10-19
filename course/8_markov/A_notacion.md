@@ -58,9 +58,34 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $N(s)$ | «ene de ese». Las salidas observadas de $s$: $\sum_{s'}N(s,s')$. La última letra no cuenta: no tiene sucesor | Ajustar contando |
 | $\widehat P$ | «pe gorro». La matriz estimada: $\widehat P(s'\mid s)=N(s,s')/N(s)$ | Ajustar contando |
 | $\mathcal L(P)$ | «ele caligráfica de pe». La verosimilitud: la probabilidad de los datos observados como función de $P$, condicionada al primer estado | Ajustar contando |
-| $\Sigma$ | «sigma mayúscula». El alfabeto: los símbolos que pueden aparecer. Con espacio, $\lvert\Sigma\rvert=28$ | Ajustar contando |
-| $\widetilde p$ | «pe tilde». La estimación suavizada (Laplace); ya no es la de máxima verosimilitud | Ajustar contando |
+| $\Sigma$ | «sigma mayúscula». El alfabeto: los símbolos que pueden seguir. Con las 27 letras y el espacio, $\lvert\Sigma\rvert=28$. En los juguetes son los estados: $\lvert\Sigma\rvert=k$ | Ajustar contando |
+| $z$ | «zeta». Un símbolo de $\Sigma$: el que sigue a un contexto. Al agregarlo, el contexto se desliza | Ajustar contando |
+| $\widetilde p$ | «pe tilde». La estimación suavizada (Laplace): $\widetilde p(z\mid s)=\frac{N(s,z)+1}{N(s)+\lvert\Sigma\rvert}$. No garantiza maximizar la verosimilitud | Ajustar contando |
 | memoria $h$ | «memoria hache». Cuántos símbolos anteriores forman el estado. Memoria 0, 1, 2 = unigrama, bigrama, trigrama. No es la profundidad de UCT | Ajustar contando |
+
+## Términos
+
+| Término | Qué significa aquí | Se presenta en |
+|---|---|---|
+| Trayectoria | La secuencia de estados $S_0,\dots,S_T$; un texto es una trayectoria observada | El problema de Markov |
+| Réplica | Una trayectoria simulada, independiente de las demás | El problema de Markov |
+| Salidas | Las transiciones que parten de un estado, $N(s)$; la última letra no tiene salida | Ajustar contando |
+| Verosimilitud | La probabilidad de los datos observados vista como función de $P$ | Ajustar contando |
+| Cero estructural | Una transición imposible por las reglas o la normalización: dos espacios seguidos | Ajustar contando |
+| Transición no observada | Un par con conteo 0 que sí podría ocurrir: q→a | Ajustar contando |
+| Estado sin observaciones | Un estado con $N(s)=0$: los datos no determinan su fila. La «k» en el *Quijote* | Ajustar contando |
+| Contexto | Los $h$ símbolos anteriores, que forman el estado con memoria $h$ | Ajustar contando |
+| Suavizado aditivo de conteos | Sumar 1 a cada conteo por símbolo siguiente antes de dividir (Laplace) | Ajustar contando |
+| Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0 | Ajustar contando |
+
+## En las figuras
+
+- **Los estados:** V es un círculo azul con la letra V, y C un cuadrado
+  amarillo con la C. La forma y la letra bastan; el color solo ayuda.
+- **Las simulaciones:** el punto con línea es la mediana de las réplicas, y
+  la franja va del 5 % al 95 % de ellas.
+- **Diagramas «…, en palabras»:** cajas con verbos, rombos con una
+  pregunta y una salida marcada con borde de otro color.
 
 ## Avisos de letras
 
@@ -69,6 +94,13 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
   política.
 - **$\mu$** es una distribución sobre estados, como en el libro de Sutton y
   Barto; no es el multiplicador de KKT de optimización.
+- **$T$** es el largo de una trayectoria, en pasos, como el $T$ de un
+  episodio en Sutton y Barto. No es la transición $T(s,a)$ de juegos: aquí
+  la transición es $P$.
+- **$k$** es el número de estados. No son las simulaciones por jugada de
+  Monte Carlo plano en juegos.
+- **$N(s)$** cuenta **salidas**, no visitas como en juegos: la última letra
+  aparece pero no sale.
 - **$P$** es la matriz de transición, la misma $P$ de
   $\langle S,A,P,R,\gamma\rangle$ en agentes; no es la clase P de
   complejidad.

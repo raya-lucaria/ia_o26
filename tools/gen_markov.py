@@ -221,7 +221,7 @@ FLUJOS = {
                {"caja": ["Toma el siguiente par", "(actual, siguiente)"]},
                {"caja": ["Suma 1 a N(s, s′)", "y 1 a N(s)"]},
                {"rombo": ["¿Quedan", "pares?"], "abajo": "no"},
-               {"caja": ["Divide cada fila", "entre su total N(s)", "y devuelve N y P̂"],
+               {"caja": ["Divide cada fila", "entre su total N(s)", "y devuelve N, N(s), P̂"],
                 "fin": True}],
         vueltas=[(3, 1, "sí: el siguiente")],
         notas=["Una fila con N(s) = 0 queda sin", "estimar: los datos no la fijan."]),
@@ -511,14 +511,14 @@ def mkv_c1_recuperar_p():
         out.append(_marca("circulo", _x_log(T), py(datos[T]["mediana"]), ACENTO, r=4))
     for T in (10, 100, 1000, 10000):
         out.append(texto(_x_log(T), top + alto + 18, miles(T), tam=12, color=SUAVE))
-    out.append(texto(162, top + alto + 38, "T, pasos (escala log)", tam=13, peso="700"))
+    out.append(texto(162, top + alto + 38, "largo T, en pasos (escala log)", tam=13, peso="700"))
     sin = sum(d["sin_salidas"] for d in datos.values())
     y = pie(out, top + alto + 62, [
         f"P verdadera: filas ({dec(P[0][0])}, {dec(P[0][1])})",
         f"y ({dec(P[1][0])}, {dec(P[1][1])}); cada réplica",
         "empieza en C. Réplicas con un",
         f"estado sin salidas: {sin}."])
-    desc = ("Error de la matriz estimada contra la longitud T de la trayectoria, en 200 "
+    desc = ("Error de la matriz estimada contra el largo T de la trayectoria, en pasos, en 200 "
             "réplicas de una cadena conocida (la del corpus redondeada a 3 decimales), con T "
             "en escala logarítmica. " + "; ".join(
                 f"T = {miles(T)}: mediana {dec(datos[T]['mediana'])}, del 5 % al 95 % entre "
@@ -560,7 +560,8 @@ def mkv_c1_ceros():
     y = pie(out, y + 4, ["La barra llena es la mayor fracción;", "solo diagnostica escasez,",
                          "no elige la memoria."])
     desc = ("Fracción de las transiciones de la segunda mitad del corpus cuyo (contexto, "
-            "siguiente) nunca apareció en la primera mitad, por memoria. " + "; ".join(
+            "siguiente) nunca apareció en la primera mitad, por memoria; las barras están "
+            "a escala de la mayor (memoria 3). " + "; ".join(
                 f"memoria {f['memoria']}: {pct(f['fraccion'])} ({miles(f['no_vistas'])} de "
                 f"{miles(f['total'])}), contextos vistos {miles(f['contextos_vistos'])} de "
                 f"{miles(f['contextos_posibles'])}" for f in filas) + ".")

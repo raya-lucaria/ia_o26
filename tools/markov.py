@@ -203,13 +203,21 @@ def contar(secuencia, memoria=1):
     return conteos
 
 
-def contar_transiciones(secuencia):
-    """El algoritmo de la pagina 3: {(s, s'): N(s, s')} y {s: N(s)}."""
-    N, salidas = {}, {}
+def contar_transiciones(secuencia, estados=None):
+    """El algoritmo de la pagina 3: (N, salidas, P̂) con N = {(s, s'): N(s, s')}
+    para todo par de `estados` (los no vistos en 0), salidas = {s: N(s)} y
+    P̂ = {(s, s'): N(s, s')/N(s)} solo para las filas con N(s) > 0. Sin
+    `estados`, usa los que aparecen en la secuencia."""
+    if estados is None:
+        estados = sorted(set(secuencia))
+    N = {(s, s2): 0 for s in estados for s2 in estados}
+    salidas = {s: 0 for s in estados}
     for s, s2 in zip(secuencia, secuencia[1:]):
-        N[(s, s2)] = N.get((s, s2), 0) + 1
-        salidas[s] = salidas.get(s, 0) + 1
-    return N, salidas
+        N[(s, s2)] += 1
+        salidas[s] += 1
+    P_gorro = {(s, s2): F(N[(s, s2)], salidas[s])
+               for s in estados if salidas[s] > 0 for s2 in estados}
+    return N, salidas, P_gorro
 
 
 def traza_contar(secuencia, estados=ESTADOS_VC):
@@ -217,7 +225,7 @@ def traza_contar(secuencia, estados=ESTADOS_VC):
     acumulado como tupla en el orden (s, s') de estados x estados."""
     N = {(a, b): 0 for a in estados for b in estados}
     filas = []
-    for j, (s, s2) in enumerate(zip(secuencia, secuencia[1:]), start=1):
+    for j, (s, s2) in enumerate(zip(secuencia, secuencia[1:])):
         N[(s, s2)] += 1
         filas.append((j, s, s2, tuple(N[(a, b)] for a in estados for b in estados)))
     return filas
@@ -551,7 +559,9 @@ def recuperar_p():
                 s = s2
             Phat = estimar(N)
             if any(f is None for f in Phat):
+                # una fila sin estimar se reporta aparte: su error no se mide
                 sin_salidas += 1
+                continue
             errores.append(error_recuperacion(P, Phat))
         errores.sort()
         salida[T] = {"errores": errores, "mediana": statistics.median(errores),

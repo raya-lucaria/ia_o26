@@ -279,23 +279,38 @@ def test_p2_ejercicio_b_e_contra_no_e():
 
 # ==================================== pagina 3 · ajustar contando ===
 
-TRAZA = [  # (j, s, s', N(V,V), N(V,C), N(C,V), N(C,C)) tras sumar la transicion j
-    (1, "C", "V", 0, 0, 1, 0), (2, "V", "C", 0, 1, 1, 0), (3, "C", "C", 0, 1, 1, 1),
-    (4, "C", "V", 0, 1, 2, 1), (5, "V", "V", 1, 1, 2, 1), (6, "V", "C", 1, 2, 2, 1),
-    (7, "C", "C", 1, 2, 2, 2), (8, "C", "V", 1, 2, 3, 2), (9, "V", "C", 1, 3, 3, 2),
-    (10, "C", "V", 1, 3, 4, 2), (11, "V", "V", 2, 3, 4, 2), (12, "V", "C", 2, 4, 4, 2),
-    (13, "C", "V", 2, 4, 5, 2), (14, "V", "C", 2, 5, 5, 2), (15, "C", "V", 2, 5, 6, 2),
-    (16, "V", "C", 2, 6, 6, 2), (17, "C", "C", 2, 6, 6, 3), (18, "C", "V", 2, 6, 7, 3),
-    (19, "V", "C", 2, 7, 7, 3), (20, "C", "V", 2, 7, 8, 3), (21, "V", "C", 2, 8, 8, 3),
-    (22, "C", "V", 2, 8, 9, 3), (23, "V", "C", 2, 9, 9, 3), (24, "C", "C", 2, 9, 9, 4),
-    (25, "C", "C", 2, 9, 9, 5), (26, "C", "V", 2, 9, 10, 5)]
+TRAZA = [  # (j, s, s', N(V,V), N(V,C), N(C,V), N(C,C)) tras sumar el paso j, desde 0
+    (0, "C", "V", 0, 0, 1, 0), (1, "V", "C", 0, 1, 1, 0), (2, "C", "C", 0, 1, 1, 1),
+    (3, "C", "V", 0, 1, 2, 1), (4, "V", "V", 1, 1, 2, 1), (5, "V", "C", 1, 2, 2, 1),
+    (6, "C", "C", 1, 2, 2, 2), (7, "C", "V", 1, 2, 3, 2), (8, "V", "C", 1, 3, 3, 2),
+    (9, "C", "V", 1, 3, 4, 2), (10, "V", "V", 2, 3, 4, 2), (11, "V", "C", 2, 4, 4, 2),
+    (12, "C", "V", 2, 4, 5, 2), (13, "V", "C", 2, 5, 5, 2), (14, "C", "V", 2, 5, 6, 2),
+    (15, "V", "C", 2, 6, 6, 2), (16, "C", "C", 2, 6, 6, 3), (17, "C", "V", 2, 6, 7, 3),
+    (18, "V", "C", 2, 7, 7, 3), (19, "C", "V", 2, 7, 8, 3), (20, "V", "C", 2, 8, 8, 3),
+    (21, "C", "V", 2, 8, 9, 3), (22, "V", "C", 2, 9, 9, 3), (23, "C", "C", 2, 9, 9, 4),
+    (24, "C", "C", 2, 9, 9, 5), (25, "C", "V", 2, 9, 10, 5)]
 
 
 def test_p3_la_traza_de_contar_fila_por_fila():
     assert [(j, s, s2) + n for j, s, s2, n in m.traza_contar(m.frase_vc())] == TRAZA
-    N, sal = m.contar_transiciones(m.frase_vc())
+    N, sal, Pg = m.contar_transiciones(m.frase_vc(), ("V", "C"))
     assert N == {("V", "V"): 2, ("V", "C"): 9, ("C", "V"): 10, ("C", "C"): 5}
     assert sal == {"V": 11, "C": 15}
+    assert Pg[("V", "V")] == F(2, 11) and Pg[("C", "C")] == F(1, 3)
+    # un estado que no aparece conserva su columna y no tiene fila
+    N, sal, Pg = m.contar_transiciones("CCCC", ("V", "C"))
+    assert N[("C", "V")] == 0 and sal["V"] == 0
+    assert ("V", "C") not in Pg and Pg[("C", "V")] == 0
+
+
+def test_p3_el_error_de_una_replica_trazada():
+    """La réplica CVCCVV (la muestreada a mano en la página 2) da filas
+    (1/2, 1/2) y (2/3, 1/3): su error contra la matriz generadora es 0.319."""
+    P = m.redondear_matriz(m.matriz_corpus())
+    N = m.matriz_conteos("CVCCVV", m.ESTADOS_VC)
+    Phat = m.estimar(N)
+    assert Phat == [[F(1, 2), F(1, 2)], [F(2, 3), F(1, 3)]]
+    assert f"{m.error_recuperacion(P, Phat):.3f}" == "0.319"
 
 
 def test_p3_la_verosimilitud_condicionada_a_s0():
@@ -842,12 +857,11 @@ def test_el_python_de_la_pagina_define_y_calcula_lo_mismo(pagina):
             u = rng.random()
             assert f(fila, u) == m.muestrear_fila(fila, u)
     elif pagina == P3:
-        r = ns["contar_transiciones"](m.frase_vc())
-        N = r[0] if isinstance(r, tuple) else r
-        assert N == {("V", "V"): 2, ("V", "C"): 9, ("C", "V"): 10, ("C", "C"): 5}
-        r = ns["contar_transiciones"](m.EJ_P3_TEXTO)
-        N = r[0] if isinstance(r, tuple) else r
-        assert N == m.contar_transiciones(m.EJ_P3_TEXTO)[0]
+        f = ns["contar_transiciones"]
+        for secuencia, estados in ((m.frase_vc(), ("V", "C")),
+                                   (m.EJ_P3_TEXTO, ("a", "b", "c")),
+                                   ("CCCC", ("V", "C"))):
+            assert tuple(f(secuencia, estados)) == m.contar_transiciones(secuencia, estados)
     elif pagina == P4:
         f = ns["predecir"]
         assert list(f(P, [F(0), F(1)], 3)) == [F(1634, 3267), F(1633, 3267)]

@@ -16,8 +16,8 @@ texto se explica mirando solo la letra anterior, y qué se puede hacer con
 eso?**
 
 En [[cuando-decide-un-dado|Cuando decide un dado]] ya usaste una
-probabilidad dentro de un modelo: $\Pr(a\mid s)$ decía qué tan probable era
-cada resultado del dado en el estado $s$. Y en
+probabilidad dentro de un modelo. Ahí, $\Pr(a\mid s)$ decía qué tan probable
+era cada resultado del dado en el estado $s$. Y en
 [[de-consecuencias-a-refuerzo|De consecuencias a refuerzo]] apareció una $P$
 que decía a qué estado lleva el ambiente. Esta unidad toma esa $P$ y la
 estudia sola: **qué sigue, si lo único que importa es dónde estás ahora**.
@@ -25,22 +25,23 @@ estudia sola: **qué sigue, si lo único que importa es dónde estás ahora**.
 ## Por qué esto está en un curso de inteligencia artificial
 
 Un agente que vive en un ambiente con azar necesita un modelo de **qué
-pasará después**. La forma más sencilla de ese modelo es una cadena de
-Markov: una tabla que dice, para cada estado, con qué probabilidad sigue
-cada otro. Con ella se predice, se simula y se genera.
+pasará después**. El más sencillo es una cadena de Markov. Es una tabla:
+para cada estado, con qué probabilidad sigue cada otro. Con ella se
+predice, se simula y se genera.
 
-Es también el primer modelo de lenguaje. En 1913, Andréi Markov contó a
-mano vocales y consonantes en un poema ruso para mostrar que las letras
-dependen de la anterior. En 1948, Claude Shannon usó la misma idea para
-escribir texto «parecido al inglés» sin entender una palabra.
+Y es una de las ideas más viejas para estudiar el lenguaje con números. En
+1913, Andréi Markov contó a mano vocales y consonantes en un poema ruso.
+Quería mostrar que cada letra depende de la anterior. En 1948, Claude
+Shannon usó la misma idea para escribir texto «parecido al inglés».
 
 ## El hilo de la unidad
 
-El hilo es **texto**: el *Quijote* completo, con 1 620 532 letras.
-Para seguir cada cuenta a mano usamos una frase suya, **«Con la iglesia hemos
-dado, Sancho»**, con solo dos estados: vocal y consonante. El juguete existe
-para trazar; cada idea se dice después en general, con $k$ estados y
-cualquier alfabeto, y se corre en el libro completo.
+El hilo es **texto**: el *Quijote* completo, con 1 620 532 letras. Para
+seguir cada cuenta a mano usamos una frase suya, **«Con la iglesia hemos
+dado, Sancho»**. Tiene solo dos estados: vocal y consonante.
+
+El juguete existe para trazar. Cada idea se dice después en general, con
+$k$ estados y cualquier alfabeto. Y se corre en el libro completo.
 
 ## Las clases
 
