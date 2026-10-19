@@ -2,7 +2,7 @@
 id: mkv-lo-que-necesitas
 title: "Lo que necesitas de probabilidad"
 nav_title: "Lo que necesitas"
-summary: "Experimento, evento, probabilidad condicional, variable aleatoria, regla del producto, independencia, independencia condicional, probabilidad total y el promedio de muchas repeticiones, contados en una frase del Quijote."
+summary: "Experimento, evento, probabilidad condicional, variable aleatoria, regla del producto, independencia, independencia condicional, probabilidad total y promedio de muchas repeticiones: primero las fórmulas generales, después los ejemplos del Quijote."
 status: ready
 estimated_time: 33m
 tags: [markov]
@@ -14,17 +14,17 @@ tags: [markov]
 
 Al terminar tendrás:
 
-- **Probabilidades contadas en una frase:** la de un evento, la conjunta y la condicional, cada una con su experimento declarado.
-- **La variable aleatoria $S_t$,** su distribución y la regla del producto encadenada.
-- **Independencia e independencia condicional,** con un contraejemplo en la frase y un supuesto medido en el *Quijote*.
-- **La probabilidad total** con una partición, y por qué el promedio de muchas repeticiones independientes se acerca a una probabilidad.
+- **Probabilidades de eventos:** conjunta y condicional, con su experimento declarado.
+- **Una variable aleatoria:** su distribución y la regla del producto encadenada.
+- **Independencia e independencia condicional:** una comparación en la frase y un supuesto contrastado con el *Quijote*.
+- **Probabilidad total y promedios:** cómo sumar por casos y qué garantiza repetir independientemente.
 
 ## Lo que traes
 
-- **Una probabilidad dentro de un modelo.** En [[cuando-decide-un-dado|Cuando decide un dado]], ${\Pr(a\mid s)}$ daba la probabilidad de cada resultado del dado en el estado $s$, y esas probabilidades sumaban 1. Aquí construimos esa notación desde cero.
-- **Un promedio de muchas repeticiones.** En [[simular-en-vez-de-evaluar|Simular partidas]], Monte Carlo plano promediaba el pago de muchas partidas al azar. Aquí verás por qué un promedio así se acerca a una probabilidad.
+- **Probabilidades de un modelo.** En [[cuando-decide-un-dado|Cuando decide un dado]], $\Pr(a\mid s)$ repartía los resultados posibles; sus probabilidades sumaban 1.
+- **Promedios de repeticiones.** En [[simular-en-vez-de-evaluar|Simular partidas]], Monte Carlo plano promediaba pagos de partidas al azar.
 
-> **Esta página va sin simulación: es de conceptos.** Cada idea se cuenta a mano en una frase del *Quijote*, «Con la iglesia hemos dado, Sancho», y después se dice en general.
+> **Página de conceptos, sin simulación.** Primero, cada fórmula general; después, su cuenta a mano en «Con la iglesia hemos dado, Sancho».
 
 ---
 
@@ -32,37 +32,43 @@ Al terminar tendrás:
 
 **Piensa: ¿qué significa «la probabilidad de que la siguiente letra sea vocal»?**
 
-Nada, hasta que digas cómo se elige la letra. Toda probabilidad es de un **experimento**: un procedimiento con azar y con resultados posibles bien definidos.
+Significa algo preciso cuando declaras cómo eliges la letra.
 
-Primero prepara la frase. Pasa todo a minúsculas, quita espacios y signos, y cambia cada letra por su clase: V si es vocal (a, e, i, o, u) y C si es consonante. La «y» contaría como consonante; aquí no aparece.
+::: definition {#mkv-c1-experimento title="Experimento, evento y probabilidad"}
+$$
+\begin{aligned}
+&A\subseteq\{\text{resultados posibles}\},\\
+&0\le\Pr(A)\le1,\\
+&\Pr(A)=\frac{\#A}{\#\{\text{resultados posibles}\}}\\
+&\quad\text{si son finitos y equiprobables.}
+\end{aligned}
+$$
+
+- **Qué es.** Un experimento produce un resultado al azar; un evento $A$ reúne los resultados que cumplen una condición.
+- **Cómo se calcula.** El símbolo $\#$ cuenta elementos; con resultados equiprobables, divides los favorables entre el total.
+- **Qué significa.** $\Pr(A)$ mide qué tan probable es que el resultado pertenezca a $A$.
+- **Qué no es.** No es una afirmación sobre el español. Cuando un texto sirva como datos de un modelo, sus frecuencias serán **estimaciones**, con gorro: $\widehat{\Pr}(A)$.
+:::
+
+- **Prepara la frase.** Pasa a minúsculas y quita espacios y signos.
+- **Clasifica.** V representa a, e, i, o, u; C representa consonantes. La «y» contaría como consonante.
 
 ```text
 conlaiglesiahemosdadosancho
 CVCCVVCCVCVVCVCVCCVCVCVCCCV
 ```
 
-Son 27 letras. Numera sus posiciones desde 0. La última, la «o» de «Sancho», no tiene letra siguiente.
-
-**El experimento.** Elige al azar una de las 26 posiciones que tienen siguiente, todas con la misma probabilidad. Mira la letra elegida, la **actual**, y la que le sigue.
-
-- **Evento $A$:** la siguiente es vocal.
-- **Evento $B$:** la actual es vocal.
-
-**Contar $A$.** La siguiente es vocal cuando la posición de al lado tiene V. La frase tiene 12 vocales, y ninguna está en la posición 0, así que 12 de las 26 posiciones cumplen $A$:
+- **Posiciones.** Son 27 letras, numeradas desde 0; la «o» final no tiene siguiente.
+- **Sorteo.** Elige una de las 26 posiciones con siguiente, todas con igual probabilidad.
+- **Evento $A$.** La siguiente letra es vocal.
+- **Evento $B$.** La letra actual es vocal.
 
 $$
 \Pr(A)=\frac{12}{26}\approx0.462.
 $$
 
-::: definition {#mkv-c1-experimento title="Experimento, evento y probabilidad"}
-**Qué es.** Un experimento es un procedimiento con azar. Un evento es un conjunto de sus resultados. $\Pr(A)$, «probabilidad de $A$», es un número entre 0 y 1 que dice qué tan probable es que ocurra $A$.
-
-**Cómo se calcula.** Si todos los resultados son igual de probables, $\Pr(A)$ es el número de resultados en $A$ entre el total.
-
-**Qué significa.** Como la posición se sortea con probabilidades iguales, $\Pr(A)$ es la frecuencia de $A$ en la frase. Es una probabilidad exacta de este sorteo, no una aproximación.
-
-**Qué no es.** No es una afirmación sobre el español. Cuando un texto sirva como datos para un modelo, sus frecuencias serán **estimaciones** y llevarán gorro: $\widehat{\Pr}(A)$.
-:::
+- **Conteo.** Hay 12 vocales y ninguna ocupa la posición 0: las 12 pueden ser la siguiente.
+- **Alcance.** $12/26$ es exacta para este sorteo; no describe por sí sola el español.
 
 ::: exercise {#mkv-c1-ej-actual-vocal title="Cuenta el evento B"}
 ¿Cuánto vale $\Pr(B)$, la probabilidad de que la letra actual sea vocal?
@@ -73,10 +79,14 @@ $$
 :::
 
 ::: answer {#mkv-c1-resp-actual-vocal of="mkv-c1-ej-actual-vocal"}
-**${\Pr(B)=11/26}$.** Hay 12 vocales, pero la «o» final no tiene siguiente y no entra al sorteo. Quedan 11 de las 26 posiciones.
+$$
+\Pr(B)=\frac{11}{26}.
+$$
+
+**Se excluye la vocal final.** Hay 12 vocales, pero la «o» final no tiene siguiente. Quedan 11 entre las 26 posiciones.
 :::
 
-Ya sabes cuántas posiciones tienen vocal actual. ¿Cambia la probabilidad de $A$ si solo miras esas?
+¿Cambia la probabilidad de $A$ si solo miras las posiciones de $B$?
 
 ---
 
@@ -84,7 +94,21 @@ Ya sabes cuántas posiciones tienen vocal actual. ¿Cambia la probabilidad de $A
 
 **Piensa: si te dicen que la letra actual es vocal, ¿sigue valiendo $12/26$ para $A$?**
 
-No: saber $B$ reduce los casos posibles. Ahora solo cuentan las 11 posiciones con vocal actual. Para verlo, cruza las dos letras de cada posición:
+No: saber $B$ reduce los casos posibles.
+
+::: definition {#mkv-c1-prob-condicional title="Probabilidad condicional"}
+$$
+\begin{aligned}
+\Pr(A\mid B)&=\frac{\Pr(A\cap B)}{\Pr(B)},\\
+&\Pr(B)>0.
+\end{aligned}
+$$
+
+- **Qué es.** $\Pr(A\mid B)$ es la probabilidad de $A$ dado que ocurrió $B$.
+- **Cómo se calcula.** Divide la probabilidad conjunta, $\Pr(A\cap B)$, entre la del condicionante, $\Pr(B)$. La intersección significa «ocurren ambos».
+- **Qué significa.** Dentro de $B$, mides qué fracción también cumple $A$.
+- **Qué no es.** No es $\Pr(B\mid A)$: invertir la barra cambia los casos que cuentas.
+:::
 
 ::: table {#mkv-c1-tabla-experimento title="Las 26 posiciones, por letra actual y siguiente"}
 | Actual (total) | Siguiente V | Siguiente C |
@@ -93,29 +117,22 @@ No: saber $B$ reduce los casos posibles. Ahora solo cuentan las 11 posiciones co
 | C (15) | 10 | 5 |
 :::
 
-Entre paréntesis, el total de cada renglón: 11 posiciones con vocal actual y 15 con consonante.
-
-Solo 2 posiciones tienen vocal actual y vocal siguiente: la de «ai» y la de «ia». El evento «ocurren $A$ y $B$» se escribe ${A\cap B}$, y su **probabilidad conjunta** es ${\Pr(A\cap B)=2/26}$. Dentro de las 11 posiciones de $B$, esas 2 dan la proporción $2/11$.
-
-::: definition {#mkv-c1-prob-condicional title="Probabilidad condicional"}
-**Qué es.** ${\Pr(A\mid B)}$, «probabilidad de $A$ dado $B$», es la probabilidad de $A$ cuando ya sabes que ocurrió $B$.
-
-**Cómo se calcula.**
+- **Lee la tabla.** Cada renglón reúne las posiciones con una misma clase actual; su total aparece entre paréntesis.
+- **Intersección.** Las 2 posiciones con vocal actual y siguiente corresponden a «ai» y «ia».
 
 $$
-\Pr(A\mid B)=\frac{\Pr(A\cap B)}{\Pr(B)},
-\qquad \Pr(B)>0.
+\begin{aligned}
+\Pr(A\cap B)&=\frac{2}{26},\\
+\Pr(A\mid B)&=\frac{2/26}{11/26}
+=\frac{2}{11}.
+\end{aligned}
 $$
 
-**Qué significa.** Te quedas solo con los resultados de $B$ y mides qué fracción de ellos está en $A$. En la frase, ${\Pr(A\mid B)=\dfrac{2/26}{11/26}=\dfrac{2}{11}}$.
-
-**Qué no es.** No es ${\Pr(B\mid A)}$. Ahí te quedas con las 12 posiciones de $A$, no con las 11 de $B$, y el cociente cambia.
-:::
-
-**La condición ${\Pr(B)>0}$ no es un detalle.** Si $B$ fuera «la actual es una k», no habría ninguna posición que mirar: la frase no tiene «k», y la condicional no se define.
+- **La barra cambia el universo.** $\Pr(B\mid A)$ usa las 12 posiciones de $A$; $\Pr(A\mid B)$, las 11 de $B$.
+- **La condición $\Pr(B)>0$ no es un detalle.** Si $B$ fuera «la actual es k», no habría posiciones que mirar: la condicional no se define.
 
 ::: exercise {#mkv-c1-ej-tras-consonante title="Condiciona a la consonante"}
-Usa la definición, no solo la tabla: ¿cuánto vale la probabilidad de que la siguiente sea vocal si la actual es consonante?
+Usa la definición: ¿cuánto vale la probabilidad de que la siguiente sea vocal si la actual es consonante?
 :::
 
 ::: hint {#mkv-c1-pista-tras-consonante of="mkv-c1-ej-tras-consonante" title="Dos probabilidades, un cociente"}
@@ -123,10 +140,18 @@ Usa la definición, no solo la tabla: ¿cuánto vale la probabilidad de que la s
 :::
 
 ::: answer {#mkv-c1-resp-tras-consonante of="mkv-c1-ej-tras-consonante"}
-**Vale ${10/15=2/3}$.** La conjunta es $10/26$ y la del condicionante, $15/26$; su cociente es $10/15$. Tras consonante, la vocal es mucho más probable que tras vocal.
+$$
+\begin{aligned}
+&\Pr(\text{siguiente V}\mid\text{actual C})\\
+&\quad=\frac{10/26}{15/26}
+=\frac{10}{15}=\frac{2}{3}.
+\end{aligned}
+$$
+
+**Tras consonante aumenta.** La conjunta vale $10/26$ y el condicionante, $15/26$; su cociente supera $2/11$.
 :::
 
-«Actual», «siguiente», «la de antes»: nombrar cada letra con palabras empieza a estorbar. ¿Cómo se nombran?
+¿Cómo nombras «actual» y «siguiente» para escribir estas cuentas sin repetir palabras?
 
 ---
 
@@ -134,38 +159,57 @@ Usa la definición, no solo la tabla: ¿cuánto vale la probabilidad de que la s
 
 **Piensa: ¿cómo escribes «la actual es vocal y la siguiente también» sin inventar un evento para cada caso?**
 
-Con un nombre para cada letra que todavía depende del sorteo. $S_0$ es la clase de la letra sorteada y $S_1$, la de la que le sigue. En general, $S_t$ es la clase de la letra que está $t$ pasos después de la sorteada, con ${t=0,1,2,\dots}$
-
-- **Los eventos se vuelven igualdades.** $B$ es ${\{S_0=V\}}$ y $A$ es ${\{S_1=V\}}$.
-- **La coma se lee «y».** ${\Pr(S_0=V,\ S_1=V)}$ es ${\Pr(A\cap B)=2/26}$.
-- **La condicional se escribe igual.** ${\Pr(S_1=V\mid S_0=V)=2/11}$.
+Asignas una variable aleatoria a cada letra que depende del sorteo.
 
 ::: definition {#mkv-c1-variable-aleatoria title="Variable aleatoria y distribución"}
-**Qué es.** Una variable aleatoria asigna un valor a cada resultado del experimento: aquí, a cada posición sorteada le asigna V o C. Va con mayúscula, $S_t$. Los valores que puede tomar, como V o C, no son aleatorios.
-
-**Cómo se calcula.** Su **distribución** da la probabilidad de cada valor posible: un vector de números entre 0 y 1 que suma 1. Para $S_0$, en el orden V, C:
-
 $$
-\bigl(\Pr(S_0=V),\ \Pr(S_0=C)\bigr)=\Bigl(\frac{11}{26},\ \frac{15}{26}\Bigr).
+\begin{aligned}
+&S_t(\text{resultado})\in\{a_1,\ldots,a_k\},\\
+&\bigl(\Pr(S_t=a_1),\ldots,\Pr(S_t=a_k)\bigr),\\
+&\Pr(S_t=a_j)\ge0,\qquad
+\sum_{j=1}^{k}\Pr(S_t=a_j)=1.
+\end{aligned}
 $$
 
-**Qué significa.** Antes del sorteo no sabes qué valor tomará $S_0$, y la distribución dice cómo se reparte. Después del sorteo conoces el valor que tomó, como C: $S_0$ sigue siendo la variable, y C es el valor observado.
-
-**Qué no es.** $S_t$ no es la letra fija de la posición $t$ de la frase. Es la letra $t$ pasos **después de la sorteada**; por eso es aleatoria.
+- **Qué es.** $S_t$ asigna un valor a cada resultado; su distribución es el vector de probabilidades de esos valores.
+- **Cómo se calcula.** Enumera sus $k$ valores posibles, distintos y finitos, en un orden fijo; calcula una probabilidad por valor.
+- **Qué significa.** Cada entrada dice qué tan probable es observar ese valor; juntas suman 1.
+- **Qué no es.** La variable $S_t$ y el valor observado son objetos distintos.
 :::
 
-**La posición debe existir.** Para hablar de $S_t$, el experimento debe sortear posiciones con al menos $t$ letras siguientes. El sorteo entre 26 posiciones garantiza $S_0$ y $S_1$.
-
-**Lo mismo con cualquier alfabeto.** Nada de lo anterior usa que haya solo dos clases. Si cada letra toma valores de un conjunto de cualquier tamaño, con $a$ y $b$ dos de ellos, la condicional se cuenta igual, siempre que haya alguna posición con $a$:
+**Para cualquier alfabeto.** Al sortear uniformemente una posición con siguiente:
 
 $$
 \begin{aligned}
 &\Pr(S_1=b\mid S_0=a)\\
-&\quad=\frac{\text{posiciones con }a\text{ y luego }b}{\text{posiciones con }a\text{ y siguiente}}.
+&\quad=\frac{\#\{\text{posiciones con }a\text{ y luego }b\}}
+{\#\{\text{posiciones con }a\text{ y siguiente}\}},\\
+&\Pr(S_0=a)>0.
 \end{aligned}
 $$
 
-En Python, la misma cuenta sirve para cualquier texto ya convertido en clases o en letras:
+- **En la frase.** $S_t$ es la clase de la letra $t$ pasos después de la sorteada, con $t=0,1,2,\ldots$
+- **Origen aleatorio.** $S_0$ es la actual y $S_1$, la siguiente; $t$ no es una posición fija de la frase.
+- **Existencia.** El sorteo debe dejar al menos $t$ letras siguientes. Las 26 posiciones garantizan $S_0$ y $S_1$.
+
+$$
+\begin{aligned}
+B&=\{S_0=V\},\qquad A=\{S_1=V\},\\
+\Pr(S_0=V,\ S_1=V)&=\frac{2}{26},\\
+\Pr(S_1=V\mid S_0=V)&=\frac{2}{11}.
+\end{aligned}
+$$
+
+**La coma se lee «y».** Pide que ambas igualdades se cumplan.
+
+$$
+\begin{aligned}
+&\bigl(\Pr(S_0=V),\Pr(S_0=C)\bigr)\\
+&\quad=\left(\frac{11}{26},\frac{15}{26}\right).
+\end{aligned}
+$$
+
+**La misma cuenta en Python.** Sirve para cualquier texto convertido en clases o letras.
 
 ```python
 from fractions import Fraction
@@ -192,7 +236,7 @@ print(condicional(frase, "V", "V"))   # 2/11
 ```
 
 ::: exercise {#mkv-c1-ej-distribucion-tras-v title="Escribe una distribución condicional"}
-Escribe la distribución de $S_1$ dado ${S_0=V}$, en el orden V, C. ¿Suma 1?
+Escribe la distribución de $S_1$ dado $S_0=V$, en el orden V, C. ¿Suma 1?
 :::
 
 ::: hint {#mkv-c1-pista-distribucion-tras-v of="mkv-c1-ej-distribucion-tras-v" title="El otro valor"}
@@ -200,10 +244,16 @@ De las 11 posiciones con vocal actual, ¿cuántas van seguidas de consonante?
 :::
 
 ::: answer {#mkv-c1-resp-distribucion-tras-v of="mkv-c1-ej-distribucion-tras-v"}
-**Es $(2/11,\ 9/11)$.** Suma ${11/11=1}$: dado ${S_0=V}$, la siguiente tiene que ser V o C.
+$$
+\left(\frac{2}{11},\frac{9}{11}\right),
+\qquad
+\frac{2}{11}+\frac{9}{11}=\frac{11}{11}=1.
+$$
+
+**Cubre ambos valores.** Dado $S_0=V$, la siguiente letra tiene que ser V o C.
 :::
 
-Con un nombre para cada letra ya puedes preguntar por tres seguidas. ¿Cómo se calcula la probabilidad de un tramo como C, V, C?
+¿Cómo calculas la probabilidad de tres letras seguidas, como C, V, C?
 
 ---
 
@@ -211,43 +261,64 @@ Con un nombre para cada letra ya puedes preguntar por tres seguidas. ¿Cómo se 
 
 **Piensa: si conoces una condicional, ¿cómo recuperas la probabilidad de que dos cosas pasen juntas?**
 
-Despejas la definición: ${\Pr(A\cap B)=\Pr(B)\,\Pr(A\mid B)}$. En la frase, ${\frac{11}{26}\cdot\frac{2}{11}=\frac{2}{26}}$: lo mismo que contar las posiciones con V seguida de V.
-
-**Con tres letras, se encadena.** Cambia el experimento: sortea una de las 25 posiciones que tienen **dos** letras siguientes. Así $S_0$, $S_1$ y $S_2$ existen siempre. El tramo C, V, C se calcula letra por letra:
-
-$$
-\begin{aligned}
-\Pr(S_0=C,\ S_1=V,\ S_2=C)
-&=\tfrac{14}{25}\cdot\tfrac{9}{14}\cdot\tfrac{7}{9}\\
-&=\tfrac{7}{25}.
-\end{aligned}
-$$
-
-- **Primer factor.** 14 de las 25 posiciones tienen C: ${\Pr(S_0=C)=14/25}$.
-- **Segundo factor.** De esas 14, 9 van seguidas de V: ${\Pr(S_1=V\mid S_0=C)=9/14}$.
-- **Tercer factor.** De esas 9, 7 siguen con C: ${\Pr(S_2=C\mid S_0=C,\ S_1=V)=7/9}$.
-
-Contar directamente da lo mismo: 7 de las 25 posiciones empiezan un tramo C, V, C.
-
-En general se escribe con el símbolo $\prod$, que indica multiplicar los factores mientras el índice $j$ recorre los pasos.
+Multiplicas la condicional por la probabilidad del evento dado.
 
 ::: theorem {#mkv-c1-teo-producto title="Regla del producto, encadenada"}
-Para valores $a_0,\dots,a_t$ de $S_0,\dots,S_t$:
-
 $$
 \begin{aligned}
-&\Pr(S_0=a_0,\dots,S_t=a_t)=\Pr(S_0=a_0)\,\times\\
-&\prod_{j=0}^{t-1}\Pr(S_{j+1}=a_{j+1}\mid S_0=a_0,\dots,S_j=a_j).
+&\Pr(A\cap B)=\Pr(B)\Pr(A\mid B),\\
+&\Pr(B)>0.
 \end{aligned}
 $$
 
-Vale si ${\Pr(S_0=a_0,\dots,S_{t-1}=a_{t-1})>0}$, para que cada condicional esté definida. Si esa probabilidad es 0, la conjunta también vale 0.
+Con $t\ge1$ y valores $a_0,\dots,a_t$ de $S_0,\dots,S_t$:
+
+$$
+\begin{aligned}
+&\Pr(S_0=a_0,\dots,S_t=a_t)\\
+&\quad=\Pr(S_0=a_0)\\
+&\qquad{}\times\prod_{j=0}^{t-1}
+\Pr(S_{j+1}=a_{j+1}\mid S_0=a_0,\dots,S_j=a_j),\\
+&\Pr(S_0=a_0,\dots,S_{t-1}=a_{t-1})>0.
+\end{aligned}
+$$
+
+**Lectura.** Multiplica la probabilidad inicial por cada condicional, conservando toda la historia.
+
+- **Símbolos.** La coma significa «y»; $\prod$ multiplica un factor por cada índice $j$.
+- **Condición.** Cada historia usada para condicionar debe tener probabilidad positiva.
+- **Caso cero.** Si la historia hasta $t-1$ tiene probabilidad 0, la conjunta completa también vale 0.
 :::
 
-Cada factor pregunta por la siguiente letra **dado todo lo anterior**, así que la condición crece: el último condiciona en $t$ letras.
+**Dos letras en la frase.**
+
+$$
+\Pr(A\cap B)=\frac{11}{26}\cdot\frac{2}{11}
+=\frac{2}{26}.
+$$
+
+**Tres letras.** Sortea entre las 25 posiciones con dos letras siguientes: ahora siempre existen $S_0$, $S_1$ y $S_2$.
+
+$$
+\begin{aligned}
+&\Pr(S_0=C,\ S_1=V,\ S_2=C)\\
+&\quad=\frac{14}{25}\cdot\frac{9}{14}\cdot\frac{7}{9}
+=\frac{7}{25}.
+\end{aligned}
+$$
+
+- **Primer factor.** 14 de las 25 posiciones empiezan con C: $\Pr(S_0=C)=14/25$.
+- **Segundo factor.** De esas 14, 9 siguen con V: $\Pr(S_1=V\mid S_0=C)=9/14$.
+- **Tercer factor.** De esas 9, 7 siguen con C:
+
+$$
+\Pr(S_2=C\mid S_0=C,\ S_1=V)=\frac{7}{9}.
+$$
+
+**Comprobación.** Contar directamente también da 7 tramos C, V, C entre 25 posiciones.
 
 ::: exercise {#mkv-c1-ej-catorce title="Explica el primer factor"}
-En la sección 3, ${\Pr(S_0=C)=15/26}$. ¿Por qué aquí el primer factor es $14/25$?
+En la sección 3, $\Pr(S_0=C)=15/26$. ¿Por qué aquí el primer factor es $14/25$?
 :::
 
 ::: hint {#mkv-c1-pista-catorce of="mkv-c1-ej-catorce" title="Compara los dos sorteos"}
@@ -255,10 +326,10 @@ En la sección 3, ${\Pr(S_0=C)=15/26}$. ¿Por qué aquí el primer factor es $14
 :::
 
 ::: answer {#mkv-c1-resp-catorce of="mkv-c1-ej-catorce"}
-**Porque cambió el experimento.** La posición 25, la «h» de «Sancho», tiene una sola letra siguiente y sale del sorteo. Quedan 14 consonantes entre 25 posiciones. Una probabilidad siempre es de un experimento.
+**Cambió el experimento.** La posición 25, la «h» de «Sancho», solo tiene una letra siguiente y sale del sorteo. Quedan 14 consonantes entre 25 posiciones.
 :::
 
-Condicionar en todo lo anterior es mucho que recordar. ¿Hay casos en que lo anterior no cambia nada?
+¿En qué casos saber lo anterior no cambia la probabilidad siguiente?
 
 ---
 
@@ -266,39 +337,58 @@ Condicionar en todo lo anterior es mucho que recordar. ¿Hay casos en que lo ant
 
 **Piensa: ¿hay eventos para los que saber uno no cambia nada del otro?**
 
-Sí, y se llaman independientes: dos tiradas de un dado justo, por ejemplo. Si $A$ no dependiera de $B$, la regla del producto perdería la condición y daría ${\Pr(A\cap B)=\Pr(A)\Pr(B)}$. En la frase, compara los dos lados:
-
-$$
-\begin{aligned}
-\Pr(A)\Pr(B)&=\tfrac{12}{26}\cdot\tfrac{11}{26}\approx0.195,\\
-\Pr(A\cap B)&=\tfrac{2}{26}\approx0.077.
-\end{aligned}
-$$
-
-**No coinciden.** Juntas ocurren menos de la mitad de lo que darían sin dependencia. Con la condicional se ve igual: ${\Pr(A\mid B)=2/11}$, muy por debajo de ${\Pr(A)=12/26}$. En esta frase, otra vocal tras vocal es rara: 2 de 11 veces.
+Sí: esos eventos son independientes.
 
 ::: definition {#mkv-c1-independencia-simple title="Independencia"}
-**Qué es.** $A$ y $B$ son independientes si ${\Pr(A\cap B)=\Pr(A)\,\Pr(B)}$.
+$$
+\Pr(A\cap B)=\Pr(A)\Pr(B).
+$$
 
-**Cómo se calcula.** Calcula los dos lados y compáralos. Si ${\Pr(B)>0}$, equivale a ${\Pr(A\mid B)=\Pr(A)}$: saber $B$ no mueve la probabilidad de $A$. En la frase, $A$ y $B$ no son independientes.
+Si $\Pr(B)>0$, equivale a:
 
-**Qué significa.** $S_0$ y $S_1$ son independientes si esto vale para todo par de valores:
+$$
+\Pr(A\mid B)=\Pr(A).
+$$
+
+- **Qué es.** Independencia significa que la probabilidad conjunta es el producto de las probabilidades individuales.
+- **Cómo se calcula.** Compara ambos lados; con condicionante positivo, también puedes comparar la condicional con la probabilidad sin condición.
+- **Qué significa.** Saber que ocurrió $B$ no cambia la probabilidad de $A$.
+- **Qué no es.** Eventos que no pueden ocurrir juntos, ambos con probabilidad positiva, no son independientes: su conjunta vale 0.
+
+Para variables aleatorias, la igualdad debe cumplirse para todos sus valores $a,b$:
 
 $$
 \begin{aligned}
 &\Pr(S_0=a,\ S_1=b)\\
-&\quad=\Pr(S_0=a)\,\Pr(S_1=b).
+&\quad=\Pr(S_0=a)\Pr(S_1=b).
+\end{aligned}
+$$
+:::
+
+**En la frase, compara.**
+
+$$
+\begin{aligned}
+\Pr(A)\Pr(B)&=\frac{12}{26}\cdot\frac{11}{26}
+\approx0.195,\\
+\Pr(A\cap B)&=\frac{2}{26}\approx0.077.
 \end{aligned}
 $$
 
-**Qué no es.** No es «no pueden ocurrir juntos». Si ${A\cap B}$ es imposible y los dos eventos tienen probabilidad positiva, la conjunta vale 0 y el producto no: no son independientes.
-:::
+**La condicional confirma la diferencia.**
+
+$$
+\Pr(A\mid B)=\frac{2}{11}
+\ne\frac{12}{26}=\Pr(A).
+$$
+
+**Conclusión.** Los eventos no son independientes: tras vocal, otra vocal aparece en 2 de 11 posiciones.
 
 > [!WARNING]
-> **Leer «dependen» como «una causa la otra».** Que $S_1$ dependa de $S_0$ **solo dice que saber una cambia la probabilidad de la otra**. No dice que una vocal provoque una consonante.
+> **Confundir dependencia con causa.** Saber una letra cambia la probabilidad de la otra; **eso no demuestra causalidad**.
 
 ::: exercise {#mkv-c1-ej-independiente-c title="Prueba con la consonante"}
-¿Son independientes $A$ y el evento ${\{S_0=C\}}$? Usa la forma con la condicional.
+¿Son independientes $A$ y el evento $\{S_0=C\}$? Usa la forma con la condicional.
 :::
 
 ::: hint {#mkv-c1-pista-independiente-c of="mkv-c1-ej-independiente-c" title="Ya la calculaste"}
@@ -306,10 +396,18 @@ $$
 :::
 
 ::: answer {#mkv-c1-resp-independiente-c of="mkv-c1-ej-independiente-c"}
-**No lo son.** Como ${\Pr(S_0=C)=15/26>0}$, se puede comparar: ${\Pr(A\mid S_0=C)=10/15}$, más de la mitad, y ${\Pr(A)=12/26}$, menos de la mitad. Saber que la actual es consonante sube la probabilidad de vocal.
+$$
+\begin{aligned}
+\Pr(S_0=C)&=\frac{15}{26}>0,\\
+\Pr(A\mid S_0=C)&=\frac{10}{15}
+\ne\frac{12}{26}=\Pr(A).
+\end{aligned}
+$$
+
+**No son independientes.** Saber que la actual es consonante aumenta la probabilidad de vocal.
 :::
 
-Las letras seguidas no son independientes. ¿Y la letra de hace dos? Quizá no agregue nada **si ya sabes la anterior**.
+Si ya sabes la letra anterior, ¿la de hace dos todavía agrega información?
 
 ---
 
@@ -317,11 +415,33 @@ Las letras seguidas no son independientes. ¿Y la letra de hace dos? Quizá no a
 
 **Piensa: si ya sabes la letra anterior, ¿saber también la de hace dos cambia la probabilidad de la siguiente?**
 
-Depende del texto, y una frase de 27 letras es muy poco para decidirlo. Por eso medimos en el libro completo.
+Puede cambiarla; la independencia condicional afirma que esa información adicional no la cambia.
 
-**Medido en el *Quijote*.** Tomamos el texto entero con la misma normalización V/C y contamos tras cada consonante. Aquí el texto se usa como datos, así que sus frecuencias llevan gorro: $\widehat{\Pr}$.
+::: definition {#mkv-c1-independencia-condicional title="Independencia condicional"}
+$$
+\begin{aligned}
+&\Pr(A\cap D\mid B)\\
+&\quad=\Pr(A\mid B)\Pr(D\mid B),\\
+&\Pr(B)>0.
+\end{aligned}
+$$
 
-**El experimento.** Sortea una posición del libro que tenga al menos dos letras después, y mira tres letras seguidas. Para no atarnos a un lugar, la sorteada (la de hace dos) es $S_{t-1}$, la anterior es $S_t$ y la siguiente, $S_{t+1}$.
+Si $\Pr(D\cap B)>0$, equivale a:
+
+$$
+\Pr(A\mid D,\ B)=\Pr(A\mid B).
+$$
+
+- **Qué es.** $A$ y $D$ son independientes dado $B$ cuando conocer también $D$ no cambia la probabilidad de $A$.
+- **Cómo se calcula.** Compara las probabilidades dentro de $B$; para agregar $D$ como condición, exige $\Pr(D\cap B)>0$.
+- **Qué significa.** La coma es «y»: $\Pr(A\mid D,B)$ condiciona en la intersección $D\cap B$.
+- **Qué no es.** La independencia sin condición y la independencia dado $B$ no se implican entre sí.
+:::
+
+- **Datos.** La frase tiene 27 letras; contrastamos el supuesto con el *Quijote* completo, normalizado como V/C.
+- **Experimento.** Sortea una posición del libro con al menos dos letras siguientes; observa las tres.
+- **Nombres.** La sorteada es $S_{t-1}$; la siguiente, $S_t$; la última, $S_{t+1}$.
+- **Estimaciones.** Usamos el libro como datos de un modelo; sus frecuencias llevan gorro: $\widehat{\Pr}$.
 
 ::: table {#mkv-c1-tabla-dos-atras title="Tras una consonante en el Quijote: ¿importa la letra de hace dos?"}
 | La de hace dos | La anterior | Siguiente vocal |
@@ -331,94 +451,97 @@ Depende del texto, y una frase de 27 letras es muy poco para decidirlo. Por eso 
 | C | C | 0.922 |
 :::
 
-La primera fila es ${\widehat{\Pr}(S_{t+1}=V\mid S_t=C)}$. Las otras dos agregan la letra de hace dos, $S_{t-1}$; los tres contextos tienen observaciones en el libro. Si la de hace dos no agregara nada, las tres filas dirían lo mismo.
-
-**No dicen lo mismo.** Tras dos consonantes seguidas, la vocal sale 0.922: en el *Quijote*, tres consonantes seguidas son raras. En este texto, **la letra de hace dos sí agrega información**.
-
-La propiedad que aquí falla tiene nombre:
-
-::: definition {#mkv-c1-independencia-condicional title="Independencia condicional"}
-**Qué es.** $A$ y $D$ son independientes dado $B$ si, una vez que sabes $B$, saber también $D$ no cambia nada de $A$.
-
-**Cómo se calcula.** Si ${\Pr(D\cap B)>0}$, la condición es
+**Instancia de la definición.** Aquí $A=\{S_{t+1}=V\}$, $B=\{S_t=C\}$ y $D$ fija la clase de $S_{t-1}$.
 
 $$
-\Pr(A\mid D,\ B)=\Pr(A\mid B).
+\begin{aligned}
+\widehat{\Pr}(A\mid B)&=0.710,\\
+\widehat{\Pr}(A\mid S_{t-1}=V,B)&=0.624,\\
+\widehat{\Pr}(A\mid S_{t-1}=C,B)&=0.922.
+\end{aligned}
 $$
 
-La coma, otra vez, es «y»: ${\Pr(A\mid D,\ B)}$ condiciona a que ocurran $D$ y $B$.
-
-**Qué significa.** Con letras: $A$ es «la siguiente es vocal», $B$ dice cuál es la anterior y $D$, cuál es la de hace dos. La de hace dos no agrega nada **si ya sabes la anterior**.
-
-**Qué no es.** No es independencia. Dos eventos pueden depender uno del otro y ser independientes dado un tercero, y también al revés.
-:::
-
-**En un modelo, es un supuesto.** En el *Quijote* no se cumple exactamente. Un modelo que solo mira la letra anterior supone que la de hace dos no agrega nada. Es una simplificación del modelo, no un hecho del español: sirve si lo que pierde es poco.
+- **Comparación.** Los tres contextos tienen observaciones, y sus frecuencias difieren: en este texto, la de hace dos sí agrega información.
+- **El caso C, C.** Tras dos consonantes, la vocal sale 0.922: tres consonantes seguidas son raras en el *Quijote*.
+- **Supuesto.** Un modelo que solo usa la anterior omite esa información; no afirma una propiedad exacta del español.
 
 ::: exercise {#mkv-c1-ej-supuesto-exacto title="Imagina el supuesto cumplido"}
 Si el *Quijote* cumpliera exactamente el supuesto, ¿cuánto valdrían las filas de V y de C?
 :::
 
 ::: hint {#mkv-c1-pista-supuesto-exacto of="mkv-c1-ej-supuesto-exacto" title="Lee la fórmula"}
-En ${\Pr(A\mid D,\ B)=\Pr(A\mid B)}$, ¿qué fila de la tabla es el lado derecho?
+En $\Pr(A\mid D,\ B)=\Pr(A\mid B)$, ¿qué fila de la tabla es el lado derecho?
 :::
 
 ::: answer {#mkv-c1-resp-supuesto-exacto of="mkv-c1-ej-supuesto-exacto"}
-**Las dos valdrían 0.710,** igual que la primera fila. Que valgan 0.624 y 0.922 dice que, en este texto, la de hace dos sí agrega información.
+**Ambas valdrían 0.710.** Las frecuencias 0.624 y 0.922 muestran que esa igualdad no se cumple exactamente en el texto.
 :::
 
-La primera fila mezcla las otras dos. ¿Cómo se combinan varios casos en una sola probabilidad?
+La primera fila mezcla las otras dos: ¿cómo combinas varios casos en una sola probabilidad?
 
 ---
 
 ## 7 · Sumar por casos con la probabilidad total
 
-**Piensa: si conoces la probabilidad de vocal tras V y tras C, ¿puedes recuperar la de vocal sin condición?**
+**Piensa: con la probabilidad de vocal tras V y tras C, ¿puedes recuperar la probabilidad sin condición?**
 
-Sí, si también sabes qué tan frecuente es cada caso. Las 26 posiciones de la frase se parten en dos grupos: actual V y actual C. Cada posición está en exactamente uno. Pesa cada condicional por la probabilidad de su caso y suma:
+Sí, si también conoces la probabilidad de cada caso.
 
+::: definition {#mkv-c1-particion title="Partición"}
 $$
 \begin{aligned}
-\Pr(A)
-&=\tfrac{2}{11}\cdot\tfrac{11}{26}+\tfrac{10}{15}\cdot\tfrac{15}{26}\\
-&=\tfrac{2+10}{26}=\tfrac{12}{26}.
+&B_j\ne\varnothing,\\
+&B_i\cap B_j=\varnothing\qquad(i\ne j),\\
+&\bigcup_j B_j=\{\text{resultados posibles}\}.
 \end{aligned}
 $$
 
-Es lo que dice la tabla de la sección 2: 2 vocales siguientes tras V y 10 tras C.
-
-::: definition {#mkv-c1-particion title="Partición"}
-**Qué es.** Una partición es una lista de casos $B_1,B_2,\dots$ que no se enciman y que, entre todos, cubren todos los resultados.
-
-**Cómo se calcula.** Revisa que cada resultado caiga en exactamente un caso. Los valores de una variable siempre forman una partición: aquí, ${\{S_0=V\}}$ y ${\{S_0=C\}}$.
-
-**Qué significa.** Puedes resolver el problema caso por caso y después juntar.
+- **Qué es.** Una partición divide los resultados en casos que no se enciman y cubren todo.
+- **Cómo se calcula.** Revisa que cada resultado pertenezca a exactamente un caso.
+- **Qué significa.** Puedes resolver por casos y reunir las contribuciones sin contar dos veces.
 :::
 
 ::: theorem {#mkv-c1-teo-total title="Probabilidad total"}
-Si $B_1,B_2,\dots$ forman una partición,
-
 $$
-\Pr(A)=\sum_j\Pr(A\mid B_j)\,\Pr(B_j).
+\Pr(A)=\sum_{j:\Pr(B_j)>0}
+\Pr(A\mid B_j)\Pr(B_j).
 $$
 
-Se suman solo los casos con ${\Pr(B_j)>0}$. Los de probabilidad 0 se omiten: su condicional no está definida y no aportan nada.
+**Condición.** Los eventos $B_1,B_2,\ldots$ forman una partición finita o numerable.
+
+**Lectura.** Multiplica cada condicional por la probabilidad de su caso y suma.
+
+**Casos nulos.** Se omiten los de probabilidad 0: sus condicionales no están definidas y no aportan probabilidad.
 :::
 
-El símbolo $\sum$ indica sumar un término por caso. **Con cualquier alfabeto,** la partición tiene un caso por valor de $S_0$:
+**Para cualquier alfabeto.** Los eventos $\{S_0=a\}$ forman una partición:
 
 $$
 \begin{aligned}
 &\Pr(S_1=b)\\
-&\quad=\sum_a\Pr(S_1=b\mid S_0=a)\,\Pr(S_0=a).
+&\quad=\sum_a
+\Pr(S_1=b\mid S_0=a)\Pr(S_0=a).
 \end{aligned}
 $$
 
-También aquí se omiten los valores $a$ con ${\Pr(S_0=a)=0}$.
+Se omiten los valores $a$ con $\Pr(S_0=a)=0$.
 
-**Lo que no generaliza del juguete.** Con dos clases, «no V» es un solo caso, C, y una distribución se fija con un número. Con más valores, «no V» se parte en varios casos, cada uno con su condicional, y hacen falta tantos números como valores menos uno.
+**En la frase.** Las 26 posiciones se reparten entre actual V y actual C.
 
-La misma regla explica la tabla de la sección 6. El 0.710 mezcla los casos «la de hace dos fue V» (0.624) y «fue C» (0.922), cada uno con su peso: tras una C, la de hace dos fue V en unas 7 de cada 10 posiciones. Por eso queda entre los dos, más cerca de 0.624.
+$$
+\begin{aligned}
+\Pr(A)
+&=\frac{2}{11}\cdot\frac{11}{26}\\
+&\quad+\frac{10}{15}\cdot\frac{15}{26}\\
+&=\frac{2+10}{26}=\frac{12}{26}.
+\end{aligned}
+$$
+
+- **Comprobación.** La tabla de la sección 2 cuenta 2 vocales siguientes tras V y 10 tras C.
+- **Más valores.** Con dos clases, «no V» significa C; con más clases, puede reunir varios casos con distintas condicionales.
+- **Distribución.** Con dos valores basta un número; con más, necesitas tantos como valores menos uno.
+- **En el libro.** En la sección 6, el 0.710 combina 0.624 y 0.922 con sus pesos respectivos.
+- **Peso mayor.** Tras C, la de hace dos fue V en unas 7 de cada 10 posiciones. La mezcla queda más cerca de 0.624.
 
 ::: exercise {#mkv-c1-ej-no-particion title="Revisa una partición"}
 ¿Forman los eventos $A$ y $B$ una partición de las 26 posiciones?
@@ -429,10 +552,10 @@ La misma regla explica la tabla de la sección 6. El 0.710 mezcla los casos «la
 :::
 
 ::: answer {#mkv-c1-resp-no-particion of="mkv-c1-ej-no-particion"}
-**No.** Las 2 posiciones con V seguida de V están en los dos, y las 5 con C seguida de C no están en ninguno.
+**No.** Las 2 posiciones con V seguida de V están en ambos. Las 5 con C seguida de C no están en ninguno.
 :::
 
-Todo esto salió de contar en una sola frase. ¿Por qué contar en muchos datos debería acercarte a una probabilidad?
+Si repites el sorteo, ¿por qué la frecuencia observada debería acercarse a la probabilidad?
 
 ---
 
@@ -440,17 +563,39 @@ Todo esto salió de contar en una sola frase. ¿Por qué contar en muchos datos 
 
 **Piensa: si repites el sorteo muchas veces, ¿qué fracción de las veces será vocal la siguiente?**
 
-Cerca de ${\Pr(A)=12/26\approx0.462}$, si las repeticiones son muchas e independientes. Cada repetición sortea de nuevo entre las 26 posiciones, sin mirar las anteriores. Llama $n$ al número de repeticiones.
+La fracción se acerca a la probabilidad del evento cuando repites independientemente el mismo experimento.
 
 ::: theorem {#mkv-c1-teo-promedio title="El promedio de muchas repeticiones"}
-Repite $n$ veces el mismo experimento, con repeticiones independientes. Con probabilidad 1, la fracción de veces en que ocurre $A$ se acerca a $\Pr(A)$ cuando $n$ crece.
+$$
+\begin{aligned}
+&\widehat{\Pr}_n(A)
+=\frac{\text{veces que ocurre }A}{n},\\
+&\Pr\!\left(
+\lim_{n\to\infty}\widehat{\Pr}_n(A)=\Pr(A)
+\right)=1.
+\end{aligned}
+$$
+
+**Condición.** Repite el mismo experimento de manera independiente; $n$ cuenta las repeticiones y todas tienen la misma probabilidad $\Pr(A)$.
+
+**Lectura.** Con probabilidad 1, la frecuencia observada converge a la probabilidad del evento.
+
+Es la **ley de los grandes números** (*law of large numbers*).
 :::
 
-Es la ley de los grandes números (*law of large numbers*), en la forma que necesitamos. El azar está en los sorteos repetidos, y el valor al que se acerca es $12/26$.
+**En la frase.** Cada repetición vuelve a sortear entre las 26 posiciones, sin depender de los sorteos anteriores.
 
-- **Se acerca, no coincide.** Con ${n=26}$ repeticiones, $A$ no tiene por qué salir exactamente 12 veces.
-- **La condición importa.** Si sorteas una sola vez y copias el resultado $n$ veces, las repeticiones no son independientes: la fracción vale 0 o 1 para siempre.
-- **Es lo que hacía Monte Carlo plano.** Con partidas independientes y la misma regla al azar, su promedio se acercaba al pago esperado bajo esa regla.
+$$
+\begin{aligned}
+\widehat{\Pr}_n(A)&\longrightarrow\Pr(A),\\
+\Pr(A)&=\frac{12}{26}\approx0.462,\\
+&\text{con probabilidad }1.
+\end{aligned}
+$$
+
+- **Con pocas repeticiones.** Con $n=26$, el evento no tiene por qué ocurrir exactamente 12 veces.
+- **Sin independencia.** Si sorteas una vez y copias el resultado $n$ veces, la fracción queda en 0 o 1.
+- **En Monte Carlo plano.** Con partidas independientes y una regla fija, el promedio se acerca al pago esperado bajo esa regla.
 
 ::: exercise {#mkv-c1-ej-repetir title="Elige la repetición válida"}
 ¿Cuál de estas formas de repetir cumple la condición del teorema?
@@ -464,10 +609,10 @@ En la forma 2, ¿saber la primera posición te dice algo de la segunda?
 :::
 
 ::: answer {#mkv-c1-resp-repetir of="mkv-c1-ej-repetir"}
-**Solo la primera.** En la segunda, la primera posición fija todas las demás: no son independientes. Además, las letras seguidas dependen entre sí, como viste en la sección 5.
+**Solo la primera.** En la segunda, la posición inicial fija las demás. Las letras seguidas también dependen entre sí, como viste en la sección 5.
 :::
 
-En un texto, las letras seguidas no son repeticiones independientes. ¿Puede contar en un texto largo acercarse a algo, si sus letras dependen unas de otras?
+¿Puedes aplicar estas cuentas a otra frase cuando el espacio también cuenta como un valor?
 
 ---
 
@@ -477,11 +622,15 @@ En un texto, las letras seguidas no son repeticiones independientes. ¿Puede con
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Toma la primera frase del *Quijote*, «En un lugar de la Mancha». **Cambia una idea:** el espacio ya no se quita, y cada letra puede tomar tres valores: V, C o espacio. En la secuencia, el espacio se escribe `_`. Normaliza igual que antes, con un solo espacio entre palabras. El experimento es el mismo: sortear con probabilidades iguales una posición que tenga siguiente.
+Toma la primera frase del *Quijote*, «En un lugar de la Mancha».
+
+- **Cambia una idea.** Conserva el espacio: cada símbolo toma uno de tres valores, V, C o espacio.
+- **Representación.** Escribe el espacio como `_`. Normaliza igual que antes, con un solo espacio entre palabras.
+- **Experimento.** Sortea con probabilidades iguales una posición que tenga siguiente.
 
 1. **Traduce.** Escribe la frase como V, C y `_`, y di cuántas posiciones entran al sorteo.
 2. **Condiciona.** Escribe la distribución de $S_1$ dado cada valor de $S_0$, en el orden V, C, espacio.
-3. **Suma por casos.** Calcula ${\Pr(S_1=V)}$ con la probabilidad total y compruébalo contando.
+3. **Suma por casos.** Calcula $\Pr(S_1=V)$ con la probabilidad total y compruébalo contando.
 4. **Decide.** ¿Son independientes $S_0$ y $S_1$? Justifica con un par de valores.
 5. **Explica un cero.** ¿Qué cero se mantendría con cualquier otra frase, normalizada igual, y por qué?
 :::
@@ -501,9 +650,9 @@ Toma la primera frase del *Quijote*, «En un lugar de la Mancha». **Cambia una 
 VC_VC_CVCVC_CV_CV_CVCCCV
 ```
 
-Son 24 símbolos. La última «a» no tiene siguiente: entran 23 posiciones al sorteo.
+Son 24 símbolos; la última «a» no tiene siguiente. Entran 23 posiciones al sorteo.
 
-**2. Condicionales.** $S_0$ vale V en 7 posiciones, C en 11 y espacio en 5; suman 23. Cada fila es la distribución de $S_1$ dado ese valor de $S_0$:
+**2. Condicionales.** $S_0$ vale V en 7 posiciones, C en 11 y espacio en 5; suman 23. Cada fila da la distribución de $S_1$ condicionada en su valor actual:
 
 | Actual | V | C | espacio |
 |---|---:|---:|---:|
@@ -511,34 +660,55 @@ Son 24 símbolos. La última «a» no tiene siguiente: entran 23 posiciones al s
 | C | 6/11 | 2/11 | 3/11 |
 | espacio | 1/5 | 4/5 | 0 |
 
-**3. Probabilidad total.** Los tres valores de $S_0$ son la partición:
+**3. Probabilidad total.** Los tres valores de $S_0$ forman la partición:
 
 $$
 \begin{aligned}
 \Pr(S_1=V)
-&=0\cdot\tfrac{7}{23}+\tfrac{6}{11}\cdot\tfrac{11}{23}+\tfrac{1}{5}\cdot\tfrac{5}{23}\\
-&=\tfrac{0+6+1}{23}=\tfrac{7}{23}.
+&=0\cdot\frac{7}{23}\\
+&\quad+\frac{6}{11}\cdot\frac{11}{23}\\
+&\quad+\frac{1}{5}\cdot\frac{5}{23}\\
+&=\frac{0+6+1}{23}=\frac{7}{23}.
 \end{aligned}
 $$
 
-Contando directamente: 7 de las 23 posiciones van seguidas de vocal.
+Contando directamente, 7 de las 23 posiciones van seguidas de vocal.
 
-**4. Independencia.** No son independientes. Como ${\Pr(S_0=V)>0}$, se puede comparar: ${\Pr(S_1=V\mid S_0=V)=0}$, pero ${\Pr(S_1=V)=7/23}$. Saber que la actual es vocal cambia la probabilidad de que la siguiente lo sea.
+**4. Independencia.** Basta encontrar un par que no cumpla la igualdad:
 
-**5. El cero que no cambia.** Espacio seguido de espacio vale 0 por cómo normalizamos: los espacios seguidos se juntan en uno. El cero de V seguida de V solo dice que esta frase no tiene dos vocales juntas; «iglesia» sí las tiene.
+$$
+\begin{aligned}
+\Pr(S_0=V)&>0,\\
+\Pr(S_1=V\mid S_0=V)&=0,\\
+\Pr(S_1=V)&=\frac{7}{23}.
+\end{aligned}
+$$
+
+La condicional difiere de la probabilidad sin condición: $S_0$ y $S_1$ no son independientes.
+
+**5. El cero que no cambia.** Espacio seguido de espacio vale 0 porque la normalización junta los espacios consecutivos. El cero de V seguida de V depende de esta frase; «iglesia» sí tiene vocales consecutivas.
 :::
 
-**Punto de control:** deberías poder declarar un experimento y contar en él una probabilidad, una conjunta y una condicional. También, escribirlas con $S_t$, encadenar la regla del producto, distinguir independencia de independencia condicional y sumar por casos con una partición.
+**Punto de control:** deberías poder declarar el experimento y calcular una probabilidad, una conjunta y una condicional. También, escribir distribuciones, encadenar productos, distinguir ambas independencias, sumar por casos y reconocer cuándo vale promediar repeticiones.
 
 ---
 
 ## Lo que hay que llevarse
 
-- **Toda probabilidad es de un experimento.** Sorteando una de las 26 posiciones con siguiente, ${\Pr(A)=12/26}$ y ${\Pr(B)=11/26}$.
-- **Condicionar reduce los casos.** ${\Pr(A\mid B)=2/11}$, contra $10/15$ tras consonante; solo se define si el evento dado tiene probabilidad positiva.
-- **La regla del producto encadena condicionales.** El tramo C, V, C vale ${\frac{14}{25}\cdot\frac{9}{14}\cdot\frac{7}{9}=\frac{7}{25}}$; cada factor condiciona en todo lo anterior.
-- **Las letras seguidas no son independientes.** ${\Pr(A)\Pr(B)\approx0.195}$, pero ${\Pr(A\cap B)\approx0.077}$.
-- **La independencia condicional es un supuesto.** En el *Quijote*, tras C la vocal sale 0.710; si la de hace dos fue V, 0.624, y si fue C, 0.922. Un modelo que solo mira la anterior usaría 0.710 en los tres casos.
-- **La probabilidad total suma por casos,** con un caso por valor. El promedio de $n$ repeticiones **independientes** se acerca a la probabilidad, con probabilidad 1.
+- **Experimento.** Entre 26 posiciones con siguiente, $\Pr(A)=12/26$ y $\Pr(B)=11/26$.
+- **Condicional.** $\Pr(A\mid B)=2/11$, frente a $10/15$ tras consonante; el condicionante debe tener probabilidad positiva.
+- **Producto.** Cada factor conserva toda la historia:
 
-Continúa con [[mkv-el-problema-de-markov|El problema de Markov]].
+$$
+\frac{14}{25}\cdot\frac{9}{14}\cdot\frac{7}{9}
+=\frac{7}{25}.
+$$
+
+- **Independencia.** Compara $\Pr(A\cap B)$ con $\Pr(A)\Pr(B)$; aquí, $0.077\ne0.195$.
+- **Independencia condicional.** Compara $\Pr(A\mid D,B)$ con $\Pr(A\mid B)$, si $\Pr(D\cap B)>0$.
+- **En el libro.** Tras C, 0.710; agregando la de hace dos, 0.624 o 0.922. El supuesto usaría 0.710 en ambos casos.
+- **Probabilidad total.** Suma condicional por peso sobre una partición; omite los casos de probabilidad 0.
+- **Promedio.** La frecuencia de $n$ repeticiones independientes del mismo experimento converge a $\Pr(A)$ con probabilidad 1.
+
+Continúa con [[mkv-cadena-en-general|La cadena de Markov, en general]].
+

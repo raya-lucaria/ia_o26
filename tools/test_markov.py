@@ -33,11 +33,11 @@ import markov as m
 RAIZ = Path(__file__).resolve().parent.parent
 CLASE = RAIZ / "course/8_markov/1_que_es_una_cadena"
 P1 = "1_lo_que_necesitas.md"
-P2 = "2_el_problema_de_markov.md"
-P3 = "3_ajustar_contando.md"
-P4 = "4_predecir.md"
-P5 = "5_generar_texto.md"
-P6 = "6_tarea.md"
+P2 = "3_el_problema_de_markov.md"
+P3 = "4_ajustar_contando.md"
+P4 = "5_predecir.md"
+P5 = "6_generar_texto.md"
+P6 = "7_tarea.md"
 PAGINAS = (P1, P2, P3, P4, P5, P6)
 
 SHA_ORIGINAL = "534f41d59f7142163fa0964076ac6351845c006ea6433778be637fac6d5b04d7"

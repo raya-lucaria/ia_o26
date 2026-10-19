@@ -39,17 +39,25 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $t$ | «te». El paso: ${t=0,1,2,\dots}$ Los libros de cadenas usan $n$; aquí $t$, como en agentes. *→ Lo que necesitas de probabilidad* |
 | $S_t$ | «ese sub te». El estado en el paso $t$, **todavía aleatorio**. *→ Lo que necesitas de probabilidad* |
 | $s$, $s'$ | «ese», «ese prima». Valores concretos de un estado: de dónde sales y a dónde llegas. *→ El problema de Markov* |
-| $\mathcal S$ | «ese caligráfica». El conjunto de estados posibles. *→ El problema de Markov* |
-| $k$ | «ka». El número de estados: ${k=\lvert\mathcal S\rvert}$. *→ El problema de Markov* |
+| $s_1,\dots,s_k$ | «ese uno a ese ka». Los estados numerados; la fila y la columna $i$ de toda matriz y la entrada $i$ de todo vector corresponden a $s_i$. *→ La cadena de Markov, en general* |
+| $P_{ij}$ | «pe i jota». La entrada de la fila $i$ y la columna $j$: ${P_{ij}=P(s_j\mid s_i)}$, de $s_i$ hacia $s_j$. *→ La cadena de Markov, en general* |
+| $\mathbf e_i$ | «e i». El vector fila $1\times k$ con 1 en la posición $i$ y 0 en las demás: empezar seguro en $s_i$. *→ La cadena de Markov, en general* |
+| $\mathbf 1$ | «uno». El vector columna $k\times 1$ de unos: ${P\mathbf 1=\mathbf 1}$ dice que cada fila suma 1. *→ La cadena de Markov, en general* |
+| $I_k$ | «identidad de tamaño ka». La matriz $k\times k$ con unos en la diagonal y ceros fuera: ${P^0=I_k}$. *→ La cadena de Markov, en general* |
+| $\mathbf 1^{\mathsf T}$ | «uno traspuesto». El vector fila $1\times k$ de unos; suma las entradas de una columna. *→ La cadena de Markov, en general* |
+| $H_t$ | «hache sub te». Una historia: el evento ${\{S_0=s_{i_0},\dots,S_t=s_{i_t}\}}$. *→ La cadena de Markov, en general* |
+| $(P^t)_{ij}$ | «entrada i jota de pe a la te». ${\Pr(S_t=s_j\mid S_0=s_i)}$: llegar de $s_i$ a $s_j$ en exactamente $t$ pasos. *→ La cadena de Markov, en general* |
+| $\mathcal S$ | «ese caligráfica». El conjunto de estados posibles. *→ La cadena de Markov, en general* |
+| $k$ | «ka». El número de estados: ${k=\lvert\mathcal S\rvert}$. *→ La cadena de Markov, en general* |
 | V, C | «ve», «ce». Los dos estados del juguete: vocal y consonante, en ese orden. *→ El problema de Markov* |
-| $P$ | «pe». La matriz de transición, $k\times k$: fila = desde, columna = hacia; cada fila suma 1. No es la clase P de complejidad. *→ El problema de Markov* |
-| ${P(s'\mid s)}$, $P_{ss'}$ | «pe de ese prima dado ese». La entrada de la fila $s$ y columna $s'$: la probabilidad de pasar de $s$ a $s'$. Si ${\Pr(S_t=s)>0}$, es ${\Pr(S_{t+1}=s'\mid S_t=s)}$. *→ El problema de Markov* |
-| $\mu_0$ | «mu cero». La distribución del estado inicial, un vector fila que suma 1. No es el $\mu$ de KKT. *→ El problema de Markov* |
-| $\mu_t$ | «mu sub te». La distribución del estado en el paso $t$: ${\mu_t(s)=\Pr(S_t=s)}$. *→ Predecir* |
-| $P^t$, ${\widehat P^{\,t}}$ | «pe a la te». La matriz multiplicada por sí misma $t$ veces: ${\mu_t=\mu_0P^t}$. *→ Predecir* |
+| $P$ | «pe». La matriz de transición, $k\times k$: fila = desde, columna = hacia; cada fila suma 1. No es la clase P de complejidad. *→ La cadena de Markov, en general* |
+| ${P(s'\mid s)}$, $P_{ss'}$ | «pe de ese prima dado ese». La entrada de la fila $s$ y columna $s'$: la probabilidad de pasar de $s$ a $s'$. Si ${\Pr(S_t=s)>0}$, es ${\Pr(S_{t+1}=s'\mid S_t=s)}$. *→ La cadena de Markov, en general* |
+| $\mu_0$ | «mu cero». La distribución del estado inicial, un vector fila que suma 1. No es el $\mu$ de KKT. *→ La cadena de Markov, en general* |
+| $\mu_t$ | «mu sub te». La distribución del estado en el paso $t$: ${\mu_t(s)=\Pr(S_t=s)}$. *→ La cadena de Markov, en general* |
+| $P^t$, ${\widehat P^{\,t}}$ | «pe a la te». La matriz multiplicada por sí misma $t$ veces: ${\mu_t=\mu_0P^t}$. *→ La cadena de Markov, en general* |
 | $j$ | «jota». Índice de un producto o una suma: ${\prod_{j=0}^{t-1}}$. *→ Lo que necesitas de probabilidad* |
 | ${p_1,\dots,p_k}$ | «pe uno a pe ka». Las entradas de una fila, en el orden de los estados, como las recibe MUESTREAR-FILA. *→ El problema de Markov* |
-| $P^{\mathsf T}$ | «pe traspuesta». La matriz con filas y columnas intercambiadas; algunos libros escriben las distribuciones como columnas y usan $P^{\mathsf T}$. Aquí no. *→ El problema de Markov* |
+| $P^{\mathsf T}$ | «pe traspuesta». La matriz con filas y columnas intercambiadas; algunos libros escriben las distribuciones como columnas y usan $P^{\mathsf T}$. Aquí no. *→ La cadena de Markov, en general* |
 | $u$ | «u». Un número uniforme en ${[0,1)}$ con que MUESTREAR-FILA elige el siguiente estado. *→ El problema de Markov* |
 | $L$ | «ele». La longitud de una racha de consonantes, todavía aleatoria; $\ell$ es un valor: ${\Pr(L=\ell)}$. *→ El problema de Markov* |
 | $\ell$, $q$ | «ele», «cu». La longitud de una racha de consonantes y la probabilidad de seguir en consonante. *→ El problema de Markov* |
@@ -66,7 +74,11 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $\Sigma$ | «sigma mayúscula». El alfabeto: los símbolos que pueden seguir. Con las 27 letras y el espacio, ${\lvert\Sigma\rvert=28}$. En los juguetes son los estados: ${\lvert\Sigma\rvert=k}$. *→ Ajustar contando* |
 | $z$ | «zeta». Un símbolo de $\Sigma$: el que sigue a un contexto. Al agregarlo, el contexto se desliza. *→ Ajustar contando* |
 | $p$ | «pe». Una probabilidad que cada página nombra en el momento, como ${p=P(V\mid V)}$ al maximizar una fila o la $p$ del error estándar. No es una matriz. *→ El problema de Markov* |
+| $\delta$ | «delta». El error de una réplica al recuperar una matriz conocida: ${\delta=\max_{i,j}\lvert\widehat P_{ij}-P_{ij}\rvert}$. *→ Ajustar contando* |
+| $\varepsilon$ | «épsilon». Una cantidad positiva cualquiera, para construir un contraejemplo. *→ La cadena de Markov, en general* |
 | $\widetilde p$ | «pe tilde». La estimación suavizada (Laplace): ${\widetilde p(z\mid s)=\frac{N(s,z)+1}{N(s)+\lvert\Sigma\rvert}}$. No garantiza maximizar la verosimilitud. *→ Ajustar contando* |
+| $c_t$, $c_j$ | «ce sub te». El contexto: los últimos $h$ símbolos hasta el paso $t$ (o tras escribir $j$ símbolos en GENERAR); $c_0$ es el contexto inicial. *→ Ajustar contando* |
+| $z_j$ | «zeta sub jota». El símbolo número $j$ que escribe GENERAR, un elemento de $\Sigma$. *→ Generar texto* |
 | memoria $h$ | «memoria hache». Cuántos símbolos anteriores forman el estado. Memoria 0, 1, 2 = unigrama, bigrama, trigrama. No es la profundidad de UCT. *→ Ajustar contando* |
 
 ## Términos

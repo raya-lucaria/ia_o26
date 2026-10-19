@@ -32,6 +32,7 @@ PREAMBULO = ("**Intenta formular tu propuesta sin abrir las pistas ni la respues
 # El recorrido de la clase 1, por id estable y en orden de navegación.
 CLASE_1_EN_ORDEN = [
     "mkv-lo-que-necesitas",
+    "mkv-cadena-en-general",
     "mkv-el-problema-de-markov",
     "mkv-ajustar-contando",
     "mkv-predecir",
