@@ -109,6 +109,13 @@ Pudiendo explicar con tus palabras, sin leerlas:
 
 No hay cuestionario ni nada que entregar.
 
+## El proyecto de la unidad
+
+La unidad cierra con un proyecto en equipos de 2: un bot que juega
+*Breakthrough de combate*, un juego de peones con dados, en una liga contra
+los bots del grupo y los nuestros. Qué es, cómo empezar, qué se entrega y
+cómo se califica: [[proyecto-torneo-adversarial|el proyecto]].
+
 Y dos hojas de consulta, aparte del recorrido:
 
 - [[notacion-juegos|Toda la notación, en una hoja]]: cada símbolo de la
