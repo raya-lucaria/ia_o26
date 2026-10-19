@@ -654,7 +654,11 @@ I, C y D llegan con ${d=0}$ y no son finales: los valora la **línea 9**, con 60
 
 La línea de corte baja un nivel: ahora queda debajo de C1 y C2, y debajo de los finales de I y de D.
 
-> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#corte)** — ahí puedes cambiar $d$ entre 1, 2 y 3 y ver cuándo cambia la jugada.
+::: figure {#jue-c3-anim-corte title="La animación de esta traza: minimax con corte, línea por línea"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Aquí va con d = 2, en la fila 8: C1 y C2 quedan en la línea de corte y se estiman, EVAL = 10 y EVAL = 50, y C corre la línea 20, v ← min(10, 50) = 10. Arriba se elige d entre 1, 2 y 3.](../_assets/jue-anim-corte.png)](../_assets/traza_arbol_t.html#corte-fila-8)
+:::
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#corte)** — pulsa la imagen o este enlace. Ahí puedes cambiar $d$ entre 1, 2 y 3 y ver cuándo cambia la jugada. Avanza una línea con ▶ o con →, y una fila de la tabla con ▶▶ o con Mayús + →.
 
 La traza de DECIDIR-CON-CORTE(R, 2) usa el formato de [[minimax-como-algoritmo|Minimax como algoritmo]]:
 

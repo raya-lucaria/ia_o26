@@ -109,9 +109,12 @@ Pudiendo explicar con tus palabras, sin leerlas:
 
 No hay cuestionario ni nada que entregar.
 
-Y una hoja de consulta, aparte del recorrido:
+Y dos hojas de consulta, aparte del recorrido:
 
 - [[notacion-juegos|Toda la notación, en una hoja]]: cada símbolo de la
   unidad, cómo se lee y dónde se presentó.
+- [[animaciones-juegos|Las animaciones de la unidad]]: cada algoritmo
+  corriendo línea por línea, con el pseudocódigo, la pila y el árbol a la
+  vez, y qué mirar en cada una.
 
 Empieza por [[juegos-leer-y-escribir|la clase 1]].

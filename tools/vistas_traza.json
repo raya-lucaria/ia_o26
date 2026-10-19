@@ -1,0 +1,26 @@
+{
+  "html": "course/7_juegos/_assets/traza_arbol_t.html",
+  "sha256": "c08051b5d3d85dffeb76bf474e7126d5d009751325d7660a92843261fae6d0e0",
+  "vistas": [
+    {
+      "archivo": "jue-anim-minimax.png",
+      "fragmento": "minimax-fila-12"
+    },
+    {
+      "archivo": "jue-anim-azar.png",
+      "fragmento": "azar-fila-6"
+    },
+    {
+      "archivo": "jue-anim-alfa-beta.png",
+      "fragmento": "alfa-beta-fila-12"
+    },
+    {
+      "archivo": "jue-anim-corte.png",
+      "fragmento": "corte-fila-8"
+    },
+    {
+      "archivo": "jue-anim-iterativa.png",
+      "fragmento": "iterativa-fila-10"
+    }
+  ]
+}

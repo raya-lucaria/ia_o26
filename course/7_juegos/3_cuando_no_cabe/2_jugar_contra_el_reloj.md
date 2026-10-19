@@ -830,7 +830,11 @@ En negrita, lo que era «?».
 3. **Cotas.** I y D devuelven ${-100}$, y la ventana solo certifica que valen **a lo más** eso. Basta para saber que no superan a centro. Aquí, además, ese techo demuestra el valor: ningún pago baja de ${-100}$.
 :::
 
-> **▶ [Recorre las tres búsquedas paso a paso](../_assets/traza_arbol_t.html#iterativa)** — ${d=1}$, 2 y 3 seguidas, con la jugada anterior primero.
+::: figure {#jue-c3-anim-iterativa title="La animación de esta traza: las tres búsquedas, línea por línea"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Aquí va en la búsqueda con d = 2, que empieza por izq, la jugada que dejó d = 1. I corre la línea 31, β ← min(100, −100) = −100, y su ventana baja a (−∞, −100).](../_assets/jue-anim-iterativa.png)](../_assets/traza_arbol_t.html#iterativa-fila-10)
+:::
+
+> **▶ [Recorre las tres búsquedas paso a paso](../_assets/traza_arbol_t.html#iterativa)** — ${d=1}$, 2 y 3 seguidas, con la jugada anterior primero. Pulsa la imagen o este enlace. Avanza una línea con ▶ o con →, y una fila de la tabla con ▶▶ o con Mayús + →.
 
 La tabla resume las tres búsquedas.
 

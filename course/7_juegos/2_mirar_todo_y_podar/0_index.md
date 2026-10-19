@@ -24,7 +24,7 @@ aprenderemos a **podar**: dejar ramas sin generar sin cambiar la respuesta.
 > **Esta clase tiene animaciones y un notebook.** Minimax, alfa-beta y expectiminimax, corriendo en el árbol base:
 >
 > - **Animaciones paso a paso:** [minimax](../_assets/traza_arbol_t.html#minimax) · [alfa-beta](../_assets/traza_arbol_t.html#alfa-beta) · [con dados](../_assets/traza_arbol_t.html#azar). Cada página de
->   algoritmo abre la suya en un recuadro como éste.
+>   algoritmo la muestra en una figura: púlsala y se abre. Todas juntas, con qué mirar en cada una, en [[animaciones-juegos|el anexo de animaciones]].
 > - **Notebook en Colab:** el mismo Python de las páginas, con el árbol dibujado en cada paso.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
@@ -143,8 +143,9 @@ se cuentan en el tiempo de la clase y no hay nada que entregar.
 
 **Las animaciones.** Una página con el árbol, el pseudocódigo con la línea
 que corre y el valor de cada variable. Avanzas un paso con ▶ o con las
-flechas del teclado. Cada página de algoritmo la enlaza en su traza, y aquí
-están todas:
+flechas del teclado. Cada página de algoritmo la muestra en su traza, y
+[[animaciones-juegos|el anexo de animaciones]] dice qué mirar en cada una.
+Aquí están todas:
 
 - [Minimax](../_assets/traza_arbol_t.html#minimax)
 - [Alfa-beta](../_assets/traza_arbol_t.html#alfa-beta)

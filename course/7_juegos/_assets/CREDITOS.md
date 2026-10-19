@@ -5,6 +5,11 @@ editan a mano: se cambia la función del generador y se vuelve a correr. Ningún
 tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 `tools/juegos.py`, así que cambiar una regla cambia el dibujo.
 
+Las cinco vistas previas `jue-anim-*.png` no se dibujan: son capturas de la
+animación `traza_arbol_t.html`, tomadas con Chrome sin interfaz por
+`tools/gen_vistas_traza.py`. `tools/test_vistas_traza.py` falla si la
+animación cambió desde la última captura; entonces se vuelven a tomar.
+
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
 | `jue-ciclo-partida.svg` | Una partida como ciclo: las siete piezas son sus cajas y elegir la jugada es la única que no dan las reglas | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
@@ -82,3 +87,8 @@ tablero está dibujado a mano: cada nodo se calcula aplicando las jugadas con
 | `jue-c3-refutacion-tres.svg` | La refutación descubierta tarde en tres paneles con el mismo eje: promedio (10 → 8.67, límite −10/3) y actualización minimax (10 → −30) sobre una secuencia impuesta, y una corrida real de UCT (c = 1, semilla 0, 60 vueltas, pagos ÷30) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-tres-mc.svg` | Los tres Monte Carlo en el árbol de resultados por jugada de la raíz: V y Q_azar exactos; Monte Carlo plano, actualización minimax y UCT con 40 partidas o vueltas (semilla 0) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
 | `jue-c3-min-volteado.svg` | MIN volteado: p, q y r (Q̂ −0.2, +0.25, +0.5; N(s,a) 30, 16, 4; N(s) = 50; c = 2√2; bonos 1.02, 1.40, 2.80) con el bigote del bono a la derecha (si eligiera MAX) y a la izquierda (elige MIN) | Generado con `tools/gen_juegos.py` | Propio, CC BY-SA 4.0 |
+| `jue-anim-minimax.png` | Vista previa de la animación de minimax en el árbol base, fila 12: línea 13, pila R›C›C2 | Capturado de `traza_arbol_t.html` con `tools/gen_vistas_traza.py` | Propio, CC BY-SA 4.0 |
+| `jue-anim-azar.png` | Vista previa de la animación de expectiminimax en el árbol base, fila 6: C, de azar, empieza a sumar con v ← 0 | Capturado de `traza_arbol_t.html` con `tools/gen_vistas_traza.py` | Propio, CC BY-SA 4.0 |
+| `jue-anim-alfa-beta.png` | Vista previa de la animación de alfa-beta en el árbol base, fila 12: el corte beta de C2, con tres marcos en la pila | Capturado de `traza_arbol_t.html` con `tools/gen_vistas_traza.py` | Propio, CC BY-SA 4.0 |
+| `jue-anim-corte.png` | Vista previa de la animación de minimax con corte en el árbol de resultados, d = 2, fila 8: C1 y C2 estimados con EVAL | Capturado de `traza_arbol_t.html` con `tools/gen_vistas_traza.py` | Propio, CC BY-SA 4.0 |
+| `jue-anim-iterativa.png` | Vista previa de la animación de la profundización iterativa, búsqueda con d = 2: empieza por izq y la ventana de I baja a (−∞, −100) | Capturado de `traza_arbol_t.html` con `tools/gen_vistas_traza.py` | Propio, CC BY-SA 4.0 |

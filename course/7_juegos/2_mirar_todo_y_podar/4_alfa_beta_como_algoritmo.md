@@ -275,6 +275,10 @@ def alfa_beta(s, alfa, beta): # (7)
 
 **El recorrido: lo que hay en memoria.**
 
+::: figure {#jue-c2-anim-alfa-beta-pila title="La animación en el corte beta de C2: tres marcos en la pila"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Corre la línea 14 en C2, v ≥ β, 7 ≥ 5: corte beta. La pila tiene tres marcos: C2 arriba con v = 7, C esperando con (α, β) = (3, 5), y R al fondo con α = 3.](../_assets/jue-anim-alfa-beta.png)](../_assets/traza_arbol_t.html#alfa-beta-fila-12)
+:::
+
 > **▶ [Ve la pila en el corte beta de C2](../_assets/traza_arbol_t.html#alfa-beta-fila-12)** — abre la traza del árbol base justo en ese paso.
 >
 > **▶ [Ve C y C1 a la vez en la pila](../_assets/traza_arbol_t.html#alfa-beta-fila-8)** — el paso en que C1 sube su α en la línea 15.

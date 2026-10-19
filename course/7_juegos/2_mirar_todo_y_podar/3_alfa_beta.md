@@ -295,7 +295,11 @@ generan **los 7**.
 
 ## 5 · Etapa 2: se agrega el centro
 
-> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#alfa-beta)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+::: figure {#jue-c2-anim-alfa-beta title="La animación de esta traza: alfa-beta, línea por línea"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Aquí va en la fila 12: corre la línea 14 en C2, v ≥ β, 7 ≥ 5, y hay corte beta; la hoja 8 no se genera. Cada nodo de la pila lleva su ventana (α, β).](../_assets/jue-anim-alfa-beta.png)](../_assets/traza_arbol_t.html#alfa-beta-fila-12)
+:::
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#alfa-beta)** — pulsa la imagen o este enlace. Avanza una línea con ▶ o con →, y una fila de la tabla con ▶▶ o con Mayús + →.
 
 **Piensa: si MIN también puede asegurarse algo, ¿quién poda entonces?**
 

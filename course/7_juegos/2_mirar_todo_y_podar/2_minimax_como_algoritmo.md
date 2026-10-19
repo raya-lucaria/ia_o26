@@ -286,7 +286,11 @@ traen el pago, en **puntos** para MAX, no en ganar o perder.
 ![Árbol base. Arriba R, donde mueve MAX, con tres flechas: izq hacia I, centro hacia C y der hacia D; en los tres mueve MIN. I tiene dos hojas, 3 y 6. C tiene dos hijos donde mueve MAX: C1 por c1, con hojas 5 y 2, y C2 por c2, con hojas 7 y 8. D tiene dos hojas, 2 y 12. Los nodos internos todavía no tienen valor. Al pie: «Cada hoja es un final: su número es lo que vale ese final.»](../_assets/jue-t-arbol.svg)
 :::
 
-> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#minimax)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+::: figure {#jue-c2-anim-minimax title="La animación de esta traza: minimax, línea por línea"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Aquí va en la fila 12: corre la línea 13, v ← max(−∞, 7) = 7, con la pila R›C›C2; I ya devolvió 3 y C1 devolvió 5.](../_assets/jue-anim-minimax.png)](../_assets/traza_arbol_t.html#minimax-fila-12)
+:::
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#minimax)** — pulsa la imagen o este enlace. Avanza una línea con ▶ o con →, y una fila de la tabla con ▶▶ o con Mayús + →.
 
 **Cómo leer la traza:**
 

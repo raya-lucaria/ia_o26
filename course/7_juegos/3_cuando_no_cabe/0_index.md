@@ -21,7 +21,7 @@ que detenerse antes y **estimar**.
 > **Esta clase tiene animaciones, tres interactivos y un notebook.** Minimax con corte y profundización iterativa en el árbol de resultados, el bono de UCT y todos los algoritmos en un mismo árbol:
 >
 > - **Animaciones paso a paso:** [corte](../_assets/traza_arbol_t.html#corte) · [iterativa](../_assets/traza_arbol_t.html#iterativa). Cada página de
->   algoritmo abre la suya en un recuadro como éste.
+>   algoritmo la muestra en una figura: púlsala y se abre. Todas juntas, con qué mirar en cada una, en [[animaciones-juegos|el anexo de animaciones]].
 > - **Simulaciones en vivo:** [Hoeffding en vivo](../_assets/hoeffding_en_vivo.html) · [Bandido en vivo](../_assets/bandido_en_vivo.html). Las abre
 >   la página «De dónde sale el bono».
 > - **El mismo árbol, todos los algoritmos:** [ábrelo](../_assets/un_arbol_todos.html). Corre cada algoritmo de la unidad sobre el árbol de resultados. Lo abren «MCTS con UCT» y la radiografía.

@@ -401,7 +401,11 @@ C1 y C2 siguen siendo de MAX.
 ![El árbol base con R de MAX arriba. I, C y D son nodos de azar con probabilidad un medio en cada flecha. I promedia 3 y 6 y vale 9/2; C promedia C1 = 5 y C2 = 8 y vale 13/2; D promedia 2 y 12 y vale 7. R elige der, la de mayor valor esperado](../_assets/jue-t-azar.svg)
 :::
 
-> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#azar)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+::: figure {#jue-c2-anim-azar title="La animación de esta traza: expectiminimax, línea por línea"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Aquí va en la fila 6: I, de azar, ya vale 9/2, y C empieza con la línea 22, v ← 0, porque en un nodo de azar se suma, no se compara.](../_assets/jue-anim-azar.png)](../_assets/traza_arbol_t.html#azar-fila-6)
+:::
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#azar)** — pulsa la imagen o este enlace. Avanza una línea con ▶ o con →, y una fila de la tabla con ▶▶ o con Mayús + →.
 
 **Cómo leer la traza.** Tiene el formato de
 [[minimax-como-algoritmo|Minimax como algoritmo]], con dos cambios:
