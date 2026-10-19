@@ -299,7 +299,7 @@ tendicen otr
 
 **Míralo escribir, símbolo por símbolo.** El generador de texto corre lo mismo con memoria 0, 1, 2 o 3. Para cada símbolo muestra el contexto, su fila, el $u$ sorteado y dónde cae en la suma acumulada.
 
-Su largo cuenta el total, contexto incluido. Con la semilla de cada ejemplo y largo 200 escribe el mismo texto que la sección 3: sortea igual que el Python de esta página con largo = 200 − $h$.
+Su largo cuenta el total, contexto incluido. Con la semilla de cada ejemplo y largo 200 escribe las mismas cuatro salidas de arriba: sortea igual que el Python de esta página con largo = 200 − $h$.
 
 ::: figure {#mkv-c1-generador title="El generador escribiendo con memoria 2"}
 [![Captura del generador de texto con memoria 2 y semilla 2034, en el símbolo 150 de 200. El panel del paso muestra el contexto «ce», con 6 942 salidas; las más probables son r 0.260, d 0.196, s 0.162, espacio 0.153 y n 0.099, y el resto suma 0.129. El u sorteado, 0.7149, cae en el pedazo de «s», de 0.6788 a 0.8410, y se escribe «s».](../_assets/mkv-c1-generador.png)](../_assets/generador_texto.html#h=2&semilla=2034&largo=200&paso=148)
@@ -403,7 +403,9 @@ Cada fila es **una sola réplica**: con otra semilla, las cifras pueden cambiar.
 
 **No es inevitable.** La copia no exige filas con una sola continuación: cada contexto del tramo de 13 de memoria 3 se vio seguido de varios símbolos distintos. Basta que los sorteos elijan, varias veces seguidas, continuaciones que el corpus ya encadena; es más fácil cuando cada contexto tiene pocas continuaciones y una domina.
 
-En el extremo, si cada contexto visitado tuviera una sola continuación observada, GENERAR seguiría el corpus letra por letra hasta llegar a un contexto sin salidas, donde usaría la fila uniforme. Cuantos más símbolos distintos y parejos siguen a cada contexto, más fácil es combinar trozos sin repetir tramos largos.
+En el extremo, si cada contexto apareciera una sola vez en el corpus, GENERAR no tendría opción: copiaría el corpus letra por letra desde el contexto inicial. Si los contextos se repiten pero cada uno tiene un solo siguiente, puede dar vueltas en un ciclo, como «abab…» con memoria 1 en el texto «abab».
+
+Cuantos más símbolos distintos y parejos siguen a cada contexto, más fácil es combinar trozos sin repetir tramos largos.
 
 > [!WARNING]
 > **Confundir que se lea bien con que sea nuevo.** De estas cuatro, la salida de memoria 3 es la más legible, y 42 % de sus 8-gramas están literales en el *Quijote*. **Parte de lo que se lee bien es copia.**

@@ -69,7 +69,7 @@ $$
 :::
 
 ::: hint {#mkv-c1-pista-actual-vocal of="mkv-c1-ej-actual-vocal" title="Dónde puede caer el sorteo"}
-¿Puede el sorteo caer en la última letra?
+¿Cuántas posiciones entran al sorteo, y en cuántas de ellas la letra actual es vocal?
 :::
 
 ::: answer {#mkv-c1-resp-actual-vocal of="mkv-c1-ej-actual-vocal"}
@@ -321,7 +321,7 @@ Depende del texto, y una frase de 27 letras es muy poco para decidirlo. Por eso 
 
 **Medido en el *Quijote*.** Tomamos el texto entero con la misma normalización V/C y contamos tras cada consonante. Aquí el texto se usa como datos, así que sus frecuencias llevan gorro: $\widehat{\Pr}$.
 
-**El experimento.** Sortea una posición del libro que tenga al menos dos letras después, y mira tres letras seguidas. Con ${t=1}$, la de hace dos es la sorteada, ${S_{t-1}=S_0}$; la anterior es $S_t$, y la siguiente, $S_{t+1}$.
+**El experimento.** Sortea una posición del libro que tenga al menos dos letras después, y mira tres letras seguidas. Para no atarnos a un lugar, la sorteada (la de hace dos) es $S_{t-1}$, la anterior es $S_t$ y la siguiente, $S_{t+1}$.
 
 ::: table {#mkv-c1-tabla-dos-atras title="Tras una consonante en el Quijote: ¿importa la letra de hace dos?"}
 | La de hace dos | La anterior | Siguiente vocal |

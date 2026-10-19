@@ -36,6 +36,7 @@ CLASE_1_EN_ORDEN = [
     "mkv-ajustar-contando",
     "mkv-predecir",
     "mkv-generar-texto",
+    "tarea-que-es-una-cadena",
 ]
 
 RE_DIRECTIVA = re.compile(r"^::: (\w+) \{([^}]*)\}\s*$", re.M)

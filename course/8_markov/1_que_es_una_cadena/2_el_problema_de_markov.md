@@ -4,7 +4,7 @@ title: "El problema de Markov"
 nav_title: "El problema de Markov"
 summary: "¿Las letras de un texto son tiradas independientes de un dado? El conteo de Markov en 1913 y el mismo en el Quijote; la definición de cadena, la probabilidad de una trayectoria, cómo leer su matriz y su grafo, cómo se muestrea una fila y qué dicen las rachas de consonantes."
 status: ready
-estimated_time: 36m
+estimated_time: 37m
 tags: [markov]
 ---
 
@@ -52,7 +52,7 @@ Hay 26 pares. La «o» final no tiene siguiente: de las 12 vocales, solo 11 cuen
 | C (15) | 10 | 5 |
 :::
 
-Divide cada renglón entre su total:
+Divide cada fila entre su total:
 
 $$
 \widehat{\Pr}(V\mid V)=\frac{2}{11},
@@ -72,11 +72,11 @@ Si a la frase le siguiera una vocal más, ¿cuánto valdrían ${\widehat{\Pr}(V\
 :::
 
 ::: hint {#mkv-c1-pista-una-vocal-mas of="mkv-c1-ej-una-vocal-mas" title="El par nuevo"}
-¿Qué letra gana un siguiente, y en qué renglón de la tabla cae ese par?
+¿Qué letra gana un siguiente, y en qué fila de la tabla cae ese par?
 :::
 
 ::: answer {#mkv-c1-resp-una-vocal-mas of="mkv-c1-ej-una-vocal-mas"}
-La «o» final gana un siguiente, y es vocal: el renglón V pasa a 3 de 12 y el renglón C no cambia. Quedan $\widehat{\Pr}(V\mid V)=3/12=1/4$ y $\widehat{\Pr}(V\mid C)=2/3$. Un dato más movió la estimación.
+La «o» final gana un siguiente, y es vocal: la fila V pasa a 3 de 12 y la fila C no cambia. Quedan ${\widehat{\Pr}(V\mid V)=3/12=1/4}$ y $\widehat{\Pr}(V\mid C)=2/3$. Un dato más movió la estimación.
 :::
 
 Con 26 pares, la diferencia podría ser casualidad. Markov hizo la misma cuenta con miles de letras.
@@ -97,7 +97,7 @@ En 1913 contó a mano las primeras 20 000 letras del poema, sin espacios ni pu
 
 - **Vocales y consonantes.** Halló 8 638 vocales y 11 362 consonantes.
 - **Tras vocal.** Hubo 1 104 pares vocal-vocal: $\widehat{\Pr}(V\mid V)={1\,104}/{8\,638}\approx0.128$.
-- **Tras consonante.** Hubo 7 534 pares consonante-vocal: $\widehat{\Pr}(V\mid C)={7\,534}/{11\,362}\approx0.663$.
+- **Tras consonante.** Markov puso en el numerador las vocales que no siguen a otra vocal, 8 638 − 1 104 = 7 534: $\widehat{\Pr}(V\mid C)={7\,534}/{11\,362}\approx0.663$.
 
 **Lo mismo en el *Quijote*.** Con las mismas reglas, sus 1 620 532 letras tienen 752 551 vocales: $\widehat{\Pr}(V)\approx0.464$. Tras una vocal, la siguiente es vocal con frecuencia $0.181$; tras una consonante, con $0.710$.
 
@@ -242,13 +242,13 @@ Con ${\mu_0=(0,1)}$ y $\widehat P$ de la frase:
 2. **$\Pr(V,C)=0$.** El factor inicial es $\mu_0(V)=0$: la cadena empieza en C.
 :::
 
-Cada factor salió de un renglón de $\widehat P$. ¿Cómo se lee una matriz así cuando hay más estados?
+Cada factor salió de una fila de $\widehat P$. ¿Cómo se lee una matriz así cuando hay más estados?
 
 ---
 
 ## 5 · Leer la matriz de transición
 
-**Piensa: ¿qué dice cada renglón, cada columna y cada cero de $P$?**
+**Piensa: ¿qué dice cada fila, cada columna y cada cero de $P$?**
 
 Cada fila es una distribución: la del siguiente estado, estando en el estado de esa fila.
 
@@ -259,7 +259,7 @@ Cada fila es una distribución: la del siguiente estado, estando en el estado de
 - **La diagonal es quedarse.** ${\widehat P(V\mid V)=2/11}$ es seguir en vocal.
 - **Matriz y grafo son lo mismo.** Cada entrada positiva es una flecha de @mkv-c1-grafo-vc.
 - **Conteos frente a probabilidades.** @mkv-c1-tabla-pares-frase también es cuadrada, pero sus filas suman 11 y 15. Dividir cada fila entre su total la vuelve estocástica.
-- **Vector fila, a la izquierda.** Una distribución como $\mu_0$ es fila y multiplica a $P$ por la izquierda. Algunos libros usan vectores columna y multiplican por $P^{\mathsf T}$, la **traspuesta** de $P$: sus filas son las columnas de $P$. Esa $\mathsf T$ no es un largo.
+- **Vector fila, a la izquierda.** Una distribución como $\mu_0$ es fila y multiplica a $P$ por la izquierda. Algunos libros usan vectores columna y multiplican por $P^{\mathsf T}$, la **traspuesta** de $P$: sus filas son las columnas de $P$. Esa $\mathsf T$ es solo la marca de «traspuesta».
 
 **Con 3 estados.** Si conservas los espacios, el espacio «_» es un tercer estado:
 
@@ -521,7 +521,7 @@ Las reales son 384 971 de largo 1, 212 310 de largo 2, 19 027 de largo 3, 
 **La figura contesta:** ¿cuántas rachas de cada largo da un texto simulado del largo del corpus? Hay 10 réplicas por modelo, hechas con MUESTREAR-FILA. **Cada barra es el número real de rachas de ese largo;** cada marca, la mediana de las 10 réplicas. El eje vertical es logarítmico.
 
 ::: figure {#mkv-c1-rachas title="Ni la cadena ni la independencia reproducen las rachas"}
-![Número de rachas de consonantes de cada largo ℓ, de 1 a 5, en escala logarítmica. Barras: las reales del corpus. Círculos: mediana de 10 réplicas del largo del corpus de una cadena con q = 0.290. Cuadros: lo mismo con letras independientes, q = 0.536. Largo 1: reales 384 971, cadena 438 112, independientes 187 124. Largo 2: reales 212 310, cadena 126 722, independientes 100 176. Largo 3: reales 19 027, cadena 36 729, independientes 53 611. Largo 4: reales 323, cadena 10 684, independientes 28 819. Largo 5: reales 3, cadena 3 072, independientes 15 360. La franja del 5 % al 95 % de las réplicas es más angosta que la marca](../_assets/mkv-c1-rachas.svg)
+![Número de rachas de consonantes de cada largo ℓ, de 1 a 5, en escala logarítmica. Barras: las reales del corpus. Rombos: mediana de 10 réplicas del largo del corpus de una cadena con q = 0.290. Triángulos: lo mismo con letras independientes, q = 0.536. Largo 1: reales 384 971, cadena 438 112, independientes 187 124. Largo 2: reales 212 310, cadena 126 722, independientes 100 176. Largo 3: reales 19 027, cadena 36 729, independientes 53 611. Largo 4: reales 323, cadena 10 684, independientes 28 819. Largo 5: reales 3, cadena 3 072, independientes 15 360. La franja del 5 % al 95 % de las réplicas es más angosta que la marca](../_assets/mkv-c1-rachas.svg)
 :::
 
 - **Largo 1 y 2.** La cadena da de más rachas de 1 y de menos de 2. Las independientes fallan más en el largo 1.
@@ -591,7 +591,7 @@ $$
 
 **3. Ceros y diagonal.** Los ceros son $P(1\mid1)$ y $P(2\mid2)$: en el modelo, desde 1 y desde 2 siempre se sale. Solo desde 3 se puede quedar, con $1/3$.
 
-**4. Trayectoria.** $\Pr(1,2,3,3)=1\cdot\frac{3}{4}\cdot\frac{1}{2}\cdot\frac{1}{3}=\frac{1}{8}$.
+**4. Trayectoria.** ${\Pr(1,2,3,3)=1\cdot\frac{3}{4}\cdot\frac{1}{2}\cdot\frac{1}{3}=\frac{1}{8}}$.
 :::
 
 ::: exercise {#mkv-c1-ej-e-no-e title="Cuenta la «e» en otra frase"}

@@ -4,7 +4,7 @@ title: "Clase 1 · Qué es una cadena"
 nav_title: Qué es una cadena
 summary: "Qué es una cadena de Markov y cómo se usa con un texto: la probabilidad que hace falta, el problema original de Markov, ajustar la matriz contando, predecir multiplicando y generar texto."
 status: ready
-estimated_time: 167m
+estimated_time: 169m
 tags: [markov, probabilidad, cadenas]
 prerequisites: [juegos]
 ---
@@ -93,10 +93,11 @@ tiempo aparte, que no está en la tabla.
 | | Minutos | Página y qué resuelve |
 |---|---:|---|
 | 1 | 33m | **Lo que necesitas de probabilidad.** Evento, probabilidad condicional, independencia e independencia condicional, contadas en la frase |
-| 2 | 36m | **El problema de Markov.** Por qué las letras no son tiradas de un dado; la definición de cadena, su matriz, su grafo y cómo se muestrea una fila |
-| 3 | 37m | **Ajustar contando.** Contar transiciones da la matriz más verosímil; lo que nunca se vio, el suavizado y cuánta memoria aguantan los datos |
+| 2 | 37m | **El problema de Markov.** Por qué las letras no son tiradas de un dado; la definición de cadena, su matriz, su grafo y cómo se muestrea una fila |
+| 3 | 38m | **Ajustar contando.** Contar transiciones da la matriz más verosímil; lo que nunca se vio, el suavizado y cuánta memoria aguantan los datos |
 | 4 | 30m | **Predecir.** La probabilidad de cada estado exactamente $t$ pasos después: con un árbol, con un vector por una matriz y simulando |
 | 5 | 31m | **Generar texto.** Escribir al estilo del corpus muestreando fila tras fila, con más o menos memoria |
+| 6 | 120m, aparte | **Tarea.** Tres videos, tres ejercicios de la clase y uno que adelanta la próxima |
 :::
 
 1. [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]]

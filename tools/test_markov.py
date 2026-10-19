@@ -37,7 +37,8 @@ P2 = "2_el_problema_de_markov.md"
 P3 = "3_ajustar_contando.md"
 P4 = "4_predecir.md"
 P5 = "5_generar_texto.md"
-PAGINAS = (P1, P2, P3, P4, P5)
+P6 = "6_tarea.md"
+PAGINAS = (P1, P2, P3, P4, P5, P6)
 
 SHA_ORIGINAL = "534f41d59f7142163fa0964076ac6351845c006ea6433778be637fac6d5b04d7"
 SHA_CORTE = "7e40231809f16318113cbefbf58a8c271857c2e84b95260c6ff083927c657e92"
@@ -594,6 +595,13 @@ def _gen40(h):
     return m.generar(h)[:40].strip()
 
 
+def _quieto(P):
+    """El vector de dos estados que PREDECIR deja igual: (a, 1 - a)."""
+    a = P[1][0] / (P[1][0] + P[0][1])
+    assert m.predecir(P, [a, 1 - a], 1) == [a, 1 - a]
+    return [a, 1 - a]
+
+
 def _cifras():
     """(texto, pagina, ancla, fuente): la fuente devuelve el texto desde
     markov.py. Las anclas son tentativas (el orquestador las ajusta al
@@ -766,6 +774,17 @@ def _cifras():
         ("3/12", P2, "Contar", lambda: "/".join(map(str, m.matriz_conteos(
             m.frase_vc() + "V", m.ESTADOS_VC)[0][:1] + [sum(m.matriz_conteos(
                 m.frase_vc() + "V", m.ESTADOS_VC)[0])]))),
+        # la tarea: dejar correr la cadena de la frase ocho pasos desde C y desde V
+        ("0.000, 0.667, 0.343, 0.500, 0.424, 0.461, 0.443, 0.452, 0.448", P6, "Adelantar",
+         lambda: ", ".join(dec(v[0]) for v in m.mu_t(P, [F(0), F(1)], 8))),
+        ("1.000, 0.182, 0.579, 0.386, 0.479, 0.434, 0.456, 0.446, 0.451", P6, "Adelantar",
+         lambda: ", ".join(dec(v[0]) for v in m.mu_t(P, [F(1), F(0)], 8))),
+        ("0.003", P6, "Adelantar", lambda: dec(m.mu_t(P, [F(1), F(0)], 8)[8][0]
+                                              - m.mu_t(P, [F(0), F(1)], 8)[8][0])),
+        # el vector que no cambia: mu P = mu con mu(V) = P(V|C) / (P(V|C) + P(C|V))
+        ("22/49", P6, "Adelantar", lambda: fr(_quieto(P)[0])),
+        ("27/49", P6, "Adelantar", lambda: fr(m.predecir(P, _quieto(P), 1)[1])),
+        ("0.449", P6, "Adelantar", lambda: dec(_quieto(P)[0])),
         ("3 de largo 5", P2, "Rachas", lambda: f"{r()['reales'][5]} de largo 5"),
         ("1/4", P4, "Derivar", lambda: fr(m.predecir([[F(0), F(1)], [F(1, 2), F(1, 2)]],
                                                     [F(0), F(1)], 2)[0])),

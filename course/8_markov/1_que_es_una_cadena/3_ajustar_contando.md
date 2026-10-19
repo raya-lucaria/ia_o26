@@ -4,7 +4,7 @@ title: "Ajustar contando"
 nav_title: "Ajustar contando"
 summary: "Si solo tienes el texto: contar transiciones da la matriz que hace más probable lo observado. El algoritmo trazado en la frase, una simulación que recupera una matriz conocida, qué hacer con lo que nunca se vio y cuánta memoria aguantan los datos del Quijote."
 status: ready
-estimated_time: 37m
+estimated_time: 38m
 tags: [markov]
 ---
 
@@ -86,7 +86,7 @@ $$
 - **Qué devuelve al terminar:** entrega conteos, salidas y filas estimadas. Si $N(s)=0$, deja esa fila sin estimar.
 
 ::: figure {#mkv-c1-flujo-contar title="Contar, en palabras"}
-![Diagrama de flujo de contar transiciones, en una pasada por el texto: empieza con todos los conteos en 0; toma el siguiente par (actual, siguiente); suma 1 a N(s, s′) y 1 a N(s); pregunta si quedan pares, y si sí vuelve a tomar el siguiente; si no, divide cada fila entre su total N(s) y devuelve N y P̂. Al pie: una fila con N(s) = 0 queda sin estimar, porque los datos no la fijan](../_assets/mkv-c1-flujo-contar.svg)
+![Diagrama de flujo de contar transiciones, en una pasada por el texto: empieza con todos los conteos en 0; toma el siguiente par (actual, siguiente); suma 1 a N(s, s′) y 1 a N(s); pregunta si quedan pares, y si sí vuelve a tomar el siguiente; si no, divide cada fila entre su total N(s) y devuelve N, N(s) y P̂. Al pie: una fila con N(s) = 0 queda sin estimar, porque los datos no la fijan](../_assets/mkv-c1-flujo-contar.svg)
 :::
 
 ::: exercise {#mkv-c1-ej-salidas title="Cuenta las salidas"}
@@ -171,7 +171,7 @@ Para $0<p<1$ la segunda derivada es negativa, y en los extremos la fila vale 0: 
 
 **Con $k$ estados, cada fila se maximiza sola.** La verosimilitud separa sus factores por filas, cada una con $k-1$ números libres. Para una fila fija se maximiza ${\sum_{s'}N(s,s')\log P(s'\mid s)}$ con la condición de que sume 1.
 
-Entre los siguientes observados, el multiplicador, como en [[el-multiplicador|El multiplicador]], hace las probabilidades proporcionales a los conteos; normalizar da ${N(s,s')/N(s)}$. Un siguiente con conteo 0 no aporta factor: darle probabilidad solo quita masa a los observados y baja $\mathcal L$, así que el máximo le da 0.
+Entre los siguientes observados, el multiplicador, como en [[el-multiplicador|El multiplicador]], hace las probabilidades proporcionales a los conteos; normalizar da ${N(s,s')/N(s)}$. En una fila con $N(s)>0$, un siguiente con conteo 0 no aporta factor: darle probabilidad solo quita masa a los observados y baja $\mathcal L$, así que el máximo le da 0. Si $N(s)=0$, la fila entera no aporta factores y cualquier fila de probabilidades da lo mismo.
 
 ::: theorem {#mkv-c1-teo-maximo title="Contar da la matriz más verosímil"}
 En una cadena finita y homogénea, condicionamos a $S_0=s_0$. Cada fila de $P$ queda libre, con entradas no negativas que suman 1.
@@ -483,7 +483,7 @@ No necesariamente: puede faltar evidencia. En una fila con salidas, el conteo 0 
 
 El conteo por sí solo no distingue imposibilidad y falta de observaciones.
 
-**Un arreglo, a mano.** En la fila V de la frase hay 2 y 9 salidas. Suma 1 a cada siguiente: quedan 3 y 10, con total 13. En la frase, los siguientes posibles son V y C: $|\Sigma|=k=2$.
+**Un arreglo, a mano.** En la fila V de la frase los conteos son 2 y 9. Suma 1 a cada siguiente: quedan 3 y 10, con total 13. En la frase, los siguientes posibles son V y C: $|\Sigma|=k=2$.
 
 - **Fila V.** $(2/11,\ 9/11)$ pasa a $(3/13,\ 10/13)$.
 - **Fila C.** $(10/15,\ 5/15)$ pasa a $(11/17,\ 6/17)$.
@@ -500,7 +500,7 @@ $$
 \frac{N(s,z)+1}{N(s)+|\Sigma|}.
 $$
 
-Con memoria 1, $z$ es también el estado siguiente; en la sección 7 dejan de coincidir.
+En esta sección cada estado es un solo símbolo, así que $z$ es también el estado siguiente. Cuando el estado guarde más de un símbolo, ya no coincidirán.
 
 **Qué significa.** Agrega una observación de cada siguiente posible. Los conteos 0 reciben probabilidad positiva; una fila sin datos queda uniforme.
 
@@ -610,7 +610,7 @@ Con esto tienes todo para ajustar una cadena por tu cuenta.
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Observaste `abacabbcabac`, un texto con símbolos a, b y c. **Cambia una idea:** el texto es tan corto que una fila, la de c, se apoya en solo dos salidas.
+Observaste `abacabbcabac`, un texto con símbolos a, b y c. **Cambia una idea:** ahora hay tres estados en lugar de dos, y el texto es tan corto que alguna fila se apoya en muy pocas salidas.
 
 1. **Cuenta.** Indica cuántas transiciones hay, construye la tabla $3\times3$ y calcula las salidas de cada símbolo.
 2. **Estima.** Escribe $\widehat P$.

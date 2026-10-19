@@ -70,7 +70,7 @@ Las cuatro hojas suman ${\tfrac{34}{99}+\tfrac{65}{99}=1}$: en el paso 2 la cade
 
 **Guardamos un vector fila.** En el orden V, C, empezar en C se escribe ${\mu_0=(0,\ 1)}$. La matriz conserva ese orden: fila = desde dónde; columna = hacia dónde.
 
-Para obtener cada entrada del paso 1, multiplicamos el renglón por una columna: entrada por entrada, y sumamos.
+Para obtener cada entrada del paso 1, multiplicamos el vector fila por una columna: entrada por entrada, y sumamos.
 
 $$
 \begin{aligned}
@@ -208,7 +208,7 @@ Debe conservar el vector actual y la matriz. En la cadena finita y homogénea, e
 
 - **Qué calcula:** obtiene la distribución $\mu_t=\mu_0P^t$.
 - **Qué guarda:** conserva la matriz, el vector actual y espacio para el siguiente.
-- **Cómo avanza:** reemplaza $\mu$ por $\mu P$, multiplicando el renglón por cada columna.
+- **Cómo avanza:** reemplaza $\mu$ por $\mu P$, multiplicando el vector fila por cada columna.
 - **Qué devuelve al terminar:** entrega $\mu_t$ después de exactamente $t$ multiplicaciones de vector por matriz.
 
 ::: figure {#mkv-c1-flujo-predecir title="Predecir, en palabras"}
@@ -230,7 +230,7 @@ OUTPUT  μ_t, la distribución del
  3   for j ← 1 to t           # un paso por vuelta
  4     nuevo ← k ceros        # el μ del paso j
  5     for each s′ in 𝒮       # una columna
- 6       for each s in 𝒮      # un renglón
+ 6       for each s in 𝒮      # una fila
  7         nuevo(s′) ← nuevo(s′)
                  + μ(s)·P(s′ | s)
  8     μ ← nuevo              # ahora μ = μ_j
@@ -248,7 +248,7 @@ def predecir(P, mu0, t):                  # (1)
     for j in range(1, t + 1):             # (3)
         nuevo = [0] * k                   # (4)
         for s2 in range(k):               # (5) columna s′
-            for s in range(k):            # (6) renglón s
+            for s in range(k):            # (6) fila s
                 nuevo[s2] += mu[s] * P[s][s2]  # (7)
         mu = nuevo                        # (8) ahora μ_j
     return mu                             # (9) μ_t
@@ -262,7 +262,7 @@ print(predecir(P_gorro, [0, 1], 3))
 **Cada pieza, en su línea:**
 
 - **Línea 2.** Copia $\mu_0$; con $t=0$, devuelve esa distribución.
-- **Líneas 4 a 7.** Multiplican el renglón por cada columna. `P[s][s2]` indica fila $s$, columna $s'$.
+- **Líneas 4 a 7.** Multiplican el vector fila por cada columna. `P[s][s2]` indica fila $s$, columna $s'$.
 - **Línea 8.** Sustituye el vector al terminar la vuelta; así evita mezclar $\mu_{j-1}$ con $\mu_j$.
 
 **Cómo leer la traza.** Usamos la matriz de la frase y empezamos en C. El renglón 0 muestra la inicialización; cada renglón siguiente muestra $\mu$ al terminar la vuelta $j$.
@@ -394,13 +394,13 @@ $$
 $$
 
 1. **Lee la matriz.** ¿Qué dicen sus dos ceros?
-2. **Calcula $\mu_1$.** Haz el renglón por cada columna.
+2. **Calcula $\mu_1$.** Haz el vector fila por cada columna.
 3. **Calcula $\mu_2$.** Comprueba que suma 1.
 4. **Generaliza.** Escribe $\mu_t$ para cualquier $t$ y cuántas multiplicaciones cuesta.
 
 :::
 
-::: hint {#mkv-c1-pista-tres-estados-1 of="mkv-c1-ej-tres-estados" title="Pista 1 · ¿Qué renglones cuentan?"}
+::: hint {#mkv-c1-pista-tres-estados-1 of="mkv-c1-ej-tres-estados" title="Pista 1 · ¿Qué filas cuentan?"}
 ¿Qué entrada de $\mu_0$ es 0? ¿Qué fila de $P$ deja de aportar por eso en el primer paso?
 :::
 
