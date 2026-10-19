@@ -149,12 +149,19 @@ UMBRALES = {
 
 # Override por unidad, con la ruta relativa a la raíz del repo como clave:
 # {"course/8_unidad": {"ppm_max": 110}}. Solo cambia las claves que nombra.
-UMBRALES_POR_UNIDAD: dict[str, dict] = {}
+# Markov nace con tablas de 4 columnas (caben a 390 px) y 80 palabras por
+# minuto. `umbrales_para` busca la clave exacta, así que cada clase repite la
+# entrada de la unidad.
+_UMBRALES_MARKOV = {"tabla_columnas": 4, "tabla_columnas_traza": 4, "ppm_max": 80}
+UMBRALES_POR_UNIDAD: dict[str, dict] = {
+    "course/8_markov": _UMBRALES_MARKOV,
+    "course/8_markov/1_que_es_una_cadena": _UMBRALES_MARKOV,
+}
 
 # Unidades donde el contrato es obligatorio (opt-in). Arranca vacía: las
 # unidades escritas antes del contrato tienen deuda conocida y no deben romper
 # la suite. Una unidad entra aquí cuando ya da cero hallazgos alta/media.
-UNIDADES_CONTRATO: list[str] = []
+UNIDADES_CONTRATO: list[str] = ["course/8_markov"]
 
 SEVERIDAD = {
     "imagen-fuera-de-figure": "alta",

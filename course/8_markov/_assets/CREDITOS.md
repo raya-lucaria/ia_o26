@@ -1,0 +1,27 @@
+# Créditos de las imágenes — Cadenas de Markov
+
+Los diagramas SVG de esta unidad los produce `tools/gen_markov.py`. No se
+editan a mano: se cambia la función del generador y se vuelve a correr. Toda
+cifra de una figura sale de `tools/markov.py`, que la calcula sobre la frase
+«Con la iglesia hemos dado, Sancho» o sobre el corte del *Quijote* versionado
+en `tools/datos/quijote/` (dominio público; ver su `README.md`).
+
+La vista previa `mkv-c1-generador.png` no se dibuja: es una captura del
+interactivo `generador_texto.html` (que escribe `tools/gen_generador_markov.py`),
+tomada con Chrome sin interfaz por `tools/gen_vista_generador.py`.
+`tools/test_generador_markov.py` falla si el interactivo cambió desde la última
+captura; entonces se vuelve a tomar.
+
+| Archivo | Qué muestra | Origen | Licencia |
+|---|---|---|---|
+| `mkv-c1-flujo-muestrear.svg` | Muestrear una fila, en palabras: sortear u, recorrer la fila sumando y quedarse con el primer estado cuya suma pasa a u | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-flujo-contar.svg` | Contar, en palabras: tomar cada par (actual, siguiente), sumar 1 a su conteo y al final dividir cada fila entre su total | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-flujo-predecir.svg` | Predecir, en palabras: empezar con μ₀ y multiplicar por la matriz hasta llegar al paso t | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-flujo-generar.svg` | Generar, en palabras: tomar el contexto, muestrear su fila (suavizada si nunca se vio), escribir el símbolo y deslizar el contexto | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-grafo-vc.svg` | El grafo vocal–consonante de la frase con sus cuatro probabilidades estimadas | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-arbol-2-pasos.svg` | El árbol de dos pasos desde C con la matriz de la frase y la probabilidad de cada camino | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-mu-t.svg` | La probabilidad de vocal en cada paso, desde V y desde C: la cuenta y la simulación, con la matriz del corpus | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-recuperar-p.svg` | El error de la matriz estimada contra la longitud de la trayectoria, en réplicas de una matriz conocida | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-ceros.svg` | La fracción de transiciones de prueba nunca vistas al contar, por memoria 0 a 3 | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-rachas.svg` | Las rachas de consonantes del corpus contra lo que dan, simuladas, una cadena y letras independientes | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c1-generador.png` | Vista previa del generador de texto con memoria 2, semilla 2034, en el símbolo 150 de 200: contexto «ce», sale «s» con u = 0.7149 | Capturado de `generador_texto.html` con `tools/gen_vista_generador.py` | Propio, CC BY-SA 4.0 |
