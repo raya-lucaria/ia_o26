@@ -210,7 +210,7 @@ $$
 \end{aligned}
 $$
 
-- **Filas de ½.** Dan ${(1/2)^{26}\approx1.49\times10^{-8}}$; $\widehat P$ hace la frase 26 veces más probable.
+- **Filas de ½.** Dan ${(1/2)^{26}\approx1.49\times10^{-8}}$; $\widehat P$ hace la frase 26 veces más probable. Que sean 26, como las transiciones, es casualidad.
 - **Matriz cercana.** Con filas ${(0.181,\ 0.819)}$ y ${(0.710,\ 0.290)}$ da ${\approx3.63\times10^{-7}}$. $\widehat P$ alcanza 1.07 veces ese valor.
 
 **A mano, la fila V.** Aporta ${p^2(1-p)^9}$, con ${p=P(V\mid V)}$ y ${1-p=P(C\mid V)}$:
@@ -263,7 +263,7 @@ En el pseudocódigo, $s_j$ abrevia el estado observado $s_{i_j}$: el subíndice 
 ### El mapa de CONTAR-TRANSICIONES
 
 - **Qué calcula:** estima $\widehat P$ fila por fila.
-- **Qué guarda:** ${N(s,s')}$ y ${N(s)}$, a lo más ${k^2+k}$ números.
+- **Qué guarda:** ${N(s,s')}$, ${N(s)}$ y $\widehat P$: a lo más ${2k^2+k}$ números.
 - **Cómo avanza:** suma 1 al conteo del par y a las salidas de su origen.
 - **Qué devuelve al terminar:** conteos, salidas y filas estimadas; si ${N(s)=0}$, deja la fila sin estimar.
 
@@ -381,22 +381,6 @@ Guarda hasta ${k^2}$ conteos, $k$ salidas y ${k^2}$ probabilidades.
 
 - **Supuestos:** la interpretación de máxima verosimilitud requiere Markov, homogeneidad y filas libres; contar no necesita $\mu_0$.
 
-**En el corpus.** Las 1 620 532 letras del *Quijote*, convertidas a V/C, dan 4 conteos y 2 salidas:
-
-$$
-N=\begin{pmatrix}
-135\,916 & 616\,635\\
-616\,635 & 251\,345
-\end{pmatrix}.
-$$
-
-$$
-\widehat P\approx\begin{pmatrix}
-0.181 & 0.819\\
-0.710 & 0.290
-\end{pmatrix}.
-$$
-
 **En la frase.** Las 26 transiciones dan ${N(V)=11}$ y ${N(C)=15}$.
 
 **Cómo leer la traza.** Cada renglón es un paso $j$ de la línea 3 y muestra los conteos después de procesar su par. El punto «·» separa dos conteos; no indica multiplicación.
@@ -486,6 +470,22 @@ Completa los pasos 18 a 25. Los pasos 16 a 25 corresponden a «sdadosancho».
 
 **3. Matriz.** Sus filas son ${(2/11,\ 9/11)}$ y ${(2/3,\ 1/3)}$.
 :::
+
+**La misma pasada sobre el corpus.** Las 1 620 532 letras del *Quijote*, convertidas a V/C, dan 4 conteos y 2 salidas:
+
+$$
+N=\begin{pmatrix}
+135\,916 & 616\,635\\
+616\,635 & 251\,345
+\end{pmatrix}.
+$$
+
+$$
+\widehat P\approx\begin{pmatrix}
+0.181 & 0.819\\
+0.710 & 0.290
+\end{pmatrix}.
+$$
 
 El algoritmo maximiza ${\mathcal L(P)}$. Si los datos vienen de una cadena, ¿recupera su matriz?
 
@@ -664,7 +664,7 @@ Los conteos 0 reciben probabilidad positiva; una fila sin datos queda uniforme.
 
 - **Cero estructural.** Imposible por las reglas o la normalización: nunca quedan dos espacios consecutivos.
 - **Transición no observada.** «q» tiene ${N(q)=32\,155}$ salidas, todas hacia «u». No apareció q→a, aunque podría aparecer en «Qatar».
-- **Estado sin observaciones.** ${N(s)=0}$, como ocurre con «k»: su fila queda indeterminada.
+- **Estado sin salidas.** ${N(s)=0}$: no aparece, como «k», o solo aparece al final. Su fila queda indeterminada.
 
 El conteo solo no distingue imposibilidad de falta de datos.
 
@@ -725,7 +725,7 @@ Puedes incluir más pasado en el estado.
 ::: definition {#mkv-c1-memoria title="La memoria de un modelo de texto"}
 **Qué es.** La memoria $h$ indica cuántos símbolos forman el contexto usado como estado.
 
-**Cómo se calcula.** Para símbolos $z_0,\dots,z_T\in\Sigma$, con $1\le h\le T$, el contexto $c_t$ se desliza:
+**Cómo se calcula.** Para símbolos $z_0,\dots,z_T\in\Sigma$, con ${0\le h\le T}$, el contexto $c_t$ se desliza:
 
 $$
 \begin{aligned}
@@ -744,14 +744,14 @@ $$
 \end{aligned}
 $$
 
-Cada fila es un contexto; cada columna, el símbolo siguiente. Con ${h=0}$ no hay contexto: una sola fila cuenta todos los símbolos.
+Cada fila es un contexto; cada columna, el símbolo siguiente. Con ${h=0}$, $c_t=()$ es el contexto vacío: una sola fila cuenta todos los símbolos.
 
 **Qué significa.** Memoria 0 usa frecuencias de símbolos: unigrama. Memoria 1 usa pares: bigrama; memoria 2 usa tríos: trigrama.
 
 **Qué no es.** No es la profundidad de búsqueda: cambia qué información contiene el estado.
 :::
 
-Un estado sin observaciones es ahora un contexto sin observaciones.
+Un estado sin salidas es ahora un contexto sin salidas.
 
 **El estado es una decisión de modelado.** En [[escribir-el-juego|Escribir el juego]], incluimos el turno porque el tablero solo no bastaba.
 
@@ -875,12 +875,12 @@ Usa @mkv-c1-ceros. **Cambia una idea:** cuenta solo con unas páginas de la prim
 ¿Qué tendría que medir una figura para comparar dos memorias? ¿Esta lo mide?
 :::
 
-::: answer {#mkv-c1-resp-ceros of="mkv-c1-ej-ceros" title="Respuesta · Escasez sí, elección no"}
+::: answer {#mkv-c1-resp-ceros of="mkv-c1-ej-ceros" title="Respuesta · Lectura de la figura de ceros"}
 **1. Memoria 3.** Tiene 0.570 %: menos de una transición de cada 100.
 
 **2. Menos de la mitad.** Se observaron 379 de 784; la mitad sería 392.
 
-**3. Dos ausencias distintas.** Tres espacios seguidos son imposibles tras normalizar. «kia» es un contexto sin observaciones en este corpus, que no contiene «k»; podría aparecer en otro texto.
+**3. Dos ausencias distintas.** Tres espacios seguidos son imposibles tras normalizar. «kia» es un contexto sin salidas en este corpus, que no contiene «k»; podría aparecer en otro texto.
 
 **4. Las fracciones no pueden bajar.** Quitar datos de conteo no agrega pares vistos; pueden quedar iguales. Lo esperable es que suban, sobre todo con memoria alta: hay 21 952 contextos posibles con memoria 3. Incluso memoria 0 puede dejar de ver algún símbolo.
 
@@ -899,11 +899,11 @@ Comparas su pérdida promedio en datos reservados: menor pérdida significa mejo
 
 ### Elegir la memoria con datos reservados
 
-La pérdida logarítmica por símbolo observado $z$, dado el contexto $s$, es:
+La pérdida logarítmica por símbolo observado $z$, dado el contexto $c$, es:
 
 $$
--\log\widetilde p(z\mid s),
-\qquad \widetilde p(z\mid s)>0.
+-\log\widetilde p(z\mid c),
+\qquad \widetilde p(z\mid c)>0.
 $$
 
 Ajusta y suaviza con la primera mitad; promedia esta pérdida en la segunda. Un promedio menor indica mejores predicciones reservadas.

@@ -110,7 +110,7 @@ $$
 - **Resultado:** `C_CV`, con el inicio incluido. Antes de fijar los uniformes, la probabilidad de esa continuación es:
 
 $$
-\Pr(\texttt{\_CV}\mid C)
+\Pr(\mathtt{\_CV}\mid C)
 =\frac{2}{15}\cdot\frac{4}{5}\cdot\frac{2}{3}.
 $$
 
@@ -374,7 +374,7 @@ pros de burrespondios en loco de
 tendicen otr
 ```
 
-- **Memoria 0:** frecuencias sin dependencia entre símbolos; «duuutesrsacee». Los espacios también siguen su frecuencia.
+- **Memoria 0:** frecuencias sin dependencia entre símbolos; «duuutesrsacee». Los espacios también siguen su frecuencia; sin memoria, salen espacios dobles que el corpus normalizado no tiene.
 - **Memoria 1:** aparecen palabras cortas reales: «de», «lo», «que», «sin».
 - **Memoria 2:** aparecen sílabas y fragmentos como «la», «y fue el» y «acaba».
 - **Memoria 3:** se reconocen frases como «en su amosura» y «un gran vizcaidad». Cada tramo de cuatro caracteres fue observado.
@@ -410,7 +410,7 @@ La salida de memoria 2 dice «veasagionallegar», que no está en el *Quijote*. 
 :::
 
 ::: hint {#mkv-c1-pista-palabra-inventada of="mkv-c1-ej-palabra-inventada" title="El tamaño de cada pieza"}
-Con memoria 2, ¿cuántas letras tiene cada bloque (contexto, siguiente)?
+¿Qué bloques del corpus garantiza una fila vista sin suavizar?
 :::
 
 ::: answer {#mkv-c1-resp-palabra-inventada of="mkv-c1-ej-palabra-inventada"}
@@ -426,13 +426,12 @@ Estas salidas tienen un antecedente famoso, hecho sin computadora.
 
 **Piensa: ¿cómo se relacionan el tamaño del bloque y la memoria del contexto?**
 
-El bloque contiene el contexto y el símbolo siguiente: mide $h+1$.
+El bloque contiene el contexto y el símbolo siguiente: mide $h+1$. Desde el primer orden, Shannon numera por el tamaño del bloque:
 
 $$
 \begin{aligned}
 \text{tamaño del bloque}&=h+1,\\
-\text{orden de Shannon}&=h+1
-\quad\text{desde el primer orden}.
+\text{orden de Shannon}&=h+1.
 \end{aligned}
 $$
 
@@ -444,10 +443,10 @@ $$
 ::: table {#mkv-c1-shannon title="Los órdenes de Shannon, en memoria"}
 | Shannon | Aquí | Qué usa |
 |---|---|---|
-| Orden cero | Fila uniforme | Equiprobables |
-| Primer orden | Memoria 0 | Letras sueltas |
-| Segundo orden | Memoria 1 | Pares |
-| Tercer orden | Memoria 2 | Tríos |
+| Orden 0 | Uniforme | Nada |
+| Orden 1 | Memoria 0 | Letras |
+| Orden 2 | Memoria 1 | Pares |
+| Orden 3 | Memoria 2 | Tríos |
 :::
 
 - **Primer orden:** usó frecuencias de letras y un libro de números aleatorios; las letras sueltas conservan sus frecuencias.
@@ -493,15 +492,13 @@ $$
 
 ### Medir la escasez
 
-Retomamos la comparación de @mkv-c1-ceros entre la primera mitad y la segunda del corpus.
-Aquí interesa distinguir qué ausencia activa la fila uniforme.
+La @mkv-c1-ceros ya midió la escasez entre la primera mitad y la segunda del corpus.
+Al generar, interesa qué ausencia activa la fila uniforme.
 
 ::: figure {#mkv-c1-ceros-generar title="Lo que nunca se vio, por memoria"}
 ![Barras horizontales por memoria, con la fracción de transiciones de la segunda mitad del corpus nunca vistas en la primera. Memoria 0: 0 %, 0 de 998 564, contextos vistos 1 de 1. Memoria 1: 0.003 %, 29 de 998 563, contextos vistos 27 de 28. Memoria 2: 0.072 %, 718 de 998 562, contextos vistos 379 de 784. Memoria 3: 0.570 %, 5 694 de 998 561, contextos vistos 3 328 de 21 952. Las barras están a escala de la mayor (memoria 3). Al pie: solo diagnostica escasez, no elige la memoria](../_assets/mkv-c1-ceros.svg)
 :::
 
-- **Fracciones:** 0.003 %, 0.072 % y 0.570 % para memorias 1, 2 y 3.
-- **Contextos:** con memoria 3 se vieron 3 328 de 21 952.
 - **Distinción:** puede faltar el siguiente en una fila vista o faltar el contexto entero. Solo el segundo caso activa la uniforme.
 
 ### Medir la copia
@@ -521,8 +518,8 @@ Aquí interesa distinguir qué ausencia activa la fila uniforme.
 - **Una réplica:** cada fila mide una sola salida de la sección 3; otra semilla puede cambiar las cifras.
 - **Copia sin obligación:** cada contexto del tramo de 13 admitía varios siguientes observados; los sorteos reprodujeron una secuencia del corpus.
 - **Continuación forzada:** si una fila observada concentra probabilidad 1 en un símbolo, siempre genera ese símbolo.
-- **Tramos forzados:** si cada contexto sucesivo tiene una sola continuación, se copia hasta encontrar otra opción o una fila ausente.
-- **Ciclos:** con memoria 1 y corpus «abab», las filas observadas permiten repetir «abab…».
+- **Tramos forzados:** si cada contexto sucesivo tiene una sola continuación, la salida es determinista hasta encontrar otra opción o una fila ausente; no tiene que ser un tramo del corpus.
+- **Ciclos:** con memoria 1 y corpus «abab», sale «ababab…», más largo que el corpus.
 - **Variedad:** más continuaciones, con probabilidades parejas, facilitan combinar fragmentos.
 
 > [!WARNING]

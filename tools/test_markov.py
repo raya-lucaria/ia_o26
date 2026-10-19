@@ -174,6 +174,8 @@ def test_p1_la_regla_del_producto_en_un_tramo():
 def test_p1_la_independencia_condicional_es_un_supuesto():
     c = m.condicionales_memoria_2()
     assert (dec(c["C"]), dec(c["VC"]), dec(c["CC"])) == ("0.710", "0.624", "0.922")
+    # la primera fila mezcla exactamente las otras dos: mismo universo
+    assert c["C"] == F(616_634, 867_979)
     assert (dec(c["V"]), dec(c["VV"]), dec(c["CV"])) == ("0.181", "0.100", "0.198")
 
 

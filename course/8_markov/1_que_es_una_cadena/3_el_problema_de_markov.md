@@ -71,7 +71,7 @@ $$
 
 - **Tras vocal:** otra vocal salió 2 de 11 veces.
 - **Tras consonante:** una vocal salió 2 de cada 3 veces.
-- **Comparación:** con letras independientes, ambas estimarían la misma probabilidad. Aquí una supera el triple de la otra.
+- **Comparación:** con letras independientes, ambas estimarían la misma probabilidad y solo diferirían por azar. Aquí una supera el triple de la otra.
 
 **El gorro cambia la lectura.** Antes, $2/11$ era exacto para el sorteo entre 26 posiciones. Aquí usamos la frase como datos para estimar un modelo.
 
@@ -110,7 +110,7 @@ En 1913 contó a mano las primeras 20 000 letras del poema, sin espacios ni pu
 **Lo mismo en el *Quijote*.** Con la estimación de la sección 1, sus 1 620 532 letras tienen 752 551 vocales: $\widehat{\Pr}(V)\approx0.464$. Tras vocal, la siguiente es vocal con frecuencia $0.181$; tras consonante, con $0.710$.
 
 ::: table {#mkv-c1-tabla-oneguin-quijote title="La pregunta de Markov en ruso y en español"}
-| Cifra | *Oneguin* (1913) | *Quijote* |
+| Cifra | *Oneguin* | *Quijote* |
 |---|---:|---:|
 | Letras contadas | 20 000 | 1 620 532 |
 | Vocal tras vocal | 0.128 | 0.181 |
@@ -164,7 +164,7 @@ Imagina letras independientes: cada una es vocal con la misma probabilidad, sin 
 :::
 
 ::: hint {#mkv-c1-pista-dado-markov of="mkv-c1-ej-dado-markov" title="Prueba la definición"}
-Si nada del pasado importa, ¿importa el presente?
+¿Qué condición de @mkv-c1-cadena tienes que revisar?
 :::
 
 ::: answer {#mkv-c1-resp-dado-markov of="mkv-c1-ej-dado-markov"}
@@ -220,7 +220,7 @@ Al repetir muchas veces cinco estados desde C, unas 4 de cada 33 trayectorias se
 Con ${\mu_0=(0,1)}$ y $\widehat P$ de la frase:
 
 1. **Calcula.** ¿Cuánto vale $\Pr(C,C,V)$?
-2. **Cambia el inicio.** ¿Cuánto vale $\Pr(V,C)$?
+2. **Cambia el primer estado.** Con el mismo $\mu_0$, ¿cuánto vale $\Pr(V,C)$?
 :::
 
 ::: hint {#mkv-c1-pista-tramo-corto of="mkv-c1-ej-tramo-corto" title="El primer factor"}
@@ -357,13 +357,16 @@ $$
 (p_1,\dots,p_k)&\in\mathbb R^{1\times k},\\
 p_i&\ge0,\qquad \sum_{i=1}^kp_i=1,\\
 u&\sim\operatorname{Unif}[0,1),\\
-I_i&=\left[\sum_{j=1}^{i-1}p_j,\
+\Delta_i&=\left[\sum_{j=1}^{i-1}p_j,\
                  \sum_{j=1}^{i}p_j\right),\\
-|I_i|&=p_i,\qquad \Pr(u\in I_i)=p_i.
+|\Delta_i|&=p_i,\qquad \Pr(u\in \Delta_i)=p_i.
 \end{aligned}
 $$
 
-Eso es **muestrear** (*sampling*); la suma vacía del primer extremo vale 0.
+- **Uniforme:** $u\sim\operatorname{Unif}[0,1)$ se lee «$u$ es un número al azar en $[0,1)$, cualquiera igual de probable». La probabilidad de caer en un intervalo es su largo.
+- **Intervalos:** $\Delta_i$ es el pedazo del estado $s_i$; la suma vacía del primer extremo vale 0.
+
+Eso es **muestrear** (*sampling*).
 
 > **Dado:** una fila $(p_1,\dots,p_k)$ de $P$, ordenada como $s_1,\dots,s_k$, y un uniforme $u\in[0,1)$.
 >
@@ -372,7 +375,7 @@ Eso es **muestrear** (*sampling*); la suma vacía del primer extremo vale 0.
 **A mano, la fila C.** Sus acumuladas son $2/3$ y $1$:
 
 $$
-I_V=[0,2/3),\qquad I_C=[2/3,1).
+\Delta_V=[0,2/3),\qquad \Delta_C=[2/3,1).
 $$
 
 Si $u<2/3$, sale V; en caso contrario, C. Con $u=0.40$, sale V.
@@ -451,7 +454,7 @@ print(visitados)
 
 **Cada pieza, en su línea:**
 
-- **Línea 4:** suma el extremo derecho de $I_i$.
+- **Línea 4:** suma el extremo derecho de $\Delta_i$.
 - **Línea 5:** el «menor que» asigna cada frontera al intervalo siguiente; los intervalos de largo 0 nunca se eligen.
 - **Línea 7:** cubre el redondeo cuando ninguna suma supera a $u$; nunca devuelve un estado con probabilidad 0.
 
@@ -507,7 +510,7 @@ Podemos generar réplicas del largo del *Quijote* y comparar sus rachas.
 
 Entre otras cosas, la distribución del largo de las rachas de consonantes.
 
-$L$ cuenta desde la primera consonante y $\ell$ es un largo concreto. $q$ es la probabilidad de que a una C le siga otra, igual en cada paso. Una racha de largo $\ell$ son $\ell-1$ continuaciones y después una vocal:
+Una **racha** es un tramo máximo de consonantes seguidas, entre vocales; $L$ es su largo, todavía aleatorio, y $\ell$ un largo concreto. $q$ es la probabilidad de que a una C le siga otra, igual en cada paso. Una racha de largo $\ell$ son $\ell-1$ continuaciones y después una vocal:
 
 $$
 \begin{aligned}

@@ -38,8 +38,8 @@ Ve primero el repaso y después la historia. Reserva el tercer video para el pun
    larga**.
 3. **[Markov Chain Stationary Distribution](https://www.youtube.com/watch?v=4sXiCxZDrTU)**
    — ritvikmath, corto. **Adelanto:** la distribución que deja de cambiar
-   al multiplicar por la matriz. Velo **después** del último ejercicio de
-   esta página.
+   al multiplicar por la matriz. Velo al llegar al punto 5 del último
+   ejercicio de esta página.
 
 > [!WARNING]
 > **El tercer video escribe $\pi$ para esa distribución.** Es la letra de los
@@ -130,7 +130,7 @@ cadena quedarse donde está? Al multiplicar el vector del video, ¿usaste
 vector fila a la izquierda, como en PREDECIR?
 :::
 
-::: answer {#mkv-c1-resp-a-la-larga of="mkv-c1-ej-a-la-larga" title="Respuesta · Una se acerca y la otra oscila"}
+::: answer {#mkv-c1-resp-a-la-larga of="mkv-c1-ej-a-la-larga" title="Respuesta · Comparación de las dos matrices"}
 **1. Las dos sucesiones.**
 
 - **Desde C:** 0.000, 0.667, 0.343, 0.500, 0.424, 0.461, 0.443, 0.452, 0.448.
@@ -143,7 +143,7 @@ ya casi no importa dónde empezó.
 **3. La otra no.** Desde V la probabilidad de vocal es 1, 0, 1, 0, …: nunca
 se asienta. Desde $(1/2,\ 1/2)$ se queda en $1/2$ en cada paso.
 
-**4. Una conjetura posible.** En la primera, desde cada estado se puede
+**4. Una conjetura posible.** En la primera, desde cada estado puede
 quedarse o cambiar; en la segunda, siempre se cambia y la cadena alterna.
 Cuándo una cadena olvida su inicio, y bajo qué condiciones, es la pregunta de
 la próxima clase.

@@ -18,7 +18,7 @@ lectura y no recuerdas qué era, búscalo aquí en vez de retroceder.
 
 **Dos convenciones valen en toda la unidad.** En los estados, mayúscula para lo que todavía
 es azar ($S_t$) y minúscula para un valor concreto ($s$). Lo exacto va sin
-gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
+gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavizada, tilde, como $\widetilde p$.
 
 ## Probabilidad
 
@@ -27,7 +27,7 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $\Pr(A)$ | «probabilidad de a». Qué tan probable es el evento $A$, entre 0 y 1. *→ Lo que necesitas de probabilidad* |
 | $\widehat{\Pr}(A)$ | «probabilidad estimada de a». La frecuencia con que $A$ ocurrió en los datos. *→ Lo que necesitas de probabilidad* |
 | $A\cap B$ | «a y be». El evento de que ocurran los dos. *→ Lo que necesitas de probabilidad* |
-| ${\Pr(A\mid B)}$ | «probabilidad de a dado be». La probabilidad de $A$ si ya sabes que ocurrió $B$: $\Pr(A\cap B)/\Pr(B)$, definida solo si $\Pr(B)>0$. *→ Lo que necesitas de probabilidad* |
+| ${\Pr(A\mid B)}$ | «probabilidad de a dado be». La probabilidad de $A$ si ya sabes que ocurrió $B$: ${\Pr(A\cap B)/\Pr(B)}$, definida solo si ${\Pr(B)>0}$. *→ Lo que necesitas de probabilidad* |
 | $\prod$, $\sum$ | «producto», «suma». Multiplicar o sumar todos los términos que indica el índice de abajo a arriba. *→ Lo que necesitas de probabilidad* |
 | ${\Pr(S_0=a, S_1=b)}$ | La coma se lee «y»: que ocurran las dos cosas. *→ Lo que necesitas de probabilidad* |
 | $n$ | «ene». El número de repeticiones independientes; desde Ajustar contando, el número de réplicas de una simulación. *→ Lo que necesitas de probabilidad* |
@@ -46,7 +46,7 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $I_k$ | «identidad de tamaño ka». La matriz $k\times k$ con unos en la diagonal y ceros fuera: $P^0=I_k$. *→ La cadena de Markov, en general* |
 | $\mathbf 1^{\mathsf T}$ | «uno traspuesto». El vector fila $1\times k$ de unos; suma las entradas de una columna. *→ La cadena de Markov, en general* |
 | $H_t$ | «hache sub te». Una historia: el evento $\{S_0=s_{i_0},\dots,S_t=s_{i_t}\}$. *→ La cadena de Markov, en general* |
-| $(P^t)_{ij}$ | «entrada i jota de pe a la te». Probabilidad de llegar a $s_j$ en exactamente $t$ pasos al empezar en $s_i$. Equivale a $\Pr(S_t=s_j\mid S_0=s_i)$ cuando $\Pr(S_0=s_i)>0$. *→ La cadena de Markov, en general* |
+| $(P^t)_{ij}$ | «entrada i jota de pe a la te». Probabilidad de llegar a $s_j$ en exactamente $t$ pasos al empezar en $s_i$. Equivale a ${\Pr(S_t=s_j\mid S_0=s_i)}$ cuando ${\Pr(S_0=s_i)>0}$. *→ La cadena de Markov, en general* |
 | $\mathcal S$ | «ese caligráfica». El conjunto de estados posibles. *→ La cadena de Markov, en general* |
 | $k$ | «ka». Número de valores posibles; en una cadena, $k=\lvert\mathcal S\rvert$. *→ Lo que necesitas de probabilidad* |
 | V, C | «ve», «ce». Vocal y consonante, en ese orden. *→ Lo que necesitas de probabilidad* |
@@ -58,7 +58,7 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $j$ | «jota». Índice de un producto o una suma: ${\prod_{j=0}^{t-1}}$. *→ Lo que necesitas de probabilidad* |
 | ${p_1,\dots,p_k}$ | «pe uno a pe ka». Las entradas de una fila, en el orden de los estados, como las recibe MUESTREAR-FILA. *→ El problema de Markov* |
 | $P^{\mathsf T}$ | «pe traspuesta». La matriz con filas y columnas intercambiadas; algunos libros escriben las distribuciones como columnas y usan $P^{\mathsf T}$. Aquí no. *→ La cadena de Markov, en general* |
-| $u$ | «u». Un número uniforme en ${[0,1)}$ con que MUESTREAR-FILA elige el siguiente estado. *→ El problema de Markov* |
+| $u$, $\Delta_i$ | «u», «delta i». Un número al azar en ${[0,1)}$, ${u\sim\operatorname{Unif}[0,1)}$, con que MUESTREAR-FILA elige el siguiente estado: sale $s_i$ si $u$ cae en el intervalo $\Delta_i$, de largo $p_i$. *→ El problema de Markov* |
 | $L$ | «ele». La longitud de una racha de consonantes, todavía aleatoria; $\ell$ es un valor: ${\Pr(L=\ell)}$. *→ El problema de Markov* |
 | $\ell$, $q$ | «ele», «cu». La longitud de una racha de consonantes y la probabilidad de seguir en consonante. *→ El problema de Markov* |
 | $T$ | «te mayúscula». Número de transiciones observadas al ajustar. En GENERAR cuenta símbolos nuevos: el texto devuelto mide $h+T$, incluido el contexto inicial. *→ Ajustar contando; Generar texto* |
@@ -75,10 +75,10 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | $z$, $z_t$, $z_j$ | «zeta». Valor concreto de un símbolo. Al ajustar, $t$ recorre el texto observado; en GENERAR, $j$ cuenta los símbolos nuevos. *→ Ajustar contando* |
 | $Z_j$ | «zeta mayúscula sub jota». El símbolo número $j$ de la continuación, todavía aleatorio; $z_j$ es su valor. *→ Generar texto* |
 | $p$ | «pe». Una probabilidad escalar, cuyo evento se declara al usarla; no es una matriz. *→ Ajustar contando* |
-| $p(z\mid c)$, $\widehat p(z\mid c)$ | Probabilidad del símbolo $z$ desde el contexto $c$; el gorro indica la frecuencia estimada. La tabla por símbolos tiene forma $\lvert\Sigma\rvert^h\times\lvert\Sigma\rvert$; $P$ sigue siendo la matriz cuadrada entre estados. *→ Generar texto* |
+| $p(z\mid c)$, $\widehat p(z\mid c)$ | Probabilidad del símbolo $z$ desde el contexto $c$; el gorro indica la frecuencia estimada. La tabla por símbolos tiene forma ${\lvert\Sigma\rvert^h\times\lvert\Sigma\rvert}$; $P$ sigue siendo la matriz cuadrada entre estados. *→ Generar texto* |
 | $\delta$ | «delta». Error al recuperar una matriz: $\delta=\max_{i,j}\lvert\widehat P_{ij}-P_{ij}\rvert$. *→ Ajustar contando* |
 | $\varepsilon$ | «épsilon». Una cantidad positiva para construir un contraejemplo. *→ La cadena de Markov, en general* |
-| $\widetilde p$ | «pe tilde». Estimación de Laplace: $\widetilde p(z\mid s)=[N(s,z)+1]/[N(s)+\lvert\Sigma\rvert]$. *→ Ajustar contando* |
+| $\widetilde p$ | «pe tilde». Estimación de Laplace: ${\widetilde p(z\mid s)}={[N(s,z)+1]}/{[N(s)+\lvert\Sigma\rvert]}$. *→ Ajustar contando* |
 | $c_t$, $c_j$ | «ce sub te», «ce sub jota». Contexto de $h$ símbolos: termina en la posición $t$ al contar; en GENERAR, queda tras escribir $j$ símbolos nuevos desde $c_0$. *→ Ajustar contando; Generar texto* |
 | $\operatorname{suf}_h(w)$ | Últimos $h$ símbolos de $w$; con $h=0$, contexto vacío. *→ Generar texto* |
 | memoria $h$ | «memoria hache». Cuántos símbolos anteriores forman el estado. Memoria 0, 1, 2 = unigrama, bigrama, trigrama. No es la profundidad de UCT. *→ Ajustar contando* |
@@ -89,9 +89,9 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 |---|---|
 | Experimento | Un procedimiento con azar; aquí, sortear una posición de la frase. *→ Lo que necesitas de probabilidad* |
 | Evento | Un conjunto de resultados del experimento: «la siguiente es vocal». *→ Lo que necesitas de probabilidad* |
-| Probabilidad conjunta | La de que ocurran dos eventos a la vez, $\Pr(A\cap B)$. *→ Lo que necesitas de probabilidad* |
-| Independencia | ${\Pr(A\cap B)=\Pr(A)\Pr(B)}$: saber uno no cambia la probabilidad del otro. *→ Lo que necesitas de probabilidad* |
-| Independencia condicional | Si $\Pr(D\cap B)>0$: ${\Pr(A\mid D,B)=\Pr(A\mid B)}$. Dado $B$, saber $D$ ya no agrega nada. *→ Lo que necesitas de probabilidad* |
+| Probabilidad conjunta | La de que ocurran dos eventos a la vez, ${\Pr(A\cap B)}$. *→ Lo que necesitas de probabilidad* |
+| Independencia | Saber uno no cambia la probabilidad del otro: ${\Pr(A\cap B)}$ es ${\Pr(A)\Pr(B)}$. *→ Lo que necesitas de probabilidad* |
+| Independencia condicional | Dado $B$, saber $D$ ya no agrega nada: si ${\Pr(D\cap B)>0}$, ${\Pr(A\mid D,B)}$ es ${\Pr(A\mid B)}$. *→ Lo que necesitas de probabilidad* |
 | Partición | Casos que no se traslapan y cubren todo. *→ Lo que necesitas de probabilidad* |
 | Ley de los grandes números | El promedio de muchas repeticiones independientes se acerca a la probabilidad. *→ Lo que necesitas de probabilidad* |
 | Estado | Valor posible de $S_t$; puede ser una clase de letra o un contexto. *→ La cadena de Markov, en general* |
@@ -102,10 +102,10 @@ gorro; lo que se estima con datos lleva gorro, como $\widehat P$.
 | Verosimilitud | La probabilidad de los datos observados vista como función de $P$. *→ Ajustar contando* |
 | Cero estructural | Transición imposible por las reglas o la normalización: dos espacios seguidos. *→ El problema de Markov* |
 | Transición no observada | Un par con conteo 0 que sí podría ocurrir: q→a. *→ Ajustar contando* |
-| Estado sin observaciones | Un estado con ${N(s)=0}$: los datos no determinan su fila. La «k» en el *Quijote*. *→ Ajustar contando* |
+| Estado sin salidas | Un estado con ${N(s)=0}$: no aparece, como la «k» en el *Quijote*, o solo aparece al final. Los datos no determinan su fila. *→ Ajustar contando* |
 | Contexto | Los $h$ símbolos anteriores, que forman el estado con memoria $h$. *→ Ajustar contando* |
-| Suavizado aditivo de conteos | Sumar 1 a cada conteo por símbolo siguiente antes de dividir (Laplace). *→ Ajustar contando* |
-| Error estándar | Cuánto se espera que una fracción de $n$ réplicas se aleje de la probabilidad $p$: ${\sqrt{p(1-p)/n}}$. *→ Predecir* |
+| Suavizado (Laplace) | Suavizado aditivo: sumar 1 a cada conteo por símbolo siguiente antes de dividir. *→ Ajustar contando* |
+| Error estándar | La dispersión de la fracción observada en $n$ réplicas independientes alrededor de su probabilidad $p$: ${\sqrt{p(1-p)/n}}$. *→ Predecir* |
 | Semilla | El número que fija la sucesión de uniformes $u$: misma semilla, misma réplica. *→ El problema de Markov* |
 | Generar | Producir una trayectoria muestreando una fila tras otra y deslizando el contexto. *→ Generar texto* |
 | Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0. *→ Ajustar contando; Shannon, en Generar texto* |

@@ -76,8 +76,8 @@ alfabeto. Después se sigue a mano en una frase del *Quijote*, **«Con la
 iglesia hemos dado, Sancho»**, con dos estados, V (vocal) y C (consonante),
 en ese orden. Y se corre en el libro completo.
 
-**Las páginas 1 y 2 son de conceptos,** sin simulación. Desde la 3, cada
-idea se resuelve de tres formas: a mano en la frase, con un algoritmo que
+**Las páginas 1 y 2 son de conceptos,** sin simulación. Desde la 3, las
+ideas centrales se resuelven de tres formas: a mano en la frase, con un algoritmo que
 sirve para cualquier tamaño y simulando.
 
 ## Recorrido
@@ -90,7 +90,7 @@ ejercicios finales con pistas y respuesta plegadas: resolverlos toma
 tiempo aparte, que no está en la tabla.
 
 ::: table {#mkv-ruta-1 title="Las páginas de esta clase"}
-| | Minutos | Página y qué resuelve |
+| # | Minutos | Página y qué resuelve |
 |---|---:|---|
 | 1 | 33m | **Lo que necesitas de probabilidad.** Evento, probabilidad condicional, independencia e independencia condicional, contadas en la frase |
 | 2 | 30m | **La cadena de Markov, en general.** La definición formal, la matriz $k\times k$, las distribuciones como vectores fila, las dimensiones de cada producto, $P^t$ y cómo se mueve una cadena |

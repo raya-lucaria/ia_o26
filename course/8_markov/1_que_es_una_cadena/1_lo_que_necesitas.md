@@ -105,7 +105,7 @@ $$
 $$
 
 - **Qué es.** $\Pr(A\mid B)$ es la probabilidad de $A$ dado que ocurrió $B$.
-- **Cómo se calcula.** Divide la probabilidad conjunta, $\Pr(A\cap B)$, entre la del condicionante, $\Pr(B)$. La intersección significa «ocurren ambos».
+- **Cómo se calcula.** Divide la probabilidad conjunta, ${\Pr(A\cap B)}$, entre la del condicionante, $\Pr(B)$. La intersección significa «ocurren ambos».
 - **Qué significa.** Dentro de $B$, mides qué fracción también cumple $A$.
 - **Qué no es.** No es $\Pr(B\mid A)$: invertir la barra cambia los casos que cuentas.
 :::
@@ -128,7 +128,7 @@ $$
 \end{aligned}
 $$
 
-- **La barra cambia el universo.** $\Pr(B\mid A)$ usa las 12 posiciones de $A$; $\Pr(A\mid B)$, las 11 de $B$.
+- **La barra cambia el universo.** ${\Pr(B\mid A)}$ usa las 12 posiciones de $A$; ${\Pr(A\mid B)}$, las 11 de $B$.
 - **La condición $\Pr(B)>0$ no es un detalle.** Si $B$ fuera «la actual es k», no habría posiciones que mirar: la condicional no se define.
 
 ::: exercise {#mkv-c1-ej-tras-consonante title="Condiciona a la consonante"}
@@ -188,13 +188,14 @@ $$
 \end{aligned}
 $$
 
-- **En la frase.** $S_t$ es la clase de la letra $t$ pasos después de la sorteada, con $t=0,1,2,\ldots$
+- **En la frase.** $S_t$ es la clase de la letra $t$ pasos después de la sorteada, con ${t=0,1,2,\ldots}$
 - **Origen aleatorio.** $S_0$ es la actual y $S_1$, la siguiente; $t$ no es una posición fija de la frase.
 - **Existencia.** El sorteo debe dejar al menos $t$ letras siguientes. Las 26 posiciones garantizan $S_0$ y $S_1$.
 
 $$
 \begin{aligned}
-B&=\{S_0=V\},\qquad A=\{S_1=V\},\\
+B&=\{S_0=V\},\\
+A&=\{S_1=V\},\\
 \Pr(S_0=V,\ S_1=V)&=\frac{2}{26},\\
 \Pr(S_1=V\mid S_0=V)&=\frac{2}{11}.
 \end{aligned}
@@ -220,7 +221,7 @@ def condicional(clases, a, b):
     con_a = 0
     # de ellas, seguidas de b
     a_luego_b = 0
-    # solo las que tienen siguiente
+    # con siguiente
     for j in range(len(clases)-1):
         if clases[j] == a:
             con_a += 1
@@ -232,11 +233,12 @@ def condicional(clases, a, b):
     return Fraction(a_luego_b, con_a)
 
 frase = "CVCCVVCCVCVVCVCVCCVCVCVCCCV"
-print(condicional(frase, "V", "V"))   # 2/11
+# imprime 2/11
+print(condicional(frase, "V", "V"))
 ```
 
 ::: exercise {#mkv-c1-ej-distribucion-tras-v title="Escribe una distribución condicional"}
-Escribe la distribución de $S_1$ dado $S_0=V$, en el orden V, C. ¿Suma 1?
+Escribe la distribución de $S_1$ dado ${S_0=V}$, en el orden V, C. ¿Suma 1?
 :::
 
 ::: hint {#mkv-c1-pista-distribucion-tras-v of="mkv-c1-ej-distribucion-tras-v" title="El otro valor"}
@@ -250,7 +252,7 @@ $$
 \frac{2}{11}+\frac{9}{11}=\frac{11}{11}=1.
 $$
 
-**Cubre ambos valores.** Dado $S_0=V$, la siguiente letra tiene que ser V o C.
+**Cubre ambos valores.** Dado ${S_0=V}$, la siguiente letra tiene que ser V o C.
 :::
 
 ¿Cómo calculas la probabilidad de tres letras seguidas, como C, V, C?
@@ -278,7 +280,8 @@ $$
 &\Pr(S_0=a_0,\dots,S_t=a_t)\\
 &\quad=\Pr(S_0=a_0)\\
 &\qquad{}\times\prod_{j=0}^{t-1}
-\Pr(S_{j+1}=a_{j+1}\mid S_0=a_0,\dots,S_j=a_j),\\
+\Pr(S_{j+1}=a_{j+1}\mid S_0=a_0,\\
+&\qquad\qquad\dots,S_j=a_j),\\
 &\Pr(S_0=a_0,\dots,S_{t-1}=a_{t-1})>0.
 \end{aligned}
 $$
@@ -287,7 +290,7 @@ $$
 
 - **Símbolos.** La coma significa «y»; $\prod$ multiplica un factor por cada índice $j$.
 - **Condición.** Cada historia usada para condicionar debe tener probabilidad positiva.
-- **Caso cero.** Si la historia hasta $t-1$ tiene probabilidad 0, la conjunta completa también vale 0.
+- **Caso cero.** Si la historia hasta ${t-1}$ tiene probabilidad 0, la conjunta completa también vale 0.
 :::
 
 **Dos letras en la frase.**
@@ -307,7 +310,7 @@ $$
 \end{aligned}
 $$
 
-- **Primer factor.** 14 de las 25 posiciones empiezan con C: $\Pr(S_0=C)=14/25$.
+- **Primer factor.** 14 de las 25 posiciones empiezan con C: ${\Pr(S_0=C)=14/25}$.
 - **Segundo factor.** De esas 14, 9 siguen con V: $\Pr(S_1=V\mid S_0=C)=9/14$.
 - **Tercer factor.** De esas 9, 7 siguen con C:
 
@@ -433,14 +436,14 @@ $$
 $$
 
 - **Qué es.** $A$ y $D$ son independientes dado $B$ cuando conocer también $D$ no cambia la probabilidad de $A$.
-- **Cómo se calcula.** Compara las probabilidades dentro de $B$; para agregar $D$ como condición, exige $\Pr(D\cap B)>0$.
+- **Cómo se calcula.** Compara las probabilidades dentro de $B$; para agregar $D$ como condición, exige ${\Pr(D\cap B)>0}$.
 - **Qué significa.** La coma es «y»: $\Pr(A\mid D,B)$ condiciona en la intersección $D\cap B$.
 - **Qué no es.** La independencia sin condición y la independencia dado $B$ no se implican entre sí.
 :::
 
 - **Datos.** La frase tiene 27 letras; contrastamos el supuesto con el *Quijote* completo: minúsculas, vocales sin acento, sin espacios ni signos. La ñ y la «y» cuentan como consonantes.
 - **Experimento.** Sortea una posición del libro con al menos dos letras siguientes; observa las tres.
-- **Nombres.** La sorteada es $S_{t-1}$; la siguiente, $S_t$; la última, $S_{t+1}$.
+- **Nombres.** Como en la sección 3, la sorteada es $S_0$; la siguiente, $S_1$; la última, $S_2$.
 - **Estimaciones.** Usamos el libro como datos de un modelo; sus frecuencias llevan gorro: $\widehat{\Pr}$.
 
 ::: table {#mkv-c1-tabla-dos-atras title="Tras una consonante en el Quijote: ¿importa la letra de hace dos?"}
@@ -451,13 +454,13 @@ $$
 | C | C | 0.922 |
 :::
 
-**Instancia de la definición.** Aquí $A=\{S_{t+1}=V\}$, $B=\{S_t=C\}$ y $D$ fija la clase de $S_{t-1}$.
+**Instancia de la definición.** Aquí ${A=\{S_2=V\}}$, ${B=\{S_1=C\}}$ y $D$ fija la clase de $S_0$.
 
 $$
 \begin{aligned}
 \widehat{\Pr}(A\mid B)&=0.710,\\
-\widehat{\Pr}(A\mid S_{t-1}=V,B)&=0.624,\\
-\widehat{\Pr}(A\mid S_{t-1}=C,B)&=0.922.
+\widehat{\Pr}(A\mid S_0=V,B)&=0.624,\\
+\widehat{\Pr}(A\mid S_0=C,B)&=0.922.
 \end{aligned}
 $$
 
@@ -524,7 +527,7 @@ $$
 \end{aligned}
 $$
 
-Se omiten los valores $a$ con $\Pr(S_0=a)=0$.
+Se omiten los valores $a$ con ${\Pr(S_0=a)=0}$.
 
 **En la frase.** Las 26 posiciones se reparten entre actual V y actual C.
 
@@ -593,7 +596,7 @@ $$
 \end{aligned}
 $$
 
-- **Con pocas repeticiones.** Con $n=26$, el evento no tiene por qué ocurrir exactamente 12 veces.
+- **Con pocas repeticiones.** Con ${n=26}$, el evento no tiene por qué ocurrir exactamente 12 veces.
 - **Sin independencia.** Si sorteas una vez y copias el resultado $n$ veces, la fracción queda en 0 o 1.
 - **En Monte Carlo plano.** Con partidas independientes y una regla fija, el promedio se acerca al pago esperado bajo esa regla.
 
@@ -630,7 +633,7 @@ Toma la primera frase del *Quijote*, «En un lugar de la Mancha».
 
 1. **Traduce.** Escribe la frase como V, C y `_`, y di cuántas posiciones entran al sorteo.
 2. **Condiciona.** Escribe la distribución de $S_1$ dado cada valor de $S_0$, en el orden V, C, espacio.
-3. **Suma por casos.** Calcula $\Pr(S_1=V)$ con la probabilidad total y compruébalo contando.
+3. **Suma por casos.** Calcula ${\Pr(S_1=V)}$ con la probabilidad total y compruébalo contando.
 4. **Decide.** ¿Son independientes $S_0$ y $S_1$? Justifica con un par de valores.
 5. **Explica un cero.** ¿Qué cero se mantendría con cualquier otra frase, normalizada igual, y por qué?
 :::
@@ -695,7 +698,7 @@ La condicional difiere de la probabilidad sin condición: $S_0$ y $S_1$ no son i
 
 ## Lo que hay que llevarse
 
-- **Experimento.** Entre 26 posiciones con siguiente, $\Pr(A)=12/26$ y $\Pr(B)=11/26$.
+- **Experimento.** Entre 26 posiciones con siguiente, ${\Pr(A)=12/26}$ y ${\Pr(B)=11/26}$.
 - **Condicional.** $\Pr(A\mid B)=2/11$, frente a $10/15$ tras consonante; el condicionante debe tener probabilidad positiva.
 - **Producto.** Cada factor conserva toda la historia:
 
@@ -704,8 +707,8 @@ $$
 =\frac{7}{25}.
 $$
 
-- **Independencia.** Compara $\Pr(A\cap B)$ con $\Pr(A)\Pr(B)$; aquí, $0.077\ne0.195$.
-- **Independencia condicional.** Compara $\Pr(A\mid D,B)$ con $\Pr(A\mid B)$, si $\Pr(D\cap B)>0$.
+- **Independencia.** Compara ${\Pr(A\cap B)}$ con ${\Pr(A)\Pr(B)}$; aquí, $0.077\ne0.195$.
+- **Independencia condicional.** Compara ${\Pr(A\mid D,B)}$ con ${\Pr(A\mid B)}$, si ${\Pr(D\cap B)>0}$.
 - **En el libro.** Tras C, 0.710; agregando la de hace dos, 0.624 o 0.922. El supuesto usaría 0.710 en ambos casos.
 - **Probabilidad total.** Suma condicional por peso sobre una partición; omite los casos de probabilidad 0.
 - **Promedio.** La frecuencia de $n$ repeticiones independientes del mismo experimento converge a $\Pr(A)$ con probabilidad 1.

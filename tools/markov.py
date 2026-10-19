@@ -121,7 +121,7 @@ def secuencia_vce(texto):
 
 
 def secuencia_e(texto):
-    """E si la letra es «e», N si no (ejercicio (b) de la pagina 2)."""
+    """E si la letra es «e», N si no (ejercicio (b) de «El problema de Markov»)."""
     return "".join("E" if c == "e" else "N" for c in normalizar_vc(texto))
 
 
@@ -204,7 +204,7 @@ def contar(secuencia, memoria=1):
 
 
 def contar_transiciones(secuencia, estados=None):
-    """El algoritmo de la pagina 3: (N, salidas, P̂) con N = {(s, s'): N(s, s')}
+    """El algoritmo de «Ajustar contando»: (N, salidas, P̂) con N = {(s, s'): N(s, s')}
     para todo par de `estados` (los no vistos en 0), salidas = {s: N(s)} y
     P̂ = {(s, s'): N(s, s')/N(s)} solo para las filas con N(s) > 0. Sin
     `estados`, usa los que aparecen en la secuencia."""
@@ -430,13 +430,15 @@ def redondear_matriz(P, cifras=3):
 @lru_cache(maxsize=None)
 def condicionales_memoria_2():
     """Pr(V | anterior C) frente a Pr(V | anterior C y la de antes V) y
-    Pr(V | anterior C y la de antes C), en el corpus V/C."""
+    Pr(V | anterior C y la de antes C), en el corpus V/C. Las tres filas
+    usan el mismo universo, las posiciones con dos letras siguientes, para
+    que la primera sea exactamente la mezcla de las otras dos."""
     c2 = contar(vc_corpus(), 2)
-    c1 = contar(vc_corpus(), 1)
-    def pr(c, ctx):
-        return F(c[ctx]["V"], sum(c[ctx].values()))
-    return {"C": pr(c1, "C"), "VC": pr(c2, "VC"), "CC": pr(c2, "CC"),
-            "V": pr(c1, "V"), "VV": pr(c2, "VV"), "CV": pr(c2, "CV")}
+    def pr(*ctxs):
+        return F(sum(c2[x]["V"] for x in ctxs),
+                 sum(sum(c2[x].values()) for x in ctxs))
+    return {"C": pr("VC", "CC"), "VC": pr("VC"), "CC": pr("CC"),
+            "V": pr("VV", "CV"), "VV": pr("VV"), "CV": pr("CV")}
 
 
 # -------------------------------------------------------------- rachas ---
@@ -761,7 +763,7 @@ def regla_del_producto(tramo="CVC", secuencia=None):
             "conjunta": F(xyz, n)}
 
 
-# --------------------------------------- pagina 2 · el problema de Markov ---
+# ------------------------------------------------ el problema de Markov ---
 
 MARKOV_1913 = {"letras": 20000, "vocales": 8638, "VV": 1104, "CV": 7534}
 
@@ -783,7 +785,7 @@ def matriz_vce(texto=FRASE):
 
 U_A_MANO = (0.40, 0.75, 0.90, 0.25, 0.10)   # MUESTREAR-FILA a mano, desde C
 
-# Ejercicio (a) de la pagina 2: una cadena de 3 estados dada como grafo.
+# Ejercicio (a) de «El problema de Markov»: una cadena de 3 estados dada como grafo.
 EJ_P2_ESTADOS = ("1", "2", "3")
 EJ_P2_P = [[F(0), F(3, 4), F(1, 4)],
            [F(1, 2), F(0), F(1, 2)],
@@ -793,7 +795,7 @@ EJ_P2_TRAYECTORIA = "1233"
 
 
 def ejercicio_p2_e():
-    """Ejercicio (b) de la pagina 2: «e» (E) contra no «e» (N) en FRASE_E,
+    """Ejercicio (b) de «El problema de Markov»: «e» (E) contra no «e» (N) en FRASE_E,
     y lo mismo en el corpus."""
     seq = secuencia_e(FRASE_E)
     N = matriz_conteos(seq, ("E", "N"))
@@ -820,7 +822,7 @@ def rachas_resumen():
                                  for l in range(1, ELL_MAX + 1)}}
 
 
-# ---------------------------------------- pagina 3 · ajustar contando ---
+# ------------------------------------------------------ ajustar contando ---
 
 P_MITADES = [[F(1, 2), F(1, 2)], [F(1, 2), F(1, 2)]]
 
@@ -834,7 +836,7 @@ def ejercicio_p3():
             "laplace": estimar(N, suavizado=1)}
 
 
-# ----------------------------------------------- pagina 4 · predecir ---
+# -------------------------------------------------------------- predecir ---
 
 EJ_P4_ESTADOS = ("x", "y", "z")
 EJ_P4_P = [[F(1, 2), F(1, 4), F(1, 4)],
@@ -855,7 +857,7 @@ def ejercicio_p4_simulacion(t_max=3):
             "ee": [error_estandar(p, N_EJ_SIMULACION) for p in cuenta]}
 
 
-# ------------------------------------------- pagina 5 · generar texto ---
+# --------------------------------------------------------- generar texto ---
 
 U_GENERAR_A_MANO = (0.90, 0.55, 0.30)        # con la tabla V/C/_ de la frase, desde C
 

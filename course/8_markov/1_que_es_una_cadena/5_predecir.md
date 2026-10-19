@@ -265,7 +265,7 @@ OUTPUT  μ_t, la distribución del
 from fractions import Fraction
 
 def predecir(P, mu0, t):                  # (1)
-    k = len(mu0)          # estados 0, …, k − 1, como en P
+    k = len(mu0)          # estados 0…k−1, como en P
     mu = list(mu0)                        # (2) paso 0
     for j in range(1, t + 1):             # (3)
         nuevo = [0] * k                   # (4)
@@ -341,7 +341,13 @@ $$
 \xrightarrow[n\to\infty]{}\mu_t(s).
 $$
 
-- **Ruido.** Con ${p=\mu_t(s)}$, cada réplica aporta 0 o 1, con dispersión ${\sqrt{p(1-p)}}$. Promediar $n$ réplicas independientes la divide entre ${\sqrt n}$.
+- **Ruido.** Con ${p=\mu_t(s)}$, cada réplica aporta 1 con probabilidad $p$ y 0 si no. Su distancia al cuadrado a $p$ promedia:
+
+$$
+p\,(1-p)^2+(1-p)\,p^2=p(1-p).
+$$
+
+- **Dispersión.** Su raíz, ${\sqrt{p(1-p)}}$, es la dispersión de una réplica. Promediar $n$ réplicas independientes la divide entre ${\sqrt n}$; aquí se usa sin demostración.
 
 ::: definition {#mkv-c1-error-estandar title="El error estándar de una fracción simulada"}
 - **Qué es.** El error estándar (*standard error*) mide la dispersión de la fracción simulada alrededor de la probabilidad $p$.
@@ -492,10 +498,10 @@ La fracción en V fue 0.693, 0.352 y 0.512 en los pasos 1, 2 y 3. La cuenta da 0
 :::
 
 ::: hint {#mkv-c1-pista-leer-simulacion-2 of="mkv-c1-ej-leer-simulacion" title="Pista 2 · ¿Tu conclusión depende del texto?"}
-¿Qué dato del *Quijote*, que no haya pasado por $\widehat P$, usa tu respuesta a 4?
+¿De dónde salen los números que comparas en 1–3?
 :::
 
-::: answer {#mkv-c1-resp-leer-simulacion of="mkv-c1-ej-leer-simulacion" title="Respuesta · Dentro del error, con menos precisión"}
+::: answer {#mkv-c1-resp-leer-simulacion of="mkv-c1-ej-leer-simulacion" title="Respuesta · Análisis de las 400 réplicas"}
 **1. Errores estándar.** Con ${n=400}$ réplicas independientes, dan 0.023, 0.024 y 0.025. En el paso 2:
 
 $$

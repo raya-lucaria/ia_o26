@@ -38,7 +38,7 @@ De [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]]:
 
 **Piensa: ¿cómo organizas las probabilidades de pasar entre estados?**
 
-En una matriz cuadrada: cada fila fija el origen y cada columna, el destino.
+En una matriz cuadrada: cada fila fija el origen y cada columna, el destino. Un **estado** es cada valor posible de $S_t$.
 
 ::: definition {#mkv-c1-matriz-transicion title="Matriz de transición estocástica por filas"}
 $$
@@ -147,7 +147,7 @@ En la matriz de tres estados, ¿qué significa $p_{31}$? Si vale cero, ¿tambié
 
 ::: answer {#mkv-c1-resp-leer-entrada of="mkv-c1-ej-leer-entrada"}
 - **Entrada:** $p_{31}$ es la probabilidad de pasar de $s_3$ a $s_1$.
-- **Sentido contrario:** $p_{13}$ puede ser positivo; las dos flechas tienen probabilidades distintas.
+- **Sentido contrario:** $p_{13}$ puede ser positivo; $p_{31}$ y $p_{13}$ están en filas distintas y no tienen por qué coincidir.
 :::
 
 La matriz describe las transiciones; falta precisar cómo gobierna una sucesión de estados.
@@ -158,7 +158,7 @@ La matriz describe las transiciones; falta precisar cómo gobierna una sucesión
 
 **Piensa: ¿qué falta, además de la matriz, para definir una cadena?**
 
-Faltan la distribución inicial y las condiciones que permiten usar la misma fila después de cualquier historia.
+Faltan la distribución inicial y dos condiciones sobre la historia: la **propiedad de Markov** (el siguiente estado depende solo del actual) y la **homogeneidad** (la misma fila en todo paso).
 
 ::: definition {#mkv-c1-cadena title="Cadena de Markov finita y homogénea"}
 $$
@@ -174,7 +174,7 @@ $$
 \end{aligned}
 $$
 
-Para todo paso entero $t\ge0$, define la historia:
+Para todo paso entero ${t\ge0}$, define la historia:
 
 $$
 H_t=\{S_0=s_{i_0},\dots,S_t=s_{i_t}\}.
@@ -234,7 +234,7 @@ La cadena ya está definida; representemos la incertidumbre sobre su estado en c
 
 Con un vector fila que asigna una probabilidad a cada estado.
 
-::: definition {#mkv-c1-distribucion title="La distribución en el paso t"}
+::: definition {#mkv-c1-distribucion title="La distribución de cada paso"}
 $$
 \begin{aligned}
 \mu_t(s_i)&=\Pr(S_t=s_i),\\
@@ -313,7 +313,7 @@ Con la distribución escrita como fila, podemos calcular cómo cambia al dar un 
 Multiplicas la distribución actual por la matriz de transición, con la fila a la izquierda.
 
 ::: theorem {#mkv-c1-teo-predecir title="La distribución avanza multiplicando por la matriz"}
-En una cadena finita y homogénea de @mkv-c1-cadena, para todo entero $t\ge0$:
+En una cadena finita y homogénea de @mkv-c1-cadena, para todo entero ${t\ge0}$:
 
 $$
 \begin{aligned}
@@ -381,19 +381,13 @@ $$
 
 $$
 \underbrace{P}_{k\times k}
+\quad
 \underbrace{\mu_t}_{1\times k}
 \quad\text{no está definido}.
 $$
 
 - **Motivo:** las dimensiones interiores no coinciden. Con un solo estado, ambas matrices son $1\times1$.
-- **Otra convención:** el superíndice $\mathsf T$ indica trasposición: intercambia filas y columnas. Con distribuciones columna, el producto se escribe:
-
-$$
-\begin{aligned}
-\mu_{t+1}^{\mathsf T}&=P^{\mathsf T}\mu_t^{\mathsf T},\\
-(k\times k)(k\times1)&=(k\times1).
-\end{aligned}
-$$
+- **Otra convención:** algunos libros escriben las distribuciones como columnas y usan la traspuesta $P^{\mathsf T}$, que intercambia filas y columnas. El último ejercicio de la página deduce el producto correcto.
 
 **Ejemplo abstracto: tres estados.** Con la matriz simbólica de la sección 1:
 
@@ -440,15 +434,15 @@ $$
 **Llegadas:** una desde $s_1$ y otra desde $s_3$; el origen $s_2$ tiene peso cero.
 :::
 
-Repetir el producto de un paso lleva a las potencias de la matriz.
+El teorema ya usa $P^t$; falta leer cada una de sus entradas.
 
 ---
 
 ## 5 · Avanzar varios pasos con potencias
 
-**Piensa: ¿cómo reúnes varias transiciones en una sola matriz?**
+**Piensa: ¿qué dice la entrada $(i,j)$ de $P^t$?**
 
-Con una potencia de la matriz de transición.
+La probabilidad de ir de $s_i$ a $s_j$ en exactamente $t$ pasos.
 
 ::: theorem {#mkv-c1-teo-potencias title="Las potencias describen transiciones de varios pasos"}
 Para una cadena finita y homogénea y enteros $t,t_1,t_2\ge0$:
@@ -457,7 +451,6 @@ $$
 \begin{aligned}
 P^t&\in\mathbb R^{k\times k},\\
 (P^t)_{ij}&\ge0,\qquad P^t\mathbf 1=\mathbf 1,\\
-\mu_t&=\mu_0P^t,\\
 P^{t_1+t_2}&=P^{t_1}P^{t_2},\\
 (P^{t_1+t_2})_{ij}
 &=\sum_{l=1}^k(P^{t_1})_{il}(P^{t_2})_{lj}.
@@ -488,7 +481,7 @@ P^{t+1}\mathbf 1
 \end{aligned}
 $$
 
-**Potencias.** $P^{t_1+t_2}$ es el producto de $t_1+t_2$ factores $P$; agruparlos en dos bloques da $P^{t_1}P^{t_2}$.
+**Potencias.** $P^{t_1+t_2}$ es el producto de ${t_1+t_2}$ factores $P$; agruparlos en dos bloques da ${P^{t_1}P^{t_2}}$.
 
 **Lectura condicional.** Condicionar en $S_0=s_i$ es empezar con $\mu_0=\mathbf e_i$. Por @mkv-c1-teo-predecir:
 
@@ -561,7 +554,7 @@ $$
 - **Secuencia imposible:** si algún prefijo tiene probabilidad cero, la trayectoria completa y el producto valen cero.
 - **Paso cero:** el producto sin factores vale uno y queda la probabilidad inicial.
 
-Para $n$ réplicas independientes con los mismos $\mu_0$ y $P$, fija el paso $t$ y el estado $s_j$:
+Para $n$ **réplicas** (trayectorias simuladas independientes) con los mismos $\mu_0$ y $P$, fija el paso $t$ y el estado $s_j$:
 
 $$
 \frac{\#\{\text{réplicas en }s_j\text{ en el paso }t\}}{n}
@@ -630,16 +623,16 @@ $$
 - **Normalización:** sumar uno tiene sentido sobre una distribución completa, no sobre cualquier columna o entrada aislada.
 
 ::: table {#mkv-c1-tabla-dimensiones title="Forma y lectura de los objetos de la cadena"}
-| Objeto | Forma | Qué suma 1 | Cómo se lee |
-|---|---|---|---|
-| $P$ | $k\times k$ | Cada fila | Transiciones de un paso |
-| $P_{ij}$ | Escalar ($1\times1$) | Nada exigido | De $s_i$ a $s_j$ |
-| Fila $i$ de $P$ | $1\times k$ | Sus entradas | Destinos desde $s_i$ |
-| Columna $j$ de $P$ | $k\times1$ | Nada exigido | Llegada a $s_j$, por origen |
-| $\mu_t$ | $1\times k$ | Sus entradas | Estado en el paso $t$ |
-| $\mu_0=\mathbf e_i$ | $1\times k$ | Sus entradas | Inicio fijo en $s_i$ |
-| $\mu_tP$ | $1\times k$ | Sus entradas | Estado un paso después |
-| $P^t$ | $k\times k$ | Cada fila | Transiciones de $t$ pasos |
+| Objeto | Forma · ¿suma 1? | Cómo se lee |
+|---|---|---|
+| $P$ | ${k\times k}$ · cada fila | Transiciones de un paso |
+| $P_{ij}$ | escalar · no exigido | De $s_i$ a $s_j$ |
+| Fila $i$ de $P$ | ${1\times k}$ · sí | Destinos desde $s_i$ |
+| Columna $j$ de $P$ | ${k\times1}$ · no exigido | Llegada a $s_j$, por origen |
+| $\mu_t$ | ${1\times k}$ · sí | Estado en el paso $t$ |
+| $\mu_0=\mathbf e_i$ | ${1\times k}$ · sí | Inicio fijo en $s_i$ |
+| $\mu_tP$ | ${1\times k}$ · sí | Estado un paso después |
+| $P^t$ | ${k\times k}$ · cada fila | Transiciones de $t$ pasos |
 :::
 
 **Ejemplo abstracto: tres estados.**
