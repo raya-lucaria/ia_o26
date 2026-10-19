@@ -4,7 +4,7 @@ title: Leer el reglamento
 nav_title: Leer el reglamento
 summary: "Unas reglas nunca llegan ordenadas: llegan con frases de más, huecos, ambigüedades y repeticiones. Esta página solo las lee y las ordena."
 status: ready
-estimated_time: 15m
+estimated_time: 16m
 tags: [juegos, modelado]
 ---
 
@@ -38,8 +38,8 @@ facultad:
 >
 > **[8]** El que pierde invita los cafés.
 
-Para hablar de los dos jugadores, llamamos **Blancas** (B) al que empieza
-abajo y **Negras** (N) al de arriba.
+Para hablar de los dos jugadores, llamamos **Blancas** (B) al que tiene sus
+peones abajo y **Negras** (N) al de arriba.
 
 Léelo otra vez y fíjate en tres cosas.
 
@@ -50,20 +50,28 @@ Léelo otra vez y fíjate en tres cosas.
 - **Falta algo.** Con lo que dice el chat no se puede hacer la primera
   jugada.
 
+---
+
 ## 1 · Cuatro preguntas para decidir si una frase entra
 
 **Piensa: ¿qué tiene que decir una frase para que cambie el juego?**
 
-Una frase entra al modelo solo si contesta una de estas cuatro preguntas:
+Tiene que contestar una de estas cuatro preguntas:
 
-1. ¿Qué **jugadas** se permiten?
-2. ¿Cómo **cambia el tablero** después de una jugada?
-3. ¿**Cuándo termina** la partida y quién gana?
-4. ¿**Cuánto vale** terminar así?
+1. **Inicio y jugadas:** ¿cómo empieza la partida, quién mueve y qué jugadas se
+   permiten?
+2. **Cambio:** ¿cómo cambia el tablero después de una jugada?
+3. **Final:** ¿cuándo termina la partida y quién gana?
+4. **Valor:** ¿cuánto vale terminar así?
+
+La primera incluye el punto de partida: dónde están los peones y **quién
+mueve primero**. Sin eso no hay primera jugada.
 
 Las tres primeras describen el juego; la cuarta dice qué quiere cada
 jugador. En la unidad de optimización, la cuarta era la función objetivo.
 Aquí se llama **utilidad**.
+
+---
 
 ## 2 · Las cuatro trampas
 
@@ -73,60 +81,62 @@ Unas reglas reales tienen los mismos tres defectos que
 ::: table {#jue-c1-trampas title="Lo que una explicación con prisa le hace a quien la lee"}
 | Trampa | Qué es | Qué se hace |
 |---|---|---|
-| **Sobra** | Una frase que no contesta ninguna de las cuatro preguntas | Se descarta, diciendo por qué |
-| **Falta** | Algo sin lo cual no se puede jugar | Se supone y **se anota el supuesto** |
-| **Ambigua** | Una frase que dos personas pueden leer distinto y las dos tener razón | Se decide una lectura y se justifica |
-| **Redundante** | Una regla que ya está implicada por otra | Se nota y no se escribe dos veces |
+| **Sobra** | No contesta ninguna de las cuatro preguntas | Se descarta, diciendo por qué |
+| **Falta** | Un dato sin el cual no se puede jugar | Se supone y **se anota el supuesto** |
+| **Ambigua** | Dos personas la leen distinto y las dos tienen razón | Se elige una lectura y se justifica |
+| **Redundante** | Ya se sigue de otra regla | Se señala y se escribe una sola vez |
 :::
 
-La redundante no es un error grave, pero escribirla dos veces es peligroso:
-si un día cambias una copia y no la otra, el modelo se contradice.
+**La redundancia puede volverse contradicción.** Repetir una regla no es un
+error grave, pero si un día cambias una copia y no la otra, el modelo se
+contradice.
+
+---
 
 ## 3 · Tu turno
 
 ::: exercise {#jue-c1-ej-reglamento title="Ordena el chat"}
 Usa las cuatro preguntas de la sección 1 con cada mensaje del chat.
 
-1. Escribe **qué mensaje sobra** y por qué.
-2. Escribe **qué falta** para poder empezar una partida, y qué supones.
-3. Encuentra **al menos un mensaje ambiguo**: escribe las dos lecturas
-   posibles y cuál eliges.
-4. Escribe **qué mensaje es redundante** y qué otro mensaje ya lo implica.
-5. Escribe la **utilidad** del mensaje 7 para una partida que gana Blancas
-   y para otra que gana Negras, medida desde el lado de Blancas. ¿Importa
-   cuántas jugadas duró la partida?
+1. **Qué sobra:** escribe qué mensaje sobra y por qué.
+2. **Qué falta:** escribe qué falta para poder empezar una partida, y qué
+   supones.
+3. **Qué es ambiguo:** encuentra al menos un mensaje ambiguo; escribe las dos
+   lecturas posibles y cuál eliges.
+4. **Qué es redundante:** escribe qué mensaje es redundante y qué otro
+   mensaje ya lo implica.
+5. **Cuánto vale:** escribe la utilidad del mensaje 7, medida desde Blancas,
+   para una partida que gana Blancas y otra que gana Negras. ¿Importa cuántas
+   jugadas duró la partida?
 :::
 
 ::: hint {#jue-c1-pista-reglamento of="jue-c1-ej-reglamento" title="Un método por pregunta"}
-**Para lo que sobra:** pasa cada mensaje por las cuatro preguntas. El que no
-contesta ninguna, sobra.
-
-**Para lo que falta:** intenta hacer la primera jugada con lo que dice el
-chat. ¿Qué no sabes todavía?
-
-**Para lo ambiguo:** busca un mensaje con el que dos personas podrían jugar
-distinto. Fíjate en los que no dicen quién gana, y en los que dicen «como»
-otra cosa.
-
-**Para lo redundante:** busca un mensaje que ya se sigue de cómo se mueve un
-peón.
+- **Para lo que sobra:** pasa cada mensaje por las cuatro preguntas. El que
+  no contesta ninguna, sobra.
+- **Para lo que falta:** intenta hacer la primera jugada con lo que dice el
+  chat. ¿Qué no sabes todavía?
+- **Para lo ambiguo:** busca un mensaje con el que dos personas podrían jugar
+  distinto. Fíjate en los que no dicen quién gana y en los que dicen «como»
+  otra cosa.
+- **Para lo redundante:** busca un mensaje que ya se sigue de cómo se mueve
+  un peón.
 :::
 
 ::: answer {#jue-c1-resp-reglamento of="jue-c1-ej-reglamento"}
 1. **Sobra el mensaje 8.** Invitar los cafés no cambia ninguna jugada, ni el
    tablero, ni el final, ni los puntos del torneo.
-2. **Falta quién empieza.** Sin eso no se puede hacer la primera jugada.
-   Supondremos que **empiezan Blancas**, como en ajedrez, y lo anotamos como
-   supuesto.
+2. **Falta quién empieza.** Es parte de la primera pregunta, y sin eso no se
+   puede hacer la primera jugada. Supondremos que **empiezan Blancas**, como
+   en ajedrez, y lo anotamos como supuesto.
 3. **Hay dos mensajes ambiguos.**
-   - **El 6:** «ahí se acaba» puede leerse como **derrota** de quien no puede
-     mover o como **empate**. En ajedrez, quedarse sin jugada sin estar en
-     jaque es empate. Elegimos **derrota**, que es la regla de Martin Gardner,
-     quien inventó el juego, y lo anotamos.
-   - **El 1:** sí entra, porque es el único que fija el tablero de 3×3. Pero
-     «es como ajedrez» puede traer reglas del ajedrez que el chat no dice,
-     como avanzar dos casillas en la primera jugada. Decidimos que **solo
-     valen las reglas escritas**: el peón avanza siempre una casilla.
+   - **El 6:** «ahí se acaba» puede leerse como derrota de quien no puede
+     mover o como empate, que es lo que pasa en ajedrez sin jaque. Elegimos
+     derrota, la regla de Martin Gardner, quien inventó el juego, y lo
+     anotamos.
+   - **El 1:** sí entra, porque es el único que fija el tablero de 3×3; pero
+     «es como ajedrez» puede traer reglas que el chat no dice, como avanzar
+     dos casillas en la primera jugada. Decidimos que solo valen las reglas
+     escritas: el peón avanza siempre una casilla.
 4. **El mensaje 4 es redundante.** El mensaje 3 ya dice que el peón solo
    avanza o captura hacia delante; moverse hacia atrás no está entre las
    jugadas permitidas.
@@ -137,9 +147,12 @@ peón.
 :::
 
 > [!WARNING]
-> Que un mensaje sea corto no lo hace prescindible. El 4 sobra porque ya
-> está dicho; el 8, porque no contesta ninguna de las cuatro preguntas. Son
-> motivos distintos, y conviene escribir cuál aplica.
+> **Los motivos son distintos.** El 4 sobra porque ya está dicho; el 8,
+> porque no contesta ninguna de las cuatro preguntas.
+>
+> Que un mensaje sea corto no lo hace prescindible: escribe qué motivo aplica.
+
+---
 
 ## 4 · El juego, en limpio
 
@@ -154,17 +167,18 @@ usaremos en toda la unidad.
 | **1** | B | B | B |
 :::
 
-**Blancas** (B) empieza en la fila 1 y **Negras** (N), en la fila 3. Las
-columnas se llaman a, b y c; un punto (·) es una casilla vacía.
+Los peones de **Blancas** (B) ocupan la fila 1 y los de **Negras** (N), la
+fila 3. Las columnas se llaman a, b y c; un punto (·) es una casilla vacía.
 
-1. Juegan por turnos y **empiezan Blancas**. En cada turno se mueve un peón
-   propio.
-2. Un peón **avanza** una casilla hacia el rival si esa casilla está vacía.
-3. Un peón **captura** en diagonal, una casilla hacia delante, si ahí hay un
-   peón rival. El peón capturado sale del tablero.
-4. Gana quien **llega a la fila del rival**, quien **captura todos** sus
-   peones o quien **deja al rival sin jugada** cuando le toca.
-5. Ganar vale $+1$ y perder, $-1$.
+1. **Turnos:** juegan por turnos y empiezan Blancas. En cada turno se mueve
+   un peón propio.
+2. **Avance:** un peón avanza una casilla hacia el rival si esa casilla está
+   vacía.
+3. **Captura:** un peón captura en diagonal, una casilla hacia delante, si
+   ahí hay un peón rival. El peón capturado sale del tablero.
+4. **Final:** gana quien llega a la fila del rival, quien captura todos sus
+   peones o quien deja al rival sin jugada cuando le toca.
+5. **Utilidad:** desde Blancas, ganar vale $+1$ y perder, $-1$.
 
 Y el juego entero cabe en cinco renglones:
 
@@ -172,9 +186,9 @@ Y el juego entero cabe en cinco renglones:
 | | En hexapawn |
 |---|---|
 | **Quién juega** | Blancas y Negras, por turnos; empiezan Blancas |
-| **Qué ve cada uno** | El tablero completo; nada está oculto |
-| **Qué puede hacer** | Mover uno de sus peones: avanzar o capturar |
-| **Cuándo termina** | Cuando alguien llega, captura todo o deja al rival sin jugada |
+| **Qué ve cada uno** | Todo el tablero; nada está oculto |
+| **Qué puede hacer** | Avanzar o capturar con un peón propio |
+| **Cuándo termina** | Al llegar, capturar todo o dejar al rival sin jugada |
 | **Qué quiere cada uno** | Ganar; lo que gana uno lo pierde el otro |
 :::
 
@@ -182,14 +196,17 @@ Y el juego entero cabe en cinco renglones:
 y decir si entra, sobra, falta, es ambigua o es redundante, con la pregunta
 que lo decide.
 
+---
+
 ## Lo que hay que llevarse
 
-- Unas reglas reales llegan con frases de más, huecos, ambigüedades y
-  repeticiones. Es lo normal.
-- Suponer está permitido; **suponer en silencio, no**. Nuestros supuestos:
+- **Las reglas reales llegan desordenadas.** Traen frases de más, huecos,
+  ambigüedades y repeticiones; es lo normal.
+- **Suponer está permitido; suponer en silencio, no.** Nuestros supuestos:
   empiezan Blancas, quedarse sin jugada es derrota y no hay reglas de ajedrez
   que el chat no diga.
-- Una frase entra al modelo solo si dice qué jugadas hay, cómo cambia el
-  tablero, cuándo termina o cuánto vale terminar así.
+- **Una frase entra al modelo solo si contesta una de las cuatro preguntas.**
+  Dice cómo empieza y qué jugadas hay, cómo cambia el tablero, cuándo termina
+  o cuánto vale terminar así.
 
 Continúa con [[escribir-el-juego|escribir el juego]].

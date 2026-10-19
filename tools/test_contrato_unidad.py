@@ -355,16 +355,32 @@ def test_el_cli_corre_y_cada_hallazgo_apunta_a_un_renglon_real(unidad):
         assert h["severidad"] == cu.SEVERIDAD[h["regla"]]
 
 
-def test_el_cli_detecta_los_errores_sembrados_conocidos():
-    """6.5 tiene 19 imágenes sin ::: figure; juegos, ejercicios sin pista en las clases 1 y 4."""
+def test_el_cli_detecta_los_errores_sembrados_conocidos(tmp_path):
+    """6.5 tiene 19 imágenes sin ::: figure. Los ejercicios sin pista se siembran
+    en una unidad sintética de dos clases: la semilla real de juegos (las clases 1
+    y 4) desapareció al sacar «Cuando no hay turnos» a `_drafts/`, que no se mide,
+    y la homologación deja la clase 1 sin hallazgos medios."""
     practica = RAIZ / "course/6_optimizacion/5_practica_de_modelado"
-    juegos = RAIZ / "course/7_juegos"
-    if not (practica.is_dir() and juegos.is_dir()):
-        pytest.skip("faltan las unidades de referencia")
+    if not practica.is_dir():
+        pytest.skip("falta la unidad de referencia")
     imagenes = [h for h in cu.auditar_unidad(practica) if h.regla == "imagen-fuera-de-figure"]
     assert len(imagenes) >= 19
-    sin_pista = {h.archivo.split("/")[2] for h in cu.auditar_unidad(juegos) if h.regla == "ejercicio-sin-pista"}
-    assert {"1_leer_y_escribir", "4_sin_turnos"} <= sin_pista
+
+    unidad = tmp_path / "9_unidad"
+    for rel, texto in [
+        ("1_clase/1_con_ejercicio.md", ejercicio(pistas=0)),
+        ("2_clase/1_otra.md", ejercicio(pistas=0)),
+        ("2_clase/2_imagen.md", pagina("Texto.\n\n![suelta](x.svg)")),
+        ("2_clase/3_completo.md", ejercicio(pistas=1)),
+        ("_drafts/1_no_se_mide.md", ejercicio(pistas=0)),
+    ]:
+        (unidad / rel).parent.mkdir(parents=True, exist_ok=True)
+        (unidad / rel).write_text(texto, encoding="utf-8")
+    hallazgos = cu.auditar_unidad(unidad)
+    clase = lambda h: Path(h.archivo).relative_to(unidad).parts[0]
+    sin_pista = {clase(h) for h in hallazgos if h.regla == "ejercicio-sin-pista"}
+    assert sin_pista == {"1_clase", "2_clase"}
+    assert [Path(h.archivo).name for h in hallazgos if h.regla == "imagen-fuera-de-figure"] == ["2_imagen.md"]
 
 
 # --------------------------------------------------------------------------

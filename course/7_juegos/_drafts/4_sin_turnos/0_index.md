@@ -36,7 +36,7 @@ de la clase verás también cuándo esa herramienta deja de ser la adecuada.
 
 Tres páginas, en orden, y una tarea de refuerzo al final.
 
-::: table {#jue-ruta-4 title="Las páginas de esta clase"}
+::: table {#jue-ruta-sin-turnos title="Las páginas de esta clase"}
 | | Minutos | Página y qué resuelve |
 |---|---:|---|
 | 1 | 25m | **Jugar a la vez.** Qué cambia si el rival no ve tu jugada, y por qué conviene mezclar |

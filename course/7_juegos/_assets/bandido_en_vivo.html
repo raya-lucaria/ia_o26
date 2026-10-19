@@ -6,7 +6,7 @@
 <title>Bandido en vivo — elegir entre x, y, z</title>
 
 <!-- Clase 7.3, «De dónde sale el bono». Las tres jugadas x, y, z del hilo de
-     la página con su μ verdadero oculto, y tres reglas para elegir: siempre el
+     la página con su esperanza Q_azar oculta, y tres reglas para elegir: siempre el
      mejor promedio, a veces al azar (10 %) y UCB con c ajustable.
 
      Las reglas, el orden de desempate y la suerte son los de juegos.bandido:
@@ -85,8 +85,8 @@
   .pista .mas{position:absolute;top:4px;right:2px;font:700 13px var(--mono)}
   .pista .mu{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed var(--text)}
   .pista .vacia{position:absolute;left:8px;top:5px;font-size:12.5px;color:var(--muted)}
-  /* la etiqueta en letra normal (en monoespaciada la prima de N(s′) parece
-     un apóstrofo recto); el valor, en monoespaciada */
+  /* la etiqueta en letra normal (Q̂ y N(s,a) se leen mejor así); el valor,
+     en monoespaciada */
   .datos{display:flex;flex-wrap:wrap;gap:.1rem .9rem;font-size:13px;color:var(--muted)}
   .datos b{font-family:var(--mono)}
   .datos>span{white-space:nowrap}
@@ -123,8 +123,8 @@
 <body>
 <div class="envoltura">
   <h1>Bandido en vivo</h1>
-  <p class="sub">Tres jugadas, <b>x, y, z</b>, cada una con un promedio verdadero μ(s′)
-  que no ves. Cada vuelta se elige una, se simula una vez (+1 o −1) y su ū(s′) se
+  <p class="sub">Tres jugadas, <b>x, y, z</b>, cada una con una esperanza Q<sub>azar</sub>(s,a)
+  que no ves. Cada vuelta se elige una, se simula una vez (+1 o −1) y su promedio Q̂(s,a) se
   actualiza. ¿Qué regla encuentra la mejor sin quemar vueltas en las malas?</p>
 
   <div class="panel">
@@ -133,11 +133,11 @@
       <div class="reglas" id="reglas">
         <label><input type="radio" name="regla" value="mejor_promedio" checked> siempre el mejor promedio</label>
         <label><input type="radio" name="regla" value="a_veces_al_azar"> a veces al azar (10 %)</label>
-        <label><input type="radio" name="regla" value="ucb"> UCB: ū(s′) + bono</label>
+        <label><input type="radio" name="regla" value="ucb"> UCB: Q̂(s,a) + bono</label>
       </div>
     </fieldset>
     <div class="fila-c" id="fila-c">
-      <label for="c"><span>c: peso del bono, en c·√(ln N(s) / N(s′)) · solo UCB; cambiarla reinicia</span><output id="o-c" for="c">2.83</output></label>
+      <label for="c"><span>c: peso del bono, en c·√(ln N(s) / N(s,a)) · solo UCB; cambiarla reinicia</span><output id="o-c" for="c">2.83</output></label>
       <input type="range" id="c" min="0" max="5" step="0.01" value="2.83">
       <div class="marcas" role="group" aria-label="valores de c">
         <button type="button" data-c="0">c = 0</button>
@@ -162,7 +162,7 @@
       <button type="button" id="b-reiniciar">↺ Reiniciar</button>
       <label class="chico" for="semilla">semilla
         <input type="number" id="semilla" min="0" max="999999" step="1" value="36"></label>
-      <button type="button" id="b-revelar" aria-pressed="false">Revelar μ</button>
+      <button type="button" id="b-revelar" aria-pressed="false">Revelar Q<sub>azar</sub></button>
     </div>
   </div>
 
@@ -172,14 +172,15 @@
     <div id="jugadas"></div>
     <p class="estado" id="estado" aria-live="polite"></p>
     <p class="entrega" id="entrega"></p>
-    <p class="nota">Barra: ū(s′). Bigote (solo UCB): hasta la cota optimista ū(s′) + bono; una
-    jugada sin probar tiene bono ∞ y se prueba primero. Una cota arriba de 1 no
-    estorba: μ(s′) nunca pasa de 1, pero lo que decide es el orden entre cotas.</p>
+    <p class="nota">Barra: Q̂(s,a), el promedio. Bigote (solo UCB): hasta el puntaje
+    Q̂(s,a) + bono; una jugada sin probar tiene bono ∞ y se prueba primero. Un puntaje
+    arriba de 1 no estorba: Q<sub>azar</sub> nunca pasa de 1, pero lo que decide es el
+    orden entre puntajes. Línea punteada (al revelar): Q<sub>azar</sub>(s,a).</p>
   </div>
 
   <div class="graficas">
     <div class="panel">
-      <h2 id="t-n">N(s′) de cada jugada contra N(s)</h2>
+      <h2 id="t-n">N(s,a) de cada jugada contra N(s)</h2>
       <canvas id="g-n" role="img" aria-labelledby="t-n" aria-describedby="d-n"></canvas>
       <p class="sr" id="d-n"></p>
       <div class="leyenda" aria-hidden="true"><span class="lx">x</span><span class="ly">y</span><span class="lz">z</span></div>
@@ -188,7 +189,7 @@
       <h2 id="t-r">Fracción de vueltas en x contra N(s)</h2>
       <canvas id="g-r" role="img" aria-labelledby="t-r" aria-describedby="d-r"></canvas>
       <p class="sr" id="d-r"></p>
-      <div class="leyenda" aria-hidden="true"><span class="lf">N(s′) de x / N(s), acumulada, de esta sola corrida; lo que eso paga, en promedio de 40 corridas y eje log, está en la figura «Cuánto gana cada regla: sin bono se queda abajo»</span></div>
+      <div class="leyenda" aria-hidden="true"><span class="lf">N(s,a) de x / N(s), acumulada, de esta sola corrida; lo que eso paga, en promedio de 40 corridas, está en la tabla «Pago promedio por vuelta, 40 corridas»</span></div>
     </div>
   </div>
 
@@ -206,9 +207,9 @@
 "use strict";
 // ---- Lógica pura, sin DOM: tools/test_interactivos_ucb.py la corre con node. ----
 
-const MUS = {x: 0.6, y: 0.3, z: -0.2};     // μ verdaderos, ocultos; la mejor es x
+const MUS = {x: 0.6, y: 0.3, z: -0.2};     // Q_azar verdaderas, ocultas; la mejor es x
 const JUGADAS = Object.keys(MUS);
-const C_TEORIA = 2 * Math.SQRT2;           // 2√2: UCB1 en la escala ±1 (√2 con G/N)
+const C_TEORIA = 2 * Math.SQRT2;           // 2√2: UCB1 en la escala ±1 (√2 en la de 0 a 1)
 const AL_AZAR = 0.1;                       // «a veces al azar»: una vuelta de cada diez
 const SEMILLA_INICIAL = 36;                // «siempre el mejor promedio» se atora en z
 const VUELTAS_MAX = 10000;
@@ -289,10 +290,10 @@ class PyRandom {
   }
 }
 
-// Pr(U = +1) = (1 + μ)/2, con μ en milésimas para que salga el mismo doble
+// Pr(U = +1) = (1 + Q_azar)/2, en milésimas para que salga el mismo doble
 // que float(Fraction) en juegos.prob_gana.
 function probGana(mu){ return Math.round((1 + mu) * 1000) / 2000; }
-// c·√(ln N(s)/N(s′)); sin probar (N(s′) = 0), bono infinito.
+// c·√(ln N(s)/N(s,a)); sin probar (N(s,a) = 0), bono infinito.
 function bonoUcb(nPadre, n, c){ return n === 0 ? Infinity : c * Math.sqrt(Math.log(nPadre) / n); }
 // la de mayor valor; en empate, la primera en el orden x, y, z
 function mejor(valores){
@@ -309,8 +310,8 @@ class Bandido {
     this.p = this.mus.map(probGana);
     this.suerte = JUGADAS.map((_, i) => new PyRandom(semilla * 1000 + i));
     this.dado = new PyRandom(semilla * 1000 + 999);
-    // N[i] es N(s′) de cada jugada; sumaU[i], la suma de sus U, así que
-    // ū(s′) = sumaU[i] / N[i]; nPadre es N(s), las vueltas ya hechas.
+    // N[i] es N(s,a) de cada jugada; sumaU[i], la suma de sus U, así que
+    // Q̂(s,a) = sumaU[i] / N[i]; nPadre es N(s), las vueltas ya hechas.
     this.N = [0, 0, 0]; this.sumaU = [0, 0, 0];
     this.nPadre = 0;
     this.elecciones = []; this.resultados = [];
@@ -340,8 +341,8 @@ class Bandido {
   }
   // fracción acumulada de las primeras k vueltas que fueron a x (la mejor)
   fraccionEnX(k){ return k ? this.historiaN[0][k] / k : 0; }
-  // la que se entregaría: la más simulada (empate: la primera)
-  masSimulada(){ return mejor(this.N); }
+  // la que se entregaría: la más visitada (empate: la primera)
+  masVisitada(){ return mejor(this.N); }
 }
 
 if (typeof module !== "undefined")
@@ -389,7 +390,7 @@ function pintarEje(){
 
 function pintarJugadas(){
   const r = rango(), ucb = regla() === "ucb";
-  const sel = b.nPadre < VUELTAS_MAX ? b.candidata() : -1, ent = b.nPadre ? b.masSimulada() : -1;
+  const sel = b.nPadre < VUELTAS_MAX ? b.candidata() : -1, ent = b.nPadre ? b.masVisitada() : -1;
   const filas = JUGADAS.map((nombre, i) => {
     const u = b.promedio(i), n = b.N[i], col = COL.jug[i];
     const bono = b.bono(i), techo = u === null ? Infinity : u + bono;
@@ -407,17 +408,18 @@ function pintarJugadas(){
         else pista += `<span class="mas" style="color:${col}">→</span>`;
       }
     }
-    if (revelado) pista += `<span class="mu" style="left:calc(${pos(b.mus[i], r)}% - 1px)" title="μ verdadero"></span>`;
+    if (revelado) pista += `<span class="mu" style="left:calc(${pos(b.mus[i], r)}% - 1px)" title="Q_azar verdadera"></span>`;
     // cada par etiqueta–valor en su span, sin partirse al cambiar de renglón
-    const datos = [`N(s′) <b>${miles(n)}</b>`, `ū(s′) <b>${u === null ? "—" : fmt(u, 2)}</b>`];
-    if (ucb) datos.push(`cota <b>${techo === Infinity ? "∞" : fmt(techo, 2)}</b>`);
-    if (revelado) datos.push(`μ(s′) <b>${fmt(b.mus[i], 2)}</b>`);
+    const datos = [`N(s,a) <b>${miles(n)}</b>`, `Q̂(s,a) <b>${u === null ? "—" : fmt(u, 2)}</b>`];
+    if (ucb) datos.push(`puntaje <b>${techo === Infinity ? "∞" : fmt(techo, 2)}</b>`);
+    if (revelado) datos.push(`Q<sub>azar</sub> <b>${fmt(b.mus[i], 2)}</b>`);
     const ins = (i === sel ? `<span class="insignia sel">se selecciona${b.regla === "a_veces_al_azar" && !b.N.some(x => x === 0) ? " (salvo vuelta al azar)" : ""}</span>` : "") +
                 (i === ent ? `<span class="insignia ent">se entregaría</span>` : "");
     return `<div class="jugada${i === sel ? " elegida" : ""}">` +
       `<div class="nombre" style="color:${col}">${nombre}</div>` +
-      `<div class="pista" role="img" aria-label="${nombre}: ${n} simulaciones, promedio ${u === null ? "sin probar" : fmt(u, 2)}` +
-      `${ucb ? ", cota optimista " + (techo === Infinity ? "infinito" : fmt(techo, 2)) : ""}">${pista}</div>` +
+      `<div class="pista" role="img" aria-label="${nombre}: ${n} vueltas, promedio Q̂ ${u === null ? "sin probar" : fmt(u, 2)}` +
+      `${ucb ? ", puntaje Q̂ más bono " + (techo === Infinity ? "infinito" : fmt(techo, 2)) : ""}` +
+      `${revelado ? ", Q_azar " + fmt(b.mus[i], 2) : ""}">${pista}</div>` +
       `<div class="datos">${datos.map(d => `<span>${d}</span>`).join("")}${ins}</div></div>`;
   });
   $("jugadas").innerHTML = filas.join("");
@@ -435,8 +437,8 @@ function pintarJugadas(){
   $("estado").innerHTML = estado;
   $("estado").dataset.texto = estado;
   $("entrega").textContent = b.nPadre
-    ? `Si hubiera que jugar ya, se entregaría la más simulada: ${JUGADAS[ent]} (${miles(b.N[ent])} de ${miles(b.nPadre)} vueltas).`
-    : "Se entregaría la más simulada; aún no hay ninguna.";
+    ? `Si hubiera que jugar ya, se entregaría la más visitada: ${JUGADAS[ent]} (${miles(b.N[ent])} de ${miles(b.nPadre)} vueltas).`
+    : "Se entregaría la más visitada; aún no hay ninguna.";
 }
 
 // ---------------------------------------------------------- gráficas ---
@@ -495,7 +497,7 @@ function pintarGraficas(){
   const n = Math.min(b.nPadre, VUELTAS_MAX), xMax = tope(Math.max(n, 20));
   {
     const {g, w, h} = preparar($("g-n"));
-    const e = ejes(g, w, h, xMax, tope(Math.max(...b.N, 8)), "N(s′)");
+    const e = ejes(g, w, h, xMax, tope(Math.max(...b.N, 8)), "N(s,a)");
     JUGADAS.forEach((nombre, i) => linea(g, e.X, e.Y, n, k => b.historiaN[i][k], COL.jug[i], GUION[i]));
     if (n){
       // el nombre al final de cada línea: el de más abajo no baja del eje y
@@ -515,7 +517,7 @@ function pintarGraficas(){
     linea(g, e.X, e.Y, n, k => b.fraccionEnX(k), COL.jug[0], [], 1);
   }
   const resumenN = JUGADAS.map((a, i) => `${a}: ${miles(b.N[i])}`).join(", ");
-  $("d-n").textContent = `Tras ${miles(b.nPadre)} vueltas, N(s′) de cada jugada: ${resumenN}.`;
+  $("d-n").textContent = `Tras ${miles(b.nPadre)} vueltas, N(s,a) de cada jugada: ${resumenN}.`;
   $("d-r").textContent = `Tras ${miles(b.nPadre)} vueltas, fracción en x: ${fmt(b.fraccionEnX(b.nPadre), 2)}.`;
 }
 
@@ -575,7 +577,7 @@ for (const bt of document.querySelectorAll("button[data-c]")){
 $("b-revelar").addEventListener("click", () => {
   revelado = !revelado;
   $("b-revelar").setAttribute("aria-pressed", String(revelado));
-  $("b-revelar").textContent = revelado ? "Ocultar μ" : "Revelar μ";
+  $("b-revelar").innerHTML = (revelado ? "Ocultar" : "Revelar") + " Q<sub>azar</sub>";
   pintar(); if (!corriendo) $("estado").innerHTML = $("estado").dataset.texto;
 });
 let espera = 0;

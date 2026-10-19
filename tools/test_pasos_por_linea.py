@@ -252,9 +252,10 @@ HECHOS = {
     ("azar", None): ("der", "7", 14, 14),
     ("alfa-beta", "T1"): ("izq", "3", 6, 7),
     ("alfa-beta", "T"): ("centro", "5", 12, 14),
-    ("corte", 1): ("der", "7", 4, 14),
-    ("corte", 2): ("centro", "6", 10, 14),
-    ("corte", 3): ("centro", "5", 14, 14),
+    # corte: el arbol de resultados de 7.3 (finales en 100·U, 15 nodos)
+    ("corte", 1): ("izq", "60", 4, 15),
+    ("corte", 2): ("centro", "10", 11, 15),
+    ("corte", 3): ("centro", "0", 15, 15),
 }
 
 
@@ -264,7 +265,7 @@ def test_c_resultados_y_generados_son_los_hechos(modo, variante):
     r, ultimo = d["resultado"], d["pasos"][-1]
     if modo == "iterativa":
         assert [(x["d"], x["jugada"], x["generados"]) for x in r["por_d"]] == [
-            (1, "der", 4), (2, "centro", 10), (3, "centro", 11)]
+            (1, "izq", 4), (2, "centro", 9), (3, "centro", 12)]
         assert r["jugada"] == "centro" and r["generados"] == 25
         assert todas(ultimo["marco"][0])["jugada"] == "centro"
         assert sum(1 for p in d["pasos"] if p["linea"] == 4) == 4

@@ -2,7 +2,7 @@
 id: minimax-como-algoritmo
 title: Minimax como algoritmo
 nav_title: Minimax como algoritmo
-summary: "El agente recibe un estado y devuelve una jugada: DECIDIR-MINIMAX y su auxiliar MINIMAX, trazados línea por línea en el árbol T, por qué son correctos y un subárbol de Negras para resolver por tu cuenta."
+summary: "El agente recibe un estado y devuelve una jugada: DECIDIR-MINIMAX y su auxiliar MINIMAX, con su mapa, su traza línea por línea en el árbol base, su elección, sus propiedades y sus casos borde, por qué son correctos y un subárbol de Negras para resolver por tu cuenta."
 status: ready
 estimated_time: 47m
 tags: [juegos, minimax, algoritmos]
@@ -17,9 +17,25 @@ Al terminar tendrás:
 
 - **el pseudocódigo de DECIDIR-MINIMAX**, que devuelve una jugada, y de su
   auxiliar **MINIMAX**, que devuelve un valor;
-- una **traza línea por línea** en un árbol de juguete, el **árbol T**;
-- la prueba de que es correcto, y **un subárbol de hexapawn** resuelto por
-  tu cuenta, ahora con Negras en la raíz.
+- una **traza línea por línea** en un árbol de juguete, el **árbol base**;
+- sus **propiedades** y sus **casos borde**, la prueba de que es correcto y
+  **un subárbol de hexapawn** resuelto por tu cuenta, con Negras en la raíz.
+
+## Lo que traes
+
+- **Las reglas generan el juego.** $S_F$ reconoce finales
+  (@jue-c1-finales); $\mathrm{Pl}(s)$ lee quién mueve (@jue-c1-pl); $A(s)$
+  enumera jugadas (@jue-c1-acciones); $T(s,a)$ produce el siguiente estado
+  (@jue-c1-transicion); $U$ paga los finales, siempre desde MAX
+  (@jue-c1-utilidad).
+- **El valor se mide desde MAX.** $V(s)$ es el pago para MAX si los dos
+  juegan lo mejor desde $s$, y $Q(s,a)=V(T(s,a))$ valora una jugada
+  (@jue-c1-valor-jugada-estrategia). MAX elige el mayor $Q$ y MIN, el menor
+  (@jue-c2-valor).
+- **Ya lo hiciste a mano.** En [[minimax|Minimax a mano]] valoramos los 13
+  nodos de n1 y vimos que $V(\text{n1})=+1$ se alcanza con
+  $\text{c1}\textbf{-}\text{c2}$. Esta página convierte ese cálculo en un
+  procedimiento que no depende de hexapawn.
 
 > **Las reglas, en cuatro líneas.** Tablero de 3×3; Blancas (B) abajo en la
 > fila 1 y Negras (N) arriba en la fila 3. Empiezan Blancas. Un peón avanza
@@ -29,22 +45,19 @@ Al terminar tendrás:
 
 > **Supuestos de esta página.** Los mismos de
 > [[escribir-el-juego|Escribir el juego]]: dos jugadores por turnos, sin
-> azar, todo a la vista, toda partida termina y suma cero.
-
-En [[minimax|Minimax a mano]] valoramos los 13 nodos de n1 y vimos que
-$V(\text{n1})=+1$ se alcanza con $\text{c1}\textbf{-}\text{c2}$. Esta
-página convierte ese cálculo en un procedimiento que no depende de
-hexapawn.
+> azar, todo a la vista, toda partida termina y suma cero (o constante).
 
 > [!TIP]
-> **Míralo correr: minimax en el árbol T**
+> **Míralo correr: minimax en el árbol base**
 >
-> - **▶ [Animación paso a paso](../_assets/traza_arbol_t.html#minimax)**: el árbol, la línea del
+> - **[Animación paso a paso](../_assets/traza_arbol_t.html#minimax)**: el árbol, la línea del
 >   código que corre y el valor de cada variable. Avanza con ▶ o con las flechas.
 > - **Notebook en Colab**, sección 3: el mismo Python de esta página,
 >   corriendo; cámbiale un número y mira qué pasa.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb)
+
+---
 
 ## 1 · Qué recibe y qué devuelve
 
@@ -67,7 +80,7 @@ elegirla, no el fin.
 >
 > **Encontrar (lo que devuelve):** **una jugada**
 >
-> $$a^{∗}\in\operatorname*{arg\,max}_{a\in A(s)} V\bigl(T(s,a)\bigr),$$
+> $$\begin{gathered}a^{*}\in\operatorname*{arg\,max}_{a\in A(s)} Q(s,a),\\ Q(s,a)=V\bigl(T(s,a)\bigr),\end{gathered}$$
 >
 > la que lleva al hijo de mayor valor. Para compararlas hace falta
 > $V$ de @jue-c2-valor en cada hijo: eso lo calcula el auxiliar.
@@ -84,7 +97,65 @@ Por eso el algoritmo tiene **dos funciones**:
 hijos de un estado, calcula $A(s)$ y, para cada jugada, $T(s,a)$. Es la idea
 de [[el-juego-como-grafo|El juego como grafo]]: el grafo es implícito.
 
-## 2 · El algoritmo
+---
+
+## 2 · El algoritmo, de principio a fin
+
+### Minimax
+
+**Minimax recorre el árbol hasta los finales y sube máximos y mínimos:**
+cada nodo vale lo que MAX puede asegurar desde ahí.
+
+- **Qué valor rastrea:** $V(s)$ de cada estado que genera; el de una jugada
+  es el de su hijo, $Q(s,a)=V(T(s,a))$.
+- **Dónde lo guarda:** en la $v$ de cada llamada abierta; en la raíz,
+  en mejor_valor. Al cerrar el nodo, entrega el número a su padre y lo
+  descarta.
+- **Cómo sube:** con el máximo de los hijos si mueve MAX y el mínimo si
+  mueve MIN; nunca con un promedio.
+- **A qué converge:** no necesita converger. En un árbol finito, al
+  terminar, cada número es exacto.
+
+::: figure {#jue-c2-fig-flujo-minimax title="Minimax, en palabras"}
+![Diagrama de flujo de minimax: baja un nivel; si es final, vale U; si quedan jugadas, baja por la siguiente; al subir, MAX toma el mayor y MIN el menor; al final juega la jugada de mayor valor](../_assets/jue-c3-rx-flujo-minimax.svg)
+:::
+
+#### 1 · Exploración: cómo obtiene su número
+
+**Los pasos.** Minimax no estima: mira **hasta los finales, en todas las
+ramas**. El recorrido es **en profundidad** (*depth-first search*), con los
+hijos en el orden de $A(s)$:
+
+1. **Bajar.** Genera las jugadas del nodo y baja por la primera, hasta
+   llegar a un final.
+2. **Valorar el final.** Su valor es su pago: $V(s)=U(s)$.
+3. **Subir el valor** (*backup*). Regresa al padre con el valor del hijo y
+   lo compara con lo mejor que llevaba; si quedan jugadas, baja por la
+   siguiente.
+4. **Cerrar el nodo.** Con todos sus hijos revisados, su valor queda fijo y
+   sube a su padre. **Ningún nodo se valora antes de conocer todos sus
+   hijos.**
+
+**La regla.** Es la de @jue-c2-valor, escrita con $Q$:
+
+| Nodo | Su valor |
+|---|---|
+| Final | $\mathbf{V(s)=U(s)}$ |
+| $\mathrm{Pl}(s)=$ MAX | $\mathbf{V(s)=\max_{a\in A(s)} Q(s,a)}$ |
+| $\mathrm{Pl}(s)=$ MIN | $\mathbf{V(s)=\min_{a\in A(s)} Q(s,a)}$ |
+
+**Cada parte tiene su papel:**
+
+- **El pago $U(s)$ detiene la cuenta:** al llegar a un final ya no hay
+  nada que calcular.
+- **El máximo es la decisión de MAX:** se queda con la jugada que más le
+  asegura, después de revisar **todas** las de $A(s)$.
+- **El valor del hijo ya incluye las respuestas que vienen después:** no
+  basta con que haya un final favorable debajo de una jugada.
+- **$V$ aparece a los dos lados del igual:** por eso se calcula de abajo
+  hacia arriba. El signo no cambia al subir: todo se mide desde MAX.
+
+**El código.**
 
 **Piensa: para valorar n3 tuvimos que valorar antes n4, n6 y n13. ¿Cómo se
 escribe eso en un programa?**
@@ -96,6 +167,10 @@ Con una función que se llama a sí misma sobre cada hijo. Dos letras, y
   ahora. En la raíz se llama **mejor_valor**.
 - **$w$** es lo que devuelve **un** hijo. La llamada al hijo va siempre en
   su propia línea, $w\leftarrow\ldots$, y después se compara.
+
+**El invariante:** tras cada hijo terminado, $v$ es el máximo (en MAX) o
+el mínimo (en MIN) de los valores recibidos. Solo al cerrar el último hijo
+vale $V(s)$.
 
 ```text
 INPUT   un estado s donde mueve MAX, y las
@@ -176,44 +251,46 @@ def minimax(s):                 # (7) da V(s)
 
 **Cada pieza del modelo, en su línea:**
 
-- **8** · $S_F$ y $U$: en un final, devuelve su utilidad.
+- **8** · $S_F$ y $U$: en un final, devuelve su pago.
 - **9 y 15** · $\mathrm{Pl}$: decide si toma el máximo o el mínimo.
 - **3, 11 y 17** · $A$: recorre las jugadas permitidas.
 - **4, 12 y 18** · $T$: genera el hijo, y la llamada lo valora.
 - **5** · el $>$: cambia de jugada solo si mejora.
 
-- **DECIDIR es el MAX de la raíz con memoria.** Sus líneas 2–5 hacen lo
-  mismo que 10–13, pero además recuerdan **qué jugada** dio el mejor
-  número. Por eso no basta con llamar MINIMAX en la raíz.
-- **El $>$ estricto de la línea 5** resuelve los empates: gana la primera
-  jugada del $\operatorname{arg\,max}$ en el orden de $A(s)$. Ahí entra un
-  desempate como el de ganar rápido.
+**DECIDIR es el MAX de la raíz con memoria.** Sus líneas 2–5 hacen lo
+mismo que 10–13, pero además recuerdan **qué jugada** dio el mejor número.
+Por eso no basta con llamar MINIMAX en la raíz.
 
 > **Si en la raíz mueve MIN**, se invierten dos líneas: la 2 empieza con
 > `mejor_valor ← +∞` y la 5 pregunta `w < mejor_valor`. MINIMAX no cambia: ya lee quién mueve con
 > $\mathrm{Pl}$. Lo usarás con Negras en @jue-c2-ej-propio.
 
-## 3 · Un ejemplo a mano: el árbol T
+**El ejemplo: el árbol base.**
 
 **Piensa: antes de soltarlo en hexapawn, ¿qué hace cada línea en un árbol
 tan chico que quepa en una mano?**
 
-El **árbol T** es de juguete: no viene de ningún juego, y sus hojas ya
-traen la utilidad. Lo usan también las páginas que siguen.
+El **árbol base** es de juguete: no viene de ningún juego, y sus hojas ya
+traen el pago, en **puntos** para MAX, no en ganar o perder.
 
-- **R**, la raíz: mueve MAX y tiene tres jugadas, **izq**, **centro** y
-  **der**, en ese orden.
+- **R** es la raíz de la búsqueda, $s_{\text{raíz}}$: mueve MAX y tiene tres
+  jugadas, **izq**, **centro** y **der**, en ese orden.
 - **I**, **C** y **D**: mueve MIN. I tiene las hojas 3 y 6; D, las hojas
   2 y 12.
 - **C** tiene dos hijos donde mueve MAX: **C1** (jugada c1), con hojas 5 y
   2, y **C2** (jugada c2), con hojas 7 y 8.
-- Las hojas se nombran por su número; todas son distintas.
+- **Las hojas se nombran por su número**, salvo las dos que valen 2: una
+  cuelga de C1 y otra de D, y se distinguen por su padre.
 
-::: figure {#jue-c2-t-arbol title="El árbol T: el problema"}
-![Árbol T. Arriba R, donde mueve MAX, con tres flechas: izq hacia I, centro hacia C y der hacia D; en los tres mueve MIN. I tiene dos hojas, 3 y 6. C tiene dos hijos donde mueve MAX: C1 por c1, con hojas 5 y 2, y C2 por c2, con hojas 7 y 8. D tiene dos hojas, 2 y 12. Los nodos internos todavía no tienen valor. Al pie: «Cada hoja es un final: su número es lo que vale ese final.»](../_assets/jue-t-arbol.svg)
+::: figure {#jue-c2-t-arbol title="El árbol base: el problema"}
+![Árbol base. Arriba R, donde mueve MAX, con tres flechas: izq hacia I, centro hacia C y der hacia D; en los tres mueve MIN. I tiene dos hojas, 3 y 6. C tiene dos hijos donde mueve MAX: C1 por c1, con hojas 5 y 2, y C2 por c2, con hojas 7 y 8. D tiene dos hojas, 2 y 12. Los nodos internos todavía no tienen valor. Al pie: «Cada hoja es un final: su número es lo que vale ese final.»](../_assets/jue-t-arbol.svg)
 :::
 
-> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#minimax)** — el árbol, el pseudocódigo con la línea que corre y el valor de cada variable.
+::: figure {#jue-c2-anim-minimax title="La animación de esta traza: minimax, línea por línea"}
+[![Captura de la animación. A la izquierda, el pseudocódigo con la línea que corre resaltada; al centro, lo que hace esa línea y la pila de llamadas con sus variables; a la derecha, el árbol, con los nodos de la pila en magenta. Aquí va en la fila 12: corre la línea 13, v ← max(−∞, 7) = 7, con la pila R›C›C2; I ya devolvió 3 y C1 devolvió 5.](../_assets/jue-anim-minimax.png)](../_assets/traza_arbol_t.html#minimax-fila-12)
+:::
+
+> **▶ [Recorre esta traza paso a paso](../_assets/traza_arbol_t.html#minimax)** — pulsa la imagen o este enlace. Avanza una línea con ▶ o con →, y una fila de la tabla con ▶▶ o con Mayús + →.
 
 **Cómo leer la traza:**
 
@@ -224,12 +301,11 @@ traen la utilidad. Lo usan también las páginas que siguen.
   camino de llamadas abiertas, de la raíz al nodo activo. $\text{R›C›C2}$
   quiere decir que R espera a C y C espera a C2. **Es todo lo que hay en
   memoria.**
-- En las filas de **R**, la columna $v$ es **mejor_valor**.
+- **En las filas de R**, la columna $v$ es **mejor_valor**.
 - **jugada** es mejor_jugada de R después de la fila, con «—» mientras
-  vale ninguna. Solo cambia en una fila de R, en la línea 5; en las demás
-  se repite, para que la veas viajar por toda la traza.
+  vale ninguna. Solo cambia en una fila de R, en la línea 5.
 
-### Tramo 1 · La rama izq
+**Tramo 1 · La rama izq**
 
 | # | línea · pila | v | w | jugada |
 |---:|---|---:|---|---|
@@ -243,13 +319,13 @@ traen la utilidad. Lo usan también las páginas que siguen.
   llega a la 16 con $v=+\infty$.
 - **Fila 4:** la hoja 6 no cambia nada: $\min(3,6)=3$.
 - **Fila 5:** I devuelve $w=3$ y la línea 5 pregunta $3>-\infty$: **sí**.
-  mejor_jugada pasa de **ninguna** a **izq**, con mejor_valor $=3$.
+  mejor_jugada pasa de ninguna a **izq**, con mejor_valor $=3$.
 
 ::: figure {#jue-c2-t-minimax-1 title="Tramo 1: I devuelve 3 y R guarda izq"}
-![El árbol T con la rama izq resuelta: I muestra v = 3 y sus hojas 3 y 6. C y D aparecen punteados, por mirar. Arriba, la línea 5 del pseudocódigo. En el recuadro, mejor_jugada = izq y mejor_valor = 3](../_assets/jue-t-minimax-1.svg)
+![El árbol base con la rama izq resuelta: I muestra v = 3 y sus hojas 3 y 6. C y D aparecen punteados, por mirar. Arriba, la línea 5 del pseudocódigo. En el recuadro, mejor_jugada = izq y mejor_valor = 3](../_assets/jue-t-minimax-1.svg)
 :::
 
-### Tramo 2 · Bajar por centro
+**Tramo 2 · Bajar por centro**
 
 | # | línea · pila | v | w | jugada |
 |---:|---|---:|---|---|
@@ -265,16 +341,15 @@ traen la utilidad. Lo usan también las páginas que siguen.
 - **Filas 7 y 11:** C1 y C2 son de MAX, así que empiezan en la línea 10
   con $v=-\infty$ y suben con $\max$.
 - **Fila 10:** C1 devuelve $w=5$ a C, que pasa de $+\infty$ a $v=5$.
-- **En la fila 12 la pila es R›C›C2.** En memoria hay tres $v$, uno por
-  nivel: R tiene mejor_valor $=3$, C tiene $v=5$ y C2 tiene $v=7$. I y C1
-  ya devolvieron su número y se olvidaron; D todavía no existe.
-- mejor_jugada sigue en **izq** todo el tramo.
+- **En la fila 12 la pila es R›C›C2.** Hay tres $v$ en memoria: R tiene
+  mejor_valor $=3$, C tiene $v=5$ y C2 tiene $v=7$. I y C1 ya devolvieron
+  su número y se olvidaron; D todavía no existe.
 
 ::: figure {#jue-c2-t-minimax-2 title="Tramo 2: a media ejecución, con la pila R›C›C2"}
-![El árbol T a media ejecución. El camino R, C, C2 lleva borde de acento: es la pila. I y C1 muestran su valor devuelto, 3 y 5. C2 tiene v = 7 tras ver la hoja 7; la hoja 8 está por mirar. D está punteado. Arriba, la línea 13. En el recuadro, mejor_jugada = izq y mejor_valor = 3](../_assets/jue-t-minimax-2.svg)
+![El árbol base a media ejecución. El camino R, C, C2 lleva borde de acento: es la pila. I y C1 muestran su valor devuelto, 3 y 5. C2 tiene v = 7 tras ver la hoja 7; la hoja 8 está por mirar. D está punteado. Arriba, la línea 13. En el recuadro, mejor_jugada = izq y mejor_valor = 3](../_assets/jue-t-minimax-2.svg)
 :::
 
-### Tramo 3 · C devuelve 5 y R cambia de jugada
+**Tramo 3 · C devuelve 5 y R cambia de jugada**
 
 | # | línea · pila | v | w | jugada |
 |---:|---|---:|---|---|
@@ -282,16 +357,16 @@ traen la utilidad. Lo usan también las páginas que siguen.
 | 15 | 4–5 · R | 5 | 5 (C) | centro |
 
 - **Fila 14:** C2 devuelve $w=8$, pero $\min(5,8)=5$: **C ya no cambia**.
-  Fíjate: el 8 se calculó y no sirvió de nada. Alfa-beta aprovecha
-  exactamente eso.
+  Fíjate: el 8 se calculó y no sirvió de nada. Una búsqueda que lo
+  notara a tiempo podría no generarlo.
 - **Fila 15:** C devuelve $w=5$ y la línea 5 pregunta $5>3$: **sí**.
-  mejor_jugada pasa de **izq** a **centro**, con mejor_valor $=5$.
+  mejor_jugada pasa de izq a **centro**, con mejor_valor $=5$.
 
 ::: figure {#jue-c2-t-minimax-3 title="Tramo 3: C devuelve 5 y R guarda centro"}
-![El árbol T con I y C resueltos: I con v = 3; C con v = 5, y sus hijos C1 = 5 y C2 = 8. D sigue punteado. Arriba, la línea 5. En el recuadro, mejor_jugada = centro y mejor_valor = 5](../_assets/jue-t-minimax-3.svg)
+![El árbol base con I y C resueltos: I con v = 3; C con v = 5, y sus hijos C1 = 5 y C2 = 8. D sigue punteado. Arriba, la línea 5. En el recuadro, mejor_jugada = centro y mejor_valor = 5](../_assets/jue-t-minimax-3.svg)
 :::
 
-### Tramo 4 · der no cambia nada
+**Tramo 4 · der no cambia nada**
 
 | # | línea · pila | v | w | jugada |
 |---:|---|---:|---|---|
@@ -302,13 +377,13 @@ traen la utilidad. Lo usan también las páginas que siguen.
 | 20 | 6 · R | 5 |  | centro |
 
 - **Fila 19:** D devuelve $w=2$ y la línea 5 pregunta $2>5$: **no**.
-  mejor_jugada se queda en **centro**. La hoja 12, la más alta del árbol,
-  no sirve: MIN nunca dejaría que MAX llegue a ella.
+  La hoja 12, la más alta del árbol, no sirve: MIN nunca dejaría que MAX
+  llegue a ella.
 - **Fila 20:** la línea 6 devuelve **centro**. El número 5 se queda dentro
   de DECIDIR: el agente solo entrega la jugada.
 
 ::: figure {#jue-c2-t-minimax-4 title="Tramo 4: D devuelve 2, que no mejora 5"}
-![El árbol T resuelto: I = 3, C = 5, D = 2, R = 5, con la flecha centro resaltada. Junto a D, «2 > 5 falso». En el recuadro, mejor_jugada = centro y mejor_valor = 5](../_assets/jue-t-minimax-4.svg)
+![El árbol base resuelto: I = 3, C = 5, D = 2, R = 5, con la flecha centro resaltada. Junto a D, «2 > 5 falso». En el recuadro, mejor_jugada = centro y mejor_valor = 5](../_assets/jue-t-minimax-4.svg)
 :::
 
 **En resumen:** mejor_jugada pasó de **ninguna → izq → centro**, y der no
@@ -423,10 +498,11 @@ filas 7 a 9 y R›C›C1 en las filas 11 a 13.
    En la fila 19, I devuelve 3 y $3>5$ es falso.
 3. **No y no.** Devuelve **centro** y genera los mismos **14 nodos**. Para
    MINIMAX el orden solo cambia el camino de mejor_jugada, porque siempre
-   mira todo. En alfa-beta, el orden decidirá cuánto se ahorra.
+   mira todo. Aquí no hay empate en la raíz; con uno, el orden sí podría
+   cambiar cuál de las empatadas devuelve.
 :::
 
-## 4 · Ahora en hexapawn: n1
+**Ahora en hexapawn: n1.**
 
 **Piensa: ¿qué hace DECIDIR-MINIMAX en n1, donde mueven Blancas?**
 
@@ -442,10 +518,185 @@ Exactamente lo mismo que en R, con dos jugadas en vez de tres:
 
 El recorrido es **en profundidad**: baja por la primera jugada hasta un
 final, regresa, y solo entonces prueba la siguiente. Su orden de visita es
-justo la numeración n1, n2, …, n13. Qué hay en memoria a media ejecución
-está en la sección «Para profundizar».
+justo la numeración n1, n2, …, n13.
 
-## 5 · Por qué es correcto
+**Qué hay en memoria a media ejecución.** Solo **la pila**: el camino de la
+raíz al nodo activo, con un $v$ por nivel y las jugadas pendientes de cada
+uno. La figura congela n1 cuando empieza MINIMAX(n8):
+
+::: figure {#jue-c2-genera title="MINIMAX a media ejecución"}
+![El subgrafo de n1 cuando empieza MINIMAX(n8). Resaltado, el camino n1, n3, n6, n7, n8: cada nodo espera a sus hijos con el mejor valor visto hasta ahora; n1 y n3 ya tienen v = +1, n6 y n8 tienen −∞ y n7 +∞. n2, n4 y n5 aparecen como cajas punteadas: devolvieron +1 y se olvidaron. n9, n10, n11, n12 y n13 son cajas con signo de interrogación: todavía no existen](../_assets/jue-minimax-genera.svg)
+:::
+
+- **El camino resaltado es todo lo que hay en memoria.**
+- **n2, n4 y n5 ya devolvieron $+1$ y se olvidaron**: su número quedó en
+  el $v$ de su padre.
+- **n9 a n13 todavía no existen.** Se generarán con $A$ y $T$.
+
+::: exercise {#jue-c2-ej-memoria title="Decide qué hay en memoria"}
+Ahora empieza MINIMAX(n13), el último nodo que se visita.
+
+1. ¿Qué nodos están en memoria, esperando?
+2. ¿Qué $v$ tiene cada uno en ese momento?
+3. ¿Cuáles ya se generaron y se olvidaron?
+:::
+
+::: hint {#jue-c2-pista-memoria of="jue-c2-ej-memoria" title="Sigue el camino"}
+En memoria solo está el camino de n1 a n13. Para el $v$ de cada uno, mira
+qué hijos suyos ya devolvieron su valor.
+:::
+
+::: answer {#jue-c2-resp-memoria of="jue-c2-ej-memoria"}
+1. El camino: n1 y n3, más n13, que se acaba de generar.
+2. En n1, mejor_valor $=+1$: n2 ya devolvió $+1$. En n3,
+   $v=\min\{+1,+1\}=+1$: n4 y n6 ya devolvieron $+1$. Cuando n13 devuelva
+   $w=-1$, n3 pasará a $v=-1$.
+3. Todos los demás: n2, n4, n5, n6, n7, n8, n9, n10, n11 y n12. Se
+   generaron, devolvieron su valor y se olvidaron.
+:::
+
+**En el árbol de resultados.** El mismo algoritmo corre en un segundo árbol
+de juguete, con la forma del árbol base y tres cambios:
+
+- **Sus finales dicen quién gana:** cada hoja vale $+1$, $-1$ o $0$, y hay
+  un solo empate.
+- **Tiene una jugada marcada como captura:** ix, la segunda respuesta de
+  MIN en I. Minimax la trata como a cualquier otra.
+- **D tiene tres hijos**, no dos: en total son 15 nodos.
+
+::: figure {#jue-c2-fig-resultados-minimax title="Minimax en el árbol de resultados: genera los 15 nodos y juega centro"}
+![Minimax en el árbol de resultados: genera los 15 nodos; I vale −1, C vale 0 y D vale −1, así que la raíz vale 0 y juega centro](../_assets/jue-c3-rx-minimax.svg)
+:::
+
+#### 2 · Elección: qué jugada juega
+
+**Cuando la raíz cerró todas sus jugadas**, juega la de **mayor $Q$**. Si
+varias empatan, juega **la primera en el orden de $A(s)$**: por el $>$
+estricto de la línea 5, solo cambia de jugada cuando otra vale
+estrictamente más.
+
+::: table {#jue-c2-tab-eleccion-minimax title="Explorar y jugar con minimax"}
+| Decisión | Qué compara | Cuándo |
+|---|---|---|
+| Explorar | $Q$; máximo o mínimo | En cada nodo |
+| Jugar | $Q$; mejora estricta | Al cerrar la raíz |
+:::
+
+- **Explorar y jugar usan el mismo número.** La elección es la regla del
+  máximo aplicada una vez más, en la raíz, guardando qué jugada lo alcanzó.
+- **El desempate no toca $U$: elige dentro del
+  $\operatorname{arg\,max}$.** Una preferencia como ganar rápido es otra
+  regla de desempate; este código solo usa el orden.
+
+#### 3 · Propiedades
+
+- **Número que da:** MINIMAX calcula el $Q$ exacto de **cada** jugada de
+  la raíz y $V(s_{\text{raíz}})$, sin estimar ni acotar. DECIDIR entrega
+  una jugada, no esos números.
+- **Usa EVAL:** no. No necesita estimar cuánto vale una posición a medio
+  camino (eso haría una función de evaluación, EVAL): trabaja con los
+  pagos $U$ de los finales, en su propia escala.
+- **Garantía:** entrega $V$ y una jugada que lo alcanza. Si MAX sigue
+  eligiendo así en cada turno, obtiene $V$ contra un MIN que juega bien y
+  al menos $V$ contra cualquier otro.
+- **Se puede interrumpir:** no; un algoritmo que sí, se llama *anytime*.
+  Tras cerrar un hijo de la raíz tiene una jugada legal con su $Q$ exacto,
+  sin garantía de que sea la óptima; antes del primer hijo, ni eso.
+- **Complejidad:** genera **cada nodo del árbol una vez**: tiempo
+  $O(b^m)$ y memoria $O(bm)$ (@jue-c2-costo-minimax).
+- **Frente a los demás:** es la referencia exacta, y conviene cuando el
+  árbol entero cabe en el tiempo que hay: gato, hexapawn. Su costo
+  exponencial es lo que obliga a buscar otros.
+- **Supuestos:** árbol finito, dos jugadores por turnos, nadie tira dados,
+  todo a la vista y suma cero o constante. Con más jugadores, el análogo es
+  $\max^n$ (casos borde).
+
+**Por qué termina.** En un juego **finito**, ninguna cadena de llamadas es
+infinita. En hexapawn ningún peón retrocede, así que la partida más larga
+tiene 7 jugadas: la pila guarda a lo más ocho estados, contando la raíz, y
+cada nodo del árbol se visita una sola vez.
+
+**Cuánto cuesta.** MINIMAX visita cada nodo una vez: 14 en el árbol base,
+13 desde n1, 252 desde $s_0$. Para un juego cualquiera:
+
+- **$b$, el factor de ramificación:** el máximo de jugadas en un estado.
+- **$m$, la profundidad máxima:** la partida más larga.
+
+Hay a lo más $1+b+b^2+\cdots+b^m$ nodos.
+
+::: remark {#jue-c2-costo-minimax title="Costo de minimax"}
+Con recorrido en profundidad y $b\ge2$,
+
+$$\text{tiempo}=O(b^m),\qquad \text{memoria}=O(bm).$$
+
+El tiempo es exponencial en la profundidad: cada nivel multiplica el
+trabajo por $b$. La memoria es pequeña: solo la pila, de $m$ niveles, con
+a lo más $b$ jugadas pendientes por nivel: hasta $m+1$ estados en el
+camino. Con $b=1$ el árbol es una cadena y cuesta $O(m+1)$.
+:::
+
+En hexapawn, $b=4$ y $m=7$: la cota $1+4+\cdots+4^7=21\,845$ queda muy por
+encima de los 252 nodos reales, porque en promedio un estado no final tiene
+unas 2.3 jugadas (contando estados distintos). **Es un techo, no un
+conteo.**
+
+::: table {#jue-c2-que-cambia-minimax title="Qué cambia cuando cambia el juego"}
+| Cambio en el juego | Efecto en minimax |
+|---|---|
+| Crece $b$ | El tiempo crece como $b^m$ |
+| Crece $m$, con $b$ fijo | Tiempo: $\times b$ por nivel; la memoria crece linealmente con $m$ |
+| Se repiten estados | Una tabla de transposición evita recalcular |
+| Cambia el pago de un final | Se recalculan sus antecesores; el costo no cambia |
+:::
+
+#### 4 · Casos borde
+
+- **Empate en la raíz:** todas las jugadas empatadas son óptimas y entrega
+  la primera. Otro orden de $A(s)$ puede entregar otra del mismo valor.
+- **Una sola jugada:** queda forzada y $V(s)=Q(s,a)$. Un nodo con un solo
+  hijo copia el valor de ese hijo, sea MAX o MIN.
+- **La raíz ya es final:** MINIMAX devuelve su $U$, pero DECIDIR no tiene
+  jugada que devolver. Hay que revisar $S_F$ antes de llamarlo: no existe
+  el máximo de un conjunto vacío.
+- **En la raíz mueve MIN:** se invierten las líneas 2 y 5; MINIMAX no
+  cambia.
+- **MIN se equivoca:** si MAX sigue eligiendo óptimamente, obtiene más que
+  $V$, nunca menos.
+- **Finales a distintas profundidades:** no prefiere ganar pronto ni
+  perder tarde, salvo que $U$ lo codifique o un desempate lo pida.
+- **Una jugada aún sin revisar:** su $Q$ es desconocido, no cero. Por eso
+  una interrupción no garantiza la jugada.
+- **Una respuesta certera que llega tarde:** en un nodo de MIN baja el
+  mínimo en cuanto regresa; no se promedia con lo anterior.
+- **El mismo estado por dos caminos:** sin memoria, se valora dos veces;
+  el remedio va abajo.
+- **Partidas que no terminan:** la recursión termina solo si el árbol es
+  finito. Un juego con repeticiones necesita una regla que lo termine.
+- **Dos jugadores, suma no constante:** cada final lleva $(U_1,U_2)$. El
+  segundo maximiza $U_2$, que no necesariamente minimiza $U_1$.
+- **Más jugadores:** $\max^n$ usa $(U_1,\dots,U_n)$; quien mueve maximiza
+  su componente y copia el vector del hijo. Con desempate fijo da un
+  equilibrio, sin la garantía escalar de minimax.
+
+La diferencia entre un pago y un vector de pagos está en
+[[diagnosticar-el-juego|Diagnosticar el juego]].
+
+**Recordar lo que ya se valoró.** En
+[[el-juego-como-grafo|El juego como grafo]] contamos 252 nodos en el árbol
+y solo **135 estados distintos**: hay transposiciones. Si MINIMAX guarda el
+valor de cada estado la primera vez, la segunda solo lo consulta: es una
+**tabla de transposición**. El trabajo baja de 252 nodos a 135 estados, a
+cambio de un valor guardado por estado.
+
+**Funciona porque $V(s)$ depende solo de $s$:** las cinco reglas leen
+únicamente $(\tau,\text{turno})$, no el camino. Si $U$ dependiera de
+cuántas jugadas van, dos caminos al mismo tablero podrían valer distinto.
+
+---
+
+#### Intuición
+
+**Por qué es correcto.**
 
 **Piensa: ¿cómo sabemos que el $+1$ es lo que Blancas asegura, y no solo
 un número que salió de la cuenta?**
@@ -463,11 +714,12 @@ larga desde él hasta un final; los finales tienen altura 0. Se demuestra:
 2. **Altura mayor.** Todos los hijos tienen menor altura, así que su $w$
    es correcto. Si mueve MAX, puede elegir cualquier hijo y asegura el mayor
    $w$; no puede asegurar más, porque después de su jugada MIN responde
-   bien. Si mueve MIN, el argumento es el mismo con el menor.
+   bien. Si mueve MIN, el argumento es el mismo con el menor: MIN puede
+   llevar a MAX a ese $w$, y MAX lo asegura sea cual sea el hijo elegido.
 
 **Y DECIDIR devuelve una jugada correcta:** sus líneas 3–5 calculan el
-máximo de los $w=V(T(s,a))$ y guardan la primera jugada que lo alcanza,
-así que mejor_jugada está en el $\operatorname{arg\,max}$.
+máximo de los $w=Q(s,a)$ y guardan la primera jugada que lo alcanza, así
+que mejor_jugada está en el $\operatorname{arg\,max}$.
 
 Es la misma inducción hacia atrás del
 [[opt-objetivo-juego-practica|ejemplo del juego]] de la unidad de
@@ -491,10 +743,15 @@ asegurar.
    no puede asegurar más que el mayor, porque después responde MIN.
 2. **Más**: $+1$, el valor de n4. El valor es lo que MAX asegura contra
    cualquier respuesta; contra un rival que se equivoca puede obtener más,
-   nunca menos.
+   nunca menos, si sigue eligiendo óptimamente.
 :::
 
-## 6 · Resolver un caso por tu cuenta
+**Decide lo que MAX puede asegurar, no el mejor final que hay debajo ni el
+promedio.**
+
+---
+
+#### Ejercicios
 
 **Piensa: sin la página anterior abierta, ¿puedes escribir y valorar un
 árbol desde cero, y decidir la jugada de Negras?**
@@ -523,8 +780,8 @@ $\text{c3}\textbf{x}\text{b2}$ y $\text{a1}\textbf{x}\text{b2}$. Mueve
 :::
 
 ::: hint {#jue-c2-pista-propio-a of="jue-c2-ej-propio" title="Pista 1 · Las jugadas de Negras"}
-Empieza con $A(\text{e1})$. El peón de b3 tiene b2 ocupada enfrente y nada
-que capturar. El de a3 puede avanzar o capturar.
+Empieza con $A(\text{e1})$. Para cada peón negro, ¿qué casilla tiene
+enfrente y qué hay en sus dos diagonales hacia delante?
 :::
 
 ::: hint {#jue-c2-pista-propio-b of="jue-c2-ej-propio" title="Pista 2 · Las respuestas de Blancas"}
@@ -576,116 +833,9 @@ Negras sin jugada.
 :::
 
 **Punto de control:** deberías poder escribir DECIDIR-MINIMAX y MINIMAX de
-memoria, decir qué recibe el agente y qué devuelve, trazar el árbol T fila
-por fila diciendo cuándo cambia mejor_jugada, y decir en qué paso de la
-demostración se usa que el rival juega bien.
-
-## Para profundizar
-
-### Qué hay en memoria a media ejecución
-
-Solo **la pila**: el camino de la raíz al nodo activo, con un $v$ por nivel
-y las jugadas pendientes de cada uno. La figura congela n1 cuando empieza
-MINIMAX(n8):
-
-::: figure {#jue-c2-genera title="MINIMAX a media ejecución"}
-![El subgrafo de n1 cuando empieza MINIMAX(n8). Resaltado, el camino n1, n3, n6, n7, n8: cada nodo espera a sus hijos con el mejor valor visto hasta ahora; n1 y n3 ya tienen v = +1, n6 y n8 tienen −∞ y n7 +∞. n2, n4 y n5 aparecen como cajas punteadas: devolvieron +1 y se olvidaron. n9, n10, n11, n12 y n13 son cajas con signo de interrogación: todavía no existen](../_assets/jue-minimax-genera.svg)
-:::
-
-- **El camino resaltado es todo lo que hay en memoria.**
-- **n2, n4 y n5 ya devolvieron $+1$ y se olvidaron**: su número quedó en
-  el $v$ de su padre.
-- **n9 a n13 todavía no existen.** Se generarán con $A$ y $T$.
-
-::: exercise {#jue-c2-ej-memoria title="Decide qué hay en memoria"}
-Ahora empieza MINIMAX(n13), el último nodo que se visita.
-
-1. ¿Qué nodos están en memoria, esperando?
-2. ¿Qué $v$ tiene cada uno en ese momento?
-3. ¿Cuáles ya se generaron y se olvidaron?
-:::
-
-::: hint {#jue-c2-pista-memoria of="jue-c2-ej-memoria" title="Sigue el camino"}
-En memoria solo está el camino de n1 a n13. Para el $v$ de cada uno, mira
-qué hijos suyos ya devolvieron su valor.
-:::
-
-::: answer {#jue-c2-resp-memoria of="jue-c2-ej-memoria"}
-1. El camino: n1 y n3, más n13, que se acaba de generar.
-2. En n1, mejor_valor $=+1$: n2 ya devolvió $+1$. En n3,
-   $v=\min\{+1,+1\}=+1$: n4 y n6 ya devolvieron $+1$. Cuando n13 devuelva
-   $w=-1$, n3 pasará a $v=-1$.
-3. Todos los demás: n2, n4, n5, n6, n7, n8, n9, n10, n11 y n12. Se
-   generaron, devolvieron su valor y se olvidaron.
-:::
-
-### Por qué termina
-
-En un juego **finito**, ninguna cadena de llamadas es infinita. En
-hexapawn ningún peón retrocede, así que la partida más larga tiene 7
-jugadas: ninguna pila pasa de 7 niveles, y cada nodo del árbol se visita
-una sola vez.
-
-### Cuánto cuesta
-
-MINIMAX visita **cada nodo del árbol una vez**: 14 en T, 13 desde n1, 252
-desde $s_0$. Para un juego cualquiera:
-
-- $b$, el **factor de ramificación**: el máximo de jugadas en un estado;
-- $m$, la **profundidad máxima**: la partida más larga.
-
-Hay a lo más $1+b+b^2+\cdots+b^m$ nodos.
-
-::: remark {#jue-c2-costo-minimax title="Costo de minimax"}
-Con recorrido en profundidad,
-
-$$\text{tiempo}=O(b^m),\qquad \text{memoria}=O(bm).$$
-
-El tiempo es exponencial en la profundidad: cada nivel multiplica el
-trabajo por $b$. La memoria es pequeña: solo la pila, de $m$ niveles, con
-a lo más $b$ jugadas pendientes por nivel.
-:::
-
-En hexapawn, $b=4$ y $m=7$: la cota $1+4+\cdots+4^7=21\,845$ queda muy por
-encima de los 252 nodos reales, porque en promedio un estado no final tiene
-unas 2.3 jugadas. Es un techo, no un conteo.
-
-### Recordar lo que ya se valoró
-
-En [[el-juego-como-grafo|El juego como grafo]] contamos 252 nodos en el
-árbol y solo **135 estados distintos**: hay transposiciones. Si MINIMAX
-guarda el valor de cada estado la primera vez, la segunda solo lo consulta:
-es una **tabla de transposición**. El trabajo baja de 252 nodos a 135
-estados, a cambio de un valor guardado por estado.
-
-**Funciona porque $V(s)$ depende solo de $s$:** las cinco reglas leen
-únicamente $(\tau,\text{turno})$, no el camino. Si $U$ dependiera de
-cuántas jugadas van, dos caminos al mismo tablero podrían valer distinto.
-
-::: table {#jue-c2-que-cambia-minimax title="Qué cambia cuando cambia el juego"}
-| Cambio en el juego | Efecto en minimax |
-|---|---|
-| Más jugadas por turno (crece $b$) | Cada nivel multiplica más; el tiempo crece como $b^m$ |
-| Partidas más largas (crece $m$) | Cada nivel extra multiplica el tiempo por $b$; la memoria solo crece en $b$ |
-| Muchos caminos llegan al mismo estado | Una tabla de transposición ahorra mucho, a cambio de memoria |
-| Un final cambia de utilidad | Hay que recalcular sus antecesores; el costo no cambia |
-:::
-
-## Ficha: minimax
-
-Antes de cerrar, minimax en siete rasgos. Cada algoritmo de la unidad tendrá su ficha con las mismas siete filas, para que puedas ponerlos lado a lado.
-
-::: table {#jue-ficha-minimax title="Minimax en siete rasgos"}
-| Rasgo | Minimax |
-|---|---|
-| Hasta dónde mira | Hasta los finales, en todas las ramas |
-| ¿Genera todo el árbol? | Sí: cada nodo, una vez |
-| ¿Garantiza $V$? | Sí, en cada nodo |
-| Con qué estima | Con nada: no estima. Solo lee la $U$ de los finales |
-| ¿Quién tira dados? | Nadie |
-| Qué entrega, y si se puede interrumpir | Una jugada de mayor $V$. Interrumpido, deja hijos de la raíz sin valorar: lo que lleve no está garantizado |
-| Cuándo conviene | Cuando el árbol entero cabe en el tiempo que hay: gato, hexapawn |
-:::
+memoria y decir qué recibe el agente y qué devuelve. También, trazar el
+árbol base fila por fila diciendo cuándo cambia mejor_jugada, y decir en
+qué paso de la demostración se usa que el rival juega bien.
 
 > [!NOTE]
 > **Lo que ya viste.** Los algoritmos de la unidad hasta esta página, en el orden del curso.
@@ -693,27 +843,21 @@ Antes de cerrar, minimax en siete rasgos. Cada algoritmo de la unidad tendrá su
 > | Algoritmo | Qué número da |
 > |---|---|
 > | **Minimax (estás aquí)** | **$V$; lo garantiza** |
->
-> **Lo que viene.**
->
-> - **Expectiminimax**: lo mismo cuando un dado o una moneda decide algunas jugadas; ahí se promedia en vez de elegir. Clase 2, [[cuando-decide-un-dado|Cuando decide un dado]].
-> - **Alfa-beta**: la misma jugada que mirar todo, sin generar las ramas que ya no pueden cambiar la decisión. Clase 2, [[alfa-beta|Alfa-beta a mano]].
-> - **Minimax con corte**: mirar unas cuantas jugadas y estimar a ojo lo que queda debajo, para cuando el árbol no cabe. Clase 3, [[cortar-y-evaluar|Cortar y evaluar a mano]].
-> - **Búsqueda de quietud**: no detenerse a estimar a mitad de un intercambio de capturas. Clase 3, [[mas-alla-del-horizonte|Más allá del horizonte]].
-> - **Profundización iterativa**: buscar cada vez un poco más hondo, con una jugada siempre lista para cuando se acabe el tiempo. Clase 3, [[jugar-contra-el-reloj|Jugar contra el reloj]].
-> - **Monte Carlo plano**: estimar cada jugada jugando muchas partidas al azar hasta el final, sin escribir ninguna estimación. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
-> - **MCTS con UCT**: construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar lo otro. Clase 3, [[simular-en-vez-de-evaluar|Simular en vez de evaluar]].
 
 ## Lo que hay que llevarse
 
-- El agente **recibe un estado y las reglas** ($S_F$, $\mathrm{Pl}$, $A$,
+- **El agente recibe un estado y las reglas** ($S_F$, $\mathrm{Pl}$, $A$,
   $T$, $U$), **no el grafo**, y **devuelve una jugada**.
 - **DECIDIR-MINIMAX** (líneas 1–6) elige la jugada; **MINIMAX** (7–20)
   calcula el valor de cada hijo. El valor es el medio, la jugada el fin.
-- **$v$** es lo mejor visto por este nodo; **$w$**, lo que devuelve un
-  hijo. En T, mejor_jugada pasa de ninguna a izq y a centro; der no la
-  cambia porque $2>5$ es falso.
-- Es correcto por inducción sobre la altura. MINIMAX mira todo: el orden
-  de los hijos no cambia la jugada ni los nodos generados.
+- **$v$ es lo mejor visto por este nodo; $w$, lo que devuelve un hijo.**
+  En el árbol base, mejor_jugada pasa de ninguna a izq y a centro; der no
+  la cambia porque $2>5$ es falso.
+- **Es correcto por inducción sobre la altura**, y cuesta $O(b^m)$ en
+  tiempo y $O(bm)$ en memoria: 252 nodos en hexapawn, bajo un techo de
+  21 845.
+- **MINIMAX mira todo:** el orden de los hijos **no cambia $V$ ni el
+  conjunto de jugadas óptimas; puede cambiar cuál se entrega si hay
+  empate**.
 
-Continúa con [[cuando-decide-un-dado|cuando decide un dado]].
+Continúa con [[alfa-beta|Alfa-beta a mano]].

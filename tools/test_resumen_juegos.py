@@ -13,25 +13,29 @@ import pytest
 import gen_resumen_juegos as gen
 
 PAGINAS = gen.PAGINAS
-RASGOS = [
-    "Hasta dónde mira",
-    "¿Genera todo el árbol?",
-    "¿Garantiza $V$?",
-    "Con qué estima",
-    "¿Quién tira dados?",
-    "Qué entrega, y si se puede interrumpir",
-    "Cuándo conviene",
+# Las propiedades canónicas de cada ficha (plan de homologación §3.3), en su
+# orden: reemplazan a la tabla de siete rasgos de antes; «Garantía» hereda la
+# fila «¿Garantiza $V$?».
+PROPIEDADES = [
+    "Número que da",
+    "Usa EVAL",
+    "Garantía",
+    "Se puede interrumpir",
+    "Complejidad",
+    "Frente a los demás",
+    "Supuestos",
 ]
 
 # Palabras que delatan a cada algoritmo; una fila anterior no puede usarlas.
 DELATORAS = {
-    "Expectiminimax": ["Expectiminimax", "azar", "Pr"],
     "Alfa-beta": ["Alfa-beta", "alfa", "cota", "\\alpha"],
+    "Expectiminimax": ["Expectiminimax", "azar", "dado", "Pr"],
     "Minimax con corte": ["corte", "EVAL", "$d$"],
     "Búsqueda de quietud": ["quiet", "captura"],
     "Profundización iterativa": ["iterativa", "reloj", "última búsqueda"],
-    "Monte Carlo plano": ["Monte Carlo", "\\bar u", "simula", "al azar"],
-    "MCTS con UCT": ["MCTS", "UCT", "crece"],
+    "Monte Carlo plano": ["Monte Carlo", "\\widehat Q", "Q_{\\text{azar}}", "simula", "al azar"],
+    "Monte Carlo con actualización minimax": ["actualización", "respaldo", "\\widehat V"],
+    "MCTS con UCT": ["MCTS", "UCT", "crece", "bono", "vueltas"],
 }
 
 
@@ -95,100 +99,170 @@ def test_ninguna_fila_nombra_un_algoritmo_posterior(archivo):
 
 
 @pytest.mark.parametrize("archivo", PAGINAS)
-def test_lo_que_viene_va_en_palabras_llanas_y_solo_trae_lo_que_falta(archivo):
+def test_el_recuadro_no_anuncia_lo_que_viene(archivo):
+    """Ola 4, r1: «Lo que viene» listaba EVAL, quietud, Monte Carlo y UCT antes
+    de enseñarlos. El recuadro solo trae lo visto; la última página, sin
+    pendientes, manda a la radiografía."""
     bloque = bloque_actual(archivo)
-    k = bloque.index("> **Lo que viene.**")
-    viene = [s for s in bloque[k + 1:] if s.startswith("> - ")]
-    pendientes = gen.pendientes(archivo)
-    assert len(viene) == len(pendientes)
-    for linea, alg in zip(viene, pendientes):
-        assert linea.startswith(f"> - **{alg['nombre']}**")
-        assert "$" not in linea, f"«Lo que viene» usa un símbolo: {linea}"
-    if not pendientes:
-        assert any(gen.SIN_PENDIENTES in s for s in bloque[k + 1:])
+    todo = "\n".join(bloque)
+    assert "Lo que viene" not in todo
+    assert not [s for s in bloque if s.startswith("> - ")]
+    for alg in gen.pendientes(archivo):
+        assert f"**{alg['nombre']}**" not in todo, alg["nombre"]
+    assert (gen.SIN_PENDIENTES in todo) == (not gen.pendientes(archivo))
+
+
+def tramos_de_ficha(lineas, archivo):
+    """{nombre: (i_ficha, i_fin)} de cada ficha propia de la página: desde su
+    encabezado `### <ficha>` hasta el siguiente `###` o `##`."""
+    tramos = {}
+    for alg in gen.ALGORITMOS:
+        if alg["archivo"] != archivo:
+            continue
+        cabeza = f"### {alg['ficha']}"
+        donde = [i for i, s in enumerate(lineas) if s.rstrip() == cabeza]
+        assert len(donde) == 1, f"{archivo}: «{cabeza}» debe aparecer una vez"
+        i = donde[0]
+        k = next((j for j in range(i + 1, len(lineas))
+                  if re.match(r"#{2,3} ", lineas[j])), len(lineas))
+        tramos[alg["nombre"]] = (i, k)
+    assert tramos, f"{archivo}: la página no tiene fichas"
+    return tramos
 
 
 def fichas(archivo):
-    """{nombre del algoritmo: {rasgo: celda}} de cada `::: table {#jue-ficha-…}`
-    entre «## Ficha: …» y el cierre, en orden."""
+    """{nombre del algoritmo: {propiedad: texto}} de la lista de «#### 3 ·
+    Propiedades» de cada ficha, con `_orden` = las propiedades en su orden."""
     lineas = texto(archivo).split("\n")
-    i_ficha = next(i for i, s in enumerate(lineas) if s.startswith("## Ficha: "))
-    i_cierre = lineas.index(gen.CIERRE)
-    tramo = "\n".join(lineas[i_ficha:i_cierre])
     salida = {}
-    for m in re.finditer(r"^::: table \{#jue-ficha-[a-z-]+ title=\"[^\"]+\"\}\n(.*?)^:::",
-                         tramo, re.M | re.S):
-        renglones = [r for r in m.group(1).splitlines() if r.startswith("|")]
-        enc = [c.strip() for c in renglones[0].strip("|").split("|")]
-        filas = [[c.strip() for c in r.strip("|").split("|")] for r in renglones[2:]]
-        assert len(enc) == 2 and enc[0] == "Rasgo", (
-            f"{archivo}: cada ficha lleva dos columnas, Rasgo y su algoritmo "
-            "(con tres, a 390 px la tercera se esconde tras el scroll)")
-        assert all(len(f) == 2 for f in filas)
-        salida[enc[1]] = {f[0]: f[1] for f in filas}
-        salida[enc[1]]["_orden"] = [f[0] for f in filas]
+    for nombre, (i, k) in tramos_de_ficha(lineas, archivo).items():
+        tramo = lineas[i:k]
+        assert "#### 3 · Propiedades" in tramo, f"{archivo}: {nombre} sin «#### 3 · Propiedades»"
+        j = tramo.index("#### 3 · Propiedades") + 1
+        props, actual = {}, None
+        orden = []
+        while j < len(tramo) and not tramo[j].startswith("#"):
+            m = re.match(r"- \*\*([^*]+):\*\* ?(.*)", tramo[j])
+            if m:
+                actual = m.group(1)
+                orden.append(actual)
+                props[actual] = m.group(2)
+            elif actual and tramo[j].strip():   # renglón partido de la viñeta
+                props[actual] += " " + tramo[j].strip()
+            elif orden and not tramo[j].strip():
+                break   # la lista de propiedades termina en su primer renglón en blanco
+            j += 1
+        props["_orden"] = orden
+        salida[nombre] = props
     return salida
 
 
 @pytest.mark.parametrize("archivo", PAGINAS)
-def test_la_ficha_va_antes_del_cierre_con_sus_siete_rasgos(archivo):
-    t = texto(archivo)
-    lineas = t.split("\n")
-    i_ficha = next(i for i, s in enumerate(lineas) if s.startswith("## Ficha: "))
+def test_cada_ficha_va_antes_del_cierre_con_sus_siete_propiedades(archivo):
+    """Antes: «la ficha va antes del cierre con sus siete rasgos». La tabla de
+    rasgos se reemplazó por el mapa y las propiedades canónicas; la prueba
+    conserva lo que fijaba: una ficha por algoritmo de la página, en el orden
+    del curso, sin LaTeX ni enlaces en su encabezado, sus propiedades en orden,
+    y el recuadro después de la última ficha y antes del cierre."""
+    lineas = texto(archivo).split("\n")
+    tramos = tramos_de_ficha(lineas, archivo)
     i_cierre = lineas.index(gen.CIERRE)
-    assert i_ficha < i_cierre
-    assert not re.search(r"\$|\[\[", lineas[i_ficha]), "la ficha no lleva LaTeX ni enlaces en su encabezado"
-    f = fichas(archivo)
-    assert f, f"{archivo}: la ficha no está en un ::: table {{#jue-ficha-…}}"
     propios = [a["nombre"] for a in gen.ALGORITMOS if a["archivo"] == archivo]
-    assert list(f) == propios, "una ficha por algoritmo de la página, en el orden del curso"
-    for nombre, rasgos in f.items():
-        assert rasgos["_orden"] == RASGOS, nombre
-    # El recuadro va justo después de la ficha.
-    lugar = gen.localizar(lineas)
-    assert lugar and i_ficha < lugar[0] < i_cierre
+    assert sorted(tramos, key=lambda n: tramos[n][0]) == propios, (
+        "una ficha por algoritmo de la página, en el orden del curso")
+    for nombre, (i_ficha, _) in tramos.items():
+        assert i_ficha < i_cierre
+        assert not re.search(r"\$|\[\[", lineas[i_ficha]), (
+            "la ficha no lleva LaTeX ni enlaces en su encabezado")
+    ultima = max(i for i, _ in tramos.values())
+    lugares = gen.localizar_todos(lineas)
+    assert len(lugares) == 1, f"{archivo}: un solo recuadro por página"
+    assert ultima < lugares[0][0] < i_cierre, (
+        f"{archivo}: el recuadro va después de la última ficha y antes del cierre")
+    f = fichas(archivo)
+    for nombre, props in f.items():
+        assert props["_orden"] == PROPIEDADES, nombre
+        assert all(props[p].strip() for p in PROPIEDADES), nombre
 
 
 @pytest.mark.parametrize("archivo", PAGINAS)
 def test_ficha_y_recuadro_dicen_lo_mismo_de_si_garantiza_v(archivo):
-    """Una sola convención: «¿Garantiza $V$?» dice si el algoritmo, por cómo
-    funciona, devuelve el valor minimax. Sí: minimax, expectiminimax (el del
-    juego con dado), alfa-beta (en la raíz). No: los demás; corte, quietud e
-    iterativa con la salvedad de los finales."""
+    """Una sola convención: la propiedad «Garantía» dice si el algoritmo, por
+    cómo funciona, devuelve el valor minimax. Sí: minimax, alfa-beta (en la
+    raíz), expectiminimax (el del juego con dado). No: los demás; corte,
+    quietud e iterativa con la salvedad de los finales, y los dos que
+    convergen (actualización minimax y UCT) con su límite."""
     f = fichas(archivo)
     for alg in gen.ALGORITMOS:
         if alg["archivo"] != archivo:
             continue
-        celda = f[alg["nombre"]]["¿Garantiza $V$?"]
-        assert celda.startswith(alg["garantiza"]), (alg["nombre"], celda)
+        celda = f[alg["nombre"]]["Garantía"]
+        assert alg["garantia"] in celda, (alg["nombre"], celda)
         if alg["garantiza"] == "Sí":
             assert alg["numero"].endswith("lo garantiza"), alg["nombre"]
+            assert "no garantiza $V$" not in celda, alg["nombre"]
         else:
             assert "no garantiza $V$" in alg["numero"], alg["nombre"]
-            assert "salvo si" not in alg["numero"] or "salvo si" in celda, alg["nombre"]
+            assert "M\\cdot V" not in alg["numero"] or "finales" in celda, alg["nombre"]
+            assert "converge" not in alg["numero"] or re.search(
+                r"converge|tienden", celda), alg["nombre"]
 
 
 def test_quien_garantiza_v_es_lo_que_dice_la_convencion():
     garantiza = {a["nombre"]: a["garantiza"] for a in gen.ALGORITMOS}
     assert [n for n, g in garantiza.items() if g == "Sí"] == [
-        "Minimax", "Expectiminimax", "Alfa-beta"]
-    salvedad = [a["nombre"] for a in gen.ALGORITMOS if "salvo si llega a los finales" in a["numero"]]
+        "Minimax", "Alfa-beta", "Expectiminimax"]
+    # el corte que llega a todos los finales da M·V, no V (plan §5.1)
+    salvedad = [a["nombre"] for a in gen.ALGORITMOS
+                if "Con todos los finales" in a["numero"] and "M\\cdot V" in a["numero"]]
     assert salvedad == ["Minimax con corte", "Búsqueda de quietud", "Profundización iterativa"]
+    convergen = [a["nombre"] for a in gen.ALGORITMOS if "converge" in a["numero"]]
+    assert convergen == ["Monte Carlo con actualización minimax", "MCTS con UCT"]
     assert "converge" in gen.ALGORITMOS[-1]["numero"]
 
 
+def test_el_orden_es_el_de_la_navegacion_y_cada_enlace_lleva_el_titulo_real():
+    """R14 de la homologación: el orden de ALGORITMOS es el de las páginas, y
+    cada `enlace` de ALGORITMOS apunta a una página que existe con el `title` de su
+    frontmatter (no a una URL perdida como `mas-alla-del-horizonte`)."""
+    import yaml
+    assert [a["nombre"] for a in gen.ALGORITMOS] == [
+        "Minimax", "Alfa-beta", "Expectiminimax", "Minimax con corte",
+        "Búsqueda de quietud", "Profundización iterativa", "Monte Carlo plano",
+        "Monte Carlo con actualización minimax", "MCTS con UCT"]
+    assert PAGINAS == sorted(PAGINAS), "las páginas van en el orden de navegación"
+    titulos = {}
+    for ruta in gen.UNIDAD.rglob("*.md"):
+        if any(p.startswith("_") for p in ruta.relative_to(gen.UNIDAD).parts):
+            continue
+        cabeza = yaml.safe_load(ruta.read_text(encoding="utf-8").split("---")[1])
+        titulos[cabeza["id"]] = cabeza["title"]
+    for a in gen.ALGORITMOS:
+        assert titulos.get(a["enlace"]) == a["titulo"], a["nombre"]
+    m = re.search(r"\[\[([^|\]]+)\|([^\]]+)\]\]", gen.SIN_PENDIENTES)
+    assert titulos.get(m.group(1)) == m.group(2)
+
+
+def test_ninguna_celda_usa_la_notacion_retirada():
+    """Plan §5.1: $\\bar u$, $\\mu$ y $G/N$ salieron de la unidad."""
+    for a in gen.ALGORITMOS:
+        todo = " ".join(str(v) for v in a.values())
+        for vieja in ("\\bar u", "\\mu", "G/N", "ū", "μ"):
+            assert vieja not in todo, (a["nombre"], vieja)
+
+
 def test_la_quietud_y_mcts_dicen_lo_que_hacen():
-    """Brief r2 W3: la salvedad de la quietud es «antes de cortar», la misma
-    de GARANTIZA_TPM (aun con capturas hasta los finales, quedarse usa EVAL);
-    y «Lo que viene» de MCTS dice que construye un árbol, no «lo mismo» que
-    Monte Carlo plano."""
+    """Brief r2 W3: la salvedad de la quietud es «antes de activar la
+    quietud», la misma de GARANTIZA_TPM («antes de cortar»: aun con capturas
+    hasta los finales, quedarse usa EVAL); UCT declara las condiciones de su
+    convergencia (árbol finito, c > 0 fija, vueltas sin límite)."""
     import juegos as j
     por = {a["nombre"]: a for a in gen.ALGORITMOS}
     assert por["Búsqueda de quietud"]["numero"].endswith(
-        "salvo si llega a los finales antes de cortar")
+        "antes de activar la quietud, da $M\\cdot V$")
     assert j.GARANTIZA_TPM["quietud"] == "No, salvo si llega a los finales antes de cortar"
-    assert por["MCTS con UCT"]["viene"] == (
-        "construye un árbol: elige por puntaje dentro de él, lo hace crecer, simula desde la "
-        "hoja y sube el resultado; manda más partidas a lo que va mejor sin dejar de probar "
-        "lo otro")
-    assert "menos nodos" not in " ".join(a["viene"] + a["numero"] for a in gen.ALGORITMOS)
+    assert "árbol finito" in por["MCTS con UCT"]["numero"]
+    assert "$c>0$ fija" in por["MCTS con UCT"]["numero"]
+    assert "cualquier" not in por["MCTS con UCT"]["numero"]
+    assert not any("viene" in a for a in gen.ALGORITMOS)
+    assert "menos nodos" not in " ".join(a["numero"] for a in gen.ALGORITMOS)

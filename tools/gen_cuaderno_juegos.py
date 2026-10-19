@@ -1,8 +1,9 @@
 """Genera el notebook de la unidad de juegos (unidad 7) para Colab.
 
 Escribe course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb, guardado sin
-salidas: minimax, expectiminimax, alfa-beta, minimax con corte y
-profundizacion iterativa sobre el arbol T, paso a paso, con un deslizador.
+salidas: minimax, expectiminimax y alfa-beta sobre el arbol base (y el
+reducido) de la clase 2, y minimax con corte y profundizacion iterativa
+sobre el arbol de resultados de la clase 3, paso a paso, con un deslizador.
 
 Colab no tiene el repositorio, asi que el notebook no importa juegos.py: cada
 celda «algoritmo» se arma aqui a partir del bloque ```python de su pagina,
@@ -141,11 +142,12 @@ URL = ("https://colab.research.google.com/github/raya-lucaria/ia_o26/"
 md(f"""
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)]({URL})
 
-# Notebook · Decidir en el árbol T
+# Notebook · Decidir en los árboles de la unidad
 
-Cinco algoritmos en el mismo árbol de juguete: **minimax**,
-**expectiminimax**, **alfa-beta**, **minimax con corte** y **profundización
-iterativa**. El código es el Python de las páginas, con su número de línea
+Cinco algoritmos en dos árboles de juguete: **minimax**,
+**alfa-beta** y **expectiminimax** en el árbol base (y el reducido), y
+**minimax con corte** y **profundización iterativa** en el árbol de
+resultados. El código es el Python de las páginas, con su número de línea
 `# (n)`. La sección 8 sale del árbol: de dónde sale el bono de UCT.
 
 - Primero: **Entorno de ejecución → Ejecutar todas** (`Ctrl + F9`).
@@ -170,9 +172,11 @@ import re
 
 # R (MAX) → I, C, D (MIN) por izq, centro, der;
 # C → C1, C2 (MAX) por c1, c2. Los números son hojas.
-ARBOL_T = ((3, 6), ((5, 2), (7, 8)), (2, 12))
-ARBOL_T1 = ((3, 6), (2, 12))                 # T sin el centro
-EVAL_T = {"I": 5, "C": 4, "D": 7, "C1": 6, "C2": 9}
+ARBOL_T = ((3, 6), ((5, 2), (7, 8)), (2, 12))   # el árbol base
+ARBOL_T1 = ((3, 6), (2, 12))                 # el reducido: sin el centro
+# El árbol de resultados (clase 3): finales +1, 0, −1, ya en 100·U.
+ARBOL_R = ((100, -100), ((0, -100), (100, -100)), (-100, 100, 100))
+EVAL_R = {"I": 60, "C": 20, "D": 10, "C1": 10, "C2": 50}
 JUGADAS_R = {3: ["izq", "centro", "der"], 2: ["izq", "der"]}
 NOMBRE_R = {"izq": "I", "centro": "C", "der": "D"}
 
@@ -196,7 +200,7 @@ def armar(arbol, s="R", k=0, t=None):
 
 def usar(arbol, azar=(), cien=False, al_reves=False):
     """Elige el árbol. azar: los nodos de azar. cien: la escala de la
-    clase 3 (la hoja 3 es un final con U = 3/100). al_reves: cada A(s)
+    clase 3 (la hoja 100 es un final con U = 1). al_reves: cada A(s)
     en el orden inverso, sin cambiar nombres."""
     global JUEGO
     JUEGO = armar(arbol)
@@ -234,7 +238,7 @@ def transicion(s, a):
 
 def evaluar(s):                          # EVAL: una estimación de s
     CUENTA["evaluados"].add(s)
-    return EVAL_T[s]
+    return EVAL_R[s]
 
 
 # --- paso: la foto de una fila de la traza ---------------------------
@@ -354,7 +358,7 @@ def fmt(x):
     return "" if x is None else {inf: "+∞", -inf: "−∞"}.get(x, str(x))
 
 def renglon(f):
-    """# · línea · pila · (α, β) · v · w · ¿corta? · mejor_jugada"""
+    """# · línea · pila · (α, β) · v · w · ¿poda? · mejor_jugada"""
     if f["evento"] == "podado":
         return (f"{f['n']:>2} ✗ {f['nodo']} ({fmt(f['w'])}) no se genera:"
                 f" corte {f['corta']}")
@@ -416,7 +420,7 @@ def posiciones(t):
 
 
 usar(ARBOL_T)
-print("reglas listas · árbol T")
+print("reglas listas · árbol base")
 ''', "logica", "maquinaria", oculta=True)
 
 code(r'''
@@ -437,7 +441,7 @@ MARCA = {"MAX": "^", "MIN": "v", "AZAR": "o", "HOJA": "s"}
 LEYENDA = ("▲ MAX   ▼ MIN   ● azar   ■ hoja   ·   gris: sin generar   ·   "
            "amarillo: en la pila   ·   azul: devuelto\n"
            "verde: EVAL (una estimación)   ·   punteado con ?: podado   ·   "
-           "«cota»: hubo corte; lo devuelto puede no ser su valor")
+           "«cota»: hubo poda; lo devuelto puede no ser su valor")
 
 
 def tipo(t, n):
@@ -488,7 +492,7 @@ def figura():
 def ver_arbol(t):
     vacio = dict(estado="pormirar", v=None, alfa=None, beta=None, cota=False)
     fig, ax = figura()
-    dibujar({n: vacio for n in t["prof"]}, t, ax, "el árbol T")
+    dibujar({n: vacio for n in t["prof"]}, t, ax, "el árbol")
     plt.show()
 
 
@@ -527,7 +531,7 @@ print("visor listo · widgets:", HAY_WIDGETS)
 
 # ================================================================ 2 ===
 md("""
-## 2 · El árbol T
+## 2 · El árbol base
 
 R es la raíz; mueve MAX. Sus jugadas `izq`, `centro` y `der` llevan a I, C
 y D. De C salen `c1` y `c2` a C1 y C2. Los números son finales: su $U$.
@@ -595,7 +599,81 @@ print("jugada:", correr(decidir_minimax("R"))[1])
 
 # ================================================================ 4 ===
 md("""
-## 4 · Cuando decide un dado: expectiminimax
+## 4 · Alfa-beta
+
+- **α**: lo que MAX ya tiene asegurado en el camino. Solo sube.
+- **β**: lo que MIN ya tiene asegurado en el camino. Solo baja.
+
+La regla: **MAX compara v ≥ β; MIN compara v ≤ α**. Cada uno mira el número
+del rival, que heredó de arriba. Si se cumple, poda: el rival nunca
+dejaría llegar la partida ahí.
+""")
+
+algoritmo_de("alfa-beta", "decidir_alfa_beta")
+
+algoritmo_de("alfa-beta", "alfa_beta")
+
+code("""
+AB = (decidir_alfa_beta, alfa_beta)
+usar(ARBOL_T1)                           # el reducido: 6 de 7
+filas_t1, jugada = correr(decidir_alfa_beta("R"))
+print("reducido:", jugada, "·", len(filas_t1[-1]["hechos"]), "de 7 nodos")
+ver(filas_t1, *AB)
+""")
+
+md("""
+Ahora el árbol base: 12 de 14. Minimax generaba los 14; la jugada es la
+misma.
+""")
+
+code("""
+usar(ARBOL_T)
+filas_ab, jugada = correr(decidir_alfa_beta("R"))
+print("base:", jugada, "·", len(filas_ab[-1]["hechos"]), "de 14 nodos")
+ver(filas_ab, *AB)
+""")
+
+md("""
+**Dos lupas.** En C2 (MAX): recibe 7, y $7 \\ge \\beta = 5$. C ya tiene 5 y
+nunca escogería algo que vale 7 o más: la hoja 8 no se genera. C2
+**devuelve 7 aunque vale 8**: es una cota, «al menos 7», no su valor.
+
+En D (MIN): recibe 2, y $2 \\le \\alpha = 5$. R ya tiene 5 con `centro`, y
+D vale a lo más 2: la hoja 12 no se genera.
+""")
+
+code("""
+for corte_ in ("corte beta", "corte alfa"):
+    k = next(f["n"] for f in filas_ab if f["evento"] == corte_)
+    lupa(filas_ab, k, *AB)
+""")
+
+md("""
+**Pruébalo.** Cambia el 7 de C2 por un 4: ¿cuántos nodos genera ahora?
+
+<details><summary>Qué pasa</summary>
+
+13. C2 ya no poda en su primera hoja ($4 < \\beta = 5$), así que genera
+el 8; ahí $8 \\ge 5$, pero ya no quedan hijos. C sigue valiendo 5 y la
+jugada sigue siendo `centro`.
+
+</details>
+
+El ejercicio «Llena la traza con el orden invertido», de la página
+*Alfa-beta como algoritmo*, resuélvelo primero a mano. Después revísalo con
+`usar(ARBOL_T, al_reves=True)` y `ver(correr(decidir_alfa_beta("R"))[0], *AB)`.
+""")
+
+code("""
+prueba = ((3, 6), ((5, 2), (7, 8)), (2, 12))     # cambia el 7
+usar(prueba)
+filas, jugada = correr(decidir_alfa_beta("R"))
+print("jugada:", jugada, "·", len(filas[-1]["hechos"]), "nodos")
+""")
+
+# ================================================================ 5 ===
+md("""
+## 5 · Cuando decide un dado: expectiminimax
 
 Ahora I, C y D son **volados parejos**: cada hijo sale con probabilidad ½.
 Un nodo de azar no elige: suma `Pr · w` de todos sus hijos. La tabla sigue
@@ -633,88 +711,15 @@ usar(prueba, azar=("I", "C", "D"))
 print("jugada:", correr(decidir_expectiminimax("R"))[1])
 """)
 
-# ================================================================ 5 ===
-md("""
-## 5 · Alfa-beta
-
-- **α**: lo que MAX ya tiene asegurado en el camino. Solo sube.
-- **β**: lo que MIN ya tiene asegurado en el camino. Solo baja.
-
-La regla: **MAX compara v ≥ β; MIN compara v ≤ α**. Cada uno mira el número
-del rival, que heredó de arriba. Si se cumple, corta: el rival nunca
-dejaría llegar la partida ahí.
-""")
-
-algoritmo_de("alfa-beta", "decidir_alfa_beta")
-
-algoritmo_de("alfa-beta", "alfa_beta")
-
-code("""
-AB = (decidir_alfa_beta, alfa_beta)
-usar(ARBOL_T1)                           # T sin el centro: 6 de 7
-filas_t1, jugada = correr(decidir_alfa_beta("R"))
-print("T1:", jugada, "·", len(filas_t1[-1]["hechos"]), "de 7 nodos")
-ver(filas_t1, *AB)
-""")
-
-md("""
-Ahora T: 12 de 14. Minimax generaba los 14; la jugada es la misma.
-""")
-
-code("""
-usar(ARBOL_T)
-filas_ab, jugada = correr(decidir_alfa_beta("R"))
-print("T:", jugada, "·", len(filas_ab[-1]["hechos"]), "de 14 nodos")
-ver(filas_ab, *AB)
-""")
-
-md("""
-**Dos lupas.** En C2 (MAX): recibe 7, y $7 \\ge \\beta = 5$. C ya tiene 5 y
-nunca escogería algo que vale 7 o más: la hoja 8 no se genera. C2
-**devuelve 7 aunque vale 8**: es una cota, «al menos 7», no su valor.
-
-En D (MIN): recibe 2, y $2 \\le \\alpha = 5$. R ya tiene 5 con `centro`, y
-D vale a lo más 2: la hoja 12 no se genera.
-""")
-
-code("""
-for corte_ in ("corte beta", "corte alfa"):
-    k = next(f["n"] for f in filas_ab if f["evento"] == corte_)
-    lupa(filas_ab, k, *AB)
-""")
-
-md("""
-**Pruébalo.** Cambia el 7 de C2 por un 4: ¿cuántos nodos genera ahora?
-
-<details><summary>Qué pasa</summary>
-
-13. C2 ya no corta en su primera hoja ($4 < \\beta = 5$), así que genera
-el 8; ahí $8 \\ge 5$, pero ya no quedan hijos. C sigue valiendo 5 y la
-jugada sigue siendo `centro`.
-
-</details>
-
-El ejercicio «Llena la traza con el orden invertido», de la página
-*Alfa-beta como algoritmo*, resuélvelo primero a mano. Después revísalo con
-`usar(ARBOL_T, al_reves=True)` y `ver(correr(decidir_alfa_beta("R"))[0], *AB)`.
-""")
-
-code("""
-prueba = ((3, 6), ((5, 2), (7, 8)), (2, 12))     # cambia el 7
-usar(prueba)
-filas, jugada = correr(decidir_alfa_beta("R"))
-print("jugada:", jugada, "·", len(filas[-1]["hechos"]), "nodos")
-""")
-
 # ================================================================ 6 ===
 md("""
 ## 6 · Minimax con corte
 
 Si el árbol no cabe, se mira solo `d` jugadas adelante; donde se corta la
-búsqueda, el nodo vale `EVAL(s)`, una estimación. Los números de T son de
-juguete: la línea 8 devuelve $100 \\cdot U$, así que el código guarda la
-hoja 3 como $U = 3/100$ para que la línea 8 devuelva 3, el número de la
-hoja tal cual.
+búsqueda, el nodo vale `EVAL(s)`, una estimación. Desde aquí el árbol es
+el **árbol de resultados**: como el base, pero D tiene tres hijos y cada
+final dice quién gana. La línea 8 devuelve $100 \\cdot U$; las hojas ya
+van en esa escala: la hoja 100 es un final con $U = +1$.
 """)
 
 algoritmo_de("corte", "decidir_con_corte")
@@ -722,7 +727,8 @@ algoritmo_de("corte", "decidir_con_corte")
 algoritmo_de("corte", "minimax_con_corte")
 
 code("""
-usar(ARBOL_T, cien=True)
+usar(ARBOL_R, cien=True)
+ver_arbol(JUEGO)
 for d in (1, 2, 3):
     filas, jugada = correr(decidir_con_corte("R", d))
     print(f"d = {d}: {jugada:<6} con {fmt(filas[-1]['v'])},",
@@ -732,24 +738,25 @@ ver(filas_c2, decidir_con_corte, minimax_con_corte)
 """)
 
 md("""
-Con `d = 1` cae en una trampa: `der` parece valer 7, pero D vale 2. Con
-`d = 2` ya ve la respuesta de MIN. En la figura, verde es `EVAL`.
+Con `d = 1` cae en una trampa: `izq` parece valer 60, pero I vale −100:
+MIN responde con la captura. Con `d = 2` ya ve la respuesta de MIN. En la
+figura, verde es `EVAL`.
 
-**Pruébalo.** Con `d = 1`, sube `EVAL_T["C"]` a 8: ¿qué jugada sale?
+**Pruébalo.** Con `d = 1`, sube `EVAL_R["C"]` a 80: ¿qué jugada sale?
 
 <details><summary>Qué pasa</summary>
 
-`centro`, con 8. Con un corte tan corto, la jugada la decide la
+`centro`, con 80. Con un corte tan corto, la jugada la decide la
 estimación, no el juego.
 
 </details>
 """)
 
 code("""
-EVAL_T["C"] = 4                          # cambia el 4
-usar(ARBOL_T, cien=True)
+EVAL_R["C"] = 20                         # cambia el 20
+usar(ARBOL_R, cien=True)
 print("d = 1:", correr(decidir_con_corte("R", 1))[1])
-EVAL_T["C"] = 4                          # el de la página
+EVAL_R["C"] = 20                         # el de la página
 """)
 
 # ================================================================ 7 ===
@@ -759,8 +766,8 @@ md("""
 No sabes cuánto tiempo queda. Busca con `d = 1`, luego `d = 2`, `d = 3`…
 y entrega la jugada de **la última búsqueda completa**. La jugada anterior
 va primero: α sube pronto y se poda más. Debajo de R corre el alfa-beta de
-la sección 5, con `d`. Un 100 es $100\cdot U$ con $U = 1$: una victoria
-segura (línea 9).
+la sección 4, con `d`, en el árbol de resultados. Un 100 es $100\cdot U$
+con $U = 1$: una victoria segura (línea 9).
 """)
 
 algoritmo_de("iterativa", "alfa_beta_con_corte")
@@ -783,7 +790,7 @@ def queda_tiempo():
 algoritmo_de("iterativa", "profundizacion_iterativa")
 
 code("""
-usar(ARBOL_T, cien=True)
+usar(ARBOL_R, cien=True)
 RELOJ["nodos"] = None
 filas_pi, jugada = correr(profundizacion_iterativa("R"))
 for f in filas_pi:
@@ -811,8 +818,8 @@ RELOJ["nodos"] = None
 """)
 
 md("""
-**Pruébalo.** Con un reloj de 12 nodos se entrega `der`, aunque la
-búsqueda con `d = 2` ya había visto que `centro` vale más. ¿Por qué?
+**Pruébalo.** Con un reloj de 12 nodos se entrega `izq`, aunque la
+búsqueda con `d = 2` ya había visto que I vale −100. ¿Por qué?
 
 <details><summary>Respuesta</summary>
 
@@ -828,13 +835,13 @@ md("""
 ## 8 · De dónde sale el bono
 
 La raíz de MCTS sin árbol debajo: tres jugadas, x, y, z, que se eligen una y
-otra vez. Cada simulación da $U = +1$ o $-1$; el promedio verdadero
-$\mu(s')$ de cada una está oculto (aquí, en `MU`). Las funciones son las de
+otra vez. Cada simulación da $U = +1$ o $-1$; el valor esperado
+$Q_{\text{azar}}(s,a)$ de cada una está oculto (aquí, en `MU`). Las funciones son las de
 `tools/juegos.py`, con la misma semilla: dan los números de la página.
 
-Los nombres son los de la página: `n_padre` es $N(s)$, `N[a]` es $N(s')$
+Los nombres son los de la página: `n_padre` es $N(s)$, `N[a]` es $N(s,a)$
 de la jugada `a`, `c` es $c$. `suma_u[a]` es la suma de sus $U$, así que
-$\\bar u(s') =$ `suma_u[a] / N[a]`; no es $G(s')$, que cuenta victorias.
+$\\widehat Q(s,a) =$ `suma_u[a] / N[a]`.
 """)
 
 code("""
@@ -844,19 +851,20 @@ import random
 MU = {"x": 0.6, "y": 0.3, "z": -0.2}      # promedios verdaderos, ocultos
 C_TEORIA = 2 * math.sqrt(2)               # c de UCB1 en la escala ±1
 
-def simular(rng, mu):                     # U = +1 con prob. (1 + μ)/2
+def simular(rng, mu):                     # U = +1 con prob. (1 + Q)/2
     return 1 if rng.random() < (1 + mu) / 2 else -1
 
 def cota(n, eps):                         # Hoeffding, escala ±1
     return math.exp(-n * eps ** 2 / 2)
 
-def bono(n_padre, n, c=C_TEORIA):         # c·√(ln N(s) / N(s′))
+def bono(n_padre, n, c=C_TEORIA):         # c·√(ln N(s) / N(s, a))
     return math.inf if n == 0 else c * math.sqrt(math.log(n_padre) / n)
 """, "logica", "bono")
 
 md("""
 **Cuánto se equivoca un promedio.** Muchas tiradas de 200 simulaciones de
-y; en cada $N(s')$, la fracción de tiradas con $\\bar u(s') \\le \\mu - \\varepsilon$.
+y; en cada $N(s,a)$, la fracción de tiradas con
+$\\widehat Q(s,a) \\le Q_{\\text{azar}}(s,a) - \\varepsilon$.
 """)
 
 code("""
@@ -881,19 +889,18 @@ frec = frecuencias(MU["y"], EPS, 200, 20000)
 ns = list(frec)
 plt.semilogy(ns, list(frec.values()), ".", label="observada")
 plt.semilogy(ns, [cota(n, EPS) for n in ns], label="cota de Hoeffding")
-plt.xlabel("N(s′): simulaciones de y")
-plt.ylabel("frecuencia de ū(s′) ≤ μ(s′) − ε")
+plt.xlabel("N(s, y): simulaciones de y")
+plt.ylabel("frecuencia de Q̂(s, y) ≤ Q_azar(s, y) − ε")
 plt.legend()
 plt.show()
 for n in (10, 50, 100):
-    print(f"N(s′) = {n:>3}: {frec[n]:.4f}  cota {cota(n, EPS):.4f}")
+    print(f"N(s, y) = {n:>3}: {frec[n]:.4f}  cota {cota(n, EPS):.4f}")
 """)
 
 md("""
-**Cada c fija qué tan rápido baja δ.** Si se pide $\\delta = N(s)^{-k}$, el margen
-$\\varepsilon = \\sqrt{2 \\ln(1/\\delta) / N(s')}$ queda
-$\\sqrt{2k} \\cdot \\sqrt{\\ln N(s) / N(s')}$: es el bono con $c = \\sqrt{2k}$,
-o sea $k = c^2/2$. Con $N(s) = 100$, $c = 1$ pide $\\delta = 0.1$ y
+**Cada c fija qué tan rápido baja δ.** Con $\\delta = N(s)^{-c^2/2}$, el
+margen $\\varepsilon = \\sqrt{2 \\ln(1/\\delta) / N(s,a)}$ queda
+$c \\cdot \\sqrt{\\ln N(s) / N(s,a)}$: es el bono. Con $N(s) = 100$, $c = 1$ pide $\\delta = 0.1$ y
 $c = 2\\sqrt2$ pide $\\delta = 10^{-8}$.
 """)
 
@@ -901,21 +908,21 @@ code("""
 def delta_de_c(c, n_padre):               # δ = N(s)^(−c²/2)
     return n_padre ** (-c * c / 2)
 
-def margen(delta, n):                     # ε = √(2·ln(1/δ) / N(s′))
+def margen(delta, n):                     # ε = √(2·ln(1/δ) / N(s, a))
     return math.sqrt(2 * math.log(1 / delta) / n)
 """, "logica", "bono")
 
 code("""
 for c in (1, C_TEORIA):
     d = delta_de_c(c, 100)
-    print(f"c = {c:.2f}: k = {c * c / 2:g}, δ = {d:.0e};",
+    print(f"c = {c:.2f}: δ = {d:.0e};",
           f"margen {margen(d, 10):.3f} = bono {bono(100, 10, c):.3f}")
 """)
 
 md("""
 **El bandido.** Tres reglas: `"mejor_promedio"` (siempre el mejor
-$\\bar u$), `"a_veces_al_azar"` (una vuelta de cada diez, al azar) y
-`"ucb"` (el mejor $\\bar u$ más el bono). Todas prueban cada jugada una
+$\\widehat Q$), `"a_veces_al_azar"` (una vuelta de cada diez, al azar)
+y `"ucb"` (el mejor $\\widehat Q$ más el bono). Todas prueban cada jugada una
 vez primero. La suerte es de la jugada: la k-ésima vez que se elige x da lo
 mismo con cualquier regla.
 """)
@@ -929,7 +936,7 @@ def elegir_jugada(regla, N, suma_u, n_padre, dado, c):
     if sin_probar:
         return sin_probar[0]
 
-    def puntaje(a):                       # ū(s′), más el bono en UCB
+    def puntaje(a):                       # Q̂(s, a), más el bono en UCB
         extra = bono(n_padre, N[a], c) if regla == "ucb" else 0
         return suma_u[a] / N[a] + extra
     return max(N, key=puntaje)
@@ -954,13 +961,13 @@ def bandido(regla, vueltas, semilla, c=C_TEORIA):
 
 md("""
 **Se atora.** Con la semilla 36, x y y pierden su única prueba: quedan en
-$\\bar u = -1$, el mínimo, y «siempre el mejor promedio» no vuelve a ellas.
+$\\widehat Q = -1$, el mínimo, y «siempre el mejor promedio» no vuelve a ellas.
 """)
 
 code("""
 for regla in ("mejor_promedio", "ucb"):
     N, suma_u, elecciones, _ = bandido(regla, 12, semilla=36)
-    print(f"{regla:<15}", "".join(elecciones), "N(s′):", N)
+    print(f"{regla:<15}", "".join(elecciones), "N(s, a):", N)
 """)
 
 md("""
@@ -968,7 +975,8 @@ md("""
 de 10 000 vueltas con cada una de las cuatro reglas de la página: las tres
 de arriba y UCB con $c = 1$. Primero: ¿cuánto gana cada regla? El pago por
 vuelta hasta $N(s)$ es el promedio de los $U$ de las vueltas 1 a $N(s)$; lo
-mejor posible es elegir siempre x, que paga $\\mu(x) = 0.6$. Segundo: ¿qué
+mejor posible es elegir siempre x, que paga
+$Q_{\\text{azar}}(s,\\text{x}) = 0.6$. Segundo: ¿qué
 tanto se elige x? Cada punto cuenta 400 elecciones, las de las vueltas
 $N(s) - 9$ a $N(s)$ de las 40 corridas, y dice qué fracción fue a x: no es
 acumulado, y son elecciones, no corridas.
@@ -1137,11 +1145,11 @@ md("""
 
 | algoritmo | jugada | nodos generados |
 |---|---|---|
-| minimax | centro (5) | 14 de 14 |
+| minimax (árbol base) | centro (5) | 14 de 14 |
+| alfa-beta: reducido / base | izq (3) / centro (5) | 6 de 7 / 12 de 14 |
 | expectiminimax (I, C, D de azar) | der (7) | 14 de 14 |
-| alfa-beta en T1 / en T | izq (3) / centro (5) | 6 de 7 / 12 de 14 |
-| con corte, d = 1, 2, 3 | der, centro, centro | 4, 10, 14 |
-| profundización iterativa | centro | 4 + 10 + 11 |
+| con corte (árbol de resultados), d = 1, 2, 3 | izq, centro, centro | 4, 11, 15 de 15 |
+| profundización iterativa (árbol de resultados) | centro | 4 + 9 + 12 |
 
 La celda de abajo vuelve a calcular toda la tabla.
 """)
@@ -1154,12 +1162,13 @@ def resumen(nombre, algoritmo, arbol=ARBOL_T, **reglas):
     nodos = " + ".join(str(len(f["hechos"])) for f in fines)
     print(f"{nombre:<14} {jugada:<7} {nodos} nodos")
 resumen("minimax", lambda: decidir_minimax("R"))
+resumen("alfa-beta red.", lambda: decidir_alfa_beta("R"), ARBOL_T1)
+resumen("alfa-beta base", lambda: decidir_alfa_beta("R"))
 resumen("azar", lambda: decidir_expectiminimax("R"), azar="ICD")
-resumen("alfa-beta T1", lambda: decidir_alfa_beta("R"), ARBOL_T1)
-resumen("alfa-beta T", lambda: decidir_alfa_beta("R"))
+R = dict(arbol=ARBOL_R, cien=True)        # el árbol de resultados
 for d in (1, 2, 3):
-    resumen(f"corte d = {d}", lambda: decidir_con_corte("R", d), cien=True)
-resumen("iterativa", lambda: profundizacion_iterativa("R"), cien=True)
+    resumen(f"corte d = {d}", lambda: decidir_con_corte("R", d), **R)
+resumen("iterativa", lambda: profundizacion_iterativa("R"), **R)
 usar(ARBOL_T)
 """)
 

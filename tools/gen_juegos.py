@@ -1097,6 +1097,13 @@ def _notas_ab(y, renglones, tam=T_TXT):
 # caben en los primeros ~340 px.
 
 ANCHO_T = 600
+
+
+def _fmt_t(x):
+    """juegos.fmt_t con el signo menos tipografico: «−100», no «-100» (los
+    finales del arbol de resultados en 100·U)."""
+    return j.fmt_t(x).replace("-", "−")
+
 T_FIG = 17          # letra de los rotulos de estas figuras
 NODO_T_W, NODO_T_H, HOJA_T_R = 108, 70, 24
 ETIQ_W = 74         # la etiqueta con α y β junto a un nodo en la pila
@@ -1211,7 +1218,7 @@ def _caja_nodo_t(cx, cy, nombre, tipo, e, resaltado=False, olvidar=False, color=
         if estado == "podado":
             s.append(texto(cx, cy + 22, "?", tam=24, color=LINEA, peso="700"))
         elif olvidar:
-            s.append(texto(cx, cy + 20, f"devolvió {j.fmt_t(e['v'])}", tam=16, color=SUAVE))
+            s.append(texto(cx, cy + 20, f"devolvió {_fmt_t(e['v'])}", tam=16, color=SUAVE))
         elif renglon:
             s.append(texto(cx, cy + 20, renglon, tam=16, color=SUAVE))
         return "".join(s)
@@ -1223,9 +1230,9 @@ def _caja_nodo_t(cx, cy, nombre, tipo, e, resaltado=False, olvidar=False, color=
     s.append(texto(cx, cy - 10, f"{nombre} · {tipo}", tam=T_FIG, color=color, peso="700"))
     if renglon is None:
         if estado == "evaluado":
-            renglon = f"EVAL = {j.fmt_t(e['v'])}"
+            renglon = f"EVAL = {_fmt_t(e['v'])}"
         elif e["v"] is not None:
-            renglon = f"v = {j.fmt_t(e['v'])}" + (" · cota" if e.get("cota") else "")
+            renglon = f"v = {_fmt_t(e['v'])}" + (" · cota" if e.get("cota") else "")
         else:
             renglon = ""
     tam = 19 if len(renglon) < 8 else (17 if len(renglon) <= 10 else 15)
@@ -1234,22 +1241,27 @@ def _caja_nodo_t(cx, cy, nombre, tipo, e, resaltado=False, olvidar=False, color=
 
 
 def _hoja_t(cx, cy, valor, estado, resaltado=False):
+    """Una hoja del arbol base o del de resultados. «−100» (finales en 100·U)
+    no cabe a 20 en el circulo: va a 15."""
     r = HOJA_T_R
+    rot = _fmt_t(valor)
+    tam, dy = (20, 7) if len(rot) <= 3 else (15, 5)
     if estado == "olvidada":
         return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{FONDO}" stroke="{SUAVE}" '
                 f'stroke-width="1.5" stroke-dasharray="2 4"/>'
-                + texto(cx, cy + 7, j.fmt_t(valor), tam=20, color=SUAVE))
+                + texto(cx, cy + dy, rot, tam=tam, color=SUAVE))
     if estado in ("pormirar", "podado"):
-        rotulo = "?" if estado == "podado" else j.fmt_t(valor)
+        rotulo = "?" if estado == "podado" else rot
+        t_, d_ = (20, 7) if rotulo == "?" else (tam, dy)
         return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{FONDO}" stroke="{LINEA}" '
                 f'stroke-width="2" stroke-dasharray="6 5"/>'
-                + texto(cx, cy + 7, rotulo, tam=20, color=LINEA if estado == "podado" else SUAVE,
+                + texto(cx, cy + d_, rotulo, tam=t_, color=LINEA if estado == "podado" else SUAVE,
                         peso="700"))
     return (f'<circle cx="{cx}" cy="{cy}" r="{r + 4}" fill="none" stroke="{COLOR_FINAL}" '
             f'stroke-width="1.5"/>'
             f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{mezclar(COLOR_FINAL, 0.16 if resaltado else 0.07)}" '
             f'stroke="{COLOR_FINAL}" stroke-width="{3.5 if resaltado else 2}"/>'
-            + texto(cx, cy + 7, j.fmt_t(valor), tam=20, peso="700"))
+            + texto(cx, cy + dy, rot, tam=tam, peso="700"))
 
 
 def _etiqueta_ab(cx, cy, lado, alfa, beta, rival=None):
@@ -1263,7 +1275,7 @@ def _etiqueta_ab(cx, cy, lado, alfa, beta, rival=None):
               radio=6, grosor=1.5)]
     for k, (letra, valor) in enumerate((("alfa", alfa), ("beta", beta))):
         yy = cy - 14 + 28 * k
-        rot = f"{'α' if letra == 'alfa' else 'β'} = {j.fmt_t(valor)}"
+        rot = f"{'α' if letra == 'alfa' else 'β'} = {_fmt_t(valor)}"
         color = TEXTO
         if rival == letra:
             s.append(caja(x + 4, yy - 12, ETIQ_W - 8, 25, relleno=ACENTO, borde=ACENTO,
@@ -1454,13 +1466,13 @@ def _que_paso(fila, poda):
         return f"entra en {fila['nodo']}"
     hijo = fila["hijo"]
     quien = f"la hoja {hijo}" if hijo.isdigit() else hijo
-    return f"{quien} devuelve w = {j.fmt_t(fila['w'])}"
+    return f"{quien} devuelve w = {_fmt_t(fila['w'])}"
 
 
 def _recuadro_lineas(fila, poda):
     jugada = fila["mejor_jugada"] or "ninguna"
     letra = "α" if poda else "mejor_valor"
-    return [f"mejor_jugada = {jugada}", f"{letra} = {j.fmt_t(fila['mejor_valor'])}"]
+    return [f"mejor_jugada = {jugada}", f"{letra} = {_fmt_t(fila['mejor_valor'])}"]
 
 
 def _recuadro(fila, poda):
@@ -1500,7 +1512,7 @@ def _recta(out, y, titulo, alfa, beta, punto_v, letra_punto, veredicto, rival=No
     out.append(texto(_x_recta(-float("inf")), y + 24, "−∞", tam=15, color=SUAVE))
     out.append(texto(_x_recta(float("inf")), y + 24, "+∞", tam=15, color=SUAVE))
     # α y β debajo, cada uno con su letra.
-    sa, sb = f"α = {j.fmt_t(alfa)}", f"β = {j.fmt_t(beta)}"
+    sa, sb = f"α = {_fmt_t(alfa)}", f"β = {_fmt_t(beta)}"
     xa_t, xb_t = xa, xb
     if xb_t - xa_t < 90:
         xa_t, xb_t = (xa + xb) / 2 - 45, (xa + xb) / 2 + 45
@@ -1511,7 +1523,7 @@ def _recta(out, y, titulo, alfa, beta, punto_v, letra_punto, veredicto, rival=No
     if punto_v is not None:
         x = round(_x_recta(punto_v), 1)
         out.append(punto(x, y, r=8, color=TEXTO))
-        out.append(texto(x, y - 16, f"{letra_punto} = {j.fmt_t(punto_v)}", tam=16, peso="700"))
+        out.append(texto(x, y - 16, f"{letra_punto} = {_fmt_t(punto_v)}", tam=16, peso="700"))
     y += 50
     if rival:
         rv, pr = (sa, sb) if rival == "alfa" else (sb, sa)
@@ -1529,7 +1541,7 @@ def _veredicto(fila, antes=None):
     """antes: mejor_valor (α de R) antes de la fila, para las filas de R."""
     ev = fila["evento"]
     v, w, a, b = fila["v"], fila["w"], fila["alfa"], fila["beta"]
-    f = j.fmt_t
+    f = _fmt_t
     if ev == "raiz":
         if fila["mejora"]:
             return f"w = {f(w)} > α = {f(antes)}: α ← {f(w)}"
@@ -1644,7 +1656,7 @@ def figura_traza_t(arbol, poda, k, titulo, desc, notas=(), alto_banda=None):
         y = _recta(out, y, tit, a, b, pv, letra, _veredicto(fila, antes), _rival(fila)) + 16
     y = _pie_t(out, y + 20, notas)
     y = _leyenda_t(out, y - 4, poda, devolvio=bool(resaltar))
-    return _svg_t(titulo, desc, y + 4, out)
+    return _svg_t(titulo, desc, y + 4, out, sep=SEP_C3)
 
 
 def _desc_estado(arbol, traza, k):
@@ -1660,12 +1672,12 @@ def _desc_estado(arbol, traza, k):
                 partes.append(f"la hoja {n} no se genera")
             continue
         if e["estado"] == "pila":
-            extra = (f", α = {j.fmt_t(e['alfa'])}, β = {j.fmt_t(e['beta'])}"
+            extra = (f", α = {_fmt_t(e['alfa'])}, β = {_fmt_t(e['beta'])}"
                      if e["alfa"] is not None else "")
-            vv = f" con v = {j.fmt_t(e['v'])}" if n != "R" else ""
+            vv = f" con v = {_fmt_t(e['v'])}" if n != "R" else ""
             partes.append(f"{n} en la pila{vv}{extra}")
         elif e["estado"] == "devuelto" and n != "R":
-            partes.append(f"{n} ya devolvió v = {j.fmt_t(e['v'])}"
+            partes.append(f"{n} ya devolvió v = {_fmt_t(e['v'])}"
                           + (" (una cota)" if e["cota"] else ""))
         elif e["estado"] == "pormirar":
             partes.append(f"{n} por mirar")
@@ -1686,7 +1698,7 @@ def _desc_t(arbol, poda, k, inicio):
     # En la fila final no hay comparacion que contar: la recta solo muestra
     # la ventana de R.
     recta = _veredicto(fila, antes) or (
-        f"la ventana de R, ({j.fmt_t(fila['alfa'])}, {j.fmt_t(fila['beta'])})")
+        f"la ventana de R, ({_fmt_t(fila['alfa'])}, {_fmt_t(fila['beta'])})")
     return (f"{inicio} Arriba, la banda del pseudocódigo: {lineas}. "
             f"{_que_paso(fila, poda).capitalize()}. Recuadro: {_recuadro(fila, poda)}. "
             f"En el árbol: {_desc_estado(arbol, traza, k)}."
@@ -1702,10 +1714,10 @@ PIE_T_ARBOL = ["Cada hoja es un final:", "su número es lo que vale ese final."]
 def jue_t_arbol():
     """El arbol T sin valores internos: el enunciado."""
     arbol = j.ARBOL_T
-    titulo = ["El árbol T"]
-    hojas = [j.fmt_t(j.nodo_en(arbol, c)) for c in _orden_caminos(arbol)
+    titulo = ["El árbol base"]
+    hojas = [_fmt_t(j.nodo_en(arbol, c)) for c in _orden_caminos(arbol)
              if not isinstance(j.nodo_en(arbol, c), tuple)]
-    desc = ("El árbol T, sin valores en los nodos internos. La raíz R es de MAX y tiene tres "
+    desc = ("El árbol base, sin valores en los nodos internos. La raíz R es de MAX y tiene tres "
             "jugadas: izq lleva a I, centro a C y der a D, los tres de MIN. I tiene las hojas 3 "
             "y 6. C tiene dos hijos de MAX: C1, por c1, con las hojas 5 y 2, y C2, por c2, con "
             "las hojas 7 y 8. D tiene las hojas 2 y 12. Las hojas, de izquierda a derecha: "
@@ -1733,19 +1745,19 @@ def _pasos_minimax_t():
     p3 = _fila_minimax(lambda f: f["evento"] == "raiz" and f["hijo"] == "C")
     p4 = _fila_minimax(lambda f: f["evento"] == "raiz" and f["hijo"] == "D")
     return {
-        1: (p1, ["Minimax en T · paso 1", "I devuelve 3:", "mejor_jugada = izq"],
-            "DECIDIR-MINIMAX sobre el árbol T, paso 1 (fila %d de la traza)." % p1,
+        1: (p1, ["Minimax en el árbol base", "tramo 1 · I devuelve 3:", "mejor_jugada = izq"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 1 (fila %d de la traza)." % p1,
             ["Primera jugada de R:", "izq vale 3, y 3 > −∞."]),
-        2: (p2, ["Minimax en T · paso 2", "A media ejecución: R›C›C2"],
-            "DECIDIR-MINIMAX sobre el árbol T, paso 2 (fila %d de la traza): a media "
+        2: (p2, ["Minimax en el árbol base", "tramo 2 · a media ejecución:", "pila R›C›C2"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 2 (fila %d de la traza): a media "
             "ejecución, con la pila R, C, C2." % p2,
             ["En la pila, solo el camino R, C, C2.", "C1 ya devolvió 5: su llamada",
              "terminó; en C solo queda su v = 5."]),
-        3: (p3, ["Minimax en T · paso 3", "C devuelve 5:", "mejor_jugada = centro"],
-            "DECIDIR-MINIMAX sobre el árbol T, paso 3 (fila %d de la traza)." % p3,
+        3: (p3, ["Minimax en el árbol base", "tramo 3 · C devuelve 5:", "mejor_jugada = centro"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 3 (fila %d de la traza)." % p3,
             ["centro vale 5, y 5 > 3:", "R cambia de jugada."]),
-        4: (p4, ["Minimax en T · paso 4", "D devuelve 2: 2 > 5 es falso"],
-            "DECIDIR-MINIMAX sobre el árbol T, paso 4 (fila %d de la traza), el último "
+        4: (p4, ["Minimax en el árbol base", "tramo 4 · D devuelve 2:", "2 > 5 es falso"],
+            "DECIDIR-MINIMAX sobre el árbol base, tramo 4 (fila %d de la traza), el último "
             "antes de devolver la jugada." % p4,
             ["der vale 2, y 2 > 5 es falso:", "mejor_jugada sigue en centro.",
              "DECIDIR-MINIMAX devuelve centro", "(línea 6). Se generaron 14 nodos."]),
@@ -1787,14 +1799,14 @@ def _pasos_ab_t1():
     n, total = t["generados"], j.contar_nodos(j.ARBOL_T1)
     fp = {p: fila_pagina(j.ARBOL_T1, p) for p in (p1, p2, p3)}
     return {
-        1: (p1, ["Alfa-beta en T1 · paso 1", "I devuelve 3: α = 3"],
-            f"DECIDIR-ALFA-BETA sobre la etapa 1 del árbol T, paso 1 (fila {fp[p1]} de la traza).",
+        1: (p1, ["Alfa-beta, árbol reducido", f"fila {fp[p1]} · I devuelve 3: α = 3"],
+            f"DECIDIR-ALFA-BETA sobre el árbol reducido (fila {fp[p1]} de la traza).",
             ["R ya tiene asegurado 3:", "a D le pasa α = 3."]),
-        2: (p2, ["Alfa-beta en T1 · paso 2", "Corte alfa en D"],
-            f"DECIDIR-ALFA-BETA sobre la etapa 1 del árbol T, paso 2 (fila {fp[p2]} de la traza).",
+        2: (p2, ["Alfa-beta, árbol reducido", f"fila {fp[p2]} · corte alfa en D"],
+            f"DECIDIR-ALFA-BETA sobre el árbol reducido (fila {fp[p2]} de la traza).",
             ["D valdrá a lo más 2, y R ya tiene 3:", "la hoja 12 no se genera."]),
-        3: (p3, ["Alfa-beta en T1 · paso 3", f"{n} de {total} nodos, juega izq"],
-            f"DECIDIR-ALFA-BETA sobre la etapa 1 del árbol T, paso 3: el final (fila {fp[p3]}).",
+        3: (p3, ["Alfa-beta, árbol reducido", f"fila {fp[p3]} · {n} de {total} nodos,", "juega izq"],
+            f"DECIDIR-ALFA-BETA sobre el árbol reducido: el final (fila {fp[p3]}).",
             ["D devolvió 2, una cota;", "2 > 3 es falso.", f"Se generaron {n} de {total} nodos."]),
     }
 
@@ -1810,23 +1822,23 @@ def _pasos_ab_t():
     exacto_c2 = j.minimax_arbol(j.ARBOL_T[1][1])
     fp = {p: fila_pagina(j.ARBOL_T, p) for p in (p1, p2, p3, p4, p5)}
     return {
-        1: (p1, ["Alfa-beta en T · paso 1", "I devuelve 3: α = 3"],
-            f"DECIDIR-ALFA-BETA sobre el árbol T, paso 1 (fila {fp[p1]} de la traza).",
+        1: (p1, ["Alfa-beta en el árbol base", "tramo 1 · I devuelve 3: α = 3"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 1 (fila {fp[p1]} de la traza).",
             ["R ya tiene asegurado 3:", "a C le pasa α = 3."]),
-        2: (p2, ["Alfa-beta en T · paso 2", "C1 devuelve 5: en C, β = 5"],
-            f"DECIDIR-ALFA-BETA sobre el árbol T, paso 2 (fila {fp[p2]} de la traza).",
+        2: (p2, ["Alfa-beta en el árbol base", "tramo 2 · C1 devuelve 5:", "en C, β = 5"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 2 (fila {fp[p2]} de la traza).",
             ["C1 subió su α a 5, pero ese α se", "perdió al regresar: a C le llegó",
              "w = 5, y C actualiza su β."]),
-        3: (p3, ["Alfa-beta en T · paso 3", "Corte beta en C2"],
-            f"DECIDIR-ALFA-BETA sobre el árbol T, paso 3 (fila {fp[p3]} de la traza).",
+        3: (p3, ["Alfa-beta en el árbol base", "tramo 3 · corte beta en C2"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 3 (fila {fp[p3]} de la traza).",
             ["C2 devuelve 7: una cota", f"(su valor exacto es {exacto_c2}).",
              "A C le basta: con 7 ≥ 5,", "C no cambia su 5."]),
-        4: (p4, ["Alfa-beta en T · paso 4", "Corte alfa en D"],
-            f"DECIDIR-ALFA-BETA sobre el árbol T, paso 4 (fila {fp[p4]} de la traza).",
+        4: (p4, ["Alfa-beta en el árbol base", "tramo 4 · corte alfa en D"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 4 (fila {fp[p4]} de la traza).",
             ["D valdrá a lo más 2, y R ya tiene 5:", "la hoja 12 no se genera."]),
-        5: (p5, ["Alfa-beta en T · paso 5", f"{n} de {total} nodos, juega centro"],
-            f"DECIDIR-ALFA-BETA sobre el árbol T, paso 5: el final (fila {fp[p5]}).",
-            ["Dos cortes, dos hojas sin generar:", f"{n} de {total} nodos. La misma",
+        5: (p5, ["Alfa-beta en el árbol base", f"tramo 5 · {n} de {total} nodos,", "juega centro"],
+            f"DECIDIR-ALFA-BETA sobre el árbol base, tramo 5: el final (fila {fp[p5]}).",
+            ["Dos podas, dos hojas sin generar:", f"{n} de {total} nodos. La misma",
              "jugada que minimax: centro."]),
     }
 
@@ -1865,9 +1877,9 @@ def jue_t_ab_pila():
     v_i = estados[(0,)]["v"]
     v_c1 = estados[(1, 0)]["v"]
     e_c, e_c2 = estados[(1,)], estados[(1, 1)]
-    f = j.fmt_t
-    titulo = ["ALFA-BETA en T", "a media ejecución: pila R›C›C2"]
-    desc = (f"El árbol T a media ejecución de DECIDIR-ALFA-BETA (fila {fila_pagina(arbol, k)} "
+    f = _fmt_t
+    titulo = ["ALFA-BETA, árbol base", "a media ejecución: pila R›C›C2"]
+    desc = (f"El árbol base a media ejecución de DECIDIR-ALFA-BETA (fila {fila_pagina(arbol, k)} "
             "de la traza): el "
             f"instante del corte beta en C2. En el árbol, resaltado, el camino R, C, C2. I y C1 "
             f"aparecen tenues, con «devolvió {f(v_i)}» y «devolvió {f(v_c1)}»: ya regresaron "
@@ -1878,7 +1890,7 @@ def jue_t_ab_pila():
             f"{f(fila['mejor_valor'])} y mejor_jugada = {fila['mejor_jugada']}, va en centro; "
             f"C, con α = {f(e_c['alfa'])}, β = {f(e_c['beta'])} y v = {f(e_c['v'])}, va en c2; "
             f"C2, con α = {f(e_c2['alfa'])}, β = {f(e_c2['beta'])} y v = {f(e_c2['v'])}: "
-            f"v ≥ β, corta. El α = {f(alfa_c1)} que C1 alcanzó se perdió al regresar: "
+            f"v ≥ β, poda. El α = {f(alfa_c1)} que C1 alcanzó se perdió al regresar: "
             f"a C le llegó w = {f(v_c1)}.")
     out = []
     y = _titulo_t(out, titulo) + 14
@@ -1898,7 +1910,7 @@ def jue_t_ab_pila():
         ("C · MIN", [f"α = {f(e_c['alfa'])}", f"β = {f(e_c['beta'])}", f"v = {f(e_c['v'])}",
                      "va en: c2"]),
         ("C2 · MAX", [f"α = {f(e_c2['alfa'])}", f"β = {f(e_c2['beta'])}", f"v = {f(e_c2['v'])}",
-                      "v ≥ β: corta"]),
+                      "v ≥ β: poda"]),
     ]
     # El de R es mas ancho: lleva «mejor_jugada = izq».
     anchos, gap, y1 = (200, 168, 168), 20, y + 20
@@ -1929,20 +1941,20 @@ def jue_t_azar():
     arbol = j.ARBOL_T
     jugada, valores, generados = j.expectiminimax_t(arbol)
     nombres = j.nombres_t(arbol)
-    f = j.fmt_t
+    f = _fmt_t
     azar = {(0,), (1,), (2,)}
     estados = {c: dict(estado="devuelto", v=valores[n], cota=False)
                for c, (n, _) in nombres.items()}
     estados[()]["estado"] = "devuelto"
     medio = "½"
     rotulos = {c: medio for c in nombres if len(c) == 2}
-    titulo = ["T con azar", f"juega {jugada}"]
+    titulo = ["El árbol base con azar", f"juega {jugada}"]
     formulas = []
     for c in sorted(azar):
         hs = [valores[nombres[c + (i,)][0]] if isinstance(j.nodo_en(arbol, c + (i,)), tuple)
               else j.F(j.nodo_en(arbol, c + (i,))) for i in range(len(j.nodo_en(arbol, c)))]
         formulas.append(f"v({nombres[c][0]}) = ½·{f(hs[0])} + ½·{f(hs[1])} = {f(valores[nombres[c][0]])}")
-    desc = ("El árbol T con I, C y D como nodos de azar: cada uno es un volado parejo, y cada "
+    desc = ("El árbol base con I, C y D como nodos de azar: cada uno es un volado parejo, y cada "
             "rama tiene probabilidad ½. C1 y C2 siguen siendo de MAX. "
             + "; ".join(formulas) + f". C1 vale v = {f(valores['C1'])} y C2 v = "
             f"{f(valores['C2'])}. R elige el mayor: {jugada}, con {f(valores['R'])}. Gana der "
@@ -1972,15 +1984,30 @@ def _fila_tramo_1(traza):
     return next(f["n"] for f in traza["filas"] if f["evento"] == "raiz" and f["hijo"] == "C")
 
 
+# El arbol de resultados a 600 px (mismo ancho que el arbol base): D tiene
+# tres hojas. En el nivel 2 caben, de izquierda a derecha, las dos hojas de
+# I, C1, C2 y las tres de D; las de C1 y C2, en el nivel 3.
+LUGARES_T_PM = {(): 316, (0,): 74, (1,): 280, (2,): 510,
+                (0, 0): 40, (0, 1): 108, (1, 0): 215, (1, 1): 345,
+                (2, 0): 450, (2, 1): 510, (2, 2): 570,
+                (1, 0, 0): 185, (1, 0, 1): 245, (1, 1, 0): 315, (1, 1, 1): 375}
+
+
 def jue_t_corte(d, tramo=None):
-    """Minimax con corte a profundidad d en T: los nodos de la linea de corte
-    reciben EVAL; lo de abajo no se genera (caja o circulo punteado con «?»,
-    la marca de A_notacion). tramo=1 dibuja el estado al cerrar izq y centro
-    (la serie va de parcial a resuelta); tramo=2, el final de esa serie, con
-    su nombre; None, el final de una figura sin tramos."""
-    arbol = j.ARBOL_T
-    traza = j.traza_decidir(arbol, profundidad=d, evaluar=j.EVAL_T)
+    """Minimax con corte a profundidad d en el arbol de resultados (finales
+    en 100·U, EVAL de EVAL_TPM): los nodos de la linea de corte reciben EVAL;
+    lo de abajo no se genera (caja o circulo punteado con «?», la marca de
+    A_notacion). tramo=1 dibuja el estado al cerrar izq y centro (la serie va
+    de parcial a resuelta); tramo=2, el final de esa serie, con su nombre;
+    None, el final de una figura sin tramos. Las cifras salen de
+    juegos.corte_tpm (destinos §E.3)."""
+    arbol = j.ARBOL_TPM_100
+    total = j.contar_nodos(arbol)
+    traza = j.traza_decidir(arbol, profundidad=d, evaluar=j.EVAL_TPM)
     exacta = j.traza_decidir(arbol)
+    jugada_c, valor_c, _, generados_c = j.corte_tpm(d)
+    assert (traza["jugada"], traza["valor"], traza["generados"]) == (jugada_c, valor_c,
+                                                                    generados_c)
     k = _fila_tramo_1(traza) if tramo == 1 else len(traza["filas"])
     fila = traza["filas"][k - 1]
     estados = _fotos_por_camino(arbol, traza, k)
@@ -1988,16 +2015,16 @@ def jue_t_corte(d, tramo=None):
     for c in nunca:
         estados[c]["estado"] = "podado"
     nombres = j.nombres_t(arbol)
-    f = j.fmt_t
+    f = _fmt_t
     evaluados = [c for c in _orden_caminos(arbol) if estados[c]["estado"] == "evaluado"]
     raiz = {f_["hijo"]: f_["w"] for f_ in traza["filas"][:k] if f_["evento"] == "raiz"}
     reales = {f_["hijo"]: f_["w"] for f_ in exacta["filas"] if f_["evento"] == "raiz"}
     jugada, valor = fila["mejor_jugada"], fila["mejor_valor"]
-    jugada_c = next(n for c, (n, a) in nombres.items() if a == jugada)
+    jugada_n = next(n for c, (n, a) in nombres.items() if a == jugada)
     if tramo == 1:
         anterior = traza["filas"][k - 2]["mejor_jugada"]
         titulo = [f"Corte con d = {d}, tramo 1", f"{jugada} sube a {f(valor)}"]
-        evento = (f"Tramo 1: R recibe w = {f(raiz[jugada_c])} de {jugada_c}, y mejor_jugada pasa "
+        evento = (f"Tramo 1: R recibe w = {f(raiz[jugada_n])} de {jugada_n}, y mejor_jugada pasa "
                   f"de {anterior} a {jugada}.")
     elif tramo == 2:
         ultimo = next(f_ for f_ in reversed(traza["filas"]) if f_["evento"] == "raiz")
@@ -2014,41 +2041,48 @@ def jue_t_corte(d, tramo=None):
         evento = f"R juega {jugada}, con {f(valor)}."
     por_mirar = [nombres[c][0] for c in _orden_caminos(arbol)
                  if estados[c]["estado"] == "pormirar" and isinstance(j.nodo_en(arbol, c), tuple)]
-    desc = (f"El árbol T con corte a profundidad {d}. Una línea punteada marca dónde se corta, "
-            f"bajo el nivel {d}; lo que queda debajo no se genera y va en caja o círculo "
-            f"punteado con «?». "
+    hojas_vistas = [f(j.nodo_en(arbol, c)) for c in _orden_caminos(arbol)
+                    if not isinstance(j.nodo_en(arbol, c), tuple)
+                    and estados[c]["estado"] == "devuelto"]
+    desc = (f"El árbol de resultados con corte a profundidad {d}; sus finales van en la escala "
+            f"100·U: +100 gana MAX, −100 gana MIN, 0 empate. Una línea punteada marca dónde "
+            f"se corta, bajo el nivel {d}; lo que queda debajo no se genera y va en caja o "
+            f"círculo punteado con «?». "
             + "; ".join(f"{nombres[c][0]} recibe EVAL = {f(estados[c]['v'])}" for c in evaluados)
+            + (f"; finales alcanzados arriba del corte: {', '.join(hojas_vistas)}"
+               if hojas_vistas else "")
             + ". " + "; ".join(f"{n} vale {f(v)}" for n, v in raiz.items())
             + (f"; {', '.join(por_mirar)} todavía por mirar" if por_mirar else "")
-            + f". {evento} Se han generado {fila['generados']} de 14 nodos.")
+            + f". {evento} Se han generado {fila['generados']} de {total} nodos.")
     out = []
     y = _titulo_t(out, titulo) + 8
-    y = _info(out, y, f"{fila['generados']} de 14 nodos"
+    y = _info(out, y, f"{fila['generados']} de {total} nodos"
               + (" hasta aquí" if tramo == 1 else ""))
     y0 = y + 30 + NODO_T_H / 2
     ys = _niveles(y0)
     resaltar = [(1,)] if tramo == 1 else []
     fondo = dibujar_t(out, arbol, estados, y0, resaltar=resaltar, renglones={(): "DECIDIR"},
-                      rotulos_tenues=False,
+                      rotulos_tenues=False, lugares=LUGARES_T_PM,
                       recuadro=[f"mejor_jugada = {jugada}", f"mejor_valor = {f(valor)}"])
     # La linea va a media distancia entre el nivel d y el siguiente: su
     # rotulo no toca las cajas de arriba ni los nodos de abajo.
     yh = (ys[d] + NODO_T_H / 2 + ys[d + 1] - NODO_T_H / 2) / 2
     out.append(linea(16, yh, ANCHO_T - 16, yh, color=ACENTO, grosor=2.5, guiones="10 7"))
-    out.append(_pastilla_t(412 if d == 1 else 300, yh, f"corte (d = {d} en la raíz)", ACENTO,
+    out.append(_pastilla_t(395 if d == 1 else 470, yh, f"corte (d = {d} en la raíz)", ACENTO,
                            tam=16, mono=False, relleno=FONDO))
     if tramo == 1:
         notas = [f"Tras izq y centro: {jugada} vale {f(valor)};",
-                 f"su valor real es {f(reales[jugada_c])}. D todavía",
+                 f"su valor real es {f(reales[jugada_n])}. D todavía",
                  "no se mira: es el tramo 2."]
     elif jugada != exacta["jugada"]:
-        notas = [f"{jugada} parece valer {f(raiz[jugada_c])} (EVAL);",
-                 f"su valor real es {f(reales[jugada_c])}.",
-                 "Lo que queda bajo el corte", "no se genera: es una trampa."]
+        notas = [f"{jugada} parece valer {f(raiz[jugada_n])} (EVAL);",
+                 f"su valor real es {f(reales[jugada_n])}: la captura",
+                 "queda bajo el corte y no se ve.", "Es una trampa."]
     else:
-        notas = [f"Con este corte, {jugada} vale {f(raiz[jugada_c])};",
-                 f"su valor real es {f(reales[jugada_c])}.",
+        notas = [f"Con este corte, {jugada} vale {f(raiz[jugada_n])};",
+                 f"su valor real es {f(reales[jugada_n])}.",
                  "La jugada ya es la de minimax", f"sin corte: {exacta['jugada']}."]
+    notas = notas + ["Finales en la escala 100·U."]
     y = _pie_t(out, fondo + HOJA_T_R + 44, notas)
     items = ([("pila", "en la pila"), ("sube", "acaba de devolver"), ("pormirar", "por mirar")]
              if tramo == 1 else [])
@@ -2074,30 +2108,41 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(136, 80, 80)):
     for c in _orden_caminos(arbol):
         if c and c not in gen_ and nombres[c][0] in podados and c[:-1] in hijos:
             hijos[c[:-1]].append(c)
-    terminales = []
+    # Con finales en 100·U («−100») la hoja crece a r = 23 y la caja a 132:
+    # todo a 15 o mas, el piso de las figuras de estos arboles.
+    largas = any(len(_fmt_t(j.nodo_en(arbol, c))) >= 3 for c in _orden_caminos(arbol)
+                 if not isinstance(j.nodo_en(arbol, c), tuple))
+    bw, bh, r = (132, 44, 23) if largas else (124, 44, 18)
 
-    def rec(c):
-        if c in hijos:
-            for h in hijos[c]:
-                rec(h)
-        else:
-            terminales.append(c)
-    rec(())
-    bw, bh, r, gap = 124, 44, 18, 22
-    ancho = {c: (44 if not isinstance(j.nodo_en(arbol, c), tuple) else bw) for c in terminales}
-    total = sum(ancho.values()) + gap * (len(terminales) - 1)
-    x = (ANCHO_T - total) / 2
+    def es_hoja(c):
+        return not isinstance(j.nodo_en(arbol, c), tuple)
+
+    def propio(c):
+        return 2 * r + 4 if es_hoja(c) else bw
+
+    def interior(c, gap):
+        return sum(ancho(h, gap) for h in hijos[c]) + gap * (len(hijos[c]) - 1)
+
+    def ancho(c, gap):
+        """Lo que mide el subarbol de c: nunca menos que su propia caja, para
+        que un padre de dos hojas no se salga por la orilla."""
+        return max(propio(c), interior(c, gap)) if c in hijos else propio(c)
+    # Con finales en 100·U (el arbol de resultados) caben nueve hojas y dos
+    # cajas: el hueco se encoge hasta que todo quepa en ANCHO_T − 16.
+    gap = 22
+    while ancho((), gap) > ANCHO_T - 16 and gap > 6:
+        gap -= 1
     xs = {}
-    for c in terminales:
-        xs[c] = x + ancho[c] / 2
-        x += ancho[c] + gap
 
-    def centro(c):
-        if c not in xs:
-            hs = [centro(h) for h in hijos[c]]
-            xs[c] = (hs[0] + hs[-1]) / 2
-        return xs[c]
-    centro(())
+    def colocar(c, x0):
+        w = ancho(c, gap)
+        if c in hijos:
+            x = x0 + (w - interior(c, gap)) / 2
+            for h in hijos[c]:
+                colocar(h, x)
+                x += ancho(h, gap) + gap
+        xs[c] = x0 + w / 2
+    colocar((), (ANCHO_T - ancho((), gap)) / 2)
     final = traza["filas"][-1]["estado"]
     ys = [y0]
     for g in gaps:
@@ -2126,9 +2171,13 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(136, 80, 80)):
         n = nombres[c][0]
         if not isinstance(j.nodo_en(arbol, c), tuple):
             if c in gen_:
-                out.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{mezclar(COLOR_FINAL, 0.07)}" '
+                rot = _fmt_t(j.nodo_en(arbol, c))
+                largo = len(rot) >= 3
+                out.append(f'<circle cx="{x}" cy="{y}" r="{r}" '
+                           f'fill="{mezclar(COLOR_FINAL, 0.07)}" '
                            f'stroke="{COLOR_FINAL}" stroke-width="2"/>')
-                out.append(texto(x, y + 6, n, tam=16, peso="700"))
+                out.append(texto(x, y + (5 if largo else 6), rot, tam=15 if largo else 16,
+                                 peso="700"))
             else:
                 out.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{FONDO}" stroke="{LINEA}" '
                            f'stroke-width="2" stroke-dasharray="5 4"/>')
@@ -2141,9 +2190,9 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(136, 80, 80)):
         if c == ():
             rot = "R · MAX"
         elif e["estado"] == "evaluado":
-            rot = f"{n} · EVAL = {j.fmt_t(e['v'])}"
+            rot = f"{n} · EVAL = {_fmt_t(e['v'])}"
         else:
-            rot = f"{n} · v = {j.fmt_t(e['v'])}"
+            rot = f"{n} · v = {_fmt_t(e['v'])}"
         alto = bh + (16 if cota else 0)
         out.append(caja(x - bw / 2, y - bh / 2, bw, alto, relleno=mezclar(color, 0.07),
                         borde=color, grosor=2,
@@ -2155,31 +2204,55 @@ def _mini_arbol(out, arbol, traza, y0, gaps=(136, 80, 80)):
     return ys[max(len(c) for c in dibujados)]
 
 
+def _cotas_por_ventana(traza):
+    """Copia de la traza con el «cota» de la foto final puesto por la ventana
+    con que llego cada nodo (v ≤ α o v ≥ β), como juegos._valores_ventana,
+    y no por si su corte dejo hermanos sin generar (el flag de traza_decidir,
+    que alimenta las otras figuras y trazas y no se toca). En la iterativa con
+    d = 3, I llega con (0, +∞), corta en su ultimo hijo y devuelve −100: es
+    un techo, como dice la pagina, aunque no haya podado nada."""
+    ventana = {f["nodo"]: (f["alfa"], f["beta"]) for f in traza["filas"]
+               if f["evento"] == "entra"}
+    final = {n: dict(e) for n, e in traza["filas"][-1]["estado"].items()}
+    for n, e in final.items():
+        if n in ventana and e["estado"] == "devuelto":
+            a, b = ventana[n]
+            e["cota"] = e["v"] <= a or e["v"] >= b
+    filas = traza["filas"][:-1] + [dict(traza["filas"][-1], estado=final)]
+    return dict(traza, filas=filas)
+
+
 def jue_t_iterativa():
-    """Profundizacion iterativa en T: tres busquedas de alfa-beta con corte,
-    cada una con la jugada que dejo lista la anterior primero."""
-    arbol = j.ARBOL_T
-    corridas = j.profundizacion_iterativa_t(arbol)
-    f = j.fmt_t
+    """Profundizacion iterativa en el arbol de resultados (finales en 100·U,
+    EVAL de EVAL_TPM): tres busquedas de alfa-beta con corte, cada una con la
+    jugada que dejo lista la anterior primero. Cifras de juegos.iterativa_tpm."""
+    arbol = j.ARBOL_TPM_100
+    corridas = [(d, o, _cotas_por_ventana(t))
+                for d, o, t in j.profundizacion_iterativa_t(arbol, (1, 2, 3), j.EVAL_TPM)]
+    filas, total = j.iterativa_tpm()
+    assert [(d, o, t["jugada"], t["generados"]) for d, o, t in corridas] == [
+        (d, o, jg, n) for d, o, jg, _, n in filas]
+    f = _fmt_t
     listas = [t["jugada"] for _, _, t in corridas]
     cambia = next((d for (d, _, t), antes in zip(corridas[1:], listas) if t["jugada"] != antes),
                   None)
     if cambia:
-        titulo = ["Profundización iterativa", f"en T: {listas[0]} con d = 1,",
-                  f"{listas[-1]} desde d = {cambia}"]
+        titulo = ["Profundización iterativa", "en el árbol de resultados:",
+                  f"{listas[0]} con d = 1,", f"{listas[-1]} desde d = {cambia}"]
     else:
-        titulo = ["Profundización iterativa", f"en T: {listas[-1]} desde d = 1"]
+        titulo = ["Profundización iterativa", "en el árbol de resultados:",
+                  f"{listas[-1]} desde d = 1"]
     partes = []
     for d, orden, t in corridas:
-        cortes = ", ".join(f"corte {tipo} en {n}" for tipo, n, *_ in t["cortes"]) or "ningún corte"
+        cortes = ", ".join(f"corte {tipo} en {n}" for tipo, n, *_ in t["cortes"]) or "ninguna poda"
         cotas = [n for n, e in t["filas"][-1]["estado"].items() if e.get("cota")]
-        cotas_ = (f"; {', '.join(cotas)} devuelven una cota, no su valor" if cotas else "")
+        cotas_ = (f"; en {_y(cotas)}, la ventana solo certifica un techo o un piso"
+                  if cotas else "")
         partes.append(f"d = {d}: la raíz mira {', '.join(orden)}; {t['generados']} nodos; "
                       f"{cortes}{cotas_}; deja lista {t['jugada']} ({f(t['valor'])})")
-    total = sum(t["generados"] for _, _, t in corridas)
-    desc = ("Tres búsquedas de alfa-beta con corte sobre el árbol T, una debajo de otra, "
-            "cada una con la jugada que dejó lista la anterior primero en la raíz. "
-            + ". ".join(partes) + f". En total, {total} nodos.")
+    desc = ("Tres búsquedas de alfa-beta con corte sobre el árbol de resultados, con sus finales "
+            "en la escala 100·U, una debajo de otra, cada una con la jugada que dejó lista la "
+            "anterior primero en la raíz. " + ". ".join(partes) + f". En total, {total} nodos.")
     out = []
     y = _titulo_t(out, titulo) + 16
     for d, orden, t in corridas:
@@ -2192,6 +2265,7 @@ def jue_t_iterativa():
         fondo = _mini_arbol(out, arbol, t, y + 54 + 40)
         y = fondo + 18 + 34
     y = _pie_t(out, y + 4, [f"En total, {total} nodos.",
+                            "Finales en la escala 100·U.",
                             "Punteada con barra: rama podada.",
                             "«cota»: su v salió de la ventana; solo",
                             "es un techo o un piso de su valor."], tam=16)
@@ -2199,18 +2273,21 @@ def jue_t_iterativa():
 
 
 def jue_ab_ventana():
-    """La ventana (α, β) como una banda en la recta: tocar un extremo o salir
-    de ella corta. Los dos ejemplos de abajo son los dos cortes del arbol T."""
+    """La ventana (α, β) como una banda en la recta: salir de ella poda, y
+    la igualdad poda solo con el umbral del rival (v ≥ β en MAX, v ≤ α en
+    MIN); igualar el umbral propio no basta. Los dos ejemplos de abajo son
+    los dos cortes del arbol base."""
     W = ANCHO_T
     t = j.traza_decidir(j.ARBOL_T, poda=True)
     beta_f = next(f for f in t["filas"] if f["corta"] == "beta")
     alfa_f = next(f for f in t["filas"] if f["corta"] == "alfa")
-    f = j.fmt_t
+    f = _fmt_t
     titulo = "La ventana (α, β)"
     desc = ("Una recta numérica de −∞ a +∞ con dos marcas, α y β. La banda entre ellas va "
             "resaltada: aquí el valor importa. A la izquierda de α, o en α, v ≤ α: corte alfa, "
             "en un nodo de MIN. A la derecha de β, o en β, v ≥ β: corte beta, en un nodo de "
-            "MAX. El igual cuenta. Abajo, los dos cortes del árbol T: D llega con "
+            "MAX. El igual cuenta solo con el umbral del rival: v = β poda en MAX y v = α "
+            "poda en MIN; igualar el umbral propio no basta. Abajo, los dos cortes del árbol base: D llega con "
             f"({f(alfa_f['alfa'])}, {f(alfa_f['beta'])}) y su hoja {f(alfa_f['w'])} cae a la "
             f"izquierda de α; C2 llega con ({f(beta_f['alfa'])}, {f(beta_f['beta'])}) y su hoja "
             f"{f(beta_f['w'])} cae a la derecha de β.")
@@ -2234,8 +2311,14 @@ def jue_ab_ventana():
         out.append(texto(cx, y - 46, r1, tam=T_VAL, peso="700"))
         out.append(texto(cx, y - 16, r2, tam=T_TXT, color=ACENTO, peso="700"))
         out.append(texto(cx, y + 78, r3, tam=T_TXT, color=SUAVE))
-    out.append(texto(X_PIE, y + 120, "El igual cuenta:", tam=T_TXT, anclaje="start"))
-    out.append(texto(X_PIE, y + 150, "v = α o v = β ya corta.", tam=T_TXT, anclaje="start"))
+    # en renglones de ≤ 345 px: a 390 el sitio no escala la figura
+    out.append(texto(X_PIE, y + 120, "El igual cuenta, pero solo con", tam=T_TXT,
+                     anclaje="start"))
+    out.append(texto(X_PIE, y + 150, "el umbral del rival:", tam=T_TXT, anclaje="start"))
+    out.append(texto(X_PIE, y + 180, "v = β poda en MAX;", tam=T_TXT, anclaje="start"))
+    out.append(texto(X_PIE, y + 210, "v = α poda en MIN.", tam=T_TXT, anclaje="start"))
+    out.append(texto(X_PIE, y + 240, "Igualar el propio no basta.", tam=T_TXT,
+                     color=SUAVE, anclaje="start"))
 
     # Los dos cortes de T, cada uno en su recta (0 a 12, con colas para ±∞).
     def xv(v):
@@ -2264,13 +2347,13 @@ def jue_ab_ventana():
 
     a_, b_ = alfa_f["alfa"], alfa_f["beta"]
     assert alfa_f["v"] <= a_
-    out.append(recta(y + 290, f"D llega con ({f(a_)}, {f(b_)})", a_, b_, alfa_f["v"],
+    out.append(recta(y + 370, f"D llega con ({f(a_)}, {f(b_)})", a_, b_, alfa_f["v"],
                      f"{f(alfa_f['v'])} ≤ {f(a_)}: corte alfa"))
     a_, b_ = beta_f["alfa"], beta_f["beta"]
     assert beta_f["v"] >= b_
-    out.append(recta(y + 460, f"C2 llega con ({f(a_)}, {f(b_)})", a_, b_, beta_f["v"],
+    out.append(recta(y + 540, f"C2 llega con ({f(a_)}, {f(b_)})", a_, b_, beta_f["v"],
                      f"{f(beta_f['v'])} ≥ {f(b_)}: corte beta"))
-    H = y + 520
+    H = y + 600
     return "".join([marco(W, H, desc, titulo, desc)] + out + [cierre()])
 
 
@@ -2457,14 +2540,17 @@ def jue_ab_fijo_parte(parte):
         titulo = "Orden fijo · 2. Corte alfa en n3"
         specs = {1: raiz, 2: _fila_final(),
                  3: dict(modo="tablero", nuevo=True, ancho=176,
-                         renglones=("v ≤ α: corta", f"v = {f(d['v3'])} (cota)")),
+                         renglones=("v ≤ α: poda", f"v = {f(d['v3'])} (cota)")),
                  4: dict(modo="tablero", nuevo=True, ancho=156,
                          renglones=("una jugada", f"v = {f(d['v4'])}")),
                  5: _fila_final(True),
                  6: dict(modo="fantasma", lineas=["y lo que", "cuelga"]),
                  13: dict(modo="fantasma")}
-        aristas = [_a(1, 2), _a(1, 3, "nueva", (ventana3, True)),
-                   _a(3, 4, "nueva", (ventana4, True)),
+        # jugada y ventana más arriba que en _a: a 0.82 la ventana tapaba la
+        # punta de flecha de c1xb2 y de a3xb2 (ronda de render).
+        aristas = [_a(1, 2, t_jugada=0.55),
+                   _a(1, 3, "nueva", (ventana3, True), t_jugada=0.33, t_ventana=0.66),
+                   _a(3, 4, "nueva", (ventana4, True), t_jugada=0.4, t_ventana=0.7),
                    _a(4, 5, "nueva"),
                    _a(3, 6, "tenue", t_jugada=0.7), _a(3, 13, "tenue", t_jugada=0.7)]
         cortes = [(3, [6, 13], "corte alfa", "der", 0.28)]
@@ -2474,7 +2560,7 @@ def jue_ab_fijo_parte(parte):
                  f"no se generan: {generados} de 13."]
         desc = (f"Alfa-beta desde n1 con el orden fijo, parte 2. n3, de MIN, llega con {ventana3}. "
                 f"Debajo, n4, de MAX, llega con {ventana4}, y su único hijo n5, final, vale "
-                f"{f(d['v5'])}. n3 muestra v = {f(d['v3'])} ≤ α = {f(d['a3'])}: corta y "
+                f"{f(d['v5'])}. n3 muestra v = {f(d['v3'])} ≤ α = {f(d['a3'])}: poda y "
                 f"devuelve una cota, su valor exacto es {f(v_exacto_n3)}. Una barra de acento "
                 "con la leyenda «corte alfa» va bajo n3. Al lado, dos cajas punteadas con «?»: "
                 f"n6 con lo que cuelga de él, tras c3-c2, y n13, tras c3xb2; no se generan. "
@@ -2504,7 +2590,7 @@ def jue_ab_invertido_parte(parte):
                                     f"({f(a2)}, {f(b2)})")
     por_mirar = dict(modo="pormirar", renglones=("por mirar", ""))
     n3_beta = (f"β: +∞ → {f(v13)}", "MIN tiene " + f(v13))
-    n6_corte = ("v ≥ β: corta", f"v = {f(v6)} (cota)")
+    n6_corte = ("v ≥ β: poda", f"v = {f(v6)} (cota)")
     # Ancho propio de los nodos con renglones largos.
     a3_, a6_, a4_ = dict(ancho=176), dict(ancho=176), dict(ancho=160)
     fantasmas = {11: dict(modo="fantasma"), 7: dict(modo="fantasma", lineas=["y lo que", "cuelga"])}
@@ -2540,7 +2626,7 @@ def jue_ab_invertido_parte(parte):
                  "Corte beta: n11 y n7", "(con lo que cuelga)", "no se generan."]
         desc = (f"Alfa-beta desde n1 con el orden invertido, parte 2. n6, de MAX, llega con "
                 f"{ventana6}. Su primer hijo, n12, tras b2xa3, va resaltado: final, vale {f(v12)}. "
-                f"n6 muestra v = {f(v6)} ≥ β = {f(b6)}: corta y devuelve v = {f(v6)}, una cota. Una barra de acento con la "
+                f"n6 muestra v = {f(v6)} ≥ β = {f(b6)}: poda y devuelve v = {f(v6)}, una cota. Una barra de acento con la "
                 "leyenda «corte beta» va bajo n6. Sus otros dos hijos, n11 tras b2-b3 y n7 tras "
                 "b1xc2 con lo que cuelga de él, son cajas punteadas con «?»: no se generan.")
         return _parte(titulo, desc, notas, LUGARES_INV, "ys_inv", specs, aristas, cortes)
@@ -2552,7 +2638,7 @@ def jue_ab_invertido_parte(parte):
                  13: dict(modo="tablero", renglones=("final", f"U = {f(v13)}")),
                  6: dict(modo="tablero", renglones=n6_corte, **a6_),
                  12: _fila_final(),
-                 4: dict(modo="tablero", nuevo=True, renglones=("v ≥ β: corta", f"v = {f(v4)}"),
+                 4: dict(modo="tablero", nuevo=True, renglones=("v ≥ β: poda", f"v = {f(v4)}"),
                          **a4_),
                  5: _fila_final(True), **fantasmas}
         aristas = [_a(1, 3, t_jugada=0.4), _a(1, 2, "nueva", (ventana2, True)),
@@ -2565,10 +2651,10 @@ def jue_ab_invertido_parte(parte):
                  f"n2 llega con {ventana2}", f"y vale {f(v2)}. n1 vale {f(v1)}:", "8 de 13."]
         desc = (f"Alfa-beta desde n1 con el orden invertido, parte 3. De vuelta en n3, falta n4, "
                 f"de MAX, que llega con {ventana4}; su único hijo, n5, vale {f(v5)}, y debajo "
-                f"una nota sobre n4: «en n4, v = {f(v5)} ≥ β = {f(b4)}: corta, pero no ahorra». n3 "
+                f"una nota sobre n4: «en n4, v = {f(v5)} ≥ β = {f(b4)}: poda, pero no ahorra». n3 "
                 f"devuelve v = {f(v3)}, y en n1 α sube a {f(v3)}. Su último hijo, n2, llega con "
                 f"{ventana2} y vale {f(v2)}. La raíz muestra v = {f(v1)}. Se generan 8 de 13 nodos.")
-        extra = [f"en n4: v = {f(v5)} ≥ β = {f(b4)},", "corta, pero no ahorra"]
+        extra = [f"en n4: v = {f(v5)} ≥ β = {f(b4)},", "poda, pero no ahorra"]
         return _parte(titulo, desc, notas, LUGARES_INV, "ys_inv", specs, aristas, cortes, extra)
     raise ValueError("El orden invertido admite partes de 1 a 3")
 
@@ -2915,115 +3001,128 @@ def jue_c3_profundizacion():
     return "".join(out)
 
 
-def _gn(cuenta):
-    g, n = cuenta
-    return f"{g}/{n}"
+# jue-c3-mcts-pasos, rehecha (destinos §E.1 #9, R7): una vuelta de UCT en
+# cuatro paneles, con el estilo de jue-c3-mcg-uct-fases (paneles separados
+# por una raya, titulo a la izquierda) pero con numeros: N y V̂ en cada nodo,
+# desde MAX. Sin G/N. Los conteos salen de juegos.mcts_vuelta y mcts_nv.
+MCTS_REL = {"r": (180, 0), "a": (122, 80), "b": (240, 80), "a1": (86, 160), "a2": (166, 160),
+            "nuevo": (166, 240)}
+MCTS_NODO_W, MCTS_NODO_H = 68, 60
+MCTS_NOMBRE = {"r": "R"}          # el rotulo de cada nodo; los demas, su clave
+MCTS_PANELES = [("1 · Selección", ["baja por el mejor puntaje:", "MAX, el mayor Q̂ + bono;",
+                                    "MIN, el menor Q̂ − bono"]),
+                ("2 · Expansión", ["agrega un hijo nuevo"]),
+                ("3 · Simulación", ["juega al azar hasta un final;", "la partida no se guarda"]),
+                ("4 · Retropropagación", ["cada nodo del camino suma", "una visita y mete U en V̂"])]
 
 
-ANCHO_MCTS = 300
+def _v_mcts(v):
+    return "?" if v is None else _dec_txt(v)
+
+
+def _nodo_mcts(out, x, y, tipo, n, v, fuerte=False, nombre=""):
+    color = COLOR_MAX if tipo == "MAX" else COLOR_MIN
+    w, h = MCTS_NODO_W, MCTS_NODO_H
+    out.append(caja(round(x - w / 2, 1), round(y - h / 2, 1), w, h, relleno=mezclar(color, 0.1),
+                    borde=ACENTO if fuerte else color, grosor=3.5 if fuerte else 2, radio=6))
+    out.append(texto(x, y - 13, nombre, tam=13, color=SUAVE, peso="700"))
+    out.append(texto(x, y + 5, f"N {n}", tam=14, peso="700", color=color))
+    out.append(texto(x, y + 23, f"V̂ {_v_mcts(v)}", tam=14, peso="700"))
 
 
 def jue_c3_mcts_pasos():
-    """Las cuatro fases de una vuelta de MCTS, en cuatro paneles. Los conteos
-    (G/N: victorias de MAX / simulaciones) salen de juegos.mcts_vuelta: la raiz
-    suma los de sus hijos, cada otro nodo vale 1 (su simulacion) mas los de
-    sus hijos, la seleccion usa UCT con c = 1 y la vuelta dibujada actualiza
-    el camino con U = +1.
-
-    Una columna de ANCHO_MCTS: a 390 px el sitio no escala los SVG y el
-    parrafo de la figura mide ~305; en dos columnas de 600, el lector del
-    telefono veia solo los paneles 1 y 3 y tenia que desplazarse de lado
-    para la expansion y la retropropagacion (ronda de render a 390)."""
+    """Las cuatro fases de una vuelta de UCT (c = 1, la simulacion da
+    U = +1) en cuatro paneles, cada nodo con N y V̂ desde MAX."""
     vuelta = j.mcts_vuelta(j.MCTS_ARBOL, c=1, u=1)
-    antes = {**vuelta["antes"], "nuevo": (0, 0)}
-    despues = vuelta["despues"]
+    antes = j.mcts_nv(vuelta["antes"])
+    antes["nuevo"] = (0, None)
+    despues = j.mcts_nv(vuelta["despues"])
     camino = vuelta["camino"]
-    o = 24
-    pw = ANCHO_MCTS - 24
-    # Cada panel mide lo que su arbol: el 1 no tiene hijo nuevo, el 3 lleva
-    # la partida al azar y su final, el 4 sus dos renglones de pie.
-    phs = (320, 350, 425, 405)
-    pys = [90 + o + sum(phs[:k]) + 16 * k for k in range(4)]
-    fin_paneles = pys[-1] + phs[-1]
-    W, H = ANCHO_MCTS, fin_paneles + 112
-    renglones = ["Una vuelta de MCTS:", f"la raíz pasa de {_gn(antes['r'])} a {_gn(despues['r'])}"]
-    titulo = " ".join(renglones)
-    desc = ("Cuatro paneles con el mismo árbol; cada nodo dice G/N: victorias de MAX entre "
-            "simulaciones que pasaron por él. La raíz no simula: sus cuentas son la suma de las "
-            "de sus hijos; cada otro nodo, su propia simulación más las de sus hijos. "
-            f"1, selección: desde la raíz, {_gn(antes['r'])}, se baja por el camino resaltado "
-            "eligiendo en cada nodo al hijo de mejor promedio para quien mueve ahí: MAX en la "
-            f"raíz elige {_gn(antes[camino[1]])}; MIN en ese nodo elige {_gn(antes[camino[2]])}, "
-            "donde MAX ganó menos. 2, expansión: se agrega un hijo nuevo, 0/0. 3, simulación: "
-            "desde ese hijo se juega una partida al azar hasta un final, que aquí gana MAX, "
-            "U = +1. 4, retropropagación: cada nodo del camino suma una simulación y, como ganó "
-            "MAX, una victoria: "
-            + ", ".join(f"{_gn(antes[n])} pasa a {_gn(despues[n])}"
-                        for n in camino + ["nuevo"]) + ".")
-    out = [marco(W, H, desc, titulo, desc)]
-    encabezado(out, renglones)
-    paneles = [("1 · Selección", "baja por el mejor promedio"),
-               ("2 · Expansión", "agrega un hijo nuevo"),
-               ("3 · Simulación", "juega al azar hasta un final"),
-               ("4 · Retropropagación", "sube el resultado")]
-    rel = {"r": (0, 0), "a": (-55, 70), "b": (60, 70), "a1": (-100, 140), "a2": (-10, 140),
-           "nuevo": (-10, 210)}
     assert camino == ["r", "a", "a2"] and vuelta["padre_nuevo"] == "a2", camino
+    tipos = {n: pl for n, (_, pl, _) in j.MCTS_ARBOL.items()}
+    tipos["nuevo"] = "MIN" if tipos["a2"] == "MAX" else "MAX"
     aristas = [(p, n) for n, (p, _, _) in j.MCTS_ARBOL.items() if p] + [("a2", "nuevo")]
-    bw, bh = 56, 30
-    for k, (nombre, sub) in enumerate(paneles):
-        px, py, ph = 12, pys[k], phs[k]
-        out.append(caja(px, py, pw, ph, relleno=mezclar(LINEA, 0.12), borde=LINEA, radio=12))
-        out.append(texto(px + pw / 2, py + 32, nombre, tam=19, peso="700"))
-        out.append(texto(px + pw / 2, py + 56, sub, tam=15, color=SUAVE))
-        cx, cy = px + pw / 2 + 15, py + 105
-        pos = {n: (cx + dx, cy + dy) for n, (dx, dy) in rel.items()}
-        visibles = [n for n in rel if k >= 1 or n != "nuevo"]
-        # El camino de la seleccion va en las aristas; el borde de acento,
-        # solo en lo nuevo de cada paso: el hijo que se agrega (2) y los
-        # nodos cuyas cuentas cambian (4).
-        aristas_fuertes = {0: set(zip(camino, camino[1:])), 1: {("a2", "nuevo")}, 2: set(),
-                           3: set(zip(camino, camino[1:])) | {("a2", "nuevo")}}[k]
+    nr0, vr0 = antes["r"]
+    nr1, vr1 = despues["r"]
+    titulo = ["Una vuelta de UCT", f"la raíz pasa de N {nr0}, V̂ {_v_mcts(vr0)}",
+              f"a N {nr1}, V̂ {_v_mcts(vr1)}"]
+    out = []
+    y = _titulo_rx(out, titulo) + 52
+    w = ANCHO_HOMOLOGACION
+    for k, (nombre, sub) in enumerate(MCTS_PANELES):
+        out.append(linea(X_PIE, y - 30, w - X_PIE, y - 30, color=LINEA, grosor=1.5))
+        out.append(texto(X_PIE, y, nombre, tam=17, peso="700", anclaje="start"))
+        for i, r_ in enumerate(sub):
+            out.append(texto(X_PIE, y + 20 + 19 * i, r_, tam=14, color=SUAVE, anclaje="start"))
+        oy = y + 48 + 19 * len(sub)
+        pos = {n: (x, oy + dy) for n, (x, dy) in MCTS_REL.items()}
+        visibles = [n for n in MCTS_REL if k >= 1 or n != "nuevo"]
+        niveles = sorted({dy for n, (_, dy) in MCTS_REL.items() if n in visibles})
+        for dy in niveles:
+            n0 = next(n for n in visibles if MCTS_REL[n][1] == dy)
+            tipo = tipos[n0]
+            out.append(texto(X_PIE, oy + dy + 5, tipo, tam=13, peso="700",
+                             color=COLOR_MAX if tipo == "MAX" else COLOR_MIN, anclaje="start"))
+        fuertes = {0: set(zip(camino, camino[1:])), 1: {("a2", "nuevo")}, 2: set(),
+                   3: set(zip(camino, camino[1:])) | {("a2", "nuevo")}}[k]
         nuevos = {0: set(), 1: {"nuevo"}, 2: set(), 3: set(camino) | {"nuevo"}}[k]
+        h2 = MCTS_NODO_H / 2
         for u, v in aristas:
             if v not in visibles:
                 continue
-            fuerte = (u, v) in aristas_fuertes
-            out.append(linea(*pos[u], *pos[v], color=ACENTO if fuerte else SUAVE,
-                             grosor=3 if fuerte else 2))
+            f_ = (u, v) in fuertes
+            (x1, y1), (x2, y2) = pos[u], pos[v]
+            out.append(linea(x1, y1 + h2, x2, y2 - h2, color=ACENTO if f_ else SUAVE,
+                             grosor=3 if f_ else 2))
+        datos = despues if k == 3 else antes
         for n in visibles:
-            x, y = pos[n]
-            fuerte = n in nuevos
-            out.append(caja(x - bw / 2, y - bh / 2, bw, bh, relleno=FONDO,
-                            borde=ACENTO if fuerte else SERIE[1], grosor=3 if fuerte else 2,
-                            radio=3))
-            out.append(texto(x, y + 6, _gn((despues if k == 3 else antes)[n]), tam=15,
-                             peso="700", color=TEXTO))
+            _nodo_mcts(out, *pos[n], tipos[n], *datos[n], fuerte=n in nuevos,
+                       nombre=MCTS_NOMBRE.get(n, n))
+        fondo = oy + max(MCTS_REL[n][1] for n in visibles) + h2
+        if k == 0:
+            # Los puntajes de la seleccion, junto a la jugada elegida en
+            # cada nodo del camino.
+            pr = vuelta["puntajes"]
+            for i, r_ in enumerate(["elige a:", f"{pr['r']['a']:.2f}", f"> {pr['r']['b']:.2f}"]):
+                out.append(texto(226, oy - 4 + 17 * i, r_, tam=13, color=SUAVE,
+                                 anclaje="start"))
+        if k == 1:
+            x, yy = pos["nuevo"]
+            out.append(_pild(x + 82, yy, "hijo nuevo", ACENTO, tam=13))
         if k == 2:
-            x, y = pos["nuevo"]
-            pts = " ".join(f"{x + (10 if i % 2 else -10):.0f},{y + bh / 2 + 4 + 9 * i:.0f}"
-                           for i in range(6))
-            out.append(f'<polyline points="{pts}" fill="none" stroke="{ACENTO}" stroke-width="2"/>')
-            out.append(caja(x - 45, y + bh / 2 + 54, 90, 28, borde=COLOR_FINAL, radio=6, grosor=2))
-            out.append(texto(x, y + bh / 2 + 74, "U = +1", tam=15, color=COLOR_FINAL, peso="700"))
+            x, yy = pos["nuevo"]
+            yf = yy + 120
+            out.append(_zigzag(x, yy + h2, x, yf - 16, n=10, amp=6, color=SIM_BORDE))
+            out.append(_nodo_mcg(x, yf, "final", r=14))
+            out.append(texto(x + 30, yf - 4, "U = +1:", tam=14, color=COLOR_FINAL,
+                             peso="700", anclaje="start"))
+            out.append(texto(x + 30, yf + 14, "gana MAX", tam=14, color=COLOR_FINAL,
+                             peso="700", anclaje="start"))
+            fondo = yf + 18
         if k == 3:
             for n in ["nuevo"] + camino[::-1]:
-                x, y = pos[n]
-                out.append(flecha(x + bw / 2 + 12, y + 12, x + bw / 2 + 12, y - 12, color=ACENTO,
-                                  grosor=2))
-            out.append(texto(px + pw / 2, py + ph - 40, "cada nodo del camino suma",
-                             tam=14, color=SUAVE))
-            out.append(texto(px + pw / 2, py + ph - 20, "1 simulación y 1 victoria",
-                             tam=14, color=SUAVE))
-        if k == 0:
-            out.append(texto(px + pw / 2, py + ph - 22, "el árbol que ya se construyó", tam=14,
-                             color=SUAVE))
-    out.append(nota_svg(fin_paneles + 30, ["En cada nodo: G/N, victorias de",
-                                           "MAX / simulaciones que pasaron",
-                                           "por él. La raíz suma sus hijos;",
-                                           "los demás, 1 más sus hijos."], tam=14))
-    out.append(cierre())
-    return "".join(out)
+                x, yy = pos[n]
+                out.append(flecha(x + MCTS_NODO_W / 2 + 10, yy + 12, x + MCTS_NODO_W / 2 + 10,
+                                  yy - 12, color=ACENTO, grosor=2))
+        y = fondo + 70
+    y = _pie_t(out, y - 28, ["N: visitas; V̂: promedio de los", "U que pasaron por el nodo,",
+                             "desde MAX. Q̂(s,a), el de una", "arista, es el V̂ del hijo al",
+                             "que lleva. La raíz no simula:", "suma lo de sus hijos."], tam=15)
+    pasos = ", ".join(f"{MCTS_NOMBRE.get(n, n)} pasa de N {antes[n][0]}, V̂ {_v_mcts(antes[n][1])} a N "
+                      f"{despues[n][0]}, V̂ {_v_mcts(despues[n][1])}" for n in camino + ["nuevo"])
+    pr = vuelta["puntajes"]
+    desc = ("Una vuelta de UCT con c = 1 en cuatro paneles con el mismo árbol de búsqueda; "
+            "cada nodo dice N, sus visitas, y V̂, el promedio de los U que pasaron por él, "
+            "visto desde MAX; MAX y MIN se marcan por nivel. La raíz no simula: sus cuentas "
+            "son las de sus hijos. 1, selección: desde la raíz, de MAX, con N "
+            f"{antes['r'][0]} y V̂ {_v_mcts(antes['r'][1])}, baja por el mejor puntaje: MAX "
+            f"elige a, con Q̂ + bono = {pr['r']['a']:.2f} contra {pr['r']['b']:.2f} de b; en a, "
+            f"MIN elige a2, con el menor Q̂ − bono, donde MAX ganó menos (V̂ "
+            f"{_v_mcts(antes['a2'][1])}). 2, expansión: agrega un hijo nuevo bajo a2, con N 0. "
+            "3, simulación: desde el hijo nuevo juega al azar hasta un final, que aquí gana "
+            f"MAX, U = +1; la partida no se guarda. 4, retropropagación: {pasos}. Q̂(s,a), el "
+            "de una arista, es el V̂ del hijo al que lleva.")
+    return _svg_h(titulo, desc, out, y)
 
 
 # ------------------------------------- p6: de donde sale el bono (UCB) ---
@@ -3036,27 +3135,19 @@ def jue_c3_mcts_pasos():
 # ANCHO_UCB = 300 y no 520: a 390 px el sitio no escala los SVG de figura y
 # el parrafo que los contiene mide 305 px; a 520 cada grafica se cortaba con
 # scroll horizontal y la leyenda o el final del eje x quedaban fuera (ronda 3
-# de render). Como jue-c3-bandido-corridas: titulo a 17, margen MARGEN_UCB,
+# de render). Como las figuras del bono: titulo a 17, margen MARGEN_UCB,
 # leyenda y notas debajo, y lo que no cabe en un renglon va en dos.
 
 ANCHO_UCB = 300
 MARGEN_UCB = 12
 COLOR_COTA = ACENTO
 COLOR_FRECUENCIA = SERIE[1]
-# Una regla, un trazo y una marca: el color nunca es la unica senal.
-ESTILO_REGLA = {
-    "mejor_promedio": dict(color=SERIE[2], guiones="8 5", marca="cuadro",
-                           rotulo="siempre el mejor promedio"),
-    "a_veces_al_azar": dict(color=SERIE[1], guiones="2 4", marca="rombo",
-                            rotulo="a veces al azar (10 %)"),
-    "ucb": dict(color=ACENTO, guiones=None, marca="circulo", rotulo="UCB, c = 2√2"),
-    "ucb_c1": dict(color=COLOR_FINAL, guiones="10 4 2 4", marca="circulo", rotulo="UCB, c = 1"),
-}
 CURVAS_BONO = (100, 1000, 10000)            # N(s) de cada curva de jue-c3-bono
 COLOR_BONO = {100: SERIE[0], 1000: SERIE[1], 10000: SERIE[2]}
 GUIONES_BONO = {100: None, 1000: "9 5", 10000: "3 4"}
 MARCAS_MICRO_BONO = (10, 30, 60)            # los N(s') del micro, con N(s) = 100
 GUIONES_C1 = "10 4 2 4"                     # raya-punto: la curva de c = 1
+COLOR_C1 = TEXTO                            # visible (antes SUAVE: se perdia)
 
 
 class Plano:
@@ -3179,86 +3270,144 @@ def _pct(v):
     return f"{100 * float(v):.1f}".rstrip("0").rstrip(".") + " %"
 
 
-def puntos_hoeffding(pl):
-    """[(n, x, y)] de cada frecuencia observada: n con frecuencia 0 no cabe
-    en el eje log y no se dibuja (no ocurre con la semilla de la figura)."""
-    t = j.tabla_hoeffding()
-    return [(n, pl.x(n), pl.y(float(f))) for n, (f, _) in t.items() if f > 0]
+# jue-c3-hoeffding, rehecha (destinos §E.1 #8, R7): dos paneles con la misma
+# cuenta leida de dos lados. A: la cota e^(−N·ε²/2) contra ε con N fijo; B:
+# el margen ε = √(2·ln(1/δ)/N) contra N para dos δ. Mide ANCHO_HOMOLOGACION.
+N_PANEL_A_HOEFFDING = j.N_HOEFFDING_HOMOLOGACION
+NS_PANEL_B_HOEFFDING = tuple(range(10, 201, 2))
+N_MARCA_B_HOEFFDING = 100
+GUIONES_DELTA = {j.DELTAS_HOEFFDING_HOMOLOGACION[0]: None, j.DELTAS_HOEFFDING_HOMOLOGACION[1]: "8 5"}
+COLOR_DELTA = {j.DELTAS_HOEFFDING_HOMOLOGACION[0]: ACENTO, j.DELTAS_HOEFFDING_HOMOLOGACION[1]: SERIE[1]}
 
 
-def plano_hoeffding():
-    # y0 = 126: arriba van titulo, subtitulo y el nombre del eje y en dos renglones.
-    return Plano(56, 126, 214, 240, (0, 200), (0.001, 1), ylog=True)
+def _pct_h(v):
+    """60.65 %, 13.53 %, 0.0335 %: dos decimales, o cuatro si es menor que 1."""
+    return (f"{v:.4f}" if v < 1 else f"{v:.2f}") + " %"
+
+
+def _dos(v):
+    return f"{v:.2f}"
+
+
+def plano_hoeffding_a(y0):
+    return Plano(56, y0, 214, 170, (0, 0.5), (0, 1))
+
+
+def plano_hoeffding_b(y0):
+    return Plano(56, y0, 214, 170, (0, 200), (0, 1.2))
 
 
 def jue_c3_hoeffding():
-    """Frecuencia observada de ū(s′) ≤ μ(s′) − ε contra N(s′) (puntos) y la
-    cota de Hoeffding (linea), eje y logaritmico. Jugada y: μ = 0.3, ε = 0.2."""
-    t = j.tabla_hoeffding()
-    mu, eps, reps = float(j.MU_HOEFFDING), float(j.EPS_HOEFFDING), j.REPS_HOEFFDING
-    pl = plano_hoeffding()
-    W = ANCHO_UCB
-    renglones = ["Cuánto falla un promedio", f"jugada y: μ = {_dec(mu)}, ε = {_dec(eps)}"]
-    citas = ", ".join(f"con N(s′) = {n}, {_pct(t[n][0])} contra una cota de {_pct(t[n][1])}"
-                      for n in (10, 50, 100))
-    desc = (f"Gráfica con eje y logarítmico. Eje x: N(s′), simulaciones, de 0 a 200. Eje y: "
-            f"frecuencia con que el promedio ū(s′) queda en μ(s′) − ε o menos, de 0.001 a 1. "
-            f"Puntos: la frecuencia observada en {reps:,} tiradas de 200 simulaciones de la "
-            f"jugada y, con μ = {mu:g} y ε = {eps:g}. Línea: la cota de Hoeffding, "
-            f"exp(−N(s′)·ε²/2). Todos los puntos quedan bajo la línea: {citas}. "
-            "Los dos bajan con N(s′); la cota es holgada pero vale para todo N(s′).").replace(
-                ",000", " 000")
+    """Hoeffding en la escala ±1, de los dos lados: (A) la cota contra ε con
+    N = 100; (B) el margen contra N para δ = 0.05 y δ = 0.005. Cifras de
+    juegos.tabla_hoeffding_epsilon, cota_hoeffding_cola y margenes_hoeffding."""
+    n_a = N_PANEL_A_HOEFFDING
+    tabla = j.tabla_hoeffding_epsilon(n_a)
+    deltas = j.DELTAS_HOEFFDING_HOMOLOGACION
+    margenes = j.margenes_hoeffding(NS_PANEL_B_HOEFFDING, deltas)
+    en_100 = {d: j.margen_hoeffding(d, N_MARCA_B_HOEFFDING) for d in deltas}
+    crece = en_100[deltas[1]] / en_100[deltas[0]]
+    titulo = ["Mover ε, mover N", "Hoeffding en la escala ±1"]
     out = []
-    _encabezado_ucb(out, renglones[0], renglones[1:])
-    y_pie = _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0.001, 0.01, 0.1, 1),
-                      "N(s′): simulaciones de la jugada",
-                      ("frecuencia de ū(s′) ≤ μ(s′) − ε", "(escala log)"),
-                      menores_y=[k * 10.0 ** e for e in (-3, -2, -1) for k in range(2, 10)])
-    out.append(_polilinea([(pl.x(n), pl.y(c)) for n, (_, c) in t.items()], COLOR_COTA,
-                          grosor=3))
-    for _, x, y in puntos_hoeffding(pl):
-        out.append(f'<circle cx="{x}" cy="{y}" r="2.6" fill="{COLOR_FRECUENCIA}"/>')
-    # Debajo de la grafica: dentro de ella, en cualquier esquina, tapaba
-    # puntos o la linea (visto renderizando).
+    y = _encabezado_ucb(out, titulo[0], titulo[1:])
+    # Panel A
+    out.append(texto(MARGEN_UCB, y + 40, "A · La cota contra ε", tam=16, peso="700",
+                     anclaje="start"))
+    out.append(texto(MARGEN_UCB, y + 60, f"con N = {n_a} muestras", tam=14, color=SUAVE,
+                     anclaje="start"))
+    pl = plano_hoeffding_a(y + 128)
+    y_pie = _ejes_ucb(out, pl, (0, 0.1, 0.2, 0.3, 0.4, 0.5), (0, 0.5, 1),
+                      "ε: el margen pedido",
+                      ("cota de la probabilidad de", "que Q̂ quede ε o más abajo"))
+    eps = [k / 200 for k in range(0, 101)]
+    out.append(_polilinea([(pl.x(e), pl.y(j.cota_hoeffding_cola(n_a, e))) for e in eps],
+                          ACENTO, grosor=3))
+    for e, pc in tabla:
+        x, yy = pl.x(e), pl.y(pc / 100)
+        out.append(_marca(x, yy, "circulo", COLOR_FINAL, r=5))
+        # el rotulo, a la derecha del punto (el de 0.4, encima: va pegado al eje)
+        if e < 0.3:
+            out.append(texto(round(x + 10, 1), round(yy + 5, 1), _pct_h(pc), tam=14,
+                             peso="700", anclaje="start"))
+        else:
+            # pegado al eje y junto al de 0.2: sube, con una raya hasta el punto
+            out.append(linea(x, round(yy - 7, 1), x, round(yy - 30, 1), color=SUAVE, grosor=1.5))
+            out.append(texto(round(x, 1), round(yy - 36, 1), _pct_h(pc), tam=14, peso="700"))
+    # Panel B
+    yb = y_pie + 56
+    out.append(linea(MARGEN_UCB, yb - 30, ANCHO_HOMOLOGACION - MARGEN_UCB, yb - 30, color=LINEA,
+                     grosor=1.5))
+    out.append(texto(MARGEN_UCB, yb, "B · El margen contra N", tam=16, peso="700",
+                     anclaje="start"))
+    out.append(texto(MARGEN_UCB, yb + 20, "ε = √(2·ln(1/δ)/N), para dos δ", tam=14,
+                     color=SUAVE, anclaje="start"))
+    pl = plano_hoeffding_b(yb + 88)
+    y_pie = _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0, 0.4, 0.8, 1.2),
+                      "N: muestras de la jugada", ("ε: el margen que falla", "con prob. ≤ δ"))
+    for d in deltas:
+        out.append(_polilinea([(pl.x(n), pl.y(e)) for n, e in margenes[d]], COLOR_DELTA[d],
+                              grosor=3, guiones=GUIONES_DELTA[d]))
+        x, yy = pl.x(N_MARCA_B_HOEFFDING), pl.y(en_100[d])
+        out.append(_marca(x, yy, "circulo", COLOR_DELTA[d], r=5))
+        arriba = d == deltas[1]
+        out.append(texto(round(x + 8, 1), round(yy + (-10 if arriba else 20), 1),
+                         _dos(en_100[d]), tam=14, peso="700", anclaje="start"))
     y_pie = _leyenda_ucb(out, y_pie + 18, [
-        (lambda x, y: f'<circle cx="{x + 14}" cy="{y}" r="4" fill="{COLOR_FRECUENCIA}"/>',
-         "observada (simulación)"),
-        (lambda x, y: linea(x, y, x + 30, y, color=COLOR_COTA, grosor=3),
-         "cota: exp(−N(s′)·ε²/2)")])
-    nota = [f"{reps:,} tiradas de 200 simulaciones".replace(",", " "),
-            "de y, con semilla fija; un punto", "por N(s′)."]
+        (lambda x, y, d=d: linea(x, y, x + 30, y, color=COLOR_DELTA[d], grosor=3,
+                                 guiones=GUIONES_DELTA[d]), f"δ = {d:g}")
+        for d in deltas])
+    nota = [f"Con δ diez veces menor, el margen",
+            f"crece {crece:.2f} veces (un tercio) para",
+            "todo N; con 4 veces más N, se",
+            "parte a la mitad. Es una cota, no",
+            "una tasa: el fallo real es menor."]
     out.append(_nota_ucb(y_pie + 28, nota))
     H = y_pie + 28 + 22 * (len(nota) - 1) + 18
-    return "".join([marco(W, H, desc, " ".join(renglones), desc)] + out + [cierre()])
+    desc = ("Dos paneles con la desigualdad de Hoeffding en la escala ±1, para una jugada, una "
+            "regla de continuación fija y N muestras independientes. Panel A, la cota contra ε: "
+            f"eje x, ε de 0 a 0.5; eje y, la cota e^(−N·ε²/2) de la probabilidad de que Q̂ quede "
+            f"ε o más por debajo de su esperanza, de 0 a 1, con N = {n_a}. La curva baja muy "
+            "rápido: " + ", ".join(f"con ε = {e:g}, {_pct_h(pc)}" for e, pc in tabla)
+            + ". Panel B, el margen contra N: eje x, N de 0 a 200; eje y, ε = √(2·ln(1/δ)/N), "
+            "de 0 a 1.2, una curva por δ: "
+            + " y ".join(f"δ = {d:g}" + (", rayada" if GUIONES_DELTA[d] else ", continua")
+                         for d in deltas)
+            + f". Con N = {N_MARCA_B_HOEFFDING}, el margen vale "
+            + " y ".join(f"{_dos(en_100[d])} con δ = {d:g}" for d in deltas)
+            + f": pedir diez veces menos fallo lo agranda {crece:.2f} veces, un tercio, para "
+            "todo N; cuatro veces más muestras lo parten a la mitad. Es una cota, no una tasa.")
+    return "".join([marco(ANCHO_HOMOLOGACION, round(H), desc, " · ".join(titulo), desc)] + out
+                   + [cierre()])
 
 
 def plano_bono():
-    return Plano(56, 100, 214, 240, (0, 200), (0, 4))
+    # y0 = 122: el nombre del eje y va en dos renglones bajo el subtitulo.
+    return Plano(56, 122, 214, 240, (0, 200), (0, 4))
 
 
 def jue_c3_bono():
-    """El bono 2√2·√(ln N(s)/N(s′)) contra N(s′) para N(s) = 100, 1000 y
+    """El bono 2√2·√(ln N(s)/N(s,a)) contra N(s,a) para N(s) = 100, 1000 y
     10 000, y la curva de c = 1 (la de la p5) con N(s) = 100, de raya y punto."""
     pl = plano_bono()
     W = ANCHO_UCB
     ns = list(range(5, 201))
-    renglones = ["El bono contra N(s′)", "c = 2√2, escala ±1"]
-    micro = ", ".join(f"{j.bono_ucb(100, n):.2f} con N(s′) = {n}" for n in MARCAS_MICRO_BONO)
-    desc = ("Gráfica. Eje x: N(s′), simulaciones de la jugada, de 0 a 200. Eje y: el bono "
-            "2√2·√(ln N(s)/N(s′)), de 0 a 4. Tres curvas, una por N(s): 100, 1 000 y 10 000; "
-            "las tres bajan al crecer N(s′), y con más N(s) quedan más arriba. Las de N(s) = 100 "
-            "acaban en N(s′) = 100: una jugada no lleva más simulaciones que su padre. Con "
+    renglones = ["El bono contra N(s,a)", "c = 2√2, escala ±1"]
+    micro = ", ".join(f"{j.bono_ucb(100, n):.2f} con N(s,a) = {n}" for n in MARCAS_MICRO_BONO)
+    desc = ("Gráfica. Eje x: N(s,a), visitas de la jugada, de 0 a 200. Eje y: el bono, en la escala de U, "
+            "2√2·√(ln N(s)/N(s,a)), de 0 a 4. Tres curvas, una por N(s): 100, 1 000 y 10 000; "
+            "las tres bajan al crecer N(s,a), y con más N(s) quedan más arriba. Las de N(s) = 100 "
+            "acaban en N(s,a) = 100: una jugada no lleva más simulaciones que su padre. Con "
             "N(s) = 100 "
-            f"el bono vale {micro}. Una cuarta curva, tenue y de raya y punto: c = 1, la de la p5, "
-            f"con N(s) = 100: {j.bono_ucb(100, 10, c=1):.2f} con N(s′) = 10.")
+            f"el bono vale {micro}. Una cuarta curva, de raya y punto: c = 1, la de las corridas de UCT de la unidad, "
+            f"con N(s) = 100: {j.bono_ucb(100, 10, c=1):.2f} con N(s,a) = 10.")
     out = []
     _encabezado_ucb(out, renglones[0], renglones[1:])
     y_pie = _ejes_ucb(out, pl, (0, 50, 100, 150, 200), (0, 1, 2, 3, 4),
-                      "N(s′): simulaciones de la jugada", "bono (en unidades de ū)")
-    # Cada curva acaba en N(s′) = N(s): un hijo no lleva más simulaciones que
+                      "N(s,a): visitas de la jugada", ("bono, en la escala de U", "(de −1 a +1)"))
+    # Cada curva acaba en N(s,a) = N(s): un hijo no lleva más simulaciones que
     # su padre (la de 100 llegaba a 200, imposible; auditoría de la 7.3).
     out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(100, n, c=1))) for n in ns if n <= 100],
-                          SUAVE, grosor=2, guiones=GUIONES_C1))
+                          COLOR_C1, grosor=2.5, guiones=GUIONES_C1))
     for n_padre in CURVAS_BONO:
         out.append(_polilinea([(pl.x(n), pl.y(j.bono_ucb(n_padre, n))) for n in ns
                                if n <= n_padre],
@@ -3270,418 +3419,19 @@ def jue_c3_bono():
     filas = [(lambda x, y, n=n: linea(x, y, x + 30, y, color=COLOR_BONO[n], grosor=3,
                                       guiones=GUIONES_BONO[n]),
               f"N(s) = {_num(n)}") for n in CURVAS_BONO]
-    filas.append((lambda x, y: linea(x, y, x + 30, y, color=SUAVE, grosor=2, guiones=GUIONES_C1),
+    filas.append((lambda x, y: linea(x, y, x + 30, y, color=COLOR_C1, grosor=2.5, guiones=GUIONES_C1),
                   "c = 1, N(s) = 100"))
     # Debajo del eje, a la izquierda, como en jue-c3-hoeffding: dentro de la
     # grafica, a la derecha, quedaba fuera de vista a 390 px (visto en la
     # ronda 1 de render) y era la unica clave de las cuatro curvas.
     y_pie = _leyenda_ucb(out, y_pie + 18, filas)
-    nota = ["Puntos: N(s) = 100 y N(s′) = " + ", ".join(str(n) for n in MARCAS_MICRO_BONO) + ";",
+    nota = ["Puntos: N(s) = 100 y",
+            "N(s,a) = " + ", ".join(str(n) for n in MARCAS_MICRO_BONO) + ";",
             "el bono vale " + ", ".join(f"{j.bono_ucb(100, n):.2f}" for n in MARCAS_MICRO_BONO)
             + "."]
     out.append(_nota_ucb(y_pie + 28, nota))
     H = y_pie + 28 + 22 * (len(nota) - 1) + 18
     return "".join([marco(W, H, desc, " ".join(renglones), desc)] + out + [cierre()])
-
-
-# ------------- jue-c3-pago y jue-c3-eligiendo-x: las dos preguntas ---
-#
-# Reemplazan a jue-c3-bandido, que graficaba la fraccion ACUMULADA de vueltas
-# en x promediada sobre 40 corridas: mezclaba el costo de explorar (las
-# primeras vueltas, que cuentan para siempre) con las corridas atoradas, y
-# el profesor no la entendio (2026-10-12). Cada una contesta una pregunta:
-# ¿cuanto gana cada regla? (pago por vuelta, con la referencia de siempre x)
-# y ¿cuantas corridas ya eligen x? (en esa vuelta, no acumulado). Miden
-# ANCHO_UCB, como las otras de la p6.
-
-MARCAS_X_BANDIDO = (10, 100, 1000, 10000)
-TITULO_PAGO = "¿Cuánto gana cada regla?"
-SUBTITULO_PAGO = (f"cada punto: promedio de {j.CORRIDAS_BANDIDO} corridas",
-                  "μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values()))
-EJE_Y_PAGO = ("pago promedio por vuelta,", "de la vuelta 1 a N(s)")
-ROTULO_SIEMPRE_X = "siempre x (lo mejor posible)"
-# Un punto de jue-c3-eligiendo-x cuenta ELECCIONES, no corridas: 40 corridas
-# × 10 vueltas = 400. Con «corridas que eligen x», el 98.8 % de UCB se leia
-# como «1 de 40 corridas no eligio x», y ninguna se atora (lente de
-# correccion r2, H5). Solo sin bono coinciden: 85 % son justo 34 corridas.
-TITULO_ELIGIENDO = "¿Qué tanto se elige x?"
-SUBTITULO_ELIGIENDO = (f"cada punto: {j.CORRIDAS_BANDIDO} corridas × {j.VENTANA_ELIGIENDO} vueltas",
-                       f"(de N(s) − {j.VENTANA_ELIGIENDO - 1} a N(s)), no acumulado")
-EJE_Y_ELIGIENDO = ("elecciones que van a x (%),", f"en esas {j.VENTANA_ELIGIENDO} vueltas")
-EJE_X_BANDIDO = "N(s): vueltas (escala log)"
-
-
-def _redondeo(v, decimales):
-    """v (Fraction) redondeado hacia arriba en el medio: 0.9875 → 0.988, y
-    no lo que haga el binario mas cercano de un float."""
-    return math.floor(v * 10 ** decimales + F(1, 2)) / 10 ** decimales
-
-
-def _f3(v):
-    return f"{_redondeo(v, 3):.3f}"
-
-
-def _pct_f(v):
-    """Fraction → «85 %», «92.5 %», «98.8 %», «100 %»."""
-    return f"{_redondeo(v * 100, 1):g} %"
-
-
-def plano_pago():
-    # y0 = 150: arriba van titulo, dos subtitulos y el nombre del eje y en
-    # dos renglones. De 0.25 a 0.65: el peor punto es 0.295 y el rotulo de
-    # «siempre x» va entre 0.6 y el borde de arriba.
-    return Plano(56, 150, 214, 240, (10, 10000), (0.25, 0.65), xlog=True)
-
-
-def plano_eligiendo():
-    # Dos subtitulos, como plano_pago. De 40 % a 100 %: el peor punto es
-    # 41.8 % y las curvas de arriba quedan separadas (a 0–100 % se tapaban).
-    # y0 = 162, 12 mas que plano_pago: el «100» de la escala va en el borde
-    # de arriba y a 12 px menos quedaba pegado al nombre del eje (render r4).
-    return Plano(56, 162, 214, 240, (10, 10000), (40, 100), xlog=True)
-
-
-def puntos_pago(pl):
-    """{regla: [(N(s), x, y)]} de jue-c3-pago."""
-    return {r: [(m, pl.x(m), pl.y(float(v))) for m, v in d.items()]
-            for r, d in j.tabla_pago().items()}
-
-
-def puntos_eligiendo(pl):
-    """{regla: [(N(s), x, y)]} de jue-c3-eligiendo-x (y en %)."""
-    return {r: [(m, pl.x(m), pl.y(float(v * 100))) for m, v in d.items()]
-            for r, d in j.tabla_eligiendo_x().items()}
-
-
-def _curvas_reglas(out, puntos):
-    for r, pts in puntos.items():
-        e = ESTILO_REGLA[r]
-        out.append(_polilinea([(x, y) for _, x, y in pts], e["color"], grosor=3,
-                              guiones=e["guiones"]))
-        for _, x, y in pts:
-            out.append(_marca(x, y, e["marca"], e["color"], r=4))
-
-
-def _leyenda_reglas(out, y, valores):
-    """La leyenda de las cuatro reglas, cada una con su valor final: en
-    N(s) = 10 000 las marcas quedan a ~10 px y el dibujo solo no dice cual
-    va arriba (ronda 2 de render de jue-c3-bandido)."""
-    filas = [(lambda x, yy, e=ESTILO_REGLA[r]: linea(x, yy, x + 30, yy, color=e["color"],
-                                                     grosor=3, guiones=e["guiones"])
-              + _marca(x + 15, yy, e["marca"], e["color"], r=4),
-              f"{ESTILO_REGLA[r]['rotulo']}: {v}")
-             for r, v in valores.items()]
-    # Mas ancha y con la muestra mas pegada que _leyenda_ucb: con el valor,
-    # «siempre el mejor promedio: 0.543» tocaba el borde (render r4, 1x).
-    return _caja_leyenda(out, MARGEN_UCB, y, ANCHO_UCB - MARGEN_UCB - 4, filas,
-                         dx_muestra=6, dx_texto=40)
-
-
-def _cifras(t, fmt):
-    """«siempre el mejor promedio, 0.400, 0.533, 0.544 y 0.543; …» en
-    N(s) = 10, 100, 1 000 y 10 000, para el aria-label."""
-    return "; ".join(f"{ESTILO_REGLA[r]['rotulo']}, "
-                     + ", ".join(fmt(d[m]) for m in MARCAS_X_BANDIDO[:-1])
-                     + f" y {fmt(d[MARCAS_X_BANDIDO[-1]])}" for r, d in t.items())
-
-
-def jue_c3_pago():
-    """Pago promedio por vuelta de las primeras N(s) vueltas contra N(s), eje
-    x log, cuatro reglas, promedio de 40 corridas; la referencia μ(x) = 0.6."""
-    t = j.tabla_pago()
-    e = j.pago_esperado_reparto()
-    pl = plano_pago()
-    W, fin, mu_x = ANCHO_UCB, max(j.MARCAS_BANDIDO), j.MUS_HILO["x"]
-    en = e["en"]
-    cuenta = " + ".join(f"{en[a]}·{_dec(j.MUS_HILO[a])}" if en[a] > 1 else _dec(j.MUS_HILO[a])
-                        for a in j.MUS_HILO if en[a])
-    cuenta = cuenta.replace("+ −", "− ")
-    reparto = (f"Sin bono, {en['x']} corridas se quedan en x, {en['y']} en y y {en['z']} en z: "
-               f"se espera ({cuenta})/{j.CORRIDAS_BANDIDO} = {float(e['esperado']):g}; "
-               f"simulado, {_f3(t['mejor_promedio'][fin])}.")
-    desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
-            "pago promedio por vuelta, el promedio de los U de las vueltas 1 a N(s), de 0.25 "
-            f"a 0.65. Cada punto es el promedio de {j.CORRIDAS_BANDIDO} corridas con semilla "
-            "fija; μ de x, y, z: " + ", ".join(_dec(v) for v in j.MUS_HILO.values())
-            + f". Una raya horizontal en {_dec(mu_x)}: siempre x, lo mejor posible. "
-            f"En N(s) = 10, 100, 1 000 y 10 000: {_cifras(t, _f3)}. "
-            "UCB empieza abajo, porque explora, y termina arriba; ninguna llega a "
-            f"{_dec(mu_x)}. {reparto}")
-    out = []
-    y = _encabezado_ucb(out, TITULO_PAGO, SUBTITULO_PAGO)
-    y_pie = _ejes_ucb(out, pl, MARCAS_X_BANDIDO, (0.3, 0.4, 0.5, 0.6), EJE_X_BANDIDO,
-                      EJE_Y_PAGO)
-    # La referencia, de raya fina y con su rotulo arriba a la izquierda: ahi
-    # las curvas van en 0.3–0.4, lejos.
-    y_ref = pl.y(float(mu_x))
-    out.append(linea(pl.x0, y_ref, pl.x0 + pl.w, y_ref, color=TEXTO, grosor=2, guiones="6 4"))
-    out.append(texto(pl.x0 + 6, y_ref - 8, ROTULO_SIEMPRE_X, tam=14, color=TEXTO,
-                     anclaje="start"))
-    _curvas_reglas(out, puntos_pago(pl))
-    y_pie = _leyenda_reglas(out, y_pie + 18, {r: _f3(d[fin]) for r, d in t.items()})
-    nota = [f"Sin bono, {en['x']} corridas se quedan en x,",
-            f"{en['y']} en y y {en['z']} en z; se espera",
-            f"({cuenta})/{j.CORRIDAS_BANDIDO} = {float(e['esperado']):g}."]
-    out.append(_nota_ucb(y_pie + 28, nota))
-    H = y_pie + 28 + 22 * (len(nota) - 1) + 18
-    titulo = " ".join((TITULO_PAGO,) + SUBTITULO_PAGO)
-    return "".join([marco(W, H, desc, titulo, desc)] + out + [cierre()])
-
-
-def jue_c3_eligiendo_x():
-    """Porcentaje de las 40 corridas que eligen x en la vuelta N(s) (ventana
-    de VENTANA_ELIGIENDO vueltas, no acumulado) contra N(s), eje x log."""
-    t = j.tabla_eligiendo_x()
-    pl = plano_eligiendo()
-    W, fin = ANCHO_UCB, max(j.MARCAS_BANDIDO)
-    n, v = j.CORRIDAS_BANDIDO, j.VENTANA_ELIGIENDO
-    atoradas = j.reparto_bandido()["mejor_promedio"]["atoradas"]
-    tope = j.tope_a_veces_al_azar()
-    desc = ("Gráfica con eje x logarítmico. Eje x: N(s), vueltas, de 10 a 10 000. Eje y: "
-            f"porcentaje de las elecciones que van a x, no acumulado, de 40 % a 100 %; "
-            f"cada punto cuenta {n * v} elecciones: las vueltas N(s) − {v - 1} a N(s) de "
-            f"cada una de las {n} corridas. En N(s) = 10, 100, 1 000 y 10 000: "
-            f"{_cifras(t, _pct_f)}. Siempre el mejor promedio se aplana en "
-            f"{_pct_f(F(n - atoradas, n))}, que aquí sí son {n - atoradas} de {n} corridas: "
-            f"entre las vueltas 100 y {_num(fin)}, las {atoradas} atoradas no eligen x "
-            f"y las otras {n - atoradas} sí. "
-            "A veces al azar se queda cerca de 0.9 + 0.1/3 = "
-            f"{_pct_f(tope)}. Las dos UCB suben hacia 100 %.")
-    out = []
-    _encabezado_ucb(out, TITULO_ELIGIENDO, SUBTITULO_ELIGIENDO)
-    y_pie = _ejes_ucb(out, pl, MARCAS_X_BANDIDO, (40, 55, 70, 85, 100), EJE_X_BANDIDO,
-                      EJE_Y_ELIGIENDO)
-    _curvas_reglas(out, puntos_eligiendo(pl))
-    y_pie = _leyenda_reglas(out, y_pie + 18, {r: _pct_f(d[fin]) for r, d in t.items()})
-    # Sin bono, y solo ahi, el porcentaje de elecciones es tambien el de
-    # corridas: en las ventanas desde N(s) = 100, las atoradas no eligen x y
-    # las demas siempre (antes, alguna atorada aun probo x: la semilla 20
-    # hasta la vuelta 20).
-    nota = [f"Sin bono, {_pct_f(F(n - atoradas, n))} son justo {n - atoradas} corridas",
-            f"de {n}: entre las vueltas 100 y {_num(fin)},",
-            f"las {atoradas} atoradas no eligen x.",
-            "A veces al azar se queda cerca de",
-            f"0.9 + 0.1/3 = {_pct_f(tope)}."]
-    out.append(_nota_ucb(y_pie + 28, nota))
-    H = y_pie + 28 + 22 * (len(nota) - 1) + 18
-    titulo = " ".join((TITULO_ELIGIENDO,) + SUBTITULO_ELIGIENDO)
-    return "".join([marco(W, H, desc, titulo, desc)] + out + [cierre()])
-
-
-# ---------------- jue-c3-bandido-corridas: lo que el promedio esconde ---
-#
-# Una fila por regla, un punto por corrida: el 0.85 de «siempre el mejor
-# promedio» en jue-c3-bandido son 34 corridas casi en 1 y 6 casi en 0, y el
-# alumno leia «elige la mejor el 85 % de las veces» (2026-10-12).
-
-# A 390 px el sitio no escala los SVG de figura: los pone a su ancho natural
-# con scroll propio, y a 520 px se veia solo de 0 a ~0.6 (justo lo que
-# importa, cerca de 1, quedaba fuera). Por eso esta figura mide ANCHO_CORRIDAS:
-# el parrafo de la figura mide 305 px a 390 (medido en el sitio construido),
-# y cada fila apila nombre, promedio y banda. Margen propio, MARGEN_CORRIDAS,
-# mas angosto que X_PIE.
-ANCHO_CORRIDAS = 300
-MARGEN_CORRIDAS = 12
-# La x de cada punto ES su fraccion, a ±BIN_CORRIDAS/2 (lente r3, H3): el
-# apilado anterior ponia cada grupo en columnas de 10 centradas en la
-# mediana, y las tres reglas sin atoradas se pintaban de 0.88 a 1.0 aunque
-# sus rangos reales son 0.90–0.94, 0.92–0.96 y 0.96–1.0; las 34 buenas sin
-# bono, todas ≥ 0.997, salian desde 0.89, pegadas a la raya del promedio.
-# Ahora cada corrida cae en el bin de BIN_CORRIDAS mas cercano a su valor y
-# las de un mismo bin se apilan en VERTICAL, como un histograma de puntos.
-# El bin mide lo que mide un punto con su hueco: a 260 px de 0 a 1, 0.02 son
-# 5.2 px, y el punto, de 2·R_CORRIDAS = 4.4 px. Un bin de 0.01 (2.6 px)
-# obligaria a puntos de 2 px. Las filas crecen lo que pida su columna mas
-# alta: la de 34 en 1.0 mide 34 puntos.
-BIN_CORRIDAS = 0.02
-PASO_CORRIDAS = 5.2         # px entre centros vecinos, en x (un bin) y en y
-R_CORRIDAS = 2.2            # medio lado de la marca
-Y_FILAS = 100               # donde empieza la primera fila
-ALTO_MIN_FILA = 104         # cuatro renglones de texto a la izquierda
-EJE_X_CORRIDAS = (f"fracción de las {_num(max(j.MARCAS_BANDIDO))} vueltas"
-                  " que fueron a x")
-# Los mismos textos partidos en renglones que caben en ANCHO_CORRIDAS.
-EJE_X_CORRIDAS_RENGLONES = (f"fracción de las {_num(max(j.MARCAS_BANDIDO))} vueltas",
-                            "que fueron a x")
-SUBTITULO_CORRIDAS = (f"cada punto es una corrida de {_num(max(j.MARCAS_BANDIDO))}"
-                      " vueltas")
-SUBTITULO_CORRIDAS_RENGLONES = ("cada punto es una corrida",
-                                f"de {_num(max(j.MARCAS_BANDIDO))} vueltas")
-
-
-def columnas_corridas(fr):
-    """{bin: [indices de fr]} con bin = el multiplo de BIN_CORRIDAS mas
-    cercano a la fraccion (en unidades de bin), cada lista de la fraccion
-    menor (abajo) a la mayor."""
-    cols = {}
-    for s in sorted(range(len(fr)), key=lambda s: (fr[s], s)):
-        cols.setdefault(round(fr[s] / BIN_CORRIDAS), []).append(s)
-    return cols
-
-
-def filas_corridas():
-    """[(top, fondo, alto)] de cada fila: fondo es la y del punto de mas
-    abajo; las columnas crecen hacia arriba desde ahi. La fila que se parte
-    (con atoradas) lleva un renglon mas arriba de la banda, «34 en x»."""
-    salida, top = [], Y_FILAS
-    for d in j.reparto_bandido().values():
-        alto_col = PASO_CORRIDAS * max(len(c) for c in columnas_corridas(d["fracciones"]).values())
-        if d["atoradas"]:
-            alto = round(alto_col + 74, 1)
-            fondo = round(top + 58 + alto_col - PASO_CORRIDAS, 1)
-        else:
-            alto = max(ALTO_MIN_FILA, round(alto_col + 46, 1))
-            fondo = round(top + alto - 16, 1)
-        salida.append((round(top, 1), fondo, alto))
-        top += alto
-    return salida
-
-
-def plano_corridas():
-    n = len(j.FILAS_BANDIDO)
-    top, _, alto = filas_corridas()[-1]
-    return Plano(20, Y_FILAS, 260, round(top + alto - Y_FILAS, 1), (0, 1), (0, n))
-
-
-def puntos_corridas(pl):
-    """{fila: [(semilla, fraccion, x, y)]} de jue-c3-bandido-corridas, en
-    orden de semilla: x en el centro del bin de la fraccion, y apilada
-    desde el fondo de la fila."""
-    r = j.reparto_bandido()
-    salida = {}
-    for (fila, d), (_, fondo, _) in zip(r.items(), filas_corridas()):
-        fr = d["fracciones"]
-        lugar = {}
-        for b, col in columnas_corridas(fr).items():
-            for i, s in enumerate(col):
-                lugar[s] = (pl.x(b * BIN_CORRIDAS), round(fondo - PASO_CORRIDAS * i, 1))
-        salida[fila] = [(s + 1, f, *lugar[s]) for s, f in enumerate(fr)]
-    return salida
-
-
-def marca_corrida(x, y, forma, color, r=R_CORRIDAS):
-    """La marca de una corrida, rellena: a este tamaño el contorno de 2 px
-    de _marca la llenaria igual. El rombo, de media diagonal r + 0.3."""
-    if forma == "cuadro":
-        return (f'<rect x="{round(x - r, 1)}" y="{round(y - r, 1)}" width="{round(2 * r, 1)}" '
-                f'height="{round(2 * r, 1)}" fill="{color}"/>')
-    if forma == "rombo":
-        a = round(r + 0.3, 1)
-        return (f'<polygon points="{x},{round(y - a, 1)} {round(x + a, 1)},{y} {x},{round(y + a, 1)} '
-                f'{round(x - a, 1)},{y}" fill="{color}"/>')
-    return f'<circle cx="{x}" cy="{y}" r="{r}" fill="{color}"/>'
-
-
-def rotulo_atoradas(d):
-    """«6 de 40 atoradas: 5 en y, 1 en z» o «0 de 40 atoradas»."""
-    base = f"{d['atoradas']} de {d['n']} atoradas"
-    if not d["atoradas"]:
-        return base
-    return base + ": " + ", ".join(f"{v} en {a}" for a, v in sorted(d["en"].items()))
-
-
-def _f2(v):
-    return f"{v:.2f}"
-
-
-def rango_corridas(d):
-    """«de 0.90 a 0.94»: el rango real de la fila, a dos decimales."""
-    return f"de {_f2(d['minimo'])} a {_f2(d['maximo'])}"
-
-
-def resumen_corridas(d):
-    """La frase del aria-label de una fila, con sus cifras."""
-    if d["atoradas"]:
-        buenas = [f for f in d["fracciones"] if f >= j.UMBRAL_ATORADA]
-        malas = [f for f in d["fracciones"] if f < j.UMBRAL_ATORADA]
-        return (f"{len(buenas)} corridas en {math.floor(min(buenas) * 100) / 100:g} o más "
-                f"y {len(malas)} atoradas en {math.ceil(max(malas) * 1000) / 1000:g} o menos "
-                f"({', '.join(f'{v} en {a}' for a, v in sorted(d['en'].items()))}), "
-                f"promedio {_f2(d['promedio'])}")
-    return (f"ninguna atorada, de {d['minimo']:.3f} a {d['maximo']:.3f}, "
-            f"promedio {_f2(d['promedio'])}")
-
-
-def jue_c3_bandido_corridas():
-    """Fraccion final en x de cada una de las 40 corridas de 10 000 vueltas,
-    una fila por regla, con el promedio de la fila marcado: el reparto que
-    el promedio de jue-c3-bandido esconde."""
-    r = j.reparto_bandido()
-    pl = plano_corridas()
-    filas_px = filas_corridas()
-    W, y1 = ANCHO_CORRIDAS, pl.y0 + pl.h
-    renglones = ["Dónde termina cada corrida"]
-    filas = ". ".join(f"{ESTILO_REGLA[f]['rotulo'][:1].upper()}{ESTILO_REGLA[f]['rotulo'][1:]}: "
-                      f"{resumen_corridas(d)}" for f, d in r.items())
-    n = j.CORRIDAS_BANDIDO
-    desc = (f"Gráfica de puntos, una fila por regla. Eje x: {EJE_X_CORRIDAS}, de 0 a 1. "
-            f"Cada punto es una corrida de {_num(max(j.MARCAS_BANDIDO))} vueltas: {n} por fila, "
-            f"con semillas 1 a {n}. La posición horizontal de cada punto es su valor, "
-            f"a ±{_num(BIN_CORRIDAS / 2)}; las corridas de valor cercano se apilan en "
-            "vertical, en una columna; una raya vertical marca el promedio de la fila. "
-            f"Atorada: menos de la mitad de sus vueltas en x. {filas}.")
-    nota = ["Atorada: termina debajo de 0.5.",
-            f"Raya vertical: el promedio de las {n}",
-            "corridas de la fila. Una columna junta",
-            f"las corridas a {_num(BIN_CORRIDAS / 2)} o menos de su x,",
-            "apiladas hacia arriba."]
-    H = round(y1 + 106 + 22 * (len(nota) - 1) + 18, 1)
-    out = [marco(W, H, desc, " ".join(renglones + [SUBTITULO_CORRIDAS]), desc)]
-    # El titulo a 17 y no a los 20 de encabezado(): a 20 no cabe en ANCHO_CORRIDAS.
-    y = 34
-    out.append(texto(MARGEN_CORRIDAS, y, renglones[0], tam=17, peso="700", anclaje="start"))
-    for i, r_ in enumerate(SUBTITULO_CORRIDAS_RENGLONES):
-        out.append(texto(MARGEN_CORRIDAS, y + 24 + 20 * i, r_, tam=14, color=TEXTO, anclaje="start"))
-    # Rejilla y separadores primero: los puntos van encima.
-    for v in (0, 0.25, 0.5, 0.75, 1):
-        out.append(linea(pl.x(v), pl.y0, pl.x(v), y1, color=mezclar(LINEA, 0.7), grosor=1))
-        out.append(texto(pl.x(v), y1 + 22, _num(v), tam=14, color=SUAVE))
-    for top, _, _ in filas_px[1:]:
-        out.append(linea(pl.x0, top, pl.x0 + pl.w, top, color=mezclar(LINEA, 0.35), grosor=1))
-    out.append(linea(pl.x0, y1, pl.x0 + pl.w, y1, color=SUAVE, grosor=2))
-    for i, r_ in enumerate(EJE_X_CORRIDAS_RENGLONES):
-        out.append(texto(pl.x0 + pl.w / 2, y1 + 46 + 20 * i, r_, tam=15, color=TEXTO))
-    puntos = puntos_corridas(pl)
-    for (fila, d), (top, fondo, _) in zip(r.items(), filas_px):
-        e = ESTILO_REGLA[fila]
-        out.append(marca_corrida(MARGEN_CORRIDAS + 6, top + 17, e["marca"], e["color"], r=4.5))
-        out.append(texto(MARGEN_CORRIDAS + 20, top + 22, e["rotulo"], tam=15, color=TEXTO, anclaje="start",
-                         peso="700"))
-        for _, _, x, yy in puntos[fila]:
-            out.append(marca_corrida(x, yy, e["marca"], e["color"]))
-        cima = min(yy for _, _, _, yy in puntos[fila])
-        xm = pl.x(d["promedio"])
-        if d["atoradas"]:
-            # La fila que se parte: «6 de 40 atoradas» junto a su columna en
-            # 0, «34 en x» (con su rango) arriba de la de 1, y el promedio en
-            # el hueco entre las dos, donde no hay ninguna corrida.
-            partes = rotulo_atoradas(d).split(": ")
-            for i, p_ in enumerate([partes[0] + ":", partes[1]]):
-                out.append(texto(pl.x(0.06), fondo - 13 + 18 * i, p_, tam=14, color=TEXTO,
-                                 anclaje="start"))
-            buenas = [f for f in d["fracciones"] if f >= j.UMBRAL_ATORADA]
-            out.append(texto(pl.x(1) + 4, top + 46,
-                             f"{len(buenas)} en x, {math.floor(min(buenas) * 100) / 100:g} o más",
-                             tam=14, color=TEXTO, anclaje="end"))
-            y_raya = top + 54
-            out.append(texto(xm - 5, round((top + 54 + fondo) / 2, 1), f"promedio {_f2(d['promedio'])}",
-                             tam=14, color=TEXTO, anclaje="end"))
-        else:
-            # Las demas: todo cae de 0.90 a 1, y el texto va a la izquierda.
-            for i, p_ in enumerate([rotulo_atoradas(d), rango_corridas(d),
-                                    f"promedio {_f2(d['promedio'])}"]):
-                out.append(texto(MARGEN_CORRIDAS + 20, top + 46 + 20 * i, p_, tam=14, color=TEXTO,
-                                 anclaje="start"))
-            # Aqui la raya cae dentro de la columna y la tapaba (render r6):
-            # va en dos tramos, arriba y abajo de los puntos, sin cruzarlos.
-            out.append(linea(xm, top + 8, xm, round(cima - 6, 1), color=TEXTO, grosor=2))
-            out.append(linea(xm, round(fondo + 6, 1), xm, round(fondo + 14, 1), color=TEXTO, grosor=2))
-            continue
-        out.append(linea(xm, y_raya, xm, round(fondo + 8, 1), color=TEXTO, grosor=2))
-    for i, r_ in enumerate(nota):
-        out.append(texto(MARGEN_CORRIDAS, y1 + 106 + 22 * i, r_, tam=14, anclaje="start"))
-    out.append(cierre())
-    return "".join(out)
 
 
 # ------------------------------- 7.3.7: el arbol T± (un arbol, todos) ---
@@ -3700,7 +3450,7 @@ NODO_TPM_W, NODO_TPM_H, HOJA_TPM_R = 62, 50, 13
 COLOR_CAPTURA = COLOR_MIN            # la captura la hace MIN
 PIE_TPM = ["Cada hoja es un final con su U:", "+1 gana MAX y −1 gana MIN;",
            "0 es empate.", "La x de ix: es una captura de MIN.",
-           "D tiene tres hijos; en T, dos."]
+           "D tiene tres hijos; en el árbol", "base, dos."]
 
 
 def _signo(u):
@@ -3718,14 +3468,14 @@ def jue_t_pm_arbol():
     es_hoja = {c: not isinstance(j.nodo_en(arbol, c), tuple) for c in caminos}
     hojas = {c: j.nodo_en(arbol, c) for c in caminos if es_hoja[c]}
     jugadas_raiz = {(i,): a for i, a in enumerate(j.JUGADAS_RAIZ)}
-    titulo = ["El árbol T±", "T con finales en U"]
+    titulo = ["El árbol de resultados", "finales en U"]
 
     def hojas_de(c):
         xs = [f"{ids[h]} = {_signo(hojas[h])}" for h in caminos if h[:-1] == c and es_hoja[h]]
         return ", ".join(xs[:-1]) + " y " + xs[-1]
     n_hojas = {c: len(j.nodo_en(arbol, c)) for c in caminos if not es_hoja[c]}
     captura = ", ".join(ids[c] for c in sorted(j.CAPTURAS_TPM))
-    desc = (f"El árbol T±: la forma del árbol T, con {j.contar_nodos(arbol)} nodos porque D "
+    desc = (f"El árbol de resultados: la forma del árbol base, con {j.contar_nodos(arbol)} nodos porque D "
             f"tiene {n_hojas[(2,)]} hijos y no 2. La raíz R es de MAX; izq lleva a I, centro a "
             f"C y der a D, los tres de MIN. I tiene las hojas {hojas_de((0,))}; {captura} es "
             f"una captura de MIN. C tiene dos hijos de MAX: C1, con {hojas_de((1, 0))}, y C2, "
@@ -3802,6 +3552,7 @@ def jue_t_pm_arbol():
 
 RX_W = ANCHO_TPM
 RX_RAIZ_W = 92
+PROB_PAREJA = {2: "½", 3: "⅓", 4: "¼"}    # la arista de un nodo de AZAR parejo
 COLOR_EVAL = LINEA                    # relleno de la insignia de EVAL
 TENUE = mezclar(SUAVE, 0.6)           # borde de lo que esta detras del horizonte
 TENUE_TXT = mezclar(SUAVE, 0.8)
@@ -3815,13 +3566,13 @@ def _u_txt(v):
         return "0"
     if v in (INF_, -INF_):
         return "+∞" if v > 0 else "−∞"
-    return ("+" if v > 0 else "−") + j.fmt_t(abs(v))
+    return ("+" if v > 0 else "−") + _fmt_t(abs(v))
 
 
 def _c_txt(v):
     """Un numero en la escala 100·U o de EVAL: sin «+» (la convencion de las
     figuras de la clase 3)."""
-    return ("−" if v < 0 else "") + j.fmt_t(abs(v))
+    return ("−" if v < 0 else "") + _fmt_t(abs(v))
 
 
 INF_ = float("inf")
@@ -3881,8 +3632,13 @@ def _pild(cx, cy, rotulo, borde, tam=14, relleno=FONDO, color_texto=None, mono=F
 
 
 def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
-              raiz_filas=(), horizonte=None, podas=(), captura_tenue=False, marcos=None):
+              raiz_filas=(), horizonte=None, podas=(), captura_tenue=False, marcos=None,
+              azar=()):
     """Dibuja T± con raiz en y0 y devuelve la y mas baja ocupada.
+
+    azar: caminos de nodos internos que se dibujan como nodos de AZAR
+    (esquinas redondas, rotulo AZAR y la probabilidad pareja en cada arista
+    que sale de ellos); vacio por omision, y entonces nada cambia.
 
     nodos: {camino: dict(estado, filas=[...], hoja=texto o None,
     bajo=[renglones bajo el id], eval=numero o None)}; los caminos que
@@ -3902,7 +3658,7 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
     es_hoja = {c: not isinstance(j.nodo_en(arbol, c), tuple) for c in caminos}
     # Bajo el corte, los niveles bajan para dejar sitio a la linea (y bajo
     # d = 2, tambien al rotulo de una poda en el nivel 2).
-    baja = 40 if horizonte == 1 else 54
+    baja = 58 if horizonte == 1 else 54
     ys = [y0 + d + (baja if horizonte is not None and k > horizonte else 0)
           for k, d in enumerate(ys)]
     n_filas = max([len(nodos.get(c, {}).get("filas", ())) for c in caminos if not es_hoja[c]
@@ -3956,14 +3712,32 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
             out.append(_pastilla_t(x1 + (x2 - x1) * t, ya + (yb - ya) * t,
                                    j.JUGADAS_RAIZ[c[0]],
                                    ACENTO if c[0] == i_jugada else SUAVE, tam=14))
+        if c[:-1] in azar:
+            # cerca del hijo, donde las aristas ya se separaron
+            t = 0.74
+            px, py = x1 + (x2 - x1) * t, ya + (yb - ya) * t
+            out.append(caja(round(px - 6, 1), round(py - 11, 1), 12, 18, relleno=FONDO,
+                            borde=FONDO, radio=4, grosor=1))
+            out.append(texto(round(px, 1), round(py + 5, 1),
+                             PROB_PAREJA[len(j.nodo_en(arbol, c[:-1]))], tam=15, peso="700",
+                             color=COLOR_AZAR))
     # La linea del corte, entre el nivel d y el siguiente.
     if horizonte is not None:
         yl = ys[horizonte] + nh / 2 + baja
         out.append(linea(6, yl, RX_W - 6, yl, color=TENUE, grosor=1.5, guiones="10 6"))
-        # El rotulo va donde la linea no cruza nodos: a la derecha bajo D
-        # (d = 1), a la izquierda bajo I (d = 2, donde I ya acabo).
-        xr = RX_W - 56 if horizonte == 1 else 56
-        out.append(_pild(xr, yl, f"corte d = {horizonte}", TENUE_TXT, tam=13))
+        # El rotulo, sin pastilla y fuera de toda arista (ola 4, r2: la
+        # pastilla sobre la linea tapaba el arranque de las aristas de D y
+        # de C1): con d = 1, encima de la linea, en el hueco entre las
+        # aristas de C y las de D (por eso baja 58 y no 40: deja aire bajo
+        # las insignias EVAL); con d = 2, debajo, a la izquierda, bajo las
+        # hojas de I, donde ya no hay nada.
+        if horizonte == 1:
+            xr = (LUGARES_TPM[(1,)] + LUGARES_TPM[(2,)]) / 2
+            out.append(texto(xr, yl - 8, f"corte d = {horizonte}", tam=13, peso="700",
+                             color=TENUE_TXT))
+        else:
+            out.append(texto(8, yl + 18, f"corte d = {horizonte}", tam=13, peso="700",
+                             color=TENUE_TXT, anclaje="start"))
     # Raiz.
     x, yr = pos(())
     out.append(caja(x - RX_RAIZ_W / 2, yr - rh / 2, RX_RAIZ_W, rh,
@@ -4038,6 +3812,9 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
             continue
         tipo = "MAX" if len(c) % 2 == 0 else "MIN"
         color = COLOR_MAX if tipo == "MAX" else COLOR_MIN
+        radio = 10
+        if c in azar:
+            tipo, color, radio = "AZAR", COLOR_AZAR, 22
         w = NODO_TPM_W
         top = yc - nh / 2
         # con EVAL, la caja abarca tambien su insignia (alto 22, centrada a +15)
@@ -4048,7 +3825,8 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
                             guiones=guiones))
             tc = TENUE_TXT
         else:
-            out.append(caja(x - w / 2, top, w, nh, relleno=mezclar(color, 0.07), borde=color))
+            out.append(caja(x - w / 2, top, w, nh, relleno=mezclar(color, 0.07), borde=color,
+                            radio=radio))
             tc = color
         out.append(texto(x, top + 21, ids[c], tam=17, color=tc, peso="700"))
         out.append(texto(x, top + 38, tipo, tam=14, color=tc, peso="700"))
@@ -4057,7 +3835,8 @@ def _arbol_rx(out, y0, nodos, ys=(0, 132, 238, 336), escala=1, jugada=None,
             # 62: los ū bajan un punto (no cabe una caja mas ancha: C2 queda a
             # 4 px de d1).
             out.append(texto(x, top + 58 + 19 * k, f,
-                             tam=(13 if len(f) <= 6 else 12) if f.startswith("ū")
+                             tam=(13 if len(f.replace("\u0302", "")) <= 6 else 12)
+                             if f.startswith(("ū", "Q̂")) or n.get("promedio")
                              else (14 if len(f) <= 6 else 13),
                              peso="700"))
         if n.get("eval") is not None:
@@ -4103,6 +3882,9 @@ def _muestra_rx(tipo, x, y):
         return caja(x + 2, y + 2, 32, 16, relleno=COLOR_EVAL, borde=TEXTO, radio=6, grosor=1.5)
     if tipo == "captura":
         return linea(x + 2, cy, x + 34, cy, color=COLOR_CAPTURA, grosor=6)
+    if tipo == "azar":
+        return caja(x + 4, y + 1, 28, 18, relleno=mezclar(COLOR_AZAR, 0.07), borde=COLOR_AZAR,
+                    radio=9)
     raise ValueError(tipo)
 
 
@@ -4243,7 +4025,7 @@ def jue_c3_rx_minimax(animar=True):
     gen = j.traza_decidir(j.ARBOL_TPM)["caminos_generados"]
     valores = j._valores_ids(j.intervalos_tpm(gen))
     nodos = _nodos_por_intervalos(valores, _u_txt, gen, ())
-    titulo = ["Minimax en T±", f"genera los {n} nodos"]
+    titulo = ["Minimax", "árbol de resultados", f"genera los {n} nodos"]
     out = []
     y = _titulo_rx(out, titulo)
     i0, marcos = len(out), {}
@@ -4255,7 +4037,7 @@ def jue_c3_rx_minimax(animar=True):
     y = _pie_t(out, y + 6, [f"V de cada jugada: izq {_u_txt(raiz['izq'])},",
                             f"centro {_u_txt(raiz['centro'])}, der {_u_txt(raiz['der'])}.",
                             "Sin EVAL: todo en la escala U."], tam=15)
-    desc = (f"Minimax en el árbol T±: recorre en profundidad los {n} nodos hasta los finales "
+    desc = (f"Minimax en el árbol de resultados: recorre en profundidad los {n} nodos hasta los finales "
             "y sube con el máximo donde mueve MAX y el mínimo donde mueve MIN. Valores: "
             + ", ".join(f"{nombre} = {_u_txt(x)}" for nombre, (_, x) in valores.items())
             + f". En la raíz, izq vale {_u_txt(raiz['izq'])}, centro {_u_txt(raiz['centro'])} "
@@ -4281,8 +4063,8 @@ def jue_c3_rx_alfa_beta(animar=True):
     podas = []
     for c, tipo, a, b, vc in cortes:
         hijos = [p for p in podados if p[:-1] == c]
-        podas.append((hijos, f"poda {'β' if tipo == 'beta' else 'α'}"))
-    titulo = ["Alfa-beta en T±", f"orden dado: {n} de {j.contar_nodos(j.ARBOL_TPM)} nodos"]
+        podas.append((hijos, f"corte {'β' if tipo == 'beta' else 'α'}"))
+    titulo = ["Alfa-beta", "árbol de resultados", f"orden dado: {n} de {j.contar_nodos(j.ARBOL_TPM)} nodos"]
     out = []
     y = _titulo_rx(out, titulo)
     i0, marcos = len(out), {}
@@ -4297,18 +4079,18 @@ def jue_c3_rx_alfa_beta(animar=True):
     renglones = []
     for c, tipo, a, b, vc in cortes:
         if tipo == "beta":
-            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≥ β = {_u_txt(b)}, poda β.")
+            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≥ β = {_u_txt(b)}, corte β.")
         else:
-            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≤ α = {_u_txt(a)}, poda α.")
+            renglones.append(f"{ids[c]}: v = {_u_txt(vc)} ≤ α = {_u_txt(a)}, corte α.")
     cotas = [f"{n} «{_cota_txt(t, x, _u_txt)}»" for n, (t, x) in valores.items()
              if t in ("≥", "≤")]
     renglones += ["Por eso da cotas, no valores", "exactos: " + ", ".join(cotas) + "."]
     y = _pie_t(out, y + 6, renglones, tam=15)
-    desc = (f"Alfa-beta en T± con el orden dado: genera {n} nodos de "
+    desc = (f"Alfa-beta en el árbol de resultados con el orden dado: genera {n} nodos de "
             f"{j.contar_nodos(j.ARBOL_TPM)}. "
             + " ".join(f"En {ids[c]} el valor llega a {_u_txt(vc)}, "
-                       + (f"mayor o igual que β = {_u_txt(b)}: poda β"
-                          if tipo == "beta" else f"menor o igual que α = {_u_txt(a)}: poda α")
+                       + (f"mayor o igual que β = {_u_txt(b)}: corte beta"
+                          if tipo == "beta" else f"menor o igual que α = {_u_txt(a)}: corte alfa")
                        + ", y no genera " + " ni ".join(ids[p] for p in podados if p[:-1] == c)
                        + "." for c, tipo, a, b, vc in cortes)
             + " Valores: " + ", ".join(f"{nombre} {_cota_txt(t, x, _u_txt)}"
@@ -4329,7 +4111,7 @@ def jue_c3_rx_corte(animar=True):
     ids = j.ids_tpm()
     (cap,) = j.CAPTURAS_TPM
     nodos[cap]["hoja"] = _c_txt(100 * j.nodo_en(j.ARBOL_TPM, cap))
-    titulo = ["Corte a d = 1 en T±", f"genera {n} nodos y estima"]
+    titulo = ["Corte a d = 1", "árbol de resultados", f"genera {n} nodos y estima"]
     out = []
     y = _titulo_rx(out, titulo)
     i0, marcos = len(out), {}
@@ -4347,7 +4129,7 @@ def jue_c3_rx_corte(animar=True):
                             f"que vale {_c_txt(100 * j.nodo_en(j.ARBOL_TPM, cap))}, "
                             "queda detrás",
                             "del corte y no se ve."], tam=15)
-    desc = (f"Minimax con corte a profundidad {d} en T±, con los finales en la escala 100·U: "
+    desc = (f"Minimax con corte a profundidad {d} en el árbol de resultados, con los finales en la escala 100·U: "
             f"genera {n} nodos, R, I, C y D, y en I, C y D devuelve su EVAL: "
             + ", ".join(f"{a} {_c_txt(w)}" for a, w in raiz.items())
             + f". Juega {jugada}, con {_c_txt(v)}. Todo lo de abajo queda detrás del "
@@ -4376,7 +4158,7 @@ def jue_c3_rx_quietud(animar=True):
     padre = cap[:-1]
     e_padre = j.EVAL_TPM[ids[padre]]
     u_cap = 100 * j.nodo_en(j.ARBOL_TPM, cap)
-    titulo = ["Quietud a d = 1 en T±", f"{n} nodos: sigue la captura"]
+    titulo = ["Quietud a d = 1", "árbol de resultados", f"{n} nodos: sigue la captura"]
     out = []
     y = _titulo_rx(out, titulo)
     i0, marcos = len(out), {}
@@ -4396,7 +4178,7 @@ def jue_c3_rx_quietud(animar=True):
                             f"el menor, {_c_txt(vals[padre])}.",
                             "C y D no tienen capturas:",
                             "se quedan con su EVAL."], tam=15)
-    desc = (f"Búsqueda de quietud con corte a profundidad {d} en T±, finales en 100·U: genera "
+    desc = (f"Búsqueda de quietud con corte a profundidad {d} en el árbol de resultados, finales en 100·U: genera "
             f"{n} nodos, R, I, C, D y la captura {ids[cap]}. En {ids[padre]}, que no está "
             f"quieto, MIN compara quedarse con la EVAL, {_c_txt(e_padre)}, con capturar, "
             f"{_c_txt(u_cap)}, y toma el menor: {ids[padre]} vale {_c_txt(vals[padre])}. "
@@ -4418,7 +4200,7 @@ def jue_c3_rx_iterativa(animar=True):
     trazas = j.profundizacion_iterativa_t(j.escalar_arbol(j.ARBOL_TPM, 100), (1, 2, 3),
                                           j.EVAL_TPM)
     ids = j.ids_tpm()
-    titulo = ["Profundización iterativa", "T±, alfa-beta con d = 1, 2, 3"]
+    titulo = ["Profundización iterativa", "árbol de resultados,", "alfa-beta con d = 1, 2, 3"]
     out = []
     y = _titulo_rx(out, titulo)
     partes = []
@@ -4427,14 +4209,14 @@ def jue_c3_rx_iterativa(animar=True):
     for (d, orden, jugada, v, g), (_, _, t), orden_gen in zip(filas, trazas, ordenes):
         gen = t["caminos_generados"]
         podados = set(j._podados_iterativa(t))
-        valores = j._valores_ids(j.intervalos_tpm(gen, d, j.EVAL_TPM, 100), d)
+        valores = j._valores_ventana(t, d, j.EVAL_TPM, 100)
         nodos = _nodos_por_intervalos(valores, _c_txt, gen, podados)
         podas = []
         for tipo, nombre, *_ in t["cortes"]:
             c = next(k for k, x in ids.items() if x == nombre)
             hijos = sorted(p for p in podados if p[:-1] == c)
             if hijos:      # un corte en el ultimo hijo no deja nada sin generar
-                podas.append((hijos, f"poda {'β' if tipo == 'beta' else 'α'}"))
+                podas.append((hijos, f"corte {'β' if tipo == 'beta' else 'α'}"))
         y += 14
         out.append(linea(X_PIE, y, RX_W - X_PIE, y, color=LINEA, grosor=1.5))
         y += 28
@@ -4464,7 +4246,7 @@ def jue_c3_rx_iterativa(animar=True):
                             "mejor jugada de la anterior.",
                             "Si el tiempo se acaba, juega la",
                             "de la última búsqueda completa."], tam=15)
-    desc = ("Profundización iterativa en T±, finales en 100·U: tres búsquedas de alfa-beta con "
+    desc = ("Profundización iterativa en el árbol de resultados, finales en 100·U: tres búsquedas de alfa-beta con "
             "corte, d = 1, 2 y 3, cada una con la mejor jugada de la anterior primero. "
             + " ".join(partes) + f" En total, {total} nodos generados. Si el tiempo se acaba "
             f"tras d = {filas[-1][0]}, juega {filas[-1][2]}.")
@@ -4489,41 +4271,43 @@ def jue_c3_rx_mc_plano():
         es_hoja = not isinstance(j.nodo_en(j.ARBOL_TPM, c), tuple)
         if len(c) == 1:
             a = j.JUGADAS_RAIZ[c[0]]
-            nodos[c] = {"filas": [f"N {k}", f"ū {_dec_txt(F(sumas[a], k))}"]}
+            nodos[c] = {"filas": [f"N {k}", f"Q̂ {_dec_txt(F(sumas[a], k))}"]}
         elif es_hoja:
             nodos[c] = {"estado": "sim" if c in tocados else "horizonte",
                         "hoja": _u_txt(j.nodo_en(j.ARBOL_TPM, c)),
                         "bajo": [f"×{llegadas[c]}"] if c in llegadas else []}
         else:
             nodos[c] = {"estado": "sim" if c in tocados else "horizonte"}
-    titulo = ["Monte Carlo plano en T±", f"{k} partidas al azar por jugada"]
+    titulo = ["Monte Carlo plano", "árbol de resultados", f"{k} partidas al azar por jugada"]
     out = []
     y = _titulo_rx(out, titulo)
     fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[f"N {k * len(j.ARBOL_TPM)}"],
                       ys=(0, 140, 262, 366))
-    y = _leyenda_rx(out, fondo + 16, [("visto", ["guarda solo N y ū", "de cada jugada"]),
+    y = _leyenda_rx(out, fondo + 16, [("visto", ["guarda solo N y Q̂", "de cada jugada"]),
                                        ("sim", ["por aquí pasaron", "partidas; no se guarda"]),
                                        ("jugada", f"la jugada que juega: {jugada}")])
     y = _pie_t(out, y + 6, ["×n: partidas que acabaron ahí.",
                             "Sumas de U:",
                             ", ".join(f"{a} {_u_txt(s)}" for a, s in sumas.items()) + ".",
-                            f"Juega {jugada}: el mayor ū. Supone",
+                            f"Juega {jugada}: la mayor Q̂. Supone",
                             "que los dos juegan al azar;",
                             "minimax jugaría centro."], tam=15)
-    desc = (f"Monte Carlo plano en T± con {k} simulaciones por jugada y semilla {semilla}: "
+    desc = (f"Monte Carlo plano en el árbol de resultados con {k} simulaciones por jugada y semilla {semilla}: "
             f"desde cada jugada de la raíz juega {k} partidas al azar, para los dos, hasta un "
             "final, y no guarda los nodos por los que pasa. Partidas por final: "
             + ", ".join(f"{ids[c]} {n}" for c, n in sorted(llegadas.items(),
                                                            key=lambda x: ids[x[0]]))
             + ". Sumas de U: " + ", ".join(f"{a} {_u_txt(s)}" for a, s in sumas.items())
-            + "; promedios ū: " + ", ".join(f"{a} {_dec_txt(F(s, k))}" for a, s in sumas.items())
+            + "; promedios Q̂: " + ", ".join(f"{a} {_dec_txt(F(s, k))}" for a, s in sumas.items())
             + f". Juega {jugada}, la de mayor promedio; minimax jugaría centro.")
     return _svg_rx(titulo, desc, out, y)
 
 
 def jue_c3_rx_uct(vueltas):
     """UCT con c = 1 y semilla 0 en T±, tras `vueltas` vueltas: su arbol con
-    N y ū, lo que aun no agrega, y la jugada mas visitada."""
+    N y V̂ en cada nodo bajo la raiz (A_notacion: Q̂ es de la arista, y el Q̂
+    de una jugada es el V̂ del hijo al que lleva; ola 4, r3), lo que aun no
+    agrega, y la jugada mas visitada. La raiz, solo N."""
     c_uct, semilla = 1, j.SEMILLA_TPM
     u = j.uct_tpm(c_uct, vueltas, semilla)
     N, S = u["N"], u["S"]
@@ -4539,28 +4323,34 @@ def jue_c3_rx_uct(vueltas):
         elif es_hoja:
             nodos[c] = {"hoja": _u_txt(j.nodo_en(j.ARBOL_TPM, c)), "bajo": [str(N[c])]}
         else:
-            nodos[c] = {"filas": [f"N {N[c]}", f"ū {_dec_txt(F(S[c], N[c]))}"]}
-    titulo = [f"UCT en T±: vuelta {vueltas}", f"c = {c_uct}, semilla {semilla}: "
+            # «promedio»: la fila V̂ con decimales va a 13/12, como iba la Q̂
+            nodos[c] = {"filas": [f"N {N[c]}", f"V̂ {_dec_txt(F(S[c], N[c]))}"],
+                        "promedio": True}
+    titulo = [f"UCT: vuelta {vueltas}", "árbol de resultados", f"c = {c_uct}, semilla {semilla}: "
               f"{len(N)} nodos"]
     out = []
     y = _titulo_rx(out, titulo)
     fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[f"N {N[()]}"],
                       ys=(0, 140, 262, 366))
     raiz = {a: N.get((i,), 0) for i, a in enumerate(j.JUGADAS_RAIZ)}
-    y = _leyenda_rx(out, fondo + 16, [("visto", "en su árbol, con N y ū"),
+    y = _leyenda_rx(out, fondo + 16, [("visto", "en su árbol, con N y V̂"),
                                        ("noexp", ["aún no está en su árbol", "(frontera)"]),
                                        ("jugada", ["juega la más visitada,", jugada])])
     y = _pie_t(out, y + 6, ["Visitas N en la raíz:",
                             ", ".join(f"{a} {n}" for a, n in raiz.items()) + ".",
                             "Bajo cada final: su N.",
-                            "ū: promedio de U desde MAX,",
-                            "a dos decimales."], tam=15)
+                            "V̂: promedio de U desde MAX,",
+                            "a dos decimales. El Q̂ de",
+                            "una jugada es el V̂ del",
+                            "nodo al que lleva."], tam=15)
     faltan = [ids[c] for c in ids if c and c not in N]
-    desc = (f"UCT en T± con c = {c_uct} y semilla {semilla}, tras {vueltas} vueltas: su árbol "
+    desc = (f"UCT en el árbol de resultados con c = {c_uct} y semilla {semilla}, tras {vueltas} vueltas: su árbol "
             f"tiene {len(N)} nodos. Visitas y promedios: "
-            + ", ".join(f"{ids[c]} N {N[c]} ū {_dec_txt(F(S[c], N[c]))}"
+            # en un nodo, N y V̂; Q̂ es de la arista. La raiz dibuja solo N: su
+            # V̂ (un promedio) no es el valor que entrega, y no se nombra (ola 4, r3)
+            + ", ".join(f"{ids[c]} N {N[c]}" + ("" if c == () else f" V̂ {_dec_txt(F(S[c], N[c]))}")
                         for c in sorted(N, key=lambda x: (len(x), x)))
-            + ". " + (f"Aún no agrega: {', '.join(faltan)}. " if faltan else
+            + ". El Q̂ de una jugada es el V̂ del nodo al que lleva. " + (f"Aún no agrega: {', '.join(faltan)}. " if faltan else
                       "Ya agregó todos los nodos. ")
             + f"Al acabarse las vueltas, juega {jugada}: la jugada de la raíz con más visitas, "
             f"con N = {raiz[jugada]}.")
@@ -4688,6 +4478,7 @@ FR_X0, FR_X1 = 40, 258                # las cajas de la columna
 FR_RCX, FR_RMX = 100, 58              # el rombo
 FR_LADO_X = 174                       # cajas del lado (vale U, poda)
 FR_IZQ, FR_DER = 24, 276              # carriles: vueltas y regreso al padre
+FR_UNE_X = 246                        # baja de una caja del lado a un rombo de abajo
 FR_GAP = 32
 
 
@@ -4696,8 +4487,13 @@ def _flujo_rec(titulo, pasos, vueltas, pie, desc):
     un rombo, vuelve al padre por el carril derecho) y «destino»: True (la
     caja «Al volver…», a donde entra ese carril). «tenue»: True en un paso
     pide que la flecha que llega a el vaya punteada, con ese rotulo.
+    «angosta»: True deja una caja de la columna a la izquierda de FR_UNE_X,
+    para que pase por su derecha la union de «une». «une»: k en un rombo con
+    «lado» lleva la caja del lado hacia abajo, por FR_UNE_X, hasta la punta
+    derecha del rombo del paso k (que no debe tener «lado»).
     vueltas: [(desde, hasta, rotulo)] por el carril izquierdo."""
     out = []
+    uniones = []    # (y bajo la caja del lado, paso al que entra)
     y = _titulo_rx(out, titulo) + 6
     out.append(texto(FR_X0, y + 8, "Empieza en la raíz", tam=14, peso="700", color=SUAVE,
                      anclaje="start"))
@@ -4726,7 +4522,8 @@ def _flujo_rec(titulo, pasos, vueltas, pie, desc):
             rs = p["caja"]
             h = 18 + 21 * len(rs)
             fin = p.get("fin")
-            out.append(caja(FR_X0, y, FR_X1 - FR_X0, h,
+            x1 = FR_UNE_X - 12 if p.get("angosta") else FR_X1
+            out.append(caja(FR_X0, y, x1 - FR_X0, h,
                             relleno=mezclar(ACENTO if fin else LINEA, 0.14 if fin else 0.18),
                             borde=ACENTO if fin else SUAVE, grosor=2.5 if fin else 1.5))
             for i, r in enumerate(rs):
@@ -4764,8 +4561,15 @@ def _flujo_rec(titulo, pasos, vueltas, pie, desc):
                 if p.get("regresa"):
                     out.append(linea(FR_X1, cy, FR_DER, cy, color=SUAVE))
                     regresos.append(cy)
+                if p.get("une") is not None:
+                    uniones.append((cy + hl / 2, p["une"]))
             geo.append((y, y + 2 * my, cy))
             y += 2 * my + FR_GAP
+    for ya, k in uniones:
+        yb = geo[k][2]
+        out.append(linea(FR_UNE_X, ya, FR_UNE_X, yb, color=SUAVE))
+        out.append(flecha(FR_UNE_X, yb, FR_RCX + FR_RMX + 3, yb, color=SUAVE, grosor=2,
+                          marcador="s"))
     # El carril derecho: de cada caja de valor a «Al volver…».
     arriba = [r for r in regresos if r < destino]
     abajo = [r for r in regresos if r > destino]
@@ -4851,14 +4655,16 @@ FLUJOS = {
         pasos=[{"rombo": ["¿Es final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"]),
                 "regresa": True},
                {"caja": ["Baja al siguiente", "hijo con α y β, y", "repite desde arriba"]},
-               {"caja": ["Al volver con v:", "MAX se queda con el",
-                         "mayor y sube α si", "lo supera"],
+               # El orden es el del código (ola 4, r2): el hijo devuelve w,
+               # v = max(v, w), primero ¿poda?, y solo si no poda sube α.
+               {"caja": ["Al volver con w:", "MAX se queda con", "v = max(v, w)"],
                 "destino": True, "tenue": "cuando vuelve"},
                {"rombo": ["¿v ≥ β?"], "abajo": "no",
                 "lado": ("sí", ["poda:", "no genera", "los demás"]), "regresa": True},
+               {"caja": ["Sube α a v", "si v lo supera"]},
                _VOLVER, _AL_PADRE, _JUEGA],
-        vueltas=[(1, 0, "con el hijo"), (4, 1, "sí")],
-        pie=["En un nodo de MIN: se queda", "con el menor, baja β, y poda", "si v ≤ α."]),
+        vueltas=[(1, 0, "con el hijo"), (5, 1, "sí")],
+        pie=["En un nodo de MIN: se queda", "con el menor, poda si v ≤ α", "y, si no, baja β."]),
     "corte": dict(
         rec=True,
         titulo=["Corte, en palabras", "minimax que para en d"],
@@ -4876,8 +4682,8 @@ FLUJOS = {
         titulo=["Monte Carlo plano,", "en palabras"],
         pasos=[{"caja": ["Toma una jugada", "de la raíz"]},
                {"caja": ["Juega k partidas", "al azar, para los dos,", "hasta un final"]},
-               {"caja": ["Promedia sus U: ū", "y olvida las partidas"]},
-               {"caja": ["Juega la jugada", "de la raíz con mayor ū"], "fin": True}],
+               {"caja": ["Promedia sus U: Q̂", "y olvida las partidas"]},
+               {"caja": ["Juega la jugada", "de la raíz con mayor Q̂"], "fin": True}],
         vueltas=[(2, 0, "quedan jugadas")],
         pie=[]),
     "uct": dict(
@@ -4885,8 +4691,9 @@ FLUJOS = {
         pasos=[{"caja": ["1 · Selección", "baja por su árbol", "con el puntaje UCT"]},
                {"caja": ["2 · Expansión", "agrega un hijo nuevo", "(en un final, salta a 4)"]},
                {"caja": ["3 · Simulación", "al azar hasta un final;", "no se guarda"]},
-               {"caja": ["4 · Retropropagación", "cada nodo del camino suma",
-                         "una visita a N y", "actualiza su promedio", "ū con la U"]},
+               {"caja": ["4 · Retropropagación", "con la U, cada estado",
+                         "del camino actualiza", "N(s) y su promedio V̂(s);",
+                         "cada arista, N(s,a) y Q̂(s,a)"]},
                {"rombo": ["¿Se acabó", "el tiempo?"], "abajo": "sí"},
                {"caja": ["Juega la jugada", "de la raíz más visitada"], "fin": True}],
         vueltas=[(4, 0, "no: otra vuelta")],
@@ -5012,7 +4819,7 @@ def jue_c3_mcg_mc_plano():
         out.append(caja(x - 27, y1 - 28, 54, 54, relleno=mezclar(COLOR_MIN, 0.08),
                         borde=COLOR_MIN))
         out.append(texto(x, y1 - 7, "N", tam=15, peso="700"))
-        out.append(texto(x, y1 + 15, "ū", tam=15, peso="700"))
+        out.append(texto(x, y1 + 15, "Q̂", tam=15, peso="700"))
         if nombre == "a_b":
             out.append(texto_con_sub(x - 28 + 18, y1 - 36, [("a", False), ("b", True)], tam=14,
                                      color=SUAVE, anclaje="start"))
@@ -5027,13 +4834,13 @@ def jue_c3_mcg_mc_plano():
     out.append(texto(xa, yf + 5, "finales", tam=14, color=SUAVE, anclaje="start"))
     y = _pie_t(out, yf + 50, ["Cada final suma su U al", "contador de su jugada, y la",
                               "partida se olvida. Con", "partidas independientes y la",
-                              "misma regla, ū converge a μ", "(el promedio con todos al",
-                              "azar), no a V."], tam=15)
+                              "misma regla, Q̂ tiende al", "valor con todos al azar,",
+                              "no a V."], tam=15)
     desc = ("Monte Carlo plano en un árbol grande, sin números: en la raíz s₀, cada jugada a₁, "
-            "a₂, …, a_b tiene solo dos contadores, N y ū. Desde cada jugada bajan caminos "
+            "a₂, …, a_b tiene solo dos contadores, N y Q̂. Desde cada jugada bajan caminos "
             "quebrados, partidas jugadas al azar para los dos, hasta finales lejanos con su U; "
             "esos caminos no se guardan. Cada final suma su U al contador de su jugada. Con más "
-            "partidas independientes y la misma regla, ū converge a μ, el promedio con todos al "
+            "partidas independientes y la misma regla, Q̂ converge a Q_azar, el valor con todos al "
             "azar, no a V.")
     return _svg_rx(titulo, desc, out, y)
 
@@ -5110,7 +4917,10 @@ def _panel_fases(out, py, titulo, sub, fase):
             x2, y2 = P[b]
             out.append(_flecha_paralela(x1, y1, x2, y2, off=-14))
         out.append(texto(172, yn + 2, "una visita más", tam=14, peso="700", anclaje="start"))
-        out.append(texto(172, yn + 21, "U entra en ū", tam=14, peso="700", anclaje="start"))
+        out.append(texto(172, yn + 21, "U entra en V̂", tam=14, peso="700", anclaje="start"))
+        out.append(texto(172, yn + 40, "y en el Q̂ de", tam=14, peso="700", anclaje="start"))
+        out.append(texto(172, yn + 59, "cada arista", tam=14, peso="700", anclaje="start"))
+        alto = 230      # dos renglones mas: no tocan la raya del panel siguiente
     if fase == "final":
         x, y = P["C"]
         out.append(_flecha_paralela(x, y, *P["R"], off=-14))
@@ -5144,8 +4954,8 @@ def jue_c3_mcg_uct_fases():
             "frontera. 1, selección: baja por el camino resaltado eligiendo con el puntaje UCT "
             "hasta un nodo con una jugada sin agregar. 2, expansión: la agrega como un hijo "
             "nuevo. 3, simulación: desde el hijo nuevo juega al azar hasta un final, y esa "
-            "partida no se guarda. 4, retropropagación: sube ese U por el camino; cada nodo "
-            "suma una visita a N y mete U en su promedio ū. Último panel: si la selección llega "
+            "partida no se guarda. 4, retropropagación: sube ese U por el camino; cada estado "
+            "del camino actualiza N(s) y V̂(s); cada arista actualiza N(s,a) y Q̂(s,a). Último panel: si la selección llega "
             "a un final que ya está en su árbol, no agrega nada ni simula: retropropaga su U "
             "directamente.")
     return _svg_rx(titulo, desc, out, y)
@@ -5247,10 +5057,15 @@ def jue_c3_mcg_uct_crece():
 # pagina 7 solo lleva utilidades (+1, −1, 0), que son la escala U, no datos
 # de una corrida: las proporciones del grosor son ilustrativas.
 
-# Que numero guarda cada algoritmo en el hijo: (algoritmo, numero).
-NUMERO_EN_EL_HIJO = [("minimax", "V"), ("alfa-beta", "V o cota"),
-                     ("corte", "valor con corte"), ("Monte Carlo plano", "ū estima μ"),
-                     ("UCT", "ū estima V")]
+# Que numero guarda cada algoritmo en el hijo, en el orden de la pagina:
+# (algoritmo, a su derecha, renglon de abajo alineado a la derecha). Lo que no
+# cabe junto al nombre baja al renglon siguiente.
+NUMERO_EN_EL_HIJO = [("minimax", "V", None), ("alfa-beta", "V o cota", None),
+                     ("expectiminimax", "E[·]", "V del juego con azar"),
+                     ("corte", "valor con corte", "o cota"),
+                     ("Monte Carlo plano", None, "Q̂ estima Q_azar"),
+                     ("actualización minimax", None, "Q̂ → Q, bajo su contrato"),
+                     ("UCT", "Q̂ → Q", None)]
 
 
 def jue_c3_rx_estado_y_jugada():
@@ -5284,22 +5099,31 @@ def jue_c3_rx_estado_y_jugada():
     out.append(texto(X_PIE, y, "Qué número guarda ahí", tam=16, peso="700", anclaje="start"))
     out.append(texto(X_PIE, y + 20, "cada algoritmo:", tam=16, peso="700", anclaje="start"))
     y += 50
-    for alg, num in NUMERO_EN_EL_HIJO:
+    for alg, junto, abajo in NUMERO_EN_EL_HIJO:
         out.append(texto(X_PIE, y, alg, tam=15, color=SUAVE, anclaje="start"))
-        out.append(texto(RX_W - X_PIE, y, num, tam=15, peso="700", anclaje="end"))
+        if junto:
+            out.append(texto(RX_W - X_PIE, y, junto, tam=15, peso="700", anclaje="end"))
+        if abajo:
+            y += 22
+            if abajo.endswith("Q_azar"):
+                out.append(_q_azar_sub(RX_W - X_PIE, y, antes=abajo.removesuffix("Q_azar"),
+                                       anclaje="end"))
+            else:
+                out.append(texto(RX_W - X_PIE, y, abajo, tam=15, peso="700", anclaje="end"))
         y += 24
     desc = ("Un estado s, de MAX, con dos jugadas, A y B, cada una hacia un hijo: el estado "
             "T(s, A) y el estado T(s, B). Dentro de cada hijo va el número de esa jugada. "
             "El valor de la jugada es el valor del hijo al que lleva: Q(s, a) = V(T(s, a)). "
-            "Qué número guarda ahí cada algoritmo: minimax, V; alfa-beta, V o una cota; el "
-            "corte, el valor con corte (o una cota, con poda); Monte Carlo plano, ū, que estima μ; "
-            "UCT, ū, que estima V y, en un árbol finito con vueltas sin límite, tiende a V.")
+            "Qué número guarda ahí cada algoritmo: minimax, V; alfa-beta, V o una cota; "
+            "expectiminimax, un valor esperado, E[·], que es V del juego con azar; el corte, "
+            "el valor con corte o una cota, con poda; Monte Carlo plano, Q̂, que estima Q_azar; "
+            "la actualización minimax, Q̂, que tiende a Q bajo su contrato; UCT, Q̂, que tiende a Q.")
     return _svg_rx(titulo, desc, out, y + 4)
 
 
 # Los dos paneles de la mezcla: (titulo, grosor a +1, grosor a −1, rotulo, ū).
-PANELES_MEZCLA = [("Pocas vueltas", 6, 6, "≈ mitad y mitad", "ū(A) ≈ 0"),
-                  ("Muchas vueltas", 2, 14, "casi todas a −1", "ū(A) → −1")]
+PANELES_MEZCLA = [("Pocas vueltas", 6, 6, "≈ mitad y mitad", "Q̂(A) ≈ 0"),
+                  ("Muchas vueltas", 2, 14, "casi todas a −1", "Q̂(A) → −1")]
 
 
 def jue_c3_mcg_mezcla():
@@ -5336,11 +5160,543 @@ def jue_c3_mcg_mezcla():
     desc = ("Dos paneles del mismo nodo de MIN, al que lleva la jugada A, con sus dos "
             "respuestas: una a un final +1 y otra a un final −1. El grosor de cada rama es "
             "cuántas vueltas pasaron por ella. Con pocas vueltas, las dos ramas tienen grosor "
-            "parecido, mitad y mitad, y el promedio ū(A) es cercano a 0. Con muchas vueltas, la "
-            "rama a −1 es muy gruesa y la de +1 delgada: casi todas van a −1, y ū(A) tiende a "
+            "parecido, mitad y mitad, y el promedio Q̂(A) es cercano a 0. Con muchas vueltas, la "
+            "rama a −1 es muy gruesa y la de +1 delgada: casi todas van a −1, y Q̂(A) tiende a "
             "−1, el mínimo. Las proporciones son ilustrativas: UCT elige cada vez más la "
             "respuesta buena para MIN.")
     return _svg_rx(titulo, desc, out, y)
+
+
+# ------------------------------ homologacion (Ola 1): figuras nuevas ---
+#
+# Las figuras nuevas de la homologacion de la unidad (plan §7, destinos §E.1)
+# miden ANCHO_HOMOLOGACION: ANCHO = 600 no se toca, y una prueba exige 300 px
+# solo a la lista cerrada HOMOLOGACION_300. Notacion del plan §5.1: V, Q y
+# Q_azar exactos (sin gorro); V̂ y Q̂ estimaciones; N visitas. Todo numero
+# sale de juegos.py.
+
+ANCHO_HOMOLOGACION = 300
+
+
+def _svg_h(titulo, desc, out, alto):
+    nombre = titulo[0] + SEP_C3 + " ".join(titulo[1:])
+    return "".join([marco(ANCHO_HOMOLOGACION, round(alto), desc, nombre, desc)] + out
+                   + [cierre()])
+
+
+def _q_azar_sub(x, y, tam=15, color=TEXTO, peso="700", antes="", despues="",
+                anclaje="start"):
+    """«Q_azar» con el «azar» como subindice, entre `antes` y `despues`."""
+    partes = ([(antes, False)] if antes else []) + [("Q", False), ("azar", True)]
+    if despues:
+        partes.append((despues, False))
+    return texto_con_sub(x, y, partes, color=color, tam=tam, peso=peso, anclaje=anclaje)
+
+
+def jue_rx_expectiminimax():
+    """El arbol de resultados con D como dado parejo (otro juego): I −1,
+    C 0, D 1/3, R 1/3; juega der."""
+    arbol = j.ARBOL_TPM
+    jugada, valores = j.expectiminimax_tpm()
+    ids = j.ids_tpm()
+    azar = {c for c, n in ids.items() if n in j.DADO_TPM}
+    d = next(iter(azar))
+    nodos = {}
+    for c, n in ids.items():
+        if c == ():
+            continue
+        if isinstance(j.nodo_en(arbol, c), tuple):
+            nodos[c] = {"filas": [_u_txt(valores[n])]}
+        else:
+            nodos[c] = {"hoja": _u_txt(j.nodo_en(arbol, c))}
+    us = list(j.nodo_en(arbol, d))
+    p = PROB_PAREJA[len(us)]
+    q = {a: valores[ids[(i,)]] for i, a in enumerate(j.JUGADAS_RAIZ)}
+    sin_dado = j.minimax_tpm()[0]
+    titulo = ["Expectiminimax", "otro juego: dado en D"]
+    out = []
+    y = _titulo_rx(out, titulo)
+    fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada, raiz_filas=[_u_txt(valores["R"])],
+                      azar=azar)
+    y = _leyenda_rx(out, fondo + 20, [("azar", ["AZAR: nadie elige;", f"cada hijo pesa {p}"]),
+                                       ("visto", ["MAX o MIN: el número", "es su valor V"]),
+                                       ("jugada", f"la jugada que juega: {jugada}")])
+    suma = " + ".join(f"{p}·({_u_txt(u)})" for u in us)
+    y = _pie_t(out, y + 6, [f"{ids[d]} = {suma}", f"   = {_u_txt(valores[ids[d]])}.",
+                            f"Q en la raíz: izq {_u_txt(q['izq'])},",
+                            f"centro {_u_txt(q['centro'])}, der {_u_txt(q['der'])}.",
+                            f"Con MIN en {ids[d]}, minimax", f"jugaría {sin_dado}."], tam=15)
+    desc = (f"Expectiminimax en el árbol de resultados, otro juego: el nodo {ids[d]} deja de "
+            f"ser de MIN y es un dado parejo, un nodo de AZAR con esquinas redondas; cada uno "
+            f"de sus {len(us)} hijos pesa {p}. Valores: "
+            + ", ".join(f"{n} = {_u_txt(v)}" for n, v in valores.items() if n != "R")
+            + f". {ids[d]} = {suma} = {_u_txt(valores[ids[d]])}. En la raíz, Q de izq "
+            f"{_u_txt(q['izq'])}, de centro {_u_txt(q['centro'])} y de der {_u_txt(q['der'])}: "
+            f"juega {jugada}, con V = {_u_txt(valores['R'])}. Con MIN en {ids[d]}, minimax "
+            f"jugaría {sin_dado}.")
+    return _svg_h(titulo, desc, out, y)
+
+
+FLUJO_EXPECTIMINIMAX = dict(
+    titulo=["Expectiminimax,", "en palabras"],
+    pasos=[{"rombo": ["¿Es final?"], "abajo": "no", "lado": ("sí", ["vale", "su U"]),
+            "regresa": True},
+           {"caja": ["Baja al siguiente", "hijo y repite con él", "desde arriba"]},
+           {"caja": ["Al volver de él", "con su valor w:"], "destino": True,
+            "tenue": "cuando vuelve"},
+           {"rombo": ["¿AZAR?"], "abajo": "no", "lado": ("sí", ["suma", "Pr(a|s)·w"]),
+            "une": 5},
+           {"caja": ["Se queda con:", "MAX, el mayor;", "MIN, el menor"], "angosta": True},
+           _VOLVER, _AL_PADRE, _JUEGA],
+    vueltas=[(1, 0, "con el hijo"), (5, 1, "sí")],
+    pie=["Un nodo de AZAR no elige:", "promedia sus hijos con su", "probabilidad Pr(a|s)."])
+
+
+def jue_rx_flujo_expectiminimax():
+    f = FLUJO_EXPECTIMINIMAX
+    desc = (_desc_rec("expectiminimax", f["pasos"], f["vueltas"])
+            + " Desde «suma Pr(a|s)·w» sigue al paso 6, ¿Quedan hijos?. " + " ".join(f["pie"]))
+    return _flujo_rec(f["titulo"], f["pasos"], f["vueltas"], f["pie"], desc)
+
+
+def jue_rx_mmmc():
+    """Monte Carlo con actualizacion minimax en el arbol de resultados tras
+    ITERACIONES_MMMC_TPM partidas (semilla 0): V̂ en cada estado guardado, ?
+    en las jugadas sin visitar, los exactos marcados, la jugada que entrega."""
+    arbol = j.ARBOL_TPM
+    n, semilla = j.ITERACIONES_MMMC_TPM, j.SEMILLA_TPM
+    m = j.mc_minimax(arbol, n, semilla)
+    V, ex = m["V"], m["exacto"]
+    jugada = j.JUGADAS_RAIZ[m["jugada"]]
+    ids = j.ids_tpm()
+    nodos = {}
+    for c in ids:
+        if c == ():
+            continue
+        hoja = not isinstance(j.nodo_en(arbol, c), tuple)
+        if c in V:
+            nodos[c] = ({"hoja": _u_txt(V[c])} if hoja else
+                        {"filas": [f"V̂ {_u_txt(V[c])}"] + (["exacto"] if ex[c] else [])})
+        elif c[:-1] in V:
+            nodos[c] = {"estado": "noexp", **({"hoja": "?"} if hoja else {"filas": ["?"]})}
+        else:
+            nodos[c] = {"estado": "noexp"}
+    qs = [("?" if q is None else _u_txt(q)) for q in m["Q"]]
+    titulo = ["Actualización minimax", "en el árbol de resultados", f"{n} partidas, semilla {semilla}"]
+    out = []
+    y = _titulo_rx(out, titulo)
+    fondo = _arbol_rx(out, y + 50, nodos, jugada=jugada,
+                      raiz_filas=[f"V̂ {_u_txt(V[()])}"] + (["exacto"] if ex[()] else []))
+    y = _leyenda_rx(out, fondo + 16, [("visto", ["guardado: su V̂;", "«exacto»: ya no cambia"]),
+                                       ("noexp", ["sin visitar: «?» es", "desconocida, no 0"]),
+                                       ("jugada", ["entrega la mayor Q̂:", jugada])])
+    y = _pie_t(out, y + 6, ["Q̂(s,a) es el V̂ del hijo al", "que lleva a. En la raíz:",
+                            ", ".join(f"{a} {x}" for a, x in zip(j.JUGADAS_RAIZ, qs)) + ".",
+                            "Sube con máximo en MAX y", "mínimo en MIN, solo con lo",
+                            "visitado; no promedia U."], tam=15)
+    guardados = sorted((c for c in V), key=lambda c: (len(c), c))
+    desc = (f"Monte Carlo con actualización minimax en el árbol de resultados, tras {n} "
+            f"partidas al azar con semilla {semilla}. Guarda {len(V)} estados: "
+            + ", ".join(f"{ids[c]} V̂ {_u_txt(V[c])}" + (" exacto" if ex[c] else " provisional")
+                        for c in guardados)
+            + ". Sin visitar: "
+            + ", ".join(ids[c] for c in ids if c and c not in V)
+            + "; su Q̂ es desconocida, no cero. En la raíz, Q̂ de izq " + qs[0] + ", de centro "
+            + qs[1] + " y de der " + qs[2] + f": entrega {jugada}, la mayor Q̂ disponible.")
+    return _svg_h(titulo, desc, out, y)
+
+
+FLUJO_MMMC = dict(
+    titulo=["Actualización minimax,", "en palabras"],
+    pasos=[{"caja": ["1 · Una partida", "jugadas al azar, todas", "con la misma probabilidad,",
+                     "hasta un final"]},
+           {"caja": ["2 · Guarda lo nuevo", "agrega al árbol los", "estados que descubrió"]},
+           {"caja": ["3 · En el final z", "V̂(z) = U(z), exacto"]},
+           {"caja": ["4 · Sube por el camino", "Q̂(s,a) = V̂(T(s,a));", "V̂(s): máximo en MAX,",
+                     "mínimo en MIN, solo", "sobre lo visitado"]},
+           {"rombo": ["¿Se acabó", "el tiempo?"], "abajo": "sí"},
+           {"caja": ["Juega la jugada", "de la raíz con mayor Q̂"], "fin": True}],
+    vueltas=[(4, 0, "no: otra partida")],
+    pie=["Una jugada sin visitar es", "desconocida, nunca cero."])
+
+
+def jue_rx_flujo_mmmc():
+    f = FLUJO_MMMC
+    return _figura_flujo("la actualización minimax", f["titulo"], f["pasos"], f["vueltas"],
+                         f["pie"])
+
+
+# La refutacion descubierta tarde: tres paneles con el mismo eje y (la
+# escala del juego, de +10 a −30).
+REF_X0, REF_X1 = 58, 284
+REF_ALTO = 140
+REF_Y_ARRIBA, REF_Y_ABAJO = 10, -30
+REF_MARCAS_Y = (10, 0, -10, -20, -30)
+COLOR_REF_A, COLOR_REF_B, COLOR_REF_LIM = ACENTO, SERIE[1], SUAVE
+GUIONES_REF = {"A": None, "B": "7 5", "lim": "2 4"}
+
+
+def series_refutacion():
+    """Los datos de los tres paneles, de juegos.py: dict por panel con
+    A y B (Q̂ por paso, None sin visitas, en la escala del juego), n, la
+    jugada que entrega al final y lo propio de cada uno."""
+    caminos = j.caminos_refutacion()
+    plano = j.mc_plano_uniforme(j.ARBOL_REFUTACION, None, caminos=caminos)["historia"]
+    mm = j.mc_minimax(j.ARBOL_REFUTACION, None, caminos=caminos)["historia"]
+    u = j.uct_refutacion()
+    k = j.ESCALA_REFUTACION
+    mas = u["mas_visitada"]
+    desde = len(mas)
+    while desde > 1 and mas[desde - 2] == mas[-1]:
+        desde -= 1
+    return {
+        "promedio": dict(A=[h["Q"][0] for h in plano], B=[h["Q"][1] for h in plano],
+                         n=len(caminos), jugada=j.JUGADAS_REFUTACION[plano[-1]["jugada"]],
+                         limite=j.q_azar_arbol(j.ARBOL_REFUTACION)[0]),
+        "minimax": dict(A=[h["Q"][0] for h in mm], B=[h["Q"][1] for h in mm],
+                        n=len(caminos), jugada=j.JUGADAS_REFUTACION[mm[-1]["jugada"]]),
+        "uct": dict(A=[None if q[0] is None else q[0] * k for q in u["Q"]],
+                    B=[None if q[1] is None else q[1] * k for q in u["Q"]],
+                    n=len(u["Q"]), jugada=mas[-1], descubre=u["descubre"], desde=desde,
+                    N=u["N"][-1]),
+    }
+
+
+def _ref_y(v, top):
+    return round(top + (REF_Y_ARRIBA - float(v)) / (REF_Y_ARRIBA - REF_Y_ABAJO) * REF_ALTO, 1)
+
+
+def _ref_x(i, n):
+    """i: paso desde 1."""
+    return round(REF_X0 + (i - 1) / (n - 1) * (REF_X1 - REF_X0), 1)
+
+
+def _ref_txt(v):
+    """Una cifra de la grafica: entera si lo es, si no con dos decimales."""
+    v = F(v)
+    if v.denominator == 1:
+        return _c_txt(v)
+    return ("−" if v < 0 else "") + f"{abs(float(v)):.2f}"
+
+
+def _panel_refutacion(out, y, titulo, sub, datos, eje_x, marcas, notas):
+    """Un panel: titulo, subtitulo, la grafica de Q̂(A) y Q̂(B) por paso y
+    las notas. marcas: [(paso, rotulo)] lineas verticales. notas: [(paso,
+    valor, rotulo, anclaje, dy)] cifras junto a la curva. Devuelve la y
+    siguiente."""
+    out.append(linea(X_PIE, y - 30, ANCHO_HOMOLOGACION - X_PIE, y - 30, color=LINEA, grosor=1.5))
+    out.append(texto(X_PIE, y, titulo, tam=17, peso="700", anclaje="start"))
+    for k, r in enumerate(sub):
+        out.append(texto(X_PIE, y + 20 + 19 * k, r, tam=14, color=SUAVE, anclaje="start"))
+    top = y + 20 + 19 * len(sub) + 16
+    n = datos["n"]
+    for v in REF_MARCAS_Y:
+        yy = _ref_y(v, top)
+        out.append(linea(REF_X0, yy, REF_X1, yy, color=LINEA, grosor=1))
+        out.append(texto(REF_X0 - 6, yy + 5, _ref_txt(v) if v <= 0 else f"+{v}", tam=13,
+                         color=SUAVE, anclaje="end"))
+    for paso, rot in marcas:
+        x = _ref_x(paso, n)
+        out.append(linea(x, top - 4, x, top + REF_ALTO, color=SUAVE, grosor=1.5, guiones="3 3"))
+    if "limite" in datos:
+        yl = _ref_y(datos["limite"], top)
+        out.append(linea(REF_X0, yl, REF_X1, yl, color=COLOR_REF_LIM, grosor=2,
+                         guiones=GUIONES_REF["lim"]))
+    for nombre, color, grosor in (("B", COLOR_REF_B, 2.5), ("A", COLOR_REF_A, 3)):
+        pts = [(_ref_x(i + 1, n), _ref_y(v, top)) for i, v in enumerate(datos[nombre])
+               if v is not None]
+        trazo = f' stroke-dasharray="{GUIONES_REF[nombre]}"' if GUIONES_REF[nombre] else ""
+        out.append(f'<polyline points="{" ".join(f"{a},{b}" for a, b in pts)}" fill="none" '
+                   f'stroke="{color}" stroke-width="{grosor}" stroke-linejoin="round"{trazo}/>')
+        xf, yf = pts[-1]
+        out.append(f'<circle cx="{xf}" cy="{yf}" r="4" fill="{color}"/>')
+    for paso, v, rot, anclaje, dy in notas:
+        out.append(texto(_ref_x(paso, n), _ref_y(v, top) + dy, rot, tam=13, peso="700",
+                         anclaje=anclaje))
+    yb = top + REF_ALTO
+    if all(_ref_x(paso, n) - REF_X0 > 22 for paso, _ in marcas):
+        out.append(texto(REF_X0, yb + 18, "1", tam=13, color=SUAVE))
+    out.append(texto(REF_X1, yb + 18, str(n), tam=13, color=SUAVE))
+    for paso, rot in marcas:
+        x = _ref_x(paso, n)
+        if paso not in (1, n):
+            out.append(texto(x, yb + 18, str(paso), tam=13, color=SUAVE))
+        out.append(texto(x, top - 10, rot, tam=13, peso="700", color=SUAVE,
+                         anclaje="end" if x > ANCHO_HOMOLOGACION / 2 else "start"))
+    out.append(texto((REF_X0 + REF_X1) / 2, yb + 38, eje_x, tam=14, color=SUAVE))
+    y = yb + 66
+    for r in notas_pie(datos):
+        out.append(texto(X_PIE, y, r, tam=15, peso="700", anclaje="start"))
+        y += 21
+    return y + 54
+
+
+def notas_pie(datos):
+    return [f"Entrega {datos['jugada']}."] if "pie" not in datos else datos["pie"]
+
+
+def jue_c3_refutacion_tres():
+    """La refutacion descubierta tarde (A: +10, +10 y r → −30; B: −10), con
+    tres operadores: promedio y actualizacion minimax sobre la misma
+    secuencia impuesta, y una corrida real de UCT."""
+    s = series_refutacion()
+    p, mm, u = s["promedio"], s["minimax"], s["uct"]
+    n = p["n"]
+    buenas = j.BUENAS_REFUTACION
+    lim = p["limite"]
+    p["pie"] = [f"Q̂(A) baja de {_ref_txt(p['A'][-2])} a {_ref_txt(p['A'][-1])}:",
+                f"sigue en A. Entrega {p['jugada']}."]
+    mm["pie"] = [f"Q̂(A) salta de {_ref_txt(mm['A'][-2])} a {_ref_txt(mm['A'][-1])}:",
+                 f"cambia. Entrega {mm['jugada']}."]
+    u["pie"] = [f"Entrega {u['jugada']}, la más visitada,", f"desde la vuelta {u['desde']}."]
+    titulo = ["Una refutación que", "aparece tarde", "A: +10, +10 o −30; B: −10"]
+    out = []
+    y = _titulo_rx(out, titulo) + 8
+    # Leyenda comun.
+    for k, (nombre, color, rot) in enumerate((("A", COLOR_REF_A, "Q̂(A)"),
+                                              ("B", COLOR_REF_B, "Q̂(B)"))):
+        x = X_PIE + 130 * k
+        trazo = f' stroke-dasharray="{GUIONES_REF[nombre]}"' if GUIONES_REF[nombre] else ""
+        out.append(f'<line x1="{x}" y1="{y}" x2="{x + 34}" y2="{y}" stroke="{color}" '
+                   f'stroke-width="3"{trazo}/>')
+        out.append(texto(x + 42, y + 5, rot, tam=15, peso="700", anclaje="start"))
+    y += 26
+    out.append(linea(X_PIE, y, X_PIE + 34, y, color=COLOR_REF_LIM, grosor=2,
+                     guiones=GUIONES_REF["lim"]))
+    out.append(texto(X_PIE + 42, y + 5, "límite del promedio:", tam=14, anclaje="start"))
+    out.append(_q_azar_sub(X_PIE + 42, y + 25, despues=f"(A) = {_u_txt(lim)}", tam=14,
+                           peso="normal"))
+    y += 46
+    out.append(texto(X_PIE, y + 4, "Eje y: Q̂ en la escala del juego.", tam=14, color=SUAVE,
+                     anclaje="start"))
+    y += 70
+    sec = ["misma secuencia impuesta: B,", f"{buenas} veces +10 por A, y el −30"]
+    y = _panel_refutacion(out, y, "1 · Promedio", sec + ["(Monte Carlo plano)"], p,
+                          "partida", [(n, "el −30")],
+                          [(n, p["A"][-1], _ref_txt(p["A"][-1]), "end", 24)])
+    y = _panel_refutacion(out, y, "2 · Actualización minimax", sec, mm, "partida",
+                          [(n, "el −30")],
+                          [(n, mm["A"][-1], _ref_txt(mm["A"][-1]), "end", -8)])
+    y = _panel_refutacion(out, y, "3 · UCT, corrida real",
+                          [f"c = {j.C_REFUTACION}, semilla {j.SEMILLA_REFUTACION}, {u['n']} vueltas;",
+                           f"corre con los pagos ÷{j.ESCALA_REFUTACION}",
+                           f"(rango ±1); aquí, ×{j.ESCALA_REFUTACION}"],
+                          u, "vuelta", [(u["descubre"], "primer −30")],
+                          [(u["n"], u["A"][-1], _ref_txt(u["A"][-1]), "end", -10)])
+    desc = (f"La refutación descubierta tarde, en tres paneles con el mismo eje y: Q̂ en la "
+            f"escala del juego, de +10 a −30. MAX elige A o B; tras A, MIN elige entre +10, +10 "
+            f"y una jugada r que lleva a −30; B es un final −10. Lo correcto es B. Paneles 1 y "
+            f"2, la misma secuencia impuesta, no una corrida: B una vez, {buenas} partidas por A "
+            f"que terminan en +10 y al final la que descubre el −30. 1, promedio, Monte Carlo "
+            f"plano: Q̂(A) baja de {_ref_txt(p['A'][-2])} a {_ref_txt(p['A'][-1])} y sigue "
+            f"entregando {p['jugada']}; su límite es Q_azar(A) = {_u_txt(lim)}, mayor que −10. "
+            f"2, actualización minimax: Q̂(A) salta de {_ref_txt(mm['A'][-2])} a "
+            f"{_ref_txt(mm['A'][-1])} y entrega {mm['jugada']}. 3, UCT, una corrida real con "
+            f"c = {j.C_REFUTACION}, semilla {j.SEMILLA_REFUTACION} y {u['n']} vueltas, que corre "
+            f"con los pagos divididos entre {j.ESCALA_REFUTACION} y se dibuja de vuelta en la "
+            f"escala del juego: el primer −30 sale en la vuelta {u['descubre']}; Q̂(A) baja poco "
+            f"a poco hasta {_ref_txt(u['A'][-1])}, con N(A) = {u['N'][0]} y N(B) = {u['N'][1]}; "
+            f"entrega {u['jugada']}, la más visitada, desde la vuelta {u['desde']}.")
+    return _svg_h(titulo, desc, out, y - 40)
+
+
+# Los tres Monte Carlo en el arbol de resultados, por jugada de la raiz.
+TRES_MC_X = (176, 226, 274)       # columnas izq, centro, der
+
+
+def filas_tres_mc():
+    """[(clave, valores por jugada, N por jugada o None, indice entregado)]
+    de juegos.py: V y Q_azar exactos; Monte Carlo plano, actualizacion
+    minimax y UCT con VUELTAS_PAGINA_TPM partidas o vueltas, semilla 0."""
+    arbol, n, s = j.ARBOL_TPM, j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM
+    v = j.q_minimax_arbol(arbol)
+    qa = j.q_azar_arbol(arbol)
+    plano = j.mc_plano_uniforme(arbol, n, s)
+    mm = j.mc_minimax(arbol, n, s)
+    u = j.uct_tpm(1, n, s)
+    nu = [u["N"].get((a,), 0) for a in range(len(arbol))]
+    qu = [F(u["S"][(a,)], u["N"][(a,)]) if nu[a] else None for a in range(len(arbol))]
+    return [
+        ("V", v, None, j._primera_mejor(v)),
+        ("Q_azar", qa, None, j._primera_mejor(qa)),
+        ("plano", plano["Q"], plano["N"], plano["jugada"]),
+        ("minimax", mm["Q"], [mm["N"].get((a,), 0) for a in range(len(arbol))], mm["jugada"]),
+        ("uct", qu, nu, j.JUGADAS_RAIZ.index(u["mas_simulada"][-1])),
+    ]
+
+
+ROTULOS_TRES_MC = {
+    "V": (["Q"], "juego óptimo"),
+    "Q_azar": (None, "los dos al azar"),
+    "plano": (["Monte Carlo", "plano"], "Q_azar"),
+    "minimax": (["Actualización", "minimax"], "Q"),
+    "uct": (["UCT, c = 1"], "Q"),
+}
+
+
+def jue_c3_tres_mc():
+    filas = filas_tres_mc()
+    n, s = j.VUELTAS_PAGINA_TPM, j.SEMILLA_TPM
+    titulo = ["Tres Monte Carlo", "en el árbol de resultados", "cada jugada de la raíz"]
+    out = []
+    y = _titulo_rx(out, titulo) + 22
+    for x, a in zip(TRES_MC_X, j.JUGADAS_RAIZ):
+        out.append(texto(x, y, a, tam=14, peso="700", color=SUAVE))
+    y += 16
+
+    def seccion(y, rot):
+        out.append(linea(X_PIE, y, ANCHO_HOMOLOGACION - X_PIE, y, color=LINEA, grosor=1.5))
+        out.append(texto(X_PIE, y + 24, rot, tam=15, peso="700", color=SUAVE, anclaje="start"))
+        return y + 52
+
+    y = seccion(y, "Exactos")
+    for k, (clave, vals, ns, i) in enumerate(filas):
+        if k == 2:
+            y = seccion(y - 20, f"{n} partidas, semilla {s}")
+            out.append(texto(X_PIE, y - 6, f"{n} partidas; la raíz también al azar", tam=13,
+                             color=SUAVE, anclaje="start"))
+            y += 18
+        rots, abajo = ROTULOS_TRES_MC[clave]
+        if rots is None:
+            out.append(_q_azar_sub(X_PIE, y, tam=16))
+            yy = y + 25
+        else:
+            for r_ in rots:
+                out.append(texto(X_PIE, y, r_, tam=15 if len(r_) < 12 else 14, peso="700",
+                                 anclaje="start"))
+                y += 19
+            yy = y + 1
+            y -= 19
+        if k < 2:
+            out.append(texto(X_PIE, yy, abajo, tam=13, color=SUAVE, anclaje="start"))
+        elif abajo == "Q_azar":
+            out.append(_q_azar_sub(X_PIE, yy, tam=13, color=SUAVE, peso="normal",
+                                   antes="tiende a "))
+        else:
+            out.append(texto(X_PIE, yy, f"tiende a {abajo}", tam=13, color=SUAVE,
+                             anclaje="start"))
+        yc = y - 5 + (9 if rots and len(rots) > 1 else 6)
+        for a, (x, q) in enumerate(zip(TRES_MC_X, vals)):
+            t = "?" if q is None else (_u_txt(q) if k < 2 else _dec_txt(q))
+            if a == i:
+                out.append(_pild(x, yc, t, ACENTO, tam=14, relleno=ACENTO, color_texto=FONDO,
+                                 alto=26))
+            else:
+                out.append(texto(x, yc + 5, t, tam=14, peso="700"))
+            if ns is not None:
+                out.append(texto(x, yc + 31, f"N {ns[a]}", tam=13, color=SUAVE))
+        y = max(yy, yc + 31) + 34
+    y = _pie_t(out, y + 4, ["Resaltada: la jugada de cada", "fila (UCT entrega la más",
+                            "visitada). Con más partidas,", "el plano iría a der; los otros",
+                            "dos, a centro."], tam=15)
+
+    def lista(vals, fmt):
+        return ", ".join(f"{a} {('?' if q is None else fmt(q))}"
+                         for a, q in zip(j.JUGADAS_RAIZ, vals))
+    (_, v, _, iv), (_, qa, _, iq), (_, qp, np_, ip), (_, qm, nm, im), (_, qu, nu, iu) = filas
+    desc = ("Los tres Monte Carlo en el árbol de resultados, por jugada de la raíz. Exactos: Q(s_raíz, a), "
+            f"con juego óptimo: {lista(v, _u_txt)}; Q_azar, si los dos juegan al azar: "
+            f"{lista(qa, _u_txt)}. Con {n} partidas o vueltas y semilla {s}: Monte Carlo plano, "
+            f"que tiende a Q_azar: {lista(qp, _dec_txt)}, con N {', '.join(map(str, np_))}; "
+            f"entrega {j.JUGADAS_RAIZ[ip]}. Actualización minimax, que tiende a Q: "
+            f"{lista(qm, _dec_txt)}, con N {', '.join(map(str, nm))}; entrega "
+            f"{j.JUGADAS_RAIZ[im]}. UCT con c = 1, que tiende a Q: {lista(qu, _dec_txt)}, con "
+            f"N {', '.join(map(str, nu))}; entrega {j.JUGADAS_RAIZ[iu]}, la más visitada. Con "
+            "más partidas, el plano iría a der; los otros dos, a centro.")
+    return _svg_h(titulo, desc, out, y)
+
+
+# MIN volteado (destinos §E.1 #7): los datos del ejercicio final del bono
+# (p, q, r bajo un nodo de MIN), con el bigote del bono a la derecha (si
+# eligiera MAX) y a la izquierda (lo que hace MIN). Cifras de
+# juegos.min_volteado. Recta en la escala de U, de VOL_MIN a VOL_MAX.
+VOL_X0, VOL_X1 = 84, 288
+VOL_MIN, VOL_MAX = -2.5, 3.5
+
+
+def _x_vol(v):
+    return round(VOL_X0 + (VOL_X1 - VOL_X0) * (float(v) - VOL_MIN) / (VOL_MAX - VOL_MIN), 1)
+
+
+def _dos_s(v):
+    """2.80, −1.22: dos decimales y signo menos tipografico."""
+    return f"{float(v):.2f}".replace("-", "−")
+
+
+def jue_c3_min_volteado():
+    """Las mismas tres jugadas con el bono a los dos lados: MAX miraria el
+    mayor Q̂ + bono; MIN mira el menor Q̂ − bono. Misma c, mismo bono."""
+    m = j.min_volteado()
+    f, n_padre = m["filas"], m["N_padre"]
+    titulo = ["MIN, volteado", "la misma c, el bigote", "al otro lado"]
+    out = []
+    y = _titulo_rx(out, titulo) + 34
+    out.append(texto(X_PIE, y, f"N(s) = {n_padre}, c = 2√2. Bajo s mueve MIN.", tam=14,
+                     anclaje="start"))
+    y += 24
+    for k, d in f.items():
+        out.append(texto(X_PIE, y, f"{k}: Q̂ {_dec_txt(d['Q'])} · N(s,a) {d['N']} · "
+                                   f"bono {_dos_s(d['bono'])}", tam=14, anclaje="start"))
+        y += 20
+    paneles = [("Si eligiera MAX: Q̂ + bono", "arriba", 1, m["max"], "elige el mayor"),
+               ("Elige MIN: Q̂ − bono", "abajo", -1, m["min"], "elige el menor")]
+    y += 30
+    for titulo_p, clave, lado, elegida, verbo in paneles:
+        out.append(linea(X_PIE, y - 26, ANCHO_HOMOLOGACION - X_PIE, y - 26, color=LINEA,
+                         grosor=1.5))
+        out.append(texto(X_PIE, y, titulo_p, tam=16, peso="700", anclaje="start"))
+        out.append(texto(X_PIE, y + 20, f"{verbo}: {elegida}, "
+                                         f"{_dos_s(f[elegida][clave])}", tam=14,
+                         color=ACENTO, peso="700", anclaje="start"))
+        y0 = y + 62
+        filas = list(f)
+        alto = 36 * (len(filas) - 1)
+        x_cero = _x_vol(0)
+        out.append(linea(x_cero, y0 - 20, x_cero, y0 + alto + 14, color=SUAVE, grosor=1,
+                         guiones="3 4"))
+        for i, k in enumerate(filas):
+            d = f[k]
+            yy = y0 + 36 * i
+            fuerte = k == elegida
+            color = ACENTO if fuerte else SERIE[1]
+            xq, xe = _x_vol(d["Q"]), _x_vol(d[clave])
+            out.append(texto(X_PIE, yy + 5, k, tam=15, peso="700", anclaje="start"))
+            out.append(linea(xq, yy, xe, yy, color=color, grosor=3.5 if fuerte else 2.5))
+            out.append(linea(xe, yy - 8, xe, yy + 8, color=color, grosor=3.5 if fuerte else 2.5))
+            out.append(_marca(xq, yy, "circulo", color, r=5))
+            out.append(texto(xe, yy - 12, _dos_s(d[clave]), tam=13, peso="700",
+                             color=ACENTO if fuerte else TEXTO))
+        ye = y0 + alto + 32
+        out.append(linea(VOL_X0, ye - 14, VOL_X1, ye - 14, color=SUAVE, grosor=1.5))
+        for v in range(-2, 4):
+            out.append(linea(_x_vol(v), ye - 18, _x_vol(v), ye - 10, color=SUAVE, grosor=1.5))
+            out.append(texto(_x_vol(v), ye + 6, _u_txt(v) if v else "0", tam=13, color=SUAVE))
+        y = ye + 62
+    y -= 36
+    y = _pie_t(out, y + 4, ["Punto: Q̂; raya: el bono, al lado", "que conviene a quien mueve.",
+                            "MIN no cambia el signo de c:", "voltea el bigote y busca el",
+                            "extremo opuesto. El bono", "siempre empuja hacia lo que",
+                            "aún podría ser bueno para él."], tam=15)
+    desc = ("MIN volteado: tres jugadas p, q y r bajo un nodo donde mueve MIN, con N(s) = "
+            f"{n_padre} y c = 2√2. "
+            + "; ".join(f"{k}: Q̂ {_dec_txt(d['Q'])}, N(s,a) {d['N']}, bono {_dos_s(d['bono'])}"
+                        for k, d in f.items())
+            + ". Arriba, si eligiera MAX: cada jugada es un punto en Q̂ con su bono como raya "
+            "hacia la derecha, hasta Q̂ + bono: "
+            + ", ".join(f"{k} {_dos_s(d['arriba'])}" for k, d in f.items())
+            + f"; elegiría el mayor, {m['max']}. Abajo, lo que hace MIN: la misma raya hacia "
+            "la izquierda, hasta Q̂ − bono: "
+            + ", ".join(f"{k} {_dos_s(d['abajo'])}" for k, d in f.items())
+            + f"; elige el menor, {m['min']}. La c y el bono son los mismos: MIN no les cambia el "
+            "signo, solo voltea el lado y busca el extremo opuesto.")
+    return _svg_h(titulo, desc, out, y)
+
+
+# La lista cerrada de figuras nuevas a 300 px (destinos §E.1); la prueba
+# parametrizada de ancho la recorre.
+HOMOLOGACION_300 = ("jue-rx-expectiminimax", "jue-rx-flujo-expectiminimax", "jue-rx-mmmc",
+                    "jue-rx-flujo-mmmc", "jue-c3-refutacion-tres", "jue-c3-tres-mc",
+                    "jue-c3-min-volteado", "jue-c3-hoeffding", "jue-c3-mcts-pasos")
 
 
 DIAGRAMAS = {
@@ -5381,9 +5737,6 @@ DIAGRAMAS = {
     "jue-c3-mcts-pasos": jue_c3_mcts_pasos,
     "jue-c3-hoeffding": jue_c3_hoeffding,
     "jue-c3-bono": jue_c3_bono,
-    "jue-c3-pago": jue_c3_pago,
-    "jue-c3-eligiendo-x": jue_c3_eligiendo_x,
-    "jue-c3-bandido-corridas": jue_c3_bandido_corridas,
     "jue-t-pm-arbol": jue_t_pm_arbol,
     "jue-c3-rx-minimax": jue_c3_rx_minimax,
     "jue-c3-rx-alfa-beta": jue_c3_rx_alfa_beta,
@@ -5399,6 +5752,13 @@ DIAGRAMAS = {
     "jue-c3-mcg-uct-crece": jue_c3_mcg_uct_crece,
     "jue-c3-rx-estado-y-jugada": jue_c3_rx_estado_y_jugada,
     "jue-c3-mcg-mezcla": jue_c3_mcg_mezcla,
+    "jue-rx-expectiminimax": jue_rx_expectiminimax,
+    "jue-rx-flujo-expectiminimax": jue_rx_flujo_expectiminimax,
+    "jue-rx-mmmc": jue_rx_mmmc,
+    "jue-rx-flujo-mmmc": jue_rx_flujo_mmmc,
+    "jue-c3-refutacion-tres": jue_c3_refutacion_tres,
+    "jue-c3-tres-mc": jue_c3_tres_mc,
+    "jue-c3-min-volteado": jue_c3_min_volteado,
 }
 
 
