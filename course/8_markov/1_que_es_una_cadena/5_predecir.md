@@ -482,7 +482,7 @@ Así, ${\mu_2=(1/4,\ 1/3,\ 5/12)}$, que suma 1.
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Repetiste la simulación desde C con la matriz del corpus. **Cambia una idea:** usaste ${n=400}$ réplicas independientes en lugar de 10 000, con semilla 2031.
+Repetiste la simulación desde C con la matriz del corpus. **Cambia una idea:** usaste ${n=400}$ réplicas independientes en lugar de 10 000, trayectorias de 3 pasos y semilla 2031.
 
 La fracción en V fue 0.693, 0.352 y 0.512 en los pasos 1, 2 y 3. La cuenta da 0.710, 0.334 y 0.533.
 

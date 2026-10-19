@@ -775,6 +775,8 @@ def _cifras():
         ("1/4", P4, "Ejercicios", lambda: fr(m.predecir(m.EJ_P4_P, m.EJ_P4_MU0, 2)[0])),
         ("1/3", P4, "Ejercicios", lambda: fr(m.predecir(m.EJ_P4_P, m.EJ_P4_MU0, 2)[1])),
         ("400", P4, "Ejercicios", lambda: str(m.N_EJ_SIMULACION)),
+        ("trayectorias de 3 pasos", P4, "Ejercicios",
+         lambda: f"trayectorias de {m.T_EJ_SIMULACION} pasos"),
         ("0.352", P4, "Ejercicios", lambda: dec(sim4()["simulada"][2])),
         ("0.334", P4, "Ejercicios", lambda: dec(sim4()["cuenta"][2])),
         ("0.024", P4, "Ejercicios", lambda: dec(sim4()["ee"][2])),

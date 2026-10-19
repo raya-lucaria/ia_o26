@@ -844,9 +844,10 @@ EJ_P4_P = [[F(1, 2), F(1, 4), F(1, 4)],
            [F(0), F(1, 2), F(1, 2)]]
 EJ_P4_MU0 = (F(1, 2), F(1, 2), F(0))
 N_EJ_SIMULACION = 400
+T_EJ_SIMULACION = 3   # largo de cada trayectoria: cambia la sucesion de u
 
 
-def ejercicio_p4_simulacion(t_max=3):
+def ejercicio_p4_simulacion(t_max=T_EJ_SIMULACION):
     """Ejercicio (b): n = 400 replicas desde C con P̂ del corpus; fraccion en
     V por paso, la cuenta y el error estandar."""
     P = matriz_corpus()

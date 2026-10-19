@@ -23,7 +23,7 @@ Al terminar tendrás:
 ## Lo que traes
 
 - **La cadena y sus formas.** [[mkv-cadena-en-general|La cadena, en general]] presenta $(\mathcal S,\mu_0,P)$ en @mkv-c1-cadena: $\mu_0$ es $1\times k$ y $P$, $k\times k$.
-- **La matriz y la trayectoria.** @mkv-c1-matriz-transicion: filas desde, columnas hacia; cada fila suma 1. La probabilidad de una trayectoria está en la sección «Distinguir distribución y trayectoria» de esa página.
+- **La matriz y la trayectoria.** @mkv-c1-matriz-transicion: filas desde, columnas hacia; cada fila suma 1. La probabilidad de una trayectoria está en la sección 6 de esa página, «Distinguir distribución y trayectoria».
 - **Las herramientas de probabilidad.** [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]] aporta la condicional (@mkv-c1-prob-condicional), el producto (@mkv-c1-teo-producto) y la independencia condicional (@mkv-c1-independencia-condicional).
 
 ---
@@ -311,11 +311,11 @@ $$
 \begin{aligned}
 &\Pr(S_{t+1}=s_j\mid S_t=s_i,\\
 &\qquad S_{t-1}=s_l)\\
-&\qquad\stackrel{?}{=}P_{ij}.
+&\qquad\stackrel{?}{=}\Pr(S_{t+1}=s_j\mid S_t=s_i).
 \end{aligned}
 $$
 
-Una desigualdad basta para refutarla.
+Una desigualdad en el mismo paso basta para refutar Markov. La homogeneidad pide aparte que el lado derecho no cambie con $t$. Con frecuencias estimadas, una diferencia también puede ser ruido de muestreo.
 
 **Contraejemplo.** Un proceso repite C C V C C V C C V… Empieza al azar en cualquiera de las tres letras del bloque.
 

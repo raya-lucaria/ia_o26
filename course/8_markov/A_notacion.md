@@ -106,7 +106,7 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | Contexto | Los $h$ símbolos anteriores, que forman el estado con memoria $h$. *→ Ajustar contando* |
 | Suavizado (Laplace) | Suavizado aditivo: sumar 1 a cada conteo por símbolo siguiente antes de dividir. *→ Ajustar contando* |
 | Error estándar | La dispersión de la fracción observada en $n$ réplicas independientes alrededor de su probabilidad $p$: ${\sqrt{p(1-p)/n}}$. *→ Predecir* |
-| Semilla | El número que fija la sucesión de uniformes $u$: misma semilla, misma réplica. *→ El problema de Markov* |
+| Semilla | El número que fija la sucesión de uniformes $u$: con el mismo modelo, inicio, orden de estados y procedimiento, la misma semilla reproduce la corrida. Las réplicas de una corrida no reinician la semilla. *→ El problema de Markov* |
 | Generar | Producir una trayectoria muestreando una fila tras otra y deslizando el contexto. *→ Generar texto* |
 | Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0. *→ Ajustar contando; Shannon, en Generar texto* |
 

@@ -22,7 +22,7 @@ Al terminar tendrás:
 
 ## Lo que traes
 
-- **Probabilidad condicional.** En [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]] estimaste ${\widehat{\Pr}(A\mid B)}$ con frecuencias.
+- **Probabilidad condicional.** En [[mkv-lo-que-necesitas|Lo que necesitas de probabilidad]] calculaste ${\Pr(A\mid B)}$ contando en un sorteo; en El problema de Markov esa cuenta pasó a ser una estimación, $\widehat{\Pr}$.
 - **La cadena.** En [[mkv-cadena-en-general|La cadena, en general]]: ${(\mathcal S,\mu_0,P)}$ (@mkv-c1-cadena), con ${P_{ij}=P(s_j\mid s_i)}$, $P$ de ${k\times k}$ y filas que suman 1. Ahí también está la probabilidad de una trayectoria, que aquí se lee al revés: los datos quedan fijos y $P$ cambia.
 - **La frase y el muestreo.** En [[mkv-el-problema-de-markov|El problema de Markov]], «Con la iglesia hemos dado, Sancho»: tras vocal hubo vocal 2 de 11 veces; tras consonante, 2 de cada 3. MUESTREAR-FILA usa la fila acumulada y un uniforme $u$.
 
