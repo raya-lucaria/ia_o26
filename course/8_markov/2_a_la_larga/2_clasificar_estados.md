@@ -4,7 +4,7 @@ title: "Clasificar los estados"
 nav_title: "Clasificar los estados"
 summary: "Comunicar, clase cerrada, transitorio, recurrente y periodo para partir cualquier cadena finita en piezas, decidir cuáles retienen a la cadena y clasificar a mano una cadena de cinco estados."
 status: ready
-estimated_time: 28m
+estimated_time: 29m
 tags: [markov, grafos, clasificacion]
 ---
 
@@ -38,19 +38,15 @@ Al terminar tendrás:
 Cuando cada uno alcanza al otro: puedes ir y volver. Contamos también el camino de cero pasos, porque $P^0=I_k$ da $(P^0)_{ss}=1$.
 
 ::: definition {#mkv-c2-def-comunican title="Estados que se comunican"}
-$$
-\begin{aligned}
-s\leftrightarrow s'
-\quad&\Longleftrightarrow\quad
-s\to s'\ \text{ y }\ s'\to s,\\
-s\to s'
-\quad&\Longleftrightarrow\quad
-(P^t)_{ss'}>0\\
-&\qquad\text{para algún }t\ge0.
-\end{aligned}
-$$
+**$s$ alcanza a $s'$**, y se escribe $s\to s'$, si en algún número de pasos $t\ge0$ se puede llegar:
 
-- **Qué es:** una relación entre dos estados: hay camino de ida y camino de vuelta.
+$$(P^t)_{ss'}>0.$$
+
+**$s$ y $s'$ se comunican**, y se escribe $s\leftrightarrow s'$, si cada uno alcanza al otro:
+
+$$s\to s'\quad\text{y}\quad s'\to s.$$
+
+- **Qué es:** hay camino de ida y camino de vuelta.
 - **Cómo se calcula:** en el grafo, buscas un camino en cada sentido; los números de las flechas no importan, solo que sean positivos.
 - **Qué significa:** la cadena puede pasar de uno al otro y regresar, tantas veces como quiera.
 - **Qué no es:** alcanzar no es comunicar; $s\to s'$ sin camino de vuelta deja a los dos en piezas distintas.
@@ -142,23 +138,21 @@ Ya sabemos partir la cadena. Falta saber si una pieza deja salir a la cadena.
 Depende de una sola cosa: si alguna flecha sale de la clase. Si ninguna sale, la clase es cerrada.
 
 ::: definition {#mkv-c2-def-clase-cerrada title="Clase cerrada y estado absorbente"}
-$$
-\begin{aligned}
-\mathcal C\ \text{cerrada}
-\ &\Longleftrightarrow\
-P_{ss'}=0\\
-&\qquad\text{si }s\in\mathcal C,\ s'\notin\mathcal C,\\
-&\Longleftrightarrow\
-\sum_{s'\in\mathcal C}P_{ss'}=1\\
-&\qquad\text{para todo }s\in\mathcal C.\\
-s\ \text{absorbente}
-\ &\Longleftrightarrow\ P_{ss}=1.
-\end{aligned}
-$$
+Una clase $\mathcal C$ es **cerrada** si ninguna flecha sale de ella: desde un estado de la clase, la probabilidad de ir a un estado de fuera es cero.
 
-- **Qué es:** una clase sin flechas hacia afuera. Si no es cerrada, decimos que es **abierta**.
-- **Cómo se calcula:** para cada estado de la clase, revisas su fila: toda la probabilidad debe caer en columnas de la clase.
-- **Qué significa:** si la cadena entra, ya no sale. Un estado absorbente es una clase cerrada de un solo estado.
+$$P_{ss'}=0\quad\text{si } s\in\mathcal C \text{ y } s'\notin\mathcal C.$$
+
+Dicho por filas: cada estado de la clase reparte **toda** su probabilidad dentro de la clase.
+
+$$\sum_{s'\in\mathcal C}P_{ss'}=1\quad\text{para cada } s\in\mathcal C.$$
+
+Un estado $s$ es **absorbente** si nunca sale de sí mismo: $P_{ss}=1$. Es una clase cerrada de un solo estado.
+
+**En el juguete:** $\{s_2,s_3\}$ es cerrada, porque de $s_2$ todo va a $s_3$ y de $s_3$ todo va a $s_2$. $\{s_1\}$ no lo es: de $s_1$ sale la mitad hacia $s_2$.
+
+- **Qué es:** una clase sin flechas hacia afuera. Si no es cerrada, es **abierta**.
+- **Cómo se calcula:** revisas la fila de cada estado de la clase.
+- **Qué significa:** si la cadena entra, ya no sale.
 - **Qué no es:** cerrada no prohíbe entrar; pueden llegarle flechas desde afuera.
 :::
 
@@ -212,18 +206,15 @@ Cerrada habla de flechas. ¿Qué dice eso de las visitas de la cadena a cada est
 A los recurrentes: los que, una vez visitados, se vuelven a visitar seguro. $\Pr_s$ es la probabilidad empezando en $s$ (@mkv-c2-def-esperanza).
 
 ::: definition {#mkv-c2-def-transitorio title="Estado transitorio y estado recurrente"}
-$$
-\begin{aligned}
-f_s&=\Pr_s\bigl(S_t=s\\
-&\qquad\text{para algún }t\ge1\bigr),\\
-s\ \text{recurrente}
-\ &\Longleftrightarrow\ f_s=1,\\
-s\ \text{transitorio}
-\ &\Longleftrightarrow\ f_s<1.
-\end{aligned}
-$$
+Sea $f_s$ la probabilidad de que la cadena, **empezando en $s$**, vuelva a estar en $s$ en algún paso $t\ge1$:
 
-- **Qué es:** $f_s$, «efe sub ese», es la probabilidad de volver a estar en $s$ en algún paso $t\ge1$, empezando en $s$. Quedarse por un lazo cuenta como regreso.
+$$f_s=\Pr_s\bigl(S_t=s \text{ para algún } t\ge1\bigr).$$
+
+El estado $s$ es **recurrente** si regresa seguro, y **transitorio** si no:
+
+$$\text{recurrente: } f_s=1,\qquad \text{transitorio: } f_s<1.$$
+
+- **Qué es:** $f_s$ se lee «efe sub ese». Quedarse por un lazo cuenta como regreso.
 - **Cómo se calcula:** sumas las probabilidades de los caminos que regresan a $s$ por primera vez.
 - **Qué significa:** cada regreso vuelve a empezar la cadena en $s$, por la propiedad de Markov. Un recurrente se visita una y otra vez sin fin; un transitorio, un número finito de veces.
 - **Qué no es:** transitorio no quiere decir que nunca regrese. Puede regresar, solo que no seguro.
