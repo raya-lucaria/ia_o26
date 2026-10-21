@@ -4,7 +4,7 @@ title: "La estacionaria y sus cuatro teoremas"
 nav_title: "La estacionaria"
 summary: "Tres preguntas sobre el largo plazo, la distribución que no cambia al dar un paso y los cuatro teoremas que dicen cuándo existe, cuándo es única, cuándo se llega a ella y cuándo mide la fracción del tiempo."
 status: ready
-estimated_time: 33m
+estimated_time: 34m
 tags: [markov, estacionaria, convergencia, ergodico]
 ---
 
@@ -455,6 +455,12 @@ $$
 > **Error típico:** «las visitas de una trayectoria son una muestra; aplica Hoeffding». **Las visitas dependen unas de otras:** @jue-c3-teo-hoeffding y @mkv-c1-teo-promedio piden repeticiones independientes. El teorema ergódico es la ley de los grandes números para cadenas, y no trae el margen de error de Hoeffding.
 
 **Un poco de historia.** Si la ley de los grandes números vale sin independencia es la pregunta de [[mkv-el-problema-de-markov|El problema de Markov]]. Nekrásov sostenía que la ley de los grandes números necesitaba independencia. Markov (1906) la demostró para variables dependientes encadenadas, en cadenas finitas y homogéneas. El teorema ergódico tal como lo enunciamos es una síntesis posterior, de los años treinta (Kolmogorov, Doeblin); no sale de un solo artículo.
+
+**El nombre viene de otro lado.** Los teoremas ergódicos generales son de Birkhoff (1931, el *puntual*) y von Neumann (1932, el *medio*).
+
+- **Qué dicen:** en un sistema que se mueve sin crear ni destruir probabilidad, el promedio en el tiempo de una cantidad iguala su promedio sobre los estados.
+- **Dónde entra la cadena:** si arranca en $\mu$ y tiene una sola clase cerrada, correr la trayectoria un paso no cambia ninguna probabilidad.
+- **El caso nuestro:** con la cantidad «estar en $s$», el promedio en el tiempo es $N_T(s)/T$ y el de los estados, $\mu(s)$. @mkv-c2-teo-ergodico es ese caso, probado desde cualquier inicio.
 
 ::: exercise {#mkv-c2-es-ej-entrada-periodica title="Visita una cadena con entrada"}
 Tres estados: $s_1\to s_2$ con probabilidad 1, y $s_2$, $s_3$ alternan. Empieza en $s_1$. ¿A qué tiende $N_T(s_1)/T$? ¿Y $N_T(s_2)/T$? ¿Converge $\mu_t$?
