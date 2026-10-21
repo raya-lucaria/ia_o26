@@ -13,7 +13,7 @@ contenido(nombre) devuelve el SVG sin escribirlo: test_gen_markov.py lo
 compara byte a byte con el archivo comiteado (si alguien edita el SVG a
 mano, la prueba falla con «corre el generador»).
 
-Los ids llevan prefijo "mkv-c1-": los ids de objeto numerado son unicos en
+Los ids llevan prefijo "mkv-c1-" (clase 1) o "mkv-c2-" (clase 2): los ids de objeto numerado son unicos en
 todo el curso.
 """
 import math
@@ -185,13 +185,16 @@ def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
                    f'{FL_CARRIL},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
         out.append(_flecha(FL_CARRIL, yb, xb - 3, yb))
         out.append(girado(FL_CARRIL - 8, (ya + yb) / 2, rot))
-    for desde, hasta, rot in salidas:
+    # Con dos salidas, la segunda baja por un carril interior: si las dos
+    # compartieran carril no se sabria que rombo lleva a que caja.
+    for i, (desde, hasta, rot) in enumerate(salidas):
         _, _, ya = geo[desde]
         _, _, yb = geo[hasta]
         xa = FL_CX + FL_MX
-        out.append(f'<polyline points="{_n(xa)},{_n(ya)} {FL_CARRIL_DER},{_n(ya)} '
-                   f'{FL_CARRIL_DER},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
-        out.append(_flecha(FL_CARRIL_DER, yb, FL_X1 + 3, yb))
+        carril = FL_CARRIL_DER if len(salidas) == 1 else FL_CARRIL_DER + 4 - 7 * i
+        out.append(f'<polyline points="{_n(xa)},{_n(ya)} {carril},{_n(ya)} '
+                   f'{carril},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
+        out.append(_flecha(carril, yb, FL_X1 + 3, yb))
         out.append(texto(xa + 10, ya - 8, rot, tam=13, color=SUAVE, anclaje="start",
                          peso="700"))
     y = y - FL_GAP + 26
@@ -673,6 +676,374 @@ def mkv_c1_rachas():
 
 # ----------------------------------------------------------- catalogo ---
 
+
+# =========================================================== CLASE 2 ===
+#
+# Figuras «mkv-c2-*» de course/8_markov/2_a_la_larga/ (plan de la clase 2,
+# §5). Cada cifra sale de markov.py (seccion «Clase 2»).
+
+COLOR_CERRADA = SERIE[0]          # verde: clase cerrada (ademas: borde continuo)
+COLOR_ABIERTA = COLOR_C           # amarillo: transitorio (ademas: borde punteado)
+
+
+def _gnodo(cx, cy, rotulo, color=COLOR_V, r=20, guiones=None, tam=15):
+    trazo = f' stroke-dasharray="{guiones}"' if guiones else ""
+    return (f'<circle cx="{_n(cx)}" cy="{_n(cy)}" r="{r}" fill="{mezclar(color, 0.18)}" '
+            f'stroke="{color}" stroke-width="2"{trazo}/>'
+            + texto(cx, cy + tam * 0.35, rotulo, tam=tam, peso="700"))
+
+
+def _arista(a, b, rotulo, r=20, curva=0.0, lado=1, tam=13, desp=12):
+    """Flecha de centro a centro recortada por el radio; curva = desviacion
+    del punto de control, perpendicular a la cuerda (en px). El rotulo va
+    del lado `lado` del punto medio de la curva."""
+    (x1, y1), (x2, y2) = a, b
+    dx, dy = x2 - x1, y2 - y1
+    d = math.hypot(dx, dy)
+    nx, ny = -dy / d, dx / d
+    mx, my = (x1 + x2) / 2 + nx * curva, (y1 + y2) / 2 + ny * curva
+
+    def recorta(px, py, qx, qy, rr):
+        L = math.hypot(qx - px, qy - py)
+        return px + (qx - px) * rr / L, py + (qy - py) * rr / L
+    sx, sy = recorta(x1, y1, mx, my, r)
+    ex, ey = recorta(x2, y2, mx, my, r + 2)
+    camino = _curva(f"M {_n(sx)} {_n(sy)} Q {_n(mx)} {_n(my)} {_n(ex)} {_n(ey)}")
+    # punto medio de la cuadratica
+    qx = 0.25 * sx + 0.5 * mx + 0.25 * ex
+    qy = 0.25 * sy + 0.5 * my + 0.25 * ey
+    s = 1 if curva >= 0 else -1
+    if curva == 0:
+        s = lado
+    tx, ty = qx + nx * desp * s, qy + ny * desp * s + tam * 0.35
+    return camino + texto(tx, ty, rotulo, tam=tam, peso="700")
+
+
+def _lazo(cx, cy, rotulo, r=20, hacia="arriba", tam=13):
+    """Lazo de un estado a si mismo hacia arriba, abajo, izquierda o derecha."""
+    ang = {"arriba": -90, "abajo": 90, "izquierda": 180, "derecha": 0}[hacia]
+    a = math.radians(ang)
+    a0, a1 = a - 0.45, a + 0.45
+    x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
+    x1, y1 = cx + (r + 2) * math.cos(a1), cy + (r + 2) * math.sin(a1)
+    L = r + 46
+    c0x, c0y = cx + L * math.cos(a - 0.7), cy + L * math.sin(a - 0.7)
+    c1x, c1y = cx + L * math.cos(a + 0.7), cy + L * math.sin(a + 0.7)
+    camino = _curva(f"M {_n(x0)} {_n(y0)} C {_n(c0x)} {_n(c0y)} {_n(c1x)} {_n(c1y)} "
+                    f"{_n(x1)} {_n(y1)}")
+    tx, ty = cx + (r + 46) * math.cos(a), cy + (r + 46) * math.sin(a) + tam * 0.35
+    ancla = "middle"
+    if hacia == "derecha":
+        ancla, tx = "start", tx - 4
+    elif hacia == "izquierda":
+        ancla, tx = "end", tx + 4
+    return camino + texto(tx, ty, rotulo, tam=tam, peso="700", anclaje=ancla)
+
+
+def _marco_clase(x, y, w, h, cerrada):
+    """Caja de una clase: continua y verde si es cerrada; punteada y
+    amarilla si no (la forma del borde lo dice sin el color)."""
+    return caja(_n(x), _n(y), _n(w), _n(h), relleno="none",
+                borde=COLOR_CERRADA if cerrada else COLOR_ABIERTA,
+                grosor=2, guiones=None if cerrada else "3 4")
+
+
+def mkv_c2_grafo_clasificar():
+    P, nombres = m.T5_P, m.T5_ESTADOS
+    cl = m.clases(P)
+    assert [c["estados"] for c in cl] == [(0,), (1, 2), (3, 4)]
+    assert [c["cerrada"] for c in cl] == [False, True, True]
+    assert [c["periodo"] for c in cl] == [None, 2, 1]
+    titulo = ["Clasificar cinco estados", "tres clases"]
+    out = []
+    y = encabezado(out, titulo)
+    pos = {0: (150, y + 44), 1: (78, y + 150), 2: (78, y + 250),
+           3: (198, y + 150), 4: (198, y + 250)}
+    # marcos de clase
+    out.append(_marco_clase(108, y + 16, 84, 56, False))
+    out.append(_marco_clase(22, y + 112, 112, 178, True))
+    out.append(_marco_clase(150, y + 112, 128, 178, True))
+    sl = pos
+    out.append(_arista(sl[0], sl[1], fr(P[0][1]), curva=0, lado=1))
+    out.append(_arista(sl[0], sl[3], fr(P[0][3]), curva=0, lado=-1))
+    out.append(_arista(sl[1], sl[2], fr(P[1][2]), curva=-16))
+    out.append(_arista(sl[2], sl[1], fr(P[2][1]), curva=-16))
+    out.append(_arista(sl[3], sl[4], fr(P[3][4]), curva=-16))
+    out.append(_arista(sl[4], sl[3], fr(P[4][3]), curva=-16))
+    out.append(_lazo(*sl[3], fr(P[3][3]), hacia="derecha"))
+    for i, (cx, cy) in pos.items():
+        cerrada = i != 0
+        out.append(_gnodo(cx, cy, nombres[i], COLOR_CERRADA if cerrada else COLOR_ABIERTA,
+                          guiones=None if cerrada else "3 3"))
+    out.append(texto(200, y + 36, "transitoria", tam=12, anclaje="start", peso="700"))
+    out.append(texto(200, y + 52, "(abierta)", tam=12, anclaje="start", color=SUAVE))
+    yb = y + 310
+    out.append(texto(78, yb, "cerrada", tam=13, peso="700"))
+    out.append(texto(78, yb + 18, "periodo 2", tam=13))
+    out.append(texto(214, yb, "cerrada", tam=13, peso="700"))
+    out.append(texto(214, yb + 18, "aperiódica", tam=13))
+    y = pie(out, yb + 48, ["Marco continuo: clase cerrada (no sale",
+                           "ninguna flecha). Punteado: abierta;",
+                           "de s1 se sale y no se vuelve."])
+    desc = ("Grafo de cinco estados. s1 va a s2 con 1/2 y a s4 con 1/2. s2 va a s3 con 1 "
+            "y s3 a s2 con 1. s4 se queda con 1/2 (lazo) y va a s5 con 1/2; s5 va a s4 con 1. "
+            "Tres clases: {s1} transitoria (abierta, marco punteado); {s2, s3} cerrada de "
+            "periodo 2; {s4, s5} cerrada aperiódica (el lazo de s4). Las cerradas llevan "
+            "marco continuo.")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c2_grafo_contraejemplos():
+    titulo = ["Tres contraejemplos", "pequeños"]
+    out = []
+    y = encabezado(out, titulo)
+    # T2
+    y += 10
+    out.append(texto(X_PIE, y, "Alternante: periodo 2", tam=14, peso="700", anclaje="start"))
+    yn = y + 52
+    a, b = (100, yn), (200, yn)
+    out.append(_marco_clase(62, yn - 34, 176, 68, True))
+    out.append(_arista(a, b, "1", curva=-18))
+    out.append(_arista(b, a, "1", curva=-18))
+    out.append(_gnodo(*a, "A", COLOR_CERRADA))
+    out.append(_gnodo(*b, "B", COLOR_CERRADA))
+    y = pie(out, yn + 58, ["μ = (1/2, 1/2) es única, pero desde A",
+                           "la cadena oscila: A, B, A, B, …"], color=TEXTO)
+    # T3
+    y += 14
+    out.append(texto(X_PIE, y, "Identidad: dos clases cerradas", tam=14, peso="700",
+                     anclaje="start"))
+    yn = y + 96
+    a, b = (100, yn), (200, yn)
+    for c, rot in ((a, "s1"), (b, "s2")):
+        out.append(_marco_clase(c[0] - 40, yn - 80, 80, 110, True))
+        out.append(_lazo(*c, "1", hacia="arriba"))
+        out.append(_gnodo(*c, rot, COLOR_CERRADA))
+    y = pie(out, yn + 54, ["Nadie sale de donde empieza: toda", "distribución es estacionaria."],
+            color=TEXTO)
+    # T4
+    y += 14
+    out.append(texto(X_PIE, y, "Transitorio entre dos cerradas", tam=14, peso="700",
+                     anclaje="start"))
+    P = m.T4_P
+    y1 = y + 96
+    s1, s2, s3 = (150, y1), (100, y1 + 110), (200, y1 + 110)
+    out.append(_marco_clase(108, y1 - 82, 84, 116, False))
+    out.append(_lazo(*s1, fr(P[0][0]), hacia="arriba"))
+    out.append(_arista(s1, s2, fr(P[0][1]), lado=1))
+    out.append(_arista(s1, s3, fr(P[0][2]), lado=-1))
+    for c, rot in ((s2, "s2"), (s3, "s3")):
+        x = c[0] - 78 if rot == "s2" else c[0] - 34
+        out.append(_marco_clase(x, c[1] - 32, 112, 64, True))
+        lado = "izquierda" if rot == "s2" else "derecha"
+        out.append(_lazo(*c, "1", hacia=lado))
+        out.append(_gnodo(*c, rot, COLOR_CERRADA))
+    out.append(_gnodo(*s1, "s1", COLOR_ABIERTA, guiones="3 3"))
+    y = pie(out, y1 + 170, ["Desde s1 cae en s2 o en s3, al azar:",
+                            "la fracción del tiempo en s2 tiende",
+                            "a 1 o a 0 según la réplica."], color=TEXTO)
+    y = pie(out, y + 6, ["Marco continuo: clase cerrada.", "Punteado: abierta."])
+    desc = ("Tres cadenas apiladas. Primera, alternante: A va a B con 1 y B a A con 1; una "
+            "clase cerrada de periodo 2; μ = (1/2, 1/2) única, pero desde A oscila. Segunda, "
+            "identidad: s1 y s2 se quedan con 1; dos clases cerradas; toda distribución es "
+            "estacionaria. Tercera: s1 se queda con 1/2 y va a s2 con 1/4 y a s3 con 1/4; s2 "
+            "y s3 se quedan con 1; s1 es transitorio (marco punteado) y la fracción del "
+            "tiempo en s2 tiende a 1 o a 0 según la réplica.")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c2_mu_t_inicios():
+    T = 10
+    P1, P2 = m.T1_P, m.T2_P
+    mu = m.estacionaria(P1)
+    desdeV = [x[0] for x in m.mu_t(P1, (F(1), F(0)), T)]
+    desdeC = [x[0] for x in m.mu_t(P1, (F(0), F(1)), T)]
+    alt = [x[0] for x in m.mu_t(P2, (F(1), F(0)), T)]
+    titulo = ["¿Olvida su inicio?", "Pr(Sₜ = primer estado)"]
+    out = []
+    y = encabezado(out, titulo)
+    COLOR_ALT = ACENTO
+    y = _leyenda(out, y + 8, [
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V)
+         + _marca("circulo", x, yy, COLOR_V), "frase, desde V"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_C, "5 4")
+         + _marca("cuadro", x, yy, COLOR_C, r=4), "frase, desde C"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_ALT, "2 3")
+         + _marca("triangulo", x, yy, COLOR_ALT, r=4), "alternante, desde A"),
+        (lambda x, yy: linea(x - 12, yy, x + 12, yy, color=TEXTO, grosor=1, guiones="1 3"),
+         f"μ(V) = {fr(mu[0])} de la frase"),
+    ])
+    top, alto = y + 24, 190
+
+    def px(t):
+        return MU_X0 + (MU_X1 - MU_X0) * t / T
+
+    def py(p):
+        return top + alto * (1 - float(p))
+    for v in (0, 0.5, 1):
+        out.append(linea(MU_X0, _n(py(v)), MU_X1, _n(py(v)), color=mezclar(LINEA, 0.5),
+                         grosor=1))
+        out.append(texto(MU_X0 - 12, py(v) + 4, f"{v:g}", tam=12, anclaje="end", color=SUAVE))
+    out.append(linea(MU_X0, _n(py(mu[0])), MU_X1, _n(py(mu[0])), color=TEXTO, grosor=1,
+                     guiones="1 3"))
+    for serie, color, forma, guiones in ((alt, COLOR_ALT, "triangulo", "2 3"),
+                                         (desdeV, COLOR_V, "circulo", None),
+                                         (desdeC, COLOR_C, "cuadro", "5 4")):
+        out.append(_polilinea([(px(t), py(p)) for t, p in enumerate(serie)], color, guiones))
+        for t, p in enumerate(serie):
+            out.append(_marca(forma, px(t), py(p), color, r=4))
+    for t in range(0, T + 1, 2):
+        out.append(texto(px(t), top + alto + 18, str(t), tam=12, color=SUAVE))
+    out.append(texto((MU_X0 + MU_X1) / 2, top + alto + 38, "paso t", tam=13, peso="700"))
+    lam = abs(m.segundo_valor_propio_2x2(P1))
+    y = pie(out, top + alto + 62, [
+        "La frase olvida su inicio: desde V y",
+        f"desde C llega a {fr(mu[0])} ≈ {dec(mu[0])};",
+        f"la distancia a μ se multiplica por {fr(lam)}",
+        "en cada paso.",
+        "La alternante no: 1, 0, 1, 0, …"], color=TEXTO)
+    desc = ("Probabilidad de estar en el primer estado en el paso t, de t = 0 a 10. "
+            "Matriz de la frase (V, C) desde V: " + ", ".join(dec(p) for p in desdeV)
+            + ". Desde C: " + ", ".join(dec(p) for p in desdeC)
+            + f". Las dos se juntan en μ(V) = {fr(mu[0])} ≈ {dec(mu[0])}; la distancia a μ se "
+            f"multiplica por {fr(lam)} en cada paso. Cadena alternante desde A: "
+            + ", ".join(fr(p) for p in alt) + "; alterna entre 1 y 0 y no converge.")
+    return svg(titulo, desc, out, y)
+
+
+FLUJOS.update({
+    "potencias": dict(
+        nombre="la iteración de potencias",
+        titulo=["Iteración de potencias,", "en palabras"],
+        pasos=[{"caja": ["Empieza: μ ← μ₀", "y pasos = 1"]},
+               {"caja": ["Multiplica:", "nuevo = μP"]},
+               {"caja": ["Mide d = ‖nuevo − μ‖₁", "y avanza: μ ← nuevo"]},
+               {"rombo": ["¿d ≤ tol?"], "abajo": "no"},
+               {"rombo": ["¿pasos llegó", "al tope?"], "abajo": "no"},
+               {"caja": ["Suma 1 a pasos"]},
+               {"caja": ["Devuelve (μ, «no paró»)"], "fin": True, "sin_flecha": True},
+               {"caja": ["Devuelve (μ, pasos)"], "fin": True, "sin_flecha": True}],
+        vueltas=[(5, 1, "otra vuelta")],
+        salidas=[(3, 7, "sí"), (4, 6, "sí")],
+        notas=["«No paró» no prueba que no converja:", "solo que no cumplió tol a tiempo.",
+               "Cada vuelta cuesta k² productos."]),
+    "absorcion": dict(
+        nombre="el tiempo medio de llegada",
+        titulo=["Tiempo medio de llegada,", "en palabras"],
+        pasos=[{"caja": ["Marca la meta A:", "m = 0 en A"]},
+               {"caja": ["Quita de P las filas", "y columnas de A"]},
+               {"caja": ["Arma el sistema", "(I − P𝒯) m = 1"]},
+               {"rombo": ["¿Tiene una", "solución?"], "abajo": "sí"},
+               {"caja": ["Resuélvelo y", "devuelve m"], "fin": True},
+               {"caja": ["Avisa: desde algún", "estado no se llega"], "fin": True,
+                "sin_flecha": True}],
+        vueltas=[],
+        salidas=[(3, 5, "no")],
+        notas=["Cada renglón dice: un turno más", "lo que falta desde donde caes."]),
+})
+
+
+def mkv_c2_tablero_chico():
+    cfg = m.TABLERO_CHICO
+    estados, P = m.tablero_desde(cfg)
+    mm = m.absorcion_tablero("chico")
+    assert estados == [0, 1, 4, 5]
+    titulo = ["Un tablero de 6 casillas", "moneda: avanza 1 o 2"]
+    out = []
+    y = encabezado(out, titulo)
+    x0, w, yc = 18, 44, y + 74
+    cx = {c: x0 + w * c + w / 2 for c in range(6)}
+    for c in range(6):
+        es = c not in cfg["saltos"]
+        out.append(caja(_n(x0 + w * c + 2), _n(yc - 20), w - 4, 40,
+                        relleno=mezclar(COLOR_V if es else LINEA, 0.12),
+                        borde=COLOR_V if es else SUAVE, radio=6, grosor=2,
+                        guiones=None if es else "3 3"))
+        out.append(texto(cx[c], yc + 6, str(c), tam=16, peso="700"))
+    # escalera 2 -> 4 por arriba, serpiente 3 -> 1 por abajo
+    out.append(_curva(f"M {_n(cx[2])} {_n(yc - 22)} Q {_n((cx[2] + cx[4]) / 2)} {_n(yc - 64)} "
+                      f"{_n(cx[4])} {_n(yc - 24)}", color=COLOR_CERRADA).replace(
+                          'stroke-width="2"', 'stroke-width="3"'))
+    out.append(texto((cx[2] + cx[4]) / 2, yc - 50, "escalera 2 → 4", tam=13, peso="700"))
+    out.append(_curva(f"M {_n(cx[3])} {_n(yc + 22)} Q {_n((cx[1] + cx[3]) / 2)} {_n(yc + 64)} "
+                      f"{_n(cx[1])} {_n(yc + 24)}", color=COLOR_C).replace(
+                          'stroke-width="2"', 'stroke-width="2" stroke-dasharray="5 3"'))
+    out.append(texto((cx[1] + cx[3]) / 2, yc + 60, "serpiente 3 → 1", tam=13, peso="700"))
+    y = pie(out, yc + 92, ["Punteadas (2 y 3): al caer ahí te mueves;",
+                           "no son estados. Si te pasas, llegas a 5."])
+    # grafo de estados reales
+    y += 10
+    out.append(texto(X_PIE, y, "Estados al final del turno", tam=14, peso="700",
+                     anclaje="start"))
+    yn = y + 80
+    pos = {0: (40, yn), 1: (110, yn), 4: (190, yn), 5: (262, yn)}
+    i = {e: k for k, e in enumerate(estados)}
+    out.append(_arista(pos[0], pos[1], fr(P[i[0]][i[1]]), lado=-1, r=18))
+    out.append(_arista(pos[0], pos[4], fr(P[i[0]][i[4]]), curva=-46, r=18))
+    out.append(_lazo(*pos[1], fr(P[i[1]][i[1]]), hacia="abajo", r=18))
+    out.append(_arista(pos[1], pos[4], fr(P[i[1]][i[4]]), lado=-1, r=18))
+    out.append(_arista(pos[4], pos[5], fr(P[i[4]][i[5]]), lado=-1, r=18))
+    for e, (x, yy) in pos.items():
+        meta = e == 5
+        out.append(_gnodo(x, yy, str(e), COLOR_CERRADA if meta else COLOR_V, r=18,
+                          guiones=None))
+        if meta:
+            out.append(f'<circle cx="{_n(x)}" cy="{_n(yy)}" r="23" fill="none" '
+                       f'stroke="{COLOR_CERRADA}" stroke-width="2"/>')
+    out.append(texto(262, yn + 44, "meta", tam=13, peso="700"))
+    ym = yn + 92
+    out.append(texto(X_PIE, ym, "Turnos que faltan, en promedio:", tam=13, anclaje="start",
+                     color=SUAVE, peso="700"))
+    for e, (x, _) in pos.items():
+        out.append(texto(x, ym + 24, f"m = {fr(mm[e])}", tam=14, peso="700"))
+    y = ym + 50
+    desc = ("Tablero de casillas 0 a 5 con moneda: avanza 1 o 2 con probabilidad 1/2. "
+            "Escalera en 2 que sube a 4; serpiente en 3 que baja a 1; si te pasas de 5 "
+            "llegas a 5. Las casillas 2 y 3 no son estados. Grafo de estados al final del "
+            f"turno: 0 va a 1 con {fr(P[i[0]][i[1]])} y a 4 con {fr(P[i[0]][i[4]])}; 1 se "
+            f"queda con {fr(P[i[1]][i[1]])} (cae en 3 y baja) y va a 4 con "
+            f"{fr(P[i[1]][i[4]])}; 4 va a 5 con 1; 5 es la meta. Turnos medios que faltan: "
+            + ", ".join(f"m({e}) = {fr(mm[e])}" for e in estados) + ".")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c2_web_juguete():
+    enl = m.T9_ENLACES
+    pr = m.pagerank_exacto(enl)
+    titulo = ["Una web de cuatro páginas", "D no tiene enlaces de salida"]
+    out = []
+    y = encabezado(out, titulo)
+    pos = {"A": (80, y + 50), "B": (220, y + 50), "C": (80, y + 180), "D": (220, y + 180)}
+    out.append(_arista(pos["A"], pos["B"], "", r=22))
+    out.append(_arista(pos["A"], pos["C"], "", r=22, curva=14))
+    out.append(_arista(pos["C"], pos["A"], "", r=22, curva=14))
+    out.append(_arista(pos["B"], pos["C"], "", r=22))
+    out.append(_arista(pos["C"], pos["D"], "", r=22))
+    for p, (x, yy) in pos.items():
+        d = p == "D"
+        out.append(_gnodo(x, yy, p, COLOR_C if d else COLOR_V, r=22,
+                          guiones="4 3" if d else None, tam=18))
+    out.append(texto(220, y + 226, "sin salidas", tam=13, peso="700"))
+    yb = y + 268
+    out.append(texto(X_PIE, yb, f"PageRank con α = {dec(m.ALFA, 2)}", tam=14, peso="700",
+                     anclaje="start"))
+    x0, x1 = 40, 200
+    tope = 0.6
+    for k, (p, v) in enumerate(zip(m.T9_PAGINAS, pr)):
+        yy = yb + 26 + 26 * k
+        out.append(texto(X_PIE + 4, yy + 5, p, tam=14, peso="700", anclaje="start"))
+        out.append(f'<rect x="{x0}" y="{_n(yy - 8)}" width="{_n((x1 - x0) * float(v) / tope)}" '
+                   f'height="16" fill="{mezclar(COLOR_C if p == "D" else COLOR_V, 0.6)}"/>')
+        out.append(texto(x0 + (x1 - x0) * float(v) / tope + 8, yy + 5,
+                         f"{fr(v)} ≈ {dec(v)}", tam=13, anclaje="start"))
+    y = pie(out, yb + 26 * 4 + 34, ["Desde D, el navegante salta a", "cualquier página (1/4 cada una)."])
+    desc = ("Grafo dirigido de cuatro páginas: A enlaza a B y a C; B enlaza a C; C enlaza a "
+            "A y a D; D no tiene enlaces de salida (borde punteado). PageRank con α = 0.85 y "
+            "salto uniforme: " + ", ".join(f"{p} = {fr(v)} ≈ {dec(v)}"
+                                           for p, v in zip(m.T9_PAGINAS, pr)) + ".")
+    return svg(titulo, desc, out, y)
+
+
 DIAGRAMAS = {
     "mkv-c1-flujo-muestrear": lambda: flujo("muestrear"),
     "mkv-c1-flujo-contar": lambda: flujo("contar"),
@@ -684,6 +1055,13 @@ DIAGRAMAS = {
     "mkv-c1-recuperar-p": mkv_c1_recuperar_p,
     "mkv-c1-ceros": mkv_c1_ceros,
     "mkv-c1-rachas": mkv_c1_rachas,
+    "mkv-c2-grafo-clasificar": mkv_c2_grafo_clasificar,
+    "mkv-c2-grafo-contraejemplos": mkv_c2_grafo_contraejemplos,
+    "mkv-c2-mu-t-inicios": mkv_c2_mu_t_inicios,
+    "mkv-c2-flujo-potencias": lambda: flujo("potencias"),
+    "mkv-c2-tablero-chico": mkv_c2_tablero_chico,
+    "mkv-c2-flujo-absorcion": lambda: flujo("absorcion"),
+    "mkv-c2-web-juguete": mkv_c2_web_juguete,
 }
 
 

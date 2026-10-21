@@ -4,7 +4,7 @@ title: Toda la notación, en una hoja
 nav_title: Notación
 summary: "Cada símbolo y cada término que usa la unidad de cadenas de Markov, cómo se lee, qué significa y en qué página se presentó."
 status: ready
-estimated_time: 5m
+estimated_time: 7m
 tags: [markov, referencia, notacion]
 ---
 
@@ -83,32 +83,56 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $\operatorname{suf}_h(w)$ | Últimos $h$ símbolos de $w$; con $h=0$, contexto vacío. *→ Generar texto* |
 | memoria $h$ | «memoria hache». Cuántos símbolos anteriores forman el estado. Memoria 0, 1, 2 = unigrama, bigrama, trigrama. No es la profundidad de UCT. *→ Ajustar contando* |
 
+## A la larga
+
+| Símbolo | Cómo se lee, qué es y dónde se presenta |
+|---|---|
+| $\lVert x-y\rVert_1$ | «norma uno de equis menos ye». La distancia entre dos distribuciones: ${\sum_i\lvert x_i-y_i\rvert}$. *→ Lo que necesitas de álgebra y límites.* |
+| $\mathrm{tol}$ | «tolerancia». El umbral para dejar de iterar: se para cuando la distancia entre dos iteraciones queda por debajo. *→ Lo que necesitas de álgebra y límites.* |
+| $E_s[X]$, $\Pr_s(\cdot)$ | «esperanza de equis empezando en ese». Valor esperado y probabilidad de la cadena que arranca en $s$. *→ Lo que necesitas de álgebra y límites.* |
+| $s\to s'$, $s\leftrightarrow s'$ | «ese alcanza a ese prima», «se comunican». Hay un camino de flechas positivas de $s$ a $s'$; y, en el segundo caso, también de regreso. *→ Clasificar los estados.* |
+| $d(s)$ | «de de ese». El periodo de $s$: el máximo común divisor de los pasos $t\ge1$ en que, empezando en $s$, se puede volver a $s$. Aperiódico si ${d(s)=1}$. Si no hay ningún regreso, no se define. *→ Clasificar los estados.* |
+| $\mu$ | «mu», sin índice. La distribución estacionaria: ${\mu P=\mu}$, con entradas $\ge0$ que suman 1. *→ La estacionaria y sus cuatro teoremas.* |
+| $N_T(s)$ | «ene sub te mayúscula de ese». Cuántas veces visita la cadena el estado $s$ en los pasos ${0,\dots,T-1}$; la fracción del tiempo es ${N_T(s)/T}$. *→ La estacionaria y sus cuatro teoremas.* |
+| $A$, $\tau_A$ | «a», «tau sub a». El conjunto de estados a los que se quiere llegar, y el primer paso en que la cadena está en él: ${\tau_A=\min\{t\ge0: S_t\in A\}}$. *→ Cuánto falta para terminar.* |
+| $m(s)$, $P_{\mathcal T}$ | «eme de ese», «pe sub te caligráfica». El tiempo medio de llegada desde $s$, ${m(s)=E_s[\tau_A]}$, y la matriz $P$ restringida a los estados fuera de $A$. *→ Cuánto falta para terminar.* |
+| $\operatorname{salidas}(s)$ | «salidas de ese». El conjunto de páginas distintas a las que enlaza $s$; $\lvert\operatorname{salidas}(s)\rvert$ es cuántas son. Si está vacío, la página no enlaza a nada. *→ PageRank.* |
+| $\alpha$, $v$ | «alfa», «ve». En PageRank, la probabilidad de seguir un enlace y el vector de salto. *→ PageRank.* |
+| $\overline P$, $G$ | «pe barra», «ge». $P$ con cada fila sin salidas sustituida por $v$, y la matriz de Google ${G=\alpha\overline P+(1-\alpha)\mathbf 1v}$. *→ PageRank.* |
+
 ## Términos
 
 | Término | Qué significa aquí y dónde se presenta |
 |---|---|
-| Experimento | Un procedimiento con azar; aquí, sortear una posición de la frase. *→ Lo que necesitas de probabilidad* |
-| Evento | Un conjunto de resultados del experimento: «la siguiente es vocal». *→ Lo que necesitas de probabilidad* |
-| Probabilidad conjunta | La de que ocurran dos eventos a la vez, ${\Pr(A\cap B)}$. *→ Lo que necesitas de probabilidad* |
-| Independencia | Saber uno no cambia la probabilidad del otro: ${\Pr(A\cap B)}$ es ${\Pr(A)\Pr(B)}$. *→ Lo que necesitas de probabilidad* |
-| Independencia condicional | Dado $B$, saber $D$ ya no agrega nada: si ${\Pr(D\cap B)>0}$, ${\Pr(A\mid D,B)}$ es ${\Pr(A\mid B)}$. *→ Lo que necesitas de probabilidad* |
-| Partición | Casos que no se traslapan y cubren todo. *→ Lo que necesitas de probabilidad* |
-| Ley de los grandes números | El promedio de muchas repeticiones independientes se acerca a la probabilidad. *→ Lo que necesitas de probabilidad* |
-| Estado | Valor posible de $S_t$; puede ser una clase de letra o un contexto. *→ La cadena de Markov, en general* |
-| Muestrear una fila | Elegir un estado con las probabilidades de una fila y un uniforme $u$. *→ El problema de Markov* |
-| Trayectoria | Secuencia de estados $s_{i_0},\dots,s_{i_t}$, con repeticiones permitidas. El pseudocódigo de conteo la abrevia como $s_0,\dots,s_T$. *→ La cadena de Markov, en general* |
-| Réplica | Una trayectoria simulada, independiente de las demás. *→ La cadena de Markov, en general* |
-| Salidas | Las transiciones que parten de un estado, $N(s)$; la última letra no tiene salida. *→ Ajustar contando* |
-| Verosimilitud | La probabilidad de los datos observados vista como función de $P$. *→ Ajustar contando* |
-| Cero estructural | Transición imposible por las reglas o la normalización: dos espacios seguidos. *→ El problema de Markov* |
-| Transición no observada | Un par con conteo 0 que sí podría ocurrir: q→a. *→ Ajustar contando* |
-| Estado sin salidas | Un estado con ${N(s)=0}$: no aparece, como la «k» en el *Quijote*, o solo aparece al final. Los datos no determinan su fila. *→ Ajustar contando* |
-| Contexto | Los $h$ símbolos anteriores, que forman el estado con memoria $h$. *→ Ajustar contando* |
-| Suavizado (Laplace) | Suavizado aditivo: sumar 1 a cada conteo por símbolo siguiente antes de dividir. *→ Ajustar contando* |
-| Error estándar | La dispersión de la fracción observada en $n$ réplicas independientes alrededor de su probabilidad $p$: ${\sqrt{p(1-p)/n}}$. *→ Predecir* |
-| Semilla | El número que fija la sucesión de uniformes $u$: con el mismo modelo, inicio, orden de estados y procedimiento, la misma semilla reproduce la corrida. Las réplicas de una corrida no reinician la semilla. *→ El problema de Markov* |
-| Generar | Producir una trayectoria muestreando una fila tras otra y deslizando el contexto. *→ Generar texto* |
-| Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0. *→ Ajustar contando; Shannon, en Generar texto* |
+| Experimento | Un procedimiento con azar; aquí, sortear una posición de la frase. *→ Lo que necesitas de probabilidad.* |
+| Evento | Un conjunto de resultados del experimento: «la siguiente es vocal». *→ Lo que necesitas de probabilidad.* |
+| Probabilidad conjunta | La de que ocurran dos eventos a la vez, ${\Pr(A\cap B)}$. *→ Lo que necesitas de probabilidad.* |
+| Independencia | Saber uno no cambia la probabilidad del otro: ${\Pr(A\cap B)}$ es ${\Pr(A)\Pr(B)}$. *→ Lo que necesitas de probabilidad.* |
+| Independencia condicional | Dado $B$, saber $D$ ya no agrega nada: si ${\Pr(D\cap B)>0}$, ${\Pr(A\mid D,B)}$ es ${\Pr(A\mid B)}$. *→ Lo que necesitas de probabilidad.* |
+| Partición | Casos que no se traslapan y cubren todo. *→ Lo que necesitas de probabilidad.* |
+| Ley de los grandes números | El promedio de muchas repeticiones independientes se acerca a la probabilidad. *→ Lo que necesitas de probabilidad.* |
+| Estado | Valor posible de $S_t$; puede ser una clase de letra o un contexto. *→ La cadena de Markov, en general.* |
+| Muestrear una fila | Elegir un estado con las probabilidades de una fila y un uniforme $u$. *→ El problema de Markov.* |
+| Trayectoria | Secuencia de estados $s_{i_0},\dots,s_{i_t}$, con repeticiones permitidas. El pseudocódigo de conteo la abrevia como $s_0,\dots,s_T$. *→ La cadena de Markov, en general.* |
+| Réplica | Una trayectoria simulada, independiente de las demás. *→ La cadena de Markov, en general.* |
+| Salidas | Las transiciones que parten de un estado, $N(s)$; la última letra no tiene salida. *→ Ajustar contando.* |
+| Verosimilitud | La probabilidad de los datos observados vista como función de $P$. *→ Ajustar contando.* |
+| Cero estructural | Transición imposible por las reglas o la normalización: dos espacios seguidos. *→ El problema de Markov.* |
+| Transición no observada | Un par con conteo 0 que sí podría ocurrir: q→a. *→ Ajustar contando.* |
+| Estado sin salidas | Un estado con ${N(s)=0}$: no aparece, como la «k» en el *Quijote*, o solo aparece al final. Los datos no determinan su fila. *→ Ajustar contando.* |
+| Contexto | Los $h$ símbolos anteriores, que forman el estado con memoria $h$. *→ Ajustar contando.* |
+| Suavizado (Laplace) | Suavizado aditivo: sumar 1 a cada conteo por símbolo siguiente antes de dividir. *→ Ajustar contando.* |
+| Error estándar | La dispersión de la fracción observada en $n$ réplicas independientes alrededor de su probabilidad $p$: ${\sqrt{p(1-p)/n}}$. *→ Predecir.* |
+| Semilla | El número que fija la sucesión de uniformes $u$: con el mismo modelo, inicio, orden de estados y procedimiento, la misma semilla reproduce la corrida. Las réplicas de una corrida no reinician la semilla. *→ El problema de Markov.* |
+| Generar | Producir una trayectoria muestreando una fila tras otra y deslizando el contexto. *→ Generar texto.* |
+| Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0. *→ Ajustar contando; Shannon, en Generar texto.* |
+| Clase | Un grupo de estados que se comunican entre sí. *→ Clasificar los estados.* |
+| Clase cerrada | Una clase de la que no sale ninguna flecha: una vez dentro, la cadena se queda. Si tiene un solo estado, ese estado es **absorbente**. *→ Clasificar los estados.* |
+| Transitorio, recurrente | Un estado es recurrente si, empezando en él, la cadena vuelve a estar en él en algún paso $t\ge1$ con probabilidad 1; un lazo cuenta. Transitorio si no. En cadenas finitas, recurrente = estar en una clase cerrada. *→ Clasificar los estados.* |
+| Irreducible | Una cadena con una sola clase, que abarca todos los estados. *→ Ajustar contando; Clasificar los estados.* |
+| Distribución estacionaria | Una $\mu$ que no cambia al dar un paso: si arrancas en ella, te quedas en ella. *→ La estacionaria y sus cuatro teoremas.* |
+| Las tres preguntas | En el paso $t$ ($\mu_t$), en el límite (${\lim\mu_t}$) y fracción del tiempo (${N_T(s)/T}$). No son la misma. *→ La estacionaria y sus cuatro teoremas.* |
+| Iteración de potencias | Multiplicar una distribución por $P$ una y otra vez hasta que deje de cambiar más que $\mathrm{tol}$. *→ ¿Olvida su inicio?.* |
 
 ## En las figuras
 
@@ -139,6 +163,14 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   Monte Carlo plano en juegos.
 - **$N(s)$** cuenta **salidas**, no visitas como en juegos: la última letra
   aparece pero no sale.
+- **$N_T(s)$**, con el subíndice, sí cuenta **visitas**. Son las de $s$ en
+  los primeros $T$ pasos.
+- **$\alpha$** es, en PageRank, la probabilidad de seguir un enlace. No es
+  la $\alpha$ de alfa-beta. Brin y Page la llamaban $d$.
+- **$P_{\mathcal T}$** es lo que muchos libros llaman $Q$. Aquí $Q$ queda
+  para el valor de una acción, como en refuerzo.
+- **La barra** de $\overline P$ no es la tilde de $\widetilde p$. La tilde
+  dice «suavizada»; la barra, «filas sin salida arregladas».
 - **$P$** es la matriz de transición, la misma $P$ de
   $\langle S,A,P,R,\gamma\rangle$ en agentes; no es la clase P de
   complejidad.

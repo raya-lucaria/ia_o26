@@ -156,6 +156,7 @@ _UMBRALES_MARKOV = {"tabla_columnas": 4, "tabla_columnas_traza": 4, "ppm_max": 8
 UMBRALES_POR_UNIDAD: dict[str, dict] = {
     "course/8_markov": _UMBRALES_MARKOV,
     "course/8_markov/1_que_es_una_cadena": _UMBRALES_MARKOV,
+    "course/8_markov/2_a_la_larga": _UMBRALES_MARKOV,
 }
 
 # Unidades donde el contrato es obligatorio (opt-in). Arranca vacía: las

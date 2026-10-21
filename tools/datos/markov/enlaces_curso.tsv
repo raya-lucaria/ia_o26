@@ -1,0 +1,641 @@
+tipo	a	b
+nodo	accelerate-what	Módulo 1 · Aceleracionismo — ¿acelerar qué?
+nodo	actuadores-en-peas	A — ¿qué puede hacer de verdad?
+nodo	agentes-ambientes	Agentes, ambientes y modelado de decisiones
+nodo	alfa-beta	Alfa-beta a mano
+nodo	alfa-beta-como-algoritmo	Alfa-beta como algoritmo
+nodo	animaciones-juegos	Las animaciones de la unidad, en una página
+nodo	arco-historico	El arco histórico
+nodo	azar-y-bpp	Máquinas que tiran monedas
+nodo	bajar-la-pendiente	Bajar la pendiente
+nodo	complejidad	Complejidad computacional
+nodo	complejidad-de-espacio	Contar memoria
+nodo	completos-y-duros	Reducciones, duros y completos
+nodo	computabilidad	Computabilidad e incompletitud
+nodo	computabilidad-y-decidibilidad	Computabilidad y decidibilidad
+nodo	contar-un-algoritmo	Contar un algoritmo
+nodo	control-optimizacion	Control · Optimización
+nodo	control-optimizacion-a	Control · Optimización · Examen A
+nodo	control-optimizacion-b	Control · Optimización · Examen B
+nodo	cortar-y-evaluar	Cortar y evaluar
+nodo	course-root	Inteligencia Artificial — Otoño 2026 (ITAM)
+nodo	cuando-decide-un-dado	Cuando decide un dado: expectiminimax
+nodo	cuando-se-acaba-el-dibujo	Cuando se acaba el dibujo
+nodo	cuanto-cuesta	Cuánto cuesta un algoritmo
+nodo	cuanto-vale-una-hora-mas	Cuánto vale una hora más
+nodo	de-consecuencias-a-refuerzo	De consecuencias a refuerzo
+nodo	de-donde-sale-el-bono	De dónde sale el bono
+nodo	de-esquina-en-esquina	De esquina en esquina
+nodo	de-prediccion-a-decision	De predicción a decisión
+nodo	desempeno-en-peas	P — ¿qué cuenta como hacerlo bien?
+nodo	diagnosticar-el-entorno	Diagnosticar el entorno
+nodo	diagnosticar-el-juego	Diagnosticar el juego
+nodo	dibujar-el-bucle	Dibujar el bucle
+nodo	discutir-el-futuro-largo	Hora 2 — Discutir el futuro largo
+nodo	discutir-el-programa	Hora 2 — Discutir el programa
+nodo	discutir-la-salida	Hora 2 — Discutir la salida
+nodo	disenar-el-agente	Diseñar el agente
+nodo	el-curso	El curso
+nodo	el-dibujo	El dibujo
+nodo	el-juego-como-grafo	El juego como grafo
+nodo	el-mapa-de-las-clases	El mapa completo
+nodo	el-mismo-truco	El mismo truco tres veces
+nodo	el-modelo-como-matriz	El modelo como matriz
+nodo	el-modelo-del-taller	El modelo, escrito
+nodo	el-multiplicador	El multiplicador
+nodo	el-rendimiento-que-decrece	El rendimiento que decrece
+nodo	elegir-el-algoritmo	Elegir el algoritmo
+nodo	entorno-en-peas	E — ¿qué mundo rodea la tarea?
+nodo	enumerar	Enumerar
+nodo	escribir-el-juego	Escribir el juego
+nodo	escribir-el-modelo	Escribir el modelo
+nodo	estado-actual	Estado actual
+nodo	examenes	Exámenes
+nodo	exit-nrx	Módulo 3 · Aceleracionismo de derecha — ¿quién se queda?
+nodo	filosofia-ia	Filosofía de la inteligencia artificial
+nodo	historia-ia	Historia de la inteligencia artificial
+nodo	ia-y-sociedad	IA y sociedad
+nodo	ideas-aceleracionismo	Las ideas del módulo
+nodo	imaginar-la-maquina	Imaginar la máquina
+nodo	intro-unidad	Introducción
+nodo	juegos	Jugar contra alguien que también piensa
+nodo	juegos-cuando-no-cabe	Clase 3 · Cuando el árbol no cabe
+nodo	juegos-leer-y-escribir	Clase 1 · Leer y escribir el juego
+nodo	juegos-mirar-todo-y-podar	Clase 2 · Mirar todo y podar
+nodo	juegos-radiografia	Radiografía de los algoritmos
+nodo	jugar-contra-el-reloj	Hasta dónde mirar: profundidad, tiempo y horizonte
+nodo	la-bitacora-del-taller	La bitácora del taller
+nodo	las-clases	P, NP y EXP
+nodo	las-cuatro-lecturas	Hora 1 — Las cuatro lecturas, en claro
+nodo	las-lecturas-de-la-salida	Hora 1 — Las cuatro lecturas, en claro
+nodo	las-lecturas-del-futuro-largo	Hora 1 — Las seis lecturas, en claro
+nodo	las-seis-lecturas	Las seis lecturas, en claro
+nodo	leer-el-reglamento	Leer el reglamento
+nodo	leer-la-bitacora	Leer la bitácora
+nodo	leer-y-escribir	Clase 1 · Leer y escribir
+nodo	left-takes-future	Módulo 2 · Aceleracionismo de izquierda — ¿quién lo construye?
+nodo	lienzo-de-modelado	El lienzo de modelado
+nodo	los-signos-del-lagrangeano	Los signos del lagrangeano
+nodo	maquina-de-turing	La máquina de Turing
+nodo	markov	Cadenas de Markov
+nodo	markov-a-la-larga	Clase 2 · Qué pasa a la larga
+nodo	markov-que-es-una-cadena	Clase 1 · Qué es una cadena
+nodo	material-adicional	Material adicional
+nodo	minimax	Minimax a mano
+nodo	minimax-como-algoritmo	Minimax como algoritmo
+nodo	mkv-ajustar-contando	Ajustar contando
+nodo	mkv-cadena-en-general	La cadena de Markov, en general
+nodo	mkv-el-problema-de-markov	El problema de Markov
+nodo	mkv-generar-texto	Generar texto
+nodo	mkv-lo-que-necesitas	Lo que necesitas de probabilidad
+nodo	mkv-predecir	Predecir
+nodo	moloch-long-future	Módulo 4 · El futuro largo — ¿quién cuenta?
+nodo	monte-carlo-en-un-arbol-grande	MCTS con UCT
+nodo	notacion-complejidad	Toda la notación, en una hoja
+nodo	notacion-computabilidad	Toda la notación, en una hoja
+nodo	notacion-juegos	Toda la notación, en una hoja
+nodo	notacion-markov	Toda la notación, en una hoja
+nodo	o-grande	O grande, y su familia
+nodo	opt-objetivo-clasificacion-practica	Clasificar mensajes y evaluar probabilidades
+nodo	opt-objetivo-juego-practica	Elegir una jugada cuando el rival responde
+nodo	opt-objetivo-panaderia-practica	Decidir cuánto pan producir antes de conocer la demanda
+nodo	opt-objetivo-regresion-practica	Predecir un valor y elegir la complejidad del modelo
+nodo	opt-objetivo-salones-practica	Asignar salones y decidir qué significa comodidad
+nodo	opt-practica-modelado	Modelar problemas de optimización
+nodo	optimizacion	Modelado y optimización
+nodo	optimizacion-continua	Clase 3 · Cuando ya no es una recta
+nodo	optimizacion-entera	Clase 4 · Cuando las piezas no se parten
+nodo	optimizacion-lineal	Clase 2 · Resolver sin dibujar
+nodo	otras-raices	Otras raíces
+nodo	para-discutir	Para discutir
+nodo	patrones-lineales	Patrones lineales
+nodo	peas-integrado	Integrar PEAS — una ficha que no se contradice
+nodo	por-que-el-boom	Por qué el boom
+nodo	por-que-importa	Por qué esto importa
+nodo	problema-de-la-parada	El problema de la parada
+nodo	proyecto-torneo-adversarial	Proyecto: un bot para Breakthrough de combate
+nodo	que-es-el-computo	Qué es el cómputo
+nodo	que-es-inteligencia	Qué es la inteligencia
+nodo	que-es-una-respuesta	Qué es una respuesta
+nodo	ramificar-y-acotar	Ramificar y acotar
+nodo	resolver-paso-a-paso	Resolver, paso a paso
+nodo	sensores-en-peas	S — ¿qué información llega de verdad?
+nodo	simular-en-vez-de-evaluar	Simular partidas: promedios y actualización minimax
+nodo	sin-dibujo	Sin dibujo
+nodo	sistemas-formales	Sistemas formales y aritmetización
+nodo	sustituir-y-derivar	Sustituir y derivar
+nodo	tarea-cuando-no-cabe	Tarea de refuerzo · Evaluar sin llegar al final
+nodo	tarea-leer-y-escribir	Tarea de refuerzo · Escribir un juego
+nodo	tarea-mirar-todo-y-podar	Tarea de refuerzo · Calcular y podar
+nodo	tarea-que-es-una-cadena	Tarea de la clase 1 · Tres videos y cuatro ejercicios
+nodo	teoremas-de-godel	Los teoremas de Gödel
+nodo	todo-es-un-numero	Todo es un número
+nodo	tres-bitacoras	Tres bitácoras para practicar
+nodo	un-arbol-todos-los-algoritmos	Radiografía: un árbol, todos los algoritmos
+nodo	zoologico-de-problemas	El zoológico de problemas
+enlace	accelerate-what	ia-y-sociedad
+enlace	accelerate-what	ideas-aceleracionismo
+enlace	actuadores-en-peas	sensores-en-peas
+enlace	agentes-ambientes	actuadores-en-peas
+enlace	agentes-ambientes	de-consecuencias-a-refuerzo
+enlace	agentes-ambientes	de-prediccion-a-decision
+enlace	agentes-ambientes	desempeno-en-peas
+enlace	agentes-ambientes	diagnosticar-el-entorno
+enlace	agentes-ambientes	dibujar-el-bucle
+enlace	agentes-ambientes	disenar-el-agente
+enlace	agentes-ambientes	entorno-en-peas
+enlace	agentes-ambientes	lienzo-de-modelado
+enlace	agentes-ambientes	peas-integrado
+enlace	agentes-ambientes	sensores-en-peas
+enlace	alfa-beta	alfa-beta-como-algoritmo
+enlace	alfa-beta	minimax-como-algoritmo
+enlace	alfa-beta-como-algoritmo	alfa-beta
+enlace	alfa-beta-como-algoritmo	cuando-decide-un-dado
+enlace	alfa-beta-como-algoritmo	minimax-como-algoritmo
+enlace	alfa-beta-como-algoritmo	ramificar-y-acotar
+enlace	animaciones-juegos	alfa-beta
+enlace	animaciones-juegos	alfa-beta-como-algoritmo
+enlace	animaciones-juegos	cortar-y-evaluar
+enlace	animaciones-juegos	cuando-decide-un-dado
+enlace	animaciones-juegos	de-donde-sale-el-bono
+enlace	animaciones-juegos	jugar-contra-el-reloj
+enlace	animaciones-juegos	minimax-como-algoritmo
+enlace	animaciones-juegos	monte-carlo-en-un-arbol-grande
+enlace	animaciones-juegos	un-arbol-todos-los-algoritmos
+enlace	arco-historico	estado-actual
+enlace	azar-y-bpp	complejidad-de-espacio
+enlace	azar-y-bpp	completos-y-duros
+enlace	azar-y-bpp	cuanto-cuesta
+enlace	bajar-la-pendiente	los-signos-del-lagrangeano
+enlace	bajar-la-pendiente	optimizacion-continua
+enlace	bajar-la-pendiente	que-es-una-respuesta
+enlace	complejidad	azar-y-bpp
+enlace	complejidad	complejidad-de-espacio
+enlace	complejidad	completos-y-duros
+enlace	complejidad	computabilidad
+enlace	complejidad	contar-un-algoritmo
+enlace	complejidad	cuanto-cuesta
+enlace	complejidad	el-mapa-de-las-clases
+enlace	complejidad	las-clases
+enlace	complejidad	notacion-complejidad
+enlace	complejidad	o-grande
+enlace	complejidad	por-que-importa
+enlace	complejidad	zoologico-de-problemas
+enlace	complejidad-de-espacio	el-mapa-de-las-clases
+enlace	completos-y-duros	el-mapa-de-las-clases
+enlace	completos-y-duros	problema-de-la-parada
+enlace	computabilidad	complejidad
+enlace	computabilidad	computabilidad-y-decidibilidad
+enlace	computabilidad	el-curso
+enlace	computabilidad	el-mismo-truco
+enlace	computabilidad	filosofia-ia
+enlace	computabilidad	historia-ia
+enlace	computabilidad	maquina-de-turing
+enlace	computabilidad	notacion-computabilidad
+enlace	computabilidad	problema-de-la-parada
+enlace	computabilidad	que-es-el-computo
+enlace	computabilidad	sistemas-formales
+enlace	computabilidad	teoremas-de-godel
+enlace	computabilidad	todo-es-un-numero
+enlace	computabilidad-y-decidibilidad	problema-de-la-parada
+enlace	computabilidad-y-decidibilidad	todo-es-un-numero
+enlace	contar-un-algoritmo	cuanto-cuesta
+enlace	contar-un-algoritmo	por-que-importa
+enlace	control-optimizacion	control-optimizacion-a
+enlace	control-optimizacion	control-optimizacion-b
+enlace	control-optimizacion	el-rendimiento-que-decrece
+enlace	control-optimizacion	opt-objetivo-panaderia-practica
+enlace	control-optimizacion	opt-objetivo-regresion-practica
+enlace	control-optimizacion	opt-objetivo-salones-practica
+enlace	control-optimizacion-a	el-multiplicador
+enlace	control-optimizacion-a	enumerar
+enlace	control-optimizacion-a	los-signos-del-lagrangeano
+enlace	control-optimizacion-a	opt-objetivo-regresion-practica
+enlace	control-optimizacion-a	opt-objetivo-salones-practica
+enlace	control-optimizacion-a	patrones-lineales
+enlace	control-optimizacion-a	ramificar-y-acotar
+enlace	control-optimizacion-a	resolver-paso-a-paso
+enlace	control-optimizacion-b	el-multiplicador
+enlace	control-optimizacion-b	el-rendimiento-que-decrece
+enlace	control-optimizacion-b	enumerar
+enlace	control-optimizacion-b	los-signos-del-lagrangeano
+enlace	control-optimizacion-b	opt-objetivo-panaderia-practica
+enlace	control-optimizacion-b	patrones-lineales
+enlace	control-optimizacion-b	ramificar-y-acotar
+enlace	control-optimizacion-b	resolver-paso-a-paso
+enlace	cortar-y-evaluar	escribir-el-juego
+enlace	cortar-y-evaluar	jugar-contra-el-reloj
+enlace	cortar-y-evaluar	minimax-como-algoritmo
+enlace	cortar-y-evaluar	opt-objetivo-salones-practica
+enlace	course-root	accelerate-what
+enlace	course-root	complejidad
+enlace	course-root	computabilidad
+enlace	course-root	exit-nrx
+enlace	course-root	filosofia-ia
+enlace	course-root	left-takes-future
+enlace	course-root	moloch-long-future
+enlace	course-root	optimizacion
+enlace	course-root	optimizacion-continua
+enlace	cuando-decide-un-dado	alfa-beta
+enlace	cuando-decide-un-dado	diagnosticar-el-juego
+enlace	cuando-decide-un-dado	escribir-el-juego
+enlace	cuando-decide-un-dado	minimax
+enlace	cuando-decide-un-dado	minimax-como-algoritmo
+enlace	cuando-decide-un-dado	tarea-leer-y-escribir
+enlace	cuando-decide-un-dado	tarea-mirar-todo-y-podar
+enlace	cuando-se-acaba-el-dibujo	de-esquina-en-esquina
+enlace	cuando-se-acaba-el-dibujo	el-dibujo
+enlace	cuando-se-acaba-el-dibujo	las-clases
+enlace	cuanto-cuesta	o-grande
+enlace	cuanto-cuesta	que-es-el-computo
+enlace	cuanto-vale-una-hora-mas	que-es-una-respuesta
+enlace	de-consecuencias-a-refuerzo	lienzo-de-modelado
+enlace	de-donde-sale-el-bono	monte-carlo-en-un-arbol-grande
+enlace	de-donde-sale-el-bono	tarea-cuando-no-cabe
+enlace	de-esquina-en-esquina	el-dibujo
+enlace	de-esquina-en-esquina	que-es-una-respuesta
+enlace	de-esquina-en-esquina	sin-dibujo
+enlace	de-prediccion-a-decision	dibujar-el-bucle
+enlace	desempeno-en-peas	entorno-en-peas
+enlace	diagnosticar-el-entorno	disenar-el-agente
+enlace	diagnosticar-el-juego	desempeno-en-peas
+enlace	diagnosticar-el-juego	diagnosticar-el-entorno
+enlace	diagnosticar-el-juego	el-juego-como-grafo
+enlace	diagnosticar-el-juego	escribir-el-juego
+enlace	diagnosticar-el-juego	tarea-leer-y-escribir
+enlace	dibujar-el-bucle	desempeno-en-peas
+enlace	discutir-el-futuro-largo	accelerate-what
+enlace	discutir-el-futuro-largo	course-root
+enlace	discutir-el-futuro-largo	exit-nrx
+enlace	discutir-el-futuro-largo	ia-y-sociedad
+enlace	discutir-el-futuro-largo	ideas-aceleracionismo
+enlace	discutir-el-futuro-largo	las-lecturas-del-futuro-largo
+enlace	discutir-el-futuro-largo	left-takes-future
+enlace	discutir-el-programa	exit-nrx
+enlace	discutir-el-programa	ia-y-sociedad
+enlace	discutir-el-programa	para-discutir
+enlace	discutir-la-salida	ia-y-sociedad
+enlace	discutir-la-salida	ideas-aceleracionismo
+enlace	discutir-la-salida	las-lecturas-de-la-salida
+enlace	discutir-la-salida	moloch-long-future
+enlace	disenar-el-agente	de-consecuencias-a-refuerzo
+enlace	el-curso	agentes-ambientes
+enlace	el-curso	course-root
+enlace	el-dibujo	que-es-una-respuesta
+enlace	el-juego-como-grafo	diagnosticar-el-juego
+enlace	el-juego-como-grafo	escribir-el-juego
+enlace	el-juego-como-grafo	opt-objetivo-juego-practica
+enlace	el-juego-como-grafo	un-arbol-todos-los-algoritmos
+enlace	el-mapa-de-las-clases	el-mismo-truco
+enlace	el-mapa-de-las-clases	por-que-importa
+enlace	el-mismo-truco	complejidad
+enlace	el-mismo-truco	computabilidad
+enlace	el-mismo-truco	computabilidad-y-decidibilidad
+enlace	el-mismo-truco	maquina-de-turing
+enlace	el-mismo-truco	problema-de-la-parada
+enlace	el-mismo-truco	sistemas-formales
+enlace	el-mismo-truco	teoremas-de-godel
+enlace	el-modelo-como-matriz	cuando-se-acaba-el-dibujo
+enlace	el-modelo-como-matriz	escribir-el-modelo
+enlace	el-modelo-como-matriz	patrones-lineales
+enlace	el-modelo-del-taller	enumerar
+enlace	el-modelo-del-taller	la-bitacora-del-taller
+enlace	el-modelo-del-taller	ramificar-y-acotar
+enlace	el-multiplicador	cuanto-vale-una-hora-mas
+enlace	el-multiplicador	el-dibujo
+enlace	el-multiplicador	el-rendimiento-que-decrece
+enlace	el-multiplicador	los-signos-del-lagrangeano
+enlace	el-multiplicador	sustituir-y-derivar
+enlace	el-rendimiento-que-decrece	cuando-se-acaba-el-dibujo
+enlace	el-rendimiento-que-decrece	de-esquina-en-esquina
+enlace	el-rendimiento-que-decrece	el-multiplicador
+enlace	el-rendimiento-que-decrece	escribir-el-modelo
+enlace	el-rendimiento-que-decrece	los-signos-del-lagrangeano
+enlace	el-rendimiento-que-decrece	sustituir-y-derivar
+enlace	elegir-el-algoritmo	cortar-y-evaluar
+enlace	elegir-el-algoritmo	de-donde-sale-el-bono
+enlace	elegir-el-algoritmo	diagnosticar-el-juego
+enlace	elegir-el-algoritmo	juegos
+enlace	elegir-el-algoritmo	jugar-contra-el-reloj
+enlace	elegir-el-algoritmo	un-arbol-todos-los-algoritmos
+enlace	entorno-en-peas	actuadores-en-peas
+enlace	enumerar	la-bitacora-del-taller
+enlace	enumerar	ramificar-y-acotar
+enlace	escribir-el-juego	diagnosticar-el-juego
+enlace	escribir-el-juego	el-juego-como-grafo
+enlace	escribir-el-juego	leer-el-reglamento
+enlace	escribir-el-juego	notacion-juegos
+enlace	escribir-el-modelo	el-dibujo
+enlace	estado-actual	arco-historico
+enlace	estado-actual	que-es-inteligencia
+enlace	examenes	control-optimizacion
+enlace	examenes	control-optimizacion-a
+enlace	examenes	control-optimizacion-b
+enlace	exit-nrx	accelerate-what
+enlace	exit-nrx	ia-y-sociedad
+enlace	exit-nrx	ideas-aceleracionismo
+enlace	exit-nrx	las-lecturas-de-la-salida
+enlace	exit-nrx	left-takes-future
+enlace	filosofia-ia	accelerate-what
+enlace	filosofia-ia	course-root
+enlace	filosofia-ia	discutir-el-futuro-largo
+enlace	filosofia-ia	discutir-el-programa
+enlace	filosofia-ia	discutir-la-salida
+enlace	filosofia-ia	exit-nrx
+enlace	filosofia-ia	historia-ia
+enlace	filosofia-ia	ideas-aceleracionismo
+enlace	filosofia-ia	las-cuatro-lecturas
+enlace	filosofia-ia	las-lecturas-de-la-salida
+enlace	filosofia-ia	las-lecturas-del-futuro-largo
+enlace	filosofia-ia	las-seis-lecturas
+enlace	filosofia-ia	left-takes-future
+enlace	filosofia-ia	moloch-long-future
+enlace	filosofia-ia	para-discutir
+enlace	historia-ia	arco-historico
+enlace	historia-ia	estado-actual
+enlace	historia-ia	ia-y-sociedad
+enlace	historia-ia	imaginar-la-maquina
+enlace	historia-ia	material-adicional
+enlace	historia-ia	otras-raices
+enlace	historia-ia	por-que-el-boom
+enlace	historia-ia	que-es-inteligencia
+enlace	ia-y-sociedad	imaginar-la-maquina
+enlace	ideas-aceleracionismo	accelerate-what
+enlace	ideas-aceleracionismo	ia-y-sociedad
+enlace	ideas-aceleracionismo	las-seis-lecturas
+enlace	ideas-aceleracionismo	para-discutir
+enlace	imaginar-la-maquina	ia-y-sociedad
+enlace	intro-unidad	el-curso
+enlace	intro-unidad	historia-ia
+enlace	juegos	agentes-ambientes
+enlace	juegos	animaciones-juegos
+enlace	juegos	juegos-cuando-no-cabe
+enlace	juegos	juegos-leer-y-escribir
+enlace	juegos	juegos-mirar-todo-y-podar
+enlace	juegos	juegos-radiografia
+enlace	juegos	notacion-juegos
+enlace	juegos	opt-objetivo-juego-practica
+enlace	juegos	proyecto-torneo-adversarial
+enlace	juegos-cuando-no-cabe	alfa-beta
+enlace	juegos-cuando-no-cabe	alfa-beta-como-algoritmo
+enlace	juegos-cuando-no-cabe	animaciones-juegos
+enlace	juegos-cuando-no-cabe	cortar-y-evaluar
+enlace	juegos-cuando-no-cabe	cuando-decide-un-dado
+enlace	juegos-cuando-no-cabe	de-donde-sale-el-bono
+enlace	juegos-cuando-no-cabe	juegos-radiografia
+enlace	juegos-cuando-no-cabe	jugar-contra-el-reloj
+enlace	juegos-cuando-no-cabe	minimax
+enlace	juegos-cuando-no-cabe	minimax-como-algoritmo
+enlace	juegos-cuando-no-cabe	monte-carlo-en-un-arbol-grande
+enlace	juegos-cuando-no-cabe	simular-en-vez-de-evaluar
+enlace	juegos-cuando-no-cabe	tarea-cuando-no-cabe
+enlace	juegos-leer-y-escribir	diagnosticar-el-juego
+enlace	juegos-leer-y-escribir	el-juego-como-grafo
+enlace	juegos-leer-y-escribir	escribir-el-juego
+enlace	juegos-leer-y-escribir	leer-el-reglamento
+enlace	juegos-leer-y-escribir	tarea-leer-y-escribir
+enlace	juegos-mirar-todo-y-podar	alfa-beta
+enlace	juegos-mirar-todo-y-podar	alfa-beta-como-algoritmo
+enlace	juegos-mirar-todo-y-podar	animaciones-juegos
+enlace	juegos-mirar-todo-y-podar	cuando-decide-un-dado
+enlace	juegos-mirar-todo-y-podar	diagnosticar-el-juego
+enlace	juegos-mirar-todo-y-podar	el-juego-como-grafo
+enlace	juegos-mirar-todo-y-podar	escribir-el-juego
+enlace	juegos-mirar-todo-y-podar	minimax
+enlace	juegos-mirar-todo-y-podar	minimax-como-algoritmo
+enlace	juegos-mirar-todo-y-podar	tarea-mirar-todo-y-podar
+enlace	juegos-radiografia	elegir-el-algoritmo
+enlace	juegos-radiografia	un-arbol-todos-los-algoritmos
+enlace	jugar-contra-el-reloj	alfa-beta-como-algoritmo
+enlace	jugar-contra-el-reloj	cortar-y-evaluar
+enlace	jugar-contra-el-reloj	minimax-como-algoritmo
+enlace	jugar-contra-el-reloj	simular-en-vez-de-evaluar
+enlace	la-bitacora-del-taller	el-modelo-del-taller
+enlace	las-clases	azar-y-bpp
+enlace	las-clases	maquina-de-turing
+enlace	las-clases	por-que-importa
+enlace	las-clases	que-es-el-computo
+enlace	las-cuatro-lecturas	discutir-el-programa
+enlace	las-lecturas-de-la-salida	discutir-la-salida
+enlace	las-lecturas-de-la-salida	ideas-aceleracionismo
+enlace	las-lecturas-del-futuro-largo	discutir-el-futuro-largo
+enlace	las-seis-lecturas	ideas-aceleracionismo
+enlace	las-seis-lecturas	otras-raices
+enlace	las-seis-lecturas	para-discutir
+enlace	leer-el-reglamento	escribir-el-juego
+enlace	leer-el-reglamento	leer-la-bitacora
+enlace	leer-la-bitacora	escribir-el-modelo
+enlace	leer-y-escribir	el-dibujo
+enlace	leer-y-escribir	escribir-el-modelo
+enlace	leer-y-escribir	leer-la-bitacora
+enlace	leer-y-escribir	patrones-lineales
+enlace	leer-y-escribir	que-es-una-respuesta
+enlace	leer-y-escribir	tres-bitacoras
+enlace	left-takes-future	accelerate-what
+enlace	left-takes-future	ideas-aceleracionismo
+enlace	left-takes-future	las-cuatro-lecturas
+enlace	los-signos-del-lagrangeano	cuando-se-acaba-el-dibujo
+enlace	los-signos-del-lagrangeano	cuanto-vale-una-hora-mas
+enlace	los-signos-del-lagrangeano	el-multiplicador
+enlace	los-signos-del-lagrangeano	escribir-el-modelo
+enlace	los-signos-del-lagrangeano	resolver-paso-a-paso
+enlace	los-signos-del-lagrangeano	tres-bitacoras
+enlace	maquina-de-turing	computabilidad-y-decidibilidad
+enlace	markov	cuando-decide-un-dado
+enlace	markov	de-consecuencias-a-refuerzo
+enlace	markov	markov-a-la-larga
+enlace	markov	markov-que-es-una-cadena
+enlace	markov	notacion-markov
+enlace	markov-a-la-larga	mkv-cadena-en-general
+enlace	markov-a-la-larga	mkv-predecir
+enlace	markov-que-es-una-cadena	cuando-decide-un-dado
+enlace	markov-que-es-una-cadena	de-consecuencias-a-refuerzo
+enlace	markov-que-es-una-cadena	mkv-ajustar-contando
+enlace	markov-que-es-una-cadena	mkv-cadena-en-general
+enlace	markov-que-es-una-cadena	mkv-el-problema-de-markov
+enlace	markov-que-es-una-cadena	mkv-generar-texto
+enlace	markov-que-es-una-cadena	mkv-lo-que-necesitas
+enlace	markov-que-es-una-cadena	mkv-predecir
+enlace	markov-que-es-una-cadena	simular-en-vez-de-evaluar
+enlace	markov-que-es-una-cadena	tarea-que-es-una-cadena
+enlace	material-adicional	arco-historico
+enlace	material-adicional	estado-actual
+enlace	material-adicional	por-que-el-boom
+enlace	minimax	diagnosticar-el-juego
+enlace	minimax	el-juego-como-grafo
+enlace	minimax	escribir-el-juego
+enlace	minimax	juegos-mirar-todo-y-podar
+enlace	minimax	minimax-como-algoritmo
+enlace	minimax-como-algoritmo	alfa-beta
+enlace	minimax-como-algoritmo	diagnosticar-el-juego
+enlace	minimax-como-algoritmo	el-juego-como-grafo
+enlace	minimax-como-algoritmo	escribir-el-juego
+enlace	minimax-como-algoritmo	minimax
+enlace	minimax-como-algoritmo	opt-objetivo-juego-practica
+enlace	mkv-ajustar-contando	el-multiplicador
+enlace	mkv-ajustar-contando	escribir-el-juego
+enlace	mkv-ajustar-contando	mkv-cadena-en-general
+enlace	mkv-ajustar-contando	mkv-el-problema-de-markov
+enlace	mkv-ajustar-contando	mkv-lo-que-necesitas
+enlace	mkv-ajustar-contando	mkv-predecir
+enlace	mkv-cadena-en-general	mkv-el-problema-de-markov
+enlace	mkv-cadena-en-general	mkv-lo-que-necesitas
+enlace	mkv-el-problema-de-markov	mkv-ajustar-contando
+enlace	mkv-el-problema-de-markov	mkv-cadena-en-general
+enlace	mkv-el-problema-de-markov	mkv-lo-que-necesitas
+enlace	mkv-generar-texto	mkv-ajustar-contando
+enlace	mkv-generar-texto	mkv-cadena-en-general
+enlace	mkv-generar-texto	mkv-el-problema-de-markov
+enlace	mkv-generar-texto	notacion-markov
+enlace	mkv-generar-texto	tarea-que-es-una-cadena
+enlace	mkv-lo-que-necesitas	cuando-decide-un-dado
+enlace	mkv-lo-que-necesitas	mkv-cadena-en-general
+enlace	mkv-lo-que-necesitas	simular-en-vez-de-evaluar
+enlace	mkv-predecir	mkv-ajustar-contando
+enlace	mkv-predecir	mkv-cadena-en-general
+enlace	mkv-predecir	mkv-el-problema-de-markov
+enlace	mkv-predecir	mkv-generar-texto
+enlace	mkv-predecir	mkv-lo-que-necesitas
+enlace	moloch-long-future	accelerate-what
+enlace	moloch-long-future	exit-nrx
+enlace	moloch-long-future	ia-y-sociedad
+enlace	moloch-long-future	las-lecturas-del-futuro-largo
+enlace	moloch-long-future	left-takes-future
+enlace	monte-carlo-en-un-arbol-grande	de-donde-sale-el-bono
+enlace	monte-carlo-en-un-arbol-grande	jugar-contra-el-reloj
+enlace	monte-carlo-en-un-arbol-grande	simular-en-vez-de-evaluar
+enlace	monte-carlo-en-un-arbol-grande	un-arbol-todos-los-algoritmos
+enlace	notacion-complejidad	azar-y-bpp
+enlace	notacion-complejidad	complejidad-de-espacio
+enlace	notacion-complejidad	completos-y-duros
+enlace	notacion-complejidad	cuanto-cuesta
+enlace	notacion-complejidad	las-clases
+enlace	notacion-complejidad	o-grande
+enlace	notacion-computabilidad	complejidad
+enlace	notacion-computabilidad	computabilidad-y-decidibilidad
+enlace	notacion-computabilidad	maquina-de-turing
+enlace	notacion-computabilidad	problema-de-la-parada
+enlace	notacion-computabilidad	que-es-el-computo
+enlace	notacion-computabilidad	sistemas-formales
+enlace	notacion-computabilidad	teoremas-de-godel
+enlace	notacion-computabilidad	todo-es-un-numero
+enlace	o-grande	contar-un-algoritmo
+enlace	o-grande	cuanto-cuesta
+enlace	opt-objetivo-clasificacion-practica	opt-objetivo-regresion-practica
+enlace	opt-objetivo-panaderia-practica	opt-objetivo-clasificacion-practica
+enlace	opt-objetivo-regresion-practica	opt-objetivo-juego-practica
+enlace	opt-objetivo-salones-practica	opt-objetivo-panaderia-practica
+enlace	opt-objetivo-salones-practica	ramificar-y-acotar
+enlace	opt-practica-modelado	opt-objetivo-clasificacion-practica
+enlace	opt-practica-modelado	opt-objetivo-juego-practica
+enlace	opt-practica-modelado	opt-objetivo-panaderia-practica
+enlace	opt-practica-modelado	opt-objetivo-regresion-practica
+enlace	opt-practica-modelado	opt-objetivo-salones-practica
+enlace	optimizacion	agentes-ambientes
+enlace	optimizacion	complejidad
+enlace	optimizacion	entorno-en-peas
+enlace	optimizacion	leer-y-escribir
+enlace	optimizacion	opt-practica-modelado
+enlace	optimizacion	optimizacion-continua
+enlace	optimizacion	optimizacion-entera
+enlace	optimizacion	optimizacion-lineal
+enlace	optimizacion-continua	bajar-la-pendiente
+enlace	optimizacion-continua	el-multiplicador
+enlace	optimizacion-continua	el-rendimiento-que-decrece
+enlace	optimizacion-continua	los-signos-del-lagrangeano
+enlace	optimizacion-continua	resolver-paso-a-paso
+enlace	optimizacion-continua	sustituir-y-derivar
+enlace	optimizacion-entera	el-modelo-del-taller
+enlace	optimizacion-entera	enumerar
+enlace	optimizacion-entera	la-bitacora-del-taller
+enlace	optimizacion-entera	ramificar-y-acotar
+enlace	optimizacion-lineal	cuando-se-acaba-el-dibujo
+enlace	optimizacion-lineal	cuanto-vale-una-hora-mas
+enlace	optimizacion-lineal	de-esquina-en-esquina
+enlace	optimizacion-lineal	el-modelo-como-matriz
+enlace	optimizacion-lineal	sin-dibujo
+enlace	otras-raices	estado-actual
+enlace	otras-raices	que-es-inteligencia
+enlace	para-discutir	ia-y-sociedad
+enlace	para-discutir	left-takes-future
+enlace	peas-integrado	diagnosticar-el-entorno
+enlace	por-que-el-boom	arco-historico
+enlace	por-que-importa	azar-y-bpp
+enlace	por-que-importa	complejidad-de-espacio
+enlace	por-que-importa	maquina-de-turing
+enlace	problema-de-la-parada	complejidad
+enlace	problema-de-la-parada	computabilidad-y-decidibilidad
+enlace	problema-de-la-parada	que-es-el-computo
+enlace	problema-de-la-parada	sistemas-formales
+enlace	problema-de-la-parada	todo-es-un-numero
+enlace	proyecto-torneo-adversarial	cortar-y-evaluar
+enlace	proyecto-torneo-adversarial	cuando-decide-un-dado
+enlace	proyecto-torneo-adversarial	elegir-el-algoritmo
+enlace	proyecto-torneo-adversarial	juegos
+enlace	proyecto-torneo-adversarial	jugar-contra-el-reloj
+enlace	proyecto-torneo-adversarial	monte-carlo-en-un-arbol-grande
+enlace	proyecto-torneo-adversarial	simular-en-vez-de-evaluar
+enlace	que-es-el-computo	maquina-de-turing
+enlace	que-es-el-computo	todo-es-un-numero
+enlace	que-es-inteligencia	arco-historico
+enlace	que-es-inteligencia	imaginar-la-maquina
+enlace	que-es-inteligencia	otras-raices
+enlace	que-es-una-respuesta	patrones-lineales
+enlace	ramificar-y-acotar	la-bitacora-del-taller
+enlace	resolver-paso-a-paso	bajar-la-pendiente
+enlace	resolver-paso-a-paso	el-multiplicador
+enlace	resolver-paso-a-paso	los-signos-del-lagrangeano
+enlace	sensores-en-peas	peas-integrado
+enlace	simular-en-vez-de-evaluar	cortar-y-evaluar
+enlace	simular-en-vez-de-evaluar	cuando-decide-un-dado
+enlace	simular-en-vez-de-evaluar	monte-carlo-en-un-arbol-grande
+enlace	sin-dibujo	cuando-se-acaba-el-dibujo
+enlace	sin-dibujo	cuanto-vale-una-hora-mas
+enlace	sin-dibujo	las-clases
+enlace	sin-dibujo	zoologico-de-problemas
+enlace	sistemas-formales	teoremas-de-godel
+enlace	sistemas-formales	todo-es-un-numero
+enlace	sustituir-y-derivar	el-multiplicador
+enlace	sustituir-y-derivar	el-rendimiento-que-decrece
+enlace	tarea-cuando-no-cabe	juegos-radiografia
+enlace	tarea-cuando-no-cabe	simular-en-vez-de-evaluar
+enlace	tarea-leer-y-escribir	diagnosticar-el-juego
+enlace	tarea-leer-y-escribir	escribir-el-juego
+enlace	tarea-leer-y-escribir	juegos-mirar-todo-y-podar
+enlace	tarea-leer-y-escribir	leer-el-reglamento
+enlace	tarea-mirar-todo-y-podar	escribir-el-juego
+enlace	tarea-mirar-todo-y-podar	juegos-cuando-no-cabe
+enlace	tarea-mirar-todo-y-podar	minimax
+enlace	tarea-mirar-todo-y-podar	tarea-leer-y-escribir
+enlace	tarea-que-es-una-cadena	markov-que-es-una-cadena
+enlace	tarea-que-es-una-cadena	mkv-ajustar-contando
+enlace	tarea-que-es-una-cadena	mkv-el-problema-de-markov
+enlace	tarea-que-es-una-cadena	mkv-generar-texto
+enlace	tarea-que-es-una-cadena	mkv-predecir
+enlace	teoremas-de-godel	complejidad
+enlace	teoremas-de-godel	el-mismo-truco
+enlace	teoremas-de-godel	problema-de-la-parada
+enlace	teoremas-de-godel	sistemas-formales
+enlace	todo-es-un-numero	problema-de-la-parada
+enlace	todo-es-un-numero	que-es-el-computo
+enlace	tres-bitacoras	patrones-lineales
+enlace	tres-bitacoras	que-es-una-respuesta
+enlace	un-arbol-todos-los-algoritmos	alfa-beta-como-algoritmo
+enlace	un-arbol-todos-los-algoritmos	cortar-y-evaluar
+enlace	un-arbol-todos-los-algoritmos	cuando-decide-un-dado
+enlace	un-arbol-todos-los-algoritmos	de-donde-sale-el-bono
+enlace	un-arbol-todos-los-algoritmos	diagnosticar-el-juego
+enlace	un-arbol-todos-los-algoritmos	elegir-el-algoritmo
+enlace	un-arbol-todos-los-algoritmos	jugar-contra-el-reloj
+enlace	un-arbol-todos-los-algoritmos	minimax
+enlace	un-arbol-todos-los-algoritmos	minimax-como-algoritmo
+enlace	un-arbol-todos-los-algoritmos	monte-carlo-en-un-arbol-grande
+enlace	un-arbol-todos-los-algoritmos	notacion-juegos
+enlace	un-arbol-todos-los-algoritmos	simular-en-vez-de-evaluar
+enlace	zoologico-de-problemas	azar-y-bpp
+enlace	zoologico-de-problemas	complejidad-de-espacio
+enlace	zoologico-de-problemas	completos-y-duros
+enlace	zoologico-de-problemas	contar-un-algoritmo
+enlace	zoologico-de-problemas	el-mapa-de-las-clases
+enlace	zoologico-de-problemas	las-clases
+enlace	zoologico-de-problemas	por-que-importa
