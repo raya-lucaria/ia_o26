@@ -55,14 +55,17 @@ def test_cada_svg_es_el_que_produce_el_generador(nombre):
 
 
 def test_cada_diagrama_lleva_el_prefijo_de_la_clase():
-    assert all(n.startswith("mkv-c1-") for n in NOMBRES)
+    assert all(re.match(r"mkv-c[12]-", n) for n in NOMBRES)
 
 
 def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
     assert set(NOMBRES) == {
         "mkv-c1-flujo-muestrear", "mkv-c1-flujo-contar", "mkv-c1-flujo-predecir",
         "mkv-c1-flujo-generar", "mkv-c1-grafo-vc", "mkv-c1-arbol-2-pasos",
-        "mkv-c1-mu-t", "mkv-c1-recuperar-p", "mkv-c1-ceros", "mkv-c1-rachas"}
+        "mkv-c1-mu-t", "mkv-c1-recuperar-p", "mkv-c1-ceros", "mkv-c1-rachas",
+        "mkv-c2-grafo-clasificar", "mkv-c2-grafo-contraejemplos", "mkv-c2-mu-t-inicios",
+        "mkv-c2-flujo-potencias", "mkv-c2-tablero-chico", "mkv-c2-flujo-absorcion",
+        "mkv-c2-web-juguete"}
 
 
 @pytest.mark.parametrize("nombre", NOMBRES)
@@ -231,12 +234,17 @@ def test_rachas_dibuja_reales_y_los_dos_modelos():
 @pytest.mark.parametrize("clave", sorted(gen.FLUJOS))
 def test_cada_flujo_tiene_rombo_y_salida_explicita(clave):
     """Cajas con verbos cortos, una decision por rombo, una sola salida (la
-    caja de borde de acento) y al menos una vuelta."""
+    caja de borde de acento) y al menos una vuelta. Excepcion: el tiempo
+    medio de llegada (clase 2) resuelve un sistema de una vez: no da vueltas
+    y tiene dos salidas (m, o el aviso de que desde algun estado no se
+    llega)."""
     f = gen.FLUJOS[clave]
     cajas = [p for p in f["pasos"] if "caja" in p]
     rombos = [p for p in f["pasos"] if "rombo" in p]
-    assert 3 <= len(cajas) <= 6 and rombos and f["vueltas"]
-    assert [p.get("fin") for p in f["pasos"]].count(True) == 1
+    sin_vuelta = clave == "absorcion"
+    assert 3 <= len(cajas) <= 6 and rombos and (f["vueltas"] or sin_vuelta)
+    assert [p.get("fin") for p in f["pasos"]].count(True) == (2 if sin_vuelta else 1)
     assert f["pasos"][-1].get("fin")
-    svg = gen.contenido(f"mkv-c1-flujo-{clave}")
+    nombre = next(n for n in gen.DIAGRAMAS if n.endswith(f"-flujo-{clave}"))
+    svg = gen.contenido(nombre)
     assert svg.count("<polygon") == len(rombos)

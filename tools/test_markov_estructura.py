@@ -40,6 +40,16 @@ CLASE_1_EN_ORDEN = [
     "tarea-que-es-una-cadena",
 ]
 
+# El recorrido de la clase 2, en el mismo orden.
+CLASE_2_EN_ORDEN = [
+    "mkv-algebra-y-limites",
+    "mkv-clasificar-estados",
+    "mkv-la-estacionaria",
+    "mkv-olvida-su-inicio",
+    "mkv-absorcion",
+    "mkv-pagerank",
+]
+
 RE_DIRECTIVA = re.compile(r"^::: (\w+) \{([^}]*)\}\s*$", re.M)
 RE_ATRIBUTO = re.compile(r'(\w+)="([^"]*)"')
 
@@ -97,5 +107,6 @@ def test_markov_aparece_en_navegacion_en_orden():
     items = {it["id"]: it for it in nav["items"]}
     assert "markov" in items, "la unidad no aparece en la navegación"
     hijos = items["markov"]["children"]
-    assert hijos[0] == "markov-que-es-una-cadena", hijos
+    assert hijos[:2] == ["markov-que-es-una-cadena", "markov-a-la-larga"], hijos
     assert items["markov-que-es-una-cadena"]["children"] == CLASE_1_EN_ORDEN
+    assert items["markov-a-la-larga"]["children"] == CLASE_2_EN_ORDEN

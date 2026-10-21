@@ -1,7 +1,10 @@
-"""Calculos de la unidad de cadenas de Markov (unidad 8), clase 1.
+"""Calculos de la unidad de cadenas de Markov (unidad 8), clases 1 y 2.
 
 Unica fuente de los numeros que citan las paginas de
-course/8_markov/1_que_es_una_cadena/ y las figuras de gen_markov.py. Nada se
+course/8_markov/1_que_es_una_cadena/ (clase 1) y
+course/8_markov/2_a_la_larga/ (clase 2: estacionaria, clases, absorcion,
+PageRank; seccion «CLASE 2» al final, fijada en test_markov_c2.py) y las
+figuras de gen_markov.py. Nada se
 copia a mano: test_markov.py fija cada cifra con su valor escrito a mano y la
 busca en el bloque de su pagina.
 
@@ -22,8 +25,11 @@ Convenciones (plan de la clase 1, §2):
   de MUESTREAR-FILA; nunca random.choices (sus resultados pueden cambiar
   entre versiones de Python). Cada paso gasta exactamente un u.
 
-Semillas (plan §2: 2026 para la primera figura simulada y siguientes):
-SEMILLAS mas abajo dice cual usa cada simulacion.
+Semillas (plan §2: 2026 para la primera figura simulada y siguientes; la
+clase 2 usa 2037 en adelante): SEMILLAS dice cual usa cada simulacion.
+
+`python3 tools/markov.py foto` reescribe la foto fija de la web del curso
+(tools/datos/markov/enlaces_curso.tsv); no se corre sin decidirlo.
 """
 from collections import Counter
 from fractions import Fraction as F
@@ -33,6 +39,7 @@ import math
 import random
 import re
 import statistics
+import sys
 import unicodedata
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -878,3 +885,452 @@ def generar_a_mano(tabla, simbolos, inicio, us):
         pasos.append((s, u, simbolos[k]))
         s = simbolos[k]
     return pasos
+
+
+# ======================================================== CLASE 2 ========
+#
+# Qué pasa a la larga (course/8_markov/2_a_la_larga/). Plan de la clase 2,
+# §4 (instancias T1–T10) y §5 (funciones). Los juguetes van en Fraction;
+# el corpus, el tablero de 100 y la web del curso en float donde hace falta
+# iterar o simular. Las semillas nuevas (2037+) estan en SEMILLAS.
+
+SEMILLAS.update({
+    "c2-fraccion-quijote": 2037,       # T6: una trayectoria de T = 100 000
+    "c2-partidas-100": 2038,           # T8: n = 10 000 partidas
+    "c2-replicas-t4": 2039,            # T4: replicas 2039..2043
+    "c2-navegante": 2040,              # T9: el navegante al azar
+    "c2-partidas-chico": 2041,         # T7: partidas simuladas
+    "c2-fraccion-frase": 2042,         # T1: fraccion del tiempo en V
+})
+
+TOL_POTENCIAS = F(1, 10**6)
+TOL_PAGERANK = F(1, 10**8)
+MAX_PASOS = 10_000
+
+# --------------------------------------------------------- instancias ---
+
+T1_P = [[F(2, 11), F(9, 11)], [F(2, 3), F(1, 3)]]           # V/C de la frase
+T2_P = [[F(0), F(1)], [F(1), F(0)]]                         # alternante A, B
+T3_P = [[F(1), F(0)], [F(0), F(1)]]                         # identidad
+T4_P = [[F(1, 2), F(1, 4), F(1, 4)],                        # s1 transitorio
+        [F(0), F(1), F(0)],
+        [F(0), F(0), F(1)]]
+T5_ESTADOS = ("s1", "s2", "s3", "s4", "s5")
+T5_P = [[F(0), F(1, 2), F(0), F(1, 2), F(0)],
+        [F(0), F(0), F(1), F(0), F(0)],
+        [F(0), F(1), F(0), F(0), F(0)],
+        [F(0), F(0), F(0), F(1, 2), F(1, 2)],
+        [F(0), F(0), F(0), F(1), F(0)]]
+T9_PAGINAS = ("A", "B", "C", "D")
+T9_ENLACES = {"A": ("B", "C"), "B": ("C",), "C": ("A", "D"), "D": ()}
+ALFA = F(17, 20)                                            # 0.85
+
+# T7: casillas 0..5, moneda (avanza 1 o 2), escalera 2 -> 4, serpiente 3 -> 1.
+TABLERO_CHICO = {"n": 5, "dado": 2, "saltos": {2: 4, 3: 1}}
+
+# T8: 0..100, dado de 6. Tablero nuestro (no historico). Ningun salto cae
+# en la base de otro, ni en 0 ni en 100.
+TABLERO_100 = {
+    "n": 100, "dado": 6,
+    "saltos": {
+        # escaleras
+        3: 22, 8: 30, 17: 45, 28: 55, 36: 57, 51: 72, 63: 81, 71: 92,
+        # serpientes
+        33: 6, 47: 26, 49: 11, 62: 19, 64: 42, 87: 24, 95: 56, 98: 78,
+    },
+}
+
+
+def t1_matriz():
+    """T1 desde la frase (es T1_P; la prueba lo compara)."""
+    return matriz_estimada(frase_vc())
+
+
+# ------------------------------------------------- algebra con Fraction ---
+
+def _resolver(A, b):
+    """Gauss-Jordan exacto: A x = b (A cuadrada). Falla si A es singular."""
+    k = len(A)
+    M = [list(map(F, fila)) + [F(bi)] for fila, bi in zip(A, b)]
+    for c in range(k):
+        piv = next((r for r in range(c, k) if M[r][c] != 0), None)
+        if piv is None:
+            raise ValueError("sistema singular: la solucion no es unica")
+        M[c], M[piv] = M[piv], M[c]
+        p = M[c][c]
+        M[c] = [x / p for x in M[c]]
+        for r in range(k):
+            if r != c and M[r][c] != 0:
+                f = M[r][c]
+                M[r] = [x - f * y for x, y in zip(M[r], M[c])]
+    return [M[r][k] for r in range(k)]
+
+
+def estacionaria(P):
+    """mu con mu P = mu, sum mu = 1, exacta. Sistema (P^T - I) mu^T = 0 con
+    la ultima ecuacion cambiada por sum = 1. Falla si no es unica."""
+    k = len(P)
+    A = [[F(P[j][i]) - (1 if i == j else 0) for j in range(k)] for i in range(k)]
+    A[-1] = [F(1)] * k
+    b = [F(0)] * (k - 1) + [F(1)]
+    return _resolver(A, b)
+
+
+def distancia_1(x, y):
+    return sum(abs(a - b) for a, b in zip(x, y))
+
+
+def iteracion_potencias(P, mu0, tol=TOL_POTENCIAS, max_pasos=MAX_PASOS):
+    """ITERACION DE POTENCIAS en float: mu <- mu P hasta que
+    ||mu_nuevo - mu||_1 <= tol. Devuelve (mu, pasos): pasos = cuantas
+    multiplicaciones se hicieron. Si llega a max_pasos, pasos = None."""
+    Pf = [[float(p) for p in f] for f in P]
+    mu = [float(p) for p in mu0]
+    k = len(mu)
+    for t in range(1, max_pasos + 1):
+        nuevo = [sum(mu[i] * Pf[i][j] for i in range(k)) for j in range(k)]
+        if distancia_1(nuevo, mu) <= float(tol):
+            return nuevo, t
+        mu = nuevo
+    return mu, None
+
+
+def distancias_t(P, mu0, t_max=10):
+    """[||mu_t - mu||_1 para t = 0..t_max], exactas."""
+    mu = estacionaria(P)
+    return [distancia_1(m_, mu) for m_ in mu_t(P, mu0, t_max)]
+
+
+def segundo_valor_propio_2x2(P):
+    """En 2x2 el otro valor propio es traza - 1 = 1 - p - q."""
+    return F(P[0][0]) + F(P[1][1]) - 1
+
+
+# ------------------------------------------------------------- clases ---
+
+def _alcanzables(P, s):
+    k, vistos, pila = len(P), {s}, [s]
+    while pila:
+        a = pila.pop()
+        for b in range(k):
+            if P[a][b] > 0 and b not in vistos:
+                vistos.add(b)
+                pila.append(b)
+    return vistos
+
+
+def clases(P):
+    """Clases de comunicacion en orden de su primer estado:
+    [{"estados": (i, …), "cerrada": bool, "periodo": d}]."""
+    k = len(P)
+    alc = [_alcanzables(P, s) for s in range(k)]
+    asignado, salida = set(), []
+    for s in range(k):
+        if s in asignado:
+            continue
+        clase = tuple(sorted(t for t in alc[s] if s in alc[t]))
+        asignado.update(clase)
+        cerrada = all(P[a][b] == 0 for a in clase for b in range(k) if b not in clase)
+        # periodo: niveles por BFS dentro de la clase; mcd de nivel(a)+1-nivel(b)
+        nivel, cola = {clase[0]: 0}, [clase[0]]
+        for a in cola:
+            for b in clase:
+                if P[a][b] > 0 and b not in nivel:
+                    nivel[b] = nivel[a] + 1
+                    cola.append(b)
+        d = 0
+        for a in clase:
+            for b in clase:
+                if P[a][b] > 0:
+                    d = math.gcd(d, nivel[a] + 1 - nivel[b])
+        salida.append({"estados": clase, "cerrada": cerrada, "periodo": abs(d) or None})
+    return salida
+
+
+# ------------------------------------------------- fraccion del tiempo ---
+
+def fraccion_del_tiempo(P, s0, T, semilla, estado=0):
+    """N_T(estado)/T de UNA trayectoria desde s0 (indice): visitas en los
+    pasos 0..T-1. Un u por paso con muestrear_fila."""
+    rng = random.Random(semilla)
+    filas = [[float(p) for p in f] for f in P]
+    s, visitas = s0, 0
+    for _ in range(T):
+        visitas += s == estado
+        s = muestrear_fila(filas[s], rng.random())
+    return visitas / T
+
+
+T_LARGO = 100_000
+REPLICAS_T4 = 5
+
+
+@lru_cache(maxsize=None)
+def fraccion_quijote():
+    """T6: fraccion del tiempo en V, desde C, T = 100 000, semilla 2037."""
+    return fraccion_del_tiempo(matriz_corpus(), 1, T_LARGO, SEMILLAS["c2-fraccion-quijote"])
+
+
+def fraccion_frase(T=10_000):
+    """T1: fraccion del tiempo en V desde C, semilla 2042."""
+    return fraccion_del_tiempo(T1_P, 1, T, SEMILLAS["c2-fraccion-frase"])
+
+
+def fracciones_t4(T=1000, n=REPLICAS_T4):
+    """T4 desde s1: fraccion del tiempo en s2 de n replicas (semillas
+    2039, 2040, …)."""
+    base = SEMILLAS["c2-replicas-t4"]
+    return [fraccion_del_tiempo(T4_P, 0, T, base + r, estado=1) for r in range(n)]
+
+
+# ------------------------------------------------------------ absorcion ---
+
+def tiempo_absorcion(P, objetivo):
+    """m(s) = E_s[tau_A] exacto: (I - P_T) m = 1 sobre los estados fuera de
+    A = objetivo (indices). Devuelve {s: m(s)} con m = 0 en A."""
+    fuera = [s for s in range(len(P)) if s not in objetivo]
+    A = [[(1 if i == j else 0) - F(P[i][j]) for j in fuera] for i in fuera]
+    m_ = _resolver(A, [F(1)] * len(fuera))
+    salida = {s: F(0) for s in objetivo}
+    salida.update(dict(zip(fuera, m_)))
+    return dict(sorted(salida.items()))
+
+
+def tablero(n, dado, saltos):
+    """Serpientes y escaleras: casillas 0..n, dado de `dado` caras (cada una
+    con prob. 1/dado); si te pasas de n llegas a n; al caer en la base de un
+    salto vas a su destino. Estados = casillas donde se puede estar al final
+    de un turno (las bases de saltos no lo son). Devuelve (estados, P) en
+    Fraction; n es absorbente."""
+    estados = [c for c in range(n + 1) if c not in saltos]
+    idx = {c: i for i, c in enumerate(estados)}
+    P = [[F(0)] * len(estados) for _ in estados]
+    for c in estados:
+        if c == n:
+            P[idx[c]][idx[c]] = F(1)
+            continue
+        for cara in range(1, dado + 1):
+            d = min(c + cara, n)
+            d = saltos.get(d, d)
+            P[idx[c]][idx[d]] += F(1, dado)
+    return estados, P
+
+
+def tablero_desde(config):
+    return tablero(config["n"], config["dado"], config["saltos"])
+
+
+@lru_cache(maxsize=None)
+def absorcion_tablero(nombre):
+    """{casilla: m(casilla)} exacto de TABLERO_CHICO o TABLERO_100."""
+    config = {"chico": TABLERO_CHICO, "100": TABLERO_100}[nombre]
+    estados, P = tablero_desde(config)
+    m_ = tiempo_absorcion(P, {estados.index(config["n"])})
+    return {estados[i]: v for i, v in m_.items()}
+
+
+def simular_partidas(config, n, semilla):
+    """n partidas desde 0: turnos hasta llegar a la meta. Un u por turno
+    con muestrear_fila sobre la fila del estado."""
+    estados, P = tablero_desde(config)
+    filas = [[float(p) for p in f] for f in P]
+    meta = estados.index(config["n"])
+    rng = random.Random(semilla)
+    turnos = []
+    for _ in range(n):
+        s, t = 0, 0
+        while s != meta:
+            s = muestrear_fila(filas[s], rng.random())
+            t += 1
+        turnos.append(t)
+    return turnos
+
+
+def resumen_partidas(config, n, semilla):
+    """(media, error estandar s/sqrt(n))."""
+    t = simular_partidas(config, n, semilla)
+    return statistics.fmean(t), statistics.stdev(t) / math.sqrt(n)
+
+
+N_PARTIDAS = 10_000
+
+
+@lru_cache(maxsize=None)
+def partidas_100():
+    return resumen_partidas(TABLERO_100, N_PARTIDAS, SEMILLAS["c2-partidas-100"])
+
+
+def partidas_chico():
+    return resumen_partidas(TABLERO_CHICO, N_PARTIDAS, SEMILLAS["c2-partidas-chico"])
+
+
+# ------------------------------------------------------------- PageRank ---
+
+def matriz_barra(enlaces, nodos=None):
+    """P̄: cada pagina reparte por igual entre sus enlaces; una sin
+    salidas reparte uniforme entre todas (v = 1/k). Fraction."""
+    nodos = list(nodos or enlaces)
+    idx = {n: i for i, n in enumerate(nodos)}
+    k = len(nodos)
+    P = []
+    for n in nodos:
+        destinos = enlaces.get(n, ())
+        fila = [F(0)] * k
+        if destinos:
+            for d in destinos:
+                fila[idx[d]] += F(1, len(destinos))
+        else:
+            fila = [F(1, k)] * k
+        P.append(fila)
+    return P
+
+
+def matriz_google(enlaces, alfa=ALFA, nodos=None):
+    """G = alfa P̄ + (1 - alfa) 1 v, v uniforme."""
+    Pb = matriz_barra(enlaces, nodos)
+    k = len(Pb)
+    return [[F(alfa) * p + (1 - F(alfa)) * F(1, k) for p in fila] for fila in Pb]
+
+
+def pagerank(enlaces, alfa=ALFA, tol=TOL_PAGERANK, nodos=None, max_pasos=MAX_PASOS):
+    """Iteracion de potencias sin armar G densa:
+    mu <- alfa (mu P̄) + (1 - alfa) v, desde mu0 = v, en float.
+    Devuelve (nodos, mu, pasos)."""
+    nodos = list(nodos or enlaces)
+    idx = {n: i for i, n in enumerate(nodos)}
+    k = len(nodos)
+    a, tolf = float(alfa), float(tol)
+    salidas = [[idx[d] for d in enlaces.get(n, ())] for n in nodos]
+    mu = [1 / k] * k
+    for t in range(1, max_pasos + 1):
+        nuevo = [0.0] * k
+        colgado = 0.0
+        for i, ds in enumerate(salidas):
+            if ds:
+                parte = mu[i] / len(ds)
+                for j in ds:
+                    nuevo[j] += parte
+            else:
+                colgado += mu[i]
+        nuevo = [a * (x + colgado / k) + (1 - a) / k for x in nuevo]
+        if distancia_1(nuevo, mu) <= tolf:
+            return nodos, nuevo, t
+        mu = nuevo
+    return nodos, mu, None
+
+
+def pagerank_exacto(enlaces, alfa=ALFA, nodos=None):
+    return estacionaria(matriz_google(enlaces, alfa, nodos))
+
+
+def navegante(enlaces=T9_ENLACES, alfa=ALFA, T=T_LARGO, semilla=None):
+    """Fraccion del tiempo del navegante al azar en cada pagina (UNA
+    trayectoria desde la primera pagina, un u por paso sobre la fila de G)."""
+    semilla = SEMILLAS["c2-navegante"] if semilla is None else semilla
+    G = matriz_google(enlaces, alfa)
+    filas = [[float(p) for p in f] for f in G]
+    rng = random.Random(semilla)
+    s, visitas = 0, [0] * len(G)
+    for _ in range(T):
+        visitas[s] += 1
+        s = muestrear_fila(filas[s], rng.random())
+    return [v / T for v in visitas]
+
+
+# ---------------------------------------------------- la web del curso ---
+
+CURSO = RAIZ / "course"
+ENLACES_CURSO = RAIZ / "tools/datos/markov/enlaces_curso.tsv"
+FECHA_FOTO = "2026-10-21"
+_RE_WIKI = re.compile(r"\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]")
+_RE_RAYA = re.compile(r"raya:([A-Za-z0-9_-]+)")
+
+
+def _frontmatter(texto):
+    if not texto.startswith("---"):
+        return {}
+    fin = texto.find("\n---", 3)
+    datos = {}
+    for renglon in texto[3:fin].splitlines():
+        if ":" in renglon and not renglon.startswith((" ", "-")):
+            clave, valor = renglon.split(":", 1)
+            datos[clave.strip()] = valor.strip().strip('"').strip("'")
+    return datos
+
+
+def enlaces_curso(raiz=CURSO):
+    """Lee course/: nodos = cada .md con id fuera de directorios _*;
+    enlaces = wikilinks [[id|…]] y raya:id entre ellas (por id o alias),
+    sin repetir ni a si misma. Devuelve (nodos {id: titulo}, enlaces
+    {id: tuple(destinos)}), ordenados por id."""
+    paginas, alias = {}, {}
+    for ruta in sorted(raiz.rglob("*.md")):
+        if any(p.startswith("_") for p in ruta.relative_to(raiz).parts[:-1]):
+            continue
+        texto = ruta.read_text(encoding="utf-8")
+        fm = _frontmatter(texto)
+        if not fm.get("id"):
+            continue
+        pid = fm["id"]
+        paginas[pid] = (fm.get("title", pid), texto)
+        alias[pid] = pid
+        al = fm.get("aliases", "")
+        for a in re.findall(r"[A-Za-z0-9_-]+", al.strip("[]")):
+            alias.setdefault(a, pid)
+    nodos = {pid: paginas[pid][0] for pid in sorted(paginas)}
+    enlaces = {}
+    for pid in nodos:
+        texto = paginas[pid][1]
+        destinos = set()
+        for objetivo in _RE_WIKI.findall(texto) + _RE_RAYA.findall(texto):
+            d = alias.get(objetivo.strip())
+            if d and d != pid:
+                destinos.add(d)
+        enlaces[pid] = tuple(sorted(destinos))
+    return nodos, enlaces
+
+
+def escribir_foto(ruta=ENLACES_CURSO):
+    """La foto fija: renglones «nodo<TAB>id<TAB>titulo» y
+    «enlace<TAB>origen<TAB>destino»."""
+    nodos, enlaces = enlaces_curso()
+    renglones = ["tipo\ta\tb"]
+    renglones += [f"nodo\t{i}\t{t}" for i, t in nodos.items()]
+    renglones += [f"enlace\t{o}\t{d}" for o, ds in enlaces.items() for d in ds]
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    ruta.write_text("\n".join(renglones) + "\n", encoding="utf-8")
+
+
+def leer_foto(ruta=ENLACES_CURSO):
+    """(nodos, enlaces) de la foto fija, como enlaces_curso()."""
+    nodos, enlaces = {}, {}
+    for renglon in ruta.read_text(encoding="utf-8").splitlines()[1:]:
+        tipo, a, b = renglon.split("\t")
+        if tipo == "nodo":
+            nodos[a] = b
+            enlaces[a] = ()
+        else:
+            enlaces[a] = enlaces[a] + (b,)
+    return nodos, enlaces
+
+
+@lru_cache(maxsize=None)
+def pagerank_curso():
+    """T10 sobre la foto: {"nodos", "enlaces", "sin_salidas", "top5":
+    [(id, titulo, valor)], "pasos"}."""
+    nodos, enlaces = leer_foto()
+    ids, mu, pasos = pagerank(enlaces, nodos=list(nodos))
+    orden = sorted(range(len(ids)), key=lambda i: -mu[i])
+    return {
+        "nodos": len(nodos),
+        "enlaces": sum(len(d) for d in enlaces.values()),
+        "sin_salidas": sum(1 for d in enlaces.values() if not d),
+        "top5": [(ids[i], nodos[ids[i]], mu[i]) for i in orden[:5]],
+        "pasos": pasos,
+    }
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["foto"]:
+        escribir_foto()
+        print(f"escrita {ENLACES_CURSO}")
