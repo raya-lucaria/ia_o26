@@ -22,7 +22,7 @@ ARTEFACTO = RAIZ / "artifact"
 CLASES = sorted(p for p in UNIDAD.iterdir() if p.is_dir() and re.match(r"\d+_", p.name))
 PAGINAS = sorted(
     (p for c in CLASES for p in c.glob("*.md")
-     if p.name != "0_index.md" and not p.name.endswith("_tarea.md")),
+     if p.name != "0_index.md" and not p.name.endswith(("_tarea.md", "_resumen.md"))),
     key=lambda p: (p.parent.name, int(p.name.split("_", 1)[0])),
 )
 
@@ -48,6 +48,7 @@ CLASE_2_EN_ORDEN = [
     "mkv-olvida-su-inicio",
     "mkv-absorcion",
     "mkv-pagerank",
+    "mkv-resumen-a-la-larga",
 ]
 
 RE_DIRECTIVA = re.compile(r"^::: (\w+) \{([^}]*)\}\s*$", re.M)

@@ -550,4 +550,4 @@ Nadie enlaza a A: ${a=1/6}$. Sustituyendo, ${b=4/9}$ y ${c=7/18}$; suman ${3/18+
 - **El curso.** 134 páginas, 506 enlaces, 88 pasos; arriba, «IA y sociedad» con 0.061.
 - **La clase, junta.** Clasificar los estados dice qué clases cerradas hay; eso decide si la estacionaria es única y si $\mu_t$ olvida su inicio. La absorción mide cuánto falta para llegar, y PageRank arregla una cadena para que tenga una sola estacionaria.
 
-Vuelve al [[markov-a-la-larga|índice de la clase 2]].
+Continúa con [[mkv-resumen-a-la-larga|el resumen de la clase]].
