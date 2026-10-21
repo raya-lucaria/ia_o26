@@ -4,7 +4,7 @@ title: "Lo que necesitas de álgebra y límites"
 nav_title: "Lo que necesitas"
 summary: "Sistemas lineales y cuántas soluciones tienen, límite de una sucesión y criterio de paro, valor esperado y la regla de condicionar en el primer paso, y alcanzar un estado en un grafo: las herramientas para preguntar qué hace una cadena a la larga."
 status: ready
-estimated_time: 30m
+estimated_time: 31m
 tags: [markov, algebra-lineal, limites, probabilidad]
 ---
 
@@ -13,15 +13,21 @@ tags: [markov, algebra-lineal, limites, probabilidad]
 **¿Qué herramientas faltan para decir si una cadena olvida dónde empezó?**
 
 > [!NOTE]
-> **La idea de la clase.** Una **distribución estacionaria** $\mu$ es una fila de probabilidades que **no cambia al dar un paso**: $\mu P=\mu$. Si la cadena arranca con ella, sigue con ella para siempre, aunque cada trayectoria siga brincando. En la frase es $\mu=(22/49,\,27/49)$: a la larga, la probabilidad de vocal es $\approx0.449$.
+> **Por qué estudiamos esto.** En la clase 1 la cadena predecía el paso siguiente, o el paso $t$. Muchas preguntas reales no son de un paso, sino **de muy largo plazo**:
 >
-> **Por qué importa.** Si la cadena olvida su inicio, $\mu$ es **la** respuesta a «¿qué pasa a la larga?»: la misma desde cualquier punto de partida. Da la proporción de vocales de un texto largo, o qué tan importante es una página en PageRank.
+> - ¿Qué fracción de un texto largo son vocales?
+> - ¿Qué fracción del tiempo pasa una máquina descompuesta, o una fila llena?
+> - Si alguien navega la web al azar por horas, ¿en qué páginas pasa más tiempo? Así ordena PageRank.
+> - En IA, varios métodos construyen a propósito una cadena para que, a la larga, visite cada estado con la probabilidad que queremos. Se llaman MCMC.
 >
-> Si no la olvida, la respuesta depende de dónde empezaste o nunca se asienta, y $\mu$ sola no basta.
+> **La idea: la distribución estacionaria.** Es una fila de probabilidades $\mu$ que **no cambia al dar un paso**: $\mu P=\mu$. Si la cadena arranca con ella, sigue con ella para siempre, aunque cada trayectoria siga brincando. En la frase es $\mu=(22/49,\,27/49)$.
 >
-> La clase pregunta: ¿existe? ¿Es única? ¿$\mu_t$ llega a ella desde cualquier inicio? ¿Qué fracción del tiempo pasa la cadena en cada estado? Y cierra con dos usos: cuánto tarda en llegar a una meta, y PageRank.
+> **Qué nos dice.**
 >
-> La definición formal y los teoremas vienen en [[mkv-la-estacionaria|La estacionaria y sus cuatro teoremas]]. **Esta página reúne las herramientas que esas preguntas necesitan.**
+> - **Si la cadena olvida su inicio,** $\mu$ es **la** respuesta de largo plazo, la misma desde cualquier punto de partida. Se calcula con álgebra, sin simular para siempre: la cadena de la frase, corrida mucho tiempo, pasa $22/49\approx0.449$ de sus pasos en vocal.
+> - **Si no lo olvida,** la respuesta depende de dónde empezaste: la cadena puede quedar atrapada en una parte, o alternar sin asentarse. Entonces la pregunta útil cambia: ¿dónde termina?, ¿cuánto tarda?
+>
+> **Lo que pregunta la clase:** ¿existe $\mu$? ¿Es única? ¿La cadena llega a ella desde cualquier inicio? ¿Qué fracción del tiempo pasa en cada estado? Y la usa dos veces: cuánto dura una partida de serpientes y escaleras, y PageRank. La definición formal y los teoremas vienen en [[mkv-la-estacionaria|La estacionaria y sus cuatro teoremas]]. **Esta página reúne las herramientas que esas preguntas necesitan.**
 
 Al terminar tendrás:
 
