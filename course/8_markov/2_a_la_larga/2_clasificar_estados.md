@@ -58,6 +58,10 @@ $$s\to s'\quad\text{y}\quad s'\to s.$$
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. Hay camino de ida $s_1\to s_2$ y de vuelta $s_2\to s_1$: $s_1\leftrightarrow s_2$.
 > - **No lo cumple:** $s_1\xrightarrow{1/2}s_2$, lazo $s_1\xrightarrow{1/2}s_1$, lazo $s_2\xrightarrow{1}s_2$. Matriz: $P=\begin{pmatrix}1/2&1/2\\0&1\end{pmatrix}$. $s_1\to s_2$, pero $(P^t)_{s_2s_1}=0$ para todo $t$: no hay vuelta.
 
+::: figure {#mkv-c2-fig-ej-comunican title="Ejemplo y contraejemplo: estados que se comunican"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: s1 ↔ s2: hay ida y vuelta. Abajo, la que no: s1 → s2, pero no hay vuelta.](../_assets/mkv-c2-ej-comunican.svg)
+:::
+
 Comunicar es una relación de equivalencia: parte los estados en grupos que no se traslapan.
 
 ::: theorem {#mkv-c2-cl-teo-clases title="Comunicar parte los estados en clases"}
@@ -99,6 +103,10 @@ La vuelta se arma igual. Una relación con las tres propiedades parte el conjunt
 >
 > - **Lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1/2}s_1$, lazo $s_2\xrightarrow{1/4}s_2$, $s_2\xrightarrow{1/4}s_3$, lazo $s_3\xrightarrow{1}s_3$. Matriz: $P=\begin{pmatrix}1/2&1/2&0\\1/2&1/4&1/4\\0&0&1\end{pmatrix}$. $s_1\leftrightarrow s_2$ y $s_3$ no regresa: clases $\mathcal C_1=\{s_1,s_2\}$ y $\mathcal C_2=\{s_3\}$, sin traslape.
 > - **No lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/2}s_2$, lazo $s_2\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1/2}s_3$, lazo $s_3\xrightarrow{1}s_3$. Matriz: $P=\begin{pmatrix}1/2&1/2&0\\0&1/2&1/2\\0&0&1\end{pmatrix}$. Con solo alcanzar, $s_1$ llega a $\{s_1,s_2,s_3\}$ y $s_2$ a $\{s_2,s_3\}$: grupos traslapados, no simétrico, no parte.
+
+::: figure {#mkv-c2-fig-ej-clases title="Ejemplo y contraejemplo: comunicar parte en clases"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Clases {s1, s2} y {s3}, sin traslape. Abajo, la que no: Solo «alcanzar»: grupos traslapados.](../_assets/mkv-c2-ej-clases.svg)
+:::
 
 **En el juguete.** Usaremos toda la página una cadena de cinco estados, con sus flechas:
 
@@ -174,6 +182,10 @@ Un estado $s$ es **absorbente** si nunca sale de sí mismo: $P_{ss}=1$. Es una c
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, lazo $s_1\xrightarrow{1/2}s_1$, lazo $s_2\xrightarrow{1}s_2$. Matriz: $P=\begin{pmatrix}1/2&1/2\\0&1\end{pmatrix}$. $\mathcal C=\{s_2\}$ es cerrada: $P_{22}=1$, así que $s_2$ es absorbente; le entran flechas, pero no salen.
 > - **No lo cumple:** $s_1\xrightarrow{1}s_2$, $s_2\xrightarrow{1/2}s_1$, $s_2\xrightarrow{1/2}s_3$, lazo $s_3\xrightarrow{1}s_3$. Matriz: $P=\begin{pmatrix}0&1&0\\1/2&0&1/2\\0&0&1\end{pmatrix}$. $\mathcal C=\{s_1,s_2\}$ es clase, pero abierta: la fila de $s_2$ dentro suma $1/2$, no $1$.
 
+::: figure {#mkv-c2-fig-ej-cerrada title="Ejemplo y contraejemplo: clase cerrada"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: {s2} cerrada: s2 es absorbente. Abajo, la que no: {s1, s2} abierta: s2 sale a s3.](../_assets/mkv-c2-ej-cerrada.svg)
+:::
+
 Una cadena finita siempre tiene dónde quedarse.
 
 ::: theorem {#mkv-c2-cl-teo-hay-cerrada title="Toda cadena finita tiene una clase cerrada"}
@@ -193,6 +205,10 @@ Empieza en cualquier clase. Si es abierta, sigue una flecha que sale a otra clas
 >
 > - **Lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_3$, $s_3\xrightarrow{1}s_2$. Matriz: $P=\begin{pmatrix}1/2&1/2&0\\0&0&1\\0&1&0\end{pmatrix}$. Tres estados, finita: $\{s_1\}$ es abierta, pero $\{s_2,s_3\}$ es una clase cerrada.
 > - **No lo cumple:** $0\xrightarrow{1}1\xrightarrow{1}2\xrightarrow{1}3\xrightarrow{1}\cdots$ en $\{0,1,2,\dots\}$. Matriz: $P=\begin{pmatrix}0&1&0&0&\cdots\\0&0&1&0&\cdots\\0&0&0&1&\cdots\\\vdots&\vdots&\vdots&\vdots&\ddots\end{pmatrix}$. Infinita: cada $\{i\}$ es una clase abierta, siempre hay un siguiente; ninguna es cerrada.
+
+::: figure {#mkv-c2-fig-ej-hay-cerrada title="Ejemplo y contraejemplo: finita, hay una cerrada"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Finita: {s2, s3} es cerrada. Abajo, la que no: Infinita: ninguna clase es cerrada.](../_assets/mkv-c2-ej-hay-cerrada.svg)
+:::
 
 - **Contraejemplo infinito:** en $\{0,1,2,\dots\}$ con $i\to i+1$ con probabilidad 1, cada $\{i\}$ es una clase abierta. Ninguna es cerrada.
 
@@ -250,6 +266,10 @@ $$\text{recurrente: } f_s=1,\qquad \text{transitorio: } f_s<1.$$
 > - **Lo cumple:** $s_1\xrightarrow{1}s_2$, $s_2\xrightarrow{1/2}s_1$, lazo $s_2\xrightarrow{1/2}s_2$. Matriz: $P=\begin{pmatrix}0&1\\1/2&1/2\end{pmatrix}$. $s_1$ es recurrente: $f_{s_1}=\sum_{k\ge1}(1/2)^{k-1}\cdot\tfrac12=1$; tarde o temprano $s_2$ lo devuelve.
 > - **No lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/2}s_2$, lazo $s_2\xrightarrow{1}s_2$. Matriz: $P=\begin{pmatrix}1/2&1/2\\0&1\end{pmatrix}$. $s_1$ es transitorio: solo regresa por su lazo, $f_{s_1}=\tfrac12<1$; ir a $s_2$ es sin vuelta.
 
+::: figure {#mkv-c2-fig-ej-transitorio title="Ejemplo y contraejemplo: recurrente y transitorio"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: s1 recurrente: regresa seguro. Abajo, la que no: s1 transitorio: regresa con 1/2.](../_assets/mkv-c2-ej-transitorio.svg)
+:::
+
 **Contamos desde $t\ge1$.** El paso 0 no cuenta como regreso; por eso $f_s$ puede ser 0.
 
 El teorema central de la página convierte esa pregunta sobre visitas en una pregunta sobre flechas.
@@ -279,6 +299,10 @@ $$
 >
 > - **Lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/2}s_2$, lazo $s_2\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1/2}s_3$, $s_3\xrightarrow{1}s_2$. Matriz: $P=\begin{pmatrix}1/2&1/2&0\\0&1/2&1/2\\0&1&0\end{pmatrix}$. Finita: $\{s_1\}$ es abierta y $f_{s_1}=1/2$; $\mathcal C=\{s_2,s_3\}$ es cerrada y $f_{s_2}=f_{s_3}=1$.
 > - **No lo cumple:** en los enteros, $k\xrightarrow{2/3}k+1$, $k\xrightarrow{1/3}k-1$ para todo $k$. Matriz infinita: $P_{k,k+1}=2/3$, $P_{k,k-1}=1/3$. Infinita: una sola clase, cerrada, pero la deriva la aleja y $f_0=2/3<1$: transitoria.
+
+::: figure {#mkv-c2-fig-ej-recurrente-cerrada title="Ejemplo y contraejemplo: recurrente equivale a cerrada"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Finita: abierta = transitoria. Abajo, la que no: Infinita: cerrada y aun así transitoria.](../_assets/mkv-c2-ej-recurrente-cerrada.svg)
+:::
 
 > [!WARNING]
 > **Creer que «cerrada ⇒ recurrente» vale siempre.** En los enteros, la caminata que sube con probabilidad $2/3$ y baja con $1/3$ tiene una sola clase, cerrada.
@@ -339,6 +363,10 @@ $$
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. Regresa a $s_1$ en 1 paso (lazo) y en 2 ($s_1s_2s_1$); $\operatorname{mcd}\{1,2\}=1$, aperiódico.
 > - **No lo cumple:** $s_1\xrightarrow{1}s_2$, $s_2\xrightarrow{1}s_3$, $s_3\xrightarrow{1}s_1$. Matriz: $P=\begin{pmatrix}0&1&0\\0&0&1\\1&0&0\end{pmatrix}$. Solo regresa a $s_1$ en pasos $3,6,9,\dots$; $d(s_1)=3$, periódico.
 
+::: figure {#mkv-c2-fig-ej-periodo title="Ejemplo y contraejemplo: periodo"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Regresa en 1 y en 2 pasos: d = 1. Abajo, la que no: Solo regresa en 3, 6, 9…: d = 3.](../_assets/mkv-c2-ej-periodo.svg)
+:::
+
 - **Sin regreso:** si ningún camino vuelve a $s$, el conjunto es vacío y no definimos $d(s)$.
 
 El periodo es de la clase, no de un estado suelto, y un lazo lo resuelve.
@@ -362,6 +390,10 @@ $d(s)$ divide a $a+b$ y a $a+t+b$, luego divide a $t$. Así $d(s)$ divide a $d(s
 >
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. Una clase con lazo en $s_1$: $d(s_1)=1$, y $s_2$ regresa en 2 y 3 pasos, así que $d(s_2)=1$.
 > - **No lo cumple:** $s_1\xrightarrow{1}s_2$, $s_2\xrightarrow{1}s_1$, sin lazo. Matriz: $P=\begin{pmatrix}0&1\\1&0\end{pmatrix}$. Misma clase sin lazo: solo regresa en pasos pares, así que $d(s_1)=d(s_2)=2$.
+
+::: figure {#mkv-c2-fig-ej-periodo-clase title="Ejemplo y contraejemplo: un lazo vuelve el periodo 1"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Con lazo: d = 1 en toda la clase. Abajo, la que no: Sin lazo: d = 2 en toda la clase.](../_assets/mkv-c2-ej-periodo-clase.svg)
+:::
 
 **En el juguete.**
 

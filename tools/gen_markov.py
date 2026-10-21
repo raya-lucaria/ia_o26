@@ -721,19 +721,19 @@ def _arista(a, b, rotulo, r=20, curva=0.0, lado=1, tam=13, desp=12):
     return camino + texto(tx, ty, rotulo, tam=tam, peso="700")
 
 
-def _lazo(cx, cy, rotulo, r=20, hacia="arriba", tam=13):
+def _lazo(cx, cy, rotulo, r=20, hacia="arriba", tam=13, alcance=46):
     """Lazo de un estado a si mismo hacia arriba, abajo, izquierda o derecha."""
     ang = {"arriba": -90, "abajo": 90, "izquierda": 180, "derecha": 0}[hacia]
     a = math.radians(ang)
     a0, a1 = a - 0.45, a + 0.45
     x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
     x1, y1 = cx + (r + 2) * math.cos(a1), cy + (r + 2) * math.sin(a1)
-    L = r + 46
+    L = r + alcance
     c0x, c0y = cx + L * math.cos(a - 0.7), cy + L * math.sin(a - 0.7)
     c1x, c1y = cx + L * math.cos(a + 0.7), cy + L * math.sin(a + 0.7)
     camino = _curva(f"M {_n(x0)} {_n(y0)} C {_n(c0x)} {_n(c0y)} {_n(c1x)} {_n(c1y)} "
                     f"{_n(x1)} {_n(y1)}")
-    tx, ty = cx + (r + 46) * math.cos(a), cy + (r + 46) * math.sin(a) + tam * 0.35
+    tx, ty = cx + (r + alcance) * math.cos(a), cy + (r + alcance) * math.sin(a) + tam * 0.35
     ancla = "middle"
     if hacia == "derecha":
         ancla, tx = "start", tx - 4
@@ -1063,6 +1063,252 @@ def mkv_c2_web_juguete():
     return svg(titulo, desc, out, y)
 
 
+
+# ------------------------------- ejemplo y contraejemplo (clase 2) ---
+# Un SVG por definicion o teorema de las paginas 2 y 3: arriba la cadena que
+# lo cumple, abajo la que no, cada una con su grafo y su matriz. Las matrices
+# viven aqui (EJEMPLOS) y test_gen_markov.py comprueba que cada una aparece,
+# entrada por entrada, en el recuadro «Ejemplo y contraejemplo» de su pagina.
+# El color de cada nodo sale de m.clases(P): verde y borde continuo si su
+# clase es cerrada; amarillo y punteado si es abierta.
+
+R_EJ = 16
+_UNO, _MEDIO, _CUARTO = F(1), F(1, 2), F(1, 4)
+_ALTERNANTE = [[0, _UNO], [_UNO, 0]]
+_LAZO_EN_S1 = [[_MEDIO, _MEDIO], [_UNO, 0]]
+_SIN_VUELTA = [[_MEDIO, _MEDIO], [0, _UNO]]
+_FILA2 = {0: (100, 0), 1: (200, 0)}
+_FILA3 = {0: (60, 0), 1: (150, 0), 2: (240, 0)}
+_TRIANGULO = {0: (150, -34), 1: (215, 34), 2: (85, 34)}
+
+
+def _panel(P, nombres=("s1", "s2", "s3"), pos=None, lazos=None):
+    return {"P": [[F(x) for x in f] for f in P], "nombres": nombres[:len(P)],
+            "pos": pos or (_FILA2 if len(P) == 2 else _FILA3), "lazos": lazos or {}}
+
+
+EJEMPLOS = {
+    "comunican": {
+        "pagina": "2_clasificar_estados.md", "titulo": "estados que se comunican",
+        "si": (_panel(_LAZO_EN_S1), "s1 ↔ s2: hay ida y vuelta"),
+        "no": (_panel(_SIN_VUELTA), "s1 → s2, pero no hay vuelta")},
+    "clases": {
+        "pagina": "2_clasificar_estados.md", "titulo": "comunicar parte en clases",
+        "si": (_panel([[_MEDIO, _MEDIO, 0], [_MEDIO, _CUARTO, _CUARTO], [0, 0, 1]],
+                      lazos={0: "arriba", 1: "arriba", 2: "arriba"}),
+               "Clases {s1, s2} y {s3}, sin traslape"),
+        "no": (_panel([[_MEDIO, _MEDIO, 0], [0, _MEDIO, _MEDIO], [0, 0, 1]],
+                      lazos={0: "arriba", 1: "arriba", 2: "arriba"}),
+               "Solo «alcanzar»: grupos traslapados")},
+    "cerrada": {
+        "pagina": "2_clasificar_estados.md", "titulo": "clase cerrada",
+        "si": (_panel(_SIN_VUELTA), "{s2} cerrada: s2 es absorbente"),
+        "no": (_panel([[0, 1, 0], [_MEDIO, 0, _MEDIO], [0, 0, 1]], lazos={2: "arriba"}),
+               "{s1, s2} abierta: s2 sale a s3")},
+    "hay-cerrada": {
+        "pagina": "2_clasificar_estados.md", "titulo": "finita, hay una cerrada",
+        "si": (_panel([[_MEDIO, _MEDIO, 0], [0, 0, 1], [0, 1, 0]]),
+               "Finita: {s2, s3} es cerrada"),
+        "no": ("corrimiento", "Infinita: ninguna clase es cerrada")},
+    "transitorio": {
+        "pagina": "2_clasificar_estados.md", "titulo": "recurrente y transitorio",
+        "si": (_panel([[0, 1], [_MEDIO, _MEDIO]]), "s1 recurrente: regresa seguro"),
+        "no": (_panel(_SIN_VUELTA), "s1 transitorio: regresa con 1/2")},
+    "recurrente-cerrada": {
+        "pagina": "2_clasificar_estados.md", "titulo": "recurrente equivale a cerrada",
+        "si": (_panel([[_MEDIO, _MEDIO, 0], [0, _MEDIO, _MEDIO], [0, 1, 0]]),
+               "Finita: abierta = transitoria"),
+        "no": ("caminata", "Infinita: cerrada y aun así transitoria")},
+    "periodo": {
+        "pagina": "2_clasificar_estados.md", "titulo": "periodo",
+        "si": (_panel(_LAZO_EN_S1), "Regresa en 1 y en 2 pasos: d = 1"),
+        "no": (_panel([[0, 1, 0], [0, 0, 1], [1, 0, 0]], pos=_TRIANGULO),
+               "Solo regresa en 3, 6, 9…: d = 3")},
+    "periodo-clase": {
+        "pagina": "2_clasificar_estados.md", "titulo": "un lazo vuelve el periodo 1",
+        "si": (_panel(_LAZO_EN_S1), "Con lazo: d = 1 en toda la clase"),
+        "no": (_panel(_ALTERNANTE), "Sin lazo: d = 2 en toda la clase")},
+    "estacionaria": {
+        "pagina": "3_la_estacionaria.md", "titulo": "distribución estacionaria",
+        "si": (_panel(_LAZO_EN_S1), "μ = (2/3, 1/3): μP = μ"),
+        "no": (_panel(_LAZO_EN_S1), "μ = (1/2, 1/2): μP = (3/4, 1/4)")},
+    "limite": {
+        "pagina": "3_la_estacionaria.md", "titulo": "el límite es estacionario",
+        "si": (_panel(_LAZO_EN_S1), "μₜ → (2/3, 1/3), y es estacionaria"),
+        "no": (_panel(_ALTERNANTE, nombres=("A", "B")), "Desde A, μₜ alterna: sin límite")},
+    "existe": {
+        "pagina": "3_la_estacionaria.md", "titulo": "existe una estacionaria",
+        "si": (_panel(_LAZO_EN_S1), "Finita: μ = (2/3, 1/3)"),
+        "no": ("corrimiento", "Infinita: μP = μ solo da μ = 0")},
+    "unica": {
+        "pagina": "3_la_estacionaria.md", "titulo": "una sola clase cerrada",
+        "si": (_panel([[0, 1, 0], [_MEDIO, _MEDIO, 0], [_MEDIO, 0, _MEDIO]],
+                      pos={0: (150, 0), 1: (240, 0), 2: (60, 0)},
+                      lazos={1: "arriba", 2: "arriba"}),
+               "Una cerrada: μ = (1/3, 2/3, 0)"),
+        "no": (_panel([[1, 0, 0], [0, 1, 0], [_MEDIO, _MEDIO, 0]],
+                      pos={0: (60, 0), 1: (240, 0), 2: (150, 0)},
+                      lazos={0: "arriba", 1: "arriba"}),
+               "Dos cerradas: toda (λ, 1 − λ, 0)")},
+    "converge": {
+        "pagina": "3_la_estacionaria.md", "titulo": "convergencia desde todo inicio",
+        "si": (_panel(_LAZO_EN_S1), "Aperiódica: μₜ → (2/3, 1/3)"),
+        "no": (_panel([[0, 1, 0], [_MEDIO, 0, _MEDIO], [0, 1, 0]]),
+               "Periodo 2: μₜ alterna, no llega")},
+    "ergodico": {
+        "pagina": "3_la_estacionaria.md", "titulo": "teorema ergódico",
+        "si": (_panel(_ALTERNANTE, nombres=("A", "B")), "Periodo 2, y aun así N/T → 1/2"),
+        "no": (_panel([[_MEDIO, _CUARTO, _CUARTO], [0, 1, 0], [0, 0, 1]],
+                      pos={0: (150, 0), 1: (60, 0), 2: (240, 0)},
+                      lazos={0: "arriba", 1: "arriba", 2: "arriba"}),
+               "Dos cerradas: N/T → 1 o 0, al azar")},
+}
+for _e in EJEMPLOS.values():
+    for _lado in ("si", "no"):
+        _p = _e[_lado][0]
+        if isinstance(_p, dict):
+            assert all(sum(_f) == 1 for _f in _p["P"]), _p["P"]
+
+
+def matriz_latex(P):
+    """La matriz como la escriben las paginas: \\begin{pmatrix}1/2&1/2\\\\1&0\\end{pmatrix}."""
+    return ("\\begin{pmatrix}" + "\\\\".join("&".join(fr(x) for x in f) for f in P)
+            + "\\end{pmatrix}")
+
+
+def _ancho_txt(s, tam=12):
+    return len(s) * tam * 0.62
+
+
+def _matriz_svg(out, xc, yc, filas, tam=12):
+    """P = [ ... ] con corchetes, centrada en xc; filas son listas de cadenas."""
+    k = len(filas[0])
+    col = max(_ancho_txt(c, tam) for f in filas for c in f) + 12
+    x = xc - (36 + k * col) / 2
+    alto_fila = 17
+    h = len(filas) * alto_fila + 4
+    y0 = yc - h / 2
+    out.append(texto(x, yc + tam * 0.35, "P =", tam=tam, anclaje="start", color=SUAVE))
+    xb = x + 30
+    xe = xb + 6 + k * col
+    for xx, d in ((xb, 5), (xe, -5)):
+        out.append(f'<path d="M {_n(xx + d)} {_n(y0)} L {_n(xx)} {_n(y0)} L {_n(xx)} '
+                   f'{_n(y0 + h)} L {_n(xx + d)} {_n(y0 + h)}" fill="none" '
+                   f'stroke="{SUAVE}" stroke-width="1.5"/>')
+    for i, f in enumerate(filas):
+        for j, c in enumerate(f):
+            out.append(texto(xb + 3 + col * (j + 0.5), y0 + 2 + alto_fila * (i + 0.5) + tam * 0.35,
+                             c, tam=tam, peso="700" if c not in ("0", "⋮", "⋯", "⋱") else "normal",
+                             color=TEXTO if c not in ("0",) else SUAVE))
+    return xe
+
+
+def _grafo_finito(out, p, yn):
+    P, k = p["P"], len(p["P"])
+    cerrado = {}
+    for c in m.clases(P):
+        for s in c["estados"]:
+            cerrado[s] = c["cerrada"]
+    pos = {i: (x, yn + dy) for i, (x, dy) in p["pos"].items()}
+    for i in range(k):
+        for j in range(k):
+            if i == j or P[i][j] == 0:
+                continue
+            ida_y_vuelta = P[j][i] > 0
+            out.append(_arista(pos[i], pos[j], fr(P[i][j]), r=R_EJ,
+                               curva=-14 if ida_y_vuelta else 0, lado=-1, tam=12, desp=9))
+    for i in range(k):
+        if P[i][i] > 0:
+            out.append(_lazo(*pos[i], fr(P[i][i]), r=R_EJ, hacia=p["lazos"].get(i, "arriba"),
+                             tam=12, alcance=28))
+    for i in range(k):
+        c = cerrado[i]
+        out.append(_gnodo(*pos[i], p["nombres"][i], COLOR_CERRADA if c else COLOR_ABIERTA,
+                          r=R_EJ, guiones=None if c else "3 3", tam=13))
+
+
+def _desc_finito(p):
+    P, n = p["P"], p["nombres"]
+    partes = []
+    for i, f in enumerate(P):
+        va = [f"a {n[j]} con {fr(x)}" if j != i else f"se queda con {fr(x)}"
+              for j, x in enumerate(f) if x > 0]
+        partes.append(f"{n[i]} " + " y ".join(va))
+    filas = "; ".join(", ".join(fr(x) for x in f) for f in P)
+    return "; ".join(partes) + f". Matriz por filas: {filas}."
+
+
+def _corrimiento(out, yn):
+    xs = (50, 120, 190)
+    for a, b in zip(xs, xs[1:]):
+        out.append(_arista((a, yn), (b, yn), "1", r=R_EJ, lado=-1, tam=12, desp=9))
+    out.append(_flecha(xs[-1] + R_EJ, yn, 240, yn))
+    out.append(texto(256, yn + 5, "⋯", tam=14, anclaje="middle"))
+    for x, rot in zip(xs, ("0", "1", "2")):
+        out.append(_gnodo(x, yn, rot, COLOR_ABIERTA, r=R_EJ, guiones="3 3", tam=13))
+    return ("0 va a 1 con 1, 1 a 2 con 1, 2 a 3 con 1, y así sin fin; ningún estado "
+            "regresa. Matriz infinita con unos arriba de la diagonal.")
+
+
+def _caminata(out, yn):
+    xs = (80, 150, 220)
+    for a, b in zip(xs, xs[1:]):
+        out.append(_arista((a, yn), (b, yn), "2/3", r=R_EJ, curva=-14, tam=12, desp=9))
+        out.append(_arista((b, yn), (a, yn), "1/3", r=R_EJ, curva=-14, tam=12, desp=9))
+    out.append(texto(36, yn + 5, "⋯", tam=14))
+    out.append(texto(264, yn + 5, "⋯", tam=14))
+    for x, rot in zip(xs, ("−1", "0", "1")):
+        out.append(_gnodo(x, yn, rot, COLOR_CERRADA, r=R_EJ, tam=13))
+    return ("En los enteros, cada k va a k + 1 con 2/3 y a k − 1 con 1/3. "
+            "Matriz infinita: P(k, k+1) = 2/3, P(k, k−1) = 1/3.")
+
+
+def _un_panel(out, y, lado, panel, dice):
+    p = panel
+    out.append(texto(X_PIE, y + 14, "✓ Lo cumple" if lado == "si" else "✗ No lo cumple",
+                     tam=14, peso="700", anclaje="start"))
+    out.append(texto(X_PIE, y + 33, dice, tam=13, anclaje="start", color=SUAVE))
+    g0 = y + 44
+    if p == "corrimiento":
+        yn = g0 + 30
+        desc = _corrimiento(out, yn)
+        _matriz_svg(out, ANCHO / 2, yn + 72, [["0", "1", "0", "⋯"], ["0", "0", "1", "⋯"],
+                                              ["0", "0", "0", "⋯"], ["⋮", "⋮", "⋮", "⋱"]])
+        return yn + 112, desc
+    if p == "caminata":
+        yn = g0 + 30
+        desc = _caminata(out, yn)
+        out.append(texto(ANCHO / 2, yn + 50, "P(k, k+1) = 2/3,   P(k, k−1) = 1/3", tam=12,
+                         peso="700"))
+        return yn + 70, desc
+    arriba = any(p["P"][i][i] > 0 and p["lazos"].get(i, "arriba") == "arriba"
+                 for i in range(len(p["P"])))
+    dys = [dy for _, dy in p["pos"].values()]
+    yn = g0 + (56 if arriba else 26) - min(dys)
+    _grafo_finito(out, p, yn)
+    k = len(p["P"])
+    ym = yn + max(dys) + 34 + k * 17 / 2
+    _matriz_svg(out, ANCHO / 2, ym, [[fr(x) for x in f] for f in p["P"]])
+    return ym + k * 17 / 2 + 10, _desc_finito(p)
+
+
+def ejemplo(clave):
+    e = EJEMPLOS[clave]
+    titulo = ["Ejemplo y contraejemplo", e["titulo"]]
+    out = []
+    y = encabezado(out, titulo)
+    descs = []
+    for lado in ("si", "no"):
+        panel, dice = e[lado]
+        out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+        y, d = _un_panel(out, y, lado, panel, dice)
+        descs.append(("Lo cumple: " if lado == "si" else "No lo cumple: ") + dice + ". " + d)
+        y += 8
+    y = pie(out, y + 4, ["Verde, borde continuo: clase cerrada.",
+                         "Amarillo, punteado: clase abierta."])
+    return svg(titulo, " ".join(descs), out, y)
+
+
 DIAGRAMAS = {
     "mkv-c1-flujo-muestrear": lambda: flujo("muestrear"),
     "mkv-c1-flujo-contar": lambda: flujo("contar"),
@@ -1081,6 +1327,7 @@ DIAGRAMAS = {
     "mkv-c2-tablero-chico": mkv_c2_tablero_chico,
     "mkv-c2-flujo-absorcion": lambda: flujo("absorcion"),
     "mkv-c2-web-juguete": mkv_c2_web_juguete,
+    **{f"mkv-c2-ej-{c}": (lambda c=c: ejemplo(c)) for c in EJEMPLOS},
 }
 
 

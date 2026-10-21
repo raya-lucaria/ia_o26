@@ -140,6 +140,10 @@ $$
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$, con $\mu=(2/3,1/3)$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. $\mu P=(\tfrac23\cdot\tfrac12+\tfrac13\cdot1,\ \tfrac23\cdot\tfrac12)=(2/3,1/3)=\mu$; suma 1, sin negativos.
 > - **No lo cumple:** la misma cadena, $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$, con $\mu=(1/2,1/2)$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. $\mu P=(\tfrac14+\tfrac12,\ \tfrac14)=(3/4,1/4)\neq\mu$: es distribución, pero un paso la cambia.
 
+::: figure {#mkv-c2-fig-ej-estacionaria title="Ejemplo y contraejemplo: distribución estacionaria"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: μ = (2/3, 1/3): μP = μ. Abajo, la que no: μ = (1/2, 1/2): μP = (3/4, 1/4).](../_assets/mkv-c2-ej-estacionaria.svg)
+:::
+
 - **Por qué te quedas:** por inducción con @mkv-c1-teo-predecir, $\mu_{t+1}=\mu_tP=\mu P=\mu$.
 - **Por qué sobra una ecuación:** cada fila de $P-I_k$ suma cero, ${(P-I_k)\mathbf 1=\mathbf 0}$. Las $k$ columnas del sistema son dependientes.
 - **Aviso de letras:** en libros de cadenas verás $\pi$ para la estacionaria. Aquí $\pi$ queda para la política de un agente, como en la unidad de agentes.
@@ -176,6 +180,10 @@ $$
 >
 > - **Lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. Desde $s_1$, $\mu_t\to\nu=(2/3,1/3)$, y $\nu P=\nu$: el límite es estacionario.
 > - **No lo cumple:** $A\xrightarrow{1}B$, $B\xrightarrow{1}A$. Matriz: $P=\begin{pmatrix}0&1\\1&0\end{pmatrix}$. Desde A, $\mu_t$ alterna $(1,0),(0,1),\dots$ sin límite; el teorema no dice nada.
+
+::: figure {#mkv-c2-fig-ej-limite title="Ejemplo y contraejemplo: el límite es estacionario"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: μₜ → (2/3, 1/3), y es estacionaria. Abajo, la que no: Desde A, μₜ alterna: sin límite.](../_assets/mkv-c2-ej-limite.svg)
+:::
 
 - **Dónde se usa que es finita:** con infinitos estados, la suma de los límites puede perder masa. En ${\{0,1,2,\dots\}}$ con $i\to i+1$, $\mu_t=\mathbf e_t$ tiende a cero entrada por entrada, y el vector cero no es una distribución.
 
@@ -235,6 +243,10 @@ $$
 >
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. Es finita (dos estados) y $\mu=(\tfrac23,\tfrac13)$ cumple $\mu P=\mu$, $\mu\mathbf 1=1$.
 > - **No lo cumple:** $0\xrightarrow{1}1$, $1\xrightarrow{1}2$, $2\xrightarrow{1}3$, $\dots$ Matriz: $P=\begin{pmatrix}0&1&0&0&\cdots\\0&0&1&0&\cdots\\0&0&0&1&\cdots\\\vdots&&&&\ddots\end{pmatrix}$. Infinitos estados: $\mu P=\mu$ obliga $\mu(0)=0$ y $\mu(i+1)=\mu(i)$, así que $\mu=\mathbf 0$.
+
+::: figure {#mkv-c2-fig-ej-existe title="Ejemplo y contraejemplo: existe una estacionaria"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Finita: μ = (2/3, 1/3). Abajo, la que no: Infinita: μP = μ solo da μ = 0.](../_assets/mkv-c2-ej-existe.svg)
+:::
 
 **De dónde sale.** No lo demostramos; se arma en tres piezas.
 
@@ -302,6 +314,10 @@ $$
 >
 > - **Lo cumple:** $s_1\xrightarrow{1}s_2$, $s_2\xrightarrow{1/2}s_1$, lazo $s_2\xrightarrow{1/2}s_2$, $s_3\xrightarrow{1/2}s_1$, lazo $s_3\xrightarrow{1/2}s_3$. Matriz: $P=\begin{pmatrix}0&1&0\\1/2&1/2&0\\1/2&0&1/2\end{pmatrix}$. Una sola clase cerrada, $\{s_1,s_2\}$: única estacionaria $\mu=(1/3,\,2/3,\,0)$, cero en el transitorio $s_3$.
 > - **No lo cumple:** lazos $s_1\xrightarrow{1}s_1$, $s_2\xrightarrow{1}s_2$; $s_3\xrightarrow{1/2}s_1$, $s_3\xrightarrow{1/2}s_2$. Matriz: $P=\begin{pmatrix}1&0&0\\0&1&0\\1/2&1/2&0\end{pmatrix}$. Dos clases cerradas, $r=2$: toda mezcla $(\lambda,\,1-\lambda,\,0)$ es estacionaria; hay infinitas.
+
+::: figure {#mkv-c2-fig-ej-unica title="Ejemplo y contraejemplo: una sola clase cerrada"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Una cerrada: μ = (1/3, 2/3, 0). Abajo, la que no: Dos cerradas: toda (λ, 1 − λ, 0).](../_assets/mkv-c2-ej-unica.svg)
+:::
 
 - **Transitorios:** el punto 1 dice que ninguna estacionaria pone probabilidad en un estado transitorio, haya una o muchas.
 - **Lo que se cita:** el punto 2 es otra vez Frobenius, dentro de cada clase. El punto 3 sale de 1 y 2; la prueba lo arma.
@@ -401,6 +417,10 @@ donde $\mu$ es la única estacionaria de @mkv-c2-teo-unica. Equivale a que cada 
 > - **Lo cumple:** $s_1\xrightarrow{1/2}s_2$, $s_2\xrightarrow{1}s_1$, lazo $s_1\xrightarrow{1/2}s_1$. Matriz: $P=\begin{pmatrix}1/2&1/2\\1&0\end{pmatrix}$. Una clase cerrada; el lazo da $d(s_1)=1$. Desde $s_1$ o $s_2$, $\mu_t\to\mu=(2/3,1/3)$.
 > - **No lo cumple:** $s_1\xrightarrow{1}s_2$, $s_2\xrightarrow{1/2}s_1$, $s_2\xrightarrow{1/2}s_3$, $s_3\xrightarrow{1}s_2$. Matriz: $P=\begin{pmatrix}0&1&0\\1/2&0&1/2\\0&1&0\end{pmatrix}$. Periodo 2: desde $s_1$, $\mu_t$ alterna entre $(0,1,0)$ y $(1/2,0,1/2)$; nunca llega a $\mu=(1/4,1/2,1/4)$.
 
+::: figure {#mkv-c2-fig-ej-converge title="Ejemplo y contraejemplo: convergencia desde todo inicio"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Aperiódica: μₜ → (2/3, 1/3). Abajo, la que no: Periodo 2: μₜ alterna, no llega.](../_assets/mkv-c2-ej-converge.svg)
+:::
+
 - **Prueba:** no la damos aquí; usa la aperiodicidad para que alguna potencia de $P$ tenga una columna, de un estado de $\mathcal C$, con todas sus entradas positivas.
 - **Necesaria y suficiente desde todo inicio:** la observación siguiente muestra que ninguna condición sobra. Desde un inicio **particular**, en cambio, se puede converger sin ella: la cadena que alterna, desde $(1/2,1/2)$, ya está en su estacionaria y no se mueve.
 
@@ -477,6 +497,10 @@ $$
 >
 > - **Lo cumple:** la alternante, $A\xrightarrow{1}B$, $B\xrightarrow{1}A$. Matriz: $P=\begin{pmatrix}0&1\\1&0\end{pmatrix}$. Una sola clase cerrada, periódica con $d(A)=2$; aun así $N_T(A)/T\to1/2=\mu(A)$ desde cualquier inicio.
 > - **No lo cumple:** lazo $s_1\xrightarrow{1/2}s_1$, $s_1\xrightarrow{1/4}s_2$, $s_1\xrightarrow{1/4}s_3$, lazos $s_2\xrightarrow{1}s_2$, $s_3\xrightarrow{1}s_3$. Matriz: $P=\begin{pmatrix}1/2&1/4&1/4\\0&1&0\\0&0&1\end{pmatrix}$. Dos clases cerradas: desde $s_1$, $N_T(s_2)/T$ tiende a 1 o a 0, cada uno con probabilidad $1/2$.
+
+::: figure {#mkv-c2-fig-ej-ergodico title="Ejemplo y contraejemplo: teorema ergódico"}
+![Dos cadenas, cada una con su grafo y su matriz P. Arriba, la que cumple: Periodo 2, y aun así N/T → 1/2. Abajo, la que no: Dos cerradas: N/T → 1 o 0, al azar.](../_assets/mkv-c2-ej-ergodico.svg)
+:::
 
 - **Prueba:** no la damos. La idea: la trayectoria entra a la clase cerrada en un tiempo finito y, dentro, los regresos a $s$ se repiten como ciclos independientes.
 - **Necesaria y suficiente desde todo inicio:** con dos clases cerradas, empezar dentro de cada una da límites distintos, y empezar en un transitorio puede dar un límite aleatorio, como en el contraejemplo.
