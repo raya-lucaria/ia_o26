@@ -180,7 +180,7 @@ Al empezar, ${\lVert\mu_0-\mu\rVert_1\le\lVert\mu_0\rVert_1+\lVert\mu\rVert_1=2}
 > **Confundir importancia con enlaces recibidos.** En el juguete, B y D reciben un enlace cada una.
 > **Pesa quién enlaza y entre cuántas salidas reparte:** B recibe la mitad de A, y D la mitad de C, que es más visitada.
 
-**De dónde viene.** Brin y Page describieron PageRank en 1998, en «The Anatomy of a Large-Scale Hypertextual Web Search Engine». Su $d$ es nuestra $\alpha$: «We usually set d to 0.85». Escribieron la fórmula con $(1-d)$ en lugar de $(1-d)/k$, sin normalizar: sus valores suman el número de páginas, no 1.
+**De dónde viene.** Brin y Page describieron PageRank en 1998, en «The Anatomy of a Large-Scale Hypertextual Web Search Engine». Su $d$ es nuestra $\alpha$: «We usually set d to 0.85». Escribieron la fórmula con $(1-d)$ en lugar de $(1-d)/k$. Con ella los valores suman el número de páginas, aunque el artículo dice que forman una distribución de probabilidad y suman 1.
 
 En el reporte técnico de 1999 de Page, Brin, Motwani y Winograd, el navegante «se aburre» (*gets bored*) y salta a una página al azar. Las páginas sin salidas las quitaban, calculaban y luego las reinsertaban. Sustituir su fila por $v$, como hace $\overline P$, es la convención moderna.
 
@@ -244,7 +244,7 @@ $$
 \end{aligned}
 $$
 
-- **El orden.** C primero, A y D empatadas, B al final. C recibe de tres páginas; B solo de la mitad de A.
+- **El orden.** C primero, A y D empatadas, B al final. Por los enlaces originales, C recibe de A y de B, y B solo de A. Además, las cuatro reciben partes iguales de la fila reparada de D (un cuarto cada una) y del salto.
 - **D sin salidas.** D empata con A aunque no enlaza a nadie: no tener salidas no la deja en cero. Sus salidas también cuentan: con un enlace D→A, D bajaría a 0.175. El PageRank depende de toda la red y del salto.
 
 ::: exercise {#mkv-c2-pr-ej-comprobar title="Comprueba la tercera ecuación"}
@@ -412,7 +412,7 @@ $$
 | C | 0.346 | 0.345 |
 | D | 0.235 | 0.234 |
 
-- **Lectura.** C sigue primero y B al final. La simulación pone a D una milésima por encima de A, aunque sus PageRank exactos empatan: una trayectoria finita no tiene por qué conservar el empate. La mayor diferencia está en B, unas dos milésimas.
+- **Lectura.** C sigue primero y B al final. La simulación pone a D una milésima por encima de A, aunque sus PageRank exactos empatan: una trayectoria finita no tiene por qué conservar el empate. La mayor diferencia está en B: 0.18514 frente a 0.18667, es decir, 0.0015; la tabla, redondeada a tres cifras, la muestra como 0.002.
 - **Lo que no dice.** Es una sola trayectoria. No da un intervalo de error con la fórmula de la clase 1.
 
 > [!WARNING]
@@ -428,7 +428,7 @@ Si el navegante empezara en D en lugar de A, ¿cambiaría el límite de las frac
 :::
 
 ::: answer {#mkv-c2-pr-resp-inicio of="mkv-c2-pr-ej-inicio"}
-El límite no cambia: con una sola clase cerrada, la fracción tiende a $\mu(s)$ desde cualquier inicio. Las fracciones observadas sí cambiarían un poco, porque la trayectoria es otra; con $T$ grande, quedarían cerca de las mismas.
+El límite no cambia: con una sola clase cerrada, la fracción tiende a $\mu(s)$ desde cualquier inicio. Las fracciones observadas pueden cambiar, porque la trayectoria es otra; el teorema habla del límite y no fija cuánto difieren dos corridas con ${T=100\,000}$.
 :::
 
 El juguete se resuelve a mano; la prueba de verdad es una web que nadie diseñó para el ejemplo.
@@ -471,7 +471,9 @@ Sin salto, ¿hay algún enlace que lleve fuera de esas dos páginas?
 :::
 
 ::: answer {#mkv-c2-pr-resp-par of="mkv-c2-pr-ej-par"}
-No saldría nunca: alternaría entre las dos, una clase cerrada de periodo 2. Falla ${\alpha<1}$; sin ella, ${\mu_t}$ puede alternar sin converger y toda la importancia se queda en el par.
+No saldría nunca: alternaría entre las dos, una clase cerrada de periodo 2. Falla ${\alpha<1}$.
+
+Y el par no es la única clase cerrada: las cuatro páginas del taller («El modelo, escrito», «Enumerar», «La bitácora del taller» y «Ramificar y acotar») forman otra, aperiódica. Sin el salto, la estacionaria deja de ser única: la importancia se reparte entre las dos clases según dónde empiece el navegante, y desde el par ${\mu_t}$ alterna sin converger.
 :::
 
 ---

@@ -4,13 +4,20 @@ title: "Lo que necesitas de álgebra y límites"
 nav_title: "Lo que necesitas"
 summary: "Sistemas lineales y cuántas soluciones tienen, límite de una sucesión y criterio de paro, valor esperado y la regla de condicionar en el primer paso, y alcanzar un estado en un grafo: las herramientas para preguntar qué hace una cadena a la larga."
 status: ready
-estimated_time: 26m
+estimated_time: 29m
 tags: [markov, algebra-lineal, limites, probabilidad]
 ---
 
 # Lo que necesitas de álgebra y límites
 
 **¿Qué herramientas faltan para decir si una cadena olvida dónde empezó?**
+
+> [!NOTE]
+> **La idea de la clase.** Una **distribución estacionaria** $\mu$ es una fila de probabilidades que **no cambia al dar un paso**: $\mu P=\mu$. Si la cadena arranca con ella, sigue con ella para siempre, aunque cada trayectoria siga brincando. En la frase es $\mu=(22/49,\,27/49)$: a la larga, la probabilidad de vocal es $\approx0.449$.
+>
+> La clase pregunta: ¿existe? ¿Es única? ¿$\mu_t$ llega a ella desde cualquier inicio? ¿Qué fracción del tiempo pasa la cadena en cada estado? Y cierra con dos usos: cuánto tarda en llegar a una meta, y PageRank.
+>
+> La definición formal y los teoremas vienen en [[mkv-la-estacionaria|La estacionaria y sus cuatro teoremas]]. **Esta página reúne las herramientas que esas preguntas necesitan.**
 
 Al terminar tendrás:
 
@@ -31,11 +38,11 @@ De la clase 1, [[markov-que-es-una-cadena|Qué es una cadena de Markov]]:
 
 De [[bajar-la-pendiente|Bajar la pendiente]], en optimización:
 
-- **Tolerancia:** un método iterativo para cuando el cambio es menor que una tolerancia (@opt-tolerancia).
+- **Tolerancia:** un método iterativo se detiene cuando el cambio ya no supera una tolerancia (@opt-tolerancia).
 
-**La pregunta abierta.** En [[tarea-que-es-una-cadena|la tarea de la clase 1]] dejaste correr dos cadenas. Con la matriz de la frase, $\mu_t(V)$ desde V y desde C se acercaban a $22/49\approx0.449$. Con la que alterna A↔B, desde A, saltaba 1, 0, 1, 0… sin asentarse.
+**La pregunta abierta.** En [[tarea-que-es-una-cadena|la tarea de la clase 1]] dejaste correr dos cadenas. Con la matriz de la frase, $\mu_t(V)$ desde V y desde C se acercaban a $22/49\approx0.449$. Con la que siempre cambia de estado, desde V, saltaba 1, 0, 1, 0… sin asentarse; aquí llamamos A y B a sus estados.
 
-Para explicar esa diferencia faltan cuatro herramientas:
+Para contestarla, esta página reúne cuatro herramientas:
 
 - **Un sistema lineal,** para encontrar la fila que no cambia al multiplicar por $P$.
 - **Un límite,** para decir con precisión qué es «acercarse».
@@ -99,6 +106,9 @@ $$
 
 Cada $\lambda$ da una solución distinta: son infinitas. La parte «una sola» es un resultado estándar de álgebra lineal que citamos.
 :::
+
+> [!TIP]
+> **Para qué sirve en esta clase.** La fila $x$ con $xP=x$ y suma 1 es la que la clase llama $\mu$, la estacionaria. Resolver ese sistema la da a mano en [[mkv-la-estacionaria|La estacionaria]] y en [[mkv-olvida-su-inicio|¿Olvida su inicio?]].
 
 **En general: la fila que no cambia.** Para una matriz de transición $P$ de $k\times k$:
 
@@ -233,6 +243,9 @@ $$
 - **Qué no es:** pasar cerca una vez. Con $k=1$, la distancia es el valor absoluto $\lvert x_t-x\rvert$.
 :::
 
+> [!TIP]
+> **Para qué sirve en esta clase.** El límite dice si $\mu_t$ se acerca a $\mu$; la tolerancia, cuándo parar de iterar. Lo usan [[mkv-la-estacionaria|La estacionaria]], [[mkv-olvida-su-inicio|¿Olvida su inicio?]] y [[mkv-pagerank|PageRank]].
+
 - **Notación:** $\lVert\cdot\rVert_1$ se lee «norma uno».
 - **Entre distribuciones:** la distancia va de 0 a 2.
 - **Entrada por entrada:** con $k$ finito, la fila converge si y solo si converge cada entrada.
@@ -263,14 +276,14 @@ Es una contradicción: no hay límite.
 - **La alternante, desde A:** $\mu_t(A)$ es $1,0,1,0,\dots$ Por el teorema, $\mu_t$ no tiene límite.
 - **La alternante, desde $(1/2,\ 1/2)$:** $\mu_t$ no cambia; una sucesión constante converge a su valor.
 
-**El criterio de paro.** Una computadora no espera a $t=\infty$. Un método iterativo para cuando el cambio es pequeño:
+**El criterio de paro.** Una computadora no espera a $t=\infty$. Un método iterativo se detiene cuando el cambio es pequeño:
 
 $$
-\lVert x_{t+1}-x_t\rVert_1<\mathrm{tol}.
+\lVert x_{t+1}-x_t\rVert_1\le\mathrm{tol}.
 $$
 
 - **Lo que no garantiza:** cambio chico no es estar cerca del límite. Las sumas $1+\tfrac12+\dots+\tfrac1t$ avanzan cada vez menos y no tienen límite.
-- **Tope de pasos:** hace falta, porque algunas sucesiones nunca cumplen el criterio; la alternante desde A, con $\mathrm{tol}\le2$, es una.
+- **Tope de pasos:** hace falta, porque algunas sucesiones nunca cumplen el criterio; el ejercicio siguiente da una.
 
 > [!WARNING]
 > **Error típico: «paró, entonces convergió».** El criterio solo mide el último cambio. **La lectura correcta: parar dice que el cambio fue chico; que exista el límite y qué tan cerca estás requiere un teorema aparte.**
@@ -288,7 +301,7 @@ $$
 \lVert(0,1)-(1,0)\rVert_1=1+1=2\quad\text{en todo paso}.
 $$
 
-**Solo con $\mathrm{tol}>2$,** que no sirve: dos distribuciones nunca distan más de 2. Sin tope de pasos, el método no para.
+**Solo con $\mathrm{tol}\ge2$,** que no sirve: dos distribuciones nunca distan más de 2, así que ese criterio para a cualquier cadena en el primer paso. Con $\mathrm{tol}<2$, sin tope de pasos, el método no para.
 :::
 
 Falta otra clase de pregunta: cuánto tarda algo, en promedio.
@@ -350,7 +363,7 @@ $$
 **Es una probabilidad:** la de la fila C, columna V.
 :::
 
-¿Hay forma de obtener su suma sin sumar término por término?
+¿Hay forma de sumar la serie de $E[L]$ sin ir término por término?
 
 ---
 
@@ -374,6 +387,9 @@ $$
 
 **Casos nulos.** Los $s$ con $\Pr(S_1=s)=0$ se omiten: su condicional no está definida y no aportan.
 :::
+
+> [!TIP]
+> **Para qué sirve en esta clase.** El valor esperado y el primer paso dan el tiempo medio para llegar a una meta. En [[mkv-absorcion|serpientes y escaleras]] miden cuántos turnos dura, en promedio, una partida.
 
 ::: proof {#mkv-c2-al-dem-primer-paso of="mkv-c2-teo-primer-paso"}
 Aplica probabilidad total a cada $\Pr(X=x_j)$ y cambia el orden de las sumas:
@@ -462,6 +478,9 @@ $s_i\to s_j$ si hay un camino de algún $t\ge0$ pasos de $s_i$ a $s_j$.
 - **Qué significa:** la cadena puede, con probabilidad positiva, pasar por $s_j$ si empieza en $s_i$.
 - **Qué no es:** simétrico. $s_i\to s_j$ no implica $s_j\to s_i$.
 :::
+
+> [!TIP]
+> **Para qué sirve en esta clase.** Con alcanzar se [[mkv-clasificar-estados|clasifican los estados]]. Esa clasificación decide si la estacionaria es única y si la cadena olvida su inicio.
 
 - **Paso cero:** sin flechas, todo estado se alcanza a sí mismo.
 - **La flecha:** en la clase 1 era un paso; ahora $s\to s'$ admite caminos de cualquier largo.
@@ -631,7 +650,7 @@ $$
 
 - **Dos estados:** $x=\bigl(b/(a+b),\ a/(a+b)\bigr)$; la frase da $(22/49,\ 27/49)\approx(0.449,\ 0.551)$.
 - **Límite:** la distancia $\lVert x_t-x\rVert_1$ queda bajo toda $\mathrm{tol}$. La frase baja a $0.0034$ y $0.0027$ en $t=8$; la alternante desde A alterna entre dos filas distintas y no tiene límite.
-- **Criterio de paro:** cambio menor que $\mathrm{tol}$, con tope de pasos. Parar no prueba convergencia.
+- **Criterio de paro:** cambio en $\mathrm{tol}$ o por debajo, con tope de pasos. Parar no prueba convergencia.
 - **Valor esperado y primer paso:** $E[X]=\sum_s\Pr(S_1=s)E[X\mid S_1=s]$. Rachas: $E[L]=1/(1-q)$, $3/2$ en la frase y $\approx1.408$ en el *Quijote*, si $q<1$.
 - **Alcanzar:** $s_i\to s_j$ si y solo si $(P^t)_{ij}>0$ para algún $t$, con $t\le k-1$ si $s_i\ne s_j$.
 

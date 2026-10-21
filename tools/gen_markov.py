@@ -219,7 +219,9 @@ def _desc_flujo(nombre, pasos, vueltas, notas=(), salidas=()):
         partes.append(f"Desde el paso {desde + 1}, si {rot}, vuelve al paso {hasta + 1}.")
     for desde, hasta, rot in salidas:
         partes.append(f"Desde el paso {desde + 1}, si {rot}, salta al paso {hasta + 1}.")
-    return (f"Diagrama de flujo de {nombre}, en palabras. " + " ".join(partes)
+    de = "del" if nombre.startswith("el ") else "de"
+    nombre = nombre[3:] if de == "del" else nombre
+    return (f"Diagrama de flujo {de} {nombre}, en palabras. " + " ".join(partes)
             + (" " + " ".join(notas) if notas else ""))
 
 

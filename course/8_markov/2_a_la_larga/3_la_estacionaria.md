@@ -4,7 +4,7 @@ title: "La estacionaria y sus cuatro teoremas"
 nav_title: "La estacionaria"
 summary: "Tres preguntas sobre el largo plazo, la distribución que no cambia al dar un paso y los cuatro teoremas que dicen cuándo existe, cuándo es única, cuándo se llega a ella y cuándo mide la fracción del tiempo."
 status: ready
-estimated_time: 30m
+estimated_time: 33m
 tags: [markov, estacionaria, convergencia, ergodico]
 ---
 
@@ -27,6 +27,7 @@ De [[mkv-algebra-y-limites|Lo que necesitas de álgebra y límites]]:
 - **Sistema lineal:** puede tener una, ninguna o infinitas soluciones (@mkv-c2-def-sistema).
 - **Límite de una sucesión de vectores:** la distancia $\lVert\mu_t-\nu\rVert_1$ tiende a cero (@mkv-c2-def-limite).
 - **Alcanzar:** hay un camino de flechas positivas de $s$ a $s'$ (@mkv-c2-def-alcanzar).
+- **Dos estados:** con $a=P_{12}$, $b=P_{21}$ y $a+b>0$, la fila fija es $igl(b/(a+b),\ a/(a+b)igr)$; en la frase, $(22/49,\ 27/49)$ (sección 1 de esa página).
 
 De [[mkv-clasificar-estados|Clasificar los estados]]:
 
@@ -37,6 +38,8 @@ De [[mkv-clasificar-estados|Clasificar los estados]]:
 - **Siempre hay dónde quedarse:** toda cadena finita tiene una clase cerrada (@mkv-c2-cl-teo-hay-cerrada).
 
 De la clase 1: $\mu_{t+1}=\mu_tP$ (@mkv-c1-teo-predecir) y la ley de los grandes números para repeticiones independientes (@mkv-c1-teo-promedio).
+
+De [[de-donde-sale-el-bono|De dónde sale el bono]], en la unidad de juegos: la cota de Hoeffding (@jue-c3-teo-hoeffding), el margen de error del promedio de repeticiones **independientes**.
 
 **Página formal:** todo se enuncia para una cadena de $k$ estados. Los juguetes son de dos o tres estados, con ceros y unos, para seguirlos a mano.
 
@@ -73,8 +76,9 @@ $$
 - **En el paso $t$:** 1 o 0, según la paridad.
 - **En el límite:** no existe; $\mu_t$ salta entre dos vectores.
 - **Fracción del tiempo:** tiende a $1/2$, sin azar, porque la trayectoria es A, B, A, B, …
+- **El techo:** $\lceil x\rceil$ es el menor entero mayor o igual que $x$. Aquí cuenta los pasos pares entre $0$ y $T-1$, incluido el inicial: con $T=5$, A está en $0,2,4$ y $\lceil5/2\rceil=3$.
 
-La figura reúne los tres contraejemplos de la página; los demás aparecen en las secciones 4 a 6.
+La figura dibuja tres de los cuatro contraejemplos de la página, los que se usan en las secciones 4 a 6. El cuarto, $i\to i+1$, tiene infinitos estados y aparece en la sección 3.
 
 ::: figure {#mkv-c2-fig-contraejemplos title="Tres cadenas pequeñas que rompen algo"}
 ![Tres grafos apilados. Arriba, la cadena que alterna: A va a B con probabilidad 1 y B va a A con probabilidad 1. En medio, la identidad: s₁ y s₂, cada uno con un lazo de probabilidad 1 y sin flechas entre ellos. Abajo, la cadena de dos clases cerradas: s₁ tiene un lazo de 1/2 y flechas de 1/4 hacia s₂ y hacia s₃; s₂ y s₃ tienen cada uno un lazo de probabilidad 1.](../_assets/mkv-c2-grafo-contraejemplos.svg)
@@ -155,23 +159,15 @@ $$
 
 - **Dónde se usa que es finita:** con infinitos estados, la suma de los límites puede perder masa. En ${\{0,1,2,\dots\}}$ con $i\to i+1$, $\mu_t=\mathbf e_t$ tiende a cero entrada por entrada, y el vector cero no es una distribución.
 
-**Ejemplo abstracto: dos estados.** Sean $a=P_{12}$ y $b=P_{21}$, con $a+b>0$.
+**Dos estados, ya resuelto.** El sistema de dos estados se resolvió en la sección 1 de [[mkv-algebra-y-limites|Lo que necesitas de álgebra y límites]]: con $a=P_{12}$, $b=P_{21}$ y $a+b>0$, la única estacionaria es $\bigl(b/(a+b),\ a/(a+b)\bigr)$. Su primera ecuación se lee como un balance:
 
 $$
-\begin{aligned}
-P&=\begin{pmatrix}1-a&a\\ b&1-b\end{pmatrix},\\
-\mu(s_1)\,a&=\mu(s_2)\,b,\\
-\mu&=\left(\frac{b}{a+b},\ \frac{a}{a+b}\right).
-\end{aligned}
+\mu(s_1)\,a=\mu(s_2)\,b.
 $$
 
 - **Lectura de la ecuación:** la probabilidad que sale de $s_1$ en un paso es igual a la que entra.
 
-**En el juguete.** En la frase de la clase 1, $a=P_{VC}=9/11$ y $b=P_{CV}=2/3$:
-
-$$
-\mu=\left(\frac{2/3}{49/33},\ \frac{9/11}{49/33}\right)=\left(\frac{22}{49},\ \frac{27}{49}\right).
-$$
+**En el juguete.** En la frase, $a=P_{VC}=9/11$ y $b=P_{CV}=2/3$ dan $\mu=(22/49,\ 27/49)$. Comprueba el balance: $\tfrac{22}{49}\cdot\tfrac{9}{11}=\tfrac{18}{49}=\tfrac{27}{49}\cdot\tfrac23$.
 
 - **Lectura:** $\mu(V)=22/49\approx0.449$, el número al que se acercaban las dos sucesiones de [[tarea-que-es-una-cadena|la tarea de la clase 1]].
 - **La cadena que alterna:** $a=b=1$ da $\mu=(1/2,1/2)$.
@@ -257,10 +253,10 @@ Ya sabemos que hay al menos una. La identidad mostró que puede haber muchas: ¿
 Dos clases cerradas, $\{s_1\}$ y $\{s_2\}$. Cada clase cerrada aporta su propia estacionaria, y cualquier mezcla de ellas también lo es.
 
 ::: theorem {#mkv-c2-teo-unica title="Unicidad: una sola clase cerrada"}
-**Condición.** Cadena finita con clases cerradas $C_1,\dots,C_r$, $r\ge1$.
+**Condición.** Cadena finita con clases cerradas $\mathcal C_1,\dots,\mathcal C_r$, $r\ge1$.
 
-1. Toda estacionaria vale $0$ fuera de ${C_1\cup\dots\cup C_r}$.
-2. Cada $C_i$ tiene exactamente una estacionaria $\mu^{(i)}$ que vale $0$ fuera de $C_i$; es positiva en todo $C_i$.
+1. Toda estacionaria vale $0$ fuera de ${\mathcal C_1\cup\dots\cup\mathcal C_r}$.
+2. Cada $\mathcal C_i$ tiene exactamente una estacionaria $\mu^{(i)}$ que vale $0$ fuera de $\mathcal C_i$; es positiva en todo $\mathcal C_i$.
 3. Las estacionarias son exactamente las mezclas:
 
 $$
@@ -276,26 +272,26 @@ $$
 :::
 
 - **Transitorios:** el punto 1 dice que ninguna estacionaria pone probabilidad en un estado transitorio, haya una o muchas.
-- **Lo que se cita:** el punto 2 es otra vez Frobenius, dentro de cada clase.
+- **Lo que se cita:** el punto 2 es otra vez Frobenius, dentro de cada clase. El punto 3 sale de 1 y 2; la prueba lo arma.
 
 ::: proof {#mkv-c2-es-dem-unica of="mkv-c2-teo-unica"}
 **Punto 1.** Sea $\mathcal U$ el conjunto de estados fuera de las clases cerradas. Si $\mathcal U=\varnothing$, el punto 1 es inmediato; supón $\mathcal U\ne\varnothing$. Desde cada $s\in\mathcal U$ se alcanza alguna clase cerrada (la prueba de @mkv-c2-cl-teo-hay-cerrada) por un camino de menos de $k$ pasos, y ya no se sale. Entonces, con $\Pr_s$ la probabilidad empezando en $s$:
 
 $$
-\delta=\min_{s\in\mathcal U}\Pr_s(S_k\notin\mathcal U)>0.
+\eta=\min_{s\in\mathcal U}\Pr_s(S_k\notin\mathcal U)>0.
 $$
 
-Arranca en una estacionaria $\mu$; entonces $\mu_k=\mu$. Desde una clase cerrada no se vuelve a $\mathcal U$:
+Arranca en una estacionaria $\mu$; entonces $\mu_k=\mu$. Escribimos $\mu(\mathcal U)=\sum_{s\in\mathcal U}\mu(s)$, la probabilidad total que $\mu$ pone en el conjunto $\mathcal U$. Desde una clase cerrada no se vuelve a $\mathcal U$:
 
 $$
 \begin{aligned}
 \mu(\mathcal U)&=\Pr(S_k\in\mathcal U)\\
 &=\sum_{s\in\mathcal U}\mu(s)\Pr_s(S_k\in\mathcal U)\\
-&\le(1-\delta)\,\mu(\mathcal U).
+&\le(1-\eta)\,\mu(\mathcal U).
 \end{aligned}
 $$
 
-Como $\delta>0$, queda $\mu(\mathcal U)=0$.
+Como $\eta>0$, queda $\mu(\mathcal U)=0$.
 
 **Dos clases cerradas dan infinitas.** Si $\mu^{(1)}P=\mu^{(1)}$ y $\mu^{(2)}P=\mu^{(2)}$, para $0\le\lambda\le1$:
 
@@ -307,6 +303,8 @@ $$
 $$
 
 La mezcla es no negativa y suma uno. Como $\mu^{(1)}\ne\mu^{(2)}$ (viven en clases distintas), cada $\lambda$ da una distinta.
+
+**Toda estacionaria es una mezcla.** Sea $\mu$ estacionaria y $s\in\mathcal C_i$. En $(\mu P)(s)=\sum_j\mu(j)P_{js}$ solo cuentan los $j\in\mathcal C_i$: fuera de las clases cerradas $\mu(j)=0$ (punto 1), y desde otra clase cerrada $P_{js}=0$. Así, $\mu$ restringida a $\mathcal C_i$ queda quieta bajo la matriz de $\mathcal C_i$, y por el punto 2 es $\lambda_i\mu^{(i)}$ con $\lambda_i=\mu(\mathcal C_i)\ge0$. Por el punto 1, $\lambda_1+\dots+\lambda_r=1$.
 :::
 
 **Contraejemplo: la identidad.** Clases cerradas $\{s_1\}$ y $\{s_2\}$, con $\mu^{(1)}=(1,0)$ y $\mu^{(2)}=(0,1)$. Las mezclas son todas las $(c,1-c)$, como en el ejercicio de la sección 2.
@@ -351,7 +349,7 @@ Ahora $s_3$ va a $s_2$: $\{s_3\}$ deja de ser cerrada y $s_1$, $s_3$ son transit
 Poder romper el ritmo. Su clase cerrada tiene periodo 2: solo se regresa a A en pasos pares.
 
 ::: theorem {#mkv-c2-teo-converge title="Convergencia desde cualquier inicio"}
-**Condición.** Cadena finita con **una sola clase cerrada** $C$, y $C$ **aperiódica**: $d(s)=1$ para un $s\in C$, y entonces para todos los de $C$ (@mkv-c2-cl-teo-periodo-clase).
+**Condición.** Cadena finita con **una sola clase cerrada** $\mathcal C$, y $\mathcal C$ **aperiódica**: $d(s)=1$ para un $s\in\mathcal C$, y entonces para todos los de $\mathcal C$ (@mkv-c2-cl-teo-periodo-clase).
 
 $$
 \lim_{t\to\infty}\mu_0P^t=\mu
@@ -365,14 +363,14 @@ donde $\mu$ es la única estacionaria de @mkv-c2-teo-unica. Equivale a que cada 
 **Casos nulos.** Los transitorios pueden tener cualquier periodo; solo cuenta el de la clase cerrada.
 :::
 
-- **Prueba:** no la damos aquí; usa la aperiodicidad para que alguna potencia de $P$ tenga una columna, de un estado de $C$, con todas sus entradas positivas.
+- **Prueba:** no la damos aquí; usa la aperiodicidad para que alguna potencia de $P$ tenga una columna, de un estado de $\mathcal C$, con todas sus entradas positivas.
 - **Necesaria y suficiente desde todo inicio:** la observación siguiente muestra que ninguna condición sobra. Desde un inicio **particular**, en cambio, se puede converger sin ella: la cadena que alterna, desde $(1/2,1/2)$, ya está en su estacionaria y no se mueve.
 
 ::: remark {#mkv-c2-es-obs-no-sobra title="Ninguna de las dos condiciones sobra"}
 Si falla cualquiera, hay algún inicio desde el que $\mu_t$ no tiende a $\mu$:
 
 - **Dos clases cerradas:** arrancar en $\mu^{(1)}$ deja $\mu_t=\mu^{(1)}$, y arrancar en $\mu^{(2)}$ deja $\mu_t=\mu^{(2)}$. No hay un límite común.
-- **Periodo $d\ge2$:** desde $s\in C$, $(P^t)_{ss}=0$ cuando $d$ no divide a $t$. Pero $\mu(s)>0$ (@mkv-c2-teo-unica), así que $\mu_t(s)$ no puede tender a $\mu(s)$.
+- **Periodo $d\ge2$:** desde $s\in\mathcal C$, $(P^t)_{ss}=0$ cuando $d$ no divide a $t$. Pero $\mu(s)>0$ (@mkv-c2-teo-unica), así que $\mu_t(s)$ no puede tender a $\mu(s)$.
 :::
 
 **Contraejemplo: la cadena que alterna, desde A.** Una sola clase cerrada, periodo 2: $\mu_t$ salta entre $(1,0)$ y $(0,1)$ sin límite (sección 1).
@@ -456,7 +454,7 @@ $$
 > [!WARNING]
 > **Error típico:** «las visitas de una trayectoria son una muestra; aplica Hoeffding». **Las visitas dependen unas de otras:** @jue-c3-teo-hoeffding y @mkv-c1-teo-promedio piden repeticiones independientes. El teorema ergódico es la ley de los grandes números para cadenas, y no trae el margen de error de Hoeffding.
 
-**Un poco de historia.** Esa es la pregunta de [[mkv-el-problema-de-markov|El problema de Markov]]. Nekrásov sostenía que la ley de los grandes números necesitaba independencia. Markov (1906) la demostró para variables dependientes encadenadas, en cadenas finitas y homogéneas. El teorema ergódico tal como lo enunciamos es una síntesis posterior, de los años treinta (Kolmogorov, Doeblin); no sale de un solo artículo.
+**Un poco de historia.** Si la ley de los grandes números vale sin independencia es la pregunta de [[mkv-el-problema-de-markov|El problema de Markov]]. Nekrásov sostenía que la ley de los grandes números necesitaba independencia. Markov (1906) la demostró para variables dependientes encadenadas, en cadenas finitas y homogéneas. El teorema ergódico tal como lo enunciamos es una síntesis posterior, de los años treinta (Kolmogorov, Doeblin); no sale de un solo artículo.
 
 ::: exercise {#mkv-c2-es-ej-entrada-periodica title="Visita una cadena con entrada"}
 Tres estados: $s_1\to s_2$ con probabilidad 1, y $s_2$, $s_3$ alternan. Empieza en $s_1$. ¿A qué tiende $N_T(s_1)/T$? ¿Y $N_T(s_2)/T$? ¿Converge $\mu_t$?
@@ -539,6 +537,8 @@ $$
 La otra mitad sí se asienta: $\mu_t(s_4)\to\tfrac12\cdot\tfrac23=\tfrac13$.
 
 **4. Sigue una trayectoria.** En el primer paso cae en una de las dos clases, con probabilidad $1/2$ cada una, y no sale. Dentro de cada clase aplica @mkv-c2-teo-ergodico. El límite de $N_T(s_4)/T$ vale $0$ con probabilidad $1/2$ y $2/3$ con probabilidad $1/2$: es aleatorio.
+
+**Qué rompe.** La unicidad (dos clases cerradas), la convergencia (la clase $\{s_2,s_3\}$ es periódica) y el ergódico (el límite es aleatorio). Solo la existencia se cumple.
 :::
 
 **Punto de control:** deberías poder separar las tres preguntas, calcular una estacionaria con el sistema lineal y, para cualquier cadena finita, decir cuáles de los cuatro teoremas aplican. Revisa siempre la condición antes de usar la conclusión: cuántas clases cerradas, y de qué periodo.

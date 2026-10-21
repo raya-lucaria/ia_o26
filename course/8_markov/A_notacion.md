@@ -90,10 +90,16 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $\lVert x-y\rVert_1$ | «norma uno de equis menos ye». La distancia entre dos distribuciones: ${\sum_i\lvert x_i-y_i\rvert}$. *→ Lo que necesitas de álgebra y límites.* |
 | $\mathrm{tol}$ | «tolerancia». El umbral para dejar de iterar: se para cuando la distancia entre dos iteraciones queda por debajo. *→ Lo que necesitas de álgebra y límites.* |
 | $E_s[X]$, $\Pr_s(\cdot)$ | «esperanza de equis empezando en ese». Valor esperado y probabilidad de la cadena que arranca en $s$. *→ Lo que necesitas de álgebra y límites.* |
-| $s\to s'$, $s\leftrightarrow s'$ | «ese alcanza a ese prima», «se comunican». Hay un camino de flechas positivas de $s$ a $s'$; y, en el segundo caso, también de regreso. *→ Clasificar los estados.* |
+| $s\to s'$, $s\leftrightarrow s'$ | «ese alcanza a ese prima», «se comunican». Hay un camino de flechas positivas de $s$ a $s'$; y, en el segundo caso, también de regreso. *→ Alcanzar: Lo que necesitas de álgebra y límites; comunicar: Clasificar los estados.* |
+| $\mathcal C$, $\mathcal C_1,\dots,\mathcal C_r$ | «ce caligráfica». Una clase de estados; las clases cerradas de una cadena. La C recta sigue siendo consonante. *→ Clasificar los estados.* |
+| $f_s$ | «efe sub ese». La probabilidad de que la cadena, empezando en $s$, vuelva a estar en $s$ en algún paso $t\ge1$. Recurrente si ${f_s=1}$. *→ Clasificar los estados.* |
 | $d(s)$ | «de de ese». El periodo de $s$: el máximo común divisor de los pasos $t\ge1$ en que, empezando en $s$, se puede volver a $s$. Aperiódico si ${d(s)=1}$. Si no hay ningún regreso, no se define. *→ Clasificar los estados.* |
 | $\mu$ | «mu», sin índice. La distribución estacionaria: ${\mu P=\mu}$, con entradas $\ge0$ que suman 1. *→ La estacionaria y sus cuatro teoremas.* |
+| $\mu(\mathcal U)$ | «mu de u». La probabilidad que $\mu$ da a un conjunto de estados: ${\sum_{s\in\mathcal U}\mu(s)}$. *→ La estacionaria y sus cuatro teoremas.* |
+| $\lceil x\rceil$ | «techo de equis». El menor entero mayor o igual que $x$. *→ La estacionaria y sus cuatro teoremas.* |
+| $\lambda$ | «lambda». Con dos estados, el número por el que se multiplica la distancia a $\mu$ en cada paso. En la frase, ${-16/33}$. *→ ¿Olvida su inicio?* |
 | $N_T(s)$ | «ene sub te mayúscula de ese». Cuántas veces visita la cadena el estado $s$ en los pasos ${0,\dots,T-1}$; la fracción del tiempo es ${N_T(s)/T}$. *→ La estacionaria y sus cuatro teoremas.* |
+| $c$ | «ce». En serpientes y escaleras, el número de caras del dado. *→ Cuánto falta para terminar.* |
 | $A$, $\tau_A$ | «a», «tau sub a». El conjunto de estados a los que se quiere llegar, y el primer paso en que la cadena está en él: ${\tau_A=\min\{t\ge0: S_t\in A\}}$. *→ Cuánto falta para terminar.* |
 | $m(s)$, $P_{\mathcal T}$ | «eme de ese», «pe sub te caligráfica». El tiempo medio de llegada desde $s$, ${m(s)=E_s[\tau_A]}$, y la matriz $P$ restringida a los estados fuera de $A$. *→ Cuánto falta para terminar.* |
 | $\operatorname{salidas}(s)$ | «salidas de ese». El conjunto de páginas distintas a las que enlaza $s$; $\lvert\operatorname{salidas}(s)\rvert$ es cuántas son. Si está vacío, la página no enlaza a nada. *→ PageRank.* |
@@ -163,6 +169,10 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   Monte Carlo plano en juegos.
 - **$N(s)$** cuenta **salidas**, no visitas como en juegos: la última letra
   aparece pero no sale.
+- **$d$** es el periodo $d(s)$. En ITERACIÓN DE POTENCIAS, la $d$ del
+  pseudocódigo es otra cosa: la distancia del último paso.
+- **$\eta$** en una prueba es un mínimo auxiliar; no es la $\delta$ del
+  error al recuperar una matriz.
 - **$N_T(s)$**, con el subíndice, sí cuenta **visitas**. Son las de $s$ en
   los primeros $T$ pasos.
 - **$\alpha$** es, en PageRank, la probabilidad de seguir un enlace. No es

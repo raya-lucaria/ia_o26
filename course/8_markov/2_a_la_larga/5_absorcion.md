@@ -4,7 +4,7 @@ title: "Cuánto falta para terminar: serpientes y escaleras"
 nav_title: "Cuánto falta: serpientes y escaleras"
 summary: "¿Cuántos turnos dura, en promedio, una partida de serpientes y escaleras? El tiempo medio de llegada resuelve un sistema lineal que sale de condicionar en el primer paso; a mano en un tablero chico, con el algoritmo TIEMPO MEDIO DE LLEGADA en uno de 100 casillas y con 10 000 partidas simuladas."
 status: ready
-estimated_time: 27m
+estimated_time: 28m
 tags: [markov, absorcion, algoritmo, simulacion]
 ---
 
@@ -35,7 +35,7 @@ Al terminar tendrás:
 
 **Piensa: en serpientes y escaleras, ¿qué es un estado?**
 
-La casilla donde queda la ficha **al final** del turno. Un tablero general tiene casillas ${0,\dots,n}$, salida 0 y meta $n$. Cada turno se tira un dado justo de $d$ caras y se avanza lo que salga.
+La casilla donde queda la ficha **al final** del turno. Un tablero general tiene casillas ${0,\dots,n}$, salida 0 y meta $n$. Cada turno se tira un dado justo de $c$ caras y se avanza lo que salga.
 
 - **Saltos.** Caer en la base de una escalera te sube a su punta; caer en la cabeza de una serpiente te baja a su cola.
 - **Pasarse.** Si la tirada te lleva más allá de $n$, llegas a $n$. Es una regla nuestra; hay tableros que exigen tirada exacta.
@@ -51,11 +51,13 @@ $$
 \tau_A=\min\{t\ge0:\ S_t\in A\}.
 $$
 
-- **Cómo se calcula:** si la cadena nunca entra en $A$, ${\tau_A=\infty}$. $E_s$ y $\Pr_s$ son esperanza y probabilidad al empezar en $s$, con ${\mu_0=\mathbf e_s}$ (@mkv-c2-def-esperanza). El **tiempo medio** desde $s$ es
+Si la cadena nunca entra en $A$, ${\tau_A=\infty}$. Con $E_s$ y $\Pr_s$ de @mkv-c2-def-esperanza (empezando en $s$), el **tiempo medio** desde $s$ es
 
 $$
 m(s)=E_s[\tau_A].
 $$
+
+- **Cómo se calcula:** con el sistema lineal de @mkv-c2-teo-absorcion, en la sección 2.
 
 - **Qué significa:** $m(s)$ cuenta transiciones, no casillas. En el tablero, una transición es un turno.
 - **Qué no es:** no es el número de turnos de una partida concreta, que es aleatorio. Es su promedio.
@@ -152,19 +154,19 @@ con ${m(s)=0}$ en $A$. Las dimensiones son ${\lvert\mathcal T\rvert\times\lvert\
 - **Cómo revisarla.** Basta mirar el grafo: ninguna clase cerrada (@mkv-c2-def-clase-cerrada) puede quedar dentro de $\mathcal T$. Si cada estado de $A$ es absorbente, la condición dice que todos los de $\mathcal T$ son transitorios (@mkv-c2-def-transitorio).
 
 ::: proof {#mkv-c2-ab-dem-absorcion of="mkv-c2-teo-absorcion"}
-**Finito.** Desde cada ${s\in\mathcal T}$ hay un camino a $A$ de a lo más $\lvert\mathcal T\rvert$ pasos. Sea ${\delta>0}$ la menor probabilidad de esos caminos. Cada bloque de $\lvert\mathcal T\rvert$ pasos llega a $A$ con probabilidad al menos $\delta$, así que ${\Pr_s(\tau_A>j\lvert\mathcal T\rvert)\le(1-\delta)^j}$. Con ${E[\tau]=\sum_{t\ge0}\Pr(\tau>t)}$, que usamos sin demostración:
+**Finito.** Desde cada ${s\in\mathcal T}$ hay un camino a $A$ de a lo más $\lvert\mathcal T\rvert$ pasos. Sea ${\eta>0}$ la menor probabilidad de esos caminos. Cada bloque de $\lvert\mathcal T\rvert$ pasos llega a $A$ con probabilidad al menos $\eta$, así que ${\Pr_s(\tau_A>j\lvert\mathcal T\rvert)\le(1-\eta)^j}$. Con ${E[\tau]=\sum_{t\ge0}\Pr(\tau>t)}$, que usamos sin demostración:
 
 $$
-m(s)\le\lvert\mathcal T\rvert\sum_{j\ge0}(1-\delta)^j=\frac{\lvert\mathcal T\rvert}{\delta}.
+m(s)\le\lvert\mathcal T\rvert\sum_{j\ge0}(1-\eta)^j=\frac{\lvert\mathcal T\rvert}{\eta}.
 $$
 
 **La ecuación.** Sea ${s\in\mathcal T}$; por @mkv-c2-teo-primer-paso,
 
 $$
-m(s)=\sum_{s'\in\mathcal S}P_{ss'}\,E_s[\tau_A\mid S_1=s'].
+m(s)=\sum_{s':\,P_{ss'}>0}P_{ss'}\,E_s[\tau_A\mid S_1=s'].
 $$
 
-Como ${s\notin A}$, ${\tau_A\ge1}$. Dado ${S_1=s'}$, por Markov y homogeneidad lo que sigue es la cadena empezando en $s'$: ${E_s[\tau_A\mid S_1=s']=1+m(s')}$. Las filas suman 1 y ${m(s')=0}$ en $A$; queda la ecuación del teorema.
+La suma va solo sobre los $s'$ con ${P_{ss'}>0}$: condicionar en un evento imposible no tiene sentido. Como ${s\notin A}$, ${\tau_A\ge1}$. Para cada uno de esos $s'$, dado ${S_1=s'}$, por Markov y homogeneidad lo que sigue es la cadena empezando en $s'$: ${E_s[\tau_A\mid S_1=s']=1+m(s')}$. Los $s'$ con ${P_{ss'}=0}$ aportan cero a la suma del teorema, las filas suman 1 y ${m(s')=0}$ en $A$; queda la ecuación del teorema.
 
 **Única.** Si $m$ y $m'$ la resuelven, su diferencia ${x=m-m'}$ cumple ${x=P_{\mathcal T}x}$, y por tanto ${x=P_{\mathcal T}^{\,t}x}$ para todo $t$. La entrada ${(P_{\mathcal T}^{\,t})_{ss'}}$ es la probabilidad de estar en $s'$ en el paso $t$ sin haber tocado $A$: a lo más ${\Pr_s(\tau_A>t)\to0}$. Entonces ${x=0}$, y ${I-P_{\mathcal T}}$ es invertible.
 :::
@@ -243,7 +245,7 @@ Separar los estados fuera de $A$, armar ${I-P_{\mathcal T}}$ y resolver el siste
 - **Qué devuelve al terminar:** $m$ sobre $\mathcal T$, o FALLA si alguna columna se queda sin pivote.
 
 ::: figure {#mkv-c2-ab-fig-flujo title="El tiempo medio de llegada, en palabras"}
-![Diagrama de flujo del tiempo medio de llegada, en palabras: separa los estados fuera de A; arma la matriz P restringida a ellos; forma I menos esa matriz y pega una columna de unos; elimina columna por columna; un rombo pregunta si la columna tiene pivote distinto de cero; si no, falla: algún estado no llega a A; si sí, sigue con la siguiente columna; al terminar devuelve m, con m igual a 0 en A](../_assets/mkv-c2-flujo-absorcion.svg)
+![Diagrama de flujo del tiempo medio de llegada, en palabras. 1: Marca la meta A: m = 0 en A. 2: Quita de P las filas y columnas de A. 3: Arma el sistema (I − P𝒯) m = 1. 4, pregunta: ¿Tiene una solución? Si sí, sigue abajo. 5: Resuélvelo y devuelve m. 6: Avisa: desde algún estado no se llega. Desde el paso 4, si no, salta al paso 6. Cada renglón dice: un turno más lo que falta desde donde caes.](../_assets/mkv-c2-flujo-absorcion.svg)
 :::
 
 ```text
@@ -379,7 +381,7 @@ El algoritmo confía en el álgebra; la simulación comprueba el número jugando
 
 **Piensa: ¿cómo compruebas 55.668 turnos sin repetir la eliminación?**
 
-Jugando muchas partidas independientes y promediando sus turnos. Cada réplica empieza en 0, sortea cada turno con MUESTREAR-FILA y para al llegar a la meta. Por @mkv-c1-teo-promedio, con probabilidad 1:
+Jugando muchas partidas independientes y promediando sus turnos. Cada réplica empieza en 0, sortea cada turno con MUESTREAR-FILA y para al llegar a la meta. Los turnos de las réplicas son independientes, con la misma distribución y esperanza finita $m(0)$ por @mkv-c2-teo-absorcion. @mkv-c1-teo-promedio habla de frecuencias de eventos; aquí usamos su extensión, la ley de los grandes números para variables así, sin demostrarla. Con probabilidad 1:
 
 $$
 \frac{1}{n}\sum_{r=1}^{n}(\text{turnos de la réplica }r)
