@@ -4,7 +4,7 @@ title: "La estacionaria y sus cuatro teoremas"
 nav_title: "La estacionaria"
 summary: "Tres preguntas sobre el largo plazo, la distribución que no cambia al dar un paso y los cuatro teoremas que dicen cuándo existe, cuándo es única, cuándo se llega a ella y cuándo mide la fracción del tiempo."
 status: ready
-estimated_time: 34m
+estimated_time: 36m
 tags: [markov, estacionaria, convergencia, ergodico]
 ---
 
@@ -81,8 +81,16 @@ $$
 La figura dibuja tres de los cuatro contraejemplos de la página, los que se usan en las secciones 4 a 6. El cuarto, $i\to i+1$, tiene infinitos estados y aparece en la sección 3.
 
 ::: figure {#mkv-c2-fig-contraejemplos title="Tres cadenas pequeñas que rompen algo"}
-![Tres grafos apilados. Arriba, la cadena que alterna: A va a B con probabilidad 1 y B va a A con probabilidad 1. En medio, la identidad: s₁ y s₂, cada uno con un lazo de probabilidad 1 y sin flechas entre ellos. Abajo, la cadena de dos clases cerradas: s₁ tiene un lazo de 1/2 y flechas de 1/4 hacia s₂ y hacia s₃; s₂ y s₃ tienen cada uno un lazo de probabilidad 1.](../_assets/mkv-c2-grafo-contraejemplos.svg)
+![Tres cadenas apiladas, cada una con lo que cumple y lo que rompe. Primera, alternante: A va a B con 1 y B a A con 1; una clase cerrada de periodo 2. Sí: μ = (1/2, 1/2) es única y la fracción del tiempo tiende a 1/2. No: desde A, μₜ alterna 1, 0, 1 y no converge; lo rompe el periodo 2. Segunda, identidad: s1 y s2 se quedan con 1; dos clases cerradas. Sí: μₜ converge, porque nunca cambia. No: toda distribución es estacionaria y cada inicio se queda con su límite. Tercera: s1 se queda con 1/2 y va a s2 con 1/4 y a s3 con 1/4; s2 y s3 se quedan con 1; s1 es transitorio (marco punteado). Sí: μₜ converge, a un límite que depende del inicio; desde s1, a (0, 1/2, 1/2). No: (0, p, 1 − p) es estacionaria para todo p, y una sola trayectoria pasa 1 o 0 del tiempo en s2, nunca 1/2.](../_assets/mkv-c2-grafo-contraejemplos.svg)
 :::
+
+**Qué rompe cada una.** Las tres contestan distinto a las tres preguntas:
+
+- **Alternante, una clase cerrada de periodo 2.** $\mu$ es única y la fracción del tiempo tiende a ½. Pero desde A, $\mu_t$ alterna 1, 0, 1, … sin límite. Rompe la **convergencia**: a la clase le falta ser aperiódica.
+- **Identidad, dos clases cerradas.** $\mu_t$ converge, porque nunca cambia, pero toda distribución es estacionaria. Rompe la **unicidad**: cada inicio se queda con su límite.
+- **Transitorio entre dos cerradas.** $\mu_t$ converge, pero a un límite que depende del inicio; desde $s_1$, a $(0,\tfrac12,\tfrac12)$. Rompe la **unicidad** y el **ergódico**: muchas réplicas en un mismo paso dan ½ en $s_2$, pero una sola trayectoria pasa ahí 1 o 0 del tiempo.
+- **Si conectas $s_2$ y $s_3$** con lazos (cada uno se queda con ½ y pasa al otro con ½), queda una sola clase cerrada aperiódica. Se cumplen los cuatro teoremas: $\mu=(0,\tfrac12,\tfrac12)$ es única, $\mu_t$ llega a ella desde cualquier inicio y cada trayectoria pasa la mitad del tiempo en cada una.
+
 
 ::: exercise {#mkv-c2-es-ej-tres-preguntas title="Responde las tres preguntas en la identidad"}
 En la cadena identidad de la figura, ${P=I_2}$, empieza con $\mu_0=(1/2,1/2)$. Da $\mu_t$, su límite y los valores posibles de $N_T(s_1)/T$.

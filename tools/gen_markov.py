@@ -809,8 +809,11 @@ def mkv_c2_grafo_contraejemplos():
     out.append(_arista(b, a, "1", curva=-18))
     out.append(_gnodo(*a, "A", COLOR_CERRADA))
     out.append(_gnodo(*b, "B", COLOR_CERRADA))
-    y = pie(out, yn + 58, ["μ = (1/2, 1/2) es única, pero desde A",
-                           "la cadena oscila: A, B, A, B, …"], color=TEXTO)
+    y = pie(out, yn + 58, ["Sí: μ = (1/2, 1/2) es única.",
+                           "Sí: fracción del tiempo → 1/2.",
+                           "No: desde A, μₜ alterna 1, 0, 1, …",
+                           "y no converge. Lo rompe el periodo 2."],
+            color=TEXTO)
     # T3
     y += 14
     out.append(texto(X_PIE, y, "Identidad: dos clases cerradas", tam=14, peso="700",
@@ -821,7 +824,11 @@ def mkv_c2_grafo_contraejemplos():
         out.append(_marco_clase(c[0] - 40, yn - 80, 80, 110, True))
         out.append(_lazo(*c, "1", hacia="arriba"))
         out.append(_gnodo(*c, rot, COLOR_CERRADA))
-    y = pie(out, yn + 54, ["Nadie sale de donde empieza: toda", "distribución es estacionaria."],
+    y = pie(out, yn + 54, ["Nadie sale de donde empieza.",
+                           "Sí: μₜ converge (nunca cambia).",
+                           "No es única: toda distribución es",
+                           "estacionaria. Cada inicio se queda",
+                           "con su límite. Lo rompen dos clases."],
             color=TEXTO)
     # T4
     y += 14
@@ -841,16 +848,26 @@ def mkv_c2_grafo_contraejemplos():
         out.append(_lazo(*c, "1", hacia=lado))
         out.append(_gnodo(*c, rot, COLOR_CERRADA))
     out.append(_gnodo(*s1, "s1", COLOR_ABIERTA, guiones="3 3"))
-    y = pie(out, y1 + 170, ["Desde s1 cae en s2 o en s3, al azar:",
-                            "la fracción del tiempo en s2 tiende",
-                            "a 1 o a 0 según la réplica."], color=TEXTO)
+    y = pie(out, y1 + 170, ["Desde s1 cae en s2 o en s3, al azar.",
+                            "Sí: μₜ converge, pero a un límite",
+                            "que depende del inicio. Desde s1,",
+                            "a (0, 1/2, 1/2): la mitad de las",
+                            "réplicas acaba en cada cerrada.",
+                            "No es única: (0, p, 1 − p) lo es.",
+                            "No: una sola trayectoria pasa 1 o 0",
+                            "del tiempo en s2, nunca 1/2."],
+            color=TEXTO)
     y = pie(out, y + 6, ["Marco continuo: clase cerrada.", "Punteado: abierta."])
-    desc = ("Tres cadenas apiladas. Primera, alternante: A va a B con 1 y B a A con 1; una "
-            "clase cerrada de periodo 2; μ = (1/2, 1/2) única, pero desde A oscila. Segunda, "
-            "identidad: s1 y s2 se quedan con 1; dos clases cerradas; toda distribución es "
-            "estacionaria. Tercera: s1 se queda con 1/2 y va a s2 con 1/4 y a s3 con 1/4; s2 "
-            "y s3 se quedan con 1; s1 es transitorio (marco punteado) y la fracción del "
-            "tiempo en s2 tiende a 1 o a 0 según la réplica.")
+    desc = ("Tres cadenas apiladas, cada una con lo que cumple y lo que rompe. Primera, "
+            "alternante: A va a B con 1 y B a A con 1; una clase cerrada de periodo 2. Sí: "
+            "μ = (1/2, 1/2) es única y la fracción del tiempo tiende a 1/2. No: desde A, μₜ "
+            "alterna 1, 0, 1 y no converge; lo rompe el periodo 2. Segunda, identidad: s1 y s2 "
+            "se quedan con 1; dos clases cerradas. Sí: μₜ converge, porque nunca cambia. No: "
+            "toda distribución es estacionaria y cada inicio se queda con su límite. Tercera: "
+            "s1 se queda con 1/2 y va a s2 con 1/4 y a s3 con 1/4; s2 y s3 se quedan con 1; s1 "
+            "es transitorio (marco punteado). Sí: μₜ converge, a un límite que depende del inicio; desde s1, a (0, 1/2, 1/2). No: "
+            "(0, p, 1 − p) es estacionaria para todo p, y una sola trayectoria pasa 1 o 0 del "
+            "tiempo en s2, nunca 1/2.")
     return svg(titulo, desc, out, y)
 
 
