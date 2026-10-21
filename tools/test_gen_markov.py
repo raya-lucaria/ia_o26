@@ -65,7 +65,33 @@ def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
         "mkv-c1-mu-t", "mkv-c1-recuperar-p", "mkv-c1-ceros", "mkv-c1-rachas",
         "mkv-c2-grafo-clasificar", "mkv-c2-grafo-contraejemplos", "mkv-c2-mu-t-inicios",
         "mkv-c2-flujo-potencias", "mkv-c2-tablero-chico", "mkv-c2-flujo-absorcion",
-        "mkv-c2-web-juguete"}
+        "mkv-c2-web-juguete"} | {f"mkv-c2-ej-{c}" for c in gen.EJEMPLOS}
+
+
+def test_hay_un_ejemplo_por_definicion_y_teorema_de_las_paginas_2_y_3():
+    """Cada definicion y teorema de clasificar-estados y la-estacionaria tiene
+    su recuadro «Ejemplo y contraejemplo» y, debajo, su figura."""
+    for pagina, n in (("2_clasificar_estados.md", 8), ("3_la_estacionaria.md", 6)):
+        texto = (UNIDAD / "2_a_la_larga" / pagina).read_text(encoding="utf-8")
+        assert texto.count("> **Ejemplo y contraejemplo.**") == n, pagina
+        claves = [c for c, e in gen.EJEMPLOS.items() if e["pagina"] == pagina]
+        assert len(claves) == n, pagina
+        for c in claves:
+            assert f"](../_assets/mkv-c2-ej-{c}.svg)" in texto, (pagina, c)
+
+
+@pytest.mark.parametrize("clave", sorted(gen.EJEMPLOS))
+def test_la_matriz_dibujada_es_la_del_recuadro(clave):
+    """La figura no puede contar otra cadena que el texto: cada matriz finita
+    que dibuja aparece, igual, en el recuadro de su pagina, justo arriba."""
+    e = gen.EJEMPLOS[clave]
+    texto = (UNIDAD / "2_a_la_larga" / e["pagina"]).read_text(encoding="utf-8")
+    figura = texto.index(f"mkv-c2-ej-{clave}.svg")
+    recuadro = texto[texto.rindex("> **Ejemplo y contraejemplo.**", 0, figura):figura]
+    for lado in ("si", "no"):
+        panel = e[lado][0]
+        if isinstance(panel, dict):
+            assert gen.matriz_latex(panel["P"]) in recuadro, (clave, lado)
 
 
 @pytest.mark.parametrize("nombre", NOMBRES)
