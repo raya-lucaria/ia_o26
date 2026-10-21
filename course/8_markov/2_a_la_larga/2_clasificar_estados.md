@@ -22,16 +22,12 @@ Al terminar tendrás:
 
 ## Lo que traes
 
-- **Alcanzar.** De [[mkv-algebra-y-limites|Lo que necesitas de álgebra y límites]]: $s\to s'$ si hay un camino de $s$ a $s'$ con flechas positivas (@mkv-c2-def-alcanzar).
+- **Alcanzar.** De [[mkv-algebra-y-limites|Lo que necesitas de álgebra y límites]]: $s\to s'$ si hay un camino de $s$ a $s'$ con flechas positivas, de cualquier número de pasos (@mkv-c2-def-alcanzar).
 - **Grafo y matriz.** En [[mkv-cadena-en-general|La cadena de Markov, en general]], cada entrada positiva de $P$ es una flecha del grafo (@mkv-c1-matriz-transicion).
 - **Potencias.** $(P^t)_{ss'}$ es la probabilidad de ir de $s$ a $s'$ en exactamente $t$ pasos (@mkv-c1-teo-potencias).
 - **Irreducible.** En [[mkv-ajustar-contando|Ajustar contando]], @mkv-c1-teo-recuperar pidió que desde cada estado se pudiera llegar a cualquier otro.
 
 **Página de concepto:** sin simulación ni código. Todo vale para una cadena finita y homogénea de $k$ estados; el juguete es para poder trazarlo.
-
-> [!WARNING]
-> **Leer $s\to s'$ como una flecha del grafo.** En la clase 1, la flecha dibujada era un paso con $P_{ss'}>0$.
-> **Aquí $s\to s'$ dice que existe un camino de cualquier número de pasos.**
 
 ---
 
@@ -213,7 +209,7 @@ Cerrada habla de flechas. ¿Qué dice eso de las visitas de la cadena a cada est
 
 **Piensa: ¿a qué estados vuelve la cadena una y otra vez?**
 
-A los recurrentes: los que, una vez visitados, se vuelven a visitar seguro. Escribimos $\Pr_s$ para las probabilidades de la cadena que empieza en $s$, con $\mu_0=\mathbf e_s$.
+A los recurrentes: los que, una vez visitados, se vuelven a visitar seguro. $\Pr_s$ es la probabilidad empezando en $s$ (@mkv-c2-def-esperanza).
 
 ::: definition {#mkv-c2-def-transitorio title="Estado transitorio y estado recurrente"}
 $$
@@ -341,7 +337,7 @@ La cadena puede regresar a $s$ en 4 y en 6 pasos, y en ningún número impar. ¿
 :::
 
 ::: hint {#mkv-c2-cl-pista-periodo-4-6 of="mkv-c2-cl-ej-periodo-4-6" title="¿Qué divide a todas las longitudes?"}
-¿Qué número divide a 4, a 6 y a sus sumas, y a ningún impar?
+¿Qué te dice cada dato por separado: el mcd de 4 y 6, y la ausencia de regresos impares?
 :::
 
 ::: answer {#mkv-c2-cl-resp-periodo-4-6 of="mkv-c2-cl-ej-periodo-4-6"}
@@ -465,7 +461,7 @@ Empezando en $s_1$, ¿en qué pasos puede estar otra vez en $s_1$?
 ¿Tu respuesta coincide con la alternante de la clase 1? Tras el cambio, ¿siguen las filas sumando 1 y sigue habiendo camino de vuelta?
 :::
 
-::: answer {#mkv-c2-cl-resp-ciclo-k of="mkv-c2-cl-ej-ciclo-k" title="Respuesta · Una clase cerrada con periodo k"}
+::: answer {#mkv-c2-cl-resp-ciclo-k of="mkv-c2-cl-ej-ciclo-k" title="Respuesta · Clasificación del ciclo"}
 **1. Clasifica.** Siguiendo la vuelta, todos se alcanzan entre sí: una sola clase, cerrada e irreducible. Sus estados son recurrentes.
 
 **2. Mide.** Desde $s_1$ solo se regresa en los pasos $k,2k,3k,\dots$: $d=k$. Con $k=2$ es la alternante, de periodo 2.
