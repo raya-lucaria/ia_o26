@@ -4,7 +4,7 @@ title: "Clase 2 · Qué pasa a la larga"
 nav_title: Qué pasa a la larga
 summary: "Qué hace una cadena de Markov si la dejas correr: clasificar sus estados, la distribución estacionaria y los cuatro teoremas que dicen cuándo olvida su inicio, el tiempo medio para terminar una partida de serpientes y escaleras, y PageRank."
 status: ready
-estimated_time: 183m
+estimated_time: 195m
 tags: [markov, probabilidad, cadenas, estacionaria, pagerank]
 prerequisites: [markov-que-es-una-cadena]
 ---
@@ -62,7 +62,7 @@ este curso.
 
 ## Recorrido
 
-Seis páginas, en orden.
+Siete páginas, en orden; la última resume toda la clase en una sola página.
 
 **Los minutos son de lectura.** Cada página cierra con uno o dos
 ejercicios finales con pistas y respuesta plegadas: resolverlos toma
@@ -77,6 +77,7 @@ tiempo aparte, que no está en la tabla.
 | 4 | 27m | **¿Olvida su inicio?** La conjetura de la tarea resuelta: a mano, con la iteración de potencias y simulando, en la frase y en el *Quijote* |
 | 5 | 28m | **Cuánto falta para terminar.** El tiempo medio de llegada con un sistema lineal, en serpientes y escaleras |
 | 6 | 32m | **PageRank.** El navegante al azar, las páginas sin salida y el salto, en una web de cuatro páginas y en la de este curso |
+| 7 | 12m | **Resumen: el formulario.** Definiciones, los cuatro teoremas con su intuición, ejemplos y contraejemplos, y lo que más se confunde |
 :::
 
 1. [[mkv-algebra-y-limites|Lo que necesitas de álgebra y límites]]
@@ -85,6 +86,7 @@ tiempo aparte, que no está en la tabla.
 4. [[mkv-olvida-su-inicio|¿Olvida su inicio?]]
 5. [[mkv-absorcion|Cuánto falta para terminar]]
 6. [[mkv-pagerank|PageRank: el navegante al azar]]
+7. [[mkv-resumen-a-la-larga|Resumen de la clase: el formulario]]
 
 ## Qué no cubre esta clase
 
