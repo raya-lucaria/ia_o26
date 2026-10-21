@@ -4,7 +4,7 @@ title: "Lo que necesitas de álgebra y límites"
 nav_title: "Lo que necesitas"
 summary: "Sistemas lineales y cuántas soluciones tienen, límite de una sucesión y criterio de paro, valor esperado y la regla de condicionar en el primer paso, y alcanzar un estado en un grafo: las herramientas para preguntar qué hace una cadena a la larga."
 status: ready
-estimated_time: 29m
+estimated_time: 30m
 tags: [markov, algebra-lineal, limites, probabilidad]
 ---
 
@@ -14,6 +14,10 @@ tags: [markov, algebra-lineal, limites, probabilidad]
 
 > [!NOTE]
 > **La idea de la clase.** Una **distribución estacionaria** $\mu$ es una fila de probabilidades que **no cambia al dar un paso**: $\mu P=\mu$. Si la cadena arranca con ella, sigue con ella para siempre, aunque cada trayectoria siga brincando. En la frase es $\mu=(22/49,\,27/49)$: a la larga, la probabilidad de vocal es $\approx0.449$.
+>
+> **Por qué importa.** Si la cadena olvida su inicio, $\mu$ es **la** respuesta a «¿qué pasa a la larga?»: la misma desde cualquier punto de partida. Da la proporción de vocales de un texto largo, o qué tan importante es una página en PageRank.
+>
+> Si no la olvida, la respuesta depende de dónde empezaste o nunca se asienta, y $\mu$ sola no basta.
 >
 > La clase pregunta: ¿existe? ¿Es única? ¿$\mu_t$ llega a ella desde cualquier inicio? ¿Qué fracción del tiempo pasa la cadena en cada estado? Y cierra con dos usos: cuánto tarda en llegar a una meta, y PageRank.
 >

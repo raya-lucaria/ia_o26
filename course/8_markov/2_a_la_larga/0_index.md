@@ -4,7 +4,7 @@ title: "Clase 2 · Qué pasa a la larga"
 nav_title: Qué pasa a la larga
 summary: "Qué hace una cadena de Markov si la dejas correr: clasificar sus estados, la distribución estacionaria y los cuatro teoremas que dicen cuándo olvida su inicio, el tiempo medio para terminar una partida de serpientes y escaleras, y PageRank."
 status: ready
-estimated_time: 178m
+estimated_time: 180m
 tags: [markov, probabilidad, cadenas, estacionaria, pagerank]
 prerequisites: [markov-que-es-una-cadena]
 ---
@@ -71,9 +71,9 @@ tiempo aparte, que no está en la tabla.
 ::: table {#mkv-ruta-2 title="Las páginas de esta clase"}
 | # | Minutos | Página y qué resuelve |
 |---|---:|---|
-| 1 | 29m | **Lo que necesitas de álgebra y límites.** Sistemas lineales, límites y tolerancia, valor esperado condicionando en el primer paso, y alcanzar en un grafo |
+| 1 | 30m | **Lo que necesitas de álgebra y límites.** Sistemas lineales, límites y tolerancia, valor esperado condicionando en el primer paso, y alcanzar en un grafo |
 | 2 | 29m | **Clasificar los estados.** Comunicar, clases cerradas, transitorios, recurrentes y periodo |
-| 3 | 33m | **La estacionaria y sus cuatro teoremas.** Las tres preguntas; cuándo existe, cuándo es única, cuándo converge y qué dice la fracción del tiempo |
+| 3 | 34m | **La estacionaria y sus cuatro teoremas.** Las tres preguntas; cuándo existe, cuándo es única, cuándo converge y qué dice la fracción del tiempo |
 | 4 | 27m | **¿Olvida su inicio?** La conjetura de la tarea resuelta: a mano, con la iteración de potencias y simulando, en la frase y en el *Quijote* |
 | 5 | 28m | **Cuánto falta para terminar.** El tiempo medio de llegada con un sistema lineal, en serpientes y escaleras |
 | 6 | 32m | **PageRank.** El navegante al azar, las páginas sin salida y el salto, en una web de cuatro páginas y en la de este curso |
