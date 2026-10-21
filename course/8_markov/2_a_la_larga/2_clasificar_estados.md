@@ -4,7 +4,7 @@ title: "Clasificar los estados"
 nav_title: "Clasificar los estados"
 summary: "Comunicar, clase cerrada, transitorio, recurrente y periodo para partir cualquier cadena finita en piezas, decidir cuáles retienen a la cadena y clasificar a mano una cadena de cinco estados."
 status: ready
-estimated_time: 27m
+estimated_time: 28m
 tags: [markov, grafos, clasificacion]
 ---
 
@@ -49,7 +49,8 @@ s\leftrightarrow s'
 s\to s'\ \text{ y }\ s'\to s,\\
 s\to s'
 \quad&\Longleftrightarrow\quad
-(P^t)_{ss'}>0\ \text{ para algún }t\ge0.
+(P^t)_{ss'}>0\\
+&\qquad\text{para algún }t\ge0.
 \end{aligned}
 $$
 
@@ -149,10 +150,11 @@ $$
 \begin{aligned}
 \mathcal C\ \text{cerrada}
 \ &\Longleftrightarrow\
-P_{ss'}=0\ \text{ si }s\in\mathcal C,\ s'\notin\mathcal C,\\
+P_{ss'}=0\\
+&\qquad\text{si }s\in\mathcal C,\ s'\notin\mathcal C,\\
 &\Longleftrightarrow\
-\sum_{s'\in\mathcal C}P_{ss'}=1
-\ \text{ para todo }s\in\mathcal C.\\
+\sum_{s'\in\mathcal C}P_{ss'}=1\\
+&\qquad\text{para todo }s\in\mathcal C.\\
 s\ \text{absorbente}
 \ &\Longleftrightarrow\ P_{ss}=1.
 \end{aligned}
@@ -216,7 +218,8 @@ A los recurrentes: los que, una vez visitados, se vuelven a visitar seguro. Escr
 ::: definition {#mkv-c2-def-transitorio title="Estado transitorio y estado recurrente"}
 $$
 \begin{aligned}
-f_s&=\Pr_s\bigl(S_t=s\ \text{para algún }t\ge1\bigr),\\
+f_s&=\Pr_s\bigl(S_t=s\\
+&\qquad\text{para algún }t\ge1\bigr),\\
 s\ \text{recurrente}
 \ &\Longleftrightarrow\ f_s=1,\\
 s\ \text{transitorio}
@@ -224,7 +227,7 @@ s\ \text{transitorio}
 \end{aligned}
 $$
 
-- **Qué es:** $f_s$, «efe sub ese», es la probabilidad de regresar a $s$ alguna vez después de salir de él.
+- **Qué es:** $f_s$, «efe sub ese», es la probabilidad de volver a estar en $s$ en algún paso $t\ge1$, empezando en $s$. Quedarse por un lazo cuenta como regreso.
 - **Cómo se calcula:** sumas las probabilidades de los caminos que regresan a $s$ por primera vez.
 - **Qué significa:** cada regreso vuelve a empezar la cadena en $s$, por la propiedad de Markov. Un recurrente se visita una y otra vez sin fin; un transitorio, un número finito de veces.
 - **Qué no es:** transitorio no quiere decir que nunca regrese. Puede regresar, solo que no seguro.
@@ -302,8 +305,8 @@ s\ \text{aperiódico}
 $$
 
 - **Qué es:** $d(s)$, «de de ese», es el máximo común divisor de los pasos en que es posible regresar a $s$.
-- **Cómo se calcula:** anotas las longitudes de los ciclos que pasan por $s$ y sacas su máximo común divisor.
-- **Qué significa:** con $d(s)=d$, la cadena solo puede estar en $s$ en pasos múltiplos de $d$.
+- **Cómo se calcula:** tomas los recorridos que empiezan y terminan en $s$, aunque repitan estados intermedios, y sacas el máximo común divisor de sus longitudes.
+- **Qué significa:** con $d(s)=d$, empezando en $s$, la cadena solo puede volver a estar en $s$ en pasos múltiplos de $d$.
 - **Qué no es:** $d(s)=2$ no garantiza regresar en el paso 2; solo prohíbe regresar en pasos impares.
 :::
 
@@ -312,11 +315,11 @@ $$
 El periodo es de la clase, no de un estado suelto, y un lazo lo resuelve.
 
 ::: theorem {#mkv-c2-cl-teo-periodo-clase title="La clase comparte el periodo y un lazo lo vuelve 1"}
-Si $s\leftrightarrow s'$, entonces $d(s)=d(s')$. Si algún estado de la clase tiene $P_{ss}>0$, toda la clase es aperiódica.
+Si $s\leftrightarrow s'$ y la cadena puede regresar a $s$ en algún paso $t\ge1$, entonces $d(s)=d(s')$. Si algún estado de la clase tiene $P_{ss}>0$, toda la clase es aperiódica.
 
-- **Condición.** Los dos estados se comunican. El lazo es suficiente, **no necesario**.
+- **Condición.** Los dos estados se comunican y hay algún regreso; con $s\ne s'$ siempre lo hay: ir y volver. El lazo es suficiente, **no necesario**.
 - **Lectura.** Basta calcular el periodo en el estado más fácil de la clase.
-- **Casos nulos.** Una clase de un solo estado sin lazo no tiene periodo.
+- **Casos nulos.** Una clase de un solo estado sin lazo no tiene regreso, y por eso no tiene periodo.
 :::
 
 ::: proof {#mkv-c2-cl-dem-periodo-clase of="mkv-c2-cl-teo-periodo-clase"}
@@ -342,7 +345,7 @@ La cadena puede regresar a $s$ en 4 y en 6 pasos, y en ningún número impar. ¿
 :::
 
 ::: answer {#mkv-c2-cl-resp-periodo-4-6 of="mkv-c2-cl-ej-periodo-4-6"}
-**$d(s)=2$.** No se puede asegurar el regreso en 2 pasos: los regresos posibles son 4, 6, 8, …; el periodo solo dice que todos son pares.
+**$d(s)=2$.** Con regresos de 4 y 6 pasos, $d(s)$ divide a 2; sin regresos impares, $d(s)$ es par. No se puede asegurar el regreso en 2 pasos: el dato no lo confirma ni lo excluye. El periodo solo dice que todo regreso es par.
 :::
 
 Falta un orden para hacer todas estas preguntas con una matriz concreta.
@@ -359,7 +362,7 @@ Primero las piezas, luego las flechas que salen, al final el periodo. Para $k$ e
 2. **Lista lo alcanzable.** Desde cada estado, anota a qué estados llega por algún camino.
 3. **Agrupa.** $s$ y $s'$ van juntos si cada uno aparece en la lista del otro: son las clases.
 4. **Pregunta por la salida.** ¿Sale alguna flecha de la clase? Si sale, es abierta y transitoria; si no, cerrada y recurrente, por @mkv-c2-teo-recurrente-cerrada.
-5. **Mide el periodo** de cada clase cerrada: busca un lazo; si no hay, el máximo común divisor de las longitudes de los ciclos.
+5. **Mide el periodo** de cada clase cerrada: busca un lazo; si no hay, el máximo común divisor de las longitudes de los regresos, aunque repitan estados.
 
 **En el juguete.** Los pasos 2 y 3, con las flechas de la sección 1:
 
@@ -376,12 +379,14 @@ Primero las piezas, luego las flechas que salen, al final el periodo. Para $k$ e
 Los pasos 4 y 5:
 
 ::: table {#mkv-c2-cl-tabla-clases title="Las tres clases del juguete"}
-| Clase | ¿Sale flecha? | Tipo | Periodo |
+| Clase | ¿Sale? | Tipo | Periodo |
 |---|---|---|---|
-| $\{s_1\}$ | sí, a $s_2$ y a $s_4$ | abierta, transitoria | no tiene |
+| $\{s_1\}$ | sí | abierta, transitoria | no tiene |
 | $\{s_2,s_3\}$ | no | cerrada, recurrente | 2 |
-| $\{s_4,s_5\}$ | no | cerrada, recurrente | 1 (lazo en $s_4$) |
+| $\{s_4,s_5\}$ | no | cerrada, recurrente | 1 |
 :::
+
+De $\{s_1\}$ salen flechas a $s_2$ y a $s_4$. El periodo 1 de $\{s_4,s_5\}$ lo da el lazo en $s_4$.
 
 ::: figure {#mkv-c2-fig-grafo-clasificar title="Las tres clases del juguete de cinco estados"}
 ![Grafo de cinco estados. s1, en un recuadro punteado rotulado abierta, manda flechas de 1/2 a s2 y a s4. s2 y s3, en un recuadro rotulado cerrada, periodo 2, se mandan flechas de 1. s4 y s5, en un recuadro rotulado cerrada, aperiódica, tienen la flecha de s4 a s5 de 1/2, la de s5 a s4 de 1 y un lazo en s4 de 1/2.](../_assets/mkv-c2-grafo-clasificar.svg)
@@ -414,7 +419,7 @@ Con esto sabemos dónde puede quedarse la cadena. La pregunta siguiente es qué 
 
 Una cadena de cinco estados tiene estas flechas, y ninguna más: $s_1\to s_2$ y $s_1\to s_4$, con $1/2$ cada una; $s_2\to s_3$, con 1; $s_3\to s_2$ y $s_3\to s_1$, con $1/2$ cada una; $s_4\to s_5$ y $s_5\to s_4$, con 1.
 
-**Cambia una idea:** ningún estado tiene lazo, y la clase grande no es cerrada.
+**Cambia una idea:** cambian las flechas del juguete y ningún estado tiene lazo.
 
 1. **Agrupa:** encuentra las clases.
 2. **Decide:** di cuáles son cerradas y qué estados son transitorios o recurrentes. Justifica.
@@ -427,10 +432,10 @@ Una cadena de cinco estados tiene estas flechas, y ninguna más: $s_1\to s_2$ y 
 :::
 
 ::: hint {#mkv-c2-cl-pista-sin-lazo-2 of="mkv-c2-cl-ej-sin-lazo" title="Pista 2 · ¿Anotaste todas las longitudes?"}
-Para cada estado, ¿revisaste todos los ciclos que pasan por él, no solo el más corto? ¿Revisaste cada flecha que sale de cada grupo?
+Para cada estado, ¿revisaste todos los recorridos de regreso, no solo el más corto? ¿Revisaste cada flecha que sale de cada grupo?
 :::
 
-::: answer {#mkv-c2-cl-resp-sin-lazo of="mkv-c2-cl-ej-sin-lazo" title="Respuesta · Dos clases, y una aperiódica sin lazo"}
+::: answer {#mkv-c2-cl-resp-sin-lazo of="mkv-c2-cl-ej-sin-lazo" title="Respuesta · Clasificación de la cadena sin lazos"}
 **1. Agrupa.** $s_1\to s_2\to s_3\to s_1$, así que $\{s_1,s_2,s_3\}$ es una clase. $\{s_4,s_5\}$ es otra: nadie de ahí regresa a $s_1$.
 
 **2. Decide.** $\{s_1,s_2,s_3\}$ es abierta por la flecha $s_1\to s_4$: sus estados son transitorios. $\{s_4,s_5\}$ es cerrada: sus estados son recurrentes, por @mkv-c2-teo-recurrente-cerrada.
@@ -478,7 +483,7 @@ Empezando en $s_1$, ¿en qué pasos puede estar otra vez en $s_1$?
 - **Cerrada** (@mkv-c2-def-clase-cerrada): ninguna flecha sale. Una cadena finita tiene al menos una.
 - **Irreducible:** una sola clase que lo abarca todo; es la condición de @mkv-c1-teo-recuperar.
 - **Recurrente o transitorio** (@mkv-c2-def-transitorio): regresar seguro o no. En finitas, recurrente ⇔ cerrada (@mkv-c2-teo-recurrente-cerrada); con infinitos estados, cerrada no basta.
-- **Periodo** (@mkv-c2-def-periodo): $d(s)=\operatorname{mcd}\{t\ge1:(P^t)_{ss}>0\}$, igual en toda la clase. Un lazo basta para $d=1$; no es necesario.
+- **Periodo** (@mkv-c2-def-periodo): $d(s)=\operatorname{mcd}\{t\ge1:(P^t)_{ss}>0\}$, igual en toda la clase donde está definido. Un lazo basta para $d=1$; no es necesario.
 - **El juguete:** $\{s_1\}$ abierta y transitoria; $\{s_2,s_3\}$ cerrada con periodo 2; $\{s_4,s_5\}$ cerrada y aperiódica.
 - **La clase 1:** la frase V/C es una clase cerrada aperiódica; la alternante, una cerrada con periodo 2.
 

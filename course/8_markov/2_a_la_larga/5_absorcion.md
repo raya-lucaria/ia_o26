@@ -18,7 +18,7 @@ Al terminar tendrás:
 - **El teorema y su condición.** Aplicarás @mkv-c2-teo-absorcion y darás un tablero donde falla.
 - **Una cuenta a mano.** Resolverás el tablero chico: ${m(0)=3}$ turnos.
 - **El algoritmo TIEMPO MEDIO DE LLEGADA.** Seguirás pseudocódigo y Python, y justificarás su costo.
-- **Una comprobación.** Compararás 55.668 turnos exactos con 10 000 partidas simuladas.
+- **Una comprobación.** Compararás el valor calculado, ${m(0)\approx55.668}$ turnos, con 10 000 partidas simuladas.
 
 ## Lo que traes
 
@@ -83,7 +83,9 @@ P=\begin{pmatrix}
 0&0&0&1\\
 0&0&0&1
 \end{pmatrix},
-\qquad
+$$
+
+$$
 P_{\mathcal T}=\begin{pmatrix}
 0&1/2&1/2\\
 0&1/2&1/2\\
@@ -384,7 +386,7 @@ $$
 \xrightarrow[n\to\infty]{}m(0).
 $$
 
-- **Ruido.** Ahora promediamos turnos, no ceros y unos. El error estándar de @mkv-c1-error-estandar se calcula igual, con la dispersión de los turnos observados en lugar de ${\sqrt{p(1-p)}}$, dividida entre ${\sqrt n}$.
+- **Ruido.** Ahora promediamos turnos, no ceros y unos, así que ${\sqrt{p(1-p)}}$ de @mkv-c1-error-estandar ya no sirve. Si $x_r$ son los turnos de la réplica $r$ y ${\bar x=\frac1n\sum_r x_r}$, la dispersión es ${s=\sqrt{\frac{1}{n-1}\sum_r(x_r-\bar x)^2}}$ (con ${n\ge2}$), y el error estándar del promedio es ${s/\sqrt n}$.
 - **Por qué termina.** Por la condición del teorema, cada réplica llega a la meta con probabilidad 1. En el tablero con pozo, la simulación no pararía nunca.
 
 **En el juguete.** Con ${n=10\,000}$ partidas y semilla 2041, el promedio fue 3.0048, con error estándar 0.0143. La diferencia con 3 es 0.0048, un tercio de error estándar.
@@ -483,6 +485,6 @@ $$
 - **La condición.** En finitas equivale a que ${I-P_{\mathcal T}}$ sea invertible. Un pozo fuera de la meta la rompe: ${m=\infty}$.
 - **A mano.** El tablero chico dura en promedio ${m(0)=3}$ turnos; sin serpiente, $21/8$.
 - **El algoritmo.** TIEMPO MEDIO DE LLEGADA arma ${I-P_{\mathcal T}}$ y elimina; cuesta del orden de ${\lvert\mathcal T\rvert^3}$ y falla exactamente cuando la condición falla.
-- **La simulación.** En el tablero de 100: 55.668 exactos contra 56.008 simulados, con error estándar 0.428.
+- **La simulación.** En el tablero de 100: ${\approx55.668}$ calculados contra 56.008 simulados, con error estándar 0.428.
 
 Continúa con [[mkv-pagerank|PageRank]].

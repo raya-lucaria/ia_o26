@@ -91,12 +91,12 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $\mathrm{tol}$ | «tolerancia». El umbral para dejar de iterar: se para cuando la distancia entre dos iteraciones queda por debajo. *→ Lo que necesitas de álgebra y límites.* |
 | $E_s[X]$, $\Pr_s(\cdot)$ | «esperanza de equis empezando en ese». Valor esperado y probabilidad de la cadena que arranca en $s$. *→ Lo que necesitas de álgebra y límites.* |
 | $s\to s'$, $s\leftrightarrow s'$ | «ese alcanza a ese prima», «se comunican». Hay un camino de flechas positivas de $s$ a $s'$; y, en el segundo caso, también de regreso. *→ Clasificar los estados.* |
-| $d(s)$ | «de de ese». El periodo de $s$: el máximo común divisor de los pasos $t\ge1$ en que se puede regresar a $s$. Aperiódico si ${d(s)=1}$. *→ Clasificar los estados.* |
+| $d(s)$ | «de de ese». El periodo de $s$: el máximo común divisor de los pasos $t\ge1$ en que, empezando en $s$, se puede volver a $s$. Aperiódico si ${d(s)=1}$. Si no hay ningún regreso, no se define. *→ Clasificar los estados.* |
 | $\mu$ | «mu», sin índice. La distribución estacionaria: ${\mu P=\mu}$, con entradas $\ge0$ que suman 1. *→ La estacionaria y sus cuatro teoremas.* |
 | $N_T(s)$ | «ene sub te mayúscula de ese». Cuántas veces visita la cadena el estado $s$ en los pasos ${0,\dots,T-1}$; la fracción del tiempo es ${N_T(s)/T}$. *→ La estacionaria y sus cuatro teoremas.* |
 | $A$, $\tau_A$ | «a», «tau sub a». El conjunto de estados a los que se quiere llegar, y el primer paso en que la cadena está en él: ${\tau_A=\min\{t\ge0: S_t\in A\}}$. *→ Cuánto falta para terminar.* |
 | $m(s)$, $P_{\mathcal T}$ | «eme de ese», «pe sub te caligráfica». El tiempo medio de llegada desde $s$, ${m(s)=E_s[\tau_A]}$, y la matriz $P$ restringida a los estados fuera de $A$. *→ Cuánto falta para terminar.* |
-| $\operatorname{salidas}(s)$ | «salidas de ese». En una red de páginas, cuántos enlaces salen de la página $s$; una fila sin salidas es la de una página que no enlaza a nada. *→ PageRank.* |
+| $\operatorname{salidas}(s)$ | «salidas de ese». El conjunto de páginas distintas a las que enlaza $s$; $\lvert\operatorname{salidas}(s)\rvert$ es cuántas son. Si está vacío, la página no enlaza a nada. *→ PageRank.* |
 | $\alpha$, $v$ | «alfa», «ve». En PageRank, la probabilidad de seguir un enlace y el vector de salto. *→ PageRank.* |
 | $\overline P$, $G$ | «pe barra», «ge». $P$ con cada fila sin salidas sustituida por $v$, y la matriz de Google ${G=\alpha\overline P+(1-\alpha)\mathbf 1v}$. *→ PageRank.* |
 
@@ -128,7 +128,7 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | Memoria 0, 1, 2 | Unigrama, bigrama, trigrama. Shannon los numera uno arriba: su «primer orden» es memoria 0. *→ Ajustar contando; Shannon, en Generar texto.* |
 | Clase | Un grupo de estados que se comunican entre sí. *→ Clasificar los estados.* |
 | Clase cerrada | Una clase de la que no sale ninguna flecha: una vez dentro, la cadena se queda. Si tiene un solo estado, ese estado es **absorbente**. *→ Clasificar los estados.* |
-| Transitorio, recurrente | Un estado es recurrente si la cadena, al salir de él, regresa con probabilidad 1; transitorio si no. En cadenas finitas, recurrente = estar en una clase cerrada. *→ Clasificar los estados.* |
+| Transitorio, recurrente | Un estado es recurrente si, empezando en él, la cadena vuelve a estar en él en algún paso $t\ge1$ con probabilidad 1; un lazo cuenta. Transitorio si no. En cadenas finitas, recurrente = estar en una clase cerrada. *→ Clasificar los estados.* |
 | Irreducible | Una cadena con una sola clase, que abarca todos los estados. *→ Ajustar contando; Clasificar los estados.* |
 | Distribución estacionaria | Una $\mu$ que no cambia al dar un paso: si arrancas en ella, te quedas en ella. *→ La estacionaria y sus cuatro teoremas.* |
 | Las tres preguntas | En el paso $t$ ($\mu_t$), en el límite (${\lim\mu_t}$) y fracción del tiempo (${N_T(s)/T}$). No son la misma. *→ La estacionaria y sus cuatro teoremas.* |

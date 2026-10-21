@@ -4,7 +4,7 @@ title: "Lo que necesitas de álgebra y límites"
 nav_title: "Lo que necesitas"
 summary: "Sistemas lineales y cuántas soluciones tienen, límite de una sucesión y criterio de paro, valor esperado y la regla de condicionar en el primer paso, y alcanzar un estado en un grafo: las herramientas para preguntar qué hace una cadena a la larga."
 status: ready
-estimated_time: 25m
+estimated_time: 26m
 tags: [markov, algebra-lineal, limites, probabilidad]
 ---
 
@@ -238,7 +238,7 @@ $$
 - **Entrada por entrada:** con $k$ finito, la fila converge si y solo si converge cada entrada.
 - **Por qué $\mathrm{tol}$:** en optimización se escribía $\varepsilon$; aquí $\varepsilon$ ya fue el contraejemplo de la clase 1.
 
-::: theorem {#mkv-c2-al-teo-oscila title="Una sucesión que oscila no tiene límite"}
+::: theorem {#mkv-c2-al-teo-oscila title="Alternar entre 1 y 0 no tiene límite"}
 La sucesión $1,0,1,0,\dots$ no tiene límite.
 
 **Condición.** Los términos pares valen 1 y los impares 0, para siempre.
@@ -270,7 +270,7 @@ $$
 $$
 
 - **Lo que no garantiza:** cambio chico no es estar cerca del límite. Las sumas $1+\tfrac12+\dots+\tfrac1t$ avanzan cada vez menos y no tienen límite.
-- **Tope de pasos:** hace falta, porque una sucesión que oscila nunca cumple el criterio.
+- **Tope de pasos:** hace falta, porque algunas sucesiones nunca cumplen el criterio; la alternante desde A, con $\mathrm{tol}\le2$, es una.
 
 > [!WARNING]
 > **Error típico: «paró, entonces convergió».** El criterio solo mide el último cambio. **La lectura correcta: parar dice que el cambio fue chico; que exista el límite y qué tan cerca estás requiere un teorema aparte.**
@@ -306,10 +306,10 @@ $$
 \begin{aligned}
 &X\in\{x_1,x_2,\dots\}\quad(\text{finitos o numerables}),\\
 &E[X]=\sum_j x_j\Pr(X=x_j),\\
-&E[X\mid B]=\sum_j x_j\Pr(X=x_j\mid B),
-\quad\Pr(B)>0,\\
-&E_s[X]=E[X\mid S_0=s],
-\qquad\Pr_s(\cdot)=\Pr(\cdot\mid S_0=s).
+&E[X\mid B]=\sum_j x_j\Pr(X=x_j\mid B),\\
+&\quad\text{con }\Pr(B)>0,\\
+&E_s[X],\ \Pr_s(\cdot):\\
+&\quad\text{cadena con }\mu_0=\mathbf e_s.
 \end{aligned}
 $$
 
@@ -319,7 +319,8 @@ $$
 - **Qué no es:** el valor más probable, ni un valor que $X$ tenga que tomar: un largo promedio de $3/2$ no es un largo.
 :::
 
-- **Notación:** $E_s$ y $\Pr_s$ se leen «empezando en $s$»; equivalen a tomar $\mu_0=\mathbf e_s$, la fila con 1 en $s$.
+- **Notación:** $E_s$ y $\Pr_s$ se leen «empezando en $s$»: esperanza y probabilidad de la cadena inicializada con $\mu_0=\mathbf e_s$, la fila con 1 en $s$.
+- **Con otro inicio:** si $\Pr(S_0=s)>0$, coinciden con $E[X\mid S_0=s]$ y $\Pr(\cdot\mid S_0=s)$; $E_s$ existe aunque $\mu_0$ no dé masa a $s$.
 - **Indicadora:** si $X$ vale 1 cuando ocurre $A$ y 0 si no, $E[X]=\Pr(A)$. Una probabilidad es un valor esperado.
 
 **En el juguete.** En la frase, $q=\widehat P(C\mid C)=1/3$:
@@ -361,7 +362,10 @@ Promedias dentro de cada caso de $S_1$ y pesas cada promedio por su probabilidad
 
 ::: theorem {#mkv-c2-teo-primer-paso title="Condicionar en el primer paso"}
 $$
-E[X]=\sum_{s:\ \Pr(S_1=s)>0}\Pr(S_1=s)\;E[X\mid S_1=s].
+\begin{aligned}
+E[X]&=\sum_{s:\ \Pr(S_1=s)>0}\Pr(S_1=s)\\
+&\qquad\times E[X\mid S_1=s].
+\end{aligned}
 $$
 
 **Condición.** $X$ es discreta y $E[X]$ está definida: $X\ge0$, o $\sum_j\lvert x_j\rvert\Pr(X=x_j)<\infty$. Los eventos $\{S_1=s\}$ forman una partición.
@@ -377,8 +381,10 @@ Aplica probabilidad total a cada $\Pr(X=x_j)$ y cambia el orden de las sumas:
 $$
 \begin{aligned}
 E[X]
-&=\sum_j x_j\sum_s\Pr(X=x_j\mid S_1=s)\Pr(S_1=s)\\
-&=\sum_s\Pr(S_1=s)\sum_jx_j\Pr(X=x_j\mid S_1=s)\\
+&=\sum_j x_j\sum_s\Pr(X=x_j\mid S_1=s)\\
+&\qquad\times\Pr(S_1=s)\\
+&=\sum_s\Pr(S_1=s)\\
+&\qquad\times\sum_jx_j\Pr(X=x_j\mid S_1=s)\\
 &=\sum_s\Pr(S_1=s)\,E[X\mid S_1=s].
 \end{aligned}
 $$
@@ -440,15 +446,16 @@ Promediar respondió «cuánto tarda». Falta una pregunta previa: si un estado 
 Puede si hay un camino de flechas positivas de $s$ a $s'$, por improbable que sea.
 
 ::: definition {#mkv-c2-def-alcanzar title="Camino y alcanzar en un grafo dirigido"}
+Un **camino de $t$ pasos** de $s_i$ a $s_j$ es una sucesión de estados:
+
 $$
 \begin{aligned}
-&\text{camino de }t\text{ pasos de }s_i\text{ a }s_j:\
-s_i=s_{i_0},s_{i_1},\dots,s_{i_t}=s_j,\\
-&\hspace{4em}P_{i_mi_{m+1}}>0\quad(0\le m<t),\\
-&s_i\to s_j\iff
-\text{hay un camino de algún }t\ge0\text{ pasos}.
+&s_i=s_{i_0},s_{i_1},\dots,s_{i_t}=s_j,\\
+&P_{i_mi_{m+1}}>0\quad(0\le m<t).
 \end{aligned}
 $$
+
+$s_i\to s_j$ si hay un camino de algún $t\ge0$ pasos de $s_i$ a $s_j$.
 
 - **Qué es:** $s_i\to s_j$, «$s_i$ alcanza a $s_j$», dice que existe una sucesión de flechas del grafo de $s_i$ a $s_j$.
 - **Cómo se calcula:** se recorre el grafo desde $s_i$ siguiendo flechas, o se revisan las potencias de $P$.
@@ -460,13 +467,7 @@ $$
 - **La flecha:** en la clase 1 era un paso; ahora $s\to s'$ admite caminos de cualquier largo.
 
 ::: theorem {#mkv-c2-al-teo-caminos title="Las potencias detectan caminos"}
-Para toda matriz de transición $P$ y todo $t\ge0$:
-
-$$
-(P^t)_{ij}>0
-\iff
-\text{hay un camino de }t\text{ pasos de }s_i\text{ a }s_j.
-$$
+Para toda matriz de transición $P$ y todo $t\ge0$: $(P^t)_{ij}>0$ si y solo si hay un camino de $t$ pasos de $s_i$ a $s_j$.
 
 **Condición.** Entradas de $P$ no negativas, como en toda matriz de transición.
 
@@ -629,7 +630,7 @@ $$
 $$
 
 - **Dos estados:** $x=\bigl(b/(a+b),\ a/(a+b)\bigr)$; la frase da $(22/49,\ 27/49)\approx(0.449,\ 0.551)$.
-- **Límite:** la distancia $\lVert x_t-x\rVert_1$ queda bajo toda $\mathrm{tol}$. La frase baja a $0.0034$ y $0.0027$ en $t=8$; la alternante desde A oscila y no tiene límite.
+- **Límite:** la distancia $\lVert x_t-x\rVert_1$ queda bajo toda $\mathrm{tol}$. La frase baja a $0.0034$ y $0.0027$ en $t=8$; la alternante desde A alterna entre dos filas distintas y no tiene límite.
 - **Criterio de paro:** cambio menor que $\mathrm{tol}$, con tope de pasos. Parar no prueba convergencia.
 - **Valor esperado y primer paso:** $E[X]=\sum_s\Pr(S_1=s)E[X\mid S_1=s]$. Rachas: $E[L]=1/(1-q)$, $3/2$ en la frase y $\approx1.408$ en el *Quijote*, si $q<1$.
 - **Alcanzar:** $s_i\to s_j$ si y solo si $(P^t)_{ij}>0$ para algún $t$, con $t\le k-1$ si $s_i\ne s_j$.

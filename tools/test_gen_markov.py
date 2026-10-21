@@ -237,13 +237,15 @@ def test_cada_flujo_tiene_rombo_y_salida_explicita(clave):
     caja de borde de acento) y al menos una vuelta. Excepcion: el tiempo
     medio de llegada (clase 2) resuelve un sistema de una vez: no da vueltas
     y tiene dos salidas (m, o el aviso de que desde algun estado no se
-    llega)."""
+    llega). Y la iteracion de potencias (clase 2) tiene dos salidas porque
+    distingue parar por tolerancia de llegar al tope sin parar."""
     f = gen.FLUJOS[clave]
     cajas = [p for p in f["pasos"] if "caja" in p]
     rombos = [p for p in f["pasos"] if "rombo" in p]
     sin_vuelta = clave == "absorcion"
     assert 3 <= len(cajas) <= 6 and rombos and (f["vueltas"] or sin_vuelta)
-    assert [p.get("fin") for p in f["pasos"]].count(True) == (2 if sin_vuelta else 1)
+    dos_salidas = sin_vuelta or clave == "potencias"
+    assert [p.get("fin") for p in f["pasos"]].count(True) == (2 if dos_salidas else 1)
     assert f["pasos"][-1].get("fin")
     nombre = next(n for n in gen.DIAGRAMAS if n.endswith(f"-flujo-{clave}"))
     svg = gen.contenido(nombre)

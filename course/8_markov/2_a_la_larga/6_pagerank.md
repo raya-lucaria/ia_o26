@@ -4,7 +4,7 @@ title: "PageRank: el navegante al azar"
 nav_title: "PageRank"
 summary: "Si solo conoces los enlaces entre páginas, ¿cuál es la más importante? Un navegante al azar vuelve la web una cadena; dos arreglos le dan una sola estacionaria, que se calcula a mano, con la iteración de potencias sin armar la matriz y simulando al navegante."
 status: ready
-estimated_time: 30m
+estimated_time: 32m
 tags: [markov]
 ---
 
@@ -90,9 +90,9 @@ La fila en ceros es el primer problema; hay un segundo, menos visible.
 Hay dos agujeros, y cada uno tiene su arreglo.
 
 - **Página sin salidas.** En D el navegante no tiene a dónde ir. La fila no suma 1.
-- **Ciclo que atrapa.** Si dos páginas solo se enlazan entre sí, forman una clase cerrada. Quien entra no sale, y fuera de ella ${\mu=0}$.
+- **Ciclo que atrapa.** Si dos páginas solo se enlazan entre sí, forman una clase cerrada: quien entra no sale. Si es la única clase cerrada, toda estacionaria vale 0 fuera de ella.
 - **Con dos ciclos así.** Hay dos clases cerradas y la estacionaria deja de ser única (@mkv-c2-teo-unica).
-- **Con periodo.** Un par que se alterna es la cadena A↔B de periodo 2: desde una de sus páginas, $\mu_t$ oscila y no converge (@mkv-c2-teo-converge).
+- **Con periodo.** Un par que se alterna es la cadena A↔B de periodo 2: desde una de sus páginas, $\mu_t$ alterna entre dos vectores distintos y no converge (@mkv-c2-teo-converge).
 
 El primer arreglo tapa la fila vacía. Para escribirlo usamos un **vector de salto** $v$: una fila $1\times k$ con ${v(s)>0}$ y ${\sum_sv(s)=1}$. Aquí, uniforme: ${v(s)=1/k}$.
 
@@ -238,12 +238,14 @@ $$
 - **Normalizar.** Con ${2a+b+c=1}$, multiplicamos por 1360 y queda ${6107a=1429}$.
 
 $$
-\mu=\left(\tfrac{1429}{6107},\ \tfrac{1140}{6107},\ \tfrac{2109}{6107},\ \tfrac{1429}{6107}\right)
-\approx(0.234,\ 0.187,\ 0.345,\ 0.234).
+\begin{aligned}
+\mu&=\tfrac{1}{6107}\,(1429,\ 1140,\ 2109,\ 1429)\\
+&\approx(0.234,\ 0.187,\ 0.345,\ 0.234).
+\end{aligned}
 $$
 
 - **El orden.** C primero, A y D empatadas, B al final. C recibe de tres páginas; B solo de la mitad de A.
-- **D sin salidas.** D empata con A aunque no enlaza a nadie: su importancia depende de lo que **recibe**, no de lo que da.
+- **D sin salidas.** D empata con A aunque no enlaza a nadie: no tener salidas no la deja en cero. Sus salidas también cuentan: con un enlace D→A, D bajaría a 0.175. El PageRank depende de toda la red y del salto.
 
 ::: exercise {#mkv-c2-pr-ej-comprobar title="Comprueba la tercera ecuación"}
 Sustituye ${a=d=1429/6107}$ y ${b=1140/6107}$ en la ecuación de $c$. ¿Obtienes ${2109/6107}$?
@@ -254,7 +256,17 @@ Sustituye ${a=d=1429/6107}$ y ${b=1140/6107}$ en la ecuación de $c$. ¿Obtienes
 :::
 
 ::: answer {#mkv-c2-pr-resp-comprobar of="mkv-c2-pr-ej-comprobar"}
-Por 6107: ${\tfrac{1429}{2}+1140+\tfrac{1429}{4}=\tfrac{8847}{4}}$. Luego ${\tfrac{17}{20}\cdot\tfrac{8847}{4}+\tfrac{3}{80}\cdot6107=\tfrac{150399+18321}{80}=\tfrac{168720}{80}=2109}$. Sí: ${c=2109/6107}$.
+Por 6107: ${\tfrac{1429}{2}+1140+\tfrac{1429}{4}=\tfrac{8847}{4}}$. Luego:
+
+$$
+\begin{aligned}
+&\tfrac{17}{20}\cdot\tfrac{8847}{4}+\tfrac{3}{80}\cdot6107\\
+&\quad=\tfrac{150399+18321}{80}\\
+&\quad=\tfrac{168720}{80}=2109.
+\end{aligned}
+$$
+
+Sí: ${c=2109/6107}$.
 :::
 
 Con cuatro páginas bastan fracciones; con millones de páginas, el sistema no se resuelve así.
@@ -370,11 +382,11 @@ La línea 11 da ${\text{nuevo}=v}$. Como ${\mu_0=v}$, la distancia es 0 y para e
 
 - **Propiedades:** cada vuelta conserva una distribución: suma 1 y no tiene entradas negativas.
 - **Número que da:** en el juguete, ${(0.234,\ 0.187,\ 0.345,\ 0.234)}$ en 28 pasos con ${\mathrm{tol}=10^{-8}}$.
-- **Garantía:** por @mkv-c2-teo-pagerank, ${\lVert\mu_t-\mu\rVert_1\le2\alpha^t}$; con ${\alpha=0.85}$, 118 pasos bastan para ${10^{-8}}$ en **cualquier** web. Al parar, el vector devuelto está a lo más a ${\alpha\,\mathrm{tol}/(1-\alpha)}$ de $\mu$.
+- **Garantía:** por @mkv-c2-teo-pagerank, ${\lVert\mu_t-\mu\rVert_1\le2\alpha^t}$; con ${\alpha=0.85}$, 118 pasos bastan para ${10^{-8}}$ en **cualquier** web. Si para por la línea 12, el vector devuelto está a lo más a ${\alpha\,\mathrm{tol}/(1-\alpha)}$ de $\mu$. Si para por el tope, esa cota no está garantizada: con tope 1, el juguete queda a 0.148 de $\mu$.
 - **Costo:** cada vuelta cuesta del orden de $k$ más el número de enlaces. Armar $G$ costaría $k^2$ por vuelta.
 - **Supuestos:** ${0\le\alpha<1}$, ${v>0}$, enlaces sin repetir y una web fija mientras se itera.
 
-**De dónde sale la cota al parar.** Si dos vectores seguidos distan a lo más $\mathrm{tol}$, la desigualdad del triángulo y la contracción dan ${\lVert\mu_t-\mu\rVert_1\le\mathrm{tol}+\alpha\lVert\mu_t-\mu\rVert_1}$. Despejando, ${\lVert\mu_t-\mu\rVert_1\le\mathrm{tol}/(1-\alpha)}$; un paso más multiplica por $\alpha$.
+**De dónde sale la cota al parar.** Sea $x$ el vector anterior y ${y=xG}$ el que se devuelve, con ${\lVert y-x\rVert_1\le\mathrm{tol}}$. Por la contracción y la desigualdad del triángulo, ${\lVert y-\mu\rVert_1\le\alpha\lVert x-\mu\rVert_1\le\alpha(\mathrm{tol}+\lVert y-\mu\rVert_1)}$. Despejando, ${\lVert y-\mu\rVert_1\le\alpha\,\mathrm{tol}/(1-\alpha)}$.
 
 La cuenta da $\mu$; un navegante simulado debería pasar ese tiempo en cada página.
 
@@ -400,7 +412,7 @@ $$
 | C | 0.346 | 0.345 |
 | D | 0.235 | 0.234 |
 
-- **Lectura.** El orden es el mismo: C, luego A y D, y B al final. La mayor diferencia está en B, unas dos milésimas.
+- **Lectura.** C sigue primero y B al final. La simulación pone a D una milésima por encima de A, aunque sus PageRank exactos empatan: una trayectoria finita no tiene por qué conservar el empate. La mayor diferencia está en B, unas dos milésimas.
 - **Lo que no dice.** Es una sola trayectoria. No da un intervalo de error con la fórmula de la clase 1.
 
 > [!WARNING]
@@ -459,7 +471,7 @@ Sin salto, ¿hay algún enlace que lleve fuera de esas dos páginas?
 :::
 
 ::: answer {#mkv-c2-pr-resp-par of="mkv-c2-pr-ej-par"}
-No saldría nunca: alternaría entre las dos, una clase cerrada de periodo 2. Falla ${\alpha<1}$; sin ella, ${\mu_t}$ puede oscilar y toda la importancia se queda en el par.
+No saldría nunca: alternaría entre las dos, una clase cerrada de periodo 2. Falla ${\alpha<1}$; sin ella, ${\mu_t}$ puede alternar sin converger y toda la importancia se queda en el par.
 :::
 
 ---
@@ -522,7 +534,16 @@ Nadie enlaza a A: ${a=1/6}$. Sustituyendo, ${b=4/9}$ y ${c=7/18}$; suman ${3/18+
 - **El modelo.** El navegante sigue un enlace con probabilidad $\alpha$ y salta con ${1-\alpha}$: ${G=\alpha\overline P+(1-\alpha)\mathbf 1v}$, con ${\alpha=0.85}$.
 - **Los arreglos.** $\overline P$ tapa las filas sin salidas con $v$; el salto rompe ciclos y periodos. Brin y Page quitaban esas páginas; $\overline P$ es la convención moderna.
 - **El teorema.** Con ${0\le\alpha<1}$ y ${v>0}$, todas las entradas de $G$ son positivas: una estacionaria y convergencia, con distancia ${\le2\alpha^t}$.
-- **El juguete.** ${\mu=(1429,\ 1140,\ 2109,\ 1429)/6107\approx(0.234,\ 0.187,\ 0.345,\ 0.234)}$; PAGERANK para en 28 pasos, y el navegante simulado queda a menos de 0.002 en cada página.
+- **El juguete.** La estacionaria es
+
+  $$
+  \begin{aligned}
+  \mu&=(1429,\ 1140,\ 2109,\ 1429)/6107\\
+  &\approx(0.234,\ 0.187,\ 0.345,\ 0.234);
+  \end{aligned}
+  $$
+
+  PAGERANK para en 28 pasos, y el navegante simulado queda a menos de 0.002 en cada página.
 - **El costo.** Cada vuelta cuesta del orden de $k$ más los enlaces, porque ${\mu G=\alpha\mu\overline P+(1-\alpha)v}$ no arma $G$.
 - **El curso.** 134 páginas, 506 enlaces, 88 pasos; arriba, «IA y sociedad» con 0.061.
 - **La clase, junta.** Clasificar los estados dice qué clases cerradas hay; eso decide si la estacionaria es única y si $\mu_t$ olvida su inicio. La absorción mide cuánto falta para llegar, y PageRank arregla una cadena para que tenga una sola estacionaria.

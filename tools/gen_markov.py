@@ -185,13 +185,16 @@ def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
                    f'{FL_CARRIL},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
         out.append(_flecha(FL_CARRIL, yb, xb - 3, yb))
         out.append(girado(FL_CARRIL - 8, (ya + yb) / 2, rot))
-    for desde, hasta, rot in salidas:
+    # Con dos salidas, la segunda baja por un carril interior: si las dos
+    # compartieran carril no se sabria que rombo lleva a que caja.
+    for i, (desde, hasta, rot) in enumerate(salidas):
         _, _, ya = geo[desde]
         _, _, yb = geo[hasta]
         xa = FL_CX + FL_MX
-        out.append(f'<polyline points="{_n(xa)},{_n(ya)} {FL_CARRIL_DER},{_n(ya)} '
-                   f'{FL_CARRIL_DER},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
-        out.append(_flecha(FL_CARRIL_DER, yb, FL_X1 + 3, yb))
+        carril = FL_CARRIL_DER if len(salidas) == 1 else FL_CARRIL_DER + 4 - 7 * i
+        out.append(f'<polyline points="{_n(xa)},{_n(ya)} {carril},{_n(ya)} '
+                   f'{carril},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
+        out.append(_flecha(carril, yb, FL_X1 + 3, yb))
         out.append(texto(xa + 10, ya - 8, rot, tam=13, color=SUAVE, anclaje="start",
                          peso="700"))
     y = y - FL_GAP + 26
@@ -904,7 +907,7 @@ def mkv_c2_mu_t_inicios():
             + ". Desde C: " + ", ".join(dec(p) for p in desdeC)
             + f". Las dos se juntan en μ(V) = {fr(mu[0])} ≈ {dec(mu[0])}; la distancia a μ se "
             f"multiplica por {fr(lam)} en cada paso. Cadena alternante desde A: "
-            + ", ".join(fr(p) for p in alt) + "; oscila y no converge.")
+            + ", ".join(fr(p) for p in alt) + "; alterna entre 1 y 0 y no converge.")
     return svg(titulo, desc, out, y)
 
 
@@ -912,15 +915,17 @@ FLUJOS.update({
     "potencias": dict(
         nombre="la iteración de potencias",
         titulo=["Iteración de potencias,", "en palabras"],
-        pasos=[{"caja": ["Empieza con μ₀", "y t = 0"]},
-               {"caja": ["Multiplica: μ′ = μP", "y suma 1 a t"]},
-               {"rombo": ["¿‖μ′ − μ‖₁", "≤ tol?"], "abajo": "no"},
-               {"rombo": ["¿t llegó", "al tope?"], "abajo": "no"},
-               {"caja": ["Avanza: μ ← μ′"]},
-               {"caja": ["Devuelve μ′ y t"], "fin": True, "sin_flecha": True}],
-        vueltas=[(4, 1, "otra vuelta")],
-        salidas=[(2, 5, "sí"), (3, 5, "sí")],
-        notas=["Si para por el tope, avisa: no", "convergió (la alternante desde A).",
+        pasos=[{"caja": ["Empieza: μ ← μ₀", "y pasos = 1"]},
+               {"caja": ["Multiplica:", "nuevo = μP"]},
+               {"caja": ["Mide d = ‖nuevo − μ‖₁", "y avanza: μ ← nuevo"]},
+               {"rombo": ["¿d ≤ tol?"], "abajo": "no"},
+               {"rombo": ["¿pasos llegó", "al tope?"], "abajo": "no"},
+               {"caja": ["Suma 1 a pasos"]},
+               {"caja": ["Devuelve (μ, «no paró»)"], "fin": True, "sin_flecha": True},
+               {"caja": ["Devuelve (μ, pasos)"], "fin": True, "sin_flecha": True}],
+        vueltas=[(5, 1, "otra vuelta")],
+        salidas=[(3, 7, "sí"), (4, 6, "sí")],
+        notas=["«No paró» no prueba que no converja:", "solo que no cumplió tol a tiempo.",
                "Cada vuelta cuesta k² productos."]),
     "absorcion": dict(
         nombre="el tiempo medio de llegada",

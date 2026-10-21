@@ -4,7 +4,7 @@ title: "¿Olvida su inicio?"
 nav_title: "¿Olvida su inicio?"
 summary: "La conjetura de la tarea, revisada: cuándo dos inicios distintos acaban en la misma distribución, qué tan rápido se juntan, el algoritmo ITERACIÓN DE POTENCIAS con su tolerancia y su tope de pasos, y una trayectoria larga del Quijote frente a su estacionaria."
 status: ready
-estimated_time: 26m
+estimated_time: 27m
 tags: [markov, estacionaria, algoritmo]
 ---
 
@@ -39,7 +39,8 @@ Al terminar tendrás:
 Una sola clase cerrada **aperiódica**. @mkv-c2-teo-converge lo dice para cualquier cadena finita de $k$ estados: con una sola clase cerrada y aperiódica, ${\mu_0P^t\to\mu}$ **desde todo** $\mu_0$. El límite es la única estacionaria de @mkv-c2-teo-unica.
 
 - **En palabras.** Olvidar el inicio es que $\mu_t$ deje de depender de $\mu_0$ cuando $t$ crece.
-- **Lo que no dice.** La condición es suficiente, no necesaria. Tampoco dice cuántos pasos hacen falta.
+- **Condición exacta.** En una cadena finita, una sola clase cerrada aperiódica es necesaria y suficiente para converger a la misma $\mu$ desde todo $\mu_0$. Desde un inicio particular, $\mu_0P^t$ puede converger sin ella.
+- **Lo que no dice.** Cuántos pasos hacen falta.
 - **Tres preguntas.** [[mkv-la-estacionaria|La estacionaria]] separó $\mu_t$ en el paso $t$, su límite y la fracción del tiempo. Esta página responde la segunda a mano y con un algoritmo, y la tercera simulando.
 
 **En el juguete.** La tarea dejó dos sucesiones de ${\Pr(S_t=V)}$ con la matriz de la frase:
@@ -50,7 +51,7 @@ Una sola clase cerrada **aperiódica**. @mkv-c2-teo-converge lo dice para cualqu
 - **La alternante no.** Con estados A, B, sus filas son ${(0,\ 1)}$ y ${(1,\ 0)}$: una clase cerrada de periodo 2. Desde A da 1, 0, 1, 0, … (la tarea la corrió con V y C).
 
 ::: figure {#mkv-c2-fig-mu-t-inicios title="Dos inicios que se juntan y uno que no se asienta"}
-![Probabilidad de estar en el primer estado en el paso t, de t = 0 a 10. Matriz de la frase (V, C) desde V: 1.000, 0.182, 0.579, 0.386, 0.479, 0.434, 0.456, 0.446, 0.451, 0.448, 0.449. Desde C: 0.000, 0.667, 0.343, 0.500, 0.424, 0.461, 0.443, 0.452, 0.448, 0.450, 0.449. Las dos se juntan en μ(V) = 22/49 ≈ 0.449; la distancia a μ se multiplica por 16/33 en cada paso. Cadena alternante desde A: 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1; oscila y no converge](../_assets/mkv-c2-mu-t-inicios.svg)
+![Probabilidad de estar en el primer estado en el paso t, de t = 0 a 10. Matriz de la frase (V, C) desde V: 1.000, 0.182, 0.579, 0.386, 0.479, 0.434, 0.456, 0.446, 0.451, 0.448, 0.449. Desde C: 0.000, 0.667, 0.343, 0.500, 0.424, 0.461, 0.443, 0.452, 0.448, 0.450, 0.449. Las dos se juntan en μ(V) = 22/49 ≈ 0.449; la distancia a μ se multiplica por 16/33 en cada paso. Cadena alternante desde A: 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1; alterna entre 1 y 0 y no converge.](../_assets/mkv-c2-mu-t-inicios.svg)
 :::
 
 - **Qué es un punto.** Una cuenta exacta, ${\mu_t(V)=(\mu_0P^t)(V)}$; aquí no hay azar ni réplicas.
@@ -166,7 +167,14 @@ Con ${a=1/2}$ y ${b=1/4}$: ${\mu=(1/3,\ 2/3)}$ y ${\lambda=1/4}$. La distancia i
 | 10 | 0.0019 | 0.0016 |
 
 - **Más lento.** En ${t=10}$ la frase ya está a 0.0008 desde V; el *Quijote*, a 0.0019. Un $\lvert\lambda\rvert$ mayor deja más distancia cada paso.
-- **Su destino.** ${\mu=(752\,551/1\,620\,531,\ 867\,980/1\,620\,531)\approx(0.4644,\ 0.5356)}$, del mismo sistema de dos ecuaciones.
+- **Su destino.** Sale del mismo sistema de dos ecuaciones:
+
+  $$
+  \begin{aligned}
+  \mu&=\left(\tfrac{752\,551}{1\,620\,531},\ \tfrac{867\,980}{1\,620\,531}\right)\\
+  &\approx(0.4644,\ 0.5356).
+  \end{aligned}
+  $$
 
 Con $k$ estados no hay un solo $\lambda$ que leer en la matriz; hace falta un procedimiento que itere y sepa parar.
 
@@ -190,7 +198,7 @@ Multiplicando por $P$ hasta que el vector deje de cambiar. Si la cadena cumple @
 - **A qué converge y bajo qué condición:** a la única $\mu$, desde todo $\mu_0$, si hay una sola clase cerrada y es aperiódica (@mkv-c2-teo-converge). Sin esa condición, puede no parar.
 
 ::: figure {#mkv-c2-fig-flujo-potencias title="La iteración de potencias, en palabras"}
-![Diagrama de flujo de la iteración de potencias, en palabras. 1: Empieza con μ₀ y t = 0. 2: Multiplica: μ′ = μP y suma 1 a t. 3, pregunta: ¿‖μ′ − μ‖₁ ≤ tol? Si no, sigue abajo. 4, pregunta: ¿t llegó al tope? Si no, sigue abajo. 5: Avanza: μ ← μ′. 6: Devuelve μ′ y t. Desde el paso 5, si otra vuelta, vuelve al paso 2. Desde el paso 3, si sí, salta al paso 6. Desde el paso 4, si sí, salta al paso 6. Si para por el tope, avisa: no convergió (la alternante desde A). Cada vuelta cuesta k² productos](../_assets/mkv-c2-flujo-potencias.svg)
+![Diagrama de flujo de la iteración de potencias, en palabras. 1: Empieza: μ ← μ₀ y pasos = 1. 2: Multiplica: nuevo = μP. 3: Mide d = ‖nuevo − μ‖₁ y avanza: μ ← nuevo. 4, pregunta: ¿d ≤ tol? Si no, sigue abajo. 5, pregunta: ¿pasos llegó al tope? Si no, sigue abajo. 6: Suma 1 a pasos. 7: Devuelve (μ, «no paró»). 8: Devuelve (μ, pasos). Desde el paso 6, si otra vuelta, vuelve al paso 2. Desde el paso 4, si sí, salta al paso 8. Desde el paso 5, si sí, salta al paso 7. «No paró» no prueba que no converja: solo que no cumplió tol a tiempo. Cada vuelta cuesta k² productos.](../_assets/mkv-c2-flujo-potencias.svg)
 :::
 
 ```text
@@ -243,6 +251,7 @@ print(iteracion_potencias(alternante, [1, 0], 1e-6, 1000))
 - **Línea 4.** Es PREDECIR con un solo paso: ${k^2}$ productos.
 - **Línea 5.** Mide cuánto se movió el vector, no cuánto le falta: $\mu$ todavía no se conoce.
 - **Líneas 7 y 9.** La tolerancia decide si paró; el tope garantiza que el ciclo termina aunque la cadena no converja.
+- **«No paró» no es «no converge».** Solo dice que no cumplió la tolerancia dentro del tope; con un tope mayor, una cadena lenta sí pararía.
 - **Por qué no siempre el sistema.** Resolver $k$ ecuaciones por eliminación cuesta del orden de $k^3$ operaciones. Iterar cuesta $k^2$ por paso, y menos si casi todas las entradas de $P$ son 0: solo se multiplican las flechas que existen.
 
 **Cómo leer la traza.** La frase desde C, con ${\mathrm{tol}=10^{-2}}$. Cada renglón muestra $\mu(V)$ y $d$ tras el paso indicado.
@@ -295,7 +304,7 @@ El vector salta entre ${(1,\ 0)}$ y ${(0,\ 1)}$; cada paso mueve 2. Nunca baja d
 > **Leer $d\le\mathrm{tol}$ como «estoy a $\mathrm{tol}$ de $\mu$».** $d$ mide cuánto se movió el último paso.
 > **Si la cadena se mueve despacio, el vector puede quedar mucho más lejos de $\mu$ que $\mathrm{tol}$.**
 
-Con dos estados se puede medir: la distancia que falta es ${d\cdot\lvert\lambda\rvert/(1-\lambda)}$. En la frase, ${16/49}$ de $d$; con ${\lambda=0.999}$, 999 veces $d$.
+Con dos estados y ${a+b>0}$, de modo que ${\lambda<1}$, se puede medir: la distancia que falta es ${d\cdot\lvert\lambda\rvert/(1-\lambda)}$. Para la identidad, ${\lambda=1}$, no aplica. En la frase, ${16/49}$ de $d$; con ${\lambda=0.999}$, 999 veces $d$.
 
 ### Lo que garantiza y cuánto cuesta
 
@@ -364,7 +373,9 @@ Una vez que la trayectoria sale de $s_1$, ¿puede volver?
 :::
 
 ::: answer {#mkv-c2-ol-resp-dos-clases of="mkv-c2-ol-ej-dos-clases"}
-$s_1$ es transitorio y ${\{s_2\}}$, ${\{s_3\}}$ son dos clases cerradas. Cada trayectoria pasa unos pasos en $s_1$ y luego cae en una de ellas para siempre. Si cae en $s_2$, su fracción ahí es casi 1 (0.998: dos de los mil pasos fueron en $s_1$); si cae en $s_3$, es 0. El límite es aleatorio. El teorema pide una sola clase cerrada; aquí hay dos, así que no aplica.
+$s_1$ es transitorio y ${\{s_2\}}$, ${\{s_3\}}$ son dos clases cerradas. Cada trayectoria pasa unos pasos en $s_1$ y luego cae en una de ellas para siempre. Si cae en $s_2$, su fracción ahí es casi 1 (0.998: dos de los mil pasos fueron en $s_1$); si cae en $s_3$, es 0. El límite es aleatorio: 1 o 0.
+
+El teorema pide una sola clase cerrada; aquí hay dos, así que no aplica.
 :::
 
 Ya puedes revisar la conjetura con matrices que no son de dos estados.
@@ -394,8 +405,8 @@ $$
 4. **Predice el paro.** ¿En cuántos pasos para ITERACIÓN DE POTENCIAS con ${\mathrm{tol}=10^{-2}}$?
 :::
 
-::: hint {#mkv-c2-ol-pista-tres-estados-1 of="mkv-c2-ol-ej-tres-estados" title="Pista 1 · ¿Qué recorridos regresan a la sala 1?"}
-¿Puedes regresar en 2 pasos? ¿En 3? ¿Cuánto suma cada columna de $P$?
+::: hint {#mkv-c2-ol-pista-tres-estados-1 of="mkv-c2-ol-ej-tres-estados" title="Pista 1 · ¿Qué necesitas para cada entregable?"}
+Separa tu propuesta en clases, longitudes posibles de regreso a la sala 1 y ecuaciones de la estacionaria. ¿Qué información de la matriz necesitas para cada parte?
 :::
 
 ::: hint {#mkv-c2-ol-pista-tres-estados-2 of="mkv-c2-ol-ej-tres-estados" title="Pista 2 · ¿Comparaste contra el vector correcto?"}
@@ -465,12 +476,12 @@ Si sustituyes ${\lambda=-16/33}$ en tu respuesta al entregable 2, ¿recuperas el
 
 ## Lo que hay que llevarse
 
-- **La conjetura, con condición.** Una sola clase cerrada aperiódica basta para olvidar el inicio (@mkv-c2-teo-converge). La alternante tiene periodo 2: desde A da 1, 0, 1, 0, …
+- **La conjetura, con condición.** Una sola clase cerrada aperiódica es necesaria y suficiente para olvidar el inicio desde todo $\mu_0$ (@mkv-c2-teo-converge). La alternante tiene periodo 2: desde A da 1, 0, 1, 0, …
 - **A mano.** La frase da ${\mu=(22/49,\ 27/49)}$, con ${22/49\approx0.449}$.
 - **El ritmo con dos estados.** La distancia se multiplica por ${\lvert\lambda\rvert=\lvert1-a-b\rvert}$; en la frase, ${16/33\approx0.485}$. En ${t=8}$, las dos sucesiones distan 0.003.
 - **El algoritmo.** ITERACIÓN DE POTENCIAS para cuando ${d\le\mathrm{tol}}$ o al llegar al tope. Con ${\mathrm{tol}=10^{-6}}$: 21 pasos en la frase, 24 en el *Quijote*. La alternante nunca para.
 - **La tolerancia.** $d$ es lo que se movió el último paso, no lo que falta.
-- **Una trayectoria.** En la frase, 0.4494 en 10 000 pasos frente a 0.4490. En el *Quijote*, 0.46434 en 100 000 pasos frente a ${\mu(V)\approx0.46439}$. Con dos clases cerradas, el límite depende de la réplica: 0 o 0.998.
+- **Una trayectoria.** En la frase, 0.4494 en 10 000 pasos frente a 0.4490. En el *Quijote*, 0.46434 en 100 000 pasos frente a ${\mu(V)\approx0.46439}$. Con dos clases cerradas, la fracción a ${T=1000}$ depende de la réplica, 0 o 0.998, y su límite es aleatorio: 0 o 1.
 - **El alcance.** Simular con la misma $\widehat P$ comprueba el procedimiento; no valida el modelo del idioma.
 - **Lo que no generaliza.** Con dos estados el ritmo es un solo número, ${\lvert\lambda\rvert}$. Con $k$ estados, la distancia no se multiplica por lo mismo en cada paso, y el teorema no dice cuántos pasos.
 

@@ -4,7 +4,7 @@ title: "La estacionaria y sus cuatro teoremas"
 nav_title: "La estacionaria"
 summary: "Tres preguntas sobre el largo plazo, la distribución que no cambia al dar un paso y los cuatro teoremas que dicen cuándo existe, cuándo es única, cuándo se llega a ella y cuándo mide la fracción del tiempo."
 status: ready
-estimated_time: 29m
+estimated_time: 30m
 tags: [markov, estacionaria, convergencia, ergodico]
 ---
 
@@ -57,7 +57,7 @@ $$
 $$
 
 - **En el paso $t$:** un número fijo para cada $t$; lo calcula $\mu_0P^t$ sin azar.
-- **En el límite:** un vector fijo, si existe; una sucesión que oscila no tiene límite (@mkv-c2-def-limite).
+- **En el límite:** un vector fijo, si existe; alternar entre dos vectores distintos impide tener límite (@mkv-c2-def-limite).
 - **Fracción del tiempo:** cuenta sobre **una** trayectoria, así que es aleatoria. Su límite, si existe, puede seguir siendo aleatorio.
 
 **En el juguete.** La cadena que alterna, con estados A y B, siempre cambia de estado. Empieza en A.
@@ -117,7 +117,7 @@ $$
 $$
 
 - **Qué es:** una distribución sobre los estados que no cambia al multiplicarla por $P$.
-- **Cómo se calcula:** resolviendo el sistema lineal $\mu(P-I_k)=\mathbf 0$ con la ecuación $\mu\mathbf 1=1$ en lugar de una de las $k$ ecuaciones, que es redundante (@mkv-c2-def-sistema).
+- **Cómo se calcula:** resolviendo el sistema lineal $\mu(P-I_k)=\mathbf 0$ con la ecuación $\mu\mathbf 1=1$ en lugar de una de las $k$ ecuaciones, que es redundante (@mkv-c2-def-sistema), y conservando solo las soluciones sin entradas negativas. En la identidad $I_2$, $(2,-1)$ cumple el sistema y no es una distribución.
 - **Qué significa:** si $\mu_0=\mu$, entonces $\mu_t=\mu$ en todo paso. Arrancas en ella y te quedas en ella.
 - **Qué no es:** un estado donde la cadena se detiene. La trayectoria sigue saltando; lo que no cambia son las probabilidades.
 :::
@@ -279,7 +279,7 @@ $$
 - **Lo que se cita:** el punto 2 es otra vez Frobenius, dentro de cada clase.
 
 ::: proof {#mkv-c2-es-dem-unica of="mkv-c2-teo-unica"}
-**Punto 1.** Sea $\mathcal U$ el conjunto de estados fuera de las clases cerradas. Desde cada $s\in\mathcal U$ se alcanza alguna clase cerrada (la prueba de @mkv-c2-cl-teo-hay-cerrada) por un camino de menos de $k$ pasos, y ya no se sale. Entonces, con $\Pr_s$ la probabilidad empezando en $s$:
+**Punto 1.** Sea $\mathcal U$ el conjunto de estados fuera de las clases cerradas. Si $\mathcal U=\varnothing$, el punto 1 es inmediato; supón $\mathcal U\ne\varnothing$. Desde cada $s\in\mathcal U$ se alcanza alguna clase cerrada (la prueba de @mkv-c2-cl-teo-hay-cerrada) por un camino de menos de $k$ pasos, y ya no se sale. Entonces, con $\Pr_s$ la probabilidad empezando en $s$:
 
 $$
 \delta=\min_{s\in\mathcal U}\Pr_s(S_k\notin\mathcal U)>0.
@@ -360,13 +360,13 @@ $$
 
 donde $\mu$ es la única estacionaria de @mkv-c2-teo-unica. Equivale a que cada fila de $P^t$ tienda a $\mu$.
 
-**Lectura.** Desde donde sea que empiece, la cadena olvida su inicio: $\mu_t$ se acerca a $\mu$.
+**Lectura.** Desde donde sea que empiece, la cadena olvida su inicio: $\mu_t$ se acerca a $\mu$. La condición es **necesaria y suficiente** para que $\mu_0P^t$ tienda a una misma $\mu$ desde todo $\mu_0$.
 
 **Casos nulos.** Los transitorios pueden tener cualquier periodo; solo cuenta el de la clase cerrada.
 :::
 
 - **Prueba:** no la damos aquí; usa la aperiodicidad para que alguna potencia de $P$ tenga una columna, de un estado de $C$, con todas sus entradas positivas.
-- **Suficiente:** desde un inicio **particular** se puede converger sin la condición. La cadena que alterna, desde $(1/2,1/2)$, ya está en su estacionaria y no se mueve.
+- **Necesaria y suficiente desde todo inicio:** la observación siguiente muestra que ninguna condición sobra. Desde un inicio **particular**, en cambio, se puede converger sin ella: la cadena que alterna, desde $(1/2,1/2)$, ya está en su estacionaria y no se mueve.
 
 ::: remark {#mkv-c2-es-obs-no-sobra title="Ninguna de las dos condiciones sobra"}
 Si falla cualquiera, hay algún inicio desde el que $\mu_t$ no tiende a $\mu$:
@@ -388,7 +388,7 @@ Si falla cualquiera, hay algún inicio desde el que $\mu_t$ no tiende a $\mu$:
 | 8 | 0.451 | 0.448 |
 
 > [!WARNING]
-> **Error típico:** «si la estacionaria es única, $\mu_t$ llega a ella». **Única no implica converge:** la cadena que alterna tiene una sola estacionaria y, desde A, oscila para siempre.
+> **Error típico:** «si la estacionaria es única, $\mu_t$ llega a ella». **Única no implica converge:** la cadena que alterna tiene una sola estacionaria y, desde A, alterna para siempre entre $(1,0)$ y $(0,1)$.
 
 > [!WARNING]
 > **Error típico:** «si todas las clases cerradas son aperiódicas, olvida su inicio». **Hace falta además que sea una sola:** en la cadena de dos clases cerradas, desde $s_1$, $\mu_t\to(0,1/2,1/2)$, y desde $s_2$, $\mu_t=(0,1,0)$. Converge, pero a límites distintos.
@@ -431,13 +431,13 @@ $$
 \end{aligned}
 $$
 
-**Lectura.** Con probabilidad 1, la fracción del tiempo que una trayectoria pasa en $s$ tiende a $\mu(s)$, empiece donde empiece.
+**Lectura.** Con probabilidad 1, la fracción del tiempo que una trayectoria pasa en $s$ tiende a $\mu(s)$, empiece donde empiece. Una sola clase cerrada es **necesaria y suficiente** para que haya ese mismo límite $\mu(s)$ desde todo inicio.
 
 **Casos nulos.** Si $s$ es transitorio, $\mu(s)=0$: la trayectoria lo visita un número finito de veces.
 :::
 
 - **Prueba:** no la damos. La idea: la trayectoria entra a la clase cerrada en un tiempo finito y, dentro, los regresos a $s$ se repiten como ciclos independientes.
-- **Suficiente:** es la condición que usamos; el contraejemplo muestra que con dos clases cerradas falla.
+- **Necesaria y suficiente desde todo inicio:** con dos clases cerradas, empezar dentro de cada una da límites distintos, y empezar en un transitorio puede dar un límite aleatorio, como en el contraejemplo.
 
 **Contraejemplo: dos clases cerradas con un transitorio.** Empieza en $s_1$. Cuando sale, cae en $s_2$ o en $s_3$, cada uno con probabilidad $1/2$, y se queda.
 
@@ -485,12 +485,13 @@ Cada teorema pide un poco más que el anterior, salvo el ergódico, que no pide 
 ::: table {#mkv-c2-tabla-cuatro title="Los cuatro teoremas, en cadenas finitas"}
 | Resultado | Condición | Contraejemplo |
 |---|---|---|
-| Existe una estacionaria | La cadena es finita (suficiente) | $i\to i+1$ en $\{0,1,2,\dots\}$: ninguna |
-| Es única | Una sola clase cerrada (si y solo si) | Identidad; dos clases cerradas con un transitorio |
-| $\mu_0P^t\to\mu$ desde todo $\mu_0$ | Una sola clase cerrada, aperiódica (suficiente) | La que alterna, desde A: oscila |
-| $N_T(s)/T\to\mu(s)$ con probabilidad 1 | Una sola clase cerrada, periódica o no (suficiente) | Dos clases cerradas: el límite es aleatorio |
+| Existe | Cadena finita (basta) | $i\to i+1$ |
+| Es única | Una clase cerrada (si y solo si) | Identidad |
+| Converge a $\mu$ desde todo inicio | Una clase cerrada y aperiódica (si y solo si) | Alterna, desde A |
+| Fracción del tiempo $\to\mu(s)$ | Una clase cerrada, aunque sea periódica (si y solo si) | Dos clases cerradas |
 :::
 
+- **Contraejemplos:** $i\to i+1$ en $\{0,1,2,\dots\}$, ninguna; identidad, varias; alterna desde A, sin límite; dos clases cerradas, límite aleatorio.
 - **Fuera de las clases cerradas:** toda estacionaria vale cero.
 - **Cómo se calcula $\mu$:** con el sistema lineal de la sección 2; cuando @mkv-c2-teo-converge aplica, también multiplicando $\mu_tP$ hasta que deje de cambiar.
 - **Lo que no se lee en la tabla:** la convergencia y el ergódico responden preguntas distintas. La cadena que alterna cumple el cuarto renglón y no el tercero.
@@ -513,7 +514,7 @@ Usa la cadena de cinco estados de [[mkv-clasificar-estados|Clasificar los estado
 :::
 
 ::: hint {#mkv-c2-es-pista-cinco-estados-1 of="mkv-c2-es-ej-cinco-estados" title="Pista 1 · ¿Qué pasa después del primer paso?"}
-Desde $s_1$, ¿a qué estados puede ir la cadena en el primer paso, y puede volver a salir de ellos? ¿Qué filas de $P$ importan después?
+Desde $s_1$, ¿en qué clase puede entrar la cadena en el primer paso? ¿Puede salir después de esa clase? ¿Qué filas de $P$ describen lo que ocurre dentro de cada una?
 :::
 
 ::: hint {#mkv-c2-es-pista-cinco-estados-2 of="mkv-c2-es-ej-cinco-estados" title="Pista 2 · ¿Cumplen tus vectores las tres condiciones?"}
@@ -550,8 +551,8 @@ La otra mitad sí se asienta: $\mu_t(s_4)\to\tfrac12\cdot\tfrac23=\tfrac13$.
 - **Estacionaria:** $\mu P=\mu$, $\mu\mathbf 1=1$, $\mu\ge0$. Si $\mu_t$ tiene límite, es estacionaria.
 - **Existe:** si la cadena es finita (suficiente; $i\to i+1$ no tiene).
 - **Única:** si y solo si hay una sola clase cerrada. Fuera de las clases cerradas, $\mu=0$.
-- **Converge desde todo inicio:** una sola clase cerrada y aperiódica (suficiente). La que alterna, desde A, oscila.
-- **Ergódico:** una sola clase cerrada, aunque sea periódica; con probabilidad 1, $N_T(s)/T\to\mu(s)$.
+- **Converge a la misma $\mu$ desde todo inicio:** si y solo si hay una sola clase cerrada y es aperiódica. La que alterna, desde A, no tiene límite.
+- **Ergódico:** con probabilidad 1, $N_T(s)/T\to\mu(s)$ desde todo inicio si y solo si hay una sola clase cerrada, aunque sea periódica.
 - **La frase:** $\mu=(22/49,\ 27/49)$, $\mu(V)\approx0.449$; cumple los cuatro.
 - **Consulta:** @mkv-c2-tabla-cuatro.
 
