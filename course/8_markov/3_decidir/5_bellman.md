@@ -70,6 +70,8 @@ $$
 
 La fórmula es condicionar en el primer paso (@mkv-c2-teo-primer-paso): primero $a$, luego $\pi$ desde donde caigas.
 
+En juegos ya usaste la letra: $Q(s,a)=V(T(s,a))$, con una sola jugada siguiente y sin pago intermedio. Aquí el siguiente estado es azar y se suma $r(s,a)$.
+
 **En el juguete.** Con $\pi$ = caminar–caminar, $V_\pi=(-6,-3)$:
 
 $$
@@ -205,6 +207,18 @@ $$
 > [!WARNING]
 > **Error típico:** «si un vector cumple la ecuación de Bellman, es $V^*$». **Solo con la condición.** Con esperar gratis, $(-5,-2)$ cumple la ecuación y no es el óptimo (sección 6).
 
+::: exercise {#mkv-c3-be-ej-revisar title="Revisa un vector con la ecuación"}
+Correr–caminar vale $(-15,-3)$. Calcula el lado derecho de la ecuación de Bellman en ese vector. ¿Lo cumple? ¿En qué casillas falla, y qué acción gana ahí?
+:::
+
+::: hint {#mkv-c3-be-pista-revisar of="mkv-c3-be-ej-revisar" title="Dos acciones por casilla"}
+En cada casilla, suma la recompensa de la acción y el promedio de $V$ donde caes. ¿Cuál de las dos da más?
+:::
+
+::: answer {#mkv-c3-be-resp-revisar of="mkv-c3-be-ej-revisar"}
+Casilla 2: $\max\bigl(-3,\ -1+\tfrac12(-3)\bigr)=-\tfrac52$, gana correr. Casilla 1: $\max\bigl(-3+(-3),\ -6+\tfrac12(-15)+\tfrac12(-3)\bigr)=\max(-6,-15)=-6$, gana caminar. Da $(-6,-\tfrac52)\ne(-15,-3)$: falla en las dos casillas, y correr–caminar no es óptima.
+:::
+
 Ya sabemos qué cumple $V^*$. ¿Y la política que lo alcanza?
 
 ---
@@ -233,12 +247,17 @@ Una política $\pi$ es óptima **si y solo si** $\pi(s)\in\arg\max_aQ^*(s,a)$ pa
 :::
 
 ::: proof {#mkv-c3-be-dem-codiciosa of="mkv-c3-teo-codiciosa"}
-La damos con $r\le0$, como en el pasillo: así, una política que no termina acumula una suma que baja a $-\infty$. Si todas las políticas terminan, como en los volados del ejercicio final, ese primer paso sobra y el resto vale con recompensas de cualquier signo. Los vectores son columnas sobre $\mathcal T$.
+La damos con $r\le0$, como en el pasillo: así las sumas parciales solo bajan. Que una política que no termina valga $-\infty$ lo pone la condición 4, no el signo: esperar gratis no termina y vale 0.
+
+Si todas las políticas terminan (lo verás en los volados del ejercicio final), el primer paso de abajo sobra y el resto vale con recompensas de cualquier signo. Los vectores son columnas sobre $\mathcal T$.
 
 **Si.** Sea $\pi$ con $\pi(s)$ en el argmax. Por @mkv-c3-teo-bellman, $V^*=r_\pi+P_{\pi,\mathcal T}V^*$. Sustituyendo $n$ veces:
 
 $$
-V^*=\sum_{k=0}^{n-1}P_{\pi,\mathcal T}^{\,k}\,r_\pi+P_{\pi,\mathcal T}^{\,n}\,V^*.
+\begin{aligned}
+V^*&=\sum_{k=0}^{n-1}P_{\pi,\mathcal T}^{\,k}\,r_\pi\\
+&\quad+P_{\pi,\mathcal T}^{\,n}\,V^*.
+\end{aligned}
 $$
 
 - **$\pi$ termina.** Si no, la condición 4 da un $s_0$ con $V_\pi(s_0)=-\infty$. La suma en $s_0$ baja a $-\infty$, y el último término queda acotado por $\max_s\lvert V^*(s)\rvert$. Contradice que $V^*(s_0)$ es finito.
@@ -281,7 +300,7 @@ Compara las dos acciones en cada casilla con $U=0$. Luego, ¿cumple $(0,0)$ la e
 :::
 
 ::: answer {#mkv-c3-be-resp-codiciosa-cero of="mkv-c3-be-ej-codiciosa-cero"}
-En 1, caminar ($-3$) contra correr ($-6$); en 2, caminar ($-3$) contra correr ($-1$). Da caminar–correr: es óptima. Pero $(0,0)$ no cumple Bellman: el lado derecho da $(-3,-1)$. La codiciosa acertó por suerte; @mkv-c3-teo-codiciosa solo garantiza la de $V^*$.
+En 1, caminar ($-3$) contra correr ($-6$); en 2, caminar ($-3$) contra correr ($-1$). Da caminar–correr: es óptima. Pero $(0,0)$ no cumple Bellman: el lado derecho da $(-3,-1)$. La codiciosa acertó por suerte; @mkv-c3-teo-codiciosa solo garantiza la de $V^*$. Es la codiciosa de la escalera: con $U=0$ solo cuenta el costo inmediato.
 :::
 
 ---
@@ -376,12 +395,12 @@ False True False
 > [!NOTE]
 > **Recuadro · Si el futuro pesa menos.** En [[de-consecuencias-a-refuerzo|De consecuencias a refuerzo]] el retorno multiplicaba por $\gamma^t$ la recompensa de $t$ pasos adelante, con $0\le\gamma<1$ (descuento). Bellman queda
 >
-> $$V(s)=\max_a\Bigl[r(s,a)+\gamma\sum_{s'}P(s'\mid s,a)V(s')\Bigr],$$
+> $$\begin{aligned}V(s)=\max_a\Bigl[&r(s,a)\\&+\gamma\sum_{s'}P(s'\mid s,a)V(s')\Bigr],\end{aligned}$$
 >
-> y tiene una sola solución sin pedir que nada termine. Con esperar gratis, esa solución es $(0,0)=V^*$. El descuento arregla la ecuación, no el modelo: esperar sigue siendo lo mejor. Aquí todo termina, usamos $\gamma=1$ y pagamos con la condición.
+> y tiene una sola solución sin pedir que nada termine. Con esperar gratis, esa solución es $(0,0)=V^*$. El descuento arregla la ecuación, no el modelo: esperar sigue siendo lo mejor. Aquí usamos $\gamma=1$ y pagamos con la condición de @mkv-c3-teo-bellman.
 
 ::: exercise {#mkv-c3-be-ej-costo-uno title="Revisa que esperar caro ya no estorba"}
-Con esperar a costo 1, evalúa el lado derecho de la ecuación en $(0,0)$ y en $(-1,-1)$. ¿Son puntos fijos?
+Con esperar gratis, $(-2,-1)$ resuelve la ecuación: está en la región. Ahora cobra 1 por esperar y evalúa el lado derecho en $(-2,-1)$. ¿Sigue siendo punto fijo?
 :::
 
 ::: hint {#mkv-c3-be-pista-costo-uno of="mkv-c3-be-ej-costo-uno" title="¿Cuánto da esperar desde V(s)?"}
@@ -389,7 +408,7 @@ El término de esperar es $-1+V(s)$. ¿Puede ser el máximo y valer $V(s)$ a la 
 :::
 
 ::: answer {#mkv-c3-be-resp-costo-uno of="mkv-c3-be-ej-costo-uno"}
-En $(0,0)$: casilla 2, $\max(-3,-1,-1)=-1$; casilla 1, $\max(-3,-6,-1)=-1$. Da $(-1,-1)\ne(0,0)$. En $(-1,-1)$: casilla 2, $\max(-3,-\tfrac32,-2)=-\tfrac32$. Ya no es punto fijo. Ninguno lo es.
+Casilla 2: $\max(-3,\,-1-\tfrac12,\,-1-1)=-\tfrac32$. Casilla 1: $\max(-1-3,\,-6-1-\tfrac12,\,-1-2)=-3$. Da $(-3,-\tfrac32)\ne(-2,-1)$: ya no es punto fijo. Con esperar gratis, el término $V(s)$ ganaba; ahora $-1+V(s)<V(s)$ siempre, y solo queda la solución de la ecuación sin esperar.
 :::
 
 ---
@@ -410,11 +429,11 @@ Un jugador tiene 1, 2 o 3 pesos y quiere llegar a 4. En cada volado apuesta un n
 :::
 
 ::: hint {#mkv-c3-be-pista-volados-1 of="mkv-c3-be-ej-volados" title="Pista 1 · ¿Qué recompensa da cada volado?"}
-$r(s,a)$ es la probabilidad de llegar a 4 en ese volado. ¿Desde qué capitales y con qué apuestas se puede llegar de un golpe? Para la audaz, empieza por el capital 2: ¿cuántos volados decide? Para la tímida, escribe las tres ecuaciones de @mkv-c3-teo-evaluar.
+¿En qué volados puedes recibir el 1, y con qué probabilidad? ¿Desde qué capitales y con qué apuestas se puede llegar de un golpe? Para la audaz, empieza por el capital 2: ¿cuántos volados decide? Para la tímida, escribe las tres ecuaciones de @mkv-c3-teo-evaluar.
 :::
 
 ::: hint {#mkv-c3-be-pista-volados-2 of="mkv-c3-be-ej-volados" title="Pista 2 · ¿Tienen sentido tus valores?"}
-¿Están entre 0 y 1, y crecen con el capital? Con $p=1/2$, ¿dan $s/4$? En el capital 2, ¿comparaste $p\,V(3)+(1-p)\,V(1)$ contra lo que da apostar 2?
+¿Están entre 0 y 1, y crecen con el capital? Con una moneda justa, ¿te parecen razonables para un juego justo? En el capital 2, ¿comparaste $p\,V(3)+(1-p)\,V(1)$ contra lo que da apostar 2?
 :::
 
 ::: answer {#mkv-c3-be-resp-volados of="mkv-c3-be-ej-volados" title="Respuesta · Contra la casa, apuesta fuerte"}

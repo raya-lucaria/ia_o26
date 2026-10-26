@@ -23,7 +23,7 @@ Al terminar tendrás:
 ## Lo que traes
 
 - **El óptimo.** $V^*(s)$ es el mejor valor posible desde $s$ y $Q^*(s,a)$ el de empezar con $a$ (@mkv-c3-def-q, @mkv-c3-def-optimo).
-- **Bellman.** En [[mkv-bellman|La ecuación de Bellman]], $V^*$ es la única solución de ${V(s)=\max_a[r(s,a)+\sum_{s'}P(s'\mid s,a)V(s')]}$ bajo las condiciones de @mkv-c3-teo-bellman.
+- **Bellman.** En [[mkv-bellman|La ecuación de Bellman]], $V^*$ es la única solución de ${V(s)=\max_a(\text{lado derecho})}$ bajo las condiciones de @mkv-c3-teo-bellman. El lado derecho de $(s,a)$ es ${r(s,a)+\sum_{s'}P(s'\mid s,a)V(s')}$.
 - **Evaluar.** Una política que termina con probabilidad 1 tiene un solo valor, ${V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi}$ (@mkv-c3-teo-evaluar).
 - **El pasillo.** En [[mkv-el-mdp|El proceso de decisión de Markov]]: caminar cuesta 3; correr cuesta 1 y resbala con $1/2$; en la casilla 1 resbalar cuesta 10 más.
 - **Programación lineal.** En [[patrones-lineales|Patrones lineales]] viste `linprog`, que minimiza, y su convención de signos (@opt-signos). Un punto factible cumple todas las restricciones (@opt-factible).
@@ -49,7 +49,8 @@ Sea un MDP $\langle\mathcal S,\mathcal A,P,r\rangle$ con ${V=0}$ en $\mathcal F$
 $$
 \begin{aligned}
 \text{minimizar}\quad&\sum_{s\in\mathcal T}V(s)\\
-\text{sujeto a}\quad&V(s)\ge r(s,a)+\sum_{s'\in\mathcal T}P(s'\mid s,a)\,V(s')\\
+\text{sujeto a}\quad&V(s)\ge r(s,a)\\
+&\qquad+\sum_{s'\in\mathcal T}P(s'\mid s,a)\,V(s')\\
 &\text{para todo }s\in\mathcal T,\ a\in\mathcal A(s).
 \end{aligned}
 $$
@@ -68,12 +69,13 @@ Entonces $V^*$ es la **única** solución óptima del programa.
 ::: proof {#mkv-c3-lp-dem-lineal of="mkv-c3-teo-lineal"}
 **Factible.** $V^*$ es el máximo de los lados derechos, así que es mayor o igual que cada uno.
 
-**Abajo no hay nada.** Sea $V$ factible y $\pi^*$ la codiciosa de $V^*$ (@mkv-c3-teo-codiciosa). Por la condición, $\pi^*$ termina, y por @mkv-c3-teo-evaluar ${V^*=r_{\pi^*}+P_{\pi^*,\mathcal T}V^*}$. Las restricciones con ${a=\pi^*(s)}$ dicen ${V\ge r_{\pi^*}+P_{\pi^*,\mathcal T}V}$. Restando, ${d=V-V^*}$ cumple ${d\ge P_{\pi^*,\mathcal T}\,d}$. Las entradas de esa matriz son ${\ge0}$, así que la desigualdad se conserva al multiplicar: ${d\ge P_{\pi^*,\mathcal T}^{\,t}\,d}$ para todo $t$. Como $\pi^*$ termina, ${P_{\pi^*,\mathcal T}^{\,t}\to0}$, y queda ${d\ge0}$.
+**Abajo no hay nada.** Sea $V$ factible y $\pi^*$ la codiciosa de $V^*$ (@mkv-c3-teo-codiciosa). Por la condición, $\pi^*$ termina, y por @mkv-c3-teo-evaluar ${V^*=r_{\pi^*}+P_{\pi^*,\mathcal T}V^*}$. Las restricciones con ${a=\pi^*(s)}$ dicen ${V\ge r_{\pi^*}+P_{\pi^*,\mathcal T}V}$. Restando, la diferencia cumple ${V-V^*\ge P_{\pi^*,\mathcal T}(V-V^*)}$. Las entradas de esa matriz son ${\ge0}$, así que la desigualdad se conserva al multiplicar: ${V-V^*\ge P_{\pi^*,\mathcal T}^{\,t}(V-V^*)}$ para todo $t$. Como $\pi^*$ termina, ${P_{\pi^*,\mathcal T}^{\,t}\to0}$, y queda ${V-V^*\ge0}$.
 
 **Única.** Si ${V\ne V^*}$ es factible, alguna coordenada es estrictamente mayor y la suma también.
 :::
 
 - **Por qué minimizar.** Maximizar no tiene sentido: si $V$ es factible, ${V+1}$ también lo es, porque las probabilidades hacia $\mathcal T$ suman a lo más 1. La región no tiene techo.
+- **Una región que ya viste.** Es el conjunto de soluciones de Bellman con esperar gratis, de [[mkv-bellman|La ecuación de Bellman]]: ${V(s)=\max(\dots,V(s))}$ dice solo que $V(s)$ es mayor o igual que cada lado derecho. El programa busca su esquina más baja.
 - **Dónde está la acción.** En el óptimo, la restricción de $(s,a)$ queda con igualdad justo cuando $a$ es una acción óptima en $s$: su lado derecho vale $Q^*(s,a)$.
 
 **En el juguete.** El pasillo tiene dos variables, $V(1)$ y $V(2)$, y cuatro restricciones, una por par:
@@ -81,7 +83,8 @@ Entonces $V^*$ es la **única** solución óptima del programa.
 $$
 \begin{aligned}
 \text{(1, caminar)}\quad&V(1)\ge-3+V(2),\\
-\text{(1, correr)}\quad&V(1)\ge-6+\tfrac12V(1)+\tfrac12V(2),\\
+\text{(1, correr)}\quad&V(1)\ge-6+\tfrac12V(1)\\
+&\qquad+\tfrac12V(2),\\
 \text{(2, caminar)}\quad&V(2)\ge-3,\\
 \text{(2, correr)}\quad&V(2)\ge-1+\tfrac12V(2).
 \end{aligned}
@@ -158,10 +161,12 @@ OUTPUT  V* sobre 𝒯, o FALLA.
  2   para cada s en 𝒯:
  3     para cada a en 𝒜(s):
  4       fila ← P(·|s,a) en 𝒯, menos 1
-           en la columna de s (V = 0 en 𝓕)
+           en la columna de s
+           (V = 0 en 𝓕)
  5       agregar  fila · V ≤ −r(s,a)
- 6   V ← linprog: minimizar la suma de V,
-       sin cotas en las variables
+ 6   V ← linprog: minimizar la
+       suma de V, sin cotas en
+       las variables
  7   si no hay mínimo: return FALLA
  8   return V
 ```
@@ -184,9 +189,8 @@ def pl_bellman(T, acciones):            # (1)
             fila[pos[s]] -= 1
             A.append(fila)              # (5)
             b.append(-r)
-    res = linprog([1] * k, A_ub=A,
-                  b_ub=b,
-                  bounds=(None, None))  # (6)
+    res = linprog([1] * k, A_ub=A, b_ub=b,
+        bounds=(None, None))            # (6)
     if res.status != 0:
         return None                     # (7) FALLA
     return dict(zip(T, res.x))          # (8)
@@ -209,7 +213,7 @@ print([round(float(v), 6) for v in V.values()])
 - **Línea 7.** `status` vale 0 solo si encontró un mínimo; maximizar, por ejemplo, devuelve «no acotado».
 
 > [!WARNING]
-> **Olvidar `bounds=(None, None)`.** Por omisión `linprog` exige ${V\ge0}$; aquí las recompensas son negativas y devuelve ${(0,0)}$ sin quejarse.
+> **Olvidar `bounds=(None, None)`.** Por omisión `linprog` exige ${V\ge0}$; aquí las recompensas son negativas y el solver devuelve un número que no es $V^*$ sin quejarse.
 > **Los valores pueden ser negativos: las variables van sin cota.**
 
 ### Lo que garantiza y cuánto cuesta
@@ -281,7 +285,8 @@ El pasillo es el mismo: caminar cuesta 3 y correr cuesta 1 y resbala con $1/2$. 
 $$
 \begin{aligned}
 \text{(1, caminar)}\quad&V(1)\ge V(2)-3,\\
-\text{(1, correr)}\quad&V(1)\ge-1+\tfrac12V(1)+\tfrac12V(2),\\
+\text{(1, correr)}\quad&V(1)\ge-1+\tfrac12V(1)\\
+&\qquad+\tfrac12V(2),\\
 &\text{es decir, }V(1)\ge V(2)-2,\\
 \text{(2, caminar)}\quad&V(2)\ge-3,\\
 \text{(2, correr)}\quad&V(2)\ge-2.

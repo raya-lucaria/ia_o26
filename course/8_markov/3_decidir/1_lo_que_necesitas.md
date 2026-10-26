@@ -13,7 +13,7 @@ tags: [markov, decidir, punto-fijo, argmax]
 **¿Qué herramientas faltan para pasar de promediar lo que hace una cadena a elegir lo que conviene?**
 
 > [!NOTE]
-> **Por qué estudiamos esto.** En las clases 1 y 2 la cadena se movía sola: tú solo calculabas promedios. En esta clase, en cada estado **eliges** qué hacer, y cada elección cambia a dónde puedes ir después.
+> **Por qué estudiamos esto.** En las clases 1 y 2 la cadena se movía sola. Ahora, en cada estado **eliges** qué hacer, y cada elección cambia a dónde puedes ir después.
 >
 > - Un robot elige caminar o correr; correr es rápido, pero puede resbalar.
 > - Un jugador elige cuánto apostar; la apuesta cambia su capital y sus opciones siguientes.
@@ -68,7 +68,7 @@ $$
 :::
 
 - **Notación.** $\mathcal A(s)$ son las opciones disponibles en $s$; en esta clase serán acciones. Va en caligráfica porque $A$ ya es el conjunto de llegada de la clase 2; juegos escribió $A(s)$ para las jugadas.
-- **Costos.** Si cada opción trae un costo, se busca el menor. Es lo mismo con signo cambiado: $\min_a\text{costo}(a)=-\max_a\bigl(-\text{costo}(a)\bigr)$, con el mismo conjunto de opciones elegidas.
+- **Costos.** Si cada opción $a$ trae un costo $f(a)$, se busca el menor. Es lo mismo con signo cambiado: $\min_a f(a)=-\max_a\bigl(-f(a)\bigr)$, con el mismo conjunto de opciones elegidas.
 
 **En el juguete.** Tres opciones, izquierda, centro y derecha, con valores $-3$, $-1$ y $-1$:
 
@@ -104,14 +104,14 @@ El máximo decide un paso. Para decidir el siguiente hay que saber cuánto vale 
 
 Un paso más lo que falte desde donde caigas; y si caes en el mismo estado, lo que falta es **la misma incógnita**.
 
-Es @mkv-c2-teo-primer-paso con un pago en cada paso. Si $X$ es lo que se recibe hasta terminar y el primer paso desde $s$ da un pago fijo, entonces, para cada $s'$ con $P_{ss'}>0$,
+Es @mkv-c2-teo-primer-paso con un pago en cada paso. Si $X$ es lo que se recibe hasta terminar y el primer paso desde $s$ da un pago que puede depender de $s'$, entonces, para cada $s'$ con $P_{ss'}>0$,
 
 $$
 \begin{aligned}
 E_s[X\mid S_1=s']
-&=(\text{pago del primer paso})+E_{s'}[X],\\
+&=(\text{pago al caer en }s')+E_{s'}[X],\\
 E_s[X]
-&=(\text{pago del primer paso})\\
+&=(\text{promedio de ese pago})\\
 &\qquad+\sum_{s'\in\mathcal T}P_{ss'}\,E_{s'}[X],
 \end{aligned}
 $$
@@ -186,11 +186,7 @@ $$
 ::: theorem {#mkv-c3-mx-teo-pendiente title="Iterar una recta: llega, se acerca o no"}
 Sea $f(x)=f(0)+q\,x$, con pendiente $q\in[0,1]$.
 
-- **Si $q<1$:** hay un solo punto fijo, $x^*=f(0)/(1-q)$, y desde cualquier $x^{(0)}$
-  $$
-  x^{(t)}-x^*=q^t\bigl(x^{(0)}-x^*\bigr).
-  $$
-  Con $q=0$ llega en una ronda; con $0<q<1$ se acerca sin llegar, y el error se multiplica por $q$ en cada ronda.
+- **Si $q<1$:** hay un solo punto fijo, $x^*=f(0)/(1-q)$, y desde cualquier $x^{(0)}$ se cumple ${x^{(t)}-x^*}={q^t\bigl(x^{(0)}-x^*\bigr)}$. Con $q=0$ llega en una ronda; con $0<q<1$ y $x^{(0)}\ne x^*$ se acerca sin llegar, y el error se multiplica por $q$ en cada ronda.
 - **Si $q=1$ y $f(0)\ne0$:** no hay punto fijo; cada ronda suma $f(0)$ y la sucesión se va a $\pm\infty$.
 - **Si $q=1$ y $f(0)=0$:** todo número es punto fijo; la iteración se queda donde empezó.
 
@@ -219,7 +215,7 @@ x^{(t)}=-2+2^{1-t}:\quad
 $$
 
 - **El error** vale $2^{1-t}$: se parte a la mitad en cada ronda y nunca llega a cero.
-- **Lectura:** $x^{(t)}$ es lo que pagas en promedio si te obligan a parar tras $t$ pasos. Con $t=2$: pagas 1 seguro, y 1 más con probabilidad $1/2$.
+- **Lectura:** $-x^{(t)}$ es lo que pagas en promedio si te obligan a parar tras $t$ pasos. Con $t=2$: pagas 1 seguro, y 1 más con probabilidad $1/2$.
 - **Cuándo parar:** nunca llega; hace falta una tolerancia (@mkv-c2-def-limite).
 
 ::: figure {#mkv-c3-fig-punto-fijo title="Iterar f(x) = −1 + x/2 desde 0: una telaraña que se cierra en −2"}
@@ -284,7 +280,7 @@ Con $f(x)=-1+x/2$ desde 0, ¿tras cuántas rondas el error queda por primera vez
 **Ocho rondas.** El error es $2^{1-t}$ y pide $2^{t-1}\ge100$; $2^6=64$ no basta y $2^7=128$ sí, así que $t-1=7$.
 :::
 
-Con las tres herramientas puedes escribir y resolver una ecuación con una sola opción por estado. Antes de juntarlas con el máximo, practícalas.
+Con una opción por estado, esto resuelve la ecuación. Antes de sumar el máximo, practícalo.
 
 ---
 
@@ -345,7 +341,7 @@ Tras tres rondas el error es $27/16\approx1.69$. Se encoge más despacio que con
 ## Lo que hay que llevarse
 
 - **Máximo y argmax:** el máximo es un número; el argmax, el conjunto de opciones que lo alcanzan. Con valores $-3,-1,-1$: máximo $-1$, dos opciones en el argmax.
-- **Costos:** $\min_a\text{costo}(a)=-\max_a\bigl(-\text{costo}(a)\bigr)$; un costo es un pago negativo.
+- **Costos:** si $f(a)$ es el costo de $a$, $\min_a f(a)=-\max_a\bigl(-f(a)\bigr)$; un costo es un pago negativo.
 - **Primer paso:** lo que falta es el pago del primer paso más el promedio de lo que falta desde donde caes. Pagar 1 y terminar con $1/2$ da $x=-1+x/2$, así que $x=-2$.
 - **Punto fijo:** $x^*=f(x^*)$; iterar es $x^{(t+1)}=f(x^{(t)})$.
 - **Recta con pendiente $q$:** con $q<1$, un solo punto fijo y error multiplicado por $q$ cada ronda; $f(x)=-1+x/2$ da $0,-1,-\tfrac32,-\tfrac74,\dots\to-2$. Con $q=1$, ninguno ($x-1$) o todos ($x$).

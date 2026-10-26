@@ -23,9 +23,10 @@ Esta clase sigue a la clase 2. Si un renglón no te suena, vuelve a su página.
   [[mkv-absorcion|Cuánto falta para terminar]] el tiempo medio de llegada
   salió de un sistema lineal; aquí el mismo truco da el valor de una
   política.
-- **El MDP de agentes.** En la unidad de agentes viste la tupla de un
-  proceso de decisión de Markov; aquí se resuelve.
-- **El árbol de juegos.** En la unidad de juegos, minimax eligió el máximo
+- **El MDP de agentes.** En
+  [[de-consecuencias-a-refuerzo|De consecuencias a refuerzo]] viste la
+  tupla de un proceso de decisión de Markov; aquí se resuelve.
+- **El árbol de juegos.** En [[minimax|Minimax a mano]], el máximo se eligió
   hacia atrás en un árbol. Aquí no hay rival, pero hay azar y ciclos.
 
 ## Qué vas a poder hacer al terminar esta clase
@@ -53,8 +54,8 @@ uno de 200.
 
 Nueve páginas, en orden; la última resume toda la clase en una sola página.
 
-**Los minutos son de lectura.** Cada página cierra con un ejercicio final
-con pistas y respuesta plegadas: resolverlo toma tiempo aparte, que no
+**Los minutos son de lectura.** Cada página, salvo el resumen, cierra con
+un ejercicio final con pistas y respuesta plegadas: resolverlo toma tiempo aparte, que no
 está en la tabla.
 
 ::: table {#mkv-ruta-3 title="Las páginas de esta clase"}
@@ -65,7 +66,7 @@ está en la tabla.
 | 3 | 28m | **El MDP.** El pasillo mojado: acciones, una matriz por acción, políticas, retorno y valor |
 | 4 | 28m | **Evaluar una política.** Un sistema lineal, a mano, con un algoritmo y simulando |
 | 5 | 28m | **La ecuación de Bellman.** El valor óptimo, su condición exacta y la política codiciosa |
-| 6 | 28m | **Iteración de valores.** Aplicar el máximo hasta que no cambie, cuándo parar y un pasillo de 200 casillas |
+| 6 | 28m | **Iteración de valores.** Aplicar el máximo ronda tras ronda, cuándo parar y un pasillo de 200 casillas |
 | 7 | 22m | **Iteración de políticas.** Evaluar y mejorar: termina en rondas finitas |
 | 8 | 18m | **Como programa lineal.** Bellman con desigualdades y `linprog` |
 | 9 | 12m | **Resumen: el formulario.** Definiciones, teoremas, los tres algoritmos y lo que más se confunde |
@@ -83,9 +84,10 @@ está en la tabla.
 
 ## Qué no cubre esta clase
 
-- **Descuento** $\gamma<1$ solo en un recuadro: aquí todo termina.
+- **Descuento** solo en un recuadro: aquí las recompensas se suman tal
+  cual.
 - **Aprender sin conocer las matrices** (aprendizaje por refuerzo): aquí
-  $P$ y $r$ se conocen.
+  las matrices y las recompensas se conocen.
 - **Estados que no se ven** tampoco están aquí.
 
 Empieza por [[mkv-max-y-punto-fijo|Lo que necesitas: el máximo y el punto fijo]].

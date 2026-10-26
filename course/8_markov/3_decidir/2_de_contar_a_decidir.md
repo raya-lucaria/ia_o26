@@ -46,8 +46,10 @@ Al terminar tendrás:
 Su suma. Desde 2 el primer brinco te deja en 3 o en 4, y desde ahí sigue cualquier ruta de ese escalón. Es condicionar en el primer paso, pero contando en lugar de promediar.
 
 $$
-\operatorname{rutas}(5)=1,\qquad
-\operatorname{rutas}(s)=\sum_{a}\operatorname{rutas}(s+a),
+\begin{aligned}
+\operatorname{rutas}(5)&=1,\\
+\operatorname{rutas}(s)&=\sum_{a}\operatorname{rutas}(s+a),
+\end{aligned}
 $$
 
 donde la suma va sobre los brincos $a\in\{1,2\}$ con $s+a\le5$.
@@ -91,7 +93,7 @@ Lo menor entre dos opciones: brincar a 3 y pagar 9 más lo que falta desde 3, o 
 Llamamos $\operatorname{costo}(s)$ a lo **mínimo que falta pagar** desde el escalón $s$ hasta la meta, y $\text{pisar}(s')$ a lo que cuesta pisar el escalón $s'$.
 
 ::: theorem {#mkv-c3-teo-hacia-atras title="Una pasada hacia atrás da el costo mínimo"}
-Sea una escalera de escalones $0,\dots,n$ con meta $n$. Desde $s$ se brinca $a$ escalones, con $a$ en un conjunto finito de enteros positivos y ${s+a\le n}$. Pisar el escalón $s'$ cuesta $\text{pisar}(s')$, un número cualquiera.
+Sea una escalera de escalones $0,\dots,n$ con meta $n$. Desde $s$ se brinca $a$ escalones, con $a$ en un conjunto finito de enteros que incluye el 1 y ${s+a\le n}$; así desde cada escalón cabe al menos un brinco. Pisar el escalón $s'$ cuesta $\text{pisar}(s')$, un número cualquiera.
 
 **Condición.** Todo brinco sube: $a\ge1$. Así ningún escalón se puede volver a pisar.
 
@@ -100,7 +102,8 @@ Entonces, calculando de $n$ hacia 0,
 $$
 \begin{aligned}
 \operatorname{costo}(n)&=0,\\
-\operatorname{costo}(s)&=\min_{a}\bigl[\text{pisar}(s+a)+\operatorname{costo}(s+a)\bigr],
+\operatorname{costo}(s)&=\min_{a}\bigl[\text{pisar}(s+a)\\
+&\qquad+\operatorname{costo}(s+a)\bigr],
 \end{aligned}
 $$
 
@@ -122,7 +125,7 @@ Una ruta desde $s$ empieza con un brinco $a$ y sigue con una ruta desde $s+a$. E
 
 **En el juguete.** De 5 hacia 0, con los costos de pisar 1, 2, 9, 1 y 1:
 
-| Escalón s | Brinca 1 | Brinca 2 | costo(s) |
+| s | Brinca 1 | Brinca 2 | costo(s) |
 |---:|---|---|---:|
 | 5 | — | — | 0 |
 | 4 | 1 + 0 = 1 | no cabe | 1 |
@@ -160,7 +163,8 @@ Una tabla de lo que falta, otra del brinco que gana, y recorrer los escalones de
 
 ```text
 INPUT   n, la meta; pisar(s') para s' = 1..n;
-        un conjunto finito de brincos ≥ 1.
+        un conjunto finito de brincos ≥ 1,
+        con el 1 entre ellos.
 OUTPUT  costo(s) y elige(s) para s = 0..n−1.
 
  1 function HACIA-ATRAS(pisar, n, brincos)
@@ -227,7 +231,7 @@ print(seguir(elige, 5))
 - **Propiedades:** termina siempre, tras $n$ escalones. Cada escalón se calcula una sola vez.
 - **Garantía:** por @mkv-c3-teo-hacia-atras, $\operatorname{costo}(0)$ es el menor costo entre todas las rutas, y seguir elige da una que lo alcanza.
 - **Costo:** $n$ escalones por a lo más tantos brincos como haya: del orden de ${n\cdot\lvert\text{brincos}\rvert}$ sumas.
-- **Supuestos:** todo brinco sube y los costos de pisar son fijos.
+- **Supuestos:** todo brinco sube, el 1 está entre los brincos y los costos de pisar son fijos.
 
 **Comprobación: probar las 8.** En una escalera chica se pueden listar todas las rutas y sumar. El mínimo tiene que coincidir con ${\operatorname{costo}(0)=4}$.
 
@@ -288,9 +292,18 @@ Con más escalones la diferencia crece: cada $\operatorname{rutas}(s)$ es la sum
 
 **Piensa: ¿qué pasa si un brinco puede fallar y dejarte donde estabas?**
 
-Que $\operatorname{costo}(s)$ depende de sí mismo, y la pasada ya no tiene por dónde empezar. Supón que el escalón 3, además de caro, resbala: desde ahí, cualquier brinco sale bien con probabilidad $1/2$ y con $1/2$ te deja en 3.
+Que $\operatorname{costo}(s)$ depende de sí mismo, y la pasada ya no tiene por dónde empezar. Supón que el escalón 3, además de caro, resbala: desde ahí, cualquier brinco sale bien con probabilidad $1/2$ y con $1/2$ te deja en 3 sin cobrar nada.
 
-- **La ecuación de 3.** Condicionando en el primer paso, como en @mkv-c2-teo-primer-paso, con probabilidad $1/2$ estás de nuevo en 3 y falta otra vez $\operatorname{costo}(3)$. Ese término aparece **a los dos lados** del igual.
+- **La ecuación de 3.** Condicionando en el primer paso, como en @mkv-c2-teo-primer-paso, con probabilidad $1/2$ estás de nuevo en 3 y falta otra vez $\operatorname{costo}(3)$. Ese término aparece **a los dos lados** del igual:
+
+$$
+\begin{aligned}
+\operatorname{costo}(3)=\min_a\Bigl[&\tfrac12\,\text{pisar}(3+a)\\
+&+\tfrac12\operatorname{costo}(3+a)\\
+&+\tfrac12\operatorname{costo}(3)\Bigr].
+\end{aligned}
+$$
+
 - **Lo que se rompe.** La pasada pide en cada renglón solo escalones ya calculados. El renglón de 3 se pide a sí mismo: hay un **ciclo** de 3 a 3, y la condición de @mkv-c3-teo-hacia-atras deja de cumplirse.
 
 > [!TIP]
@@ -300,7 +313,7 @@ Que $\operatorname{costo}(s)$ depende de sí mismo, y la pasada ya no tiene por 
 > - **No lo cumple:** la misma escalera con resbalón $1/2$ en el escalón 3. Hay un lazo de 3 a sí mismo y $\operatorname{costo}(3)$ depende de $\operatorname{costo}(3)$.
 
 ::: figure {#mkv-c3-fig-ej-hacia-atras title="Lo que necesita la pasada hacia atrás: que nada regrese"}
-![Dos escaleras, cada una como grafo con nodos de acción y una matriz por acción debajo. Arriba, la que cumple: escalones 0 a 5, cada brinco de 1 o de 2 sube con probabilidad 1; el grafo no tiene ciclos y una pasada basta. Abajo, la que no: en el escalón 3 cada brinco sube con 1/2 y con 1/2 regresa a 3; el lazo hace que costo(3) dependa de sí mismo](../_assets/mkv-c3-ej-hacia-atras.svg)
+![Dos escaleras, cada una como grafo de escalones 0 a 5 con flechas para los brincos de 1 y de 2, y debajo una tabla con lo que cuesta pisar y lo que falta. Arriba, la que cumple: sin ciclos; lo que falta es 4, 4, 2, 1, 1 y 0, y la ruta 0 → 2 → 4 → 5 va resaltada. Abajo, la que no: en el escalón 3 un lazo marcado 1/2 regresa a 3; lo que falta solo se conoce en 4 y 5, y de 3 hacia abajo la tabla queda con signos de interrogación](../_assets/mkv-c3-ej-hacia-atras.svg)
 :::
 
 - **No es el azar.** Si el brinco desde 3 te mandara con $1/2$ a 4 y con $1/2$ a 5, habría azar sin ciclo. La pasada seguiría funcionando con un promedio dentro del mínimo, como en @mkv-c2-teo-absorcion. **Lo que rompe la pasada hacia atrás es el ciclo, no el azar.**
@@ -331,7 +344,7 @@ La misma escalera de 0 a 5, con los mismos costos de pisar: 1, 2, 9, 1 y 1. **Ca
 :::
 
 ::: hint {#mkv-c3-es-pista-brinco-3-2 of="mkv-c3-es-ej-brinco-3" title="Pista 2 · ¿Tus números tienen sentido?"}
-¿Hay ahora más rutas que 8? ¿Puede $\operatorname{costo}(0)$ ser mayor que 4, si las rutas viejas siguen disponibles? ¿Qué hace la línea 7 cuando dos brincos empatan?
+¿Hay ahora más rutas que 8? ¿Puede $\operatorname{costo}(0)$ ser mayor que 4, si las rutas viejas siguen disponibles? ¿Revisaste en cada renglón si el mínimo lo alcanza más de un brinco?
 :::
 
 ::: answer {#mkv-c3-es-resp-brinco-3 of="mkv-c3-es-ej-brinco-3" title="Respuesta · La escalera con brinco de 3"}
@@ -347,7 +360,7 @@ La misma escalera de 0 a 5, con los mismos costos de pisar: 1, 2, 9, 1 y 1. **Ca
 - **Escalón 1:** ${2+1}$ · ${9+1}$ · ${1+1}$. ${\operatorname{costo}(1)=2}$.
 - **Escalón 0:** ${1+2}$ · ${2+1}$ · ${9+1}$. ${\operatorname{costo}(0)=3}$.
 
-**4. Empate.** En 0, brincar 1 y brincar 2 dan 3. Hay dos rutas óptimas: 0 → 1 → 4 → 5 y 0 → 2 → 5, las dos pagan 3. El Python devuelve la primera, porque con `<` estricto la línea 7 conserva el primer brinco probado. El argmax es un conjunto con dos brincos (@mkv-c3-def-argmax).
+**4. Empate.** En 0, brincar 1 y brincar 2 dan 3. Hay dos rutas óptimas: 0 → 1 → 4 → 5 y 0 → 2 → 5, las dos pagan 3. El Python devuelve la primera, porque con `<` estricto la línea 7 conserva el primer brinco probado. El argmin —el argmax con el signo cambiado, @mkv-c3-def-argmax— es un conjunto con dos brincos.
 
 **5. Codiciosa.** En 0 va al 1 (cuesta 1); en 1 elige entre 2, 9 y 1 y va al 4; de ahí a 5. Paga ${1+1+1=3}$: acierta. Pero un caso donde acierta no prueba nada; la escalera original es un contraejemplo y basta uno.
 :::
@@ -359,7 +372,7 @@ La misma escalera de 0 a 5, con los mismos costos de pisar: 1, 2, 9, 1 y 1. **Ca
 ## Lo que hay que llevarse
 
 - **Contar.** ${\operatorname{rutas}(s)=\sum_a\operatorname{rutas}(s+a)}$ con ${\operatorname{rutas}(5)=1}$: la escalera tiene **8 rutas**.
-- **Decidir.** ${\operatorname{costo}(s)=\min_a[\text{pisar}(s+a)+\operatorname{costo}(s+a)]}$ con ${\operatorname{costo}(5)=0}$ da ${(4,4,2,1,1,0)}$ y la ruta 0 → 2 → 4 → 5, que paga 4 (@mkv-c3-teo-hacia-atras).
+- **Decidir.** $\operatorname{costo}(s)$ es el mínimo sobre $a$ de ${\text{pisar}(s+a)}+{\operatorname{costo}(s+a)}$; con ${\operatorname{costo}(5)=0}$ da ${(4,4,2,1,1,0)}$ y la ruta 0 → 2 → 4 → 5, que paga 4 (@mkv-c3-teo-hacia-atras).
 - **El algoritmo.** HACIA-ATRÁS calcula cada escalón una vez: del orden de ${n\cdot\lvert\text{brincos}\rvert}$ sumas, contra un número de rutas que crece como Fibonacci.
 - **La codiciosa falla.** Brincar al más barato de enfrente paga 5: no ve lo que viene después.
 - **El límite.** La pasada pide que todo brinco suba. Un resbalón que te deja donde estabas crea un ciclo: lo que la rompe es el ciclo, no el azar.

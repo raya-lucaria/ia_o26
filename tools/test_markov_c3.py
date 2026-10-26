@@ -240,10 +240,11 @@ def test_iteracion_de_politicas_una_mejora(inicio):
 
 
 def test_empates_conservar_termina_cambiar_alterna():
-    j = m.pasillo(caminar=2)
+    # Caminar cuesta 2 solo en la casilla 2, como en 7_iterar_politicas.
+    j = m.pasillo_empate()
     for p in (CC, CR):
         V = m.evaluar_politica(j, _pol(p))
-        assert V == {1: -4, 2: -2}
+        assert V == {1: -5, 2: -2}
         assert m.q_valor(j, V, 2, m.CAMINAR) == m.q_valor(j, V, 2, m.CORRER) == -2
     assert m.iterar_politicas(j, _pol(CC), empate="conservar") == [_pol(CC)]
     alt = m.iterar_politicas(j, _pol(CC), empate="cambiar", max_rondas=10)
@@ -280,6 +281,7 @@ def test_pasillo_largo():
     d = m.pasillo_largo()
     assert d["v_inicio"] == -467
     assert d["rondas_vi"] == 451
+    # Una mejora; la pagina cuenta 2 rondas: la que mejora y la que confirma.
     assert d["rondas_pi"] == 1
     assert d["politicas"] == 2 ** 200
     assert f"{float(d['politicas']):.3e}" == "1.607e+60"

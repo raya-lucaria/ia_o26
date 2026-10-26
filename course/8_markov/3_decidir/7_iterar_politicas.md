@@ -36,7 +36,7 @@ Al terminar tendrás:
 
 **Piensa: si ya sabes cuánto vale una política, ¿cómo encuentras una mejor?**
 
-En cada casilla pruebas cada acción una vez y después sigues con la política vieja. Si alguna acción da más, la cambias. Eso es la codiciosa de $V_\pi$, la misma idea de @mkv-c3-teo-codiciosa con ${U=V_\pi}$.
+En cada casilla pruebas cada acción una vez y después sigues con la política vieja. Si alguna da más, la cambias: es la codiciosa de @mkv-c3-teo-codiciosa con ${U=V_\pi}$.
 
 > **Dado:** un MDP finito que cumple las condiciones de @mkv-c3-teo-bellman y una política $\pi_0$ que termina con probabilidad 1.
 >
@@ -104,7 +104,7 @@ Dos arranques distintos llegaron en una mejora. ¿Pasa siempre que el algoritmo 
 
 **Piensa: ¿qué impide que la mejora regrese a una política que ya visitó?**
 
-Que el valor sube en cada cambio. Una política cuyo valor creció no puede ser una que ya se evaluó con un valor menor. Y hay un número finito de políticas.
+Que el valor sube en cada cambio: no puede volver a una política de valor menor. Y hay un número finito de políticas.
 
 ::: theorem {#mkv-c3-teo-iterar-politicas title="Iteración de políticas mejora y termina"}
 Sea un MDP finito y sean $\pi_0,\pi_1,\dots$ las políticas que produce iteración de políticas.
@@ -118,7 +118,7 @@ Entonces:
 3. Ninguna política se repite: el algoritmo para tras a lo más ${\prod_{s\in\mathcal T}\lvert\mathcal A(s)\rvert}$ rondas.
 4. La política con que para es óptima, y su valor es $V^*$.
 
-**Lectura.** Cada mejora es una apuesta segura: probar una acción distinta un paso y luego seguir igual nunca pierde valor.
+**Lectura.** Probar otra acción un paso y luego seguir igual nunca pierde valor.
 
 **Casos nulos.** Si $\pi_0$ ya es óptima, basta una ronda. Si cada casilla tiene una sola acción, también.
 :::
@@ -127,13 +127,19 @@ Entonces:
 Sea $\pi$ una política que termina y $\pi'$ su mejora. Como $\pi'(s)$ maximiza y $\pi(s)$ es una de las opciones,
 
 $$
-r_{\pi'}+P_{\pi',\mathcal T}V_\pi\ \ge\ r_\pi+P_{\pi,\mathcal T}V_\pi=V_\pi,
+\begin{aligned}
+r_{\pi'}+P_{\pi',\mathcal T}V_\pi\ &\ge\ r_\pi+P_{\pi,\mathcal T}V_\pi\\
+&=V_\pi,
+\end{aligned}
 $$
 
 entrada por entrada. $P_{\pi',\mathcal T}$ no tiene entradas negativas, así que la desigualdad se puede aplicar $n$ veces:
 
 $$
-V_\pi\ \le\ \sum_{t=0}^{n-1}P_{\pi',\mathcal T}^{\,t}\,r_{\pi'}+P_{\pi',\mathcal T}^{\,n}\,V_\pi.
+\begin{aligned}
+V_\pi\ &\le\ \sum_{t=0}^{n-1}P_{\pi',\mathcal T}^{\,t}\,r_{\pi'}\\
+&\quad+P_{\pi',\mathcal T}^{\,n}\,V_\pi.
+\end{aligned}
 $$
 
 La suma es lo que se espera recibir en los primeros $n$ pasos con $\pi'$. El último término está acotado por ${\max_s\lvert V_\pi(s)\rvert}$.
@@ -170,7 +176,7 @@ Un MDP tiene 5 estados no terminales con 3 acciones cada uno. ¿Cuántas rondas,
 :::
 
 ::: answer {#mkv-c3-pi-resp-cota of="mkv-c3-pi-ej-cota"}
-Hay ${3^5=243}$ políticas, así que a lo más 243 rondas. Es una cota de peor caso: en la práctica suele bastar con pocas rondas.
+Hay ${3^5=243}$ políticas, así que a lo más 243 rondas. Es una cota de peor caso: suelen bastar pocas.
 :::
 
 Falta escribirlo para que lo haga un programa.
@@ -181,7 +187,7 @@ Falta escribirlo para que lo haga un programa.
 
 **Piensa: ¿qué necesita guardar el programa entre una ronda y la siguiente?**
 
-Solo la política actual. El valor se recalcula exacto en cada ronda, a partir de ella.
+Solo la política actual: el valor se recalcula exacto en cada ronda.
 
 ### El mapa de ITERACIÓN DE POLÍTICAS
 
@@ -216,6 +222,7 @@ OUTPUT  π*, una política óptima, y V*.
 
 ```python
 from fractions import Fraction as F
+from itertools import count
 
 def resolver(M, b):              # eliminación exacta
     k = len(b)
@@ -271,18 +278,21 @@ def mejorar(mdp, V, pol, conservar):       # (5)
     return nueva
 
 def iterar_politicas(mdp, pol, conservar=True,
-                     max_rondas=50):       # (1)
-    for ronda in range(1, max_rondas + 1): # (3)
+                     max_rondas=None):     # (1)
+    rondas = (count(1) if max_rondas is None
+              else range(1, max_rondas + 1))
+    for ronda in rondas:                   # (3)
         V = evaluar(mdp, pol)              # (4)
         nueva = mejorar(mdp, V, pol,
                         conservar)         # (5)
         if nueva == pol:                   # (8)
             return pol, V, ronda
         pol = nueva                        # (9)
-    return None                            # no paró
+    return None                 # tope sin parar
 
 def pasillo(n=2, caminar=3):
-    """Casillas 1..n, meta n+1; hueco si i % 3 == 1."""
+    """Casillas 1..n, meta n+1; hueco si i % 3 == 1.
+    caminar: costo de caminar solo en la casilla n."""
     mdp, h = {}, F(1, 2)
     for i in range(n, 0, -1):     # de la meta hacia atrás
         sig = i + 1 if i < n else "meta"
@@ -303,7 +313,8 @@ for ini in ("caminar", "correr"):
 EMP = pasillo(caminar=2)       # caminar en 2 cuesta 2
 cc = {1: "caminar", 2: "caminar"}
 print(iterar_politicas(EMP, cc)[2])
-print(iterar_politicas(EMP, cc, conservar=False))
+print(iterar_politicas(EMP, cc, conservar=False,
+                       max_rondas=50))
 # 1
 # None
 ```
@@ -312,14 +323,15 @@ print(iterar_politicas(EMP, cc, conservar=False))
 
 - **Línea 4.** `evaluar` lanza un error si $\pi$ no termina: la eliminación se queda sin pivote. Por eso $\pi_0$ debe terminar.
 - **Línea 7.** `conservar=True` es la regla de empates del teorema. Con `False`, el empate se rompe hacia la otra acción.
-- **Línea 8.** Comparar políticas es exacto; no hay tolerancia, porque las fracciones no redondean.
-- **`pasillo`.** Recorre las casillas de la meta hacia atrás. Así la eliminación casi no rellena y el caso de 200 casillas tarda menos de un segundo.
+- **Línea 8.** Comparar políticas es exacto; no hay tolerancia, porque las fracciones no redondean. Además de $\pi$ y $V$, el Python devuelve cuántas rondas usó.
+- **`max_rondas`.** Por omisión no hay tope: con `conservar=True` el teorema garantiza que para. Con tope, si se agota, devuelve `None`, sin garantía.
+- **`pasillo`.** Recorre las casillas de la meta hacia atrás: la eliminación casi no rellena y 200 casillas tardan menos de un segundo.
 
 **Cómo leer la traza.** Corremos el pasillo desde caminar–caminar. Cada renglón dice qué deja la línea indicada.
 
 **Tramo único · De caminar–caminar a caminar–correr**
 
-| # | Línea | Qué queda |
+| Ronda | Línea | Qué queda |
 |---|---|---|
 | 1 | 4 | V = (−6, −3) |
 | 1 | 6 | en 2: −3 contra −5/2; en 1: −6 contra −21/2 |
@@ -327,7 +339,7 @@ print(iterar_politicas(EMP, cc, conservar=False))
 | 2 | 4 | V = (−5, −2) |
 | 2 | 8 | sin cambios: devuelve π y V |
 
-- **Contraejemplo, en código.** Con caminar a costo 2, `conservar=True` para en la ronda 1. Con `False`, agota las 50 rondas y devuelve `None`.
+- **Contraejemplo, en código.** Con caminar a costo 2, `conservar=True` para en la ronda 1. Con `False` y un tope de 50 rondas, lo agota y devuelve `None`.
 
 ::: exercise {#mkv-c3-pi-ej-sin-conservar title="Rompe el empate al revés"}
 En el pasillo original, donde caminar en 2 cuesta 3, corres `iterar_politicas(J2, cc, conservar=False)`. ¿Para? ¿Con qué política?
@@ -349,7 +361,7 @@ Sí para, en 2 rondas, con caminar–correr. En el pasillo original nunca hay em
 - **Costo por ronda:** evaluar resuelve un sistema de ${\lvert\mathcal T\rvert}$ incógnitas, del orden de ${\lvert\mathcal T\rvert^3}$; mejorar calcula un $Q$ por cada par estado–acción.
 - **Supuestos:** las condiciones de @mkv-c3-teo-bellman, una $\pi_0$ que termina y la regla de empates.
 
-Cada ronda cuesta más que una de iteración de valores, que no resuelve ningún sistema. La pregunta es cuántas rondas hacen falta.
+Cada ronda cuesta más que una de iteración de valores. ¿Cuántas hacen falta?
 
 > **Una nota de historia.** El algoritmo lleva el nombre de Ronald A. Howard, que lo presentó en *Dynamic Programming and Markov Processes* (Technology Press del MIT y Wiley, 1960).
 
@@ -377,12 +389,12 @@ print(V[1])
 
 **El número que da.** Iteración de políticas usa 2 rondas desde caminar siempre (una mejora y una que confirma) y da ${V^*(1)=-467}$ exacto. Iteración de valores necesita 451 rondas para bajar el residuo a $10^{-9}$, y aun así da un valor aproximado.
 
-::: figure {#mkv-c3-fig-rondas-politicas title="Una ronda basta para llegar"}
-![Plano con V(1) en el eje horizontal y V(2) en el vertical, con las cuatro políticas del pasillo como puntos: caminar–caminar en (−6, −3), caminar–correr en (−5, −2), correr–caminar en (−15, −3) y correr–correr en (−14, −2). Dos flechas de iteración de políticas, una desde caminar–caminar y otra desde correr–correr, llegan en una ronda a caminar–correr, el óptimo, en (−5, −2)](../_assets/mkv-c3-rondas-politicas.svg)
+::: figure {#mkv-c3-fig-rondas-politicas title="Una mejora basta para llegar"}
+![Iteración de políticas en el pasillo de dos casillas. Desde caminar–caminar, con V = (−6, −3), y desde correr–correr, con V = (−14, −2), una mejora llega a caminar–correr, con V = (−5, −2), y la siguiente no cambia nada. Abajo, el pasillo de 200 casillas: valores, 451 rondas hasta residuo de 10⁻⁹; políticas, 1 mejora desde caminar siempre](../_assets/mkv-c3-rondas-politicas.svg)
 :::
 
 - **Por qué tan pocas.** El valor de una política ya trae el futuro entero, no $t$ pasos. La mejora decide con información completa.
-- **Por qué no siempre conviene.** Cada ronda resuelve un sistema de 200 incógnitas. Aquí es barato porque cada casilla solo apunta a sí misma y a la siguiente.
+- **Por qué no siempre conviene.** Cada ronda resuelve un sistema de 200 incógnitas, barato aquí porque cada casilla apunta solo a sí misma y a la siguiente.
 
 ::: exercise {#mkv-c3-pi-ej-sin-castigo title="Quita el castigo del pasillo grande"}
 En el pasillo de 200 casillas, caer al hueco ya no cuesta nada más: correr cuesta 1 en todas las casillas. Desde caminar siempre, ¿qué hace la primera mejora?
@@ -432,8 +444,11 @@ Toma el pasillo de dos casillas. **Cambia una idea:** el hueco de la casilla 1 y
 
 $$
 \begin{aligned}
-Q_\pi(2,\text{caminar})&=-3,\quad Q_\pi(2,\text{correr})=-\tfrac52,\\
-Q_\pi(1,\text{caminar})&=-6,\quad Q_\pi(1,\text{correr})=-1+\tfrac12(-6)+\tfrac12(-3)=-\tfrac{11}2.
+Q_\pi(2,\text{caminar})&=-3,\\
+Q_\pi(2,\text{correr})&=-\tfrac52,\\
+Q_\pi(1,\text{caminar})&=-6,\\
+Q_\pi(1,\text{correr})&=-1+\tfrac12(-6)+\tfrac12(-3)\\
+&=-\tfrac{11}2.
 \end{aligned}
 $$
 

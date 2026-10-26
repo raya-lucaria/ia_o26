@@ -2246,12 +2246,12 @@ def mkv_c3_rondas_politicas():
             out.append(caja(X_PIE, _n(y), ANCHO - 2 * X_PIE, 40, radio=6,
                             relleno=mezclar(ACENTO if ultima else LINEA, 0.14 if ultima else 0.18),
                             borde=ACENTO if ultima else SUAVE, grosor=2 if ultima else 1.5))
-            out.append(texto(X_PIE + 10, y + 17, f"ronda {k}: {_nombre_pol(pol)}", tam=13,
+            out.append(texto(X_PIE + 10, y + 17, f"ronda {k + 1}: {_nombre_pol(pol)}", tam=13,
                              peso="700", anclaje="start"))
             out.append(texto(X_PIE + 10, y + 33, f"V = ({_v(V[1])}, {_v(V[2])})"
                              + ("; la mejora no cambia nada" if ultima else ""), tam=12,
                              anclaje="start", color=SUAVE))
-            partes.append(f"ronda {k}: {_nombre_pol(pol)}, V = ({_v(V[1])}, {_v(V[2])})")
+            partes.append(f"ronda {k + 1}: {_nombre_pol(pol)}, V = ({_v(V[1])}, {_v(V[2])})")
             y += 40
             if not ultima:
                 out.append(_flecha(ANCHO / 2, y + 2, ANCHO / 2, y + 16))
@@ -2263,9 +2263,11 @@ def mkv_c3_rondas_politicas():
     out.append(texto(X_PIE, y + 14, f"El pasillo de {m.N_PASILLO} casillas", tam=14, peso="700",
                      anclaje="start"))
     y += 30
-    tope = max(d["rondas_vi"], d["rondas_pi"])
+    # Como la pagina: una ronda evalua y mejora; la ultima solo confirma.
+    rondas_pi = d["rondas_pi"] + 1
+    tope = max(d["rondas_vi"], rondas_pi)
     for rot, v, color in (("valores", d["rondas_vi"], COLOR_V),
-                          ("políticas", d["rondas_pi"], ACENTO)):
+                          ("políticas", rondas_pi, ACENTO)):
         out.append(texto(X_PIE, y + 13, rot, tam=13, peso="700", anclaje="start"))
         w = max(110 * v / tope, 2)
         out.append(f'<rect x="96" y="{_n(y)}" width="{_n(w)}" height="18" '
@@ -2273,12 +2275,12 @@ def mkv_c3_rondas_politicas():
         out.append(texto(96 + w + 6, y + 14, f"{miles(v)} ronda" + ("" if v == 1 else "s"), tam=13, anclaje="start"))
         y += 28
     y = pie(out, y + 8, ["Valores: hasta residuo ≤ 10⁻⁹, desde 0.",
-                         "Políticas: mejoras desde caminar siempre;",
-                         "cada ronda resuelve un sistema."])
+                         "Políticas: desde caminar siempre; la",
+                         "última ronda solo confirma."])
     desc = ("Iteración de políticas en el pasillo de dos casillas. " + " ".join(descs)
             + f" En el pasillo de {m.N_PASILLO} casillas, la iteración de valores hace "
             f"{miles(d['rondas_vi'])} rondas hasta un residuo de 10⁻⁹ y la de políticas, "
-            f"{d['rondas_pi']} mejora{'' if d['rondas_pi'] == 1 else 's'} desde caminar siempre.")
+            f"{d['rondas_pi'] + 1} rondas desde caminar siempre: una mejora y una que confirma.")
     return svg(titulo, desc, out, y)
 
 
@@ -2464,7 +2466,7 @@ FLUJOS.update({
         pasos=[{"caja": ["Toma la política π"]},
                {"caja": ["Elige filas: la fila s", "de P y r con la acción π(s)"]},
                {"caja": ["Arma (I − P) V = r", "sin la columna de la meta"]},
-               {"rombo": ["¿Tiene una", "solución?"], "abajo": "sí"},
+               {"rombo": ["¿Tiene solución", "única?"], "abajo": "sí"},
                {"caja": ["Resuélvelo y devuelve", "el valor de π"], "fin": True},
                {"caja": ["Avisa: desde algún", "estado no termina"], "fin": True,
                 "sin_flecha": True}],
@@ -2508,12 +2510,8 @@ def _mdp_fila_mal():
 
 
 def _mdp_empate():
-    """Caminar cuesta 2 en la casilla 2 (plan §3, contraejemplo de empates):
-    alli caminar y correr empatan."""
-    mdp = m.pasillo()
-    mdp["r"] = dict(mdp["r"])
-    mdp["r"][(2, m.CAMINAR)] = F(-2)
-    return mdp
+    """El pasillo del contraejemplo de empates: m.pasillo_empate()."""
+    return m.pasillo_empate()
 
 
 def _lado_mdp_completo(mdp, pie_txt):

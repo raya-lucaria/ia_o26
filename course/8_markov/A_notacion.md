@@ -111,7 +111,8 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | Símbolo | Cómo se lee, qué es y dónde se presenta |
 |---|---|
 | $\max_a$, $\arg\max_a$ | «máximo sobre a», «argumento del máximo». El mayor valor, y el **conjunto** de las $a$ que lo alcanzan (con empates, tiene más de una). *→ Lo que necesitas: el máximo y el punto fijo.* |
-| $x^{(t)}$ | «equis en la ronda te». El valor tras $t$ aplicaciones de $x\leftarrow f(x)$; un punto fijo cumple ${x=f(x)}$. *→ Lo que necesitas: el máximo y el punto fijo.* |
+| $x^{(t)}$, $x^*$ | «equis en la ronda te», «equis estrella». El valor tras $t$ aplicaciones de $x\leftarrow f(x)$, y el punto fijo, que cumple ${x^*=f(x^*)}$. *→ Lo que necesitas: el máximo y el punto fijo.* |
+| $q$ | «cu». En una recta ${f(x)=f(0)+q\,x}$, la pendiente; en los juguetes, la probabilidad de seguir, el mismo sentido que en las rachas. *→ Lo que necesitas: el máximo y el punto fijo.* |
 | $\operatorname{rutas}(s)$, $\operatorname{costo}(s)$ | «rutas de ese», «costo de ese». En la escalera, cuántas rutas llegan arriba desde el escalón $s$ y lo mínimo que falta pagar. *→ De contar a decidir: la escalera.* |
 | $\mathcal A(s)$, $a$ | «a caligráfica de ese», «a». Las acciones posibles en $s$, y una de ellas. Caligráfica porque $A$ es el conjunto de llegada de la clase 2. *→ El proceso de decisión de Markov.* |
 | $\langle\mathcal S,\mathcal A,P,r\rangle$ | El MDP: estados, acciones, una matriz por acción y la recompensa esperada. Agentes lo escribió $\langle S,A,P,R,\gamma\rangle$. *→ El proceso de decisión de Markov.* |
@@ -123,11 +124,11 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $G_t$ | «ge sub te». El retorno: la suma de las recompensas desde el paso $t$ hasta terminar. Sin subíndice, $G$ es la matriz de Google. *→ El proceso de decisión de Markov.* |
 | $E^\pi_s$, $\Pr^\pi_s$ | «esperanza de pi empezando en ese». Valor esperado y probabilidad al empezar en $s$ y seguir $\pi$. *→ El proceso de decisión de Markov.* |
 | $V_\pi(s)$ | «ve sub pi de ese». El valor de $\pi$ desde $s$: ${E^\pi_s[G_0]}$. El estado va entre paréntesis: $V(1)$, nunca $V_1$. *→ El proceso de decisión de Markov.* |
-| $Q_\pi(s,a)$, $V^*$, $Q^*$ | «cu sub pi». El valor de usar $a$ primero y después $\pi$; los valores óptimos. *→ La ecuación de Bellman.* |
+| $Q_\pi(s,a)$, $V^*$, $Q^*$ | «cu sub pi». El valor de usar $a$ primero y después $\pi$; los valores óptimos. Es la misma idea que la $Q$ de juegos: lo que vale una jugada. *→ La ecuación de Bellman.* |
 | $U$, $\pi_U$ | «u», «pi sub u». Una estimación cualquiera del valor, y su política codiciosa: en cada $s$, una acción que maximiza ${r(s,a)+\sum_{s'}P(s'\mid s,a)U(s')}$. *→ La ecuación de Bellman.* |
 | $V^{(t)}$, $\operatorname{res}^{(t)}$ | «ve en la ronda te», «residuo». El valor tras $t$ rondas de iteración de valores, y ${\max_s\lvert V^{(t)}(s)-V^{(t-1)}(s)\rvert}$. Una ronda no es un paso. *→ Iteración de valores.* |
 | $m$, $\beta$ | «eme», «beta». En la cota de paro: tras $m$ pasos, cualquier sucesión de acciones sigue sin terminar con probabilidad a lo más $\beta<1$. *→ Iteración de valores.* |
-| $\gamma$ | «gama». El descuento; solo aparece en un recuadro: aquí todo termina y no hace falta. *→ La ecuación de Bellman.* |
+| $\gamma$ | «gama». El descuento; solo aparece en un recuadro. Aquí no hace falta: basta que alguna política termine y que toda la que no termina valga $-\infty$. *→ La ecuación de Bellman.* |
 
 ## Términos
 
@@ -220,3 +221,8 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   de Google.
 - **$V^{(t)}$** lleva la ronda arriba y entre paréntesis; el estado va entre
   paréntesis, $V(1)$, nunca como subíndice.
+- **$m$ y $\beta$** de la cota de paro no son el $m(s)$ del tiempo medio de
+  llegada ni la $\beta$ de alfa-beta: $m$ cuenta pasos y $\beta$ es una
+  probabilidad.
+- **$U$** es aquí una estimación cualquiera del valor; en juegos, $U(s)$ era
+  la utilidad de una posición final.

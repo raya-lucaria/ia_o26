@@ -1472,6 +1472,17 @@ def pasillo(caminar=3, castigo=10, esperar=None, n=2):
     return mdp
 
 
+
+def pasillo_empate():
+    """J2 con caminar a costo 2 solo en la casilla 2 (contraejemplo de
+    empates de 7_iterar_politicas): ahi caminar y correr empatan en -2.
+    Caminar-caminar y caminar-correr valen las dos (-5, -2)."""
+    mdp = pasillo()
+    mdp["r"][(2, CAMINAR)] = F(-2)
+    mdp["r_real"][(2, CAMINAR, META)] = F(-2)
+    return mdp
+
+
 POLITICAS_J2 = {
     "caminar–caminar": {1: CAMINAR, 2: CAMINAR},
     "caminar–correr": {1: CAMINAR, 2: CORRER},

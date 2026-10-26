@@ -60,12 +60,12 @@ Cada renglón es un teorema de su página: @mkv-c3-teo-hacia-atras, @mkv-c3-teo-
 | Evaluar una política | $\pi$ termina con probabilidad 1 desde todo $s\in\mathcal T$; equivale a que $I-P_{\pi,\mathcal T}$ sea invertible | $V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi$ tiene solución única |
 | Bellman | Finito; terminal con valor 0; existe una política que termina; toda política que no termina vale $-\infty$ en algún estado | $V^*$ es la única solución de $V(s)=\max_a[r(s,a)+\sum_{s'}P(s'\mid s,a)V(s')]$ en $\mathcal T$, con $V=0$ en $\mathcal F$ |
 | La codiciosa del óptimo | Las de Bellman | Elegir en cada estado una acción del argmax con $V^*$ da una política óptima |
-| Iteración de valores | Las de Bellman | $V^{(t)}\to V^*$; desde $V^{(0)}=0$ baja monótona |
+| Iteración de valores | Las de Bellman | $V^{(t)}\to V^*$; desde $V^{(0)}=0$ y con $r\le0$, baja monótona |
 | Iteración de políticas | Las de Bellman; empezar con una política que termina; conservar la acción en los empates | Cada ronda no empeora y se detiene en un número finito de rondas en una óptima |
 | Programa lineal | Las de Bellman | El mínimo de $\sum_sV(s)$ sujeto a $V(s)\ge r(s,a)+\sum_{s'}P(s'\mid s,a)V(s')$ para toda $(s,a)$ es $V^*$ |
 :::
 
-- **Sin descuento, la condición es terminar.** Aquí $\gamma=1$ y todo termina; el recuadro de [[mkv-bellman|la ecuación de Bellman]] cuenta qué cambia con $\gamma<1$.
+- **Sin descuento, la condición es terminar.** Aquí $\gamma=1$: basta que una política termine y que toda la que no termina valga $-\infty$ en algún estado. El recuadro de [[mkv-bellman|la ecuación de Bellman]] cuenta qué cambia con $\gamma<1$.
 
 ---
 
@@ -105,14 +105,14 @@ Los tres resuelven Bellman. Calculan lo mismo y difieren en qué garantizan y cu
 
 Cinco preguntas, una por idea. Contesta antes de abrir la respuesta.
 
-::: exercise {#mkv-c3-rs-ej-evaluar title="Evalúa correr–correr"}
-En el pasillo, la política es correr en las dos casillas. Escribe sus dos ecuaciones y resuélvelas.
+::: exercise {#mkv-c3-rs-ej-evaluar title="Evalúa correr–correr con castigo 4"}
+En el pasillo, caer al hueco cuesta 4 en lugar de 10, así que $r(1,\text{correr})=-3$. La política es correr en las dos casillas. Escribe sus dos ecuaciones y resuélvelas.
 :::
 ::: hint {#mkv-c3-rs-pista-evaluar of="mkv-c3-rs-ej-evaluar" title="¿Por cuál casilla conviene empezar?"}
 Una de las dos ecuaciones solo tiene una incógnita.
 :::
 ::: answer {#mkv-c3-rs-resp-evaluar of="mkv-c3-rs-ej-evaluar"}
-En la casilla 2, $V(2)=-1+\tfrac12V(2)$, así que $V(2)=-2$. En la casilla 1, $V(1)=-6+\tfrac12V(1)+\tfrac12V(2)$, así que $\tfrac12V(1)=-7$ y $V(1)=-14$. El valor es $(-14,-2)$.
+En la casilla 2, $V(2)=-1+\tfrac12V(2)$, así que $V(2)=-2$. En la casilla 1, $V(1)=-3+\tfrac12V(1)+\tfrac12V(2)$, así que $\tfrac12V(1)=-4$ y $V(1)=-8$. El valor es $(-8,-2)$.
 :::
 
 ::: exercise {#mkv-c3-rs-ej-iterar title="Dos rondas de iteración de valores"}
@@ -136,23 +136,23 @@ En 1: caminar da $-3-3=-6$ y correr da $-6-3-\tfrac32=-10.5$, así que caminar. 
 :::
 
 ::: exercise {#mkv-c3-rs-ej-esperar title="Esperar gratis"}
-Agrega en las dos casillas la acción esperar, que te deja donde estás y cuesta 0. ¿Qué condición de Bellman falla, y por qué $(-1,-1)$ resuelve la ecuación?
+Agrega en las dos casillas la acción esperar, que te deja donde estás y cuesta 0. ¿Qué condición de Bellman falla, y por qué $(-4,-2)$ resuelve la ecuación?
 :::
 ::: hint {#mkv-c3-rs-pista-esperar of="mkv-c3-rs-ej-esperar" title="¿Cuánto vale esperar siempre?"}
 Piensa en cuánto suma una política que nunca llega a la meta y nunca paga.
 :::
 ::: answer {#mkv-c3-rs-resp-esperar of="mkv-c3-rs-ej-esperar"}
-Esperar siempre no termina y vale 0, no $-\infty$: falla «toda política que no termina vale $-\infty$ en algún estado». Con $(-1,-1)$, en 2 queda $\max(-3,\,-1-\tfrac12,\,-1)=-1$, y en 1 queda $\max(-3-1,\,-6-1,\,-1)=-1$. Se cumple, igual que con $(0,0)$ y con $(-5,-2)$.
+Esperar siempre no termina y vale 0, no $-\infty$: falla «toda política que no termina vale $-\infty$ en algún estado». Con $(-4,-2)$, en 2 queda $\max(-3,\,-1-1,\,-2)=-2$, y en 1 queda $\max(-3-2,\,-6-2-1,\,-4)=-4$. Se cumple, igual que con $(0,0)$ y con $(-5,-2)$.
 :::
 
-::: exercise {#mkv-c3-rs-ej-lineal title="Por qué el PL minimiza"}
-Escribe las cuatro desigualdades del programa lineal del pasillo. ¿Qué pasa si en lugar de minimizar $V(1)+V(2)$ lo maximizas?
+::: exercise {#mkv-c3-rs-ej-lineal title="El PL con castigo 4"}
+Con castigo 4, $r(1,\text{correr})=-3$. Escribe las cuatro desigualdades del programa lineal del pasillo y halla su mínimo. ¿Cuáles quedan apretadas, y qué política dicen?
 :::
-::: hint {#mkv-c3-rs-pista-lineal of="mkv-c3-rs-ej-lineal" title="¿Hay un techo?"}
-Prueba con $V(1)=V(2)=M$ y $M$ muy grande.
+::: hint {#mkv-c3-rs-pista-lineal of="mkv-c3-rs-ej-lineal" title="¿Qué acota cada desigualdad?"}
+Despeja cada una: es una cota inferior de $V(1)$ o de $V(2)$. Empieza por las de la casilla 2.
 :::
 ::: answer {#mkv-c3-rs-resp-lineal of="mkv-c3-rs-ej-lineal"}
-Son $V(1)\ge-3+V(2)$, $V(1)\ge-6+\tfrac12V(1)+\tfrac12V(2)$, $V(2)\ge-3$ y $V(2)\ge-1+\tfrac12V(2)$. Con $V(1)=V(2)=M$ grande se cumplen las cuatro, así que la región no tiene techo y el máximo es $+\infty$. Minimizando, la última da $V(2)\ge-2$, la primera da $V(1)\ge-5$, y el mínimo es $(-5,-2)=V^*$.
+Son $V(1)\ge-3+V(2)$, $V(1)\ge-3+\tfrac12V(1)+\tfrac12V(2)$, $V(2)\ge-3$ y $V(2)\ge-1+\tfrac12V(2)$. Despejadas: $V(1)\ge V(2)-3$, $V(1)\ge V(2)-6$, $V(2)\ge-3$ y $V(2)\ge-2$. El mínimo es $V(2)=-2$ y $V(1)=-5$, con suma $-7$. Quedan apretadas caminar en 1 y correr en 2: la política es caminar–correr, y $(-5,-2)$ es su valor.
 :::
 
 Vuelve al [[markov-decidir|índice de la clase 3]].

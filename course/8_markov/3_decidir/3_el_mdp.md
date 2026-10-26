@@ -91,7 +91,7 @@ $$
 $$
 
 - **Qué es:** un conjunto finito de estados $\mathcal S$ con terminales $\mathcal F\subseteq\mathcal S$ no vacío y no terminales $\mathcal T=\mathcal S\setminus\mathcal F$. En cada $s\in\mathcal T$ hay un conjunto finito y no vacío de acciones $\mathcal A(s)$. Cada par $(s,a)$ trae una fila $P(\cdot\mid s,a)$ y una recompensa esperada $r(s,a)$.
-- **Cómo se calcula:** una matriz por acción, $P_a$, de tamaño $\lvert\mathcal S\rvert\times\lvert\mathcal S\rvert$, fila desde y columna hacia, con entradas $P(s'\mid s,a)\ge0$ y cada fila sumando 1. La recompensa es el promedio de lo recibido:
+- **Cómo se calcula:** para cada $s\in\mathcal T$ y cada $a\in\mathcal A(s)$, una fila con entradas $P(s'\mid s,a)\ge0$ que suman 1. Si $a$ está disponible en todos los estados, sus filas forman una matriz $P_a$ de tamaño $\lvert\mathcal S\rvert\times\lvert\mathcal S\rvert$, fila desde y columna hacia. La recompensa es el promedio de lo recibido:
 
 $$
 r(s,a)=E[r_{t+1}\mid S_t=s,\ a].
@@ -179,7 +179,7 @@ $$
 :::
 
 - **Aviso de letras.** Agentes escribió $\pi(a\mid s)$, una probabilidad por acción. Aquí $\pi(s)$ es una sola acción, y $\pi^*$ será la mejor.
-- **Nombres con palabras.** «Caminar–correr» es caminar en la casilla 1 y correr en la 2. Se escribe con palabras porque una C sola ya es consonante en esta unidad.
+- **Nombres con palabras.** «Caminar–correr» es caminar en la casilla 1 y correr en la 2. Se escribe con palabras porque C ya es el estado consonante de la clase 1.
 
 **En el juguete.** Dos casillas con dos acciones: $2\times2=4$ políticas. Son caminar–caminar, caminar–correr, correr–caminar y correr–correr.
 
@@ -227,8 +227,8 @@ $$
 
 $$
 \begin{aligned}
-P_\pi&=\begin{pmatrix}0&1&0\\0&1/2&1/2\\0&0&1\end{pmatrix},\qquad
-r_\pi=\begin{pmatrix}-3\\-1\end{pmatrix},\\
+P_\pi&=\begin{pmatrix}0&1&0\\0&1/2&1/2\\0&0&1\end{pmatrix},\\
+r_\pi&=\begin{pmatrix}-3\\-1\end{pmatrix},\\
 P_{\pi,\mathcal T}&=\begin{pmatrix}0&1\\0&1/2\end{pmatrix}.
 \end{aligned}
 $$
@@ -298,8 +298,8 @@ La fila 1 sale de $P_{\text{correr}}$ y la fila 2 de $P_{\text{caminar}}$. Para 
 ::: answer {#mkv-c3-md-resp-filas of="mkv-c3-md-ej-filas"}
 $$
 \begin{aligned}
-P_\pi&=\begin{pmatrix}1/2&1/2&0\\0&0&1\\0&0&1\end{pmatrix},\qquad
-r_\pi=\begin{pmatrix}-6\\-3\end{pmatrix},\\
+P_\pi&=\begin{pmatrix}1/2&1/2&0\\0&0&1\\0&0&1\end{pmatrix},\\
+r_\pi&=\begin{pmatrix}-6\\-3\end{pmatrix},\\
 P_{\pi,\mathcal T}&=\begin{pmatrix}1/2&1/2\\0&0\end{pmatrix}.
 \end{aligned}
 $$
@@ -326,7 +326,7 @@ V_\pi(s)&=E^\pi_s[G_0],\qquad s\in\mathcal T.
 $$
 
 - **Qué es:** $G_t$ es el **retorno**, la suma de las recompensas recibidas desde el paso $t$ hasta terminar. $V_\pi(s)$ es el **valor**: el promedio de $G_0$ cuando la cadena de $\pi$ empieza en $s$. En $\mathcal F$ el valor es 0.
-- **Cómo se calcula:** sin azar, sumando la única trayectoria. Con azar, es un promedio sobre todas las trayectorias. En ese promedio se puede usar $r_\pi(S_t)$ en lugar de lo recibido: el promedio no cambia.
+- **Cómo se calcula:** sin azar, sumando la única trayectoria. Con azar, es un promedio sobre todas las trayectorias. En ese promedio se puede usar $r_\pi(S_t)$ en lugar de lo recibido: $r_\pi(s)$ ya es el promedio de lo recibido estando en $s$, y promediar por partes no cambia el total.
 - **Qué significa:** cuánto recibe en promedio, de aquí al final, quien empieza en $s$ y sigue $\pi$. Con recompensas negativas, $-V_\pi(s)$ es el costo esperado.
 - **Qué no es:** el retorno de **una** trayectoria, ni $r_\pi(s)$, que es solo el primer paso.
 :::
@@ -345,12 +345,12 @@ $$
 Correr–correr sí tiene azar. Desde 2, el robot corre hasta avanzar; si avanza en el intento $j$, recibe $-1$ en cada intento:
 
 ::: table {#mkv-c3-md-tabla-retorno title="Retorno desde la casilla 2 con correr–correr"}
-| Avanza en el intento | Trayectoria | $G_0$ | Probabilidad |
+| Intento | Trayectoria | $G_0$ | Prob. |
 |---:|---|---:|---:|
 | 1 | 2, meta | $-1$ | 1/2 |
 | 2 | 2, 2, meta | $-2$ | 1/4 |
 | 3 | 2, 2, 2, meta | $-3$ | 1/8 |
-| $j$ | $j$ veces 2, meta | $-j$ | $(1/2)^j$ |
+| $j$ | 2 ($j$ veces), meta | $-j$ | $(1/2)^j$ |
 :::
 
 - **Lectura:** $G_0$ toma infinitos valores, cada vez menos probables. $V_\pi(2)$ es su promedio, y una suma infinita no es la forma cómoda de sacarlo.
@@ -461,7 +461,10 @@ Caminar recibe $-3$ en las tres casillas. Correr recibe $-1$ en 1 y en 3, y en 2
 **3. Elige filas.** Correr en 1 y en 3, caminar en 2:
 
 $$
-P_\pi=\begin{pmatrix}1/2&1/2&0&0\\0&0&1&0\\0&0&1/2&1/2\\0&0&0&1\end{pmatrix},\qquad
+P_\pi=\begin{pmatrix}1/2&1/2&0&0\\0&0&1&0\\0&0&1/2&1/2\\0&0&0&1\end{pmatrix},
+$$
+
+$$
 r_\pi=\begin{pmatrix}-1\\-3\\-1\end{pmatrix}.
 $$
 

@@ -96,6 +96,18 @@ Con $\pi$ fija, $P_\pi$ es una cadena finita y homogénea, y la condición es la
 > **Evaluar sin revisar la condición.** Un programa con decimales puede devolver números aunque ${I-P_{\pi,\mathcal T}}$ sea casi singular.
 > **Antes de leer el resultado, revisa que desde cada estado la política llegue a $\mathcal F$.**
 
+::: exercise {#mkv-c3-ev-ej-desde-todo title="¿Basta con que termine desde una casilla?"}
+Con esperar gratis disponible, toma la política que espera en 1 y camina en 2. ¿Cumple la condición de @mkv-c3-teo-evaluar? ¿Qué dice el sistema de $V(1)$ y de $V(2)$?
+:::
+
+::: hint {#mkv-c3-ev-pista-desde-todo of="mkv-c3-ev-ej-desde-todo" title="¿Desde cuál casilla se llega a la meta?"}
+¿A dónde lleva la fila de 1 y a dónde la de 2? Escribe las dos ecuaciones y mira cuál tiene a su incógnita de los dos lados.
+:::
+
+::: answer {#mkv-c3-ev-resp-desde-todo of="mkv-c3-ev-ej-desde-todo"}
+No la cumple: desde 2 se llega a la meta, pero desde 1 nunca se sale. Las ecuaciones son ${V(1)=0+V(1)}$ y ${V(2)=-3}$. La segunda fija ${V(2)=-3}$; la primera la cumple cualquier $V(1)$, así que no hay solución única. La condición pide terminar **desde todo** estado, no desde alguno.
+:::
+
 Con el teorema en mano, el pasillo se evalúa con dos ecuaciones.
 
 ---
@@ -108,7 +120,9 @@ La fila 1 de $P_{\text{caminar}}$ y la fila 2 de $P_{\text{correr}}$: la políti
 
 $$
 P_{\pi,\mathcal T}=\begin{pmatrix}0&1\\0&1/2\end{pmatrix},
-\qquad
+$$
+
+$$
 r_\pi=\begin{pmatrix}-3\\-1\end{pmatrix}.
 $$
 
@@ -142,7 +156,9 @@ La fila 1 sale de $P_{\text{correr}}$ y la fila 2 de $P_{\text{caminar}}$:
 
 $$
 P_{\pi,\mathcal T}=\begin{pmatrix}1/2&1/2\\0&0\end{pmatrix},
-\qquad
+$$
+
+$$
 r_\pi=\begin{pmatrix}-6\\-3\end{pmatrix}.
 $$
 
@@ -230,13 +246,13 @@ def evaluar_politica(mdp, pol):
         return None                        # (8) FALLA
     return dict(zip(T, V))                 # (9)
 
-m = F(1, 2)
+mitad = F(1, 2)
 pasillo = {
     "estados": [1, 2],
     "P": {(1, "caminar"): {2: F(1)},
-          (1, "correr"): {1: m, 2: m},
+          (1, "correr"): {1: mitad, 2: mitad},
           (2, "caminar"): {"meta": F(1)},
-          (2, "correr"): {2: m, "meta": m}},
+          (2, "correr"): {2: mitad, "meta": mitad}},
     "r": {(1, "caminar"): F(-3),
           (1, "correr"): F(-6),
           (2, "caminar"): F(-3),
@@ -271,12 +287,12 @@ for a1 in ("caminar", "correr"):
 :::
 
 ::: figure {#mkv-c3-fig-cuatro-politicas-plano title="Las cuatro políticas en el plano V(1)–V(2)"}
-![Plano con V(1) en el eje horizontal y V(2) en el vertical. Cuatro puntos: caminar–caminar en (−6, −3), caminar–correr en (−5, −2), correr–caminar en (−15, −3) y correr–correr en (−14, −2). Caminar–correr queda arriba y a la derecha de las otras tres.](../_assets/mkv-c3-cuatro-politicas-plano.svg)
+![Plano con V(1) en el eje horizontal y V(2) en el vertical. Cuatro puntos: caminar–caminar en (−6, −3), caminar–correr en (−5, −2), correr–caminar en (−15, −3) y correr–correr en (−14, −2). Caminar–correr queda a la derecha de las otras tres y a la altura máxima, empatada con correr–correr.](../_assets/mkv-c3-cuatro-politicas-plano.svg)
 :::
 
 - **Columna V(2).** Solo depende de la acción en 2: −3 si caminas, −2 si corres. Desde 2 nunca se regresa a 1.
 - **Columna V(1).** Depende de las dos acciones. Correr en 1 sale caro: el castigo de 10 llega con $1/2$ en cada intento.
-- **Una sola gana en las dos.** Caminar–correr tiene el valor más alto en la casilla 1 **y** en la casilla 2. En la figura, es el punto arriba y a la derecha de todos.
+- **Una sola alcanza el máximo en las dos.** Caminar–correr tiene el valor más alto en la casilla 1 **y** empata el más alto en la casilla 2 con correr–correr. En la figura, es el punto de la fila de arriba que queda más a la derecha.
 
 ::: exercise {#mkv-c3-ev-ej-esperar title="Corre el algoritmo con esperar siempre"}
 Agrega al pasillo «esperar» gratis y evalúa esperar siempre con EVALUAR-POLÍTICA. ¿Cómo queda $M$ en la línea 6, y qué devuelve el algoritmo, en qué línea?
@@ -353,11 +369,11 @@ print(round(statistics.fmean(G), 4), round(ee, 4))
 ![Histograma de los retornos de 10 000 episodios de caminar–correr desde la casilla 1, semilla 2044. Las barras están en −4, −5, −6, −7 y siguen hacia la izquierda; cada una mide cerca de la mitad de la anterior, y la de −4 tiene cerca de la mitad de los episodios. Una línea vertical marca el valor calculado, −5, y otra el promedio simulado.](../_assets/mkv-c3-simular-politica.svg)
 :::
 
-- **Lectura.** El retorno es −3 por caminar más 1 por cada intento de correr. Ningún episodio paga menos de 4, y la mitad paga justo 4.
+- **Lectura.** El retorno es −3 por caminar y −1 por cada intento de correr. Ningún episodio paga menos de 4, y la mitad paga justo 4.
 - **El promedio no es lo típico.** El retorno más frecuente es −4, pero los episodios largos jalan la media hasta −5.
 
 > [!WARNING]
-> **Leer $V_\pi(1)$ como lo que pagará un episodio.** −5 es el promedio de muchos episodios; ninguno paga 5 si tuvo suerte en el primer intento.
+> **Leer $V_\pi(1)$ como lo que pagará un episodio.** −5 es el promedio de muchos episodios; el que tuvo suerte en el primer intento paga 4, no 5.
 > **El valor fija la media del retorno, no su valor en un episodio concreto.**
 
 ::: exercise {#mkv-c3-ev-ej-histograma title="Lee el histograma sin simular"}
@@ -400,7 +416,7 @@ El pasillo es el mismo, con los mismos costos. **Cambia una idea:** el piso de l
 :::
 
 ::: answer {#mkv-c3-ev-resp-rampa of="mkv-c3-ev-ej-rampa" title="Respuesta · El pasillo con rampa"}
-**1. La fila.** Correr en 2 va a 1 con $1/2$ y a la meta con $1/2$; suma 1. En el diccionario: `(2, "correr"): {1: m, "meta": m}`.
+**1. La fila.** Correr en 2 va a 1 con $1/2$ y a la meta con $1/2$; suma 1. En el diccionario: `(2, "correr"): {1: mitad, "meta": mitad}`.
 
 **2. Condición.** Sí. Desde 1 se camina a 2, y desde 2 se llega a la meta con $1/2$ en cada intento. No hay clase cerrada dentro de $\{1,2\}$.
 
@@ -424,7 +440,7 @@ Sustituir la primera en la segunda da ${V(2)=-\tfrac52+\tfrac12V(2)}$: ${V(2)=-5
 - **Correr–caminar:** $(-15,-3)$, igual que antes.
 - **Correr–correr:** $(-26,-14)$.
 
-**5. Ciclos y ganadora.** $V(1)$ depende de $V(2)$ y $V(2)$ de $V(1)$: ninguna ecuación tiene una sola incógnita, y hay que resolverlas juntas. Ahora caminar–caminar tiene el valor más alto en las dos casillas: la rampa vuelve caro correr en 2.
+**5. Ciclos y ganadora.** $V(1)$ depende de $V(2)$ y $V(2)$ de $V(1)$: ninguna ecuación tiene una sola incógnita, y hay que resolverlas juntas. Ahora caminar–caminar alcanza el máximo en las dos casillas (en la 2 empata con correr–caminar): la rampa vuelve caro correr en 2.
 :::
 
 **Punto de control:** deberías poder armar $P_{\pi,\mathcal T}$ y $r_\pi$ eligiendo filas, revisar la condición en el grafo y resolver ${(I-P_{\pi,\mathcal T})V_\pi=r_\pi}$. También, correr EVALUAR-POLÍTICA y comparar su resultado con episodios simulados.
@@ -437,7 +453,7 @@ Sustituir la primera en la segunda da ${V(2)=-\tfrac52+\tfrac12V(2)}$: ${V(2)=-5
 - **La condición.** En MDP finitos equivale a que ${I-P_{\pi,\mathcal T}}$ sea invertible. Esperar siempre, gratis, la rompe: ${I-P_{\pi,\mathcal T}=0}$.
 - **A mano.** Caminar–correr vale ${(V(1),V(2))=(-5,-2)}$; correr–caminar, $(-15,-3)$.
 - **El algoritmo.** EVALUAR-POLÍTICA elige filas, arma ${I-P_{\pi,\mathcal T}}$ y elimina; cuesta del orden de ${\lvert\mathcal T\rvert^3}$ por política.
-- **Las cuatro.** caminar–caminar $(-6,-3)$, caminar–correr $(-5,-2)$, correr–caminar $(-15,-3)$, correr–correr $(-14,-2)$. Caminar–correr gana en las dos casillas.
+- **Las cuatro.** caminar–caminar $(-6,-3)$, caminar–correr $(-5,-2)$, correr–caminar $(-15,-3)$, correr–correr $(-14,-2)$. Caminar–correr alcanza el máximo en las dos casillas.
 - **La simulación.** −5 calculado contra −5.0074 simulado, con error estándar 0.0143.
 
 Evaluar las cuatro funcionó porque eran cuatro. ¿Y si en lugar de fijar la acción la elegimos?
