@@ -1,0 +1,27 @@
+id: ver-video-mdp-silver
+type: task
+authority: official
+content:
+  title: "Tarea · Ver la clase de David Silver sobre procesos de decisión de Markov"
+  instructions: >-
+    Para el miércoles 28 de octubre hay que ver y entender la clase 2 del curso
+    de aprendizaje por refuerzo de David Silver (Google DeepMind), sobre
+    procesos de decisión de Markov. Dura una hora y 42 minutos y está en
+    inglés; los subtítulos automáticos ayudan si los necesitas. Recorre lo
+    mismo que la clase 3 de Markov, Decidir, en el mismo orden, y un poco más.
+    La condición no es verla: es entenderla. Párala y regrésate cuando haga
+    falta. Llega a clase pudiendo explicar con tus palabras qué agrega cada
+    paso de cadena a proceso con recompensa y a proceso de decisión, la
+    diferencia entre V y Q, por qué el valor de una política sale de un sistema
+    lineal y el óptimo no, y para qué sirve el descuento que usa el video. El
+    enlace, la tabla que traduce su notación a la nuestra y las cuatro
+    preguntas están en la página de tarea de la clase 3. No hay nada que
+    entregar.
+  due: "2026-10-28"
+  status: published
+  tags:
+    - tarea
+    - video
+    - preparacion
+    - markov
+    - mdp

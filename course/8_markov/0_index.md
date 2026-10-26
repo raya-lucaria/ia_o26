@@ -62,8 +62,9 @@ completo.
 El recorrido de lectura suma **10 horas y 28 minutos**.
 
 La clase 1 termina con una **tarea**: tres videos, tres de sus ejercicios
-y uno que adelanta la siguiente pregunta. Está en el índice de
-la clase, aparte del recorrido.
+y uno que adelanta la siguiente pregunta. La clase 3 también: un video
+sobre procesos de decisión de Markov, para el miércoles 28 de octubre.
+Cada una está en el índice de su clase, aparte del recorrido.
 
 Y una hoja de consulta, aparte del recorrido:
 

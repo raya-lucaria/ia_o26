@@ -62,6 +62,7 @@ CLASE_3_EN_ORDEN = [
     "mkv-iterar-politicas",
     "mkv-mdp-lineal",
     "mkv-resumen-decidir",
+    "tarea-decidir",
 ]
 
 RE_DIRECTIVA = re.compile(r"^::: (\w+) \{([^}]*)\}\s*$", re.M)

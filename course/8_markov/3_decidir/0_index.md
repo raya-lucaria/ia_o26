@@ -15,6 +15,12 @@ prerequisites: [markov-a-la-larga]
 y cómo se calcula?** Al final tendrás una ecuación que caracteriza la mejor
 elección, su condición exacta y tres algoritmos que la resuelven.
 
+> [!WARNING]
+> **Tarea para el miércoles 28 de octubre:** ver y entender la clase de
+> David Silver sobre procesos de decisión de Markov (una hora y 42 minutos).
+> El enlace y las preguntas con las que llegas están en
+> [[tarea-decidir|la tarea de la clase 3]].
+
 ## Lo que traes
 
 Esta clase sigue a la clase 2. Si un renglón no te suena, vuelve a su página.
@@ -70,6 +76,7 @@ está en la tabla.
 | 7 | 23m | **Iteración de políticas.** Evaluar y mejorar: termina en rondas finitas |
 | 8 | 18m | **Como programa lineal.** Bellman con desigualdades y `linprog` |
 | 9 | 15m | **Resumen: el formulario.** Definiciones, teoremas, los tres algoritmos y lo que más se confunde |
+| 10 | 120m, aparte | **Tarea.** Ver la clase de David Silver sobre MDP, para el miércoles 28 de octubre |
 :::
 
 1. [[mkv-max-y-punto-fijo|Lo que necesitas: el máximo y el punto fijo]]
@@ -81,6 +88,8 @@ está en la tabla.
 7. [[mkv-iterar-politicas|Iteración de políticas]]
 8. [[mkv-mdp-lineal|El MDP como programa lineal]]
 9. [[mkv-resumen-decidir|Resumen de la clase: el formulario]]
+
+Aparte del recorrido: [[tarea-decidir|la tarea de la clase 3, para el miércoles 28 de octubre]].
 
 ## Qué no cubre esta clase
 
