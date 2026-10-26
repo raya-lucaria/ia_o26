@@ -4,7 +4,7 @@ title: "Iteración de políticas"
 nav_title: "Iteración de políticas"
 summary: "Evaluar y mejorar hasta que la política no cambie: termina en un número finito de rondas si se conserva la acción en los empates."
 status: ready
-estimated_time: 22m
+estimated_time: 23m
 tags: [markov, decidir, iteracion-de-politicas, algoritmo]
 ---
 
@@ -30,7 +30,7 @@ Sí: buscando entre políticas, no entre números. Al terminar tendrás:
 **Qué V usa esta página.** Casi siempre $V_\pi$: el valor exacto de la política actual, buena o no. El algoritmo para cuando $V_\pi$ es $V^*$, el de la mejor política. $V^{(k)}$, la aproximación tras $k$ rondas, solo aparece al comparar.
 
 > [!NOTE]
-> **Por qué otro algoritmo.** $V^{(k)}$ se acerca a $V^*$ sin tocarlo, y hay que decidir cuándo parar. Pero el pasillo tiene solo cuatro políticas: buscar entre ellas es finito. Falta ver que no dé vueltas.
+> **Por qué otro algoritmo.** $V^{(k)}$ se acerca a $V^*$ sin tocarlo, y hay que decidir cuándo parar. Pero el pasillo tiene solo cuatro políticas deterministas: buscar entre ellas es finito. Falta ver que no dé vueltas.
 
 ---
 
@@ -64,7 +64,7 @@ $$
 
 Correr gana: $-5/2>-3$.
 
-**Mejorar en la casilla 1.** Correr cuesta $-6$ por el hueco:
+**Mejorar en la casilla 1.** Correr en 1 recibe $-6$ en promedio, por el hueco:
 
 $$
 \begin{aligned}
@@ -149,14 +149,14 @@ La suma es lo esperado en $n$ pasos con $\pi'$. El último término está acotad
 - **Termina.** Si $\pi'$ no terminara, la condición de @mkv-c3-teo-bellman diría que vale $-\infty$ en algún estado. Pero la desigualdad acota sus sumas por abajo, para todo $n$. Entonces $\pi'$ termina.
 - **No baja.** Como $\pi'$ termina, ${P_{\pi',\mathcal T}^{\,n}\to0}$. Queda ${V_\pi\le V_{\pi'}}$.
 - **Sube donde cambia.** Por la regla de empates, si la acción cambió en $s$, es porque ${Q_\pi(s,\pi'(s))>V_\pi(s)}$. Con ${V_{\pi'}\ge V_\pi}$, se sigue ${V_{\pi'}(s)\ge Q_\pi(s,\pi'(s))>V_\pi(s)}$.
-- **Para.** El valor crece estrictamente en cada cambio, así que ninguna política se repite. Hay ${\prod_s\lvert\mathcal A(s)\rvert}$ políticas.
+- **Para.** El valor crece estrictamente en cada cambio, así que ninguna política se repite. Hay ${\prod_s\lvert\mathcal A(s)\rvert}$ políticas deterministas, y el algoritmo solo produce de esas.
 - **Óptima.** Al parar, $\pi(s)$ alcanza el máximo en cada $s$: ${V_\pi(s)=\max_aQ_\pi(s,a)}$. O sea, $V_\pi$ resuelve la ecuación de Bellman. Por @mkv-c3-teo-bellman, $V_\pi$ es $V^*$.
 :::
 
 - **La política inicial importa.** Una $\pi_0$ que no termina no se puede evaluar: ${I-P_{\pi,\mathcal T}}$ es singular, como esperar siempre en @mkv-c3-teo-evaluar.
 - **La regla de empates importa.** Sin ella, la acción puede cambiar sin que el valor suba, y «no se repite» se cae.
 
-**En el juguete.** Hay ${2\cdot2=4}$ políticas, así que a lo más 4 rondas. Desde caminar–caminar, $V_\pi$ sube de ${(-6,-3)}$ a ${(-5,-2)}$. Sube estricto en las dos casillas, aunque la acción cambió solo en la 2. Usó 2 rondas.
+**En el juguete.** Hay ${2\cdot2=4}$ políticas deterministas, así que a lo más 4 rondas. Desde caminar–caminar, $V_\pi$ sube de ${(-6,-3)}$ a ${(-5,-2)}$. Sube estricto en las dos casillas, aunque la acción cambió solo en la 2. Usó 2 rondas.
 
 > [!TIP]
 > **Ejemplo y contraejemplo.** Cambia el pasillo: caminar en la casilla 2 cuesta 2, no 3. Ahí caminar y correr empatan: correr da ${-1+\tfrac12(-2)=-2}$, igual que caminar.
@@ -173,12 +173,12 @@ Las dos son óptimas: su valor ${(-5,-2)}$ es $V^*$. El algoritmo llegó, pero n
 Un MDP tiene 5 estados no terminales con 3 acciones cada uno. ¿Cuántas rondas, a lo más, garantiza el teorema?
 :::
 
-::: hint {#mkv-c3-pi-pista-cota of="mkv-c3-pi-ej-cota" title="¿Cuántas políticas hay?"}
+::: hint {#mkv-c3-pi-pista-cota of="mkv-c3-pi-ej-cota" title="¿Cuántas políticas deterministas hay?"}
 ¿Cuántas acciones puedes elegir en cada estado, y cómo se combinan entre estados?
 :::
 
 ::: answer {#mkv-c3-pi-resp-cota of="mkv-c3-pi-ej-cota"}
-Hay ${3^5=243}$ políticas: a lo más 243 rondas. Es el peor caso; suelen bastar pocas.
+Hay ${3^5=243}$ políticas deterministas: a lo más 243 rondas. Es el peor caso; suelen bastar pocas.
 :::
 
 Falta escribirlo para que lo haga un programa.
@@ -379,7 +379,7 @@ Cada ronda cuesta más que en iteración de valores. ¿Cuántas hacen falta?
 
 Iteración de políticas, muy pocas: cada mejora corrige todas las casillas a la vez. El pasillo grande tiene casillas 1 a 200 y meta 201. Hay un hueco sin barandal en cada casilla ${i\equiv1\pmod3}$.
 
-- **Políticas.** Hay $2^{200}\approx1.6\times10^{60}$: la cota del teorema no ayuda.
+- **Políticas.** Hay $2^{200}\approx1.6\times10^{60}$ deterministas: la cota del teorema no ayuda.
 - **Primera evaluación.** Con $\pi$ = caminar siempre, ${V_\pi(i)=V_\pi(i+1)-3}$. Así que ${V_\pi(1)=-600}$.
 - **Primera mejora.** Junto a un barandal, correr da ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)=V_\pi(i+1)-\tfrac52}$. Es mejor que caminar. Junto a un hueco, correr da ${V_\pi(i+1)-\tfrac{15}2}$, peor.
 - **Resultado.** Una mejora basta: caminar junto al hueco, correr junto al barandal.
@@ -397,7 +397,7 @@ print(V[1])
 **El número que da.** Desde caminar siempre usa 2 rondas: una mejora y una que confirma. Da ${V^*(1)=-467}$ exacto. Iteración de valores necesita 451 rondas para bajar el residuo a $10^{-9}$. Y su $V^{(451)}$ solo aproxima $V^*$.
 
 ::: figure {#mkv-c3-fig-rondas-politicas title="Una mejora basta para llegar"}
-![Iteración de políticas en el pasillo de dos casillas. Desde caminar–caminar, con V = (−6, −3), y desde correr–correr, con V = (−14, −2), una mejora llega a caminar–correr, con V = (−5, −2), y la siguiente no cambia nada. Abajo, el pasillo de 200 casillas: valores, 451 rondas hasta residuo de 10⁻⁹; políticas, 1 mejora desde caminar siempre](../_assets/mkv-c3-rondas-politicas.svg)
+![Iteración de políticas en el pasillo de dos casillas. Desde caminar–caminar, con Vπ = (−6, −3), y desde correr–correr, con Vπ = (−14, −2), una mejora llega a caminar–correr, con Vπ = (−5, −2), y la siguiente no cambia nada. Abajo, el pasillo de 200 casillas: valores, 451 rondas hasta residuo de 10⁻⁹; políticas, 1 mejora desde caminar siempre](../_assets/mkv-c3-rondas-politicas.svg)
 :::
 
 - **Por qué tan pocas.** $V_\pi$ ya trae el futuro entero; $V^{(k)}$ solo trae $k$ pasos. La mejora decide con información completa.
@@ -439,7 +439,7 @@ Toma el pasillo de dos casillas. **Cambia una idea:** el hueco de la casilla 1 y
 :::
 
 ::: hint {#mkv-c3-pi-pista-sin-hueco-2 of="mkv-c3-pi-ej-sin-hueco" title="Pista 2 · ¿Tus valores tienen sentido?"}
-¿El valor de cada política nueva es al menos el de la anterior, casilla por casilla? ¿Concuerda tu respuesta del inciso 5 con la frontera «correr en 1 conviene si el castigo es menor que 1»?
+¿El valor de cada política nueva es al menos el de la anterior, casilla por casilla? ¿Concuerda tu respuesta del inciso 5 con la figura de fronteras de [[mkv-bellman|La ecuación de Bellman]]?
 :::
 
 ::: answer {#mkv-c3-pi-resp-sin-hueco of="mkv-c3-pi-ej-sin-hueco" title="Respuesta · El pasillo sin castigo"}

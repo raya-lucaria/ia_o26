@@ -247,7 +247,7 @@ print([round(float(v), 6) for v in V_estrella.values()])
 - **Costo:** el programa tiene $\lvert\mathcal T\rvert$ variables y ${\sum_s\lvert\mathcal A(s)\rvert}$ restricciones. No enumera políticas. Crece con estados y acciones, no con su producto.
 - **Supuestos:** se conocen $P$ y $r$, y las condiciones se cumplen. Si no, el solver puede devolver un número que no es $V^*$ sin avisar.
 
-**El caso grande.** En el pasillo de 200 casillas hay 200 variables y 400 restricciones, frente a $2^{200}\approx1.6\times10^{60}$ políticas. PL-BELLMAN da ${V^*(1)=-467}$, el mismo valor que iterar valores y que iterar políticas.
+**El caso grande.** En el pasillo de 200 casillas hay 200 variables y 400 restricciones, frente a $2^{200}\approx1.6\times10^{60}$ políticas deterministas. PL-BELLMAN da ${V^*(1)=-467}$, el mismo valor que iterar valores y que iterar políticas.
 
 ```python
 G = {}
@@ -281,48 +281,48 @@ Con el modelo y el código en la mano, cambia un número del pasillo.
 
 ## Ejercicios
 
-::: exercise {#mkv-c3-lp-ej-sin-castigo title="El pasillo sin castigo"}
+::: exercise {#mkv-c3-lp-ej-rampa title="El pasillo con rampa, como programa lineal"}
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-El pasillo es el mismo: caminar cuesta 3; correr cuesta 1 y resbala con $1/2$. **Cambia una idea:** le ponen barandal a la casilla 1. Resbalar ya no cuesta nada extra: el castigo es 0.
+Es el pasillo con rampa de [[mkv-evaluar-politica|Evaluar una política]]: los mismos costos, pero si corres en 2 y resbalas, regresas a la casilla 1. Ahí lo resolviste evaluando las cuatro políticas. Ahora resuélvelo con un solo programa lineal.
 
 1. **Plantea.** Escribe las cuatro restricciones del programa y despéjalas.
 2. **Resuelve a mano.** Encuentra el mínimo de ${V(1)+V(2)}$ en la región.
 3. **Lee la política.** ¿Qué restricciones quedan con igualdad, y qué política es?
-4. **Corre.** Cambia un solo número del `pasillo` en el Python y comprueba tu resultado.
-5. **Busca la frontera.** ¿Con qué castigo empatan caminar y correr en la casilla 1? ¿Qué les pasa a sus dos restricciones?
+4. **Corre.** Cambia un solo destino del `pasillo` en el Python y comprueba tu resultado.
+5. **Compara.** ¿Coincide con la tabla de las cuatro políticas con rampa? ¿Por qué la restricción de (2, correr) no queda con igualdad?
 :::
 
-::: hint {#mkv-c3-lp-pista-sin-castigo-1 of="mkv-c3-lp-ej-sin-castigo" title="Pista 1 · ¿Qué cambia en las cuatro restricciones?"}
-¿Cuánto vale ahora $r(1,\text{correr})$? ¿Cuál de las cuatro restricciones es la única que cambia?
+::: hint {#mkv-c3-lp-pista-rampa-1 of="mkv-c3-lp-ej-rampa" title="Pista 1 · ¿Qué cambia en las cuatro restricciones?"}
+¿Cuál de las cuatro restricciones es la única que cambia? ¿Qué incógnitas aparecen ahora en ella?
 :::
 
-::: hint {#mkv-c3-lp-pista-sin-castigo-2 of="mkv-c3-lp-ej-sin-castigo" title="Pista 2 · ¿Tu respuesta tiene sentido?"}
-¿Tu solución da ${V(2)=-2}$, como antes? ¿Tu $V(1)$ es mejor que $-5$, ahora que correr en 1 es más barato? ¿Coincide con el valor $V_\pi$ de esa política, por @mkv-c3-teo-evaluar?
+::: hint {#mkv-c3-lp-pista-rampa-2 of="mkv-c3-lp-ej-rampa" title="Pista 2 · ¿Tu respuesta tiene sentido?"}
+¿Tu punto cumple las cuatro restricciones, incluida la que cambió? ¿Coincide con el valor $V_\pi$ que calculaste para esa política con rampa?
 :::
 
-::: answer {#mkv-c3-lp-resp-sin-castigo of="mkv-c3-lp-ej-sin-castigo" title="Respuesta · El pasillo sin castigo"}
-**1. Plantear.** Solo cambia (1, correr): ${r(1,\text{correr})=-1}$.
+::: answer {#mkv-c3-lp-resp-rampa of="mkv-c3-lp-ej-rampa" title="Respuesta · El pasillo con rampa"}
+**1. Plantear.** Solo cambia (2, correr): al resbalar cae en 1, no en 2.
 
 $$
 \begin{aligned}
 \text{(1, caminar)}\quad&V(1)\ge V(2)-3,\\
-\text{(1, correr)}\quad&V(1)\ge-1+\tfrac12V(1)\\
-&\qquad+\tfrac12V(2),\\
-&\text{es decir, }V(1)\ge V(2)-2,\\
+\text{(1, correr)}\quad&V(1)\ge V(2)-12,\\
 \text{(2, caminar)}\quad&V(2)\ge-3,\\
-\text{(2, correr)}\quad&V(2)\ge-2.
+\text{(2, correr)}\quad&V(2)\ge-1+\tfrac12V(1).
 \end{aligned}
 $$
 
-**2. Resolver.** Ahora manda ${V(1)\ge V(2)-2}$. El mínimo es ${V(2)=-2}$ y ${V(1)=-4}$, con suma $-6$. Es el nuevo óptimo: ${V^*=(-4,-2)}$.
+La última tiene a las dos incógnitas: ya no se despeja sola.
 
-**3. La política.** Quedan con igualdad (1, correr) y (2, correr): correr–correr. Su valor por @mkv-c3-teo-evaluar es ${V_\pi(2)=-2}$ y ${V_\pi(1)=-2+V_\pi(2)=-4}$. Coincide con $V^*$.
+**2. Resolver.** Las dos de caminar dan ${V(2)\ge-3}$ y ${V(1)\ge V(2)-3\ge-6}$. Ningún punto factible baja de $(-6,-3)$. Ese punto cumple también (2, correr): ${-3\ge-1+\tfrac12(-6)=-4}$. El mínimo es ${V^*=(-6,-3)}$, con suma $-9$.
 
-**4. Correr.** Basta cambiar `-6` por `-1` en la fila de correr de la casilla 1. Imprime `[-4.0, -2.0]`.
+**3. La política.** Quedan con igualdad (1, caminar) y (2, caminar): caminar–caminar.
 
-**5. Frontera.** Con castigo $x$, ${r(1,\text{correr})=-1-x/2}$. La restricción despejada es ${V(1)\ge V(2)-2-x}$. Empata con ${V(1)\ge V(2)-3}$ cuando ${x=1}$. Ahí las dos rectas coinciden y ambas quedan con igualdad. Caminar y correr son óptimas en 1, con ${V^*(1)=-5}$.
+**4. Correr.** En la fila de correr de la casilla 2, cambia `{2: 0.5, "meta": 0.5}` por `{1: 0.5, "meta": 0.5}`. Imprime `[-6.0, -3.0]`.
+
+**5. Comparar.** Coincide: con rampa, caminar–caminar vale $(-6,-3)$ y gana en las dos casillas. La restricción de (2, correr) vale $-4$ en el óptimo, menos que ${V^*(2)=-3}$. Ese $-4$ es $Q^*(2,\text{correr})$: correr en 2 es peor que caminar.
 :::
 
 **Punto de control:** deberías poder:

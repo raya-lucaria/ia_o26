@@ -30,7 +30,7 @@ De [[mkv-max-y-punto-fijo|Lo que necesitas: el máximo y el punto fijo]]:
 De [[mkv-el-mdp|El proceso de decisión de Markov]]:
 
 - **MDP:** $\langle\mathcal S,\mathcal A,P,r\rangle$, una matriz $P_a$ por acción y recompensas $r(s,a)\le0$ (@mkv-c3-def-mdp).
-- **Política:** $\pi(s)\in\mathcal A(s)$, una acción por estado (@mkv-c3-def-politica); la política elige filas y arma $P_\pi$, $P_{\pi,\mathcal T}$ y $r_\pi$ (@mkv-c3-def-cadena-politica).
+- **Política:** en general, una distribución $\pi(a\mid s)$ por estado; aquí basta la determinista, $\pi(s)\in\mathcal A(s)$, una acción por estado (@mkv-c3-def-politica); la política elige filas y arma $P_\pi$, $P_{\pi,\mathcal T}$ y $r_\pi$ (@mkv-c3-def-cadena-politica).
 - **Valor:** $V_\pi(s)=E^\pi_s[G_0]$, que puede ser $-\infty$ si no termina (@mkv-c3-def-valor), y terminar con probabilidad 1 (@mkv-c3-def-termina).
 - **El pasillo:** casillas 1 y 2, y la meta.
   - Caminar cuesta 3 y avanza.
@@ -40,14 +40,30 @@ De [[mkv-el-mdp|El proceso de decisión de Markov]]:
 De [[mkv-evaluar-politica|Evaluar una política]]:
 
 - **Evaluar:** si $\pi$ termina con probabilidad 1 desde todo estado, $V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi$ tiene solución única (@mkv-c3-teo-evaluar).
-- **Las cuatro políticas del pasillo**, con su $V_\pi=(V_\pi(1),V_\pi(2))$: caminar–caminar $(-6,-3)$, caminar–correr $(-5,-2)$, correr–caminar $(-15,-3)$, correr–correr $(-14,-2)$.
+- **Las cuatro políticas deterministas del pasillo**, con su $V_\pi=(V_\pi(1),V_\pi(2))$: caminar–caminar $(-6,-3)$, caminar–correr $(-5,-2)$, correr–caminar $(-15,-3)$, correr–correr $(-14,-2)$.
 
 De [[cuando-decide-un-dado|Cuando decide un dado]], en juegos: expectiminimax toma el máximo en los nodos de MAX y el promedio en los de azar (@jue-c2-valor-esperado). De la clase 2: condicionar en el primer paso (@mkv-c2-teo-primer-paso).
 
 **Qué V usa esta página.** $V_\pi$: el valor de una política fija $\pi$, buena o mala. $V^*$: el óptimo, el valor con la mejor política. $V(s)$ a secas: solo la incógnita de la ecuación de Bellman; el teorema dice cuándo su solución es $V^*$.
 
 > [!NOTE]
-> **Por qué estudiamos esto.** Evaluar las políticas una por una funciona con 4. Con 200 casillas son $2^{200}$. La ecuación de Bellman describe el óptimo $V^*$ **sin** enumerar políticas. De ella salen los algoritmos que lo calculan. Pero tiene una condición, y sin ella la ecuación puede mentir.
+> **Por qué estudiamos esto.** Evaluar las políticas deterministas una por una funciona con 4. Con 200 casillas son $2^{200}$. La ecuación de Bellman describe el óptimo $V^*$ **sin** enumerar políticas. De ella salen los algoritmos que lo calculan. Pero tiene una condición, y sin ella la ecuación puede mentir.
+
+
+**El problema, en general.** Ya no fijamos la política: la buscamos.
+
+> **Dado:** un MDP finito $\langle\mathcal S,\mathcal A,P,r\rangle$ con terminales $\mathcal F$ y estados sin terminar $\mathcal T$.
+>
+> **Encontrar:** una política $\pi^*$ que maximice $V_\pi(s)$ en todos los estados de $\mathcal T$ a la vez, y su valor $V^*$.
+
+- **Por qué existe.** Maximizar en todos los estados a la vez podría ser imposible: una política podría ganar en 1 y otra en 2. No pasa. La codiciosa de $V^*$ gana en todos (@mkv-c3-teo-codiciosa).
+- **Qué da la página.** Una ecuación que cumple $V^*$, cuándo $V^*$ es su única solución, y cómo sacar $\pi^*$ de $V^*$.
+
+**El mismo problema, en el pasillo.**
+
+> **Dado:** el pasillo con caminar y correr en cada casilla, y los $V_\pi$ de sus cuatro políticas deterministas.
+>
+> **Encontrar:** la política que da el valor más alto en la casilla 1 y en la casilla 2 a la vez, y ese valor $V^*=(V^*(1),V^*(2))$.
 
 ---
 
@@ -124,7 +140,7 @@ Si desviarse una vez mejora, ¿qué es lo mejor que se puede lograr?
 En principio sí: el máximo se toma estado por estado. Que una sola política gane en todos a la vez es un teorema de la sección 4.
 
 ::: definition {#mkv-c3-def-optimo title="Valor óptimo y valor de acción óptimo"}
-Con el máximo sobre las $\prod_{s\in\mathcal T}\lvert\mathcal A(s)\rvert$ políticas:
+Con el máximo sobre las $\prod_{s\in\mathcal T}\lvert\mathcal A(s)\rvert$ políticas deterministas:
 
 $$
 \begin{aligned}
@@ -136,7 +152,7 @@ $$
 Una política $\pi^*$ es **óptima** si $V_{\pi^*}(s)=V^*(s)$ en todo $s\in\mathcal T$.
 
 - **Qué es:** $V^*(s)$ es lo mejor que se puede lograr desde $s$. $Q^*(s,a)$ es lo mejor después de empezar con $a$.
-- **Cómo se calcula:** en principio, evaluando todas las políticas. En el pasillo son 4; con 200 casillas, $2^{200}$.
+- **Cómo se calcula:** en principio, evaluando todas las políticas. En el pasillo son 4 deterministas; con 200 casillas, $2^{200}$.
 - **Qué significa:** $V^*$ es una cota. Ninguna $V_\pi$ la supera en ningún estado.
 - **Qué no es:** el máximo sobre reglas que recuerdan la historia o sortean la acción. Con la condición de la sección 3 no ganan nada; lo citamos sin probarlo.
 :::
@@ -308,9 +324,7 @@ Una política $\pi$ es óptima **si y solo si** $\pi(s)\in\arg\max_aQ^*(s,a)$ pa
 :::
 
 ::: proof {#mkv-c3-be-dem-codiciosa of="mkv-c3-teo-codiciosa"}
-La damos con $r\le0$, como en el pasillo: así las sumas parciales solo bajan. El signo no basta para que una política sin fin valga $-\infty$. Eso lo pone la condición 4: esperar gratis no termina y vale 0.
-
-A veces todas las políticas terminan, como en los volados del ejercicio final. Entonces el primer paso de abajo sobra, y el resto vale con recompensas de cualquier signo. Los vectores son columnas sobre $\mathcal T$.
+Suponemos $r\le0$, como en el pasillo. La viñeta «$\pi$ termina» usa la condición 4. Si todas las políticas terminan, como en los volados del ejercicio final, esa viñeta sobra y la prueba vale con cualquier signo. Los vectores son columnas sobre $\mathcal T$.
 
 **Si.** Sea $\pi$ con $\pi(s)$ en el argmax. Por @mkv-c3-teo-bellman, $V^*=r_\pi+P_{\pi,\mathcal T}V^*$. Sustituyendo $n$ veces:
 
@@ -486,7 +500,7 @@ Un jugador tiene 1, 2 o 3 pesos y quiere llegar a 4.
 - **Fin:** con 0 pesos quiebra; con 4 se retira.
 - **La decisión:** solo con 2 pesos elige. Apostar 1 es la política tímida; apostar 2, la audaz.
 
-**Cambia una idea:** en el pasillo había una meta y costos. Aquí hay dos terminales, 0 y 4. La recompensa es 1 al llegar a 4. Así, $V_\pi(s)$ es la probabilidad de llegar a 4.
+**Cambia una idea:** en el pasillo había una meta y costos. Aquí hay dos terminales, 0 y 4. La recompensa es 1 al llegar a 4. Así, $V_\pi(s)$ es la probabilidad de llegar a 4. Aquí la recompensa es positiva, no $\le0$. El teorema sigue valiendo si toda política termina: entonces la condición 4 no tiene a quién aplicarse.
 
 1. **Plantea el MDP:** $\mathcal T$, $\mathcal F$, cada $\mathcal A(s)$ y cada $r(s,a)$. ¿Se cumple la condición de @mkv-c3-teo-bellman?
 2. **Evalúa** las dos políticas con $p=1/3$: calcula $V_\pi$ de cada una.

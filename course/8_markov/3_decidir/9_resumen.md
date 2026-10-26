@@ -4,7 +4,7 @@ title: "Resumen de la clase: el formulario"
 nav_title: "Resumen"
 summary: "Nada nuevo: las definiciones, los teoremas con su condición, los tres algoritmos y lo que más se confunde, en una sola página."
 status: ready
-estimated_time: 14m
+estimated_time: 15m
 tags: [markov, decidir, resumen]
 ---
 
@@ -19,7 +19,7 @@ tags: [markov, decidir, resumen]
 |---|---|---|
 | $V_\pi(s)$ | Lo que vale $s$ si sigues una política fija $\pi$, buena o mala | Evaluar una política |
 | $V^*(s)$ | Lo que vale $s$ con la mejor política: $V^*(s)=\max_\pi V_\pi(s)$ | Bellman y los tres algoritmos |
-| $V^{(k)}(s)$ | La aproximación de un algoritmo tras $k$ rondas | Iteración de valores |
+| $V^{(k)}(s)$ | La aproximación tras $k$ rondas; desde $V^{(0)}=0$, lo mejor si quedan $k$ pasos | Iteración de valores |
 | $V(s)$ | Una incógnita: números que buscamos en una ecuación o un PL | Bellman y el programa lineal |
 :::
 
@@ -39,21 +39,22 @@ tags: [markov, decidir, resumen]
 
 ## 2 · Las definiciones
 
-¿Qué objetos usa la clase? Nueve, uno por definición.
+¿Qué objetos usa la clase? Nueve, uno por definición, y el problema que plantean.
 
 - **Argmax** (@mkv-c3-def-argmax): el conjunto de las acciones que alcanzan el máximo. Con empates tiene más de un elemento.
 - **Punto fijo** (@mkv-c3-def-punto-fijo): una $x$ con $x=f(x)$. Iterar $x\leftarrow f(x)$ puede llegar, acercarse o no moverse hacia ningún lado.
 - **MDP** (@mkv-c3-def-mdp): $\langle\mathcal S,\mathcal A,P,r\rangle$. Trae las acciones $\mathcal A(s)$ de cada estado y una matriz $P_a$ por acción, con filas que suman 1. También trae la recompensa esperada $r(s,a)$. Aquí $r\le0$: un costo es una recompensa negativa.
-- **Política** (@mkv-c3-def-politica): una regla $\pi(s)\in\mathcal A(s)$ que elige **una sola** acción por estado, siempre la misma. Hay $\prod_{s\in\mathcal T}\lvert\mathcal A(s)\rvert$ políticas.
+- **Política** (@mkv-c3-def-politica): en general, una distribución $\pi(a\mid s)$ sobre las acciones de cada estado. La **determinista** pone probabilidad 1 en una sola acción y se escribe $\pi(s)\in\mathcal A(s)$. En esta clase bastan las deterministas: la codiciosa de $V^*$ ya es óptima (@mkv-c3-teo-codiciosa). Hay $\prod_{s\in\mathcal T}\lvert\mathcal A(s)\rvert$ políticas deterministas; con sorteo, infinitas.
 - **Cadena de la política** (@mkv-c3-def-cadena-politica): $P_\pi$ toma la fila $s$ de $P_{\pi(s)}$. Su bloque entre no terminales es $P_{\pi,\mathcal T}$, y $r_\pi(s)=r(s,\pi(s))$.
 - **Valor de una política** (@mkv-c3-def-valor): $V_\pi(s)=E^\pi_s[G_0]$, el retorno esperado desde $s$ si sigues la política fija $\pi$. El retorno $G_t$ suma las recompensas hasta llegar a $\mathcal F$.
 - **Terminar con probabilidad 1** (@mkv-c3-def-termina): desde todo estado de $\mathcal T$, la cadena $P_\pi$ llega a $\mathcal F$ con probabilidad 1.
 - **Valor de acción** (@mkv-c3-def-q): $Q_\pi(s,a)$ es el valor de tomar $a$ primero y seguir $\pi$ después.
 - **Óptimos** (@mkv-c3-def-optimo): $V^*(s)=\max_\pi V_\pi(s)$, el mayor valor que alcanza alguna política desde $s$. $Q^*$ es su valor de acción.
+- **El problema:** encontrar una política que maximice $V_\pi(s)$ en todos los estados a la vez. Existe: la codiciosa de $V^*$ gana en todos (@mkv-c3-teo-codiciosa).
 
-En el pasillo mojado hay cuatro políticas. La tabla da el valor $V_\pi$ de cada una. La óptima es caminar–correr: caminar junto al hueco, correr junto al barandal. Su fila, $(-5,-2)$, es también $V^*$.
+En el pasillo mojado hay cuatro políticas deterministas. La tabla da el valor $V_\pi$ de cada una. La óptima es caminar–correr: caminar junto al hueco, correr junto al barandal. Su fila, $(-5,-2)$, es también $V^*$.
 
-::: table {#mkv-c3-rs-tabla-politicas title="Las cuatro políticas del pasillo"}
+::: table {#mkv-c3-rs-tabla-politicas title="Las cuatro políticas deterministas del pasillo"}
 | Política | $V_\pi(1)$ | $V_\pi(2)$ |
 |---|---:|---:|
 | caminar–caminar | −6 | −3 |
@@ -91,8 +92,8 @@ En el pasillo mojado hay cuatro políticas. La tabla da el valor $V_\pi$ de cada
 ::: table {#mkv-c3-rs-tabla-algoritmos title="Los tres caminos para resolver Bellman"}
 | Algoritmo | Qué calcula | Qué garantiza | Cuánto cuesta |
 |---|---|---|---|
-| Iteración de valores | La aproximación $V^{(k)}$: lo mejor con $k$ pasos restantes. Al final, su codiciosa | Se acerca a $V^*$, pero en el pasillo no llega en rondas finitas. Para con el residuo y la cota | Una ronda recorre cada $(s,a)$ y sus llegadas; en el pasillo de 200, 451 rondas hasta tol $10^{-9}$ |
-| Iteración de políticas | Evalúa $V_\pi$ con un sistema lineal y mejora con la codiciosa | Llega a una política óptima en rondas finitas, a lo más $\prod_s\lvert\mathcal A(s)\rvert$; suele bastar con pocas | Un sistema lineal por ronda; en el pasillo de 200, 2 rondas desde caminar siempre |
+| Iteración de valores | La aproximación $V^{(k)}$: lo mejor si quedan $k$ pasos. Al final, su codiciosa | Se acerca a $V^*$, pero en el pasillo no llega en rondas finitas. Para con el residuo y la cota | Una ronda recorre cada $(s,a)$ y sus llegadas; en el pasillo de 200, 451 rondas hasta tol $10^{-9}$ |
+| Iteración de políticas | Evalúa $V_\pi$ con un sistema lineal y mejora con la codiciosa | Llega a una política óptima en rondas finitas, a lo más $\prod_s\lvert\mathcal A(s)\rvert$, las deterministas; suele bastar con pocas | Un sistema lineal por ronda; en el pasillo de 200, 2 rondas desde caminar siempre |
 | Programa lineal | $V^*$ como el mínimo de un PL | Exacto bajo las condiciones de Bellman | Una variable por estado y una desigualdad por par $(s,a)$; lo resuelve `linprog` |
 :::
 
@@ -100,7 +101,7 @@ En el pasillo mojado hay cuatro políticas. La tabla da el valor $V_\pi$ de cada
   - Iterar valores es lo más simple, y cada ronda es barata. Pero solo se acerca a $V^*$.
   - Iterar políticas paga un sistema lineal por ronda. A cambio, termina.
   - El programa lineal entrega todo el problema a otro programa, de una vez.
-- **Contar las políticas no es opción.** El pasillo de 200 casillas tiene $2^{200}\approx1.6\times10^{60}$ políticas. Los tres algoritmos lo resuelven sin recorrerlas.
+- **Contar las políticas no es opción.** El pasillo de 200 casillas tiene $2^{200}\approx1.6\times10^{60}$ políticas deterministas. Los tres algoritmos lo resuelven sin recorrerlas.
 
 ---
 
@@ -115,9 +116,9 @@ En el pasillo mojado hay cuatro políticas. La tabla da el valor $V_\pi$ de cada
 > - **El programa lineal también se engaña ahí.** Con esperar gratis su región no cambia. Su mínimo sigue en $(-5,-2)$, el $V_\pi$ de caminar–correr, que ya no es $V^*$. Con esperar a costo 1, esperar siempre vale $-\infty$ y todo vuelve a funcionar.
 > - **El PL minimiza; no maximiza.** La región no tiene techo: maximizar no tiene sentido.
 > - **Un residuo chico no garantiza un error chico.** El error es la distancia de $V^{(k)}$ a $V^*$. Con un lazo de 99/100 y costo 1, el error es 99 veces el residuo. Lo que garantiza es la cota $\tfrac{m}{1-\beta}\operatorname{res}^{(k)}$. En el pasillo, $m=3$ y $\beta=1/2$ dan 6 veces el residuo.
-> - **Ronda no es turno.** La ronda $k$ es una pasada del algoritmo sobre todos los estados. $V^{(k)}$ es lo mejor con $k$ pasos restantes. El turno del robot sigue siendo $t$.
+> - **Ronda no es turno.** La ronda $k$ es una pasada del algoritmo sobre todos los estados. Desde $V^{(0)}=0$, $V^{(k)}$ es lo mejor si quedan $k$ pasos: $k$ cuenta hacia atrás desde el final. El turno del robot, contado desde el inicio, sigue siendo $t$.
 > - **Cambiar en un empate puede no terminar.** Con caminar a costo 2 en la casilla 2, las dos acciones empatan. Si la mejora cambia en el empate, alterna para siempre.
-> - **La política elige una acción, no una mezcla.** Aquí $\pi(s)$ es una sola acción. En agentes se escribió $\pi(a\mid s)$.
+> - **Una política puede sortear, pero aquí no hace falta.** La definición general es $\pi(a\mid s)$, como en agentes. Los algoritmos usan la determinista $\pi(s)$, porque la codiciosa de $V^*$ ya es óptima. Contar políticas es contar deterministas.
 
 ---
 
