@@ -41,3 +41,4 @@ sesión.
 | Miércoles 9 de septiembre | Entrega · ensayo de [[filosofia-ia|Filosofía de la IA]], en PDF por Canvas |
 | Lunes 14 de septiembre | Video · [[optimizacion|Programación lineal, reducciones y simplex]] |
 | Lunes 21 de septiembre | Entrega · [[optimizacion-continua|Multiplicadores de Lagrange]] en Khan Academy y descenso con restricciones, por Canvas |
+| Miércoles 28 de octubre | Video · [[tarea-decidir|Procesos de decisión de Markov, con David Silver]] |
