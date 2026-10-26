@@ -1334,3 +1334,418 @@ if __name__ == "__main__":
     if sys.argv[1:] == ["foto"]:
         escribir_foto()
         print(f"escrita {ENLACES_CURSO}")
+
+
+# ============================================================================
+# ---- Decidir (course/8_markov/3_decidir/) ----
+# ============================================================================
+# Clase 3 (MDP). Plan: .superpowers/unidad/markov/clase-3/plan.md §3; API
+# congelada en api-markov.md (la importan gen_markov.py y el integrador). Todo
+# exacto con Fraction salvo lo que dice «flotante». Lo fija test_markov_c3.py.
+#
+# Un MDP es un dict:
+#   estados   lista de no terminales, en orden
+#   acciones  dict s -> lista de nombres (el orden decide los empates)
+#   P         dict (s, a) -> dict s' -> Fraction; el terminal se llama "meta"
+#             (un terminal es cualquier s' fuera de `estados`: valor 0)
+#   r         dict (s, a) -> Fraction, la recompensa ESPERADA r(s, a)
+#   r_real    (opcional, para simular) dict (s, a, s') -> int, la recompensa
+#             recibida al ir de s a s' con a; su promedio con P es r(s, a)
+# Una politica es un dict s -> accion.
+
+SEMILLAS.update({
+    "c3-simular-politica": 2044,       # p4: 10 000 episodios de caminar–correr
+})
+
+# ------------------------------------------------------------- escalera ---
+
+ESCALERA_COSTOS = (1, 2, 9, 1, 1)      # pisar los escalones 1..5; el 3 esta flojo
+_ESCALONES = 5
+
+
+def _pisar(s):
+    return ESCALERA_COSTOS[s - 1]
+
+
+def escalera_rutas():
+    """rutas(0..5): rutas(5) = 1, rutas(s) = suma de rutas(s + a), a en {1, 2}
+    sin pasarse del 5."""
+    rutas = [0] * (_ESCALONES + 1)
+    rutas[_ESCALONES] = 1
+    for s in range(_ESCALONES - 1, -1, -1):
+        rutas[s] = sum(rutas[s + a] for a in (1, 2) if s + a <= _ESCALONES)
+    return rutas
+
+
+def _escalera_tabla():
+    """(costo, brinco optimo) por escalon, pasada hacia atras."""
+    costo = [0] * (_ESCALONES + 1)
+    brinco = [None] * (_ESCALONES + 1)
+    for s in range(_ESCALONES - 1, -1, -1):
+        opciones = [(_pisar(s + a) + costo[s + a], a)
+                    for a in (1, 2) if s + a <= _ESCALONES]
+        costo[s], brinco[s] = min(opciones)
+    return costo, brinco
+
+
+def escalera_costo():
+    """costo(0..5) = lo que falta pagar desde s: (4, 4, 2, 1, 1, 0)."""
+    return _escalera_tabla()[0]
+
+
+def escalera_ruta_optima():
+    _, brinco = _escalera_tabla()
+    ruta = [0]
+    while ruta[-1] < _ESCALONES:
+        ruta.append(ruta[-1] + brinco[ruta[-1]])
+    return ruta
+
+
+def escalera_es_unica():
+    """True si en ningun escalon de la ruta optima empatan los dos brincos."""
+    costo, _ = _escalera_tabla()
+    for s in escalera_ruta_optima()[:-1]:
+        valores = [_pisar(s + a) + costo[s + a] for a in (1, 2) if s + a <= _ESCALONES]
+        if valores.count(min(valores)) > 1:
+            return False
+    return True
+
+
+def escalera_codiciosa():
+    """«Pisa el siguiente mas barato»: entre s+1 y s+2 el de menor costo de
+    pisar (en empate, el mas cercano)."""
+    ruta = [0]
+    while ruta[-1] < _ESCALONES:
+        s = ruta[-1]
+        opciones = [(_pisar(s + a), a) for a in (1, 2) if s + a <= _ESCALONES]
+        ruta.append(s + min(opciones)[1])
+    return ruta
+
+
+def costo_ruta(ruta):
+    return sum(_pisar(s) for s in ruta[1:])
+
+
+def escalera_todas_las_rutas():
+    """Todas las rutas de 0 a 5 (para contar 8 y ver la optima unica)."""
+    def desde(s):
+        if s == _ESCALONES:
+            return [[s]]
+        return [[s] + resto for a in (1, 2) if s + a <= _ESCALONES
+                for resto in desde(s + a)]
+    return desde(0)
+
+
+# -------------------------------------------------------- el pasillo J2 ---
+
+CAMINAR, CORRER, ESPERAR = "caminar", "correr", "esperar"
+META = "meta"
+
+
+def pasillo(caminar=3, castigo=10, esperar=None, n=2):
+    """J2 (n = 2) o el PASILLO (n = 200): casillas 1..n, meta despues de n.
+    Hueco sin barandal en i si i % 3 == 1 (en J2: la 1). Caminar avanza
+    seguro y cuesta `caminar`. Correr cuesta 1; con 1/2 avanza, con 1/2
+    resbala y se queda; si resbala junto al hueco cae y cuesta `castigo` mas.
+    `esperar`: None sin esa accion; un numero = su costo (se queda)."""
+    caminar, castigo = F(caminar), F(castigo)
+    estados = list(range(1, n + 1))
+    mdp = {"estados": estados, "acciones": {}, "P": {}, "r": {}, "r_real": {}}
+    medio = F(1, 2)
+    for i in estados:
+        sig = i + 1 if i < n else META
+        hueco = i % 3 == 1
+        acciones = [CAMINAR, CORRER] + ([ESPERAR] if esperar is not None else [])
+        mdp["acciones"][i] = acciones
+        mdp["P"][(i, CAMINAR)] = {sig: F(1)}
+        mdp["r"][(i, CAMINAR)] = -caminar
+        mdp["r_real"][(i, CAMINAR, sig)] = -caminar
+        mdp["P"][(i, CORRER)] = {i: medio, sig: medio}      # resbalar primero
+        caida = castigo if hueco else 0
+        mdp["r"][(i, CORRER)] = -1 - medio * caida
+        mdp["r_real"][(i, CORRER, i)] = -1 - caida
+        mdp["r_real"][(i, CORRER, sig)] = F(-1)
+        if esperar is not None:
+            mdp["P"][(i, ESPERAR)] = {i: F(1)}
+            mdp["r"][(i, ESPERAR)] = -F(esperar)
+            mdp["r_real"][(i, ESPERAR, i)] = -F(esperar)
+    return mdp
+
+
+POLITICAS_J2 = {
+    "caminar–caminar": {1: CAMINAR, 2: CAMINAR},
+    "caminar–correr": {1: CAMINAR, 2: CORRER},
+    "correr–caminar": {1: CORRER, 2: CAMINAR},
+    "correr–correr": {1: CORRER, 2: CORRER},
+}
+
+
+def matriz_accion(mdp, a, columnas=None):
+    """P_a como lista de filas: fila = desde (estados), columna = hacia
+    (estados y luego la meta). Para las figuras y la prueba de filas."""
+    columnas = columnas or mdp["estados"] + [META]
+    return [[mdp["P"].get((s, a), {}).get(c, F(0)) for c in columnas]
+            for s in mdp["estados"]]
+
+
+def cadena_politica(mdp, pol):
+    """(P_{pi,T}, r_pi): la politica elige filas; solo columnas no terminales."""
+    S = mdp["estados"]
+    PT = [[mdp["P"][(s, pol[s])].get(c, F(0)) for c in S] for s in S]
+    return PT, [mdp["r"][(s, pol[s])] for s in S]
+
+
+def _resolver_disperso(filas, b):
+    """Gauss exacto con filas dispersas ({columna: valor}): eliminacion hacia
+    abajo y sustitucion hacia atras. Falla si el sistema es singular."""
+    k = len(filas)
+    M = [dict(f) for f in filas]
+    b = list(map(F, b))
+    for c in range(k):
+        piv = next((r for r in range(c, k) if M[r].get(c, 0) != 0), None)
+        if piv is None:
+            raise ValueError("sistema singular: la solucion no es unica")
+        M[c], M[piv], b[c], b[piv] = M[piv], M[c], b[piv], b[c]
+        for r in range(c + 1, k):
+            f = M[r].get(c, 0)
+            if f != 0:
+                f = f / M[c][c]
+                for j, v in M[c].items():
+                    M[r][j] = M[r].get(j, 0) - f * v
+                b[r] -= f * b[c]
+    x = [F(0)] * k
+    for c in range(k - 1, -1, -1):
+        x[c] = (b[c] - sum(v * x[j] for j, v in M[c].items() if j > c)) / M[c][c]
+    return x
+
+
+def evaluar_politica(mdp, pol):
+    """V_pi exacto: (I - P_{pi,T}) V = r_pi. ValueError si es singular (la
+    politica no termina con probabilidad 1 desde algun estado)."""
+    S = mdp["estados"]
+    idx = {s: k for k, s in enumerate(S)}
+    filas = []
+    for s in S:
+        fila = {idx[s]: F(1)}
+        for t, p in mdp["P"][(s, pol[s])].items():
+            if t in idx:
+                fila[idx[t]] = fila.get(idx[t], 0) - p
+        filas.append(fila)
+    return dict(zip(S, _resolver_disperso(filas, [mdp["r"][(s, pol[s])] for s in S])))
+
+
+def q_valor(mdp, V, s, a):
+    """r(s, a) + sum_s' P(s' | s, a) U(s'); U = 0 fuera de los estados."""
+    return mdp["r"][(s, a)] + sum(p * V.get(t, 0) for t, p in mdp["P"][(s, a)].items()
+                                  if t in mdp["estados"])
+
+
+def _argmax(mdp, U, s):
+    qs = [(a, q_valor(mdp, U, s, a)) for a in mdp["acciones"][s]]
+    mejor = max(q for _, q in qs)
+    return [a for a, q in qs if q == mejor]
+
+
+def codiciosa(mdp, U):
+    """pi_U: en cada estado una accion del argmax; en empate, la primera de
+    acciones[s]."""
+    return {s: _argmax(mdp, U, s)[0] for s in mdp["estados"]}
+
+
+def iterar_valores(mdp, rondas=None, tol=None, V0=None, max_rondas=10**6):
+    """ITERACION DE VALORES sincrona: V^(t)(s) = max_a q(V^(t-1), s, a).
+    Con `rondas`: exacta, V^(0..rondas). Con `tol`: flotante, para en la
+    primera ronda con residuo <= tol. Devuelve [V^(0), V^(1), ...]."""
+    S = mdp["estados"]
+    if tol is None:
+        V = {s: F(V0[s]) if V0 else F(0) for s in S}
+        traza = [V]
+        for _ in range(rondas):
+            V = {s: max(q_valor(mdp, V, s, a) for a in mdp["acciones"][s]) for s in S}
+            traza.append(V)
+        return traza
+    dentro = set(S)
+    acc = {s: [(float(mdp["r"][(s, a)]),
+                [(t, float(p)) for t, p in mdp["P"][(s, a)].items() if t in dentro])
+               for a in mdp["acciones"][s]] for s in S}
+    V = {s: float(V0[s]) if V0 else 0.0 for s in S}
+    traza = [V]
+    for _ in range(max_rondas):
+        V = {s: max(r + sum(p * traza[-1][t] for t, p in suc) for r, suc in acc[s])
+             for s in S}
+        traza.append(V)
+        if max(abs(V[s] - traza[-2][s]) for s in S) <= tol:
+            break
+    return traza
+
+
+def residuos(traza):
+    """res^(t) = max_s |V^(t)(s) - V^(t-1)(s)|, t = 1..len-1."""
+    return [max(abs(b[s] - a[s]) for s in a) for a, b in zip(traza, traza[1:])]
+
+
+def errores(traza, Vstar):
+    """max_s |V*(s) - V^(t)(s)|, t = 0..len-1."""
+    return [max(abs(Vstar[s] - V[s]) for s in V) for V in traza]
+
+
+def cota_paro(m, beta):
+    """Factor de la cota de paro con gamma = 1: si cualquier sucesion de
+    acciones sigue sin terminar tras m pasos con probabilidad <= beta < 1,
+    max_s |V* - V^(t)| <= m / (1 - beta) * res^(t). Ver cifras.md."""
+    return F(m) / (1 - F(beta))
+
+
+def prob_no_terminar(mdp, m):
+    """beta_m = max sobre sucesiones de acciones (adaptativas) y sobre el
+    estado de inicio de P(seguir sin terminar tras m pasos)."""
+    S = mdp["estados"]
+    f = {s: F(1) for s in S}
+    for _ in range(m):
+        f = {s: max(sum(p * f.get(t, 0) for t, p in mdp["P"][(s, a)].items())
+                    for a in mdp["acciones"][s]) for s in S}
+    return max(f.values())
+
+
+def iterar_politicas(mdp, pol0, empate="conservar", max_rondas=50):
+    """ITERACION DE POLITICAS (Howard): evaluar y mejorar. Devuelve
+    [pi_0, pi_1, ..., pi_K]: pi_K es la primera que la mejora deja igual (se
+    hicieron K mejoras). En empate, "conservar" deja la accion actual si esta
+    en el argmax; "cambiar" toma la primera del argmax distinta de la actual.
+    Si no se estabiliza, la lista tiene max_rondas + 1 politicas."""
+    pols = [dict(pol0)]
+    for _ in range(max_rondas):
+        pol = pols[-1]
+        V = evaluar_politica(mdp, pol)
+        nueva = {}
+        for s in mdp["estados"]:
+            mejores = _argmax(mdp, V, s)
+            if empate == "conservar":
+                nueva[s] = pol[s] if pol[s] in mejores else mejores[0]
+            else:
+                otras = [a for a in mejores if a != pol[s]]
+                nueva[s] = otras[0] if otras else pol[s]
+        if nueva == pol:
+            return pols
+        pols.append(nueva)
+    return pols
+
+
+def lazo_99():
+    """Un estado con lazo 99/100 y r = -1 (la meta con 1/100): V* = -100."""
+    return {"estados": [1], "acciones": {1: [CAMINAR]},
+            "P": {(1, CAMINAR): {1: F(99, 100), META: F(1, 100)}},
+            "r": {(1, CAMINAR): F(-1)},
+            "r_real": {(1, CAMINAR, 1): F(-1), (1, CAMINAR, META): F(-1)}}
+
+
+# ------------------------------------------------------------- simular ---
+
+N_EPISODIOS = 10_000
+
+
+def simular_politica(mdp, pol, inicio=1, n=N_EPISODIOS, semilla=None):
+    """n episodios desde `inicio` hasta la meta; un u por paso con
+    muestrear_fila sobre los sucesores en el orden de P[(s, a)] (en el pasillo,
+    resbalar primero). Devuelve los retornos (ints)."""
+    semilla = SEMILLAS["c3-simular-politica"] if semilla is None else semilla
+    rng = random.Random(semilla)
+    filas = {}
+    for s in mdp["estados"]:
+        suc = list(mdp["P"][(s, pol[s])].items())
+        filas[s] = ([t for t, _ in suc], [float(p) for _, p in suc])
+    retornos = []
+    for _ in range(n):
+        s, g = inicio, 0
+        while s in filas:
+            destinos, fila = filas[s]
+            t = destinos[muestrear_fila(fila, rng.random())]
+            g += mdp["r_real"][(s, pol[s], t)]
+            s = t
+        retornos.append(int(g))
+    return retornos
+
+
+@lru_cache(maxsize=None)
+def resumen_simulacion():
+    """(media, error estandar s/sqrt(n)) de caminar–correr en J2, desde 1."""
+    g = simular_politica(pasillo(), POLITICAS_J2["caminar–correr"])
+    return statistics.fmean(g), statistics.stdev(g) / math.sqrt(len(g))
+
+
+# ------------------------------------------------------------- PASILLO ---
+
+N_PASILLO = 200
+TOL_PASILLO = 1e-9
+
+
+@lru_cache(maxsize=None)
+def pasillo_largo():
+    """El PASILLO (200 casillas): V*(1) exacto, rondas de iteracion de valores
+    (desde 0, tol 1e-9), rondas de iteracion de politicas (mejoras desde
+    caminar siempre), numero de politicas y la politica optima."""
+    mdp = pasillo(n=N_PASILLO)
+    pols = iterar_politicas(mdp, {s: CAMINAR for s in mdp["estados"]})
+    optima = pols[-1]
+    V = evaluar_politica(mdp, optima)
+    traza = iterar_valores(mdp, tol=TOL_PASILLO)
+    return {
+        "v_inicio": V[1],
+        "rondas_vi": len(traza) - 1,
+        "rondas_pi": len(pols) - 1,
+        "politicas": 2 ** N_PASILLO,
+        "politica": optima,
+        "error_vi": max(abs(float(V[s]) - traza[-1][s]) for s in mdp["estados"]),
+    }
+
+
+# ------------------------------------------------------ programa lineal ---
+
+def programa_lineal(mdp):
+    """Minimizar sum_s V(s) s.a. V(s) >= r(s, a) + sum_s' P V(s') para toda
+    (s, a), con V = 0 fuera de los estados; variables libres. Devuelve
+    ({s: V(s)} flotante, resultado de linprog)."""
+    from scipy.optimize import linprog
+    S = mdp["estados"]
+    idx = {s: k for k, s in enumerate(S)}
+    A, b = [], []
+    for s in S:
+        for a in mdp["acciones"][s]:
+            fila = [0.0] * len(S)
+            fila[idx[s]] -= 1.0
+            for t, p in mdp["P"][(s, a)].items():
+                if t in idx:
+                    fila[idx[t]] += float(p)
+            A.append(fila)                    # -V(s) + sum P V <= -r
+            b.append(-float(mdp["r"][(s, a)]))
+    res = linprog([1.0] * len(S), A_ub=A, b_ub=b, bounds=(None, None))
+    return dict(zip(S, res.x)), res
+
+
+def cumple_bellman(mdp, V):
+    """True si V(s) = max_a q(V, s, a) en todo s (exacto)."""
+    return all(F(V[s]) == max(q_valor(mdp, {k: F(v) for k, v in V.items()}, s, a)
+                              for a in mdp["acciones"][s]) for s in mdp["estados"])
+
+
+# --------------------------------------------------------------- volados ---
+
+def volados(p, meta=4):
+    """Apostar en volados con probabilidad p de ganar: capital 1..meta-1,
+    apuesta >= 1 y sin pasarse (min(s, meta - s)); solo en 2 hay dos opciones.
+    Valor = probabilidad de llegar a la meta. «audaz» apuesta todo lo que
+    puede; «tímida» apuesta 1. Devuelve {nombre: (V(1), ..., V(meta-1))}."""
+    p = F(p)
+    S = list(range(1, meta))
+    salida = {}
+    for nombre, apuesta in (("audaz", lambda s: min(s, meta - s)), ("tímida", lambda s: 1)):
+        A = [[F(1 if i == j else 0) for j in S] for i in S]
+        b = []
+        for i in S:
+            k = apuesta(i)
+            for dest, q in ((i + k, p), (i - k, 1 - p)):
+                if dest in S:
+                    A[S.index(i)][S.index(dest)] -= q
+            b.append(p if i + k == meta else F(0))
+        salida[nombre] = tuple(_resolver(A, b))
+    return salida
