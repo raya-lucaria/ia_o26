@@ -9,9 +9,9 @@ sea un esqueleto (contiene «Esqueleto:» o un hueco ⟦…⟧) se omiten, porqu
 las paginas se escriben en paralelo.
 
 Una correccion al plan v4 (§3): en J2, iteracion de valores desde 0, el error
-max|V* - V^(t)| es IGUAL al residuo desde la ronda 2 (los dos 2^(2-t)); en la
+max|V* - V^(k)| es IGUAL al residuo desde la ronda 2 (los dos 2^(2-k)); en la
 ronda 1 el error es 2 y el residuo 3. El «2 × residuo» del plan compara el
-error de la ronda t-1 con el residuo de la ronda t.
+error de la ronda k-1 con el residuo de la ronda k.
 """
 import re
 from fractions import Fraction as F
@@ -143,9 +143,9 @@ def test_j2_error_igual_a_residuo_desde_la_ronda_2():
     res = m.residuos(traza)
     err = m.errores(traza, VSTAR)
     assert (res[0], err[1]) == (3, 2)             # ronda 1: residuo 3, error 2
-    for t in range(2, 31):
-        assert res[t - 1] == err[t] == F(2) ** (2 - t)
-        assert err[t - 1] == 2 * res[t - 1]       # el «2 ×» del plan: ronda anterior
+    for k in range(2, 31):
+        assert res[k - 1] == err[k] == F(2) ** (2 - k)
+        assert err[k - 1] == 2 * res[k - 1]       # el «2 ×» del plan: ronda anterior
 
 
 def test_j2_desde_cero_baja_monotona():
@@ -164,8 +164,8 @@ def test_cota_de_paro_en_j2():
     assert m.cota_paro(2, F(3, 4)) == 8
     traza = m.iterar_valores(j, rondas=30)
     res, err = m.residuos(traza), m.errores(traza, VSTAR)
-    for t in range(1, 31):
-        assert err[t] <= 6 * res[t - 1]
+    for k in range(1, 31):
+        assert err[k] <= 6 * res[k - 1]
 
 
 def test_lazo_99_error_99_por_residuo():
@@ -173,9 +173,9 @@ def test_lazo_99_error_99_por_residuo():
     assert m.evaluar_politica(L, {1: m.CAMINAR}) == {1: -100}
     traza = m.iterar_valores(L, rondas=40)
     res, err = m.residuos(traza), m.errores(traza, {1: F(-100)})
-    for t in range(1, 41):
-        assert res[t - 1] == F(99, 100) ** (t - 1)
-        assert err[t] == 99 * res[t - 1]
+    for k in range(1, 41):
+        assert res[k - 1] == F(99, 100) ** (k - 1)
+        assert err[k] == 99 * res[k - 1]
     assert m.prob_no_terminar(L, 1) == F(99, 100)
     assert m.cota_paro(1, F(99, 100)) == 100
 

@@ -111,7 +111,7 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | Símbolo | Cómo se lee, qué es y dónde se presenta |
 |---|---|
 | $\max_a$, $\arg\max_a$ | «máximo sobre a», «argumento del máximo». El mayor valor, y el **conjunto** de las $a$ que lo alcanzan (con empates, tiene más de una). *→ Lo que necesitas: el máximo y el punto fijo.* |
-| $x^{(t)}$, $x^*$ | «equis en la ronda te», «equis estrella». El valor tras $t$ aplicaciones de $x\leftarrow f(x)$, y el punto fijo, que cumple ${x^*=f(x^*)}$. *→ Lo que necesitas: el máximo y el punto fijo.* |
+| $x^{(k)}$, $x^*$ | «equis en la ronda ka», «equis estrella». El valor tras $k$ aplicaciones de $x\leftarrow f(x)$, y el punto fijo, que cumple ${x^*=f(x^*)}$. *→ Lo que necesitas: el máximo y el punto fijo.* |
 | $q$ | «cu». En una recta ${f(x)=f(0)+q\,x}$, la pendiente; en los juguetes, la probabilidad de seguir, el mismo sentido que en las rachas. *→ Lo que necesitas: el máximo y el punto fijo.* |
 | $\operatorname{rutas}(s)$, $\operatorname{costo}(s)$ | «rutas de ese», «costo de ese». En la escalera, cuántas rutas llegan arriba desde el escalón $s$ y lo mínimo que falta pagar. *→ De contar a decidir: la escalera.* |
 | $\mathcal A(s)$, $a$ | «a caligráfica de ese», «a». Las acciones posibles en $s$, y una de ellas. Caligráfica porque $A$ es el conjunto de llegada de la clase 2. *→ El proceso de decisión de Markov.* |
@@ -126,7 +126,7 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $V_\pi(s)$ | «ve sub pi de ese». El valor de $\pi$ desde $s$: ${E^\pi_s[G_0]}$. El estado va entre paréntesis: $V(1)$, nunca $V_1$. *→ El proceso de decisión de Markov.* |
 | $Q_\pi(s,a)$, $V^*$, $Q^*$ | «cu sub pi». El valor de usar $a$ primero y después $\pi$; los valores óptimos. Es la misma idea que la $Q$ de juegos: lo que vale una jugada. *→ La ecuación de Bellman.* |
 | $U$, $\pi_U$ | «u», «pi sub u». Una estimación cualquiera del valor, y su política codiciosa: en cada $s$, una acción que maximiza ${r(s,a)+\sum_{s'}P(s'\mid s,a)U(s')}$. *→ La ecuación de Bellman.* |
-| $V^{(t)}$, $\operatorname{res}^{(t)}$ | «ve en la ronda te», «residuo». El valor tras $t$ rondas de iteración de valores, y ${\max_s\lvert V^{(t)}(s)-V^{(t-1)}(s)\rvert}$. Una ronda no es un paso. *→ Iteración de valores.* |
+| $V^{(k)}$, $\operatorname{res}^{(k)}$ | «ve en la ronda ka», «residuo». El valor tras $k$ rondas de iteración de valores, y ${\max_s\lvert V^{(k)}(s)-V^{(k-1)}(s)\rvert}$. Una ronda no es un paso: el paso, o turno, sigue siendo $t$. $k$ cuenta rondas de un algoritmo; en las clases 1 y 2 era el número de estados. *→ Iteración de valores.* |
 | $m$, $\beta$ | «eme», «beta». En la cota de paro: tras $m$ pasos, cualquier sucesión de acciones sigue sin terminar con probabilidad a lo más $\beta<1$. *→ Iteración de valores.* |
 | $\gamma$ | «gama». El descuento; solo aparece en un recuadro. Aquí no hace falta: basta que alguna política termine y que toda la que no termina valga $-\infty$. *→ La ecuación de Bellman.* |
 
@@ -197,7 +197,8 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   episodio en Sutton y Barto. No es la transición $T(s,a)$ de juegos: aquí
   la transición es $P$.
 - **$k$** es el número de estados. No son las simulaciones por jugada de
-  Monte Carlo plano en juegos.
+  Monte Carlo plano en juegos. En «Decidir», $k$ cuenta rondas de un
+  algoritmo; en las clases 1 y 2 era el número de estados.
 - **$N(s)$** cuenta **salidas**, no visitas como en juegos: la última letra
   aparece pero no sale.
 - **$d$** es el periodo $d(s)$. En ITERACIÓN DE POTENCIAS, la $d$ del
@@ -219,7 +220,7 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   conjunto de llegada de la clase 2. En juegos, $A(s)$ eran las jugadas.
 - **$G_t$**, con subíndice, es el retorno; $G$ sola sigue siendo la matriz
   de Google.
-- **$V^{(t)}$** lleva la ronda arriba y entre paréntesis; el estado va entre
+- **$V^{(k)}$** lleva la ronda arriba y entre paréntesis; el estado va entre
   paréntesis, $V(1)$, nunca como subíndice.
 - **$m$ y $\beta$** de la cota de paro no son el $m(s)$ del tiempo medio de
   llegada ni la $\beta$ de alfa-beta: $m$ cuenta pasos y $\beta$ es una

@@ -170,24 +170,24 @@ $$
 \begin{aligned}
 &f:\mathbb R\to\mathbb R,\qquad
 x^*\ \text{es punto fijo}\iff f(x^*)=x^*,\\
-&\text{iterar:}\quad x^{(t+1)}=f\bigl(x^{(t)}\bigr),
+&\text{iterar:}\quad x^{(k+1)}=f\bigl(x^{(k)}\bigr),
 \qquad x^{(0)}\ \text{dado}.
 \end{aligned}
 $$
 
 - **Qué es:** un número que $f$ deja quieto. Puede no haber ninguno, haber uno o haber muchos.
-- **Cómo se calcula:** despejando, cuando se puede; si no, iterando desde algún $x^{(0)}$ y viendo si $x^{(t)}$ se acerca a algo.
+- **Cómo se calcula:** despejando, cuando se puede; si no, iterando desde algún $x^{(0)}$ y viendo si $x^{(k)}$ converge.
 - **Qué significa:** si la iteración tiene límite y $f$ es continua, ese límite es un punto fijo.
 - **Qué no es:** iterar no garantiza nada por sí solo: la sucesión puede no acercarse, o acercarse a un punto fijo que no es el que buscas.
 :::
 
-- **Rondas.** $x^{(t)}$ es el valor tras $t$ **rondas**, aplicaciones de $f$. Una ronda no es un paso de la cadena.
+- **Rondas.** $x^{(k)}$ es el valor tras $k$ **rondas**, aplicaciones de $f$, no pasos de la cadena; en las clases 1 y 2, $k$ era el número de estados.
 - **En inglés:** *fixed point*.
 
 ::: theorem {#mkv-c3-mx-teo-pendiente title="Iterar una recta: llega, se acerca o no"}
 Sea $f(x)=f(0)+q\,x$, con pendiente $q\in[0,1]$.
 
-- **Si $q<1$:** hay un solo punto fijo, $x^*=f(0)/(1-q)$, y desde cualquier $x^{(0)}$ se cumple ${x^{(t)}-x^*}={q^t\bigl(x^{(0)}-x^*\bigr)}$. Con $q=0$ llega en una ronda; con $0<q<1$ y $x^{(0)}\ne x^*$ se acerca sin llegar, y el error se multiplica por $q$ en cada ronda.
+- **Si $q<1$:** hay un solo punto fijo, $x^*=f(0)/(1-q)$, y desde cualquier $x^{(0)}$ se cumple ${x^{(k)}-x^*}={q^k\bigl(x^{(0)}-x^*\bigr)}$. Con $q=0$ llega en una ronda; con $0<q<1$ y $x^{(0)}\ne x^*$ se acerca sin llegar, y el error se multiplica por $q$ cada ronda.
 - **Si $q=1$ y $f(0)\ne0$:** no hay punto fijo; cada ronda suma $f(0)$ y la sucesión se va a $\pm\infty$.
 - **Si $q=1$ y $f(0)=0$:** todo número es punto fijo; la iteración se queda donde empezó.
 
@@ -199,24 +199,24 @@ Sea $f(x)=f(0)+q\,x$, con pendiente $q\in[0,1]$.
 :::
 
 ::: proof {#mkv-c3-mx-dem-pendiente of="mkv-c3-mx-teo-pendiente"}
-Con $q<1$, $x^*=f(0)+q\,x^*$ se despeja. Resta esa igualdad a $x^{(t+1)}=f(0)+q\,x^{(t)}$:
+Con $q<1$, $x^*=f(0)+q\,x^*$ se despeja. Resta esa igualdad a $x^{(k+1)}=f(0)+q\,x^{(k)}$:
 
 $$
-x^{(t+1)}-x^*=q\,\bigl(x^{(t)}-x^*\bigr).
+x^{(k+1)}-x^*=q\,\bigl(x^{(k)}-x^*\bigr).
 $$
 
-Aplicada $t$ veces da la fórmula. Con $q=1$, $x=f(0)+x$ exige $f(0)=0$, y entonces vale para toda $x$.
+Aplicada $k$ veces da la fórmula. Con $q=1$, $x=f(0)+x$ exige $f(0)=0$, y entonces vale para toda $x$.
 :::
 
 **En el juguete.** La ecuación de la sección 2 es $x=f(x)$ con $f(x)=-1+x/2$: $q=1/2$ y $x^*=-2$. Desde $x^{(0)}=0$:
 
 $$
-x^{(t)}=-2+2^{1-t}:\quad
+x^{(k)}=-2+2^{1-k}:\quad
 0,\ -1,\ -\tfrac32,\ -\tfrac74,\ -\tfrac{15}8,\ \dots
 $$
 
-- **El error** vale $2^{1-t}$: se parte a la mitad en cada ronda y nunca llega a cero.
-- **Lectura:** $-x^{(t)}$ es lo que pagas en promedio si te obligan a parar tras $t$ pasos. Con $t=2$: pagas 1 seguro, y 1 más con probabilidad $1/2$.
+- **El error** vale $2^{1-k}$: se parte a la mitad cada ronda, sin llegar a cero.
+- **Lectura:** $-x^{(k)}$ es lo que pagas en promedio si te obligan a parar tras $k$ pasos. Con $k=2$: pagas 1 seguro, y 1 más con probabilidad $1/2$.
 - **Cuándo parar:** nunca llega; hace falta una tolerancia (@mkv-c2-def-limite).
 
 ::: figure {#mkv-c3-fig-punto-fijo title="Iterar f(x) = −1 + x/2 desde 0: una telaraña que se cierra en −2"}
@@ -273,12 +273,12 @@ x         ['0', '0', '0', '0', '0', '0']
 Con $f(x)=-1+x/2$ desde 0, ¿tras cuántas rondas el error queda por primera vez en $1/100$ o menos?
 :::
 
-::: hint {#mkv-c3-mx-pista-cuantas-rondas of="mkv-c3-mx-ej-cuantas-rondas" title="¿Cuánto vale el error en la ronda t?"}
+::: hint {#mkv-c3-mx-pista-cuantas-rondas of="mkv-c3-mx-ej-cuantas-rondas" title="¿Cuánto vale el error en la ronda k?"}
 ¿Qué potencia de 2 es la primera en pasar de 100?
 :::
 
 ::: answer {#mkv-c3-mx-resp-cuantas-rondas of="mkv-c3-mx-ej-cuantas-rondas"}
-**Ocho rondas.** El error es $2^{1-t}$ y pide $2^{t-1}\ge100$; $2^6=64$ no basta y $2^7=128$ sí, así que $t-1=7$.
+**Ocho rondas.** El error es $2^{1-k}$ y pide $2^{k-1}\ge100$; $2^6=64$ no basta y $2^7=128$ sí, así que $k-1=7$.
 :::
 
 Con una opción por estado, esto resuelve la ecuación. Antes de sumar el máximo, practícalo.
@@ -296,7 +296,7 @@ Un estado $s$: en cada paso pagas 1; con probabilidad $1/4$ terminas y con $3/4$
 
 1. **Plantea** $x=f(x)$ para $x=E_s[X]$, condicionando en el primer paso.
 2. **Resuelve** el punto fijo y compruébalo con la fórmula de las rachas.
-3. **Itera** desde $x^{(0)}=0$ tres rondas y escribe el error en la ronda $t$.
+3. **Itera** desde $x^{(0)}=0$ tres rondas y escribe el error en la ronda $k$.
 4. **Rompe la condición:** si nunca terminas, ¿qué pasa con $f$, con el punto fijo y con la iteración?
 :::
 
@@ -322,9 +322,9 @@ $$
 
 $$
 \begin{aligned}
-x^{(t)}&=-4+4\bigl(\tfrac34\bigr)^t:\quad
+x^{(k)}&=-4+4\bigl(\tfrac34\bigr)^k:\quad
 0,\ -1,\ -\tfrac74,\ -\tfrac{37}{16},\\
-\text{error}&=4\bigl(\tfrac34\bigr)^t.
+\text{error}&=4\bigl(\tfrac34\bigr)^k.
 \end{aligned}
 $$
 
@@ -344,7 +344,7 @@ Tras tres rondas el error es $27/16\approx1.69$. Se encoge más despacio que con
 - **Máximo y argmax:** el máximo es un número; el argmax, el conjunto de opciones que lo alcanzan. Con valores $-3,-1,-1$: máximo $-1$, dos opciones en el argmax.
 - **Costos:** si $f(a)$ es el costo de $a$, $\min_a f(a)=-\max_a\bigl(-f(a)\bigr)$; un costo es un pago negativo.
 - **Primer paso:** lo que falta es el pago del primer paso más el promedio de lo que falta desde donde caes. Pagar 1 y terminar con $1/2$ da $x=-1+x/2$, así que $x=-2$.
-- **Punto fijo:** $x^*=f(x^*)$; iterar es $x^{(t+1)}=f(x^{(t)})$.
+- **Punto fijo:** $x^*=f(x^*)$; iterar es $x^{(k+1)}=f(x^{(k)})$.
 - **Recta con pendiente $q$:** con $q<1$, un solo punto fijo y error multiplicado por $q$ cada ronda; $f(x)=-1+x/2$ da $0,-1,-\tfrac32,-\tfrac74,\dots\to-2$. Con $q=1$, ninguno ($x-1$) o todos ($x$).
 
 Continúa con [[mkv-la-escalera|De contar a decidir: la escalera]]: ¿cómo se usa el máximo cuando hay que decidir muchas veces seguidas?

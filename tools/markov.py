@@ -1564,7 +1564,7 @@ def codiciosa(mdp, U):
 
 
 def iterar_valores(mdp, rondas=None, tol=None, V0=None, max_rondas=10**6):
-    """ITERACION DE VALORES sincrona: V^(t)(s) = max_a q(V^(t-1), s, a).
+    """ITERACION DE VALORES sincrona: V^(k)(s) = max_a q(V^(k-1), s, a).
     Con `rondas`: exacta, V^(0..rondas). Con `tol`: flotante, para en la
     primera ronda con residuo <= tol. Devuelve [V^(0), V^(1), ...]."""
     S = mdp["estados"]
@@ -1591,19 +1591,19 @@ def iterar_valores(mdp, rondas=None, tol=None, V0=None, max_rondas=10**6):
 
 
 def residuos(traza):
-    """res^(t) = max_s |V^(t)(s) - V^(t-1)(s)|, t = 1..len-1."""
+    """res^(k) = max_s |V^(k)(s) - V^(k-1)(s)|, k = 1..len-1."""
     return [max(abs(b[s] - a[s]) for s in a) for a, b in zip(traza, traza[1:])]
 
 
 def errores(traza, Vstar):
-    """max_s |V*(s) - V^(t)(s)|, t = 0..len-1."""
+    """max_s |V*(s) - V^(k)(s)|, k = 0..len-1."""
     return [max(abs(Vstar[s] - V[s]) for s in V) for V in traza]
 
 
 def cota_paro(m, beta):
     """Factor de la cota de paro con gamma = 1: si cualquier sucesion de
     acciones sigue sin terminar tras m pasos con probabilidad <= beta < 1,
-    max_s |V* - V^(t)| <= m / (1 - beta) * res^(t). Ver cifras.md."""
+    max_s |V* - V^(k)| <= m / (1 - beta) * res^(k). Ver cifras.md."""
     return F(m) / (1 - F(beta))
 
 

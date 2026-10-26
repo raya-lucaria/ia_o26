@@ -14,9 +14,9 @@ tags: [markov, decidir, iteracion-de-valores, algoritmo]
 
 Al terminar tendrás:
 
-- **Una traza a mano.** Correrás seis rondas en el pasillo mojado y verás a ${V^{(t)}}$ acercarse a ${(-5,-2)}$.
+- **Una traza a mano.** Correrás seis rondas en el pasillo mojado y verás a ${V^{(k)}}$ acercarse a ${(-5,-2)}$.
 - **El algoritmo ITERACIÓN DE VALORES.** Seguirás su pseudocódigo y su gemelo Python, y justificarás su costo por ronda.
-- **El teorema y su condición.** Aplicarás @mkv-c3-teo-iterar-valores y dirás qué significa ${V^{(t)}}$ cuando se arranca en 0.
+- **El teorema y su condición.** Aplicarás @mkv-c3-teo-iterar-valores y dirás qué significa ${V^{(k)}}$ cuando se arranca en 0.
 - **Una regla de paro.** Convertirás un residuo en una cota del error, y darás un caso donde el error es 99 veces el residuo.
 - **Un caso grande.** Resolverás un pasillo de 200 casillas sin revisar sus $2^{200}\approx1.6\times10^{60}$ políticas.
 
@@ -51,36 +51,32 @@ V(s)=\max_{a\in\mathcal A(s)}\Big[&r(s,a)\\
 \end{aligned}
 $$
 
-Una **ronda** reemplaza el lado izquierdo por el derecho, en todos los estados a la vez. Antes de leerla, una advertencia: el superíndice $(t)$ no es el reloj del robot.
+Una **ronda** reemplaza el lado izquierdo por el derecho, en todos los estados a la vez. El superíndice $(k)$ cuenta rondas del algoritmo; en las clases 1 y 2, $k$ era el número de estados.
 
 $$
 \begin{aligned}
-V^{(t+1)}(s)=\max_{a\in\mathcal A(s)}\Big[&r(s,a)\\
-&+\sum_{s'}P(s'\mid s,a)\,V^{(t)}(s')\Big].
+V^{(k+1)}(s)=\max_{a\in\mathcal A(s)}\Big[&r(s,a)\\
+&+\sum_{s'}P(s'\mid s,a)\,V^{(k)}(s')\Big].
 \end{aligned}
 $$
 
 > [!NOTE]
-> **Qué cuenta el $(t)$: pasos que quedan, no el reloj.** Desde ${V^{(0)}=0}$, ${V^{(t)}(s)}$ es lo mejor que puedes lograr desde $s$ si solo te quedan $t$ pasos. Después de esos $t$ pasos ya no cuenta nada.
+> **Qué cuenta la $k$: pasos que quedan.** Desde ${V^{(0)}=0}$, ${V^{(k)}(s)}$ es lo mejor desde $s$ si solo quedan $k$ pasos. Con ${k+1}$ pasos gastas uno (eliges $a$, pagas ${r(s,a)}$, caes en $s'$) y te quedan $k$: ${V^{(k)}(s')}$. Es la pasada hacia atrás de [[mkv-la-escalera|la escalera]], ahora con azar.
 >
-> - **Lectura de la ecuación.** Con ${t+1}$ pasos, gastas uno ahora: eliges $a$, pagas ${r(s,a)}$ y caes en $s'$. Desde $s'$ te quedan $t$ pasos, y su mejor valor ya lo calculaste: ${V^{(t)}(s')}$.
-> - **Por eso $t+1$ a la izquierda y $t$ a la derecha.** No son dos momentos del robot. Son cuántos pasos le quedan antes y después de gastar uno.
-> - **De dónde viene.** Es la pasada hacia atrás de [[mkv-la-escalera|la escalera]], ahora con azar.
->
-> **En la casilla 2 del pasillo.** Con 0 pasos no haces nada: ${V^{(0)}=(0,0)}$. Con un paso, ${V^{(1)}(2)=\max(-3,-1)=-1}$: lo mejor es correr, porque si resbalas ya se acabaron los pasos. Con dos, ${V^{(2)}(2)=\max(-3,\,-1+\tfrac12(-1))=-\tfrac32}$. Al crecer los pasos que quedan, el valor se acerca a ${V^*(2)=-2}$, el valor sin límite de pasos.
+> **En la casilla 2 del pasillo.** Con 0 pasos no haces nada: ${V^{(0)}=(0,0)}$. Con uno, ${V^{(1)}(2)=\max(-3,-1)=-1}$: correr, porque si resbalas ya no quedan pasos. Con dos, ${V^{(2)}(2)=\max(-3,\,-1+\tfrac12(-1))=-\tfrac32}$. Al crecer $k$, el valor se acerca a ${V^*(2)=-2}$.
 
 > [!WARNING]
-> **Leer ${V^{(t)}}$ como el valor en el instante $t$ del episodio.** El robot siempre está en el paso 0 de su episodio; $t$ es la ronda del algoritmo, que es igual a los pasos que le quedan.
+> **Leer ${V^{(k)}}$ como el valor en el turno $k$ del robot.** La $k$ es la ronda del algoritmo, no el turno $t$ del robot; el turno sigue siendo $t$, como en $S_t$ y $A_t$.
 
-- **Síncrona.** El lado derecho usa solo valores de la ronda $t$, aunque ya hayas calculado otro estado de la ronda ${t+1}$.
+- **Síncrona.** El lado derecho usa solo valores de la ronda $k$, aunque ya hayas calculado otro estado de la ronda ${k+1}$.
 
 **En el juguete.** En el pasillo mojado, ${\mathcal T=\{1,2\}}$. Con $P_{\text{caminar}}$ y $P_{\text{correr}}$ de [[mkv-el-mdp|El MDP]], cada ronda es:
 
 $$
 \begin{aligned}
-V^{(t+1)}(2)&=\max\big(-3,\ -1+\tfrac12V^{(t)}(2)\big),\\
-V^{(t+1)}(1)&=\max\big(-3+V^{(t)}(2),\\
-&\qquad -6+\tfrac12V^{(t)}(1)+\tfrac12V^{(t)}(2)\big).
+V^{(k+1)}(2)&=\max\big(-3,\ -1+\tfrac12V^{(k)}(2)\big),\\
+V^{(k+1)}(1)&=\max\big(-3+V^{(k)}(2),\\
+&\qquad -6+\tfrac12V^{(k)}(1)+\tfrac12V^{(k)}(2)\big).
 \end{aligned}
 $$
 
@@ -89,10 +85,10 @@ El primer término es caminar y el segundo, correr. La meta aporta 0. Desde ${V^
 - **Ronda 1.** En 2: ${\max(-3,-1)=-1}$. En 1: ${\max(-3+0,\,-6)=-3}$. Queda ${V^{(1)}=(-3,-1)}$.
 - **Ronda 2.** En 2: ${\max(-3,\,-1-\tfrac12)=-\tfrac32}$. En 1: ${\max(-3-1,\,-6-\tfrac32-\tfrac12)=-4}$.
 
-- **Residuo.** ${\operatorname{res}^{(t)}=\max_s\lvert V^{(t)}(s)-V^{(t-1)}(s)\rvert}$: el mayor cambio que hizo la ronda $t$.
+- **Residuo.** ${\operatorname{res}^{(k)}=\max_s\lvert V^{(k)}(s)-V^{(k-1)}(s)\rvert}$: el mayor cambio que hizo la ronda $k$.
 
 ::: table {#mkv-c3-vi-tabla-traza title="Traza de la iteración de valores en el pasillo mojado"}
-| $t$ | $V^{(t)}(1)$ | $V^{(t)}(2)$ | $\operatorname{res}^{(t)}$ |
+| $k$ | $V^{(k)}(1)$ | $V^{(k)}(2)$ | $\operatorname{res}^{(k)}$ |
 |---|---|---|---|
 | 0 | 0 | 0 | — |
 | 1 | −3 | −1 | 3 |
@@ -103,12 +99,12 @@ El primer término es caminar y el segundo, correr. La meta aporta 0. Desde ${V^
 | 6 | −79/16 | −63/32 | 1/16 |
 :::
 
-- **La fórmula.** ${V^{(t)}(2)=-2+2^{1-t}}$ para ${t\ge0}$, y ${V^{(t)}(1)=-5+2^{2-t}}$ para ${t\ge1}$.
+- **La fórmula.** ${V^{(k)}(2)=-2+2^{1-k}}$ para ${k\ge0}$, y ${V^{(k)}(1)=-5+2^{2-k}}$ para ${k\ge1}$.
 - **Nunca llega.** La distancia a ${V^*=(-5,-2)}$ pasa de 5 a 2 en la ronda 1; desde ahí, cada ronda la corta a la mitad, y ninguna ronda finita la cierra. Es la telaraña de @mkv-c3-def-punto-fijo, ahora en dos estados.
 - **La política sí llega.** En toda ronda, el máximo en 1 lo da caminar y el máximo en 2 lo da correr: la codiciosa ya es caminar–correr.
 
 ::: figure {#mkv-c3-fig-iterar-valores title="Los valores contra la ronda en el pasillo mojado"}
-![Gráfica de V(1) y V(2) contra la ronda t, de 0 a 6. V(1) baja de 0 a −3, −4, −4.5 y sigue hacia la línea punteada en −5; V(2) baja de 0 a −1, −1.5, −1.75 y sigue hacia la línea punteada en −2. Ninguna curva toca su línea; desde la ronda 1, la distancia se corta a la mitad en cada ronda](../_assets/mkv-c3-iterar-valores.svg)
+![Gráfica de V(1) y V(2) contra la ronda k, de 0 a 6. V(1) baja de 0 a −3, −4, −4.5 y sigue hacia la línea punteada en −5; V(2) baja de 0 a −1, −1.5, −1.75 y sigue hacia la línea punteada en −2. Ninguna curva toca su línea; desde la ronda 1, la distancia se corta a la mitad en cada ronda](../_assets/mkv-c3-iterar-valores.svg)
 :::
 
 > [!WARNING]
@@ -124,7 +120,7 @@ Con ${V^{(6)}=(-79/16,\,-63/32)}$ de la traza, calcula ${V^{(7)}}$ y ${\operator
 :::
 
 ::: answer {#mkv-c3-vi-resp-ronda-7 of="mkv-c3-vi-ej-ronda-7"}
-En 2: ${\max(-3,\,-1-\tfrac{63}{64})=-\tfrac{127}{64}}$, con correr. En 1: caminar da ${-3-\tfrac{63}{32}=-\tfrac{159}{32}}$ y correr da ${-6-\tfrac{79}{32}-\tfrac{63}{64}=-\tfrac{605}{64}}$; gana caminar. Queda ${V^{(7)}=(-159/32,\,-127/64)}$ y ${\operatorname{res}^{(7)}=1/32}$, el cambio en la casilla 1. Coincide con la fórmula para ${t=7}$.
+En 2: ${\max(-3,\,-1-\tfrac{63}{64})=-\tfrac{127}{64}}$, con correr. En 1: caminar da ${-3-\tfrac{63}{32}=-\tfrac{159}{32}}$ y correr da ${-6-\tfrac{79}{32}-\tfrac{63}{64}=-\tfrac{605}{64}}$; gana caminar. Queda ${V^{(7)}=(-159/32,\,-127/64)}$ y ${\operatorname{res}^{(7)}=1/32}$, el cambio en la casilla 1. Coincide con la fórmula para ${k=7}$.
 :::
 
 A mano bastan dos estados; para muchos hace falta escribir la ronda como un procedimiento que además sepa parar.
@@ -210,8 +206,8 @@ def iterar_valores(S, P, r, tol, cero):
 
 S, P, r = pasillo(2)
 traza, pi = iterar_valores(S, P, r, F(1, 16), F(0))
-for t, V in enumerate(traza):
-    print(t, V[1], V[2])
+for k, V in enumerate(traza):
+    print(k, V[1], V[2])
 print(pi)
 # 0 0 0
 # 1 -3 -1
@@ -249,23 +245,23 @@ Sea un MDP finito con terminales $\mathcal F$ de valor 0.
 
 **Condición.** La de @mkv-c3-teo-bellman: existe una política que termina con probabilidad 1, y toda política estacionaria que no termina vale $-\infty$ en algún estado.
 
-Entonces, desde cualquier ${V^{(0)}}$ finito, ${V^{(t)}(s)\to V^*(s)}$ para todo ${s\in\mathcal T}$. Y tras un número finito de rondas, toda política codiciosa de ${V^{(t)}}$ es óptima.
+Entonces, desde cualquier ${V^{(0)}}$ finito, ${V^{(k)}(s)\to V^*(s)}$ para todo ${s\in\mathcal T}$. Y tras un número finito de rondas, toda política codiciosa de ${V^{(k)}}$ es óptima.
 
-Si además ${V^{(0)}=0}$ y ${r\le0}$, entonces ${V^{(t)}(s)}$ es lo mejor que se espera cobrar en a lo más $t$ pasos, y baja monótona: ${V^{(t+1)}(s)\le V^{(t)}(s)}$.
+Si además ${V^{(0)}=0}$ y ${r\le0}$, entonces ${V^{(k)}(s)}$ es lo mejor que se espera cobrar en a lo más $k$ pasos, y baja monótona: ${V^{(k+1)}(s)\le V^{(k)}(s)}$.
 
-**Lectura.** Es el recuadro «Qué cuenta el $(t)$» de la sección 1: cada ronda agrega un paso de futuro; con suficientes pasos, lo que queda después pesa cada vez menos.
+**Lectura.** Es el recuadro «Qué cuenta la $k$» de la sección 1: cada ronda agrega un paso de futuro; con suficientes pasos, lo que queda después pesa cada vez menos.
 
-**Casos nulos.** Sin ciclos, como en la escalera, ${V^{(t)}=V^*}$ exacto a más tardar cuando $t$ alcanza el camino más largo: 5 rondas desde el escalón 0. Si toda acción lleva directo a $\mathcal F$, basta una ronda.
+**Casos nulos.** Sin ciclos, como en la escalera, ${V^{(k)}=V^*}$ exacto a más tardar cuando $k$ alcanza el camino más largo: 5 rondas desde el escalón 0. Si toda acción lleva directo a $\mathcal F$, basta una ronda.
 :::
 
 ::: proof {#mkv-c3-vi-dem-iterar-valores of="mkv-c3-teo-iterar-valores"}
-**Lo mejor en $t$ pasos.** Por inducción. Con 0 pasos no se cobra nada: ${V^{(0)}=0}$. Con ${t+1}$ pasos, condiciona en el primero (@mkv-c2-teo-primer-paso): cobras ${r(s,a)}$ y desde donde caes te quedan $t$ pasos, que valen a lo más ${V^{(t)}}$. Elegir la mejor primera acción es el máximo de la ronda.
+**Lo mejor en $k$ pasos.** Por inducción. Con 0 pasos no se cobra nada: ${V^{(0)}=0}$. Con ${k+1}$ pasos, condiciona en el primero (@mkv-c2-teo-primer-paso): cobras ${r(s,a)}$ y desde donde caes te quedan $k$ pasos, que valen a lo más ${V^{(k)}}$. Elegir la mejor primera acción es el máximo de la ronda.
 
-**Monótona.** Una ronda respeta el orden: si ${U\le W}$ en todo estado, la ronda desde $U$ da a lo más la ronda desde $W$, porque las probabilidades no son negativas. Como ${r\le0}$, ${V^{(1)}\le0=V^{(0)}}$; aplicando la ronda a los dos lados, ${V^{(t+1)}\le V^{(t)}}$ para todo $t$.
+**Monótona.** Una ronda respeta el orden: si ${U\le W}$ en todo estado, la ronda desde $U$ da a lo más la ronda desde $W$, porque las probabilidades no son negativas. Como ${r\le0}$, ${V^{(1)}\le0=V^{(0)}}$; aplicando la ronda a los dos lados, ${V^{(k+1)}\le V^{(k)}}$ para todo $k$.
 
 **Converge.** Para el caso general, la demostración está en Bertsekas y Tsitsiklis, «An analysis of stochastic shortest path problems» (*Mathematics of Operations Research*, 1991). Cuando toda política termina, la sección 3 da una prueba completa: la suma de los residuos es finita.
 
-**La política.** Hay un número finito de acciones. Una acción que no da el máximo en la ecuación de Bellman queda abajo de él por una distancia fija; cuando ${V^{(t)}}$ está más cerca que eso de $V^*$, ya no puede ganar. Lo que sí gana da una codiciosa de $V^*$, óptima por @mkv-c3-teo-codiciosa.
+**La política.** Hay un número finito de acciones. Una acción que no da el máximo en la ecuación de Bellman queda abajo de él por una distancia fija; cuando ${V^{(k)}}$ está más cerca que eso de $V^*$, ya no puede ganar. Lo que sí gana da una codiciosa de $V^*$, óptima por @mkv-c3-teo-codiciosa.
 :::
 
 - **Número que da.** En el pasillo mojado, ${V^{(6)}=(-79/16,\,-63/32)}$, a $1/16$ de ${V^*=(-5,-2)}$; la codiciosa es caminar–correr desde la ronda 0.
@@ -284,15 +280,15 @@ El teorema dice que converge, pero no cuándo parar. Para eso hay que leer el re
 No por sí solo. Un residuo chico dice que la última ronda movió poco, no que falta poco. Hace falta un factor que traduzca uno en el otro.
 
 ::: figure {#mkv-c3-fig-residuo title="El residuo por ronda, en escala logarítmica"}
-![Gráfica en escala logarítmica del residuo del pasillo mojado contra la ronda t: 3 en la ronda 1, y desde ahí 1, 1/2, 1/4, 1/8 y 1/16. Desde la ronda 2 los puntos caen sobre una recta: el residuo se divide entre 2 en cada ronda. Una línea horizontal marca tol](../_assets/mkv-c3-residuo.svg)
+![Gráfica en escala logarítmica del residuo del pasillo mojado contra la ronda k: 3 en la ronda 1, y desde ahí 1, 1/2, 1/4, 1/8 y 1/16. Desde la ronda 2 los puntos caen sobre una recta: el residuo se divide entre 2 en cada ronda. Una línea horizontal marca tol](../_assets/mkv-c3-residuo.svg)
 :::
 
-**En el juguete.** La distancia a $V^*$ en la ronda $t$ es ${\max(2^{2-t},2^{1-t})=2^{2-t}}$, y el residuo también es $2^{2-t}$ desde ${t\ge2}$. Aquí error y residuo coinciden. Eso es suerte del juguete.
+**En el juguete.** La distancia a $V^*$ en la ronda $k$ es ${\max(2^{2-k},2^{1-k})=2^{2-k}}$, y el residuo también es $2^{2-k}$ desde ${k\ge2}$. Aquí error y residuo coinciden. Eso es suerte del juguete.
 
 ::: theorem {#mkv-c3-vi-teo-cota title="Una cota del error con el residuo"}
 **Condición.** Existen un número de pasos $m$ y una probabilidad ${\beta<1}$ tales que, con **cualquier** sucesión de acciones y desde cualquier estado de $\mathcal T$, la probabilidad de seguir sin terminar tras $m$ pasos es a lo más $\beta$. Esta $m$ no es el tiempo medio $m(s)$ de la clase 2, y $\beta$ no es la de alfa-beta.
 
-Entonces, en toda ronda $t$, ${\max_s\lvert V^*(s)-V^{(t)}(s)\rvert\le\tfrac{m}{1-\beta}\operatorname{res}^{(t)}}$.
+Entonces, en toda ronda $k$, ${\max_s\lvert V^*(s)-V^{(k)}(s)\rvert\le\tfrac{m}{1-\beta}\operatorname{res}^{(k)}}$.
 
 **Lectura.** Si el residuo es a lo más $\mathrm{tol}$, el error es a lo más ${\tfrac{m}{1-\beta}\,\mathrm{tol}}$. Para garantizar un error ${\varepsilon}$, se pide ${\mathrm{tol}=\tfrac{1-\beta}{m}\,\varepsilon}$.
 
@@ -300,21 +296,21 @@ Entonces, en toda ronda $t$, ${\max_s\lvert V^*(s)-V^{(t)}(s)\rvert\le\tfrac{m}{
 :::
 
 ::: proof {#mkv-c3-vi-dem-cota of="mkv-c3-vi-teo-cota"}
-**Una ronda no agranda diferencias.** Para dos estimaciones $U$ y $W$, la diferencia de sus rondas en $s$ es a lo más ${\max_a\sum_{s'}P(s'\mid s,a)\lvert U(s')-W(s')\rvert}$. Las probabilidades suman a lo más 1 y en la meta las dos valen 0: queda a lo más ${\max\lvert U-W\rvert}$. Aplicado a ${V^{(t)}}$ y ${V^{(t-1)}}$, cada residuo es a lo más el anterior.
+**Una ronda no agranda diferencias.** Para dos estimaciones $U$ y $W$, la diferencia de sus rondas en $s$ es a lo más ${\max_a\sum_{s'}P(s'\mid s,a)\lvert U(s')-W(s')\rvert}$. Las probabilidades suman a lo más 1 y en la meta las dos valen 0: queda a lo más ${\max\lvert U-W\rvert}$. Aplicado a ${V^{(k)}}$ y ${V^{(k-1)}}$, cada residuo es a lo más el anterior.
 
-**$m$ rondas la encogen por $\beta$.** Tras $m$ rondas, la diferencia en $s$ es a lo más un promedio de ${\lvert U-W\rvert}$ sobre donde quedas tras $m$ pasos sin terminar. Eso pesa a lo más $\beta$. Entonces ${\operatorname{res}^{(t+jm+i)}\le\beta^j\operatorname{res}^{(t)}}$ para ${1\le i\le m}$.
+**$m$ rondas la encogen por $\beta$.** Tras $m$ rondas, la diferencia en $s$ es a lo más un promedio de ${\lvert U-W\rvert}$ sobre donde quedas tras $m$ pasos sin terminar. Eso pesa a lo más $\beta$. Entonces ${\operatorname{res}^{(k+jm+i)}\le\beta^j\operatorname{res}^{(k)}}$ para ${1\le i\le m}$.
 
-**Sumar.** Como ${V^{(t)}\to V^*}$, el error es a lo más la suma de los residuos que faltan. En bloques de $m$:
+**Sumar.** Como ${V^{(k)}\to V^*}$, el error es a lo más la suma de los residuos que faltan. En bloques de $m$:
 
 $$
 \begin{aligned}
-\sum_{k>t}\operatorname{res}^{(k)}
-&\le m\,\operatorname{res}^{(t)}\,(1+\beta+\beta^2+\cdots)\\
-&=\frac{m}{1-\beta}\operatorname{res}^{(t)}.
+\sum_{\ell>k}\operatorname{res}^{(\ell)}
+&\le m\,\operatorname{res}^{(k)}\,(1+\beta+\beta^2+\cdots)\\
+&=\frac{m}{1-\beta}\operatorname{res}^{(k)}.
 \end{aligned}
 $$
 
-La misma suma finita prueba que ${V^{(t)}}$ converge cuando toda política termina.
+La misma suma finita prueba que ${V^{(k)}}$ converge cuando toda política termina.
 :::
 
 **En el juguete.** Con cualquier sucesión de acciones, desde la casilla 1 la probabilidad de no haber terminado tras 3 pasos es a lo más $1/2$. Con ${m=3}$ y ${\beta=1/2}$, el factor es ${3/(1/2)=6}$: el error es a lo más 6 veces el residuo. Con ${m=2}$ el peor caso es ${\beta=3/4}$ y el factor sube a 8. La cota es holgada, pero segura.
@@ -322,8 +318,8 @@ La misma suma finita prueba que ${V^{(t)}}$ converge cuando toda política termi
 > [!TIP]
 > **Ejemplo y contraejemplo de «el error es igual al residuo».**
 >
-> - **Lo cumple:** en el pasillo mojado, el error desde la ronda 2 es igual a ${\operatorname{res}^{(t)}}$; un residuo de $1/16$ deja un error de $1/16$.
-> - **No lo cumple:** un estado con un lazo que lo regresa a sí mismo con probabilidad $99/100$, con ${r=-1}$ y la meta con $1/100$. Ahí ${V^*=-100}$; desde 0, ${V^{(t)}=-100\,(1-0.99^t)}$, el residuo es $0.99^{t-1}$ y el error es **99 veces el residuo**. Un residuo de 0.001 esconde un error de 0.099. La condición de la cota sí se cumple, con factor 100.
+> - **Lo cumple:** en el pasillo mojado, el error desde la ronda 2 es igual a ${\operatorname{res}^{(k)}}$; un residuo de $1/16$ deja un error de $1/16$.
+> - **No lo cumple:** un estado con un lazo que lo regresa a sí mismo con probabilidad $99/100$, con ${r=-1}$ y la meta con $1/100$. Ahí ${V^*=-100}$; desde 0, ${V^{(k)}=-100\,(1-0.99^k)}$, el residuo es $0.99^{k-1}$ y el error es **99 veces el residuo**. Un residuo de 0.001 esconde un error de 0.099. La condición de la cota sí se cumple, con factor 100.
 
 ::: figure {#mkv-c3-fig-ej-paro title="Residuo chico no es error chico"}
 ![Dos paneles con escala logarítmica, error y residuo contra la ronda. Arriba, marcado como cumple, el pasillo mojado: desde la ronda 2 las curvas de error y de residuo van encimadas, el error es igual al residuo. Abajo, marcado como no cumple, el estado con lazo 99/100 y recompensa −1: las dos curvas bajan muy despacio y la del error va siempre 99 veces arriba de la del residuo. Pie: parar con residuo chico no garantiza error chico sin el factor de la cota](../_assets/mkv-c3-ej-paro.svg)
@@ -378,17 +374,17 @@ print(all(pi[i] == ("caminar" if i % 3 == 1
 **Lo que tarda.** Como en el juguete, la codiciosa es óptima desde la ronda 0: la decisión es local, hueco o barandal. Lo que tarda son los **valores**: la información de la meta avanza a lo más una casilla por ronda, así que las primeras casillas tardan en «verla».
 
 ::: exercise {#mkv-c3-vi-ej-200 title="Cuenta las rondas mínimas"}
-Explica por qué, en el pasillo de 200 casillas, el residuo es al menos 1 en cada ronda ${t\le200}$. ¿Qué dice eso de las rondas necesarias con ${\mathrm{tol}=10^{-9}}$?
+Explica por qué, en el pasillo de 200 casillas, el residuo es al menos 1 en cada ronda ${k\le200}$. ¿Qué dice eso de las rondas necesarias con ${\mathrm{tol}=10^{-9}}$?
 :::
 
 ::: hint {#mkv-c3-vi-pista-200 of="mkv-c3-vi-ej-200" title="¿Llegas a la meta en pocos pasos?"}
-Lee ${V^{(t)}(1)}$ como lo mejor en $t$ pasos. Desde la casilla 1, ¿cuántos pasos necesitas como mínimo para llegar a 201, y cuánto cuesta, como mínimo, cada paso?
+Lee ${V^{(k)}(1)}$ como lo mejor en $k$ pasos. Desde la casilla 1, ¿cuántos pasos necesitas como mínimo para llegar a 201, y cuánto cuesta, como mínimo, cada paso?
 :::
 
 ::: answer {#mkv-c3-vi-resp-200 of="mkv-c3-vi-ej-200"}
-Desde la casilla 1 hacen falta al menos 200 pasos para llegar a la meta, porque cada paso avanza a lo más una casilla. Con ${t\le200}$ pasos, los primeros ${t-1}$ nunca terminan y cada uno cuesta al menos 1.
+Desde la casilla 1 hacen falta al menos 200 pasos para llegar a la meta, porque cada paso avanza a lo más una casilla. Con ${k\le200}$ pasos, los primeros ${k-1}$ nunca terminan y cada uno cuesta al menos 1.
 
-Toma el mejor plan de $t$ pasos: sus primeros ${t-1}$ pasos valen a lo más ${V^{(t-1)}(1)}$, y el último cuesta al menos 1. Entonces ${V^{(t)}(1)\le V^{(t-1)}(1)-1}$ y ${\operatorname{res}^{(t)}\ge1}$. Con ${\mathrm{tol}=10^{-9}}$, el algoritmo hace más de 200 rondas.
+Toma el mejor plan de $k$ pasos: sus primeros ${k-1}$ pasos valen a lo más ${V^{(k-1)}(1)}$, y el último cuesta al menos 1. Entonces ${V^{(k)}(1)\le V^{(k-1)}(1)-1}$ y ${\operatorname{res}^{(k)}\ge1}$. Con ${\mathrm{tol}=10^{-9}}$, el algoritmo hace más de 200 rondas.
 :::
 
 Ahora cambia el punto de partida y mira qué del teorema se sostiene.
@@ -434,17 +430,17 @@ Escribe los dos renglones de la ronda del juguete con los números de ${V^{(0)}}
 **5. Explica.** $m$ y $\beta$ hablan solo de las probabilidades de terminar, y la prueba compara dos rondas cualesquiera. El arranque cambia los residuos, pero no el factor que los traduce en error.
 :::
 
-**Punto de control:** deberías poder escribir una ronda síncrona de la iteración de valores y correrla a mano en un MDP chico. También, decir qué significa ${V^{(t)}}$ desde 0, aplicar @mkv-c3-teo-iterar-valores con su condición, y traducir un residuo en una cota del error con $m$ y $\beta$.
+**Punto de control:** deberías poder escribir una ronda síncrona de la iteración de valores y correrla a mano en un MDP chico. También, decir qué significa ${V^{(k)}}$ desde 0, aplicar @mkv-c3-teo-iterar-valores con su condición, y traducir un residuo en una cota del error con $m$ y $\beta$.
 
 ---
 
 ## Lo que hay que llevarse
 
 - **La idea.** No se despeja $V^*$: se aplica el lado derecho de Bellman una y otra vez, en todos los estados con la ronda anterior.
-- **El significado.** Desde 0, ${V^{(t)}(s)}$ es lo mejor en $t$ pasos y baja monótona hacia $V^*$.
-- **El juguete.** ${V^{(t)}(1)=-5+2^{2-t}}$ y ${V^{(t)}(2)=-2+2^{1-t}}$: se acerca a ${(-5,-2)}$ sin llegar; la codiciosa es caminar–correr desde la ronda 0.
+- **El significado.** Desde 0, ${V^{(k)}(s)}$ es lo mejor en $k$ pasos y baja monótona hacia $V^*$.
+- **El juguete.** ${V^{(k)}(1)=-5+2^{2-k}}$ y ${V^{(k)}(2)=-2+2^{1-k}}$: se acerca a ${(-5,-2)}$ sin llegar; la codiciosa es caminar–correr desde la ronda 0.
 - **El teorema.** Bajo la condición de @mkv-c3-teo-bellman converge desde cualquier arranque, y tras rondas finitas la codiciosa es óptima (@mkv-c3-teo-iterar-valores).
-- **Cuándo parar.** El error es a lo más ${\tfrac{m}{1-\beta}\operatorname{res}^{(t)}}$: factor 6 en el juguete. En el lazo $99/100$ el error real es 99 veces el residuo.
+- **Cuándo parar.** El error es a lo más ${\tfrac{m}{1-\beta}\operatorname{res}^{(k)}}$: factor 6 en el juguete. En el lazo $99/100$ el error real es 99 veces el residuo.
 - **El caso grande.** En el pasillo de 200 casillas, 451 rondas dan ${V^{(451)}(1)\approx V^*(1)=-467}$ y la regla local, sin revisar $2^{200}$ políticas.
 
 Los valores nunca llegan, pero la política llegó desde el principio. ¿Se puede llegar en un número finito de rondas?

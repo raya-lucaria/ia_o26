@@ -348,7 +348,7 @@ def test_el_paro_dice_cuantas_veces_el_residuo():
     err, res = m.errores(traza, Vs)[1:], m.residuos(traza)
     assert all(e == r for e, r in zip(err[1:], res[1:]))
     renglones = _renglones("mkv-c3-ej-paro")
-    assert "el pasillo: error = residuo desde t = 2" in renglones
+    assert "el pasillo: error = residuo desde k = 2" in renglones
     assert "lazo 99/100: error = 99 × residuo" in renglones
 
 
