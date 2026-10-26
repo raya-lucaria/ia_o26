@@ -4,7 +4,7 @@ title: "Clase 3 · Decidir"
 nav_title: Decidir
 summary: "Cuando en cada estado puedes elegir: de la pasada hacia atrás en una escalera al proceso de decisión de Markov, el valor de una política, la ecuación de Bellman y tres maneras de resolverla: iterar valores, iterar políticas y un programa lineal."
 status: ready
-estimated_time: 220m
+estimated_time: 222m
 tags: [markov, decidir, mdp, bellman, programacion-dinamica]
 prerequisites: [markov-a-la-larga]
 ---
@@ -69,7 +69,7 @@ está en la tabla.
 | 6 | 30m | **Iteración de valores.** Aplicar el máximo ronda tras ronda, cuándo parar y un pasillo de 200 casillas |
 | 7 | 22m | **Iteración de políticas.** Evaluar y mejorar: termina en rondas finitas |
 | 8 | 18m | **Como programa lineal.** Bellman con desigualdades y `linprog` |
-| 9 | 12m | **Resumen: el formulario.** Definiciones, teoremas, los tres algoritmos y lo que más se confunde |
+| 9 | 14m | **Resumen: el formulario.** Definiciones, teoremas, los tres algoritmos y lo que más se confunde |
 :::
 
 1. [[mkv-max-y-punto-fijo|Lo que necesitas: el máximo y el punto fijo]]
