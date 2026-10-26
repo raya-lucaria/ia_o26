@@ -1618,14 +1618,18 @@ def prob_no_terminar(mdp, m):
     return max(f.values())
 
 
-def iterar_politicas(mdp, pol0, empate="conservar", max_rondas=50):
+def iterar_politicas(mdp, pol0, empate="conservar", max_rondas=None):
     """ITERACION DE POLITICAS (Howard): evaluar y mejorar. Devuelve
     [pi_0, pi_1, ..., pi_K]: pi_K es la primera que la mejora deja igual (se
     hicieron K mejoras). En empate, "conservar" deja la accion actual si esta
     en el argmax; "cambiar" toma la primera del argmax distinta de la actual.
-    Si no se estabiliza, la lista tiene max_rondas + 1 politicas."""
+    Sin tope (max_rondas=None) corre hasta estabilizarse: con "conservar"
+    eso pasa en un numero finito de rondas. Con un tope que se agota, la
+    lista tiene max_rondas + 1 politicas y la ultima no es necesariamente
+    optima (es lo que muestra el contraejemplo de "cambiar")."""
+    import itertools
     pols = [dict(pol0)]
-    for _ in range(max_rondas):
+    for _ in (itertools.count() if max_rondas is None else range(max_rondas)):
         pol = pols[-1]
         V = evaluar_politica(mdp, pol)
         nueva = {}

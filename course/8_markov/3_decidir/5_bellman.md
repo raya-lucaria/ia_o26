@@ -4,7 +4,7 @@ title: "La ecuación de Bellman"
 nav_title: "Bellman"
 summary: "De fijar la acción a elegirla: el valor de acción, el valor óptimo, la ecuación de Bellman con su condición exacta y por qué la codiciosa del óptimo es óptima."
 status: ready
-estimated_time: 28m
+estimated_time: 32m
 tags: [markov, decidir, bellman, optimo]
 ---
 
@@ -52,6 +52,12 @@ De [[cuando-decide-un-dado|Cuando decide un dado]], en juegos: expectiminimax to
 
 Sí. Corres una vez y, si caes en la 2 otra vez, vuelves a caminar: el costo esperado es $5/2$, menos que 3. Para decirlo en general hace falta el valor de una acción.
 
+**Dos preguntas distintas.** $V_\pi$ y $Q_\pi$ miden lo mismo, el retorno esperado, pero contestan preguntas distintas.
+
+- **$V_\pi(s)$:** ¿cuánto vale **estar** en $s$ si sigo $\pi$ desde ya? Un número por estado.
+- **$Q_\pi(s,a)$:** ¿cuánto vale estar en $s$, **hacer** $a$ una vez y después seguir $\pi$? Un número por par estado–acción.
+- **Por qué hace falta $Q$:** $V_\pi(2)=-3$ no dice si correr sería mejor. Para elegir hay que comparar acciones en el mismo estado, y eso es comparar $Q$.
+
 ::: definition {#mkv-c3-def-q title="Valor de una acción"}
 Para un MDP y una política $\pi$ que termina con probabilidad 1 desde todo estado de $\mathcal T$:
 
@@ -64,7 +70,7 @@ $$
 
 - **Qué es:** el valor esperado de hacer $a$ en $s$ **una vez** y seguir $\pi$ después.
 - **Cómo se calcula:** con $V_\pi$ de @mkv-c3-teo-evaluar, una suma por acción. Los estados de $\mathcal F$ no aparecen: ahí el valor es 0.
-- **Qué significa:** $Q_\pi(s,\pi(s))=V_\pi(s)$. Si $Q_\pi(s,a)>V_\pi(s)$, desviarse una vez en $s$ conviene.
+- **Qué significa:** $Q_\pi(s,\pi(s))=V_\pi(s)$: si la primera acción es la que $\pi$ ya elegía, no cambia nada. Si $Q_\pi(s,a)>V_\pi(s)$, desviarse una vez en $s$ conviene.
 - **Qué no es:** el valor de usar $a$ siempre en $s$. Después del primer paso manda $\pi$.
 :::
 
@@ -83,6 +89,24 @@ $$
 
 - **En la casilla 2:** $-5/2>-3=V_\pi(2)$. Desviarse conviene.
 - **En la casilla 1:** $-21/2<-6=V_\pi(1)$. Correr junto al hueco no conviene.
+
+Las otras dos son las acciones que $\pi$ ya elige: $Q_\pi(1,\text{caminar})=-3+V_\pi(2)=-6$ y $Q_\pi(2,\text{caminar})=-3$. Los cuatro juntos:
+
+::: table {#mkv-c3-be-tabla-q-pi title="Los cuatro valores de acción de caminar–caminar"}
+| Casilla $s$ | $Q_\pi(s,\text{caminar})$ | $Q_\pi(s,\text{correr})$ | $V_\pi(s)$ |
+|---|---:|---:|---:|
+| 1 | $\mathbf{-6}$ | $-21/2$ | $-6$ |
+| 2 | $\mathbf{-3}$ | $-5/2$ | $-3$ |
+:::
+
+- **$V$ está dentro de $Q$:** en cada fila, $V_\pi(s)$ es la $Q_\pi$ de la acción que $\pi$ elige, en negritas.
+- **La señal de mejora:** en la casilla 2, correr tiene $Q_\pi$ mayor que $V_\pi$. Esa celda dice que $\pi$ se puede mejorar, y en qué casilla.
+
+> [!WARNING]
+> **Dos confusiones típicas.**
+>
+> - **«$Q$ es otra función de valor, con otra lógica».** No: es $V$ con la primera acción forzada. Quitas el forzado y vuelves a $V$: $V_\pi(s)=Q_\pi(s,\pi(s))$.
+> - **«El máximo de $Q_\pi$ es $V_\pi$».** Falso en general. Con caminar–caminar, $\max_aQ_\pi(2,a)=-5/2\ne V_\pi(2)=-3$. Solo coinciden si $\pi$ ya elige en cada estado la acción de mayor $Q_\pi$.
 
 Si desviarse una vez mejora, ¿qué es lo mejor que se puede lograr?
 
@@ -132,7 +156,29 @@ Q^*(2,\text{correr})&=-1+\tfrac12(-2)=-2.
 \end{aligned}
 $$
 
-En cada casilla, $V^*(s)$ es el mayor de sus dos $Q^*$. ¿Pasa siempre?
+En la misma forma que la tabla de caminar–caminar:
+
+::: table {#mkv-c3-be-tabla-q-star title="Los cuatro valores de acción óptimos"}
+| Casilla $s$ | $Q^*(s,\text{caminar})$ | $Q^*(s,\text{correr})$ | $V^*(s)$ |
+|---|---:|---:|---:|
+| 1 | $\mathbf{-5}$ | $-19/2$ | $-5$ |
+| 2 | $-3$ | $\mathbf{-2}$ | $-2$ |
+:::
+
+Aquí sí, en cada casilla, $V^*(s)$ es el mayor de sus dos $Q^*$: $V^*(s)=\max_aQ^*(s,a)$. Con $Q_\pi$ no pasaba. ¿Pasa siempre con $Q^*$? La sección 3 dice que sí.
+
+**Lo que separa a $V$ de $Q$**, en una tabla:
+
+::: table {#mkv-c3-be-tabla-v-q title="V contra Q"}
+| Pregunta | $V$ | $Q$ |
+|---|---|---|
+| ¿Qué contesta? | Cuánto vale estar en $s$ | Cuánto vale hacer $a$ en $s$ y seguir |
+| ¿De qué depende? | Del estado | Del estado y la primera acción |
+| ¿Cuántos números en el pasillo? | 2, uno por casilla | 4, uno por par casilla–acción |
+| ¿Cómo se pasa al otro? | $Q=r+\sum_{s'}P\,V$, con una suma | $V_\pi(s)=Q_\pi(s,\pi(s))$; $V^*(s)=\max_aQ^*(s,a)$ |
+| ¿Para qué sirve? | Evaluar: cuánto vale una política | Elegir: qué acción conviene |
+| ¿Qué era en juegos? | $V(s)$, el valor de la posición | $Q(s,a)=V(T(s,a))$, el valor de una jugada |
+:::
 
 ::: exercise {#mkv-c3-be-ej-desviar title="Desvíate una vez desde correr–correr"}
 Con $\pi$ = correr–correr, $V_\pi=(-14,-2)$. Calcula $Q_\pi(1,\text{caminar})$. ¿Conviene desviarse una vez en la casilla 1?
@@ -144,6 +190,18 @@ Caminar desde 1 llega seguro a la casilla 2. ¿Cuánto vale seguir $\pi$ desde a
 
 ::: answer {#mkv-c3-be-resp-desviar of="mkv-c3-be-ej-desviar"}
 $Q_\pi(1,\text{caminar})=-3+V_\pi(2)=-3-2=-5>-14$. Conviene mucho: caminar junto al hueco ahorra 9 en promedio.
+:::
+
+::: exercise {#mkv-c3-be-ej-q-a-v title="De Q a V"}
+Una política $\pi$ elige correr en 1 y caminar en 2. Sus cuatro valores de acción son $Q_\pi(1,\text{caminar})=-6$, $Q_\pi(1,\text{correr})=-15$, $Q_\pi(2,\text{caminar})=-3$ y $Q_\pi(2,\text{correr})=-5/2$. ¿Cuánto vale $V_\pi$? ¿En qué casillas mejoraría desviarse, y con qué acción?
+:::
+
+::: hint {#mkv-c3-be-pista-q-a-v of="mkv-c3-be-ej-q-a-v" title="¿Qué Q es V?"}
+$V_\pi(s)$ es la $Q_\pi$ de la acción que $\pi$ elige en $s$, no el máximo. Después compara las otras con ella.
+:::
+
+::: answer {#mkv-c3-be-resp-q-a-v of="mkv-c3-be-ej-q-a-v"}
+$V_\pi(1)=Q_\pi(1,\text{correr})=-15$ y $V_\pi(2)=Q_\pi(2,\text{caminar})=-3$: es correr–caminar, $(-15,-3)$. En 1, caminar da $-6>-15$; en 2, correr da $-5/2>-3$. Conviene desviarse en las dos casillas, hacia caminar–correr.
 :::
 
 ---
@@ -348,7 +406,9 @@ La ecuación de Bellman gana un término en cada casilla:
 $$
 \begin{aligned}
 V(2)&=\max\bigl(-3,\ -1+\tfrac12V(2),\ V(2)\bigr),\\
-V(1)&=\max\bigl(V(2)-3,\ -6+\tfrac12V(1)+\tfrac12V(2),\ V(1)\bigr).
+V(1)&=\max\bigl(V(2)-3,\\
+&\qquad -6+\tfrac12V(1)+\tfrac12V(2),\\
+&\qquad V(1)\bigr).
 \end{aligned}
 $$
 
@@ -465,6 +525,7 @@ con solución $(1/15,\ 1/5,\ 7/15)$. La audaz gana en los tres capitales.
 ## Lo que hay que llevarse
 
 - **Valor de una acción:** $Q_\pi(s,a)=r(s,a)+\sum_{s'}P(s'\mid s,a)V_\pi(s')$; una vez $a$, después $\pi$ (@mkv-c3-def-q).
+- **$V$ contra $Q$:** $V$ vale el estado, $Q$ vale el par estado–acción; $V_\pi(s)=Q_\pi(s,\pi(s))$, no $\max_aQ_\pi(s,a)$. Una $Q_\pi$ mayor que $V_\pi$ señala dónde mejorar.
 - **Óptimo:** $V^*(s)=\max_\pi V_\pi(s)$; en el pasillo, $V^*=(-5,-2)$, $Q^*(1,\cdot)=(-5,\,-19/2)$ y $Q^*(2,\cdot)=(-3,\,-2)$ (@mkv-c3-def-optimo).
 - **Bellman:** $V^*(s)=\max_aQ^*(s,a)$, y es la única solución si el MDP es finito, $\mathcal F$ vale 0, alguna política termina y toda política que no termina vale $-\infty$ en algún estado (@mkv-c3-teo-bellman).
 - **Codiciosa:** $\pi$ es óptima si y solo si elige en el argmax de $Q^*$; la codiciosa de $V^*$ es caminar–correr, y la de $U=(-8,-8)$ es caminar–caminar, $(-6,-3)$ (@mkv-c3-teo-codiciosa).

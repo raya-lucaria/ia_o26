@@ -32,9 +32,39 @@ Al terminar tendrás:
 > **Por qué evaluamos antes de elegir.** El pasillo tiene cuatro políticas, y para compararlas hace falta un número por casilla para cada una.
 > Una política fija convierte el MDP en una cadena de Markov con costos. Su valor sale con el mismo truco que el tiempo medio de llegada: lo que pagas ahora más lo que falta.
 
-> **Dado:** un MDP finito $\langle\mathcal S,\mathcal A,P,r\rangle$ con terminales $\mathcal F$ y una política $\pi$.
+**El problema, en general.** Sirve para cualquier MDP finito y cualquier política fija.
+
+> **Dado:** un MDP finito $\langle\mathcal S,\mathcal A,P,r\rangle$ con terminales $\mathcal F$ y una política fija $\pi$. De ahí salen las tres piezas que se usan: los estados sin terminar $\mathcal T$, la matriz $P_{\pi,\mathcal T}$ y el vector $r_\pi$.
 >
 > **Encontrar:** ${V_\pi(s)=E^\pi_s[G_0]}$ para cada ${s\in\mathcal T}$, o avisar que desde algún estado la política no termina.
+
+$V_\pi(s)$ responde una sola pregunta: **cuánto vale estar en $s$ si sigo $\pi$**.
+
+::: table {#mkv-c3-ev-tabla-piezas title="Las piezas de evaluar una política"}
+| Símbolo | Qué es | Tamaño | En el pasillo con caminar–correr |
+|---|---|---|---|
+| $\mathcal T$ | Los estados que aún no terminan | $k=\lvert\mathcal T\rvert$ estados | $\{1,2\}$, en el orden 1, 2 |
+| $\pi$ | La acción elegida en cada estado | una acción por estado | caminar en 1, correr en 2 |
+| $P_{\pi,\mathcal T}$ | Fila $s$ de $P_{\pi(s)}$, solo columnas de $\mathcal T$ | $k\times k$ | fila 1 de $P_{\text{caminar}}$, fila 2 de $P_{\text{correr}}$ |
+| $r_\pi$ | La recompensa $r(s,\pi(s))$ de cada estado | $k\times1$ | $-3$ en 1, $-1$ en 2 |
+| $V_\pi$ | La incógnita: el valor desde cada estado | $k\times1$ | $V(1)$ y $V(2)$ |
+| $I$ | La matriz identidad | $k\times k$ | la identidad de $2\times2$ |
+:::
+
+**El mismo problema, en el pasillo.** Las mismas piezas, con números.
+
+> **Dado:** el pasillo con la política caminar–correr. La política elige filas: la 1 de $P_{\text{caminar}}$ y la 2 de $P_{\text{correr}}$. Restringidas a ${\mathcal T=\{1,2\}}$:
+>
+> $$
+> \begin{aligned}
+> P_{\pi,\mathcal T}&=\begin{pmatrix}0&1\\0&1/2\end{pmatrix},\\
+> r_\pi&=\begin{pmatrix}-3\\-1\end{pmatrix}.
+> \end{aligned}
+> $$
+>
+> **Encontrar:** $V(1)$ y $V(2)$: cuánto vale cada casilla si caminas en 1 y corres en 2.
+
+- **Lectura.** La fila 2 suma $1/2$: la otra mitad es llegar a la meta.
 
 ---
 
@@ -53,8 +83,9 @@ Entonces $V_\pi(s)$ es finito para todo ${s\in\mathcal T}$, y el vector columna 
 
 $$
 \begin{aligned}
-V_\pi(s)&=r(s,\pi(s))+\sum_{s'\in\mathcal T}P(s'\mid s,\pi(s))\,V_\pi(s'),
-\quad s\in\mathcal T,\\
+V_\pi(s)&=r(s,\pi(s))\\
+&\quad+\sum_{s'\in\mathcal T}P(s'\mid s,\pi(s))\,V_\pi(s'),\\
+&\quad\text{para cada } s\in\mathcal T,\\
 V_\pi&=r_\pi+P_{\pi,\mathcal T}\,V_\pi,\\
 (I-P_{\pi,\mathcal T})\,V_\pi&=r_\pi,
 \end{aligned}
@@ -114,19 +145,9 @@ Con el teorema en mano, el pasillo se evalúa con dos ecuaciones.
 
 ## 2 · Evaluar caminar–correr a mano
 
-**Piensa: ¿qué filas de $P_{\text{caminar}}$ y $P_{\text{correr}}$ usa caminar–correr?**
+**Piensa: ¿cuál de las dos ecuaciones tiene una sola incógnita?**
 
-La fila 1 de $P_{\text{caminar}}$ y la fila 2 de $P_{\text{correr}}$: la política elige filas. Restringidas a ${\mathcal T=\{1,2\}}$, en el orden 1, 2:
-
-$$
-P_{\pi,\mathcal T}=\begin{pmatrix}0&1\\0&1/2\end{pmatrix},
-$$
-
-$$
-r_\pi=\begin{pmatrix}-3\\-1\end{pmatrix}.
-$$
-
-- **Lectura.** La fila 2 suma $1/2$: la otra mitad es llegar a la meta. La condición se cumple, porque desde 1 se llega a 2 y desde 2 a la meta.
+Usa $P_{\pi,\mathcal T}$ y $r_\pi$ del planteamiento. La condición se cumple: desde 1 se llega a 2, y desde 2 a la meta.
 
 El sistema, renglón por renglón:
 
@@ -183,7 +204,7 @@ Solo dos cosas. Antes de armar la matriz, la política elige una fila por estado
 - **Qué devuelve al terminar:** $V_\pi$ sobre $\mathcal T$, o FALLA si alguna columna se queda sin pivote.
 
 ::: figure {#mkv-c3-fig-flujo-evaluar title="Evaluar una política, en palabras"}
-![Diagrama de flujo de evaluar una política, en palabras. 1: Para cada estado sin terminar, toma la acción que elige la política. 2: Copia su fila de P y su recompensa r. 3: Arma el sistema (I − P_π,𝒯) V = r_π. 4, pregunta: ¿tiene una solución? Si sí, 5: resuélvelo y devuelve V, con V = 0 en la meta. Si no, 6: avisa que desde algún estado la política no termina. Cada renglón dice: lo que pagas ahora más lo que falta desde donde caes.](../_assets/mkv-c3-flujo-evaluar.svg)
+![Diagrama de flujo de evaluar una política, en palabras. 1: Para cada estado sin terminar, toma la acción que elige la política. 2: Copia su fila de P y su recompensa r. 3: Arma el sistema (I − P_π,𝒯) V = r_π. 4, pregunta: ¿tiene solución única? Si sí, 5: resuélvelo y devuelve V, con V = 0 en la meta. Si no es única, 6: avisa que desde algún estado la política no termina. Cada renglón dice: lo que pagas ahora más lo que falta desde donde caes.](../_assets/mkv-c3-flujo-evaluar.svg)
 :::
 
 ```text
@@ -423,9 +444,8 @@ El pasillo es el mismo, con los mismos costos. **Cambia una idea:** el piso de l
 **3. Resolver.** Con caminar–correr:
 
 $$
-P_{\pi,\mathcal T}=\begin{pmatrix}0&1\\1/2&0\end{pmatrix},
-\qquad
 \begin{aligned}
+P_{\pi,\mathcal T}&=\begin{pmatrix}0&1\\1/2&0\end{pmatrix},\\
 V(1)&=-3+V(2),\\
 V(2)&=-1+\tfrac12V(1).
 \end{aligned}

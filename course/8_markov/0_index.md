@@ -4,7 +4,7 @@ title: Cadenas de Markov
 nav_title: Markov
 summary: "Un modelo de qué sigue que solo mira el estado actual: qué es una cadena de Markov, cómo se ajusta contando en un texto, cómo predice y genera, y qué hace a la larga."
 status: ready
-estimated_time: 609m
+estimated_time: 620m
 tags: [markov, probabilidad, cadenas]
 prerequisites: [juegos]
 ---
@@ -52,14 +52,14 @@ completo.
 |---|---|---|---:|
 | 1 | La cadena se ve en los datos: se define, se ajusta, predice y genera | Probabilidad que se necesita, el problema de Markov, ajustar contando, predecir y generar texto | 199m |
 | 2 | La cadena se ve a la larga: qué pasa si la dejas correr | Clasificar estados, la estacionaria y sus cuatro teoremas, olvidar el inicio, absorción y PageRank | 203m |
-| 3 | Se decide: en cada estado eliges qué matriz usar | La escalera, el MDP, evaluar una política, Bellman, iterar valores, iterar políticas y programa lineal | 207m |
+| 3 | Se decide: en cada estado eliges qué matriz usar | La escalera, el MDP, evaluar una política, Bellman, iterar valores, iterar políticas y programa lineal | 218m |
 :::
 
 - [[markov-que-es-una-cadena|Clase 1 · Qué es una cadena]]
 - [[markov-a-la-larga|Clase 2 · Qué pasa a la larga]]
 - [[markov-decidir|Clase 3 · Decidir]]
 
-El recorrido de lectura suma **10 horas y 9 minutos**.
+El recorrido de lectura suma **10 horas y 20 minutos**.
 
 La clase 1 termina con una **tarea**: tres videos, tres de sus ejercicios
 y uno que adelanta la siguiente pregunta. Está en el índice de
