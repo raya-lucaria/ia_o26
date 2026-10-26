@@ -125,10 +125,10 @@ $$
 > **Ejemplo y contraejemplo.**
 >
 > - **Lo cumple:** $P_{\text{caminar}}$ y $P_{\text{correr}}$ de arriba. Cada fila es una distribución: la fila 1 de correr pone 1/2 en quedarse y 1/2 en avanzar, y suma 1.
-> - **No lo cumple:** una «correr» cuya fila de 1 es $(1/2,\ 1/2,\ 0)$ más 1/2 en «cae al hueco», contado como otro destino. Esa fila suma 3/2. El hueco no es un lugar aparte: ocurre **junto con** resbalar, y su costo va en $r(1,\text{correr})$, no en $P$.
+> - **No lo cumple:** una «correr» cuya fila de 1 es $(1/2,\ 1,\ 0)$: se queda con 1/2 y avanza con 1, como si resbalar y avanzar no se excluyeran. Esa fila suma 3/2 y no es una distribución. El hueco tampoco es un destino aparte: ocurre **junto con** resbalar, y su costo va en $r(1,\text{correr})$, no en $P$.
 
 ::: figure {#mkv-c3-fig-ej-mdp title="Ejemplo y contraejemplo: un MDP"}
-![Dos paneles, cada uno con su grafo de nodos de acción y una matriz por acción debajo. Arriba, el que cumple: P_caminar y P_correr del pasillo, cada fila suma 1. Abajo, el que no: correr desde 1 pone 1/2 en quedarse, 1/2 en avanzar y 1/2 en caer al hueco; su fila suma 3/2 y no es una distribución.](../_assets/mkv-c3-ej-mdp.svg)
+![Dos paneles, cada uno con su grafo de nodos de acción y una matriz por acción debajo. Arriba, el que cumple: P_caminar y P_correr del pasillo, cada fila suma 1. Abajo, el que no: correr desde 1 pone 1/2 en quedarse y 1 en avanzar; su fila suma 3/2 y no es una distribución.](../_assets/mkv-c3-ej-mdp.svg)
 :::
 
 > [!WARNING]
