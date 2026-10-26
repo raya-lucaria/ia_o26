@@ -254,7 +254,7 @@ OUTPUT  V_π(s) para cada s en 𝒯,
 **Gemelo Python.** Cada comentario numerado remite al pseudocódigo.
 
 - **`resolver`** es la eliminación de [[mkv-absorcion|Cuánto falta para terminar]], sin cambios. `n` es el número de estados.
-- **El MDP es un diccionario.** `P[(s, a)]` da los destinos con su probabilidad. `r[(s, a)]` da la recompensa esperada.
+- **El MDP es el diccionario de [[mkv-el-mdp|El MDP]].** `mdp["P"][(s, a)]` da los destinos con su probabilidad. `mdp["r"][(s, a)]` da la recompensa esperada.
 
 ```python
 from fractions import Fraction as F
@@ -295,17 +295,17 @@ def evaluar_politica(mdp, pol):
         return None                        # (8) FALLA
     return dict(zip(T, V))                 # (9) V_pi
 
-mitad = F(1, 2)
+h = F(1, 2)
 pasillo = {
     "estados": [1, 2],
+    "acciones": {1: ["caminar", "correr"],
+                 2: ["caminar", "correr"]},
     "P": {(1, "caminar"): {2: F(1)},
-          (1, "correr"): {1: mitad, 2: mitad},
+          (1, "correr"): {1: h, 2: h},
           (2, "caminar"): {"meta": F(1)},
-          (2, "correr"): {2: mitad, "meta": mitad}},
-    "r": {(1, "caminar"): F(-3),
-          (1, "correr"): F(-6),
-          (2, "caminar"): F(-3),
-          (2, "correr"): F(-1)},
+          (2, "correr"): {2: h, "meta": h}},
+    "r": {(1, "caminar"): F(-3), (1, "correr"): F(-6),
+          (2, "caminar"): F(-3), (2, "correr"): F(-1)},
 }
 for a1 in ("caminar", "correr"):
     for a2 in ("caminar", "correr"):
@@ -321,7 +321,7 @@ for a1 in ("caminar", "correr"):
 **Cada pieza, en su línea:**
 
 - **Línea 4.** `fila.get(j, F(0))` pone 0 donde la acción no lleva. La meta no tiene columna: su probabilidad queda fuera, como en $P_{\pi,\mathcal T}$.
-- **Línea 5.** `r[(s, a)]` es la recompensa esperada. En la casilla 1, correr vale ${-1-\tfrac12\cdot10=-6}$.
+- **Línea 5.** `mdp["r"][(s, a)]` es la recompensa esperada. En la casilla 1, correr vale ${-1-\tfrac12\cdot10=-6}$.
 - **Líneas 7 y 8.** Con fracciones, «sin pivote» es exacto. La condición falla o no falla, sin redondeo.
 
 **Las cuatro políticas.** El ciclo final evalúa las ${2\cdot2=4}$ políticas deterministas del pasillo. Cada renglón es el $V_\pi$ de su política:

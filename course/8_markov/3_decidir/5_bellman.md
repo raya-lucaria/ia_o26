@@ -4,7 +4,7 @@ title: "La ecuación de Bellman"
 nav_title: "Bellman"
 summary: "De fijar la acción a elegirla: el valor de acción, el valor óptimo, la ecuación de Bellman con su condición exacta y por qué la codiciosa del óptimo es óptima."
 status: ready
-estimated_time: 32m
+estimated_time: 33m
 tags: [markov, decidir, bellman, optimo]
 ---
 
@@ -441,21 +441,45 @@ El código prueba los tres vectores en las tres versiones del pasillo: sin esper
 ```python
 from fractions import Fraction as F
 
-def lado_derecho(U, esperar=None):
-    v1, v2 = U                    # candidato: U(1), U(2)
-    m = F(1, 2)
-    en1 = [-3 + v2, -6 + m * v1 + m * v2]
-    en2 = [F(-3), -1 + m * v2]
-    if esperar is not None:       # costo de esperar
-        en1.append(-esperar + v1)
-        en2.append(-esperar + v2)
-    return (max(en1), max(en2))
+h = F(1, 2)
+pasillo = {
+    "estados": [1, 2],
+    "acciones": {1: ["caminar", "correr"],
+                 2: ["caminar", "correr"]},
+    "P": {(1, "caminar"): {2: F(1)},
+          (1, "correr"): {1: h, 2: h},
+          (2, "caminar"): {"meta": F(1)},
+          (2, "correr"): {2: h, "meta": h}},
+    "r": {(1, "caminar"): F(-3), (1, "correr"): F(-6),
+          (2, "caminar"): F(-3), (2, "correr"): F(-1)},
+}
 
-for U in [(0, 0), (-5, -2), (-1, -1)]:
-    U = (F(U[0]), F(U[1]))
-    print(U == lado_derecho(U),
-          U == lado_derecho(U, 0),
-          U == lado_derecho(U, 1))
+def q(mdp, V, s, a):                     # la meta vale 0
+    fila = mdp["P"][(s, a)]
+    return mdp["r"][(s, a)] + sum(
+        p * V.get(t, 0) for t, p in fila.items())
+
+def lado_derecho(mdp, U):                # U: un candidato
+    return {s: max(q(mdp, U, s, a)
+                   for a in mdp["acciones"][s])
+            for s in mdp["estados"]}
+
+def con_esperar(mdp, costo):             # agrega esperar
+    nuevo = {"estados": mdp["estados"], "acciones": {},
+             "P": dict(mdp["P"]), "r": dict(mdp["r"])}
+    for s in mdp["estados"]:
+        nuevo["acciones"][s] = mdp["acciones"][s] + ["esperar"]
+        nuevo["P"][(s, "esperar")] = {s: F(1)}
+        nuevo["r"][(s, "esperar")] = F(-costo)
+    return nuevo
+
+gratis = con_esperar(pasillo, 0)
+caro = con_esperar(pasillo, 1)
+for v1, v2 in [(0, 0), (-5, -2), (-1, -1)]:
+    U = {1: F(v1), 2: F(v2)}
+    print(U == lado_derecho(pasillo, U),
+          U == lado_derecho(gratis, U),
+          U == lado_derecho(caro, U))
 ```
 
 ```text
@@ -464,6 +488,7 @@ True True True
 False True False
 ```
 
+- **El MDP:** el diccionario de [[mkv-el-mdp|El MDP]]. `con_esperar` le agrega la acción esperar, que se queda en su casilla con recompensa $-\text{costo}$.
 - **Lectura:** sin esperar y con esperar caro, solo $(-5,-2)$ es punto fijo. Con esperar gratis, los tres lo son.
 - **Qué se rompe:** si la condición falla, una solución de Bellman puede no ser el óptimo $V^*$.
 

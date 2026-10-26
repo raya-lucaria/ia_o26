@@ -194,37 +194,49 @@ OUTPUT  V* sobre 𝒯, o FALLA.
  8   return V*
 ```
 
-**Gemelo Python.** Cada comentario numerado remite al pseudocódigo. Cada acción es un par: su recompensa y su fila. La fila es un diccionario de destinos. `n` es el número de estados de $\mathcal T$.
+**Gemelo Python.** Cada comentario numerado remite al pseudocódigo. El MDP es el diccionario de [[mkv-el-mdp|El MDP]], y `armar_pasillo` la de [[mkv-iterar-valores|Iteración de valores]]. `n` es el número de estados de $\mathcal T$.
 
 ```python
+from fractions import Fraction as F
 from scipy.optimize import linprog
 
-def pl_bellman(T, acciones):            # (1)
+def armar_pasillo(n=2, castigo=10):
+    """Casillas 1..n y la meta; hueco si i % 3 == 1."""
+    h = F(1, 2)
+    mdp = {"estados": list(range(1, n + 1)),
+           "acciones": {}, "P": {}, "r": {}}
+    for i in mdp["estados"]:
+        sig = i + 1 if i < n else "meta"
+        hueco = i % 3 == 1               # sin barandal
+        mdp["acciones"][i] = ["caminar", "correr"]
+        mdp["P"][(i, "caminar")] = {sig: F(1)}
+        mdp["r"][(i, "caminar")] = F(-3)
+        mdp["P"][(i, "correr")] = {i: h, sig: h}
+        mdp["r"][(i, "correr")] = -1 - h * castigo * hueco
+    return mdp
+
+def pl_bellman(mdp):                     # (1)
+    T = mdp["estados"]
     n = len(T)
     pos = {s: i for i, s in enumerate(T)}
     A, b = [], []
-    for s in T:                         # (2)
-        for r, P in acciones[s]:        # (3)
+    for s in T:                          # (2)
+        for a in mdp["acciones"][s]:     # (3)
             fila = [0.0] * n
-            for s2, p in P.items():
-                if s2 in pos:           # (4) V = 0 en F
-                    fila[pos[s2]] += p
+            for s2, p in mdp["P"][(s, a)].items():
+                if s2 in pos:            # (4) V = 0 en F
+                    fila[pos[s2]] += float(p)
             fila[pos[s]] -= 1
-            A.append(fila)              # (5)
-            b.append(-r)
+            A.append(fila)               # (5)
+            b.append(-float(mdp["r"][(s, a)]))
     res = linprog([1] * n, A_ub=A, b_ub=b,
-        bounds=(None, None))            # (6)
+        bounds=(None, None))             # (6)
     if res.status != 0:
-        return None                     # (7) FALLA
-    return dict(zip(T, res.x))          # (8) V*
+        return None                      # (7) FALLA
+    return dict(zip(T, res.x))           # (8) V*
 
-pasillo = {
-    1: [(-3, {2: 1}),                   # caminar
-        (-6, {1: 0.5, 2: 0.5})],        # correr
-    2: [(-3, {"meta": 1}),
-        (-1, {2: 0.5, "meta": 0.5})],
-}
-V_estrella = pl_bellman([1, 2], pasillo)
+pasillo = armar_pasillo(2)
+V_estrella = pl_bellman(pasillo)
 print([round(float(v), 6) for v in V_estrella.values()])
 # [-5.0, -2.0]
 ```
@@ -250,13 +262,8 @@ print([round(float(v), 6) for v in V_estrella.values()])
 **El caso grande.** En el pasillo de 200 casillas hay 200 variables y 400 restricciones, frente a $2^{200}\approx1.6\times10^{60}$ políticas deterministas. PL-BELLMAN da ${V^*(1)=-467}$, el mismo valor que iterar valores y que iterar políticas.
 
 ```python
-G = {}
-for i in range(1, 201):
-    sig = i + 1 if i < 200 else "meta"
-    castigo = 5 if i % 3 == 1 else 0  # 10 × 1/2
-    G[i] = [(-3, {sig: 1}),
-            (-1 - castigo, {i: 0.5, sig: 0.5})]
-V_estrella = pl_bellman(list(G), G)
+largo = armar_pasillo(200)
+V_estrella = pl_bellman(largo)
 print(round(float(V_estrella[1]), 6))
 # -467.0
 ```
@@ -320,7 +327,7 @@ La última tiene a las dos incógnitas: ya no se despeja sola.
 
 **3. La política.** Quedan con igualdad (1, caminar) y (2, caminar): caminar–caminar.
 
-**4. Correr.** En la fila de correr de la casilla 2, cambia `{2: 0.5, "meta": 0.5}` por `{1: 0.5, "meta": 0.5}`. Imprime `[-6.0, -3.0]`.
+**4. Correr.** Después de `pasillo = armar_pasillo(2)`, cambia la fila de correr en la casilla 2: `pasillo["P"][(2, "correr")] = {1: F(1, 2), "meta": F(1, 2)}`. Imprime `[-6.0, -3.0]`.
 
 **5. Comparar.** Coincide: con rampa, caminar–caminar vale $(-6,-3)$ y gana en las dos casillas. La restricción de (2, correr) vale $-4$ en el óptimo, menos que ${V^*(2)=-3}$. Ese $-4$ es $Q^*(2,\text{correr})$: correr en 2 es peor que caminar.
 :::
