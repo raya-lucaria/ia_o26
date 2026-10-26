@@ -376,3 +376,63 @@ def test_iteracion_de_politicas_sin_tope_llega_en_un_pasillo_de_51():
     siempre = {s: m.CAMINAR for s in mdp["estados"]}
     pols = m.iterar_politicas(mdp, siempre)
     assert all(a == m.CORRER for a in pols[-1].values())
+
+
+# ============================= el Python de cada pagina corre y es uno ===
+#
+# Ninguna prueba corria los bloques ```python de esta clase: una salida
+# impresa en la pagina podia desfasarse del codigo con la suite verde. Y cada
+# pagina armaba el MDP a su manera (tuplas, listas de pares, (r, P) por
+# estado). Ahora todas usan el diccionario de 3_el_mdp.md —estados, acciones,
+# P, r— y estas pruebas corren cada bloque, comparan lo que imprime con lo
+# que la pagina dice que imprime, y exigen que el pasillo sea el mismo
+# diccionario en todas.
+
+PAGINAS_CON_MDP = [P3, P4, P5, P6, P7, P8]
+RE_BLOQUE = re.compile(r"^```python\n(.*?)^```\n(?:\n```text\n(.*?)^```)?",
+                       re.S | re.M)
+
+
+def _bloques(nombre):
+    return RE_BLOQUE.findall((CLASE / nombre).read_text(encoding="utf-8"))
+
+
+def _esperado(codigo, texto):
+    """La salida que promete la pagina: el bloque ```text que sigue al
+    codigo o, si no hay, los renglones `# …` pegados al margen (los
+    comentarios del codigo van indentados o a media linea)."""
+    if texto:
+        return texto.rstrip("\n").splitlines()
+    return [l[2:] for l in codigo.splitlines() if l.startswith("# ")]
+
+
+@pytest.mark.parametrize("pagina", PAGINAS_CON_MDP)
+def test_el_python_de_la_pagina_imprime_lo_que_dice(pagina, capsys):
+    if pagina == P8:
+        pytest.importorskip("scipy")
+    ns = {"__name__": "pagina"}
+    for codigo, texto in _bloques(pagina):
+        exec(compile(codigo, pagina, "exec"), ns)
+        salida = capsys.readouterr().out.rstrip("\n").splitlines()
+        assert salida == _esperado(codigo, texto), pagina
+
+
+@pytest.mark.parametrize("pagina", PAGINAS_CON_MDP)
+def test_todas_las_paginas_usan_el_mismo_diccionario_del_mdp(pagina, capsys):
+    if pagina == P8:
+        pytest.importorskip("scipy")
+    ns = {"__name__": "pagina"}
+    for codigo, _ in _bloques(pagina):
+        exec(compile(codigo, pagina, "exec"), ns)
+    capsys.readouterr()
+    juguete = m.pasillo()
+    esperado = {"estados": [1, 2],
+                "acciones": {s: list(juguete["acciones"][s]) for s in (1, 2)},
+                "P": juguete["P"], "r": juguete["r"]}
+    if "armar_pasillo" in ns:
+        assert ns["armar_pasillo"](2) == esperado, pagina
+        largo = ns["armar_pasillo"](200)
+        ref = m.pasillo(n=200)
+        assert largo["P"] == ref["P"] and largo["r"] == ref["r"], pagina
+    else:
+        assert ns["pasillo"] == esperado, pagina

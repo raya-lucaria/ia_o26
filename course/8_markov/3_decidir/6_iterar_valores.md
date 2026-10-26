@@ -74,7 +74,7 @@ $$
 >
 > - Con 0 pasos no haces nada: ${V^{(0)}=(0,0)}$.
 > - Con uno, ${V^{(1)}(2)=\max(-3,-1)=-1}$. Corres, porque si resbalas ya no quedan pasos.
-> - Con dos, ${V^{(2)}(2)=\max(-3,\,-1+\tfrac12(-1))=-\tfrac32}$.
+> - Con dos, ${V^{(2)}(2)=\max(-3,\,-1+\tfrac12(-1))}$, que es ${-\tfrac32}$.
 > - Al crecer $k$, la aproximación se acerca al óptimo ${V^*(2)=-2}$.
 
 > [!WARNING]
@@ -185,49 +185,51 @@ OUTPUT  V ≈ V* en 𝒯 y su política
 
 **Gemelo Python.** Cada comentario numerado remite al pseudocódigo.
 
-- `pasillo(n)` arma el pasillo de $n$ casillas. Con ${n=2}$ es el juguete.
+- `armar_pasillo(n)` arma el pasillo de $n$ casillas con el diccionario de [[mkv-el-mdp|El MDP]]. Con ${n=2}$ da ese mismo diccionario.
 - Hay hueco en la casilla $i$ si ${i\equiv1\pmod 3}$.
 - Correr en un hueco cuesta 1, más el castigo de 10 con probabilidad $1/2$: ${-6}$ en promedio.
 
 ```python
 from fractions import Fraction as F
 
-ACCIONES = ("caminar", "correr")
+def armar_pasillo(n=2, castigo=10):
+    """Casillas 1..n y la meta; hueco si i % 3 == 1."""
+    h = F(1, 2)
+    mdp = {"estados": list(range(1, n + 1)),
+           "acciones": {}, "P": {}, "r": {}}
+    for i in mdp["estados"]:
+        sig = i + 1 if i < n else "meta"
+        hueco = i % 3 == 1               # sin barandal
+        mdp["acciones"][i] = ["caminar", "correr"]
+        mdp["P"][(i, "caminar")] = {sig: F(1)}
+        mdp["r"][(i, "caminar")] = F(-3)
+        mdp["P"][(i, "correr")] = {i: h, sig: h}
+        mdp["r"][(i, "correr")] = -1 - h * castigo * hueco
+    return mdp
 
-def pasillo(n, castigo=10):
-    """Casillas 1..n; la meta es n + 1."""
-    P, r = {}, {}
-    for i in range(1, n + 1):
-        hueco = i % 3 == 1         # sin barandal
-        P[i, "caminar"] = {i + 1: F(1)}
-        r[i, "caminar"] = F(-3)
-        P[i, "correr"] = {i: F(1, 2), i + 1: F(1, 2)}
-        r[i, "correr"] = -1 - F(castigo, 2) * hueco
-    return list(range(1, n + 1)), P, r
+def q(mdp, V, s, a):                     # la meta vale 0
+    fila = mdp["P"][(s, a)]
+    return mdp["r"][(s, a)] + sum(
+        p * V.get(t, 0) for t, p in fila.items())
 
-def q(P, r, V, s, a):              # la meta vale 0
-    return r[s, a] + sum(p * V.get(t, 0)
-                         for t, p in P[s, a].items())
-
-def iterar_valores(S, P, r, tol, cero):
-    V = {s: cero for s in S}                     # (2)
+def iterar_valores(mdp, tol, cero):
+    T, A = mdp["estados"], mdp["acciones"]
+    V = {s: cero for s in T}                     # (2)
     traza = [V]
     while True:                                  # (3)
-        W = {s: max(q(P, r, V, s, a)
-                    for a in ACCIONES)
-             for s in S}                         # (4)(5)
-        res = max(abs(W[s] - V[s]) for s in S)   # (6)
+        W = {s: max(q(mdp, V, s, a) for a in A[s])
+             for s in T}                         # (4)(5)
+        res = max(abs(W[s] - V[s]) for s in T)   # (6)
         V = W                                    # (7)
         traza.append(V)
         if res <= tol:                           # (8)
             break
-    pi = {s: max(ACCIONES,
-                 key=lambda a: q(P, r, V, s, a))
-          for s in S}                            # (9)
+    pi = {s: max(A[s], key=lambda a: q(mdp, V, s, a))
+          for s in T}                            # (9)
     return traza, pi                             # (10)
 
-S, P, r = pasillo(2)
-traza, pi = iterar_valores(S, P, r, F(1, 16), F(0))
+pasillo = armar_pasillo(2)
+traza, pi = iterar_valores(pasillo, F(1, 16), F(0))
 for k, V in enumerate(traza):
     print(k, V[1], V[2])
 print(pi)
@@ -246,7 +248,7 @@ print(pi)
 - **Línea 2.** `cero` decide la aritmética. `F(0)` da fracciones exactas, como en la traza. `0.0` da decimales, como en el pasillo grande.
 - **Líneas 4 y 5.** `W` se arma completo desde `V` antes de reemplazarlo. Eso la hace síncrona.
 - **Línea 9.** Recalcula el máximo con la `V` final; no reusa el de la última ronda, porque las dos políticas pueden diferir. `max` con `key` devuelve la primera acción que alcanza el máximo. En un empate conserva caminar.
-- **Dos atajos del pasillo.** Las acciones son las mismas en todo estado (`ACCIONES`, no ${\mathcal A(s)}$). Y la función devuelve la traza entera; su último elemento es la `V` final.
+- **Un atajo.** La función devuelve la traza entera; su último elemento es la `V` final.
 
 ::: exercise {#mkv-c3-vi-ej-tol title="Elige la tolerancia"}
 Con ${\mathrm{tol}=1/16}$ la llamada para en la ronda 6. ¿Qué valores de `tol` la harían parar justo en la ronda 4?
@@ -382,11 +384,11 @@ No las revisas. La iteración de valores trabaja con 200 números por ronda, no 
 - Correr cuesta 1 y resbala con $1/2$. En un hueco suma el castigo de 10.
 
 ```python
-S, P, r = pasillo(200)
-traza, pi = iterar_valores(S, P, r, 1e-9, 0.0)
+largo = armar_pasillo(200)
+traza, pi = iterar_valores(largo, 1e-9, 0.0)
 print(len(traza) - 1, round(traza[-1][1]))
-print(all(pi[i] == ("caminar" if i % 3 == 1
-                    else "correr") for i in S))
+print(all(pi[i] == ("caminar" if i % 3 == 1 else "correr")
+          for i in largo["estados"]))
 # 451 -467
 # True
 ```

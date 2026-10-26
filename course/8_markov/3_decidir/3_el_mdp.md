@@ -4,7 +4,7 @@ title: "El proceso de decisión de Markov"
 nav_title: "El MDP"
 summary: "El problema de decidir con azar, primero en general y luego en el pasillo mojado: el MDP, su notación, la política, el máximo que se busca, la cadena de cada política, el retorno, el valor y terminar con probabilidad 1."
 status: ready
-estimated_time: 36m
+estimated_time: 37m
 tags: [markov, decidir, mdp, politica]
 ---
 
@@ -348,13 +348,18 @@ from fractions import Fraction as F
 from itertools import product
 
 h = F(1, 2)
-T = [1, 2]                           # (1) los que no terminan
-P = {(1, "caminar"): {2: F(1)},      # (2) una fila por (s, a)
-     (2, "caminar"): {"meta": F(1)},
-     (1, "correr"): {1: h, 2: h},
-     (2, "correr"): {2: h, "meta": h}}
-r = {(1, "caminar"): -3, (2, "caminar"): -3,
-     (1, "correr"): -6, (2, "correr"): -1}
+pasillo = {
+    "estados": [1, 2],               # (1) los que no terminan
+    "acciones": {1: ["caminar", "correr"],
+                 2: ["caminar", "correr"]},
+    "P": {(1, "caminar"): {2: F(1)}, # (2) una fila por (s, a)
+          (1, "correr"): {1: h, 2: h},
+          (2, "caminar"): {"meta": F(1)},
+          (2, "correr"): {2: h, "meta": h}},
+    "r": {(1, "caminar"): F(-3), (1, "correr"): F(-6),
+          (2, "caminar"): F(-3), (2, "correr"): F(-1)},
+}
+P, r = pasillo["P"], pasillo["r"]
 
 for s, a in P:                       # (3) cada fila suma 1
     assert sum(P[(s, a)].values()) == 1
@@ -362,10 +367,11 @@ for s, a in P:                       # (3) cada fila suma 1
 def fila(d):
     return ", ".join(f"{sig}:{p}" for sig, p in d.items())
 
-for a1, a2 in product(["caminar", "correr"], repeat=2):
+for a1, a2 in product(pasillo["acciones"][1],
+                      pasillo["acciones"][2]):
     pi = {1: a1, 2: a2}         # (4) una acción por estado
     print(f"{a1}–{a2}")
-    for s in T:                 # (5) la política elige filas
+    for s in pasillo["estados"]:   # (5) elige filas
         print(f"  {s} -> {fila(P[(s, pi[s])])}"
               f" | r = {r[(s, pi[s])]}")
 ```
@@ -385,6 +391,11 @@ correr–correr
   2 -> 2:1/2, meta:1/2 | r = -1
 ```
 
+**Este diccionario es el MDP en todas las páginas que siguen.**
+
+- `pasillo["estados"]` es $\mathcal T$, y `pasillo["acciones"][s]` es $\mathcal A(s)$.
+- `pasillo["P"][(s, a)]` es la fila $P(\cdot\mid s,a)$: un diccionario de destinos con su probabilidad.
+- `pasillo["r"][(s, a)]` es $r(s,a)$. La meta no es llave: vale 0.
 - **Línea (5):** `P[(s, pi[s])]` es la definición entera: la fila de $s$ en la matriz de la acción que eligió $\pi$.
 
 ::: figure {#mkv-c3-fig-cuatro-cadenas title="Las cuatro cadenas del pasillo, una por política"}

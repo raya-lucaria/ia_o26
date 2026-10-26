@@ -223,8 +223,8 @@ OUTPUT  π*, una política óptima, y V*.
 **Gemelo Python.** Cada comentario numerado remite al pseudocódigo. En el código, `V` es $V_\pi$, el valor de la política actual.
 
 - `resolver` es la eliminación exacta de [[mkv-absorcion|Cuánto falta para terminar]].
-- `evaluar` arma ${I-P_{\pi,\mathcal T}}$ y $r_\pi$ como en @mkv-c3-teo-evaluar.
-- Un MDP es un diccionario: estado, acción, recompensa y destinos. La meta no es llave y vale 0.
+- `evaluar_politica` es la de [[mkv-evaluar-politica|Evaluar una política]]: arma ${I-P_{\pi,\mathcal T}}$ y $r_\pi$ como en @mkv-c3-teo-evaluar.
+- El MDP es el diccionario de [[mkv-el-mdp|El MDP]], y `armar_pasillo` la de [[mkv-iterar-valores|Iteración de valores]]. La meta no es llave y vale 0.
 
 ```python
 from fractions import Fraction as F
@@ -248,67 +248,69 @@ def resolver(M, b):              # eliminación exacta
                         for x, y in zip(M[r], M[c])]
     return [M[r][n] for r in range(n)]
 
-def evaluar(mdp, pol):                     # (4)
-    pos = {s: i for i, s in enumerate(mdp)}
-    n = len(mdp)
-    M = [[F(0)] * n for _ in mdp]
-    b = [F(0)] * n
-    for s, i in pos.items():
-        r, P = mdp[s][pol[s]]
-        M[i][i] += 1
-        b[i] = F(r)
-        for t, p in P.items():
-            if t in pos:                   # meta: V = 0
-                M[i][pos[t]] -= p
-    V = resolver(M, b)
+def evaluar_politica(mdp, pol):          # (4)
+    T = mdp["estados"]
+    PT, rp = [], []
+    for s in T:
+        fila = mdp["P"][(s, pol[s])]
+        PT.append([fila.get(j, F(0)) for j in T])
+        rp.append(mdp["r"][(s, pol[s])])
+    n = len(T)
+    M = [[(i == j) - PT[i][j] for j in range(n)]
+         for i in range(n)]
+    V = resolver(M, rp)
     if V is None:
         raise ValueError("π no termina")
-    return dict(zip(mdp, V))
+    return dict(zip(T, V))
 
-def q(mdp, V, s, a):                       # (6)
-    r, P = mdp[s][a]
-    return r + sum(p * V.get(t, 0)
-                   for t, p in P.items())
+def q(mdp, V, s, a):                # (6) la meta vale 0
+    fila = mdp["P"][(s, a)]
+    return mdp["r"][(s, a)] + sum(
+        p * V.get(t, 0) for t, p in fila.items())
 
-def mejorar(mdp, V, pol, conservar):       # (5)
+def mejorar(mdp, V, pol, conservar):     # (5)
     nueva = {}
-    for s in mdp:
-        qs = {a: q(mdp, V, s, a) for a in mdp[s]}
+    for s in mdp["estados"]:
+        qs = {a: q(mdp, V, s, a)
+              for a in mdp["acciones"][s]}
         top = max(qs.values())
         empate = [a for a in qs if qs[a] == top]
         if conservar and pol[s] in empate:
-            nueva[s] = pol[s]              # (7)
+            nueva[s] = pol[s]            # (7)
         else:
             otra = [a for a in empate if a != pol[s]]
             nueva[s] = (otra or empate)[0]
     return nueva
 
 def iterar_politicas(mdp, pol, conservar=True,
-                     max_rondas=None):     # (1)
+                     max_rondas=None):   # (1)
     rondas = (count(1) if max_rondas is None
               else range(1, max_rondas + 1))
-    for ronda in rondas:                   # (3)
-        V = evaluar(mdp, pol)              # (4)
+    for ronda in rondas:                 # (3)
+        V = evaluar_politica(mdp, pol)   # (4)
         nueva = mejorar(mdp, V, pol,
-                        conservar)         # (5)
-        if nueva == pol:                   # (8)
+                        conservar)       # (5)
+        if nueva == pol:                 # (8)
             return pol, V, ronda
-        pol = nueva                        # (9)
+        pol = nueva                      # (9)
     return None                 # tope sin parar
 
-def pasillo(n=2, caminar=3):
-    """Casillas 1..n, meta n+1; hueco si i % 3 == 1.
-    caminar: costo de caminar solo en la casilla n."""
-    mdp, h = {}, F(1, 2)
-    for i in range(n, 0, -1):     # de la meta hacia atrás
+def armar_pasillo(n=2, castigo=10):
+    """Casillas 1..n y la meta; hueco si i % 3 == 1."""
+    h = F(1, 2)
+    mdp = {"estados": list(range(1, n + 1)),
+           "acciones": {}, "P": {}, "r": {}}
+    for i in mdp["estados"]:
         sig = i + 1 if i < n else "meta"
-        mal = -6 if i % 3 == 1 else -1
-        cam = -caminar if i == n else -3
-        mdp[i] = {"caminar": (cam, {sig: F(1)}),
-                  "correr": (mal, {i: h, sig: h})}
+        hueco = i % 3 == 1               # sin barandal
+        mdp["acciones"][i] = ["caminar", "correr"]
+        mdp["P"][(i, "caminar")] = {sig: F(1)}
+        mdp["r"][(i, "caminar")] = F(-3)
+        mdp["P"][(i, "correr")] = {i: h, sig: h}
+        mdp["r"][(i, "correr")] = -1 - h * castigo * hueco
     return mdp
 
-J2 = pasillo()
+J2 = armar_pasillo(2)
 for ini in ("caminar", "correr"):
     pol, V, k = iterar_politicas(J2, {1: ini, 2: ini})
     print(ini, "->", pol[1], pol[2],
@@ -316,7 +318,8 @@ for ini in ("caminar", "correr"):
 # caminar -> caminar correr -5 -2 rondas: 2
 # correr -> caminar correr -5 -2 rondas: 2
 
-EMP = pasillo(caminar=2)       # caminar en 2 cuesta 2
+EMP = armar_pasillo(2)
+EMP["r"][(2, "caminar")] = F(-2)   # caminar en 2 cuesta 2
 cc = {1: "caminar", 2: "caminar"}
 print(iterar_politicas(EMP, cc)[2])
 print(iterar_politicas(EMP, cc, conservar=False,
@@ -327,11 +330,10 @@ print(iterar_politicas(EMP, cc, conservar=False,
 
 **Cada pieza, en su línea:**
 
-- **Línea 4.** `evaluar` lanza un error si $\pi$ no termina: la eliminación se queda sin pivote. Por eso $\pi_0$ debe terminar.
+- **Línea 4.** `evaluar_politica` lanza un error si $\pi$ no termina: la eliminación se queda sin pivote. Por eso $\pi_0$ debe terminar.
 - **Línea 7.** `conservar=True` es la regla de empates del teorema. Con `False`, el empate se rompe hacia la otra acción.
 - **Línea 8.** Comparar políticas es exacto: las fracciones no redondean. El Python devuelve $\pi$, $V_\pi$ y cuántas rondas usó.
 - **`max_rondas`.** Por omisión no hay tope: con `conservar=True` el teorema garantiza que para. Si el tope se agota, devuelve `None`.
-- **`pasillo`.** Numera de la meta hacia atrás: la eliminación casi no rellena, y 200 casillas tardan menos de un segundo.
 
 **Cómo leer la traza.** El pasillo desde caminar–caminar; cada renglón dice qué deja esa línea.
 
@@ -381,12 +383,12 @@ Iteración de políticas, muy pocas: cada mejora corrige todas las casillas a la
 
 - **Políticas.** Hay $2^{200}\approx1.6\times10^{60}$ deterministas: la cota del teorema no ayuda.
 - **Primera evaluación.** Con $\pi$ = caminar siempre, ${V_\pi(i)=V_\pi(i+1)-3}$. Así que ${V_\pi(1)=-600}$.
-- **Primera mejora.** Junto a un barandal, correr da ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)=V_\pi(i+1)-\tfrac52}$. Es mejor que caminar. Junto a un hueco, correr da ${V_\pi(i+1)-\tfrac{15}2}$, peor.
+- **Primera mejora.** Junto a un barandal, correr da ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)}$, que es ${V_\pi(i+1)-\tfrac52}$. Es mejor que caminar. Junto a un hueco, correr da ${V_\pi(i+1)-\tfrac{15}2}$, peor.
 - **Resultado.** Una mejora basta: caminar junto al hueco, correr junto al barandal.
 
 ```python
-largo = pasillo(n=200)
-siempre = {i: "caminar" for i in largo}
+largo = armar_pasillo(200)
+siempre = {i: "caminar" for i in largo["estados"]}
 pol, V, k = iterar_politicas(largo, siempre)
 print(k, pol[1], pol[2])
 print(V[1])
@@ -412,7 +414,7 @@ Con caminar siempre, ¿cuánto da correr junto a un hueco si cuesta 1 en vez de 
 :::
 
 ::: answer {#mkv-c3-pi-resp-sin-castigo of="mkv-c3-pi-ej-sin-castigo"}
-Sea $V_\pi$ el valor de caminar siempre. Junto a un hueco, correr da ahora ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)=V_\pi(i+1)-\tfrac52}$, como junto al barandal. La primera mejora cambia todas las casillas a correr. Con correr siempre, el nuevo valor cumple ${V_\pi(i)=V_\pi(i+1)-2}$, y caminar daría ${V_\pi(i+1)-3}$. La segunda ronda no cambia nada y el algoritmo para.
+Sea $V_\pi$ el valor de caminar siempre. Junto a un hueco, correr da ahora ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)}$, que es ${V_\pi(i+1)-\tfrac52}$, como junto al barandal. La primera mejora cambia todas las casillas a correr. Con correr siempre, el nuevo valor cumple ${V_\pi(i)=V_\pi(i+1)-2}$, y caminar daría ${V_\pi(i+1)-3}$. La segunda ronda no cambia nada y el algoritmo para.
 :::
 
 Aplica la ronda a mano a un pasillo distinto.
