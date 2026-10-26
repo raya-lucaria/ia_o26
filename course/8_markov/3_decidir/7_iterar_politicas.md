@@ -25,7 +25,7 @@ Al terminar tendrás:
 - **El MDP y sus políticas.** En [[mkv-el-mdp|El MDP]] viste el MDP (@mkv-c3-def-mdp), la política (@mkv-c3-def-politica), la cadena que elige (@mkv-c3-def-cadena-politica) y qué es terminar con probabilidad 1 (@mkv-c3-def-termina).
 - **Evaluar.** En [[mkv-evaluar-politica|Evaluar una política]], si $\pi$ termina, $V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi$ tiene una sola solución (@mkv-c3-teo-evaluar).
 - **Bellman.** En [[mkv-bellman|La ecuación de Bellman]] viste el valor de acción (@mkv-c3-def-q), el óptimo (@mkv-c3-def-optimo), la ecuación con su condición (@mkv-c3-teo-bellman) y la codiciosa (@mkv-c3-teo-codiciosa).
-- **Iteración de valores.** En [[mkv-iterar-valores|Iteración de valores]] el pasillo nunca llega en rondas finitas: ${V^{(t)}(2)=-2+2^{1-t}}$ (@mkv-c3-teo-iterar-valores).
+- **Iteración de valores.** En [[mkv-iterar-valores|Iteración de valores]] el pasillo nunca llega en rondas finitas: ${V^{(k)}(2)=-2+2^{1-k}}$ (@mkv-c3-teo-iterar-valores).
 
 > [!NOTE]
 > **Por qué otro algoritmo.** Iteración de valores se acerca a $V^*$ sin tocarlo, y hay que decidir cuándo parar. Pero el pasillo tiene solo cuatro políticas. Si buscamos entre políticas en lugar de entre números, la búsqueda es finita. Falta que no dé vueltas.
@@ -304,9 +304,9 @@ def pasillo(n=2, caminar=3):
 
 J2 = pasillo()
 for ini in ("caminar", "correr"):
-    pol, V, t = iterar_politicas(J2, {1: ini, 2: ini})
+    pol, V, k = iterar_politicas(J2, {1: ini, 2: ini})
     print(ini, "->", pol[1], pol[2],
-          V[1], V[2], "rondas:", t)
+          V[1], V[2], "rondas:", k)
 # caminar -> caminar correr -5 -2 rondas: 2
 # correr -> caminar correr -5 -2 rondas: 2
 
@@ -380,8 +380,8 @@ Iteración de políticas, muy pocas: cada mejora corrige todas las casillas a la
 ```python
 largo = pasillo(n=200)
 siempre = {i: "caminar" for i in largo}
-pol, V, t = iterar_politicas(largo, siempre)
-print(t, pol[1], pol[2])
+pol, V, k = iterar_politicas(largo, siempre)
+print(k, pol[1], pol[2])
 print(V[1])
 # 2 caminar correr
 # -467
@@ -393,7 +393,7 @@ print(V[1])
 ![Iteración de políticas en el pasillo de dos casillas. Desde caminar–caminar, con V = (−6, −3), y desde correr–correr, con V = (−14, −2), una mejora llega a caminar–correr, con V = (−5, −2), y la siguiente no cambia nada. Abajo, el pasillo de 200 casillas: valores, 451 rondas hasta residuo de 10⁻⁹; políticas, 1 mejora desde caminar siempre](../_assets/mkv-c3-rondas-politicas.svg)
 :::
 
-- **Por qué tan pocas.** El valor de una política ya trae el futuro entero, no $t$ pasos. La mejora decide con información completa.
+- **Por qué tan pocas.** El valor de una política ya trae el futuro entero, no $k$ pasos. La mejora decide con información completa.
 - **Por qué no siempre conviene.** Cada ronda resuelve un sistema de 200 incógnitas, barato aquí porque cada casilla apunta solo a sí misma y a la siguiente.
 
 ::: exercise {#mkv-c3-pi-ej-sin-castigo title="Quita el castigo del pasillo grande"}

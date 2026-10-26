@@ -313,7 +313,7 @@ Si todas las políticas terminan (lo verás en los volados del ejercicio final),
 
 $$
 \begin{aligned}
-V^*&=\sum_{k=0}^{n-1}P_{\pi,\mathcal T}^{\,k}\,r_\pi\\
+V^*&=\sum_{t=0}^{n-1}P_{\pi,\mathcal T}^{\,t}\,r_\pi\\
 &\quad+P_{\pi,\mathcal T}^{\,n}\,V^*.
 \end{aligned}
 $$

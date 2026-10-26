@@ -2082,15 +2082,15 @@ def mkv_c3_iterar_valores():
     y = encabezado(out, titulo)
     y = _leyenda(out, y + 8, [
         (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V)
-         + _marca("circulo", x, yy, COLOR_V), "V⁽ᵗ⁾(1)"),
+         + _marca("circulo", x, yy, COLOR_V), "V⁽ᵏ⁾(1)"),
         (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_C, "5 4")
-         + _marca("cuadro", x, yy, COLOR_C, r=4), "V⁽ᵗ⁾(2)"),
+         + _marca("cuadro", x, yy, COLOR_C, r=4), "V⁽ᵏ⁾(2)"),
         (lambda x, yy: linea(x - 12, yy, x + 12, yy, color=TEXTO, grosor=1, guiones="1 3"),
          f"V*: {_v(Vs[1])} y {_v(Vs[2])}"),
     ])
     top = y + 30
     px, py = _plano(out, (58, top, 280, top + 190), (0, T), (-6, 0), range(0, T + 1),
-                    range(-6, 1), "ronda t", "valor")
+                    range(-6, 1), "ronda k", "valor")
     for s in (1, 2):
         out.append(linea(58, _n(py(Vs[s])), 280, _n(py(Vs[s])), color=TEXTO, grosor=1,
                          guiones="1 3"))
@@ -2101,10 +2101,10 @@ def mkv_c3_iterar_valores():
             out.append(_marca(forma, x, yy, color, r=4))
     y = pie(out, top + 190 + 62, [
         "Cada ronda acerca los dos valores a V*:",
-        "V⁽ᵗ⁾ es lo mejor con t pasos restantes.",
+        "V⁽ᵏ⁾ es lo mejor con k pasos restantes.",
         "Bajan sin pasarse y nunca llegan."], color=TEXTO)
-    desc = (f"Iteración de valores en el pasillo desde V⁽⁰⁾ = 0, rondas 0 a {T}. V⁽ᵗ⁾(1): "
-            + ", ".join(_v(V[1]) for V in traza) + ". V⁽ᵗ⁾(2): "
+    desc = (f"Iteración de valores en el pasillo desde V⁽⁰⁾ = 0, rondas 0 a {T}. V⁽ᵏ⁾(1): "
+            + ", ".join(_v(V[1]) for V in traza) + ". V⁽ᵏ⁾(2): "
             + ", ".join(_v(V[2]) for V in traza)
             + f". Las dos bajan hacia V*(1) = {_v(Vs[1])} y V*(2) = {_v(Vs[2])} sin llegar.")
     return svg(titulo, desc, out, y)
@@ -2139,15 +2139,15 @@ def mkv_c3_residuo():
     y = encabezado(out, titulo)
     y = _leyenda(out, y + 8, [
         (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V)
-         + _marca("circulo", x, yy, COLOR_V), "residuo res⁽ᵗ⁾"),
+         + _marca("circulo", x, yy, COLOR_V), "residuo res⁽ᵏ⁾"),
         (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_C, "5 4")
-         + _marca("cuadro", x, yy, COLOR_C, r=4), "error máx |V* − V⁽ᵗ⁾|"),
+         + _marca("cuadro", x, yy, COLOR_C, r=4), "error máx |V* − V⁽ᵏ⁾|"),
         (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], ACENTO, "2 3")
          + _marca("triangulo", x, yy, ACENTO, r=4), f"cota: {fr(cota)} × residuo"),
     ])
     top = y + 30
     px, py = _plano(out, (58, top, 280, top + 190), (1, T), (-3, 2), range(1, T + 1),
-                    [10 ** k for k in range(-3, 3)], "ronda t", "tamaño", fy=_fy_log, log=True)
+                    [10 ** k for k in range(-3, 3)], "ronda k", "tamaño", fy=_fy_log, log=True)
     _serie_log(out, px, py, [cota * r for r in res], ACENTO, "triangulo", "2 3")
     _serie_log(out, px, py, err, COLOR_C, "cuadro", "5 4")
     _serie_log(out, px, py, res, COLOR_V, "circulo")
@@ -2582,7 +2582,7 @@ def _lado_paro(mdp, Vs, T=10):
         err = m.errores(traza, Vs)[1:]
         top = y + 28
         px, py = _plano(out, (58, top, 280, top + 120), (1, T), (-3, 2), range(1, T + 1),
-                        [10 ** k for k in range(-3, 3)], "ronda t", "tamaño (escala log)",
+                        [10 ** k for k in range(-3, 3)], "ronda k", "tamaño (escala log)",
                         fy=_fy_log, log=True)
         _serie_log(out, px, py, err, COLOR_C, "cuadro", "5 4")
         _serie_log(out, px, py, res, COLOR_V, "circulo")
@@ -2770,7 +2770,7 @@ def ejemplo_c3(clave):
             k = coc[-1]
             igual = all(c == k for c in coc[1:])
             assert igual, coc
-            dice = ("el pasillo: error = residuo desde t = 2" if k == 1
+            dice = ("el pasillo: error = residuo desde k = 2" if k == 1
                     else f"el pasillo: error = {fr(k)} × residuo") \
                 if lado == "si" else f"lazo 99/100: error = {fr(k)} × residuo"
             out.append(texto(X_PIE, y + 14, "✓ Lo cumple" if lado == "si" else "✗ No lo cumple",

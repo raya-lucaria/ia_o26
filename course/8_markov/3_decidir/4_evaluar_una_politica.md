@@ -43,12 +43,12 @@ $V_\pi(s)$ responde una sola pregunta: **cuánto vale estar en $s$ si sigo $\pi$
 ::: table {#mkv-c3-ev-tabla-piezas title="Las piezas de evaluar una política"}
 | Símbolo | Qué es | Tamaño | En el pasillo con caminar–correr |
 |---|---|---|---|
-| $\mathcal T$ | Los estados que aún no terminan | $k=\lvert\mathcal T\rvert$ estados | $\{1,2\}$, en el orden 1, 2 |
+| $\mathcal T$ | Los estados que aún no terminan | $\lvert\mathcal T\rvert$ estados | $\{1,2\}$, en el orden 1, 2 |
 | $\pi$ | La acción elegida en cada estado | una acción por estado | caminar en 1, correr en 2 |
-| $P_{\pi,\mathcal T}$ | Fila $s$ de $P_{\pi(s)}$, solo columnas de $\mathcal T$ | $k\times k$ | fila 1 de $P_{\text{caminar}}$, fila 2 de $P_{\text{correr}}$ |
-| $r_\pi$ | La recompensa $r(s,\pi(s))$ de cada estado | $k\times1$ | $-3$ en 1, $-1$ en 2 |
-| $V_\pi$ | La incógnita: el valor desde cada estado | $k\times1$ | $V(1)$ y $V(2)$ |
-| $I$ | La matriz identidad | $k\times k$ | la identidad de $2\times2$ |
+| $P_{\pi,\mathcal T}$ | Fila $s$ de $P_{\pi(s)}$, solo columnas de $\mathcal T$ | $\lvert\mathcal T\rvert\times\lvert\mathcal T\rvert$ | fila 1 de $P_{\text{caminar}}$, fila 2 de $P_{\text{correr}}$ |
+| $r_\pi$ | La recompensa $r(s,\pi(s))$ de cada estado | $\lvert\mathcal T\rvert\times1$ | $-3$ en 1, $-1$ en 2 |
+| $V_\pi$ | La incógnita: el valor desde cada estado | $\lvert\mathcal T\rvert\times1$ | $V(1)$ y $V(2)$ |
+| $I$ | La matriz identidad | $\lvert\mathcal T\rvert\times\lvert\mathcal T\rvert$ | la identidad de $2\times2$ |
 :::
 
 **El mismo problema, en el pasillo.** Las mismas piezas, con números.

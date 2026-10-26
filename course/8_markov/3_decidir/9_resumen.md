@@ -60,7 +60,7 @@ Cada renglón es un teorema de su página: @mkv-c3-teo-hacia-atras, @mkv-c3-teo-
 | Evaluar una política | $\pi$ termina con probabilidad 1 desde todo $s\in\mathcal T$; equivale a que $I-P_{\pi,\mathcal T}$ sea invertible | $V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi$ tiene solución única |
 | Bellman | Finito; terminal con valor 0; existe una política que termina; toda política que no termina vale $-\infty$ en algún estado | $V^*$ es la única solución de $V(s)=\max_a[r(s,a)+\sum_{s'}P(s'\mid s,a)V(s')]$ en $\mathcal T$, con $V=0$ en $\mathcal F$ |
 | La codiciosa del óptimo | Las de Bellman | Elegir en cada estado una acción del argmax con $V^*$ da una política óptima |
-| Iteración de valores | Las de Bellman | $V^{(t)}\to V^*$; desde $V^{(0)}=0$ y con $r\le0$, baja monótona |
+| Iteración de valores | Las de Bellman | $V^{(k)}\to V^*$; desde $V^{(0)}=0$ y con $r\le0$, baja monótona |
 | Iteración de políticas | Las de Bellman; empezar con una política que termina; conservar la acción en los empates | Cada ronda no empeora y se detiene en un número finito de rondas en una óptima |
 | Programa lineal | Las de Bellman | El mínimo de $\sum_sV(s)$ sujeto a $V(s)\ge r(s,a)+\sum_{s'}P(s'\mid s,a)V(s')$ para toda $(s,a)$ es $V^*$ |
 :::
@@ -76,7 +76,7 @@ Los tres resuelven Bellman. Calculan lo mismo y difieren en qué garantizan y cu
 ::: table {#mkv-c3-rs-tabla-algoritmos title="Los tres caminos para resolver Bellman"}
 | Algoritmo | Qué calcula | Qué garantiza | Cuánto cuesta |
 |---|---|---|---|
-| Iteración de valores | $V^{(t)}$, lo mejor con $t$ pasos restantes; al final, su codiciosa | Se acerca a $V^*$, pero en el pasillo nunca llega en rondas finitas; para con el residuo y la cota | Una ronda recorre cada $(s,a)$ y sus llegadas; en el pasillo de 200, 451 rondas hasta tol $10^{-9}$ |
+| Iteración de valores | $V^{(k)}$, lo mejor con $k$ pasos restantes; al final, su codiciosa | Se acerca a $V^*$, pero en el pasillo nunca llega en rondas finitas; para con el residuo y la cota | Una ronda recorre cada $(s,a)$ y sus llegadas; en el pasillo de 200, 451 rondas hasta tol $10^{-9}$ |
 | Iteración de políticas | Evaluar con un sistema lineal y mejorar con la codiciosa | Llega a una política óptima en rondas finitas, a lo más $\prod_s\lvert\mathcal A(s)\rvert$; suele bastar con pocas | Un sistema lineal por ronda; en el pasillo de 200, 2 rondas desde caminar siempre |
 | Programa lineal | $V^*$ como el mínimo de un PL | Exacto bajo las condiciones de Bellman | Una variable por estado y una desigualdad por par $(s,a)$; lo resuelve `linprog` |
 :::
@@ -94,8 +94,8 @@ Los tres resuelven Bellman. Calculan lo mismo y difieren en qué garantizan y cu
 > - **Una solución de Bellman no siempre es $V^*$.** Con esperar gratis, esperar siempre no termina y vale 0, no $-\infty$. Bellman tiene entonces infinitas soluciones, como $(0,0)$, $(-5,-2)$ y $(-1,-1)$, y $V^*=(0,0)$.
 > - **El programa lineal también se engaña ahí.** Con esperar gratis su región no cambia y su mínimo sigue en $(-5,-2)$, que ya no es $V^*$. Con esperar a costo 1, esperar siempre vale $-\infty$ y todo vuelve a funcionar.
 > - **El PL minimiza; no maximiza.** La región no tiene techo: maximizar no tiene sentido.
-> - **Un residuo chico no garantiza un error chico.** Con un lazo de 99/100 y costo 1, el error es 99 veces el residuo. La cota $\tfrac{m}{1-\beta}\operatorname{res}^{(t)}$ es la que garantiza; en el pasillo, $m=3$ y $\beta=1/2$ dan 6 veces el residuo.
-> - **Ronda no es paso.** $V^{(t)}$ es lo mejor con $t$ pasos restantes, y la ronda es una pasada del algoritmo sobre todos los estados.
+> - **Un residuo chico no garantiza un error chico.** Con un lazo de 99/100 y costo 1, el error es 99 veces el residuo. La cota $\tfrac{m}{1-\beta}\operatorname{res}^{(k)}$ es la que garantiza; en el pasillo, $m=3$ y $\beta=1/2$ dan 6 veces el residuo.
+> - **Ronda no es paso.** $V^{(k)}$ es lo mejor con $k$ pasos restantes, y la ronda es una pasada del algoritmo sobre todos los estados.
 > - **Cambiar en un empate puede no terminar.** Con caminar a costo 2 en la casilla 2, las dos acciones empatan; si la mejora cambia en el empate, alterna para siempre.
 > - **La política elige una acción, no una mezcla.** Aquí $\pi(s)$ es una sola acción; en agentes se escribió $\pi(a\mid s)$.
 
