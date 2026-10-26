@@ -366,3 +366,13 @@ def test_el_limpiador_lee_los_formatos():
     assert _esta("-467", _limpio("$\u2212467$"))
     assert _esta("10 000", _limpio(r"$10\,000$"))
     assert not _esta("-5", _limpio("-5.0074")) and _esta("-5.0074", _limpio("-5.0074"))
+
+
+def test_iteracion_de_politicas_sin_tope_llega_en_un_pasillo_de_51():
+    # Revision r2: con un tope de 50 la fuente devolvia una politica no
+    # optima en silencio. Caminar cuesta 52 y correr 1 sin hueco: correr
+    # siempre es la optima y cada mejora corrige una sola casilla.
+    mdp = m.pasillo(caminar=52, castigo=0, n=51)
+    siempre = {s: m.CAMINAR for s in mdp["estados"]}
+    pols = m.iterar_politicas(mdp, siempre)
+    assert all(a == m.CORRER for a in pols[-1].values())

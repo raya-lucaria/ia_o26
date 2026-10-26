@@ -69,7 +69,8 @@ $$
 $$
 \begin{aligned}
 V^{(t+1)}(2)&=\max\big(-3,\ -1+\tfrac12V^{(t)}(2)\big),\\
-V^{(t+1)}(1)&=\max\big(-3+V^{(t)}(2),\ -6+\tfrac12V^{(t)}(1)+\tfrac12V^{(t)}(2)\big).
+V^{(t+1)}(1)&=\max\big(-3+V^{(t)}(2),\\
+&\qquad -6+\tfrac12V^{(t)}(1)+\tfrac12V^{(t)}(2)\big).
 \end{aligned}
 $$
 

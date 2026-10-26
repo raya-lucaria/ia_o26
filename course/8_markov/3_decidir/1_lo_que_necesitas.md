@@ -57,7 +57,8 @@ f:\mathcal A(s)\to\mathbb R,\\
 &\max_{a\in\mathcal A(s)}f(a)
 =\text{el mayor de los números }f(a),\\
 &\operatorname*{arg\,max}_{a\in\mathcal A(s)}f(a)
-=\Bigl\{a\in\mathcal A(s):\ f(a)=\max_{a'\in\mathcal A(s)}f(a')\Bigr\}.
+=\Bigl\{a\in\mathcal A(s):\\
+&\qquad f(a)=\max_{a'\in\mathcal A(s)}f(a')\Bigr\}.
 \end{aligned}
 $$
 
