@@ -2,7 +2,7 @@
 id: mkv-evaluar-politica
 title: "Evaluar una política"
 nav_title: "Evaluar una política"
-summary: "Si fijas la política, su valor resuelve un sistema lineal; a mano en el pasillo, con el algoritmo EVALUAR-POLÍTICA para las cuatro políticas y simulando 10 000 episodios."
+summary: "Si fijas la política, su valor resuelve un sistema lineal; a mano en el pasillo, con el algoritmo EVALUAR-POLÍTICA para las cuatro políticas deterministas y simulando 10 000 episodios."
 status: ready
 estimated_time: 28m
 tags: [markov, decidir, evaluacion, algoritmo, simulacion]
@@ -17,7 +17,7 @@ Al terminar tendrás:
 - **El teorema y su condición.** Escribirás ${V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi}$ y dirás cuándo tiene solución única.
 - **Una cuenta a mano.** Evaluarás caminar–correr en el pasillo: ${(V_\pi(1),V_\pi(2))=(-5,-2)}$.
 - **El algoritmo EVALUAR-POLÍTICA.** Seguirás pseudocódigo y Python, y justificarás su costo.
-- **Las cuatro políticas.** Las compararás casilla por casilla en una tabla y en el plano.
+- **Las cuatro políticas deterministas.** Las compararás casilla por casilla en una tabla y en el plano.
 - **Una comprobación.** Contrastarás −5 con 10 000 episodios simulados.
 
 ## Lo que traes
@@ -34,7 +34,7 @@ Al terminar tendrás:
 > El óptimo, $V^*$, llega en la página siguiente.
 
 > [!NOTE]
-> **Por qué evaluamos antes de elegir.** El pasillo tiene cuatro políticas. Para compararlas hace falta un número por casilla para cada una.
+> **Por qué evaluamos antes de elegir.** El pasillo tiene cuatro políticas deterministas, una acción por casilla. Con ellas basta en esta clase. Para compararlas hace falta un número por casilla para cada una.
 > Con la política fija, el MDP se vuelve una cadena de Markov con costos. Su valor sale con el truco del tiempo medio de llegada: lo que pagas ahora más lo que falta.
 
 **El problema, en general.** Sirve para cualquier MDP finito y cualquier política fija.
@@ -118,7 +118,7 @@ Con $\pi$ fija, $P_\pi$ es una cadena finita y homogénea. La condición es la d
 :::
 
 - **Suficiente y necesaria.** Si desde algún estado la política no termina, ${I-P_{\pi,\mathcal T}}$ es singular. Entonces el sistema no da un único vector.
-- **Cómo revisarla.** Como en 8.2.5: en el grafo de $P_\pi$, ninguna clase cerrada puede quedar dentro de $\mathcal T$.
+- **Cómo revisarla.** Como en [[mkv-absorcion|Cuánto falta para terminar]]: en el grafo de $P_\pi$, ninguna clase cerrada puede quedar dentro de $\mathcal T$.
 
 > [!TIP]
 > **Ejemplo y contraejemplo.**
@@ -253,7 +253,7 @@ OUTPUT  V_π(s) para cada s en 𝒯,
 
 **Gemelo Python.** Cada comentario numerado remite al pseudocódigo.
 
-- **`resolver`** es la eliminación de 8.2.5, sin cambios. `n` es el número de estados.
+- **`resolver`** es la eliminación de [[mkv-absorcion|Cuánto falta para terminar]], sin cambios. `n` es el número de estados.
 - **El MDP es un diccionario.** `P[(s, a)]` da los destinos con su probabilidad. `r[(s, a)]` da la recompensa esperada.
 
 ```python
@@ -324,9 +324,9 @@ for a1 in ("caminar", "correr"):
 - **Línea 5.** `r[(s, a)]` es la recompensa esperada. En la casilla 1, correr vale ${-1-\tfrac12\cdot10=-6}$.
 - **Líneas 7 y 8.** Con fracciones, «sin pivote» es exacto. La condición falla o no falla, sin redondeo.
 
-**Las cuatro políticas.** El ciclo final evalúa las ${2\cdot2=4}$ políticas del pasillo. Cada renglón es el $V_\pi$ de su política:
+**Las cuatro políticas.** El ciclo final evalúa las ${2\cdot2=4}$ políticas deterministas del pasillo. Cada renglón es el $V_\pi$ de su política:
 
-::: table {#mkv-c3-ev-tabla-cuatro title="El valor de las cuatro políticas del pasillo"}
+::: table {#mkv-c3-ev-tabla-cuatro title="El valor de las cuatro políticas deterministas del pasillo"}
 | Política $\pi$ | $V_\pi(1)$ | $V_\pi(2)$ |
 |---|---:|---:|
 | caminar–caminar | −6 | −3 |
@@ -336,7 +336,7 @@ for a1 in ("caminar", "correr"):
 :::
 
 ::: figure {#mkv-c3-fig-cuatro-politicas-plano title="Las cuatro políticas en el plano de sus valores"}
-![Plano con V(1) en el eje horizontal y V(2) en el vertical. Cuatro puntos: caminar–caminar en (−6, −3), caminar–correr en (−5, −2), correr–caminar en (−15, −3) y correr–correr en (−14, −2). Caminar–correr queda a la derecha de las otras tres y a la altura máxima, empatada con correr–correr.](../_assets/mkv-c3-cuatro-politicas-plano.svg)
+![Plano con V_π(1) en el eje horizontal y V_π(2) en el vertical. Cuatro puntos: caminar–caminar en (−6, −3), caminar–correr en (−5, −2), correr–caminar en (−15, −3) y correr–correr en (−14, −2). Caminar–correr queda a la derecha de las otras tres y a la altura máxima, empatada con correr–correr.](../_assets/mkv-c3-cuatro-politicas-plano.svg)
 :::
 
 En la figura, cada eje es el valor $V_\pi$ en una casilla: la 1 en horizontal, la 2 en vertical.
@@ -378,8 +378,8 @@ El álgebra dice −5. Falta comprobarlo con episodios.
 
 Cada episodio sortea el siguiente estado con MUESTREAR-FILA. Para al llegar a la meta. Por la condición, cada episodio termina con probabilidad 1.
 
-- **El promedio.** Los retornos son independientes, con la misma distribución. Su esperanza es $V_\pi(1)$. Por la ley de los grandes números, su promedio tiende a $V_\pi(1)$. Es la extensión de @mkv-c1-teo-promedio que ya usamos en 8.2.5.
-- **El ruido.** Como en 8.2.5, el error estándar es ${s/\sqrt n}$. Aquí $s$ es la dispersión de los retornos y $n$ el número de episodios.
+- **El promedio.** Los retornos son independientes, con la misma distribución. Su esperanza es $V_\pi(1)$. Por la ley de los grandes números, su promedio tiende a $V_\pi(1)$. Es la extensión de @mkv-c1-teo-promedio que ya usamos en [[mkv-absorcion|Cuánto falta para terminar]].
+- **El ruido.** Como en [[mkv-absorcion|Cuánto falta para terminar]], el error estándar es ${s/\sqrt n}$. Aquí $s$ es la dispersión de los retornos y $n$ el número de episodios.
 - **Qué se suma.** El programa suma $r(s,a)$ en cada paso. Para caminar, y para correr en 2, es lo que de verdad se paga. Correr en 1 tendría que sortear además el castigo.
 
 ```python

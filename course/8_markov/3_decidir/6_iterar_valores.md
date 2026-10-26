@@ -18,7 +18,7 @@ Al terminar tendrás:
 - **El algoritmo ITERACIÓN DE VALORES.** Seguirás su pseudocódigo y su gemelo Python. Justificarás su costo por ronda.
 - **El teorema y su condición.** Aplicarás @mkv-c3-teo-iterar-valores. Dirás qué significa ${V^{(k)}}$ si se arranca en 0.
 - **Una regla de paro.** Convertirás un residuo en una cota del error. Darás un caso donde el error es 99 veces el residuo.
-- **Un caso grande.** Resolverás un pasillo de 200 casillas sin revisar sus $2^{200}\approx1.6\times10^{60}$ políticas.
+- **Un caso grande.** Resolverás un pasillo de 200 casillas sin revisar sus $2^{200}\approx1.6\times10^{60}$ políticas deterministas.
 
 ## Lo que traes
 
@@ -68,7 +68,7 @@ V^{(k+1)}(s)=\max_{a\in\mathcal A(s)}\Big[&r(s,a)\\
 $$
 
 > [!NOTE]
-> **Qué cuenta la $k$: pasos que quedan.** Si arrancas en ${V^{(0)}=0}$, ${V^{(k)}(s)}$ es lo mejor desde $s$ cuando solo quedan $k$ pasos. Con ${k+1}$ pasos gastas uno: eliges $a$, pagas ${r(s,a)}$ y caes en $s'$. Te quedan $k$ pasos, que valen ${V^{(k)}(s')}$. Es la pasada hacia atrás de [[mkv-la-escalera|la escalera]], ahora con azar.
+> **Qué cuenta la $k$: rondas, que equivalen a pasos que quedan.** Si arrancas en ${V^{(0)}=0}$, ${V^{(k)}(s)}$ es lo mejor desde $s$ cuando solo quedan $k$ pasos. Con ${k+1}$ pasos gastas uno: eliges $a$, pagas ${r(s,a)}$ y caes en $s'$. Te quedan $k$ pasos, que valen ${V^{(k)}(s')}$. Es la pasada hacia atrás de [[mkv-la-escalera|la escalera]], ahora con azar.
 >
 > **En la casilla 2 del pasillo.**
 >
@@ -78,9 +78,9 @@ $$
 > - Al crecer $k$, la aproximación se acerca al óptimo ${V^*(2)=-2}$.
 
 > [!WARNING]
-> **Leer ${V^{(k)}}$ como el valor en el turno $k$ del robot.** La $k$ es la ronda del algoritmo. El turno del robot sigue siendo $t$, como en $S_t$ y $A_t$.
+> **Leer ${V^{(k)}}$ como el valor en el turno ${t=k}$ del robot.** La $k$ cuenta rondas del algoritmo. Desde ${V^{(0)}=0}$, eso coincide con los pasos que **le quedan** al robot. Se cuenta hacia atrás desde el final, no hacia adelante desde el inicio. El turno sigue siendo $t$, como en $S_t$ y $A_t$.
 
-- **Síncrona.** El lado derecho usa solo la ronda $k$. Vale aunque ya tengas otro estado de la ronda ${k+1}$.
+- **Síncrona.** El lado derecho usa solo la ronda $k$. Si ya calculaste ${V^{(k+1)}}$ de otro estado, todavía no lo uses.
 
 **En el juguete.** En el pasillo mojado, ${\mathcal T=\{1,2\}}$. Con $P_{\text{caminar}}$ y $P_{\text{correr}}$ de [[mkv-el-mdp|El MDP]], cada ronda es:
 
@@ -116,7 +116,7 @@ El primer término es caminar y el segundo, correr. La meta aporta 0. Desde ${V^
 - **La política sí llega.** En toda ronda, en 1 gana caminar y en 2 gana correr. La codiciosa ya es caminar–correr.
 
 ::: figure {#mkv-c3-fig-iterar-valores title="Los valores contra la ronda en el pasillo mojado"}
-![Gráfica de V(1) y V(2) contra la ronda k, de 0 a 6. V(1) baja de 0 a −3, −4, −4.5 y sigue hacia la línea punteada en −5; V(2) baja de 0 a −1, −1.5, −1.75 y sigue hacia la línea punteada en −2. Ninguna curva toca su línea; desde la ronda 1, la distancia se corta a la mitad en cada ronda](../_assets/mkv-c3-iterar-valores.svg)
+![Gráfica de V⁽ᵏ⁾(1) y V⁽ᵏ⁾(2) contra la ronda k, de 0 a 6. V(1) baja de 0 a −3, −4, −4.5 y sigue hacia la línea punteada en −5; V(2) baja de 0 a −1, −1.5, −1.75 y sigue hacia la línea punteada en −2. Ninguna curva toca su línea; desde la ronda 1, la distancia se corta a la mitad en cada ronda](../_assets/mkv-c3-iterar-valores.svg)
 :::
 
 > [!WARNING]
@@ -279,7 +279,7 @@ Si además ${V^{(0)}=0}$ y ${r\le0}$, ${V^{(k)}(s)}$ es lo mejor que se espera c
 :::
 
 ::: proof {#mkv-c3-vi-dem-iterar-valores of="mkv-c3-teo-iterar-valores"}
-**Lo mejor en $k$ pasos.** Por inducción. Con 0 pasos no se cobra nada: ${V^{(0)}=0}$. Con ${k+1}$ pasos, condiciona en el primero (@mkv-c2-teo-primer-paso). Cobras ${r(s,a)}$, y desde donde caes te quedan $k$ pasos, que valen a lo más ${V^{(k)}}$. Elegir la mejor primera acción es el máximo de la ronda.
+**Lo mejor en $k$ pasos.** Por inducción. Con 0 pasos no se cobra nada: ${V^{(0)}=0}$. Con ${k+1}$ pasos, condiciona en el primero (@mkv-c2-teo-primer-paso). Cobras ${r(s,a)}$, y desde donde caes te quedan $k$ pasos. Jugados lo mejor posible, valen ${V^{(k)}(s')}$, por la hipótesis de inducción. Elegir la mejor primera acción es el máximo de la ronda.
 
 **Monótona.** Una ronda respeta el orden. Si ${U\le W}$ en todo estado, la ronda desde $U$ da a lo más la ronda desde $W$, porque las probabilidades no son negativas. Como ${r\le0}$, ${V^{(1)}\le0=V^{(0)}}$. Aplicando la ronda a los dos lados, ${V^{(k+1)}\le V^{(k)}}$ para todo $k$.
 
@@ -322,7 +322,7 @@ Entonces, en toda ronda $k$, ${\max_s\lvert V^*(s)-V^{(k)}(s)\rvert\le\tfrac{m}{
 ::: proof {#mkv-c3-vi-dem-cota of="mkv-c3-vi-teo-cota"}
 **Una ronda no agranda diferencias.** Toma dos estimaciones $U$ y $W$. La diferencia de sus rondas en $s$ es a lo más ${\max_a\sum_{s'}P(s'\mid s,a)\lvert U(s')-W(s')\rvert}$. Las probabilidades suman a lo más 1, y en la meta las dos valen 0. Queda a lo más ${\max\lvert U-W\rvert}$. Aplicado a ${V^{(k)}}$ y ${V^{(k-1)}}$: cada residuo es a lo más el anterior.
 
-**$m$ rondas la encogen por $\beta$.** Tras $m$ rondas, la diferencia en $s$ es a lo más un promedio de ${\lvert U-W\rvert}$. Ese promedio se toma sobre donde quedas tras $m$ pasos sin terminar, y eso pesa a lo más $\beta$. Entonces ${\operatorname{res}^{(k+jm+i)}\le\beta^j\operatorname{res}^{(k)}}$ para ${1\le i\le m}$.
+**$m$ rondas la encogen por $\beta$.** En $m$ rondas, la diferencia solo sobrevive en las trayectorias que no han terminado. Esas pesan a lo más $\beta$; aquí no damos más detalle. Entonces ${\operatorname{res}^{(k+jm+i)}\le\beta^j\operatorname{res}^{(k)}}$ para ${1\le i\le m}$.
 
 **Sumar.** Como ${V^{(k)}\to V^*}$, el error es a lo más la suma de los residuos que faltan. En bloques de $m$:
 
@@ -371,7 +371,7 @@ Con la regla de paro completa, falta probar el algoritmo donde enumerar polític
 
 ## 4 · Comprobar en un pasillo de 200 casillas
 
-**Piensa: con $2^{200}$ políticas, ¿cómo encuentras la mejor sin revisarlas?**
+**Piensa: con $2^{200}$ políticas deterministas, ¿cómo encuentras la mejor sin revisarlas?**
 
 No las revisas. La iteración de valores trabaja con 200 números por ronda, no con políticas.
 
@@ -393,7 +393,7 @@ print(all(pi[i] == ("caminar" if i % 3 == 1
 
 - **Lectura.** Con ${\mathrm{tol}=10^{-9}}$, el algoritmo para tras 451 rondas, con la aproximación ${V^{(451)}(1)\approx-467}$. El óptimo exacto es ${V^*(1)=-467}$.
 - **La política.** El `True` dice que la codiciosa camina junto a cada hueco y corre junto a cada barandal. Nadie le dio esa regla al algoritmo: salió del máximo.
-- **El costo.** Cada ronda hace 200 casillas × 2 acciones × a lo más 2 destinos. Enumerar $2^{200}\approx1.6\times10^{60}$ políticas, en cambio, no termina en ninguna computadora.
+- **El costo.** Cada ronda hace 200 casillas × 2 acciones × a lo más 2 destinos. Enumerar $2^{200}\approx1.6\times10^{60}$ políticas deterministas, en cambio, no termina en ninguna computadora.
 
 ::: figure {#mkv-c3-fig-pasillo-largo title="La política y el valor óptimos en el pasillo de 200 casillas"}
 ![Arriba, una franja de 200 casillas coloreada por la acción que elige la iteración de valores: caminar en las casillas con hueco, 1, 4, 7 y así cada tres, y correr en las de barandal. Abajo, el valor óptimo de cada casilla: sube en escalones desde la casilla 1 hasta 0 en la meta, 201, con un escalón más alto en cada casilla con hueco](../_assets/mkv-c3-pasillo-largo.svg)
@@ -439,7 +439,7 @@ Escribe los dos renglones de la ronda del juguete con los números de ${V^{(0)}}
 :::
 
 ::: hint {#mkv-c3-vi-pista-arranque-2 of="mkv-c3-vi-ej-arranque" title="Pista 2 · ¿Cómo sabes que tu traza va bien?"}
-¿Se acerca al óptimo ${V^*=(-5,-2)}$? ¿Tu residuo de la ronda 1 sale del cambio en la casilla 2? ¿La condición de la cota habla de valores o solo de probabilidades?
+¿Se acerca al óptimo ${V^*=(-5,-2)}$? ¿Cuál de las dos casillas cambió más en la ronda 1? ¿La condición de la cota habla de valores o solo de probabilidades?
 :::
 
 ::: answer {#mkv-c3-vi-resp-arranque of="mkv-c3-vi-ej-arranque" title="Respuesta · Desde una estimación equivocada"}

@@ -4,7 +4,7 @@ title: "Lo que necesitas: el máximo y el punto fijo"
 nav_title: "Lo que necesitas"
 summary: "El máximo y el argmax con empates, condicionar en el primer paso y el punto fijo de una función: cuándo iterar llega, se acerca o no."
 status: ready
-estimated_time: 18m
+estimated_time: 19m
 tags: [markov, decidir, punto-fijo, argmax]
 ---
 
@@ -105,7 +105,7 @@ El máximo decide un paso. Para decidir el siguiente hay que saber cuánto vale 
 
 Un paso más lo que falte desde donde caigas; y si caes en el mismo estado, lo que falta es **la misma incógnita**.
 
-Es @mkv-c2-teo-primer-paso con un pago en cada paso. Si $X$ es lo que se recibe hasta terminar y el primer paso desde $s$ da un pago que puede depender de $s'$, entonces, para cada $s'$ con $P_{ss'}>0$,
+Es @mkv-c2-teo-primer-paso con un pago en cada paso. Sea $X$ lo que se recibe hasta terminar. El primer paso desde $s$ paga algo que puede depender de a dónde caes, $s'$. Entonces, para cada $s'$ al que se puede caer ($P_{ss'}>0$),
 
 $$
 \begin{aligned}
@@ -134,7 +134,7 @@ x&=-2.
 $$
 
 - **Comprobación:** es una racha con probabilidad de seguir $1/2$; dura $1/(1-\tfrac12)=2$ pasos en promedio y pagas 2.
-- **Lo nuevo:** $x$ aparece de los dos lados. Aquí se despeja; con un máximo adentro, no.
+- **Lo nuevo:** $x$ aparece de los dos lados. Aquí se despeja. Con un máximo adentro y varios estados que se llaman entre sí, despejar deja de ser una cuenta directa.
 
 ::: exercise {#mkv-c3-mx-ej-dos-pagos title="Plantea con dos pagos"}
 Cambia el juguete: el paso cuesta 1 si terminas y 3 si te quedas, cada caso con probabilidad $1/2$. Escribe la ecuación de $x$ y resuélvela.
@@ -181,7 +181,7 @@ $$
 - **Qué no es:** iterar no garantiza nada por sí solo: la sucesión puede no acercarse, o acercarse a un punto fijo que no es el que buscas.
 :::
 
-- **Rondas.** $x^{(k)}$ es el valor tras $k$ **rondas**, aplicaciones de $f$, no pasos de la cadena; en las clases 1 y 2, $k$ era el número de estados.
+- **Rondas.** $x^{(k)}$ es el valor tras $k$ **rondas**: $k$ aplicaciones de $f$. La $k$ cuenta rondas del algoritmo, no el turno $t$ de la cadena. En las clases 1 y 2, $k$ era el número de estados.
 - **En inglés:** *fixed point*.
 
 ::: theorem {#mkv-c3-mx-teo-pendiente title="Iterar una recta: llega, se acerca o no"}
@@ -216,7 +216,7 @@ x^{(k)}=-2+2^{1-k}:\quad
 $$
 
 - **El error** vale $2^{1-k}$: se parte a la mitad cada ronda, sin llegar a cero.
-- **Lectura:** $-x^{(k)}$ es lo que pagas en promedio si te obligan a parar tras $k$ pasos. Con $k=2$: pagas 1 seguro, y 1 más con probabilidad $1/2$.
+- **Lectura:** $-x^{(k)}$ es lo que pagas en promedio si solo **quedan** $k$ pasos y luego te obligan a parar. La ronda $k$ cuenta hacia atrás desde el final, no hacia adelante desde el inicio. Con $k=2$: pagas 1 seguro, y 1 más con probabilidad $1/2$.
 - **Cuándo parar:** nunca llega; hace falta una tolerancia (@mkv-c2-def-limite).
 
 ::: figure {#mkv-c3-fig-punto-fijo title="Iterar f(x) = −1 + x/2 desde 0: una telaraña que se cierra en −2"}

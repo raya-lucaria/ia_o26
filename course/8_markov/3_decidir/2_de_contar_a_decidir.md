@@ -305,6 +305,7 @@ $$
 $$
 
 - **Lo que se rompe.** La pasada pide en cada renglón solo escalones ya calculados. El renglón de 3 se pide a sí mismo: hay un **ciclo** de 3 a 3, y la condición de @mkv-c3-teo-hacia-atras deja de cumplirse.
+- **Un solo lazo todavía se despeja.** Llama $c=\operatorname{costo}(3)$ y $X_a=\text{pisar}(3+a)+\operatorname{costo}(3+a)$. La ecuación es $c=\tfrac12\min_aX_a+\tfrac12c$, y despejar da $c=\min_aX_a$. Así sale $\operatorname{costo}(3)=\min(1+1,\ 1+0)=1$, igual que sin resbalón, porque resbalar no cobra. Lo que se rompe es el **orden**: el renglón de 3 ya no sale de renglones calculados. Con lazos entre varios estados, como en el pasillo de la página siguiente, ni siquiera queda una ecuación suelta que despejar.
 
 > [!TIP]
 > **Ejemplo y contraejemplo.**

@@ -4,7 +4,7 @@ title: "El proceso de decisión de Markov"
 nav_title: "El MDP"
 summary: "El problema de decidir con azar, primero en general y luego en el pasillo mojado: el MDP, su notación, la política, el máximo que se busca, la cadena de cada política, el retorno, el valor y terminar con probabilidad 1."
 status: ready
-estimated_time: 35m
+estimated_time: 36m
 tags: [markov, decidir, mdp, politica]
 ---
 
@@ -61,12 +61,12 @@ $$
 - **Qué no es:** una cadena de Markov. Una cadena tiene **una** matriz; un MDP tiene una por acción, y alguien tiene que elegir cuál usar.
 :::
 
-- **Aviso de letras.** La $\mathcal A$ es caligráfica porque $A$ ya es el conjunto de llegada de 8.2.5; en juegos se escribió $A(s)$ para las jugadas.
+- **Aviso de letras.** La $\mathcal A$ es caligráfica porque $A$ ya es el conjunto de llegada de [[mkv-absorcion|Cuánto falta para terminar]]; en juegos se escribió $A(s)$ para las jugadas.
 - **Letra nueva, $A_t$.** Es la acción que se usa en el paso $t$; puede salir de un sorteo, como $S_t$. No es el conjunto $A$ de la clase 2.
-- **Aviso de la tupla.** Agentes la escribió $\langle S,A,P,R,\gamma\rangle$. Aquí no lleva $\gamma$: las recompensas se suman tal cual. Basta con dos cosas: que alguna política termine, y que toda la que no termina valga $-\infty$ ([[mkv-bellman|La ecuación de Bellman]]).
-- **Recompensa recibida y esperada.** $r_{t+1}$ es lo que llega en un paso concreto, como en agentes. $r(s,a)$ es su promedio. Aquí todas son $\le0$. Un costo es una recompensa con signo menos: maximizar recompensa es minimizar costo.
+- **Aviso de la tupla.** Agentes la escribió $\langle S,A,P,R,\gamma\rangle$. Aquí no lleva $\gamma$: las recompensas se suman tal cual. Lo que se pide a cambio llega en [[mkv-bellman|La ecuación de Bellman]].
+- **Recompensa recibida y esperada.** $r_{t+1}$ es lo que llega en un paso concreto, como en agentes. $r(s,a)$ es su promedio. En el pasillo todas son $\le0$. Un costo es una recompensa con signo menos: maximizar recompensa es minimizar costo.
 
-Son muchas letras. Esta tabla las junta todas; las últimas cinco se definen con calma en las secciones 4 a 6.
+Son muchas letras. Esta tabla las junta todas; las cuatro últimas se definen con calma en las secciones 5 y 6.
 
 ::: table {#mkv-c3-md-tabla-notacion title="La notación del MDP, pieza por pieza"}
 | Símbolo | Se lee | Qué es |
@@ -90,7 +90,7 @@ Son muchas letras. Esta tabla las junta todas; las últimas cinco se definen con
 | $V_\pi(s)$ | «ve sub pi de ese» | El valor de $s$ con la política fija $\pi$: $E^\pi_s[G_0]$ |
 :::
 
-- **Lectura:** las primeras diez piezas son el MDP, lo que está dado. $\pi$ es lo que se elige. Las últimas cinco son cómo se califica lo elegido.
+- **Lectura:** las diez primeras piezas son el MDP, lo que está dado. $S_t$ y $A_t$ son lo que pasa en una corrida. $\pi$ es lo que se elige. Las cuatro últimas califican lo elegido.
 
 ### La política
 
@@ -148,7 +148,7 @@ $$
 
 Se lee renglón por renglón; $\sim$ se lee «se sortea con».
 
-- **Lo que se maximiza:** $V_\pi(s)$, el retorno promedio con la política $\pi$. Se pide desde **cada** estado no terminal a la vez.
+- **Lo que se maximiza:** $V_\pi(s)$, el retorno promedio con la política $\pi$. No es un solo número: hay un máximo por cada estado no terminal. Se pide **una misma** $\pi$ que gane en todos a la vez.
 - **Sobre qué:** la política $\pi$. Es la única pieza que eliges.
 - **Empezar:** la cadena sale de $s$.
 - **La acción:** en cada paso se sortea con la fila de $\pi$ del estado actual. Tiene que estar disponible ahí.
@@ -158,9 +158,9 @@ Se lee renglón por renglón; $\sim$ se lee «se sortea con».
 
 > **Dado:** un MDP $\langle\mathcal S,\mathcal A,P,r\rangle$ con terminales $\mathcal F$.
 >
-> **Encontrar:** una política $\pi^*$ que maximice $V_\pi(s)$ desde todo $s\in\mathcal T$ a la vez. Y el valor óptimo, el de la mejor política: $V^*(s)=\max_\pi V_\pi(s)$.
+> **Encontrar:** una política $\pi^*$ que maximice $V_\pi(s)$ en todos los estados a la vez. Es decir, $V_{\pi^*}(s)=V^*(s)$ para todo $s\in\mathcal T$, donde $V^*(s)=\max_\pi V_\pi(s)$ es el máximo de cada estado por separado. Esa $\pi^*$ existe: lo asegura @mkv-c3-teo-codiciosa.
 
-Lo raro de este problema es la variable: no es un número, es una **regla**. Las deterministas son finitas, $\prod_s\lvert\mathcal A(s)\rvert$. Pero con 20 estados de 4 acciones ya son $4^{20}$, más de un billón. Tampoco es obvio que una sola gane en todos los estados a la vez. Lo asegura @mkv-c3-teo-codiciosa. El resto de la clase lo resuelve sin probarlas todas.
+Lo raro de este problema es la variable: no es un número, es una **regla**. Las deterministas son finitas, $\prod_s\lvert\mathcal A(s)\rvert$. Pero con 20 estados de 4 acciones ya son $4^{20}$, más de un billón. Tampoco es obvio que una sola gane en todos los estados a la vez; por eso se cita @mkv-c3-teo-codiciosa. El resto de la clase lo resuelve sin probarlas todas.
 
 Así se ve en general. ¿Cómo se ve con números?
 
@@ -194,7 +194,7 @@ P_{\text{correr}}&=\begin{pmatrix}1/2&1/2&0\\0&1/2&1/2\\0&0&1\end{pmatrix}.
 \end{aligned}
 $$
 
-- **La fila de la meta:** es $(0,0,1)$ en las dos matrices. Es el terminal que se queda, como la meta de 8.2.5.
+- **La fila de la meta:** es $(0,0,1)$ en las dos matrices. Es el terminal que se queda, como la meta de [[mkv-absorcion|Cuánto falta para terminar]].
 
 **Las recompensas.** Correr en la casilla 1 recibe $-1$ si avanza y $-11$ si resbala, cada uno con 1/2. En promedio:
 
@@ -254,7 +254,7 @@ $$
 Cumple la definición: cada fila suma 1. No es determinista, y por @mkv-c3-teo-codiciosa no hace falta mirarla.
 
 ::: exercise {#mkv-c3-md-ej-contar title="Cuenta las políticas con una acción más"}
-Agrega al pasillo una tercera acción, esperar, que deja al robot en su casilla. ¿Cuántas políticas hay?
+Agrega al pasillo una tercera acción, esperar: deja al robot en su casilla y es gratis, $r(s,\text{esperar})=0$. ¿Cuántas políticas deterministas hay?
 :::
 
 ::: hint {#mkv-c3-md-pista-contar of="mkv-c3-md-ej-contar" title="¿Cuántas opciones hay por casilla?"}
@@ -262,20 +262,20 @@ Agrega al pasillo una tercera acción, esperar, que deja al robot en su casilla.
 :::
 
 ::: answer {#mkv-c3-md-resp-contar of="mkv-c3-md-ej-contar"}
-$\lvert\mathcal A(1)\rvert=\lvert\mathcal A(2)\rvert=3$, así que hay $3\times3=9$ políticas.
+$\lvert\mathcal A(1)\rvert=\lvert\mathcal A(2)\rvert=3$, así que hay $3\times3=9$ políticas deterministas. Si se permite sortear, hay infinitas.
 :::
 
-**El problema del pasillo.** El máximo de la sección 1, con estas piezas:
+**El problema del pasillo.** Los máximos de la sección 1, con estas piezas:
 
 $$
-\max_{\pi}\ \bigl(V_\pi(1),\ V_\pi(2)\bigr),
+\max_\pi V_\pi(1)\quad\text{y}\quad\max_\pi V_\pi(2),
 $$
 
-donde $\pi$ recorre las 4 políticas deterministas.
+**con la misma $\pi$** en los dos, donde $\pi$ recorre las 4 políticas deterministas.
 
 > **Dado:** el pasillo, con $P_{\text{caminar}}$, $P_{\text{correr}}$ y las cuatro recompensas de arriba.
 >
-> **Encontrar:** cuál de las 4 políticas da el mayor $V_\pi(1)$ y el mayor $V_\pi(2)$ a la vez. Y esos dos máximos, $V^*(1)$ y $V^*(2)$.
+> **Encontrar:** cuál de las 4 políticas deterministas da el mayor $V_\pi(1)$ y el mayor $V_\pi(2)$ a la vez. Y esos dos máximos, $V^*(1)$ y $V^*(2)$.
 
 Aquí no se responde. La página 4 calcula $V_\pi$ de cada política. La 5 elige la mejor y da $V^*$.
 
@@ -293,11 +293,11 @@ Entonces ya no basta una flecha por brinco: hace falta una **fila de probabilida
 - **Acciones:** desde el escalón $s$, el brinco $a\in\{1,2\}$ sin pasarte; desde el 4 solo cabe $a=1$.
 - **Fila del brinco:** llegas a $s+a$ con probabilidad 1, y a cualquier otro escalón con 0.
 - **Recompensa:** lo que pagas, con signo menos. Pisar el escalón 2 cuesta 2, así que brincar 2 desde el 0 da recompensa $-2$.
-- **Políticas:** los escalones 0 a 3 tienen dos brincos y el 4 uno: $2^4\cdot1=16$.
+- **Políticas deterministas:** los escalones 0 a 3 tienen dos brincos y el 4 uno: $2^4\cdot1=16$.
 
-Hay más políticas que rutas, 16 contra 8, porque la política también decide en escalones que su ruta no pisa. La ruta óptima 0→2→4→5 sale de brincar 2 en el 0, 2 en el 2 y 1 en el 4.
+Hay más políticas deterministas que rutas, 16 contra 8, porque la política también decide en escalones que su ruta no pisa. La ruta óptima 0→2→4→5 sale de brincar 2 en el 0, 2 en el 2 y 1 en el 4.
 
-**En el juguete.** Con un brinco que falla, la fila cambia y nada más. Supón que brincar 1 desde el escalón 3 sale con probabilidad 1/2, y con 1/2 te deja en el 3. Su fila pone 1/2 en el 4 y 1/2 en el 3. Ese 1/2 en la diagonal es el ciclo que rompió la pasada hacia atrás.
+**En el juguete.** Con un brinco que falla, la fila cambia y nada más. Supón, como en la página anterior, que cualquier brinco desde el 3 sale con probabilidad 1/2 y con 1/2 te deja en el 3. La fila de brincar 1 pone 1/2 en el 4 y 1/2 en el 3. Ese 1/2 en la diagonal es el ciclo que rompió la pasada hacia atrás.
 
 Fijar la política fija una fila en cada estado. ¿Qué queda al juntarlas?
 
@@ -322,7 +322,7 @@ $$
 - **Qué es:** dos piezas.
   - La matriz $P_\pi$: su fila $s$ es la fila $s$ de $P_{\pi(s)}$. Las filas de los terminales no cambian.
   - El vector $r_\pi$: la recompensa esperada en cada estado.
-- **Cómo se calcula:** **la política elige filas.** En cada estado, copia la fila de la acción elegida. $P_{\pi,\mathcal T}$ es $P_\pi$ restringida a las filas y columnas de $\mathcal T$, como $P_{\mathcal T}$ en 8.2.5.
+- **Cómo se calcula:** **la política elige filas.** En cada estado, copia la fila de la acción elegida. $P_{\pi,\mathcal T}$ es $P_\pi$ restringida a las filas y columnas de $\mathcal T$, como $P_{\mathcal T}$ en [[mkv-absorcion|Cuánto falta para terminar]].
 - **Qué significa:** bajo $\pi$, los estados $S_0,S_1,\dots$ forman una cadena de Markov con matriz $P_\pi$. Todo lo de la clase 2 se le aplica.
 - **Qué no es:** una mezcla de matrices. Para una política determinista, $P_\pi$ no es un promedio de $P_{\text{caminar}}$ y $P_{\text{correr}}$: cada fila viene entera de una sola. Solo una política que sortea mezclaría filas, y aquí no la usamos.
 :::
@@ -341,7 +341,7 @@ $$
 ![P_caminar y P_correr lado a lado. La política caminar–correr toma la fila 1 de P_caminar, (0, 1, 0), y la fila 2 de P_correr, (0, 1/2, 1/2); con la fila de la meta, (0, 0, 1), forman P_π. Al lado, r_π = (−3, −1).](../_assets/mkv-c3-politica-elige-filas.svg)
 :::
 
-Las cuatro políticas dan cuatro cadenas. Este programa las arma y comprueba que cada fila suma 1:
+Las cuatro políticas deterministas dan cuatro cadenas. Este programa las arma y comprueba que cada fila suma 1:
 
 ```python
 from fractions import Fraction as F
@@ -496,13 +496,13 @@ $$
 - **Qué no es:** terminar en un número acotado de pasos, ni terminar solo desde el inicio.
 :::
 
-**En el juguete.** Las cuatro políticas del pasillo terminan. Con correr–correr, en cada casilla avanza con probabilidad 1/2 en cada intento. Desde 2, no terminar en $t$ pasos tiene probabilidad $(1/2)^t$, que tiende a 0.
+**En el juguete.** Las cuatro políticas deterministas del pasillo terminan. Con correr–correr, en cada casilla avanza con probabilidad 1/2 en cada intento. Desde 2, no terminar en $t$ pasos tiene probabilidad $(1/2)^t$, que tiende a 0.
 
 > [!TIP]
 > **Ejemplo y contraejemplo.**
 >
 > - **Lo cumple:** caminar–correr. $P_\pi$ tiene filas $(0,1,0)$, $(0,\tfrac12,\tfrac12)$ y $(0,0,1)$: de 1 se va a 2, y de 2 hay una flecha a la meta. Llega con probabilidad 1 desde las dos casillas.
-> - **No lo cumple:** con la acción esperar, que deja al robot en su casilla, la política esperar siempre. $P_{\pi,\mathcal T}$ es la identidad: ninguna flecha sale hacia la meta. Nunca llega, y su retorno es una suma sin último término.
+> - **No lo cumple:** con la acción esperar gratis del ejercicio anterior, la política esperar siempre. $P_{\pi,\mathcal T}$ es la identidad: ninguna flecha sale hacia la meta. Nunca llega. Su retorno es 0, pero no mide cuánto cuesta llegar. Si esperar costara 1, valdría $-\infty$. La página 5 usa las dos versiones.
 
 ::: figure {#mkv-c3-fig-ej-termina title="Ejemplo y contraejemplo: terminar con probabilidad 1"}
 ![Dos paneles, cada uno con el grafo de la cadena de la política y su matriz debajo. Arriba, el que cumple: caminar–correr, 1 va a 2 con 1, 2 se queda con 1/2 y va a meta con 1/2; llega con probabilidad 1. Abajo, el que no: esperar siempre, 1 y 2 se quedan con 1; P_π,T es la identidad y nunca llega a la meta.](../_assets/mkv-c3-ej-termina.svg)
@@ -512,7 +512,7 @@ $$
 > **Error típico:** «termina con probabilidad 1, así que termina en a lo más tantos pasos». **Con correr–correr no hay tope:** desde 2, tardar más de 10 pasos tiene probabilidad $(1/2)^{10}=1/1024$, positiva. Lo que vale 1 es la probabilidad de llegar alguna vez.
 
 ::: exercise {#mkv-c3-md-ej-termina title="Cuáles terminan con esperar"}
-Con esperar como tercera acción hay 9 políticas. ¿Cuántas terminan? ¿Termina caminar en 1 y esperar en 2?
+Con esperar como tercera acción hay 9 políticas deterministas. ¿Cuántas terminan? ¿Termina caminar en 1 y esperar en 2?
 :::
 
 ::: hint {#mkv-c3-md-pista-termina of="mkv-c3-md-ej-termina" title="¿Desde qué casilla hay que llegar?"}
@@ -535,7 +535,7 @@ Caminar en 1 y esperar en 2 no termina: desde 1 llega a 2 y se queda ahí para s
 **Cambia una idea:** el pasillo tiene tres casillas, 1, 2 y 3, antes de la meta. El hueco sin barandal está en la casilla 2. La 1 y la 3 tienen barandal. Caminar y correr funcionan igual que antes, con el mismo castigo de 10.
 
 1. **Modela:** escribe $\mathcal T$, $\mathcal F$, $P_{\text{caminar}}$, $P_{\text{correr}}$ y las seis recompensas $r(s,a)$.
-2. **Cuenta:** ¿cuántas políticas hay?
+2. **Cuenta:** ¿cuántas políticas deterministas hay?
 3. **Elige filas:** para correr junto al barandal y caminar junto al hueco, escribe $P_\pi$ y $r_\pi$.
 4. **Revisa y suma:** ¿cuáles políticas terminan con probabilidad 1? Da $V_\pi(1)$, $V_\pi(2)$ y $V_\pi(3)$ para caminar siempre.
 :::
@@ -560,7 +560,7 @@ $$
 
 Caminar recibe $-3$ en las tres casillas. Correr recibe $-1$ en 1 y en 3, y en 2 recibe $\tfrac12(-1)+\tfrac12(-11)=-6$.
 
-**2. Cuenta.** $2\times2\times2=8$ políticas.
+**2. Cuenta.** $2\times2\times2=8$ políticas deterministas.
 
 **3. Elige filas.** Correr en 1 y en 3, caminar en 2:
 
@@ -578,7 +578,7 @@ $$
 **Punto de control:** deberías poder hacer cuatro cosas.
 
 - Escribir un problema de decisión como MDP: una matriz por acción, con filas que suman 1.
-- Contar sus políticas.
+- Contar sus políticas deterministas.
 - Armar $P_\pi$ y $r_\pi$ eligiendo filas.
 - Revisar en el grafo si una política termina con probabilidad 1.
 
@@ -587,12 +587,12 @@ $$
 ## Lo que hay que llevarse
 
 - **MDP:** $\langle\mathcal S,\mathcal A,P,r\rangle$, una matriz $P_a$ por acción, filas que suman 1, y $r(s,a)$, la recompensa esperada (@mkv-c3-def-mdp). Cada símbolo está en la tabla de la sección 1.
-- **El problema:** maximizar $V_\pi(s)$ sobre las políticas, desde todo $s\in\mathcal T$ a la vez. El máximo es $V^*(s)$. La variable es una regla, no un número.
+- **El problema:** encontrar una política que maximice $V_\pi(s)$ en todos los estados a la vez. El máximo de cada estado es $V^*(s)$; que una sola política los alcance todos lo asegura @mkv-c3-teo-codiciosa. La variable es una regla, no un número.
 - **El pasillo:** caminar cuesta 3 y avanza seguro; correr cuesta 1, avanza con 1/2, y en la casilla 1 su recompensa esperada es $-6$.
-- **Política:** en general, una distribución $\pi(a\mid s)$ en cada estado; aquí basta la determinista, una acción por estado, $\pi(s)\in\mathcal A(s)$. El pasillo tiene $2\times2=4$ y la escalera 16 (@mkv-c3-def-politica).
+- **Política:** en general, una distribución $\pi(a\mid s)$ en cada estado; aquí basta la determinista, una acción por estado, $\pi(s)\in\mathcal A(s)$. El pasillo tiene $2\times2=4$ deterministas y la escalera 16 (@mkv-c3-def-politica).
 - **La política elige filas:** $P_\pi$ toma la fila $s$ de $P_{\pi(s)}$ y es una cadena de Markov; caminar–correr da $P_{\pi,\mathcal T}$ con filas $(0,1)$ y $(0,\tfrac12)$ (@mkv-c3-def-cadena-politica).
 - **Valor de una política:** $V_\pi(s)=E^\pi_s[G_0]$, el promedio del retorno si sigues $\pi$. Con caminar–caminar, $V_\pi=(-6,-3)$. En la escalera, la mejor política da $V^*=-\operatorname{costo}$ (@mkv-c3-def-valor).
-- **Terminar:** desde cada estado no terminal se llega a $\mathcal F$ con probabilidad 1; se revisa en el grafo de $P_\pi$. Las cuatro del pasillo terminan; esperar siempre no (@mkv-c3-def-termina).
+- **Terminar:** desde cada estado no terminal se llega a $\mathcal F$ con probabilidad 1; se revisa en el grafo de $P_\pi$. Las cuatro deterministas del pasillo terminan; esperar siempre no (@mkv-c3-def-termina).
 
 Si fijamos la política, ¿cuánto vale?
 

@@ -2248,10 +2248,10 @@ def mkv_c3_rondas_politicas():
                             borde=ACENTO if ultima else SUAVE, grosor=2 if ultima else 1.5))
             out.append(texto(X_PIE + 10, y + 17, f"ronda {k + 1}: {_nombre_pol(pol)}", tam=13,
                              peso="700", anclaje="start"))
-            out.append(texto(X_PIE + 10, y + 33, f"V = ({_v(V[1])}, {_v(V[2])})"
+            out.append(texto(X_PIE + 10, y + 33, f"Vπ = ({_v(V[1])}, {_v(V[2])})"
                              + ("; la mejora no cambia nada" if ultima else ""), tam=12,
                              anclaje="start", color=SUAVE))
-            partes.append(f"ronda {k + 1}: {_nombre_pol(pol)}, V = ({_v(V[1])}, {_v(V[2])})")
+            partes.append(f"ronda {k + 1}: {_nombre_pol(pol)}, Vπ = ({_v(V[1])}, {_v(V[2])})")
             y += 40
             if not ultima:
                 out.append(_flecha(ANCHO / 2, y + 2, ANCHO / 2, y + 16))
