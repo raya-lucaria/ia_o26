@@ -12,23 +12,25 @@ tags: [markov, decidir, iteracion-de-politicas, algoritmo]
 
 **¿Se puede llegar a la política óptima en un número finito de rondas?**
 
-Al terminar tendrás:
+Sí: buscando entre políticas, no entre números. Al terminar tendrás:
 
-- **Una ronda a mano.** Evaluarás caminar–caminar en el pasillo, la mejorarás y llegarás a caminar–correr, con valores $(-5,-2)$.
-- **Un teorema con su condición.** Sabrás por qué el valor nunca baja y por qué el algoritmo termina.
-- **Un contraejemplo.** Verás que, si la mejora cambia de acción en un empate, las políticas alternan para siempre.
+- **Una ronda a mano.** Evaluarás caminar–caminar en el pasillo y la mejorarás. Llegarás a caminar–correr, con valor óptimo $V^*=(-5,-2)$.
+- **Un teorema con su condición.** Sabrás por qué el valor de la política nunca baja y por qué el algoritmo termina.
+- **Un contraejemplo.** Si la mejora cambia de acción en un empate, puede alternar para siempre.
 - **El algoritmo ITERACIÓN DE POLÍTICAS.** Seguirás pseudocódigo y Python exacto con fracciones.
-- **Una comparación.** Contarás sus rondas contra las de iteración de valores en un pasillo de 200 casillas.
+- **Una comparación.** Sus rondas contra las de iteración de valores, en un pasillo de 200 casillas.
 
 ## Lo que traes
 
 - **El MDP y sus políticas.** En [[mkv-el-mdp|El MDP]] viste el MDP (@mkv-c3-def-mdp), la política (@mkv-c3-def-politica), la cadena que elige (@mkv-c3-def-cadena-politica) y qué es terminar con probabilidad 1 (@mkv-c3-def-termina).
-- **Evaluar.** En [[mkv-evaluar-politica|Evaluar una política]], si $\pi$ termina, $V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi$ tiene una sola solución (@mkv-c3-teo-evaluar).
+- **Evaluar.** En [[mkv-evaluar-politica|Evaluar una política]] viste que, si $\pi$ termina, $V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi$ tiene una sola solución (@mkv-c3-teo-evaluar).
 - **Bellman.** En [[mkv-bellman|La ecuación de Bellman]] viste el valor de acción (@mkv-c3-def-q), el óptimo (@mkv-c3-def-optimo), la ecuación con su condición (@mkv-c3-teo-bellman) y la codiciosa (@mkv-c3-teo-codiciosa).
-- **Iteración de valores.** En [[mkv-iterar-valores|Iteración de valores]] el pasillo nunca llega en rondas finitas: ${V^{(k)}(2)=-2+2^{1-k}}$ (@mkv-c3-teo-iterar-valores).
+- **Iteración de valores.** En [[mkv-iterar-valores|Iteración de valores]] la aproximación del pasillo nunca llega en rondas finitas: ${V^{(k)}(2)=-2+2^{1-k}}$ (@mkv-c3-teo-iterar-valores).
+
+**Qué V usa esta página.** Casi siempre $V_\pi$: el valor exacto de la política actual, buena o no. El algoritmo para cuando $V_\pi$ es $V^*$, el de la mejor política. $V^{(k)}$, la aproximación tras $k$ rondas, solo aparece al comparar.
 
 > [!NOTE]
-> **Por qué otro algoritmo.** Iteración de valores se acerca a $V^*$ sin tocarlo, y hay que decidir cuándo parar. Pero el pasillo tiene solo cuatro políticas. Si buscamos entre políticas en lugar de entre números, la búsqueda es finita. Falta que no dé vueltas.
+> **Por qué otro algoritmo.** $V^{(k)}$ se acerca a $V^*$ sin tocarlo, y hay que decidir cuándo parar. Pero el pasillo tiene solo cuatro políticas: buscar entre ellas es finito. Falta ver que no dé vueltas.
 
 ---
 
@@ -36,7 +38,7 @@ Al terminar tendrás:
 
 **Piensa: si ya sabes cuánto vale una política, ¿cómo encuentras una mejor?**
 
-En cada casilla pruebas cada acción una vez y después sigues con la política vieja. Si alguna da más, la cambias: es la codiciosa de @mkv-c3-teo-codiciosa con ${U=V_\pi}$.
+En cada casilla pruebas cada acción una vez y luego sigues la política vieja. Si alguna da más, cambias. Es la codiciosa de @mkv-c3-teo-codiciosa, aplicada a ${U=V_\pi}$.
 
 > **Dado:** un MDP finito que cumple las condiciones de @mkv-c3-teo-bellman y una política $\pi_0$ que termina con probabilidad 1.
 >
@@ -44,14 +46,14 @@ En cada casilla pruebas cada acción una vez y después sigues con la política 
 
 Una **ronda** tiene dos pasos:
 
-- **Evaluar.** Resolver ${V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi}$. Por @mkv-c3-teo-evaluar tiene una sola solución si $\pi$ termina.
-- **Mejorar.** En cada ${s\in\mathcal T}$, elegir una acción que maximice ${Q_\pi(s,a)=r(s,a)+\sum_{s'}P(s'\mid s,a)V_\pi(s')}$. Si la acción actual empata con el máximo, se conserva.
+- **Evaluar.** Calcular $V_\pi$, el valor de la política actual. Es la solución de ${V_\pi=r_\pi+P_{\pi,\mathcal T}V_\pi}$. Por @mkv-c3-teo-evaluar es única si $\pi$ termina.
+- **Mejorar.** En cada casilla ${s\in\mathcal T}$, elegir la acción con mayor $Q_\pi(s,a)$: lo que da hacer $a$ una vez y luego seguir $\pi$: ${Q_\pi(s,a)=r(s,a)+\sum_{s'}P(s'\mid s,a)V_\pi(s')}$. Si la acción actual empata con el máximo, se conserva.
 
-Si la mejora no cambia nada, el algoritmo para. En inglés se llama *policy iteration*.
+Si la mejora no cambia nada, para. En inglés: *policy iteration*.
 
-**En el juguete.** Empezamos con caminar–caminar. Caminar avanza seguro y cuesta 3, así que ${V_\pi(2)=-3}$ y ${V_\pi(1)=-3+V_\pi(2)=-6}$.
+**En el juguete.** Empezamos con $\pi$ = caminar–caminar. Caminar avanza seguro y cuesta 3. Entonces ${V_\pi(2)=-3}$ y ${V_\pi(1)=-3+V_\pi(2)=-6}$.
 
-**Mejorar en la casilla 2.** Correr cuesta 1 y se queda en 2 con $1/2$:
+**Mejorar en la casilla 2.** Correr cuesta 1 y se queda en 2 con probabilidad $1/2$:
 
 $$
 \begin{aligned}
@@ -73,30 +75,30 @@ $$
 
 Caminar gana. La política nueva es caminar–correr.
 
-**Segunda ronda.** Evaluar caminar–correr da ${V(2)=-1+\tfrac12V(2)}$, o sea ${V(2)=-2}$, y ${V(1)=-3+V(2)=-5}$. Mejorar:
+**Segunda ronda.** Ahora $\pi$ = caminar–correr. Para evaluarla buscamos números $V(1),V(2)$ con ${V(2)=-1+\tfrac12V(2)}$ y ${V(1)=-3+V(2)}$. La solución es ${V_\pi=(-5,-2)}$. Mejorar:
 
 - **Casilla 2.** Caminar da $-3$; correr da ${-1+\tfrac12(-2)=-2}$. Se queda correr.
 - **Casilla 1.** Caminar da ${-3-2=-5}$; correr da ${-6+\tfrac12(-5)+\tfrac12(-2)=-\tfrac{19}2}$. Se queda caminar.
 
-Nada cambió: el algoritmo para con caminar–correr y ${(V(1),V(2))=(-5,-2)}$. Es $\pi^*$ y es $V^*$, exactos, en dos rondas. La segunda solo confirma.
+Nada cambió: para con caminar–correr. Es $\pi^*$, y su valor ${V_\pi=(-5,-2)}$ es $V^*$ exacto. Usó dos rondas; la segunda confirma.
 
 > [!WARNING]
-> **Mejorar con el valor de la acción, no con el costo inmediato.** En la casilla 2, caminar cuesta 3 y correr 1, pero eso no basta: correr puede repetir el turno.
-> **Se compara $Q_\pi(s,a)$, que suma el costo de ahora y el valor de donde caes.**
+> **Mejorar con el valor de la acción, no con el costo inmediato.** En la casilla 2, correr cuesta menos, pero puede repetir el turno.
+> **Se compara $Q_\pi(s,a)$: el costo de ahora más el valor $V_\pi$ de donde caes.**
 
 ::: exercise {#mkv-c3-pi-ej-correr title="Empieza corriendo"}
-Corre una ronda desde correr–correr, cuyo valor es ${(-14,-2)}$. ¿Qué política sale de la mejora?
+Corre una ronda desde $\pi$ = correr–correr, cuyo valor es ${V_\pi=(-14,-2)}$. ¿Qué política sale de la mejora?
 :::
 
 ::: hint {#mkv-c3-pi-pista-correr of="mkv-c3-pi-ej-correr" title="¿Qué acción gana en la casilla 1?"}
-¿Cuánto vale caminar desde 1 si después sigues con un ${V(2)=-2}$? ¿Y correr, si ${V(1)=-14}$?
+¿Cuánto vale caminar desde 1 si después sigues con ${V_\pi(2)=-2}$? ¿Y correr, si ${V_\pi(1)=-14}$?
 :::
 
 ::: answer {#mkv-c3-pi-resp-correr of="mkv-c3-pi-ej-correr"}
 En la casilla 2, caminar da $-3$ y correr ${-1+\tfrac12(-2)=-2}$: se queda correr. En la casilla 1, caminar da ${-3-2=-5}$ y correr ${-6+\tfrac12(-14)+\tfrac12(-2)=-14}$: cambia a caminar. Sale caminar–correr, también en una sola mejora.
 :::
 
-Dos arranques distintos llegaron en una mejora. ¿Pasa siempre que el algoritmo termina?
+Los dos arranques llegaron en una mejora. ¿Termina siempre?
 
 ---
 
@@ -104,7 +106,7 @@ Dos arranques distintos llegaron en una mejora. ¿Pasa siempre que el algoritmo 
 
 **Piensa: ¿qué impide que la mejora regrese a una política que ya visitó?**
 
-Que el valor sube en cada cambio: no puede volver a una política de valor menor. Y hay un número finito de políticas.
+El valor de la política sube en cada cambio: no puede volver a una de valor menor. Y hay un número finito de políticas.
 
 ::: theorem {#mkv-c3-teo-iterar-politicas title="Iteración de políticas mejora y termina"}
 Sea un MDP finito y sean $\pi_0,\pi_1,\dots$ las políticas que produce iteración de políticas.
@@ -124,7 +126,7 @@ Entonces:
 :::
 
 ::: proof {#mkv-c3-pi-dem-iterar-politicas of="mkv-c3-teo-iterar-politicas"}
-Sea $\pi$ una política que termina y $\pi'$ su mejora. Como $\pi'(s)$ maximiza y $\pi(s)$ es una de las opciones,
+Sea $\pi$ una política que termina y $\pi'$ su mejora. $\pi'(s)$ maximiza, y $\pi(s)$ es una de las opciones. Entonces
 
 $$
 \begin{aligned}
@@ -133,7 +135,7 @@ r_{\pi'}+P_{\pi',\mathcal T}V_\pi\ &\ge\ r_\pi+P_{\pi,\mathcal T}V_\pi\\
 \end{aligned}
 $$
 
-entrada por entrada. $P_{\pi',\mathcal T}$ no tiene entradas negativas, así que la desigualdad se puede aplicar $n$ veces:
+entrada por entrada. $P_{\pi',\mathcal T}$ no tiene entradas negativas. Así que la desigualdad se puede aplicar $n$ veces:
 
 $$
 \begin{aligned}
@@ -142,30 +144,30 @@ V_\pi\ &\le\ \sum_{t=0}^{n-1}P_{\pi',\mathcal T}^{\,t}\,r_{\pi'}\\
 \end{aligned}
 $$
 
-La suma es lo que se espera recibir en los primeros $n$ pasos con $\pi'$. El último término está acotado por ${\max_s\lvert V_\pi(s)\rvert}$.
+La suma es lo esperado en $n$ pasos con $\pi'$. El último término está acotado por ${\max_s\lvert V_\pi(s)\rvert}$.
 
 - **Termina.** Si $\pi'$ no terminara, la condición de @mkv-c3-teo-bellman diría que vale $-\infty$ en algún estado. Pero la desigualdad acota sus sumas por abajo, para todo $n$. Entonces $\pi'$ termina.
-- **No baja.** Como $\pi'$ termina, ${P_{\pi',\mathcal T}^{\,n}\to0}$ y queda ${V_\pi\le V_{\pi'}}$.
-- **Sube donde cambia.** Por la regla de empates, si la acción cambió en $s$ es porque ${Q_\pi(s,\pi'(s))>V_\pi(s)}$. Con ${V_{\pi'}\ge V_\pi}$, ${V_{\pi'}(s)\ge Q_\pi(s,\pi'(s))>V_\pi(s)}$.
+- **No baja.** Como $\pi'$ termina, ${P_{\pi',\mathcal T}^{\,n}\to0}$. Queda ${V_\pi\le V_{\pi'}}$.
+- **Sube donde cambia.** Por la regla de empates, si la acción cambió en $s$, es porque ${Q_\pi(s,\pi'(s))>V_\pi(s)}$. Con ${V_{\pi'}\ge V_\pi}$, se sigue ${V_{\pi'}(s)\ge Q_\pi(s,\pi'(s))>V_\pi(s)}$.
 - **Para.** El valor crece estrictamente en cada cambio, así que ninguna política se repite. Hay ${\prod_s\lvert\mathcal A(s)\rvert}$ políticas.
-- **Óptima.** Al parar, $\pi(s)$ alcanza el máximo en cada $s$: ${V_\pi(s)=\max_aQ_\pi(s,a)}$. Es una solución de Bellman, y por @mkv-c3-teo-bellman es $V^*$.
+- **Óptima.** Al parar, $\pi(s)$ alcanza el máximo en cada $s$: ${V_\pi(s)=\max_aQ_\pi(s,a)}$. O sea, $V_\pi$ resuelve la ecuación de Bellman. Por @mkv-c3-teo-bellman, $V_\pi$ es $V^*$.
 :::
 
-- **La política inicial importa.** Una $\pi_0$ que no termina no se puede evaluar: ${I-P_{\pi,\mathcal T}}$ es singular, como en esperar siempre de @mkv-c3-teo-evaluar.
-- **La regla de empates importa.** Sin ella, la acción puede cambiar sin que el valor suba, y el argumento de «no se repite» se cae.
+- **La política inicial importa.** Una $\pi_0$ que no termina no se puede evaluar: ${I-P_{\pi,\mathcal T}}$ es singular, como esperar siempre en @mkv-c3-teo-evaluar.
+- **La regla de empates importa.** Sin ella, la acción puede cambiar sin que el valor suba, y «no se repite» se cae.
 
-**En el juguete.** Hay ${2\cdot2=4}$ políticas, así que a lo más 4 rondas. Desde caminar–caminar el valor sube de ${(-6,-3)}$ a ${(-5,-2)}$, estricto en las dos casillas aunque la acción cambió solo en la 2. Usó 2 rondas.
+**En el juguete.** Hay ${2\cdot2=4}$ políticas, así que a lo más 4 rondas. Desde caminar–caminar, $V_\pi$ sube de ${(-6,-3)}$ a ${(-5,-2)}$. Sube estricto en las dos casillas, aunque la acción cambió solo en la 2. Usó 2 rondas.
 
 > [!TIP]
-> **Ejemplo y contraejemplo.** Cambia el pasillo: caminar en la casilla 2 cuesta 2, no 3. Ahora caminar y correr empatan ahí: correr da ${-1+\tfrac12(-2)=-2}$, igual que caminar.
-> - **Lo cumple:** conservar en empate. Desde caminar–caminar, con valor ${(-5,-2)}$, la casilla 2 empata y se queda caminar. Para en una ronda.
-> - **No lo cumple:** cambiar en empate. Caminar–caminar pasa a caminar–correr, que vale lo mismo, ${(-5,-2)}$, y en la siguiente ronda regresa. Alterna para siempre.
+> **Ejemplo y contraejemplo.** Cambia el pasillo: caminar en la casilla 2 cuesta 2, no 3. Ahí caminar y correr empatan: correr da ${-1+\tfrac12(-2)=-2}$, igual que caminar.
+> - **Lo cumple:** conservar en empate. Desde caminar–caminar, con ${V_\pi=(-5,-2)}$, la casilla 2 empata y se queda caminar. Para en una ronda.
+> - **No lo cumple:** cambiar en empate. Caminar–caminar pasa a caminar–correr, cuyo $V_\pi$ es el mismo, ${(-5,-2)}$. En la siguiente ronda regresa. Alterna para siempre.
 
 ::: figure {#mkv-c3-fig-ej-empates title="Conservar o cambiar en un empate"}
 ![Dos paneles con el pasillo donde caminar en la casilla 2 cuesta 2. Arriba, marcado como cumple: conservar en empate; desde caminar–caminar, con valor (−5, −2), en la casilla 2 caminar y correr empatan en −2, se conserva caminar y el algoritmo para en una ronda. Abajo, marcado como no cumple: cambiar en empate; caminar–caminar pasa a caminar–correr y regresa, las dos con valor (−5, −2), en un ciclo que no termina. Debajo de cada grafo, las matrices de caminar y de correr. Pie: sin la regla de empates, la política cambia sin que el valor suba](../_assets/mkv-c3-ej-empates.svg)
 :::
 
-Las dos son óptimas: el algoritmo encontró el óptimo, pero nunca se entera de que ya llegó. Sutton y Barto lo dejan como el ejercicio 4.4 de su libro (2.ª ed., 2018).
+Las dos son óptimas: su valor ${(-5,-2)}$ es $V^*$. El algoritmo llegó, pero no se entera. Sutton y Barto lo dejan como el ejercicio 4.4 de su libro (2.ª ed., 2018).
 
 ::: exercise {#mkv-c3-pi-ej-cota title="Cuenta la cota"}
 Un MDP tiene 5 estados no terminales con 3 acciones cada uno. ¿Cuántas rondas, a lo más, garantiza el teorema?
@@ -176,7 +178,7 @@ Un MDP tiene 5 estados no terminales con 3 acciones cada uno. ¿Cuántas rondas,
 :::
 
 ::: answer {#mkv-c3-pi-resp-cota of="mkv-c3-pi-ej-cota"}
-Hay ${3^5=243}$ políticas, así que a lo más 243 rondas. Es una cota de peor caso: suelen bastar pocas.
+Hay ${3^5=243}$ políticas: a lo más 243 rondas. Es el peor caso; suelen bastar pocas.
 :::
 
 Falta escribirlo para que lo haga un programa.
@@ -187,13 +189,13 @@ Falta escribirlo para que lo haga un programa.
 
 **Piensa: ¿qué necesita guardar el programa entre una ronda y la siguiente?**
 
-Solo la política actual: el valor se recalcula exacto en cada ronda.
+Solo la política actual. Su valor $V_\pi$ se recalcula exacto en cada ronda.
 
 ### El mapa de ITERACIÓN DE POLÍTICAS
 
 - **Qué calcula:** una política óptima y su valor.
 - **Qué guarda:** la política actual $\pi$ y su valor $V_\pi$.
-- **Cómo avanza:** evalúa $\pi$ con un sistema lineal y la reemplaza por su codiciosa, conservando la acción en los empates.
+- **Cómo avanza:** evalúa $\pi$ con un sistema lineal. Luego la reemplaza por su codiciosa, conservando la acción en los empates.
 - **Qué devuelve al terminar:** $\pi^*$ y $V^*$, exactos, cuando una mejora no cambia nada.
 
 ::: figure {#mkv-c3-fig-flujo-politicas title="Iteración de políticas, en palabras"}
@@ -208,45 +210,49 @@ OUTPUT  π*, una política óptima, y V*.
  1 function ITERAR-POLÍTICAS(MDP, π₀)
  2   π ← π₀
  3   repetir
- 4     V ← EVALUAR-POLÍTICA(MDP, π)
+ 4     Vπ ← EVALUAR-POLÍTICA(MDP, π)
  5     para cada s en 𝒯:
- 6       Q(a) ← r(s,a) + Σ P(s'|s,a) V(s')
+ 6       Q(a) ← r(s,a) + Σ P(s'|s,a) Vπ(s')
  7       si π(s) alcanza el máximo de Q:
            π'(s) ← π(s)
          si no: π'(s) ← un a que maximiza Q
- 8     si π' = π: return π, V
+ 8     si π' = π: return π, Vπ
  9     π ← π'
 ```
 
-**Gemelo Python.** Cada comentario numerado remite al pseudocódigo. `resolver` es la eliminación exacta de [[mkv-absorcion|Cuánto falta para terminar]]; `evaluar` arma ${I-P_{\pi,\mathcal T}}$ y $r_\pi$ como en @mkv-c3-teo-evaluar. Un MDP es un diccionario: estado, acción, recompensa y destinos; la meta no es llave y vale 0.
+**Gemelo Python.** Cada comentario numerado remite al pseudocódigo. En el código, `V` es $V_\pi$, el valor de la política actual.
+
+- `resolver` es la eliminación exacta de [[mkv-absorcion|Cuánto falta para terminar]].
+- `evaluar` arma ${I-P_{\pi,\mathcal T}}$ y $r_\pi$ como en @mkv-c3-teo-evaluar.
+- Un MDP es un diccionario: estado, acción, recompensa y destinos. La meta no es llave y vale 0.
 
 ```python
 from fractions import Fraction as F
 from itertools import count
 
 def resolver(M, b):              # eliminación exacta
-    k = len(b)
+    n = len(b)
     M = [list(f) + [c] for f, c in zip(M, b)]
-    for c in range(k):
-        p = next((r for r in range(c, k)
+    for c in range(n):
+        p = next((r for r in range(c, n)
                   if M[r][c] != 0), None)
         if p is None:
             return None          # singular
         M[c], M[p] = M[p], M[c]
         piv = M[c][c]
         M[c] = [x / piv for x in M[c]]
-        for r in range(k):
+        for r in range(n):
             if r != c and M[r][c] != 0:
                 f = M[r][c]
                 M[r] = [x - f * y
                         for x, y in zip(M[r], M[c])]
-    return [M[r][k] for r in range(k)]
+    return [M[r][n] for r in range(n)]
 
 def evaluar(mdp, pol):                     # (4)
     pos = {s: i for i, s in enumerate(mdp)}
-    k = len(mdp)
-    M = [[F(0)] * k for _ in mdp]
-    b = [F(0)] * k
+    n = len(mdp)
+    M = [[F(0)] * n for _ in mdp]
+    b = [F(0)] * n
     for s, i in pos.items():
         r, P = mdp[s][pol[s]]
         M[i][i] += 1
@@ -323,21 +329,21 @@ print(iterar_politicas(EMP, cc, conservar=False,
 
 - **Línea 4.** `evaluar` lanza un error si $\pi$ no termina: la eliminación se queda sin pivote. Por eso $\pi_0$ debe terminar.
 - **Línea 7.** `conservar=True` es la regla de empates del teorema. Con `False`, el empate se rompe hacia la otra acción.
-- **Línea 8.** Comparar políticas es exacto; no hay tolerancia, porque las fracciones no redondean. Además de $\pi$ y $V$, el Python devuelve cuántas rondas usó.
-- **`max_rondas`.** Por omisión no hay tope: con `conservar=True` el teorema garantiza que para. Con tope, si se agota, devuelve `None`, sin garantía.
-- **`pasillo`.** Recorre las casillas de la meta hacia atrás: la eliminación casi no rellena y 200 casillas tardan menos de un segundo.
+- **Línea 8.** Comparar políticas es exacto: las fracciones no redondean. El Python devuelve $\pi$, $V_\pi$ y cuántas rondas usó.
+- **`max_rondas`.** Por omisión no hay tope: con `conservar=True` el teorema garantiza que para. Si el tope se agota, devuelve `None`.
+- **`pasillo`.** Numera de la meta hacia atrás: la eliminación casi no rellena, y 200 casillas tardan menos de un segundo.
 
-**Cómo leer la traza.** Corremos el pasillo desde caminar–caminar. Cada renglón dice qué deja la línea indicada.
+**Cómo leer la traza.** El pasillo desde caminar–caminar; cada renglón dice qué deja esa línea.
 
 **Tramo único · De caminar–caminar a caminar–correr**
 
 | Ronda | Línea | Qué queda |
 |---|---|---|
-| 1 | 4 | V = (−6, −3) |
+| 1 | 4 | Vπ = (−6, −3) |
 | 1 | 6 | en 2: −3 contra −5/2; en 1: −6 contra −21/2 |
 | 1 | 9 | π = caminar–correr |
-| 2 | 4 | V = (−5, −2) |
-| 2 | 8 | sin cambios: devuelve π y V |
+| 2 | 4 | Vπ = (−5, −2) |
+| 2 | 8 | sin cambios: devuelve π y Vπ, que es V* |
 
 - **Contraejemplo, en código.** Con caminar a costo 2, `conservar=True` para en la ronda 1. Con `False` y un tope de 50 rondas, lo agota y devuelve `None`.
 
@@ -346,22 +352,22 @@ En el pasillo original, donde caminar en 2 cuesta 3, corres `iterar_politicas(J2
 :::
 
 ::: hint {#mkv-c3-pi-pista-sin-conservar of="mkv-c3-pi-ej-sin-conservar" title="¿Hay algún empate en el pasillo original?"}
-Revisa las cuentas de la sección 1: ¿alguna comparación dio dos números iguales?
+En las cuentas de la sección 1, ¿alguna comparación dio dos números iguales?
 :::
 
 ::: answer {#mkv-c3-pi-resp-sin-conservar of="mkv-c3-pi-ej-sin-conservar"}
-Sí para, en 2 rondas, con caminar–correr. En el pasillo original nunca hay empate: la regla solo decide cuando dos acciones dan exactamente lo mismo.
+Sí para, en 2 rondas, con caminar–correr. En el pasillo original nunca hay empate. La regla solo decide cuando dos acciones dan exactamente lo mismo.
 :::
 
 ### Lo que garantiza y cuánto cuesta
 
-- **Propiedades:** el valor nunca baja y sube estrictamente donde la acción cambia (@mkv-c3-teo-iterar-politicas).
-- **Número que da:** caminar–correr con ${(-5,-2)}$ en el pasillo, en 2 rondas desde caminar–caminar o desde correr–correr.
-- **Garantía:** para en a lo más ${\prod_s\lvert\mathcal A(s)\rvert}$ rondas y devuelve $V^*$ exacto, sin tolerancia ni cota de paro.
-- **Costo por ronda:** evaluar resuelve un sistema de ${\lvert\mathcal T\rvert}$ incógnitas, del orden de ${\lvert\mathcal T\rvert^3}$; mejorar calcula un $Q$ por cada par estado–acción.
+- **Propiedades:** $V_\pi$ nunca baja de una ronda a la siguiente. Sube estrictamente donde la acción cambia (@mkv-c3-teo-iterar-politicas).
+- **Número que da:** caminar–correr con ${V^*=(-5,-2)}$ en el pasillo. Son 2 rondas desde caminar–caminar o desde correr–correr.
+- **Garantía:** para en a lo más ${\prod_s\lvert\mathcal A(s)\rvert}$ rondas. Devuelve $V^*$ exacto, sin tolerancia ni cota de paro.
+- **Costo por ronda:** evaluar resuelve un sistema de ${\lvert\mathcal T\rvert}$ incógnitas, del orden de ${\lvert\mathcal T\rvert^3}$ operaciones. Mejorar calcula un $Q_\pi$ por cada par estado–acción.
 - **Supuestos:** las condiciones de @mkv-c3-teo-bellman, una $\pi_0$ que termina y la regla de empates.
 
-Cada ronda cuesta más que una de iteración de valores. ¿Cuántas hacen falta?
+Cada ronda cuesta más que en iteración de valores. ¿Cuántas hacen falta?
 
 > **Una nota de historia.** El algoritmo lleva el nombre de Ronald A. Howard, que lo presentó en *Dynamic Programming and Markov Processes* (Technology Press del MIT y Wiley, 1960).
 
@@ -371,11 +377,12 @@ Cada ronda cuesta más que una de iteración de valores. ¿Cuántas hacen falta?
 
 **Piensa: en un pasillo de 200 casillas, ¿cuántas rondas necesita cada algoritmo?**
 
-Iteración de políticas, muy pocas: cada mejora corrige todas las casillas a la vez. El pasillo grande tiene casillas 1 a 200 y meta 201, con hueco sin barandal en cada casilla ${i\equiv1\pmod3}$.
+Iteración de políticas, muy pocas: cada mejora corrige todas las casillas a la vez. El pasillo grande tiene casillas 1 a 200 y meta 201. Hay un hueco sin barandal en cada casilla ${i\equiv1\pmod3}$.
 
-- **Políticas.** Hay $2^{200}\approx1.6\times10^{60}$ políticas. La cota del teorema no ayuda.
-- **Primera mejora.** Con caminar siempre, ${V(i)=V(i+1)-3}$, así que ${V(1)=-600}$. Junto a un barandal, correr da ${-1+\tfrac12V(i)+\tfrac12V(i+1)=V(i+1)-\tfrac52}$, mejor que caminar. Junto a un hueco, correr da ${V(i+1)-\tfrac{15}2}$, peor.
-- **Resultado.** Una sola mejora ya encuentra la regla local: caminar junto al hueco, correr junto al barandal.
+- **Políticas.** Hay $2^{200}\approx1.6\times10^{60}$: la cota del teorema no ayuda.
+- **Primera evaluación.** Con $\pi$ = caminar siempre, ${V_\pi(i)=V_\pi(i+1)-3}$. Así que ${V_\pi(1)=-600}$.
+- **Primera mejora.** Junto a un barandal, correr da ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)=V_\pi(i+1)-\tfrac52}$. Es mejor que caminar. Junto a un hueco, correr da ${V_\pi(i+1)-\tfrac{15}2}$, peor.
+- **Resultado.** Una mejora basta: caminar junto al hueco, correr junto al barandal.
 
 ```python
 largo = pasillo(n=200)
@@ -387,14 +394,14 @@ print(V[1])
 # -467
 ```
 
-**El número que da.** Iteración de políticas usa 2 rondas desde caminar siempre (una mejora y una que confirma) y da ${V^*(1)=-467}$ exacto. Iteración de valores necesita 451 rondas para bajar el residuo a $10^{-9}$, y aun así da un valor aproximado.
+**El número que da.** Desde caminar siempre usa 2 rondas: una mejora y una que confirma. Da ${V^*(1)=-467}$ exacto. Iteración de valores necesita 451 rondas para bajar el residuo a $10^{-9}$. Y su $V^{(451)}$ solo aproxima $V^*$.
 
 ::: figure {#mkv-c3-fig-rondas-politicas title="Una mejora basta para llegar"}
 ![Iteración de políticas en el pasillo de dos casillas. Desde caminar–caminar, con V = (−6, −3), y desde correr–correr, con V = (−14, −2), una mejora llega a caminar–correr, con V = (−5, −2), y la siguiente no cambia nada. Abajo, el pasillo de 200 casillas: valores, 451 rondas hasta residuo de 10⁻⁹; políticas, 1 mejora desde caminar siempre](../_assets/mkv-c3-rondas-politicas.svg)
 :::
 
-- **Por qué tan pocas.** El valor de una política ya trae el futuro entero, no $k$ pasos. La mejora decide con información completa.
-- **Por qué no siempre conviene.** Cada ronda resuelve un sistema de 200 incógnitas, barato aquí porque cada casilla apunta solo a sí misma y a la siguiente.
+- **Por qué tan pocas.** $V_\pi$ ya trae el futuro entero; $V^{(k)}$ solo trae $k$ pasos. La mejora decide con información completa.
+- **Por qué no siempre conviene.** Cada ronda resuelve un sistema de 200 incógnitas. Aquí es barato: cada casilla apunta solo a sí misma y a la siguiente.
 
 ::: exercise {#mkv-c3-pi-ej-sin-castigo title="Quita el castigo del pasillo grande"}
 En el pasillo de 200 casillas, caer al hueco ya no cuesta nada más: correr cuesta 1 en todas las casillas. Desde caminar siempre, ¿qué hace la primera mejora?
@@ -405,7 +412,7 @@ Con caminar siempre, ¿cuánto da correr junto a un hueco si cuesta 1 en vez de 
 :::
 
 ::: answer {#mkv-c3-pi-resp-sin-castigo of="mkv-c3-pi-ej-sin-castigo"}
-Junto a un hueco, correr da ahora ${-1+\tfrac12V(i)+\tfrac12V(i+1)=V(i+1)-\tfrac52}$, como junto al barandal. La primera mejora cambia todas las casillas a correr. Con correr siempre, ${V(i)=V(i+1)-2}$, y caminar daría ${V(i+1)-3}$: la segunda ronda no cambia nada y el algoritmo para.
+Sea $V_\pi$ el valor de caminar siempre. Junto a un hueco, correr da ahora ${-1+\tfrac12V_\pi(i)+\tfrac12V_\pi(i+1)=V_\pi(i+1)-\tfrac52}$, como junto al barandal. La primera mejora cambia todas las casillas a correr. Con correr siempre, el nuevo valor cumple ${V_\pi(i)=V_\pi(i+1)-2}$, y caminar daría ${V_\pi(i+1)-3}$. La segunda ronda no cambia nada y el algoritmo para.
 :::
 
 Aplica la ronda a mano a un pasillo distinto.
@@ -418,17 +425,17 @@ Aplica la ronda a mano a un pasillo distinto.
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin
 pedir ayuda a ChatGPT.**
 
-Toma el pasillo de dos casillas. **Cambia una idea:** el hueco de la casilla 1 ya no castiga; si resbalas ahí, solo pierdes el turno, como en la 2.
+Toma el pasillo de dos casillas. **Cambia una idea:** el hueco de la casilla 1 ya no castiga. Si resbalas ahí, solo pierdes el turno, como en la 2.
 
 1. **Escribe el MDP.** ¿Cuánto vale ahora $r(1,\text{correr})$? Lo demás no cambia.
-2. **Evalúa.** Calcula el valor de caminar–caminar.
+2. **Evalúa.** Calcula $V_\pi$ para $\pi$ = caminar–caminar.
 3. **Mejora.** Calcula $Q_\pi(s,a)$ en las dos casillas. ¿Qué política sale? ¿Cuántas casillas cambiaron?
 4. **Termina.** Evalúa la nueva política y mejora otra vez. ¿Cuántas rondas usó el algoritmo? ¿Cuánto vale $V^*$?
-5. **Pon el castigo en 1.** Con castigo 1, ${r(1,\text{correr})=-\tfrac32}$. Repite desde caminar–caminar conservando en empate. ¿Dónde aparece un empate y qué política devuelve?
+5. **Pon el castigo en 1.** Con castigo 1, ${r(1,\text{correr})=-\tfrac32}$. Repite desde caminar–caminar, conservando en empate. ¿Dónde aparece un empate y qué política devuelve?
 :::
 
 ::: hint {#mkv-c3-pi-pista-sin-hueco-1 of="mkv-c3-pi-ej-sin-hueco" title="Pista 1 · ¿Qué cuenta hace cada ronda?"}
-¿Cuál es el sistema de dos ecuaciones de la política actual? Con su solución, ¿cuánto da cada acción en cada casilla si después sigues con esa política?
+¿Cuál es el sistema de dos ecuaciones de la política actual? Con su solución $V_\pi$, ¿cuánto da cada acción en cada casilla si después sigues con esa política?
 :::
 
 ::: hint {#mkv-c3-pi-pista-sin-hueco-2 of="mkv-c3-pi-ej-sin-hueco" title="Pista 2 · ¿Tus valores tienen sentido?"}
@@ -438,7 +445,7 @@ Toma el pasillo de dos casillas. **Cambia una idea:** el hueco de la casilla 1 y
 ::: answer {#mkv-c3-pi-resp-sin-hueco of="mkv-c3-pi-ej-sin-hueco" title="Respuesta · El pasillo sin castigo"}
 **1. El MDP.** Sin castigo, correr en 1 solo tarda: ${r(1,\text{correr})=-1}$.
 
-**2. Evaluar.** Caminar–caminar no cambia: ${(V(1),V(2))=(-6,-3)}$.
+**2. Evaluar.** Caminar–caminar no cambia: ${V_\pi=(-6,-3)}$.
 
 **3. Mejorar.**
 
@@ -452,25 +459,25 @@ Q_\pi(1,\text{correr})&=-1+\tfrac12(-6)+\tfrac12(-3)\\
 \end{aligned}
 $$
 
-Correr gana en las dos: sale correr–correr. Cambiaron las dos casillas en una sola mejora.
+Correr gana en las dos: sale correr–correr. Cambiaron ambas en una mejora.
 
-**4. Terminar.** Correr–correr da ${V(2)=-2}$ y ${V(1)=-1+\tfrac12V(1)-1}$, o sea ${V(1)=-4}$. Mejorar: en 2, $-3$ contra $-2$; en 1, ${-3-2=-5}$ contra ${-1-2-1=-4}$. Nada cambia. Usó 2 rondas y ${V^*=(-4,-2)}$.
+**4. Terminar.** Para correr–correr buscamos $V(1),V(2)$ con ${V(2)=-1+\tfrac12V(2)}$ y ${V(1)=-1+\tfrac12V(1)+\tfrac12V(2)}$. La solución es ${V_\pi=(-4,-2)}$. Mejorar: en 2, $-3$ contra $-2$; en 1, ${-3-2=-5}$ contra ${-1-2-1=-4}$. Nada cambia. Usó 2 rondas, y ${V^*=(-4,-2)}$.
 
-**5. Castigo 1.** En la ronda 1, en la casilla 1 caminar da $-6$ y correr ${-\tfrac32-3-\tfrac32=-6}$: empatan, y se conserva caminar. La casilla 2 pasa a correr. En la ronda 2, con ${(-5,-2)}$, caminar da $-5$ y correr ${-\tfrac32-\tfrac52-1=-5}$: otro empate, se conserva caminar. Devuelve caminar–correr con ${(-5,-2)}$. Es la frontera: con castigo 1 las dos acciones valen lo mismo en la casilla 1.
+**5. Castigo 1.** Ronda 1, con ${V_\pi=(-6,-3)}$: en la casilla 1, caminar da $-6$ y correr ${-\tfrac32-3-\tfrac32=-6}$. Empatan, y se conserva caminar. La casilla 2 pasa a correr. Ronda 2, con ${V_\pi=(-5,-2)}$ de caminar–correr: caminar da $-5$ y correr ${-\tfrac32-\tfrac52-1=-5}$. Otro empate; se conserva caminar. Devuelve caminar–correr, con ${V^*=(-5,-2)}$. Es la frontera: con castigo 1, las dos acciones valen lo mismo en la casilla 1.
 :::
 
-**Punto de control:** deberías poder correr una ronda de iteración de políticas a mano, decir por qué el valor no baja y por qué el algoritmo para, y explicar qué hace la regla de empates.
+**Punto de control:** deberías poder correr una ronda a mano y decir por qué $V_\pi$ no baja, por qué el algoritmo para y qué hace la regla de empates.
 
 ---
 
 ## Lo que hay que llevarse
 
-- **La ronda.** Evaluar con un sistema lineal (@mkv-c3-teo-evaluar) y mejorar con la codiciosa de $V_\pi$, conservando la acción en los empates.
-- **En el juguete.** Desde caminar–caminar, ${(-6,-3)}$, o desde correr–correr, ${(-14,-2)}$, una mejora llega a caminar–correr, ${(-5,-2)}$. Una segunda ronda lo confirma.
-- **El teorema.** Con las condiciones de Bellman, una $\pi_0$ que termina y la regla de empates, el valor no baja y el algoritmo para con $\pi^*$ en a lo más ${\prod_s\lvert\mathcal A(s)\rvert}$ rondas (@mkv-c3-teo-iterar-politicas).
-- **Los empates.** Si la mejora cambia en empate, puede alternar para siempre entre dos políticas del mismo valor.
-- **El costo.** Rondas caras y pocas: en el PASILLO, 2 rondas contra 451 de iteración de valores.
+- **La ronda.** Evaluar $V_\pi$ con un sistema lineal (@mkv-c3-teo-evaluar). Mejorar con la codiciosa de $V_\pi$, conservando la acción en los empates.
+- **En el juguete.** Desde caminar–caminar, con ${V_\pi=(-6,-3)}$, o desde correr–correr, con ${V_\pi=(-14,-2)}$, una mejora llega a caminar–correr. Su valor ${(-5,-2)}$ es $V^*$, y una segunda ronda lo confirma.
+- **El teorema.** Pide las condiciones de Bellman, una $\pi_0$ que termina y la regla de empates. Entonces $V_\pi$ no baja, y el algoritmo para con $\pi^*$ en a lo más ${\prod_s\lvert\mathcal A(s)\rvert}$ rondas (@mkv-c3-teo-iterar-politicas).
+- **Los empates.** Cambiar en empate puede alternar para siempre entre dos políticas del mismo valor.
+- **El costo.** Rondas caras y pocas: en el PASILLO, 2 rondas exactas contra 451 de iteración de valores, que solo aproximan $V^*$.
 
-Evaluar es un sistema lineal y mejorar es un máximo; las dos piezas juntas suenan a optimización. ¿Es esto un problema de optimización como los de la unidad 6?
+Evaluar es un sistema lineal y mejorar es un máximo: suena a optimización. ¿Es esto un problema de optimización como los de la unidad 6?
 
 Continúa con [[mkv-mdp-lineal|El MDP como programa lineal]].
