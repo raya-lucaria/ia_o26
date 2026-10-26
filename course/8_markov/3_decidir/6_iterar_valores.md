@@ -4,7 +4,7 @@ title: "Iteración de valores"
 nav_title: "Iteración de valores"
 summary: "Resolver Bellman aplicando el máximo una y otra vez: la traza en el pasillo, cuándo converge, cuándo parar y un pasillo de 200 casillas."
 status: ready
-estimated_time: 28m
+estimated_time: 30m
 tags: [markov, decidir, iteracion-de-valores, algoritmo]
 ---
 
@@ -51,7 +51,7 @@ V(s)=\max_{a\in\mathcal A(s)}\Big[&r(s,a)\\
 \end{aligned}
 $$
 
-Una **ronda** reemplaza el lado izquierdo por el derecho, en todos los estados a la vez:
+Una **ronda** reemplaza el lado izquierdo por el derecho, en todos los estados a la vez. Antes de leerla, una advertencia: el superíndice $(t)$ no es el reloj del robot.
 
 $$
 \begin{aligned}
@@ -60,9 +60,19 @@ V^{(t+1)}(s)=\max_{a\in\mathcal A(s)}\Big[&r(s,a)\\
 \end{aligned}
 $$
 
+> [!NOTE]
+> **Qué cuenta el $(t)$: pasos que quedan, no el reloj.** Desde ${V^{(0)}=0}$, ${V^{(t)}(s)}$ es lo mejor que puedes lograr desde $s$ si solo te quedan $t$ pasos. Después de esos $t$ pasos ya no cuenta nada.
+>
+> - **Lectura de la ecuación.** Con ${t+1}$ pasos, gastas uno ahora: eliges $a$, pagas ${r(s,a)}$ y caes en $s'$. Desde $s'$ te quedan $t$ pasos, y su mejor valor ya lo calculaste: ${V^{(t)}(s')}$.
+> - **Por eso $t+1$ a la izquierda y $t$ a la derecha.** No son dos momentos del robot. Son cuántos pasos le quedan antes y después de gastar uno.
+> - **De dónde viene.** Es la pasada hacia atrás de [[mkv-la-escalera|la escalera]], ahora con azar.
+>
+> **En la casilla 2 del pasillo.** Con 0 pasos no haces nada: ${V^{(0)}=(0,0)}$. Con un paso, ${V^{(1)}(2)=\max(-3,-1)=-1}$: lo mejor es correr, porque si resbalas ya se acabaron los pasos. Con dos, ${V^{(2)}(2)=\max(-3,\,-1+\tfrac12(-1))=-\tfrac32}$. Al crecer los pasos que quedan, el valor se acerca a ${V^*(2)=-2}$, el valor sin límite de pasos.
+
+> [!WARNING]
+> **Leer ${V^{(t)}}$ como el valor en el instante $t$ del episodio.** El robot siempre está en el paso 0 de su episodio; $t$ es la ronda del algoritmo, que es igual a los pasos que le quedan.
+
 - **Síncrona.** El lado derecho usa solo valores de la ronda $t$, aunque ya hayas calculado otro estado de la ronda ${t+1}$.
-- **Ronda no es paso.** El paso $t$ es un movimiento del robot; la ronda $t$ es una vuelta del algoritmo.
-- **Qué cuenta $V^{(t)}$.** Desde ${V^{(0)}=0}$, ${V^{(t)}(s)}$ es lo mejor que esperas cobrar si al robot le quedan $t$ pasos y después se apaga. Es la pasada hacia atrás de la escalera, pero contada en pasos restantes y no en escalones.
 
 **En el juguete.** En el pasillo mojado, ${\mathcal T=\{1,2\}}$. Con $P_{\text{caminar}}$ y $P_{\text{correr}}$ de [[mkv-el-mdp|El MDP]], cada ronda es:
 
@@ -243,7 +253,7 @@ Entonces, desde cualquier ${V^{(0)}}$ finito, ${V^{(t)}(s)\to V^*(s)}$ para todo
 
 Si además ${V^{(0)}=0}$ y ${r\le0}$, entonces ${V^{(t)}(s)}$ es lo mejor que se espera cobrar en a lo más $t$ pasos, y baja monótona: ${V^{(t+1)}(s)\le V^{(t)}(s)}$.
 
-**Lectura.** Cada ronda agrega un paso de futuro; con suficientes pasos, lo que queda después pesa cada vez menos.
+**Lectura.** Es el recuadro «Qué cuenta el $(t)$» de la sección 1: cada ronda agrega un paso de futuro; con suficientes pasos, lo que queda después pesa cada vez menos.
 
 **Casos nulos.** Sin ciclos, como en la escalera, ${V^{(t)}=V^*}$ exacto a más tardar cuando $t$ alcanza el camino más largo: 5 rondas desde el escalón 0. Si toda acción lleva directo a $\mathcal F$, basta una ronda.
 :::
