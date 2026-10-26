@@ -13,11 +13,12 @@ contenido(nombre) devuelve el SVG sin escribirlo: test_gen_markov.py lo
 compara byte a byte con el archivo comiteado (si alguien edita el SVG a
 mano, la prueba falla con «corre el generador»).
 
-Los ids llevan prefijo "mkv-c1-" (clase 1) o "mkv-c2-" (clase 2): los ids de objeto numerado son unicos en
-todo el curso.
+Los ids llevan prefijo "mkv-c1-" (clase 1), "mkv-c2-" (clase 2) o "mkv-c3-"
+(clase 3): los ids de objeto numerado son unicos en todo el curso.
 """
 import math
 import sys
+from functools import lru_cache
 from fractions import Fraction as F
 from xml.sax.saxutils import escape
 
@@ -1180,17 +1181,46 @@ def _ancho_txt(s, tam=12):
     return len(s) * tam * 0.62
 
 
-def _matriz_svg(out, xc, yc, filas, tam=12):
-    """P = [ ... ] con corchetes, centrada en xc; filas son listas de cadenas."""
+def _pre_matriz(rotulo, sub, tam=12):
+    """Ancho del rotulo «P_sub =» a la izquierda del corchete."""
+    return _ancho_txt(rotulo, tam) + (_ancho_txt(sub, tam) + 2 if sub else 0) + 22
+
+
+def _matriz_svg(out, xc, yc, filas, tam=12, rotulo="P", sub=None, cols=None, marcar=(),
+                pre=None):
+    """P = [ ... ] con corchetes, centrada en xc; filas son listas de cadenas.
+    Clase 3: `sub` escribe el subindice aparte (P con «caminar» abajo),
+    `cols` rotula las columnas encima, `marcar` encierra filas en el acento y
+    `pre` fija el ancho del rotulo (para alinear varias matrices)."""
     k = len(filas[0])
     col = max(_ancho_txt(c, tam) for f in filas for c in f) + 12
-    x = xc - (36 + k * col) / 2
+    if cols:
+        col = max(col, max(_ancho_txt(c, tam) for c in cols) + 8)
+    simple = sub is None and rotulo == "P"
+    if pre is None:
+        pre = 30 if simple else _pre_matriz(rotulo, sub, tam)
+    x = xc - (pre + 6 + k * col) / 2
     alto_fila = 17
     h = len(filas) * alto_fila + 4
     y0 = yc - h / 2
-    out.append(texto(x, yc + tam * 0.35, "P =", tam=tam, anclaje="start", color=SUAVE))
-    xb = x + 30
+    if simple:
+        out.append(texto(x, yc + tam * 0.35, "P =", tam=tam, anclaje="start", color=SUAVE))
+    else:
+        # P y su subindice desde la izquierda; «=» pegado al corchete
+        out.append(texto(x, yc + tam * 0.35, rotulo, tam=tam, anclaje="start", color=SUAVE))
+        if sub:
+            out.append(texto(x + _ancho_txt(rotulo, tam) + 2, yc + tam * 0.35 + 6, sub,
+                             tam=tam, anclaje="start", color=SUAVE))
+        out.append(texto(x + pre - 8, yc + tam * 0.35, "=", tam=tam, anclaje="end",
+                         color=SUAVE))
+    xb = x + pre
     xe = xb + 6 + k * col
+    for i in marcar:
+        out.append(caja(_n(xb - 3), _n(y0 + 1 + alto_fila * i), _n(xe - xb + 6), alto_fila + 2,
+                        relleno=mezclar(ACENTO, 0.16), borde=ACENTO, radio=4, grosor=1.5))
+    if cols:
+        for j, c in enumerate(cols):
+            out.append(texto(xb + 3 + col * (j + 0.5), y0 - 6, c, tam=tam, color=SUAVE))
     for xx, d in ((xb, 5), (xe, -5)):
         out.append(f'<path d="M {_n(xx + d)} {_n(y0)} L {_n(xx)} {_n(y0)} L {_n(xx)} '
                    f'{_n(y0 + h)} L {_n(xx + d)} {_n(y0 + h)}" fill="none" '
@@ -1309,6 +1339,1461 @@ def ejemplo(clave):
     return svg(titulo, " ".join(descs), out, y)
 
 
+# =========================================================== CLASE 3 ===
+#
+# Figuras «mkv-c3-*» de course/8_markov/3_decidir/ (plan de la clase 3, §4 y
+# §5). Cada cifra sale de markov.py (seccion «Decidir»). Notacion del plan
+# §2: V(1), nunca V con subindice; politicas en palabras («caminar–correr»).
+#
+# Marcas: estado = circulo azul con su numero; meta = circulo verde con
+# anillo doble; accion = punto pequeno, con su nombre y su recompensa al
+# lado. En una politica o una codiciosa, la accion elegida va en el acento y
+# con trazo continuo; la que no, punteada.
+
+R_S, R_A = 18, 5
+X_J2 = {1: 46, 2: 150, m.META: 254}
+COLOR_META = COLOR_CERRADA
+# desplazamiento del nodo de accion respecto a su estado
+_OFF = {m.CAMINAR: (52, -44), m.CORRER: (40, 46), m.ESPERAR: (0, -56)}
+# lado del rotulo de probabilidad en la flecha que avanza (+1: lado de la normal)
+_LADO = {m.CAMINAR: -1, m.CORRER: 1}
+
+
+def _v(x):
+    """Una fraccion con signo menos tipografico: −5, −1/2."""
+    return fr(x).replace("-", "−")
+
+
+def _vd(x, cifras=3):
+    return f"{float(x):.{cifras}f}".replace("-", "−")
+
+
+def _aprox(x):
+    """−467, o 1/3 ≈ 0.33 si no es entero."""
+    x = F(x)
+    return _v(x) if x.denominator == 1 else f"{_v(x)} ≈ {_vd(x, 2)}"
+
+
+def _nombre_pol(pol):
+    return f"{pol[1]}–{pol[2]}"
+
+
+def _seg(a, b, r0=0.0, r1=0.0, color=SUAVE, punta=True, curva=0.0, grosor=2,
+         guiones=None):
+    """Curva cuadratica de a a b recortada por r0 y r1. Devuelve (svg, punto
+    medio, normal unitaria del lado hacia donde se curva)."""
+    (x1, y1), (x2, y2) = a, b
+    d = math.hypot(x2 - x1, y2 - y1)
+    nx, ny = -(y2 - y1) / d, (x2 - x1) / d
+    mx, my = (x1 + x2) / 2 + nx * curva, (y1 + y2) / 2 + ny * curva
+
+    def rec(px, py, qx, qy, rr):
+        L = math.hypot(qx - px, qy - py)
+        return px + (qx - px) * rr / L, py + (qy - py) * rr / L
+    sx, sy = rec(x1, y1, mx, my, r0)
+    ex, ey = rec(x2, y2, mx, my, r1 + (2 if punta else 0))
+    marca = ""
+    if punta:
+        marca = f' marker-end="url(#{"p" if color == ACENTO else "s"})"'
+    trazo = f' stroke-dasharray="{guiones}"' if guiones else ""
+    camino = (f'<path d="M {_n(sx)} {_n(sy)} Q {_n(mx)} {_n(my)} {_n(ex)} {_n(ey)}" '
+              f'fill="none" stroke="{color}" stroke-width="{grosor}"{trazo}{marca}/>')
+    medio = (0.25 * sx + 0.5 * mx + 0.25 * ex, 0.25 * sy + 0.5 * my + 0.25 * ey)
+    s = 1 if curva >= 0 else -1
+    return camino, medio, (nx * s, ny * s)
+
+
+def _estado(cx, cy, rotulo):
+    if rotulo == m.META:
+        return (f'<circle cx="{_n(cx)}" cy="{_n(cy)}" r="{R_S + 5}" fill="none" '
+                f'stroke="{COLOR_META}" stroke-width="2"/>'
+                + _gnodo(cx, cy, "meta", COLOR_META, r=R_S, tam=12))
+    return _gnodo(cx, cy, str(rotulo), COLOR_V, r=R_S, tam=15)
+
+
+def _punto_accion(cx, cy, color=TEXTO):
+    return (f'<circle cx="{_n(cx)}" cy="{_n(cy)}" r="{R_A}" fill="{color}" '
+            f'stroke="{color}" stroke-width="1"/>')
+
+
+def _grafo_mdp(out, mdp, y, acciones=None, resaltar=None, rotulos=None, xs=X_J2):
+    """Estados en fila y, por cada (s, a) que se dibuja, su nodo de accion.
+    acciones: dict s -> acciones a dibujar (por omision, todas). resaltar:
+    dict s -> accion elegida (en el acento; las demas punteadas). rotulos:
+    dict (s, a) -> segundo renglon (por omision «r = −3»). Devuelve la y de
+    abajo del grafo."""
+    acciones = acciones or mdp["acciones"]
+    arriba = 92 if any(m.ESPERAR in acciones[s] for s in mdp["estados"]) else 80
+    yn = y + arriba
+    pos = {s: (xs[s], yn) for s in mdp["estados"]}
+    pos[m.META] = (xs[m.META], yn)
+    abajo = any(m.CORRER in acciones[s] for s in mdp["estados"])
+    for s in mdp["estados"]:
+        S = pos[s]
+        for a in acciones[s]:
+            dx, dy = _OFF[a]
+            D = (S[0] + dx, S[1] + dy)
+            elegida = resaltar is None or resaltar.get(s) == a
+            color = ACENTO if resaltar and elegida else SUAVE
+            guiones = None if elegida else "4 3"
+            vuelve = s in mdp["P"][(s, a)]
+            c = -12 if vuelve else 0
+            camino, _, _ = _seg(S, D, R_S, R_A, color, punta=False, curva=c, guiones=guiones)
+            out.append(camino)
+            for t, p in mdp["P"][(s, a)].items():
+                T = pos[t]
+                camino, (qx, qy), (nx, ny) = _seg(D, T, R_A, R_S + (5 if t == m.META else 0),
+                                                  color, curva=c if t == s else 0,
+                                                  guiones=guiones)
+                out.append(camino)
+                lado = 1 if t == s else _LADO.get(a, 1)
+                out.append(texto(qx + nx * 12 * lado, qy + ny * 12 * lado + 4, _v(p), tam=12,
+                                 peso="700"))
+            out.append(_punto_accion(*D, ACENTO if resaltar and elegida else TEXTO))
+            segundo = (rotulos or {}).get((s, a), f"r = {_v(mdp['r'][(s, a)])}")
+            if dy < 0:
+                out.append(texto(D[0], D[1] - 24, a, tam=12, peso="700"))
+                out.append(texto(D[0], D[1] - 10, segundo, tam=12))
+            else:
+                out.append(texto(D[0], D[1] + 22, a, tam=12, peso="700"))
+                out.append(texto(D[0], D[1] + 37, segundo, tam=12))
+    for s, (cx, cy) in pos.items():
+        out.append(_estado(cx, cy, s))
+    return yn + (88 if abajo else 34)
+
+
+def _desc_mdp(mdp, acciones=None):
+    acciones = acciones or mdp["acciones"]
+    partes = []
+    for s in mdp["estados"]:
+        for a in acciones[s]:
+            va = ", ".join((f"se queda con {fr(p)}" if t == s else f"a {t} con {fr(p)}")
+                           for t, p in mdp["P"][(s, a)].items())
+            partes.append(f"en {s}, {a} (r = {_v(mdp['r'][(s, a)])}): {va}")
+    return "; ".join(partes) + "."
+
+
+def _filas(M):
+    return [[_v(x) for x in f] for f in M]
+
+
+def _cols(mdp):
+    return [str(s) for s in mdp["estados"]] + ["meta"]
+
+
+def _matrices_mdp(out, y, mdp, acciones=(m.CAMINAR, m.CORRER), marcar=None):
+    """Una matriz por accion, una debajo de otra; columnas rotuladas."""
+    k = len(mdp["estados"])
+    pre = max(_pre_matriz("P", a) for a in acciones)
+    for a in acciones:
+        yc = y + 22 + k * 17 / 2
+        _matriz_svg(out, ANCHO / 2, yc, _filas(m.matriz_accion(mdp, a)), sub=a,
+                    cols=_cols(mdp), marcar=(marcar or {}).get(a, ()), pre=pre)
+        y = yc + k * 17 / 2 + 12
+    return y
+
+
+def _matriz_pi(out, y, mdp, pol, sub="π", pre=None):
+    k = len(mdp["estados"])
+    filas = [m.matriz_accion(mdp, pol[s])[i] for i, s in enumerate(mdp["estados"])]
+    yc = y + 22 + k * 17 / 2
+    _matriz_svg(out, ANCHO / 2, yc, _filas(filas), sub=sub, cols=_cols(mdp), pre=pre)
+    return yc + k * 17 / 2 + 8, filas
+
+
+def _panel_mdp(out, y, mdp, acciones=None, resaltar=None, rotulos=None, matrices=True):
+    """Grafo del MDP y, debajo, una matriz por accion (plan §5)."""
+    y = _grafo_mdp(out, mdp, y, acciones, resaltar, rotulos)
+    if matrices:
+        y = _matrices_mdp(out, y, mdp)
+    return y
+
+
+# ------------------------------------------------------------ graficas ---
+
+def _plano(out, caja_px, xr, yr, xticks, yticks, xlab, ylab, fx=None, fy=None, log=False):
+    """Ejes con rejilla. caja_px = (x0, top, x1, bot). Con log, yr va en
+    log10 y yticks en valores. Devuelve (px, py)."""
+    x0, top, x1, bot = caja_px
+    fx = fx or (lambda v: _v(F(v).limit_denominator(100)))
+    fy = fy or fx
+
+    def px(x):
+        return x0 + (x1 - x0) * (float(x) - xr[0]) / (xr[1] - xr[0])
+
+    def py(v):
+        v = math.log10(float(v)) if log else float(v)
+        return bot - (bot - top) * (v - yr[0]) / (yr[1] - yr[0])
+    for v in yticks:
+        out.append(linea(x0, _n(py(v)), x1, _n(py(v)), color=mezclar(LINEA, 0.5), grosor=1))
+        out.append(texto(x0 - 8, py(v) + 4, fy(v), tam=12, anclaje="end", color=SUAVE))
+    for v in xticks:
+        out.append(linea(_n(px(v)), top, _n(px(v)), bot, color=mezclar(LINEA, 0.5), grosor=1))
+        out.append(texto(px(v), bot + 17, fx(v), tam=12, color=SUAVE))
+    out.append(texto((x0 + x1) / 2, bot + 36, xlab, tam=13, peso="700"))
+    out.append(texto(X_PIE, top - 12, ylab, tam=13, peso="700", anclaje="start"))
+    return px, py
+
+
+# --------------------------------------------------- el punto fijo, 1D ---
+
+def _f_telarana(x):
+    """La funcion de la pagina 1: f(x) = −1 + x/2 (plan §4, p1)."""
+    return -1 + F(x) / 2
+
+
+def _telarana(out, px, py, f, x0, pasos):
+    """Iterar x ← f(x) desde x0: vertical a la curva, horizontal a y = x."""
+    x = F(x0)
+    xs = [x]
+    camino = [(px(x), py(x))]
+    for _ in range(pasos):
+        fx = f(x)
+        camino.append((px(x), py(fx)))
+        camino.append((px(fx), py(fx)))
+        x = fx
+        xs.append(x)
+    out.append(_polilinea(camino, ACENTO, grosor=2))
+    for x in xs:
+        out.append(_marca("circulo", px(x), py(x), ACENTO, r=3.5))
+    return xs
+
+
+def _panel_funcion(out, y, curvas, diagonal=True, xr=(-4, 1), yr=(-4, 1), alto=170,
+                   telarana=None, marcas=(), pegada=None):
+    """Grafica 1D: y = x punteada y las curvas [(f, color, guiones)].
+    telarana = (f, x0, pasos). marcas = [(x, rotulo)] sobre y = x. pegada =
+    (x_desde, x_hasta): tramo grueso donde la curva coincide con y = x."""
+    top, bot = y + 30, y + 30 + alto
+    px, py = _plano(out, (58, top, 280, bot), xr, yr, range(xr[0], xr[1] + 1),
+                    range(yr[0], yr[1] + 1), "x", "y")
+    def tramo(f, color, guiones=None, grosor=2):
+        n = 80
+        pts = []
+        for i in range(n + 1):
+            x = F(xr[0]) + F(xr[1] - xr[0]) * i / n
+            v = f(x)
+            if yr[0] <= v <= yr[1]:
+                pts.append((px(x), py(v)))
+        out.append(_polilinea(pts, color, guiones, grosor))
+    if diagonal:
+        tramo(lambda x: x, TEXTO, "2 4", 1.5)
+    if pegada:
+        a, b = pegada
+        out.append(_polilinea([(px(a), py(a)), (px(b), py(b))], COLOR_C, None, 6))
+    for f, color, guiones in curvas:
+        tramo(f, color, guiones)
+    xs = None
+    if telarana:
+        xs = _telarana(out, px, py, *telarana)
+    for x, rot in marcas:
+        out.append(f'<circle cx="{_n(px(x))}" cy="{_n(py(x))}" r="6" fill="none" '
+                   f'stroke="{COLOR_CERRADA}" stroke-width="2.5"/>')
+        out.append(texto(px(x) + 10, py(x) + 20, rot, tam=12, peso="700", anclaje="start"))
+    return bot + 44, xs
+
+
+# =============================================== figuras de la pagina 1 ===
+
+def mkv_c3_punto_fijo():
+    titulo = ["Iterar x ← f(x)", "f(x) = −1 + x/2, desde 0"]
+    out = []
+    y = encabezado(out, titulo)
+    y = _leyenda(out, y + 8, [
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V), "y = f(x)"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], TEXTO, "2 4", 1.5), "y = x"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], ACENTO)
+         + _marca("circulo", x, yy, ACENTO, r=3.5), "la telaraña: x ← f(x)"),
+    ])
+    y, xs = _panel_funcion(out, y, [(_f_telarana, COLOR_V, None)],
+                           telarana=(_f_telarana, 0, 6), marcas=[(-2, "x = −2")])
+    y = pie(out, y + 12, ["Sube o baja a la curva, cruza a y = x:",
+                         "x = " + ", ".join(_v(x) for x in xs[:5]) + ", …",
+                         "Cada vez a la mitad de distancia del",
+                         "cruce en −2; se acerca, nunca llega."], color=TEXTO)
+    desc = ("Gráfica de y = f(x) = −1 + x/2 y de y = x, con x de −4 a 1. Se cruzan una vez, "
+            "en x = −2: el punto fijo. La telaraña itera x ← f(x) desde 0: "
+            + ", ".join(_v(x) for x in xs) + "; la distancia a −2 se parte a la mitad en "
+            "cada paso y nunca llega a cero.")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 2 ===
+
+def _escalera_grafo(out, yn, resbalon=None, marcar_ruta=None, rotulo_falta=True):
+    """Escalones 0..5 en fila; brincos de 1 abajo de la fila? No: los de 1
+    rectos y los de 2 en arco (pares arriba, impares abajo)."""
+    xs = {s: 64 + 43 * s for s in range(6)}
+    ruta = set(zip(marcar_ruta, marcar_ruta[1:])) if marcar_ruta else set()
+    for s in range(5):
+        for a in (1, 2):
+            t = s + a
+            if t > 5:
+                continue
+            en_ruta = (s, t) in ruta
+            color = ACENTO if en_ruta else SUAVE
+            grosor = 2 if en_ruta else 1.5
+            if a == 1:
+                camino, _, _ = _seg((xs[s], yn), (xs[t], yn), 14, 14, color, grosor=grosor)
+            else:
+                curva = -30 if s % 2 == 0 else 30
+                camino, _, _ = _seg((xs[s], yn), (xs[t], yn), 14, 14, color, curva=curva,
+                                    grosor=grosor)
+            out.append(camino)
+    if resbalon is not None:
+        out.append(_lazo(xs[resbalon], yn, "1/2", r=14, hacia="abajo", tam=12, alcance=36))
+    for s in range(6):
+        out.append(_gnodo(xs[s], yn, str(s), COLOR_META if s == 5 else COLOR_V, r=14, tam=13))
+    return xs
+
+
+def mkv_c3_escalera():
+    cost = m.ESCALERA_COSTOS
+    costo = m.escalera_costo()
+    ruta = m.escalera_ruta_optima()
+    cod = m.escalera_codiciosa()
+    titulo = ["La escalera", "brinca 1 o 2; pisar cuesta"]
+    out = []
+    y = encabezado(out, titulo)
+    # dibujo: escalones que suben a la derecha
+    base, x0, w, h = y + 150, 72, 35, 20
+    for s in range(6):
+        top = base - h * (s + 1)
+        flojo = s > 0 and cost[s - 1] == max(cost)
+        out.append(caja(_n(x0 + w * s), _n(top), w, _n(base - top), radio=2,
+                        relleno=mezclar(COLOR_C if flojo else LINEA, 0.25),
+                        borde=COLOR_C if flojo else SUAVE, grosor=1.5,
+                        guiones="4 3" if flojo else None))
+        out.append(texto(x0 + w * s + w / 2, top + 15, str(s), tam=13, peso="700"))
+        if flojo:
+            out.append(texto(x0 + w * s + w / 2, base - 8, "flojo", tam=12, color=COLOR_C))
+    # la ruta optima: arcos del centro de un escalon al de otro
+    for a, b in zip(ruta, ruta[1:]):
+        ya, yb = base - h * (a + 1) - 4, base - h * (b + 1) - 4
+        xa, xb = x0 + w * a + w / 2, x0 + w * b + w / 2
+        out.append(_curva(f"M {_n(xa)} {_n(ya)} Q {_n((xa + xb) / 2)} {_n(min(ya, yb) - 34)} "
+                          f"{_n(xb)} {_n(yb - 4)}", color=ACENTO).replace('url(#s)', 'url(#p)'))
+    out.append(texto(X_PIE, base - 128, "ruta óptima", tam=12, peso="700", anclaje="start",
+                     color=ACENTO))
+    # tabla alineada con los escalones
+    filas = [("escalón", [str(s) for s in range(6)], "700"),
+             ("pisar", ["—"] + [str(c) for c in cost], "normal"),
+             ("falta", [str(c) for c in costo], "700")]
+    yt = base + 24
+    for k, (rot, vals, peso) in enumerate(filas):
+        out.append(texto(X_PIE, yt + 20 * k, rot, tam=13, anclaje="start", color=SUAVE))
+        for s, v in enumerate(vals):
+            out.append(texto(x0 + w * s + w / 2, yt + 20 * k, v, tam=13, peso=peso,
+                             color=TEXTO if k != 1 else SUAVE))
+    y = pie(out, yt + 66, [
+        "Fila «falta»: lo que falta pagar desde",
+        "ese escalón, de 5 hacia atrás.",
+        "Óptima: " + " → ".join(map(str, ruta)) + f", paga {m.costo_ruta(ruta)}.",
+        "La codiciosa (pisa el más barato):",
+        " → ".join(map(str, cod)) + f", paga {m.costo_ruta(cod)}."], color=TEXTO)
+    desc = ("Escalera de escalones 0 a 5 que suben a la derecha; desde cada escalón se brinca "
+            "1 o 2 sin pasarse del 5. Pisar los escalones 1 a 5 cuesta "
+            + ", ".join(map(str, cost)) + " (el 3 está flojo). Lo que falta pagar desde cada "
+            "escalón, de 0 a 5: " + ", ".join(map(str, costo)) + ". La ruta óptima, marcada, es "
+            + " → ".join(map(str, ruta)) + f" y paga {m.costo_ruta(ruta)}; la codiciosa, que pisa "
+            "el siguiente más barato, es " + " → ".join(map(str, cod))
+            + f" y paga {m.costo_ruta(cod)}.")
+    return svg(titulo, desc, out, y)
+
+
+def _arbol_rutas():
+    """El arbol de llamadas de rutas(0): cada nodo es un escalon; sus hijos,
+    los escalones a 1 y 2 brincos. Devuelve [(nivel, escalon, x, padre)]."""
+    nodos = []
+    hojas = [0]
+
+    def baja(s, nivel, padre):
+        i = len(nodos)
+        nodos.append([nivel, s, None, padre])
+        hijos = [s + a for a in (1, 2) if s + a <= 5]
+        if not hijos:
+            nodos[i][2] = 26 + 35 * hojas[0]
+            hojas[0] += 1
+        else:
+            xs = [baja(t, nivel + 1, i) for t in hijos]
+            nodos[i][2] = sum(xs) / len(xs)
+        return nodos[i][2]
+    baja(0, 0, None)
+    return nodos
+
+
+def mkv_c3_escalera_arbol_vs_grafo():
+    rutas = m.escalera_rutas()
+    nodos = _arbol_rutas()
+    hojas = sum(1 for n in nodos if n[1] == 5)
+    assert hojas == rutas[0] == len(m.escalera_todas_las_rutas())
+    titulo = ["Contar rutas: árbol", "contra grafo"]
+    out = []
+    y = encabezado(out, titulo)
+    out.append(texto(X_PIE, y + 6, f"El árbol de rutas(0): {len(nodos)} nodos", tam=14,
+                     peso="700", anclaje="start"))
+    y0 = y + 36
+    dy = 40
+    for nivel, s, x, padre in nodos:
+        if padre is not None:
+            pn = nodos[padre]
+            out.append(linea(_n(pn[2]), _n(y0 + dy * pn[0] + 11), _n(x),
+                             _n(y0 + dy * nivel - 11), color=SUAVE, grosor=1.5))
+    for nivel, s, x, padre in nodos:
+        out.append(_gnodo(x, y0 + dy * nivel, str(s), COLOR_META if s == 5 else COLOR_V, r=11,
+                          tam=12))
+    prof = max(n[0] for n in nodos)
+    y = y0 + dy * prof + 30
+    veces = {s: sum(1 for n in nodos if n[1] == s) for s in range(6)}
+    y = pie(out, y, [f"{hojas} hojas = {hojas} rutas. El 3 aparece {veces[3]} veces,",
+                     f"el 4, {veces[4]}: el árbol repite la cuenta."], color=TEXTO)
+    y += 8
+    out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+    out.append(texto(X_PIE, y + 14, "El grafo: 6 nodos, uno por escalón", tam=14, peso="700",
+                     anclaje="start"))
+    yn = y + 62
+    xs = _escalera_grafo(out, yn)
+    out.append(texto(X_PIE, yn + 50, "rutas", tam=12, anclaje="start", color=SUAVE))
+    for s in range(6):
+        out.append(texto(xs[s], yn + 50, str(rutas[s]), tam=13, peso="700"))
+    y = pie(out, yn + 80, ["Hacia atrás: rutas(s) = rutas(s + 1) +",
+                            "rutas(s + 2); cada escalón se cuenta",
+                            "una sola vez."], color=TEXTO)
+    desc = (f"Arriba, el árbol de llamadas de rutas(0): {len(nodos)} nodos y {hojas} hojas, todas "
+            f"en el escalón 5; el escalón 3 aparece {veces[3]} veces y el 4, {veces[4]}. Abajo, "
+            "el grafo de la escalera: 6 nodos, de 0 a 5, con un brinco de 1 a s + 1 y uno de 2 "
+            "a s + 2. Rutas desde cada escalón, de 0 a 5: " + ", ".join(map(str, rutas)) + ".")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 3 ===
+
+def mkv_c3_pasillo():
+    mdp = m.pasillo()
+    r = mdp["r"]
+    caminar = -r[(1, m.CAMINAR)]
+    p_resbala = mdp["P"][(1, m.CORRER)][1]
+    castigo = (r[(2, m.CORRER)] - r[(1, m.CORRER)]) / p_resbala
+    titulo = ["El robot en el pasillo", "mojado"]
+    out = []
+    y = encabezado(out, titulo)
+    yc = y + 40
+    cx = {"1": 114, "2": 190, "meta": 266}
+    out.append(texto(36, yc + 8, "inicio", tam=12, peso="700"))
+    out.append(_flecha(60, yc + 4, 77, yc + 4))
+    for rot, x in cx.items():
+        meta = rot == "meta"
+        out.append(caja(_n(x - 32), _n(yc - 22), 64, 52, radio=6,
+                        relleno=mezclar(COLOR_META if meta else COLOR_V, 0.16),
+                        borde=COLOR_META if meta else COLOR_V, grosor=2))
+        out.append(texto(x, yc + 10, rot, tam=16, peso="700"))
+    out.append(_flecha(147, yc + 4, 155, yc + 4))
+    out.append(_flecha(223, yc + 4, 231, yc + 4))
+    # el hueco junto a la 1 y el barandal junto a la 2
+    out.append(caja(86, _n(yc + 40), 56, 26, radio=13, relleno="#000000", borde=COLOR_C,
+                    grosor=2, guiones="4 3"))
+    out.append(texto(114, yc + 84, "hueco", tam=13, peso="700"))
+    out.append(texto(114, yc + 100, "sin barandal", tam=12, color=SUAVE))
+    out.append(linea(162, _n(yc + 46), 218, _n(yc + 46), color=SUAVE, grosor=3))
+    for x in (166, 181, 196, 211):
+        out.append(linea(x, _n(yc + 46), x, _n(yc + 62), color=SUAVE, grosor=2))
+    out.append(texto(190, yc + 84, "barandal", tam=13, peso="700"))
+    y = yc + 128
+    y = pie(out, y, [f"Caminar: avanza seguro; cuesta {fr(caminar)}.",
+                     "Correr: cuesta 1; con " + fr(1 - p_resbala) + " avanza,",
+                     f"con {fr(p_resbala)} resbala de lado y se queda.",
+                     f"En la 1, resbalar es caer al hueco:",
+                     f"lo levantan y cuesta {fr(castigo)} más.",
+                     "En la 2, el barandal lo detiene."], color=TEXTO)
+    desc = ("Pasillo: inicio, casilla 1, casilla 2 y la meta, en fila. Junto a la casilla 1 hay "
+            "un hueco sin barandal; junto a la 2, un barandal. Caminar avanza seguro y cuesta "
+            f"{fr(caminar)}. Correr cuesta 1: con {fr(1 - p_resbala)} avanza y con "
+            f"{fr(p_resbala)} resbala de lado y se queda en su casilla; en la 1, al resbalar "
+            f"cae al hueco y cuesta {fr(castigo)} más.")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c3_pasillo_mdp():
+    mdp = m.pasillo()
+    titulo = ["El pasillo como MDP", "estados, acciones, P y r"]
+    out = []
+    y = encabezado(out, titulo)
+    y = _panel_mdp(out, y, mdp)
+    y = pie(out, y + 14, ["Punto: una acción, con su recompensa", "esperada r(s, a). Fila = desde;",
+                         "columna = hacia. Cada fila suma 1."])
+    desc = ("MDP del pasillo: estados 1 y 2 y la meta. " + _desc_mdp(mdp)
+            + " Debajo, P caminar y P correr, filas desde 1 y 2, columnas hacia 1, 2 y meta: "
+            + " / ".join("; ".join(", ".join(_v(x) for x in f) for f in m.matriz_accion(mdp, a))
+                         for a in (m.CAMINAR, m.CORRER)) + ".")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c3_politica_elige_filas():
+    mdp = m.pasillo()
+    pol = m.POLITICAS_J2["caminar–correr"]
+    titulo = ["La política elige filas", "caminar–correr"]
+    out = []
+    y = encabezado(out, titulo)
+    y = pie(out, y + 2, ["Caminar en 1, correr en 2: la fila 1", "sale de P caminar y la 2, de P correr."],
+            color=TEXTO)
+    marcar = {m.CAMINAR: (0,), m.CORRER: (1,)}
+    y = _matrices_mdp(out, y, mdp, marcar=marcar)
+    out.append(_flecha(ANCHO / 2, y + 2, ANCHO / 2, y + 24))
+    y, filas = _matriz_pi(out, y + 26, mdp, pol,
+                          pre=max(_pre_matriz("P", a) for a in (m.CAMINAR, m.CORRER)))
+    PT, rpi = m.cadena_politica(mdp, pol)
+    y = pie(out, y + 16, [f"Recompensas: ({', '.join(_v(x) for x in rpi)}); cada estado",
+                         "paga la de su acción.",
+                         "Pπ ya es una cadena de Markov."], color=TEXTO)
+    desc = ("La política caminar–correr elige la fila 1 de P caminar ("
+            + ", ".join(_v(x) for x in filas[0]) + ") y la fila 2 de P correr ("
+            + ", ".join(_v(x) for x in filas[1]) + "), marcadas; juntas forman Pπ, la matriz de la política. Recompensas: ("
+            + ", ".join(_v(x) for x in rpi) + ").")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c3_cuatro_cadenas():
+    mdp = m.pasillo()
+    titulo = ["Las cuatro políticas,", "cada una una cadena"]
+    out = []
+    y = encabezado(out, titulo)
+    descs = []
+    for nombre, pol in m.POLITICAS_J2.items():
+        V = m.evaluar_politica(mdp, pol)
+        out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+        out.append(texto(X_PIE, y + 14, nombre, tam=14, peso="700", anclaje="start"))
+        out.append(texto(X_PIE, y + 32, f"V(1) = {_v(V[1])}, V(2) = {_v(V[2])}",
+                         tam=13, anclaje="start", color=SUAVE))
+        acc = {s: [pol[s]] for s in mdp["estados"]}
+        y = _grafo_mdp(out, mdp, y + 40, acc)
+        descs.append(f"{nombre}: " + _desc_mdp(mdp, acc)[:-1]
+                     + f"; V(1) = {_v(V[1])}, V(2) = {_v(V[2])}.")
+        y += 4
+    y = pie(out, y + 4, ["Fijar la política deja una sola acción", "por estado: una cadena con meta."])
+    desc = "Las cuatro políticas del pasillo, cada una dibujada como su cadena. " + " ".join(descs)
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 4 ===
+
+def mkv_c3_cuatro_politicas_plano():
+    mdp = m.pasillo()
+    vals = {n: m.evaluar_politica(mdp, p) for n, p in m.POLITICAS_J2.items()}
+    optima = max(vals, key=lambda n: (vals[n][1], vals[n][2]))
+    assert all(vals[optima][s] >= v[s] for v in vals.values() for s in (1, 2))
+    titulo = ["Las cuatro políticas", "en el plano V(1)–V(2)"]
+    out = []
+    y = encabezado(out, titulo)
+    top = y + 34
+    px, py = _plano(out, (58, top, 280, top + 180), (-16, 0), (-4, 0), range(-16, 1, 4),
+                    range(-4, 1), "V(1)", "V(2)")
+    formas = dict(zip(m.POLITICAS_J2, ("cuadro", "circulo", "triangulo", "rombo")))
+    # la esquina que domina la optima
+    xo, yo = px(vals[optima][1]), py(vals[optima][2])
+    out.append(linea(_n(xo), _n(yo), _n(xo), _n(py(-4)), color=ACENTO, grosor=1, guiones="3 3"))
+    out.append(linea(_n(xo), _n(yo), _n(px(-16)), _n(yo), color=ACENTO, grosor=1, guiones="3 3"))
+    for n, V in vals.items():
+        color = ACENTO if n == optima else COLOR_V
+        out.append(_marca(formas[n], px(V[1]), py(V[2]), color, r=5))
+    yl = top + 180 + 58
+    y = _leyenda(out, yl, [(lambda x, yy, n=n: _marca(formas[n], x, yy,
+                                                       ACENTO if n == optima else COLOR_V, r=5),
+                            f"{n}: ({_v(vals[n][1])}, {_v(vals[n][2])})") for n in vals])
+    y = pie(out, y + 6, ["Las otras tres caen abajo o a la",
+                         f"izquierda de {optima} (punteado):",
+                         "ninguna la supera desde 1 ni desde 2."], color=TEXTO)
+    desc = ("Las cuatro políticas del pasillo como puntos (V(1), V(2)): "
+            + "; ".join(f"{n} ({_v(V[1])}, {_v(V[2])})" for n, V in vals.items())
+            + f". Las otras tres caen abajo o a la izquierda de {optima}: ninguna la supera "
+            "desde 1 ni desde 2.")
+    return svg(titulo, desc, out, y)
+
+
+def mkv_c3_simular_politica():
+    mdp = m.pasillo()
+    pol = m.POLITICAS_J2["caminar–correr"]
+    g = m.simular_politica(mdp, pol)
+    media, ee = m.resumen_simulacion()
+    V = m.evaluar_politica(mdp, pol)
+    n = len(g)
+    cuenta = {}
+    for x in g:
+        cuenta[x] = cuenta.get(x, 0) + 1
+    hi = max(cuenta)
+    corte = hi - 6          # las colas largas se juntan en «o menos»
+    barras = [(v, cuenta.get(v, 0)) for v in range(hi, corte, -1)]
+    resto = sum(c for v, c in cuenta.items() if v <= corte)
+    barras.append((corte, resto))
+    titulo = ["Simular caminar–correr", f"{miles(n)} episodios desde 1"]
+    out = []
+    y = encabezado(out, titulo)
+    top, bot = y + 34, y + 214
+    tope = max(c for _, c in barras)
+    escala = 10 ** int(math.log10(tope))
+    tope_eje = math.ceil(tope / escala) * escala
+    x0, x1 = 64, 280
+    paso = (x1 - x0) / len(barras)
+    for k in range(0, tope_eje + 1, tope_eje // 5 if tope_eje // 5 else 1):
+        yy = bot - (bot - top) * k / tope_eje
+        out.append(linea(x0, _n(yy), x1, _n(yy), color=mezclar(LINEA, 0.5), grosor=1))
+        out.append(texto(x0 - 8, yy + 4, miles(k), tam=12, anclaje="end", color=SUAVE))
+    out.append(texto(X_PIE, top - 12, "episodios", tam=13, peso="700", anclaje="start"))
+    for i, (v, c) in enumerate(barras):
+        h = (bot - top) * c / tope_eje
+        xb = x0 + paso * i
+        out.append(f'<rect x="{_n(xb + 3)}" y="{_n(bot - h)}" width="{_n(paso - 6)}" '
+                   f'height="{_n(h)}" fill="{mezclar(COLOR_V, 0.5)}" stroke="{COLOR_V}" '
+                   f'stroke-width="1"/>')
+        rot = _v(v) if i < len(barras) - 1 else f"≤{_v(v)}"
+        out.append(texto(xb + paso / 2, bot + 17, rot, tam=12, color=SUAVE))
+    out.append(texto((x0 + x1) / 2, bot + 36, "retorno del episodio", tam=13, peso="700"))
+    xm = x0 + paso * (hi - media) + paso / 2
+    out.append(linea(_n(xm), top + 30, _n(xm), bot, color=ACENTO, grosor=2, guiones="5 3"))
+    out.append(texto(xm + 6, top + 44, f"media {_vd(media, 2)}", tam=12, peso="700",
+                     anclaje="start", color=ACENTO))
+    y = pie(out, bot + 62, [f"Media: {_vd(media)}; error estándar: {_vd(ee)}.",
+                            f"La cuenta exacta da V(1) = {_v(V[1])}.",
+                            "Ningún episodio vale la media: el",
+                            f"retorno es entero; el más común, {_v(hi)}."], color=TEXTO)
+    desc = (f"Histograma del retorno de {miles(n)} episodios de caminar–correr desde la casilla 1 "
+            f"(semilla {m.SEMILLAS['c3-simular-politica']}). "
+            + "; ".join(f"{_v(v) if i < len(barras) - 1 else 'menos de ' + _v(v + 1)}: "
+                        f"{miles(c)}" for i, (v, c) in enumerate(barras))
+            + f". Media {_vd(media)}, error estándar {_vd(ee)}; el valor exacto es "
+            f"V(1) = {_v(V[1])}.")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 5 ===
+
+def _bellman_2(mdp):
+    """y(x) = max_a q(s = 2, a) con V(2) = x: la ecuacion de Bellman en 2."""
+    def f(x):
+        return max(m.q_valor(mdp, {1: F(0), 2: F(x)}, 2, a) for a in mdp["acciones"][2])
+    return f
+
+
+def _accion_2(mdp, a):
+    def f(x):
+        return m.q_valor(mdp, {1: F(0), 2: F(x)}, 2, a)
+    return f
+
+
+def mkv_c3_bellman_1d():
+    mdp = m.pasillo()
+    f = _bellman_2(mdp)
+    V = m.evaluar_politica(mdp, m.POLITICAS_J2["caminar–correr"])
+    assert f(V[2]) == V[2]
+    titulo = ["Bellman en la casilla 2", "y = máx(caminar, correr)"]
+    out = []
+    y = encabezado(out, titulo)
+    y = _leyenda(out, y + 8, [
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_C, "6 4"),
+         f"caminar: {_v(mdp['r'][(2, m.CAMINAR)])}"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V, "2 3"),
+         f"correr: {_v(mdp['r'][(2, m.CORRER)])} + x/2"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], ACENTO, None, 3),
+         "el máximo de las dos"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], TEXTO, "2 4", 1.5), "y = x"),
+    ])
+    y, _ = _panel_funcion(out, y, [(_accion_2(mdp, m.CAMINAR), COLOR_C, "6 4"),
+                                   (_accion_2(mdp, m.CORRER), COLOR_V, "2 3"),
+                                   (f, ACENTO, None)],
+                          marcas=[(V[2], f"V(2) = {_v(V[2])}")])
+    y = pie(out, y + 12, ["x es V(2): lo que vale la casilla 2.",
+                         f"Un solo cruce con y = x, en {_v(V[2])}: ahí",
+                         "correr gana a caminar."], color=TEXTO)
+    desc = ("Ecuación de Bellman en la casilla 2 como gráfica de una variable, x = V(2): "
+            f"caminar vale {_v(mdp['r'][(2, m.CAMINAR)])}, correr vale "
+            f"{_v(mdp['r'][(2, m.CORRER)])} + x/2, y y = máx de las dos. Cruza a y = x una sola "
+            f"vez, en x = {_v(V[2])}, donde correr es la mayor.")
+    return svg(titulo, desc, out, y)
+
+
+def _politicas_optimas(mdp):
+    """La mejor de las cuatro politicas de J2 en todo estado, o None si
+    ninguna domina (se calcula con evaluar_politica, no con la formula)."""
+    vals = {n: m.evaluar_politica(mdp, p) for n, p in m.POLITICAS_J2.items()}
+    mejores = [n for n, V in vals.items()
+               if all(V[s] >= W[s] for W in vals.values() for s in mdp["estados"])]
+    return mejores
+
+
+def mkv_c3_fronteras():
+    titulo = ["¿Correr o caminar?", "según costo y castigo"]
+    out = []
+    y = encabezado(out, titulo)
+    W, X = (0, 6), (0, 12)
+    top = y + 34
+    px, py = _plano(out, (58, top, 280, top + 220), W, X, range(0, 7), range(0, 13, 2),
+                    "costo de caminar", "castigo del hueco")
+    # fronteras de la pagina 5: correr en 2 si costo > 2; correr en 1 si castigo < costo − 2
+    out.append(linea(_n(px(2)), _n(py(12)), _n(px(2)), _n(py(0)), color=TEXTO, grosor=2))
+    out.append(linea(_n(px(2)), _n(py(0)), _n(px(6)), _n(py(4)), color=TEXTO, grosor=2))
+    regiones = [(F(1), F(6)), (F(4), F(9)), (F(5), F(1, 2))]
+    nombres = []
+    for w, x in regiones:
+        mejores = _politicas_optimas(m.pasillo(caminar=w, castigo=x))
+        assert len(mejores) == 1, (w, x, mejores)
+        nombres.append(mejores[0])
+    # la frontera dibujada es la que da el calculo, en una rejilla
+    for w in range(0, 7):
+        for x in range(0, 13):
+            mej = _politicas_optimas(m.pasillo(caminar=w, castigo=x))
+            corre2, corre1 = w > 2, x < w - 2
+            if w != 2 and x != w - 2:
+                esperado = f"{'correr' if corre1 else 'caminar'}–{'correr' if corre2 else 'caminar'}"
+                assert mej == [esperado], (w, x, mej)
+    pos_rot = [(1, 9), (4.4, 6.5), (5, 0.9)]
+    for (wx, xx), n in zip(pos_rot, nombres):
+        a, b = n.split("–")
+        out.append(texto(px(wx), py(xx), a + "–", tam=12, peso="700"))
+        out.append(texto(px(wx), py(xx) + 15, b, tam=12, peso="700"))
+    J = m.pasillo()
+    w0, x0 = -J["r"][(1, m.CAMINAR)], (J["r"][(2, m.CORRER)] - J["r"][(1, m.CORRER)]) * 2
+    out.append(f'<circle cx="{_n(px(w0))}" cy="{_n(py(x0))}" r="6" fill="{ACENTO}" '
+               f'stroke="{ACENTO}" stroke-width="1"/>')
+    out.append(texto(px(w0) + 10, py(x0) + 22, "el pasillo", tam=12, peso="700", anclaje="start",
+                     color=ACENTO))
+    y = pie(out, top + 220 + 62, [
+        "Raya vertical: costo de caminar = 2;",
+        "a la derecha conviene correr en 2.",
+        "Raya inclinada: castigo = costo − 2;",
+        "debajo conviene correr también en 1.",
+        f"El pasillo: costo {fr(w0)}, castigo {fr(x0)}."], color=TEXTO)
+    desc = ("Mapa de la mejor política del pasillo según el costo de caminar (de 0 a 6) y el "
+            "castigo del hueco (de 0 a 12). Raya vertical en costo = 2: a la derecha conviene "
+            "correr en 2. Raya inclinada castigo = costo − 2: debajo conviene correr también en "
+            "1. Regiones: " + "; ".join(nombres) + f". El pasillo (costo {fr(w0)}, castigo "
+            f"{fr(x0)}) cae en {_politicas_optimas(J)[0]}. En las rayas, "
+            "empatan.")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 6 ===
+
+def mkv_c3_iterar_valores():
+    mdp = m.pasillo()
+    T = 8
+    traza = m.iterar_valores(mdp, rondas=T)
+    Vs = m.evaluar_politica(mdp, m.POLITICAS_J2["caminar–correr"])
+    titulo = ["Iteración de valores", "en el pasillo, desde 0"]
+    out = []
+    y = encabezado(out, titulo)
+    y = _leyenda(out, y + 8, [
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V)
+         + _marca("circulo", x, yy, COLOR_V), "V⁽ᵗ⁾(1)"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_C, "5 4")
+         + _marca("cuadro", x, yy, COLOR_C, r=4), "V⁽ᵗ⁾(2)"),
+        (lambda x, yy: linea(x - 12, yy, x + 12, yy, color=TEXTO, grosor=1, guiones="1 3"),
+         f"V*: {_v(Vs[1])} y {_v(Vs[2])}"),
+    ])
+    top = y + 30
+    px, py = _plano(out, (58, top, 280, top + 190), (0, T), (-6, 0), range(0, T + 1),
+                    range(-6, 1), "ronda t", "valor")
+    for s in (1, 2):
+        out.append(linea(58, _n(py(Vs[s])), 280, _n(py(Vs[s])), color=TEXTO, grosor=1,
+                         guiones="1 3"))
+    for s, color, forma, g in ((1, COLOR_V, "circulo", None), (2, COLOR_C, "cuadro", "5 4")):
+        pts = [(px(t), py(V[s])) for t, V in enumerate(traza)]
+        out.append(_polilinea(pts, color, g))
+        for x, yy in pts:
+            out.append(_marca(forma, x, yy, color, r=4))
+    y = pie(out, top + 190 + 62, [
+        "Cada ronda acerca los dos valores a V*:",
+        "V⁽ᵗ⁾ es lo mejor con t pasos restantes.",
+        "Bajan sin pasarse y nunca llegan."], color=TEXTO)
+    desc = (f"Iteración de valores en el pasillo desde V⁽⁰⁾ = 0, rondas 0 a {T}. V⁽ᵗ⁾(1): "
+            + ", ".join(_v(V[1]) for V in traza) + ". V⁽ᵗ⁾(2): "
+            + ", ".join(_v(V[2]) for V in traza)
+            + f". Las dos bajan hacia V*(1) = {_v(Vs[1])} y V*(2) = {_v(Vs[2])} sin llegar.")
+    return svg(titulo, desc, out, y)
+
+
+def _serie_log(out, px, py, valores, color, forma, guiones=None, t0=1):
+    pts = [(px(t0 + i), py(v)) for i, v in enumerate(valores)]
+    out.append(_polilinea(pts, color, guiones))
+    for x, yy in pts:
+        out.append(_marca(forma, x, yy, color, r=4))
+
+
+_EXP = {k: ("10" + str(k).replace("-", "⁻").translate(SUPER)) if k not in (0, 1)
+        else ("1" if k == 0 else "10") for k in range(-6, 4)}
+
+
+def _fy_log(v):
+    return _EXP[round(math.log10(float(v)))]
+
+
+def mkv_c3_residuo():
+    mdp = m.pasillo()
+    T = 10
+    traza = m.iterar_valores(mdp, rondas=T)
+    Vs = m.evaluar_politica(mdp, m.POLITICAS_J2["caminar–correr"])
+    res = m.residuos(traza)
+    err = m.errores(traza, Vs)[1:]
+    mm, beta = 3, m.prob_no_terminar(mdp, 3)
+    cota = m.cota_paro(mm, beta)
+    titulo = ["Residuo, error y cota", "escala log"]
+    out = []
+    y = encabezado(out, titulo)
+    y = _leyenda(out, y + 8, [
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_V)
+         + _marca("circulo", x, yy, COLOR_V), "residuo res⁽ᵗ⁾"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], COLOR_C, "5 4")
+         + _marca("cuadro", x, yy, COLOR_C, r=4), "error máx |V* − V⁽ᵗ⁾|"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], ACENTO, "2 3")
+         + _marca("triangulo", x, yy, ACENTO, r=4), f"cota: {fr(cota)} × residuo"),
+    ])
+    top = y + 30
+    px, py = _plano(out, (58, top, 280, top + 190), (1, T), (-3, 2), range(1, T + 1),
+                    [10 ** k for k in range(-3, 3)], "ronda t", "tamaño", fy=_fy_log, log=True)
+    _serie_log(out, px, py, [cota * r for r in res], ACENTO, "triangulo", "2 3")
+    _serie_log(out, px, py, err, COLOR_C, "cuadro", "5 4")
+    _serie_log(out, px, py, res, COLOR_V, "circulo")
+    y = pie(out, top + 190 + 62, [
+        f"m = {mm}, β = {fr(beta)}: la cota es {fr(cota)} × residuo.",
+        "El error real queda debajo; parar con",
+        "residuo ≤ tol garantiza error ≤ " + fr(cota) + " tol."], color=TEXTO)
+    desc = (f"Escala logarítmica, rondas 1 a {T} de la iteración de valores en el pasillo. "
+            "Residuo: " + ", ".join(_v(r) for r in res) + ". Error máximo contra V*: "
+            + ", ".join(_v(e) for e in err) + f". Cota con m = {mm} y β = {fr(beta)}: "
+            f"{fr(cota)} × residuo, siempre por encima del error.")
+    return svg(titulo, desc, out, y)
+
+
+@lru_cache(maxsize=None)
+def _pasillo_largo_valores():
+    d = m.pasillo_largo()
+    mdp = m.pasillo(n=m.N_PASILLO)
+    return d, mdp, m.evaluar_politica(mdp, d["politica"])
+
+
+def mkv_c3_pasillo_largo():
+    d, mdp, V = _pasillo_largo_valores()
+    pol = d["politica"]
+    n = len(mdp["estados"])
+    titulo = ["El pasillo largo", f"{n} casillas"]
+    out = []
+    y = encabezado(out, titulo)
+    k = 24
+    out.append(texto(X_PIE, y + 6, f"La política óptima, casillas 1 a {k}", tam=13, peso="700",
+                     anclaje="start"))
+    x0, w = 20, 260 / k
+    yc = y + 22
+    for i in range(1, k + 1):
+        corre = pol[i] == m.CORRER
+        out.append(f'<rect x="{_n(x0 + w * (i - 1) + 1)}" y="{_n(yc)}" width="{_n(w - 2)}" '
+                   f'height="22" fill="{mezclar(COLOR_C if corre else COLOR_V, 0.55 if corre else 0.2)}" '
+                   f'stroke="{COLOR_C if corre else COLOR_V}" stroke-width="1"'
+                   + ("" if corre else ' stroke-dasharray="2 2"') + "/>")
+        if i % 3 == 1:
+            cx = x0 + w * (i - 0.5)
+            out.append(f'<polygon points="{_n(cx - 4)},{_n(yc + 27)} {_n(cx + 4)},{_n(yc + 27)} '
+                       f'{_n(cx)},{_n(yc + 34)}" fill="{COLOR_C}"/>')
+    for i in (1, 6, 12, 18, 24):
+        out.append(texto(x0 + w * (i - 0.5), yc + 50, str(i), tam=12, color=SUAVE))
+    y = _leyenda(out, yc + 76, [
+        (lambda x, yy: f'<rect x="{_n(x - 7)}" y="{_n(yy - 8)}" width="14" height="16" '
+                       f'fill="{mezclar(COLOR_V, 0.2)}" stroke="{COLOR_V}" stroke-width="1" '
+                       f'stroke-dasharray="2 2"/>', "caminar"),
+        (lambda x, yy: f'<rect x="{_n(x - 7)}" y="{_n(yy - 8)}" width="14" height="16" '
+                       f'fill="{mezclar(COLOR_C, 0.55)}" stroke="{COLOR_C}" stroke-width="1"/>',
+         "correr"),
+        (lambda x, yy: f'<polygon points="{_n(x - 4)},{_n(yy - 6)} {_n(x + 4)},{_n(yy - 6)} '
+                       f'{_n(x)},{_n(yy + 1)}" fill="{COLOR_C}"/>', "hueco sin barandal"),
+    ])
+    camina = sorted({i % 3 for i in mdp["estados"] if pol[i] == m.CAMINAR})
+    assert camina == [1], camina
+    top = y + 34
+    vmin = min(V.values())
+    piso = -100 * math.ceil(-float(vmin) / 100)
+    px, py = _plano(out, (64, top, 280, top + 160), (0, n), (piso, 0), range(0, n + 1, 50),
+                    range(piso, 1, 100), "casilla i", "V*(i)", fx=lambda v: str(v),
+                    fy=lambda v: _v(v))
+    out.append(_polilinea([(px(i), py(V[i])) for i in mdp["estados"]], ACENTO))
+    y = pie(out, top + 160 + 62, [
+        "Camina junto a cada hueco (i = 1, 4, 7…)",
+        "y corre junto al barandal; nadie se lo",
+        "dijo al algoritmo.",
+        f"V*(1) = {_aprox(d['v_inicio'])}."], color=TEXTO)
+    desc = (f"Pasillo de {n} casillas. Franja de la política óptima en las casillas 1 a {k}: "
+            "camina en las casillas con hueco (1, 4, 7, …, las de i mod 3 = 1) y corre en las "
+            f"demás. Debajo, V*(i) contra la casilla i, de 1 a {n}: sube casi en línea recta "
+            f"desde V*(1) = {_aprox(d['v_inicio'])} hasta "
+            f"V*({n}) = {_v(V[n])}.")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 7 ===
+
+def mkv_c3_rondas_politicas():
+    mdp = m.pasillo()
+    d = m.pasillo_largo()
+    titulo = ["Iteración de políticas,", "ronda a ronda"]
+    out = []
+    y = encabezado(out, titulo)
+    descs = []
+    for inicio in ("caminar–caminar", "correr–correr"):
+        pols = m.iterar_politicas(mdp, m.POLITICAS_J2[inicio])
+        out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+        out.append(texto(X_PIE, y + 14, f"Desde {inicio}", tam=14, peso="700", anclaje="start"))
+        y += 26
+        partes = []
+        for k, pol in enumerate(pols):
+            V = m.evaluar_politica(mdp, pol)
+            ultima = k == len(pols) - 1
+            out.append(caja(X_PIE, _n(y), ANCHO - 2 * X_PIE, 40, radio=6,
+                            relleno=mezclar(ACENTO if ultima else LINEA, 0.14 if ultima else 0.18),
+                            borde=ACENTO if ultima else SUAVE, grosor=2 if ultima else 1.5))
+            out.append(texto(X_PIE + 10, y + 17, f"ronda {k + 1}: {_nombre_pol(pol)}", tam=13,
+                             peso="700", anclaje="start"))
+            out.append(texto(X_PIE + 10, y + 33, f"V = ({_v(V[1])}, {_v(V[2])})"
+                             + ("; la mejora no cambia nada" if ultima else ""), tam=12,
+                             anclaje="start", color=SUAVE))
+            partes.append(f"ronda {k + 1}: {_nombre_pol(pol)}, V = ({_v(V[1])}, {_v(V[2])})")
+            y += 40
+            if not ultima:
+                out.append(_flecha(ANCHO / 2, y + 2, ANCHO / 2, y + 16))
+                y += 20
+        descs.append(f"Desde {inicio}: " + "; ".join(partes) + ".")
+        y += 22
+    # el pasillo largo: rondas de una y otra
+    out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+    out.append(texto(X_PIE, y + 14, f"El pasillo de {m.N_PASILLO} casillas", tam=14, peso="700",
+                     anclaje="start"))
+    y += 30
+    # Como la pagina: una ronda evalua y mejora; la ultima solo confirma.
+    rondas_pi = d["rondas_pi"] + 1
+    tope = max(d["rondas_vi"], rondas_pi)
+    for rot, v, color in (("valores", d["rondas_vi"], COLOR_V),
+                          ("políticas", rondas_pi, ACENTO)):
+        out.append(texto(X_PIE, y + 13, rot, tam=13, peso="700", anclaje="start"))
+        w = max(110 * v / tope, 2)
+        out.append(f'<rect x="96" y="{_n(y)}" width="{_n(w)}" height="18" '
+                   f'fill="{mezclar(color, 0.55)}" stroke="{color}" stroke-width="1"/>')
+        out.append(texto(96 + w + 6, y + 14, f"{miles(v)} ronda" + ("" if v == 1 else "s"), tam=13, anclaje="start"))
+        y += 28
+    y = pie(out, y + 8, ["Valores: hasta residuo ≤ 10⁻⁹, desde 0.",
+                         "Políticas: desde caminar siempre; la",
+                         "última ronda solo confirma."])
+    desc = ("Iteración de políticas en el pasillo de dos casillas. " + " ".join(descs)
+            + f" En el pasillo de {m.N_PASILLO} casillas, la iteración de valores hace "
+            f"{miles(d['rondas_vi'])} rondas hasta un residuo de 10⁻⁹ y la de políticas, "
+            f"{d['rondas_pi'] + 1} rondas desde caminar siempre: una mejora y una que confirma.")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figuras de la pagina 8 ===
+
+def _restricciones(mdp):
+    """(s, a, a1, a2, b): a1 V(1) + a2 V(2) >= b, una por (s, a) de J2."""
+    filas = []
+    for s in mdp["estados"]:
+        for a in mdp["acciones"][s]:
+            co = {1: F(0), 2: F(0)}
+            co[s] += 1
+            for t, p in mdp["P"][(s, a)].items():
+                if t in co:
+                    co[t] -= p
+            filas.append((s, a, co[1], co[2], mdp["r"][(s, a)]))
+    return filas
+
+
+def _recorta_poligono(poli, a1, a2, b):
+    """Sutherland-Hodgman: la parte de poli con a1 x + a2 y >= b."""
+    sale = []
+    for i, P in enumerate(poli):
+        Q = poli[(i + 1) % len(poli)]
+        fp = a1 * P[0] + a2 * P[1] - b
+        fq = a1 * Q[0] + a2 * Q[1] - b
+        if fp >= 0:
+            sale.append(P)
+        if (fp >= 0) != (fq >= 0):
+            t = fp / (fp - fq)
+            sale.append((P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])))
+    return sale
+
+
+_VENTANA_LP = ((-14, 2), (-4, 2))
+
+
+def _panel_lp(out, y, mdp, alto=170, rotular=True, vstar=None):
+    (xa, xb), (ya, yb) = _VENTANA_LP
+    top = y + 30
+    px, py = _plano(out, (58, top, 280, top + alto), (xa, xb), (ya, yb), range(-12, xb + 1, 4),
+                    range(ya, yb + 1), "V(1)", "V(2)")
+    filas = [f for f in _restricciones(mdp) if f[2] or f[3]]
+    poli = [(F(xa), F(ya)), (F(xb), F(ya)), (F(xb), F(yb)), (F(xa), F(yb))]
+    for _, _, a1, a2, b in filas:
+        poli = _recorta_poligono(poli, a1, a2, b)
+    out.append(f'<polygon points="{" ".join(f"{_n(px(x))},{_n(py(v))}" for x, v in poli)}" '
+               f'fill="{mezclar(COLOR_CERRADA, 0.3)}" stroke="none"/>')
+    rotulos = []
+    for s, a, a1, a2, b in filas:
+        if a2 == 0 or a1 == 0:
+            # horizontal (solo V(2)) o vertical (solo V(1))
+            if a1 == 0:
+                v = b / a2
+                seg = ((xa, v), (xb, v))
+            else:
+                v = b / a1
+                seg = ((v, ya), (v, yb))
+        else:
+            # V(1) = (b - a2 V(2)) / a1
+            seg = (((b - a2 * ya) / a1, ya), ((b - a2 * yb) / a1, yb))
+            if min(seg[0][0], seg[1][0]) < xa:
+                y_en = (b - a1 * xa) / a2
+                seg = ((F(xa), y_en), seg[1]) if seg[0][0] < xa else (seg[0], (F(xa), y_en))
+        (x1, y1), (x2, y2) = seg
+        out.append(linea(_n(px(x1)), _n(py(y1)), _n(px(x2)), _n(py(y2)), color=TEXTO, grosor=1.5))
+        rotulos.append((s, a, seg))
+    sol, _ = m.programa_lineal(mdp)
+    opt = (sol[1], sol[2])
+    # la recta de nivel V(1) + V(2) = optimo
+    c = opt[0] + opt[1]
+    out.append(_polilinea([(px(c - ya), py(ya)), (px(c - yb), py(yb))]
+                          if xa <= c - yb else [(px(xa), py(c - xa)), (px(c - ya), py(ya))],
+                          ACENTO, "4 3", 1.5))
+    out.append(f'<circle cx="{_n(px(opt[0]))}" cy="{_n(py(opt[1]))}" r="6" fill="{ACENTO}" '
+               f'stroke="{ACENTO}" stroke-width="1"/>')
+    if vstar is not None:
+        out.append(f'<circle cx="{_n(px(vstar[0]))}" cy="{_n(py(vstar[1]))}" r="7" fill="none" '
+                   f'stroke="{COLOR_C}" stroke-width="2.5"/>')
+    return top + alto + 44, rotulos, opt, filas
+
+
+def _rotulo_restriccion(s, a):
+    return f"{a} en {s}"
+
+
+def mkv_c3_region_lp():
+    mdp = m.pasillo()
+    titulo = ["El MDP como programa", "lineal: la región"]
+    out = []
+    y = encabezado(out, titulo)
+    y0 = y
+    y, rotulos, opt, filas = _panel_lp(out, y, mdp, alto=200)
+    # rotulos de las rectas: en la ventana, cerca de su extremo
+    (xa, xb), (ya, yb) = _VENTANA_LP
+    top = y0 + 30
+    px = lambda x: 58 + 222 * (float(x) - xa) / (xb - xa)
+    py = lambda v: top + 200 - 200 * (float(v) - ya) / (yb - ya)
+    sitios = {(2, m.CAMINAR): (px(-13.6), py(-3) + 15, "start"),
+              (2, m.CORRER): (px(-13.6), py(-2) - 6, "start"),
+              (1, m.CAMINAR): (px(-1), py(2) - 8, "middle"),
+              (1, m.CORRER): (px(-10), py(2) - 8, "middle")}
+    for s, a, _ in rotulos:
+        x, yy, anc = sitios[(s, a)]
+        out.append(texto(x, yy, _rotulo_restriccion(s, a), tam=12, peso="700", anclaje=anc))
+    Vs = m.evaluar_politica(mdp, m.POLITICAS_J2["caminar–correr"])
+    assert all(abs(opt[i] - float(Vs[i + 1])) < 1e-9 for i in range(2))
+    y = _leyenda(out, y + 16, [
+        (lambda x, yy: f'<rect x="{_n(x - 10)}" y="{_n(yy - 7)}" width="20" height="14" '
+                       f'fill="{mezclar(COLOR_CERRADA, 0.3)}"/>', "donde se cumplen las cuatro"),
+        (lambda x, yy: _polilinea([(x - 12, yy), (x + 12, yy)], ACENTO, "4 3", 1.5),
+         "V(1) + V(2) constante, la menor"),
+        (lambda x, yy: f'<circle cx="{_n(x)}" cy="{_n(yy)}" r="5" fill="{ACENTO}"/>',
+         f"el mínimo: ({_vd(opt[0], 0)}, {_vd(opt[1], 0)}) = V*"),
+    ])
+    y = pie(out, y + 6, ["Una recta por cada par (estado, acción):",
+                         "V(s) ≥ r(s, a) + Σ P(s′ | s, a) V(s′)."], color=TEXTO)
+    desc = ("Plano V(1)–V(2) con las cuatro restricciones del programa lineal del pasillo, una "
+            "recta por par (estado, acción): "
+            + "; ".join(f"{a} en {s}: {_v(a1)} V(1) + {_v(a2)} V(2) ≥ {_v(b)}".replace("+ −", "− ")
+                        for s, a, a1, a2, b in filas)
+            + ". La región donde se cumplen todas está sombreada; minimizar V(1) + V(2) lleva a "
+            f"la esquina ({_vd(opt[0], 0)}, {_vd(opt[1], 0)}), que es V*.")
+    return svg(titulo, desc, out, y)
+
+
+# =============================================== figura de la pagina 9 ===
+
+def mkv_c3_mapa_decidir():
+    titulo = ["Decidir: pregunta,", "ecuación, algoritmo"]
+    out = []
+    y = encabezado(out, titulo)
+    filas = [
+        ("¿Sin ciclos?", "costo(s) = mín (pisar + costo)", ["HACIA-ATRÁS:", "una pasada"]),
+        ("¿Cuánto vale π?", "V = r + P V, con las filas de π", ["EVALUAR-POLÍTICA:", "un sistema lineal"]),
+        ("¿Cuál es la mejor?", "V*(s) = máx (r + Σ P V*)",
+         ["iteración de valores,", "iteración de políticas", "o programa lineal"]),
+    ]
+    descs = []
+    for preg, ec, alg in filas:
+        out.append(caja(X_PIE, _n(y), ANCHO - 2 * X_PIE, 30, radio=6,
+                        relleno=mezclar(COLOR_V, 0.14), borde=COLOR_V, grosor=1.5))
+        out.append(texto(ANCHO / 2, y + 20, preg, tam=14, peso="700"))
+        out.append(_flecha(ANCHO / 2, y + 31, ANCHO / 2, y + 46))
+        y += 48
+        out.append(caja(X_PIE, _n(y), ANCHO - 2 * X_PIE, 30, radio=6,
+                        relleno=mezclar(LINEA, 0.18), borde=SUAVE, grosor=1.5))
+        out.append(texto(ANCHO / 2, y + 20, ec, tam=13))
+        out.append(_flecha(ANCHO / 2, y + 31, ANCHO / 2, y + 46))
+        y += 48
+        h = 12 + 18 * len(alg)
+        out.append(caja(X_PIE, _n(y), ANCHO - 2 * X_PIE, h, radio=6,
+                        relleno=mezclar(ACENTO, 0.14), borde=ACENTO, grosor=2))
+        for i, r in enumerate(alg):
+            out.append(texto(ANCHO / 2, y + 20 + 18 * i, r, tam=13, peso="700" if i == 0 else
+                             "normal"))
+        y += h + 26
+        descs.append(f"{preg} Ecuación: {ec}. Algoritmo: {' '.join(alg)}.")
+    y = pie(out, y - 6, ["Lo que rompe la pasada hacia atrás", "es el ciclo, no el azar."])
+    desc = "Mapa de la clase en tres filas. " + " ".join(descs)
+    return svg(titulo, desc, out, y)
+
+
+# ---------------------------------------------------- flujos (clase 3) ---
+
+FLUJOS.update({
+    "hacia-atras": dict(
+        nombre="la pasada hacia atrás",
+        titulo=["Hacia atrás,", "en palabras"],
+        pasos=[{"caja": ["Empieza arriba:", "costo(5) = 0, s = 4"]},
+               {"caja": ["Para cada brinco: pisar", "el destino + su costo"]},
+               {"caja": ["costo(s) = el menor;", "guarda ese brinco"]},
+               {"rombo": ["¿s = 0?"], "abajo": "no"},
+               {"caja": ["Baja: s ← s − 1"]},
+               {"caja": ["Devuelve costo y,", "brinco a brinco, la ruta"], "fin": True,
+                "sin_flecha": True}],
+        vueltas=[(4, 1, "otro escalón")],
+        salidas=[(3, 5, "sí")],
+        notas=["Funciona porque cada brinco sube:", "el costo de arriba ya está listo."]),
+    "evaluar": dict(
+        nombre="evaluar una política",
+        titulo=["Evaluar una política,", "en palabras"],
+        pasos=[{"caja": ["Toma la política π"]},
+               {"caja": ["Elige filas: la fila s", "de P y r con la acción π(s)"]},
+               {"caja": ["Arma (I − P) V = r", "sin la columna de la meta"]},
+               {"rombo": ["¿Tiene solución", "única?"], "abajo": "sí"},
+               {"caja": ["Resuélvelo y devuelve", "el valor de π"], "fin": True},
+               {"caja": ["Avisa: desde algún", "estado no termina"], "fin": True,
+                "sin_flecha": True}],
+        vueltas=[],
+        salidas=[(3, 5, "no")],
+        notas=["Cada renglón dice: lo que pagas", "ahora más lo que vale donde caes."]),
+    "valores": dict(
+        nombre="la iteración de valores",
+        titulo=["Iteración de valores,", "en palabras"],
+        pasos=[{"caja": ["Empieza: V(s) = 0", "en todo estado"]},
+               {"caja": ["En cada s, el máximo", "sobre a de r + Σ P V"]},
+               {"caja": ["Mide el residuo: el", "mayor cambio; V ← nuevo"]},
+               {"rombo": ["¿residuo", "≤ tol?"], "abajo": "sí"},
+               {"caja": ["Devuelve V y la", "codiciosa de V"], "fin": True}],
+        vueltas=[(3, 1, "no: otra ronda")],
+        notas=["Cada ronda usa los valores de la", "anterior en todos los estados."]),
+    "politicas": dict(
+        nombre="la iteración de políticas",
+        titulo=["Iteración de políticas,", "en palabras"],
+        pasos=[{"caja": ["Empieza con una π", "que termina"]},
+               {"caja": ["Evalúa: resuelve el", "sistema del valor de π"]},
+               {"caja": ["Mejora: en cada s, la", "codiciosa de ese valor;", "en empate, conserva π(s)"]},
+               {"rombo": ["¿Cambió", "alguna?"], "abajo": "no"},
+               {"caja": ["Devuelve π y su valor"], "fin": True}],
+        vueltas=[(3, 1, "sí: otra ronda")],
+        notas=["Cada ronda mejora o deja igual;", "hay un número finito de políticas."]),
+})
+
+
+# --------------------------------------------- ejemplo y contraejemplo ---
+# Un SVG por clave del manifiesto del plan (§5): arriba lo que cumple, abajo
+# lo que no; cada lado es una funcion (out, y) -> (y, descripcion).
+
+def _mdp_fila_mal():
+    """«Correr» con la fila de 1 que suma 3/2 (plan §5, p3): se queda con
+    1/2 y avanza con 1."""
+    mdp = m.pasillo()
+    mdp["P"] = dict(mdp["P"])
+    mdp["P"][(1, m.CORRER)] = {1: F(1, 2), 2: F(1)}
+    return mdp
+
+
+def _mdp_empate():
+    """El pasillo del contraejemplo de empates: m.pasillo_empate()."""
+    return m.pasillo_empate()
+
+
+def _lado_mdp_completo(mdp, pie_txt):
+    def dibuja(out, y):
+        y = _grafo_mdp(out, mdp, y + 4)
+        malas = {a: tuple(i for i, f in enumerate(m.matriz_accion(mdp, a)) if sum(f) != 1)
+                 for a in (m.CAMINAR, m.CORRER)}
+        y = _matrices_mdp(out, y, mdp, marcar=malas)
+        sumas = [sum(f) for f in m.matriz_accion(mdp, m.CORRER)]
+        return y, _desc_mdp(mdp) + " Filas de P correr suman " + " y ".join(map(fr, sumas)) + "."
+    return dibuja
+
+
+def _lado_politica(mdp, pol, nombre, evaluar=False):
+    def dibuja(out, y):
+        acc = {s: [pol[s]] for s in mdp["estados"]}
+        y = _grafo_mdp(out, mdp, y + 4, acc)
+        d = f"Política {nombre}: " + _desc_mdp(mdp, acc)
+        if not evaluar:
+            y, filas = _matriz_pi(out, y, mdp, pol)
+            return y, d
+        PT, rpi = m.cadena_politica(mdp, pol)
+        IP = [[F(int(i == j)) - PT[i][j] for j in range(len(PT))] for i in range(len(PT))]
+        yc = y + 8 + len(IP) * 17 / 2
+        _matriz_svg(out, ANCHO / 2, yc, _filas(IP), rotulo="I − P", sub="π,𝒯")
+        y = yc + len(IP) * 17 / 2 + 10
+        try:
+            V = m.evaluar_politica(mdp, pol)
+            linea_ = f"r = ({', '.join(_v(x) for x in rpi)}) → V = ({_v(V[1])}, {_v(V[2])})"
+            d += (" I − P π,𝒯 = " + "; ".join(", ".join(_v(x) for x in f) for f in IP)
+                  + f", invertible; V(1) = {_v(V[1])}, V(2) = {_v(V[2])}.")
+        except ValueError:
+            linea_ = f"r = ({', '.join(_v(x) for x in rpi)}): 0 · V = 0, toda V sirve"
+            d += (" I − P π,𝒯 = " + "; ".join(", ".join(_v(x) for x in f) for f in IP)
+                  + ", la matriz cero: no se puede invertir y toda V resuelve el sistema.")
+        out.append(texto(ANCHO / 2, y + 12, linea_, tam=12, peso="700"))
+        return y + 24, d
+    return dibuja
+
+
+def _lado_funcion(curvas, marcas=(), pegada=None, texto_desc=""):
+    def dibuja(out, y):
+        y, _ = _panel_funcion(out, y + 4, curvas, alto=140, marcas=marcas, pegada=pegada)
+        return y, texto_desc
+    return dibuja
+
+
+def _lado_codiciosa(mdp, U, nombre_u):
+    def dibuja(out, y):
+        pol = m.codiciosa(mdp, U)
+        rot = {(s, a): f"vale {_v(m.q_valor(mdp, U, s, a))}" for s in mdp["estados"]
+               for a in mdp["acciones"][s]}
+        out.append(texto(X_PIE, y + 12, f"{nombre_u}: U(1) = {_v(U[1])}, U(2) = {_v(U[2])}",
+                         tam=12, anclaje="start", color=TEXTO, peso="700"))
+        y = _grafo_mdp(out, mdp, y + 20, resaltar=pol, rotulos=rot)
+        d = (f"Con {nombre_u}, U(1) = {_v(U[1])} y U(2) = {_v(U[2])}: "
+             + "; ".join(f"en {s}, {a} vale {_v(m.q_valor(mdp, U, s, a))}"
+                         for s in mdp["estados"] for a in mdp["acciones"][s])
+             + f". La codiciosa elige {_nombre_pol(pol)}.")
+        return y, d
+    return dibuja
+
+
+def _lado_paro(mdp, Vs, T=10):
+    def dibuja(out, y):
+        traza = m.iterar_valores(mdp, rondas=T)
+        res = m.residuos(traza)
+        err = m.errores(traza, Vs)[1:]
+        top = y + 28
+        px, py = _plano(out, (58, top, 280, top + 120), (1, T), (-3, 2), range(1, T + 1),
+                        [10 ** k for k in range(-3, 3)], "ronda t", "tamaño (escala log)",
+                        fy=_fy_log, log=True)
+        _serie_log(out, px, py, err, COLOR_C, "cuadro", "5 4")
+        _serie_log(out, px, py, res, COLOR_V, "circulo")
+        cocientes = [e / r for e, r in zip(err, res)]
+        d = ("Rondas 1 a " + str(T) + ": residuo " + ", ".join(_vd(r, 4) for r in res)
+             + "; error " + ", ".join(_vd(e, 4) for e in err) + ".")
+        return top + 120 + 44, d, cocientes
+    return dibuja
+
+
+def _lado_empates(empate):
+    def dibuja(out, y):
+        mdp = _mdp_empate()
+        pols = m.iterar_politicas(mdp, m.POLITICAS_J2["caminar–caminar"], empate=empate,
+                                  max_rondas=4)
+        V = m.evaluar_politica(mdp, pols[0])
+        q = {a: m.q_valor(mdp, V, 2, a) for a in mdp["acciones"][2]}
+        out.append(texto(X_PIE, y + 6, "En 2: " + ", ".join(f"{a} vale {_v(v)}"
+                                                             for a, v in q.items()),
+                         tam=12, anclaje="start", color=TEXTO))
+        y += 18
+        partes = []
+        for k, pol in enumerate(pols):
+            ultima = k == len(pols) - 1
+            out.append(caja(40, _n(y), 220, 26, radio=6,
+                            relleno=mezclar(LINEA, 0.18), borde=SUAVE, grosor=1.5))
+            out.append(texto(ANCHO / 2, y + 18, f"ronda {k}: {_nombre_pol(pol)}", tam=13,
+                             peso="700"))
+            partes.append(_nombre_pol(pol))
+            y += 26
+            if not ultima:
+                out.append(_flecha(ANCHO / 2, y + 2, ANCHO / 2, y + 14))
+                y += 18
+        para = len(pols) < 5
+        out.append(texto(ANCHO / 2, y + 20, "para: la mejora no cambia nada" if para
+                         else "… y así sin fin", tam=13, peso="700",
+                         color=COLOR_CERRADA if para else COLOR_C))
+        d = ("Iteración de políticas desde caminar–caminar, con caminar a costo "
+             f"{_v(-mdp['r'][(2, m.CAMINAR)])} en la casilla 2: allí "
+             + " y ".join(f"{a} vale {_v(v)}" for a, v in q.items()) + ". Rondas: "
+             + ", ".join(partes) + (", y para." if para else ", y sigue alternando."))
+        return y + 34, d
+    return dibuja
+
+
+def _lado_lp(mdp, vstar_txt):
+    def dibuja(out, y):
+        vstar = m.iterar_valores(mdp, rondas=1)[-1]
+        es_fijo = m.cumple_bellman(mdp, vstar)
+        y, _, opt, filas = _panel_lp(out, y, mdp, alto=130,
+                                     vstar=(vstar[1], vstar[2]) if vstar_txt else None)
+        V = m.evaluar_politica(m.pasillo(), m.POLITICAS_J2["caminar–correr"])
+        mins = f"({_vd(opt[0], 0)}, {_vd(opt[1], 0)})"
+        if vstar_txt:
+            assert es_fijo and vstar[1] == vstar[2] == 0
+            linea_ = f"mínimo {mins} ≠ V* = ({_v(vstar[1])}, {_v(vstar[2])}) (anillo)"
+        else:
+            linea_ = f"mínimo {mins} = V* (punto)"
+        out.append(texto(ANCHO / 2, y + 12, linea_, tam=12, peso="700"))
+        d = (f"Región del programa lineal en el plano V(1)–V(2); el mínimo de V(1) + V(2) es "
+             f"{mins}." + (f" Con esperar gratis las restricciones nuevas dicen V(s) ≥ V(s), "
+                           f"la región no cambia, pero V* = ({_v(vstar[1])}, {_v(vstar[2])})."
+                           if vstar_txt else f" Coincide con V* = ({_v(V[1])}, {_v(V[2])})."))
+        return y + 26, d
+    return dibuja
+
+
+def _ejemplos_c3():
+    J = m.pasillo()
+    E0 = m.pasillo(esperar=0)
+    cc = m.POLITICAS_J2["caminar–correr"]
+    esperar = {1: m.ESPERAR, 2: m.ESPERAR}
+    Vs = m.evaluar_politica(J, cc)
+    Ue = {1: F(-8), 2: F(-8)}
+    lazo = m.lazo_99()
+    V99 = m.evaluar_politica(lazo, {1: m.CAMINAR})
+    return {
+        "punto-fijo": {
+            "pagina": "1_lo_que_necesitas.md", "titulo": "punto fijo",
+            "si": (_lado_funcion([(_f_telarana, COLOR_V, None)], marcas=[(-2, "x = −2")],
+                                 texto_desc="y = −1 + x/2 cruza a y = x una vez, en −2; iterar "
+                                 "se acerca."),
+                   "f(x) = −1 + x/2: un cruce, en −2"),
+            "no": (_lado_funcion([(lambda x: x, COLOR_V, None)], pegada=(-4, 1),
+                                 texto_desc="f(x) = x coincide con y = x: toda x es punto fijo."),
+                   "f(x) = x: toda x es punto fijo"),
+            "pie": ["Punteada: y = x. Anillo: el cruce.", "Amarillo grueso: pegada a y = x."]},
+        "hacia-atras": {
+            "pagina": "2_de_contar_a_decidir.md", "titulo": "una pasada hacia atrás",
+            "si": (_lado_escalera(None), "Sin ciclos: costo(s) sale de arriba"),
+            "no": (_lado_escalera(3), "Resbalón en 3: costo(3) usa costo(3)"),
+            "pie": ["Lo que rompe la pasada es el ciclo,", "no el azar."]},
+        "mdp": {
+            "pagina": "3_el_mdp.md", "titulo": "un MDP",
+            "si": (_lado_mdp_completo(J, ""), "Cada fila de P caminar y P correr suma 1"),
+            "no": (_lado_mdp_completo(_mdp_fila_mal(), ""), "Fila 1 de P correr: 1/2 + 1 = 3/2"),
+            "pie": ["Una fila que no suma 1 no es una", "distribución: no es un MDP."]},
+        "termina": {
+            "pagina": "3_el_mdp.md", "titulo": "termina con probabilidad 1",
+            "si": (_lado_politica(J, cc, "caminar–correr"), "caminar–correr: llega a la meta"),
+            "no": (_lado_politica(E0, esperar, "esperar siempre"),
+                   "esperar siempre: nunca llega"),
+            "pie": ["Con esperar, ninguna flecha llega", "a la meta: la cadena no termina."]},
+        "evaluar": {
+            "pagina": "4_evaluar_una_politica.md", "titulo": "evaluar una política",
+            "si": (_lado_politica(J, cc, "caminar–correr", evaluar=True),
+                   "caminar–correr: una sola solución"),
+            "no": (_lado_politica(E0, esperar, "esperar siempre (gratis)", evaluar=True),
+                   "esperar siempre: I − P es cero"),
+            "pie": ["Sin terminar con probabilidad 1,", "I − P (sin la meta) no se invierte."]},
+        "bellman": {
+            "pagina": "5_bellman.md", "titulo": "ecuación de Bellman",
+            "si": (_lado_funcion([(_bellman_2(J), ACENTO, None)], marcas=[(Vs[2], "−2")],
+                                 texto_desc="y = máx(−3, −1 + x/2) cruza a y = x solo en −2."),
+                   "y = máx(−3, −1 + x/2): cruza en −2"),
+            "no": (_lado_funcion([(_bellman_2(E0), ACENTO, None)], pegada=(Vs[2], 1),
+                                 texto_desc="Con esperar gratis, y = máx(−3, −1 + x/2, x) "
+                                 "coincide con y = x para todo x ≥ −2: infinitas soluciones."),
+                   "con esperar gratis: pegada a y = x"),
+            "pie": ["x = V(2). Punteada: y = x.", "Amarillo grueso: infinitas soluciones."]},
+        "codiciosa": {
+            "pagina": "5_bellman.md", "titulo": "la codiciosa de V*",
+            "si": (_lado_codiciosa(J, Vs, "U = V*"), "Codiciosa de V*: caminar–correr"),
+            "no": (_lado_codiciosa(J, Ue, "U equivocado"),
+                   "Codiciosa de U: " + _nombre_pol(m.codiciosa(J, Ue))),
+            "pie": ["Acento: la acción que elige. «vale» =", "r(s, a) + Σ P(s′ | s, a) U(s′)."]},
+        "paro": {
+            "pagina": "6_iterar_valores.md", "titulo": "parar con un residuo chico",
+            "si": (_lado_paro(J, Vs), None),
+            "no": (_lado_paro(lazo, V99), None),
+            "pie": ["Círculo: residuo. Cuadro: error.", "Sin la cota, un residuo chico no",
+                    "asegura un error chico."]},
+        "empates": {
+            "pagina": "7_iterar_politicas.md", "titulo": "empates en la mejora",
+            "si": (_lado_empates("conservar"), "En empate conserva: termina"),
+            "no": (_lado_empates("cambiar"), "En empate cambia: alterna"),
+            "pie": ["Caminar cuesta 2 en la casilla 2;", "allí caminar y correr empatan."]},
+        "lineal": {
+            "pagina": "8_como_programa_lineal.md", "titulo": "el programa lineal da V*",
+            "si": (_lado_lp(J, False), "El pasillo: el mínimo es V*"),
+            "no": (_lado_lp(E0, True), "Esperar gratis: región igual"),
+            "pie": ["Sombreado: la región. Punto: el", "mínimo. Anillo: V* con esperar."]},
+    }
+
+
+def _lado_escalera(resbalon):
+    def dibuja(out, y):
+        costo = m.escalera_costo()
+        yn = y + 40
+        xs = _escalera_grafo(out, yn, resbalon=resbalon,
+                             marcar_ruta=None if resbalon else m.escalera_ruta_optima())
+        out.append(texto(X_PIE, yn + 88, "pisar", tam=12, anclaje="start", color=SUAVE))
+        out.append(texto(X_PIE, yn + 106, "falta", tam=12, anclaje="start", color=SUAVE))
+        for s in range(1, 6):
+            out.append(texto(xs[s], yn + 88, str(m.ESCALERA_COSTOS[s - 1]), tam=12,
+                             color=SUAVE))
+        for s in range(6):
+            v = str(costo[s]) if resbalon is None or s > resbalon else "?"
+            out.append(texto(xs[s], yn + 106, v, tam=12, peso="700"))
+        if resbalon is None:
+            d = ("Escalera sin ciclos, escalones 0 a 5, brincos de 1 y de 2; pisar cuesta "
+                 + ", ".join(map(str, m.ESCALERA_COSTOS)) + ". Lo que falta, de 0 a 5: "
+                 + ", ".join(map(str, costo)) + "; una pasada de 5 hacia 0 basta. Ruta "
+                 "óptima marcada: " + " → ".join(map(str, m.escalera_ruta_optima())) + ".")
+        else:
+            d = (f"La misma escalera, pero en el escalón {resbalon} un brinco falla con 1/2 y "
+                 f"te deja donde estás (lazo): costo({resbalon}) depende de sí mismo, y de "
+                 f"{resbalon} hacia abajo la pasada no puede llenar la tabla.")
+        return yn + 118, d
+    return dibuja
+
+
+def ejemplo_c3(clave):
+    e = EJEMPLOS_C3[clave]
+    titulo = ["Ejemplo y contraejemplo", e["titulo"]]
+    out = []
+    y = encabezado(out, titulo)
+    descs = []
+    for lado in ("si", "no"):
+        dibuja, dice = e[lado]
+        out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+        if clave == "paro":
+            sub = []
+            y2, d, coc = dibuja(sub, y + 40)
+            k = coc[-1]
+            igual = all(c == k for c in coc[1:])
+            assert igual, coc
+            dice = ("el pasillo: error = residuo desde t = 2" if k == 1
+                    else f"el pasillo: error = {fr(k)} × residuo") \
+                if lado == "si" else f"lazo 99/100: error = {fr(k)} × residuo"
+            out.append(texto(X_PIE, y + 14, "✓ Lo cumple" if lado == "si" else "✗ No lo cumple",
+                             tam=14, peso="700", anclaje="start"))
+            out.append(texto(X_PIE, y + 33, dice, tam=13, anclaje="start", color=SUAVE))
+            out.extend(sub)
+            y = y2
+            d = d + (" Desde la ronda 2, error y residuo coinciden." if k == 1 else
+                     f" El error es {fr(k)} veces el residuo en toda ronda.")
+        else:
+            out.append(texto(X_PIE, y + 14, "✓ Lo cumple" if lado == "si" else "✗ No lo cumple",
+                             tam=14, peso="700", anclaje="start"))
+            out.append(texto(X_PIE, y + 33, dice, tam=13, anclaje="start", color=SUAVE))
+            y, d = dibuja(out, y + 40)
+        descs.append(("Lo cumple: " if lado == "si" else "No lo cumple: ") + dice + ". " + d)
+        y += 8
+    y = pie(out, y + 4, e["pie"])
+    return svg(titulo, " ".join(descs), out, y)
+
+
+EJEMPLOS_C3 = _ejemplos_c3()
+
+
 DIAGRAMAS = {
     "mkv-c1-flujo-muestrear": lambda: flujo("muestrear"),
     "mkv-c1-flujo-contar": lambda: flujo("contar"),
@@ -1328,6 +2813,28 @@ DIAGRAMAS = {
     "mkv-c2-flujo-absorcion": lambda: flujo("absorcion"),
     "mkv-c2-web-juguete": mkv_c2_web_juguete,
     **{f"mkv-c2-ej-{c}": (lambda c=c: ejemplo(c)) for c in EJEMPLOS},
+    "mkv-c3-punto-fijo": mkv_c3_punto_fijo,
+    "mkv-c3-escalera": mkv_c3_escalera,
+    "mkv-c3-escalera-arbol-vs-grafo": mkv_c3_escalera_arbol_vs_grafo,
+    "mkv-c3-flujo-hacia-atras": lambda: flujo("hacia-atras"),
+    "mkv-c3-pasillo": mkv_c3_pasillo,
+    "mkv-c3-pasillo-mdp": mkv_c3_pasillo_mdp,
+    "mkv-c3-politica-elige-filas": mkv_c3_politica_elige_filas,
+    "mkv-c3-cuatro-cadenas": mkv_c3_cuatro_cadenas,
+    "mkv-c3-flujo-evaluar": lambda: flujo("evaluar"),
+    "mkv-c3-cuatro-politicas-plano": mkv_c3_cuatro_politicas_plano,
+    "mkv-c3-simular-politica": mkv_c3_simular_politica,
+    "mkv-c3-bellman-1d": mkv_c3_bellman_1d,
+    "mkv-c3-fronteras": mkv_c3_fronteras,
+    "mkv-c3-flujo-valores": lambda: flujo("valores"),
+    "mkv-c3-iterar-valores": mkv_c3_iterar_valores,
+    "mkv-c3-residuo": mkv_c3_residuo,
+    "mkv-c3-pasillo-largo": mkv_c3_pasillo_largo,
+    "mkv-c3-flujo-politicas": lambda: flujo("politicas"),
+    "mkv-c3-rondas-politicas": mkv_c3_rondas_politicas,
+    "mkv-c3-region-lp": mkv_c3_region_lp,
+    "mkv-c3-mapa-decidir": mkv_c3_mapa_decidir,
+    **{f"mkv-c3-ej-{c}": (lambda c=c: ejemplo_c3(c)) for c in EJEMPLOS_C3},
 }
 
 

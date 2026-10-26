@@ -46,3 +46,34 @@ captura; entonces se vuelve a tomar.
 | `mkv-c2-ej-converge.svg` | Ejemplo y contraejemplo de «convergencia desde todo inicio»: una cadena que lo cumple y otra que no, cada una con su grafo y su matriz | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c2-ej-ergodico.svg` | Ejemplo y contraejemplo de «teorema ergódico»: una cadena que lo cumple y otra que no, cada una con su grafo y su matriz | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c1-generador.png` | Vista previa del generador de texto con memoria 2, semilla 2034, en el símbolo 150 de 200: contexto «ce», sale «s» con u = 0.7149 | Capturado de `generador_texto.html` con `tools/gen_vista_generador.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-bellman-1d.svg` | Ecuación de Bellman en la casilla 2 como gráfica de una variable, x = V(2) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-cuatro-cadenas.svg` | Las cuatro políticas del pasillo, cada una dibujada como su cadena | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-cuatro-politicas-plano.svg` | Las cuatro políticas del pasillo como puntos (V(1), V(2)) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-bellman.svg` | Ejemplo y contraejemplo de Bellman en una variable: un solo cruce en −2; con esperar gratis, pegada a y = x e infinitas soluciones | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-codiciosa.svg` | La codiciosa de V* da caminar–correr; la de una estimación equivocada U = (−8, −8) da caminar–caminar | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-empates.svg` | Conservar la acción en un empate termina; cambiarla hace alternar para siempre entre dos políticas del mismo valor | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-evaluar.svg` | Caminar–correr tiene I − P invertible y valor (−5, −2); esperar siempre gratis deja I − P singular | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-hacia-atras.svg` | La escalera sin ciclos se resuelve con una pasada; con un resbalón en el escalón 3, costo(3) depende de sí mismo | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-lineal.svg` | El mínimo del programa lineal es V* = (−5, −2); con esperar gratis la región no cambia y el mínimo ya no es V* = (0, 0) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-mdp.svg` | Las matrices de caminar y correr con filas que suman 1, contra una fila de correr que suma 3/2 | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-paro.svg` | En el pasillo el error es igual al residuo; en el lazo de 99/100 es 99 veces el residuo | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-punto-fijo.svg` | f(x) = −1 + x/2 cruza y = x una vez y la iteración se acerca; con f(x) = x todo número es punto fijo | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-ej-termina.svg` | Caminar–correr llega a la meta con probabilidad 1; esperar siempre nunca llega | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-escalera-arbol-vs-grafo.svg` | Arriba, el árbol de llamadas de rutas(0) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-escalera.svg` | Escalera de escalones 0 a 5 que suben a la derecha; desde cada escalón se brinca 1 o 2 sin pasarse del 5. Pisar los escalones 1 a 5 cuesta 1, 2, 9, 1, 1 (el 3 está flojo) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-flujo-evaluar.svg` | Diagrama de flujo de evaluar una política, en palabras | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-flujo-hacia-atras.svg` | Diagrama de flujo de la pasada hacia atrás, en palabras | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-flujo-politicas.svg` | Diagrama de flujo de la iteración de políticas, en palabras | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-flujo-valores.svg` | Diagrama de flujo de la iteración de valores, en palabras | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-fronteras.svg` | Mapa de la mejor política del pasillo según el costo de caminar (de 0 a 6) y el castigo del hueco (de 0 a 12) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-iterar-valores.svg` | Iteración de valores en el pasillo desde V⁽⁰⁾ = 0, rondas 0 a 8: V(1) y V(2) contra la ronda | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-mapa-decidir.svg` | Mapa de la clase: pregunta, ecuación y algoritmo, en tres filas | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-pasillo-largo.svg` | El pasillo de 200 casillas: la acción óptima en cada casilla y su valor óptimo | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-pasillo-mdp.svg` | El MDP del pasillo como grafo con nodos de acción, y debajo las matrices de caminar y de correr | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-pasillo.svg` | El pasillo mojado: inicio, la casilla 1 con hueco sin barandal, la casilla 2 con barandal y la meta | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-politica-elige-filas.svg` | La política caminar–correr elige la fila 1 de P caminar (0, 1, 0) y la fila 2 de P correr (0, 1/2, 1/2), marcadas; juntas forman Pπ, la matriz de la política | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-punto-fijo.svg` | Gráfica de y = f(x) = −1 + x/2 y de y = x, con x de −4 a 1. Se cruzan una vez, en x = −2 | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-region-lp.svg` | Plano V(1)–V(2) con las cuatro restricciones del programa lineal del pasillo, una recta por par (estado, acción) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-residuo.svg` | Escala logarítmica, rondas 1 a 10 de la iteración de valores en el pasillo | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-rondas-politicas.svg` | Iteración de políticas en el pasillo de dos casillas | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c3-simular-politica.svg` | Histograma del retorno de 10 000 episodios de caminar–correr desde la casilla 1 (semilla 2044) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |

@@ -29,6 +29,18 @@ UNIDAD = gen.ASSETS.parent
 NOMBRES = sorted(gen.DIAGRAMAS)
 _DEJAVU = "/usr/share/fonts/truetype/dejavu/"
 
+# Clase 3: las figuras propias del plan (§4) y las claves del manifiesto de
+# ejemplo y contraejemplo (§5), escritas a mano para que el catalogo no pueda
+# perder ni inventar una.
+FIGURAS_C3 = (
+    "punto-fijo", "escalera", "escalera-arbol-vs-grafo", "flujo-hacia-atras", "pasillo",
+    "pasillo-mdp", "politica-elige-filas", "cuatro-cadenas", "flujo-evaluar",
+    "cuatro-politicas-plano", "simular-politica", "bellman-1d", "fronteras", "flujo-valores",
+    "iterar-valores", "residuo", "pasillo-largo", "flujo-politicas", "rondas-politicas",
+    "region-lp", "mapa-decidir")
+CLAVES_C3 = ("punto-fijo", "hacia-atras", "mdp", "termina", "evaluar", "bellman", "codiciosa",
+             "paro", "empates", "lineal")
+
 
 @lru_cache(maxsize=None)
 def _svg(nombre):
@@ -55,7 +67,7 @@ def test_cada_svg_es_el_que_produce_el_generador(nombre):
 
 
 def test_cada_diagrama_lleva_el_prefijo_de_la_clase():
-    assert all(re.match(r"mkv-c[12]-", n) for n in NOMBRES)
+    assert all(re.match(r"mkv-c[123]-", n) for n in NOMBRES)
 
 
 def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
@@ -65,7 +77,8 @@ def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
         "mkv-c1-mu-t", "mkv-c1-recuperar-p", "mkv-c1-ceros", "mkv-c1-rachas",
         "mkv-c2-grafo-clasificar", "mkv-c2-grafo-contraejemplos", "mkv-c2-mu-t-inicios",
         "mkv-c2-flujo-potencias", "mkv-c2-tablero-chico", "mkv-c2-flujo-absorcion",
-        "mkv-c2-web-juguete"} | {f"mkv-c2-ej-{c}" for c in gen.EJEMPLOS}
+        "mkv-c2-web-juguete"} | {f"mkv-c2-ej-{c}" for c in gen.EJEMPLOS} | {
+        f"mkv-c3-{n}" for n in FIGURAS_C3} | {f"mkv-c3-ej-{c}" for c in CLAVES_C3}
 
 
 def test_hay_un_ejemplo_por_definicion_y_teorema_de_las_paginas_2_y_3():
@@ -263,12 +276,12 @@ def test_cada_flujo_tiene_rombo_y_salida_explicita(clave):
     caja de borde de acento) y al menos una vuelta. Excepcion: el tiempo
     medio de llegada (clase 2) resuelve un sistema de una vez: no da vueltas
     y tiene dos salidas (m, o el aviso de que desde algun estado no se
-    llega). Y la iteracion de potencias (clase 2) tiene dos salidas porque
+    llega), igual que evaluar una politica (clase 3). Y la iteracion de potencias (clase 2) tiene dos salidas porque
     distingue parar por tolerancia de llegar al tope sin parar."""
     f = gen.FLUJOS[clave]
     cajas = [p for p in f["pasos"] if "caja" in p]
     rombos = [p for p in f["pasos"] if "rombo" in p]
-    sin_vuelta = clave == "absorcion"
+    sin_vuelta = clave in ("absorcion", "evaluar")
     assert 3 <= len(cajas) <= 6 and rombos and (f["vueltas"] or sin_vuelta)
     dos_salidas = sin_vuelta or clave == "potencias"
     assert [p.get("fin") for p in f["pasos"]].count(True) == (2 if dos_salidas else 1)
@@ -276,3 +289,95 @@ def test_cada_flujo_tiene_rombo_y_salida_explicita(clave):
     nombre = next(n for n in gen.DIAGRAMAS if n.endswith(f"-flujo-{clave}"))
     svg = gen.contenido(nombre)
     assert svg.count("<polygon") == len(rombos)
+
+
+# ------------------------------------------------------------ clase 3 ---
+
+NOMBRES_C3 = [n for n in NOMBRES if n.startswith("mkv-c3-")]
+
+
+def test_el_manifiesto_de_la_clase_3_es_el_del_plan():
+    assert set(gen.EJEMPLOS_C3) == set(CLAVES_C3)
+
+
+@pytest.mark.parametrize("clave", CLAVES_C3)
+def test_cada_ejemplo_de_la_clase_3_tiene_sus_dos_paneles(clave):
+    renglones = _renglones(f"mkv-c3-ej-{clave}")
+    assert renglones.count("✓ Lo cumple") == 1 and renglones.count("✗ No lo cumple") == 1
+    aria = _aria(f"mkv-c3-ej-{clave}")
+    assert aria.startswith("Lo cumple: ") and " No lo cumple: " in aria
+
+
+@pytest.mark.parametrize("nombre", NOMBRES_C3)
+def test_la_clase_3_respeta_la_notacion_del_plan(nombre):
+    """Plan §2: V(1), nunca V con subindice; politicas en palabras, nunca
+    CC/CR; ningun guion bajo de LaTeX en un rotulo."""
+    texto = " ".join(_renglones(nombre)) + " " + _aria(nombre)
+    for prohibido in ("V₁", "V₂", "V_", "r_", "P_", "CC", "CR", "\\"):
+        assert prohibido not in texto, (nombre, prohibido)
+    assert not re.search(r"V\(\d\)\s*=\s*-", texto), nombre    # menos tipografico
+
+
+def test_el_mdp_dibuja_las_matrices_de_markov_py():
+    J = m.pasillo()
+    aria = _aria("mkv-c3-pasillo-mdp")
+    for a in (m.CAMINAR, m.CORRER):
+        filas = "; ".join(", ".join(gen._v(x) for x in f) for f in m.matriz_accion(J, a))
+        assert filas in aria, a
+    assert "en 1, correr (r = −6): se queda con 1/2, a 2 con 1/2" in aria
+
+
+def test_las_cuatro_politicas_llevan_su_valor():
+    J = m.pasillo()
+    for figura in ("mkv-c3-cuatro-cadenas", "mkv-c3-cuatro-politicas-plano"):
+        aria = _aria(figura)
+        for nombre, pol in m.POLITICAS_J2.items():
+            V = m.evaluar_politica(J, pol)
+            assert nombre in aria
+            assert f"({gen._v(V[1])}, {gen._v(V[2])})" in aria or \
+                f"V(1) = {gen._v(V[1])}, V(2) = {gen._v(V[2])}" in aria, (figura, nombre)
+    assert "(−5, −2)" in _aria("mkv-c3-cuatro-politicas-plano")
+
+
+def test_el_paro_dice_cuantas_veces_el_residuo():
+    """Correccion del plan: en el pasillo el error es igual al residuo desde
+    la ronda 2; en el lazo 99/100 es 99 veces."""
+    J = m.pasillo()
+    Vs = m.evaluar_politica(J, m.POLITICAS_J2["caminar–correr"])
+    traza = m.iterar_valores(J, rondas=10)
+    err, res = m.errores(traza, Vs)[1:], m.residuos(traza)
+    assert all(e == r for e, r in zip(err[1:], res[1:]))
+    renglones = _renglones("mkv-c3-ej-paro")
+    assert "el pasillo: error = residuo desde t = 2" in renglones
+    assert "lazo 99/100: error = 99 × residuo" in renglones
+
+
+def test_la_codiciosa_elige_lo_que_dice_markov_py():
+    J = m.pasillo()
+    aria = _aria("mkv-c3-ej-codiciosa")
+    Vs = m.evaluar_politica(J, m.POLITICAS_J2["caminar–correr"])
+    assert gen._nombre_pol(m.codiciosa(J, Vs)) == "caminar–correr"
+    assert gen._nombre_pol(m.codiciosa(J, {1: -8, 2: -8})) == "caminar–caminar"
+    assert "La codiciosa elige caminar–correr" in aria
+    assert "La codiciosa elige caminar–caminar" in aria
+    assert "en 1, caminar vale −11; en 1, correr vale −14" in aria
+
+
+def test_el_programa_lineal_y_la_simulacion_salen_de_markov_py():
+    assert "el mínimo: (−5, −2) = V*" in _renglones("mkv-c3-region-lp")
+    aria = _aria("mkv-c3-ej-lineal")
+    assert "V* = (0, 0)" in aria and "(−5, −2)" in aria
+    media, ee = m.resumen_simulacion()
+    aria = _aria("mkv-c3-simular-politica")
+    assert f"Media {gen._vd(media)}, error estándar {gen._vd(ee)}" in aria
+    assert "V(1) = −5" in aria
+    d = m.pasillo_largo()
+    assert f"V*(1) = {gen._aprox(d['v_inicio'])}" in _aria("mkv-c3-pasillo-largo")
+    assert f"{gen.miles(d['rondas_vi'])} rondas" in _aria("mkv-c3-rondas-politicas")
+
+
+def test_la_escalera_dibuja_las_cifras_de_markov_py():
+    aria = _aria("mkv-c3-escalera")
+    assert "4, 4, 2, 1, 1, 0" in aria
+    assert "0 → 2 → 4 → 5 y paga 4" in aria and "0 → 1 → 2 → 4 → 5 y paga 5" in aria
+    assert "8, 5, 3, 2, 1, 1" in _aria("mkv-c3-escalera-arbol-vs-grafo")

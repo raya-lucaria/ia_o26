@@ -4,7 +4,7 @@ title: Toda la notación, en una hoja
 nav_title: Notación
 summary: "Cada símbolo y cada término que usa la unidad de cadenas de Markov, cómo se lee, qué significa y en qué página se presentó."
 status: ready
-estimated_time: 7m
+estimated_time: 9m
 tags: [markov, referencia, notacion]
 ---
 
@@ -106,6 +106,30 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $\alpha$, $v$ | «alfa», «ve». En PageRank, la probabilidad de seguir un enlace y el vector de salto. *→ PageRank.* |
 | $\overline P$, $G$ | «pe barra», «ge». $P$ con cada fila sin salidas sustituida por $v$, y la matriz de Google ${G=\alpha\overline P+(1-\alpha)\mathbf 1v}$. *→ PageRank.* |
 
+## Decidir
+
+| Símbolo | Cómo se lee, qué es y dónde se presenta |
+|---|---|
+| $\max_a$, $\arg\max_a$ | «máximo sobre a», «argumento del máximo». El mayor valor, y el **conjunto** de las $a$ que lo alcanzan (con empates, tiene más de una). *→ Lo que necesitas: el máximo y el punto fijo.* |
+| $x^{(t)}$, $x^*$ | «equis en la ronda te», «equis estrella». El valor tras $t$ aplicaciones de $x\leftarrow f(x)$, y el punto fijo, que cumple ${x^*=f(x^*)}$. *→ Lo que necesitas: el máximo y el punto fijo.* |
+| $q$ | «cu». En una recta ${f(x)=f(0)+q\,x}$, la pendiente; en los juguetes, la probabilidad de seguir, el mismo sentido que en las rachas. *→ Lo que necesitas: el máximo y el punto fijo.* |
+| $\operatorname{rutas}(s)$, $\operatorname{costo}(s)$ | «rutas de ese», «costo de ese». En la escalera, cuántas rutas llegan arriba desde el escalón $s$ y lo mínimo que falta pagar. *→ De contar a decidir: la escalera.* |
+| $\mathcal A(s)$, $a$ | «a caligráfica de ese», «a». Las acciones posibles en $s$, y una de ellas. Caligráfica porque $A$ es el conjunto de llegada de la clase 2. *→ El proceso de decisión de Markov.* |
+| $\langle\mathcal S,\mathcal A,P,r\rangle$ | El MDP: estados, acciones, una matriz por acción y la recompensa esperada. Agentes lo escribió $\langle S,A,P,R,\gamma\rangle$. *→ El proceso de decisión de Markov.* |
+| $P(s'\mid s,a)$, $P_a$ | «pe de ese prima dado ese y a». La probabilidad de llegar a $s'$ al usar $a$ en $s$; $P_a$ es la matriz de la acción $a$ (fila desde, columna hacia, filas que suman 1). *→ El proceso de decisión de Markov.* |
+| $r(s,a)$ | «erre de ese, a». La recompensa esperada al usar $a$ en $s$; aquí es $\le0$: un costo es una recompensa negativa. *→ El proceso de decisión de Markov.* |
+| $\mathcal F$, $\mathcal T$, $\tau_{\mathcal F}$ | «efe», «te» caligráficas. Los terminales (aquí, solo la meta), los que aún no terminan, y el primer paso en $\mathcal F$, como $\tau_A$. *→ El proceso de decisión de Markov.* |
+| $\pi(s)$, $\pi^*$ | «pi de ese». La acción que la política elige en $s$ (una sola, siempre la misma) y una política óptima. Las del pasillo se nombran con palabras: caminar–correr es caminar en 1 y correr en 2. *→ El proceso de decisión de Markov.* |
+| $P_\pi$, $P_{\pi,\mathcal T}$, $r_\pi$ | «pe sub pi». La cadena de la política: la fila $s$ es la fila $s$ de $P_{\pi(s)}$; restringida a $\mathcal T$; y su vector de recompensas. *→ El proceso de decisión de Markov.* |
+| $G_t$ | «ge sub te». El retorno: la suma de las recompensas desde el paso $t$ hasta terminar. Sin subíndice, $G$ es la matriz de Google. *→ El proceso de decisión de Markov.* |
+| $E^\pi_s$, $\Pr^\pi_s$ | «esperanza de pi empezando en ese». Valor esperado y probabilidad al empezar en $s$ y seguir $\pi$. *→ El proceso de decisión de Markov.* |
+| $V_\pi(s)$ | «ve sub pi de ese». El valor de $\pi$ desde $s$: ${E^\pi_s[G_0]}$. El estado va entre paréntesis: $V(1)$, nunca $V_1$. *→ El proceso de decisión de Markov.* |
+| $Q_\pi(s,a)$, $V^*$, $Q^*$ | «cu sub pi». El valor de usar $a$ primero y después $\pi$; los valores óptimos. Es la misma idea que la $Q$ de juegos: lo que vale una jugada. *→ La ecuación de Bellman.* |
+| $U$, $\pi_U$ | «u», «pi sub u». Una estimación cualquiera del valor, y su política codiciosa: en cada $s$, una acción que maximiza ${r(s,a)+\sum_{s'}P(s'\mid s,a)U(s')}$. *→ La ecuación de Bellman.* |
+| $V^{(t)}$, $\operatorname{res}^{(t)}$ | «ve en la ronda te», «residuo». El valor tras $t$ rondas de iteración de valores, y ${\max_s\lvert V^{(t)}(s)-V^{(t-1)}(s)\rvert}$. Una ronda no es un paso. *→ Iteración de valores.* |
+| $m$, $\beta$ | «eme», «beta». En la cota de paro: tras $m$ pasos, cualquier sucesión de acciones sigue sin terminar con probabilidad a lo más $\beta<1$. *→ Iteración de valores.* |
+| $\gamma$ | «gama». El descuento; solo aparece en un recuadro. Aquí no hace falta: basta que alguna política termine y que toda la que no termina valga $-\infty$. *→ La ecuación de Bellman.* |
+
 ## Términos
 
 | Término | Qué significa aquí y dónde se presenta |
@@ -139,6 +163,13 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | Distribución estacionaria | Una $\mu$ que no cambia al dar un paso: si arrancas en ella, te quedas en ella. *→ La estacionaria y sus cuatro teoremas.* |
 | Las tres preguntas | En el paso $t$ ($\mu_t$), en el límite (${\lim\mu_t}$) y fracción del tiempo (${N_T(s)/T}$). No son la misma. *→ La estacionaria y sus cuatro teoremas.* |
 | Iteración de potencias | Multiplicar una distribución por $P$ una y otra vez hasta que deje de cambiar más que $\mathrm{tol}$. *→ ¿Olvida su inicio?.* |
+| Punto fijo | Un $x$ con ${x=f(x)}$: aplicar $f$ no lo mueve. *→ Lo que necesitas: el máximo y el punto fijo.* |
+| Acción, política | Lo que se elige en un estado; una regla que elige una acción por estado. *→ El proceso de decisión de Markov.* |
+| Terminar con probabilidad 1 | Desde todo estado, la política llega a $\mathcal F$ con probabilidad 1. *→ El proceso de decisión de Markov.* |
+| Evaluar, mejorar | Calcular $V_\pi$ de una política fija; cambiarla por la codiciosa de su valor. *→ Evaluar una política; Iteración de políticas.* |
+| Codiciosa | La política que, en cada estado, elige la mejor acción según una estimación $U$ del valor. *→ La ecuación de Bellman.* |
+| Ronda | Una pasada de un algoritmo por todos los estados; no es un paso de la cadena. *→ Iteración de valores.* |
+| Iteración de valores, de políticas | Aplicar el máximo de Bellman hasta que el residuo baje; evaluar y mejorar hasta que la política no cambie. *→ Iteración de valores; Iteración de políticas.* |
 
 ## En las figuras
 
@@ -184,3 +215,14 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 - **$P$** es la matriz de transición, la misma $P$ de
   $\langle S,A,P,R,\gamma\rangle$ en agentes; no es la clase P de
   complejidad.
+- **$\mathcal A(s)$** son las acciones: caligráfica porque $A$ ya es el
+  conjunto de llegada de la clase 2. En juegos, $A(s)$ eran las jugadas.
+- **$G_t$**, con subíndice, es el retorno; $G$ sola sigue siendo la matriz
+  de Google.
+- **$V^{(t)}$** lleva la ronda arriba y entre paréntesis; el estado va entre
+  paréntesis, $V(1)$, nunca como subíndice.
+- **$m$ y $\beta$** de la cota de paro no son el $m(s)$ del tiempo medio de
+  llegada ni la $\beta$ de alfa-beta: $m$ cuenta pasos y $\beta$ es una
+  probabilidad.
+- **$U$** es aquí una estimación cualquiera del valor; en juegos, $U(s)$ era
+  la utilidad de una posición final.
