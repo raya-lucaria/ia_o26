@@ -4,7 +4,7 @@ title: Cadenas de Markov
 nav_title: Markov
 summary: "Un modelo de qué sigue que solo mira el estado actual: qué es una cadena de Markov, cómo se ajusta contando en un texto, cómo predice y genera, y qué hace a la larga."
 status: ready
-estimated_time: 630m
+estimated_time: 836m
 tags: [markov, probabilidad, cadenas]
 prerequisites: [juegos]
 ---
@@ -53,17 +53,20 @@ completo.
 | 1 | La cadena se ve en los datos: se define, se ajusta, predice y genera | Probabilidad que se necesita, el problema de Markov, ajustar contando, predecir y generar texto | 199m |
 | 2 | La cadena se ve a la larga: qué pasa si la dejas correr | Clasificar estados, la estacionaria y sus cuatro teoremas, olvidar el inicio, absorción y PageRank | 203m |
 | 3 | Se decide: en cada estado eliges qué matriz usar | La escalera, el MDP, evaluar una política, Bellman, iterar valores, iterar políticas y programa lineal | 228m |
+| 4 | Lo que no se ve: el estado se oculta y solo llegan señales | El modelo oculto, filtrar, decodificar con Viterbi, aprender la idea, un modelo de lenguaje pequeño, decidir con la creencia y el camino al refuerzo | 206m |
 :::
 
 - [[markov-que-es-una-cadena|Clase 1 · Qué es una cadena]]
 - [[markov-a-la-larga|Clase 2 · Qué pasa a la larga]]
 - [[markov-decidir|Clase 3 · Decidir]]
+- [[markov-lo-que-no-se-ve|Clase 4 · Lo que no se ve]]
 
-El recorrido de lectura suma **10 horas y 30 minutos**.
+El recorrido de lectura suma **13 horas y 56 minutos**.
 
 La clase 1 termina con una **tarea**: tres videos, tres de sus ejercicios
 y uno que adelanta la siguiente pregunta. La clase 3 también: un video
 sobre procesos de decisión de Markov, para el miércoles 28 de octubre.
+Y la clase 4: dos videos, para el miércoles 4 de noviembre.
 Cada una está en el índice de su clase, aparte del recorrido.
 
 Y una hoja de consulta, aparte del recorrido:

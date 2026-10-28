@@ -65,6 +65,20 @@ CLASE_3_EN_ORDEN = [
     "tarea-decidir",
 ]
 
+# El recorrido de la clase 4, en el mismo orden.
+CLASE_4_EN_ORDEN = [
+    "mkv-bayes-y-normalizar",
+    "mkv-el-modelo-oculto",
+    "mkv-filtrar",
+    "mkv-decodificar",
+    "mkv-aprender-lo-oculto",
+    "mkv-lenguaje-pequeno",
+    "mkv-decidir-sin-ver",
+    "mkv-hacia-refuerzo",
+    "mkv-resumen-lo-oculto",
+    "tarea-lo-que-no-se-ve",
+]
+
 RE_DIRECTIVA = re.compile(r"^::: (\w+) \{([^}]*)\}\s*$", re.M)
 RE_ATRIBUTO = re.compile(r'(\w+)="([^"]*)"')
 
@@ -122,8 +136,9 @@ def test_markov_aparece_en_navegacion_en_orden():
     items = {it["id"]: it for it in nav["items"]}
     assert "markov" in items, "la unidad no aparece en la navegación"
     hijos = items["markov"]["children"]
-    assert hijos[:3] == ["markov-que-es-una-cadena", "markov-a-la-larga",
-                         "markov-decidir"], hijos
+    assert hijos[:4] == ["markov-que-es-una-cadena", "markov-a-la-larga",
+                         "markov-decidir", "markov-lo-que-no-se-ve"], hijos
     assert items["markov-que-es-una-cadena"]["children"] == CLASE_1_EN_ORDEN
     assert items["markov-a-la-larga"]["children"] == CLASE_2_EN_ORDEN
     assert items["markov-decidir"]["children"] == CLASE_3_EN_ORDEN
+    assert items["markov-lo-que-no-se-ve"]["children"] == CLASE_4_EN_ORDEN
