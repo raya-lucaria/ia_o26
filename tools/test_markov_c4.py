@@ -112,11 +112,30 @@ def test_lenguaje_diseño():
 
 
 def test_parametros_lenguaje():
+    """Dos convenciones con nombre: sin inicial (P + B; bigramas W²) y con
+    inicial (mu0 o la primera palabra). Mezclarlas daba 45 frente a 144
+    celdas pero 41 (con mu0) frente a 132 (sin) libres."""
     assert m.parametros_lenguaje() == {
         "estados": 3, "palabras": 12,
-        "celdas_hmm": 45, "celdas_bigramas": 144,
-        "libres_hmm": 41, "libres_bigramas": 132,
+        "celdas_hmm": 45, "libres_hmm": 39,
+        "celdas_hmm_con_inicial": 48, "libres_hmm_con_inicial": 41,
+        "celdas_bigramas": 144, "libres_bigramas": 132,
+        "celdas_bigramas_con_inicial": 156, "libres_bigramas_con_inicial": 143,
+        "libres_hmm_con_ceros": 35, "libres_hmm_con_ceros_en_P_y_B": 12,
     }
+
+
+def test_los_ceros_de_P_reducen_los_libres():
+    """Con los 4 ceros estructurales de P, sus filas tienen 1, 2 y 2 celdas
+    posibles: 0 + 1 + 1 = 2 libres en P en lugar de 3·2 = 6. Con B completa
+    (3·11 = 33) el modelo tiene 35 libres, no 39; si tambien se cuentan los
+    ceros de B (4, 5 y 4 palabras por estado: 3 + 4 + 3 = 10), 12."""
+    h = m.lenguaje_pequeno()
+    posibles = [sum(1 for p in h["P"][s].values() if p > 0) for s in h["estados"]]
+    assert posibles == [1, 2, 2]
+    assert sum(k - 1 for k in posibles) == 2
+    q = m.parametros_lenguaje()
+    assert q["libres_hmm"] - q["libres_hmm_con_ceros"] == 4
 
 
 def test_lenguaje_tiene_trayectorias_imposibles_y_viterbi_las_evita():
@@ -425,3 +444,92 @@ def test_decidir():
     for b in BARRIDO:
         c = {"llevar": 1, "no llevar": 4 * b, "mirar": F(1, 2) + b}
         assert c[m.decidir(b)] == min(c.values())
+
+
+# ------------------------------------------------ evidencia imposible ---
+
+def _degenerado():
+    """mu0 = (1, 0), P y B identidad: la señal (x, y) es imposible."""
+    return m._hmm(["a", "b"], ["x", "y"], [1, 0], [[1, 0], [0, 1]], [[1, 0], [0, 1]])
+
+
+def test_evidencia_imposible():
+    h, s = _degenerado(), ["x", "y"]
+    assert m.verosimilitud_hmm(h, s) == 0                  # legitimo: vale 0
+    assert all(p == 0 for p in m.fuerza_bruta(h, s).values())
+    for f in (m.filtrar, m.suavizar, m.viterbi, m.mejor_por_dia):
+        with pytest.raises(ValueError, match="señal imposible"):
+            f(h, s)
+    with pytest.raises(ValueError, match="señal imposible"):
+        m.posterior_trayectoria(h, ["a", "b"], s)
+    with pytest.raises(ValueError, match="señal imposible"):
+        m.corregir(h, h["mu0"], "y")
+    # lo posible del mismo modelo si funciona
+    assert m.viterbi(h, ["x", "x"]) == (["a", "a"], 1)
+
+
+def test_predecir_pide_una_creencia():
+    h = m.paraguas()
+    for f in (m.predecir_estado, m.predecir_señal):
+        with pytest.raises(ValueError, match="creencia"):
+            f(h, {LL: F(0), SOL: F(0)})
+
+
+# ---------------------------------------------- empates de los umbrales ---
+
+def test_empates_de_los_umbrales():
+    """Orden de ACCIONES_DIA: llevar, no llevar, mirar."""
+    assert m.ACCIONES_DIA == ("llevar", "no llevar", "mirar")
+    c = m.costos_dia(F(1, 4))                  # llevar = no llevar = 1
+    assert c == {"llevar": 1, "no llevar": 1, "mirar": F(3, 4)}
+    assert m.decidir(F(1, 4)) == "mirar"       # mirar es mas barato aun
+    c = m.costos_dia(F(1, 6))                  # mirar = actuar = 2/3
+    assert c["mirar"] == m.costo_actuar(F(1, 6)) == c["no llevar"] == F(2, 3)
+    assert m.decidir(F(1, 6)) == "no llevar"   # empate: no llevar va antes que mirar
+    c = m.costos_dia(F(1, 2))                  # mirar = llevar = 1
+    assert c["mirar"] == c["llevar"] == m.costo_actuar(F(1, 2)) == 1
+    assert c["no llevar"] == 2
+    assert m.decidir(F(1, 2)) == "llevar"      # empate: llevar va primero
+    # sin la accion mirar, en b = 1/4 actuar cuesta 1 de las dos formas
+    assert m.costo_actuar(F(1, 4)) == 1 and m.umbral_paraguas() == F(1, 4)
+
+
+# ------------------------------------------- anclaje del par (camino, p) ---
+# Cada caso fija en UNA comparacion la trayectoria con su probabilidad
+# posterior: cambiar una sin la otra rompe la prueba.
+
+def par_trayectoria_probabilidad(hmm, señales, metodo):
+    tray = m.viterbi(hmm, señales)[0] if metodo == "viterbi" else m.mejor_por_dia(hmm, señales)
+    return (tuple(tray), m.posterior_trayectoria(hmm, tray, señales))
+
+
+PARES = [
+    ("viterbi", "viterbi", ((SOL, SOL, SOL), F(6272, 15611))),
+    ("viterbi", "por_dia", ((SOL, LL, SOL), F(5184, 15611))),
+    ("viterbi-4", "viterbi", ((SOL, SOL, SOL, LL), F(169344, 704647))),
+    ("viterbi-4", "por_dia", ((SOL, LL, SOL, LL), F(139968, 704647))),
+    ("coinciden", "viterbi", ((LL, LL, SOL, LL, LL), F(23147208, 68607401))),
+    ("coinciden", "por_dia", ((LL, LL, SOL, LL, LL), F(23147208, 68607401))),
+]
+
+
+@pytest.mark.parametrize("clave,metodo,par", PARES)
+def test_par_trayectoria_probabilidad(clave, metodo, par):
+    assert par_trayectoria_probabilidad(m.paraguas(), m.SEÑALES_EJ[clave], metodo) == par
+
+
+def _mutaciones(par):
+    tray, p = par
+    otra = tuple(SOL if e == LL else LL for e in tray)
+    return [
+        (otra, p),                 # camino cambiado, misma probabilidad
+        (tray, p + F(1, 10**6)),   # mismo camino, probabilidad cambiada
+        (tray[::-1], p) if tray[::-1] != tray else (otra, p / 2),   # el error del plan: al reves
+    ]
+
+
+@pytest.mark.parametrize("clave,metodo,par", PARES)
+def test_la_guarda_del_par_atrapa_tres_mutaciones(clave, metodo, par):
+    real = par_trayectoria_probabilidad(m.paraguas(), m.SEÑALES_EJ[clave], metodo)
+    for mutado in _mutaciones(par):
+        assert mutado != real

@@ -1785,6 +1785,13 @@ def volados(p, meta=4):
 # lista del mismo largo; una creencia b, un dict s -> Fraction que suma 1,
 # b_t(s) = Pr(S_t = s | O_{0:t}).
 #
+# Evidencia imposible (señales con verosimilitud 0): verosimilitud_hmm
+# devuelve 0, que es un valor legitimo. Todo lo que tendria que dividir entre
+# ella o elegir entre caminos de probabilidad 0 lanza ValueError("señal
+# imposible…"): corregir, filtrar, suavizar, mejor_por_dia, viterbi y
+# posterior_trayectoria. predecir_estado y predecir_señal lanzan
+# ValueError("creencia…") si b no suma 1 (una creencia que no existe).
+#
 # Dos nombres de la API cambian porque la clase 1 ya los usa con otra firma:
 # verosimilitud -> verosimilitud_hmm y simular -> simular_hmm.
 
@@ -1885,17 +1892,34 @@ FRASES_EJ = {
 
 
 def parametros_lenguaje():
-    """Celdas y parametros libres del HMM (sin mu0) frente a los bigramas de
-    palabras. Con S estados y W palabras: celdas S² + S·W y W²; libres
-    S(S-1) + S(W-1) + (S-1) (aqui si entra mu0) y W(W-1). No se compara el
-    mismo modelo: el HMM no ve la palabra anterior, solo su estado."""
+    """Celdas y parametros libres del HMM frente a la tabla de bigramas de
+    palabras, en las dos convenciones con nombre explicito. Con S estados y
+    W palabras, sin distribucion inicial: HMM S² + S·W celdas y
+    S(S-1) + S(W-1) libres; bigramas W² y W(W-1). «_con_inicial» suma mu0
+    (S celdas, S-1 libres) o la primera palabra (W celdas, W-1 libres).
+    «libres_hmm_con_ceros» (sin inicial) cuenta solo las celdas de P que no
+    son cero estructural: una fila con k celdas posibles tiene k-1 libres;
+    «libres_hmm_con_ceros_en_P_y_B» hace lo mismo tambien en B. No se
+    compara el mismo modelo: el HMM no ve la palabra anterior, solo su
+    estado."""
     hmm = lenguaje_pequeno()
-    S, W = len(hmm["estados"]), len(hmm["señales"])
+    E = hmm["estados"]
+    S, W = len(E), len(hmm["señales"])
+
+    def libres(M):
+        return sum(sum(1 for p in M[s].values() if p > 0) - 1 for s in E)
     return {
         "estados": S, "palabras": W,
-        "celdas_hmm": S * S + S * W, "celdas_bigramas": W * W,
-        "libres_hmm": S * (S - 1) + S * (W - 1) + (S - 1),
-        "libres_bigramas": W * (W - 1),
+        "celdas_hmm": S * S + S * W,                              # 45
+        "libres_hmm": S * (S - 1) + S * (W - 1),                  # 39
+        "celdas_hmm_con_inicial": S * S + S * W + S,              # 48
+        "libres_hmm_con_inicial": S * (S - 1) + S * (W - 1) + (S - 1),   # 41
+        "celdas_bigramas": W * W,                                 # 144
+        "libres_bigramas": W * (W - 1),                           # 132
+        "celdas_bigramas_con_inicial": W * W + W,                 # 156
+        "libres_bigramas_con_inicial": W * (W - 1) + (W - 1),     # 143
+        "libres_hmm_con_ceros": libres(hmm["P"]) + S * (W - 1),   # 2 + 33 = 35
+        "libres_hmm_con_ceros_en_P_y_B": libres(hmm["P"]) + libres(hmm["B"]),  # 2 + 10 = 12
     }
 
 
@@ -1948,7 +1972,10 @@ def verosimilitud_hmm(hmm, señales):
 
 def posterior_trayectoria(hmm, trayectoria, señales):
     """Pr(trayectoria | señales) = conjunta / verosimilitud."""
-    return probabilidad_conjunta(hmm, trayectoria, señales) / verosimilitud_hmm(hmm, señales)
+    L = verosimilitud_hmm(hmm, señales)
+    if L == 0:
+        raise ValueError("señal imposible: no hay posterior si Pr(señales) = 0")
+    return probabilidad_conjunta(hmm, trayectoria, señales) / L
 
 
 # ------------------------------------------------------ filtrar, predecir ---
@@ -1960,8 +1987,14 @@ def _normalizar(d):
     return {s: p / total for s, p in d.items()}
 
 
+def _creencia(b):
+    if sum(b.values()) != 1:
+        raise ValueError("creencia que no suma 1: no se puede predecir con ella")
+
+
 def predecir_estado(hmm, b):
     """Un paso sin corregir: (b·P)(s') = suma_s b(s) P(s'|s)."""
+    _creencia(b)
     E = hmm["estados"]
     return {t: sum(b[s] * hmm["P"][s][t] for s in E) for t in E}
 
@@ -2015,6 +2048,8 @@ def viterbi(hmm, señales):
         atras.append(previo)
     s = _primer_max(E, lambda s: delta[s])
     mejor = delta[s]
+    if mejor == 0:
+        raise ValueError("señal imposible: toda trayectoria tiene probabilidad 0")
     tray = [s]
     for previo in reversed(atras):
         s = previo[s]
@@ -2023,7 +2058,8 @@ def viterbi(hmm, señales):
 
 
 def mejor_por_dia(hmm, señales):
-    """El argmax del SUAVIZADO de cada dia (no del filtro); empate: el primero."""
+    """El argmax del SUAVIZADO de cada dia (no del filtro); empate: el primero.
+    Con señales imposibles, suavizar ya lanza ValueError."""
     return [_primer_max(hmm["estados"], lambda s: g[s]) for g in suavizar(hmm, señales)]
 
 
