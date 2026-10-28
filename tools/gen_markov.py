@@ -3829,7 +3829,7 @@ def mkv_c4_mapa_2x2():
     yr = (ya + 4, ya + 4 + ch + 12)
     celdas = [
         (0, 0, True, ["Planificar", "un MDP"], ["clase 3: Bellman,", "iterar valores", "y políticas"]),
-        (0, 1, True, ["POMDP"], ["clase 4: creencia,", "filtrar,", "decidir con b"]),
+        (0, 1, True, ["Planificar en", "un POMDP"], ["clase 4: creencia,", "filtrar,", "decidir con b"]),
         (1, 0, False, ["Refuerzo", "clásico"], ["falta: el modelo;", "se aprende de", "episodios"]),
         (1, 1, False, ["Refuerzo con", "observación", "parcial"], ["falta: el modelo", "y el estado"]),
     ]
@@ -3860,7 +3860,7 @@ def mkv_c4_mapa_2x2():
     y = pie(out, y, ["Relleno: ya se vio.", "Punteado: falta por ver."])
     desc = ("Cuadro de dos por dos. Columnas: estado visible y estado oculto. Renglones: modelo conocido "
             "y modelo desconocido. Arriba a la izquierda, Planificar un MDP, con la marca clase 3: "
-            "Bellman, iterar valores y políticas. Arriba a la derecha, POMDP, con la marca clase 4: "
+            "Bellman, iterar valores y políticas. Arriba a la derecha, Planificar en un POMDP, con la marca clase 4: "
             "creencia, filtrar, decidir con b. Estas dos casillas van rellenas: ya se vieron. Abajo a "
             "la izquierda, Refuerzo clásico, con falta: el modelo; se aprende de episodios. Abajo a la "
             "derecha, Refuerzo con observación parcial, con falta: el modelo y el estado. Las dos de "

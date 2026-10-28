@@ -486,3 +486,12 @@ def test_los_flujos_de_la_clase_4_tienen_rombo_y_vuelta():
         f = gen.FLUJOS_C4[clave]
         assert sum("rombo" in p for p in f["pasos"]) == rombos and f["vueltas"], clave
         assert gen.contenido(f"mkv-c4-flujo-{clave}").count("<polygon") == rombos, clave
+
+
+def test_el_mapa_2x2_nombra_las_cuatro_casillas():
+    r = _renglones("mkv-c4-mapa-2x2")
+    for rot in ("Planificar", "un MDP", "Planificar en", "un POMDP", "clase 4: creencia,",
+                "decidir con b", "Refuerzo con", "observación", "parcial"):
+        assert rot in r, rot
+    assert "Planificar en un POMDP, con la marca clase 4" in _aria("mkv-c4-mapa-2x2")
+    assert "POMDP" not in [t for t in r if t != "un POMDP"]
