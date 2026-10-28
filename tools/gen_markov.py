@@ -23,7 +23,7 @@ from fractions import Fraction as F
 from xml.sax.saxutils import escape
 
 import markov as m
-from gen_optimizacion import (ACENTO, FONDO, FUENTE, LINEA, SERIE, SUAVE, TEXTO,
+from gen_optimizacion import (ACENTO, ALARMA, FONDO, FUENTE, LINEA, SERIE, SUAVE, TEXTO,
                               _rombo, caja, cierre, flecha, linea, marco, mezclar)
 from unidades import RAIZ
 
@@ -137,6 +137,7 @@ def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
     out = []
     y = encabezado(out, titulo) + 8
     geo = []
+    mx_de = {}
     for k, p in enumerate(pasos):
         if k and not p.get("sin_flecha"):
             y0 = y - FL_GAP
@@ -161,7 +162,9 @@ def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
             rs = p["rombo"]
             my = 26 + 9 * len(rs)
             cy = y + my
-            out.append(_rombo(FL_CX, round(cy, 1), FL_MX, my, mezclar(COLOR_V, 0.08),
+            mx = p.get("mx", FL_MX)        # rombo mas ancho si el rotulo no cabe
+            mx_de[k] = mx
+            out.append(_rombo(FL_CX, round(cy, 1), mx, my, mezclar(COLOR_V, 0.08),
                               borde=COLOR_V))
             for i, r in enumerate(rs):
                 out.append(texto(FL_CX, cy + 5 - 9 * (len(rs) - 1) + 18 * i, r, tam=14,
@@ -186,8 +189,8 @@ def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
     for desde, hasta, rot in vueltas:
         tipo_a, _, ya = geo[desde]
         tipo_b, _, yb = geo[hasta]
-        xa = FL_CX - FL_MX if tipo_a == "rombo" else FL_X0
-        xb = FL_CX - FL_MX if tipo_b == "rombo" else FL_X0
+        xa = FL_CX - mx_de.get(desde, FL_MX) if tipo_a == "rombo" else FL_X0
+        xb = FL_CX - mx_de.get(hasta, FL_MX) if tipo_b == "rombo" else FL_X0
         out.append(f'<polyline points="{_n(xa)},{_n(ya)} {FL_CARRIL},{_n(ya)} '
                    f'{FL_CARRIL},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
         out.append(_flecha(FL_CARRIL, yb, xb - 3, yb))
@@ -197,7 +200,7 @@ def _flujo(titulo, pasos, vueltas=(), notas=(), salidas=()):
     for i, (desde, hasta, rot) in enumerate(salidas):
         _, _, ya = geo[desde]
         _, _, yb = geo[hasta]
-        xa = FL_CX + FL_MX
+        xa = FL_CX + mx_de.get(desde, FL_MX)
         carril = FL_CARRIL_DER if len(salidas) == 1 else FL_CARRIL_DER + 4 - 7 * i
         out.append(f'<polyline points="{_n(xa)},{_n(ya)} {carril},{_n(ya)} '
                    f'{carril},{_n(yb)}" fill="none" stroke="{SUAVE}" stroke-width="2"/>')
@@ -2985,6 +2988,888 @@ def ejemplo_c4_modelo():
     return svg(titulo, " ".join(descs), out, y)
 
 
+# ------------------------------------------------ pagina 3: filtrar ---
+#
+# Helpers reutilizables de las paginas 3 a 8:
+#   _cabecera             encabezado de un panel «lo cumple / no lo cumple»
+#   _dos_paneles          el armazon de un ejemplo y contraejemplo
+#   _barra                una probabilidad como barra dentro de su pista
+#   FLUJOS_C4 / flujo_c4  diagramas de flujo de la clase (aparte de FLUJOS:
+#                         la guarda de FLUJOS fija 3 a 6 cajas y una salida)
+#   _tabla_viterbi        delta y apuntadores de VITERBI, con fracciones
+#   _trellis              la reticula de Viterbi, siempre en las mismas posiciones
+
+BARRA_X0, BARRA_W = 66, 100
+COLOR_LLUVIA, COLOR_SOL = COLOR_V, COLOR_C
+
+
+def _cabecera(out, y, lado, dice):
+    out.append(texto(X_PIE, y + 14, "✓ Lo cumple" if lado == "si" else "✗ No lo cumple",
+                     tam=14, peso="700", anclaje="start"))
+    out.append(texto(X_PIE, y + 33, dice, tam=13, anclaje="start", color=SUAVE))
+    return y + 44
+
+
+def _dos_paneles(titulo, paneles, pie_txt=()):
+    """paneles: [(lado, dice, f)] con f(out, y) -> (y libre, descripcion).
+    Devuelve el SVG."""
+    out = []
+    y = encabezado(out, titulo)
+    descs = []
+    for lado, dice, f in paneles:
+        out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+        y, d = f(out, _cabecera(out, y, lado, dice))
+        descs.append(("Lo cumple: " if lado == "si" else "No lo cumple: ") + dice + ". " + d)
+        y += 8
+    if pie_txt:
+        y = pie(out, y + 4, pie_txt)
+    return svg(titulo, " ".join(descs), out, y)
+
+
+def _fv(v):
+    """9/11 ≈ 0.818; un entero va solo."""
+    return fr(v) if F(v).denominator == 1 else f"{fr(v)} ≈ {dec(v)}"
+
+
+def _barra(out, y, nombre, v, valor, color, guiones=None, tachada=False, x0=BARRA_X0,
+           ancho=BARRA_W, gris=False, color_valor=TEXTO):
+    """Una probabilidad `v` como barra dentro de su pista (la pista entera es 1).
+    y es el centro del renglon. Oculto = borde punteado; gris = no es del modelo."""
+    borde = SUAVE if gris else color
+    out.append(texto(x0 - 8, y + 4, nombre, tam=13, anclaje="end", color=SUAVE))
+    out.append(caja(x0, _n(y - 8), ancho, 16, relleno="none", borde=LINEA, radio=3, grosor=1))
+    if v > 0:
+        out.append(caja(x0, _n(y - 8), _n(ancho * float(v)), 16,
+                        relleno=mezclar(borde, 0.3), borde=borde, radio=3, grosor=2,
+                        guiones=guiones))
+    else:
+        out.append(linea(x0, _n(y - 8), x0, _n(y + 8), color=borde, grosor=3))
+    if tachada:
+        out.append(linea(x0 - 2, _n(y + 10), x0 + ancho + 2, _n(y - 10), color=ALARMA, grosor=2.5))
+    out.append(texto(x0 + ancho + 8, y + 4, valor, tam=12, anclaje="start", peso="700",
+                     color=color_valor))
+    return y
+
+
+def mkv_c4_ej_creencia():
+    h = m.paraguas()
+    E = h["estados"]
+    b0 = m.filtrar(h, [m.PARAGUAS])[0]
+    tray, obs = m.simular_hmm(h, 6, m.SEMILLAS["c4-simular-semana"])
+    real = {s: F(1) if s == tray[6] else F(0) for s in E}
+    crea = m.filtrar(h, obs)[6]
+    col = {"lluvia": COLOR_LLUVIA, "sol": COLOR_SOL}
+    assert sum(b0.values()) == 1 and tray[6] == "lluvia"
+
+    def arriba(out, y):
+        y += 8
+        for s in E:
+            _barra(out, y, s, b0[s], f"{fr(b0[s])} ≈ {dec(b0[s])}", col[s])
+            y += 24
+        out.append(texto(X_PIE, y + 6, f"suma = {fr(sum(b0.values()))}", tam=13, peso="700",
+                         anclaje="start"))
+        return y + 14, (f"Barras de la creencia del día 0 tras paraguas: lluvia {fr(b0['lluvia'])}, "
+                        f"aproximadamente {dec(b0['lluvia'])}, y sol {fr(b0['sol'])}, "
+                        f"aproximadamente {dec(b0['sol'])}; suman 1.")
+
+    def abajo(out, y):
+        out.append(texto(X_PIE, y + 8, "Clima real del día 6 (oculto)", tam=13, peso="700",
+                         anclaje="start"))
+        y += 26
+        for s in E:
+            _barra(out, y, s, real[s], fr(real[s]), col[s], guiones=GUIONES_OCULTO)
+            y += 24
+        out.append(texto(X_PIE, y + 8, "Creencia del día 6, siete señales", tam=13, peso="700",
+                         anclaje="start", color=SUAVE))
+        y += 26
+        for s in E:
+            _barra(out, y, s, crea[s], f"≈ {dec(crea[s])}", col[s], gris=True, color_valor=SUAVE)
+            y += 24
+        return y, (f"Arriba, en barras con borde punteado y marcado como oculto, el clima real del día 6: "
+                   f"lluvia {fr(real['lluvia'])} y sol {fr(real['sol'])}. Debajo, en gris, la creencia "
+                   f"de ese día con las siete señales: lluvia aproximadamente {dec(crea['lluvia'])} y "
+                   f"sol aproximadamente {dec(crea['sol'])}.")
+
+    return _dos_paneles(["Ejemplo y contraejemplo", "una creencia"], [
+        ("si", "b₀ tras ver paraguas, prior (1/2, 1/2)", arriba),
+        ("no", "El clima real, que no se ve", abajo)],
+        ["Borde punteado: oculto.", "Gris: lo que sí sabes."])
+
+
+def _cadena_filtro(out, y, h, señales, final_tachada=False):
+    """Barras de Pr(lluvia): b₀, la predicción, b₁, unidas por las flechas
+    «predecir» y «corregir». Si la evidencia del dia 1 es 0, la ultima barra
+    queda tachada. Devuelve (y libre, descripcion)."""
+    o0, o1 = señales
+    b0 = m.filtrar(h, [o0])[0]
+    ev0 = m.verosimilitud_hmm(h, [o0])
+    pred = m.predecir_estado(h, b0)
+    pesos = {s: pred[s] * h["B"][s][o1] for s in h["estados"]}
+    ev1 = sum(pesos.values())
+    L = "lluvia"
+    out.append(texto(X_PIE, y + 10, f"Día 0, ve {o0}: ev₀ = {fr(ev0)}", tam=12, anclaje="start",
+                     color=SUAVE))
+    yc = y + 30
+    _barra(out, yc, "b₀", b0[L], _fv(b0[L]), COLOR_LLUVIA)
+    out.append(_flecha(34, yc + 11, 34, yc + 31))
+    out.append(texto(46, yc + 26, "predecir con P", tam=13, anclaje="start", peso="700"))
+    yc += 42
+    _barra(out, yc, "b₁|₀", pred[L], _fv(pred[L]), COLOR_LLUVIA)
+    out.append(_flecha(34, yc + 11, 34, yc + 31))
+    out.append(texto(46, yc + 26, f"corregir con B · ev₁ = {fr(ev1)}", tam=13, anclaje="start",
+                     peso="700"))
+    yc += 42
+    if ev1 == 0:
+        _barra(out, yc, "b₁", F(0), "señal imposible", COLOR_LLUVIA, tachada=True,
+               color_valor=ALARMA)
+        # la barra tachada no es una creencia: no hay con que normalizar
+        final = None
+    else:
+        final = m.corregir(h, pred, o1)
+        _barra(out, yc, "b₁", final[L], _fv(final[L]), COLOR_LLUVIA)
+    desc = (f"Día 0, con {o0}: la creencia de lluvia b₀ vale {fr(b0[L])} y la evidencia {fr(ev0)}. "
+            f"Flecha predecir con P: la barra pasa a {fr(pred[L])}. Flecha corregir con B, con {o1}: ")
+    if final is None:
+        desc += (f"los pesos son {', '.join(fr(pesos[s]) for s in h['estados'])}, la evidencia es "
+                 f"{fr(ev1)} y la última barra aparece tachada con el letrero señal imposible.")
+    else:
+        desc += (f"la evidencia es {fr(ev1)} y la barra sube a {fr(final[L])}, "
+                 f"aproximadamente {dec(final[L])}.")
+    return yc + 14, desc
+
+
+def ejemplo_c4_filtrar():
+    h = m.paraguas()
+    I = m._hmm(h["estados"], h["señales"], [F(1, 2), F(1, 2)], [[1, 0], [0, 1]], [[1, 0], [0, 1]])
+    return _dos_paneles(["Ejemplo y contraejemplo", "el filtrado recursivo"], [
+        ("si", "El paraguas: paraguas, paraguas",
+         lambda out, y: _cadena_filtro(out, y, h, m.SEÑALES_EJ["filtrar"])),
+        ("no", "P = B = I; paraguas, sin paraguas",
+         lambda out, y: _cadena_filtro(out, y, I, [m.PARAGUAS, m.SIN_PARAGUAS]))],
+        ["Barra: Pr(lluvia); el resto es sol.", "Tachada: no se puede normalizar."])
+
+
+def mkv_c4_filtrar_traza():
+    h = m.paraguas()
+    señ = m.SEÑALES_EJ["coinciden"][:3]
+    b = m.filtrar(h, señ)
+    L = "lluvia"
+    cre = [x[L] for x in b]
+    pre = [h["mu0"][L]] + [m.predecir_estado(h, x)[L] for x in b[:-1]]
+    titulo = ["La creencia de lluvia,", "día por día"]
+    out = []
+    y = encabezado(out, titulo)
+    x0, x1, top, bot = 58, 284, y + 22, y + 22 + 170
+    out.append(texto(X_PIE, top - 12, "Pr(lluvia)", tam=13, peso="700", anclaje="start"))
+
+    def py(v):
+        return bot - (bot - top) * float(v)
+    for v, rot in ((0, "0"), (F(1, 2), "1/2"), (1, "1")):
+        out.append(linea(x0, _n(py(v)), x1, _n(py(v)), color=mezclar(LINEA, 0.5), grosor=1,
+                         guiones="5 4" if v == F(1, 2) else None))
+        out.append(texto(x0 - 8, py(v) + 4, rot, tam=12, anclaje="end", color=SUAVE))
+    xd = [x0 + (x1 - x0) * (2 * k + 1) / 6 for k in range(3)]
+    desc = []
+    for k in range(3):
+        xp, xb = xd[k] - 13, xd[k] + 13
+        sube = cre[k] > pre[k]
+        out.append(_flecha(xp + 7, py(pre[k]), xb - 7, py(cre[k])))
+        out.append(f'<circle cx="{_n(xp)}" cy="{_n(py(pre[k]))}" r="5" fill="{FONDO}" '
+                   f'stroke="{COLOR_LLUVIA}" stroke-width="2"/>')
+        out.append(f'<circle cx="{_n(xb)}" cy="{_n(py(cre[k]))}" r="5" fill="{COLOR_LLUVIA}" '
+                   f'stroke="{COLOR_LLUVIA}" stroke-width="2"/>')
+        out.append(texto(xp, py(pre[k]) + (18 if sube else -10), dec(pre[k]), tam=12))
+        out.append(texto(xb, py(cre[k]) + (-10 if sube else 18), dec(cre[k]), tam=12, peso="700"))
+        out.append(texto(xd[k], bot + 17, f"día {k}", tam=12, color=SUAVE))
+        out.append(texto(xd[k], bot + 34, señ[k], tam=12))
+        desc.append(f"Día {k}: de {fr(pre[k])} a {fr(cre[k])}, aproximadamente {dec(cre[k])}.")
+    y = bot + 54
+    out.append(texto(x0 - 8, bot + 34, "señal", tam=12, anclaje="end", color=SUAVE))
+    y = _leyenda(out, y + 10, [
+        (lambda x, yy: f'<circle cx="{_n(x)}" cy="{_n(yy)}" r="5" fill="{FONDO}" '
+                       f'stroke="{COLOR_LLUVIA}" stroke-width="2"/>', "predicción, antes de la señal"),
+        (lambda x, yy: f'<circle cx="{_n(x)}" cy="{_n(yy)}" r="5" fill="{COLOR_LLUVIA}" '
+                       f'stroke="{COLOR_LLUVIA}" stroke-width="2"/>', "creencia, después de corregir"),
+        (lambda x, yy: linea(_n(x - 12), _n(yy), _n(x + 12), _n(yy), color=SUAVE, grosor=1,
+                             guiones="5 4"), "1/2: lo que creías al empezar")])
+    y = pie(out, y + 6, [f"Día {k}: {fr(pre[k])} → {fr(cre[k])}" for k in range(3)], tam=13,
+            color=TEXTO)
+    return svg(titulo, "Gráfica de la creencia de lluvia contra el día, 0 a 2, con las señales "
+               + ", ".join(señ) + " al pie. Por día, un punto hueco con la predicción y un punto "
+               "lleno con la creencia, unidos por una flecha. " + " ".join(desc)
+               + " Una línea punteada horizontal marca 1/2.", out, y)
+
+
+FLUJOS_C4 = {
+    "filtrar": dict(
+        nombre="FILTRAR",
+        titulo=["FILTRAR, en palabras", "predecir, corregir, normalizar"],
+        pasos=[{"caja": ["Arranca: la predicción", "es μ₀"]},
+               {"caja": ["Corrige: multiplica cada", "estado por B de la señal"]},
+               {"caja": ["Suma los pesos:", "esa suma es la evidencia"]},
+               {"rombo": ["¿La evidencia", "es 0?"], "abajo": "no"},
+               {"caja": ["Normaliza: divide entre", "la evidencia y guarda b"]},
+               {"rombo": ["¿Quedan", "días?"], "abajo": "sí"},
+               {"caja": ["Predice con P", "y pasa al día siguiente"]},
+               {"caja": ["Devuelve las creencias", "y las evidencias"], "fin": True,
+                "sin_flecha": True},
+               {"caja": ["Para: señal imposible"], "fin": True, "sin_flecha": True}],
+        vueltas=[(6, 1, "otro día")],
+        salidas=[(3, 8, "sí"), (5, 7, "no")],
+        notas=["Una señal que ningún estado", "emite no se puede normalizar."]),
+    "viterbi": dict(
+        nombre="VITERBI",
+        titulo=["VITERBI, en palabras", "máximo en lugar de suma"],
+        pasos=[{"caja": ["Día 0: mejor₀ = μ₀ · B", "de la primera señal"]},
+               {"caja": ["Pasa al día siguiente"]},
+               {"caja": ["Para cada estado: prueba", "cada estado de ayer, guarda",
+                         "el máximo y de dónde vino;", "multiplica por la emisión"]},
+               {"rombo": ["¿Quedan", "días?"], "abajo": "no"},
+               {"caja": ["Elige el estado con mayor", "mejor al final; si vale 0:", "señal imposible"]},
+               {"caja": ["Sigue los apuntadores hacia", "atrás; devuelve la ruta", "y su conjunta"],
+                "fin": True}],
+        vueltas=[(3, 1, "sí: otro día")],
+        notas=["Mismo recorrido que FILTRAR, pero", "con máximo y apuntadores."]),
+    "aprender": dict(
+        nombre="el ciclo de Baum-Welch",
+        titulo=["Baum-Welch, en palabras", "contar con fracciones"],
+        pasos=[{"caja": ["Modelo de hoy:", "μ₀, P, B"]},
+               {"caja": ["Reparte cada día y cada par", "de días entre los estados,", "con toda la secuencia"]},
+               {"caja": ["Conteos esperados:", "fracciones en lugar de enteros"]},
+               {"caja": ["Cuenta: cada fila", "entre su total"]},
+               {"caja": ["Modelo nuevo"]},
+               {"rombo": ["¿La verosimilitud", "dejó de subir?"], "abajo": "sí", "mx": 90},
+               {"caja": ["Termina"], "fin": True}],
+        vueltas=[(5, 0, "no: otra vuelta")],
+        notas=["Cada vuelta no baja la verosimilitud,", "pero puede parar en un modelo", "que no es el mejor."]),
+}
+
+
+def flujo_c4(clave):
+    f = FLUJOS_C4[clave]
+    salidas = f.get("salidas", ())
+    out, alto = _flujo(f["titulo"], f["pasos"], f["vueltas"], f["notas"], salidas)
+    return svg(f["titulo"], _desc_flujo(f["nombre"], f["pasos"], f["vueltas"], f["notas"],
+                                        salidas), out, alto)
+
+
+# ----------------------------------------------- pagina 4: decodificar ---
+
+def _tabla_viterbi(h, señales):
+    """(delta, previo): delta[t][s] = la mejor conjunta de una trayectoria que
+    acaba en s el dia t; previo[t][s] = de que estado de ayer viene (el primero
+    en empate, como markov.viterbi). Con fracciones exactas."""
+    E, P, B = h["estados"], h["P"], h["B"]
+    delta = [{s: h["mu0"][s] * B[s][señales[0]] for s in E}]
+    previo = [None]
+    for o in señales[1:]:
+        d = delta[-1]
+        pr = {t: m._primer_max(E, lambda s: d[s] * P[s][t]) for t in E}
+        delta.append({t: d[pr[t]] * P[pr[t]][t] * B[t][o] for t in E})
+        previo.append(pr)
+    return delta, previo
+
+
+def _ruta_viterbi(h, señales):
+    """La ruta de markov.viterbi y su conjunta (ValueError si es imposible)."""
+    return m.viterbi(h, señales)
+
+
+TR_X = (54, 150, 246)          # centros de las tres columnas (dias 0, 1, 2)
+TR_W, TR_H, TR_DY = 74, 40, 62
+
+
+def _flecha_gruesa(x1, y1, x2, y2, color=ACENTO, grosor=3.0, cabeza=8):
+    d = math.hypot(x2 - x1, y2 - y1)
+    ux, uy = (x2 - x1) / d, (y2 - y1) / d
+    bx, by = x2 - ux * cabeza, y2 - uy * cabeza
+    px, py = -uy * 5, ux * 5
+    return (f'<line x1="{_n(x1)}" y1="{_n(y1)}" x2="{_n(bx)}" y2="{_n(by)}" stroke="{color}" '
+            f'stroke-width="{grosor}"/>'
+            f'<polygon points="{_n(x2)},{_n(y2)} {_n(bx + px)},{_n(by + py)} '
+            f'{_n(bx - px)},{_n(by - py)}" fill="{color}"/>')
+
+
+def _trellis(out, y, h, señales, delta, previo, llenas, nuevo=None, ruta=None, cero=False):
+    """La reticula de Viterbi: 3 columnas (dias 0, 1, 2), 2 filas (los estados
+    de `h`, el primero arriba), siempre en las mismas posiciones. Las primeras
+    `llenas` columnas llevan valor; la columna `nuevo` lleva borde grueso de
+    acento. ★ marca el mayor de su columna. Flecha gruesa: de donde viene el
+    maximo; delgada y punteada: la que perdio. `ruta`: estados del camino de
+    regreso, con linea doble. cero: las columnas llenas con 0 van tachadas y
+    sin flechas. Devuelve la y libre de abajo."""
+    E = h["estados"]
+    yc = [y + 44 + TR_H / 2, y + 44 + TR_H / 2 + TR_DY]
+    for k in range(3):
+        out.append(texto(TR_X[k], y + 12, f"día {k}", tam=12, color=SUAVE))
+        out.append(texto(TR_X[k], y + 29, señales[k], tam=12))
+    # flechas primero: los nodos las tapan en los bordes
+    def punto_sal(k, j, i):          # sale del estado j hacia el estado i
+        return TR_X[k] + TR_W / 2, yc[j] + (-9 if i == 0 else 9)
+
+    def punto_ent(k, i, j):          # llega al estado i desde el estado j
+        return TR_X[k] - TR_W / 2, yc[i] + (-9 if j == 0 else 9)
+    en_ruta = set()
+    if ruta:
+        en_ruta = {(k, ruta[k - 1], ruta[k]) for k in range(1, len(ruta))}
+    for k in range(1, llenas):
+        if cero and all(delta[k][s] == 0 for s in E):
+            continue
+        for i, t in enumerate(E):
+            for j, s in enumerate(E):
+                if previo[k][t] == s:
+                    continue
+                (x1, y1), (x2, y2) = punto_sal(k - 1, j, i), punto_ent(k, i, j)
+                out.append(f'<line x1="{_n(x1)}" y1="{_n(y1)}" x2="{_n(x2)}" y2="{_n(y2)}" '
+                           f'stroke="{SUAVE}" stroke-width="1.2" stroke-dasharray="3 3" '
+                           f'marker-end="url(#s)"/>')
+        for i, t in enumerate(E):
+            j = E.index(previo[k][t])
+            if (k, E[j], t) in en_ruta:
+                continue
+            (x1, y1), (x2, y2) = punto_sal(k - 1, j, i), punto_ent(k, i, j)
+            out.append(_flecha_gruesa(x1, y1, x2, y2))
+    for (k, s, t) in sorted(en_ruta):
+        i, j = E.index(t), E.index(s)
+        (x1, y1), (x2, y2) = punto_sal(k - 1, j, i), punto_ent(k, i, j)
+        out.append(linea(_n(x1), _n(y1), _n(x2 - 1), _n(y2), color=ACENTO, grosor=7))
+        out.append(linea(_n(x1), _n(y1), _n(x2 - 1), _n(y2), color=FONDO, grosor=3))
+        # punta hacia atras: el camino de regreso va del dia k al dia k - 1
+        d = math.hypot(x2 - x1, y2 - y1)
+        ux, uy = (x1 - x2) / d, (y1 - y2) / d
+        out.append(f'<polygon points="{_n(x1 - 1)},{_n(y1)} {_n(x1 + 9 * (-ux) + uy * 6)},'
+                   f'{_n(y1 + 9 * (-uy) - ux * 6)} {_n(x1 + 9 * (-ux) - uy * 6)},'
+                   f'{_n(y1 + 9 * (-uy) + ux * 6)}" fill="{ACENTO}"/>')
+    # nodos
+    for k in range(3):
+        mejor = None
+        if k < llenas and any(delta[k][s] > 0 for s in E):
+            mejor = m._primer_max(E, lambda s: delta[k][s])
+        for i, s in enumerate(E):
+            x, cy = TR_X[k], yc[i]
+            if k < llenas:
+                grueso = k == nuevo
+                out.append(caja(_n(x - TR_W / 2), _n(cy - TR_H / 2), TR_W, TR_H,
+                                relleno=mezclar(COLOR_V, 0.18),
+                                borde=ACENTO if grueso else COLOR_V, radio=7,
+                                grosor=3.5 if grueso else 1.5))
+                out.append(texto(x, cy - 3, s + (" ★" if s == mejor else ""), tam=12, color=SUAVE))
+                out.append(texto(x, cy + 13, fr(delta[k][s]), tam=12, peso="700"))
+                if delta[k][s] == 0:
+                    out.append(linea(_n(x - 9), _n(cy + 13), _n(x + 9), _n(cy + 7), color=ALARMA,
+                                     grosor=2.5))
+            else:
+                out.append(caja(_n(x - TR_W / 2), _n(cy - TR_H / 2), TR_W, TR_H,
+                                relleno="none", borde=SUAVE, radio=7, grosor=1.5, guiones="4 3"))
+                out.append(texto(x, cy + 4, s, tam=12, color=SUAVE))
+    return yc[1] + TR_H / 2
+
+
+def _desc_trellis(h, señales, delta, previo, llenas, nuevo, ruta):
+    E = h["estados"]
+    partes = [f"Retícula de tres columnas, días 0, 1 y 2, con las señales {', '.join(señales)} "
+              f"arriba de cada una; dos filas, {E[0]} arriba y {E[1]} abajo."]
+    for k in range(llenas):
+        vals = " y ".join(f"{s} {fr(delta[k][s])}" for s in E)
+        extra = ""
+        if k > 0:
+            extra = " Cada uno con flecha gruesa desde " + " y ".join(
+                f"{previo[k][s]} del día {k - 1}" for s in E) + ", las flechas que perdieron punteadas."
+        partes.append(f"Día {k}{', nuevo, con borde grueso' if k == nuevo else ''}: {vals}.{extra}")
+    if llenas < 3:
+        partes.append("Las columnas sin llenar tienen nodos vacíos punteados.")
+    if ruta:
+        partes.append("El camino de regreso " + ", ".join(ruta) + " va con línea doble gruesa.")
+    return " ".join(partes)
+
+
+def mkv_c4_trellis(n):
+    h = m.paraguas()
+    señ = m.SEÑALES_EJ["viterbi"]
+    delta, previo = _tabla_viterbi(h, señ)
+    ruta, conj = _ruta_viterbi(h, señ)
+    assert delta[2][ruta[2]] == conj and [ "sol", "sol", "sol"] == ruta
+    titulo = {1: ["Retícula de Viterbi,", "tramo 1: el día 0"],
+              2: ["Retícula de Viterbi,", "tramo 2: el día 1"],
+              3: ["Retícula de Viterbi,", "tramo 3: el día 2"]}[n]
+    out = []
+    y = encabezado(out, titulo)
+    y = _trellis(out, y, h, señ, delta, previo, llenas=n, nuevo=n - 1,
+                 ruta=ruta if n == 3 else None)
+    renglones = ["Borde grueso: lo nuevo. ★: el mayor", "de su columna."]
+    if n >= 2:
+        renglones += ["Flecha gruesa: de dónde viene el", "máximo. Punteada: la que perdió."]
+    if n == 3:
+        renglones += ["Doble línea: el camino de regreso."]
+    y = pie(out, y + 26, renglones)
+    if n == 3:
+        out.append(texto(X_PIE, y + 4, f"conjunta {fr(conj)}", tam=14, peso="700", anclaje="start"))
+        y += 22
+    desc = _desc_trellis(h, señ, delta, previo, n, n - 1, ruta if n == 3 else None)
+    if n == 3:
+        desc += f" Al pie: conjunta {fr(conj)}."
+    return svg(titulo, desc, out, y)
+
+
+def ejemplo_c4_decodificar():
+    h = m.paraguas()
+    señ = m.SEÑALES_EJ["viterbi"]
+    d1, p1 = _tabla_viterbi(h, señ)
+    ruta, conj = _ruta_viterbi(h, señ)
+    E, O = h["estados"], h["señales"]
+    malo = dict(h, señales=O + ["nieve"], B={s: {**h["B"][s], "nieve": F(0)} for s in E})
+    señ2 = [m.SIN_PARAGUAS, "nieve", m.SIN_PARAGUAS]
+    d2, p2 = _tabla_viterbi(malo, señ2)
+    try:
+        m.viterbi(malo, señ2)
+        raise AssertionError("la señal con nieve deberia ser imposible")
+    except ValueError:
+        pass
+
+    def arriba(out, y):
+        yf = _trellis(out, y, h, señ, d1, p1, llenas=3, ruta=ruta)
+        out.append(texto(X_PIE, yf + 22, f"ruta {', '.join(ruta)} · conjunta {fr(conj)}", tam=13,
+                         peso="700", anclaje="start"))
+        return yf + 34, (_desc_trellis(h, señ, d1, p1, 3, None, ruta)
+                         + f" Conjunta {fr(conj)}.")
+
+    def abajo(out, y):
+        yf = _trellis(out, y, malo, señ2, d2, p2, llenas=3, cero=True)
+        out.append(texto(X_PIE, yf + 22, "sin ruta: señal imposible", tam=13, peso="700",
+                         anclaje="start", color=ALARMA))
+        vals = [fr(d2[k][s]) for k in range(3) for s in E]
+        return yf + 34, (f"Retícula con las señales {', '.join(señ2)} y B de 2 por 3, con la columna "
+                         f"de nieve en ceros. Día 0: lluvia {vals[0]} y sol {vals[1]}. Días 1 y 2: "
+                         f"{vals[2]} y {vals[3]}, y {vals[4]} y {vals[5]}, tachados. Sin camino, "
+                         "con el letrero señal imposible.")
+    return _dos_paneles(["Ejemplo y contraejemplo", "Viterbi necesita una conjunta > 0"], [
+        ("si", "Sin paraguas, paraguas, sin paraguas", arriba),
+        ("no", "B de 2×3: nadie emite nieve", abajo)],
+        ["★ mayor de su columna. Doble línea:", "el camino de regreso. Rojo tachado: 0."])
+
+
+# ------------------------------------------- pagina 5: aprender lo oculto ---
+
+def _tira(out, y, dias, primer_dia):
+    """Una celda por dia anotado: el numero de dia arriba, el estado dentro
+    (con su color y su nombre). Devuelve la y libre de abajo."""
+    w = 36
+    x0 = (ANCHO - w * len(dias)) / 2
+    for k, s in enumerate(dias):
+        cx = x0 + w * (k + 0.5)
+        color = COLOR_LLUVIA if s == "lluvia" else COLOR_SOL
+        out.append(texto(cx, y + 10, str(primer_dia + k), tam=12, color=SUAVE))
+        out.append(caja(_n(cx - w / 2 + 1), _n(y + 16), w - 2, 26, relleno=mezclar(color, 0.2),
+                        borde=color, radio=5, grosor=2))
+        out.append(texto(cx, y + 33, s, tam=12))
+    return y + 46
+
+
+def _panel_aprender(h, tray):
+    E = h["estados"]
+    _, obs = m.simular_hmm(h, 6, m.SEMILLAS["c4-simular-semana"])
+    Ph, _ = m.contar_con_etiquetas(E, h["señales"], tray, [m.PARAGUAS] * len(tray))
+    sale = {s: sum(1 for x in tray[:-1] if x == s) for s in E}
+    filas = [[fr(Ph[s][t]) for t in E] for s in E]
+    sumas = [fr(sum(Ph[s].values())) for s in E]
+    malas = [i for i, s in enumerate(E) if sum(Ph[s].values()) != 1]
+    return Ph, sale, filas, sumas, malas
+
+
+def ejemplo_c4_aprender():
+    h = m.paraguas()
+    E = h["estados"]
+    tray, _ = m.simular_hmm(h, 6, m.SEMILLAS["c4-simular-semana"])
+    assert tray == ["sol", "sol"] + ["lluvia"] * 5
+
+    def panel(dias, primer):
+        def f(out, y):
+            y = _tira(out, y + 4, dias, primer)
+            Ph, sale, filas, sumas, malas = _panel_aprender(h, dias)
+            out.append(texto(X_PIE, y + 14, " · ".join(f"{s} sale {sale[s]}" for s in E),
+                             tam=13, peso="700", anclaje="start"))
+            yb = _matriz_con_sumas(out, y + 52, E, filas, sumas, malas, rotulo="P̂")
+            desc = (f"La tira de días anotados, del {primer} al {primer + len(dias) - 1}: "
+                    f"{', '.join(dias)}. " + ", ".join(f"{s} sale {sale[s]} veces" for s in E)
+                    + ". P gorro con filas " + " y ".join("(" + ", ".join(fi) + ")" for fi in filas) + ".")
+            if malas:
+                out.append(texto(X_PIE, yb + 20, "La fila de " + ", ".join(E[i] for i in malas)
+                                 + ": sin estimar.", tam=13, peso="700", anclaje="start",
+                                 color=ACENTO))
+                yb += 26
+                desc += " La fila de " + ", ".join(E[i] for i in malas) + " va marcada como sin estimar."
+            return yb + 10, desc
+        return f
+    return _dos_paneles(["Ejemplo y contraejemplo", "aprender lo oculto"], [
+        ("si", "Los siete días anotados", panel(tray, 0)),
+        ("no", "Solo los días 2 a 6", panel(tray[2:], 2))],
+        ["Doble borde: una fila que no suma 1."])
+
+
+# --------------------------------------------- pagina 6: lenguaje pequeño ---
+
+def _cruz(x, y, r=4, color=ALARMA):
+    return (linea(_n(x - r), _n(y - r), _n(x + r), _n(y + r), color=color, grosor=2)
+            + linea(_n(x - r), _n(y + r), _n(x + r), _n(y - r), color=color, grosor=2))
+
+
+def _pastilla(cx, cy, nombre, w=108, h=44):
+    """Estado oculto con nombre largo: pastilla de borde punteado."""
+    return (caja(_n(cx - w / 2), _n(cy - h / 2), w, h, relleno=mezclar(COLOR_OCULTO, 0.18),
+                 borde=COLOR_OCULTO, radio=14, grosor=2, guiones=GUIONES_OCULTO)
+            + texto(cx, cy - 2, nombre, tam=12, peso="700")
+            + texto(cx, cy + 14, "oculto", tam=12, color=SUAVE))
+
+
+def mkv_c4_lenguaje_grafo():
+    h = m.lenguaje_pequeno()
+    E, O = h["estados"], h["señales"]
+    assert len(E) == 3
+    titulo = ["El lenguaje pequeño", "como modelo oculto"]
+    out = []
+    y = encabezado(out, titulo)
+    yt = y + 76
+    yv = yt + 118
+    C = {0: (62, yt), 1: (238, yt), 2: (150, yv)}       # determinante, sustantivo, verbo
+    # (origen, destino): (x1, y1, x2, y2) de la flecha, y donde va su rotulo (dx, dy, ancla)
+    G = {
+        (0, 1): (118, yt - 8, 182, yt - 8, (150, yt - 14, "middle")),
+        (1, 0): (182, yt + 8, 118, yt + 8, (150, yt + 26, "middle")),
+        (1, 2): (258, yt + 22, 196, yv - 22, (+8, 0, "start")),
+        (2, 1): (176, yv - 22, 222, yt + 22, (-8, 0, "end")),
+        (2, 0): (112, yv - 22, 86, yt + 22, (+8, 0, "start")),
+        (0, 2): (36, yt + 22, 96, yv - 6, (-8, 0, "end")),
+    }
+    lazos = {0: (-1, 62), 1: (-1, 238), 2: (+1, 150)}   # hacia arriba (-1) o abajo (+1)
+    ceros, reales = [], []
+    for i, s in enumerate(E):
+        for j, t in enumerate(E):
+            p = h["P"][s][t]
+            if p == 0:
+                ceros.append((s, t))
+            else:
+                reales.append((s, t, p))
+                x1, y1, x2, y2, (lx, ly, an) = G[(i, j)]
+                out.append(_flecha(x1, y1, x2, y2))
+                if an == "middle":
+                    out.append(texto(lx, ly, fr(p), tam=13, peso="700"))
+                else:
+                    out.append(texto((x1 + x2) / 2 + lx, (y1 + y2) / 2 + 4, fr(p), tam=13,
+                                     peso="700", anclaje=an))
+    for s, t in ceros:
+        i, j = E.index(s), E.index(t)
+        if i == j:
+            cx, cy = C[i]
+            dy, base = lazos[i][0], (cy - 22 if lazos[i][0] < 0 else cy + 22)
+            out.append(f'<path d="M {cx - 22} {base} C {cx - 26} {base + dy * 42} {cx + 26} '
+                       f'{base + dy * 42} {cx + 22} {base}" fill="none" stroke="{SUAVE}" '
+                       f'stroke-width="1.5" stroke-dasharray="3 3"/>')
+            out.append(_cruz(cx, base + dy * 31))
+            out.append(texto(cx + 18, base + dy * 36 + 4, "0", tam=13, peso="700", anclaje="start"))
+        else:
+            x1, y1, x2, y2, _ = G[(i, j)]
+            out.append(f'<line x1="{_n(x1)}" y1="{_n(y1)}" x2="{_n(x2)}" y2="{_n(y2)}" '
+                       f'stroke="{SUAVE}" stroke-width="1.5" stroke-dasharray="3 3"/>')
+            out.append(_cruz((x1 + x2) / 2, (y1 + y2) / 2))
+            out.append(texto((x1 + x2) / 2 - 10, (y1 + y2) / 2 + 4, "0", tam=13, peso="700",
+                             anclaje="end"))
+    for i, s in enumerate(E):
+        out.append(_pastilla(*C[i], s))
+    # lo que emite cada estado, en el orden del dibujo: determinante, verbo, sustantivo
+    y0 = yv + 22 + 62
+    out.append(texto(X_PIE, y0, "Lo que emite cada estado:", tam=12, anclaje="start", color=SUAVE))
+    orden = [0, 2, 1]
+    xs = {0: 62, 2: 150, 1: 238}
+    filas_max = 0
+    for i in orden:
+        s = E[i]
+        palabras = [(o, h["B"][s][o]) for o in O if h["B"][s][o] > 0]
+        filas_max = max(filas_max, len(palabras))
+        out.append(texto(xs[i], y0 + 22, s, tam=12, peso="700"))
+        for k, (o, p) in enumerate(palabras):
+            ty = y0 + 44 + 21 * k
+            if o == "casa":
+                out.append(caja(_n(xs[i] - 38), _n(ty - 15), 76, 21, relleno="none", borde=ACENTO,
+                                radio=6, grosor=2))
+            out.append(texto(xs[i] - 31, ty, f"{o} {fr(p)}", tam=13, anclaje="start"))
+    y = y0 + 44 + 21 * filas_max
+    mu0 = "(" + ", ".join(fr(h["mu0"][s]) for s in E) + ")"
+    y = pie(out, y + 12, [f"μ₀ = {mu0}", "orden: determinante, sustantivo, verbo",
+                          "Punteado: oculto. ×: cero de P.", "Recuadro: casa, de dos estados."])
+    desc = ("Grafo de tres estados ocultos con borde punteado: " + ", ".join(E) + ". Flechas: "
+            + "; ".join(f"de {s} a {t} {fr(p)}" for s, t, p in reales) + ". Los cuatro ceros "
+            "van marcados con una cruz y el rótulo 0 sobre una línea punteada sin punta: "
+            + "; ".join(f"{s} a {t}" for s, t in ceros) + ". Debajo, las palabras de cada estado "
+            "con su probabilidad: " + "; ".join(
+                f"{E[i]} " + ", ".join(f"{o} {fr(h['B'][E[i]][o])}" for o in O if h['B'][E[i]][o] > 0)
+                for i in range(3)) + ". La palabra casa aparece bajo sustantivo y bajo verbo, "
+            f"en recuadro. Al pie, μ₀ = {mu0}.")
+    assert len(ceros) == 4
+    return svg(titulo, desc, out, y)
+
+
+# ------------------------------------------ pagina 7: decidir sin ver ---
+
+def mkv_c4_ds_costos():
+    h = m.paraguas()
+    lo, hi = m.rango_mirar()
+    assert (lo, hi) == (F(1, 6), F(1, 2))
+    titulo = ["Los tres costos", "según la creencia b"]
+    out = []
+    y = encabezado(out, titulo)
+    x0, x1, top = 48, 284, y + 24
+    bot = top + 150
+
+    def px(b):
+        return x0 + (x1 - x0) * float(b)
+
+    def py(c):
+        return bot - (bot - top) * float(c) / 2
+    out.append(texto(X_PIE, top - 12, "costo esperado del día", tam=13, peso="700", anclaje="start"))
+    for c in (0, F(1, 2), 1, F(3, 2), 2):
+        out.append(linea(x0, _n(py(c)), x1, _n(py(c)), color=mezclar(LINEA, 0.5), grosor=1))
+        out.append(texto(x0 - 8, py(c) + 4, fr(c), tam=12, anclaje="end", color=SUAVE))
+    for b in (0, F(1, 4), F(1, 2), F(3, 4), 1):
+        out.append(linea(_n(px(b)), top, _n(px(b)), bot, color=mezclar(LINEA, 0.5), grosor=1))
+        out.append(texto(px(b), bot + 17, fr(b), tam=12, color=SUAVE))
+    out.append(texto((x0 + x1) / 2, bot + 36, "b = Pr(lluvia)", tam=13, peso="700"))
+    c = m.costos_dia
+    # la envolvente inferior, debajo de las lineas
+    env = [(b, min(c(b).values())) for b in (F(0), lo, hi, F(1))]
+    assert [v for _, v in env] == [0, F(2, 3), 1, 1]
+    out.append(_polilinea([(px(b), py(v)) for b, v in env], mezclar(ACENTO, 0.45), grosor=9))
+    # las lineas: color, marca en la linea y rotulo en la leyenda
+    lineas = [
+        ("llevar", "rombo", COLOR_V, [(0, c(0)["llevar"]), (1, c(1)["llevar"])], F(9, 10), "llevar = 1"),
+        ("no llevar", "triangulo", COLOR_C, [(0, c(0)["no llevar"]), (F(1, 2), c(F(1, 2))["no llevar"])],
+         F(9, 20), "no llevar = 4b"),
+        ("mirar", "cuadro", COLOR_REAL, [(0, c(0)["mirar"]), (1, c(1)["mirar"])], F(9, 10),
+         "mirar = 1/2 + b"),
+    ]
+    gratis = [(F(0), c(0)["no llevar"] - c(0)["no llevar"]), (F(1), F(1) * m.COSTO_PARAGUAS)]
+    assert m.costo_actuar(F(1, 3)) - m.valor_informacion(F(1, 3)) == F(1, 3)
+    out.append(_polilinea([(px(b), py(v)) for b, v in gratis], TEXTO, guiones="2 4", grosor=2))
+    for _, forma, color, pts, bm, _r in lineas:
+        out.append(_polilinea([(px(b), py(v)) for b, v in pts], color, grosor=2.5))
+    for nombre, forma, color, pts, bm, _r in lineas:
+        (b0, v0), (b1, v1) = pts
+        v = v0 + (v1 - v0) * (bm - b0) / (b1 - b0)
+        out.append(_marca(forma, px(bm), py(v), color, r=5))
+    # los puntos que se leen
+    marcas = [(F(1, 6), F(2, 3), None, None),
+              (F(1, 4), F(1), "1", (-9, -8, "end")),
+              (F(1, 4), F(3, 4), "3/4", (7, 18, "start")),
+              (F(1, 2), F(1), "(1/2, 1)", (8, 18, "start"))]
+    assert c(F(1, 6))["no llevar"] == c(F(1, 6))["mirar"] == F(2, 3)
+    assert c(F(1, 4))["llevar"] == c(F(1, 4))["no llevar"] == 1 and c(F(1, 4))["mirar"] == F(3, 4)
+    assert c(F(1, 2))["llevar"] == c(F(1, 2))["mirar"] == 1
+    for b, v, rot, pos in marcas:
+        out.append(f'<circle cx="{_n(px(b))}" cy="{_n(py(v))}" r="3.5" fill="{TEXTO}"/>')
+        if rot is None:
+            # el punto (1/6, 2/3) queda entre tres lineas: su rotulo va arriba a la
+            # izquierda, en el hueco libre, unido por una guia fina
+            out.append(linea(_n(px(b) - 8), _n(py(1.42) + 5), _n(px(b)), _n(py(v) - 4),
+                             color=SUAVE, grosor=1))
+            out.append(texto(x0 + 4, py(1.42), "(1/6, 2/3)", tam=12, anclaje="start", peso="700"))
+            continue
+        dx, dy, an = pos
+        out.append(texto(px(b) + dx, py(v) + dy, rot, tam=12, anclaje=an, peso="700"))
+    # b = 9/11: llevar
+    b911 = F(9, 11)
+    assert m.decidir(b911) == "llevar"
+    out.append(linea(_n(px(b911)), _n(py(1)), _n(px(b911)), bot, color=ACENTO, grosor=2, guiones="4 3"))
+    out.append(_marca("rombo", px(b911), py(1), ACENTO, r=5))
+    out.append(texto(px(b911) - 6, py(0.12), "b = 9/11: llevar", tam=12, anclaje="end", peso="700"))
+    # las tres regiones
+    yb = bot + 72
+    out.append(texto(X_PIE, yb - 8, "Lo que conviene, según b:", tam=12, anclaje="start", color=SUAVE))
+    yb += 2
+    tramos = [(F(0), lo, "no llevar", COLOR_C), (lo, hi, "mirar", COLOR_REAL), (hi, F(1), "llevar", COLOR_V)]
+    for a, z, nombre, color in tramos:
+        out.append(caja(_n(px(a)), yb, _n(px(z) - px(a)), 36, relleno=mezclar(color, 0.3),
+                        borde=color, radio=4, grosor=2))
+        if nombre == "no llevar":
+            out.append(texto((px(a) + px(z)) / 2, yb + 15, "no", tam=12))
+            out.append(texto((px(a) + px(z)) / 2, yb + 29, "llevar", tam=12))
+        else:
+            out.append(texto((px(a) + px(z)) / 2, yb + 22, nombre, tam=13, peso="700"))
+    for b in (F(0), lo, hi, F(1)):
+        out.append(texto(px(b), yb + 52, fr(b), tam=12, color=SUAVE))
+    y = yb + 66
+    forma_mini = {"rombo": "rombo", "triangulo": "triangulo", "cuadro": "cuadro"}
+    items = [(lambda x, yy, f=forma, col=color: linea(_n(x - 12), _n(yy), _n(x + 12), _n(yy), color=col,
+                                                      grosor=2.5) + _marca(f, x, yy, col, r=5), r)
+             for _n_, forma, color, _p, _b, r in lineas for f in [forma]]
+    items.append((lambda x, yy: linea(_n(x - 12), _n(yy), _n(x + 12), _n(yy), color=TEXTO, grosor=2,
+                                      guiones="2 4"), "y = b: ver gratis"))
+    items.append((lambda x, yy: linea(_n(x - 12), _n(yy), _n(x + 12), _n(yy),
+                                      color=mezclar(ACENTO, 0.45), grosor=9), "el menor de los tres"))
+    y = _leyenda(out, y + 4, items)
+    desc = ("Gráfica con la creencia b = Pr(lluvia) de 0 a 1 en el eje horizontal y el costo esperado "
+            "del día de 0 a 2 en el vertical. Tres rectas sólidas, cada una con su marca: llevar, "
+            "horizontal en 1; no llevar, 4b, que sube desde 0; mirar, 1/2 + b, que sube desde 1/2. "
+            "Una recta punteada, y = b, marca ver gratis. Una banda ancha marca el menor de los tres. "
+            "Abajo, tres regiones: no llevar de 0 a 1/6, mirar entre 1/6 y 1/2, llevar de 1/2 a 1. "
+            "Puntos marcados: en 1/6, no llevar y mirar valen 2/3; en 1/4, llevar y no llevar valen 1 "
+            "y mirar 3/4; en 1/2, mirar y llevar valen 1. Una marca en b = 9/11 dice llevar.")
+    return svg(titulo, desc, out, y)
+
+
+def _ventana(h, b, señal):
+    """(Pr(señal), creencia tras verla): Bayes sobre el prior b."""
+    pesos = {s: b[s] * h["B"][s][señal] for s in h["estados"]}
+    ev = sum(pesos.values())
+    return ev, {s: p / ev for s, p in pesos.items()}
+
+
+def _hoja(out, cx, y, lineas, w=128):
+    h = 16 + 18 * len(lineas)
+    out.append(caja(_n(cx - w / 2), _n(y), w, h, relleno=mezclar(COLOR_V, 0.12), borde=SUAVE,
+                    radio=8, grosor=1.5))
+    for k, r in enumerate(lineas):
+        out.append(texto(cx, y + 22 + 18 * k, r, tam=13, peso="700" if k == 1 else "normal"))
+    return y + h
+
+
+def _arbol_mirar(out, y, ramas, cuentas, veredicto):
+    """Raiz «mirar» y dos ramas. ramas: [(rotulo en dos renglones, hoja)]."""
+    out.append(caja(_n(150 - 70), _n(y), 140, 28, relleno=mezclar(COLOR_C, 0.18), borde=COLOR_C,
+                    radio=8, grosor=2))
+    out.append(texto(150, y + 19, "mirar: cuesta 1/2", tam=13, peso="700"))
+    xs = (72, 228)
+    fin = y
+    for cx, (rot, hoja) in zip(xs, ramas):
+        sx = 150 + (cx - 150) * 0.3
+        out.append(_flecha(sx, y + 28, cx + (150 - cx) * 0.12, y + 80))
+        mx = (sx + cx) / 2
+        for k, r in enumerate(rot):
+            if cx < 150:
+                out.append(texto(mx - 8, y + 50 + 14 * k, r, tam=12, anclaje="end"))
+            else:
+                out.append(texto(mx + 8, y + 50 + 14 * k, r, tam=12, anclaje="start"))
+        fin = _hoja(out, cx, y + 84, hoja)
+    for k, r in enumerate(cuentas):
+        out.append(texto(X_PIE, fin + 20 + 19 * k, r, tam=13, anclaje="start", peso="700"))
+    out.append(texto(X_PIE, fin + 20 + 19 * len(cuentas), veredicto, tam=13, anclaje="start",
+                     color=SUAVE))
+    return fin + 28 + 19 * len(cuentas)
+
+
+def ejemplo_c4_decidir():
+    h = m.paraguas()
+    b = {"lluvia": F(1, 3), "sol": F(2, 3)}
+    c = m.costos_dia
+    actuar = m.costo_actuar(b["lluvia"])
+    assert actuar == 1
+
+    def accion(bl):
+        cs = c(bl)
+        return ("llevar", cs["llevar"]) if cs["llevar"] <= cs["no llevar"] else ("no llevar", cs["no llevar"])
+
+    # arriba: mirar revela el clima
+    ramas1 = []
+    tot1 = m.COSTO_MIRAR
+    for s, bl in (("lluvia", F(1)), ("sol", F(0))):
+        a, cost = accion(bl)
+        ramas1.append(([f"{s} {fr(b[s])}"], [f"{s}: b = {fr(bl)}", a, f"costo {fr(cost)}"]))
+        tot1 += b[s] * cost
+    assert tot1 == m.costo_mirar(b["lluvia"]) == F(5, 6) < actuar
+
+    def arriba(out, y):
+        yf = _arbol_mirar(out, y + 4, ramas1,
+                          [f"{fr(m.COSTO_MIRAR)} + {fr(b['lluvia'])}·1 + {fr(b['sol'])}·0 = {fr(tot1)}"],
+                          f"{fr(tot1)} < {fr(actuar)}: mirar gana")
+        return yf, ("Árbol de decisión con b = 1/3 y precio 1/2: mirar revela el clima; rama lluvia con "
+                    "probabilidad 1/3 lleva a llevar, costo 1; rama sol con 2/3 lleva a no llevar, costo "
+                    f"0; total {fr(m.COSTO_MIRAR)} + 1/3 = {fr(tot1)}, menor que actuar ya, {fr(actuar)}.")
+
+    # abajo: la ventana empañada solo deja ver si el vecino trae paraguas
+    ramas2, tot2, trozos = [], m.COSTO_MIRAR, []
+    for o in (m.PARAGUAS, m.SIN_PARAGUAS):
+        ev, post = _ventana(h, b, o)
+        a, cost = accion(post["lluvia"])
+        ramas2.append((o.split(" ", 1) if o != m.PARAGUAS else [o], None))
+        ramas2[-1] = (([o, fr(ev)] if o == m.PARAGUAS else ["sin paraguas", fr(ev)]),
+                      [f"lluvia: b = {fr(post['lluvia'])}", a, f"costo {fr(cost)}"])
+        tot2 += ev * cost
+        trozos.append((ev, cost))
+    assert tot2 == F(16, 15) > actuar
+
+    def abajo(out, y):
+        yf = _arbol_mirar(out, y + 4, ramas2,
+                          [f"{fr(m.COSTO_MIRAR)} + {fr(trozos[0][0])}·{fr(trozos[0][1])} + "
+                           f"{fr(trozos[1][0])}·{fr(trozos[1][1])}", f"= {fr(tot2)}"],
+                          f"{fr(tot2)} > {fr(actuar)}: mirar pierde")
+        return yf, ("Árbol con la ventana empañada, que muestra solo una señal: rama paraguas con "
+                    f"{fr(trozos[0][0])} deja la lluvia en {ramas2[0][1][0].split('= ')[1]} y lleva a "
+                    f"llevar, costo 1; rama sin paraguas con {fr(trozos[1][0])} deja la lluvia en "
+                    f"{ramas2[1][1][0].split('= ')[1]} y lleva a no llevar, costo {fr(trozos[1][1])}; "
+                    f"total {fr(tot2)}, mayor que {fr(actuar)}.")
+    return _dos_paneles(["Ejemplo y contraejemplo", "pagar por mirar"], [
+        ("si", "b = 1/3; mirar revela el clima", arriba),
+        ("no", "b = 1/3; ventana con niebla", abajo)])
+
+
+# ------------------------------------------- pagina 8: hacia el refuerzo ---
+
+def mkv_c4_mapa_2x2():
+    titulo = ["El mapa de dos ejes", "lo visto y lo que falta"]
+    out = []
+    y = encabezado(out, titulo)
+    cw, ch = 110, 104
+    cx0 = (60, 174)                    # x de cada columna
+    xc = (cx0[0] + cw / 2, cx0[1] + cw / 2)
+    out.append(texto(xc[0], y + 14, "estado visible", tam=13, peso="700"))
+    out.append(texto(xc[1], y + 14, "estado oculto", tam=13, peso="700"))
+    # flecha horizontal del renglon de arriba
+    ya = y + 50
+    out.append(texto((xc[0] + xc[1]) / 2, ya - 14, "se deja de ver el estado", tam=12, color=SUAVE,
+                     peso="700"))
+    out.append(_flecha(xc[0] + 20, ya - 6, xc[1] - 20, ya - 6))
+    yr = (ya + 4, ya + 4 + ch + 12)
+    celdas = [
+        (0, 0, True, ["Planificar", "un MDP"], ["clase 3: Bellman,", "iterar valores", "y políticas"]),
+        (0, 1, True, ["POMDP"], ["clase 4: creencia,", "filtrar,", "decidir con b"]),
+        (1, 0, False, ["Refuerzo", "clásico"], ["falta: el modelo;", "se aprende de", "episodios"]),
+        (1, 1, False, ["Refuerzo con", "observación", "parcial"], ["falta: el modelo", "y el estado"]),
+    ]
+    for r, cc, visto, tit, nota in celdas:
+        x, yy = cx0[cc], yr[r]
+        if visto:
+            out.append(caja(x, yy, cw, ch, relleno=mezclar(COLOR_V, 0.22), borde=COLOR_V, radio=10,
+                            grosor=2))
+        else:
+            out.append(caja(x, yy, cw, ch, relleno="none", borde=SUAVE, radio=10, grosor=2,
+                            guiones="5 4"))
+        ty = yy + 20
+        for k, t in enumerate(tit):
+            out.append(texto(x + cw / 2, ty, t, tam=13, peso="700"))
+            ty += 16
+        ty += 3
+        for t in nota:
+            out.append(texto(x + cw / 2, ty, t, tam=12, color=TEXTO if visto else SUAVE))
+            ty += 15
+    # renglones (dos renglones de texto girado) y flecha vertical, a la izquierda
+    for r, (a1, a2) in enumerate((("modelo", "conocido"), ("modelo", "desconocido"))):
+        out.append(girado(12, yr[r] + ch / 2, a1, tam=12))
+        out.append(girado(27, yr[r] + ch / 2, a2, tam=12))
+    ymed = (yr[0] + yr[1] + ch) / 2
+    out.append(_flecha(54, yr[0] + ch / 2, 54, yr[1] + ch / 2 - 2))
+    out.append(girado(45, ymed, "se deja de conocer el modelo", tam=12))
+    y = yr[1] + ch + 22
+    y = pie(out, y, ["Relleno: ya se vio.", "Punteado: falta por ver."])
+    desc = ("Cuadro de dos por dos. Columnas: estado visible y estado oculto. Renglones: modelo conocido "
+            "y modelo desconocido. Arriba a la izquierda, Planificar un MDP, con la marca clase 3: "
+            "Bellman, iterar valores y políticas. Arriba a la derecha, POMDP, con la marca clase 4: "
+            "creencia, filtrar, decidir con b. Estas dos casillas van rellenas: ya se vieron. Abajo a "
+            "la izquierda, Refuerzo clásico, con falta: el modelo; se aprende de episodios. Abajo a la "
+            "derecha, Refuerzo con observación parcial, con falta: el modelo y el estado. Las dos de "
+            "abajo van solo con borde punteado: no se han visto. Una flecha horizontal en el renglón de "
+            "arriba dice se deja de ver el estado; una vertical en la columna izquierda dice se deja de "
+            "conocer el modelo.")
+    return svg(titulo, desc, out, y)
+
+
 DIAGRAMAS = {
     "mkv-c1-flujo-muestrear": lambda: flujo("muestrear"),
     "mkv-c1-flujo-contar": lambda: flujo("contar"),
@@ -3028,6 +3913,21 @@ DIAGRAMAS = {
     **{f"mkv-c3-ej-{c}": (lambda c=c: ejemplo_c3(c)) for c in EJEMPLOS_C3},
     "mkv-c4-hmm-grafo": mkv_c4_hmm_grafo,
     "mkv-c4-ej-modelo": ejemplo_c4_modelo,
+    "mkv-c4-ej-creencia": mkv_c4_ej_creencia,
+    "mkv-c4-ej-filtrar": ejemplo_c4_filtrar,
+    "mkv-c4-flujo-filtrar": lambda: flujo_c4("filtrar"),
+    "mkv-c4-filtrar-traza": mkv_c4_filtrar_traza,
+    "mkv-c4-flujo-viterbi": lambda: flujo_c4("viterbi"),
+    "mkv-c4-trellis-1": lambda: mkv_c4_trellis(1),
+    "mkv-c4-trellis-2": lambda: mkv_c4_trellis(2),
+    "mkv-c4-trellis-3": lambda: mkv_c4_trellis(3),
+    "mkv-c4-ej-decodificar": ejemplo_c4_decodificar,
+    "mkv-c4-ej-aprender": ejemplo_c4_aprender,
+    "mkv-c4-flujo-aprender": lambda: flujo_c4("aprender"),
+    "mkv-c4-lenguaje-grafo": mkv_c4_lenguaje_grafo,
+    "mkv-c4-ds-costos": mkv_c4_ds_costos,
+    "mkv-c4-ej-decidir": ejemplo_c4_decidir,
+    "mkv-c4-mapa-2x2": mkv_c4_mapa_2x2,
 }
 
 
