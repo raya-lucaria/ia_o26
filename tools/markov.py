@@ -2198,3 +2198,179 @@ def decidir(b):
     """La accion de menor costo esperado; en empate, el orden de ACCIONES_DIA."""
     c = costos_dia(b)
     return _primer_max(list(ACCIONES_DIA), lambda a: -c[a])
+
+
+# ------------------------------------- decidir sin ver, parametrizado ---
+# Las mismas cuentas con los costos como argumentos (pagina 7: el ejercicio
+# «mojarse cuesta 3» y la ventana empañada). Los valores por omision son los
+# del juguete, asi que costo_actuar_con(b) == costo_actuar(b), etc. Se pide
+# 0 < llevar < mojarse y precio >= 0 (si mojarse <= llevar nunca conviene
+# cargar el paraguas y no hay umbral).
+
+def _costos_validos(llevar, mojarse, precio=0):
+    llevar, mojarse, precio = F(llevar), F(mojarse), F(precio)
+    if not (0 < llevar < mojarse) or precio < 0:
+        raise ValueError("costos: se pide 0 < llevar < mojarse y precio >= 0")
+    return llevar, mojarse, precio
+
+
+def costos_dia_con(b, llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE, precio=COSTO_MIRAR):
+    """Costo esperado de cada accion con Pr(lluvia) = b: llevar cuesta
+    `llevar` siempre; no llevar, `mojarse` si llueve; mirar paga `precio`,
+    ve el clima y despues solo carga el paraguas si llueve."""
+    llevar, mojarse, precio = _costos_validos(llevar, mojarse, precio)
+    b = F(b)
+    return {"llevar": llevar, "no llevar": mojarse * b, "mirar": precio + llevar * b}
+
+
+def costo_actuar_con(b, llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE):
+    """Actuar ya, sin mirar: min(llevar, mojarse·b)."""
+    llevar, mojarse, _ = _costos_validos(llevar, mojarse)
+    return min(llevar, mojarse * F(b))
+
+
+def costo_mirar_con(b, llevar=COSTO_PARAGUAS, precio=COSTO_MIRAR):
+    """Mirar con informacion perfecta: precio + b·llevar (con sol no se paga
+    nada). No depende del costo de mojarse: despues de ver nadie se moja."""
+    if F(precio) < 0 or F(llevar) <= 0:
+        raise ValueError("costos: se pide llevar > 0 y precio >= 0")
+    return F(precio) + F(llevar) * F(b)
+
+
+def umbral_con(llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE):
+    """Llevar conviene si b > llevar/mojarse; en el umbral, empate."""
+    llevar, mojarse, _ = _costos_validos(llevar, mojarse)
+    return llevar / mojarse
+
+
+def rango_mirar_con(llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE, precio=COSTO_MIRAR):
+    """(lo, hi) exactos con: mirar conviene estrictamente si lo < b < hi;
+    lo = precio/(mojarse - llevar) (cruce con no llevar) y
+    hi = 1 - precio/llevar (cruce con llevar). En lo y en hi mirar empata con
+    la mejor accion sin mirar. None si el rango es vacio (lo >= hi): pasa
+    justo cuando el precio alcanza el maximo de valor_informacion_con."""
+    llevar, mojarse, precio = _costos_validos(llevar, mojarse, precio)
+    lo = precio / (mojarse - llevar)
+    hi = 1 - precio / llevar
+    return (lo, hi) if lo < hi else None
+
+
+def valor_informacion_con(b, llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE):
+    """Lo que vale ver el clima gratis: min(llevar, mojarse·b) - llevar·b."""
+    return costo_actuar_con(b, llevar, mojarse) - F(llevar) * F(b)
+
+
+def maximo_informacion_con(llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE):
+    """(b, valor) del maximo de valor_informacion_con: sube como
+    (mojarse - llevar)·b hasta el umbral y baja como llevar·(1 - b) despues,
+    asi que el maximo esta en el umbral y vale llevar·(1 - llevar/mojarse)."""
+    u = umbral_con(llevar, mojarse)
+    return u, valor_informacion_con(u, llevar, mojarse)
+
+
+def decidir_con(b, llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE, precio=COSTO_MIRAR):
+    """La accion de menor costo; en empate, el orden de ACCIONES_DIA."""
+    c = costos_dia_con(b, llevar, mojarse, precio)
+    return _primer_max(list(ACCIONES_DIA), lambda a: -c[a])
+
+
+def costo_mirar_con_señal(b, B, llevar=COSTO_PARAGUAS, mojarse=COSTO_MOJARSE,
+                          precio=COSTO_MIRAR):
+    """Mirar por una ventana que NO revela el clima: solo muestra una señal o
+    con verosimilitudes B[clima][o] (claves LLUVIA y SOL). Se paga `precio`,
+    se ve o, se actualiza con Bayes b_o = b·B(lluvia,o)/Pr(o) y se actua sin
+    mirar con b_o. Devuelve (total, desglose): total = precio +
+    suma_o Pr(o)·min(llevar, mojarse·b_o); desglose[o] = {"prob": Pr(o),
+    "creencia": b_o, "accion": ..., "costo": ...}. Las señales de
+    probabilidad 0 no aparecen. En empate de acciones va llevar primero."""
+    llevar, mojarse, precio = _costos_validos(llevar, mojarse, precio)
+    b = F(b)
+    señales = list(B[LLUVIA])
+    total, desglose = precio, {}
+    for o in señales:
+        p = b * F(B[LLUVIA][o]) + (1 - b) * F(B[SOL][o])
+        if p == 0:
+            continue
+        bo = b * F(B[LLUVIA][o]) / p
+        c = {"llevar": llevar, "no llevar": mojarse * bo}
+        a = _primer_max(["llevar", "no llevar"], lambda x: -c[x])
+        desglose[o] = {"prob": p, "creencia": bo, "accion": a, "costo": c[a]}
+        total += p * c[a]
+    return total, desglose
+
+
+def ventana_empañada():
+    """Las verosimilitudes de la ventana empañada de la pagina 7: solo se ve
+    si el vecino trae paraguas, con la B del paraguas."""
+    return {LLUVIA: {PARAGUAS: F(9, 10), SIN_PARAGUAS: F(1, 10)},
+            SOL: {PARAGUAS: F(2, 10), SIN_PARAGUAS: F(8, 10)}}
+
+
+# ------------------------------------------ piezas para las paginas 3 a 6 ---
+
+def evidencias(hmm, señales):
+    """[ev_0, ..., ev_T] del filtro (pagina 3): ev_t = suma_s pred(s) B(s, o_t),
+    con pred = mu0 el dia 0 y b_{t-1}·P despues. Su producto es la
+    verosimilitud. ValueError("señal imposible…") si alguna vale 0."""
+    E, P, B = hmm["estados"], hmm["P"], hmm["B"]
+    salida, b = [], None
+    for t, o in enumerate(señales):
+        pred = dict(hmm["mu0"]) if t == 0 else {
+            s2: sum(b[s] * P[s][s2] for s in E) for s2 in E}
+        w = {s: pred[s] * B[s][o] for s in E}
+        ev = sum(w.values())
+        if ev == 0:
+            raise ValueError("señal imposible: evidencia 0")
+        b = {s: w[s] / ev for s in E}
+        salida.append(ev)
+    return salida
+
+
+def columnas_viterbi(hmm, señales):
+    """La reticula de Viterbi (pagina 4): [{s: (mejor_t(s), de_t(s))}]_t, con
+    de_0(s) = None. En empate de predecesor gana el primero de `estados`,
+    como en viterbi."""
+    E, P, B = hmm["estados"], hmm["P"], hmm["B"]
+    col = {s: (hmm["mu0"][s] * B[s][señales[0]], None) for s in E}
+    salida = [col]
+    for o in señales[1:]:
+        nueva = {}
+        for s in E:
+            de = _primer_max(E, lambda r: col[r][0] * P[r][s])
+            nueva[s] = (col[de][0] * P[de][s] * B[s][o], de)
+        col = nueva
+        salida.append(col)
+    return salida
+
+
+def iterar_em(hmm, secuencias, rondas):
+    """[L_0, L_1, ..., L_rondas]: la verosimilitud exacta (producto sobre las
+    secuencias) del modelo de entrada y de cada modelo tras un paso_em mas
+    (pagina 5: 397/2000, 268802881/669153424, ≈0.666, ≈0.943, ≈0.999)."""
+    def L(h):
+        p = F(1)
+        for s in secuencias:
+            p *= verosimilitud_hmm(h, s)
+        return p
+    salida = [L(hmm)]
+    for _ in range(rondas):
+        hmm, _ = paso_em(hmm, secuencias)
+        salida.append(L(hmm))
+    return salida
+
+
+def lenguaje_verbo_tras_verbo():
+    """El ejercicio final de la pagina 6: lenguaje_pequeno con la fila de
+    verbo en P cambiada de (1/2, 1/2, 0) a (9/20, 9/20, 1/10)."""
+    h = lenguaje_pequeno()
+    h["P"][VERBO] = {DETERMINANTE: F(9, 20), SUSTANTIVO: F(9, 20), VERBO: F(1, 10)}
+    return h
+
+
+def libres_reales(hmm):
+    """Parametros libres sin distribucion inicial, descontando solo los ceros
+    estructurales de P (B completa): suma de (celdas positivas - 1) por fila
+    de P, mas S·(W - 1). En lenguaje_pequeno da 35; con verbo tras verbo, 36."""
+    E = hmm["estados"]
+    S, W = len(E), len(hmm["señales"])
+    return sum(sum(1 for p in hmm["P"][s].values() if p > 0) - 1 for s in E) + S * (W - 1)
