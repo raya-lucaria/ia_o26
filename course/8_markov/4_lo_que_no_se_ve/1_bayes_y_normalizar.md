@@ -16,7 +16,7 @@ Al terminar tendrás:
 
 - **La regla de Bayes:** pasar de la probabilidad de la señal dado el estado a la del estado dada la señal. Sirve con cualquier número de estados.
 - **Normalizar:** dividir pesos no negativos entre su suma y reconocer cuándo no se puede.
-- **Tres nombres:** prior, verosimilitud y posterior, cada uno con su valor en el ejemplo del paraguas.
+- **Cuatro nombres:** prior, verosimilitud, evidencia y posterior, cada uno con su valor en el ejemplo del paraguas.
 
 ## Lo que traes
 
@@ -35,7 +35,7 @@ Aquí basta con eso. Aún no usamos $P$ ni seguimos cambios en el tiempo: un dí
 
 **Piensa: cuando llueve, tu compañero trae paraguas 9 de cada 10 veces. Si llega con paraguas, ¿qué tan probable es que llueva?**
 
-No es $9/10$. También puede traer paraguas cuando hay sol.
+Todavía no puedes decirlo: faltan el prior y la probabilidad de paraguas con sol.
 
 Trabajas en un sótano sin ventanas. No ves el estado $S$: lluvia o sol. Sí ves la señal $O$: paraguas o sin paraguas. Las mayúsculas representan variables aleatorias. Las minúsculas $s$ y $o$ son valores concretos. El conjunto de estados es $\mathcal S$.
 
@@ -50,22 +50,22 @@ Trabajas en un sótano sin ventanas. No ves el estado $S$: lluvia o sol. Sí ves
 
 - **El prior es un vector fila**, como $\mu_0$: $(1/2,\ 1/2)$, en el orden (lluvia, sol).
 - **Aviso de letra.** La página 2 llama $B(s,o)$, la emisión, a $\Pr(O=o\mid S=s)$. Aquí la escribimos completa.
-- **Prior y posterior** nombran lo que crees antes y después de observar la señal.
 
 ::: theorem {#mkv-c4-teo-bayes title="Regla de Bayes"}
-**Condición.** $\mathcal S$ es finito. La suma corre sobre los estados con $\Pr(S=s')>0$. La evidencia debe ser positiva: $\Pr(O=o)>0$.
+**Condición.** $\mathcal S$ es finito, $\Pr(S=s)>0$ y la evidencia es positiva: $\Pr(O=o)>0$. La suma recorre solo los estados con prior positivo; en los demás, $\Pr(O=o\mid S=s')$ no está definida.
 
 $$
 \begin{aligned}
 \Pr(S=s\mid O=o)
 &=\frac{\Pr(O=o\mid S=s)\,\Pr(S=s)}{\Pr(O=o)},\\
-\Pr(O=o)&=\sum_{s'\in\mathcal S}\Pr(O=o\mid S=s')\,\Pr(S=s').
+\Pr(O=o)&=\sum_{s':\,\Pr(S=s')>0}\Pr(O=o\mid S=s')\\
+&\qquad\times\Pr(S=s').
 \end{aligned}
 $$
 
 **Lectura.** Multiplica el prior de cada estado por su verosimilitud. Divide cada producto entre la suma de todos los productos.
 
-**Casos nulos.** Un estado con prior 0 queda con posterior 0 y se omite de la suma. Si la evidencia vale 0, la señal es imposible en el modelo. La posterior no se define.
+**Casos nulos.** Un estado con prior 0 no entra en la suma, y su posterior vale 0: $\Pr(S=s,\ O=o)\le\Pr(S=s)=0$. Si la evidencia vale 0, la señal es imposible en el modelo. La posterior no se define.
 :::
 
 ::: proof {#mkv-c4-dem-bayes of="mkv-c4-teo-bayes"}
@@ -75,11 +75,11 @@ $$
 \begin{aligned}
 \Pr(S=s\mid O=o)
 &=\frac{\Pr(S=s,\ O=o)}{\Pr(O=o)}\\
-&=\frac{\Pr(O=o\mid S=s)\,\Pr(S=s)}{\sum_{s'}\Pr(O=o\mid S=s')\,\Pr(S=s')}.
+&=\frac{\Pr(O=o\mid S=s)\,\Pr(S=s)}{\Pr(O=o)}.
 \end{aligned}
 $$
 
-El primer renglón requiere $\Pr(O=o)>0$ para definir la condicional.
+El primer renglón requiere $\Pr(O=o)>0$, y el segundo, $\Pr(S=s)>0$. La evidencia se desarrolla con la probabilidad total, que omite los casos de prior 0.
 :::
 
 **Ejemplo del paraguas.** Usa el prior $(1/2,\ 1/2)$:
@@ -117,8 +117,6 @@ Con el mismo prior $(1/2,\ 1/2)$, tu compañero llega **sin** paraguas. ¿Cuánt
 **$1/9\approx0.111$.** Las verosimilitudes son $1/10$ y $8/10$. Los productos son $1/20$ y $8/20$. La evidencia es $9/20$. Al dividir, obtienes $\tfrac{1/20}{9/20}=\tfrac19$.
 :::
 
-¿Necesitabas la evidencia antes de calcular los numeradores?
-
 ---
 
 ## 2 · Normalizar al final
@@ -152,7 +150,7 @@ $$
 | suma | | $11/20=0.55$ | $1$ |
 :::
 
-**El prior influye.** Con prior $(3/4,\ 1/4)$, los pesos son $27/40=0.675$ y $2/40=0.05$. Suman $29/40$. La posterior de lluvia sube a $27/29\approx0.931$. Con la misma señal, cambiar el prior cambia la posterior.
+**El prior influye.** Con prior $(3/4,\ 1/4)$, los pesos son $27/40=0.675$ y $2/40=0.05$. Suman $29/40$. La posterior de lluvia sube a $27/29\approx0.931$.
 
 > [!TIP]
 > **Ejemplo y contraejemplo de normalizar.**

@@ -32,7 +32,7 @@ Al terminar tendrás:
 
 **Piensa: si alguien anotó el clima de cada día junto a la señal, ¿qué cuentas?**
 
-Cuentas transiciones, como en la clase 1, y pares (estado, señal). La primera tabla estima $P$; la segunda, $B$.
+Cuentas transiciones, como en la clase 1, y pares (estado, señal).
 
 ::: definition {#mkv-c4-def-contar title="Estimar P y B contando"}
 $$
@@ -44,13 +44,13 @@ $$
 
 - **Qué es:** dada la trayectoria $s_0,\dots,s_T$ y las señales $o_0,\dots,o_T$, $N(s,s')$ cuenta los pasos $t\in\{0,\dots,T-1\}$ con $s_t=s$ y $s_{t+1}=s'$. $N(s)=\sum_{s'}N(s,s')$ cuenta las salidas de $s$. $N(s,o)$ cuenta los días $t\in\{0,\dots,T\}$ con $s_t=s$ y $o_t=o$.
 - **Cómo se calcula:** recorre los datos y divide cada fila entre su total. La fila $s$ de $\widehat P$ requiere $N(s)>0$. La fila $s$ de $\widehat B$ requiere que $s$ aparezca.
-- **Qué significa:** la conjunta separa los factores de $P$ y de $B$. Maximiza cada producto contando, como en @mkv-c1-teo-maximo. Así obtienes los $P$ y $B$ que hacen más probables los datos.
+- **Qué significa:** la conjunta separa los factores de $P$ y de $B$; contar maximiza cada producto, como en @mkv-c1-teo-maximo.
 - **Qué no es:** el denominador de $\widehat B$ no es $N(s)$. $N(s)$ cuenta salidas; el último día no tiene. $N(s,o)$ cuenta días; el último sí tiene señal.
 :::
 
 - **Ojo con la notación.** $N$ tiene dos usos según su segundo argumento: estado para transiciones, señal para emisiones.
 
-**En la semana simulada.** Usamos la semana de la página 2, con el clima anotado. Los días 0 y 1 son sol sin paraguas. Del 2 al 5 llueve con paraguas. El día 6 llueve sin paraguas.
+**En la semana simulada** de la página 2, ahora anotada. Los días 0 y 1 son sol sin paraguas. Del 2 al 5 llueve con paraguas. El día 6 llueve sin paraguas.
 
 ::: table {#mkv-c4-ap-tabla-conteos title="Los conteos de la semana anotada"}
 | Desde | Hacia lluvia | Hacia sol | $N(s)$ |
@@ -66,7 +66,7 @@ $$
 | sol | 0 | 2 | 2 |
 :::
 
-Ordena los estados como lluvia, sol. Las columnas de $\widehat B$ son paraguas, sin paraguas:
+En el orden lluvia, sol; columnas de $\widehat B$: paraguas, sin paraguas:
 
 $$
 \begin{aligned}
@@ -75,8 +75,8 @@ $$
 \end{aligned}
 $$
 
-- **Seis salidas, siete días.** Hay $T=6$ transiciones y 7 señales. La lluvia tiene 4 salidas y aparece 5 días.
-- **Ceros por pocos datos.** $\widehat P(\text{sol}\mid\text{lluvia})=0$ y $\widehat B(\text{sol},\text{paraguas})=0$. El modelo original tiene $3/10$ y $2/10$.
+- **Seis salidas, siete días.** $T=6$ transiciones y 7 señales: la lluvia tiene 4 salidas y aparece 5 días.
+- **Ceros por pocos datos.** $\widehat P(\text{sol}\mid\text{lluvia})=0$ y $\widehat B(\text{sol},\text{paraguas})=0$. En el modelo verdadero: $3/10$ y $2/10$.
 
 > [!TIP]
 > **Ejemplo y contraejemplo.**
@@ -110,10 +110,10 @@ def contar(estados, señales, tray, obs):
         return out
     return filas(NP), filas(NB)
 
-C, N = "paraguas", "sin paraguas"
+con, sin = "paraguas", "sin paraguas"
 tray = ["sol", "sol"] + ["lluvia"] * 5
-obs = [N, N, C, C, C, C, N]
-P_g, B_g = contar(["lluvia", "sol"], [C, N], tray, obs)
+obs = [sin, sin, con, con, con, con, sin]
+P_g, B_g = contar(["lluvia", "sol"], [con, sin], tray, obs)
 for s in ["lluvia", "sol"]:
     print(s, *P_g[s].values(), "|", *B_g[s].values())
 ```
@@ -149,8 +149,9 @@ Cuentas con fracciones. Cada día reparte su unidad entre los estados, según cu
 
 El ciclo tiene cuatro pasos:
 
-- **Arranca con un modelo.** Elígelo como estimación inicial.
-- **Reparte cada día.** El suavizado $b_{t\mid T}$ da la probabilidad de cada estado. Calcula también la de cada par de estados en días seguidos. Usa **toda** la secuencia, no solo hasta $t$.
+- **Arranca con un modelo,** aunque sea una adivinanza.
+- **Reparte cada día.** El suavizado $b_{t\mid T}$ da la probabilidad de cada estado. Usa **toda** la secuencia, no solo hasta $t$.
+- **Reparte cada par de días.** Para $s$ el día $t$ y $s'$ el día $t+1$, multiplica lo de adelante hasta $s$, la transición $P(s'\mid s)$, la emisión $B(s',o_{t+1})$ y lo de atrás desde $s'$; luego normaliza. No es el producto de los dos repartos diarios.
 - **Vuelve a contar.** Suma fracciones: son **conteos esperados**. Divide cada fila entre su total (@mkv-c4-def-contar).
 - **Repite** con el modelo nuevo.
 
@@ -158,7 +159,7 @@ El ciclo tiene cuatro pasos:
 ![Diagrama de flujo vertical de Baum-Welch. Arriba, «modelo de hoy: μ₀, P, B». Flecha a «reparte cada día y cada par de días entre los estados, con toda la secuencia». Flecha a «conteos esperados: fracciones en lugar de enteros». Flecha a «cuenta: cada fila entre su total». Flecha a «modelo nuevo». Un rombo pregunta si la verosimilitud dejó de subir; si no, una flecha regresa al modelo de hoy; si sí, termina. Al pie: cada vuelta no baja la verosimilitud, pero puede parar en un modelo que no es el mejor.](../_assets/mkv-c4-flujo-aprender.svg)
 :::
 
-**Un paso a mano.** Dos días: paraguas y luego sin paraguas. Fingimos no conocer el modelo y arrancamos con el de la página 2. Con dos días hay cuatro trayectorias. Su conjunta es el producto de la página 2. Cada peso es la conjunta entre la suma, $397/2000$:
+**Un paso a mano.** Dos días: paraguas y luego sin paraguas. Fingimos no conocer el modelo y arrancamos con el de la página 2. Hay cuatro trayectorias. Cada peso es la conjunta entre la suma, $397/2000$:
 
 ::: table {#mkv-c4-ap-tabla-paso title="Las cuatro trayectorias de paraguas, sin paraguas"}
 | # | Trayectoria | Conjunta | Peso |
@@ -169,11 +170,11 @@ El ciclo tiene cuatro pasos:
 | 4 | sol, sol | 112/2000 | 112/397 |
 :::
 
-- **Fila 2:** $\tfrac12\cdot\tfrac9{10}\cdot\tfrac3{10}\cdot\tfrac8{10}=216/2000$. Es la trayectoria más probable dadas las dos señales.
+- **Fila 2:** $\tfrac12\cdot\tfrac9{10}\cdot\tfrac3{10}\cdot\tfrac8{10}=216/2000$, la mayor.
 - **Día 0, con toda la secuencia:** las filas 1 y 2 dan $b_{0\mid1}(\text{lluvia})=279/397\approx0.703$. El filtro daba $9/11\approx0.818$. «Sin paraguas» del día 1 reduce la probabilidad de lluvia del día 0.
 - **El día 1:** filas 1 y 3 dan lluvia $69/397$; filas 2 y 4, sol $328/397$.
 
-**Vuelve a contar.** Lluvia→lluvia aporta $63/397$ y lluvia→sol, $216/397$. Total de salidas: $279/397$. Los $397$ se cancelan:
+**Vuelve a contar.** Lluvia→lluvia aporta $63/397\approx0.159$, no $(279/397)(69/397)\approx0.122$. Lluvia→sol aporta $216/397$. Total de salidas: $279/397$. Los $397$ se cancelan:
 
 $$
 \begin{aligned}
@@ -195,7 +196,7 @@ El nuevo inicio es el reparto del día 0: $(279/397,\ 118/397)$.
 
 **La verosimilitud sube.** Pasa de $\Pr(O_{0:1})=397/2000\approx0.199$ a $268802881/669153424\approx0.402$. Su logaritmo pasa de $-1.617$ a $-0.912$.
 
-**En Python.** Con pocos días se puede sumar sobre todas las trayectorias. Sumar los pesos de las que pasan por $s$ el día $t$ da $b_{t\mid T}(s)$. Con muchos días, eso se calcula con el suavizado de la página 4.
+**En Python.** Con pocos días se suma sobre todas las trayectorias: los pesos de las que pasan por $s$ el día $t$ dan $b_{t\mid T}(s)$. Con muchos días se usa el suavizado de la página 4.
 
 ```python
 from itertools import product
@@ -235,17 +236,21 @@ def paso(hmm, obs):
             NP[s][s2] += w                 # pares
         for s, o in zip(tr, obs):
             NB[s][o] += w                  # días
+
+    def filas(N, viejo):           # sin conteo: fila anterior
+        out = {}
+        for s, f in N.items():
+            tot = sum(f.values())
+            out[s] = ({k: n / tot for k, n in f.items()}
+                      if tot else dict(viejo[s]))
+        return out
     nuevo = dict(hmm, mu0=ini)
-    nuevo["P"] = {s: {k: n / sum(f.values())
-                      for k, n in f.items()}
-                  for s, f in NP.items()}
-    nuevo["B"] = {s: {k: n / sum(f.values())
-                      for k, n in f.items()}
-                  for s, f in NB.items()}
+    nuevo["P"] = filas(NP, hmm["P"])
+    nuevo["B"] = filas(NB, hmm["B"])
     return nuevo, vero
 
-nuevo, antes = paso(paraguas, [C, N])
-_, despues = paso(nuevo, [C, N])
+nuevo, antes = paso(paraguas, [con, sin])
+_, despues = paso(nuevo, [con, sin])
 for s in ["lluvia", "sol"]:
     print(s, *nuevo["P"][s].values(), "|",
           *nuevo["B"][s].values())
@@ -259,7 +264,7 @@ sol 3/59 56/59 | 59/223 164/223
 ```
 
 ::: remark {#mkv-c4-obs-baum-welch title="Lo que garantiza Baum-Welch y lo que no"}
-**Condición.** El modelo inicial da verosimilitud positiva a las señales.
+**Condición.** El modelo inicial da verosimilitud positiva a las señales. Si una fila recibe conteo esperado total 0 (con un solo día no hay pares), se conserva la anterior.
 
 - **Sí garantiza:** la verosimilitud no baja (Baum, Petrie, Soules y Weiss, 1970). Al repetir con los mismos dos días, sube a $0.666$, $0.943$ y $0.999$.
 - **No garantiza el mejor modelo:** puede terminar en un máximo local o un punto fijo que no sea óptimo.
@@ -267,7 +272,7 @@ sol 3/59 56/59 | 59/223 164/223
 - **Depende del inicio:** dos inicios pueden dar modelos distintos.
 :::
 
-- **Memorizar dos días.** Acercarse a 1 indica ajuste a dos señales, no que recuperaste el clima. Con pocos datos, puedes sobreajustar.
+- **Memorizar dos días.** Acercarse a 1 es ajustarse a dos señales, no recuperar el clima.
 - **De dónde viene el nombre.** Lleva el nombre de Leonard Baum y Lloyd Welch, del Institute for Defense Analyses (IDA) de Princeton. Welch no firma los artículos de 1966 a 1972. Es un caso del algoritmo EM (*expectation–maximization*, esperanza–maximización) de Dempster, Laird y Rubin (1977), que llegó después y lo generalizó.
 - **Vocales sin etiquetas.** En 1980, Cave y Neuwirth, en actas internas del IDA, ajustaron un modelo de dos estados a texto en inglés sin decirle qué era vocal. Un estado salió con las vocales y el otro con las consonantes. Su texto abre citando a Markov, que en 1913 había contado esas clases a mano en el *Oneguin*.
 
@@ -280,7 +285,7 @@ Con las dos filas de $B$ iguales, ¿qué factor de la conjunta depende del clima
 :::
 
 ::: answer {#mkv-c4-ap-resp-filas-iguales of="mkv-c4-ap-ej-filas-iguales"}
-Cada conjunta es $\tfrac12\cdot\tfrac12\cdot P(s'\mid s)\cdot\tfrac12$; suman $1/4$. Los pesos son $7/20$, $3/20$, $3/20$ y $7/20$. El día 0 queda en $(1/2,\ 1/2)$, igual que el día 1. Obtienes **el mismo modelo**, con verosimilitud $1/4$. Desde el paraguas, un paso dio $0.402$. El inicio importa.
+Cada conjunta es $\tfrac12\cdot\tfrac12\cdot P(s'\mid s)\cdot\tfrac12$; suman $1/4$. Los pesos son $7/20$, $3/20$, $3/20$ y $7/20$. El día 0 queda en $(1/2,\ 1/2)$, igual que el día 1. Obtienes **el mismo modelo**: tras el paso sigue en $1/4$. Desde el paraguas, tras un paso, sube a $0.402$, aunque arrancó en $0.199$. El inicio importa.
 :::
 
 ---
@@ -298,7 +303,7 @@ Un diario registra seis días. Clima: calor, calor, frío, frío, calor, calor. 
 2. **Cuenta emisiones:** escribe $N(s,o)$ y cuántos días aparece cada clima.
 3. **Estima:** calcula $\widehat P$ y $\widehat B$, en el orden calor, frío y uno, dos, tres helados.
 4. **Revisa los ceros:** ¿qué celdas valen 0? ¿Indican imposibilidad o falta de datos?
-5. **Recorta:** usa calor, calor, calor, frío y dos, tres, tres, uno helados. ¿Qué fila no puedes estimar? ¿Puedes estimar la de frío de $\widehat B$?
+5. **Cambia de registro:** sustituye el diario por este otro: calor, calor, calor, frío con dos, tres, tres, uno helados. ¿Qué fila no puedes estimar? ¿Y la de frío de $\widehat B$?
 :::
 
 ::: hint {#mkv-c4-ap-pista-helado-1 of="mkv-c4-ap-ej-helado" title="Pista 1 · ¿Qué recorres para cada tabla?"}
@@ -306,7 +311,7 @@ Un diario registra seis días. Clima: calor, calor, frío, frío, calor, calor. 
 :::
 
 ::: hint {#mkv-c4-ap-pista-helado-2 of="mkv-c4-ap-ej-helado" title="Pista 2 · ¿Tus filas suman 1?"}
-¿Cada fila estimada suma 1? En el registro recortado, ¿cuántas salidas tiene el último clima?
+¿Cada fila estimada suma 1? En el otro registro, ¿cuántas salidas tiene el último clima?
 :::
 
 ::: answer {#mkv-c4-ap-resp-helado of="mkv-c4-ap-ej-helado" title="Respuesta · Dos tablas de conteo con tres señales"}
@@ -325,7 +330,7 @@ $$
 
 **4. Revisa los ceros.** $\widehat B(\text{calor},\text{un helado})=0$ y $\widehat B(\text{frío},\text{tres helados})=0$. Solo dicen que en seis días no se vio. Un modelo con esos ceros declara imposible un día de calor con un helado.
 
-**5. Recorta.** Frío aparece al final: $N(\text{frío})=0$. No puedes estimar su fila de $\widehat P$. La de calor es $(2/3,\ 1/3)$. Sí estimas la fila de frío de $\widehat B$: $(1,\ 0,\ 0)$. Para $\widehat B$ basta aparecer; para $\widehat P$ necesitas salidas.
+**5. Cambia de registro.** Frío solo aparece al final: $N(\text{frío})=0$. No puedes estimar su fila de $\widehat P$. La de calor es $(2/3,\ 1/3)$. Sí estimas la fila de frío de $\widehat B$: $(1,\ 0,\ 0)$. Para $\widehat B$ basta aparecer; para $\widehat P$ necesitas salidas.
 :::
 
 **Punto de control:** debes poder hacer cuatro cosas.

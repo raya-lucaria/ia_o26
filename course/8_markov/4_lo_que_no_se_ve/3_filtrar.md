@@ -70,19 +70,19 @@ $$
 > [!TIP]
 > **Ejemplo y contraejemplo de la creencia.**
 >
-> - **Lo cumple:** con paraguas el día 0, $b_0=\begin{pmatrix}9/11&2/11\end{pmatrix}$. Usa $\mu_0$ y la señal. Divide los pesos $9/20$ y $2/20$ entre $11/20$. El resultado suma 1.
-> - **No lo cumple:** el clima real del día 6 de la semana simulada, $\begin{pmatrix}1&0\end{pmatrix}$: llovió. Ese vector requiere conocer el estado oculto. Con las señales de esa semana, la creencia es $\approx\begin{pmatrix}0.194&0.806\end{pmatrix}$.
+> - **Lo cumple:** con paraguas el día 0, $b_0=\begin{pmatrix}9/11&2/11\end{pmatrix}$. Divide los pesos $9/20$ y $2/20$ entre $11/20$. El resultado suma 1.
+> - **No lo cumple:** el clima real del día 6 de la semana simulada, $\begin{pmatrix}1&0\end{pmatrix}$: llovió. Un $(1,0)$ puede ser una creencia, pero no es la que dan las siete señales de esa semana: esa es $\approx\begin{pmatrix}0.194&0.806\end{pmatrix}$.
 
 ::: figure {#mkv-c4-fig-ej-creencia title="Ejemplo y contraejemplo: una creencia"}
-![Dos paneles con barras de lluvia y sol. Arriba, el que cumple: la creencia del día 0 tras ver paraguas, lluvia 9/11 ≈ 0.818 y sol 2/11 ≈ 0.182; las barras suman 1 y salen de μ₀ y de la señal. Abajo, el que no: el clima real del día 6 de la semana simulada, lluvia 1 y sol 0, marcado como oculto; a su lado, en gris, la creencia de ese día con las siete señales, lluvia ≈ 0.194 y sol ≈ 0.806.](../_assets/mkv-c4-ej-creencia.svg)
+![Dos paneles con barras de lluvia y sol. Arriba, el que cumple: la creencia del día 0 tras ver paraguas, lluvia 9/11 ≈ 0.818 y sol 2/11 ≈ 0.182; las barras suman 1 y salen de μ₀ y de la señal. Abajo, el que no: el clima real del día 6 de la semana simulada, lluvia 1 y sol 0, en barras con borde punteado y marcado como oculto; debajo, en gris, la creencia de ese día con las siete señales, lluvia ≈ 0.194 y sol ≈ 0.806.](../_assets/mkv-c4-ej-creencia.svg)
 :::
 
 ::: exercise {#mkv-c4-fi-ej-sumas title="Suma la creencia y la columna"}
 Con paraguas el día 0, ¿cuánto suman $b_0(\text{lluvia})+b_0(\text{sol})$? ¿Y $B(\text{lluvia},\text{paraguas})+B(\text{sol},\text{paraguas})$?
 :::
 
-::: hint {#mkv-c4-fi-pista-sumas of="mkv-c4-fi-ej-sumas" title="¿Sobre qué reparte cada una?"}
-¿Cuál reparte probabilidad entre estados y cuál entre señales?
+::: hint {#mkv-c4-fi-pista-sumas of="mkv-c4-fi-ej-sumas" title="¿Qué suma cada una?"}
+¿Cuál es una distribución y cuál reúne probabilidades condicionadas a estados distintos?
 :::
 
 ::: answer {#mkv-c4-fi-resp-sumas of="mkv-c4-fi-ej-sumas"}
@@ -101,7 +101,6 @@ Primero predices con $P$. Luego corriges con Bayes al ver la señal nueva. Ya co
 
 - **Predecir.** $b_{t+1\mid t}=b_tP$. Aplicas $\mu_{t+1}=\mu_tP$, de la clase 1, con $b_t$ en lugar de $\mu_t$.
 - **Corregir.** La predicción es el prior. Multiplica por la verosimilitud $B(s,o_{t+1})$ y normaliza los pesos.
-- **El día 0.** Empiezas con el prior $\mu_0$.
 
 ::: theorem {#mkv-c4-teo-filtrar title="El filtrado recursivo"}
 **Condición.** Usa un modelo como en @mkv-c4-def-hmm y señales $o_0,\dots,o_T$ con $\Pr(O_{0:T}=o_{0:T})>0$. Esto equivale a exigir que cada evidencia $\operatorname{ev}_t$ sea positiva.
@@ -153,11 +152,11 @@ $$
 > - **No lo cumple:** un clima fijo con señales que lo revelan. Lluvia → lluvia 1, sol → sol 1; lluvia → paraguas 1, sol → sin paraguas 1. Con $P=B=\begin{pmatrix}1&0\\0&1\end{pmatrix}$ y (paraguas, sin paraguas), obtienes $b_0=(1,0)$ y $b_{1\mid0}=(1,0)$. Los pesos del día 1 son $(1\cdot0,\ 0\cdot1)=(0,0)$. Entonces $\operatorname{ev}_1=0$ y no puedes normalizar.
 
 ::: figure {#mkv-c4-fig-ej-filtrar title="Ejemplo y contraejemplo: el filtrado recursivo"}
-![Dos paneles, cada uno con dos días: barras de la creencia, la flecha predecir y la flecha corregir. Arriba, el que cumple, el paraguas con paraguas y paraguas: lluvia 9/11 ≈ 0.818, luego predecir la baja a 69/110 ≈ 0.627 y corregir la sube a 621/703 ≈ 0.883; evidencias 11/20 y 703/1100. Abajo, el que no, el clima fijo con P y B identidad y señales paraguas, sin paraguas: lluvia 1, predecir la deja en 1, y al corregir los pesos son 0 y 0; la evidencia es 0 y la barra final aparece tachada con el letrero «señal imposible».](../_assets/mkv-c4-ej-filtrar.svg)
+![Dos paneles, cada uno con dos días: barras de la creencia, la flecha predecir y la flecha corregir. Arriba, el que cumple, el paraguas con paraguas y paraguas: día 0 con ev₀ = 11/20 y lluvia 9/11 ≈ 0.818, predecir la baja a 69/110 ≈ 0.627 y corregir, con ev₁ = 703/1100, la sube a 621/703 ≈ 0.883. Abajo, el que no, P = B = I con señales paraguas, sin paraguas: día 0 con ev₀ = 1/2 y lluvia 1, predecir la deja en 1, y sobre la flecha corregir se lee «ev₁ = 0»; la barra final aparece tachada con el letrero «señal imposible». Pie: la barra es Pr(lluvia); tachada, no se puede normalizar.](../_assets/mkv-c4-ej-filtrar.svg)
 :::
 
 > [!WARNING]
-> **Error típico: predecir antes del día 0.** El día 0 usa $\mu_0$ como prior de $S_0$. **Predecir es para pasar de un día al siguiente.** Si predices antes del día 0, aquí obtienes $9/11$ por la simetría de $P$. En otro modelo, el resultado cambia.
+> **Error típico: predecir antes del día 0.** El día 0 usa $\mu_0$ como prior de $S_0$. **Predecir es para pasar de un día al siguiente.** Aquí el error no se nota: $\mu_0$ uniforme por esta $P$, cuyas columnas también suman 1, vuelve a dar $\mu_0$. En otro modelo, sí cambia.
 
 ::: exercise {#mkv-c4-fi-ej-otra-senal title="Corrige con la otra señal"}
 Partes de $b_0(\text{lluvia})=9/11$. El día 1 tu compañero llega **sin** paraguas. ¿Cuánto vale $b_1(\text{lluvia})$?
@@ -192,7 +191,7 @@ Solo la creencia de ayer. Con ella y la señal nueva calculas la de hoy. FILTRAR
 - **Cómo avanza:** procesa un día por vuelta: predice, corrige y normaliza. El día 0 toma $\mu_0$ como predicción.
 - **Qué devuelve:** las listas de creencias y evidencias. La última creencia da la probabilidad de lluvia hoy.
 - **Garantía:** cada $b_t$ es exacta si toda $\operatorname{ev}_t>0$. Si una evidencia vale 0, se detiene con «señal imposible».
-- **Costo:** cada día requiere $\lvert\mathcal S\rvert^2$ productos al predecir y $\lvert\mathcal S\rvert$ al corregir. El costo no aumenta con el tiempo.
+- **Costo:** cada día posterior al 0 hace $\lvert\mathcal S\rvert^2$ productos al predecir; todos hacen $\lvert\mathcal S\rvert$ al corregir. No aumenta con el tiempo.
 - **Supuestos:** conoces el modelo: $\mu_0$, $P$ y $B$.
 
 ::: figure {#mkv-c4-fig-flujo-filtrar title="FILTRAR, en palabras"}
@@ -255,8 +254,8 @@ def filtrar(hmm, obs):
         evidencias.append(ev)
     return creencias, evidencias                     # (11)
 
-C, N = "paraguas", "sin paraguas"
-creencias, evidencias = filtrar(paraguas, [C, C, N])
+con, sin = "paraguas", "sin paraguas"
+creencias, evidencias = filtrar(paraguas, [con, con, sin])
 for t in range(3):
     print(t, creencias[t]["lluvia"], evidencias[t])
 ```
@@ -280,7 +279,7 @@ fijo = {"estados": ["lluvia", "sol"],
         "B": {"lluvia": {"paraguas": uno, "sin paraguas": cero},
               "sol": {"paraguas": cero, "sin paraguas": uno}}}
 try:
-    filtrar(fijo, [C, N])
+    filtrar(fijo, [con, sin])
 except ValueError as e:
     print(e)
 ```
@@ -352,7 +351,7 @@ $$
 **Por eso las evidencias dan la verosimilitud.** Por la regla del producto, multiplica la probabilidad de la primera señal por la de la segunda dada la primera. Continúa así con las demás:
 
 ::: remark {#mkv-c4-obs-verosimilitud title="La verosimilitud es el producto de las evidencias"}
-**Condición.** Un modelo como en @mkv-c4-def-hmm y señales $o_0,\dots,o_T$.
+**Condición.** Un modelo como en @mkv-c4-def-hmm y señales con $\Pr(O_{0:T}=o_{0:T})>0$.
 
 $$
 \begin{aligned}
@@ -362,7 +361,7 @@ $$
 $$
 
 - **Lectura:** FILTRAR ya calcula cada factor. Para obtener la verosimilitud, solo faltan $T$ multiplicaciones.
-- **Casos nulos:** si una $\operatorname{ev}_t=0$, la verosimilitud vale 0 y los factores siguientes no están definidos. FILTRAR se detiene ahí.
+- **Casos nulos:** si $\Pr(O_{0:T}=o_{0:T})=0$, hay un primer día $t$ con $\operatorname{ev}_t=0$. Ahí la verosimilitud ya vale 0 y los factores siguientes no existen: FILTRAR se detiene.
 :::
 
 Para las señales (paraguas, paraguas, sin paraguas):
@@ -374,7 +373,7 @@ $$
 \end{aligned}
 $$
 
-Es el resultado que en la página 2 obtuviste al sumar 8 trayectorias. Aquí multiplicas tres factores:
+En la página 2 sumaste 8 trayectorias; aquí bastan tres factores:
 
 ```python
 from math import prod
@@ -385,10 +384,10 @@ def predecir_señal(hmm, b):
     return {o: sum(pred[s] * B[s][o] for s in E)
             for o in hmm["señales"]}
 
-b0 = filtrar(paraguas, [C])[0][0]
+b0 = filtrar(paraguas, [con])[0][0]
 for o, p in predecir_señal(paraguas, b0).items():
     print(o, p)
-print(prod(filtrar(paraguas, [C, C, N])[1]))
+print(prod(filtrar(paraguas, [con, con, sin])[1]))
 ```
 
 ```text
@@ -435,21 +434,21 @@ Dos filtros reciben las señales paraguas, paraguas, sin paraguas, paraguas, par
 - **Fila 1:** la predicción asigna probabilidad a los dos climas porque $P$ no tiene ceros. Las señales acercan las dos creencias.
 - **Fila 4:** la diferencia bajó de 1 a $\approx0.004$.
 
-**La condición, solo para el paraguas.** Todas las entradas de $P$ y de $B$ son positivas. La predicción asigna probabilidad a cada clima. Ninguna señal lo descarta. En este modelo, el inicio se olvida.
+**La condición, solo para el paraguas.** Todas las entradas de $P$ y de $B$ son positivas: la predicción mezcla los climas y ninguna señal descarta uno.
 
 > [!WARNING]
-> **Error típico: generalizarlo.** La creencia no siempre olvida su inicio. Si $P$ es la identidad y las dos filas de $B$ son iguales, $b_t=\mu_0$ siempre. El clima no cambia. Las señales no informan. **Los resultados generales exigen condiciones sobre $B$, además de $P$.** En [[mkv-olvida-su-inicio|Olvida su inicio]] avanzabas una distribución sin observar señales. Aquí actualizas una creencia con ellas.
+> **Error típico: generalizarlo.** La tabla lo muestra con números; no lo demuestra. Y no pasa siempre: si $P$ es la identidad y las filas de $B$ son iguales, $b_t=\mu_0$ para siempre, porque $P$ no mezcla los climas. **Hay teoremas de estabilidad del filtro, y cada uno pide condiciones distintas.** En [[mkv-olvida-su-inicio|Olvida su inicio]] no había señales.
 
 ::: exercise {#mkv-c4-fi-ej-tercer-inicio title="Encuentra el tercer inicio"}
 Con las mismas cinco señales y $\mu_0=(1/2,1/2)$, ¿dónde quedará $b_4(\text{lluvia})$ respecto a $0.864$ y $0.868$?
 :::
 
-::: hint {#mkv-c4-fi-pista-tercer-inicio of="mkv-c4-fi-ej-tercer-inicio" title="¿Qué inicio queda en medio?"}
-¿Dónde queda $\mu_0=(1/2,1/2)$ respecto a los dos inicios de la tabla?
+::: hint {#mkv-c4-fi-pista-tercer-inicio of="mkv-c4-fi-ej-tercer-inicio" title="¿Qué pasa si condicionas en el día 0?"}
+Con $\mu_0=(1/2,1/2)$, ¿cómo escribes $b_4(\text{lluvia})$ por probabilidad total sobre el clima del día 0?
 :::
 
 ::: answer {#mkv-c4-fi-resp-tercer-inicio of="mkv-c4-fi-ej-tercer-inicio"}
-Entre los dos valores. FILTRAR da $b_4(\text{lluvia})\approx0.867$. Los tres filtros casi coinciden.
+Entre los dos. Por probabilidad total sobre $S_0$, $b_4$ es un promedio de las dos columnas, con pesos $\Pr(S_0=s\mid O_{0:4})$. FILTRAR da $b_4(\text{lluvia})\approx0.867$.
 :::
 
 ---
@@ -459,7 +458,7 @@ Entre los dos valores. FILTRAR da $b_4(\text{lluvia})\approx0.867$. Los tres fil
 ::: exercise {#mkv-c4-fi-ej-tres-climas title="Filtra con tres climas"}
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin pedir ayuda a ChatGPT.**
 
-**Cambia una idea:** ahora hay tres climas en lugar de dos: entre sol y lluvia está nublado. Las señales siguen siendo paraguas y sin paraguas. Usa el orden (sol, nublado, lluvia):
+**Cambia una idea:** ahora hay tres climas: entre sol y lluvia está nublado. Como el nublado cubre los días grises, el sol trae paraguas con $1/10$ y no con $2/10$. Las señales siguen siendo paraguas y sin paraguas. Usa el orden (sol, nublado, lluvia):
 
 - **El inicio:** $\mu_0=(1/3,\ 1/3,\ 1/3)$.
 - **Cómo cambia:** desde sol, $(3/5,\ 3/10,\ 1/10)$. Desde nublado, $(1/4,\ 1/2,\ 1/4)$. Desde lluvia, $(1/10,\ 3/10,\ 3/5)$.
@@ -501,7 +500,7 @@ Las entradas suman $11/60+22/60+27/60=1$.
 
 **4. Multiplica.** $\tfrac12\cdot\tfrac{91}{150}=\tfrac{91}{300}\approx0.303$.
 
-**5. Compara.** La probabilidad de lluvia baja de $621/703\approx0.883$ a $243/364\approx0.668$. Nublado recibe $0.302$: también produce paraguas la mitad de las veces. Además, la probabilidad de seguir con lluvia es $3/5$ en vez de $7/10$.
+**5. Compara.** La probabilidad de lluvia baja de $621/703\approx0.883$ a $243/364\approx0.668$. Nublado recibe $0.302$: produce paraguas la mitad de las veces. La comparación junta tres cambios: el estado nublado, $B(\text{sol},\text{paraguas})$ de $2/10$ a $1/10$ y seguir con lluvia de $7/10$ a $3/5$.
 :::
 
 **Punto de control:** comprueba estas cuatro habilidades.

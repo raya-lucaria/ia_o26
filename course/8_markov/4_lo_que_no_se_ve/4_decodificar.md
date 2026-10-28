@@ -33,7 +33,7 @@ Al terminar tendrás:
 
 **Piensa: con dos climas posibles, ¿cuántas secuencias de una semana pudieron producir las señales que viste?**
 
-Hay $2^7=128$ secuencias, una por cada combinación de climas en los siete días. Con $\lvert\mathcal S\rvert$ estados y $T+1$ días hay $\lvert\mathcal S\rvert^{T+1}$ secuencias. Revisarlas todas resulta impráctico.
+Hay $2^7=128$, una por cada combinación de climas. Con $\lvert\mathcal S\rvert$ estados y $T+1$ días hay $\lvert\mathcal S\rvert^{T+1}$ secuencias. Revisarlas todas resulta impráctico.
 
 > **Dado:** un modelo oculto $\langle\mathcal S,\mathcal O,\mu_0,P,B\rangle$ y las señales observadas $o_0,\dots,o_T$.
 >
@@ -69,8 +69,8 @@ def conjunta(hmm, tray, obs):
         p *= P[tray[t - 1]][tray[t]] * B[tray[t]][obs[t]]
     return p
 
-C, N = "paraguas", "sin paraguas"
-obs = [N, C, N]
+con, sin = "paraguas", "sin paraguas"
+obs = [sin, con, sin]
 todas = {tr: conjunta(paraguas, tr, obs)
          for tr in product(paraguas["estados"], repeat=3)}
 for tr in sorted(todas, key=todas.get, reverse=True)[:3]:
@@ -83,7 +83,7 @@ sol, lluvia, sol 81/3125
 lluvia, lluvia, sol 189/25000
 ```
 
-- **Gana sol, sol, sol** con conjunta $98/3125=392/12500\approx0.031$. Le sigue sol, lluvia, sol con $81/3125$.
+- **Gana sol, sol, sol** con conjunta $98/3125\approx0.031$. Le sigue sol, lluvia, sol con $81/3125$.
 - **Ninguna vale 0.** En el paraguas, todas las entradas de $P$ y $B$ son positivas. Toda trayectoria es posible, aunque unas son más probables que otras.
 
 ::: exercise {#mkv-c4-de-ej-cuantas title="Cuenta las trayectorias"}
@@ -106,7 +106,7 @@ Calculemos primero la probabilidad de cada estado por día, dadas todas las señ
 
 **Piensa: el paraguas de mañana, ¿dice algo del clima de hoy?**
 
-Sí, porque el clima tiende a mantenerse. El filtro $b_t$ solo usa las señales hasta $t$. El **suavizado** incluye las señales posteriores. Lo comparamos con Viterbi porque ambos usan toda la secuencia.
+Sí, porque el clima tiende a mantenerse. El filtro $b_t$ solo usa las señales hasta $t$. El **suavizado** incluye también las señales posteriores.
 
 ::: table {#mkv-c4-de-tabla-simbolos title="Los símbolos de esta página"}
 | Símbolo | Se lee | Qué es |
@@ -119,7 +119,7 @@ Sí, porque el clima tiende a mantenerse. El filtro $b_t$ solo usa las señales 
 :::
 
 - **Sobre el nombre.** Aquí, «suavizar» significa usar señales futuras. Es distinto del suavizado de conteos de la clase 1.
-- **Sobre las letras.** Otros textos llaman $\alpha$, $\beta$ y $\delta$ a adelante, atrás y mejor. Aquí esas letras tienen otro significado.
+- **Sobre las letras.** Otros textos llaman $\alpha$, $\beta$ y $\delta$ a adelante, atrás y mejor. En esta unidad, $\alpha$ es la de PageRank, $\beta$ la de la cota de paro y $\delta$ el error al recuperar una matriz.
 
 ::: remark {#mkv-c4-de-obs-suavizar title="El suavizado es adelante por atrás"}
 **Condición.** Tenemos un modelo como en @mkv-c4-def-hmm y señales $o_{0:T}$ con $\Pr(O_{0:T}=o_{0:T})>0$.
@@ -133,9 +133,10 @@ $$
 $$
 
 - **Arranques:** $\operatorname{adelante}_0(s)=\mu_0(s)B(s,o_0)$ y $\operatorname{atrás}_T(s)=1$.
-- **De dónde sale:** $\Pr(S_t=s,O_{0:T})$ es el producto del pasado, $\operatorname{adelante}_t(s)$, por el futuro dado $S_t=s$, $\operatorname{atrás}_t(s)$. El futuro depende del pasado solo a través de $S_t$. Esto se debe a los dos supuestos de @mkv-c4-def-hmm.
-- **Lectura:** sumar $\operatorname{adelante}_t\cdot\operatorname{atrás}_t$ sobre $s$ da $\Pr(O_{0:T})$ en cualquier día. Al normalizar el producto obtenemos $b_{t\mid T}$.
-- **Casos nulos:** si $\Pr(O_{0:T})=0$, no podemos dividir. En el último día, $b_{T\mid T}=b_T$ porque no quedan señales futuras.
+- **De dónde sale:** $\Pr(S_t=s,O_{0:T})$ es el producto del pasado, $\operatorname{adelante}_t(s)$, por el futuro dado $S_t=s$, $\operatorname{atrás}_t(s)$. Por los dos supuestos de @mkv-c4-def-hmm, el futuro depende del pasado solo a través de $S_t$.
+- **La recursión de atrás:** condiciona en el estado de mañana. Pasas a $s'$ con $P(s'\mid s)$, emites $o_{t+1}$ con $B(s',o_{t+1})$, y el resto del futuro vale $\operatorname{atrás}_{t+1}(s')$.
+- **Lectura:** sumar $\operatorname{adelante}_t\cdot\operatorname{atrás}_t$ sobre $s$ da $\Pr(O_{0:T})$ en cualquier día. Normalizar el producto da $b_{t\mid T}$. En el último día, $b_{T\mid T}=b_T$.
+- **Casos nulos:** si $\Pr(O_{0:T})=0$, no podemos dividir.
 :::
 
 **En el paraguas,** con sin paraguas, paraguas, sin paraguas:
@@ -288,7 +289,7 @@ print(", ".join(tray), p)
 sol, sol, sol 98/3125
 ```
 
-Coincide con la trayectoria y la conjunta obtenidas por fuerza bruta. Veamos los pasos. La retícula tiene una columna por día y un nodo por estado.
+Es la ganadora de la fuerza bruta. La retícula tiene una columna por día y un nodo por estado.
 
 ::: table {#mkv-c4-de-traza-1 title="Traza de Viterbi, tramo 1: el arranque"}
 | # | Nodo | Cuenta | mejor ← de |
@@ -297,11 +298,10 @@ Coincide con la trayectoria y la conjunta obtenidas por fuerza bruta. Veamos los
 | 2 | día 0, sol | $\tfrac12\cdot\tfrac{8}{10}$ | 2/5 ← inicio |
 :::
 
-- **Fila 1:** con la señal sin paraguas, lluvia empieza con $1/20$.
-- **Fila 2:** sol empieza con 8 veces ese valor: $2/5$.
+- **Filas 1 y 2:** con sin paraguas, sol empieza 8 veces arriba de lluvia.
 
 ::: figure {#mkv-c4-fig-trellis-1 title="Tramo 1: sol arranca adelante"}
-![Retícula de Viterbi para sin paraguas, paraguas, sin paraguas: tres columnas, días 0, 1 y 2, con la señal arriba de cada una; dos filas, lluvia arriba y sol abajo. Solo la columna del día 0 está llena, con borde grueso: lluvia 1/20 y sol 2/5. Las columnas de los días 1 y 2 tienen nodos vacíos punteados.](../_assets/mkv-c4-trellis-1.svg)
+![Retícula de Viterbi, tramo 1, para sin paraguas, paraguas, sin paraguas: tres columnas, días 0, 1 y 2, con la señal arriba de cada una; dos filas, lluvia arriba y sol abajo. Solo la columna del día 0 está llena, con borde grueso: lluvia 1/20 y sol 2/5, marcado con ★ como el mayor de su columna. Las columnas de los días 1 y 2 tienen nodos vacíos punteados.](../_assets/mkv-c4-trellis-1.svg)
 :::
 
 ::: table {#mkv-c4-de-traza-2 title="Traza de Viterbi, tramo 2: el día 1"}
@@ -316,7 +316,7 @@ Coincide con la trayectoria y la conjunta obtenidas por fuerza bruta. Veamos los
 - **Lluvia toma la delantera.** Si termináramos hoy, ganaría sol, lluvia, con $27/250$ frente a $7/125$.
 
 ::: figure {#mkv-c4-fig-trellis-2 title="Tramo 2: en el día 1 lluvia toma la delantera"}
-![La misma retícula, nodos en las mismas posiciones. Columna del día 0 llena: lluvia 1/20 y sol 2/5. Columna del día 1 nueva, con borde grueso: lluvia 27/250 con flecha gruesa desde sol del día 0, y sol 7/125 con flecha gruesa desde sol del día 0. Las flechas que perdieron, de lluvia del día 0 a cada nodo del día 1, van delgadas y punteadas. Lluvia del día 1 lleva la marca de mayor valor de su columna. La columna del día 2 sigue vacía.](../_assets/mkv-c4-trellis-2.svg)
+![La misma retícula, tramo 2, nodos en las mismas posiciones. Día 0: lluvia 1/20 y sol 2/5 con ★. Día 1, nuevo, con borde grueso: lluvia 27/250 con ★ y sol 7/125, cada uno con flecha gruesa desde sol del día 0. Las flechas que perdieron, desde lluvia del día 0, van punteadas. La columna del día 2 sigue vacía.](../_assets/mkv-c4-trellis-2.svg)
 :::
 
 ::: table {#mkv-c4-de-traza-3 title="Traza de Viterbi, tramo 3: el día 2 y el regreso"}
@@ -327,12 +327,11 @@ Coincide con la trayectoria y la conjunta obtenidas por fuerza bruta. Veamos los
 | 7 | regreso | sol gana el día 2; sigue a sol, luego a sol | sol, sol, sol |
 :::
 
-- **Fila 5:** la señal sin paraguas reduce el valor de lluvia con el factor $1/10$.
-- **Fila 6:** llegar a sol desde sol da $98/2500$. Desde lluvia da $81/2500$. Volver desde lluvia requiere cambiar de clima, con probabilidad $3/10$.
+- **Filas 5 y 6:** sin paraguas castiga a lluvia con $1/10$. A sol se llega mejor desde sol: volver desde lluvia cuesta un cambio de clima, $3/10$.
 - **Fila 7:** $98/3125>189/25000$. Los apuntadores llevan de sol a sol y luego a sol. La ventaja de lluvia en el día 1 no sobrevivió.
 
 ::: figure {#mkv-c4-fig-trellis-3 title="Tramo 3: gana sol, sol, sol al regresar"}
-![La misma retícula completa. Día 0: lluvia 1/20, sol 2/5. Día 1: lluvia 27/250 desde sol, sol 7/125 desde sol. Día 2, nuevo, con borde grueso: lluvia 189/25000 con flecha desde lluvia del día 1, y sol 98/3125 con flecha desde sol del día 1. El camino de regreso sol, sol, sol va resaltado con línea doble gruesa, de sol del día 2 a sol del día 1 y a sol del día 0. Al pie: conjunta 98/3125.](../_assets/mkv-c4-trellis-3.svg)
+![La misma retícula completa, tramo 3. Día 0: lluvia 1/20 y sol 2/5 con ★. Día 1: lluvia 27/250 con ★ y sol 7/125, desde sol del día 0. Día 2, nuevo, con borde grueso: lluvia 189/25000 con flecha gruesa desde lluvia del día 1, y sol 98/3125 con ★. En cada tramo, las flechas que perdieron van punteadas. El camino de regreso sol, sol, sol va con línea doble con punta hacia atrás, en lugar de la flecha gruesa en los tramos de sol a sol. Al pie: conjunta 98/3125.](../_assets/mkv-c4-trellis-3.svg)
 :::
 
 ### Lo que garantiza y cuánto cuesta
@@ -374,7 +373,7 @@ El último factor no depende de $s_{0:t-2}$. Por la hipótesis de inducción, ma
 :::
 
 - **Garantía.** La trayectoria devuelta tiene la mayor conjunta y, por tanto, la mayor posterior.
-- **Costo.** Cada día prueba $\lvert\mathcal S\rvert$ predecesores por cada uno de $\lvert\mathcal S\rvert$ estados. Requiere del orden de $T\lvert\mathcal S\rvert^2$ productos. Un año del paraguas, con $T=364$, requiere unos $1456$ productos. Por fuerza bruta revisaríamos $2^{365}\approx7.5\times10^{109}$ trayectorias.
+- **Costo.** Cada día prueba $\lvert\mathcal S\rvert$ predecesores por cada uno de $\lvert\mathcal S\rvert$ estados: del orden de $T\lvert\mathcal S\rvert^2$. Un año del paraguas, con $T=364$, son $364\cdot2^2=1456$ candidatos; con las emisiones, unas $2184$ multiplicaciones. Por fuerza bruta revisaríamos $2^{365}\approx7.5\times10^{109}$ trayectorias.
 - **Memoria.** Una columna de valores y $T\lvert\mathcal S\rvert$ apuntadores.
 - **Supuestos.** Conocemos el modelo: $\mu_0$, $P$ y $B$.
 
@@ -385,7 +384,7 @@ El último factor no depende de $s_{0:t-2}$. Por la hipótesis de inducción, ma
 > - **No lo cumple:** agregamos la señal «nieve», que ningún estado emite: $B=\begin{pmatrix}9/10&1/10&0\\2/10&8/10&0\end{pmatrix}$. Con sin paraguas, nieve, sin paraguas, las flechas lluvia → nieve y sol → nieve valen 0. La columna del día 1 vale $(0,\ 0)$. La del día 2 también. No hay trayectoria que devolver: «señal imposible».
 
 ::: figure {#mkv-c4-fig-ej-decodificar title="Ejemplo y contraejemplo: Viterbi necesita una conjunta positiva"}
-![Dos paneles con la misma retícula de tres días, lluvia arriba y sol abajo. Arriba, marcado como cumple: señales sin paraguas, paraguas, sin paraguas; columnas 1/20 y 2/5, 27/250 y 7/125, 189/25000 y 98/3125; camino sol, sol, sol resaltado con línea doble y conjunta 98/3125. Abajo, marcado como no cumple: señales sin paraguas, nieve, sin paraguas, con B de 2 por 3 y la columna de nieve en ceros; día 0 con 1/20 y 2/5, días 1 y 2 con 0 y 0 tachados; sin camino, con el letrero señal imposible.](../_assets/mkv-c4-ej-decodificar.svg)
+![Dos paneles con la misma retícula de tres días, lluvia arriba y sol abajo; ★ marca el mayor de cada columna llena. Arriba, marcado como cumple: señales sin paraguas, paraguas, sin paraguas; columnas 1/20 y 2/5 con ★, 27/250 con ★ y 7/125, 189/25000 y 98/3125 con ★; flechas punteadas para lo que perdió en cada tramo y el camino sol, sol, sol con línea doble con punta hacia atrás; conjunta 98/3125. Abajo, marcado como no cumple: B de 2×3, nadie emite nieve; señales sin paraguas, nieve, sin paraguas; día 0 con 1/20 y 2/5 con ★, días 1 y 2 con 0 y 0 tachados en rojo; sin ruta, con el letrero señal imposible.](../_assets/mkv-c4-ej-decodificar.svg)
 :::
 
 > [!WARNING]
@@ -422,7 +421,8 @@ def por_dia(hmm, obs):
     return [max(E, key=lambda s: b[s])
             for b in suavizar(hmm, obs)]
 
-for obs in ([N, C, N], [N, C, N, C], [C, C, N, C, C]):
+for obs in ([sin, con, sin], [sin, con, sin, con],
+            [con, con, sin, con, con]):
     adelante, _ = adelante_atras(paraguas, obs)
     L = sum(adelante[-1].values())
     v, _ = viterbi(paraguas, obs)
@@ -449,9 +449,9 @@ lluvia, lluvia, sol, lluvia, lluvia 23147208/68607401
 :::
 
 - **Por qué difieren.** El $0.554$ de lluvia en el día 1 reúne muchas trayectorias: sol, lluvia, sol; lluvia, lluvia, sol; y otras. Ninguna por separado supera a sol, sol, sol.
-- **La marginal suma; Viterbi maximiza.** Un estado puede ser el más probable del día porque muchos caminos pasan por él. La mejor secuencia es un solo camino.
+- **La marginal suma; Viterbi maximiza.** Un estado gana su día si muchos caminos pasan por él; la mejor secuencia es un solo camino.
 - **La trayectoria es posible.** En el paraguas, sol, lluvia, sol tiene conjunta $81/3125>0$. Es menos probable que sol, sol, sol, con $98/3125$.
-- **A veces coinciden.** Con las señales con, con, sin, con, con, ambos dan lluvia, lluvia, sol, lluvia, lluvia. Por eso elegimos el ejemplo con cuidado.
+- **A veces coinciden.** Con las señales con, con, sin, con, con, ambos dan lluvia, lluvia, sol, lluvia, lluvia.
 
 ::: exercise {#mkv-c4-de-ej-marginal title="Suma la marginal de lluvia"}
 Usa las señales sin paraguas, paraguas, sin paraguas. Suma las conjuntas de las cuatro trayectorias con lluvia el día 1. Divide entre $15611/200000$. ¿Qué obtienes?
@@ -472,18 +472,17 @@ Las conjuntas son $81/3125$ para sol, lluvia, sol y $189/25000$ para lluvia, llu
 ::: exercise {#mkv-c4-de-ej-helado title="Decodifica el diario de helados"}
 **Intenta formular tu propuesta sin abrir las pistas ni la respuesta y sin pedir ayuda a ChatGPT.**
 
-**Cambia una idea:** la señal tiene tres valores. Además, $P$ no es simétrica. Usamos el helado de Eisner con los números de Jurafsky y Martin. El clima es calor o frío. Cada día alguien come uno, dos o tres helados.
+**Cambia una idea:** la señal tiene tres valores. El clima es calor o frío, y cada día alguien come uno, dos o tres helados (el ejemplo es de Eisner). $\mu_0$ y $P$ son las del paraguas: $(1/2,\ 1/2)$, se queda con $7/10$ y cambia con $3/10$. Las emisiones son las de Jurafsky y Martin:
 
-- **El inicio:** $\mu_0=(4/5,\ 1/5)$, en el orden calor, frío.
-- **Cómo cambia:** después de calor, sigue calor con $3/5$ o frío con $2/5$. Después de frío, cada estado tiene probabilidad $1/2$.
-- **Los helados:** con calor, comer uno, dos o tres tiene probabilidades $1/5$, $2/5$ y $2/5$. Con frío, son $1/2$, $2/5$ y $1/10$.
+- **Con calor:** uno, dos o tres helados con $1/5$, $2/5$ y $2/5$.
+- **Con frío:** con $1/2$, $2/5$ y $1/10$.
 
-El diario dice tres, uno, tres helados.
+El diario dice uno, tres, un helado.
 
 1. **Arranca:** calcula $\operatorname{mejor}_0$ de calor y de frío.
 2. **Avanza:** calcula $\operatorname{mejor}_1$ y $\operatorname{mejor}_2$ de cada estado, con su apuntador.
 3. **Regresa:** escribe la trayectoria de Viterbi y su conjunta.
-4. **Compara:** el suavizado de frío es $905/14281$, $8625/14281$ y $2533/14281$. ¿Qué secuencia obtienes al elegir el mejor estado de cada día? ¿Coincide con Viterbi?
+4. **Compara:** el suavizado de calor es $374/1009$, $3364/5045$ y $374/1009$. ¿Qué secuencia da el mejor estado de cada día? ¿Cuál es su conjunta?
 5. **Revisa:** cambia `paraguas` por el helado en la versión en Python y confirma el paso 3.
 :::
 
@@ -495,21 +494,21 @@ El diario dice tres, uno, tres helados.
 ¿Elegiste el estado final usando $\operatorname{mejor}_2$ en lugar del suavizado? ¿El producto de los factores de tu trayectoria coincide con $\operatorname{mejor}_2$?
 :::
 
-::: answer {#mkv-c4-de-resp-helado of="mkv-c4-de-ej-helado" title="Respuesta · Calor, frío, calor"}
-**1. Arranca.** Calor: $\tfrac45\cdot\tfrac25=\tfrac{8}{25}$. Frío: $\tfrac15\cdot\tfrac{1}{10}=\tfrac{1}{50}$.
+::: answer {#mkv-c4-de-resp-helado of="mkv-c4-de-ej-helado" title="Respuesta · Frío, frío, frío"}
+**1. Arranca.** Calor: $\tfrac12\cdot\tfrac15=\tfrac{1}{10}$. Frío: $\tfrac12\cdot\tfrac12=\tfrac14$.
 
 **2. Avanza.**
 
-- **Día 1, calor:** $\max(\tfrac{8}{25}\cdot\tfrac35,\ \tfrac{1}{50}\cdot\tfrac12)\cdot\tfrac15=\tfrac{24}{625}$, desde calor.
-- **Día 1, frío:** $\max(\tfrac{8}{25}\cdot\tfrac25,\ \tfrac{1}{50}\cdot\tfrac12)\cdot\tfrac12=\tfrac{8}{125}$, desde calor.
-- **Día 2, calor:** $\max(\tfrac{24}{625}\cdot\tfrac35,\ \tfrac{8}{125}\cdot\tfrac12)\cdot\tfrac25=\tfrac{8}{625}$, desde frío.
-- **Día 2, frío:** $\max(\tfrac{24}{625}\cdot\tfrac25,\ \tfrac{8}{125}\cdot\tfrac12)\cdot\tfrac{1}{10}=\tfrac{2}{625}$, desde frío.
+- **Día 1, calor:** $\max(\tfrac{1}{10}\cdot\tfrac{7}{10},\ \tfrac14\cdot\tfrac{3}{10})\cdot\tfrac25=\tfrac{3}{100}$, desde frío.
+- **Día 1, frío:** $\max(\tfrac{1}{10}\cdot\tfrac{3}{10},\ \tfrac14\cdot\tfrac{7}{10})\cdot\tfrac{1}{10}=\tfrac{7}{400}$, desde frío.
+- **Día 2, calor:** $\max(\tfrac{3}{100}\cdot\tfrac{7}{10},\ \tfrac{7}{400}\cdot\tfrac{3}{10})\cdot\tfrac15=\tfrac{21}{5000}$, desde calor.
+- **Día 2, frío:** $\max(\tfrac{3}{100}\cdot\tfrac{3}{10},\ \tfrac{7}{400}\cdot\tfrac{7}{10})\cdot\tfrac12=\tfrac{49}{8000}$, desde frío.
 
-**3. Regresa.** Gana calor el día 2, con $8/625$. Su apuntador lleva a frío. El de frío lleva a calor. Obtenemos calor, frío, calor, con conjunta $8/625$.
+**3. Regresa.** Gana frío el día 2, con $49/8000>21/5000$. Los apuntadores llevan a frío y a frío: frío, frío, frío, con conjunta $49/8000$. Calor iba adelante el día 1, como lluvia en el paraguas.
 
-**4. Compara.** Frío gana solo el día 1 ($8625/14281>1/2$). El mejor estado por día da calor, frío, calor. Coincide con Viterbi, pero depende de las señales.
+**4. Compara.** Calor gana solo el día 1 ($3364/5045>1/2$). El mejor por día es frío, calor, frío, con conjunta $\tfrac12\cdot\tfrac12\cdot\tfrac{3}{10}\cdot\tfrac25\cdot\tfrac{3}{10}\cdot\tfrac12=\tfrac{9}{2000}<\tfrac{49}{8000}$. Difiere de Viterbi, igual que en el paraguas.
 
-**5. Revisa.** Con el helado, `viterbi` imprime calor, frío, calor y `8/625`.
+**5. Revisa.** Con el helado, `viterbi` imprime frío, frío, frío y `49/8000`.
 :::
 
 **Punto de control:** calcula el suavizado con las dos tablas y explica por qué usa señales futuras. Corre Viterbi a mano en una retícula chica, con apuntadores, y enuncia su condición. Muestra con cifras por qué elegir el mejor estado diario puede no dar la mejor secuencia.
@@ -521,7 +520,7 @@ El diario dice tres, uno, tres helados.
 - **El problema.** Hay $\lvert\mathcal S\rvert^{T+1}$ trayectorias. Maximizar la conjunta equivale a maximizar la posterior.
 - **Suavizar.** $b_{t\mid T}\propto\operatorname{adelante}_t\cdot\operatorname{atrás}_t$. Con sin paraguas, paraguas, sin paraguas, lluvia tiene probabilidades $2307/15611$, $8649/15611$ y $2307/15611$. Ganan sol $\approx0.852$, lluvia $\approx0.554$, sol $\approx0.852$ (@mkv-c4-de-obs-suavizar).
 - **Viterbi.** Usa la recurrencia de adelante con $\max$ en vez de $\sum$, más apuntadores. Cuesta del orden de $T\lvert\mathcal S\rvert^2$. Devuelve la trayectoria de mayor conjunta si $\Pr(O_{0:T})>0$. Si no, lanza el error «señal imposible» (@mkv-c4-de-teo-viterbi).
-- **El contraste.** Viterbi da sol, sol, sol con posterior $6272/15611\approx0.4018$ (conjunta $392/12500$). El mejor por día da sol, lluvia, sol con $5184/15611\approx0.3321$. Con cuatro días, $169344/704647\approx0.2403$ frente a $139968/704647\approx0.1986$.
+- **El contraste.** Viterbi da sol, sol, sol con posterior $6272/15611\approx0.4018$ (su conjunta $98/3125$ entre $\Pr(O_{0:2})=15611/200000$). El mejor por día da sol, lluvia, sol con $5184/15611\approx0.3321$. Con cuatro días, $169344/704647\approx0.2403$ frente a $139968/704647\approx0.1986$.
 - **Comparamos con el suavizado, no con el filtro.** En el paraguas, todas las trayectorias son posibles. Algunas son más probables que otras.
 
 Todo esto supone que conoces $P$ y $B$. Si nadie registró el clima, ¿de dónde salen?

@@ -60,11 +60,11 @@ $$
 \end{aligned}
 $$
 
-  El primero dice que el estado sigue una cadena de Markov. Las señales no cambian sus transiciones. El segundo dice que la señal depende solo del estado actual.
-- **Qué no es:** $B(s,o)$ no es $\Pr(S_t=s\mid O_t=o)$. $B$ da probabilidades de señales dado el estado. Invertir esa relación requiere Bayes y depende de $\mu_0$.
+  El primero dice que el estado sigue una cadena de Markov. Las señales no cambian sus transiciones. El segundo dice que la señal depende solo del estado actual; en $t=0$, $O_{0:-1}$ es la historia vacía.
+- **Qué no es:** $B(s,o)$ no es $\Pr(S_t=s\mid O_t=o)$. $B$ va del estado a la señal; invertirla pide Bayes y depende de $\mu_0$.
 :::
 
-- **Aviso de letras.** $O_t$ es la señal aleatoria del paso $t$. La minúscula $o$ es un valor concreto. Lo mismo ocurre con $S_t$ y $s$.
+- **Aviso de letras.** $O_t$ es la señal aleatoria del paso $t$; $o$, un valor concreto. Igual que $S_t$ y $s$.
 - **Aviso de $P$.** Aquí $P(s'\mid s)$ es la matriz de la clase 1, sin acción. No es $P(s'\mid s,a)$ del MDP.
 - **En otros textos** verás $A$ por $P$ y $\pi$ por $\mu_0$. Aquí $\pi$ representa la política.
 
@@ -119,7 +119,7 @@ Por lo que traen los demás. Usaremos este ejemplo toda la clase; lo adaptamos d
 
 **El inicio.** Sin información inicial, usamos $\mu_0=(1/2,\ 1/2)$, en el orden lluvia, sol.
 
-**El clima cambia.** Si hoy llueve, mañana llueve con probabilidad 7/10 y sale el sol con 3/10. Si hoy hay sol, las probabilidades se invierten. **El clima tiende a seguir igual.**
+**El clima cambia.** Si hoy llueve, mañana llueve con 7/10 y sale el sol con 3/10. Si hoy hay sol, las probabilidades se invierten. **El clima tiende a seguir igual.**
 
 **El compañero emite.** Con lluvia trae paraguas 9 de cada 10 días. Con sol, 2 de cada 10: es precavido. Filas en orden lluvia, sol. Columnas de $B$: paraguas, sin paraguas.
 
@@ -233,15 +233,15 @@ for t in range(7):
 Tapa la columna del clima de la semana simulada. Con solo las señales, ¿qué días dirías que llovió? ¿En cuántos de los 7 aciertas?
 :::
 
-::: hint {#mkv-c4-mo-pista-tapar of="mkv-c4-mo-ej-tapar" title="¿Qué señal es más probable con lluvia?"}
-Compara $B(\text{lluvia},\cdot)$ y $B(\text{sol},\cdot)$ en cada columna.
+::: hint {#mkv-c4-mo-pista-tapar of="mkv-c4-mo-ej-tapar" title="¿Qué fila de B mirar?"}
+Día por día, ¿qué clima hace más probable la señal que viste? Luego destapa y compara.
 :::
 
 ::: answer {#mkv-c4-mo-resp-tapar of="mkv-c4-mo-ej-tapar"}
 La regla «paraguas, lluvia; sin paraguas, sol» predice lluvia del día 2 al 5 y sol en 0, 1 y 6. Acierta 6 de 7: falla el día 6. Para mejorar, usa también $P$ y los días vecinos.
 :::
 
-¿Qué probabilidad tenía esa semana exacta?
+Antes que la semana entera, tres días: ¿qué tan probable es un clima con sus señales?
 
 ---
 
@@ -298,16 +298,16 @@ def probabilidad_conjunta(hmm, tray, obs):
         p *= P[tray[t - 1]][tray[t]] * B[tray[t]][obs[t]]
     return p
 
-C, N = "paraguas", "sin paraguas"
+con, sin = "paraguas", "sin paraguas"
 print(probabilidad_conjunta(paraguas,
-      ["lluvia", "lluvia", "sol"], [C, C, N]))
+      ["lluvia", "lluvia", "sol"], [con, con, sin]))
 
 def verosimilitud(hmm, obs):      # suma sobre trayectorias
     todas = product(hmm["estados"], repeat=len(obs))
     return sum(probabilidad_conjunta(hmm, tr, obs)
                for tr in todas)
 
-print(verosimilitud(paraguas, [C, C, N]))
+print(verosimilitud(paraguas, [con, con, sin]))
 ```
 
 ```text
@@ -316,7 +316,7 @@ print(verosimilitud(paraguas, [C, C, N]))
 ```
 
 - **Las señales solas.** Las 8 trayectorias cubren todos los casos sin traslaparse. Por probabilidad total, suman $\Pr(O_{0:2}=(\text{paraguas},\text{paraguas},\text{sin paraguas}))=24089/200000\approx0.120$.
-- **Una de muchas.** Lluvia, lluvia, sol aporta $0.068$ de esos $0.120$: más de la mitad. Las otras 7 aportan el resto.
+- **Una de muchas.** Lluvia, lluvia, sol aporta $0.068$ de esos $0.120$: más de la mitad.
 
 ::: exercise {#mkv-c4-mo-ej-dos-dias title="Multiplica dos días"}
 Calcula la conjunta de sol, lluvia con las señales sin paraguas, paraguas.
@@ -342,14 +342,14 @@ La conjunta incluye estados y señales. ¿Las señales solas forman una cadena?
 
 **Piensa: el paraguas de hoy depende del clima, que depende del clima de ayer. ¿Basta el paraguas de ayer para predecir el de hoy?**
 
-No basta. El paraguas de anteayer informa sobre el clima de ayer, que influye en el de hoy. La cuenta es exacta.
+No basta. El paraguas de anteayer informa sobre el clima de ayer, que influye en el de hoy. La cuenta va abajo, con fracciones exactas.
 
 En una cadena de Markov, la señal de mañana dependería solo de la de hoy. Mantén hoy paraguas y cambia la señal de ayer:
 
 ```python
 L = lambda obs: verosimilitud(paraguas, obs)
-print(L([C, C, C]) / L([C, C]))
-print(L([N, C, C]) / L([N, C]))
+print(L([con, con, con]) / L([con, con]))
+print(L([sin, con, con]) / L([sin, con]))
 ```
 
 ```text
@@ -366,17 +366,17 @@ $$
 \end{aligned}
 $$
 
-Hoy ves la misma señal en los dos casos. La probabilidad cambia. **Las señales del paraguas no son una cadena de Markov.**
+Hoy es igual en los dos casos y la probabilidad cambia. **Las señales del paraguas no son una cadena de Markov.**
 
 ::: remark {#mkv-c4-obs-no-markov title="Lo que se observa no es, en general, una cadena de Markov"}
 El estado $S_t$ sí es una cadena de Markov, por @mkv-c4-def-hmm. Las señales $O_t$, en general, no.
 
 - **En el paraguas no lo son:** $46211/70300\ne24089/39700$.
-- **En otros modelos sí:** si las filas de $B$ son iguales, la señal no depende del estado. Las $O_t$ son independientes. Si $B$ es la identidad, $O_t=S_t$ y las señales forman la misma cadena.
+- **En otros modelos sí:** si las filas de $B$ son iguales, o las de $P$, las $O_t$ son independientes. Si $B$ es la identidad, $O_t$ identifica a $S_t$ uno a uno y las señales copian la cadena.
 :::
 
 > [!WARNING]
-> **Error típico:** «la señal sale de una cadena, así que también es una cadena». **No en general:** una sola señal no resume la memoria del estado oculto. Ni «nunca» ni «siempre»: depende de $B$.
+> **Error típico:** «la señal sale de una cadena, así que también es una cadena». **No en general:** una sola señal no resume la memoria del estado oculto. Ni «nunca» ni «siempre»: depende del modelo completo, $P$ y $B$.
 
 ::: exercise {#mkv-c4-mo-ej-filas-iguales title="Iguala las filas de B"}
 Cambia $B$ por dos filas iguales, $(1/2,\ 1/2)$. ¿Cuánto valen ahora las dos condicionales de arriba?
@@ -398,7 +398,7 @@ Predecir las señales del paraguas requiere considerar el estado oculto. ¿Qué 
 
 **Piensa: ya tienes las señales de la semana; ¿qué quieres saber del clima que no viste?**
 
-Cuatro preguntas, cada una con su algoritmo. Usan el mismo modelo y las señales $o_{0:T}$.
+Cuatro, cada una con su algoritmo.
 
 ::: table {#mkv-c4-mo-tabla-preguntas title="Las cuatro preguntas a un modelo oculto"}
 | Pregunta | Nombre | Qué se calcula |
@@ -508,7 +508,7 @@ Es $\Pr(O_0=3,\ O_1=1)\approx0.109$: la verosimilitud.
 - **$B$ se lee por filas:** estados por señales, no necesariamente cuadrada. Cada fila suma 1. Leerla por columnas es el contraejemplo.
 - **El paraguas:** el clima sigue igual con 7/10 y cambia con 3/10; el compañero trae paraguas con 9/10 si llueve y con 2/10 si hay sol. Inicio: $\mu_0=(1/2,1/2)$.
 - **La conjunta es un producto:** $\mu_0$, luego $P$ y $B$ por día. Lluvia, lluvia, sol con paraguas, paraguas, sin paraguas da $1701/25000\approx0.068$. La suma de las 8 trayectorias da $24089/200000\approx0.120$ (@mkv-c4-obs-conjunta).
-- **Las señales no son, en general, una cadena:** en el paraguas, $46211/70300\approx0.657$ frente a $24089/39700\approx0.607$ (@mkv-c4-obs-no-markov).
+- **Las señales no son, en general, una cadena:** depende de $P$ y $B$. En el paraguas, $46211/70300\approx0.657$ frente a $24089/39700\approx0.607$ (@mkv-c4-obs-no-markov).
 - **Cuatro preguntas:** verosimilitud, filtrar, decodificar y aprender. Al final, qué hacer sin ver.
 
 Si no veo el clima, ¿cuánto creo que llueve hoy?
