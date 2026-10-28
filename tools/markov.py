@@ -1764,3 +1764,401 @@ def volados(p, meta=4):
             b.append(p if i + k == meta else F(0))
         salida[nombre] = tuple(_resolver(A, b))
     return salida
+
+
+# ============================================================================
+# ---- Lo que no se ve (course/8_markov/4_lo_que_no_se_ve/) ----
+# ============================================================================
+# Clase 4 (modelo oculto, HMM, y decidir sin ver). Plan:
+# .superpowers/unidad/markov/clase-4/plan.md §3 y §6; API congelada en
+# api-markov.md. Todo exacto con Fraction salvo lo que dice «flotante». Lo
+# fija test_markov_c4.py.
+#
+# Un HMM es un dict:
+#   estados   lista de nombres, en orden (el orden decide los empates)
+#   señales   lista de nombres, en orden
+#   mu0       dict s -> Fraction, la distribucion inicial
+#   P         dict s -> dict s' -> Fraction (fila desde, columna hacia)
+#   B         dict s -> dict o -> Fraction (emision; cada fila suma 1)
+# OJO: P[s][s'] no es el P[(s, a)] del MDP de la clase 3.
+# Una trayectoria es una lista de estados (dias 0..T); las señales, una
+# lista del mismo largo; una creencia b, un dict s -> Fraction que suma 1,
+# b_t(s) = Pr(S_t = s | O_{0:t}).
+#
+# Dos nombres de la API cambian porque la clase 1 ya los usa con otra firma:
+# verosimilitud -> verosimilitud_hmm y simular -> simular_hmm.
+
+SEMILLAS.update({
+    "c4-simular-semana": 2045,         # p2: una semana del paraguas (T = 6)
+    "c4-generar-frase": 2046,          # p6: una frase del modelo de lenguaje
+})
+
+LLUVIA, SOL = "lluvia", "sol"
+PARAGUAS, SIN_PARAGUAS = "paraguas", "sin paraguas"
+
+
+def _hmm(estados, señales, mu0, P, B):
+    """Arma el dict con Fraction en cada celda (P y B por filas en orden)."""
+    return {
+        "estados": list(estados),
+        "señales": list(señales),
+        "mu0": {s: F(p) for s, p in zip(estados, mu0)},
+        "P": {s: {t: F(p) for t, p in zip(estados, fila)} for s, fila in zip(estados, P)},
+        "B": {s: {o: F(p) for o, p in zip(señales, fila)} for s, fila in zip(estados, B)},
+    }
+
+
+# ------------------------------------------------------------ instancias ---
+
+def paraguas():
+    """El juguete (Russell y Norvig): se queda 7/10, cambia 3/10;
+    B(lluvia, paraguas) = 9/10, B(sol, paraguas) = 2/10; mu0 = (1/2, 1/2).
+    Escrito de memoria: el historiador lo confirma contra el libro."""
+    return _hmm([LLUVIA, SOL], [PARAGUAS, SIN_PARAGUAS],
+                [F(1, 2), F(1, 2)],
+                [[F(7, 10), F(3, 10)], [F(3, 10), F(7, 10)]],
+                [[F(9, 10), F(1, 10)], [F(2, 10), F(8, 10)]])
+
+
+_C, _N = PARAGUAS, SIN_PARAGUAS
+SEÑALES_EJ = {
+    "filtrar": [_C, _C],                         # p3: 9/11 y 621/703
+    "viterbi": [_N, _C, _N],                     # p4: Viterbi != mejor por dia
+    "viterbi-4": [_N, _C, _N, _C],               # p4: el segundo contraste
+    "coinciden": [_C, _C, _N, _C, _C],           # p4: aqui coinciden
+}
+
+
+def helado_eisner():
+    """El helado de Jason Eisner (2002): el clima de cada dia (calor, frio)
+    se adivina por cuantos helados comio alguien (1, 2 o 3). B es de 2 x 3.
+    Los numeros son una eleccion sencilla del calculista (los de la version
+    de Jurafsky y Martin, de memoria): a confirmar por el historiador."""
+    return _hmm(["calor", "frío"], ["un helado", "dos helados", "tres helados"],
+                [F(4, 5), F(1, 5)],
+                [[F(3, 5), F(2, 5)], [F(1, 2), F(1, 2)]],
+                [[F(1, 5), F(2, 5), F(2, 5)], [F(1, 2), F(2, 5), F(1, 10)]])
+
+
+def hmm_tres_estados():
+    """El paraguas con un tercer clima en medio (nublado): la una idea que
+    cambia es el numero de estados. Todas las entradas son positivas."""
+    return _hmm([SOL, "nublado", LLUVIA], [PARAGUAS, SIN_PARAGUAS],
+                [F(1, 3), F(1, 3), F(1, 3)],
+                [[F(3, 5), F(3, 10), F(1, 10)],
+                 [F(1, 4), F(1, 2), F(1, 4)],
+                 [F(1, 10), F(3, 10), F(3, 5)]],
+                [[F(1, 10), F(9, 10)], [F(1, 2), F(1, 2)], [F(9, 10), F(1, 10)]])
+
+
+DETERMINANTE, SUSTANTIVO, VERBO = "determinante", "sustantivo", "verbo"
+PALABRAS_LENGUAJE = ["la", "una", "esta", "mi",                  # determinantes
+                     "niña", "gata", "casa", "sopa", "luna",     # sustantivos
+                     "come", "ve", "duerme"]                     # verbos (y «casa»)
+
+
+def lenguaje_pequeno():
+    """Modelo de lenguaje pequeño: 3 estados gramaticales y 12 palabras.
+    «casa» la emiten el sustantivo y el verbo (casar). Ceros de P: tras un
+    determinante viene un sustantivo; tras un sustantivo, un verbo o (sin
+    punto) otra frase; tras un verbo, un objeto. La primera palabra es
+    determinante (1/2), sustantivo (1/4) o verbo en imperativo (1/4): por eso
+    «casa la sopa» tiene dos lecturas. No modela concordancia ni puntos:
+    puede decir «mi luna come la casa»."""
+    E = [DETERMINANTE, SUSTANTIVO, VERBO]
+    fila = {
+        DETERMINANTE: {"la": F(1, 2), "una": F(1, 4), "esta": F(1, 8), "mi": F(1, 8)},
+        SUSTANTIVO: {"niña": F(1, 4), "gata": F(1, 4), "casa": F(1, 4),
+                     "sopa": F(1, 8), "luna": F(1, 8)},
+        VERBO: {"come": F(1, 4), "ve": F(1, 4), "duerme": F(1, 4), "casa": F(1, 4)},
+    }
+    return _hmm(E, PALABRAS_LENGUAJE, [F(1, 2), F(1, 4), F(1, 4)],
+                [[0, 1, 0], [F(1, 4), 0, F(3, 4)], [F(1, 2), F(1, 2), 0]],
+                [[fila[s].get(o, 0) for o in PALABRAS_LENGUAJE] for s in E])
+
+
+FRASES_EJ = {
+    "casa-ambigua": ["casa", "la", "sopa"],      # dos lecturas: verbo (2/3) o sustantivo
+    "sin-ambiguedad": ["la", "gata", "casa", "casa"],   # una sola lectura posible
+    "por-dia-imposible": ["casa", "casa", "casa"],      # el mejor por dia tiene prob. 0
+}
+
+
+def parametros_lenguaje():
+    """Celdas y parametros libres del HMM (sin mu0) frente a los bigramas de
+    palabras. Con S estados y W palabras: celdas S² + S·W y W²; libres
+    S(S-1) + S(W-1) + (S-1) (aqui si entra mu0) y W(W-1). No se compara el
+    mismo modelo: el HMM no ve la palabra anterior, solo su estado."""
+    hmm = lenguaje_pequeno()
+    S, W = len(hmm["estados"]), len(hmm["señales"])
+    return {
+        "estados": S, "palabras": W,
+        "celdas_hmm": S * S + S * W, "celdas_bigramas": W * W,
+        "libres_hmm": S * (S - 1) + S * (W - 1) + (S - 1),
+        "libres_bigramas": W * (W - 1),
+    }
+
+
+# ------------------------------------------------- probabilidad conjunta ---
+
+def probabilidad_conjunta(hmm, trayectoria, señales):
+    """Pr(S_{0:T} = trayectoria, O_{0:T} = señales) = mu0(s0) B(s0, o0)
+    por el producto de P(s_t | s_{t-1}) B(s_t, o_t)."""
+    P, B = hmm["P"], hmm["B"]
+    p = hmm["mu0"][trayectoria[0]] * B[trayectoria[0]][señales[0]]
+    for t in range(1, len(señales)):
+        p *= P[trayectoria[t - 1]][trayectoria[t]] * B[trayectoria[t]][señales[t]]
+    return p
+
+
+def fuerza_bruta(hmm, señales):
+    """Todas las trayectorias -> probabilidad conjunta (S**(T+1) de ellas;
+    solo para verificar con T pequeño). Claves: tuplas."""
+    from itertools import product
+    return {tr: probabilidad_conjunta(hmm, list(tr), señales)
+            for tr in product(hmm["estados"], repeat=len(señales))}
+
+
+def _hacia_adelante(hmm, señales):
+    """alfa_t(s) = Pr(S_t = s, O_{0:t}), sin normalizar."""
+    E, P, B = hmm["estados"], hmm["P"], hmm["B"]
+    a = {s: hmm["mu0"][s] * B[s][señales[0]] for s in E}
+    salida = [a]
+    for o in señales[1:]:
+        a = {t: sum(a[s] * P[s][t] for s in E) * B[t][o] for t in E}
+        salida.append(a)
+    return salida
+
+
+def _hacia_atras(hmm, señales):
+    """beta_t(s) = Pr(O_{t+1:T} | S_t = s); beta_T = 1."""
+    E, P, B = hmm["estados"], hmm["P"], hmm["B"]
+    b = {s: F(1) for s in E}
+    salida = [b]
+    for o in reversed(señales[1:]):
+        b = {s: sum(P[s][t] * B[t][o] * b[t] for t in E) for s in E}
+        salida.append(b)
+    return salida[::-1]
+
+
+def verosimilitud_hmm(hmm, señales):
+    """Pr(O_{0:T}): la suma de alfa_T (hacia adelante, sin enumerar)."""
+    return sum(_hacia_adelante(hmm, señales)[-1].values())
+
+
+def posterior_trayectoria(hmm, trayectoria, señales):
+    """Pr(trayectoria | señales) = conjunta / verosimilitud."""
+    return probabilidad_conjunta(hmm, trayectoria, señales) / verosimilitud_hmm(hmm, señales)
+
+
+# ------------------------------------------------------ filtrar, predecir ---
+
+def _normalizar(d):
+    total = sum(d.values())
+    if total == 0:
+        raise ValueError("señal imposible: la creencia no se puede normalizar")
+    return {s: p / total for s, p in d.items()}
+
+
+def predecir_estado(hmm, b):
+    """Un paso sin corregir: (b·P)(s') = suma_s b(s) P(s'|s)."""
+    E = hmm["estados"]
+    return {t: sum(b[s] * hmm["P"][s][t] for s in E) for t in E}
+
+
+def corregir(hmm, b_pred, señal):
+    """Bayes: b(s) proporcional a b_pred(s) B(s, señal), normalizado."""
+    return _normalizar({s: b_pred[s] * hmm["B"][s][señal] for s in hmm["estados"]})
+
+
+def filtrar(hmm, señales):
+    """[b_0, ..., b_T]: b_0 corrige mu0 con o_0; luego predecir y corregir."""
+    b = corregir(hmm, hmm["mu0"], señales[0])
+    creencias = [b]
+    for o in señales[1:]:
+        b = corregir(hmm, predecir_estado(hmm, b), o)
+        creencias.append(b)
+    return creencias
+
+
+def predecir_señal(hmm, b):
+    """La señal de mañana: (b·P·B)(o)."""
+    pred = predecir_estado(hmm, b)
+    return {o: sum(pred[s] * hmm["B"][s][o] for s in hmm["estados"]) for o in hmm["señales"]}
+
+
+def suavizar(hmm, señales):
+    """[Pr(S_t = s | O_{0:T})]_t: alfa_t(s) beta_t(s), normalizado por dia."""
+    return [_normalizar({s: a[s] * b[s] for s in hmm["estados"]})
+            for a, b in zip(_hacia_adelante(hmm, señales), _hacia_atras(hmm, señales))]
+
+
+# ----------------------------------------------------------- decodificar ---
+
+def _primer_max(estados, valor):
+    """El primer estado (en el orden de `estados`) con el valor maximo."""
+    mejor = max(valor(s) for s in estados)
+    return next(s for s in estados if valor(s) == mejor)
+
+
+def viterbi(hmm, señales):
+    """(trayectoria, conjunta) de la trayectoria mas probable: programacion
+    dinamica con maximo en lugar de suma. delta_t(s) = la mejor conjunta de
+    una trayectoria que acaba en s el dia t. En empate gana el primer estado
+    de `estados` (en el regreso y en el ultimo dia)."""
+    E, P, B = hmm["estados"], hmm["P"], hmm["B"]
+    delta = {s: hmm["mu0"][s] * B[s][señales[0]] for s in E}
+    atras = []
+    for o in señales[1:]:
+        previo = {t: _primer_max(E, lambda s: delta[s] * P[s][t]) for t in E}
+        delta = {t: delta[previo[t]] * P[previo[t]][t] * B[t][o] for t in E}
+        atras.append(previo)
+    s = _primer_max(E, lambda s: delta[s])
+    mejor = delta[s]
+    tray = [s]
+    for previo in reversed(atras):
+        s = previo[s]
+        tray.append(s)
+    return tray[::-1], mejor
+
+
+def mejor_por_dia(hmm, señales):
+    """El argmax del SUAVIZADO de cada dia (no del filtro); empate: el primero."""
+    return [_primer_max(hmm["estados"], lambda s: g[s]) for g in suavizar(hmm, señales)]
+
+
+def no_markov_paraguas():
+    """Las señales del paraguas no son una cadena de Markov:
+    (Pr(O_2 = paraguas | paraguas, paraguas),
+     Pr(O_2 = paraguas | sin paraguas, paraguas)) = (46211/70300, 24089/39700)."""
+    h = paraguas()
+    L = lambda os: verosimilitud_hmm(h, os)
+    return (L([_C, _C, _C]) / L([_C, _C]), L([_N, _C, _C]) / L([_N, _C]))
+
+
+# --------------------------------------------------------------- aprender ---
+
+def contar_con_etiquetas(estados, señales, trayectoria, señales_obs):
+    """(P_gorro, B_gorro) por conteo, como en la clase 1: transiciones vistas
+    entre dias seguidos y emisiones vistas, cada fila entre su total. Una fila
+    sin datos queda en ceros."""
+    cP = {s: {t: 0 for t in estados} for s in estados}
+    cB = {s: {o: 0 for o in señales} for s in estados}
+    for s, t in zip(trayectoria, trayectoria[1:]):
+        cP[s][t] += 1
+    for s, o in zip(trayectoria, señales_obs):
+        cB[s][o] += 1
+
+    def filas(c):
+        return {s: {k: (F(n, sum(f.values())) if sum(f.values()) else F(0))
+                    for k, n in f.items()} for s, f in c.items()}
+    return filas(cP), filas(cB)
+
+
+def paso_em(hmm, secuencias):
+    """Un paso de Baum-Welch (idea, pagina 5): con el modelo de hoy, los
+    conteos ESPERADOS de estados, transiciones y emisiones, usando toda la
+    secuencia (hacia adelante y hacia atras); el modelo nuevo es contar con
+    ellos. Devuelve (hmm_nuevo, log-verosimilitud del modelo de entrada,
+    flotante). No garantiza el mejor modelo: solo no baja la verosimilitud."""
+    E, O, P, B = hmm["estados"], hmm["señales"], hmm["P"], hmm["B"]
+    inicio = {s: F(0) for s in E}
+    trans = {s: {t: F(0) for t in E} for s in E}
+    emis = {s: {o: F(0) for o in O} for s in E}
+    log_L = 0.0
+    for señales in secuencias:
+        alfa, beta = _hacia_adelante(hmm, señales), _hacia_atras(hmm, señales)
+        L = sum(alfa[-1].values())
+        log_L += math.log(L)
+        for t, o in enumerate(señales):
+            for s in E:
+                g = alfa[t][s] * beta[t][s] / L
+                emis[s][o] += g
+                if t == 0:
+                    inicio[s] += g
+            if t + 1 < len(señales):
+                o2 = señales[t + 1]
+                for s in E:
+                    for s2 in E:
+                        trans[s][s2] += alfa[t][s] * P[s][s2] * B[s2][o2] * beta[t + 1][s2] / L
+    n = len(secuencias)
+    nuevo = {
+        "estados": list(E), "señales": list(O),
+        "mu0": {s: inicio[s] / n for s in E},
+        "P": {s: _normalizar(trans[s]) if sum(trans[s].values()) else dict(P[s]) for s in E},
+        "B": {s: _normalizar(emis[s]) if sum(emis[s].values()) else dict(B[s]) for s in E},
+    }
+    return nuevo, log_L
+
+
+# ---------------------------------------------------------------- simular ---
+
+def simular_hmm(hmm, T, semilla):
+    """(trayectoria, señales) de los dias 0..T (T + 1 de cada una) con
+    MUESTREAR-FILA: S_0 con mu0, y cada dia primero el estado (con P desde el
+    de ayer) y luego su señal (con B); un u por sorteo, en ese orden."""
+    rng = random.Random(semilla)
+    E, O = hmm["estados"], hmm["señales"]
+
+    def sortear(fila, nombres):
+        return nombres[muestrear_fila([float(fila[k]) for k in nombres], rng.random())]
+
+    s = sortear(hmm["mu0"], E)
+    tray, obs = [s], [sortear(hmm["B"][s], O)]
+    for _ in range(T):
+        s = sortear(hmm["P"][s], E)
+        tray.append(s)
+        obs.append(sortear(hmm["B"][s], O))
+    return tray, obs
+
+
+# ---------------------------------------------------- decidir sin ver ---
+# Un dia, con terminacion: hoy llueve con probabilidad b (la creencia). Se
+# elige una accion, se paga, y el dia acaba. «mirar» paga 1/2, revela el
+# clima y despues se elige bien (paraguas solo si llueve).
+
+COSTO_PARAGUAS = 1
+COSTO_MOJARSE = 4
+COSTO_MIRAR = F(1, 2)
+ACCIONES_DIA = ("llevar", "no llevar", "mirar")    # el orden decide empates
+
+
+def costos_dia(b):
+    """Costo esperado de cada accion con Pr(lluvia) = b."""
+    b = F(b)
+    return {"llevar": F(COSTO_PARAGUAS), "no llevar": COSTO_MOJARSE * b,
+            "mirar": COSTO_MIRAR + COSTO_PARAGUAS * b}
+
+
+def costo_actuar(b):
+    """Actuar ya, sin mirar: min(1, 4b)."""
+    return min(F(COSTO_PARAGUAS), COSTO_MOJARSE * F(b))
+
+
+def costo_mirar(b):
+    """Pagar por mirar: 1/2 + b (si llueve, se lleva el paraguas)."""
+    return costos_dia(b)["mirar"]
+
+
+def umbral_paraguas():
+    """Llevar conviene si b > 1/4 (4b = 1)."""
+    return F(COSTO_PARAGUAS, COSTO_MOJARSE)
+
+
+def rango_mirar():
+    """Mirar conviene estrictamente si 1/2 + b < min(1, 4b): 1/6 < b < 1/2."""
+    lo = COSTO_MIRAR / (COSTO_MOJARSE - COSTO_PARAGUAS)
+    hi = (COSTO_PARAGUAS - COSTO_MIRAR) / COSTO_PARAGUAS
+    return (lo, hi)
+
+
+def valor_informacion(b):
+    """Lo que vale ver el clima GRATIS: costo_actuar(b) - b (con informacion
+    perfecta el costo esperado es b). En b = 1/2 vale 1/2."""
+    return costo_actuar(b) - COSTO_PARAGUAS * F(b)
+
+
+def decidir(b):
+    """La accion de menor costo esperado; en empate, el orden de ACCIONES_DIA."""
+    c = costos_dia(b)
+    return _primer_max(list(ACCIONES_DIA), lambda a: -c[a])
