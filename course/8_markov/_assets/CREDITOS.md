@@ -77,3 +77,5 @@ captura; entonces se vuelve a tomar.
 | `mkv-c3-residuo.svg` | Escala logarítmica, rondas 1 a 10 de la iteración de valores en el pasillo | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c3-rondas-politicas.svg` | Iteración de políticas en el pasillo de dos casillas | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
 | `mkv-c3-simular-politica.svg` | Histograma del retorno de 10 000 episodios de caminar–correr desde la casilla 1 (semilla 2044) | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c4-hmm-grafo.svg` | El paraguas como modelo oculto: estados ocultos (lluvia, sol) arriba con borde punteado y sus transiciones, señales que se ven abajo con borde sólido y las emisiones, con μ₀ | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |
+| `mkv-c4-ej-modelo.svg` | Ejemplo y contraejemplo de «un modelo oculto»: el paraguas con B cuyas filas suman 1, y la misma B copiada por columnas, con filas que suman 11/10 y 9/10 | Generado con `tools/gen_markov.py` | Propio, CC BY-SA 4.0 |

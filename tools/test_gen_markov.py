@@ -38,6 +38,7 @@ FIGURAS_C3 = (
     "cuatro-politicas-plano", "simular-politica", "bellman-1d", "fronteras", "flujo-valores",
     "iterar-valores", "residuo", "pasillo-largo", "flujo-politicas", "rondas-politicas",
     "region-lp", "mapa-decidir")
+FIGURAS_C4 = ("hmm-grafo", "ej-modelo")
 CLAVES_C3 = ("punto-fijo", "hacia-atras", "mdp", "termina", "evaluar", "bellman", "codiciosa",
              "paro", "empates", "lineal")
 
@@ -67,7 +68,7 @@ def test_cada_svg_es_el_que_produce_el_generador(nombre):
 
 
 def test_cada_diagrama_lleva_el_prefijo_de_la_clase():
-    assert all(re.match(r"mkv-c[123]-", n) for n in NOMBRES)
+    assert all(re.match(r"mkv-c[1234]-", n) for n in NOMBRES)
 
 
 def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
@@ -78,7 +79,8 @@ def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
         "mkv-c2-grafo-clasificar", "mkv-c2-grafo-contraejemplos", "mkv-c2-mu-t-inicios",
         "mkv-c2-flujo-potencias", "mkv-c2-tablero-chico", "mkv-c2-flujo-absorcion",
         "mkv-c2-web-juguete"} | {f"mkv-c2-ej-{c}" for c in gen.EJEMPLOS} | {
-        f"mkv-c3-{n}" for n in FIGURAS_C3} | {f"mkv-c3-ej-{c}" for c in CLAVES_C3}
+        f"mkv-c3-{n}" for n in FIGURAS_C3} | {f"mkv-c3-ej-{c}" for c in CLAVES_C3} | {
+        f"mkv-c4-{n}" for n in FIGURAS_C4}
 
 
 def test_hay_un_ejemplo_por_definicion_y_teorema_de_las_paginas_2_y_3():
@@ -381,3 +383,37 @@ def test_la_escalera_dibuja_las_cifras_de_markov_py():
     assert "4, 4, 2, 1, 1, 0" in aria
     assert "0 → 2 → 4 → 5 y paga 4" in aria and "0 → 1 → 2 → 4 → 5 y paga 5" in aria
     assert "8, 5, 3, 2, 1, 1" in _aria("mkv-c3-escalera-arbol-vs-grafo")
+
+
+# ------------------------------------------------------------ clase 4 ---
+
+def test_el_grafo_oculto_dibuja_el_paraguas_de_markov_py():
+    h = m.paraguas()
+    renglones = _renglones("mkv-c4-hmm-grafo")
+    assert renglones.count("oculto") == 2 and renglones.count("se ve") == 2
+    # las seis fracciones distintas, y las escritas como la pagina (2/10, no 1/5)
+    for rot in ("7/10", "3/10", "9/10", "1/10", "2/10", "8/10"):
+        assert rot in renglones, rot
+    assert "1/5" not in renglones
+    assert renglones.count("7/10") == 2 and renglones.count("3/10") == 2
+    assert f"μ₀ = ({gen.fr(h['mu0'][m.LLUVIA])}, {gen.fr(h['mu0'][m.SOL])})" in renglones
+    aria = _aria("mkv-c4-hmm-grafo")
+    assert "De lluvia salen flechas de emisión: a paraguas con 9/10, a sin paraguas con 1/10" in aria
+    assert "De sol salen flechas de emisión: a paraguas con 2/10, a sin paraguas con 8/10" in aria
+    assert "Lluvia se queda con 7/10 y pasa a sol con 3/10" in aria
+    assert "μ₀ = (1/2, 1/2)" in aria
+    # lo oculto es punteado y lo que se ve es solido: forma, no solo color
+    svg = _svg("mkv-c4-hmm-grafo")
+    assert svg.count('stroke-dasharray="4 3"') == 2
+
+
+def test_el_ejemplo_del_modelo_oculto_suma_bien_arriba_y_mal_abajo():
+    h = m.paraguas()
+    assert all(sum(f.values()) == 1 for f in h["B"].values())
+    renglones = _renglones("mkv-c4-ej-modelo")
+    assert renglones.count("✓ Lo cumple") == 1 and renglones.count("✗ No lo cumple") == 1
+    aria = _aria("mkv-c4-ej-modelo")
+    assert "lluvia suma 1, sol suma 1" in aria
+    assert "9/10, 2/10; 1/10, 8/10" in aria and "lluvia suma 11/10, sol suma 9/10" in aria
+    # solo las dos sumas erroneas llevan doble borde (dos cajas cada una)
+    assert _svg("mkv-c4-ej-modelo").count(f'stroke="{gen.ACENTO}" stroke-width="1.5"') == 4

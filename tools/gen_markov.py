@@ -13,8 +13,8 @@ contenido(nombre) devuelve el SVG sin escribirlo: test_gen_markov.py lo
 compara byte a byte con el archivo comiteado (si alguien edita el SVG a
 mano, la prueba falla con «corre el generador»).
 
-Los ids llevan prefijo "mkv-c1-" (clase 1), "mkv-c2-" (clase 2) o "mkv-c3-"
-(clase 3): los ids de objeto numerado son unicos en todo el curso.
+Los ids llevan prefijo "mkv-c1-" (clase 1), "mkv-c2-" (clase 2), "mkv-c3-"
+(clase 3) o "mkv-c4-" (clase 4): los ids de objeto numerado son unicos en todo el curso.
 """
 import math
 import sys
@@ -42,6 +42,12 @@ def fr(x):
     """Una fraccion como la escriben las paginas: 2/11, 1 (si es entera)."""
     x = F(x)
     return str(x.numerator) if x.denominator == 1 else f"{x.numerator}/{x.denominator}"
+
+
+def fr10(x):
+    """Como la clase 4 escribe los decimos: 2/10, no 1/5 (0 y 1 quedan enteros)."""
+    x = F(x)
+    return f"{int(x * 10)}/10" if x not in (0, 1) and (x * 10).denominator == 1 else fr(x)
 
 
 def dec(x, cifras=3):
@@ -2794,6 +2800,191 @@ def ejemplo_c3(clave):
 EJEMPLOS_C3 = _ejemplos_c3()
 
 
+# =========================================================== CLASE 4 ===
+#
+# Figuras «mkv-c4-*» de course/8_markov/4_lo_que_no_se_ve/. Cada cifra sale de
+# markov.py (seccion «Lo que no se ve»: paraguas()). Marcas: estado oculto =
+# circulo amarillo de BORDE PUNTEADO con el rotulo «oculto»; senal que se ve =
+# caja azul de BORDE SOLIDO con el rotulo «se ve». El color nunca es la unica
+# senal. Flechas entre estados: transicion (P); hacia abajo: emision (B).
+#
+# Helpers reutilizables por el resto de la clase:
+#   _oculto, _visto         un estado oculto / una senal vista
+#   grafo_oculto            el grafo completo de un modelo oculto
+#   _matriz_con_sumas       una matriz por filas con su columna «suma»
+
+COLOR_OCULTO = COLOR_C
+COLOR_VISTO = COLOR_V
+R_OC = 28            # radio de un estado oculto
+W_VISTO, H_VISTO = 112, 46
+GUIONES_OCULTO = "4 3"
+
+
+def _oculto(cx, cy, nombre, r=R_OC):
+    """Estado oculto: circulo punteado, su nombre y el rotulo «oculto»."""
+    return (f'<circle cx="{_n(cx)}" cy="{_n(cy)}" r="{r}" fill="{mezclar(COLOR_OCULTO, 0.18)}" '
+            f'stroke="{COLOR_OCULTO}" stroke-width="2" stroke-dasharray="{GUIONES_OCULTO}"/>'
+            + texto(cx, cy - 1, nombre, tam=14, peso="700")
+            + texto(cx, cy + 13, "oculto", tam=12, color=SUAVE))
+
+
+def _visto(cx, cy, nombre, w=W_VISTO, h=H_VISTO):
+    """Senal que se ve: caja de borde solido, su nombre y el rotulo «se ve»."""
+    return (caja(_n(cx - w / 2), _n(cy - h / 2), w, h,
+                 relleno=mezclar(COLOR_VISTO, 0.18), borde=COLOR_VISTO, radio=8, grosor=2)
+            + texto(cx, cy - 4, nombre, tam=14, peso="700")
+            + texto(cx, cy + 13, "se ve", tam=12, color=SUAVE))
+
+
+def _xs_equidistantes(n, x0=84, x1=216):
+    return [(x0 + x1) / 2] if n == 1 else [x0 + (x1 - x0) * i / (n - 1) for i in range(n)]
+
+
+def _emision(origen, destino, rotulo, t=0.27, tam=13, cruzada=False):
+    """Flecha recta del borde del estado oculto al borde de arriba de la
+    senal; el rotulo cerca del origen, del lado hacia donde va la flecha, o
+    del opuesto si la flecha cruza a otra (cruzada=True: asi dos rotulos que
+    cruzan no se juntan en el centro)."""
+    (x1, y1), (x2, y2) = origen, destino
+    d = math.hypot(x2 - x1, y2 - y1)
+    ux, uy = (x2 - x1) / d, (y2 - y1) / d
+    sx, sy = x1 + ux * R_OC, y1 + uy * R_OC
+    ex, ey = x2 - ux * 2, y2 - uy * 2
+    lado = 1 if x2 >= x1 else -1
+    if cruzada:
+        lado = -lado
+    # el rotulo va a un lado de la flecha; si es casi vertical, al lado de la salida
+    px, py = sx + (ex - sx) * t, sy + (ey - sy) * t
+    ancla = "start" if lado > 0 else "end"
+    return (_flecha(sx, sy, ex, ey)
+            + texto(px + lado * 6, py + tam * 0.35, rotulo, tam=tam, peso="700", anclaje=ancla))
+
+
+def grafo_oculto(out, y, h, brecha=140, transiciones=True, emisiones=True):
+    """Dibuja el grafo de un modelo oculto `h` (dict de markov._hmm): estados
+    ocultos arriba, senales abajo, flechas de transicion entre los de arriba
+    y de emision hacia abajo, con sus fracciones tal cual salen de `h`.
+    `y` es la y libre de arriba; devuelve (y libre de abajo, descripcion)."""
+    E, O = h["estados"], h["señales"]
+    yn = y + 70 if transiciones else y + 34
+    ys = yn + brecha
+    xe, xo = _xs_equidistantes(len(E)), _xs_equidistantes(len(O), 80, 220)
+    pos = {s: (x, yn) for s, x in zip(E, xe)}
+    if transiciones:
+        for s in E:
+            for t in E:
+                p = h["P"][s][t]
+                if p == 0:
+                    continue
+                if s == t:
+                    out.append(_lazo(*pos[s], fr10(p), r=R_OC, hacia="arriba", alcance=30))
+                else:
+                    ida_y_vuelta = h["P"][t][s] > 0
+                    out.append(_arista(pos[s], pos[t], fr10(p), r=R_OC,
+                                       curva=-14 if ida_y_vuelta else 0, lado=-1, desp=10))
+    if emisiones:
+        w_llegada = min(40, (W_VISTO - 24) / max(len(E) - 1, 1))
+        for k, o in enumerate(O):
+            for i, s in enumerate(E):
+                tx = xo[k] + (i - (len(E) - 1) / 2) * w_llegada
+                out.append(_emision(pos[s], (tx, ys - H_VISTO / 2), fr10(h["B"][s][o]),
+                                    t=0.3, cruzada=abs(tx - pos[s][0]) > 40))
+    for s in E:
+        out.append(_oculto(*pos[s], s))
+    for k, o in enumerate(O):
+        out.append(_visto(xo[k], ys, o))
+    desc = [f"Arriba, los estados ocultos {' y '.join(E)}, en nodos con borde punteado."]
+    if transiciones:
+        for s in E:
+            va = [f"se queda con {fr10(h['P'][s][t])}" if t == s else f"pasa a {t} con {fr10(h['P'][s][t])}"
+                  for t in E if h["P"][s][t] > 0]
+            desc.append(f"{s[0].upper() + s[1:]} " + " y ".join(va) + ".")
+    desc.append(f"Abajo, las señales que se ven, {' y '.join(O)}, en nodos con borde sólido.")
+    if emisiones:
+        for s in E:
+            desc.append(f"De {s} salen flechas de emisión: " + ", ".join(
+                f"a {o} con {fr10(h['B'][s][o])}" for o in O) + ".")
+    return ys + H_VISTO / 2, " ".join(desc)
+
+
+def mkv_c4_hmm_grafo():
+    h = m.paraguas()
+    titulo = ["El paraguas oculto,", "estados arriba, señales abajo"]
+    out = []
+    y = encabezado(out, titulo)
+    y, desc = grafo_oculto(out, y, h)
+    mu0 = "(" + ", ".join(fr(h["mu0"][s]) for s in h["estados"]) + ")"
+    out.append(texto(ANCHO / 2, y + 30, f"μ₀ = {mu0}", tam=14, peso="700"))
+    y = pie(out, y + 54, ["Entre estados: transición, P.", "Hacia abajo: emisión, B.",
+                          "Punteado: oculto. Sólido: se ve."])
+    return svg(titulo, desc + f" Al pie, μ₀ = {mu0}.", out, y)
+
+
+def _matriz_con_sumas(out, yc, nombres, filas, sumas, malas=(), rotulo="B", tam=12):
+    """rotulo = [ filas ] con el nombre de cada fila a la izquierda y, a la
+    derecha, la columna «suma». Las sumas de `malas` van en doble borde
+    (forma, no solo color). Devuelve la y libre de abajo."""
+    alto_fila, col, xb = 28, 44, 96
+    h = len(filas) * alto_fila + 4
+    y0 = yc - h / 2
+    xe = xb + 6 + len(filas[0]) * col
+    xs = 240
+    out.append(texto(X_PIE, yc + tam * 0.35, f"{rotulo} =", tam=tam, anclaje="start", color=SUAVE))
+    out.append(texto(xs, y0 - 6, "suma", tam=tam, color=SUAVE))
+    for xx, d in ((xb, 5), (xe, -5)):
+        out.append(f'<path d="M {_n(xx + d)} {_n(y0)} L {_n(xx)} {_n(y0)} L {_n(xx)} '
+                   f'{_n(y0 + h)} L {_n(xx + d)} {_n(y0 + h)}" fill="none" '
+                   f'stroke="{SUAVE}" stroke-width="1.5"/>')
+    for i, (nom, f, sm) in enumerate(zip(nombres, filas, sumas)):
+        cy = y0 + 2 + alto_fila * (i + 0.5)
+        out.append(texto(xb - 8, cy + tam * 0.35, nom, tam=tam, anclaje="end", color=SUAVE))
+        for j, c in enumerate(f):
+            out.append(texto(xb + 3 + col * (j + 0.5), cy + tam * 0.35, c, tam=tam, peso="700"))
+        if i in malas:
+            for grosor_extra in (0, 3):
+                out.append(caja(_n(xs - 27 - grosor_extra), _n(cy - 9 - grosor_extra), 54 + 2 * grosor_extra,
+                                18 + 2 * grosor_extra, relleno="none", borde=ACENTO, radio=4,
+                                grosor=1.5))
+        out.append(texto(xs, cy + tam * 0.35, sm, tam=tam, peso="700",
+                         color=ACENTO if i in malas else TEXTO))
+    return y0 + h
+
+
+def _panel_modelo(out, y, lado, h, dice, malas):
+    out.append(texto(X_PIE, y + 14, "✓ Lo cumple" if lado == "si" else "✗ No lo cumple",
+                     tam=14, peso="700", anclaje="start"))
+    out.append(texto(X_PIE, y + 33, dice, tam=13, anclaje="start", color=SUAVE))
+    yf, desc = grafo_oculto(out, y + 44, h, brecha=112)
+    E, O = h["estados"], h["señales"]
+    filas = [[fr10(h["B"][s][o]) for o in O] for s in E]
+    sumas = [fr10(sum(h["B"][s].values())) for s in E]
+    yb = _matriz_con_sumas(out, yf + 56, E, filas, sumas, malas)
+    matriz = "; ".join(", ".join(f) for f in filas)
+    sumas_txt = ", ".join(f"{s} suma {x}" for s, x in zip(E, sumas))
+    return yb + 10, f"{desc} B por filas: {matriz}. {sumas_txt}."
+
+
+def ejemplo_c4_modelo():
+    h = m.paraguas()
+    E, O = h["estados"], h["señales"]
+    # la misma tabla copiada por columnas: B[i][j] pasa a ser B[j][i]
+    Bt = {s: {o: h["B"][E[j]][O[i]] for j, o in enumerate(O)} for i, s in enumerate(E)}
+    malo = dict(h, B=Bt)
+    titulo = ["Ejemplo y contraejemplo", "un modelo oculto"]
+    out = []
+    y = encabezado(out, titulo)
+    descs = []
+    for lado, hh, dice in (("si", h, "B del paraguas: cada fila suma 1"),
+                           ("no", malo, "La misma B, copiada por columnas")):
+        out.append(linea(X_PIE, _n(y - 6), ANCHO - X_PIE, _n(y - 6), color=LINEA, grosor=1))
+        malas = [i for i, s in enumerate(E) if sum(hh["B"][s].values()) != 1]
+        y, d = _panel_modelo(out, y, lado, hh, dice, malas)
+        descs.append(("Lo cumple: " if lado == "si" else "No lo cumple: ") + dice + ". " + d)
+        y += 8
+    y = pie(out, y + 4, ["Doble borde: una suma distinta de 1."])
+    return svg(titulo, " ".join(descs), out, y)
+
+
 DIAGRAMAS = {
     "mkv-c1-flujo-muestrear": lambda: flujo("muestrear"),
     "mkv-c1-flujo-contar": lambda: flujo("contar"),
@@ -2835,6 +3026,8 @@ DIAGRAMAS = {
     "mkv-c3-region-lp": mkv_c3_region_lp,
     "mkv-c3-mapa-decidir": mkv_c3_mapa_decidir,
     **{f"mkv-c3-ej-{c}": (lambda c=c: ejemplo_c3(c)) for c in EJEMPLOS_C3},
+    "mkv-c4-hmm-grafo": mkv_c4_hmm_grafo,
+    "mkv-c4-ej-modelo": ejemplo_c4_modelo,
 }
 
 
