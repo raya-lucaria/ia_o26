@@ -1,0 +1,27 @@
+id: ver-videos-modelo-oculto
+type: task
+authority: official
+content:
+  title: "Tarea · Modelos ocultos de Markov y programación dinámica, dos videos"
+  instructions: >-
+    Para el miércoles 4 de noviembre hay que ver y entender dos videos. El
+    primero, de ritvikmath, dura unos 14 minutos y presenta el modelo oculto de
+    Markov. El segundo es la lección 3 del curso de aprendizaje por refuerzo de
+    David Silver (Google DeepMind), sobre planificar con programación dinámica:
+    dura una hora y 39 minutos y está en inglés; los subtítulos automáticos
+    ayudan si los necesitas. La condición no es verlos: es entenderlos. Párales
+    y regrésate cuando haga falta. Llega a clase pudiendo explicar con tus
+    palabras qué es el estado oculto y qué es la señal en el ejemplo del primer
+    video, qué preguntas se le hacen a un modelo oculto, en qué se distinguen
+    iterar políticas e iterar valores, y qué dos propiedades pide la
+    programación dinámica. Los enlaces, la tabla que traduce la notación de
+    Silver a la nuestra y las cuatro preguntas están en la página de tarea de
+    la clase 4. No hay nada que entregar.
+  due: "2026-11-04"
+  status: published
+  tags:
+    - tarea
+    - video
+    - preparacion
+    - markov
+    - modelo-oculto

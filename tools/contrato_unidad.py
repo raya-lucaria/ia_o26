@@ -158,6 +158,7 @@ UMBRALES_POR_UNIDAD: dict[str, dict] = {
     "course/8_markov/1_que_es_una_cadena": _UMBRALES_MARKOV,
     "course/8_markov/2_a_la_larga": _UMBRALES_MARKOV,
     "course/8_markov/3_decidir": _UMBRALES_MARKOV,
+    "course/8_markov/4_lo_que_no_se_ve": _UMBRALES_MARKOV,
 }
 
 # Unidades donde el contrato es obligatorio (opt-in). Arranca vacía: las

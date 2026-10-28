@@ -16,6 +16,7 @@ import html
 import os
 import re
 import xml.etree.ElementTree as ET
+from fractions import Fraction as F
 from functools import lru_cache
 
 import pytest
@@ -38,6 +39,10 @@ FIGURAS_C3 = (
     "cuatro-politicas-plano", "simular-politica", "bellman-1d", "fronteras", "flujo-valores",
     "iterar-valores", "residuo", "pasillo-largo", "flujo-politicas", "rondas-politicas",
     "region-lp", "mapa-decidir")
+FIGURAS_C4 = ("hmm-grafo", "ej-modelo", "ej-creencia", "ej-filtrar", "flujo-filtrar",
+              "filtrar-traza", "flujo-viterbi", "trellis-1", "trellis-2", "trellis-3",
+              "ej-decodificar", "ej-aprender", "flujo-aprender", "lenguaje-grafo",
+              "ds-costos", "ej-decidir", "mapa-2x2")
 CLAVES_C3 = ("punto-fijo", "hacia-atras", "mdp", "termina", "evaluar", "bellman", "codiciosa",
              "paro", "empates", "lineal")
 
@@ -67,7 +72,7 @@ def test_cada_svg_es_el_que_produce_el_generador(nombre):
 
 
 def test_cada_diagrama_lleva_el_prefijo_de_la_clase():
-    assert all(re.match(r"mkv-c[123]-", n) for n in NOMBRES)
+    assert all(re.match(r"mkv-c[1234]-", n) for n in NOMBRES)
 
 
 def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
@@ -78,7 +83,8 @@ def test_estan_las_figuras_de_prioridad_1_y_la_de_rachas():
         "mkv-c2-grafo-clasificar", "mkv-c2-grafo-contraejemplos", "mkv-c2-mu-t-inicios",
         "mkv-c2-flujo-potencias", "mkv-c2-tablero-chico", "mkv-c2-flujo-absorcion",
         "mkv-c2-web-juguete"} | {f"mkv-c2-ej-{c}" for c in gen.EJEMPLOS} | {
-        f"mkv-c3-{n}" for n in FIGURAS_C3} | {f"mkv-c3-ej-{c}" for c in CLAVES_C3}
+        f"mkv-c3-{n}" for n in FIGURAS_C3} | {f"mkv-c3-ej-{c}" for c in CLAVES_C3} | {
+        f"mkv-c4-{n}" for n in FIGURAS_C4}
 
 
 def test_hay_un_ejemplo_por_definicion_y_teorema_de_las_paginas_2_y_3():
@@ -381,3 +387,111 @@ def test_la_escalera_dibuja_las_cifras_de_markov_py():
     assert "4, 4, 2, 1, 1, 0" in aria
     assert "0 → 2 → 4 → 5 y paga 4" in aria and "0 → 1 → 2 → 4 → 5 y paga 5" in aria
     assert "8, 5, 3, 2, 1, 1" in _aria("mkv-c3-escalera-arbol-vs-grafo")
+
+
+# ------------------------------------------------------------ clase 4 ---
+
+def test_el_grafo_oculto_dibuja_el_paraguas_de_markov_py():
+    h = m.paraguas()
+    renglones = _renglones("mkv-c4-hmm-grafo")
+    assert renglones.count("oculto") == 2 and renglones.count("se ve") == 2
+    # las seis fracciones distintas, y las escritas como la pagina (2/10, no 1/5)
+    for rot in ("7/10", "3/10", "9/10", "1/10", "2/10", "8/10"):
+        assert rot in renglones, rot
+    assert "1/5" not in renglones
+    assert renglones.count("7/10") == 2 and renglones.count("3/10") == 2
+    assert f"μ₀ = ({gen.fr(h['mu0'][m.LLUVIA])}, {gen.fr(h['mu0'][m.SOL])})" in renglones
+    aria = _aria("mkv-c4-hmm-grafo")
+    assert "De lluvia salen flechas de emisión: a paraguas con 9/10, a sin paraguas con 1/10" in aria
+    assert "De sol salen flechas de emisión: a paraguas con 2/10, a sin paraguas con 8/10" in aria
+    assert "Lluvia se queda con 7/10 y pasa a sol con 3/10" in aria
+    assert "μ₀ = (1/2, 1/2)" in aria
+    # lo oculto es punteado y lo que se ve es solido: forma, no solo color
+    svg = _svg("mkv-c4-hmm-grafo")
+    assert svg.count('stroke-dasharray="4 3"') == 2
+
+
+def test_el_ejemplo_del_modelo_oculto_suma_bien_arriba_y_mal_abajo():
+    h = m.paraguas()
+    assert all(sum(f.values()) == 1 for f in h["B"].values())
+    renglones = _renglones("mkv-c4-ej-modelo")
+    assert renglones.count("✓ Lo cumple") == 1 and renglones.count("✗ No lo cumple") == 1
+    aria = _aria("mkv-c4-ej-modelo")
+    assert "lluvia suma 1, sol suma 1" in aria
+    assert "9/10, 2/10; 1/10, 8/10" in aria and "lluvia suma 11/10, sol suma 9/10" in aria
+    # solo las dos sumas erroneas llevan doble borde (dos cajas cada una)
+    assert _svg("mkv-c4-ej-modelo").count(f'stroke="{gen.ACENTO}" stroke-width="1.5"') == 4
+
+
+# ------------------------------------- clase 4, paginas 3 a 8 ---
+
+def test_las_figuras_de_filtrar_dibujan_las_cifras_de_markov_py():
+    h = m.paraguas()
+    b = m.filtrar(h, m.SEÑALES_EJ["filtrar"])
+    assert (_fr(b[0]["lluvia"]), _fr(b[1]["lluvia"])) == ("9/11", "621/703")
+    r = _renglones("mkv-c4-ej-filtrar")
+    for rot in ("9/11 ≈ 0.818", "69/110 ≈ 0.627", "621/703 ≈ 0.883", "señal imposible"):
+        assert rot in r, rot
+    traza = " ".join(_renglones("mkv-c4-filtrar-traza"))
+    for rot in ("1/2 → 9/11", "69/110 → 621/703", "4593/7030 → 4593/24089"):
+        assert rot in traza, rot
+
+
+def test_la_retícula_sale_de_viterbi_y_el_tramo_3_cierra_con_la_conjunta():
+    tray, conj = m.viterbi(m.paraguas(), m.SEÑALES_EJ["viterbi"])
+    assert tray == ["sol", "sol", "sol"] and _fr(conj) == "98/3125"
+    assert "conjunta 98/3125" in _renglones("mkv-c4-trellis-3")
+    for n, valores in ((1, ("1/20", "2/5")), (2, ("27/250", "7/125")), (3, ("189/25000", "98/3125"))):
+        r = _renglones(f"mkv-c4-trellis-{n}")
+        for v in valores:
+            assert v in r, (n, v)
+    # la misma retícula: los nodos no cambian de lugar de un tramo a otro
+    cajas = [re.findall(r'<rect x="([\d.]+)" y="([\d.]+)" width="74" height="40"', _svg(f"mkv-c4-trellis-{n}"))
+             for n in (1, 2, 3)]
+    assert cajas[0] == cajas[1] == cajas[2] and len(cajas[0]) == 6
+
+
+def test_el_contraejemplo_de_viterbi_tacha_ceros_y_no_dibuja_ruta():
+    r = _renglones("mkv-c4-ej-decodificar")
+    assert "sin ruta: señal imposible" in r and r.count("0") >= 4 and "nieve" in r
+
+
+def test_el_lenguaje_pequeno_dibuja_cuatro_ceros_y_casa_dos_veces():
+    h = m.lenguaje_pequeno()
+    ceros = [(s, t) for s in h["estados"] for t in h["estados"] if h["P"][s][t] == 0]
+    assert len(ceros) == 4
+    svg = _svg("mkv-c4-lenguaje-grafo")
+    assert svg.count(f'stroke="{gen.ALARMA}" stroke-width="2"') == 2 * 4      # una cruz (2 trazos) por cero
+    assert _renglones("mkv-c4-lenguaje-grafo").count("casa 1/4") == 2
+    assert svg.count(f'stroke="{gen.ACENTO}" stroke-width="2"') == 2           # los dos recuadros de «casa»
+
+
+def test_los_costos_dibujan_los_puntos_de_markov_py():
+    lo, hi = m.rango_mirar()
+    assert (_fr(lo), _fr(hi)) == ("1/6", "1/2") and m.decidir(F(9, 11)) == "llevar"
+    r = _renglones("mkv-c4-ds-costos")
+    for rot in ("(1/2, 1)", "3/4", "b = 9/11: llevar", "(1/6, 2/3)"):
+        assert rot in r, rot
+
+
+def test_el_ejemplo_de_decidir_trae_las_dos_cuentas():
+    assert m.costo_mirar(F(1, 3)) == F(5, 6)
+    r = _renglones("mkv-c4-ej-decidir")
+    assert "5/6 < 1: mirar gana" in r and "16/15 > 1: mirar pierde" in r
+    assert "lluvia: b = 9/13" in r and "lluvia: b = 1/17" in r and "costo 4/17" in r
+
+
+def test_los_flujos_de_la_clase_4_tienen_rombo_y_vuelta():
+    for clave, rombos in (("filtrar", 2), ("viterbi", 1), ("aprender", 1)):
+        f = gen.FLUJOS_C4[clave]
+        assert sum("rombo" in p for p in f["pasos"]) == rombos and f["vueltas"], clave
+        assert gen.contenido(f"mkv-c4-flujo-{clave}").count("<polygon") == rombos, clave
+
+
+def test_el_mapa_2x2_nombra_las_cuatro_casillas():
+    r = _renglones("mkv-c4-mapa-2x2")
+    for rot in ("Planificar", "un MDP", "Planificar en", "un POMDP", "clase 4: creencia,",
+                "decidir con b", "Refuerzo con", "observación", "parcial"):
+        assert rot in r, rot
+    assert "Planificar en un POMDP, con la marca clase 4" in _aria("mkv-c4-mapa-2x2")
+    assert "POMDP" not in [t for t in r if t != "un POMDP"]
