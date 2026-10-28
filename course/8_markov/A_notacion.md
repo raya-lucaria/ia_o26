@@ -4,7 +4,7 @@ title: Toda la notación, en una hoja
 nav_title: Notación
 summary: "Cada símbolo y cada término que usa la unidad de cadenas de Markov, cómo se lee, qué significa y en qué página se presentó."
 status: ready
-estimated_time: 9m
+estimated_time: 11m
 tags: [markov, referencia, notacion]
 ---
 
@@ -130,6 +130,38 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | $m$, $\beta$ | «eme», «beta». En la cota de paro: tras $m$ pasos, cualquier sucesión de acciones sigue sin terminar con probabilidad a lo más $\beta<1$. *→ Iteración de valores.* |
 | $\gamma$ | «gama». El descuento; solo aparece en un recuadro. Aquí no hace falta: basta que alguna política termine y que toda la que no termina valga $-\infty$. *→ La ecuación de Bellman.* |
 
+## Lo que no se ve
+
+| Símbolo | Cómo se lee, qué es y dónde se presenta |
+|---|---|
+| $S$, $O$ | «ese», «o». Sin subíndice, el estado y la señal de un solo día: lluvia o sol, paraguas o sin paraguas. Las minúsculas $s$ y $o$ son valores concretos. *→ Lo que necesitas: Bayes y normalizar* |
+| $\Pr(S=s)$, $\Pr(O=o\mid S=s)$ | «prior», «verosimilitud». Lo que crees del estado antes de ver la señal, y qué tan probable es la señal en cada estado. *→ Lo que necesitas: Bayes y normalizar* |
+| $\Pr(O=o)$, $\Pr(S=s\mid O=o)$ | «evidencia», «posterior». La probabilidad de la señal al considerar todos los estados, y lo que crees del estado después de verla. *→ Lo que necesitas: Bayes y normalizar* |
+| $w(s)$ | «doble u de ese». Un peso no negativo por estado, antes de normalizar: prior por verosimilitud. *→ Lo que necesitas: Bayes y normalizar* |
+| $\operatorname{normalizar}(w)$ | «normalizar de doble u». Dividir cada peso entre la suma de todos; hace falta que la suma sea positiva. Da una distribución que suma 1. *→ Lo que necesitas: Bayes y normalizar* |
+| $\mathcal O$ | «o caligráfica». El conjunto finito de señales, las que se ven. En la clase 1 el alfabeto era $\Sigma$; aquí, con un modelo oculto, es $\mathcal O$. *→ El modelo oculto* |
+| $O_t$, $o$ | «o sub te», «o». La señal aleatoria del paso $t$, y un valor concreto de ella. *→ El modelo oculto* |
+| $B(s,o)$ | «be de ese, o». La emisión: ${\Pr(O_t=o\mid S_t=s)}$. Una fila por estado, una columna por señal; cada fila suma 1 y no tiene que ser cuadrada. *→ El modelo oculto* |
+| $\langle\mathcal S,\mathcal O,\mu_0,P,B\rangle$ | El modelo oculto de Markov (HMM): estados, señales, distribución inicial, transición y emisión. Nadie decide: no hay acciones ni recompensas. *→ El modelo oculto* |
+| $\lvert\mathcal S\rvert$, $\lvert\mathcal O\rvert$ | «tamaño de ese», «tamaño de o». Cuántos estados y cuántas señales. $P$ es de $\lvert\mathcal S\rvert\times\lvert\mathcal S\rvert$ y $B$ de $\lvert\mathcal S\rvert\times\lvert\mathcal O\rvert$. *→ El modelo oculto* |
+| $O_{0:t}$, $O_{0:T}$ | «o de cero a te». Las señales $O_0,\dots,O_t$; con $T$, todas las que se vieron. *→ El modelo oculto* |
+| $T$ | «te mayúscula». En un modelo oculto, el último índice de la secuencia: hay $T+1$ señales. Coincide con las $T$ transiciones observadas de la clase 1. *→ El modelo oculto* |
+| $b_t(s)$ | «be sub te de ese». La creencia: ${\Pr(S_t=s\mid O_{0:t}=o_{0:t})}$, un vector fila que suma 1. Describe tu información, no el estado físico. *→ Filtrar y predecir* |
+| $b_{t+1\mid t}(s)$ | «be de te más uno dado te». La predicción $b_tP$: la creencia del día $t+1$ con señales hasta el día $t$, antes de ver la nueva. *→ Filtrar y predecir* |
+| $w_t(s)$, $\operatorname{ev}_t$ | «doble u sub te», «evidencia sub te». El peso de cada estado antes de normalizar, y su suma: la probabilidad de la señal del día $t$ dadas las anteriores. *→ Filtrar y predecir* |
+| $b_{t\mid T}(s)$ | «be de te dado te mayúscula». El suavizado: ${\Pr(S_t=s\mid O_{0:T})}$, con todas las señales, también las posteriores. *→ Decodificar: Viterbi y suavizar* |
+| $\operatorname{adelante}_t(s)$ | «adelante en te». ${\Pr(S_t=s,\ O_{0:t})}$, sin normalizar: el pasado hasta el día $t$. *→ Decodificar: Viterbi y suavizar* |
+| $\operatorname{atrás}_t(s)$ | «atrás en te». ${\Pr(O_{t+1:T}\mid S_t=s)}$: el futuro dado el estado de hoy. *→ Decodificar: Viterbi y suavizar* |
+| $\operatorname{mejor}_t(s)$ | «mejor en te». La mayor probabilidad conjunta de un camino que termina en $s$ el día $t$, con las señales vistas. *→ Decodificar: Viterbi y suavizar* |
+| $\operatorname{de}_t(s)$ | «de dónde viene». El apuntador de Viterbi: el estado del día $t-1$ que da $\operatorname{mejor}_t(s)$. *→ Decodificar: Viterbi y suavizar* |
+| $N(s,o)$, $\widehat B$ | «ene de ese, o», «be gorro». Los días con estado $s$ y señal $o$, y la emisión estimada: ${\widehat B(s,o)=N(s,o)/\sum_{o'}N(s,o')}$. *→ Aprender un modelo oculto* |
+| $\operatorname{costo}(s,a)$ | «costo de ese, a». Lo que pagas en un paso al usar $a$ en $s$: ${-r(s,a)}$, con $r\le0$. Minimizar costo es maximizar recompensa. *→ Decidir sin ver el estado* |
+| $\operatorname{costo}(b,a)$ | «costo de be, a». El costo esperado de $a$ con la creencia $b$: ${\sum_s b(s)\operatorname{costo}(s,a)}$. *→ Decidir sin ver el estado* |
+| $\operatorname{actuar}(b)$ | «actuar de be». El menor costo esperado sin mirar: ${\min_a\operatorname{costo}(b,a)}$. *→ Decidir sin ver el estado* |
+| $\operatorname{costo}(b,\text{mirar})$, precio | El precio de mirar más lo que cuesta, en promedio, elegir bien tras ver el estado exacto. *→ Decidir sin ver el estado* |
+| $\operatorname{info}(b)$ | «info de be». El valor de la información perfecta: ${\operatorname{actuar}(b)-\sum_s b(s)\min_a\operatorname{costo}(s,a)}$. Es el ahorro de ver gratis. *→ Decidir sin ver el estado* |
+| $r(b,a)$, $V(b)$, $b'$ | «erre de be, a», «ve de be», «be prima». La recompensa esperada con la creencia $b$; el valor de una creencia; y la creencia tras elegir $a$ y recibir la señal $o$. *→ Decidir sin ver el estado* |
+
 ## Términos
 
 | Término | Qué significa aquí y dónde se presenta |
@@ -170,6 +202,23 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
 | Codiciosa | La política que, en cada estado, elige la mejor acción según una estimación $U$ del valor. *→ La ecuación de Bellman.* |
 | Ronda | Una pasada de un algoritmo por todos los estados; no es el turno $t$ del robot. *→ Iteración de valores.* |
 | Iteración de valores, de políticas | Aplicar el máximo de Bellman hasta que el residuo baje; evaluar y mejorar hasta que la política no cambie. *→ Iteración de valores; Iteración de políticas.* |
+| Prior, posterior | Lo que crees del estado antes y después de observar la señal. *→ Lo que necesitas: Bayes y normalizar.* |
+| Verosimilitud (de una señal) | Aquí, ${\Pr(O=o\mid S=s)}$ para cada estado; en las preguntas del modelo, ${\Pr(O_{0:T}=o_{0:T})}$. Es la de la clase 1 solo en el nombre. *→ Lo que necesitas: Bayes y normalizar; El modelo oculto.* |
+| Evidencia | La probabilidad de la señal al considerar todos los estados: la suma de los pesos. *→ Lo que necesitas: Bayes y normalizar.* |
+| Normalizar | Dividir pesos no negativos entre su suma. Si la suma es 0, no se puede. *→ Lo que necesitas: Bayes y normalizar.* |
+| Estado oculto, señal | El estado no se ve; la señal sí, y depende solo del estado actual. *→ El modelo oculto.* |
+| Emisión | La probabilidad de ver una señal dado el estado, $B(s,o)$. *→ El modelo oculto.* |
+| Modelo oculto de Markov (HMM) | Una cadena de Markov que no se ve, más una señal por paso con la emisión $B$. *→ El modelo oculto.* |
+| Creencia, estado de información | Lo que sabes del estado dadas las señales: una distribución, no el estado físico. *→ Filtrar y predecir.* |
+| Filtrar, predecir, corregir | Filtrar es calcular la creencia día por día: predecir con $P$ y corregir con Bayes al ver la señal nueva. *→ Filtrar y predecir.* |
+| Suavizar | Estimar un estado con todas las señales, también las posteriores. No es el suavizado de Laplace de la clase 1. *→ Decodificar: Viterbi y suavizar.* |
+| Decodificar, Viterbi | Hallar la trayectoria de estados de mayor probabilidad conjunta con las señales; Viterbi lo hace con un máximo en vez de una suma. *→ Decodificar: Viterbi y suavizar.* |
+| Baum-Welch | Aprender $P$ y $B$ sin etiquetas: repartir cada día entre estados, contar con fracciones y repetir. La verosimilitud no baja, pero puede parar en un modelo que no es el mejor. *→ Aprender un modelo oculto.* |
+| Macroacción | Mirar: pagar por ver el estado y decidir con esa información, juntos como una sola acción. *→ Decidir sin ver el estado.* |
+| Valor de la información perfecta | Cuánto bajaría el costo esperado si vieras el estado exacto gratis, $\operatorname{info}(b)$. Mirar conviene si supera el precio. *→ Decidir sin ver el estado.* |
+| POMDP | Proceso de decisión de Markov parcialmente observable: el estado está oculto y decides con la creencia como estado. *→ Decidir sin ver el estado; Hacia el aprendizaje por refuerzo.* |
+| Episodio | Una corrida de principio a fin, de la que el refuerzo estima valores sin conocer $P$ ni $r$. *→ Hacia el aprendizaje por refuerzo.* |
+| Mirar, explorar | Mirar gana información del estado, con el modelo conocido; explorar, del modelo. *→ Hacia el aprendizaje por refuerzo.* |
 
 ## En las figuras
 
@@ -187,6 +236,11 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   ±0.010: dos errores estándar en el peor caso.
 - **Diagramas «…, en palabras»:** cajas con verbos, rombos con una
   pregunta y una salida marcada con borde de otro color.
+- **Los modelos ocultos:** el nodo de borde punteado y el rótulo «oculto» es
+  un estado que no se ve. La caja de borde sólido y «se ve» es una señal.
+- **Ejemplos y contraejemplos:** el doble borde marca una suma que no es 1.
+- **El mapa de dos por dos:** el borde punteado marca la casilla que aún no
+  se ha visto.
 
 ## Avisos de letras
 
@@ -227,3 +281,18 @@ gorro; la estimación por frecuencias lleva gorro, como $\widehat P$, y la suavi
   probabilidad.
 - **$U$** es aquí una estimación cualquiera del valor; en juegos, $U(s)$ era
   la utilidad de una posición final.
+- **$\mathcal O$** es el conjunto de señales; el alfabeto $\Sigma$ de la
+  clase 1 se llama $\mathcal O$ cuando las palabras son señales.
+- **$T$** en un modelo oculto es el último índice: hay $T+1$ señales y $T$
+  transiciones, las mismas que cuenta la clase 1.
+- **$b$** minúscula es la creencia y $B$ mayúscula es la matriz de emisión.
+  La creencia suma 1; una columna de $B$ no tiene por qué.
+- **$\operatorname{costo}(s,a)$** es lo que pagas en un paso. La
+  $\operatorname{costo}(s)$ de la escalera era todo lo que faltaba pagar.
+- **Suavizar** aquí usa señales futuras. No es el suavizado de Laplace.
+- **Verosimilitud** nombra, en la clase 4, la probabilidad de una señal dado
+  el estado o la de toda la secuencia. En la clase 1 era función de $P$.
+- **$P(s'\mid s)$** del modelo oculto no lleva acción; no es el
+  $P(s'\mid s,a)$ del MDP.
+- **$w$** es un peso antes de normalizar; en juegos era lo que devuelve un
+  hijo.
