@@ -108,6 +108,21 @@ def _helado():
     return _f("helado_eisner")()
 
 
+def _HP():
+    """El helado del ejercicio final de la pagina 4: mu0 y P del paraguas."""
+    return _f("helado_paraguas")()
+
+
+DIARIO = [UNO, TRES, UNO]
+
+
+def _mejor(hmm, obs, t, s):
+    """mejor_t(s) de Viterbi: la mayor conjunta de un camino que acaba en s
+    el dia t (por enumeracion, sin depender de una funcion de la reticula)."""
+    todas = _f("fuerza_bruta")(hmm, obs[:t + 1])
+    return max(p for tr, p in todas.items() if tr[-1] == s)
+
+
 def _paso_em():
     nuevo, _ = _f("paso_em")(_H(), [[C, N]])
     return nuevo
@@ -259,6 +274,29 @@ def _sorteo_impreso(pagina):
     raise AssertionError(f"{pagina}: no hay bloque que simule")
 
 
+def test_el_paso_de_baum_welch_de_la_pagina_5_no_divide_entre_cero(capsys):
+    """Hallazgo de la ronda 1: `paso` dividia entre la suma de cada fila de
+    conteos esperados, que es 0 con un solo dia (no hay pares) o con un
+    estado al que nunca se llega. Ahora conserva la fila anterior, como
+    markov.paso_em; con los dos casos debe correr y coincidir con ella."""
+    _saltar_si_esqueleto(P5)
+    ns, _ = _correr(P5, capsys)
+    paso = ns["paso"]
+    h = _H()
+    # un estado inalcanzable: se arranca en lluvia y lluvia nunca cambia
+    encerrado = dict(h, mu0={LL: F(1), SOL: F(0)},
+                     P={LL: {LL: F(1), SOL: F(0)}, SOL: dict(h["P"][SOL])})
+    for hmm, obs in ((h, [C]), (h, [N]), (encerrado, [C, N]), (encerrado, [C])):
+        try:
+            nuevo, vero = paso(hmm, obs)
+        except ZeroDivisionError as e:
+            raise AssertionError(f"{P5}: `paso` divide entre 0 con {obs}") from e
+        esperado, _ = _f("paso_em")(hmm, [obs])
+        assert nuevo["P"] == esperado["P"] and nuevo["B"] == esperado["B"], obs
+        assert nuevo["mu0"] == esperado["mu0"], obs
+        assert vero == _vero(obs, hmm), obs
+
+
 def test_la_semana_simulada_de_la_pagina_2_es_la_de_markov():
     _saltar_si_esqueleto(P2)
     assert _sorteo_impreso(P2) == tuple(_semana())
@@ -402,16 +440,23 @@ CIFRAS = {
             ("8649/15611", lambda: _suav([N, C, N])[1][LL]),
         ],
         "Ejercicios": [
-            ("8/625", lambda: _vit([TRES, UNO, TRES], _helado())[1]),
-            ("905/14281", lambda: _suav([TRES, UNO, TRES], _helado())[0][FRIO]),
-            ("8625/14281", lambda: _suav([TRES, UNO, TRES], _helado())[1][FRIO]),
-            ("2533/14281", lambda: _suav([TRES, UNO, TRES], _helado())[2][FRIO]),
+            # mu0 y P del paraguas, B del helado, diario (uno, tres, uno)
+            ("1/10", lambda: _mejor(_HP(), DIARIO, 0, CALOR)),
+            ("1/4", lambda: _mejor(_HP(), DIARIO, 0, FRIO)),
+            ("3/100", lambda: _mejor(_HP(), DIARIO, 1, CALOR)),
+            ("7/400", lambda: _mejor(_HP(), DIARIO, 1, FRIO)),
+            ("21/5000", lambda: _mejor(_HP(), DIARIO, 2, CALOR)),
+            ("49/8000", lambda: _vit(DIARIO, _HP())[1]),
+            ("9/2000", lambda: _con(_f("mejor_por_dia")(_HP(), DIARIO), DIARIO, _HP())),
+            ("374/1009", lambda: _suav(DIARIO, _HP())[0][CALOR]),
+            ("3364/5045", lambda: _suav(DIARIO, _HP())[1][CALOR]),
         ],
         LLEVARSE: [
             ("2307/15611", lambda: _suav([N, C, N])[0][LL]),
             ("8649/15611", lambda: _suav([N, C, N])[1][LL]),
             ("6272/15611", lambda: _vit([N, C, N])[1] / _vero([N, C, N])),
-            ("392/12500", lambda: _vit([N, C, N])[1]),
+            ("98/3125", lambda: _vit([N, C, N])[1]),
+            ("15611/200000", lambda: _vero([N, C, N])),
             ("5184/15611", lambda: _post(_f("mejor_por_dia")(_H(), [N, C, N]), [N, C, N])),
             ("169344/704647", lambda: _vit([N, C, N, C])[1] / _vero([N, C, N, C])),
             ("139968/704647",
@@ -641,7 +686,7 @@ def test_las_condiciones_siguen_escritas(pagina):
 # de ella en su renglon y frase, la suya. Si hay otra trayectoria pegada, el
 # par esta cruzado; si no hay ninguna, no se juzga (la cifra va sola).
 
-ESTADOS_NOMBRE = "sol|lluvia|determinante|sustantivo|verbo"
+ESTADOS_NOMBRE = "sol|lluvia|determinante|sustantivo|verbo|calor|frío"
 RE_TRAY = re.compile(rf"(?:{ESTADOS_NOMBRE})(?:, (?:{ESTADOS_NOMBRE}))+")
 
 
@@ -665,6 +710,11 @@ def _pares():
     pares.append(([SOL, LL, SOL], _con([SOL, LL, SOL], t3)))
     vl, pl = _vit(["casa"] * 3, _L())
     pares.append((vl, pl))
+    if getattr(m, "helado_paraguas", None) is not None:
+        vh, ph = _vit(DIARIO, _HP())
+        pares.append((vh, ph))
+        dh = md(_HP(), DIARIO)
+        pares.append((dh, _con(dh, DIARIO, _HP())))
     return [(", ".join(t), f"{p.numerator}/{p.denominator}") for t, p in pares]
 
 
@@ -675,9 +725,15 @@ def _fallas_pares(texto, pares, requeridos=()):
         trays = [(g.end(), g.group(0)) for g in RE_TRAY.finditer(u)]
         for tray, prob in pares:
             for g in re.finditer(r"(?<![\d./])" + re.escape(prob) + r"(?![\d/]|\.\d)", u):
-                antes = [t for fin, t in trays if fin <= g.start()]
+                antes = [(fin, t) for fin, t in trays if fin <= g.start()]
                 if not antes:
                     continue
+                # «p1 < p2», «p1 frente a p2»: si entre la trayectoria y esta
+                # cifra hay otra cifra rastreada, esta es la comparada, no la suya.
+                tramo = u[antes[-1][0]:g.start()]
+                if any(_esta(q, tramo) for _, q in pares):
+                    continue
+                antes = [t for _, t in antes]
                 if antes[-1] == tray:
                     vistos.add((tray, prob))
                 else:
@@ -687,13 +743,17 @@ def _fallas_pares(texto, pares, requeridos=()):
 
 
 def _requeridos(pares, cuales):
-    return [pares[i] for i in cuales]
+    """Los pares pedidos; los del helado faltan si markov aun no tiene
+    helado_paraguas (y entonces no se exigen)."""
+    return [pares[i] for i in cuales if i < len(pares)]
 
 
 # Indices de _pares(): 0 Viterbi-3, 1 por dia-3, 2 Viterbi-4, 3 por dia-4,
-# 4 conjunta sol-sol-sol, 5 conjunta sol-lluvia-sol, 6 lenguaje Viterbi.
+# 4 conjunta sol-sol-sol, 5 conjunta sol-lluvia-sol, 6 lenguaje Viterbi,
+# 7 helado Viterbi (49/8000), 8 helado mejor por dia (9/2000).
 PARES_REQUERIDOS = {
     (P4, "1 · Plantear"): [4, 5],
+    (P4, "Ejercicios"): [7, 8],
     (P4, "4 · Comparar"): [0, 1, 2, 3],
     (P4, LLEVARSE): [0, 1],
     (P6, "4 · Encontrar"): [6],
@@ -708,6 +768,8 @@ def test_los_pares_de_markov_son_los_del_brief():
                          ("sol, sol, sol, lluvia", "169344/704647"),
                          ("sol, lluvia, sol, lluvia", "139968/704647")]
     assert pares[6] == ("sustantivo, verbo, sustantivo", "3/2048")
+    if len(pares) > 7:
+        assert pares[7:] == [("frío, frío, frío", "49/8000"), ("frío, calor, frío", "9/2000")]
 
 
 @pytest.mark.parametrize("pagina,sec", sorted(PARES_REQUERIDOS))
@@ -757,6 +819,9 @@ MUTACIONES = [
     # el par cruzado en el resumen
     ("par-cruzado-llevarse", P4, LLEVARSE,
      "Viterbi da sol, sol, sol con", "Viterbi da sol, lluvia, sol con"),
+    # el ejercicio del helado: la trayectoria del mejor por dia junto a la de Viterbi
+    ("par-cruzado-helado", P4, "Ejercicios",
+     "imprime frío, frío, frío", "imprime frío, calor, frío"),
     # el umbral 1/4 cambia por 1/3 en su seccion
     ("umbral-1-3", P7, "3 · Decidir", "1/4", "1/3"),
     # 45 celdas por 54

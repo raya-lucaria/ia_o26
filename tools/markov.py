@@ -1847,6 +1847,17 @@ def helado_eisner():
                 [[F(1, 5), F(2, 5), F(2, 5)], [F(1, 2), F(2, 5), F(1, 10)]])
 
 
+def helado_paraguas():
+    """El ejercicio final de la pagina 4: cambia UNA idea respecto al paraguas
+    (la señal tiene tres valores). mu0 = (1/2, 1/2) y P del paraguas (se
+    queda 7/10, cambia 3/10); B, la de helado_eisner (calor: 1/5, 2/5, 2/5;
+    frio: 1/2, 2/5, 1/10). helado_eisner no cambia: la usa la pagina 2."""
+    e = helado_eisner()
+    return _hmm(e["estados"], e["señales"], [F(1, 2), F(1, 2)],
+                [[F(7, 10), F(3, 10)], [F(3, 10), F(7, 10)]],
+                [[e["B"][s][o] for o in e["señales"]] for s in e["estados"]])
+
+
 def hmm_tres_estados():
     """El paraguas con un tercer clima en medio (nublado): la una idea que
     cambia es el numero de estados. Todas las entradas son positivas."""

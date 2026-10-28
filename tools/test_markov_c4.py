@@ -1087,3 +1087,39 @@ def test_c8_pasillo_q_estrella():
     assert m.cumple_bellman(j, V)
     assert m.q_valor(j, V, 1, m.CAMINAR) == V[1] == -5
     assert m.q_valor(j, V, 1, m.CORRER) < -5
+
+
+def test_c4_helado_paraguas():
+    """Ejercicio final de la pagina 4: mu0 y P del paraguas, B del helado,
+    diario (uno, tres, uno). Todo contra fuerza bruta y a mano."""
+    H, FR = "calor", "frío"
+    U, D, T = "un helado", "dos helados", "tres helados"
+    h = m.helado_paraguas()
+    assert h["estados"] == [H, FR] and h["señales"] == [U, D, T]
+    assert h["mu0"] == {H: F(1, 2), FR: F(1, 2)}
+    assert h["P"] == {H: {H: F(7, 10), FR: F(3, 10)}, FR: {H: F(3, 10), FR: F(7, 10)}}
+    assert h["B"] == {H: {U: F(1, 5), D: F(2, 5), T: F(2, 5)},
+                      FR: {U: F(1, 2), D: F(2, 5), T: F(1, 10)}}
+    assert m.helado_eisner()["mu0"] == {H: F(4, 5), FR: F(1, 5)}     # la de la pagina 2 sigue igual
+    s = [U, T, U]
+    todas = m.fuerza_bruta(h, s)
+    L = sum(todas.values())
+    # reticula: 1/10, 1/4; 3/100 (desde frio), 7/400 (desde frio); 21/5000 (desde calor), 49/8000 (desde frio)
+    assert m.columnas_viterbi(h, s) == [
+        {H: (F(1, 10), None), FR: (F(1, 4), None)},
+        {H: (F(3, 100), FR), FR: (F(7, 400), FR)},
+        {H: (F(21, 5000), H), FR: (F(49, 8000), FR)}]
+    assert F(3, 100) > F(7, 400)                  # calor va adelante el dia 1
+    # Viterbi: frio, frio, frio con 49/8000 > 21/5000
+    assert m.viterbi(h, s) == ([FR, FR, FR], F(49, 8000))
+    assert max(todas.values()) == todas[(FR, FR, FR)] == F(49, 8000) > F(21, 5000)
+    # suavizado de calor 374/1009, 3364/5045, 374/1009; calor gana solo el dia 1
+    g = m.suavizar(h, s)
+    assert [x[H] for x in g] == [F(374, 1009), F(3364, 5045), F(374, 1009)]
+    for t in range(3):
+        assert g[t][H] == sum(p for tr, p in todas.items() if tr[t] == H) / L
+    assert F(3364, 5045) > F(1, 2) > F(374, 1009)
+    # mejor por dia: frio, calor, frio con conjunta 9/2000 < 49/8000
+    assert m.mejor_por_dia(h, s) == [FR, H, FR]
+    assert todas[(FR, H, FR)] == F(1, 2) * F(1, 2) * F(3, 10) * F(2, 5) * F(3, 10) * F(1, 2) == F(9, 2000)
+    assert F(9, 2000) < F(49, 8000)
