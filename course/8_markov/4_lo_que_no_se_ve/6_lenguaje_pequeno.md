@@ -34,13 +34,13 @@ Al terminar tendrás:
 
 **Piensa: ¿qué necesitas saber para adivinar qué clase de palabra sigue?**
 
-La categoría de la última palabra. Después de «la» viene un sustantivo; después de un sustantivo, casi siempre un verbo. Las categorías no se ven en el texto: son estados ocultos.
+La categoría de la última palabra. Después de «la» viene un sustantivo; después de un sustantivo, casi siempre un verbo. Las categorías no se ven: son estados ocultos.
 
-**En general.** Los estados $\mathcal S$ son categorías gramaticales. Las señales $\mathcal O$ son las palabras del vocabulario. $P$ dice qué categoría sigue a cuál; $B$, qué palabra produce cada una. Es @mkv-c4-def-hmm sin cambios. En la clase 1 el vocabulario se llamaba $\Sigma$; aquí es $\mathcal O$, porque las palabras son las señales.
+**En general.** Los estados $\mathcal S$ son categorías gramaticales. Las señales $\mathcal O$, las palabras. $P$ dice qué categoría sigue a cuál; $B$, qué palabra produce cada una. Es @mkv-c4-def-hmm sin cambios. En la clase 1 el vocabulario se llamaba $\Sigma$; aquí es $\mathcal O$, porque las palabras son las señales.
 
-**El juguete.** Tres categorías: determinante, sustantivo y verbo. Doce palabras, $\lvert\mathcal O\rvert=12$, pocas a propósito para trazar a mano. Es un modelo de lenguaje **pequeño**, no un modelo grande en miniatura.
+**El juguete.** Tres categorías: determinante, sustantivo y verbo. Doce palabras, $\lvert\mathcal O\rvert=12$, pocas, para trazar a mano. Es un modelo de lenguaje **pequeño**, no un modelo grande en miniatura.
 
-- **La palabra ambigua.** «casa» es sustantivo («la casa») y también verbo («casa la sopa», del verbo casar, en imperativo). Es la única palabra con dos categorías.
+- **La palabra ambigua.** «casa» es sustantivo («la casa») y verbo, de casar («casa a mi gata»: búscale pareja). Es la única con dos categorías.
 - **El inicio.** $\mu_0=(1/2,\ 1/4,\ 1/4)$, en el orden determinante, sustantivo, verbo.
 
 ::: table {#mkv-c4-le-tabla-P title="Qué categoría sigue a cuál, P"}
@@ -53,7 +53,7 @@ La categoría de la última palabra. Después de «la» viene un sustantivo; des
 
 - **Cuatro ceros en $P$.** Prohíben repetir categoría y pasar de determinante a verbo. Son reglas del modelo, no datos que faltan.
 
-$B$, de $3\times12$, no cabe. Va por estado, solo con las palabras de probabilidad positiva.
+$B$, de $3\times12$, no cabe: va por estado, con las palabras de probabilidad positiva.
 
 ::: table {#mkv-c4-le-tabla-B title="Qué palabra produce cada categoría, B"}
 | Estado | Palabras | $B(s,o)$ |
@@ -64,7 +64,7 @@ $B$, de $3\times12$, no cabe. Va por estado, solo con las palabras de probabilid
 :::
 
 ::: figure {#mkv-c4-fig-lenguaje-grafo title="El modelo de lenguaje pequeño como modelo oculto"}
-![Grafo de tres estados ocultos con borde punteado: determinante, sustantivo y verbo. Flechas: de determinante a sustantivo 1; de sustantivo a determinante 1/4 y a verbo 3/4; de verbo a determinante 1/2 y a sustantivo 1/2. Los cuatro ceros se marcan como flechas tachadas o lazos ausentes: determinante a determinante, determinante a verbo, sustantivo a sustantivo y verbo a verbo. Debajo de cada estado, las palabras que emite con su probabilidad: determinante la 1/2, una 1/4, esta 1/8, mi 1/8; sustantivo niña, gata y casa 1/4, sopa y luna 1/8; verbo come, ve, duerme y casa 1/4. La palabra casa aparece bajo sustantivo y bajo verbo, resaltada. Al pie, μ₀ = (1/2, 1/4, 1/4).](../_assets/mkv-c4-lenguaje-grafo.svg)
+![Grafo de tres estados ocultos con borde punteado: determinante, sustantivo y verbo. Flechas: de determinante a sustantivo 1; de sustantivo a determinante 1/4 y a verbo 3/4; de verbo a determinante 1/2 y a sustantivo 1/2. Los cuatro ceros son líneas punteadas sin punta, con una cruz y un 0: lazos punteados en determinante, sustantivo y verbo, y una línea entre determinante y verbo. Debajo, las palabras que emite cada estado, en columnas: determinante la 1/2, una 1/4, esta 1/8, mi 1/8; verbo casa, come, ve y duerme 1/4; sustantivo niña, gata y casa 1/4, sopa y luna 1/8. Las dos apariciones de casa van en un recuadro. Al pie, μ₀ = (1/2, 1/4, 1/4).](../_assets/mkv-c4-lenguaje-grafo.svg)
 :::
 
 **En Python**, el mismo diccionario que el paraguas, con las mismas claves:
@@ -124,7 +124,7 @@ Solo el determinante produce «mi», y tras él viene un sustantivo con probabil
 
 **Piensa: si sorteas categorías con $P$ y palabras con $B$, ¿salen frases?**
 
-Tienen forma, pero no sentido. Copiamos `simular` tal cual de [[mkv-el-modelo-oculto|El modelo oculto]]; solo cambia el diccionario.
+Tienen forma, pero no sentido. Copiamos `simular` de [[mkv-el-modelo-oculto|El modelo oculto]]; solo cambia el diccionario.
 
 ```python
 import random
@@ -170,13 +170,13 @@ for t in range(8):
 ```
 
 - **Se lee:** «casa casa la gata come niña duerme esta». Las categorías respetan $P$: nunca hay dos sustantivos ni dos verbos seguidos.
-- **«casa» dos veces:** primero sustantivo, luego verbo. La diferencia solo está en la columna oculta.
+- **«casa» dos veces:** primero sustantivo, luego verbo. La diferencia está en la columna oculta.
 
 **Lo que el modelo no sabe.** Solo recuerda una categoría.
 
 - **Sentido:** «mi luna come la casa» tiene probabilidad positiva.
 - **Objeto del verbo:** «duerme esta» sale igual que «come esta».
-- **Concordancia:** no la maneja. Las doce palabras femeninas y singulares lo esconden; con «el» saldría «el gata».
+- **Concordancia:** no la maneja. Sustantivos y determinantes con género son femeninos y singulares, y eso lo esconde; con «el» saldría «el gata».
 - **Fin de frase:** no hay punto; la cadena sigue.
 
 ::: exercise {#mkv-c4-le-ej-luna title="Calcula una frase absurda"}
@@ -208,7 +208,7 @@ Es pequeña, pero no es 0: el modelo acepta la frase.
 
 Un verbo, casi siempre. Es la señal de mañana de [[mkv-filtrar|Filtrar y predecir]]: filtra lo leído, avanza con $P$ y reparte con $B$.
 
-**En general.** Si $\Pr(O_{0:t}=o_{0:t})>0$, la creencia $b_t$ existe y la siguiente palabra se predice así:
+**En general.** Si $\Pr(O_{0:t}=o_{0:t})>0$, existe $b_t$ y la siguiente palabra se predice así:
 
 $$
 \begin{aligned}
@@ -217,7 +217,7 @@ $$
 \end{aligned}
 $$
 
-**Tras «la gata».** «la» solo puede ser determinante y «gata» solo sustantivo, así que $b_1(\text{sustantivo})=1$. La fila de sustantivo en $P$ da $(1/4,\ 0,\ 3/4)$. Con $B$:
+**Tras «la gata».** «la» solo es determinante y «gata» solo sustantivo, así que $b_1(\text{sustantivo})=1$. La fila de sustantivo en $P$ da $(1/4,\ 0,\ 3/4)$. Con $B$:
 
 ::: table {#mkv-c4-le-tabla-siguiente title="La siguiente palabra después de «la gata»"}
 | Palabras | Categoría | Probabilidad de cada una |
@@ -228,7 +228,7 @@ $$
 | esta, mi | determinante | 1/32 |
 :::
 
-- **Los verbos suman 3/4** y los determinantes 1/4. Ningún sustantivo puede seguir: es el cero de sustantivo a sustantivo.
+- **Los verbos suman 3/4** y los determinantes 1/4. Ningún sustantivo sigue: es el cero de sustantivo a sustantivo.
 
 **«casa» según el contexto.** La creencia sobre el último «casa» depende de lo anterior:
 
@@ -243,9 +243,9 @@ $$
 
 - **Sola**, «casa» empata: $\mu_0$ da 1/4 a cada categoría y las dos producen «casa» con 1/4.
 - **Tras «la»** solo puede ser sustantivo; **tras «la gata»**, solo verbo.
-- **Tras otro «casa»** se inclina al verbo, porque sustantivo pasa a verbo con 3/4.
+- **Tras otro «casa»**, se inclina al verbo: sustantivo pasa a verbo con 3/4.
 
-El filtro, copiado como lo calculaste en [[mkv-filtrar|Filtrar y predecir]]: predecir, corregir, normalizar.
+El filtro de [[mkv-filtrar|Filtrar y predecir]], copiado: predecir, corregir, normalizar.
 
 ```python
 def normalizar(d):
@@ -293,7 +293,7 @@ casa casa     2/5 3/5
 3/16
 ```
 
-**Con toda la frase.** En «casa la sopa», el filtro lee «casa» antes de ver «la». Viterbi ve todo y elige verbo, determinante, sustantivo. Solo compite con sustantivo, determinante, sustantivo. Copiamos las dos funciones de [[mkv-el-modelo-oculto|El modelo oculto]]:
+**Con toda la frase.** «casa mi gata» tiene dos lecturas: «casa (a) mi gata», con «casa» verbo, o «casa» suelta y luego «mi gata…», con «casa» sustantivo. El filtro lee «casa» antes de ver «mi». Viterbi ve todo y elige verbo, determinante, sustantivo. Copiamos las dos funciones de [[mkv-el-modelo-oculto|El modelo oculto]]:
 
 ```python
 from itertools import product
@@ -310,7 +310,7 @@ def verosimilitud(hmm, obs):      # suma sobre trayectorias
     return sum(probabilidad_conjunta(hmm, tr, obs)
                for tr in todas)
 
-frase = ["casa", "la", "sopa"]
+frase = ["casa", "mi", "gata"]
 L = verosimilitud(lenguaje, frase)
 for tr in ([VER, DET, SUS], [SUS, DET, SUS]):
     p = probabilidad_conjunta(lenguaje, tr, frase)
@@ -318,11 +318,11 @@ for tr in ([VER, DET, SUS], [SUS, DET, SUS]):
 ```
 
 ```text
-verbo 1/512 2/3
-sustantivo 1/1024 1/3
+verbo 1/1024 2/3
+sustantivo 1/2048 1/3
 ```
 
-- **La lectura de verbo gana con probabilidad posterior 2/3**, frente a 1/3. Pesa más porque el verbo pasa a determinante con 1/2, y el sustantivo solo con 1/4.
+- **Gana la lectura de verbo**, con posterior 2/3 frente a 1/3. Pesa más porque el verbo pasa a determinante con 1/2, y el sustantivo solo con 1/4.
 - **«la gata casa casa» tiene una sola lectura:** determinante, sustantivo, verbo, sustantivo, con probabilidad posterior 1. El contexto resuelve los dos «casa».
 
 ::: exercise {#mkv-c4-le-ej-tras-casa title="Predice después de «la gata casa»"}
@@ -354,11 +354,11 @@ Sí, si hay ceros. En el paraguas no pasaba: todas las entradas de $P$ y $B$ son
 - **Señales imposibles.** Si $\Pr(O_{0:T}=o_{0:T})=0$, no hay creencia: el denominador vale 0 y no se puede normalizar.
 :::
 
-**«casa casa casa».** El suavizado da 1/2 y 1/2 a sustantivo y verbo en las tres palabras. Los tres días empatan, y en un empate gana el primer estado de la lista. El mejor de cada día arma sustantivo, sustantivo, sustantivo: usa dos veces el cero de sustantivo a sustantivo, así que **su probabilidad es 0**.
+**«casa casa casa».** El suavizado da 1/2 y 1/2 a sustantivo y verbo en las tres palabras. **El caso depende de un empate:** en cada día gana el primer estado de la lista. El mejor de cada día arma sustantivo, sustantivo, sustantivo, que usa dos veces el cero de sustantivo a sustantivo: su probabilidad es 0.
 
-Viterbi da sustantivo, verbo, sustantivo, con conjunta 3/2048. Empata con verbo, sustantivo, verbo, la otra lectura posible, y gana por el orden de la lista. El filtro daba 2/5 y 3/5 en la segunda palabra; con la tercera, el suavizado vuelve a 1/2.
+Viterbi da sustantivo, verbo, sustantivo, con conjunta 3/2048. Empata con verbo, sustantivo, verbo, y gana por el mismo orden. En este modelo no hay frase de hasta ocho palabras que caiga en lo imposible sin empate; el ejercicio final rompe el empate.
 
-**Una señal imposible.** «la la» pide dos determinantes seguidos, porque solo ellos producen «la», y eso está prohibido. La verosimilitud vale 0 y el filtro no puede normalizar:
+**Una señal imposible.** «la la» pide dos determinantes seguidos, que están prohibidos: solo ellos producen «la». La verosimilitud vale 0 y el filtro no puede normalizar:
 
 ```python
 frase = ["casa", "casa", "casa"]
@@ -378,7 +378,7 @@ except ValueError as e:
 señal imposible: no se puede normalizar
 ```
 
-En [[mkv-decodificar|Decodificar]], el mejor de cada día y Viterbi diferían, pero los dos eran posibles. Aquí aparece lo que el paraguas no podía mostrar: una respuesta por día que el modelo prohíbe.
+En [[mkv-decodificar|Decodificar]], el mejor de cada día y Viterbi diferían, pero ambos eran posibles. Aquí el mejor de cada día da una trayectoria prohibida.
 
 ::: exercise {#mkv-c4-le-ej-la-come title="Revisa «la come»"}
 ¿Cuánto vale la verosimilitud de «la come»? ¿Qué hace `filtrar` con esa frase?
@@ -400,7 +400,7 @@ En [[mkv-decodificar|Decodificar]], el mejor de cada día y Viterbi diferían, p
 
 Muchos menos, si cuentas igual. Una celda es una entrada de una tabla. Un parámetro libre es una celda que puedes elegir; la última de cada fila queda fija, porque la fila suma 1.
 
-**Sin distribución inicial y sin descontar ceros.** El modelo oculto tiene $P$, de $\lvert\mathcal S\rvert\times\lvert\mathcal S\rvert$, y $B$, de $\lvert\mathcal S\rvert\times\lvert\mathcal O\rvert$. La tabla de palabras con memoria 1 tiene una fila por palabra: $\lvert\mathcal O\rvert\times\lvert\mathcal O\rvert$.
+**Sin distribución inicial y sin descontar ceros.** El modelo oculto tiene $P$, de $\lvert\mathcal S\rvert\times\lvert\mathcal S\rvert$, y $B$, de $\lvert\mathcal S\rvert\times\lvert\mathcal O\rvert$. La tabla de palabras con memoria 1 es de $\lvert\mathcal O\rvert\times\lvert\mathcal O\rvert$.
 
 ::: table {#mkv-c4-le-tabla-parametros title="Celdas y parámetros libres, sin distribución inicial"}
 | Modelo | Celdas | Libres |
@@ -411,9 +411,9 @@ Muchos menos, si cuentas igual. Una celda es una entrada de una tabla. Un parám
 
 **Con distribución inicial.** Sumamos $\mu_0$ al oculto y la distribución de la primera palabra a la tabla: 48 celdas y 41 libres, frente a 156 y 143.
 
-**Con ceros, sin distribución inicial.** Los cuatro ceros de $P$ son reglas: no se estiman. Las filas de $P$ tienen 1, 2 y 2 celdas posibles: 2 libres en vez de 6. Con $B$ completa, quedan 35 libres reales.
+**Con ceros, sin distribución inicial.** Los ceros son reglas: no se estiman. Las filas de $P$ tienen 1, 2 y 2 celdas posibles: 2 libres en vez de 6. Si solo fijamos los ceros de $P$ y dejamos $B$ densa, quedan 35. Si también fijamos los de $B$ (4, 5 y 4 palabras por estado: 3, 4 y 3 libres), quedan 12.
 
-**Lo que no se compara.** Las dos familias no tienen la misma capacidad, así que menos parámetros no significa «mejor».
+**Lo que no se compara.** Las familias no tienen la misma capacidad: menos parámetros no significa «mejor».
 
 - **El oculto no puede representar cualquier tabla de palabras.** «la» y «mi» comparten estado, así que predicen lo mismo. Una tabla de palabras puede darles filas distintas.
 - **La tabla no ve más atrás de la palabra anterior.** Tras «casa» tiene una sola fila. El oculto da «la» con 3/16 tras «casa» y con 1/4 tras «la gata casa».
@@ -443,7 +443,7 @@ No. Comparten la pregunta, qué palabra sigue dado lo leído, pero guardan lo le
 >
 > - **El modelo oculto** resume lo leído en la creencia $b_t$. Con cada palabra la actualiza: predecir con $P$, corregir con $B$, normalizar.
 > - **Un transformer** (Vaswani et al., 2017, que lo presentaron como traductor de codificador–decodificador) genera un símbolo a la vez, atendiendo directamente a los anteriores. No tiene un estado oculto que salte con $P$ y emita con $B$, ni una creencia que se actualice.
-> - **Con una ventana de contexto fija** de $n$ palabras, la siguiente depende solo de esas $n$. El estado es la ventana, que se ve, como la memoria $h$ de la clase 1.
+> - **Con una ventana de contexto fija** de $h$ palabras, la siguiente depende solo de la ventana. El estado es la ventana, que se ve, como la memoria $h$ de la clase 1.
 > - **Este modelo pequeño no explica uno grande.** Solo muestra, con números a mano, qué es predecir la siguiente palabra.
 
 ::: exercise {#mkv-c4-le-ej-memoria title="Compara qué se guarda"}
@@ -451,7 +451,7 @@ Tras «la gata casa», ¿qué guarda de lo leído el modelo oculto? ¿Y la tabla
 :::
 
 ::: hint {#mkv-c4-le-pista-memoria of="mkv-c4-le-ej-memoria" title="¿Qué usa cada uno para la fila siguiente?"}
-¿Uno usa una distribución sobre categorías y el otro una palabra?
+¿Qué información necesita cada modelo para calcular la distribución de la siguiente palabra?
 :::
 
 ::: answer {#mkv-c4-le-resp-memoria of="mkv-c4-le-ej-memoria"}
@@ -485,7 +485,7 @@ El oculto guarda la creencia: verbo con 1, que depende de «la gata». La tabla 
 ::: answer {#mkv-c4-le-resp-cero of="mkv-c4-le-ej-cero" title="Respuesta · Un cero menos"}
 **1. Revisa.** $9/20+9/20+1/10=1$. Quedan tres ceros: determinante a determinante, determinante a verbo y sustantivo a sustantivo.
 
-**2. Cuenta.** Las filas de $P$ tienen 1, 2 y 3 celdas posibles: $0+1+2=3$ libres. Con los 33 de $B$, son 36, uno más que 35.
+**2. Cuenta.** Las filas de $P$ tienen 1, 2 y 3 celdas posibles: $0+1+2=3$ libres. Con los 33 de $B$ densa, son 36, uno más que 35.
 
 **3. Prueba.** Antes valía 0. Ahora:
 
@@ -512,9 +512,9 @@ $$
 - **El mismo modelo:** categorías como estados ocultos y palabras como señales; @mkv-c4-def-hmm no cambia. Aquí: 3 categorías, 12 palabras, $\mu_0=(1/2,1/4,1/4)$ y cuatro ceros en $P$.
 - **Generar:** `simular`, copiada del paraguas, con semilla 2046 da «casa casa la gata come niña duerme esta». Respeta las categorías; no sabe de sentido, de objetos ni de concordancia.
 - **Predecir:** tras «la gata», cada verbo sale con 3/16. «casa» es sustantivo y verbo con 1/2 cada uno; es solo verbo tras «la gata» y verbo con 3/5 tras otro «casa».
-- **Con toda la frase:** en «casa la sopa», Viterbi lee verbo, determinante, sustantivo, con posterior 2/3 frente a 1/3. «la gata casa casa» tiene una sola lectura.
-- **Los ceros:** en «casa casa casa», el mejor de cada día da sustantivo, sustantivo, sustantivo, de probabilidad 0; Viterbi da sustantivo, verbo, sustantivo, con 3/2048 (@mkv-c4-le-obs-imposible). «la la» tiene verosimilitud 0, y filtrar no puede normalizar.
-- **Parámetros:** sin distribución inicial, 45 celdas y 39 libres frente a 144 y 132; con ella, 48 y 41 frente a 156 y 143; con los ceros, 35 libres reales. Las familias no tienen la misma capacidad.
+- **Con toda la frase:** en «casa mi gata», Viterbi lee verbo, determinante, sustantivo, con posterior 2/3 frente a 1/3. «la gata casa casa» tiene una sola lectura.
+- **Los ceros:** en «casa casa casa», con empate en cada día, el mejor de cada día da sustantivo, sustantivo, sustantivo, de probabilidad 0; Viterbi da sustantivo, verbo, sustantivo, con 3/2048 (@mkv-c4-le-obs-imposible). «la la» tiene verosimilitud 0, y filtrar no puede normalizar.
+- **Parámetros:** sin distribución inicial, 45 celdas y 39 libres frente a 144 y 132; con ella, 48 y 41 frente a 156 y 143; 35 libres si fijamos los ceros de $P$ con $B$ densa, y 12 si también los de $B$. Las familias no tienen la misma capacidad.
 - **Un transformer no es un modelo oculto:** comparten la pregunta de qué sigue, no la forma de guardar lo leído.
 
 Ya sabes qué crees del estado que no ves. Con esa creencia, ¿cómo decides qué hacer?

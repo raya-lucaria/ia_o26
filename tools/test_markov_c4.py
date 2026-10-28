@@ -35,7 +35,7 @@ SECUENCIAS = {
     "helado": [["tres helados"], ["tres helados", "un helado", "tres helados"],
                ["un helado", "dos helados", "tres helados", "dos helados"]],
     "tres": [[C], [C, N, C], [N, N, C, C], [C, C, C, N, N]],
-    "lenguaje": [["casa"], ["casa", "la", "sopa"], ["la", "gata", "casa", "casa"],
+    "lenguaje": [["casa"], ["casa", "mi", "gata"], ["casa", "la", "sopa"], ["la", "gata", "casa", "casa"],
                  ["casa", "casa", "casa"], ["la", "niña", "ve", "la", "casa"],
                  ["mi", "luna", "come"]],
 }
@@ -156,10 +156,16 @@ def test_lenguaje_tiene_trayectorias_imposibles_y_viterbi_las_evita():
 def test_lenguaje_frases():
     h = m.lenguaje_pequeno()
     s = m.FRASES_EJ["casa-ambigua"]
-    assert m.verosimilitud_hmm(h, s) == F(3, 1024)
-    assert m.viterbi(h, s) == ([VER, DET, SUS], F(1, 512))
+    assert s == ["casa", "mi", "gata"]
+    todas = m.fuerza_bruta(h, s)
+    assert {tr: p for tr, p in todas.items() if p} == {
+        (VER, DET, SUS): F(1, 1024), (SUS, DET, SUS): F(1, 2048)}
+    assert m.verosimilitud_hmm(h, s) == sum(todas.values()) == F(3, 2048)
+    assert m.viterbi(h, s) == ([VER, DET, SUS], F(1, 1024))
     assert m.posterior_trayectoria(h, [VER, DET, SUS], s) == F(2, 3)
     assert m.posterior_trayectoria(h, [SUS, DET, SUS], s) == F(1, 3)
+    assert m.suavizar(h, s)[0] == {DET: 0, SUS: F(1, 3), VER: F(2, 3)}
+    assert m.mejor_por_dia(h, s) == [VER, DET, SUS] == m.viterbi(h, s)[0]
     s = m.FRASES_EJ["sin-ambiguedad"]
     assert m.viterbi(h, s) == ([DET, SUS, VER, SUS], F(3, 2048))
     assert m.posterior_trayectoria(h, [DET, SUS, VER, SUS], s) == 1
@@ -1046,8 +1052,8 @@ def test_c6_lenguaje_frases_y_ceros():
     assert m.simular_hmm(h, 7, 2046)[1] == "casa casa la gata come niña duerme esta".split()
     assert m.simular_hmm(h, 7, 2046)[0] == [SUS, VER, DET, SUS, VER, SUS, VER, DET]
     assert m.probabilidad_conjunta(h, [DET, SUS, VER, DET, SUS], "mi luna come la casa".split()) == F(3, 32768)
-    assert m.probabilidad_conjunta(h, [VER, DET, SUS], ["casa", "la", "sopa"]) == F(1, 512)
-    assert m.probabilidad_conjunta(h, [SUS, DET, SUS], ["casa", "la", "sopa"]) == F(1, 1024)
+    assert m.probabilidad_conjunta(h, [VER, DET, SUS], ["casa", "mi", "gata"]) == F(1, 1024)
+    assert m.probabilidad_conjunta(h, [SUS, DET, SUS], ["casa", "mi", "gata"]) == F(1, 2048)
     ccc = ["casa"] * 3
     assert all(g == {DET: 0, SUS: F(1, 2), VER: F(1, 2)} for g in m.suavizar(h, ccc))
     assert m.filtrar(h, ccc)[1][SUS] == F(2, 5)
@@ -1123,3 +1129,25 @@ def test_c4_helado_paraguas():
     assert m.mejor_por_dia(h, s) == [FR, H, FR]
     assert todas[(FR, H, FR)] == F(1, 2) * F(1, 2) * F(3, 10) * F(2, 5) * F(3, 10) * F(1, 2) == F(9, 2000)
     assert F(9, 2000) < F(49, 8000)
+
+
+def test_c6_ningun_imposible_sin_empate_hasta_ocho_palabras():
+    """Pagina 6: «no hay frase de hasta ocho palabras que caiga en lo
+    imposible sin empate». Toda palabra salvo «casa» la emite un solo
+    estado, asi que cambiarla por otra de su clase escala todas las
+    trayectorias por el mismo factor: basta un representante por clase
+    (la, niña, come, casa), 4**n frases por longitud."""
+    h = m.lenguaje_pequeno()
+    emisores = {o: [s for s in h["estados"] if h["B"][s][o] > 0] for o in h["señales"]}
+    assert [o for o, e in emisores.items() if len(e) > 1] == ["casa"]
+    imposibles = []
+    for n in range(1, 9):
+        for frase in product(["la", "niña", "come", "casa"], repeat=n):
+            frase = list(frase)
+            if m.verosimilitud_hmm(h, frase) == 0:
+                continue
+            if m.probabilidad_conjunta(h, m.mejor_por_dia(h, frase), frase) == 0:
+                g = m.suavizar(h, frase)
+                assert any(sorted(x.values())[-1] == sorted(x.values())[-2] for x in g), frase
+                imposibles.append(frase)
+    assert ["casa"] * 3 in imposibles

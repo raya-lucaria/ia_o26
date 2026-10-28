@@ -104,6 +104,9 @@ def _L_mod():
     return dict(h, P=dict(h["P"], **{VER: {DET: F(9, 20), SUS: F(9, 20), VER: F(1, 10)}}))
 
 
+CASA_MI_GATA = ["casa", "mi", "gata"]
+
+
 def _helado():
     return _f("helado_eisner")()
 
@@ -500,8 +503,10 @@ CIFRAS = {
             ("3/16", lambda: _f("predecir_señal")(_L(), _fil(["la", "gata"], _L())[-1])["come"]),
             ("2/5", lambda: _fil(["casa", "casa"], _L())[-1][SUS]),
             ("3/5", lambda: _fil(["casa", "casa"], _L())[-1][VER]),
-            ("1/512", lambda: _con([VER, DET, SUS], ["casa", "la", "sopa"], _L())),
-            ("2/3", lambda: _post([VER, DET, SUS], ["casa", "la", "sopa"], _L())),
+            ("1/1024", lambda: _con([VER, DET, SUS], CASA_MI_GATA, _L())),
+            ("1/2048", lambda: _con([SUS, DET, SUS], CASA_MI_GATA, _L())),
+            ("2/3", lambda: _post([VER, DET, SUS], CASA_MI_GATA, _L())),
+            ("1/3", lambda: _post([SUS, DET, SUS], CASA_MI_GATA, _L())),
         ],
         "4 · Encontrar": [
             ("3/2048", lambda: _vit(["casa"] * 3, _L())[1]),
@@ -516,6 +521,7 @@ CIFRAS = {
             ("156", lambda: _par()["celdas_bigramas_con_inicial"]),
             ("143", lambda: _par()["libres_bigramas_con_inicial"]),
             ("35", lambda: _par()["libres_hmm_con_ceros"]),
+            ("12", lambda: _par()["libres_hmm_con_ceros_en_P_y_B"]),
         ],
         "Ejercicios": [
             ("1/640", lambda: _vero(["come", "ve"], _L_mod())),
@@ -531,7 +537,8 @@ CIFRAS = {
             ("2046", lambda: m.SEMILLAS["c4-generar-frase"]),
             ("3/16", lambda: _f("predecir_señal")(_L(), _fil(["la", "gata"], _L())[-1])["come"]),
             ("3/5", lambda: _fil(["casa", "casa"], _L())[-1][VER]),
-            ("2/3", lambda: _post([VER, DET, SUS], ["casa", "la", "sopa"], _L())),
+            ("2/3", lambda: _post([VER, DET, SUS], CASA_MI_GATA, _L())),
+            ("1/3", lambda: _post([SUS, DET, SUS], CASA_MI_GATA, _L())),
             ("3/2048", lambda: _vit(["casa"] * 3, _L())[1]),
             ("45", lambda: _par()["celdas_hmm"]),
             ("39", lambda: _par()["libres_hmm"]),
@@ -542,6 +549,7 @@ CIFRAS = {
             ("156", lambda: _par()["celdas_bigramas_con_inicial"]),
             ("143", lambda: _par()["libres_bigramas_con_inicial"]),
             ("35", lambda: _par()["libres_hmm_con_ceros"]),
+            ("12", lambda: _par()["libres_hmm_con_ceros_en_P_y_B"]),
         ],
     },
     P7: {
@@ -660,7 +668,11 @@ FRASES_ANCLA = {
     P3: {"5 · Comparar": ["solo para el paraguas"],
          LLEVARSE: ["No ocurre en todo modelo"]},
     P4: {"4 · Comparar": ["no garantiza la mejor secuencia"]},
-    P6: {"6 · Distinguir": ["no es un modelo oculto de Markov"]},
+    # «12» suelto tambien es el tamaño del vocabulario: la frase fija que es
+    # la cuenta de libres con los ceros de P y de B.
+    P6: {"5 · Contar": ["quedan 12"],
+         "6 · Distinguir": ["no es un modelo oculto de Markov"],
+         LLEVARSE: ["y 12 si también"]},
     P7: {"4 · Pagar": ["Mirar conviene estrictamente"],
          "5 · Tomar": ["no garantiza una solución única"]},
 }
@@ -710,6 +722,8 @@ def _pares():
     pares.append(([SOL, LL, SOL], _con([SOL, LL, SOL], t3)))
     vl, pl = _vit(["casa"] * 3, _L())
     pares.append((vl, pl))
+    vc, _ = _vit(CASA_MI_GATA, _L())
+    pares.append((vc, _post(vc, CASA_MI_GATA, _L())))
     if getattr(m, "helado_paraguas", None) is not None:
         vh, ph = _vit(DIARIO, _HP())
         pares.append((vh, ph))
@@ -750,14 +764,15 @@ def _requeridos(pares, cuales):
 
 # Indices de _pares(): 0 Viterbi-3, 1 por dia-3, 2 Viterbi-4, 3 por dia-4,
 # 4 conjunta sol-sol-sol, 5 conjunta sol-lluvia-sol, 6 lenguaje Viterbi,
-# 7 helado Viterbi (49/8000), 8 helado mejor por dia (9/2000).
+# 7 «casa mi gata» Viterbi (2/3), 8 helado Viterbi (49/8000),
+# 9 helado mejor por dia (9/2000).
 PARES_REQUERIDOS = {
     (P4, "1 · Plantear"): [4, 5],
-    (P4, "Ejercicios"): [7, 8],
+    (P4, "Ejercicios"): [8, 9],
     (P4, "4 · Comparar"): [0, 1, 2, 3],
     (P4, LLEVARSE): [0, 1],
     (P6, "4 · Encontrar"): [6],
-    (P6, LLEVARSE): [6],
+    (P6, LLEVARSE): [6, 7],
 }
 
 
@@ -768,8 +783,11 @@ def test_los_pares_de_markov_son_los_del_brief():
                          ("sol, sol, sol, lluvia", "169344/704647"),
                          ("sol, lluvia, sol, lluvia", "139968/704647")]
     assert pares[6] == ("sustantivo, verbo, sustantivo", "3/2048")
-    if len(pares) > 7:
-        assert pares[7:] == [("frío, frío, frío", "49/8000"), ("frío, calor, frío", "9/2000")]
+    assert pares[7] == ("verbo, determinante, sustantivo", "2/3")
+    assert _f("mejor_por_dia")(_L(), CASA_MI_GATA) == [VER, DET, SUS]   # coincide con Viterbi
+    assert _vero(CASA_MI_GATA, _L()) == F(3, 2048)
+    if len(pares) > 8:
+        assert pares[8:] == [("frío, frío, frío", "49/8000"), ("frío, calor, frío", "9/2000")]
 
 
 @pytest.mark.parametrize("pagina,sec", sorted(PARES_REQUERIDOS))
@@ -826,6 +844,11 @@ MUTACIONES = [
     ("umbral-1-3", P7, "3 · Decidir", "1/4", "1/3"),
     # 45 celdas por 54
     ("celdas-54", P6, "5 · Contar", "=45", "=54"),
+    # «casa mi gata»: la trayectoria de la otra lectura junto al 2/3
+    ("par-cruzado-casa", P6, LLEVARSE,
+     "Viterbi lee verbo, determinante, sustantivo", "Viterbi lee sustantivo, determinante, sustantivo"),
+    # los 12 libres cambian por 13 en su seccion
+    ("libres-13", P6, "5 · Contar", "quedan 12", "quedan 13"),
     # se borra la condicion «solo para el paraguas»
     ("sin-condicion", P3, "5 · Comparar", "solo para el paraguas", "en general"),
 ]

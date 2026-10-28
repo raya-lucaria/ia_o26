@@ -1881,7 +1881,7 @@ def lenguaje_pequeno():
     determinante viene un sustantivo; tras un sustantivo, un verbo o (sin
     punto) otra frase; tras un verbo, un objeto. La primera palabra es
     determinante (1/2), sustantivo (1/4) o verbo en imperativo (1/4): por eso
-    «casa la sopa» tiene dos lecturas. No modela concordancia ni puntos:
+    «casa mi gata» tiene dos lecturas. No modela concordancia ni puntos:
     puede decir «mi luna come la casa»."""
     E = [DETERMINANTE, SUSTANTIVO, VERBO]
     fila = {
@@ -1896,7 +1896,7 @@ def lenguaje_pequeno():
 
 
 FRASES_EJ = {
-    "casa-ambigua": ["casa", "la", "sopa"],      # dos lecturas: verbo (2/3) o sustantivo
+    "casa-ambigua": ["casa", "mi", "gata"],      # dos lecturas: verbo (2/3) o sustantivo
     "sin-ambiguedad": ["la", "gata", "casa", "casa"],   # una sola lectura posible
     "por-dia-imposible": ["casa", "casa", "casa"],      # el mejor por dia tiene prob. 0
 }
