@@ -33,28 +33,27 @@ Al terminar tendrás:
 
 ## 1 · Dibujar el mapa de dos ejes
 
-**Piensa: en la clase 3 y en esta, ¿qué tuviste siempre, aunque no vieras el clima?**
+**Piensa: para decidir, en la clase 3 y en esta, ¿qué tuviste siempre, aunque no vieras el clima?**
 
-Siempre tuviste el modelo. En la clase 3, $P(s'\mid s,a)$ y $r(s,a)$ venían escritas. En esta, $\mu_0$, $P$ y $B$ del paraguas, y los costos del día. Lo que cambió fue si veías el estado. Son dos preguntas distintas, y cada una es un eje.
+Siempre tuviste el modelo. En la clase 3, $P(s'\mid s,a)$ y $r(s,a)$ venían escritas. En esta, $\mu_0$, $P$ y $B$ del paraguas, y los costos del día. Lo que cambió fue si veías el estado. Cada pregunta es un eje.
 
 - **¿Se ve el estado?** Si se ve, la política elige con $s$. Si no, elige con las señales, resumidas en la creencia $b_t$.
 - **¿Se conoce el modelo?** Conocerlo es tener escritas las transiciones, las emisiones si las hay, y las recompensas. Si no, hay que sacar lo necesario de la experiencia.
 
-La casilla con estado oculto y modelo conocido se llama POMDP: proceso de decisión de Markov parcialmente observable (*partially observable Markov decision process*).
+Con estado oculto, el problema es un POMDP: proceso de decisión de Markov parcialmente observable (*partially observable Markov decision process*). Arriba a la derecha se conoce; abajo a la derecha, no.
 
 ::: table {#mkv-c4-hr-tabla-mapa title="El mapa de dos ejes"}
 | El modelo | Estado visible | Estado oculto |
 |---|---|---|
-| Se conoce | **Planificar un MDP.** Bellman, iterar valores o políticas (clase 3) | **POMDP.** La creencia con el filtro y decidir con ella (clase 4) |
+| Se conoce | **Planificar un MDP.** Bellman, iterar valores o políticas (clase 3) | **Planificar en un POMDP.** Creencia, filtrar, decidir con $b$ (clase 4) |
 | No se conoce | **Refuerzo clásico.** Aprender de episodios | **Refuerzo con observación parcial.** Aprender sin ver el estado ni tener el modelo |
 :::
 
-- **Arriba todo se calcula.** No hace falta actuar para saber cuánto vale algo. A la derecha se calcula sobre la creencia, que es un estado de información, no el clima.
-- **Abajo ya no basta calcular.** Los números que pide Bellman no están escritos. Hay que actuar para conseguirlos.
-- **Abajo a la derecha se suman las dos dificultades.** Esta unidad no la toca.
+- **Arriba todo se calcula, sin actuar.** A la derecha, sobre la creencia, que es un estado de información, no el clima.
+- **Abajo ya no basta calcular.** Los números que pide Bellman no están escritos. Hacen falta datos de interacción, propios o registrados.
 
 ::: figure {#mkv-c4-fig-mapa-2x2 title="El mapa de dos ejes, con dónde se vio cada casilla"}
-![Cuadro de dos por dos. Columnas: estado visible y estado oculto. Renglones: modelo conocido y modelo desconocido. Arriba a la izquierda, «Planificar un MDP», con la marca «clase 3: Bellman, iterar valores y políticas». Arriba a la derecha, «POMDP», con la marca «clase 4: creencia, filtrar, decidir con b». Estas dos casillas van rellenas: ya se vieron. Abajo a la izquierda, «Refuerzo clásico», con «falta: el modelo; se aprende de episodios». Abajo a la derecha, «Refuerzo con observación parcial», con «falta: el modelo y el estado». Las dos de abajo van solo con borde punteado: no se han visto. Una flecha horizontal en el renglón de arriba dice «se deja de ver el estado»; una vertical en la columna izquierda dice «se deja de conocer el modelo».](../_assets/mkv-c4-mapa-2x2.svg)
+![Cuadro de dos por dos. Columnas: estado visible y estado oculto. Renglones: modelo conocido y modelo desconocido. Arriba a la izquierda, «Planificar un MDP», con la marca «clase 3: Bellman, iterar valores y políticas». Arriba a la derecha, «Planificar en un POMDP», con la marca «clase 4: creencia, filtrar, decidir con b». Estas dos casillas van rellenas: ya se vieron. Abajo a la izquierda, «Refuerzo clásico», con «falta: el modelo; se aprende de episodios». Abajo a la derecha, «Refuerzo con observación parcial», con «falta: el modelo y el estado». Las dos de abajo van solo con borde punteado: no se han visto. Fuera de las casillas, una flecha horizontal sobre el renglón de arriba dice «se deja de ver el estado», y una vertical a la izquierda dice «se deja de conocer el modelo».](../_assets/mkv-c4-mapa-2x2.svg)
 :::
 
 ::: exercise {#mkv-c4-hr-ej-ubica title="Ubica tres problemas del curso"}
@@ -66,7 +65,9 @@ En cada caso, ¿ves el estado? ¿Tienes $P$ y $r$ escritas?
 :::
 
 ::: answer {#mkv-c4-hr-resp-ubica of="mkv-c4-hr-ej-ubica"}
-(a) Planificar un MDP: ves la casilla y tienes $P$ y $r$. (b) POMDP: no ves el clima, pero tienes $\mu_0$, $P$, $B$ y los costos. (c) Refuerzo clásico: ves la casilla, pero te falta una parte de $P$.
+- **(a)** Planificar un MDP: ves la casilla y tienes $P$ y $r$.
+- **(b)** Planificar en un POMDP: no ves el clima, pero tienes $\mu_0$, $P$, $B$ y los costos.
+- **(c)** Refuerzo clásico: ves la casilla, pero te falta una parte de $P$.
 :::
 
 ---
@@ -75,20 +76,20 @@ En cada caso, ¿ves el estado? ¿Tienes $P$ y $r$ escritas?
 
 **Piensa: ¿mirar por la ventana es lo mismo que probar una acción para ver qué pasa?**
 
-No. Las dos reducen lo que ignoras, pero ignoran cosas distintas.
+No. Reducen dos ignorancias distintas.
 
 - **No conocer el estado.** El modelo está escrito; falta saber el estado de hoy. Lo reduces con señales: un paraguas lleva $b_0(\text{lluvia})$ a $9/11$, y dos lo llevan a $621/703$. Ninguna señal cambia lo que sabes de $P$ o de $B$.
 - **No conocer el modelo.** Faltan las probabilidades y las recompensas. No hay ventana que las muestre. Hay que **aprender de la experiencia**: juntar corridas y contar.
 
 ::: remark {#mkv-c4-hr-obs-mirar title="Mirar no es explorar"}
-- **Mirar** reduce la incertidumbre del estado de hoy, con el modelo conocido. Su costo y su beneficio se calculan antes: en el problema de un día, mirar conviene estrictamente si $1/6<b<1/2$.
-- **Explorar** es elegir una acción, a veces una que parece peor, para aprender un modelo desconocido. Lo que gana es información sobre $P$ o $r$, que sirve para las decisiones de después.
+- **Mirar** informa sobre el estado de hoy, con el modelo conocido. Su costo y su beneficio se calculan antes: en el problema de un día, mirar conviene estrictamente si $1/6<b<1/2$.
+- **Explorar** es elegir una acción, a veces una que parece peor, para informarte de lo que no conoces. Esa información mejora el modelo, los valores o la política de después.
 :::
 
 Las dos formas se tocan en [[mkv-aprender-lo-oculto|Aprender un modelo oculto]]. Baum-Welch estima $P$ y $B$ solo con señales. Calcula conteos esperados con las creencias sobre los estados de toda la secuencia. Pero ahí nadie actúa ni recibe recompensas: las señales llegan solas. Es aprender un modelo, no aprendizaje por refuerzo.
 
 > [!WARNING]
-> **Error típico:** «mirar es explorar, porque gano información». **Mirar gana información del estado; explorar, del modelo.** Con el modelo conocido no hay nada que explorar.
+> **Error típico:** «mirar es explorar, porque gano información». **Mirar informa del estado de hoy; explorar, de cómo responden las acciones.** Con el modelo conocido no hay nada que explorar.
 
 ::: exercise {#mkv-c4-hr-ej-informacion title="Clasifica tres formas de ganar información"}
 Para cada caso, di si reduce la incertidumbre del estado, si aprende el modelo actuando o si lo aprende sin actuar.
@@ -117,7 +118,7 @@ No necesariamente. Se pueden aprender tres cosas distintas.
 ::: table {#mkv-c4-hr-tabla-aprender title="Tres cosas que se pueden aprender"}
 | Qué se aprende | Cómo lo obtuviste en el curso | Qué permite |
 |---|---|---|
-| El modelo: $P$, $r$ y, si hay, $B$ | Contando (clase 1) o con Baum-Welch (clase 4) | Planificar como en la clase 3 |
+| El modelo: $P$, $r$ y, si hay, $B$ | $P$ contando (clase 1); $P$ y $B$ con Baum-Welch (clase 4); $r$, nunca | Planificar como en la clase 3 |
 | Los valores: $Q_\pi$, $V^*$, $Q^*$ | Con Bellman y el modelo escrito (clase 3) | Con $Q^*$, elegir sin el modelo |
 | La política $\pi$ | La codiciosa de $V^*$ (clase 3) | Actuar directamente |
 :::
@@ -128,7 +129,7 @@ No necesariamente. Se pueden aprender tres cosas distintas.
 
 Eso trae dos cosas que no había:
 
-- **Interacción.** El agente elige una acción y el ambiente responde con un estado y una recompensa. Los datos dependen de lo que el agente hizo. No llegan solos, como las señales del paraguas.
+- **Interacción.** El agente elige una acción y el ambiente responde con un estado y una recompensa. Los datos dependen de lo que hizo; no llegan solos, como las señales del paraguas.
 - **Explorar frente a explotar.** Explotar es usar la acción que hoy parece mejor. Explorar es probar otra para aprender, aunque hoy cueste más. Si nunca exploras, una acción mal estimada al inicio puede no corregirse nunca.
 
 ::: exercise {#mkv-c4-hr-ej-q title="Compara V y Q sin modelo"}
@@ -140,7 +141,7 @@ Con $V^*$, ¿qué tienes que sumar a cada acción para compararlas?
 :::
 
 ::: answer {#mkv-c4-hr-resp-q of="mkv-c4-hr-ej-q"}
-Con $V^*$ sola no puedes: comparar caminar y correr pide $r(1,a)+\sum_{s'}P(s'\mid1,a)V^*(s')$. Con $Q^*(1,\cdot)$ eliges el mayor de los dos números. Gana caminar, con $Q^*(1,\text{caminar})=V^*(1)=-5$.
+Con $V^*$ sola no puedes: comparar caminar y correr pide $r(1,a)+\sum_{s'}P(s'\mid1,a)V^*(s')$. Con $Q^*(1,\cdot)$ eliges la acción con el número mayor, sin $P$ ni $r$.
 :::
 
 ---
@@ -149,21 +150,21 @@ Con $V^*$ sola no puedes: comparar caminar y correr pide $r(1,a)+\sum_{s'}P(s'\m
 
 **Piensa: un modelo de lenguaje elige la siguiente palabra según el texto. ¿Eso ya es aprendizaje por refuerzo?**
 
-Por sí solo, no. Pero la analogía sirve para leer cómo se describen los modelos que se afinan con refuerzo.
+Por sí solo, no. La analogía sirve para leer cómo se describen los modelos que se afinan con refuerzo. Ojo: no es lo que hizo la página 6.
 
 ::: table {#mkv-c4-hr-tabla-lenguaje title="El modelo de lenguaje con las piezas del refuerzo"}
-| Pieza | En el modelo de lenguaje | ¿Está en la página 6? |
+| Pieza | En la analogía | En la página 6 |
 |---|---|---|
-| Estado | El texto hasta ahora | Sí |
-| Acción | La siguiente palabra | Sí |
-| Política | $\pi(\text{palabra}\mid\text{texto})$: el modelo | Sí: sus probabilidades |
-| Ambiente | Algo que responde a lo escrito | No: el texto solo se alarga |
-| Recompensa | Una calificación del resultado | No |
+| Estado | El texto hasta ahora | La categoría oculta |
+| Acción | La siguiente palabra, elegida | La palabra era una señal emitida |
+| Política | $\pi(\text{palabra}\mid\text{texto})$: el modelo | Solo la predicción $b_tPB$ |
+| Ambiente | Algo que responde a lo escrito | No hay |
+| Recompensa | Una calificación del resultado | No hay |
 :::
 
 - **La transición es trivial.** El siguiente estado es el texto con la palabra pegada.
 - **Con ambiente y recompensa se puede afinar con refuerzo.** Si alguien califica cada respuesta, esa calificación es la recompensa, y la política se ajusta para recibir más.
-- **El modelo de la página 6 no tiene ninguna.** Nadie califica lo que genera.
+- **En la página 6 nadie elegía ni calificaba.** Las palabras salían de un estado oculto.
 
 > [!WARNING]
 > **Error típico:** «predecir la siguiente palabra es aprendizaje por refuerzo». **Predecir es la pregunta de filtrar y predecir.** Refuerzo pide acciones con consecuencias y una recompensa que las califique.
@@ -186,11 +187,11 @@ El teclado de tu celular sugiere la siguiente palabra con un modelo de lenguaje.
 
 **Piensa: después de cuatro clases, ¿qué no sabes hacer todavía?**
 
-Decidir bien sin conocer el modelo. Todo lo que hiciste supone $P$, $B$ y las recompensas escritas. Esta clase deja tres cosas fuera, a propósito:
+Decidir bien sin conocer el modelo. Para decidir, siempre tuviste $P$, $B$ y las recompensas escritas. Esta clase deja tres cosas fuera, a propósito:
 
 - **No da un algoritmo de refuerzo.** No estima $Q$ de episodios ni trata la exploración con un método.
-- **No resuelve el POMDP en general.** El problema de un día se resolvió a mano. No se prometió la ecuación de Bellman sobre creencias.
-- **No toca la casilla de abajo a la derecha.** Observación parcial y modelo desconocido a la vez.
+- **No resuelve el POMDP en general.** El problema de un día se resolvió a mano. La ecuación sobre creencias se escribió, sin demostrar garantías para ella.
+- **No toca la casilla de abajo a la derecha,** donde se suman las dos dificultades.
 
 ::: exercise {#mkv-c4-hr-ej-quitar title="Quita un dato de la clase 3"}
 Quieres el valor de caminar–correr en el pasillo, pero no tienes $P$ ni $r$. Solo puedes recorrer el pasillo con esa política. ¿Qué datos cambias por qué?
@@ -201,7 +202,7 @@ Quieres el valor de caminar–correr en el pasillo, pero no tienes $P$ ni $r$. S
 :::
 
 ::: answer {#mkv-c4-hr-resp-quitar of="mkv-c4-hr-ej-quitar"}
-Cambias $P$ y $r$ por episodios. $V_\pi(s)$ es el retorno esperado desde $s$. Recorres muchas veces desde $s$ con caminar–correr, sumas lo que pagas y promedias. El promedio se acerca a $(-5,-2)$.
+Cambias $P$ y $r$ por episodios. $V_\pi(s)$ es el retorno esperado desde $s$. Recorres muchas veces desde $s$ con caminar–correr, sumas las recompensas, que son negativas, y promedias. El promedio se acerca a $(-5,-2)$.
 :::
 
 ---
@@ -213,7 +214,7 @@ Cambias $P$ y $r$ por episodios. $V_\pi(s)$ es el retorno esperado desde $s$. Re
 
 **Cambia una idea:** la casilla no viene dada; la decides tú con los dos ejes.
 
-- **(a)** Un robot de almacén ve su posición exacta. Su mapa y la probabilidad de que cada movimiento falle están escritos.
+- **(a)** Un robot de almacén ve su posición exacta. Su meta, el costo de cada movimiento y la probabilidad de que falle están escritos.
 - **(b)** El mismo robot, pero un sensor ruidoso le da la posición con error. El modelo sigue escrito, con la tabla de errores del sensor.
 - **(c)** Un termostato nuevo lee la temperatura exacta. No sabe qué tan rápido se calienta la casa. Paga por consumo y por incomodidad.
 - **(d)** Un sistema de recomendaciones no ve el gusto del usuario; solo ve sus clics. Tampoco sabe cómo responde el usuario a cada recomendación.
@@ -221,7 +222,7 @@ Cambias $P$ y $r$ por episodios. $V_\pi(s)$ es el retorno esperado desde $s$. Re
 1. **Ubica** cada caso en una casilla del mapa.
 2. **Justifica** con los dos ejes: qué se ve y qué se conoce.
 3. **Nombra** qué calcularías en (a) y en (b).
-4. **Elige** qué aprendería el termostato: el modelo, los valores o la política. Di por qué tiene que explorar.
+4. **Elige** qué conviene que aprenda el termostato para decidir sin modelo: el modelo, los valores o la política. Di por qué tiene que explorar.
 5. **Decide:** en (b), el robot puede pagar por una lectura exacta de su posición. ¿Eso es explorar?
 :::
 
@@ -234,7 +235,7 @@ En cada justificación, ¿dijiste qué falta: el estado de hoy, las probabilidad
 :::
 
 ::: answer {#mkv-c4-hr-resp-cuatro-casos of="mkv-c4-hr-ej-cuatro-casos" title="Respuesta · Cuatro casillas, una por caso"}
-**1. Ubica.** (a) Planificar un MDP. (b) POMDP. (c) Refuerzo clásico. (d) Refuerzo con observación parcial.
+**1. Ubica.** (a) Planificar un MDP. (b) Planificar en un POMDP. (c) Refuerzo clásico. (d) Refuerzo con observación parcial.
 
 **2. Justifica.**
 
@@ -245,7 +246,7 @@ En cada justificación, ¿dijiste qué falta: el estado de hoy, las probabilidad
 
 **3. Nombra.** En (a), $V^*$ con Bellman y su política codiciosa. En (b), la creencia sobre la posición con el filtro, y decidir con ella.
 
-**4. Elige.** Cualquiera de las tres sirve. Si aprende $Q^*$, elige sin el modelo. Tiene que explorar porque los datos dependen de lo que hace. Si siempre usa la acción que hoy parece mejor, nunca sabe qué pasa con las otras.
+**4. Elige.** Los valores $Q^*$: con ellos elige la acción sin saber cómo se calienta la casa. Aprender el modelo también serviría, pero después habría que planificar. Tiene que explorar porque los datos dependen de lo que hace. Si siempre usa la acción que hoy parece mejor, nunca sabe qué pasa con las otras.
 
 **5. Decide.** No es explorar. Es mirar: reduce la incertidumbre de la posición de hoy con el modelo conocido. No cambia lo que sabe de $P$ ni del sensor.
 :::
@@ -256,9 +257,9 @@ En cada justificación, ¿dijiste qué falta: el estado de hoy, las probabilidad
 
 ## Lo que hay que llevarse
 
-- **Dos ejes, cuatro casillas.** ¿Se ve el estado? ¿Se conoce el modelo? La clase 3 vivió en planificar un MDP; esta clase, en el POMDP.
+- **Dos ejes, cuatro casillas.** ¿Se ve el estado? ¿Se conoce el modelo? La clase 3 vivió en planificar un MDP; esta clase, en planificar en un POMDP.
 - **Dos formas de no conocer.** Sin ver el estado, filtras: un paraguas da $9/11$ y dos dan $621/703$. Sin el modelo, aprendes de la experiencia.
-- **Mirar no es explorar.** Mirar reduce la incertidumbre del estado, con el modelo conocido; en el día del paraguas conviene si $1/6<b<1/2$. Explorar actúa para aprender el modelo.
+- **Mirar no es explorar.** Mirar informa del estado, con el modelo conocido; en el día del paraguas conviene si $1/6<b<1/2$. Explorar actúa para aprender el modelo, los valores o la política.
 - **Baum-Welch aprende un modelo sin actuar.** No hay acciones ni recompensas: no es refuerzo.
 - **Se aprende el modelo, los valores o la política.** Con $Q^*$ eliges sin el modelo; con $V^*$ sola, no.
 - **Lo nuevo del refuerzo:** interacción, episodios en vez de $P$ y $r$, y explorar frente a explotar.

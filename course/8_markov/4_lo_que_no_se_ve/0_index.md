@@ -53,8 +53,9 @@ Esta clase sigue a las tres anteriores. Si un renglón no te suena, vuelve a su 
 
 Un solo juguete: **el paraguas**. Trabajas en un sótano sin ventanas y no
 ves el clima; solo ves si tu compañero llega con paraguas. El mismo juguete
-sirve para generar, filtrar, decodificar, aprender y decidir. Al final, el
-mismo modelo con tres estados gramaticales y unas doce palabras.
+sirve para generar, filtrar, decodificar, aprender y decidir. Entre
+aprender y decidir, el mismo modelo con tres estados gramaticales y unas
+doce palabras.
 
 ## Recorrido
 

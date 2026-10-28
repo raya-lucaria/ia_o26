@@ -27,7 +27,7 @@ Al terminar tendrás:
 - **Bayes.** En [[mkv-bayes-y-normalizar|Bayes y normalizar]], partiste del prior $(1/2,1/2)$. Con paraguas, la probabilidad de lluvia quedó en $9/11$; sin paraguas, en $1/9$.
 - **La creencia.** En [[mkv-filtrar|Filtrar y predecir]] calculaste $b_t(s)=\Pr(S_t=s\mid O_{0:t})$ cada día: $b_0(\text{lluvia})=9/11$ y, con otro paraguas, $b_1(\text{lluvia})=621/703$.
 - **Viterbi.** En [[mkv-decodificar|Decodificar]], $\operatorname{mejor}_t(s)$ guardó la probabilidad de la mejor trayectoria que termina en $s$.
-- **Qué significan $b$ y $V$ aquí.** $b$ es la creencia de hoy. Para el paraguas basta un número: $b=b(\text{lluvia})$. $V^*$ y $Q^*$ son los de la clase 3, con estado visible.
+- **Qué significan $b$ y $V$ aquí.** $b$ es la creencia de hoy. Para el paraguas basta un número: $b=b(\text{lluvia})$. $V^*$ y $Q^*$ son los de la clase 3, en recompensas; el resto de la página usa costos.
 
 ---
 
@@ -47,15 +47,15 @@ Un proceso de decisión de Markov (MDP) tiene cuatro piezas: estados, acciones, 
 | Transición | $P(s'\mid s,a)$ | A dónde llegas | El día termina |
 | Costo | $\operatorname{costo}(s,a)=-r(s,a)$ | Lo que pagas al usar $a$ en $s$ | Llevar 1; no llevar 4 con lluvia, 0 con sol |
 | Política | $\pi(s)$ | Una acción por estado | Llevar si llueve |
-| Valor | $V^*(s)$ | Lo que vale $s$ con la mejor política | $V^*(\text{lluvia})=-1$, $V^*(\text{sol})=0$ |
+| Valor | $V^*(s)$ | Lo que vale $s$ con la mejor política | $V^*(\text{lluvia})=-1$: pagas 1; $V^*(\text{sol})=0$ |
 | Valor de acción | $Q^*(s,a)$ | Usar $a$ y luego lo mejor | $Q^*(\text{lluvia},\text{no llevar})=-4$ |
 :::
 
-- **Aviso de signo.** En la clase 3 maximizaste recompensas $r\le0$. Aquí usamos costos: $\operatorname{costo}(s,a)=-r(s,a)$. Maximizar recompensa equivale a minimizar costo.
+- **Aviso de signo.** En la clase 3 maximizaste recompensas $r\le0$. Desde aquí usamos costos y mínimos: $\operatorname{costo}(s,a)=-r(s,a)$. Solo la comparación con Viterbi, al final, vuelve a recompensas.
 - **Aviso de letra.** $\operatorname{costo}(s,a)$ es lo que pagas en un paso. En la escalera, $\operatorname{costo}(s)$ era todo lo que faltaba pagar.
 - **Aviso de diccionarios.** En el modelo oculto, `P[s][s2]` y `B[s][o]` son diccionarios anidados por estado. En el MDP de la clase 3, `P[(s, a)]` daba la transición por pareja.
 
-**La política óptima.** El día termina al actuar, así que $Q^*(s,a)=r(s,a)$. Con lluvia, llevar cuesta 1 y no llevar cuesta 4: conviene llevar. Con sol, llevar cuesta 1 y no llevar cuesta 0. Conviene no llevar. La política óptima es **llevar si llueve**.
+**La política óptima.** El día termina al actuar, así que $Q^*(s,a)=-\operatorname{costo}(s,a)$. Con lluvia, llevar cuesta 1 y no llevar cuesta 4: conviene llevar. Con sol, llevar cuesta 1 y no llevar cuesta 0. Conviene no llevar. La política óptima es **llevar si llueve**.
 
 **Lo que cuesta no ver.** Sin más información, asignas a la lluvia una probabilidad de $1/2$. Llevar cuesta 1 y no llevar tiene costo esperado $\tfrac12\cdot4+\tfrac12\cdot0=2$. Conviene llevar: 1.
 
@@ -65,7 +65,7 @@ $$
 \tfrac12\cdot1+\tfrac12\cdot0=\tfrac12.
 $$
 
-Ver el clima te ahorraría $1-\tfrac12=\tfrac12$. Ese ahorro es el valor de saber el estado. Depende de tu creencia inicial.
+Ver el clima te ahorraría $1-\tfrac12=\tfrac12$. Ese ahorro es el valor de saber el estado; depende de tu creencia.
 
 ::: exercise {#mkv-c4-ds-ej-ver-gratis title="Calcula lo que ahorra ver"}
 Ahora asignas a la lluvia una probabilidad de $1/3$. ¿Cuánto cuesta la mejor acción sin ver? ¿Y viendo gratis? ¿Cuánto ahorras?
@@ -87,7 +87,7 @@ Desde el sótano no puedes ver gratis. ¿Cómo decides sin ver?
 
 **Piensa: si no ves el clima, ¿qué puedes elegir y con qué información?**
 
-Puedes elegir una acción a partir de tu creencia. Primero planteamos el problema: qué ocurre, en qué orden y cuándo termina.
+Puedes elegir una acción a partir de tu creencia.
 
 ::: remark {#mkv-c4-obs-un-dia title="El problema de un día"}
 **En general.** Hay conjuntos finitos de estados $\mathcal S$ y acciones $\mathcal A$. Cada pareja tiene un costo $\operatorname{costo}(s,a)\ge0$. La creencia $b$ es una distribución sobre $\mathcal S$. El estado es uno solo y **no cambia durante el día**.
@@ -106,7 +106,6 @@ Puedes elegir una acción a partir de tu creencia. Primero planteamos el problem
 
 - **Mirar es una macroacción.** Junta dos pasos: pagar por ver y decidir con esa información. Después de mirar, tienes el MDP visible de la sección 1.
 - **La acción no puede depender de $s$.** No lo ves. Sin mirar, eliges una sola acción para los dos climas.
-- **Por qué un día.** No hay decisiones futuras que valorar. La creencia de mañana entra en la sección 5.
 
 ::: exercise {#mkv-c4-ds-ej-planes title="Cuenta los planes del día"}
 Un plan indica qué haces hoy y, si miras, qué haces en cada clima. ¿Cuántos planes hay? ¿Qué regla tras mirar gana en los dos climas?
@@ -141,7 +140,6 @@ $$
 
 - **De dónde sale:** usas las probabilidades de cada clima como pesos, como en la probabilidad total de la clase 1.
 - **Qué significa:** decides con la información disponible. La misma $b$ da la misma decisión, llueva o no.
-- **Aviso de letra.** $\operatorname{costo}(b,a)$ recibe una creencia; $\operatorname{costo}(s,a)$ recibe un estado.
 
 **En el paraguas.** Con $b(\text{lluvia})=b$ y $b(\text{sol})=1-b$:
 
@@ -175,7 +173,7 @@ Tu compañero llegó con paraguas el día 0 y sin paraguas el día 1. El filtro 
 $69/397\approx0.174<1/4$: no llevas. El costo esperado es $4\cdot\tfrac{69}{397}=\tfrac{276}{397}\approx0.695$. Llevar cuesta 1.
 :::
 
-Ese $0.695$ es caro para quien casi seguro tiene sol. ¿Cuánto ayudaría salir de dudas?
+Ese $0.695$ es caro con aproximadamente un 83 % de probabilidad de sol. ¿Cuánto ayudaría salir de dudas?
 
 ---
 
@@ -183,7 +181,7 @@ Ese $0.695$ es caro para quien casi seguro tiene sol. ¿Cuánto ayudaría salir 
 
 **Piensa: con $b=1/4$, ¿cuánto pagarías por ver el cielo antes de decidir?**
 
-Hasta $3/4$. Sin mirar pagas 1, y si vieras gratis pagarías en promedio $b=1/4$. La diferencia es el valor de ver. Calculemos primero el costo de mirar.
+Hasta $3/4$. Sin mirar pagas 1, y si vieras gratis pagarías en promedio $b=1/4$. La diferencia es el valor de ver.
 
 **El costo de mirar, en general.** Pagas el precio y ves $s$. Luego eliges la acción de menor costo en ese estado:
 
@@ -200,7 +198,7 @@ $$
 **Antes de la gráfica.** Contesta qué acción cuesta menos según lo que crees. Cada punto de una línea es el costo esperado de una acción con una creencia. El eje horizontal es $b$, de 0 a 1. El vertical muestra el costo esperado del día.
 
 ::: figure {#mkv-c4-fig-ds-costos title="Los tres costos según la creencia, y dónde gana cada uno"}
-![Gráfica con la creencia b = Pr(lluvia) de 0 a 1 en el eje horizontal y el costo esperado del día en el vertical. Tres rectas: llevar, horizontal en 1; no llevar, 4b, que sube desde 0; mirar, 1/2 + b, que sube desde 1/2. Una recta punteada, b, marca ver gratis. Abajo, tres regiones: no llevar de 0 a 1/6, mirar entre 1/6 y 1/2, llevar de 1/2 a 1. Puntos marcados: en 1/6, no llevar y mirar valen 2/3; en 1/4, llevar y no llevar valen 1 y mirar 3/4; en 1/2, mirar y llevar valen 1. Una marca en b = 9/11 dice llevar.](../_assets/mkv-c4-ds-costos.svg)
+![Gráfica con la creencia b = Pr(lluvia) de 0 a 1 en el eje horizontal y el costo esperado del día de 0 a 2 en el vertical. Tres rectas sólidas, cada una con su marca: llevar, horizontal en 1; no llevar, 4b, que sube desde 0; mirar, 1/2 + b, que sube desde 1/2. Una recta punteada, y = b, marca ver gratis. Una banda ancha marca el menor de los tres. Abajo, tres regiones: no llevar de 0 a 1/6, mirar entre 1/6 y 1/2, llevar de 1/2 a 1. Puntos marcados: en 1/6, no llevar y mirar valen 2/3; en 1/4, llevar y no llevar valen 1 y mirar 3/4; en 1/2, mirar y llevar valen 1. Una marca en b = 9/11 dice llevar.](../_assets/mkv-c4-ds-costos.svg)
 :::
 
 - **Mirar contra no llevar:** $\tfrac12+b<4b$ si $b>1/6$. En $b=1/6$ las dos valen $2/3$.
@@ -250,7 +248,7 @@ La diferencia es negativa si y solo si $\operatorname{info}(b)>\text{precio}$. A
 > - **No lo cumple:** $b=1/3$. La ventana empañada solo deja ver si el vecino trae paraguas, con $B=\begin{pmatrix}9/10&1/10\\2/10&8/10\end{pmatrix}$. Lo trae con probabilidad $13/30$: la probabilidad de lluvia sube a $9/13$ y llevas: 1. No lo trae con $17/30$: la probabilidad de lluvia baja a $1/17$ y no llevas: $4/17$. Mirar cuesta $\tfrac12+\tfrac{13}{30}+\tfrac{4}{30}=\tfrac{16}{15}>1$. La fórmula del teorema diría «mira», pero aquí no aplica: mirar pierde.
 
 ::: figure {#mkv-c4-fig-ej-decidir title="Ejemplo y contraejemplo: pagar por mirar"}
-![Dos árboles de decisión con b = 1/3 y precio 1/2. Arriba, el que cumple: mirar revela el clima; rama lluvia con probabilidad 1/3 lleva a llevar, costo 1; rama sol con 2/3 lleva a no llevar, costo 0; total 1/2 + 1/3 = 5/6, menor que actuar ya, 1. Abajo, el que no: la ventana empañada muestra solo una señal; rama paraguas con 13/30 deja la lluvia en 9/13 y lleva a llevar, costo 1; rama sin paraguas con 17/30 deja la lluvia en 1/17 y lleva a no llevar, costo 4/17; total 16/15, mayor que 1.](../_assets/mkv-c4-ej-decidir.svg)
+![Lo cumple: b = 1/3; mirar revela el clima. Árbol de decisión con b = 1/3 y precio 1/2: mirar revela el clima; rama lluvia con probabilidad 1/3 lleva a llevar, costo 1; rama sol con 2/3 lleva a no llevar, costo 0; total 1/2 + 1/3 = 5/6, menor que actuar ya, 1. No lo cumple: b = 1/3; ventana con niebla. Árbol con la ventana empañada, que muestra solo una señal: rama paraguas con 13/30 deja la lluvia en 9/13 y lleva a llevar, costo 1; rama sin paraguas con 17/30 deja la lluvia en 1/17 y lleva a no llevar, costo 4/17; total 16/15, mayor que 1.](../_assets/mkv-c4-ej-decidir.svg)
 :::
 
 > [!WARNING]
@@ -325,14 +323,14 @@ El problema terminaba hoy. ¿Qué cambia si mañana decides otra vez?
 
 **Piensa: si decides todos los días, ¿qué tienes que recordar de los días pasados?**
 
-Solo tu creencia de hoy. El filtro la actualiza con la acción y la nueva señal. No necesitas guardar el resto de la historia.
+Solo tu creencia de hoy: el filtro la actualiza con la acción y la nueva señal.
 
-Cuando el problema se repite, decides en cada paso $t$ con $b_t$. La creencia funciona como estado del MDP. Este es un **proceso de decisión de Markov parcialmente observable** (*partially observable Markov decision process*, POMDP).
+Cuando el problema se repite, $b_t$ funciona como el estado del MDP. Este es un **proceso de decisión de Markov parcialmente observable** (*partially observable Markov decision process*, POMDP).
 
 ::: remark {#mkv-c4-obs-creencia-estado title="La creencia como estado"}
-**En general.** Tienes un MDP con estado oculto: $\mathcal S$, $\mathcal A$, $P(s'\mid s,a)$, $r(s,a)$ y señales descritas por $B(s,o)$. En cada paso:
+**En general.** Tienes un MDP con estado oculto: $\mathcal S$, $\mathcal A$, $P(s'\mid s,a)$, $\operatorname{costo}(s,a)$ y señales descritas por $B(s,o)$. En cada paso:
 
-1. **Decides** con $b_t$ y ejecutas $a$. Recibes, en promedio, $r(b_t,a)=\sum_s b_t(s)\,r(s,a)$.
+1. **Decides** con $b_t$ y ejecutas $a$. Pagas, en promedio, $\operatorname{costo}(b_t,a)$, como en la sección 3.
 2. **El estado cambia** según $P(\cdot\mid s,a)$ y emite una señal $o$ según $B$.
 3. **Actualizas** con el filtro de la página 3: predices con $P$, corriges con $B(s',o)$ y normalizas.
 
@@ -342,25 +340,26 @@ b_{t+1}(s')&=\frac{B(s',o)\sum_s b_t(s)P(s'\mid s,a)}{\Pr(o\mid b_t,a)}.
 \end{aligned}
 $$
 
-El denominador suma el numerador sobre $s'$. **Qué significa:** la nueva creencia depende solo de $b_t$, de $a$ y de $o$. La creencia es el estado de este MDP.
+El denominador suma el numerador sobre $s'$. **Supuesto:** el costo pagado no se usa como señal; si informara (pagar 4 revela lluvia), entraría en $o$. **Qué significa:** la nueva creencia depende solo de $b_t$, de $a$ y de $o$.
 :::
 
 - **En el paraguas,** llevar no cambia el clima: $P(s'\mid s,a)=P(s'\mid s)$. Usas el filtro de la página 3.
-- **Aviso de estado.** $b_t$ es el estado de información del MDP. El clima sigue oculto.
 
-**La ecuación tiene el mismo aspecto.** Usamos recompensas como en la clase 3; $b'$ es la creencia después de $a$ y $o$:
+**Un horizonte finito.** Quedan $n$ días y al final no se paga nada. Sin un final, el costo acumulado crece sin límite: cada día de lluvia cuesta al menos 1. Sea $\operatorname{falta}_n(b)$ lo mínimo que esperas pagar con $n$ días por delante, y $b'$ la creencia tras $a$ y $o$:
 
 $$
 \begin{aligned}
-V(b)&=\max_{a\in\mathcal A}\Bigl[r(b,a)\\
-&\qquad+\sum_{o}\Pr(o\mid b,a)\,V(b')\Bigr].
+\operatorname{falta}_n(b)&=\min_{a\in\mathcal A}\Bigl[\operatorname{costo}(b,a)\\
+&\qquad+\sum_{o}\Pr(o\mid b,a)\operatorname{falta}_{n-1}(b')\Bigr],
 \end{aligned}
 $$
 
-- **El problema de un día** no tiene decisiones futuras. El segundo término vale 0 y queda $V(b)=\max_a r(b,a)=-\operatorname{actuar}(b)$. La sección 3 resolvió justo eso.
-- **Límite del teorema.** El teorema de la clase 3 exigía estados finitos. Aquí $b$ toma un continuo de valores. Ese teorema no garantiza una solución única ni que la política codiciosa sea óptima.
+con $\operatorname{falta}_0=0$. Es la ecuación de Bellman de la clase 3, en costos, sobre creencias. $n$ cuenta días, no rondas.
 
-**Viterbi y Bellman.** Ambas usan programación dinámica con un máximo. Construyen la mejor solución a partir de soluciones óptimas de problemas más cortos.
+- **El problema de un día** es $n=1$: el segundo término vale 0. Sin mirar, $\operatorname{falta}_1(b)=\operatorname{actuar}(b)$. Con mirar como opción más, $\operatorname{falta}_1(b)=\min(\operatorname{actuar}(b),\operatorname{costo}(b,\text{mirar}))$: en $b=1/4$ vale $3/4$, no 1.
+- **Límite del teorema.** Con $n$ fijo, la recursión se define hacia atrás. Sin horizonte sería un punto fijo sobre un continuo de creencias. @mkv-c3-teo-bellman, en [[mkv-bellman|La ecuación de Bellman]], exigía estados finitos. Ese teorema no garantiza una solución única ni que la política codiciosa sea óptima.
+
+**Viterbi y Bellman.** Ambas usan programación dinámica con un máximo. Para compararlas, Bellman vuelve aquí a recompensas, como en la clase 3: $r=-\operatorname{costo}$.
 
 $$
 \begin{aligned}
@@ -381,7 +380,6 @@ $$
 
 - **Viterbi no decide nada.** Busca la trayectoria más probable dadas las señales.
 - **Bellman sí decide.** Elige una acción y promedia sus posibles consecuencias.
-- **Con logaritmos se parecen más.** El logaritmo convierte el producto de Viterbi en una suma, como en Bellman.
 
 ::: exercise {#mkv-c4-ds-ej-cuantas-creencias title="Cuenta las creencias del paraguas"}
 Empiezas con $\mu_0=(1/2,1/2)$. ¿Cuántos valores puede tomar $b_0$? ¿Y $b_1$? ¿Cuántos como máximo el día $t$?
@@ -407,7 +405,7 @@ $b_0$: dos, $9/11$ y $1/9$. $b_1$: cuatro, $621/703$, $69/397$, $279/397$ y $31/
 1. **Escribe** los tres costos esperados en función de $b$.
 2. **Encuentra** el umbral de llevar sin mirar. ¿Qué ocurre en el umbral?
 3. **Encuentra** el rango de $b$ donde mirar conviene estrictamente. Indica los empates en los extremos.
-4. **Generaliza:** expresa el umbral y la condición para mirar usando los costos de llevar y mojarse, y el precio. Comprueba que 1, 4 y $1/2$ dan $1/4$ y $(1/6,1/2)$.
+4. **Generaliza:** con $0<\text{llevar}<\text{mojarse}$ y $\text{precio}\ge0$, expresa el umbral y la condición para mirar. Comprueba que 1, 4 y $1/2$ dan $1/4$ y $(1/6,1/2)$. ¿Cuándo no hay rango?
 5. **Calcula** $\operatorname{info}(b)$ y su máximo. Indica dónde lo alcanza. ¿Desde qué precio mirar deja de convenir estrictamente?
 :::
 
@@ -441,7 +439,7 @@ $$
 \end{aligned}
 $$
 
-Al despejar, $\dfrac{\text{precio}}{\text{mojarse}-\text{llevar}}<b<1-\dfrac{\text{precio}}{\text{llevar}}$. Con 1, 4 y $1/2$, el umbral es $1/4$ y el rango, $(1/6,\ 1/2)$. Con 1, 3 y $1/2$, son $1/3$ y $(1/4,\ 1/2)$.
+Para $b\in[0,1]$, con $0<\text{llevar}<\text{mojarse}$ y $\text{precio}\ge0$, al despejar queda $\dfrac{\text{precio}}{\text{mojarse}-\text{llevar}}<b<1-\dfrac{\text{precio}}{\text{llevar}}$. Con 1, 4 y $1/2$, el umbral es $1/4$ y el rango, $(1/6,\ 1/2)$. Con 1, 3 y $1/2$, son $1/3$ y $(1/4,\ 1/2)$. **Si el extremo inferior no es menor que el superior, no hay rango:** con 1, 3 y precio $2/3$ ambos valen $1/3$. Si llevar no cuesta menos que mojarse, las fórmulas no aplican.
 
 **5. El valor.** $\operatorname{info}(b)=\min(1,3b)-b$. Sube como $2b$ hasta el umbral. Después baja como $1-b$. Su máximo está en $b=1/3$ y vale $2/3$. Si el precio es $2/3$ o más, mirar nunca gana estrictamente.
 
@@ -474,7 +472,7 @@ for x in [F(1, 4), F(1, 3), F(1, 2)]:
 - **Decidir con la creencia:** $\operatorname{costo}(b,a)=\sum_s b(s)\operatorname{costo}(s,a)$. El mínimo es $\min(1,4b)$: llevas si $b>1/4$. Con $b_0=9/11$, llevas.
 - **Mirar:** cuesta $\tfrac12+b$ y conviene estrictamente para $1/6<b<1/2$. Empates: $2/3$ en $1/6$, 1 en $1/2$. En $1/4$, llevar y no llevar cuestan 1; mirar, $3/4$.
 - **Valor frente a precio:** $\operatorname{info}(b)=\min(1,4b)-b$. Mirar conviene si $\operatorname{info}(b)>\text{precio}$. Esta regla exige ver el estado exacto (@mkv-c4-teo-mirar).
-- **La creencia como estado:** el POMDP es un MDP sobre creencias. Bellman conserva su forma. El teorema de la clase 3 no aplica porque las creencias forman un continuo.
+- **La creencia como estado:** el POMDP es un MDP sobre creencias. Con $n$ días por delante, Bellman se escribe igual, en costos. Sin horizonte, el teorema de la clase 3 no aplica: las creencias forman un continuo.
 - **Viterbi y Bellman:** ambas usan programación dinámica con un máximo. Viterbi busca la trayectoria más probable; Bellman, las acciones con mayor recompensa esperada.
 
 Aquí conocías $P$, $B$ y los costos. ¿Cómo decides si tienes que aprenderlos al actuar?
