@@ -8,8 +8,8 @@ estimated_time: 75m
 tags: [aprendizaje-maquina, regularizacion, lagrangeano, ridge, lasso, red-elastica]
 ---
 
-> [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
 >
 > **Notebook 07 · El lagrangeano en acción.** Corre en tu navegador, sin instalar nada.
 >

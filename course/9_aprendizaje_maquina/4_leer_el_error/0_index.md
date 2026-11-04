@@ -8,8 +8,8 @@ estimated_time: 140m
 tags: [aprendizaje-maquina, residuales, benchmark, regularizacion, lagrangeano]
 ---
 
-> [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
 >
 > **Notebook 06 · Leer el error.** Corre en tu navegador, sin instalar nada.
 >
@@ -17,8 +17,8 @@ tags: [aprendizaje-maquina, residuales, benchmark, regularizacion, lagrangeano]
 >
 > **[👉 Abrir `06_leer_el_error.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)**
 
-> [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
 >
 > **Notebook 07 · El lagrangeano en acción.** Corre en tu navegador, sin instalar nada.
 >

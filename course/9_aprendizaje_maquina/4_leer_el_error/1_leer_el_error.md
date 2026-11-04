@@ -8,8 +8,8 @@ estimated_time: 65m
 tags: [aprendizaje-maquina, residuales, benchmark, colas-largas, variable-omitida, colinealidad]
 ---
 
-> [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
 >
 > **Notebook 06 · Leer el error.** Corre en tu navegador, sin instalar nada.
 >
