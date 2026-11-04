@@ -122,6 +122,92 @@ def test_la_anidada_dice_quien_estima_y_quien_elige():
     assert "Afuera se estima; adentro se elige" in t
     assert "no ve el pliegue externo" in t
 
+def test_los_datos_del_tramo_rapido_estan_en_el_catalogo():
+    assert set(DATOS_RAPIDO) <= set(fig._RAPIDO)
+    assert len(fig._RAPIDO) == 14
+
+
+@pytest.mark.parametrize("ident", ["ml-c2-prueba-miente", "ml-c2-cv-capacidad",
+                                   "ml-c2-estratificada"])
+def test_los_ids_congelados_existen_tal_cual(ident):
+    # contrato §2.3: los cita otra clase (5, 3 y 4); no se renombran
+    assert ident in fig._RAPIDO
+
+
+@pytest.mark.parametrize("ident", ["ml-c2-ajustes-con-prueba", "ml-c2-prueba-ruidosa",
+                                   "ml-c2-optimismo", "ml-c2-prueba-miente", "ml-c2-reparto"])
+def test_las_graficas_de_prueba_usan_el_rosa_de_prueba(ident):
+    assert gen.color_rol("prueba").lower() in colores(ident)
+
+
+def test_la_cv_lleva_oro_entrenamiento_cian_benchmark_magenta_y_piso():
+    c = colores("ml-c2-cv-capacidad")
+    for rol in ("validacion", "entrenamiento", "benchmark"):
+        assert gen.color_rol(rol).lower() in c, rol
+    assert "solo en el simulador" in contenido("ml-c2-cv-capacidad")
+
+
+def test_el_aria_de_los_ajustes_nombra_las_cifras():
+    import ml_cifras_c2 as c
+    a, t = c.cifras_c2_ajustes_con_prueba(), aria("ml-c2-ajustes-con-prueba")
+    for N in (1, 4):
+        assert fig._num(a[N]["L_ent"]) in t and fig._num(a[N]["L_prueba"]) in t
+    assert fig._num(a[12]["L_prueba"], 0) in t
+
+
+def test_el_aria_de_la_prueba_ruidosa_nombra_desviaciones_y_coberturas():
+    import ml_cifras_c2 as c
+    p, t = c.cifras_c2_prueba_ruidosa(), aria("ml-c2-prueba-ruidosa")
+    for n in (20, 200):
+        assert fig._num(p[f"desv_{n}"]) in t and fig._pct(p[f"cobertura_{n}"]) in t
+    assert fig._num(p["R"]) in t
+
+
+def test_el_aria_del_optimismo_nombra_el_sesgo_y_los_porcentajes():
+    import ml_cifras_c2 as c
+    o, t = c.cifras_c2_optimismo(), aria("ml-c2-optimismo")
+    assert fig._num(o["sesgo_prueba"]) in t
+    assert fig._pct(o["optimistas_prueba"]) in t and fig._pct(o["optimistas_validacion"]) in t
+    assert "sin reajuste" in contenido("ml-c2-optimismo")
+
+
+def test_la_figura_de_contratos_dibuja_las_cifras_de_imitar():
+    import ml_cifras_c2 as c
+    t = fig.tabla_contratos()
+    i = c.cifras_c2_imitar()
+    fila = t[(t["contrato"] == "el mes que viene") & (t["separacion"] == "al azar")].iloc[0]
+    assert fila["L_prueba"] == i["el mes que viene"]["azar"]["L_prueba"]
+    assert list(dict.fromkeys(t["contrato"])) == list(c.CONTRATOS)
+    a = aria("ml-c2-prueba-miente")
+    for ct in c.CONTRATOS:
+        assert fig._num(i[ct]["azar"]["R"]) in a
+
+
+def test_el_aria_del_reparto_nombra_los_tres_extremos():
+    import ml_cifras_c2 as c
+    r, t = c.cifras_c2_reparto(), aria("ml-c2-reparto")
+    for f in (0.1, 0.2, 0.5):
+        assert fig._num(r[f]["R"]) in t and fig._num(r[f]["desv_error"]) in t
+
+
+def test_el_aria_de_la_cv_nombra_los_elegidos_y_el_umbral():
+    import ml_cifras_c2 as c
+    h, t = c.cifras_c2_hilo(), aria("ml-c2-cv-capacidad")
+    assert f"N = {h['N_min']}" in t and fig._num(h["umbral"], 2) in t
+    assert fig._num(h["cv"][h["N_min"]], 2) in t
+
+
+def test_el_pliegue_anomalo_rotula_un_pliegue_con_entrega_lejana():
+    import ml_cifras_c2 as c
+    p = c.cifras_c2_pliegue_anomalo()
+    assert f"pliegue {p[8]['pliegue_max']}" in contenido("ml-c2-pliegue-anomalo")
+
+
+def test_la_estratificada_nombra_las_dos_fracciones():
+    import ml_cifras_c2 as c
+    e, t = c.cifras_c2_estratificada(), aria("ml-c2-estratificada")
+    assert fig._pct(e["azar"]) in t and fig._pct(e["estratificada"]) in t
+
 # --- fin tramo rapido ---
 
 

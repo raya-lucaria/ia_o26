@@ -29,6 +29,8 @@ hornea cada relleno translucido contra el panel.
 """
 import re
 
+import numpy as np
+
 import gen_aprendizaje_maquina as gen
 from gen_aprendizaje_maquina import (ACENTO, FONDO, LINEA, PANEL, SUAVE, TEXTO,
                                      _n, caja, flecha, linea, mezclar, svg, texto)
@@ -95,8 +97,13 @@ def _grafica(dibujar, aria, titulo, alto_in, paneles=1, **subplots):
     return _sin_opacidad(crudo)
 
 
-def _leyenda(ax, **kw):
-    ley = ax.legend(frameon=True, fontsize=9, **kw)
+def _leyenda(ax, renombrar=None, **kw):
+    """Leyenda con el panel del sitio; renombrar={rotulo viejo: nuevo}."""
+    kw.setdefault("fontsize", 9)
+    if renombrar:
+        h, r = ax.get_legend_handles_labels()
+        kw["handles"], kw["labels"] = h, [renombrar.get(x, x) for x in r]
+    ley = ax.legend(frameon=True, **kw)
     ley.get_frame().set_facecolor(PANEL)
     ley.get_frame().set_edgecolor(LINEA)
     for t in ley.get_texts():
@@ -579,6 +586,310 @@ def ml_c2_anidada():
     return svg(AN_W, AN_H, aria, "Afuera se estima; adentro se elige", c)
 
 
+# ============================================== graficas de datos (rapido) ---
+#
+# Todas leen sus cifras de tools/ml_cifras_c2.py (el mismo diccionario que la
+# pagina y la prueba) y dibujan con las dibujar_* de ml_lab, tema="sitio".
+
+def _cif():
+    import ml_cifras_c2
+    return ml_cifras_c2
+
+
+# --------------------------------------- grafica: ml-c2-ajustes-con-prueba ---
+#
+# P1 §2. Grados 1, 4 y 12 sobre el hilo: circulos de entrenamiento, cuadrados
+# de prueba, f gruesa y el ajuste; arriba de cada panel L_ent y L_prueba.
+YLIM_AJUSTES = (0, 75)
+
+
+def ml_c2_ajustes_con_prueba():
+    cif = _cif()
+    ml = gen.ml_lab()
+    d = cif.hilo()
+    a = cif.cifras_c2_ajustes_con_prueba()
+
+    def dibujar(fig, ejes):
+        for ax, N in zip(ejes, (1, 4, 12)):
+            ml.dibujar_proceso(d, conjuntos=("ent", "prueba"), ax=ax, tema="sitio")
+            ml.dibujar_ajuste([cif.construir(N)(d)], ventana=(0, 6), ax=ax, tema="sitio")
+            ax.set_ylim(*YLIM_AJUSTES)
+            ax.set_xlim(0, 6)
+            ax.set_title(f"grado {N}:  L_ent = {_num(a[N]['L_ent'])}   ·   "
+                         f"L_prueba = {_num(a[N]['L_prueba'])}", color=TEXTO, fontsize=9)
+            ax.set_ylabel("tiempo y (min)")
+            ax.set_xlabel("")
+            if ax.get_legend():
+                ax.get_legend().remove()
+        ejes[-1].set_xlabel("distancia x (km)")
+        h, r = ejes[0].get_legend_handles_labels()
+        r = ["f̂ (el ajuste)" if x.startswith("lineal") else x for x in r]
+        _leyenda(ejes[0], handles=h, labels=r, loc="lower right", fontsize=8)
+
+    aria = ("Tres paneles con las mismas 60 entregas: círculos de entrenamiento y "
+            "cuadrados de prueba, la f verdadera y el ajuste. Grado 1: L_ent "
+            f"{_num(a[1]['L_ent'])}, L_prueba {_num(a[1]['L_prueba'])}. Grado 4: L_ent "
+            f"{_num(a[4]['L_ent'])}, L_prueba {_num(a[4]['L_prueba'])}. Grado 12: L_ent "
+            f"{_num(a[12]['L_ent'])}, el más bajo, pero la curva pasa cerca de los círculos "
+            "y se dispara en los bordes, y su L_prueba es enorme, "
+            f"{_num(a[12]['L_prueba'], 0)}.")
+    return _grafica(dibujar, aria, "Grados 1, 4 y 12 con entrenamiento y prueba", 7.4,
+                    paneles=3, sharex=True)
+
+
+# ------------------------------------------- grafica: ml-c2-prueba-ruidosa ---
+#
+# P1 §3. El modelo de grado 4 congelado; 500 pruebas nuevas de 20 y de 200
+# sacadas del despliegue; linea en R; cobertura de ±2 EE en cada panel.
+
+def ml_c2_prueba_ruidosa():
+    cif = _cif()
+    ml = gen.ml_lab()
+    p = cif.cifras_c2_prueba_ruidosa()
+
+    def dibujar(fig, ejes):
+        for ax, n in zip(ejes, (20, 200)):
+            ml.dibujar_histograma_estimaciones(p["estimaciones"][n], verdadero=p["R"],
+                                               etiqueta="L_prueba", ax=ax, tema="sitio")
+            ax.set_title(f"{cif.REP_PRUEBAS} pruebas de {n}: desv. {_num(p[f'desv_{n}'])}; "
+                         f"±2 EE cubre R en {_pct(p[f'cobertura_{n}'])}", color=TEXTO,
+                         fontsize=9)
+            ax.set_xlim(0, 32)
+            _leyenda(ax, loc="upper right", renombrar={"verdadero": f"R = {_num(p['R'])}"})
+            ax.set_xlabel("")
+        ejes[-1].set_xlabel("L_prueba del mismo modelo (grado 4, congelado)")
+
+    aria = (f"Dos histogramas de L_prueba del mismo modelo de grado 4, congelado, con "
+            f"{cif.REP_PRUEBAS} pruebas nuevas cada uno. Con 20 entregas por prueba la nube "
+            f"es ancha, desviación {_num(p['desv_20'])}, y el intervalo de ±2 EE cubre R en "
+            f"{_pct(p['cobertura_20'])} de las pruebas; con 200, desviación "
+            f"{_num(p['desv_200'])} y cobertura {_pct(p['cobertura_200'])}. Las dos nubes "
+            f"se centran en R = {_num(p['R'])}.")
+    return _grafica(dibujar, aria, "Una prueba honesta también baila", 5.2, paneles=2,
+                    sharex=True)
+
+
+# ------------------------------------------------ grafica: ml-c2-optimismo ---
+#
+# P1 §4 (F4). Anunciado menos real del elegido, SIN reajuste, eligiendo con la
+# prueba (izquierda en la pagina: arriba aqui) y con validacion (abajo).
+XLIM_OPTIMISMO = (-30, 20)
+
+
+def ml_c2_optimismo():
+    cif = _cif()
+    ml = gen.ml_lab()
+    o = cif.cifras_c2_optimismo()
+    serie = o["anunciado_menos_real"]
+
+    def dibujar(fig, ejes):
+        for ax, (clave, nombre) in zip(ejes, (("prueba", "eliges con la prueba"),
+                                              ("validacion", "eliges con validación"))):
+            v = np.clip(serie[clave], *XLIM_OPTIMISMO)
+            ml.dibujar_histograma_estimaciones({nombre: v}, verdadero=0,
+                                               etiqueta="anunciado − real del elegido (sin reajuste)",
+                                               ax=ax, tema="sitio")
+            ax.set_xlim(*XLIM_OPTIMISMO)
+            ax.set_title(f"{nombre}: {_pct(o['optimistas_' + clave])} anuncian de menos",
+                         color=TEXTO, fontsize=9)
+            _leyenda(ax, loc="upper left", renombrar={"verdadero": "0: anuncio honesto"})
+        ejes[0].set_xlabel("")
+        ejes[1].annotate("sin reajuste: el mismo\nentrenamiento en los dos paneles",
+                         (0.99, 0.95), xycoords="axes fraction", ha="right", va="top",
+                         fontsize=8, color=TEXTO)
+
+    aria = (f"Dos histogramas con {o['repeticiones']} repeticiones del hilo: lo anunciado "
+            "menos el riesgo real del grado elegido, sin reajuste. Arriba, eligiendo con la "
+            f"prueba: la nube se corre a la izquierda de 0, la media es "
+            f"{_num(o['sesgo_prueba'])} y {_pct(o['optimistas_prueba'])} de las repeticiones "
+            "anuncian menos error del real. Abajo, eligiendo con validación y anunciando en "
+            f"prueba: la mediana queda en {_num(o['mediana_validacion'])} y "
+            f"{_pct(o['optimistas_validacion'])} anuncian de menos. Los valores fuera de "
+            f"{XLIM_OPTIMISMO[0]} a {XLIM_OPTIMISMO[1]} se apilan en los bordes.")
+    return _grafica(dibujar, aria, "El engaño de elegir con la prueba", 5.2, paneles=2,
+                    sharex=True)
+
+
+# --------------------------------------------- grafica: ml-c2-prueba-miente ---
+#
+# P1 §5. Id congelado (lo cita la clase 5). Por contrato, L_prueba al azar y
+# con la separacion que lo imita, contra R del despliegue y el benchmark.
+
+def tabla_contratos():
+    cif = _cif()
+    i = cif.cifras_c2_imitar()
+    filas = []
+    for c in cif.CONTRATOS:
+        a = i[c]["azar"]
+        filas.append({"contrato": c, "separacion": "al azar", "L_prueba": a["L_prueba"],
+                      "R": a["R"], "benchmark": a["benchmark"]})
+        if "imita" in i[c]:
+            m = i[c]["imita"]
+            sep = "por tiempo" if c == "el mes que viene" else "por paciente"
+            filas.append({"contrato": c, "separacion": sep, "L_prueba": m["L_prueba"],
+                          "R": m["R"], "benchmark": m["benchmark"]})
+    import pandas as pd
+    return pd.DataFrame(filas)
+
+
+def ml_c2_prueba_miente():
+    cif = _cif()
+    ml = gen.ml_lab()
+    i = cif.cifras_c2_imitar()
+    t = tabla_contratos()
+
+    def dibujar(fig, ax):
+        ml.dibujar_contratos(t, ax=ax, tema="sitio")
+        ax.set_xticklabels([f"{c}\n{s}".replace("el mes que viene", "el mes\nque viene")
+                            .replace("más de lo mismo", "más de\nlo mismo")
+                            .replace("pacientes nuevos", "pacientes\nnuevos")
+                            for c, s in zip(t["contrato"], t["separacion"])], fontsize=8)
+        ax.set_yscale("log")
+        ax.set_ylim(1, 3000)
+        ax.set_ylabel("pérdida (escala log)")
+        _leyenda(ax, loc="upper left", fontsize=8, ncol=2)
+
+    def par(c, k="azar"):
+        return f"{_num(i[c][k]['L_prueba'])} contra R {_num(i[c][k]['R'])}"
+
+    aria = ("Por contrato, lo que promete la prueba contra el riesgo del despliegue, en "
+            "escala logarítmica. Más de lo mismo, al azar: " + par("más de lo mismo") +
+            ". El mes que viene, al azar: " + par("el mes que viene") + "; por tiempo: " +
+            par("el mes que viene", "imita") + ". Pacientes nuevos, al azar: " +
+            par("pacientes nuevos") + "; por paciente: " + par("pacientes nuevos", "imita") +
+            ". Otra ciudad, al azar: " + par("otra ciudad") + "; ninguna separación de la "
+            "muestra la imita. La raya y punto es el benchmark, la media de entrenamiento.")
+    return _grafica(dibujar, aria, "Lo que promete la prueba según cómo se separó", 4.4)
+
+
+# ------------------------------------------------- grafica: ml-c2-reparto ---
+#
+# P1 §6. R medio del modelo (arriba) y dispersion de L_prueba − R (abajo)
+# contra la fraccion de prueba, n = 60; marcas en 20 % y 50 %.
+
+def ml_c2_reparto():
+    cif = _cif()
+    ml = gen.ml_lab()
+    r = cif.cifras_c2_reparto()
+    t = cif.tabla_reparto()
+
+    def dibujar(fig, ejes):
+        ml.dibujar_reparto(t, marca=0.2, ax=list(ejes), tema="sitio")
+        for ax in ejes:
+            ax.axvline(0.5, color=SUAVE, ls=":", lw=1.2)
+        ejes[0].set_title(f"{cif.REP_REPARTO} repeticiones por fracción; n = {cif.N_REPARTO}",
+                          color=TEXTO, fontsize=9)
+        ejes[0].set_ylabel("R medio del modelo")
+        ejes[1].set_ylabel("desv. del error")
+
+    aria = ("Contra la fracción de la muestra que va a prueba, de 5 a 50 por ciento, con "
+            f"60 entregas. Arriba, el riesgo medio del modelo: {_num(r[0.1]['R'])} con 10 por "
+            f"ciento, {_num(r[0.2]['R'])} con 20 y {_num(r[0.5]['R'])} con 50: empeora al "
+            "quitarle datos. Abajo, la desviación de L_prueba menos R: "
+            f"{_num(r[0.1]['desv_error'])} con 10 por ciento, {_num(r[0.2]['desv_error'])} "
+            f"con 20 y {_num(r[0.5]['desv_error'])} con 50: la medición mejora. Marcas en 20 "
+            "y 50 por ciento.")
+    return _grafica(dibujar, aria, "Aprender y medir compiten por los mismos datos", 5.2,
+                    paneles=2, sharex=True)
+
+
+# --------------------------------------------- grafica: ml-c2-cv-capacidad ---
+#
+# P2 §3. Id congelado (lo cita la clase 3). Una sola llamada a dibujar_cv con
+# R (muestra enorme, solo en el simulador), L_ent, piso y benchmark.
+
+def ml_c2_cv_capacidad():
+    cif = _cif()
+    ml = gen.ml_lab()
+    h = cif.cifras_c2_hilo()
+    s = cif.seleccion_hilo()
+
+    def dibujar(fig, ax):
+        ml.dibujar_cv(s, R=h["R_por_N"], L_ent=h["L_ent_por_N"], piso=h["piso"],
+                      benchmark=h["benchmark_despliegue"], ax=ax, tema="sitio")
+        ax.set_yscale("log")
+        ax.set_ylim(4, 400)
+        ax.set_xlabel("grado N")
+        ax.set_ylabel("pérdida (escala log)")
+        _leyenda(ax, loc="upper center", fontsize=8, ncol=2, bbox_to_anchor=(0.5, -0.2))
+
+    aria = (f"CV 5 con barras de ±1 EE contra el grado N de 0 a 12. El mínimo está en N = "
+            f"{h['N_min']}, con CV {_num(h['cv'][h['N_min']], 2)} ± "
+            f"{_num(h['ee'][h['N_min']], 2)}; el umbral mínimo más un EE es "
+            f"{_num(h['umbral'], 2)} y la regla de un EE también elige N = {h['N_un_ee']}. "
+            f"L_ent baja siempre, de {_num(h['L_ent_por_N'][0])} a "
+            f"{_num(h['L_ent_por_N'][12])}. El riesgo R de cada grado, que solo existe en el "
+            f"simulador, es mínimo en N = {h['N_mejor_R']} ({_num(h['R_por_N'][4])}) y vale "
+            f"{_num(h['R_por_N'][h['N_min']])} en el elegido. Piso {_num(h['piso'])}; "
+            f"benchmark, la media de entrenamiento, {_num(h['benchmark_despliegue'])}.")
+    return _grafica(dibujar, aria, "La validación cruzada contra el grado", 5.0)
+
+
+# ------------------------------------------- grafica: ml-c2-pliegue-anomalo ---
+#
+# P2 §4. Caso 16: la perdida de cada pliegue para los grados 1, 4 y 8.
+
+def ml_c2_pliegue_anomalo():
+    cif = _cif()
+    ml = gen.ml_lab()
+    p = cif.cifras_c2_pliegue_anomalo()
+    d = ml.caso(16)
+    res = {N: ml.validacion_cruzada(d, cif.construir(N), k=5) for N in (1, 4, 8)}
+
+    def dibujar(fig, ax):
+        ml.dibujar_cajas_pliegues(res, ax=ax, tema="sitio")
+        ax.set_yscale("log")
+        ax.set_xlabel("grado N")
+        ax.set_ylabel("L de cada pliegue (escala log)")
+        _leyenda(ax, loc="upper left", fontsize=8)
+
+    lejanos = " y ".join(str(m) for m in p["pliegues_con_lejana"])
+    aria = ("Caso 16, cinco pliegues, un triángulo por pliegue y una raya en la media, para "
+            f"los grados 1, 4 y 8, en escala logarítmica. Con grado 1 los cinco quedan juntos: "
+            f"el mayor es {_num(p[1]['cociente'], 2)} veces la mediana de los otros. Con grado "
+            f"8, los pliegues {lejanos}, los que traen una entrega lejana, se disparan: el "
+            f"pliegue {p[8]['pliegue_max']} da {_num(p[8]['por_pliegue'][p[8]['pliegue_max'] - 1], 0)}, "
+            f"miles de veces la mediana de los otros.")
+    return _grafica(dibujar, aria, "Un pliegue que carga casi todo el error", 3.6)
+
+
+# ---------------------------------------------- grafica: ml-c2-estratificada ---
+#
+# P2 §5. Id congelado (lo cita la clase 4). 60 casos con 6 positivos, k = 5:
+# arriba una particion al azar, abajo la estratificada; en el titulo, la
+# fraccion de 1000 particiones con algun pliegue sin positivos.
+SEMILLA_ESTRAT = 0
+
+
+def ml_c2_estratificada():
+    cif = _cif()
+    ml = gen.ml_lab()
+    e = cif.cifras_c2_estratificada()
+    df = cif.df_estratificada()
+    azar = ml.pliegues(df, k=cif.K_ESTRAT, como="azar", semilla=SEMILLA_ESTRAT)
+    estr = ml.pliegues(df, k=cif.K_ESTRAT, como="estratificado", semilla=SEMILLA_ESTRAT)
+    y = df["y"].to_numpy()
+    cuenta = {n: [int(y[v].sum()) for _, v in part] for n, part in (("azar", azar),
+                                                                     ("estr", estr))}
+
+    def dibujar(fig, ejes):
+        for ax, part, nombre, clave in ((ejes[0], azar, "al azar", "azar"),
+                                        (ejes[1], estr, "estratificada", "estratificada")):
+            ml.dibujar_pliegues(len(df), cif.K_ESTRAT, prueba=False, y=df["y"], particion=part,
+                                ax=ax, tema="sitio")
+            ax.set_title(f"{nombre}: positivos por pliegue "
+                         f"{', '.join(map(str, cuenta['azar' if clave == 'azar' else 'estr']))}"
+                         f"\nen 1000 particiones, {_pct(e[clave])} con algún pliegue vacío",
+                         color=TEXTO, fontsize=9)
+
+    aria = ("Sesenta casos con 6 positivos en cinco pliegues. Arriba, una partición al azar: "
+            f"positivos por pliegue {', '.join(map(str, cuenta['azar']))}. Abajo, la "
+            f"estratificada: {', '.join(map(str, cuenta['estr']))}. En 1000 particiones de "
+            f"cada método, al azar {_pct(e['azar'])} dejan algún pliegue sin positivos; "
+            f"estratificando, {_pct(e['estratificada'])}.")
+    return _grafica(dibujar, aria, "Pliegues al azar y estratificados", 6.0, paneles=2)
+
+
 _RAPIDO = {
     "ml-c2-dos-niveles": ml_c2_dos_niveles,
     "ml-c2-tres-conjuntos": ml_c2_tres_conjuntos,
@@ -586,6 +897,14 @@ _RAPIDO = {
     "ml-c2-pliegues": ml_c2_pliegues,
     "ml-c2-costo-cv": ml_c2_costo_cv,
     "ml-c2-anidada": ml_c2_anidada,
+    "ml-c2-ajustes-con-prueba": ml_c2_ajustes_con_prueba,
+    "ml-c2-prueba-ruidosa": ml_c2_prueba_ruidosa,
+    "ml-c2-optimismo": ml_c2_optimismo,
+    "ml-c2-prueba-miente": ml_c2_prueba_miente,
+    "ml-c2-reparto": ml_c2_reparto,
+    "ml-c2-cv-capacidad": ml_c2_cv_capacidad,
+    "ml-c2-pliegue-anomalo": ml_c2_pliegue_anomalo,
+    "ml-c2-estratificada": ml_c2_estratificada,
 }
 
 # --- fin tramo rapido ---
