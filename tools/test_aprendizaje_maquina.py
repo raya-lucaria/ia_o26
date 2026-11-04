@@ -3724,8 +3724,8 @@ def test_ajustes_por_mu_es_trayectorias_y_nunca_reajusta(monkeypatch):
     m = aj.modelo(1e-2)
     eta = m.Phi(d.val).to_numpy() @ m.beta_gorro.to_numpy()
     assert 1 / (1 + np.exp(-eta)) == pytest.approx(m.predecir_p(d.val))
-    medias = d.ent["x"].mean()
-    assert m.phi.media_["x"] == pytest.approx(medias) if hasattr(m.phi, "media_") else True
+    assert m.phi.centro["x"] == pytest.approx(d.ent["x"].mean())
+    assert m.phi.escala["x"] == pytest.approx(d.ent["x"].std(ddof=0))
 
     def prohibido(*a, **k):
         raise AssertionError("no debe ajustar")
@@ -3753,7 +3753,8 @@ def test_ajustes_por_mu_en_softmax_y_con_pesos():
         aj = ml.ajustes_por_mu(d, ml.estandarizar(ml.columnas("x1", "x2")), "l2", [0.01, 1.0],
                                pesos="balanceado")
     assert aj.modelos[0.01].pesos is not None
-    assert list(aj.interceptos.columns) == [0, 1, 2]
+    for mu in (0.01, 1.0):  # .interceptos[mu] también en softmax
+        pd.testing.assert_series_equal(aj.interceptos[mu], aj.modelos[mu].beta_gorro["1"])
     assert aj.tabla["coeficiente"].str.contains("clase").all()
     norma = aj.tabla.groupby("mu")["valor"].apply(lambda v: np.sqrt((v ** 2).sum()))
     assert norma[1.0] < norma[0.01]
@@ -3779,9 +3780,24 @@ def test_perfil_en_beta_convexo_y_a_escalones():
     t = ml.perfil_en_beta(d.ent, "x1", np.linspace(-1, 4, 61))
     perdida = t[t["criterio"] == "logaritmica"]["valor"].to_numpy()
     assert np.all(np.diff(perdida, 2) > -1e-9)
-    for c in ("aciertos", "mcc"):
-        assert t[t["criterio"] == c]["valor"].nunique() <= len(d.ent) + 1
     assert set(t.columns) == {"beta1", "criterio", "valor"}
+    # cada fila contra una cuenta independiente: β0 que anula la derivada, y sus métricas
+    from scipy import optimize as opt, special as sp
+    x, y = d.ent["x1"].to_numpy(), d.ent["y"].to_numpy()
+    for b1 in (-0.5, 1.0, 2.5):
+        b0 = opt.brentq(lambda b: np.mean(sp.expit(b + b1 * x) - y), -50, 50, xtol=1e-14)
+        p = sp.expit(b0 + b1 * x)
+        g = (p >= 0.5).astype(int)
+        fila = t[np.isclose(t["beta1"], b1)].set_index("criterio")["valor"]
+        assert fila["logaritmica"] == pytest.approx(np.mean(-(y * np.log(p) + (1 - y) * np.log(1 - p))))
+        assert fila["aciertos"] == pytest.approx(np.mean(g == y))
+        assert fila["mcc"] == pytest.approx(ml.mcc(y, g, clases=[0, 1]))
+    # intercepto lejos de ±60 y una sola clase
+    lejos = pd.DataFrame({"x": [100.0, 100.0], "y": [0, 1]})
+    assert ml.perfil_en_beta(lejos, "x", [1.0], criterios=("logaritmica",))["valor"][0] == \
+        pytest.approx(math.log(2))
+    una = pd.DataFrame({"x": [0.0, 1.0], "y": [1, 1]})
+    assert ml.perfil_en_beta(una, "x", [1.0], criterios=("logaritmica",))["valor"][0] == 0.0
 
 
 def test_contribucion_por_clase_suma_y_pesos_balanceados():
@@ -4107,7 +4123,8 @@ def test_perfil_ordena_y_separa_perdida(perfil):
         filas = filas.sort_values("beta1")
         np.testing.assert_allclose(curva.get_xdata(), filas["beta1"])
         np.testing.assert_allclose(curva.get_ydata(), filas["valor"])
-        assert (curva.axes is ax) == (criterio != "logaritmica")
+        assert curva.axes is ax  # las tres curvas en un solo eje (contrato §5.11)
+    assert len(ax.figure.axes) == 1
 
 
 def test_contribuciones_normalizacion_y_porcentajes(contribuciones):
@@ -4544,3 +4561,96 @@ def test_conformal_por_clase_es_el_estadistico_de_orden_de_cada_clase():
         k = ml._rango_conformal(len(ci), 0.1)
         assert k <= len(ci)
         assert cf.c_gorro[c] == ci[k - 1] and np.isfinite(cf.c_gorro[c])
+
+
+def test_dibujar_pliegues_dibuja_la_particion_recibida():
+    """codex-rev-c4-6: el conteo de pliegues sin raros del título es el de la partición que
+    se pasa, y cambia cuando cambia la partición (40 casos, 3 raros)."""
+    df = pd.DataFrame({"x1": np.arange(40.0), "y": [0] * 37 + [1] * 3})
+    df.attrs["ml"] = {"columnas_x": ["x1"], "columnas_contexto": [], "tarea": "clasificacion",
+                      "K": 2, "clases": [0, 1]}
+    y = df["y"].to_numpy()
+    cuentas = []
+    for como in ("azar", "estratificado"):
+        part = ml.pliegues(df, 5, como=como)
+        vacios = sum(not np.any(y[v] == 1) for _, v in part)
+        ax = ml.dibujar_pliegues(40, 5, y=y, particion=part)
+        assert f"{vacios} de 5 pliegues" in ax.get_title()
+        cuentas.append(vacios)
+    assert cuentas[0] != cuentas[1] and cuentas[1] == 2
+
+
+def test_validaciones_frescas_son_iid_del_proceso():
+    """codex-rev-lab-c4.i2: con n_realidad = 100 y tamaño 100, submuestrear realidad sin
+    reemplazo daba siempre los mismos casos (desv ≈ 0); con validaciones frescas, la desv
+    de los aciertos es la binomial."""
+    t = ml.metricas_vs_proporcion(
+        [0.3], pesos=(None,), metricas=("aciertos",), contra=("despliegue", "val"),
+        tamanos_val=(100,), repeticiones_val=200,
+        fabrica_por_proporcion=lambda p, s: ml.PROCESOS["fraude"](n=200, semilla=s, proporcion=p,
+                                                               n_realidad=100))
+    v = t[t["conjunto"] == "val"].iloc[0]
+    assert v["desv"] == pytest.approx(math.sqrt(v["media"] * (1 - v["media"]) / 100), rel=0.25)
+    fig = ml.dibujar_metricas_vs_proporcion(ml.metricas_vs_proporcion([0.1], metricas=("mcc",)))
+    assert fig is not None  # repeticiones=1: ee nan, punto sin barra
+
+
+def test_efecto_de_pesos_dibuja_con_la_phi_de_la_tabla():
+    d = ml.caso(25, n_realidad=4000)
+    phi = ml.estandarizar(ml._phi_taller_c4("cuadratica", ["x1", "x2"]))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        t = ml.efecto_de_pesos(d, [1, 9], mu=1e-4, phi=phi)
+        llamadas = []
+        original = ml.ajustar
+
+        def espia(*a, **k):
+            llamadas.append(k)
+            return original(*a, **k)
+
+        ml.ajustar = espia
+        try:
+            ml.dibujar_efecto_de_pesos(t, razon=9, datos=d)
+        finally:
+            ml.ajustar = original
+    assert llamadas and all(repr(k.get("phi")) == repr(phi) and k.get("mu") == 1e-4
+                            for k in llamadas)
+
+
+def test_softmax_con_ruido_ancho_es_exacto():
+    """Con el ruido común a z_1…z_{K−1}, K > 2 se reduce a una integral binaria exacta."""
+    from scipy import integrate, special, stats
+
+    c = 21 - math.log(2)
+    d = ml.proceso_clasificacion(n=30, K=3, x={"x1": ml.normal()},
+                                 puntajes=[lambda q: 0 * q["x1"], lambda q: c + 0 * q["x1"],
+                                           lambda q: c + 0 * q["x1"]],
+                                 ruido=ml.normal(0, 300), n_realidad=500, separar="azar")
+    ref = integrate.quad(lambda e: (1 - special.expit(e + 21)) * stats.norm.pdf(e, 0, 300),
+                         -4000, 4000, points=[-21], limit=1000)[0]
+    assert d.realidad["prob_0"].iloc[0] == pytest.approx(ref, abs=1e-6)
+    assert d.realidad["prob_1"].iloc[0] == pytest.approx((1 - ref) / 2, abs=1e-6)
+    p3 = ml.PROCESOS["mensajes3"](n=300, ruido=ml.normal(0, 3), n_realidad=20_000)
+    medias = p3.realidad[["prob_0", "prob_1", "prob_2"]].mean().to_numpy()
+    assert medias == pytest.approx([0.90, 0.08, 0.02], abs=0.003)
+
+
+def test_taller_4_imprime_intervalos_y_calibra_con_k_3():
+    d = ml.PROCESOS["mensajes3"](n=1500, n_realidad=3000)
+    llamadas = []
+    original = ml.recalibrar
+
+    def espia(*a, **k):
+        llamadas.append(a)
+        return original(*a, **k)
+
+    ml.recalibrar = espia
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            with redirect_stdout(io.StringIO()) as salida:
+                ml.taller(d, 4, pesos=(None,), mu=0.01)
+    finally:
+        ml.recalibrar = original
+    assert llamadas
+    assert "percentiles 2.5–97.5" in salida.getvalue() and "MCC" in salida.getvalue()

@@ -1825,24 +1825,13 @@ class _PoblacionClasificacion:
             b1 = optimize.brentq(falta, lo, hi, xtol=1e-12, rtol=1e-15)
             return np.array([0.0, b1])
 
-        def objetivo(bl):
-            b = np.concatenate([[0.0], bl])
-            total, grad = 0.0, np.zeros(self.K)
-            for mascara, regla in nodos:
-                if not mascara.any():
-                    continue
-                Zm = Z0[mascara] + b
-                e, a = _a_nodos(regla)
-                for ej, aj in zip(e, a):
-                    Zj = Zm.copy()
-                    Zj[:, 1:] += ej
-                    total += aj * special.logsumexp(Zj, axis=1).sum()
-                    grad += aj * _softmax_filas(Zj).sum(axis=0)
-            total, grad = total / len(Z0), grad / len(Z0)
-            return total - p[1:] @ bl, (grad - p)[1:]
+        def falta(bl):
+            P = self._integrar(Z0 + np.concatenate([[0.0], bl]), nodos)
+            return P.mean(axis=0)[1:] - p[1:]
 
-        sol = optimize.minimize(objetivo, np.log(p[1:] / p[0]), jac=True, method="BFGS",
-                                options={"gtol": 1e-11, "maxiter": 500})
+        sol = optimize.root(falta, np.log(p[1:] / p[0]), method="hybr", tol=1e-12)
+        if not sol.success or np.max(np.abs(falta(sol.x))) > 1e-8:
+            raise ValueError("no encontré los interceptos que dan esas proporciones")
         return np.concatenate([[0.0], sol.x])
 
     def _xs_dict(self, n, rng):
@@ -1893,11 +1882,14 @@ class _PoblacionClasificacion:
                 acc[:, 0] = 1 - p1
                 P[mascara] = acc
                 continue
-            e, a = _a_nodos(regla)
-            for ej, aj in zip(e, a):
-                Zj = Zm.copy()
-                Zj[:, 1:] += ej
-                acc += aj * _softmax_filas(Zj)
+            # el ruido es común a z_1…z_{K−1}: con S = Σ_{k>=1} e^{z_k − z_0},
+            # Pr(y != 0 | ε) = σ(ε + ln S) y, dado y != 0, la clase k sale con e^{z_k}/Σ e^{z_j}
+            # (no depende de ε): K > 2 se reduce a una integral binaria, exacta.
+            resto = Zm[:, 1:]
+            ln_s = special.logsumexp(resto, axis=1) - Zm[:, 0]
+            p_resto = _p1_binaria(ln_s, regla)
+            acc[:, 0] = 1 - p_resto
+            acc[:, 1:] = p_resto[:, None] * _softmax_filas(resto)
             P[mascara] = acc
         return P
 
@@ -5834,7 +5826,7 @@ class AjustesPorMu:
 
     mus (en el orden pedido), modelos {μ: Modelo} (cada uno con su Φ ya ajustada con
     ent), tabla (= trayectorias con los mismos argumentos: solo pendientes) e
-    interceptos (por μ; con softmax, una columna por clase).
+    interceptos (Series por μ; con softmax, cada valor es la Series de los K interceptos).
     Desde: 1.5 (clase 4). Ejemplo: aj.modelo(0.01).predecir_prob(datos.val)
     """
 
@@ -5871,8 +5863,8 @@ def ajustes_por_mu(datos, phi, penalizacion, mus, rho=0.5, **ajuste):
         filas.extend(_filas_pendientes(m, mu))
         inter[mu] = m.beta_gorro["1"]
     tabla = pd.DataFrame(filas, columns=["mu", "coeficiente", "valor"])
-    if isinstance(next(iter(inter.values())), pd.Series):
-        interceptos = pd.DataFrame(inter).T
+    if isinstance(next(iter(inter.values())), pd.Series):  # softmax: un vector por μ
+        interceptos = pd.Series(inter, dtype=object, name="intercepto")
         interceptos.index.name = "mu"
     else:
         interceptos = pd.Series({mu: float(v) for mu, v in inter.items()}, name="intercepto")
@@ -5910,20 +5902,25 @@ def perfil_en_beta(df, columna, rejilla, criterios=("logaritmica", "aciertos", "
     filas = []
     for b1 in np.asarray(rejilla, float):
         eta1 = b1 * x
-        if y.min() == y.max():
-            b0 = (60.0 if y[0] == 1 else -60.0)
+        constante = y.min() == y.max()
+        if constante:  # una sola clase: el óptimo de β0 es ±∞ y la pérdida tiende a 0
+            p = np.full(len(y), y[0])
+            eta = None
         else:
             def d(b0):
                 return float(np.mean(special.expit(b0 + eta1) - y))
             lo, hi = -60.0, 60.0
-            b0 = optimize.brentq(d, lo, hi, xtol=1e-13) if d(lo) < 0 < d(hi) else (
-                lo if d(lo) >= 0 else hi)
-        eta = b0 + eta1
-        p = special.expit(eta)
+            while d(lo) > 0:
+                lo *= 2
+            while d(hi) < 0:
+                hi *= 2
+            b0 = optimize.brentq(d, lo, hi, xtol=1e-13, rtol=1e-15)
+            eta = b0 + eta1
+            p = special.expit(eta)
         g = (p >= tau).astype(int)
         for c in criterios:
             if c == "logaritmica":
-                v = float(np.mean(np.logaddexp(0, eta) - y * eta))
+                v = 0.0 if constante else float(np.mean(np.logaddexp(0, eta) - y * eta))
             elif c == "brier":
                 v = float(np.mean((y - p) ** 2))
             elif c == "aciertos":
@@ -6021,7 +6018,21 @@ def efecto_de_pesos(datos, razones, mu=0.0, phi=None):
                 "aciertos_moda": moda["aciertos"],
                 "coincidencia": float(np.mean(g == g_eq)),
             })
-    return pd.DataFrame(filas)
+    tabla = pd.DataFrame(filas)
+    tabla.attrs["ajuste"] = {"phi": phi, "mu": mu, "penalizacion": pen}
+    return tabla
+
+
+def _fresca(datos, n, rng):
+    """n casos nuevos e iid del proceso de entrenamiento (una validación fresca). Si el
+    Datos no trae su población, remuestrea realidad CON reemplazo (aproximación)."""
+    pob = getattr(datos, "_pob", None)
+    if pob is not None and not hasattr(pob, "grande"):
+        df = pob.completo(int(n), rng)
+        df = df[[c for c in df.columns if not c.startswith("_")]]
+        return _con_meta(df.copy(), datos.ent.attrs.get("ml", {}))
+    real = _grandes(datos)[0]
+    return real.iloc[rng.integers(0, len(real), int(n))]
 
 
 def _rotulo_pesos(p):
@@ -6057,7 +6068,8 @@ def metricas_vs_proporcion(proporciones, pesos=(None, "balanceado"),
     Carlo de la media entre modelos reentrenados (baja con repeticiones) y
     desv_entre_modelos = su dispersión; en "val", desv = la dispersión de evaluar el
     MISMO modelo (el de la primera repetición) en repeticiones_val validaciones
-    frescas iid de tamaño tamano (por omisión, el de datos.val).
+    frescas iid de tamaño tamano (por omisión, el de datos.val), sacadas de nuevo del
+    proceso (no de realidad: submuestrear una muestra fija subestima la dispersión).
     fabrica_por_proporcion(proporcion, semilla) -> Datos; None = PROCESOS["fraude"].
     Desde: 1.5 (clase 4). Ejemplo: ml.metricas_vs_proporcion([0.5, 0.1, 0.01])
     """
@@ -6113,16 +6125,15 @@ def metricas_vs_proporcion(proporciones, pesos=(None, "balanceado"),
                                   "conjunto": "despliegue", "tamano": np.nan, "media": moda[m],
                                   "ee": np.nan, "desv": np.nan, "desv_entre_modelos": np.nan})
         if "val" in contra:
-            real = _grandes(datos0)[0]
             tamanos = tuple(tamanos_val) if tamanos_val is not None else (len(datos0.val),)
             for tam in tamanos:
                 tam = int(tam)
-                if not 1 <= tam <= len(real):
-                    raise ValueError(f"cada tamaño de validación va de 1 a {len(real)}")
+                if tam < 1:
+                    raise ValueError("cada tamaño de validación es un entero >= 1")
                 rng = np.random.default_rng([int(semilla), 9, tam])
                 vals = {(rot, m): [] for rot in primeros for m in metricas}
                 for _ in range(int(repeticiones_val)):
-                    fresca = real.iloc[rng.choice(len(real), tam, replace=False)]
+                    fresca = _fresca(datos0, tam, rng)
                     for rot, mod in primeros.items():
                         for m in metricas:
                             vals[(rot, m)].append(_metrica_con_tau(mod, fresca, m, tau))
@@ -7950,8 +7961,8 @@ def dibujar_umbral(modelo, df, tau=0.5, tau_elegido=None, ax=None, tema="claro")
 def dibujar_perfil_en_beta(tabla, ax=None, tema="claro"):
     """Curvas de criterios contra β₁ en una tabla larga (beta1, criterio, valor).
 
-    La pérdida logarítmica usa un eje gemelo derecho; las métricas, el izquierdo.
-    Devuelve el eje izquierdo.
+    Las tres curvas en un solo eje (la pérdida logarítmica comparte la escala de las
+    métricas: con dos clases vive entre 0 y ln 2 cerca del óptimo). Devuelve el eje.
     Desde: 1.5 (clase 4). Ejemplo: ml.dibujar_perfil_en_beta(tabla)
     """
     _columnas_dibujo(tabla, ["beta1", "criterio", "valor"])
@@ -7963,15 +7974,10 @@ def dibujar_perfil_en_beta(tabla, ax=None, tema="claro"):
     for i, (criterio, sub) in enumerate(tabla.groupby("criterio", sort=False)):
         sub = sub.sort_values("beta1")
         destino = ax
-        if criterio == "logaritmica":
-            _, derecho = _ejes(ax.twinx(), tema)
-            derecho.patch.set_visible(False)
-            derecho.set_ylabel("pérdida logarítmica")
-            destino = derecho
         rol = ("entrenamiento", "prueba", "validacion", "f")[i % 4]
         destino.plot(sub["beta1"], sub["valor"], color=_color(rol, tema),
                      label=rotulos.get(criterio, str(criterio)))[0].set_gid(f"perfil-{criterio}")
-    ax.set(xlabel="β₁", ylabel="métrica")
+    ax.set(xlabel="β₁", ylabel="valor del criterio")
     ax.set_title("perfil en β₁", color=t["texto"])
     manijas, rotulos_l = ax.get_legend_handles_labels()
     if derecho is not None:  # una sola leyenda para los dos ejes, sin encimarse
@@ -8113,8 +8119,9 @@ def dibujar_efecto_de_pesos(tabla, razon=None, datos=None, ax=None, tema="claro"
             limites.append(np.linspace(lo - margen, hi + margen, 160))
         u, v = np.meshgrid(*limites)
         malla = pd.DataFrame({"x1": u.ravel(), "x2": v.ravel()})
-        ponderado = ajustar(datos, pesos={0: 1.0, 1: float(razon)})
-        simple = ajustar(datos)
+        ajuste = dict(tabla.attrs.get("ajuste", {}))  # la φ y la μ con que se armó la tabla
+        ponderado = ajustar(datos, pesos={0: 1.0, 1: float(razon)}, **ajuste)
+        simple = ajustar(datos, **ajuste)
         for m, corte, rol, trazo, nombre, gid in (
                 (ponderado, 0.5, "f_gorro", "-", "con pesos, τ = 0.5", "frontera-pesos"),
                 (simple, 1 / (1 + razon), "benchmark", "--",
@@ -8243,9 +8250,11 @@ def dibujar_metricas_vs_proporcion(tabla, ax=None, tema="claro"):
             filas = despliegue[despliegue["modelo"] == modelo].sort_values("proporcion")
             if filas.empty:
                 continue
-            if not np.isfinite(filas[["media", "ee"]]).all().all() or (filas["ee"] < 0).any():
-                raise ValueError("media y ee de despliegue deben ser finitos, con ee no negativo")
-            cont = a.errorbar(filas["proporcion"], filas["media"], yerr=2 * filas["ee"],
+            if not np.isfinite(filas["media"]).all() or (filas["ee"] < 0).any():
+                raise ValueError("media de despliegue finita y ee no negativo (o nan con una "
+                                 "sola repetición)")
+            barra = 2 * filas["ee"].fillna(0.0)  # con repeticiones=1 no hay EE: punto sin barra
+            cont = a.errorbar(filas["proporcion"], filas["media"], yerr=barra,
                               fmt=marca, capsize=3, color=_color(rol, tema), label=modelo)
             gid = f"despliegue-{modelo.replace(' ', '-')}-{metrica}"
             cont.lines[0].set_gid(gid)
@@ -8625,6 +8634,13 @@ def _taller_c4(datos, pesos=(None, "balanceado"), phi=None, mu=None, delta=0.1, 
     print("Métricas por opción de pesos (μ por CV en ent; val_b no eligió nada):")
     print(tabla_r.drop(columns=[c for c in tabla_r.columns if "intervalo" in c]).astype(float)
           .round(3).to_string())
+    for rot, fila in resultados.items():
+        partes = []
+        for c, nombre in (("mcc", "MCC"), ("aciertos_balanceados", "A_bal")):
+            lo, hi = fila[f"{c} intervalo"]
+            partes.append(f"{nombre} {fila[f'{c} (val_b)']:.3f} [{lo:.3f}, {hi:.3f}]")
+        print(f"{rot}: en val_b, " + "; ".join(partes) + " (percentiles 2.5–97.5 del bootstrap "
+              "por filas)")
     # figura 1: métricas en val_b contra el benchmark
     fig, ax = plt.subplots(figsize=(6.4, 3.6))
     nombres = ["mcc", "aciertos_balanceados", "aciertos"]
@@ -8651,6 +8667,20 @@ def _taller_c4(datos, pesos=(None, "balanceado"), phi=None, mu=None, delta=0.1, 
         ver = (calibracion(real["prob"], (real["y"] == clases[1]).astype(int))
                if "prob" in real else None)
         dibujar_calibracion(tablas, verdadera=ver)
+    else:  # K > 2: confiabilidad de cada clase (uno contra el resto), con Platt de K clases
+        tablas = {}
+        rot, m = list(modelos.items())[-1]
+        rc = recalibrar(m, val_a) if len(val_a) else None
+        bins = min(10, max(2, len(val_b) // 10))
+        y_b = val_b["y"].to_numpy()
+        P = m.predecir_prob(val_b)
+        Pr = rc.predecir_prob(val_b) if rc is not None else None
+        for j, c in enumerate(clases):
+            tablas[f"clase {c} ({rot})"] = calibracion(P[:, j], (y_b == c).astype(int), bins=bins)
+            if Pr is not None:
+                tablas[f"clase {c} + Platt en val_a"] = calibracion(Pr[:, j], (y_b == c).astype(int),
+                                                                    bins=bins)
+        dibujar_calibracion(tablas)
     # figura 3: cobertura conformal, calibrada en cal, medida en el despliegue
     desp = _grandes(datos)[1]
     ultimo = list(modelos)[-1]
