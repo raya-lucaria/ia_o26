@@ -199,15 +199,16 @@ def bloque_5(proceso, N, zona, anterior):
         phi = ml.polinomio(N, "x")   # y, si lo pides, el tiempo anterior observado
         phi = ml.combinar(phi, ml.columnas("y_anterior")) if anterior else phi
         m = ml.ajustar(datos, phi=phi)
-        todo = pd.concat([datos.ent, datos.prueba], ignore_index=True)
+        todo = ml.PROCESOS["recursivo"](n=79, futuro=1, semilla=SEMILLA,   # la misma
+                                        con_realidad=False).ent      # serie, entera
         ax = plt.subplots(figsize=(8, 3.8))[1]
-        ax.scatter(datos.ent.t, datos.ent.y, s=16, label="entrenamiento: 60 pasos")
-        ax.scatter(datos.prueba.t, datos.prueba.y, s=16, ec="gray", label="después")
+        ax.scatter(todo.t, todo.y, s=16, c=np.where(todo.t < 60, "C0", "gray"),
+                   label="la serie (en gris, lo que pasó después)")
         ax.plot(todo.t, m.predecir(todo), color="C1", label="predicción a un paso")
-        ax.set(xlabel="paso (la x crece con el tiempo)", ylabel="y")
-        ax.legend(), plt.show()
-        print(f"dentro: L = {ml.L(m, datos.realidad):.3f}  ·  a un paso en el futuro: "
-              f"R = {ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")
+        ax.set(xlabel="paso (x crece con el tiempo)", ylabel="y"), ax.legend()
+        plt.show()
+        print(f"dentro: L = {ml.L(m, datos.realidad):.3f}  ·  a un paso en el "
+              f"futuro: R = {ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")
         return
     datos = ml.PROCESOS[clave](semilla=SEMILLA, fracciones=(1, 0, 0))
     hasta, m = lo + zona * (hi - lo), ml.ajustar(datos, phi=ml.polinomio(N))
@@ -220,7 +221,6 @@ def bloque_5(proceso, N, zona, anterior):
         tabla = ml.error_por_zona(m, datos, {"dentro": (lo, hi), "fuera": (hi, hasta)})
         tabla = tabla[["zona", "desde", "hasta", "R_zona"]].round(3)
         print(tabla.to_string(index=False))
-
 
 ml.laboratorio(bloque_5, proceso=ml.selector("proceso", list(RANGOS)),
                N=ml.deslizador("grado N", 1, 10, 1, 7),
