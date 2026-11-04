@@ -21,6 +21,7 @@ import ml_cifras_c1 as c
 RAIZ = Path(__file__).resolve().parent.parent
 CLASE = RAIZ / "course/9_aprendizaje_maquina/2_el_problema"
 GUIONES = RAIZ / "tools/cuadernos_ml"
+P2_RUTA = CLASE / "2_polinomios_y_capacidad.md"
 
 
 def leer(ruta):
@@ -203,10 +204,14 @@ def test_p1_ninguna_phi_omite_la_constante():
         assert m.group(1) == "1", f"φ sin la constante: {m.group(0)}"
 
 
-def test_p1_no_cita_ids_de_la_pagina_2_en_la_variante_1a():
-    propios = set(re.findall(r"\{#(ml-c1-[a-z0-9-]+)", p1()))
+def test_p1_solo_cita_ids_de_la_clase_1_que_existen():
+    # Variante 1a: ningun @ a la pagina 2. Desde el nucleo 1b (C1.T13b) la
+    # remision de §6 cita @ml-c1-obs-capacidad-efectiva: vale cualquier id de
+    # P1 o P2 que exista.
+    paginas = p1() + (P2_RUTA.read_text(encoding="utf-8") if P2_RUTA.exists() else "")
+    propios = set(re.findall(r"\{#(ml-c1-[a-z0-9-]+)", paginas))
     citados = set(re.findall(r"@(ml-c1-[a-z0-9-]+)", p1()))
-    assert citados <= propios, f"@ a ids de la página 2: {sorted(citados - propios)}"
+    assert citados <= propios, f"@ a ids que no existen: {sorted(citados - propios)}"
 
 
 def test_p1_la_optimizacion_no_es_cuarta_ni_quinta_fuente():
@@ -525,6 +530,254 @@ def test_nb01_la_galeria_no_promete_cifras_que_no_imprime():
 
 
 # --- tramo 1b ---
+
+P2 = CLASE / "2_polinomios_y_capacidad.md"
+NB02 = GUIONES / "02_polinomios_y_capacidad.texto.md"
+
+
+@lru_cache(maxsize=None)
+def p2():
+    return leer(P2)
+
+
+@lru_cache(maxsize=None)
+def s2():
+    return secciones(p2())
+
+
+def cierre_p2():
+    return p2().split("## 8 · ", 1)[1].split("\n## ", 1)[1]
+
+
+def plano(texto):
+    """El texto con los espacios colapsados (las frases cruzan renglones)."""
+    return " ".join(texto.split())
+
+
+def test_p2_tiene_las_ocho_secciones_del_brief():
+    assert sorted(s2()) == list(range(1, 9))
+
+
+# ---- cifras, una aserción por fila de §10.7 (tramo 1b) ----
+
+def test_p2_s1_cita_el_error_de_taylor_en_2_5():
+    t = c.cifras_c1_taylor()
+    sec = s2()[1]
+    assert f"{t['taylor_3'][2.5]:.1f}" in sec and f"{t['taylor_9'][2.5]:.1f}" in sec
+
+
+def test_p2_s1_el_micro_de_taylor_da_medio():
+    m = bloque(p2(), "ml-c1-resp-taylor")
+    assert "0.5" in m.group(1) or "1/2" in m.group(1) or "\\tfrac12" in m.group(1)
+
+
+def test_p2_s2_cita_los_errores_maximos_de_weierstrass():
+    w = c.cifras_c1_weierstrass()
+    sec = s2()[2]
+    for N in c.WEIERSTRASS_GRADOS:
+        assert f"{w[N]['error_maximo']:.3f}" in sec, N
+
+
+def test_p2_s3_cita_L_ent_y_R_de_los_tres_ajustes():
+    t = c.cifras_c1_tres_ajustes()
+    sec = s2()[3]
+    for N in c.TRES_GRADOS:
+        assert f"{t[N]['L_ent']:.2f}" in sec, N
+
+
+def test_p2_s4_cita_el_minimo_de_la_u_y_el_bajo_el_piso():
+    k = c.cifras_c1_capacidad()[20]
+    sec = plano(s2()[4])
+    assert f"N={k['N_menor_R']}" in sec.replace(" ", "")
+    m = bloque(p2(), "ml-c1-ej-bajo-el-piso")
+    assert f"{k['L_ent'][15]:.3f}" in m.group(1) and "0.25" in m.group(1)
+
+
+def test_p2_s4_cita_el_optimismo_en_500_muestras():
+    o = c.cifras_c1_optimismo()
+    sec = s2()[4]
+    assert "500" in sec
+    for clave in ("R_fijo", "media_L_ent_gorro", "media_R_gorro"):
+        assert f"{o[clave]:.2f}" in sec, clave
+
+
+def test_p2_s5_cita_las_200_elecciones():
+    e = c.cifras_c1_elegir()
+    sec = plano(s2()[5])
+    assert f"{e['veces_N_max_ent']} de {e['repeticiones']}" in sec
+
+
+def test_p2_s6_cita_el_inverso_y_las_columnas():
+    i = c.cifras_c1_inverso()
+    sec = s2()[6]
+    assert f"{i['R_inverso']:.2f}" in sec and f"{i['R_10']:.2f}" in sec
+    col = c.cifras_c1_columnas()
+    resp = bloque(p2(), "ml-c1-resp-columnas").group(1)
+    assert str(col[5]) in resp and str(col[20]) in resp
+
+
+def test_p2_s7_cita_el_recursivo_y_el_seno():
+    e = c.cifras_c1_extrapolar()
+    sec = s2()[7]
+    assert f"{e['seno']['grado_7']['fuera']:.0f}" in sec
+    assert f"{e['recursivo']['sin_anterior']['futuro']:.1f}" in sec
+    assert f"{e['recursivo']['con_anterior']['futuro']:.2f}" in sec
+
+
+def test_p2_s8_cita_las_256_funciones_y_la_mitad():
+    sec = s2()[8]
+    assert "256" in sec
+    assert alguna(sec, ("\\tfrac12", "\\frac12", "\\frac{1}{2}", "1/2", "0.5"))
+
+
+def test_p2_el_ejercicio_final_cita_el_polinomio_en_9_y_10():
+    pi = c.cifras_c1_par_impar()
+    resp = bloque(p2(), "ml-c1-resp-final-polinomios-y-capacidad").group(1)
+    assert str(pi["grado_7"][9]) in resp and str(pi["grado_7"][10]) in resp
+
+
+def test_p2_cierre_cita_las_cifras_que_hay_que_llevarse():
+    k, e, i = c.cifras_c1_capacidad()[20], c.cifras_c1_elegir(), c.cifras_c1_inverso()
+    cierre = plano(cierre_p2())
+    assert f"N={k['N_menor_R']}" in cierre.replace(" ", "")
+    assert str(e["veces_N_max_ent"]) in cierre
+    assert f"{i['R_inverso']:.2f}" in cierre and f"{i['R_10']:.2f}" in cierre
+
+
+# ---- frases y objetos fijos ----
+
+def test_p2_la_capacidad_efectiva_es_optimizacion_y_no_cuarta_fuente():
+    cuerpo = bloque(p2(), "ml-c1-obs-capacidad-efectiva").group(1)
+    assert "optimización" in cuerpo
+    assert "cuarta fuente" not in cuerpo
+    # «no es una quinta fuente» es del bloque literal; ninguna otra frase la numera.
+    assert not re.search(r"(?<![Nn]o es una )(cuarta|quinta) fuente", p2())
+
+
+def test_p2_memorizar_es_el_vecino_junto_al_no_parametrico():
+    m = bloque(p2(), "ml-c1-obs-no-parametrico")
+    cerca = plano(p2()[max(0, m.start() - 600):m.end() + 600])
+    assert ("La regla “memorizar” de la clase 0 (@ml-c0-memorizar-contra-ajustar) es el "
+            "vecino más cercano: por eso tenía cero en lo visto") in cerca
+
+
+def test_p2_s2_aproximar_no_es_aprender():
+    assert "aproximar no es aprender" in plano(s2()[2]).lower()
+
+
+def test_p2_los_objetos_que_cita_la_clase_2_existen():
+    for ident in ("ml-c1-def-capacidad", "ml-c1-def-brecha", "ml-c1-teo-optimismo-entrenamiento",
+                  "ml-c1-dem-optimismo-entrenamiento", "ml-c1-def-capacidad-como-restriccion",
+                  "ml-c1-def-param-hiper"):
+        bloque(p2(), ident)
+
+
+def test_p2_la_brecha_es_solo_la_formula():
+    cuerpo = bloque(p2(), "ml-c1-def-brecha").group(1)
+    assert "R(\\widehat\\beta)-L_{\\text{ent}}(\\widehat\\beta)" in cuerpo.replace(" ", "")
+    assert "suele" not in cuerpo and "crece" not in cuerpo
+
+
+def test_p2_el_teorema_del_optimismo_usa_argmin():
+    assert "arg\\,min" in bloque(p2(), "ml-c1-teo-optimismo-entrenamiento").group(1)
+
+
+def test_p2_no_free_lunch_en_cuatro_pasos():
+    cuerpo = bloque(p2(), "ml-c1-dem-no-free-lunch").group(1)
+    pasos = re.findall(r"(?m)^\s*(\d+)\.\s", cuerpo)
+    assert pasos == ["1", "2", "3", "4"], pasos
+
+
+def test_p2_un_modelo_exitoso_va_en_nota():
+    assert re.search(r"(?m)^> \[!NOTE\]\s*$\n> \*\*Un modelo exitoso", p2())
+
+
+def test_p2_la_ultima_linea_de_lo_que_hay_que_llevarse_es_la_pregunta_de_la_clase_2():
+    seccion = p2().split("## Lo que hay que llevarse", 1)[1].split("\n## ", 1)[0]
+    renglones = [r for r in seccion.strip().split("\n\n")
+                 if r.strip() and not r.startswith("Continúa con")]
+    ultimo = renglones[-1]
+    assert "¿Cómo medimos $R$ sin la muestra enorme" in plano(ultimo)
+
+
+def test_p2_no_cita_ids_de_las_clases_2_a_5():
+    assert not re.search(r"@ml-c[2-5]-", p2())
+
+
+def test_p2_ninguna_phi_omite_la_constante():
+    for m in re.finditer(r"\\phi(?:_N)?(?:\(x\))?\s*=\s*\(\s*([^,)\s]+)", p2()):
+        assert m.group(1) == "1", f"φ sin la constante: {m.group(0)}"
+
+
+def test_p2_la_tendencia_de_la_brecha_es_observacion_en_prosa():
+    # Entre la definicion y el teorema: «suele» (no es ley) y la cita al teorema.
+    d = bloque(p2(), "ml-c1-def-brecha")
+    t = bloque(p2(), "ml-c1-teo-optimismo-entrenamiento")
+    entre = plano(p2()[d.end():t.start()])
+    assert "suele" in entre and "@ml-c1-teo-optimismo-entrenamiento" in entre
+
+
+def test_p2_el_alt_de_cada_figura_es_el_aria_label_de_su_svg():
+    import html
+    assets = CLASE.parent / "_assets"
+    figuras = re.findall(r"!\[([^\]]*)\]\(\.\./_assets/(ml-c1-[a-z0-9-]+)\.svg\)", p2())
+    assert len(figuras) == 8
+    for alt, ident in figuras:
+        svg = (assets / f"{ident}.svg").read_text(encoding="utf-8")
+        aria = html.unescape(re.search(r'aria-label="([^"]*)"', svg).group(1))
+        assert alt == aria, ident
+
+
+def test_p2_la_lectura_cabe_en_su_presupuesto():
+    import contrato_unidad as cu
+    palabras = {}
+    for n, texto in s2().items():
+        pag = cu.parsear("## " + texto)
+        palabras[n] = sum(cu.palabras(u.texto) for u in pag.unidades
+                          if not u.excluida and not (set(u.contexto) & cu.DIRECTIVAS_FUERA_DE_TIEMPO))
+    assert "~35 min de lectura" in p2()
+    assert sum(palabras.values()) <= 35 * 80 * 1.1, palabras
+
+
+def test_p1_s6_remite_a_la_capacidad_efectiva_de_la_pagina_2():
+    # Arreglo mecanico de C1.T15: la remision de §6 de P1 deja de ir en palabras.
+    assert "@ml-c1-obs-capacidad-efectiva" in s1()[6]
+
+
+# ---- guion de NB02 ----
+
+@lru_cache(maxsize=None)
+def nb02():
+    return leer(NB02)
+
+
+def celda02(clave):
+    m = re.search(r"(?ms)^### celda: " + re.escape(clave) + r"\s*$(.*?)(?=^### celda: |\Z)",
+                  nb02())
+    assert m, f"falta la celda {clave}"
+    return m.group(1)
+
+
+def test_nb02_tu_eliges_N_el_ajuste_elige_beta():
+    assert "Tú eliges $N$; el ajuste elige $\\widehat\\beta$" in plano(celda02("bloque-3-mira"))
+
+
+def test_nb02_la_parte_b_no_demuestra_el_teorema():
+    assert "no demuestra" in plano(celda02("bloque-6-explica"))
+
+
+def test_nb02_no_lleva_arrobas_ni_wikilinks():
+    assert not re.search(r"@ml-|\[\[", nb02())
+
+
+def test_nb02_cifras_de_los_bloques_en_su_celda():
+    k, e = c.cifras_c1_capacidad()[20], c.cifras_c1_elegir()
+    b2 = celda02("bloque-2-mira") + celda02("bloque-2-explica")
+    assert f"{k['R'][4]:.3f}" in b2 or f"N = {k['N_menor_R']}" in b2 or \
+        f"N={k['N_menor_R']}" in b2.replace(" ", "")
+    b3 = celda02("bloque-3-mira") + celda02("bloque-3-explica")
+    assert str(e["veces_N_max_ent"]) in b3
+
 # --- fin tramo 1b ---
 
 
