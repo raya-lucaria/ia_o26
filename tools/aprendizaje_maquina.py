@@ -467,7 +467,9 @@ class _Heterocedastico(Mecanismo):
         return self._desv(df) * np.asarray(self.base.muestrear(len(df), rng), float)
 
     def varianza_en(self, df):
-        return self._desv(df) ** 2 * float(self.base.varianza)
+        d = self._desv(df)
+        with np.errstate(invalid="ignore"):
+            return np.where(d == 0, 0.0, d ** 2 * float(self.base.varianza))  # 0·inf = 0: sin ruido
 
     def __repr__(self):
         return f"heterocedastico(desv_de={getattr(self.desv_de, '__name__', 'función')}, base={self.base!r})"
@@ -995,8 +997,6 @@ class _Poblacion:
         if perdida == "cuadratica":
             if self.mecanismo is None and math.isinf(self.ruido.varianza):
                 return float("inf")
-            if isinstance(self.mecanismo, _Heterocedastico) and math.isinf(self.mecanismo.base.varianza):
-                return float("inf")
             if self.tipo is None or (self.endogeno and not isinstance(self.ruido, _Normal)):
                 return None
             v = desp["_v"].to_numpy()
@@ -1011,15 +1011,19 @@ class _Poblacion:
             # Cauchy); inf si el primer momento es infinito (Cauchy, t con gl <= 1, Pareto
             # con alfa <= 1), con o sin omitidas; con heterocedastico, la media de su
             # desviación por E|base|. Asimétrica (Pareto, lognormal), endógena u omitidas: nan.
-            pieza = self.mecanismo.base if isinstance(self.mecanismo, _Heterocedastico) else (
-                self.ruido if self.mecanismo is None else None)
-            if pieza is not None and (math.isinf(getattr(pieza, "_desv_abs", 0.0)) or (
-                    isinstance(pieza, _Pareto) and pieza.alfa <= 1)):
+            hetero = isinstance(self.mecanismo, _Heterocedastico)
+            pieza = self.mecanismo.base if hetero else (self.ruido if self.mecanismo is None else None)
+            sin_ruido = hetero and not np.any(self.mecanismo._desv(self._sin_escala(desp)) > 0)
+            if pieza is not None and not sin_ruido and (math.isinf(getattr(pieza, "_desv_abs", 0.0))
+                                                        or (isinstance(pieza, _Pareto)
+                                                            and pieza.alfa <= 1)):
                 return float("inf")
             if self.tipo != "directa" or self.endogeno or not hasattr(pieza, "_desv_abs"):
                 return None
             if self.mecanismo is None:
                 return float(pieza._desv_abs * abs(self.c_y))
+            if sin_ruido:
+                return 0.0
             desv = self.mecanismo._desv(self._sin_escala(desp))
             return float(np.mean(desv) * pieza._desv_abs * abs(self.c_y))
         raise ValueError(f"perdida debe ser 'cuadratica', 'absoluta' o 'logaritmica', no {perdida!r}")
@@ -1976,9 +1980,10 @@ def _caso_9(n=150, semilla=0, **cambios):
 
 
 def _caso_10(n=200, semilla=0, **cambios):
-    """Caso 10: f = x1 + x2, x2 medida en unidades × 10⁶ (escala={"x2": 1e6})."""
+    """Caso 10: f = x1 + x2 con corr(x1, x2) = 0.5, x2 medida en unidades × 10⁶."""
     return _proceso(**_con(dict(n=n, x={"x1": normal(), "x2": normal()}, f=_f_suma,
-                                ruido=normal(0, 1), escala={"x2": 1e6}, semilla=semilla,
+                                ruido=normal(0, 1), correlacion={("x1", "x2"): 0.5},
+                                escala={"x2": 1e6}, semilla=semilla,
                                 descripcion="dos variables igual de útiles en escalas distintas"),
                            cambios))
 
@@ -2564,9 +2569,12 @@ class _Estandarizar(Phi):
         self.nombres = list(M.columns)
         libres = [c for c in M.columns if c != "1"]
         A = M[libres].to_numpy(float)
-        self.centro = pd.Series(A.mean(axis=0) if len(A) else 0.0, index=libres)
+        centro = A.mean(axis=0) if len(A) else np.zeros(len(libres))
         desv = A.std(axis=0) if len(A) else np.ones(len(libres))
-        self.escala = pd.Series(np.where(desv > 0, desv, 1.0), index=libres)
+        # una columna constante (o que solo varía por redondeo) se centra y no se divide
+        constante = desv <= 1e-12 * np.maximum(1.0, np.abs(centro))
+        self.centro = pd.Series(centro, index=libres)
+        self.escala = pd.Series(np.where(constante, 1.0, desv), index=libres)
 
     def _matriz(self, df):
         M = self.phi(df).copy()
@@ -4122,6 +4130,10 @@ def _presupuesto(datos, phi, penalizacion, d, rho):
         lo, hi = hi, hi + 3.0
         if hi > 60:
             raise ValueError("no encontré un μ con Ω(β̂) <= d")
+    while g(lo) <= 0:  # con columnas en unidades enormes, el μ que basta es diminuto
+        hi, lo = lo, lo - 30.0
+        if lo < -700:
+            raise ValueError("no encontré un μ > 0 con Ω(β̂) = d")
     t = optimize.brentq(g, lo, hi, xtol=1e-13, rtol=4 * np.finfo(float).eps, maxiter=500)
     m = ajuste(t)
     return m.beta_gorro.copy(), float(math.exp(t)), L(m, datos.ent)
@@ -5344,6 +5356,28 @@ def dibujar_benchmarks(modelo, datos, df_eval=None, criterios=("cuadratica", "ab
     return ax
 
 
+def _esperado(pieza, estadistico):
+    """E[e²] o E|e| de una pieza: el número, inf si es infinito, None si no se conoce."""
+    m = pieza.media if np.isfinite(pieza.media) else 0.0
+    if estadistico == "cuadrado":
+        if np.isnan(pieza.varianza):
+            return None
+        return float(pieza.varianza + m ** 2) if np.isfinite(pieza.varianza) else float("inf")
+    if isinstance(pieza, _Pareto):
+        a_, x_m = pieza.alfa, pieza.escala
+        if a_ <= 1:
+            return float("inf")
+        if not pieza.centrar:
+            return float(pieza.media)  # soporte positivo: E|X| = E[X]
+        mu = x_m * a_ / (a_ - 1)  # E|X − μ| = 2·E[(X − μ)+] = 2·x_m^α·μ^(1−α)/(α − 1)
+        return float(2 * x_m ** a_ * mu ** (1 - a_) / (a_ - 1))
+    if isinstance(pieza, _Lognormal):
+        return float(pieza.media)
+    if hasattr(pieza, "_desv_abs") and (pieza.media == 0 or np.isnan(pieza.media)):
+        return float(pieza._desv_abs)
+    return None
+
+
 def dibujar_media_acumulada(piezas, n_max=10_000, trayectorias=20, estadistico="cuadrado",
                             semilla=0, ax=None, tema="claro"):
     """El promedio acumulado de e² (o |e|) contra n, una línea por semilla, un panel por pieza.
@@ -5371,18 +5405,14 @@ def dibujar_media_acumulada(piezas, n_max=10_000, trayectorias=20, estadistico="
             ln, = a.plot(n[marcas], acumulado[marcas], color=_color("f_gorro", tema), lw=0.8,
                          alpha=1.0)
             ln.set_gid(f"traza-{nombre}-{i}")
-        teorico = None
-        if estadistico == "cuadrado" and np.isfinite(pieza.varianza):
-            m = pieza.media if np.isfinite(pieza.media) else 0.0
-            teorico = pieza.varianza + m ** 2
-        elif estadistico == "absoluto" and np.isfinite(getattr(pieza, "_desv_abs", np.nan)) \
-                and pieza.media == 0:
-            teorico = pieza._desv_abs
-        if teorico is not None:
+        teorico = _esperado(pieza, estadistico)
+        if teorico is not None and np.isfinite(teorico):
             ln = a.axhline(teorico, ls=":", color=_color("piso", tema), lw=1.6, label="valor esperado")
             ln.set_gid(f"esperado-{nombre}")
+        elif teorico is not None:
+            a.plot([], [], ls="", label="valor esperado infinito")
         else:
-            a.plot([], [], ls="", label="sin valor esperado finito")
+            a.plot([], [], ls="", label="valor esperado no calculado")
         a.set_xscale("log")
         a.set_yscale("log")
         a.set_title(nombre)
@@ -5625,22 +5655,35 @@ def dibujar_regiones(datos, phi, penalizacion, d, rho=0.5, mostrar_mu=True, ax=N
     y = datos.ent["y"].to_numpy(float)
     Mc, yc = M - M.mean(axis=0), y - y.mean()
     bx, by = _region(penalizacion, d, rho)
-    puntos = np.array([[0, 0], mc.beta_gorro[pend].to_numpy(float), beta_r[pend].to_numpy(float),
-                       [bx.min(), by.min()], [bx.max(), by.max()]])
+    b_mc, b_r = mc.beta_gorro[pend].to_numpy(float), beta_r[pend].to_numpy(float)
+    puntos = np.array([[0, 0], b_mc, b_r, [bx.min(), by.min()], [bx.max(), by.max()]])
     lo, hi = puntos.min(axis=0), puntos.max(axis=0)
     margen = 0.25 * max(float((hi - lo).max()), 1e-9)
-    g1 = np.linspace(lo[0] - margen, hi[0] + margen, 241)
-    g2 = np.linspace(lo[1] - margen, hi[1] + margen, 241)
-    B1, B2 = np.meshgrid(g1, g2)
-    R = yc[:, None] - Mc[:, :1] * B1.ravel()[None, :] - Mc[:, 1:2] * B2.ravel()[None, :]
-    Lg = (R ** 2).mean(axis=0).reshape(B1.shape)
+    # L_ent(β) = L_mc + (β − β̂)ᵀ S (β − β̂) con el intercepto en su mejor valor: las curvas de
+    # nivel son elipses y se trazan exactas (una rejilla no resuelve escalas muy distintas)
+    S = Mc.T @ Mc / len(yc)
+    lam, V = np.linalg.eigh(S)
     l_mc = L(mc, datos.ent)
-    l_r = float(((yc - Mc @ beta_r[pend].to_numpy(float)) ** 2).mean())
-    niveles = np.unique(np.concatenate([l_mc + (l_r - l_mc) * np.array([0.25, 0.5, 2, 3.5, 5.5]),
-                                        [l_r]]))
-    niveles = niveles[niveles > l_mc]
-    cs = ax.contour(B1, B2, Lg, levels=niveles, colors=[_color("realidad", tema)], linewidths=1)
-    cs.set_gid("curvas-nivel")
+    sube = float(b_r @ S @ b_r - 2 * b_r @ S @ b_mc + b_mc @ S @ b_mc)  # L(β_r) − L_mc
+    paso = sube if sube > 1e-12 * max(l_mc, 1e-300) else max(float(b_mc @ S @ b_mc) / 8, 1e-12)
+    th = np.linspace(0, 2 * np.pi, 361)
+    if lam.min() > 1e-14 * lam.max():
+        for k, c in enumerate(paso * np.array([0.25, 0.5, 1.0, 2.0, 3.5, 5.5])):
+            elipse = b_mc[:, None] + V @ (np.sqrt(c / lam)[:, None] * np.vstack([np.cos(th),
+                                                                                 np.sin(th)]))
+            ln, = ax.plot(elipse[0], elipse[1], color=_color("realidad", tema),
+                          lw=1.6 if k == 2 else 0.9, label="curvas de nivel de L_ent" if k == 0
+                          else None)
+            ln.set_gid(f"curva-nivel-{k}")
+    else:  # S singular (columnas idénticas): rectas paralelas, en una rejilla
+        g1 = np.linspace(lo[0] - margen, hi[0] + margen, 241)
+        g2 = np.linspace(lo[1] - margen, hi[1] + margen, 241)
+        B1, B2 = np.meshgrid(g1, g2)
+        R = yc[:, None] - Mc[:, :1] * B1.ravel()[None, :] - Mc[:, 1:2] * B2.ravel()[None, :]
+        Lg = (R ** 2).mean(axis=0).reshape(B1.shape)
+        cs = ax.contour(B1, B2, Lg, levels=l_mc + paso * np.array([0.25, 0.5, 1, 2, 3.5, 5.5]),
+                        colors=[_color("realidad", tema)], linewidths=1)
+        cs.set_gid("curva-nivel-rejilla")
     relleno = ax.fill(bx, by, color=_horneado(_color("f_gorro", tema), t["panel"], 0.3), lw=1.6,
                       ec=_color("f_gorro", tema), label=f"Ω(β) ≤ d = {d:g}")
     relleno[0].set_gid("region")
@@ -5652,6 +5695,8 @@ def dibujar_regiones(datos, phi, penalizacion, d, rho=0.5, mostrar_mu=True, ax=N
     ln.set_gid("beta-restringido")
     ax.axhline(0, color=t["rejilla"], lw=0.8)
     ax.axvline(0, color=t["rejilla"], lw=0.8)
+    ax.set_xlim(lo[0] - margen, hi[0] + margen)
+    ax.set_ylim(lo[1] - margen, hi[1] + margen)
     ax.set_aspect("equal", adjustable="datalim")
     ax.set_xlabel(f"β de {pend[0]}")
     ax.set_ylabel(f"β de {pend[1]}")
@@ -6026,6 +6071,9 @@ def _taller_c3(datos, que="error", phi=None, penalizacion="l1", rho=0.5, mus=Non
         return None
     phi_e = estandarizar(base)
     mus = _mus_por_omision(datos, phi_e, rho, penalizacion) if mus is None else list(mus)
+    if not mus or min(mus) <= 0:
+        raise ValueError("en el taller los μ son > 0 (se leen en escala log); μ = 0 es el "
+                         "ajuste sin castigo")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cruda = trayectorias(datos, base, penalizacion, mus, rho)

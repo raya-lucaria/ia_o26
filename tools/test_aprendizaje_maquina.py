@@ -2869,6 +2869,10 @@ def test_senal_es_la_regla_descriptiva():
     assert ml._senal([-2.0, -2.1, -1.9, -2.2, -1.8]) == "señal"
     assert ml._senal([-2.0, 1.5, -0.3, 0.8, -1.0]) == "sin señal"
     assert ml._senal([1.0]) == "sin señal"
+    # la desviación de las diferencias, no su error estándar: aquí el EE daría «señal»
+    assert ml._senal([-1.0, -1.0, 0.0, 0.0, 0.0]) == "sin señal"
+    # ddof=1: |media| = 1.1 queda entre la desviación con ddof=0 (0.9) y con ddof=1 (1.27)
+    assert ml._senal([0.2, 2.0]) == "sin señal"
 
 
 def test_taller_3_corre_rapido_sin_tocar_prueba(monkeypatch):
@@ -2894,6 +2898,33 @@ def test_taller_3_corre_rapido_sin_tocar_prueba(monkeypatch):
             assert "se confirma en una reserva" in salida
         else:
             assert "diferencia" not in salida or "val (no eligió nada" in salida
+
+
+def test_taller_3_no_evalua_el_modelo_final_en_val(monkeypatch):
+    datos = ml.caso(24, escala=None)
+    real = ml.elegir
+
+    def espia(*args, **kwargs):
+        s = real(*args, **kwargs)
+        original = s.modelo_final.predecir
+
+        def predecir(df):
+            assert not (len(df) == len(datos.val) and df.index.equals(datos.val.index)
+                        and df["y"].equals(datos.val["y"])), "evaluó el modelo final en val"
+            return original(df)
+
+        s.modelo_final.predecir = predecir
+        return s
+
+    monkeypatch.setattr(ml, "elegir", espia)
+    with redirect_stdout(io.StringIO()), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.taller(datos, 3, que="lagrangeano")
+        with pytest.raises(AssertionError, match="final en val"):  # la espía sí ve una evaluación
+            s = ml.elegir(datos, {1.0: lambda df: ml.ajustar(df, mu=1.0, penalizacion="l1")}, con="cv")
+            ml.L(s.modelo_final, datos.val)
+    with pytest.raises(ValueError, match="> 0"):
+        ml.taller(datos, 3, que="lagrangeano", mus=[0.0, 0.1, 1.0])
 
 
 def test_taller_3_pasa_orden_complejidad(monkeypatch):
@@ -2927,3 +2958,68 @@ def test_galeria_3_sin_widgets(monkeypatch):
     with redirect_stdout(io.StringIO()), warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ml.galeria(3, casos=[24])
+
+
+# --- lo que encontró la revisión del lote c3 ----------------------------------
+
+def test_estandarizar_columna_constante_no_amplifica_el_redondeo():
+    df = pd.DataFrame({"x": np.full(100, 0.1), "y": np.full(100, 2.0)})
+    est = ml.estandarizar(ml.columnas("x")).ajustar(df)
+    assert np.allclose(est(df)["x"], 0.0)
+    m = ml.ajustar(df, phi=ml.estandarizar(ml.columnas("x")), columnas_x=["x"], tarea="regresion")
+    assert abs(m.predecir(pd.DataFrame({"x": [0.11]}))[0] - 2.0) < 1e-6
+
+
+def test_heterocedastico_sin_ruido_tiene_piso_cero():
+    d = ml.proceso(n=50, ruido=ml.heterocedastico(lambda d: 0.0 * d["x"], base=ml.cauchy()))
+    assert ml.piso(d) == 0.0 and ml.piso(d, "absoluta") == 0.0
+    assert np.allclose(d.ent["y"], d.ent["x"] * 0 + ml._f_por_omision(d.ent))
+
+
+def test_caso_10_se_rompe_en_8_de_10_semillas():
+    """A μ = 2: sin estandarizar x1 ya se apagó y x2 no; estandarizando, viven las dos."""
+    est = ml.estandarizar(ml.columnas("x1", "x2"))
+    ok = []
+    for s in range(10):
+        d = ml.caso(10, semilla=s)
+        crudo = ml.ajustar(d, mu=2.0, penalizacion="l1").beta_gorro
+        estd = ml.ajustar(d, phi=est, mu=2.0, penalizacion="l1").beta_gorro
+        ok.append(crudo["x1"] == 0 and crudo["x2"] != 0 and estd["x1"] != 0 and estd["x2"] != 0)
+    assert ok[0] and sum(ok) >= 8
+
+
+def test_optimo_restringido_con_mu_diminuto():
+    datos = ml.muchas_variables(n=100, J=2, utiles=2, escala={"x1": 1e-8, "x2": 1e-8})
+    mc = ml.ajustar(datos).beta_gorro[["x1", "x2"]]
+    d = 0.5 * float((mc ** 2).sum())
+    beta, mu = ml.optimo_restringido(datos, None, "l2", d)
+    assert 0 < mu < 1e-10
+    assert float((beta[["x1", "x2"]] ** 2).sum()) == pytest.approx(d, rel=1e-6)
+    m = ml.ajustar(datos, mu=mu, penalizacion="l2")
+    assert np.allclose(m.beta_gorro, beta, rtol=1e-4)
+
+
+def test_dibujar_regiones_siempre_trae_curvas_de_nivel_visibles():
+    for datos, d in ((ml.caso(10), 1.0), (ml.caso(9), 100.0), (ml.caso(9), 1.0)):
+        ax = ml.dibujar_regiones(datos, None, "l1", d)
+        (x0, x1), (y0, y1) = ax.get_xlim(), ax.get_ylim()
+        curvas = [ln for ln in ax.get_lines() if (ln.get_gid() or "").startswith("curva-nivel")]
+        assert curvas
+        dentro = sum(np.any((ln.get_xdata() >= x0) & (ln.get_xdata() <= x1)
+                            & (ln.get_ydata() >= y0) & (ln.get_ydata() <= y1)) for ln in curvas)
+        assert dentro >= 2
+
+
+def test_dibujar_media_acumulada_distingue_infinito_de_no_calculado():
+    ax = ml.dibujar_media_acumulada({"L": ml.lognormal()}, n_max=200, trayectorias=2,
+                                    estadistico="absoluto")
+    esperado = next(ln for ln in ax.get_lines() if ln.get_gid() == "esperado-L")
+    assert esperado.get_ydata()[0] == pytest.approx(np.exp(0.5))
+    ax = ml.dibujar_media_acumulada({"P": ml.pareto(1.5)}, n_max=200, trayectorias=2,
+                                    estadistico="absoluto")
+    assert any((ln.get_gid() or "") == "esperado-P" for ln in ax.get_lines())
+    ax = ml.dibujar_media_acumulada({"P": ml.pareto(1.5)}, n_max=200, trayectorias=2)
+    assert "valor esperado infinito" in [t.get_text() for t in ax.get_legend().get_texts()]
+    rng = np.random.default_rng(0)
+    assert ml._esperado(ml.pareto(1.5), "absoluto") == pytest.approx(
+        np.abs(ml.pareto(1.5).muestrear(4_000_000, rng)).mean(), rel=0.03)
