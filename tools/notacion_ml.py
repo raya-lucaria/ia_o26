@@ -145,6 +145,9 @@ def lista_blanca(datos=DATOS):
         for simbolo, _ in leer_lista_clase(ruta.read_text(encoding="utf-8"),
                                            ruta.name):
             if simbolo.startswith("re:"):
+                # La misma forma de la lista común se adelanta a esta clase.
+                patrones = [(rx, min(c, clase) if rx.pattern == simbolo[3:] else c)
+                            for rx, c in patrones]
                 patrones.append((re.compile(simbolo[3:]), clase))
             else:
                 m = GRIEGAS.get(simbolo, simbolo.lstrip("\\"))
