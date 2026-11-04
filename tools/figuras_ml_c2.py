@@ -989,7 +989,195 @@ _M = {
 
 
 # --- tramo completo ---
-_COMPLETO = {}
+
+# --------------------------------------------- grafica: ml-c2-sesgo-varianza ---
+#
+# P3 §3 (fig. 5.6 del libro). Arriba, las barras apiladas ruido + sesgo² +
+# varianza por grado (100 muestras, f conocida) y la estrella en N⋆. Abajo,
+# mismo eje: la CV_5 de una sola muestra (la de ml-c2-cv-capacidad) y el total
+# calculado, en escala log (el total del grado 12 se sale: se dice en el rotulo).
+YLIM_SV = (4, 400)
+
+
+def ml_c2_sesgo_varianza():
+    cif = _cif()
+    ml = gen.ml_lab()
+    sv = cif.sesgo_varianza_hilo()
+    s = cif.cifras_c2_sesgo_varianza()
+    h = cif.cifras_c2_hilo()
+    sel = cif.seleccion_hilo()
+    Ns = list(cif.CANDIDATOS)
+    total = [s[N]["total"] for N in Ns]
+
+    def dibujar(fig, ejes):
+        arriba, abajo = ejes
+        ml.dibujar_sesgo_varianza(sv, ax=arriba, tema="sitio")
+        fuera = [N for N in Ns if s[N]["total"] > arriba.get_ylim()[1]]
+        arriba.set_title(f"en el simulador: f conocida, {cif.REP_SV} muestras; "
+                         f"{fuera[0]} a {fuera[-1]} salen del eje", color=TEXTO,
+                         fontsize=9)
+        arriba.set_xlabel("")
+        arriba.set_ylabel("error esperado")
+        _leyenda(arriba, loc="upper left", fontsize=8,
+                 renombrar={f"menor total: {s['N_estrella']}": f"menor total: N⋆ = "
+                                                                f"{s['N_estrella']}"})
+        ml.dibujar_cv(sel, ax=abajo, tema="sitio")
+        ln, = abajo.plot(Ns, total, ls="-", lw=2.0, color=REAL, label="total calculado")
+        ln.set_gid("total-calculado")
+        abajo.set_yscale("log")
+        abajo.set_ylim(*YLIM_SV)
+        abajo.set_xticks(Ns)
+        abajo.set_xlabel("grado N")
+        abajo.set_ylabel("pérdida (escala log)")
+        abajo.set_title("medido con una sola muestra: CV 5", color=TEXTO, fontsize=9)
+        _leyenda(abajo, loc="upper center", fontsize=8, ncol=2, bbox_to_anchor=(0.5, -0.3),
+                 renombrar={"CV_k": "CV 5 de una muestra"})
+
+    N0 = s["N_estrella"]
+    aria = (f"Dos paneles con el grado N de 0 a 12. Arriba, barras apiladas de ruido, sesgo "
+            f"al cuadrado y varianza calculadas con f conocida y {cif.REP_SV} muestras: el "
+            f"ruido mide {_num(s[0]['ruido'])} en todos los grados, el sesgo al cuadrado baja "
+            f"de {_num(s[0]['sesgo2'])} en N = 0 a {_num(s[N0]['sesgo2'], 2)} en N = {N0} y la "
+            f"varianza sube; el menor total, {_num(s[N0]['total'], 2)}, está en N⋆ = {N0}. "
+            f"Abajo, en escala log, la CV 5 de una sola muestra, con mínimo en N = "
+            f"{h['N_min']}, junto al total calculado: las dos bajan y suben en la misma zona "
+            f"sin coincidir punto por punto; el total del grado 12 sale del eje.")
+    return _grafica(dibujar, aria, "La U calculada y la U medida", 7.2, paneles=2, sharex=True,
+                    gridspec_kw={"height_ratios": [1.2, 1]})
+
+
+# ------------------------------------------- grafica: ml-c2-curva-aprendizaje ---
+#
+# P3 §4 (fig. 5.4 del libro, con su panel de abajo). Medianas de 50 repeticiones
+# de L_ent y R de los grados 1 y 10 contra n (log, duplicando desde 30), el piso;
+# abajo, el grado que elige CV_5 (mediana de 20). resumen="mediana" EXPLICITO:
+# la prueba de posicion compara cada punto con cifras_c2_curva_aprendizaje.
+YLIM_CURVA = (0, 30)
+
+
+def ml_c2_curva_aprendizaje():
+    cif = _cif()
+    ml = gen.ml_lab()
+    a = cif.cifras_c2_curva_aprendizaje()
+
+    def dibujar(fig, ejes):
+        ml.dibujar_curva_aprendizaje(cif.tabla_curva_aprendizaje(), piso=a["piso"],
+                                     elegido=cif.tabla_capacidad_elegida(),
+                                     resumen="mediana", ax=list(ejes), tema="sitio")
+        arriba, abajo = ejes
+        arriba.set_ylim(*YLIM_CURVA)
+        arriba.set_ylabel("pérdida (mediana de 50)")
+        _leyenda(arriba, loc="upper right", fontsize=8, ncol=2,
+                 renombrar={"L_ent · 1": "L ent · grado 1", "R · 1": "R · grado 1",
+                            "L_ent · 10": "L ent · grado 10", "R · 10": "R · grado 10"})
+        abajo.set_ylim(0, 12.5)
+        abajo.set_ylabel("grado elegido")
+        abajo.set_xlabel("entregas de entrenamiento n (escala log)")
+        _leyenda(abajo, loc="lower right", fontsize=8,
+                 renombrar={"elegido por CV (mediana)": "elegido por CV 5 (mediana de 20)"})
+
+    R = a["R"]
+    aria = (f"Arriba, medianas de 50 muestras contra el número de entregas, de 30 a 960 en "
+            f"escala log: el riesgo R del grado 1 baja de {_num(R[(1, 30)])} a "
+            f"{_num(R[(1, 480)])} y se queda en {_num(R[(1, 960)])}, arriba del piso de "
+            f"{_num(a['piso'])}; el del grado 10 empieza arriba de la recta y baja a "
+            f"{_num(R[(10, 480)])} y {_num(R[(10, 960)])}, pegado al piso. Abajo, el grado que "
+            f"elige la CV 5 (mediana de 20 muestras) sube de {a['elegido'][30]:g} con 30 "
+            f"entregas a {a['elegido'][960]:g} con 960.")
+    return _grafica(dibujar, aria, "Más datos: a quién le ayudan", 6.4, paneles=2, sharex=True,
+                    gridspec_kw={"height_ratios": [3, 1.4]})
+
+
+# ------------------------------------------------ diagrama: ml-c2-diagnostico ---
+#
+# P3 §5. Id congelado (lo cita la clase 5). El arbol de cuatro preguntas que
+# se contestan con datos reales, de arriba abajo, y sus cinco hojas.
+
+DG_W, DG_H = 600, 600
+
+
+def _hoja(c, x, y, w, nombre, accion, color):
+    c.append(caja(x, y, w, 50, relleno=mezclar(color, 0.22, PANEL), borde=color, radio=8,
+                  grosor=2))
+    c.append(texto(x + w / 2, y + 21, nombre, tam=14, peso="700", color=TEXTO))
+    c.append(texto(x + w / 2, y + 40, accion, tam=12, color=SUAVE))
+
+
+def _pregunta(c, x, y, w, renglones, nota=None):
+    alto = 24 + 18 * len(renglones) + (16 if nota else 0)
+    c.append(caja(x, y, w, alto, relleno=FONDO, borde=ACENTO, radio=10, grosor=2))
+    for i, r in enumerate(renglones):
+        c.append(tx(x + 14, y + 24 + 18 * i, r, tam=13, anclaje="start"))
+    if nota:
+        c.append(texto(x + 14, y + 24 + 18 * len(renglones), nota, tam=12, color=SUAVE,
+                       anclaje="start"))
+    return alto
+
+
+def ml_c2_diagnostico():
+    c = []
+    c.append(texto(16, 30, "Diagnosticar con dos curvas y un benchmark", tam=17, peso="700",
+                   anclaje="start"))
+    c.append(texto(16, 50, "se lee de arriba abajo; cada pregunta se contesta con datos reales",
+                   tam=13, color=SUAVE, anclaje="start"))
+    xq, wq, xh, wh = 16, 350, 398, 186
+    filas = [
+        (66, [["1 · ¿Brecha "] + _L("val") + [" − "] + _L("ent") + [" (o CV − "]
+              + _L("ent") + [") grande?"]], None,
+         "sobreajuste", "menos capacidad, más datos", PRU),
+        (160, [["2 · ¿Le gana al benchmark (la media de ent)?"],
+               ["(a) en validación que no eligió: la"],
+               ["diferencia pareada baja de 0 a más de 2 EE"]],
+         "(b) con CV solo da señal o «falta evidencia»",
+         "no aprende", "otras variables o familias", BENCH),
+        (300, [["3 · ¿Subir el grado baja la CV más de un EE?"]],
+         "heurística, como la regla de un EE",
+         "subajuste", "más capacidad, mejor φ", VAL),
+        (400, [["4 · ¿Tu prueba imita el despliegue?"]], None,
+         "listo", "lo que queda: ruido o familia", VERDE),
+    ]
+    centros = []
+    for y, renglones, nota, nombre, accion, color in filas:
+        alto = _pregunta(c, xq, y, wq, renglones, nota)
+        yc = y + alto / 2
+        centros.append((y, alto))
+        _hoja(c, xh, yc - 25, wh, nombre, accion, color)
+        c.append(flecha(xq + wq, yc, xh - 4, yc, color=ACENTO, grosor=2))
+        c.append(texto(xq + wq + 16, yc - 8, "sí" if nombre != "no aprende" else "no",
+                       tam=12, color=SUAVE))
+    # flechas hacia abajo entre preguntas ("no", salvo la 2, que sigue con "sí")
+    for i in range(len(filas) - 1):
+        (y, alto), (y2, _) = centros[i], centros[i + 1]
+        c.append(flecha(xq + 60, y + alto, xq + 60, y2 - 4, color=ACENTO, grosor=2))
+        c.append(texto(xq + 68, (y + alto + y2) / 2 + 4, "sí" if i == 1 else "no", tam=12,
+                       color=SUAVE, anclaje="start"))
+    # la quinta hoja: la prueba no imita
+    y4, a4 = centros[-1]
+    c.append(flecha(xq + 60, y4 + a4, xq + 60, 494, color=ACENTO, grosor=2))
+    c.append(texto(xq + 68, 486, "no", tam=12, color=SUAVE, anclaje="start"))
+    _hoja(c, xq, 498, 260, "rehacer la separación", "página 1, §5: imitar el despliegue",
+          ACENTO)
+    c.append(texto(16, DG_H - 34, "El subajuste se reconoce porque una familia más flexible",
+                   tam=13, color=SUAVE, anclaje="start"))
+    c.append(texto(16, DG_H - 14, "baja el error honesto; el piso solo se ve en el simulador.",
+                   tam=13, color=SUAVE, anclaje="start"))
+    aria = ("Árbol de diagnóstico con cuatro preguntas que se leen de arriba abajo. Uno: la "
+            "brecha entre validación, o CV, y entrenamiento es grande; si sí, sobreajuste: "
+            "menos capacidad o más datos. Dos: le gana al benchmark, la media de "
+            "entrenamiento; en una validación que no eligió el modelo, la diferencia pareada "
+            "baja de cero a más de dos errores estándar; con CV solo da señal o falta "
+            "evidencia; si no, no aprende: otras variables o familias. Tres: subir el grado "
+            "baja la CV más de un error estándar, una heurística; si sí, subajuste: más "
+            "capacidad o mejor phi. Cuatro: la prueba imita el despliegue; si sí, listo; si "
+            "no, rehacer la separación.")
+    return svg(DG_W, DG_H, aria, "Diagnosticar con dos curvas y un benchmark", c)
+
+
+_COMPLETO = {
+    "ml-c2-sesgo-varianza": ml_c2_sesgo_varianza,
+    "ml-c2-curva-aprendizaje": ml_c2_curva_aprendizaje,
+    "ml-c2-diagnostico": ml_c2_diagnostico,
+}
 # --- fin tramo completo ---
 
 

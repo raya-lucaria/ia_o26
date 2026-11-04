@@ -257,4 +257,61 @@ def test_el_abanico_no_usa_opacidad_para_informar():
 
 
 # --- tramo completo ---
+
+def test_el_tramo_completo_trae_sus_tres_figuras():
+    assert list(fig._COMPLETO) == ["ml-c2-sesgo-varianza", "ml-c2-curva-aprendizaje",
+                                   "ml-c2-diagnostico"]
+
+
+def test_el_aria_de_sesgo_y_varianza_nombra_la_estrella_y_el_desglose():
+    import ml_cifras_c2 as c
+    s, t = c.cifras_c2_sesgo_varianza(), aria("ml-c2-sesgo-varianza")
+    N0 = s["N_estrella"]
+    assert f"N⋆ = {N0}" in t and fig._num(s[N0]["total"], 2) in t
+    assert fig._num(s[0]["ruido"]) in t
+
+
+def test_cada_punto_de_la_curva_de_aprendizaje_es_su_mediana():
+    # «un punto queda donde está su valor»: la ordenada de R en 30, 480 y 960
+    # es la mediana de cifras_c2_curva_aprendizaje (si alguien quita
+    # resumen="mediana", esta prueba se pone roja)
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import aprendizaje_maquina as ml
+    import ml_cifras_c2 as c
+    a = c.cifras_c2_curva_aprendizaje()
+    fig_, ejes = plt.subplots(2, 1)
+    ml.dibujar_curva_aprendizaje(c.tabla_curva_aprendizaje(), piso=a["piso"],
+                                 elegido=c.tabla_capacidad_elegida(), resumen="mediana",
+                                 ax=list(ejes), tema="sitio")
+    for N in c.GRADOS_CURVA:
+        ln = [x for x in ejes[0].lines if x.get_gid() == f"R-{N}"][0]
+        pares = dict(zip(np.asarray(ln.get_xdata(), float), np.asarray(ln.get_ydata(), float)))
+        for n in (30, 480, 960):
+            assert np.isclose(pares[n], a["R"][(N, n)])
+    el = [x for x in ejes[1].lines if x.get_gid() == "elegido"][0]
+    pares = dict(zip(np.asarray(el.get_xdata(), float), np.asarray(el.get_ydata(), float)))
+    assert pares[30] == a["elegido"][30] and pares[960] == a["elegido"][960]
+    plt.close(fig_)
+    assert 'resumen="mediana"' in __import__("inspect").getsource(fig.ml_c2_curva_aprendizaje)
+
+
+def test_el_aria_de_la_curva_nombra_las_medianas_citadas():
+    import ml_cifras_c2 as c
+    a, t = c.cifras_c2_curva_aprendizaje(), aria("ml-c2-curva-aprendizaje")
+    for k in ((1, 30), (1, 480), (1, 960), (10, 480), (10, 960)):
+        assert fig._num(a["R"][k]) in t
+    assert fig._num(a["R"][(10, 30)]) not in t   # inestable entre semillas: no se cita
+
+
+def test_el_diagnostico_tiene_las_cinco_hojas_y_las_cuatro_preguntas():
+    t = contenido("ml-c2-diagnostico")
+    for hoja in ("sobreajuste", "no aprende", "subajuste", "listo", "rehacer la separación"):
+        assert hoja in t
+    for k in ("1 ·", "2 ·", "3 ·", "4 ·"):
+        assert k in t
+    assert "falta evidencia" in t and "heurística" in t
+
 # --- fin tramo completo ---
