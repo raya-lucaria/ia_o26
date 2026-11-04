@@ -994,8 +994,12 @@ class _Poblacion:
     def piso(self, desp, perdida):
         if perdida == "logaritmica":
             raise ValueError("la pérdida logarítmica es de clasificación; aquí es regresión")
+        hetero = isinstance(self.mecanismo, _Heterocedastico)
+        desv_h = self.mecanismo._desv(self._sin_escala(desp)) if hetero else None
         if perdida == "cuadratica":
             if self.mecanismo is None and math.isinf(self.ruido.varianza):
+                return float("inf")
+            if hetero and math.isinf(self.mecanismo.base.varianza) and np.any(desv_h > 0):
                 return float("inf")
             if self.tipo is None or (self.endogeno and not isinstance(self.ruido, _Normal)):
                 return None
@@ -1011,21 +1015,19 @@ class _Poblacion:
             # Cauchy); inf si el primer momento es infinito (Cauchy, t con gl <= 1, Pareto
             # con alfa <= 1), con o sin omitidas; con heterocedastico, la media de su
             # desviación por E|base|. Asimétrica (Pareto, lognormal), endógena u omitidas: nan.
-            hetero = isinstance(self.mecanismo, _Heterocedastico)
             pieza = self.mecanismo.base if hetero else (self.ruido if self.mecanismo is None else None)
-            sin_ruido = hetero and not np.any(self.mecanismo._desv(self._sin_escala(desp)) > 0)
+            sin_ruido = hetero and not np.any(desv_h > 0)
             if pieza is not None and not sin_ruido and (math.isinf(getattr(pieza, "_desv_abs", 0.0))
                                                         or (isinstance(pieza, _Pareto)
                                                             and pieza.alfa <= 1)):
                 return float("inf")
+            if sin_ruido and self.tipo == "directa":
+                return 0.0  # y = f(x) exacta: sin ruido ni omitidas
             if self.tipo != "directa" or self.endogeno or not hasattr(pieza, "_desv_abs"):
                 return None
             if self.mecanismo is None:
                 return float(pieza._desv_abs * abs(self.c_y))
-            if sin_ruido:
-                return 0.0
-            desv = self.mecanismo._desv(self._sin_escala(desp))
-            return float(np.mean(desv) * pieza._desv_abs * abs(self.c_y))
+            return float(np.mean(desv_h) * pieza._desv_abs * abs(self.c_y))
         raise ValueError(f"perdida debe ser 'cuadratica', 'absoluta' o 'logaritmica', no {perdida!r}")
 
 
@@ -2571,8 +2573,10 @@ class _Estandarizar(Phi):
         A = M[libres].to_numpy(float)
         centro = A.mean(axis=0) if len(A) else np.zeros(len(libres))
         desv = A.std(axis=0) if len(A) else np.ones(len(libres))
-        # una columna constante (o que solo varía por redondeo) se centra y no se divide
-        constante = desv <= 1e-12 * np.maximum(1.0, np.abs(centro))
+        # una columna constante (o que solo varía por redondeo, a la precisión de sus propios
+        # valores: no depende de las unidades) se centra y no se divide
+        tope = np.max(np.abs(A), axis=0) if len(A) else np.zeros(len(libres))
+        constante = desv <= 64 * np.finfo(float).eps * tope
         self.centro = pd.Series(centro, index=libres)
         self.escala = pd.Series(np.where(constante, 1.0, desv), index=libres)
 
@@ -5662,15 +5666,17 @@ def dibujar_regiones(datos, phi, penalizacion, d, rho=0.5, mostrar_mu=True, ax=N
     # L_ent(β) = L_mc + (β − β̂)ᵀ S (β − β̂) con el intercepto en su mejor valor: las curvas de
     # nivel son elipses y se trazan exactas (una rejilla no resuelve escalas muy distintas)
     S = Mc.T @ Mc / len(yc)
-    lam, V = np.linalg.eigh(S)
+    escala_ = np.sqrt(np.diag(S))  # z = D·(β − β̂): el rango se juzga sin las unidades
+    escala_ = np.where(escala_ > 0, escala_, 1.0)
+    lam, V = np.linalg.eigh(S / np.outer(escala_, escala_))
     l_mc = L(mc, datos.ent)
     sube = float(b_r @ S @ b_r - 2 * b_r @ S @ b_mc + b_mc @ S @ b_mc)  # L(β_r) − L_mc
     paso = sube if sube > 1e-12 * max(l_mc, 1e-300) else max(float(b_mc @ S @ b_mc) / 8, 1e-12)
     th = np.linspace(0, 2 * np.pi, 361)
-    if lam.min() > 1e-14 * lam.max():
+    if lam.min() > 1e-12 * lam.max():
         for k, c in enumerate(paso * np.array([0.25, 0.5, 1.0, 2.0, 3.5, 5.5])):
-            elipse = b_mc[:, None] + V @ (np.sqrt(c / lam)[:, None] * np.vstack([np.cos(th),
-                                                                                 np.sin(th)]))
+            z = V @ (np.sqrt(c / lam)[:, None] * np.vstack([np.cos(th), np.sin(th)]))
+            elipse = b_mc[:, None] + z / escala_[:, None]
             ln, = ax.plot(elipse[0], elipse[1], color=_color("realidad", tema),
                           lw=1.6 if k == 2 else 0.9, label="curvas de nivel de L_ent" if k == 0
                           else None)
@@ -5697,7 +5703,7 @@ def dibujar_regiones(datos, phi, penalizacion, d, rho=0.5, mostrar_mu=True, ax=N
     ax.axvline(0, color=t["rejilla"], lw=0.8)
     ax.set_xlim(lo[0] - margen, hi[0] + margen)
     ax.set_ylim(lo[1] - margen, hi[1] + margen)
-    ax.set_aspect("equal", adjustable="datalim")
+    ax.set_aspect("equal", adjustable="box")
     ax.set_xlabel(f"β de {pend[0]}")
     ax.set_ylabel(f"β de {pend[1]}")
     titulo = _PENALIZACIONES[penalizacion]
@@ -6092,11 +6098,15 @@ def _taller_c3(datos, que="error", phi=None, penalizacion="l1", rho=0.5, mus=Non
     a1.set_title("sin estandarizar")
     dibujar_trayectorias(tabla, marcar_mu=s.elegido, ax=a2)
     a2.set_title("estandarizando con ent")
-    vivos = {mu: int((tabla[tabla["mu"] == mu]["valor"] != 0).sum()) for mu in mus}
+    desarrollo = _desarrollo(datos)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        vivos = {mu: int((construir[mu](desarrollo).beta_gorro.drop("1") != 0).sum())
+                 for mu in mus}  # con ent ∪ val, como el modelo final
     dibujar_cv(s, log=True, anotar=vivos)
     print(f"CV_{k} sobre ent ∪ val (estandarizando en cada pliegue): μ del mínimo = "
-          f"{s.elegido:.4g} ({vivos[s.elegido]} distintos de 0); μ por la regla de un EE = "
-          f"{s.elegido_un_ee:.4g} ({vivos[s.elegido_un_ee]} distintos de 0)")
+          f"{s.elegido:.4g} ({vivos[s.elegido]} pendientes distintas de 0 reajustando con ent ∪ "
+          f"val); μ por la regla de un EE = {s.elegido_un_ee:.4g} ({vivos[s.elegido_un_ee]})")
     resumen = pd.DataFrame({"β̂ (μ del mínimo, ent ∪ val)": final.beta_gorro,
                             "verdadero (estructural)": verdadero})
     print(resumen.round(3).to_string())

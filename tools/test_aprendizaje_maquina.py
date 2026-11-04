@@ -2923,7 +2923,7 @@ def test_taller_3_no_evalua_el_modelo_final_en_val(monkeypatch):
         with pytest.raises(AssertionError, match="final en val"):  # la espía sí ve una evaluación
             s = ml.elegir(datos, {1.0: lambda df: ml.ajustar(df, mu=1.0, penalizacion="l1")}, con="cv")
             ml.L(s.modelo_final, datos.val)
-    with pytest.raises(ValueError, match="> 0"):
+    with pytest.raises(ValueError, match="en el taller los μ son > 0"):
         ml.taller(datos, 3, que="lagrangeano", mus=[0.0, 0.1, 1.0])
 
 
@@ -3023,3 +3023,37 @@ def test_dibujar_media_acumulada_distingue_infinito_de_no_calculado():
     rng = np.random.default_rng(0)
     assert ml._esperado(ml.pareto(1.5), "absoluto") == pytest.approx(
         np.abs(ml.pareto(1.5).muestrear(4_000_000, rng)).mean(), rel=0.03)
+
+
+def test_segunda_ronda_c3():
+    # estandarizar: variación real en unidades diminutas no es «constante»
+    df = pd.DataFrame({"x": [0, 1e-13, 2e-13, 3e-13], "y": [0.0, 1, 2, 3]})
+    E = ml.estandarizar(ml.columnas("x")).ajustar(df)(df)
+    assert np.allclose(E["x"].std(ddof=0), 1.0)
+    # elipses con escalas muy distintas pero rango completo
+    ax = ml.dibujar_regiones(ml.caso(10, escala={"x2": 1e7}), None, "l1", 0.4)
+    assert sum(1 for ln in ax.get_lines() if (ln.get_gid() or "").startswith("curva-nivel-")) == 6
+    # piso infinito con base Cauchy aunque haya omitidas; 0 sin ruido con cualquier base
+    d = ml.caso(9, omitir=["x2"], ruido=ml.heterocedastico(lambda _: 1.0, base=ml.cauchy()))
+    assert np.isinf(ml.piso(d))
+    d = ml.proceso(n=40, ruido=ml.heterocedastico(lambda d: 0.0 * d["x"], base=ml.pareto(1.5)))
+    assert ml.piso(d, "absoluta") == 0.0 and ml.piso(d) == 0.0
+
+
+def test_taller_3_cuenta_las_pendientes_del_modelo_final(monkeypatch):
+    datos = ml.caso(24, escala=None)
+    visto = {}
+    real = ml.elegir
+
+    def espia(*args, **kwargs):
+        visto["s"] = real(*args, **kwargs)
+        return visto["s"]
+
+    monkeypatch.setattr(ml, "elegir", espia)
+    buf = io.StringIO()
+    with redirect_stdout(buf), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.taller(datos, 3, que="lagrangeano")
+    s = visto["s"]
+    vivas = int((s.modelo_final.beta_gorro.drop("1") != 0).sum())
+    assert f"({vivas} pendientes distintas de 0" in buf.getvalue()
