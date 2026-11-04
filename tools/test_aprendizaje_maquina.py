@@ -3817,7 +3817,6 @@ def test_efecto_de_pesos_a_los_dos_lados_del_maximo():
     t = ml.efecto_de_pesos(d, razones)
     salto = t["beta0"] - t["beta0"].iloc[0]
     assert salto.to_numpy() == pytest.approx(t["ln_razon"].to_numpy(), abs=0.2)
-    assert (t["coincidencia"] > 0.98).all()
     imax = int(t["mcc_tau05"].idxmax())
     assert 0 < imax < len(t) - 1
     assert t["mcc_tau05"].max() - t["mcc_tau05"].iloc[-1] > 0.1
@@ -4670,3 +4669,137 @@ def test_interceptos_k3_con_puntajes_lejanos():
                                            lambda q: 0 * q["x1"]],
                                  proporcion=[0.8, 0.15, 0.05], n_realidad=500, separar="azar")
     assert d._pob.b[1:] == pytest.approx([-11.67397643, -2.77258872], abs=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# 10 · Revisión c4 de 1.5: cachés, cuadratura, etiquetas ajenas y conformal exacto
+
+
+class _ConstanteRuido(ml.Pieza):
+    """Pieza del taller con el repr heredado «constante()»: su repr no dice v."""
+    nombre = "constante"
+
+    def __init__(self, v):
+        self.v = float(v)
+
+    def muestrear(self, n, rng):
+        return np.full(n, self.v)
+
+
+def _cero(d):
+    return 0.0 * d["x1"]
+
+
+def test_cache_de_poblacion_distingue_ruidos_con_el_mismo_repr():
+    a = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=_cero,
+                                 ruido=_ConstanteRuido(0), n_realidad=2000)
+    b = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=_cero,
+                                 ruido=_ConstanteRuido(10), n_realidad=2000)
+    assert a.realidad["prob"].to_numpy() == pytest.approx(0.5, abs=1e-12)
+    assert b.realidad["prob"].to_numpy() == pytest.approx(special_expit(10), abs=1e-9)
+    c = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=_cero,
+                                 ruido=_ConstanteRuido(0), proporcion=0.5, n_realidad=2000)
+    d = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=_cero,
+                                 ruido=_ConstanteRuido(10), proporcion=0.5, n_realidad=2000)
+    assert c.realidad["prob"].to_numpy() == pytest.approx(0.5, abs=1e-9)
+    assert d.realidad["prob"].to_numpy() == pytest.approx(0.5, abs=1e-9)
+
+
+def special_expit(z):
+    from scipy import special
+    return float(special.expit(z))
+
+
+def test_oraculo_integra_ruidos_discretos_y_uniformes_anchos_exactos():
+    disc = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=_cero,
+                                    ruido=ml.categorica([-100, 100], [0.494, 0.506]),
+                                    n_realidad=2000)
+    assert disc.realidad["prob"].to_numpy() == pytest.approx(0.506, abs=1e-9)
+    prop = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=_cero,
+                                    ruido=ml.categorica([-100, 100], [0.494, 0.506]),
+                                    proporcion=0.5, n_realidad=2000)
+    assert prop.realidad["prob"].mean() == pytest.approx(0.5, abs=1e-6)
+
+    def diez(d):
+        return 10.0 + 0.0 * d["x1"]
+
+    ancho = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=diez,
+                                     ruido=ml.uniforme(-1000, 1000), n_realidad=2000)
+    assert ancho.realidad["prob"].to_numpy() == pytest.approx(0.505, abs=1e-9)
+    # una pieza continua con cuantiles (t de 1 gl, escala enorme) converge a la cuenta exacta
+    t = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=diez,
+                                 ruido=ml.t_student(1, 1000), n_realidad=2000)
+    from scipy import integrate, stats as st
+    exacto = integrate.quad(lambda e: special_expit(10 + e) * st.t.pdf(e, 1, scale=1000),
+                            -np.inf, np.inf, limit=500)[0]
+    assert t.realidad["prob"].to_numpy() == pytest.approx(exacto, abs=1e-6)
+
+
+def test_proporcion_con_categorica_de_texto():
+    d = ml.proceso_clasificacion(n=50, x={"tipo": ml.categorica(["a", "b"])},
+                                 puntaje=lambda d: (d.tipo == "b").astype(float),
+                                 proporcion=0.2, con_realidad=False)
+    assert len(d.ent) > 0
+
+
+def test_rango_conformal_conserva_fracciones_exactas():
+    from fractions import Fraction
+    assert ml._rango_conformal(9, Fraction(9999999, 100000000)) == 10
+    assert ml._rango_conformal(9, 0.09999999) == 10
+    assert ml._rango_conformal(9, 0.3) == 7      # 0.3 en flotante no sube a 8
+    assert ml._rango_conformal(9, 0.1) == 9
+    assert ml._rango_conformal(10, 1e-8) == 11
+    assert ml._corte(np.arange(1, 10), 0.09999999) == float("inf")
+
+
+def test_etiquetas_ajenas_al_problema_lanzan():
+    with pytest.raises(ValueError, match="y"):
+        ml.log_loss([2], [0.9])
+    ent = pd.DataFrame({"y": [0, 1, 0, 1]})
+    ent.attrs["ml"] = {"tarea": "clasificacion", "clases": [0, 1]}
+    with pytest.raises(ValueError, match="clase"):
+        ml.benchmarks(ent, pd.DataFrame({"y": [2, 2]}), criterios=("brier",))
+    d = ml.PROCESOS["fraude"](n=600, proporcion=0.3, con_realidad=False)
+    m = ml.ajustar(d)
+    with pytest.raises(ValueError, match="clase"):
+        ml.contribucion_por_clase(m, d.ent.assign(y=2))
+
+
+def test_incertidumbre_por_grupos_remuestrea_grupos_completos():
+    df = pd.DataFrame({"x1": 0.0, "grupo": np.repeat(np.arange(10), 10),
+                       "y": np.repeat([0] * 5 + [1] * 5, 10)})
+    m = _regla_constante(0)
+    g = ml.incertidumbre(m, df, "aciertos", grupo="grupo", repeticiones=3000)
+    f = ml.incertidumbre(m, df, "aciertos", repeticiones=3000)
+    assert g.ee == pytest.approx(math.sqrt(0.25 / 10), rel=0.1)   # 0.158
+    assert f.ee == pytest.approx(math.sqrt(0.25 / 100), rel=0.1)  # 0.050
+
+
+def test_por_clase_precision_valores_y_clase_sin_predicciones():
+    s = ml.por_clase("precision", [0, 0, 1, 1], [0, 0, 0, 1], clases=[0, 1])
+    assert s.to_numpy() == pytest.approx([2 / 3, 1.0])
+    s, avisos = _avisos(ml.por_clase, "precision", [0, 0, 1, 1], [0, 0, 0, 0], clases=[0, 1])
+    assert s.iloc[0] == pytest.approx(0.5) and math.isnan(s.iloc[1])
+    assert avisos
+
+
+def test_elegir_umbral_desempata_hacia_medio():
+    class _Fija(ml.Modelo):
+        tarea, familia = "clasificacion", "constante"
+
+        def predecir_p(self, df):
+            return np.full(len(df), 0.1)
+
+    m = _Fija()
+    m.clases, m.K = np.asarray([0, 1]), 2
+    df = pd.DataFrame({"x1": 0.0, "y": [0, 0, 1, 1]})
+    for metrica in ("aciertos", "mcc", "aciertos_balanceados"):
+        assert ml.elegir_umbral(m, df, metrica, rejilla=[0.3, 0.5, 0.7]) == 0.5
+
+
+def test_efecto_de_pesos_coincidencia_poblacional():
+    """Contrato: con n grande la regla con pesos y la sin pesos con τ = w0/(w0 + w1)
+    coinciden en más del 99 % de despliegue (con n = 20 000 la razón 100 da 0.989)."""
+    d = ml.PROCESOS["fraude"](n=500_000, proporcion=0.05)
+    t = ml.efecto_de_pesos(d, [1, 3, 12, 30, 100])
+    assert (t["coincidencia"] > 0.99).all()

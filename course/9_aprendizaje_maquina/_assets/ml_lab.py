@@ -1624,23 +1624,77 @@ def _normal_mezcla(medias, pesos, desv):
 
 
 def _nodos_pieza(ruido):
-    """La regla para promediar sobre una Pieza: normal (exacta), cuantiles (Gauss–Legendre
-    en u) o, si la pieza no da cuantiles, 4000 sorteos fijos (Monte Carlo reproducible)."""
+    """La regla para promediar sobre una Pieza, exacta cuando se puede: normal (mezcla),
+    categórica numérica (sus masas), uniforme (forma cerrada con softplus), otra con
+    cuantiles (Gauss–Legendre compuesta en u, refinada hasta converger) o, si la pieza no
+    da cuantiles, 4000 sorteos fijos (Monte Carlo reproducible)."""
     if isinstance(ruido, _Normal):
         return _normal_mezcla([ruido.media], [1.0], ruido.desv)
+    if isinstance(ruido, _Categorica):
+        if ruido._texto():
+            return None
+        return ("nodos", np.asarray(ruido.categorias, float), np.asarray(ruido.probs, float))
+    if isinstance(ruido, _Uniforme):
+        return ("uniforme", ruido.a, ruido.b)
     if hasattr(ruido, "_cuantil"):
-        u, w = _legendre_u(_NODOS_U)
-        return ("nodos", np.asarray(ruido._cuantil(u), float), w)
+        return ("cuantil", ruido._cuantil)
     e = np.asarray(ruido.muestrear(4000, np.random.default_rng([_SEMILLA_HUELLA, 11])), float)
     if e.shape != (4000,) or not np.all(np.isfinite(e)):
         return None
     return ("nodos", e, np.full(4000, 1 / 4000))
 
 
-def _a_nodos(regla):
-    """Convierte una mezcla de normales en nodos (para K > 2)."""
+_PANEL_GL = 16
+_PANELES_MAX = 4096   # 65 536 nodos: lo más fino que se intenta antes de avisar
+_TOL_CUADRATURA = 1e-9
+
+
+def _legendre_compuesta(paneles):
+    """Gauss–Legendre de 16 nodos en cada uno de `paneles` tramos iguales de (0, 1)."""
+    clave = ("compuesta", paneles)
+    if clave not in _LEGENDRE:
+        x, w = np.polynomial.legendre.leggauss(_PANEL_GL)
+        bordes = np.arange(paneles)[:, None] / paneles
+        u = (bordes + (x[None, :] + 1) / (2 * paneles)).ravel()
+        _LEGENDRE[clave] = (u, np.tile(w / (2 * paneles), paneles))
+    return _LEGENDRE[clave]
+
+
+def _nodos_cuantil(cuantil, z):
+    """Nodos en u para ∫ σ(z + Q(u)) du: duplica los paneles hasta que dos refinamientos
+    seguidos coinciden a 1e-9 en una sonda de los z pedidos (una σ casi escalón frente a
+    un ruido ancho necesita paneles finos; una fija de 128 nodos se equivocaba)."""
+    z = np.asarray(z, float)
+    sonda = np.unique(np.quantile(z, np.linspace(0, 1, 101))) if len(z) else np.zeros(1)
+
+    def con(paneles):
+        u, w = _legendre_compuesta(paneles)
+        e = np.asarray(cuantil(u), float)
+        return e, w, special.expit(sonda[:, None] + e[None, :]) @ w
+
+    paneles = 8
+    e, w, antes = con(paneles)
+    while paneles < _PANELES_MAX:
+        paneles *= 2
+        e, w, ahora = con(paneles)
+        if np.max(np.abs(ahora - antes)) <= _TOL_CUADRATURA:
+            return e, w
+        antes = ahora
+    warnings.warn("la integral sobre el ruido no convergió a 1e-9 con 65 536 nodos: Pr(y | x) "
+                  "puede tener un error mayor", RuntimeWarning, stacklevel=3)
+    return e, w
+
+
+def _a_nodos(regla, z=None):
+    """Convierte una regla en (nodos, pesos); z (opcional) guía el refinamiento de los
+    cuantiles. Una normal o una uniforme se aproximan aquí solo para el arranque de K > 2."""
     if regla[0] == "nodos":
         return regla[1], regla[2]
+    if regla[0] == "cuantil":
+        return _nodos_cuantil(regla[1], np.zeros(1) if z is None else z)
+    if regla[0] == "uniforme":
+        u, w = _legendre_compuesta(64)
+        return regla[1] + (regla[2] - regla[1]) * u, w
     _, medias, pesos, desv = regla
     if desv <= _DESV_GH:
         t, a = _gauss_hermite(0.0, desv)
@@ -1653,9 +1707,15 @@ def _a_nodos(regla):
 def _p1_binaria(z, regla):
     """E[σ(z + ε)] para cada z, con ε según la regla. Una normal ancha se integra por la
     identidad E[σ(z + ε)] = E_L[Φ((z + m − L)/s)], con L logística (Gauss–Legendre en u):
-    Gauss–Hermite con una σ casi escalón no converge."""
+    Gauss–Hermite con una σ casi escalón no converge. Una uniforme en [a, b] tiene forma
+    cerrada: (softplus(z + b) − softplus(z + a))/(b − a)."""
     z = np.asarray(z, float)
     salida = np.empty(len(z))
+    if regla[0] == "uniforme":
+        a, b = regla[1], regla[2]
+        if b - a <= 1e-6:  # casi una constante: el cociente pierde cifras
+            return special.expit(z + (a + b) / 2)
+        return (np.logaddexp(0.0, z + b) - np.logaddexp(0.0, z + a)) / (b - a)
     if regla[0] == "normal" and regla[3] > _DESV_GH:
         _, medias, pesos, desv = regla
         u, w = _legendre_u(256)
@@ -1666,7 +1726,7 @@ def _p1_binaria(z, regla):
         for i in range(0, len(z), bloque):
             salida[i:i + bloque] = special.ndtr((z[i:i + bloque, None] + corr[None, :]) / desv) @ peso
         return salida
-    e, a = _a_nodos(regla)
+    e, a = _a_nodos(regla, z)
     bloque = max(1, 4_000_000 // len(e))
     for i in range(0, len(z), bloque):
         salida[i:i + bloque] = special.expit(z[i:i + bloque, None] + e[None, :]) @ a
@@ -1921,15 +1981,39 @@ class _PoblacionClasificacion:
         return ("clf", self.K, tuple(_huella(f, self._Z(df, [f], b=np.zeros(1)))
                                      for f in self.puntajes),
                 tuple((k, _huella(v, df[k])) for k, v in self.x.items()),
-                repr(self.ruido), self.r, tuple(np.round(self.b, 12)))
+                self._huella_ruido(), self.r, tuple(np.round(self.b, 12)))
+
+    def _huella_ruido(self):
+        """El ruido por lo que HACE: tipo, estado y sorteos con el generador fijo de la
+        huella (sin su identidad: dos normal(0, 1) distintas comparten caché). El repr no
+        basta: una pieza del taller hereda «nombre()» sin sus parámetros."""
+        if self.ruido is None:
+            return None
+        rng = np.random.default_rng([_SEMILLA_HUELLA, 3])
+        if self.mecanismo is not None:
+            df = self._xs(_N_HUELLA, rng)
+            for k, v in self.mecanismo.preparar(_N_HUELLA, rng).items():
+                df[k] = v
+            sorteos = self.mecanismo.muestrear(df, rng)
+        else:
+            sorteos = self.ruido.muestrear(_N_HUELLA, rng)
+        return _huella(self.ruido, sorteos)[1:]
 
     def _llave_contenido(self):
         """Lo que fija los interceptos, por contenido (no por identidad de los objetos)."""
         df = self._xs(_N_HUELLA, np.random.default_rng(_SEMILLA_HUELLA))
         Z = self._Z(df, b=np.zeros(self.K))
-        h = hashlib.sha256(np.ascontiguousarray(df.to_numpy(float)).tobytes()
-                           + np.ascontiguousarray(Z).tobytes()).hexdigest()
-        return ("interceptos", self.K, tuple(self.x), h, repr(self.ruido), self.r)
+        h = hashlib.sha256()
+        for col in df.columns:  # cada columna con su tipo: una categórica de texto no es float
+            v = np.asarray(df[col])
+            try:
+                crudo = np.ascontiguousarray(v, dtype=float).tobytes()
+            except (TypeError, ValueError):
+                crudo = repr([(type(a).__name__, a) for a in v.tolist()]).encode()
+            h.update(repr((col, str(v.dtype))).encode() + crudo)
+        h.update(np.ascontiguousarray(Z).tobytes())
+        return ("interceptos", self.K, tuple(self.x), h.hexdigest(),
+                self._huella_ruido(), self.r)
 
     def sigma2_e(self):
         return float("nan")
@@ -4177,6 +4261,9 @@ def log_loss(y, prob):
     p = np.asarray(prob, float)
     y = np.asarray(y).reshape(-1)
     if p.ndim == 1:
+        if not np.isin(y, (0, 1)).all():
+            raise ValueError("con una probabilidad Pr(y=1), y va en {0, 1}: una etiqueta "
+                             "distinta no se puede contar como 0")
         return float(np.mean(perdida(y, p, "logaritmica")))
     idx = y.astype(int)
     if (idx != y).any() or idx.min() < 0 or idx.max() >= p.shape[1]:
@@ -4501,6 +4588,10 @@ def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
     else:
         criterios = list(criterios or ["logaritmica", "aciertos"])
         clases = list(meta.get("clases") or np.unique(y_ent))
+        ajenas = sorted({v for v in y.tolist() if v not in clases}, key=repr)
+        if ajenas:
+            raise ValueError(f"df_eval trae etiquetas que no son una clase del problema "
+                             f"({clases}): {ajenas}")
         p = np.array([np.mean(y_ent == c) for c in clases], float)
         # la clase más frecuente; un empate lo gana la última, como predecir con p >= 0.5
         j = len(p) - 1 - int(np.argmax(p[::-1]))
@@ -5563,7 +5654,22 @@ def _rango_conformal(n_cal, delta):
     """⌈(n_cal + 1)(1 − δ)⌉ con aritmética exacta (fracciones, nunca math.ceil de un flotante)."""
     if int(n_cal) != n_cal or n_cal < 0:
         raise ValueError("n_cal es un entero >= 0")
-    d = Fraction(delta).limit_denominator(10 ** 6)
+    # una Fraction, un entero o un Decimal se usan tal cual. Un flotante se lee como la
+    # fracción que él redondea: la de denominador <= 10⁶ si vuelve al MISMO flotante (1/3,
+    # 3/10) y, si no, su decimal más corto (0.09999999 es 9999999/10⁸, no 1/10): la
+    # corrección del redondeo nunca cambia δ por otro número
+    if isinstance(delta, (float, np.floating)):
+        delta = float(delta)
+        if not math.isfinite(delta):
+            raise ValueError("delta está en (0, 1)")
+        d = Fraction(delta).limit_denominator(10 ** 6)
+        if float(d) != delta:
+            d = Fraction(repr(delta))
+    else:
+        try:
+            d = Fraction(delta)
+        except (TypeError, ValueError):
+            raise ValueError("delta está en (0, 1)")
     if not 0 < d < 1:
         raise ValueError("delta está en (0, 1)")
     x = (int(n_cal) + 1) * (1 - d)
@@ -5968,6 +6074,10 @@ def contribucion_por_clase(modelo, df, pesos=None):
     if len(df) == 0:
         raise ValueError("df está vacío")
     y = df["y"].to_numpy()
+    ajenas = sorted({v for v in y.tolist() if v not in list(modelo.clases)}, key=repr)
+    if ajenas:
+        raise ValueError(f"df trae etiquetas que no son una clase del modelo "
+                         f"({list(modelo.clases)}): {ajenas}")
     w = _w_eval(modelo.clases, y, pesos)
     l_i = _perdida_log_i(modelo, df)
     n = len(y)
