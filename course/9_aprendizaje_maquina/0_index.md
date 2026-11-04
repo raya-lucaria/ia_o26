@@ -8,8 +8,8 @@ tags: [aprendizaje-maquina]
 prerequisites: [markov]
 ---
 
-> [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
 >
 > **Notebook 01 · ¿Qué es f?** Corre en tu navegador, sin instalar nada.
 >
