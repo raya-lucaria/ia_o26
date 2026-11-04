@@ -71,6 +71,8 @@ def bloque_2(k, regla, semilla, ver_R):
     N_min, N_ee = s.elegido, s.elegido_un_ee
     print(f"CV_{k}: mínimo en N = {N_min} ({t.loc[N_min, 'valor']:.2f} ±"
           f" {t.loc[N_min, 'ee']:.2f}); la regla de un EE elige N = {N_ee}")
+    print(f"benchmark (N = 0, la media de entrenamiento): CV {bench[0]:.2f} ±"
+          f" {bench[1]:.2f}")
     print(f"ajustes: {s.costo_ajustes} (= 13·{k} + 1)")
     if ver_R:
         mejor = min(R, key=R.get)
@@ -149,7 +151,7 @@ DATOS_B4 = {"entregas": DATOS, "caso 16": ml.caso(16)}
 def bloque_4(estadistico, cual):
     f = ESTADISTICOS[estadistico]
     res = {N: ml.validacion_cruzada(DATOS_B4[cual], construir(N), k=5, estadistico=f)
-           for N in (1, 4, 8)}
+           for N in (0, 1, 4, 8)}                    # N = 0: el benchmark
     ml.dibujar_cajas_pliegues(res, estadistico=f is not None)
     plt.yscale("log" if f is None else "linear")
     plt.show()
@@ -215,7 +217,8 @@ def una_anidada(s):
     cv_ganador = sel.tabla.set_index("candidato").loc[sel.elegido, "valor"]
     return {"CV del ganador": cv_ganador, "anidada": an.media,
             "R del procedimiento (4/5)": ml.riesgo(proc.modelo_final, d),
-            "R del modelo final": ml.riesgo(sel.modelo_final, d)}
+            "R del modelo final": ml.riesgo(sel.modelo_final, d),
+            "R del benchmark": ml.riesgo(CANDS_B6[0](des), d)}
 
 
 T_B6 = ml.repetir(una_anidada, repeticiones=30, semilla=SEMILLA)   # ~30 s, una vez
@@ -224,8 +227,9 @@ T_B6 = ml.repetir(una_anidada, repeticiones=30, semilla=SEMILLA)   # ~30 s, una 
 def bloque_6(repeticiones):
     t = T_B6.iloc[:repeticiones].drop(columns=["repeticion", "semilla"])
     medias, ee = t.mean(), t.std(ddof=1) / np.sqrt(len(t))
-    plt.errorbar(range(4), medias, yerr=2 * ee, fmt="o", capsize=4)
-    plt.xticks(range(4), [c.replace(" (", "\n(") for c in t.columns])
+    plt.errorbar(range(len(medias)), medias, yerr=2 * ee, fmt="o", capsize=4)
+    plt.xticks(range(len(medias)), [c.replace(" (", "\n(").replace("del ", "del\n")
+                                    for c in t.columns], fontsize=8)
     plt.axvline(2.5, ls=":", color="gray")
     plt.ylabel("pérdida promedio"); plt.show()
     for c in t.columns:
