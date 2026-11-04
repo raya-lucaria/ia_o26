@@ -841,11 +841,12 @@ def ml_c1_taylor_vs_mco():
         ax.text(2.04, 15.2, "más allá de x = 2, Taylor\nde 1/x empeora al subir\nel grado",
                 fontsize=9, color=TEXTO, va="top")
         ax.plot([1], [7], marker="x", ms=8, color=TEXTO, ls="", zorder=7)
-        ax.text(1.04, 7.4, "x₀ = 1", fontsize=9, color=TEXTO)
-        ax.text(2.5, 1.0, f"en x = 2.5, error de Taylor:\ngrado 3 → {_num(t['taylor_3'][2.5], 1)}"
-                f", grado 9 → {_num(t['taylor_9'][2.5], 1)}", fontsize=9, color=TEXTO,
-                ha="center", bbox={"facecolor": PANEL, "edgecolor": LINEA,
-                                   "boxstyle": "round"})
+        ax.annotate("x₀ = 1", (1, 7), xytext=(0.55, 3.2), fontsize=9, color=TEXTO,
+                    arrowprops={"arrowstyle": "-", "color": TEXTO, "lw": 0.8})
+        ax.text(0.985, 0.72, f"en x = 2.5, error de Taylor:\ngrado 3 → "
+                f"{_num(t['taylor_3'][2.5], 1)}, grado 9 → {_num(t['taylor_9'][2.5], 1)}",
+                transform=ax.transAxes, fontsize=9, color=TEXTO, ha="right", va="top",
+                zorder=8, bbox={"facecolor": PANEL, "edgecolor": LINEA, "boxstyle": "round"})
         ax.set_xlim(0.3, 3)
         ax.set_ylim(0, 16)
         ax.set_xlabel("x")
@@ -933,6 +934,11 @@ def ml_c1_tres_ajustes():
             ax.set_xlim(0.3, 3)
             ax.set_ylim(-2, tope)
             ax.set_ylabel("y")
+        # El grado 15 se desploma despues del ultimo dato: se marca ese limite.
+        ultimo = ejes[-1]
+        ultimo.axvline(t["x_max"], color=TEXTO, lw=1.0, ls=(0, (1, 2)))
+        ultimo.text(t["x_max"] - 0.03, tope - 0.6, f"último dato,\nx = {_num(t['x_max'], 2)}",
+                    fontsize=8.5, color=TEXTO, ha="right", va="top")
         ejes[-1].set_xlabel("x")
         manejadores, rotulos = ejes[0].get_legend_handles_labels()
         _ley(ejes[0], handles=manejadores,
@@ -945,9 +951,13 @@ def ml_c1_tres_ajustes():
     partes = "; ".join(
         f"grado {N}, {nombres[N]}: error de entrenamiento {_num(t[N]['L_ent'], 2)} y "
         f"riesgo {_num(t[N]['R'], 2)}" for N in cif.TRES_GRADOS)
+    q = t[cif.TRES_GRADOS[-1]]
     aria = ("Tres ajustes a los mismos 20 datos de la curva 2 más 5 entre x, con 200 "
             f"observaciones nuevas del mismo proceso al fondo. {partes}. El de grado 15 pasa "
-            "cerca de casi todos los datos y entre ellos se dispara.")
+            "cerca de casi todos los datos y oscila entre ellos; después del último dato, en "
+            f"x igual a {_num(t['x_max'], 2)}, se desploma: en x igual a 3 predice "
+            f"{_num(q['prediccion_en_3'], 0)}, y de ese tramo sale más del "
+            f"{_num(100 * q['fraccion_reducible_tras_x_max'], 1)} % de su riesgo reducible.")
     return _grafica(dibujar, aria, "Subajuste, capacidad adecuada y sobreajuste", 7.2,
                     paneles=3)
 
@@ -957,6 +967,16 @@ def ml_c1_tres_ajustes():
 # P2 §4 (DL fig. 5.3 medida). La curva de capacidad N = 1..15 con L_ent y R
 # (realidad), la brecha, el piso, el benchmark y el N de menor R; abajo, el
 # mismo proceso con 200 datos. Eje y logaritmico: R(15) con 20 datos es ~1500.
+
+def _zonas(ax):
+    """Los rotulos de subajuste y sobreajuste en coordenadas de los ejes (el
+    zonas=True de ml_lab los pone con el ylim lineal, antes del eje log, y el
+    de sobreajuste cae sobre la curva de R)."""
+    ax.text(0.02, 0.96, "← subajuste", transform=ax.transAxes, fontsize=9, color=TEXTO,
+            va="top", ha="left")
+    ax.text(0.78, 0.96, "sobreajuste →", transform=ax.transAxes, fontsize=9, color=TEXTO,
+            va="top", ha="right")
+
 
 def ml_c1_capacidad_brecha():
     import ml_cifras_c1 as cif
@@ -971,6 +991,7 @@ def ml_c1_capacidad_brecha():
                                        tema="sitio")
             ax.set_yscale("log")
             ax.set_ylim(0.02, 4000)
+            _zonas(ax)
             ax.set_xticks(range(1, 16, 2))
             ax.set_xlabel("grado N (capacidad →)", labelpad=1)
             ax.set_ylabel("pérdida (escala log)")
@@ -985,7 +1006,8 @@ def ml_c1_capacidad_brecha():
 
     v, d = k[20], k[200]
     aria = ("Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos "
-            "de la curva 2 más 5 entre x, en escala logarítmica. El error de entrenamiento "
+            "de la curva 2 más 5 entre x, en escala logarítmica, con el extremo de subajuste "
+            "a la izquierda y el de sobreajuste a la derecha. El error de entrenamiento "
             f"nunca sube y en grado 15 vale {_num(v['L_ent'][15], 3)}, abajo del piso "
             f"{_num(v['piso'], 2)}. El riesgo, medido con la muestra enorme, hace una U: es "
             f"mínimo en grado {v['N_menor_R']}, con {_num(v['R'][v['N_menor_R']], 3)}, y en "
@@ -1023,7 +1045,8 @@ def ml_c1_elegir_con_entrenamiento():
             ax.set_xlabel("grado N elegido")
             ax.set_ylabel("muestras")
 
-    reparto = ", ".join(f"{v} veces grado {N}" for N, v in e["reparto_N_R"].items())
+    reparto = ", ".join(f"{v} {'vez' if v == 1 else 'veces'} grado {N}"
+                        for N, v in e["reparto_N_R"].items())
     aria = (f"En {e['repeticiones']} muestras de 20 datos de la curva 2 más 5 entre x, se "
             f"elige el grado de 1 a {e['N_max']}. Arriba, el que minimiza el error de "
             f"entrenamiento: {e['veces_N_max_ent']} de {e['repeticiones']} veces el máximo, "
@@ -1232,7 +1255,7 @@ def ml_c1_no_free_lunch():
     aria = ("Las 256 funciones de etiquetas de 3 bits, con entrenamiento en 000, 011, 101 y "
             "110, agrupadas por rugosidad. El vecino más cercano y la mayoría aciertan "
             f"{float(v[0]):.0%} fuera de la muestra en las funciones más suaves y "
-            f"{float(v[12]):.0%} en las más rugosas; siempre 1 acierta 50 % en cada grupo. "
+            f"{float(v[12]):.0%} en las más rugosas; siempre 1 acierta 50% en cada grupo. "
             "Promediando sobre las 256 funciones, cada regla acierta exactamente la mitad."
             ).replace("%", " %")
     return _grafica(dibujar, aria, "No free lunch, exacto", 3.8)

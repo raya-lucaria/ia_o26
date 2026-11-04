@@ -8,8 +8,8 @@ estimated_time: 65m
 tags: [aprendizaje-maquina, capacidad, brecha, hiperparametro, extrapolar, no-free-lunch]
 ---
 
-> [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
 >
 > **Notebook 02 · Polinomios, capacidad y supuestos.** Corre en tu navegador, sin instalar nada.
 >

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="622" viewBox="0 0 388.8 403.2" role="img" aria-label="En 200 muestras de 20 datos de la curva 2 más 5 entre x, se elige el grado de 1 a 15. Arriba, el que minimiza el error de entrenamiento: 200 de 200 veces el máximo, grado 15. Abajo, el de menor riesgo, repartido: 1 veces grado 1, 2 veces grado 2, 8 veces grado 3, 46 veces grado 4, 69 veces grado 5, 43 veces grado 6, 17 veces grado 7, 10 veces grado 8, 3 veces grado 9, 1 veces grado 10."><title>¿Quién elige el grado?</title><rect x="0" y="0" width="388.8" height="403.2" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="622" viewBox="0 0 388.8 403.2" role="img" aria-label="En 200 muestras de 20 datos de la curva 2 más 5 entre x, se elige el grado de 1 a 15. Arriba, el que minimiza el error de entrenamiento: 200 de 200 veces el máximo, grado 15. Abajo, el de menor riesgo, repartido: 1 vez grado 1, 2 veces grado 2, 8 veces grado 3, 46 veces grado 4, 71 veces grado 5, 42 veces grado 6, 16 veces grado 7, 10 veces grado 8, 3 veces grado 9, 1 vez grado 10."><title>¿Quién elige el grado?</title><rect x="0" y="0" width="388.8" height="403.2" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -277,32 +277,32 @@ z
    <g id="barra-N_R">
     <path d="M 66.677763 352.24 
 L 83.108816 352.24 
-L 83.108816 350.459738 
-L 66.677763 350.459738 
+L 83.108816 350.509886 
+L 66.677763 350.509886 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 87.216579 352.24 
 L 103.647632 352.24 
-L 103.647632 348.679476 
-L 87.216579 348.679476 
+L 103.647632 348.779772 
+L 87.216579 348.779772 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 107.755395 352.24 
 L 124.186447 352.24 
-L 124.186447 337.997902 
-L 107.755395 337.997902 
+L 124.186447 338.399088 
+L 107.755395 338.399088 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 128.294211 352.24 
 L 144.725263 352.24 
-L 144.725263 270.347937 
-L 128.294211 270.347937 
+L 144.725263 272.654755 
+L 128.294211 272.654755 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
@@ -317,40 +317,40 @@ z
    <g id="barra-N_R">
     <path d="M 169.371842 352.24 
 L 185.802895 352.24 
-L 185.802895 275.688723 
-L 169.371842 275.688723 
+L 185.802895 279.575211 
+L 169.371842 279.575211 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 189.910658 352.24 
 L 206.341711 352.24 
-L 206.341711 321.975542 
-L 189.910658 321.975542 
+L 206.341711 324.558176 
+L 189.910658 324.558176 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 210.449474 352.24 
 L 226.880526 352.24 
-L 226.880526 334.437378 
-L 210.449474 334.437378 
+L 226.880526 334.93886 
+L 210.449474 334.93886 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 230.988289 352.24 
 L 247.419342 352.24 
-L 247.419342 346.899213 
-L 230.988289 346.899213 
+L 247.419342 347.049658 
+L 230.988289 347.049658 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
    <g id="barra-N_R">
     <path d="M 251.527105 352.24 
 L 267.958158 352.24 
-L 267.958158 350.459738 
-L 251.527105 350.459738 
+L 267.958158 350.509886 
+L 251.527105 350.509886 
 z
 " clip-path="url(#p4137850332)" style="fill: #a9e88f"/>
    </g>
@@ -523,31 +523,31 @@ z
     <g id="ytick_5">
      <g id="line2d_35">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="62.57" y="316.634755" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="62.57" y="317.63772" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_39">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="55.57" y="321.573739" transform="rotate(-0 55.57 321.573739)">20</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="55.57" y="322.576704" transform="rotate(-0 55.57 322.576704)">20</text>
      </g>
     </g>
     <g id="ytick_6">
      <g id="line2d_36">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="62.57" y="281.02951" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="62.57" y="283.035439" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_40">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="55.57" y="285.968494" transform="rotate(-0 55.57 285.968494)">40</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="55.57" y="287.974424" transform="rotate(-0 55.57 287.974424)">40</text>
      </g>
     </g>
     <g id="ytick_7">
      <g id="line2d_37">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="62.57" y="245.424265" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="62.57" y="248.433159" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_41">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="55.57" y="250.363249" transform="rotate(-0 55.57 250.363249)">60</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="55.57" y="253.372143" transform="rotate(-0 55.57 253.372143)">60</text>
      </g>
     </g>
     <g id="text_42">
@@ -575,7 +575,7 @@ L 374.76 223.26
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_43">
-    <text style="font-size: 10.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="218.665" y="217.26" transform="rotate(-0 218.665 217.26)">el N de menor R: 166 de 200 entre 3 y 6</text>
+    <text style="font-size: 10.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="218.665" y="217.26" transform="rotate(-0 218.665 217.26)">el N de menor R: 167 de 200 entre 3 y 6</text>
    </g>
   </g>
  </g>

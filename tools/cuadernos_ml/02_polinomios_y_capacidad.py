@@ -83,9 +83,12 @@ def bloque_2(N, n, sigma):
     ml.dibujar_ajuste({f"grado {N}": m}, datos, ax=a1)
     a1.set(ylim=(0, 20), ylabel="y")
     media = ml.benchmarks(datos, datos.realidad).loc["media", "cuadratica"]
-    ml.dibujar_curva_capacidad(tabla, brecha=True, zonas=True, optimo=True,
+    ml.dibujar_curva_capacidad(tabla, brecha=True, zonas=False, optimo=True,
                                piso=ml.piso(datos), benchmark=media, marcar=N, ax=a2)
     a2.set_yscale("log")   # R del grado 15 puede valer miles: en escala log se ve todo
+    a2.text(0.02, 0.96, "← subajuste", transform=a2.transAxes, va="top", fontsize=9)
+    a2.text(0.78, 0.96, "sobreajuste →", transform=a2.transAxes, va="top", ha="right",
+            fontsize=9)
     plt.show()
     L = tabla[tabla.candidato == N].set_index("conjunto")["L"]
     print(f"grado {N}: L_ent = {L['ent']:.3f}   ·   R = {L['realidad']:.3f}"
@@ -106,7 +109,10 @@ ml.laboratorio(bloque_2, N=ml.deslizador("grado N", 1, 15, 1, 4),
 # %% [codigo] bloque-3-juega
 #@title Juega: ¿quién elige N?
 SEMILLA, REPETICIONES = 0, 200
-MALLA = np.linspace(0.3, 3, 1000)   # R = E_x[(f − f̂)²] + σ², con x uniforme
+# R = E_x[(f − f̂)²] + σ², con x uniforme en [0.3, 3]: la integral se calcula con
+# cuadratura de Gauss-Legendre (64 nodos MALLA con sus pesos PESOS).
+_t, _w = np.polynomial.legendre.leggauss(64)
+MALLA, PESOS = 1.35 * _t + 1.65, _w / 2
 grande = ml.PROCESOS["inverso"](n=20 * REPETICIONES, semilla=SEMILLA,
                                 fracciones=(1, 0, 0), con_realidad=False).ent
 
@@ -124,7 +130,7 @@ def experimento(s):   # la muestra s (20 datos): L_ent y R de cada grado 1..15
     for N in range(1, 16):
         g = ajuste(x, y, N)
         filas[f"L{N}"] = np.mean((y - g(x)) ** 2)
-        filas[f"R{N}"] = np.mean((2 + 5 / MALLA - g(MALLA)) ** 2) + 0.25
+        filas[f"R{N}"] = np.sum(PESOS * (2 + 5 / MALLA - g(MALLA)) ** 2) + 0.25
     return filas
 
 
@@ -199,16 +205,22 @@ def bloque_5(proceso, N, zona, anterior):
         phi = ml.polinomio(N, "x")   # y, si lo pides, el tiempo anterior observado
         phi = ml.combinar(phi, ml.columnas("y_anterior")) if anterior else phi
         m = ml.ajustar(datos, phi=phi)
-        todo = ml.PROCESOS["recursivo"](n=79, futuro=1, semilla=SEMILLA,   # la misma
-                                        con_realidad=False).ent      # serie, entera
+        # La misma serie con sus primeros 79 pasos: 60 de entrenamiento y 19 después
+        # (el paso 80 queda en la parte de prueba, que la clase 1 no abre).
+        todo = ml.PROCESOS["recursivo"](n=79, futuro=1, semilla=SEMILLA,
+                                        con_realidad=False).ent
+        antes, despues = todo[todo.t < 60], todo[todo.t >= 60]
         ax = plt.subplots(figsize=(8, 3.8))[1]
-        ax.scatter(todo.t, todo.y, s=16, c=np.where(todo.t < 60, "C0", "gray"),
-                   label="la serie (en gris, lo que pasó después)")
+        ax.scatter(antes.t, antes.y, s=16, color="C0", label="60 pasos de entrenamiento")
+        ax.scatter(despues.t, despues.y, s=22, facecolors="none", edgecolors="gray",
+                   label="los 19 pasos siguientes (huecos)")
         ax.plot(todo.t, m.predecir(todo), color="C1", label="predicción a un paso")
         ax.set(xlabel="paso (x crece con el tiempo)", ylabel="y"), ax.legend()
         plt.show()
-        print(f"dentro: L = {ml.L(m, datos.realidad):.3f}  ·  a un paso en el "
-              f"futuro: R = {ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")
+        print(f"en la serie dibujada: L_ent = {ml.L(m, datos.ent):.3f} (60 pasos)")
+        print(f"error esperado, aproximado con series nuevas del mismo proceso: dentro "
+              f"(pasos 0 a 59) = {ml.L(m, datos.realidad):.3f}  ·  a un paso en el futuro "
+              f"(pasos 60 a 79) = {ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")
         return
     datos = ml.PROCESOS[clave](semilla=SEMILLA, fracciones=(1, 0, 0))
     hasta, m = lo + zona * (hi - lo), ml.ajustar(datos, phi=ml.polinomio(N))

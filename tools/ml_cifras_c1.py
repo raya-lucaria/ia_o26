@@ -406,15 +406,27 @@ TRES_GRADOS = (1, 4, 15)
 
 
 def cifras_c1_tres_ajustes(semilla=SEMILLA_1B):
-    """P2 §3, figura ml-c1-tres-ajustes: L_ent y R (muestra enorme de
-    despliegue, 100 000 observaciones) de los grados 1, 4 y 15 sobre los
-    20 datos de la reciproca."""
+    """P2 §3, figura ml-c1-tres-ajustes: L_ent y R de los grados 1, 4 y 15
+    sobre los 20 datos de la reciproca. R se mide con la MISMA muestra enorme
+    (realidad, 100 000 observaciones) que la curva de capacidad de §4, para
+    que el grado 15 tenga un solo R en toda la pagina (revision r1 del tramo
+    1b: con despliegue daba 1451 en §3 y 1537 en §4). Ademas, x_max de los
+    datos, la prediccion del grado 15 en x = 3 y la parte del riesgo
+    reducible del grado 15 que cae a la derecha del ultimo dato (malla fina):
+    el disparo es extrapolacion, no oscilacion entre los datos."""
     ml = _ml()
     datos = datos_inverso(semilla=semilla)
-    salida = {}
+    salida = {"x_max": float(datos.ent.x.max())}
     for N in TRES_GRADOS:
         m = ml.ajustar(datos, phi=ml.polinomio(N))
-        salida[N] = {"L_ent": float(ml.L(m, datos.ent)), "R": float(ml.riesgo(m, datos))}
+        salida[N] = {"L_ent": float(ml.L(m, datos.ent)), "R": float(ml.L(m, datos.realidad))}
+        if N == TRES_GRADOS[-1]:
+            x = np.linspace(*INVERSO_RANGO, 200_001)
+            p = m.predecir(pd.DataFrame({"x": x}))
+            e = (f_inverso(x) - p) ** 2
+            salida[N]["prediccion_en_3"] = float(p[-1])
+            salida[N]["fraccion_reducible_tras_x_max"] = float(e[x > salida["x_max"]].sum()
+                                                               / e.sum())
     return salida
 
 
@@ -458,8 +470,14 @@ def cifras_c1_capacidad(semilla=SEMILLA_1B):
 # polinomio(N) (x escalada a [-1, 1] con el rango de ese trozo), resuelto en
 # forma cerrada con numpy; test_ml_cifras_c1 comprueba que coincide con
 # ml.ajustar. R se calcula con su definicion: E_x[(f - f_gorro)²] + sigma²,
-# con x uniforme en [0.3, 3] (una malla de 1000 puntos), como error_por_zona.
-MALLA_R = np.linspace(*INVERSO_RANGO, 1000)
+# con x uniforme en [0.3, 3], por cuadratura de Gauss-Legendre de 64 nodos
+# (convergida: 200 nodos dan lo mismo a 1e-12). La malla uniforme de 1000
+# puntos que habia antes sesgaba el riesgo lo bastante para mover una
+# eleccion de grado (166 -> 167 entre 3 y 6) y la media del optimismo
+# (0.706 -> 0.700); revision r1 del tramo 1b.
+_NODOS, _PESOS = np.polynomial.legendre.leggauss(64)
+MALLA_R = (INVERSO_RANGO[1] - INVERSO_RANGO[0]) / 2 * _NODOS + sum(INVERSO_RANGO) / 2
+PESOS_R = _PESOS / 2
 
 
 def trozos_inverso(repeticiones, n=20, semilla=SEMILLA_1B):
@@ -482,8 +500,9 @@ def ajuste_rapido(x, y, N):
 
 
 def riesgo_inverso(prediccion):
-    """R = E_x[(f - f_gorro)²] + sigma², x uniforme en [0.3, 3] (malla)."""
-    return float(np.mean((f_inverso(MALLA_R) - prediccion(MALLA_R)) ** 2) + INVERSO_SIGMA2)
+    """R = E_x[(f - f_gorro)²] + sigma², x uniforme en [0.3, 3] (cuadratura)."""
+    return float(np.sum(PESOS_R * (f_inverso(MALLA_R) - prediccion(MALLA_R)) ** 2)
+                 + INVERSO_SIGMA2)
 
 
 GRADO_OPTIMISMO = 4
@@ -578,6 +597,19 @@ def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
             cuatro[(N, escalar)] = {"L_ent": float(ml.L(m4, d4.ent)),
                                     "avisos": [str(a.message) for a in avisos]}
     salida["caso_4"] = cuatro
+    # NB02 bloque 4 pide llevar el grado a 40 (escalado): su R y su L_ent.
+    m40 = ml.ajustar(datos, phi=ml.polinomio(40))
+    salida["R_40"] = float(ml.riesgo(m40, datos))
+    salida["L_ent_40"] = float(ml.L(m40, datos.ent))
+    # Escalar no garantiza la monotonia numerica: el primer grado (de 25 a 40)
+    # donde L_ent escalado sube respecto al anterior, con los dos valores.
+    previo = None
+    for N in range(25, 41):
+        L = float(ml.L(ml.ajustar(datos, phi=ml.polinomio(N)), datos.ent))
+        if previo is not None and L > previo[1]:
+            salida["sube_escalado"] = {"de": previo[0], "a": N, "L_de": previo[1], "L_a": L}
+            break
+        previo = (N, L)
     return salida
 
 
@@ -662,6 +694,18 @@ def cifras_c1_no_free_lunch():
     fila = tabla[(tabla.funcion == f_empate) & (tabla.regla == "mayoria")].iloc[0]
     salida["desempate_mayoria"] = {"funcion": f_empate,
                                    "aciertos_fuera": fila["aciertos_fuera"]}
+    # El vecino: cada entrada no vista esta a distancia de Hamming 1 de tres
+    # de entrenamiento (empate triple) y ml_lab desempata por el indice menor.
+    ent = list(NFL_ENTRENAMIENTO)
+    dist = lambda a, b: bin(a ^ b).count("1")  # noqa: E731
+    fuera = [i for i in range(8) if i not in ent]
+    salida["fuera"] = tuple(format(i, "03b") for i in fuera)
+    salida["vecinos_empatados"] = {
+        format(i, "03b"): tuple(format(j, "03b") for j in ent if dist(i, j) == 1)
+        for i in fuera}
+    salida["vecino_elegido"] = {
+        format(i, "03b"): format(min(ent, key=lambda j: (dist(i, j), j)), "03b")
+        for i in fuera}
     return salida
 
 

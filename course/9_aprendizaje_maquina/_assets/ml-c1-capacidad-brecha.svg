@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="933" viewBox="0 0 388.8 604.8" role="img" aria-label="Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos de la curva 2 más 5 entre x, en escala logarítmica. El error de entrenamiento nunca sube y en grado 15 vale 0.034, abajo del piso 0.25. El riesgo, medido con la muestra enorme, hace una U: es mínimo en grado 6, con 0.366, y en grado 15 llega a 1537; la brecha sombreada crece. El benchmark, la media, tiene riesgo 10.5. Abajo, el mismo proceso con 200 datos: el riesgo casi no sube después de grado 5 y en grado 15 vale 0.266; la U es de este experimento, no una ley."><title>La brecha de generalización, medida</title><rect x="0" y="0" width="388.8" height="604.8" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="933" viewBox="0 0 388.8 604.8" role="img" aria-label="Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos de la curva 2 más 5 entre x, en escala logarítmica, con el extremo de subajuste a la izquierda y el de sobreajuste a la derecha. El error de entrenamiento nunca sube y en grado 15 vale 0.034, abajo del piso 0.25. El riesgo, medido con la muestra enorme, hace una U: es mínimo en grado 6, con 0.366, y en grado 15 llega a 1537; la brecha sombreada crece. El benchmark, la media, tiene riesgo 10.5. Abajo, el mismo proceso con 200 datos: el riesgo casi no sube después de grado 5 y en grado 15 vale 0.266; la U es de este experimento, no una ley."><title>La brecha de generalización, medida</title><rect x="0" y="0" width="388.8" height="604.8" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -682,9 +682,15 @@ L 374.76 29.4
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_16">
-    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="325.118513" y="140.910479" transform="rotate(-0 325.118513 140.910479)">brecha</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="75.084269" y="43.401454" transform="rotate(-0 75.084269 43.401454)">← subajuste</text>
    </g>
    <g id="text_17">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #f7f2ff" x="307.485856" y="43.401454" transform="rotate(-0 307.485856 43.401454)">sobreajuste →</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="325.118513" y="140.910479" transform="rotate(-0 325.118513 140.910479)">brecha</text>
+   </g>
+   <g id="text_19">
     <text style="font-size: 10.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="221.864219" y="23.4" transform="rotate(-0 221.864219 23.4)">recíproca, 20 datos, σ_ε = 0.5: menor R en N = 6</text>
    </g>
    <g id="legend_1">
@@ -710,7 +716,7 @@ L 98.280469 255.5358
       <use xlink:href="#m28ae90e9f3" x="89.280469" y="255.5358" style="fill: #64dce3; stroke: #64dce3"/>
      </g>
     </g>
-    <g id="text_18">
+    <g id="text_20">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="105.480469" y="258.6858" transform="rotate(-0 105.480469 258.6858)">L_ent (entrenamiento)</text>
     </g>
     <g id="line2d_60">
@@ -719,7 +725,7 @@ L 89.280469 268.22205
 L 98.280469 268.22205 
 " style="fill: none; stroke-dasharray: 5.92,2.56; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.6"/>
     </g>
-    <g id="text_19">
+    <g id="text_21">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="105.480469" y="271.37205" transform="rotate(-0 105.480469 271.37205)">R (muestra enorme)</text>
     </g>
     <g id="line2d_61">
@@ -727,7 +733,7 @@ L 98.280469 268.22205
       <use xlink:href="#mcf799ef4fe" x="89.280469" y="280.6858" style="fill: #a9e88f; stroke: #a9e88f; stroke-linejoin: bevel"/>
      </g>
     </g>
-    <g id="text_20">
+    <g id="text_22">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="105.480469" y="283.8358" transform="rotate(-0 105.480469 283.8358)">menor R</text>
     </g>
     <g id="line2d_62">
@@ -736,7 +742,7 @@ L 222.022969 255.5358
 L 231.022969 255.5358 
 " style="fill: none; stroke-dasharray: 1.6,2.64; stroke-dashoffset: 0; stroke: #dfd0e8; stroke-width: 1.6"/>
     </g>
-    <g id="text_21">
+    <g id="text_23">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="238.222969" y="258.6858" transform="rotate(-0 238.222969 258.6858)">piso = 0.25</text>
     </g>
     <g id="line2d_63">
@@ -745,7 +751,7 @@ L 222.022969 267.99955
 L 231.022969 267.99955 
 " style="fill: none; stroke-dasharray: 8.96,2.24,1.4,2.24; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.4"/>
     </g>
-    <g id="text_22">
+    <g id="text_24">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="238.222969" y="271.14955" transform="rotate(-0 238.222969 271.14955)">benchmark: la media, R = 10.5</text>
     </g>
    </g>
@@ -807,7 +813,7 @@ z
        <use xlink:href="#md5d1416848" x="82.868054" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_23">
+     <g id="text_25">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="82.868054" y="520.729469" transform="rotate(-0 82.868054 520.729469)">1</text>
      </g>
     </g>
@@ -817,7 +823,7 @@ z
        <use xlink:href="#md5d1416848" x="122.581244" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_24">
+     <g id="text_26">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="122.581244" y="520.729469" transform="rotate(-0 122.581244 520.729469)">3</text>
      </g>
     </g>
@@ -827,7 +833,7 @@ z
        <use xlink:href="#md5d1416848" x="162.294434" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_25">
+     <g id="text_27">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="162.294434" y="520.729469" transform="rotate(-0 162.294434 520.729469)">5</text>
      </g>
     </g>
@@ -837,7 +843,7 @@ z
        <use xlink:href="#md5d1416848" x="202.007624" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_26">
+     <g id="text_28">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="202.007624" y="520.729469" transform="rotate(-0 202.007624 520.729469)">7</text>
      </g>
     </g>
@@ -847,7 +853,7 @@ z
        <use xlink:href="#md5d1416848" x="241.720814" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_27">
+     <g id="text_29">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="241.720814" y="520.729469" transform="rotate(-0 241.720814 520.729469)">9</text>
      </g>
     </g>
@@ -857,7 +863,7 @@ z
        <use xlink:href="#md5d1416848" x="281.434004" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_28">
+     <g id="text_30">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="281.434004" y="520.729469" transform="rotate(-0 281.434004 520.729469)">11</text>
      </g>
     </g>
@@ -867,7 +873,7 @@ z
        <use xlink:href="#md5d1416848" x="321.147194" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_29">
+     <g id="text_31">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="321.147194" y="520.729469" transform="rotate(-0 321.147194 520.729469)">13</text>
      </g>
     </g>
@@ -877,11 +883,11 @@ z
        <use xlink:href="#md5d1416848" x="360.860384" y="503.8515" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_30">
+     <g id="text_32">
       <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="360.860384" y="520.729469" transform="rotate(-0 360.860384 520.729469)">15</text>
      </g>
     </g>
-    <g id="text_31">
+    <g id="text_33">
      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="221.864219" y="534.311031" transform="rotate(-0 221.864219 534.311031)">grado N (capacidad →)</text>
     </g>
    </g>
@@ -892,7 +898,7 @@ z
        <use xlink:href="#m7dde4cb0bd" x="68.968438" y="480.239936" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_32">
+     <g id="text_34">
       <!-- $\mathdefault{10^{-1}}$ -->
       <g style="fill: #fff8ed" transform="translate(31.418438 485.178921)">
        <text>
@@ -910,7 +916,7 @@ z
        <use xlink:href="#m7dde4cb0bd" x="68.968438" y="446.459426" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_33">
+     <g id="text_35">
       <!-- $\mathdefault{10^{0}}$ -->
       <g style="fill: #fff8ed" transform="translate(39.088438 451.39841)">
        <text>
@@ -927,7 +933,7 @@ z
        <use xlink:href="#m7dde4cb0bd" x="68.968438" y="412.678915" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_34">
+     <g id="text_36">
       <!-- $\mathdefault{10^{1}}$ -->
       <g style="fill: #fff8ed" transform="translate(39.088438 417.6179)">
        <text>
@@ -944,7 +950,7 @@ z
        <use xlink:href="#m7dde4cb0bd" x="68.968438" y="378.898405" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_35">
+     <g id="text_37">
       <!-- $\mathdefault{10^{2}}$ -->
       <g style="fill: #fff8ed" transform="translate(39.088438 383.837389)">
        <text>
@@ -961,7 +967,7 @@ z
        <use xlink:href="#m7dde4cb0bd" x="68.968438" y="345.117894" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
-     <g id="text_36">
+     <g id="text_38">
       <!-- $\mathdefault{10^{3}}$ -->
       <g style="fill: #fff8ed" transform="translate(39.088438 350.056878)">
        <text>
@@ -1273,7 +1279,7 @@ z
       </g>
      </g>
     </g>
-    <g id="text_37">
+    <g id="text_39">
      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="24.714844" y="414.31575" transform="rotate(-90 24.714844 414.31575)">pérdida (escala log)</text>
     </g>
    </g>
@@ -1365,7 +1371,13 @@ L 374.76 503.8515
 L 374.76 324.78 
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="text_38">
+   <g id="text_40">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="75.084269" y="338.781454" transform="rotate(-0 75.084269 338.781454)">← subajuste</text>
+   </g>
+   <g id="text_41">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #f7f2ff" x="307.485856" y="338.781454" transform="rotate(-0 307.485856 338.781454)">sobreajuste →</text>
+   </g>
+   <g id="text_42">
     <text style="font-size: 10.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="221.864219" y="318.78" transform="rotate(-0 221.864219 318.78)">recíproca, 200 datos, σ_ε = 0.5: menor R en N = 8</text>
    </g>
    <g id="legend_2">
@@ -1391,7 +1403,7 @@ L 100.825469 550.9158
       <use xlink:href="#m28ae90e9f3" x="91.825469" y="550.9158" style="fill: #64dce3; stroke: #64dce3"/>
      </g>
     </g>
-    <g id="text_39">
+    <g id="text_43">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="108.025469" y="554.0658" transform="rotate(-0 108.025469 554.0658)">L_ent (entrenamiento)</text>
     </g>
     <g id="line2d_123">
@@ -1400,7 +1412,7 @@ L 91.825469 563.60205
 L 100.825469 563.60205 
 " style="fill: none; stroke-dasharray: 5.92,2.56; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.6"/>
     </g>
-    <g id="text_40">
+    <g id="text_44">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="108.025469" y="566.75205" transform="rotate(-0 108.025469 566.75205)">R (muestra enorme)</text>
     </g>
     <g id="line2d_124">
@@ -1408,7 +1420,7 @@ L 100.825469 563.60205
       <use xlink:href="#mcf799ef4fe" x="91.825469" y="576.0658" style="fill: #a9e88f; stroke: #a9e88f; stroke-linejoin: bevel"/>
      </g>
     </g>
-    <g id="text_41">
+    <g id="text_45">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="108.025469" y="579.2158" transform="rotate(-0 108.025469 579.2158)">menor R</text>
     </g>
     <g id="line2d_125">
@@ -1417,7 +1429,7 @@ L 224.567969 550.9158
 L 233.567969 550.9158 
 " style="fill: none; stroke-dasharray: 1.6,2.64; stroke-dashoffset: 0; stroke: #dfd0e8; stroke-width: 1.6"/>
     </g>
-    <g id="text_42">
+    <g id="text_46">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="240.767969" y="554.0658" transform="rotate(-0 240.767969 554.0658)">piso = 0.25</text>
     </g>
     <g id="line2d_126">
@@ -1426,7 +1438,7 @@ L 224.567969 563.37955
 L 233.567969 563.37955 
 " style="fill: none; stroke-dasharray: 8.96,2.24,1.4,2.24; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.4"/>
     </g>
-    <g id="text_43">
+    <g id="text_47">
      <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="240.767969" y="566.52955" transform="rotate(-0 240.767969 566.52955)">benchmark: la media, R = 9.8</text>
     </g>
    </g>
