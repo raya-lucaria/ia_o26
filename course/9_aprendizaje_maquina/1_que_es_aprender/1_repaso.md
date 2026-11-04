@@ -22,7 +22,7 @@ Al terminar tendrás:
 ~20 min de lectura, más lo que tardes en resolver los ejercicios; esta clase no tiene notebook.
 
 > **Lo que traes**
-> - Mínimos cuadrados, $f_\beta(x)=\beta_0+\beta_1x$ y seis entregas: [[opt-objetivo-regresion-practica|Regresión, en la unidad 6]].
+> - Mínimos cuadrados, ${f_\beta(x)=\beta_0+\beta_1x}$ y seis entregas: [[opt-objetivo-regresion-practica|Regresión, en la unidad 6]].
 > - Error absoluto medio, $\mathrm{MAE}$, en minutos: [[opt-objetivo-regresion-practica|Regresión, en la unidad 6]].
 > - La taxonomía de la IA (@taxonomia-ia): [[que-es-inteligencia|Qué es la inteligencia]].
 
@@ -72,7 +72,7 @@ Un programa **aprende** de la experiencia $E$ respecto de una clase de tareas $T
 
 (Mitchell, 1997; citado en Goodfellow, Bengio y Courville, 2016, §5.1.)
 
-Las letras $T$, $E$ y $P$ viven solo en esta definición. En el resto de la unidad, $E[\cdot]$ es la esperanza y $\Pr(\cdot)$ la probabilidad.
+Las letras $T$, $E$ y $P$ viven solo en esta definición. En el resto de la unidad, ${E[\cdot]}$ es la esperanza y $\Pr(\cdot)$ la probabilidad.
 :::
 
 La tarea es anunciar minutos; la experiencia, entregas con su tiempo; el desempeño, el error medio en minutos.
@@ -123,11 +123,11 @@ A las mismas seis entregas añadimos paquetes y zona. Cada punto es una entrega:
 Con tiempos ajustamos ${11+3.6x}$. Sin tiempos buscamos agrupaciones según distintos criterios; ninguna es «la verdadera».
 
 ::: definition {#ml-c0-def-supervisado title="Supervisado y no supervisado"}
-En el aprendizaje **supervisado**, la experiencia son $n$ pares $(x_i,y_i)$, $i=1,\dots,n$: cada observación trae sus entradas $x_i$ y la respuesta $y_i$. La tarea es anunciar $y$ para una $x$ nueva.
+En el aprendizaje **supervisado**, la experiencia son $n$ pares $(x_i,y_i)$, ${i=1,\dots,n}$: cada observación trae sus entradas $x_i$ y la respuesta $y_i$. La tarea es anunciar $y$ para una $x$ nueva.
 
 Si $y$ es una cantidad que se quiere estimar (minutos, un precio), es regresión. Si es una categoría que se quiere identificar (a tiempo o tarde, gato o perro), es clasificación. Esto vale aunque las categorías se guarden como números, por ejemplo 0 y 1.
 
-En el aprendizaje **no supervisado**, la experiencia son solo las entradas $x_i$, $i=1,\dots,n$, sin respuesta. La tarea es describir cómo se reparten: qué grupos forman, en qué direcciones varían más, dónde se acumulan.
+En el aprendizaje **no supervisado**, la experiencia son solo las entradas $x_i$, ${i=1,\dots,n}$, sin respuesta. La tarea es describir cómo se reparten: qué grupos forman, en qué direcciones varían más, dónde se acumulan.
 :::
 
 Aquí $x_i$ reúne distancia y paquetes; $y_i$ indica minutos.

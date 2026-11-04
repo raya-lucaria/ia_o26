@@ -550,3 +550,18 @@ def test_15d_las_formulas_de_la_recta_no_se_parten():
                 if re.search(r"11\+3\.6|10\.6\+|\\beta\^\\star=", m)]
     assert len(formulas) >= 4
     assert [m for m in formulas if not (m.startswith("{") and m.endswith("}"))] == []
+
+
+@pytest.mark.parametrize("cuerpo", [
+    r"f_\beta(x)=\beta_0+\beta_1x",   # «Lo que traes»: se partia antes del «+»
+    r"E[\cdot]",                      # aviso de Mitchell: «E[» y «·]» en dos renglones
+    r"i=1,\dots,n",                   # definicion de supervisado: la «i» sola
+])
+def test_15e_las_otras_formulas_que_mathjax_partia_van_entre_llaves(cuerpo):
+    """r3: a 390 px MathJax 4 partia tambien estas tres formulas en linea.
+    Cada aparicion va entre llaves, como las de la recta (test_15d); las
+    llaves no cambian lo literal del aviso de notacion."""
+    texto = _sin_figuras(_cuerpo(_leer(PAGINA)))
+    formulas = [m for m in re.findall(r"(?<!\$)\$([^$]+)\$(?!\$)", texto) if cuerpo in m]
+    assert formulas, cuerpo
+    assert all(m == "{" + cuerpo + "}" for m in formulas), formulas
