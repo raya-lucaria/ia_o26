@@ -650,7 +650,8 @@ def test_p2_la_capacidad_efectiva_es_optimizacion_y_no_cuarta_fuente():
     cuerpo = bloque(p2(), "ml-c1-obs-capacidad-efectiva").group(1)
     assert "optimización" in cuerpo
     assert "cuarta fuente" not in cuerpo
-    assert not re.search(r"(cuarta|quinta) fuente", p2())
+    # «no es una quinta fuente» es del bloque literal; ninguna otra frase la numera.
+    assert not re.search(r"(?<![Nn]o es una )(cuarta|quinta) fuente", p2())
 
 
 def test_p2_memorizar_es_el_vecino_junto_al_no_parametrico():
@@ -693,7 +694,9 @@ def test_p2_un_modelo_exitoso_va_en_nota():
 
 def test_p2_la_ultima_linea_de_lo_que_hay_que_llevarse_es_la_pregunta_de_la_clase_2():
     seccion = p2().split("## Lo que hay que llevarse", 1)[1].split("\n## ", 1)[0]
-    ultimo = [r for r in seccion.strip().split("\n\n") if r.strip()][-1]
+    renglones = [r for r in seccion.strip().split("\n\n")
+                 if r.strip() and not r.startswith("Continúa con")]
+    ultimo = renglones[-1]
     assert "¿Cómo medimos $R$ sin la muestra enorme" in plano(ultimo)
 
 

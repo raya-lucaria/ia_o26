@@ -448,7 +448,7 @@ No: mayor flexibilidad no revela la lluvia omitida ni elimina el azar.
    $E[y\mid x_{\text{visibles}}]$.
 4. **Pocos datos (estimación):** con $n$ datos finitos, $\widehat f$ puede diferir de la mejor función de la familia.
 
-Y además: el algoritmo puede no encontrar el mínimo de $L_{\text{ent}}$ (optimización), fuera de las cuatro; la página 2 vuelve sobre esto.
+Y además: el algoritmo puede no encontrar el mínimo de $L_{\text{ent}}$ (optimización), fuera de las cuatro (@ml-c1-obs-capacidad-efectiva, en la página 2, lo retoma).
 :::
 
 Cambia representación o familia para corregir aproximación; reúne más datos para mejorar estimación.
@@ -700,4 +700,4 @@ Por eso necesitas especificar el proceso de despliegue, además de la pérdida.
 - **Representar cambia lo que puedes ajustar:** los anillos pasan de cerca de 50 % a 75 % de aciertos en el despliegue con la misma logística.
 - **Lineal significa lineal en $\beta$:** una curva puede doblarse y seguir siendo una suma de columnas calculadas de antemano.
 
-Continúa con [[ml-clase-1-el-problema|Clase 1 · El problema]].
+Continúa con [[ml-polinomios-y-capacidad|Polinomios, capacidad y supuestos]].
