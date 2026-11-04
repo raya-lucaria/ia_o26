@@ -1,0 +1,7 @@
+# Notación que presenta la clase 3, además de la lista común de
+# tools/notacion_ml.py (contrato §4.1–§4.3). La edita prog-c3 en su rama
+# (D-015). Una línea por símbolo: «símbolo | fuente», con la fuente como fila
+# de contrato §4 o una D-NNN (p. ej. «\gamma | contrato §4.8 (Cybenko)»).
+# El símbolo es una macro (\gamma), una letra griega (γ) o «re:<regex>» para
+# una forma compuesta. Vale desde esta clase en adelante. Una línea sin
+# fuente hace fallar tools/test_notacion_ml.py.
