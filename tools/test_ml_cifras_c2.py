@@ -353,4 +353,96 @@ def test_numero_de_condicion_del_grado_12_con_36_entregas():
 
 
 # --- tramo completo ---
+
+# ------------------------------------------- cifras_c2_curva_aprendizaje ---
+
+def test_curva_aprendizaje_las_cifras_de_la_pagina():
+    a = c.cifras_c2_curva_aprendizaje()
+    assert a["piso"] == 9.0
+    assert {n: _r(a["R"][(1, n)], 1) for n in (30, 480, 960)} == {30: 14.7, 480: 13.8, 960: 13.8}
+    assert {n: _r(a["R"][(10, n)], 1) for n in (480, 960)} == {480: 9.1, 960: 9.0}
+    assert a["elegido"][30] == 3 and a["elegido"][960] == 10
+
+
+def test_curva_aprendizaje_la_recta_se_estanca_y_el_10_baja_hacia_el_piso():
+    a = c.cifras_c2_curva_aprendizaje()
+    assert a["R"][(1, 960)] > a["piso"] + 1
+    assert a["R"][(10, 960)] < a["R"][(1, 960)]
+    # el grado elegido sube con n (mediana)
+    assert a["elegido"][960] > a["elegido"][30]
+
+
+def test_curva_aprendizaje_las_medianas_citadas_son_estables_con_tres_semillas():
+    a = c.cifras_c2_curva_aprendizaje()
+    citadas = [(1, 30), (1, 480), (1, 960), (10, 480), (10, 960)]
+    for otra in a["R_otras_semillas"].values():
+        for k in citadas:
+            assert abs(otra[k] / a["R"][k] - 1) < 0.05, k
+
+
+def test_curva_aprendizaje_el_10_en_30_no_se_cita_pero_queda_arriba_de_la_recta():
+    # su mediana cambia 40 % entre semillas maestras (18.6, 26.7, 25.6): la
+    # pagina no la cita como numero, solo que queda arriba de la recta
+    a = c.cifras_c2_curva_aprendizaje()
+    assert a["R"][(10, 30)] > a["R"][(1, 30)]
+    for otra in a["R_otras_semillas"].values():
+        assert otra[(10, 30)] > otra[(1, 30)]
+
+
+# ------------------------------------------------- cifras_c2_diagnostico ---
+
+def test_diagnostico_cada_proceso_cae_en_su_hoja():
+    d = c.cifras_c2_diagnostico()
+    assert {k: v["hoja"] for k, v in d.items()} == c.HOJA_DIAGNOSTICO
+
+
+def test_diagnostico_las_propiedades_de_cada_hoja():
+    d = c.cifras_c2_diagnostico()
+    A, B, C, D = (d[k] for k in "ABCD")
+    assert B["CV"] > c.UMBRAL_BRECHA * B["L_ent"]
+    for r in (A, C, D):
+        assert r["CV"] <= c.UMBRAL_BRECHA * r["L_ent"]
+    # C: en (a) no le gana al benchmark a 2 EE, y en (b) falta evidencia
+    assert not C["dif_val"] < -2 * C["dif_val_ee"]
+    assert not C["senal_b"]
+    # A y D le ganan en (a)
+    assert A["dif_val"] < -2 * A["dif_val_ee"] and D["dif_val"] < -2 * D["dif_val_ee"]
+    # A: un grado mas alto baja la CV mas de un EE; D: ninguno
+    assert A["CV_mejor_mas_flexible"] < A["CV"] - A["EE"]
+    assert not D["CV_mejor_mas_flexible"] < D["CV"] - D["EE"]
+
+
+def test_diagnostico_las_cifras_del_micro():
+    d = c.cifras_c2_diagnostico()
+    fila = {k: (_r(v["L_ent"], 1), _r(v["CV"], 1), _r(v["EE"], 1)) for k, v in d.items()}
+    assert fila == {"A": (12.6, 15.1, 0.9), "B": (5.7, 262.2, 143.9),
+                    "C": (59.2, 66.3, 4.9), "D": (8.5, 9.7, 0.5)}
+    assert (_r(d["A"]["CV_mejor_mas_flexible"], 1), d["A"]["mejor_mas_flexible"]) == (9.7, 8)
+    assert {k: (_r(v["dif_val"], 1), _r(v["dif_val_ee"], 1)) for k, v in d.items()
+            if k != "B"} == {"A": (-40.2, 8.7), "C": (-0.1, 0.3), "D": (-49.6, 9.5)}
+
+
+def test_diagnostico_no_calcula_un_ee_con_perdidas_fuera():
+    # guarda negativa (contrato v4 §3): ninguna cifra de la clase 2 hace
+    # s_d/√n sobre perdidas_fuera de CV
+    fuente = inspect.getsource(c.cifras_c2_diagnostico)
+    assert "perdidas_fuera" not in fuente.split('"""', 2)[2]
+    assert "error_estandar" not in fuente
+
+
+# ------------------------------------------- cifras_c2_diagnostico_final ---
+
+def test_diagnostico_final_a_mejora_y_b_se_estanca():
+    f = c.cifras_c2_diagnostico_final()
+    assert f["A"]["mejora"] > 0.20
+    assert f["B"]["mejora"] < 0.05
+
+
+def test_diagnostico_final_las_cifras_del_ejercicio():
+    f = c.cifras_c2_diagnostico_final()
+    tabla = {k: tuple(_r(v[n][q], 1) for n in c.N_CONSULTOR for q in ("L_ent", "CV"))
+             for k, v in f.items()}
+    assert tabla == {"A": (8.1, 11.8, 8.7, 9.2), "B": (13.9, 14.4, 14.3, 14.4)}
+
+
 # --- fin tramo completo ---

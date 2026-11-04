@@ -79,11 +79,16 @@ Cada bloque `## Clase N` lo llena solo la rama de esa clase.
 
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
+| `ml-c2-abanico.svg` | Cien ajustes de grado 1, 4 y 12, uno por muestra del mismo proceso, con su promedio y la media verdadera de y dado x | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea del notebook _deprecated_bias_variance del profesor y de Goodfellow et al., *Deep Learning*, §5.4 | Propio, CC BY-SA 4.0 |
+| `ml-c2-diana.svg` | Las predicciones en x = 5 de cien ajustes de grado 1 y 12, su promedio y el valor verdadero, con eje fijo | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de la diapositiva 8 del deck 06 del profesor (Domingos 2012) | Propio, CC BY-SA 4.0 |
 
 ### Clase 2 · tramo completo
 
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
+| `ml-c2-sesgo-varianza.svg` | Ruido, sesgo² y varianza por grado calculados con f conocida, y la CV 5 de una sola muestra junto al total calculado | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de Goodfellow et al., figura 5.6 | Propio, CC BY-SA 4.0 |
+| `ml-c2-curva-aprendizaje.svg` | Medianas de L_ent y R de los grados 1 y 10 contra el número de entregas, con el piso, y el grado que elige la CV | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de Goodfellow et al., figura 5.4 | Propio, CC BY-SA 4.0 |
+| `ml-c2-diagnostico.svg` | Árbol de diagnóstico: brecha, benchmark, capacidad y separación, con sus cinco hojas | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de Goodfellow et al., §11.3, y de las diapositivas 30–33 del deck 04 y 96 del deck 07 del profesor | Propio, CC BY-SA 4.0 |
 
 ## Clase 3
 

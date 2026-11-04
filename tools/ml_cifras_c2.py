@@ -618,7 +618,7 @@ def sesgo_varianza_hilo(semilla=SEMILLA):
         w.__exit__(None, None, None)
 
 
-EJE_DIANA = (0.0, 80.0)     # eje fijo de ml-c2-diana (minutos)
+EJE_DIANA = (15.0, 55.0)    # eje fijo de ml-c2-diana (minutos); todas caen dentro
 
 
 def _predicciones_en(sv, x0, N):
@@ -665,6 +665,189 @@ def cifras_c2_sesgo_varianza():
 # ===================================================================
 # --- tramo completo ---  (pagina 3 §3–§5, notebook 05)
 # ===================================================================
-# cifras_c2_curva_aprendizaje, cifras_c2_diagnostico y
-# cifras_c2_diagnostico_final: pendientes (C2.T2, segunda parte).
+# C2.T2, segunda parte (DECISION prog-c2-9): curvas de aprendizaje (§4),
+# los cuatro procesos del diagnostico (§5, 05·4) y el consultor del
+# ejercicio final.
+
+NS_CURVA = (30, 60, 120, 240, 480, 960)   # duplicando desde 30 >= 2·(10 + 1)
+GRADOS_CURVA = (1, 10)
+REP_CURVA = 50              # 05·3 y ml-c2-curva-aprendizaje (medianas)
+REP_ELEGIDO = 20            # panel de abajo: grado elegido por CV_5
+CANDIDATOS_ELEGIDO = tuple(range(13))
+SEMILLAS_MAESTRAS = (0, 1000, 2000)
+
+
+def fabrica_curva(s):
+    """fabrica de 960 entregas (todas las filas: fracciones (1, 0, 0))."""
+    return _ml().PROCESOS["entregas_curvas"](n=max(NS_CURVA), semilla=int(s),
+                                             n_realidad=N_REALIDAD, fracciones=(1, 0, 0))
+
+
+@lru_cache(maxsize=None)
+def tabla_curva_aprendizaje(semilla=SEMILLA):
+    ml, w = _ml(), _silencio()
+    try:
+        return ml.curva_aprendizaje(fabrica_curva, {N: construir(N) for N in GRADOS_CURVA},
+                                    ns=NS_CURVA, repeticiones=REP_CURVA, semilla=semilla)
+    finally:
+        w.__exit__(None, None, None)
+
+
+@lru_cache(maxsize=None)
+def tabla_capacidad_elegida(semilla=SEMILLA):
+    ml, w = _ml(), _silencio()
+    try:
+        return ml.capacidad_elegida(fabrica_curva, candidatos(CANDIDATOS_ELEGIDO), ns=NS_CURVA,
+                                    k=5, repeticiones=REP_ELEGIDO, semilla=semilla)
+    finally:
+        w.__exit__(None, None, None)
+
+
+def _medianas_R(t):
+    return {(int(N), int(n)): float(v)
+            for (N, n), v in t.groupby(["candidato", "n"])["R"].median().items()}
+
+
+@lru_cache(maxsize=None)
+def cifras_c2_curva_aprendizaje():
+    """P3 §4, 05·3 y ml-c2-curva-aprendizaje: medianas de R (50 repeticiones) de los
+    grados 1 y 10 en n = 30, 480 y 960; mediana de L_ent; grado que elige CV_5
+    (mediana de 20 repeticiones) en 30 y 960; el piso; y las mismas medianas con
+    las otras dos semillas maestras (estabilidad)."""
+    ml = _ml()
+    t = tabla_curva_aprendizaje()
+    med = _medianas_R(t)
+    lent = {(int(N), int(n)): float(v)
+            for (N, n), v in t.groupby(["candidato", "n"])["L_ent"].median().items()}
+    el = tabla_capacidad_elegida().groupby("n")["elegido"].median()
+    res = {"piso": float(ml.piso(fabrica_curva(SEMILLA))),
+           "R": {(N, n): med[(N, n)] for N in GRADOS_CURVA for n in NS_CURVA},
+           "L_ent": {(N, n): lent[(N, n)] for N in GRADOS_CURVA for n in NS_CURVA},
+           "elegido": {int(n): float(v) for n, v in el.items()},
+           "elegido_rango": {int(n): (int(g.min()), int(g.max())) for n, g in
+                             tabla_capacidad_elegida().groupby("n")["elegido"]}}
+    res["R_otras_semillas"] = {s: _medianas_R(tabla_curva_aprendizaje(s))
+                               for s in SEMILLAS_MAESTRAS[1:]}
+    return res
+
+
+# ----------------------------------------------------- diagnostico (§5) ---
+# Cuatro procesos misteriosos (05·4 y el micro ml-c2-ej-cuatro-curvas). Sus
+# parametros los fija esta tabla (Decidir en ejecucion de clase_2.md §10.3);
+# con n = 200 la diferencia pareada de A en validacion (40 entregas) no salia
+# de 2 EE, asi que A, C y D usan n = 400 (80 de validacion), y B, n = 40
+# (24 de entrenamiento: con 15 el grado 12 interpola y la CV vale 10^5).
+
+def _f_casi_constante(d):
+    return 30 + 0.2 * d["x"]
+
+
+def proceso_diagnostico(nombre, semilla=SEMILLA):
+    ml = _ml()
+    if nombre == "C":
+        return ml.proceso(n=400, x={"x": ml.uniforme(0, 6)}, f=_f_casi_constante,
+                          ruido=ml.normal(0, 8), semilla=semilla, n_realidad=N_REALIDAD)
+    n = 40 if nombre == "B" else 400
+    return ml.PROCESOS["entregas_curvas"](n=n, semilla=semilla, n_realidad=N_REALIDAD)
+
+
+GRADO_DIAGNOSTICO = {"A": 1, "B": 12, "C": 1, "D": 4}
+HOJA_DIAGNOSTICO = {"A": "subajuste", "B": "sobreajuste", "C": "no aprende", "D": "listo"}
+UMBRAL_BRECHA = 2.0         # brecha grande: CV_5 mayor que el doble de L_ent
+
+
+def hoja_del_arbol(r):
+    """Recorre el arbol de ml-c2-diagnostico con las cifras de un proceso."""
+    if r["CV"] > UMBRAL_BRECHA * r["L_ent"]:
+        return "sobreajuste"
+    if not r["gana_a"]:
+        return "no aprende"
+    if r["mejor_mas_flexible"] is not None and \
+            r["CV_mejor_mas_flexible"] < r["CV"] - r["EE"]:
+        return "subajuste"
+    return "listo"
+
+
+@lru_cache(maxsize=None)
+def cifras_c2_diagnostico():
+    """P3 §5, 05·4 y ml-c2-ej-cuatro-curvas: por proceso, L_ent y CV_5 ± EE del modelo
+    actual, la CV_5 del mejor grado mas flexible (0–8; 0–12 para B), el benchmark
+    (grado 0) con su EE, (a) la diferencia pareada modelo − benchmark en validacion
+    con su EE (los dos ajustados solo con ent: la validacion no eligio nada), (b) la
+    diferencia de las CV_5 y sus cinco diferencias por pliegue (misma particion;
+    descriptiva) y, solo para el notebook, piso y R − piso. Nunca s_d/√n sobre
+    perdidas_fuera (guarda negativa en la prueba)."""
+    ml, w = _ml(), _silencio()
+    res = {}
+    try:
+        for nombre, N in GRADO_DIAGNOSTICO.items():
+            d = proceso_diagnostico(nombre)
+            M = max(8, N)
+            cvs = {g: ml.validacion_cruzada(d, construir(g), k=5, semilla=SEMILLA)
+                   for g in range(M + 1)}
+            modelo, bench = construir(N)(d.ent), construir(0)(d.ent)
+            yv = d.val["y"].to_numpy()
+            dm, ee_d = ml.diferencia_pareada(
+                ml.perdida(yv, np.asarray(modelo.predecir(d.val))),
+                ml.perdida(yv, np.asarray(bench.predecir(d.val))))
+            dpp = ml.diferencia_por_pliegue(cvs[N], cvs[0])
+            por = [float(v) for v in dpp["diferencia"].iloc[:5]]
+            mas = [g for g in range(N + 1, M + 1)]
+            mejor = min(mas, key=lambda g: cvs[g].media) if mas else None
+            media_b = float(dpp["diferencia"].iloc[5])
+            r = {"grado": N, "n": len(d.ent) + len(d.val) + len(d.prueba),
+                 "L_ent": float(ml.L(modelo, d.ent)), "CV": float(cvs[N].media),
+                 "EE": float(cvs[N].ee), "mejor_mas_flexible": mejor,
+                 "CV_mejor_mas_flexible": float(cvs[mejor].media) if mejor is not None
+                 else float("nan"),
+                 "benchmark": float(cvs[0].media), "benchmark_ee": float(cvs[0].ee),
+                 "dif_val": float(dm), "dif_val_ee": float(ee_d),
+                 "gana_a": bool(dm < -2 * ee_d),
+                 "dif_cv": media_b, "dif_por_pliegue": por,
+                 "senal_b": bool(abs(media_b) > float(np.std(por, ddof=1))),
+                 "curva_cv": {g: float(cvs[g].media) for g in cvs},
+                 "piso": float(ml.piso(d)), "R": float(ml.riesgo(modelo, d))}
+            r["R_menos_piso"] = r["R"] - r["piso"]
+            r["hoja"] = hoja_del_arbol(r)
+            res[nombre] = r
+    finally:
+        w.__exit__(None, None, None)
+    return res
+
+
+# ------------------------------------------------- ejercicio final (P3) ---
+# El consultor reporta medianas de 20 muestras de cada tamaño (una sola
+# muestra por tamaño daba mejoras de −14 % a 45 % para el mismo modelo: el
+# ejercicio no se sostenia). A = grado 12 (sobreajusta), B = grado 1 (recta).
+
+N_CONSULTOR = (120, 480)
+REP_CONSULTOR = 20
+GRADOS_CONSULTOR = {"A": 12, "B": 1}
+
+
+@lru_cache(maxsize=None)
+def cifras_c2_diagnostico_final():
+    """Ejercicio final de P3: L_ent y CV_5 (medianas de 20 muestras) de los dos
+    modelos del consultor con n_ent = 120 y 480, y la mejora relativa de la CV."""
+    ml, w = _ml(), _silencio()
+    res = {}
+    try:
+        for nombre, N in GRADOS_CONSULTOR.items():
+            r = {"grado": N}
+            for n in N_CONSULTOR:
+                le, cv = [], []
+                for i in range(REP_CONSULTOR):
+                    d = ml.PROCESOS["entregas_curvas"](n=n, semilla=SEMILLA + i,
+                                                     n_realidad=N_REALIDAD, fracciones=(1, 0, 0))
+                    le.append(ml.L(construir(N)(d.ent), d.ent))
+                    cv.append(ml.validacion_cruzada(d, construir(N), k=5,
+                                                    semilla=SEMILLA + i).media)
+                r[n] = {"L_ent": float(np.median(le)), "CV": float(np.median(cv))}
+            r["mejora"] = 1 - r[N_CONSULTOR[1]]["CV"] / r[N_CONSULTOR[0]]["CV"]
+            res[nombre] = r
+    finally:
+        w.__exit__(None, None, None)
+    return res
+
+
 # --- fin tramo completo ---
