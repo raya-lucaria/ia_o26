@@ -147,8 +147,105 @@ def test_la_tarea_no_lleva_respuestas_ni_explica():
 
 
 # --- tramo m ---
+
+P3 = "3_sesgo_y_varianza.md"
+G05 = "tools/cuadernos_ml/05_sesgo_y_varianza.texto.md"
+
+
+def test_p3_la_dispersion_de_la_diana_en_la_seccion_1():
+    sv = c.cifras_c2_sesgo_varianza()
+    s1 = seccion(P3, 1)
+    assert esta(sv["diana_12"]["desv"], s1) and esta(sv["diana_1"]["desv"], s1)
+
+
+def test_p3_el_sesgo_en_x0_y_el_piso_en_la_seccion_2():
+    sv = c.cifras_c2_sesgo_varianza()
+    s2 = seccion(P3, 2)
+    assert esta(sv["f_x0"], s2)
+    assert esta(sv["diana_1"]["sesgo"], s2) and esta(sv["diana_12"]["sesgo"], s2)
+    assert esta(sv["sigma2_e"], s2)
+    assert all(sv[f"diana_{N}"]["fuera_eje"] == 0 for N in (1, 12))
+    assert "Ninguna predicción queda fuera" in s2
+
+
+def test_cada_figura_del_tramo_m_vive_en_un_figure_de_p3():
+    import figuras_ml_c2 as fig
+    assert set(fig._M) <= figuras_en(P3), set(fig._M) - figuras_en(P3)
+
 # --- fin tramo m ---
 
 
 # --- tramo completo ---
+
+
+def test_p3_la_u_calculada_en_la_seccion_3_y_al_llevarse():
+    sv = c.cifras_c2_sesgo_varianza()
+    N = sv["N_estrella"]
+    s3 = seccion(P3, 3)
+    assert f"N^\\star={N}" in s3
+    for k in ("sesgo2", "varianza", "total"):
+        assert esta(sv[N][k], s3, 2), k
+        assert esta(sv[N][k], llevarse(P3), 2), k
+    assert esta(sv[N]["ruido"], s3)
+    # la CV de una sola muestra (el hilo de P2) elige otro grado
+    assert f"\\widehat N={c.cifras_c2_hilo()['N_min']}" in s3
+
+
+def test_p3_las_curvas_de_aprendizaje_en_la_seccion_4():
+    cu = c.cifras_c2_curva_aprendizaje()
+    s4 = seccion(P3, 4)
+    for clave in ((1, 30), (1, 480), (1, 960), (10, 480), (10, 960)):
+        assert esta(cu["R"][clave], s4), clave
+    assert esta(cu["piso"], s4)
+    # la mediana del grado 10 con 30 entregas no se cita (DECISION prog-c2-9.1)
+    assert not esta(cu["R"][(10, 30)], s4)
+    assert f"{cu['elegido'][30]:.0f} con 30" in s4 and f"{cu['elegido'][960]:.0f} con 960" in s4
+    assert esta(cu["R"][(1, 960)], llevarse(P3)) and esta(cu["R"][(10, 960)], llevarse(P3))
+
+
+def test_p3_el_diagnostico_de_los_cuatro_procesos_en_la_seccion_5():
+    dg = c.cifras_c2_diagnostico()
+    s5 = seccion(P3, 5)
+    for nombre, r in dg.items():
+        for k in ("L_ent", "CV", "EE", "benchmark", "benchmark_ee", "dif_val",
+                  "dif_val_ee", "dif_cv"):
+            assert esta(r[k], s5), (nombre, k)
+        assert esta(min(r["dif_por_pliegue"]), s5) and esta(max(r["dif_por_pliegue"]), s5)
+        if r["mejor_mas_flexible"] is not None:
+            assert f"{r['mejor_mas_flexible']}: " in s5, nombre
+    hojas = {"A": "subajuste", "B": "sobreajuste", "C": "no aprende", "D": "listo"}
+    assert {n: r["hoja"] for n, r in dg.items()} == hojas
+    for nombre, hoja in hojas.items():
+        assert f"**{nombre}: {hoja}" in s5, nombre
+
+
+def test_p3_el_ejercicio_final_cita_al_consultor():
+    fi = c.cifras_c2_diagnostico_final()
+    t = texto(P3)
+    i, j = t.find("## Ejercicio final"), t.find("## Para profundizar")
+    assert 0 <= i < j
+    ej = t[i:j]
+    for nombre in ("A", "B"):
+        for n in c.N_CONSULTOR:
+            assert esta(fi[nombre][n]["L_ent"], ej) and esta(fi[nombre][n]["CV"], ej), (nombre, n)
+    assert fi["A"]["mejora"] > 0.2 and abs(fi["B"]["mejora"]) < 0.01
+
+
+def test_guion_05_cita_la_diana_las_curvas_y_el_diagnostico():
+    sv, cu, dg = (c.cifras_c2_sesgo_varianza(), c.cifras_c2_curva_aprendizaje(),
+                  c.cifras_c2_diagnostico())
+    g = texto(G05)
+    assert esta(sv["f_x0"], g) and esta(sv["diana_12"]["desv"], g)
+    assert esta(sv["diana_1"]["sesgo"], g) and esta(sv["diana_12"]["sesgo"], g)
+    for clave in ((1, 30), (1, 480), (10, 480), (10, 960)):
+        assert esta(cu["R"][clave], g), clave
+    assert esta(dg["A"]["CV"], g) and esta(dg["B"]["CV"], g) and esta(dg["B"]["L_ent"], g)
+    assert esta(dg["C"]["dif_val"], g) and esta(dg["C"]["dif_val_ee"], g)
+
+
+def test_cada_figura_del_tramo_completo_vive_en_un_figure_de_p3():
+    import figuras_ml_c2 as fig
+    usadas = figuras_en(P3)
+    assert set(fig._COMPLETO) <= usadas, set(fig._COMPLETO) - usadas
+
 # --- fin tramo completo ---
