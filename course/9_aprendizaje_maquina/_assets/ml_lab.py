@@ -278,7 +278,7 @@ class _EfectoGrupo(Mecanismo):
         if desv_grupo < 0 or desv < 0:
             raise ValueError("las desviaciones de efecto_grupo no pueden ser negativas")
         self.n_grupos, self.desv_grupo, self.desv = int(n_grupos), float(desv_grupo), float(desv)
-        self.varianza = self.desv_grupo ** 2 + self.desv ** 2
+        self.varianza = (self.desv_grupo ** 2 if self.n_grupos >= 2 else 0.0) + self.desv ** 2
         self.nombre, self.crea = "efecto_grupo", ["grupo"]
 
     def preparar(self, n, rng):
@@ -289,20 +289,37 @@ class _EfectoGrupo(Mecanismo):
         return {"grupo": self.n_grupos + rng.permutation(np.arange(int(n)) // 10)}
 
     def _efecto(self, grupos):
-        """El efecto de cada grupo es parte de la población: lo fija su id, no la semilla."""
+        """El efecto de cada grupo es parte de la población: lo fija su id, no la semilla.
+
+        Los n_grupos de la población tienen efectos de media 0 y desviación desv_grupo
+        exactas (con un solo grupo, efecto 0); los grupos nuevos, efectos N(0, desv_grupo²)."""
         g = np.asarray(grupos, dtype=np.int64)
         salida = np.empty(len(g))
         for b in np.unique(g // _BLOQUE_GRUPOS):
             z = np.random.default_rng([_SEMILLA_GRUPOS, int(b)]).normal(size=_BLOQUE_GRUPOS)
             dentro = g // _BLOQUE_GRUPOS == b
             salida[dentro] = z[g[dentro] % _BLOQUE_GRUPOS]
+        vistos = g < self.n_grupos
+        salida[vistos] = self._propios()[g[vistos]]
         return self.desv_grupo * salida
+
+    def _propios(self):
+        """Los n_grupos efectos estandarizados (media 0, desviación 1 entre los grupos)."""
+        z = np.random.default_rng([_SEMILLA_GRUPOS, 0]).normal(size=max(self.n_grupos,
+                                                                         _BLOQUE_GRUPOS))
+        z = z[:self.n_grupos]
+        if self.n_grupos < 2:
+            return np.zeros(self.n_grupos)
+        return (z - z.mean()) / z.std()
 
     def muestrear(self, df, rng):
         return self._efecto(df["grupo"]) + rng.normal(0, self.desv, len(df))
 
     def varianza_en(self, df):
-        return np.full(len(df), self.varianza)
+        """Var(ε) entre grupos: la de los propios (0 con uno solo) o la de los nuevos."""
+        propia = self.desv_grupo ** 2 if self.n_grupos >= 2 else 0.0
+        nuevos = np.asarray(df["grupo"]) >= self.n_grupos
+        return np.where(nuevos, self.desv_grupo ** 2, propia) + self.desv ** 2
 
     def __repr__(self):
         return (f"efecto_grupo(n_grupos={self.n_grupos}, desv_grupo={self.desv_grupo}, "
@@ -321,7 +338,8 @@ def ar1(persistencia=0.8, desv=1.0):
 def efecto_grupo(n_grupos=20, desv_grupo=1.0, desv=1.0):
     """Ruido por grupo: crea "grupo"; ε = efecto del grupo + ruido individual.
 
-    Var(ε) = desv_grupo² + desv². Los efectos son de la población (no cambian con la semilla).
+    Los efectos son de la población (no cambian con la semilla): entre sus n_grupos
+    tienen media 0 y desviación desv_grupo exactas, así que Var(ε) = desv_grupo² + desv².
     Desde: 1.2 (clase 2). Ejemplo: ml.proceso(n=240, ruido=ml.efecto_grupo(24, 4, 1))
     """
     return _EfectoGrupo(n_grupos, desv_grupo, desv)
@@ -886,7 +904,9 @@ def _poblacion_grande(pob, n_realidad, semilla_realidad, uso=None):
             if "_varmc" in c:
                 c["_varmc"] = np.nan
         salida.append(c)
-    _CACHE[llave] = (pob, tuple(salida), deriva)  # guarda pob y deriva para que su id no se reuse
+    if deriva is not None:  # deriva puede leer estado que cambia: no se guarda en la caché
+        return tuple(salida)
+    _CACHE[llave] = (pob, tuple(salida), deriva)  # guarda pob para que su id no se reuse
     while len(_CACHE) > _CACHE_MAX:
         _CACHE.popitem(last=False)
     return tuple(salida)
@@ -1788,9 +1808,21 @@ def _particion(df, particion, k, semilla):
     else:
         raise ValueError('particion es "azar", "estratificado", "grupo", "temporal" o una '
                          "función df -> pliegues")
-    part = [(np.asarray(a, int), np.asarray(b, int)) for a, b in part]
+    part = [(np.asarray(a, int).reshape(-1), np.asarray(b, int).reshape(-1)) for a, b in part]
     if not part:
         raise ValueError("la partición no trajo pliegues")
+    vistas = np.zeros(len(df), int)
+    for m, (a, b) in enumerate(part, start=1):
+        for idx in (a, b):
+            if len(idx) and (idx.min() < 0 or idx.max() >= len(df)):
+                raise ValueError(f"el pliegue {m} nombra filas fuera de 0…{len(df) - 1}")
+        if len(a) == 0 or len(b) == 0:
+            raise ValueError(f"el pliegue {m} deja vacío el ajuste o la validación")
+        if np.intersect1d(a, b).size:
+            raise ValueError(f"el pliegue {m} valida filas con las que ajusta: es una fuga")
+        np.add.at(vistas, b, 1)
+    if vistas.max() > 1:
+        raise ValueError("una fila valida en dos pliegues: los de validación no se traslapan")
     return part
 
 # === 4 · Representaciones φ ===
@@ -2986,7 +3018,8 @@ def validacion_cruzada(df, construir, k=5, particion="azar", criterio=None, esta
     Ejemplo: cv = ml.validacion_cruzada(datos, lambda df: ml.ajustar(df, phi=ml.polinomio(4)))
 
     perdidas_fuera: la pérdida de cada observación de desarrollo con el modelo del
-    pliegue que no la vio, en el orden de las filas. Es DESCRIPTIVA: esas pérdidas
+    pliegue que no la vio, en el orden de las filas (nan si la fila no valida en ningún
+    pliegue, como en una partición temporal). Es DESCRIPTIVA: esas pérdidas
     dependen entre sí (los entrenamientos se superponen), así que no se pasan a
     diferencia_pareada para afirmar una mejora; para comparar por CV, usa
     diferencia_por_pliegue.
@@ -3032,7 +3065,8 @@ def diferencia_pareada(perdidas_a, perdidas_b):
 def _mismas_particiones(a, b):
     if len(a) != len(b):
         return False
-    return all(np.array_equal(np.sort(va), np.sort(vb)) for (_, va), (_, vb) in zip(a, b))
+    return all(np.array_equal(np.sort(aa), np.sort(ab)) and np.array_equal(np.sort(va), np.sort(vb))
+               for (aa, va), (ab, vb) in zip(a, b))
 
 
 def diferencia_por_pliegue(cv_a, cv_b):
@@ -3228,12 +3262,19 @@ def optimismo_por_seleccion(fabrica, candidatos, repeticiones=500, semilla=0, de
     return largo if detalle else _optimismo_agregado(largo)
 
 
+def _argmin_finito(valores):
+    """El primero con el menor valor finito (como elegir); error si ninguno es finito."""
+    v = np.asarray(valores, float)
+    if not np.isfinite(v).any():
+        raise ValueError("ningún candidato tiene un valor finito")
+    return int(np.nanargmin(np.where(np.isfinite(v), v, np.nan)))
+
+
 def _optimismo_agregado(largo):
     filas = []
     for i, g in largo.groupby("repeticion", sort=True):
         g = g.reset_index(drop=True)
-        ip = int(np.argmin(g["L_prueba"].to_numpy()))
-        iv = int(np.argmin(g["L_val"].to_numpy()))
+        ip, iv = _argmin_finito(g["L_prueba"]), _argmin_finito(g["L_val"])
         filas.append({"repeticion": i, "con_prueba": g.loc[ip, "L_prueba"],
                       "con_val_y_prueba": g.loc[iv, "L_prueba"], "R_real": g.loc[ip, "R"],
                       "R_val": g.loc[iv, "R"]})
@@ -3289,7 +3330,7 @@ def reparto(fabrica, construir, fracciones_prueba=(0.05, 0.1, 0.15, 0.2, 0.25, 0
                 raise ValueError("cada fracción de prueba está en (0, 1)")
             rng = np.random.default_rng([s, 7, int(round(1000 * fr))])
             perm = rng.permutation(len(pool))
-            n_p = max(1, int(round(len(pool) * fr)))
+            n_p = min(len(pool) - 1, max(1, int(round(len(pool) * fr))))
             ent = pool.iloc[np.sort(perm[n_p:])].copy()
             pru = pool.iloc[np.sort(perm[:n_p])]
             ent.attrs = copy.deepcopy(pool.attrs)
@@ -3389,6 +3430,9 @@ def sesgo_varianza(fabrica, construir_por_candidato, repeticiones=100, x_malla=N
     try:
         ruido_x = _var_y_dado_x(pob, malla, primero.semilla_realidad)
     except (ValueError, AttributeError):
+        if primero.omitidas or getattr(pob, "endogeno", 0) or not np.isfinite(primero.sigma2_e):
+            raise ValueError("sesgo_varianza no sabe Var(y | x) de este proceso (ruido con "
+                             "contexto junto con variables omitidas o endogeneidad)")
         ruido_x = np.full(len(malla), float(primero.sigma2_e))
     preds = {c: np.empty((int(repeticiones), len(malla))) for c in construir_por_candidato}
     modelos = {c: [] for c in construir_por_candidato}
@@ -4020,8 +4064,8 @@ def dibujar_pliegues(n, k, m_activo=None, prueba=True, *, y=None, particion=None
                      tema="claro"):
     """Los k pliegues: en cada vuelta, qué filas ajustan (●) y cuáles validan (▲, rayado).
 
-    particion: la lista que devolvió pliegues(...) (se dibuja lo que se usó; n y k deben
-    coincidir); sin ella, bloques contiguos. y: marca la clase menos frecuente y cuenta
+    particion: la lista que devolvió pliegues(...) (se dibuja tal cual lo que se usó,
+    ajuste y validación; n y k deben coincidir); sin ella, bloques contiguos. y: marca la clase menos frecuente y cuenta
     los pliegues de validación sin ningún caso. Desde: 1.2 (clase 2).
     Ejemplo: ml.dibujar_pliegues(48, 5, m_activo=2, particion=ml.pliegues(df, 5))
     """
@@ -4030,17 +4074,18 @@ def dibujar_pliegues(n, k, m_activo=None, prueba=True, *, y=None, particion=None
         if len(particion) != k:
             raise ValueError(f"particion trae {len(particion)} pliegues y k = {k}")
         validas = [np.asarray(v, int) for _, v in particion]
-        total = sorted(np.concatenate(validas).tolist())
-        if total != list(range(n)):
-            raise ValueError(f"particion no reparte las {n} filas (¿otro n?)")
+        ajustes = [np.asarray(a, int) for a, _ in particion]
+        todas = np.concatenate(validas + ajustes)
+        if len(todas) and (todas.min() < 0 or todas.max() >= n):
+            raise ValueError(f"particion nombra filas fuera de 0…{n - 1} (¿otro n?)")
     else:
         validas = [np.asarray(v, int) for v in np.array_split(np.arange(n), k)]
+        ajustes = [np.setdiff1d(np.arange(n), v) for v in validas]
     fig, ax = _ejes(ax, tema)
     t = _TEMAS[tema]
     c_ent, c_val = _color("entrenamiento", tema), _color("validacion", tema)
-    for m, val in enumerate(validas, start=1):
+    for m, (val, ajuste) in enumerate(zip(validas, ajustes), start=1):
         fila = k - m
-        ajuste = np.setdiff1d(np.arange(n), val)
         activo = m_activo is None or m == m_activo
         tenue = (lambda c: c) if activo else (lambda c: _horneado(c, t["panel"], 0.35))
         _rectangulos(ax, [(fila, _tramos(ajuste))], tenue(c_ent), f"ajuste-{m}")
@@ -4212,10 +4257,10 @@ def dibujar_abanico(sv, candidato, ax=None, tema="claro"):
     P = _curvas_sv(sv, candidato)
     tenue = _horneado(_color("f_gorro", tema), _TEMAS[tema]["panel"], 0.3)
     for i, fila in enumerate(P):
-        ln, = ax.plot(x, fila, color=tenue, lw=0.7, label="f̂ de cada muestra" if i == 0 else None)
+        ln, = ax.plot(x, fila, color=tenue, lw=0.7, label=r"$\widehat{f}$ de cada muestra" if i == 0 else None)
         ln.set_gid("repeticion")
     ln, = ax.plot(x, P.mean(axis=0), color=_color("f_gorro", tema), ls="--", lw=2.6,
-                  label="promedio de las f̂")
+                  label=r"promedio de las $\widehat{f}$")
     ln.set_gid("promedio")
     ln, = ax.plot(x, sv.verdad, color=_color("f", tema), lw=ROLES["f"]["ancho"],
                   label="E[y | x]")
@@ -4256,12 +4301,15 @@ def dibujar_sesgo_varianza(sv, ax=None, tema="claro"):
     techo = np.sort(base)[min(len(base) - 1, max(1, len(base) // 2))] * 3
     if base.max() > techo:  # los grados que explotan no aplastan a los demás
         ax.set_ylim(0, techo)
-        _nota(ax, "barras recortadas arriba: su total sale del eje", tema)
+        ax.set_title("barras recortadas arriba: su total sale del eje", fontsize=9,
+                     color=_TEMAS[tema]["texto"])
     ax.set_xticks(xs)
     ax.set_xticklabels([str(c) for c in cands])
     ax.set_xlabel("candidato (capacidad →)")
     ax.set_ylabel("error cuadrático esperado")
-    _leyenda(ax, tema)
+    ley = ax.legend(frameon=False, loc="upper center")
+    for texto in ley.get_texts():
+        texto.set_color(_TEMAS[tema]["texto"])
     return ax
 
 
@@ -4297,7 +4345,12 @@ def dibujar_curva_aprendizaje(tabla, piso=None, *, elegido=None, resumen="media"
         arriba.text(r.index[-1], r["R"].iloc[-1], f"  {c}", va="center", fontsize=8,
                     color=t["texto"])
     _linea_piso(arriba, piso, tema)
-    arriba.set_xscale("log")
+    ns = sorted(tabla["n"].unique())
+    for a in (ejes if paneles == 2 else [arriba]):
+        a.set_xscale("log")
+        a.set_xticks(ns)
+        a.set_xticklabels([str(int(v)) for v in ns])
+        a.minorticks_off()
     arriba.set_ylabel(f"pérdida ({resumen})")
     _leyenda(arriba, tema)
     if paneles == 2:
@@ -4306,7 +4359,6 @@ def dibujar_curva_aprendizaje(tabla, piso=None, *, elegido=None, resumen="media"
         ln, = abajo.plot(e.index, e.to_numpy(float), marker="s", color=_color("validacion", tema),
                          label="elegido por CV (mediana)")
         ln.set_gid("elegido")
-        abajo.set_xscale("log")
         abajo.set_ylabel("elegido")
         abajo.set_xlabel("n")
         _leyenda(abajo, tema)
@@ -4400,7 +4452,8 @@ def dibujar_diana(sv, x0, candidatos=None, ax=None, tema="claro"):
                     label=f"E[y | x = {x0:g}]")
     ln.set_gid("f")
     ax.set_yticks(range(len(candidatos)))
-    ax.set_yticklabels([f"candidato {c}" for c in candidatos])
+    ax.set_yticklabels([str(c) for c in candidatos])
+    ax.set_ylabel("candidato")
     ax.set_ylim(-0.6, len(candidatos) - 0.4)
     ax.set_xlabel(f"predicción en x = {x0:g}")
     ax.tick_params(colors=t["texto"])

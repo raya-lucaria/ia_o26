@@ -2178,3 +2178,104 @@ def test_taller_y_galeria_de_la_clase_2(monkeypatch):
     for numero in (14, 15, 16):
         with redirect_stdout(io.StringIO()):
             ml.galeria(2, casos=[numero])
+
+
+# --- revisión adversarial del lote c2 (codex-rev-lab-c2): cada prueba falló antes ---
+
+
+def test_efecto_grupo_piso_es_el_de_sus_pacientes():
+    uno = ml.proceso(n=40, f=lambda d: 0 * d["x"], ruido=ml.efecto_grupo(1, 4, 0), n_realidad=2000)
+    assert np.allclose(uno.realidad["y"], uno.realidad["y"].iloc[0])
+    assert ml.piso(uno) == pytest.approx(0)
+    mec = ml.efecto_grupo(24, 4, 1)
+    efectos = mec._efecto(np.arange(24))
+    assert efectos.mean() == pytest.approx(0, abs=1e-12) and efectos.std() == pytest.approx(4)
+    d = ml.caso(14, n_realidad=24_000)
+    assert d.realidad["y"].sub(d.realidad["f"]).mean() == pytest.approx(0, abs=0.05)
+
+
+@pytest.mark.parametrize("particion, patron", [
+    (lambda d: [([0, 1], [0, 1]), ([2, 3], [2, 3])], "fuga"),
+    (lambda d: [([1, 2, 3], [0, 1]), ([0, 2, 3], [1])], "fuga"),
+    (lambda d: [([2, 3], [0, 1]), ([0, 3], [1, 2])], "dos pliegues"),
+    (lambda d: [([1, 2], []), ([0], [1])], "vacío"),
+    (lambda d: [([1, 2, 9], [0])], "fuera"),
+])
+def test_validacion_cruzada_rechaza_particiones_con_fuga(particion, patron):
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    with pytest.raises(ValueError, match=patron):
+        ml.validacion_cruzada(df, lambda d: _Constante(0), particion=particion)
+
+
+def test_validacion_cruzada_temporal_deja_nan_en_lo_que_no_valida():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    r = ml.validacion_cruzada(df, lambda d: _Constante(0),
+                              particion=lambda d: [([0], [1]), ([0, 1], [2, 3])])
+    assert np.isnan(r.perdidas_fuera[0]) and np.allclose(r.perdidas_fuera[1:], [4, 9, 16])
+
+
+def test_sesgo_varianza_no_inventa_el_ruido_con_omitidas_y_contexto():
+    fab = lambda s: ml.proceso(n=60, x={"x": ml.normal(), "z": ml.normal()},  # noqa: E731
+                               f=lambda d: d["z"], ruido=ml.ar1(0, 1), omitir=["z"],
+                               semilla=s, n_realidad=2000)
+    with pytest.raises(ValueError, match="Var"):
+        ml.sesgo_varianza(fab, _polis([1]), repeticiones=2)
+
+
+def test_deriva_que_cambia_de_estado_no_sale_de_la_cache():
+    estado = {"a": 4.0}
+    deriva = lambda t: {"x": ml.uniforme(estado["a"], estado["a"] + 1)}  # noqa: E731
+    base = dict(n=20, despliegue="otra_poblacion", deriva=deriva, n_realidad=500)
+    assert ml.proceso(**base).despliegue["x"].min() >= 4
+    estado["a"] = 10.0
+    assert ml.proceso(**base).despliegue["x"].min() >= 10
+
+
+def test_optimismo_salta_candidatos_sin_valor_finito():
+    fab = lambda s: ml.entregas_curvas(semilla=s, n_realidad=2000)  # noqa: E731
+    cands = {"nan": lambda df: _Constante(float("nan")), "25": lambda df: _Constante(25)}
+    corto = ml.optimismo_por_seleccion(fab, cands, repeticiones=2)
+    assert np.isfinite(corto[["con_prueba", "con_val_y_prueba", "R_real", "R_val"]]).all().all()
+
+
+def test_misma_particion_exige_mismo_ajuste_y_dibujar_pliegues_lo_dibuja_tal_cual():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    p1 = lambda d: [([1], [0, 2]), ([0], [1, 3])]  # noqa: E731
+    p2 = lambda d: [([1, 3], [0, 2]), ([0, 2], [1, 3])]  # noqa: E731
+    a = ml.validacion_cruzada(df, lambda d: _Constante(0), particion=p1)
+    b = ml.validacion_cruzada(df, lambda d: _Constante(0), particion=p2)
+    with pytest.raises(ValueError, match="misma partición"):
+        ml.diferencia_por_pliegue(a, b)
+    ax = ml.dibujar_pliegues(4, 2, particion=p1(df), prueba=False)
+    cubiertas = set()
+    for barra in (b for b in ax.collections if b.get_gid() == "ajuste-1"):
+        for camino in barra.get_paths():
+            xs = camino.vertices[:, 0]
+            cubiertas |= set(range(int(round(xs.min())), int(round(xs.max()))))
+    assert cubiertas == {1}
+
+
+def test_reparto_nunca_deja_el_entrenamiento_vacio():
+    fab = lambda s: ml.entregas_curvas(n=10, semilla=s, n_realidad=500)  # noqa: E731
+    tabla = ml.reparto(fab, _polis([0])[0], fracciones_prueba=(0.99,), repeticiones=1)
+    assert np.isfinite(tabla["R"]).all()
+
+
+def test_cv_anidada_elige_dentro_de_cada_pliegue_externo():
+    datos = ml.entregas_curvas(n=80)
+    c = _polis(range(6))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        r = ml.cv_anidada(datos, c, k_externo=4, k_interno=3)
+        df = pd.concat([datos.ent, datos.val])
+        df.attrs = datos.ent.attrs
+        esperado = []
+        for ajuste, valida in ml.pliegues(df, k=4, semilla=0):
+            dentro = df.iloc[ajuste].copy()
+            dentro.attrs = df.attrs
+            s = ml.elegir(dentro, c, con="cv", k=3, semilla=1)
+            esperado.append(ml.L(s.modelo, df.iloc[valida]))
+            assert len(s.modelo.beta_gorro) == s.elegido + 1
+    assert np.allclose(r.por_pliegue, esperado)
+    plano = ml.validacion_cruzada(df, c[0], k=4)
+    assert not np.allclose(r.por_pliegue, plano.por_pliegue)
