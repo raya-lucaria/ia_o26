@@ -212,6 +212,47 @@ def test_la_estratificada_nombra_las_dos_fracciones():
 
 
 # --- tramo m ---
+
+def test_el_tramo_m_trae_abanico_y_diana_y_nada_del_completo():
+    assert list(fig._M) == ["ml-c2-abanico", "ml-c2-diana"]
+    assert not {"ml-c2-sesgo-varianza", "ml-c2-curva-aprendizaje",
+                "ml-c2-diagnostico"} & set(fig._M)
+
+
+def test_la_diana_es_el_id_congelado_y_nombra_sesgo_y_desviacion():
+    import ml_cifras_c2 as c
+    s, t = c.cifras_c2_sesgo_varianza(), aria("ml-c2-diana")
+    for N in (1, 12):
+        assert fig._num(s[f"diana_{N}"]["desv"]) in t
+    assert fig._num(s["f_x0"]) in t and "ninguna predicción queda fuera" in t
+
+
+def test_cada_cruz_de_la_diana_queda_donde_esta_su_prediccion():
+    # figuras.md: «un punto queda donde está su valor»; eje fijo, sin recorte.
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import aprendizaje_maquina as ml
+    import ml_cifras_c2 as c
+    sv = c.sesgo_varianza_hilo()
+    fig_, ax = plt.subplots()
+    ml.dibujar_diana(sv, c.X0, candidatos=[1, 12], ax=ax, tema="sitio")
+    for fila, N in enumerate((1, 12)):
+        esperado = np.sort(c._predicciones_en(sv, c.X0, N))
+        dibujado = [ln for ln in ax.lines if ln.get_gid() == "repeticion"
+                    and abs(np.mean(ln.get_ydata()) - fila) < 0.5]
+        assert len(dibujado) == 1
+        assert np.allclose(np.sort(dibujado[0].get_xdata()), esperado)
+        assert esperado.min() >= c.EJE_DIANA[0] and esperado.max() <= c.EJE_DIANA[1]
+    plt.close(fig_)
+
+
+def test_el_abanico_no_usa_opacidad_para_informar():
+    assert "opacity" not in contenido("ml-c2-abanico")
+    t = aria("ml-c2-abanico")
+    assert "Grado 1" in t and "Grado 12" in t
+
 # --- fin tramo m ---
 
 

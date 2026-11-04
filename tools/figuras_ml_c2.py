@@ -911,7 +911,80 @@ _RAPIDO = {
 
 
 # --- tramo m ---
-_M = {}
+
+# ------------------------------------------------- grafica: ml-c2-abanico ---
+#
+# P3 §1. Cien ajustes (cien muestras del hilo) por grado 1, 4 y 12, su
+# promedio y E[y | x]; la translucidez de ml_lab se hornea (sin fill-opacity,
+# §10.12). El ancho del abanico en x0 = 5 sale de ml_cifras_c2.
+ABANICO = (1, 4, 12)
+
+
+def ml_c2_abanico():
+    cif = _cif()
+    ml = gen.ml_lab()
+    sv = cif.sesgo_varianza_hilo()
+    ancho = {N: float(cif._predicciones_en(sv, cif.X0, N).std()) for N in ABANICO}
+
+    def dibujar(fig, ejes):
+        for ax, N in zip(ejes, ABANICO):
+            ml.dibujar_abanico(sv, N, ax=ax, tema="sitio")
+            ax.set_title(f"grado {N}: {cif.REP_SV} muestras; en x = {cif.X0:g}, "
+                         f"desviación {_num(ancho[N])}", color=TEXTO, fontsize=9)
+            ax.set_ylim(0, 50)
+            ax.set_xlabel("")
+            ax.set_ylabel("predicción (min)")
+            if ax is not ejes[0] and ax.get_legend():
+                ax.get_legend().remove()
+        # sin mathtext: el acento de $\widehat{f}$ sale en letra de 5 px
+        _leyenda(ejes[0], loc="lower right", fontsize=8,
+                 renombrar={r"$\widehat{f}$ de cada muestra": "f̂ de cada muestra",
+                            r"promedio de las $\widehat{f}$": "promedio de las f̂"})
+        ejes[-1].set_xlabel("distancia x (km)")
+
+    aria = (f"Tres paneles con {cif.REP_SV} ajustes cada uno, uno por muestra del mismo "
+            "proceso, su promedio y la verdadera E[y | x]. Grado 1: las rectas casi no se "
+            f"separan (desviación {_num(ancho[1])} en x = 5) pero su promedio se aleja de "
+            f"la curva. Grado 4: abanico angosto (desviación {_num(ancho[4])}) y promedio "
+            "pegado a la curva. Grado 12: el promedio sigue la curva, pero cada ajuste se "
+            f"sacude, sobre todo en los bordes (desviación {_num(ancho[12])} en x = 5).")
+    return _grafica(dibujar, aria, "Cien muestras, cien ajustes", 7.0, paneles=3, sharex=True)
+
+
+# --------------------------------------------------- grafica: ml-c2-diana ---
+#
+# P3 §2. Id congelado (lo cita la clase 3). Las predicciones de cada
+# repeticion en x0 = 5 para los grados 1 y 12, su promedio y f(x0), con eje
+# fijo EJE_DIANA y sin recorte (ninguna cae fuera: lo prueba ml_cifras_c2).
+
+def ml_c2_diana():
+    cif = _cif()
+    ml = gen.ml_lab()
+    sv = cif.sesgo_varianza_hilo()
+    s = cif.cifras_c2_sesgo_varianza()
+
+    def dibujar(fig, ax):
+        ml.dibujar_diana(sv, cif.X0, candidatos=[1, 12], ax=ax, tema="sitio")
+        ax.set_xlim(*cif.EJE_DIANA)
+        ax.set_yticklabels(["grado 1", "grado 12"])
+        ax.set_ylabel("")
+        _leyenda(ax, loc="upper center", fontsize=8, ncol=3, bbox_to_anchor=(0.5, -0.32))
+
+    d1, d12 = s["diana_1"], s["diana_12"]
+    aria = (f"Predicciones en x = {cif.X0:g} de {cif.REP_SV} ajustes, cada uno con otra "
+            f"muestra, junto a E[y | x = 5] = {_num(s['f_x0'])}. Grado 1: las cruces se "
+            f"agrupan apretadas (desviación {_num(d1['desv'])}) pero corridas "
+            f"{_num(d1['sesgo'])} minutos del valor verdadero. Grado 12: centradas "
+            f"(sesgo {_num(d12['sesgo'])}) pero dispersas (desviación {_num(d12['desv'])}). "
+            f"Eje fijo de {cif.EJE_DIANA[0]:g} a {cif.EJE_DIANA[1]:g} minutos; ninguna "
+            "predicción queda fuera.")
+    return _grafica(dibujar, aria, "La diana en x = 5", 3.4)
+
+
+_M = {
+    "ml-c2-abanico": ml_c2_abanico,
+    "ml-c2-diana": ml_c2_diana,
+}
 # --- fin tramo m ---
 
 

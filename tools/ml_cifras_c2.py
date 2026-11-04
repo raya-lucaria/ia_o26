@@ -618,7 +618,7 @@ def sesgo_varianza_hilo(semilla=SEMILLA):
         w.__exit__(None, None, None)
 
 
-EJE_DIANA = (0.0, 80.0)     # eje fijo de ml-c2-diana (minutos)
+EJE_DIANA = (15.0, 55.0)    # eje fijo de ml-c2-diana (minutos); todas caen dentro
 
 
 def _predicciones_en(sv, x0, N):
