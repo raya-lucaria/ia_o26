@@ -31,7 +31,8 @@ Al terminar tendrás:
 - **Cuatro diagnósticos:** distinguir variable omitida, interacción omitida, endogeneidad y colinealidad por sus efectos sobre $\widehat\beta$.
 - **Una decisión:** decir qué arregla regularizar y qué no.
 
-> [!TIP] **Míralo correr: el notebook 6**
+> [!TIP]
+> **Míralo correr: el notebook 6**
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)
 
@@ -52,7 +53,8 @@ Cada columna muestra un modelo; cada punto corresponde a una observación de val
 
 El promedio esconde cómo falla cada modelo: ensanchar la familia puede corregir la curva de B, pero no elimina el ruido de A.
 
-> [!TIP] **Míralo correr: bloque 1 · Las tres vistas**
+> [!TIP]
+> **Míralo correr: bloque 1 · Las tres vistas**
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)
 >
@@ -76,7 +78,11 @@ La simulación confirma $\bar e_{\text{ent}}=0$ a 10 decimales. Para separar cen
 ::: theorem {#ml-c3-teo-centro-y-ancho title="El error cuadrático es centro más ancho"}
 Para cualquier conjunto $\mathcal D$ y cualquier $\widehat f$, con pérdida
 cuadrática,
-$$L_{\mathcal D}=\frac1{n_{\mathcal D}}\sum_{i\in\mathcal D}e_i^2=\bar e_{\mathcal D}^{\,2}+\frac1{n_{\mathcal D}}\sum_{i\in\mathcal D}\bigl(e_i-\bar e_{\mathcal D}\bigr)^2 .$$
+
+$$
+L_{\mathcal D}=\frac1{n_{\mathcal D}}\sum_{i\in\mathcal D}e_i^2=\bar e_{\mathcal D}^{\,2}+\frac1{n_{\mathcal D}}\sum_{i\in\mathcal D}\bigl(e_i-\bar e_{\mathcal D}\bigr)^2 .
+$$
+
 :::
 ::: proof {#ml-c3-dem-centro-y-ancho of="ml-c3-teo-centro-y-ancho"}
 1) Escribe $e_i=\bar e_{\mathcal D}+(e_i-\bar e_{\mathcal D})$ y eleva al cuadrado.
@@ -88,7 +94,11 @@ Esta identidad es exacta en cada muestra. La siguiente promedia sobre entrenamie
 
 ::: remark {#ml-c3-obs-centro-no-es-sesgo title="El centro es menos el sesgo promedio; lo demás va al ancho"}
 El histograma junta residuales de muchos $x$. Repite el entrenamiento y saca un $x$ nuevo, independiente de él. Con pérdida cuadrática, $E[\varepsilon\mid x]=0$ y $\text{sesgo}(x)=E_{\mathcal D}[\widehat f(x)]-f(x)$, como en @ml-c2-teo-sesgo-varianza, en promedio sobre entrenamientos:
-$$E[e]=-E_x\bigl[\text{sesgo}(x)\bigr],\qquad \operatorname{Var}(e)=E_x\bigl[\sigma_\varepsilon^2(x)\bigr]+E_x\bigl[\text{varianza}(x)\bigr]+\operatorname{Var}_x\bigl(\text{sesgo}(x)\bigr).$$
+
+$$
+E[e]=-E_x\bigl[\text{sesgo}(x)\bigr],\qquad \operatorname{Var}(e)=E_x\bigl[\sigma_\varepsilon^2(x)\bigr]+E_x\bigl[\text{varianza}(x)\bigr]+\operatorname{Var}_x\bigl(\text{sesgo}(x)\bigr).
+$$
+
 Un sesgo de promedio cero sobre $x$ puede ensanchar el histograma sin desplazarlo. Por ejemplo, una curva faltante compensada por el intercepto: aparece como forma en $e$ contra $x$.
 
 La identidad vale en promedio, no en cada histograma. Su centro se mueve por dos razones. Con el ajuste fijo, validación es una muestra: $\bar e$ cae cerca de $E[e\mid\widehat f]$, pero no encima. Entre entrenamientos cambia $\widehat f$ y, con él, ese centro.
@@ -133,7 +143,8 @@ Dividirlo entre el nivel da 0.1 %, pero eso engaña. En el caso 11, la media log
 
 Retomamos la media de entrenamiento como punto de comparación de la clase 2: ¿el modelo le gana de verdad o por azar?
 
-> [!TIP] **Míralo correr: bloque 2 · ¿Bueno o malo?**
+> [!TIP]
+> **Míralo correr: bloque 2 · ¿Bueno o malo?**
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)
 >
@@ -144,7 +155,11 @@ La regla constante tiene capacidad cero: solo ajusta $\beta_0$. Entre su pérdid
 ::: definition {#ml-c3-def-benchmark title="Benchmark y error relativo"}
 Un **punto de comparación (*benchmark*)** es una regla tonta ajustada con $\mathcal D_{\text{ent}}$. Se evalúa en el mismo conjunto y con la misma pérdida que el modelo. En regresión predice siempre $\bar y_{\text{ent}}$ con pérdida cuadrática, o la mediana de $y$ de entrenamiento con pérdida absoluta. Todo error se reporta:
 1. junto al del benchmark, y como **mejora sobre el benchmark**
-   $$1-\frac{L_{\text{val}}(\widehat\beta)}{L_{\text{val}}(\bar y_{\text{ent}})};$$
+
+   $$
+   1-\frac{L_{\text{val}}(\widehat\beta)}{L_{\text{val}}(\bar y_{\text{ent}})};
+   $$
+
 2. frente a la **escala** de $y$: el $\mathrm{RMSE}$ al lado de la
    desviación estándar de $y$ en entrenamiento, no al lado de su nivel.
 
@@ -177,7 +192,11 @@ La media es −1 en promedio sobre muestras. El cero del supuesto EE no indica c
 Para $y_1,\dots,y_n$,
 $\frac1n\sum_{i=1}^n(y_i-\beta_0)^2$ tiene un **único** minimizador,
 $\beta_0=\bar y$, y
-$$\operatorname*{arg\,min}_{\beta_0}\ \frac1n\sum_{i=1}^n\lvert y_i-\beta_0\rvert$$
+
+$$
+\operatorname*{arg\,min}_{\beta_0}\ \frac1n\sum_{i=1}^n\lvert y_i-\beta_0\rvert
+$$
+
 es el conjunto de las medianas de los $y_i$. Si $n$ es par, incluye todo el intervalo entre las dos centrales. El benchmark toma su punto medio, la regla de selección de `benchmarks`.
 :::
 ::: proof {#ml-c3-dem-constante-optima of="ml-c3-teo-constante-optima"}
@@ -220,7 +239,8 @@ Cada línea sigue el MSE del modelo correcto en los primeros $n$ casos de valida
 
 Una cola larga produce valores enormes, raros pero no despreciables. Primero averigua si la entrega fue real o hubo un error de captura.
 
-> [!TIP] **Míralo correr: bloque 3 · Colas largas**
+> [!TIP]
+> **Míralo correr: bloque 3 · Colas largas**
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)
 >
@@ -275,7 +295,8 @@ El mapa retoma @ml-c1-obs-cuatro-fuentes: azar, variables que no medimos, famili
 
 La omitida puede subir el piso sin correr la pendiente; si está correlacionada con las visibles, puede hacer ambas cosas. Una interacción ausente deja error de aproximación. La colinealidad deja pocos datos para separar columnas casi iguales; la endogeneidad compromete la interpretación estructural.
 
-> [!TIP] **Míralo correr: bloque 4 · Lo que el modelo no ve**
+> [!TIP]
+> **Míralo correr: bloque 4 · Lo que el modelo no ve**
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)
 >
@@ -299,7 +320,11 @@ $E[\varepsilon\mid x_1,x_2]=0$, varianzas finitas y
 $\operatorname{Var}(x_1)>0$. Si el modelo solo ve $x_1$, al crecer
 $n_{\text{ent}}$ la pendiente de mínimos cuadrados $\widehat\beta_1$ se
 concentra en
-$$\beta_1+\beta_2\,\frac{\operatorname{cov}(x_1,x_2)}{\operatorname{Var}(x_1)}.$$
+
+$$
+\beta_1+\beta_2\,\frac{\operatorname{cov}(x_1,x_2)}{\operatorname{Var}(x_1)}.
+$$
+
 Si $\operatorname{cov}(x_1,x_2)=0$, se concentra en $\beta_1$. Esto habla solo de la pendiente. Que lo omitido «solo suba el piso» pide más: por ejemplo, que $x_2$ sea independiente de $x_1$. Entonces el piso sube en $\beta_2^2\operatorname{Var}(x_2)$.
 :::
 ::: proof {#ml-c3-dem-variable-omitida of="ml-c3-teo-variable-omitida"}
@@ -389,7 +414,8 @@ La figura compara 200 entrenamientos. A la izquierda, la colinealidad ensancha e
 
 La predicción dentro de la nube puede ser estable aunque los coeficientes cambien mucho. Si subes una pendiente y bajas la otra, sus aportes casi se compensan. Fuera de la diagonal ya no: estás extrapolando.
 
-> [!TIP] **Míralo correr: bloque 5 · Reaprender**
+> [!TIP]
+> **Míralo correr: bloque 5 · Reaprender**
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/06_leer_el_error.ipynb)
 >
@@ -400,7 +426,11 @@ Las soluciones casi igual de buenas forman una elipse alargada. La fórmula mide
 ::: remark {#ml-c3-obs-colinealidad title="Cuánto crece la varianza con la colinealidad"}
 Con dos variables, el modelo correcto y ruido de varianza constante
 $\sigma_\varepsilon^2$,
-$$\operatorname{Var}(\widehat\beta_1\mid X)=\frac{\sigma_\varepsilon^2}{n_{\text{ent}}\,\widehat{\operatorname{Var}}(x_1)\,\bigl(1-\widehat{\operatorname{corr}}(x_1,x_2)^2\bigr)},$$
+
+$$
+\operatorname{Var}(\widehat\beta_1\mid X)=\frac{\sigma_\varepsilon^2}{n_{\text{ent}}\,\widehat{\operatorname{Var}}(x_1)\,\bigl(1-\widehat{\operatorname{corr}}(x_1,x_2)^2\bigr)},
+$$
+
 con la varianza y la correlación muestrales de entrenamiento. Con
 $\widehat{\operatorname{corr}}=0.99$, el factor $1/(1-0.99^2)\approx50$.
 :::

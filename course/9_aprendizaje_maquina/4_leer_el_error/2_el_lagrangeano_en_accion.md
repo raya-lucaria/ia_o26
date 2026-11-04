@@ -33,7 +33,8 @@ Al terminar tendrás:
 - **Una elección:** explicarás por qué $\mu$ es hiperparámetro y la elegirás con validación cruzada (*cross-validation*).
 - **Una escala comparable:** estandarizarás con entrenamiento y explicarás qué cambia al cambiar unidades.
 
-> [!TIP] **Míralo correr: el lagrangeano en acción**
+> [!TIP]
+> **Míralo correr: el lagrangeano en acción**
 > Abre `07_el_lagrangeano_en_accion.ipynb`. Cada bloque acompaña una parte de esta lectura.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
@@ -78,13 +79,25 @@ brecha (@ml-c1-def-brecha) más de lo que sube $L_{\text{ent}}$.
 
 ::: definition {#ml-c3-def-lagrangeano-capacidad title="El lagrangeano de la capacidad"}
 La capacidad como restricción (@ml-c1-def-capacidad-como-restriccion) es
-$$\min_{\beta}\ L_{\text{ent}}(\beta)\quad\text{s.a.}\quad\Omega(\beta)\le d .$$
+
+$$
+\min_{\beta}\ L_{\text{ent}}(\beta)\quad\text{s.a.}\quad\Omega(\beta)\le d .
+$$
+
 Es un mínimo con una restricción $\Omega(\beta)-d\le0$; la regla de
 @opt-lagrangeano-general pone $+\mu$:
-$$\mathcal L(\beta,\mu)=L_{\text{ent}}(\beta)+\mu\,\bigl(\Omega(\beta)-d\bigr),\qquad\mu\ge0 .$$
+
+$$
+\mathcal L(\beta,\mu)=L_{\text{ent}}(\beta)+\mu\,\bigl(\Omega(\beta)-d\bigr),\qquad\mu\ge0 .
+$$
+
 Con $\mu$ fijo, $-\mu d$ no depende de $\beta$, y minimizar $\mathcal L$ en
 $\beta$ es resolver la **forma penalizada**
-$$\widehat\beta(\mu)\in\operatorname*{arg\,min}_{\beta}\ L_{\text{ent}}(\beta)+\mu\,\Omega(\beta).$$
+
+$$
+\widehat\beta(\mu)\in\operatorname*{arg\,min}_{\beta}\ L_{\text{ent}}(\beta)+\mu\,\Omega(\beta).
+$$
+
 Con ridge y $\mu>0$ el minimizador es único; con lasso puede haber
 varios (columnas colineales), y entonces `ajustar` devuelve el que da su
 algoritmo: hay otros con el mismo objetivo. $\mu$ grande ⇔ $d$ chico ⇔
@@ -131,7 +144,7 @@ resultado y la hipótesis de holgura del enunciado (Slater): un punto que
 cumpla la restricción con holgura. Con las tres $\Omega$ y $d>0$ lo hay:
 $\beta$ con solo intercepto tiene $\Omega=0<d$.
 
-5) Con convexidad y Slater, el teorema de dualidad convexa
+Por último, 5) con convexidad y Slater, el teorema de dualidad convexa
 (fuera del curso; aquí solo se enuncia, Boyd y Vandenberghe, 2004) da un
 $\mu\ge0$ con el que $\widehat\beta$ **minimiza**
 $\mathcal L(\cdot,\mu)=L_{\text{ent}}+\mu(\Omega-d)$, es decir,
@@ -139,7 +152,7 @@ $L_{\text{ent}}+\mu\Omega$, y con $\mu(\Omega(\widehat\beta)-d)=0$.
 
 Si $\Omega$ es derivable (ridge), «minimiza» es la estacionariedad
 $\nabla\mathcal L=0$ de @opt-kkt; si no (lasso), es la condición de la
-esquina que se deriva en @ml-c3-dem-soft-thresholding.
+esquina que se deriva en la demostración de @ml-c3-teo-soft-thresholding.
 
 Esto **extiende** @opt-teo-kkt; no es lo que la unidad 6 demostró. La figura
 `ml-c3-recta-de-apoyo` lo muestra para $d>0$: $\mu$ es la pendiente (con
@@ -191,7 +204,8 @@ por holgura complementaria (@opt-kkt). Restringir no mejora el mínimo libre
 cuando ese mínimo ya está permitido.
 :::
 
-> [!TIP] **Míralo correr: bloque 1 · Restringir es penalizar**
+> [!TIP]
+> **Míralo correr: bloque 1 · Restringir es penalizar**
 > Mueve el presupuesto y compara dónde queda el óptimo.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
@@ -223,8 +237,15 @@ La elástica conserva esquinas, pero curva sus lados.
 ::: definition {#ml-c3-def-ridge-lasso-elastica title="Ridge, lasso y red elástica"}
 Con $\beta_1,\dots$ los coeficientes de las columnas de $\Phi$ salvo el
 intercepto (en esta unidad, $\lVert\beta\rVert$ no incluye $\beta_0$):
-$$\Omega_2(\beta)=\lVert\beta\rVert_2^2=\sum_{j\ge1}\beta_j^2\ \text{(ridge)},\qquad\Omega_1(\beta)=\lVert\beta\rVert_1=\sum_{j\ge1}\lvert\beta_j\rvert\ \text{(lasso)},$$
-$$\Omega_\rho(\beta)=\rho\,\lVert\beta\rVert_1+(1-\rho)\,\lVert\beta\rVert_2^2,\quad0\le\rho\le1\ \text{(red elástica)}.$$
+
+$$
+\Omega_2(\beta)=\lVert\beta\rVert_2^2=\sum_{j\ge1}\beta_j^2\ \text{(ridge)},\qquad\Omega_1(\beta)=\lVert\beta\rVert_1=\sum_{j\ge1}\lvert\beta_j\rvert\ \text{(lasso)},
+$$
+
+$$
+\Omega_\rho(\beta)=\rho\,\lVert\beta\rVert_1+(1-\rho)\,\lVert\beta\rVert_2^2,\quad0\le\rho\le1\ \text{(red elástica)}.
+$$
+
 Las tres son el mismo lagrangeano con otra $\Omega$: $\rho=1$ es lasso y
 $\rho=0$ es ridge.
 :::
@@ -280,7 +301,11 @@ $\frac1n\sum_i x_i^2=1$ y $b=\frac1n\sum_i x_iy_i$, la pendiente de
 mínimos cuadrados. El objetivo
 $\frac1n\sum_i(y_i-\beta x_i)^2+\mu\,\Omega(\beta)$ es estrictamente
 convexo, así que su minimizador $\widehat\beta$ es único:
-$$\widehat\beta_{\text{lasso}}=\operatorname{sign}(b)\max\bigl(\lvert b\rvert-\mu/2,\ 0\bigr),\qquad\widehat\beta_{\text{ridge}}=\frac{b}{1+\mu}.$$
+
+$$
+\widehat\beta_{\text{lasso}}=\operatorname{sign}(b)\max\bigl(\lvert b\rvert-\mu/2,\ 0\bigr),\qquad\widehat\beta_{\text{ridge}}=\frac{b}{1+\mu}.
+$$
+
 Lasso vale exactamente 0 si $\lvert b\rvert\le\mu/2$; ridge nunca, si
 $b\ne0$. Lo mismo vale para **cada pendiente** cuando las columnas sin la
 constante están centradas y cumplen $\frac1n\Phi^{\mathsf T}\Phi=I$; la
@@ -324,11 +349,16 @@ $\mu(\rho\lvert\beta\rvert+(1-\rho)\beta^2)$:
 Ridge divide entre $1+\mu$: $(1.5,\ 0.2)$.
 Lasso resta el umbral sin cruzar cero: $(2.5,\ 0)$.
 La elástica combina ambos pasos:
-$$\frac{\operatorname{sign}(b)\max(\lvert b\rvert-\mu\rho/2,0)}{1+\mu(1-\rho)}.$$
+
+$$
+\frac{\operatorname{sign}(b)\max(\lvert b\rvert-\mu\rho/2,0)}{1+\mu(1-\rho)}.
+$$
+
 Da $(1.833,\ 0.1)$: el umbral es la mitad del de lasso y después encoge más.
 :::
 
-> [!TIP] **Míralo correr: bloque 2 · Encoger o anular**
+> [!TIP]
+> **Míralo correr: bloque 2 · Encoger o anular**
 > Mueve la pendiente sin penalizar y el precio. Busca cuándo aparece el cero.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
@@ -432,12 +462,14 @@ Con correlación el problema no se separa: cambiar una pendiente altera lo
 que conviene hacer con las demás (@ml-c3-obs-lasso-correlacionadas).
 :::
 
-> [!TIP] **Míralo correr: bloque 3 · Grado 12 y la U contra μ**
+> [!TIP]
+> **Míralo correr: bloque 3 · Grado 12 y la U contra μ**
 > Mueve el precio y compara la curva ajustada, los residuales y los errores.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
 
-> [!TIP] **Míralo correr: bloque 4 · Trayectorias**
+> [!TIP]
+> **Míralo correr: bloque 4 · Trayectorias**
 > Cambia la penalización e introduce la gemela. Explica qué conserva cada ajuste.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
@@ -471,7 +503,11 @@ $\beta_j/1000$. Con penalización sí cambian, porque
 $\Omega$ castiga distinto a $\beta_j/1000$ que a $\beta_j$: la misma $\mu$
 castiga distinto a cada variable. Por eso cada columna de $\Phi$, salvo el
 intercepto, se estandariza antes de penalizar,
-$$\widetilde x_{ij}=\frac{x_{ij}-\bar x_j}{s_j},$$
+
+$$
+\widetilde x_{ij}=\frac{x_{ij}-\bar x_j}{s_j},
+$$
+
 con la media $\bar x_j$ y la desviación $s_j$ **de entrenamiento** (de cada
 pliegue, en validación cruzada), nunca de todos los datos. La clase 5
 muestra por qué.
@@ -505,7 +541,8 @@ Se apaga después. Para expresar el mismo efecto, el coeficiente se divide entre
 El modelo cambió por una preferencia que nadie eligió.
 :::
 
-> [!TIP] **Míralo correr: bloque 6 · Estandarizar**
+> [!TIP]
+> **Míralo correr: bloque 6 · Estandarizar**
 > Cambia las unidades y compara las trayectorias antes y después de estandarizar.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
@@ -540,7 +577,11 @@ cualquier ajuste castigado, así que entrenamiento no tiene motivo para preferir
 ::: theorem {#ml-c3-teo-monotonia-mu title="Entrenamiento siempre prefiere menos μ"}
 Si $0\le\mu<\mu'$ y $\widehat\beta(\mu)$, $\widehat\beta(\mu')$
 minimizan $L_{\text{ent}}+\mu\,\Omega$ y $L_{\text{ent}}+\mu'\,\Omega$, entonces
-$$\Omega\bigl(\widehat\beta(\mu')\bigr)\le\Omega\bigl(\widehat\beta(\mu)\bigr)\qquad\text{y}\qquad L_{\text{ent}}\bigl(\widehat\beta(\mu)\bigr)\le L_{\text{ent}}\bigl(\widehat\beta(\mu')\bigr).$$
+
+$$
+\Omega\bigl(\widehat\beta(\mu')\bigr)\le\Omega\bigl(\widehat\beta(\mu)\bigr)\qquad\text{y}\qquad L_{\text{ent}}\bigl(\widehat\beta(\mu)\bigr)\le L_{\text{ent}}\bigl(\widehat\beta(\mu')\bigr).
+$$
+
 Si se deja que $L_{\text{ent}}$ elija $\mu$, elige la más chica.
 :::
 ::: proof {#ml-c3-dem-monotonia-mu of="ml-c3-teo-monotonia-mu"}
@@ -604,7 +645,8 @@ en el fondo y suben con $\mu$ grande. La monotonía de entrenamiento es
 un teorema; la U de los otros errores describe este ejemplo.
 :::
 
-> [!TIP] **Míralo correr: bloque 5 · Quién elige μ**
+> [!TIP]
+> **Míralo correr: bloque 5 · Quién elige μ**
 > Compara la menor pérdida de entrenamiento, el mínimo de CV y la regla de un EE.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
@@ -641,15 +683,26 @@ Comprueba con dos preguntas: si $d_1$ es enorme, ¿qué multiplicador debe valer
 ::: answer {#ml-c3-resp-final-lagrangeano-en-accion of="ml-c3-ej-final-lagrangeano-en-accion" title="Respuesta · Dos presupuestos, dos precios"}
 **1. Problema restringido.** Todas las componentes de $\beta$ son reales;
 el intercepto $\beta_0$ queda libre:
-$$\min_\beta L_{\text{ent}}(\beta)\quad\text{s.a.}\quad
-\sum_{j=2}^{12}\lvert\beta_j\rvert\le d_1,\qquad(\beta_1-4)^2\le d_2.$$
+
+$$
+\min_\beta L_{\text{ent}}(\beta)\quad\text{s.a.}\quad
+\sum_{j=2}^{12}\lvert\beta_j\rvert\le d_1,\qquad(\beta_1-4)^2\le d_2.
+$$
+
 
 **2. Lagrangeano.** Es un mínimo y ambas restricciones quedan $\le0$;
 los términos se suman:
-$$\mathcal L=L_{\text{ent}}+\mu_1\bigl(\sum_{j=2}^{12}\lvert\beta_j\rvert-d_1\bigr)+\mu_2\bigl((\beta_1-4)^2-d_2\bigr),\qquad\mu_1,\mu_2\ge0.$$
+
+$$
+\mathcal L=L_{\text{ent}}+\mu_1\bigl(\sum_{j=2}^{12}\lvert\beta_j\rvert-d_1\bigr)+\mu_2\bigl((\beta_1-4)^2-d_2\bigr),\qquad\mu_1,\mu_2\ge0.
+$$
 
 **3. Forma penalizada.** Quita las constantes respecto de $\beta$:
-$$L_{\text{ent}}+\mu_1\sum_{j=2}^{12}\lvert\beta_j\rvert+\mu_2(\beta_1-4)^2.$$
+
+$$
+L_{\text{ent}}+\mu_1\sum_{j=2}^{12}\lvert\beta_j\rvert+\mu_2(\beta_1-4)^2.
+$$
+
 Los parámetros son $\beta$; los hiperparámetros son $\mu_1,\mu_2$, o los presupuestos $d_1,d_2$.
 
 **4. Límites.** Con $\mu_2\to\infty$, $\widehat\beta_1\to4$.
@@ -664,7 +717,11 @@ Si la estandarización previa usó todos los datos, debes rehacerla dentro del p
 Con $\widetilde x_{i1}=(x_{i1}-\bar x_1)/s_1$, el coeficiente estandarizado
 es $\widetilde\beta_1=\beta_1s_1$, en minutos por desviación estándar.
 El intercepto absorbe el centrado; el 4 pasa a $4s_1$ y la restricción queda
-$$(\widetilde\beta_1-4s_1)^2\le d_2s_1^2.$$
+
+$$
+(\widetilde\beta_1-4s_1)^2\le d_2s_1^2.
+$$
+
 Como $s_1$ sale de entrenamiento, cambia con cada pliegue.
 :::
 
@@ -711,7 +768,7 @@ Para seguir las conexiones y las fuentes:
 - Restringir y reproyectar es otra manera de imponer el presupuesto (Goodfellow et al., 2016, §7.2).
 - Hastie, Tibshirani y Friedman, *The Elements of Statistical Learning*, 2.ª ed. (2009): §3.4, geometría del diamante; §7.10, regla de un EE.
 - Tibshirani (1996), lasso; Zou y Hastie (2005), red elástica; Hoerl y Kennard (1970), ridge.
-- Boyd y Vandenberghe, *Convex Optimization* (2004), cap. 5: dualidad, Slater y KKT convexo, usados en @ml-c3-dem-restringido-penalizado.
+- Boyd y Vandenberghe, *Convex Optimization* (2004), cap. 5: dualidad, Slater y KKT convexo, usados en la demostración de @ml-c3-teo-restringido-penalizado.
 
 ## Lo que hay que llevarse
 

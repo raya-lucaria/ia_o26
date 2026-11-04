@@ -30,7 +30,8 @@ tags: [aprendizaje-maquina, residuales, benchmark, regularizacion, lagrangeano]
 
 **En la clase 2 aprendiste a medir el error de generalización sin engañarte. Si ese error no te gusta, ¿cómo sabes qué cambiar, y cuándo basta con pedirle al modelo que sea más simple?**
 
-> [!TIP] **Míralo correr: lee el error y regulariza.**
+> [!TIP]
+> **Míralo correr: lee el error y regulariza.**
 > Recorre las páginas junto con sus notebooks:
 >
 > `06_leer_el_error`
