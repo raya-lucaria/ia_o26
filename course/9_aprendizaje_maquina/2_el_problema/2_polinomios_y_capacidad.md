@@ -55,7 +55,11 @@ Son polinomios que resuelven problemas distintos: copiar derivadas locales o rep
 
 ::: remark {#ml-c1-obs-taylor title="El polinomio de Taylor"}
 Si $f$ tiene $N+1$ derivadas continuas entre $x_0$ y $x$,
-$$f(x)=f(x_0)+f'(x_0)(x-x_0)+\dots+\frac{f^{(N)}(x_0)}{N!}(x-x_0)^N+\frac{f^{(N+1)}(\xi)}{(N+1)!}(x-x_0)^{N+1}$$
+
+$$
+f(x)=f(x_0)+f'(x_0)(x-x_0)+\dots+\frac{f^{(N)}(x_0)}{N!}(x-x_0)^N+\frac{f^{(N+1)}(\xi)}{(N+1)!}(x-x_0)^{N+1}
+$$
+
 para algún $\xi$ entre $x_0$ y $x$. El último término es el error. Si la
 derivada $N+1$ está acotada en ese segmento, el error es pequeño cerca de
 $x_0$: es una garantía **local**. Si las derivadas crecen con $N$, subir $N$
@@ -113,7 +117,11 @@ El subíndice indica solo el grado: $\phi_1(x)=(1,x)$ y $\phi_2(x)=(1,x,x^2)$; n
 ::: theorem {#ml-c1-teo-stone-weierstrass title="Stone–Weierstrass, para polinomios en un intervalo"}
 Sea $f$ continua en el intervalo cerrado $[x_{\min},x_{\max}]$ y
 $\phi_N(x)=(1,x,\dots,x^N)$. Entonces
-$$\lim_{N\to\infty}\ \min_{\beta\in\mathbb R^{N+1}}\ \max_{x_{\min}\le x\le x_{\max}}\ \bigl\lvert f(x)-\beta^{\mathsf T}\phi_N(x)\bigr\rvert=0 .$$
+
+$$
+\lim_{N\to\infty}\ \min_{\beta\in\mathbb R^{N+1}}\ \max_{x_{\min}\le x\le x_{\max}}\ \bigl\lvert f(x)-\beta^{\mathsf T}\phi_N(x)\bigr\rvert=0 .
+$$
+
 Es decir, para cualquier tolerancia hay un polinomio que se queda a menos de
 ella de $f$ en todo el intervalo.
 :::
@@ -162,7 +170,11 @@ El grado 4 combina 0.18 en entrenamiento con riesgo 0.44.
 ::: definition {#ml-c1-def-capacidad title="Espacio de hipótesis y capacidad"}
 El espacio de hipótesis es el conjunto de funciones entre las que el ajuste
 puede elegir. Para polinomios de grado a lo más $N$,
-$$\mathcal H_N=\bigl\{f_\beta(x)=\beta^{\mathsf T}\phi_N(x):\ \beta\in\mathbb R^{N+1}\bigr\},\qquad \mathcal H_1\subset\mathcal H_2\subset\cdots$$
+
+$$
+\mathcal H_N=\bigl\{f_\beta(x)=\beta^{\mathsf T}\phi_N(x):\ \beta\in\mathbb R^{N+1}\bigr\},\qquad \mathcal H_1\subset\mathcal H_2\subset\cdots
+$$
+
 La capacidad es qué tan variadas son las funciones de esa familia: más
 capacidad, más formas que puede seguir, incluido el ruido. Su versión formal
 para clasificación binaria es la dimensión VC: el mayor número de puntos tal
@@ -231,7 +243,11 @@ La U pertenece al experimento, no es una ley.
 La separación entre ambos errores mide cuánto difiere el desempeño observado del esperado en uso.
 
 ::: definition {#ml-c1-def-brecha title="Brecha de generalización"}
-$$\mathrm{brecha}(\widehat\beta)=R(\widehat\beta)-L_{\text{ent}}(\widehat\beta).$$
+
+$$
+\mathrm{brecha}(\widehat\beta)=R(\widehat\beta)-L_{\text{ent}}(\widehat\beta).
+$$
+
 :::
 
 La brecha suele crecer con la capacidad: es una observación experimental de la figura.
@@ -243,7 +259,11 @@ Supón que las $n_{\text{ent}}$ observaciones de entrenamiento son
 independientes y salen del mismo proceso que el despliegue, que $\ell\ge0$ y
 que $\widehat\beta\in\operatorname*{arg\,min}_\beta L_{\text{ent}}(\beta)$.
 Con la esperanza sobre la muestra de entrenamiento,
-$$E\bigl[L_{\text{ent}}(\widehat\beta)\bigr]\ \le\ \inf_\beta R(\beta)\ \le\ E\bigl[R(\widehat\beta)\bigr],$$
+
+$$
+E\bigl[L_{\text{ent}}(\widehat\beta)\bigr]\ \le\ \inf_\beta R(\beta)\ \le\ E\bigl[R(\widehat\beta)\bigr],
+$$
+
 así que $E\bigl[\mathrm{brecha}(\widehat\beta)\bigr]\ge0$.
 :::
 
@@ -303,7 +323,11 @@ Limitar grado no limita curvatura.
 
 ::: definition {#ml-c1-def-capacidad-como-restriccion title="La capacidad como restricción"}
 Con $\phi=\phi_{N_{\max}}$ fija, limitar el grado es resolver
-$$\min_\beta\ L_{\text{ent}}(\beta)\quad\text{s.a.}\quad \operatorname{grado}(f_\beta)\le N,$$
+
+$$
+\min_\beta\ L_{\text{ent}}(\beta)\quad\text{s.a.}\quad \operatorname{grado}(f_\beta)\le N,
+$$
+
 donde $\operatorname{grado}(f_\beta)$ es el mayor exponente con coeficiente
 distinto de cero. Es la forma $g(\beta)\le d$ de la unidad 6, con
 $\Omega(\beta)=\operatorname{grado}(f_\beta)$ como medida de capacidad y $d=N$
@@ -322,7 +346,11 @@ problema ya planteado: $\beta$. Un **hiperparámetro** es lo que fija ese
 problema —la familia, la representación, la cota $d$—: aquí, $N$. Ninguno
 se elige minimizando $L_{\text{ent}}$. Con uno que fija la capacidad, como
 $N$, se ve por qué: con familias anidadas,
-$$\min_{1\le N\le N_{\max}}\ \min_{\beta}\ L_{\text{ent}}(\beta\,;N)$$
+
+$$
+\min_{1\le N\le N_{\max}}\ \min_{\beta}\ L_{\text{ent}}(\beta\,;N)
+$$
+
 se alcanza en $N=N_{\max}$, la máxima capacidad (el conjunto de grados que
 lo alcanzan siempre contiene a $N_{\max}$ y puede contener grados menores
 empatados). Un hiperparámetro se elige con datos que no tocaron el ajuste.
