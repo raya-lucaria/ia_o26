@@ -511,9 +511,9 @@ def ml_c1_aprender_es_minimizar():
                               ax=abajo, tema="sitio")
         for ln in abajo.get_lines():
             if ln.get_gid() == "minimo":
-                ln.set_label(rf"mínimo: $\widehat{{\beta}}_1$ = {_num(b1, 2)}")
+                ln.set_label(f"mínimo: β̂₁ = {_num(b1, 2)}")
             else:
-                ln.set_label(r"$L_{\mathrm{ent}}$ al mover la pendiente")
+                ln.set_label("Lₑₙₜ al mover la pendiente")
         abajo.set_xlabel(r"pendiente $\beta_1$ (con $\beta_0$ fijo en su valor ajustado)")
         abajo.set_ylabel(r"$L_{\mathrm{ent}}(\beta_1)$")
         _leyenda(abajo, loc="upper center")
@@ -558,10 +558,10 @@ def ml_c1_piso():
                         fontweight="bold")
             for ln in ax.get_lines():
                 if ln.get_gid() == "piso":
-                    ln.set_label(rf"piso $R_{{\mathrm{{Bayes}}}} = \sigma_\varepsilon^2$ = {c['piso']:g}")
+                    ln.set_label(f"piso de Bayes = {c['piso']:g}")
             ax.set_ylim(0, tope)
             ax.set_ylabel("R (100 000 obs.)")
-            ax.set_title(rf"$\sigma_\varepsilon = {s:g}$", color=TEXTO, fontsize=11)
+            ax.set_title(rf"ruido $\sigma_\varepsilon = {s:g}$", color=TEXTO, fontsize=12.5)
             manejadores, rotulos = ax.get_legend_handles_labels()
             pares = [(h, r) for h, r in zip(manejadores, rotulos) if r.startswith("piso")]
             _leyenda(ax, handles=[h for h, _ in pares], labels=[r for _, r in pares],
