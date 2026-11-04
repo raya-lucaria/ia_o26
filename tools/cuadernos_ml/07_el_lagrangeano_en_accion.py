@@ -234,8 +234,8 @@ ml.laboratorio(bloque_5, con=ml.selector("elige con", {"L_ent": "ent", "L_val": 
                p=ml.selector("penalización", {"lasso": "l1", "ridge": "l2"}, "l1"))
 
 # %% [codigo] bloque-5-prueba
-#@title La prueba, una sola vez
 # abre-prueba: procedimiento fijado (lasso, CV5, un EE); se mira una vez
+#@title La prueba, una sola vez
 sel = seleccion_b5("cv", "un_ee", "l1")   # fijado antes; no cambia con los controles
 final, prueba = sel.modelo_final, DATOS_B5.prueba
 l_mod = (prueba["y"] - final.predecir(prueba)) ** 2

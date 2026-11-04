@@ -31,9 +31,11 @@ def bloque_1(modelo, sigma, donde, semilla):
                        omitir=["x2"], semilla=semilla)
     m = ml.ajustar(datos, phi=ml.columnas("x1"))
     df = datos.val if donde == "validación" else datos.ent
-    ml.dibujar_tres_paneles(m, df)
-    plt.show()
     e = df["y"] - m.predecir(df)
+    hist = ml.dibujar_tres_paneles(m, df).axes[1]      # el panel del medio
+    hist.axvspan(e.mean() - e.std(), e.mean() + e.std(), color="0.6", alpha=0.3)
+    hist.axvline(0, ls="--", color="0.3"); hist.axvline(e.mean(), color="0.1")
+    plt.show()
     media = ml.benchmarks(datos, df).loc["media", "cuadratica"]
     nombre = "val" if donde == "validación" else "ent"
     print(f"L_{nombre} = {ml.L(m, df):.3f}   ·   centro ē_{nombre} = {e.mean():.3f}"
