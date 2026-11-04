@@ -13,6 +13,9 @@ Lo que fijan, en el orden del contrato común (§5):
    visible, la reproducibilidad por semilla y los adelantos que lanzan.
 5. Las Phi, los casos borde de 1.0, las gráficas y la interactividad sin
    ipywidgets.
+6. Lo que trae 1.1 (O0b-c1, contrato §5.15 B): repetir, error_por_zona,
+   no_free_lunch y sus dos gráficas, el adelanto proceso_clasificacion con la
+   prueba de adelantos de §5.2, PROCESOS["recursivo"] y los casos 3, 4 y 5.
 
 Corre en menos de un minuto con el venv de S-lab.
 """
@@ -206,12 +209,16 @@ def test_toda_dibujar_termina_en_ax_y_tema():
 
 
 def test_claves_de_los_catalogos_de_1_0():
-    assert set(ml.PROCESOS) == {
+    claves_1_0 = _entradas()["1.0"]["__claves__"]
+    assert set(claves_1_0["PROCESOS"]) == {
         "entregas", "inverso", "mezcla_logs", "seno", "x1_mas_x2x3", "lluvia",
     }
+    assert set(claves_1_0["CASOS_BORDE"]) == {1, 2, 23}
+    # 1.1 (O0b-c1) agrega "recursivo" y los casos 3, 4 y 5; no quita nada
+    assert set(ml.PROCESOS) == set(claves_1_0["PROCESOS"]) | {"recursivo"}
     for prohibida in ("lineal", "ar1", "cola_larga"):
         assert prohibida not in ml.PROCESOS
-    assert set(ml.CASOS_BORDE) == {1, 2, 23}
+    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 23}
     assert all(isinstance(k, int) for k in ml.CASOS_BORDE)
     assert set(ml.ANALISIS_TALLER) == {1}
     assert ml.SENTIDO == {
@@ -231,8 +238,9 @@ def test_requiere_misma_x_y_mayor_o_igual():
 
 
 def test_version_y_cambios():
-    assert ml.VERSION == "1.0"
-    assert ml.VERSION in ml.CAMBIOS
+    assert ml.VERSION == "1.1"
+    assert {"1.0", "1.1"} <= set(ml.CAMBIOS)
+    assert set(_entradas()) == set(ml.CAMBIOS)
 
 
 def test_copia_en_assets_es_identica():
@@ -1183,3 +1191,259 @@ def test_la_guarda_de_compatibilidad_compara_parametro_a_parametro(vieja, nueva,
     else:
         with pytest.raises(AssertionError):
             _compatible({"g": vieja}, {"g": nueva})
+
+
+# ---------------------------------------------------------------------------
+# 9 · Versión 1.1 (O0b-c1, contrato §5.15 B, D-013b)
+# ---------------------------------------------------------------------------
+
+
+def test_las_funciones_nuevas_dicen_desde_cuando():
+    for nombre in ("repetir", "error_por_zona", "no_free_lunch", "dibujar_no_free_lunch",
+                   "dibujar_elecciones", "proceso_clasificacion"):
+        assert "Desde: 1.1 (clase 1)" in getattr(ml, nombre).__doc__, nombre
+    assert "Desde: 1.1 (clase 1)" in ml.PROCESOS["recursivo"].__doc__
+
+
+def test_repetir_es_determinista_y_apila():
+    def experimento(semilla):
+        rng = np.random.default_rng(semilla)
+        return {"media": float(rng.normal(size=10).mean()), "n": 10}
+
+    a = ml.repetir(experimento, repeticiones=7, semilla=3)
+    b = ml.repetir(experimento, repeticiones=7, semilla=3)
+    assert a.equals(b)
+    assert list(a.columns) == ["repeticion", "semilla", "media", "n"]
+    assert a["repeticion"].tolist() == list(range(7))
+    assert a["semilla"].tolist() == list(range(3, 10))
+    assert a.loc[2, "media"] == experimento(5)["media"]
+    assert not a.equals(ml.repetir(experimento, repeticiones=7, semilla=4))
+    with pytest.raises(TypeError, match="dict"):
+        ml.repetir(lambda s: s, repeticiones=2)
+    with pytest.raises(ValueError, match="semilla"):
+        ml.repetir(lambda s: {"semilla": s}, repeticiones=2)
+
+
+def test_error_por_zona_contra_la_cuenta_a_mano():
+    datos = ml.PROCESOS["entregas"](n=30)
+    m = ml.ajustar(datos)
+    b0, b1 = m.beta_gorro["1"], m.beta_gorro["x"]
+    tabla = ml.error_por_zona(m, datos, {"dentro": (0, 6), "fuera": (6, 9)}, puntos=2001)
+    assert list(tabla.columns) == ["zona", "desde", "hasta", "dif2", "sigma2_e", "R_zona"]
+    assert tabla["zona"].tolist() == ["dentro", "fuera"]
+    # (f − f̂)² = (a + c x)² con a = 10 − b0, c = 4 − b1; promedio exacto en [lo, hi]
+    a, c = 10 - b0, 4 - b1
+    for _, fila in tabla.iterrows():
+        lo, hi = fila["desde"], fila["hasta"]
+        exacto = a * a + a * c * (lo + hi) + c * c * (lo * lo + lo * hi + hi * hi) / 3
+        assert fila["dif2"] == pytest.approx(exacto, rel=1e-3)  # malla de 2001 puntos
+        assert fila["R_zona"] == pytest.approx(fila["dif2"] + 1.0, rel=1e-12)
+    # la zona de los datos, con x uniforme y despliegue igual, es ≈ R
+    assert tabla.loc[0, "R_zona"] == pytest.approx(ml.riesgo(m, datos), rel=0.03)
+    with pytest.raises(ValueError, match="una variable"):
+        ml.error_por_zona(ml.ajustar(ml.caso(1, omitir=None)), ml.caso(1, omitir=None),
+                          {"z": (0, 1)})
+
+
+def test_no_free_lunch_promedia_exactamente_un_medio():
+    from fractions import Fraction
+
+    tabla = ml.no_free_lunch()
+    assert list(tabla.columns) == ["funcion", "regla", "aciertos_fuera", "rugosidad"]
+    assert tabla["funcion"].nunique() == 256 and len(tabla) == 3 * 256
+    assert set(tabla["regla"]) == {"vecino", "mayoria", "siempre_1"}
+    for regla, trozo in tabla.groupby("regla"):
+        total = sum(Fraction(v) for v in trozo["aciertos_fuera"])
+        assert total / len(trozo) == Fraction(1, 2), regla
+    siempre = tabla[tabla["regla"] == "siempre_1"]
+    for r, trozo in siempre.groupby("rugosidad"):
+        assert sum(Fraction(v) for v in trozo["aciertos_fuera"]) / len(trozo) == Fraction(1, 2), r
+    assert tabla["rugosidad"].min() == 0 and tabla["rugosidad"].max() == 12
+    # desempate de la mayoría: entrenamiento (0, 3, 5, 6) con etiquetas 1, 1, 0, 0 → 1
+    funcion = (1 << 0) | (1 << 3)  # f(0) = f(3) = 1, todo lo demás 0
+    fila = tabla[(tabla["funcion"] == funcion) & (tabla["regla"] == "mayoria")].iloc[0]
+    assert fila["aciertos_fuera"] == 0.0  # predice 1 en 1, 2, 4, 7, donde f vale 0
+    # el vecino desempata por el índice menor: el 1 tiene a 0, 3 y 5 a distancia 1 → copia f(0)
+    # (1, 2 y 4 tienen al 0 entre sus vecinos a distancia 1; el 7 no: copia f(3) = 0)
+    vec = tabla[(tabla["funcion"] == 1) & (tabla["regla"] == "vecino")].iloc[0]
+    assert vec["aciertos_fuera"] == 0.25  # falla en 1, 2 y 4 (copia f(0) = 1), acierta en 7
+    with pytest.raises(ValueError):
+        ml.no_free_lunch(reglas=("adivina",))
+
+
+def test_dibujar_no_free_lunch_es_el_groupby():
+    tabla = ml.no_free_lunch()
+    ax = ml.dibujar_no_free_lunch(tabla)
+    for regla, trozo in tabla.groupby("regla"):
+        medias = trozo.groupby("rugosidad")["aciertos_fuera"].mean()
+        ln = [ln for ln in ax.get_lines() if ln.get_gid() == f"regla-{regla}"][0]
+        assert np.allclose(ln.get_xdata(), medias.index) and np.allclose(ln.get_ydata(), medias)
+        assert f"{trozo['aciertos_fuera'].mean():.3f}" in ln.get_label()
+    assert any(ln.get_gid() == "medio" for ln in ax.get_lines())
+
+
+def test_dibujar_elecciones_son_los_value_counts():
+    tabla = pd.DataFrame({"N_ent": [15, 15, 15, 14], "N_R": [4, 5, 4, 6]})
+    ejes = ml.dibujar_elecciones(tabla)
+    assert len(ejes) == 2
+    for ax, col in zip(ejes, ("N_ent", "N_R")):
+        alturas = {round(b.get_x() + b.get_width() / 2): b.get_height() for b in ax.patches}
+        assert alturas == tabla[col].value_counts().to_dict()
+    with pytest.raises(ValueError):
+        ml.dibujar_elecciones(tabla, columnas=("N_ent", "no_hay"))
+
+
+def test_proceso_clasificacion_oraculo_es_sigma_del_puntaje():
+    datos = ml.proceso_clasificacion(n=500)
+    assert datos.tarea == "clasificacion" and datos.K == 2 and list(datos.clases) == [0, 1]
+    assert datos.columnas_x == ["x1", "x2"]
+    assert len(datos.ent) == 300 and len(datos.val) == 100 and len(datos.prueba) == 100
+    real = datos.realidad
+    z = 1.5 * real["x1"] + 1.0 * real["x2"]
+    assert np.allclose(real["prob"], 1 / (1 + np.exp(-z)))
+    # la frecuencia de y = 1 sigue a prob
+    bandas = pd.cut(real["prob"], np.linspace(0, 1, 11))
+    tabla = real.groupby(bandas, observed=True).agg(p=("prob", "mean"), y=("y", "mean"))
+    assert np.allclose(tabla["p"], tabla["y"], atol=0.02)
+    assert "prob" not in datos.ent.columns
+    # estratificado: la proporción de y = 1 casi igual en los tres conjuntos
+    props = [d["y"].mean() for d in (datos.ent, datos.val, datos.prueba)]
+    assert max(props) - min(props) < 0.02
+    # un puntaje propio, ajustar y el piso logarítmico
+    propio = ml.proceso_clasificacion(n=400, x={"a": ml.uniforme(-2, 2)},
+                                      puntaje=lambda d: 3 * d["a"], separar="azar")
+    m = ml.ajustar(propio, tarea="clasificacion")
+    assert m.beta_gorro["a"] == pytest.approx(3, abs=1.2)
+    assert 0 < ml.piso(propio, "logaritmica") < ml.riesgo(m, propio, "logaritmica")
+    assert ml.proceso_clasificacion(semilla=1).ent.equals(ml.proceso_clasificacion(semilla=1).ent)
+
+
+@pytest.mark.parametrize("cambio", [
+    {"proporcion": 0.1}, {"ruido_etiquetas": 0.1}, {"K": 3},
+    {"faltantes": {"x1": (0.2, "azar")}}, {"ruido": ml.normal(0, 1)},
+    {"separar": "tiempo"}, {"separar": "grupo"},
+])
+def test_adelantos_de_proceso_clasificacion_lanzan_con_la_clase_4(cambio):
+    with pytest.raises(NotImplementedError, match="clase 4"):
+        ml.proceso_clasificacion(n=50, con_realidad=False, **cambio)
+
+
+def test_adelantos_de_proceso_clasificacion_de_la_clase_2_y_errores():
+    with pytest.raises(NotImplementedError, match="clase 2"):
+        ml.proceso_clasificacion(n=50, despliegue="futuro", con_realidad=False)
+    with pytest.raises(NotImplementedError, match="clase 2"):
+        ml.proceso_clasificacion(n=50, despliegue="otra_poblacion", deriva=lambda t: {},
+                                 con_realidad=False)
+    with pytest.raises(ValueError, match="deriva"):
+        ml.proceso_clasificacion(n=50, deriva=lambda t: {}, con_realidad=False)
+    with pytest.raises(ValueError):
+        ml.proceso_clasificacion(n=50, separar="temporal", con_realidad=False)
+    with pytest.raises(ValueError):
+        ml.proceso_clasificacion(n=50, K=1, con_realidad=False)
+
+
+def test_firma_de_proceso_clasificacion_es_la_de_5_5():
+    nombres = list(inspect.signature(ml.proceso_clasificacion).parameters)
+    assert nombres == [
+        "n", "x", "puntaje", "K", "puntajes", "proporcion", "ruido_etiquetas", "separar",
+        "fracciones", "despliegue", "deriva", "n_realidad", "semilla", "semilla_realidad",
+        "faltantes", "ruido", "con_realidad",
+    ]
+    defectos = {k: v.default for k, v in inspect.signature(ml.proceso_clasificacion).parameters.items()}
+    assert defectos["n"] == 500 and defectos["K"] == 2 and defectos["separar"] == "estratificado"
+    assert defectos["faltantes"] is None and defectos["ruido"] is None
+    assert defectos["con_realidad"] is True and defectos["ruido_etiquetas"] == 0.0
+
+
+def test_mutacion_mover_ruido_tras_con_realidad_rompe_la_superficie(monkeypatch):
+    esperado = _entradas()[ml.VERSION]
+
+    def movida(n=500, x=None, puntaje=None, K=2, puntajes=None, proporcion=None,
+               ruido_etiquetas=0.0, separar="estratificado", fracciones=(0.6, 0.2, 0.2),
+               despliegue="igual", deriva=None, n_realidad=100_000, semilla=0,
+               semilla_realidad=0, faltantes=None, con_realidad=True, ruido=None):
+        return None
+
+    monkeypatch.setattr(ml, "proceso_clasificacion", movida)
+    assert ml._superficie() != esperado
+
+
+def test_recursivo_es_una_serie_que_se_evalua_a_un_paso():
+    datos = ml.PROCESOS["recursivo"]()
+    assert datos.columnas_x == ["x", "y_anterior"] and datos.columnas_contexto == ["t"]
+    assert len(datos.ent) == 60 and len(datos.val) == 0 and len(datos.prueba) == 20
+    assert datos.ent["t"].tolist() == list(range(60))
+    assert datos.prueba["t"].tolist() == list(range(60, 80))
+    serie = pd.concat([datos.ent, datos.prueba])
+    assert np.all(np.diff(serie["x"]) > 0)  # x crece con el tiempo
+    assert serie["x"].iloc[0] == pytest.approx(1, abs=0.05)
+    assert serie["x"].iloc[-1] == pytest.approx(5, abs=0.05)
+    # y_anterior es el y observado un paso antes
+    assert np.allclose(serie["y_anterior"].iloc[1:].to_numpy(), serie["y"].iloc[:-1].to_numpy())
+    # f = 0.8·y_anterior + la mezcla de logaritmos de x; el residuo es el ruido
+    x = serie["x"]
+    g = x + np.log(x) + x * np.log(x) + 1 / x + x ** 1.3
+    assert np.allclose(datos.f(serie), 0.8 * serie["y_anterior"] + g)
+    assert datos.sigma2_e == 1.0 and ml.piso(datos) == pytest.approx(1.0)
+    # realidad: el tramo de entrenamiento; despliegue: el futuro, a un paso
+    assert datos.realidad["t"].max() == 59 and datos.despliegue["t"].min() == 60
+    assert datos.despliegue["x"].min() > datos.ent["x"].max() - 0.05
+    desp = datos.despliegue
+    assert np.mean((desp["y"] - desp["f"]) ** 2) == pytest.approx(1.0, abs=0.03)
+    m_tiempo = ml.ajustar(datos, phi=ml.columnas("x", "y_anterior"))
+    assert ml.riesgo(m_tiempo, datos) < 1.5
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        m_poli = ml.ajustar(datos, phi=ml.polinomio(4))
+    assert ml.riesgo(m_poli, datos) > 5 * ml.riesgo(m_tiempo, datos)
+    assert ml.PROCESOS["recursivo"](semilla=2).ent.equals(ml.PROCESOS["recursivo"](semilla=2).ent)
+    with pytest.raises(ValueError, match="recursivo"):
+        ml.PROCESOS["recursivo"](separar="azar")
+
+
+def test_casos_3_4_y_5_se_rompen_a_la_vista():
+    # caso 3: ningún polinomio de grado <= 10 alcanza a (1, 1/x)
+    for n in (20, 60):
+        datos = ml.caso(3, n=n)
+        assert len(datos.ent) == n
+        r_buena = ml.riesgo(ml.ajustar(datos, phi=ml.columnas("1/x")), datos)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            r_poli = min(ml.riesgo(ml.ajustar(datos, phi=ml.polinomio(N)), datos)
+                         for N in range(1, 11))
+        assert r_poli >= 1.5 * r_buena, (n, r_poli, r_buena)
+    # caso 4: sin escalar, más columnas y L_ent sube, con aviso de mal condicionamiento
+    datos = ml.caso(4)
+    assert len(datos.ent) == 100
+    m25, avisos = _avisos(ml.ajustar, datos, phi=ml.polinomio(25, escalar=False))
+    m10 = ml.ajustar(datos, phi=ml.polinomio(10, escalar=False))
+    assert ml.L(m25, datos.ent) > ml.L(m10, datos.ent)
+    assert any("mal condicionada" in a for a in avisos)
+    assert not any("pseudoinversa" in a for a in avisos)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        L_esc = [ml.L(ml.ajustar(datos, phi=ml.polinomio(N)), datos.ent) for N in (10, 15, 20, 25)]
+    assert all(b <= a + 1e-9 for a, b in zip(L_esc, L_esc[1:]))
+    # caso 5: el seno con N = 7 acierta dentro y falla fuera
+    datos = ml.caso(5)
+    assert len(datos.ent) == 50
+    m = ml.ajustar(datos, phi=ml.polinomio(7))
+    tabla = ml.error_por_zona(m, datos, {"dentro": (0, 2), "fuera": (2, 3)}).set_index("zona")
+    assert tabla.loc["fuera", "R_zona"] >= 10 * tabla.loc["dentro", "R_zona"]
+    for numero in (3, 4, 5):
+        cb = ml.CASOS_BORDE[numero]
+        assert cb.numero == numero and cb.clase == 1 and cb.pregunta.endswith("?")
+    assert ml.caso("seno_extrapolar").ent.equals(ml.caso(5).ent)
+
+
+def test_galeria_corre_los_casos_nuevos_con_sus_opciones(monkeypatch):
+    monkeypatch.setenv("ML_LAB_PRUEBA", "1")
+    for numero in (3, 4, 5):
+        s = io.StringIO()
+        with redirect_stdout(s):
+            ml.galeria(1, casos=[numero])
+        assert ml.CASOS_BORDE[numero].pregunta in s.getvalue()
+    s = io.StringIO()
+    with redirect_stdout(s):
+        ml.galeria(1, casos=[5])
+    assert "fuera" in s.getvalue()

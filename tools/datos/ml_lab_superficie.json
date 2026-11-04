@@ -98,5 +98,115 @@
     1
    ]
   }
+ },
+ "1.1": {
+  "VERSION": "constante:str",
+  "CAMBIOS": "constante:dict",
+  "NoAplica": "excepcion",
+  "requiere": "(version_minima)",
+  "Pieza": {
+   "__init__": "()",
+   "muestrear": "(self, n, rng)"
+  },
+  "Mecanismo": {
+   "__init__": "()",
+   "muestrear": "(self, df, rng)",
+   "preparar": "(self, n, rng)",
+   "varianza_en": "(self, df)"
+  },
+  "normal": "(media=0.0, desv=1.0)",
+  "uniforme": "(a=0.0, b=1.0)",
+  "categorica": "(categorias, probs=None)",
+  "Datos": {
+   "__init__": "(ent, val, prueba, realidad, despliegue, f, f_visible, columnas_x, columnas_contexto, oraculos, omitidas, tarea, K, clases, sigma2_e, separacion, despliegue_como, semilla, semilla_realidad, descripcion, columnas_universo=None)"
+  },
+  "proceso": "(n=200, x={'x': uniforme(a=0.0, b=1.0)}, f=<function _f_por_omision>, ruido=normal(media=0.0, desv=1.0), correlacion=None, endogeno=0.0, omitir=None, escala=None, faltantes=None, separar='azar', fracciones=(0.6, 0.2, 0.2), despliegue='igual', deriva=None, n_realidad=100000, semilla=0, semilla_realidad=0, con_realidad=True)",
+  "proceso_clasificacion": "(n=500, x={'x1': normal(media=0.0, desv=1.0), 'x2': normal(media=0.0, desv=1.0)}, puntaje=<function _puntaje_por_omision>, K=2, puntajes=None, proporcion=None, ruido_etiquetas=0.0, separar='estratificado', fracciones=(0.6, 0.2, 0.2), despliegue='igual', deriva=None, n_realidad=100000, semilla=0, semilla_realidad=0, faltantes=None, ruido=None, con_realidad=True)",
+  "anillos": "(n=400, radio_interior=1.0, radio_exterior=2.0, grosor=0.3, ruido=0.1, separar='estratificado', semilla=0, fracciones=(0.6, 0.2, 0.2))",
+  "PROCESOS": "constante:dict",
+  "CasoBorde": {
+   "__init__": "(numero, nombre, clase, construir, pregunta, que_se_ve, opciones=None)"
+  },
+  "CASOS_BORDE": "constante:dict",
+  "caso": "(numero_o_nombre, **cambios)",
+  "Phi": {
+   "__init__": "()",
+   "ajustar": "(self, df_ent)"
+  },
+  "polinomio": "(N, variable='x', escalar=True)",
+  "columnas": "(*expresiones)",
+  "polares": "(x1='x1', x2='x2', *, incluir=('r', 'theta'))",
+  "periodicas": "(variable='x', periodo=1.0, armonicos=1)",
+  "dummies": "(variable, quitar_una=True, codificacion='base')",
+  "combinar": "(*phis, intercepto=True)",
+  "taylor": "(funcion='seno', centro=0.5, N=3)",
+  "Modelo": {
+   "__init__": "()",
+   "L": "(self, df, perdida=None, pesos=None)",
+   "Phi": "(self, df)",
+   "n_parametros": "(self)",
+   "predecir": "(self, df)",
+   "predecir_p": "(self, df)",
+   "predecir_prob": "(self, df)"
+  },
+  "ajustar": "(datos_o_df, phi=None, mu=0.0, penalizacion=None, rho=0.5, pesos=None, perdida=None, intercepto=True, columnas_x=None, tarea=None)",
+  "ajustar_otro": "(datos_o_df, familia='vecinos', columnas_x=None, tarea=None, **hiperparametros)",
+  "perdida": "(y, y_gorro, tipo='cuadratica')",
+  "Criterio": "alias:str",
+  "SENTIDO": "constante:dict",
+  "evaluar": "(modelo, df, criterio=None, pesos=None)",
+  "L": "(modelo, df, perdida=None, pesos=None)",
+  "riesgo": "(modelo, datos, criterio=None, contra='despliegue')",
+  "desempeno": "(modelo, datos, criterio=None, contra='despliegue')",
+  "piso": "(datos, perdida='cuadratica')",
+  "mse": "(y, y_gorro)",
+  "aciertos": "(y, y_gorro)",
+  "benchmarks": "(datos_o_df, df_eval, tarea=None, criterios=None)",
+  "repetir": "(experimento, repeticiones=500, semilla=0)",
+  "error_por_zona": "(modelo, datos, zonas, puntos=1000, variable='x')",
+  "no_free_lunch": "(reglas=('vecino', 'mayoria', 'siempre_1'), bits=3, entrenamiento=(0, 3, 5, 6))",
+  "curva_capacidad": "(datos, candidatos, conjuntos=('ent', 'realidad'), k=None)",
+  "beta_verdadero": "(datos, phi)",
+  "ROLES": "constante:dict",
+  "tema": "(nombre='claro')",
+  "dibujar_proceso": "(datos, mostrar_f=True, conjuntos=('ent',), color_por=None, realizaciones=1, puntos_realidad=0, ax=None, tema='claro')",
+  "dibujar_ajuste": "(modelos, datos=None, ventana=None, ax=None, tema='claro')",
+  "dibujar_frontera": "(modelo, df, vista='cartesianas', ax=None, tema='claro')",
+  "imprimir_Phi": "(modelo, df, filas=5)",
+  "dibujar_curva_capacidad": "(tabla, brecha=True, zonas=True, optimo=True, piso=None, benchmark=None, marcar=None, ax=None, tema='claro')",
+  "dibujar_tres_paneles": "(modelo, df, ax=None, tema='claro')",
+  "dibujar_piso": "(datos, modelos, perdida='cuadratica', ax=None, tema='claro')",
+  "dibujar_perdida_1d": "(datos_o_df, phi, coeficiente, valores, ax=None, tema='claro')",
+  "dibujar_elecciones": "(tabla, columnas=('N_ent', 'N_R'), ax=None, tema='claro')",
+  "dibujar_no_free_lunch": "(tabla, ax=None, tema='claro')",
+  "laboratorio": "(funcion, **controles)",
+  "deslizador": "(etiqueta, minimo, maximo, paso, valor)",
+  "selector": "(etiqueta, opciones, valor=None)",
+  "interruptor": "(etiqueta, valor=False)",
+  "galeria": "(clase, casos=None, **opciones)",
+  "taller": "(datos, clase, **opciones)",
+  "ANALISIS_TALLER": "constante:dict",
+  "__claves__": {
+   "PROCESOS": [
+    "entregas",
+    "inverso",
+    "lluvia",
+    "mezcla_logs",
+    "recursivo",
+    "seno",
+    "x1_mas_x2x3"
+   ],
+   "CASOS_BORDE": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    23
+   ],
+   "ANALISIS_TALLER": [
+    1
+   ]
+  }
  }
 }
