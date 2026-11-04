@@ -1027,4 +1027,58 @@ def cifras_c3_interaccion():
 
 
 # --- tramo completo ---
+# --------------------------------------------------- tarea 3 · cincuenta variables ---
+# El proceso que escribe el bloque 1 de tarea_3_cincuenta_variables.py, copiado
+# aquí para medir sus criterios (clase_3.md §10.6.1): 50 normales, 5 útiles con
+# coeficientes (3, −2, 1.5, 1, 0.5) en unidades estándar, x6 gemela de x1 con
+# corr 0.95, ruido N(0, 1), n = 300 con 0.6/0.2/0.2, escalas 10^((j mod 10) − 4).
+# Las escalas bajan una década respecto del plan (1e-3 … 1e6): con 1e-2 la útil
+# x1 (coeficiente 3) sobrevivía sin estandarizar en μ = 0.01 y el criterio (b)
+# no se cumplía con ninguna rejilla que dejara el mínimo estandarizado adentro
+# (DECISIÓN prog-c3-6).
+
+J_TAREA, N_TAREA = 50, 300
+COEF_TAREA = {"x1": 3.0, "x2": -2.0, "x3": 1.5, "x4": 1.0, "x5": 0.5}
+MUS_TAREA = [float(m) for m in np.logspace(-2, 1, 16)]
+
+
+def escalas_tarea():
+    return {f"x{j}": 10.0 ** ((j % 10) - 4) for j in range(1, J_TAREA + 1)}
+
+
+def datos_tarea(semilla=0, con_realidad=False):
+    ml = _ml()
+    x = {f"x{j}": ml.normal() for j in range(1, J_TAREA + 1)}
+    f = lambda d: sum(c * d[v] for v, c in COEF_TAREA.items())  # noqa: E731
+    return ml.proceso(n=N_TAREA, x=x, f=f, ruido=ml.normal(0, 1),
+                      correlacion={("x1", "x6"): 0.95}, escala=escalas_tarea(),
+                      semilla=semilla, con_realidad=con_realidad)
+
+
+@functools.lru_cache(maxsize=None)
+def seleccion_tarea(semilla=0, estandarizar=True):
+    """Lasso elegido con CV₅ (mínimo; orden μ decreciente) sobre la rejilla de la
+    tarea: (μ del mínimo, μ de un EE, útiles vivas en el modelo final)."""
+    ml = _ml()
+    cols = ml.columnas(*[f"x{j}" for j in range(1, J_TAREA + 1)])
+    phi = ml.estandarizar(cols) if estandarizar else cols
+    cand = {mu: (lambda df, mu=mu: ml.ajustar(df, phi=phi, mu=mu, penalizacion="l1"))
+            for mu in MUS_TAREA}
+    with _silencio():
+        sel = ml.elegir(datos_tarea(semilla), cand, con="cv", k=5, regla="minimo",
+                        orden_complejidad=sorted(MUS_TAREA, reverse=True))
+    b = sel.modelo_final.beta_gorro
+    return sel.elegido, sel.elegido_un_ee, tuple(u for u in COEF_TAREA if b[u] != 0)
+
+
+@functools.lru_cache(maxsize=None)
+def cifras_c3_tarea():
+    """Lo que la página de la tarea y su guion citan del montaje (no de resultados)."""
+    n_ent = int(round(0.6 * N_TAREA))
+    out = {"n": N_TAREA, "n_ent": n_ent, "J": J_TAREA, "utiles": len(COEF_TAREA),
+           "mus": len(MUS_TAREA), "mu_min": MUS_TAREA[0], "mu_max": MUS_TAREA[-1]}
+    out["cita"] = {"n": str(N_TAREA), "n_ent": str(n_ent), "J": str(J_TAREA),
+                   "utiles": str(len(COEF_TAREA)), "corr_gemela": "0.95"}
+    return out
+
 # --- fin tramo completo ---

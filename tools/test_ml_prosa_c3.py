@@ -201,4 +201,46 @@ def test_los_guiones_no_tienen_secciones_vacias(ruta):
 
 
 # --- tramo completo ---
+TAREA = CLASE / "3_tarea.md"
+NBTAREA = GUIONES / "tarea_3_cincuenta_variables.texto.md"
+ENTREGA = "Se entrega el `.ipynb` por Canvas, con las celdas corridas"
+
+
+def test_tarea_cita_el_montaje_y_la_rubrica():
+    texto = pagina(TAREA)
+    t = c.cifras_c3_tarea()["cita"]
+    comprobar(texto, [t["J"], t["utiles"], t["corr_gemela"]], "3_tarea.md")
+    s = secciones(texto)
+    assert set(s) >= {1, 2, 3, 4, 5}, f"3_tarea.md: secciones {sorted(s)}"
+    puntos = [int(x) for x in re.findall(r"\|\s*(\d{1,3})\s*\|", s[4])]
+    assert sorted(puntos) == sorted([10, 15, 25, 20, 15, 15]) and sum(puntos) == 100, puntos
+
+
+def test_tarea_sin_respuestas_ni_fechas_y_con_la_frase_de_entrega():
+    texto = pagina(TAREA)
+    assert ENTREGA in texto
+    assert "La fecha la da el profesor en clase" in texto
+    assert not re.search(r"^:::\s*(answer|hint|exercise)\b", texto, re.M)
+    assert "tarea_3_cincuenta_variables.ipynb" in texto
+
+
+def test_el_guion_de_la_tarea_no_da_respuestas_y_cita_el_montaje():
+    texto = leer(NBTAREA)
+    partes = re.split(r"(?m)^### celda: ", texto)[1:]
+    claves = [p.splitlines()[0].strip() for p in partes]
+    assert not any(k.endswith(("-explica", "-respuesta")) for k in claves), claves
+    assert "<details" not in texto
+    vacias = [p.splitlines()[0] for p in partes if not "\n".join(p.splitlines()[1:]).strip()]
+    assert not vacias, f"secciones vacías {vacias}"
+    assert ENTREGA in texto
+    t = c.cifras_c3_tarea()["cita"]
+    comprobar(texto, [t["J"], t["n_ent"], t["corr_gemela"]], "guion de la tarea")
+
+
+def test_el_indice_completo_lleva_la_fila_de_la_tarea_sin_enlazarla():
+    texto = pagina(INDICE)
+    tabla = texto.split("{#ml-c3-tab-recorrido", 1)[1].split("\n:::", 1)[0]
+    assert "Tarea 3" in tabla and "aparte" in tabla
+    assert "tarea_3_cincuenta_variables" in texto
+
 # --- fin tramo completo ---

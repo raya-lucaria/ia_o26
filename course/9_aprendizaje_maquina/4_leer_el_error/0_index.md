@@ -80,9 +80,10 @@ Regularizar es una respuesta posible al diagnóstico; no corrige todas las fuent
 |---|---:|---|
 | Leer el error | 65 | `06` |
 | El lagrangeano en acción | 75 | `07` |
+| Tarea 3 | aparte | `tarea_3` |
 :::
 
-El recorrido suma 140 minutos.
+El recorrido suma 140 minutos; la tarea se hace aparte.
 
 1. [[ml-leer-el-error|Leer el error]]
 2. [[ml-lagrangeano-en-accion|El lagrangeano en acción]]
@@ -98,6 +99,11 @@ Contrastas el diagnóstico con una muestra enorme para reconocer lo que los resi
 Observas el efecto en los coeficientes y eliges $\mu$ con validación cruzada, estandarizando con entrenamiento.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
+
+**Tarea 3 · `tarea_3_cincuenta_variables`.** Es la tarea para trabajar en casa (~150 min).
+Encuentras su página en el menú de la clase como «Tarea 3».
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/tarea_3_cincuenta_variables.ipynb)
 
 ## Qué no cubre esta clase
 
