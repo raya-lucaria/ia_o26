@@ -217,7 +217,7 @@ El grado 2 queda fuera: su media 11.37 supera 11.02, aunque su EE sea 1.45.
 El primero que entra es el 6. En esta semilla ambas reglas coinciden; la regla no siempre baja el grado.
 
 La caída de $L_{\text{ent}}$ recuerda @ml-c1-teo-optimismo-entrenamiento.
-La CV primero baja y luego sube; la página siguiente de la clase explica esa forma.
+La CV primero baja y luego sube; [[ml-sesgo-y-varianza|Sesgo y varianza]] explica esa forma.
 El elegido reajustado tiene $R=27.3$, frente al mejor $R=11.0$ del grado 4, que la elección no vio.
 El grado 6 se dobla en los bordes. La brecha de @ml-c1-def-brecha sigue siendo $R-L_{\text{ent}}$, no CV menos entrenamiento.
 
@@ -476,4 +476,4 @@ El EE de CV también requiere cuidado: en 200 muestras, reporta 2.2 en promedio 
 Con seis positivos y cinco pliegues, el azar deja algún pliegue sin positivos el 88 % de las veces; estratificar, el 0 %.
 Con tres positivos, siempre quedan al menos dos pliegues vacíos, estratifiques o no.
 
-Continúa con [[ml-tarea-2|Tarea 2]].
+Continúa con [[ml-sesgo-y-varianza|Sesgo y varianza]].
