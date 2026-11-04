@@ -9,8 +9,8 @@ tags: [aprendizaje-maquina, riesgo, representacion, capacidad]
 prerequisites: [ml-clase-0-que-es-aprender]
 ---
 
-> [!IMPORTANT]
-> ### ▶ ABRE LOS NOTEBOOKS EN COLAB
+> [!WARNING]
+> **▶▶ ABRE LOS NOTEBOOKS EN COLAB ◀◀**
 >
 > **Notebook 01 · ¿Qué es f?** y **Notebook 02 · Polinomios, capacidad y supuestos**. Corren en tu navegador, sin instalar nada.
 >
