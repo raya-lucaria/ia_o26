@@ -5,3 +5,6 @@
 # El símbolo es una macro (\gamma), una letra griega (γ) o «re:<regex>» para
 # una forma compuesta. Vale desde esta clase en adelante. Una línea sin
 # fuente hace fallar tools/test_notacion_ml.py.
+\pi | D-015 (plan-c1-15: π en el ejercicio final de P2 y en la tarea 1)
+\sin | D-015 (plan-c1-15: el seno 4 + 2 sen 5x de PROCESOS["seno"], P2 §1 y §7)
+\cos | D-015 (plan-c1-15: cos πx en el ejercicio final de P2)
