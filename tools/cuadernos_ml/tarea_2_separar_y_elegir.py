@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore")
 # que la muestra». Por eso la separación es al azar: 80 % desarrollo, 20 % prueba.
 datos = ml.proceso(n=150, x={"x": ml.uniforme(1, 5)}, f=lambda d: 10 + 12 / d.x,
                    ruido=ml.normal(0, 2), fracciones=(0.8, 0, 0.2), semilla=SEMILLA)
-print(f"desarrollo: {len(datos.ent)} entregas · prueba: {len(datos.prueba)} (cerrada)")
+print(f"desarrollo: {len(datos.ent)} entregas · prueba: {150 - len(datos.ent)} (cerrada)")
 ml.dibujar_proceso(datos, mostrar_f=False)
 plt.show()
 
@@ -60,6 +60,9 @@ print(sel.tabla.round(3).to_string(index=False))
 N_hat = sel.elegido if REGLA == "minimo" else sel.elegido_un_ee
 print(f"CV_5: el mínimo elige N = {sel.elegido}; la de un EE, N = {sel.elegido_un_ee}")
 print(f"uso la regla «{REGLA}»: N̂ = {N_hat}")
+t = sel.tabla.set_index("candidato")
+print(f"benchmark (N = 0, la media de entrenamiento): CV {t.loc[0, 'valor']:.2f} ±"
+      f" {t.loc[0, 'ee']:.2f}")
 ml.dibujar_cv(sel)
 plt.show()
 
@@ -97,7 +100,7 @@ lejanas["y"] = 10 + 12 / lejanas["x"] + rng.normal(0, 2, 2)
 auditar = pd.concat([datos.ent, lejanas], ignore_index=True)
 auditar.attrs = datos.ent.attrs
 for k in (3, 5, 20):
-    res = {N: ml.validacion_cruzada(auditar, candidatos[N], k=k) for N in (1, 4, 8)}
+    res = {N: ml.validacion_cruzada(auditar, candidatos[N], k=k) for N in (0, 1, 4, 8)}
     ml.dibujar_cajas_pliegues(res)
     plt.yscale("log"); plt.title(f"k = {k}: {13 * k + 1} ajustes para 13 grados")
     plt.show()

@@ -63,6 +63,7 @@ MODELO_B2 = construir(4)(DATOS_B2)                     # congelado: ya no se aju
 D = DATOS_B2.despliegue                                 # el visor de la realidad
 PERDIDAS_B2 = np.asarray(ml.perdida(D["y"], MODELO_B2.predecir(D)), float)
 R_B2 = PERDIDAS_B2.mean()
+BENCH_B2 = ml.benchmarks(DATOS_B2, D).loc["media"].iloc[0]   # la media de ent
 TAMANOS = [5, 10, 20, 50, 100, 200, 400]
 
 
@@ -78,6 +79,7 @@ def bloque_2(n_prueba, intervalos):
     plt.show()
     print(f"R (despliegue, 100 000) = {R_B2:.2f}; desviación de las 500 L_prueba:"
           f" {np.std(L, ddof=1):.2f}")
+    print(f"benchmark (la media de entrenamiento) en el despliegue = {BENCH_B2:.2f}")
     if intervalos:
         print(f"L_prueba ± 2 EE cubre R en {cubre / 5:.0f} % de las 500 pruebas")
 
@@ -186,6 +188,8 @@ def fabrica_n(n):
 
 TABLAS_B5 = {n: ml.reparto(fabrica_n(n), construir(4), repeticiones=100,
                            semilla=SEMILLA) for n in (60, 240, 960)}
+BENCH_B5 = {n: ml.benchmarks(d, d.despliegue).loc["media"].iloc[0]
+            for n, d in ((n, fabrica_n(n)(SEMILLA)) for n in (60, 240, 960))}
 
 
 def bloque_5(fraccion, n_total):
@@ -196,6 +200,7 @@ def bloque_5(fraccion, n_total):
     print(f"n = {n_total}, {fraccion:.0%} a prueba: R medio del modelo ="
           f" {g['R'].mean():.2f}; desviación de L_prueba − R ="
           f" {g['error'].std(ddof=1):.2f}")
+    print(f"benchmark (la media de entrenamiento, una muestra) = {BENCH_B5[n_total]:.2f}")
 
 
 ml.laboratorio(bloque_5,
