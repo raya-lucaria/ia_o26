@@ -499,4 +499,22 @@ def test_interaccion_caso_7():
 
 
 # --- tramo completo ---
+
+def test_datos_de_la_tarea():
+    """clase_3.md §10.6.1, sobre 10 semillas: (a) lasso estandarizado elegido con
+    CV₅ conserva ≥ 4 de las 5 útiles en ≥ 8; (b) sin estandarizar, con la misma
+    rejilla, apaga al menos una útil de escala chica (x1 o x2) en ≥ 8."""
+    a = [len(c.seleccion_tarea(s, True)[2]) >= 4 for s in range(10)]
+    b = [bool({"x1", "x2"} - set(c.seleccion_tarea(s, False)[2])) for s in range(10)]
+    assert a[0] and sum(a) >= 8, a
+    assert b[0] and sum(b) >= 8, b
+
+
+def test_cifras_de_la_tarea():
+    t = c.cifras_c3_tarea()
+    assert t["cita"] == {"n": "300", "n_ent": "180", "J": "50", "utiles": "5",
+                         "corr_gemela": "0.95"}
+    d = c.datos_tarea(0)
+    assert len(d.ent) == 180 and len(d.val) == 60 and len(d.prueba) == 60
+
 # --- fin tramo completo ---
