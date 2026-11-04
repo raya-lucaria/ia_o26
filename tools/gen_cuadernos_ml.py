@@ -63,8 +63,9 @@ CUADERNOS_HERRAMIENTA = {"_humo": 1}
 
 URL_COLAB = ("https://colab.research.google.com/github/raya-lucaria/ia_o26/"
              "blob/main/course/9_aprendizaje_maquina/_assets/{stem}.ipynb")
-BADGE = ("[![Abrir en Colab](https://colab.research.google.com/assets/"
-         "colab-badge.svg)]({url})")
+# Badge grande a propósito: el profesor lo pidió visible desde lejos al proyectar.
+BADGE = ('<a href="{url}" target="_blank"><img src="https://colab.research.google.com/'
+         'assets/colab-badge.svg" alt="Abrir en Colab" width="300"></a>')
 URL_LAB = ("https://raw.githubusercontent.com/raya-lucaria/ia_o26/main/"
            "course/9_aprendizaje_maquina/_assets/ml_lab.py")
 
