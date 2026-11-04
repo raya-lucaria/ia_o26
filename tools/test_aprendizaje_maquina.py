@@ -35,12 +35,14 @@ import subprocess
 import sys
 import warnings
 from contextlib import redirect_stdout
+from types import SimpleNamespace
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.colors import to_rgba  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import pytest  # noqa: E402
@@ -229,10 +231,12 @@ def test_claves_de_los_catalogos_de_1_0():
     assert set(_entradas()["1.2"]["__claves__"]["PROCESOS"]) >= {"entregas_curvas"}
     for prohibida in ("lineal", "ar1", "cola_larga"):
         assert prohibida not in ml.PROCESOS
-    # 1.3 (clase 3) agrega los casos 6 a 12 y 24 y el taller 3
-    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24}
+    # 1.3 (clase 3) agrega los casos 6 a 12 y 24 y el taller 3; 1.5 (clase 4), 17, 18, 22,
+    # 25 y el taller 4
+    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                                   22, 23, 24, 25}
     assert all(isinstance(k, int) for k in ml.CASOS_BORDE)
-    assert set(ml.ANALISIS_TALLER) == {1, 2, 3}
+    assert set(ml.ANALISIS_TALLER) == {1, 2, 3, 4}
     # 1.4 agrega las métricas de la clase 4
     assert ml.SENTIDO == {
         "cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max",
@@ -252,8 +256,8 @@ def test_requiere_misma_x_y_mayor_o_igual():
 
 
 def test_version_y_cambios():
-    assert ml.VERSION == "1.4"
-    assert {"1.0", "1.1", "1.2", "1.3", "1.4"} <= set(ml.CAMBIOS)
+    assert ml.VERSION == "1.5"
+    assert {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"} <= set(ml.CAMBIOS)
     assert set(_entradas()) == set(ml.CAMBIOS)
 
 
@@ -855,7 +859,8 @@ def test_casos_de_1_0_se_rompen_a_la_vista():
     assert ml.ajustar(c2).beta_gorro["x1"] == pytest.approx(4.0, abs=1.0)
     assert ml.piso(c2) > 9 * ml.piso(ml.caso(2, omitir=None))
     for numero, caso in ml.CASOS_BORDE.items():
-        dueña = 2 if 13 <= numero <= 16 else 3 if 6 <= numero <= 12 or numero == 24 else 1
+        dueña = (2 if 13 <= numero <= 16 else 3 if 6 <= numero <= 12 or numero == 24
+                 else 4 if numero in (17, 18, 22, 25) else 1)
         assert caso.numero == numero and caso.clase == dueña
         assert caso.pregunta.endswith("?") and caso.que_se_ve
 
@@ -3689,3 +3694,853 @@ def test_dibujar_calibracion_humo():
     ax = ml.dibujar_calibracion({"sin pesos": tab}, verdadera=ver)
     assert {ln.get_gid() for ln in ax.lines} >= {"diagonal", "verdadera", "calibracion-0"}
     ml.dibujar_calibracion(tab, histograma=False, tema="sitio")
+
+
+# ---------------------------------------------------------------------------
+# 9 · Lo que trae 1.5 (segundo tramo del lote de la clase 4)
+# ---------------------------------------------------------------------------
+
+
+def _fraude_1d(n=300, semilla=0, ruido=False):
+    """Una variable: separable (puntaje 1000·x) o con ruido (puntaje 2·x)."""
+    f = (lambda d: 2.0 * d["x"]) if ruido else (lambda d: 1000.0 * d["x"])
+    return ml.proceso_clasificacion(n=n, x={"x": ml._DosUniformes(0.2, 1.0)}, puntaje=f,
+                                    semilla=semilla, n_realidad=2000)
+
+
+def test_ajustes_por_mu_es_trayectorias_y_nunca_reajusta(monkeypatch):
+    d = _fraude_1d()
+    phi = ml.estandarizar(ml.columnas("x"))
+    mus = [1e-3, 1e-2, 1e-1]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        aj = ml.ajustes_por_mu(d, phi, "l2", mus)
+        tr = ml.trayectorias(d, phi, "l2", mus)
+    pd.testing.assert_frame_equal(aj.tabla, tr)
+    assert aj.mus == tuple(mus)
+    for mu in mus:
+        assert aj.interceptos[mu] == aj.modelos[mu].beta_gorro["1"]
+    # la Φ guardada es la aprendida con ent: transformar val con ella da lo mismo
+    m = aj.modelo(1e-2)
+    eta = m.Phi(d.val).to_numpy() @ m.beta_gorro.to_numpy()
+    assert 1 / (1 + np.exp(-eta)) == pytest.approx(m.predecir_p(d.val))
+    medias = d.ent["x"].mean()
+    assert m.phi.media_["x"] == pytest.approx(medias) if hasattr(m.phi, "media_") else True
+
+    def prohibido(*a, **k):
+        raise AssertionError("no debe ajustar")
+
+    monkeypatch.setattr(ml, "ajustar", prohibido)
+    monkeypatch.setattr(ml, "ajustar_otro", prohibido)
+    aj.modelo(1e-2).predecir_prob(d.val)
+    with pytest.raises(ValueError, match="rejilla precalculada"):
+        aj.modelo(0.5)
+    fig = ml.dibujar_separable({"separable": aj}, mu=1e-2, datos={"separable": d})
+    der = fig.axes[1]
+    punto = [ln for ln in der.lines if ln.get_gid() == "separable-punto-0"][0]
+    norma = float(np.sqrt((aj.tabla.loc[np.isclose(aj.tabla["mu"], 1e-2), "valor"] ** 2).sum()))
+    assert punto.get_ydata()[0] == pytest.approx(norma)
+    assert der.get_yscale() == "linear"
+    with pytest.raises(ValueError, match="rejilla precalculada"):
+        ml.dibujar_separable({"separable": aj}, mu=0.5)
+    ml.dibujar_separable({"separable": aj}, mu=[1e-3, 1e-1], tema="sitio")
+
+
+def test_ajustes_por_mu_en_softmax_y_con_pesos():
+    d = ml.PROCESOS["mensajes3"](n=900, con_realidad=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        aj = ml.ajustes_por_mu(d, ml.estandarizar(ml.columnas("x1", "x2")), "l2", [0.01, 1.0],
+                               pesos="balanceado")
+    assert aj.modelos[0.01].pesos is not None
+    assert list(aj.interceptos.columns) == [0, 1, 2]
+    assert aj.tabla["coeficiente"].str.contains("clase").all()
+    norma = aj.tabla.groupby("mu")["valor"].apply(lambda v: np.sqrt((v ** 2).sum()))
+    assert norma[1.0] < norma[0.01]
+
+
+def test_separable_la_norma_sube_por_decada_sin_explotar():
+    d = _fraude_1d(n=40)
+    con = _fraude_1d(n=200, ruido=True)
+    phi = ml.estandarizar(ml.columnas("x"))
+    mus = [1e-6, 1e-5, 1e-4, 1e-3]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        sep = ml.ajustes_por_mu(d, phi, "l2", mus).tabla.set_index("mu")["valor"].abs()
+        ruido = ml.ajustes_por_mu(con, phi, "l2", mus).tabla.set_index("mu")["valor"].abs()
+    subidas = -np.diff(sep.to_numpy())  # de μ chica a grande la norma baja
+    assert np.all(subidas > 0.3)
+    assert np.all(sep.to_numpy()[:-1] / sep.to_numpy()[1:] < 5)  # nunca ×10 por década
+    assert abs(ruido.iloc[0] - ruido.iloc[1]) < 0.05
+
+
+def test_perfil_en_beta_convexo_y_a_escalones():
+    d = ml.PROCESOS["fraude"](n=200, proporcion=0.3, con_realidad=False)
+    t = ml.perfil_en_beta(d.ent, "x1", np.linspace(-1, 4, 61))
+    perdida = t[t["criterio"] == "logaritmica"]["valor"].to_numpy()
+    assert np.all(np.diff(perdida, 2) > -1e-9)
+    for c in ("aciertos", "mcc"):
+        assert t[t["criterio"] == c]["valor"].nunique() <= len(d.ent) + 1
+    assert set(t.columns) == {"beta1", "criterio", "valor"}
+
+
+def test_contribucion_por_clase_suma_y_pesos_balanceados():
+    d = ml.PROCESOS["fraude"](n=1000, proporcion=0.05, con_realidad=False)
+    m = ml.ajustar(d)
+    for pesos in (None, "balanceado"):
+        t = ml.contribucion_por_clase(m, d.ent, pesos=pesos)
+        assert t["contribucion"].sum() == pytest.approx(m.L(d.ent, pesos=pesos))
+    t = ml.contribucion_por_clase(m, d.ent, pesos="balanceado")
+    assert t["fraccion_peso"].to_numpy() == pytest.approx([0.5, 0.5])
+    assert t["fraccion_casos"].sum() == pytest.approx(1)
+
+
+def test_efecto_de_pesos_a_los_dos_lados_del_maximo():
+    d = ml.PROCESOS["fraude"](n=20_000, proporcion=0.05)
+    razones = [1, 2, 3, 5, 8, 12, 19, 30, 50, 100]
+    t = ml.efecto_de_pesos(d, razones)
+    salto = t["beta0"] - t["beta0"].iloc[0]
+    assert salto.to_numpy() == pytest.approx(t["ln_razon"].to_numpy(), abs=0.2)
+    assert (t["coincidencia"] > 0.98).all()
+    imax = int(t["mcc_tau05"].idxmax())
+    assert 0 < imax < len(t) - 1
+    assert t["mcc_tau05"].max() - t["mcc_tau05"].iloc[-1] > 0.1
+    balanceada = (1 - 0.05) / 0.05
+    jbal = int(t["aciertos_balanceados_tau05"].idxmax())
+    cerca = int(np.argmin(np.abs(np.log(t["razon"]) - math.log(balanceada))))
+    assert abs(jbal - cerca) <= 1
+    assert np.all(np.diff(t["aciertos_tau05"].to_numpy()) <= 1e-9)
+
+
+def test_metricas_vs_proporcion_dispersion_no_depende_de_repeticiones():
+    def corre(rep):
+        return ml.metricas_vs_proporcion([0.01], pesos=("balanceado",), metricas=("mcc",),
+                                         contra=("despliegue", "val"), repeticiones=rep,
+                                         tamanos_val=(120, 3000), repeticiones_val=150)
+    for rep in (1, 2):
+        t = corre(rep)
+        v = t[(t["conjunto"] == "val") & (t["modelo"] == "balanceado")].set_index("tamano")
+        assert v.loc[120, "desv"] > 3 * v.loc[3000, "desv"]
+    desp = t[(t["conjunto"] == "despliegue") & (t["modelo"] == "balanceado")]
+    assert np.isfinite(desp["ee"]).all() and np.isfinite(desp["desv_entre_modelos"]).all()
+    assert set(t["modelo"]) == {"balanceado", "moda"}
+
+
+def test_metricas_vs_proporcion_pesos_contra_sin_pesos_a_1_por_ciento():
+    t = ml.metricas_vs_proporcion([0.01], n=2000, repeticiones=3)
+    d = t[t["conjunto"] == "despliegue"].set_index(["modelo", "metrica"])["media"]
+    # (el MCC no: con pesos balanceados a 1 % puede quedar igual o abajo; lo mide cifras_c4)
+    assert d["balanceado", "aciertos_balanceados"] > d["sin pesos", "aciertos_balanceados"]
+    assert d["balanceado", "aciertos"] < d["sin pesos", "aciertos"]
+    assert d["moda", "mcc"] == 0.0
+
+
+def test_casos_de_la_clase_4():
+    assert {17, 18, 22, 25} <= set(ml.CASOS_BORDE)
+    assert all(ml.CASOS_BORDE[k].clase == 4 for k in (17, 18, 22, 25))
+    a, b = ml.caso(18), ml.PROCESOS["fraude"](n=1000, proporcion=0.01)
+    for parte in ("ent", "val", "prueba"):
+        pd.testing.assert_frame_equal(getattr(a, parte), getattr(b, parte))
+    t = ml.benchmarks(a, a.despliegue, criterios=("aciertos", "mcc"))
+    assert t.loc["moda", "aciertos"] == pytest.approx((a.despliegue["y"] == 0).mean())
+    assert t.loc["moda", "mcc"] == 0.0
+    v25, n25 = ml.caso(25), ml.caso("rara_en_el_centro")
+    pd.testing.assert_frame_equal(v25.ent, n25.ent)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        lin = ml.ajustar(v25, phi=ml.estandarizar(ml.columnas("x1", "x2")), mu=1e-4,
+                         penalizacion="l2", pesos="balanceado")
+        cua = ml.ajustar(v25, phi=ml.estandarizar(ml._phi_taller_c4("cuadratica", ["x1", "x2"])),
+                         mu=1e-4, penalizacion="l2", pesos="balanceado")
+    assert ml.desempeno(lin, v25, "mcc") < 0.15 < 0.5 < ml.desempeno(cua, v25, "mcc")
+    # poblacional: la regla óptima para aciertos > 0.75 y la balanceada > 0.7
+    real = v25.realidad
+    y = real["y"].to_numpy()
+    assert ml.mcc(y, (real["prob"] >= 0.5).astype(int), clases=[0, 1]) > 0.75
+    assert ml.mcc(y, (real["prob"] >= 0.1).astype(int), clases=[0, 1]) > 0.7
+    d22 = ml.caso(22)
+    m22 = ml.ajustar(d22)
+    a22 = ml.desempeno(m22, d22, "aciertos")
+    assert a22 <= 0.75 + 2 * math.sqrt(0.75 * 0.25 / len(d22.despliegue))
+    d17 = ml.caso(17)
+    with pytest.warns(UserWarning, match="separan"):
+        m17 = ml.ajustar(d17)
+    assert ml.aciertos(d17.ent["y"], m17.predecir(d17.ent)) == 1.0
+
+
+def test_taller_4_mapa_de_reservas(monkeypatch):
+    d = ml.PROCESOS["fraude"](n=900, proporcion=0.2)
+    vistos = {"benchmarks": [], "elegir": [], "recalibrar": [], "evaluar": [],
+              "incertidumbre": [], "conformal": []}
+    for nombre in vistos:
+        original = getattr(ml, nombre)
+
+        def espia(*a, _n=nombre, _o=original, **k):
+            vistos[_n].append((a, k))
+            return _o(*a, **k)
+
+        monkeypatch.setattr(ml, nombre, espia)
+    with warnings.catch_warnings(record=True) as avisos:
+        warnings.simplefilter("always")
+        salida = io.StringIO()
+        with redirect_stdout(salida):
+            ml.taller(d, 4)
+    texto = salida.getvalue()
+    assert "por clase" in texto  # separación estratificada
+    (cal_a, _), = [(a, k) for a, k in vistos["conformal"]]
+    cal = cal_a[1]
+    i_cal = set(cal.index)
+    assert i_cal <= set(d.val.index) and not (i_cal & set(d.ent.index))
+    for nombre in ("benchmarks", "elegir", "recalibrar", "evaluar", "incertidumbre"):
+        for a, k in vistos[nombre]:
+            for x in list(a) + list(k.values()):
+                if isinstance(x, pd.DataFrame):
+                    assert not (set(x.index) & i_cal), nombre
+                    assert not (set(x.index) & set(d.prueba.index)), nombre
+    (ba, bk), = vistos["benchmarks"]
+    assert bk["criterios"] == ("mcc", "aciertos_balanceados", "aciertos", "logaritmica")
+    val_b = ba[1]
+    assert set(val_b.index) <= set(d.val.index) and not (set(val_b.index) & i_cal)
+    assert not [a for a in avisos if "estratificada fija" in str(a.message)]
+
+
+def test_taller_4_avisos_por_clase_k_grupo_y_tiempo():
+    d = ml.PROCESOS["fraude"](n=900, proporcion=0.2)
+    with pytest.warns(UserWarning, match="estratificada fija"):
+        with redirect_stdout(io.StringIO()):
+            ml.taller(d, 4, pesos=(None,), por_clase=False)
+    pocos = ml.PROCESOS["fraude"](n=300, proporcion=0.0167, semilla=3)
+    raros = int((pocos.ent["y"] == 1).sum())
+    if 2 <= raros < 5:
+        with pytest.warns(UserWarning, match=f"k = {raros}"):
+            with redirect_stdout(io.StringIO()):
+                ml.taller(pocos, 4, pesos=(None,))
+    g = ml.proceso_clasificacion(n=900, ruido=ml.efecto_grupo(40, 1.0, 0.5), separar="grupo",
+                                 proporcion=0.3)
+    with pytest.warns(UserWarning, match="no hay garantía por filas"):
+        with redirect_stdout(io.StringIO()):
+            ml.taller(g, 4, pesos=(None,), mu=0.01)
+    t = ml.proceso_clasificacion(n=600, ruido=ml.ar1(0.5, 0.5), separar="tiempo",
+                                 proporcion=0.3)
+    with pytest.warns(UserWarning, match="no se sostiene"):
+        with redirect_stdout(io.StringIO()):
+            ml.taller(t, 4, pesos=(None,), mu=0.01)
+    cal, resto = ml.partir(g.val, 1 / 3, como="grupo", semilla=g.semilla + 4)
+    a, b = ml.partir(resto, 0.5, como="grupo", semilla=g.semilla + 5)
+    for otra in (g.ent, a, b):
+        assert set(cal["grupo"]).isdisjoint(otra["grupo"])
+
+
+def test_galeria_4_sin_widgets():
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with redirect_stdout(io.StringIO()) as salida:
+            ml.galeria(4)
+    assert "Caso 17" in salida.getvalue()
+
+
+# --- 9b · Las gráficas de la clase 4 (1.5; redactadas por Codex, revisadas aquí) ---
+
+
+@pytest.fixture(scope="module")
+def binario():
+    datos = ml.PROCESOS["fraude"](n=600, proporcion=0.2)
+    modelo = ml.ajustar(datos)
+    return datos, modelo, ml.conformal(modelo, datos.val, delta=0.1)
+
+
+@pytest.fixture(scope="module")
+def multiclase():
+    datos = ml.PROCESOS["mensajes3"](n=3000)
+    modelo = ml.ajustar(datos)
+    return datos, modelo, ml.conformal(modelo, datos.val, delta=0.1, por_clase=True)
+
+
+@pytest.fixture(scope="module")
+def regresion():
+    datos = ml.PROCESOS["entregas"](n=300)
+    modelo = ml.ajustar(datos)
+    return datos, modelo, ml.conformal(modelo, datos.val, delta=0.1)
+
+
+@pytest.fixture
+def perfil():
+    return pd.DataFrame([
+        {"beta1": b, "criterio": criterio, "valor": valor}
+        for b in [2., -1., 0., 1.]
+        for criterio, valor in [("logaritmica", (b - 0.5) ** 2 + 0.3),
+                                ("aciertos", 0.6 + b * 0.05), ("mcc", b * 0.1)]
+    ], columns=["beta1", "criterio", "valor"])
+
+
+@pytest.fixture
+def contribuciones():
+    return {"sin pesos": pd.Series([19., 1.], index=[0, 1]),
+            "balanceado": pd.Series([3., 7.], index=[0, 1])}
+
+
+@pytest.fixture
+def pesos():
+    razones = np.array([0.25, 1., 4., 16.])
+    return pd.DataFrame({
+        "razon": razones, "ln_razon": np.log(razones),
+        "beta0": -1.4 + 0.95 * np.log(razones),
+        "pendientes": [np.array([1., -0.7])] * 4,
+        "p_promedio": razones / (4 + razones), "prob_real": 0.2,
+        "mcc_tau05": [0.3, 0.5, 0.6, 0.4],
+        "mcc_umbral_equivalente": [0.31, 0.5, 0.61, 0.41],
+        "aciertos_balanceados_tau05": [0.6, 0.7, 0.8, 0.7],
+        "aciertos_tau05": [0.83, 0.86, 0.8, 0.65],
+        "mcc_moda": 0., "aciertos_balanceados_moda": 0.5,
+        "aciertos_moda": 0.8, "coincidencia": [0.99, 1., 0.99, 0.98],
+    })
+
+
+@pytest.fixture
+def proporciones():
+    filas = []
+    for metrica in ("mcc", "aciertos_balanceados", "aciertos", "logaritmica"):
+        for p in (0.01, 0.1, 0.5):
+            referencia = "proporcion" if metrica == "logaritmica" else "moda"
+            for modelo in ("sin pesos", "balanceado", referencia):
+                filas.append(dict(proporcion=p, modelo=modelo, metrica=metrica,
+                                  conjunto="despliegue", tamano=np.nan, media=0.6 + p / 10,
+                                  ee=0.01, desv=np.nan, desv_entre_modelos=0.03))
+            if metrica != "logaritmica":
+                for n in (50, 500):
+                    filas.append(dict(proporcion=p, modelo="balanceado", metrica=metrica,
+                                      conjunto="val", tamano=n, media=0.65 + p / 10,
+                                      ee=np.nan, desv=0.1 if n == 50 else 0.02,
+                                      desv_entre_modelos=np.nan))
+    return pd.DataFrame(filas, columns=["proporcion", "modelo", "metrica", "conjunto", "tamano",
+                                        "media", "ee", "desv", "desv_entre_modelos"])
+
+
+def artista(fig, gid):
+    encontrados = fig.findobj(lambda a: a.get_gid() == gid)
+    assert len(encontrados) == 1, (gid, len(encontrados))
+    return encontrados[0]
+
+
+NOMBRES = ["umbral", "perfil_en_beta", "contribucion_por_clase", "efecto_de_pesos",
+           "promedios", "cobertura_por_clase", "metricas_vs_proporcion", "confusion",
+           "conformal", "roc_pr"]
+
+
+@pytest.mark.parametrize("tema", ["claro", "sitio"])
+@pytest.mark.parametrize("nombre", NOMBRES)
+def test_humo_temas_y_ejes(nombre, tema, binario, perfil, contribuciones, pesos, proporciones,
+                          monkeypatch):
+    datos, m, cf = binario
+    df = datos.prueba
+    y, g = df["y"], m.predecir(df)
+    serie = ml.por_clase("aciertos", y, g, clases=list(m.clases))
+    argumentos = {
+        "umbral": (m, df), "perfil_en_beta": (perfil,),
+        "contribucion_por_clase": (contribuciones,), "efecto_de_pesos": (pesos,),
+        "promedios": (serie, y.value_counts()), "cobertura_por_clase": (cf, df),
+        "metricas_vs_proporcion": (proporciones,),
+        "confusion": (ml.matriz_confusion(y, g),), "conformal": (cf, df),
+        "roc_pr": (m.predecir_p(df), y),
+    }
+    def no_ajustar(*args, **kwargs):
+        pytest.fail("este dibujo no debe ajustar modelos")
+    monkeypatch.setattr(ml, "ajustar", no_ajustar)
+    n = {"umbral": 2, "efecto_de_pesos": 2, "metricas_vs_proporcion": 4, "roc_pr": 2}.get(nombre, 1)
+    fig, ejes = plt.subplots(1, n)
+    resultado = getattr(ml, f"dibujar_{nombre}")(*argumentos[nombre], ax=ejes, tema=tema)
+    assert resultado is (fig if n > 1 else ejes)
+    assert fig.get_facecolor() == to_rgba(ml._TEMAS[tema]["fondo"])
+    for a in fig.axes:
+        assert a.get_facecolor() == to_rgba(ml._TEMAS[tema]["panel"])
+        assert a.xaxis.label.get_color() == ml._TEMAS[tema]["texto"]
+    fig.canvas.draw()
+
+
+@pytest.mark.parametrize("nombre", NOMBRES)
+def test_firma_y_docstring(nombre):
+    funcion = getattr(ml, f"dibujar_{nombre}")
+    parametros = list(inspect.signature(funcion).parameters.values())
+    assert [(p.name, p.default) for p in parametros[-2:]] == [("ax", None), ("tema", "claro")]
+    assert "Desde: 1.5 (clase 4)." in funcion.__doc__
+    assert "Ejemplo:" in funcion.__doc__
+    assert len(funcion.__doc__.splitlines()) <= 8
+
+
+def test_umbral_perdida_invariante_metricas_y_disposicion(binario):
+    datos, m, _ = binario
+    df = datos.prueba
+    fig = ml.dibujar_umbral(m, df, tau=0.237, tau_elegido=0.41)
+    otro = ml.dibujar_umbral(m, df, tau=0.9)
+    assert fig.axes[0].get_title() == otro.axes[0].get_title()
+    assert fig.axes[0].get_title() == f"pérdida logarítmica: {ml.L(m, df):.3f} (no depende de τ)"
+    assert fig.axes[0].get_position().y0 > fig.axes[1].get_position().y1
+    assert artista(fig, "umbral-elegido").get_xdata() == [0.41, 0.41]
+    p, y = m.predecir_p(df), df["y"]
+    for nombre, funcion in (("mcc", ml.mcc), ("a_bal", ml.aciertos_balanceados),
+                            ("aciertos", ml.aciertos)):
+        curva = artista(fig, f"curva-{nombre}")
+        np.testing.assert_allclose(curva.get_xdata(), np.arange(1, 100) / 100)
+        def evaluar(tau):
+            g = np.where(p >= tau, m.clases[1], m.clases[0])
+            return funcion(y, g) if nombre == "aciertos" else funcion(y, g, clases=list(m.clases))
+        np.testing.assert_allclose(curva.get_ydata(), [evaluar(t) for t in curva.get_xdata()])
+        punto = artista(fig, f"actual-{nombre}")
+        np.testing.assert_allclose(punto.get_data(), [[0.237], [evaluar(0.237)]])
+    for c in m.clases:
+        barras = fig.findobj(lambda a: a.get_gid() == f"histograma-clase-{c}")
+        assert sum(b.get_height() for b in barras) == (y == c).sum()
+
+
+def test_umbral_perdida_sin_pesos(binario):
+    datos, _, _ = binario
+    m = ml.ajustar(datos, pesos={0: 1., 1: 4.})
+    fig = ml.dibujar_umbral(m, datos.prueba)
+    perdida = ml.log_loss(datos.prueba["y"], m.predecir_p(datos.prueba))
+    assert f"{perdida:.3f}" in fig.axes[0].get_title()
+
+
+def test_perfil_ordena_y_separa_perdida(perfil):
+    ax = ml.dibujar_perfil_en_beta(perfil)
+    for criterio, filas in perfil.groupby("criterio"):
+        curva = artista(ax.figure, f"perfil-{criterio}")
+        filas = filas.sort_values("beta1")
+        np.testing.assert_allclose(curva.get_xdata(), filas["beta1"])
+        np.testing.assert_allclose(curva.get_ydata(), filas["valor"])
+        assert (curva.axes is ax) == (criterio != "logaritmica")
+
+
+def test_contribuciones_normalizacion_y_porcentajes(contribuciones):
+    contribuciones["pequeño"] = pd.Series([96., 4.], index=[0, 1])
+    ax = ml.dibujar_contribucion_por_clase(contribuciones)
+    for i, s in enumerate(contribuciones.values()):
+        base = 0
+        for c, fraccion in (s / s.sum()).items():
+            barra = artista(ax.figure, f"contribucion-{i}-clase-{c}")
+            assert barra.get_height() == pytest.approx(fraccion)
+            assert barra.get_y() == pytest.approx(base)
+            base += fraccion
+        assert base == pytest.approx(1)
+    assert len(ax.texts) == 5  # el tramo de exactamente 4 % no lleva texto
+    assert ax.get_ylabel() == "fracción de L_ent"
+
+
+def test_contribuciones_alinea_clases_ausentes():
+    ax = ml.dibujar_contribucion_por_clase({"a": pd.Series([1., 3.], index=[0, 1]),
+                                           "b": pd.Series([2.], index=[1])})
+    assert artista(ax.figure, "contribucion-1-clase-0").get_height() == 0
+    assert artista(ax.figure, "contribucion-1-clase-1").get_height() == 1
+
+
+def test_efecto_pesos_escalas_y_referencias(pesos):
+    fig = ml.dibujar_efecto_de_pesos(pesos, razon=4)
+    np.testing.assert_allclose(artista(fig, "cambio-intercepto").get_ydata(), 0.95 * pesos["ln_razon"])
+    referencia = artista(fig, "recta-pendiente-uno")
+    np.testing.assert_allclose(referencia.get_xdata(), referencia.get_ydata())
+    assert referencia.get_color() == ml._color("realidad", "claro")
+    assert referencia.get_label() == "recta de pendiente 1"
+    promedio = artista(fig, "probabilidad-promedio")
+    np.testing.assert_allclose(promedio.get_xdata(), pesos["razon"])
+    np.testing.assert_allclose(promedio.get_ydata(), pesos["p_promedio"])
+    np.testing.assert_allclose(artista(fig, "probabilidad-real").get_ydata(), [0.2, 0.2])
+    assert promedio.axes.get_xscale() == "log"
+    for metrica in ("mcc", "aciertos_balanceados", "aciertos"):
+        np.testing.assert_allclose(artista(fig, f"pesos-{metrica}").get_ydata(), pesos[f"{metrica}_tau05"])
+        linea = artista(fig, f"moda-{metrica}")
+        assert linea.get_linestyle() == ":"
+        assert linea.get_color() == ml._color("benchmark", "claro")
+        np.testing.assert_allclose(linea.get_ydata(), pesos[f"{metrica}_moda"].iloc[0])
+    marcas = fig.findobj(lambda a: a.get_gid() == "razon-elegida")
+    np.testing.assert_allclose(sorted(a.get_xdata()[0] for a in marcas), [np.log(4), 4, 4])
+
+
+@pytest.mark.parametrize("tema", ["claro", "sitio"])
+def test_efecto_pesos_fronteras_ajustes_y_umbrales(pesos, binario, tema, monkeypatch):
+    datos, _, _ = binario
+    original, llamadas, modelos = ml.ajustar, [], []
+    def ajustar(*args, **kwargs):
+        llamadas.append((args, kwargs))
+        modelo = original(*args, **kwargs)
+        modelos.append(modelo)
+        return modelo
+    monkeypatch.setattr(ml, "ajustar", ajustar)
+    fig = ml.dibujar_efecto_de_pesos(pesos, razon=4, datos=datos, tema=tema)
+    assert len(llamadas) == 2
+    assert llamadas[0][0][0] is datos
+    assert llamadas[0][1] == {"pesos": {0: 1., 1: 4.}}
+    assert llamadas[1][1] == {}
+    for m, gid, tau in zip(modelos, ["frontera-pesos", "frontera-equivalente"], [0.5, 0.2]):
+        contorno = artista(fig, gid)
+        vertices = np.concatenate([p.vertices for p in contorno.get_paths()])
+        assert len(vertices) > 10
+        np.testing.assert_allclose(m.predecir_p(pd.DataFrame(vertices, columns=["x1", "x2"])),
+                                   tau, atol=0.002)
+    fig.canvas.draw()
+
+
+def test_promedios_identidades_y_soporte(binario):
+    datos, m, _ = binario
+    y, g = datos.prueba["y"], m.predecir(datos.prueba)
+    serie = ml.por_clase("aciertos", y, g, clases=list(m.clases))
+    soporte = y.value_counts().iloc[::-1]
+    ax = ml.dibujar_promedios(serie, soporte)
+    for como in ("macro", "ponderado"):
+        valor = ml.promediar("aciertos", y, g, como, clases=list(m.clases))
+        np.testing.assert_allclose(artista(ax.figure, f"promedio-{como}").get_xdata(), valor)
+    alturas = np.array([b.get_height() for b in ax.patches])
+    np.testing.assert_allclose(alturas, 0.15 + 0.7 * soporte.reindex(serie.index) / soporte.max())
+    assert np.all((alturas >= 0.15) & (alturas <= 0.85))
+
+
+def test_promedios_clase_sin_soporte():
+    y, g, clases = [0, 0, 0], [0, 1, 0], [0, 1]
+    with pytest.warns(UserWarning, match="no tiene casos"):
+        serie = ml.por_clase("aciertos", y, g, clases=clases)
+    ax = ml.dibujar_promedios(serie, pd.Series([3, 0], index=clases))
+    assert not ax.figure.findobj(lambda a: a.get_gid() == "promedio-macro")
+    assert "macro: no estimable" in [t.get_text() for t in ax.get_legend().get_texts()]
+    esperado = ml.promediar("aciertos", y, g, "ponderado", clases=clases)
+    np.testing.assert_allclose(artista(ax.figure, "promedio-ponderado").get_xdata(), esperado)
+
+
+@pytest.mark.parametrize("caso", ["binario", "multiclase"])
+@pytest.mark.parametrize("tema", ["claro", "sitio"])
+def test_cobertura_global_identidad_y_tamanos(caso, tema, request):
+    datos, m, cf = request.getfixturevalue(caso)
+    df = datos.prueba
+    ax = ml.dibujar_cobertura_por_clase(cf, df, tema=tema)
+    por_clase = cf.cobertura_por_clase(df)
+    soporte = df["y"].value_counts().reindex(por_clase.index, fill_value=0)
+    global_esperada = (por_clase * soporte).sum() / soporte.sum()
+    np.testing.assert_allclose(artista(ax.figure, "cobertura-global").get_ydata(), global_esperada)
+    np.testing.assert_allclose(global_esperada, cf.cobertura(df))
+    np.testing.assert_allclose(artista(ax.figure, "cobertura-objetivo").get_ydata(), 0.9)
+    for i, c in enumerate(m.clases):
+        assert artista(ax.figure, f"cobertura-clase-{i}").get_height() == por_clase[c]
+        assert f"{cf.tamano_por_clase(df)[c]:.2f}" in artista(ax.figure, f"tamano-clase-{i}").get_text()
+    assert ax.get_title() == ("por clase" if cf.por_clase else "marginal")
+    ax.figure.canvas.draw()
+
+
+def test_metricas_bandas_errores_referencias_y_orden(proporciones):
+    fig = ml.dibujar_metricas_vs_proporcion(proporciones)
+    assert [a.get_title() for a in fig.axes] == ["MCC", "A_bal", "aciertos", "pérdida logarítmica"]
+    bandas = fig.findobj(lambda a: (a.get_gid() or "").startswith("banda-"))
+    assert len(bandas) == proporciones.loc[proporciones["conjunto"] == "val", "metrica"].nunique()
+    for metrica in proporciones["metrica"].unique():
+        referencia = artista(fig, f"referencia-{metrica}")
+        assert referencia.get_label() == ("proporción" if metrica == "logaritmica" else "moda")
+        assert referencia.get_linestyle() == ":"
+        assert referencia.get_color() == ml._color("benchmark", "claro")
+        assert referencia.axes.get_xscale() == "log"
+        assert referencia.axes.get_legend().get_title().get_text() == (
+            "puntos: despliegue ± 2 EE Monte Carlo; banda: dispersión entre validaciones")
+        cont = referencia.axes.containers[0]
+        puntos = cont.lines[0]
+        for segmento, x, y in zip(cont.lines[2][0].get_segments(), puntos.get_xdata(), puntos.get_ydata()):
+            np.testing.assert_allclose(segmento, [[x, y - 0.02], [x, y + 0.02]])
+        if metrica != "logaritmica":
+            banda = artista(fig, f"banda-{metrica}")
+            assert banda.get_label() == "validación de n = 50, ±2 desv"
+            vertices = banda.get_paths()[0].vertices
+            for p in (0.01, 0.1, 0.5):
+                limites = vertices[np.isclose(vertices[:, 0], p), 1]
+                assert limites.min() == pytest.approx(0.65 + p / 10 - 0.2)
+                assert limites.max() == pytest.approx(0.65 + p / 10 + 0.2)
+
+
+def test_metricas_un_panel_acepta_secuencia_y_sin_banda(proporciones):
+    tabla = proporciones[proporciones["metrica"] == "logaritmica"]
+    fig, ax = plt.subplots()
+    assert ml.dibujar_metricas_vs_proporcion(tabla, ax=[ax]) is fig
+    assert len(fig.axes) == 1
+    assert not fig.findobj(lambda a: (a.get_gid() or "").startswith("banda-"))
+    assert len(ml.dibujar_metricas_vs_proporcion(tabla).axes) == 1
+
+
+def test_confusion_conteos_y_orientacion():
+    matriz = ml.matriz_confusion([0, 0, 0, 1, 1], [0, 1, 1, 1, 1])
+    ax = ml.dibujar_confusion(matriz)
+    np.testing.assert_array_equal(artista(ax.figure, "mapa-confusion").get_array(), matriz)
+    for i in range(2):
+        for j in range(2):
+            texto = artista(ax.figure, f"conteo-{i}-{j}")
+            assert texto.get_text() == str(matriz.iloc[i, j])
+            assert texto.get_position() == (j, i)
+    assert (ax.get_xlabel(), ax.get_ylabel()) == ("predicha", "real")
+
+
+@pytest.mark.parametrize("caso", ["binario", "multiclase"])
+@pytest.mark.parametrize("tema", ["claro", "sitio"])
+def test_conformal_conjuntos_y_titulo_global(caso, tema, request):
+    datos, m, cf = request.getfixturevalue(caso)
+    df = datos.prueba
+    ax = ml.dibujar_conformal(cf, df, tema=tema)
+    celdas = artista(ax.figure, "conjuntos-conformales").get_offsets()
+    esperado = [(list(m.clases).index(c), i)
+                for i, conjunto in enumerate(cf.predecir_conjunto(df.iloc[:40])) for c in conjunto]
+    assert set(map(tuple, celdas)) == set(esperado)
+    reales = artista(ax.figure, "clases-reales").get_offsets()
+    assert len(reales) == 40
+    np.testing.assert_array_equal(reales[:, 0], df.iloc[:40]["y"])
+    assert f"cobertura: {cf.cobertura(df):.3f}" in ax.get_title()
+    assert f"tamaño medio: {cf.tamano_medio(df):.3f}" in ax.get_title()
+    ax.figure.canvas.draw()
+
+
+@pytest.mark.parametrize("tema", ["claro", "sitio"])
+def test_conformal_regresion_intervalos_y_exclusiones(regresion, tema):
+    datos, m, cf = regresion
+    df = datos.prueba.copy()
+    df.loc[df.index[0], "y"] = 1e9  # garantiza un caso fuera
+    ax = ml.dibujar_conformal(cf, df, tema=tema)
+    ordenado = df.sort_values(m.columnas_x[0])
+    x = ordenado[m.columnas_x[0]].to_numpy()
+    pred = m.predecir(ordenado)
+    np.testing.assert_allclose(artista(ax.figure, "prediccion-conformal").get_data(), [x, pred])
+    vertices = artista(ax.figure, "banda-conformal").get_paths()[0].vertices
+    for xx, yy in zip(x, pred):
+        limites = vertices[np.isclose(vertices[:, 0], xx, rtol=0, atol=1e-12), 1]
+        assert limites.min() == pytest.approx(yy - cf.c_gorro)
+        assert limites.max() == pytest.approx(yy + cf.c_gorro)
+    fuera = np.abs(ordenado["y"].to_numpy() - pred) > cf.c_gorro
+    np.testing.assert_allclose(artista(ax.figure, "casos-fuera").get_offsets(),
+                               np.column_stack([x[fuera], ordenado["y"].to_numpy()[fuera]]))
+    assert ax.get_title() == f"cobertura: {cf.cobertura(df):.3f}"
+    ax.figure.canvas.draw()
+
+
+def area_titulo(ax):
+    return float(re.search(r"área: ([0-9.]+)", ax.get_title())[1])
+
+
+def test_roc_perfecta_azar_y_base_positivos():
+    fig = ml.dibujar_roc_pr([0.1, 0.2, 0.8, 0.9], [0, 0, 1, 1])
+    assert [area_titulo(a) for a in fig.axes] == [1., 1.]
+    rng = np.random.default_rng(211)
+    y = rng.binomial(1, 0.3, 20000)
+    fig = ml.dibujar_roc_pr(rng.random(len(y)), y)
+    assert area_titulo(fig.axes[0]) == pytest.approx(0.5, abs=0.02)
+    assert area_titulo(fig.axes[1]) == pytest.approx(y.mean(), abs=0.02)
+    np.testing.assert_allclose(artista(fig, "proporcion-positivos").get_ydata(), y.mean())
+
+
+def test_roc_empates_no_dependen_del_orden():
+    uno = ml.dibujar_roc_pr([0.5] * 4, [0, 0, 1, 1])
+    dos = ml.dibujar_roc_pr([0.5] * 4, [1, 0, 1, 0])
+    assert area_titulo(uno.axes[0]) == 0.5
+    np.testing.assert_allclose(artista(uno, "curva-roc").get_data(), [[0, 1], [0, 1]])
+    for gid in ("curva-roc", "curva-precision-sensibilidad"):
+        np.testing.assert_array_equal(artista(uno, gid).get_data(), artista(dos, gid).get_data())
+
+
+@pytest.mark.parametrize("nombre,tabla", [("perfil_en_beta", "perfil"),
+                                          ("efecto_de_pesos", "pesos"),
+                                          ("metricas_vs_proporcion", "proporciones")])
+def test_tablas_validan_todas_las_columnas(nombre, tabla, request):
+    tabla = request.getfixturevalue(tabla)
+    funcion = getattr(ml, f"dibujar_{nombre}")
+    for columna in tabla:
+        with pytest.raises(ValueError, match="faltan las columnas"):
+            funcion(tabla.drop(columns=columna))
+    with pytest.raises(ValueError, match="vacía"):
+        funcion(tabla.iloc[:0])
+
+
+def test_validacion_modelos_y_datos(binario, multiclase, regresion, pesos):
+    datos, m, cf = binario
+    with pytest.raises(ValueError, match="binaria"):
+        ml.dibujar_umbral(multiclase[1], multiclase[0].prueba)
+    with pytest.raises(ValueError, match="umbrales"):
+        ml.dibujar_umbral(m, datos.prueba, tau=-0.1)
+    with pytest.raises(ValueError, match="faltan las columnas"):
+        ml.dibujar_umbral(m, datos.prueba.drop(columns="y"))
+    with pytest.raises(ValueError, match="largos distintos"):
+        ml.dibujar_umbral(SimpleNamespace(K=2, columnas_x=m.columnas_x,
+                                         predecir_p=lambda df: np.zeros(3)), datos.prueba)
+    with pytest.raises(ValueError, match="necesita razon"):
+        ml.dibujar_efecto_de_pesos(pesos, datos=datos)
+    with pytest.raises(ValueError, match="binaria"):
+        ml.dibujar_efecto_de_pesos(pesos, razon=4, datos=multiclase[0])
+    with pytest.raises(ValueError, match="razón = 1"):
+        ml.dibujar_efecto_de_pesos(pesos[pesos["razon"] != 1])
+    with pytest.raises(ValueError, match="clasificación"):
+        ml.dibujar_cobertura_por_clase(regresion[2], regresion[0].prueba)
+    for funcion in (ml.dibujar_conformal, ml.dibujar_cobertura_por_clase):
+        with pytest.raises(ValueError, match="faltan las columnas"):
+            funcion(cf, datos.prueba.drop(columns="y"))
+        with pytest.raises(ValueError, match="fuera de clases"):
+            funcion(cf, datos.prueba.assign(y=7))
+
+
+@pytest.mark.parametrize("prob,y,mensaje", [([0.2], [0, 1], "mismo largo"),
+                                           ([0.1, 0.2], [0, 0], "ambas clases"),
+                                           ([0.1, 0.2], [0, 2], "ambas clases"),
+                                           ([np.nan, 0.2], [0, 1], "probabilidades"),
+                                           ([-0.1, 1.2], [0, 1], "probabilidades")])
+def test_roc_valida(prob, y, mensaje):
+    with pytest.raises(ValueError, match=mensaje):
+        ml.dibujar_roc_pr(prob, y)
+
+
+def test_series_y_matrices_invalidas():
+    with pytest.raises(ValueError, match="mismo largo"):
+        ml.dibujar_promedios(pd.Series([1., 2.]), pd.Series([1.]))
+    with pytest.raises(ValueError, match="mismas clases"):
+        ml.dibujar_promedios(pd.Series([1.], index=[0]), pd.Series([1.], index=[1]))
+    with pytest.raises(ValueError, match="no negativo"):
+        ml.dibujar_promedios(pd.Series([1.]), pd.Series([-1.]))
+    for valores in ([0., 0.], [-1., 2.], [np.inf, 1.]):
+        with pytest.raises(ValueError, match="total positivo"):
+            ml.dibujar_contribucion_por_clase({"a": pd.Series(valores)})
+    with pytest.raises(ValueError, match="desconocidas"):
+        ml.dibujar_contribucion_por_clase({"a": pd.Series([np.nan])})
+    with pytest.raises(ValueError, match="cuadrada"):
+        ml.dibujar_confusion(pd.DataFrame([[1, 2]]))
+    with pytest.raises(ValueError, match="conteos enteros"):
+        ml.dibujar_confusion(pd.DataFrame([[0.5]]))
+
+
+def test_numero_de_ejes_invalido(binario, pesos, proporciones):
+    datos, m, _ = binario
+    _, ax = plt.subplots()
+    for funcion, args in [(ml.dibujar_umbral, (m, datos.prueba)),
+                           (ml.dibujar_roc_pr, ([0.1, 0.9], [0, 1])),
+                           (ml.dibujar_efecto_de_pesos, (pesos,)),
+                           (ml.dibujar_metricas_vs_proporcion, (proporciones,))]:
+        with pytest.raises(ValueError, match="ejes"):
+            funcion(*args, ax=[ax])
+
+
+# --- 9c · Arreglos de la revisión adversarial de 1.4 (codex-rev-lab-c4.i1) ---
+
+
+def test_oraculo_con_ruido_normal_ancho_converge():
+    """Con ruido N(0, 30²), la prob anunciada coincide con la integral independiente
+    (24 nodos de Gauss–Hermite daban 0.620 donde se pedía 0.6)."""
+    from scipy import integrate, special, stats
+
+    d = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=lambda d: 0 * d["x1"],
+                                 ruido=ml.normal(0, 30), proporcion=0.6, n_realidad=2000)
+    b = d._pob.b[1]
+    ref = integrate.quad(lambda e: special.expit(b + e) * stats.norm.pdf(e, 0, 30),
+                         -400, 400, points=[-b], limit=500)[0]
+    assert d.realidad["prob"].iloc[0] == pytest.approx(ref, abs=1e-6)
+    assert ref == pytest.approx(0.6, abs=1e-4)
+    for s in (0.5, 3.0, 300.0):
+        regla = ml._normal_mezcla([0.3], [1.0], s)
+        for z in (-9.0, 0.0, 4.0):
+            r = integrate.quad(lambda e: special.expit(z + e) * stats.norm.pdf(e, 0.3, s),
+                               0.3 - 12 * s, 0.3 + 12 * s, points=[-z], limit=1000)[0]
+            assert ml._p1_binaria(np.array([z]), regla)[0] == pytest.approx(r, abs=1e-6)
+
+
+def test_oraculo_de_una_pieza_sin_cuantiles_usa_sorteos_fijos():
+    class Cero(ml.Pieza):
+        nombre, media, varianza = "cero", 0.0, 0.0
+
+        def muestrear(self, n, rng):
+            return np.zeros(n)
+
+    d = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=lambda d: 0 * d["x1"],
+                                 ruido=Cero(), n_realidad=1000)
+    assert d.realidad["prob"].to_numpy() == pytest.approx(0.5)
+    assert ml.piso(d, "logaritmica") == pytest.approx(math.log(2))
+
+
+def test_interceptos_lejanos_y_cache_sin_redondeo():
+    d = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=lambda d: 100 + 0 * d["x1"],
+                                 proporcion=0.1, n_realidad=1000)
+    assert d._pob.b[1] == pytest.approx(math.log(0.1 / 0.9) - 100, abs=1e-6)
+    f = lambda d: 0 * d["x1"]  # noqa: E731
+    a = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=f, proporcion=1e-16,
+                                 con_realidad=False)._pob.b[1]
+    b = ml.proceso_clasificacion(n=50, x={"x1": ml.normal()}, puntaje=f, proporcion=1e-20,
+                                 con_realidad=False)._pob.b[1]
+    assert b < a - 5
+    u = ml.proceso_clasificacion(n=50, ruido_etiquetas=1.0, proporcion=0.5, con_realidad=False)
+    assert u._pob.b.tolist() == [0.0, 0.0]
+
+
+def test_faltantes_leen_los_datos_completos_y_topan_la_fraccion():
+    d = ml.proceso_clasificacion(n=20_000, faltantes={"x1": (0.2, "azar"),
+                                                      "x2": (0.2, "depende_x")},
+                                 con_realidad=False, fracciones=(1, 0, 0))
+    assert d.ent["x1"].isna().mean() == pytest.approx(0.2, abs=0.01)
+    assert d.ent["x2"].isna().mean() == pytest.approx(0.2, abs=0.01)
+    with pytest.raises(ValueError, match="0.5"):
+        ml.proceso_clasificacion(n=50, faltantes={"x1": (0.8, "depende_x")}, con_realidad=False)
+
+
+def test_politica_de_una_sola_clase_en_por_clase_y_promediar():
+    s, avisos = _avisos(ml.por_clase, "aciertos", [0, 0], [0, 0])
+    assert s.isna().all() and any("pasa `clases=`" in a for a in avisos)
+    v, avisos = _avisos(ml.promediar, "aciertos", [0, 0], [0, 0])
+    assert math.isnan(v) and avisos
+
+
+def test_etiquetas_fuera_de_las_clases_lanzan_en_brier_y_recalibrar():
+    d = ml.PROCESOS["fraude"](n=400, proporcion=0.3)
+    m = ml.ajustar(d)
+    mala = d.val.assign(y=2)
+    with pytest.raises(ValueError, match="fuera"):
+        ml.recalibrar(m, mala)
+    with pytest.raises(ValueError, match="fuera"):
+        ml.evaluar(m, mala, "brier")
+
+
+def test_calibracion_por_cuantiles_no_parte_empates():
+    t = ml.calibracion([0.5] * 100, [0] * 50 + [1] * 50)
+    assert len(t) == 1 and t["frecuencia"].iloc[0] == 0.5
+    p = np.r_[np.full(60, 0.2), np.linspace(0.3, 0.9, 40)]
+    y = (np.random.default_rng(0).uniform(size=100) < p).astype(int)
+    orden = np.random.default_rng(1).permutation(100)
+    pd.testing.assert_frame_equal(ml.calibracion(p, y), ml.calibracion(p[orden], y[orden]))
+
+
+def test_pesos_que_suman_cero_lanzan():
+    d = ml.PROCESOS["mensajes3"](n=100, con_realidad=False)
+    with pytest.raises(ValueError, match="suman 0"):
+        ml.ajustar(d, pesos={0: 0, 1: 0, 2: 0}, mu=0.1, penalizacion="l2")
+
+
+def test_conformal_en_un_conjunto_vacio():
+    d = ml.PROCESOS["fraude"](n=400, proporcion=0.3)
+    cf = ml.conformal(ml.ajustar(d), d.val)
+    assert math.isnan(cf.cobertura(d.val.iloc[:0]))
+    assert cf.cobertura_por_clase(d.val.iloc[:0]).isna().all()
+
+
+def test_softmax_l1_cumple_kkt():
+    """Lasso y elástica en softmax: gradiente 0 en los interceptos; |g| <= μρ en los ceros;
+    g + μρ·signo + 2μ(1−ρ)β = 0 en los activos (mata «todo en cero»)."""
+    d = ml.PROCESOS["mensajes3"](n=1500, con_realidad=False)
+    for pen, rho in (("l1", 1.0), ("elastica", 0.5)):
+        mu = 0.02
+        m = ml.ajustar(d, phi=ml.estandarizar(ml.columnas("x1", "x2")), mu=mu, penalizacion=pen,
+                       rho=0.5)
+        A = m.Phi(d.ent).to_numpy()
+        Y = np.eye(3)[d.ent["y"].to_numpy()]
+        G = ((m.predecir_prob(d.ent) - Y).T @ A) / len(A)
+        B = m.beta_gorro.to_numpy()
+        assert np.abs(G[:, 0]).max() < 1e-6
+        activos = B[:, 1:] != 0
+        assert activos.any()
+        g, b = G[:, 1:], B[:, 1:]
+        r = 1.0 if pen == "l1" else 0.5
+        assert np.abs(g[~activos]).max(initial=0) <= mu * r + 1e-6
+        resto = g + mu * r * np.sign(b) + 2 * mu * (1 - r) * b
+        assert np.abs(resto[activos]).max() < 1e-5
+
+
+def test_conformal_por_clase_es_el_estadistico_de_orden_de_cada_clase():
+    d = ml.PROCESOS["mensajes3"](n=6000)
+    m = ml.ajustar(d)
+    cf = ml.conformal(m, d.val, delta=0.1, por_clase=True)
+    P = m.predecir_prob(d.val)
+    y = d.val["y"].to_numpy()
+    for c in (0, 1, 2):
+        ci = np.sort(1 - P[y == c, c])
+        k = ml._rango_conformal(len(ci), 0.1)
+        assert k <= len(ci)
+        assert cf.c_gorro[c] == ci[k - 1] and np.isfinite(cf.c_gorro[c])
