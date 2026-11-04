@@ -78,13 +78,14 @@ def test_ancho_y_letra(ident):
     assert min(float(t) for t in re.findall(r'font-size="([\d.]+)"', texto)) >= 12
 
 
-@pytest.mark.parametrize("ident", DATOS)
+@pytest.mark.parametrize("ident", TRAMO_RAPIDO)
 def test_las_graficas_de_datos_caben_a_390_px(ident):
     """A 390 px el cuerpo de figura deja ~305 px y, debajo de 1470 px, el
     framework muestra los SVG a tamano natural con scroll horizontal y sin
     ninguna senal de que hay mas a la derecha. La revision r1 vio fuera de
     pantalla el panel de las 2 nuevas de F1b: las tres graficas de datos se
-    apilan en vertical a 300 px de ancho."""
+    apilan en vertical a 300 px de ancho. La r2 vio lo mismo en F3 (la caja
+    que se amplia) y F4 (la columna del predictor): las cinco van a 300."""
     raiz = re.match(r"<svg\b[^>]*>", _svg(ident)).group()
     assert float(re.search(r'\bwidth="([\d.]+)"', raiz).group(1)) <= 300
 
@@ -283,3 +284,27 @@ def test_f1b_los_anuncios_quedan_en_5_y_6_km():
     assert len(de_reglas) == 6
     columnas = {round(e.px(fig.PARES[i][0]), 1) for i in fig.NUEVAS}
     assert {round(cx, 1) for cx, _ in de_reglas} == columnas
+
+
+def test_f1a_las_nuevas_quedan_en_5_y_6_km():
+    """r2: los puntos de las nuevas iban en px(km) - 6, o sea en ~4.84 y
+    ~5.84 km. El punto va en su distancia; solo el «?» se corre."""
+    texto = _svg(F1A)
+    e = fig.Ejes(40, 34, 248, 210, fig.XLIM, fig.YLIM)
+    # la franja bajo el eje (el otro punto de ese color es el de la leyenda)
+    franja = e.y0 + e.h + 44
+    xs = sorted(round(cx, 1) for cx, cy in _cy_de_nuevas(texto)
+                if franja <= cy <= franja + 34)
+    assert xs == sorted(round(e.px(fig.PARES[i][0]), 1) for i in fig.NUEVAS)
+
+
+@pytest.mark.parametrize("ident", TRAMO_RAPIDO)
+def test_la_ultima_linea_no_toca_el_borde_inferior(ident):
+    """r2: en F1a la ultima linea base de la leyenda quedaba a 2 px del borde
+    y Chrome recortaba las colas de la q y la g. Toda linea base queda a
+    >= 8 px del borde inferior."""
+    texto = _svg(ident)
+    raiz = re.match(r"<svg\b[^>]*>", texto).group()
+    alto = float(re.search(r'\bheight="([\d.]+)"', raiz).group(1))
+    ys = [float(y) for y in re.findall(r'<text\b[^>]*\by="([\d.]+)"', texto)]
+    assert alto - max(ys) >= 8, (alto, max(ys))

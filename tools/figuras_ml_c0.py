@@ -228,15 +228,18 @@ def _desconocidas(e, y):
                  anclaje="end")]
     for i in NUEVAS:
         km = PARES[i][0]
-        out.append(f'<circle cx="{_n(e.px(km) - 6)}" cy="{_n(y + alto / 2)}" '
+        # r2: el punto va en su distancia (5 y 6 km); solo el «?» se corre
+        out.append(f'<circle cx="{_n(e.px(km))}" cy="{_n(y + alto / 2)}" '
                    f'r="{_n(R_NUEVA)}" fill="{C_NUEVAS}"/>')
-        out.append(texto(e.px(km) + 6, y + alto / 2 + 5, "?", color=TEXTO, tam=13,
+        out.append(texto(e.px(km) + 11, y + alto / 2 + 5, "?", color=TEXTO, tam=13,
                          peso="700"))
     return out
 
 
 def fig_tres_reglas_en_lo_visto():
-    W, H = ANCHO_DATOS, 520
+    # r2: 532 de alto deja la ultima linea base de la leyenda (518) a 14 px
+    # del borde; con 520 las colas de la q y la g se recortaban.
+    W, H = ANCHO_DATOS, 532
     e = Ejes(40, 34, 248, 210, XLIM, YLIM)
     out = e.fondo(XT, YT, "distancia (km)", "tiempo (min)")
     out += e.banda(4.5, 6.5, "llegan después", arriba=True)
@@ -445,39 +448,41 @@ ALT_F3 = (
 
 
 def fig_jerarquia():
-    W, H = 600, 500
-    out = [caja(12, 12, W - 24, 112, relleno="none", borde=LINEA, radio=12),
-           texto(26, 36, "Inteligencia artificial", tam=16, peso="700", anclaje="start")]
-    ancho, hueco, x = 104, 8, 26
-    cajas = []
-    for k, (l1, l2) in enumerate(RAMAS):
+    """r2: a 300 px de ancho (cabe a 390 px sin scroll). Las cinco ramas en
+    una rejilla de 2 + 2 + 1, con la de aprendizaje maquina sola abajo y el
+    zoom debajo de ella."""
+    W, H = ANCHO_DATOS, 500
+    out = [caja(8, 8, W - 16, 204, relleno="none", borde=LINEA, radio=12),
+           texto(20, 30, "Inteligencia artificial", tam=15, peso="700", anclaje="start")]
+    ancho, alto = 126, 44
+    pos = [(20, 44), (154, 44), (20, 96), (154, 96), (87, 152)]
+    for k, ((l1, l2), (x, y)) in enumerate(zip(RAMAS, pos)):
         ml = k == len(RAMAS) - 1
-        out.append(caja(x, 50, ancho, 60, relleno=PANEL,
+        out.append(caja(x, y, ancho, alto, relleno=PANEL,
                         borde=ACENTO if ml else LINEA, grosor=2.5 if ml else 1.5, radio=8))
-        out.append(texto(x + ancho / 2, 74, l1, tam=12, peso="700",
-                         color=TEXTO if ml else SUAVE))
-        out.append(texto(x + ancho / 2, 90, l2, tam=12, peso="700",
-                         color=TEXTO if ml else SUAVE))
-        cajas.append(x)
-        x += ancho + hueco
-    xm = cajas[-1]
+        for j, l in enumerate((l1, l2)):
+            out.append(texto(x + ancho / 2, y + 19 + 15 * j, l, tam=12, peso="700",
+                             color=TEXTO if ml else SUAVE))
+    xm, ym = pos[-1]
     # zoom: de la caja de aprendizaje maquina al rectangulo grande
-    zx, zy, zw, zh = 26, 160, W - 52, 270
-    out.append(linea(xm, 110, zx, zy, color=ACENTO, grosor=1.5, guiones="5 4"))
-    out.append(linea(xm + ancho, 110, zx + zw, zy, color=ACENTO, grosor=1.5, guiones="5 4"))
-    out.append(texto(W / 2, 148, "de cerca:", tam=12, color=SUAVE))
+    zx, zy, zw, zh = 8, 246, W - 16, 180
+    out.append(linea(xm, ym + alto, zx, zy, color=ACENTO, grosor=1.5, guiones="5 4"))
+    out.append(linea(xm + ancho, ym + alto, zx + zw, zy, color=ACENTO, grosor=1.5,
+                     guiones="5 4"))
+    out.append(texto(W / 2, 234, "de cerca:", tam=12, color=SUAVE))
     for k, (nombre, ejemplo) in enumerate(NIVELES):
-        rx, ry = zx + 30 * k, zy + 62 * k
-        rw, rh = zw - 60 * k, zh - 82 * k
+        rx, ry = zx + 10 * k, zy + 56 * k
+        rw, rh = zw - 20 * k, zh - 64 * k
         out.append(caja(rx, ry, rw, rh, relleno=mezclar(ACENTO, 0.07 + 0.08 * k),
                         borde=ACENTO, grosor=2, radio=10))
-        out.append(texto(rx + 14, ry + 24, nombre, tam=14, peso="700", anclaje="start"))
-        out.append(texto(rx + 14, ry + 42, f"ej.: {ejemplo}", tam=12, anclaje="start",
+        out.append(texto(rx + 10, ry + 21, nombre, tam=13, peso="700", anclaje="start"))
+        out.append(texto(rx + 10, ry + 39, f"ej.: {ejemplo}", tam=12, anclaje="start",
                          color=SUAVE))
-    out.append(texto(W / 2, zy + zh + 26, "Solo aquí dentro hay anidamiento.",
+    out.append(texto(W / 2, zy + zh + 24, "Solo aquí dentro hay anidamiento.",
                      tam=13, peso="700", color=ACENTO))
-    out.append(texto(W / 2, zy + zh + 46,
-                     "Las cinco ramas de arriba son hermanas: ninguna contiene a las demás.",
+    out.append(texto(W / 2, zy + zh + 44, "Las cinco ramas de arriba son hermanas:",
+                     tam=12, color=SUAVE))
+    out.append(texto(W / 2, zy + zh + 60, "ninguna contiene a las demás.",
                      tam=12, color=SUAVE))
     return svg(W, H, ALT_F3, "El aprendizaje de máquina, visto de cerca dentro de la IA", out)
 
@@ -520,7 +525,10 @@ def _cabos(x, y, s):
 
 
 def fig_quien_elige_phi():
-    W, H = 600, 524
+    """r2: a 300 px de ancho (cabe a 390 px sin scroll). Cada tira en dos
+    renglones: arriba la entrada y lo que el modelo ve de ella, abajo el
+    predictor y la salida."""
+    W, H = ANCHO_DATOS, 764
     out = []
     # U+03D5 (PHI SYMBOL), la forma con trazo recto: es la que MathJax dibuja
     # para \phi en la prosa; U+03C6 sale con la otra forma y el alumno veria
@@ -528,60 +536,62 @@ def fig_quien_elige_phi():
     phi = [(PHI, _IT), "(", ("x", _IT), ")"]
     yhat = [("ŷ", _IT)]
     tiras = [
-        ("1 · Reglas", 34),
-        ("2 · Aprendizaje de máquina clásico", 144),
-        ("3 · Aprendizaje de representaciones", 274),
-        ("4 · Aprendizaje profundo", 404),
+        ("1 · Reglas", 22),
+        ("2 · Aprendizaje de máquina clásico", 152),
+        ("3 · Aprendizaje de representaciones", 366),
+        ("4 · Aprendizaje profundo", 580),
     ]
     for nombre, y in tiras:
-        out.append(texto(16, y, nombre, tam=14, peso="700", anclaje="start", color=ACENTO))
-    yb = 46
+        out.append(texto(8, y, nombre, tam=14, peso="700", anclaje="start", color=ACENTO))
     # tira 1: entrada -> programa a mano -> salida
-    out.append(_cabos(46, yb + 31, "entrada"))
-    out.append(flecha(80, yb + 26, 168, yb + 26))
-    out += _bloque(172, yb, 256, ["programa escrito"], False)
-    out.append(flecha(430, yb + 26, 514, yb + 26))
-    out.append(_cabos(548, yb + 31, "salida"))
+    out.append(texto(40, 48, "entrada", tam=15, peso="700", anclaje="start"))
+    out.append(flecha(66, 54, 66, 72))
+    out += _bloque(40, 76, 160, ["programa escrito"], False)
+    out.append(flecha(202, 101, 222, 101))
+    out.append(texto(228, 106, "salida", tam=15, peso="700", anclaje="start"))
 
-    def tira_phi(y, phi_datos, rotulo_phi):
-        o = [texto(26, y + 31, [("x", _IT)], tam=16, peso="700")]
-        o.append(flecha(38, y + 26, 66, y + 26))
-        o += _bloque(70, y, 170, [phi + [f" {rotulo_phi}"]], phi_datos)
-        o.append(flecha(242, y + 26, 270, y + 26))
-        o += _bloque(274, y, 246, [PREDICTOR], True)
-        o.append(flecha(522, y + 26, 552, y + 26))
-        o.append(texto(572, y + 31, yhat, tam=16, peso="700"))
+    def salida(y):
+        o = _bloque(44, y, 218, [PREDICTOR], True)
+        o.append(flecha(264, y + 25, 279, y + 25))
+        o.append(texto(290, y + 30, yhat, tam=16, peso="700"))
         return o
 
-    out += tira_phi(156, False, "elegida")
-    out += tira_phi(286, True, "aprendida")
+    def tira_phi(y, phi_datos, rotulo_phi):
+        o = [texto(24, y + 30, [("x", _IT)], tam=16, peso="700")]
+        o.append(flecha(34, y + 25, 52, y + 25))
+        o += _bloque(56, y, 180, [phi + [f" {rotulo_phi}"]], phi_datos)
+        o.append(flecha(146, y + 52, 146, y + 68))
+        o += salida(y + 72)
+        return o
+
+    out += tira_phi(164, False, "elegida")
+    out += tira_phi(378, True, "aprendida")
     # tira 4: capas en etapas, que juntas forman phi(x)
-    y = 416
-    out.append(texto(26, y + 31, [("x", _IT)], tam=16, peso="700"))
-    out.append(flecha(38, y + 26, 54, y + 26))
-    out += _bloque(58, y, 76, ["capa 1"], True, alto=50)
-    out.append(flecha(136, y + 26, 148, y + 26))
-    out += _bloque(152, y, 76, ["capa 2"], True, alto=50)
-    out.append(flecha(230, y + 26, 240, y + 26))
-    out.append(texto(250, y + 31, "…", tam=16, peso="700"))
-    out.append(flecha(260, y + 26, 270, y + 26))
-    out += _bloque(274, y, 246, [PREDICTOR], True)
-    out.append(flecha(522, y + 26, 552, y + 26))
-    out.append(texto(572, y + 31, yhat, tam=16, peso="700"))
+    y = 592
+    out.append(texto(24, y + 30, [("x", _IT)], tam=16, peso="700"))
+    out.append(flecha(34, y + 25, 52, y + 25))
+    out += _bloque(56, y, 70, ["capa 1"], True, alto=50)
+    out.append(flecha(128, y + 25, 138, y + 25))
+    out += _bloque(142, y, 70, ["capa 2"], True, alto=50)
+    out.append(flecha(214, y + 25, 222, y + 25))
+    out.append(texto(232, y + 30, "…", tam=16, peso="700"))
+    out.append(linea(242, y + 25, 250, y + 25, color=ACENTO, grosor=2))
+    out.append(flecha(250, y + 24, 250, y + 102))
     # llave bajo las capas
-    yl = y + 58
-    out.append(f'<path d="M 58 {_n(yl)} Q 58 {_n(yl + 8)} 70 {_n(yl + 8)} L 147 {_n(yl + 8)} '
-               f'Q 157 {_n(yl + 8)} 159 {_n(yl + 16)} Q 161 {_n(yl + 8)} 171 {_n(yl + 8)} '
-               f'L 248 {_n(yl + 8)} Q 260 {_n(yl + 8)} 260 {_n(yl)}" fill="none" '
+    yl = y + 56
+    out.append(f'<path d="M 56 {_n(yl)} Q 56 {_n(yl + 8)} 68 {_n(yl + 8)} L 124 {_n(yl + 8)} '
+               f'Q 132 {_n(yl + 8)} 134 {_n(yl + 16)} Q 136 {_n(yl + 8)} 144 {_n(yl + 8)} '
+               f'L 200 {_n(yl + 8)} Q 212 {_n(yl + 8)} 212 {_n(yl)}" fill="none" '
                f'stroke="{SUAVE}" stroke-width="1.5"/>')
-    out.append(texto(159, yl + 32, ["juntas forman ", *phi, ", con datos"], tam=13,
+    out.append(texto(126, yl + 32, ["juntas forman ", *phi, ", con datos"], tam=13,
                      peso="700"))
+    out += salida(y + 106)
     # los dos criterios, entre las tiras que separan
-    for yc, s in ((252, f"↕ cambia quién elige {PHI}: una persona o el ajuste"),
-                  (382, f"↕ cambia si {PHI} se arma en una etapa o en varias")):
-        out.append(linea(16, yc - 4, 70, yc - 4, color=LINEA, grosor=1))
-        out.append(linea(W - 70, yc - 4, W - 16, yc - 4, color=LINEA, grosor=1))
-        out.append(texto(W / 2, yc, s, tam=12, color=SUAVE, peso="700"))
+    for yc, (s1, s2) in ((322, (f"↕ cambia quién elige {PHI}:", "una persona o el ajuste")),
+                         (536, (f"↕ cambia si {PHI} se arma", "en una etapa o en varias"))):
+        out.append(linea(8, yc - 18, W - 8, yc - 18, color=LINEA, grosor=1))
+        out.append(texto(W / 2, yc, s1, tam=12, color=SUAVE, peso="700"))
+        out.append(texto(W / 2, yc + 16, s2, tam=12, color=SUAVE, peso="700"))
     return svg(W, H, ALT_F4, "Quién elige qué: cuatro maneras de construir un sistema", out)
 
 
