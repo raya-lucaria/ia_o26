@@ -8,6 +8,15 @@ estimated_time: 65m
 tags: [aprendizaje-maquina, capacidad, brecha, hiperparametro, extrapolar, no-free-lunch]
 ---
 
+> [!IMPORTANT]
+> ### ▶ ABRE EL NOTEBOOK EN COLAB
+>
+> **Notebook 02 · Polinomios, capacidad y supuestos.** Corre en tu navegador, sin instalar nada.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
+>
+> **[👉 Abrir `02_polinomios_y_capacidad.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)**
+
 # Polinomios, capacidad y supuestos
 
 **Si los polinomios pueden aproximar casi cualquier curva, ¿por qué no usar siempre el mayor grado?**

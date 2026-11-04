@@ -10,13 +10,15 @@ prerequisites: [ml-clase-0-que-es-aprender]
 ---
 
 > [!IMPORTANT]
-> ### ▶ ABRE EL NOTEBOOK EN COLAB
+> ### ▶ ABRE LOS NOTEBOOKS EN COLAB
 >
-> **Notebook 01 · ¿Qué es f?** Corre en tu navegador, sin instalar nada.
+> **Notebook 01 · ¿Qué es f?** y **Notebook 02 · Polinomios, capacidad y supuestos**. Corren en tu navegador, sin instalar nada.
 >
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
 >
 > **[👉 Abrir `01_que_es_f.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)**
+>
+> **[👉 Abrir `02_polinomios_y_capacidad.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)**
 
 # Clase 1 · El problema
 
