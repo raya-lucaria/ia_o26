@@ -431,6 +431,96 @@ def test_nb01_la_reciproca_tiene_riesgo_infinito_por_este_ajuste_no_por_la_famil
 def test_nb01_no_lleva_arrobas_ni_wikilinks():
     assert not re.search(r"@ml-|\[\[", nb01())
 
+# ---- cifras atadas a su bloque (revision r3, D-009.5) ----
+
+def _g(v):
+    return f"{v:g}"
+
+
+def test_p1_s2_el_ejercicio_del_residual_cuenta_con_sus_datos():
+    r = c.cifras_c1_residual()
+    ej = bloque(p1(), "ml-c1-ej-residual").group(1)
+    assert (f"$f({r['x']})={_g(r['f'])}$, observaste $y={_g(r['y'])}$ y tu ajuste dice "
+            f"$\\widehat f({r['x']})={_g(r['f_gorro'])}$") in ej
+    resp = bloque(p1(), "ml-c1-resp-residual").group(1)
+    assert f"$\\varepsilon={_g(r['y'])}-{_g(r['f'])}={_g(r['ruido'])}$" in resp
+    assert (f"$f-\\widehat f={_g(r['f'])}-{_g(r['f_gorro'])}={_g(r['reducible'])}$"
+            in resp)
+    assert f"${_g(r['y'])}-{_g(r['f_gorro'])}={_g(r['residual'])}$" in resp
+
+
+def test_p1_s4_el_ejercicio_del_piso_da_sigma_cuadrada():
+    e = c.cifras_c1_ej_piso()
+    assert e["piso"] == e["sigma2"]
+    ej = bloque(p1(), "ml-c1-ej-piso").group(1)
+    assert f"$\\sigma_\\varepsilon^2={_g(e['sigma2'])}$" in ej
+    assert f"muestra de {e['n_muestra']}" in ej
+    resp = bloque(p1(), "ml-c1-resp-piso").group(1)
+    assert f"su promedio poblacional es {_g(e['piso'])}." in resp
+    assert f"En {e['n_muestra']} observaciones no tiene por qué dar {_g(e['piso'])}" in resp
+
+
+def test_p1_s5_el_ejemplo_de_la_lluvia_cuenta_dentro_de_su_bloque():
+    ll = c.cifras_c1_lluvia()
+    ejm = bloque(p1(), "ml-c1-ejm-lluvia").group(1)
+    assert (f"$E[y\\mid x_1]={ll['intercepto_sin_x2']:g}+{ll['pendiente_sin_x2']:g}x_1$"
+            in ejm)
+    assert (f"$R_{{\\text{{Bayes}}}}=1+6^2\\cdot\\tfrac14={ll['piso_sin_x2_exacto']:g}$"
+            in ejm)
+    assert f"Si mide $x_2$, $R_{{\\text{{Bayes}}}}={ll['piso_con_x2_exacto']:g}$." in ejm
+    assert round(ll["piso_sin_x2"], 6) == ll["piso_sin_x2_exacto"]
+    assert round(ll["piso_con_x2"], 6) == ll["piso_con_x2_exacto"]
+
+
+def test_p1_s5_de_10_a_1_en_cada_oracion_que_lo_dice():
+    ll = c.cifras_c1_lluvia()
+    de_a = f"de {ll['piso_sin_x2']:.0f} a {ll['piso_con_x2']:.0f}"
+    sec = s1()[5]
+    assert f"medir la lluvia baja el piso {de_a}." in sec
+    resp = bloque(p1(), "ml-c1-resp-intervencion").group(1)
+    assert f"Medir $x_2$ baja el piso {de_a}." in resp
+    assert f"**El piso depende de lo visible:** medir la lluvia lo baja {de_a}." in cierre_p1()
+
+
+def test_p1_s7_arriba_y_abajo_solo_con_el_radio_queda_en_50():
+    a = c.cifras_c1_arriba_abajo()
+    assert abs(a["aciertos"] - a["bayes_solo_r"]) < 0.02
+    resp = bloque(p1(), "ml-c1-resp-representacion").group(1)
+    assert f"los aciertos quedan cerca de {round(100 * a['aciertos'])} %." in resp
+    assert round(100 * a["aciertos"]) == round(100 * a["bayes_solo_r"])
+
+
+def test_p1_s7_el_aviso_no_promete_que_el_piso_sube_sin_nombrar_la_perdida():
+    # Con aciertos, descartar θ puede dejar igual el mejor desempeño (Pr(1|θ) =
+    # 0.6 y 0.8 equiprobables: 0.30 de error con y sin θ). Revision r3.
+    sec = s1()[7]
+    assert "el piso sube" not in sec
+    assert "los aciertos del mejor clasificador posible pueden bajar" in sec
+
+
+def test_p1_s8_no_cita_ecuaciones_normales_que_nadie_presento():
+    assert "ecuaciones normales" not in p1()
+    assert "el mismo problema de mínimos cuadrados" in s1()[8]
+
+
+def test_p1_la_pista_final_suma_por_clase():
+    pista = bloque(p1(), "ml-c1-pista-final-que-es-f-2").group(1)
+    assert "cuatro puntos" not in pista
+    assert "dos desigualdades de cada clase" in pista
+
+
+def test_p1_el_alt_del_ganador_no_da_la_respuesta_del_ejercicio():
+    fig = bloque(p1(), "ml-c1-ganador-imposible").group(1)
+    assert "3.5 km" not in fig and "24.0" not in fig
+
+
+def test_nb01_la_galeria_no_promete_cifras_que_no_imprime():
+    t = " ".join(celda("galeria-intro").split())
+    assert "cifras que imprime." not in t
+    assert "el caso 2 la celda no imprime cifras" in t
+    assert "vuelve a las cifras que imprime el bloque 3" in t
+    assert "ignora por ahora la curva de capacidad" in t
+
 # --- fin tramo 1a ---
 
 

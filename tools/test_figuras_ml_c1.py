@@ -114,7 +114,15 @@ def test_el_aria_del_ganador_nombra_las_cifras():
     a = aria("ml-c1-ganador-imposible")
     assert f"{g['prediccion'][7.0][0]:.1f}" in a and "37.4" in a
     assert "−25.0" in a
-    assert "24.0" in a
+    # Sin la respuesta del ejercicio ml-c1-ej-ganador (a): un lector de pantalla
+    # lee el alt antes de que el alumno lo intente (revision r3).
+    assert "24.0" not in a and "3.5 km" not in a
+
+
+def test_la_matriz_phi_dice_que_es_cada_dimension():
+    t = contenido("ml-c1-matriz-phi")
+    assert " por 2<" not in t and " por 3<" not in t
+    assert t.count("entradas") >= 3 and t.count("una por entrega") >= 3
 
 
 def test_el_aria_del_piso_nombra_las_cifras():

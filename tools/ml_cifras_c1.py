@@ -18,6 +18,7 @@ import importlib
 from fractions import Fraction
 
 import numpy as np
+import pandas as pd
 
 
 def _ml():
@@ -176,6 +177,10 @@ def cifras_c1_lluvia():
         "n_ent": len(sin.ent),
         "columnas_sin": list(sin.columnas_x),
         "columnas_con": list(con.columnas_x),
+        # E[y | x1] sin la lluvia, leida del proceso: 13 + 4 x1 (revision r3)
+        "intercepto_sin_x2": float(np.asarray(sin.f_visible(pd.DataFrame({"x1": [0.0]})))[0]),
+        "pendiente_sin_x2": float(np.asarray(sin.f_visible(pd.DataFrame({"x1": [1.0]})))[0]
+                                  - np.asarray(sin.f_visible(pd.DataFrame({"x1": [0.0]})))[0]),
     }
 
 
@@ -288,6 +293,40 @@ def cifras_c1_omitida(semilla=0):
         "piso_visible_cuenta": 0.45 + 0.16 * 1.0 + 0.25,
         "n_ent": len(datos.ent),
     }
+
+# P1 §2, ejercicio ml-c1-ej-residual: los datos del enunciado y sus tres
+# cuentas (revision r3, D-009.5: la cifra de la respuesta sale de aqui).
+RESIDUAL = {"x": 3, "f": 22.0, "y": 25.0, "f_gorro": 23.5}
+
+
+def cifras_c1_residual():
+    r = RESIDUAL
+    return {**r, "ruido": r["y"] - r["f"], "reducible": r["f"] - r["f_gorro"],
+            "residual": r["y"] - r["f_gorro"]}
+
+
+def cifras_c1_ej_piso():
+    """P1 §4, ejercicio ml-c1-ej-piso: y = 2x + ε con σ_ε² = 4. El MSE
+    poblacional del predictor 2x es el piso, que ml_lab confirma."""
+    ml = _ml()
+    datos = ml.proceso(n=10, x={"x": ml.uniforme(0, 6)}, f=lambda d: 2 * d.x,
+                       ruido=ml.normal(0, 2), fracciones=(1, 0, 0))
+    return {"sigma2": 4.0, "piso": float(ml.piso(datos)), "n_muestra": len(datos.ent)}
+
+
+def cifras_c1_arriba_abajo(semilla=0):
+    """P1 §7, respuesta ml-c1-resp-representacion (a): con la etiqueta «arriba»
+    (x2 > 0) sobre los mismos anillos, la logistica con phi = (1, r) acierta
+    cerca de 50 % en el despliegue; por simetria, ningun clasificador que solo
+    vea r pasa de 50 % (exacto: Pr(x2 > 0 | r) = 1/2)."""
+    ml = _ml()
+    datos = datos_anillos(semilla=semilla)
+    ent, desp = datos.ent.copy(), datos.despliegue.copy()
+    for df in (ent, desp):
+        df["y"] = (df["x2"] > 0).astype(int)
+    m = ml.ajustar(ent, phi=phi_anillos("solo radio"), tarea="clasificacion",
+                   columnas_x=["x1", "x2"])
+    return {"aciertos": float(ml.evaluar(m, desp, "aciertos")), "bayes_solo_r": 0.5}
 
 # --- fin tramo 1a ---
 

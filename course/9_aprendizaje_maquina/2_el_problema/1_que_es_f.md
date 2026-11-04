@@ -40,7 +40,7 @@ Al terminar tendrás:
 ## 1 · Volver al ajuste que ganó
 
 ::: figure {#ml-c1-ganador-imposible title="El ajuste que ganó predice un tiempo imposible"}
-![Seis entregas de 1 a 6 km; la recta ajustada predice 37.4 minutos a 7 km y el polinomio de grado 5, que pasa por los seis puntos, predice −25.0 minutos. A 3.5 km los dos predicen 24.0 minutos.](../_assets/ml-c1-ganador-imposible.svg)
+![Seis entregas de 1 a 6 km; la recta ajustada predice 37.4 minutos a 7 km y el polinomio de grado 5, que pasa por los seis puntos, predice −25.0 minutos.](../_assets/ml-c1-ganador-imposible.svg)
 :::
 
 El grado 5 pasa por las seis entregas; la recta deja pequeñas diferencias.
@@ -427,7 +427,7 @@ Un grado mayor tampoco lo revela: la mejor función con solo distancia ya era un
 ## 6 · Nombrar las fuentes del error
 
 ::: figure {#ml-c1-cuatro-fuentes title="Las cuatro fuentes del error"}
-![Diagrama de las cuatro fuentes del error. Al centro, lo mejor que se puede predecir con lo que mides, rodeado de dos halos: 1, el azar, y 2, lo que no mides, que puede encogerse al medir otra variable; las dos fijan el piso. A la derecha, el óvalo de la familia: la mejor de la familia, en su borde, está a una distancia de aproximación (3) del centro, y f gorro con n datos está a una distancia de estimación (4) de la mejor de la familia. Aparte, punteado y fuera de las cuatro: lo que devuelve el optimizador, el error de optimización.](../_assets/ml-c1-cuatro-fuentes.svg)
+![Diagrama de las cuatro fuentes del error. Al centro, lo mejor que se puede predecir con lo que mides, rodeado de dos halos: 1, el azar, y 2, lo que no mides, que puede encogerse al medir otra variable; las dos fijan el piso. A la derecha, el óvalo de la familia: la mejor de la familia, en su borde, está a una distancia de aproximación (3) del centro, y f gorro con n datos está a una distancia de estimación (4) de la mejor de la familia. Junto a f gorro, un punto hueco: lo que devuelve el optimizador; la distancia entre los dos es el error de optimización, aparte, punteado y fuera de las cuatro.](../_assets/ml-c1-cuatro-fuentes.svg)
 :::
 
 Los halos muestran el piso; el óvalo, la familia permitida.
@@ -511,7 +511,8 @@ Otras rectas polares pueden producir espirales, y el ángulo salta en $\pm\pi$.
 > [!WARNING]
 > Lectura equivocada: «Cambiar coordenadas agrega información».
 >
-> Lectura correcta: **Cambiar de coordenadas no agrega información: cambia qué fronteras puede dibujar una recta.** Si conservas solo $r$ y la etiqueta depende de $\theta$, el piso sube.
+> Lectura correcta: **Cambiar de coordenadas no agrega información: cambia qué fronteras puede dibujar una recta.**
+> Si conservas solo $r$ y la etiqueta depende de $\theta$, pierdes información: los aciertos del mejor clasificador posible pueden bajar.
 
 Algo semejante ocurre al dar a la logística un reporte médico o los píxeles de una resonancia: cambia la información representada.
 Tú eliges $\phi$, como en @ml-c0-quien-elige-phi; el aprendizaje de representaciones la aprende (@ml-c0-jerarquia).
@@ -548,7 +549,7 @@ Ambas conservan la información que exige la nueva etiqueta.
 ## 8 · Reconocer un modelo lineal
 
 ::: figure {#ml-c1-matriz-phi title="Tres Φ para las mismas seis entregas"}
-![Las seis entregas, con x de 1 a 6, escritas con tres matrices de diseño lado a lado: phi de x igual a (1, x), con 2 columnas; (1, x, x al cuadrado), con 3 columnas y valores 1, 4, 9, 16, 25 y 36; y (1, 1 entre x), con 2 columnas y valores 1, 1/2, 1/3, 1/4, 1/5 y 1/6. La primera columna de cada una es la de unos. Debajo de cada matriz, la misma multiplicación Φ por beta gorro igual a y gorro.](../_assets/ml-c1-matriz-phi.svg)
+![Las seis entregas, con x de 1 a 6, escritas con tres matrices de diseño lado a lado: phi de x igual a (1, x), con 2 columnas; (1, x, x al cuadrado), con 3 columnas y valores 1, 4, 9, 16, 25 y 36; y (1, 1 entre x), con 2 columnas y valores 1, 1/2, 1/3, 1/4, 1/5 y 1/6. La primera columna de cada una es la de unos. Debajo de cada matriz, la misma multiplicación Φ por beta gorro igual a y gorro: Φ tiene 6 filas y tantas columnas como entradas tiene beta gorro, y y gorro trae 6 predicciones, una por entrega.](../_assets/ml-c1-matriz-phi.svg)
 :::
 
 Las seis entregas vuelven transformadas en columnas.
@@ -583,7 +584,7 @@ categoría, $(1,x_1,x_2,x_1x_2)$.
 :::
 
 La primera columna de $\Phi$ es la de unos; con el cuadrado hay 3 columnas, con el recíproco, 2.
-Sirven las mismas ecuaciones normales para cualquier $\phi$ fija.
+Para cualquier $\phi$ fija se resuelve el mismo problema de mínimos cuadrados.
 Las dummies indican pertenencia a categorías; $x_1x_2$ combina variables.
 Elegir columnas traduce tu conocimiento a matemáticas.
 
@@ -651,7 +652,7 @@ Solo consideramos esos cuatro puntos, sin ruido. La idea nueva: la frontera ya n
 :::
 
 ::: hint {#ml-c1-pista-final-que-es-f-2 of="ml-c1-ej-final-que-es-f" title="Pista 2 · Revisa la separación"}
-Si sumas las desigualdades que pediría una recta en los cuatro puntos, ¿qué obtienes?
+Suma por separado las dos desigualdades de cada clase: ¿qué exige cada suma sobre $\beta_0$?
 ¿Tu $\phi$ da valores de signo distinto a cada clase?
 :::
 

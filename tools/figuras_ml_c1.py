@@ -302,7 +302,9 @@ def ml_c1_cuatro_fuentes():
     c.append(f'<circle cx="{mx}" cy="{my}" r="6" fill="{TEXTO}"/>')
     c.append(texto(mx + 12, my + 26, "la mejor de", tam=13, anclaje="start"))
     c.append(texto(mx + 12, my + 42, "la familia", tam=13, anclaje="start"))
-    c.append(flecha(mx - 8, my, cx + 84, my, color=ACENTO, grosor=2.5))
+    # la flecha 3 llega al punto central (E[y | x_visibles]), por encima de los
+    # halos: la aproximacion se mide hasta lo mejor con lo que mides (r3)
+    c.append(flecha(mx - 8, my, cx + 10, cy, color=ACENTO, grosor=2.5))
     c.append(texto((mx + cx + 78) / 2, my - 12, "3 · aproximación", tam=13, peso="700",
                    color=ACENTO))
     # f gorro con n datos
@@ -322,14 +324,20 @@ def ml_c1_cuatro_fuentes():
     c.append(texto(ox, oy + 17, "y además: optimización", tam=13, peso="700",
                    color=SUAVE))
     c.append(texto(ox, oy + 34, "(fuera de las cuatro)", tam=12, color=SUAVE))
-    c.append(linea(gx, oy - 24, gx, gy + 10, color=SUAVE, grosor=1.5, guiones="3 4"))
+    # lo que devuelve el optimizador: un punto propio cerca de f gorro (r3)
+    px, py = gx + 40, gy + 34
+    c.append(linea(gx + 5, gy + 4, px - 5, py - 4, color=SUAVE, grosor=1.2, guiones="2 3"))
+    c.append(f'<circle cx="{px}" cy="{py}" r="5" fill="{FONDO}" stroke="{SUAVE}" '
+             f'stroke-width="1.8"/>')
+    c.append(linea(px, oy - 24, px, py + 7, color=SUAVE, grosor=1.5, guiones="3 4"))
     aria = ("Diagrama de las cuatro fuentes del error. Al centro, lo mejor que se puede "
             "predecir con lo que mides, rodeado de dos halos: 1, el azar, y 2, lo que no "
             "mides, que puede encogerse al medir otra variable; las dos fijan el piso. A la "
             "derecha, el óvalo de la familia: la mejor de la familia, en su borde, está a "
             "una distancia de aproximación (3) del centro, y f gorro con n datos está a una "
-            "distancia de estimación (4) de la mejor de la familia. Aparte, punteado y "
-            "fuera de las cuatro: lo que devuelve el optimizador, el error de optimización.")
+            "distancia de estimación (4) de la mejor de la familia. Junto a f gorro, un punto "
+            "hueco: lo que devuelve el optimizador; la distancia entre los dos es el error "
+            "de optimización, aparte, punteado y fuera de las cuatro.")
     return svg(CF_W, CF_H, aria, "Las cuatro fuentes del error", c)
 
 
@@ -338,7 +346,7 @@ def ml_c1_cuatro_fuentes():
 # P1 §8 (F7a). Las seis entregas de la unidad 6 con tres Φ lado a lado:
 # (1, x), (1, x, x²) y (1, 1/x); debajo, la misma multiplicacion Φβ.
 
-MP_W, MP_H = 600, 400
+MP_W, MP_H = 600, 424
 _RECIPROCOS = ("1", "1/2", "1/3", "1/4", "1/5", "1/6")
 
 
@@ -390,8 +398,11 @@ def ml_c1_matriz_phi():
         yb = y0 + 156 + 34
         c.append(texto(x0 + ancho / 2, yb, ["Φ ", ("β̂", _IT), " = ", ("ŷ", _IT)], tam=15,
                        peso="700", color=CIAN))
-        c.append(texto(x0 + ancho / 2, yb + 18, f"6×{len(enc)} por {len(enc)}", tam=12,
-                       color=SUAVE))
+        k = len(enc)
+        c.append(texto(x0 + ancho / 2, yb + 20, ["Φ: 6×", str(k), " · ", ("β̂", _IT),
+                                                 f": {k} entradas"], tam=12, color=SUAVE))
+        c.append(texto(x0 + ancho / 2, yb + 36, [("ŷ", _IT), ": 6, una por entrega"],
+                       tam=12, color=SUAVE))
     c.append(flecha(68, y0 + 78, 96, y0 + 78, color=SUAVE))
     c.append(texto(16, MP_H - 48, ["La primera columna es la de unos (su coeficiente es ",
                                     ("β", _IT), "₀)."], tam=13, anclaje="start",
@@ -404,7 +415,8 @@ def ml_c1_matriz_phi():
             "con 3 columnas y valores 1, 4, 9, 16, 25 y 36; y (1, 1 entre x), con 2 "
             "columnas y valores 1, 1/2, 1/3, 1/4, 1/5 y 1/6. La primera columna de cada "
             "una es la de unos. Debajo de cada matriz, la misma multiplicación Φ por beta "
-            "gorro igual a y gorro.")
+            "gorro igual a y gorro: Φ tiene 6 filas y tantas columnas como entradas tiene "
+            "beta gorro, y y gorro trae 6 predicciones, una por entrega.")
     return svg(MP_W, MP_H, aria, "Tres Φ para las mismas seis entregas", c)
 
 
@@ -458,8 +470,7 @@ def ml_c1_ganador_imposible():
 
     aria = (f"Seis entregas de 1 a 6 km; la recta ajustada predice {_num(r7)} minutos a "
             f"7 km y el polinomio de grado 5, que pasa por los seis puntos, predice "
-            f"{_num(q7)} minutos. A 3.5 km los dos predicen "
-            f"{_num(g['prediccion'][3.5][0])} minutos.")
+            f"{_num(q7)} minutos.")
     return _grafica(dibujar, aria, "El ajuste que ganó predice un tiempo imposible", 3.7)
 
 

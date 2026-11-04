@@ -244,7 +244,10 @@ también verás su matriz $\Phi$.
 **Galería.** Pulsa «Caso 1», lee la pregunta que aparece y escribe tu respuesta
 antes de abrir «¿Qué se ve?». Haz lo mismo con «Caso 2».
 En el caso 1 la celda no imprime coeficientes: antes de abrir «¿Qué se ve?», anota si esperas el coeficiente estimado de $x_1$ mayor, menor o igual que 1, y por qué; luego compáralo con la explicación.
-En el caso 2, apóyate en la gráfica y en las cifras que imprime.
+En el caso 1, ignora por ahora la curva de capacidad: la retoma el notebook 02.
+En el caso 2 la celda no imprime cifras: para leer el piso y el riesgo $R$ de tu
+mejor recta, vuelve a las cifras que imprime el bloque 3 con el interruptor
+apagado y el grado 1.
 
 ### celda: ejercicio-piso
 

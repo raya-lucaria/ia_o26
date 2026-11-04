@@ -208,6 +208,29 @@ def test_omitida_caso_1():
     assert abs(o["piso_visible"] - 0.86) < 0.01
     assert o["piso_visible_cuenta"] == pytest.approx(0.86, abs=1e-12)
 
+# ------------------------------------------- cifras de la revision r3 ---
+
+def test_residual_ruido_reducible_y_residual():
+    r = c.cifras_c1_residual()
+    assert (r["ruido"], r["reducible"], r["residual"]) == (3.0, -1.5, 1.5)
+    assert r["ruido"] + r["reducible"] == r["residual"]
+
+
+def test_ej_piso_es_sigma_cuadrada():
+    e = c.cifras_c1_ej_piso()
+    assert e["piso"] == pytest.approx(4.0) and e["n_muestra"] == 10
+
+
+def test_lluvia_E_sin_x2_es_13_mas_4x1():
+    ll = c.cifras_c1_lluvia()
+    assert (ll["intercepto_sin_x2"], ll["pendiente_sin_x2"]) == pytest.approx((13.0, 4.0))
+
+
+def test_arriba_abajo_con_solo_r_queda_en_50():
+    a = c.cifras_c1_arriba_abajo()
+    assert abs(a["aciertos"] - 0.5) < 0.02 and a["bayes_solo_r"] == 0.5
+
+
 # --- fin tramo 1a ---
 
 
@@ -217,3 +240,4 @@ def test_omitida_caso_1():
 
 # --- tramo tarea ---
 # --- fin tramo tarea ---
+

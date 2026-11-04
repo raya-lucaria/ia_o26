@@ -29,7 +29,12 @@ def bloque_1(proceso, sigma, n, semilla):
     recta = ml.ajustar(datos)
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ml.dibujar_proceso(datos, puntos_realidad=300, ax=ax)
-    ml.dibujar_ajuste({"f̂: la recta ajustada": recta}, datos, ax=ax)
+    # Sin datos= para no volver a dibujar (y rotular) los puntos de entrenamiento;
+    # el eje muestra tiempos observados: es y, no ŷ.
+    ventana = ax.get_xlim()
+    ml.dibujar_ajuste({"f̂: la recta ajustada": recta}, ventana=ventana, ax=ax)
+    ax.set_xlim(ventana)
+    ax.set_ylabel("y")
     plt.show()
     b_ent = ml.benchmarks(datos, datos.ent).loc["media", "cuadratica"]
     b_desp = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
@@ -61,10 +66,8 @@ SEMILLA = 0
 class Fijo(ml.Modelo):
     """Un predictor que no se ajusta: predice con una función fija de x."""
     tarea = "regresion"
-
     def __init__(self, g):
         self.g = g
-
     def predecir(self, df):
         return np.asarray(self.g(df), dtype=float)
 
@@ -76,14 +79,20 @@ def bloque_2(sigma, n):
     modelos = {"oráculo f": Fijo(lambda d: 10 + 4 * d["x"]),
                "recta ajustada": ml.ajustar(datos),
                "media (benchmark)": Fijo(lambda d: np.full(len(d), ybar))}
-    fig, ax = plt.subplots(figsize=(7, 3.6))
-    ml.dibujar_piso(datos, modelos, ax=ax)
+    R, valor_piso = {k: ml.riesgo(m, datos) for k, m in modelos.items()}, ml.piso(datos)
+    ax = ml.dibujar_piso(datos, modelos, ax=plt.subplots(figsize=(7, 3.6))[1])
+    # La media es ~50 veces las otras: su barra se recorta para leer el piso.
+    tope = max(5, 1.5 * valor_piso, 1.5 * R["oráculo f"], 1.5 * R["recta ajustada"])
+    if R["media (benchmark)"] > tope:
+        ax.set_ylim(0, tope)
+        ax.text(2, 0.97 * tope, f"↑ media: {R['media (benchmark)']:.1f}\n(recortada)",
+                ha="center", va="top", fontsize=9, color="white", fontweight="bold")
+    ax.legend(loc="upper left", frameon=False)
     plt.show()
-    print(f"piso R_Bayes = σ_ε² = {ml.piso(datos):.3f}")
+    print(f"piso R_Bayes = σ_ε² = {valor_piso:.3f}")
     for nombre, m in modelos.items():
         print(f"{nombre:>18}: L_ent = {ml.L(m, datos.ent):7.3f}"
-              f"   R (despliegue) = {ml.riesgo(m, datos):7.3f}")
-
+              f"   R (despliegue) = {R[nombre]:7.3f}")
 
 ml.laboratorio(
     bloque_2,
@@ -119,6 +128,8 @@ def bloque_3(medir, N):
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.8))
     ml.dibujar_proceso(datos, color_por="x2" if medir else None, ax=a1)
     ml.dibujar_piso(datos, {f"grado {N}": m}, ax=a2)
+    a2.set_ylim(0, 1.45 * max(ml.riesgo(m, datos), ml.piso(datos)))
+    a2.legend(loc="upper center", frameon=False)   # arriba de la barra, no encima
     plt.show()
     media = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
     print(f"columnas que ve el modelo: {datos.columnas_x}")
@@ -210,7 +221,7 @@ def bloque_5(proceso, phi):
               lambda x: m.predecir(pd.DataFrame({v: x, "x2": 0}))}
     if phi.endswith("lluvia"):
         curvas["con lluvia"] = lambda x: m.predecir(pd.DataFrame({v: x, "x2": 1}))
-    ml.dibujar_ajuste(curvas, datos)
+    ml.dibujar_ajuste(curvas, datos).set_ylabel("y")   # datos observados y predicciones
     plt.show()
     print("m = ml.ajustar(datos, phi=...)   ← la misma línea con cualquier φ")
     ml.imprimir_Phi(m, datos.ent, filas=4)
