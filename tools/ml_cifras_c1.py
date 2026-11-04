@@ -647,7 +647,9 @@ def cifras_c1_extrapolar(semilla=SEMILLA_1B):
     datos para el polinomio de grado 7 (entregas y seno) y para la recta de
     las entregas; en el recursivo (x creciente en el tiempo), L en el tramo
     de entrenamiento (realidad, t < n) y R a un paso en el futuro
-    (despliegue, t >= n) de la recta en x, sin y con el tiempo anterior."""
+    (despliegue, t >= n) de la recta en x, sin y con el tiempo anterior.
+    «dentro» y «futuro» promedian series nuevas del proceso (realidad y
+    despliegue); «serie_dibujada» es L_ent sobre los 60 pasos observados."""
     ml = _ml()
     salida = {}
     for panel, zonas in EXTRAPOLAR_ZONAS.items():
@@ -665,7 +667,8 @@ def cifras_c1_extrapolar(semilla=SEMILLA_1B):
     for nombre, con in (("sin_anterior", False), ("con_anterior", True)):
         m = ml.ajustar(datos, phi=phi_recursivo(con))
         rec[nombre] = {"dentro": float(ml.L(m, datos.realidad)),
-                       "futuro": float(ml.riesgo(m, datos))}
+                       "futuro": float(ml.riesgo(m, datos)),
+                       "serie_dibujada": float(ml.L(m, datos.ent))}
     salida["recursivo"] = rec
     return salida
 
