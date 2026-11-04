@@ -214,13 +214,15 @@ def test_claves_de_los_catalogos_de_1_0():
         "entregas", "inverso", "mezcla_logs", "seno", "x1_mas_x2x3", "lluvia",
     }
     assert set(claves_1_0["CASOS_BORDE"]) == {1, 2, 23}
-    # 1.1 (O0b-c1) agrega "recursivo" y los casos 3, 4 y 5; no quita nada
-    assert set(ml.PROCESOS) == set(claves_1_0["PROCESOS"]) | {"recursivo"}
+    # 1.1 (O0b-c1) agrega "recursivo" y los casos 3, 4 y 5; 1.2 (clase 2) agrega
+    # "entregas_curvas", los casos 13 a 16 y el taller 2; nadie quita nada
+    assert set(ml.PROCESOS) == set(claves_1_0["PROCESOS"]) | {"recursivo", "entregas_curvas"}
+    assert set(_entradas()["1.2"]["__claves__"]["PROCESOS"]) >= {"entregas_curvas"}
     for prohibida in ("lineal", "ar1", "cola_larga"):
         assert prohibida not in ml.PROCESOS
-    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 23}
+    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 13, 14, 15, 16, 23}
     assert all(isinstance(k, int) for k in ml.CASOS_BORDE)
-    assert set(ml.ANALISIS_TALLER) == {1}
+    assert set(ml.ANALISIS_TALLER) == {1, 2}
     assert ml.SENTIDO == {
         "cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max",
     }
@@ -238,8 +240,8 @@ def test_requiere_misma_x_y_mayor_o_igual():
 
 
 def test_version_y_cambios():
-    assert ml.VERSION == "1.1"
-    assert {"1.0", "1.1"} <= set(ml.CAMBIOS)
+    assert ml.VERSION == "1.2"
+    assert {"1.0", "1.1", "1.2"} <= set(ml.CAMBIOS)
     assert set(_entradas()) == set(ml.CAMBIOS)
 
 
@@ -522,15 +524,18 @@ def test_fracciones_con_ceros():
 
 
 def test_adelantos_de_proceso_lanzan_con_la_clase_que_los_trae():
-    for kwargs, clase in [({"separar": "tiempo"}, "clase 2"), ({"separar": "grupo"}, "clase 2"),
-                          ({"separar": "estratificado"}, "clase 2"),
-                          ({"despliegue": "futuro"}, "clase 2"),
-                          ({"despliegue": "grupos_nuevos"}, "clase 2"),
-                          ({"despliegue": "otra_poblacion"}, "clase 2"),
-                          ({"despliegue": "futuro", "deriva": lambda t: {}}, "clase 2"),
-                          ({"faltantes": {"x": (0.2, "azar")}}, "clase 4")]:
-        with pytest.raises(NotImplementedError, match=clase):
-            ml.proceso(n=20, **kwargs)
+    # 1.2: lo de la clase 2 ya funciona; faltantes sigue lanzando y nombra la clase 4
+    with pytest.raises(NotImplementedError, match="clase 4"):
+        ml.proceso(n=20, faltantes={"x": (0.2, "azar")})
+    with pytest.raises(NotImplementedError, match="clase 4"):
+        ml.proceso(n=20, ruido=ml.ar1(), despliegue="futuro", faltantes={"x": (0.2, "azar")})
+    # lo que pide una columna que el proceso no tiene es un ValueError que lo dice
+    for kwargs, patron in [({"separar": "tiempo"}, "columna t"),
+                           ({"separar": "grupo"}, "columna grupo"),
+                           ({"despliegue": "futuro"}, "columna t"),
+                           ({"despliegue": "grupos_nuevos"}, "columna grupo")]:
+        with pytest.raises(ValueError, match=patron):
+            ml.proceso(n=20, con_realidad=False, **kwargs)
     with pytest.raises(ValueError, match="deriva"):
         ml.proceso(n=20, deriva=lambda t: {})
     with pytest.raises(ValueError):
@@ -814,8 +819,11 @@ def test_curva_capacidad():
     assert set(tabla["conjunto"]) == {"ent", "realidad"}
     ent = tabla[tabla.conjunto == "ent"].set_index("candidato")["L"]
     assert ent[4] <= ent[2] <= ent[1]
-    with pytest.raises(NotImplementedError, match="clase 2"):
-        ml.curva_capacidad(datos, candidatos, conjuntos=("cv",), k=5)
+    cv = ml.curva_capacidad(datos, candidatos, conjuntos=("cv",), k=5)
+    for N, construir in candidatos.items():
+        r = ml.validacion_cruzada(datos, construir, k=5)
+        fila = cv[cv.candidato == N].iloc[0]
+        assert fila["L"] == pytest.approx(r.media) and fila["ee"] == pytest.approx(r.ee)
 
 
 # ---------------------------------------------------------------------------
@@ -832,7 +840,7 @@ def test_casos_de_1_0_se_rompen_a_la_vista():
     assert ml.ajustar(c2).beta_gorro["x1"] == pytest.approx(4.0, abs=1.0)
     assert ml.piso(c2) > 9 * ml.piso(ml.caso(2, omitir=None))
     for numero, caso in ml.CASOS_BORDE.items():
-        assert caso.numero == numero and caso.clase == 1
+        assert caso.numero == numero and caso.clase == (2 if 13 <= numero <= 16 else 1)
         assert caso.pregunta.endswith("?") and caso.que_se_ve
 
 
@@ -1329,11 +1337,19 @@ def test_adelantos_de_proceso_clasificacion_lanzan_con_la_clase_4(cambio):
 
 
 def test_adelantos_de_proceso_clasificacion_de_la_clase_2_y_errores():
-    with pytest.raises(NotImplementedError, match="clase 2"):
+    # 1.2: despliegue y deriva funcionan con la implementación común
+    with pytest.raises(ValueError, match="columna t"):
         ml.proceso_clasificacion(n=50, despliegue="futuro", con_realidad=False)
-    with pytest.raises(NotImplementedError, match="clase 2"):
-        ml.proceso_clasificacion(n=50, despliegue="otra_poblacion", deriva=lambda t: {},
-                                 con_realidad=False)
+    otra = ml.proceso_clasificacion(n=50, despliegue="otra_poblacion",
+                                    deriva=lambda t: {"x1": ml.uniforme(3, 4)})
+    assert otra.despliegue["x1"].min() >= 3 and otra.realidad["x1"].min() < 0
+    z = 1.5 * otra.despliegue["x1"] + otra.despliegue["x2"]
+    assert np.allclose(otra.despliegue["prob"], 1 / (1 + np.exp(-z)))
+    concepto = ml.proceso_clasificacion(n=50, despliegue="otra_poblacion",
+                                        deriva=lambda t: {"f": lambda d: -d["x1"]})
+    assert np.allclose(concepto.despliegue["prob"], 1 / (1 + np.exp(concepto.despliegue["x1"])))
+    with pytest.raises(ValueError, match="grupo"):
+        ml.proceso_clasificacion(n=50, despliegue="grupos_nuevos", con_realidad=False)
     with pytest.raises(ValueError, match="deriva"):
         ml.proceso_clasificacion(n=50, deriva=lambda t: {}, con_realidad=False)
     with pytest.raises(ValueError):
@@ -1593,3 +1609,767 @@ def test_recursivo_realidad_y_despliegue_son_filas_independientes_de_todo_el_tra
     real = datos.realidad
     seguidas = np.isclose(real["y_anterior"].to_numpy()[1:], real["y"].to_numpy()[:-1])
     assert seguidas.mean() < 0.01
+
+
+# ---------------------------------------------------------------------------
+# 10 · Versión 1.2 (lote de la clase 2, contrato §5.15 C, D-013c-c2)
+# ---------------------------------------------------------------------------
+
+NUEVAS_1_2 = ("ar1", "efecto_grupo", "entregas_curvas", "separar", "pliegues", "error_estandar",
+              "intervalo", "validacion_cruzada", "diferencia_pareada", "diferencia_por_pliegue",
+              "elegir", "cv_anidada", "optimismo_por_seleccion", "capacidad_elegida", "reparto",
+              "sesgo_varianza", "curva_aprendizaje", "dibujar_pliegues",
+              "dibujar_histograma_estimaciones", "dibujar_cv", "dibujar_abanico",
+              "dibujar_sesgo_varianza", "dibujar_curva_aprendizaje", "dibujar_cajas_pliegues",
+              "dibujar_diana", "dibujar_contratos", "dibujar_reparto")
+
+
+def _polis(Ns, var="x"):
+    return {N: (lambda df, N=N: ml.ajustar(df, phi=ml.polinomio(N, variable=var))) for N in Ns}
+
+
+class _Constante(ml.Modelo):
+    """Un predictor fijo para las pruebas (tarea regresión)."""
+
+    familia, tarea = "constante", "regresion"
+
+    def __init__(self, valor):
+        self.valor = float(valor)
+
+    def predecir(self, df):
+        return np.full(len(df), self.valor)
+
+
+def test_las_funciones_de_1_2_dicen_desde_cuando():
+    for nombre in NUEVAS_1_2:
+        assert "Desde: 1.2 (clase 2)" in getattr(ml, nombre).__doc__, nombre
+    assert "Desde: 1.2 (clase 2)" in ml.Datos.rehacer.__doc__
+    assert ml.PROCESOS["entregas_curvas"] is ml.entregas_curvas
+
+
+def test_ar1_es_estacionario_desde_el_primer_paso():
+    a, desv = 0.95, 3.0
+    mec = ml.ar1(a, desv)
+    assert mec.crea == ["t"] and mec.varianza == pytest.approx(desv ** 2 / (1 - a ** 2))
+    rng = np.random.default_rng(0)
+    primeros = np.array([mec.muestrear(pd.DataFrame({"t": np.arange(3)}), rng)[0]
+                         for _ in range(4000)])
+    assert np.var(primeros) == pytest.approx(mec.varianza, rel=0.08)
+    serie = mec.muestrear(pd.DataFrame({"t": np.arange(20_000)[::-1]}), rng)[::-1]
+    assert np.corrcoef(serie[:-1], serie[1:])[0, 1] == pytest.approx(a, abs=0.02)
+    with pytest.raises(ValueError, match="persistencia"):
+        ml.ar1(1.0)
+
+
+def test_efecto_grupo_fija_pacientes_y_crea_nuevos():
+    mec = ml.efecto_grupo(24, 4, 1)
+    assert mec.crea == ["grupo"] and mec.varianza == pytest.approx(17)
+    g = mec.preparar(240, np.random.default_rng(0))["grupo"]
+    assert sorted(np.unique(g)) == list(range(24)) and np.all(np.bincount(g) == 10)
+    nuevos = mec.preparar_nuevos(100, np.random.default_rng(0))["grupo"]
+    assert nuevos.min() >= 24
+    # el efecto de un paciente es de la población: no cambia con la semilla
+    assert np.allclose(mec._efecto([3, 3, 7]), mec._efecto(np.array([3, 3, 7])))
+    d1 = ml.caso(14, semilla=1)
+    d2 = ml.caso(14, semilla=2)
+    assert d1.sigma2_e == pytest.approx(17)
+    assert ml.piso(d1) == pytest.approx(17)
+    pd.testing.assert_frame_equal(d1.despliegue, d2.despliegue)
+
+
+def test_despliegue_futuro():
+    """Contrato §5.5 v5: t sigue a la muestra; otra realización estacionaria del ruido."""
+    a, desv, n = 0.95, 3.0, 240
+    datos = ml.proceso(n=n, x={"x": ml.uniforme(0, 6)}, f=lambda d: 10 + 0 * d["x"],
+                       ruido=ml.ar1(a, desv), despliegue="futuro")
+    muestra = pd.concat([datos.ent, datos.val, datos.prueba])
+    assert sorted(muestra["t"]) == list(range(n))
+    t_desp = datos.despliegue["t"].to_numpy()
+    assert t_desp.min() == n and t_desp.max() == n + len(t_desp) - 1
+    assert t_desp.min() > muestra["t"].max()
+    otra = ml.proceso(n=n, x={"x": ml.uniforme(0, 6)}, f=lambda d: 10 + 0 * d["x"],
+                      ruido=ml.ar1(a, desv), despliegue="futuro", semilla=9)
+    pd.testing.assert_frame_equal(datos.despliegue.reset_index(drop=True),
+                                  otra.despliegue.reset_index(drop=True))
+    eps = datos.despliegue["y"].to_numpy() - 10
+    assert np.var(eps) == pytest.approx(desv ** 2 / (1 - a ** 2), rel=0.05)
+    pares = []
+    for s in range(200):
+        d = ml.proceso(n=40, x={"x": ml.uniforme(0, 6)}, f=lambda d: 10 + 0 * d["x"],
+                       ruido=ml.ar1(a, desv), despliegue="futuro", semilla=s,
+                       semilla_realidad=s, n_realidad=50)
+        m = pd.concat([d.ent, d.val, d.prueba]).sort_values("t")
+        pares.append((m["y"].iloc[-1] - 10, d.despliegue.sort_values("t")["y"].iloc[0] - 10))
+    pares = np.array(pares)
+    assert abs(np.corrcoef(pares[:, 0], pares[:, 1])[0, 1]) < 0.2  # no es continuación
+    with pytest.raises(ValueError, match="deriva"):
+        ml.proceso(n=40, ruido=ml.ar1(), deriva=lambda t: {})
+    with pytest.raises(NotImplementedError, match="clase 4"):
+        ml.proceso(n=40, ruido=ml.ar1(), despliegue="futuro", faltantes={"x": (0.1, "azar")})
+    for numero in (13, 14, 15):
+        ml.caso(numero, n_realidad=2000)
+
+
+def test_deriva_cambia_x_o_f_en_el_despliegue():
+    base = dict(n=60, x={"x": ml.uniforme(0, 6)}, f=lambda d: 2 * d["x"], n_realidad=5000)
+    otra = ml.proceso(despliegue="otra_poblacion", deriva=lambda t: {"x": ml.uniforme(4, 9)},
+                      **base)
+    assert otra.despliegue["x"].min() >= 4 and otra.realidad["x"].max() <= 6
+    assert np.allclose(otra.despliegue["f"], 2 * otra.despliegue["x"])
+    concepto = ml.proceso(despliegue="otra_poblacion", deriva=lambda t: {"f": lambda d: -d["x"]},
+                          **base)
+    assert np.allclose(concepto.despliegue["f"], -concepto.despliegue["x"])
+    futuro = ml.proceso(ruido=ml.ar1(0.5, 1), despliegue="futuro",
+                        deriva=lambda t: {"x": 0.001 * t}, **base)
+    assert np.allclose(futuro.despliegue["x"], 0.001 * futuro.despliegue["t"])
+    with pytest.raises(ValueError, match="variable"):
+        ml.proceso(despliegue="otra_poblacion", deriva=lambda t: {"z": 1}, **base)
+    # con f_visible de forma cerrada, la deriva la deja en nan (y el piso es desconocido)
+    lluvia = ml.caso(2, despliegue="otra_poblacion", deriva=lambda t: {"x1": ml.uniforme(5, 6)})
+    assert lluvia.despliegue["f_visible"].isna().all()
+
+
+def test_separar_y_proceso_nunca_mezclan_tiempo_ni_grupos():
+    t = ml.proceso(n=100, ruido=ml.ar1(), separar="tiempo")
+    assert t.ent["t"].max() < t.val["t"].min() and t.val["t"].max() < t.prueba["t"].min()
+    g = ml.caso(14, separar="grupo")
+    grupos = [set(p["grupo"]) for p in (g.ent, g.val, g.prueba)]
+    assert not (grupos[0] & grupos[1] or grupos[0] & grupos[2] or grupos[1] & grupos[2])
+    # separar es una función pública con el mismo vocabulario, y conserva attrs
+    ent, val, pru = ml.separar(pd.concat([g.ent, g.val, g.prueba]), como="grupo", semilla=3)
+    assert ent.attrs["ml"]["tarea"] == "regresion"
+    assert not set(ent["grupo"]) & set(pru["grupo"])
+    a, b, c = ml.separar(pd.concat([t.ent, t.val, t.prueba]), como="tiempo")
+    assert a["t"].max() < c["t"].min()
+    with pytest.raises(ValueError, match="temporal"):
+        ml.separar(t.ent, como="temporal")
+    # estratificado en regresión: deciles de y, las tres partes con todo el rango
+    e = ml.proceso(n=200, separar="estratificado")
+    assert len(e.ent) == 120 and len(e.val) == 40 and len(e.prueba) == 40
+    assert e.prueba["y"].min() < e.ent["y"].quantile(0.2) < e.ent["y"].quantile(0.8) < \
+        e.prueba["y"].max()
+    # mismas semillas, solo cambia separar: misma muestra y mismo despliegue
+    az = ml.caso(14, separar="azar")
+    juntas = lambda d: pd.concat([d.ent, d.val, d.prueba]).sort_index()  # noqa: E731
+    pd.testing.assert_frame_equal(juntas(az), juntas(g))
+    pd.testing.assert_frame_equal(az.despliegue, g.despliegue)
+
+
+def test_pliegues_cada_fila_valida_una_vez():
+    df = ml.entregas_curvas(n=53).ent
+    part = ml.pliegues(df, k=5, semilla=2)
+    assert len(part) == 5
+    validas = np.concatenate([v for _, v in part])
+    assert sorted(validas) == list(range(len(df)))
+    for ajuste, valida in part:
+        assert not set(ajuste) & set(valida) and len(ajuste) + len(valida) == len(df)
+    y = pd.DataFrame({"y": np.r_[np.ones(6, int), np.zeros(54, int)]})
+    for semilla in range(30):
+        est = ml.pliegues(y, k=5, como="estratificado", semilla=semilla)
+        assert all(y["y"].iloc[v].sum() > 0 for _, v in est)
+    for como in ("grupo", "temporal"):
+        with pytest.raises(NotImplementedError, match="clase 5"):
+            ml.pliegues(df, como=como)
+    with pytest.raises(ValueError):
+        ml.pliegues(df, como="azar", estratificar=True)
+
+
+def test_rehacer_cambia_la_muestra_no_la_poblacion():
+    datos = ml.entregas_curvas()
+    otra = datos.rehacer(5)
+    assert not otra.ent.equals(datos.ent) and otra.realidad is None
+    con = datos.rehacer(5, True)
+    pd.testing.assert_frame_equal(con.despliegue, datos.despliegue)
+    assert con.ent.equals(otra.ent)
+    assert ml.caso(13).rehacer(1, True).despliegue.equals(ml.caso(13).despliegue)
+    with pytest.raises(ValueError):
+        ml.Datos(*[None] * 20).rehacer(1)
+
+
+def test_entregas_curvas_hilo_de_la_clase_2():
+    datos = ml.entregas_curvas()
+    assert len(datos.ent) == 36 and datos.sigma2_e == pytest.approx(9)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s = ml.elegir(datos, _polis(range(13)), con="cv")
+        m12 = _polis([12])[12](datos.ent)
+    assert 3 <= s.elegido <= 6
+    assert ml.L(m12, datos.val) / ml.L(m12, datos.ent) >= 2
+    x = np.linspace(0, 6, 601)
+    f = datos.f(pd.DataFrame({"x": x}))
+    fuera = (x < 3) | (x > 4)  # creciente salvo la bajada de la joroba (3.2 a 3.96 km)
+    assert np.all(np.diff(f)[fuera[1:]] > 0)
+    assert f[0] == pytest.approx(10 + 4 * np.exp(-18))
+    assert ml.entregas_curvas(sigma_e=1).sigma2_e == pytest.approx(1)
+    plano = ml.entregas_curvas(joroba=0)
+    assert np.allclose(plano.f(pd.DataFrame({"x": [3.0]})), 10 + 12 * np.log(4))
+    assert "lineal" not in ml.PROCESOS
+
+
+@pytest.mark.parametrize("numero,cambios", [
+    (13, {"persistencia": 0.5, "n": 120}), (13, {"separar": "tiempo"}),
+    (14, {"desv_grupo": 2, "n_grupos": 12}), (14, {"separar": "grupo"}),
+    (15, {"n": 60}), (16, {"semilla": 3}),
+])
+def test_casos_13_a_16_existen_corren_y_aceptan_cambios(numero, cambios):
+    caso = ml.CASOS_BORDE[numero]
+    assert caso.clase == 2 and caso.pregunta.endswith("?") and caso.que_se_ve
+    datos = ml.caso(numero, n_realidad=3000, **cambios)
+    assert datos.tarea == "regresion" and len(datos.ent) > 0
+    assert ml.caso(caso.nombre, n_realidad=3000, **cambios).ent.equals(datos.ent)
+    m = ml.ajustar(datos, phi=ml.polinomio(2))
+    assert np.isfinite(ml.riesgo(m, datos))
+    if numero == 16:
+        assert (datos.ent["x"] > 5.5).sum() == 2 and (datos.ent["x"] <= 4).sum() == 48
+
+
+def test_polinomio_cero_es_la_media():
+    datos = ml.entregas_curvas()
+    m = ml.ajustar(datos, phi=ml.polinomio(0))
+    assert list(m.beta_gorro.index) == ["1"]
+    assert m.beta_gorro["1"] == pytest.approx(datos.ent["y"].mean())
+    with pytest.raises(ValueError, match="intercepto"):
+        ml.ajustar(datos, phi=ml.polinomio(0), intercepto=False)
+
+
+def test_validacion_cruzada_perdidas_fuera_reproducen_cada_pliegue():
+    datos = ml.entregas_curvas()
+    r = ml.validacion_cruzada(datos, _polis([4])[4], k=5)
+    desarrollo = pd.concat([datos.ent, datos.val])
+    assert len(r.perdidas_fuera) == len(desarrollo) and len(r.por_pliegue) == 5
+    for (_, valida), valor in zip(r.pliegues, r.por_pliegue):
+        assert r.perdidas_fuera[valida].mean() == pytest.approx(valor)
+    assert r.media == pytest.approx(np.mean(r.por_pliegue))
+    assert r.ee == pytest.approx(np.std(r.por_pliegue, ddof=1) / np.sqrt(5))
+    assert r.por_pliegue_estadistico is None
+    assert "no se pasan a\n    diferencia_pareada" in ml.validacion_cruzada.__doc__
+
+
+def test_validacion_cruzada_estadistico_etiquetas_y_nan():
+    """Contrato v5 §5.9 (r3-13): etiquetas, nan tal cual, sin fallar."""
+    datos = ml.proceso_clasificacion(n=200, separar="azar", fracciones=(1, 0, 0))
+    df = datos.ent
+    positivos = np.flatnonzero(df["y"].to_numpy() == 1)
+    negativos = np.flatnonzero(df["y"].to_numpy() == 0)
+    sin_positivos = negativos[:20]
+    resto = np.setdiff1d(np.arange(len(df)), sin_positivos)
+    trozos = np.array_split(resto, 4)
+    part = [(np.setdiff1d(np.arange(len(df)), sin_positivos), sin_positivos)] + [
+        (np.setdiff1d(np.arange(len(df)), t), t) for t in trozos]
+    assert len(positivos) > 0
+    vistos = []
+
+    def estadistico(y, y_gorro):
+        vistos.append(np.asarray(y_gorro))
+        return float("nan") if not np.any(y == 1) else float(np.mean(y_gorro))
+
+    r = ml.validacion_cruzada(df, lambda d: ml.ajustar(d), particion=lambda d: part,
+                              estadistico=estadistico)
+    est = r.por_pliegue_estadistico
+    assert np.isnan(est[0]) and np.all(np.isfinite(est[1:]))
+    assert set(np.unique(np.concatenate(vistos))) <= {0, 1}
+
+
+def test_diferencia_pareada_y_por_pliegue():
+    a = np.array([1.0, 2.0, 4.0])
+    assert ml.diferencia_pareada(a, a) == (0.0, 0.0)
+    media, ee = ml.diferencia_pareada(a, np.zeros(3))
+    assert media == pytest.approx(7 / 3) and ee == pytest.approx(np.std(a, ddof=1) / np.sqrt(3))
+    with pytest.raises(ValueError, match="mismo largo"):
+        ml.diferencia_pareada(a, a[:2])
+    datos = ml.entregas_curvas()
+    c = _polis([1, 4])
+    r1 = ml.validacion_cruzada(datos, c[1], k=5)
+    r4 = ml.validacion_cruzada(datos, c[4], k=5)
+    tabla = ml.diferencia_por_pliegue(r4, r1)
+    assert list(tabla["pliegue"]) == [1, 2, 3, 4, 5, "media"]
+    assert tabla["diferencia"].iloc[-1] == pytest.approx(r4.media - r1.media)
+    assert "descriptivo" in tabla.attrs["nota"]
+    otra = ml.validacion_cruzada(datos, c[1], k=5, semilla=7)
+    with pytest.raises(ValueError, match="misma partición"):
+        ml.diferencia_por_pliegue(r4, otra)
+
+
+def test_contraejemplo_del_ee_pareado_en_cv():
+    """Contrato §5.9 / ml-c3-def-benchmark (b): dos respuestas ±1, CV dejando una fuera,
+    predictor 0 contra la media de entrenamiento. Las dos diferencias por pliegue son
+    siempre iguales (s_d/√2 = 0) y la desviación real de su media es 2."""
+    medias = []
+    for y1 in (-1.0, 1.0):
+        for y2 in (-1.0, 1.0):
+            df = pd.DataFrame({"x": [0.0, 1.0], "y": [y1, y2]})
+            part = lambda d: [(np.array([1]), np.array([0])), (np.array([0]), np.array([1]))]  # noqa: E731
+            cero = ml.validacion_cruzada(df, lambda d: _Constante(0), particion=part)
+            media = ml.validacion_cruzada(df, lambda d: _Constante(d["y"].mean()), particion=part)
+            tabla = ml.diferencia_por_pliegue(cero, media)
+            d = tabla["diferencia"].iloc[:2].to_numpy(float)
+            assert d[0] == d[1]
+            assert np.std(d, ddof=1) / np.sqrt(2) == 0
+            medias.append(tabla["diferencia"].iloc[-1])
+    assert sorted(medias) == [-3, -3, 1, 1]
+    assert np.std(medias) == pytest.approx(2.0)
+
+
+def test_elegir_semantica_de_contrato():
+    datos = ml.entregas_curvas()
+    c = _polis(range(9))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cv = ml.elegir(datos, c, con="cv", k=5)
+        val = ml.elegir(datos, c, con="val")
+        ent = ml.elegir(datos, c, con="ent")
+        un = ml.elegir(datos, c, con="cv", regla="un_ee")
+    # tabla, costo y cv
+    assert list(cv.tabla.columns) == ["candidato", "valor", "ee"]
+    assert cv.costo_ajustes == 9 * 5 + 1 and cv.con == "cv"
+    for N in c:
+        assert len(cv.cv[N].por_pliegue) == 5
+        assert cv.cv[N].media == pytest.approx(cv.tabla.set_index("candidato").loc[N, "valor"])
+    # modelo_final: con val reajusta con ent ∪ val; con cv es el mismo objeto
+    n_ent, n_val = len(datos.ent), len(datos.val)
+    assert cv.modelo_final is cv.modelo
+    assert val.modelo is not val.modelo_final and val.cv is None and val.con == "val"
+    desarrollo = pd.concat([datos.ent, datos.val])
+    esperado = c[val.elegido](desarrollo).beta_gorro
+    assert np.allclose(val.modelo_final.beta_gorro, esperado)
+    assert np.allclose(val.modelo.beta_gorro, c[val.elegido](datos.ent).beta_gorro)
+    assert n_ent + n_val == len(desarrollo)
+    # entrenamiento elige el más complejo; la regla de un EE, uno igual o más simple
+    assert ent.elegido == 8
+    assert un.elegido_un_ee <= un.elegido
+    v = un.tabla.set_index("candidato")
+    umbral = v.loc[un.elegido, "valor"] + v.loc[un.elegido, "ee"]
+    assert v.loc[un.elegido_un_ee, "valor"] <= umbral
+    assert all(v.loc[N, "valor"] > umbral for N in c if N < un.elegido_un_ee)
+    with pytest.warns(UserWarning, match="prueba"):
+        ml.elegir(datos, c, con="prueba")
+    with pytest.raises(ValueError, match="un EE"):
+        ml.elegir(datos, c, con="val", regla="un_ee")
+
+
+def test_elegir_empate_al_mas_simple():
+    datos = ml.entregas_curvas()
+    cands = {"a": lambda df: _Constante(25), "b": lambda df: _Constante(25),
+             "c": lambda df: _Constante(100)}
+    for con in ("ent", "val", "cv"):
+        assert ml.elegir(datos, cands, con=con).elegido == "a"
+    orden = ml.elegir(datos, cands, con="cv", orden_complejidad=["b", "a", "c"])
+    assert orden.elegido == "b"
+
+
+def test_cv_anidada_y_optimismo():
+    datos = ml.entregas_curvas(n=80)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        r = ml.cv_anidada(datos, _polis(range(6)), k_externo=4, k_interno=3)
+    assert len(r.por_pliegue) == 4 and np.isfinite(r.media)
+    assert np.all(np.isfinite(r.perdidas_fuera))
+    fab = lambda s: ml.entregas_curvas(semilla=s, con_realidad=False)  # noqa: E731
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        largo = ml.optimismo_por_seleccion(fab, _polis(range(5)), repeticiones=6, detalle=True)
+        corto = ml.optimismo_por_seleccion(fab, _polis(range(5)), repeticiones=6)
+    assert list(largo.columns) == ["repeticion", "candidato", "L_ent", "L_val", "L_prueba", "R",
+                                   "R_final", "L_prueba_final"]
+    assert (largo["R_final"] != largo["R"]).any()
+    for _, fila in corto.iterrows():
+        g = largo[largo.repeticion == fila["repeticion"]]
+        assert fila["con_prueba"] == g["L_prueba"].min()
+        assert fila["con_val_y_prueba"] == g.loc[g["L_val"].idxmin(), "L_prueba"]
+        assert fila["R_real"] == g.loc[g["L_prueba"].idxmin(), "R"]
+
+
+def test_sesgo_varianza_suma_y_curva_de_aprendizaje():
+    datos = ml.entregas_curvas()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        sv = ml.sesgo_varianza(datos.rehacer, _polis([1, 4]), repeticiones=20)
+    t = sv.tabla.set_index("candidato")
+    assert t.loc[1, "ruido"] == pytest.approx(9)
+    assert np.allclose(t["total"], t["ruido"] + t["sesgo2"] + t["varianza"])
+    P = sv.predicciones[4]
+    assert P.shape == (20, len(sv.malla))
+    assert t.loc[4, "sesgo2"] + t.loc[4, "varianza"] == pytest.approx(
+        np.mean((P - sv.verdad) ** 2))
+    assert t.loc[1, "sesgo2"] > t.loc[4, "sesgo2"]
+    fab = lambda s: ml.entregas_curvas(n=240, semilla=s, con_realidad=False)  # noqa: E731
+    tabla = ml.curva_aprendizaje(fab, _polis([1, 4]), ns=[30, 240], repeticiones=3)
+    assert list(tabla.columns) == ["candidato", "n", "repeticion", "L_ent", "R"]
+    assert len(tabla) == 2 * 2 * 3
+    with pytest.raises(ValueError, match="filas"):
+        ml.curva_aprendizaje(fab, _polis([1]), ns=[500], repeticiones=1)
+
+
+def test_capacidad_elegida_sube_con_n_en_el_hilo():
+    fab = lambda s: ml.entregas_curvas(n=960, semilla=s, con_realidad=False)  # noqa: E731
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        tabla = ml.capacidad_elegida(fab, _polis(range(11)), ns=[30, 960], repeticiones=8)
+    assert list(tabla.columns) == ["n", "repeticion", "elegido"]
+    med = tabla.groupby("n")["elegido"].median()
+    assert med[960] >= med[30]
+
+
+def test_reparto_error_es_L_prueba_menos_R():
+    fab = lambda s: ml.entregas_curvas(n=120, semilla=s, con_realidad=False)  # noqa: E731
+    tabla = ml.reparto(fab, _polis([3])[3], fracciones_prueba=(0.1, 0.5), repeticiones=3)
+    assert list(tabla.columns) == ["fraccion", "repeticion", "R", "L_prueba", "error", "ee"]
+    assert np.allclose(tabla["error"], tabla["L_prueba"] - tabla["R"])
+    fig = ml.dibujar_reparto(tabla, marca=0.1)
+    assert len(fig.axes) == 2
+    assert any(ln.get_gid() == "marca" for ln in fig.axes[1].get_lines())
+
+
+# --- gráficas de la clase 2 ---
+
+
+def _gids(ax):
+    return [a.get_gid() for a in ax.get_children() if a.get_gid()]
+
+
+def test_dibujar_cv_cubre_los_cuatro_con():
+    datos = ml.entregas_curvas()
+    c = _polis(range(9))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        sel = {con: ml.elegir(datos, c, con=con) for con in ("ent", "val", "cv", "prueba")}
+    # cv: un umbral horizontal en CV(mín) + EE(mín), marcas sobre los puntos, sin verticales
+    ax = ml.dibujar_cv(sel["cv"])
+    s = sel["cv"].tabla.set_index("candidato")
+    umbral = [ln for ln in ax.get_lines() if ln.get_gid() == "umbral"]
+    assert len(umbral) == 1
+    assert umbral[0].get_ydata()[0] == pytest.approx(s.loc[sel["cv"].elegido, "valor"]
+                                                     + s.loc[sel["cv"].elegido, "ee"])
+    for gid, cand in (("elegido", sel["cv"].elegido), ("elegido-un-ee", sel["cv"].elegido_un_ee)):
+        ln = next(ln for ln in ax.get_lines() if ln.get_gid() == gid)
+        assert ln.get_xdata()[0] == cand and ln.get_ydata()[0] == pytest.approx(s.loc[cand, "valor"])
+    assert not any(np.allclose(*ln.get_xdata()[:2]) for ln in ax.get_lines()
+                   if len(ln.get_xdata()) == 2 and ln.get_gid() not in ("piso", "benchmark"))
+    assert not {"R", "L_ent", "piso", "benchmark"} & set(_gids(ax))
+    serie = next(ln for ln in ax.get_lines() if ln.get_gid() == "serie-cv")
+    assert serie.get_marker() == "^"
+    assert "CV_k" in [t.get_text() for t in ax.get_legend().get_texts()]
+    # val: triángulos sin barras ni umbral; ent: círculos y aviso si llega L_ent; prueba: cuadrados
+    ax = ml.dibujar_cv(sel["val"])
+    serie = next(ln for ln in ax.get_lines() if ln.get_gid() == "serie-val")
+    assert serie.get_marker() == "^" and serie.get_label() == "L_val"
+    assert "umbral" not in _gids(ax) and not ax.collections
+    with pytest.warns(UserWarning, match="L_ent"):
+        ax = ml.dibujar_cv(sel["ent"], L_ent={N: 1.0 for N in c})
+    assert [ln.get_marker() for ln in ax.get_lines() if ln.get_gid() == "serie-ent"] == ["o"]
+    assert "L_ent" not in _gids(ax)
+    ax = ml.dibujar_cv(sel["prueba"], R={N: 10.0 for N in c}, piso=9.0, benchmark=(60, 2))
+    assert [ln.get_marker() for ln in ax.get_lines() if ln.get_gid() == "serie-prueba"] == ["s"]
+    assert {"R", "piso", "benchmark"} <= set(_gids(ax))
+
+
+def test_dibujar_pliegues_dibuja_la_particion_usada():
+    y = pd.DataFrame({"y": np.r_[np.ones(3, int), np.zeros(57, int)]})
+    part = ml.pliegues(y, k=5, como="estratificado")
+    ax = ml.dibujar_pliegues(60, 5, y=y["y"], particion=part)
+    assert "2 de 5" in ax.get_title()  # 3 positivos y 5 pliegues: dos sin ninguno (palomar)
+    for m, (_, val) in enumerate(part, start=1):
+        barras = [b for b in ax.collections if b.get_gid() == f"valida-{m}"]
+        cubiertas = set()
+        for b in barras:
+            for camino in b.get_paths():
+                xs = camino.vertices[:, 0]
+                cubiertas |= set(range(int(round(xs.min())), int(round(xs.max()))))
+        assert cubiertas == set(int(v) for v in val)
+    with pytest.raises(ValueError, match="pliegues"):
+        ml.dibujar_pliegues(60, 4, particion=part)
+    ml.dibujar_pliegues(48, 5, m_activo=2, prueba=True)
+
+
+def test_dibujar_histograma_estimaciones_una_o_varias_series():
+    rng = np.random.default_rng(0)
+    ax = ml.dibujar_histograma_estimaciones({"con prueba": rng.normal(size=200),
+                                             "con validación": rng.normal(1, 1, 200)},
+                                            verdadero=0, etiqueta="anunciado − real")
+    assert [ln.get_gid() for ln in ax.get_lines()].count("verdadero") == 1
+    assert {"serie-con prueba", "serie-con validación"} <= set(_gids(ax))
+    v = rng.normal(size=100)
+    a1 = ml.dibujar_histograma_estimaciones(v, verdadero=0.5, etiqueta="L_prueba")
+    a2 = ml.dibujar_histograma_estimaciones({"L_prueba": v}, verdadero=0.5, etiqueta="L_prueba")
+    caminos = lambda ax: [p.get_path().vertices.tolist() for p in ax.patches]  # noqa: E731
+    assert caminos(a1) == caminos(a2)
+
+
+def test_dibujar_cajas_pliegues_con_seleccion_y_con_estadistico():
+    datos = ml.entregas_curvas()
+    sel = ml.elegir(datos, _polis([1, 4]), con="cv")
+    ax = ml.dibujar_cajas_pliegues(sel)
+    puntos = next(ln for ln in ax.get_lines() if ln.get_gid() == "pliegues-4")
+    assert np.allclose(puntos.get_ydata(), sel.cv[4].por_pliegue)
+    res = {N: ml.validacion_cruzada(datos, f, estadistico=lambda y, g: float(np.mean(y - g)))
+           for N, f in _polis([1, 4]).items()}
+    ax = ml.dibujar_cajas_pliegues(res, estadistico=True)
+    puntos = next(ln for ln in ax.get_lines() if ln.get_gid() == "pliegues-1")
+    assert np.allclose(puntos.get_ydata(), res[1].por_pliegue_estadistico)
+
+
+def test_dibujar_diana_pone_cada_marca_en_su_valor():
+    datos = ml.entregas_curvas()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        sv = ml.sesgo_varianza(datos.rehacer, _polis([1, 6]), repeticiones=10)
+    ax = ml.dibujar_diana(sv, 5.0, candidatos=[1, 6])
+    marcas = [ln for ln in ax.get_lines() if ln.get_gid() == "repeticion"]
+    punto = pd.DataFrame({"x": [5.0]})
+    for ln, N in zip(marcas, (1, 6)):
+        esperado = [_polis([N])[N](datos.rehacer(s).ent).predecir(punto)[0] for s in range(10)]
+        esperado[0] = _polis([N])[N](datos.ent).predecir(punto)[0]
+        assert np.allclose(ln.get_xdata(), esperado)
+    verde = next(ln for ln in ax.get_lines() if ln.get_gid() == "f")
+    assert verde.get_xdata()[0] == pytest.approx(datos.f(punto)[0])
+    ml.dibujar_abanico(sv, 6)
+    ml.dibujar_sesgo_varianza(sv)
+
+
+def test_dibujar_curva_aprendizaje_media_o_mediana():
+    tabla = pd.DataFrame({"candidato": [1] * 6, "n": [30, 30, 30, 60, 60, 60],
+                          "repeticion": [0, 1, 2] * 2, "L_ent": [1, 2, 9, 1, 1, 7.0],
+                          "R": [3, 4, 30, 2, 2, 20.0]})
+    for resumen, f in (("media", np.mean), ("mediana", np.median)):
+        ax = ml.dibujar_curva_aprendizaje(tabla, piso=1.0, resumen=resumen)
+        R = next(ln for ln in ax.get_lines() if ln.get_gid() == "R-1")
+        assert np.allclose(R.get_ydata(), [f([3, 4, 30]), f([2, 2, 20])])
+    elegido = pd.DataFrame({"n": [30, 30, 60, 60], "repeticion": [0, 1, 0, 1],
+                            "elegido": [2, 3, 4, 6]})
+    fig = ml.dibujar_curva_aprendizaje(tabla, elegido=elegido)
+    assert len(fig.axes) == 2
+    assert inspect.signature(ml.dibujar_curva_aprendizaje).parameters["resumen"].default == "media"
+
+
+def test_dibujar_contratos_igual_con_estimado_y_un_panel_por_modelo():
+    tabla = pd.DataFrame({"contrato": ["igual", "el mes que viene"],
+                          "separacion": ["azar", "azar"], "L_prueba": [10.0, 60.0],
+                          "R": [11.0, 130.0], "benchmark": [60.0, 140.0]})
+    a1 = ml.dibujar_contratos(tabla, resaltar="el mes que viene")
+    a2 = ml.dibujar_contratos(tabla.rename(columns={"L_prueba": "estimado"}),
+                              resaltar="el mes que viene")
+    barras = lambda ax: [(p.get_x(), p.get_height()) for p in ax.patches]  # noqa: E731
+    lineas = lambda ax: [(ln.get_gid(), list(ln.get_xydata().ravel())) for ln in ax.get_lines()]  # noqa: E731
+    assert barras(a1) == barras(a2) and lineas(a1) == lineas(a2)
+    assert [h for _, h in barras(a1)] == [10.0, 60.0]
+    assert [ln.get_ydata()[0] for ln in a1.get_lines() if ln.get_gid() == "R"] == [11.0, 130.0]
+    doble = pd.concat([tabla.assign(modelo="lineal"), tabla.assign(modelo="vecinos")])
+    fig = ml.dibujar_contratos(doble)
+    assert len(fig.axes) == 2
+
+
+def test_taller_y_galeria_de_la_clase_2(monkeypatch):
+    import time
+    monkeypatch.setenv("ML_LAB_PRUEBA", "1")
+    s = io.StringIO()
+    inicio = time.time()
+    with redirect_stdout(s):
+        ml.taller(ml.entregas_curvas(), 2, que="elegir")
+    assert time.time() - inicio < 10
+    texto = s.getvalue()
+    for conjunto in ("CV_5 sobre ent ∪ val", "prueba:", "despliegue:"):
+        assert conjunto in texto
+    with redirect_stdout(io.StringIO()):
+        ml.taller(ml.entregas_curvas(), 2, que="descomponer")
+    s = io.StringIO()
+    with redirect_stdout(s):
+        ml.galeria(2)
+    assert ml.CASOS_BORDE[13].pregunta in s.getvalue()
+    for numero in (14, 15, 16):
+        with redirect_stdout(io.StringIO()):
+            ml.galeria(2, casos=[numero])
+
+
+# --- revisión adversarial del lote c2 (codex-rev-lab-c2): cada prueba falló antes ---
+
+
+def test_efecto_grupo_piso_es_el_de_sus_pacientes():
+    uno = ml.proceso(n=40, f=lambda d: 0 * d["x"], ruido=ml.efecto_grupo(1, 4, 0), n_realidad=2000)
+    assert np.allclose(uno.realidad["y"], uno.realidad["y"].iloc[0])
+    assert ml.piso(uno) == pytest.approx(0)
+    mec = ml.efecto_grupo(24, 4, 1)
+    efectos = mec._efecto(np.arange(24))
+    assert efectos.mean() == pytest.approx(0, abs=1e-12) and efectos.std() == pytest.approx(4)
+    d = ml.caso(14, n_realidad=24_000)
+    assert d.realidad["y"].sub(d.realidad["f"]).mean() == pytest.approx(0, abs=0.05)
+
+
+@pytest.mark.parametrize("particion, patron", [
+    (lambda d: [([0, 1], [0, 1]), ([2, 3], [2, 3])], "fuga"),
+    (lambda d: [([1, 2, 3], [0, 1]), ([0, 2, 3], [1])], "fuga"),
+    (lambda d: [([2, 3], [0, 1]), ([0, 3], [1, 2])], "dos pliegues"),
+    (lambda d: [([1, 2], []), ([0], [1])], "vacío"),
+    (lambda d: [([1, 2, 9], [0])], "fuera"),
+])
+def test_validacion_cruzada_rechaza_particiones_con_fuga(particion, patron):
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    with pytest.raises(ValueError, match=patron):
+        ml.validacion_cruzada(df, lambda d: _Constante(0), particion=particion)
+
+
+def test_validacion_cruzada_temporal_deja_nan_en_lo_que_no_valida():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    r = ml.validacion_cruzada(df, lambda d: _Constante(0),
+                              particion=lambda d: [([0], [1]), ([0, 1], [2, 3])])
+    assert np.isnan(r.perdidas_fuera[0]) and np.allclose(r.perdidas_fuera[1:], [4, 9, 16])
+
+
+def test_sesgo_varianza_no_inventa_el_ruido_con_omitidas_y_contexto():
+    fab = lambda s: ml.proceso(n=60, x={"x": ml.normal(), "z": ml.normal()},  # noqa: E731
+                               f=lambda d: d["z"], ruido=ml.ar1(0, 1), omitir=["z"],
+                               semilla=s, n_realidad=2000)
+    with pytest.raises(ValueError, match="Var"):
+        ml.sesgo_varianza(fab, _polis([1]), repeticiones=2)
+
+
+def test_deriva_que_cambia_de_estado_no_sale_de_la_cache():
+    estado = {"a": 4.0}
+    deriva = lambda t: {"x": ml.uniforme(estado["a"], estado["a"] + 1)}  # noqa: E731
+    base = dict(n=20, despliegue="otra_poblacion", deriva=deriva, n_realidad=500)
+    assert ml.proceso(**base).despliegue["x"].min() >= 4
+    estado["a"] = 10.0
+    assert ml.proceso(**base).despliegue["x"].min() >= 10
+
+
+def test_optimismo_salta_candidatos_sin_valor_finito():
+    fab = lambda s: ml.entregas_curvas(semilla=s, n_realidad=2000)  # noqa: E731
+    cands = {"nan": lambda df: _Constante(float("nan")), "25": lambda df: _Constante(25)}
+    corto = ml.optimismo_por_seleccion(fab, cands, repeticiones=2)
+    assert np.isfinite(corto[["con_prueba", "con_val_y_prueba", "R_real", "R_val"]]).all().all()
+
+
+def test_misma_particion_exige_mismo_ajuste_y_dibujar_pliegues_lo_dibuja_tal_cual():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    p1 = lambda d: [([1], [0, 2]), ([0], [1, 3])]  # noqa: E731
+    p2 = lambda d: [([1, 3], [0, 2]), ([0, 2], [1, 3])]  # noqa: E731
+    a = ml.validacion_cruzada(df, lambda d: _Constante(0), particion=p1)
+    b = ml.validacion_cruzada(df, lambda d: _Constante(0), particion=p2)
+    with pytest.raises(ValueError, match="misma partición"):
+        ml.diferencia_por_pliegue(a, b)
+    ax = ml.dibujar_pliegues(4, 2, particion=p1(df), prueba=False)
+    cubiertas = set()
+    for barra in (b for b in ax.collections if b.get_gid() == "ajuste-1"):
+        for camino in barra.get_paths():
+            xs = camino.vertices[:, 0]
+            cubiertas |= set(range(int(round(xs.min())), int(round(xs.max()))))
+    assert cubiertas == {1}
+
+
+def test_reparto_nunca_deja_el_entrenamiento_vacio():
+    fab = lambda s: ml.entregas_curvas(n=10, semilla=s, n_realidad=500)  # noqa: E731
+    tabla = ml.reparto(fab, _polis([0])[0], fracciones_prueba=(0.99,), repeticiones=1)
+    assert np.isfinite(tabla["R"]).all()
+
+
+def test_cv_anidada_elige_dentro_de_cada_pliegue_externo():
+    datos = ml.entregas_curvas(n=80)
+    c = _polis(range(6))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        r = ml.cv_anidada(datos, c, k_externo=4, k_interno=3)
+        df = pd.concat([datos.ent, datos.val])
+        df.attrs = datos.ent.attrs
+        esperado = []
+        for ajuste, valida in ml.pliegues(df, k=4, semilla=0):
+            dentro = df.iloc[ajuste].copy()
+            dentro.attrs = df.attrs
+            s = ml.elegir(dentro, c, con="cv", k=3, semilla=1)
+            esperado.append(ml.L(s.modelo, df.iloc[valida]))
+            assert len(s.modelo.beta_gorro) == s.elegido + 1
+    assert np.allclose(r.por_pliegue, esperado)
+    plano = ml.validacion_cruzada(df, c[0], k=4)
+    assert not np.allclose(r.por_pliegue, plano.por_pliegue)
+
+
+# --- revisión adversarial del lote c2, ronda 2 (codex-rev-lab-c2.i2): cada prueba falló antes ---
+
+
+def test_piso_junta_f_y_efecto_grupo_cuando_f_usa_el_grupo():
+    # f = ±4 por grupo y los efectos estandarizados de 2 grupos son ∓4: y = 0 siempre
+    d = ml.proceso(n=200, f=lambda d: 4 * (2 * d["grupo"] - 1), ruido=ml.efecto_grupo(2, 4, 0),
+                   n_realidad=4000)
+    desp = d.despliegue
+    assert np.allclose(desp["y"], 0)
+    assert ml.piso(d) == pytest.approx(0, abs=1e-12)
+    assert np.allclose(desp["f_visible"], 0) and np.allclose(d.f_visible(desp), 0)
+    assert np.allclose(d.f_visible(desp[["x"]]), 0)  # sin grupo: el grupo no es visible
+    # f que usa x y el grupo: el piso es E[Var_g(f + efecto)] + desv², y es alcanzable
+    d = ml.proceso(n=200, f=lambda d: d["x"] + d["grupo"], ruido=ml.efecto_grupo(4, 1, 1),
+                   n_realidad=40_000)
+    mec = ml.efecto_grupo(4, 1, 1)
+    esperado = np.var(np.arange(4) + mec._efecto(np.arange(4))) + 1
+    assert ml.piso(d) == pytest.approx(esperado, rel=1e-9)
+    L = np.mean((d.despliegue["y"] - d.despliegue["f_visible"]) ** 2)
+    assert L == pytest.approx(esperado, rel=0.03)
+
+
+def test_piso_desconocido_si_f_usa_el_grupo_y_no_se_puede_juntar():
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        nuevos = ml.proceso(n=200, f=lambda d: d["x"] * d["grupo"], ruido=ml.efecto_grupo(3, 1, 1),
+                            despliegue="grupos_nuevos", n_realidad=2000)
+        assert np.isnan(ml.piso(nuevos))
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        omitida = ml.proceso(n=200, x={"x": ml.uniforme(), "z": ml.uniforme()}, omitir=["z"],
+                             f=lambda d: d["x"] + d["z"] * d["grupo"],
+                             ruido=ml.efecto_grupo(3, 1, 1), n_realidad=2000)
+        assert np.isnan(ml.piso(omitida))
+    assert np.isnan(omitida.f_visible(omitida.despliegue.head(3))).all()
+    # si f no usa el grupo, nada cambia: el caso 14 y el de grupos nuevos
+    assert ml.piso(ml.proceso(n=240, ruido=ml.efecto_grupo(24, 4, 1), n_realidad=2000)) == 17
+
+
+def test_varianza_en_distingue_grupos_propios_de_nuevos():
+    mec = ml.efecto_grupo(1, 4, 1)
+    v = mec.varianza_en(pd.DataFrame({"grupo": [0, 0, 1, 5]}))
+    assert list(v) == [1, 1, 17, 17]
+    v24 = ml.efecto_grupo(24, 4, 1).varianza_en(pd.DataFrame({"grupo": [0, 23, 24]}))
+    assert list(v24) == [17, 17, 17]
+    igual = ml.proceso(n=240, ruido=ml.efecto_grupo(1, 4, 1), n_realidad=2000)
+    nuevos = ml.proceso(n=240, ruido=ml.efecto_grupo(1, 4, 1), despliegue="grupos_nuevos",
+                        n_realidad=2000)
+    assert ml.piso(igual) == pytest.approx(1) and ml.piso(nuevos) == pytest.approx(17)
+
+
+@pytest.mark.parametrize("particion", [
+    lambda d: [([1, 2, 3], [0]), ([0, 2, 3], [1])],      # omite 2 y 3, y no va hacia adelante
+    lambda d: [([0], [1]), ([0, 1, 2], [3])],            # la fila 2 no valida y no es de las primeras
+    lambda d: [([1], [0]), ([0, 1], [2, 3])],            # el pliegue 1 ajusta con el futuro
+])
+def test_validacion_cruzada_exige_que_cada_fila_valide_una_vez(particion):
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [0.0, 0, 20, 30]})
+    with pytest.raises(ValueError, match="exactamente una vez"):
+        ml.validacion_cruzada(df, lambda d: _Constante(0), particion=particion)
+
+
+def test_validacion_cruzada_hacia_adelante_sigue_el_orden_de_t():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "t": [3, 2, 1, 0], "y": [1.0, 2, 3, 4]})
+    r = ml.validacion_cruzada(df, lambda d: _Constante(0),
+                              particion=lambda d: [([3], [2]), ([3, 2], [1, 0])])
+    assert np.isnan(r.perdidas_fuera[3]) and np.allclose(r.perdidas_fuera[:3], [1, 4, 9])
+    with pytest.raises(ValueError, match="exactamente una vez"):  # hacia adelante en filas, no en t
+        ml.validacion_cruzada(df, lambda d: _Constante(0),
+                              particion=lambda d: [([0], [1]), ([0, 1], [2, 3])])
+
+
+def test_dibujar_cv_prefiere_el_riesgo_de_despliegue():
+    tabla = pd.DataFrame({"candidato": [1, 4, 1, 4], "conjunto": ["realidad"] * 2 + ["despliegue"] * 2,
+                          "L": [15.15, 9.65, 36.39, 258.25], "ee": [0.1] * 4})
+    sel = ml.Seleccion(tabla=pd.DataFrame({"candidato": [1, 4], "valor": [20.0, 12.0],
+                                           "ee": [1.0, 1.0]}),
+                       elegido=4, elegido_un_ee=4, modelo=None, modelo_final=None,
+                       criterio="cuadratica", sentido="min", costo_ajustes=11, cv=None, con="cv")
+    ax = ml.dibujar_cv(sel, R=tabla)
+    (r,) = [ln for ln in ax.get_lines() if ln.get_gid() == "R"]
+    assert list(r.get_ydata()) == [36.39, 258.25]
+    ax = ml.dibujar_cv(sel, R=tabla[tabla["conjunto"] == "realidad"])
+    (r,) = [ln for ln in ax.get_lines() if ln.get_gid() == "R-origen"]
+    assert list(r.get_ydata()) == [15.15, 9.65] and "origen" in r.get_label()
+
+
+def test_dibujar_pliegues_rechaza_una_particion_de_otro_n():
+    df4 = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    with pytest.raises(ValueError, match="otro n"):
+        ml.dibujar_pliegues(8, 2, particion=ml.pliegues(df4, k=2))
+    with pytest.raises(ValueError, match="otro n"):
+        ml.dibujar_pliegues(3, 2, particion=ml.pliegues(df4, k=2))
+    ml.dibujar_pliegues(4, 2, particion=ml.pliegues(df4, k=2))
