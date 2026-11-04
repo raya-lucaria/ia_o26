@@ -200,7 +200,8 @@ def bloque_5(fraccion, n_total):
     print(f"n = {n_total}, {fraccion:.0%} a prueba: R medio del modelo ="
           f" {g['R'].mean():.2f}; desviación de L_prueba − R ="
           f" {g['error'].std(ddof=1):.2f}")
-    print(f"benchmark (la media de entrenamiento, una muestra) = {BENCH_B5[n_total]:.2f}")
+    print("benchmark (la media de entrenamiento, una muestra) ="
+          f" {BENCH_B5[n_total]:.2f}")
 
 
 ml.laboratorio(bloque_5,
