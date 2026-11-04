@@ -93,8 +93,8 @@ Taylor de grado 1 de $1/x$ centrado en 1 es $2-x$.
 (b) ¿Cuánto se equivoca?
 :::
 
-::: hint {#ml-c1-pista-taylor-1 of="ml-c1-ej-taylor" title="Pista 1 · Recupera la recta"}
-¿Qué vale $1/x$ y su derivada en 1?
+::: hint {#ml-c1-pista-taylor-1 of="ml-c1-ej-taylor" title="Pista 1 · Evalúa las dos"}
+¿Qué valen $2-x$ y $1/x$ en $x=2$?
 :::
 
 ::: answer {#ml-c1-resp-taylor of="ml-c1-ej-taylor" title="Respuesta · El error lejos del centro"}
@@ -164,16 +164,19 @@ Una garantía emparentada, la de Cybenko, aparecerá al estudiar redes.
 ## 3 · Ampliar la familia
 
 ::: figure {#ml-c1-tres-ajustes title="Subajuste, capacidad adecuada y sobreajuste"}
-![Tres ajustes a los mismos 20 datos de la curva 2 más 5 entre x, con 200 observaciones nuevas del mismo proceso al fondo. grado 1, subajuste: error de entrenamiento 4.35 y riesgo 5.36; grado 4, capacidad adecuada: error de entrenamiento 0.18 y riesgo 0.44; grado 15, sobreajuste: error de entrenamiento 0.03 y riesgo 1450.97. El de grado 15 pasa cerca de casi todos los datos y entre ellos se dispara.](../_assets/ml-c1-tres-ajustes.svg)
+![Tres ajustes a los mismos 20 datos de la curva 2 más 5 entre x, con 200 observaciones nuevas del mismo proceso al fondo. grado 1, subajuste: error de entrenamiento 4.35 y riesgo 5.33; grado 4, capacidad adecuada: error de entrenamiento 0.18 y riesgo 0.44; grado 15, sobreajuste: error de entrenamiento 0.03 y riesgo 1537.16. El de grado 15 pasa cerca de casi todos los datos y oscila entre ellos; después del último dato, en x igual a 2.82, se desploma: en x igual a 3 predice −430, y de ese tramo sale más del 99.8 % de su riesgo reducible.](../_assets/ml-c1-tres-ajustes.svg)
 :::
 
 Los círculos son los 20 datos de entrenamiento; los puntos pequeños, 200 observaciones nuevas.
 
-**Piensa: el grado 15 pasa por casi todos los datos: ¿qué hace entre ellos?**
+**Piensa: el grado 15 pasa por casi todos los datos: ¿qué hace entre ellos y después del último?**
 
-Se dispara: logra $L_{\text{ent}}=0.03$, pero $R$ supera mil.
+Entre los datos oscila; después del último, en $x=2.82$, se desploma: en $x=3$ predice −430.
+Logra $L_{\text{ent}}=0.03$, pero $R$ supera mil.
+Más del 99.8 % de su riesgo reducible sale de ese tramo final: es extrapolación más que oscilación interior.
+
 Eso es sobreajuste (*overfitting*): ajustar peculiaridades de la muestra perjudica la generalización.
-El grado 1 tiene subajuste (*underfitting*): su familia no sigue la curvatura, con errores 4.35 y 5.36.
+El grado 1 tiene subajuste (*underfitting*): su familia no sigue la curvatura, con errores 4.35 y 5.33.
 El grado 4 combina 0.18 en entrenamiento con riesgo 0.44.
 
 ::: definition {#ml-c1-def-capacidad title="Espacio de hipótesis y capacidad"}
@@ -199,7 +202,7 @@ La capacidad de la familia es la representacional. La efectiva puede ser menor:
 el algoritmo no siempre encuentra la mejor función de la familia. Ese es el
 error de optimización, que va aparte de las cuatro fuentes de
 @ml-c1-obs-cuatro-fuentes (azar, variables que no medimos, familia
-equivocada, pocos datos). No es una quinta fuente: es lo que se agrega
+equivocada, pocos datos). No es una quinta fuente, sino lo que se agrega
 cuando el ajuste no llega al mínimo de $L_{\text{ent}}$.
 :::
 
@@ -234,13 +237,13 @@ Los casos con puntos alineados tampoco permiten todas las etiquetas.
 ## 4 · Mirar el error que no optimizamos
 
 ::: figure {#ml-c1-capacidad-brecha title="La brecha de generalización, medida"}
-![Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos de la curva 2 más 5 entre x, en escala logarítmica. El error de entrenamiento nunca sube y en grado 15 vale 0.034, abajo del piso 0.25. El riesgo, medido con la muestra enorme, hace una U: es mínimo en grado 6, con 0.366, y en grado 15 llega a 1537; la brecha sombreada crece. El benchmark, la media, tiene riesgo 10.5. Abajo, el mismo proceso con 200 datos: el riesgo casi no sube después de grado 5 y en grado 15 vale 0.266; la U es de este experimento, no una ley.](../_assets/ml-c1-capacidad-brecha.svg)
+![Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos de la curva 2 más 5 entre x, en escala logarítmica, con el extremo de subajuste a la izquierda y el de sobreajuste a la derecha. El error de entrenamiento nunca sube y en grado 15 vale 0.034, abajo del piso 0.25. El riesgo, medido con la muestra enorme, hace una U: es mínimo en grado 6, con 0.366, y en grado 15 llega a 1537; la brecha sombreada crece. El benchmark, la media, tiene riesgo 10.5. Abajo, el mismo proceso con 200 datos: el riesgo casi no sube después de grado 5 y en grado 15 vale 0.266; la U es de este experimento, no una ley.](../_assets/ml-c1-capacidad-brecha.svg)
 :::
 
 Cada grado tiene un ajuste; los ejes verticales son logarítmicos.
 Arriba, con 20 datos, $R$ alcanza 0.366 en $N=6$ y cerca de 1537 en $N=15$.
 La media es el punto de comparación (*benchmark*), con riesgo 10.5.
-La figura no rotula las zonas: el extremo rígido subajusta; el flexible sobreajusta.
+Los rótulos marcan las dos zonas: a la izquierda, el extremo rígido subajusta; a la derecha, el flexible sobreajusta.
 
 **Piensa: ¿por qué la curva de entrenamiento nunca sube, y la de $R$ sí?**
 
@@ -287,7 +290,8 @@ así que $E\bigl[\mathrm{brecha}(\widehat\beta)\bigr]\ge0$.
 
 El ínfimo es el menor riesgo alcanzable o aproximable dentro de la familia.
 En 500 muestras, con $\beta$ fijo, la media de entrenamiento es 0.30 frente a $R(\beta)=0.31$.
-Con $\widehat\beta$ de grado 4, las medias son 0.21 en entrenamiento y 0.71 de riesgo.
+El teorema dice que coinciden en esperanza; la diferencia es el azar de 500 muestras.
+Con $\widehat\beta$ de grado 4, las medias son 0.21 en entrenamiento y 0.70 de riesgo.
 Una muestra concreta puede salir al revés: ocurrió en 9 de 500.
 
 > [!WARNING]
@@ -319,16 +323,17 @@ Con $N=15$, $L_{\text{ent}}=0.034$ y $R_{\text{Bayes}}=0.25$.
 ## 5 · Decidir quién elige el grado
 
 ::: figure {#ml-c1-elegir-con-entrenamiento title="¿Quién elige el grado?"}
-![En 200 muestras de 20 datos de la curva 2 más 5 entre x, se elige el grado de 1 a 15. Arriba, el que minimiza el error de entrenamiento: 200 de 200 veces el máximo, grado 15. Abajo, el de menor riesgo, repartido: 1 veces grado 1, 2 veces grado 2, 8 veces grado 3, 46 veces grado 4, 69 veces grado 5, 43 veces grado 6, 17 veces grado 7, 10 veces grado 8, 3 veces grado 9, 1 veces grado 10.](../_assets/ml-c1-elegir-con-entrenamiento.svg)
+![En 200 muestras de 20 datos de la curva 2 más 5 entre x, se elige el grado de 1 a 15. Arriba, el que minimiza el error de entrenamiento: 200 de 200 veces el máximo, grado 15. Abajo, el de menor riesgo, repartido: 1 vez grado 1, 2 veces grado 2, 8 veces grado 3, 46 veces grado 4, 71 veces grado 5, 42 veces grado 6, 16 veces grado 7, 10 veces grado 8, 3 veces grado 9, 1 vez grado 10.](../_assets/ml-c1-elegir-con-entrenamiento.svg)
 :::
 
 El entrenamiento elige grado 15: 200 de 200 veces.
-El menor riesgo cae entre 3 y 6 en 166; predomina 5.
+El menor riesgo cae entre 3 y 6 en 167 de 200 muestras; el grado más frecuente es 5.
 
 **Piensa: si le dejas a $L_{\text{ent}}$ elegir el grado, ¿cuál escoge?**
 
-El máximo gana o empata.
-Limitar grado no limita curvatura.
+$L_{\text{ent}}$ escoge el máximo, 15: las familias anidadas permiten reproducir cualquier polinomio de menor grado poniendo coeficientes cero.
+Por eso, su mínimo de $L_{\text{ent}}$ es igual o menor; si empata, sigue entre los ganadores.
+La capacidad se fija desde fuera, como restricción del problema, igual que $g(\beta)\le d$ en la unidad 6, según el bloque siguiente.
 
 ::: definition {#ml-c1-def-capacidad-como-restriccion title="La capacidad como restricción"}
 Con $\phi=\phi_{N_{\max}}$ fija, limitar el grado es resolver
@@ -352,9 +357,9 @@ Tú eliges $N$; el ajuste elige $\widehat\beta$.
 ::: definition {#ml-c1-def-param-hiper title="Parámetro contra hiperparámetro"}
 Un **parámetro** es lo que elige minimizar $L_{\text{ent}}$ dentro de un
 problema ya planteado: $\beta$. Un **hiperparámetro** es lo que fija ese
-problema —la familia, la representación, la cota $d$—: aquí, $N$. Ninguno
-se elige minimizando $L_{\text{ent}}$. Con uno que fija la capacidad, como
-$N$, se ve por qué: con familias anidadas,
+problema —la familia, la representación, la cota $d$—: aquí, $N$. Un
+hiperparámetro no se elige minimizando $L_{\text{ent}}$. Con uno que
+fija la capacidad, como $N$, se ve por qué: con familias anidadas,
 
 $$
 \min_{1\le N\le N_{\max}}\ \min_{\beta}\ L_{\text{ent}}(\beta\,;N)
@@ -365,8 +370,7 @@ lo alcanzan siempre contiene a $N_{\max}$ y puede contener grados menores
 empatados). Un hiperparámetro se elige con datos que no tocaron el ajuste.
 :::
 
-«Ninguno» alude a hiperparámetros; $\beta$ sí minimiza $L_{\text{ent}}$.
-«;$N$» indica el grado.
+En $L_{\text{ent}}(\beta\,;N)$, lo que va tras el punto y coma es el grado con que se ajusta: $N$ fija la familia y $\beta$ recorre sus coeficientes.
 No todos los hiperparámetros miden capacidad.
 
 > [!TIP]
@@ -429,10 +433,12 @@ Subir el grado por fuerza bruta aumenta también almacenamiento y cálculo.
 > [!WARNING]
 > Lectura equivocada: «Con más potencias el error de entrenamiento subió: la monotonía falla».
 >
-> Lectura correcta: **Falla la aritmética: las potencias sin escalar dan una $\Phi$ casi singular. Escala $x$ y la monotonía vuelve.**
+> Lectura correcta: **Falla la aritmética: las potencias sin escalar dan una $\Phi$ casi singular. En el caso mostrado, escalar $x$ recupera un ajuste preciso; con grados mayores puede no bastar.**
 
-En el caso con 100 datos, sin escalar, $L_{\text{ent}}$ pasa de 1.11 a 13.4 entre grados 10 y 25.
+En el caso 4 de la galería del notebook (100 datos), sin escalar, $L_{\text{ent}}$ pasa de 1.11 a 13.4 entre grados 10 y 25.
 Escalando, el grado 25 da 0.18.
+
+Escalar tampoco garantiza la monotonía numérica: con los 60 datos de esta sección, $L_{\text{ent}}$ escalado pasa de 0.0763 en grado 35 a 0.0764 en grado 36.
 El mal condicionamiento dificulta el cálculo y puede producir coeficientes enormes; no cambia la inclusión entre familias.
 
 > [!TIP]
@@ -476,17 +482,20 @@ Para el seno, el grado 7 pasa de 0.10 a 609.
 ::: remark {#ml-c1-obs-donde-se-usa title="Interpolar, extrapolar y el riesgo"}
 Interpolar es predecir para $x$ dentro del rango de los datos de entrenamiento;
 extrapolar, fuera. $R$ promedia la pérdida según dónde caen las $x$ del
-despliegue: si casi todas caen dentro, lo que pase fuera casi no pesa; si caen
-fuera, $R$ es otro número y el entrenamiento no dice nada de él.
+despliegue: las zonas con pocas $x$ pesan menos, pero errores enormes pueden
+dominar $R$. Una probabilidad de 0.001 con una pérdida de $10^6$ aporta 1000.
+Si muchas $x$ caen fuera del rango, el entrenamiento no dice nada de esa
+parte de $R$.
 :::
 
 En el recursivo, $x$ crece con el tiempo: fuera del rango está el futuro.
 Hay además una dependencia omitida: el tiempo de hoy depende del de ayer.
 Ninguna potencia de $x$ observa el tiempo anterior: falta una variable (@ml-c1-obs-cuatro-fuentes), aun dentro del rango.
 
-La recta en $x$ da 5.5 dentro y 36.4 en el futuro.
+Promediando sobre series nuevas del mismo proceso, la recta en $x$ da 5.5 dentro y 36.4 en el futuro; en la serie dibujada, su $L_{\text{ent}}$ es 6.55.
 Al incluir el tiempo anterior observado en $\phi$, con la constante 1, sigue siendo lineal en $\beta$.
-Da 1.05 en ambas zonas, cerca del piso 1, a un paso.
+Da 1.05 en ambas zonas, cerca del piso 1, a un paso; en la serie dibujada, 0.90.
+
 A varios pasos, usando sus propias predicciones, el error se acumula.
 Cuando las observaciones dependen unas de otras, cambia cómo separas los datos; lo verás en la clase 5.
 
@@ -518,16 +527,23 @@ Necesitas medir con entregas que se parezcan al uso previsto.
 ## 8 · Elegir supuestos
 
 ::: figure {#ml-c1-no-free-lunch title="No free lunch, exacto"}
-![Las 256 funciones de etiquetas de 3 bits, con entrenamiento en 000, 011, 101 y 110, agrupadas por rugosidad. El vecino más cercano y la mayoría aciertan 100 % fuera de la muestra en las funciones más suaves y 0 % en las más rugosas; siempre 1 acierta 50  % en cada grupo. Promediando sobre las 256 funciones, cada regla acierta exactamente la mitad.](../_assets/ml-c1-no-free-lunch.svg)
+![Las 256 funciones de etiquetas de 3 bits, con entrenamiento en 000, 011, 101 y 110, agrupadas por rugosidad. El vecino más cercano y la mayoría aciertan 100 % fuera de la muestra en las funciones más suaves y 0 % en las más rugosas; siempre 1 acierta 50 % en cada grupo. Promediando sobre las 256 funciones, cada regla acierta exactamente la mitad.](../_assets/ml-c1-no-free-lunch.svg)
 :::
 
 Comparamos las 256 funciones de etiquetas de 3 bits: 8 entradas.
+El entrenamiento trae las etiquetas de 000, 011, 101 y 110; fuera quedan 001, 010, 100 y 111.
+
+El vecino más cercano copia la etiqueta de la entrada de entrenamiento que difiere en menos bits.
+Cada entrada de fuera difiere en un bit de tres de entrenamiento: el empate se rompe con la de menor número.
+Así, 001, 010 y 100 copian a 000, y 111 copia a 011.
+
+La mayoría predice en todas la etiqueta más frecuente de las cuatro de entrenamiento; con empate 2 a 2, predice 1.
+Siempre 1 predice 1 en todas.
 
 **Piensa: si una regla gana en los problemas suaves, ¿qué le pasa en los demás?**
 
 Compensa ganancias con pérdidas.
 La rugosidad cuenta aristas del cubo que cambian de etiqueta; pertenece a la función completa.
-La mayoría desempata hacia 1.
 
 Ponderando por el número de funciones de cada grupo, todas promedian $\tfrac12$.
 La inducción no es lógicamente válida; aprendes reglas probablemente correctas bajo supuestos.
@@ -557,27 +573,29 @@ Ninguna regla generaliza mejor que otra promediando sobre todos los problemas.
 :::
 
 ::: remark {#ml-c1-obs-no-parametrico title="Modelos sin un número fijo de parámetros"}
-Un modelo es **no paramétrico** si el número de cantidades que guarda crece
-con $n$. Vecinos más cercanos predice con la $y$ del dato de entrenamiento más
-parecido: guarda todos los datos y alcanza $L_{\text{ent}}=0$ si no hay dos
-$x$ iguales. El número de vecinos es un hiperparámetro.
+Un modelo es **no paramétrico** si no tiene una dimensión paramétrica finita
+fijada de antemano: lo que guarda puede crecer con $n$. Vecinos más cercanos
+con un vecino predice con la $y$ del dato de entrenamiento más parecido.
+Guarda todos los datos y alcanza $L_{\text{ent}}=0$ si no hay dos $x$ iguales.
+El número de vecinos es un hiperparámetro.
 :::
 
-La regla “memorizar” de la clase 0
-(@ml-c0-memorizar-contra-ajustar) es el vecino más cercano: por eso tenía cero en lo visto.
+La regla «memorizar» de la clase 0 (la que muestra @ml-c0-memorizar-contra-ajustar) es el vecino más cercano con un vecino: por eso tenía cero en lo visto.
 
 ::: remark {#ml-c1-obs-supuestos title="Elegir modelo es elegir supuestos"}
 Lo que hace funcionar a un modelo son los supuestos que trae sobre $f$:
 suavidad (vecinos), linealidad en $\phi$ (regresión), periodicidad, que la
 etiqueta no cambie al mover la imagen. Si el problema real los cumple, el
-modelo gana; si no, pierde. Por eso hay que conocer el problema antes de
-elegir.
+modelo puede tener ventaja; si no, suele perderla. La ventaja no está
+garantizada: depende también de los datos, del ruido y de la estimación.
+
+Por eso hay que conocer el problema antes de elegir.
 :::
 
 > [!WARNING]
 > Lectura equivocada: «No free lunch dice que todos los modelos sirven igual».
 >
-> Lectura correcta: **Dice que empatan promediando sobre todos los problemas; en los problemas reales, que no son todos, el que trae los supuestos correctos gana.**
+> Lectura correcta: **Dice que empatan promediando sobre todos los problemas; en los problemas reales, que no son todos, traer los supuestos correctos da una ventaja posible, no segura.**
 
 Considera estructura lineal, temporal o espacial, datos y uso.
 Los dos procesos y modelos del notebook ilustran especialización; no demuestran el teorema.
@@ -596,7 +614,7 @@ Dos entradas tienen etiqueta conocida y dos no.
 :::
 
 ::: hint {#ml-c1-pista-cuatro-futuros-1 of="ml-c1-ej-cuatro-futuros" title="Pista 1 · Enumera los casos"}
-¿Cómo queda la tabla de las cuatro formas?
+¿Cómo puedes enumerar las etiquetas posibles de las dos entradas?
 :::
 
 ::: answer {#ml-c1-resp-cuatro-futuros of="ml-c1-ej-cuatro-futuros" title="Respuesta · Cada futuro pesa igual"}
@@ -668,7 +686,7 @@ El entrenamiento premia ampliar la familia; necesitas datos que no tocaron el aj
 - **El mínimo de entrenamiento nunca sube con el grado:** las familias están anidadas. Eso no garantiza menor riesgo.
 - **La U es del experimento:** con 20 datos, $R$ alcanza 0.366 en $N=6$; en $N=15$ ronda 1537, aunque $L_{\text{ent}}=0.034$.
   Con 200 datos, el riesgo casi no sube desde grado 5.
-- **El entrenamiento no elige bien la capacidad:** eligió $N_{\max}=15$ en 200 de 200 muestras; el menor riesgo cayó entre 3 y 6 en 166.
+- **El entrenamiento no elige bien la capacidad:** eligió $N_{\max}=15$ en 200 de 200 muestras; el menor riesgo cayó entre 3 y 6 en 167.
 - **La representación puede ganar a la fuerza bruta:** $(1,1/x)$ logra riesgo 0.25 contra 1.28 de diez potencias.
 - **Generalizar exige supuestos:** en las 256 funciones, toda regla promedia exactamente 0.5 de aciertos fuera de la muestra.
 

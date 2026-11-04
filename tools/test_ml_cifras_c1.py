@@ -271,7 +271,10 @@ def test_weierstrass_el_error_maximo_baja_con_el_grado():
 def test_tres_ajustes_L_ent_baja_y_R_hace_la_u():
     t = c.cifras_c1_tres_ajustes()
     assert [(_r(t[N]["L_ent"], 3), _r(t[N]["R"], 2)) for N in (1, 4, 15)] == [
-        (4.352, 5.36), (0.184, 0.44), (0.034, 1450.97)]
+        (4.352, 5.33), (0.184, 0.44), (0.034, 1537.16)]
+    # r1 1b: R sobre realidad, la misma muestra que la curva de capacidad.
+    assert t[15]["fraccion_reducible_tras_x_max"] > 0.99
+    assert _r(t[15]["prediccion_en_3"], 0) == -430
     assert t[1]["L_ent"] > t[4]["L_ent"] > t[15]["L_ent"]
     assert t[4]["R"] < t[1]["R"] < t[15]["R"]
 
@@ -350,7 +353,7 @@ def test_optimismo_beta_fijo_insesgado_beta_gorro_optimista():
     o = c.cifras_c1_optimismo()
     assert o["repeticiones"] == 500
     assert (_r(o["R_fijo"], 2), _r(o["media_L_ent_fijo"], 2)) == (0.31, 0.30)
-    assert (_r(o["media_L_ent_gorro"], 2), _r(o["media_R_gorro"], 2)) == (0.21, 0.71)
+    assert (_r(o["media_L_ent_gorro"], 2), _r(o["media_R_gorro"], 2)) == (0.21, 0.70)
     assert abs(o["media_L_ent_fijo"] - o["R_fijo"]) < 0.02
     assert o["media_L_ent_gorro"] < o["R_fijo"] < o["media_R_gorro"]
     # En promedio, no en cada muestra: alguna sale al reves.
@@ -363,7 +366,7 @@ def test_elegir_L_ent_siempre_se_va_al_maximo():
     e = c.cifras_c1_elegir()
     assert (e["repeticiones"], e["N_max"], e["veces_N_max_ent"]) == (200, 15, 200)
     assert e["moda_N_R"] == 5
-    assert e["veces_N_R_3_a_6"] == 166
+    assert e["veces_N_R_3_a_6"] == 167   # r1 1b: cuadratura, antes 166 con la malla
     assert sum(e["reparto_N_R"].values()) == 200
     assert max(e["reparto_N_R"]) == 10
 

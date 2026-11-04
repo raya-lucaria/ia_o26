@@ -34,8 +34,8 @@ El grado máximo $N$ limita los polinomios disponibles; el ajuste elige sus
 coeficientes $\widehat\beta$. El gorro indica que se estimaron con una muestra.
 
 $L_{\text{ent}}$ es el error cuadrático promedio en entrenamiento y $R$ es el
-riesgo: la pérdida cuadrática esperada en la población. Aquí $L$ denota error,
-no un lenguaje. La página [La capacidad como restricción y Brecha de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
+riesgo: la pérdida cuadrática esperada en la población.
+La página [La capacidad como restricción y Brecha de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
 conecta la elección del grado con la diferencia entre esos errores:
 
 $$
@@ -45,12 +45,13 @@ $$
 
 ### celda: bloque-1-predice
 
-**Predice.** Con grado 3, ¿quién acierta mejor en el borde derecho del intervalo: Taylor centrado en el medio o el ajuste a datos? ¿Y si subes Taylor a grado 9?
+**Predice.** Con grado 3, ¿quién acierta mejor en el borde derecho del intervalo:
+Taylor centrado en $x_0=1$ o el ajuste a datos? ¿Y si subes Taylor a grado 9?
 
 Anota si esperas que gane Taylor o mínimos cuadrados, y si el error de Taylor
 mejorará al subir el grado. Deja «función» en «recíproca», «centro x₀» en 1
 y «datos con ruido» activado. Aquí $x_0$ es el centro de Taylor, no una
-observación inicial. Está dentro del intervalo, aunque no en su punto medio.
+observación inicial.
 
 Ejecuta con «grado N» en 3 y después muévelo a 9: el control cambia ambos
 polinomios. Compara los errores impresos en el borde $x=3$.
@@ -60,7 +61,9 @@ aunque el control permita ir más lejos.
 ### celda: bloque-1-mira
 
 **Mira.** Los puntos son los datos; la curva verde gruesa es $f$, y la leyenda distingue Taylor de mínimos cuadrados.
-La franja gris queda fuera del rango de los datos; la línea vertical punteada marca $x=2$ para la recíproca con $x_0=1$.
+La franja gris marca la zona fuera del rango de los datos. En la figura de la
+página ocurre al revés: la franja sombreada marca dónde están los datos.
+La línea vertical punteada marca $x=2$ para la recíproca con $x_0=1$.
 Compara Taylor cerca del centro y en el borde derecho; si sale del panel, lee su error debajo de la gráfica.
 
 ### celda: bloque-1-explica
@@ -97,6 +100,8 @@ curvas del panel derecho. Aquí $n$ es el número de datos de entrenamiento.
 **Mira.** Izquierda: los puntos son datos y las curvas, $f$ y el ajuste. Derecha: círculos para $L_{\text{ent}}$ y discontinua para $R$, aproximado con observaciones nuevas.
 El eje vertical es logarítmico; la brecha está sombreada. La punteada marca el piso; la raya-punto, la media como punto de comparación (*benchmark*).
 La estrella señala el menor $R$ medido; el círculo destacado, el grado actual.
+Arriba, los rótulos marcan la zona de subajuste, a la izquierda, y la de
+sobreajuste, a la derecha.
 
 ### celda: bloque-2-explica
 
@@ -123,8 +128,8 @@ con cada aumento de grado.
 El control mueve la desviación estándar del ruido, $\sigma_\varepsilon$.
 Su cuadrado, $\sigma_\varepsilon^2$, mide la dispersión cuadrática del ruido
 alrededor de su media cero; aquí determina el piso, 0.250 con los valores
-iniciales. La estrella de la gráfica marca una comparación entre ajustes
-de esta muestra, no un óptimo teórico al que debamos poner estrella en la notación.
+iniciales. La estrella de la gráfica marca el grado con menor $R$ medido
+en esta muestra.
 
 </details>
 
@@ -189,6 +194,8 @@ Lee $R$, el piso y el benchmark; sin escalar, vigila también el aviso y el mayo
 Gana $(1,1/x)$ en esta comparación. Con dos columnas alcanza $R=0.250$,
 cerca del piso, y estima $\widehat\beta=(2.03,\ 5.00)$.
 El polinomio inicial de grado 10 usa 11 columnas y da $R=1.279$.
+Con el grado 40 que pediste, $L_{\text{ent}}=0.074$, pero $R=199\,262$:
+muy lejos del piso.
 La representación recíproca puede expresar la forma del proceso con menos
 coeficientes: reduce tanto la capacidad como el error de aproximación.
 
@@ -201,6 +208,8 @@ Sin escalar, las potencias pueden producir mal condicionamiento: la
 aritmética pierde precisión y los coeficientes se vuelven enormes. Si
 $L_{\text{ent}}$ sube, no se refuta la monotonía del mínimo exacto entre
 familias anidadas; el cálculo ya no está alcanzándolo con precisión.
+Escalar ayuda, pero tampoco lo garantiza: con «escalar x» activado,
+$L_{\text{ent}}$ pasa de 0.0763 en grado 35 a 0.0764 en grado 36.
 El caso 4 de la galería permite explorar ese fallo.
 
 </details>
@@ -221,8 +230,11 @@ cuenta en el proceso recursivo; allí la comparación es con los pasos futuros.
 ### celda: bloque-5-mira
 
 **Mira.** Con el seno, los puntos son datos; compara el polinomio con la curva verde de $f$ y lee `R_zona` para la franja gris exterior.
-Con «recursivo», el eje horizontal ordena los pasos: los puntos distinguen entrenamiento y después; la línea es la predicción a un paso.
-Compara los errores impresos dentro y en el futuro al agregar el valor anterior observado, manteniendo grado 1.
+Con «recursivo», el eje horizontal ordena los pasos: 60 de entrenamiento como
+puntos llenos y 19 siguientes como círculos huecos; la línea predice a un paso.
+Lo impreso da primero $L_{\text{ent}}$ sobre la serie dibujada y después el
+error esperado, aproximado con series nuevas del mismo proceso: dentro
+(pasos 0 a 59) y a un paso en el futuro (pasos 60 a 79).
 
 ### celda: bloque-5-explica
 
@@ -240,10 +252,11 @@ La tabla separa errores por zona; ampliar la ventana no cambia por sí solo
 la población de despliegue que define $R$.
 
 El recursivo muestra además una variable ausente: el tiempo de entrega
-anterior observado. Con grado 1, sin esa columna, los errores son
-aproximadamente 5.5 dentro y 36.4 en el futuro. Al agregarla quedan cerca
-de 1.05 en ambos, frente al piso 1. La media condicional con lo visible
-promedia lo que no observas; no la identificamos automáticamente con $f$.
+anterior observado. Con grado 1 y sin esa columna, los errores esperados,
+promediados sobre series nuevas del mismo proceso, son aproximadamente 5.5
+dentro y 36.4 en el futuro. Sobre la serie dibujada, $L_{\text{ent}}$ es 6.55.
+Al agregarla quedan cerca de 1.05 en ambos, frente al piso 1
+(0.90 sobre la serie dibujada).
 
 Estas predicciones son **a un paso**: reciben el valor anterior observado,
 no una predicción anterior encadenada. A varios pasos el error puede
@@ -254,7 +267,8 @@ $x$ vuelve a extrapolar mal. La separación de series se estudia en la clase 5.
 
 ### celda: bloque-6-predice
 
-**Predice.** Promediando sobre las 256 funciones, ¿qué regla acierta más fuera de la muestra: el vecino más cercano o “siempre 1”?
+**Predice.** Promediando sobre las 256 funciones, ¿qué regla acierta más fuera
+de la muestra: el vecino más cercano o «siempre 1»?
 
 Elige vecino, siempre 1 o empate. Ejecuta «Juega» y cambia «regla» entre
 «vecino más cercano» y «siempre 1»; compara el promedio exacto impreso.
@@ -263,7 +277,10 @@ celda, «Mira: cada modelo gana en su proceso», para obtener la parte B.
 
 ### celda: bloque-6-mira
 
-**Mira.** En A, cada punto de la curva resume los aciertos fuera de la muestra para un grupo de funciones de igual rugosidad.
+**Mira.** El vecino copia la etiqueta de la entrada de entrenamiento que
+difiere en menos bits; con empate, la de menor número.
+En A, cada punto de la curva resume los aciertos fuera de la muestra para un
+grupo de funciones de igual rugosidad.
 La referencia horizontal marca $1/2$; compara la curva por grupos con el promedio exacto impreso para todas las funciones.
 En B, cada fila de la tabla es un proceso y cada columna, un modelo: busca el menor $R$ dentro de cada fila.
 

@@ -657,8 +657,9 @@ def test_p2_la_capacidad_efectiva_es_optimizacion_y_no_cuarta_fuente():
 def test_p2_memorizar_es_el_vecino_junto_al_no_parametrico():
     m = bloque(p2(), "ml-c1-obs-no-parametrico")
     cerca = plano(p2()[max(0, m.start() - 600):m.end() + 600])
-    assert ("La regla “memorizar” de la clase 0 (@ml-c0-memorizar-contra-ajustar) es el "
-            "vecino más cercano: por eso tenía cero en lo visto") in cerca
+    assert ("La regla «memorizar» de la clase 0 (la que muestra "
+            "@ml-c0-memorizar-contra-ajustar) es el vecino más cercano con un vecino: por eso "
+            "tenía cero en lo visto") in cerca
 
 
 def test_p2_s2_aproximar_no_es_aprender():
@@ -777,6 +778,232 @@ def test_nb02_cifras_de_los_bloques_en_su_celda():
         f"N={k['N_menor_R']}" in b2.replace(" ", "")
     b3 = celda02("bloque-3-mira") + celda02("bloque-3-explica")
     assert str(e["veces_N_max_ent"]) in b3
+
+
+
+# ---- revision r1 del nucleo 1b: cada cifra atada a su frase (D-009.5) ----
+#
+# Cada asercion arma con f-string la frase (o el trozo de frase) que cita la
+# cifra, con el valor de ml_cifras_c1, y la busca en su seccion o celda con los
+# espacios colapsados. Si cambia la semilla o ml_lab, la prosa desfasada falla
+# aqui. Los alt se comparan aparte (deben ser el aria-label del SVG).
+
+def _sin_alt(texto):
+    return plano(re.sub(r"!\[[^\]]*\]\([^)]*\)", "", texto))
+
+
+def _r(v, d):
+    return f"{v:.{d}f}"
+
+
+def test_r1_p2_s1_cifras_en_su_frase():
+    t = c.cifras_c1_taylor()
+    sec = _sin_alt(s2()[1])
+    assert f"en $x=2.5$, el grado 3 se equivoca {_r(t['mco_3'][2.5], 2)}." in sec
+    assert (f"Taylor pasa de error {_r(t['taylor_3'][2.5], 1)} a "
+            f"{_r(t['taylor_9'][2.5], 1)} al subir de grado 3 a 9.") in sec
+
+
+def test_r1_p2_s3_cifras_en_su_frase():
+    t = c.cifras_c1_tres_ajustes()
+    q = t[15]
+    sec = _sin_alt(s2()[3])
+    assert (f"después del último, en $x={_r(t['x_max'], 2)}$, se desploma: en $x=3$ predice "
+            f"{menos(q['prediccion_en_3'], 0)[0]}.") in sec
+    assert f"Logra $L_{{\\text{{ent}}}}={_r(q['L_ent'], 2)}$, pero $R$ supera mil." in sec
+    assert q["R"] > 1000
+    assert (f"Más del {_r(100 * q['fraccion_reducible_tras_x_max'], 1)} % de su riesgo "
+            "reducible sale de ese tramo final") in sec
+    assert f"con errores {_r(t[1]['L_ent'], 2)} y {_r(t[1]['R'], 2)}." in sec
+    assert (f"El grado 4 combina {_r(t[4]['L_ent'], 2)} en entrenamiento con riesgo "
+            f"{_r(t[4]['R'], 2)}.") in sec
+
+
+def test_r1_p2_s3_el_grado_15_tiene_el_mismo_R_que_en_la_curva():
+    t, k = c.cifras_c1_tres_ajustes(), c.cifras_c1_capacidad()[20]
+    assert t[15]["R"] == k["R"][15]
+
+
+def test_r1_p2_s4_cifras_en_su_frase():
+    k, d = c.cifras_c1_capacidad()[20], c.cifras_c1_capacidad()[200]
+    o = c.cifras_c1_optimismo()
+    sec = _sin_alt(s2()[4])
+    assert (f"$R$ alcanza {_r(k['R'][k['N_menor_R']], 3)} en $N={k['N_menor_R']}$ y cerca de "
+            f"{k['R'][15]:.0f} en $N=15$.") in sec
+    assert f"con riesgo {_r(k['benchmark'], 1)}." in sec
+    assert (f"pasa de {_r(d['R'][5], 3)} a {_r(d['R'][15], 3)} en $N=15$.") in sec
+    assert (f"la media de entrenamiento es {_r(o['media_L_ent_fijo'], 2)} frente a "
+            f"$R(\\beta)={_r(o['R_fijo'], 2)}$.") in sec
+    assert "la diferencia es el azar de 500 muestras" in sec
+    assert (f"las medias son {_r(o['media_L_ent_gorro'], 2)} en entrenamiento y "
+            f"{_r(o['media_R_gorro'], 2)} de riesgo.") in sec
+    assert f"ocurrió en {o['muestras_al_reves']} de {o['repeticiones']}." in sec
+    assert (f"en grado 15 el entrenamiento llega a {_r(k['L_ent'][15], 3)} y la brecha ronda "
+            f"{k['brecha_15']:.0f}.") in sec
+
+
+def test_r1_p2_s5_cifras_en_su_frase():
+    e = c.cifras_c1_elegir()
+    sec = _sin_alt(s2()[5])
+    assert f"El entrenamiento elige grado 15: {e['veces_N_max_ent']} de {e['repeticiones']} veces." in sec
+    assert (f"El menor riesgo cae entre 3 y 6 en {e['veces_N_R_3_a_6']} de {e['repeticiones']} "
+            f"muestras; el grado más frecuente es {e['moda_N_R']}.") in sec
+
+
+def test_r1_p2_s6_cifras_en_su_frase():
+    i = c.cifras_c1_inverso()
+    sec = _sin_alt(s2()[6])
+    b0, b1 = i["beta_inverso"]
+    assert f"la media tiene {_r(i['benchmark'], 1)}." in sec
+    assert f"$\\widehat\\beta=({_r(b0, 2)},\\ {_r(b1, 2)})$" in sec
+    assert (f"Su riesgo es {_r(i['R_inverso'], 2)}, en el piso; diez potencias dan "
+            f"{_r(i['R_10'], 2)}.") in sec
+    assert f"Los grados 1 y 4 dan {_r(i['R_1'], 1)} y {_r(i['R_4'], 1)}." in sec
+    k4 = i["caso_4"]
+    assert ("En el caso 4 de la galería del notebook (100 datos), sin escalar, "
+            f"$L_{{\\text{{ent}}}}$ pasa de {_r(k4[(10, False)]['L_ent'], 2)} a "
+            f"{_r(k4[(25, False)]['L_ent'], 1)} entre grados 10 y 25.") in sec
+    assert f"Escalando, el grado 25 da {_r(k4[(25, True)]['L_ent'], 2)}." in sec
+    u = i["sube_escalado"]
+    assert (f"pasa de {_r(u['L_de'], 4)} en grado {u['de']} a {_r(u['L_a'], 4)} en grado "
+            f"{u['a']}.") in sec
+    assert "Escala $x$ y la monotonía vuelve" not in sec
+
+
+def test_r1_p2_s7_cifras_en_su_frase():
+    e = c.cifras_c1_extrapolar()
+    sec = _sin_alt(s2()[7])
+    r = e["entregas"]["recta"]
+    assert (f"la recta tiene riesgos de zona {_r(r['dentro'], 2)} dentro y "
+            f"{_r(r['fuera'], 2)} fuera") in sec
+    sn = e["seno"]["grado_7"]
+    assert f"el grado 7 pasa de {_r(sn['dentro'], 2)} a {sn['fuera']:.0f}." in sec
+    sin, con = e["recursivo"]["sin_anterior"], e["recursivo"]["con_anterior"]
+    assert (f"la recta en $x$ da {_r(sin['dentro'], 1)} dentro y {_r(sin['futuro'], 1)} en el "
+            f"futuro; en la serie dibujada, su $L_{{\\text{{ent}}}}$ es "
+            f"{_r(sin['serie_dibujada'], 2)}.") in sec
+    assert _r(con["dentro"], 2) == _r(con["futuro"], 2)
+    assert (f"Da {_r(con['futuro'], 2)} en ambas zonas, cerca del piso "
+            f"{e['recursivo']['piso']:.0f}, a un paso; en la serie dibujada, "
+            f"{_r(con['serie_dibujada'], 2)}.") in sec
+    assert "casi no pesa" not in sec
+
+
+def test_r1_p2_s8_las_reglas_y_las_entradas_en_su_frase():
+    n = c.cifras_c1_no_free_lunch()
+    sec = _sin_alt(s2()[8])
+    ent, fuera = n["entrenamiento"], n["fuera"]
+    assert (f"El entrenamiento trae las etiquetas de {ent[0]}, {ent[1]}, {ent[2]} y {ent[3]}; "
+            f"fuera quedan {fuera[0]}, {fuera[1]}, {fuera[2]} y {fuera[3]}.") in sec
+    assert all(len(v) == 3 for v in n["vecinos_empatados"].values())
+    el = n["vecino_elegido"]
+    assert el["001"] == el["010"] == el["100"] == "000" and el["111"] == "011"
+    assert "Así, 001, 010 y 100 copian a 000, y 111 copia a 011." in sec
+    assert "con empate 2 a 2, predice 1." in sec
+    assert "gana; si no, pierde" not in sec and "supuestos correctos gana" not in sec
+    assert "con un vecino" in plano(bloque(p2(), "ml-c1-obs-no-parametrico").group(1))
+
+
+def test_r1_p2_cierre_cifras_en_su_frase():
+    t, k = c.cifras_c1_taylor(), c.cifras_c1_capacidad()[20]
+    e, i = c.cifras_c1_elegir(), c.cifras_c1_inverso()
+    cierre = plano(cierre_p2())
+    assert (f"Taylor pasa de error {_r(t['taylor_3'][2.5], 1)} a {_r(t['taylor_9'][2.5], 1)} al "
+            f"subir de grado 3 a 9; mínimos cuadrados da {_r(t['mco_3'][2.5], 2)}.") in cierre
+    assert (f"$R$ alcanza {_r(k['R'][6], 3)} en $N={k['N_menor_R']}$; en $N=15$ ronda "
+            f"{k['R'][15]:.0f}, aunque $L_{{\\text{{ent}}}}={_r(k['L_ent'][15], 3)}$.") in cierre
+    assert (f"en {e['veces_N_max_ent']} de {e['repeticiones']} muestras; el menor riesgo cayó "
+            f"entre 3 y 6 en {e['veces_N_R_3_a_6']}.") in cierre
+    assert (f"logra riesgo {_r(i['R_inverso'], 2)} contra {_r(i['R_10'], 2)} de diez "
+            "potencias.") in cierre
+
+
+def test_r1_p2_meta_y_tipografia():
+    texto = p2()
+    assert "«Ninguno» alude" not in texto and "indica el grado." not in texto
+    assert "Un hiperparámetro no se elige minimizando" in plano(
+        bloque(texto, "ml-c1-def-param-hiper").group(1))
+    assert "“" not in texto and "”" not in texto
+    assert "  %" not in texto
+    assert not re.search(r"\b1 veces\b", texto)
+    assert "No es una quinta fuente, sino lo que se agrega" in plano(
+        bloque(texto, "ml-c1-obs-capacidad-efectiva").group(1))
+
+
+def test_r1_p2_las_pistas_no_dan_la_respuesta():
+    assert "¿Qué valen $2-x$ y $1/x$ en $x=2$?" in bloque(p2(), "ml-c1-pista-taylor-1").group(1)
+    pista = bloque(p2(), "ml-c1-pista-cuatro-futuros-1").group(1)
+    assert "cuatro" not in pista
+
+
+def test_unidad_9_no_usa_avisos_que_el_builder_no_conoce():
+    # El builder solo pinta NOTE, TIP, WARNING y CAUTION: [!IMPORTANT] salio como
+    # texto literal y su encabezado ### entro al indice «On This Page» (285f8ff).
+    for ruta in sorted((CLASE.parent).rglob("*.md")):
+        texto = ruta.read_text(encoding="utf-8")
+        for m in re.finditer(r"(?m)^> \[!([A-Z]+)\]", texto):
+            assert m.group(1) in {"NOTE", "TIP", "WARNING", "CAUTION"}, (ruta.name, m.group(1))
+        assert not re.search(r"(?m)^> #{1,6} ", texto), f"{ruta.name}: encabezado en un aviso"
+
+
+def test_r1_nb02_cifras_en_su_celda():
+    t, k = c.cifras_c1_taylor(), c.cifras_c1_capacidad()[20]
+    i, e = c.cifras_c1_inverso(), c.cifras_c1_extrapolar()
+    b1 = plano(celda02("bloque-1-explica"))
+    assert (f"el error de Taylor es {_r(t['taylor_3'][3.0], 3)} y el del ajuste es "
+            f"{_r(t['mco_3'][3.0], 3)}.") in b1
+    assert f"llega aproximadamente a {t['taylor_9'][3.0]:.0f}." in b1
+    b2 = plano(celda02("bloque-2-explica"))
+    assert (f"el grado 4 da $L_{{\\text{{ent}}}}={_r(k['L_ent'][4], 3)}$, "
+            f"$R={_r(k['R'][4], 3)}$ y brecha {_r(k['R'][4] - k['L_ent'][4], 3)}.") in b2
+    assert f"El menor $R$ medido aparece en grado {k['N_menor_R']}" in b2
+    assert f"en grado 15 llega aproximadamente a {k['R'][15]:.0f}." in b2
+    assert f"el piso, {_r(k['piso'], 3)} con los valores iniciales." in b2
+    b4 = plano(celda02("bloque-4-explica"))
+    b0, b1_ = i["beta_inverso"]
+    assert f"alcanza $R={_r(i['R_inverso'], 3)}$" in b4
+    assert f"$\\widehat\\beta=({_r(b0, 2)},\\ {_r(b1_, 2)})$" in b4
+    assert f"usa 11 columnas y da $R={_r(i['R_10'], 3)}$." in b4
+    r40 = f"{i['R_40']:,.0f}".replace(",", "\\,")
+    assert (f"Con el grado 40 que pediste, $L_{{\\text{{ent}}}}={_r(i['L_ent_40'], 3)}$, pero "
+            f"$R={r40}$") in b4
+    u = i["sube_escalado"]
+    assert (f"pasa de {_r(u['L_de'], 4)} en grado {u['de']} a {_r(u['L_a'], 4)} en grado "
+            f"{u['a']}.") in b4
+    b5 = plano(celda02("bloque-5-explica"))
+    sn, en = e["seno"]["grado_7"], e["entregas"]["grado_7"]
+    assert f"pasa de {_r(sn['dentro'], 3)} dentro a {sn['fuera']:.0f} fuera." in b5
+    assert f"pasa de {_r(en['dentro'], 3)} dentro a más de un millón fuera" in b5
+    assert en["fuera"] > 1e6
+    sin, con = e["recursivo"]["sin_anterior"], e["recursivo"]["con_anterior"]
+    assert (f"son aproximadamente {_r(sin['dentro'], 1)} dentro y {_r(sin['futuro'], 1)} en el "
+            f"futuro. Sobre la serie dibujada, $L_{{\\text{{ent}}}}$ es "
+            f"{_r(sin['serie_dibujada'], 2)}.") in b5
+    assert (f"quedan cerca de {_r(con['futuro'], 2)} en ambos, frente al piso 1 "
+            f"({_r(con['serie_dibujada'], 2)} sobre la serie dibujada).") in b5
+
+
+def test_r1_nb02_no_free_lunch_y_parte_b_en_su_celda():
+    n, b = c.cifras_c1_no_free_lunch(), c.cifras_c1_nb02_parte_b()
+    b6 = plano(celda02("bloque-6-explica"))
+    v = n["vecino"]["por_rugosidad"]
+    assert (f"El vecino pasa de {float(v[0]):.1f} en rugosidad 0 a {float(v[12]):.1f} en "
+            "rugosidad 12;") in b6
+    assert all(float(x) == 0.5 for x in n["siempre_1"]["por_rugosidad"].values())
+    s_, p_ = b["suave"], b["periódico"]
+    assert (f"el polinomio de grado 3 gana en el proceso suave: $R={_r(s_['polinomio'], 3)}$ "
+            f"frente a {_r(s_['vecinos'], 3)} de vecinos.") in b6
+    assert (f"En el periódico ganan los vecinos: {_r(p_['vecinos'], 3)} frente a "
+            f"{_r(p_['polinomio'], 3)} del polinomio.") in b6
+
+
+def test_r1_nb02_sin_frases_meta_y_con_el_centro_correcto():
+    t = nb02()
+    for frase in ("no un lenguaje", "poner estrella en la notación",
+                  "no la identificamos automáticamente", "centrado en el medio"):
+        assert frase not in plano(t), frase
+    assert "Taylor centrado en $x_0=1$" in plano(celda02("bloque-1-predice"))
+    assert "al revés" in plano(celda02("bloque-1-mira"))
 
 # --- fin tramo 1b ---
 

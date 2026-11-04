@@ -598,14 +598,17 @@ def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
                                     "avisos": [str(a.message) for a in avisos]}
     salida["caso_4"] = cuatro
     # NB02 bloque 4 pide llevar el grado a 40 (escalado): su R y su L_ent.
-    m40 = ml.ajustar(datos, phi=ml.polinomio(40))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")   # grados altos: avisos de condicionamiento
+        m40 = ml.ajustar(datos, phi=ml.polinomio(40))
+        ajustes = {N: ml.ajustar(datos, phi=ml.polinomio(N)) for N in range(25, 41)}
     salida["R_40"] = float(ml.riesgo(m40, datos))
     salida["L_ent_40"] = float(ml.L(m40, datos.ent))
     # Escalar no garantiza la monotonia numerica: el primer grado (de 25 a 40)
     # donde L_ent escalado sube respecto al anterior, con los dos valores.
     previo = None
     for N in range(25, 41):
-        L = float(ml.L(ml.ajustar(datos, phi=ml.polinomio(N)), datos.ent))
+        L = float(ml.L(ajustes[N], datos.ent))
         if previo is not None and L > previo[1]:
             salida["sube_escalado"] = {"de": previo[0], "a": N, "L_de": previo[1], "L_a": L}
             break
@@ -709,6 +712,24 @@ def cifras_c1_no_free_lunch():
     salida["vecino_elegido"] = {
         format(i, "03b"): format(min(ent, key=lambda j: (dist(i, j), j)), "03b")
         for i in fuera}
+    return salida
+
+
+def cifras_c1_nb02_parte_b(semilla=SEMILLA_1B):
+    """NB02, celda bloque-6-prueba (parte B de no free lunch): R (despliegue)
+    del polinomio de grado 3 y de vecinos (3) en un proceso suave y en uno
+    periodico, 60 datos cada uno. Misma construccion que la celda."""
+    ml = _ml()
+    curvas = {"suave": (lambda d: 10 + 4 * d.x - 0.3 * d.x ** 2, 1.0),
+              "periódico": (lambda d: 4 + 2 * np.sin(5 * d.x), 0.3)}
+    salida = {}
+    for nombre, (f, sigma) in curvas.items():
+        datos = ml.proceso(n=60, x={"x": ml.uniforme(0, 6)}, f=f, semilla=semilla,
+                           ruido=ml.normal(0, sigma), fracciones=(1, 0, 0))
+        polinomio = ml.ajustar(datos, phi=ml.polinomio(3))
+        vecinos = ml.ajustar_otro(datos, familia="vecinos", n_vecinos=3)
+        salida[nombre] = {"polinomio": float(ml.riesgo(polinomio, datos)),
+                          "vecinos": float(ml.riesgo(vecinos, datos))}
     return salida
 
 
