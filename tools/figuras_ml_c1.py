@@ -132,6 +132,27 @@ def _recolorear_nuevas(ax):
             col.set_color(NUEVAS)
 
 
+def _restilar_clases(ax):
+    """dibujar_frontera pinta y = 1 con el triangulo y el oro del rol de
+    validacion; en la clase 1 todo punto es de entrenamiento y la clase se
+    distingue por marca: y = 0 circulo cian, y = 1 rombo pervinca, con las
+    dos regiones del mismo par de colores horneados contra el panel."""
+    from matplotlib.contour import ContourSet
+    from matplotlib.markers import MarkerStyle
+    rombo = MarkerStyle("D")
+    for col in list(ax.collections):
+        if isinstance(col, ContourSet) and getattr(col, "filled", False):
+            from matplotlib.colors import ListedColormap
+            col.set_cmap(ListedColormap([mezclar(CIAN, 0.14, PANEL),
+                                         mezclar(PERVINCA, 0.16, PANEL)]))
+            col.set_alpha(None)
+        elif col.get_label() == "y = 1":
+            col.set_color(PERVINCA)
+            col.set_paths([rombo.get_path().transformed(rombo.get_transform())])
+        elif col.get_label() == "y = 0":
+            col.set_color(CIAN)
+
+
 def _ajustes(ax):
     return [ln for ln in ax.get_lines() if ln.get_gid() == "ajuste"]
 
@@ -576,7 +597,9 @@ def ml_c1_piso():
             f"la media {_num(uno['R_media'], 1)}. Con sigma épsilon igual a 2, el piso es "
             f"4: el oráculo da {_num(dos['R_oraculo'], 2)}, la recta "
             f"{_num(dos['R_recta'], 2)} y la media {_num(dos['R_media'], 1)}. Duplicar "
-            "sigma cuadruplica el piso, y ni el oráculo baja de él.")
+            "sigma cuadruplica el piso. El riesgo verdadero del oráculo es justo el piso; su "
+            "estimación con 100 000 observaciones puede quedar un poco abajo, a unos dos "
+            "errores estándar.")
     return _grafica(dibujar, aria, "El piso que nadie baja", 6.0, paneles=2)
 
 
@@ -656,10 +679,12 @@ def ml_c1_anillos_polares():
         arriba, abajo = ejes
         ml.dibujar_frontera(modelos["cartesianas"], datos.ent, vista="cartesianas",
                             ax=arriba, tema="sitio")
+        _restilar_clases(arriba)
         arriba.set_title(f"cartesianas (1, x₁, x₂): aciertos en el despliegue "
                          f"{_pct(a['cartesianas']['aciertos'])}", color=TEXTO, fontsize=11)
         ml.dibujar_frontera(modelos["polares"], datos.ent, vista="polares", ax=abajo,
                             tema="sitio")
+        _restilar_clases(abajo)
         th = np.linspace(-np.pi, np.pi, 50)
         abajo.plot(th, np.full_like(th, r_bayes), ls=":", color=PISO, lw=2,
                    label=f"ideal: r = {r_bayes:.2f}")

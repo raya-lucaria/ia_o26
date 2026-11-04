@@ -76,6 +76,13 @@ def test_ninguna_figura_de_la_clase_1_usa_el_rosa_de_prueba(ident):
     assert gen.color_rol("prueba").lower() not in colores(ident)
 
 
+@pytest.mark.parametrize("ident", TRAMO_1A)
+def test_ninguna_figura_de_la_clase_1_usa_el_oro_de_validacion(ident):
+    # Tampoco hay validacion en la clase 1; dibujar_frontera pinta y = 1 con
+    # el rol de validacion y la figura lo restila (revision codex-rev-codigo-c1-r1).
+    assert gen.color_rol("validacion").lower() not in colores(ident)
+
+
 @pytest.mark.parametrize("ident", ["ml-c1-mismo-mundo"])
 def test_los_casos_no_vistos_llevan_el_rol_observaciones_nuevas(ident):
     texto = contenido(ident)
@@ -131,6 +138,12 @@ def test_el_aria_de_los_anillos_nombra_las_cifras():
     assert "−0.07" in a
     # Aciertos, nunca R (contrato §4.8, r1-23).
     assert "riesgo" not in a.lower()
+
+
+def test_el_aria_del_piso_no_dice_que_la_estimacion_nunca_baja_del_piso():
+    a = aria("ml-c1-piso")
+    assert "ni el oráculo baja" not in a
+    assert "un poco abajo" in a
 
 
 def test_el_aria_de_la_lluvia_nombra_los_dos_pisos():

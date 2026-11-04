@@ -28,10 +28,12 @@ def bloque_1(proceso, sigma, n, semilla):
     ml.dibujar_proceso(datos, puntos_realidad=300, ax=ax)
     ml.dibujar_ajuste({"f̂: la recta ajustada": recta}, datos, ax=ax)
     plt.show()
-    media = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
-    print(f"L_ent (entrenamiento, {n} datos) = {ml.L(recta, datos.ent):.3f}")
-    print(f"R(β̂) (despliegue, 100 000 obs.) = {ml.riesgo(recta, datos):.3f}"
-          f"   ·   benchmark, la media de ent: R = {media:.3f}")
+    b_ent = ml.benchmarks(datos, datos.ent).loc["media", "cuadratica"]
+    b_desp = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
+    print(f"entrenamiento ({n} datos): L_ent = {ml.L(recta, datos.ent):.3f}"
+          f"   ·   la media (benchmark): {b_ent:.3f}")
+    print(f"despliegue (100 000 obs.): R(β̂) = {ml.riesgo(recta, datos):.3f}"
+          f"   ·   la media (benchmark): {b_desp:.3f}")
 
 
 ml.laboratorio(
@@ -117,8 +119,9 @@ def bloque_3(medir, N):
     plt.show()
     media = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
     print(f"columnas que ve el modelo: {datos.columnas_x}")
-    print(f"piso = {ml.piso(datos):.2f}   ·   R (despliegue) = {ml.riesgo(m, datos):.2f}"
-          f"   ·   benchmark, la media de ent: R = {media:.2f}")
+    print(f"piso = {ml.piso(datos):.2f}   ·   "
+          f"R (despliegue) = {ml.riesgo(m, datos):.2f}   ·   "
+          f"la media (benchmark), R = {media:.2f}")
 
 
 ml.laboratorio(
@@ -152,17 +155,20 @@ def bloque_4(radio_exterior, grosor, ruido, representacion):
         m = ml.ajustar(datos, phi=phi, tarea="clasificacion")
     if any("separan" in str(a.message) for a in avisos):
         print("Los datos se separan: sin penalización la logística no tiene "
-              "coeficientes óptimos finitos; crecen hasta que el optimizador se detiene.")
+              "coeficientes óptimos finitos;\ncrecen hasta que el optimizador "
+              "se detiene.")
     vista = "cartesianas" if phi is None else "polares"
     ml.dibujar_frontera(m, datos.ent, vista=vista)
     plt.show()
     ml.imprimir_Phi(m, datos.ent, filas=4)
     desp = datos.despliegue
+    moda_ent = ml.benchmarks(datos, datos.ent).loc["moda", "aciertos"]
     moda = ml.benchmarks(datos, desp).loc["moda", "aciertos"]
     bayes = np.mean((desp["prob"] >= 0.5).astype(int) == desp["y"])
-    print(f"aciertos en ent = {ml.evaluar(m, datos.ent, 'aciertos'):.3f}   ·   "
-          f"aciertos en el despliegue = {ml.desempeno(m, datos, 'aciertos'):.3f}")
-    print(f"benchmark, la moda: {moda:.3f}   ·   techo de Bayes: {bayes:.3f}")
+    print(f"aciertos en ent = {ml.evaluar(m, datos.ent, 'aciertos'):.3f}"
+          f"   ·   la moda (benchmark) en ent: {moda_ent:.3f}")
+    print(f"aciertos en el despliegue = {ml.desempeno(m, datos, 'aciertos'):.3f}"
+          f"   ·   la moda: {moda:.3f}   ·   techo de Bayes: {bayes:.3f}")
     print("coeficientes β̂:", m.beta_gorro.round(3).to_dict())
 
 
@@ -185,8 +191,10 @@ ml.laboratorio(
 import pandas as pd
 
 SEMILLA = 0
-DATOS_B5 = {"entregas con lluvia": (ml.caso(2, omitir=None, semilla=SEMILLA), "x1"),
-            "recíproca": (ml.PROCESOS["inverso"](semilla=SEMILLA, fracciones=(1, 0, 0)), "x")}
+DATOS_B5 = {
+    "entregas con lluvia": (ml.caso(2, omitir=None, semilla=SEMILLA), "x1"),
+    "recíproca": (ml.PROCESOS["inverso"](semilla=SEMILLA, fracciones=(1, 0, 0)), "x"),
+}
 PHIS_B5 = {"(1, x)": lambda v: ml.columnas(v),
            "(1, x, x²)": lambda v: ml.columnas(v, f"{v}**2"),
            "(1, 1/x)": lambda v: ml.columnas(f"1/{v}"),
@@ -208,9 +216,15 @@ def bloque_5(proceso, phi):
     plt.show()
     print("m = ml.ajustar(datos, phi=...)   ← la misma línea con cualquier φ")
     ml.imprimir_Phi(m, datos.ent, filas=4)
-    media = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
-    print(f"L_ent = {ml.L(m, datos.ent):.3f}   ·   R (despliegue) = "
-          f"{ml.riesgo(m, datos):.3f}   ·   benchmark, la media de ent: R = {media:.3f}")
+    b_ent = ml.benchmarks(datos, datos.ent).loc["media", "cuadratica"]
+    b_desp = ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]
+    print(f"entrenamiento: L_ent = {ml.L(m, datos.ent):.3f}"
+          f"   ·   la media (benchmark): {b_ent:.3f}")
+    print(f"despliegue: R = {ml.riesgo(m, datos):.3f}"
+          f"   ·   la media (benchmark): {b_desp:.3f}")
+    if phi == "(1, 1/x)" and v == "x1":
+        print("Ojo: x₁ llega hasta 0 y 1/x₁ explota; el R verdadero de esta φ es "
+              "infinito.\nEl número de arriba solo promedia esta muestra enorme.")
 
 
 ml.laboratorio(
