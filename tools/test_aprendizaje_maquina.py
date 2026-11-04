@@ -1229,7 +1229,7 @@ def test_error_por_zona_contra_la_cuenta_a_mano():
     m = ml.ajustar(datos)
     b0, b1 = m.beta_gorro["1"], m.beta_gorro["x"]
     tabla = ml.error_por_zona(m, datos, {"dentro": (0, 6), "fuera": (6, 9)}, puntos=2001)
-    assert list(tabla.columns) == ["zona", "desde", "hasta", "dif2", "sigma2_e", "R_zona"]
+    assert list(tabla.columns) == ["zona", "desde", "hasta", "dif2", "var_y_dado_x", "R_zona"]
     assert tabla["zona"].tolist() == ["dentro", "fuera"]
     # (f − f̂)² = (a + c x)² con a = 10 − b0, c = 4 − b1; promedio exacto en [lo, hi]
     a, c = 10 - b0, 4 - b1
@@ -1275,7 +1275,7 @@ def test_dibujar_no_free_lunch_es_el_groupby():
     tabla = ml.no_free_lunch()
     ax = ml.dibujar_no_free_lunch(tabla)
     for regla, trozo in tabla.groupby("regla"):
-        medias = trozo.groupby("rugosidad")["aciertos_fuera"].mean()
+        medias = trozo.groupby("rugosidad")["aciertos_fuera"].mean().astype(float)
         ln = [ln for ln in ax.get_lines() if ln.get_gid() == f"regla-{regla}"][0]
         assert np.allclose(ln.get_xdata(), medias.index) and np.allclose(ln.get_ydata(), medias)
         assert f"{trozo['aciertos_fuera'].mean():.3f}" in ln.get_label()
@@ -1447,3 +1447,149 @@ def test_galeria_corre_los_casos_nuevos_con_sus_opciones(monkeypatch):
     with redirect_stdout(s):
         ml.galeria(1, casos=[5])
     assert "fuera" in s.getvalue()
+
+
+# --- Revisión del lote O0b-c1 (codex-rev-lab-O0b-c1): cada prueba falló antes del arreglo ---
+
+
+class _Prediccion:
+    """Un modelo que predice con una función fija de la malla."""
+
+    def __init__(self, funcion):
+        self.funcion = funcion
+
+    def predecir(self, df):
+        return np.asarray(self.funcion(df), float)
+
+
+def test_error_por_zona_suma_la_varianza_de_y_dado_lo_visible():
+    # caso 2: con 13 + 4·x1 (el óptimo), lo que queda es Var(6·lluvia) + σ² = 36·¼ + 1 = 10
+    datos = ml.caso(2)
+    tabla = ml.error_por_zona(_Prediccion(lambda d: 13 + 4 * d["x1"]), datos, {"z": (0, 6)},
+                              variable="x1")
+    assert list(tabla.columns) == ["zona", "desde", "hasta", "dif2", "var_y_dado_x", "R_zona"]
+    assert tabla.loc[0, "dif2"] == pytest.approx(0, abs=1e-12)
+    assert tabla.loc[0, "var_y_dado_x"] == pytest.approx(10, rel=1e-9)
+    assert tabla.loc[0, "R_zona"] == pytest.approx(10, rel=1e-9)
+    # endogeno = 0.8 con ruido N(0, 1): Var(ε | x) = 1 − 0.8² = 0.36
+    endo = ml.proceso(n=50, endogeno=0.8)
+    tabla = ml.error_por_zona(_Prediccion(endo.f_visible), endo, {"z": (0, 1)})
+    assert tabla.loc[0, "R_zona"] == pytest.approx(0.36, rel=1e-9)
+    # y con el predictor óptimo, la zona de los datos coincide con el piso
+    assert tabla.loc[0, "R_zona"] == pytest.approx(ml.piso(endo), rel=0.02)
+
+
+def test_error_por_zona_rechaza_lo_que_no_sabe_medir():
+    # caso 1: las omitidas están correlacionadas con x1; Var(y | x1) no se sabe por fila
+    datos = ml.caso(1)
+    with pytest.raises(ValueError, match="Var"):
+        ml.error_por_zona(_Prediccion(datos.f_visible), datos, {"z": (-1, 1)}, variable="x1")
+
+
+def test_error_por_zona_distingue_sigma_de_sigma_cuadrada():
+    datos = ml.PROCESOS["entregas"](n=30, ruido=ml.normal(0, 2))
+    tabla = ml.error_por_zona(ml.ajustar(datos), datos, {"z": (0, 6)})
+    assert (tabla["R_zona"] - tabla["dif2"]).tolist() == pytest.approx([4.0], rel=1e-12)
+
+
+@pytest.mark.parametrize("zonas, puntos, patron", [
+    ({"z": (0, 1)}, 0, "puntos"), ({"z": (0, 1)}, 1, "puntos"), ({"z": (0, 1)}, 2.5, "puntos"),
+    ({"z": (0, 1)}, True, "puntos"), ({"z": (0, np.inf)}, 10, "finit"),
+    ({"z": (np.nan, 1)}, 10, "finit"),
+])
+def test_error_por_zona_exige_una_malla_que_mida(zonas, puntos, patron):
+    datos = ml.PROCESOS["entregas"](n=30)
+    with pytest.raises(ValueError, match=patron):
+        ml.error_por_zona(ml.ajustar(datos), datos, zonas, puntos=puntos)
+
+
+def test_error_por_zona_nombra_la_zona_donde_queda_indefinido():
+    datos = ml.proceso(n=30, x={"x": ml.uniforme(1, 2)}, f=lambda d: np.log(d["x"]))
+    with pytest.raises(ValueError, match="negativa"):
+        with np.errstate(all="ignore"):
+            ml.error_por_zona(_Prediccion(lambda d: 0 * d["x"]), datos,
+                              {"positiva": (1, 2), "negativa": (-2, -1)})
+
+
+def test_error_por_zona_con_dos_puntos_ya_promedia():
+    # f(x) = x, predictor 0, sin ruido: con la malla fina la media de x² en [0, 1] es 1/3
+    datos = ml.proceso(n=30, f=lambda d: d["x"], ruido=ml.normal(0, 0))
+    tabla = ml.error_por_zona(_Prediccion(lambda d: 0 * d["x"]), datos, {"z": (0, 1)},
+                              puntos=20_001)
+    assert tabla.loc[0, "R_zona"] == pytest.approx(1 / 3, rel=1e-4)
+
+
+def test_repetir_con_cero_repeticiones_conserva_las_columnas():
+    vacio = ml.repetir(lambda s: {"a": s}, repeticiones=0)
+    assert len(vacio) == 0 and list(vacio.columns) == ["repeticion", "semilla"]
+    for malo in (-1, 1.9, True, "3"):
+        with pytest.raises(ValueError, match="repeticiones"):
+            ml.repetir(lambda s: {"a": s}, repeticiones=malo)
+
+
+def test_no_free_lunch_rugosidad_en_funciones_conocidas():
+    tabla = ml.no_free_lunch(reglas=("siempre_1",))
+    rug = tabla.set_index("funcion")["rugosidad"]
+    paridad = sum(1 << i for i in range(8) if bin(i).count("1") % 2)
+    assert rug[0] == 0 and rug[255] == 0  # constantes: ninguna arista cambia
+    assert rug[1] == 3 and rug[1 << 7] == 3  # un solo vértice en 1: sus tres aristas
+    assert rug[paridad] == 12  # paridad: todas las aristas cambian
+
+
+def test_no_free_lunch_es_exacto_y_global_pondera_por_funciones():
+    from fractions import Fraction
+
+    tabla = ml.no_free_lunch(entrenamiento=(0, 3, 5))  # cinco puntos fuera: quintos
+    for regla, trozo in tabla.groupby("regla"):
+        assert all(isinstance(v, Fraction) for v in trozo["aciertos_fuera"])
+        assert sum(trozo["aciertos_fuera"]) / len(trozo) == Fraction(1, 2), regla
+    # aquí la media de medias por rugosidad NO es 1/2 (vecino ≈ 0.528, mayoría 0.535)
+    medias = tabla[tabla["regla"] == "vecino"].groupby("rugosidad")["aciertos_fuera"].mean()
+    assert abs(float(medias.astype(float).mean()) - 0.5) > 0.02
+    ax = ml.dibujar_no_free_lunch(tabla)
+    for regla in ("vecino", "mayoria", "siempre_1"):
+        ln = [ln for ln in ax.get_lines() if ln.get_gid() == f"regla-{regla}"][0]
+        assert "(promedio 0.500)" in ln.get_label(), ln.get_label()
+    plt.close("all")
+
+
+def test_proceso_clasificacion_rechaza_nombres_reservados():
+    for nombre in ("prob", "y"):
+        with pytest.raises(ValueError, match=nombre):
+            ml.proceso_clasificacion(n=50, x={nombre: ml.normal()},
+                                     puntaje=lambda d, k=nombre: d[k], con_realidad=False)
+
+
+def test_proceso_clasificacion_otra_semilla_cambia_la_muestra_entera():
+    def todo(s):
+        d = ml.proceso_clasificacion(n=200, semilla=s, con_realidad=False)
+        return pd.concat([d.ent, d.val, d.prueba]).sort_index()
+
+    a, b = todo(0), todo(1)
+    assert a.equals(todo(0))
+    assert not np.allclose(a["x1"].to_numpy(), b["x1"].to_numpy())
+    # la misma semilla con otras fracciones: mismos datos, otra partición
+    c = ml.proceso_clasificacion(n=200, semilla=0, fracciones=(0.5, 0.25, 0.25),
+                                 con_realidad=False)
+    assert pd.concat([c.ent, c.val, c.prueba]).sort_index().equals(a)
+
+
+def test_recursivo_otra_semilla_cambia_la_serie():
+    a, b = ml.PROCESOS["recursivo"](semilla=0), ml.PROCESOS["recursivo"](semilla=1)
+    assert not np.allclose(a.ent["y"].to_numpy(), b.ent["y"].to_numpy())
+    assert not np.allclose(a.prueba["x"].to_numpy(), b.prueba["x"].to_numpy())
+
+
+def test_recursivo_realidad_y_despliegue_son_filas_independientes_de_todo_el_tramo():
+    chica = ml.PROCESOS["recursivo"](n_realidad=10, semilla_realidad=3)
+    assert chica.despliegue["t"].max() > 70  # no solo los primeros pasos del futuro
+    assert chica.realidad["t"].max() > 10
+    datos = ml.PROCESOS["recursivo"]()
+    for df, (lo, hi) in ((datos.realidad, (0, 60)), (datos.despliegue, (60, 80))):
+        cuenta = df["t"].value_counts()
+        assert set(cuenta.index) == set(range(lo, hi))
+        assert cuenta.max() - cuenta.min() <= 2  # tiempos estratificados: uniformes en el tramo
+    # filas de réplicas independientes: y_anterior de una fila no es el y de la previa
+    real = datos.realidad
+    seguidas = np.isclose(real["y_anterior"].to_numpy()[1:], real["y"].to_numpy()[:-1])
+    assert seguidas.mean() < 0.01

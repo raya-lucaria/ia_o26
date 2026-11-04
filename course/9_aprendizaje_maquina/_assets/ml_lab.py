@@ -23,6 +23,7 @@ import re  # noqa: E402
 import warnings  # noqa: E402
 from collections import OrderedDict  # noqa: E402
 from dataclasses import dataclass  # noqa: E402
+from fractions import Fraction  # noqa: E402
 
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
@@ -299,6 +300,15 @@ def _huella(objeto, muestra):
             hashlib.sha1(crudo).hexdigest())
 
 
+def _validar_reservados(x, reservados):
+    """Los nombres que ml_lab escribe en las tablas no pueden ser variables de x."""
+    for nombre in x:
+        if nombre in reservados or str(nombre).startswith("_"):
+            raise ValueError(f"x no puede llamar {nombre!r} a una variable: ml_lab usa ese nombre "
+                             f"para su columna (reservados: {', '.join(reservados)} y los que "
+                             "empiezan con _)")
+
+
 class _Poblacion:
     """Lo que define una población de regresión: x, f, ruido y sus arreglos."""
 
@@ -311,6 +321,7 @@ class _Poblacion:
         for nombre, pieza in self.x.items():
             if not isinstance(pieza, Pieza):
                 raise ValueError(f"x[{nombre!r}] debe ser una Pieza (normal, uniforme, ...)")
+        _validar_reservados(self.x, ("y", "f", "f_visible"))
         self.f = f
         self.mecanismo = ruido if isinstance(ruido, Mecanismo) else None
         if self.mecanismo is None and not isinstance(ruido, Pieza):
@@ -871,6 +882,7 @@ class _PoblacionClasificacion:
         for nombre, pieza in self.x.items():
             if not isinstance(pieza, Pieza):
                 raise ValueError(f"x[{nombre!r}] debe ser una Pieza (normal, uniforme, ...)")
+        _validar_reservados(self.x, ("y", "prob"))
         if not callable(puntaje):
             raise ValueError("puntaje es una función de los datos: lambda d: 2 * d['x1']")
         self.puntaje = puntaje
@@ -1140,12 +1152,19 @@ class _PoblacionRecursiva(_Poblacion):
         return self._tabla(*self._series(1, rng))
 
     def grande(self, n_realidad, rng, flujo):
-        largo = self.n if flujo == 1 else self.futuro
-        replicas = -(-int(n_realidad) // largo)
-        t, x, ant, y, f = self._series(replicas, rng)
-        cols = slice(0, self.n) if flujo == 1 else slice(self.n, self.T)
-        partes = [m[:, cols] for m in (t, x, ant, y, f)]
-        return self._tabla(*partes).iloc[:int(n_realidad)].reset_index(drop=True)
+        """Cada fila sale de una réplica nueva, en un t estratificado uniforme en su tramo
+        (realidad t < n, despliegue t >= n); se simula por bloques para no llenar la memoria."""
+        lo, hi = (0, self.n) if flujo == 1 else (self.n, self.T)
+        total = int(n_realidad)
+        u = (rng.permutation(total) + rng.uniform(size=total)) / total
+        t_fila = lo + np.minimum((u * (hi - lo)).astype(int), hi - lo - 1)
+        partes = []
+        for inicio in range(0, total, 20_000):
+            t_b = t_fila[inicio:inicio + 20_000]
+            matrices = self._series(len(t_b), rng)
+            fila = np.arange(len(t_b))
+            partes.append(self._tabla(*(m[fila, t_b] for m in matrices)))
+        return pd.concat(partes, ignore_index=True)
 
 
 _CAMBIOS_RECURSIVO = {"n_realidad", "semilla_realidad", "con_realidad", "descripcion"}
@@ -2275,6 +2294,9 @@ def repetir(experimento, repeticiones=500, semilla=0):
     La base de todos los «500 veces»: una fila por repetición, con repeticion y semilla.
     Desde: 1.1 (clase 1). Ejemplo: ml.repetir(lambda s: {"R": mi_R(s)}, repeticiones=200)
     """
+    if isinstance(repeticiones, bool) or not isinstance(repeticiones, (int, np.integer)) \
+            or repeticiones < 0:
+        raise ValueError(f"repeticiones es un entero >= 0, no {repeticiones!r}")
     filas = []
     for i in range(int(repeticiones)):
         s = int(semilla) + i
@@ -2285,14 +2307,35 @@ def repetir(experimento, repeticiones=500, semilla=0):
             raise ValueError("el dict de experimento no puede traer las claves 'repeticion' "
                              "ni 'semilla': repetir las agrega")
         filas.append({"repeticion": i, "semilla": s, **r})
+    if not filas:
+        return pd.DataFrame(columns=["repeticion", "semilla"])
     return pd.DataFrame(filas)
 
 
-def error_por_zona(modelo, datos, zonas, puntos=1000, variable="x"):
-    """El riesgo cuadrático si el uso cayera uniforme en cada zona: media de (f − f̂)² en
-    una malla de la zona, más sigma2_e. No toca despliegue. Solo regresión de una variable.
+def _var_y_dado_x(pob, malla, semilla_realidad):
+    """Var(y | lo visible) en cada punto de la malla, o ValueError si no se sabe."""
+    if not isinstance(pob, _Poblacion) or pob.mecanismo is not None:
+        raise ValueError("error_por_zona no sabe Var(y | x) de este proceso: su ruido "
+                         "depende de un contexto que la malla no trae")
+    if math.isinf(pob.ruido.varianza):
+        return np.full(len(malla), np.inf)
+    cruzadas = any((a in pob.omitidas) != (b in pob.omitidas) for a, b in pob.correlacion)
+    if cruzadas or (pob.endogeno and pob.var_endogena in pob.omitidas):
+        raise ValueError("error_por_zona no sabe Var(y | x) de este proceso: lo omitido "
+                         "depende de lo visible (correlación o endogeneidad)")
+    d = pob._sin_escala(malla)
+    var = pob.var_endogena if pob.endogeno else pob.visibles[0]
+    v = pob._media_ruido({var: d[var].to_numpy()})[1]
+    if pob.omitidas:  # omitidas independientes de lo visible: los mismos sorteos de f_visible
+        v = v + pob._repetir_f(d, pob._sorteos_omitidas(semilla_realidad), pob.J).var(axis=1)
+    return np.asarray(v, float) * pob.c_y ** 2
 
-    Columnas: zona, desde, hasta, dif2 (la media de (f − f̂)²), sigma2_e, R_zona.
+
+def error_por_zona(modelo, datos, zonas, puntos=1000, variable="x"):
+    """El riesgo cuadrático si el uso cayera uniforme en cada zona: media en una malla de
+    (E[y | x] − f̂)² más la de Var(y | x). No toca despliegue. Solo regresión de una variable.
+
+    Columnas: zona, desde, hasta, dif2, var_y_dado_x (= sigma2_e si nada se omite), R_zona.
     Desde: 1.1 (clase 1). Ejemplo: ml.error_por_zona(m, datos, {"dentro": (0, 2), "fuera": (2, 3)})
     """
     if datos.tarea != "regresion" or len(datos.columnas_x) != 1:
@@ -2301,17 +2344,30 @@ def error_por_zona(modelo, datos, zonas, puntos=1000, variable="x"):
         raise ValueError(f"variable es la x visible de estos datos: {datos.columnas_x[0]!r}")
     if datos.f_visible is None:
         raise ValueError("este proceso no sabe E[y | x]: no hay contra qué medir")
+    if isinstance(puntos, bool) or not isinstance(puntos, (int, np.integer)) or puntos < 2:
+        raise ValueError(f"puntos es un entero >= 2 (los de la malla de cada zona), no {puntos!r}")
+    pob = getattr(datos, "_pob", None)
     filas = []
     for nombre, (lo, hi) in zonas.items():
         lo, hi = float(lo), float(hi)
+        if not (math.isfinite(lo) and math.isfinite(hi)):
+            raise ValueError(f"la zona {nombre!r} pide límites finitos")
         if not hi > lo:
             raise ValueError(f"la zona {nombre!r} pide desde < hasta")
         malla = pd.DataFrame({variable: np.linspace(lo, hi, int(puntos))})
         malla.attrs["ml"] = copy.deepcopy(datos.ent.attrs.get("ml", {}))
-        dif2 = float(np.mean((np.asarray(datos.f_visible(malla), float)
-                              - modelo.predecir(malla)) ** 2))
-        filas.append((nombre, lo, hi, dif2, datos.sigma2_e, dif2 + datos.sigma2_e))
-    return pd.DataFrame(filas, columns=["zona", "desde", "hasta", "dif2", "sigma2_e", "R_zona"])
+        with np.errstate(all="ignore"):
+            e_y = np.asarray(datos.f_visible(malla), float)
+            pred = np.asarray(modelo.predecir(malla), float)
+            var = _var_y_dado_x(pob, malla, datos.semilla_realidad)
+        if not (np.all(np.isfinite(e_y)) and np.all(np.isfinite(pred))) or np.any(np.isnan(var)):
+            raise ValueError(f"en la zona {nombre!r} E[y | x], la predicción o Var(y | x) "
+                             "quedan indefinidos (¿la zona sale del dominio de f?)")
+        dif2 = float(np.mean((e_y - pred) ** 2))
+        v = float(np.mean(var))
+        filas.append((nombre, lo, hi, dif2, v, dif2 + v))
+    return pd.DataFrame(filas, columns=["zona", "desde", "hasta", "dif2", "var_y_dado_x",
+                                        "R_zona"])
 
 
 _REGLAS_NFL = ("vecino", "mayoria", "siempre_1")
@@ -2321,8 +2377,9 @@ def no_free_lunch(reglas=("vecino", "mayoria", "siempre_1"), bits=3, entrenamien
     """Todas las funciones booleanas de bits bits: qué fracción aciertan las reglas fuera
     de los puntos de entrenamiento. Promediada sobre todas las funciones, toda regla da 1/2.
 
-    rugosidad = aristas del cubo con etiquetas distintas. vecino desempata por el índice
-    menor; mayoria desempata a favor de 1. Desde: 1.1 (clase 1). Ejemplo: ml.no_free_lunch()
+    aciertos_fuera es una Fraction exacta; rugosidad = aristas del cubo con etiquetas
+    distintas. vecino desempata por el índice menor; mayoria, a favor de 1.
+    Desde: 1.1 (clase 1). Ejemplo: ml.no_free_lunch()
     """
     for r in reglas:
         if r not in _REGLAS_NFL:
@@ -2350,7 +2407,7 @@ def no_free_lunch(reglas=("vecino", "mayoria", "siempre_1"), bits=3, entrenamien
             else:
                 pred = dict.fromkeys(fuera, 1)
             aciertos = sum(pred[i] == f[i] for i in fuera)
-            filas.append((funcion, regla, aciertos / len(fuera), rugosidad))
+            filas.append((funcion, regla, Fraction(aciertos, len(fuera)), rugosidad))
     return pd.DataFrame(filas, columns=["funcion", "regla", "aciertos_fuera", "rugosidad"])
 
 
@@ -2931,8 +2988,9 @@ def dibujar_no_free_lunch(tabla, ax=None, tema="claro"):
     estilos = [("entrenamiento", "o", "-"), ("validacion", "^", "--"), ("prueba", "s", ":")]
     for k, (regla, trozo) in enumerate(tabla.groupby("regla", sort=False)):
         rol, marca, trazo = estilos[k % len(estilos)]
-        medias = trozo.groupby("rugosidad")["aciertos_fuera"].mean()
-        global_ = trozo["aciertos_fuera"].mean()
+        valores = trozo["aciertos_fuera"].astype(float)  # Fraction exacta → float al dibujar
+        medias = valores.groupby(trozo["rugosidad"]).mean()
+        global_ = float(sum(trozo["aciertos_fuera"]) / len(trozo))
         ln, = ax.plot(medias.index, medias.to_numpy(), marker=marca, ls=trazo, lw=1.6,
                       color=_color(rol, tema), label=f"{regla} (promedio {global_:.3f})")
         ln.set_gid(f"regla-{regla}")
