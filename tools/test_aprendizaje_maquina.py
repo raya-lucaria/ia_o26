@@ -68,9 +68,71 @@ def _x_y(version):
     return int(x), int(y)
 
 
+def _parametros(firma):
+    """Parte "(a, b=1, *, c=None, **d)" en parámetros (tipo, nombre, valor por omisión
+    como texto o None), respetando paréntesis, comillas y los <function …> del JSON."""
+    cuerpo = firma.strip()
+    assert cuerpo.startswith("(") and cuerpo.endswith(")"), firma
+    cuerpo = cuerpo[1:-1]
+    trozos, actual, nivel, comilla = [], "", 0, None
+    for ch in cuerpo:
+        if comilla:
+            actual += ch
+            if ch == comilla:
+                comilla = None
+            continue
+        if ch in "'\"":
+            comilla = ch
+        elif ch in "([{<":
+            nivel += 1
+        elif ch in ")]}>":
+            nivel -= 1
+        elif ch == "," and nivel == 0:
+            trozos.append(actual.strip())
+            actual = ""
+            continue
+        actual += ch
+    if actual.strip():
+        trozos.append(actual.strip())
+    salida, solo_nombre = [], False
+    for t in trozos:
+        if t == "*":
+            solo_nombre = True
+            continue
+        if t.startswith("**"):
+            salida.append(("**", t[2:], None))
+            continue
+        if t.startswith("*"):
+            salida.append(("*", t[1:], None))
+            solo_nombre = True
+            continue
+        nombre, _, defecto = t.partition("=")
+        salida.append(("nombre" if solo_nombre else "posicion", nombre.strip(),
+                       defecto.strip() if _ else None))
+    return salida
+
+
+def _firma_compatible(vieja, nueva, nombre):
+    """§5.2: la firma nueva conserva cada parámetro viejo (mismo orden posicional,
+    mismo nombre, mismo valor por omisión) y solo agrega parámetros con valor por
+    omisión: al final de los posicionales, o solo por nombre."""
+    v, n = _parametros(vieja), _parametros(nueva)
+    pos_v = [p for p in v if p[0] == "posicion"]
+    pos_n = [p for p in n if p[0] == "posicion"]
+    assert pos_n[:len(pos_v)] == pos_v, f"cambió la firma de {nombre}: {vieja} -> {nueva}"
+    otros_n = {p[1]: p for p in n if p[0] != "posicion"}
+    for p in v:
+        if p[0] != "posicion":
+            assert otros_n.get(p[1]) == p, f"cambió {p[1]} en {nombre}: {vieja} -> {nueva}"
+    viejos = {p[1] for p in v}
+    for p in n:
+        if p[1] not in viejos and p[0] in ("posicion", "nombre"):
+            assert p[2] is not None, f"{nombre} agregó {p[1]} sin valor por omisión"
+
+
 def _compatible(vieja, nueva):
-    """Cada nombre de la vieja sigue en la nueva con la misma firma, o con
-    argumentos con valor por omisión agregados al final."""
+    """Cada nombre de la vieja sigue en la nueva con una firma compatible
+    parámetro a parámetro (_firma_compatible), métodos incluidos."""
     for nombre, firma in vieja.items():
         if nombre == "__claves__":
             continue
@@ -80,11 +142,12 @@ def _compatible(vieja, nueva):
             continue
         if isinstance(firma, dict) and isinstance(actual, dict):
             for metodo, f in firma.items():
-                assert actual.get(metodo) == f, f"cambió {nombre}.{metodo}"
+                assert metodo in actual, f"se quitó {nombre}.{metodo}"
+                _firma_compatible(f, actual[metodo], f"{nombre}.{metodo}")
             continue
         assert isinstance(firma, str) and isinstance(actual, str), nombre
-        # solo se agregan parámetros con valor por omisión al final
-        assert actual.startswith(firma.rstrip(")")), f"cambió la firma de {nombre}"
+        assert firma.startswith("(") and actual.startswith("("), f"cambió {nombre}"
+        _firma_compatible(firma, actual, nombre)
     for catalogo, claves in vieja.get("__claves__", {}).items():
         faltan = set(map(str, claves)) - set(map(str, nueva["__claves__"][catalogo]))
         assert not faltan, f"{catalogo} perdió {sorted(faltan)}"
@@ -863,3 +926,260 @@ def test_galeria_y_taller(monkeypatch):
     with redirect_stdout(io.StringIO()):
         ml.taller(ml.PROCESOS["inverso"](), 1, N_max=6)
         ml.taller(ml.anillos(n=300), 1, phi=ml.polares())
+
+
+# ---------------------------------------------------------------------------
+# 8 · Revisión adversarial de 1.0 (D-018): cada prueba falló antes del arreglo
+# ---------------------------------------------------------------------------
+
+
+class _Laplace(ml.Pieza):
+    """Una pieza del taller, con la plantilla del docstring: su repr no trae b."""
+
+    nombre, media = "laplace", 0.0
+
+    def __init__(self, b):
+        self.b = b
+        self.varianza = 2 * b * b
+
+    def muestrear(self, n, rng):
+        return rng.laplace(0, self.b, n)
+
+
+def test_la_cache_distingue_piezas_propias_del_mismo_nombre():
+    uno = ml.PROCESOS["entregas"](ruido=_Laplace(1))
+    cinco = ml.PROCESOS["entregas"](ruido=_Laplace(5))
+    assert ml.piso(uno) == pytest.approx(2.0)
+    assert ml.piso(cinco) == pytest.approx(50.0)
+    real = cinco.realidad
+    assert np.var(real["y"] - real["f"]) == pytest.approx(50.0, rel=0.03)
+
+
+def test_la_cache_ve_una_pieza_o_una_f_que_cambiaron_en_su_lugar():
+    pieza = _Laplace(1)
+    assert ml.piso(ml.PROCESOS["entregas"](ruido=pieza)) == pytest.approx(2.0)
+    pieza.b, pieza.varianza = 3, 18.0
+    despues = ml.PROCESOS["entregas"](ruido=pieza)
+    assert ml.piso(despues) == pytest.approx(18.0)
+    assert np.var(despues.realidad["y"] - despues.realidad["f"]) == pytest.approx(18, rel=0.03)
+    k = {"c": 1.0}
+
+    def g(d):
+        return k["c"] * d["x"]
+
+    a = ml.proceso(f=g)
+    k["c"] = 3.0
+    b = ml.proceso(f=g)
+    assert np.allclose(b.realidad["f"], 3 * b.realidad["x"])
+    assert not np.allclose(a.realidad["f"], b.realidad["f"])
+
+
+def _avisos(funcion, *args, **kwargs):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        salida = funcion(*args, **kwargs)
+    return salida, [str(x.message) for x in w]
+
+
+def test_potencias_sin_escalar_avisan_mal_condicionamiento_y_no_pseudoinversa():
+    """Caso 4 de clase_1.md §10.4: q <= n, rango numérico deficiente por la escala."""
+    datos = ml.PROCESOS["inverso"](n=100)
+    for N in (15, 20, 25):
+        _, avisos = _avisos(ml.ajustar, datos, phi=ml.polinomio(N, escalar=False))
+        assert any("mal condicionada" in a for a in avisos), (N, avisos)
+        assert not any("pseudoinversa" in a for a in avisos), (N, avisos)
+    _, avisos = _avisos(ml.ajustar, datos, phi=ml.polinomio(25))
+    assert not any("pseudoinversa" in a for a in avisos)
+    # y donde el rango sí falta, sigue la pseudoinversa con la causa correcta
+    _, avisos = _avisos(ml.ajustar, ml.caso(23), phi=ml.polinomio(12))
+    assert any("pseudoinversa" in a and "más parámetros" in a for a in avisos)
+    df, cols = _datos_reg(colineal=True)
+    _, avisos = _avisos(ml.ajustar, df, columnas_x=cols, tarea="regresion")
+    assert any("pseudoinversa" in a and "repetidas" in a for a in avisos)
+
+
+def test_ridge_con_escalas_dispares_no_pierde_el_intercepto():
+    x = 1e9 * np.array([-2.0, -1, 0, 1, 2])
+    df = pd.DataFrame({"x": x, "y": [-1.0, 1, 3, 5, 7]})
+    m = ml.ajustar(df, columnas_x=["x"], tarea="regresion", mu=0.1, penalizacion="l2")
+    # a mano: con x centrada, b1 = (Σ xc yc / n) / (Σ xc² / n + mu)
+    b1 = (np.sum(x * (df["y"] - 3)) / 5) / (np.sum(x ** 2) / 5 + 0.1)
+    assert m.beta_gorro["1"] == pytest.approx(3.0, rel=1e-9)
+    assert m.beta_gorro["x"] == pytest.approx(b1, rel=1e-9)
+    w = np.array([0.5, 2.0, 1.0, 3.0, 1.5])
+    Phi = np.column_stack([np.ones(5), x])
+    beta = ml._resolver(Phi, df["y"].to_numpy(), w, 0.1, "l2", 0.0, "regresion", True)
+    g0 = -(2 / 5) * np.sum(w * (df["y"].to_numpy() - Phi @ beta))
+    assert abs(g0) < 1e-9
+
+
+def test_casos_con_forma_cerrada_la_sueltan_si_cambian_sus_hipotesis():
+    assert ml.caso(1).f_visible(pd.DataFrame({"x1": [1.0]}))[0] == pytest.approx(1.8)
+    assert ml.caso(1, n=50).f_visible(pd.DataFrame({"x1": [1.0]}))[0] == pytest.approx(1.8)
+    assert ml.piso(ml.caso(2, ruido=ml.normal(1, 1))) == pytest.approx(10.0, abs=0.1)
+    c2 = ml.caso(2, endogeno=0.5)
+    assert ml.piso(c2) == pytest.approx(9.75, abs=0.1)
+    assert c2.f_visible(pd.DataFrame({"x1": [0.0]}))[0] == pytest.approx(
+        13 - 0.5 * 3 / np.sqrt(3), abs=1e-6)
+    c1 = ml.caso(1, endogeno=0.5)
+    assert c1.f_visible is None
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        assert np.isnan(ml.piso(c1))
+
+
+def test_logistica_cuasiseparada_avisa():
+    for x, y in (([0, 1, 2, 3, 3, 4, 5, 6], [0, 0, 0, 0, 1, 1, 1, 1]),
+                 ([-1, 0, 0, 1], [0, 0, 1, 1])):
+        df = pd.DataFrame({"x": np.asarray(x, float), "y": y})
+        with pytest.warns(UserWarning, match="se separan"):
+            ml.ajustar(df, columnas_x=["x"], tarea="clasificacion")
+
+
+def _logistica_fija(beta):
+    df = pd.DataFrame({"x": [-1.0, 0.0, 1.0, 2.0], "y": [0, 1, 0, 1]})
+    m = ml.ajustar(df, columnas_x=["x"], tarea="clasificacion")
+    m.beta_gorro[:] = beta
+    return m
+
+
+def test_predecir_usa_el_umbral_0_5_incluido():
+    m = _logistica_fija([0.0, 1.0])
+    x = np.array([-1.0, -1e-9, 0.0, 1e-9, 1.0])
+    df = pd.DataFrame({"x": x})
+    p = m.predecir_p(df)
+    assert p[2] == 0.5
+    assert list(m.predecir(df)) == [0, 0, 1, 1, 1]
+    assert np.array_equal(m.predecir(df) == m.clases[1], p >= 0.5)
+
+
+def test_la_perdida_logistica_sale_del_puntaje_sin_infinitos():
+    m = _logistica_fija([0.0, 78.377])
+    df = pd.DataFrame({"x": [1.0, -1.0], "y": [0, 1]})
+    assert ml.L(m, df) == pytest.approx(78.377, rel=1e-9)
+    datos = ml.anillos(n=100)
+    lejos = datos.ent.copy()
+    lejos[["x1", "x2"]] *= 1e3
+    m = ml.ajustar(datos, phi=ml.polares(incluir=("r",)), tarea="clasificacion")
+    assert np.isfinite(ml.L(m, lejos))
+
+
+def test_un_peso_cero_no_vuelve_nan_la_perdida():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [0, 0, 1, 1]})
+    v = ml.ajustar_otro(df, columnas_x=["x"], tarea="clasificacion", n_vecinos=1)
+    nuevo = pd.DataFrame({"x": [0.0, 0.0], "y": [0, 1]})
+    assert ml.L(v, nuevo, pesos={0: 1.0, 1: 0.0}) == 0.0
+
+
+def test_vecinos_multiclase_da_probabilidades_y_perdida():
+    df = pd.DataFrame({"x": np.arange(9.0), "y": [0, 0, 0, 1, 1, 1, 2, 2, 2]})
+    v = ml.ajustar_otro(df, columnas_x=["x"], tarea="clasificacion", n_vecinos=3)
+    P = v.predecir_prob(df)
+    assert P.shape == (9, 3) and np.allclose(P.sum(axis=1), 1)
+    assert np.allclose(P[0], [1, 0, 0]) and np.allclose(P[4], [0, 1, 0])
+    l_i = -np.log(P[np.arange(9), df["y"].to_numpy()])
+    assert ml.L(v, df) == pytest.approx(l_i.mean())
+    with pytest.raises(ml.NoAplica):
+        v.predecir_p(df)
+
+
+def test_benchmarks_multiclase_y_desempate():
+    df = pd.DataFrame({"x": np.arange(9.0), "y": [0, 0, 0, 1, 1, 1, 2, 2, 2]})
+    t = ml.benchmarks(df, df, tarea="clasificacion")
+    assert t.loc["proporcion", "logaritmica"] == pytest.approx(np.log(3))
+    assert t.loc["moda", "aciertos"] == pytest.approx(1 / 3)
+    # binario con p = 0.5: moda y proporcion desempatan igual que predecir (p >= 0.5)
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [0, 1, 0, 1]})
+    ev = pd.DataFrame({"y": [1, 1, 1, 0]})
+    t = ml.benchmarks(df, ev, tarea="clasificacion")
+    assert t.loc["moda", "aciertos"] == pytest.approx(0.75)
+    assert t.loc["proporcion", "aciertos"] == pytest.approx(0.75)
+
+
+def test_benchmark_proporcion_usa_la_p_de_ent():
+    anillos = ml.anillos(n=200)
+    ev = anillos.despliegue.iloc[:500]
+    p = float(np.mean(anillos.ent["y"] == 1))
+    y = (ev["y"].to_numpy() == 1).astype(float)
+    esperado = -np.mean(y * np.log(p) + (1 - y) * np.log(1 - p))
+    t = ml.benchmarks(anillos, ev)
+    assert t.loc["proporcion", "logaritmica"] == pytest.approx(esperado, rel=1e-12)
+
+
+def test_curva_capacidad_ee_es_desviacion_entre_raiz_de_n():
+    datos = ml.PROCESOS["entregas"](n=20)
+    tabla = ml.curva_capacidad(datos, {1: lambda df: ml.ajustar(df)}, conjuntos=("ent",))
+    m = ml.ajustar(datos)
+    l_i = (datos.ent["y"] - m.predecir(datos.ent)) ** 2
+    assert tabla["ee"].iloc[0] == pytest.approx(np.std(l_i, ddof=1) / np.sqrt(len(l_i)))
+
+
+def test_dummies_efectos_categoria_no_vista_es_el_promedio_de_los_grupos():
+    df = _df_con_categoria()
+    phi = lambda: ml.combinar(ml.columnas("x"), ml.dummies("g", codificacion="efectos"))  # noqa: E731
+    m = ml.ajustar(df, phi=phi())
+    x0 = 0.4
+    grupos = [m.predecir(pd.DataFrame({"x": [x0], "g": [c]}))[0] for c in "abc"]
+    with pytest.warns(UserWarning, match="grupo promedio"):
+        nuevo = m.predecir(pd.DataFrame({"x": [x0], "g": ["zeta"]}))[0]
+    assert nuevo == pytest.approx(np.mean(grupos), abs=1e-9)
+    otro = df.copy()
+    otro["g"] = otro["g"].map({"a": "c", "b": "b", "c": "a"})
+    m2 = ml.ajustar(otro, phi=phi())
+    with pytest.warns(UserWarning, match="grupo promedio"):
+        nuevo2 = m2.predecir(pd.DataFrame({"x": [x0], "g": ["zeta"]}))[0]
+    assert nuevo2 == pytest.approx(nuevo, abs=1e-9)
+
+
+def test_escala_de_una_omitida_no_toca_f():
+    datos = ml.proceso(x={"x1": ml.uniforme(), "x2": ml.uniforme()},
+                       f=lambda d: d["x1"] + d["x2"], omitir=["x2"], escala={"x2": 1000})
+    real = datos.realidad
+    assert np.allclose(datos.f(real), real["f"])
+
+
+def test_piso_nan_de_una_pieza_sin_varianza_avisa():
+    class SinVarianza(ml.Pieza):
+        nombre, media = "sin_varianza", 0.0
+
+        def muestrear(self, n, rng):
+            return rng.normal(0, 1, n)
+
+    datos = ml.PROCESOS["entregas"](ruido=SinVarianza())
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        assert np.isnan(ml.piso(datos))
+
+
+def test_dibujar_ajuste_no_junta_modelos_con_el_mismo_rotulo():
+    a = ml.ajustar(ml.PROCESOS["inverso"](semilla=1))
+    b = ml.ajustar(ml.PROCESOS["inverso"](semilla=2))
+    ax = ml.dibujar_ajuste([a, b], ventana=(0.3, 3.0))
+    assert len(_curvas(ax)) == 2
+
+
+def test_dibujar_proceso_nombra_f_verdadera_solo_si_lo_es():
+    def rotulo(datos):
+        ax = ml.dibujar_proceso(datos)
+        return [ln.get_label() for ln in ax.get_lines() if ln.get_gid() == "f"][0]
+
+    assert rotulo(ml.PROCESOS["entregas"]()) == "f verdadera"
+    assert rotulo(ml.PROCESOS["entregas"](endogeno=0.5)) == "E[y | lo visible]"
+    assert rotulo(ml.PROCESOS["entregas"](ruido=ml.normal(1, 1))) == "E[y | lo visible]"
+
+
+@pytest.mark.parametrize("vieja,nueva,compatible", [
+    ("(datos, phi)", "(datos, phi, obligatorio)", False),
+    ("(x, N=3)", "(x, N=30)", False),
+    ("(x, a=1)", "(x, b=2, a=1)", False),
+    ("(x, *, a=1)", "(x, *, a=1, b)", False),
+    ("(x, **cambios)", "(x)", False),
+    ("(x, a=1)", "(x, a=1, b=2)", True),
+    ("(x)", "(x, *, b=2)", True),
+    ("(x, *, a=1)", "(x, *, a=1, b={'k': (1, 2)})", True),
+    ("(x, f=<function _f>)", "(x, f=<function _f>, g=None)", True),
+])
+def test_la_guarda_de_compatibilidad_compara_parametro_a_parametro(vieja, nueva, compatible):
+    if compatible:
+        _compatible({"g": vieja}, {"g": nueva})
+    else:
+        with pytest.raises(AssertionError):
+            _compatible({"g": vieja}, {"g": nueva})

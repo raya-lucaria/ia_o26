@@ -15,6 +15,7 @@ VERSION = "1.0"
 
 import ast  # noqa: E402
 import copy  # noqa: E402
+import hashlib  # noqa: E402
 import inspect  # noqa: E402
 import math  # noqa: E402
 import os  # noqa: E402
@@ -274,6 +275,26 @@ def _con_meta(df, meta):
     return df
 
 
+_SEMILLA_HUELLA = 20_261_104
+_N_HUELLA = 64
+
+
+def _huella(objeto, muestra):
+    """Identidad, clase, estado y lo que devolvió con el generador fijo de la huella."""
+    try:
+        estado = repr(sorted((k, repr(v)) for k, v in vars(objeto).items()))
+    except TypeError:
+        estado = ""
+    arreglo = np.asarray(muestra).reshape(-1)
+    try:
+        crudo = np.ascontiguousarray(arreglo, dtype=float).tobytes()
+    except (TypeError, ValueError):
+        crudo = repr(arreglo.tolist()).encode()
+    tipo = type(objeto)
+    return (id(objeto), tipo.__module__, tipo.__qualname__, estado,
+            hashlib.sha1(crudo).hexdigest())
+
+
 class _Poblacion:
     """Lo que define una población de regresión: x, f, ruido y sus arreglos."""
 
@@ -321,7 +342,23 @@ class _Poblacion:
         self.J = 200  # sorteos de Monte Carlo sobre las omitidas (f_visible)
 
     def llave(self):
-        return ("reg", id(self.f), id(self.cerrada), repr(self.x), repr(self.ruido),
+        """Identifica la población por lo que HACE, no por su repr: una pieza del
+        taller con la plantilla tiene repr «nombre()» sin sus parámetros. Cada pieza,
+        el ruido y f entran con su identidad, su estado y una huella de lo que
+        devuelven con un generador fijo; así dos piezas con el mismo nombre y otro
+        parámetro, una pieza cambiada en su lugar o una f cuya global cambió no
+        comparten la caché."""
+        rng = np.random.default_rng(_SEMILLA_HUELLA)
+        xs = self._x(_N_HUELLA, rng)
+        ctx = self.mecanismo.preparar(_N_HUELLA, rng) if self.mecanismo is not None else {}
+        todo = pd.DataFrame({**xs, **ctx})
+        if self.mecanismo is not None:
+            ruido = self.mecanismo.muestrear(todo, np.random.default_rng(_SEMILLA_HUELLA))
+        else:
+            ruido = self.ruido.muestrear(_N_HUELLA, np.random.default_rng(_SEMILLA_HUELLA))
+        return ("reg", _huella(self.f, self._evaluar_f(todo)), id(self.cerrada),
+                tuple((k, _huella(v, xs[k])) for k, v in self.x.items()),
+                _huella(self.ruido, ruido),
                 repr(sorted(self.correlacion.items())), self.endogeno, tuple(self.omitidas),
                 repr(sorted(self.escala.items())))
 
@@ -415,7 +452,7 @@ class _Poblacion:
     def _sin_escala(self, df):
         d = df.copy()
         for k, c in self.escala.items():
-            if k != "y" and k in d:
+            if k in self.visibles and k in d:  # las omitidas nunca se escalaron
                 d[k] = d[k] / c
         return d
 
@@ -502,6 +539,15 @@ class _Poblacion:
 
     def nombres_oraculos(self):
         return ["f"] + (["f_visible"] if self.tipo else [])
+
+    def f_visible_es_f(self):
+        """E[y | lo visible] = f solo sin omitidas, sin endogeneidad y con ruido de media 0."""
+        if self.omitidas or self.endogeno:
+            return False
+        if self.mecanismo is not None:
+            return True
+        m = float(self.ruido.media)
+        return not np.isfinite(m) or m == 0.0
 
     def piso(self, desp, perdida):
         if perdida == "logaritmica":
@@ -757,16 +803,17 @@ def proceso(n=200, x={"x": uniforme(0, 1)}, f=_f_por_omision, ruido=normal(0, 1)
     escalar) y el contexto. escala solo cambia unidades; {"y": c} multiplica y.
     En 1.0: separar="azar", despliegue="igual", deriva=None, faltantes=None.
     Ejemplo: datos = ml.proceso(n=50, x={"x": ml.uniforme(0, 6)}, f=lambda d: 10 + 4 * d["x"])
+
+    Lo que aún no funciona lanza NotImplementedError y dice qué versión lo trae:
+    separar="tiempo"|"grupo"|"estratificado", despliegue≠"igual" y deriva (clase 2);
+    faltantes (clase 4). deriva(t) devolverá un dict por variable (una Pieza o un
+    arreglo del largo de t) y puede traer la clave "f" (cambio de concepto, caso 28);
+    con despliegue="igual", deriva es un ValueError en cualquier versión.
+    endogeno = corr(x1, ε) (x1, o la primera variable si no hay "x1"):
+    ε = c·σ·z1 + sqrt(1 − c²)·u, con z1 la x1 estandarizada y u el ruido.
+    Flujos: la muestra sale de default_rng([semilla, 0]), la partición de
+    [semilla, 3], realidad de [semilla_realidad, 1] y despliegue de [semilla_realidad, 2].
     """
-    # Lo que aún no funciona lanza NotImplementedError y dice qué versión lo trae:
-    # separar="tiempo"|"grupo"|"estratificado", despliegue≠"igual" y deriva (clase 2);
-    # faltantes (clase 4). deriva(t) devolverá un dict por variable (una Pieza o un
-    # arreglo del largo de t) y puede traer la clave "f" (cambio de concepto, caso 28);
-    # con despliegue="igual" deriva es un ValueError en cualquier versión.
-    # endogeno = corr(x1, ε) (x1, o la primera variable si no hay "x1"):
-    # ε = c·σ·z1 + sqrt(1 − c²)·u, con z1 la x1 estandarizada y u el ruido.
-    # Flujos: la muestra sale de default_rng([semilla, 0]), la partición de
-    # [semilla, 3], realidad de [semilla_realidad, 1] y despliegue de [semilla_realidad, 2].
     return _proceso(n=n, x=x, f=f, ruido=ruido, correlacion=correlacion, endogeno=endogeno,
                     omitir=omitir, escala=escala, faltantes=faltantes, separar=separar,
                     fracciones=fracciones, despliegue=despliegue, deriva=deriva,
@@ -839,6 +886,27 @@ def _con(base, cambios):
     return kw
 
 
+# Lo único que un caso con forma cerrada de f_visible deja cambiar sin perderla: el
+# tamaño, las semillas, la partición y un ruido centrado e independiente de x.
+_CAMBIOS_QUE_CONSERVAN_LA_FORMA = {"n", "semilla", "fracciones", "n_realidad",
+                                   "semilla_realidad", "con_realidad", "descripcion",
+                                   "separar", "ruido", "endogeno"}
+
+
+def _conserva_forma_cerrada(cambios):
+    """True si la forma cerrada registrada sigue valiendo con estos cambios: E[ε | x] = 0
+    exige endogeno = 0 y un ruido Pieza de media 0; todo lo demás (x, f, omitir,
+    correlacion, escala…) la invalida y el caso cae a Monte Carlo o a «desconocido»."""
+    if set(cambios) - _CAMBIOS_QUE_CONSERVAN_LA_FORMA:
+        return False
+    if cambios.get("endogeno", 0.0) != 0:
+        return False
+    if "ruido" in cambios:
+        ruido = cambios["ruido"]
+        return isinstance(ruido, Pieza) and float(ruido.media) == 0.0
+    return True
+
+
 def _entregas(n=20, semilla=0, sigma_e=1.0, **cambios):
     """Las entregas de la clase 1: f = 10 + 4x, x ~ U(0, 6), ruido N(0, sigma_e²)."""
     return _proceso(**_con(dict(n=n, x={"x": uniforme(0, 6)}, f=_f_entregas,
@@ -874,9 +942,8 @@ def _caso_1(n=200, semilla=0, **cambios):
                 fracciones=(1, 0, 0), semilla=semilla,
                 descripcion="x1 + x2·x3 con x2 y x3 omitidas")
     kw = _con(base, cambios)
-    if (kw["omitir"] == ["x2", "x3"] and kw["correlacion"] == {("x1", "x3"): 0.8}
-            and kw["f"] is _f_caso_1 and kw["x"] is base["x"] and not kw.get("escala")):
-        kw["f_visible_cerrada"] = _f_visible_caso_1  # E[y | x1] = 1.8 x1
+    if _conserva_forma_cerrada(cambios):
+        kw["f_visible_cerrada"] = _f_visible_caso_1  # E[y | x1] = x1 + E[x2]·0.8 x1 = 1.8 x1
     return _proceso(**kw)
 
 
@@ -886,9 +953,8 @@ def _lluvia(n=20, semilla=0, **cambios):
                 ruido=normal(0, 1), omitir=["x2"], fracciones=(1, 0, 0), semilla=semilla,
                 descripcion="entregas con lluvia que el modelo no ve")
     kw = _con(base, cambios)
-    if kw["omitir"] == ["x2"] and kw["f"] is _f_lluvia and kw["x"] is base["x"] \
-            and not kw.get("escala"):
-        kw["f_visible_cerrada"] = _f_visible_lluvia
+    if _conserva_forma_cerrada(cambios):
+        kw["f_visible_cerrada"] = _f_visible_lluvia  # E[y | x1] = 10 + 4 x1 + 6·0.5
     return _proceso(**kw)
 
 
@@ -1387,13 +1453,22 @@ class _ModeloVecinos(Modelo):
     def predecir(self, df):
         return self._est.predict(self._X(df))
 
+    def predecir_prob(self, df):
+        """(n, K) en el orden de self.clases; una clase que ent no vio tiene columna 0."""
+        if self.tarea != "clasificacion":
+            raise NoAplica("predecir_prob es de clasificación; en regresión usa predecir")
+        prob = self._est.predict_proba(self._X(df))
+        salida = np.zeros((len(df), self.K))
+        vistas = list(self._est.classes_)
+        for j, c in enumerate(self.clases):
+            if c in vistas:
+                salida[:, j] = prob[:, vistas.index(c)]
+        return salida
+
     def predecir_p(self, df):
         if self.tarea != "clasificacion" or self.K != 2:
             raise NoAplica("predecir_p es de clasificación binaria")
-        prob = self._est.predict_proba(self._X(df))
-        j = list(self._est.classes_).index(self.clases[1]) if self.clases[1] in \
-            self._est.classes_ else None
-        return prob[:, j] if j is not None else np.zeros(len(df))
+        return self.predecir_prob(df)[:, 1]
 
 
 def _entrada(datos_o_df, columnas_x, tarea):
@@ -1475,10 +1550,18 @@ def _absoluta(Phi, y, w, mu, pen):
 
 
 def _separables(Phi, y01):
+    """¿Hay una dirección β con s_i·Φ_i β >= 0 para todos y > 0 para alguno (s = ±1)?
+
+    Eso es separación completa o cuasicompleta (empates justo en la frontera): en
+    los dos casos avanzar por β baja la pérdida sin fin y no hay minimizador finito.
+    Se resuelve como programa lineal con Σ s_i·Φ_i β = 1 para excluir β = 0. Φ se
+    normaliza por columnas para que la tolerancia no dependa de las unidades."""
     s = 2 * y01 - 1
-    sol = optimize.linprog(np.zeros(Phi.shape[1]), A_ub=-(s[:, None] * Phi),
-                           b_ub=-np.ones(len(s)), bounds=[(None, None)] * Phi.shape[1],
-                           method="highs")
+    normas = np.linalg.norm(Phi, axis=0)
+    M = s[:, None] * (Phi / np.where(normas > 0, normas, 1.0))
+    sol = optimize.linprog(np.zeros(Phi.shape[1]), A_ub=-M, b_ub=np.zeros(len(s)),
+                           A_eq=M.sum(axis=0)[None, :], b_eq=[1.0],
+                           bounds=[(None, None)] * Phi.shape[1], method="highs")
     return sol.status == 0
 
 
@@ -1490,7 +1573,8 @@ def _logistica(Phi, y, w, mu, r, pen, intercepto):
         beta[0] = math.log(ybar / (1 - ybar))
     separado = mu == 0 and _separables(Phi, y)
     if separado:
-        warnings.warn("los datos se separan perfectamente: sin penalización no hay "
+        warnings.warn("los datos se separan perfectamente (o con empates justo en la "
+                      "frontera): sin penalización no hay "
                       "coeficientes óptimos finitos; los que ves son donde se detuvo el "
                       "algoritmo, no un óptimo", UserWarning, stacklevel=3)
     D = pen.astype(float)
@@ -1522,6 +1606,64 @@ def _logistica(Phi, y, w, mu, r, pen, intercepto):
     return beta
 
 
+_COND_MAXIMA = 1e12
+
+
+def _avisar_rango(A, n):
+    """Separa las dos causas por las que mínimos cuadrados no tiene un β̂ limpio.
+
+    Pseudoinversa (norma mínima, un elemento del argmin): más columnas que datos, o
+    columnas que repiten o combinan EXACTAMENTE otras; normalizar las columnas no
+    les devuelve el rango. Mal condicionamiento: el rango «falta» solo en la
+    aritmética, porque las columnas viven en escalas muy distintas (potencias sin
+    escalar): normalizarlas sube el rango, o el número de condición pasa de 1e12."""
+    q = A.shape[1]
+    if q > n:
+        warnings.warn(f"Φ tiene {q} columnas y solo {n} datos (más parámetros que datos): "
+                      "uso la pseudoinversa, que da el ajuste de norma mínima, uno de muchos "
+                      "con el mismo error", UserWarning, stacklevel=4)
+        return
+    normas = np.linalg.norm(A, axis=0)
+    rango = np.linalg.matrix_rank(A)
+    rango_normalizado = np.linalg.matrix_rank(A / np.where(normas > 0, normas, 1.0))
+    if rango < q and rango_normalizado <= rango:
+        warnings.warn(f"Φ tiene {q} columnas y rango {rango} (columnas repetidas o que son "
+                      "combinación exacta de otras): uso la pseudoinversa, que da el ajuste "
+                      "de norma mínima, uno de muchos con el mismo error", UserWarning,
+                      stacklevel=4)
+        return
+    cond = np.linalg.cond(A)
+    if rango < q or cond > _COND_MAXIMA:
+        vivas = normas[normas > 0]
+        warnings.warn(f"Φ está mal condicionada (número de condición {cond:.1e}; la norma de "
+                      f"sus columnas va de {vivas.min():.1e} a {vivas.max():.1e}): la "
+                      "aritmética pierde precisión y los coeficientes no son confiables; "
+                      "escala las columnas", UserWarning, stacklevel=4)
+
+
+def _ridge(Phi, y, w, mu, pen, intercepto):
+    """Ridge sin armar Φ'WΦ: con el intercepto libre, centra (con pesos) y resuelve
+    el sistema aumentado [√(w/n)·Φc; √mu·I] β = [√(w/n)·yc; 0] por mínimos
+    cuadrados. Armar las ecuaciones normales eleva al cuadrado el número de
+    condición y, con escalas dispares (x ~ 1e9), lstsq tiraba el intercepto."""
+    n, q = Phi.shape
+    if intercepto:
+        media_x = np.average(Phi[:, 1:], axis=0, weights=w)
+        media_y = np.average(y, weights=w)
+        X, z = Phi[:, 1:] - media_x, y - media_y
+        libres = pen[1:]
+    else:
+        X, z, libres = Phi, y, pen
+    raiz = np.sqrt(w / n)
+    pena = np.diag(np.where(libres, math.sqrt(mu), 0.0))
+    A = np.vstack([raiz[:, None] * X, pena])
+    b = np.concatenate([raiz * z, np.zeros(X.shape[1])])
+    beta = np.linalg.lstsq(A, b, rcond=None)[0]
+    if not intercepto:
+        return beta
+    return np.concatenate([[media_y - media_x @ beta], beta])
+
+
 def _resolver(Phi, y, w, mu, penalizacion, rho, tarea, intercepto, perdida="cuadratica"):
     """β̂ ∈ argmin (1/n) Σ w_i ℓ_i(β) + μ Ω(β), sin penalizar el intercepto (columna 0)."""
     Phi = np.asarray(Phi, float)
@@ -1542,22 +1684,10 @@ def _resolver(Phi, y, w, mu, penalizacion, rho, tarea, intercepto, perdida="cuad
     if mu == 0:
         raiz = np.sqrt(w)
         A = raiz[:, None] * Phi
-        rango = np.linalg.matrix_rank(A)
-        if rango < q:
-            warnings.warn(f"Φ tiene {q} columnas y rango {rango} (más parámetros que datos o "
-                          "columnas repetidas): uso la pseudoinversa, que da el ajuste de "
-                          "norma mínima, uno de muchos con el mismo error", UserWarning,
-                          stacklevel=3)
-        else:
-            cond = np.linalg.cond(A)
-            if cond > 1e12:
-                warnings.warn(f"Φ está mal condicionada (número de condición {cond:.1e}): "
-                              "los coeficientes pierden precisión; escala las columnas",
-                              UserWarning, stacklevel=3)
+        _avisar_rango(A, int(np.sum(w > 0)))
         return np.linalg.lstsq(A, raiz * y, rcond=None)[0]
     if r == 0:
-        A = Phi.T @ (w[:, None] * Phi) / n + mu * np.diag(pen.astype(float))
-        return np.linalg.lstsq(A, Phi.T @ (w * y) / n, rcond=None)[0]
+        return _ridge(Phi, y, w, mu, pen, intercepto)
     beta = np.zeros(q)
     if intercepto:
         beta[0] = np.average(y, weights=w)
@@ -1571,20 +1701,21 @@ def ajustar(datos_o_df, phi=None, mu=0.0, penalizacion=None, rho=0.5, pesos=None
     Resuelve β̂ ∈ argmin (1/n) Σ w_{y_i} ℓ_i(β) + μ Ω(β) con el intercepto sin penalizar:
     Ω₂ = Σ_{j≥1} β_j², Ω₁ = Σ_{j≥1} |β_j|, elástica = ρ Ω₁ + (1−ρ) Ω₂.
     Ejemplo: m = ml.ajustar(datos, phi=ml.polinomio(3), mu=0.1, penalizacion="l2")
+
+    Qué elemento del argmin devuelve. Con mu=0 y rango deficiente (o q > n), uno
+    de muchos: el de norma mínima (pseudoinversa), con un aviso; sus predicciones
+    fuera de la muestra dependen de las unidades de las columnas. Si el rango solo
+    falta en la aritmética (columnas en escalas muy distintas), avisa de mal
+    condicionamiento. Ridge y elástica con rho<1 tienen un solo minimizador. Lasso
+    con columnas colineales puede tener muchos: devuelve el que encuentra el
+    algoritmo (hay otros con el mismo objetivo). Logística sin penalizar con datos
+    separados (o con empates en la frontera) no tiene minimizador finito: avisa.
+    Conversión a sklearn (llama alpha o 1/C a nuestro mu, con otra escala):
+    Lasso(alpha=mu/2); ElasticNet(alpha=mu*(2-rho)/2, l1_ratio=rho/(2-rho));
+    LogisticRegression(C=1/(2*mu*n)) en l2, C=1/(mu*n) en l1,
+    C=1/(mu*(2-rho)*n) con l1_ratio=rho/(2-rho) en elástica, penalty=None con mu=0.
+    pesos ("balanceado" = n/(K n_y), o {y: w_y}) llega con la versión de la clase 4.
     """
-    # Equivalencias con sklearn (con la misma escala de μ): Lasso(alpha=mu/2);
-    # ElasticNet(alpha=mu*(2-rho)/2, l1_ratio=rho/(2-rho)); LogisticRegression
-    # (C=1/(2*mu*n), sample_weight=w) en l2, C=1/(mu*n) en l1, y con mu=0, penalty=None.
-    # sklearn llama alpha (o 1/C) a nuestro mu, con otra escala. Aquí se resuelve con
-    # mínimos cuadrados, forma cerrada (ridge) o descenso por coordenadas propio, y una
-    # prueba comprueba que da lo mismo que sklearn y que se cumplen las condiciones KKT.
-    # Qué elemento del argmin devuelve: con mu=0 y rango deficiente (o q > n), el de
-    # norma mínima (pseudoinversa), con un aviso; ese ajuste predice distinto fuera de
-    # la muestra según las unidades de las columnas. Ridge y elástica con rho<1 tienen
-    # un solo minimizador. Lasso con columnas colineales puede tener muchos: devuelve
-    # el que encuentra el algoritmo (hay otros con el mismo objetivo). Logística sin
-    # penalizar con datos separables no tiene minimizador finito: avisa.
-    # pesos ("balanceado" = n/(K n_y), o {y: w_y}) llega con la versión de la clase 4.
     if pesos is not None:
         raise NotImplementedError("`pesos` llega con la versión de la clase 4")
     df, cols, tarea, clases = _entrada(datos_o_df, columnas_x, tarea)
@@ -1713,6 +1844,28 @@ def _w_eval(modelo_clases, y, pesos):
     return np.array([w.get(v, 0.0) for v in np.asarray(y)], float)
 
 
+def _perdida_log_i(modelo, df):
+    """ℓ_i logarítmica de un clasificador. La logística la saca del puntaje η con
+    logaddexp (pasar por p = expit(η) redondea p a 1 y da infinito donde ℓ = η);
+    los demás, de Pr(y_i) con K clases."""
+    y = df["y"].to_numpy()
+    if getattr(modelo, "familia", None) == "logistica" and hasattr(modelo, "_eta"):
+        eta = modelo._eta(df)
+        y01 = (y == modelo.clases[1]).astype(float)
+        return np.logaddexp(0, eta) - y01 * eta
+    P = modelo.predecir_prob(df)
+    clases = list(modelo.clases)
+    idx = np.array([clases.index(v) if v in clases else -1 for v in y])
+    p_y = np.where(idx >= 0, P[np.arange(len(y)), np.maximum(idx, 0)], 0.0)
+    with np.errstate(divide="ignore"):
+        return -np.log(p_y)
+
+
+def _promedio_ponderado(w, l_i):
+    """(1/n) Σ w_i ℓ_i, con w_i = 0 aportando 0 aunque ℓ_i sea infinita."""
+    return float(np.mean(w * np.where(w == 0, 0.0, l_i)))
+
+
 def _evaluar_perdida(modelo, df, criterio, pesos):
     if len(df) == 0:
         return float("nan")
@@ -1726,15 +1879,14 @@ def _evaluar_perdida(modelo, df, criterio, pesos):
     if crit == "aciertos":
         if modelo.tarea != "clasificacion":
             raise ValueError('"aciertos" es de clasificación')
-        return float(np.mean(w * (modelo.predecir(df) == y)))
+        return _promedio_ponderado(w, (modelo.predecir(df) == y).astype(float))
     if modelo.tarea == "clasificacion":
         if crit != "logaritmica":
             raise ValueError(f'"{crit}" no es una pérdida de clasificación en esta versión')
-        y01 = (y == modelo.clases[1]).astype(float)
-        return float(np.mean(w * perdida(y01, modelo.predecir_p(df), "logaritmica")))
+        return _promedio_ponderado(w, _perdida_log_i(modelo, df))
     if crit == "logaritmica":
         raise ValueError('la pérdida "logaritmica" es de clasificación')
-    return float(np.mean(w * perdida(y, modelo.predecir(df), crit)))
+    return _promedio_ponderado(w, perdida(y, modelo.predecir(df), crit))
 
 
 def evaluar(modelo, df, criterio=None, pesos=None):
@@ -1801,7 +1953,7 @@ def piso(datos, perdida="cuadratica"):
     if perdida not in _PERDIDAS:
         raise ValueError(f"perdida es una de {_PERDIDAS}")
     valor = pob.piso(desp, perdida)
-    if valor is None:
+    if valor is None or math.isnan(valor):
         warnings.warn("piso desconocido: con lo que registra este proceso no se puede calcular",
                       UserWarning, stacklevel=2)
         return float("nan")
@@ -1811,8 +1963,9 @@ def piso(datos, perdida="cuadratica"):
 def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
     """Los puntos de comparación sin x, ajustados en ent y evaluados en df_eval.
 
-    Regresión: filas media y mediana. Clasificación: moda y proporcion (predice la
-    proporción p de ent). criterios=None: la pérdida natural y, en clasificación, "aciertos".
+    Regresión: filas media y mediana. Clasificación (K clases): moda y proporcion
+    (predice las proporciones de ent; un empate lo gana la última clase, como en
+    predecir). criterios=None: la pérdida natural y, en clasificación, "aciertos".
     Ejemplo: ml.benchmarks(datos, datos.despliegue)
     """
     ent = datos_o_df.ent if isinstance(datos_o_df, Datos) else datos_o_df
@@ -1827,11 +1980,12 @@ def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
         filas = {"media": float(np.mean(y_ent)), "mediana": float(np.median(y_ent))}
     else:
         criterios = list(criterios or ["logaritmica", "aciertos"])
-        clases = meta.get("clases") or list(np.unique(y_ent))
-        p = float(np.mean(y_ent == clases[1]))
-        moda = clases[1] if p > 0.5 else clases[0]
-        filas = {"moda": (moda, 1.0 if moda == clases[1] else 0.0),
-                 "proporcion": (clases[1] if p >= 0.5 else clases[0], p)}
+        clases = list(meta.get("clases") or np.unique(y_ent))
+        p = np.array([np.mean(y_ent == c) for c in clases], float)
+        # la clase más frecuente; un empate lo gana la última, como predecir con p >= 0.5
+        j = len(p) - 1 - int(np.argmax(p[::-1]))
+        uno = np.eye(len(clases))[j]
+        filas = {"moda": (clases[j], uno), "proporcion": (clases[j], p)}
     tabla = pd.DataFrame(index=list(filas), columns=criterios, dtype=float)
     for c in criterios:
         if c in _METRICAS_FUTURAS:
@@ -1848,8 +2002,9 @@ def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
                 if c == "aciertos":
                     tabla.loc[fila, c] = aciertos(y, np.full(len(y), etiqueta))
                 elif c == "logaritmica":
-                    y01 = (y == clases[1]).astype(float)
-                    tabla.loc[fila, c] = float(np.mean(perdida(y01, np.full(len(y), prob), c)))
+                    p_y = np.array([prob[clases.index(v)] if v in clases else 0.0 for v in y])
+                    with np.errstate(divide="ignore"):
+                        tabla.loc[fila, c] = float(np.mean(-np.log(p_y)))
                 else:
                     raise ValueError(f'"{c}" no es un criterio de clasificación en esta versión')
     tabla.index.name = "benchmark"
@@ -1886,8 +2041,7 @@ def curva_capacidad(datos, candidatos, conjuntos=("ent", "realidad"), k=None):
             if modelo.tarea == "regresion":
                 l_i = perdida(df["y"], modelo.predecir(df), "cuadratica")
             else:
-                y01 = (df["y"].to_numpy() == modelo.clases[1]).astype(float)
-                l_i = perdida(y01, modelo.predecir_p(df), "logaritmica")
+                l_i = _perdida_log_i(modelo, df)
             ee = float(np.std(l_i, ddof=1) / math.sqrt(len(l_i))) if len(l_i) > 1 else float("nan")
             filas.append((valor, c, float(np.mean(l_i)), ee))
     return pd.DataFrame(filas, columns=["candidato", "conjunto", "L", "ee"])
@@ -2086,7 +2240,9 @@ def dibujar_proceso(datos, mostrar_f=True, conjuntos=("ent",), color_por=None,
             and datos.tarea == "regresion":
         x = _malla(datos, var)
         malla = pd.DataFrame({var: x})
-        etiqueta = "f verdadera" if not datos.omitidas else "E[y | lo visible]"
+        pob = getattr(datos, "_pob", None)
+        es_f = pob.f_visible_es_f() if hasattr(pob, "f_visible_es_f") else not datos.omitidas
+        etiqueta = "f verdadera" if es_f else "E[y | lo visible]"
         ln, = ax.plot(x, datos.f_visible(malla), color=_color("f", tema),
                       lw=ROLES["f"]["ancho"], ls="-", label=etiqueta, zorder=2)
         ln.set_gid("f")
@@ -2100,7 +2256,14 @@ def _como_dict(modelos):
     if isinstance(modelos, Modelo):
         return {_rotulo(modelos): modelos}
     if isinstance(modelos, (list, tuple)):
-        return {_rotulo(m): m for m in modelos}
+        salida = {}
+        for m in modelos:  # dos modelos con los mismos hiperparámetros no se pisan
+            base = _rotulo(m)
+            rotulo, k = base, 2
+            while rotulo in salida:
+                rotulo, k = f"{base} ({k})", k + 1
+            salida[rotulo] = m
+        return salida
     if isinstance(modelos, dict):
         return dict(modelos)
     raise ValueError("modelos es un Modelo, una lista de Modelo o un dict {rótulo: Modelo o función}")
