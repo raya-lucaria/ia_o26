@@ -3,3 +3,5 @@
 # La ruta es relativa a la raíz del repositorio; el fragmento tiene que
 # aparecer en la línea del hallazgo; la regla es una de notacion_ml.REGLAS.
 # Nunca se exceptúa con un comentario en la página.
+course/9_aprendizaje_maquina/4_leer_el_error/2_el_lagrangeano_en_accion.md | En los libros verás $\lambda$ en lugar de $\mu$, y en sklearn, `alpha` | lambda | la nota única de clase_3.md §10.2.2 §1 va en prosa justo después de ml-c3-def-lagrangeano-capacidad, no dentro (DECISIÓN prog-c3-5)
+course/9_aprendizaje_maquina/4_leer_el_error/2_el_lagrangeano_en_accion.md | En los libros verás $\lambda$ en lugar de $\mu$, y en sklearn, `alpha` | alpha | la misma nota única (DECISIÓN prog-c3-5)
