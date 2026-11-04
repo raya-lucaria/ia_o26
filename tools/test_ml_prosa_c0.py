@@ -228,6 +228,30 @@ def test_5b_el_alt_de_f1b_pone_cada_regla_junto_a_su_valor():
     assert comprobar_cifras_por_regla(alt.replace("Derecha:", ". Derecha: las nuevas,")) == []
 
 
+ALT_DE = {
+    "ml-c0-tres-reglas-en-lo-visto": fig.ALT_F1A,
+    "ml-c0-memorizar-contra-ajustar": fig.ALT_F1B,
+    "ml-c0-con-y-sin-y": fig.ALT_F2,
+    "ml-c0-jerarquia": fig.ALT_F3,
+    "ml-c0-quien-elige-phi": fig.ALT_F4,
+}
+
+
+def test_5c_cada_alt_es_el_aria_label_de_su_figura():
+    """El alt de la pagina es literal el del generador: asi las cifras del alt
+    (las de F2 incluidas: 3.5 km, 2 a 3 y 9 a 11 paquetes) salen de
+    ml_cifras_c0 y ninguna se copia a mano."""
+    _leer(PAGINA)
+    ids = _figuras_de_la_clase()
+    assert set(ALT_DE) == set(fig.FIGURAS_C0)
+    for ident, alt in ALT_DE.items():
+        cuerpo = ids[ident]
+        hallado = re.search(r"!\[(.*?)\]\(", cuerpo, re.S).group(1)
+        assert " ".join(hallado.split()) == alt, ident
+        assert re.search(r'aria-label="([^"]*)"', fig.FIGURAS_C0[ident]()).group(1) == \
+            alt.replace('"', "&quot;")
+
+
 # --------------------------------------- 6 · sin ids de otras clases ---
 
 @pytest.mark.parametrize("ruta", (PAGINA, INDICE), ids=("pagina", "indice"))
