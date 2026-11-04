@@ -256,6 +256,29 @@ def test_p1_s3_cifras_en_su_frase():
     assert f"$\\sigma_\\varepsilon=1$ es {p['ee_oraculo']:.4f}" in sec
 
 
+def test_p1_s1_los_rmse_de_la_unidad_6_en_su_frase():
+    g = c.cifras_c1_ganador()
+    assert (f"RMSE de {g['rmse_1']:.3f} para la recta y {g['rmse_5']:.3f} "
+            "para el grado 5") in s1()[1]
+
+
+def test_p1_s1_la_respuesta_da_las_dos_predicciones_a_35_km():
+    g = c.cifras_c1_ganador()
+    recta, grado5 = g["prediccion"][3.5]
+    assert f"{recta:.1f}" == f"{grado5:.1f}", "la respuesta (a) dice que coinciden"
+    resp = bloque(p1(), "ml-c1-resp-ganador").group(1)
+    assert f"A 3.5 km, la recta y el polinomio predicen {recta:.1f} minutos" in resp
+
+
+def test_p1_el_cierre_condiciona_el_cuadruplo_del_piso():
+    # Con la lluvia sin medir el piso es 9 + σ_ε²: duplicar σ_ε lo lleva de
+    # 10 a 13, no a 40 (revision r2). El cierre solo afirma el cuadruplo
+    # cuando el piso es σ_ε².
+    cierre = cierre_p1()
+    assert "Duplicar $\\sigma_\\varepsilon$ cuadruplica" not in cierre
+    assert "cuadruplica" not in cierre or "solo $\\sigma_\\varepsilon^2$" in cierre
+
+
 def test_p1_s4_las_barras_del_oraculo_en_su_frase():
     p = c.cifras_c1_piso()
     sec = s1()[4]
@@ -302,6 +325,29 @@ def test_ningun_aviso_lleva_texto_en_la_linea_del_marcador():
         for n, renglon in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
             assert not re.match(r"^\s{0,3}>\s*\[!(NOTE|TIP|WARNING|CAUTION)\]\s*\S", renglon), \
                 f"{ruta.name}:{n}: el marcador del aviso va solo en su renglon"
+
+
+def test_ningun_titulo_de_directiva_lleva_matematicas():
+    # Raya no renderiza $…$ dentro de title=: el sitio publico
+    # «Compara con $\\beta$ fijo» literal (revision r2 del tramo 1a). Recorre
+    # toda la unidad, no solo la clase 1: es una guarda comun.
+    unidad = CLASE.parent
+    for ruta in sorted(unidad.rglob("*.md")):
+        for n, renglon in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            if renglon.lstrip().startswith(":::"):
+                for titulo in re.findall(r'title="([^"]*)"', renglon):
+                    assert "$" not in titulo and "\\" not in titulo, \
+                        f"{ruta.relative_to(RAIZ)}:{n}: title= con matemáticas: {titulo}"
+
+
+def test_ninguna_lista_usa_el_parentesis_como_marcador():
+    # «1) …» es lista ordenada en Markdown: la prueba del mejor predictor se
+    # publico como dos renglones de lista con 3) y 4) metidos en el segundo
+    # (revision r2 del tramo 1a). Las listas van con «1.»; los incisos, «(a)».
+    for ruta in paginas_c1():
+        for n, renglon in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            assert not re.match(r"^\s{0,3}\d+\)\s", renglon), \
+                f"{ruta.name}:{n}: lista con «N)»; usa «N.» o prosa"
 
 
 def test_p1_el_alt_de_cada_figura_es_el_aria_label_de_su_svg():
@@ -371,7 +417,9 @@ def test_nb01_cifras_de_los_bloques_en_su_celda():
     assert f"frente al {round(100 * a['moda'])} % de la moda" in t4
     assert f"Polares sí: logra {round(100 * a['polares']['aciertos'])} %" in t4
     assert f"solo radio también logra {round(100 * a['solo radio']['aciertos'])} %" in t4
-    assert f"El techo de Bayes es {round(100 * a['bayes'])} %" in t4
+    assert f"{round(100 * a['bayes'])} %" in t4
+    assert "techo de Bayes es" not in t4, "los aciertos del oráculo en la muestra no son el techo"
+    assert "aciertos del oráculo" in t4
 
 
 def test_nb01_la_reciproca_tiene_riesgo_infinito_por_este_ajuste_no_por_la_familia():

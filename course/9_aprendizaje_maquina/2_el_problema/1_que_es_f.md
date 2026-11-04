@@ -104,7 +104,8 @@ $E[\,\cdot\mid x]$ promedia las observaciones con esa misma $x$: es la media con
 $\operatorname{Var}(\cdot\mid x)$, «varianza», promedia el cuadrado de la distancia a ese promedio: mide la dispersión de tiempos a igual distancia.
 
 Esta $\varepsilon$ no es la cadena vacía de computabilidad ni la cantidad positiva de Markov: aquí es el ruido.
-Si su media condicional no fuera cero, podríamos absorberla en la parte sistemática al definirla.
+Si su media condicional no fuera cero y solo quisiéramos predecir, podríamos absorberla en la parte sistemática.
+Si $f$ es la regla de interés (estructural) y no solo la mejor predicción, no siempre podemos absorberla: eso es la endogeneidad.
 
 ::: definition {#ml-c1-def-proceso-generador title="Proceso generador"}
 Cada observación $(x,y)$ sale del mismo proceso:
@@ -247,7 +248,7 @@ Con $\beta$ fijado antes de ver los datos, $L_{\text{ent}}$ promedia honestament
 >
 > Lectura correcta: **Un error sin conjunto no dice nada: el de entrenamiento lo eligió el optimizador; el que importa es $R$.**
 
-::: exercise {#ml-c1-ej-beta-fijo title="Compara con $\beta$ fijo"}
+::: exercise {#ml-c1-ej-beta-fijo title="Compara con β fijo"}
 La recta $10+4x_1$ se eligió antes de ver las seis entregas; en ellas su MSE es 1.
 El proceso es $f=10+4x_1$, con $\sigma_\varepsilon^2=1$.
 
@@ -325,11 +326,10 @@ $h(x)=E[y\mid x]$ lo alcanza.
 :::
 
 ::: proof {#ml-c1-dem-mejor-predictor of="ml-c1-teo-mejor-predictor"}
-1) Suma y resta $E[y\mid x]$ dentro del cuadrado: $y-h=(y-E[y\mid x])+(E[y\mid x]-h)$.
-2) Desarrolla el cuadrado. 3) El término cruzado se anula: condicionado a $x$,
-$E[y\mid x]-h(x)$ es constante y $E\bigl[y-E[y\mid x]\mid x\bigr]=0$; toma la
-esperanza de la esperanza condicional. 4) El primer cuadrado da
-$E[\operatorname{Var}(y\mid x)]$.
+1. Suma y resta $E[y\mid x]$ dentro del cuadrado: $y-h=(y-E[y\mid x])+(E[y\mid x]-h)$.
+2. Desarrolla el cuadrado.
+3. El término cruzado se anula: condicionado a $x$, $E[y\mid x]-h(x)$ es constante y $E\bigl[y-E[y\mid x]\mid x\bigr]=0$; toma la esperanza de la esperanza condicional.
+4. El primer cuadrado da $E[\operatorname{Var}(y\mid x)]$.
 :::
 
 > [!TIP]
@@ -500,7 +500,7 @@ La representación la limita. Conservamos la logística, cuyo puntaje es lineal 
 En cartesianas hay 48 % de aciertos en el despliegue, cerca del 50 % de la moda; en polares, 75 %.
 
 Usamos $\phi(x)=(1,r,\theta)$: $r=\sqrt{x_1^2+x_2^2}$ es el radio y $\theta$ el ángulo.
-Esta $r$ no es la recompensa de Markov; ambos símbolos se usan aquí solo para los anillos.
+Esta $r$ no es la recompensa de Markov; $r$ y $\theta$ se usan aquí solo para los anillos.
 El 1 aporta el intercepto, como en $\phi(3)=(1,3,9)$.
 
 Una frontera $\beta_0+\beta_1r=0$ fija un radio: es un círculo en cartesianas.
@@ -667,6 +667,7 @@ Si sumas las desigualdades que pediría una recta en los cuatro puntos, ¿qué o
 Sumar $z>0$ en $(1,1),(-1,-1)$ exige $2\beta_0>0$.
 Sumar $z<0$ en $(1,-1),(-1,1)$ exige $2\beta_0<0$.
 No puedes satisfacer ambas condiciones.
+Con la orientación contraria (clase 1 en $z<0$) cambian los signos y llegas a la misma contradicción.
 
 **3. La representación.** Elige $\phi=(1,x_1x_2)$ y $\beta_0=0$.
 Entonces $z=\beta_1x_1x_2$, con $\beta_1>0$, separa las clases al cortar en cero.
@@ -692,7 +693,8 @@ Por eso necesitas especificar el proceso de despliegue, además de la pérdida.
 
 - **Ganar en las seis no basta:** a 7 km, el grado 5 predice −25 minutos y la recta 37.4.
 - **El riesgo mira el despliegue:** $L_{\text{ent}}$ usa lo observado; $R(\widehat\beta)$ promedia sobre la siguiente observación del proceso.
-- **El piso depende de lo visible:** medir la lluvia lo baja de 10 a 1. Duplicar $\sigma_\varepsilon$ cuadruplica el piso cuadrático.
+- **El piso depende de lo visible:** medir la lluvia lo baja de 10 a 1.
+  Cuando el piso es solo $\sigma_\varepsilon^2$, duplicar la desviación estándar lo cuadruplica.
 - **El remedio depende de la fuente:** azar, variables no medidas, familia equivocada o pocos datos. La optimización se revisa aparte.
 - **Representar cambia lo que puedes ajustar:** los anillos pasan de cerca de 50 % a 75 % de aciertos en el despliegue con la misma logística.
 - **Lineal significa lineal en $\beta$:** una curva puede doblarse y seguir siendo una suma de columnas calculadas de antemano.

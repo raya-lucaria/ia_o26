@@ -165,8 +165,7 @@ def bloque_4(radio_exterior, grosor, ruido, representacion):
         ax.axhline(r0, ls=":", lw=2, color="gray", label=f"ideal: r = {r0:.2f}")
         ax.legend(loc="upper right")
     plt.show()
-    (print(m.Phi(datos.ent).head(4).to_string(index=False)) if separados  # sin argmin
-     else ml.imprimir_Phi(m, datos.ent, filas=4))   # finito, no se dice «β̂ = argmin»
+    print(m.Phi(datos.ent)[:4]) if separados else ml.imprimir_Phi(m, datos.ent, 4)
     moda_ent = ml.benchmarks(datos, datos.ent).loc["moda", "aciertos"]
     moda = ml.benchmarks(datos, desp).loc["moda", "aciertos"]
     oraculo = np.mean((desp["prob"] >= 0.5).astype(int) == desp["y"])

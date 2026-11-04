@@ -163,7 +163,7 @@ una fila por observación.
 En polares, el eje horizontal es $\theta$ y el vertical es $r$: un radio fijo se ve horizontal; la frontera ajustada puede inclinarse un poco.
 
 La línea punteada es la frontera ideal, $r=1.31$: el radio donde las dos clases son igual de probables.
-Debajo aparecen cuatro filas de $\Phi$, con «1» primero; compara los aciertos en entrenamiento y en el despliegue con la moda y el techo de Bayes.
+Debajo aparecen cuatro filas de $\Phi$, con «1» primero; compara los aciertos en entrenamiento y en el despliegue con la moda y con los aciertos del oráculo.
 
 ### celda: bloque-4-explica
 
@@ -171,9 +171,11 @@ Debajo aparecen cuatro filas de $\Phi$, con «1» primero; compara los aciertos 
 
 Con los valores iniciales, cartesianas no pasa de 60 %: logra 48 % de aciertos
 en el despliegue, frente al 50 % de la moda. Polares sí: logra 75 %; solo radio
-también logra 75 %. El techo de Bayes es 76 %. La moda predice siempre la clase
-más frecuente del entrenamiento; el techo corresponde al oráculo que conoce
-las probabilidades del proceso.
+también logra 75 %. Los aciertos del oráculo en el despliegue son 76 %;
+el oráculo conoce las probabilidades del proceso y clasifica con ellas.
+Con una muestra finita, esa cifra aproxima el techo de Bayes de la población;
+no es una cota exacta para otros clasificadores en esa misma muestra.
+La moda predice siempre la clase más frecuente del entrenamiento.
 
 Cambió $\phi$, con la misma logística y el mismo optimizador. Compara sus
 columnas: $(1,x_1,x_2)$, $(1,r,\theta)$ y $(1,r)$. La columna de unos permite
@@ -240,8 +242,9 @@ también verás su matriz $\Phi$.
 ### celda: galeria-intro
 
 **Galería.** Pulsa «Caso 1», lee la pregunta que aparece y escribe tu respuesta
-antes de abrir «¿Qué se ve?». Haz lo mismo con «Caso 2». Usa las gráficas y las
-cifras de cada caso para justificar tu respuesta antes de leer la explicación.
+antes de abrir «¿Qué se ve?». Haz lo mismo con «Caso 2».
+En el caso 1 la celda no imprime coeficientes: antes de abrir «¿Qué se ve?», anota si esperas el coeficiente estimado de $x_1$ mayor, menor o igual que 1, y por qué; luego compáralo con la explicación.
+En el caso 2, apóyate en la gráfica y en las cifras que imprime.
 
 ### celda: ejercicio-piso
 
