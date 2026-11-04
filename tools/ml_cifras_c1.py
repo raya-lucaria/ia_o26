@@ -131,6 +131,22 @@ def cifras_c1_piso(semilla=0):
     return salida
 
 
+def cifras_c1_bloque_1(semilla=0):
+    """NB01 bloque 1 con sus controles iniciales (proceso «entregas», ruido
+    normal de desviacion 1, 20 datos, semilla 0), por el mismo camino que la
+    celda: L_ent de la recta, su R en el despliegue y el de la media
+    (benchmark) en el despliegue."""
+    ml = _ml()
+    datos = ml.PROCESOS["entregas"](n=N_ENTREGAS, semilla=semilla, ruido=ml.normal(0, 1.0),
+                                    fracciones=(1, 0, 0))
+    recta = ml.ajustar(datos)
+    return {
+        "L_ent_recta": float(ml.L(recta, datos.ent)),
+        "R_recta": float(ml.riesgo(recta, datos)),
+        "R_media": float(ml.benchmarks(datos, datos.despliegue).loc["media", "cuadratica"]),
+    }
+
+
 def datos_lluvia(medir_lluvia=False, semilla=0):
     """El caso 2 (la lluvia): 20 entregas; con medir_lluvia, x2 es visible."""
     ml = _ml()

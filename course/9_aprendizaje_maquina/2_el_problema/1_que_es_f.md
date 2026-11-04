@@ -55,9 +55,13 @@ Con ese criterio, el polinomio ganó. El objetivo no penalizaba un tiempo negati
 
 En la clase 0 (@ml-c0-memorizar-contra-ajustar) memorizar llegó a cero en lo visto y falló en lo nuevo; aquí el que llega a cero es un polinomio.
 
-La recta de las seis es $10.6+(134/35)x$.
-A 3.5 km, ambos ajustes predicen 24.0 minutos.
-Esa coincidencia interior no determina cómo continúan: la página 2 retoma la extrapolación, predecir fuera del rango observado.
+La recta de las seis es $10.6+(134/35)x$. El polinomio de grado 5 es
+
+$$
+73-\tfrac{1876}{15}x+\tfrac{280}{3}x^2-\tfrac{92}{3}x^3+\tfrac{14}{3}x^4-\tfrac{4}{15}x^5 .
+$$
+
+Dentro y fuera del rango observado no se comportan igual: la página 2 retoma la extrapolación, predecir fuera del rango observado.
 
 Queríamos acertar la siguiente entrega. Para explicar qué podemos aprender de ella, necesitamos separar la regla que genera tiempos de sus variaciones.
 
@@ -76,7 +80,7 @@ Con los dos ajustes de la figura:
 ::: answer {#ml-c1-resp-ganador of="ml-c1-ej-ganador" title="Respuesta · La coincidencia no se prolonga"}
 (a) A 3.5 km, la recta y el polinomio predicen 24.0 minutos.
 
-(b) A 0 km, predicen 10.6 y 73.0 minutos, respectivamente.
+(b) A 0 km, predicen 10.6 y 73.0 minutos, respectivamente: en $x=0$ cada fórmula vale su término constante.
 Dentro coinciden en el punto consultado; fuera, no. Acertar entre los datos no fija la continuación de la curva.
 :::
 
@@ -106,13 +110,16 @@ Si su media condicional no fuera cero, podríamos absorberla en la parte sistem�
 Cada observación $(x,y)$ sale del mismo proceso:
 
 $$
-y=f(x)+\varepsilon,\qquad E[\varepsilon\mid x]=0,\qquad \operatorname{Var}(\varepsilon\mid x)=\sigma_\varepsilon^2(x).
+\begin{aligned}
+y&=f(x)+\varepsilon,\\
+E[\varepsilon\mid x]&=0,\qquad \operatorname{Var}(\varepsilon\mid x)=\sigma_\varepsilon^2(x).
+\end{aligned}
 $$
 
 $f$ es la parte sistemática (la función verdadera, sobre todas las
 variables) y $\varepsilon$ el ruido. Como $E[\varepsilon\mid x]=0$,
 $f(x)=E[y\mid x]$. Por omisión, $\sigma_\varepsilon^2(x)=\sigma_\varepsilon^2$
-es constante. Los casos 6, 8 y 12 rompen a propósito uno de estos supuestos:
+es constante. Más adelante, la unidad rompe a propósito cada supuesto:
 con ruido de Cauchy, $\varepsilon$ no tiene media y su segundo momento es
 infinito; con endogeneidad, $E[\varepsilon\mid x]\ne0$, y entonces $f\ne
 E[y\mid x]$; con heterocedasticidad, $\sigma_\varepsilon^2(x)$ no es
@@ -175,7 +182,7 @@ Las otras dos cuentas requieren conocer $f$, disponible aquí porque especificam
 ![Arriba, 20 entregas y la recta ajustada, 10.36 más 3.90 x. Abajo, el error cuadrático medio de entrenamiento como función de la pendiente, una parábola con su mínimo en 3.90, donde vale 0.45: aprender es minimizar.](../_assets/ml-c1-aprender-es-minimizar.svg)
 :::
 
-Arriba ves el ajuste a 20 entregas. Abajo, la pérdida mínima vale 0.45.
+Abajo, la pérdida mínima en entrenamiento vale 0.45.
 
 **Piensa: si el optimizador encontró el mínimo exacto, ¿encontró el mejor modelo?**
 
@@ -204,8 +211,7 @@ $$
 
 Lleva gorro porque cambia con la muestra.
 El $\beta^\star=(11,\ 3.6)$ de la clase 0 y el $\beta^\star$ de la unidad 6
-son, en esta notación, $\widehat\beta$: dependen de la muestra. Otra
-muestra del mismo proceso da otro $\widehat\beta$.
+son, en esta notación, $\widehat\beta$: dependen de la muestra.
 :::
 
 Desde aquí, todo ajuste a una muestra lleva gorro; la estrella queda para el óptimo de un problema sobre la población, que no depende de ninguna muestra.
@@ -228,18 +234,16 @@ observación nueva.
 
 El error que la clase 0 midió en las dos entregas nuevas (el MAE) es un promedio de la pérdida absoluta $\lvert y-\widehat y\rvert$ en dos casos; $R$ es su versión esperada sobre todo el despliegue. En esta clase usamos la pérdida cuadrática, la misma con que se ajusta; por qué se puede reportar con otra lo explica la clase 4.
 
-Así, $\ell(y,\widehat y)=(y-\widehat y)^2$ y $L$ es el MSE.
-Por omisión, entrenamiento y despliegue vienen del mismo proceso.
-$R(\beta)$ es un número poblacional para cada $\beta$.
-$R(\widehat\beta)$ evalúa ese número en tu ajuste: otra muestra puede cambiar ambos.
+Aquí $\ell(y,\widehat y)=(y-\widehat y)^2$ y $L$ es el MSE.
+Por omisión, entrenamiento y despliegue comparten proceso; otra muestra da otro $\widehat\beta$ y otro $R(\widehat\beta)$.
 
-El notebook aproxima esa esperanza con 100 000 observaciones nuevas; en la vida real esa muestra no existe.
+El notebook aproxima esa esperanza con 100 000 observaciones nuevas, disponibles solo aquí.
 El error estándar del oráculo con $\sigma_\varepsilon=1$ es 0.0045.
 
 Con $\beta$ fijado antes de ver los datos, $L_{\text{ent}}$ promedia honestamente $R(\beta)$; con $\widehat\beta$, no.
 
 > [!WARNING]
-> Lectura equivocada: «El error es 0.95 minutos».
+> Lectura equivocada: «El error es 0.96 minutos».
 >
 > Lectura correcta: **Un error sin conjunto no dice nada: el de entrenamiento lo eligió el optimizador; el que importa es $R$.**
 
@@ -298,8 +302,9 @@ Si no se omite ninguna variable y $E[\varepsilon\mid x]=0$, ese predictor es
 $f$ misma y $R_{\text{Bayes}}=E[\sigma_\varepsilon^2(x)]$, que vale
 $\sigma_\varepsilon^2$ en el caso constante. Dejar de ver una variable no
 disminuye el piso (puede dejarlo igual); medir una más no lo aumenta (puede
-bajarlo). Con ruido de segundo momento infinito (Cauchy), todo predictor
-tiene riesgo cuadrático infinito: el piso cuadrático es $+\infty$.
+bajarlo).
+
+Con ruido de segundo momento infinito (Cauchy) e independiente de las variables, todo predictor tiene riesgo cuadrático infinito: el piso cuadrático es $+\infty$.
 :::
 
 La cuenta separa dispersión inevitable y distancia al promedio condicional.
@@ -309,7 +314,10 @@ Sea $x$ el vector de variables visibles y $h$ cualquier predictor con
 $E[(y-h(x))^2]<\infty$. Entonces
 
 $$
-E\bigl[(y-h(x))^2\bigr]=E\bigl[\operatorname{Var}(y\mid x)\bigr]+E\Bigl[\bigl(E[y\mid x]-h(x)\bigr)^2\Bigr].
+\begin{aligned}
+E\bigl[(y-h(x))^2\bigr]&=E\bigl[\operatorname{Var}(y\mid x)\bigr]\\
+&\quad+E\Bigl[\bigl(E[y\mid x]-h(x)\bigr)^2\Bigr].
+\end{aligned}
 $$
 
 El primer término no depende de $h$: ningún predictor baja de él, y
@@ -433,21 +441,17 @@ No: mayor flexibilidad no revela la lluvia omitida ni elimina el azar.
 1. **Azar:** aun con todo medido, $y$ varía alrededor de $f(x)$. No baja con
    nada.
 2. **Variables que no medimos:** lo que sí determina $y$ y el modelo no ve.
-   Baja al medirlas. Las fuentes 1 y 2 juntas fijan el piso
+   Puede bajar al medirlas. Las fuentes 1 y 2 juntas fijan el piso
    $R_{\text{Bayes}}$, relativo a lo que mides.
 3. **Una familia equivocada (aproximación):** ni la mejor función de la
    familia alcanza el mejor predictor con lo que mides,
    $E[y\mid x_{\text{visibles}}]$.
-4. **Pocos datos (estimación):** con $n$ datos ruidosos, $\widehat f$ no es la
-   mejor función de la familia.
+4. **Pocos datos (estimación):** con $n$ datos finitos, $\widehat f$ puede diferir de la mejor función de la familia.
 
-Y además: el algoritmo puede no encontrar el mínimo de $L_{\text{ent}}$
-(optimización).
+Y además: el algoritmo puede no encontrar el mínimo de $L_{\text{ent}}$ (optimización), fuera de las cuatro; la página 2 vuelve sobre esto.
 :::
 
 Cambia representación o familia para corregir aproximación; reúne más datos para mejorar estimación.
-
-Y además, fuera de las cuatro: el optimizador puede no llegar al mínimo (error de optimización); la página 2 vuelve sobre esto.
 
 ::: exercise {#ml-c1-ej-cuatro-fuentes title="Nombra la fuente"}
 Nombra cada causa y su remedio.

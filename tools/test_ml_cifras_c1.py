@@ -105,6 +105,14 @@ def comprobar_piso(p):
     assert _r(uno["L_ent_oraculo"], 3) == 0.489
 
 
+def test_bloque_1_coincide_con_el_piso_por_otro_camino():
+    b, p = c.cifras_c1_bloque_1(), c.cifras_c1_piso()[1.0]
+    assert (_r(b["L_ent_recta"], 3), _r(b["R_recta"], 3), _r(b["R_media"], 3)) == (
+        0.45, 1.025, 49.073)
+    assert _r(b["L_ent_recta"], 9) == _r(p["L_ent_recta"], 9)
+    assert _r(b["R_recta"], 9) == _r(p["R_recta"], 9)
+
+
 def test_piso_las_cifras_de_la_pagina():
     comprobar_piso(c.cifras_c1_piso())
 

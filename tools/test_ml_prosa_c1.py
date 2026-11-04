@@ -213,6 +213,82 @@ def test_p1_la_optimizacion_no_es_cuarta_ni_quinta_fuente():
     assert not re.search(r"(cuarta|quinta) fuente", p1())
 
 
+# ---- cifras atadas a su frase (revision r1 del tramo 1a, D-009.5) ----
+
+def _tfrac(fr):
+    """Una fraccion como la escribe P1: 73, \\tfrac{280}{3}, con su signo aparte."""
+    a = abs(fr)
+    return str(a.numerator) if a.denominator == 1 else f"\\tfrac{{{a.numerator}}}{{{a.denominator}}}"
+
+
+def test_p1_s1_da_la_recta_y_el_polinomio_de_grado_5_con_fracciones_exactas():
+    g = c.cifras_c1_ganador()
+    sec = s1()[1]
+    pend = g["pendiente_recta_fraccion"]
+    assert f"${g['intercepto_recta']:.1f}+({pend.numerator}/{pend.denominator})x$" in sec
+    fr = g["coeficientes_grado_5_fracciones"]          # de x^5 a la constante
+    terminos = []
+    for k, a in enumerate(reversed(fr)):               # constante primero
+        signo = "-" if a < 0 else "+"
+        cuerpo = _tfrac(a) + ("" if k == 0 else "x" if k == 1 else f"x^{k}")
+        terminos.append(cuerpo if k == 0 else signo + cuerpo)
+    assert "".join(terminos) in sec.replace(" ", "")
+
+
+def test_p1_s1_el_ejercicio_no_trae_su_respuesta_en_la_prosa():
+    sec = s1()[1]
+    prosa = re.sub(r"(?ms)^::: figure.*?^:::\s*$", "", sec[:sec.index("::: exercise")])
+    assert "24.0" not in prosa, "la prosa de §1 ya resuelve (a) del ejercicio"
+    resp = bloque(p1(), "ml-c1-resp-ganador").group(1)
+    g = c.cifras_c1_ganador()
+    assert f"{g['prediccion'][0.0][0]:.1f} y {g['prediccion'][0.0][1]:.1f}" in resp
+    assert "término constante" in resp
+
+
+def test_p1_s3_cifras_en_su_frase():
+    g, p = c.cifras_c1_ganador(), c.cifras_c1_piso()[1.0]
+    sec = s1()[3]
+    assert f"pérdida mínima en entrenamiento vale {p['L_ent_recta']:.2f}" in sec
+    assert f"«El error es {g['rmse_1']:.2f} minutos»" in sec
+    assert f"en ellas su MSE es {g['mse_fija']:g}" in sec
+    assert f"MSE de {g['mse_1']:.3f} < 1" in sec
+    assert f"${g['rmse_1']:.3f}=\\sqrt{{{g['mse_1']:.3f}}}$" in sec
+    assert f"$\\sigma_\\varepsilon=1$ es {p['ee_oraculo']:.4f}" in sec
+
+
+def test_p1_s4_las_barras_del_oraculo_en_su_frase():
+    p = c.cifras_c1_piso()
+    sec = s1()[4]
+    assert (f"Las barras aproximan riesgos: {p[1.0]['R_oraculo']:.2f} y "
+            f"{p[2.0]['R_oraculo']:.2f} no contradicen") in sec
+
+
+def test_p1_s7_cifras_en_su_frase():
+    a = c.cifras_c1_anillos()
+    sec = s1()[7]
+    assert (f"En cartesianas hay {round(100 * a['cartesianas']['aciertos'])} % de aciertos "
+            f"en el despliegue, cerca del {round(100 * a['moda'])} % de la moda; en polares, "
+            f"{round(100 * a['polares']['aciertos'])} %") in sec
+    assert f"la ideal $r={a['radio_bayes']:.2f}$ es horizontal" in sec
+    assert f"con coeficiente {menos(a['polares']['beta']['theta'], 2)[0]}" in sec
+    assert f"alcanza solo {round(100 * a['bayes'])} % de aciertos" in sec
+
+
+def test_p1_la_lectura_cabe_en_su_presupuesto():
+    # 80 palabras por minuto sin pistas ni respuestas (contrato §9), contra
+    # los ~30 min de lectura que declara la pagina (el resto es el notebook)
+    # y los 5 min de §3 del brief, con un margen de 10 %.
+    import contrato_unidad as cu
+    palabras = {}
+    for n, texto in s1().items():
+        pag = cu.parsear("## " + texto)
+        palabras[n] = sum(cu.palabras(u.texto) for u in pag.unidades
+                          if not u.excluida and not (set(u.contexto) & cu.DIRECTIVAS_FUERA_DE_TIEMPO))
+    assert "~30 min de lectura" in p1()
+    assert sum(palabras.values()) <= 30 * 80 * 1.1, palabras
+    assert palabras[3] <= 5 * 80 * 1.1, palabras[3]
+
+
 # ---- forma que validate no ve (revision r1 del tramo 1a) ----
 
 def paginas_c1():
@@ -274,6 +350,34 @@ def test_nb01_el_bloque_4_cita_los_aciertos_y_no_los_llama_R():
 
 def test_nb01_el_ejercicio_del_piso_da_un_cuarto():
     assert "0.25" in celda("ejercicio-piso-respuesta")
+
+
+def test_nb01_cifras_de_los_bloques_en_su_celda():
+    b1, p, ll = c.cifras_c1_bloque_1(), c.cifras_c1_piso()[1.0], c.cifras_c1_lluvia_grados()
+    a = c.cifras_c1_anillos()
+    t1 = " ".join(celda("bloque-1-explica").split())
+    assert f"$L_{{\\text{{ent}}}}={b1['L_ent_recta']:.3f}$" in t1
+    assert f"riesgo aproximado {b1['R_recta']:.3f} en el despliegue, frente a {b1['R_media']:.3f}" in t1
+    t2 = " ".join(celda("bloque-2-explica").split())
+    assert f"riesgo aproximado de {p['R_oraculo']:.3f}" in t2
+    assert f"$L_{{\\text{{ent}}}}={p['L_ent_oraculo']:.3f}$" in t2
+    t3 = " ".join(celda("bloque-3-explica").split())
+    assert f"con grado 1 es {ll[False][1]:.2f}" in t3
+    assert f"el riesgo sube de {ll[False][1]:.2f} a {ll[False][5]:.2f}" in t3
+    assert "casi no" not in t3
+    assert f"$r={a['radio_bayes']:.2f}$" in celda("bloque-4-mira")
+    t4 = " ".join(celda("bloque-4-explica").split())
+    assert f"logra {round(100 * a['cartesianas']['aciertos'])} % de aciertos" in t4
+    assert f"frente al {round(100 * a['moda'])} % de la moda" in t4
+    assert f"Polares sí: logra {round(100 * a['polares']['aciertos'])} %" in t4
+    assert f"solo radio también logra {round(100 * a['solo radio']['aciertos'])} %" in t4
+    assert f"El techo de Bayes es {round(100 * a['bayes'])} %" in t4
+
+
+def test_nb01_la_reciproca_tiene_riesgo_infinito_por_este_ajuste_no_por_la_familia():
+    t5 = " ".join(celda("bloque-5-explica").split())
+    assert "este ajuste tiene riesgo verdadero infinito" in t5
+    assert "coeficiente de $1/x_1$ no es cero" in t5
 
 
 def test_nb01_no_lleva_arrobas_ni_wikilinks():

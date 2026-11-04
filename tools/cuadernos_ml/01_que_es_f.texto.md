@@ -33,7 +33,7 @@ no como cadena vacía.
 Para un predictor $f_\beta$, con parámetros $\beta$, el riesgo
 $R(\beta)=E[\ell(y,f_\beta(x))]$ promedia la pérdida $\ell$ en la población;
 $E$ indica esperanza. Aquí usamos pérdida cuadrática para los tiempos.
-[Proceso generador y Riesgo y error de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/) conectan ambas ecuaciones.
+[Proceso generador y Riesgo y error de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/#raya-object-ml-c1-def-proceso-generador) conectan ambas ecuaciones.
 
 ### celda: bloque-1-predice
 
@@ -48,18 +48,20 @@ Después puedes explorar «recíproca», «mezcla de logaritmos» y «seno» en 
 
 **Mira.** En la gráfica, los círculos son las 20 entregas de entrenamiento; los puntos pequeños son 300 observaciones nuevas.
 La línea gruesa verde es $f$; la delgada es la recta ajustada $\widehat f$.
-Debajo, `L_ent` mide el error en entrenamiento y $R(\widehat\beta)$ aproxima el riesgo en el despliegue; la media es el punto de comparación (*benchmark*).
+
+Debajo, `L_ent` mide el error en entrenamiento; la media es el punto de comparación (*benchmark*).
+La cifra impresa junto a $R(\widehat\beta)$ aproxima ese riesgo con las 100 000 observaciones del despliegue.
 
 ### celda: bloque-1-explica
 
 <details><summary>Explicación</summary>
 
-cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
+Al mover el control, cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
 
 La función $R(\beta)=E[\ell(y,f_\beta(x))]$ permanece fija; cambia el ajuste
 $\widehat\beta$ donde la evalúas. El gorro identifica lo estimado con los datos:
 $\widehat f=f_{\widehat\beta}$. Es la distinción de
-[Lo estimado lleva gorro](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/).
+[Lo estimado lleva gorro](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/#raya-object-ml-c1-def-estimacion).
 
 Aquí $L$ denota un error promedio, no un lenguaje. Con los controles iniciales,
 la recta tiene $L_{\text{ent}}=0.450$ en
@@ -91,7 +93,7 @@ Los renglones impresos separan $L_{\text{ent}}$, el error en entrenamiento, de $
 
 Se cuadruplica: el piso pasa de 1 a 4. En este proceso,
 $R_{\text{Bayes}}=\sigma_\varepsilon^2$, como explica
-[El piso: error de Bayes](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/).
+[El piso: error de Bayes](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/#raya-object-ml-c1-def-error-bayes).
 La varianza del ruido, $\sigma_\varepsilon^2$, mide su dispersión cuadrática
 alrededor de su media cero. El control mueve su desviación estándar
 $\sigma_\varepsilon$; duplicarla cuadruplica la varianza.
@@ -129,13 +131,14 @@ Compara también las columnas visibles impresas: al incorporar $x_2$, el piso pa
 
 Medir la lluvia baja más el error en este experimento. Sin medirla, el piso es
 10 y el riesgo aproximado con grado 1 es 10.89 en el despliegue; medirla baja el
-piso a 1. Subir el grado casi no cambia el riesgo: una curva más flexible de
-la distancia no revela si llovió en esa entrega.
+piso a 1.
+
+Subir el grado no baja el piso y aquí empeora el ajuste: sin medir la lluvia, con grado 5 el riesgo sube de 10.89 a 15.73. Una curva más flexible de la distancia no revela si llovió, y con 20 datos persigue el ruido.
 
 Con pérdida cuadrática, la mejor predicción con lo visible es la media
 condicional $E[y\mid x_{\text{visibles}}]$: el tiempo promedio entre entregas
 con esos valores visibles. No la confundas con $f$ si omitiste la lluvia.
-[La lluvia: ruido que no es ruido](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/)
+[La lluvia: ruido que no es ruido](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/#raya-object-ml-c1-ejm-lluvia)
 explica por qué el piso depende de lo que mides.
 
 </details>
@@ -158,6 +161,8 @@ una fila por observación.
 
 **Mira.** Cada punto es una observación coloreada por su clase; la frontera separa las clases que predice la logística.
 En polares, el eje horizontal es $\theta$ y el vertical es $r$: un radio fijo se ve horizontal; la frontera ajustada puede inclinarse un poco.
+
+La línea punteada es la frontera ideal, $r=1.31$: el radio donde las dos clases son igual de probables.
 Debajo aparecen cuatro filas de $\Phi$, con «1» primero; compara los aciertos en entrenamiento y en el despliegue con la moda y el techo de Bayes.
 
 ### celda: bloque-4-explica
@@ -173,7 +178,7 @@ las probabilidades del proceso.
 Cambió $\phi$, con la misma logística y el mismo optimizador. Compara sus
 columnas: $(1,x_1,x_2)$, $(1,r,\theta)$ y $(1,r)$. La columna de unos permite
 un término constante, como en
-[Modelo lineal: lineal en sus parámetros](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/).
+[Modelo lineal: lineal en sus parámetros](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/#raya-object-ml-c1-def-modelo-lineal).
 Con solo radio, la frontera es exactamente horizontal:
 $r=-\widehat\beta_0/\widehat\beta_1$. En polares, el coeficiente ajustado de
 $\theta$ explica la pequeña inclinación.
@@ -208,15 +213,14 @@ Ninguna necesita otro algoritmo: todas son lineales en $\beta$. Por ejemplo,
 $f_\beta(x)=\beta_0+\beta_1x+\beta_2x^2$ curva la predicción en $x$, pero
 combina las columnas de $\Phi$ linealmente en sus parámetros. Esa es la
 distinción de
-[Modelo lineal: lineal en sus parámetros](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/).
+[Modelo lineal: lineal en sus parámetros](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/#raya-object-ml-c1-def-modelo-lineal).
 
 El indicador de lluvia agrega una columna con codificación de base mediante
 `ml.dummies("x2")`. Si cambias «proceso» a «recíproca», esa opción no aplica:
 el proceso no trae lluvia y la celda lo dice.
 
 La elección de columnas también exige mirar el dominio. En «entregas con
-lluvia», la distancia $x_1$ puede acercarse a cero: con $(1,1/x_1)$ el riesgo
-verdadero es infinito. El promedio finito impreso sobre observaciones del
+lluvia», la distancia $x_1$ puede acercarse a cero: con $(1,1/x_1)$ este ajuste tiene riesgo verdadero infinito, porque su coeficiente de $1/x_1$ no es cero. El promedio finito impreso sobre observaciones del
 despliegue no lo convierte en un riesgo finito; atiende el aviso de la celda.
 
 </details>

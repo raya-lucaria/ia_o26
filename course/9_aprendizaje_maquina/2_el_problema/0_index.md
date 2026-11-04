@@ -48,8 +48,8 @@ Lo que te llevas de la clase:
 - **Proceso y riesgo:** cómo se escriben el proceso que genera las entregas y el riesgo que mide el error al predecir sus tiempos.
 - **Fuentes de error:** qué baja cada remedio: medir otra variable, cambiar la representación, ampliar la familia o reunir más datos.
 - **Linealidad:** cuándo un modelo es lineal en sus parámetros $\beta$, aunque use potencias de la distancia.
-- **Capacidad:** por qué el error de entrenamiento $L_{\text{ent}}$ no basta para elegir el grado $N$ del polinomio.
-- **Límites:** el principio de que ningún método gana en todos los problemas (*no free lunch*).
+- **Capacidad (página 2):** por qué el error de entrenamiento $L_{\text{ent}}$ no basta para elegir el grado $N$ del polinomio.
+- **Límites (página 2):** el principio de que ningún método gana en todos los problemas (*no free lunch*).
 
 ## El hilo de la clase
 
