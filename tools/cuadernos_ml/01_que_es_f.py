@@ -146,23 +146,26 @@ REPRESENTACIONES = {"cartesianas (1, x₁, x₂)": None,
                     "polares (1, r, θ)": ml.polares(),
                     "solo radio (1, r)": ml.polares(incluir=("r",))}
 
-
 def bloque_4(radio_exterior, grosor, ruido, representacion):
     datos = ml.anillos(n=400, radio_exterior=radio_exterior, grosor=grosor,
                        ruido=ruido, semilla=SEMILLA, fracciones=(1, 0, 0))
-    phi = REPRESENTACIONES[representacion]
+    phi, desp = REPRESENTACIONES[representacion], datos.despliegue
     with warnings.catch_warnings(record=True) as avisos:
         warnings.simplefilter("always")
         m = ml.ajustar(datos, phi=phi, tarea="clasificacion")
     if any("separan" in str(a.message) for a in avisos):
-        print("Los datos se separan: sin penalización la logística no tiene "
-              "coeficientes óptimos finitos;\ncrecen hasta que el optimizador "
-              "se detiene.")
+        print("Los datos se separan: sin penalización no hay coeficientes óptimos"
+              " finitos;\ncrecen hasta que el optimizador se detiene.")
     vista = "cartesianas" if phi is None else "polares"
-    ml.dibujar_frontera(m, datos.ent, vista=vista)
+    ax = ml.dibujar_frontera(m, datos.ent, vista=vista)
+    if vista == "polares":   # la frontera ideal: el radio donde Pr(y = 1 | x) cruza 1/2
+        r = np.hypot(desp["x1"], desp["x2"]).to_numpy()
+        lado = desp["prob"].to_numpy()[r.argsort()] >= 0.5
+        r0 = np.sort(r)[np.argmax(lado != lado[0])]
+        ax.axhline(r0, ls=":", lw=2, color="gray", label=f"ideal: r = {r0:.2f}")
+        ax.legend(loc="upper right")
     plt.show()
     ml.imprimir_Phi(m, datos.ent, filas=4)
-    desp = datos.despliegue
     moda_ent = ml.benchmarks(datos, datos.ent).loc["moda", "aciertos"]
     moda = ml.benchmarks(datos, desp).loc["moda", "aciertos"]
     bayes = np.mean((desp["prob"] >= 0.5).astype(int) == desp["y"])
@@ -172,14 +175,11 @@ def bloque_4(radio_exterior, grosor, ruido, representacion):
           f"   ·   la moda: {moda:.3f}   ·   techo de Bayes: {bayes:.3f}")
     print("coeficientes β̂:", m.beta_gorro.round(3).to_dict())
 
-
-ml.laboratorio(
-    bloque_4,
-    radio_exterior=ml.deslizador("radio exterior", 1.3, 2.2, 0.1, 1.6),
-    grosor=ml.deslizador("grosor", 0.3, 0.8, 0.05, 0.4),
-    ruido=ml.deslizador("ruido", 0.1, 0.4, 0.05, 0.15),
-    representacion=ml.selector("representación", list(REPRESENTACIONES)),
-)
+ml.laboratorio(bloque_4,
+               radio_exterior=ml.deslizador("radio exterior", 1.3, 2.2, 0.1, 1.6),
+               grosor=ml.deslizador("grosor", 0.3, 0.8, 0.05, 0.4),
+               ruido=ml.deslizador("ruido", 0.1, 0.4, 0.05, 0.15),
+               representacion=ml.selector("representación", list(REPRESENTACIONES)))
 
 # %% [texto] bloque-4-mira
 
@@ -221,8 +221,9 @@ def bloque_5(proceso, phi):
     print(f"despliegue: R = {ml.riesgo(m, datos):.3f}"
           f"   ·   la media (benchmark): {b_desp:.3f}")
     if phi == "(1, 1/x)" and v == "x1":
-        print("Ojo: x₁ llega hasta 0 y 1/x₁ explota; el R verdadero de esta φ es "
-              "infinito.\nEl número de arriba solo promedia esta muestra enorme.")
+        print("Ojo: x₁ llega hasta 0 y 1/x₁ explota; como el coeficiente de 1/x₁ "
+              "no es 0,\nel R verdadero de este ajuste es infinito. El número de "
+              "arriba solo promedia\nesta muestra enorme.")
 
 
 ml.laboratorio(bloque_5, proceso=ml.selector("proceso", list(DATOS_B5)),

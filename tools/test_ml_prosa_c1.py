@@ -213,6 +213,32 @@ def test_p1_la_optimizacion_no_es_cuarta_ni_quinta_fuente():
     assert not re.search(r"(cuarta|quinta) fuente", p1())
 
 
+# ---- forma que validate no ve (revision r1 del tramo 1a) ----
+
+def paginas_c1():
+    return sorted(CLASE.glob("*.md"))
+
+
+def test_ningun_aviso_lleva_texto_en_la_linea_del_marcador():
+    # Raya solo reconoce «> [!TIP]» solo en su renglon
+    # (raya_static/rendering.py); con texto detras publica «[!TIP]» literal.
+    for ruta in paginas_c1():
+        for n, renglon in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+            assert not re.match(r"^\s{0,3}>\s*\[!(NOTE|TIP|WARNING|CAUTION)\]\s*\S", renglon), \
+                f"{ruta.name}:{n}: el marcador del aviso va solo en su renglon"
+
+
+def test_p1_el_alt_de_cada_figura_es_el_aria_label_de_su_svg():
+    import html
+    assets = CLASE.parent / "_assets"
+    figuras = re.findall(r"!\[([^\]]*)\]\(\.\./_assets/(ml-c1-[a-z0-9-]+)\.svg\)", p1())
+    assert len(figuras) == 9
+    for alt, ident in figuras:
+        svg = (assets / f"{ident}.svg").read_text(encoding="utf-8")
+        aria = html.unescape(re.search(r'aria-label="([^"]*)"', svg).group(1))
+        assert alt == aria, ident
+
+
 # ---- guion de NB01 ----
 
 @lru_cache(maxsize=None)

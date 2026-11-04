@@ -53,6 +53,21 @@ def test_ganador_el_polinomio_de_grado_5_pasa_por_las_seis():
         assert math.isclose(coef, float(exacto), rel_tol=1e-9, abs_tol=1e-9)
 
 
+def test_ganador_las_fracciones_que_escribe_la_pagina_son_exactas():
+    g = c.cifras_c1_ganador()
+    fr = g["coeficientes_grado_5_fracciones"]
+    assert fr == [Fraction(-4, 15), Fraction(14, 3), Fraction(-92, 3), Fraction(280, 3),
+                  Fraction(-1876, 15), Fraction(73)]
+    assert g["pendiente_recta_fraccion"] == Fraction(134, 35)
+    # Con aritmetica exacta, el polinomio pasa por las seis entregas.
+    for x, y in zip(c.ENTREGAS_X, c.ENTREGAS_Y):
+        valor = sum(a * Fraction(int(x)) ** (5 - k) for k, a in enumerate(fr))
+        assert valor == Fraction(int(y)), (x, valor)
+    assert fr[-1] == 73          # su valor en 0 km es la constante
+    assert sum(a * Fraction(7) ** (5 - k) for k, a in enumerate(fr)) == -25
+    assert sum(a * Fraction(7, 2) ** (5 - k) for k, a in enumerate(fr)) == 24
+
+
 def test_ganador_por_otro_camino_con_fracciones_exactas():
     # Minimos cuadrados de la recta con fracciones: pendiente = Sxy / Sxx.
     x = [Fraction(int(v)) for v in c.ENTREGAS_X]
@@ -87,6 +102,7 @@ def comprobar_piso(p):
     assert _r(uno["ee_oraculo"], 4) == 0.0045
     assert _r(dos["ee_oraculo"], 3) == 0.018
     assert _r(uno["L_ent_recta"], 3) == 0.45
+    assert _r(uno["L_ent_oraculo"], 3) == 0.489
 
 
 def test_piso_las_cifras_de_la_pagina():
@@ -121,6 +137,19 @@ def test_lluvia_pisos_y_pendientes():
     assert ll["columnas_sin"] == ["x1"] and ll["columnas_con"] == ["x1", "x2"]
     assert (_r(ll["beta1_sin_x2"], 2), _r(ll["beta1_con_x2"], 2)) == (3.98, 4.01)
     assert (_r(ll["R_recta_sin_x2"], 1), _r(ll["R_recta_con_x2"], 2)) == (10.9, 1.23)
+
+
+def test_lluvia_subir_el_grado_no_baja_el_riesgo():
+    gr = c.cifras_c1_lluvia_grados()
+    sin, con = gr[False], gr[True]
+    assert (_r(sin[1], 2), _r(sin[5], 2)) == (10.89, 15.73)
+    assert (_r(con[1], 2), _r(con[5], 2)) == (1.23, 1.71)
+    # Ningun grado baja del de grado 1 por mas de una centesima, y el 5 es el peor.
+    for d in (sin, con):
+        assert min(d.values()) > d[1] - 0.01
+        assert max(d, key=d.get) == 5
+    assert gr["piso"] == {False: pytest.approx(10.0), True: pytest.approx(1.0)}
+    assert _r(sin[1], 6) == _r(c.cifras_c1_lluvia()["R_recta_sin_x2"], 6)
 
 
 # ---------------------------------------------------- cifras_c1_anillos ---

@@ -15,6 +15,7 @@ Anclas por tramo (protocolo p5.2 §7.1): cada rama escribe solo antes del
 1b; la -c, el de la tarea.
 """
 import importlib
+from fractions import Fraction
 
 import numpy as np
 
@@ -68,6 +69,12 @@ def cifras_c1_ganador():
         "intercepto_recta": float(p1[1]),
         "pendiente_recta": float(p1[0]),
         "coeficientes_grado_5": [float(c) for c in p5],
+        # Los mismos coeficientes como fracciones (de x^5 a la constante): la
+        # pagina escribe el polinomio con ellas para que el ejercicio de §1 se
+        # pueda resolver sustituyendo (revision r1 del tramo 1a).
+        "coeficientes_grado_5_fracciones": [Fraction(float(c)).limit_denominator(100)
+                                            for c in p5],
+        "pendiente_recta_fraccion": Fraction(float(p1[0])).limit_denominator(100),
         "rmse_1": float(np.sqrt(mse_1)),
         "rmse_5": float(np.sqrt(max(mse_5, 0.0))),
         "mse_1": mse_1,
@@ -117,7 +124,9 @@ def cifras_c1_piso(semilla=0):
             clave = nombre.split()[0].replace("á", "a")
             fila[f"R_{clave}"] = float(ml.riesgo(modelo, datos))
             fila[f"ee_{clave}"] = float(np.std(l_i, ddof=1) / np.sqrt(len(l_i)))
-        fila["L_ent_recta"] = float(ml.L(modelos_piso(datos)["recta ajustada"], datos.ent))
+        modelos = modelos_piso(datos)
+        fila["L_ent_recta"] = float(ml.L(modelos["recta ajustada"], datos.ent))
+        fila["L_ent_oraculo"] = float(ml.L(modelos["oráculo f"], datos.ent))
         salida[s] = fila
     return salida
 
@@ -152,6 +161,34 @@ def cifras_c1_lluvia():
         "columnas_sin": list(sin.columnas_x),
         "columnas_con": list(con.columnas_x),
     }
+
+
+GRADOS_LLUVIA = (1, 2, 3, 4, 5)
+
+
+def phi_lluvia(medir_lluvia, N):
+    """La phi del bloque 3 de NB01: polinomio de grado N en x1 y, si se mide
+    la lluvia, la columna x2."""
+    ml = _ml()
+    if medir_lluvia:
+        return ml.combinar(ml.polinomio(N, "x1"), ml.columnas("x2"))
+    return ml.polinomio(N, "x1")
+
+
+def cifras_c1_lluvia_grados():
+    """NB01 bloque 3 (explicacion): el riesgo en el despliegue del ajuste de
+    grado N = 1..5 en x1, sin y con la lluvia, con los mismos datos del caso 2
+    (semilla 0) y la misma phi que el notebook. Subir el grado no baja el piso
+    y con 20 datos sube el riesgo (10.89 -> 15.73 sin medir la lluvia)."""
+    ml = _ml()
+    salida = {}
+    for medir in (False, True):
+        datos = datos_lluvia(medir)
+        salida[medir] = {N: float(ml.riesgo(ml.ajustar(datos, phi=phi_lluvia(medir, N)),
+                                            datos))
+                         for N in GRADOS_LLUVIA}
+    salida["piso"] = {medir: float(ml.piso(datos_lluvia(medir))) for medir in (False, True)}
+    return salida
 
 
 # Los anillos de P1 §7 y del bloque 4 de NB01 (los valores por omision de sus

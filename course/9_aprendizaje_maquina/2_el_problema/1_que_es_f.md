@@ -22,7 +22,8 @@ Al terminar tendrás:
 - **Un diagnóstico:** la fuente de un error y su remedio.
 - **Un criterio de linealidad:** decidir si un modelo es lineal en $\beta$ y escribir su $\Phi$.
 
-> [!TIP] **Míralo correr: ¿qué es f?**
+> [!TIP]
+> **Míralo correr: ¿qué es f?**
 >
 > Recorre los cinco bloques de `01_que_es_f.ipynb` junto con la lectura.
 >
@@ -82,7 +83,7 @@ Dentro coinciden en el punto consultado; fuera, no. Acertar entre los datos no f
 ## 2 · Separar la regla del azar
 
 ::: figure {#ml-c1-mismo-mundo title="Un proceso, tres muestras, tres ajustes"}
-![La misma f verdadera, 10 más 4x, con ruido de desviación estándar 3, y tres muestras de 20 entregas cada una con su recta ajustada; las pendientes ajustadas son 3.71, 4.59, 4.19. Al fondo, 200 observaciones nuevas del mismo proceso.](../_assets/ml-c1-mismo-mundo.svg)
+![La misma f verdadera, 10 más 4x, con ruido de desviación estándar 3, y tres muestras de 20 entregas, cada una con su color y su marca y su recta ajustada del mismo color; las pendientes ajustadas son 3.71, 4.59, 4.19. Al fondo, 200 observaciones nuevas del mismo proceso.](../_assets/ml-c1-mismo-mundo.svg)
 :::
 
 Tres muestras de 20 entregas producen tres rectas distintas; al fondo hay observaciones nuevas.
@@ -138,7 +139,8 @@ El primer término depende de qué tan bien estimamos $f$ (reducible); el
 segundo, de nada que el ajuste pueda tocar con las variables que mide.
 :::
 
-> [!TIP] **Míralo correr: bloque 1 · El proceso que no vemos**
+> [!TIP]
+> **Míralo correr: bloque 1 · El proceso que no vemos**
 >
 > Cambia la muestra y compara las rectas.
 >
@@ -322,7 +324,8 @@ esperanza de la esperanza condicional. 4) El primer cuadrado da
 $E[\operatorname{Var}(y\mid x)]$.
 :::
 
-> [!TIP] **Míralo correr: bloque 2 · El piso que nadie baja**
+> [!TIP]
+> **Míralo correr: bloque 2 · El piso que nadie baja**
 >
 > Cambia el ruido y compara el oráculo con los ajustes.
 >
@@ -386,7 +389,8 @@ El azar permanece; medir la lluvia elimina la incertidumbre que esa variable apo
 También puedes perder información al representar: redondear la distancia borra diferencias que habías medido.
 La sección 7 mostrará qué conserva y qué descarta una transformación.
 
-> [!TIP] **Míralo correr: bloque 3 · La lluvia**
+> [!TIP]
+> **Míralo correr: bloque 3 · La lluvia**
 >
 > Oculta la lluvia y luego permite que el modelo la vea.
 >
@@ -509,7 +513,8 @@ Algo semejante ocurre al dar a la logística un reporte médico o los píxeles d
 Tú eliges $\phi$, como en @ml-c0-quien-elige-phi; el aprendizaje de representaciones la aprende (@ml-c0-jerarquia).
 Los anillos se traslapan: hasta el clasificador de Bayes alcanza solo 76 % de aciertos en el despliegue.
 
-> [!TIP] **Míralo correr: bloque 4 · Laboratorio polar**
+> [!TIP]
+> **Míralo correr: bloque 4 · Laboratorio polar**
 >
 > Compara cartesianas, polares y solo radio.
 >
@@ -539,7 +544,7 @@ Ambas conservan la información que exige la nueva etiqueta.
 ## 8 · Reconocer un modelo lineal
 
 ::: figure {#ml-c1-matriz-phi title="Tres Φ para las mismas seis entregas"}
-![Las seis entregas, con x de 1 a 6, escritas con tres matrices de diseño lado a lado: phi de x igual a (1, x), con 2 columnas; (1, x, x al cuadrado), con 3 columnas y valores 1, 4, 9, 16, 25 y 36; y (1, 1 entre x), con 2 columnas y valores 1, 1/2, 1/3, 1/4, 1/5 y 1/6. La primera columna de cada una es la de unos. Debajo de cada matriz, la misma multiplicación Φ por beta igual a y gorro.](../_assets/ml-c1-matriz-phi.svg)
+![Las seis entregas, con x de 1 a 6, escritas con tres matrices de diseño lado a lado: phi de x igual a (1, x), con 2 columnas; (1, x, x al cuadrado), con 3 columnas y valores 1, 4, 9, 16, 25 y 36; y (1, 1 entre x), con 2 columnas y valores 1, 1/2, 1/3, 1/4, 1/5 y 1/6. La primera columna de cada una es la de unos. Debajo de cada matriz, la misma multiplicación Φ por beta gorro igual a y gorro.](../_assets/ml-c1-matriz-phi.svg)
 :::
 
 Las seis entregas vuelven transformadas en columnas.
@@ -587,7 +592,8 @@ En $\beta_1e^{\beta_2x}$ necesitas $\beta_2$ para calcular la exponencial.
 La logística es lineal generalizada: transforma el puntaje con la sigmoide; la clase 4 lo desarrolla.
 La linealidad es en $\phi(x)$, no necesariamente en las entradas originales.
 
-> [!TIP] **Míralo correr: bloque 5 · Lineal en sus parámetros**
+> [!TIP]
+> **Míralo correr: bloque 5 · Lineal en sus parámetros**
 >
 > Cambia las columnas y conserva el ajuste por mínimos cuadrados.
 >

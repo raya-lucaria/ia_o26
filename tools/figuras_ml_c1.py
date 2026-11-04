@@ -382,7 +382,7 @@ def ml_c1_matriz_phi():
         c.append(texto(x0 + ancho / 2, y0 - 32, q, tam=13, color=SUAVE))
         _matriz(c, x0, y0, enc, filas, ancho_celda=46)
         yb = y0 + 156 + 34
-        c.append(texto(x0 + ancho / 2, yb, ["Φ ", ("β", _IT), " = ", ("ŷ", _IT)], tam=15,
+        c.append(texto(x0 + ancho / 2, yb, ["Φ ", ("β̂", _IT), " = ", ("ŷ", _IT)], tam=15,
                        peso="700", color=CIAN))
         c.append(texto(x0 + ancho / 2, yb + 18, f"6×{len(enc)} por {len(enc)}", tam=12,
                        color=SUAVE))
@@ -390,15 +390,15 @@ def ml_c1_matriz_phi():
     c.append(texto(16, MP_H - 48, ["La primera columna es la de unos (su coeficiente es ",
                                     ("β", _IT), "₀)."], tam=13, anclaje="start",
                    color=ACENTO))
-    c.append(texto(16, MP_H - 26, ["Cambia Φ; el ajuste es el mismo: ", ("β", _IT),
-                                    " entra multiplicando columnas ya calculadas."],
+    c.append(texto(16, MP_H - 26, ["Cambia Φ, no el procedimiento de ajuste: ",
+                                    ("β", _IT), " multiplica columnas calculadas."],
                    tam=13, anclaje="start"))
     aria = ("Las seis entregas, con x de 1 a 6, escritas con tres matrices de diseño "
             "lado a lado: phi de x igual a (1, x), con 2 columnas; (1, x, x al cuadrado), "
             "con 3 columnas y valores 1, 4, 9, 16, 25 y 36; y (1, 1 entre x), con 2 "
             "columnas y valores 1, 1/2, 1/3, 1/4, 1/5 y 1/6. La primera columna de cada "
             "una es la de unos. Debajo de cada matriz, la misma multiplicación Φ por beta "
-            "igual a y gorro.")
+            "gorro igual a y gorro.")
     return svg(MP_W, MP_H, aria, "Tres Φ para las mismas seis entregas", c)
 
 
@@ -464,6 +464,11 @@ def ml_c1_ganador_imposible():
 # sigma_e = 3 (el tope del deslizador del bloque 1 de NB01) para que las tres
 # rectas se separen a la vista; con sigma_e = 1 se enciman.
 SIGMA_MISMO_MUNDO = 3.0
+# Una muestra, un color y una marca (revision r1). Ninguno es de rol salvo el
+# cian de la primera, que es el de f estimada; las marcas no son de ningun rol
+# de puntos (circulo de entrenamiento aparte).
+COLORES_MUESTRA = (CIAN, NARANJA, PERVINCA)
+MARCAS_MUESTRA = ("o", "D", "v")
 
 def ml_c1_mismo_mundo():
     import ml_cifras_c1 as cif
@@ -474,30 +479,41 @@ def ml_c1_mismo_mundo():
     pendientes = [float(m.beta_gorro["x"]) for m in modelos]
 
     def dibujar(fig, ax):
+        from matplotlib.lines import Line2D
+        from matplotlib.markers import MarkerStyle
         ml.dibujar_proceso(datos, realizaciones=3, puntos_realidad=200, ax=ax,
                            tema="sitio")
         _recolorear_nuevas(ax)
         ml.dibujar_ajuste({f"ajuste a la muestra {k + 1}": m for k, m in enumerate(modelos)},
                           ventana=(0, 6), ax=ax, tema="sitio")
-        for ln in _ajustes(ax):
-            ln.set_color(CIAN)
+        # Revision r1: cada muestra y su recta llevan el mismo color y su
+        # propia marca, para que se lea que puntos produjeron que ajuste.
+        nubes = [col for col in ax.collections if col.get_gid() == "muestra"]
+        for col, color, marca in zip(nubes, COLORES_MUESTRA, MARCAS_MUESTRA):
+            forma = MarkerStyle(marca)
+            col.set_color(color)
+            col.set_paths([forma.get_path().transformed(forma.get_transform())])
+        for ln, color in zip(_ajustes(ax), COLORES_MUESTRA):
+            ln.set_color(color)
             ln.set_linestyle("-")
-            ln.set_linewidth(1.4)
+            ln.set_linewidth(1.6)
         ax.set_xlabel("distancia x (km)")
         ax.set_ylabel("tiempo y (min)")
         ax.set_xlim(0, 6)
-        manejadores, rotulos = ax.get_legend_handles_labels()
-        quedan = [(h, r) for h, r in zip(manejadores, rotulos)
-                  if not r.startswith("ajuste a la muestra") or r.endswith("1")]
-        _leyenda(ax, handles=[h for h, _ in quedan],
-                 labels=["f̂ de cada muestra" if r.startswith("ajuste") else
-                         ("20 entregas (tres muestras)" if r == "entrenamiento" else r)
-                         for _, r in quedan], loc="upper left")
-        ax.set_ylabel("tiempo y (min)")
+        muestras = [Line2D([], [], color=color, marker=marca, ms=5, lw=1.6,
+                           label=f"muestra {k + 1}: pendiente {_num(p, 2)}")
+                    for k, (color, marca, p) in enumerate(zip(COLORES_MUESTRA,
+                                                              MARCAS_MUESTRA, pendientes))]
+        otros = [(h, r) for h, r in zip(*ax.get_legend_handles_labels())
+                 if r in ("f verdadera", "observaciones nuevas")]
+        _leyenda(ax, handles=muestras + [h for h, _ in otros],
+                 labels=[m.get_label() for m in muestras] + [r for _, r in otros],
+                 loc="upper left", title="3 muestras de 20 entregas", title_fontsize=9)
+        ax.get_legend().get_title().set_color(TEXTO)
 
     aria = ("La misma f verdadera, 10 más 4x, con ruido de desviación estándar 3, y tres "
-            "muestras de 20 entregas cada una "
-            "con su recta ajustada; las pendientes ajustadas son "
+            "muestras de 20 entregas, cada una con su color y su marca y su recta ajustada "
+            "del mismo color; las pendientes ajustadas son "
             + ", ".join(_num(p, 2) for p in pendientes)
             + ". Al fondo, 200 observaciones nuevas del mismo proceso.")
     return _grafica(dibujar, aria, "Un proceso, tres muestras, tres ajustes", 3.7)
