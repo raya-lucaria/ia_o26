@@ -56,6 +56,24 @@ Cada bloque `## Clase N` lo llena solo la rama de esa clase.
 
 ## Clase 2
 
+### Clase 2 · tramo rápido
+
+| Archivo | Qué muestra | Origen | Licencia |
+|---|---|---|---|
+| `ml-c2-dos-niveles.svg` | Diagrama: dos optimizaciones anidadas; afuera se elige el grado N con validación, adentro β con N fijo y entrenamiento | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`) | Propio, CC BY-SA 4.0 |
+| `ml-c2-tres-conjuntos.svg` | Diagrama: la muestra en entrenamiento, validación y prueba (60/20/20) con el rol de cada uno, el candado de la prueba y el modelo final reajustado con entrenamiento y validación | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 20, 57 y 58 del deck 04 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-simulacro.svg` | Diagrama: cuatro contratos de uso (más de lo mismo, el mes que viene, pacientes nuevos, otra ciudad) con su prueba marcada y la separación que imita cada uno | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 19, 25 y 26 del deck 04 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-pliegues.svg` | Diagrama: rejilla de cinco vueltas por cinco pliegues; en la vuelta m valida el pliegue m, y la prueba queda cerrada aparte | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 4 a 10 del deck 05 del profesor y de Goodfellow et al., *Deep Learning*, alg. 5.1 | Propio, CC BY-SA 4.0 |
+| `ml-c2-costo-cv.svg` | Diagrama: tres validaciones cruzadas apiladas, una por candidato, y el contador M·k + 1 de ajustes con el reajuste final | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 11 a 15 del deck 05 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-anidada.svg` | Diagrama: la validación cruzada anidada; afuera cada pliegue externo mide, adentro una validación cruzada interna elige el grado | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`) | Propio, CC BY-SA 4.0 |
+
+### Clase 2 · tramo m
+
+| Archivo | Qué muestra | Origen | Licencia |
+|---|---|---|---|
+
+### Clase 2 · tramo completo
+
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
 
