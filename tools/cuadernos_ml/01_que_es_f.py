@@ -153,7 +153,7 @@ def bloque_4(radio_exterior, grosor, ruido, representacion):
     with warnings.catch_warnings(record=True) as avisos:
         warnings.simplefilter("always")
         m = ml.ajustar(datos, phi=phi, tarea="clasificacion")
-    if any("separan" in str(a.message) for a in avisos):
+    if separados := any("separan" in str(a.message) for a in avisos):
         print("Los datos se separan: sin penalización no hay coeficientes óptimos"
               " finitos;\ncrecen hasta que el optimizador se detiene.")
     vista = "cartesianas" if phi is None else "polares"
@@ -165,14 +165,15 @@ def bloque_4(radio_exterior, grosor, ruido, representacion):
         ax.axhline(r0, ls=":", lw=2, color="gray", label=f"ideal: r = {r0:.2f}")
         ax.legend(loc="upper right")
     plt.show()
-    ml.imprimir_Phi(m, datos.ent, filas=4)
+    (print(m.Phi(datos.ent).head(4).to_string(index=False)) if separados  # sin argmin
+     else ml.imprimir_Phi(m, datos.ent, filas=4))   # finito, no se dice «β̂ = argmin»
     moda_ent = ml.benchmarks(datos, datos.ent).loc["moda", "aciertos"]
     moda = ml.benchmarks(datos, desp).loc["moda", "aciertos"]
-    bayes = np.mean((desp["prob"] >= 0.5).astype(int) == desp["y"])
+    oraculo = np.mean((desp["prob"] >= 0.5).astype(int) == desp["y"])
     print(f"aciertos en ent = {ml.evaluar(m, datos.ent, 'aciertos'):.3f}"
           f"   ·   la moda (benchmark) en ent: {moda_ent:.3f}")
     print(f"aciertos en el despliegue = {ml.desempeno(m, datos, 'aciertos'):.3f}"
-          f"   ·   la moda: {moda:.3f}   ·   techo de Bayes: {bayes:.3f}")
+          f"   ·   la moda: {moda:.3f}   ·   aciertos del oráculo: {oraculo:.3f}")
     print("coeficientes β̂:", m.beta_gorro.round(3).to_dict())
 
 ml.laboratorio(bloque_4,

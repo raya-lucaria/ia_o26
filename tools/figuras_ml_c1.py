@@ -177,7 +177,11 @@ def _num(v, d=1):
 
 RED_W, RED_H = 560, 380
 RED_X0 = 300           # la x del punto
-RED_Y = {"y": 92, "f": 178, "fg": 236}   # alturas en pantalla (y crece hacia abajo)
+RED_Y = {"y": 92, "f": 178, "fg": 246}   # alturas en pantalla (y crece hacia abajo)
+# Pendientes en pantalla, bajas a proposito: con 0.36 la f cruzaba el rotulo
+# «ε: el azar» (revision r2 del tramo 1a); asi las dos rectas pasan por
+# debajo de los rotulos de la derecha y por encima de los de la izquierda.
+RED_PEND = {"f": 0.12, "fg": 0.09}
 
 
 def _recta_pantalla(y_en_x0, pendiente, x):
@@ -195,13 +199,14 @@ def ml_c1_reducible():
     c.append(texto(der - 8, arr + 18, ["tiempo ", ("y", _IT)], tam=13, color=SUAVE,
                    anclaje="end"))
     # f verdadera (gruesa, verde) y f estimada (delgada, cian)
-    for clave, pendiente, color, grosor in (("f", 0.36, VERDE, 3.5), ("fg", 0.27, CIAN, 1.8)):
+    for clave, color, grosor in (("f", VERDE, 3.5), ("fg", CIAN, 1.8)):
+        pendiente = RED_PEND[clave]
         y1 = _recta_pantalla(RED_Y[clave], pendiente, izq + 4)
         y2 = _recta_pantalla(RED_Y[clave], pendiente, der - 4)
         c.append(linea(izq + 4, y1, der - 4, y2, color=color, grosor=grosor))
-    c.append(_rotulo(izq + 14, _recta_pantalla(RED_Y["f"], 0.36, izq + 14) - 12,
+    c.append(_rotulo(izq + 14, _recta_pantalla(RED_Y["f"], RED_PEND["f"], izq + 14) - 20,
                    [("f", _IT), ": la regla"], tam=14, color=VERDE, anclaje="start"))
-    c.append(_rotulo(izq + 96, _recta_pantalla(RED_Y["fg"], 0.27, izq + 96) - 9,
+    c.append(_rotulo(izq + 96, _recta_pantalla(RED_Y["fg"], RED_PEND["fg"], izq + 96) - 18,
                    [("f̂", _IT), ": tu ajuste"], tam=14, color=CIAN, anclaje="start"))
     # la x del punto
     c.append(linea(RED_X0, arr + 4, RED_X0, aba - 4, color=LINEA, grosor=1.2, guiones="3 4"))
@@ -219,14 +224,14 @@ def ml_c1_reducible():
         c.append(linea(xd, y1 + 2, xd, y2 - 2, color=color, grosor=3))
         c.append(linea(xd - 6, y1 + 2, xd + 6, y1 + 2, color=color, grosor=2))
         c.append(linea(xd - 6, y2 - 2, xd + 6, y2 - 2, color=color, grosor=2))
-    c.append(_rotulo(xd + 14, (RED_Y["y"] + RED_Y["f"]) / 2 - 4, [("ε", _IT), ": el azar"],
+    c.append(_rotulo(xd + 14, RED_Y["y"] + 24, [("ε", _IT), ": el azar"],
                    tam=14, peso="700", anclaje="start", color=VERDE))
-    c.append(_rotulo(xd + 14, (RED_Y["y"] + RED_Y["f"]) / 2 + 15, "ningún ajuste lo baja",
+    c.append(_rotulo(xd + 14, RED_Y["y"] + 43, "ningún ajuste lo baja",
                    tam=13, anclaje="start", color=TEXTO))
-    c.append(_rotulo(xd + 14, (RED_Y["f"] + RED_Y["fg"]) / 2 - 2,
+    c.append(_rotulo(xd + 14, RED_Y["f"] + 18,
                    [("f", _IT), "(", ("x", _IT), ") − ", ("f̂", _IT), "(", ("x", _IT),
                     "): reducible"], tam=14, peso="700", anclaje="start", color=ACENTO))
-    c.append(_rotulo(xd + 14, (RED_Y["f"] + RED_Y["fg"]) / 2 + 17, "baja si estimas mejor",
+    c.append(_rotulo(xd + 14, RED_Y["f"] + 36, "baja si estimas mejor",
                    tam=13, anclaje="start", color=TEXTO))
 
     # a la izquierda, el residual completo
@@ -234,7 +239,7 @@ def ml_c1_reducible():
     c.append(linea(xi, RED_Y["y"] + 2, xi, RED_Y["fg"] - 2, color=TEXTO, grosor=2.5))
     c.append(linea(xi - 6, RED_Y["y"] + 2, xi + 6, RED_Y["y"] + 2, color=TEXTO, grosor=2))
     c.append(linea(xi - 6, RED_Y["fg"] - 2, xi + 6, RED_Y["fg"] - 2, color=TEXTO, grosor=2))
-    yr = (RED_Y["y"] + RED_Y["fg"]) / 2 + 8
+    yr = RED_Y["y"] + 58
     c.append(texto(xi - 12, yr - 9, [("y", _IT), " − ", ("f̂", _IT), "(", ("x", _IT),
                                      "): el residual"], tam=14, peso="700", anclaje="end"))
     c.append(texto(xi - 12, yr + 10, "lo único que ves", tam=13, anclaje="end",
@@ -253,7 +258,7 @@ def ml_c1_reducible():
 # ------------------------------------------ diagrama: ml-c1-cuatro-fuentes ---
 #
 # P1 §6 (F3, rediseno de la revision 1). Al centro, lo mejor con lo que mides
-# con dos halos (1 azar; 2 lo que no mides, que encoge al medir otra
+# con dos halos (1 azar; 2 lo que no mides, que puede encoger al medir otra
 # variable); el ovalo de la familia con la mejor de la familia en su borde
 # (3 aproximacion); f̂ con n datos (4 estimacion); aparte, punteado y fuera
 # del recuento, lo que devuelve el optimizador (y ademas: optimizacion).
@@ -282,9 +287,10 @@ def ml_c1_cuatro_fuentes():
     c.append(texto(cx, cy + 102, "lo mejor con", tam=13, color=VERDE, peso="700"))
     c.append(texto(cx, cy + 118, "lo que mides", tam=13, color=VERDE, peso="700"))
     c.append(texto(cx, cy + 138, "1 y 2 fijan el piso", tam=13, color=SUAVE))
-    # medir otra variable: flecha que encoge el halo 2
+    # medir otra variable: flecha que puede encoger el halo 2 (si la variable
+    # medida aporta informacion nueva; una copia de una visible lo deja igual)
     c.append(texto(16, 82, "medir otra variable", tam=13, color=SUAVE, anclaje="start"))
-    c.append(texto(16, 98, "encoge el halo 2", tam=13, color=SUAVE, anclaje="start"))
+    c.append(texto(16, 98, "puede encoger el halo 2", tam=13, color=SUAVE, anclaje="start"))
     c.append(flecha(52, 106, cx - 50, cy - 56, color=SUAVE))
 
     # la familia
@@ -319,7 +325,7 @@ def ml_c1_cuatro_fuentes():
     c.append(linea(gx, oy - 24, gx, gy + 10, color=SUAVE, grosor=1.5, guiones="3 4"))
     aria = ("Diagrama de las cuatro fuentes del error. Al centro, lo mejor que se puede "
             "predecir con lo que mides, rodeado de dos halos: 1, el azar, y 2, lo que no "
-            "mides, que se encoge al medir otra variable; las dos fijan el piso. A la "
+            "mides, que puede encogerse al medir otra variable; las dos fijan el piso. A la "
             "derecha, el óvalo de la familia: la mejor de la familia, en su borde, está a "
             "una distancia de aproximación (3) del centro, y f gorro con n datos está a una "
             "distancia de estimación (4) de la mejor de la familia. Aparte, punteado y "

@@ -427,7 +427,7 @@ Un grado mayor tampoco lo revela: la mejor función con solo distancia ya era un
 ## 6 · Nombrar las fuentes del error
 
 ::: figure {#ml-c1-cuatro-fuentes title="Las cuatro fuentes del error"}
-![Diagrama de las cuatro fuentes del error. Al centro, lo mejor que se puede predecir con lo que mides, rodeado de dos halos: 1, el azar, y 2, lo que no mides, que se encoge al medir otra variable; las dos fijan el piso. A la derecha, el óvalo de la familia: la mejor de la familia, en su borde, está a una distancia de aproximación (3) del centro, y f gorro con n datos está a una distancia de estimación (4) de la mejor de la familia. Aparte, punteado y fuera de las cuatro: lo que devuelve el optimizador, el error de optimización.](../_assets/ml-c1-cuatro-fuentes.svg)
+![Diagrama de las cuatro fuentes del error. Al centro, lo mejor que se puede predecir con lo que mides, rodeado de dos halos: 1, el azar, y 2, lo que no mides, que puede encogerse al medir otra variable; las dos fijan el piso. A la derecha, el óvalo de la familia: la mejor de la familia, en su borde, está a una distancia de aproximación (3) del centro, y f gorro con n datos está a una distancia de estimación (4) de la mejor de la familia. Aparte, punteado y fuera de las cuatro: lo que devuelve el optimizador, el error de optimización.](../_assets/ml-c1-cuatro-fuentes.svg)
 :::
 
 Los halos muestran el piso; el óvalo, la familia permitida.
