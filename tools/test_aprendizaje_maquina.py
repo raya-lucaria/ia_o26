@@ -4184,7 +4184,9 @@ def test_efecto_pesos_fronteras_ajustes_y_umbrales(pesos, binario, tema, monkeyp
     fig = ml.dibujar_efecto_de_pesos(pesos, razon=4, datos=datos, tema=tema)
     assert len(llamadas) == 2
     assert llamadas[0][0][0] is datos
-    assert llamadas[0][1] == {"pesos": {0: 1., 1: 4.}}
+    ybar = float((datos.ent["y"] == 1).mean())
+    w0 = 1 / ((1 - ybar) + 4 * ybar)  # normalizados como en efecto_de_pesos (promedio 1)
+    assert llamadas[0][1] == {"pesos": {0: w0, 1: 4 * w0}}
     assert llamadas[1][1] == {}
     for m, gid, tau in zip(modelos, ["frontera-pesos", "frontera-equivalente"], [0.5, 0.2]):
         contorno = artista(fig, gid)
@@ -4615,6 +4617,10 @@ def test_efecto_de_pesos_dibuja_con_la_phi_de_la_tabla():
             ml.ajustar = original
     assert llamadas and all(repr(k.get("phi")) == repr(phi) and k.get("mu") == 1e-4
                             for k in llamadas)
+    ybar = float((d.ent["y"] == 1).mean())
+    w0 = 1 / ((1 - ybar) + 9 * ybar)
+    con_pesos = [k["pesos"] for k in llamadas if k.get("pesos")]
+    assert con_pesos == [{0: w0, 1: 9 * w0}]  # los mismos pesos normalizados de la tabla
 
 
 def test_softmax_con_ruido_ancho_es_exacto():
@@ -4654,3 +4660,13 @@ def test_taller_4_imprime_intervalos_y_calibra_con_k_3():
         ml.recalibrar = original
     assert llamadas
     assert "percentiles 2.5–97.5" in salida.getvalue() and "MCC" in salida.getvalue()
+
+
+def test_interceptos_k3_con_puntajes_lejanos():
+    """codex-rev-lab-c4.i3: con puntajes constantes [0, 10, 0] el arranque log(p/p0) dejaba
+    al solver sin converger; el arranque convexo lo resuelve."""
+    d = ml.proceso_clasificacion(n=50, K=3, x={"x1": ml.normal()},
+                                 puntajes=[lambda q: 0 * q["x1"], lambda q: 10 + 0 * q["x1"],
+                                           lambda q: 0 * q["x1"]],
+                                 proporcion=[0.8, 0.15, 0.05], n_realidad=500, separar="azar")
+    assert d._pob.b[1:] == pytest.approx([-11.67397643, -2.77258872], abs=1e-6)

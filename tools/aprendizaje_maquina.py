@@ -1829,9 +1829,29 @@ class _PoblacionClasificacion:
             P = self._integrar(Z0 + np.concatenate([[0.0], bl]), nodos)
             return P.mean(axis=0)[1:] - p[1:]
 
-        sol = optimize.root(falta, np.log(p[1:] / p[0]), method="hybr", tol=1e-12)
-        if not sol.success or np.max(np.abs(falta(sol.x))) > 1e-8:
+        # 1) arranque global: el problema convexo mean E[lse(z + b)] − p·b con los nodos del
+        #    ruido (exacto sin ruido); 2) refinamiento con la prob integrada exacta.
+        reglas = [(m_, _a_nodos(r_)) for m_, r_ in nodos if m_.any()]
+
+        def convexo(bl):
+            b = np.concatenate([[0.0], bl])
+            total, grad = 0.0, np.zeros(self.K)
+            for m_, (e, a) in reglas:
+                Zm = Z0[m_] + b
+                for ej, aj in zip(e, a):
+                    Zj = Zm.copy()
+                    Zj[:, 1:] += ej
+                    total += aj * special.logsumexp(Zj, axis=1).sum()
+                    grad += aj * _softmax_filas(Zj).sum(axis=0)
+            return total / len(Z0) - p[1:] @ bl, (grad / len(Z0) - p)[1:]
+
+        inicio = optimize.minimize(convexo, np.log(p[1:] / p[0]), jac=True, method="BFGS",
+                                   options={"gtol": 1e-10, "maxiter": 1000}).x
+        sol = optimize.root(falta, inicio, method="hybr", tol=1e-13)
+        x = sol.x if np.max(np.abs(falta(sol.x))) <= np.max(np.abs(falta(inicio))) else inicio
+        if np.max(np.abs(falta(x))) > 1e-8:
             raise ValueError("no encontré los interceptos que dan esas proporciones")
+        sol = optimize.OptimizeResult(x=x)
         return np.concatenate([[0.0], sol.x])
 
     def _xs_dict(self, n, rng):
@@ -8120,7 +8140,10 @@ def dibujar_efecto_de_pesos(tabla, razon=None, datos=None, ax=None, tema="claro"
         u, v = np.meshgrid(*limites)
         malla = pd.DataFrame({"x1": u.ravel(), "x2": v.ravel()})
         ajuste = dict(tabla.attrs.get("ajuste", {}))  # la φ y la μ con que se armó la tabla
-        ponderado = ajustar(datos, pesos={0: 1.0, 1: float(razon)}, **ajuste)
+        clases = list(datos.clases)
+        ybar = float(np.mean(datos.ent["y"].to_numpy() == clases[1]))
+        w0 = 1.0 / ((1 - ybar) + ybar * float(razon))  # promedio 1 en ent, como efecto_de_pesos
+        ponderado = ajustar(datos, pesos={clases[0]: w0, clases[1]: float(razon) * w0}, **ajuste)
         simple = ajustar(datos, **ajuste)
         for m, corte, rol, trazo, nombre, gid in (
                 (ponderado, 0.5, "f_gorro", "-", "con pesos, τ = 0.5", "frontera-pesos"),
