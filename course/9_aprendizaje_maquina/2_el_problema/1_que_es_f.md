@@ -8,6 +8,15 @@ estimated_time: 55m
 tags: [aprendizaje-maquina, proceso-generador, riesgo, error-bayes, representacion, modelo-lineal]
 ---
 
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
+>
+> **Notebook 01 · ¿Qué es f?** Corre en tu navegador, sin instalar nada.
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)
+>
+> **[👉 Abrir `01_que_es_f.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)**
+
 # ¿Qué es f? El proceso, el piso y la representación
 
 **¿Qué parte del próximo tiempo de entrega podemos aprender con lo que medimos, y qué parte no aprenderá ningún modelo?**
