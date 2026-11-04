@@ -55,17 +55,15 @@ En las vistas, memorizar gana: error medio 0, recta 0.8, promedio 4 min.
 
 **Piensa: en las entregas de 5 y 6 km, que ninguna regla vio, ¿qué regla se equivocará menos?**
 
-Llegan los tiempos reales.
-
 ::: figure {#ml-c0-memorizar-contra-ajustar title="Cero error en lo que vio, siete minutos en lo nuevo"}
 ![Arriba: las cuatro entregas vistas; error medio de memorizar 0, de la recta 0.8 y del promedio 4. Abajo: las dos nuevas, de 5 y 6 km, tardaron 31 y 33 min; memorizar anuncia 25 y falla en promedio por 7; el promedio anuncia 20 y falla por 12; la recta anuncia 29 y 32.6 y falla por 1.2.](../_assets/ml-c0-memorizar-contra-ajustar.svg)
 :::
 
 En las nuevas, el MAE es: recta 1.2, memorizar 7, promedio 12 min. El orden se invierte: la recta pasa al primer lugar.
 
-Memorizar no fracasa del todo: le gana al promedio. Lo que falla es usar su cero en lo visto como prueba de que acierta en lo nuevo.
+Memorizar no fracasa del todo: le gana al promedio. Lo que falla es usar su cero en lo visto como prueba de que acierta en lo nuevo. Estas dos entregas bastan como contraejemplo, pero no para medir cada regla.
 
-Las nuevas están más lejos que las vistas (extrapolar, clase 1); son un contraejemplo: dos entregas no bastan para generalizar el desempeño de cada regla. En la clase 1 verás miles de casos nuevos, no dos.
+Las nuevas, además, están más lejos que las vistas (extrapolar). En la clase 1 verás miles de casos nuevos, no dos.
 
 ::: definition {#ml-c0-def-aprender title="Aprender, según Mitchell"}
 Un programa **aprende** de la experiencia $E$ respecto de una clase de tareas $T$ y una medida de desempeño $P$ si su desempeño en las tareas de $T$, medido con $P$, mejora con la experiencia $E$.
@@ -84,7 +82,7 @@ El error en lo visto, por sí solo, no demuestra acierto en casos nuevos. Memori
 La clase 1 nombra ese error; la clase 2 enseña a medirlo.
 :::
 
-La recta salió de optimizar los **parámetros** $\beta_0$ y $\beta_1$, elegidos por el ajuste. Seguiremos así. La clase 1 agrega una restricción de capacidad; la clase 3, un lagrangeano con multiplicador $\mu\ge0$, como en la unidad 6.
+La recta salió de optimizar los **parámetros** $\beta_0$ y $\beta_1$, y así seguirá la unidad. La clase 1 agrega una restricción de capacidad; la clase 3, un lagrangeano con multiplicador $\mu\ge0$, como en la unidad 6.
 
 > [!WARNING]
 > Lectura equivocada: «si el error en los datos que ya vio es cero, el programa aprendió».
@@ -120,7 +118,7 @@ A las mismas seis entregas añadimos paquetes y zona. Cada punto es una entrega:
 
 **Piensa: si borras la columna del tiempo, ¿qué pregunta puedes seguir haciéndole a estas seis entregas?**
 
-Con tiempos ajustamos ${11+3.6x}$. Sin tiempos buscamos agrupaciones según distintos criterios; ninguna es «la verdadera».
+Con tiempos comparamos cada anuncio con uno observado y ajustamos ${11+3.6x}$. Sin tiempos ya no preguntas cuánto tarda una entrega, sino cómo se reparten. Ninguna agrupación es «la verdadera», pero cada una es buena según su criterio.
 
 ::: definition {#ml-c0-def-supervisado title="Supervisado y no supervisado"}
 En el aprendizaje **supervisado**, la experiencia son $n$ pares $(x_i,y_i)$, ${i=1,\dots,n}$: cada observación trae sus entradas $x_i$ y la respuesta $y_i$. La tarea es anunciar $y$ para una $x$ nueva.
@@ -132,7 +130,7 @@ En el aprendizaje **no supervisado**, la experiencia son solo las entradas $x_i$
 
 Aquí $x_i$ reúne distancia y paquetes; $y_i$ indica minutos.
 
-El no supervisado puede ajustar parámetros optimizando un objetivo sin respuestas; cualquier nivel del mapa de la sección 3 admite supervisado y no supervisado.
+El no supervisado puede optimizar un objetivo sin respuestas; los dos caben en cualquier nivel de la sección 3.
 
 ::: remark {#ml-c0-obs-otras-experiencias title="No son solo dos cajas"}
 En aprendizaje por refuerzo el programa actúa y recibe una recompensa, no la respuesta correcta: [[mkv-hacia-refuerzo|Hacia el aprendizaje por refuerzo]].
@@ -147,8 +145,6 @@ Esta unidad es de aprendizaje supervisado. Casi todo es regresión, con un prime
 > Lectura equivocada: «supervisado significa que alguien vigila el entrenamiento».
 >
 > Lectura correcta: **supervisado quiere decir que la experiencia trae la respuesta $y$ de cada observación.**
->
-> La respuesta no tiene que ser una categoría; los minutos también son una respuesta.
 
 ::: exercise {#ml-c0-ej-que-experiencia title="Clasifica la experiencia"}
 (a) Predecir precios de casas con ventas pasadas y sus precios; (b) agrupar clientes de una tienda sin categorías previas.
@@ -185,11 +181,11 @@ La IA no es una cebolla.
 
 La figura anida: aprendizaje de máquina (regresión logística, unidad 6) ⊃ aprendizaje de representaciones (*representation learning*; autoencoder poco profundo) ⊃ aprendizaje profundo (*deep learning*; red multicapa).
 
-El autoencoder aprende a reconstruir su entrada mediante un código más corto.
+El autoencoder reconstruye su entrada pasando por un código más corto.
 
-[[que-es-inteligencia|Qué es la inteligencia]] pasa de aprendizaje de máquina a redes profundas (aquí, aprendizaje profundo), sin representaciones.
+La figura de [[que-es-inteligencia|Qué es la inteligencia]] anida aprendizaje de máquina ⊃ redes profundas, sin el escalón intermedio de representaciones.
 
-Entre niveles cambia quién elige cada pieza y cómo se arma. Cada tira representa un sistema; una caja rellena indica qué aprende con datos.
+Entre niveles cambia quién elige cada pieza y cómo se arma. Cada tira es un sistema; una caja rellena indica qué aprende con datos.
 
 ::: figure {#ml-c0-quien-elige-phi title="Quién elige qué: cuatro maneras de construir un sistema"}
 ![Cuatro tiras. Reglas: todo a mano. Clásico: la representación fi de x a mano y el predictor con parámetros beta ajustado con datos. Representaciones: fi de x y el predictor, los dos con datos. Profundo: capa 1, capa 2 y más, una sobre otra, que juntas forman fi de x, y el predictor, todo con datos.](../_assets/ml-c0-quien-elige-phi.svg)
@@ -213,7 +209,7 @@ Ubica en @ml-c0-jerarquia: caja más específica y las que la contienen.
 - (a) Sistema experto de diagnóstico con reglas escritas por médicos.
 - (b) Regresión sobre $(1,x,x^2)$, columnas que tú elegiste.
 - (c) Autoencoder poco profundo: comprime imágenes y su código alimenta una regresión logística.
-- (d) Modelo de lenguaje grande.
+- (d) Modelo de lenguaje grande basado en un transformer.
 :::
 
 ::: hint {#ml-c0-pista-donde-cae-1 of="ml-c0-ej-donde-cae" title="Pista 1 · Quién eligió qué"}
@@ -254,7 +250,7 @@ elijas algoritmo ni calcules. La respuesta desarrolla una opción.
 :::
 
 ::: answer {#ml-c0-resp-final-repaso-que-es-aprender of="ml-c0-ej-final-repaso-que-es-aprender" title="Respuesta · Medir donde se va a usar"}
-**1.** La tarea es anunciar los minutos de entregas en la zona nueva; la experiencia son las 200 entregas. El desempeño es el error medio en minutos en entregas de la zona nueva, junto al de anunciar el promedio.
+**1.** La tarea es anunciar los minutos de entregas en la zona nueva; la experiencia son las 200 entregas. El desempeño es el error medio en minutos en entregas de la zona nueva; se compara con el error de anunciar el promedio, el punto de comparación.
 
 **2.** Es supervisado, regresión; $y$ son los minutos.
 
