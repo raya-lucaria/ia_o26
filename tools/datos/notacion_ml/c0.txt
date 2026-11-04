@@ -1,0 +1,17 @@
+# Notación que presenta la clase 0, además de la lista común de
+# tools/notacion_ml.py (contrato §4.1–§4.3). La edita prog-c0 en su rama
+# (D-015). Una línea por símbolo: «símbolo | fuente», con la fuente como fila
+# de contrato §4 o una D-NNN (p. ej. «\gamma | contrato §4.8 (Cybenko)»).
+# El símbolo es una macro (\gamma), una letra griega (γ) o «re:<regex>» para
+# una forma compuesta. Vale desde esta clase en adelante. Una línea sin
+# fuente hace fallar tools/test_notacion_ml.py.
+#
+# L.c0 (prog-c0, C0.T4): la clase 0 no agrega ningún símbolo a la lista
+# común. Lo que su página e índice escriben —\beta, \beta^\star, \mu\ge0,
+# \Pr, E[\cdot], \phi(x), \widehat y, \operatorname*{arg\,min}, \mathrm{MAE},
+# x_i, y_i, n— ya vale desde la clase 0 por la lista común (contrato §4.1 y
+# §4.2: \phi presentada en la 0, v3 r1-03). $T$, $E$ y $P$ de Mitchell son
+# letras latinas sin macro: las vigila tools/test_ml_prosa_c0.py (prueba 7,
+# solo dentro de ml-c0-def-aprender), no esta lista. Comprobado pasando las
+# fórmulas literales del brief B0-pagina por revisar_texto(..., clase=0):
+# cero hallazgos.

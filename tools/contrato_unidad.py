@@ -159,6 +159,16 @@ UMBRALES_POR_UNIDAD: dict[str, dict] = {
     "course/8_markov/2_a_la_larga": _UMBRALES_MARKOV,
     "course/8_markov/3_decidir": _UMBRALES_MARKOV,
     "course/8_markov/4_lo_que_no_se_ve": _UMBRALES_MARKOV,
+    # Aprendizaje de maquina: los mismos umbrales que Markov, para la unidad y
+    # cada clase (contrato de la unidad 9, §8.2). Entra a UNIDADES_CONTRATO
+    # solo al cierre de la unidad.
+    "course/9_aprendizaje_maquina": _UMBRALES_MARKOV,
+    "course/9_aprendizaje_maquina/1_que_es_aprender": _UMBRALES_MARKOV,
+    "course/9_aprendizaje_maquina/2_el_problema": _UMBRALES_MARKOV,
+    "course/9_aprendizaje_maquina/3_separar_los_datos": _UMBRALES_MARKOV,
+    "course/9_aprendizaje_maquina/4_leer_el_error": _UMBRALES_MARKOV,
+    "course/9_aprendizaje_maquina/5_clasificacion": _UMBRALES_MARKOV,
+    "course/9_aprendizaje_maquina/6_supuestos_y_metodologia": _UMBRALES_MARKOV,
 }
 
 # Unidades donde el contrato es obligatorio (opt-in). Arranca vacía: las

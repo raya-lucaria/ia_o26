@@ -17,6 +17,7 @@ ASSETS_AGENTES = RAIZ / "course/5_agentes_ambientes/_assets"
 ASSETS_OPTIMIZACION = RAIZ / "course/6_optimizacion/_assets"
 ASSETS_JUEGOS = RAIZ / "course/7_juegos/_assets"
 ASSETS_MARKOV = RAIZ / "course/8_markov/_assets"
+ASSETS_ML = RAIZ / "course/9_aprendizaje_maquina/_assets"
 
 ASSETS_POR_UNIDAD = {
     "historia": ASSETS_HISTORIA,
@@ -27,6 +28,7 @@ ASSETS_POR_UNIDAD = {
     "optimizacion": ASSETS_OPTIMIZACION,
     "juegos": ASSETS_JUEGOS,
     "markov": ASSETS_MARKOV,
+    "aprendizaje-maquina": ASSETS_ML,
 }
 
 CELDA_NOMBRE = 0
