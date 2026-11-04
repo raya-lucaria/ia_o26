@@ -30,7 +30,8 @@ datos = ml.proceso(n=300, x=x, f=f, ruido=ml.normal(0, 1),
                    correlacion={("x1", "x6"): 0.95},   # x6: gemela de x1, no está en f
                    escala=ESCALAS, semilla=SEMILLA)
 COLUMNAS = ml.columnas(*[f"x{j}" for j in range(1, J + 1)])
-print(f"ent: {len(datos.ent)} · val: {len(datos.val)} · prueba: {len(datos.prueba)}"
+n_prueba = 300 - len(datos.ent) - len(datos.val)    # la prueba ni se toca aquí
+print(f"ent: {len(datos.ent)} · val: {len(datos.val)} · prueba: {n_prueba}"
       " (cerrada hasta el bloque 6)")
 cinco = ml.ajustar(datos, phi=ml.columnas("x1", "x2", "x3", "x4", "x5"))
 ml.imprimir_Phi(cinco, datos.ent, filas=5)
@@ -67,7 +68,7 @@ print(f"diferencia pareada «mínimos cuadrados − media» en val: {d:.3f} (EE 
 
 # %% [codigo-visible] bloque-3-juega
 MUS = [float(m) for m in np.logspace(-2, 1, 16)]   # la rejilla de μ
-PHI = ml.estandarizar(COLUMNAS)       # se estandariza con cada pliegue, dentro de construir
+PHI = ml.estandarizar(COLUMNAS)   # se estandariza dentro de cada pliegue
 candidatos = {mu: (lambda df, mu=mu: ml.ajustar(df, phi=PHI, mu=mu, penalizacion="l1"))
               for mu in MUS}
 REGLA = "un_ee"                       # o "minimo": decide antes de ver la curva
@@ -75,7 +76,8 @@ REGLA = "un_ee"                       # o "minimo": decide antes de ver la curva
 sel = ml.elegir(datos, candidatos, con="cv", k=5, regla=REGLA,
                 orden_complejidad=sorted(MUS, reverse=True))   # simple → complejo
 mu_hat = sel.elegido if REGLA == "minimo" else sel.elegido_un_ee
-print(f"CV_5: el mínimo elige μ = {sel.elegido:.3g}; la de un EE, μ = {sel.elegido_un_ee:.3g}")
+print(f"CV_5: el mínimo elige μ = {sel.elegido:.3g};"
+      f" la de un EE, μ = {sel.elegido_un_ee:.3g}")
 print(f"uso la regla «{REGLA}»: μ̂ = {mu_hat:.3g}")
 ml.dibujar_cv(sel, log=True)
 plt.show()
@@ -93,7 +95,8 @@ tabla = ml.trayectorias(datos, PHI, PENALIZACION, np.logspace(-2, 1, 40))
 ml.dibujar_trayectorias(tabla, utiles=UTILES, marcar_mu=mu_hat)
 plt.show()
 m = ml.ajustar(datos, phi=PHI, mu=mu_hat, penalizacion=PENALIZACION)
-comparar = pd.DataFrame({"β̂": m.beta_gorro, "verdadero": ml.beta_verdadero(datos, PHI)})
+verdadero = ml.beta_verdadero(datos, PHI)
+comparar = pd.DataFrame({"β̂": m.beta_gorro, "verdadero": verdadero})
 print(comparar.loc[UTILES + ["x7", "x8"]].round(3).to_string())
 print(f"coeficientes ≠ 0: {int((m.beta_gorro.drop('1') != 0).sum())} de {J}")
 
@@ -136,13 +139,14 @@ print(pd.DataFrame({"desviación de x": desv, "β̂ en sus unidades": b[list(COE
 
 # %% [codigo-visible] bloque-6-juega
 # abre-prueba: la prueba se abre una vez, con el procedimiento congelado
-final = sel.modelo_final                         # el de tu regla, reajustado con ent ∪ val
+final = sel.modelo_final          # el de tu regla, reajustado con ent ∪ val
 prueba = datos.prueba
 y = prueba["y"].to_numpy()
 l_mod = (y - final.predecir(prueba)) ** 2
 media = pd.concat([datos.ent, datos.val])["y"].mean()   # el benchmark, fijado igual
 l_med = (y - media) ** 2
-print(f"prueba ({len(y)}): L_prueba = {l_mod.mean():.3f} ± {2 * ml.error_estandar(l_mod):.3f}"
+ee_l = ml.error_estandar(l_mod)
+print(f"prueba ({len(y)}): L_prueba = {l_mod.mean():.3f} ± {2 * ee_l:.3f}"
       f" (2 EE) · la media: {l_med.mean():.3f}")
 d, ee = ml.diferencia_pareada(l_mod, l_med)
 print(f"diferencia pareada «modelo − media» en prueba: {d:.3f} (EE {ee:.3f});"
