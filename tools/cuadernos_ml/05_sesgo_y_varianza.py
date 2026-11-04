@@ -38,7 +38,7 @@ def bloque_1(N, x0, diana):
         ml.dibujar_abanico(SV, N)
         plt.ylim(0, 50)
     plt.show()
-    i = int(np.argmin(np.abs(X_MALLA - x0)))           # el punto de la malla más cercano
+    i = int(np.argmin(np.abs(X_MALLA - x0)))      # el punto de la malla más cercano
     p = SV.predicciones[N][:, i]
     print(f"grado {N}, x0 = {X_MALLA[i]:.2f} km: E[y|x0] = {SV.verdad[i]:.1f};"
           f" sesgo = {p.mean() - SV.verdad[i]:.2f}; varianza = {p.var():.2f}"
@@ -75,7 +75,8 @@ def bloque_2(sigma, n):
     t = sv.tabla.set_index("candidato")
     N0 = int(t["total"].idxmin())
     bench = t.loc[0, "total"]                           # N = 0: la media de ent
-    print(f"σ = {sigma:g}, n = {n}: menor total en N⋆ = {N0} (ruido {t.loc[N0, 'ruido']:.2f},"
+    print(f"σ = {sigma:g}, n = {n}: menor total en N⋆ = {N0}"
+          f" (ruido {t.loc[N0, 'ruido']:.2f},"
           f" sesgo² {t.loc[N0, 'sesgo2']:.2f}, varianza {t.loc[N0, 'varianza']:.2f})")
     print(f"benchmark (N = 0, la media de entrenamiento): total {bench:.2f};"
           f" la CV_5 de una muestra elige N̂ = {s.elegido}")
@@ -93,13 +94,15 @@ ml.laboratorio(bloque_2, sigma=ml.selector("ruido σ", list(SIGMAS), 3.0),
 # %% [codigo] bloque-3-juega
 #@title Juega: más datos
 NS_B3 = [30, 60, 120, 240, 480, 960]
-fabrica_960 = lambda s: ml.PROCESOS["entregas_curvas"](n=960, semilla=int(s), n_realidad=2000,
-                                                      fracciones=(1, 0, 0))
-CURVA = ml.curva_aprendizaje(fabrica_960, {N: construir(N) for N in (1, 4, 10)}, ns=NS_B3,
-                             repeticiones=50, semilla=SEMILLA)
+fabrica_960 = lambda s: ml.PROCESOS["entregas_curvas"](
+    n=960, semilla=int(s), n_realidad=2000, fracciones=(1, 0, 0))
+CURVA = ml.curva_aprendizaje(fabrica_960, {N: construir(N) for N in (1, 4, 10)},
+                             ns=NS_B3, repeticiones=50, semilla=SEMILLA)
 ELEGIDO = ml.capacidad_elegida(fabrica_960, CANDIDATOS, ns=NS_B3, k=5, repeticiones=20,
                                semilla=SEMILLA)
 PISO = ml.piso(fabrica_960(SEMILLA))
+_D960 = fabrica_960(SEMILLA)
+BENCH_B3 = ml.benchmarks(_D960, _D960.despliegue).loc["media"].iloc[0]  # media de ent
 
 
 def bloque_3(modelos, abajo):
@@ -113,7 +116,10 @@ def bloque_3(modelos, abajo):
         print(f"grado {N}: R (mediana de 50) con 30 = {med[N, 30]:.1f}, con 960 ="
               f" {med[N, 960]:.1f}; piso {PISO:.1f}")
     e = ELEGIDO.groupby("n")["elegido"].median()
-    print(f"grado que elige la CV_5 (mediana de 20): {e[30]:g} con 30, {e[960]:g} con 960")
+    print(f"grado que elige la CV_5 (mediana de 20): {e[30]:g} con 30,"
+          f" {e[960]:g} con 960")
+    print(f"benchmark (la media de entrenamiento, 960 entregas) en el despliegue ="
+          f" {BENCH_B3:.1f}")
 
 
 ml.laboratorio(bloque_3, modelos=ml.selector("modelos", ["1 y 10", "1, 4 y 10"]),
@@ -143,28 +149,28 @@ def bloque_4(proceso, revelar):
     cv = {g: ml.validacion_cruzada(datos, construir(g), k=5) for g in (0, N)}
     ml.dibujar_curva_capacidad(tabla, marcar=N, benchmark=(cv[0].media, cv[0].ee),
                                piso=ml.piso(datos) if revelar else None)
-    plt.yscale("log")
-    plt.show()
+    plt.yscale("log"); plt.show()
     modelo, bench = construir(N)(datos.ent), construir(0)(datos.ent)   # solo con ent
     y = datos.val["y"].to_numpy()
     d, ee = ml.diferencia_pareada(ml.perdida(y, modelo.predecir(datos.val)),
                                   ml.perdida(y, bench.predecir(datos.val)))
-    print(f"(a) en validación (la validación no eligió este modelo): modelo − benchmark ="
-          f" {d:.2f} (EE {ee:.2f}); le gana por más de dos EE: {'sí' if d < -2 * ee else 'no'}")
+    gana = "sí" if d < -2 * ee else "no"
+    print("(a) en validación (la validación no eligió este modelo):"
+          f" modelo − benchmark = {d:.2f} (EE {ee:.2f});"
+          f" le gana por más de dos EE: {gana}")
     dp = ml.diferencia_por_pliegue(cv[N], cv[0])
-    por = dp["diferencia"].iloc[:5].to_numpy(float)
-    media = float(dp["diferencia"].iloc[5])
+    por, media = dp["diferencia"].to_numpy(float)[:5], float(dp["diferencia"].iloc[5])
     senal = "señal" if abs(media) > por.std(ddof=1) else "falta evidencia"
     print(f"(b) con CV (descriptivo): diferencia media {media:.2f}; por pliegue "
           + ", ".join(f"{v:.2f}" for v in por) + f" → {senal}")
     print(f"    {dp.attrs['nota']}")
     if revelar:
         R, p = ml.riesgo(modelo, datos), ml.piso(datos)
-        print(f"solo en el simulador: R = {R:.2f}, piso = {p:.2f}; queda por ganar {R - p:.2f}")
+        print(f"solo en el simulador: R = {R:.2f}, piso {p:.2f}, por ganar {R - p:.2f}")
 
 
 ml.laboratorio(bloque_4, proceso=ml.selector("proceso", list(PROCESOS_B4)),
-               revelar=ml.interruptor("revelar el piso y R (solo en el simulador)", False))
+               revelar=ml.interruptor("revelar el piso y R (solo en el simulador)"))
 
 # %% [texto] bloque-4-mira
 
