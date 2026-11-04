@@ -696,8 +696,24 @@ class _Poblacion:
         self.var_endogena = "x1" if "x1" in self.x else next(iter(self.x))
         if self.endogeno and self.mecanismo is not None:
             raise ValueError("endogeno solo se combina con un ruido que sea Pieza")
+        if self.endogeno:
+            # ε = c·σ·z1 + sqrt(1 − c²)·u pide σ y la desviación de x1 finitas: con una cola
+            # pesada la correlación no existe y sqrt(inf) llena y de nan
+            vr = float(self.ruido.varianza)
+            if not (np.isfinite(vr) and vr >= 0):
+                raise ValueError(f"endogeno ≠ 0 pide un ruido con varianza finita: con {self.ruido!r} "
+                                 "la correlación entre x1 y ε no está definida")
+            pe = self.x[self.var_endogena]
+            m_e, v_e = float(getattr(pe, "media", float("nan"))), float(
+                getattr(pe, "varianza", float("nan")))
+            if not (np.isfinite(m_e) and np.isfinite(v_e) and v_e > 0):
+                raise ValueError(f"endogeno ≠ 0 pide que {self.var_endogena!r} tenga media y varianza "
+                                 f"finitas (y varianza > 0): con {pe!r} la correlación con ε no "
+                                 "está definida")
         self.cerrada = f_visible_cerrada
         self.contexto = list(getattr(self.mecanismo, "crea", []) or [])
+        self._pendientes = self._pendientes_omitidas()
+        self._gauss = None
         self.tipo = self._tipo_f_visible()
         self.J = 200  # sorteos de Monte Carlo sobre las omitidas (f_visible)
 
@@ -727,12 +743,123 @@ class _Poblacion:
             return "cerrada"
         if not self.omitidas:
             return "directa"
-        if self.endogeno and self.var_endogena in self.omitidas:
+        cruza = any((a in self.omitidas) != (b in self.omitidas) for (a, b) in self.correlacion)
+        if not cruza and not (self.endogeno and self.var_endogena in self.omitidas):
+            return "mc"
+        self._gauss = self._preparar_gauss()
+        return "gauss" if self._gauss is not None else None
+
+    def _pendientes_omitidas(self):
+        """{omitida: c} si f es afín en cada omitida con pendiente constante, es decir,
+        f = g(lo demás) + Σ c_o·o; None si no lo es o no se puede saber (f falla, nan, texto).
+
+        Se mide con 64 filas de la población: f en ellas, con cada omitida + 1 y + 2.5."""
+        if not self.omitidas:
+            return {}
+        rng = np.random.default_rng([_SEMILLA_HUELLA, 7])
+        n = _N_HUELLA
+        try:
+            xs = self._x(n, rng)
+            ctx = self.mecanismo.preparar(n, rng) if self.mecanismo is not None else {}
+            base = pd.DataFrame({**xs, **ctx})
+            f0 = self._evaluar_f(base)
+            out = {}
+            for o in self.omitidas:
+                v = np.asarray(base[o], dtype=float)
+                f1 = self._evaluar_f(base.assign(**{o: v + 1.0}))
+                f2 = self._evaluar_f(base.assign(**{o: v + 2.5}))
+                if not (np.all(np.isfinite(f0)) and np.all(np.isfinite(f1))
+                        and np.all(np.isfinite(f2))):
+                    return None
+                tol = 1e-9 * max(1.0, float(np.max(np.abs(np.concatenate([f0, f1, f2])))))
+                d1, d2 = f1 - f0, f2 - f0
+                c = float(np.mean(d1))
+                if np.max(np.abs(d1 - c)) > tol or np.max(np.abs(d2 - 2.5 * c)) > 2.5 * tol:
+                    return None
+                out[o] = 0.0 if abs(c) <= tol else c
+            return out
+        except (TypeError, ValueError, KeyError):
             return None
-        for (a, b) in self.correlacion:
-            if (a in self.omitidas) != (b in self.omitidas):
-                return None
-        return "mc"
+
+    def _omitida_pesada(self, o):
+        """True si la varianza de la omitida o es infinita o no se conoce (una categórica
+        tiene soporte finito: nunca lo es)."""
+        pieza = self.x[o]
+        if isinstance(pieza, _Categorica):
+            return False
+        return not np.isfinite(float(getattr(pieza, "varianza", float("nan"))))
+
+    def _pendientes_totales(self):
+        """a_o: la pendiente de f + E[ε | x] en cada omitida (f y, si x1 es endógena y está
+        omitida, el término c·σ/desv(x1) del ruido)."""
+        a = dict(self._pendientes)
+        if self.endogeno and self.var_endogena in a:
+            pe = self.x[self.var_endogena]
+            a[self.var_endogena] += self.endogeno * math.sqrt(float(self.ruido.varianza)) / \
+                math.sqrt(float(pe.varianza))
+        return a
+
+    def _preparar_gauss(self):
+        """Condicionamiento gaussiano conjunto (1.3): si f es afín en las omitidas y las que
+        pesan y están enlazadas por correlacion son normales (con sus pares visibles), E[y |
+        lo visible] y Var(y | lo visible) son exactos. Devuelve lo que hace falta o None.
+
+        En z (la cópula de proceso), las z enlazadas son normales con correlación C; las
+        omitidas sueltas son independientes de lo visible (aportan su media y su varianza)."""
+        if self.mecanismo is not None or self.cerrada is not None or self._pendientes is None:
+            return None
+        if self.endogeno and not isinstance(self.ruido, _Normal):
+            return None
+        a = self._pendientes_totales()
+        pesan = [o for o in self.omitidas if a[o] != 0.0]
+        if any(self._omitida_pesada(o) for o in pesan):
+            return None
+        grupo = []
+        for par in self.correlacion:
+            for v in par:
+                if v not in grupo:
+                    grupo.append(v)
+        vis_g = [v for v in grupo if v not in self.omitidas]
+        om_g = [o for o in pesan if o in grupo]
+        sueltas = [o for o in pesan if o not in grupo]
+        if any(not isinstance(self.x[v], _Normal) for v in vis_g + om_g):
+            return None
+        if any(not np.isfinite(float(self.x[o].media)) for o in sueltas):
+            return None
+        C = np.eye(len(grupo))
+        for (u, w), r in self.correlacion.items():
+            i, j = grupo.index(u), grupo.index(w)
+            C[i, j] = C[j, i] = r
+        io = [grupo.index(o) for o in om_g]
+        iv = [grupo.index(v) for v in vis_g]
+        if om_g and vis_g:
+            B = C[np.ix_(io, iv)] @ np.linalg.inv(C[np.ix_(iv, iv)])
+            Sc = C[np.ix_(io, io)] - B @ C[np.ix_(iv, io)]
+        else:
+            B = np.zeros((len(om_g), len(vis_g)))
+            Sc = C[np.ix_(io, io)]
+        s_o = np.array([self.x[o].desv for o in om_g])
+        a_g = np.array([a[o] for o in om_g]) * s_o
+        var = float(a_g @ Sc @ a_g) + sum(a[o] ** 2 * float(self.x[o].varianza) for o in sueltas)
+        return {"a": a, "vis_g": vis_g, "om_g": om_g, "B": B, "a_g": a_g, "var": max(var, 0.0)}
+
+    def _f_visible_gauss(self, df):
+        """E[y | lo visible] con el condicionamiento gaussiano conjunto (df con escala)."""
+        g = self._gauss
+        d = self._sin_escala(df)
+        n = len(d)
+        xs = {}
+        for k, pieza in self.x.items():
+            if k in self.omitidas:
+                m = float(getattr(pieza, "media", float("nan")))
+                xs[k] = np.full(n, m if np.isfinite(m) else 0.0)  # pendiente 0 si no es finita
+            else:
+                xs[k] = np.asarray(d[k], dtype=float)
+        h = self._evaluar_f(pd.DataFrame(xs)) + self._media_ruido(xs)[0]
+        if g["om_g"] and g["vis_g"]:
+            Z = np.column_stack([(xs[v] - self.x[v].media) / self.x[v].desv for v in g["vis_g"]])
+            h = h + (Z @ g["B"].T) @ g["a_g"]
+        return h * self.c_y
 
     def sigma2_e(self):
         if self.mecanismo is not None:
@@ -965,6 +1092,8 @@ class _Poblacion:
                 return np.full(len(df), np.nan)
         if self.tipo == "mc":
             return self._mc(df, semilla_realidad) + self._m_visible(df)
+        if self.tipo == "gauss":
+            return self._f_visible_gauss(df)
         raise ValueError("f_visible no se puede calcular en este proceso")
 
     def oraculos(self, completo, semilla_realidad):
@@ -977,7 +1106,22 @@ class _Poblacion:
         elif self.tipo == "mc":
             out["f_visible"] = self._mc(vis, semilla_realidad) + completo["_m"].to_numpy()
             out["_varmc"] = self._var_omitidas(vis, semilla_realidad)
+        elif self.tipo == "gauss":
+            out["f_visible"] = self._f_visible_gauss(vis)
+            out["_varmc"] = np.full(len(vis), self._gauss["var"] * self.c_y ** 2)
+        if self.tipo in ("mc", "gauss") and self._media_omitida_indefinida():
+            out["f_visible"] = np.full(len(vis), np.nan)  # E[y | lo visible] no existe
         return out
+
+    def _media_omitida_indefinida(self):
+        """True si f depende (o no se sabe si depende) de una omitida sin media (Cauchy)."""
+        for o in self.omitidas:
+            if isinstance(self.x[o], _Categorica):
+                continue
+            if not np.isfinite(float(getattr(self.x[o], "media", float("nan")))):
+                if self._pendientes is None or self._pendientes.get(o, 1.0) != 0.0:
+                    return True
+        return False
 
     def nombres_oraculos(self):
         return ["f"] + (["f_visible"] if self.tipo else [])
@@ -1001,12 +1145,23 @@ class _Poblacion:
                 return float("inf")
             if hetero and math.isinf(self.mecanismo.base.varianza) and np.any(desv_h > 0):
                 return float("inf")
+            if self.tipo != "cerrada":
+                # (1.3) una omitida sin varianza finita: con f afín en ella y pendiente ≠ 0 el
+                # piso es inf (Var(f | lo visible) ≥ c²·Var = inf); si no se sabe si f la usa
+                # así, o su varianza no se conoce, nan: un Monte Carlo daría un piso ficticio
+                for o in self.omitidas:
+                    if not self._omitida_pesada(o):
+                        continue
+                    if self._pendientes is None:
+                        return None
+                    if self._pendientes[o] != 0.0:
+                        return float("inf") if math.isinf(float(self.x[o].varianza)) else None
             if self.tipo is None or (self.endogeno and not isinstance(self.ruido, _Normal)):
                 return None
             v = desp["_v"].to_numpy()
             if self.tipo == "directa":
                 return float(np.mean(v))
-            if self.tipo == "mc":
+            if self.tipo in ("mc", "gauss"):
                 return float(np.mean(desp["_varmc"]) + np.mean(v))
             dif = desp["_f"] + desp["_m"] - desp["f_visible"]
             return float(np.mean(dif ** 2) + np.mean(v))
@@ -2577,13 +2732,19 @@ class _Estandarizar(Phi):
         # valores: no depende de las unidades) se centra y no se divide
         tope = np.max(np.abs(A), axis=0) if len(A) else np.zeros(len(libres))
         constante = desv <= 64 * np.finfo(float).eps * tope
+        # y su columna transformada es 0 exacto en cualquier df: centrar por la media deja el
+        # error de redondeo (1e9 + 0.1 da −4.8e-7), que mínimos cuadrados convierte en un
+        # coeficiente enorme y rompe la invariancia de escala
         self.centro = pd.Series(centro, index=libres)
         self.escala = pd.Series(np.where(constante, 1.0, desv), index=libres)
+        self.constante = pd.Series(constante, index=libres)
 
     def _matriz(self, df):
         M = self.phi(df).copy()
         libres = list(self.centro.index)
-        M[libres] = (M[libres].to_numpy(float) - self.centro.to_numpy()) / self.escala.to_numpy()
+        Z = (M[libres].to_numpy(float) - self.centro.to_numpy()) / self.escala.to_numpy()
+        Z[:, self.constante.to_numpy(bool)] = 0.0
+        M[libres] = Z
         return M
 
     def __repr__(self):
@@ -5635,11 +5796,9 @@ def _region(penalizacion, d, rho, puntos=721):
     r_ = {"l1": 1.0, "l2": 0.0, "elastica": rho}[penalizacion]
     th = np.linspace(0, 2 * np.pi, puntos)
     s = np.abs(np.cos(th)) + np.abs(np.sin(th))
-    if r_ == 1:
-        r = d / s
-    else:
-        a = 1 - r_
-        r = (-r_ * s + np.sqrt((r_ * s) ** 2 + 4 * a * d)) / (2 * a)
+    a, b = 1 - r_, r_ * s
+    # la raíz positiva en su forma estable (sin restar casi iguales cerca de lasso, ρ → 1)
+    r = 2 * d / (b + np.sqrt(b * b + 4 * a * d))
     return r * np.cos(th), r * np.sin(th)
 
 
@@ -5681,15 +5840,21 @@ def dibujar_regiones(datos, phi, penalizacion, d, rho=0.5, mostrar_mu=True, ax=N
                           lw=1.6 if k == 2 else 0.9, label="curvas de nivel de L_ent" if k == 0
                           else None)
             ln.set_gid(f"curva-nivel-{k}")
-    else:  # S singular (columnas idénticas): rectas paralelas, en una rejilla
-        g1 = np.linspace(lo[0] - margen, hi[0] + margen, 241)
-        g2 = np.linspace(lo[1] - margen, hi[1] + margen, 241)
-        B1, B2 = np.meshgrid(g1, g2)
-        R = yc[:, None] - Mc[:, :1] * B1.ravel()[None, :] - Mc[:, 1:2] * B2.ravel()[None, :]
-        Lg = (R ** 2).mean(axis=0).reshape(B1.shape)
-        cs = ax.contour(B1, B2, Lg, levels=l_mc + paso * np.array([0.25, 0.5, 1, 2, 3.5, 5.5]),
-                        colors=[_color("realidad", tema)], linewidths=1)
-        cs.set_gid("curva-nivel-rejilla")
+    else:  # S de rango uno (columnas proporcionales): cada nivel son dos rectas paralelas,
+        # wᵀ(β − β̂) = ±sqrt(c/λ) con w = D·v (v el vector propio de S normalizada), exactas
+        w = escala_ * V[:, -1]
+        normal_ = w / float(w @ w)
+        dir_ = np.array([-w[1], w[0]]) / float(np.hypot(*w))
+        largo = 4 * float(np.hypot(*(hi - lo)) + 4 * margen + np.hypot(*(b_mc - (lo + hi) / 2)))
+        s_ = np.linspace(-largo, largo, 2001)
+        for k, c in enumerate(paso * np.array([0.25, 0.5, 1.0, 2.0, 3.5, 5.5])):
+            for signo, sufijo in ((1, ""), (-1, "b")):
+                p0 = b_mc + signo * math.sqrt(c / lam[-1]) * normal_
+                recta = p0[:, None] + dir_[:, None] * s_[None, :]
+                ln, = ax.plot(recta[0], recta[1], color=_color("realidad", tema),
+                              lw=1.6 if k == 2 else 0.9,
+                              label="curvas de nivel de L_ent" if k == 0 and signo == 1 else None)
+                ln.set_gid(f"curva-nivel-{k}{sufijo}")
     relleno = ax.fill(bx, by, color=_horneado(_color("f_gorro", tema), t["panel"], 0.3), lw=1.6,
                       ec=_color("f_gorro", tema), label=f"Ω(β) ≤ d = {d:g}")
     relleno[0].set_gid("region")

@@ -3057,3 +3057,110 @@ def test_taller_3_cuenta_las_pendientes_del_modelo_final(monkeypatch):
     s = visto["s"]
     vivas = int((s.modelo_final.beta_gorro.drop("1") != 0).sum())
     assert f"({vivas} pendientes distintas de 0" in buf.getvalue()
+
+
+# --- tercera ronda de la revisión del lote c3 -----------------------------------
+
+def _L_ent_en(datos, phi, B):
+    """L_ent con el intercepto en su mejor valor, en cada columna de B (2 × m)."""
+    M = ml.ajustar(datos, phi=phi).Phi(datos.ent)
+    pend = [c for c in M.columns if c != "1"]
+    Mc = M[pend].to_numpy(float)
+    Mc = Mc - Mc.mean(axis=0)
+    y = datos.ent["y"].to_numpy(float)
+    return (((y - y.mean())[:, None] - Mc @ B) ** 2).mean(axis=0)
+
+
+@pytest.mark.parametrize("pesada", [ml.cauchy(), ml.t_student(2), ml.pareto(1.5)])
+def test_piso_con_omitida_de_cola_pesada_no_es_un_monte_carlo_finito(pesada):
+    x = {"x1": ml.normal(), "x2": pesada}
+    d = ml.proceso(n=40, x=x, f=lambda d: d["x1"] + d["x2"], omitir=["x2"],
+                   ruido=ml.normal(0, 0), n_realidad=2000)
+    assert ml.piso(d) == float("inf")
+    d = ml.proceso(n=40, x=x, f=lambda d: d["x1"] + np.tanh(d["x2"]), omitir=["x2"],
+                   ruido=ml.normal(0, 0), n_realidad=2000)
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        assert np.isnan(ml.piso(d))
+    d = ml.proceso(n=40, x=x, f=lambda d: d["x1"] + 0 * d["x2"], omitir=["x2"],
+                   ruido=ml.normal(0, 1), n_realidad=2000)
+    assert ml.piso(d) == pytest.approx(1.0, rel=0.1)
+
+
+def test_estandarizar_constante_grande_no_depende_de_las_unidades():
+    c = 1e9 + 0.1
+    for k in (1.0, 1e-9):
+        df = pd.DataFrame({"x": np.full(100, c * k), "y": np.full(100, 2.0)})
+        m = ml.ajustar(df, phi=ml.estandarizar(ml.columnas("x")), columnas_x=["x"],
+                       tarea="regresion")
+        assert np.all(m.Phi(df)["x"].to_numpy() == 0.0)
+        assert m.predecir(pd.DataFrame({"x": [1.1 * c * k]}))[0] == pytest.approx(2.0)
+
+
+@pytest.mark.parametrize("ruido", [ml.cauchy(), ml.t_student(2), ml.pareto(1.5)])
+def test_endogeno_pide_un_ruido_con_varianza_finita(ruido):
+    with pytest.raises(ValueError, match="endogeno"):
+        ml.proceso(n=40, ruido=ruido, endogeno=0.5, n_realidad=500)
+    with pytest.raises(ValueError, match="endogeno"):
+        ml.proceso(n=40, x={"x1": ruido}, ruido=ml.normal(), f=lambda d: d["x1"],
+                   endogeno=0.5, n_realidad=500)
+
+
+def test_piso_con_condicionamiento_gaussiano_conjunto():
+    x = {"x1": ml.normal(), "x2": ml.normal()}
+    d = ml.proceso(n=40, x=x, f=lambda d: d["x1"] + d["x2"], ruido=ml.normal(), endogeno=0.5,
+                   omitir=["x1"], n_realidad=2000)
+    assert ml.piso(d) == pytest.approx(2.25 + 0.75, abs=1e-12)
+    desp = d.despliegue
+    assert np.allclose(d.f_visible(desp), desp["x2"]) and np.allclose(desp["f_visible"], desp["x2"])
+    # x2 omitida y correlacionada 0.6 con x1: E[y | x1] = 2.2·x1, piso 4·(1 − 0.36) + 1
+    d = ml.proceso(n=40, x=x, correlacion={("x1", "x2"): 0.6}, f=lambda d: d["x1"] + 2 * d["x2"],
+                   omitir=["x2"], escala={"y": 10.0}, n_realidad=200_000)
+    assert ml.piso(d) == pytest.approx(100 * 3.56, abs=1e-9)
+    desp = d.despliegue
+    assert np.allclose(desp["f_visible"], 22 * desp["x1"])
+    assert np.mean((desp["y"] - desp["f_visible"]) ** 2) == pytest.approx(356, rel=0.02)
+
+
+def test_region_elastica_cerca_de_lasso_no_pierde_la_frontera():
+    for rho in (1 - 1e-16, 1 - 1e-12, 0.5, 0.0):
+        bx, by = ml._region("elastica", 0.4, rho)
+        pen = (1 - rho) * (bx ** 2 + by ** 2) + rho * (np.abs(bx) + np.abs(by))
+        assert np.allclose(pen, 0.4, rtol=1e-12)
+
+
+def test_dibujar_regiones_rango_uno_traza_rectas_en_su_nivel():
+    datos = ml.proceso(n=80, x={"x": ml.normal()}, f=lambda d: 2 * d["x"], ruido=ml.normal(0, 0.5))
+    phi = ml.columnas("x", "10000000*x")
+    ax = ml.dibujar_regiones(datos, phi, "l1", 0.4)
+    (x0, x1), (y0, y1) = ax.get_xlim(), ax.get_ylim()
+    niveles = {}
+    for ln in ax.get_lines():
+        gid = ln.get_gid() or ""
+        if gid.startswith("curva-nivel-"):
+            B = np.vstack([ln.get_xdata(), ln.get_ydata()])
+            Ls = _L_ent_en(datos, phi, B)
+            assert Ls.max() - Ls.min() <= 1e-9 * Ls.max()
+            dentro = (B[0] >= x0) & (B[0] <= x1) & (B[1] >= y0) & (B[1] <= y1)
+            assert dentro.sum() >= 2
+            niveles.setdefault(gid.rstrip("b"), []).append(Ls.mean())
+    assert len(niveles) == 6 and all(len(v) == 2 for v in niveles.values())
+    assert len({round(v[0], 9) for v in niveles.values()}) == 6
+
+
+@pytest.mark.parametrize("datos, d", [(ml.caso(10), 0.4), (ml.caso(10, escala={"x2": 1e7}), 0.4),
+                                      (ml.caso(9), 1.0)])
+def test_dibujar_regiones_el_optimo_restringido_toca_su_curva(datos, d):
+    """La curva gruesa (nivel 2) es la de L en el óptimo restringido, y las seis siguen
+    los múltiplos 0.25, 0.5, 1, 2, 3.5, 5.5 del incremento de pérdida."""
+    ax = ml.dibujar_regiones(datos, None, "l1", d)
+    beta_r, _ = ml.optimo_restringido(datos, None, "l1", d)
+    pend = [c for c in beta_r.index if c != "1"]
+    L_r = _L_ent_en(datos, None, beta_r[pend].to_numpy(float)[:, None])[0]
+    L_mc = _L_ent_en(datos, None, ml.ajustar(datos).beta_gorro[pend].to_numpy(float)[:, None])[0]
+    assert L_r - L_mc > 1e-6 * L_mc  # el óptimo restringido está en la frontera
+    curvas = {ln.get_gid(): ln for ln in ax.get_lines()
+              if (ln.get_gid() or "").startswith("curva-nivel-")}
+    for k, mult in enumerate((0.25, 0.5, 1.0, 2.0, 3.5, 5.5)):
+        ln = curvas[f"curva-nivel-{k}"]
+        Ls = _L_ent_en(datos, None, np.vstack([ln.get_xdata(), ln.get_ydata()]))
+        assert np.allclose(Ls - L_mc, mult * (L_r - L_mc), rtol=1e-6, atol=1e-12 * L_mc)
