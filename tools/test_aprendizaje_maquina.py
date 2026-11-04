@@ -2279,3 +2279,97 @@ def test_cv_anidada_elige_dentro_de_cada_pliegue_externo():
     assert np.allclose(r.por_pliegue, esperado)
     plano = ml.validacion_cruzada(df, c[0], k=4)
     assert not np.allclose(r.por_pliegue, plano.por_pliegue)
+
+
+# --- revisión adversarial del lote c2, ronda 2 (codex-rev-lab-c2.i2): cada prueba falló antes ---
+
+
+def test_piso_junta_f_y_efecto_grupo_cuando_f_usa_el_grupo():
+    # f = ±4 por grupo y los efectos estandarizados de 2 grupos son ∓4: y = 0 siempre
+    d = ml.proceso(n=200, f=lambda d: 4 * (2 * d["grupo"] - 1), ruido=ml.efecto_grupo(2, 4, 0),
+                   n_realidad=4000)
+    desp = d.despliegue
+    assert np.allclose(desp["y"], 0)
+    assert ml.piso(d) == pytest.approx(0, abs=1e-12)
+    assert np.allclose(desp["f_visible"], 0) and np.allclose(d.f_visible(desp), 0)
+    assert np.allclose(d.f_visible(desp[["x"]]), 0)  # sin grupo: el grupo no es visible
+    # f que usa x y el grupo: el piso es E[Var_g(f + efecto)] + desv², y es alcanzable
+    d = ml.proceso(n=200, f=lambda d: d["x"] + d["grupo"], ruido=ml.efecto_grupo(4, 1, 1),
+                   n_realidad=40_000)
+    mec = ml.efecto_grupo(4, 1, 1)
+    esperado = np.var(np.arange(4) + mec._efecto(np.arange(4))) + 1
+    assert ml.piso(d) == pytest.approx(esperado, rel=1e-9)
+    L = np.mean((d.despliegue["y"] - d.despliegue["f_visible"]) ** 2)
+    assert L == pytest.approx(esperado, rel=0.03)
+
+
+def test_piso_desconocido_si_f_usa_el_grupo_y_no_se_puede_juntar():
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        nuevos = ml.proceso(n=200, f=lambda d: d["x"] * d["grupo"], ruido=ml.efecto_grupo(3, 1, 1),
+                            despliegue="grupos_nuevos", n_realidad=2000)
+        assert np.isnan(ml.piso(nuevos))
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        omitida = ml.proceso(n=200, x={"x": ml.uniforme(), "z": ml.uniforme()}, omitir=["z"],
+                             f=lambda d: d["x"] + d["z"] * d["grupo"],
+                             ruido=ml.efecto_grupo(3, 1, 1), n_realidad=2000)
+        assert np.isnan(ml.piso(omitida))
+    assert np.isnan(omitida.f_visible(omitida.despliegue.head(3))).all()
+    # si f no usa el grupo, nada cambia: el caso 14 y el de grupos nuevos
+    assert ml.piso(ml.proceso(n=240, ruido=ml.efecto_grupo(24, 4, 1), n_realidad=2000)) == 17
+
+
+def test_varianza_en_distingue_grupos_propios_de_nuevos():
+    mec = ml.efecto_grupo(1, 4, 1)
+    v = mec.varianza_en(pd.DataFrame({"grupo": [0, 0, 1, 5]}))
+    assert list(v) == [1, 1, 17, 17]
+    v24 = ml.efecto_grupo(24, 4, 1).varianza_en(pd.DataFrame({"grupo": [0, 23, 24]}))
+    assert list(v24) == [17, 17, 17]
+    igual = ml.proceso(n=240, ruido=ml.efecto_grupo(1, 4, 1), n_realidad=2000)
+    nuevos = ml.proceso(n=240, ruido=ml.efecto_grupo(1, 4, 1), despliegue="grupos_nuevos",
+                        n_realidad=2000)
+    assert ml.piso(igual) == pytest.approx(1) and ml.piso(nuevos) == pytest.approx(17)
+
+
+@pytest.mark.parametrize("particion", [
+    lambda d: [([1, 2, 3], [0]), ([0, 2, 3], [1])],      # omite 2 y 3, y no va hacia adelante
+    lambda d: [([0], [1]), ([0, 1, 2], [3])],            # la fila 2 no valida y no es de las primeras
+    lambda d: [([1], [0]), ([0, 1], [2, 3])],            # el pliegue 1 ajusta con el futuro
+])
+def test_validacion_cruzada_exige_que_cada_fila_valide_una_vez(particion):
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [0.0, 0, 20, 30]})
+    with pytest.raises(ValueError, match="exactamente una vez"):
+        ml.validacion_cruzada(df, lambda d: _Constante(0), particion=particion)
+
+
+def test_validacion_cruzada_hacia_adelante_sigue_el_orden_de_t():
+    df = pd.DataFrame({"x": [0.0, 1, 2, 3], "t": [3, 2, 1, 0], "y": [1.0, 2, 3, 4]})
+    r = ml.validacion_cruzada(df, lambda d: _Constante(0),
+                              particion=lambda d: [([3], [2]), ([3, 2], [1, 0])])
+    assert np.isnan(r.perdidas_fuera[3]) and np.allclose(r.perdidas_fuera[:3], [1, 4, 9])
+    with pytest.raises(ValueError, match="exactamente una vez"):  # hacia adelante en filas, no en t
+        ml.validacion_cruzada(df, lambda d: _Constante(0),
+                              particion=lambda d: [([0], [1]), ([0, 1], [2, 3])])
+
+
+def test_dibujar_cv_prefiere_el_riesgo_de_despliegue():
+    tabla = pd.DataFrame({"candidato": [1, 4, 1, 4], "conjunto": ["realidad"] * 2 + ["despliegue"] * 2,
+                          "L": [15.15, 9.65, 36.39, 258.25], "ee": [0.1] * 4})
+    sel = ml.Seleccion(tabla=pd.DataFrame({"candidato": [1, 4], "valor": [20.0, 12.0],
+                                           "ee": [1.0, 1.0]}),
+                       elegido=4, elegido_un_ee=4, modelo=None, modelo_final=None,
+                       criterio="cuadratica", sentido="min", costo_ajustes=11, cv=None, con="cv")
+    ax = ml.dibujar_cv(sel, R=tabla)
+    (r,) = [ln for ln in ax.get_lines() if ln.get_gid() == "R"]
+    assert list(r.get_ydata()) == [36.39, 258.25]
+    ax = ml.dibujar_cv(sel, R=tabla[tabla["conjunto"] == "realidad"])
+    (r,) = [ln for ln in ax.get_lines() if ln.get_gid() == "R-origen"]
+    assert list(r.get_ydata()) == [15.15, 9.65] and "origen" in r.get_label()
+
+
+def test_dibujar_pliegues_rechaza_una_particion_de_otro_n():
+    df4 = pd.DataFrame({"x": [0.0, 1, 2, 3], "y": [1.0, 2, 3, 4]})
+    with pytest.raises(ValueError, match="otro n"):
+        ml.dibujar_pliegues(8, 2, particion=ml.pliegues(df4, k=2))
+    with pytest.raises(ValueError, match="otro n"):
+        ml.dibujar_pliegues(3, 2, particion=ml.pliegues(df4, k=2))
+    ml.dibujar_pliegues(4, 2, particion=ml.pliegues(df4, k=2))

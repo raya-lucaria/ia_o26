@@ -643,6 +643,12 @@ class _Poblacion:
         if self.mecanismo is not None:
             eps = np.asarray(self.mecanismo.muestrear(todo, rng), float)
             v = np.asarray(self.mecanismo.varianza_en(todo), float)
+            juntos = self._f_y_efecto_juntos(todo, f_usar, fval)
+            if juntos is not None:  # f usa el grupo: E[y | x] y Var(y | x) con su covarianza
+                media, varianza = juntos
+                if self.tipo != "directa":  # con omitidas o forma cerrada no se sabe juntar
+                    media = varianza = np.full(len(todo), np.nan)
+                m, v = media - fval, varianza
         else:
             u = np.asarray(self.ruido.muestrear(n, rng), float)
             if self.endogeno:
@@ -662,6 +668,41 @@ class _Poblacion:
         df["_m"] = m * self.c_y
         df["_v"] = v * self.c_y ** 2
         return df
+
+    def _f_y_efecto_juntos(self, todo, f_usar, fval=None):
+        """Si f usa el grupo de efecto_grupo, (E[f + efecto | x], Var(f + ε | x)) por fila.
+
+        El grupo no es una variable visible: el mejor predictor promedia sobre él. Con
+        los grupos de la población (todos con el mismo peso, como los reparte preparar)
+        se calcula exacto sumando f y el efecto en cada grupo, con su covarianza. Con
+        grupos nuevos f en un id que no es de la población no tiene promedio conocido:
+        nan, y el piso queda desconocido. Si f no usa el grupo, None (el caso común:
+        Var(ε) = varianza_en, sin cambio)."""
+        mec = self.mecanismo
+        if not isinstance(mec, _EfectoGrupo) or "grupo" not in todo:
+            return None
+        n = len(todo)
+        if fval is None:
+            fval = np.asarray(f_usar(todo), float).reshape(-1) * np.ones(n)
+        G = mec.n_grupos
+        F = np.empty((n, G))
+        for g in range(G):
+            d = todo.copy()
+            d["grupo"] = np.full(n, g, dtype=np.asarray(todo["grupo"]).dtype)
+            F[:, g] = np.asarray(f_usar(d), float).reshape(-1) * np.ones(n)
+        nuevos = np.asarray(todo["grupo"]) >= G
+        if np.array_equal(F, np.broadcast_to(F[:, :1], F.shape)) and \
+                np.array_equal(fval[~nuevos], F[~nuevos, 0]):
+            if not nuevos.any() or np.array_equal(fval[nuevos], F[nuevos, 0]):
+                return None
+        if nuevos.any():
+            return np.full(n, np.nan), np.full(n, np.nan)
+        total = F + mec._efecto(np.arange(G))[None, :]
+        return total.mean(axis=1), total.var(axis=1) + mec.desv ** 2
+
+    def f_usa_grupo(self, df):
+        """True si f cambia con el grupo de efecto_grupo en las filas de df."""
+        return self._f_y_efecto_juntos(self._sin_escala(df), self.f) is not None
 
     def _sin_escala(self, df):
         d = df.copy()
@@ -734,7 +775,20 @@ class _Poblacion:
         if self.tipo == "cerrada":
             return np.asarray(self.cerrada(df), float).reshape(-1) * np.ones(len(df))
         if self.tipo == "directa":
+            d = self._sin_escala(df)
+            if isinstance(self.mecanismo, _EfectoGrupo):
+                d = d if "grupo" in d else d.assign(grupo=0)
+                juntos = self._f_y_efecto_juntos(d, self.f)
+                if juntos is not None:
+                    return juntos[0] * self.c_y
             return self.f_estructural(df) + self._m_visible(df)
+        if isinstance(self.mecanismo, _EfectoGrupo):  # f usa el grupo y hay omitidas: desconocida
+            d = self._sin_escala(df)
+            d = d if "grupo" in d else d.assign(grupo=0)
+            sorteo = self._x(len(d), np.random.default_rng(_SEMILLA_HUELLA))
+            d = d.assign(**{o: sorteo[o] for o in self.omitidas if o not in d})
+            if self._f_y_efecto_juntos(d, self.f) is not None:
+                return np.full(len(df), np.nan)
         if self.tipo == "mc":
             return self._mc(df, semilla_realidad) + self._m_visible(df)
         raise ValueError("f_visible no se puede calcular en este proceso")
@@ -1823,7 +1877,22 @@ def _particion(df, particion, k, semilla):
         np.add.at(vistas, b, 1)
     if vistas.max() > 1:
         raise ValueError("una fila valida en dos pliegues: los de validación no se traslapan")
+    if vistas.min() == 0 and not _hacia_adelante(df, part, vistas):
+        raise ValueError("una fila no valida en ningún pliegue: cada fila valida exactamente una "
+                         "vez (la única excepción es una CV hacia adelante, temporal)")
     return part
+
+
+def _hacia_adelante(df, part, vistas):
+    """La única partición incompleta que vale: CV hacia adelante (origen móvil).
+
+    En el orden de t (o de las filas si no hay t), cada pliegue ajusta solo con filas
+    anteriores a todas las que valida, y las filas que nunca validan son las primeras."""
+    orden = (stats.rankdata(np.asarray(df["t"]), method="ordinal") - 1 if "t" in df
+             else np.arange(len(df)))
+    if any(orden[a].max() >= orden[b].min() for a, b in part):
+        return False
+    return orden[vistas == 0].max() < orden[vistas > 0].min()
 
 # === 4 · Representaciones φ ===
 
@@ -3018,8 +3087,10 @@ def validacion_cruzada(df, construir, k=5, particion="azar", criterio=None, esta
     Ejemplo: cv = ml.validacion_cruzada(datos, lambda df: ml.ajustar(df, phi=ml.polinomio(4)))
 
     perdidas_fuera: la pérdida de cada observación de desarrollo con el modelo del
-    pliegue que no la vio, en el orden de las filas (nan si la fila no valida en ningún
-    pliegue, como en una partición temporal). Es DESCRIPTIVA: esas pérdidas
+    pliegue que no la vio, en el orden de las filas. Cada fila valida exactamente una vez;
+    la única excepción es una CV hacia adelante (en el orden de t, o de las filas sin t,
+    cada pliegue ajusta solo con filas anteriores a las que valida y las que nunca validan
+    son las primeras): esas primeras filas quedan en nan. Es DESCRIPTIVA: esas pérdidas
     dependen entre sí (los entrenamientos se superponen), así que no se pasan a
     diferencia_pareada para afirmar una mejora; para comparar por CV, usa
     diferencia_por_pliegue.
@@ -3434,6 +3505,11 @@ def sesgo_varianza(fabrica, construir_por_candidato, repeticiones=100, x_malla=N
             raise ValueError("sesgo_varianza no sabe Var(y | x) de este proceso (ruido con "
                              "contexto junto con variables omitidas o endogeneidad)")
         ruido_x = np.full(len(malla), float(primero.sigma2_e))
+        if isinstance(pob, _Poblacion) and isinstance(pob.mecanismo, _EfectoGrupo):
+            d = pob._sin_escala(malla)
+            juntos = pob._f_y_efecto_juntos(d if "grupo" in d else d.assign(grupo=0), pob.f)
+            if juntos is not None:  # f usa el grupo: Var(y | x) lleva la covarianza
+                ruido_x = juntos[1] * pob.c_y ** 2
     preds = {c: np.empty((int(repeticiones), len(malla))) for c in construir_por_candidato}
     modelos = {c: [] for c in construir_por_candidato}
     for i in range(int(repeticiones)):
@@ -4078,6 +4154,8 @@ def dibujar_pliegues(n, k, m_activo=None, prueba=True, *, y=None, particion=None
         todas = np.concatenate(validas + ajustes)
         if len(todas) and (todas.min() < 0 or todas.max() >= n):
             raise ValueError(f"particion nombra filas fuera de 0…{n - 1} (¿otro n?)")
+        if np.unique(todas).size != n:
+            raise ValueError(f"particion no usa las {n} filas: es de otro n")
     else:
         validas = [np.asarray(v, int) for v in np.array_split(np.arange(n), k)]
         ajustes = [np.setdiff1d(np.arange(n), v) for v in validas]
@@ -4177,7 +4255,9 @@ def dibujar_cv(seleccion, R=None, L_ent=None, piso=None, benchmark=None, *, ax=N
     """La curva con que se eligió (CV_k con barras, L_val, L_ent o L_prueba), el umbral
     «mínimo + 1 EE» (se lee por la media) y marcas sobre el elegido y el de un EE.
 
-    R, L_ent: dict, Series o tabla de curva_capacidad; piso y benchmark como en
+    R, L_ent: dict, Series o tabla de curva_capacidad (de R se dibuja el conjunto
+    despliegue; si la tabla solo trae realidad, la línea dice que es el riesgo de
+    origen); piso y benchmark como en
     dibujar_curva_capacidad. Desde: 1.2 (clase 2).
     Ejemplo: ml.dibujar_cv(ml.elegir(datos, cands, con="cv"), piso=ml.piso(datos))
     """
@@ -4225,10 +4305,16 @@ def dibujar_cv(seleccion, R=None, L_ent=None, piso=None, benchmark=None, *, ax=N
                           marker="o", ls="-", lw=1.2, label="L_ent")
             ln.set_gid("L_ent")
     if R is not None:
-        s = _serie(R)
+        # El riesgo que importa es el de despliegue; el de origen (realidad) solo si es lo
+        # único que trae R, y entonces la leyenda lo dice.
+        hay = set(R["conjunto"]) if isinstance(R, pd.DataFrame) and "conjunto" in R else set()
+        origen = "realidad" in hay and "despliegue" not in hay
+        s = _serie(R, ("despliegue", "realidad"))
+        rotulo = ("R en el origen (realidad), no en despliegue; solo en el simulador" if origen
+                  else "R (solo en el simulador)")
         ln, = ax.plot([pos[c] for c in s.index], s.to_numpy(), color=_color("realidad", tema),
-                      ls="--", lw=1.6, label="R (solo en el simulador)")
-        ln.set_gid("R")
+                      ls="--", lw=1.6, label=rotulo)
+        ln.set_gid("R-origen" if origen else "R")
     _linea_piso(ax, piso, tema)
     _linea_benchmark(ax, benchmark, tema)
     if not numerico:
