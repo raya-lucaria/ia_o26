@@ -28,6 +28,7 @@ Corre en menos de un minuto con el venv de S-lab.
 import inspect
 import io
 import json
+import math
 import os
 import re
 import subprocess
@@ -222,7 +223,9 @@ def test_claves_de_los_catalogos_de_1_0():
     assert set(claves_1_0["CASOS_BORDE"]) == {1, 2, 23}
     # 1.1 (O0b-c1) agrega "recursivo" y los casos 3, 4 y 5; 1.2 (clase 2) agrega
     # "entregas_curvas", los casos 13 a 16 y el taller 2; nadie quita nada
-    assert set(ml.PROCESOS) == set(claves_1_0["PROCESOS"]) | {"recursivo", "entregas_curvas"}
+    # 1.4 (clase 4) agrega los procesos hilo "fraude" y "mensajes3"
+    assert set(ml.PROCESOS) == set(claves_1_0["PROCESOS"]) | {"recursivo", "entregas_curvas",
+                                                             "fraude", "mensajes3"}
     assert set(_entradas()["1.2"]["__claves__"]["PROCESOS"]) >= {"entregas_curvas"}
     for prohibida in ("lineal", "ar1", "cola_larga"):
         assert prohibida not in ml.PROCESOS
@@ -230,8 +233,10 @@ def test_claves_de_los_catalogos_de_1_0():
     assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24}
     assert all(isinstance(k, int) for k in ml.CASOS_BORDE)
     assert set(ml.ANALISIS_TALLER) == {1, 2, 3}
+    # 1.4 agrega las métricas de la clase 4
     assert ml.SENTIDO == {
         "cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max",
+        "mcc": "max", "aciertos_balanceados": "max", "brier": "min",
     }
 
 
@@ -247,8 +252,8 @@ def test_requiere_misma_x_y_mayor_o_igual():
 
 
 def test_version_y_cambios():
-    assert ml.VERSION == "1.3"
-    assert {"1.0", "1.1", "1.2", "1.3"} <= set(ml.CAMBIOS)
+    assert ml.VERSION == "1.4"
+    assert {"1.0", "1.1", "1.2", "1.3", "1.4"} <= set(ml.CAMBIOS)
     assert set(_entradas()) == set(ml.CAMBIOS)
 
 
@@ -355,11 +360,17 @@ def test_pesos_balanceados_son_n_sobre_K_por_n_y():
     assert sum(w[v] for v in y) == pytest.approx(len(y))
 
 
-def test_ajustar_con_pesos_lanza_hasta_la_clase_4():
+def test_ajustar_con_pesos_desde_la_clase_4():
+    """1.4: pesos solo en clasificación, y modelo.pesos guarda los que se usaron."""
     datos = ml.anillos()
-    for pesos in ("balanceado", {0: 1.0, 1: 2.0}):
-        with pytest.raises(NotImplementedError, match="clase 4"):
-            ml.ajustar(datos, tarea="clasificacion", pesos=pesos)
+    m = ml.ajustar(datos, tarea="clasificacion", pesos={0: 1.0, 1: 2.0})
+    assert m.pesos == {0: 1.0, 1: 2.0}
+    assert ml.ajustar(datos, pesos="balanceado").pesos == pytest.approx(
+        ml._pesos_balanceados(datos.ent["y"], [0, 1]))
+    with pytest.raises(ValueError, match="clasificación"):
+        ml.ajustar(ml.PROCESOS["entregas"](), pesos="balanceado")
+    with pytest.raises(ValueError, match="clases"):
+        ml.ajustar(datos, pesos={0: 1.0})
 
 
 def test_conversiones_a_sklearn():
@@ -481,8 +492,8 @@ def test_riesgo_solo_perdidas_y_desempeno_las_metricas():
     assert ml.desempeno(m, datos, "aciertos") == pytest.approx(
         ml.aciertos(datos.despliegue["y"].to_numpy(), m.predecir(datos.despliegue)))
     assert ml.desempeno(m, datos, "logaritmica") == pytest.approx(ml.riesgo(m, datos))
-    with pytest.raises(NotImplementedError, match="clase 4"):
-        ml.desempeno(m, datos, "mcc")
+    assert ml.desempeno(m, datos, "mcc") == pytest.approx(
+        ml.mcc(datos.despliegue["y"], m.predecir(datos.despliegue), clases=[0, 1]))
 
 
 def test_realidad_y_despliegue_son_dos_muestras_de_la_misma_poblacion():
@@ -531,11 +542,9 @@ def test_fracciones_con_ceros():
 
 
 def test_adelantos_de_proceso_lanzan_con_la_clase_que_los_trae():
-    # 1.2: lo de la clase 2 ya funciona; faltantes sigue lanzando y nombra la clase 4
-    with pytest.raises(NotImplementedError, match="clase 4"):
-        ml.proceso(n=20, faltantes={"x": (0.2, "azar")})
-    with pytest.raises(NotImplementedError, match="clase 4"):
-        ml.proceso(n=20, ruido=ml.ar1(), despliegue="futuro", faltantes={"x": (0.2, "azar")})
+    # 1.4: faltantes ya funciona (clase 4)
+    assert ml.proceso(n=20, faltantes={"x": (0.2, "azar")}).ent["x"].isna().any()
+    ml.proceso(n=20, ruido=ml.ar1(), despliegue="futuro", faltantes={"x": (0.2, "azar")})
     # lo que pide una columna que el proceso no tiene es un ValueError que lo dice
     for kwargs, patron in [({"separar": "tiempo"}, "columna t"),
                            ({"separar": "grupo"}, "columna grupo"),
@@ -814,8 +823,7 @@ def test_benchmarks():
     assert set(t.index) == {"moda", "proporcion"}
     assert list(t.columns) == ["logaritmica", "aciertos"]
     assert t.loc["moda", "aciertos"] == pytest.approx(0.5, abs=0.02)
-    with pytest.raises(NotImplementedError, match="clase 4"):
-        ml.benchmarks(anillos, anillos.val, criterios=["mcc"])
+    assert ml.benchmarks(anillos, anillos.val, criterios=["mcc"]).loc["moda", "mcc"] == 0.0
 
 
 def test_curva_capacidad():
@@ -1339,9 +1347,16 @@ def test_proceso_clasificacion_oraculo_es_sigma_del_puntaje():
     {"faltantes": {"x1": (0.2, "azar")}}, {"ruido": ml.normal(0, 1)},
     {"separar": "tiempo"}, {"separar": "grupo"},
 ])
-def test_adelantos_de_proceso_clasificacion_lanzan_con_la_clase_4(cambio):
-    with pytest.raises(NotImplementedError, match="clase 4"):
-        ml.proceso_clasificacion(n=50, con_realidad=False, **cambio)
+def test_adelantos_de_proceso_clasificacion_ya_no_lanzan_en_la_clase_4(cambio):
+    """1.4 los trae: ninguno lanza NotImplementedError (separar tiempo/grupo sin la
+    columna que piden es ValueError, en español)."""
+    if cambio.get("K") == 3:
+        cambio = {**cambio, "puntajes": [lambda d: 0 * d.x1, lambda d: d.x1, lambda d: d.x2]}
+    if "separar" in cambio:
+        with pytest.raises(ValueError, match="columna"):
+            ml.proceso_clasificacion(n=50, con_realidad=False, **cambio)
+        return
+    ml.proceso_clasificacion(n=50, con_realidad=False, **cambio)
 
 
 def test_adelantos_de_proceso_clasificacion_de_la_clase_2_y_errores():
@@ -1712,8 +1727,6 @@ def test_despliegue_futuro():
     assert abs(np.corrcoef(pares[:, 0], pares[:, 1])[0, 1]) < 0.2  # no es continuación
     with pytest.raises(ValueError, match="deriva"):
         ml.proceso(n=40, ruido=ml.ar1(), deriva=lambda t: {})
-    with pytest.raises(NotImplementedError, match="clase 4"):
-        ml.proceso(n=40, ruido=ml.ar1(), despliegue="futuro", faltantes={"x": (0.1, "azar")})
     for numero in (13, 14, 15):
         ml.caso(numero, n_realidad=2000)
 
@@ -3164,3 +3177,515 @@ def test_dibujar_regiones_el_optimo_restringido_toca_su_curva(datos, d):
         ln = curvas[f"curva-nivel-{k}"]
         Ls = _L_ent_en(datos, None, np.vstack([ln.get_xdata(), ln.get_ydata()]))
         assert np.allclose(Ls - L_mc, mult * (L_r - L_mc), rtol=1e-6, atol=1e-12 * L_mc)
+
+
+# ---------------------------------------------------------------------------
+# 8 · Lo que trae 1.4 (primer tramo del lote de la clase 4, clase_4.md §10.3 y §10.7)
+# ---------------------------------------------------------------------------
+
+
+def _avisos(funcion, *args, **kwargs):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        salida = funcion(*args, **kwargs)
+    return salida, [str(a.message) for a in w]
+
+
+def test_firmas_de_los_procesos_hilo():
+    for clave, n in (("fraude", 600), ("mensajes3", 10_000)):
+        params = list(inspect.signature(ml.PROCESOS[clave]).parameters.values())
+        assert [p.name for p in params[:2]] == ["n", "semilla"]
+        assert params[0].default == n and params[1].default == 0
+        assert params[2].kind is params[2].KEYWORD_ONLY and params[2].name == "proporcion"
+    assert inspect.signature(ml.PROCESOS["mensajes3"]).parameters["separar"].default == "azar"
+    with pytest.raises(ValueError, match=r"proporcion=0\.05"):
+        ml.PROCESOS["fraude"](0.05)
+    with pytest.raises(TypeError):
+        ml.PROCESOS["fraude"](600, 0, 0.05)  # la proporción solo va por nombre
+
+
+def test_fraude_criterios_de_clase_4_10_3():
+    """Con 0.1, la logística sin pesos tiene MCC > 0.2 en el despliegue y la moda 0. Con
+    0.01 (la construcción del caso 18, n = 1000), la logística sin pesos queda a menos de
+    0.1 de la moda y por debajo de la que usa pesos balanceados."""
+    d = ml.PROCESOS["fraude"](proporcion=0.1)
+    m = ml.ajustar(d)
+    assert ml.desempeno(m, d, "mcc") > 0.2
+    assert ml.benchmarks(d, d.despliegue, criterios=("mcc",)).loc["moda", "mcc"] == 0.0
+    d = ml.PROCESOS["fraude"](n=1000, proporcion=0.01)
+    sin = ml.desempeno(ml.ajustar(d), d, "mcc")
+    con = ml.desempeno(ml.ajustar(d, pesos="balanceado"), d, "mcc")
+    assert abs(sin - 0.0) < 0.1
+    assert sin < con
+
+
+def test_mensajes3_criterio_a_aciertos_dentro_del_fraude():
+    d = ml.PROCESOS["mensajes3"]()
+    y = d.despliegue["y"].to_numpy()
+    for pesos, condicion in ((None, lambda a: a < 0.3), ("balanceado", lambda a: a > 0.6)):
+        m = ml.ajustar(d, pesos=pesos)
+        a = ml.por_clase("aciertos", y, m.predecir(d.despliegue), clases=[0, 1, 2])[2]
+        assert condicion(a), (pesos, a)
+
+
+def test_mensajes3_criterio_b_conformal_marginal_y_por_clase():
+    """Marginal con δ = 0.1: cobertura del fraude <= 0.6 en despliegue. Por clase, en
+    promedio sobre calibraciones repetidas e independientes: >= 0.9 − 2 EE."""
+    d = ml.PROCESOS["mensajes3"]()
+    cal, _ = ml.partir(d.val, 1 / 3, como="azar", semilla=0)
+    m = ml.ajustar(d)
+    marginal = ml.conformal(m, cal, delta=0.1)
+    assert marginal.cobertura_por_clase(d.despliegue)[2] <= 0.6
+    coberturas = []
+    for s in range(1, 21):
+        otra = ml.PROCESOS["mensajes3"](semilla=s, con_realidad=False)
+        cal_s, _ = ml.partir(otra.val, 1 / 3, como="azar", semilla=s)
+        cf = ml.conformal(m, cal_s, delta=0.1, por_clase=True)
+        coberturas.append(cf.cobertura_por_clase(d.despliegue)[2])
+    c = np.array(coberturas)
+    assert c.mean() >= 0.9 - 2 * c.std(ddof=1) / math.sqrt(len(c))
+
+
+def test_proporcion_fija_el_intercepto_en_la_poblacion():
+    d = ml.proceso_clasificacion(n=200, proporcion=0.05, n_realidad=100_000)
+    assert d.realidad["prob"].mean() == pytest.approx(0.05, abs=0.002)
+    d3 = ml.PROCESOS["mensajes3"](n=300, proporcion=(0.7, 0.2, 0.1))
+    medias = d3.realidad[["prob_0", "prob_1", "prob_2"]].mean().to_numpy()
+    assert medias == pytest.approx([0.7, 0.2, 0.1], abs=0.002)
+    assert d3.clases.tolist() == [0, 1, 2] and d3.K == 3
+    with pytest.raises(ValueError, match="proporcion"):
+        ml.proceso_clasificacion(n=50, proporcion=1.2, con_realidad=False)
+
+
+def test_ruido_etiquetas_mezcla_la_prob_y_fija_el_techo():
+    d = ml.proceso_clasificacion(n=400, puntaje=lambda d: 1000 * d["x1"], ruido_etiquetas=0.5)
+    p = d.despliegue["prob"].to_numpy()
+    assert p.min() == pytest.approx(0.25) and p.max() == pytest.approx(0.75)
+    m = ml.ajustar(d)
+    techo = 1 - 0.5 / 2
+    a = ml.desempeno(m, d, "aciertos")
+    assert a <= techo + 2 * math.sqrt(techo * (1 - techo) / len(d.despliegue))
+
+
+@pytest.mark.parametrize("ruido", [ml.normal(0, 1.5), ml.efecto_grupo(10, 1.5, 0.5),
+                                   ml.ar1(0.7, 1.0), ml.t_student(5)])
+def test_oraculo_con_ruido_promedia_el_ruido(ruido):
+    """prob es Pr(y=1 | x visibles): en realidad, dentro de grupos de prob parecida, la
+    frecuencia de y = 1 coincide con la prob media (Monte Carlo, ±4 EE)."""
+    d = ml.proceso_clasificacion(n=200, ruido=ruido, n_realidad=100_000, separar="azar")
+    tab = ml.calibracion(d.realidad["prob"], d.realidad["y"], bins=10)
+    assert np.all(np.abs(tab["frecuencia"] - tab["p_media"]) <= 4 * tab["ee"] + 1e-3)
+    sin = ml.proceso_clasificacion(n=200, n_realidad=100_000)
+    # el ruido aplana la probabilidad: menos casos extremos que sin ruido
+    assert d.realidad["prob"].std() < sin.realidad["prob"].std()
+
+
+def test_proceso_clasificacion_faltantes():
+    d = ml.proceso_clasificacion(n=2000, faltantes={"x1": (0.2, "azar")})
+    for parte in (d.ent, d.val, d.prueba):
+        assert parte["x1"].isna().mean() == pytest.approx(0.2, abs=0.06)
+        assert parte["x2"].notna().all()
+    assert d.realidad["prob"].notna().all() and d.realidad["x1"].notna().all()
+    dep = ml.proceso_clasificacion(n=4000, faltantes={"x1": (0.3, "depende_x")},
+                                   con_realidad=False)
+    todo = pd.concat([dep.ent, dep.val, dep.prueba])
+    falta = todo["x1"].isna()
+    assert falta.mean() == pytest.approx(0.3, abs=0.03)
+    assert todo.loc[falta, "x2"].mean() > todo.loc[~falta, "x2"].mean() + 0.3
+    with pytest.raises(ValueError, match="visible"):
+        ml.proceso_clasificacion(n=50, faltantes={"z": (0.2, "azar")}, con_realidad=False)
+
+
+def test_proceso_faltantes():
+    d = ml.proceso(n=3000, faltantes={"x": (0.2, "azar")})
+    for parte in (d.ent, d.val, d.prueba):
+        assert parte["x"].isna().mean() == pytest.approx(0.2, abs=0.05)
+    assert d.realidad["x"].notna().all() and d.despliegue["x"].notna().all()
+    y = ml.proceso(n=3000, faltantes={"x": (0.3, "depende_y")}, con_realidad=False)
+    todo = pd.concat([y.ent, y.val, y.prueba])
+    assert todo.loc[todo["x"].isna(), "y"].mean() > todo.loc[todo["x"].notna(), "y"].mean()
+
+
+def test_proceso_clasificacion_grupo():
+    d = ml.proceso_clasificacion(n=600, ruido=ml.efecto_grupo(30, 1.0, 0.5), separar="grupo")
+    assert "grupo" in d.ent.columns and "grupo" in d.columnas_contexto
+    g = [set(p["grupo"]) for p in (d.ent, d.val, d.prueba)]
+    assert not (g[0] & g[1]) and not (g[0] & g[2]) and not (g[1] & g[2])
+    nuevos = ml.proceso_clasificacion(n=300, ruido=ml.efecto_grupo(30, 1.0, 0.5),
+                                      separar="grupo", despliegue="grupos_nuevos")
+    assert nuevos.despliegue["grupo"].min() >= 30
+
+
+def test_proceso_clasificacion_tiempo():
+    d = ml.proceso_clasificacion(n=400, ruido=ml.ar1(0.8, 1.0), separar="tiempo")
+    assert d.val["t"].min() > d.ent["t"].max()
+    assert d.prueba["t"].min() > d.val["t"].max()
+
+
+def test_proceso_clasificacion_separar_sin_columna():
+    with pytest.raises(ValueError, match="grupo"):
+        ml.proceso_clasificacion(n=50, separar="grupo", con_realidad=False)
+    with pytest.raises(ValueError, match="columna t"):
+        ml.proceso_clasificacion(n=50, separar="tiempo", con_realidad=False)
+
+
+def test_proceso_clasificacion_binaria_sin_novedades_no_cambio():
+    """La muestra y el oráculo de una binaria sin lo nuevo son los de 1.3 (D-004)."""
+    d = ml.proceso_clasificacion(n=300)
+    pob = d._pob
+    assert np.array_equal(d.realidad["prob"].to_numpy(),
+                          1 / (1 + np.exp(-(1.5 * d.realidad["x1"] + d.realidad["x2"]))))
+    assert pob.b.tolist() == [0.0, 0.0]
+    import hashlib
+    h = hashlib.sha256(pd.util.hash_pandas_object(d.ent).values.tobytes()).hexdigest()[:16]
+    assert h == _HUELLA_BINARIA_1_3
+
+
+# Huella de proceso_clasificacion(n=300).ent en 1.3 (fcb8ee7), para fijar que 1.4 no la mueve.
+_HUELLA_BINARIA_1_3 = "9f9b3f5bbf03a7c8"
+
+
+def test_partir_conserva_y_respeta_el_vocabulario():
+    d = ml.PROCESOS["fraude"](n=1200, proporcion=0.1)
+    cal, resto = ml.partir(d.val, 1 / 3)
+    assert set(cal.index).isdisjoint(resto.index)
+    assert sorted(cal.index.tolist() + resto.index.tolist()) == sorted(d.val.index.tolist())
+    assert cal.attrs["ml"] == d.val.attrs["ml"]
+    for parte, total in ((cal, 1 / 3), (resto, 2 / 3)):
+        for c in (0, 1):
+            esperado = (d.val["y"] == c).sum() * total
+            assert abs((parte["y"] == c).sum() - esperado) <= 1
+    g = ml.proceso_clasificacion(n=600, ruido=ml.efecto_grupo(30, 1, 0.5), separar="grupo")
+    a, b = ml.partir(g.val.pipe(lambda v: pd.concat([g.ent, v])), 0.5, como="grupo")
+    assert set(a["grupo"]).isdisjoint(b["grupo"])
+    t = ml.proceso_clasificacion(n=400, ruido=ml.ar1(), separar="tiempo")
+    viejo, nuevo = ml.partir(t.ent, 0.5, como="tiempo")
+    assert nuevo["t"].min() > viejo["t"].max()
+    with pytest.raises(ValueError, match="temporal"):
+        ml.partir(d.val, 0.5, como="temporal")
+    with pytest.raises(ValueError, match="grupo"):
+        ml.partir(d.val, 0.5, como="grupo")
+
+
+def test_mcc_gorodkin_contra_sklearn_y_contra_covarianzas():
+    from sklearn.metrics import matthews_corrcoef
+
+    rng = np.random.default_rng(0)
+    for K in (2, 3, 5):
+        y = rng.integers(0, K, 300)
+        g = np.where(rng.uniform(size=300) < 0.6, y, rng.integers(0, K, 300))
+        assert ml.mcc(y, g, clases=list(range(K))) == pytest.approx(matthews_corrcoef(y, g))
+        U = np.eye(K)[y]
+        V = np.eye(K)[g]
+        cov = sum(np.cov(U[:, k], V[:, k], bias=True)[0, 1] for k in range(K))
+        den = math.sqrt(U.var(axis=0).sum() * V.var(axis=0).sum())
+        assert ml.mcc(y, g, clases=list(range(K))) == pytest.approx(cov / den)
+    # binaria = correlación de las etiquetas 0/1; regla constante: 0 por convención
+    y, g = np.array([0, 0, 1, 1, 1]), np.array([0, 1, 1, 1, 0])
+    assert ml.mcc(y, g, clases=[0, 1]) == pytest.approx(np.corrcoef(y, g)[0, 1])
+    assert ml.mcc([0, 0, 0, 1], [0, 0, 0, 0], clases=[0, 1]) == 0.0
+    assert ml.mcc([0, 0, 0, 0], [0, 0, 0, 0], clases=[0, 1]) == 0.0
+
+
+def test_soporte_nulo_y_clases_explicitas():
+    assert ml.aciertos_balanceados([0, 0, 1, 1], [0, 0, 1, 1], clases=[0, 1]) == 1
+    v, avisos = _avisos(ml.aciertos_balanceados, [0, 0, 1, 1], [0, 0, 1, 1], clases=[0, 1, 2])
+    assert math.isnan(v) and any("falta la clase 2" in a for a in avisos)
+    assert ml.aciertos_balanceados([0, 0, 1, 1], [0, 0, 1, 1]) == 1
+    v, avisos = _avisos(ml.aciertos_balanceados, [0, 0, 0], [0, 0, 0])
+    assert math.isnan(v) and any("pasa `clases=`" in a for a in avisos)
+    with pytest.raises(ValueError, match="fuera"):
+        ml.mcc([0, 1, 2], [0, 1, 1], clases=[0, 1])
+    # la regla constante en un conjunto sin positivos: A_bal nan (no 1), MCC 0
+    y0, g0 = [0] * 20, [0] * 20
+    v, _ = _avisos(ml.aciertos_balanceados, y0, g0, clases=[0, 1])
+    assert math.isnan(v)
+    assert ml.mcc(y0, g0, clases=[0, 1]) == 0.0
+    s, avisos = _avisos(ml.por_clase, "aciertos", y0, g0, clases=[0, 1])
+    assert s[0] == 1 and math.isnan(s[1])
+    assert any("no tiene casos en este conjunto" in a for a in avisos)
+    m, _ = _avisos(ml.promediar, "aciertos", y0, g0, "macro", clases=[0, 1])
+    assert math.isnan(m)
+    assert ml.promediar("aciertos", y0, g0, "ponderado", clases=[0, 1]) == 1.0
+
+
+def test_identidades_de_promediar():
+    rng = np.random.default_rng(1)
+    y = rng.choice(3, 500, p=[0.8, 0.15, 0.05])
+    g = np.where(rng.uniform(size=500) < 0.7, y, rng.integers(0, 3, 500))
+    cl = [0, 1, 2]
+    assert ml.promediar("aciertos", y, g, "macro", clases=cl) == pytest.approx(
+        ml.aciertos_balanceados(y, g, clases=cl))
+    assert ml.promediar("aciertos", y, g, "ponderado", clases=cl) == pytest.approx(
+        ml.aciertos(y, g))
+    s = ml.por_clase("precision", y, g, clases=cl)
+    assert list(s.index) == cl
+
+
+def test_con_clases_en_cv_guarda_nan_en_el_pliegue_sin_positivos():
+    est = ml.con_clases(ml.aciertos_balanceados, [0, 1])
+    assert est.__name__ == "aciertos_balanceados" and est.__doc__ == ml.aciertos_balanceados.__doc__
+    df = pd.DataFrame({"x1": np.linspace(-1, 1, 40), "y": [0] * 38 + [1, 1]})
+    df.attrs["ml"] = {"columnas_x": ["x1"], "columnas_contexto": [], "tarea": "clasificacion",
+                      "K": 2, "clases": [0, 1]}
+
+    def contiguos(d):
+        idx = np.arange(len(d))
+        return [(np.setdiff1d(idx, b), b) for b in np.array_split(idx, 4)]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        r = ml.validacion_cruzada(df, lambda d: ml.ajustar(d, mu=1.0, penalizacion="l2"),
+                                  particion=contiguos, estadistico=est)
+    assert np.isnan(r.por_pliegue_estadistico[:3]).all()
+
+
+def test_criterios_nuevos_en_evaluar_benchmarks_y_cv():
+    d = ml.PROCESOS["fraude"](n=800, proporcion=0.2)
+    m = ml.ajustar(d)
+    val = d.val
+    assert ml.evaluar(m, val, "mcc") == pytest.approx(ml.mcc(val["y"], m.predecir(val),
+                                                             clases=[0, 1]))
+    assert ml.evaluar(m, val, "brier") == pytest.approx(ml.brier(val["y"], m.predecir_p(val)))
+    with pytest.raises(ValueError, match="riesgo"):
+        ml.riesgo(m, d, "mcc")
+    with pytest.raises(ValueError, match="pondera"):
+        ml.evaluar(m, val, "mcc", pesos="balanceado")
+    cv = ml.validacion_cruzada(d, lambda df: ml.ajustar(df), criterio="mcc",
+                               particion="estratificado")
+    assert len(cv.por_pliegue) == 5 and np.isnan(cv.perdidas_fuera).all()
+    s = ml.elegir(d, {"x1": lambda df: ml.ajustar(df, phi=ml.columnas("x1")),
+                      "x1 y x2": lambda df: ml.ajustar(df)}, con="val", criterio="mcc")
+    assert s.elegido == "x1 y x2" and s.sentido == "max"
+    with pytest.raises(ValueError, match="binario"):
+        ml.benchmarks(ml.PROCESOS["mensajes3"](n=300), ml.PROCESOS["mensajes3"](n=300).val,
+                      criterios=("brier",))
+
+
+def test_benchmarks_de_clasificacion_contra_las_formulas():
+    """Ajustados en ent, evaluados en el conjunto: con ȳ_ent = 0.05 y ȳ_D = 0.10, el Brier
+    de la proporción es 0.10·0.95² + 0.90·0.05² = 0.0925; la logarítmica, su fórmula."""
+    meta = {"columnas_x": ["x1"], "columnas_contexto": [], "tarea": "clasificacion", "K": 2,
+            "clases": [0, 1]}
+    ent = pd.DataFrame({"x1": 0.0, "y": [1] * 5 + [0] * 95})
+    ent.attrs["ml"] = meta
+    ev = pd.DataFrame({"x1": 0.0, "y": [1] * 10 + [0] * 90})
+    t = ml.benchmarks(ent, ev, criterios=("brier", "logaritmica", "mcc", "aciertos_balanceados",
+                                          "aciertos"))
+    assert t.loc["proporcion", "brier"] == pytest.approx(0.0925)
+    assert t.loc["proporcion", "logaritmica"] == pytest.approx(
+        -0.10 * math.log(0.05) - 0.90 * math.log(0.95))
+    assert t.loc["moda", "mcc"] == 0.0 and t.loc["moda", "aciertos_balanceados"] == 0.5
+    assert list(ml.benchmarks(ent, ev).columns) == ["logaritmica", "aciertos"]
+
+
+def test_pesos_de_clase():
+    y = np.array([0] * 950 + [1] * 50)
+    w = ml.pesos_de_clase(y)
+    assert w[0] == pytest.approx(1000 / (2 * 950)) and w[1] == pytest.approx(10)
+    w = ml.pesos_de_clase(y, como="razon", razon=9)
+    assert w[1] / w[0] == pytest.approx(9)
+    assert np.mean([w[v] for v in y]) == pytest.approx(1)
+    with pytest.raises(ValueError, match="razón"):
+        ml.pesos_de_clase(y, como="razon")
+    w, avisos = _avisos(ml.pesos_de_clase, y, como="balanceado", razon=3)
+    assert w[1] == pytest.approx(10) and avisos
+
+
+def test_pesos_mueven_el_intercepto_y_no_las_pendientes():
+    """Con el proceso bien especificado y n grande: β̂0(razón) − β̂0(1) ≈ ln(razón) y las
+    pendientes casi no cambian (la equivalencia con el umbral de clase_4.md §10.7)."""
+    d = ml.PROCESOS["fraude"](n=20_000, proporcion=0.1, con_realidad=False)
+    sin = ml.ajustar(d)
+    con = ml.ajustar(d, pesos={0: 1.0, 1: 9.0})
+    salto = con.beta_gorro["1"] - sin.beta_gorro["1"]
+    assert salto == pytest.approx(math.log(9), abs=0.15)
+    assert con.beta_gorro[["x1", "x2"]].to_numpy() == pytest.approx(
+        sin.beta_gorro[["x1", "x2"]].to_numpy(), abs=0.15)
+
+
+def test_softmax_con_K_2_coincide_con_la_logistica():
+    """Con K = 2 puntajes libres y μ, la diferencia de coeficientes es la logística con μ/2."""
+    d = ml.PROCESOS["fraude"](n=500, proporcion=0.3, con_realidad=False)
+    ent = d.ent
+    phi = ml.estandarizar(ml.columnas("x1", "x2"))
+    log = ml.ajustar(ent, phi=phi, mu=0.05, penalizacion="l2")
+    M = phi.ajustar(ent)(ent).to_numpy()
+    A = np.column_stack([np.ones(len(M)), M])
+    Y = np.eye(2)[ent["y"].to_numpy()]
+    B = ml._softmax(A, Y, np.ones(len(A)), 0.1, 0.0, np.array([False, True, True]))
+    assert (B[1] - B[0]) == pytest.approx(log.beta_gorro.to_numpy(), abs=1e-5)
+
+
+def test_softmax_tres_clases_kkt_y_predicciones():
+    d = ml.PROCESOS["mensajes3"](n=2000, con_realidad=False)
+    m = ml.ajustar(d)
+    assert m.familia == "softmax" and m.beta_gorro.shape == (3, 3)
+    assert list(m.beta_gorro["1"].index) == [0, 1, 2]
+    P = m.predecir_prob(d.ent)
+    assert P.sum(axis=1) == pytest.approx(1)
+    Y = np.eye(3)[d.ent["y"].to_numpy()]
+    A = m.Phi(d.ent).to_numpy()
+    assert np.abs(A.T @ (P - Y) / len(A)).max() < 1e-6  # gradiente 0 sin penalizar
+    assert m.beta_gorro.sum(axis=0).abs().max() < 1e-6  # Σ_k β_kj = 0
+    assert ml.L(m, d.val) == pytest.approx(ml.log_loss(d.val["y"], m.predecir_prob(d.val)))
+    m1 = ml.ajustar(d, phi=ml.estandarizar(ml.columnas("x1", "x2")), mu=0.05, penalizacion="l1")
+    assert (m1.beta_gorro.drop(columns="1").to_numpy() == 0).any()
+
+
+def test_rango_conformal_exacto():
+    for (n, delta), k in (((8, 1 / 3), 6), ((9, 0.1), 9), ((5, 1 / 6), 5), ((5, 1 / 3), 4)):
+        assert ml._rango_conformal(n, delta) == k
+    assert ml._corte([0.1, 0.2], 0.1) == float("inf")  # índice 3 > n_cal = 2
+    assert ml._corte([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], 0.1) == 0.5  # empates
+
+
+def test_conformal_cobertura_promedio_sobre_calibraciones():
+    """La garantía promedia sobre la calibración: con R calibraciones independientes, la
+    cobertura media cae en [1 − δ − 3 EE, 1 − δ + 1/(n_cal + 1) + 3 EE]."""
+    d = ml.PROCESOS["fraude"](n=600, proporcion=0.3)
+    m = ml.ajustar(d)
+    cob, n_cal = [], None
+    for s in range(1, 41):
+        otra = ml.PROCESOS["fraude"](n=600, proporcion=0.3, semilla=s, con_realidad=False)
+        cf = ml.conformal(m, otra.val, delta=0.1)
+        n_cal = cf.n_cal
+        cob.append(cf.cobertura(d.despliegue))
+    c = np.array(cob)
+    ee = c.std(ddof=1) / math.sqrt(len(c))
+    assert 0.9 - 3 * ee <= c.mean() <= 0.9 + 1 / (n_cal + 1) + 3 * ee
+    cf = ml.conformal(m, d.val, delta=0.1)
+    assert cf.puntajes.shape == (len(d.val),)
+    assert 0 < cf.tamano_medio(d.despliegue) <= 2
+    assert set(cf.tamano_por_clase(d.despliegue).index) == {0, 1}
+    conj = cf.predecir_conjunto(d.val.head(3))
+    assert all(isinstance(c_, set) for c_ in conj)
+    reg = ml.PROCESOS["entregas"](n=200)
+    mr = ml.ajustar(reg)
+    cr = ml.conformal(mr, reg.val, delta=0.2)
+    lo, hi = cr.predecir_conjunto(reg.despliegue)
+    assert np.all(hi - lo == pytest.approx(2 * cr.c_gorro))
+
+
+def test_conformal_por_clase_avisa_si_una_clase_no_alcanza():
+    d = ml.PROCESOS["fraude"](n=200, proporcion=0.05)
+    m = ml.ajustar(d)
+    cf, avisos = _avisos(ml.conformal, m, d.val, delta=0.1, por_clase=True)
+    assert cf.c_gorro[1] == float("inf") and any("∞" in a for a in avisos)
+
+
+def test_calibracion_y_recalibrar_con_platt():
+    d = ml.PROCESOS["fraude"](n=4000, proporcion=0.1)
+    con = ml.ajustar(d, pesos="balanceado")
+    tab = ml.calibracion(con.predecir_p(d.val), d.val["y"], bins=10)
+    assert list(tab.columns) == ["grupo", "p_media", "frecuencia", "n", "ee"]
+    assert tab["n"].sum() == len(d.val) and tab["n"].max() - tab["n"].min() <= 1
+    u = ml.calibracion(con.predecir_p(d.val), d.val["y"], bins=10, estrategia="uniforme")
+    assert u["n"].sum() == len(d.val)
+    # los pesos descalibran: la probabilidad media anunciada pasa de la tasa real
+    assert con.predecir_p(d.despliegue).mean() > d.despliegue["y"].mean() + 0.1
+    val_a, val_b = ml.partir(d.val, 0.5)
+    rc = ml.recalibrar(con, val_a)
+    b0, b1 = rc.hiperparametros["beta_cal"]
+    assert b0 == pytest.approx(-math.log(con.pesos[1] / con.pesos[0]), abs=0.5)
+    assert b1 == pytest.approx(1, abs=0.25)
+    assert ml.desempeno(rc, d, "brier") < ml.desempeno(con, d, "brier")
+    assert ml.L(rc, d.despliegue) < ml.L(con, d.despliegue)
+    d3 = ml.PROCESOS["mensajes3"](n=3000)
+    c3 = ml.ajustar(d3, pesos="balanceado")
+    r3 = ml.recalibrar(c3, d3.val)
+    assert ml.L(r3, d3.despliegue) < ml.L(c3, d3.despliegue)
+    assert set(r3.hiperparametros["beta_cal"]) == {"pendiente", "desplazamientos"}
+
+
+def test_elegir_umbral():
+    d = ml.PROCESOS["fraude"](n=2000, proporcion=0.05)
+    m = ml.ajustar(d)
+    tau = ml.elegir_umbral(m, d.val)
+    p, y = m.predecir_p(d.val), d.val["y"].to_numpy()
+    mejor = max(ml.mcc(y, (p >= t).astype(int), clases=[0, 1]) for t in np.arange(0.01, 1, 0.01))
+    assert ml.mcc(y, (p >= tau).astype(int), clases=[0, 1]) == pytest.approx(mejor)
+    assert ml.mcc(y, (p >= tau).astype(int), clases=[0, 1]) > ml.mcc(y, m.predecir(d.val),
+                                                                      clases=[0, 1])
+    rej = np.array([0.3, 0.5, 0.7])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        t = ml.elegir_umbral(m, d.val.assign(y=0), "aciertos", rejilla=rej)
+    assert t == 0.7 or t == 0.5  # empate entre los que no predicen positivos: el más cercano a 0.5
+    with pytest.raises(ValueError, match="umbral"):
+        ml.elegir_umbral(m, d.val, "brier")
+
+
+def _regla_constante(etiqueta, clases=(0, 1)):
+    class _Constante(ml.Modelo):
+        tarea, familia = "clasificacion", "constante"
+
+        def predecir(self, df):
+            return np.full(len(df), etiqueta)
+
+    m = _Constante()
+    m.clases, m.K = np.asarray(clases), len(clases)
+    return m
+
+
+def test_incertidumbre_esquemas():
+    df = pd.DataFrame({"x1": 0.0, "y": [0] * 90 + [1] * 10})
+    m = _regla_constante(0)
+    est = ml.incertidumbre(m, df, "aciertos", estratificar=True, repeticiones=300)
+    assert est.ee == 0 and est.intervalo == (0.9, 0.9) and est.esquema == "estratificado por clase"
+    filas = ml.incertidumbre(m, df, "aciertos", repeticiones=2000)
+    assert filas.ee == pytest.approx(math.sqrt(0.9 * 0.1 / 100), rel=0.15)
+    assert filas.esquema == "por filas"
+    d = ml.PROCESOS["fraude"](n=1500, proporcion=0.3)
+    mod = ml.ajustar(d)
+    inc = ml.incertidumbre(mod, d.val, "aciertos", repeticiones=2000)
+    l_i = (mod.predecir(d.val) == d.val["y"].to_numpy()).astype(float)
+    assert inc.ee == pytest.approx(ml.error_estandar(l_i), rel=0.1)
+    assert ml.incertidumbre(mod, d.val, "mcc", contra=mod, repeticiones=50).ee == 0
+    with pytest.raises(ValueError, match="esquemas"):
+        ml.incertidumbre(mod, d.val, estratificar=True, grupo="grupo")
+    a = ml.incertidumbre(mod, d.val, "mcc", repeticiones=200, semilla=3)
+    b = ml.incertidumbre(mod, d.val, "mcc", repeticiones=200, semilla=3)
+    assert a == b
+    g = d.val.assign(grupo=np.arange(len(d.val)))
+    por_g = ml.incertidumbre(mod, g, "aciertos", grupo="grupo", repeticiones=2000)
+    assert por_g.ee == pytest.approx(inc.ee, rel=0.1) and por_g.esquema == "por grupos (grupo)"
+    # estratificado en un caso no degenerado: sqrt(Σ (n_y/n)² a_y(1−a_y)/n_y)
+    y = d.val["y"].to_numpy()
+    acierta = mod.predecir(d.val) == y
+    teo = math.sqrt(sum((np.mean(y == c)) ** 2 * acierta[y == c].mean()
+                        * (1 - acierta[y == c].mean()) / np.sum(y == c) for c in (0, 1)))
+    e = ml.incertidumbre(mod, d.val, "aciertos", estratificar=True, repeticiones=3000)
+    assert e.ee == pytest.approx(teo, rel=0.1)
+
+
+def test_dibujar_metrica_por_pliegue_marca_nan_y_convencion():
+    tabla = pd.DataFrame({
+        "k": [3] * 6 + [10] * 4,
+        "pliegue": [0, 1, 2, 0, 1, 2, 0, 1, 0, 1],
+        "metrica": ["mcc"] * 3 + ["aciertos_balanceados"] * 3 + ["mcc"] * 2
+                   + ["aciertos_balanceados"] * 2,
+        "valor": [0.4, 0.0, 0.5, 0.7, np.nan, 0.8, 0.3, 0.0, 0.6, np.nan],
+        "raros": [2, 0, 3, 2, 0, 3, 1, 0, 1, 0],
+    })
+    ax = ml.dibujar_metrica_por_pliegue(tabla, k=3)
+    gids = {c.get_gid(): c for c in ax.collections}
+    assert len(gids["no-estimable-k3"].get_offsets()) == 1
+    assert len(gids["no-estimable-k10"].get_offsets()) == 1
+    assert len(gids["cero-por-convencion-k3"].get_offsets()) == 1
+    raya = [ln for ln in ax.lines if ln.get_gid() == "media-aciertos_balanceados-k3"][0]
+    assert raya.get_ydata()[0] == pytest.approx(0.75)
+    assert "sin los nan" in ax.get_title()
+    with pytest.raises(ValueError, match="k=5"):
+        ml.dibujar_metrica_por_pliegue(tabla, k=5)
+    ml.dibujar_metrica_por_pliegue(tabla, tema="sitio")
+
+
+def test_dibujar_calibracion_humo():
+    d = ml.PROCESOS["fraude"](n=1500, proporcion=0.2)
+    m = ml.ajustar(d)
+    tab = ml.calibracion(m.predecir_p(d.val), d.val["y"])
+    ver = ml.calibracion(d.realidad["prob"], d.realidad["y"])
+    ax = ml.dibujar_calibracion({"sin pesos": tab}, verdadera=ver)
+    assert {ln.get_gid() for ln in ax.lines} >= {"diagonal", "verdadera", "calibracion-0"}
+    ml.dibujar_calibracion(tab, histograma=False, tema="sitio")

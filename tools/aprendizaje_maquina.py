@@ -11,7 +11,7 @@ Uso: import ml_lab as ml; datos = ml.PROCESOS["entregas"](); m = ml.ajustar(dato
 
 # === 0 · Versión y tema ===
 
-VERSION = "1.3"
+VERSION = "1.4"
 
 import ast  # noqa: E402
 import copy  # noqa: E402
@@ -40,7 +40,7 @@ __all__ = [
     "Datos", "proceso", "proceso_clasificacion", "anillos", "PROCESOS", "CasoBorde",
     "CASOS_BORDE", "caso", "entregas_curvas", "muchas_variables",
     # 3 · separaciones
-    "separar", "pliegues", "Particion",
+    "separar", "pliegues", "Particion", "partir",
     # 4 · representaciones
     "Phi", "polinomio", "columnas", "polares", "periodicas", "dummies", "combinar", "taylor",
     "interacciones", "estandarizar",
@@ -48,16 +48,20 @@ __all__ = [
     "Modelo", "ajustar", "ajustar_otro",
     # 6 · pérdidas y métricas
     "perdida", "Criterio", "SENTIDO", "evaluar", "L", "riesgo", "desempeno", "piso", "mse",
-    "aciertos", "benchmarks", "mae", "rmse", "r2", "peores_errores",
+    "aciertos", "benchmarks", "mae", "rmse", "r2", "peores_errores", "clasificar",
+    "aciertos_balanceados", "mcc", "brier", "log_loss", "matriz_confusion", "por_clase",
+    "promediar", "con_clases", "pesos_de_clase",
     # 7 · medir
     "repetir", "error_por_zona", "no_free_lunch", "error_estandar", "intervalo",
     "validacion_cruzada", "ResultadoCV", "diferencia_pareada", "diferencia_por_pliegue",
     "elegir", "Seleccion", "cv_anidada", "optimismo_por_seleccion", "capacidad_elegida",
-    "reparto",
+    "reparto", "incertidumbre", "Incertidumbre",
     # 8 · capacidad
     "curva_capacidad", "sesgo_varianza", "SesgoVarianza", "curva_aprendizaje",
     # 9 · regularización
     "beta_verdadero", "trayectorias", "optimo_restringido", "encoger_1d", "beta_repetido",
+    # 10 · clasificación: calibración y conformal
+    "calibracion", "recalibrar", "elegir_umbral", "conformal", "Conformal",
     # 12 · gráficas
     "ROLES", "tema", "dibujar_proceso", "dibujar_ajuste", "dibujar_frontera", "imprimir_Phi",
     "dibujar_curva_capacidad", "dibujar_tres_paneles", "dibujar_piso", "dibujar_perdida_1d",
@@ -67,6 +71,7 @@ __all__ = [
     "dibujar_reparto", "dibujar_benchmarks", "dibujar_media_acumulada", "dibujar_peso_de_filas",
     "dibujar_residuales_plano", "dibujar_beta_repetido", "dibujar_encoger_1d",
     "dibujar_trayectorias", "dibujar_regiones", "dibujar_presupuesto",
+    "dibujar_metrica_por_pliegue", "dibujar_calibracion",
     # 13 · interactividad
     "laboratorio", "deslizador", "selector", "interruptor", "galeria", "taller",
     "ANALISIS_TALLER",
@@ -1482,8 +1487,6 @@ def _proceso(n=200, x=None, f=_f_por_omision, ruido=None, correlacion=None, endo
              fracciones=(0.6, 0.2, 0.2), despliegue="igual", deriva=None, n_realidad=100_000,
              semilla=0, semilla_realidad=0, con_realidad=True, f_visible_cerrada=None,
              descripcion=None):
-    if faltantes is not None:
-        raise NotImplementedError("`faltantes` llega con la versión de la clase 4")
     if separar not in _SEPARAR:
         raise ValueError(f"separar debe ser uno de {_SEPARAR}, no {separar!r}")
     x = {"x": uniforme(0, 1)} if x is None else x
@@ -1498,6 +1501,9 @@ def _proceso(n=200, x=None, f=_f_por_omision, ruido=None, correlacion=None, endo
                          "(efecto_grupo)")
     cambio = {"t0": 0} if despliegue == "futuro" else None
     muestra = pob.completo(int(n), np.random.default_rng([semilla, 0]), cambio)
+    if faltantes is not None:
+        muestra = _faltantes(muestra, faltantes, pob.visibles,
+                             np.random.default_rng([semilla, 5]))
     argumentos = dict(n=n, x=x, f=f, ruido=ruido, correlacion=correlacion, endogeno=endogeno,
                       omitir=omitir, escala=escala, faltantes=faltantes, separar=separar,
                       fracciones=fracciones, despliegue=despliegue, deriva=deriva,
@@ -1537,8 +1543,11 @@ def proceso(n=200, x={"x": uniforme(0, 1)}, f=_f_por_omision, ruido=normal(0, 1)
     concepto, caso 28). Con despliegue="igual", deriva es un ValueError. Con deriva y
     f_visible de forma cerrada o por Monte Carlo, el despliegue la trae como nan.
     Una x llamada t con "futuro" pasa a ser 0…n−1 en la muestra, n… en despliegue y
-    0…n−1 repetido en realidad. Desde: 1.2 (clase 2) para todo lo anterior;
-    faltantes lanza NotImplementedError hasta la versión de la clase 4.
+    0…n−1 repetido en realidad. Desde: 1.2 (clase 2) para todo lo anterior.
+    faltantes (desde 1.4, clase 4): {"x2": (0.2, "azar"|"depende_x"|"depende_y")} borra
+    (nan) esa fracción de la columna solo en la muestra (ent, val, prueba), nunca en
+    realidad ni despliegue; "depende_x" depende de la primera otra variable visible y
+    "depende_y" de y (Pr(falta) = 2·fracción·rango).
     endogeno = corr(x1, ε) (x1, o la primera variable si no hay "x1"):
     ε = c·σ·z1 + sqrt(1 − c²)·u, con z1 la x1 estandarizada y u el ruido.
     Flujos: la muestra sale de default_rng([semilla, 0]), la partición de
@@ -1578,64 +1587,341 @@ def _puntaje_por_omision(d):
     return 1.5 * d["x1"] + 1.0 * d["x2"]
 
 
+def _puntaje_cero(d):
+    return np.zeros(len(d))
+
+
+_NODOS_GH = 24
+_N_CALIBRAR = 40_000
+_CACHE_INTERCEPTOS = OrderedDict()
+
+
+def _gauss_hermite(media, desv):
+    t, a = np.polynomial.hermite_e.hermegauss(_NODOS_GH)
+    return media + desv * t, a / a.sum()
+
+
+def _nodos_pieza(ruido):
+    """(nodos, pesos) para promediar sobre una Pieza; None si no se sabe hacerlo."""
+    if isinstance(ruido, _Normal):
+        return _gauss_hermite(ruido.media, ruido.desv)
+    if hasattr(ruido, "_cuantil"):
+        u = (np.arange(400) + 0.5) / 400
+        return np.asarray(ruido._cuantil(u), float), np.full(400, 1 / 400)
+    return None
+
+
+def _softmax_filas(Z):
+    Z = Z - Z.max(axis=1, keepdims=True)
+    E = np.exp(Z)
+    return E / E.sum(axis=1, keepdims=True)
+
+
+def _faltantes(muestra, faltantes, visibles, rng):
+    """Borra (nan) una fracción de cada columna pedida; solo en la muestra, nunca en realidad.
+
+    {"x2": (0.2, "azar"|"depende_x"|"depende_y")}: "azar", cada fila con la misma
+    probabilidad; "depende_x", más probable cuanto mayor la primera OTRA variable
+    visible; "depende_y", cuanto mayor y. Con dependencia, Pr(falta) = 2·fracción·rango
+    (rango en (0, 1)), que promedia la fracción si es <= 0.5.
+    """
+    if not isinstance(faltantes, dict):
+        raise ValueError('faltantes es un dict: {"x2": (0.2, "azar")}')
+    n = len(muestra)
+    for col, regla in faltantes.items():
+        if col not in visibles:
+            raise ValueError(f"faltantes nombra {col!r}, que no es una variable visible "
+                             f"({', '.join(visibles)})")
+        try:
+            fraccion, como = regla
+        except (TypeError, ValueError):
+            raise ValueError(f'faltantes[{col!r}] es (fracción, "azar"|"depende_x"|"depende_y")')
+        fraccion = float(fraccion)
+        if not 0 <= fraccion < 1:
+            raise ValueError("la fracción de faltantes está en [0, 1)")
+        if como == "azar":
+            p = np.full(n, fraccion)
+        elif como in ("depende_x", "depende_y"):
+            if como == "depende_x":
+                otras = [v for v in visibles if v != col]
+                if not otras:
+                    raise ValueError('"depende_x" necesita otra variable visible de la que dependa')
+                base = muestra[otras[0]].to_numpy(float)
+            else:
+                base = muestra["y"].to_numpy(float)
+            rango = (stats.rankdata(base, method="average") - 0.5) / max(n, 1)
+            p = np.clip(2 * fraccion * rango, 0, 1)
+        else:
+            raise ValueError('el mecanismo de faltantes es "azar", "depende_x" o "depende_y"')
+        borrar = rng.uniform(size=n) < p
+        muestra[col] = muestra[col].astype(float)
+        muestra.loc[borrar, col] = np.nan
+    return muestra
+
+
 class _PoblacionClasificacion:
-    """Binaria: z = puntaje(d) y Pr(y=1 | x) = σ(z). Sin omitidas ni contexto (1.1)."""
+    """K clases: z_k = puntajes[k](d) + b_k (+ ruido en k >= 1); Pr(y = k | z) = softmax(z)_k.
+
+    Binaria: z = puntaje(d) + b y Pr(y = 1 | z) = σ(z). b lo fija proporcion (b = 0
+    sin ella). El oráculo prob es respecto de lo visible: promedia el ruido
+    (cuadratura) y mezcla las etiquetas reasignadas: (1 − r)·p + r/K.
+    """
 
     tarea = "clasificacion"
     omitidas = []
-    contexto = []
     tipo = "directa"
     c_y = 1.0
 
-    def __init__(self, x, puntaje):
+    def __init__(self, x, puntajes, ruido=None, ruido_etiquetas=0.0, proporcion=None):
         self.x = dict(x)
         if not self.x:
             raise ValueError("x necesita al menos una variable")
         for nombre, pieza in self.x.items():
             if not isinstance(pieza, Pieza):
                 raise ValueError(f"x[{nombre!r}] debe ser una Pieza (normal, uniforme, ...)")
-        _validar_reservados(self.x, ("y", "prob"))
-        if not callable(puntaje):
-            raise ValueError("puntaje es una función de los datos: lambda d: 2 * d['x1']")
-        self.puntaje = puntaje
+        self.puntajes = list(puntajes)
+        self.K = len(self.puntajes)
+        reservados = ("y", "prob") + tuple(f"prob_{k}" for k in range(self.K))
+        _validar_reservados(self.x, reservados)
+        for p in self.puntajes:
+            if not callable(p):
+                raise ValueError("puntaje es una función de los datos: lambda d: 2 * d['x1']")
+        if ruido is not None and not isinstance(ruido, (Pieza, Mecanismo)):
+            raise ValueError("ruido es None, una Pieza o un Mecanismo (efecto_grupo, ar1)")
+        self.ruido = ruido
+        self.mecanismo = ruido if isinstance(ruido, Mecanismo) else None
+        self.contexto = list(self.mecanismo.crea) if self.mecanismo is not None else []
+        r = float(ruido_etiquetas)
+        if not 0 <= r <= 1:
+            raise ValueError("ruido_etiquetas es una fracción en [0, 1]")
+        self.r = r
         self.visibles = list(self.x)
+        self.b = np.zeros(self.K)
+        if proporcion is not None:
+            objetivo = self._objetivo(proporcion)
+            llave = self._llave_contenido() + (tuple(np.round(objetivo, 15)),)
+            if llave not in _CACHE_INTERCEPTOS:
+                _CACHE_INTERCEPTOS[llave] = self._calibrar(objetivo)
+                while len(_CACHE_INTERCEPTOS) > 64:
+                    _CACHE_INTERCEPTOS.popitem(last=False)
+            self.b = _CACHE_INTERCEPTOS[llave].copy()
+
+    @property
+    def puntaje(self):
+        return self.puntajes[-1]
+
+    def _objetivo(self, proporcion):
+        K, r = self.K, self.r
+        if K == 2 and np.ndim(proporcion) == 0:
+            p = np.array([1 - float(proporcion), float(proporcion)])
+        else:
+            p = np.asarray(proporcion, float).reshape(-1)
+        if len(p) != K or np.any(p <= 0) or not math.isclose(p.sum(), 1.0, abs_tol=1e-9):
+            raise ValueError("proporcion es Pr(y=1) en (0, 1) (binaria) o una lista de K "
+                             "proporciones positivas que suman 1")
+        sin_ruido = (p - r / K) / (1 - r) if r < 1 else p
+        if r >= 1 or np.any(sin_ruido <= 0):
+            raise ValueError(f"con ruido_etiquetas={r:g} ninguna clase puede tener proporción "
+                             f"menor que {r / K:.3g}")
+        return sin_ruido / sin_ruido.sum()
+
+    def _calibrar(self, p):
+        """Los interceptos (b_0 = 0) que dan Pr(y = k) = p_k en la población, sin las etiquetas
+        reasignadas; se resuelven en una muestra fija de x (no depende de la semilla)."""
+        rng = np.random.default_rng([_SEMILLA_HUELLA, 7])
+        n = _N_CALIBRAR
+        df = pd.DataFrame(self._xs_dict(n, rng))
+        if self.mecanismo is not None:
+            for k, v in self.mecanismo.preparar(n, rng).items():
+                df[k] = v
+        Z0 = self._Z(df, b=np.zeros(self.K))
+        nodos = self._nodos(df)
+        if nodos is None:
+            raise ValueError("con este ruido no sé calcular Pr(y | x): proporcion no se puede "
+                             "ajustar (usa normal, una pieza de ml_lab, efecto_grupo o ar1)")
+        if self.K == 2:
+            def falta(b0):
+                return float(np.mean(self._integrar(Z0 + np.array([0.0, b0]), nodos)[:, 1])) - p[1]
+            b1 = optimize.brentq(falta, -60, 60, xtol=1e-12)
+            return np.array([0.0, b1])
+
+        def objetivo(bl):
+            b = np.concatenate([[0.0], bl])
+            total, grad = 0.0, np.zeros(self.K)
+            for mascara, e, a in nodos:
+                if not mascara.any():
+                    continue
+                Zm = Z0[mascara] + b
+                for ej, aj in zip(e, a):
+                    Zj = Zm.copy()
+                    Zj[:, 1:] += ej
+                    total += aj * special.logsumexp(Zj, axis=1).sum()
+                    grad += aj * _softmax_filas(Zj).sum(axis=0)
+            total, grad = total / len(Z0), grad / len(Z0)
+            return total - p[1:] @ bl, (grad - p)[1:]
+
+        sol = optimize.minimize(objetivo, np.log(p[1:] / p[0]), jac=True, method="BFGS",
+                                options={"gtol": 1e-11, "maxiter": 500})
+        return np.concatenate([[0.0], sol.x])
+
+    def _xs_dict(self, n, rng):
+        return {v: np.asarray(p.muestrear(n, rng)) for v, p in self.x.items()}
 
     def _xs(self, n, rng):
-        return pd.DataFrame({v: np.asarray(p.muestrear(n, rng)) for v, p in self.x.items()})
+        return pd.DataFrame(self._xs_dict(n, rng))
 
-    def _z(self, df):
-        return np.asarray(self.puntaje(df), dtype=float).reshape(-1) * np.ones(len(df))
+    def _Z(self, df, puntajes=None, b=None):
+        n = len(df)
+        cols = [np.asarray(f(df), dtype=float).reshape(-1) * np.ones(n)
+                for f in (puntajes or self.puntajes)]
+        return np.column_stack(cols) + (self.b if b is None else b)
+
+    def _nodos(self, df):
+        """[(filas, nodos, pesos)] para promediar el ruido que se suma a z_k (k >= 1)."""
+        n = len(df)
+        todas = np.ones(n, bool)
+        if self.ruido is None:
+            return [(todas, np.zeros(1), np.ones(1))]
+        if isinstance(self.ruido, Pieza):
+            nd = _nodos_pieza(self.ruido)
+            return None if nd is None else [(todas, *nd)]
+        if isinstance(self.ruido, _Ar1):
+            return [(todas, *_gauss_hermite(0.0, math.sqrt(self.ruido.varianza)))]
+        if isinstance(self.ruido, _EfectoGrupo):
+            mec = self.ruido
+            g = np.asarray(df["grupo"])
+            vistos = g < mec.n_grupos
+            t, a = _gauss_hermite(0.0, mec.desv)
+            efectos = mec.desv_grupo * mec._propios()
+            e_v = (efectos[:, None] + t[None, :]).ravel()
+            a_v = (np.full(len(efectos), 1 / len(efectos))[:, None] * a[None, :]).ravel()
+            e_n, a_n = _gauss_hermite(0.0, math.sqrt(mec.desv_grupo ** 2 + mec.desv ** 2))
+            return [(vistos, e_v, a_v), (~vistos, e_n, a_n)]
+        return None
+
+    def _integrar(self, Z, nodos):
+        """Pr(y = k | lo visible), sin las etiquetas reasignadas."""
+        P = np.zeros_like(Z)
+        for mascara, e, a in nodos:
+            if not mascara.any():
+                continue
+            Zm = Z[mascara]
+            acc = np.zeros_like(Zm)
+            if self.K == 2:
+                z = Zm[:, 1] - Zm[:, 0]
+                bloque = max(1, 4_000_000 // len(e))
+                for i in range(0, len(z), bloque):
+                    p1 = special.expit(z[i:i + bloque, None] + e[None, :]) @ a
+                    acc[i:i + bloque, 1] = p1
+                    acc[i:i + bloque, 0] = 1 - p1
+                P[mascara] = acc
+                continue
+            for ej, aj in zip(e, a):
+                Zj = Zm.copy()
+                Zj[:, 1:] += ej
+                acc += aj * _softmax_filas(Zj)
+            P[mascara] = acc
+        return P
+
+    def _mezclar(self, P):
+        return P if self.r == 0 else (1 - self.r) * P + self.r / self.K
 
     def llave(self):
         df = self._xs(_N_HUELLA, np.random.default_rng(_SEMILLA_HUELLA))
-        return ("clf", _huella(self.puntaje, self._z(df)),
-                tuple((k, _huella(v, df[k])) for k, v in self.x.items()))
+        return ("clf", self.K, tuple(_huella(f, self._Z(df, [f], b=np.zeros(1)))
+                                     for f in self.puntajes),
+                tuple((k, _huella(v, df[k])) for k, v in self.x.items()),
+                repr(self.ruido), self.r, tuple(np.round(self.b, 12)))
+
+    def _llave_contenido(self):
+        """Lo que fija los interceptos, por contenido (no por identidad de los objetos)."""
+        df = self._xs(_N_HUELLA, np.random.default_rng(_SEMILLA_HUELLA))
+        Z = self._Z(df, b=np.zeros(self.K))
+        h = hashlib.sha256(np.ascontiguousarray(df.to_numpy(float)).tobytes()
+                           + np.ascontiguousarray(Z).tobytes()).hexdigest()
+        return ("interceptos", self.K, tuple(self.x), h, repr(self.ruido), self.r)
 
     def sigma2_e(self):
         return float("nan")
 
+    def _contexto(self, n, rng, cambio):
+        if self.mecanismo is None:
+            return {}
+        if cambio and cambio.get("nuevos"):
+            if not hasattr(self.mecanismo, "preparar_nuevos"):
+                raise ValueError('despliegue="grupos_nuevos" pide un ruido que sepa crear grupos '
+                                 "nuevos, como efecto_grupo")
+            ctx = self.mecanismo.preparar_nuevos(n, rng)
+        else:
+            ctx = self.mecanismo.preparar(n, rng)
+        if cambio and cambio.get("t0") is not None and "t" in ctx:
+            ctx = {**ctx, "t": int(cambio["t0"]) + np.asarray(ctx["t"])}
+        return ctx
+
     def prob(self, df):
-        return special.expit(self._z(df[self.visibles]))
+        """Pr(y = 1 | lo visible) en binaria; (n, K) con K > 2."""
+        nodos = self._nodos(df)
+        if nodos is None:
+            P = np.full((len(df), self.K), np.nan)
+        else:
+            P = self._mezclar(self._integrar(self._Z(df), nodos))
+        return P[:, 1] if self.K == 2 else P
 
     def completo(self, n, rng, cambio=None):
         """Con cambio (despliegue de clase 2): una x llamada t sigue a la muestra y deriva
-        cambia variables o, con la clave "f", el puntaje."""
-        if cambio and cambio.get("nuevos"):
-            raise ValueError('despliegue="grupos_nuevos" pide una columna grupo; '
-                             "proceso_clasificacion la tendrá con ruido (clase 4)")
-        xs = {v: np.asarray(p.muestrear(n, rng)) for v, p in self.x.items()}
+        cambia variables o, con la clave "f", el puntaje (solo binaria)."""
+        if cambio and cambio.get("nuevos") and self.mecanismo is None:
+            raise ValueError('despliegue="grupos_nuevos" pide una columna grupo: un ruido que la '
+                             "cree (efecto_grupo)")
+        xs = self._xs_dict(n, rng)
         if cambio and "t" in self.x:
             if cambio.get("t0") is not None:
                 xs["t"] = int(cambio["t0"]) + np.arange(int(n))
             elif cambio.get("t_realidad") is not None:
                 xs["t"] = np.arange(int(n)) % int(cambio["t_realidad"])
-        puntaje = self.puntaje
+        ctx = self._contexto(n, rng, cambio)
+        puntajes = self.puntajes
         if cambio and cambio.get("deriva") is not None:
-            puntaje = _aplicar_deriva(cambio["deriva"], xs.get("t"), xs, n, rng, puntaje)
-        df = pd.DataFrame(xs)
-        p = special.expit(np.asarray(puntaje(df), float).reshape(-1) * np.ones(len(df)))
-        df["y"] = (rng.uniform(size=n) < p).astype(int)
-        df["_prob"] = p
+            t = ctx.get("t", xs.get("t"))
+            nuevo = _aplicar_deriva(cambio["deriva"], None if t is None else np.asarray(t),
+                                    xs, n, rng, self.puntajes[-1])
+            if nuevo is not self.puntajes[-1]:
+                if self.K > 2:
+                    raise ValueError('la clave "f" de deriva cambia el puntaje de una binaria; '
+                                     "con K > 2 no está definida")
+                puntajes = [self.puntajes[0], nuevo]
+        df = pd.DataFrame({**xs, **ctx})
+        Z = self._Z(df, puntajes)
+        if self.ruido is None:
+            Zr = Z
+        else:
+            if self.mecanismo is not None:
+                eps = np.asarray(self.mecanismo.muestrear(df, rng), float)
+            else:
+                eps = np.asarray(self.ruido.muestrear(n, rng), float)
+            Zr = Z.copy()
+            Zr[:, 1:] += eps[:, None]
+        if self.K == 2:
+            p_real = special.expit(Zr[:, 1] - Zr[:, 0])
+            if self.r:
+                p_real = (1 - self.r) * p_real + self.r / 2
+            df["y"] = (rng.uniform(size=n) < p_real).astype(int)
+        else:
+            P_real = self._mezclar(_softmax_filas(Zr))
+            u = rng.uniform(size=n)
+            df["y"] = (u[:, None] > np.cumsum(P_real, axis=1)[:, :-1]).sum(axis=1).astype(int)
+        nodos = self._nodos(df)
+        if self.ruido is None and self.r == 0 and self.K == 2:
+            P_vis = None
+            df["_prob"] = special.expit(Z[:, 1] - Z[:, 0])
+        else:
+            P_vis = (np.full((n, self.K), np.nan) if nodos is None
+                     else self._mezclar(self._integrar(Z, nodos)))
+            if self.K == 2:
+                df["_prob"] = P_vis[:, 1]
+            else:
+                for k in range(self.K):
+                    df[f"_prob_{k}"] = P_vis[:, k]
         return df
 
     def f_estructural(self, df):
@@ -1645,14 +1931,28 @@ class _PoblacionClasificacion:
         return self.prob(df)
 
     def oraculos(self, completo, semilla_realidad):
-        if "_prob" in completo:
-            return {"prob": completo["_prob"].to_numpy()}
-        return {"prob": self.prob(completo)}
+        if self.K == 2:
+            if "_prob" in completo:
+                return {"prob": completo["_prob"].to_numpy()}
+            return {"prob": self.prob(completo)}
+        if "_prob_0" in completo:
+            return {f"prob_{k}": completo[f"_prob_{k}"].to_numpy() for k in range(self.K)}
+        P = self.prob(completo)
+        return {f"prob_{k}": P[:, k] for k in range(self.K)}
 
     def nombres_oraculos(self):
-        return ["prob"]
+        return ["prob"] if self.K == 2 else [f"prob_{k}" for k in range(self.K)]
 
-    piso = _PoblacionAnillos.piso
+    def piso(self, desp, perdida):
+        if perdida != "logaritmica":
+            raise ValueError("en clasificación el piso es con perdida='logaritmica'")
+        if self.K == 2:
+            return _PoblacionAnillos.piso(self, desp, perdida)
+        P = np.column_stack([desp[f"prob_{k}"].to_numpy(float) for k in range(self.K)])
+        if np.isnan(P).any():
+            return float("nan")
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return float(np.mean(-np.sum(np.where(P > 0, P * np.log(P), 0.0), axis=1)))
 
 
 def proceso_clasificacion(n=500, x={"x1": normal(0, 1), "x2": normal(0, 1)},
@@ -1661,20 +1961,28 @@ def proceso_clasificacion(n=500, x={"x1": normal(0, 1), "x2": normal(0, 1)},
                           fracciones=(0.6, 0.2, 0.2), despliegue="igual", deriva=None,
                           n_realidad=100_000, semilla=0, semilla_realidad=0, faltantes=None,
                           ruido=None, con_realidad=True):
-    """Datos de clasificación binaria con Pr(y=1 | x) = σ(puntaje(d)), conocida.
+    """Datos de clasificación con Pr(y | x) conocida: binaria σ(puntaje) o softmax con K.
 
-    realidad y despliegue traen el oráculo "prob". Desde: 1.1 (clase 1).
+    realidad y despliegue traen el oráculo "prob" = Pr(y=1 | x visibles) (binaria) o
+    "prob_0"…"prob_{K-1}" (K > 2). Desde: 1.1 (clase 1); lo de abajo, 1.4 (clase 4).
     Ejemplo: datos = ml.proceso_clasificacion(n=400, puntaje=lambda d: 2 * d["x1"] - d["x2"])
 
-    Es un adelanto con la firma completa (§5.5): funcionan K=2, puntaje,
-    separar="azar"|"estratificado" y, desde 1.2 (clase 2), despliegue y deriva con la
-    semántica de proceso ("futuro" pide una x llamada t; la clave "f" de deriva
-    reemplaza al puntaje; "grupos_nuevos" no tiene grupo hasta la clase 4: ValueError).
-    Lanzan NotImplementedError con la versión que los trae: proporcion,
-    ruido_etiquetas≠0, K>2 (con puntajes), faltantes, ruido (se sumará al puntaje) y
-    separar="tiempo"|"grupo" (clase 4). deriva con despliegue="igual" es ValueError.
+    K > 2: puntajes es la lista de los K puntajes libres (z_k = puntajes[k](d) + b_k,
+    b_0 = 0; puntaje se ignora). proporcion: Pr(y=1) (binaria) o la lista de K
+    proporciones; ajusta los interceptos b para que la población las tenga (sin ella,
+    b = 0). ruido_etiquetas: esa fracción de etiquetas se reasigna al azar uniforme
+    entre las K clases, y prob la incluye; con una señal perfectamente separable y
+    clases balanceadas, el techo binario de aciertos es 1 − ruido_etiquetas/2 (con
+    señal casi separable, un poco menos). ruido (Pieza o Mecanismo) se SUMA al puntaje
+    (con K > 2, a todos los z_k con k >= 1, contra la clase 0): efecto_grupo crea
+    "grupo" y ar1 crea "t"; prob promedia ese ruido (cuadratura de Gauss–Hermite, o
+    400 cuantiles de la pieza; con un ruido que no sabe promediar, nan). faltantes:
+    como en proceso; solo borra valores de la muestra (ent, val, prueba), y prob usa
+    los completos. separar: "azar", "estratificado", "tiempo" (pide t) o "grupo"
+    (pide grupo). despliegue y deriva, como en proceso (la clave "f" de deriva
+    reemplaza al puntaje de una binaria). deriva con despliegue="igual" es ValueError.
     Flujos: los de proceso (muestra [semilla, 0], partición [semilla, 3], realidad y
-    despliegue [semilla_realidad, 1] y [semilla_realidad, 2]).
+    despliegue [semilla_realidad, 1] y [semilla_realidad, 2]); faltantes [semilla, 5].
     """
     if deriva is not None and despliegue == "igual":
         raise ValueError('`deriva` solo vale con despliegue="futuro" u "otra_poblacion"')
@@ -1685,34 +1993,99 @@ def proceso_clasificacion(n=500, x={"x1": normal(0, 1), "x2": normal(0, 1)},
     if not isinstance(K, (int, np.integer)) or K < 2:
         raise ValueError("K es el número de clases: un entero >= 2")
     if K > 2 or puntajes is not None:
-        raise NotImplementedError("K > 2 (con puntajes) llega con la versión de la clase 4")
-    if proporcion is not None:
-        raise NotImplementedError("`proporcion` llega con la versión de la clase 4")
-    if ruido_etiquetas != 0:
-        raise NotImplementedError("`ruido_etiquetas` llega con la versión de la clase 4")
-    if faltantes is not None:
-        raise NotImplementedError("`faltantes` llega con la versión de la clase 4")
-    if ruido is not None:
-        raise NotImplementedError("`ruido` (sumado al puntaje) llega con la versión de la clase 4")
-    if separar in ("tiempo", "grupo"):
-        raise NotImplementedError(f'separar="{separar}" llega con la versión de la clase 4')
-    pob = _PoblacionClasificacion(x, puntaje)
-    _validar_despliegue(despliegue, deriva, list(pob.x))
+        if puntajes is None or len(puntajes) != K:
+            raise ValueError(f"con K = {K} clases, puntajes es una lista de K = {K} funciones "
+                             "(la primera suele ser la referencia: lambda d: 0 * d.x1)")
+        lista = list(puntajes)
+    else:
+        lista = [_puntaje_cero, puntaje]
+    pob = _PoblacionClasificacion(x, lista, ruido, ruido_etiquetas, proporcion)
+    columnas = list(pob.x) + pob.contexto
+    _validar_despliegue(despliegue, deriva, columnas)
+    if separar == "tiempo" and "t" not in columnas:
+        raise ValueError('separar="tiempo" necesita una columna t: un ruido que la cree (ar1) '
+                         'o una x llamada "t"')
+    if separar == "grupo" and "grupo" not in columnas:
+        raise ValueError('separar="grupo" necesita una columna grupo: un ruido que la cree '
+                         "(efecto_grupo)")
     cambio = {"t0": 0} if despliegue == "futuro" else None
     muestra = pob.completo(int(n), np.random.default_rng([semilla, 0]), cambio)
-    muestra = muestra.drop(columns="_prob")
-    argumentos = dict(n=n, x=x, puntaje=puntaje, separar=separar, fracciones=fracciones,
-                      despliegue=despliegue, deriva=deriva,
-                      n_realidad=n_realidad, semilla_realidad=semilla_realidad)
+    muestra = muestra.drop(columns=[c for c in muestra.columns if c.startswith("_prob")])
+    if faltantes is not None:
+        muestra = _faltantes(muestra, faltantes, pob.visibles,
+                             np.random.default_rng([semilla, 5]))
+    argumentos = dict(n=n, x=x, puntaje=puntaje, K=K, puntajes=puntajes, proporcion=proporcion,
+                      ruido_etiquetas=ruido_etiquetas, separar=separar, fracciones=fracciones,
+                      despliegue=despliegue, deriva=deriva, n_realidad=n_realidad,
+                      semilla_realidad=semilla_realidad, faltantes=faltantes, ruido=ruido)
 
     def rehacer(s, con_realidad=False):
         return proceso_clasificacion(**{**argumentos, "semilla": s,
                                         "con_realidad": con_realidad})
 
+    tipo = "binaria" if K == 2 else f"con {K} clases"
     return _armar(pob, muestra, fracciones, np.random.default_rng([semilla, 3]), separar,
                   n_realidad, semilla, semilla_realidad, con_realidad,
-                  f"clasificación binaria con {', '.join(pob.visibles)}", rehacer,
-                  K=2, clases=[0, 1], despliegue_como=despliegue, uso=(despliegue, int(n), deriva))
+                  f"clasificación {tipo} con {', '.join(pob.visibles)}", rehacer,
+                  K=K, clases=list(range(K)), despliegue_como=despliegue,
+                  uso=(despliegue, int(n), deriva))
+
+
+def _validar_n_hilo(n, nombre):
+    if isinstance(n, bool) or not float(n).is_integer() or n < 2:
+        pista = (f" ¿quisiste decir proporcion={n}?" if isinstance(n, float) and 0 < n < 1
+                 else "")
+        raise ValueError(f"{nombre}: n es el tamaño de la muestra, un entero >= 2 "
+                         f"(recibí {n!r}).{pista}")
+
+
+def _puntaje_fraude(d):
+    return 1.5 * d["x1"] + 1.0 * d["x2"]
+
+
+def _puntaje_legitimo(d):
+    return 0 * d["x1"]
+
+
+def _puntaje_publicidad(d):
+    return 1.2 * d["x1"] - 0.4 * d["x2"]
+
+
+def _puntaje_fraude3(d):
+    return 0.6 * d["x1"] + 1.5 * d["x2"]
+
+
+def _fraude(n=600, semilla=0, *, proporcion=0.1, fracciones=(0.6, 0.2, 0.2), **cambios):
+    """El hilo binario de la clase 4: fraude (y = 1) contra legítimo (y = 0).
+
+    x1 «enlaces» y x2 «urgencia», normales estándar independientes; puntaje
+    1.5·x1 + 1.0·x2, con el intercepto que fija proporcion (Pr(y=1) en la población);
+    separar="estratificado". Desde: 1.4 (clase 4).
+    Ejemplo: datos = ml.PROCESOS["fraude"](n=1000, proporcion=0.01)
+    """
+    _validar_n_hilo(n, "fraude")
+    return proceso_clasificacion(**_con(dict(
+        n=int(n), x={"x1": normal(0, 1), "x2": normal(0, 1)}, puntaje=_puntaje_fraude,
+        proporcion=proporcion, separar="estratificado", fracciones=fracciones,
+        semilla=semilla), cambios))
+
+
+def _mensajes3(n=10_000, semilla=0, *, proporcion=(0.90, 0.08, 0.02),
+               fracciones=(0.5, 0.3, 0.2), separar="azar", **cambios):
+    """El hilo de tres clases de la clase 4: 0 legítimo, 1 publicidad, 2 fraude.
+
+    x1 «enlaces» y x2 «urgencia», normales estándar; puntajes 0 (referencia),
+    1.2·x1 − 0.4·x2 y 0.6·x1 + 1.5·x2, con los interceptos que fija proporcion.
+    separar="azar" a propósito: la garantía conformal marginal pide calibración y
+    caso nuevo intercambiables. Desde: 1.4 (clase 4).
+    Ejemplo: datos3 = ml.PROCESOS["mensajes3"](n=10_000)
+    """
+    _validar_n_hilo(n, "mensajes3")
+    return proceso_clasificacion(**_con(dict(
+        n=int(n), K=3, x={"x1": normal(0, 1), "x2": normal(0, 1)},
+        puntajes=[_puntaje_legitimo, _puntaje_publicidad, _puntaje_fraude3],
+        proporcion=list(proporcion), separar=separar, fracciones=fracciones,
+        semilla=semilla), cambios))
 
 
 # Los procesos con nombre. Cada uno es (n=…, semilla=0, **cambios) -> Datos; cambios
@@ -2173,6 +2546,8 @@ PROCESOS = {
     "lluvia": _lluvia,
     "recursivo": _recursivo,
     "entregas_curvas": entregas_curvas,
+    "fraude": _fraude,
+    "mensajes3": _mensajes3,
 }
 
 
@@ -2341,6 +2716,30 @@ def separar(df, como="azar", fracciones=(0.6, 0.2, 0.2), columna_y="y", columna_
         parte.attrs = copy.deepcopy(df.attrs)
         salida.append(parte)
     return tuple(salida)
+
+
+def partir(df, fraccion=0.5, como="estratificado", semilla=0, *, columna_y="y",
+           columna_tiempo="t", columna_grupo="grupo"):
+    """Parte UN conjunto en dos piezas; la primera con ≈fraccion de los casos.
+
+    Es separar(df, como, fracciones=(fraccion, 1 − fraccion, 0)) sin la tercera pieza,
+    con el mismo vocabulario: "azar"; "estratificado" (respeta la proporción de cada
+    clase); "grupo" (grupos enteros en cada pieza; la fracción se cumple en casos de
+    forma aproximada); "tiempo" (la primera pieza es el tramo más antiguo). Conserva
+    attrs. Receta de reservas: cal, resto = partir(datos.val, 1/3) primero, y después
+    val_a, val_b = partir(resto, 0.5).
+    Desde: 1.4 (clase 4). Ejemplo: cal, resto = ml.partir(datos.val, 1/3, semilla=0)
+    """
+    if como not in _SEPARAR:
+        raise ValueError(f'como es "azar", "estratificado", "grupo" o "tiempo", no {como!r}'
+                         + (' ("temporal" es de pliegues)' if como == "temporal" else ""))
+    fraccion = float(fraccion)
+    if not 0 < fraccion < 1:
+        raise ValueError("fraccion está en (0, 1): la parte de los casos que va a la primera pieza")
+    a, b, _ = separar(df, como=como, fracciones=(fraccion, 1 - fraccion, 0.0),
+                      columna_y=columna_y, columna_tiempo=columna_tiempo,
+                      columna_grupo=columna_grupo, semilla=semilla)
+    return a, b
 
 
 def pliegues(df, k=5, como="azar", semilla=0, *, estratificar=False):
@@ -2918,6 +3317,46 @@ class _ModeloLineal(Modelo):
         return np.where(self.predecir_p(df) >= 0.5, self.clases[1], self.clases[0])
 
 
+class _ModeloSoftmax(_ModeloLineal):
+    """Softmax con K puntajes libres: beta_gorro es un DataFrame (filas = clases,
+    columnas = las de Φ), así que beta_gorro["1"] son los K interceptos."""
+
+    def __init__(self, tarea, clases, columnas_x, hiperparametros, phi, B, intercepto, nombres):
+        self.familia, self.tarea = "softmax", tarea
+        self.clases = np.asarray(clases)
+        self.K = len(clases)
+        self.columnas_x = list(columnas_x)
+        self.hiperparametros = hiperparametros
+        self.pesos = None
+        self.phi = phi
+        self.intercepto = intercepto
+        self.beta_gorro = pd.DataFrame(B, index=list(clases), columns=nombres, dtype=float)
+
+    def Phi(self, df):
+        M = _disenar(self.phi, df, self.intercepto)
+        nombres = list(self.beta_gorro.columns)
+        return M if list(M.columns) == nombres else M[nombres]
+
+    def n_parametros(self):
+        return int(self.beta_gorro.size)
+
+    def _Z(self, df):
+        return self.Phi(df).to_numpy(dtype=float) @ self.beta_gorro.to_numpy().T
+
+    def _log_prob(self, df):
+        Z = self._Z(df)
+        return Z - special.logsumexp(Z, axis=1, keepdims=True)
+
+    def predecir_prob(self, df):
+        return _softmax_filas(self._Z(df))
+
+    def predecir_p(self, df):
+        raise NoAplica("predecir_p es de clasificación binaria; con K > 2 usa predecir_prob")
+
+    def predecir(self, df):
+        return self.clases[np.argmax(self._Z(df), axis=1)]
+
+
 class _ModeloVecinos(Modelo):
     familia = "vecinos"
 
@@ -3087,6 +3526,69 @@ def _logistica(Phi, y, w, mu, r, pen, intercepto):
     return beta
 
 
+def _softmax(Phi, Y, w, mu, r, pen):
+    """B̂ (K × q) de (1/n) Σ w_i (lse(z_i) − z_{i,y_i}) + μ(r Σ|B_kj| + (1−r) Σ B_kj²), j penalizadas.
+
+    Arranca en B = 0 con los interceptos en ln(proporción) centrados; como el gradiente
+    suma 0 entre clases, sin penalización devuelve la solución con Σ_k B_kj = 0 (los K
+    puntajes no son únicos: sumarles un mismo vector no cambia nada)."""
+    n, q = Phi.shape
+    K = Y.shape[1]
+    D = pen.astype(float)[None, :]
+    wn = w / n
+    B0 = np.zeros((K, q))
+    if not pen.all():
+        prop = np.clip((w[:, None] * Y).sum(axis=0) / w.sum(), 1e-6, None)
+        lp = np.log(prop)
+        B0[:, int(np.flatnonzero(~pen)[0])] = lp - lp.mean()
+
+    def suave(Bv):
+        B = Bv.reshape(K, q)
+        Z = Phi @ B.T
+        lse = special.logsumexp(Z, axis=1)
+        valor = float(wn @ (lse - (Y * Z).sum(axis=1)) + mu * (1 - r) * ((B * D) ** 2).sum())
+        P = np.exp(Z - lse[:, None])
+        G = (wn[:, None] * (P - Y)).T @ Phi + 2 * mu * (1 - r) * B * D
+        return valor, G.ravel()
+
+    if r == 0 or mu == 0:
+        sol = optimize.minimize(suave, B0.ravel(), jac=True, method="L-BFGS-B",
+                                options={"maxiter": 5000, "ftol": 1e-15, "gtol": 1e-10})
+        return sol.x.reshape(K, q)
+    # lasso o elástica: gradiente proximal acelerado (FISTA)
+    paso = 1.0 / (0.5 * np.linalg.norm(Phi, 2) ** 2 * wn.max() + 2 * mu * (1 - r) + 1e-12)
+    umbral = paso * mu * r * D
+    B = B0.copy()
+    Bv, t = B.copy(), 1.0
+    for _ in range(50_000):
+        _, G = suave(Bv.ravel())
+        nuevo = Bv - paso * G.reshape(K, q)
+        nuevo = np.sign(nuevo) * np.maximum(np.abs(nuevo) - umbral, 0) * D + nuevo * (1 - D)
+        t_nuevo = (1 + math.sqrt(1 + 4 * t * t)) / 2
+        Bv = nuevo + (t - 1) / t_nuevo * (nuevo - B)
+        if np.max(np.abs(nuevo - B)) < 1e-12 * (1 + np.max(np.abs(nuevo))):
+            B = nuevo
+            break
+        B, t = nuevo, t_nuevo
+    return B
+
+
+def _pesos_de_ajuste(pesos, y, clases):
+    """El vector w_i del objetivo y el dict {clase: w} que lo dio."""
+    if pesos == "balanceado":
+        w = _pesos_balanceados(y, list(clases))
+    elif isinstance(pesos, dict):
+        faltan = [c for c in np.unique(y).tolist() if c not in pesos]
+        if faltan:
+            raise ValueError(f"pesos no dice el peso de las clases {faltan}")
+        w = {c: float(v) for c, v in pesos.items()}
+        if any(v < 0 or not np.isfinite(v) for v in w.values()):
+            raise ValueError("los pesos son números finitos >= 0")
+    else:
+        raise ValueError('pesos es None, "balanceado" o un dict {clase: peso}')
+    return np.array([w[v] for v in np.asarray(y).tolist()], float), w
+
+
 _COND_MAXIMA = 1e12
 
 
@@ -3195,11 +3697,15 @@ def ajustar(datos_o_df, phi=None, mu=0.0, penalizacion=None, rho=0.5, pesos=None
     Lasso(alpha=mu/2); ElasticNet(alpha=mu*(2-rho)/2, l1_ratio=rho/(2-rho));
     LogisticRegression(C=1/(2*mu*n)) en l2, C=1/(mu*n) en l1,
     C=1/(mu*(2-rho)*n) con l1_ratio=rho/(2-rho) en elástica, penalty=None con mu=0.
-    pesos ("balanceado" = n/(K n_y), o {y: w_y}) llega con la versión de la clase 4.
+    pesos (desde 1.4, clase 4): "balanceado" = n/(K n_y), contado en ent, o {y: w_y};
+    solo en clasificación, solo entran al objetivo de ajuste (modelo.pesos los guarda;
+    evaluar nunca los lee). Con K > 2 clases ajusta softmax con K puntajes libres
+    (familia "softmax"; beta_gorro es K × q y beta_gorro["1"] los K interceptos): sin
+    penalización, los K puntajes no son únicos (devuelve el de Σ_k β_kj = 0).
     """
-    if pesos is not None:
-        raise NotImplementedError("`pesos` llega con la versión de la clase 4")
     df, cols, tarea, clases = _entrada(datos_o_df, columnas_x, tarea)
+    if pesos is not None and tarea != "clasificacion":
+        raise ValueError("pesos son por clase: solo en clasificación")
     if mu < 0:
         raise ValueError("mu es >= 0")
     if penalizacion not in (None, "l2", "l1", "elastica"):
@@ -3222,19 +3728,40 @@ def ajustar(datos_o_df, phi=None, mu=0.0, penalizacion=None, rho=0.5, pesos=None
             raise ValueError('en clasificación, ajustar minimiza la pérdida "logaritmica"')
         if clases is None:
             clases = list(np.unique(df["y"]))
-        if len(clases) != 2:
-            raise NotImplementedError("la clasificación con K > 2 (softmax) llega con la "
-                                      "versión de la clase 4")
-        familia = "logistica"
+        if len(clases) < 2:
+            raise ValueError("clasificar pide al menos dos clases")
+        fuera = sorted(set(np.unique(df["y"]).tolist()) - set(list(clases)))
+        if fuera:
+            raise ValueError(f"y trae etiquetas fuera de las clases {list(clases)}: {fuera}")
+        familia = "logistica" if len(clases) == 2 else "softmax"
         y = (df["y"].to_numpy() == clases[1]).astype(float)
+    w, w_dict = (None, None) if pesos is None else _pesos_de_ajuste(pesos, df["y"].to_numpy(),
+                                                                     clases)
     phi_aj = (phi if phi is not None else _Identidad(cols)).ajustar(df)
     M = _disenar(phi_aj, df, intercepto)
-    beta = _resolver(M.to_numpy(dtype=float), y, None, mu, penalizacion, rho, tarea,
-                     intercepto, perdida)
     hiper = {"mu": mu, "penalizacion": penalizacion, "rho": rho, "perdida": perdida,
              "intercepto": intercepto, "phi": repr(phi_aj)}
-    return _ModeloLineal(familia, tarea, clases, cols, hiper, phi_aj, beta, intercepto,
-                         list(M.columns))
+    if pesos is not None:
+        hiper["pesos"] = pesos if isinstance(pesos, str) else dict(w_dict)
+    if tarea == "clasificacion" and len(clases) > 2:
+        A = M.to_numpy(dtype=float)
+        pen = np.ones(A.shape[1], dtype=bool)
+        if intercepto:
+            pen[0] = False
+        mu_ef, r = (0.0, 0.0) if penalizacion is None or mu == 0 else (
+            float(mu), {"l2": 0.0, "l1": 1.0, "elastica": float(rho)}[penalizacion])
+        Y = (df["y"].to_numpy()[:, None] == np.asarray(clases)[None, :]).astype(float)
+        B = _softmax(A, Y, np.ones(len(A)) if w is None else w, mu_ef, r, pen)
+        modelo = _ModeloSoftmax(tarea, clases, cols, hiper, phi_aj, B, intercepto,
+                                list(M.columns))
+        modelo.pesos = w_dict
+        return modelo
+    beta = _resolver(M.to_numpy(dtype=float), y, w, mu, penalizacion, rho, tarea,
+                     intercepto, perdida)
+    modelo = _ModeloLineal(familia, tarea, clases, cols, hiper, phi_aj, beta, intercepto,
+                           list(M.columns))
+    modelo.pesos = w_dict
+    return modelo
 
 
 _HIPER = {"vecinos": {"n_vecinos"}, "arbol": {"profundidad"},
@@ -3276,12 +3803,15 @@ def ajustar_otro(datos_o_df, familia="vecinos", columnas_x=None, tarea=None,
 
 # === 6 · Pérdidas y métricas ===
 
-Criterio = str  # "cuadratica" | "absoluta" | "logaritmica" (pérdidas) | "aciertos" (métrica)
+Criterio = str  # "cuadratica" | "absoluta" | "logaritmica" (pérdidas)
+#                 | "mcc" | "aciertos" | "aciertos_balanceados" | "brier" (métricas)
 
-SENTIDO = {"cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max"}
+SENTIDO = {"cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max",
+           "mcc": "max", "aciertos_balanceados": "max", "brier": "min"}
 
 _PERDIDAS = ("cuadratica", "absoluta", "logaritmica")
-_METRICAS_FUTURAS = ("mcc", "aciertos_balanceados", "brier")
+_METRICAS_FUTURAS = ()
+_METRICAS_GLOBALES = ("mcc", "aciertos_balanceados")  # no son un promedio por fila
 
 
 def perdida(y, y_gorro, tipo="cuadratica"):
@@ -3357,6 +3887,251 @@ def aciertos(y, y_gorro):
     return float(np.mean(np.asarray(y) == np.asarray(y_gorro)))
 
 
+def clasificar(prob, tau=0.5):
+    """Etiquetas desde probabilidades: 1 si Pr(y=1) >= tau (binaria).
+
+    prob es un arreglo de Pr(y=1), o la matriz (n, K) de predecir_prob: con K = 2 corta
+    su segunda columna en tau; con K > 2 elige la clase más probable (tau no se usa).
+    Desde: 1.4 (clase 4). Ejemplo: ml.clasificar(m.predecir_p(df), tau=0.2)
+    """
+    p = np.asarray(prob, float)
+    if p.ndim == 2:
+        if p.shape[1] == 2:
+            p = p[:, 1]
+        else:
+            if tau != 0.5:
+                raise ValueError("con K > 2 clases no hay un umbral: se elige la más probable")
+            return np.argmax(p, axis=1)
+    if not 0 <= tau <= 1:
+        raise ValueError("tau es un umbral en [0, 1]")
+    return (p >= tau).astype(int)
+
+
+def _etiquetas(y, y_gorro, clases):
+    """(y, ŷ, clases) como listas de Python; con clases, valida que no haya etiquetas fuera."""
+    y = np.asarray(y).reshape(-1).tolist()
+    g = np.asarray(y_gorro).reshape(-1).tolist()
+    if len(y) != len(g):
+        raise ValueError(f"y y y_gorro tienen largos distintos ({len(y)} y {len(g)})")
+    if clases is None:
+        return y, g, sorted(set(y) | set(g)), False
+    cl = list(np.asarray(clases).reshape(-1).tolist())
+    if len(set(cl)) != len(cl):
+        raise ValueError("clases repite una etiqueta")
+    fuera = sorted((set(y) | set(g)) - set(cl), key=str)
+    if fuera:
+        raise ValueError(f"hay etiquetas fuera de clases={cl}: {fuera}")
+    return y, g, cl, True
+
+
+def _solo_una_clase(cl):
+    if len(cl) < 2:
+        warnings.warn("solo hay una clase: pasa `clases=` con todas las del problema",
+                      UserWarning, stacklevel=3)
+        return True
+    return False
+
+
+def aciertos_balanceados(y, y_gorro, *, clases=None):
+    """A_bal: la proporción de aciertos dentro de cada clase, promediada sobre las K clases.
+
+    clases: TODAS las etiquetas del problema (datos.clases, modelo.clases). Si una no
+    tiene casos en y, A_bal no se puede estimar: nan con aviso (nunca promedia solo
+    las presentes). Con clases=None usa las presentes en y ∪ ŷ, así que no ve una
+    clase ausente; con una sola, nan con aviso.
+    Desde: 1.4 (clase 4). Ejemplo: ml.aciertos_balanceados(df["y"], m.predecir(df), clases=[0, 1])
+    """
+    y, g, cl, _ = _etiquetas(y, y_gorro, clases)
+    if _solo_una_clase(cl):
+        return float("nan")
+    ya, ga = np.asarray(y, dtype=object), np.asarray(g, dtype=object)
+    valores = []
+    for c in cl:
+        dentro = ya == c
+        if not dentro.any():
+            warnings.warn(f"no estimable: falta la clase {c} (no tiene casos en este conjunto)",
+                          UserWarning, stacklevel=2)
+            return float("nan")
+        valores.append(float(np.mean(ga[dentro] == c)))
+    return float(np.mean(valores))
+
+
+def mcc(y, y_gorro, *, clases=None):
+    """MCC (Gorodkin): la correlación entre los one-hot de y y de ŷ, sobre las K clases.
+
+    MCC = Σ_y cov(u_y, û_y) / sqrt(Σ_y Var(u_y) · Σ_y Var(û_y)); con K = 2 es la
+    correlación binaria. Vale 0 si un denominador es 0 (una regla constante, o un
+    conjunto sin la clase rara): por convención, no nan. clases como en
+    aciertos_balanceados (con clases=None, las presentes; con una sola, nan con aviso).
+    Desde: 1.4 (clase 4). Ejemplo: ml.mcc(df["y"], m.predecir(df), clases=[0, 1])
+    """
+    y, g, cl, _ = _etiquetas(y, y_gorro, clases)
+    if _solo_una_clase(cl):
+        return float("nan")
+    if not y:
+        return float("nan")
+    ya, ga = np.asarray(y, dtype=object), np.asarray(g, dtype=object)
+    U = np.column_stack([(ya == c).astype(float) for c in cl])
+    V = np.column_stack([(ga == c).astype(float) for c in cl])
+    Uc, Vc = U - U.mean(axis=0), V - V.mean(axis=0)
+    cov = float((Uc * Vc).sum())
+    den = float((Uc ** 2).sum()) * float((Vc ** 2).sum())
+    return 0.0 if den <= 0 else float(cov / math.sqrt(den))
+
+
+def brier(y, prob):
+    """Puntaje de Brier binario: el promedio de (y − p)², con y en {0, 1} y p = Pr(y=1).
+
+    Desde: 1.4 (clase 4). Ejemplo: ml.brier(df["y"], m.predecir_p(df))
+    """
+    p = np.asarray(prob, float)
+    if p.ndim == 2:
+        if p.shape[1] != 2:
+            raise ValueError("brier es binario: con K > 2 clases no está definido aquí")
+        p = p[:, 1]
+    y = np.asarray(y, float).reshape(-1)
+    if not np.isin(y, (0.0, 1.0)).all():
+        raise ValueError("brier pide y en {0, 1}")
+    return float(np.mean((y - p) ** 2))
+
+
+def log_loss(y, prob):
+    """Pérdida logarítmica media: −ln de la probabilidad que el modelo dio a la clase real.
+
+    prob es Pr(y=1) (binaria, y en {0, 1}) o la matriz (n, K) con y en 0…K−1.
+    Desde: 1.4 (clase 4). Ejemplo: ml.log_loss(df["y"], m.predecir_prob(df))
+    """
+    p = np.asarray(prob, float)
+    y = np.asarray(y).reshape(-1)
+    if p.ndim == 1:
+        return float(np.mean(perdida(y, p, "logaritmica")))
+    idx = y.astype(int)
+    if (idx != y).any() or idx.min() < 0 or idx.max() >= p.shape[1]:
+        raise ValueError("con una matriz de probabilidades, y son índices de clase 0…K−1")
+    with np.errstate(divide="ignore"):
+        return float(np.mean(-np.log(p[np.arange(len(y)), idx])))
+
+
+def matriz_confusion(y, y_gorro, K=None):
+    """Cuántos casos de cada clase real (filas) fueron a cada clase predicha (columnas).
+
+    K: las clases 0…K−1 (así aparece una clase sin casos); sin K, las presentes.
+    Desde: 1.4 (clase 4). Ejemplo: ml.matriz_confusion(df["y"], m.predecir(df), K=3)
+    """
+    clases = None if K is None else list(range(int(K)))
+    y, g, cl, _ = _etiquetas(y, y_gorro, clases)
+    tabla = pd.DataFrame(0, index=pd.Index(cl, name="real"),
+                         columns=pd.Index(cl, name="predicha"), dtype=int)
+    for a, b in zip(y, g):
+        tabla.loc[a, b] += 1
+    return tabla
+
+
+def por_clase(metrica, y, y_gorro, *, clases=None):
+    """La métrica dentro de cada clase: "aciertos" (de los casos de la clase, cuántos se
+    acertaron) o "precision" (de los que se predijeron de la clase, cuántos lo eran).
+
+    El índice son las clases del problema (clases=); con clases=None, las presentes
+    en y ∪ ŷ (así no ve una clase ausente). Una clase sin casos en y (o, con
+    "precision", sin predicciones) vale nan, con el aviso «la clase y no tiene casos
+    en este conjunto: su métrica no se puede estimar».
+    Desde: 1.4 (clase 4). Ejemplo: ml.por_clase("aciertos", df["y"], m.predecir(df), clases=[0, 1, 2])
+    """
+    if metrica not in ("aciertos", "precision"):
+        raise ValueError('metrica es "aciertos" o "precision"')
+    y, g, cl, _ = _etiquetas(y, y_gorro, clases)
+    ya, ga = np.asarray(y, dtype=object), np.asarray(g, dtype=object)
+    valores = {}
+    for c in cl:
+        base = (ya == c) if metrica == "aciertos" else (ga == c)
+        if not base.any():
+            warnings.warn(f"la clase {c} no tiene casos en este conjunto: su métrica no se puede "
+                          "estimar", UserWarning, stacklevel=2)
+            valores[c] = float("nan")
+        else:
+            otra = ga if metrica == "aciertos" else ya
+            valores[c] = float(np.mean(otra[base] == c))
+    serie = pd.Series(valores, dtype=float)
+    serie.index.name = "clase"
+    serie.name = metrica
+    return serie
+
+
+def promediar(metrica, y, y_gorro, como="macro", *, clases=None):
+    """Promedio de por_clase: "macro" (cada clase pesa igual; nan si alguna lo es) o
+    "ponderado" (cada clase pesa su número de casos en y; una clase sin casos pesa 0).
+
+    Identidades: macro de "aciertos" = aciertos_balanceados; ponderado = aciertos.
+    Desde: 1.4 (clase 4). Ejemplo: ml.promediar("aciertos", df["y"], m.predecir(df), "macro", clases=[0, 1, 2])
+    """
+    if como not in ("macro", "ponderado"):
+        raise ValueError('como es "macro" o "ponderado"')
+    y_l, g_l, cl, _ = _etiquetas(y, y_gorro, clases)
+    if como == "macro":
+        serie = por_clase(metrica, y, y_gorro, clases=cl)
+        return float("nan") if serie.isna().any() else float(serie.mean())
+    soporte = pd.Series({c: sum(1 for v in y_l if v == c) for c in cl}, dtype=float)
+    vivas = [c for c in cl if soporte[c] > 0]
+    if not vivas:
+        return float("nan")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        serie = por_clase(metrica, y, y_gorro, clases=cl)
+    if serie[vivas].isna().any():
+        warnings.warn("una clase con casos no tiene predicciones: su precisión no se puede "
+                      "estimar", UserWarning, stacklevel=2)
+        return float("nan")
+    return float((serie[vivas] * soporte[vivas]).sum() / soporte[vivas].sum())
+
+
+def con_clases(metrica, clases):
+    """Fija las clases del problema en una métrica: e(y, ŷ) = metrica(y, ŷ, clases=clases).
+
+    Es lo que se pasa a validacion_cruzada(..., estadistico=), que solo da dos arreglos.
+    Conserva el nombre y la documentación de la métrica.
+    Desde: 1.4 (clase 4). Ejemplo: est = ml.con_clases(ml.mcc, datos.clases)
+    """
+    fijas = list(np.asarray(clases).reshape(-1).tolist())
+
+    def e(y, y_gorro):
+        return metrica(y, y_gorro, clases=fijas)
+
+    e.__name__ = getattr(metrica, "__name__", "metrica")
+    e.__qualname__ = e.__name__
+    e.__doc__ = getattr(metrica, "__doc__", None)
+    e.clases = fijas
+    return e
+
+
+def pesos_de_clase(y, como="balanceado", razon=None):
+    """Los pesos w_y de cada clase, contados en y.
+
+    "balanceado": w_y = n / (K n_y) (cada clase pesa lo mismo en total; promedio 1).
+    "razon" (binaria, y en {0, 1}): w_1/w_0 = razon, normalizados a promedio 1 en y:
+    w_0 = 1/((1 − ȳ) + ȳ·razon), w_1 = razon·w_0. razon es obligatoria con "razon".
+    Desde: 1.4 (clase 4). Ejemplo: ml.pesos_de_clase(datos.ent["y"])
+    """
+    y = np.asarray(y).reshape(-1)
+    if len(y) == 0:
+        raise ValueError("y está vacía")
+    if como == "balanceado":
+        if razon is not None:
+            warnings.warn('con como="balanceado" la razón se ignora', UserWarning, stacklevel=2)
+        return {c: float(v) for c, v in _pesos_balanceados(y, sorted(np.unique(y).tolist())).items()}
+    if como != "razon":
+        raise ValueError('como es "balanceado" o "razon"')
+    if razon is None:
+        raise ValueError('con como="razon" di la razón w1/w0 (razon=…)')
+    razon = float(razon)
+    if not razon > 0 or not np.isfinite(razon):
+        raise ValueError("la razón w1/w0 es un número positivo")
+    if not np.isin(y, (0, 1)).all():
+        raise ValueError('como="razon" es binario: y en {0, 1}')
+    ybar = float(np.mean(y == 1))
+    w0 = 1.0 / ((1 - ybar) + ybar * razon)
+    return {0: w0, 1: razon * w0}
+
+
 def _w_eval(modelo_clases, y, pesos):
     if pesos is None:
         return np.ones(len(y))
@@ -3380,8 +4155,12 @@ def _perdida_log_i(modelo, df):
         eta = modelo._eta(df)
         y01 = (y == modelo.clases[1]).astype(float)
         return np.logaddexp(0, eta) - y01 * eta
-    P = modelo.predecir_prob(df)
     clases = list(modelo.clases)
+    if hasattr(modelo, "_log_prob"):
+        lp = modelo._log_prob(df)
+        idx = np.array([clases.index(v) if v in clases else -1 for v in y.tolist()])
+        return np.where(idx >= 0, -lp[np.arange(len(y)), np.maximum(idx, 0)], np.inf)
+    P = modelo.predecir_prob(df)
     idx = np.array([clases.index(v) if v in clases else -1 for v in y])
     p_y = np.where(idx >= 0, P[np.arange(len(y)), np.maximum(idx, 0)], 0.0)
     with np.errstate(divide="ignore"):
@@ -3393,6 +4172,30 @@ def _promedio_ponderado(w, l_i):
     return float(np.mean(w * np.where(w == 0, 0.0, l_i)))
 
 
+def _metrica_global(modelo, df, crit):
+    """MCC o A_bal de un clasificador en df, con las clases del modelo (nunca clases=None)."""
+    if modelo.tarea != "clasificacion":
+        raise ValueError(f'"{crit}" es de clasificación')
+    f = mcc if crit == "mcc" else aciertos_balanceados
+    return f(df["y"].to_numpy(), modelo.predecir(df), clases=list(modelo.clases))
+
+
+def _brier_i(modelo, df):
+    if modelo.tarea != "clasificacion" or modelo.K != 2:
+        raise ValueError('"brier" es de clasificación binaria (con K > 2 no está definido aquí)')
+    y01 = (df["y"].to_numpy() == modelo.clases[1]).astype(float)
+    return (y01 - modelo.predecir_p(df)) ** 2
+
+
+def _valor_criterio(modelo, df, criterio):
+    """El criterio de un modelo en df: la métrica del conjunto, o el promedio de ℓ_i."""
+    crit = criterio or ("cuadratica" if modelo.tarea == "regresion" else "logaritmica")
+    if crit in _METRICAS_GLOBALES:
+        return _metrica_global(modelo, df, crit) if len(df) else float("nan")
+    l_i, _ = _perdidas_i(modelo, df, criterio)
+    return float(np.mean(l_i)) if len(l_i) else float("nan")
+
+
 def _evaluar_perdida(modelo, df, criterio, pesos):
     if len(df) == 0:
         return float("nan")
@@ -3402,7 +4205,13 @@ def _evaluar_perdida(modelo, df, criterio, pesos):
     if crit not in SENTIDO:
         raise ValueError(f"criterio es uno de {sorted(SENTIDO)}")
     y = df["y"].to_numpy()
+    if crit in _METRICAS_GLOBALES:
+        if pesos is not None:
+            raise ValueError(f'«{crit}» no se pondera: es una métrica del conjunto, sin pesos')
+        return _metrica_global(modelo, df, crit)
     w = _w_eval(modelo.clases, y, pesos)
+    if crit == "brier":
+        return _promedio_ponderado(w, _brier_i(modelo, df))
     if crit == "aciertos":
         if modelo.tarea != "clasificacion":
             raise ValueError('"aciertos" es de clasificación')
@@ -3493,6 +4302,9 @@ def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
     Regresión: filas media y mediana. Clasificación (K clases): moda y proporcion
     (predice las proporciones de ent; un empate lo gana la última clase, como en
     predecir). criterios=None: la pérdida natural y, en clasificación, "aciertos".
+    Desde 1.4 (clase 4), también "mcc", "aciertos_balanceados" y "brier" (binario):
+    la moda tiene MCC 0 por convención; Brier de la proporción p de ent en un conjunto
+    con proporción q: q(1 − p)² + (1 − q)p².
     Ejemplo: ml.benchmarks(datos, datos.despliegue)
     """
     ent = datos_o_df.ent if isinstance(datos_o_df, Datos) else datos_o_df
@@ -3519,6 +4331,8 @@ def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
             raise NotImplementedError(f'el criterio "{c}" llega con la versión de la clase 4')
         if c not in SENTIDO:
             raise ValueError(f"criterio es uno de {sorted(SENTIDO)}")
+        if c in ("mcc", "aciertos_balanceados", "brier") and tarea == "regresion":
+            raise ValueError(f'"{c}" no es un criterio de regresión')
         for fila, pred in filas.items():
             if tarea == "regresion":
                 if c not in ("cuadratica", "absoluta"):
@@ -3532,8 +4346,17 @@ def benchmarks(datos_o_df, df_eval, tarea=None, criterios=None):
                     p_y = np.array([prob[clases.index(v)] if v in clases else 0.0 for v in y])
                     with np.errstate(divide="ignore"):
                         tabla.loc[fila, c] = float(np.mean(-np.log(p_y)))
+                elif c in _METRICAS_GLOBALES:
+                    f = mcc if c == "mcc" else aciertos_balanceados
+                    tabla.loc[fila, c] = f(y, np.full(len(y), etiqueta, dtype=object),
+                                           clases=clases)
+                elif c == "brier":
+                    if len(clases) != 2:
+                        raise ValueError('"brier" es binario: con K > 2 clases no está definido')
+                    y01 = np.array([v == clases[1] for v in y.tolist()], float)
+                    tabla.loc[fila, c] = float(np.mean((y01 - prob[1]) ** 2))
                 else:
-                    raise ValueError(f'"{c}" no es un criterio de clasificación en esta versión')
+                    raise ValueError(f'"{c}" no es un criterio de clasificación')
     tabla.index.name = "benchmark"
     return tabla
 
@@ -3692,6 +4515,11 @@ def _perdidas_i(modelo, df, criterio):
     if crit not in SENTIDO:
         raise ValueError(f"criterio es uno de {sorted(SENTIDO)}")
     y = df["y"].to_numpy()
+    if crit in _METRICAS_GLOBALES:
+        raise ValueError(f'«{crit}» no es un promedio por fila: no tiene ℓ_i (en CV se mide '
+                         "por pliegue)")
+    if crit == "brier":
+        return _brier_i(modelo, df), crit
     if crit == "aciertos":
         if modelo.tarea != "clasificacion":
             raise ValueError('"aciertos" es de clasificación')
@@ -3760,9 +4588,12 @@ def validacion_cruzada(df, construir, k=5, particion="azar", criterio=None, esta
         tramo.attrs = copy.deepcopy(df.attrs)
         modelo = construir(tramo)
         df_m = df.iloc[valida]
-        l_i, _ = _perdidas_i(modelo, df_m, criterio)
-        fuera[valida] = l_i
-        por_pliegue.append(float(np.mean(l_i)) if len(l_i) else float("nan"))
+        if criterio in _METRICAS_GLOBALES:  # una cifra por pliegue; sin ℓ_i fuera
+            por_pliegue.append(_valor_criterio(modelo, df_m, criterio))
+        else:
+            l_i, _ = _perdidas_i(modelo, df_m, criterio)
+            fuera[valida] = l_i
+            por_pliegue.append(float(np.mean(l_i)) if len(l_i) else float("nan"))
         if estadistico is not None:
             est.append(estadistico(df_m["y"].to_numpy(), np.asarray(modelo.predecir(df_m))))
     por = np.asarray(por_pliegue, float)
@@ -3909,8 +4740,7 @@ def elegir(datos_o_df, candidatos, con="ent", k=5, particion="azar", criterio=No
         for c in orden:
             m = candidatos[c](datos_o_df.ent)
             ajustados[c] = m
-            l_i, _ = _perdidas_i(m, evalua, criterio)
-            valores[c], ees[c] = float(np.mean(l_i)) if len(l_i) else float("nan"), None
+            valores[c], ees[c] = _valor_criterio(m, evalua, criterio), None
         costo = len(orden) + 1
     tarea = (datos_o_df.tarea if es_datos else
              _desarrollo(datos_o_df).attrs.get("ml", {}).get("tarea", "regresion"))
@@ -3948,9 +4778,12 @@ def cv_anidada(df, candidatos, particion_externa="azar", k_externo=5, particion_
         s = elegir(dentro, candidatos, con="cv", k=k_interno, particion=particion_interna,
                    criterio=criterio, regla=regla, orden_complejidad=orden_complejidad,
                    semilla=semilla + 1)
-        l_i, _ = _perdidas_i(s.modelo, df.iloc[valida], criterio)
-        fuera[valida] = l_i
-        por.append(float(np.mean(l_i)))
+        if criterio in _METRICAS_GLOBALES:
+            por.append(_valor_criterio(s.modelo, df.iloc[valida], criterio))
+        else:
+            l_i, _ = _perdidas_i(s.modelo, df.iloc[valida], criterio)
+            fuera[valida] = l_i
+            por.append(float(np.mean(l_i)))
     por = np.asarray(por, float)
     ee = float(np.std(por, ddof=1) / math.sqrt(len(por))) if len(por) > 1 else float("nan")
     return ResultadoCV(por_pliegue=por, media=float(np.mean(por)), ee=ee, pliegues=externos,
@@ -4359,7 +5192,456 @@ def beta_repetido(fabrica, phi, repeticiones=200, semilla=0, mu=0.0, penalizacio
 
 
 # === 10 · Clasificación: calibración y conformal ===
-# Llegan con la versión de la clase 4.
+# Llegan con la versión de la clase 4 (1.4).
+
+
+def _p_binaria(modelo, df):
+    if modelo.tarea != "clasificacion" or modelo.K != 2:
+        raise ValueError("esto es de clasificación binaria")
+    return np.asarray(modelo.predecir_p(df), float)
+
+
+def calibracion(prob, y, bins=10, estrategia="cuantiles"):
+    """La tabla de la curva de confiabilidad: en cada grupo de probabilidades parecidas,
+    la probabilidad media anunciada (p_media) contra la frecuencia observada de y = 1.
+
+    Columnas grupo, p_media, frecuencia, n, ee (= sqrt(f(1 − f)/n), el EE de la
+    frecuencia). estrategia: "cuantiles" (grupos con casi los mismos casos, por rango)
+    o "uniforme" (cortes en 0, 1/bins, …, 1; los grupos vacíos no salen).
+    Desde: 1.4 (clase 4). Ejemplo: ml.calibracion(m.predecir_p(datos.val), datos.val["y"])
+    """
+    p = np.asarray(prob, float).reshape(-1)
+    y = np.asarray(y, float).reshape(-1)
+    if len(p) != len(y) or len(p) == 0:
+        raise ValueError("prob e y tienen el mismo largo, mayor que 0")
+    if not np.isin(y, (0.0, 1.0)).all():
+        raise ValueError("calibracion es binaria: y en {0, 1} y prob = Pr(y=1)")
+    bins = int(bins)
+    if bins < 1:
+        raise ValueError("bins es un entero >= 1")
+    if estrategia == "cuantiles":
+        rango = np.argsort(np.argsort(p, kind="stable"), kind="stable")
+        grupo = (rango * bins) // len(p)
+    elif estrategia == "uniforme":
+        grupo = np.minimum((p * bins).astype(int), bins - 1)
+    else:
+        raise ValueError('estrategia es "cuantiles" o "uniforme"')
+    filas = []
+    for g in np.unique(grupo):
+        dentro = grupo == g
+        n = int(dentro.sum())
+        f = float(y[dentro].mean())
+        filas.append((int(g), float(p[dentro].mean()), f, n, math.sqrt(f * (1 - f) / n)))
+    return pd.DataFrame(filas, columns=["grupo", "p_media", "frecuencia", "n", "ee"])
+
+
+class _ModeloRecalibrado(Modelo):
+    """Un modelo con sus probabilidades recalibradas (Platt, isotónica o la de K clases)."""
+
+    familia = "recalibrado"
+
+    def __init__(self, base, metodo, transformar, beta_cal):
+        self.base = base
+        self.tarea, self.K, self.clases = base.tarea, base.K, base.clases
+        self.columnas_x = list(base.columnas_x)
+        self.hiperparametros = {**base.hiperparametros, "recalibrado": metodo,
+                                "beta_cal": beta_cal}
+        self.pesos = base.pesos
+        self._transformar = transformar
+
+    def predecir_prob(self, df):
+        P = self._transformar(df)
+        return P if P.ndim == 2 else np.column_stack([1 - P, P])
+
+    def predecir_p(self, df):
+        if self.K != 2:
+            raise NoAplica("predecir_p es de clasificación binaria; con K > 2 usa predecir_prob")
+        return self._transformar(df)
+
+    def predecir(self, df):
+        if self.K == 2:
+            return np.where(self.predecir_p(df) >= 0.5, self.clases[1], self.clases[0])
+        return self.clases[np.argmax(self.predecir_prob(df), axis=1)]
+
+
+def _logit_de(modelo, df):
+    if hasattr(modelo, "_eta") and getattr(modelo, "familia", None) == "logistica":
+        return np.asarray(modelo._eta(df), float)
+    p = np.clip(_p_binaria(modelo, df), 1e-15, 1 - 1e-15)
+    return np.log(p) - np.log1p(-p)
+
+
+def recalibrar(modelo, df_cal, metodo="platt"):
+    """Recalibra las probabilidades de un clasificador con datos que no tocó su ajuste.
+
+    "platt" (binaria): ajusta Pr(y=1) = σ(β0 + β1·ẑ) sobre el puntaje ẑ del modelo, con
+    la pérdida logarítmica sin pesos en df_cal; con K > 2, una pendiente común sobre
+    ln p̂_y y un desplazamiento por clase (deshace el corrimiento de los pesos).
+    "isotonica" (binaria): una función creciente de p̂ (sklearn). Guarda beta_cal en
+    hiperparametros; las predicciones de etiqueta usan 0.5 (o la más probable).
+    Desde: 1.4 (clase 4). Ejemplo: mc = ml.recalibrar(m, val_a)
+    """
+    if modelo.tarea != "clasificacion":
+        raise ValueError("recalibrar es de clasificación")
+    if len(df_cal) == 0:
+        raise ValueError("df_cal está vacío")
+    clases = list(modelo.clases)
+    y = df_cal["y"].to_numpy()
+    if modelo.K == 2:
+        y01 = (y == clases[1]).astype(float)
+        if metodo == "platt":
+            z = _logit_de(modelo, df_cal)
+            Phi = np.column_stack([np.ones(len(z)), z])
+            b = _logistica(Phi, y01, np.ones(len(z)), 0.0, 0.0, np.array([False, True]), True)
+
+            def transformar(df, b=b):
+                return special.expit(b[0] + b[1] * _logit_de(modelo, df))
+
+            return _ModeloRecalibrado(modelo, "platt", transformar, (float(b[0]), float(b[1])))
+        if metodo == "isotonica":
+            from sklearn.isotonic import IsotonicRegression
+
+            iso = IsotonicRegression(y_min=0.0, y_max=1.0, out_of_bounds="clip")
+            iso.fit(_p_binaria(modelo, df_cal), y01)
+
+            def transformar(df):
+                return np.asarray(iso.predict(_p_binaria(modelo, df)), float)
+
+            return _ModeloRecalibrado(modelo, "isotonica", transformar, None)
+        raise ValueError('metodo es "platt" o "isotonica"')
+    if metodo != "platt":
+        raise ValueError('con K > 2 clases, metodo es "platt" (pendiente común y '
+                         "desplazamiento por clase)")
+    LP = np.log(np.clip(modelo.predecir_prob(df_cal), 1e-300, None))
+    idx = np.array([clases.index(v) for v in y.tolist()])
+    K = len(clases)
+
+    def objetivo(th):
+        Z = th[0] * LP
+        Z[:, 1:] += th[1:]
+        lse = special.logsumexp(Z, axis=1)
+        valor = float(np.mean(lse - Z[np.arange(len(Z)), idx]))
+        P = np.exp(Z - lse[:, None])
+        R = P.copy()
+        R[np.arange(len(Z)), idx] -= 1
+        g0 = float(np.mean((R * LP).sum(axis=1)))
+        return valor, np.concatenate([[g0], R[:, 1:].mean(axis=0)])
+
+    th = optimize.minimize(objetivo, np.concatenate([[1.0], np.zeros(K - 1)]), jac=True,
+                           method="BFGS", options={"gtol": 1e-10}).x
+
+    def transformar(df, th=th):
+        Z = th[0] * np.log(np.clip(modelo.predecir_prob(df), 1e-300, None))
+        Z[:, 1:] += th[1:]
+        return _softmax_filas(Z)
+
+    beta_cal = {"pendiente": float(th[0]),
+                "desplazamientos": dict(zip(clases, [0.0] + [float(v) for v in th[1:]]))}
+    return _ModeloRecalibrado(modelo, "platt", transformar, beta_cal)
+
+
+_UMBRAL_METRICAS = ("mcc", "aciertos_balanceados", "aciertos")
+
+
+def elegir_umbral(modelo, df_val, metrica="mcc", rejilla=None):
+    """El umbral τ que optimiza la métrica en VALIDACIÓN (nunca en prueba); binaria.
+
+    rejilla por omisión 0.01, 0.02, …, 0.99; un empate lo gana el τ más cercano a 0.5.
+    Desde: 1.4 (clase 4). Ejemplo: tau = ml.elegir_umbral(m, val_a, "mcc")
+    """
+    if metrica not in _UMBRAL_METRICAS:
+        raise ValueError(f"metrica es una de {_UMBRAL_METRICAS} (las pérdidas no dependen del "
+                         "umbral)")
+    p = _p_binaria(modelo, df_val)
+    clases = list(modelo.clases)
+    y = df_val["y"].to_numpy()
+    taus = np.arange(0.01, 1.0, 0.01) if rejilla is None else np.asarray(rejilla, float)
+    if len(taus) == 0:
+        raise ValueError("la rejilla de umbrales está vacía")
+    valores = []
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for tau in taus:
+            g = np.where(p >= tau, clases[1], clases[0])
+            if metrica == "aciertos":
+                valores.append(aciertos(y, g))
+            elif metrica == "mcc":
+                valores.append(mcc(y, g, clases=clases))
+            else:
+                valores.append(aciertos_balanceados(y, g, clases=clases))
+    v = np.asarray(valores, float)
+    if np.all(np.isnan(v)):
+        raise ValueError(f"«{metrica}» no se puede estimar en df_val (¿falta una clase?)")
+    mejor = np.nanmax(v)
+    empatados = np.flatnonzero(np.isclose(v, mejor, rtol=0, atol=1e-12))
+    return float(taus[empatados[np.argmin(np.abs(taus[empatados] - 0.5))]])
+
+
+def _rango_conformal(n_cal, delta):
+    """⌈(n_cal + 1)(1 − δ)⌉ con aritmética exacta (fracciones, nunca math.ceil de un flotante)."""
+    if int(n_cal) != n_cal or n_cal < 0:
+        raise ValueError("n_cal es un entero >= 0")
+    d = Fraction(delta).limit_denominator(10 ** 6)
+    if not 0 < d < 1:
+        raise ValueError("delta está en (0, 1)")
+    x = (int(n_cal) + 1) * (1 - d)
+    return int(-((-x.numerator) // x.denominator))
+
+
+def _corte(puntajes, delta):
+    c = np.sort(np.asarray(puntajes, float))
+    k = _rango_conformal(len(c), delta)
+    return float("inf") if k > len(c) else float(c[k - 1])
+
+
+@dataclass
+class Conformal:
+    """Lo que devuelve conformal: el corte ĉ y cómo arma C(x) (o el intervalo).
+
+    Clasificación: c(x, y) = 1 − p̂_y(x) y C(x) = {y : c(x, y) <= ĉ} (ĉ por clase si
+    por_clase). Regresión: c = |y − ŷ| y el intervalo ŷ ± ĉ.
+    Desde: 1.4 (clase 4). Ejemplo: cf.cobertura(datos.despliegue)
+    """
+
+    modelo: object
+    delta: float
+    por_clase: bool
+    c_gorro: object
+    n_cal: object
+    puntajes: np.ndarray
+    tarea: str
+
+    def _cortes(self):
+        if not self.por_clase:
+            return np.full(self.modelo.K, float(self.c_gorro))
+        return np.array([float(self.c_gorro[c]) for c in self.modelo.clases])
+
+    def _dentro(self, df):
+        """(n, K) booleana: la clase k entra en C(x)."""
+        P = self.modelo.predecir_prob(df)
+        return (1 - P) <= self._cortes()[None, :]
+
+    def predecir_conjunto(self, df):
+        """Clasificación: la lista de conjuntos C(x); regresión: (bajo, alto)."""
+        if self.tarea == "regresion":
+            y_gorro = np.asarray(self.modelo.predecir(df), float)
+            return y_gorro - self.c_gorro, y_gorro + self.c_gorro
+        D = self._dentro(df)
+        clases = list(self.modelo.clases)
+        return [{clases[j] for j in np.flatnonzero(fila)} for fila in D]
+
+    def _cubre(self, df):
+        y = df["y"].to_numpy()
+        if self.tarea == "regresion":
+            lo, hi = self.predecir_conjunto(df)
+            return (y >= lo) & (y <= hi)
+        D = self._dentro(df)
+        clases = list(self.modelo.clases)
+        idx = np.array([clases.index(v) for v in y.tolist()])
+        return D[np.arange(len(y)), idx]
+
+    def cobertura(self, df):
+        """La fracción de casos de df cuyo y cae en C(x)."""
+        return float(np.mean(self._cubre(df)))
+
+    def cobertura_por_clase(self, df):
+        """La cobertura dentro de cada clase real (nan si la clase no tiene casos)."""
+        if self.tarea == "regresion":
+            raise ValueError("cobertura_por_clase es de clasificación")
+        cubre = self._cubre(df)
+        y = df["y"].to_numpy()
+        return pd.Series({c: float(np.mean(cubre[y == c])) if np.any(y == c) else float("nan")
+                          for c in self.modelo.clases}, name="cobertura", dtype=float)
+
+    def tamano_medio(self, df):
+        """El tamaño medio de C(x) (clasificación) o el ancho medio del intervalo."""
+        if self.tarea == "regresion":
+            return float(2 * self.c_gorro)
+        return float(self._dentro(df).sum(axis=1).mean())
+
+    def tamano_por_clase(self, df):
+        """El tamaño medio de C(x) dentro de cada clase real."""
+        if self.tarea == "regresion":
+            raise ValueError("tamano_por_clase es de clasificación")
+        t = self._dentro(df).sum(axis=1)
+        y = df["y"].to_numpy()
+        return pd.Series({c: float(np.mean(t[y == c])) if np.any(y == c) else float("nan")
+                          for c in self.modelo.clases}, name="tamano", dtype=float)
+
+
+def conformal(modelo, df_cal, delta=0.1, por_clase=False):
+    """Conformal dividido: el corte ĉ con el cuantil corregido, medido en df_cal.
+
+    Puntaje fijo: c(x, y) = 1 − p̂_y(x) en clasificación, |y − ŷ| en regresión. ĉ es el
+    ⌈(n_cal + 1)(1 − δ)⌉-ésimo menor c_i (∞ si ese índice pasa de n_cal), con
+    aritmética exacta. Garantía: si, condicionado en todo lo que fijó el modelo, los
+    n_cal casos de calibración y el nuevo son intercambiables, Pr(y ∈ C(x)) >= 1 − δ;
+    es marginal (no por clase ni por x). por_clase=True: un ĉ con los casos de cada
+    clase (la garantía vale dentro de cada clase; con menos de ⌈(1 − δ)/δ⌉ casos, ∞).
+    Desde: 1.4 (clase 4). Ejemplo: cf = ml.conformal(m, cal, delta=0.1)
+    """
+    if len(df_cal) == 0:
+        raise ValueError("df_cal está vacío")
+    _rango_conformal(1, delta)  # valida delta
+    y = df_cal["y"].to_numpy()
+    if modelo.tarea == "regresion":
+        if por_clase:
+            raise ValueError("por_clase es de clasificación")
+        c = np.abs(y.astype(float) - np.asarray(modelo.predecir(df_cal), float))
+        return Conformal(modelo, float(delta), False, _corte(c, delta), len(c), c, "regresion")
+    clases = list(modelo.clases)
+    P = modelo.predecir_prob(df_cal)
+    fuera = sorted(set(y.tolist()) - set(clases), key=str)
+    if fuera:
+        raise ValueError(f"df_cal trae etiquetas fuera de las clases del modelo: {fuera}")
+    idx = np.array([clases.index(v) for v in y.tolist()])
+    c = 1 - P[np.arange(len(y)), idx]
+    if not por_clase:
+        return Conformal(modelo, float(delta), False, _corte(c, delta), len(c), c,
+                         "clasificacion")
+    cortes, ns = {}, {}
+    for j, cl in enumerate(clases):
+        cj = c[idx == j]
+        ns[cl] = len(cj)
+        cortes[cl] = _corte(cj, delta)
+        if not np.isfinite(cortes[cl]):
+            warnings.warn(f"la clase {cl} tiene {len(cj)} casos de calibración: con delta={delta} "
+                          "su corte es ∞ (siempre entra en el conjunto)", UserWarning,
+                          stacklevel=2)
+    return Conformal(modelo, float(delta), True, pd.Series(cortes, name="c_gorro", dtype=float),
+                     pd.Series(ns, name="n_cal"), c, "clasificacion")
+
+
+@dataclass
+class Incertidumbre:
+    """Lo que devuelve incertidumbre: la cifra, su EE bootstrap y el intervalo de
+    percentiles 2.5–97.5, con el esquema de remuestreo dicho en palabras."""
+
+    valor: float
+    ee: float
+    intervalo: tuple
+    esquema: str
+    repeticiones: int
+
+
+def _confusion(yi, gi, K):
+    return np.bincount(yi * K + gi, minlength=K * K).reshape(K, K)
+
+
+def _mcc_confusion(C):
+    n = C.sum()
+    t, p = C.sum(axis=1), C.sum(axis=0)
+    den = (n * n - float(p @ p)) * (n * n - float(t @ t))
+    return 0.0 if den <= 0 else float((np.trace(C) * n - float(t @ p)) / math.sqrt(den))
+
+
+def _abal_confusion(C):
+    t = C.sum(axis=1)
+    if np.any(t == 0):
+        return float("nan")
+    return float(np.mean(np.diag(C) / t))
+
+
+def _cifra_por_fila(modelo, df, criterio):
+    """Lo que el bootstrap remuestrea: ("global", y_i, ŷ_i, K) o ("media", ℓ_i)."""
+    crit = criterio or ("cuadratica" if modelo.tarea == "regresion" else "logaritmica")
+    if crit not in SENTIDO:
+        raise ValueError(f"criterio es uno de {sorted(SENTIDO)}")
+    if crit in _METRICAS_GLOBALES:
+        if modelo.tarea != "clasificacion":
+            raise ValueError(f'"{crit}" es de clasificación')
+        clases = list(modelo.clases)
+        y = df["y"].to_numpy().tolist()
+        g = np.asarray(modelo.predecir(df)).tolist()
+        fuera = sorted((set(y) | set(g)) - set(clases), key=str)
+        if fuera:
+            raise ValueError(f"hay etiquetas fuera de las clases del modelo: {fuera}")
+        pos = {c: i for i, c in enumerate(clases)}
+        return crit, np.array([pos[v] for v in y]), np.array([pos[v] for v in g]), len(clases)
+    l_i, _ = _perdidas_i(modelo, df, crit)
+    return crit, np.asarray(l_i, float), None, None
+
+
+def _medir_en(cifra, idx):
+    crit, a, b, K = cifra
+    if b is None:
+        return float(np.mean(a[idx]))
+    C = _confusion(a[idx], b[idx], K)
+    return _mcc_confusion(C) if crit == "mcc" else _abal_confusion(C)
+
+
+def incertidumbre(modelo, df, criterio=None, *, repeticiones=1000, estratificar=False, grupo=None,
+                  contra=None, semilla=0):
+    """Bootstrap de UNA cifra de un modelo en df (pérdida o métrica, también MCC y A_bal).
+
+    Devuelve valor, ee (desviación entre réplicas), intervalo (percentiles 2.5–97.5),
+    esquema y repeticiones. Esquemas: por omisión remuestrea FILAS con reemplazo y no
+    fija los conteos por clase; estratificar=True remuestrea dentro de cada clase y
+    condiciona en los conteos (con una regla constante el EE puede ser 0 aunque la
+    cifra cambie en otra muestra); grupo="<columna>" remuestrea grupos completos.
+    contra=otro_modelo da la diferencia (modelo − contra) en las mismas réplicas.
+    estratificar y grupo juntos: ValueError. Una réplica sin una clase da nan en A_bal
+    (se descarta, con aviso).
+    Desde: 1.4 (clase 4). Ejemplo: ml.incertidumbre(m, val_b, "mcc")
+    """
+    if estratificar and grupo is not None:
+        raise ValueError("estratificar y grupo son dos esquemas distintos: elige uno")
+    repeticiones = int(repeticiones)
+    if repeticiones < 2:
+        raise ValueError("repeticiones es un entero >= 2")
+    n = len(df)
+    if n == 0:
+        raise ValueError("df está vacío")
+    cifras = [_cifra_por_fila(modelo, df, criterio)]
+    if contra is not None:
+        cifras.append(_cifra_por_fila(contra, df, criterio))
+    todo = np.arange(n)
+
+    def medir(idx):
+        v = _medir_en(cifras[0], idx)
+        return v - _medir_en(cifras[1], idx) if contra is not None else v
+
+    rng = np.random.default_rng(semilla)
+    if grupo is not None:
+        if grupo not in df.columns:
+            raise ValueError(f"df no tiene la columna {grupo!r}")
+        g = df[grupo].to_numpy()
+        unicos = np.unique(g)
+        filas = [np.flatnonzero(g == u) for u in unicos]
+        esquema = f"por grupos ({grupo})"
+
+        def muestra():
+            elegidos = rng.integers(0, len(unicos), len(unicos))
+            return np.concatenate([filas[j] for j in elegidos])
+    elif estratificar:
+        if modelo.tarea != "clasificacion":
+            raise ValueError("estratificar es por clase: solo en clasificación")
+        y = df["y"].to_numpy()
+        estratos = [np.flatnonzero(y == c) for c in np.unique(y)]
+        esquema = "estratificado por clase"
+
+        def muestra():
+            return np.concatenate([e[rng.integers(0, len(e), len(e))] for e in estratos])
+    else:
+        esquema = "por filas"
+
+        def muestra():
+            return rng.integers(0, n, n)
+
+    reps = np.array([medir(muestra()) for _ in range(repeticiones)], float)
+    malas = int(np.isnan(reps).sum())
+    if malas:
+        warnings.warn(f"{malas} de {repeticiones} réplicas no se pudieron medir (les faltaba una "
+                      "clase): el EE y el intervalo usan las demás", UserWarning, stacklevel=2)
+    validas = reps[~np.isnan(reps)]
+    if len(validas) < 2:
+        ee, lo, hi = float("nan"), float("nan"), float("nan")
+    else:
+        ee = 0.0 if np.ptp(validas) == 0 else float(np.std(validas, ddof=1))
+        lo, hi = (float(v) for v in np.percentile(validas, [2.5, 97.5]))
+    return Incertidumbre(valor=float(medir(todo)), ee=ee, intervalo=(lo, hi), esquema=esquema,
+                         repeticiones=repeticiones)
+
 
 # === 11 · Supuestos y fugas ===
 # Llegan con la versión de la clase 5.
@@ -5915,6 +7197,124 @@ def dibujar_presupuesto(datos, phi, penalizacion, ds, d_marcado=None, rho=0.5, a
     return ax
 
 
+_ROTULO_METRICA = {"mcc": "MCC", "aciertos_balanceados": "A_bal", "aciertos": "A",
+                   "logaritmica": "pérdida logarítmica", "brier": "Brier"}
+
+
+def dibujar_metrica_por_pliegue(tabla, k=None, ax=None, tema="claro"):
+    """MCC y A_bal de cada pliegue (puntos) y su media sin los nan (raya), por k.
+
+    tabla en formato largo: k, pliegue, metrica ("mcc" | "aciertos_balanceados"),
+    valor y, si la trae, raros (casos de la clase rara en ese pliegue de validación).
+    Donde valor es nan (A_bal sin una clase) dibuja una × «no estimable»; un MCC de un
+    pliegue con raros == 0 vale 0 por convención y se marca hueco. Con k, resalta ese k.
+    Desde: 1.4 (clase 4). Ejemplo: ml.dibujar_metrica_por_pliegue(tabla, k=10)
+    """
+    fig, ax = _ejes(ax, tema)
+    t = _TEMAS[tema]
+    faltan = {"k", "pliegue", "metrica", "valor"} - set(tabla.columns)
+    if faltan:
+        raise ValueError(f"a la tabla le faltan las columnas {sorted(faltan)}")
+    ks = sorted(tabla["k"].unique())
+    if k is not None and k not in ks:
+        raise ValueError(f"k={k} no está en la tabla (tiene {ks})")
+    metricas = [m for m in ("mcc", "aciertos_balanceados") if m in set(tabla["metrica"])]
+    otras = sorted(set(tabla["metrica"]) - set(metricas))
+    if otras:
+        raise ValueError(f'dibujar_metrica_por_pliegue dibuja "mcc" y "aciertos_balanceados", '
+                         f"no {otras}")
+    estilo = {"mcc": ("prueba", "o", -0.17), "aciertos_balanceados": ("entrenamiento", "s", 0.17)}
+    ya = set()
+    for i, kk in enumerate(ks):
+        resalto = k is None or kk == k
+        alfa = 1.0 if resalto else 0.3
+        for m in metricas:
+            rol, marca, desplaza = estilo[m]
+            sub = tabla[(tabla["k"] == kk) & (tabla["metrica"] == m)]
+            v = sub["valor"].to_numpy(float)
+            x = i + desplaza + np.linspace(-0.07, 0.07, len(v)) if len(v) > 1 else \
+                np.full(len(v), i + desplaza)
+            conv = np.zeros(len(v), bool)
+            if m == "mcc" and "raros" in sub:
+                conv = sub["raros"].to_numpy() == 0
+            llenos = ~np.isnan(v) & ~conv
+            etiqueta = _ROTULO_METRICA[m] + " por pliegue" if m not in ya else None
+            ya.add(m)
+            c = ax.scatter(x[llenos], v[llenos], marker=marca, color=_color(rol, tema), s=28,
+                           alpha=alfa, label=etiqueta, zorder=3)
+            c.set_gid(f"pliegue-{m}-k{kk}")
+            if conv.any():
+                c = ax.scatter(x[conv], v[conv], marker=marca, facecolors="none",
+                               edgecolors=_color(rol, tema), s=40, alpha=alfa, zorder=3,
+                               label="MCC 0 por convención (sin casos raros)"
+                               if "conv" not in ya else None)
+                ya.add("conv")
+                c.set_gid(f"cero-por-convencion-k{kk}")
+            nan = np.isnan(v)
+            if nan.any():
+                c = ax.scatter(x[nan], np.zeros(nan.sum()), marker="x", color=t["texto"], s=46,
+                               alpha=alfa, zorder=4,
+                               label="no estimable (falta una clase)" if "nan" not in ya else None)
+                ya.add("nan")
+                c.set_gid(f"no-estimable-k{kk}")
+            if (~nan).any():
+                media = float(np.nanmean(v))
+                ln, = ax.plot([i + desplaza - 0.13, i + desplaza + 0.13], [media, media],
+                              color=_color(rol, tema), lw=3, alpha=alfa, solid_capstyle="butt")
+                ln.set_gid(f"media-{m}-k{kk}")
+    ax.set_xticks(range(len(ks)))
+    ax.set_xticklabels([f"k = {kk}" for kk in ks])
+    ax.set_xlim(-0.6, len(ks) - 0.4)
+    ax.axhline(0, color=t["rejilla"], lw=1, zorder=1)
+    ax.set_ylabel("valor en el pliegue de validación")
+    ax.set_title("raya: media de los pliegues sin los nan", color=t["texto"], fontsize=10)
+    _leyenda(ax, tema)
+    return ax
+
+
+def dibujar_calibracion(tablas, verdadera=None, histograma=True, ax=None, tema="claro"):
+    """Curva de confiabilidad: frecuencia observada contra probabilidad anunciada.
+
+    tablas: una tabla de calibracion o un dict {rótulo: tabla} (p. ej. sin pesos,
+    con pesos, recalibrado); barras de ±2 EE. verdadera: la tabla calculada con la
+    prob oráculo (rol realidad). La diagonal es la calibración perfecta. histograma:
+    cuántos casos hay en cada grupo (barras al pie, en proporción al mayor).
+    Desde: 1.4 (clase 4). Ejemplo: ml.dibujar_calibracion({"sin pesos": tab})
+    """
+    fig, ax = _ejes(ax, tema)
+    t = _TEMAS[tema]
+    if isinstance(tablas, pd.DataFrame):
+        tablas = {"modelo": tablas}
+    if not isinstance(tablas, dict) or not tablas:
+        raise ValueError("tablas es una tabla de calibracion o un dict {rótulo: tabla}")
+    roles = ["entrenamiento", "prueba", "validacion", "f"]
+    marcas = ["o", "s", "^", "D"]
+    ln, = ax.plot([0, 1], [0, 1], ls=":", color=t["texto"], lw=1, label="calibración perfecta")
+    ln.set_gid("diagonal")
+    mayor = max(float(tab["n"].max()) for tab in tablas.values())
+    for i, (nombre, tab) in enumerate(tablas.items()):
+        rol = roles[i % len(roles)]
+        cont = ax.errorbar(tab["p_media"], tab["frecuencia"], yerr=2 * tab["ee"],
+                           marker=marcas[i % len(marcas)], ls="-", lw=1.4, ms=5, capsize=2,
+                           color=_color(rol, tema), label=nombre, zorder=3)
+        cont.lines[0].set_gid(f"calibracion-{i}")
+        if histograma:
+            barras = ax.bar(tab["p_media"], 0.12 * tab["n"] / mayor, width=0.012,
+                            bottom=0, color=_color(rol, tema), alpha=0.45, zorder=2)
+            for b in barras:
+                b.set_gid(f"histograma-{i}")
+    if verdadera is not None:
+        ln, = ax.plot(verdadera["p_media"], verdadera["frecuencia"], ls=ROLES["realidad"]["trazo"],
+                      color=_color("realidad", tema), lw=1.6, label="con la prob verdadera")
+        ln.set_gid("verdadera")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_xlabel("probabilidad anunciada (media del grupo)")
+    ax.set_ylabel("frecuencia observada de y = 1")
+    _leyenda(ax, tema)
+    return ax
+
+
 # === 13 · Interactividad y taller ===
 
 
@@ -6324,6 +7724,17 @@ CAMBIOS = {
            "dibujar_residuales_plano, dibujar_beta_repetido (el trazo de dibujar_diana), "
            "dibujar_encoger_1d, dibujar_trayectorias, dibujar_regiones, dibujar_presupuesto; "
            "dibujar_cv con log y anotar; el taller de la clase 3.",
+    "1.4": "Primer tramo de la clase 4: proceso_clasificacion completo (proporcion, K > 2 "
+           "con puntajes, ruido_etiquetas, ruido sumado al puntaje con su prob integrada, "
+           "faltantes, separar tiempo y grupo) y faltantes en proceso; los procesos «fraude» "
+           "y «mensajes3»; partir; ajustar con pesos y softmax con K puntajes libres; "
+           "clasificar, aciertos_balanceados, mcc (Gorodkin), brier, log_loss, "
+           "matriz_confusion, por_clase, promediar, con_clases y pesos_de_clase, y los "
+           "criterios mcc, aciertos_balanceados y brier en evaluar, desempeno, benchmarks, "
+           "validacion_cruzada y elegir; incertidumbre (bootstrap por filas, estratificado o "
+           "por grupos); calibracion, recalibrar (Platt), elegir_umbral y conformal (cuantil "
+           "corregido exacto, marginal o por clase); dibujar_metrica_por_pliegue y "
+           "dibujar_calibracion.",
 }
 
 
