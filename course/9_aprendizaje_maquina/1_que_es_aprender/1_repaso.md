@@ -44,10 +44,10 @@ Ajustamos con esas cuatro:
 
 $$\beta^\star\in\operatorname*{arg\,min}_{\beta_0,\beta_1}\ \frac1n\sum_{i=1}^{n}\bigl(y_i-\beta_0-\beta_1x_i\bigr)^2$$
 
-Las cuatro distancias no son todas iguales, así que el mínimo es único: $\beta^\star=(11,\ 3.6)$, la recta $11+3.6x$.
-Para 5 km anuncia $11+3.6\cdot5=29$ min.
+Las cuatro distancias no son todas iguales, así que el mínimo es único: ${\beta^\star=(11,\ 3.6)}$, la recta ${11+3.6x}$.
+Para 5 km anuncia ${11+3.6\cdot5=29}$ min.
 
-Es el mismo problema de la unidad 6, ahora resuelto solo con las cuatro primeras; con las seis salía $10.6+(134/35)x$.
+Es el mismo problema de la unidad 6, ahora resuelto solo con las cuatro primeras; con las seis salía ${10.6+(134/35)x}$.
 
 La recta se ajusta minimizando cuadrados, pero el error lo reportamos como MAE, en minutos: la clase 4 explica por qué la pérdida con que se ajusta y la medida con que se reporta pueden ser distintas.
 
@@ -65,7 +65,7 @@ En las nuevas, el MAE es: recta 1.2, memorizar 7, promedio 12 min. El orden se i
 
 Memorizar no fracasa del todo: le gana al promedio. Lo que falla es usar su cero en lo visto como prueba de que acierta en lo nuevo.
 
-Las dos nuevas están más lejos que todas las vistas (la clase 1 separa esa dificultad, extrapolar), y son un contraejemplo, no una medición. En la clase 1 verás miles de casos nuevos, no dos.
+Las nuevas están más lejos que las vistas (extrapolar, clase 1); son un contraejemplo: dos entregas no bastan para generalizar el desempeño de cada regla. En la clase 1 verás miles de casos nuevos, no dos.
 
 ::: definition {#ml-c0-def-aprender title="Aprender, según Mitchell"}
 Un programa **aprende** de la experiencia $E$ respecto de una clase de tareas $T$ y una medida de desempeño $P$ si su desempeño en las tareas de $T$, medido con $P$, mejora con la experiencia $E$.
@@ -110,9 +110,9 @@ No se observa mejora en el desempeño medido; con estos datos no hay evidencia d
 
 ## 2 · Distinguir supervisado de no supervisado
 
-¿Cómo aprende un niño a distinguir gatos de perros con fotos que alguien ya etiquetó, y cómo aprende otro que prueba comidas sin que nadie le diga qué son?
+Un niño distingue gatos de perros con fotos etiquetadas; ¿y sin etiquetas?
 
-Son las mismas seis entregas; añadimos cuántos paquetes llevaban y en qué zona.
+A las mismas seis entregas añadimos paquetes y zona. Cada punto es una entrega: arriba, en (distancia, tiempo), con la recta de la sección 1, ajustada solo con la distancia y las cuatro primeras; abajo, en (distancia, paquetes).
 
 ::: figure {#ml-c0-con-y-sin-y title="Las mismas seis entregas, con respuesta y sin ella"}
 ![Arriba: tabla con zona, distancia, paquetes y tiempo, y tiempo contra distancia con la recta 11 + 3.6x. Abajo: la misma tabla sin la columna de tiempo, y paquetes contra distancia con dos agrupaciones marcadas, una por distancia, cerca hasta 3.5 km y lejos después, y otra por paquetes, pocos, de 2 a 3, y muchos, de 9 a 11.](../_assets/ml-c0-con-y-sin-y.svg)
@@ -120,8 +120,7 @@ Son las mismas seis entregas; añadimos cuántos paquetes llevaban y en qué zon
 
 **Piensa: si borras la columna del tiempo, ¿qué pregunta puedes seguir haciéndole a estas seis entregas?**
 
-Comparando anuncios y tiempos ajustamos $11+3.6x$. Sin tiempos preguntamos cómo se reparten.
-Cada agrupación vale según su criterio; ninguna es «la verdadera».
+Con tiempos ajustamos ${11+3.6x}$. Sin tiempos buscamos agrupaciones según distintos criterios; ninguna es «la verdadera».
 
 ::: definition {#ml-c0-def-supervisado title="Supervisado y no supervisado"}
 En el aprendizaje **supervisado**, la experiencia son $n$ pares $(x_i,y_i)$, $i=1,\dots,n$: cada observación trae sus entradas $x_i$ y la respuesta $y_i$. La tarea es anunciar $y$ para una $x$ nueva.
@@ -133,7 +132,7 @@ En el aprendizaje **no supervisado**, la experiencia son solo las entradas $x_i$
 
 Aquí $x_i$ reúne distancia y paquetes; $y_i$ indica minutos.
 
-El no supervisado también ajusta parámetros optimizando un objetivo, solo que sin respuestas. Supervisado contra no supervisado es un eje distinto del mapa de la sección 3: cualquier nivel de ese mapa admite los dos.
+El no supervisado puede ajustar parámetros optimizando un objetivo sin respuestas; cualquier nivel del mapa de la sección 3 admite supervisado y no supervisado.
 
 ::: remark {#ml-c0-obs-otras-experiencias title="No son solo dos cajas"}
 En aprendizaje por refuerzo el programa actúa y recibe una recompensa, no la respuesta correcta: [[mkv-hacia-refuerzo|Hacia el aprendizaje por refuerzo]].
@@ -152,7 +151,11 @@ Esta unidad es de aprendizaje supervisado. Casi todo es regresión, con un prime
 > La respuesta no tiene que ser una categoría; los minutos también son una respuesta.
 
 ::: exercise {#ml-c0-ej-que-experiencia title="Clasifica la experiencia"}
-(a) Predecir precios de casas con ventas pasadas y sus precios; (b) agrupar clientes de una tienda sin categorías previas; (c) aprender a jugar recibiendo puntos al ganar; (d) predecir la siguiente palabra con millones de textos.
+(a) Predecir precios de casas con ventas pasadas y sus precios; (b) agrupar clientes de una tienda sin categorías previas.
+
+(c) Un robot aprende a caminar con un puntaje según cuánto avanza.
+
+(d) Rellenar palabras borradas al azar de millones de textos.
 
 ¿Supervisado, no supervisado o ninguno? Si admite dos lecturas, da ambas.
 :::
@@ -162,14 +165,14 @@ Esta unidad es de aprendizaje supervisado. Casi todo es regresión, con un prime
 :::
 
 ::: answer {#ml-c0-resp-que-experiencia of="ml-c0-ej-que-experiencia" title="Respuesta · Cuatro experiencias distintas"}
-(a) Supervisado, regresión. (b) No supervisado. (c) Ninguno: refuerzo, con recompensa por lo que hizo, no la jugada correcta.
+(a) Supervisado, regresión. (b) No supervisado. (c) Ninguno: refuerzo; el puntaje premia lo que hizo, no le dice el paso correcto.
 
-(d) Ambas lecturas valen. Es supervisado si cada palabra es la respuesta de las anteriores; no supervisado si aprende cómo se reparte el texto. La respuesta sale del propio texto: es autosupervisado, y la frontera se borra.
+(d) Ambas lecturas valen: supervisado si cada palabra borrada es la respuesta; no supervisado si aprende cómo se reparte el texto. La respuesta sale del propio texto: es autosupervisado.
 :::
 
 ## 3 · Ubicar el aprendizaje de máquina dentro de la IA
 
-Es la @taxonomia-ia con su caja «Aprendizaje máquina» vista de cerca; aquí la llamamos aprendizaje de máquina (*machine learning*).
+Abajo, vista de cerca, está la caja del aprendizaje de máquina (*machine learning*) de la @taxonomia-ia. La caja que la unidad de historia rotula «Aprendizaje máquina» es la misma que aquí llamamos aprendizaje de máquina.
 
 ::: figure {#ml-c0-jerarquia title="El aprendizaje de máquina, visto de cerca dentro de la IA"}
 ![Cinco ramas hermanas de la inteligencia artificial; la del aprendizaje de máquina se amplía y adentro muestra tres rectángulos anidados: aprendizaje de máquina con la regresión logística, aprendizaje de representaciones con un autoencoder poco profundo y aprendizaje profundo con una red de varias capas.](../_assets/ml-c0-jerarquia.svg)
@@ -177,16 +180,16 @@ Es la @taxonomia-ia con su caja «Aprendizaje máquina» vista de cerca; aquí l
 
 **Piensa: ¿toda la inteligencia artificial aprende de datos?**
 
-No: otras ramas de @taxonomia-ia pueden aprender sin depender de ello; solo dentro del aprendizaje hay anidamiento estricto.
+No: hay enfoques de IA que no requieren aprender de datos; las otras ramas de la @taxonomia-ia pueden usar aprendizaje, pero no dependen de él. Solo dentro del aprendizaje hay anidamiento estricto.
 La IA no es una cebolla.
 
 La figura anida: aprendizaje de máquina (regresión logística, unidad 6) ⊃ aprendizaje de representaciones (*representation learning*; autoencoder poco profundo) ⊃ aprendizaje profundo (*deep learning*; red multicapa).
 
 El autoencoder aprende a reconstruir su entrada mediante un código más corto.
 
-[[que-es-inteligencia|Qué es la inteligencia]] anidó aprendizaje de máquina ⊃ redes profundas (aquí, aprendizaje profundo) ⊃ transformers ⊃ LLM, sin el escalón de representaciones.
+[[que-es-inteligencia|Qué es la inteligencia]] pasa de aprendizaje de máquina a redes profundas (aquí, aprendizaje profundo), sin representaciones.
 
-Entre niveles no cambia el tamaño de la fórmula: cambia quién elige cada pieza y cómo se arma. Cada tira es un sistema; una caja rellena con «se ajusta con datos» indica lo que aprende.
+Entre niveles cambia quién elige cada pieza y cómo se arma. Cada tira representa un sistema; una caja rellena indica qué aprende con datos.
 
 ::: figure {#ml-c0-quien-elige-phi title="Quién elige qué: cuatro maneras de construir un sistema"}
 ![Cuatro tiras. Reglas: todo a mano. Clásico: la representación fi de x a mano y el predictor con parámetros beta ajustado con datos. Representaciones: fi de x y el predictor, los dos con datos. Profundo: capa 1, capa 2 y más, una sobre otra, que juntas forman fi de x, y el predictor, todo con datos.](../_assets/ml-c0-quien-elige-phi.svg)
@@ -194,11 +197,10 @@ Entre niveles no cambia el tamaño de la fórmula: cambia quién elige cada piez
 
 La representación $\phi(x)$ es lo que el modelo ve de cada entrada: si eliges $(1,x,x^2)$, ve distancia y cuadrado; para 3 km, obtienes $\phi(3)=(1,3,9)$.
 
-En el clásico eliges $\phi$ a mano; en representaciones y en profundo la encuentra el ajuste, y el profundo la compone en capas. En los tres, el ajuste elige los parámetros $\beta$ del predictor.
+En el clásico eliges $\phi$ a mano; en representaciones la elige el ajuste; en profundo la compone en capas. En los tres, el ajuste elige $\beta$.
 
-Elegir $x^2$ conserva la linealidad del modelo en $\beta$; la clase 1 define su significado.
-
-Esta unidad elige $\phi$ a mano; al final verás qué cambia si se aprende: ahí empieza la unidad de redes.
+Elegir $x^2$ conserva la linealidad del modelo en $\beta$; la clase 1 define qué significa ser lineal en $\beta$.
+Esta unidad elige $\phi$ a mano; aprenderla abre la unidad de redes.
 
 > [!WARNING]
 > Lectura equivocada: «usar $x^2$ como variable ya saca al modelo de los modelos lineales, o ya es aprendizaje profundo».

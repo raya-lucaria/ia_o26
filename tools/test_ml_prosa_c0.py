@@ -504,3 +504,49 @@ def test_14b_la_prueba_14_atrapa_una_cifra_cambiada(de, a):
     texto = _cuerpo(_leer(PAGINA))
     assert de in texto, de
     assert comprobar_toda_cifra_atada(texto.replace(de, a, 1)) != []
+
+
+# ------------------------------------------ 15 · ronda 2 de revision ---
+#
+# Cada caso es una frase que la ronda 2 encontro en el sitio y que no debe
+# volver: dos entregas si son una medicion (lo que no permiten es
+# concluir en general); no todo metodo no supervisado optimiza un objetivo
+# (DBSCAN); el «ello» sin referente y la «formula» que nadie hizo crecer.
+
+@pytest.mark.parametrize("frase", [
+    "no una medición",
+    "también ajusta parámetros",
+    "sin depender de ello",
+    "el tamaño de la fórmula",
+    "define su significado",
+    "Siempre se ajusta",
+])
+def test_15_no_vuelven_las_frases_de_la_ronda_2(frase):
+    assert frase not in _cuerpo(_leer(PAGINA)), frase
+
+
+def test_15b_la_frase_de_d015_va_literal_una_vez():
+    literal = ("La caja que la unidad de historia rotula «Aprendizaje máquina» es la "
+               "misma que aquí llamamos aprendizaje de máquina.")
+    assert _cuerpo(_leer(PAGINA)).count(literal) == 1
+
+
+def test_15c_el_micro_de_la_experiencia_no_repite_los_casos_del_remark():
+    """r2: (c) y (d) eran jugar por puntos y la siguiente palabra, que el
+    remark «No son solo dos cajas» ya resuelve justo arriba."""
+    enunciado = _bloque(_cuerpo(_leer(PAGINA)), "ml-c0-ej-que-experiencia")
+    for caso in ("siguiente palabra", "jugar"):
+        assert caso not in enunciado, caso
+
+
+def test_15d_las_formulas_de_la_recta_no_se_parten():
+    """r2: MathJax 4 parte una formula en linea en el = o el +, y a 390 px
+    salia «β⋆» al final de un renglon y «= (11, 3.6)» al principio del
+    siguiente. Entre llaves no la parte (comprobado con render_math.mjs: un
+    mjx-break sin llaves, ninguno con ellas). Las formulas de la recta van
+    entre llaves."""
+    texto = _sin_figuras(_cuerpo(_leer(PAGINA)))
+    formulas = [m for m in re.findall(r"(?<!\$)\$([^$]+)\$(?!\$)", texto)
+                if re.search(r"11\+3\.6|10\.6\+|\\beta\^\\star=", m)]
+    assert len(formulas) >= 4
+    assert [m for m in formulas if not (m.startswith("{") and m.endswith("}"))] == []
