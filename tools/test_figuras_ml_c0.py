@@ -145,12 +145,68 @@ def test_f1b_pone_cada_regla_junto_a_su_error_en_cada_conjunto():
         assert str(cifras.ENTREGAS[i][1]) in der
 
 
-def test_f1b_dibuja_los_mae_bajo_cada_panel_junto_a_su_regla():
-    textos = _textos(_svg(F1B))
-    for clave in ("mae_vistas", "mae_nuevas"):
-        for regla in ("memorizar", "recta", "promedio"):
-            valor = f(C[regla][clave])
-            assert valor in textos, (regla, clave)
+def _textos_con_y(texto_svg):
+    """(y, texto visible) de cada <text>."""
+    return [(float(y), re.sub(r"<[^>]+>", "", s)) for y, s in
+            re.findall(r'<text\b[^>]*\by="([\d.-]+)"[^>]*>(.*?)</text>', texto_svg, re.S)]
+
+
+def renglones_mae(texto_svg, titulo):
+    """{regla: valor} del bloque de MAE que encabeza `titulo`: el valor es el
+    otro texto del mismo renglon (misma y) que el nombre de la regla, y el
+    renglon cae en los tres siguientes al titulo (cada 18 px)."""
+    textos = _textos_con_y(texto_svg)
+    y0 = next(y for y, s in textos if s == titulo)
+    out = {}
+    for y, s in textos:
+        if s in ("memorizar", "recta", "promedio") and y0 < y <= y0 + 20 + 18 * 2 + 1:
+            otros = [o for yy, o in textos if yy == y and o != s]
+            assert len(otros) == 1, (titulo, s, otros)
+            out[s] = otros[0]
+    return out
+
+
+TITULO_VISTAS = "error medio en las 4 vistas (min)"
+TITULO_NUEVAS = "error medio en las 2 nuevas (min)"
+
+
+@pytest.mark.parametrize("ident, titulo, clave", [
+    (F1A, TITULO_VISTAS, "mae_vistas"),
+    (F1B, TITULO_VISTAS, "mae_vistas"),
+    (F1B, TITULO_NUEVAS, "mae_nuevas"),
+])
+def test_cada_mae_visible_va_en_el_renglon_de_su_regla_y_su_conjunto(ident, titulo, clave):
+    """r3: antes bastaba que el valor apareciera en algun lugar del texto;
+    intercambiar los MAE de dos reglas pasaba. Ahora cada renglon del bloque
+    de su conjunto pone junto a la regla su propio valor."""
+    esperado = {r: f(C[r][clave]) for r in ("memorizar", "recta", "promedio")}
+    assert renglones_mae(_svg(ident), titulo) == esperado
+
+
+def test_la_guarda_de_renglones_atrapa_dos_mae_intercambiados():
+    texto = _svg(F1B)
+    a, b = f(C["memorizar"]["mae_nuevas"]), f(C["promedio"]["mae_nuevas"])
+    cambiado = (texto.replace(f">{a}</text>", ">@A@</text>")
+                .replace(f">{b}</text>", f">{a}</text>").replace(">@A@</text>", f">{b}</text>"))
+    assert cambiado != texto
+    assert renglones_mae(cambiado, TITULO_NUEVAS) != {
+        r: f(C[r]["mae_nuevas"]) for r in ("memorizar", "recta", "promedio")}
+
+
+EN_LETRA = {"cero": 0, "uno": 1, "un": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5,
+            "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10, "once": 11, "doce": 12}
+
+
+def test_f1b_el_titulo_dice_los_errores_de_memorizar():
+    """r3: el titulo «Cero error en lo que vio, siete minutos en lo nuevo»
+    dice dos cifras en letra que ninguna prueba ataba (la de cifras salta
+    las figuras). Son el error de memorizar en las vistas y en las nuevas."""
+    titulo = re.search(r"<title>(.*?)</title>", _svg(F1B)).group(1)
+    m = re.fullmatch(r"(\w+) error en lo que vio, (\w+) minutos en lo nuevo", titulo)
+    assert m, titulo
+    visto, nuevo = (EN_LETRA[w.lower()] for w in m.groups())
+    assert visto == C["memorizar"]["mae_vistas"]
+    assert nuevo == C["memorizar"]["mae_nuevas"]
 
 
 # ---------------------------------------------------------- roles ---

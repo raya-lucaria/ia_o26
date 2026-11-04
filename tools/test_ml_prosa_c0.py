@@ -268,6 +268,19 @@ def test_5c_cada_alt_es_el_aria_label_de_su_figura():
             alt.replace('"', "&quot;")
 
 
+def test_5d_cada_titulo_de_figura_es_el_del_generador():
+    """r3: el titulo de F1b («Cero error en lo que vio, siete minutos en lo
+    nuevo») dice dos cifras en letra; el generador lo arma desde
+    ml_cifras_c0 (test_figuras_ml_c0 lo ata) y la pagina tiene que copiarlo
+    literal, como el alt. Vale para los cinco titulos."""
+    texto = _leer(PAGINA)
+    for ident, gen_svg in fig.FIGURAS_C0.items():
+        m = re.search(rf'^:::\s*figure\s*\{{#{re.escape(ident)}\s+title="([^"]*)"\}}', texto, re.M)
+        assert m, ident
+        titulo_svg = re.search(r"<title>(.*?)</title>", gen_svg()).group(1)
+        assert m.group(1) == titulo_svg, ident
+
+
 # --------------------------------------- 6 · sin ids de otras clases ---
 
 @pytest.mark.parametrize("ruta", (PAGINA, INDICE), ids=("pagina", "indice"))
@@ -565,3 +578,44 @@ def test_15e_las_otras_formulas_que_mathjax_partia_van_entre_llaves(cuerpo):
     formulas = [m for m in re.findall(r"(?<!\$)\$([^$]+)\$(?!\$)", texto) if cuerpo in m]
     assert formulas, cuerpo
     assert all(m == "{" + cuerpo + "}" for m in formulas), formulas
+
+
+def _minutos_frontmatter(ruta):
+    from contrato_unidad import minutos
+    fm = _leer(ruta).split("\n---", 1)[0]
+    return minutos(re.search(r"^estimated_time:\s*(\S+)", fm, re.M).group(1))
+
+
+def comprobar_minutos_del_indice(indice):
+    """Los minutos del indice: su frontmatter, la fila de la tabla de
+    recorrido y el total en prosa, todos iguales a los de la pagina."""
+    errores = []
+    m = _minutos_frontmatter(PAGINA)
+    fm = re.search(r"^estimated_time:\s*(\S+)", indice.split("\n---", 1)[0], re.M)
+    from contrato_unidad import minutos
+    if minutos(fm.group(1)) != m:
+        errores.append(f"frontmatter del indice: {fm.group(1)}, pagina: {m}")
+    fila = re.search(r"^\|\s*Repaso\s*\|[^|]*\|\s*(\d+)\s*\|\s*$", indice, re.M)
+    if not fila or int(fila.group(1)) != m:
+        errores.append(f"fila de Repaso en el recorrido: {fila and fila.group(1)}, pagina: {m}")
+    total = re.findall(r"(?<![\d.])(\d+) minutos de lectura", indice)
+    if total != [str(m)]:
+        errores.append(f"total en prosa: {total}, pagina: {m}")
+    return errores
+
+
+def test_16_los_minutos_del_indice_son_los_de_la_pagina():
+    """r3: el 20 de la tabla y el de «20 minutos de lectura» del indice no
+    los ataba ninguna prueba; salen del estimated_time de la pagina."""
+    assert comprobar_minutos_del_indice(_leer(INDICE)) == []
+
+
+@pytest.mark.parametrize("de, a", [
+    ("| 20 |", "| 25 |"),
+    ("20 minutos de lectura", "25 minutos de lectura"),
+    ("estimated_time: 20m", "estimated_time: 25m"),
+])
+def test_16b_la_prueba_16_atrapa_un_minuto_cambiado(de, a):
+    texto = _leer(INDICE)
+    assert de in texto, de
+    assert comprobar_minutos_del_indice(texto.replace(de, a, 1)) != []

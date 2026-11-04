@@ -280,6 +280,23 @@ ALT_F1B = (
 )
 
 
+# r3: el titulo de F1b dice dos cifras en letra (el error de memorizar en lo
+# visto y en lo nuevo); salen de ml_cifras_c0 como todo lo demas, y
+# test_f1b_el_titulo_dice_los_errores_de_memorizar lo ata.
+EN_LETRA = {0: "cero", 1: "un", 2: "dos", 3: "tres", 4: "cuatro", 5: "cinco", 6: "seis",
+            7: "siete", 8: "ocho", 9: "nueve", 10: "diez", 11: "once", 12: "doce"}
+
+
+def _en_letra(valor):
+    entero = round(valor)
+    assert abs(valor - entero) < 1e-9, valor
+    return EN_LETRA[entero]
+
+
+TITULO_F1B = (f"{_en_letra(C['memorizar']['mae_vistas']).capitalize()} error en lo que vio, "
+              f"{_en_letra(C['memorizar']['mae_nuevas'])} minutos en lo nuevo")
+
+
 # Los segmentos de error de cada regla se corren a un lado de su distancia
 # para no taparse; el anuncio y el tiempo real se quedan en 5 y 6 km, y dos
 # conectores cortos dicen a que distancia pertenece cada segmento.
@@ -327,7 +344,7 @@ def fig_memorizar_contra_ajustar():
     out += _renglones_mae(abajo.x0, 648, "mae_nuevas", "error medio en las 2 nuevas (min)",
                           ancho=200)
     out += _leyenda(738)
-    return svg(W, H, ALT_F1B, "Cero error en lo que vio, siete minutos en lo nuevo", out)
+    return svg(W, H, ALT_F1B, TITULO_F1B, out)
 
 
 # ------------------------------------------------------------- F2 ---
