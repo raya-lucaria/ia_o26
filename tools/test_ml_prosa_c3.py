@@ -87,6 +87,7 @@ def cifras_p1():
     en = c.cifras_c3_endogena()["cita"]
     di = c.cifras_c3_diana()["cita"]
     cl = c.cifras_c3_colineal()["cita"]
+    it = c.cifras_c3_interaccion()["cita"]
     return {
         1: [m["rmse_val"]],
         2: [e["rmse_modelo"], e["rmse_media"], e["rmse_mediana"], e["ybar"],
@@ -96,7 +97,7 @@ def cifras_p1():
         3: [co["normal"], co["pareto"], co["cauchy"], "25.99", "96", "1.49", "34"],
         4: [o["beta1_a"], o["beta1_b"], o["beta_c_x1"], o["beta_c_x2x3"], o["L_val_c"],
             o["piso_visible"], en["media_beta1"], en["cuenta"], en["L_val"], en["piso"],
-            di["omitida"], di["endogena"], "3.5"],
+            di["omitida"], di["endogena"], it["L_val_sin"], it["L_val_con"], "3.5"],
         5: [cl["desv_beta1_0"], cl["desv_beta1_99"], cl["desv_y_dentro_99"],
             cl["desv_y_fuera_99"], "0.229", "50"],
     }

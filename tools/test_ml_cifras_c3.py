@@ -489,6 +489,12 @@ def test_caso_24_se_rompe():
     _ocho_de_diez(rompe)
 
 
+
+def test_interaccion_caso_7():
+    m = c.cifras_c3_interaccion()
+    assert m["L_val_sin"] > 10 * m["L_val_con"]
+    assert m["cita"] == {"L_val_sin": "5.59", "L_val_con": "0.24"}
+
 # --- fin tramo rapido ---
 
 

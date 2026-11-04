@@ -1009,6 +1009,20 @@ def _mu_restringido_ortonormal(b, penalizacion, d):
     return float(hi)
 
 
+
+@functools.lru_cache(maxsize=None)
+def cifras_c3_interaccion():
+    """P1 §4, F6 (alt): caso 7 con semilla 0, L_val de la recta en x1, x2 sin y con
+    la columna x1·x2 (la silla de residuales y el ruido sin forma)."""
+    ml = _ml()
+    d = ml.caso(7)
+    sin = ml.ajustar(d, phi=ml.columnas("x1", "x2"))
+    con = ml.ajustar(d, phi=ml.combinar(ml.columnas("x1", "x2"),
+                                        ml.interacciones(("x1", "x2"))))
+    out = {"L_val_sin": float(ml.L(sin, d.val)), "L_val_con": float(ml.L(con, d.val))}
+    out["cita"] = {"L_val_sin": _f(out["L_val_sin"], 2), "L_val_con": _f(out["L_val_con"], 2)}
+    return out
+
 # --- fin tramo rapido ---
 
 
