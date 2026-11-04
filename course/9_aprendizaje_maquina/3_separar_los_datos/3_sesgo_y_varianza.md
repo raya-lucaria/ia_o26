@@ -102,7 +102,9 @@ puntos que sujeten la curva. Es la comparación de este experimento,
 no una ley para cualquier procedimiento.
 :::
 
-> [!TIP] **Míralo correr: bloque 1 · Abanico y diana**
+> [!TIP]
+> **Míralo correr: bloque 1 · Abanico y diana**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/05_sesgo_y_varianza.ipynb)
 
 ## 2 · Separar el error en tres partes
@@ -304,7 +306,9 @@ no da ese EE: no permite afirmar equivalencia. La comparación útil
 es entre riesgos, no entre números de grado.
 :::
 
-> [!TIP] **Míralo correr: bloque 2 · La U calculada y la U medida**
+> [!TIP]
+> **Míralo correr: bloque 2 · La U calculada y la U medida**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/05_sesgo_y_varianza.ipynb)
 
 ## 4 · Comprar más datos
@@ -389,7 +393,9 @@ datos también puede tener mucha varianza. La conclusión usa la familia
 y la evolución de sus curvas, no solo la distancia al piso.
 :::
 
-> [!TIP] **Míralo correr: bloque 3 · Curvas de aprendizaje**
+> [!TIP]
+> **Míralo correr: bloque 3 · Curvas de aprendizaje**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/05_sesgo_y_varianza.ipynb)
 
 ## 5 · Diagnosticar con dos curvas
@@ -451,7 +457,9 @@ o «falta evidencia»: es descriptiva. Confirma en una reserva que no tocó ning
 El benchmark puede fallar mucho en ambos conjuntos y dejar una brecha casi cero.
 Su brecha esperada es positiva: del orden de la varianza de $y$ entre $n_{\text{ent}}$.
 
-> [!NOTE] **Un modelo exitoso**
+> [!NOTE]
+> **Un modelo exitoso**
+>
 > Le gana al benchmark por más de dos EE de la diferencia pareada en una reserva que no tocó ninguna decisión, con ambos modelos fijados. Usa la prueba una vez o validación que no eligió el modelo. Más flexibilidad no mejora la CV: señal heurística, no prueba.
 >
 > Tiene una brecha chica.
@@ -495,7 +503,9 @@ La CV sola no bastaba para afirmar que A o D superan al benchmark:
 solo daba una señal.
 :::
 
-> [!TIP] **Míralo correr: bloque 4 · Cuatro procesos misteriosos**
+> [!TIP]
+> **Míralo correr: bloque 4 · Cuatro procesos misteriosos**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/05_sesgo_y_varianza.ipynb)
 
 ## Ejercicio final · Un consultor con dos curvas

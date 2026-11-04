@@ -143,6 +143,14 @@ def test_la_tarea_no_lleva_respuestas_ni_explica():
     t = texto(TAREA)
     assert "::: answer" not in t and "-explica" not in t
 
+def test_ningun_recuadro_lleva_texto_en_la_linea_del_marcador():
+    """«> [!TIP] **titulo**» publica el marcador «[!TIP]» como texto: Raya solo
+    reconoce el recuadro si el marcador va solo en su linea (se vio en el build)."""
+    malos = [f"{r.name}:{i}" for r in sorted(CLASE.glob("*.md"))
+             for i, linea in enumerate(r.read_text(encoding="utf-8").splitlines(), 1)
+             if re.match(r"^>\s*\[![A-Z]+\]\s*\S", linea)]
+    assert not malos, malos
+
 # --- fin tramo rapido ---
 
 

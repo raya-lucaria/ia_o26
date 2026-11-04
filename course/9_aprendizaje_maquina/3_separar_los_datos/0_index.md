@@ -26,7 +26,9 @@ Eliges con validación y reservas la prueba para medir después de fijar el mode
 Con las entregas de la unidad 6 verás por qué esa separación importa.
 La prueba estima el riesgo; no lo revela exactamente.
 
-> [!TIP] **Míralo correr: los tres notebooks**
+> [!TIP]
+> **Míralo correr: los tres notebooks**
+>
 > Abre el 03 para separar, el 04 para elegir y el 05 para explicar el error.
 > Los enlaces están en «Los notebooks». Corren en tu navegador, sin instalar nada.
 

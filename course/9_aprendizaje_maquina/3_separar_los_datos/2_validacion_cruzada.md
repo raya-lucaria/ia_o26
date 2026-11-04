@@ -123,7 +123,9 @@ Cinco pliegues dan $L_{\mathcal D_m}=9.2,\ 9.0,\ 9.1,\ 8.7,\ 8.8$, en minutos cu
 El divisor de la varianza muestral es cuatro; el EE divide después la desviación entre $\sqrt5$.
 :::
 
-> [!TIP] **Míralo correr: bloque 1 · Los pliegues, dibujados**
+> [!TIP]
+> **Míralo correr: bloque 1 · Los pliegues, dibujados**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)
 
 ## 2 · Elegir con una CV por candidato
@@ -180,7 +182,9 @@ Incluye el reajuste final.
 **(b)** $13\cdot60+1=781$. Cada candidato requiere una vuelta por observación; después reajustas solo el elegido.
 :::
 
-> [!TIP] **Míralo correr: bloques 2 y 3 · CV contra el grado y contra una sola validación**
+> [!TIP]
+> **Míralo correr: bloques 2 y 3 · CV contra el grado y contra una sola validación**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)
 
 ## 3 · Leer las barras y la regla de un EE
@@ -254,7 +258,9 @@ El grado 2 no entra: su barra baja a 9.7, pero su media 10.2 supera 9.9.
 El grado 3 es el primero cuya media no supera el umbral.
 :::
 
-> [!TIP] **Míralo correr: bloque 2 · CV contra el grado, con barras**
+> [!TIP]
+> **Míralo correr: bloque 2 · CV contra el grado, con barras**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)
 
 ## 4 · Mirar dentro de los pliegues
@@ -303,7 +309,9 @@ En otro reparto, con $N=1$ los cinco pliegues dan errores parecidos; con $N=8$, 
 Puedes preferir el grado bajo o ampliar los datos en esa zona; borrar el pliegue oculta el problema.
 :::
 
-> [!TIP] **Míralo correr: bloque 4 · Mirar dentro de los pliegues**
+> [!TIP]
+> **Míralo correr: bloque 4 · Mirar dentro de los pliegues**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)
 
 ## 5 · Estratificar cuando una clase es rara
@@ -353,7 +361,9 @@ Tienes $k=5$ y tres positivos.
 **(c)** Con $k=3$, estratificar coloca uno en cada pliegue.
 :::
 
-> [!TIP] **Míralo correr: bloque 5 · Estratificar**
+> [!TIP]
+> **Míralo correr: bloque 5 · Estratificar**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)
 
 ## 6 · Medir al que elige: la CV anidada
@@ -407,7 +417,9 @@ Comparas 13 candidatos con cinco pliegues adentro y afuera.
 $5\cdot(13\cdot5+1)=330$ ajustes. Cada vuelta externa selecciona con cinco pliegues internos y reajusta su elegido antes de evaluarlo afuera.
 :::
 
-> [!TIP] **Míralo correr: bloque 6 · La CV anidada**
+> [!TIP]
+> **Míralo correr: bloque 6 · La CV anidada**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)
 
 ## Ejercicio final

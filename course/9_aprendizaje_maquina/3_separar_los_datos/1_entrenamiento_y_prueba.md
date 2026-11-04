@@ -104,7 +104,9 @@ Clasifica como parámetro, hiperparámetro o del procedimiento:
 (a) y (e) son parámetros: el ajuste elige esos coeficientes dentro de una familia fija. (b) es hiperparámetro: delimita la familia. (c) y (d) son del procedimiento: fijan cómo separas y mides, sin cambiar la regla de predicción.
 :::
 
-> [!TIP] **Míralo correr: bloque 1 · Separar dos decisiones**
+> [!TIP]
+> **Míralo correr: bloque 1 · Separar dos decisiones**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)
 
 ## 2 · Apartar una prueba
@@ -183,7 +185,9 @@ $$s_\ell^2=\frac{(1.5^2)\cdot4}{3}=3,\qquad s_\ell=\sqrt3\approx1.73,\qquad \mat
 La cuenta usa $1,1,4,4$, no los residuales con signo. Tanto la pérdida promedio como su EE están en minutos cuadrados.
 :::
 
-> [!TIP] **Míralo correr: bloque 2 · Apartar una prueba y medir cuánto baila**
+> [!TIP]
+> **Míralo correr: bloque 2 · Apartar una prueba y medir cuánto baila**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)
 
 ## 3 · Medir cuánto baila una prueba
@@ -293,7 +297,9 @@ Trece grados tienen exactamente el mismo riesgo, 10. Para cada uno mides una pru
 La esperanza del mínimo es menor que 10, salvo que todas las cifras sean idénticas con probabilidad uno. Cada cifra tiene esperanza 10; tomar el mínimo aprovecha las desviaciones favorables. Con una prueba nueva e independiente, la esperanza vuelve a 10: el grado ganador no pudo adaptarse a ella.
 :::
 
-> [!TIP] **Míralo correr: bloque 3 · El engaño de elegir con la prueba**
+> [!TIP]
+> **Míralo correr: bloque 3 · El engaño de elegir con la prueba**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)
 
 ## 5 · Imitar el despliegue
@@ -360,7 +366,9 @@ Solo C mide entregas de una colonia nueva: «otra ciudad» en chico. Toda la pru
 Para «más entregas de estas tres colonias», procura que las tres aparezcan en ambos lados: la página siguiente anuncia cómo estratificar. Para «colonias nuevas», aparta una colonia entera y reporta solo su error. La composición de la prueba debe venir del uso previsto, no de un accidente del sorteo.
 :::
 
-> [!TIP] **Míralo correr: bloque 4 · Imitar el despliegue**
+> [!TIP]
+> **Míralo correr: bloque 4 · Imitar el despliegue**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)
 
 ## 6 · Repartir los datos
@@ -397,7 +405,9 @@ Tus pérdidas en validación tienen $s_\ell\approx10$. Quieres reportar con $\ma
 Necesitas $n\ge(10/0.5)^2=400$ observaciones. Aquí el límite pedido es para un EE, no para el margen de dos EE. Es una previsión basada en la dispersión de validación y en observaciones independientes.
 :::
 
-> [!TIP] **Míralo correr: bloque 5 · Repartir los datos**
+> [!TIP]
+> **Míralo correr: bloque 5 · Repartir los datos**
+>
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)
 
 ## Ejercicio final · Dos contratos para los mismos datos
