@@ -16,6 +16,12 @@ Lo que fijan, en el orden del contrato común (§5):
 6. Lo que trae 1.1 (O0b-c1, contrato §5.15 B): repetir, error_por_zona,
    no_free_lunch y sus dos gráficas, el adelanto proceso_clasificacion con la
    prueba de adelantos de §5.2, PROCESOS["recursivo"] y los casos 3, 4 y 5.
+7. Lo que trae 1.2 (lote de la clase 2) y 1.3 (lote de la clase 3, clase_3.md
+   §10.7.2): piezas de cola larga y heterocedastico con su piso, interacciones,
+   estandarizar, mae/rmse/r2, peores_errores, trayectorias, optimo_restringido,
+   encoger_1d, beta_repetido, muchas_variables, los casos 6–12 y 24, sus
+   gráficas (dibujar_cv y dibujar_diana idénticas a 1.2 sin los argumentos
+   nuevos) y el taller de la clase 3.
 
 Corre en menos de un minuto con el venv de S-lab.
 """
@@ -220,9 +226,10 @@ def test_claves_de_los_catalogos_de_1_0():
     assert set(_entradas()["1.2"]["__claves__"]["PROCESOS"]) >= {"entregas_curvas"}
     for prohibida in ("lineal", "ar1", "cola_larga"):
         assert prohibida not in ml.PROCESOS
-    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 13, 14, 15, 16, 23}
+    # 1.3 (clase 3) agrega los casos 6 a 12 y 24 y el taller 3
+    assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24}
     assert all(isinstance(k, int) for k in ml.CASOS_BORDE)
-    assert set(ml.ANALISIS_TALLER) == {1, 2}
+    assert set(ml.ANALISIS_TALLER) == {1, 2, 3}
     assert ml.SENTIDO == {
         "cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max",
     }
@@ -240,8 +247,8 @@ def test_requiere_misma_x_y_mayor_o_igual():
 
 
 def test_version_y_cambios():
-    assert ml.VERSION == "1.2"
-    assert {"1.0", "1.1", "1.2"} <= set(ml.CAMBIOS)
+    assert ml.VERSION == "1.3"
+    assert {"1.0", "1.1", "1.2", "1.3"} <= set(ml.CAMBIOS)
     assert set(_entradas()) == set(ml.CAMBIOS)
 
 
@@ -840,7 +847,8 @@ def test_casos_de_1_0_se_rompen_a_la_vista():
     assert ml.ajustar(c2).beta_gorro["x1"] == pytest.approx(4.0, abs=1.0)
     assert ml.piso(c2) > 9 * ml.piso(ml.caso(2, omitir=None))
     for numero, caso in ml.CASOS_BORDE.items():
-        assert caso.numero == numero and caso.clase == (2 if 13 <= numero <= 16 else 1)
+        dueña = 2 if 13 <= numero <= 16 else 3 if 6 <= numero <= 12 or numero == 24 else 1
+        assert caso.numero == numero and caso.clase == dueña
         assert caso.pregunta.endswith("?") and caso.que_se_ve
 
 
@@ -2373,3 +2381,549 @@ def test_dibujar_pliegues_rechaza_una_particion_de_otro_n():
     with pytest.raises(ValueError, match="otro n"):
         ml.dibujar_pliegues(3, 2, particion=ml.pliegues(df4, k=2))
     ml.dibujar_pliegues(4, 2, particion=ml.pliegues(df4, k=2))
+
+
+# ---------------------------------------------------------------------------
+# 1.3 · el lote de la clase 3 (clase_3.md §10.7.2, contrato §5.4–§5.12, §5.15 C)
+
+NUEVAS_1_3 = [
+    "t_student", "cauchy", "pareto", "lognormal", "heterocedastico", "muchas_variables",
+    "interacciones", "estandarizar", "mae", "rmse", "r2", "peores_errores", "trayectorias",
+    "optimo_restringido", "encoger_1d", "beta_repetido", "dibujar_benchmarks",
+    "dibujar_media_acumulada", "dibujar_peso_de_filas", "dibujar_residuales_plano",
+    "dibujar_beta_repetido", "dibujar_encoger_1d", "dibujar_trayectorias", "dibujar_regiones",
+    "dibujar_presupuesto",
+]
+VERSION_1_2 = "d05c81b"  # el commit de ml_lab 1.2 contra el que se comparan las ampliaciones
+
+
+def _calla(funcion, *args, **kwargs):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return funcion(*args, **kwargs)
+
+
+def test_las_funciones_de_1_3_dicen_desde_cuando():
+    for nombre in NUEVAS_1_3:
+        assert nombre in ml.__all__, nombre
+        assert "Desde: 1.3 (clase 3)" in getattr(ml, nombre).__doc__, nombre
+    assert "(1.3)" in ml.dibujar_cv.__doc__
+    assert set(ml.ANALISIS_TALLER) >= {3}
+    assert {6, 7, 8, 9, 10, 11, 12, 24} <= set(ml.CASOS_BORDE)
+    for n in (6, 7, 8, 9, 10, 11, 12, 24):
+        assert ml.CASOS_BORDE[n].clase == 3
+
+
+# --- piezas y piso ---------------------------------------------------------
+
+def test_piezas_de_cola_larga_y_sus_momentos():
+    t3, t2, c, p, ln = ml.t_student(3), ml.t_student(2), ml.cauchy(), ml.pareto(1.5), ml.lognormal(0, 1)
+    assert t3.varianza == pytest.approx(3.0) and t3.media == 0
+    assert np.isinf(t2.varianza) and np.isinf(c.varianza) and np.isinf(p.varianza)
+    assert ml.pareto(3.0).varianza == pytest.approx(3 / (4 * 1))
+    assert np.isnan(c.media) and p.media == 0
+    assert ln.media == pytest.approx(np.exp(0.5)) and ln.varianza == pytest.approx((np.e - 1) * np.e)
+    rng = np.random.default_rng(0)
+    # centrar resta la media: la media muestral de Pareto(3) con 10⁶ filas está cerca de 0
+    assert abs(ml.pareto(3.0).muestrear(1_000_000, rng).mean()) < 0.01
+    assert np.median(ml.pareto(1.5).muestrear(200_001, rng)) == pytest.approx(2 ** (1 / 1.5) - 3,
+                                                                               abs=0.01)
+    for pieza in (t3, c, p, ln):
+        a = pieza.muestrear(50, np.random.default_rng(4))
+        assert np.array_equal(a, pieza.muestrear(50, np.random.default_rng(4)))
+        u = np.array([0.1, 0.5, 0.9])
+        assert np.all(np.diff(pieza._cuantil(u)) > 0)
+    with pytest.raises(ValueError, match="centrar"):
+        ml.pareto(0.8)
+    assert np.isinf(ml.pareto(0.8, centrar=False).varianza)
+    with pytest.raises(ValueError):
+        ml.t_student(0)
+    with pytest.raises(ValueError, match="centrada"):
+        ml.heterocedastico(lambda d: d["x"], base=ml.normal(1, 1))
+
+
+def test_piso_infinito_con_colas_sin_segundo_momento():
+    for ruido in (ml.pareto(1.5), ml.t_student(2), ml.cauchy()):
+        assert np.isinf(ml.piso(ml.proceso(n=50, ruido=ruido)))
+    assert ml.piso(ml.proceso(n=50, ruido=ml.t_student(3))) == pytest.approx(3.0)
+    # absoluta: E|ε| de la pieza simétrica; inf con Cauchy; nan (con aviso) si es asimétrica
+    assert ml.piso(ml.proceso(n=50, ruido=ml.t_student(2)), "absoluta") == pytest.approx(np.sqrt(2))
+    assert ml.piso(ml.proceso(n=50, ruido=ml.t_student(3)), "absoluta") == pytest.approx(
+        2 * np.sqrt(3) / np.pi)
+    assert np.isinf(ml.piso(ml.proceso(n=50, ruido=ml.cauchy()), "absoluta"))
+    with pytest.warns(UserWarning, match="piso desconocido"):
+        assert np.isnan(ml.piso(ml.proceso(n=50, ruido=ml.pareto(1.5)), "absoluta"))
+
+
+def test_heterocedastico_varianza_por_fila_y_su_piso():
+    datos = ml.caso(12)
+    assert ml.piso(datos) == pytest.approx(0.04 + 0.3 + 0.75, rel=0.01)  # E[(0.2 + 1.5x)²]
+    assert ml.piso(datos, "absoluta") == pytest.approx(0.95 * np.sqrt(2 / np.pi), rel=0.01)
+    e = datos.realidad["y"] - datos.realidad["f"]
+    x = datos.realidad["x"]
+    assert e[x < 0.2].std() == pytest.approx(np.sqrt(((0.2 + 1.5 * np.linspace(0, 0.2, 999)) ** 2).mean()),
+                                             rel=0.05)
+    assert e[x > 0.8].std() > 4 * e[x < 0.2].std()
+    con_cauchy = ml.caso(12, ruido=ml.heterocedastico(lambda d: 0.2 + d["x"], base=ml.cauchy()))
+    assert np.isinf(ml.piso(con_cauchy)) and np.isinf(ml.piso(con_cauchy, "absoluta"))
+
+
+def test_caso_8_piso_endogeno_y_mc_por_encima():
+    datos = ml.caso(8)
+    assert abs(ml.piso(datos) - 0.75) < 0.01
+    grande = ml.caso(8, n=20_000)
+    m = ml.ajustar(grande)
+    l_i = ml.perdida(grande.val["y"], m.predecir(grande.val))
+    assert l_i.mean() >= ml.piso(grande) - 2 * ml.error_estandar(l_i)
+    assert m.beta_gorro["x1"] == pytest.approx(2.5, abs=0.03)
+
+
+# --- representaciones, métricas -------------------------------------------
+
+def test_interacciones_y_estandarizar():
+    datos = ml.caso(7)
+    phi = ml.combinar(ml.columnas("x1", "x2"), ml.interacciones(("x1", "x2")))
+    m = ml.ajustar(datos, phi=phi)
+    M = m.Phi(datos.val)
+    assert list(M.columns) == ["1", "x1", "x2", "x1*x2"]
+    assert np.allclose(M["x1*x2"], datos.val["x1"] * datos.val["x2"])
+    columnas_antes = list(datos.ent.columns)
+    est = ml.estandarizar(ml.polinomio(3)).ajustar(ml.caso(11).ent)
+    E = est(ml.caso(11).ent)
+    assert np.allclose(E.mean(), 0, atol=1e-12) and np.allclose(E.std(ddof=0), 1)
+    V = est(ml.caso(11).val)  # con la media y la desviación de ent, no de val
+    assert not np.allclose(V.mean(), 0, atol=1e-6)
+    con_uno = ml.estandarizar(ml.combinar(ml.polinomio(2))).ajustar(datos.ent.assign(x=datos.ent.x1))
+    assert np.all(con_uno(datos.ent.assign(x=datos.ent.x1))["1"] == 1.0)
+    assert list(datos.ent.columns) == columnas_antes
+    with pytest.raises(ValueError):
+        ml.interacciones("x1")
+    with pytest.raises(ValueError):
+        ml.estandarizar("x1")
+
+
+def test_mae_rmse_r2_y_peores_errores():
+    y, g = np.array([0.0, 0, 0, 4]), np.zeros(4)
+    assert ml.mae(y, g) == 1.0 and ml.rmse(y, g) == 2.0 and ml.rmse(y, g) != ml.mae(y, g)
+    assert ml.r2([1.0, 2, 3], [1.0, 2, 3]) == 1.0
+    assert ml.r2([1.0, 2, 3], [2.0, 2, 2]) == pytest.approx(0.0)
+    datos = ml.caso(11)
+    m = ml.ajustar(datos)
+    antes = datos.val.copy()
+    t = ml.peores_errores(m, datos.val, k=7)
+    assert len(t) == 7 and list(t.columns) == ["x", "y", "y_gorro", "e"]
+    assert np.all(np.diff(np.abs(t["e"].to_numpy())) <= 0)
+    e = datos.val["y"] - m.predecir(datos.val)
+    assert abs(t["e"].iloc[0]) == pytest.approx(np.abs(e).max())
+    pd.testing.assert_frame_equal(datos.val, antes)
+
+
+# --- regularización ----------------------------------------------------------
+
+def test_encoger_1d_contra_el_enunciado_y_kkt():
+    b = np.array([-2.0, -0.3, 0.0, 0.2, 1.0, 3.0])
+    assert np.allclose(ml.encoger_1d(b, 1.0, "l2"), b / 2)
+    assert np.allclose(ml.encoger_1d(b, 1.0, "l1"), np.sign(b) * np.maximum(np.abs(b) - 0.5, 0))
+    assert np.allclose(ml.encoger_1d(b, 1.0, "elastica", rho=1.0), ml.encoger_1d(b, 1.0, "l1"))
+    assert np.allclose(ml.encoger_1d(b, 1.0, "elastica", rho=0.0), ml.encoger_1d(b, 1.0, "l2"))
+    assert ml.encoger_1d(1.0, 1.0, "l1") == 0.5 and ml.encoger_1d(1.0, 0.7, None) == 1.0
+    # contra ajustar con un diseño de una columna centrada con (1/n)Σx² = 1
+    rng = np.random.default_rng(3)
+    x = rng.normal(size=200)
+    x = (x - x.mean()) / x.std()
+    df = pd.DataFrame({"x": x, "y": 0.8 * x + rng.normal(size=200)})
+    b_mc = ml.ajustar(df, columnas_x=["x"], tarea="regresion").beta_gorro["x"]
+    for pen in ("l2", "l1", "elastica"):
+        for mu in (0.1, 0.9, 3.0):
+            m = ml.ajustar(df, mu=mu, penalizacion=pen, rho=0.4, columnas_x=["x"], tarea="regresion")
+            assert m.beta_gorro["x"] == pytest.approx(ml.encoger_1d(b_mc, mu, pen, 0.4), abs=1e-9)
+
+
+def test_trayectorias_solo_pendientes_y_mu_grande():
+    datos = ml.muchas_variables(n=200, J=6, utiles=3)
+    mus = [0.01, 0.1, 1.0, 1e8]
+    for pen in ("l2", "l1", "elastica"):
+        t = ml.trayectorias(datos, None, pen, mus)
+        assert list(t.columns) == ["mu", "coeficiente", "valor"]
+        assert "1" not in set(t["coeficiente"])
+        assert set(t["coeficiente"]) == set(datos.columnas_x)
+        assert np.all(np.abs(t[t["mu"] == 1e8]["valor"]) < 1e-6)
+        m = ml.ajustar(datos, mu=1e8, penalizacion=pen)
+        assert m.beta_gorro["1"] == pytest.approx(datos.ent["y"].mean(), abs=1e-6)
+
+
+def test_optimo_restringido_reajusta_al_mismo_beta():
+    datos = ml.caso(9)
+    for pen in ("l1", "l2", "elastica"):
+        beta, mu = ml.optimo_restringido(datos, None, pen, 0.8, rho=0.5)
+        assert mu > 0
+        m = ml.ajustar(datos, mu=mu, penalizacion=pen, rho=0.5)
+        assert np.allclose(m.beta_gorro.to_numpy(), beta.to_numpy(), atol=1e-4)
+        b = beta[["x1", "x2"]].to_numpy()
+        omega = {"l1": np.abs(b).sum(), "l2": (b ** 2).sum(),
+                 "elastica": 0.5 * np.abs(b).sum() + 0.5 * (b ** 2).sum()}[pen]
+        assert omega == pytest.approx(0.8, abs=1e-7)
+        # nadie dentro de Ω <= d tiene menor L_ent (comparado con un optimizador aparte)
+        X = datos.ent[["x1", "x2"]].to_numpy()
+        Xc, yc = X - X.mean(axis=0), datos.ent["y"].to_numpy() - datos.ent["y"].mean()
+        from scipy import optimize as opt
+        if pen == "l2":
+            restr = {"type": "ineq", "fun": lambda v: 0.8 - (v ** 2).sum()}
+            r = opt.minimize(lambda v: ((yc - Xc @ v) ** 2).mean(), np.zeros(2), method="SLSQP",
+                             constraints=[restr], options={"ftol": 1e-14, "maxiter": 500})
+            assert ((yc - Xc @ b) ** 2).mean() <= r.fun + 1e-7
+    beta, mu = ml.optimo_restringido(datos, None, "l1", 1e6)
+    assert mu == 0.0
+    with pytest.raises(ValueError, match="mayor que 0"):
+        ml.optimo_restringido(datos, None, "l1", 0.0)
+    with pytest.raises(ValueError, match="2 coeficientes"):
+        ml.optimo_restringido(ml.muchas_variables(n=60, J=3, utiles=3), None, "l1", 1.0)
+
+
+def test_beta_repetido_contra_minimos_cuadrados_a_mano():
+    datos = ml.caso(9)
+    t = ml.beta_repetido(datos.rehacer, None, repeticiones=5, semilla=3)
+    assert list(t.index) == [3, 4, 5, 6, 7] and list(t.columns) == ["1", "x1", "x2"]
+    for s in (3, 7):
+        d = datos.rehacer(s)
+        X = np.column_stack([np.ones(len(d.ent)), d.ent[["x1", "x2"]].to_numpy()])
+        b = np.linalg.lstsq(X, d.ent["y"].to_numpy(), rcond=None)[0]
+        assert np.allclose(t.loc[s].to_numpy(), b, atol=1e-10)
+    datos24 = ml.muchas_variables(n=150, J=10, utiles=3)
+    lasso = ml.beta_repetido(datos24.rehacer, None, repeticiones=10, mu=0.3, penalizacion="l1")
+    assert ((lasso.drop(columns="1") == 0).to_numpy().sum()) > 0
+    frecuencia = (lasso != 0).mean()
+    assert frecuencia["x1"] == 1.0
+
+
+def test_muchas_variables():
+    datos = ml.muchas_variables(n=200, J=12, utiles=4, gemelas={"x1": 0.9})
+    bv = ml.beta_verdadero(datos, None)
+    assert np.allclose(bv[[f"x{j}" for j in range(1, 13)]].to_numpy(),
+                       [3, -2, 1.5, 1] + [0] * 8, atol=1e-9)
+    assert np.corrcoef(datos.realidad["x1"], datos.realidad["x5"])[0, 1] == pytest.approx(0.9, abs=0.03)
+    assert abs(np.corrcoef(datos.realidad["x1"], datos.realidad["x6"])[0, 1]) < 0.03
+    visto = {}
+    real = ml._proceso
+
+    def espia(**kw):
+        visto.update(kw)
+        return real(**kw)
+
+    import unittest.mock as mock
+    with mock.patch.object(ml, "_proceso", espia):
+        ml.muchas_variables(n=50, J=3, utiles=2, escala={"x2": 10, "y": 3})
+    assert visto["escala"] == {"x2": 10, "y": 3}
+    with pytest.raises(ValueError):
+        ml.muchas_variables(J=5, utiles=6)
+
+
+def test_caso_24_mu_escala_con_el_cuadrado_de_y():
+    datos, kilos = ml.caso(24), ml.caso(24, escala=None)
+    vivos = lambda d, mu: int((ml.ajustar(d, mu=mu, penalizacion="l1").beta_gorro.drop("1") != 0).sum())  # noqa: E731
+    assert vivos(datos, 0.3) > vivos(kilos, 0.3)
+    b1 = ml.ajustar(datos, mu=300.0, penalizacion="l1").beta_gorro / 1000
+    b0 = ml.ajustar(kilos, mu=0.3, penalizacion="l1").beta_gorro
+    assert np.abs(b1 - b0).max() < 1e-6
+    r1 = ml.ajustar(datos, mu=0.3, penalizacion="l2").beta_gorro / 1000
+    assert np.abs(r1 - ml.ajustar(kilos, mu=0.3, penalizacion="l2").beta_gorro).max() < 1e-6
+
+
+# --- gráficas ----------------------------------------------------------------
+
+def test_dibujar_benchmarks_barras_y_pisos():
+    datos = ml.caso(11)
+    m = ml.ajustar(datos)
+    ax = ml.dibujar_benchmarks(m, datos)
+    b = ml.benchmarks(datos, datos.val, criterios=["cuadratica", "absoluta"])
+    largo = {p.get_gid(): p.get_width() for p in ax.patches if p.get_gid()}
+    assert largo["barra-cuadratica-media"] == pytest.approx(np.sqrt(b.loc["media", "cuadratica"]))
+    assert largo["barra-absoluta-mediana"] == pytest.approx(b.loc["mediana", "absoluta"])
+    assert largo["barra-cuadratica-modelo"] == pytest.approx(ml.rmse(datos.val.y, m.predecir(datos.val)))
+    assert largo["barra-cuadratica-piso"] == pytest.approx(np.sqrt(ml.piso(datos)))
+    assert largo["barra-absoluta-piso"] == pytest.approx(ml.piso(datos, "absoluta"))
+    assert "RMSE" in " ".join(t.get_text() for t in ax.get_yticklabels())
+    with pytest.raises(ValueError, match="no es un criterio"):
+        ml.dibujar_benchmarks(m, datos, criterios=("rmse",))
+    for ruido in (ml.pareto(1.5), ml.t_student(2), ml.cauchy()):
+        d = ml.caso(6, ruido=ruido)
+        ax = _calla(ml.dibujar_benchmarks, ml.ajustar(d), d)
+        assert "barra-cuadratica-piso" not in [p.get_gid() for p in ax.patches]
+        textos = [t.get_text() for t in ax.get_legend().get_texts()]
+        assert "piso infinito: todo predictor tiene riesgo cuadrático infinito" in textos
+        assert np.isfinite(ax.get_xlim()[1])
+    d = ml.proceso(n=200, x={"x1": ml.normal(), "x2": ml.normal()}, correlacion={("x1", "x2"): 0.5},
+                   omitir=["x2"], f=lambda d: d["x1"] * d["x2"] ** 2)
+    ax = _calla(ml.dibujar_benchmarks, ml.ajustar(d), d)
+    assert "piso desconocido" in [t.get_text() for t in ax.get_legend().get_texts()]
+
+
+def test_dibujar_media_acumulada_determinista_y_normal_estable():
+    piezas = {"normal": ml.normal(), "Cauchy": ml.cauchy()}
+    fig = ml.dibujar_media_acumulada(piezas, n_max=10_000, trayectorias=20)
+    otra = ml.dibujar_media_acumulada(piezas, n_max=10_000, trayectorias=20)
+    a, b = fig.axes, otra.axes
+    assert len(a) == 2
+    finales = []
+    for la, lb in zip(a[0].get_lines(), b[0].get_lines()):
+        assert np.array_equal(la.get_ydata(), lb.get_ydata())
+        if (la.get_gid() or "").startswith("traza-normal"):
+            finales.append(la.get_ydata()[-1])
+    assert len(finales) == 20
+    assert (max(finales) - min(finales)) / np.mean(finales) < 0.10
+    cauchy_finales = [ln.get_ydata()[-1] for ln in a[1].get_lines()
+                      if (ln.get_gid() or "").startswith("traza-Cauchy")]
+    assert max(cauchy_finales) / min(cauchy_finales) > 10
+    ax = ml.dibujar_media_acumulada({"normal": ml.normal()}, n_max=100, trayectorias=2)
+    assert hasattr(ax, "get_lines")
+
+
+def test_dibujar_peso_de_filas_con_un_vector_conocido():
+    df = pd.DataFrame({"x": np.zeros(100), "y": np.r_[np.ones(99), 50.0]})
+    ax = ml.dibujar_peso_de_filas(_Constante(0.0), df)
+    lineas = {ln.get_gid(): ln for ln in ax.get_lines()}
+    for gid, esperado in (("peso-mse", 2500 / 2599), ("peso-mae", 50 / 149)):
+        x, y = lineas[gid].get_xdata(), lineas[gid].get_ydata()
+        assert x[1] == pytest.approx(0.01) and y[1] == pytest.approx(esperado)
+        assert round(y[1], 3) == {"peso-mse": 0.962, "peso-mae": 0.336}[gid]
+
+
+def test_dibujar_residuales_plano_marcadores_y_todas_las_filas():
+    datos = ml.caso(7)
+    m = ml.ajustar(datos)
+    ax = ml.dibujar_residuales_plano(m, datos.val, "x1", "x2")
+    nubes = {c.get_gid(): c for c in ax.collections}
+    assert set(nubes) == {"residuales-positivos", "residuales-negativos"}
+    assert sum(len(c.get_offsets()) for c in nubes.values()) == len(datos.val)
+    from matplotlib.markers import MarkerStyle
+    for gid, marca in (("residuales-positivos", "^"), ("residuales-negativos", "v")):
+        ruta = nubes[gid].get_paths()[0]
+        assert np.allclose(ruta.vertices, MarkerStyle(marca).get_path().transformed(
+            MarkerStyle(marca).get_transform()).vertices)
+
+
+def test_dibujar_beta_repetido_con_el_trazo_de_la_diana():
+    datos = ml.caso(9)
+    t = ml.beta_repetido(datos.rehacer, None, repeticiones=40)
+    verdadero = ml.beta_verdadero(datos, None)
+    ax = ml.dibujar_beta_repetido(t, verdadero, ["x1", "x2"])
+    anillos = [p for p in ax.patches if (p.get_gid() or "").startswith("anillo-")]
+    assert len(anillos) == 3
+    assert all(np.allclose(p.center, verdadero[["x1", "x2"]]) for p in anillos)
+    nube = next(ln for ln in ax.get_lines() if ln.get_gid() == "repeticion")
+    assert len(nube.get_xdata()) == 40
+    # mismos objetos de estilo que dibujar_diana (clase 2)
+    sv = ml.sesgo_varianza(ml.entregas_curvas().rehacer, _polis([1]), repeticiones=5)
+    diana = ml.dibujar_diana(sv, 3.0)
+    rep_d = next(ln for ln in diana.get_lines() if ln.get_gid() == "repeticion")
+    for prop in ("get_marker", "get_color", "get_markersize", "get_markeredgewidth", "get_linestyle"):
+        assert getattr(nube, prop)() == getattr(rep_d, prop)(), prop
+    ver_d = next(ln for ln in diana.get_lines() if ln.get_gid() == "f")
+    prom_d = next(ln for ln in diana.get_lines() if (ln.get_gid() or "").startswith("promedio-"))
+    ver = next(ln for ln in ax.get_lines() if ln.get_gid() == "verdadero")
+    prom = next(ln for ln in ax.get_lines() if ln.get_gid() == "promedio")
+    assert ver.get_color() == ver_d.get_color() and prom.get_color() == prom_d.get_color()
+    ax1 = ml.dibujar_beta_repetido(t, verdadero, "x1")
+    prom1 = next(ln for ln in ax1.get_lines() if ln.get_gid() == "promedio")
+    assert prom1.get_linestyle() == prom_d.get_linestyle() == "--"
+    assert next(ln for ln in ax1.get_lines() if ln.get_gid() == "verdadero").get_xdata()[0] == \
+        pytest.approx(1.0)
+    with pytest.raises(ValueError, match="1 o 2"):
+        ml.dibujar_beta_repetido(t, verdadero, ["1", "x1", "x2"])
+
+
+def test_dibujar_encoger_1d_marca_los_minimos_de_encoger_1d():
+    for pen in ("l2", "l1", "elastica"):
+        ax = ml.dibujar_encoger_1d("objetivo", b=1.3, mus=(0.0, 0.5, 2.0), penalizacion=pen, rho=0.3)
+        for mu in (0.0, 0.5, 2.0):
+            ln = next(ln for ln in ax.get_lines() if ln.get_gid() == f"minimo-{mu:g}")
+            assert ln.get_xdata()[0] == pytest.approx(ml.encoger_1d(1.3, mu, pen, 0.3))
+            curva = next(c for c in ax.get_lines() if c.get_gid() == f"objetivo-{mu:g}")
+            assert ln.get_ydata()[0] <= curva.get_ydata().min() + 1e-9
+    ax = ml.dibujar_encoger_1d()
+    assert {"solucion-l2", "solucion-l1", "solucion-elastica", "sin-regularizar"} <= set(_gids(ax))
+    with pytest.raises(ValueError, match="penalizacion"):
+        ml.dibujar_encoger_1d("objetivo")
+
+
+def test_dibujar_trayectorias_colores_por_rol():
+    datos = ml.muchas_variables(n=150, J=8, utiles=3)
+    t = ml.trayectorias(datos, ml.estandarizar(ml.columnas(*datos.columnas_x)), "l1",
+                        [0.0] + list(np.logspace(-3, 1, 12)))
+    ax = ml.dibujar_trayectorias(t, utiles=["x1", "x2", "x3"], marcar_mu=0.1)
+    lineas = {ln.get_gid(): ln for ln in ax.get_lines() if (ln.get_gid() or "").startswith("coef-")}
+    assert set(lineas) == {f"coef-x{j}" for j in range(1, 9)}
+    grises = {lineas[f"coef-x{j}"].get_color() for j in range(4, 9)}
+    assert len(grises) == 1 and grises.isdisjoint({lineas[f"coef-x{j}"].get_color() for j in (1, 2, 3)})
+    assert all(len(ln.get_xdata()) == 12 for ln in lineas.values())  # μ = 0 no cabe en log
+    assert "marcar-mu" in _gids(ax)
+
+
+def test_dibujar_regiones_titulo_con_el_mu_de_optimo_restringido():
+    datos = ml.caso(9)
+    for pen in ("l1", "l2", "elastica"):
+        ax = ml.dibujar_regiones(datos, None, pen, 1.0)
+        _, mu = ml.optimo_restringido(datos, None, pen, 1.0)
+        assert f"μ equivalente = {mu:.4g}" in ax.get_title()
+        estrella = next(ln for ln in ax.get_lines() if ln.get_gid() == "beta-restringido")
+        beta, _ = ml.optimo_restringido(datos, None, pen, 1.0)
+        assert np.allclose([estrella.get_xdata()[0], estrella.get_ydata()[0]], beta[["x1", "x2"]])
+    ax = ml.dibujar_regiones(datos, None, "l1", 1.0, mostrar_mu=False)
+    assert "μ" not in ax.get_title()
+
+
+def test_dibujar_presupuesto_convexa_y_su_recta_de_apoyo():
+    datos = ml.caso(9)
+    ds = np.linspace(0.1, 2.5, 25)
+    ax = ml.dibujar_presupuesto(datos, None, "l1", ds, d_marcado=1.0)
+    curva = next(ln for ln in ax.get_lines() if ln.get_gid() == "curva-presupuesto")
+    v = np.asarray(curva.get_ydata(), float)
+    assert np.all(np.diff(v) <= 1e-8)
+    assert np.all(v[:-2] - 2 * v[1:-1] + v[2:] >= -1e-8)  # rejilla uniforme
+    recta = next(ln for ln in ax.get_lines() if ln.get_gid() == "recta-apoyo")
+    _, mu = ml.optimo_restringido(datos, None, "l1", 1.0)
+    (x0, x1), (y0, y1) = recta.get_xdata(), recta.get_ydata()
+    assert (y1 - y0) / (x1 - x0) == pytest.approx(-mu, abs=1e-4)
+    pendiente = (y1 - y0) / (x1 - x0)
+    assert np.all(v >= y0 + pendiente * (ds - x0) - 1e-6)
+    omega_mc = np.abs(ml.ajustar(datos).beta_gorro[["x1", "x2"]]).sum()
+    ax = ml.dibujar_presupuesto(datos, None, "l1", ds, d_marcado=omega_mc + 0.5)
+    recta = next(ln for ln in ax.get_lines() if ln.get_gid() == "recta-apoyo")
+    assert np.ptp(recta.get_ydata()) == 0.0
+    with pytest.raises(ValueError, match="mayor que 0"):
+        ml.dibujar_presupuesto(datos, None, "l1", [0.0, 0.5, 1.0])
+    # dibujar_frontera conserva su firma (frontera de decisión, clases 1, 4, 5)
+    assert list(inspect.signature(ml.dibujar_frontera).parameters) == ["modelo", "df", "vista",
+                                                                       "ax", "tema"]
+
+
+def _modulo_1_2():
+    r = subprocess.run(["git", "-C", str(RAIZ), "show", f"{VERSION_1_2}:tools/aprendizaje_maquina.py"],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        pytest.skip(f"no está el commit {VERSION_1_2} de ml_lab 1.2")
+    import importlib.util
+    import tempfile
+    ruta = Path(tempfile.mkdtemp()) / "ml_lab_1_2.py"
+    ruta.write_text(r.stdout, encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("ml_lab_1_2", ruta)
+    viejo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(viejo)
+    assert viejo.VERSION == "1.2"
+    return viejo
+
+
+def _svg(fig):
+    buf = io.StringIO()
+    with plt.rc_context({"svg.hashsalt": "ml", "svg.fonttype": "none"}):  # el texto, como texto
+        fig.savefig(buf, format="svg", metadata={"Date": None})
+    return re.sub(r'id="[^"]*"|xlink:href="#[^"]*"|clip-path="url\(#[^)]*\)"', "", buf.getvalue())
+
+
+def test_dibujar_cv_y_diana_sin_argumentos_nuevos_son_los_de_1_2():
+    viejo = _modulo_1_2()
+    datos = ml.entregas_curvas()
+    c = _polis(range(7))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for con in ("ent", "val", "cv", "prueba"):
+            sel = ml.elegir(datos, c, con=con)
+            nuevo = _svg(ml.dibujar_cv(sel, R={N: 1.0 + N for N in c}, piso=0.5, log=False,
+                                       anotar=None).figure)
+            antes = _svg(viejo.dibujar_cv(sel, R={N: 1.0 + N for N in c}, piso=0.5).figure)
+            assert nuevo == antes, con
+        mus = [float(m) for m in np.logspace(-3, 0.5, 4)]  # floats largos: el rótulo no cambia
+        sel = ml.Seleccion(tabla=pd.DataFrame({"candidato": mus, "valor": [3.0, 2.0, 2.5, 4.0],
+                                               "ee": [0.5] * 4}),
+                           elegido=mus[1], elegido_un_ee=mus[2], modelo=None, modelo_final=None,
+                           criterio="cuadratica", sentido="min", costo_ajustes=21, cv=None, con="cv")
+        assert _svg(ml.dibujar_cv(sel).figure) == _svg(viejo.dibujar_cv(sel).figure)
+        sv = ml.sesgo_varianza(datos.rehacer, _polis([1, 6]), repeticiones=4)
+        assert _svg(ml.dibujar_diana(sv, 3.0).figure) == _svg(viejo.dibujar_diana(sv, 3.0).figure)
+    sel = _calla(ml.elegir, datos, c, con="cv")
+    with pytest.raises(TypeError):
+        ml.dibujar_cv(sel, None, None, None, None, True)
+    with pytest.raises(ValueError, match="> 0"):
+        ml.dibujar_cv(sel, log=True)  # el candidato 0 no cabe en log
+
+
+def test_dibujar_cv_log_y_anotar():
+    datos = ml.entregas_curvas()
+    mus = [0.001, 0.01, 0.1, 1.0, 10.0]
+    c = {mu: (lambda df, mu=mu: ml.ajustar(df, phi=ml.estandarizar(ml.polinomio(8)), mu=mu,
+                                           penalizacion="l2")) for mu in mus}
+    sel = _calla(ml.elegir, datos, c, con="cv", orden_complejidad=sorted(mus, reverse=True))
+    ax = ml.dibujar_cv(sel, log=True, anotar={0.01: "A", 10.0: "tú"})
+    serie = next(ln for ln in ax.get_children() if getattr(ln, "get_gid", lambda: None)() == "serie-cv")
+    assert np.allclose(np.sort(serie.get_xdata()), np.log10(mus))
+    textos = {a.get_gid(): a for a in ax.texts}
+    assert textos["anotar-0.01"].get_text() == "A" and textos["anotar-10.0"].xy[0] == pytest.approx(1.0)
+    assert ax.get_xlabel() == "log₁₀ μ"
+    with pytest.raises(ValueError, match="no es un candidato"):
+        ml.dibujar_cv(sel, anotar={5.0: "x"})
+
+
+# --- taller y galería --------------------------------------------------------
+
+def test_senal_es_la_regla_descriptiva():
+    assert ml._senal([-2.0, -2.1, -1.9, -2.2, -1.8]) == "señal"
+    assert ml._senal([-2.0, 1.5, -0.3, 0.8, -1.0]) == "sin señal"
+    assert ml._senal([1.0]) == "sin señal"
+
+
+def test_taller_3_corre_rapido_sin_tocar_prueba(monkeypatch):
+    import time
+
+    monkeypatch.setenv("ML_LAB_PRUEBA", "1")
+    for numero, opciones in ((7, {}), (12, {}), (24, {"que": "lagrangeano"}),
+                             (10, {"que": "lagrangeano"})):
+        datos = ml.caso(numero)
+        datos.prueba = None  # cualquier lectura de prueba rompería la llamada
+        inicio = time.perf_counter()
+        buf = io.StringIO()
+        with redirect_stdout(buf), warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            ml.taller(datos, 3, **opciones)
+        assert time.perf_counter() - inicio < 10, numero
+        salida = buf.getvalue()
+        plt.close("all")
+        if opciones.get("que") == "lagrangeano":
+            assert "le gana" not in salida
+            linea = next(t for t in salida.splitlines() if t.startswith("Contra la media"))
+            assert "EE" not in linea and ("señal" in linea)
+            assert "se confirma en una reserva" in salida
+        else:
+            assert "diferencia" not in salida or "val (no eligió nada" in salida
+
+
+def test_taller_3_pasa_orden_complejidad(monkeypatch):
+    visto = {}
+    real = ml.elegir
+
+    def espia(*args, **kwargs):
+        visto.update(kwargs)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(ml, "elegir", espia)
+    mus = list(np.logspace(-3, 0.5, 9))
+    with redirect_stdout(io.StringIO()), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.taller(ml.caso(24, escala=None), 3, que="lagrangeano", mus=mus)
+    assert visto["orden_complejidad"] == sorted(mus, reverse=True)
+    sel = _calla(real, ml.caso(24, escala=None),
+                 {mu: (lambda df, mu=mu: ml.ajustar(df, phi=ml.estandarizar(ml.columnas(
+                     *[f"x{j}" for j in range(1, 11)])), mu=mu, penalizacion="l1")) for mu in mus},
+                 con="cv", orden_complejidad=sorted(mus, reverse=True))
+    assert sel.elegido_un_ee >= sel.elegido
+
+
+def test_galeria_3_sin_widgets(monkeypatch):
+    monkeypatch.setenv("ML_LAB_PRUEBA", "1")
+    buf = io.StringIO()
+    with redirect_stdout(buf), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.galeria(3)
+    assert "Caso 6" in buf.getvalue()
+    with redirect_stdout(io.StringIO()), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.galeria(3, casos=[24])
