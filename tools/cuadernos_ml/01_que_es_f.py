@@ -12,7 +12,10 @@
 
 # %% [codigo] bloque-1-juega
 #@title Juega: el proceso que no vemos
+import warnings
+
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 SEMILLA = 0
@@ -138,8 +141,6 @@ ml.laboratorio(
 
 # %% [codigo] bloque-4-juega
 #@title Juega: laboratorio polar
-import warnings
-
 SEMILLA = 0
 REPRESENTACIONES = {"cartesianas (1, x₁, x₂)": None,
                     "polares (1, r, θ)": ml.polares(),
@@ -188,8 +189,6 @@ ml.laboratorio(
 
 # %% [codigo] bloque-5-juega
 #@title Juega: lineal en β
-import pandas as pd
-
 SEMILLA = 0
 DATOS_B5 = {
     "entregas con lluvia": (ml.caso(2, omitir=None, semilla=SEMILLA), "x1"),
@@ -207,7 +206,6 @@ def bloque_5(proceso, phi):
         print("La recíproca no trae lluvia: esta φ no aplica. Elige otra.")
         return
     m = ml.ajustar(datos, phi=PHIS_B5[phi](v))
-    x = np.linspace(datos.ent[v].min(), datos.ent[v].max(), 300)
     curvas = {f"φ = {phi}, sin lluvia" if "x2" in datos.ent else f"φ = {phi}":
               lambda x: m.predecir(pd.DataFrame({v: x, "x2": 0}))}
     if phi.endswith("lluvia"):
@@ -227,11 +225,8 @@ def bloque_5(proceso, phi):
               "infinito.\nEl número de arriba solo promedia esta muestra enorme.")
 
 
-ml.laboratorio(
-    bloque_5,
-    proceso=ml.selector("proceso", list(DATOS_B5)),
-    phi=ml.selector("φ", list(PHIS_B5)),
-)
+ml.laboratorio(bloque_5, proceso=ml.selector("proceso", list(DATOS_B5)),
+               phi=ml.selector("φ", list(PHIS_B5)))
 
 # %% [texto] bloque-5-mira
 
