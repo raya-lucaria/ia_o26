@@ -21,7 +21,7 @@ Es la única clase de la unidad sin notebook ni sesión propia.
 - Retomas las seis entregas, la recta por mínimos cuadrados y el MAE de [[opt-objetivo-regresion-practica|Regresión, en la unidad 6]].
 - Recuperas la pérdida logarítmica y los aciertos de [[opt-objetivo-clasificacion-practica|Clasificación, en la unidad 6]].
 - Vuelves a la taxonomía de la IA de [[que-es-inteligencia|Qué es la inteligencia]].
-- Retomas el aprendizaje por refuerzo de [[mkv-hacia-refuerzo|Hacia el aprendizaje por refuerzo]].
+- Te asomas al aprendizaje por refuerzo de [[mkv-hacia-refuerzo|Hacia el aprendizaje por refuerzo]].
 
 ## Qué vas a poder hacer al terminar esta clase
 

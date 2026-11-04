@@ -14,17 +14,17 @@ tags: [aprendizaje-maquina, repaso, mitchell, supervisado, representacion]
 
 Al terminar tendrás:
 
-- Explicarás cómo define Mitchell aprender: tarea, experiencia, desempeño y dónde medirlo.
-- Mostrarás con cifras que acertar lo visto no demuestra aprendizaje.
-- Distinguirás supervisado de no supervisado por su experiencia.
-- Usarás un mapa de IA: quién elige representaciones y si se arman en capas.
+- **La definición de Mitchell:** tarea, experiencia, desempeño y dónde se mide.
+- **Por qué un error de cero en lo visto no basta:** con cifras.
+- **Supervisado contra no supervisado:** por lo que trae la experiencia.
+- **Un mapa dentro de la IA:** quién elige lo que el modelo ve de cada entrada ($\phi$) y si se arma en capas.
 
 ~20 min de lectura, más lo que tardes en resolver los ejercicios; esta clase no tiene notebook.
 
 > **Lo que traes**
 > - Mínimos cuadrados, $f_\beta(x)=\beta_0+\beta_1x$ y seis entregas: [[opt-objetivo-regresion-practica|Regresión, en la unidad 6]].
 > - Error absoluto medio, $\mathrm{MAE}$, en minutos: [[opt-objetivo-regresion-practica|Regresión, en la unidad 6]].
-> - Taxonomía @taxonomia-ia: [[que-es-inteligencia|Qué es la inteligencia]].
+> - La taxonomía de la IA (@taxonomia-ia): [[que-es-inteligencia|Qué es la inteligencia]].
 
 Estas ideas son el punto de partida de la unidad; aquí quedan por escrito, con el ejemplo de la unidad 6.
 
@@ -55,10 +55,10 @@ En las vistas, memorizar gana: error medio 0, recta 0.8, promedio 4 min.
 
 **Piensa: en las entregas de 5 y 6 km, que ninguna regla vio, ¿qué regla se equivocará menos?**
 
-Llegan los tiempos reales nuevos.
+Llegan los tiempos reales.
 
 ::: figure {#ml-c0-memorizar-contra-ajustar title="Cero error en lo que vio, siete minutos en lo nuevo"}
-![Izquierda: las cuatro entregas vistas; error medio de memorizar 0, de la recta 0.8 y del promedio 4. Derecha: las dos nuevas, de 5 y 6 km, tardaron 31 y 33 min; memorizar anuncia 25 y falla en promedio por 7; el promedio anuncia 20 y falla por 12; la recta anuncia 29 y 32.6 y falla por 1.2.](../_assets/ml-c0-memorizar-contra-ajustar.svg)
+![Arriba: las cuatro entregas vistas; error medio de memorizar 0, de la recta 0.8 y del promedio 4. Abajo: las dos nuevas, de 5 y 6 km, tardaron 31 y 33 min; memorizar anuncia 25 y falla en promedio por 7; el promedio anuncia 20 y falla por 12; la recta anuncia 29 y 32.6 y falla por 1.2.](../_assets/ml-c0-memorizar-contra-ajustar.svg)
 :::
 
 En las nuevas, el MAE es: recta 1.2, memorizar 7, promedio 12 min. El orden se invierte: la recta pasa al primer lugar.
@@ -99,7 +99,7 @@ Según @ml-c0-obs-desempeno-en-casos-nuevos, ¿aprende? Di la tarea, la experien
 :::
 
 ::: hint {#ml-c0-pista-aprende-o-recuerda-1 of="ml-c0-ej-aprende-o-recuerda" title="Pista 1 · Dónde medir"}
-¿En qué entregas se mide el desempeño de la tarea "predecir"?
+¿En qué entregas se mide el desempeño de la tarea «predecir»?
 :::
 
 ::: answer {#ml-c0-resp-aprende-o-recuerda of="ml-c0-ej-aprende-o-recuerda" title="Respuesta · No mejora donde importa"}
@@ -110,20 +110,18 @@ No se observa mejora en el desempeño medido; con estos datos no hay evidencia d
 
 ## 2 · Distinguir supervisado de no supervisado
 
-¿Cómo aprende un niño a distinguir gatos de perros con fotos que alguien ya etiquetó?
+¿Cómo aprende un niño a distinguir gatos de perros con fotos que alguien ya etiquetó, y cómo aprende otro que prueba comidas sin que nadie le diga qué son?
 
-Son las mismas seis entregas; añadimos cuántos paquetes llevaban y en qué zona. Cada punto es una entrega: (distancia, tiempo) a la izquierda; (distancia, paquetes) a la derecha.
+Son las mismas seis entregas; añadimos cuántos paquetes llevaban y en qué zona.
 
 ::: figure {#ml-c0-con-y-sin-y title="Las mismas seis entregas, con respuesta y sin ella"}
-![Izquierda: tabla con zona, distancia, paquetes y tiempo, y tiempo contra distancia con la recta 11 + 3.6x. Derecha: la misma tabla sin la columna de tiempo, y paquetes contra distancia con dos agrupaciones marcadas, una por distancia, cerca hasta 3.5 km y lejos después, y otra por paquetes, pocos, de 2 a 3, y muchos, de 9 a 11.](../_assets/ml-c0-con-y-sin-y.svg)
+![Arriba: tabla con zona, distancia, paquetes y tiempo, y tiempo contra distancia con la recta 11 + 3.6x. Abajo: la misma tabla sin la columna de tiempo, y paquetes contra distancia con dos agrupaciones marcadas, una por distancia, cerca hasta 3.5 km y lejos después, y otra por paquetes, pocos, de 2 a 3, y muchos, de 9 a 11.](../_assets/ml-c0-con-y-sin-y.svg)
 :::
-
-A la izquierda comparas anuncio y tiempo; a la derecha falta este último.
 
 **Piensa: si borras la columna del tiempo, ¿qué pregunta puedes seguir haciéndole a estas seis entregas?**
 
 Comparando anuncios y tiempos ajustamos $11+3.6x$. Sin tiempos preguntamos cómo se reparten.
-Cada agrupación, por distancia o paquetes, vale según su criterio; ninguna es «la verdadera», pero tampoco cualquiera vale.
+Cada agrupación vale según su criterio; ninguna es «la verdadera».
 
 ::: definition {#ml-c0-def-supervisado title="Supervisado y no supervisado"}
 En el aprendizaje **supervisado**, la experiencia son $n$ pares $(x_i,y_i)$, $i=1,\dots,n$: cada observación trae sus entradas $x_i$ y la respuesta $y_i$. La tarea es anunciar $y$ para una $x$ nueva.
@@ -135,7 +133,7 @@ En el aprendizaje **no supervisado**, la experiencia son solo las entradas $x_i$
 
 Aquí $x_i$ reúne distancia y paquetes; $y_i$ indica minutos.
 
-El no supervisado optimiza objetivos ajustando parámetros sin respuestas; esta distinción es independiente del mapa de la sección 3: cualquier nivel admite ambos tipos.
+El no supervisado también ajusta parámetros optimizando un objetivo, solo que sin respuestas. Supervisado contra no supervisado es un eje distinto del mapa de la sección 3: cualquier nivel de ese mapa admite los dos.
 
 ::: remark {#ml-c0-obs-otras-experiencias title="No son solo dos cajas"}
 En aprendizaje por refuerzo el programa actúa y recibe una recompensa, no la respuesta correcta: [[mkv-hacia-refuerzo|Hacia el aprendizaje por refuerzo]].
@@ -148,7 +146,9 @@ Esta unidad es de aprendizaje supervisado. Casi todo es regresión, con un prime
 
 > [!WARNING]
 > Lectura equivocada: «supervisado significa que alguien vigila el entrenamiento».
+>
 > Lectura correcta: **supervisado quiere decir que la experiencia trae la respuesta $y$ de cada observación.**
+>
 > La respuesta no tiene que ser una categoría; los minutos también son una respuesta.
 
 ::: exercise {#ml-c0-ej-que-experiencia title="Clasifica la experiencia"}
@@ -169,8 +169,7 @@ Esta unidad es de aprendizaje supervisado. Casi todo es regresión, con un prime
 
 ## 3 · Ubicar el aprendizaje de máquina dentro de la IA
 
-Ampliamos el aprendizaje de máquina (*machine learning*) de @taxonomia-ia.
-La caja que la unidad de historia rotula “Aprendizaje máquina” es la misma que aquí llamamos aprendizaje de máquina.
+Es la @taxonomia-ia con su caja «Aprendizaje máquina» vista de cerca; aquí la llamamos aprendizaje de máquina (*machine learning*).
 
 ::: figure {#ml-c0-jerarquia title="El aprendizaje de máquina, visto de cerca dentro de la IA"}
 ![Cinco ramas hermanas de la inteligencia artificial; la del aprendizaje de máquina se amplía y adentro muestra tres rectángulos anidados: aprendizaje de máquina con la regresión logística, aprendizaje de representaciones con un autoencoder poco profundo y aprendizaje profundo con una red de varias capas.](../_assets/ml-c0-jerarquia.svg)
@@ -178,29 +177,28 @@ La caja que la unidad de historia rotula “Aprendizaje máquina” es la misma 
 
 **Piensa: ¿toda la inteligencia artificial aprende de datos?**
 
-No: las otras ramas de @taxonomia-ia pueden usar aprendizaje sin depender de él. Ampliamos la rama dedicada al aprendizaje: solo dentro hay anidamiento estricto. La IA no es una cebolla.
+No: otras ramas de @taxonomia-ia pueden aprender sin depender de ello; solo dentro del aprendizaje hay anidamiento estricto.
+La IA no es una cebolla.
 
 La figura anida: aprendizaje de máquina (regresión logística, unidad 6) ⊃ aprendizaje de representaciones (*representation learning*; autoencoder poco profundo) ⊃ aprendizaje profundo (*deep learning*; red multicapa).
 
 El autoencoder aprende a reconstruir su entrada mediante un código más corto.
 
-[[que-es-inteligencia|Qué es la inteligencia]] anidó aprendizaje de máquina ⊃ redes profundas (aquí, aprendizaje profundo) ⊃ transformers ⊃ LLM; omitió el escalón intermedio de representaciones.
+[[que-es-inteligencia|Qué es la inteligencia]] anidó aprendizaje de máquina ⊃ redes profundas (aquí, aprendizaje profundo) ⊃ transformers ⊃ LLM, sin el escalón de representaciones.
 
-Cada tira es un sistema; sus cajas rellenas aprenden. Cambia quién elige y arma, no el tamaño de la fórmula.
+Entre niveles no cambia el tamaño de la fórmula: cambia quién elige cada pieza y cómo se arma. Cada tira es un sistema; una caja rellena con «se ajusta con datos» indica lo que aprende.
 
 ::: figure {#ml-c0-quien-elige-phi title="Quién elige qué: cuatro maneras de construir un sistema"}
 ![Cuatro tiras. Reglas: todo a mano. Clásico: la representación fi de x a mano y el predictor con parámetros beta ajustado con datos. Representaciones: fi de x y el predictor, los dos con datos. Profundo: capa 1, capa 2 y más, una sobre otra, que juntas forman fi de x, y el predictor, todo con datos.](../_assets/ml-c0-quien-elige-phi.svg)
 :::
 
-La representación $\phi(x)$ es lo que el modelo ve de cada entrada. Alguien la elige o el ajuste la encuentra: si eliges $(1,x,x^2)$, ve distancia y cuadrado; para 3 km, obtienes $\phi(3)=(1,3,9)$.
+La representación $\phi(x)$ es lo que el modelo ve de cada entrada: si eliges $(1,x,x^2)$, ve distancia y cuadrado; para 3 km, obtienes $\phi(3)=(1,3,9)$.
 
-En el clásico eliges $\phi$; en representaciones, se ajusta con datos. Ambos ajustan los parámetros $\beta$ del predictor.
-
-Representaciones y profundo ajustan $\phi$; este compone capas, una sobre otra.
+En el clásico eliges $\phi$ a mano; en representaciones y en profundo la encuentra el ajuste, y el profundo la compone en capas. En los tres, el ajuste elige los parámetros $\beta$ del predictor.
 
 Elegir $x^2$ conserva la linealidad del modelo en $\beta$; la clase 1 define su significado.
 
-Aquí eliges $\phi$ a mano; al final verás qué cambia al aprenderla. La unidad de redes empieza ahí.
+Esta unidad elige $\phi$ a mano; al final verás qué cambia si se aprende: ahí empieza la unidad de redes.
 
 > [!WARNING]
 > Lectura equivocada: «usar $x^2$ como variable ya saca al modelo de los modelos lineales, o ya es aprendizaje profundo».
@@ -236,7 +234,8 @@ pedir ayuda a ChatGPT.**
 
 La empresa de la unidad 6 abrirá otra zona urbana. Tiene 200 entregas con zona, distancia, paquetes y minutos; ninguna de la nueva.
 
-La idea nueva es usar el sistema donde no obtuvo su experiencia. No elijas algoritmo ni calcules. La respuesta desarrolla una opción.
+La idea nueva es usar el sistema donde no obtuvo su experiencia. No
+elijas algoritmo ni calcules. La respuesta desarrolla una opción.
 
 1. Di la tarea, la experiencia y el desempeño.
 2. ¿Es supervisado? ¿Cuál es la respuesta $y$?

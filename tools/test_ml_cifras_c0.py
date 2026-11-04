@@ -120,3 +120,7 @@ def test_no_importa_ml_lab_desde_assets():
     import inspect
     fuente = inspect.getsource(c0)
     assert "_assets" not in fuente.split('"""', 2)[2]
+
+
+def test_phi_del_ejemplo_de_la_seccion_3():
+    assert c0.phi_cuadratica(c0.PHI_EJEMPLO_KM) == (1, 3, 9)

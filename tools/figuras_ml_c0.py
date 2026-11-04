@@ -147,35 +147,34 @@ def _muestra_linea(x, y, regla):
 
 
 NOMBRE_LEYENDA = {
-    "memorizar": "memorizar (copia la vista más cercana)",
+    "memorizar": "memorizar (la vista más cercana)",
     "recta": "la recta 11 + 3.6x",
     "promedio": "el promedio, 20 min",
 }
 
 
-def _leyenda(y, x0=24, con_nuevas=True, tam=12):
-    """Dos renglones: memorizar y la recta; el promedio y las marcas."""
+def _leyenda(y, x0=14, con_nuevas=True, tam=12):
+    """Leyenda en renglones para un lienzo de 300 px (cabe en el celular):
+    una regla por renglon y, en el ultimo, las marcas."""
     out = []
-    out.append(_muestra_linea(x0, y - 4, "memorizar"))
-    out.append(texto(x0 + 32, y, NOMBRE_LEYENDA["memorizar"], tam=tam, anclaje="start"))
-    out.append(_muestra_linea(x0 + 300, y - 4, "recta"))
-    out.append(texto(x0 + 332, y, NOMBRE_LEYENDA["recta"], tam=tam, anclaje="start"))
-    y2 = y + 22
-    out.append(_muestra_linea(x0, y2 - 4, "promedio"))
-    out.append(texto(x0 + 32, y2, NOMBRE_LEYENDA["promedio"], tam=tam, anclaje="start"))
-    x = x0 + 172
+    for k, regla in enumerate(REGLAS):
+        yy = y + 20 * k
+        out.append(_muestra_linea(x0, yy - 4, regla))
+        out.append(texto(x0 + 32, yy, NOMBRE_LEYENDA[regla], tam=tam, anclaje="start"))
+    y2 = y + 20 * len(REGLAS)
+    x = x0
     out.append(f'<circle cx="{_n(x + 6)}" cy="{_n(y2 - 4)}" r="{_n(R_VISTA)}" '
                f'fill="{C_VISTAS}" stroke="{FONDO}" stroke-width="1.5"/>')
-    out.append(texto(x + 18, y2, "vistas", tam=tam, anclaje="start"))
-    x += 74
+    out.append(texto(x + 16, y2, "vistas", tam=tam, anclaje="start"))
+    x += 62
     if con_nuevas:
         out.append(f'<circle cx="{_n(x + 6)}" cy="{_n(y2 - 4)}" r="{_n(R_NUEVA)}" '
                    f'fill="{C_NUEVAS}"/>')
-        out.append(texto(x + 18, y2, "nuevas", tam=tam, anclaje="start"))
-        x += 80
-    out.append(f'<circle cx="{_n(x + 6)}" cy="{_n(y2 - 4)}" r="4" fill="{PANEL}" '
+        out.append(texto(x + 16, y2, "nuevas", tam=tam, anclaje="start"))
+    y3 = y2 + 20
+    out.append(f'<circle cx="{_n(x0 + 6)}" cy="{_n(y3 - 4)}" r="4" fill="{PANEL}" '
                f'stroke="{SUAVE}" stroke-width="2"/>')
-    out.append(texto(x + 18, y2, "lo que anuncia una regla", tam=tam, anclaje="start"))
+    out.append(texto(x0 + 16, y3, "lo que anuncia una regla", tam=tam, anclaje="start"))
     return out
 
 
@@ -213,9 +212,32 @@ ALT_F1A = (
 )
 
 
+ANCHO_DATOS = 300   # cabe sin scroll en el cuerpo de figura a 390 px (~305 px)
+
+
+def _desconocidas(e, y):
+    """Franja bajo el eje x, alineada con «llegan después», con las dos
+    nuevas: se sabe su distancia y no su tiempo, asi que no se dibujan dentro
+    de la grafica de tiempo (ahi el eje y les inventaria un valor)."""
+    alto = 34
+    x1, x2 = e.px(4.5), e.px(XLIM[1])
+    out = [caja(x1, y, x2 - x1, alto, relleno=BANDA, borde=LINEA, radio=4, grosor=1),
+           texto(x1 - 8, y + 13, "distancia conocida,", color=SUAVE, tam=12,
+                 anclaje="end"),
+           texto(x1 - 8, y + 29, "tiempo desconocido →", color=SUAVE, tam=12,
+                 anclaje="end")]
+    for i in NUEVAS:
+        km = PARES[i][0]
+        out.append(f'<circle cx="{_n(e.px(km) - 6)}" cy="{_n(y + alto / 2)}" '
+                   f'r="{_n(R_NUEVA)}" fill="{C_NUEVAS}"/>')
+        out.append(texto(e.px(km) + 6, y + alto / 2 + 5, "?", color=TEXTO, tam=13,
+                         peso="700"))
+    return out
+
+
 def fig_tres_reglas_en_lo_visto():
-    W, H = 600, 486
-    e = Ejes(58, 36, 516, 280, XLIM, YLIM)
+    W, H = ANCHO_DATOS, 520
+    e = Ejes(40, 34, 248, 210, XLIM, YLIM)
     out = e.fondo(XT, YT, "distancia (km)", "tiempo (min)")
     out += e.banda(4.5, 6.5, "llegan después", arriba=True)
     out += e.promedio(PROM)
@@ -232,22 +254,19 @@ def fig_tres_reglas_en_lo_visto():
             dy = -9 if regla != "promedio" else 17
             out.append(texto(e.px(km), e.py(valor) + dy, f(valor), color=COLOR_REGLA[regla],
                              tam=12, peso="700"))
-        # posicion de la nueva sobre el eje: se sabe la distancia, no el tiempo
-        # se sabe su distancia, no su tiempo: la marca va sobre el eje
-        out.append(e.nueva(km, YLIM[0]))
-        out.append(texto(e.px(km), e.py(YLIM[0]) - 10, "?", color=TEXTO,
-                         tam=13, peso="700"))
-    out += _renglones_mae(58, 376, "mae_vistas", "error medio en las 4 vistas (min)")
-    out += _leyenda(450, x0=24)
+    out += _desconocidas(e, e.y0 + e.h + 44)
+    out += _renglones_mae(e.x0, 352, "mae_vistas", "error medio en las 4 vistas (min)",
+                          ancho=200)
+    out += _leyenda(438)
     return svg(W, H, ALT_F1A, "Tres reglas en las cuatro entregas que vio", out)
 
 
 # ------------------------------------------------------------ F1b ---
 
 ALT_F1B = (
-    "Izquierda: las cuatro entregas vistas; error medio de memorizar "
+    "Arriba: las cuatro entregas vistas; error medio de memorizar "
     f"{f(C['memorizar']['mae_vistas'])}, de la recta {f(C['recta']['mae_vistas'])} y "
-    f"del promedio {f(C['promedio']['mae_vistas'])}. Derecha: las dos nuevas, de 5 y "
+    f"del promedio {f(C['promedio']['mae_vistas'])}. Abajo: las dos nuevas, de 5 y "
     f"6 km, tardaron {PARES[NUEVAS[0]][1]} y {PARES[NUEVAS[1]][1]} min; memorizar "
     f"anuncia {f(C['memorizar']['anuncios_nuevas'][0])} y falla en promedio por "
     f"{f(C['memorizar']['mae_nuevas'])}; el promedio anuncia "
@@ -258,43 +277,53 @@ ALT_F1B = (
 )
 
 
-def fig_memorizar_contra_ajustar():
-    W, H = 600, 452
-    paneles = (
-        Ejes(44, 44, 250, 230, XLIM, YLIM),
-        Ejes(340, 44, 250, 230, XLIM, YLIM),
-    )
+# Los segmentos de error de cada regla se corren a un lado de su distancia
+# para no taparse; el anuncio y el tiempo real se quedan en 5 y 6 km, y dos
+# conectores cortos dicen a que distancia pertenece cada segmento.
+DESPLAZA = {"memorizar": -0.27, "recta": 0.0, "promedio": 0.27}
+
+
+def _segmento_de_error(e, km, anun, real, regla):
+    xx = km + DESPLAZA[regla]
+    color = COLOR_REGLA[regla]
     out = []
-    izq, der = paneles
-    out.append(texto(izq.x0 + izq.w / 2, 22, "Las 4 que vio", tam=15, peso="700"))
-    out.append(texto(der.x0 + der.w / 2, 22, "Las 2 nuevas: tiempos reales",
-                     tam=15, peso="700"))
-    for e, rot in ((izq, "llegan después"), (der, "ya llegaron")):
-        out += e.fondo(XT, YT, "distancia (km)", "min" if e is izq else None)
+    if xx != km:
+        for yy in (anun, real):
+            out.append(linea(e.px(km), e.py(yy), e.px(xx), e.py(yy), color=color,
+                             grosor=1.2, guiones="2 2"))
+    out.append(linea(e.px(xx), e.py(anun), e.px(xx), e.py(real), color=color, grosor=2.5))
+    return out
+
+
+def fig_memorizar_contra_ajustar():
+    W, H = ANCHO_DATOS, 832
+    arriba = Ejes(40, 44, 248, 170, XLIM, YLIM)
+    abajo = Ejes(40, 390, 248, 200, XLIM, YLIM)
+    out = [texto(W / 2, 20, "Las 4 que vio", tam=15, peso="700"),
+           texto(W / 2, 362, "Las 2 nuevas: tiempos reales", tam=15, peso="700")]
+    for e, rot in ((arriba, "llegan después"), (abajo, "ya llegaron")):
+        out += e.fondo(XT, YT, "distancia (km)", "min")
         out += e.banda(4.5, 6.5, rot, arriba=True)
         out += e.promedio(PROM)
         out += e.escalones()
         out += e.recta(B0, B1)
         for i in VISTAS:
             out.append(e.vista(*PARES[i], r=4.5))
-    # derecha: segmentos de error de cada regla, del anuncio al tiempo real
-    desplaza = {"memorizar": -0.17, "recta": 0.0, "promedio": 0.17}
+    # abajo: el segmento de error de cada regla, del anuncio al tiempo real
     for k, i in enumerate(NUEVAS):
         km, real = PARES[i]
         for regla in REGLAS:
-            anun = C[regla]["anuncios_nuevas"][k]
-            xx = km + desplaza[regla]
-            out.append(linea(der.px(xx), der.py(anun), der.px(xx), der.py(real),
-                             color=COLOR_REGLA[regla], grosor=2.5))
-            out.append(der.anuncio(xx, anun, COLOR_REGLA[regla]))
-        out.append(der.nueva(km, real, r=5))
-        out.append(texto(der.px(km) - 8, der.py(real) - 9, f"{real} min", color=TEXTO,
-                         tam=12, peso="700", anclaje="end"))
-    out += _renglones_mae(izq.x0, 334, "mae_vistas", "error medio en las 4 vistas",
-                          ancho=170)
-    out += _renglones_mae(der.x0, 334, "mae_nuevas", "error medio en las 2 nuevas",
-                          ancho=170)
-    out += _leyenda(H - 36, x0=24)
+            out += _segmento_de_error(abajo, km, C[regla]["anuncios_nuevas"][k], real, regla)
+        for regla in REGLAS:
+            out.append(abajo.anuncio(km, C[regla]["anuncios_nuevas"][k], COLOR_REGLA[regla]))
+        out.append(abajo.nueva(km, real, r=5))
+        out.append(texto(abajo.px(km), abajo.py(real) - 10, f"{real} min", color=TEXTO,
+                         tam=12, peso="700"))
+    out += _renglones_mae(arriba.x0, 272, "mae_vistas", "error medio en las 4 vistas (min)",
+                          ancho=200)
+    out += _renglones_mae(abajo.x0, 648, "mae_nuevas", "error medio en las 2 nuevas (min)",
+                          ancho=200)
+    out += _leyenda(738)
     return svg(W, H, ALT_F1B, "Cero error en lo que vio, siete minutos en lo nuevo", out)
 
 
@@ -304,8 +333,8 @@ P = cifras.cifras_c0_paquetes()
 AGR = P["agrupaciones"]
 
 ALT_F2 = (
-    "Izquierda: tabla con zona, distancia, paquetes y tiempo, y tiempo contra "
-    f"distancia con la recta {f(B0)} + {f(B1)}x. Derecha: la misma tabla sin la "
+    "Arriba: tabla con zona, distancia, paquetes y tiempo, y tiempo contra "
+    f"distancia con la recta {f(B0)} + {f(B1)}x. Abajo: la misma tabla sin la "
     "columna de tiempo, y paquetes contra distancia con dos agrupaciones marcadas, "
     f"una por distancia, cerca hasta {f(AGR['por distancia']['corte'])} km y lejos "
     f"después, y otra por paquetes, pocos, de "
@@ -357,37 +386,38 @@ def _tabla(x, y, con_y):
 
 
 def fig_con_y_sin_y():
-    W, H = 600, 446
-    out = [texto(150, 22, "Con respuesta", tam=15, peso="700"),
-           texto(450, 22, "Sin respuesta", tam=15, peso="700")]
-    out += _tabla(22, 72, True)
-    out += _tabla(322, 72, False)
-    izq = Ejes(48, 222, 236, 186, XLIM, YLIM)
-    der = Ejes(348, 222, 236, 186, XLIM, (0, 12))
-    out += izq.fondo(XT, (10, 20, 30), "distancia (km)", "tiempo (min)")
-    out += izq.recta(B0, B1)
+    W, H = ANCHO_DATOS, 816
+    out = [texto(W / 2, 20, "Con respuesta", tam=15, peso="700")]
+    out += _tabla(28, 64, True)
+    con = Ejes(44, 210, 244, 150, XLIM, YLIM)
+    out += con.fondo(XT, (10, 20, 30), "distancia (km)", "tiempo (min)")
+    out += con.recta(B0, B1)
     for km, minutos in PARES:
-        out.append(izq.vista(km, minutos, r=5))
-    out += der.fondo(XT, (0, 3, 6, 9, 12), "distancia (km)", "paquetes")
+        out.append(con.vista(km, minutos, r=5))
+    out.append(linea(14, 412, W - 14, 412, color=LINEA, grosor=1))
+    out.append(texto(W / 2, 440, "Sin respuesta", tam=15, peso="700"))
+    out += _tabla(28, 484, False)
+    sin = Ejes(44, 640, 244, 130, XLIM, (0, 12))
+    out += sin.fondo(XT, (0, 3, 6, 9, 12), "distancia (km)", "paquetes")
     cd = AGR["por distancia"]["corte"]
     cp = AGR["por paquetes"]["corte"]
-    out.append(linea(der.px(cd), der.y0, der.px(cd), der.y0 + der.h, color=SEPARADOR,
+    out.append(linea(sin.px(cd), sin.y0, sin.px(cd), sin.y0 + sin.h, color=SEPARADOR,
                      grosor=2, guiones="6 4"))
-    out.append(linea(der.x0, der.py(cp), der.x0 + der.w, der.py(cp), color=SEPARADOR,
+    out.append(linea(sin.x0, sin.py(cp), sin.x0 + sin.w, sin.py(cp), color=SEPARADOR,
                      grosor=2, guiones="6 4"))
     for r, (km, _) in enumerate(PARES):
-        out.append(der.vista(km, P["paquetes"][r], r=5))
+        out.append(sin.vista(km, P["paquetes"][r], r=5))
     # rotulos de las dos agrupaciones, junto a su linea
-    out.append(texto(der.px(cd), der.y0 - 26, "por distancia", tam=12, color=TEXTO,
+    out.append(texto(sin.px(cd), sin.y0 - 24, "por distancia", tam=12, color=TEXTO,
                      peso="700"))
-    out.append(texto(der.px(cd) - 5, der.y0 - 9, "cerca ←", tam=12, anclaje="end",
+    out.append(texto(sin.px(cd) - 5, sin.y0 - 8, "cerca ←", tam=12, anclaje="end",
                      color=SUAVE))
-    out.append(texto(der.px(cd) + 5, der.y0 - 9, "→ lejos", tam=12, anclaje="start",
+    out.append(texto(sin.px(cd) + 5, sin.y0 - 8, "→ lejos", tam=12, anclaje="start",
                      color=SUAVE))
-    xr = der.x0 + der.w - 6
-    out.append(texto(xr, der.py(cp) - 7, "por paquetes: muchos ↑", tam=12, anclaje="end",
+    xr = sin.x0 + sin.w - 6
+    out.append(texto(xr, sin.py(cp) - 7, "por paquetes: muchos ↑", tam=12, anclaje="end",
                      color=TEXTO, peso="700"))
-    out.append(texto(xr, der.py(cp) + 17, "pocos ↓", tam=12, anclaje="end",
+    out.append(texto(xr, sin.py(cp) + 17, "pocos ↓", tam=12, anclaje="end",
                      color=TEXTO, peso="700"))
     return svg(W, H, ALT_F2, "Las mismas seis entregas, con respuesta y sin ella", out)
 
@@ -461,6 +491,7 @@ ALT_F4 = (
     "otra, que juntas forman fi de x, y el predictor, todo con datos."
 )
 C_DATOS = mezclar(ACENTO, 0.24)
+PHI = "\u03d5"
 _IT = {"estilo": "italic"}
 PREDICTOR = ["predictor con parámetros ", ("β", _IT)]
 
@@ -491,7 +522,10 @@ def _cabos(x, y, s):
 def fig_quien_elige_phi():
     W, H = 600, 524
     out = []
-    phi = [("φ", _IT), "(", ("x", _IT), ")"]
+    # U+03D5 (PHI SYMBOL), la forma con trazo recto: es la que MathJax dibuja
+    # para \phi en la prosa; U+03C6 sale con la otra forma y el alumno veria
+    # dos dibujos para el mismo simbolo.
+    phi = [(PHI, _IT), "(", ("x", _IT), ")"]
     yhat = [("ŷ", _IT)]
     tiras = [
         ("1 · Reglas", 34),
@@ -543,8 +577,8 @@ def fig_quien_elige_phi():
     out.append(texto(159, yl + 32, ["juntas forman ", *phi, ", con datos"], tam=13,
                      peso="700"))
     # los dos criterios, entre las tiras que separan
-    for yc, s in ((252, "↕ cambia quién elige φ: una persona o el ajuste"),
-                  (382, "↕ cambia si φ se arma en una etapa o en varias")):
+    for yc, s in ((252, f"↕ cambia quién elige {PHI}: una persona o el ajuste"),
+                  (382, f"↕ cambia si {PHI} se arma en una etapa o en varias")):
         out.append(linea(16, yc - 4, 70, yc - 4, color=LINEA, grosor=1))
         out.append(linea(W - 70, yc - 4, W - 16, yc - 4, color=LINEA, grosor=1))
         out.append(texto(W / 2, yc, s, tam=12, color=SUAVE, peso="700"))

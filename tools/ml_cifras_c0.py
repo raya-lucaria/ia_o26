@@ -164,6 +164,15 @@ def datos_c0_ejercicios():
     }
 
 
+# El ejemplo de representacion de §3: phi(x) = (1, x, x^2) en 3 km.
+PHI_EJEMPLO_KM = 3
+
+
+def phi_cuadratica(x):
+    """La representacion elegida a mano de §3: (1, x, x^2)."""
+    return (1, x, x ** 2)
+
+
 def redondeo(x):
     """Como se escribe una cifra en la pagina: una cifra decimal, sin .0."""
     r = round(float(x), 1)

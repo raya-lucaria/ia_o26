@@ -78,6 +78,17 @@ def test_ancho_y_letra(ident):
     assert min(float(t) for t in re.findall(r'font-size="([\d.]+)"', texto)) >= 12
 
 
+@pytest.mark.parametrize("ident", DATOS)
+def test_las_graficas_de_datos_caben_a_390_px(ident):
+    """A 390 px el cuerpo de figura deja ~305 px y, debajo de 1470 px, el
+    framework muestra los SVG a tamano natural con scroll horizontal y sin
+    ninguna senal de que hay mas a la derecha. La revision r1 vio fuera de
+    pantalla el panel de las 2 nuevas de F1b: las tres graficas de datos se
+    apilan en vertical a 300 px de ancho."""
+    raiz = re.match(r"<svg\b[^>]*>", _svg(ident)).group()
+    assert float(re.search(r'\bwidth="([\d.]+)"', raiz).group(1)) <= 300
+
+
 @pytest.mark.parametrize("ident", TRAMO_RAPIDO)
 def test_determinista(ident):
     assert _svg(ident) == _svg(ident)
@@ -119,7 +130,7 @@ def test_f1a_no_revela_los_tiempos_reales_de_las_nuevas():
 
 def test_f1b_pone_cada_regla_junto_a_su_error_en_cada_conjunto():
     aria = _aria(_svg(F1B))
-    izq, der = aria.split("Derecha:")
+    izq, der = aria.split("Abajo:")
     assert _junto(izq, "memorizar", f(C["memorizar"]["mae_vistas"]))
     assert _junto(izq, "recta", f(C["recta"]["mae_vistas"]))
     assert _junto(izq, "promedio", f(C["promedio"]["mae_vistas"]))
@@ -230,3 +241,45 @@ def test_la_guarda_de_phi_atrapa_las_formas_prohibidas():
     for malo in ("φ_1", "φ1", "\\phi_{2}", "φ₁", "\\phi_1"):
         assert _PHI_NUMERO.search(malo), malo
     assert not _PHI_NUMERO.search("φ(x)")
+
+
+# ---------------------------------------- F1a y F1b: posiciones (r1) ---
+
+def _cy_de_nuevas(texto_svg):
+    color = gen.ROLES["observaciones_nuevas"]["color"]
+    return [(float(re.search(r'cx="([\d.]+)"', c).group(1)),
+             float(re.search(r'cy="([\d.]+)"', c).group(1)))
+            for c in _circulos(texto_svg, color)]
+
+
+def _panel_de_datos(texto_svg):
+    """El primer rect de panel (el de la grafica): x, y, w, h."""
+    m = re.search(r'<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" '
+                  r'rx="0" fill="' + re.escape(fig.PANEL) + '"', texto_svg)
+    return tuple(float(v) for v in m.groups())
+
+
+def test_f1a_no_pone_las_nuevas_dentro_de_la_grafica_de_tiempo():
+    """r1: con la marca sobre (5, 10) el eje y sugeria 10 min para un tiempo
+    que aun no se conoce. Ninguna marca de nueva cae dentro del panel."""
+    texto = _svg(F1A)
+    x0, y0, w, h = _panel_de_datos(texto)
+    marcas = _cy_de_nuevas(texto)
+    assert len(marcas) >= 2
+    assert all(not (y0 <= cy <= y0 + h) for _, cy in marcas)
+    assert "tiempo desconocido" in " ".join(_textos(texto))
+
+
+def test_f1b_los_anuncios_quedan_en_5_y_6_km():
+    """r1: los aros de anuncio iban corridos a 4.83 y 5.17 km y parecian de
+    otras distancias. Los aros quedan en la distancia de su entrega; solo los
+    segmentos de error se corren, con conectores."""
+    texto = _svg(F1B)
+    e = fig.Ejes(40, 390, 248, 200, fig.XLIM, fig.YLIM)
+    aros = re.findall(r'<circle cx="([\d.]+)" cy="([\d.]+)" r="4" fill="' +
+                      re.escape(fig.PANEL) + r'" stroke="([^"]+)"', texto)
+    de_reglas = [(float(cx), color) for cx, cy, color in aros
+                 if color in fig.COLOR_REGLA.values()]
+    assert len(de_reglas) == 6
+    columnas = {round(e.px(fig.PARES[i][0]), 1) for i in fig.NUEVAS}
+    assert {round(cx, 1) for cx, _ in de_reglas} == columnas

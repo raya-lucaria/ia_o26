@@ -4,7 +4,9 @@ Atan cada cifra de `1_que_es_aprender/1_repaso.md` a **su frase o su
 bloque**, no a la pagina entera (patron de test_juegos.py), y vigilan lo que
 el brief prohibe y raya validate no ve. Los valores salen de
 tools/ml_cifras_c0.py; ninguno se escribe aqui. Las trece pruebas son las de
-clase_0.md §10.7, en su orden.
+clase_0.md §10.7, en su orden; la 14 (ronda 1 de revision) ata ademas toda
+cifra de la pagina a su oracion, y la prueba 1 exige que la primera cifra de
+error tras el nombre de una regla sea la suya.
 
 Se escriben en C0.T4, antes de despachar la redaccion: mientras la pagina y
 el indice no existan, las que los leen fallan (rojo esperado, se anota). Con
@@ -118,6 +120,9 @@ def _tramos_por_regla(oracion):
     return tramos
 
 
+_PRIMERA_CIFRA = re.compile(r"(?<![\w.,])\d+(?:\.\d+)?(?![\w]|[.,]\d)")
+
+
 def comprobar_cifras_por_regla(texto):
     """Prueba 1 sobre un texto: lista de errores (vacia si todo cuadra).
 
@@ -126,6 +131,7 @@ def comprobar_cifras_por_regla(texto):
     oracion asi tiene, en el tramo de esa regla, el valor de otra regla en
     ese conjunto (y que no sea tambien el suyo)."""
     errores = []
+    texto = re.sub(r"(?<![\w@])@[\w-]+", " ", texto)   # ids: «@ml-c0-memorizar-…»
     oraciones = [o for o in _oraciones(texto) if DE_ERROR.search(o)]
     for clave, conjunto in CONJUNTOS.items():
         del_conjunto = [o for o in oraciones if re.search(conjunto, o, re.I)]
@@ -134,9 +140,19 @@ def comprobar_cifras_por_regla(texto):
             ajenos = {f(C[r][clave]) for r in REGLAS if r != regla} - {propio}
             vista = False
             for o in del_conjunto:
+                # en una oracion de un solo conjunto, la primera cifra que
+                # sigue al nombre de la regla es la suya (r1: un 8 por el 7
+                # pasaba porque otra oracion si traia el 7)
+                solo_uno = sum(bool(re.search(c, o, re.I)) for c in CONJUNTOS.values()) == 1
                 for tramo in _tramos_por_regla(o).get(regla, []):
                     if _numero(propio).search(tramo):
                         vista = True
+                    # la cifra de error es la primera tras la ultima palabra
+                    # de error del tramo («anuncia 25 y falla por 7» → 7)
+                    desde = [m.end() for m in DE_ERROR.finditer(tramo)]
+                    primera = _PRIMERA_CIFRA.search(tramo, desde[-1] if desde else 0)
+                    if solo_uno and primera and primera.group() != propio:
+                        errores.append(f"{regla}/{clave}: «{o}» le pone {primera.group()}")
                     for ajeno in ajenos:
                         if _numero(ajeno).search(tramo) and not _numero(propio).search(tramo):
                             errores.append(f"{regla}/{clave}: «{o}» le pone {ajeno}")
@@ -225,7 +241,7 @@ def test_5b_el_alt_de_f1b_pone_cada_regla_junto_a_su_valor():
     _leer(PAGINA)
     cuerpo = _figuras_de_la_clase()["ml-c0-memorizar-contra-ajustar"]
     alt = re.search(r"!\[(.*?)\]\(", cuerpo, re.S).group(1)
-    assert comprobar_cifras_por_regla(alt.replace("Derecha:", ". Derecha: las nuevas,")) == []
+    assert comprobar_cifras_por_regla(alt.replace("Abajo:", ". Abajo: las nuevas,")) == []
 
 
 ALT_DE = {
@@ -359,3 +375,132 @@ def test_el_comprobador_de_la_prueba_1_acepta_y_rechaza():
     assert comprobar_cifras_por_regla(buena) == []
     mala = buena.replace("por 7", "por X").replace("por 12", "por 7").replace("por X", "por 12")
     assert comprobar_cifras_por_regla(mala) != []
+
+
+# ------------------------------- 14 · toda cifra atada a su oracion (r1) ---
+#
+# La prueba 1 ata los MAE por regla; esta ata **toda** cifra de la pagina a
+# la oracion que la dice. Cada oracion con una cifra tiene que casar con una
+# entrada de ATADAS (un ancla y la lista exacta de cifras, en orden, sacadas
+# de ml_cifras_c0); una oracion con cifras y sin ancla falla como «sin
+# atar». Lo que no es cifra del ejemplo se quita antes de leer: referencias
+# (unidad 6, clase 1, sección 3, §5.1, figuras 1.4 y 1.5, años), subíndices
+# y exponentes, ids y wikilinks, y la notación (1,x,x^2).
+
+_CIFRA = re.compile(r"(?<![\d.])\d+(?:\.\d+)?(?![\d]|\.\d)")
+_NO_ES_CIFRA = [
+    r"\(1,\s*x,\s*x\^2\)", r"\bi=1\b", r"\[\[[^\]]*\]\]", r"(?<![\w@])@[\w-]+", r"\(\.\./[^)]*\)",
+    r"\*\*\d+\.\*\*",
+    r"\b(?:unidad|unidades|clase|clases|sección|capítulo|figuras?|Pista)\s+\d+(?:\.\d+)*"
+    r"(?:\s*y\s*\d+(?:\.\d+)*)?",
+    r"§\s?\d+(?:\.\d+)*", r"\b(?:19|20)\d\d\b",
+    r"[_^]\{[^}]*\}", r"[_^]\w", r"\\frac\d\w", r"\\ge\s*0",
+]
+
+
+def _cifras(oracion):
+    t = oracion
+    for patron in _NO_ES_CIFRA:
+        t = re.sub(patron, " ", t)
+    return _CIFRA.findall(t)
+
+
+def _atadas():
+    v = {r: [f(a) for a in C[r]["anuncios_nuevas"]] for r in REGLAS}
+    mae = {(r, k): f(C[r][k]) for r in REGLAS for k in ("mae_vistas", "mae_nuevas")}
+    b0, b1 = (f(b) for b in C["beta_estrella"])
+    km = {i: str(cifras.ENTREGAS[i][0]) for i in range(len(cifras.ENTREGAS))}
+    kn = [km[i] for i in cifras.NUEVAS]
+    vecino = km[max(cifras.VISTAS)]
+    b06, b16 = C["beta_seis_exacta"]
+    d = cifras.datos_c0_ejercicios()
+    phi = cifras.phi_cuadratica(cifras.PHI_EJEMPLO_KM)
+    pares = [str(x) for i in cifras.VISTAS for x in cifras.ENTREGAS[i]]
+    prom = f(C["promedio_vistas"])
+    return [
+        # entrada
+        ("min de lectura", [str(cifras_minutos())]),
+        # §1
+        ("el programa vio (", pares),
+        ("llegarán después", kn),
+        ("Para 5 y 6 km, es la de", kn + [vecino, v["memorizar"][0]]),
+        ("El promedio fijo de lo visto", [prom]),
+        ("con $n=", [str(len(cifras.VISTAS))]),
+        ("el mínimo es único", [b0, b1, b0, b1]),
+        ("Para 5 km anuncia", [kn[0], b0, b1, kn[0], v["recta"][0]]),
+        ("con las seis salía", [f(b06), str(b16.numerator), str(b16.denominator)]),
+        ("En las vistas, memorizar gana",
+         [mae["memorizar", "mae_vistas"], mae["recta", "mae_vistas"],
+          mae["promedio", "mae_vistas"]]),
+        ("Piensa: en las entregas de", kn),
+        ("En las nuevas, el MAE es",
+         [mae["recta", "mae_nuevas"], mae["memorizar", "mae_nuevas"],
+          mae["promedio", "mae_nuevas"]]),
+        ("lo lleva a cero y falla por", [mae["memorizar", "mae_nuevas"]]),
+        ("Cada semana llegan", [str(d["por_semana"])]),
+        ("semanas, el error medio en lo visto baja",
+         [str(d["semanas"])] + [str(x) for x in d["mae_visto"]]),
+        ("aún no vistas, permanece en", [str(d["mae_nuevo"])]),
+        ("en entregas que no vio: sigue en", [str(d["mae_nuevo"])]),
+        ("Bajar de", [str(x) for x in d["mae_visto"]]),
+        # §2 (0 y 1: la convención de guardar dos categorías, no una cifra del ejemplo)
+        ("por ejemplo 0 y 1", ["0", "1"]),
+        ("ajustamos $", [b0, b1]),
+        # §3
+        ("para 3 km", [str(cifras.PHI_EJEMPLO_KM), str(cifras.PHI_EJEMPLO_KM)]
+         + [str(x) for x in phi]),
+        # ejercicio final y su respuesta
+        ("Tiene ", [str(d["entregas_zona"])]),
+        ("la experiencia son las", [str(d["entregas_zona"])]),
+        ("El error en las", [str(d["entregas_zona"])]),
+        ("basta el error en las", [str(d["entregas_zona"])]),
+        ("al azar parte de las", [str(d["entregas_zona"])]),
+        # lo que hay que llevarse
+        ("El error de memorizar es",
+         [mae[r, k] for r in REGLAS for k in ("mae_vistas", "mae_nuevas")]),
+    ]
+
+
+def cifras_minutos():
+    from contrato_unidad import minutos
+    fm = _leer(PAGINA).split("\n---", 1)[0]
+    return minutos(re.search(r"^estimated_time:\s*(\S+)", fm, re.M).group(1))
+
+
+def comprobar_toda_cifra_atada(texto):
+    errores = []
+    atadas = _atadas()
+    usadas = set()
+    plano = re.sub(r"^\s*(?::::|#+ ).*$", "", _sin_figuras(texto), flags=re.M)
+    for o in _oraciones(plano):
+        cifras_o = _cifras(o)
+        if not cifras_o:
+            continue
+        anclas = [(a, esp) for a, esp in atadas if a in o]
+        if not anclas:
+            errores.append(f"sin atar: «{o}» dice {cifras_o}")
+            continue
+        ancla, esperadas = anclas[0]
+        usadas.add(ancla)
+        if cifras_o != esperadas:
+            errores.append(f"«{o}»: dice {cifras_o}, ml_cifras_c0 da {esperadas}")
+    for ancla, _ in atadas:
+        if ancla not in usadas:
+            errores.append(f"ninguna oración con cifras trae el ancla «{ancla}»")
+    return errores
+
+
+def test_14_toda_cifra_de_la_pagina_esta_atada_a_su_oracion():
+    assert comprobar_toda_cifra_atada(_cuerpo(_leer(PAGINA))) == []
+
+
+@pytest.mark.parametrize("de, a", [
+    ("memorizar 7, promedio", "memorizar 8, promedio"),   # la mutacion de r1
+    ("anuncia 25.", "anuncia 26."),
+    ("obtienes $\\phi(3)=(1,3,9)$", "obtienes $\\phi(3)=(1,3,8)$"),
+    ("Tiene 200 entregas", "Tiene 300 entregas"),
+])
+def test_14b_la_prueba_14_atrapa_una_cifra_cambiada(de, a):
+    texto = _cuerpo(_leer(PAGINA))
+    assert de in texto, de
+    assert comprobar_toda_cifra_atada(texto.replace(de, a, 1)) != []
