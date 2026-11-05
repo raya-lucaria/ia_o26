@@ -761,7 +761,532 @@ _TRAMO_1A = {
 
 
 # --- tramo 1b ---
-_TRAMO_1B = {}
+#
+# P2 (ml-polinomios-y-capacidad). Todas las cifras salen de ml_cifras_c1 (tramo
+# 1b); la reciproca 2 + 5/x con 20 datos y semilla 0 es el hilo de la pagina.
+
+def _ley(ax, fontsize=9, **kw):
+    """_leyenda con otro tamano de letra."""
+    ley = _leyenda(ax, **kw)
+    for t in ley.get_texts():
+        t.set_fontsize(fontsize)
+    return ley
+
+
+def _ley_abajo(ax, ncol=2, fontsize=8.5, bajo=-0.2, **kw):
+    """La leyenda debajo de los ejes, para no tapar las curvas."""
+    return _ley(ax, fontsize=fontsize, loc="upper center", bbox_to_anchor=(0.5, bajo),
+                ncol=ncol, **kw)
+
+
+def _f_verdadera(ax, x, y, rotulo="f verdadera", **kw):
+    rol = gen.ROLES["f_verdadera"]
+    ax.plot(x, y, color=VERDE, lw=rol["grosor"], label=rotulo, zorder=2, **kw)
+
+
+def _entrenamiento(ax, x, y, rotulo="20 datos de entrenamiento", s=26):
+    rol = gen.ROLES["entrenamiento"]
+    ax.scatter(x, y, marker=rol["marcador"], s=s, color=rol["color"], edgecolor=TEXTO,
+               linewidths=0.5, zorder=6, label=rotulo)
+
+
+def _nuevas(ax, x, y, rotulo="observaciones nuevas"):
+    ax.scatter(x, y, marker=gen.ROLES["observaciones_nuevas"]["marcador"], s=10,
+               color=NUEVAS, lw=0, zorder=1, label=rotulo)
+
+
+def _franja(ax, desde, hasta, rotulo=None):
+    ax.axvspan(desde, hasta, color=SUAVE, alpha=0.16, lw=0, label=rotulo)
+
+
+def _titulo(ax, s, tam=10.5):
+    ax.set_title(s, color=TEXTO, fontsize=tam)
+
+
+def _recorte(ax, x, y_tope, valor, color=TEXTO):
+    ax.text(x, 0.97 * y_tope, f"↑ {valor}", ha="center", va="top", fontsize=9,
+            color=color, fontweight="bold")
+
+
+# ----------------------------------------- grafica: ml-c1-taylor-vs-mco ---
+#
+# P2 §1 (F12). f = 2 + 5/x; Taylor de grados 3 y 9 centrado en x0 = 1 y el
+# polinomio de grado 3 ajustado por minimos cuadrados a los 20 datos. Una
+# linea en x = 2: mas alla, Taylor de 1/x empeora al subir el grado.
+
+def ml_c1_taylor_vs_mco():
+    import numpy as np
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    t = cif.cifras_c1_taylor()
+    datos = cif.datos_inverso()
+    mco = ml.ajustar(datos, phi=ml.polinomio(3))
+    x = np.linspace(0.3, 3, 400)
+    lo, hi = t["rango_datos"]
+
+    def dibujar(fig, ax):
+        _franja(ax, lo, hi, "zona de los datos")
+        _f_verdadera(ax, x, cif.f_inverso(x), "f verdadera: 2 + 5/x")
+        ml.dibujar_ajuste({"Taylor de grado 3 en x₀ = 1": ml.taylor("inverso", 1.0, 3),
+                           "Taylor de grado 9 en x₀ = 1": ml.taylor("inverso", 1.0, 9),
+                           "mínimos cuadrados, grado 3": mco},
+                          ventana=(0.3, 3), ax=ax, tema="sitio")
+        t3, t9, mc = _ajustes(ax)
+        for ln, color, trazo in ((t3, NARANJA, "--"), (t9, PERVINCA, "-."), (mc, CIAN, "-")):
+            ln.set_color(color)
+            ln.set_linestyle(trazo)
+            ln.set_linewidth(2.0)
+        _entrenamiento(ax, datos.ent.x, datos.ent.y)
+        ax.axvline(2, color=TEXTO, lw=1.2, ls=(0, (1, 2)))
+        ax.text(2.04, cif.P2_YTOPE - 0.8, "más allá de x = 2, Taylor\nde 1/x empeora al subir\nel grado",
+                fontsize=9, color=TEXTO, va="top")
+        ax.plot([1], [7], marker="x", ms=8, color=TEXTO, ls="", zorder=7)
+        ax.annotate("x₀ = 1", (1, 7), xytext=(0.55, 3.2), fontsize=9, color=TEXTO,
+                    arrowprops={"arrowstyle": "-", "color": TEXTO, "lw": 0.8})
+        ax.text(0.985, 0.72, f"en x = 2.5, error de Taylor:\ngrado 3 → "
+                f"{_num(t['taylor_3'][2.5], 1)}, grado 9 → {_num(t['taylor_9'][2.5], 1)}",
+                transform=ax.transAxes, fontsize=9, color=TEXTO, ha="right", va="top",
+                zorder=8, bbox={"facecolor": PANEL, "edgecolor": LINEA, "boxstyle": "round"})
+        ax.set_xlim(0.3, 3)
+        ax.set_ylim(0, cif.P2_YTOPE)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        manejadores, rotulos = ax.get_legend_handles_labels()
+        _ley_abajo(ax, handles=manejadores, labels=rotulos)
+
+    aria = (f"La curva 2 más 5 entre x, 20 datos con ruido y tres polinomios. Taylor de "
+            f"grado 3 y de grado 9, centrados en x0 igual a 1, se pegan a la curva cerca del "
+            f"centro y se abren en los bordes; a la derecha de x igual a 2, subir el grado "
+            f"empeora: en x igual a 2.5 el error de Taylor pasa de "
+            f"{_num(t['taylor_3'][2.5], 1)} con grado 3 a {_num(t['taylor_9'][2.5], 1)} con "
+            f"grado 9. El polinomio de grado 3 ajustado por mínimos cuadrados reparte el "
+            f"error donde hay datos: en x igual a 2.5 se equivoca "
+            f"{_num(t['mco_3'][2.5], 2)}.")
+    return _grafica(dibujar, aria, "Taylor contra mínimos cuadrados", 5.0)
+
+
+# -------------------------------------------- grafica: ml-c1-weierstrass ---
+#
+# P2 §2. |x − 0.5| en [0, 1] y sus ajustes por minimos cuadrados en una malla
+# fina (base de Chebyshev) de grados 2, 6 y 14, con su error maximo.
+
+def ml_c1_weierstrass():
+    import numpy as np
+    from numpy.polynomial import chebyshev as C
+    import ml_cifras_c1 as cif
+    w = cif.cifras_c1_weierstrass()
+    x = np.linspace(0, 1, 801)
+    estilos = {2: (NARANJA, "--"), 6: (PERVINCA, "-."), 14: (CIAN, "-")}
+
+    def dibujar(fig, ax):
+        _f_verdadera(ax, x, np.abs(x - 0.5), "f(x) = |x − 0.5|")
+        for N, (color, trazo) in estilos.items():
+            ax.plot(x, C.chebval(2 * x - 1, w[N]["coeficientes"]), color=color, ls=trazo,
+                    lw=1.8, zorder=4, label=f"grado {N}: error máximo "
+                                            f"{_num(w[N]['error_maximo'], 3)}")
+        ax.set_xlim(0, 1)
+        ax.set_ylim(-0.08, 0.62)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        _titulo(ax, "mínimos cuadrados en una malla fina, sin ruido")
+        _ley(ax, loc="upper center")
+
+    errores = ", ".join(f"{_num(w[N]['error_maximo'], 3)} con grado {N}"
+                        for N in cif.WEIERSTRASS_GRADOS)
+    aria = ("La función valor absoluto de x menos 0.5 en el intervalo de 0 a 1, con un pico "
+            "sin derivada en 0.5, y sus ajustes por mínimos cuadrados en una malla fina con "
+            f"polinomios de grado 2, 6 y 14. El error máximo baja: {errores}. El mejor "
+            "polinomio en máximo de cada grado se equivoca a lo más eso.")
+    return _grafica(dibujar, aria, "Aproximar en todo un intervalo", 3.4)
+
+
+# --------------------------------------------- grafica: ml-c1-tres-ajustes ---
+#
+# P2 §3 (DL fig. 5.2 con ruido). 20 datos de la reciproca, grados 1, 4 y 15,
+# con 200 observaciones nuevas; cada panel con su L_ent y su R.
+
+def ml_c1_tres_ajustes():
+    import numpy as np
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    t = cif.cifras_c1_tres_ajustes()
+    datos = cif.datos_inverso()
+    nuevas = datos.realidad.iloc[:200]
+    x = np.linspace(0.3, 3, 400)
+    nombres = {1: "subajuste", 4: "capacidad adecuada", 15: "sobreajuste"}
+    tope = cif.P2_YTOPE
+
+    def dibujar(fig, ejes):
+        for ax, N in zip(ejes, cif.TRES_GRADOS):
+            m = ml.ajustar(datos, phi=ml.polinomio(N))
+            _nuevas(ax, nuevas.x, nuevas.y)
+            _f_verdadera(ax, x, cif.f_inverso(x))
+            ml.dibujar_ajuste({f"ajuste de grado {N}": m}, ventana=(0.3, 3), ax=ax,
+                              tema="sitio")
+            ln = _ajustes(ax)[0]
+            ln.set_color(CIAN)
+            ln.set_linewidth(1.8)
+            _entrenamiento(ax, datos.ent.x, datos.ent.y)
+            R = t[N]["R"]
+            R_txt = _num(R, 2) if R < 100 else f"{R:,.0f}".replace(",", " ")
+            _titulo(ax, f"grado {N} · {nombres[N]}: L_ent = {_num(t[N]['L_ent'], 2)}, "
+                        f"R = {R_txt}")
+            ax.set_xlim(0.3, 3)
+            ax.set_ylim(-2, tope)
+            ax.set_ylabel("y")
+        # El grado 15 se desploma despues del ultimo dato: se marca ese limite.
+        ultimo = ejes[-1]
+        ultimo.axvline(t["x_max"], color=TEXTO, lw=1.0, ls=(0, (1, 2)))
+        ultimo.text(t["x_max"] - 0.03, tope - 0.6, f"último dato,\nx = {_num(t['x_max'], 2)}",
+                    fontsize=8.5, color=TEXTO, ha="right", va="top")
+        ejes[-1].set_xlabel("x")
+        manejadores, rotulos = ejes[0].get_legend_handles_labels()
+        _ley(ejes[0], handles=manejadores,
+                 labels=["ajuste" if r.startswith("ajuste") else r for r in rotulos],
+                 loc="upper right", fontsize=8.5)
+        for ax in ejes[1:]:
+            if ax.get_legend():
+                ax.get_legend().remove()
+
+    partes = "; ".join(
+        f"grado {N}, {nombres[N]}: error de entrenamiento {_num(t[N]['L_ent'], 2)} y "
+        f"riesgo {_num(t[N]['R'], 2)}" for N in cif.TRES_GRADOS)
+    q = t[cif.TRES_GRADOS[-1]]
+    aria = ("Tres ajustes a los mismos 20 datos de la curva 2 más 5 entre x, con 200 "
+            f"observaciones nuevas del mismo proceso al fondo. {partes}. El de grado 15 pasa "
+            "cerca de casi todos los datos y oscila entre ellos; después del último dato, en "
+            f"x igual a {_num(t['x_max'], 2)}, se desploma: en x igual a 3 predice "
+            f"{_num(q['prediccion_en_3'], 0)}, y de ese tramo sale más del "
+            f"{_num(100 * q['fraccion_reducible_tras_x_max'], 1)} % de su riesgo reducible.")
+    return _grafica(dibujar, aria, "Subajuste, capacidad adecuada y sobreajuste", 7.2,
+                    paneles=3)
+
+
+# ---------------------------------------- grafica: ml-c1-capacidad-brecha ---
+#
+# P2 §4 (DL fig. 5.3 medida). La curva de capacidad N = 1..15 con L_ent y R
+# (realidad), la brecha, el piso, el benchmark y el N de menor R; abajo, el
+# mismo proceso con 200 datos. Eje y logaritmico: R(15) con 20 datos es ~1500.
+
+def _zonas(ax):
+    """Los rotulos de subajuste y sobreajuste en coordenadas de los ejes (el
+    zonas=True de ml_lab los pone con el ylim lineal, antes del eje log, y el
+    de sobreajuste cae sobre la curva de R)."""
+    ax.text(0.02, 0.96, "← subajuste", transform=ax.transAxes, fontsize=9, color=TEXTO,
+            va="top", ha="left")
+    ax.text(0.78, 0.96, "sobreajuste →", transform=ax.transAxes, fontsize=9, color=TEXTO,
+            va="top", ha="right")
+
+
+def ml_c1_capacidad_brecha():
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    k = cif.cifras_c1_capacidad()
+
+    def dibujar(fig, ejes):
+        for ax, n in zip(ejes, (20, 200)):
+            c = k[n]
+            ml.dibujar_curva_capacidad(c["tabla"], brecha=True, zonas=False, optimo=True,
+                                       piso=c["piso"], benchmark=c["benchmark"], ax=ax,
+                                       tema="sitio")
+            ax.set_yscale("log")
+            ax.set_ylim(0.02, 4000)
+            _zonas(ax)
+            ax.set_xticks(range(1, 16, 2))
+            ax.set_xlabel("grado N (capacidad →)", labelpad=1)
+            ax.set_ylabel("pérdida (escala log)")
+            _titulo(ax, f"recíproca, {n} datos, σ_ε = 0.5: menor R en N = {c['N_menor_R']}")
+            nombres = {"L_ent": "L_ent (entrenamiento)", "R (realidad)": "R (muestra enorme)",
+                       "menor R": "menor R", "piso R_Bayes": f"piso = {_num(c['piso'], 2)}",
+                       "benchmark": f"benchmark: la media, R = {_num(c['benchmark'], 1)}"}
+            manejadores, rotulos = ax.get_legend_handles_labels()
+            _ley_abajo(ax, handles=manejadores, labels=[nombres.get(r, r) for r in rotulos],
+                       fontsize=8)
+        ejes[0].annotate("brecha", (13.2, 2.0), color=TEXTO, fontsize=9)
+
+    v, d = k[20], k[200]
+    aria = ("Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos "
+            "de la curva 2 más 5 entre x, en escala logarítmica, con el extremo de subajuste "
+            "a la izquierda y el de sobreajuste a la derecha. El error de entrenamiento "
+            f"nunca sube y en grado 15 vale {_num(v['L_ent'][15], 3)}, abajo del piso "
+            f"{_num(v['piso'], 2)}. El riesgo, medido con la muestra enorme, hace una U: es "
+            f"mínimo en grado {v['N_menor_R']}, con {_num(v['R'][v['N_menor_R']], 3)}, y en "
+            f"grado 15 llega a {v['R'][15]:.0f}; la brecha sombreada crece. El benchmark, la "
+            f"media, tiene riesgo {_num(v['benchmark'], 1)}. Abajo, el mismo proceso con 200 "
+            f"datos: desde grado 5, con {_num(d['R'][5], 3)}, el riesgo ya no sube por "
+            f"encima de ese valor; baja a {_num(d['R'][d['N_menor_R']], 3)} en grado "
+            f"{d['N_menor_R']} y en grado 15 vale {_num(d['R'][15], 3)}; la U es de este "
+            f"experimento, no una ley.")
+    return _grafica(dibujar, aria, "La brecha de generalización, medida", 8.4, paneles=2)
+
+
+# --------------------------------- grafica: ml-c1-elegir-con-entrenamiento ---
+#
+# P2 §5 (F17). En 200 muestras de 20 datos, el N que elige L_ent contra el
+# de menor R.
+
+def ml_c1_elegir_con_entrenamiento():
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    e = cif.cifras_c1_elegir()
+
+    def dibujar(fig, ejes):
+        ml.dibujar_elecciones(e["tabla"], ax=list(ejes), tema="sitio")
+        arriba, abajo = ejes
+        _titulo(arriba, f"el N que elige L_ent: {e['veces_N_max_ent']} de "
+                        f"{e['repeticiones']} veces N = {e['N_max']}")
+        _titulo(abajo, f"el N de menor R: {e['veces_N_R_3_a_6']} de {e['repeticiones']} "
+                       f"entre 3 y 6")
+        for p in arriba.patches:
+            p.set_facecolor(CIAN)
+        for p in abajo.patches:
+            p.set_facecolor(VERDE)
+        for ax in ejes:
+            ax.set_xlim(0.4, 15.6)
+            ax.set_xticks(range(1, 16))
+            ax.set_xlabel("grado N elegido")
+            ax.set_ylabel("muestras")
+
+    reparto = ", ".join(f"{v} {'vez' if v == 1 else 'veces'} grado {N}"
+                        for N, v in e["reparto_N_R"].items())
+    aria = (f"En {e['repeticiones']} muestras de 20 datos de la curva 2 más 5 entre x, se "
+            f"elige el grado de 1 a {e['N_max']}. Arriba, el que minimiza el error de "
+            f"entrenamiento: {e['veces_N_max_ent']} de {e['repeticiones']} veces el máximo, "
+            f"grado {e['N_max']}. Abajo, el de menor riesgo, repartido: {reparto}.")
+    return _grafica(dibujar, aria, "¿Quién elige el grado?", 5.6, paneles=2)
+
+
+# --------------------------------------- grafica: ml-c1-inverso-vs-potencias ---
+#
+# P2 §6 (caso 3, 60 datos). Arriba, la reciproca cerca de cero con el
+# polinomio de grado 10 y phi = (1, 1/x); abajo, R de los grados 1, 4, 10 y
+# de (1, 1/x) contra el piso y el benchmark (escala log).
+
+def ml_c1_inverso_vs_potencias():
+    import numpy as np
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    i = cif.cifras_c1_inverso()
+    datos = ml.caso(3, n=cif.INVERSO_N, semilla=cif.SEMILLA_1B)
+    m10 = ml.ajustar(datos, phi=ml.polinomio(10))
+    minv = ml.ajustar(datos, phi=ml.columnas("1/x"))
+    x = np.linspace(0.05, 3, 600)
+    b0, b1 = i["beta_inverso"]
+
+    def dibujar(fig, ejes):
+        arriba, abajo = ejes
+        _f_verdadera(arriba, x, cif.f_inverso(x), "f verdadera: 2 + 5/x")
+        ml.dibujar_ajuste({"polinomio de grado 10": m10,
+                           f"φ = (1, 1/x): {_num(b0, 2)} + {_num(b1, 2)}/x": minv},
+                          ventana=(0.05, 3), ax=arriba, tema="sitio")
+        p10, pinv = _ajustes(arriba)
+        p10.set_color(NARANJA)
+        p10.set_linestyle("--")
+        p10.set_linewidth(1.8)
+        pinv.set_color(CIAN)
+        pinv.set_linestyle("-")
+        pinv.set_linewidth(1.6)
+        _entrenamiento(arriba, datos.ent.x, datos.ent.y, "60 datos de entrenamiento", s=18)
+        arriba.set_xlim(0, 3)
+        arriba.set_ylim(0, cif.INVERSO_YTOPE)
+        # Los datos que quedan arriba del cuadro: triangulo en el borde y su y.
+        altos = datos.ent[datos.ent.y > cif.INVERSO_YTOPE]
+        tope = cif.INVERSO_YTOPE
+        arriba.scatter(altos.x, [tope * 0.965] * len(altos), marker="^", s=46,
+                       color=gen.color_rol("entrenamiento"), edgecolor=TEXTO, lw=0.6,
+                       zorder=8, clip_on=False)
+        arriba.text(0.9, tope * 0.62, f"▲ {len(altos)} datos arriba del cuadro: y = "
+                    + " y ".join(f"{v:.0f}" for v in i["fuera_del_cuadro"]),
+                    fontsize=8.5, color=TEXTO, va="top")
+        arriba.set_xlabel("x")
+        arriba.set_ylabel("y")
+        _ley(arriba, loc="upper right", fontsize=8.5)
+        nombres = ["grado 1", "grado 4", "grado 10", "(1, 1/x)"]
+        valores = [i["R_1"], i["R_4"], i["R_10"], i["R_inverso"]]
+        barras = abajo.bar(range(4), valores, color=[mezclar(NARANJA, 0.55, PANEL)] * 3
+                           + [CIAN], edgecolor=TEXTO, lw=0.6)
+        for b, v in zip(barras, valores):
+            dentro = v > 10
+            abajo.text(b.get_x() + b.get_width() / 2, v / 1.7 if dentro else v * 1.15,
+                       _num(v, 2 if v < 10 else 1), ha="center",
+                       va="top" if dentro else "bottom", fontsize=9.5, color=TEXTO,
+                       fontweight="bold")
+        abajo.axhline(i["piso"], ls=gen.ROLES["piso_bayes"]["linea"], color=PISO, lw=1.8,
+                      label=f"piso = {_num(i['piso'], 2)}")
+        abajo.axhline(i["benchmark"], ls=gen.ROLES["benchmark"]["linea"],
+                      color=gen.color_rol("benchmark"), lw=1.6,
+                      label=f"benchmark: la media, R = {_num(i['benchmark'], 1)}")
+        abajo.set_yscale("log")
+        abajo.set_ylim(0.1, 1000)
+        abajo.set_xticks(range(4))
+        abajo.set_xticklabels(nombres)
+        abajo.set_ylabel("R (despliegue, log)")
+        _ley(abajo, loc="upper right", fontsize=8.5)
+
+    altos = " y ".join(f"{v:.0f}" for v in i["fuera_del_cuadro"])
+    aria = (f"Arriba, {cif.INVERSO_N} datos de la curva 2 más 5 entre x con x desde 0.05; "
+            f"{len(i['fuera_del_cuadro'])} de ellos, con y de {altos}, quedan arriba del "
+            f"cuadro y un triángulo en el borde los marca; "
+            f"el polinomio de grado 10 y el modelo con la columna 1 entre x, que estima "
+            f"{_num(b0, 2)} más {_num(b1, 2)} entre x. Abajo, el riesgo en el despliegue, en "
+            f"escala logarítmica: grado 1, {_num(i['R_1'], 1)}; grado 4, {_num(i['R_4'], 1)}; "
+            f"grado 10, {_num(i['R_10'], 2)}; la columna 1 entre x, {_num(i['R_inverso'], 2)}, "
+            f"en el piso de {_num(i['piso'], 2)}. El benchmark, la media, tiene "
+            f"{_num(i['benchmark'], 1)}.")
+    return _grafica(dibujar, aria, "Una columna correcta contra diez potencias", 6.4,
+                    paneles=2)
+
+
+# ------------------------------------------------ grafica: ml-c1-extrapolar ---
+#
+# P2 §7 (F13). Tres paneles con la zona de datos sombreada: entregas (recta
+# y grado 7 hasta 9 km), seno (grado 7 hasta 3) y el recursivo, con x
+# creciente en el tiempo y la prediccion a un paso sin y con el tiempo
+# anterior. El despliegue no cambia: el error «fuera» es error_por_zona.
+
+def ml_c1_extrapolar():
+    import numpy as np
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    e = cif.cifras_c1_extrapolar()
+
+    def zona(ax, panel):
+        z = cif.EXTRAPOLAR_ZONAS[panel]
+        _franja(ax, *z["dentro"], "zona de los datos")
+        ax.set_xlim(z["dentro"][0], z["fuera"][1])
+
+    def dibujar(fig, ejes):
+        a1, a2, a3 = ejes
+        # Entregas.
+        d = cif.datos_extrapolar("entregas")
+        x = np.linspace(0, 9, 400)
+        zona(a1, "entregas")
+        _f_verdadera(a1, x, 10 + 4 * x, "f verdadera: 10 + 4x")
+        ml.dibujar_ajuste({"recta": ml.ajustar(d),
+                           "grado 7": ml.ajustar(d, phi=ml.polinomio(7))},
+                          ventana=(0, 9), ax=a1, tema="sitio")
+        recta, g7 = _ajustes(a1)
+        recta.set_color(CIAN)
+        g7.set_color(NARANJA)
+        g7.set_linestyle("--")
+        g7.set_linewidth(1.8)
+        _entrenamiento(a1, d.ent.x, d.ent.y, "entrenamiento", s=18)
+        a1.set_ylim(0, 60)
+        en = e["entregas"]
+        _titulo(a1, f"entregas: de 6 a 9 km, R de la zona = {_num(en['recta']['fuera'], 2)}"
+                    f" (recta) y {en['grado_7']['fuera']:.1e} (grado 7)".replace("e+0", "e")
+                    .replace("e+", "e"), tam=9.5)
+        a1.set_xlabel("distancia x (km)")
+        # Seno.
+        d = cif.datos_extrapolar("seno")
+        x = np.linspace(0, 3, 400)
+        zona(a2, "seno")
+        _f_verdadera(a2, x, 4 + 2 * np.sin(5 * x), "f verdadera: 4 + 2 sen 5x")
+        ml.dibujar_ajuste({"grado 7": ml.ajustar(d, phi=ml.polinomio(7))}, ventana=(0, 3),
+                          ax=a2, tema="sitio")
+        g7 = _ajustes(a2)[0]
+        g7.set_color(NARANJA)
+        g7.set_linestyle("--")
+        g7.set_linewidth(1.8)
+        _entrenamiento(a2, d.ent.x, d.ent.y, "entrenamiento", s=14)
+        a2.set_ylim(0, 9)
+        se = e["seno"]["grado_7"]
+        _titulo(a2, f"seno, grado 7: R dentro = {_num(se['dentro'], 2)}, fuera = "
+                    f"{se['fuera']:.0f}", tam=9.5)
+        a2.set_xlabel("x")
+        # Recursivo.
+        d = cif.datos_extrapolar("recursivo")
+        r = e["recursivo"]
+        todo = __import__("pandas").concat([d.ent, d.prueba], ignore_index=True)
+        n = r["n"]
+        a3.axvspan(-0.5, n - 0.5, color=SUAVE, alpha=0.16, lw=0, label="zona de los datos")
+        _entrenamiento(a3, d.ent.t, d.ent.y, "entrenamiento", s=14)
+        a3.scatter(d.prueba.t, d.prueba.y, marker="o", s=22, facecolor=PANEL,
+                   edgecolor=NUEVAS, lw=1.0, zorder=6, label="lo que pasó después")
+        for con, color, trazo, rot in ((False, NARANJA, "--", "recta en x"),
+                                       (True, CIAN, "-",
+                                        "x y el tiempo anterior observado (a un paso)")):
+            m = ml.ajustar(d, phi=cif.phi_recursivo(con))
+            a3.plot(todo.t, m.predecir(todo), color=color, ls=trazo, lw=1.7, zorder=7,
+                    label=rot)
+        a3.set_xlim(-0.5, len(todo) - 0.5)
+        _titulo(a3, f"recursivo, R en el futuro: "
+                    f"{_num(r['sin_anterior']['futuro'], 1)} sin y "
+                    f"{_num(r['con_anterior']['futuro'], 2)} con\nel tiempo anterior (a un paso)",
+                tam=9.5)
+        a3.set_xlabel("paso (la x crece con el tiempo)")
+        for ax in ejes:
+            ax.set_ylabel("y")
+            _ley_abajo(ax, ncol=2, fontsize=8, bajo=-0.3)
+
+    en, se, r = e["entregas"], e["seno"]["grado_7"], e["recursivo"]
+    aria = ("Tres procesos con la zona de los datos sombreada. Entregas, datos de 0 a 6 km: "
+            f"de 6 a 9 km la recta tiene riesgo de zona {_num(en['recta']['fuera'], 2)} y el "
+            f"polinomio de grado 7 se dispara, con más de un millón. Seno, datos de 0 a 2: el "
+            f"grado 7 tiene {_num(se['dentro'], 2)} dentro y {se['fuera']:.0f} entre 2 y 3. "
+            f"Recursivo, con la x creciendo en el tiempo: la recta en x falla dentro, "
+            f"{_num(r['sin_anterior']['dentro'], 1)}, y en el futuro, "
+            f"{_num(r['sin_anterior']['futuro'], 1)}; con el tiempo anterior como columna, "
+            f"a un paso, queda en {_num(r['con_anterior']['dentro'], 2)} y "
+            f"{_num(r['con_anterior']['futuro'], 2)}, cerca del piso de 1.")
+    return _grafica(dibujar, aria, "Dónde se usará el modelo", 11.0, paneles=3)
+
+
+# ----------------------------------------------- grafica: ml-c1-no-free-lunch ---
+#
+# P2 §8. Las 256 funciones de 3 bits por rugosidad; aciertos medios fuera de
+# la muestra de tres reglas; la linea de 1/2 y el promedio de cada regla.
+
+def ml_c1_no_free_lunch():
+    import ml_cifras_c1 as cif
+    ml = gen.ml_lab()
+    nfl = cif.cifras_c1_no_free_lunch()
+    tabla = ml.no_free_lunch(entrenamiento=cif.NFL_ENTRENAMIENTO)
+    estilos = {"vecino": (CIAN, "o", "-", "vecino más cercano"),
+               "mayoria": (PERVINCA, "D", "--", "mayoría (empate → 1)"),
+               "siempre_1": (NARANJA, "v", ":", "siempre 1")}
+
+    def dibujar(fig, ax):
+        ml.dibujar_no_free_lunch(tabla, ax=ax, tema="sitio")
+        for ln in ax.get_lines():
+            gid = ln.get_gid() or ""
+            if gid.startswith("regla-"):
+                color, marca, trazo, nombre = estilos[gid[6:]]
+                ln.set_color(color)
+                ln.set_marker(marca)
+                ln.set_linestyle(trazo)
+                ln.set_label(f"{nombre}: promedio "
+                             f"{float(nfl[gid[6:]]['promedio']):.1f}")
+            elif gid == "medio":
+                ln.set_color(PISO)
+                ln.set_label("1/2")
+        ax.set_xticks(sorted(nfl["tamanos"]))
+        ax.set_xlabel("rugosidad (aristas del cubo con etiquetas distintas)")
+        ax.set_ylabel("aciertos fuera de la muestra")
+        _titulo(ax, "256 funciones de 3 bits; entrenamiento: "
+                    + ", ".join(nfl["entrenamiento"]))
+        _ley(ax, loc="upper right", fontsize=8.5)
+
+    v, m = nfl["vecino"]["por_rugosidad"], nfl["mayoria"]["por_rugosidad"]
+    aria = ("Las 256 funciones de etiquetas de 3 bits, con entrenamiento en 000, 011, 101 y "
+            "110, agrupadas por rugosidad. El vecino más cercano y la mayoría aciertan "
+            f"{float(v[0]):.0%} fuera de la muestra en las funciones más suaves y "
+            f"{float(v[12]):.0%} en las más rugosas; siempre 1 acierta 50% en cada grupo. "
+            "Promediando sobre las 256 funciones, cada regla acierta exactamente la mitad."
+            ).replace("%", " %")
+    return _grafica(dibujar, aria, "No free lunch, exacto", 3.8)
+
+
+_TRAMO_1B = {
+    "ml-c1-taylor-vs-mco": ml_c1_taylor_vs_mco,
+    "ml-c1-weierstrass": ml_c1_weierstrass,
+    "ml-c1-tres-ajustes": ml_c1_tres_ajustes,
+    "ml-c1-capacidad-brecha": ml_c1_capacidad_brecha,
+    "ml-c1-elegir-con-entrenamiento": ml_c1_elegir_con_entrenamiento,
+    "ml-c1-inverso-vs-potencias": ml_c1_inverso_vs_potencias,
+    "ml-c1-extrapolar": ml_c1_extrapolar,
+    "ml-c1-no-free-lunch": ml_c1_no_free_lunch,
+}
 # --- fin tramo 1b ---
 
 

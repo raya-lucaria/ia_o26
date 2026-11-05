@@ -185,8 +185,122 @@ def test_el_sin_opacidad_hornea_contra_el_panel():
 
 
 # --- tramo 1b ---
+
+TRAMO_1B = ["ml-c1-taylor-vs-mco", "ml-c1-weierstrass", "ml-c1-tres-ajustes",
+            "ml-c1-capacidad-brecha", "ml-c1-elegir-con-entrenamiento",
+            "ml-c1-inverso-vs-potencias", "ml-c1-extrapolar", "ml-c1-no-free-lunch"]
+
+
+def test_el_tramo_1b_trae_las_ocho_figuras_de_p2_en_orden():
+    assert list(fig._TRAMO_1B) == TRAMO_1B
+
+
+@pytest.mark.parametrize("ident", TRAMO_1B)
+def test_ninguna_figura_1b_usa_el_rosa_de_prueba_ni_el_oro_de_validacion(ident):
+    c = colores(ident)
+    assert gen.color_rol("prueba").lower() not in c
+    assert gen.color_rol("validacion").lower() not in c
+
+
+@pytest.mark.parametrize("ident", [i for i in TRAMO_1B if i != "ml-c1-no-free-lunch"])
+def test_las_figuras_1b_de_regresion_traen_la_f_verdadera_o_el_entrenamiento(ident):
+    c = colores(ident)
+    assert gen.color_rol("f_verdadera").lower() in c or \
+        gen.color_rol("entrenamiento").lower() in c
+
+
+def test_tres_ajustes_dibuja_observaciones_nuevas_con_su_rol():
+    assert gen.color_rol("observaciones_nuevas").lower() in colores("ml-c1-tres-ajustes")
+    assert "observaciones nuevas" in contenido("ml-c1-tres-ajustes")
+
+
+@pytest.mark.parametrize("ident", ["ml-c1-capacidad-brecha", "ml-c1-inverso-vs-potencias"])
+def test_capacidad_e_inverso_llevan_piso_y_benchmark_con_sus_roles(ident):
+    c = colores(ident)
+    assert gen.color_rol("piso_bayes").lower() in c
+    assert gen.color_rol("benchmark").lower() in c
+    assert "benchmark" in contenido(ident)
+
+
+def test_el_aria_de_taylor_nombra_el_error_en_2_5():
+    import ml_cifras_c1 as cif
+    t = cif.cifras_c1_taylor()
+    a = aria("ml-c1-taylor-vs-mco")
+    assert f"{t['taylor_3'][2.5]:.1f}" in a and f"{t['taylor_9'][2.5]:.1f}" in a
+
+
+def test_el_aria_de_weierstrass_nombra_los_tres_errores():
+    import ml_cifras_c1 as cif
+    w = cif.cifras_c1_weierstrass()
+    a = aria("ml-c1-weierstrass")
+    assert all(f"{w[N]['error_maximo']:.3f}" in a for N in (2, 6, 14))
+
+
+def test_el_aria_de_la_capacidad_nombra_el_optimo_y_el_contraste():
+    import ml_cifras_c1 as cif
+    k = cif.cifras_c1_capacidad()
+    a = aria("ml-c1-capacidad-brecha")
+    assert f"grado {k[20]['N_menor_R']}" in a
+    assert f"{k[20]['R'][15]:.0f}" in a and "200 datos" in a
+    assert "no una ley" in a
+
+
+def test_el_aria_de_elegir_nombra_las_200_y_el_maximo():
+    import ml_cifras_c1 as cif
+    e = cif.cifras_c1_elegir()
+    a = aria("ml-c1-elegir-con-entrenamiento")
+    assert f"{e['veces_N_max_ent']} de {e['repeticiones']}" in a
+
+
+def test_el_aria_del_inverso_nombra_los_cuatro_riesgos():
+    import ml_cifras_c1 as cif
+    i = cif.cifras_c1_inverso()
+    a = aria("ml-c1-inverso-vs-potencias")
+    for clave, d in (("R_1", 1), ("R_4", 1), ("R_10", 2), ("R_inverso", 2)):
+        assert f"{i[clave]:.{d}f}" in a, clave
+
+
+def test_el_aria_de_extrapolar_nombra_el_recursivo():
+    import ml_cifras_c1 as cif
+    r = cif.cifras_c1_extrapolar()["recursivo"]
+    a = aria("ml-c1-extrapolar")
+    assert f"{r['sin_anterior']['futuro']:.1f}" in a
+    assert f"{r['con_anterior']['futuro']:.2f}" in a
+
+
+def test_el_aria_de_no_free_lunch_dice_la_mitad_exacta():
+    a = aria("ml-c1-no-free-lunch")
+    assert "256" in a and "exactamente la mitad" in a
+
 # --- fin tramo 1b ---
 
 
 # --- tramo tarea ---
 # --- fin tramo tarea ---
+
+
+def test_r2_extrapolar_solo_el_modelo_con_el_anterior_va_a_un_paso():
+    # La recta en x no usa el valor anterior: «a un paso» no le aplica (r2 1b).
+    a = aria("ml-c1-extrapolar")
+    assert "recta en x, a un paso" not in contenido("ml-c1-extrapolar")
+    assert "y en el futuro, " in a and "como columna, a un paso, queda en" in a
+
+
+def test_r2_inverso_nombra_los_datos_fuera_del_cuadro():
+    import ml_cifras_c1 as cif
+    altos = cif.cifras_c1_inverso()["fuera_del_cuadro"]
+    assert f"con y de {altos[0]:.0f} y {altos[1]:.0f}, quedan arriba del cuadro" in aria(
+        "ml-c1-inverso-vs-potencias")
+
+
+def test_r3_taylor_y_tres_ajustes_no_dejan_puntos_fuera_del_cuadro():
+    # Con tope 16 quedaban fuera, sin marca, dos datos de entrenamiento y 6 de
+    # las 200 observaciones nuevas (r3 del tramo 1b).
+    import ml_cifras_c1 as cif
+    datos = cif.datos_inverso()
+    nuevas = datos.realidad.iloc[:200]
+    assert max(datos.ent.y.max(), nuevas.y.max()) < cif.P2_YTOPE
+    assert min(datos.ent.y.min(), nuevas.y.min()) > 0
+    fuente = (HERRAMIENTAS / "figuras_ml_c1.py").read_text(encoding="utf-8")
+    assert "ax.set_ylim(0, cif.P2_YTOPE)" in fuente and "tope = cif.P2_YTOPE" in fuente
+    assert "set_ylim(0, 16)" not in fuente and "tope = 16" not in fuente

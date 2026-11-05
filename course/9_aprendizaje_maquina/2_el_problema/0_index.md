@@ -4,19 +4,21 @@ title: "Clase 1 · El problema: qué queremos aprender y por qué es difícil"
 nav_title: "Clase 1 · El problema"
 summary: "Existe una f que no vemos y solo tenemos datos con ruido: el piso que ningún modelo baja, el riesgo contra el error de entrenamiento, la representación y la capacidad."
 status: ready
-estimated_time: 55m
+estimated_time: 120m
 tags: [aprendizaje-maquina, riesgo, representacion, capacidad]
 prerequisites: [ml-clase-0-que-es-aprender]
 ---
 
 > [!WARNING]
-> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
+> **▶▶ ABRE LOS NOTEBOOKS EN COLAB ◀◀**
 >
-> **Notebook 01 · ¿Qué es f?** Corre en tu navegador, sin instalar nada.
+> **Notebook 01 · ¿Qué es f?** y **Notebook 02 · Polinomios, capacidad y supuestos**. Corren en tu navegador, sin instalar nada.
 >
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
 >
 > **[👉 Abrir `01_que_es_f.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)**
+>
+> **[👉 Abrir `02_polinomios_y_capacidad.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)**
 
 # Clase 1 · El problema
 
@@ -26,8 +28,8 @@ Falta saber cómo predice en entregas nuevas. El error cero solo describe
 las entregas con las que se ajustó.
 
 > [!TIP]
-> Puedes acompañar la lectura con el notebook 01 en Colab, sin instalar nada.
-> Abre el acceso de «Los notebooks» y recórrelo junto con la página.
+> Puedes acompañar la lectura con dos notebooks en Colab, uno por página, sin instalar nada.
+> Abre los accesos de «Los notebooks» y recorre cada uno junto con su página.
 
 ## Lo que traes
 
@@ -57,8 +59,8 @@ Lo que te llevas de la clase:
 - **Proceso y riesgo:** cómo se escriben el proceso que genera las entregas y el riesgo que mide el error al predecir sus tiempos.
 - **Fuentes de error:** qué baja cada remedio: medir otra variable, cambiar la representación, ampliar la familia o reunir más datos.
 - **Linealidad:** cuándo un modelo es lineal en sus parámetros $\beta$, aunque use potencias de la distancia.
-- **Capacidad (página 2):** por qué el error de entrenamiento $L_{\text{ent}}$ no basta para elegir el grado $N$ del polinomio.
-- **Límites (página 2):** el principio de que ningún método gana en todos los problemas (*no free lunch*).
+- **Capacidad:** por qué el error de entrenamiento $L_{\text{ent}}$ no basta para elegir el grado $N$ del polinomio.
+- **Límites:** el principio de que ningún método gana en todos los problemas (*no free lunch*).
 
 ## El hilo de la clase
 
@@ -68,26 +70,36 @@ Los anillos entran para mostrar cómo cambiar las variables puede facilitar la c
 
 ## Recorrido
 
-El tramo publicado reúne la primera página y su notebook en 55 minutos.
+Las dos páginas y sus notebooks toman 120 minutos en total: 55 + 65.
 
 ::: table {#ml-c1-tab-recorrido title="Las páginas de esta clase"}
 | # | Página | Minutos |
 |---|---|---:|
 | 1 | ¿Qué es f? El proceso, el piso y la representación | 55 |
+| 2 | Polinomios, capacidad y supuestos | 65 |
 :::
 
 1. [[ml-que-es-f|¿Qué es f? El proceso, el piso y la representación]]
+2. [[ml-polinomios-y-capacidad|Polinomios, capacidad y supuestos]]
 
-La página 2 (polinomios y capacidad) y su notebook llegan en la siguiente entrega; la tarea, después.
+La tarea (proponer una representación) llega en la siguiente entrega.
 
 ## Los notebooks
 
+Cada notebook se puede recorrer solo en casa, de arriba abajo.
+
 El notebook 01, `01_que_es_f.ipynb`, toma unos 25 minutos, incluidos en el recorrido.
 Te permite explorar el ruido, el riesgo y la representación con las entregas y los anillos.
-Cada notebook se puede recorrer solo en casa, de arriba abajo.
-El notebook 02 y el de la tarea quedan pendientes de publicación.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)
+
+El notebook 02, `02_polinomios_y_capacidad.ipynb`, toma unos 30 minutos, incluidos en el recorrido.
+Recorres Taylor y la curva de capacidad, y distingues quién elige el grado del polinomio.
+Exploras qué pasa al extrapolar y por qué ningún método gana en todos los problemas.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
+
+El notebook de la tarea queda pendiente de publicación.
 
 ## Qué no cubre esta clase
 
