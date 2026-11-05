@@ -75,14 +75,14 @@ Apuesta un número para cada grado elegido. Para «un EE», admite también
 **Mira.** Los triángulos muestran medias CV; las barras, EE aproximados. Compara medias con el umbral, ambas marcas y $L_{\text{ent}}$; la curva crema muestra $R$.
 Bajar de la raya-punto del punto de comparación (*benchmark*) es una señal.
 
-cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$
+Al mover «semilla», cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
 
 ### celda: bloque-2-explica
 
 <details><summary>Explicación</summary>
 
 Con los valores iniciales, ambas reglas eligen $N=6$: CV $9.69\pm1.33$; 66 ajustes. El entrenamiento prefiere 12.
-Compara con el benchmark impreso: la media de entrenamiento como punto de comparación; la clase 3 lo define.
+Compara con el benchmark impreso: «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 En el despliegue, su $R=27.3$ supera 11.0 del grado 4; compara también $R$ en $N=0$.
 
 El grado 6 se dobla en los bordes. En general, CV no favorece el grado máximo; tampoco garantiza el menor $R$.
@@ -146,7 +146,7 @@ no necesariamente una pérdida.
 Con los valores iniciales, el grado 8 se dispara en los pliegues 2 y 3.
 El grado 1 tiene pérdidas por pliegue entre 11.33 y 18.61.
 La caja del grado 0 muestra el benchmark en los mismos pliegues.
-Los pliegues que traen una entrega lejana obligan a extrapolar; la figura rotula el 3.
+Ambos fallan en la zona escasamente cubierta: el pliegue 2 interpola y el 3 extrapola; la figura rotula el 3.
 
 En «Validación cruzada», $e_i=y_i-\widehat y_i$ y $\ell_i=e_i^2$ conectan residual y pérdida cuadrática.
 La varianza usa residuales con signo y divide entre el tamaño del pliegue menos uno.

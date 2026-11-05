@@ -265,13 +265,13 @@ Las barras de grados 8 a 12 salen del eje y llevan su total escrito; casi todo e
 
 **Piensa: ¿por qué la curva de la CV de una sola muestra es más irregular que la U calculada con cien?**
 
-La CV fluctúa con la muestra y la partición. Además, entrena con
-$(k-1)/k$ de los datos (@ml-c2-def-validacion-cruzada). Las cien muestras
-estabilizan el cálculo del simulador, que usa entrenamientos completos.
+La CV fluctúa con la muestra y la partición. La descomposición usa 36 observaciones por ajuste.
+Esta CV usa 38 o 39 por pliegue (@ml-c2-def-validacion-cruzada); el reajuste final usa 48.
+Las cien muestras estabilizan el cálculo del simulador.
 
 De $N=0$ a $N=7$, el sesgo² estimado baja en conjunto: 43.8, 6.0, 0.90, 0.73, 0.45, 0.50, 0.24 y 0.27, con un repunte chico de $N=4$ a $N=5$. La varianza sube hasta 10.9 en $N=7$, salvo de $N=0$ a $N=1$, cuando baja de 1.43 a 0.88.
 
-Desde $N=8$, el sesgo² estimado vuelve a crecer: 20.5 en $N=9$ y 64.9 en $N=12$. No es que el grado 12 «tenga sesgo», sino que unos pocos ajustes se disparan en los bordes y arrastran el promedio de cien, que tiene ruido de Monte Carlo. En el tramo interior, $0.5<x<5.5$, el sesgo² no pasa de 0.25 desde $N=6$.
+Desde $N=8$, el sesgo² estimado vuelve a crecer: 20.5 en $N=9$ y 64.9 en $N=12$. El 64.9 no permite cuantificar de forma estable el sesgo poblacional del grado 12: contiene error de Monte Carlo amplificado por los ajustes extremos, unos pocos que se disparan en los bordes y arrastran el promedio de cien. En el tramo interior, $0.5<x<5.5$, el sesgo² no pasa de 0.25 desde $N=6$.
 
 Por eso la tendencia vale hasta $N\approx7$ y lees la barra alta del grado 12 como varianza.
 
@@ -283,9 +283,8 @@ Buscamos el grado de menor riesgo esperado sobre entrenamientos posibles:
 
 $$N^\star\in\operatorname*{arg\,min}_N E_{\mathcal D}\bigl[R\bigl(\widehat\beta(N)\bigr)\bigr].$$
 
-Con empate, elegimos el menor $N$; la estrella marca el óptimo teórico, como en esta regla; el que eligen los datos lleva gorro, $\widehat N$.
-Obtenemos $N^\star=2$, calculado en el simulador, donde conocemos $f$:
-100 muestras y el mismo grado con tres semillas maestras.
+Con empate, el menor $N$. La estrella marca el óptimo teórico; el grado que eligen los datos lleva gorro, $\widehat N$.
+$N^\star=2$ sale del simulador, donde conocemos $f$, con 100 muestras por grado; el mismo $N^\star$ sale con tres semillas maestras distintas.
 La CV de una muestra eligió $\widehat N=6$.
 
 En la clase 3 cambiarás el grado por una perilla continua de regularización.
@@ -420,7 +419,7 @@ Compara familias más flexibles y el benchmark. La CV da «señal»
 o «falta evidencia»: es descriptiva. Confirma en una reserva que no tocó ninguna decisión.
 
 1. **¿La brecha es grande?** Compara $L_{\text{val}}-L_{\text{ent}}$
-   o $\mathrm{CV}_k-L_{\text{ent}}$. Si sí, diagnostica sobreajuste
+   o $\mathrm{CV}_k-L_{\text{ent}}$. Aquí la llamamos grande si la validación o la CV pasa del doble de $L_{\text{ent}}$: es una regla práctica, no una prueba. Si sí, diagnostica sobreajuste
    (*overfitting*): prueba menos capacidad, regularización o más datos.
 
 2. **¿Le gana al benchmark?** Distingue dos casos.
@@ -500,7 +499,7 @@ media y rango de las cinco diferencias por pliegue.
 ::: answer {#ml-c2-resp-cuatro-curvas of="ml-c2-ej-cuatro-curvas" title="Respuesta · Seguir el orden"}
 - **A: subajuste.** Supera al benchmark en validación; subir el grado baja la CV más de un EE. Prueba más capacidad: es una heurística.
 - **B: sobreajuste.** La CV es 262.2 frente a 5.7 de entrenamiento. Reduce capacidad o consigue más datos.
-- **C: no aprende algo aprovechable.** La diferencia pareada no baja de cero a más de dos EE; la CV da «falta evidencia». Prueba otras variables.
+- **C: no aprende algo aprovechable.** Su brecha, 66.3 − 59.2 = 7.1, es la mayor en minutos de A, C y D, pero la CV no llega al doble de 59.2. Por eso pasas a la pregunta 2. La diferencia pareada no baja de cero a más de dos EE; la CV da «falta evidencia». Prueba otras variables.
 - **D: listo.** Supera al benchmark en validación, tiene brecha chica y más grado no mejora la CV; la prueba imita el despliegue.
 
 La CV sola no bastaba para afirmar que A o D superan al benchmark:

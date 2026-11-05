@@ -272,9 +272,9 @@ Para el elegido por validación, @ml-c2-obs-optimismo-seleccion y @ml-c2-teo-pru
 
 $$E\bigl[L_{\text{val}}\bigl(\widehat\beta(\widehat N)\bigr)\bigr]\le E\bigl[R\bigl(\widehat\beta(\widehat N)\bigr)\bigr]=E\bigl[L_{\text{prueba}}\bigl(\widehat\beta(\widehat N)\bigr)\bigr].$$
 
-En este experimento, sin reajuste, las medias de entrenamiento, validación y prueba son 8.5, 9.1 y 12.6. Las diferencias son $0.64\pm0.28$ y $3.53\pm0.56$, cada una con su EE de Monte Carlo. Ambas superan dos EE. Ese orden observado no es un teorema; tampoco se afirma para el modelo final.
+En este experimento, sin reajuste, las medias de entrenamiento, validación y prueba son 8.5, 9.1 y 12.6. En esas mismas 300 repeticiones, el $R$ medio del elegido por validación es 54.6. Las diferencias son $0.64\pm0.28$ y $3.53\pm0.56$, cada una con su EE de Monte Carlo. Ambas superan dos EE. Ese orden observado no es un teorema; tampoco se afirma para el modelo final.
 
-Abajo, con validación, la mediana de anunciado menos real es −0.6 y 56 % de los anuncios son optimistas. La media es $-42.0\pm37.2$: está a menos de dos EE de cero. Pocos grados altos que explotan en los bordes arrastran la media; escribir solo «aproximadamente cero» ocultaría esa incertidumbre.
+Abajo, con validación, la mediana de anunciado menos real es −0.6 y 56 % de los anuncios son optimistas. La igualdad $E[L_{\text{prueba}}]=E[R]$ es de esperanzas, no de medias de 300 repeticiones. La diferencia de medias es $-42.0\pm37.2$: queda a menos de dos EE de Monte Carlo de cero. Unas pocas repeticiones con $R$ enorme mueven mucho la media; escribir solo «aproximadamente cero» ocultaría esa incertidumbre.
 
 ::: remark {#ml-c2-obs-prueba-se-gasta title="La prueba también se gasta despacio"}
 Volver a abrir la misma prueba tras cada cambio es elegir con ella, una decisión a la vez. También ocurre en una comunidad: reutilizar durante años una prueba pública favorece cifras optimistas (Goodfellow et al., §5.3).
@@ -328,12 +328,14 @@ Cada par compara lo que promete la prueba con el riesgo del despliegue; el eje v
 
 Compara también con el benchmark. Estas filas corresponden a los modelos ajustados tras separar al azar:
 
+::: table {#ml-c2-tab-benchmark-contratos title="Lo que promete la prueba, el riesgo y el benchmark por contrato"}
 | Contrato | $L_{\text{prueba}}$ | $R$ | Benchmark en despliegue |
 |---|---:|---:|---:|
 | Más de lo mismo | 11.9 | 9.3 | 50.9 |
 | El mes que viene | 57.6 | 135.6 | 132.1 |
 | Pacientes nuevos | 1.9 | 17.9 | 59.4 |
 | Otra ciudad | 13.1 | 109.5 | 86.1 |
+:::
 
 En «el mes que viene», el modelo ni siquiera le gana a la media de entrenamiento en el despliegue: $R=135.6$ contra 132.1 del benchmark; en «otra ciudad» ocurre lo mismo, con 109.5 contra 86.1. La prueba al azar también lo escondió: prometía 57.6 y 13.1, respectivamente.
 
@@ -365,9 +367,9 @@ Calculas el error de la prueba dos veces: solo con sus entregas de C, y con toda
 ::: answer {#ml-c2-resp-categoria-ausente of="ml-c2-ej-categoria-ausente" title="Respuesta · Nombrar la población evaluada"}
 Solo C mide entregas de una colonia nueva: «otra ciudad» en chico. Toda la prueba evalúa una mezcla con las proporciones que dejó el sorteo.
 
-Para «más entregas de estas tres colonias», esa cifra te sirve en la medida en que esas proporciones se parezcan a las del despliegue. Si la colonia no cambia la distribución de la pérdida, la mezcla casi no importa; si la cambia, una mezcla distinta de la del despliegue sesga la cifra.
+Para «más entregas de estas tres colonias», esa cifra te sirve en la medida en que esas proporciones se parezcan a las del despliegue. Si la colonia no cambia la distribución de la pérdida, la mezcla casi no importa; si la cambia, una mezcla distinta de la del despliegue sesga la cifra. Puedes estratificar para controlar la composición; no es un requisito universal. La página siguiente anuncia cómo hacerlo.
 
-Para «más entregas de estas tres colonias», puedes estratificar para controlar la composición; no es un requisito universal. La página siguiente anuncia cómo hacerlo. Para «colonias nuevas», aparta una colonia entera y reporta solo su error. La composición de la prueba debe venir del uso previsto, no de un accidente del sorteo.
+Para «colonias nuevas», aparta una colonia entera y reporta solo su error. Así evalúas esa colonia. Eso no acredita por sí solo el desempeño en cualquier colonia nueva. La cifra vale para la población de colonias del despliegue en la medida en que la reservada se le parezca. La composición de la prueba debe venir del uso previsto, no de un accidente del sorteo.
 :::
 
 > [!TIP]
@@ -447,7 +449,7 @@ Simplifica: cada cliente tiene exactamente 5 entregas cada mes, 60 en el año. E
 
 **2. Elegir.** Dentro de lo restante, valida con el penúltimo mes en A y con clientes apartados en B. Compara grados ahí. La validación cruzada de la página siguiente también debe respetar la estructura.
 
-**3. Reportar.** Reajusta con desarrollo y abre la prueba una vez. Reporta $L_{\text{prueba}}$ y el benchmark. Las entregas de un cliente pueden depender entre sí: no puedes aplicar automáticamente el EE de entregas independientes. Con dependencia positiva, ese EE subestima la incertidumbre; en general, puede subestimarla.
+**3. Reportar.** Reajusta con desarrollo y abre la prueba una vez. Reporta $L_{\text{prueba}}$ y el benchmark. Las entregas de un cliente pueden depender entre sí: no puedes aplicar automáticamente el EE de entregas independientes. Con dependencia positiva, ese EE subestima la incertidumbre; en general, puede equivocarse en cualquier dirección.
 
 Si supones clientes independientes entre sí, usa como unidad el cliente. Promedia sus pérdidas y calcula el EE como la desviación de esos promedios entre la raíz del número de clientes. En B hay 8: espera un EE ancho. En A hay 40, para el mes observado.
 

@@ -478,6 +478,13 @@ def cifras_c2_pliegue_anomalo():
             if res["lejanas_por_pliegue"] is None:
                 res["lejanas_por_pliegue"] = [
                     int(np.sum(x[np.asarray(val)] > 5)) for _, val in cv.pliegues]
+                # Revision r2 (H1): una entrega lejana extrapola solo si cae fuera
+                # del rango de x con que se ajusto esa vuelta. En el caso 16 el
+                # pliegue 2 interpola (5.54 < 5.92) y el 3 extrapola.
+                res["extrapola_por_pliegue"] = [
+                    bool(np.any(x[np.asarray(val)] > x[np.asarray(ent)].max())
+                         or np.any(x[np.asarray(val)] < x[np.asarray(ent)].min()))
+                    for ent, val in cv.pliegues]
     finally:
         w.__exit__(None, None, None)
     res["pliegues_con_lejana"] = [i + 1 for i, c in enumerate(res["lejanas_por_pliegue"]) if c]

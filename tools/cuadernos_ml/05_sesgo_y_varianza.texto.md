@@ -28,7 +28,7 @@ antes de ejecutar «Juega», mueve un control y contrasta tu respuesta con
 «Explicación». Puedes hacerlo por tu cuenta.
 
 Ubica el punto de comparación (*benchmark*) en las salidas:
-la media de entrenamiento como punto de comparación; la clase 3 lo define.
+«la media de entrenamiento como punto de comparación; la clase 3 lo define».
 
 ### celda: idea
 
@@ -75,7 +75,7 @@ $\text{sesgo}(x)=E_{\mathcal D}[\widehat f(x)]-f(x)$ mide el desplazamiento;
 $\text{varianza}(x)=\operatorname{Var}_{\mathcal D}(\widehat f(x))$ mide la dispersión.
 Aquí $f(x)=E[y\mid x]$.
 
-En este punto domina el sesgo cuadrado del grado 1 y la varianza del 12.
+Entre las aportaciones del ajuste, domina el sesgo² en el grado 1 y la varianza en el grado 12; en el error total del grado 1 domina el ruido, 9.0.
 La recta se equivoca parecido; el grado alto cambia más entre muestras.
 Es una comparación local: verifica las cifras al cambiar $x_0$.
 
@@ -86,7 +86,7 @@ Es una comparación local: verifica las cifras al cambiar $x_0$.
 **Predice.** Si duplicas el ruido $\sigma_\varepsilon$, ¿qué barra crece: el ruido, el sesgo², la varianza o varias?
 
 Apuesta un número: el factor por el que cambiará la aportación del ruido.
-En «ruido σ», pasa de 3 a 6; deja «entregas n» en 60.
+En «ruido σε», pasa de 3 a 6; deja «entregas n» en 60.
 La etiqueta del control nombra $\sigma_\varepsilon$, la desviación del ruido.
 
 ### celda: bloque-2-mira

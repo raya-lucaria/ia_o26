@@ -338,3 +338,205 @@ def test_r1_guion_05_avisa_del_sesgo_del_taller():
     assert f"{t[12]['sesgo2']:.0f}" in texto(G05)
 
 # --- fin ronda 1 ---
+
+
+# --- ronda 2 de revision ---
+# H4 (D-009.5): buscar por seccion o por archivo deja que una copia correcta
+# (un texto alternativo, otra frase) encubra otra falsa. Cada copia publicada
+# se lee en SU parrafo, sin textos alternativos, con su papel; y cada una
+# tiene su mutacion en memoria.
+
+def sin_alt(t):
+    return re.sub(r"!\[[^\]]*\]\([^)]*\)", "", t)
+
+
+def parrafo_de(t, ancla):
+    """El unico parrafo (bloque entre lineas en blanco, sin textos
+    alternativos) que contiene `ancla`."""
+    ps = [p for p in re.split(r"\n\s*\n", sin_alt(t)) if ancla in p]
+    assert len(ps) == 1, (ancla, len(ps))
+    return ps[0]
+
+
+def fila_de(t, prefijo):
+    """La unica fila de tabla que empieza con `prefijo`."""
+    fs = [r for r in t.splitlines() if r.startswith(prefijo)]
+    assert len(fs) == 1, (prefijo, len(fs))
+    return fs[0]
+
+
+def celda_s5(columna):
+    """Una celda de la tabla del diagnostico: fila buscada solo en la seccion 5
+    (el ejercicio final tiene filas que empiezan igual) y leida por columna,
+    para que una cifra repetida en otra columna no encubra la falsa."""
+    def buscar(t, prefijo):
+        return fila_de(secciones(t)[5], prefijo).split("|")[columna]
+    buscar.columna = columna
+    return buscar
+
+
+def _copias():
+    """(archivo, ancla, papel, valor, decimales, buscar): cada cifra publicada
+    con el parrafo (o la fila) donde vive."""
+    pr, op, h = c.cifras_c2_prueba_ruidosa(), c.cifras_c2_optimismo(), c.cifras_c2_hilo()
+    an, pa, dg = c.cifras_c2_anidada(), c.cifras_c2_pliegue_anomalo(), c.cifras_c2_diagnostico()
+    P, F = parrafo_de, celda_s5
+    cp = [
+        (P1, "Ninguna tiene que estar mal", "desv con 20", pr["desv_20"], 1, P),
+        (P1, "Ninguna tiene que estar mal", "desv con 200", pr["desv_200"], 1, P),
+        (P1, "las medias de entrenamiento, validación y prueba", "L_ent medio",
+         op["media_L_ent"], 1, P),
+        (P1, "las medias de entrenamiento, validación y prueba", "L_val medio",
+         op["media_L_val"], 1, P),
+        (P1, "las medias de entrenamiento, validación y prueba", "L_prueba medio",
+         op["media_L_prueba"], 1, P),
+        (P2, "Con el grado 6 fijado", "L_prueba del final", h["L_prueba_un_ee"], 1, P),
+        (P2, "Con el grado 6 fijado", "2 EE del final", 2 * h["ee_prueba_un_ee"], 1, P),
+        (P2, "Con el grado 6 fijado", "benchmark en prueba", h["benchmark_prueba"], 1, P),
+        (P2, "Con el grado 6 fijado", "2 EE del benchmark",
+         2 * h["ee_benchmark_prueba"], 1, P),
+        (P2, "Con el grado 6 fijado", "diferencia pareada", h["dif_prueba"], 1, P),
+        (P2, "Con el grado 6 fijado", "EE de la diferencia", h["ee_dif_prueba"], 1, P),
+        (P2, "Una sola entrega del borde", "perdida maxima", h["perdida_max_prueba"], 1, P),
+        (P2, "Una sola entrega del borde", "R del final", h["R_un_ee"], 1, P),
+        (P2, "Una sola entrega del borde", "R del benchmark", h["benchmark_despliegue"], 1, P),
+        (P2, "En el caso 16, grado 1 da", "cociente grado 1", pa[1]["cociente"], 2, P),
+        (G03, "Con los valores iniciales, $R=", "R congelado", pr["R"], 2, P),
+        (G03, "Con los valores iniciales, $R=", "desv con 20", pr["desv_20"], 2, P),
+        (G03, "elegir con la prueba da una media de", "sesgo con prueba",
+         op["sesgo_prueba"], 2, P),
+        (G03, "elegir con la prueba da una media de", "EE del sesgo", op["ee_prueba"], 2, P),
+        (G03, "el taller imprime", "L_prueba del final", h["L_prueba_un_ee"], 2, P),
+        (G03, "el taller imprime", "margen de 2 EE", 2 * h["ee_prueba_un_ee"], 2, P),
+        (G03, "el taller imprime", "benchmark en prueba", h["benchmark_prueba"], 2, P),
+        (G03, "el taller imprime", "diferencia pareada", h["dif_prueba"], 1, P),
+        (G04, "la CV del ganador", "CV del ganador", an["cv_ganador"], 2, P),
+        (G04, "la CV del ganador", "anidada", an["anidada"], 2, P),
+        (G04, "la CV del ganador", "R del procedimiento", an["R_procedimiento"], 2, P),
+        (G04, "la CV del ganador", "R del final", an["R_final"], 2, P),
+        (G04, "pérdidas por pliegue entre", "minimo grado 1", min(pa[1]["por_pliegue"]), 2, P),
+        (G04, "pérdidas por pliegue entre", "maximo grado 1", max(pa[1]["por_pliegue"]), 2, P),
+    ]
+    for n, r in dg.items():
+        fila = f"| {n} ({r['grado']}) |"
+        cp.append((P3, fila, "L_ent", r["L_ent"], 1, F(2)))
+        cp.append((P3, fila, "CV", r["CV"], 1, F(3)))
+        cp.append((P3, fila, "EE", r["EE"], 1, F(3)))
+        if r["mejor_mas_flexible"] is not None:
+            cp.append((P3, fila, "CV del mas flexible", r["CV_mejor_mas_flexible"], 1, F(4)))
+        cp.append((P3, f"| {n} | ", "benchmark", r["benchmark"], 1, F(2)))
+        cp.append((P3, f"| {n} | ", "benchmark_ee", r["benchmark_ee"], 1, F(2)))
+        cp.append((P3, f"| {n} | ", "dif_val", r["dif_val"], 1, F(3)))
+        cp.append((P3, f"| {n} | ", "dif_val_ee", r["dif_val_ee"], 1, F(3)))
+        cp.append((P3, f"| {n} | ", "dif_cv", r["dif_cv"], 1, F(4)))
+        for v in (min(r["dif_por_pliegue"]), max(r["dif_por_pliegue"])):
+            cp.append((P3, f"| {n} | ", "rango por pliegue", v, 1, F(4)))
+    return cp
+
+
+def _lista(valores, d):
+    return "$" + ",".join(formas(v, d)[0] for v in valores) + "$"
+
+
+def test_r2_p2_las_perdidas_por_pliegue_completas_y_en_orden():
+    """Las cinco perdidas por pliegue del caso 16 como lista exacta: una cifra
+    suelta («8», «5») se confunde con «grado 8» o con otro numero del parrafo."""
+    pa = c.cifras_c2_pliegue_anomalo()
+    parr = parrafo_de(texto(P2), "En el caso 16, grado 1 da")
+    l1, l8 = _lista(pa[1]["por_pliegue"], 1), _lista(pa[8]["por_pliegue"], 0)
+    assert l1 in parr and l8 in parr, (l1, l8)
+    for lista in (l1, l8):                      # mutacion: un pliegue cambiado
+        assert lista not in parr.replace(lista, lista.replace(",", ",9", 1))
+
+
+COPIAS = _copias()
+IDS_COPIAS = [f"{a.split('/')[-1]}·{b[:18]}·{p}·{i}" for i, (a, b, p, *_r) in enumerate(COPIAS)]
+
+
+@pytest.mark.parametrize("copia", COPIAS, ids=IDS_COPIAS)
+def test_r2_cada_copia_en_su_parrafo(copia):
+    nombre, ancla, papel, v, d, buscar = copia
+    assert esta(v, buscar(texto(nombre), ancla), d), (nombre, ancla, papel)
+
+
+def _mutar(t, ancla, v, d, buscar):
+    """Cambia la copia de `v` dentro del parrafo o fila de `ancla`, en memoria."""
+    trozo = buscar(t, ancla)
+    for f in formas(v, d):
+        antes = r"(?<![\d.])" if f[0] in "−-" else r"(?<![\d.−-])"
+        m = re.search(antes + re.escape(f) + r"(?![\d])", trozo)
+        if m:
+            nuevo = trozo[:m.start()] + "9" + f.lstrip("−-") + "9" + trozo[m.end():]
+            if hasattr(buscar, "columna"):        # una celda: se cambia dentro de su fila
+                fila = fila_de(secciones(t)[5], ancla)
+                partes = fila.split("|")
+                partes[buscar.columna] = nuevo
+                trozo, nuevo = fila, "|".join(partes)
+            assert t.count(trozo) == 1, ancla
+            return t.replace(trozo, nuevo, 1)
+    raise AssertionError((ancla, v))
+
+
+@pytest.mark.parametrize("copia", COPIAS, ids=IDS_COPIAS)
+def test_r2_mutar_una_copia_la_pone_en_rojo(copia):
+    nombre, ancla, papel, v, d, buscar = copia
+    malo = _mutar(sin_alt(texto(nombre)), ancla, v, d, buscar)
+    assert not esta(v, buscar(malo, ancla), d), (nombre, ancla, papel)
+
+
+def test_r2_p1_el_r_medio_del_elegido_junto_a_la_igualdad_de_esperanzas():
+    op = c.cifras_c2_optimismo()
+    s4 = sin_alt(seccion(P1, 4))
+    assert esta(op["media_R"], s4) and esta(op["sesgo_validacion"], s4)
+    assert esta(op["ee_validacion"], s4)
+    # la diferencia de medias queda a menos de dos EE de cero: igualdad de esperanzas
+    assert abs(op["sesgo_validacion"]) < 2 * op["ee_validacion"]
+    assert op["media_R"] > 3 * op["media_L_prueba"]
+    assert "esperanzas" in s4
+
+
+def test_r2_p2_el_pliegue_2_interpola_y_el_3_extrapola():
+    pa = c.cifras_c2_pliegue_anomalo()
+    flags = {p: pa["extrapola_por_pliegue"][p - 1] for p in pa["pliegues_con_lejana"]}
+    assert flags == {2: False, 3: True}
+    s4 = seccion(P2, 4)
+    assert "el pliegue 2 interpola y el 3 extrapola" in s4
+    assert "extrapola y falla en ambos" not in s4
+    g = texto(G04)
+    assert "el pliegue 2 interpola y el 3 extrapola" in g
+    assert "obligan a extrapolar" not in g
+
+
+def test_r2_p3_la_brecha_grande_tiene_criterio_y_c_no_la_tiene():
+    dg = c.cifras_c2_diagnostico()
+    assert c.UMBRAL_BRECHA == 2.0
+    s5 = seccion(P3, 5)
+    assert "del doble de $L_{\\text{ent}}$" in s5
+    C = dg["C"]
+    vineta = next(r for r in s5.splitlines() if r.startswith("- **C: "))
+    assert esta(C["CV"] - C["L_ent"], vineta) and esta(C["L_ent"], vineta)
+    assert C["CV"] <= c.UMBRAL_BRECHA * C["L_ent"]
+    # su brecha en minutos es mayor que las de A y D: por eso hace falta el criterio
+    assert C["CV"] - C["L_ent"] > max(dg[n]["CV"] - dg[n]["L_ent"] for n in "AD")
+
+
+def test_r2_p3_el_sesgo_del_grado_12_no_se_niega():
+    s3 = seccion(P3, 3)
+    assert "tenga sesgo" not in s3 and "entrenamientos completos" not in s3
+    for n in ("36", "48"):
+        assert re.search(rf"(?<![\d.]){n}(?![\d])", s3), n
+
+
+def test_r2_cada_tabla_numerada_lleva_titulo():
+    sin = [f"{r.name}: {m}" for r in sorted(CLASE.glob("*.md"))
+           for m in re.findall(r"(?m)^::: table \{#([a-z0-9-]+)\}", r.read_text(encoding="utf-8"))]
+    assert not sin, sin
+    assert "::: table {#ml-c2-tab-benchmark-contratos" in seccion(P1, 5)
+
+
+def test_r2_guiones_sin_fragmento_suelto_de_la_semilla():
+    for g in (G03, G04):
+        malas = [r for r in texto(g).splitlines() if r.startswith("cambia la semilla:")]
+        assert not malas, g
+
+# --- fin ronda 2 ---

@@ -58,7 +58,7 @@ Cada observación de desarrollo valida exactamente una vez. Las demás vueltas l
 No: esa vuelta la aparta antes de ajustar. Para seguir el recorrido a mano, toma seis entregas, A a F.
 Reparte los pliegues como {A, B}, {C, D}, {E, F}. Cada fila rehace el ajuste desde sus datos.
 
-::: table {#ml-c2-tab-traza-seis}
+::: table {#ml-c2-tab-traza-seis title="La traza de seis entregas en tres pliegues"}
 | Vuelta | Con qué se ajusta | A quién predice |
 |---|---|---|
 | 1 | C, D, E, F | A, B |
@@ -241,13 +241,15 @@ Una sola entrega del borde tiene pérdida 779.9 y domina el promedio. Con $n_{\t
 ::: exercise {#ml-c2-ej-elige-un-ee title="Elige por la media"}
 Estos datos son inventados para practicar. El orden de simplicidad es $N$ creciente.
 
-| Grado | CV | EE |
-|---|---:|---:|
-| 1 | 14.0 | 0.6 |
-| 2 | 10.2 | 0.5 |
-| 3 | 9.6 | 0.4 |
-| 4 | 9.5 | 0.4 |
-| 5 | 9.8 | 0.5 |
+| Grado | CV | EE | ¿Media bajo el umbral? |
+|---|---:|---:|---|
+| 1 | 14.0 | 0.6 | ? |
+| 2 | 10.2 | 0.5 | ? |
+| 3 | 9.6 | 0.4 | ? |
+| 4 | 9.5 | 0.4 | ? |
+| 5 | 9.8 | 0.5 | ? |
+
+Calcula el umbral del mínimo y completa la última columna; luego contesta.
 
 (a) ¿Qué elige el mínimo? (b) ¿Qué elige la regla de un EE? Justifica por qué entra o queda fuera el grado 2.
 :::
@@ -256,6 +258,8 @@ Estos datos son inventados para practicar. El orden de simplicidad es $N$ crecie
 :::
 ::: answer {#ml-c2-resp-elige-un-ee of="ml-c2-ej-elige-un-ee" title="Respuesta · Una barra que cruza no basta"}
 **(a)** El mínimo elige $N=4$; el umbral es $9.5+0.4=9.9$.
+
+Columna completa: grado 1 no (14.0), grado 2 no (10.2), grados 3, 4 y 5 sí (9.6, 9.5 y 9.8 no superan 9.9).
 
 **(b)** La regla elige $N=3$, cuya media es 9.6.
 El grado 2 no entra: su barra baja a 9.7, pero su media 10.2 supera 9.9.
@@ -279,9 +283,9 @@ El promedio esconde qué pliegues cargan el error. En este caso son dos: los pli
 
 **Piensa: ¿Qué puede hacer que un solo pliegue tenga diez veces más error que los otros, y solo en el grado alto?**
 
-Puede traer distancias fuera del intervalo con que se ajustó ese modelo.
+Puede traer distancias en una zona que el ajuste casi no cubre, o fuera de ella.
 En el caso 16, grado 1 da $13.8,16.1,13.0,11.3,18.6$; el máximo es 1.39 veces la mediana de los otros.
-Grado 8 da $13,5991,88482,8,5$. Las entregas lejanas están en los pliegues 2 y 3: el grado alto extrapola y falla en ambos.
+Grado 8 da $13,5991,88482,8,5$. Las entregas lejanas están en los pliegues 2 y 3, en la zona que los datos cubren escasamente: el grado alto falla en ambos; el pliegue 2 interpola y el 3 extrapola.
 
 Puedes investigar otros estadísticos por pliegue. El residual con signo es $y_i-\widehat y_i$, calculado con $\widehat\beta^{(-m)}$.
 Para la proporción de errores grandes, fija antes un umbral en minutos.

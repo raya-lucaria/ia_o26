@@ -14,6 +14,7 @@ Archivo permitido: tools/cuadernos_ml/03_entrenamiento_y_prueba.texto.md
 Acompaña la página [Entrenamiento y prueba](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/separar-los-datos/entrenamiento-y-prueba/).
 
 Duración del recorrido: ~40 min.
+Ejecutar todas las celdas de corrido tarda cerca de un minuto; el bloque 3 es el más lento.
 
 Ejecuta primero la celda de arranque y sigue el orden del notebook.
 Antes de cada «Juega», escribe tu apuesta. Después mueve los controles,
@@ -45,7 +46,7 @@ Deja «entregas n» y «semilla» como están; recorre «grado N» y después ac
 **Mira.** Los círculos de la derecha miden $L_{\text{ent}}$; $N=0$ es el benchmark en entrenamiento.
 Al activar «mostrar la realidad R», compara la curva crema con la raya-punto del benchmark.
 
-cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$
+Al mover «semilla», cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
 
 ### celda: bloque-1-explica
 
@@ -192,7 +193,7 @@ El taller usa validación cruzada (*cross-validation*) para elegir $N$, con las 
 Identifica qué conjunto produjo cada cifra: prueba con su intervalo $\pm2\,\mathrm{EE}$, benchmark y riesgo en el despliegue.
 Compara las reglas antes de abrir la prueba; no uses su resultado para volver a elegir.
 
-Con los datos iniciales, el modelo final pierde frente al benchmark: el taller imprime $L_{\text{prueba}}=112.55\pm146.96$ contra 82.26 del benchmark, con diferencia pareada +30.3.
+Con los datos iniciales, el modelo final pierde frente al benchmark: el taller imprime $L_{\text{prueba}}=112.55\pm146.95$ contra 82.26 del benchmark, con diferencia pareada +30.3.
 La prueba tiene solo 12 entregas y una del borde domina el promedio; esto indica que la prueba es imprecisa y no contradice la elección.
 El taller imprime la línea de prueba en cada corrida: compara las reglas en la tabla de CV, decide y lee la prueba una sola vez, al final.
 

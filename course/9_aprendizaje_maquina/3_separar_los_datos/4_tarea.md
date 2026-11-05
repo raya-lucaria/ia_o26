@@ -29,7 +29,7 @@ visibles y las seis celdas `entrega-<k>` llenas.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/tarea_2_separar_y_elegir.ipynb)
 
-Pon los últimos cuatro dígitos de tu clave única en `SEMILLA = ____`.
+Sustituye el 0 de `SEMILLA = 0` por los últimos cuatro dígitos de tu clave única.
 Conserva esa semilla durante la tarea. Tus cifras deben corresponder a esa
 ejecución. Escribe las apuestas antes de correr las celdas que permiten
 comprobarlas; conserva el orden y las salidas.

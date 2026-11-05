@@ -237,7 +237,7 @@ del elegido; solo existe en el simulador.
 
 La fábrica de este experimento usa `fracciones=(0.6, 0.2, 0.2)`.
 Compara `L_prueba` y `R` del mismo ajuste de cada repetición.
-No reemplaza el reporte ni repite la selección por CV del bloque 4.
+No reemplaza el reporte del bloque 4 ni repite la selección por CV del bloque 3.
 
 ### celda: bloque-6-mira
 
