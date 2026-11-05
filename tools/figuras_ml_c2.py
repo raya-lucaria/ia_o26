@@ -224,7 +224,7 @@ def ml_c2_dos_niveles():
     c.append(caja(24, 70, 360, 222, relleno=PANEL, borde=VAL, radio=12, grosor=2.2))
     c.append(texto(40, 96, ["afuera: elige el grado ", ("N", _IT)], tam=15, peso="700",
                    anclaje="start", color=VAL))
-    c.append(tx(40, 118, ["compara los ", ("N", _IT), " candidatos con "] + _L("val"),
+    c.append(tx(40, 118, ["compara los candidatos con "] + _L("val"),
                 tam=13, anclaje="start"))
     # caja de adentro
     c.append(caja(48, 140, 312, 128, relleno=FONDO, borde=ENT, radio=10, grosor=2))
@@ -379,7 +379,7 @@ def ml_c2_simulacro():
                 c.append(_cuadrado(x + cw / 2, y + bh / 2, r=4.5))
         if i == 1:      # eje de tiempo
             c.append(flecha(bx, y + bh + 12, bx + bw + 6, y + bh + 12, color=SUAVE))
-            c.append(texto(bx + bw - 2, y + bh + 27, ["tiempo ", ("t", _IT)], tam=12,
+            c.append(texto(bx + bw - 2, y + bh + 27, "tiempo", tam=12,
                            color=SUAVE, anclaje="end"))
         if i == 2:      # los pacientes: cuatro grupos de tres celdas
             for g in range(4):
@@ -1037,7 +1037,7 @@ def _barras_sesgo_varianza(ax, s, Ns):
     from aprendizaje_maquina import _TEMAS, _color
     xs = np.arange(len(Ns))
     base = np.zeros(len(Ns))
-    for col, rol, rayado, rotulo in (("ruido", "piso", None, "ruido σ²(x)"),
+    for col, rol, rayado, rotulo in (("ruido", "piso", None, "ruido σε²(x)"),
                                      ("varianza", "validacion", "\\\\\\", "varianza"),
                                      ("sesgo2", "prueba", "///", "sesgo²")):
         h = np.array([s[N][col] for N in Ns])
@@ -1081,7 +1081,7 @@ def ml_c2_sesgo_varianza():
         arriba.set_ylabel("error esperado")
         h_, r_ = arriba.get_legend_handles_labels()
         orden = [r_.index(x) for x in (f"menor total: N⋆ = {s['N_estrella']}", "sesgo²",
-                                       "varianza", "ruido σ²(x)")]
+                                       "varianza", "ruido σε²(x)")]
         _leyenda(arriba, loc="upper left", fontsize=8, handles=[h_[j] for j in orden],
                  labels=[r_[j] for j in orden])
         ml.dibujar_cv(sel, ax=abajo, tema="sitio")

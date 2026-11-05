@@ -698,7 +698,7 @@ z
 " style="fill: #dfd0e8; stroke: #2e1945; stroke-width: 0.5; stroke-linejoin: miter"/>
     </g>
     <g id="text_18">
-     <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="90.967094" y="75.74625" transform="rotate(-0 90.967094 75.74625)">ruido σ²(x)</text>
+     <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="90.967094" y="75.74625" transform="rotate(-0 90.967094 75.74625)">ruido σε²(x)</text>
     </g>
    </g>
   </g>

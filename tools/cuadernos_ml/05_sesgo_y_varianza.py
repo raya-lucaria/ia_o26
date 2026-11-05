@@ -80,14 +80,14 @@ def bloque_2(sigma, n):
     t = sv.tabla.set_index("candidato")
     N0 = int(t["total"].idxmin())
     bench = t.loc[0, "total"]                 # N = 0: error esperado de la media de ent
-    print(f"σ = {sigma:g}, n = {n}: menor total en N⋆ = {N0}"
+    print(f"σε = {sigma:g}, n = {n}: menor total en N⋆ = {N0}"
           f" (ruido {t.loc[N0, 'ruido']:.2f},"
           f" sesgo² {t.loc[N0, 'sesgo2']:.2f}, varianza {t.loc[N0, 'varianza']:.2f})")
     print(f"benchmark (N = 0, la media de entrenamiento): error esperado {bench:.2f};"
           f" la CV_5 de una muestra elige N̂ = {s.elegido}")
 
 
-ml.laboratorio(bloque_2, sigma=ml.selector("ruido σ", list(SIGMAS), 3.0),
+ml.laboratorio(bloque_2, sigma=ml.selector("ruido σε", list(SIGMAS), 3.0),
                n=ml.selector("entregas n", list(NS), 60))
 
 # %% [texto] bloque-2-mira
