@@ -1013,8 +1013,10 @@ def ml_c1_capacidad_brecha():
             f"mínimo en grado {v['N_menor_R']}, con {_num(v['R'][v['N_menor_R']], 3)}, y en "
             f"grado 15 llega a {v['R'][15]:.0f}; la brecha sombreada crece. El benchmark, la "
             f"media, tiene riesgo {_num(v['benchmark'], 1)}. Abajo, el mismo proceso con 200 "
-            f"datos: el riesgo casi no sube después de grado 5 y en grado 15 vale "
-            f"{_num(d['R'][15], 3)}; la U es de este experimento, no una ley.")
+            f"datos: desde grado 5, con {_num(d['R'][5], 3)}, el riesgo ya no sube por "
+            f"encima de ese valor; baja a {_num(d['R'][d['N_menor_R']], 3)} en grado "
+            f"{d['N_menor_R']} y en grado 15 vale {_num(d['R'][15], 3)}; la U es de este "
+            f"experimento, no una ley.")
     return _grafica(dibujar, aria, "La brecha de generalización, medida", 8.4, paneles=2)
 
 
@@ -1086,7 +1088,16 @@ def ml_c1_inverso_vs_potencias():
         pinv.set_linewidth(1.6)
         _entrenamiento(arriba, datos.ent.x, datos.ent.y, "60 datos de entrenamiento", s=18)
         arriba.set_xlim(0, 3)
-        arriba.set_ylim(0, 40)
+        arriba.set_ylim(0, cif.INVERSO_YTOPE)
+        # Los datos que quedan arriba del cuadro: triangulo en el borde y su y.
+        altos = datos.ent[datos.ent.y > cif.INVERSO_YTOPE]
+        tope = cif.INVERSO_YTOPE
+        arriba.scatter(altos.x, [tope * 0.965] * len(altos), marker="^", s=46,
+                       color=gen.color_rol("entrenamiento"), edgecolor=TEXTO, lw=0.6,
+                       zorder=8, clip_on=False)
+        arriba.text(0.9, tope * 0.62, f"▲ {len(altos)} datos arriba del cuadro: y = "
+                    + " y ".join(f"{v:.0f}" for v in i["fuera_del_cuadro"]),
+                    fontsize=8.5, color=TEXTO, va="top")
         arriba.set_xlabel("x")
         arriba.set_ylabel("y")
         _ley(arriba, loc="upper right", fontsize=8.5)
@@ -1112,7 +1123,10 @@ def ml_c1_inverso_vs_potencias():
         abajo.set_ylabel("R (despliegue, log)")
         _ley(abajo, loc="upper right", fontsize=8.5)
 
-    aria = (f"Arriba, {cif.INVERSO_N} datos de la curva 2 más 5 entre x con x desde 0.05, "
+    altos = " y ".join(f"{v:.0f}" for v in i["fuera_del_cuadro"])
+    aria = (f"Arriba, {cif.INVERSO_N} datos de la curva 2 más 5 entre x con x desde 0.05; "
+            f"{len(i['fuera_del_cuadro'])} de ellos, con y de {altos}, quedan arriba del "
+            f"cuadro y un triángulo en el borde los marca; "
             f"el polinomio de grado 10 y el modelo con la columna 1 entre x, que estima "
             f"{_num(b0, 2)} más {_num(b1, 2)} entre x. Abajo, el riesgo en el despliegue, en "
             f"escala logarítmica: grado 1, {_num(i['R_1'], 1)}; grado 4, {_num(i['R_4'], 1)}; "
@@ -1190,14 +1204,16 @@ def ml_c1_extrapolar():
         a3.scatter(d.prueba.t, d.prueba.y, marker="o", s=22, facecolor=PANEL,
                    edgecolor=NUEVAS, lw=1.0, zorder=6, label="lo que pasó después")
         for con, color, trazo, rot in ((False, NARANJA, "--", "recta en x"),
-                                       (True, CIAN, "-", "x y el tiempo anterior")):
+                                       (True, CIAN, "-",
+                                        "x y el tiempo anterior observado (a un paso)")):
             m = ml.ajustar(d, phi=cif.phi_recursivo(con))
             a3.plot(todo.t, m.predecir(todo), color=color, ls=trazo, lw=1.7, zorder=7,
-                    label=f"{rot}, a un paso")
+                    label=rot)
         a3.set_xlim(-0.5, len(todo) - 0.5)
-        _titulo(a3, f"recursivo, R a un paso en el futuro: "
+        _titulo(a3, f"recursivo, R en el futuro: "
                     f"{_num(r['sin_anterior']['futuro'], 1)} sin y "
-                    f"{_num(r['con_anterior']['futuro'], 2)} con\nel tiempo anterior", tam=9.5)
+                    f"{_num(r['con_anterior']['futuro'], 2)} con\nel tiempo anterior (a un paso)",
+                tam=9.5)
         a3.set_xlabel("paso (la x crece con el tiempo)")
         for ax in ejes:
             ax.set_ylabel("y")
@@ -1209,9 +1225,9 @@ def ml_c1_extrapolar():
             f"polinomio de grado 7 se dispara, con más de un millón. Seno, datos de 0 a 2: el "
             f"grado 7 tiene {_num(se['dentro'], 2)} dentro y {se['fuera']:.0f} entre 2 y 3. "
             f"Recursivo, con la x creciendo en el tiempo: la recta en x falla dentro, "
-            f"{_num(r['sin_anterior']['dentro'], 1)}, y a un paso en el futuro, "
-            f"{_num(r['sin_anterior']['futuro'], 1)}; con el tiempo anterior como columna "
-            f"queda en {_num(r['con_anterior']['dentro'], 2)} y "
+            f"{_num(r['sin_anterior']['dentro'], 1)}, y en el futuro, "
+            f"{_num(r['sin_anterior']['futuro'], 1)}; con el tiempo anterior como columna, "
+            f"a un paso, queda en {_num(r['con_anterior']['dentro'], 2)} y "
             f"{_num(r['con_anterior']['futuro'], 2)}, cerca del piso de 1.")
     return _grafica(dibujar, aria, "Dónde se usará el modelo", 11.0, paneles=3)
 

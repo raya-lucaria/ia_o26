@@ -382,6 +382,16 @@ def cifras_c1_taylor():
     return salida
 
 
+def cifras_c1_micro_taylor():
+    """P2 §1, micro ml-c1-ej-taylor: el Taylor de grado 1 de 1/x en x0 = 1 es
+    2 - x; en x = 2 predice 0, el valor verdadero es 1/2 y el error, 1/2."""
+    from fractions import Fraction
+    x0, x = Fraction(1), Fraction(2)
+    valor, derivada = 1 / x0, -1 / x0 ** 2          # 1/x y su derivada en x0
+    pred = valor + derivada * (x - x0)
+    return {"prediccion": pred, "verdadero": 1 / x, "error": abs(1 / x - pred)}
+
+
 WEIERSTRASS_GRADOS = (2, 6, 14)
 
 
@@ -471,7 +481,7 @@ def cifras_c1_capacidad(semilla=SEMILLA_1B):
 # forma cerrada con numpy; test_ml_cifras_c1 comprueba que coincide con
 # ml.ajustar. R se calcula con su definicion: E_x[(f - f_gorro)²] + sigma²,
 # con x uniforme en [0.3, 3], por cuadratura de Gauss-Legendre de 64 nodos
-# (convergida: 200 nodos dan lo mismo a 1e-12). La malla uniforme de 1000
+# (convergida: 200 nodos dan lo mismo a 1e-12 relativo). La malla uniforme de 1000
 # puntos que habia antes sesgaba el riesgo lo bastante para mover una
 # eleccion de grado (166 -> 167 entre 3 y 6) y la media del optimismo
 # (0.706 -> 0.700); revision r1 del tramo 1b.
@@ -565,6 +575,9 @@ def cifras_c1_elegir(semilla=SEMILLA_1B):
 
 INVERSO_N = 60
 INVERSO_GRADOS = (1, 4, 10)
+# Tope del eje y del panel de arriba de ml-c1-inverso-vs-potencias (y de NB02
+# bloque 4): los datos que quedan arriba se marcan con un triangulo y se nombran.
+INVERSO_YTOPE = 40
 
 
 def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
@@ -585,6 +598,8 @@ def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
     salida["mejor_polinomio_R"] = min(
         float(ml.riesgo(ml.ajustar(datos, phi=ml.polinomio(N)), datos)) for N in range(1, 11))
     salida["piso"] = float(ml.piso(datos))
+    salida["fuera_del_cuadro"] = sorted(float(v) for v in datos.ent.y
+                                        if v > INVERSO_YTOPE)
     salida["benchmark"] = float(ml.benchmarks(datos, datos.despliegue)
                                 .loc["media", "cuadratica"])
     d4 = ml.caso(4, semilla=semilla)
@@ -604,6 +619,19 @@ def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
         ajustes = {N: ml.ajustar(datos, phi=ml.polinomio(N)) for N in range(25, 41)}
     salida["R_40"] = float(ml.riesgo(m40, datos))
     salida["L_ent_40"] = float(ml.L(m40, datos.ent))
+    # NB02 bloque 4 con «escalar x» apagado (revision r2 del tramo 1b): L_ent
+    # sube aunque la familia es la misma, y el mayor coeficiente NO es la
+    # alarma: con escala, los de grado alto tambien son enormes (sobreajuste);
+    # sin escalar, el calculo cae a la pseudoinversa y los deja pequenos.
+    escala = {}
+    for N in (15, 25, 40):
+        for escalar in (True, False):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                mN = ml.ajustar(datos, phi=ml.polinomio(N, escalar=escalar))
+            escala[(N, escalar)] = {"L_ent": float(ml.L(mN, datos.ent)),
+                                    "coef_max": float(mN.beta_gorro.abs().max())}
+    salida["escalar_contra_no"] = escala
     # Escalar no garantiza la monotonia numerica: el primer grado (de 25 a 40)
     # donde L_ent escalado sube respecto al anterior, con los dos valores.
     previo = None

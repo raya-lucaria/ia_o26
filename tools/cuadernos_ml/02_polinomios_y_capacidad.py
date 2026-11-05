@@ -78,14 +78,17 @@ def curva(n, sigma):
 
 def bloque_2(N, n, sigma):
     datos, tabla = curva(n, sigma)
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2))
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 4.2))
     m = ml.ajustar(datos, phi=ml.polinomio(N))
     ml.dibujar_ajuste({f"grado {N}": m}, datos, ax=a1)
-    a1.set(ylim=(0, 20), ylabel="y")
+    x = np.linspace(0.3, 3.0, 300)
+    a1.plot(x, datos.f_visible(pd.DataFrame({"x": x})), color="green", lw=3, zorder=1, label="f verdadera")
+    a1.set(ylim=(0, 20), ylabel="y"), a1.legend(loc="upper right", fontsize=8)
     media = ml.benchmarks(datos, datos.realidad).loc["media", "cuadratica"]
     ml.dibujar_curva_capacidad(tabla, brecha=True, zonas=False, optimo=True,
                                piso=ml.piso(datos), benchmark=media, marcar=N, ax=a2)
     a2.set_yscale("log")   # R del grado 15 puede valer miles: en escala log se ve todo
+    a2.legend(loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=8, frameon=False)
     a2.text(0.02, 0.96, "← subajuste", transform=a2.transAxes, va="top")
     a2.text(0.78, 0.96, "sobreajuste →", transform=a2.transAxes, va="top", ha="right")
     plt.show()
@@ -208,7 +211,7 @@ def bloque_5(proceso, N, zona, anterior):
         ax.scatter(a.t, a.y, s=16, color="C0", label="60 pasos de entrenamiento")
         ax.scatter(d.t, d.y, s=22, fc="none", ec="gray", label="19 pasos siguientes")
         ax.plot(todo.t, m.predecir(todo), color="C1", label="predicción a un paso")
-        ax.set(xlabel="paso t (x crece con t)", ylabel="y"), ax.legend(), plt.show()
+        ax.set(xlabel="paso (x crece con el tiempo)", ylabel="y"), ax.legend(), plt.show()
         print(f"serie dibujada: L_ent = {ml.L(m, datos.ent):.3f}  ·  series nuevas: "
               f"dentro = {ml.L(m, datos.realidad):.3f}, a un paso en el futuro = "
               f"{ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")

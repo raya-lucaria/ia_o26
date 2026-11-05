@@ -237,7 +237,7 @@ Los casos con puntos alineados tampoco permiten todas las etiquetas.
 ## 4 · Mirar el error que no optimizamos
 
 ::: figure {#ml-c1-capacidad-brecha title="La brecha de generalización, medida"}
-![Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos de la curva 2 más 5 entre x, en escala logarítmica, con el extremo de subajuste a la izquierda y el de sobreajuste a la derecha. El error de entrenamiento nunca sube y en grado 15 vale 0.034, abajo del piso 0.25. El riesgo, medido con la muestra enorme, hace una U: es mínimo en grado 6, con 0.366, y en grado 15 llega a 1537; la brecha sombreada crece. El benchmark, la media, tiene riesgo 10.5. Abajo, el mismo proceso con 200 datos: el riesgo casi no sube después de grado 5 y en grado 15 vale 0.266; la U es de este experimento, no una ley.](../_assets/ml-c1-capacidad-brecha.svg)
+![Arriba, la curva de capacidad de los polinomios de grado 1 a 15 sobre 20 datos de la curva 2 más 5 entre x, en escala logarítmica, con el extremo de subajuste a la izquierda y el de sobreajuste a la derecha. El error de entrenamiento nunca sube y en grado 15 vale 0.034, abajo del piso 0.25. El riesgo, medido con la muestra enorme, hace una U: es mínimo en grado 6, con 0.366, y en grado 15 llega a 1537; la brecha sombreada crece. El benchmark, la media, tiene riesgo 10.5. Abajo, el mismo proceso con 200 datos: desde grado 5, con 0.274, el riesgo ya no sube por encima de ese valor; baja a 0.260 en grado 8 y en grado 15 vale 0.266; la U es de este experimento, no una ley.](../_assets/ml-c1-capacidad-brecha.svg)
 :::
 
 Cada grado tiene un ajuste; los ejes verticales son logarítmicos.
@@ -407,7 +407,7 @@ Son propuestas exploratorias sin validar; la clase 2 te la da: validación y val
 ## 6 · Elegir la representación antes que el grado
 
 ::: figure {#ml-c1-inverso-vs-potencias title="Una columna correcta contra diez potencias"}
-![Arriba, 60 datos de la curva 2 más 5 entre x con x desde 0.05, el polinomio de grado 10 y el modelo con la columna 1 entre x, que estima 2.03 más 5.00 entre x. Abajo, el riesgo en el despliegue, en escala logarítmica: grado 1, 82.4; grado 4, 18.2; grado 10, 1.28; la columna 1 entre x, 0.25, en el piso de 0.25. El benchmark, la media, tiene 120.8.](../_assets/ml-c1-inverso-vs-potencias.svg)
+![Arriba, 60 datos de la curva 2 más 5 entre x con x desde 0.05; 2 de ellos, con y de 52 y 88, quedan arriba del cuadro y un triángulo en el borde los marca; el polinomio de grado 10 y el modelo con la columna 1 entre x, que estima 2.03 más 5.00 entre x. Abajo, el riesgo en el despliegue, en escala logarítmica: grado 1, 82.4; grado 4, 18.2; grado 10, 1.28; la columna 1 entre x, 0.25, en el piso de 0.25. El benchmark, la media, tiene 120.8.](../_assets/ml-c1-inverso-vs-potencias.svg)
 :::
 
 También puedes cambiar las columnas.
@@ -466,7 +466,7 @@ Ambas cuentas incluyen el intercepto y los productos cruzados, no solo las poten
 ## 7 · Saber dónde se usará el modelo
 
 ::: figure {#ml-c1-extrapolar title="Dónde se usará el modelo"}
-![Tres procesos con la zona de los datos sombreada. Entregas, datos de 0 a 6 km: de 6 a 9 km la recta tiene riesgo de zona 1.14 y el polinomio de grado 7 se dispara, con más de un millón. Seno, datos de 0 a 2: el grado 7 tiene 0.10 dentro y 609 entre 2 y 3. Recursivo, con la x creciendo en el tiempo: la recta en x falla dentro, 5.5, y a un paso en el futuro, 36.4; con el tiempo anterior como columna queda en 1.05 y 1.05, cerca del piso de 1.](../_assets/ml-c1-extrapolar.svg)
+![Tres procesos con la zona de los datos sombreada. Entregas, datos de 0 a 6 km: de 6 a 9 km la recta tiene riesgo de zona 1.14 y el polinomio de grado 7 se dispara, con más de un millón. Seno, datos de 0 a 2: el grado 7 tiene 0.10 dentro y 609 entre 2 y 3. Recursivo, con la x creciendo en el tiempo: la recta en x falla dentro, 5.5, y en el futuro, 36.4; con el tiempo anterior como columna, a un paso, queda en 1.05 y 1.05, cerca del piso de 1.](../_assets/ml-c1-extrapolar.svg)
 :::
 
 Arriba, la recta prolonga bien las entregas; el grado 7 se dispara.
