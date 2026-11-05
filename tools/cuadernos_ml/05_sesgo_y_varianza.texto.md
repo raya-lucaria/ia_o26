@@ -59,6 +59,8 @@ promedia ajustes; la verde muestra $E[y\mid x]$. En la diana, cada marca
 es una predicción; las dos líneas indican promedio y verdad.
 El control evita los bordes: el grado 12 puede extrapolar allí y perder
 escala. Consulta sesgo y varianza impresos al mover «x0 (km)».
+El eje de la diana se estira para mostrar todas las predicciones; con el grado 12 cerca de un borde puede estirarse mucho.
+En el abanico, el notebook imprime cuántas curvas salen del eje de 0 a 50.
 
 ### celda: bloque-1-explica
 
@@ -203,14 +205,18 @@ Antes de ejecutar, predice qué componente cambiará. Compara las barras con
 el caso inicial y explica si necesitas otra familia, más datos o mejores
 variables.
 
+El taller promedia sobre todo el rango de $x$, bordes incluidos; con los datos iniciales imprime para el grado 12 un sesgo² de 603 y una varianza de decenas de miles.
+No significa que el grado 12 esté sesgado en el centro: en los bordes, unos pocos de los 50 ajustes se disparan y arrastran el promedio, por lo que ese sesgo² estimado es inestable.
+Léelo como señal de extrapolación, junto a la varianza.
+
 ### celda: galeria-intro
 
 **Galería.** Los casos 13–16 son misterios: abre cada caso, lee su pregunta
 y escribe tu diagnóstico antes de revelar «¿Qué se ve?».
 Busca qué comparación sostiene tu respuesta y qué dato te haría cambiarla.
 
-En el caso 13, el proceso y el modelo se eligieron para que la separación
-al azar engañe. Con un modelo que no usa el tiempo, casi no engaña.
+En el caso 13, compara $L_{\text{prueba}}$ con $R$: el polinomio usa solo la distancia, sin tiempo, y la prueba al azar casi no engaña.
+Contrasta lo que ves con la explicación: la página muestra el engaño con vecinos en distancia y tiempo.
 Toma el caso como un aviso para revisar cómo separas los datos.
 
 ### celda: ejercicio-tres-predicciones

@@ -50,9 +50,10 @@ comprobarlas; conserva el orden y las salidas.
 
 2. **Antes de mirar.** Escribe tres apuestas numéricas en `entrega-2`.
    Predice el grado que elegirá la validación cruzada (*cross-validation*, CV).
-   Predice cuánto valdrá $L_{\text{prueba}}$ del modelo final y cuánto la del punto de
-   comparación (*benchmark*). Aquí $L$ es la pérdida promedio y $N$ es el grado.
-   Para comparar usarás la media de entrenamiento como punto de comparación; la clase 3 lo define.
+   Predice $L_{\text{prueba}}$ del modelo final menos la del benchmark (min²).
+   Predice $\mathrm{CV}_5$ del grado 12 (min²).
+   Aquí $L$ es la pérdida promedio y $N$ es el grado.
+   El *benchmark* es «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 
    Las tres van en el diccionario `MIS_APUESTAS` del notebook.
 
@@ -92,7 +93,7 @@ comprobarlas; conserva el orden y las salidas.
    Describe qué cambia con pocos y muchos pliegues en costo, sesgo y ruido.
    Se califica que apoyes la explicación en las cajas y en las ejecuciones.
 
-6. **Elige con la prueba para medir cuánto te habrías engañado**
+6. **Medir el engaño.** Elige con la prueba para medir cuánto te habrías engañado.
 
    Corre las 200 repeticiones que eligen con la prueba.
    Compara el error anunciado con $R$, estimado con la muestra enorme del proceso.

@@ -446,3 +446,22 @@ def test_diagnostico_final_las_cifras_del_ejercicio():
 
 
 # --- fin tramo completo ---
+
+
+# ------------------------------------------- cifras_c2_taller_descomponer ---
+
+def test_taller_descomponer_el_grado_12_se_dispara_en_los_bordes():
+    """Revision r1: el guion 05 avisa del sesgo² enorme del grado 12 en el taller."""
+    t = c.cifras_c2_taller_descomponer()
+    assert round(t[12]["sesgo2"]) == 603 and t[12]["varianza"] > 10_000
+    assert t[6]["sesgo2"] < 1
+
+
+def test_sesgo_varianza_el_sesgo2_vuelve_a_crecer_y_en_el_interior_no():
+    """Revision r1: P3 §3 limita «el sesgo baja» a N ≤ 7 y lo explica con el tramo
+    interior, donde el sesgo² no pasa de 0.25 desde N = 6."""
+    s = c.cifras_c2_sesgo_varianza()
+    assert all(s[N]["sesgo2"] < 1 for N in range(2, 9))
+    assert s[9]["sesgo2"] > 10 and s[12]["sesgo2"] > 50
+    assert max(s["sesgo2_interior"][N] for N in range(6, 13)) <= 0.25
+    assert s[1]["varianza"] < s[0]["varianza"]

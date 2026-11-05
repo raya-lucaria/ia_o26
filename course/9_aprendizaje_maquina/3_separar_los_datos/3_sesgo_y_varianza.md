@@ -54,7 +54,7 @@ El eje horizontal mide distancia en kilómetros; el vertical, predicción
 en minutos. Compara cuánto cambian las curvas al recibir otras entregas.
 
 ::: figure {#ml-c2-abanico title="Cien muestras, cien ajustes"}
-![Tres paneles con 100 ajustes cada uno, uno por muestra del mismo proceso, su promedio y la verdadera E[y | x]. Grado 1: las rectas casi no se separan (desviación 0.9 en x = 5) pero su promedio se aleja de la curva. Grado 4: abanico angosto (desviación 1.1) y promedio pegado a la curva. Grado 12: el promedio sigue la curva, pero cada ajuste se sacude, sobre todo en los bordes (desviación 3.5 en x = 5).](../_assets/ml-c2-abanico.svg)
+![Tres paneles con 100 ajustes cada uno, uno por muestra del mismo proceso, su promedio y la verdadera E[y | x]. Grado 1: las rectas casi no se separan (desviación 0.9 en x = 5) pero su promedio se aleja de la curva. Grado 4: abanico angosto (desviación 1.1) y promedio pegado a la curva. Grado 12: en el centro el promedio sigue la curva, pero en los bordes se aleja (llega a −32.8 en x = 6.0), y cada ajuste se sacude, sobre todo en los bordes (desviación 3.5 en x = 5).](../_assets/ml-c2-abanico.svg)
 :::
 
 En grado 1 el promedio se aleja de $f$; en grado 12 las líneas se abren.
@@ -85,16 +85,16 @@ El sesgo mide el desplazamiento del promedio respecto de $f$; la varianza,
 la dispersión entre equipos. Un grupo puede estar muy unido y equivocarse
 hacia el mismo lado, como las rectas del grado 1.
 
-::: exercise {#ml-c2-ej-que-cambia}
+::: exercise {#ml-c2-ej-que-cambia title="Compara la dispersión de los ajustes"}
 Sin mirar la figura: con $n=36$, ¿qué abanico es más ancho en los extremos,
 el de grado 2 o el de grado 10, y por qué?
 :::
 
-::: hint {#ml-c2-pista-que-cambia-1 of="ml-c2-ej-que-cambia" title="Pista 1"}
+::: hint {#ml-c2-pista-que-cambia-1 of="ml-c2-ej-que-cambia" title="Pista 1 · ¿Cuántos coeficientes estimas?"}
 ¿Cuántos coeficientes tiene que estimar cada uno con las mismas 36 entregas?
 :::
 
-::: answer {#ml-c2-resp-que-cambia of="ml-c2-ej-que-cambia" title="Respuesta"}
+::: answer {#ml-c2-resp-que-cambia of="ml-c2-ej-que-cambia" title="Respuesta · Comparar la sensibilidad a la muestra"}
 Esperamos un abanico más ancho para el grado 10. Estima más coeficientes
 con los mismos datos y el ajuste resulta más sensible a la muestra.
 Esa sensibilidad se nota especialmente en los extremos, donde hay menos
@@ -114,10 +114,10 @@ Cada marca es la predicción de una muestra en el mismo $x_0$.
 El eje del valor mide minutos; el apilamiento solo permite distinguir marcas.
 
 ::: figure {#ml-c2-diana title="La diana en x = 5"}
-![Predicciones en x = 5 de 100 ajustes, cada uno con otra muestra, junto a E[y | x = 5] = 31.5. Grado 1: las cruces se agrupan apretadas (desviación 0.9) pero corridas 1.5 minutos del valor verdadero. Grado 12: centradas (sesgo −0.5) pero dispersas (desviación 3.5). Eje fijo de 15 a 55 minutos; ninguna predicción queda fuera.](../_assets/ml-c2-diana.svg)
+![Predicciones en x = 5 de 100 ajustes, cada uno con otra muestra, junto a E[y | x = 5] = 31.5. Grado 1: las cruces se agrupan apretadas (desviación 0.9) pero corridas 1.5 minutos del valor verdadero. Grado 12: centradas (sesgo −0.5) pero dispersas (desviación 3.5). El promedio de cada grado es una raya blanca discontinua; la banda gris marca E[y | x = 5] ± σε, de 28.5 a 34.5, la escala del ruido nuevo. Eje fijo de 15 a 55 minutos; ninguna predicción queda fuera.](../_assets/ml-c2-diana.svg)
 :::
 
-Sesgo es la distancia con signo de la línea discontinua a la verde;
+Sesgo es la distancia con signo de la raya blanca discontinua, el promedio, a la línea verde;
 varianza, cuánto se dispersan las marcas. Aquí $f(x_0)=31.5$ minutos.
 El grado 1 tiene sesgo 1.5; el grado 12, $-0.5$.
 La banda $f(x_0)\pm\sigma_\varepsilon$ muestra la escala del ruido nuevo.
@@ -226,17 +226,17 @@ Para comprobar la cuenta a mano, sustituye los cien ajustes por tres
 predicciones posibles. Este ejemplo pequeño permite calcular exactamente
 el promedio sobre muestras.
 
-::: exercise {#ml-c2-ej-tres-predicciones}
+::: exercise {#ml-c2-ej-tres-predicciones title="Calcula sesgo, varianza y error esperado"}
 En un $x$ fijo, $f(x)=11$. Un procedimiento predice $8$, $10$ o $12$,
 cada una con probabilidad $1/3$ según la muestra, y el ruido nuevo tiene varianza 4.
 Calcula sesgo, varianza y error cuadrático esperado.
 :::
 
-::: hint {#ml-c2-pista-tres-predicciones-1 of="ml-c2-ej-tres-predicciones" title="Pista 1"}
+::: hint {#ml-c2-pista-tres-predicciones-1 of="ml-c2-ej-tres-predicciones" title="Pista 1 · ¿Respecto de qué promedio?"}
 ¿Alrededor de qué número se mide la varianza: de $f(x)$ o del promedio de las predicciones?
 :::
 
-::: answer {#ml-c2-resp-tres-predicciones of="ml-c2-ej-tres-predicciones" title="Respuesta"}
+::: answer {#ml-c2-resp-tres-predicciones of="ml-c2-ej-tres-predicciones" title="Respuesta · Sumar las tres partes del error"}
 El promedio es 10. El sesgo es $-1$: el procedimiento predice, en promedio,
 por debajo de $f(x)=11$.
 La varianza mide las desviaciones cuadráticas respecto de 10:
@@ -257,11 +257,11 @@ Abajo, la CV mide con una sola muestra. Los ejes son grado y error cuadrático,
 en minutos cuadrados.
 
 ::: figure {#ml-c2-sesgo-varianza title="La U calculada y la U medida"}
-![Dos paneles con el grado N de 0 a 12. Arriba, barras apiladas de ruido, sesgo al cuadrado y varianza calculadas con f conocida y 100 muestras: el ruido mide 9.0 en todos los grados, el sesgo al cuadrado baja de 43.8 en N = 0 a 0.90 en N = 2 y la varianza sube; el menor total, 10.89, está en N⋆ = 2. Abajo, en escala log, la CV 5 de una sola muestra, con mínimo en N = 6, junto al total calculado: las dos bajan y suben en la misma zona sin coincidir punto por punto; el total del grado 12 sale del eje.](../_assets/ml-c2-sesgo-varianza.svg)
+![Dos paneles con el grado N de 0 a 12. Arriba, barras apiladas de ruido, sesgo al cuadrado y varianza calculadas con f conocida y 100 muestras: el ruido mide 9.0 en todos los grados, el sesgo al cuadrado baja de 43.8 en N = 0 a 0.90 en N = 2 y la varianza, salvo de N = 0 a 1, sube; el menor total, 10.89, está en N⋆ = 2. La varianza va abajo del sesgo² en cada barra. De N = 8 a 12 las barras salen del eje y llevan su total escrito (72 a 34200), casi todo varianza; ahí el sesgo² estimado vuelve a crecer (20.5 en N = 9, 64.9 en N = 12), arrastrado por los bordes. Abajo, en escala log, la CV 5 de una sola muestra, con mínimo en N = 6, junto al total calculado: las dos bajan y suben en la misma zona sin coincidir punto por punto; el total del grado 12 sale del eje.](../_assets/ml-c2-sesgo-varianza.svg)
 :::
 
 Las dos curvas bajan y suben en la misma zona, sin coincidir punto por punto.
-Las barras de grados 8 a 12 salen del eje; abajo usamos escala logarítmica.
+Las barras de grados 8 a 12 salen del eje y llevan su total escrito; casi todo es varianza. Abajo usamos escala logarítmica.
 
 **Piensa: ¿por qué la curva de la CV de una sola muestra es más irregular que la U calculada con cien?**
 
@@ -269,7 +269,12 @@ La CV fluctúa con la muestra y la partición. Además, entrena con
 $(k-1)/k$ de los datos (@ml-c2-def-validacion-cruzada). Las cien muestras
 estabilizan el cálculo del simulador, que usa entrenamientos completos.
 
-En este proceso, aumentar el grado reduce el sesgo y aumenta la varianza.
+De $N=0$ a $N=7$, el sesgo² estimado baja en conjunto: 43.8, 6.0, 0.90, 0.73, 0.45, 0.50, 0.24 y 0.27, con un repunte chico de $N=4$ a $N=5$. La varianza sube hasta 10.9 en $N=7$, salvo de $N=0$ a $N=1$, cuando baja de 1.43 a 0.88.
+
+Desde $N=8$, el sesgo² estimado vuelve a crecer: 20.5 en $N=9$ y 64.9 en $N=12$. No es que el grado 12 «tenga sesgo», sino que unos pocos ajustes se disparan en los bordes y arrastran el promedio de cien, que tiene ruido de Monte Carlo. En el tramo interior, $0.5<x<5.5$, el sesgo² no pasa de 0.25 desde $N=6$.
+
+Por eso la tendencia vale hasta $N\approx7$ y lees la barra alta del grado 12 como varianza.
+
 El grado 2 suma ruido 9.0, sesgo² 0.90 y varianza 0.99: total 10.89.
 La identidad no exige monotonía de cada término.
 **La U es una tendencia observada**, no una ley.
@@ -286,12 +291,12 @@ La CV de una muestra eligió $\widehat N=6$.
 En la clase 3 cambiarás el grado por una perilla continua de regularización.
 Ahora conservaremos el grado y aumentaremos las entregas.
 
-::: exercise {#ml-c2-ej-u-y-cv}
+::: exercise {#ml-c2-ej-u-y-cv title="Compara el óptimo teórico con la CV"}
 La U calculada tiene mínimo en $N^\star=2$; la CV eligió $\widehat N=6$.
 Sus totales son 10.89 y 14.58. ¿Está mal la CV? Compara riesgos.
 :::
 
-::: hint {#ml-c2-pista-u-y-cv-1 of="ml-c2-ej-u-y-cv" title="Pista 1"}
+::: hint {#ml-c2-pista-u-y-cv-1 of="ml-c2-ej-u-y-cv" title="Pista 1 · ¿Cuánto difieren los riesgos?"}
 ¿Qué tan distintos son los totales calculados en esos dos grados?
 :::
 
@@ -373,12 +378,12 @@ Abajo, el grado elegido por CV, mediana de 20 repeticiones, sube de 3
 con 30 entregas a 10 con 960. La capacidad elegida con 80 %
 puede cambiar al reajustar con 100 %.
 
-::: exercise {#ml-c2-ej-mas-datos}
+::: exercise {#ml-c2-ej-mas-datos title="Evalúa si más datos ayudan"}
 El grado 1 tiene $R=13.8$ con $n_{\text{ent}}=480$ y con 960
 (medianas); el piso es 9.0. ¿Cuánto bajará $R$ si duplicas otra vez?
 :::
 
-::: hint {#ml-c2-pista-mas-datos-1 of="ml-c2-ej-mas-datos" title="Pista 1"}
+::: hint {#ml-c2-pista-mas-datos-1 of="ml-c2-ej-mas-datos" title="Pista 1 · ¿Qué limita a una recta?"}
 ¿Cuánto bajó en la última duplicación, y qué parte del error de una recta no depende de $n$?
 :::
 
@@ -400,8 +405,7 @@ y la evolución de sus curvas, no solo la distancia al piso.
 
 ## 5 · Diagnosticar con dos curvas
 
-Lee el árbol de arriba abajo con entrenamiento, CV y un punto de comparación (*benchmark*):
-la media de entrenamiento como punto de comparación; la clase 3 lo define.
+Lee el árbol de arriba abajo con entrenamiento, CV y un *benchmark*: «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 
 ::: figure {#ml-c2-diagnostico title="Diagnosticar con dos curvas y un benchmark"}
 ![Árbol de diagnóstico con cuatro preguntas que se leen de arriba abajo. Uno: la brecha entre validación, o CV, y entrenamiento es grande; si sí, sobreajuste: menos capacidad o más datos. Dos: le gana al benchmark, la media de entrenamiento; en una validación que no eligió el modelo, la diferencia pareada baja de cero a más de dos errores estándar; con CV solo da señal o falta evidencia; si no, no aprende: otras variables o familias. Tres: subir el grado baja la CV más de un error estándar, una heurística; si sí, subajuste: más capacidad o mejor phi. Cuatro: la prueba imita el despliegue; si sí, listo; si no, rehacer la separación.](../_assets/ml-c2-diagnostico.svg)
@@ -466,8 +470,8 @@ Su brecha esperada es positiva: del orden de la varianza de $y$ entre $n_{\text{
 >
 > **La prueba imita la realidad.**
 
-::: exercise {#ml-c2-ej-cuatro-curvas}
-Clasifica A–D y propone acciones. Supón que sus pruebas imitan el despliegue.
+::: exercise {#ml-c2-ej-cuatro-curvas title="Diagnostica con las curvas y el benchmark"}
+Clasifica A–D y propón acciones. Supón que sus pruebas imitan el despliegue.
 Los modelos se fijaron antes, ajustados solo con entrenamiento; validación
 no eligió nada. Las pérdidas son cuadráticas.
 
@@ -489,7 +493,7 @@ media y rango de las cinco diferencias por pliegue.
 | D | 49.8 ± 3.7 | −49.6 (9.5) | −40.1 [−50.2, −29.6] |
 :::
 
-::: hint {#ml-c2-pista-cuatro-curvas-1 of="ml-c2-ej-cuatro-curvas" title="Pista 1"}
+::: hint {#ml-c2-pista-cuatro-curvas-1 of="ml-c2-ej-cuatro-curvas" title="Pista 1 · ¿Por dónde empiezas el diagnóstico?"}
 ¿Qué pregunta del árbol va primero, y con qué dos números se contesta?
 :::
 

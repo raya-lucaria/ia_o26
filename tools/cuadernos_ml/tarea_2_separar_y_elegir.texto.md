@@ -54,7 +54,7 @@ La función $f$ es estructural; $\varepsilon$ es ruido, no la cadena vacía.
 Usarás pérdida cuadrática: $L$ es la pérdida promedio, no un lenguaje.
 Sus unidades son minutos². La validación cruzada (*cross-validation*) ayudará
 a elegir el grado; la prueba estimará el riesgo del ajuste elegido.
-Usarás un punto de comparación (*benchmark*): la media de entrenamiento como punto de comparación; la clase 3 lo define.
+El *benchmark* es «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 Repasa [Entrenamiento y prueba](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/separar-los-datos/entrenamiento-y-prueba/)
 y [Validación cruzada](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/separar-los-datos/validacion-cruzada/).
 
@@ -62,7 +62,8 @@ y [Validación cruzada](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquin
 
 ## 1 · Justifica la separación
 
-**Predice.** De las 150 entregas, ¿cuántas quedarán en desarrollo y cuántas en prueba con la separación 80/20?
+**Predice.** ¿Qué tan ancho esperas el intervalo $\pm2\,\mathrm{EE}$ de la prueba con 30 entregas, comparado con el de una prueba de 120?
+Apuesta la razón entre el ancho con 30 entregas y el ancho con 120.
 
 Escribe tu apuesta numérica en `entrega-1` antes de correr el bloque.
 Pon tu `SEMILLA` y conserva `fracciones=(0.8, 0, 0.2)`.
@@ -72,12 +73,12 @@ La reserva de prueba queda aparte.
 ### celda: bloque-1-mira
 
 **Mira.** Cada punto de la nube es una entrega de desarrollo: distancia horizontal y tiempo vertical.
-La leyenda dice «entrenamiento»; el renglón impreso da los tamaños de desarrollo y prueba.
+La leyenda dice «desarrollo»; el renglón impreso da los tamaños de desarrollo y prueba.
 La figura oculta $f$ y muestra solo desarrollo a propósito: la prueba queda cerrada hasta el bloque 4.
 
 ### celda: entrega-1
 
-**Entrega 1.** Escribe aquí tu apuesta y, después de correr, los tamaños observados.
+**Entrega 1.** Escribe aquí tu apuesta sobre la razón entre los anchos de los intervalos y, después de correr, los tamaños observados de desarrollo y prueba.
 En dos renglones, justifica por qué separar al azar imita este contrato de uso.
 No basta decir que el azar «es más justo».
 
@@ -89,10 +90,10 @@ No supongas que esas columnas ya existen.
 
 ## 2 · Apuesta antes de mirar
 
-**Predice.** ¿Qué tres números apostarías para el grado elegido por CV, el error de prueba del modelo y el del benchmark?
+**Predice.** ¿Qué tres números apostarías para el grado que elegirá la CV, la diferencia $L_{\text{prueba}}$ del modelo final menos la del benchmark y la $\mathrm{CV}_5$ del grado 12?
 
 Sustituye los tres `None` de `MIS_APUESTAS` por números antes de continuar.
-Escribe ambos errores en minutos²; así quedará explícita tu comparación.
+Escribe la diferencia con signo y la $\mathrm{CV}_5$ del grado 12 en minutos².
 Aclara si tu apuesta de grado corresponde al mínimo o a un error estándar (EE).
 Todavía no ejecutes el bloque 3 ni abras la prueba.
 
@@ -100,13 +101,14 @@ Todavía no ejecutes el bloque 3 ni abras la prueba.
 
 **Mira.** Cada renglón reproduce una entrada de `MIS_APUESTAS`; aquí no hay una gráfica ni errores medidos.
 Comprueba que los tres renglones contienen números y que desapareció «¡falta tu apuesta!».
+Corresponden al grado que elegirá la CV, a la diferencia $L_{\text{prueba}}$ del modelo final menos la del benchmark y a la $\mathrm{CV}_5$ del grado 12; las dos últimas apuestas están en minutos².
 Conserva esta salida para contrastarla con los bloques 3 y 4.
 
 ### celda: entrega-2
 
-**Entrega 2.** Copia tus tres apuestas originales y la regla a la que corresponde el grado apostado.
-Explica en una frase si esperas que el error del modelo quede debajo,
-cerca o encima del benchmark.
+**Entrega 2.** Copia tus tres apuestas originales: el grado que elegirá la CV, la diferencia $L_{\text{prueba}}$ del modelo final menos la del benchmark y la $\mathrm{CV}_5$ del grado 12.
+Anota la regla a la que corresponde el grado apostado y expresa las otras dos apuestas en minutos².
+Explica en una frase qué significa el signo de tu diferencia para la comparación con el benchmark.
 No corrijas las apuestas después de ver los resultados.
 
 ### celda: bloque-3-predice

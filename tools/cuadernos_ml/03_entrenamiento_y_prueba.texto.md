@@ -31,7 +31,7 @@ La prueba estima el riesgo del elegido cuando ya no decides con ella.
 
 Aquí $L$ es pérdida promedio, no lenguaje, clase de complejidad ni longitud de racha.
 Usamos pérdida cuadrática, en minutos².
-El punto de comparación (*benchmark*) será la media de entrenamiento como punto de comparación; la clase 3 lo define.
+El *benchmark* es «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 
 ### celda: bloque-1-predice
 
@@ -85,7 +85,7 @@ La apuesta 5 es la más cercana. Los intervalos cubren $R$ en 89 % de las prueba
 Compara con la media de entrenamiento evaluada en el despliegue, impresa debajo del histograma.
 
 En «Entrenamiento y prueba», el ancho baja como $1/\sqrt{n_{\text{prueba}}}$ para pérdidas independientes con varianza finita.
-Con 200 entregas, la desviación es 1.15 y la cobertura, 94 %.
+Con 200 entregas, la desviación es 1.10 y la cobertura, 96 %.
 Insesgada significa correcta en promedio, no exacta en cada muestra.
 $L_{\text{prueba}}\pm2\,\mathrm{EE}$ es un intervalo aproximado; EE significa error estándar del promedio, no de una predicción individual.
 
@@ -122,7 +122,7 @@ Más candidatos pueden agravar el optimismo, sin garantizar monotonía en esta t
 
 ### celda: bloque-4-predice
 
-**Predice.** En “el mes que viene”, ¿la prueba al azar promete menos, igual o más error del que darás en el futuro?
+**Predice.** En «el mes que viene», ¿la prueba al azar promete menos, igual o más error del que darás en el futuro?
 
 Elige una opción y apuesta un número para $L_{\text{prueba}}-R$.
 Selecciona «el mes que viene» en «contrato»; compara «al azar» y «como el contrato» en «cómo separar».
@@ -192,13 +192,18 @@ El taller usa validación cruzada (*cross-validation*) para elegir $N$, con las 
 Identifica qué conjunto produjo cada cifra: prueba con su intervalo $\pm2\,\mathrm{EE}$, benchmark y riesgo en el despliegue.
 Compara las reglas antes de abrir la prueba; no uses su resultado para volver a elegir.
 
+Con los datos iniciales, el modelo final pierde frente al benchmark: el taller imprime $L_{\text{prueba}}=112.55\pm146.96$ contra 82.26 del benchmark, con diferencia pareada +30.3.
+La prueba tiene solo 12 entregas y una del borde domina el promedio; esto indica que la prueba es imprecisa y no contradice la elección.
+El taller imprime la línea de prueba en cada corrida: compara las reglas en la tabla de CV, decide y lee la prueba una sola vez, al final.
+
 ### celda: galeria-intro
 
 **Galería.** Recorre los casos 13–16 como misterios.
-En el 13, anticipa qué esconde separar al azar cuando importa el tiempo.
+En el 13, compara $L_{\text{prueba}}$ con $R$: el polinomio usa solo la distancia, sin tiempo, y la prueba al azar casi no engaña.
+Contrasta lo que ves con la explicación: la página muestra el engaño con vecinos en distancia y tiempo.
 En el 14, busca qué cambia al recibir pacientes nuevos.
 En el 15, identifica qué queda fuera del alcance de la muestra al cambiar de ciudad.
-En el 16, busca qué distingue al pliegue raro.
+En el 16, busca en qué pliegues distintos caen las dos entregas lejanas y cuánto sube el error de cada uno.
 
 Lee cada pregunta y escribe una explicación antes de abrir «¿Qué se ve?».
 Después contrasta tu explicación con la del caso: identifica qué comparación permitió resolver el misterio.

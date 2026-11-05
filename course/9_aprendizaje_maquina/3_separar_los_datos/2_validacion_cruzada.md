@@ -193,10 +193,10 @@ Cada triángulo es el promedio de cinco pliegues; la barra, su error estándar a
 El eje horizontal recorre grados; el vertical mide pérdida cuadrática.
 
 ::: figure {#ml-c2-cv-capacidad title="La validación cruzada contra el grado"}
-![CV 5 con barras de ±1 EE contra el grado N de 0 a 12. El mínimo está en N = 6, con CV 9.69 ± 1.33; el umbral mínimo más un EE es 11.02 y la regla de un EE también elige N = 6. L_ent baja siempre, de 51.2 a 4.5. El riesgo R de cada grado, que solo existe en el simulador, es mínimo en N = 4 (11.0) y vale 27.3 en el elegido. Piso 9.0; benchmark, la media de entrenamiento, 51.4.](../_assets/ml-c2-cv-capacidad.svg)
+![CV 5 con barras de ±1 EE contra el grado N de 0 a 12. El mínimo está en N = 6, con CV 9.69 ± 1.33; el umbral mínimo más un EE es 11.02 y la regla de un EE también elige N = 6. L_ent del mismo reajuste baja siempre, de 52.8 a 5.5. El riesgo R de cada grado, que solo existe en el simulador, es mínimo en N = 4 (11.0) y vale 27.3 en el elegido. Piso 9.0; benchmark, la media de entrenamiento, 51.4.](../_assets/ml-c2-cv-capacidad.svg)
 :::
 
-La raya-punto muestra un punto de comparación (*benchmark*): la media de entrenamiento como punto de comparación; la clase 3 lo define.
+La raya-punto es el *benchmark*: «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 La curva de riesgo solo existe en el simulador. El piso de esta pérdida es $R_{\text{Bayes}}=\sigma_\varepsilon^2=9.0$; $\varepsilon$ conserva su sentido de ruido.
 
 **Piensa: Si dos grados tienen $\mathrm{CV}_5$ casi iguales, ¿estás obligado a quedarte con el que salió más bajo?**
@@ -222,12 +222,16 @@ El primero que entra es el 6. En esta semilla ambas reglas coinciden; la regla n
 
 La caída de $L_{\text{ent}}$ recuerda @ml-c1-teo-optimismo-entrenamiento.
 La CV primero baja y luego sube; [[ml-sesgo-y-varianza|Sesgo y varianza]] explica esa forma.
-El elegido reajustado tiene $R=27.3$, frente al mejor $R=11.0$ del grado 4, que la elección no vio.
+El elegido reajustado tiene $R=27.3$, frente al mejor $R=11.0$ del grado 4 reajustado con las 48 entregas de desarrollo, que la elección no vio.
 El grado 6 se dobla en los bordes. La brecha de @ml-c1-def-brecha sigue siendo $R-L_{\text{ent}}$, no CV menos entrenamiento.
 
 ¿Qué podemos hacer con los intervalos de la gráfica? Usarlos como tolerancia orientativa; no prueban igualdad de riesgos.
 Los triángulos bajo el benchmark son una señal descriptiva. Sus pérdidas dependen entre sí y elegiste el grado con ellas.
 La confirmación requiere la prueba, abierta una vez, y la diferencia pareada de pérdidas de los modelos ya fijados.
+
+Con el grado 6 fijado y reajustado, las doce entregas de prueba reportan $112.5\pm147.0$ y el benchmark, en esa misma prueba, $82.3\pm40.3$; ambas cifras llevan $\pm2\,\mathrm{EE}$. La diferencia pareada «modelo menos benchmark» es $+30.3$ con EE 71.9: el modelo no le gana al benchmark en esta prueba.
+
+Una sola entrega del borde tiene pérdida 779.9 y domina el promedio. Con $n_{\text{prueba}}=12$, la prueba es insesgada pero muy imprecisa. En el simulador, $R=27.3$ contra 51.4 del benchmark: con pocas entregas, la prueba no alcanza a ver esa ventaja.
 
 > [!WARNING]
 > Lectura equivocada: «La regla de un EE prueba que los dos modelos son igual de buenos».
@@ -401,7 +405,7 @@ Con una prueba final bien hecha, la anidada no es obligatoria: la prueba mide el
 La anidada permite evaluar la selección cuando no alcanza para reservar una prueba aparte.
 
 ::: remark {#ml-c2-obs-variantes title="Otras formas de rotar"}
-Dejar-uno-fuera tiene casi ningún sesgo por tamaño, pero cuesta muchos ajustes y sus cifras están muy correlacionadas.
+Dejar-uno-fuera casi no tiene sesgo por tamaño, pero cuesta muchos ajustes y sus cifras están muy correlacionadas.
 La CV repetida rehace la partición con otras semillas y promedia para reducir el ruido de la partición.
 Las versiones temporal y por grupos respetan el despliegue; llegan en la clase 5.
 :::
@@ -479,10 +483,8 @@ Elegir entre 13 grados con cinco pliegues cuesta $M\cdot k+1=66$ ajustes.
 En las entregas, ambas reglas eligen grado 6: $\mathrm{CV}_5=9.69\pm1.33$, con umbral 11.02.
 La media del grado 2, 11.37, queda fuera aunque su barra cruce el umbral.
 
-Una vez fijado y reajustado el elegido, las doce entregas de prueba reportan $112.5\pm147.0$.
-El benchmark en esa misma prueba da $82.3\pm40.3$; ambas cifras llevan $\pm2\,\mathrm{EE}$.
-Una entrega en el borde vuelve enorme y ruidosa la pérdida del elegido. Insesgada no significa exacta: doce entregas son pocas para precisar este riesgo.
-En el simulador, $R=27.3$ para el elegido, frente a 11.0 del grado 4; el benchmark tiene riesgo 51.4.
+En prueba, el elegido da 112.5 frente a 82.3 del benchmark; una entrega del borde domina el promedio y la comparación es muy imprecisa.
+En el simulador, $R=27.3$ para el elegido, frente a 11.0 del grado 4 reajustado con las 48 entregas de desarrollo; el benchmark tiene riesgo 51.4.
 
 El EE de CV también requiere cuidado: en 200 muestras, reporta 2.2 en promedio ante una desviación real de 3.1.
 Con seis positivos y cinco pliegues, el azar deja algún pliegue sin positivos el 88 % de las veces; estratificar, el 0 %.

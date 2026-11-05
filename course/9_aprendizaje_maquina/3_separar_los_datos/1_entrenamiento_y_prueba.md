@@ -73,7 +73,7 @@ La tabla separa las perillas del modelo de las decisiones sobre cómo medirlo. $
 | umbral $\tau$ | cuándo una probabilidad se vuelve «sí» | validación, con la métrica elegida | clase 4 |
 | pesos de clase $w_y$ | cuánto pesa cada clase en la pérdida | validación, con una métrica sin pesos | clase 4 |
 | número de vecinos; profundidad de un árbol | la capacidad de esas familias | $L_{\text{val}}$ o $\mathrm{CV}_k$ | clase 1 (vecinos), clase 5 (árboles) |
-| número de pliegues $k$, semilla, fracciones, $n_{\text{prueba}}$ | **cómo se mide**, no el modelo | se fijan antes de medir; no se eligen con datos | clase 2 |
+| número de pliegues $k$, semilla, fracciones, $n_{\text{prueba}}$ | **cómo se mide**, no el modelo | se fijan antes de abrir la prueba; nunca mirando su resultado | clase 2 |
 
 Aquí $\mu$ conserva el sentido de multiplicador de la unidad 6; en Markov nombraba una distribución. $\tau$ será un umbral; en juegos era un tablero y en Markov, un tiempo de llegada. $w_y$ será un peso de clase; no es el valor de un hijo en juegos ni una cadena en computabilidad.
 :::
@@ -112,7 +112,7 @@ Clasifica como parámetro, hiperparámetro o del procedimiento:
 ## 2 · Apartar una prueba
 
 ::: figure {#ml-c2-ajustes-con-prueba title="Grados 1, 4 y 12 con entrenamiento y prueba"}
-![Tres paneles con las mismas 60 entregas: círculos de entrenamiento y cuadrados de prueba, la f verdadera y el ajuste. Grado 1: L_ent 18.5, L_prueba 15.3. Grado 4: L_ent 7.1, L_prueba 13.3. Grado 12: L_ent 4.5, el más bajo, pero la curva pasa cerca de los círculos y se dispara en los bordes, y su L_prueba es enorme, 15919.](../_assets/ml-c2-ajustes-con-prueba.svg)
+![Tres paneles con 36 entregas de entrenamiento (círculos) y 12 de prueba (cuadrados); las 12 de validación no se muestran. La f verdadera y el ajuste. Grado 1: L_ent 18.5, L_prueba 15.3. Grado 4: L_ent 7.1, L_prueba 13.3. Grado 12: L_ent 4.5, el más bajo, pero la curva pasa cerca de los círculos y se dispara en los bordes, y su L_prueba es enorme, 15919.](../_assets/ml-c2-ajustes-con-prueba.svg)
 :::
 
 Cada círculo es una entrega usada para ajustar; cada cuadrado, una que el ajuste no vio. Los ejes muestran distancia y tiempo. La curva delgada es $\widehat f$; la gruesa verde, $f$. El grado 12 pasa cerca de los círculos y falla lejos de ellos.
@@ -145,7 +145,7 @@ Entonces
 
 $$\operatorname{Var}\bigl(L_{\text{prueba}}(\widehat\beta)\mid\widehat\beta\bigr)=\frac{\operatorname{Var}(\ell\mid\widehat\beta)}{n_{\text{prueba}}},\qquad \mathrm{EE}\approx\frac{s_\ell}{\sqrt{n_{\text{prueba}}}},\qquad s_\ell^2=\frac{1}{n_{\text{prueba}}-1}\sum_{i\in\mathcal D_{\text{prueba}}}\bigl(\ell_i-L_{\text{prueba}}\bigr)^2.$$
 
-$s_\ell$ es la desviación estándar muestral de las pérdidas. Dividirla entre la raíz del tamaño estima cuánto fluctúa su promedio. Con pérdidas $1,1,4,4$, el promedio es 2.5 y su EE es aproximadamente 0.87.
+$s_\ell$ es la desviación estándar muestral de las pérdidas. Dividirla entre la raíz del tamaño estima cuánto fluctúa su promedio. Con pérdidas $0,2,2,4$, el promedio es 2 y su EE es aproximadamente 0.82.
 :::
 
 ::: proof {#ml-c2-dem-prueba-insesgada of="ml-c2-teo-prueba-insesgada"}
@@ -193,7 +193,7 @@ La cuenta usa $1,1,4,4$, no los residuales con signo. Tanto la pérdida promedio
 ## 3 · Medir cuánto baila una prueba
 
 ::: figure {#ml-c2-prueba-ruidosa title="Una prueba honesta también baila"}
-![Dos histogramas de L_prueba del mismo modelo de grado 4, congelado, con 500 pruebas nuevas cada uno. Con 20 entregas por prueba la nube es ancha, desviación 3.8, y el intervalo de ±2 EE cubre R en 89 % de las pruebas; con 200, desviación 1.1 y cobertura 94 %. Las dos nubes se centran en R = 11.8.](../_assets/ml-c2-prueba-ruidosa.svg)
+![Dos histogramas de L_prueba del mismo modelo de grado 4, congelado, con 500 pruebas nuevas cada uno. Con 20 entregas por prueba la nube es ancha, desviación 3.8, y el intervalo de ±2 EE cubre R en 89 % de las pruebas; con 200, desviación 1.1 y cobertura 96 %. Las dos nubes se centran en R = 11.8.](../_assets/ml-c2-prueba-ruidosa.svg)
 :::
 
 Ahora el modelo está congelado: grado 4, ajustado una sola vez. Cada barra cuenta pruebas cuyo promedio cae en ese tramo del eje horizontal. Cada prueba sortea nuevas entregas; la línea crema discontinua marca $R=11.8$.
@@ -202,11 +202,11 @@ Ahora el modelo está congelado: grado 4, ajustado una sola vez. Cada barra cuen
 
 Ninguna tiene que estar mal. Insesgada no significa exacta: no tiene una dirección sistemática de error al repetirla. En 500 pruebas nuevas, la desviación de $L_{\text{prueba}}$ es 3.8 con 20 entregas y 1.1 con 200.
 
-Las dos nubes se centran en el riesgo, pero la primera es más ancha. Los intervalos $\pm2\,\mathrm{EE}$ lo cubren en 89 % y 94 % de las pruebas, respectivamente. La cola de las pérdidas dificulta la aproximación con pocas observaciones.
+Las dos nubes se centran en el riesgo, pero la primera es más ancha. Los intervalos $\pm2\,\mathrm{EE}$ lo cubren en 89 % y 96 % de las pruebas, respectivamente. La cola de las pérdidas dificulta la aproximación con pocas observaciones.
 
 La raíz del denominador explica el costo de precisar: el ancho baja como $1/\sqrt{n_{\text{prueba}}}$. Cuadruplicar la prueba reduce el EE esperado a la mitad. Solo cambia la evaluación; el modelo no aprende de esas entregas adicionales.
 
-Reporta $L_{\text{prueba}}\pm2\,\mathrm{EE}$ junto al punto de comparación (*benchmark*): la media de entrenamiento como punto de comparación; la clase 3 lo define. Una pérdida aislada no dice si mejoraste sobre esa referencia.
+Reporta $L_{\text{prueba}}\pm2\,\mathrm{EE}$ junto a un *benchmark*: «la media de entrenamiento como punto de comparación; la clase 3 lo define». Una pérdida aislada no dice si mejoraste sobre esa referencia.
 
 Las pruebas nuevas del bloque 2 salen de `datos.despliegue`, la muestra enorme del despliegue simulado, no de `datos.prueba`. Nada lee la prueba reservada para tomar decisiones. Falta ver qué pasa si rompes esa separación.
 
@@ -321,7 +321,7 @@ Separar al azar vale cuando el despliegue se parece a sacar más observaciones i
 :::
 
 ::: figure {#ml-c2-prueba-miente title="Lo que promete la prueba según cómo se separó"}
-![Por contrato, lo que promete la prueba contra el riesgo del despliegue, en escala logarítmica. Más de lo mismo, al azar: 11.9 contra R 9.3. El mes que viene, al azar: 57.6 contra R 135.6; por tiempo: 119.4 contra R 155.6. Pacientes nuevos, al azar: 1.9 contra R 17.9; por paciente: 20.3 contra R 18.0. Otra ciudad, al azar: 13.1 contra R 109.5; ninguna separación de la muestra la imita. La raya y punto es el benchmark, la media de entrenamiento.](../_assets/ml-c2-prueba-miente.svg)
+![Por contrato, lo que promete la prueba contra el riesgo del despliegue, en escala logarítmica. Más de lo mismo, al azar: 11.9 contra R 9.3. El mes que viene, al azar: 57.6 contra R 135.6; por tiempo: 119.4 contra R 155.6. Pacientes nuevos, al azar: 1.9 contra R 17.9; por paciente: 20.3 contra R 18.0. Otra ciudad, al azar: 13.1 contra R 109.5; ninguna separación de la muestra la imita. En cada columna, la raya de la izquierda es R y la raya y punto de la derecha, el benchmark (la media de entrenamiento).](../_assets/ml-c2-prueba-miente.svg)
 :::
 
 Cada par compara lo que promete la prueba con el riesgo del despliegue; el eje vertical usa escala logarítmica. En «más de lo mismo», $11.9\pm5.9$ contiene $R=9.3$: el margen es dos EE, no exactitud.
@@ -335,9 +335,11 @@ Compara también con el benchmark. Estas filas corresponden a los modelos ajusta
 | Pacientes nuevos | 1.9 | 17.9 | 59.4 |
 | Otra ciudad | 13.1 | 109.5 | 86.1 |
 
+En «el mes que viene», el modelo ni siquiera le gana a la media de entrenamiento en el despliegue: $R=135.6$ contra 132.1 del benchmark; en «otra ciudad» ocurre lo mismo, con 109.5 contra 86.1. La prueba al azar también lo escondió: prometía 57.6 y 13.1, respectivamente.
+
 Al azar, «el mes que viene» promete 57.6 frente a 135.6; por tiempo, 119.4 frente a 155.6. Cambia el entrenamiento, por eso cambia también el riesgo. Para pacientes nuevos, separar al azar da 1.9 frente a 17.9; apartar pacientes da 20.3 frente a 18.0.
 
-En “el mes que viene”, $R$ es el error **a largo plazo**: un mes cualquiera del futuro, sin aprovechar lo que el ruido de los últimos días recuerda; justo después de la muestra el error puede salir menor.
+En «el mes que viene», $R$ es el error **a largo plazo**: un mes cualquiera del futuro, sin aprovechar lo que el ruido de los últimos días recuerda; justo después de la muestra el error puede salir menor.
 
 Los modelos se fijaron antes de mirar la prueba. El caso temporal usa vecinos sobre distancia y tiempo para aprovechar cercanía temporal. Se eligió para exhibir el engaño: un modelo lineal que solo usa distancia casi no miente, con 103.3 frente a 98.9.
 
@@ -361,9 +363,11 @@ Calculas el error de la prueba dos veces: solo con sus entregas de C, y con toda
 :::
 
 ::: answer {#ml-c2-resp-categoria-ausente of="ml-c2-ej-categoria-ausente" title="Respuesta · Nombrar la población evaluada"}
-Solo C mide entregas de una colonia nueva: «otra ciudad» en chico. Toda la prueba mezcla colonias conocidas y nuevas según cuántas entregas cayeron de cada una. No representa por sí sola ninguno de los dos contratos propuestos.
+Solo C mide entregas de una colonia nueva: «otra ciudad» en chico. Toda la prueba evalúa una mezcla con las proporciones que dejó el sorteo.
 
-Para «más entregas de estas tres colonias», procura que las tres aparezcan en ambos lados: la página siguiente anuncia cómo estratificar. Para «colonias nuevas», aparta una colonia entera y reporta solo su error. La composición de la prueba debe venir del uso previsto, no de un accidente del sorteo.
+Para «más entregas de estas tres colonias», esa cifra te sirve en la medida en que esas proporciones se parezcan a las del despliegue. Si la colonia no cambia la distribución de la pérdida, la mezcla casi no importa; si la cambia, una mezcla distinta de la del despliegue sesga la cifra.
+
+Para «más entregas de estas tres colonias», puedes estratificar para controlar la composición; no es un requisito universal. La página siguiente anuncia cómo hacerlo. Para «colonias nuevas», aparta una colonia entera y reporta solo su error. La composición de la prueba debe venir del uso previsto, no de un accidente del sorteo.
 :::
 
 > [!TIP]
@@ -391,7 +395,7 @@ Si quieres un margen aproximado de dos EE menor que una tolerancia, despeja la r
 
 $$n_{\text{prueba}}\approx(2s_\ell/\text{tolerancia})^2.$$
 
-Estima la dispersión con validación, antes de abrir la prueba. El grado elegido con 80 % puede no ser el óptimo para 100 %; la página 3 retoma esa diferencia.
+Estima la dispersión con validación, antes de abrir la prueba. Para dimensionar el reparto sirven el desarrollo o un piloto; lo que no se vale es ajustarlo mirando la prueba. El grado elegido con 80 % puede no ser el óptimo para 100 %; la página 3 retoma esa diferencia.
 
 ::: exercise {#ml-c2-ej-tamano-prueba title="Calcula cuánta prueba necesitas"}
 Tus pérdidas en validación tienen $s_\ell\approx10$. Quieres reportar con $\mathrm{EE}\le0.5$. ¿Cuántas observaciones de prueba necesitas?

@@ -235,9 +235,9 @@ La última asignación a `datos` determina qué ejemplo usa el taller.
 **Galería.** Abre los casos 13–16 como misterios. Lee la pregunta de cada caso,
 anota tu apuesta y busca una pista visual antes de abrir la explicación.
 
-En el caso 13, el proceso y el modelo se eligieron para que la separación al
-azar engañe. Con un modelo que no usa el tiempo casi no ocurre.
-En el caso 16, busca los pliegues que traen una entrega lejana.
+En el caso 13, compara $L_{\text{prueba}}$ con $R$: el polinomio usa solo la distancia, sin tiempo, y la prueba al azar casi no engaña.
+Contrasta lo que ves con la explicación: la página muestra el engaño con vecinos en distancia y tiempo.
+En el caso 16, busca en qué pliegues distintos caen las dos entregas lejanas y cuánto sube el error de cada uno.
 En cada misterio, identifica qué decisión cambió y qué comparación permite juzgarla.
 
 ### celda: ejercicio-cinco-pliegues

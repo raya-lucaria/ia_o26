@@ -267,3 +267,74 @@ def test_cada_figura_del_tramo_completo_vive_en_un_figure_de_p3():
     assert set(fig._COMPLETO) <= usadas, set(fig._COMPLETO) - usadas
 
 # --- fin tramo completo ---
+
+
+# --- ronda 1 de revision ---
+
+G_TAREA = "tools/cuadernos_ml/tarea_2_separar_y_elegir.texto.md"
+LITERAL_BENCHMARK = "la media de entrenamiento como punto de comparación; la clase 3 lo define"
+
+
+def test_r1_p1_la_cobertura_con_200_y_el_benchmark_que_le_gana_al_modelo():
+    pr, im = c.cifras_c2_prueba_ruidosa(), c.cifras_c2_imitar()
+    assert f"{100 * pr['cobertura_200']:.0f} %" in seccion(P1, 3)
+    s5 = seccion(P1, 5)
+    for contrato in ("el mes que viene", "otra ciudad"):
+        a = im[contrato]["azar"]
+        assert a["R"] > a["benchmark"], contrato     # el modelo pierde con la media
+        assert esta(a["R"], s5) and esta(a["benchmark"], s5), contrato
+    assert "“" not in texto(P1) and "”" not in texto(P1)
+
+
+def test_r1_p1_el_teorema_no_regala_el_ejercicio_del_ee():
+    t = texto(P1)
+    i = t.find("::: theorem {#ml-c2-teo-prueba-insesgada")
+    j = t.find(":::", t.find("\n", i) + 1)
+    assert "1,1,4,4" not in t[i:j]
+
+
+def test_r1_p2_el_reporte_de_prueba_en_el_cuerpo_del_seccion_3():
+    h = c.cifras_c2_hilo()
+    s3 = seccion(P2, 3)
+    assert esta(h["L_prueba_un_ee"], s3) and esta(2 * h["ee_prueba_un_ee"], s3)
+    assert esta(h["benchmark_prueba"], s3) and esta(2 * h["ee_benchmark_prueba"], s3)
+    assert esta(h["dif_prueba"], s3) and esta(h["ee_dif_prueba"], s3)
+    assert h["dif_prueba"] > 0                       # el elegido no le gana en prueba
+    assert esta(h["R_por_N"][4], s3) and "48 entregas de desarrollo" in s3
+
+
+def test_r1_p3_el_sesgo_no_baja_siempre():
+    sv = c.cifras_c2_sesgo_varianza()
+    s3 = seccion(P3, 3)
+    assert "aumentar el grado reduce el sesgo y aumenta la varianza" not in s3
+    assert esta(sv[9]["sesgo2"], s3) and esta(sv[12]["sesgo2"], s3)
+    tope = max(sv["sesgo2_interior"][N] for N in range(6, 13))
+    assert f"{tope:.2f}" in s3
+
+
+def test_r1_p3_cada_ejercicio_lleva_titulo():
+    sin = re.findall(r"(?m)^::: exercise \{#(ml-c2-[a-z0-9-]+)\}", texto(P3))
+    assert not sin, sin
+
+
+def test_r1_el_literal_del_benchmark_sin_arranque_repetido():
+    for nombre in (P1, P2, P3, TAREA, G03, G_TAREA):
+        t = texto(nombre)
+        assert LITERAL_BENCHMARK in t, nombre
+        assert "comparación (*benchmark*): la media" not in t, nombre
+        assert "será la media de entrenamiento como punto" not in t, nombre
+
+
+def test_r1_guion_03_la_prueba_de_200_y_el_taller():
+    pr, h = c.cifras_c2_prueba_ruidosa(), c.cifras_c2_hilo()
+    g = texto(G03)
+    assert esta(pr["desv_200"], g, 2) and f"{100 * pr['cobertura_200']:.0f} %" in g
+    assert esta(h["L_prueba_un_ee"], g, 2) and esta(h["benchmark_prueba"], g, 2)
+    assert "“" not in g and "”" not in g
+
+
+def test_r1_guion_05_avisa_del_sesgo_del_taller():
+    t = c.cifras_c2_taller_descomponer()
+    assert f"{t[12]['sesgo2']:.0f}" in texto(G05)
+
+# --- fin ronda 1 ---

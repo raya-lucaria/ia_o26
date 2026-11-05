@@ -740,6 +740,26 @@ def _medianas_R(t):
 
 
 @lru_cache(maxsize=None)
+def cifras_c2_taller_descomponer():
+    """taller-intro del guion 05 (revision r1): lo que imprime
+    ml.taller(hilo(), clase=2, que="descomponer") con sus valores por omision
+    (50 repeticiones, malla de toda la realidad, bordes incluidos). El sesgo²
+    del grado 12 sale enorme por los pocos ajustes que se disparan en los bordes;
+    el guion lo avisa con esta cifra."""
+    ml, w = _ml(), _silencio()
+    try:
+        d = hilo()
+        construir_ = {N: (lambda df, N=N: ml.ajustar(df, phi=ml.polinomio(N, variable="x")))
+                      for N in CANDIDATOS}
+        t = ml.sesgo_varianza(d.rehacer, construir_, repeticiones=50).tabla
+        t = t.set_index("candidato")
+    finally:
+        w.__exit__(None, None, None)
+    return {N: {k: float(t.loc[N, k]) for k in ("sesgo2", "varianza", "total")}
+            for N in CANDIDATOS}
+
+
+@lru_cache(maxsize=None)
 def cifras_c2_curva_aprendizaje():
     """P3 §4, 05·3 y ml-c2-curva-aprendizaje: medianas de R (50 repeticiones) de los
     grados 1 y 10 en n = 30, 480 y 960; mediana de L_ent; grado que elige CV_5
