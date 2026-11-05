@@ -14,7 +14,6 @@
 # %% [codigo] bloque-1-juega
 #@title Juega: las tres vistas
 import warnings
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -32,9 +31,8 @@ def bloque_1(modelo, sigma, donde, semilla):
     m = ml.ajustar(datos, phi=ml.columnas("x1"))
     df = datos.val if donde == "validación" else datos.ent
     e = df["y"] - m.predecir(df)
-    vista, hist = ml.dibujar_tres_paneles(m, df).axes[:2]
-    lim = (min(*vista.get_xlim(), *vista.get_ylim()), max(*vista.get_xlim(), *vista.get_ylim()))
-    vista.set_xlim(lim); vista.set_ylim(lim)        # ŷ y y con los mismos límites
+    vista, hist = ml.dibujar_tres_paneles(m, df).axes[:2]   # ŷ contra y: mismos límites
+    lim = vista.get_xlim() + vista.get_ylim(); vista.axis([min(lim), max(lim)] * 2)
     hist.axvspan(e.mean() - e.std(), e.mean() + e.std(), color="0.6", alpha=0.3)
     hist.axvline(0, ls="--", color="0.3"); hist.axvline(e.mean(), color="0.1")
     plt.show()

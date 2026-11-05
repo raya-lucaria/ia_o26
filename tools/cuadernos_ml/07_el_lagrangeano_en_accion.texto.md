@@ -120,7 +120,7 @@ Si exploras «semilla», cambia la semilla: la población y $f$ se quedan; cambi
 ### celda: bloque-3-mira
 
 **Mira.** En «el ajuste», los puntos son entregas y las curvas son $f$ y el ajuste; sigue sus oscilaciones al mover $\mu$.
-En las tres vistas, cada punto es una entrega de validación: el centro residual casi no se mueve; con $\mu$ grande aparece forma en $e$ contra $x$.
+En las tres vistas, cada punto es una entrega de validación: compara centro, ancho y forma; con $\mu$ grande aparece forma en $e$ contra $x$.
 En la U, los círculos son $L_{\text{ent}}$, los triángulos son $\mathrm{CV}_5$ y la línea crema es $R$; ubica «tú».
 
 ### celda: bloque-3-explica
@@ -139,8 +139,9 @@ El riesgo es enorme con $\mu$ chica y sube con $\mu$ grande; no sigue una U limp
 El $R$ impreso aproxima la pérdida esperada con una muestra enorme;
 esa información no está disponible para elegir en un problema real.
 
-El intercepto libre mantiene el centro residual cerca de cero; ese centro
-no mide el sesgo de una predicción. Con solo 12 filas de validación, el ancho salta.
+El intercepto libre garantiza un centro residual de 0 exacto en entrenamiento.
+En validación no hay tal garantía: con 12 filas, centro y ancho saltan.
+El centro no mide el sesgo de una predicción.
 Una penalización grande deja estructura sin seguir: aparece forma en los residuales.
 
 `polinomio(12, escalar=True)` lleva $x$ a $[-1,1]$ antes de elevar;
@@ -207,7 +208,7 @@ El orden se declara antes de medir: $\mu$ de mayor a menor, de simple a complejo
 ### celda: bloque-5-mira
 
 **Mira.** Los círculos son $L_{\text{ent}}$; con CV, los triángulos son medias con barras de EE; la línea crema es $R$.
-Recorre $\mu$ de mayor a menor: busca la primera media bajo «mínimo + 1 EE»; los números cuentan pendientes distintas de cero.
+Recorre $\mu$ de mayor a menor: busca la primera media bajo «mínimo + 1 EE»; los números cuentan pendientes distintas de cero. La línea impresa indica que los conteos y $R$ usan el reajuste en entrenamiento ∪ validación con CV, y el ajuste en entrenamiento con $L_{\text{ent}}$ o $L_{\text{val}}$.
 La prueba está en una celda aparte que no cambia con los controles: si cambiara con ellos, elegirías con la prueba.
 
 ### celda: bloque-5-explica

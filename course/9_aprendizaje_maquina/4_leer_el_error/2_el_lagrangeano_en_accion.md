@@ -50,8 +50,8 @@ El recorrido toma ~35 min de lectura, ~12 de cuentas a mano y ~28 con el noteboo
 
 *~8 min de lectura.*
 
-La curva gruesa es $L_{\text{ent}}$ como función de un solo coeficiente.
-Las otras le suman $\mu\beta^2$ (izquierda) o $\mu\lvert\beta\rvert$ (derecha)
+La curva gruesa es $L_{\text{ent}}$ como función de un solo coeficiente: la de $\mu=0$.
+Los paneles suman $\mu\beta^2$ (arriba) o $\mu\lvert\beta\rvert$ (abajo)
 para tres valores de $\mu$; el punto marca cada mínimo.
 
 ::: figure {#ml-c3-un-coeficiente title="Un coeficiente y su castigo"}
@@ -154,8 +154,8 @@ Si $\Omega$ es derivable (ridge), «minimiza» es la estacionariedad
 $\nabla\mathcal L=0$ de @opt-kkt; si no (lasso), es la condición de la
 esquina que se deriva en la demostración de @ml-c3-teo-soft-thresholding.
 
-Esto **extiende** @opt-teo-kkt; no es lo que la unidad 6 demostró. La figura
-`ml-c3-recta-de-apoyo` lo muestra para $d>0$: $\mu$ es la pendiente (con
+Esto **extiende** @opt-teo-kkt; no es lo que la unidad 6 demostró. @ml-c3-recta-de-apoyo
+lo muestra para $d>0$: $\mu$ es la pendiente (con
 signo menos) de una recta que apoya a la curva del mejor $L_{\text{ent}}$
 contra el presupuesto.
 :::
@@ -163,6 +163,7 @@ contra el presupuesto.
 Cada punto de la curva es el mejor $L_{\text{ent}}$ que se puede lograr con presupuesto $d$: la curva $v(d)$.
 El plano tiene presupuesto $\Omega$ en horizontal y pérdida en vertical.
 La recta toca la curva en el óptimo del presupuesto marcado.
+La figura usa los datos de §2 (dos variables estandarizadas con correlación 0.5) y lasso.
 
 ::: figure {#ml-c3-recta-de-apoyo title="μ es la pendiente de apoyo"}
 ![La mejor pérdida de entrenamiento contra el presupuesto d baja y es convexa; en d = 1 la toca una recta de pendiente −1.36: ese es μ](../_assets/ml-c3-recta-de-apoyo.svg)
@@ -198,10 +199,9 @@ $\Omega_1(\widehat\beta_{\text{MC}})=1.5$.
 ¿El ajuste sin penalizar cumple la restricción?
 :::
 ::: answer {#ml-c3-resp-holgura of="ml-c3-ej-holgura" title="Respuesta · Sobra presupuesto"}
-Sí, cumple con holgura: $1.5<2$. Por tanto,
-$\widehat\beta=\widehat\beta_{\text{MC}}$ sigue siendo óptimo y $\mu=0$
-por holgura complementaria (@opt-kkt). Restringir no mejora el mínimo libre
-cuando ese mínimo ya está permitido.
+(a) $\mu=0$: el presupuesto no aprieta, $1.5<2$, y la holgura
+complementaria (@opt-kkt) lo obliga. (b) $\widehat\beta=\widehat\beta_{\text{MC}}$:
+el mínimo libre ya está permitido.
 :::
 
 > [!TIP]
@@ -239,7 +239,11 @@ Con $\beta_1,\dots$ los coeficientes de las columnas de $\Phi$ salvo el
 intercepto (en esta unidad, $\lVert\beta\rVert$ no incluye $\beta_0$):
 
 $$
-\Omega_2(\beta)=\lVert\beta\rVert_2^2=\sum_{j\ge1}\beta_j^2\ \text{(ridge)},\qquad\Omega_1(\beta)=\lVert\beta\rVert_1=\sum_{j\ge1}\lvert\beta_j\rvert\ \text{(lasso)},
+\Omega_2(\beta)=\lVert\beta\rVert_2^2=\sum_{j\ge1}\beta_j^2\ \text{(ridge)},
+$$
+
+$$
+\Omega_1(\beta)=\lVert\beta\rVert_1=\sum_{j\ge1}\lvert\beta_j\rvert\ \text{(lasso)},
 $$
 
 $$
@@ -303,7 +307,11 @@ $\frac1n\sum_i(y_i-\beta x_i)^2+\mu\,\Omega(\beta)$ es estrictamente
 convexo, así que su minimizador $\widehat\beta$ es único:
 
 $$
-\widehat\beta_{\text{lasso}}=\operatorname{sign}(b)\max\bigl(\lvert b\rvert-\mu/2,\ 0\bigr),\qquad\widehat\beta_{\text{ridge}}=\frac{b}{1+\mu}.
+\widehat\beta_{\text{lasso}}=\operatorname{sign}(b)\max\bigl(\lvert b\rvert-\mu/2,\ 0\bigr),
+$$
+
+$$
+\widehat\beta_{\text{ridge}}=\frac{b}{1+\mu}.
 $$
 
 Lasso vale exactamente 0 si $\lvert b\rvert\le\mu/2$; ridge nunca, si
@@ -376,12 +384,15 @@ $\mu$, de más capacidad a la izquierda a menos a la derecha.
 ![Las entregas de la clase 2 con el mismo polinomio de grado 12: con μ 100 la recta de la media; con μ 0.0032 una curva cercana a f; con μ 10⁻⁶ la curva persigue los 36 puntos y oscila, como en la clase 2. R: 48.3, 29.3, 203.1. Cuarto panel: contra μ, L ent sube; CV 5 forma una U con fondo en μ = 0.0032; R es enorme con μ chica, no es una U limpia en medio y sube con μ grande](../_assets/ml-c3-grado-12-mu.svg)
 :::
 
-En A, $\mu=100$ deja casi la media; en B, $\mu=0.0032$ recupera la forma de $f$.
+En A, $\mu=100$ deja casi la media; en B, $\mu=0.0032$ se acerca a la forma de $f$.
 En C, $\mu=10^{-6}$ persigue los puntos y oscila, sobre todo en los bordes.
 No interpola las 36 entregas. Es la misma familia, con otra capacidad:
 sigue siendo lineal en $\beta$.
 
 La U que viste contra el grado (@ml-c2-cv-capacidad) reaparece aquí en $\mathrm{CV}_5$, con mínimo en B.
+El $R$ de B, 29.3, supera al de las $\mu$ vecinas de la rejilla: B cae en el tope intermedio de $R$.
+La CV con 36 entregas no ve ese tope: elegir con CV no garantiza el mínimo de $R$.
+
 $L_{\text{ent}}$ sube con $\mu$; $R$ no dibuja una U limpia:
 baja desde C, tiene un tope intermedio y vuelve a subir hacia A.
 La U de §6 usará otras variables y lasso para elegir.
@@ -395,9 +406,11 @@ La U de §6 usará otras variables y lasso para elegir.
 
 El grado 12 sin penalizar tenía $R=1971$. Aquí $R$ castiga especialmente la
 penalización pequeña, aunque esas 12 filas de validación prefieran C.
-En la muestra enorme, el centro queda chico frente al ancho; B tiene el menor ancho.
+En la muestra enorme, el centro queda chico frente al ancho en este ejemplo.
 
-El intercepto libre mantiene el centro cerca de cero: no lo leas como sesgo de predicción (@ml-c3-obs-centro-no-es-sesgo).
+El intercepto libre garantiza $\bar e_{\text{ent}}=0$ en entrenamiento (@ml-c3-def-tres-vistas).
+En validación y en la muestra enorme no hay tal garantía;
+no lo leas como sesgo de predicción (@ml-c3-obs-centro-no-es-sesgo).
 Con poca penalización pesa la varianza; con mucha, queda forma en $e$ contra $x$ que el ajuste ya no sigue.
 
 El punto de comparación (*benchmark*) de la media marca el extremo de este recorrido.
@@ -489,6 +502,7 @@ La figura muestra trayectorias de lasso sin estandarizar y estandarizando con en
 Sin estandarizar, $x_1$ se apaga en $\mu=1.1$;
 $x_2$, hasta $\mu\approx2.8\times10^6$, fuera de la figura.
 Estandarizando se apagan en 2.5 y 2.9, respectivamente.
+En el panel sin estandarizar, la curva de $x_2$ muestra $10^6\cdot\widehat\beta_2$: solo se amplía su escala vertical para que se vea; su valor es un millón de veces menor.
 
 **Piensa: si mides una distancia en metros en lugar de kilómetros, ¿debería cambiar lo que predice el modelo?**
 
@@ -544,6 +558,7 @@ El modelo cambió por una preferencia que nadie eligió.
 > [!TIP]
 > **Míralo correr: bloque 6 · Estandarizar**
 > Cambia las unidades y compara las trayectorias antes y después de estandarizar.
+> El bloque 5 acompaña a §6: puedes saltarlo y volver.
 >
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/07_el_lagrangeano_en_accion.ipynb)
 
@@ -555,6 +570,8 @@ Con escalas comparables, falta elegir el precio. Son las 50 variables de §4,
 con lasso y 30 valores de $\mu$ entre $10^{-4}$ y $10^3$.
 El eje horizontal crece en escala logarítmica. Los círculos muestran $L_{\text{ent}}$;
 los triángulos, $\mathrm{CV}_5\pm$ un EE. Arriba se cuentan las pendientes distintas de cero.
+
+Los conteos y $R$ son del reajuste con entrenamiento ∪ validación (240 filas), el modelo que se entrega; $L_{\text{ent}}$ es del ajuste con entrenamiento.
 
 La curva crema discontinua es $R$, calculada con la muestra enorme de la simulación;
 la raya-punto magenta es el benchmark de la media.
@@ -571,18 +588,24 @@ El mínimo y la elección llevan marcas sobre sus puntos.
 
 **Piensa: si dejas que $L_{\text{ent}}$ elija $\mu$, ¿cuál elige?**
 
-La más pequeña: $10^{-4}$ en esta rejilla. El ajuste libre puede imitar a
+Aquí, la más pequeña: $10^{-4}$ en esta rejilla. El ajuste libre puede imitar a
 cualquier ajuste castigado, así que entrenamiento no tiene motivo para preferir más castigo.
 
-::: theorem {#ml-c3-teo-monotonia-mu title="Entrenamiento siempre prefiere menos μ"}
+::: theorem {#ml-c3-teo-monotonia-mu title="Entrenamiento nunca prefiere más μ"}
 Si $0\le\mu<\mu'$ y $\widehat\beta(\mu)$, $\widehat\beta(\mu')$
 minimizan $L_{\text{ent}}+\mu\,\Omega$ y $L_{\text{ent}}+\mu'\,\Omega$, entonces
 
 $$
-\Omega\bigl(\widehat\beta(\mu')\bigr)\le\Omega\bigl(\widehat\beta(\mu)\bigr)\qquad\text{y}\qquad L_{\text{ent}}\bigl(\widehat\beta(\mu)\bigr)\le L_{\text{ent}}\bigl(\widehat\beta(\mu')\bigr).
+\Omega\bigl(\widehat\beta(\mu')\bigr)\le\Omega\bigl(\widehat\beta(\mu)\bigr)
 $$
 
-Si se deja que $L_{\text{ent}}$ elija $\mu$, elige la más chica.
+y
+
+$$
+L_{\text{ent}}\bigl(\widehat\beta(\mu)\bigr)\le L_{\text{ent}}\bigl(\widehat\beta(\mu')\bigr).
+$$
+
+Si $L_{\text{ent}}$ elige $\mu$, la menor $\mu$ es una minimizadora; puede haber empates.
 :::
 ::: proof {#ml-c3-dem-monotonia-mu of="ml-c3-teo-monotonia-mu"}
 Escribe $\widehat\beta=\widehat\beta(\mu)$ y $\widehat\beta'=\widehat\beta(\mu')$.
@@ -595,8 +618,8 @@ y la misma con $\mu'$ y los papeles al revés.
 
 ::: remark {#ml-c3-obs-mu-hiperparametro title="μ y ρ se eligen fuera del ajuste"}
 $\mu$ y $\rho$ son hiperparámetros (@ml-c1-def-param-hiper): fijan el
-problema que resuelve $\widehat\beta(\mu)$, y $L_{\text{ent}}$ elegiría
-$\mu=0$. Se eligen con $\mathrm{CV}_k$ (@ml-c2-def-validacion-cruzada) en
+problema que resuelve $\widehat\beta(\mu)$, y $L_{\text{ent}}$ nunca prefiere
+una $\mu$ mayor: $\mu=0$ es una de sus minimizadoras. Se eligen con $\mathrm{CV}_k$ (@ml-c2-def-validacion-cruzada) en
 una rejilla logarítmica, estandarizando dentro de cada pliegue. Con la
 regla de un EE (@ml-c2-def-regla-un-ee) el orden de simple a complejo es
 **$\mu$ decreciente**.
@@ -694,8 +717,10 @@ $$
 los términos se suman:
 
 $$
-\mathcal L=L_{\text{ent}}+\mu_1\bigl(\sum_{j=2}^{12}\lvert\beta_j\rvert-d_1\bigr)+\mu_2\bigl((\beta_1-4)^2-d_2\bigr),\qquad\mu_1,\mu_2\ge0.
+\mathcal L=L_{\text{ent}}+\mu_1\bigl(\sum_{j=2}^{12}\lvert\beta_j\rvert-d_1\bigr)+\mu_2\bigl((\beta_1-4)^2-d_2\bigr),
 $$
+
+con $\mu_1,\mu_2\ge0$.
 
 **3. Forma penalizada.** Quita las constantes respecto de $\beta$:
 
@@ -774,7 +799,7 @@ Para seguir las conexiones y las fuentes:
 
 - El lagrangeano es $\mathcal L=L_{\text{ent}}+\mu(\Omega-d)$, con $\mu\ge0$ y el intercepto sin castigo.
 - La esquina hace ceros: con umbral $\mu/2$, lasso lleva $(3,\ 0.4)$ a $(2.5,\ 0)$ cuando $\mu=1$.
-- Entrenamiento elige la menor $\mu$; CV elige 0.14 por mínimo y 0.24 con un EE: 15 frente a 8 variables.
+- Entrenamiento nunca prefiere más $\mu$ (aquí elige $10^{-4}$); CV elige 0.14 por mínimo y 0.24 con un EE: 15 frente a 8 variables.
 - Estandariza con entrenamiento, dentro de cada pliegue. Con $\mu\to\infty$, llegas a la media.
 
 Continúa con la clase 4.

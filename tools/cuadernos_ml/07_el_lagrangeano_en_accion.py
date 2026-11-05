@@ -15,7 +15,6 @@
 # %% [codigo] bloque-1-juega
 #@title Juega: restringir es penalizar
 import warnings
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -35,7 +34,7 @@ def bloque_1(region, fraccion, mostrar_mu, curva):
     fig, ejes = plt.subplots(1, 2 if curva else 1, figsize=(11 if curva else 5.5, 5))
     a1 = ejes[0] if curva else ejes
     ml.dibujar_regiones(DATOS_B1, PHI_B1, region, d, mostrar_mu=mostrar_mu, ax=a1)
-    a1.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2)   # fuera de la región
+    a1.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2)   # bajo los ejes
     if curva:                                   # 40 presupuestos > 0, sin el 0
         ds = np.linspace(0.05, 1.2, 40) * OMEGA[region]
         ml.dibujar_presupuesto(DATOS_B1, PHI_B1, region, ds, d_marcado=d, ax=ejes[1])
@@ -194,12 +193,11 @@ ml.laboratorio(
 
 # %% [codigo] bloque-5-juega
 #@title Juega: ¿quién elige μ?
-DATOS_B5 = ml.muchas_variables(n=300, J=50, utiles=5, semilla=SEMILLA)   # los del bloque 4
+DATOS_B5 = ml.muchas_variables(n=300, J=50, utiles=5, semilla=SEMILLA)  # bloque 4
 DESARROLLO_B5 = pd.concat([DATOS_B5.ent, DATOS_B5.val])   # donde se reajusta con CV
 MUS_B5 = [float(m) for m in np.logspace(-4, 3, 30)]
 BENCH_B5 = ml.benchmarks(DATOS_B5, DATOS_B5.despliegue).loc["media", "cuadratica"]
 _AJ, _SEL_B5 = {}, {}
-
 def _candidatos(p):           # estandariza dentro de cada pliegue; un ajuste, una vez
     def c(df, mu):
         k = (p, mu, tuple(df.index))
@@ -207,26 +205,22 @@ def _candidatos(p):           # estandariza dentro de cada pliegue; un ajuste, u
             _AJ[k] = ml.ajustar(df, phi=PHI_50, mu=mu, penalizacion=p)
         return _AJ[k]
     return {mu: (lambda df, mu=mu: c(df, mu)) for mu in MUS_B5}
-
 def seleccion_b5(con, regla, p):              # simple → complejo: μ de mayor a menor
     k = (con, regla if con == "cv" else "minimo", p)
     if k not in _SEL_B5:
         _SEL_B5[k] = ml.elegir(DATOS_B5, _candidatos(p), con=con, k=5, regla=k[1],
                                orden_complejidad=sorted(MUS_B5, reverse=True))
     return _SEL_B5[k]
-
 def bloque_5(con, regla, p):
     sel = seleccion_b5(con, regla, p)
     ent = {mu: c(DATOS_B5.ent) for mu, c in _candidatos(p).items()}
-    # conteos y R del modelo que se usa: con CV, el reajuste con ent ∪ val
-    base, filas = ((DESARROLLO_B5, "ent ∪ val") if con == "cv" else (DATOS_B5.ent, "ent"))
+    base, filas = (DESARROLLO_B5, "ent ∪ val") if con == "cv" else (DATOS_B5.ent, "ent")
     mods = {mu: c(base) for mu, c in _candidatos(p).items()}
     nz = {mu: str(int((m.beta_gorro.drop("1") != 0).sum())) for mu, m in mods.items()}
     R = {mu: ml.riesgo(m, DATOS_B5) for mu, m in mods.items()}
     Le = None if con == "ent" else {mu: ml.L(m, DATOS_B5.ent) for mu, m in ent.items()}
     ml.dibujar_cv(sel, R=R, L_ent=Le, benchmark=BENCH_B5, log=True,
-                  anotar={mu: nz[mu] for mu in MUS_B5[::4]})
-    plt.show()
+                  anotar={mu: nz[mu] for mu in MUS_B5[::4]}); plt.show()
     mu = sel.elegido_un_ee if (con, regla) == ("cv", "un_ee") else sel.elegido
     v, ee = sel.tabla.set_index("candidato").loc[mu, ["valor", "ee"]]
     valor = f"CV₅ = {v:.3f} ± {ee:.3f}" if con == "cv" else f"L_{con} = {v:.3f}"

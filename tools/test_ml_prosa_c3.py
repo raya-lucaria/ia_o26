@@ -277,6 +277,7 @@ def frases_p2():
         ("| Mínimo |", [mu["mu_min"], mu["cv_min"], mu["ee_min"], mu["no_ceros_min"]]),
         ("| Un EE |", [mu["mu_un_ee"], mu["cv_un_ee"], mu["ee_un_ee"], mu["no_ceros_un_ee"]]),
         ("Sus riesgos son", [mu["R_min"], mu["R_un_ee"]]),
+        ("Los conteos y $R$ son del reajuste", [str(c.curvas_mu_cv()["filas"])]),
         ("Al abrir la prueba una vez", [mu["L_prueba"], mu["dos_ee_prueba"]]),
         ("La diferencia pareada modelo − media es", [mu["dif_prueba"], mu["ee_dif_prueba"]]),
     ]

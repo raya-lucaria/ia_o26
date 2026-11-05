@@ -96,7 +96,13 @@ Esta identidad es exacta en cada muestra. La siguiente promedia sobre entrenamie
 El histograma junta residuales de muchos $x$. Repite el entrenamiento y saca un $x$ nuevo, independiente de él. Con pérdida cuadrática, $E[\varepsilon\mid x]=0$ y $\text{sesgo}(x)=E_{\mathcal D}[\widehat f(x)]-f(x)$, como en @ml-c2-teo-sesgo-varianza, en promedio sobre entrenamientos:
 
 $$
-E[e]=-E_x\bigl[\text{sesgo}(x)\bigr],\qquad \operatorname{Var}(e)=E_x\bigl[\sigma_\varepsilon^2(x)\bigr]+E_x\bigl[\text{varianza}(x)\bigr]+\operatorname{Var}_x\bigl(\text{sesgo}(x)\bigr).
+E[e]=-E_x\bigl[\text{sesgo}(x)\bigr]
+$$
+
+y, para el ancho,
+
+$$
+\operatorname{Var}(e)=E_x\bigl[\sigma_\varepsilon^2(x)\bigr]+E_x\bigl[\text{varianza}(x)\bigr]+\operatorname{Var}_x\bigl(\text{sesgo}(x)\bigr).
 $$
 
 Un sesgo de promedio cero sobre $x$ puede ensanchar el histograma sin desplazarlo. Por ejemplo, una curva faltante compensada por el intercepto: aparece como forma en $e$ contra $x$.
@@ -132,14 +138,14 @@ Ya puedes leer cómo falla. Falta decidir cuánto importa ese error.
 ## 2 · Comparar el error contra un benchmark
 
 ::: figure {#ml-c3-benchmarks title="Contra qué se mide un error"}
-![Errores en validación en barras. Caso 11: el RMSE del modelo, 1.05, es 0.1 % de y y casi iguala al de la media, 1.10; la mejora sobre la media es 7.7 %. Señal débil: el modelo, 1.05, casi toca la raíz del piso, 1.00, con la media en 1.15.](../_assets/ml-c3-benchmarks.svg)
+![Errores en validación en barras. Caso 11: el RMSE del modelo, 1.05, es 0.1 % de y y casi iguala al de la media, 1.10. La mejora sobre la media es 7.7 %, calculada con las cifras sin redondear. Señal débil: el modelo, 1.05, casi toca la raíz del piso, 1.00, con la media en 1.15.](../_assets/ml-c3-benchmarks.svg)
 :::
 
-Las barras muestran RMSE de validación y la raíz del piso cuadrático, en las mismas unidades. A la derecha, una señal débil deja poco margen sobre el piso.
+Las barras muestran RMSE de validación y la raíz del piso cuadrático, en las mismas unidades. Abajo, una señal débil deja poco margen sobre el piso.
 
 **Piensa: un RMSE de 1.05 cuando la respuesta ronda 1000, ¿es bueno?**
 
-Dividirlo entre el nivel da 0.1 %, pero eso engaña. En el caso 11, la media logra RMSE 1.10 y la mediana 1.09. La desviación de $y$ en entrenamiento es 1.06; RMSE/desviación vale 0.99. La mejora cuadrática sobre la media es 7.7 %: importa la dispersión, no el nivel.
+Dividirlo entre el nivel da 0.1 %, pero eso engaña. En el caso 11, la media logra RMSE 1.10 y la mediana 1.09. La desviación de $y$ en entrenamiento es 1.06; RMSE/desviación vale 0.99. La mejora cuadrática sobre la media es 7.7 %, calculada con las cifras sin redondear: importa la dispersión, no el nivel.
 
 Retomamos la media de entrenamiento como punto de comparación de la clase 2: ¿el modelo le gana de verdad o por azar?
 
@@ -176,7 +182,7 @@ Si la diferencia media no sale de la dispersión de las diferencias por pliegue,
 
 En ambos paneles, la validación es una reserva: no eligió nada; los modelos quedaron fijados con entrenamiento. Caso 11: diferencia pareada modelo − media de -0.093 (EE 0.041), en 200 filas. Le gana por más de 2 EE, aunque la mejora sea chica.
 
-Con señal débil, $f=0.75x$, el RMSE del modelo es 1.05; el de la media, 1.15; la raíz del piso, 1.00. La mejora es 15.7 %; la diferencia pareada, -0.205 (EE 0.064), también pasa de 2 EE. El modelo casi alcanza el piso: cambiar la familia ofrece poco margen.
+Con señal débil, $f=0.75x$, el RMSE del modelo es 1.05; el de la media, 1.15; la raíz del piso, 1.00. La mejora es 15.7 %, calculada con las cifras sin redondear; la diferencia pareada, -0.205 (EE 0.064), también pasa de 2 EE. El modelo casi alcanza el piso: cambiar la familia ofrece poco margen.
 
 ::: remark {#ml-c3-obs-cv-no-es-reserva title="Por qué la validación cruzada no da ese error estándar"}
 En validación cruzada los ajustes comparten casi todo su entrenamiento: las pérdidas fuera de pliegue dependen entre sí. No hay un estimador insesgado de la varianza de $\mathrm{CV}_k$ (Bengio y Grandvalet, 2004).
@@ -229,7 +235,7 @@ La moda aparecerá en la clase 4. Aquí queda otra pregunta: ¿qué pasa si las 
 
 ## 3 · Reconocer una cola larga
 
-::: figure {#ml-c3-media-acumulada title="Una cola larga no se promedia"}
+::: figure {#ml-c3-media-acumulada title="El MSE sin segundo momento"}
 ![Promedio acumulado de e cuadrada contra n en 20 semillas, en escala logarítmica. Con ruido normal las líneas se juntan (cociente máximo entre mínimo a n = 10 000: 1.04); con Pareto de exponente 1.5 y con Cauchy no se juntan (cocientes 79 y 13 196).](../_assets/ml-c3-media-acumulada.svg)
 :::
 
@@ -249,7 +255,7 @@ Una cola larga produce valores enormes, raros pero no despreciables. Primero ave
 ::: remark {#ml-c3-obs-colas-largas title="Una cola larga no es un outlier"}
 Con ruido de Pareto de exponente 1.5 la media existe y la varianza es infinita. Lo mismo ocurre con una $t$ de Student de 2 grados de libertad. Con exponente 1 o menos, Pareto tampoco tiene media.
 
-Con Cauchy no existe la media y el segundo momento es infinito. El supuesto $E[\varepsilon\mid x]=0$ de @ml-c1-def-proceso-generador deja de tener sentido (caso 6). En los tres casos, todo predictor tiene riesgo cuadrático infinito. El piso cuadrático también es infinito: es el ínfimo del riesgo (@ml-c1-def-error-bayes). Con Cauchy también lo es el absoluto.
+Con Cauchy no existe la media y el segundo momento es infinito. El supuesto $E[\varepsilon\mid x]=0$ de @ml-c1-def-proceso-generador deja de tener sentido (caso 6). Si el ruido es independiente de las entradas, en los tres casos todo predictor tiene riesgo cuadrático infinito. El piso cuadrático también es infinito: es el ínfimo del riesgo (@ml-c1-def-error-bayes). Con Cauchy también lo es el absoluto.
 
 Sin varianza, $L_{\text{val}}$ cuadrático no se estabiliza al crecer $n_{\text{val}}$: lo dominan pocas filas. El MAE se estabiliza si la media existe; con Cauchy, tampoco. Cada una de esas filas **no es un outlier: es el fenómeno**. Quitarlas cambia el problema que se resuelve.
 :::
@@ -305,10 +311,10 @@ La omitida puede subir el piso sin correr la pendiente; si está correlacionada 
 La diana de @ml-c2-diana mostraba predicciones en un punto fijo; ahora muestra parejas de coeficientes.
 
 ::: figure {#ml-c3-diana-beta title="La diana de los coeficientes"}
-![Cuatro nubes de 200 estimaciones de beta 1 y beta 2; la cruz verde es el coeficiente estructural (1, 1) y la cian el promedio: correcta centrada; omitida corrida a 1.59; colineal alargada; endógena corrida a 1.50](../_assets/ml-c3-diana-beta.svg)
+![Cuatro nubes de 200 estimaciones de beta 1 y beta 2. La cruz verde marca el coeficiente estructural (1, 1); el rombo cian, el promedio. La nube correcta está centrada; la omitida, corrida a 1.59; la colineal, alargada; la endógena, corrida a 1.50.](../_assets/ml-c3-diana-beta.svg)
 :::
 
-Cada punto es $(\widehat\beta_1,\widehat\beta_2)$ de un entrenamiento; hay 200 por panel. La cruz verde marca el coeficiente estructural $(1,1)$; la cian discontinua, el promedio. La nube correcta está centrada; la colineal se alarga. La omitida centra $\widehat\beta_1$ en 1.59; la endógena, en 1.50.
+Cada punto es $(\widehat\beta_1,\widehat\beta_2)$ de un entrenamiento; hay 200 por panel. La cruz verde marca el coeficiente estructural $(1,1)$; el rombo cian, el promedio. La nube correcta está centrada; la colineal se alarga. La omitida centra $\widehat\beta_1$ en 1.59; la endógena, en 1.50.
 
 El sesgo del estimador, $E_{\mathcal D}[\widehat\beta_j]-\beta_j$, usa el $\beta_j$ estructural. Difiere del sesgo de predicción $\text{sesgo}(x)=E_{\mathcal D}[\widehat f(x)]-f(x)$ de @ml-c2-teo-sesgo-varianza. Veremos que una pendiente sesgada puede predecir bien la media condicional visible.
 
@@ -371,11 +377,13 @@ Una pendiente también puede incorporar ruido predecible desde la entrada.
 ::: remark {#ml-c3-obs-endogeneidad title="Endogeneidad: sesgo sin que falte nada visible"}
 Si $x_1$ está correlacionada con el ruido, $E[\varepsilon\mid x]\neq0$ (caso 8). La misma cuenta concentra $\widehat\beta_1$ en $\beta_1+\operatorname{cov}(x_1,\varepsilon)/\operatorname{Var}(x_1)$. Los residuales de entrenamiento no lo delatan: las ecuaciones normales obligan $\sum_{i\in\mathcal D_{\text{ent}}}e_i\,x_{ij}=0$ para cada columna.
 
-La función estructural $f$ ya no es $E[y\mid x]$. El mejor predictor visible es esa media condicional, lineal con ruido normal y con esa pendiente. Como en @ml-c3-ejm-omitida, el sesgo es del coeficiente estructural, no de la predicción: la pendiente sigue siendo la mejor para predecir.
+La función estructural $f$ ya no es $E[y\mid x]$. En el caso 8, $(x_1,\varepsilon)$ tiene distribución normal conjunta. Por eso $E[y\mid x_1]$ es lineal, con esa pendiente, y coincide con el mejor predictor lineal. Como en @ml-c3-ejm-omitida, el sesgo es del coeficiente estructural, no de la predicción.
 
-Si no falta ninguna variable y todo es normal, el piso visible es $\operatorname{Var}(\varepsilon)\,\bigl(1-\operatorname{corr}(x_1,\varepsilon)^2\bigr)$. Aquí $\operatorname{Var}(\varepsilon)$ es la varianza marginal del ruido. Si además falta una variable, esa fórmula no vale: el piso es $E[\operatorname{Var}(y\mid x_{\text{visibles}})]$, que suma lo que la omitida no deja ver.
+Sin normalidad conjunta, mínimos cuadrados sigue dando el mejor predictor lineal con esa pendiente, pero la media condicional puede no ser lineal.
 
-Ni más datos ni $\mu$ recuperan el coeficiente estructural. Hace falta otra información, fuera de este curso.
+Si no falta ninguna variable y $(x_1,\varepsilon)$ tiene distribución normal conjunta, el piso visible es $\operatorname{Var}(\varepsilon)\,\bigl(1-\operatorname{corr}(x_1,\varepsilon)^2\bigr)$. Aquí $\operatorname{Var}(\varepsilon)$ es la varianza marginal del ruido. Si además falta una variable, esa fórmula no vale: el piso es $E[\operatorname{Var}(y\mid x_{\text{visibles}})]$, que suma lo que la omitida no deja ver.
+
+Ni más datos ni regularizar permiten identificar el coeficiente estructural sin información adicional. Hace falta otra información, fuera de este curso.
 :::
 
 En el caso 8, $f=1+2x_1$ y $\operatorname{corr}(x_1,\varepsilon)=0.5$. La cuenta da 2.5; el promedio de 200 estimaciones, 2.50. La correlación de $e$ con $x_1$ en entrenamiento es 0 a 10 decimales. En validación, $L_{\text{val}}=0.78$ casi toca el piso 0.75: predice bien, pero no recupera el efecto estructural.
@@ -408,7 +416,7 @@ Tienes $y=2x_1+3x_2+\varepsilon$, $\operatorname{Var}(x_1)=1$, $\operatorname{co
 ![Con correlación 0.99 la desviación de beta 1 pasa de 0.10 a 0.75; la predicción dentro de la nube casi no cambia (desviación 0.13), fuera sí (1.50)](../_assets/ml-c3-colineal-prediccion.svg)
 :::
 
-La figura compara 200 entrenamientos. A la izquierda, la colinealidad ensancha el histograma de $\widehat\beta_1$. A la derecha, separa predecir dentro de la nube y fuera de la diagonal donde viven los datos, $x_1\approx x_2$.
+La figura compara 200 entrenamientos. Arriba, la colinealidad ensancha el histograma de $\widehat\beta_1$. Abajo, separa predecir dentro de la nube y fuera de la diagonal donde viven los datos, $x_1\approx x_2$.
 
 **Piensa: con dos variables casi idénticas, ¿qué es más estable entre entrenamientos: cada coeficiente o la predicción?**
 
@@ -462,7 +470,7 @@ Los datos permiten intercambiar coeficientes enormes sin cambiar casi el ajuste.
 ::: exercise {#ml-c3-ej-final-leer-el-error title="Distingue dos causas del mismo abanico"}
 Un equipo predice minutos de entrega con distancia $x_1$ y tráfico $x_2$, centradas e independientes. Usa $\Phi=(1,x_1,x_2)$. En validación, el residual contra $x_1$ abre en abanico: chico cerca de $x_1=0$, grande en los extremos, sin curva.
 
-La idea nueva es que el mismo dibujo puede tener dos causas. H1: el ruido crece con $\lvert x_1\rvert$. H2: falta el término $x_1x_2$. No hay otras variables y no puedes pedir más datos. Usa los conjuntos ya separados; la prueba sigue cerrada.
+La idea nueva es que el mismo dibujo puede tener dos causas. H1: $\varepsilon=\sigma(x_1)\cdot Z$, con $\sigma$ creciente en $\lvert x_1\rvert$ y $Z$ normal estándar independiente de $x_1$ y $x_2$. H2: falta el término $x_1x_2$. No hay otras variables y no puedes pedir más datos. Usa los conjuntos ya separados; la prueba sigue cerrada.
 
 Entrega un diagnóstico: explica qué observarías bajo cada causa y cómo confirmarías una mejora.
 
@@ -479,7 +487,7 @@ Si coloreas cada residual por el signo de $x_2$, ¿qué esperarías ver bajo cad
 Comprueba con dos preguntas: ¿tu cambio bajaría $L_{\text{val}}$ hasta cerca del piso bajo H1? ¿y bajo H2?
 :::
 ::: answer {#ml-c3-resp-final-leer-el-error of="ml-c3-ej-final-leer-el-error" title="Respuesta · Separar ruido de forma"}
-**1.** Bajo H2, el signo de $e$ tiende a seguir el de $x_1x_2$: aparece una silla en el plano, como en @ml-c3-interaccion-plano. Bajo H1, el signo no sigue a $x_2$. El abanico solo mostraba tamaños; separar por signo conserva la dirección del error.
+**1.** Bajo H2, el signo de $e$ tiende a seguir el de $x_1x_2$: aparece una silla en el plano, como en @ml-c3-interaccion-plano. Bajo H1, el signo no sigue a $x_2$: el signo de $e$ es el de $Z$, que no depende de $x_2$. El abanico solo mostraba tamaños; separar por signo conserva la dirección del error.
 
 **2.** Bajo H2, agrega la columna $x_1x_2$ con `interacciones`; el modelo sigue siendo lineal en $\beta$. Bajo H1, la familia ya representa la media condicional: no agregas columnas por ese abanico.
 

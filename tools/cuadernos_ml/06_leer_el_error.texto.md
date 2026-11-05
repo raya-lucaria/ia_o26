@@ -258,6 +258,7 @@ Para los ruidos alternativos, sustituye el argumento `ruido`.
 Compara centro, ancho, forma y errores frente al benchmark y al piso.
 Después revisa las peores filas y las pendientes al repetir entrenamientos.
 Anota qué cambió y qué evidencia gráfica lo muestra.
+Con `ruido=ml.t_student(2)`, ignora «a más de 2 EE»: sin varianza finita de la pérdida, ese EE no mide incertidumbre (la definición del punto de comparación de la página exige $E[\ell^2]<\infty$).
 
 ### celda: galeria-intro
 
@@ -265,6 +266,7 @@ Anota qué cambió y qué evidencia gráfica lo muestra.
 «¿Qué se ve?». Sustenta tu respuesta con una vista del error o con la
 distribución de pendientes. Repite con otro botón y distingue qué mecanismo
 produce el error en cada caso.
+En el caso 6, ignora «a más de 2 EE»: sin varianza finita de la pérdida, ese EE no mide incertidumbre (la definición del punto de comparación de la página exige $E[\ell^2]<\infty$).
 
 ### celda: ejercicio-endogena
 
