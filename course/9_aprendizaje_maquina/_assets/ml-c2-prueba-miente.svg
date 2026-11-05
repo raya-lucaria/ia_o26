@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="489" viewBox="0 0 388.8 316.8" role="img" aria-label="Por contrato, lo que promete la prueba contra el riesgo del despliegue, en escala logarítmica. Más de lo mismo, al azar: 11.9 contra R 9.3. El mes que viene, al azar: 57.6 contra R 135.6; por tiempo: 119.4 contra R 155.6. Pacientes nuevos, al azar: 1.9 contra R 17.9; por paciente: 20.3 contra R 18.0. Otra ciudad, al azar: 13.1 contra R 109.5; ninguna separación de la muestra la imita. La raya y punto es el benchmark, la media de entrenamiento."><title>Lo que promete la prueba según cómo se separó</title><rect x="0" y="0" width="388.8" height="316.8" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="489" viewBox="0 0 388.8 316.8" role="img" aria-label="Por contrato, lo que promete la prueba contra el riesgo del despliegue, en escala logarítmica. Más de lo mismo, al azar: 11.9 contra R 9.3. El mes que viene, al azar: 57.6 contra R 135.6; por tiempo: 119.4 contra R 155.6. Pacientes nuevos, al azar: 1.9 contra R 17.9; por paciente: 20.3 contra R 18.0. Otra ciudad, al azar: 13.1 contra R 109.5; ninguna separación de la muestra la imita. En cada columna, la raya de la izquierda es R y la raya y punto de la derecha, el benchmark (la media de entrenamiento)."><title>Lo que promete la prueba según cómo se separó</title><rect x="0" y="0" width="388.8" height="316.8" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -443,63 +443,63 @@ z
     </g>
    </g>
    <g id="R">
-    <path d="M 75.837737 200.173958 
-L 113.40072 200.173958 
+    <path d="M 73.860738 200.173958 
+L 93.630729 200.173958 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2.2"/>
    </g>
    <g id="benchmark">
-    <path d="M 75.837737 145.323397 
-L 113.40072 145.323397 
+    <path d="M 95.607728 145.323397 
+L 115.377719 145.323397 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 10.24,2.56,1.6,2.56; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.6"/>
    </g>
    <g id="R">
-    <path d="M 125.262715 113.768347 
-L 162.825697 113.768347 
+    <path d="M 123.285715 113.768347 
+L 143.055706 113.768347 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2.2"/>
    </g>
    <g id="benchmark">
-    <path d="M 125.262715 114.599119 
-L 162.825697 114.599119 
+    <path d="M 145.032705 114.599119 
+L 164.802696 114.599119 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 10.24,2.56,1.6,2.56; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.6"/>
    </g>
    <g id="R">
-    <path d="M 174.687692 109.319576 
-L 212.250675 109.319576 
+    <path d="M 172.710693 109.319576 
+L 192.480684 109.319576 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2.2"/>
    </g>
    <g id="benchmark">
-    <path d="M 174.687692 111.953456 
-L 212.250675 111.953456 
+    <path d="M 194.457683 111.953456 
+L 214.227674 111.953456 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 10.24,2.56,1.6,2.56; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.6"/>
    </g>
    <g id="R">
-    <path d="M 224.112669 178.889831 
-L 261.675652 178.889831 
+    <path d="M 222.13567 178.889831 
+L 241.905661 178.889831 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2.2"/>
    </g>
    <g id="benchmark">
-    <path d="M 224.112669 140.320612 
-L 261.675652 140.320612 
+    <path d="M 243.88266 140.320612 
+L 263.652651 140.320612 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 10.24,2.56,1.6,2.56; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.6"/>
    </g>
    <g id="R">
-    <path d="M 273.537646 178.741775 
-L 311.100629 178.741775 
+    <path d="M 271.560647 178.741775 
+L 291.330638 178.741775 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2.2"/>
    </g>
    <g id="benchmark">
-    <path d="M 273.537646 140.311922 
-L 311.100629 140.311922 
+    <path d="M 293.307637 140.311922 
+L 313.077628 140.311922 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 10.24,2.56,1.6,2.56; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.6"/>
    </g>
    <g id="R">
-    <path d="M 322.962624 120.654677 
-L 360.525607 120.654677 
+    <path d="M 320.985625 120.654677 
+L 340.755616 120.654677 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 8.14,3.52; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2.2"/>
    </g>
    <g id="benchmark">
-    <path d="M 322.962624 128.381057 
-L 360.525607 128.381057 
+    <path d="M 342.732615 128.381057 
+L 362.502606 128.381057 
 " clip-path="url(#p6c01fd6535)" style="fill: none; stroke-dasharray: 10.24,2.56,1.6,2.56; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.6"/>
    </g>
    <g id="patch_3">

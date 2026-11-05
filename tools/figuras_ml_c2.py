@@ -626,8 +626,10 @@ def ml_c2_ajustes_con_prueba():
         r = ["f̂ (el ajuste)" if x.startswith("lineal") else x for x in r]
         _leyenda(ejes[0], handles=h, labels=r, loc="lower right", fontsize=8)
 
-    aria = ("Tres paneles con las mismas 60 entregas: círculos de entrenamiento y "
-            "cuadrados de prueba, la f verdadera y el ajuste. Grado 1: L_ent "
+    n_ent, n_pru = len(d.ent), len(d.prueba)
+    aria = (f"Tres paneles con {n_ent} entregas de entrenamiento (círculos) y {n_pru} de "
+            f"prueba (cuadrados); las {len(d.val)} de validación no se muestran. La f "
+            "verdadera y el ajuste. Grado 1: L_ent "
             f"{_num(a[1]['L_ent'])}, L_prueba {_num(a[1]['L_prueba'])}. Grado 4: L_ent "
             f"{_num(a[4]['L_ent'])}, L_prueba {_num(a[4]['L_prueba'])}. Grado 12: L_ent "
             f"{_num(a[12]['L_ent'])}, el más bajo, pero la curva pasa cerca de los círculos "
@@ -740,6 +742,14 @@ def ml_c2_prueba_miente():
 
     def dibujar(fig, ax):
         ml.dibujar_contratos(t, ax=ax, tema="sitio")
+        # R a la izquierda y benchmark a la derecha de cada columna (revision r1:
+        # en «el mes que viene, al azar» 135.6 y 132.1 se encimaban en escala log)
+        for ln in ax.lines:
+            if ln.get_gid() in ("R", "benchmark"):
+                x0, x1 = ln.get_xdata()
+                centro = (x0 + x1) / 2
+                ln.set_xdata([centro - 0.42, centro - 0.02] if ln.get_gid() == "R"
+                             else [centro + 0.02, centro + 0.42])
         ax.set_xticklabels([f"{c}\n{s}".replace("el mes que viene", "el mes\nque viene")
                             .replace("más de lo mismo", "más de\nlo mismo")
                             .replace("pacientes nuevos", "pacientes\nnuevos")
@@ -758,7 +768,8 @@ def ml_c2_prueba_miente():
             par("el mes que viene", "imita") + ". Pacientes nuevos, al azar: " +
             par("pacientes nuevos") + "; por paciente: " + par("pacientes nuevos", "imita") +
             ". Otra ciudad, al azar: " + par("otra ciudad") + "; ninguna separación de la "
-            "muestra la imita. La raya y punto es el benchmark, la media de entrenamiento.")
+            "muestra la imita. En cada columna, la raya de la izquierda es R y la raya y punto "
+            "de la derecha, el benchmark (la media de entrenamiento).")
     return _grafica(dibujar, aria, "Lo que promete la prueba según cómo se separó", 4.4)
 
 
@@ -817,7 +828,7 @@ def ml_c2_cv_capacidad():
             f"{h['N_min']}, con CV {_num(h['cv'][h['N_min']], 2)} ± "
             f"{_num(h['ee'][h['N_min']], 2)}; el umbral mínimo más un EE es "
             f"{_num(h['umbral'], 2)} y la regla de un EE también elige N = {h['N_un_ee']}. "
-            f"L_ent baja siempre, de {_num(h['L_ent_por_N'][0])} a "
+            f"L_ent del mismo reajuste baja siempre, de {_num(h['L_ent_por_N'][0])} a "
             f"{_num(h['L_ent_por_N'][12])}. El riesgo R de cada grado, que solo existe en el "
             f"simulador, es mínimo en N = {h['N_mejor_R']} ({_num(h['R_por_N'][4])}) y vale "
             f"{_num(h['R_por_N'][h['N_min']])} en el elegido. Piso {_num(h['piso'])}; "
@@ -924,6 +935,7 @@ def ml_c2_abanico():
     cif = _cif()
     ml = gen.ml_lab()
     sv = cif.sesgo_varianza_hilo()
+    s = cif.cifras_c2_sesgo_varianza()
     ancho = {N: float(cif._predicciones_en(sv, cif.X0, N).std()) for N in ABANICO}
 
     def dibujar(fig, ejes):
@@ -946,8 +958,10 @@ def ml_c2_abanico():
             "proceso, su promedio y la verdadera E[y | x]. Grado 1: las rectas casi no se "
             f"separan (desviación {_num(ancho[1])} en x = 5) pero su promedio se aleja de "
             f"la curva. Grado 4: abanico angosto (desviación {_num(ancho[4])}) y promedio "
-            "pegado a la curva. Grado 12: el promedio sigue la curva, pero cada ajuste se "
-            f"sacude, sobre todo en los bordes (desviación {_num(ancho[12])} en x = 5).")
+            "pegado a la curva. Grado 12: en el centro el promedio sigue la curva, pero en los "
+            f"bordes se aleja (llega a {_num(s['promedio_12_min'])} en x = "
+            f"{_num(s['promedio_12_min_x'])}), y cada ajuste se sacude, sobre todo en los "
+            f"bordes (desviación {_num(ancho[12])} en x = 5).")
     return _grafica(dibujar, aria, "Cien muestras, cien ajustes", 7.0, paneles=3, sharex=True)
 
 
@@ -965,6 +979,18 @@ def ml_c2_diana():
 
     def dibujar(fig, ax):
         ml.dibujar_diana(sv, cif.X0, candidatos=[1, 12], ax=ax, tema="sitio")
+        # revision r1: la banda f(x0) ± σε que la pagina nombra, y el promedio con
+        # otro color y contorno (antes era cian discontinuo sobre cruces cian)
+        f0, se = s["f_x0"], s["sigma2_e"] ** 0.5
+        ax.axvspan(f0 - se, f0 + se, color=mezclar(VERDE, 0.22, PANEL), lw=0, zorder=0,
+                   label="f(x0) ± σε")
+        import matplotlib.patheffects as pe
+        for ln in ax.lines:
+            if (ln.get_gid() or "").startswith("promedio-"):
+                ln.set_color(TEXTO)
+                ln.set_linewidth(3.0)
+                ln.set_zorder(6)
+                ln.set_path_effects([pe.Stroke(linewidth=5.5, foreground=PANEL), pe.Normal()])
         ax.set_xlim(*cif.EJE_DIANA)
         ax.set_yticklabels(["grado 1", "grado 12"])
         ax.set_ylabel("")
@@ -976,8 +1002,11 @@ def ml_c2_diana():
             f"agrupan apretadas (desviación {_num(d1['desv'])}) pero corridas "
             f"{_num(d1['sesgo'])} minutos del valor verdadero. Grado 12: centradas "
             f"(sesgo {_num(d12['sesgo'])}) pero dispersas (desviación {_num(d12['desv'])}). "
-            f"Eje fijo de {cif.EJE_DIANA[0]:g} a {cif.EJE_DIANA[1]:g} minutos; ninguna "
-            "predicción queda fuera.")
+            f"El promedio de cada grado es una raya blanca discontinua; la banda gris marca "
+            f"E[y | x = 5] ± σε, de {_num(s['f_x0'] - s['sigma2_e'] ** 0.5)} a "
+            f"{_num(s['f_x0'] + s['sigma2_e'] ** 0.5)}, la escala del ruido nuevo. Eje fijo "
+            f"de {cif.EJE_DIANA[0]:g} a {cif.EJE_DIANA[1]:g} minutos; ninguna predicción "
+            "queda fuera.")
     return _grafica(dibujar, aria, "La diana en x = 5", 3.4)
 
 
@@ -997,6 +1026,38 @@ _M = {
 # mismo eje: la CV_5 de una sola muestra (la de ml-c2-cv-capacidad) y el total
 # calculado, en escala log (el total del grado 12 se sale: se dice en el rotulo).
 YLIM_SV = (4, 400)
+YLIM_BARRAS = (0, 60)
+
+
+def _barras_sesgo_varianza(ax, s, Ns):
+    """Las barras apiladas de dibujar_sesgo_varianza, con la varianza ABAJO del sesgo²
+    (revision r1: con el sesgo² arriba, las barras 11 y 12 recortadas se veian
+    enteras de rosa, «sesgo», cuando su total es casi todo varianza) y el total
+    escrito sobre cada barra que sale del eje."""
+    from aprendizaje_maquina import _TEMAS, _color
+    xs = np.arange(len(Ns))
+    base = np.zeros(len(Ns))
+    for col, rol, rayado, rotulo in (("ruido", "piso", None, "ruido σ²(x)"),
+                                     ("varianza", "validacion", "\\\\\\", "varianza"),
+                                     ("sesgo2", "prueba", "///", "sesgo²")):
+        h = np.array([s[N][col] for N in Ns])
+        barras = ax.bar(xs, h, bottom=base, color=_color(rol, "sitio"), hatch=rayado,
+                        edgecolor=_TEMAS["sitio"]["panel"], lw=0.5, label=rotulo)
+        for b in barras:
+            b.set_gid(f"barra-{col}")
+        base = base + h
+    i = int(np.argmin(base))
+    ln, = ax.plot([xs[i]], [base[i]], marker="*", ms=16, ls="", color=TEXTO,
+                  label=f"menor total: N⋆ = {Ns[i]}")
+    ln.set_gid("optimo")
+    ax.set_ylim(*YLIM_BARRAS)
+    for x, tot in zip(xs, base):
+        if tot > YLIM_BARRAS[1]:
+            ax.text(x, YLIM_BARRAS[1] * 0.97, f"{tot:,.0f}".replace(",", " "), rotation=90,
+                    ha="center", va="top", fontsize=8, color=FONDO,
+                    bbox=dict(boxstyle="round,pad=0.15", fc=TEXTO, ec="none"))
+    ax.set_xticks(xs)
+    ax.set_xticklabels([str(N) for N in Ns])
 
 
 def ml_c2_sesgo_varianza():
@@ -1011,16 +1072,18 @@ def ml_c2_sesgo_varianza():
 
     def dibujar(fig, ejes):
         arriba, abajo = ejes
-        ml.dibujar_sesgo_varianza(sv, ax=arriba, tema="sitio")
-        fuera = [N for N in Ns if s[N]["total"] > arriba.get_ylim()[1]]
-        arriba.set_title(f"en el simulador: f conocida, {cif.REP_SV} muestras; "
-                         f"{fuera[0]} a {fuera[-1]} salen del eje", color=TEXTO,
+        _barras_sesgo_varianza(arriba, s, Ns)
+        fuera = [N for N in Ns if s[N]["total"] > YLIM_BARRAS[1]]
+        arriba.set_title(f"simulador, f conocida, {cif.REP_SV} muestras; de {fuera[0]} a "
+                         f"{fuera[-1]}, el total va escrito", color=TEXTO,
                          fontsize=9)
         arriba.set_xlabel("")
         arriba.set_ylabel("error esperado")
-        _leyenda(arriba, loc="upper left", fontsize=8,
-                 renombrar={f"menor total: {s['N_estrella']}": f"menor total: N⋆ = "
-                                                                f"{s['N_estrella']}"})
+        h_, r_ = arriba.get_legend_handles_labels()
+        orden = [r_.index(x) for x in (f"menor total: N⋆ = {s['N_estrella']}", "sesgo²",
+                                       "varianza", "ruido σ²(x)")]
+        _leyenda(arriba, loc="upper left", fontsize=8, handles=[h_[j] for j in orden],
+                 labels=[r_[j] for j in orden])
         ml.dibujar_cv(sel, ax=abajo, tema="sitio")
         ln, = abajo.plot(Ns, total, ls="-", lw=2.0, color=REAL, label="total calculado")
         ln.set_gid("total-calculado")
@@ -1034,11 +1097,17 @@ def ml_c2_sesgo_varianza():
                  renombrar={"CV_k": "CV 5 de una muestra"})
 
     N0 = s["N_estrella"]
+    fuera0 = min(N for N in Ns if s[N]["total"] > YLIM_BARRAS[1])
     aria = (f"Dos paneles con el grado N de 0 a 12. Arriba, barras apiladas de ruido, sesgo "
             f"al cuadrado y varianza calculadas con f conocida y {cif.REP_SV} muestras: el "
             f"ruido mide {_num(s[0]['ruido'])} en todos los grados, el sesgo al cuadrado baja "
             f"de {_num(s[0]['sesgo2'])} en N = 0 a {_num(s[N0]['sesgo2'], 2)} en N = {N0} y la "
-            f"varianza sube; el menor total, {_num(s[N0]['total'], 2)}, está en N⋆ = {N0}. "
+            f"varianza, salvo de N = 0 a 1, sube; el menor total, {_num(s[N0]['total'], 2)}, está en N⋆ = {N0}. "
+            f"La varianza va abajo del sesgo² en cada barra. De N = {fuera0} a 12 las barras "
+            f"salen del eje y llevan su total escrito ({_num(s[fuera0]['total'], 0)} a "
+            f"{_num(s[12]['total'], 0)}), casi todo varianza; ahí el sesgo² estimado vuelve "
+            f"a crecer ({_num(s[9]['sesgo2'])} en N = 9, {_num(s[12]['sesgo2'])} en N = 12), "
+            f"arrastrado por los bordes. "
             f"Abajo, en escala log, la CV 5 de una sola muestra, con mínimo en N = "
             f"{h['N_min']}, junto al total calculado: las dos bajan y suben en la misma zona "
             f"sin coincidir punto por punto; el total del grado 12 sale del eje.")

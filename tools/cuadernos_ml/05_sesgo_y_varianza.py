@@ -13,7 +13,7 @@
 
 # %% [codigo] bloque-1-juega
 #@title Juega: el abanico y la diana
-import warnings
+import functools, warnings
 import numpy as np, pandas as pd, matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 SEMILLA = 0
@@ -31,15 +31,21 @@ X_MALLA = SV.malla["x"].to_numpy()
 
 
 def bloque_1(N, x0, diana):
+    i = int(np.argmin(np.abs(X_MALLA - x0)))      # el punto de la malla más cercano
+    p = SV.predicciones[N][:, i]
     if diana:
         ml.dibujar_diana(SV, x0, candidatos=[N])
-        plt.xlim(15, 55)
+        # el eje cubre todas las marcas: ninguna predicción queda escondida
+        margen = 0.05 * (p.max() - p.min()) + 2
+        plt.xlim(min(15, p.min() - margen), max(55, p.max() + margen))
     else:
         ml.dibujar_abanico(SV, N)
         plt.ylim(0, 50)
+        P = SV.predicciones[N]
+        fuera = int(((P < 0) | (P > 50)).any(axis=1).sum())
+        if fuera:
+            print(f"{fuera} de {len(p)} curvas salen del eje de 0 a 50 en algún punto")
     plt.show()
-    i = int(np.argmin(np.abs(X_MALLA - x0)))      # el punto de la malla más cercano
-    p = SV.predicciones[N][:, i]
     print(f"grado {N}, x0 = {X_MALLA[i]:.2f} km: E[y|x0] = {SV.verdad[i]:.1f};"
           f" sesgo = {p.mean() - SV.verdad[i]:.2f}; varianza = {p.var():.2f}"
           f" (desviación {p.std():.2f})")
@@ -58,13 +64,14 @@ ml.laboratorio(bloque_1, N=ml.deslizador("grado N", 0, 12, 1, 4),
 # %% [codigo] bloque-2-juega
 #@title Juega: la descomposición, numérica
 SIGMAS, NS = (1.5, 3.0, 6.0), (30, 60, 120)
-SV_B2 = {(s, n): ml.sesgo_varianza(lambda r, n=n, s=s: fabrica(r, n=n, sigma=s),
-                                   CANDIDATOS, repeticiones=50, semilla=SEMILLA)
-         for s in SIGMAS for n in NS}                   # 9 combinaciones, una vez
+@functools.lru_cache(maxsize=None)                     # cada combinación, la primera vez
+def sv_b2(s, n):
+    return ml.sesgo_varianza(lambda r: fabrica(r, n=n, sigma=s), CANDIDATOS,
+                             repeticiones=50, semilla=SEMILLA)
 
 
 def bloque_2(sigma, n):
-    sv = SV_B2[sigma, n]
+    sv = sv_b2(sigma, n)
     fig, (a, b) = plt.subplots(1, 2, figsize=(10, 4))
     ml.dibujar_sesgo_varianza(sv, ax=a)
     datos = fabrica(SEMILLA, n=n, sigma=sigma)
@@ -74,11 +81,11 @@ def bloque_2(sigma, n):
     plt.show()
     t = sv.tabla.set_index("candidato")
     N0 = int(t["total"].idxmin())
-    bench = t.loc[0, "total"]                           # N = 0: la media de ent
+    bench = t.loc[0, "total"]                 # N = 0: error esperado de la media de ent
     print(f"σ = {sigma:g}, n = {n}: menor total en N⋆ = {N0}"
           f" (ruido {t.loc[N0, 'ruido']:.2f},"
           f" sesgo² {t.loc[N0, 'sesgo2']:.2f}, varianza {t.loc[N0, 'varianza']:.2f})")
-    print(f"benchmark (N = 0, la media de entrenamiento): total {bench:.2f};"
+    print(f"benchmark (N = 0, la media de entrenamiento): error esperado {bench:.2f};"
           f" la CV_5 de una muestra elige N̂ = {s.elegido}")
 
 
@@ -164,9 +171,13 @@ def bloque_4(proceso, revelar):
     print(f"(b) con CV (descriptivo): diferencia media {media:.2f}; por pliegue "
           + ", ".join(f"{v:.2f}" for v in por) + f" → {senal}")
     print(f"    {dp.attrs['nota']}")
-    if revelar:
-        R, p = ml.riesgo(modelo, datos), ml.piso(datos)
-        print(f"solo en el simulador: R = {R:.2f}, piso {p:.2f}, por ganar {R - p:.2f}")
+    if revelar:   # con la media condicional conocida: R − piso no puede ser negativo
+        D = datos.despliegue
+        p = ml.piso(datos)
+        exceso = np.mean((np.asarray(modelo.predecir(D), float)
+                          - np.asarray(datos.f_visible(D), float)) ** 2)
+        print(f"solo en el simulador: R = {p + exceso:.2f}, piso {p:.2f},"
+              f" por ganar {exceso:.2f}")
 
 
 ml.laboratorio(bloque_4, proceso=ml.selector("proceso", list(PROCESOS_B4)),

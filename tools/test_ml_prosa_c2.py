@@ -60,13 +60,22 @@ def llevarse(nombre):
 
 
 def formas(v, d=1):
-    """Un numero como puede escribirlo la pagina: punto decimal, signo «−» o «-»."""
+    """Un numero como puede escribirlo la pagina: punto decimal, signo «−» o «-».
+    Un negativo exige su signo (revision r1: aceptar el valor absoluto dejaba
+    pasar un sesgo con el signo cambiado)."""
     s = f"{abs(v):.{d}f}"
-    return (s,) if v >= 0 else (f"−{s}", f"-{s}", s)
+    return (s,) if v >= 0 else (f"−{s}", f"-{s}")
 
 
 def esta(v, t, d=1):
-    return any(f in t for f in formas(v, d))
+    """El numero aparece entero: ni pegado a otra cifra (51.2 no esta en 951.2 ni
+    1.15 en 999.15) ni, si es positivo, precedido de un signo menos (revision r1:
+    cuatro mutaciones de cifras pasaban las 20 pruebas por subcadena)."""
+    for f in formas(v, d):
+        antes = r"(?<![\d.])" if f[0] in "−-" else r"(?<![\d.−-])"
+        if re.search(antes + re.escape(f) + r"(?![\d])", t):
+            return True
+    return False
 
 
 def figuras_en(nombre):
@@ -92,7 +101,8 @@ def test_p1_el_engano_de_elegir_con_la_prueba_en_su_seccion():
     s4 = seccion(P1, 4)
     assert esta(op["sesgo_prueba"], s4) and esta(op["ee_prueba"], s4)
     assert f"{100 * op['optimistas_prueba']:.0f} %" in s4
-    assert esta(op["sesgo_prueba"], llevarse(P1))
+    # el cierre lo dice con palabras: «anuncia 7.5 menos error»
+    assert esta(abs(op["sesgo_prueba"]), llevarse(P1)) and "menos error" in llevarse(P1)
 
 
 def test_p1_el_reparto_en_su_seccion():

@@ -62,7 +62,7 @@ def bloque_2(k, regla, semilla, ver_R):
     des = pd.concat([datos.ent, datos.val]); des.attrs = datos.ent.attrs
     bench = (s.cv[0].media, s.cv[0].ee)                  # N = 0: la media de ent
     R = {N: ml.riesgo(c(des), datos) for N, c in CANDIDATOS.items()} if ver_R else None
-    L_ent = {N: ml.L(c(datos), datos.ent) for N, c in CANDIDATOS.items()}
+    L_ent = {N: ml.L(c(des), des) for N, c in CANDIDATOS.items()}   # el mismo ajuste que R
     ml.dibujar_cv(s, R=R, L_ent=L_ent, piso=ml.piso(datos) if ver_R else None,
                   benchmark=bench)
     plt.yscale("log")

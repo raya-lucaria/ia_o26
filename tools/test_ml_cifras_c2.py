@@ -68,7 +68,7 @@ def test_prueba_ruidosa_las_cifras_de_la_pagina():
     p = c.cifras_c2_prueba_ruidosa()
     assert _r(p["R"], 1) == 11.8
     assert (_r(p["desv_20"], 1), _r(p["desv_200"], 1)) == (3.8, 1.1)
-    assert (round(100 * p["cobertura_20"]), round(100 * p["cobertura_200"])) == (89, 94)
+    assert (round(100 * p["cobertura_20"]), round(100 * p["cobertura_200"])) == (89, 96)
 
 
 def test_prueba_ruidosa_el_ancho_baja_como_raiz_de_n():

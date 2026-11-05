@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="578" viewBox="0 0 388.8 374.4" role="img" aria-label="Dos histogramas de L_prueba del mismo modelo de grado 4, congelado, con 500 pruebas nuevas cada uno. Con 20 entregas por prueba la nube es ancha, desviación 3.8, y el intervalo de ±2 EE cubre R en 89 % de las pruebas; con 200, desviación 1.1 y cobertura 94 %. Las dos nubes se centran en R = 11.8."><title>Una prueba honesta también baila</title><rect x="0" y="0" width="388.8" height="374.4" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="578" viewBox="0 0 388.8 374.4" role="img" aria-label="Dos histogramas de L_prueba del mismo modelo de grado 4, congelado, con 500 pruebas nuevas cada uno. Con 20 entregas por prueba la nube es ancha, desviación 3.8, y el intervalo de ±2 EE cubre R en 89 % de las pruebas; con 200, desviación 1.1 y cobertura 96 %. Las dos nubes se centran en R = 11.8."><title>Una prueba honesta también baila</title><rect x="0" y="0" width="388.8" height="374.4" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -377,41 +377,41 @@ z
     <g id="ytick_7">
      <g id="line2d_22">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="54.38" y="296.245774" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="54.38" y="292.952728" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_19">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="301.184758" transform="rotate(-0 47.38 301.184758)">10</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="297.891712" transform="rotate(-0 47.38 297.891712)">10</text>
      </g>
     </g>
     <g id="ytick_8">
      <g id="line2d_23">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="54.38" y="269.242798" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="54.38" y="262.656706" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_20">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="274.181782" transform="rotate(-0 47.38 274.181782)">20</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="267.59569" transform="rotate(-0 47.38 267.59569)">20</text>
      </g>
     </g>
     <g id="ytick_9">
      <g id="line2d_24">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="54.38" y="242.239821" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="54.38" y="232.360684" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_21">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="247.178806" transform="rotate(-0 47.38 247.178806)">30</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="237.299668" transform="rotate(-0 47.38 237.299668)">30</text>
      </g>
     </g>
     <g id="ytick_10">
      <g id="line2d_25">
       <g>
-       <use xlink:href="#m7dde4cb0bd" x="54.38" y="215.236845" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
+       <use xlink:href="#m7dde4cb0bd" x="54.38" y="202.064662" style="fill: #fff8ed; stroke: #fff8ed; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_22">
-      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="220.17583" transform="rotate(-0 47.38 220.17583)">40</text>
+      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #fff8ed" x="47.38" y="207.003646" transform="rotate(-0 47.38 207.003646)">40</text>
      </g>
     </g>
     <g id="text_23">
@@ -419,68 +419,68 @@ z
     </g>
    </g>
    <g id="serie-L_prueba">
-    <path d="M 142.115843 323.24875 
-L 142.115843 317.848155 
-L 144.562342 317.848155 
-L 144.562342 312.44756 
-L 147.00884 312.44756 
-L 147.00884 309.747262 
-L 149.455339 309.747262 
-L 149.455339 293.545476 
-L 151.901837 293.545476 
-L 151.901837 285.444583 
-L 154.348336 285.444583 
-L 154.348336 290.845179 
-L 156.794834 290.845179 
-L 156.794834 261.141905 
-L 159.241332 261.141905 
-L 159.241332 236.839226 
-L 161.687831 236.839226 
-L 161.687831 255.74131 
-L 164.134329 255.74131 
-L 164.134329 228.738333 
-L 166.580828 228.738333 
-L 166.580828 209.83625 
-L 169.027326 209.83625 
-L 169.027326 199.03506 
-L 171.473825 199.03506 
-L 171.473825 199.03506 
-L 173.920323 199.03506 
-L 173.920323 209.83625 
-L 176.366822 209.83625 
-L 176.366822 228.738333 
-L 178.81332 228.738333 
-L 178.81332 239.539524 
-L 181.259819 239.539524 
-L 181.259819 266.5425 
-L 183.706317 266.5425 
-L 183.706317 271.943095 
-L 186.152815 271.943095 
-L 186.152815 258.441607 
-L 188.599314 258.441607 
-L 188.599314 298.946071 
-L 191.045812 298.946071 
-L 191.045812 301.646369 
-L 193.492311 301.646369 
-L 193.492311 312.44756 
-L 195.938809 312.44756 
-L 195.938809 315.147857 
-L 198.385308 315.147857 
-L 198.385308 312.44756 
-L 200.831806 312.44756 
-L 200.831806 323.24875 
-L 203.278305 323.24875 
-L 203.278305 320.548452 
-L 205.724803 320.548452 
-L 205.724803 320.548452 
-L 208.171301 320.548452 
-L 208.171301 323.24875 
-L 210.6178 323.24875 
-L 210.6178 323.24875 
-L 213.064298 323.24875 
-L 213.064298 320.548452 
-L 215.510797 320.548452 
-L 215.510797 323.24875 
+    <path d="M 140.702259 323.24875 
+L 140.702259 317.189546 
+L 142.76188 317.189546 
+L 142.76188 323.24875 
+L 144.821501 323.24875 
+L 144.821501 317.189546 
+L 146.881122 317.189546 
+L 146.881122 308.100739 
+L 148.940743 308.100739 
+L 148.940743 317.189546 
+L 151.000364 317.189546 
+L 151.000364 302.041535 
+L 153.059985 302.041535 
+L 153.059985 295.98233 
+L 155.119606 295.98233 
+L 155.119606 256.597501 
+L 157.179227 256.597501 
+L 157.179227 274.775115 
+L 159.238848 274.775115 
+L 159.238848 247.508695 
+L 161.298469 247.508695 
+L 161.298469 265.686308 
+L 163.35809 265.686308 
+L 163.35809 256.597501 
+L 165.417711 256.597501 
+L 165.417711 229.331082 
+L 167.477332 229.331082 
+L 167.477332 214.183071 
+L 169.536953 214.183071 
+L 169.536953 235.390286 
+L 171.596574 235.390286 
+L 171.596574 226.301479 
+L 173.656195 226.301479 
+L 173.656195 199.03506 
+L 175.715816 199.03506 
+L 175.715816 232.360684 
+L 177.775437 232.360684 
+L 177.775437 214.183071 
+L 179.835058 214.183071 
+L 179.835058 220.242275 
+L 181.894679 220.242275 
+L 181.894679 256.597501 
+L 183.9543 256.597501 
+L 183.9543 247.508695 
+L 186.013921 247.508695 
+L 186.013921 262.656706 
+L 188.073542 262.656706 
+L 188.073542 292.952728 
+L 190.133163 292.952728 
+L 190.133163 302.041535 
+L 192.192784 302.041535 
+L 192.192784 305.071137 
+L 194.252405 305.071137 
+L 194.252405 302.041535 
+L 196.312026 302.041535 
+L 196.312026 323.24875 
+L 198.371647 323.24875 
+L 198.371647 320.219148 
+L 200.431268 320.219148 
+L 200.431268 317.189546 
+L 202.490889 317.189546 
+L 202.490889 323.24875 
 " clip-path="url(#p7c85824559)" style="fill: none; stroke: #ff87ad; stroke-width: 1.8; stroke-linejoin: miter"/>
    </g>
    <g id="verdadero">
@@ -509,7 +509,7 @@ L 374.76 192.824375
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_24">
-    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="214.57" y="186.824375" transform="rotate(-0 214.57 186.824375)">500 pruebas de 200: desv. 1.1; ±2 EE cubre R en 94 %</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="214.57" y="186.824375" transform="rotate(-0 214.57 186.824375)">500 pruebas de 200: desv. 1.1; ±2 EE cubre R en 96 %</text>
    </g>
    <g id="legend_2">
     <g id="patch_14">

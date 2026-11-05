@@ -161,7 +161,10 @@ for c, (a, i, cm) in CONTRATOS.items():
 
 def bloque_4(contrato, separar):
     fila = FILAS_B4.get((contrato, separar))
-    if fila is None:
+    if fila is None and contrato == "más de lo mismo":
+        print("«más de lo mismo»: separar al azar ya imita este contrato.")
+        fila = FILAS_B4[contrato, "al azar"]
+    elif fila is None:
         print(f"«{contrato}»: ninguna separación de tu muestra lo imita;"
               " declara el alcance.")
         fila = FILAS_B4[contrato, "al azar"]

@@ -150,9 +150,12 @@ def cifras_c2_prueba_ruidosa():
     finally:
         w.__exit__(None, None, None)
     R = float(perd.mean())
-    rng = np.random.default_rng(SEMILLA)
     res = {"R": R, "estimaciones": {}}
     for n in (20, 200):
+        # un generador nuevo por tamano: la misma receta que bloque_2 del
+        # notebook 03, que lo reinicia en cada llamada (revision r1: con uno
+        # compartido, la cifra de 200 del guion no era la que imprime el notebook)
+        rng = np.random.default_rng(SEMILLA)
         L, cubre = [], []
         for _ in range(REP_PRUEBAS):
             l = perd[rng.choice(len(perd), size=n, replace=False)]
@@ -381,7 +384,10 @@ def cifras_c2_hilo():
         res["umbral"] = res["cv"][res["N_min"]] + res["ee"][res["N_min"]]
         des = ml._desarrollo(d)
         res["R_por_N"] = {N: float(ml.riesgo(construir(N)(des), d)) for N in CANDIDATOS}
-        res["L_ent_por_N"] = {N: float(ml.L(construir(N)(d), d.ent)) for N in CANDIDATOS}
+        # L_ent del MISMO ajuste que R (el reajuste con las 48 de desarrollo), para
+        # que R − L_ent sea la brecha de un solo modelo (revision r1: antes era
+        # el ajuste con 36 y la diferencia mezclaba dos modelos)
+        res["L_ent_por_N"] = {N: float(ml.L(construir(N)(des), des)) for N in CANDIDATOS}
         for nombre, N in (("min", res["N_min"]), ("un_ee", res["N_un_ee"])):
             m = construir(N)(des)
             l = np.asarray(ml.perdida(d.prueba["y"], m.predecir(d.prueba)), float)
@@ -394,6 +400,15 @@ def cifras_c2_hilo():
         res["ee_benchmark_prueba"] = float(lb.std(ddof=1) / math.sqrt(len(lb)))
         res["benchmark_despliegue"] = float(
             ml.benchmarks(d, d.despliegue).loc["media"].iloc[0])
+        # Revision r1: la diferencia pareada en prueba (final − benchmark), que el
+        # cuerpo de P2 §3 lee: no le gana; una entrega del borde domina la cifra.
+        lm = np.asarray(ml.perdida(d.prueba["y"], construir(res["N_un_ee"])(des)
+                                   .predecir(d.prueba)), float)
+        dif = lm - lb
+        res["dif_prueba"] = float(dif.mean())
+        res["ee_dif_prueba"] = float(dif.std(ddof=1) / math.sqrt(len(dif)))
+        res["n_prueba"] = int(len(dif))
+        res["perdida_max_prueba"] = float(lm.max())
         res["piso"] = float(ml.piso(d))
         res["N_mejor_R"] = int(min(CANDIDATOS, key=lambda N: res["R_por_N"][N]))
     finally:
@@ -619,6 +634,8 @@ def sesgo_varianza_hilo(semilla=SEMILLA):
 
 
 EJE_DIANA = (15.0, 55.0)    # eje fijo de ml-c2-diana (minutos); todas caen dentro
+INTERIOR = (0.5, 5.5)       # tramo interior de x: sin los bordes donde el promedio de
+                            # 100 ajustes de grado alto lo arrastran unos pocos (r1)
 
 
 def _predicciones_en(sv, x0, N):
@@ -651,6 +668,20 @@ def cifras_c2_sesgo_varianza():
         p = _predicciones_en(sv, X0, N)
         res[f"diana_{N}"] = {"sesgo": float(p.mean() - verdad), "desv": float(p.std()),
                              "fuera_eje": int(np.sum((p < EJE_DIANA[0]) | (p > EJE_DIANA[1])))}
+    # Revision r1: el sesgo² promediado en toda la malla deja de bajar desde N = 8
+    # (20.5 en 9, 64.9 en 12): lo arrastran los bordes, donde unos pocos ajustes
+    # se disparan, y el ruido de Monte Carlo del promedio de 100. En el tramo
+    # interior sigue chico; la pagina lo dice con estas cifras.
+    x = sv.malla["x"].to_numpy(float)
+    dentro = (x > INTERIOR[0]) & (x < INTERIOR[1])
+    verdad_malla = np.asarray(sv.verdad, float)
+    res["sesgo2_interior"] = {
+        N: float(np.mean((sv.predicciones[N].mean(axis=0) - verdad_malla)[dentro] ** 2))
+        for N in CANDIDATOS}
+    res["N_sesgo2_minimo"] = int(min(CANDIDATOS, key=lambda N: res[N]["sesgo2"]))
+    prom12 = sv.predicciones[12].mean(axis=0)
+    res["promedio_12_min"] = float(prom12.min())
+    res["promedio_12_min_x"] = float(x[int(np.argmin(prom12))])
     # R2 de §10.13: numero de condicion de Φ^T Φ con grado 12 y n = 36 (escalado)
     d = hilo()
     phi = ml.polinomio(12).ajustar(d.ent)
@@ -806,8 +837,15 @@ def cifras_c2_diagnostico():
                  "dif_cv": media_b, "dif_por_pliegue": por,
                  "senal_b": bool(abs(media_b) > float(np.std(por, ddof=1))),
                  "curva_cv": {g: float(cvs[g].media) for g in cvs},
-                 "piso": float(ml.piso(d)), "R": float(ml.riesgo(modelo, d))}
-            r["R_menos_piso"] = r["R"] - r["piso"]
+                 "piso": float(ml.piso(d))}
+            # R con la media condicional conocida: R = piso + E_x[(f̂ − f)²] en la
+            # muestra de despliegue (revision r1: ml.riesgo es una estimacion con
+            # 2000 y en C daba R < piso, un exceso negativo imposible)
+            dep = d.despliegue
+            exceso = np.mean((np.asarray(modelo.predecir(dep), float)
+                              - np.asarray(d.f_visible(dep), float)) ** 2)
+            r["R_menos_piso"] = float(exceso)
+            r["R"] = r["piso"] + r["R_menos_piso"]
             r["hoja"] = hoja_del_arbol(r)
             res[nombre] = r
     finally:

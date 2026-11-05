@@ -27,7 +27,9 @@ datos = ml.proceso(n=150, x={"x": ml.uniforme(1, 5)}, f=lambda d: 10 + 12 / d.x,
                    ruido=ml.normal(0, 2), fracciones=(0.8, 0, 0.2), semilla=SEMILLA)
 print(f"desarrollo: {len(datos.ent)} entregas · prueba:"
       f" {150 - len(datos.ent)} (cerrada)")
-ml.dibujar_proceso(datos, mostrar_f=False)
+ax = ml.dibujar_proceso(datos, mostrar_f=False)
+for t in ax.get_legend().get_texts() if ax.get_legend() else []:   # ent es el desarrollo
+    t.set_text(t.get_text().replace("entrenamiento", "desarrollo"))
 plt.show()
 
 # %% [texto] bloque-1-mira
@@ -40,8 +42,8 @@ plt.show()
 # Antes de correr nada más, escribe tus tres apuestas (números).
 MIS_APUESTAS = {
     "grado que elegirá la CV": None,
-    "L_prueba del modelo final (min²)": None,
-    "L_prueba del benchmark (min²)": None,
+    "L_prueba del modelo final menos la del benchmark (min²)": None,
+    "CV_5 del grado 12 (min²)": None,
 }
 for que, valor in MIS_APUESTAS.items():
     print(f"{que}: {'¡falta tu apuesta!' if valor is None else valor}")
