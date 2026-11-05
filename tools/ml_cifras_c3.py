@@ -380,6 +380,8 @@ def cifras_c3_endogena():
 
 # F5 · las cuatro dianas de β̂ (200 entrenamientos de 150 filas, σ = 1).
 N_DIANA = 150
+CORR_OMITIDA_DIANA = 0.6    # corr(x1, x3), con x3 omitida
+ENDOGENO_DIANA = 0.5        # corr(x1, ε), con σ = 1
 
 
 def fabricas_diana():
@@ -392,10 +394,11 @@ def fabricas_diana():
                                          semilla=s, con_realidad=False),
         "omitida correlacionada": lambda s: ml.proceso(
             n=N_DIANA, x=x3, f=lambda q: 1 + q["x1"] + q["x2"] + q["x3"],
-            correlacion={("x1", "x3"): 0.6}, omitir=["x3"], semilla=s, con_realidad=False),
+            correlacion={("x1", "x3"): CORR_OMITIDA_DIANA}, omitir=["x3"], semilla=s,
+            con_realidad=False),
         "colineal": lambda s: ml.caso(9, semilla=s, con_realidad=False),
         "endógena": lambda s: ml.proceso(n=N_DIANA, x=x2, f=lambda q: 1 + q["x1"] + q["x2"],
-                                         endogeno=0.5, semilla=s, con_realidad=False),
+                                         endogeno=ENDOGENO_DIANA, semilla=s, con_realidad=False),
     }
 
 
@@ -413,8 +416,14 @@ def cifras_c3_diana():
     for k, t in tablas_diana().items():
         out[k] = {"media": (float(t["x1"].mean()), float(t["x2"].mean())),
                   "desv": (float(t["x1"].std(ddof=1)), float(t["x2"].std(ddof=1)))}
+    # las cuentas de @ml-c3-teo-variable-omitida: todas las x con varianza 1 y
+    # coeficiente 1, así que β̂1 → 1 + corr (revisión c3 r2, B4)
     out["cita"] = {"omitida": _f(out["omitida correlacionada"]["media"][0], 2),
-                   "endogena": _f(out["endógena"]["media"][0], 2)}
+                   "endogena": _f(out["endógena"]["media"][0], 2),
+                   "corr_omitida": f"{CORR_OMITIDA_DIANA:g}",
+                   "endogeno": f"{ENDOGENO_DIANA:g}",
+                   "cuenta_omitida": f"{1 + CORR_OMITIDA_DIANA:g}",
+                   "cuenta_endogena": f"{1 + ENDOGENO_DIANA:g}"}
     return out
 
 
@@ -660,13 +669,15 @@ def cifras_c3_grado12():
          "R": {m: float(piv.loc[m, "realidad"]) for m in mus},
          "L_ent": {m: float(piv.loc[m, "ent"]) for m in mus}}
     out = {"paneles": paneles, "R_sin_penalizar": float(ml.riesgo(sin, d)), "u": u,
-           "piso": float(ml.piso(d)), "n_ent": len(d.ent)}
+           "piso": float(ml.piso(d)), "n_ent": len(d.ent),
+           "n_desarrollo": len(d.ent) + len(d.val)}   # las filas de la CV₅ (ent ∪ val)
     out["cita"] = {
         "mu_grande": "100", "mu_medio": f"{u['mu_min']:.4f}".rstrip("0"),
         "mu_medio_log": _f(np.log10(u["mu_min"]), 1), "mu_chico": "10⁻⁶",
         "R": {k: _f(v["R"], 1) for k, v in paneles.items()},
         "L_val": {k: _f(v["L_val"], 1) for k, v in paneles.items()},
         "R_sin_penalizar": _f(out["R_sin_penalizar"], 0),
+        "n_desarrollo": str(out["n_desarrollo"]),
     }
     return out
 
@@ -955,7 +966,10 @@ def cifras_c3_mu_cv():
                      "ee": float(np.std(l_mod, ddof=1) / np.sqrt(len(l_mod))),
                      "media": float(np.mean(l_med)), "dif": float(dif), "ee_dif": float(ee),
                      "le_gana": bool(dif < -2 * ee)}
-    out["R_media"] = float(ml.benchmarks(d, d.despliegue).loc["media", "cuadratica"])
+    # el benchmark de F15 se ajusta con las mismas filas que el reajuste cuyo R
+    # dibuja (ent ∪ val, curvas_mu_cv()): así la meseta de R toca su horizontal
+    out["R_media"] = float(ml.benchmarks(pd.concat([d.ent, d.val]), d.despliegue,
+                                         tarea="regresion").loc["media", "cuadratica"])
     # mutación: rejilla ascendente, sin orden_complejidad
     with _silencio():
         sa = ml.elegir(d, _MEMO.candidatos("l1"), con="cv", k=5, regla="un_ee")

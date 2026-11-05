@@ -123,7 +123,8 @@ def bloque_3(ruido, que, donde, semilla):
         a1.scatter(val["x"], val["y"] - m.predecir(val), s=12)
         a1.set_xlabel("x (validación)"); a1.set_ylabel("residual e")
     else:
-        ml.dibujar_media_acumulada({ruido: RUIDOS_B3[ruido]}, estadistico=que, ax=a1)
+        ml.dibujar_media_acumulada({ruido: RUIDOS_B3[ruido]}, estadistico=que,
+                                    semilla=semilla, ax=a1)
     ml.dibujar_peso_de_filas(m, val, ax=a2)
     plt.show()
     print("Los 5 peores errores en validación:")
@@ -215,16 +216,16 @@ def bloque_5(corr, donde, semilla):
     if (corr, semilla) not in TABLAS_B5:
         TABLAS_B5[corr, semilla] = ml.beta_repetido(_fab_b5(corr), None, 200,
                                                     semilla=semilla)
-    t = TABLAS_B5[corr, semilla]
+    tabla = TABLAS_B5[corr, semilla]
     x1, x2 = PUNTOS_B5[donde]
-    y_gorro = t["1"] + t["x1"] * x1 + t["x2"] * x2
+    y_gorro = tabla["1"] + tabla["x1"] * x1 + tabla["x2"] * x2
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4))
-    ml.dibujar_beta_repetido(t, verdadero={"x1": 1.0, "x2": 1.0},
+    ml.dibujar_beta_repetido(tabla, verdadero={"x1": 1.0, "x2": 1.0},
                              columnas=("x1", "x2"), ax=a1)
     a2.hist(y_gorro, bins=30)
     a2.set_xlabel(f"ŷ en x1 = {x1:g}, x2 = {x2:g}")
     plt.show()
-    print(f"desviación de β̂₁ en 200 entrenamientos = {t['x1'].std():.3f}")
+    print(f"desviación de β̂₁ en 200 entrenamientos = {tabla['x1'].std():.3f}")
     print(f"desviación de ŷ en ese punto = {y_gorro.std():.3f}")
 
 

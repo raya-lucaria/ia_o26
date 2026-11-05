@@ -555,8 +555,8 @@ L 363.862727 34.210545
 " clip-path="url(#p0247151b58)" style="fill: none; stroke-dasharray: 5.92,2.56; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.6"/>
    </g>
    <g id="benchmark">
-    <path d="M 44.3 34.328323 
-L 379.08 34.328323 
+    <path d="M 44.3 34.210545 
+L 379.08 34.210545 
 " clip-path="url(#p0247151b58)" style="fill: none; stroke-dasharray: 8.96,2.24,1.4,2.24; stroke-dashoffset: 0; stroke: #f04cff; stroke-width: 1.4"/>
    </g>
    <g id="serie-cv">

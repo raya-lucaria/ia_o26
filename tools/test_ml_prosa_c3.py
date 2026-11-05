@@ -172,7 +172,10 @@ def test_ninguna_linea_dice_le_gana_con_validacion_cruzada(ruta):
 
 
 def test_p1_el_centro_de_entrenamiento_es_cero():
-    assert "0" in secciones(pagina(P1))[1]
+    """Revisión c3 r2 (R1-H8): la cifra va atada a la frase que la cita, no a
+    que aparezca un «0» en la sección."""
+    frase = _unidad(pagina(P1), "La simulación confirma")
+    assert r"$\bar e_{\text{ent}}=0$ a 10 decimales" in frase, frase
     assert abs(c.cifras_c3_centro_entrenamiento()["e_ent"]) < 1e-10
 
 
@@ -237,12 +240,15 @@ def frases_p1():
                                        s["mejora"], s["dif_pareada"], s["ee_dif"]]),
         ("el cociente máximo/mínimo", [co["normal"], co["pareto"], co["cauchy"]]),
         ("La omitida centra", [di["omitida"], di["endogena"]]),
-        ("la simulación da", [o["beta1_a"]]),
+        ("la simulación da $", [o["beta1_a"]]),
         ("sin el producto,", [o["beta1_b"]]),
         ("el coeficiente de $x_2x_3", [o["beta_c_x1"], o["beta_c_x2x3"], o["L_val_c"]]),
         ("el piso con lo visible es", [o["piso_visible"]]),
         ("elimina la silla", [it["L_val_sin"], it["L_val_con"]]),
         ("La cuenta da 2.5", [en["cuenta"], en["media_beta1"], en["L_val"], en["piso"]]),
+        ("Todas las $x$ son normales estándar", [di["corr_omitida"], di["endogeno"],
+                                                 di["cuenta_omitida"], di["cuenta_endogena"],
+                                                 di["omitida"], di["endogena"]]),
         ("La desviación de $\\widehat y$ es", [cl["desv_y_dentro_99"], cl["desv_y_fuera_99"],
                                               cl["desv_beta1_0"], cl["desv_beta1_99"]]),
         ("veces mayor", [f"{ej['colineal']['razon']:.1f}", f"{ej['colineal']['desv_09']:.3f}"]),
@@ -269,6 +275,7 @@ def frases_p2():
         ("| Centro de residuales", [v[x]["centro"] for x in k]),
         ("| Ancho de residuales", [v[x]["ancho"] for x in k]),
         ("El $R$ de B,", [g12["R"]["medio"]]),
+        ("no ve ese tope", [g12["n_desarrollo"]]),
         ("lasso conserva $x_1$", [pa["l1"]["x1"], pa["l1"]["x6"]]),
         ("La elástica conserva ambas", [pa["elastica"]["x1"]]),
         ("su media pasa de", [rc["sin"]["desv"], rc["ridge"]["desv"], rc["sin"]["media"],
@@ -301,7 +308,8 @@ def test_p1_h1_del_ejercicio_final_fija_el_ruido_independiente():
     no siga a x2 (ε = σ(x1)·signo(x1x2)·U cumple H1 y da la silla de H2). H1 tiene
     que decir ε = σ(x1)·Z con Z independiente de las entradas."""
     ej = _bloque(pagina(P1), "ml-c3-ej-final-leer-el-error")
-    assert r"\sigma(x_1)" in ej and "independiente de $x_1$ y $x_2$" in ej, ej
+    assert r"\sigma_\varepsilon(x_1)" in ej and "independiente de $x_1$ y $x_2$" in ej, ej
+    assert r"\sigma(x_1)" not in ej, "σ sola es la sigmoide (revisión c3 r2)"
 
 
 def test_el_intercepto_solo_garantiza_el_centro_en_entrenamiento():
@@ -311,6 +319,49 @@ def test_el_intercepto_solo_garantiza_el_centro_en_entrenamiento():
         texto = pagina(ruta)
         assert "mantiene el centro" not in texto, ruta.name
         assert "en entrenamiento" in texto, ruta.name
+
+
+def test_p1_h1_habla_del_error_ideal_no_del_residual():
+    """Revisión c3 r2: e = σ_ε(x1)Z + f − f̂; con semilla 0, 3 de 120 residuales
+    de validación tienen signo distinto al del ruido. El signo de Z es el del
+    error ideal, no el de e."""
+    resp = _bloque(pagina(P1), "ml-c3-resp-final-leer-el-error")
+    assert "el signo de $e$ es el de $Z$" not in resp
+    assert "error ideal" in resp and "sistemático" in resp, resp
+
+
+def test_p1_el_piso_normal_conjunto_se_limita_al_caso_8():
+    """Revisión c3 r2: Var(ε)(1 − corr²) no vale con otras entradas visibles
+    (ε = 0.5x1 + 0.5x2 + √0.5·Z: la fórmula da 0.75 y el piso es 0.50)."""
+    obs = _bloque(pagina(P1), "ml-c3-obs-endogeneidad")
+    assert "Si no falta ninguna variable" not in obs
+    assert "única entrada" in obs and "Con más entradas visibles" in obs, obs
+    assert "no de la predicción" not in obs
+
+
+def test_p1_bengio_grandvalet_excluye_un_estimador_universal():
+    obs = _bloque(pagina(P1), "ml-c3-obs-cv-no-es-reserva")
+    assert "insesgado universal" in obs, obs
+
+
+def test_p2_con_mu_enorme_lasso_llega_a_una_meseta():
+    """Revisión c3 r2: con μ = 10, 100 y 1000, CV₅ = 16.3050 y R = 17.5321; la
+    página no puede decir que siguen subiendo."""
+    cur = c.curvas_mu_cv()
+    grandes = sorted(cur["R"])[-3:]
+    assert len({round(cur["R"][m], 9) for m in grandes}) == 1
+    texto = pagina(P2)
+    assert r"con $\mu\to\infty$ llegas al benchmark" not in texto
+    resp = _bloque(texto, "ml-c3-resp-sube-mu")
+    assert "meseta" in resp and "permanecen iguales" in resp, resp
+    seis = secciones(texto)[6]
+    assert "meseta del predictor constante, el benchmark" in seis
+
+
+def test_los_guiones_de_nb07_no_hablan_de_la_linea_crema():
+    """Revisión c3 r2: con el tema claro del notebook, R es negra discontinua."""
+    texto = leer(GUIONES / "07_el_lagrangeano_en_accion.texto.md")
+    assert "crema" not in texto and texto.count("la línea discontinua es $R$") == 2
 
 
 def test_la_monotonia_en_mu_admite_empates():
@@ -331,7 +382,10 @@ ENTREGA = "Se entrega el `.ipynb` por Canvas, con las celdas corridas"
 def test_tarea_cita_el_montaje_y_la_rubrica():
     texto = pagina(TAREA)
     t = c.cifras_c3_tarea()["cita"]
-    comprobar(texto, [t["J"], t["utiles"], t["corr_gemela"]], "3_tarea.md")
+    comprobar(_unidad(texto, "Tienes 50 variables"), [t["J"], t["utiles"], t["corr_gemela"]],
+              "3_tarea.md «Tienes 50 variables»")
+    comprobar(_unidad(texto, "Tendrás 300 observaciones"), [t["n"], t["n_ent"]],
+              "3_tarea.md «Tendrás 300 observaciones»")
     s = secciones(texto)
     assert set(s) >= {1, 2, 3, 4, 5}, f"3_tarea.md: secciones {sorted(s)}"
     puntos = [int(x) for x in re.findall(r"\|\s*(\d{1,3})\s*\|", s[4])]
@@ -356,7 +410,10 @@ def test_el_guion_de_la_tarea_no_da_respuestas_y_cita_el_montaje():
     assert not vacias, f"secciones vacías {vacias}"
     assert ENTREGA in texto
     t = c.cifras_c3_tarea()["cita"]
-    comprobar(texto, [t["J"], t["n_ent"], t["corr_gemela"]], "guion de la tarea")
+    comprobar(_unidad(texto, "`J` fija"), [t["J"]], "guion «`J` fija»")
+    comprobar(_unidad(texto, "es gemela de `x1`"), [t["corr_gemela"]], "guion «gemela»")
+    comprobar(_unidad(texto, "Hay $n=300$ observaciones"), [t["n"], t["n_ent"]],
+              "guion «Hay n=300 observaciones»")
 
 
 def test_el_indice_completo_lleva_la_fila_de_la_tarea_sin_enlazarla():

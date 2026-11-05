@@ -123,6 +123,7 @@ def bloque_3(log_mu, semilla, que):
         sel, curva = _U_B3[semilla]
         tu = min(MUS_B3, key=lambda c: abs(np.log10(c) - log_mu))
         ml.dibujar_cv(sel, R=curva, L_ent=curva, log=True, anotar={tu: "tú"})
+        plt.gca().set_yscale("log")             # R llega a 200: sin log, la U se aplasta
         print(f"μ del mínimo de CV₅ = {sel.elegido:.2g}")
     plt.show()
     e = datos.val["y"] - m.predecir(datos.val)
@@ -168,9 +169,9 @@ def bloque_4(penalizacion, rho, gemela, semilla):
     if gemela and penalizacion != "l2":         # 100 réplicas con μ = 0.3, una vez
         if clave[:2] not in _PAREJA_B4:
             fab = lambda s: _datos_b4(s, True, False)
-            t = ml.beta_repetido(fab, PHI_50, 100, mu=0.3, penalizacion=penalizacion,
-                                 rho=rho)
-            _PAREJA_B4[clave[:2]] = (t[["x1", "x6"]] != 0).mean()
+            tabla = ml.beta_repetido(fab, PHI_50, 100, mu=0.3, penalizacion=penalizacion,
+                                     rho=rho)
+            _PAREJA_B4[clave[:2]] = (tabla[["x1", "x6"]] != 0).mean()
         f = _PAREJA_B4[clave[:2]]
         print(f"de 100 muestras, con μ = 0.3: conserva x1 {100 * f['x1']:.0f} veces"
               f" y su gemela x6 {100 * f['x6']:.0f}")
@@ -196,7 +197,6 @@ ml.laboratorio(
 DATOS_B5 = ml.muchas_variables(n=300, J=50, utiles=5, semilla=SEMILLA)  # bloque 4
 DESARROLLO_B5 = pd.concat([DATOS_B5.ent, DATOS_B5.val])   # donde se reajusta con CV
 MUS_B5 = [float(m) for m in np.logspace(-4, 3, 30)]
-BENCH_B5 = ml.benchmarks(DATOS_B5, DATOS_B5.despliegue).loc["media", "cuadratica"]
 _AJ, _SEL_B5 = {}, {}
 def _candidatos(p):           # estandariza dentro de cada pliegue; un ajuste, una vez
     def c(df, mu):
@@ -215,18 +215,21 @@ def bloque_5(con, regla, p):
     sel = seleccion_b5(con, regla, p)
     ent = {mu: c(DATOS_B5.ent) for mu, c in _candidatos(p).items()}
     base, filas = (DESARROLLO_B5, "ent ∪ val") if con == "cv" else (DATOS_B5.ent, "ent")
+    # el benchmark se ajusta con las mismas filas que los modelos que dibuja R
+    bench = ml.benchmarks(base, DATOS_B5.despliegue,
+                          tarea="regresion").loc["media", "cuadratica"]
     mods = {mu: c(base) for mu, c in _candidatos(p).items()}
     nz = {mu: str(int((m.beta_gorro.drop("1") != 0).sum())) for mu, m in mods.items()}
     R = {mu: ml.riesgo(m, DATOS_B5) for mu, m in mods.items()}
     Le = None if con == "ent" else {mu: ml.L(m, DATOS_B5.ent) for mu, m in ent.items()}
-    ml.dibujar_cv(sel, R=R, L_ent=Le, benchmark=BENCH_B5, log=True,
+    ml.dibujar_cv(sel, R=R, L_ent=Le, benchmark=bench, log=True,
                   anotar={mu: nz[mu] for mu in MUS_B5[::4]}); plt.show()
     mu = sel.elegido_un_ee if (con, regla) == ("cv", "un_ee") else sel.elegido
     v, ee = sel.tabla.set_index("candidato").loc[mu, ["valor", "ee"]]
     valor = f"CV₅ = {v:.3f} ± {ee:.3f}" if con == "cv" else f"L_{con} = {v:.3f}"
     print(f"μ elegida = {mu:.3g} · {valor} · {nz[mu]} coeficientes ≠ 0 · "
           f"R = {R[mu]:.3f} (ajuste con {filas}, {len(base)} filas) · "
-          f"la media (benchmark): R = {BENCH_B5:.3f}")
+          f"la media (benchmark): R = {bench:.3f}")
 
 ml.laboratorio(bloque_5, con=ml.selector("elige con", {"L_ent": "ent", "L_val": "val",
                                                       "CV con k = 5": "cv"}, "ent"),

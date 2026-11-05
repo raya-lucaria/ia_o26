@@ -89,7 +89,7 @@ plt.show()
 # %% [texto] bloque-4-predice
 
 # %% [codigo-visible] bloque-4-juega
-PENALIZACION = "l1"   # prueba también "elastica" (con rho=0.5 en las dos llamadas)
+PENALIZACION = "l1"   # prueba también "elastica" (usa rho=0.5 por omisión)
 UTILES = ["x1", "x2", "x3", "x4", "x5", "x6"]
 tabla = ml.trayectorias(datos, PHI, PENALIZACION, np.logspace(-2, 1, 40))
 ml.dibujar_trayectorias(tabla, utiles=UTILES, marcar_mu=mu_hat)

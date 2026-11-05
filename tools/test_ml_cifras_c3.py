@@ -160,7 +160,8 @@ def test_diana():
         assert abs(mu - 1) > 10 * sd / np.sqrt(c.REPETICIONES)
     mu, sd = m["correcto"]["media"][0], m["correcto"]["desv"][0]
     assert abs(mu - 1) < 3 * sd / np.sqrt(c.REPETICIONES)
-    assert m["cita"] == {"omitida": "1.59", "endogena": "1.50"}
+    assert m["cita"] == {"omitida": "1.59", "endogena": "1.50", "corr_omitida": "0.6",
+                         "endogeno": "0.5", "cuenta_omitida": "1.6", "cuenta_endogena": "1.5"}
 
 
 def test_abanico_los_dos_abren_igual():
@@ -242,12 +243,12 @@ def test_grado12():
     lent = [u["L_ent"][x] for x in mus]
     assert all(b >= a - 1e-9 for a, b in zip(lent, lent[1:]))
     assert u["mu_un_ee"] >= u["mu_min"]
-    assert m["n_ent"] == 36
+    assert m["n_ent"] == 36 and m["n_desarrollo"] == 48   # la CV₅ corre en ent ∪ val
     assert m["cita"] == {"mu_grande": "100", "mu_medio": "0.0032", "mu_medio_log": "-2.5",
                          "mu_chico": "10⁻⁶",
                          "R": {"grande": "48.3", "medio": "29.3", "chico": "203.1"},
                          "L_val": {"grande": "56.4", "medio": "13.8", "chico": "7.6"},
-                         "R_sin_penalizar": "1971"}
+                         "R_sin_penalizar": "1971", "n_desarrollo": "48"}
 
 
 def test_grado12_vistas():
@@ -348,6 +349,18 @@ def test_las_curvas_de_f15_salen_del_reajuste_que_cita_la_pagina():
         mu = m[f"mu_{k}"]
         assert cur["no_ceros"][mu] == m[k]["no_ceros"]
         assert cur["R"][mu] == pytest.approx(m[k]["R"])
+
+
+def test_el_benchmark_de_f15_es_la_meseta_del_reajuste():
+    """Revisión c3 r2: R_media salía de la media de las 180 filas de ent (17.503)
+    mientras R se mide con el reajuste de 240; con μ enorme lasso apaga todo y R
+    es el predictor constante de esas 240 filas. La horizontal tiene que ser esa
+    meseta, no otra."""
+    m = c.cifras_c3_mu_cv()
+    cur = c.curvas_mu_cv()
+    mu_max = max(cur["R"])
+    assert cur["no_ceros"][mu_max] == 0
+    assert cur["R"][mu_max] == pytest.approx(m["R_media"], rel=1e-9)
 
 
 # ------------------------------------------------------------- ejercicios ---

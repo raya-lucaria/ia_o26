@@ -295,14 +295,14 @@ def ml_c3_fuentes_patologias():
     c.append(texto(154, 328, "escalas que entorpecen", tam=13, color=SUAVE))
     c.append(texto(154, 346, "al optimizador", tam=13, color=SUAVE))
     c.append(caja(308, 280, 276, 96, relleno=FONDO, borde=SUAVE, radio=8, guiones="3 4", grosor=1.5))
-    c.append(texto(446, 308, "endogeneidad", tam=13, peso="700", color=SUAVE))
-    c.append(texto(446, 328, "no se ve en el error:", tam=13, color=SUAVE))
-    c.append(texto(446, 346, "rompe el coeficiente,", tam=13, color=SUAVE))
-    c.append(texto(446, 364, "no la predicción", tam=13, color=SUAVE))
+    c.append(texto(446, 308, "endogeneidad (caso 8)", tam=13, peso="700", color=SUAVE))
+    c.append(texto(446, 328, "lineal, no se ve en el error:", tam=13, color=SUAVE))
+    c.append(texto(446, 346, "rompe el coeficiente, no", tam=13, color=SUAVE))
+    c.append(texto(446, 364, "la predicción con lo visible", tam=13, color=SUAVE))
     aria = ("Cuatro fuentes del error y sus patologías: azar, el ruido de siempre; variables "
             "que no medimos, la variable omitida; familia equivocada, la interacción omitida; "
             "pocos datos, la colinealidad. Aparte, la optimización (escalas que la entorpecen) "
-            "y la endogeneidad, que no se ve en el error")
+            "y la endogeneidad lineal del caso 8, que no se ve en el error")
     return svg(FP_W, FP_H, aria, "Cuatro fuentes y sus patologías", c)
 
 
@@ -511,7 +511,8 @@ def ml_c3_grado_12_mu():
         fig.legend(manejadores, rotulos, loc="lower center", ncol=2, frameon=True)
 
     aria = ("Las entregas de la clase 2 con el mismo polinomio de grado 12: con μ 100 la recta "
-            f"de la media; con μ {q['mu_medio']} una curva cercana a f; con μ 10⁻⁶ la curva "
+            f"de la media; con μ {q['mu_medio']} una curva cercana a f en el centro que cae en el "
+            "borde derecho; con μ 10⁻⁶ la curva "
             "persigue los 36 puntos y oscila, como en la clase 2. R: "
             f"{q['R']['grande']}, {q['R']['medio']}, {q['R']['chico']}. Cuarto panel: contra μ, "
             f"L ent sube; CV 5 forma una U con fondo en μ = {q['mu_medio']}; R es enorme con μ "
