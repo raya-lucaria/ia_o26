@@ -4887,11 +4887,7 @@ def test_ajustar_otro_boosting_nombra_tasa_y_etapas():
 def test_seleccionar_solo_mira_entrenamiento():
     d = ml.sembrar_fuga(_llego_tarde(n=200), "seleccion_previa", n_ruido=40, k=5)
     phi = ml.seleccionar(k=5).ajustar(d.ent)
-    otra_val = d.val.copy()
-    otra_val["y"] = 1 - otra_val["y"]
-    otra_val[d.columnas_universo] = otra_val[d.columnas_universo].to_numpy()[::-1]
-    phi2 = ml.seleccionar(k=5).ajustar(d.ent)
-    assert phi.nombres == phi2.nombres
+    assert ml.seleccionar(k=5).ajustar(d.ent.copy()).nombres == phi.nombres
     # y la lista es la de mayor |corr| en ent
     r = ml._abs_corr_con_y(d.ent, d.columnas_universo)
     assert set(phi.nombres) == {d.columnas_universo[i] for i in np.argsort(-r)[:5]}
@@ -5327,3 +5323,167 @@ def test_adversarial_categoricas_no_regalan_el_origen():
     b = pd.DataFrame({"zona": rng.choice(["norte", "centro", "sur"], 150)})
     r = ml.validacion_adversarial(a, b)
     assert r.senal == "señal" and r.mcc > 0.3
+
+
+def test_tuberia_expone_la_representacion_y_las_columnas_que_lee():
+    # Con seleccionar(10) desde el universo, columnas_x se quedaba con las 10 de entrada
+    # y importancia omitía las que el modelo sí usa; .phi era None con es_lineal=True.
+    d = ml.caso(26)
+    dev = ml._desarrollo(d)
+    m = ml.tuberia(ml.seleccionar(10), modelo={"familia": "logistica",
+                                               "pesos": "balanceado"})(dev)
+    elegidas = list(m._phi.nombres)
+    assert set(elegidas) - set(d.columnas_x)  # eligió alguna fuera de las de entrada
+    assert set(elegidas) <= set(m.columnas_x)
+    assert m.columnas_x[:10] == d.columnas_x
+    assert m.es_lineal and m.phi is not None
+    assert list(m.phi(d.val).columns) == elegidas
+    imp = ml.importancia(m, d.val, "logaritmica", repeticiones=1)
+    assert set(elegidas) <= set(imp.index)
+    usadas = imp[elegidas].abs().sum()
+    assert usadas > 0
+    # con imputador, la representación imputa antes de la Φ
+    f = _llego_tarde(n=300, faltantes={"distancia": (0.3, "azar")})
+    m = ml.tuberia(ml.imputador(), modelo={"familia": "logistica"})(f.ent)
+    assert not m.phi(f.val).isna().any().any()
+    assert m.columnas_x == ["distancia", "hora", "lluvia"]
+    assert ml.tuberia(ml.imputador(), modelo={"familia": "vecinos"})(f.ent).phi is None
+
+
+def _taller_5_texto(datos):
+    salida = io.StringIO()
+    with redirect_stdout(salida), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.taller(datos, clase=5)
+    return salida.getvalue()
+
+
+def test_taller_5_alarma_con_perdida_y_no_con_mcc(monkeypatch):
+    # Sin fuga y con Pr(y = 1) < 0.5 casi siempre, la regla verdadera cortada en 0.5 da
+    # MCC 0 y la CV un MCC positivo: la alarma por MCC saltaba sin fuga.
+    monkeypatch.setattr(ml, "_widgets", lambda: None)
+    monkeypatch.setattr(ml, "_mostrar", lambda: None)
+    d = ml._llego_tarde(n=1500, puntaje=lambda df: 0.15 * df["distancia"], proporcion=0.35)
+    alarma = [l for l in _taller_5_texto(d).splitlines() if l.startswith("(5)")][0]
+    assert "CV" not in alarma and "regla verdadera" not in alarma
+    alarma = [l for l in _taller_5_texto(ml.caso(19)).splitlines() if l.startswith("(5)")][0]
+    assert "pérdida logarítmica de la CV" in alarma
+
+
+@pytest.mark.parametrize("numero", [19, 20, 21, 26, 27, 28])
+def test_galeria_5_corre_cada_caso(monkeypatch, numero):
+    monkeypatch.setattr(ml, "_widgets", lambda: None)
+    monkeypatch.setattr(ml, "_mostrar", lambda: None)
+    salida = io.StringIO()
+    with redirect_stdout(salida), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.galeria(5, casos=[numero])
+    texto = salida.getvalue()
+    assert "(5) Alarma de fuga" in texto
+    if numero == 27:
+        assert "sin KS para las categóricas: zona" in texto
+
+
+def test_autocorrelacion_constante_lanza_aunque_la_media_redondee():
+    with pytest.raises(ValueError, match="constantes"):
+        ml.autocorrelacion(np.full(100, 0.1), rezagos=2)
+
+
+def test_autocorrelacion_varios_rezagos_contra_sumas_a_mano():
+    e = [0.3, -1.2, 2.0, 0.7, -0.4, 1.1, -2.2, 0.5, 0.0, 1.6]
+    media = sum(e) / len(e)
+    c = [v - media for v in e]
+    den = sum(v * v for v in c)
+    esperado = [sum(c[t] * c[t + h] for t in range(len(e) - h)) / den for h in range(1, 6)]
+    assert ml.autocorrelacion(e, rezagos=5) == pytest.approx(esperado, abs=1e-12)
+
+
+def test_ks_rechaza_columnas_nominales_o_mixtas():
+    a = pd.DataFrame({"x": [0, "A"]}, dtype=object)
+    b = pd.DataFrame({"x": [0, "B"]}, dtype=object)
+    with pytest.raises(ValueError, match="nominal o mixta"):
+        ml.ks_por_variable(a, b)
+    with pytest.raises(ValueError, match="nominal o mixta"):
+        ml.ks_por_variable(pd.DataFrame({"z": ["n", "s"]}), pd.DataFrame({"z": ["n", "c"]}))
+    # una columna object con puros números sí pasa
+    r = ml.ks_por_variable(pd.DataFrame({"x": np.array([0, 1, 2], dtype=object)}),
+                           pd.DataFrame({"x": [1.0, 2.0, 3.0]}))
+    assert r["estadistico"].iloc[0] == pytest.approx(1 / 3)
+
+
+def test_caso_20_con_logistica_sin_castigo_no_cambia_la_cv():
+    # Imputar una constante con su indicadora y escalar solo reparametrizan la logística
+    # sin castigo: la fuga y la tubería dan la misma pérdida (no «más optimista»).
+    assert "más optimista" not in ml.CASOS_BORDE[20].que_se_ve
+    assert "reparametrizan" in ml.CASOS_BORDE[20].que_se_ve
+    for s in (0, 1, 2):
+        limpio = ml._llego_tarde(semilla=s, faltantes={"distancia": (0.3, "depende_x")})
+        fuga = ml.validacion_cruzada(ml.caso(20, semilla=s), lambda df: ml.ajustar(df)).media
+        tub = ml.validacion_cruzada(limpio, ml.tuberia(ml.imputador(),
+                                                       modelo={"familia": "logistica"})).media
+        assert fuga == pytest.approx(tub, abs=1e-9)
+
+
+@pytest.mark.parametrize("familia", ["arbol", "boosting"])  # el bosque remuestrea: no da 0.5
+def test_arboles_desempatan_en_0_5_hacia_la_clase_1(familia):
+    df = pd.DataFrame({"x": [0.0, 0.0, 0.0, 0.0], "y": ["a", "b", "a", "b"]})
+    m = ml.ajustar_otro(df, familia=familia, columnas_x=["x"], tarea="clasificacion",
+                        profundidad=1)
+    p = m.predecir_p(df)
+    assert p == pytest.approx(np.full(4, 0.5), abs=1e-9)
+    assert list(m.predecir(df)) == ["b"] * 4
+    assert list(m.predecir(df)) == [m.clases[i] for i in ml.clasificar(p)]
+
+
+def test_imputar_simple_con_int64_y_mediana_no_entera():
+    df = pd.DataFrame({"a": pd.array([1, 2, None], dtype="Int64")})
+    lleno = ml.imputar_simple(df).transformar(df)
+    assert lleno["a"].tolist() == [1.0, 2.0, 1.5]
+    assert lleno["a_falta"].tolist() == [0.0, 0.0, 1.0]
+
+
+def test_boosting_con_una_sola_clase_lanza_en_espanol():
+    df = pd.DataFrame({"x": [0.0, 1.0, 2.0], "y": [1, 1, 1]})
+    with pytest.raises(ValueError, match="una sola clase"):
+        ml.ajustar_otro(df, familia="boosting", columnas_x=["x"], tarea="clasificacion")
+
+
+def test_seleccionar_con_correlaciones_conocidas():
+    # Referencia independiente de _abs_corr_con_y: columnas construidas con |corr| en un
+    # orden conocido, que no es el orden de las columnas.
+    rng = np.random.default_rng(1)
+    n = 4000
+    y = rng.standard_normal(n)
+    fuerza = {"c0": 0.0, "c1": 0.9, "c2": 0.1, "c3": -0.7, "c4": 0.3, "c5": 0.0, "c6": 0.5}
+    df = pd.DataFrame({c: a * y + math.sqrt(1 - a * a) * rng.standard_normal(n)
+                       for c, a in fuerza.items()})
+    df["y"] = y
+    df.attrs["ml"] = {"columnas_x": list(fuerza), "columnas_contexto": [],
+                      "tarea": "regresion", "K": None, "clases": None}
+    phi = ml.seleccionar(k=3).ajustar(df)
+    assert set(phi.nombres) == {"c1", "c3", "c6"}
+    assert set(ml.seleccionar(k=1).ajustar(df).nombres) == {"c1"}
+
+
+def test_adversarial_corta_cada_pliegue_en_su_proporcion():
+    # Pliegues con proporciones de origen distintas en el ajuste: el corte de cada
+    # pliegue es su propio ō, no el global.
+    a, b = _dos_tablas(desplaza=0.6, n_a=300, n_b=200)
+    o = np.r_[np.zeros(300, int), np.ones(200, int)]
+    idx0, idx1 = np.flatnonzero(o == 0), np.flatnonzero(o == 1)
+    trozos0 = np.array_split(idx0, 4)
+    trozos1 = np.split(idx1, [20, 60, 120])  # validación desigual → ajustes desiguales
+    part = []
+    for m in range(4):
+        valida = np.sort(np.r_[trozos0[m], trozos1[m]])
+        ajuste = np.setdiff1d(np.arange(500), valida)
+        part.append((ajuste, valida))
+    r = ml.validacion_adversarial(a, b, particion=lambda df: part)
+    cortes = [o[aj].mean() for aj, _ in part]
+    assert np.ptp(cortes) > 0.05
+    pred = np.zeros(500, int)
+    for (aj, va), tau in zip(part, cortes):
+        pred[va] = r.prob[va] >= tau
+    assert r.mcc == pytest.approx(ml.mcc(o, pred, clases=[0, 1]))
+    global_ = ml.mcc(o, (r.prob >= o.mean()).astype(int), clases=[0, 1])
+    assert global_ != pytest.approx(r.mcc, abs=1e-6)

@@ -3019,9 +3019,12 @@ CASOS_BORDE = {
     20: CasoBorde(
         20, "preprocesar_antes", 5, _caso_20,
         "Imputaste y escalaste con todas las filas antes de separar. ¿Cuánto cambia la CV?",
-        "Poco: la mediana y la escala de todo se parecen a las de cada pliegue. Pero en la "
-        "mayoría de las semillas la CV con la fuga sale un poco más optimista que la limpia, "
-        "que lo aprende todo dentro del pliegue."),
+        "Con la logística sin castigo, nada: imputar una constante con su indicadora y "
+        "escalar solo reparametrizan el modelo, y la CV con la fuga da la misma pérdida "
+        "logarítmica que la tubería que lo aprende todo dentro del pliegue. El error es de "
+        "procedimiento: con un modelo que sí depende de la escala (vecinos, o un castigo "
+        "μ > 0) la mediana y la escala de todas las filas pueden mover la CV, poco y no "
+        "siempre hacia el optimismo."),
     21: CasoBorde(
         21, "duplicados", 5, _caso_21,
         "El 30 % de las filas se capturó dos veces antes de separar. ¿Qué promete la CV?",
@@ -3915,6 +3918,17 @@ class _ModeloArboles(_ModeloVecinos):
         self.familia = familia
         self.hiperparametros = dict(hiperparametros)
 
+    def predecir(self, df):
+        """La etiqueta desde las probabilidades del propio modelo: en binaria,
+        clases[1] si Pr(y = clases[1]) >= 0.5 (el predict de sklearn desempata hacia la
+        primera clase); con K > 2, la más probable."""
+        if self.tarea != "clasificacion":
+            return super().predecir(df)
+        prob = self.predecir_prob(df)
+        if self.K == 2:
+            return self.clases[(prob[:, 1] >= 0.5).astype(int)]
+        return self.clases[np.argmax(prob, axis=1)]
+
 
 def _entrada(datos_o_df, columnas_x, tarea):
     df = datos_o_df.ent if isinstance(datos_o_df, Datos) else datos_o_df
@@ -4355,6 +4369,10 @@ def ajustar_otro(datos_o_df, familia="vecinos", columnas_x=None, tarea=None,
         if tarea == "clasificacion" and clases is None:
             clases = list(np.unique(df["y"]))
         y = df["y"].to_numpy(float) if tarea == "regresion" else df["y"].to_numpy()
+        if familia == "boosting" and tarea == "clasificacion" and len(np.unique(y)) < 2:
+            raise ValueError(f"el ent trae una sola clase ({np.unique(y).tolist()}): el boosting "
+                             "de clasificación necesita ver al menos dos para ajustarse "
+                             '(usa particion="estratificado" o más filas)')
         est = _estimador_arboles(familia, tarea, h).fit(X, y)
         return _ModeloArboles(familia, tarea, clases, cols, h, est)
     from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -6665,6 +6683,9 @@ class Imputador:
             if c not in salida:
                 raise ValueError(f'no hay columna "{c}" en los datos')
             if salida[c].isna().any():
+                if (pd.api.types.is_integer_dtype(salida[c]) and isinstance(v, (int, float))
+                        and float(v) != math.floor(float(v))):
+                    salida[c] = salida[c].astype(float)  # la mediana 1.5 no cabe en Int64
                 salida[c] = salida[c].fillna(v)
         meta = salida.attrs.get("ml")
         if meta:
@@ -6715,21 +6736,69 @@ def _matriz_tuberia(d, phi_aj):
     return M
 
 
-class _ModeloTuberia(Modelo):
-    """Imputadores y Φ aprendidos con el ent del ajuste, y el modelo encima."""
+class _PhiTuberia(Phi):
+    """La representación ajustada de una tubería: los imputadores y la Φ, ya aprendidos."""
 
-    def __init__(self, interno, imputadores, phi_aj, columnas_x, pasos):
+    def __init__(self, imputadores, phi_aj):
+        self._imputadores, self._phi = list(imputadores), phi_aj
+        self.nombres = list(getattr(phi_aj, "nombres", []))
+        self._ajustada = True
+
+    def ajustar(self, df_ent):
+        return self  # ya viene ajustada con el ent del pliegue
+
+    def _matriz(self, df):
+        d = df
+        for imp in self._imputadores:
+            d = imp.transformar(d)
+        return self._phi(d)
+
+    def __repr__(self):
+        return " → ".join([repr(i) for i in self._imputadores] + [repr(self._phi)])
+
+
+class _ModeloTuberia(Modelo):
+    """Imputadores y Φ aprendidos con el ent del ajuste, y el modelo encima.
+
+    .phi es la representación ajustada (imputadores y Φ) si el modelo es lineal; y
+    .columnas_x son las columnas de entrada del ajuste más las que la representación lee
+    por su nombre fuera de ellas (seleccionar puede elegirlas del universo): las que
+    importancia revuelve."""
+
+    def __init__(self, interno, imputadores, phi_aj, columnas_x, pasos, muestra=None):
         self._interno, self._imputadores, self._phi = interno, imputadores, phi_aj
         self.familia, self.tarea = interno.familia, interno.tarea
         self.K, self.clases, self.pesos = interno.K, interno.clases, interno.pesos
         self.es_lineal = interno.es_lineal
         self.beta_gorro = interno.beta_gorro
-        self.columnas_x = list(columnas_x)
+        self.phi = _PhiTuberia(imputadores, phi_aj) if interno.es_lineal else None
+        self._entrada = list(columnas_x)
+        self._muestra = muestra
+        self._leidas = None
         self.hiperparametros = {**interno.hiperparametros, "pasos": pasos}
         if hasattr(interno, "_eta"):
             self._eta = lambda df: interno._eta(self._z(df))
         if hasattr(interno, "_log_prob"):
             self._log_prob = lambda df: interno._log_prob(self._z(df))
+
+    @property
+    def columnas_x(self):
+        if self._leidas is None:
+            self._leidas = self._columnas_leidas()
+        return self._entrada + [c for c in self._leidas if c not in self._entrada]
+
+    def _columnas_leidas(self):
+        """Las columnas del ent que la representación lee con su nombre: las que llenan los
+        imputadores y las que la Φ deja pasar tal cual (seleccionar, columnas, la
+        identidad), aunque no estuvieran en columnas_x. Una sola pasada por la muestra."""
+        m = self._muestra
+        if m is None:
+            return []
+        meta = m.attrs.get("ml", {})
+        fuera = {"y"} | set(meta.get("columnas_contexto", []))
+        leidas = {c for imp in self._imputadores for c in (imp.columnas or [])}
+        leidas |= set(self._z(m).columns)
+        return [c for c in m.columns if c in leidas and c not in fuera]
 
     def _z(self, df):
         d = df
@@ -6832,7 +6901,9 @@ def tuberia(*pasos, modelo):
                 raise ValueError(f'familia="{familia}" es de {_FAMILIAS_AJUSTAR[familia]} y los '
                                  f"datos son de {meta.get('tarea')}")
             interno = ajustar(Z, **opciones)
-        return _ModeloTuberia(interno, ajustados, phi_aj, entrada, texto)
+        muestra = df.head(3).copy()
+        muestra.attrs = copy.deepcopy(df.attrs)
+        return _ModeloTuberia(interno, ajustados, phi_aj, entrada, texto, muestra)
 
     construir.pasos = texto
     return construir
@@ -7256,19 +7327,35 @@ def validacion_adversarial(df_a, df_b, columnas=None, k=5, semilla=0, particion=
         o_bar=float(o.mean()), pliegues=part, familia=familia)
 
 
+def _numerica_ks(serie, nombre):
+    """Los valores no faltantes de una columna numérica; ValueError si es nominal o mixta
+    (convertirla en silencio tiraría sus categorías y dejaría una KS de lo que sobra)."""
+    if pd.api.types.is_bool_dtype(serie):
+        return serie.dropna().to_numpy(float)
+    if not pd.api.types.is_numeric_dtype(serie):
+        presentes = serie.dropna()
+        num = pd.to_numeric(presentes, errors="coerce")
+        if num.isna().any():
+            raise ValueError(f'"{nombre}" es nominal o mixta (trae valores como '
+                             f'{presentes[num.isna()].iloc[0]!r}): KS compara variables '
+                             "numéricas; una categórica se compara por sus proporciones")
+        return num.to_numpy(float)
+    return serie.dropna().to_numpy(float)
+
+
 def ks_por_variable(df_a, df_b, columnas=None):
     """El estadístico de Kolmogorov–Smirnov de dos muestras por variable: la mayor
     distancia vertical entre las dos distribuciones acumuladas empíricas, con su valor p
     (scipy, ks_2samp). Compara marginales, una por una: no ve correlaciones ni cambios
-    de f. Columnas: variable, estadistico, p_valor (sin los faltantes de cada una).
+    de f. Columnas: variable, estadistico, p_valor (sin los faltantes de cada una). Una
+    columna nominal o mixta es ValueError: nómbralas fuera con columnas=.
 
     Desde: 1.6 (clase 5). Ejemplo: ml.ks_por_variable(datos.ent, datos.despliegue)
     """
     cols = _columnas_adversariales(df_a, df_b, columnas)
     filas = []
     for c in cols:
-        a = pd.to_numeric(df_a[c], errors="coerce").dropna().to_numpy(float)
-        b = pd.to_numeric(df_b[c], errors="coerce").dropna().to_numpy(float)
+        a, b = (_numerica_ks(df[c], c) for df in (df_a, df_b))
         if len(a) == 0 or len(b) == 0:
             raise ValueError(f'"{c}" no tiene valores numéricos en alguna de las dos tablas')
         r = stats.ks_2samp(a, b)
@@ -7292,10 +7379,10 @@ def autocorrelacion(residuales, rezagos=10):
     rezagos = int(rezagos)
     if not 1 <= rezagos <= n - 1:
         raise ValueError(f"rezagos va de 1 a {n - 1}")
+    if np.ptp(e) == 0:  # antes de centrar: el redondeo de la media no deja un 0 exacto
+        raise ValueError("los residuales son constantes: no hay autocorrelación que medir")
     c = e - e.mean()
     den = float(c @ c)
-    if den == 0:
-        raise ValueError("los residuales son constantes: no hay autocorrelación que medir")
     return np.array([float(c[:-h] @ c[h:]) / den for h in range(1, rezagos + 1)])
 
 
@@ -10391,7 +10478,9 @@ def _taller_c5(datos, k=5, familia="bosque", semilla=0):
     cuarta parte de ent, para ō ≈ 0.2; pliegues por grupos si hay "grupo"); (2) las tres
     KS_j más grandes; (3) si hay t, residuales contra t y autocorrelación; (4) CV al azar
     contra la estructurada (grupos o temporal) contra el uso, con lineal y vecinos;
-    (5) alarma de fuga."""
+    (5) alarma de fuga: la CV por debajo de su piso (regresión: el piso cuadrático; en
+    binaria: la pérdida logarítmica de la probabilidad verdadera), o una sola variable
+    con más de la mitad de la importancia. Las categóricas no van a KS."""
     clf = datos.tarea == "clasificacion"
     crit = "mcc" if clf else "cuadratica"
     rotulo_uso = "MCC en el despliegue" if clf else "R (despliegue)"
@@ -10406,7 +10495,14 @@ def _taller_c5(datos, k=5, familia="bosque", semilla=0):
     adv = validacion_adversarial(datos.ent, uso_x, columnas=datos.columnas_x, k=k,
                                  semilla=semilla, particion="grupo" if por_grupos
                                  else "estratificado", familia=familia)
-    ks = ks_por_variable(datos.ent, desp, columnas=datos.columnas_x)
+    numericas = [c for c in datos.columnas_x
+                 if pd.api.types.is_numeric_dtype(datos.ent[c])
+                 and pd.api.types.is_numeric_dtype(desp[c])]
+    nominales = [c for c in datos.columnas_x if c not in numericas]
+    if not numericas:
+        raise ValueError("el taller de la clase 5 necesita al menos una variable numérica "
+                         "para las KS_j")
+    ks = ks_por_variable(datos.ent, desp, columnas=numericas)
     fig, ejes = plt.subplots(1, 3 if "t" in datos.ent.columns else 2, figsize=(15, 4.2))
     dibujar_adversarial(adv, ax=ejes[0])
     dibujar_ks(ks, ax=ejes[1])
@@ -10417,8 +10513,19 @@ def _taller_c5(datos, k=5, familia="bosque", semilla=0):
           f"{adv.mcc:.2f}.")
     top = ks.sort_values("estadistico", ascending=False).head(3)
     print("(2) KS_j más grandes (ent contra despliegue): " + "; ".join(
-        f"{r.variable} {r.estadistico:.3f}" for r in top.itertuples()))
-    base = ajustar(datos)
+        f"{r.variable} {r.estadistico:.3f}" for r in top.itertuples())
+        + (f" (sin KS para las categóricas: {', '.join(nominales)}; compara sus "
+           "proporciones)" if nominales else ""))
+    if nominales:  # dummies con codificación de efectos: una categoría nueva avisa, no rompe
+        phi_t = combinar(columnas(*numericas),
+                         *[dummies(c, codificacion="efectos") for c in nominales])
+        lineal = lambda df: ajustar(df, phi=phi_t)  # noqa: E731
+        vecinos = lambda df: ajustar_otro(df, familia="vecinos", n_vecinos=5,  # noqa: E731
+                                          columnas_x=numericas)
+    else:
+        lineal = lambda df: ajustar(df)  # noqa: E731
+        vecinos = lambda df: ajustar_otro(df, familia="vecinos", n_vecinos=5)  # noqa: E731
+    base = lineal(datos)
     if "t" in datos.ent.columns:
         dev = _desarrollo(datos)
         dibujar_residual_tiempo(base, dev, ax=ejes[2])
@@ -10431,8 +10538,7 @@ def _taller_c5(datos, k=5, familia="bosque", semilla=0):
               f"(banda sin memoria ±{2 / math.sqrt(len(e)):.2f}).")
     _mostrar()
     estructura = "grupo" if por_grupos else ("temporal" if "t" in datos.ent.columns else None)
-    familias = {"lineal" if not clf else "logística": lambda df: ajustar(df),
-                "vecinos": lambda df: ajustar_otro(df, familia="vecinos", n_vecinos=5)}
+    familias = {"lineal" if not clf else "logística": lineal, "vecinos": vecinos}
     print(f"(4) {rotulo_cv} (ent ∪ val) contra el uso:")
     filas = []
     for nombre, construir in familias.items():
@@ -10450,14 +10556,19 @@ def _taller_c5(datos, k=5, familia="bosque", semilla=0):
     alarmas = []
     cv_lin = filas[0][1]
     if clf:
-        techo = None
+        # La referencia es una pérdida cuyo mejor predictor es la probabilidad verdadera:
+        # nadie baja en promedio de la pérdida logarítmica de prob. (Con el MCC no hay tal
+        # techo: la regla verdadera cortada en 0.5 maximiza aciertos, no el MCC.)
         if "prob" in desp.columns and datos.K == 2:
-            techo = mcc(desp["y"].to_numpy(),
-                        np.where(desp["prob"].to_numpy() >= 0.5, datos.clases[1], datos.clases[0]),
-                        clases=list(datos.clases))
-        if techo is not None and cv_lin.media > techo + 2 * cv_lin.ee:
-            alarmas.append(f"la CV ({cv_lin.media:.3f}) supera al MCC de la regla verdadera "
-                           f"({techo:.3f}) por más de 2 EE")
+            p = np.clip(desp["prob"].to_numpy(float), 1e-15, 1 - 1e-15)
+            uno = (desp["y"].to_numpy() == datos.clases[1]).astype(float)
+            piso_log = float(-np.mean(uno * np.log(p) + (1 - uno) * np.log(1 - p)))
+            cv_log = validacion_cruzada(datos, familias["logística"], k=k,
+                                        criterio="logaritmica", semilla=semilla)
+            if cv_log.media < piso_log - 2 * cv_log.ee:
+                alarmas.append(f"la pérdida logarítmica de la CV ({cv_log.media:.3f}) queda "
+                               f"por debajo de la de la probabilidad verdadera "
+                               f"({piso_log:.3f}) por más de 2 EE")
     else:
         try:
             with warnings.catch_warnings():
