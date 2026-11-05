@@ -97,18 +97,20 @@ curvas del panel derecho. Aquí $n$ es el número de datos de entrenamiento.
 
 ### celda: bloque-2-mira
 
-**Mira.** Izquierda: los puntos son datos y las curvas, $f$ y el ajuste. Derecha: círculos para $L_{\text{ent}}$ y discontinua para $R$, aproximado con observaciones nuevas.
+**Mira.** Izquierda: los puntos son datos, la curva verde gruesa es $f$ y la otra,
+el ajuste. Derecha: círculos para $L_{\text{ent}}$ y discontinua para $R$,
+aproximado con observaciones nuevas.
 El eje vertical es logarítmico; la brecha está sombreada. La punteada marca el piso; la raya-punto, la media como punto de comparación (*benchmark*).
 La estrella señala el menor $R$ medido; el círculo destacado, el grado actual.
 Arriba, los rótulos marcan la zona de subajuste, a la izquierda, y la de
-sobreajuste, a la derecha.
+sobreajuste, a la derecha. La leyenda va a la derecha del panel.
 
 ### celda: bloque-2-explica
 
 <details><summary>Explicación</summary>
 
 $L_{\text{ent}}$ no sube al pasar de grado 4 a 12. Con 20 datos, $R$ aumenta;
-con 200, la curva queda casi plana desde el grado 5. Con los controles
+con 200, $R$ ya no sube por encima de su valor en grado 5. Con los controles
 iniciales, el grado 4 da $L_{\text{ent}}=0.184$, $R=0.444$ y brecha 0.260.
 El menor $R$ medido aparece en grado 6; en grado 15 llega aproximadamente a 1537.
 
@@ -174,8 +176,8 @@ $L_{\text{ent}}$ dentro de cada familia no resuelve cómo elegir entre ellas.
 
 Elige polinomio, recíproca o empate. Conserva «escalar x» activado, deja
 «φ» en «polinomio» y lleva «grado N» a 40. Anota $R$ y cambia «φ» a
-«(1, 1/x)» para compararlo. Después desactiva «escalar x» con el polinomio
-y observa el aviso y los coeficientes.
+«(1, 1/x)» para compararlo. Después, con el grado 40, desactiva «escalar x»
+y compara $L_{\text{ent}}$ y el aviso con los de antes.
 
 $\phi$ transforma cada observación en las columnas que usa el modelo;
 $\Phi$ es la matriz que las reúne para todos los datos. Incluye la columna
@@ -185,7 +187,9 @@ constante 1. Si escribimos $\phi_N$, su subíndice numérico indica solo el grad
 
 **Mira.** Los puntos son observaciones de la recíproca cerca de cero; la curva muestra el ajuste elegido.
 Debajo aparecen cuatro filas de $\Phi$: compara sus dos columnas para $(1,1/x)$ con las 41 del grado 40.
-Lee $R$, el piso y el benchmark; sin escalar, vigila también el aviso y el mayor coeficiente en valor absoluto.
+Lee $R$, el piso y el benchmark; sin escalar, vigila también el aviso y cuánto
+cambia $L_{\text{ent}}$.
+Dos datos, con $y$ mayor que 40, quedan arriba del cuadro.
 
 ### celda: bloque-4-explica
 
@@ -204,13 +208,22 @@ la ventaja depende de acertar con la forma del proceso. Elegir columnas
 informativas puede ayudar más que agregar potencias. El ajuste sigue siendo
 lineal en sus coeficientes, aunque aparezca $1/x$ como columna.
 
-Sin escalar, las potencias pueden producir mal condicionamiento: la
-aritmética pierde precisión y los coeficientes se vuelven enormes. Si
-$L_{\text{ent}}$ sube, no se refuta la monotonía del mínimo exacto entre
-familias anidadas; el cálculo ya no está alcanzándolo con precisión.
-Escalar ayuda, pero tampoco lo garantiza: con «escalar x» activado,
+Sin escalar, las potencias producen mal condicionamiento: la aritmética pierde
+precisión.
+Con el grado 40, $L_{\text{ent}}$ pasa de 0.074 con escala a 293.1 sin escalar;
+con el grado 25, de 0.111 a 8.59.
+La familia es la misma, así que esa subida no refuta la monotonía del mínimo
+exacto entre familias anidadas: el cálculo ya no lo alcanza.
+El mayor coeficiente no sirve de alarma: con escala, en grado 40 llega a
+$3.0\times10^{11}$, porque el ajuste sobreajusta.
+Sin escalar, el cálculo descarta direcciones casi repetidas y deja los
+coeficientes pequeños.
+El caso 4 de la galería muestra esta misma subida sin escalar, con 100 datos y
+grados 10 y 25.
+
+Escalar ayuda, pero tampoco garantiza la monotonía: con «escalar x» activado,
 $L_{\text{ent}}$ pasa de 0.0763 en grado 35 a 0.0764 en grado 36.
-El caso 4 de la galería permite explorar ese fallo.
+Esos dos grados se prueban en este bloque.
 
 </details>
 
@@ -242,7 +255,10 @@ error esperado, aproximado con series nuevas del mismo proceso: dentro
 
 El error del seno es mayor fuera: con los controles indicados, pasa de
 0.097 dentro a 609 fuera. El intervalo de uso se extiende de 2 a 3;
-el ajuste no recibió datos en esa extensión. En «entregas», con grado 7,
+el ajuste no recibió datos en esa extensión.
+Cada `R_zona` aproxima el riesgo si las entradas se distribuyeran uniformemente
+en esa zona, incluido el ruido; no es su contribución al riesgo del despliegue
+actual. En «entregas», con grado 7,
 pasa de 1.824 dentro a más de un millón fuera al extender de 6 a 9 km.
 
 La observación [Interpolar, extrapolar y el riesgo](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
@@ -313,6 +329,8 @@ Elegir un modelo supone apostar por ciertas formas del proceso.
 `ml.taller(datos, clase=1, phi=ml.polinomio(4), N_max=15)`.
 Mira la nube con $f$, la curva de capacidad y la matriz $\Phi$ de la
 representación elegida, junto con sus errores y su piso.
+El taller aproxima $R$ con otra muestra grande, así que puede diferir en el
+segundo decimal del que da el bloque 2.
 
 Para comparar con $(1,1/x)$, comenta la llamada activa y descomenta la
 línea con `phi=ml.columnas("1/x")`. Para el seno, descomenta todas las

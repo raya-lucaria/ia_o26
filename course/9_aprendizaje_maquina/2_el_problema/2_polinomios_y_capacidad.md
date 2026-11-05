@@ -66,10 +66,15 @@ Son polinomios que resuelven problemas distintos: copiar derivadas locales o rep
 Si $f$ tiene $N+1$ derivadas continuas entre $x_0$ y $x$,
 
 $$
-f(x)=f(x_0)+f'(x_0)(x-x_0)+\dots+\frac{f^{(N)}(x_0)}{N!}(x-x_0)^N+\frac{f^{(N+1)}(\xi)}{(N+1)!}(x-x_0)^{N+1}
+\begin{aligned}
+f(x)&=T_N(x)+\frac{f^{(N+1)}(\xi)}{(N+1)!}(x-x_0)^{N+1},\\
+T_N(x)&=f(x_0)+f'(x_0)(x-x_0)+\dots\\
+&\quad+\frac{f^{(N)}(x_0)}{N!}(x-x_0)^N,
+\end{aligned}
 $$
 
-para algún $\xi$ entre $x_0$ y $x$. El último término es el error. Si la
+para algún $\xi$ entre $x_0$ y $x$. $T_N$ es el polinomio de Taylor de grado
+$N$; el término que se le suma es el error. Si la
 derivada $N+1$ está acotada en ese segmento, el error es pequeño cerca de
 $x_0$: es una garantía **local**. Si las derivadas crecen con $N$, subir $N$
 puede empeorarlo lejos de $x_0$.
@@ -178,6 +183,7 @@ Más del 99.8 % de su riesgo reducible sale de ese tramo final: es extrapolació
 Eso es sobreajuste (*overfitting*): ajustar peculiaridades de la muestra perjudica la generalización.
 El grado 1 tiene subajuste (*underfitting*): su familia no sigue la curvatura, con errores 4.35 y 5.33.
 El grado 4 combina 0.18 en entrenamiento con riesgo 0.44.
+Ya está cerca del mínimo: en esta muestra, el menor $R$ es 0.366, en el grado 6.
 
 ::: definition {#ml-c1-def-capacidad title="Espacio de hipótesis y capacidad"}
 El espacio de hipótesis es el conjunto de funciones entre las que el ajuste
@@ -249,7 +255,7 @@ Los rótulos marcan las dos zonas: a la izquierda, el extremo rígido subajusta;
 
 Las familias están anidadas: el mínimo de $L_{\text{ent}}$ no puede subir.
 Pero el ajuste no optimiza $R$, aquí aproximado con la muestra enorme del mismo proceso.
-Abajo, con 200 datos, $R$ casi no sube desde $N=5$: pasa de 0.274 a 0.266 en $N=15$.
+Abajo, con 200 datos, $R$ ya no sube por encima de su valor en $N=5$: baja de 0.274 a 0.260 en $N=8$ y queda en 0.266 en $N=15$.
 La U pertenece al experimento, no es una ley.
 
 La separación entre ambos errores mide cuánto difiere el desempeño observado del esperado en uso.
@@ -289,8 +295,11 @@ así que $E\bigl[\mathrm{brecha}(\widehat\beta)\bigr]\ge0$.
 :::
 
 El ínfimo es el menor riesgo alcanzable o aproximable dentro de la familia.
-En 500 muestras, con $\beta$ fijo, la media de entrenamiento es 0.30 frente a $R(\beta)=0.31$.
+
+Para verlo, fija de antemano un $\beta$: el polinomio de grado 4 ajustado a otra muestra, antes de ver las 500.
+Con ese $\beta$ fijo, en 500 muestras la media de entrenamiento es 0.30 frente a $R(\beta)=0.31$.
 El teorema dice que coinciden en esperanza; la diferencia es el azar de 500 muestras.
+
 Con $\widehat\beta$ de grado 4, las medias son 0.21 en entrenamiento y 0.70 de riesgo.
 Una muestra concreta puede salir al revés: ocurrió en 9 de 500.
 
@@ -371,7 +380,7 @@ empatados). Un hiperparámetro se elige con datos que no tocaron el ajuste.
 :::
 
 En $L_{\text{ent}}(\beta\,;N)$, lo que va tras el punto y coma es el grado con que se ajusta: $N$ fija la familia y $\beta$ recorre sus coeficientes.
-No todos los hiperparámetros miden capacidad.
+No todos los hiperparámetros miden capacidad; la clase 2 los reúne en una tabla.
 
 > [!TIP]
 > **Míralo correr: bloque 3 · ¿Quién elige el grado?**
@@ -412,6 +421,7 @@ Son propuestas exploratorias sin validar; la clase 2 te la da: validación y val
 
 También puedes cambiar las columnas.
 Con 60 datos desde $x=0.05$, la recíproca cambia rápidamente.
+Dos de esos datos, con $y$ de 52 y 88, quedan arriba del cuadro; un triángulo en el borde los marca.
 Las barras inferiores comparan riesgos en escala logarítmica; la media tiene 120.8.
 
 **Piensa: para una curva recíproca, ¿preferirías diez potencias o una columna $1/x$?**
@@ -471,7 +481,7 @@ Ambas cuentas incluyen el intercepto y los productos cruzados, no solo las poten
 
 Arriba, la recta prolonga bien las entregas; el grado 7 se dispara.
 En medio, el polinomio no repite el seno.
-Abajo, el eje cuenta pasos y compara rectas a un paso.
+Abajo, el eje cuenta pasos y compara la recta en $x$ con el modelo que usa el tiempo anterior observado, a un paso.
 
 **Piensa: si el modelo acierta dentro del rango de los datos, ¿puedes prometer lo mismo fuera?**
 
@@ -597,7 +607,8 @@ Por eso hay que conocer el problema antes de elegir.
 >
 > Lectura correcta: **Dice que empatan promediando sobre todos los problemas; en los problemas reales, que no son todos, traer los supuestos correctos da una ventaja posible, no segura.**
 
-Considera estructura lineal, temporal o espacial, datos y uso.
+Antes de elegir, pregúntate: ¿la relación es lineal, temporal o espacial?
+¿Cuántos datos tienes? ¿Dónde se usará el modelo?
 Los dos procesos y modelos del notebook ilustran especialización; no demuestran el teorema.
 
 > [!TIP]
@@ -685,7 +696,7 @@ El entrenamiento premia ampliar la familia; necesitas datos que no tocaron el aj
 - **Aproximar no es aprender:** en $x=2.5$, Taylor pasa de error 10.1 a 115.3 al subir de grado 3 a 9; mínimos cuadrados da 0.11.
 - **El mínimo de entrenamiento nunca sube con el grado:** las familias están anidadas. Eso no garantiza menor riesgo.
 - **La U es del experimento:** con 20 datos, $R$ alcanza 0.366 en $N=6$; en $N=15$ ronda 1537, aunque $L_{\text{ent}}=0.034$.
-  Con 200 datos, el riesgo casi no sube desde grado 5.
+  Con 200 datos, el riesgo ya no sube por encima de su valor en grado 5.
 - **El entrenamiento no elige bien la capacidad:** eligió $N_{\max}=15$ en 200 de 200 muestras; el menor riesgo cayó entre 3 y 6 en 167.
 - **La representación puede ganar a la fuerza bruta:** $(1,1/x)$ logra riesgo 0.25 contra 1.28 de diez potencias.
 - **Generalizar exige supuestos:** en las 256 funciones, toda regla promedia exactamente 0.5 de aciertos fuera de la muestra.

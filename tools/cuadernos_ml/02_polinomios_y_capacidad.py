@@ -59,30 +59,28 @@ ml.laboratorio(bloque_1, curva_f=ml.selector("función", list(FUNCIONES)),
 
 # %% [codigo] bloque-2-juega
 #@title Juega: la curva de capacidad en vivo
+import functools
+
 SEMILLA = 0
-CURVAS = {}   # (n, σ) -> (datos, tabla): se calcula una vez por combinación
 
 
+@functools.cache   # (n, σ) -> (datos, tabla): se calcula una vez por combinación
 def curva(n, sigma):
-    if (n, sigma) not in CURVAS:
-        datos = ml.PROCESOS["inverso"](n=n, semilla=SEMILLA, fracciones=(1, 0, 0),
-                                       ruido=ml.normal(0, sigma))
-        grados = {N: (lambda df, N=N: ml.ajustar(df, phi=ml.polinomio(N)))
-                  for N in range(1, 16)}
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tabla = ml.curva_capacidad(datos, grados, conjuntos=("ent", "realidad"))
-        CURVAS[(n, sigma)] = (datos, tabla)
-    return CURVAS[(n, sigma)]
-
+    datos = ml.PROCESOS["inverso"](n=n, semilla=SEMILLA, fracciones=(1, 0, 0),
+                                   ruido=ml.normal(0, sigma))
+    grados = {N: (lambda df, N=N: ml.ajustar(df, phi=ml.polinomio(N)))
+              for N in range(1, 16)}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return datos, ml.curva_capacidad(datos, grados, conjuntos=("ent", "realidad"))
 
 def bloque_2(N, n, sigma):
     datos, tabla = curva(n, sigma)
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 4.2))
     m = ml.ajustar(datos, phi=ml.polinomio(N))
     ml.dibujar_ajuste({f"grado {N}": m}, datos, ax=a1)
-    x = np.linspace(0.3, 3.0, 300)
-    a1.plot(x, datos.f_visible(pd.DataFrame({"x": x})), color="green", lw=3, zorder=1, label="f verdadera")
+    x = pd.DataFrame({"x": np.linspace(0.3, 3.0, 300)})
+    a1.plot(x.x, datos.f_visible(x), color="green", lw=3, zorder=1, label="f verdadera")
     a1.set(ylim=(0, 20), ylabel="y"), a1.legend(loc="upper right", fontsize=8)
     media = ml.benchmarks(datos, datos.realidad).loc["media", "cuadratica"]
     ml.dibujar_curva_capacidad(tabla, brecha=True, zonas=False, optimo=True,
@@ -96,7 +94,6 @@ def bloque_2(N, n, sigma):
     print(f"grado {N}: L_ent = {L['ent']:.3f}   ·   R = {L['realidad']:.3f}"
           f"   ·   brecha = {L['realidad'] - L['ent']:.3f}")
     print(f"piso = {ml.piso(datos):.3f}   ·   la media (benchmark), R = {media:.3f}")
-
 
 ml.laboratorio(bloque_2, N=ml.deslizador("grado N", 1, 15, 1, 4),
                n=ml.deslizador("datos n", 20, 200, 10, 20),
@@ -193,7 +190,7 @@ ml.laboratorio(bloque_4, phi=ml.selector("φ", ["polinomio", "(1, 1/x)"]),
 
 # %% [codigo] bloque-5-juega
 #@title Juega: extrapolar
-SEMILLA = 0
+SEMILLA, ROTULO = 0, {True: "x y el tiempo anterior (a un paso)", False: "recta en x"}
 RANGOS = {"entregas": ("entregas", 0, 6), "seno": ("seno", 0, 2), "recursivo": (
     "recursivo", 0, 0), "mezcla de logaritmos": ("mezcla_logs", 1, 5)}
 
@@ -207,11 +204,11 @@ def bloque_5(proceso, N, zona, anterior):
         todo = ml.PROCESOS["recursivo"](n=79, futuro=1, semilla=SEMILLA,   # la misma
                                         con_realidad=False).ent   # serie, 79 pasos
         a, d = todo[todo.t < 60], todo[todo.t >= 60]
-        ax = plt.subplots(figsize=(8, 3.8))[1]
+        ax = plt.subplots(figsize=(8, 3.8), subplot_kw={"ylabel": "y"})[1]
         ax.scatter(a.t, a.y, s=16, color="C0", label="60 pasos de entrenamiento")
         ax.scatter(d.t, d.y, s=22, fc="none", ec="gray", label="19 pasos siguientes")
-        ax.plot(todo.t, m.predecir(todo), color="C1", label="predicción a un paso")
-        ax.set(xlabel="paso (x crece con el tiempo)", ylabel="y"), ax.legend(), plt.show()
+        ax.plot(todo.t, m.predecir(todo), color="C1", label=ROTULO[anterior])
+        ax.set(xlabel="paso (x crece con el tiempo)"), ax.legend(), plt.show()
         print(f"serie dibujada: L_ent = {ml.L(m, datos.ent):.3f}  ·  series nuevas: "
               f"dentro = {ml.L(m, datos.realidad):.3f}, a un paso en el futuro = "
               f"{ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")

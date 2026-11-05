@@ -277,3 +277,17 @@ def test_el_aria_de_no_free_lunch_dice_la_mitad_exacta():
 
 # --- tramo tarea ---
 # --- fin tramo tarea ---
+
+
+def test_r2_extrapolar_solo_el_modelo_con_el_anterior_va_a_un_paso():
+    # La recta en x no usa el valor anterior: «a un paso» no le aplica (r2 1b).
+    a = aria("ml-c1-extrapolar")
+    assert "recta en x, a un paso" not in contenido("ml-c1-extrapolar")
+    assert "y en el futuro, " in a and "como columna, a un paso, queda en" in a
+
+
+def test_r2_inverso_nombra_los_datos_fuera_del_cuadro():
+    import ml_cifras_c1 as cif
+    altos = cif.cifras_c1_inverso()["fuera_del_cuadro"]
+    assert f"con y de {altos[0]:.0f} y {altos[1]:.0f}, quedan arriba del cuadro" in aria(
+        "ml-c1-inverso-vs-potencias")

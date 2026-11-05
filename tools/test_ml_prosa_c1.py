@@ -831,7 +831,7 @@ def test_r1_p2_s4_cifras_en_su_frase():
     assert (f"$R$ alcanza {_r(k['R'][k['N_menor_R']], 3)} en $N={k['N_menor_R']}$ y cerca de "
             f"{k['R'][15]:.0f} en $N=15$.") in sec
     assert f"con riesgo {_r(k['benchmark'], 1)}." in sec
-    assert (f"pasa de {_r(d['R'][5], 3)} a {_r(d['R'][15], 3)} en $N=15$.") in sec
+    # La frase de 200 datos la ata test_r2_p2_s4_con_200_datos_R_no_sube_y_el_beta_fijo.
     assert (f"la media de entrenamiento es {_r(o['media_L_ent_fijo'], 2)} frente a "
             f"$R(\\beta)={_r(o['R_fijo'], 2)}$.") in sec
     assert "la diferencia es el azar de 500 muestras" in sec
@@ -1010,3 +1010,140 @@ def test_r1_nb02_sin_frases_meta_y_con_el_centro_correcto():
 
 # --- tramo tarea ---
 # --- fin tramo tarea ---
+
+
+# ---- revision r2 del nucleo 1b: las cifras que la r1 dejo sin atar y las
+# frases nuevas (D-009.5) ----
+
+def _r2_codigo02():
+    return leer(GUIONES / "02_polinomios_y_capacidad.py")
+
+
+def test_r2_p2_weierstrass_errores_en_su_frase():
+    w = c.cifras_c1_weierstrass()
+    e = [_r(w[N]["error_maximo"], 3) for N in c.WEIERSTRASS_GRADOS]
+    assert (f"Los errores máximos {e[0]}, {e[1]} y {e[2]} muestran aproximación, no "
+            "aprendizaje") in _sin_alt(s2()[2])
+
+
+def test_r2_p2_micro_de_taylor_en_su_frase():
+    t = c.cifras_c1_micro_taylor()
+    resp = plano(bloque(p2(), "ml-c1-resp-taylor").group(1))
+    assert f"(a) Predice {float(t['prediccion']):g}." in resp
+    assert (f"(b) El valor verdadero es {float(t['verdadero']):g}; el error absoluto es "
+            f"{float(t['error']):g}.") in resp
+
+
+def test_r2_p2_columnas_en_su_frase():
+    col = c.cifras_c1_columnas()
+    resp = plano(bloque(p2(), "ml-c1-resp-columnas").group(1))
+    assert f"(a) $\\binom{{{5 + 3}}}{{3}}={col[5]}$." in resp
+    assert f"(b) $\\binom{{{20 + 3}}}{{3}}={col[20]}$." in resp
+
+
+def test_r2_p2_par_impar_en_su_frase():
+    pi = c.cifras_c1_par_impar()
+    resp = plano(bloque(p2(), "ml-c1-resp-final-polinomios-y-capacidad").group(1))
+    assert (f"predice {pi['grado_7'][9]} en $x=9$ y {pi['grado_7'][10]} en "
+            "$x=10$.") in resp
+
+
+def test_r2_p2_zona_rara_en_su_frase():
+    z = c.cifras_c1_zona_rara()
+    obs = plano(bloque(p2(), "ml-c1-obs-donde-se-usa").group(1))
+    assert (f"Una probabilidad de {float(z['prob']):g} con una pérdida de $10^"
+            f"{len(str(z['perdida'])) - 1}$ aporta {z['aporte']}.") in obs
+
+
+def test_r2_p2_taylor_en_dos_renglones():
+    obs = bloque(p2(), "ml-c1-obs-taylor").group(1)
+    assert "\\begin{aligned}" in obs and "T_N(x)&=" in obs
+    assert "el término que se le suma es el error." in plano(obs)
+
+
+def test_r2_p2_s3_el_grado_4_cerca_del_minimo():
+    k = c.cifras_c1_capacidad()[20]
+    assert (f"en esta muestra, el menor $R$ es {_r(k['R'][k['N_menor_R']], 3)}, en el grado "
+            f"{k['N_menor_R']}.") in _sin_alt(s2()[3])
+
+
+def test_r2_p2_s4_con_200_datos_R_no_sube_y_el_beta_fijo():
+    d, o = c.cifras_c1_capacidad()[200], c.cifras_c1_optimismo()
+    sec = _sin_alt(s2()[4])
+    assert all(d["R"][N] <= d["R"][5] for N in range(5, 16))
+    assert (f"baja de {_r(d['R'][5], 3)} a {_r(d['R'][d['N_menor_R']], 3)} en "
+            f"$N={d['N_menor_R']}$ y queda en {_r(d['R'][15], 3)} en $N=15$.") in sec
+    assert "casi no sube" not in sec and "casi no sube" not in plano(cierre_p2())
+    assert (f"el polinomio de grado {o['grado']} ajustado a otra muestra, antes de ver las "
+            f"{o['repeticiones']}.") in sec
+
+
+def test_r2_p2_s5_la_tabla_de_la_clase_2():
+    assert ("No todos los hiperparámetros miden capacidad; la clase 2 los reúne en una "
+            "tabla.") in _sin_alt(s2()[5])
+
+
+def test_r2_p2_s6_los_datos_fuera_del_cuadro():
+    i = c.cifras_c1_inverso()
+    altos = i["fuera_del_cuadro"]
+    assert len(altos) == 2
+    assert (f"Dos de esos datos, con $y$ de {altos[0]:.0f} y {altos[1]:.0f}, quedan arriba "
+            "del cuadro") in _sin_alt(s2()[6])
+
+
+def test_r2_p2_s7_solo_el_modelo_con_el_anterior_va_a_un_paso():
+    sec = _sin_alt(s2()[7])
+    assert "compara rectas a un paso" not in sec
+    assert ("compara la recta en $x$ con el modelo que usa el tiempo anterior observado, a "
+            "un paso.") in sec
+
+
+def test_r2_p2_s8_el_checklist_en_preguntas():
+    sec = _sin_alt(s2()[8])
+    assert "Considera estructura" not in sec
+    assert "pregúntate: ¿la relación es lineal, temporal o espacial?" in sec
+
+
+def test_r2_nb02_cifras_en_su_celda():
+    k, e = c.cifras_c1_capacidad()[20], c.cifras_c1_elegir()
+    b3 = plano(celda02("bloque-3-explica"))
+    assert (f"entrenamiento elige grado 15 en {e['veces_N_max_ent']} de {e['repeticiones']} "
+            "muestras.") in b3
+    r = plano(celda02("ejercicio-fuerza-bruta-respuesta"))
+    assert f"el grado 15 tiene un riesgo cercano a {k['R'][15]:.0f}:" in r
+    assert "casi plana" not in plano(celda02("bloque-2-explica"))
+
+
+def test_r2_nb02_bloque_4_escalar_contra_no_escalar():
+    i = c.cifras_c1_inverso()
+    ec = i["escalar_contra_no"]
+    # Lo que la prosa afirma: sin escalar sube L_ent y los coeficientes NO
+    # crecen (desde grado 25); con escala, el de grado 40 es enorme.
+    for N in (25, 40):
+        assert ec[(N, False)]["L_ent"] > ec[(N, True)]["L_ent"]
+        assert ec[(N, False)]["coef_max"] < ec[(N, True)]["coef_max"]
+    b4 = plano(celda02("bloque-4-explica"))
+    assert (f"Con el grado 40, $L_{{\\text{{ent}}}}$ pasa de {_r(ec[(40, True)]['L_ent'], 3)} "
+            f"con escala a {_r(ec[(40, False)]['L_ent'], 1)} sin escalar; con el grado 25, de "
+            f"{_r(ec[(25, True)]['L_ent'], 3)} a {_r(ec[(25, False)]['L_ent'], 2)}.") in b4
+    mant, exp = f"{ec[(40, True)]['coef_max']:.1e}".split("e+")
+    assert f"en grado 40 llega a ${mant}\\times10^{{{int(exp)}}}$" in b4
+    assert "se vuelven enormes" not in b4
+    assert "Esos dos grados se prueban en este bloque." in b4
+    assert "mayor coeficiente en valor absoluto" not in plano(celda02("bloque-4-mira"))
+    assert (f"Dos datos, con $y$ mayor que {c.INVERSO_YTOPE}, quedan arriba del "
+            "cuadro.") in plano(celda02("bloque-4-mira"))
+    assert len(i["fuera_del_cuadro"]) == 2
+
+
+def test_r2_nb02_R_zona_dice_su_distribucion():
+    assert ("no es su contribución al riesgo del despliegue "
+            "actual") in plano(celda02("bloque-5-explica"))
+
+
+def test_r2_nb02_ninguna_salida_usa_t():
+    # t es de la clase 5 (contrato §4.2): ni en rotulos ni en impresiones.
+    codigo = _r2_codigo02()
+    assert "paso t" not in codigo and "crece con t" not in codigo
+    assert 'xlabel="paso (x crece con el tiempo)"' in codigo
+    assert "x crece con el tiempo" in codigo

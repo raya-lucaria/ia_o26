@@ -644,6 +644,14 @@ def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
     return salida
 
 
+def cifras_c1_zona_rara():
+    """P2 §7, ml-c1-obs-donde-se-usa: una zona con probabilidad 0.001 y
+    perdida 10^6 aporta 1000 al riesgo (con perdida cuadratica, una zona rara
+    puede dominar R)."""
+    prob, perdida = Fraction(1, 1000), 10 ** 6
+    return {"prob": prob, "perdida": perdida, "aporte": prob * perdida}
+
+
 def cifras_c1_columnas():
     """P2 §6, micro ml-c1-ej-columnas: monomios de grado a lo mas 3 en J
     variables, binom(J + 3, 3)."""
