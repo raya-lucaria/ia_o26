@@ -161,16 +161,13 @@ for c, (a, i, cm) in CONTRATOS.items():
 
 def bloque_4(contrato, separar):
     fila = FILAS_B4.get((contrato, separar))
-    if fila is None and contrato == "más de lo mismo":
-        print("«más de lo mismo»: separar al azar ya imita este contrato.")
-        fila = FILAS_B4[contrato, "al azar"]
-    elif fila is None:
-        print(f"«{contrato}»: ninguna separación de tu muestra lo imita;"
-              " declara el alcance.")
+    if fila is None:   # solo hay fila «al azar»: o ya imita, o nada lo imita
+        print(f"«{contrato}»: " + ("separar al azar ya imita este contrato."
+              if contrato == "más de lo mismo" else
+              "ninguna separación de tu muestra lo imita; declara el alcance."))
         fila = FILAS_B4[contrato, "al azar"]
     ml.dibujar_contratos(pd.DataFrame(list(FILAS_B4.values())), resaltar=contrato)
-    plt.yscale("log")
-    plt.show()
+    plt.yscale("log"); plt.show()
     print(f"{contrato}, {fila['separacion']}: L_prueba = {fila['L_prueba']:.1f}   R en"
           f" el despliegue = {fila['R']:.1f}   benchmark = {fila['benchmark']:.1f}")
 

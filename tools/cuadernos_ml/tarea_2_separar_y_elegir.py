@@ -28,7 +28,8 @@ datos = ml.proceso(n=150, x={"x": ml.uniforme(1, 5)}, f=lambda d: 10 + 12 / d.x,
 print(f"desarrollo: {len(datos.ent)} entregas · prueba:"
       f" {150 - len(datos.ent)} (cerrada)")
 ax = ml.dibujar_proceso(datos, mostrar_f=False)
-for t in ax.get_legend().get_texts() if ax.get_legend() else []:   # ent es el desarrollo
+leyenda = ax.get_legend()
+for t in leyenda.get_texts() if leyenda else []:     # ent es el desarrollo
     t.set_text(t.get_text().replace("entrenamiento", "desarrollo"))
 plt.show()
 

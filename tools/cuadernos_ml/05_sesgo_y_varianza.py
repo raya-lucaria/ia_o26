@@ -35,14 +35,12 @@ def bloque_1(N, x0, diana):
     p = SV.predicciones[N][:, i]
     if diana:
         ml.dibujar_diana(SV, x0, candidatos=[N])
-        # el eje cubre todas las marcas: ninguna predicción queda escondida
-        margen = 0.05 * (p.max() - p.min()) + 2
+        margen = 0.05 * (p.max() - p.min()) + 2    # ninguna marca queda fuera del eje
         plt.xlim(min(15, p.min() - margen), max(55, p.max() + margen))
     else:
         ml.dibujar_abanico(SV, N)
         plt.ylim(0, 50)
-        P = SV.predicciones[N]
-        fuera = int(((P < 0) | (P > 50)).any(axis=1).sum())
+        fuera = int((np.abs(SV.predicciones[N] - 25) > 25).any(axis=1).sum())
         if fuera:
             print(f"{fuera} de {len(p)} curvas salen del eje de 0 a 50 en algún punto")
     plt.show()
@@ -64,7 +62,7 @@ ml.laboratorio(bloque_1, N=ml.deslizador("grado N", 0, 12, 1, 4),
 # %% [codigo] bloque-2-juega
 #@title Juega: la descomposición, numérica
 SIGMAS, NS = (1.5, 3.0, 6.0), (30, 60, 120)
-@functools.lru_cache(maxsize=None)                     # cada combinación, la primera vez
+@functools.lru_cache(maxsize=None)          # cada combinación, la primera vez
 def sv_b2(s, n):
     return ml.sesgo_varianza(lambda r: fabrica(r, n=n, sigma=s), CANDIDATOS,
                              repeticiones=50, semilla=SEMILLA)
@@ -162,9 +160,8 @@ def bloque_4(proceso, revelar):
     d, ee = ml.diferencia_pareada(ml.perdida(y, modelo.predecir(datos.val)),
                                   ml.perdida(y, bench.predecir(datos.val)))
     gana = "sí" if d < -2 * ee else "no"
-    print("(a) en validación (la validación no eligió este modelo):"
-          f" modelo − benchmark = {d:.2f} (EE {ee:.2f});"
-          f" le gana por más de dos EE: {gana}")
+    print("(a) en validación (la validación no eligió este modelo): modelo − benchmark"
+          f" = {d:.2f} (EE {ee:.2f}); le gana por más de dos EE: {gana}")
     dp = ml.diferencia_por_pliegue(cv[N], cv[0])
     por, media = dp["diferencia"].to_numpy(float)[:5], float(dp["diferencia"].iloc[5])
     senal = "señal" if abs(media) > por.std(ddof=1) else "falta evidencia"
@@ -172,10 +169,8 @@ def bloque_4(proceso, revelar):
           + ", ".join(f"{v:.2f}" for v in por) + f" → {senal}")
     print(f"    {dp.attrs['nota']}")
     if revelar:   # con la media condicional conocida: R − piso no puede ser negativo
-        D = datos.despliegue
-        p = ml.piso(datos)
-        exceso = np.mean((np.asarray(modelo.predecir(D), float)
-                          - np.asarray(datos.f_visible(D), float)) ** 2)
+        p, D = ml.piso(datos), datos.despliegue
+        exceso = np.mean((modelo.predecir(D) - np.asarray(datos.f_visible(D))) ** 2)
         print(f"solo en el simulador: R = {p + exceso:.2f}, piso {p:.2f},"
               f" por ganar {exceso:.2f}")
 
