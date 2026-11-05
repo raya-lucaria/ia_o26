@@ -120,8 +120,9 @@ def bloque_3(proporcion, pesos, medir):
     for ax in fig.axes:
         ax.axvline(proporcion, color="0.5", lw=1)
     plt.show()
-    ml.dibujar_contribucion_por_clase(
+    ax = ml.dibujar_contribucion_por_clase(
         {f"{int(100 * p)} %": CONTRIB[p]["fraccion_peso"] for p in CONTRIB})
+    ax.set_ylabel("fracción del peso total")
     plt.show()
     print(CONTRIB[0.01].round(3).to_string())
 
@@ -230,8 +231,11 @@ SEMILLA = 0
 PHI_6 = ml.estandarizar(ml.columnas("x1", "x2"))
 construir = lambda df: ml.ajustar(df, phi=PHI_6, mu=1e-2, penalizacion="l2",
                                   pesos="balanceado")
-DF6 = {r: fraude(n=500, semilla=SEMILLA, proporcion=r / 500, fracciones=(1, 0, 0)).ent
-       for r in (3, 10, 30)}
+def _con_raros(r, n=500):                       # exactamente r fraudes de n
+    df = fraude(n=4 * n, semilla=SEMILLA, proporcion=r / n, fracciones=(1, 0, 0)).ent
+    df = pd.concat([df[df["y"] == 1].head(r), df[df["y"] == 0].head(n - r)])
+    return df.sample(frac=1, random_state=SEMILLA).reset_index(drop=True)
+DF6 = {r: _con_raros(r) for r in (3, 10, 30)}
 TABLAS6 = {}                                    # cada (raros, k), una vez
 
 
@@ -250,7 +254,6 @@ def _tabla6(raros, k):
                               "raros": int(df["y"].iloc[idx].sum())})
         TABLAS6[raros, k] = pd.DataFrame(filas)
     return TABLAS6[raros, k]
-
 
 def bloque_6(k, raros):
     print(f"fraudes en la muestra: {int(DF6[raros]['y'].sum())} de {len(DF6[raros])}")
