@@ -392,7 +392,7 @@ def ml_c4_tasa():
     for p, tv, col, rot in ((t["p_sin"], t["sin"], VERDE, f"sin pesos: p̂ = 0.05, tasa {t['cita']['sin']}"),
                             (t["p_con"], t["con"], ACENTO, "con pesos: p̂ = 0.5, tasa 100 %")):
         c.append(f'<circle cx="{X(p):.1f}" cy="{Y(tv):.1f}" r="7" fill="{col}"/>')
-        c.append(texto(X(p) + (12 if p < 0.3 else -12), Y(tv) - (34 if p < 0.3 else 12), rot, tam=13, peso="700",
+        c.append(texto(X(p) + (12 if p < 0.3 else -12), Y(tv) - (90 if p < 0.3 else 12), rot, tam=13, peso="700",
                        color=col, anclaje="start" if p < 0.3 else "end"))
     aria = (f"La tasa de interés de equilibrio crece con la probabilidad anunciada; el cliente "
             f"típico sin pesos recibe 0.05 y pagaría {t['cita']['sin']}; con pesos recibe 0.5 y "
@@ -520,6 +520,9 @@ def ml_c4_metricas_vs_proporcion():
             if ax.get_legend() is not None:
                 ax.get_legend().remove()
             ax.set_xlabel("")
+        for ax in ejes[:n]:              # A_bal y aciertos no pasan de 1: la banda ±2 desv
+            if ax.get_ylim()[1] > 1.0:   # se corta en la cota, no se dibuja arriba de ella
+                ax.set_ylim(top=1.02)
         ejes[n - 1].set_xlabel("proporción de fraude Pr(y = 1), escala log")
         ejes[n].axis("off")
         ejes[n].legend(manijas, rotulos, loc="center", ncol=2,
@@ -862,7 +865,7 @@ def ml_c4_cobertura_por_clase():
             ax.bar(xs, med, 0.36, color=col, label=etiqueta)
             ax.errorbar(xs, med, yerr=[2 * e for e in ee], fmt="none", ecolor=TEXTO, lw=1.2)
             for xi, mi, ti in zip(xs, med, tam):
-                ax.text(xi, min(mi, 1) + 0.03, f"{ti:.1f}", ha="center", color=TEXTO, fontsize=8.5)
+                ax.text(xi, min(mi, 1) + 0.03, f"|C| {ti:.1f}", ha="center", color=TEXTO, fontsize=8.5)
         ax.axhline(0.9, color=CREMA, ls="--", lw=1.5, label="1 − δ = 0.9")
         ax.set_xticks(x, ["legítimo (90 %)", "publicidad (8 %)", "fraude (2 %)"])
         ax.set_ylim(0, 1.32)
