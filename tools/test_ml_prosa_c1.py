@@ -11,6 +11,7 @@ Anclas por tramo (protocolo p5.2 §7.1): la parte 1b (pagina 2) la agrega la
 subrama -b tras su bajada (C1.T13b), antes del «fin» de su tramo.
 """
 import re
+import sys
 from functools import lru_cache
 from pathlib import Path
 
@@ -1152,3 +1153,195 @@ def test_r2_nb02_ninguna_salida_usa_t():
 def test_r2_nb02_la_recta_en_x_no_va_a_un_paso():
     assert "la línea predice a un paso" not in plano(celda02("bloque-5-mira"))
     assert 'False: "recta en x"' in _r2_codigo02()
+
+
+# ---- revision r3 del nucleo 1b: premisas atadas a su frase, remisiones que el
+# sitio si tiene, «escalar x» explicado y anclas de los enlaces del notebook ----
+
+P2_URL = "https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/"
+
+
+def test_r3_ninguna_remision_a_figuras_que_el_sitio_no_numera():
+    # «Las figuras 5.2 y 5.3» eran las de Goodfellow; el sitio numera 9.2.2.N.
+    for texto in (p2(), nb02()):
+        assert not re.search(r"[Ff]iguras? 5\.\d", texto)
+    assert "**Míralo correr: bloque 2 · Los tres ajustes y la curva de capacidad, en vivo**" in p2()
+
+
+def test_r3_p2_s3_las_etiquetas_de_tres_puntos_en_su_frase():
+    v = c.cifras_c1_vc()
+    assert v["separables"] == v["etiquetas"] == 2 ** v["puntos"]
+    assert "etiquetar de todas las formas tres puntos que no estén alineados" in plano(
+        bloque(p2(), "ml-c1-ej-vc").group(1))
+    assert (f"(a) Sí: puedes separar las {v['etiquetas']} etiquetas de tres puntos no "
+            "alineados.") in plano(bloque(p2(), "ml-c1-resp-vc").group(1))
+
+
+def test_r3_p2_s6_las_variables_del_ejercicio_de_columnas():
+    (J, J2), g, col = c.COLUMNAS_VARIABLES, c.COLUMNAS_GRADO, c.cifras_c1_columnas()
+    ej = plano(bloque(p2(), "ml-c1-ej-columnas").group(1))
+    assert f"(a) ¿Cuántas columnas tiene un polinomio completo de grado {g} en {J} variables?" in ej
+    assert f"(b) ¿Y en {J2}?" in ej
+    assert f"¿Cuántos monomios de grado a lo más {g} hay con {J} letras?" in plano(
+        bloque(p2(), "ml-c1-pista-columnas-1").group(1))
+    resp = plano(bloque(p2(), "ml-c1-resp-columnas").group(1))
+    assert f"(a) $\\binom{{{J + g}}}{{{g}}}={col[J]}$." in resp
+    assert f"(b) $\\binom{{{J2 + g}}}{{{g}}}={col[J2]}$." in resp
+
+
+def test_r3_p2_s6_dice_que_hace_escalar_x():
+    sec = _sin_alt(s2()[6])
+    assert "En el caso mostrado" not in sec
+    assert "En el bloque 4 del notebook, escalar $x$ recupera un ajuste preciso" in sec
+    assert ("Escalar $x$ es llevarla a $[-1,1]$, con el rango de los datos de entrenamiento, "
+            "antes de elevarla; con «escalar x» activado, las columnas $x$, $x^2$, … de "
+            "$\\Phi$ que imprime el notebook muestran esa $x$ escalada, no la "
+            "original.") in sec
+
+
+def test_r3_p2_s7_la_zona_y_el_ejercicio_de_entregas():
+    lo, hi = c.EXTRAPOLAR_ZONAS["entregas"]["dentro"]
+    sec = _sin_alt(s2()[7])
+    assert ("«Riesgo de zona» supone uso uniforme en esa zona; ampliar la zona no cambia la "
+            "población de despliegue que define $R$.") in sec
+    assert f"Entregas, datos de {lo:g} a {hi:g} km" in s2()[7]   # el alt de la figura
+    assert (f"El modelo de entregas de la figura se ajustó con distancias de {lo:g} a {hi:g} "
+            "km.") in plano(bloque(p2(), "ml-c1-ej-donde-se-usa").group(1))
+    assert f"(a) Las distancias mayores que {hi:g} y hasta 12 km." in plano(
+        bloque(p2(), "ml-c1-resp-donde-se-usa").group(1))
+
+
+def test_r3_p2_s8_los_aciertos_de_los_cuatro_futuros():
+    f = c.cifras_c1_cuatro_futuros()
+    formas = [f"«{a}, {b}»" for a, b in f["futuros"]]
+    resp = plano(bloque(p2(), "ml-c1-resp-cuatro-futuros").group(1))
+    assert (f"(a) Hay {len(formas)} formas: {', '.join(formas[:-1])} y "
+            f"{formas[-1]}.") in resp
+    a = f["aciertos"]
+    assert (f"(b) La predicción tiene {a[0]}, {a[1]}, {a[2]} y {a[3]} aciertos, "
+            "respectivamente.") in resp
+    assert f"El promedio es {f['promedio']} de {f['de']}:" in resp
+    assert "Si tu regla predice «1, 1»" in plano(bloque(p2(), "ml-c1-ej-cuatro-futuros").group(1))
+
+
+def test_r3_p2_final_premisa_formula_y_extrapolacion():
+    pi, P = c.cifras_c1_par_impar(), c.PAR_IMPAR
+    assert pi["exacta"] and pi["interpola"] and pi["n"] == 8
+    ej = plano(bloque(p2(), "ml-c1-ej-final-polinomios-y-capacidad").group(1))
+    assert (f"En los enteros $x=1,\\dots,{P['n']}$, el tiempo extra de una ruta vale "
+            f"{P['par']} si $x$ es par y {P['impar']} si es impar.") in ej
+    assert "pasa por los ocho puntos" in ej
+    assert ("4. Decide cuál de las dos reglas extrapola correctamente si continúa la "
+            "alternancia, y qué supuesto lo hace posible.") in ej
+    resp = plano(bloque(p2(), "ml-c1-resp-final-polinomios-y-capacidad").group(1))
+    b0, b1 = pi["beta_periodica"]
+    assert f"Sirve $\\phi=(1,\\cos\\pi x)$, con $f={b0:g}+{b1:g}\\cos\\pi x$." in resp
+    assert f"La regla da exactamente {P['par']} y {P['impar']}, respectivamente" in resp
+    assert "Interpola los ocho puntos" in resp
+    assert ("**4. La extrapolación.** Ambas extrapolan; la periódica acierta en todo entero "
+            "bajo ese supuesto: que continúe la misma alternancia.") in resp
+
+
+def test_r3_nb02_bloque_1_dice_donde_mide_la_pagina():
+    t = c.cifras_c1_taylor()
+    assert 2.5 in t["taylor_3"] and 3.0 in t["taylor_3"]
+    assert "La página mide el error en $x=2.5$; aquí se mide en el borde, $x=3$." in plano(
+        celda02("bloque-1-mira"))
+
+
+def test_r3_nb02_bloque_4_columnas_escala_brecha_y_coeficiente():
+    i, o = c.cifras_c1_inverso(), c.cifras_c1_optimismo()
+    assert 'N=ml.deslizador("grado N", 1, 40, 1, 10)' in _r2_codigo02()
+    assert 'escalar=ml.interruptor("escalar x", True)' in _r2_codigo02()
+    mira = plano(celda02("bloque-4-mira"))
+    assert (f"compara sus dos columnas para $(1,1/x)$ con las {i['columnas_40']} del grado "
+            "40.") in mira
+    assert ("Con «escalar x», $\\Phi$ usa $x$ llevada a $[-1,1]$: sus columnas x, x^2, … "
+            "muestran esa $x$ escalada, no la original.") in mira
+    b4 = plano(celda02("bloque-4-explica"))
+    assert (f"El polinomio inicial de grado 10 usa {i['columnas_10']} columnas y da "
+            f"$R={_r(i['R_10'], 3)}$.") in b4
+    assert i["L_ent_10"] > i["R_10"]
+    assert (f"En esta muestra su $L_{{\\text{{ent}}}}$, {_r(i['L_ent_10'], 3)}, queda arriba "
+            "de $R$: el teorema habla del promedio, y una muestra puede salir al revés (en "
+            f"la página, {o['muestras_al_reves']} de {o['repeticiones']}).") in b4
+    assert "porque el ajuste sobreajusta" not in b4
+    r40 = f"{i['R_40']:,.0f}".replace(",", "\\,")
+    assert ("en esta base de potencias; su tamaño depende de la representación. El "
+            "sobreajuste lo muestran las dos pérdidas: "
+            f"$L_{{\\text{{ent}}}}={_r(i['L_ent_40'], 3)}$ contra $R={r40}$.") in b4
+
+
+def test_r3_nb02_el_taller_dice_que_hace_escalar_x():
+    assert "ml.taller(datos, clase=1, phi=ml.polinomio(4), N_max=15)" in _r2_codigo02()
+    assert ("Como en el bloque 4, con «escalar x» $\\Phi$ usa $x$ llevada a $[-1,1]$: sus "
+            "columnas x, x^2, … muestran esa $x$ escalada, no la original.") in plano(
+        celda02("taller-intro"))
+
+
+def test_r3_nb02_bloque_5_uniforme_y_el_futuro_segun_el_interruptor():
+    assert c.cifras_c1_extrapolar()["zona_uniforme"]
+    assert ("Cada `R_zona` aproxima el riesgo si las entradas se distribuyeran uniformemente "
+            "en esa zona, incluido el ruido;") in plano(celda02("bloque-5-explica"))
+    assert ("y en el futuro (pasos 60 a 79), a un paso si el interruptor está "
+            "encendido.") in plano(celda02("bloque-5-mira"))
+    codigo = _r2_codigo02()
+    assert 'FUTURO = {True: "a un paso en el futuro", False: "en el futuro"}' in codigo
+    assert "{FUTURO[anterior]} = " in codigo and "a un paso en el futuro = " not in codigo
+
+
+def test_r3_nb02_bloque_6_siempre_1_en_su_frase():
+    n = c.cifras_c1_no_free_lunch()
+    valores = {float(x) for x in n["siempre_1"]["por_rugosidad"].values()}
+    assert len(valores) == 1
+    assert f"«Siempre 1» queda en {valores.pop():g} en cada grupo." in plano(
+        celda02("bloque-6-explica"))
+
+
+def test_r3_nb02_los_enlaces_a_objetos_llevan_su_ancla_y_su_titulo():
+    # Cada enlace a P2 va al objeto que nombra (el sitio emite su id como ancla)
+    # y su texto es el titulo de ese objeto; sin ancla, solo la portada.
+    enlaces = re.findall(r"\[([^\]]+)\]\(" + re.escape(P2_URL) + r"(?:#([a-z0-9-]+))?\)",
+                         nb02())
+    assert [t for t, a in enlaces if not a] == ["Polinomios y capacidad"]
+    con_ancla = [(t, a) for t, a in enlaces if a]
+    assert len(con_ancla) == 9
+    for texto, ancla in con_ancla:
+        assert re.search(r"\{#" + re.escape(ancla) + r' [^}]*title="' + re.escape(texto) + '"',
+                         p2()), (texto, ancla)
+    assert "La página [La capacidad" not in nb02()
+
+
+# Las siete alteraciones que la r3 hizo en memoria y pasaban las 63 pruebas de
+# prosa: cada una tiene que tumbar la guarda que la ata.
+MUTACIONES_R3 = [
+    ("p2", "f=2.5+2.5\\cos\\pi x", "f=2.5+3.5\\cos\\pi x",
+     "test_r3_p2_final_premisa_formula_y_extrapolacion"),
+    ("p2", "separar las 8 etiquetas", "separar las 7 etiquetas",
+     "test_r3_p2_s3_las_etiquetas_de_tres_puntos_en_su_frase"),
+    ("p2", "tiene 2, 1, 1 y 0 aciertos", "tiene 2, 2, 1 y 0 aciertos",
+     "test_r3_p2_s8_los_aciertos_de_los_cuatro_futuros"),
+    ("p2", "grado 3 en 5 variables", "grado 3 en 6 variables",
+     "test_r3_p2_s6_las_variables_del_ejercicio_de_columnas"),
+    ("nb02", "con las 41 del grado 40", "con las 42 del grado 40",
+     "test_r3_nb02_bloque_4_columnas_escala_brecha_y_coeficiente"),
+    ("nb02", "«Siempre 1» queda en 0.5", "«Siempre 1» queda en 0.6",
+     "test_r3_nb02_bloque_6_siempre_1_en_su_frase"),
+    ("nb02", "distribuyeran uniformemente", "distribuyeran normalmente",
+     "test_r3_nb02_bloque_5_uniforme_y_el_futuro_segun_el_interruptor"),
+]
+
+
+@pytest.mark.parametrize("cual,antes,despues,prueba", MUTACIONES_R3,
+                         ids=[m[3][8:40] + "|" + m[2][:18] for m in MUTACIONES_R3])
+def test_r3_las_guardas_detectan_cada_mutacion(monkeypatch, cual, antes, despues, prueba):
+    original = {"p2": p2(), "nb02": nb02()}[cual]
+    assert original.count(antes) == 1, antes
+    mutado = original.replace(antes, despues)
+    if cual == "p2":
+        monkeypatch.setattr(sys.modules[__name__], "p2", lambda: mutado)
+        monkeypatch.setattr(sys.modules[__name__], "s2", lambda: secciones(mutado))
+    else:
+        monkeypatch.setattr(sys.modules[__name__], "nb02", lambda: mutado)
+    with pytest.raises(AssertionError):   # sin mutar pasa (corre en la suite)
+        globals()[prueba]()

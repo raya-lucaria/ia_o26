@@ -213,7 +213,7 @@ cuando el ajuste no llega al mínimo de $L_{\text{ent}}$.
 :::
 
 > [!TIP]
-> **Míralo correr: bloque 2 · Las figuras 5.2 y 5.3 en vivo**
+> **Míralo correr: bloque 2 · Los tres ajustes y la curva de capacidad, en vivo**
 >
 > Compara los ajustes y la curva de la sección siguiente.
 >
@@ -443,7 +443,9 @@ Subir el grado por fuerza bruta aumenta también almacenamiento y cálculo.
 > [!WARNING]
 > Lectura equivocada: «Con más potencias el error de entrenamiento subió: la monotonía falla».
 >
-> Lectura correcta: **Falla la aritmética: las potencias sin escalar dan una $\Phi$ casi singular. En el caso mostrado, escalar $x$ recupera un ajuste preciso; con grados mayores puede no bastar.**
+> Lectura correcta: **Falla la aritmética: las potencias sin escalar dan una $\Phi$ casi singular. En el bloque 4 del notebook, escalar $x$ recupera un ajuste preciso; con grados mayores puede no bastar.**
+
+Escalar $x$ es llevarla a $[-1,1]$, con el rango de los datos de entrenamiento, antes de elevarla; con «escalar x» activado, las columnas $x$, $x^2$, … de $\Phi$ que imprime el notebook muestran esa $x$ escalada, no la original.
 
 En el caso 4 de la galería del notebook (100 datos), sin escalar, $L_{\text{ent}}$ pasa de 1.11 a 13.4 entre grados 10 y 25.
 Escalando, el grado 25 da 0.18.
@@ -487,7 +489,7 @@ Abajo, el eje cuenta pasos y compara la recta en $x$ con el modelo que usa el ti
 
 No: en entregas, la recta tiene riesgos de zona 1.03 dentro y 1.14 fuera; el grado 7 supera un millón fuera.
 Para el seno, el grado 7 pasa de 0.10 a 609.
-«Riesgo de zona» supone uso uniforme en esa zona; la figura no cambia el despliegue del experimento.
+«Riesgo de zona» supone uso uniforme en esa zona; ampliar la zona no cambia la población de despliegue que define $R$.
 
 ::: remark {#ml-c1-obs-donde-se-usa title="Interpolar, extrapolar y el riesgo"}
 Interpolar es predecir para $x$ dentro del rango de los datos de entrenamiento;
@@ -515,7 +517,7 @@ Cuando las observaciones dependen unas de otras, cambia cómo separas los datos;
 > [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
 
 ::: exercise {#ml-c1-ej-donde-se-usa title="Encuentra la extrapolación"}
-El modelo de entregas se ajustó con distancias de 1 a 6 km.
+El modelo de entregas de la figura se ajustó con distancias de 0 a 6 km.
 Se usará en una zona nueva con entregas de 5 a 12 km.
 
 (a) ¿Qué parte del uso es extrapolación?
@@ -648,7 +650,7 @@ La idea nueva es una regularidad periódica, no suave.
 1. Describe qué hace el polinomio de grado 7 que pasa por los ocho puntos, dentro y en $x=9,10$.
 2. Identifica qué supuesto le falta.
 3. Propón una $\phi$ con dos columnas que dé la función exacta; di si el modelo es lineal en $\beta$.
-4. Decide cuál de las dos reglas extrapola y qué supuesto lo hace posible.
+4. Decide cuál de las dos reglas extrapola correctamente si continúa la alternancia, y qué supuesto lo hace posible.
 :::
 
 ::: hint {#ml-c1-pista-final-polinomios-y-capacidad-1 of="ml-c1-ej-final-polinomios-y-capacidad" title="Pista 1 · Compara pares e impares"}
@@ -669,7 +671,7 @@ Pasar por los datos no le exige repetir el patrón.
 En enteros pares el coseno vale 1; en impares, −1.
 La regla da exactamente 5 y 0, respectivamente, y es lineal en $\beta$.
 
-**4. La extrapolación.** La representación periódica acierta en todo entero si continúa esa misma alternancia.
+**4. La extrapolación.** Ambas extrapolan; la periódica acierta en todo entero bajo ese supuesto: que continúe la misma alternancia.
 Lo permite el supuesto correcto, no una mayor capacidad.
 :::
 

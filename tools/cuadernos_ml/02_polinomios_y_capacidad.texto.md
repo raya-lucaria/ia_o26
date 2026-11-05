@@ -35,8 +35,9 @@ coeficientes $\widehat\beta$. El gorro indica que se estimaron con una muestra.
 
 $L_{\text{ent}}$ es el error cuadrático promedio en entrenamiento y $R$ es el
 riesgo: la pérdida cuadrática esperada en la población.
-La página [La capacidad como restricción y Brecha de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
-conecta la elección del grado con la diferencia entre esos errores:
+Las definiciones [La capacidad como restricción](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-def-capacidad-como-restriccion)
+y [Brecha de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-def-brecha), de la página Polinomios y capacidad,
+conectan la elección del grado con la diferencia entre esos errores:
 
 $$
 \min_\beta L_{\text{ent}}(\beta)\quad\text{s.a.}\quad\operatorname{grado}(f_\beta)\le N,
@@ -65,6 +66,7 @@ La franja gris marca la zona fuera del rango de los datos. En la figura de la
 página ocurre al revés: la franja sombreada marca dónde están los datos.
 La línea vertical punteada marca $x=2$ para la recíproca con $x_0=1$.
 Compara Taylor cerca del centro y en el borde derecho; si sale del panel, lee su error debajo de la gráfica.
+La página mide el error en $x=2.5$; aquí se mide en el borde, $x=3$.
 
 ### celda: bloque-1-explica
 
@@ -78,7 +80,7 @@ Taylor usa el valor y las derivadas de la función en su centro. Mínimos
 cuadrados reparte el error entre los datos al minimizar $L_{\text{ent}}$.
 Cuando solo tenemos observaciones, no contamos con las derivadas exactas de $f$.
 
-La observación [El polinomio de Taylor](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
+La observación [El polinomio de Taylor](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-obs-taylor)
 explica el límite: para $1/x$ centrada en $x_0=1$, la serie converge solo
 en $(0,2)$. A la derecha de $x=2$, subir el grado no resuelve el problema.
 Taylor es una aproximación local; su comportamiento aquí no dice que todo
@@ -121,7 +123,8 @@ incurren en sobreajuste (*overfitting*): mejoran en entrenamiento y empeoran
 al recibir observaciones nuevas. Con más datos o poco ruido, la subida puede
 ser mucho menos marcada.
 
-La definición [Brecha de generalización y el teorema El entrenamiento miente a tu favor, en promedio](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
+La definición [Brecha de generalización](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-def-brecha) y el teorema
+[El entrenamiento miente a tu favor, en promedio](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-teo-optimismo-entrenamiento)
 explican $\mathrm{brecha}=R-L_{\text{ent}}$. Bajo los supuestos del teorema,
 su promedio sobre muestras no es negativo; una muestra particular puede
 tener brecha negativa. Tampoco hay una ley que obligue a la brecha a crecer
@@ -163,7 +166,7 @@ $L_{\text{ent}}$ entre los candidatos, salvo diferencias de aritmética.
 Si hay empates, un grado menor también puede minimizarlo; la monotonía no
 obliga a escoger el máximo entre candidatos empatados.
 
-La definición [Parámetro contra hiperparámetro](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
+La definición [Parámetro contra hiperparámetro](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-def-param-hiper)
 distingue los coeficientes $\beta$, que se ajustan dentro de una familia,
 del hiperparámetro $N$, que decide qué familia permites. Minimizar
 $L_{\text{ent}}$ dentro de cada familia no resuelve cómo elegir entre ellas.
@@ -187,6 +190,8 @@ constante 1. Si escribimos $\phi_N$, su subíndice numérico indica solo el grad
 
 **Mira.** Los puntos son observaciones de la recíproca cerca de cero; la curva muestra el ajuste elegido.
 Debajo aparecen cuatro filas de $\Phi$: compara sus dos columnas para $(1,1/x)$ con las 41 del grado 40.
+Con «escalar x», $\Phi$ usa $x$ llevada a $[-1,1]$: sus columnas x, x^2, …
+muestran esa $x$ escalada, no la original.
 Lee $R$, el piso y el benchmark; sin escalar, vigila también el aviso y cuánto
 cambia $L_{\text{ent}}$.
 Dos datos, con $y$ mayor que 40, quedan arriba del cuadro.
@@ -198,12 +203,14 @@ Dos datos, con $y$ mayor que 40, quedan arriba del cuadro.
 Gana $(1,1/x)$ en esta comparación. Con dos columnas alcanza $R=0.250$,
 cerca del piso, y estima $\widehat\beta=(2.03,\ 5.00)$.
 El polinomio inicial de grado 10 usa 11 columnas y da $R=1.279$.
+En esta muestra su $L_{\text{ent}}$, 1.370, queda arriba de $R$: el teorema habla
+del promedio, y una muestra puede salir al revés (en la página, 9 de 500).
 Con el grado 40 que pediste, $L_{\text{ent}}=0.074$, pero $R=199\,262$:
 muy lejos del piso.
 La representación recíproca puede expresar la forma del proceso con menos
 coeficientes: reduce tanto la capacidad como el error de aproximación.
 
-Como explica [Elegir modelo es elegir supuestos](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/),
+Como explica [Elegir modelo es elegir supuestos](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-obs-supuestos),
 la ventaja depende de acertar con la forma del proceso. Elegir columnas
 informativas puede ayudar más que agregar potencias. El ajuste sigue siendo
 lineal en sus coeficientes, aunque aparezca $1/x$ como columna.
@@ -215,7 +222,9 @@ con el grado 25, de 0.111 a 8.59.
 La familia es la misma, así que esa subida no refuta la monotonía del mínimo
 exacto entre familias anidadas: el cálculo ya no lo alcanza.
 El mayor coeficiente no sirve de alarma: con escala, en grado 40 llega a
-$3.0\times10^{11}$, porque el ajuste sobreajusta.
+$3.0\times10^{11}$ en esta base de potencias; su tamaño depende de la
+representación. El sobreajuste lo muestran las dos pérdidas:
+$L_{\text{ent}}=0.074$ contra $R=199\,262$.
 Sin escalar, el cálculo descarta direcciones casi repetidas y deja los
 coeficientes pequeños.
 El caso 4 de la galería muestra esta misma subida sin escalar, con 100 datos y
@@ -249,7 +258,8 @@ con el interruptor encendido, la predicción a un paso con el tiempo anterior
 observado.
 Lo impreso da primero $L_{\text{ent}}$ sobre la serie dibujada y después el
 error esperado, aproximado con series nuevas del mismo proceso: dentro
-(pasos 0 a 59) y a un paso en el futuro (pasos 60 a 79).
+(pasos 0 a 59) y en el futuro (pasos 60 a 79), a un paso si el interruptor
+está encendido.
 
 ### celda: bloque-5-explica
 
@@ -263,7 +273,7 @@ en esa zona, incluido el ruido; no es su contribución al riesgo del despliegue
 actual. En «entregas», con grado 7,
 pasa de 1.824 dentro a más de un millón fuera al extender de 6 a 9 km.
 
-La observación [Interpolar, extrapolar y el riesgo](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/)
+La observación [Interpolar, extrapolar y el riesgo](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-obs-donde-se-usa)
 explica por qué un buen ajuste dentro del intervalo no garantiza buenas
 predicciones fuera. Allí los datos no restringen directamente al polinomio.
 La tabla separa errores por zona; ampliar la ventana no cambia por sí solo
@@ -315,7 +325,7 @@ El promedio global pondera cada grupo por su número de funciones.
 No basta promediar las alturas de la curva dando el mismo peso a todos
 los grupos. Al considerar todas las funciones por igual, la ventaja en
 unas se compensa con la desventaja en otras. Es el alcance del teorema
-[No free lunch (Wolpert, 1996)](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/).
+[No free lunch (Wolpert, 1996)](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-teo-no-free-lunch).
 
 En B, el polinomio de grado 3 gana en el proceso suave: $R=1.046$ frente
 a 1.486 de vecinos. En el periódico ganan los vecinos: 0.314 frente a
@@ -331,6 +341,8 @@ Elegir un modelo supone apostar por ciertas formas del proceso.
 `ml.taller(datos, clase=1, phi=ml.polinomio(4), N_max=15)`.
 Mira la nube con $f$, la curva de capacidad y la matriz $\Phi$ de la
 representación elegida, junto con sus errores y su piso.
+Como en el bloque 4, con «escalar x» $\Phi$ usa $x$ llevada a $[-1,1]$: sus
+columnas x, x^2, … muestran esa $x$ escalada, no la original.
 El taller aproxima $R$ con otra muestra grande, así que puede diferir en el
 segundo decimal del que da el bloque 2.
 
