@@ -198,8 +198,9 @@ def test_ningun_R_junto_a_una_metrica(ruta):
     t = leer(ruta)
     malos = []
     for m in re.finditer(r"\$R\$|\$R[_(\\ ]", t):
-        if re.search(r"(nunca|no es|ni)\s+$", t[max(0, m.start() - 12):m.start()]):
+        if re.search(r"(nunca|no es|ni|llamar)\s+$", t[max(0, m.start() - 12):m.start()]):
             continue          # la prohibición misma: «…, nunca $R$» (ml-c4-def-perdida-vs-metrica)
+                              # o «Penaliza: … llamar $R$ a un MCC» (rúbrica, clase_4.md §10.6)
         a, b = max(0, m.start() - 60), m.end() + 60
         ventana = t[a:b]
         for x in re.finditer(METRICA, ventana):
