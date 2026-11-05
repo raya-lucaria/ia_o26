@@ -291,3 +291,16 @@ def test_r2_inverso_nombra_los_datos_fuera_del_cuadro():
     altos = cif.cifras_c1_inverso()["fuera_del_cuadro"]
     assert f"con y de {altos[0]:.0f} y {altos[1]:.0f}, quedan arriba del cuadro" in aria(
         "ml-c1-inverso-vs-potencias")
+
+
+def test_r3_taylor_y_tres_ajustes_no_dejan_puntos_fuera_del_cuadro():
+    # Con tope 16 quedaban fuera, sin marca, dos datos de entrenamiento y 6 de
+    # las 200 observaciones nuevas (r3 del tramo 1b).
+    import ml_cifras_c1 as cif
+    datos = cif.datos_inverso()
+    nuevas = datos.realidad.iloc[:200]
+    assert max(datos.ent.y.max(), nuevas.y.max()) < cif.P2_YTOPE
+    assert min(datos.ent.y.min(), nuevas.y.min()) > 0
+    fuente = (HERRAMIENTAS / "figuras_ml_c1.py").read_text(encoding="utf-8")
+    assert "ax.set_ylim(0, cif.P2_YTOPE)" in fuente and "tope = cif.P2_YTOPE" in fuente
+    assert "set_ylim(0, 16)" not in fuente and "tope = 16" not in fuente

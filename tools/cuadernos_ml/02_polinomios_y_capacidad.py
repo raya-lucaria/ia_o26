@@ -191,6 +191,7 @@ ml.laboratorio(bloque_4, phi=ml.selector("φ", ["polinomio", "(1, 1/x)"]),
 # %% [codigo] bloque-5-juega
 #@title Juega: extrapolar
 SEMILLA, ROTULO = 0, {True: "x y el tiempo anterior (a un paso)", False: "recta en x"}
+FUTURO = {True: "a un paso en el futuro", False: "en el futuro"}
 RANGOS = {"entregas": ("entregas", 0, 6), "seno": ("seno", 0, 2), "recursivo": (
     "recursivo", 0, 0), "mezcla de logaritmos": ("mezcla_logs", 1, 5)}
 
@@ -210,7 +211,7 @@ def bloque_5(proceso, N, zona, anterior):
         ax.plot(todo.t, m.predecir(todo), color="C1", label=ROTULO[anterior])
         ax.set(xlabel="paso (x crece con el tiempo)"), ax.legend(), plt.show()
         print(f"serie dibujada: L_ent = {ml.L(m, datos.ent):.3f}  ·  series nuevas: "
-              f"dentro = {ml.L(m, datos.realidad):.3f}, a un paso en el futuro = "
+              f"dentro = {ml.L(m, datos.realidad):.3f}, {FUTURO[anterior]} = "
               f"{ml.riesgo(m, datos):.3f}  ·  piso = {ml.piso(datos):.3f}")
         return
     datos = ml.PROCESOS[clave](semilla=SEMILLA, fracciones=(1, 0, 0))

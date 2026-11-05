@@ -341,6 +341,10 @@ def cifras_c1_arriba_abajo(semilla=0):
 SEMILLA_1B = 0
 N_MAX = 15
 INVERSO_RANGO = (0.3, 3.0)
+# Tope del eje y de ml-c1-taylor-vs-mco y ml-c1-tres-ajustes (r3 del tramo 1b):
+# con 16 quedaban fuera, sin marca, dos datos de entrenamiento y 6 de los 200
+# nuevos. La prueba de figuras exige que todos queden abajo de este tope.
+P2_YTOPE = 20
 INVERSO_SIGMA2 = 0.25
 
 
@@ -619,10 +623,18 @@ def cifras_c1_inverso(n=INVERSO_N, semilla=SEMILLA_1B):
         ajustes = {N: ml.ajustar(datos, phi=ml.polinomio(N)) for N in range(25, 41)}
     salida["R_40"] = float(ml.riesgo(m40, datos))
     salida["L_ent_40"] = float(ml.L(m40, datos.ent))
+    salida["columnas_40"] = len(m40.beta_gorro)
+    # Los controles iniciales del bloque 4 (grado 10, escalado): en esta muestra
+    # L_ent queda ARRIBA de R (brecha negativa; r3 del tramo 1b).
+    m10 = ml.ajustar(datos, phi=ml.polinomio(10))
+    salida["L_ent_10"] = float(ml.L(m10, datos.ent))
+    salida["columnas_10"] = len(m10.beta_gorro)
     # NB02 bloque 4 con «escalar x» apagado (revision r2 del tramo 1b): L_ent
     # sube aunque la familia es la misma, y el mayor coeficiente NO es la
-    # alarma: con escala, los de grado alto tambien son enormes (sobreajuste);
-    # sin escalar, el calculo cae a la pseudoinversa y los deja pequenos.
+    # alarma: con escala, los de grado alto tambien son enormes; su tamano
+    # depende de la base (en potencias de la x escalada; en Chebyshev es otro),
+    # asi que el sobreajuste lo dicen L_ent_40 contra R_40, no el coeficiente.
+    # Sin escalar, el calculo cae a la pseudoinversa y los deja pequenos.
     escala = {}
     for N in (15, 25, 40):
         for escalar in (True, False):
@@ -652,10 +664,46 @@ def cifras_c1_zona_rara():
     return {"prob": prob, "perdida": perdida, "aporte": prob * perdida}
 
 
+COLUMNAS_GRADO = 3
+COLUMNAS_VARIABLES = (5, 20)
+
+
 def cifras_c1_columnas():
     """P2 §6, micro ml-c1-ej-columnas: monomios de grado a lo mas 3 en J
-    variables, binom(J + 3, 3)."""
-    return {5: math.comb(5 + 3, 3), 20: math.comb(20 + 3, 3)}
+    variables, binom(J + 3, 3). Las llaves son los J del enunciado."""
+    return {J: math.comb(J + COLUMNAS_GRADO, COLUMNAS_GRADO) for J in COLUMNAS_VARIABLES}
+
+
+def cifras_c1_vc(puntos=((0.0, 0.0), (1.0, 0.0), (0.0, 1.0)), direcciones=720):
+    """P2 §3, micro ml-c1-ej-vc (a): las 2^3 etiquetas de tres puntos no
+    alineados, y cuantas separa una recta (busqueda en direcciones w: una
+    etiqueta se separa si alguna proyeccion deja los 1 de un lado y los 0 del
+    otro, o es constante)."""
+    import itertools
+    import numpy as np
+    P = np.array(puntos)
+    etiquetas = list(itertools.product((0, 1), repeat=len(P)))
+    angulos = np.linspace(0, 2 * np.pi, direcciones, endpoint=False)
+    proy = P @ np.stack([np.cos(angulos), np.sin(angulos)])   # puntos x direcciones
+
+    def separable(et):
+        et = np.array(et, bool)
+        if et.all() or not et.any():
+            return True
+        return bool(np.any(proy[et].min(axis=0) > proy[~et].max(axis=0)))
+
+    return {"puntos": len(P), "etiquetas": len(etiquetas),
+            "separables": sum(separable(e) for e in etiquetas)}
+
+
+def cifras_c1_cuatro_futuros(prediccion=(1, 1)):
+    """P2 §8, micro ml-c1-ej-cuatro-futuros: las 2^2 etiquetas posibles de las
+    dos entradas desconocidas (en el orden 11, 10, 01, 00), los aciertos de la
+    prediccion «1, 1» en cada una y su promedio exacto."""
+    futuros = [(1, 1), (1, 0), (0, 1), (0, 0)]
+    aciertos = [sum(p == f for p, f in zip(prediccion, fut)) for fut in futuros]
+    return {"futuros": futuros, "aciertos": aciertos,
+            "promedio": Fraction(sum(aciertos), len(futuros)), "de": len(prediccion)}
 
 
 EXTRAPOLAR_GRADO = 7
@@ -701,6 +749,14 @@ def cifras_c1_extrapolar(semilla=SEMILLA_1B):
                      for fila in ml.error_por_zona(m, datos, zonas).itertuples()}
             for nombre, m in modelos.items()}
         salida[panel]["piso"] = float(ml.piso(datos))
+    # R_zona promedia en una malla uniforme de la zona (r3 del tramo 1b: NB02
+    # lo dice con «uniformemente»): se comprueba contra la malla propia.
+    datos = datos_extrapolar("seno", semilla)
+    m = ml.ajustar(datos, phi=ml.polinomio(EXTRAPOLAR_GRADO))
+    tabla = ml.error_por_zona(m, datos, {"fuera": EXTRAPOLAR_ZONAS["seno"]["fuera"]})
+    malla = pd.DataFrame({"x": np.linspace(*EXTRAPOLAR_ZONAS["seno"]["fuera"], 1000)})
+    dif2 = float(np.mean((np.asarray(datos.f_visible(malla)) - m.predecir(malla)) ** 2))
+    salida["zona_uniforme"] = bool(np.isclose(dif2, float(tabla.dif2.iloc[0]), rtol=1e-12))
     datos = datos_extrapolar("recursivo", semilla)
     rec = {"n": len(datos.ent), "futuro": len(datos.prueba), "piso": float(ml.piso(datos))}
     for nombre, con in (("sin_anterior", False), ("con_anterior", True)):
@@ -769,12 +825,16 @@ def cifras_c1_nb02_parte_b(semilla=SEMILLA_1B):
     return salida
 
 
+PAR_IMPAR = {"n": 8, "par": 5, "impar": 0}
+
+
 def cifras_c1_par_impar():
     """P2, ejercicio final: en x = 1..8, y = 5 si x es par y 0 si es impar.
     El polinomio de grado 7 que pasa por los 8 (Lagrange con fracciones
     exactas) en x = 9 y 10, y la phi periodica (1, cos pi x): 2.5 + 2.5 cos pi x."""
-    xs = list(range(1, 9))
-    ys = [Fraction(5) if x % 2 == 0 else Fraction(0) for x in xs]
+    xs = list(range(1, PAR_IMPAR["n"] + 1))
+    ys = [Fraction(PAR_IMPAR["par"]) if x % 2 == 0 else Fraction(PAR_IMPAR["impar"])
+          for x in xs]
 
     def lagrange(v):
         total = Fraction(0)
@@ -786,11 +846,13 @@ def cifras_c1_par_impar():
             total += termino
         return total
 
-    periodica = {x: 2.5 + 2.5 * math.cos(math.pi * x) for x in range(1, 11)}
+    b0, b1 = (PAR_IMPAR["par"] + PAR_IMPAR["impar"]) / 2, (PAR_IMPAR["par"] - PAR_IMPAR["impar"]) / 2
+    periodica = {x: b0 + b1 * math.cos(math.pi * x) for x in range(1, 11)}
     return {"grado_7": {9: lagrange(9), 10: lagrange(10)},
             "interpola": all(lagrange(x) == y for x, y in zip(xs, ys)),
             "periodica": {x: round(v, 12) for x, v in periodica.items()},
-            "beta_periodica": (2.5, 2.5)}
+            "exacta": all(abs(periodica[x] - float(y)) < 1e-12 for x, y in zip(xs, ys)),
+            "beta_periodica": (b0, b1), "n": len(xs)}
 
 # --- fin tramo 1b ---
 

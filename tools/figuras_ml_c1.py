@@ -838,7 +838,7 @@ def ml_c1_taylor_vs_mco():
             ln.set_linewidth(2.0)
         _entrenamiento(ax, datos.ent.x, datos.ent.y)
         ax.axvline(2, color=TEXTO, lw=1.2, ls=(0, (1, 2)))
-        ax.text(2.04, 15.2, "más allá de x = 2, Taylor\nde 1/x empeora al subir\nel grado",
+        ax.text(2.04, cif.P2_YTOPE - 0.8, "más allá de x = 2, Taylor\nde 1/x empeora al subir\nel grado",
                 fontsize=9, color=TEXTO, va="top")
         ax.plot([1], [7], marker="x", ms=8, color=TEXTO, ls="", zorder=7)
         ax.annotate("x₀ = 1", (1, 7), xytext=(0.55, 3.2), fontsize=9, color=TEXTO,
@@ -848,7 +848,7 @@ def ml_c1_taylor_vs_mco():
                 transform=ax.transAxes, fontsize=9, color=TEXTO, ha="right", va="top",
                 zorder=8, bbox={"facecolor": PANEL, "edgecolor": LINEA, "boxstyle": "round"})
         ax.set_xlim(0.3, 3)
-        ax.set_ylim(0, 16)
+        ax.set_ylim(0, cif.P2_YTOPE)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         manejadores, rotulos = ax.get_legend_handles_labels()
@@ -914,7 +914,7 @@ def ml_c1_tres_ajustes():
     nuevas = datos.realidad.iloc[:200]
     x = np.linspace(0.3, 3, 400)
     nombres = {1: "subajuste", 4: "capacidad adecuada", 15: "sobreajuste"}
-    tope = 16
+    tope = cif.P2_YTOPE
 
     def dibujar(fig, ejes):
         for ax, N in zip(ejes, cif.TRES_GRADOS):
