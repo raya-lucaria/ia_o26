@@ -121,7 +121,7 @@ Si exploras «semilla», cambia la semilla: la población y $f$ se quedan; cambi
 
 **Mira.** En «el ajuste», los puntos son entregas y las curvas son $f$ y el ajuste; sigue sus oscilaciones al mover $\mu$.
 En las tres vistas, cada punto es una entrega de validación: compara centro, ancho y forma; con $\mu$ grande aparece forma en $e$ contra $x$.
-En la U, los círculos son $L_{\text{ent}}$, los triángulos son $\mathrm{CV}_5$ y la línea crema es $R$; ubica «tú».
+En la U, los círculos son $L_{\text{ent}}$, los triángulos son $\mathrm{CV}_5$ y la línea discontinua es $R$; ubica «tú». El eje vertical va en escala logarítmica.
 
 ### celda: bloque-3-explica
 
@@ -207,7 +207,7 @@ El orden se declara antes de medir: $\mu$ de mayor a menor, de simple a complejo
 
 ### celda: bloque-5-mira
 
-**Mira.** Los círculos son $L_{\text{ent}}$; con CV, los triángulos son medias con barras de EE; la línea crema es $R$.
+**Mira.** Los círculos son $L_{\text{ent}}$; con CV, los triángulos son medias con barras de EE; la línea discontinua es $R$.
 Recorre $\mu$ de mayor a menor: busca la primera media bajo «mínimo + 1 EE»; los números cuentan pendientes distintas de cero. La línea impresa indica que los conteos y $R$ usan el reajuste en entrenamiento ∪ validación con CV, y el ajuste en entrenamiento con $L_{\text{ent}}$ o $L_{\text{val}}$.
 La prueba está en una celda aparte que no cambia con los controles: si cambiara con ellos, elegirías con la prueba.
 

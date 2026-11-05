@@ -221,7 +221,7 @@ Después de esta celda no vuelvas a elegir ni ejecutes «correr todo».
 
 **Mira.** La primera línea imprime `L_prueba` y la media evaluadas en prueba; el margen tras «±» corresponde a 2 EE.
 La segunda muestra la diferencia pareada «modelo − media» y su EE en prueba.
-La última estima $R$ en el despliegue para ese mismo modelo; no es otra pérdida de validación cruzada.
+La línea rotulada «R» estima $R$ en el despliegue para ese mismo modelo; no es otra pérdida de validación cruzada.
 
 ### celda: entrega-6
 

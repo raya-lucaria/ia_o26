@@ -381,17 +381,20 @@ con ridge. Los paneles comparan tres precios; el cuarto muestra los errores cont
 $\mu$, de más capacidad a la izquierda a menos a la derecha.
 
 ::: figure {#ml-c3-grado-12-mu title="El grado 12 con tres μ"}
-![Las entregas de la clase 2 con el mismo polinomio de grado 12: con μ 100 la recta de la media; con μ 0.0032 una curva cercana a f; con μ 10⁻⁶ la curva persigue los 36 puntos y oscila, como en la clase 2. R: 48.3, 29.3, 203.1. Cuarto panel: contra μ, L ent sube; CV 5 forma una U con fondo en μ = 0.0032; R es enorme con μ chica, no es una U limpia en medio y sube con μ grande](../_assets/ml-c3-grado-12-mu.svg)
+![Las entregas de la clase 2 con el mismo polinomio de grado 12: con μ 100 la recta de la media; con μ 0.0032 una curva cercana a f en el centro que cae en el borde derecho; con μ 10⁻⁶ la curva persigue los 36 puntos y oscila, como en la clase 2. R: 48.3, 29.3, 203.1. Cuarto panel: contra μ, L ent sube; CV 5 forma una U con fondo en μ = 0.0032; R es enorme con μ chica, no es una U limpia en medio y sube con μ grande](../_assets/ml-c3-grado-12-mu.svg)
 :::
 
-En A, $\mu=100$ deja casi la media; en B, $\mu=0.0032$ se acerca a la forma de $f$.
+En A, $\mu=100$ deja casi la media; en B, $\mu=0.0032$ se acerca a $f$ en el centro, pero cae en el borde derecho.
 En C, $\mu=10^{-6}$ persigue los puntos y oscila, sobre todo en los bordes.
 No interpola las 36 entregas. Es la misma familia, con otra capacidad:
 sigue siendo lineal en $\beta$.
 
 La U que viste contra el grado (@ml-c2-cv-capacidad) reaparece aquí en $\mathrm{CV}_5$, con mínimo en B.
+
 El $R$ de B, 29.3, supera al de las $\mu$ vecinas de la rejilla: B cae en el tope intermedio de $R$.
-La CV con 36 entregas no ve ese tope: elegir con CV no garantiza el mínimo de $R$.
+La $\mathrm{CV}_5$ se calcula sobre las 48 entregas de entrenamiento ∪ validación, y no ve ese tope.
+No usa los ajustes de 36 entregas que dibujan los tres paneles.
+Elegir con CV no garantiza el mínimo de $R$.
 
 $L_{\text{ent}}$ sube con $\mu$; $R$ no dibuja una U limpia:
 baja desde C, tiene un tope intermedio y vuelve a subir hacia A.
@@ -651,7 +654,7 @@ le gana por más de 2 EE. Ambos modelos estaban fijados antes de abrir esa reser
 > [!WARNING]
 > Lectura equivocada: «Más regularización siempre generaliza mejor».
 >
-> Lectura correcta: **a la derecha de esta U, $\mathrm{CV}_5$ y $R$ suben juntos; con $\mu\to\infty$ llegas al benchmark.**
+> Lectura correcta: **a la derecha de esta U, $\mathrm{CV}_5$ y $R$ suben juntos hasta la meseta del predictor constante, el benchmark. Con $\mu$ más grande ya no cambian.**
 
 ::: exercise {#ml-c3-ej-sube-mu title="Predice tres curvas"}
 Usa la U de esta sección. Al subir un poco $\mu$, ¿qué pasa con $L_{\text{ent}}$,
@@ -664,7 +667,8 @@ $\mathrm{CV}_5$ y $R$ si partes de una penalización (a) muy chica,
 ::: answer {#ml-c3-resp-sube-mu of="ml-c3-ej-sube-mu" title="Respuesta · Una curva monótona y dos con fondo"}
 $L_{\text{ent}}$ sube o se queda igual en los tres casos.
 En esta figura, $\mathrm{CV}_5$ y $R$ bajan con $\mu$ chica, casi no cambian
-en el fondo y suben con $\mu$ grande. La monotonía de entrenamiento es
+en el fondo y suben con $\mu$ grande.
+Al llegar a la meseta del predictor constante, permanecen iguales. La monotonía de entrenamiento es
 un teorema; la U de los otros errores describe este ejemplo.
 :::
 

@@ -68,7 +68,7 @@ validación sí puede moverse un poco. «Centro y ancho» separa ambos efectos;
 «El centro no es el sesgo» de Leer el error distingue ese promedio del sesgo
 de una predicción.
 
-Al mover el control, cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
+Si después mueves el control «semilla», la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
 
 Prueba «recta a una curva»: la curvatura omitida aparece como U en el tercer
 panel. El intercepto compensa su promedio, pero no elimina la forma.
