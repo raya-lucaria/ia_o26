@@ -5073,6 +5073,20 @@ def test_medir_fugas_no_tiene_columna_R():
     assert not any(r.startswith("R") for r in rotulos)
 
 
+def test_dibujar_fugas_rotulos_de_tipo_no_se_enciman():
+    # Se vio renderizando en Chrome: con los cinco tipos en una línea cada uno, los
+    # rótulos del eje x se pegaban («posteriorpreprocesar antes…»).
+    tipos = ["ninguna", "posterior", "preprocesar_antes", "duplicados", "seleccion_previa"]
+    tabla = pd.DataFrame({"tipo": tipos, "intensidad": 1.0, "estimado": 0.5, "en_uso": 0.3})
+    tabla["inflado"] = tabla["estimado"] - tabla["en_uso"]
+    tabla.attrs["criterio"] = "mcc"
+    ax = ml.dibujar_fugas(tabla)
+    rotulos = [t.get_text() for t in ax.get_xticklabels()]
+    assert len(rotulos) == 5
+    assert max(len(linea) for r in rotulos for linea in r.split("\n")) <= 11
+    assert "selección\nprevia" in rotulos and "preprocesar\nantes" in rotulos
+
+
 def test_medir_fugas_ninguna_no_infla():
     d = _llego_tarde(n=600)
     tabla = ml.medir_fugas(d, lambda df: ml.ajustar(df), tipos=("ninguna",), criterio="mcc")

@@ -9647,7 +9647,7 @@ def dibujar_ks(tabla, ax=None, tema="claro"):
                      color=_color("f_gorro", tema))
     for b in barras:
         b.set_gid("barras-ks")
-    ax.set(xlabel="KS_j: distancia máxima entre las acumuladas", xlim=(0, max(
+    ax.set(xlabel=r"$\mathrm{KS}_j$: distancia máxima entre las acumuladas", xlim=(0, max(
         0.05, float(orden["estadistico"].max()) * 1.15)))
     return ax
 
@@ -9693,6 +9693,16 @@ def dibujar_residual_tiempo(modelo, df, ax=None, tema="claro"):
     return ax
 
 
+_ROTULO_FUGA = {"ninguna": "ninguna", "posterior": "posterior",
+                "preprocesar_antes": "preprocesar\nantes", "duplicados": "duplicados",
+                "seleccion_previa": "selección\nprevia"}
+
+
+def _rotulo_fuga(tipo, en_linea=False):
+    r = _ROTULO_FUGA.get(tipo, str(tipo).replace("_", "\n"))
+    return r.replace("\n", " ") if en_linea else r
+
+
 def dibujar_fugas(tabla, ax=None, tema="claro"):
     """Cuánto infla cada fuga (medir_fugas): por tipo, lo que promete la CV y lo que da en
     el uso. Con un MCC los rótulos son «MCC de la CV» y «MCC en el despliegue» (nunca R);
@@ -9720,15 +9730,15 @@ def dibujar_fugas(tabla, ax=None, tema="claro"):
         for b in ax.bar(x + ancho / 2, sub["en_uso"], ancho, color=_color("realidad", tema),
                         label=r_uso):
             b.set_gid("barras-en-uso")
-        ax.set_xticks(x, [str(v).replace("_", " ") for v in tipos])
+        ax.set_xticks(x, [_rotulo_fuga(v) for v in tipos])
     else:
         for j, tipo in enumerate(tipos):
             sub = tabla[tabla["tipo"] == tipo].sort_values("intensidad")
             color = _SERIES[tema][j % len(_SERIES[tema])]
             ax.plot(sub["intensidad"], sub["estimado"], marker="^", color=color,
-                    label=f"{tipo}: {r_cv}")
+                    label=f"{_rotulo_fuga(tipo, True)}: {r_cv}")
             ax.plot(sub["intensidad"], sub["en_uso"], ls="--", marker="s", color=color,
-                    label=f"{tipo}: {r_uso}")
+                    label=f"{_rotulo_fuga(tipo, True)}: {r_uso}")
         ax.set_xlabel("intensidad")
     if crit in ("mcc",):
         ax.axhline(0, ls=ROLES["benchmark"]["trazo"], color=_color("benchmark", tema),
