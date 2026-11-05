@@ -44,6 +44,7 @@ CITAS = {
     'cifras_c4_cinco_puntajes': {"sexto": ["5", "0.8", "{0,1,2}"], "tercio": ["4", "0.6", "{0}"]},
     'cifras_c4_cliente_tipico': {"p_w": "0.5", "razon": "19"},
     'cifras_c4_conformal_cobertura': {"fraudes_cal3": "18", "marginal_fraude": "0.01", "marginal_global": "0.89", "marginal_tamano": "0.98", "n_cal3": "1000", "por_clase_fraude": "0.83", "por_clase_global": "0.92", "por_clase_tamano": "1.80"},
+    'cifras_c4_conformal_equilibrado': {"cobertura_01": "0.90", "tamano_01": "1.94"},
     'cifras_c4_conformal_repetido': {"R": "30", "marginal_fraude": "0.03", "por_clase": ["0.90", "0.90", "0.90"], "por_clase_fraude": "0.90"},
     'cifras_c4_contribucion': {"constante_frac_positivos": "0.82", "frac_casos_fraude_1": "0.009", "frac_peso_balanceado": "1/2", "perdida_media_fraude_1": "3.41", "perdida_media_legitimo_1": "0.009"},
     'cifras_c4_desbalanceo': {"banda_01": "0.24", "banda_50": "0.16"},

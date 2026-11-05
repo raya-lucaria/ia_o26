@@ -967,3 +967,28 @@ def cifras_c4_conformal_repetido():
                      "marginal_fraude": _f(out["marginal"]["media"][2], 2),
                      "por_clase_fraude": _f(out["por_clase"]["media"][2], 2),
                      "por_clase": tuple(_f(v, 2) for v in out["por_clase"]["media"])}}
+
+
+@functools.lru_cache(maxsize=None)
+def cifras_c4_conformal_equilibrado():
+    """NB09 bloque 3 y ml-c4-conformal-conjuntos: tres clases iguales, cobertura y tamaño
+    medio (sobre 3) en despliegue para δ = 0.01…0.30."""
+    ml = _ml()
+    eq = (1 / 3, 1 / 3, 1 / 3)
+    datos3, cal3, _ = datos_conformal(proporcion=eq)
+    m = modelo_conformal(proporcion=eq)
+    cob, tam = [], []
+    for i in range(1, 31):
+        with _silencio():
+            cf = ml.conformal(m, cal3, round(0.01 * i, 2))
+        cob.append(cf.cobertura(datos3.despliegue))
+        tam.append(cf.tamano_medio(datos3.despliegue) / 3)
+    i01 = 9
+    return {"cobertura": tuple(cob), "tamano": tuple(tam),
+            "cita": {"cobertura_01": _f(cob[i01], 2), "tamano_01": _f(3 * tam[i01], 2)}}
+
+
+def datos_perfil():
+    """ml-c4-perdida-vs-metrica: fraude(proporcion=0.3) chico (60 de entrenamiento), solo x1,
+    para que los escalones de aciertos y MCC se vean."""
+    return datos_fraude(0.3, n=100)
