@@ -1274,9 +1274,9 @@ def test_r3_nb02_bloque_4_columnas_escala_brecha_y_coeficiente():
 
 def test_r3_nb02_el_taller_dice_que_hace_escalar_x():
     assert "ml.taller(datos, clase=1, phi=ml.polinomio(4), N_max=15)" in _r2_codigo02()
-    assert ("Como en el bloque 4, con «escalar x» $\\Phi$ usa $x$ llevada a $[-1,1]$: sus "
-            "columnas x, x^2, … muestran esa $x$ escalada, no la original.") in plano(
-        celda02("taller-intro"))
+    assert ("Como en el bloque 4, `ml.polinomio` escala $x$ por omisión: $\\Phi$ usa $x$ "
+            "llevada a $[-1,1]$, y sus columnas x, x^2, … muestran esa $x$ escalada, no la "
+            "original.") in plano(celda02("taller-intro"))
 
 
 def test_r3_nb02_bloque_5_uniforme_y_el_futuro_segun_el_interruptor():
@@ -1286,8 +1286,9 @@ def test_r3_nb02_bloque_5_uniforme_y_el_futuro_segun_el_interruptor():
     assert ("y en el futuro (pasos 60 a 79), a un paso si el interruptor está "
             "encendido.") in plano(celda02("bloque-5-mira"))
     codigo = _r2_codigo02()
-    assert 'FUTURO = {True: "a un paso en el futuro", False: "en el futuro"}' in codigo
-    assert "{FUTURO[anterior]} = " in codigo and "a un paso en el futuro = " not in codigo
+    # el print dice «a un paso» solo con la columna del tiempo anterior
+    assert "{'a un paso ' * anterior}en el \"" in codigo
+    assert "a un paso en el futuro = " not in codigo
 
 
 def test_r3_nb02_bloque_6_siempre_1_en_su_frase():

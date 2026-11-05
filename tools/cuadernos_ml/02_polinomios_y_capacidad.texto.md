@@ -341,8 +341,8 @@ Elegir un modelo supone apostar por ciertas formas del proceso.
 `ml.taller(datos, clase=1, phi=ml.polinomio(4), N_max=15)`.
 Mira la nube con $f$, la curva de capacidad y la matriz $\Phi$ de la
 representación elegida, junto con sus errores y su piso.
-Como en el bloque 4, con «escalar x» $\Phi$ usa $x$ llevada a $[-1,1]$: sus
-columnas x, x^2, … muestran esa $x$ escalada, no la original.
+Como en el bloque 4, `ml.polinomio` escala $x$ por omisión: $\Phi$ usa $x$
+llevada a $[-1,1]$, y sus columnas x, x^2, … muestran esa $x$ escalada, no la original.
 El taller aproxima $R$ con otra muestra grande, así que puede diferir en el
 segundo decimal del que da el bloque 2.
 
