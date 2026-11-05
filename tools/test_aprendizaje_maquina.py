@@ -5307,3 +5307,23 @@ def test_taller_y_galeria_de_la_clase_5_corren(monkeypatch):
                   "(4) CV", "(5) Alarma de fuga", "MCC en el despliegue", "largo plazo"):
         assert marca in texto
     assert 5 in ml.ANALISIS_TALLER
+
+
+# === Revisión del lote c5 (Codex) ===
+
+
+def test_adversarial_categoricas_no_regalan_el_origen():
+    # Codificar por orden de aparición en la tabla unida numeraba primero las categorías
+    # de df_a: dos muestras iid de 10 000 categorías daban «señal» con MCC 0.95.
+    rng = np.random.default_rng(0)
+    a = pd.DataFrame({"c": rng.integers(0, 10_000, 600).astype(str),
+                      "x": rng.standard_normal(600)})
+    b = pd.DataFrame({"c": rng.integers(0, 10_000, 150).astype(str),
+                      "x": rng.standard_normal(150)})
+    r = ml.validacion_adversarial(a, b)
+    assert r.senal == "sin señal" and abs(r.mcc) < 0.1
+    # y una categoría nueva frecuente en df_b sí se ve
+    a = pd.DataFrame({"zona": rng.choice(["norte", "centro"], 600)})
+    b = pd.DataFrame({"zona": rng.choice(["norte", "centro", "sur"], 150)})
+    r = ml.validacion_adversarial(a, b)
+    assert r.senal == "señal" and r.mcc > 0.3

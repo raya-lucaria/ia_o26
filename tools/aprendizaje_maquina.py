@@ -7121,17 +7121,25 @@ def _columnas_adversariales(df_a, df_b, columnas):
     return cols
 
 
-def _matriz_adversarial(union):
-    partes = []
+def _matriz_adversarial(union, a_idx, v_idx):
+    """Las matrices (ajuste, validación) del pliegue. Una categórica se codifica con el
+    orden de sus valores en el pliegue de ajuste (nunca con el orden de aparición en la
+    tabla unida, que pone primero las categorías de df_a y regala el origen); un valor
+    que el ajuste no vio queda como faltante."""
+    pa, pv = [], []
     for c in union.columns:
         s = union[c]
-        if pd.api.types.is_numeric_dtype(s):
-            partes.append(s.to_numpy(float))
+        if pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s):
+            v = pd.to_numeric(s, errors="coerce").to_numpy(float)
+            pa.append(v[a_idx])
+            pv.append(v[v_idx])
         else:
-            codigo = pd.factorize(s)[0].astype(float)
-            codigo[codigo < 0] = np.nan
-            partes.append(codigo)
-    return np.column_stack(partes)
+            sa, sv = s.iloc[a_idx], s.iloc[v_idx]
+            vistos = sorted(pd.unique(sa.dropna()), key=lambda u: (type(u).__name__, str(u)))
+            codigo = {u: float(i) for i, u in enumerate(vistos)}
+            pa.append(sa.map(codigo).to_numpy(float))
+            pv.append(sv.map(codigo).to_numpy(float))
+    return np.column_stack(pa), np.column_stack(pv)
 
 
 def _clasificador_adversarial(familia, semilla, pesos=None):
@@ -7183,8 +7191,10 @@ def validacion_adversarial(df_a, df_b, columnas=None, k=5, semilla=0, particion=
     estratificados por origen, como pliegues(como="grupo", estratificar=True) sobre la
     tabla unida: ningún grupo cruza el pliegue. familia: "bosque" (poco profundo, por
     omisión: ve interacciones) o "logistica" (solo diferencias lineales). columnas nunca
-    incluye t, grupo, y ni identificadores; una categórica se codifica por número y un
-    faltante se llena con la mediana del pliegue de ajuste. Ve solo x: un cambio de f
+    incluye t, grupo, y ni identificadores; una categórica se codifica por número dentro
+    de cada pliegue, con el orden de sus valores en el ajuste (una categoría que el ajuste
+    no vio cuenta como faltante), y un faltante se llena con la mediana del pliegue de
+    ajuste. Ve solo x: un cambio de f
     le es invisible. Desde: 1.6 (clase 5).
     Ejemplo: r = ml.validacion_adversarial(datos.ent, datos.despliegue.sample(150, random_state=0))
     """
@@ -7207,7 +7217,6 @@ def validacion_adversarial(df_a, df_b, columnas=None, k=5, semilla=0, particion=
         part = pliegues(tabla, k, como="grupo", semilla=semilla, estratificar=True)
     else:
         part = _particion(tabla, particion, k, semilla)
-    X = _matriz_adversarial(union)
     prob = np.full(len(o), np.nan)
     pred = np.zeros(len(o), int)
     validada = np.zeros(len(o), bool)
@@ -7217,7 +7226,7 @@ def validacion_adversarial(df_a, df_b, columnas=None, k=5, semilla=0, particion=
         if len(np.unique(oa)) < 2:
             raise ValueError("un pliegue de ajuste trae un solo origen: usa particion="
                              '"estratificado" o más filas')
-        Xa, Xv = X[a_idx].copy(), X[v_idx].copy()
+        Xa, Xv = _matriz_adversarial(union, a_idx, v_idx)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             med = np.nanmedian(Xa, axis=0)
