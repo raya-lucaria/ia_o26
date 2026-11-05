@@ -244,7 +244,9 @@ cuenta en el proceso recursivo; allí la comparación es con los pasos futuros.
 
 **Mira.** Con el seno, los puntos son datos; compara el polinomio con la curva verde de $f$ y lee `R_zona` para la franja gris exterior.
 Con «recursivo», el eje horizontal ordena los pasos: 60 de entrenamiento como
-puntos llenos y 19 siguientes como círculos huecos; la línea predice a un paso.
+puntos llenos y 19 siguientes como círculos huecos; la línea es la recta en $x$ o,
+con el interruptor encendido, la predicción a un paso con el tiempo anterior
+observado.
 Lo impreso da primero $L_{\text{ent}}$ sobre la serie dibujada y después el
 error esperado, aproximado con series nuevas del mismo proceso: dentro
 (pasos 0 a 59) y a un paso en el futuro (pasos 60 a 79).

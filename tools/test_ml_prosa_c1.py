@@ -1147,3 +1147,8 @@ def test_r2_nb02_ninguna_salida_usa_t():
     assert "paso t" not in codigo and "crece con t" not in codigo
     assert 'xlabel="paso (x crece con el tiempo)"' in codigo
     assert "x crece con el tiempo" in codigo
+
+
+def test_r2_nb02_la_recta_en_x_no_va_a_un_paso():
+    assert "la línea predice a un paso" not in plano(celda02("bloque-5-mira"))
+    assert 'False: "recta en x"' in _r2_codigo02()
