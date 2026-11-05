@@ -32,7 +32,9 @@ def bloque_1(modelo, sigma, donde, semilla):
     m = ml.ajustar(datos, phi=ml.columnas("x1"))
     df = datos.val if donde == "validación" else datos.ent
     e = df["y"] - m.predecir(df)
-    hist = ml.dibujar_tres_paneles(m, df).axes[1]      # el panel del medio
+    vista, hist = ml.dibujar_tres_paneles(m, df).axes[:2]
+    lim = (min(*vista.get_xlim(), *vista.get_ylim()), max(*vista.get_xlim(), *vista.get_ylim()))
+    vista.set_xlim(lim); vista.set_ylim(lim)        # ŷ y y con los mismos límites
     hist.axvspan(e.mean() - e.std(), e.mean() + e.std(), color="0.6", alpha=0.3)
     hist.axvline(0, ls="--", color="0.3"); hist.axvline(e.mean(), color="0.1")
     plt.show()
@@ -107,16 +109,16 @@ RUIDOS_B3 = {"normal": ml.normal(), "t3": ml.t_student(3),
              "pareto": ml.pareto(1.5), "cauchy": ml.cauchy()}
 
 
-def _datos_b3(ruido, donde):
+def _datos_b3(ruido, donde, semilla):
     if donde == "x":     # la cola vive en x: x lognormal, f curva, ruido normal
-        return ml.proceso(n=1000, x={"x": ml.lognormal(0, 1)}, semilla=SEMILLA,
+        return ml.proceso(n=1000, x={"x": ml.lognormal(0, 1)}, semilla=semilla,
                           f=lambda d: 2 + np.exp(d.x / 3), ruido=ml.normal(0, 0.5))
     return ml.proceso(n=1000, x={"x": ml.uniforme(0, 1)}, f=lambda d: 2 + 3 * d.x,
-                      ruido=RUIDOS_B3[ruido], semilla=SEMILLA)
+                      ruido=RUIDOS_B3[ruido], semilla=semilla)
 
 
-def bloque_3(ruido, que, donde):
-    datos = _datos_b3(ruido, donde)
+def bloque_3(ruido, que, donde, semilla):
+    datos = _datos_b3(ruido, donde, semilla)
     m, val = ml.ajustar(datos), datos.val       # una recta en los dos casos
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 3.8))
     if donde == "x":                            # la vista 3: e contra x
@@ -139,6 +141,7 @@ ml.laboratorio(
                                         "valores absolutos (MAE)": "absoluto"}),
     donde=ml.selector("dónde vive la cola", {"en el ruido": "ruido",
                                              "en x (ruido normal)": "x"}),
+    semilla=ml.deslizador("semilla", 0, 9, 1, SEMILLA),
 )
 
 # %% [texto] bloque-3-mira
@@ -207,13 +210,14 @@ def _fab_b5(corr):
                              con_realidad=False)
 
 
-TABLAS_B5 = {}                                  # cada correlación, una vez
+TABLAS_B5 = {}                                  # cada (correlación, semilla), una vez
 
 
-def bloque_5(corr, donde):
-    if corr not in TABLAS_B5:
-        TABLAS_B5[corr] = ml.beta_repetido(_fab_b5(corr), None, 200, semilla=SEMILLA)
-    t = TABLAS_B5[corr]
+def bloque_5(corr, donde, semilla):
+    if (corr, semilla) not in TABLAS_B5:
+        TABLAS_B5[corr, semilla] = ml.beta_repetido(_fab_b5(corr), None, 200,
+                                                    semilla=semilla)
+    t = TABLAS_B5[corr, semilla]
     x1, x2 = PUNTOS_B5[donde]
     y_gorro = t["1"] + t["x1"] * x1 + t["x2"] * x2
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4))
@@ -233,6 +237,7 @@ ml.laboratorio(
                       {"dentro de la nube: x1 = x2 = 1": "dentro",
                        "fuera de la diagonal de los datos: x1 = 1, x2 = −1": "fuera"},
                       "dentro"),
+    semilla=ml.deslizador("semilla", 0, 9, 1, SEMILLA),
 )
 
 # %% [texto] bloque-5-mira

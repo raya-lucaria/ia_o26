@@ -98,7 +98,8 @@ m = ml.ajustar(datos, phi=PHI, mu=mu_hat, penalizacion=PENALIZACION)
 verdadero = ml.beta_verdadero(datos, PHI)
 comparar = pd.DataFrame({"β̂": m.beta_gorro, "verdadero": verdadero})
 print(comparar.loc[UTILES + ["x7", "x8"]].round(3).to_string())
-print(f"coeficientes ≠ 0: {int((m.beta_gorro.drop('1') != 0).sum())} de {J}")
+print(f"coeficientes ≠ 0 (ajuste con entrenamiento, {len(datos.ent)} filas):"
+      f" {int((m.beta_gorro.drop('1') != 0).sum())} de {J}")
 
 
 def otra_muestra(s):                  # el mismo proceso, otra semilla
@@ -152,6 +153,9 @@ d, ee = ml.diferencia_pareada(l_mod, l_med)
 print(f"diferencia pareada «modelo − media» en prueba: {d:.3f} (EE {ee:.3f});"
       f" le gana por más de 2 EE: {'sí' if d + 2 * ee < 0 else 'no'}")
 print(f"R (despliegue, 100 000 obs.) = {ml.riesgo(final, datos):.3f}")
+print(f"coeficientes ≠ 0 del modelo final (reajuste con ent ∪ val,"
+      f" {len(datos.ent) + len(datos.val)} filas): "
+      f"{int((final.beta_gorro.drop('1') != 0).sum())} de {J}")
 
 # %% [texto] bloque-6-mira
 

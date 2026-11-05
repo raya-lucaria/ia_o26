@@ -906,6 +906,24 @@ def selecciones_mu_cv(penalizacion="l1"):
 
 
 @functools.lru_cache(maxsize=None)
+def curvas_mu_cv():
+    """F15 y la tabla de P2 §6: por cada μ de la rejilla, las pendientes distintas
+    de cero y R del modelo que describe la página, el REAJUSTE con ent ∪ val
+    (Seleccion.modelo con con="cv"), no el ajuste de 180 filas. L_ent va aparte
+    (cifras_c3_mu_cv()["L_ent"]), con el ajuste de entrenamiento."""
+    import pandas as pd
+    ml = _ml()
+    d = datos_muchas()
+    desarrollo = pd.concat([d.ent, d.val])
+    nz, R = {}, {}
+    for mu, cons in _MEMO.candidatos("l1").items():
+        m = cons(desarrollo)
+        nz[mu] = int((m.beta_gorro.drop("1") != 0).sum())
+        R[mu] = float(ml.riesgo(m, d))
+    return {"no_ceros": nz, "R": R, "filas": len(desarrollo)}
+
+
+@functools.lru_cache(maxsize=None)
 def cifras_c3_mu_cv():
     """P2 §6, F15: μ que elige L_ent, la del mínimo de CV5 y la de un EE, con su
     CV5 ± EE, no ceros y R; L_prueba ± 2 EE del modelo final (un EE), abierta una

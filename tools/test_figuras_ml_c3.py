@@ -115,6 +115,9 @@ def _cifras_esperadas(ident):
     if ident == "ml-c3-diana-beta":
         c = q(cif.cifras_c3_diana)
         return [c["omitida"], c["endogena"]]
+    if ident == "ml-c3-interaccion-plano":
+        c = q(cif.cifras_c3_interaccion)
+        return [c["L_val_sin"], c["L_val_con"]]
     if ident == "ml-c3-colineal-prediccion":
         c = q(cif.cifras_c3_colineal)
         return [c["desv_beta1_0"], c["desv_beta1_99"], c["desv_y_dentro_99"], c["desv_y_fuera_99"]]

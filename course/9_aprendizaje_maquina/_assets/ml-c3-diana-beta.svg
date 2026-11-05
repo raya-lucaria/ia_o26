@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="644" viewBox="0 0 388.8 417.6" role="img" aria-label="Cuatro nubes de 200 estimaciones de beta 1 y beta 2; la cruz verde es el coeficiente estructural (1, 1) y la cian el promedio: correcta centrada; omitida corrida a 1.59; colineal alargada; endógena corrida a 1.50"><title>La diana de los coeficientes</title><rect x="0" y="0" width="388.8" height="417.6" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="644" viewBox="0 0 388.8 417.6" role="img" aria-label="Cuatro nubes de 200 estimaciones de beta 1 y beta 2; la cruz verde es el coeficiente estructural (1, 1) y el rombo cian el promedio: correcta centrada; omitida corrida a 1.59; colineal alargada; endógena corrida a 1.50"><title>La diana de los coeficientes</title><rect x="0" y="0" width="388.8" height="417.6" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -406,30 +406,6 @@ L 3 3
      <use xlink:href="#m9cdbfae006" x="116.978843" y="98.730238" style="fill: #64dce3; stroke: #64dce3; stroke-width: 1.2"/>
     </g>
    </g>
-   <g id="promedio">
-    <defs>
-     <path id="m9aa74c7e5d" d="M -11 0 
-L 11 0 
-M 0 11 
-L 0 -11 
-" style="stroke: #64dce3; stroke-width: 3"/>
-    </defs>
-    <g clip-path="url(#peef5793940)">
-     <use xlink:href="#m9aa74c7e5d" x="116.270668" y="98.522229" style="fill: #64dce3; stroke: #64dce3; stroke-width: 3"/>
-    </g>
-   </g>
-   <g id="verdadero">
-    <defs>
-     <path id="m6db596b22a" d="M -11 0 
-L 11 0 
-M 0 11 
-L 0 -11 
-" style="stroke: #a9e88f; stroke-width: 3"/>
-    </defs>
-    <g clip-path="url(#peef5793940)">
-     <use xlink:href="#m6db596b22a" x="116.245" y="98.39" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
-    </g>
-   </g>
    <g id="patch_3">
     <path d="M 42.95 171.685 
 L 42.95 25.095 
@@ -452,6 +428,19 @@ L 189.54 25.095
    </g>
    <g id="text_13">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="116.245" y="19.095" transform="rotate(-0 116.245 19.095)">correcto</text>
+   </g>
+   <g id="promedio">
+    <defs>
+     <path id="m4fe73439ce" d="M -0 8.485281 
+L 8.485281 0 
+L 0 -8.485281 
+L -8.485281 -0 
+z
+" style="stroke: #64dce3; stroke-width: 2.6; stroke-linejoin: miter"/>
+    </defs>
+    <g clip-path="url(#peef5793940)">
+     <use xlink:href="#m4fe73439ce" x="116.270668" y="98.522229" style="fill: #2e1945; stroke: #64dce3; stroke-width: 2.6; stroke-linejoin: miter"/>
+    </g>
    </g>
    <g id="legend_1">
     <g id="patch_7">
@@ -477,19 +466,31 @@ z
     </g>
     <g id="line2d_12">
      <g>
-      <use xlink:href="#m9aa74c7e5d" x="112.545938" y="146.815859" style="fill: #64dce3; stroke: #64dce3; stroke-width: 3"/>
+      <use xlink:href="#m4fe73439ce" x="112.545938" y="146.815859" style="fill: #2e1945; stroke: #64dce3; stroke-width: 2.6; stroke-linejoin: miter"/>
      </g>
     </g>
     <g id="text_15">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="127.845938" y="149.790859" transform="rotate(-0 127.845938 149.790859)">promedio</text>
     </g>
     <g id="line2d_13">
+     <defs>
+      <path id="m6db596b22a" d="M -11 0 
+L 11 0 
+M 0 11 
+L 0 -11 
+" style="stroke: #a9e88f; stroke-width: 3"/>
+     </defs>
      <g>
       <use xlink:href="#m6db596b22a" x="112.545938" y="159.292266" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
      </g>
     </g>
     <g id="text_16">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="127.845938" y="162.267266" transform="rotate(-0 127.845938 162.267266)">verdadero</text>
+    </g>
+   </g>
+   <g id="verdadero">
+    <g clip-path="url(#peef5793940)">
+     <use xlink:href="#m6db596b22a" x="116.245" y="98.39" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
     </g>
    </g>
   </g>
@@ -858,16 +859,6 @@ z
      <use xlink:href="#m9cdbfae006" x="328.14014" y="100.901914" style="fill: #64dce3; stroke: #64dce3; stroke-width: 1.2"/>
     </g>
    </g>
-   <g id="promedio">
-    <g clip-path="url(#padc3a6b777)">
-     <use xlink:href="#m9aa74c7e5d" x="323.179288" y="98.507177" style="fill: #64dce3; stroke: #64dce3; stroke-width: 3"/>
-    </g>
-   </g>
-   <g id="verdadero">
-    <g clip-path="url(#padc3a6b777)">
-     <use xlink:href="#m6db596b22a" x="305.785" y="98.39" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
-    </g>
-   </g>
    <g id="patch_9">
     <path d="M 232.49 171.685 
 L 232.49 25.095 
@@ -890,6 +881,16 @@ L 379.08 25.095
    </g>
    <g id="text_29">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="305.785" y="19.095" transform="rotate(-0 305.785 19.095)">omitida correlacionada</text>
+   </g>
+   <g id="promedio">
+    <g clip-path="url(#padc3a6b777)">
+     <use xlink:href="#m4fe73439ce" x="323.179288" y="98.507177" style="fill: #2e1945; stroke: #64dce3; stroke-width: 2.6; stroke-linejoin: miter"/>
+    </g>
+   </g>
+   <g id="verdadero">
+    <g clip-path="url(#padc3a6b777)">
+     <use xlink:href="#m6db596b22a" x="305.785" y="98.39" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
+    </g>
    </g>
   </g>
   <g id="axes_3">
@@ -1257,16 +1258,6 @@ z
      <use xlink:href="#m9cdbfae006" x="92.556689" y="282.131036" style="fill: #64dce3; stroke: #64dce3; stroke-width: 1.2"/>
     </g>
    </g>
-   <g id="promedio">
-    <g clip-path="url(#p42dc3661a7)">
-     <use xlink:href="#m9aa74c7e5d" x="115.043526" y="301.364102" style="fill: #64dce3; stroke: #64dce3; stroke-width: 3"/>
-    </g>
-   </g>
-   <g id="verdadero">
-    <g clip-path="url(#p42dc3661a7)">
-     <use xlink:href="#m6db596b22a" x="116.245" y="302.33" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
-    </g>
-   </g>
    <g id="patch_14">
     <path d="M 42.95 375.625 
 L 42.95 229.035 
@@ -1289,6 +1280,16 @@ L 189.54 229.035
    </g>
    <g id="text_42">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="116.245" y="223.035" transform="rotate(-0 116.245 223.035)">colineal</text>
+   </g>
+   <g id="promedio">
+    <g clip-path="url(#p42dc3661a7)">
+     <use xlink:href="#m4fe73439ce" x="115.043526" y="301.364102" style="fill: #2e1945; stroke: #64dce3; stroke-width: 2.6; stroke-linejoin: miter"/>
+    </g>
+   </g>
+   <g id="verdadero">
+    <g clip-path="url(#p42dc3661a7)">
+     <use xlink:href="#m6db596b22a" x="116.245" y="302.33" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
+    </g>
    </g>
   </g>
   <g id="axes_4">
@@ -1656,16 +1657,6 @@ z
      <use xlink:href="#m9cdbfae006" x="321.079527" y="302.624655" style="fill: #64dce3; stroke: #64dce3; stroke-width: 1.2"/>
     </g>
    </g>
-   <g id="promedio">
-    <g clip-path="url(#p1353322015)">
-     <use xlink:href="#m9aa74c7e5d" x="320.466229" y="302.444514" style="fill: #64dce3; stroke: #64dce3; stroke-width: 3"/>
-    </g>
-   </g>
-   <g id="verdadero">
-    <g clip-path="url(#p1353322015)">
-     <use xlink:href="#m6db596b22a" x="305.785" y="302.33" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
-    </g>
-   </g>
    <g id="patch_19">
     <path d="M 232.49 375.625 
 L 232.49 229.035 
@@ -1688,6 +1679,16 @@ L 379.08 229.035
    </g>
    <g id="text_55">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="305.785" y="223.035" transform="rotate(-0 305.785 223.035)">endógena</text>
+   </g>
+   <g id="promedio">
+    <g clip-path="url(#p1353322015)">
+     <use xlink:href="#m4fe73439ce" x="320.466229" y="302.444514" style="fill: #2e1945; stroke: #64dce3; stroke-width: 2.6; stroke-linejoin: miter"/>
+    </g>
+   </g>
+   <g id="verdadero">
+    <g clip-path="url(#p1353322015)">
+     <use xlink:href="#m6db596b22a" x="305.785" y="302.33" style="fill: #a9e88f; stroke: #a9e88f; stroke-width: 3"/>
+    </g>
    </g>
   </g>
  </g>

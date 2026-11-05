@@ -197,6 +197,127 @@ def test_los_guiones_no_tienen_secciones_vacias(ruta):
     assert partes, f"{ruta.name}: sin secciones"
     vacias = [p.splitlines()[0] for p in partes if not "\n".join(p.splitlines()[1:]).strip()]
     assert not vacias, f"{ruta.name}: secciones vacías {vacias}"
+# Revisión c3 r1 (D-009.5): cada cifra atada a la FRASE que la cita, no solo a
+# su sección. El ancla es un fragmento literal que aparece una sola vez en la
+# página; la cifra tiene que estar en su párrafo (o en su renglón, si el ancla
+# es una fila de tabla).
+def _unidad(texto, ancla):
+    assert texto.count(ancla) == 1, f"el ancla {ancla!r} aparece {texto.count(ancla)} veces"
+    renglones = texto.splitlines()
+    i = next(k for k, r in enumerate(renglones) if ancla in r)
+    if renglones[i].lstrip().startswith("|"):
+        return renglones[i]
+    a = i
+    while a > 0 and renglones[a - 1].strip():
+        a -= 1
+    b = i
+    while b + 1 < len(renglones) and renglones[b + 1].strip():
+        b += 1
+    return "\n".join(renglones[a:b + 1])
+
+
+def frases_p1():
+    m = c.cifras_c3_mismo_rmse()["cita"]
+    e = c.cifras_c3_escala_y()["cita"]
+    s = c.cifras_c3_senal_debil()["cita"]
+    co = c.cifras_c3_colas()["cita"]
+    o = c.cifras_c3_omitida_caso1()["cita"]
+    en = c.cifras_c3_endogena()["cita"]
+    di = c.cifras_c3_diana()["cita"]
+    cl = c.cifras_c3_colineal()["cita"]
+    it = c.cifras_c3_interaccion()["cita"]
+    ej = c.cifras_c3_ejercicios()
+    return [
+        ("Ambas tienen RMSE de validación", [m["rmse_val"]]),
+        ("todo está en el ancho", [f"{ej['cancelan']['L']:g}"]),
+        ("RMSE/desviación vale", [e["rmse_media"], e["rmse_mediana"], e["desv_y_ent"],
+                                  e["rmse_sobre_desv"], e["mejora"]]),
+        ("Caso 11: diferencia pareada", [e["dif_pareada"], e["ee_dif"], e["n_val"]]),
+        ("Con señal débil, $f=0.75x$", [s["rmse_modelo"], s["rmse_media"], s["raiz_piso"],
+                                       s["mejora"], s["dif_pareada"], s["ee_dif"]]),
+        ("el cociente máximo/mínimo", [co["normal"], co["pareto"], co["cauchy"]]),
+        ("La omitida centra", [di["omitida"], di["endogena"]]),
+        ("la simulación da", [o["beta1_a"]]),
+        ("sin el producto,", [o["beta1_b"]]),
+        ("el coeficiente de $x_2x_3", [o["beta_c_x1"], o["beta_c_x2x3"], o["L_val_c"]]),
+        ("el piso con lo visible es", [o["piso_visible"]]),
+        ("elimina la silla", [it["L_val_sin"], it["L_val_con"]]),
+        ("La cuenta da 2.5", [en["cuenta"], en["media_beta1"], en["L_val"], en["piso"]]),
+        ("La desviación de $\\widehat y$ es", [cl["desv_y_dentro_99"], cl["desv_y_fuera_99"],
+                                              cl["desv_beta1_0"], cl["desv_beta1_99"]]),
+        ("veces mayor", [f"{ej['colineal']['razon']:.1f}", f"{ej['colineal']['desv_09']:.3f}"]),
+    ]
+
+
+def frases_p2():
+    r = c.cifras_c3_recta_apoyo()["cita"]
+    g = c.cifras_c3_regiones()["cita"]
+    g12 = c.cifras_c3_grado12()["cita"]
+    v = c.cifras_c3_grado12_vistas()["cita"]
+    pa = c.cifras_c3_pareja()["cita"]
+    rc = c.cifras_c3_ridge_colineal()["cita"]
+    es = c.cifras_c3_estandarizar()["cita"]
+    mu = c.cifras_c3_mu_cv()["cita"]
+    k = ("grande", "medio", "chico")
+    sin_x2 = es["sin_x2"].replace(" × 10^", "\\times10^")
+    return [
+        ("la recta de pendiente", [r["d"], "-" + r["mu"]]),
+        ("ridge llega a", [g["l2"]["beta1"], g["l2"]["beta2"], g["l2"]["mu"], g["l1"]["mu"],
+                           g["elastica"]["beta1"], g["elastica"]["beta2"], g["elastica"]["mu"]]),
+        ("| $L_{\\text{val}}$, en 12 filas", [g12["L_val"][x] for x in k]),
+        ("| $R$, muestra enorme", [g12["R"][x] for x in k]),
+        ("| Centro de residuales", [v[x]["centro"] for x in k]),
+        ("| Ancho de residuales", [v[x]["ancho"] for x in k]),
+        ("El $R$ de B,", [g12["R"]["medio"]]),
+        ("lasso conserva $x_1$", [pa["l1"]["x1"], pa["l1"]["x6"]]),
+        ("La elástica conserva ambas", [pa["elastica"]["x1"]]),
+        ("su media pasa de", [rc["sin"]["desv"], rc["ridge"]["desv"], rc["sin"]["media"],
+                              rc["ridge"]["media"]]),
+        ("fuera de la figura", [sin_x2]),
+        ("| Mínimo |", [mu["mu_min"], mu["cv_min"], mu["ee_min"], mu["no_ceros_min"]]),
+        ("| Un EE |", [mu["mu_un_ee"], mu["cv_un_ee"], mu["ee_un_ee"], mu["no_ceros_un_ee"]]),
+        ("Sus riesgos son", [mu["R_min"], mu["R_un_ee"]]),
+        ("Al abrir la prueba una vez", [mu["L_prueba"], mu["dos_ee_prueba"]]),
+        ("La diferencia pareada modelo − media es", [mu["dif_prueba"], mu["ee_dif_prueba"]]),
+    ]
+
+
+@pytest.mark.parametrize("ruta,frases", [(P1, "frases_p1"), (P2, "frases_p2")])
+def test_cada_cifra_esta_en_la_frase_que_la_cita(ruta, frases):
+    texto = pagina(ruta)
+    for ancla, cifras in globals()[frases]():
+        comprobar(_unidad(texto, ancla), cifras, f"{ruta.name} «{ancla}»")
+
+
+
+def _bloque(texto, ident):
+    i = texto.index("{#" + ident)
+    return texto[i:texto.index("\n:::", i)]
+
+
+def test_p1_h1_del_ejercicio_final_fija_el_ruido_independiente():
+    """Revisión c3 r1: «el ruido crece con |x1|» no basta para que el signo de e
+    no siga a x2 (ε = σ(x1)·signo(x1x2)·U cumple H1 y da la silla de H2). H1 tiene
+    que decir ε = σ(x1)·Z con Z independiente de las entradas."""
+    ej = _bloque(pagina(P1), "ml-c3-ej-final-leer-el-error")
+    assert r"\sigma(x_1)" in ej and "independiente de $x_1$ y $x_2$" in ej, ej
+
+
+def test_el_intercepto_solo_garantiza_el_centro_en_entrenamiento():
+    """Revisión c3 r1: con semilla 0 los centros de validación del grado 12 son
+    −0.17, −0.52 y 3.56; el intercepto libre solo fija ē = 0 en entrenamiento."""
+    for ruta in (P2, GUIONES / "07_el_lagrangeano_en_accion.texto.md"):
+        texto = pagina(ruta)
+        assert "mantiene el centro" not in texto, ruta.name
+        assert "en entrenamiento" in texto, ruta.name
+
+
+def test_la_monotonia_en_mu_admite_empates():
+    """Revisión c3 r1: las desigualdades del teorema son no estrictas."""
+    teo = _bloque(pagina(P2), "ml-c3-teo-monotonia-mu")
+    assert "siempre prefiere" not in teo and "empates" in teo, teo
+
+
 # --- fin tramo rapido ---
 
 

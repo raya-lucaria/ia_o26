@@ -199,7 +199,7 @@ L 352.939409 138.360742
 L 362.54992 136.271838 
 L 363.703182 136.005537 
 L 363.703182 136.005537 
-" clip-path="url(#p8cbf26ad9a)" style="fill: none; stroke: #f04cff; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p8cbf26ad9a)" style="fill: none; stroke: #f04cff; stroke-width: 3.6; stroke-linecap: square"/>
    </g>
    <g id="minimo-0">
     <defs>
@@ -261,7 +261,7 @@ L 347.941943 127.363058
 L 356.014773 124.281622 
 L 363.703182 121.118026 
 L 363.703182 121.118026 
-" clip-path="url(#p8cbf26ad9a)" style="fill: none; stroke: #a8ff5a; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p8cbf26ad9a)" style="fill: none; stroke-dasharray: 7.4,3.2; stroke-dashoffset: 0; stroke: #a8ff5a; stroke-width: 2"/>
    </g>
    <g id="minimo-0.5">
     <defs>
@@ -337,7 +337,7 @@ L 355.245932 84.70094
 L 361.78108 78.376911 
 L 363.703182 76.455491 
 L 363.703182 76.455491 
-" clip-path="url(#p8cbf26ad9a)" style="fill: none; stroke: #55ddff; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p8cbf26ad9a)" style="fill: none; stroke-dasharray: 12.8,3.2,2,3.2; stroke-dashoffset: 0; stroke: #55ddff; stroke-width: 2"/>
    </g>
    <g id="minimo-2">
     <defs>
@@ -386,37 +386,50 @@ L 379.08 22.92
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="209.935" y="16.92" transform="rotate(-0 209.935 16.92)">ridge: + μβ²</text>
    </g>
    <g id="legend_1">
+    <g id="patch_7">
+     <path d="M 174.794141 67.149219 
+L 245.075859 67.149219 
+Q 246.775859 67.149219 246.775859 65.449219 
+L 246.775859 28.87 
+Q 246.775859 27.17 245.075859 27.17 
+L 174.794141 27.17 
+Q 173.094141 27.17 173.094141 28.87 
+L 173.094141 65.449219 
+Q 173.094141 67.149219 174.794141 67.149219 
+z
+" style="fill: #2e1945; stroke: #78419e; stroke-linejoin: miter"/>
+    </g>
     <g id="line2d_13">
-     <path d="M 316.178672 34.053672 
-L 324.678672 34.053672 
-L 333.178672 34.053672 
-" style="fill: none; stroke: #f04cff; stroke-width: 2; stroke-linecap: square"/>
+     <path d="M 176.494141 34.053672 
+L 184.994141 34.053672 
+L 193.494141 34.053672 
+" style="fill: none; stroke: #f04cff; stroke-width: 3.6; stroke-linecap: square"/>
     </g>
     <g id="text_15">
-     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="339.978672" y="37.028672" transform="rotate(-0 339.978672 37.028672)">μ = 0</text>
+     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="200.294141" y="37.028672" transform="rotate(-0 200.294141 37.028672)">μ = 0: Lₑₙₜ</text>
     </g>
     <g id="line2d_14">
-     <path d="M 316.178672 46.530078 
-L 324.678672 46.530078 
-L 333.178672 46.530078 
-" style="fill: none; stroke: #a8ff5a; stroke-width: 2; stroke-linecap: square"/>
+     <path d="M 176.494141 46.530078 
+L 184.994141 46.530078 
+L 193.494141 46.530078 
+" style="fill: none; stroke-dasharray: 7.4,3.2; stroke-dashoffset: 0; stroke: #a8ff5a; stroke-width: 2"/>
     </g>
     <g id="text_16">
-     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="339.978672" y="49.505078" transform="rotate(-0 339.978672 49.505078)">μ = 0.5</text>
+     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="200.294141" y="49.505078" transform="rotate(-0 200.294141 49.505078)">μ = 0.5</text>
     </g>
     <g id="line2d_15">
-     <path d="M 316.178672 59.006484 
-L 324.678672 59.006484 
-L 333.178672 59.006484 
-" style="fill: none; stroke: #55ddff; stroke-width: 2; stroke-linecap: square"/>
+     <path d="M 176.494141 59.006484 
+L 184.994141 59.006484 
+L 193.494141 59.006484 
+" style="fill: none; stroke-dasharray: 12.8,3.2,2,3.2; stroke-dashoffset: 0; stroke: #55ddff; stroke-width: 2"/>
     </g>
     <g id="text_17">
-     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="339.978672" y="61.981484" transform="rotate(-0 339.978672 61.981484)">μ = 2</text>
+     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="200.294141" y="61.981484" transform="rotate(-0 200.294141 61.981484)">μ = 2</text>
     </g>
    </g>
   </g>
   <g id="axes_2">
-   <g id="patch_7">
+   <g id="patch_8">
     <path d="M 40.79 334.96 
 L 379.08 334.96 
 L 379.08 205.26 
@@ -565,7 +578,7 @@ L 347.941943 318.490909
 L 356.014773 316.141538 
 L 363.703182 313.685099 
 L 363.703182 313.685099 
-" clip-path="url(#pbdb8c4d267)" style="fill: none; stroke: #f04cff; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#pbdb8c4d267)" style="fill: none; stroke: #f04cff; stroke-width: 3.6; stroke-linecap: square"/>
    </g>
    <g id="minimo-0">
     <g clip-path="url(#pbdb8c4d267)">
@@ -614,7 +627,7 @@ L 352.170568 309.38633
 L 360.243398 306.465036 
 L 363.703182 305.140962 
 L 363.703182 305.140962 
-" clip-path="url(#pbdb8c4d267)" style="fill: none; stroke: #a8ff5a; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#pbdb8c4d267)" style="fill: none; stroke-dasharray: 7.4,3.2; stroke-dashoffset: 0; stroke: #a8ff5a; stroke-width: 2"/>
    </g>
    <g id="minimo-0.5">
     <g clip-path="url(#pbdb8c4d267)">
@@ -662,7 +675,7 @@ L 353.70825 284.881745
 L 362.1655 280.358692 
 L 363.703182 279.508551 
 L 363.703182 279.508551 
-" clip-path="url(#pbdb8c4d267)" style="fill: none; stroke: #55ddff; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#pbdb8c4d267)" style="fill: none; stroke-dasharray: 12.8,3.2,2,3.2; stroke-dashoffset: 0; stroke: #55ddff; stroke-width: 2"/>
    </g>
    <g id="minimo-2">
     <g clip-path="url(#pbdb8c4d267)">
@@ -674,22 +687,22 @@ L 363.703182 279.508551
 L 209.935 205.26 
 " clip-path="url(#pbdb8c4d267)" style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
-   <g id="patch_8">
+   <g id="patch_9">
     <path d="M 40.79 334.96 
 L 40.79 205.26 
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="patch_9">
+   <g id="patch_10">
     <path d="M 379.08 334.96 
 L 379.08 205.26 
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="patch_10">
+   <g id="patch_11">
     <path d="M 40.79 334.96 
 L 379.08 334.96 
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="patch_11">
+   <g id="patch_12">
     <path d="M 40.79 205.26 
 L 379.08 205.26 
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
@@ -698,32 +711,45 @@ L 379.08 205.26
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="209.935" y="199.26" transform="rotate(-0 209.935 199.26)">lasso: + μ|β|</text>
    </g>
    <g id="legend_2">
+    <g id="patch_13">
+     <path d="M 174.794141 249.489219 
+L 245.075859 249.489219 
+Q 246.775859 249.489219 246.775859 247.789219 
+L 246.775859 211.21 
+Q 246.775859 209.51 245.075859 209.51 
+L 174.794141 209.51 
+Q 173.094141 209.51 173.094141 211.21 
+L 173.094141 247.789219 
+Q 173.094141 249.489219 174.794141 249.489219 
+z
+" style="fill: #2e1945; stroke: #78419e; stroke-linejoin: miter"/>
+    </g>
     <g id="line2d_26">
-     <path d="M 316.178672 216.393672 
-L 324.678672 216.393672 
-L 333.178672 216.393672 
-" style="fill: none; stroke: #f04cff; stroke-width: 2; stroke-linecap: square"/>
+     <path d="M 176.494141 216.393672 
+L 184.994141 216.393672 
+L 193.494141 216.393672 
+" style="fill: none; stroke: #f04cff; stroke-width: 3.6; stroke-linecap: square"/>
     </g>
     <g id="text_30">
-     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="339.978672" y="219.368672" transform="rotate(-0 339.978672 219.368672)">μ = 0</text>
+     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="200.294141" y="219.368672" transform="rotate(-0 200.294141 219.368672)">μ = 0: Lₑₙₜ</text>
     </g>
     <g id="line2d_27">
-     <path d="M 316.178672 228.870078 
-L 324.678672 228.870078 
-L 333.178672 228.870078 
-" style="fill: none; stroke: #a8ff5a; stroke-width: 2; stroke-linecap: square"/>
+     <path d="M 176.494141 228.870078 
+L 184.994141 228.870078 
+L 193.494141 228.870078 
+" style="fill: none; stroke-dasharray: 7.4,3.2; stroke-dashoffset: 0; stroke: #a8ff5a; stroke-width: 2"/>
     </g>
     <g id="text_31">
-     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="339.978672" y="231.845078" transform="rotate(-0 339.978672 231.845078)">μ = 0.5</text>
+     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="200.294141" y="231.845078" transform="rotate(-0 200.294141 231.845078)">μ = 0.5</text>
     </g>
     <g id="line2d_28">
-     <path d="M 316.178672 241.346484 
-L 324.678672 241.346484 
-L 333.178672 241.346484 
-" style="fill: none; stroke: #55ddff; stroke-width: 2; stroke-linecap: square"/>
+     <path d="M 176.494141 241.346484 
+L 184.994141 241.346484 
+L 193.494141 241.346484 
+" style="fill: none; stroke-dasharray: 12.8,3.2,2,3.2; stroke-dashoffset: 0; stroke: #55ddff; stroke-width: 2"/>
     </g>
     <g id="text_32">
-     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="339.978672" y="244.321484" transform="rotate(-0 339.978672 244.321484)">μ = 2</text>
+     <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="200.294141" y="244.321484" transform="rotate(-0 200.294141 244.321484)">μ = 2</text>
     </g>
    </g>
   </g>

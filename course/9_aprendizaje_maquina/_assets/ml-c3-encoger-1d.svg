@@ -197,13 +197,13 @@ L -3.5 0
     <path d="M 81.014455 265.794545 
 L 312.323545 34.485455 
 L 312.323545 34.485455 
-" clip-path="url(#p91ba68a653)" style="fill: none; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.4"/>
+" clip-path="url(#p91ba68a653)" style="fill: none; stroke-dasharray: 1.4,2.1; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.4"/>
    </g>
    <g id="solucion-l2">
     <path d="M 81.014455 207.967273 
 L 312.323545 92.312727 
 L 312.323545 92.312727 
-" clip-path="url(#p91ba68a653)" style="fill: none; stroke: #f04cff; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p91ba68a653)" style="fill: none; stroke: #f04cff; stroke-width: 2.4; stroke-linecap: square"/>
    </g>
    <g id="solucion-l1">
     <path d="M 81.014455 246.518788 
@@ -211,7 +211,7 @@ L 177.393242 150.14
 L 215.944758 150.14 
 L 312.323545 53.761212 
 L 312.323545 53.761212 
-" clip-path="url(#p91ba68a653)" style="fill: none; stroke: #a8ff5a; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p91ba68a653)" style="fill: none; stroke-dasharray: 8.88,3.84; stroke-dashoffset: 0; stroke: #a8ff5a; stroke-width: 2.4"/>
    </g>
    <g id="solucion-elastica">
     <path d="M 81.014455 220.817778 
@@ -219,7 +219,7 @@ L 187.031121 150.14
 L 206.306879 150.14 
 L 312.323545 79.462222 
 L 312.323545 79.462222 
-" clip-path="url(#p91ba68a653)" style="fill: none; stroke: #55ddff; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p91ba68a653)" style="fill: none; stroke-dasharray: 15.36,3.84,2.4,3.84; stroke-dashoffset: 0; stroke: #55ddff; stroke-width: 2.4"/>
    </g>
    <g id="line2d_15">
     <path d="M 69.449 150.14 
@@ -250,11 +250,24 @@ L 323.889 22.92
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="196.669" y="16.92" transform="rotate(-0 196.669 16.92)">μ = 1, ρ = 0.5</text>
    </g>
    <g id="legend_1">
+    <g id="patch_7">
+     <path d="M 75.399 79.625625 
+L 163.383297 79.625625 
+Q 165.083297 79.625625 165.083297 77.925625 
+L 165.083297 28.87 
+Q 165.083297 27.17 163.383297 27.17 
+L 75.399 27.17 
+Q 73.699 27.17 73.699 28.87 
+L 73.699 77.925625 
+Q 73.699 79.625625 75.399 79.625625 
+z
+" style="fill: #2e1945; stroke: #78419e; stroke-linejoin: miter"/>
+    </g>
     <g id="line2d_16">
      <path d="M 77.099 34.053672 
 L 85.599 34.053672 
 L 94.099 34.053672 
-" style="fill: none; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.4"/>
+" style="fill: none; stroke-dasharray: 1.4,2.1; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 1.4"/>
     </g>
     <g id="text_18">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="100.899" y="37.028672" transform="rotate(-0 100.899 37.028672)">sin regularizar</text>
@@ -263,7 +276,7 @@ L 94.099 34.053672
      <path d="M 77.099 46.530078 
 L 85.599 46.530078 
 L 94.099 46.530078 
-" style="fill: none; stroke: #f04cff; stroke-width: 2; stroke-linecap: square"/>
+" style="fill: none; stroke: #f04cff; stroke-width: 2.4; stroke-linecap: square"/>
     </g>
     <g id="text_19">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="100.899" y="49.505078" transform="rotate(-0 100.899 49.505078)">ridge (l2)</text>
@@ -272,7 +285,7 @@ L 94.099 46.530078
      <path d="M 77.099 59.006484 
 L 85.599 59.006484 
 L 94.099 59.006484 
-" style="fill: none; stroke: #a8ff5a; stroke-width: 2; stroke-linecap: square"/>
+" style="fill: none; stroke-dasharray: 8.88,3.84; stroke-dashoffset: 0; stroke: #a8ff5a; stroke-width: 2.4"/>
     </g>
     <g id="text_20">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="100.899" y="61.981484" transform="rotate(-0 100.899 61.981484)">lasso (l1)</text>
@@ -281,7 +294,7 @@ L 94.099 59.006484
      <path d="M 77.099 71.482891 
 L 85.599 71.482891 
 L 94.099 71.482891 
-" style="fill: none; stroke: #55ddff; stroke-width: 2; stroke-linecap: square"/>
+" style="fill: none; stroke-dasharray: 15.36,3.84,2.4,3.84; stroke-dashoffset: 0; stroke: #55ddff; stroke-width: 2.4"/>
     </g>
     <g id="text_21">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="100.899" y="74.457891" transform="rotate(-0 100.899 74.457891)">elástica</text>

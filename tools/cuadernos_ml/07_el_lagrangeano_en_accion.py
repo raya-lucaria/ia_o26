@@ -35,6 +35,7 @@ def bloque_1(region, fraccion, mostrar_mu, curva):
     fig, ejes = plt.subplots(1, 2 if curva else 1, figsize=(11 if curva else 5.5, 5))
     a1 = ejes[0] if curva else ejes
     ml.dibujar_regiones(DATOS_B1, PHI_B1, region, d, mostrar_mu=mostrar_mu, ax=a1)
+    a1.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2)   # fuera de la región
     if curva:                                   # 40 presupuestos > 0, sin el 0
         ds = np.linspace(0.05, 1.2, 40) * OMEGA[region]
         ml.dibujar_presupuesto(DATOS_B1, PHI_B1, region, ds, d_marcado=d, ax=ejes[1])
@@ -62,7 +63,7 @@ ml.laboratorio(
 
 # %% [codigo] bloque-2-juega
 #@title Juega: encoger o anular
-rng = np.random.default_rng(0)
+rng = np.random.default_rng(SEMILLA)
 X_B2 = rng.normal(size=200)
 X_B2 = (X_B2 - X_B2.mean()) / np.sqrt(np.mean((X_B2 - X_B2.mean()) ** 2))
 U_B2 = rng.normal(size=200)
@@ -133,7 +134,7 @@ def bloque_3(log_mu, semilla, que):
 
 
 ml.laboratorio(bloque_3, log_mu=ml.deslizador("log₁₀ μ", -6.0, 2.0, 0.5, -2.0),
-               semilla=ml.deslizador("semilla", 0, 9, 1, 0),
+               semilla=ml.deslizador("semilla", 0, 9, 1, SEMILLA),
                que=ml.selector("qué ver", {"el ajuste": "ajuste",
                                            "las tres vistas en validación": "vistas",
                                            "la U contra μ": "u"}, "ajuste"))
@@ -182,7 +183,7 @@ ml.laboratorio(
                                               "red elástica": "elastica"}, "l1"),
     rho=ml.selector("ρ (solo red elástica)", [0.2, 0.5, 0.8], 0.5),
     gemela=ml.interruptor("una útil con una gemela casi idéntica", False),
-    semilla=ml.deslizador("semilla", 0, 9, 1, 0),
+    semilla=ml.deslizador("semilla", 0, 9, 1, SEMILLA),
 )
 
 # %% [texto] bloque-4-mira
@@ -193,7 +194,8 @@ ml.laboratorio(
 
 # %% [codigo] bloque-5-juega
 #@title Juega: ¿quién elige μ?
-DATOS_B5 = ml.muchas_variables(n=300, J=50, utiles=5, semilla=0)   # los del bloque 4
+DATOS_B5 = ml.muchas_variables(n=300, J=50, utiles=5, semilla=SEMILLA)   # los del bloque 4
+DESARROLLO_B5 = pd.concat([DATOS_B5.ent, DATOS_B5.val])   # donde se reajusta con CV
 MUS_B5 = [float(m) for m in np.logspace(-4, 3, 30)]
 BENCH_B5 = ml.benchmarks(DATOS_B5, DATOS_B5.despliegue).loc["media", "cuadratica"]
 _AJ, _SEL_B5 = {}, {}
@@ -215,10 +217,13 @@ def seleccion_b5(con, regla, p):              # simple → complejo: μ de mayor
 
 def bloque_5(con, regla, p):
     sel = seleccion_b5(con, regla, p)
-    mods = {mu: c(DATOS_B5.ent) for mu, c in _candidatos(p).items()}
+    ent = {mu: c(DATOS_B5.ent) for mu, c in _candidatos(p).items()}
+    # conteos y R del modelo que se usa: con CV, el reajuste con ent ∪ val
+    base, filas = ((DESARROLLO_B5, "ent ∪ val") if con == "cv" else (DATOS_B5.ent, "ent"))
+    mods = {mu: c(base) for mu, c in _candidatos(p).items()}
     nz = {mu: str(int((m.beta_gorro.drop("1") != 0).sum())) for mu, m in mods.items()}
     R = {mu: ml.riesgo(m, DATOS_B5) for mu, m in mods.items()}
-    Le = None if con == "ent" else {mu: ml.L(m, DATOS_B5.ent) for mu, m in mods.items()}
+    Le = None if con == "ent" else {mu: ml.L(m, DATOS_B5.ent) for mu, m in ent.items()}
     ml.dibujar_cv(sel, R=R, L_ent=Le, benchmark=BENCH_B5, log=True,
                   anotar={mu: nz[mu] for mu in MUS_B5[::4]})
     plt.show()
@@ -226,7 +231,8 @@ def bloque_5(con, regla, p):
     v, ee = sel.tabla.set_index("candidato").loc[mu, ["valor", "ee"]]
     valor = f"CV₅ = {v:.3f} ± {ee:.3f}" if con == "cv" else f"L_{con} = {v:.3f}"
     print(f"μ elegida = {mu:.3g} · {valor} · {nz[mu]} coeficientes ≠ 0 · "
-          f"R = {R[mu]:.3f} · la media (benchmark): R = {BENCH_B5:.3f}")
+          f"R = {R[mu]:.3f} (ajuste con {filas}, {len(base)} filas) · "
+          f"la media (benchmark): R = {BENCH_B5:.3f}")
 
 ml.laboratorio(bloque_5, con=ml.selector("elige con", {"L_ent": "ent", "L_val": "val",
                                                       "CV con k = 5": "cv"}, "ent"),
@@ -263,7 +269,7 @@ def bloque_6(factor_x2, estandarizar, factor_y, log_mu):
     escala = {"x2": factor_x2, "y": factor_y}
     datos = ml.proceso(n=300, x={"x1": ml.normal(), "x2": ml.normal()},
                        f=lambda d: 1 + d.x1 + d.x2, ruido=ml.normal(0, 1),
-                       escala=escala, semilla=0)
+                       escala=escala, semilla=SEMILLA)
     phi = ml.columnas("x1", "x2")
     phi = ml.estandarizar(phi) if estandarizar else phi
     mu = float(10 ** log_mu)

@@ -68,7 +68,7 @@ def _plt():
     return matplotlib, plt
 
 
-def _grafica(dibujar, aria, titulo, alto_in, filas=1, columnas=1, **subplots):
+def _grafica(dibujar, aria, titulo, alto_in, filas=1, columnas=1, rect=None, **subplots):
     """Arma una figura de datos con la paleta del sitio y la deja como SVG.
 
     Parte de los rcParams de fabrica: la figura no depende de quien corrio
@@ -92,11 +92,15 @@ def _grafica(dibujar, aria, titulo, alto_in, filas=1, columnas=1, **subplots):
         for ax in fig.axes:                     # ticks menores de un eje log incluidos
             for t in ax.get_xminorticklabels() + ax.get_yminorticklabels():
                 t.set_fontsize(max(t.get_fontsize(), 8))
+        from matplotlib.lines import Line2D
+        for ln in fig.findobj(Line2D):          # un marcador hueco salía negro en el SVG:
+            if str(ln.get_markerfacecolor()).lower() == "none":   # se rellena del panel
+                ln.set_markerfacecolor(PANEL)     # y va debajo de los datos, que se ven
+                ln.set_zorder(1.5)
         for t in fig.findobj(Text):
             if t.get_fontsize() < 8:
                 t.set_fontsize(8)
-        for ax in fig.axes:
-            ley = ax.get_legend()
+        for ley in [ax.get_legend() for ax in fig.axes] + list(fig.legends):
             if ley is not None:
                 for t in ley.get_texts():
                     t.set_fontsize(8.5)
@@ -104,7 +108,7 @@ def _grafica(dibujar, aria, titulo, alto_in, filas=1, columnas=1, **subplots):
                 ley.get_frame().set_facecolor(PANEL)
                 ley.get_frame().set_edgecolor(LINEA)
                 ley.get_frame().set_alpha(1.0)
-        fig.tight_layout()
+        fig.tight_layout(rect=rect)
         crudo = gen.svg_de_matplotlib(fig, aria, titulo=titulo, ancho=600)
     return _sin_opacidad(crudo)
 
@@ -135,6 +139,52 @@ def _num(v, d=2):
 
 def _titulo(ax, s):
     ax.set_title(s, color=TEXTO, fontsize=9.5)
+
+
+# Trazos para distinguir series sin depender del color (revisión c3 r1).
+TRAZOS = ("-", "--", "-.", ":", (0, (6, 2, 1, 2, 1, 2)))
+# Rótulos de ml_lab en ASCII -> con subíndice, como en la prosa.
+ROTULOS = {"L_ent": "Lₑₙₜ", "CV_k": "CV₅", "L_val": "L_val"}
+
+
+def _trazos(ax, gids, grosor=None):
+    """Da a las líneas con esos gid un trazo distinto cada una (y el grosor dado)."""
+    lineas = {ln.get_gid(): ln for ln in ax.get_lines()}
+    for i, gid in enumerate(gids):
+        if gid in lineas:
+            lineas[gid].set_linestyle(TRAZOS[i % len(TRAZOS)])
+            if grosor is not None:
+                lineas[gid].set_linewidth(grosor[i] if isinstance(grosor, (list, tuple)) else grosor)
+
+
+def _rotular(manejadores, rotulos):
+    return manejadores, [ROTULOS.get(r, r) for r in rotulos]
+
+
+def _rotulo_cv(r, nombre_minimo=None):
+    """Rótulos cortos para la leyenda de dibujar_cv (los de ml_lab no caben)."""
+    if r.startswith("elegido (mínimo)"):
+        return "mínimo de CV₅" + (f" ({nombre_minimo})" if nombre_minimo else "")
+    if r.startswith("elegido (un EE)"):
+        return "regla de un EE"
+    if r.startswith("R "):
+        return "R (muestra enorme)"
+    return ROTULOS.get(r, r)
+
+
+def _promedio_en_rombo(ax):
+    """El promedio de la diana como rombo hueco, distinto de la cruz (+) del
+    coeficiente estructural y de las equis de cada muestra: así no se
+    distinguen solo por el color (revisión c3 r1)."""
+    for ln in ax.get_lines():
+        if ln.get_gid() == "promedio":
+            ln.set_marker("D")
+            ln.set_markersize(12)
+            ln.set_markeredgewidth(2.6)
+            ln.set_markerfacecolor(PANEL)     # relleno del panel, encima de la nube
+            ln.set_zorder(4)
+        elif ln.get_gid() == "verdadero":
+            ln.set_zorder(6)
 
 
 # --- tramo rapido ---
@@ -209,7 +259,7 @@ def ml_c3_media_acumulada():
             f"Con ruido normal las líneas se juntan (cociente máximo entre mínimo a n = 10 000: "
             f"{c['cita']['normal']}); con Pareto de exponente 1.5 y con Cauchy no se juntan "
             f"(cocientes {c['cita']['pareto']} y {c['cita']['cauchy']}).")
-    return _grafica(dibujar, aria, "Una cola larga no se promedia", 6.6, filas=3)
+    return _grafica(dibujar, aria, "El MSE sin segundo momento", 6.6, filas=3)
 
 
 # ------------------------------------- F4 · ml-c3-fuentes-patologias (a mano) ---
@@ -272,12 +322,13 @@ def ml_c3_diana_beta():
             ax.set_xlim(-1.5, 3.5)
             ax.set_ylim(-1.5, 3.5)
             ax.set_aspect("equal", adjustable="box")
+            _promedio_en_rombo(ax)
             if ax.get_legend() is not None:
                 ax.get_legend().remove()
         ejes[0, 0].legend(loc="lower right")
 
     aria = ("Cuatro nubes de 200 estimaciones de beta 1 y beta 2; la cruz verde es el "
-            "coeficiente estructural (1, 1) y la cian el promedio: correcta centrada; "
+            "coeficiente estructural (1, 1) y el rombo cian el promedio: correcta centrada; "
             f"omitida corrida a {c['cita']['omitida']}; colineal alargada; endógena corrida a "
             f"{c['cita']['endogena']}")
     return _grafica(dibujar, aria, "La diana de los coeficientes", 5.8, filas=2, columnas=2)
@@ -298,11 +349,18 @@ def ml_c3_interaccion_plano():
             ml.dibujar_residuales_plano(m, d.val, "x1", "x2", ax=ax, tema="sitio")
             _titulo(ax, f"{t}: L val = {_num(ml.L(m, d.val))}")
             ax.set_aspect("equal", adjustable="box")
+            manejadores, _ = ax.get_legend_handles_labels()
+            if ax.get_legend() is not None:
+                ax.get_legend().remove()
+        # la leyenda, debajo de los dos paneles: dentro tapaba la nube
+        fig.legend(manejadores, ["residual e ≥ 0", "residual e < 0"], loc="lower center",
+                   ncol=2, frameon=True)
 
     aria = ("Residuales de validación en el plano x1, x2, con triángulo hacia arriba si son "
             "positivos y hacia abajo si son negativos: sin la columna x1·x2 forman una silla; "
             f"con ella, ruido sin forma; L val {_num(l_sin)} contra {_num(l_con)}")
-    return _grafica(dibujar, aria, "Una interacción es una columna más", 3.4, columnas=2)
+    return _grafica(dibujar, aria, "Una interacción es una columna más", 3.8, columnas=2,
+                    rect=(0, 0.1, 1, 1))
 
 
 # ------------------------------------------- F7 · ml-c3-colineal-prediccion ---
@@ -319,7 +377,7 @@ def ml_c3_colineal_prediccion():
         a.hist(t[0.99]["x1"], bins=bins, color=mezclar(CIAN, 0.55, PANEL), edgecolor=CIAN,
                label="corr 0.99")
         a.hist(t[0.0]["x1"], bins=bins, color=mezclar(ORO, 0.7, PANEL), edgecolor=ORO,
-               label="corr 0")
+               hatch="////", label="corr 0")
         a.axvline(1.0, color=VERDE, lw=2.5, label="β₁ estructural")
         a.set_xlabel("β̂₁ en 200 entrenamientos")
         a.legend(loc="upper left")
@@ -327,7 +385,7 @@ def ml_c3_colineal_prediccion():
         dentro = cif.prediccion_repetida(t[0.99], cif.DENTRO)
         fuera = cif.prediccion_repetida(t[0.99], cif.FUERA)
         b.hist(fuera, bins=bins, color=mezclar(ACENTO, 0.5, PANEL), edgecolor=ACENTO,
-               label="fuera: x1 = 1, x2 = −1")
+               hatch="////", label="fuera: x1 = 1, x2 = −1")
         b.hist(dentro, bins=bins, color=mezclar(CIAN, 0.55, PANEL), edgecolor=CIAN,
                label="dentro: x1 = x2 = 1")
         b.set_xlabel("ŷ con corr 0.99")
@@ -354,6 +412,11 @@ def ml_c3_un_coeficiente():
             ml.dibujar_encoger_1d(vista="objetivo", b=B_F8, mus=MUS_F8, penalizacion=pen,
                                   ax=ax, tema="sitio")
             _titulo(ax, t)
+            # μ = 0 es L_ent: la curva gruesa y continua; las otras, con trazo propio
+            _trazos(ax, [f"objetivo-{m:g}" for m in MUS_F8], grosor=[3.6, 2, 2])
+            manejadores, rotulos = ax.get_legend_handles_labels()
+            rotulos = ["μ = 0: Lₑₙₜ" if r == "μ = 0" else r for r in rotulos]
+            ax.legend(manejadores, rotulos, loc="upper center")
 
     umbral = 2 * B_F8
     aria = ("La pérdida de un coeficiente más el castigo, para μ = 0, 0.5 y 2, con la pendiente "
@@ -398,6 +461,10 @@ def ml_c3_encoger_1d():
     def dibujar(fig, ax):
         ml.dibujar_encoger_1d(vista="solucion", mu=1.0, ax=ax, tema="sitio")
         ax.set_aspect("equal", adjustable="box")
+        _trazos(ax, ["solucion-l2", "solucion-l1", "solucion-elastica"], grosor=2.4)
+        lineas = {ln.get_gid(): ln for ln in ax.get_lines()}
+        lineas["sin-regularizar"].set_linestyle((0, (1, 1.5)))
+        ax.legend(*ax.get_legend_handles_labels())
 
     aria = ("Pendiente penalizada contra la sin penalizar, μ = 1: ridge es una recta de "
             "pendiente 1/2; lasso vale 0 entre −0.5 y 0.5")
@@ -436,8 +503,12 @@ def ml_c3_grado_12_mu():
         _titulo(ejes[1, 1], "la U contra μ\n(mismos datos)")
         ejes[1, 1].set_yscale("log")
         ejes[1, 1].set_ylabel("L, CV₅ y R")
+        manejadores, rotulos = _rotular(*ejes[1, 1].get_legend_handles_labels())
         if ejes[1, 1].get_legend() is not None:
             ejes[1, 1].get_legend().remove()
+        # la leyenda del cuarto panel, bajo la figura: qué es cada marca
+        rotulos = [_rotulo_cv(r, "B") for r in rotulos]
+        fig.legend(manejadores, rotulos, loc="lower center", ncol=2, frameon=True)
 
     aria = ("Las entregas de la clase 2 con el mismo polinomio de grado 12: con μ 100 la recta "
             f"de la media; con μ {q['mu_medio']} una curva cercana a f; con μ 10⁻⁶ la curva "
@@ -445,7 +516,8 @@ def ml_c3_grado_12_mu():
             f"{q['R']['grande']}, {q['R']['medio']}, {q['R']['chico']}. Cuarto panel: contra μ, "
             f"L ent sube; CV 5 forma una U con fondo en μ = {q['mu_medio']}; R es enorme con μ "
             "chica, no es una U limpia en medio y sube con μ grande")
-    return _grafica(dibujar, aria, "El grado 12 con tres μ", 6.2, filas=2, columnas=2)
+    return _grafica(dibujar, aria, "El grado 12 con tres μ", 7.4, filas=2, columnas=2,
+                    rect=(0, 0.13, 1, 1))
 
 
 # ------------------------------------------------- F12 · ml-c3-trayectorias ---
@@ -461,15 +533,20 @@ def ml_c3_trayectorias():
             ml.dibujar_trayectorias(cif.tabla_trayectorias(pen), utiles=list(cif.UTILES),
                                     ax=ax, tema="sitio")
             _titulo(ax, t)
-            if ax.get_legend() is not None and pen != "l2":
+            _trazos(ax, [f"coef-{u}" for u in cif.UTILES])
+            manejadores, rotulos = ax.get_legend_handles_labels()
+            if ax.get_legend() is not None:
                 ax.get_legend().remove()
         for ax in ejes[:-1]:
             ax.set_xlabel("")
+        # la leyenda, bajo los tres paneles: en el de ridge tapaba x2 y las grises
+        fig.legend(manejadores, rotulos, loc="lower center", ncol=6, frameon=True)
 
     aria = ("Coeficientes contra μ en estos datos, 5 útiles en color y 45 espurias en gris: "
             "ridge no apaga ninguno; lasso apaga las útiles entre μ = "
             f"{c['cita']['primera_util']} y {c['cita']['ultima_util']}; la elástica en medio")
-    return _grafica(dibujar, aria, "Trayectorias de los coeficientes", 7.0, filas=3)
+    return _grafica(dibujar, aria, "Trayectorias de los coeficientes", 7.4, filas=3,
+                    rect=(0, 0.05, 1, 1))
 
 
 # ------------------------------------------------- F13 · ml-c3-ridge-colineal ---
@@ -487,6 +564,7 @@ def ml_c3_ridge_colineal():
             ax.set_xlim(-1.5, 3.5)
             ax.set_ylim(-1.5, 3.5)
             ax.set_aspect("equal", adjustable="box")
+            _promedio_en_rombo(ax)
             _titulo(ax, tt)
             if ax.get_legend() is not None:
                 ax.get_legend().remove()
@@ -516,11 +594,14 @@ def ml_c3_estandarizar():
                 # la pendiente de x2 está en unidades × 10⁶: se dibuja × 10⁶ para verla
                 tabla = tabla.copy()
                 tabla.loc[tabla["coeficiente"] == "x2", "valor"] *= 1e6
-                tabla.loc[tabla["coeficiente"] == "x2", "coeficiente"] = "x2 × 10⁶"
-            ml.dibujar_trayectorias(tabla, utiles=sorted(tabla["coeficiente"].unique()),
-                                    ax=ax, tema="sitio")
+                tabla.loc[tabla["coeficiente"] == "x2", "coeficiente"] = "10⁶ · β̂ de x2"
+            nombres = sorted(tabla["coeficiente"].unique())
+            ml.dibujar_trayectorias(tabla, utiles=nombres, ax=ax, tema="sitio")
             _titulo(ax, t)
+            _trazos(ax, [f"coef-{n}" for n in nombres], grosor=2.4)
+            ax.legend(*ax.get_legend_handles_labels())
         ejes[0].set_xlabel("")
+        ejes[0].set_ylabel("coeficiente (x2: × 10⁶)")
 
     q = c["cita"]
     aria = ("Dos variables igual de útiles, x2 en unidades × 10⁶: sin estandarizar x1 se "
@@ -537,26 +618,31 @@ def ml_c3_mu_cv():
     c = cif.cifras_c3_mu_cv()
     d = cif.datos_muchas()
     s = cif.selecciones_mu_cv()
-    nz = {}
-    import numpy as np
-    for mu, cons in cif._MEMO.candidatos("l1").items():
-        m = cons(d.ent)
-        nz[mu] = str(int((m.beta_gorro.drop("1") != 0).sum()))
-    anotar = {mu: v for i, (mu, v) in enumerate(sorted(nz.items())) if i % 4 == 0}
-    R = {mu: ml.riesgo(cons(d.ent), d) for mu, cons in cif._MEMO.candidatos("l1").items()}
+    curvas = cif.curvas_mu_cv()     # conteos y R del reajuste con ent ∪ val
+    nz = {mu: str(v) for mu, v in curvas["no_ceros"].items()}
+    marcadas = {c["mu_min"], c["mu_un_ee"]}
+    anotar = {mu: v for i, (mu, v) in enumerate(sorted(nz.items()))
+              if i % 4 == 0 or mu in marcadas}
 
     def dibujar(fig, ax):
-        ml.dibujar_cv(s["minimo"], R=R, L_ent=c["L_ent"], benchmark=c["R_media"], log=True,
-                      anotar=anotar, ax=ax, tema="sitio")
+        ml.dibujar_cv(s["minimo"], R=curvas["R"], L_ent=c["L_ent"], benchmark=c["R_media"],
+                      log=True, anotar=anotar, ax=ax, tema="sitio")
         ax.set_yscale("log")
+        ax.set_ylabel("pérdida cuadrática")
         _titulo(ax, "50 variables, lasso: quién elige μ")
+        manejadores, rotulos = ax.get_legend_handles_labels()
+        rotulos = [_rotulo_cv(r) for r in rotulos]
+        if ax.get_legend() is not None:
+            ax.get_legend().remove()
+        fig.legend(manejadores, rotulos, loc="lower center", ncol=3, frameon=True)
 
     q = c["cita"]
     aria = (f"L ent sube con μ; CV 5 mínima en μ = {q['mu_min']} con {q['no_ceros_min']} "
             "variables; la línea horizontal es el mínimo más un error estándar; de μ grande a "
             f"chica, el primer triángulo bajo esa línea es μ = {q['mu_un_ee']}, con "
             f"{q['no_ceros_un_ee']} variables; R en el elegido {q['R_un_ee']}")
-    return _grafica(dibujar, aria, "Elegir μ con validación cruzada", 4.4)
+    return _grafica(dibujar, aria, "Elegir μ con validación cruzada", 5.2,
+                    rect=(0, 0.17, 1, 1))
 
 
 # ---------------------------------------------- F16 · ml-c3-recta-de-apoyo ---

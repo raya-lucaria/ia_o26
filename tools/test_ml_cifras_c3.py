@@ -336,6 +336,20 @@ def test_mu_cv_mutacion_del_orden():
     assert m["mutacion_un_ee"] <= m["mu_min"] <= m["mu_un_ee"]
 
 
+def test_las_curvas_de_f15_salen_del_reajuste_que_cita_la_pagina():
+    """Revisión c3 r1 (H1): F15 contaba pendientes y medía R con el ajuste de
+    180 filas (24 pendientes en el mínimo) mientras la página cita el reajuste
+    con ent ∪ val (15). Las curvas de la figura son las del modelo citado."""
+    m = c.cifras_c3_mu_cv()
+    cur = c.curvas_mu_cv()
+    d = c.datos_muchas()
+    assert cur["filas"] == len(d.ent) + len(d.val)
+    for k in ("min", "un_ee"):
+        mu = m[f"mu_{k}"]
+        assert cur["no_ceros"][mu] == m[k]["no_ceros"]
+        assert cur["R"][mu] == pytest.approx(m[k]["R"])
+
+
 # ------------------------------------------------------------- ejercicios ---
 
 def test_cuentas_de_los_ejercicios():
