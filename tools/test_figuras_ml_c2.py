@@ -166,7 +166,9 @@ def test_el_aria_de_la_prueba_ruidosa_nombra_desviaciones_y_coberturas():
 def test_el_aria_del_optimismo_nombra_el_sesgo_y_los_porcentajes():
     import ml_cifras_c2 as c
     o, t = c.cifras_c2_optimismo(), aria("ml-c2-optimismo")
-    assert fig._num(o["sesgo_prueba"]) in t
+    # revision r3: los dos paneles con el mismo estadistico (la mediana)
+    assert fig._num(o["mediana_prueba"]) in t and fig._num(o["mediana_validacion"]) in t
+    assert fig._num(o["sesgo_prueba"]) not in t
     assert fig._pct(o["optimistas_prueba"]) in t and fig._pct(o["optimistas_validacion"]) in t
     assert "sin reajuste" in contenido("ml-c2-optimismo")
 
@@ -201,6 +203,48 @@ def test_el_pliegue_anomalo_rotula_un_pliegue_con_entrega_lejana():
     import ml_cifras_c2 as c
     p = c.cifras_c2_pliegue_anomalo()
     assert f"pliegue {p[8]['pliegue_max']}" in contenido("ml-c2-pliegue-anomalo")
+
+
+def test_el_pliegue_anomalo_rotula_los_dos_pliegues_con_entrega_lejana():
+    # revision r3: la prosa dice «son dos»; el titulo y los rotulos tambien
+    import ml_cifras_c2 as c
+    p = c.cifras_c2_pliegue_anomalo()
+    t = contenido("ml-c2-pliegue-anomalo")
+    assert len(p["pliegues_con_lejana"]) == 2
+    for m in p["pliegues_con_lejana"]:
+        assert f">pliegue {m}<" in t or f"pliegue {m}" in t
+        assert fig._num(p[8]["por_pliegue"][m - 1], 0) in aria("ml-c2-pliegue-anomalo")
+    assert "Dos pliegues que cargan" in t
+    # el grado 4 ya no rotula su pliegue minimo
+    assert t.count("pliegue 5") <= 1
+
+
+def test_la_estratificada_no_promete_marcas_que_no_dibuja():
+    t = contenido("ml-c2-estratificada")
+    assert "▲" not in t and "●" not in t
+    assert "amarillo" in t and "azul" in t
+
+
+def test_el_diagnostico_escribe_el_umbral_del_doble():
+    import ml_cifras_c2 as c
+    t = contenido("ml-c2-diagnostico")
+    assert c.UMBRAL_BRECHA == 2.0 and ("CV &gt; 2" in t or "CV > 2" in t)
+    assert "del doble" in aria("ml-c2-diagnostico")
+
+
+def test_la_prueba_miente_sin_marcador_sin_explicar():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    ml = fig.gen.ml_lab()
+    f, ax = plt.subplots()
+    t = fig.tabla_contratos()
+    ml.dibujar_contratos(t, ax=ax, tema="sitio")
+    antes = sum(ln.get_marker() not in (None, "None", "") and ln.get_gid() not in ("R", "benchmark")
+                for ln in ax.lines)
+    plt.close(f)
+    assert antes >= 1   # ml_lab sigue dibujandolo: la figura del sitio lo quita
+    assert "ln.remove()" in __import__("inspect").getsource(fig.ml_c2_prueba_miente)
 
 
 def test_la_estratificada_nombra_las_dos_fracciones():

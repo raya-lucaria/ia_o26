@@ -39,6 +39,8 @@ def bloque_1(N, n, semilla, ver_R):
     ml.dibujar_ajuste([modelo], datos, ax=a1)
     ml.dibujar_curva_capacidad(tabla, marcar=N, benchmark=bench if ver_R else None,
                                ax=a2)
+    if ver_R:  # R del grado 12 llega a miles: en escala lineal aplasta lo demás
+        a2.set_yscale("log")
     plt.show()
     ent = tabla[tabla["conjunto"] == "ent"].set_index("candidato")["L"]
     print(f"entrenamiento: el grado de menor L_ent es {int(ent.idxmin())}")

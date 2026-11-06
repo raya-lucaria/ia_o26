@@ -275,8 +275,8 @@ El grado 3 es el primero cuya media no supera el umbral.
 
 La media decidió, pero puede esconder fragilidad. Ahora cada triángulo es un pliegue, no un promedio; la altura mide pérdida en escala logarítmica.
 
-::: figure {#ml-c2-pliegue-anomalo title="Un pliegue que carga casi todo el error"}
-![Caso 16, cinco pliegues, un triángulo por pliegue y una raya en la media, para los grados 1, 4 y 8, en escala logarítmica. Con grado 1 los cinco quedan juntos: el mayor es 1.39 veces la mediana de los otros. Con grado 8, los pliegues 2 y 3, los que traen una entrega lejana, se disparan: el pliegue 3 da 88482, miles de veces la mediana de los otros.](../_assets/ml-c2-pliegue-anomalo.svg)
+::: figure {#ml-c2-pliegue-anomalo title="Dos pliegues que cargan casi todo el error"}
+![Caso 16, cinco pliegues, un triángulo por pliegue y una raya en la media, para los grados 1, 4 y 8, en escala logarítmica. Con grado 1 los cinco quedan juntos: el mayor es 1.39 veces la mediana de los otros. Con grado 8, los pliegues 2 y 3, los que traen una entrega lejana, se disparan: el pliegue 3 da 88482, miles de veces la mediana de los otros, y el pliegue 2 da 5991.](../_assets/ml-c2-pliegue-anomalo.svg)
 :::
 
 El promedio esconde qué pliegues cargan el error. En este caso son dos: los pliegues que traen una entrega lejana.
@@ -328,7 +328,7 @@ La composición también importa al clasificar. Cambiamos a un juguete de clasif
 Cada caja es un pliegue; cada marca, un positivo.
 
 ::: figure {#ml-c2-estratificada title="Pliegues al azar y estratificados"}
-![Sesenta casos con 6 positivos en cinco pliegues. Arriba, una partición al azar: positivos por pliegue 2, 2, 1, 0, 1. Abajo, la estratificada: 1, 1, 1, 1, 2. En 1000 particiones de cada método, al azar 88 % dejan algún pliegue sin positivos; estratificando, 0 %.](../_assets/ml-c2-estratificada.svg)
+![Sesenta casos con 6 positivos en cinco pliegues. Arriba, una partición al azar: positivos por pliegue 2, 2, 1, 0, 1. Abajo, la estratificada: 1, 1, 1, 1, 2. En 1000 particiones de cada método, al azar 88 % dejan algún pliegue sin positivos; estratificando, 0 %. En cada vuelta, las filas en azul ajustan, las amarillas validan y una estrella marca cada positivo.](../_assets/ml-c2-estratificada.svg)
 :::
 
 Al azar puede faltar la clase rara en un pliegue. Estratificar reparte sus casos: aquí cada pliegue recibe uno o dos positivos.

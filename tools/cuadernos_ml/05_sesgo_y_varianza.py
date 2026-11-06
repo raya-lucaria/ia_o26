@@ -99,8 +99,9 @@ ml.laboratorio(bloque_2, sigma=ml.selector("ruido σε", list(SIGMAS), 3.0),
 # %% [codigo] bloque-3-juega
 #@title Juega: más datos
 NS_B3 = [30, 60, 120, 240, 480, 960]
-fabrica_960 = lambda s: ml.PROCESOS["entregas_curvas"](
-    n=960, semilla=int(s), n_realidad=2000, fracciones=(1, 0, 0))
+fabrica_960 = lambda s: ml.PROCESOS["entregas_curvas"](  # una realidad por muestra
+    n=960, semilla=int(s), n_realidad=2000, semilla_realidad=int(s),
+    fracciones=(1, 0, 0))
 CURVA = ml.curva_aprendizaje(fabrica_960, {N: construir(N) for N in (1, 4, 10)},
                              ns=NS_B3, repeticiones=50, semilla=SEMILLA)
 ELEGIDO = ml.capacidad_elegida(fabrica_960, CANDIDATOS, ns=NS_B3, k=5, repeticiones=20,

@@ -225,7 +225,7 @@ Con 400 observaciones esperas $\mathrm{EE}=0.4$. Para llegar a 0.2 necesitas 160
 ## 4 · Ver el engaño de elegir con la prueba
 
 ::: figure {#ml-c2-optimismo title="El engaño de elegir con la prueba"}
-![Dos histogramas con 300 repeticiones del hilo: lo anunciado menos el riesgo real del grado elegido, sin reajuste. Arriba, eligiendo con la prueba: la nube se corre a la izquierda de 0, la media es −7.5 y 74 % de las repeticiones anuncian menos error del real. Abajo, eligiendo con validación y anunciando en prueba: la mediana queda en −0.6 y 56 % anuncian de menos. Los valores fuera de -30 a 20 se apilan en los bordes.](../_assets/ml-c2-optimismo.svg)
+![Dos histogramas con 300 repeticiones del hilo: lo anunciado menos el riesgo real del grado elegido, sin reajuste. Arriba, eligiendo con la prueba: la nube se corre a la izquierda de 0, la mediana es −3.2 y 74 % de las repeticiones anuncian menos error del real. Abajo, eligiendo con validación y anunciando en prueba: la mediana queda en −0.6 y 56 % anuncian de menos. Los valores fuera de -30 a 20 se apilan en los bordes.](../_assets/ml-c2-optimismo.svg)
 :::
 
 Cada barra cuenta repeticiones: nuevos datos, elección de grado y comparación de lo anunciado con el riesgo real. El eje horizontal muestra $L_{\text{prueba}}-R$; debajo de cero, anuncias menos error del que tendrás. Ambos paneles son sin reajuste: conservan el mismo entrenamiento; solo cambia quién elige el grado.

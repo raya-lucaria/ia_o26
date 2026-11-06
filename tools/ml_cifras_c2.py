@@ -19,6 +19,10 @@ Decisiones de ejecucion (bitacora/prog-c2.md, DECISION prog-c2-2):
   optimismo_por_seleccion tarda 0.7 s y el bloque 03·3 no cabe en 10 s.
   El error de Monte Carlo de R con 2000 observaciones es chico frente a las
   diferencias que se citan; la figura y el notebook usan la misma fabrica.
+  Salvo fabrica_curva (revision r3), esas 2000 filas son las mismas en todas
+  las repeticiones (semilla_realidad 0): su sesgo no promedia. En `fabrica`
+  (grado 4) es de unas 0.3 unidades de R; fabrica_curva sortea una realidad
+  por repeticion porque ahi el sesgo invertia L_ent y R.
 - Las repeticiones citadas son las del notebook (§10.12).
 
 Anclas por tramo (protocolo p5.2 §7.1): este modulo se escribe completo en
@@ -716,9 +720,18 @@ SEMILLAS_MAESTRAS = (0, 1000, 2000)
 
 
 def fabrica_curva(s):
-    """fabrica de 960 entregas (todas las filas: fracciones (1, 0, 0))."""
+    """fabrica de 960 entregas (todas las filas: fracciones (1, 0, 0)).
+
+    Revision r3 (H1): la realidad se sortea DE NUEVO en cada repeticion
+    (semilla_realidad = s). Con la muestra de 2000 fija (semilla_realidad 0 en
+    todas) la mediana de R del grado 1 salia 13.8 contra 14.9-15.0 con 200 000
+    filas, y la curva dibujaba L_ent ARRIBA de R desde n = 60, contra el
+    optimismo del entrenamiento (@ml-c1-teo-optimismo-entrenamiento). Con una
+    realidad por repeticion el error de Monte Carlo de R promedia en vez de
+    sumarse igual en las 50."""
     return _ml().PROCESOS["entregas_curvas"](n=max(NS_CURVA), semilla=int(s),
-                                             n_realidad=N_REALIDAD, fracciones=(1, 0, 0))
+                                             n_realidad=N_REALIDAD, semilla_realidad=int(s),
+                                             fracciones=(1, 0, 0))
 
 
 @lru_cache(maxsize=None)

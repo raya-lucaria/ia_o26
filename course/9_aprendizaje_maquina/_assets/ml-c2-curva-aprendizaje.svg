@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="711" viewBox="0 0 388.8 460.8" role="img" aria-label="Arriba, medianas de 50 muestras contra el número de entregas, de 30 a 960 en escala log: el riesgo R del grado 1 baja de 14.7 a 13.8 y se queda en 13.8, arriba del piso de 9.0; el del grado 10 empieza arriba de la recta y baja a 9.1 y 9.0, pegado al piso. Abajo, el grado que elige la CV 5 (mediana de 20 muestras) sube de 3 con 30 entregas a 10 con 960."><title>Más datos: a quién le ayudan</title><rect x="0" y="0" width="388.8" height="460.8" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="711" viewBox="0 0 388.8 460.8" role="img" aria-label="Arriba, medianas de 50 muestras contra el número de entregas, de 30 a 960 en escala log: el riesgo R del grado 1 baja de 15.6 a 14.9 y se queda en 14.9, arriba del piso de 9.0; el del grado 10 empieza arriba de la recta y baja a 9.2 y 9.1, pegado al piso. Abajo, el grado que elige la CV 5 (mediana de 20 muestras) sube de 3 con 30 entregas a 10 con 960."><title>Más datos: a quién le ayudan</title><rect x="0" y="0" width="388.8" height="460.8" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -193,12 +193,12 @@ z
     </g>
    </g>
    <g id="R-1">
-    <path d="M 69.393471 147.689073 
-L 127.287355 152.610114 
-L 185.18124 154.239558 
-L 243.075124 154.653533 
-L 300.969008 154.990979 
-L 358.862893 155.036253 
+    <path d="M 69.393471 139.806407 
+L 127.287355 142.878023 
+L 185.18124 145.221769 
+L 243.075124 145.349895 
+L 300.969008 145.552171 
+L 358.862893 145.530713 
 " clip-path="url(#pc986c4f8fd)" style="fill: none; stroke: #fff8ed; stroke-width: 2; stroke-linecap: square"/>
    </g>
    <g id="L_ent-10">
@@ -219,12 +219,12 @@ L 358.862893 196.529678
     </g>
    </g>
    <g id="R-10">
-    <path d="M 69.393471 114.412373 
-L 127.287355 178.466375 
-L 185.18124 188.344551 
-L 243.075124 192.683002 
-L 300.969008 193.925964 
-L 358.862893 194.92119 
+    <path d="M 69.393471 105.76801 
+L 127.287355 175.125378 
+L 185.18124 187.15366 
+L 243.075124 191.253021 
+L 300.969008 193.352349 
+L 358.862893 194.467528 
 " clip-path="url(#pc986c4f8fd)" style="fill: none; stroke-dasharray: 7.4,3.2; stroke-dashoffset: 0; stroke: #fff8ed; stroke-width: 2"/>
    </g>
    <g id="piso">
@@ -253,10 +253,10 @@ L 373.336364 19.08
 " style="fill: none; stroke: #4a3166; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_9">
-    <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #fff8ed" x="358.862893" y="157.243753" transform="rotate(-0 358.862893 157.243753)">  1</text>
+    <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #fff8ed" x="358.862893" y="147.738213" transform="rotate(-0 358.862893 147.738213)">  1</text>
    </g>
    <g id="text_10">
-    <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #fff8ed" x="358.862893" y="197.12869" transform="rotate(-0 358.862893 197.12869)">  10</text>
+    <text style="font-size: 8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #fff8ed" x="358.862893" y="196.675028" transform="rotate(-0 358.862893 196.675028)">  10</text>
    </g>
    <g id="legend_1">
     <g id="patch_7">

@@ -322,7 +322,7 @@ duplica entregas de 30 a 960, en escala logarítmica; el vertical mide pérdida 
 La línea punteada marca el piso del riesgo.
 
 ::: figure {#ml-c2-curva-aprendizaje title="Más datos: a quién le ayudan"}
-![Arriba, medianas de 50 muestras contra el número de entregas, de 30 a 960 en escala log: el riesgo R del grado 1 baja de 14.7 a 13.8 y se queda en 13.8, arriba del piso de 9.0; el del grado 10 empieza arriba de la recta y baja a 9.1 y 9.0, pegado al piso. Abajo, el grado que elige la CV 5 (mediana de 20 muestras) sube de 3 con 30 entregas a 10 con 960.](../_assets/ml-c2-curva-aprendizaje.svg)
+![Arriba, medianas de 50 muestras contra el número de entregas, de 30 a 960 en escala log: el riesgo R del grado 1 baja de 15.6 a 14.9 y se queda en 14.9, arriba del piso de 9.0; el del grado 10 empieza arriba de la recta y baja a 9.2 y 9.1, pegado al piso. Abajo, el grado que elige la CV 5 (mediana de 20 muestras) sube de 3 con 30 entregas a 10 con 960.](../_assets/ml-c2-curva-aprendizaje.svg)
 :::
 
 La recta se estanca: pasa de 14.7 con 30 entregas a 13.8 con 480 y con 960.
@@ -407,7 +407,7 @@ y la evolución de sus curvas, no solo la distancia al piso.
 Lee el árbol de arriba abajo con entrenamiento, CV y un *benchmark*: «la media de entrenamiento como punto de comparación; la clase 3 lo define».
 
 ::: figure {#ml-c2-diagnostico title="Diagnosticar con dos curvas y un benchmark"}
-![Árbol de diagnóstico con cuatro preguntas que se leen de arriba abajo. Uno: la brecha entre validación, o CV, y entrenamiento es grande; si sí, sobreajuste: menos capacidad o más datos. Dos: le gana al benchmark, la media de entrenamiento; en una validación que no eligió el modelo, la diferencia pareada baja de cero a más de dos errores estándar; con CV solo da señal o falta evidencia; si no, no aprende: otras variables o familias. Tres: subir el grado baja la CV más de un error estándar, una heurística; si sí, subajuste: más capacidad o mejor phi. Cuatro: la prueba imita el despliegue; si sí, listo; si no, rehacer la separación.](../_assets/ml-c2-diagnostico.svg)
+![Árbol de diagnóstico con cuatro preguntas que se leen de arriba abajo. Uno: la brecha entre validación, o CV, y entrenamiento es grande, es decir, la CV pasa del doble del error de entrenamiento; si sí, sobreajuste: menos capacidad o más datos. Dos: le gana al benchmark, la media de entrenamiento; en una validación que no eligió el modelo, la diferencia pareada baja de cero a más de dos errores estándar; con CV solo da señal o falta evidencia; si no, no aprende: otras variables o familias. Tres: subir el grado baja la CV más de un error estándar, una heurística; si sí, subajuste: más capacidad o mejor phi. Cuatro: la prueba imita el despliegue; si sí, listo; si no, rehacer la separación.](../_assets/ml-c2-diagnostico.svg)
 :::
 
 El subajuste se reconoce al bajar el error honesto con más flexibilidad.

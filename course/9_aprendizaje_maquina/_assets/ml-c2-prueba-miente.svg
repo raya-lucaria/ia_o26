@@ -424,24 +424,6 @@ L -2 0
      <text style="font-size: 13px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="25.01975" y="142.948" transform="rotate(-90 25.01975 142.948)">pérdida (escala log)</text>
     </g>
    </g>
-   <g id="estimado">
-    <defs>
-     <path id="m6d6f67759d" d="M -3.5 3.5 
-L 3.5 3.5 
-L 3.5 -3.5 
-L -3.5 -3.5 
-z
-" style="stroke: #ff87ad; stroke-linejoin: miter"/>
-    </defs>
-    <g clip-path="url(#p6c01fd6535)">
-     <use xlink:href="#m6d6f67759d" x="94.619229" y="192.144301" style="fill: #ff87ad; stroke: #ff87ad; stroke-linejoin: miter"/>
-     <use xlink:href="#m6d6f67759d" x="144.044206" y="141.312335" style="fill: #ff87ad; stroke: #ff87ad; stroke-linejoin: miter"/>
-     <use xlink:href="#m6d6f67759d" x="193.469183" y="117.860433" style="fill: #ff87ad; stroke: #ff87ad; stroke-linejoin: miter"/>
-     <use xlink:href="#m6d6f67759d" x="242.894161" y="252.01669" style="fill: #ff87ad; stroke: #ff87ad; stroke-linejoin: miter"/>
-     <use xlink:href="#m6d6f67759d" x="292.319138" y="174.979159" style="fill: #ff87ad; stroke: #ff87ad; stroke-linejoin: miter"/>
-     <use xlink:href="#m6d6f67759d" x="341.744115" y="189.053556" style="fill: #ff87ad; stroke: #ff87ad; stroke-linejoin: miter"/>
-    </g>
-   </g>
    <g id="R">
     <path d="M 73.860738 200.173958 
 L 93.630729 200.173958 

@@ -702,8 +702,8 @@ def ml_c2_optimismo():
 
     aria = (f"Dos histogramas con {o['repeticiones']} repeticiones del hilo: lo anunciado "
             "menos el riesgo real del grado elegido, sin reajuste. Arriba, eligiendo con la "
-            f"prueba: la nube se corre a la izquierda de 0, la media es "
-            f"{_num(o['sesgo_prueba'])} y {_pct(o['optimistas_prueba'])} de las repeticiones "
+            f"prueba: la nube se corre a la izquierda de 0, la mediana es "
+            f"{_num(o['mediana_prueba'])} y {_pct(o['optimistas_prueba'])} de las repeticiones "
             "anuncian menos error del real. Abajo, eligiendo con validación y anunciando en "
             f"prueba: la mediana queda en {_num(o['mediana_validacion'])} y "
             f"{_pct(o['optimistas_validacion'])} anuncian de menos. Los valores fuera de "
@@ -754,6 +754,11 @@ def ml_c2_prueba_miente():
                             .replace("más de lo mismo", "más de\nlo mismo")
                             .replace("pacientes nuevos", "pacientes\nnuevos")
                             for c, s in zip(t["contrato"], t["separacion"])], fontsize=8)
+        # revision r3: el marcador cuadrado que ml_lab pone sobre cada barra no se
+        # explicaba en ningun lado; la barra ya dice L_prueba
+        for ln in list(ax.lines):
+            if ln.get_gid() not in ("R", "benchmark") and ln.get_marker() not in (None, "None", ""):
+                ln.remove()
         ax.set_yscale("log")
         ax.set_ylim(1, 3000)
         ax.set_ylabel("pérdida (escala log)")
@@ -849,19 +854,31 @@ def ml_c2_pliegue_anomalo():
 
     def dibujar(fig, ax):
         ml.dibujar_cajas_pliegues(res, ax=ax, tema="sitio")
+        # revision r3: ml_lab rotula un pliegue por grado (el que mas se aleja); en
+        # el grado 4 era el minimo y en el 8 solo el 3. Se rotulan los pliegues con
+        # entrega lejana del grado 8 y el mayor del grado 1, que cita la prosa.
+        i8 = list(res).index(8)
+        for a in list(ax.texts):
+            if a.xy[0] != 0:
+                a.remove()
+        for m in p["pliegues_con_lejana"]:
+            ax.annotate(f"pliegue {m}", (i8, p[8]["por_pliegue"][m - 1]), xytext=(8, 0),
+                        textcoords="offset points", fontsize=8, color=TEXTO, va="center")
         ax.set_yscale("log")
         ax.set_xlabel("grado N")
         ax.set_ylabel("L de cada pliegue (escala log)")
         _leyenda(ax, loc="upper left", fontsize=8)
 
     lejanos = " y ".join(str(m) for m in p["pliegues_con_lejana"])
+    otro = next(m for m in p["pliegues_con_lejana"] if m != p[8]["pliegue_max"])
     aria = ("Caso 16, cinco pliegues, un triángulo por pliegue y una raya en la media, para "
             f"los grados 1, 4 y 8, en escala logarítmica. Con grado 1 los cinco quedan juntos: "
             f"el mayor es {_num(p[1]['cociente'], 2)} veces la mediana de los otros. Con grado "
             f"8, los pliegues {lejanos}, los que traen una entrega lejana, se disparan: el "
             f"pliegue {p[8]['pliegue_max']} da {_num(p[8]['por_pliegue'][p[8]['pliegue_max'] - 1], 0)}, "
-            f"miles de veces la mediana de los otros.")
-    return _grafica(dibujar, aria, "Un pliegue que carga casi todo el error", 3.6)
+            f"miles de veces la mediana de los otros, y el pliegue {otro} da "
+            f"{_num(p[8]['por_pliegue'][otro - 1], 0)}.")
+    return _grafica(dibujar, aria, "Dos pliegues que cargan casi todo el error", 3.6)
 
 
 # ---------------------------------------------- grafica: ml-c2-estratificada ---
@@ -892,12 +909,17 @@ def ml_c2_estratificada():
                          f"{', '.join(map(str, cuenta['azar' if clave == 'azar' else 'estr']))}"
                          f"\nen 1000 particiones, {_pct(e[clave])} con algún pliegue vacío",
                          color=TEXTO, fontsize=9)
+            # revision r3: ml_lab escribe «(● ajusta · ▲ valida)», pero las franjas
+            # solo usan color
+            ax.set_xlabel("filas de desarrollo (azul: ajusta · amarillo: valida · "
+                          "★ positivo)", fontsize=10)
 
     aria = ("Sesenta casos con 6 positivos en cinco pliegues. Arriba, una partición al azar: "
             f"positivos por pliegue {', '.join(map(str, cuenta['azar']))}. Abajo, la "
             f"estratificada: {', '.join(map(str, cuenta['estr']))}. En 1000 particiones de "
             f"cada método, al azar {_pct(e['azar'])} dejan algún pliegue sin positivos; "
-            f"estratificando, {_pct(e['estratificada'])}.")
+            f"estratificando, {_pct(e['estratificada'])}. En cada vuelta, las filas en azul "
+            "ajustan, las amarillas validan y una estrella marca cada positivo.")
     return _grafica(dibujar, aria, "Pliegues al azar y estratificados", 6.0, paneles=2)
 
 
@@ -1178,8 +1200,8 @@ def _pregunta(c, x, y, w, renglones, nota=None):
     for i, r in enumerate(renglones):
         c.append(tx(x + 14, y + 24 + 18 * i, r, tam=13, anclaje="start"))
     if nota:
-        c.append(texto(x + 14, y + 24 + 18 * len(renglones), nota, tam=12, color=SUAVE,
-                       anclaje="start"))
+        c.append(tx(x + 14, y + 24 + 18 * len(renglones), nota, tam=12, color=SUAVE,
+                    anclaje="start"))
     return alto
 
 
@@ -1192,7 +1214,7 @@ def ml_c2_diagnostico():
     xq, wq, xh, wh = 16, 350, 398, 186
     filas = [
         (66, [["1 · ¿Brecha "] + _L("val") + [" − "] + _L("ent") + [" (o CV − "]
-              + _L("ent") + [") grande?"]], None,
+              + _L("ent") + [") grande?"]], ["grande: la CV pasa del doble (CV > 2"] + _L("ent") + [")"],
          "sobreajuste", "menos capacidad, más datos", PRU),
         (160, [["2 · ¿Le gana al benchmark (la media de ent)?"],
                ["(a) en validación que no eligió: la"],
@@ -1231,7 +1253,8 @@ def ml_c2_diagnostico():
     c.append(texto(16, DG_H - 14, "baja el error honesto; el piso solo se ve en el simulador.",
                    tam=13, color=SUAVE, anclaje="start"))
     aria = ("Árbol de diagnóstico con cuatro preguntas que se leen de arriba abajo. Uno: la "
-            "brecha entre validación, o CV, y entrenamiento es grande; si sí, sobreajuste: "
+            "brecha entre validación, o CV, y entrenamiento es grande, es decir, la CV pasa "
+            "del doble del error de entrenamiento; si sí, sobreajuste: "
             "menos capacidad o más datos. Dos: le gana al benchmark, la media de "
             "entrenamiento; en una validación que no eligió el modelo, la diferencia pareada "
             "baja de cero a más de dos errores estándar; con CV solo da señal o falta "

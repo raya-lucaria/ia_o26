@@ -359,9 +359,25 @@ def test_numero_de_condicion_del_grado_12_con_36_entregas():
 def test_curva_aprendizaje_las_cifras_de_la_pagina():
     a = c.cifras_c2_curva_aprendizaje()
     assert a["piso"] == 9.0
-    assert {n: _r(a["R"][(1, n)], 1) for n in (30, 480, 960)} == {30: 14.7, 480: 13.8, 960: 13.8}
-    assert {n: _r(a["R"][(10, n)], 1) for n in (480, 960)} == {480: 9.1, 960: 9.0}
+    assert {n: _r(a["R"][(1, n)], 1) for n in (30, 480, 960)} == {30: 15.6, 480: 14.9, 960: 14.9}
+    assert {n: _r(a["R"][(10, n)], 1) for n in (480, 960)} == {480: 9.2, 960: 9.1}
     assert a["elegido"][30] == 3 and a["elegido"][960] == 10
+
+
+def test_curva_aprendizaje_L_ent_queda_debajo_de_R_en_cada_tamano():
+    # revision r3 (H1): con una sola realidad de 2000 filas para las 50 repeticiones,
+    # la mediana de R del grado 1 salia 13.8 y la curva dibujaba L_ent arriba de R
+    # desde n = 60, contra @ml-c1-teo-optimismo-entrenamiento. Con una realidad por
+    # repeticion (fabrica_curva) el orden vuelve en los dos grados y cada tamaño.
+    a = c.cifras_c2_curva_aprendizaje()
+    for N in c.GRADOS_CURVA:
+        for n in c.NS_CURVA:
+            assert a["L_ent"][(N, n)] < a["R"][(N, n)], (N, n)
+
+
+def test_fabrica_curva_sortea_una_realidad_por_repeticion():
+    import inspect
+    assert "semilla_realidad=int(s)" in inspect.getsource(c.fabrica_curva)
 
 
 def test_curva_aprendizaje_la_recta_se_estanca_y_el_10_baja_hacia_el_piso():
