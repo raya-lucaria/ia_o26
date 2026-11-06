@@ -81,7 +81,7 @@ for nombre, (kw, deriva) in ESC.items():
     d = ml.PROCESOS["entregas_curvas"](**kw, **({"deriva": deriva} if deriva else {}),
                                        ruido=memoria, separar="tiempo")
     uso = d.despliegue.sample(100, random_state=SEMILLA)
-    if nombre.startswith("mismas"):   # u, v ~ U(0, 1): mismas marginales, otra correlación
+    if nombre.startswith("mismas"):   # mismas marginales, otra correlación
         u, v = rng.random(100), rng.random(100)
         uso = uso.assign(distancia=6 * u, hora=8 + 14 * np.mod(u + 0.15 * v, 1))
     adv = {c: ml.validacion_adversarial(d.ent, uso, columnas=list(X), familia=c)
@@ -93,13 +93,13 @@ def bloque_2(que, clasificador, valores_p):
     adv, ks, m, d = DET[que]
     fig, ejes = plt.subplots(1, 3, figsize=(15, 4))
     ml.dibujar_adversarial(adv[clasificador], ax=ejes[0])
-    ml.dibujar_ks(ks if valores_p else ks.drop(columns="p_valor"), ax=ejes[1])
+    ml.dibujar_ks(ks, ax=ejes[1])
     ml.dibujar_residual_tiempo(m, d.val, ax=ejes[2])
     plt.show()
+    if valores_p: print(ks.round(3).to_string(index=False))   # supone filas iid
 
-CLASIF = ["bosque", "logistica"]
 ml.laboratorio(bloque_2, que=ml.selector("Qué cambió", list(ESC), "nada"),
-               clasificador=ml.selector("Clasificador", CLASIF, "bosque"),
+               clasificador=ml.selector("Clasificador", ["bosque", "logistica"]),
                valores_p=ml.interruptor("Mostrar valores p", False))
 
 # %% [codigo] bloque-2-prueba
