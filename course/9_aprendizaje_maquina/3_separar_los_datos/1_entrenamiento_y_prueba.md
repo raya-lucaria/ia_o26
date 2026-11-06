@@ -143,7 +143,11 @@ Para el error estándar ($\mathrm{EE}$), además:
 
 Entonces
 
-$$\operatorname{Var}\bigl(L_{\text{prueba}}(\widehat\beta)\mid\widehat\beta\bigr)=\frac{\operatorname{Var}(\ell\mid\widehat\beta)}{n_{\text{prueba}}},\qquad \mathrm{EE}\approx\frac{s_\ell}{\sqrt{n_{\text{prueba}}}},\qquad s_\ell^2=\frac{1}{n_{\text{prueba}}-1}\sum_{i\in\mathcal D_{\text{prueba}}}\bigl(\ell_i-L_{\text{prueba}}\bigr)^2.$$
+$$\operatorname{Var}\bigl(L_{\text{prueba}}(\widehat\beta)\mid\widehat\beta\bigr)=\frac{\operatorname{Var}(\ell\mid\widehat\beta)}{n_{\text{prueba}}},$$
+
+$$\mathrm{EE}\approx\frac{s_\ell}{\sqrt{n_{\text{prueba}}}},$$
+
+$$s_\ell^2=\frac{1}{n_{\text{prueba}}-1}\sum_{i\in\mathcal D_{\text{prueba}}}\bigl(\ell_i-L_{\text{prueba}}\bigr)^2.$$
 
 $s_\ell$ es la desviación estándar muestral de las pérdidas. Dividirla entre la raíz del tamaño estima cuánto fluctúa su promedio. Con pérdidas $0,2,2,4$, el promedio es 2 y su EE es aproximadamente 0.82.
 :::
