@@ -131,6 +131,7 @@ minimizar el MSE era maximizar la verosimilitud gaussiana (@ml-c3-obs-mse-verosi
 
 ::: remark {#ml-c4-obs-separable title="Datos separables: sin penalización no hay óptimo"}
 Supón que entrenamiento tiene casos de las dos clases y que algún $(\beta_0,\beta)$ da $z_i>0$ en todo caso con $y_i=1$ y $z_i<0$ en todo caso con $y_i=0$.
+
 Con las dos clases presentes, ese $\beta$ no puede ser 0; por eso, al escalarlo, crece la norma de las pendientes.
 Al multiplicar $(\beta_0,\beta)$ por un número cada vez
 más grande, $L_{\text{ent}}$ baja hacia 0. Ningún par finito llega a ese ínfimo,
@@ -813,8 +814,10 @@ positivo, cuánto lo es) y el **recall** o sensibilidad es
 $\frac{\mathrm{VP}}{\mathrm{VP}+\mathrm{FN}}$ (de lo positivo, cuánto encuentras).
 
 La curva **ROC** recorre todos los umbrales y dibuja la tasa de verdaderos
-positivos contra la de falsos positivos; su área (AUC) es la probabilidad de
-ordenar un positivo arriba de un negativo. La curva **PR** dibuja precisión
+positivos contra la de falsos positivos. Su área (AUC) es la probabilidad de que un positivo al azar quede arriba de un negativo al azar, con los empates contados a la mitad.
+Con $s_+$ y $s_-$ sus puntajes, AUC $=\Pr(s_+>s_-)+\tfrac12\Pr(s_+=s_-)$.
+
+La curva **PR** dibuja precisión
 contra recall; con una clase rara informa más que la ROC. Nada de esta unidad
 depende de este recuadro: MCC y $A_{\text{bal}}$ ya resumen la matriz.
 :::

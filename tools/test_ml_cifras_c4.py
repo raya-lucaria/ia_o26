@@ -459,3 +459,23 @@ def test_guarda_estatica_de_la_tarea_mutacion():
     assert mutado != texto
     with pytest.raises(AssertionError):
         _guarda_tarea(mutado)
+
+
+# Revisión ronda 1 (H9): la fuente fija μ = MU_MULTICLASE para conformal,
+# mientras el NB09 (bloques 3 y 4) elige μ por CV estratificada entre
+# 1, 0.1, 0.01 y 0.001 con pérdida logarítmica. Las cifras que cita la página
+# solo valen para el notebook si la CV elige ese mismo μ en los tres casos.
+@pytest.mark.parametrize("n,proporcion", [(10_000, (1 / 3, 1 / 3, 1 / 3)),
+                                          (2000, (0.9, 0.08, 0.02)),
+                                          (10_000, (0.9, 0.08, 0.02))])
+def test_la_cv_del_nb09_elige_el_mu_de_la_fuente(n, proporcion):
+    import aprendizaje_maquina as ml
+    d = ml.PROCESOS["mensajes3"](n=n, semilla=0, proporcion=list(proporcion))
+    phi = ml.estandarizar(ml.columnas("x1", "x2"))
+    cands = {mu: (lambda df, mu=mu: ml.ajustar(df, phi=phi, mu=mu, penalizacion="l2"))
+             for mu in [1.0, 0.1, 0.01, 1e-3]}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        elegido = ml.elegir(d.ent, cands, con="cv", particion="estratificado",
+                            criterio="logaritmica").elegido
+    assert elegido == c.MU_MULTICLASE

@@ -120,6 +120,85 @@ def test_p2_cita_sus_cifras():
     comprobar(leer(P2), cifras_p2(), P2.name)
 
 
+# ------------------------------------------------- cifras con su etiqueta ---
+# Revisión ronda 1 (H8): buscar cada cifra en cualquier lugar de la página
+# dejaba pasar un umbral 0.18 → 0.88 (otro 0.18 seguía en la página), pérdidas
+# o Brier intercambiados y un intercepto −3.08 → −30.8. Aquí cada cifra se
+# busca DENTRO de su frase, tabla o celda, junto a la palabra que la nombra,
+# también en las copias de los guiones. Reescribir la frase-ancla hace fallar
+# la prueba aunque la cifra esté bien: es a propósito (como test_lecturas).
+
+def _num(v):
+    """Regex de una cifra citada: «-» o «−»; termina donde termina el número."""
+    s = re.escape(str(v))
+    if str(v).startswith("-"):
+        s = "[-−]" + re.escape(str(v)[1:])
+    return s + r"(?![0-9])"
+
+
+def anclas():
+    um, dos = cita("cifras_c4_umbral"), cita("cifras_c4_dos_reglas")
+    cal, pl = cita("cifras_c4_calibracion"), cita("cifras_c4_platt")
+    de = cita("cifras_c4_desbalanceo")
+    A, B = dos["A"], dos["B"]
+    return [
+        (P1, r"el umbral que elige MCC es {}", [um["tau"]]),
+        (P1, r"\| {}, elegido \| {} \| {} \|", [um["tau"], um["mcc_val_elegido"],
+                                                um["mcc_des_elegido"]]),
+        (P1, r"con el umbral {}\]", [um["tau"]]),
+        (P1, r"A tiene menor pérdida: {} contra {}\.", [A["perdida"], B["perdida"]]),
+        (P1, r"la banda va de ±{} con 50 % de fraude a ±{} con 1 %", [de["banda_50"],
+                                                                     de["banda_01"]]),
+        (NB08, r"la regla A tiene pérdida {}, aciertos {} y MCC {}\. La regla B tiene "
+               r"pérdida {}, aciertos {} y MCC {}\.",
+         [A["perdida"], A["aciertos"], A["mcc"], B["perdida"], B["aciertos"], B["mcc"]]),
+        (P2, r"Allí da {}, frente a {} sin pesos y {} con pesos\.",
+         [cal["brier_benchmark"], cal["brier_sin"], cal["brier_con"]]),
+        (P2, r"La pérdida logarítmica da, respectivamente, {}, {} y {}\.",
+         [cal["log_benchmark"], cal["log_sin"], cal["log_con"]]),
+        (P2, r"\\widehat\\beta\^\{{\\text\{{cal\}}\}}_0={}\$ y "
+             r"\$\\widehat\\beta\^\{{\\text\{{cal\}}\}}_1={}\$; la referencia del intercepto es {}\.",
+         [pl["beta0"], pl["beta1"], pl["menos_ln_razon"]]),
+        (P2, r"el Brier recalibrado es {} contra {} del constante; la pérdida logarítmica "
+             r"es {} contra {}\.", [cal["brier_recalibrado"], cal["brier_benchmark"],
+                                   cal["log_recalibrado"], cal["log_benchmark"]]),
+        (P2, r"Brier sin pesos {}, con pesos {} y recalibrado {}; el constante da {}",
+         [cal["brier_sin"], cal["brier_con"], cal["brier_recalibrado"], cal["brier_benchmark"]]),
+        (P2, r"el anuncio promedio sube de {} a {} con pesos; Platt en `val_a` lo regresa a {}\.",
+         [cal["p_sin"], cal["p_con"], cal["p_rec"]]),
+    ]
+
+
+def test_cada_cifra_ancla_va_junto_a_su_etiqueta():
+    faltan = []
+    for ruta, patron, valores in anclas():
+        rx = patron.format(*[_num(v) for v in valores])
+        if not re.search(rx, leer(ruta)):
+            faltan.append(f"{ruta.name}: {patron} con {valores}")
+    assert not faltan, "cifra separada de su etiqueta:\n  " + "\n  ".join(faltan)
+
+
+def test_las_anclas_atrapan_las_mutaciones_de_la_revision():
+    """Las cuatro mutaciones que pasaban la guarda vieja ya no pasan."""
+    um, dos = cita("cifras_c4_umbral"), cita("cifras_c4_dos_reglas")
+    cal, pl = cita("cifras_c4_calibracion"), cita("cifras_c4_platt")
+    mutaciones = [
+        (P1, f"el umbral que elige MCC es {um['tau']}", "el umbral que elige MCC es 0.88"),
+        (P1, f"menor pérdida: {dos['A']['perdida']} contra {dos['B']['perdida']}",
+         f"menor pérdida: {dos['B']['perdida']} contra {dos['A']['perdida']}"),
+        (P2, f"frente a {cal['brier_sin']} sin pesos y {cal['brier_con']} con pesos",
+         f"frente a {cal['brier_con']} sin pesos y {cal['brier_sin']} con pesos"),
+        (P2, f"_0={pl['beta0']}$", f"_0={pl['beta0'][:-3]}0{pl['beta0'][-3:]}$"),
+    ]
+    for ruta, original, mutado in mutaciones:
+        texto = leer(ruta)
+        assert original in texto, f"la frase de la mutación cambió: {original}"
+        mut = texto.replace(original, mutado)
+        rotas = [p for r, p, v in anclas() if r == ruta
+                 and not re.search(p.format(*[_num(x) for x in v]), mut)]
+        assert rotas, f"la mutación «{mutado}» pasa las anclas"
+
+
 # -------------------------------------------------------------- figuras ---
 
 TITULOS = {
