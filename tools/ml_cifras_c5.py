@@ -615,8 +615,8 @@ def cifras_c5_escalar_mco():
     X1 = np.array([[1.0, 0, 0], [1, 1, 1]])
     y1 = np.array([0.0, 1.0])
     p1 = float(np.array([1.0, 1, 0]) @ np.linalg.pinv(X1) @ y1)
-    X2 = np.array([[1.0, 0, 0, 0], [1, 1, 1, 1]])
-    p2 = float(np.array([1.0, 1, 0, 0]) @ np.linalg.pinv(X2) @ y1)
+    X2 = np.array([[1.0, 0, 0], [1, 1, 2]])       # la tercera columna, multiplicada por 2
+    p2 = float(np.array([1.0, 1, 0]) @ np.linalg.pinv(X2) @ y1)
     return {"mco": mco, "ridge": ridge, "imputacion": imput, "contra_1": p1, "contra_2": p2,
             "cita": {"ridge": f"{ridge:.2g}"}}
 
