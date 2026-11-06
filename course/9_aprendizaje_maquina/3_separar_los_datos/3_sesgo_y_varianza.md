@@ -597,4 +597,4 @@ Recuerda el recuadro «Un modelo exitoso»: comparación pareada favorable
 en una reserva intacta, sin señal de mejora al flexibilizar, brecha chica
 y prueba que imita la realidad.
 
-Continúa con [[ml-clase-3-leer-el-error|Clase 3]].
+Continúa con la [[ml-tarea-2|tarea de la clase 2]].
