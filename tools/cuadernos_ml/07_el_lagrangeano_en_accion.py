@@ -118,7 +118,7 @@ def bloque_3(log_mu, semilla, que):
         if semilla not in _U_B3:                # orden: μ de mayor a menor
             _U_B3[semilla] = (ml.elegir(datos, CAND_B3, con="cv", k=5,
                                         orden_complejidad=sorted(MUS_B3, reverse=True)),
-                              ml.curva_capacidad(datos, CAND_B3))
+                              ml.curva_capacidad(datos, CAND_B3, ("ent", "despliegue")))
         sel, curva = _U_B3[semilla]
         tu = min(MUS_B3, key=lambda c: abs(np.log10(c) - log_mu))
         ml.dibujar_cv(sel, R=curva, L_ent=curva, log=True, anotar={tu: "tú"})
@@ -220,8 +220,8 @@ def bloque_5(con, regla, p):
     nz = {mu: str(int((m.beta_gorro.drop("1") != 0).sum())) for mu, m in mods.items()}
     R = {mu: ml.riesgo(m, DATOS_B5) for mu, m in mods.items()}
     Le = None if con == "ent" else {mu: ml.L(m, DATOS_B5.ent) for mu, m in ent.items()}
-    ml.dibujar_cv(sel, R=R, L_ent=Le, benchmark=bench, log=True,
-                  anotar={mu: nz[mu] for mu in MUS_B5[::4]}); plt.show()
+    ml.dibujar_cv(sel, R=R, L_ent=Le, benchmark=bench, log=True, anotar={
+        mu: nz[mu] for mu in MUS_B5[::4]}).set_yscale("log"); plt.show()  # eje y log
     mu = sel.elegido_un_ee if (con, regla) == ("cv", "un_ee") else sel.elegido
     v, ee = sel.tabla.set_index("candidato").loc[mu, ["valor", "ee"]]
     valor = f"CV₅ = {v:.3f} ± {ee:.3f}" if con == "cv" else f"L_{con} = {v:.3f}"

@@ -636,7 +636,8 @@ def seleccion_grado12(semilla=0):
     d = datos_entregas_curvas(semilla)
     cand = candidatos_grado12()
     sel = ml.elegir(d, cand, con="cv", k=5, orden_complejidad=sorted(cand, reverse=True))
-    curva = ml.curva_capacidad(d, cand, conjuntos=("ent", "realidad"))
+    # R en despliegue, la misma muestra que ml.riesgo usa para los rótulos A/B/C
+    curva = ml.curva_capacidad(d, cand, conjuntos=("ent", "despliegue"))
     return sel, curva
 
 
@@ -666,7 +667,7 @@ def cifras_c3_grado12():
     u = {"mu_min": float(sel.elegido), "mu_un_ee": float(sel.elegido_un_ee),
          "cv": {m: float(tabla.loc[m, "valor"]) for m in mus},
          "ee": {m: float(tabla.loc[m, "ee"]) for m in mus},
-         "R": {m: float(piv.loc[m, "realidad"]) for m in mus},
+         "R": {m: float(piv.loc[m, "despliegue"]) for m in mus},
          "L_ent": {m: float(piv.loc[m, "ent"]) for m in mus}}
     out = {"paneles": paneles, "R_sin_penalizar": float(ml.riesgo(sin, d)), "u": u,
            "piso": float(ml.piso(d)), "n_ent": len(d.ent),

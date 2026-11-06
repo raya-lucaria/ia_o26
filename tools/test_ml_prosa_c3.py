@@ -298,6 +298,129 @@ def test_cada_cifra_esta_en_la_frase_que_la_cita(ruta, frases):
 
 
 
+
+# Revisión c3 r3 (R1-H8, tercera vuelta): una fila de tabla se compara columna
+# por columna (intercambiar 48.3 y 203.1 en la fila de R tiene que fallar), y
+# las respuestas, viñetas de cierre y guiones de nb06 y nb07 atan sus cuentas.
+def _celdas(fila):
+    return [x.strip() for x in fila.strip().strip("|").split("|")]
+
+
+def _es(celda, cifras):
+    """La celda dice exactamente la cifra, o (con varias) las trae en orden."""
+    if len(cifras) == 1:
+        return celda in formas(cifras[0])
+    i = 0
+    for x in cifras:
+        hallado = [celda.find(f, i) for f in formas(x) if celda.find(f, i) >= 0]
+        if not hallado:
+            return False
+        i = min(hallado) + 1
+    return True
+
+
+def filas_p2():
+    g12 = c.cifras_c3_grado12()["cita"]
+    v = c.cifras_c3_grado12_vistas()["cita"]
+    mu = c.cifras_c3_mu_cv()["cita"]
+    k = ("grande", "medio", "chico")
+    return [
+        ("| $L_{\\text{val}}$, en 12 filas", [[g12["L_val"][x]] for x in k]),
+        ("| $R$, muestra enorme", [[g12["R"][x]] for x in k]),
+        ("| Centro de residuales", [[v[x]["centro"]] for x in k]),
+        ("| Ancho de residuales", [[v[x]["ancho"]] for x in k]),
+        ("| Mínimo |", [[mu["mu_min"]], [mu["cv_min"], mu["ee_min"]], [mu["no_ceros_min"]]]),
+        ("| Un EE |", [[mu["mu_un_ee"]], [mu["cv_un_ee"], mu["ee_un_ee"]],
+                       [mu["no_ceros_un_ee"]]]),
+    ]
+
+
+def test_p2_las_filas_de_tabla_van_columna_por_columna():
+    texto = pagina(P2)
+    for ancla, columnas in filas_p2():
+        celdas = _celdas(_unidad(texto, ancla))[1:]
+        assert len(celdas) == len(columnas), (ancla, celdas)
+        malas = [(cel, cif) for cel, cif in zip(celdas, columnas) if not _es(cel, cif)]
+        assert not malas, f"{ancla}: {malas}"
+
+
+def _g(x):
+    return f"{x:g}"
+
+
+def _par(t):
+    return f"({_g(round(t[0], 3))},\\ {_g(round(t[1], 3))})"
+
+
+def frases_respuestas():
+    ej = c.cifras_c3_ejercicios()
+    k, co, cl = ej["constante"], ej["cola"], ej["colineal"]
+    cero, esq = ej["cero_a_mano"], ej["esquina"]
+    return {P1: [
+        ("Elevar al cuadrado hace costoso", [_g(k["mse_media"]), _g(k["mse_mediana"])]),
+        ("«Mejor» depende de la pérdida", [_g(k["mae_media"]), _g(k["mae_mediana"])]),
+        ("La fila aporta", [_g(co["mse"]), f"{100 * co['frac_mse']:.0f}"]),
+        ("El cuadrado aumenta mucho su peso", [_g(co["mae"]), f"{100 * co['frac_mae']:.0f}"]),
+        ("**(a)** $2+3", [_g(ej["pendiente"])]),
+        ("Toma la raíz de la varianza", [f"{cl['desv_09']:.3f}", f"{cl['razon']:.1f}"]),
+        ("el factor $1/(1-0.99^2)", [f"{ej['factor_099']:.0f}"]),
+        ("- **Cola larga:**", [f"{100 * co['frac_mse']:.0f}"]),
+        ("- **Lo que falta:**", [_g(ej["pendiente"])]),
+    ], P2: [
+        ("Ninguna pendiente vale cero", [_par(esq["ridge"]), f"{esq['mu_ridge']:.3f}"]),
+        ("Lasso resta el umbral sin cruzar cero", [_par(cero["l1"])]),
+        ("el umbral es la mitad del de lasso", [_par(cero["elastica"])]),
+    ]}
+
+
+@pytest.mark.parametrize("ruta", [P1, P2])
+def test_cada_respuesta_ata_sus_cuentas(ruta):
+    texto = pagina(ruta)
+    for ancla, cifras in frases_respuestas()[ruta]:
+        comprobar(_unidad(texto, ancla), cifras, f"{ruta.name} «{ancla}»")
+
+
+def _defecto(py, etiqueta):
+    """El valor inicial de un deslizador del .py del notebook: la prosa lo cita."""
+    m = re.search(re.escape(f'"{etiqueta}"') + r",\s*[-\d.]+,\s*[-\d.]+,\s*[-\d.]+,"
+                  r"\s*([-\d.]+)\)", py)
+    assert m, f"no hay deslizador «{etiqueta}» en el .py"
+    return float(m.group(1))
+
+
+def test_los_guiones_de_nb06_y_nb07_atan_sus_cuentas_al_codigo():
+    import ml_cifras_c3 as cc
+    ml = cc._ml()
+    py6 = (GUIONES / "06_leer_el_error.py").read_text(encoding="utf-8")
+    py7 = (GUIONES / "07_el_lagrangeano_en_accion.py").read_text(encoding="utf-8")
+    t6, t7 = leer(NB06), leer(NB07)
+    # nb06 B4: f = 1 + 2·x1 + 3·x2; el control empieza en corr = 0.3
+    assert "f=lambda d: 1 + 2 * d.x1 + 3 * d.x2" in py6
+    corr = _defecto(py6, "corr(x1, x2)")
+    centro = _g(round(2 + 3 * corr, 6))
+    comprobar(_unidad(t6, "¿dónde se centra el histograma"), [_g(corr), centro, "2", "5"],
+              "nb06 bloque-4-predice")
+    comprobar(_unidad(t6, "Se centra en"), [_g(corr), centro], "nb06 bloque-4-explica")
+    comprobar(_unidad(t6, "Deja «qué no ve el modelo» en «x2»"), [_g(corr)],
+              "nb06 bloque-4-predice, controles")
+    # nb07 B2: b = 0.4 y μ = 1 por omisión; la cuenta sale de encoger_1d
+    b, mu = _defecto(py7, "b: pendiente sin penalizar"), _defecto(py7, "μ")
+    assert ml.encoger_1d(b, mu, "l1") == 0
+    comprobar(_unidad(t7, "¿sobrevive a lasso"), [_g(b), _g(mu)], "nb07 bloque-2-predice")
+    comprobar(_unidad(t7, "No sobrevive:"), [_g(b), _g(mu / 2)], "nb07 bloque-2-explica")
+    comprobar(_unidad(t7, "Ridge divide entre $1+\\mu$: aquí"),
+              [_g(b), _g(ml.encoger_1d(b, mu, "l2"))], "nb07 bloque-2-explica, ridge")
+    # nb07 B4: 100 réplicas con μ = 0.3 y gemela a 0.95
+    assert "ml.beta_repetido(fab, PHI_50, 100, mu=0.3," in py7
+    assert 'gemelas={"x1": 0.95}' in py7
+    comprobar(_unidad(t7, "El conteo usa"), ["100", "0.3", "0.95"], "nb07 bloque-4-explica")
+    # nb07, ejercicio del cero a mano: b = (3, 0.4), μ = 1
+    cero = c.cifras_c3_ejercicios()["cero_a_mano"]
+    comprobar(_unidad(t7, "Lasso resta $\\mu/2=0.5$"),
+              [f"({_g(cero['l1'][0])},{_g(cero['l1'][1])})",
+               f"({_g(cero['l2'][0])},{_g(round(cero['l2'][1], 6))})"],
+              "nb07 ejercicio-cero-a-mano-respuesta")
+
 def _bloque(texto, ident):
     i = texto.index("{#" + ident)
     return texto[i:texto.index("\n:::", i)]

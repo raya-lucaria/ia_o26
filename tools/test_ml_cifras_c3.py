@@ -229,6 +229,15 @@ def test_sin_holgura_no_hay_mu():
 
 # ------------------------------------------------------------- página 2 · §4 ---
 
+def test_grado12_los_puntos_a_b_c_de_la_curva_son_sus_rotulos():
+    """F11 y nb07 B3: la curva R del cuarto panel y los rótulos «R = …» de los paneles
+    A, B y C salen de la misma muestra (despliegue), no de dos Monte Carlo distintos."""
+    m = c.cifras_c3_grado12()
+    for k in ("grande", "medio", "chico"):
+        mu = m["paneles"][k]["mu"]
+        assert m["u"]["R"][mu] == pytest.approx(m["paneles"][k]["R"], rel=1e-9), k
+
+
 def test_grado12():
     m = c.cifras_c3_grado12()
     p = m["paneles"]

@@ -97,7 +97,7 @@ plt.show()
 m = ml.ajustar(datos, phi=PHI, mu=mu_hat, penalizacion=PENALIZACION)
 verdadero = ml.beta_verdadero(datos, PHI)
 comparar = pd.DataFrame({"β̂": m.beta_gorro, "verdadero": verdadero})
-print(comparar.loc[UTILES + ["x7", "x8"]].round(3).to_string())
+print((comparar.loc[UTILES + ["x7", "x8"]].round(3) + 0.0).to_string())  # sin «-0.0»
 print(f"coeficientes ≠ 0 (ajuste con entrenamiento, {len(datos.ent)} filas):"
       f" {int((m.beta_gorro.drop('1') != 0).sum())} de {J}")
 

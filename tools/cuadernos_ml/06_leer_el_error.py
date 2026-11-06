@@ -123,7 +123,7 @@ def bloque_3(ruido, que, donde, semilla):
         a1.set_xlabel("x (validación)"); a1.set_ylabel("residual e")
     else:
         ml.dibujar_media_acumulada({ruido: RUIDOS_B3[ruido]}, estadistico=que,
-                                    semilla=semilla, ax=a1)
+                                    semilla=1000 * semilla, ax=a1)  # sin traslape
     ml.dibujar_peso_de_filas(m, val, ax=a2)
     plt.show()
     print("Los 5 peores errores en validación:")
