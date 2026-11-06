@@ -208,6 +208,7 @@ El orden se declara antes de medir: $\mu$ de mayor a menor, de simple a complejo
 ### celda: bloque-5-mira
 
 **Mira.** Los círculos son $L_{\text{ent}}$; con CV, los triángulos son medias con barras de EE; la línea discontinua es $R$.
+El eje vertical va en escala logarítmica, para que la U de $\mathrm{CV}_5$ y la línea «mínimo + 1 EE» se distingan cerca del fondo.
 Recorre $\mu$ de mayor a menor: busca la primera media bajo «mínimo + 1 EE»; los números cuentan pendientes distintas de cero. La línea impresa indica que los conteos y $R$ usan el reajuste en entrenamiento ∪ validación con CV, y el ajuste en entrenamiento con $L_{\text{ent}}$ o $L_{\text{val}}$.
 La prueba está en una celda aparte que no cambia con los controles: si cambiara con ellos, elegirías con la prueba.
 

@@ -331,8 +331,8 @@ En B, el signo del residual tiende a seguir al de $x_1x_2$:
 aparece un patrón por cuadrantes. En A, los signos se mezclan;
 crece la dispersión, pero no hay ese patrón en la media.
 
-Ambos tienen la misma varianza condicional del error ideal dado $x_1$,
-$0.25+x_1^2$. Los ajustes finitos pueden alterar algo los abanicos.
+Respecto del predictor aditivo poblacional $1+x_1+x_2$, ambos errores tienen varianza condicional $0.25+x_1^2$ dado $x_1$.
+Los ajustes finitos pueden alterar algo los abanicos.
 La página Leer el error pide completar el argumento; aquí ya tienes
 la vista que permite distinguirlos.
 

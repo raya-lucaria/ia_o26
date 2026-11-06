@@ -56,7 +56,7 @@ La rúbrica suma 100 puntos:
 ### celda: idea
 
 Decidirás con 50 variables: pocas importan, sus escalas difieren y dos son casi idénticas.
-Equilibras ajuste y penalización mediante $\mathcal L=L_{\text{ent}}+\mu\,\Omega_1$, con $\mu\ge0$, sobre columnas estandarizadas.
+Minimizas el objetivo penalizado $L_{\text{ent}}+\mu\,\Omega_1$, con $\mu\ge0$, sobre columnas estandarizadas.
 Eliges $\mu$ por validación cruzada (*cross-validation*); abres prueba una sola vez, al final.
 Cada número debe nombrar su conjunto. Se califica tu argumento, no acertar las cinco útiles.
 Consulta [Leer el error y regularizar](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/leer-el-error/).

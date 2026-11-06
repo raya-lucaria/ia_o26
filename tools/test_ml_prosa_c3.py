@@ -493,6 +493,47 @@ def test_la_monotonia_en_mu_admite_empates():
     assert "siempre prefiere" not in teo and "empates" in teo, teo
 
 
+
+def test_p1_la_diana_da_la_varianza_marginal_del_ruido():
+    """Revisión c3 r3: en el proceso endógeno ε = 0.5x1 + √0.75·Z, Var(ε) = 1 pero
+    Var(ε|x) = 0.75; σ_ε es la condicional, así que «σ_ε = 1» era falso."""
+    frase = _unidad(pagina(P1), "Todas las $x$ son normales estándar")
+    assert r"$\sigma_\varepsilon=1$" not in frase
+    assert r"$\operatorname{Var}(\varepsilon)=1$, la varianza marginal" in frase, frase
+
+
+def test_p2_los_factores_de_ridge_usan_la_correlacion_muestral():
+    """Revisión c3 r3: con corr poblacional 0.5 el factor de (1,−1) con μ = 0.1 es
+    0.8333; el exacto, con la muestral de entrenamiento (0.5207), es 0.8274."""
+    obs = _bloque(pagina(P2), "ml-c3-obs-ridge-colinealidad")
+    assert obs.count(r"\widehat{\operatorname{corr}}(x_1,x_2)") == 4, obs
+    assert "correlación muestral de entrenamiento" in obs and "divisor $n$" in obs
+
+
+def test_nb06_no_llama_error_ideal_al_error_del_predictor_aditivo():
+    """Revisión c3 r3: el error ideal de B, y − E[y|x], tiene varianza 0.25; la
+    varianza 0.25 + x1² es respecto de 1 + x1 + x2."""
+    t = leer(NB06)
+    resp = t.split("### celda: ejercicio-abanico-respuesta", 1)[1].split("### celda:", 1)[0]
+    assert "error ideal" not in resp
+    assert "predictor aditivo poblacional $1+x_1+x_2$" in resp, resp
+
+
+def test_nb07_b5_dice_que_el_eje_vertical_es_logaritmico():
+    t = leer(NB07)
+    mira = t.split("### celda: bloque-5-mira", 1)[1].split("### celda:", 1)[0]
+    assert "escala logarítmica" in mira, mira
+    py = (GUIONES / "07_el_lagrangeano_en_accion.py").read_text(encoding="utf-8")
+    b5 = py.split("def bloque_5", 1)[1].split("ml.laboratorio", 1)[0]
+    assert '.set_yscale("log")' in b5
+
+
+def test_la_tarea_no_llama_lagrangeano_al_objetivo_penalizado():
+    """Revisión c3 r3: sin −μd no es el lagrangeano de P2 (Ω − d)."""
+    t = leer(GUIONES / "tarea_3_cincuenta_variables.texto.md")
+    assert r"\mathcal L=L_{\text{ent}}+\mu\,\Omega_1" not in t
+    assert r"objetivo penalizado $L_{\text{ent}}+\mu\,\Omega_1$" in t
+
 # --- fin tramo rapido ---
 
 

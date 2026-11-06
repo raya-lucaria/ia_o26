@@ -316,7 +316,7 @@ La diana de @ml-c2-diana mostraba predicciones en un punto fijo; ahora muestra p
 
 Cada punto es $(\widehat\beta_1,\widehat\beta_2)$ de un entrenamiento; hay 200 por panel. La cruz verde marca el coeficiente estructural $(1,1)$; el rombo cian, el promedio. La nube correcta está centrada; la colineal se alarga. La omitida centra $\widehat\beta_1$ en 1.59; la endógena, en 1.50.
 
-Todas las $x$ son normales estándar y $\sigma_\varepsilon=1$: en la omitida, $f=1+x_1+x_2+x_3$, con $x_3$ omitida y $\operatorname{corr}(x_1,x_3)=0.6$; en la endógena, $f=1+x_1+x_2$, con $\operatorname{corr}(x_1,\varepsilon)=0.5$. La cuenta de @ml-c3-teo-variable-omitida da $1+0.6=1.6$ y $1+0.5=1.5$; la simulación da 1.59 y 1.50.
+Todas las $x$ son normales estándar y $\operatorname{Var}(\varepsilon)=1$, la varianza marginal: en la omitida, $f=1+x_1+x_2+x_3$, con $x_3$ omitida y $\operatorname{corr}(x_1,x_3)=0.6$; en la endógena, $f=1+x_1+x_2$, con $\operatorname{corr}(x_1,\varepsilon)=0.5$. La cuenta de @ml-c3-teo-variable-omitida da $1+0.6=1.6$ y $1+0.5=1.5$; la simulación da 1.59 y 1.50.
 
 El sesgo del estimador, $E_{\mathcal D}[\widehat\beta_j]-\beta_j$, usa el $\beta_j$ estructural. Difiere del sesgo de predicción $\text{sesgo}(x)=E_{\mathcal D}[\widehat f(x)]-f(x)$ de @ml-c2-teo-sesgo-varianza. Veremos que una pendiente sesgada puede predecir bien la media condicional visible.
 

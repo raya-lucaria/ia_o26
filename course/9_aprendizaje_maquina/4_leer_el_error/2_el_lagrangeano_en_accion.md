@@ -765,9 +765,10 @@ Como $s_1$ sale de entrenamiento, cambia con cada pliegue.
 ::: remark {#ml-c3-obs-ridge-colinealidad title="Ridge encoge sobre todo la dirección inestable"}
 Con dos variables estandarizadas, ridge multiplica la parte de
 $\widehat\beta_{\text{MC}}$ en la dirección $(1,1)$ por
-$\frac{1+\operatorname{corr}(x_1,x_2)}{1+\operatorname{corr}(x_1,x_2)+\mu}$
+$\frac{1+\widehat{\operatorname{corr}}(x_1,x_2)}{1+\widehat{\operatorname{corr}}(x_1,x_2)+\mu}$
 y la de la dirección $(1,-1)$ por
-$\frac{1-\operatorname{corr}(x_1,x_2)}{1-\operatorname{corr}(x_1,x_2)+\mu}$.
+$\frac{1-\widehat{\operatorname{corr}}(x_1,x_2)}{1-\widehat{\operatorname{corr}}(x_1,x_2)+\mu}$.
+Aquí $\widehat{\operatorname{corr}}$ es la correlación muestral de entrenamiento, con columnas centradas y varianza de divisor $n$ igual a 1.
 Con correlación cerca de 1, la segunda —la que la colinealidad vuelve
 inestable— se encoge casi a cero.
 :::
