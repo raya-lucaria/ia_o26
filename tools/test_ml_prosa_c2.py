@@ -101,8 +101,9 @@ def test_p1_el_engano_de_elegir_con_la_prueba_en_su_seccion():
     s4 = seccion(P1, 4)
     assert esta(op["sesgo_prueba"], s4) and esta(op["ee_prueba"], s4)
     assert f"{100 * op['optimistas_prueba']:.0f} %" in s4
-    # el cierre lo dice con palabras: «anuncia 7.5 menos error»
-    assert esta(abs(op["sesgo_prueba"]), llevarse(P1)) and "menos error" in llevarse(P1)
+    # el cierre da la media con su signo y lo dice con palabras («menos error»);
+    # revision r3: con la mediana de cada panel al lado
+    assert esta(op["sesgo_prueba"], llevarse(P1)) and "menos error" in llevarse(P1)
 
 
 def test_p1_el_reparto_en_su_seccion():
@@ -376,10 +377,13 @@ def celda_s5(columna):
 
 
 def _copias():
-    """(archivo, ancla, papel, valor, decimales, buscar): cada cifra publicada
-    con el parrafo (o la fila) donde vive."""
+    """(archivo, ancla, papel, valor, decimales, buscar): las cifras publicadas
+    que tienen guarda por parrafo (o fila), con el parrafo donde viven. No son
+    todas: varias cuentas de ejercicios solo se fijan en la fuente
+    (test_ml_cifras_c2); revision r3, R2-H4."""
     pr, op, h = c.cifras_c2_prueba_ruidosa(), c.cifras_c2_optimismo(), c.cifras_c2_hilo()
     an, pa, dg = c.cifras_c2_anidada(), c.cifras_c2_pliegue_anomalo(), c.cifras_c2_diagnostico()
+    cv, pm = c.cifras_c2_cv_vs_val(), op["sesgo_prueba_por_M"]
     P, F = parrafo_de, celda_s5
     cp = [
         (P1, "Ninguna tiene que estar mal", "desv con 20", pr["desv_20"], 1, P),
@@ -416,6 +420,15 @@ def _copias():
         (G04, "la CV del ganador", "R del final", an["R_final"], 2, P),
         (G04, "pérdidas por pliegue entre", "minimo grado 1", min(pa[1]["por_pliegue"]), 2, P),
         (G04, "pérdidas por pliegue entre", "maximo grado 1", max(pa[1]["por_pliegue"]), 2, P),
+        # revision r3 (R2-H4): G04 bloque 3 y G03 bloque del numero de candidatos
+        (G04, "la desviación real es", "desv de validacion", cv["desv_val"], 2, P),
+        (G04, "la desviación real es", "desv de CV", cv["desv_cv"], 2, P),
+        (G04, "la desviación real es", "EE medio de validacion", cv["ee_val_medio"], 2, P),
+        (G04, "la desviación real es", "EE medio de CV", cv["ee_cv_medio"], 2, P),
+        (G03, "el primer cruce ocurre con", "media con M=7", pm[7], 2, P),
+        (G03, "el primer cruce ocurre con", "media con M=6", pm[6], 2, P),
+        (G03, "La tabla tampoco baja", "media con M=11", pm[11], 2, P),
+        (G03, "La tabla tampoco baja", "media con M=12", pm[12], 2, P),
     ]
     for n, r in dg.items():
         fila = f"| {n} ({r['grado']}) |"
@@ -516,7 +529,7 @@ def test_r2_p3_la_brecha_grande_tiene_criterio_y_c_no_la_tiene():
     vineta = next(r for r in s5.splitlines() if r.startswith("- **C: "))
     assert esta(C["CV"] - C["L_ent"], vineta) and esta(C["L_ent"], vineta)
     assert C["CV"] <= c.UMBRAL_BRECHA * C["L_ent"]
-    # su brecha en minutos es mayor que las de A y D: por eso hace falta el criterio
+    # su brecha en minutos² es mayor que las de A y D: por eso hace falta el criterio
     assert C["CV"] - C["L_ent"] > max(dg[n]["CV"] - dg[n]["L_ent"] for n in "AD")
 
 
@@ -540,3 +553,96 @@ def test_r2_guiones_sin_fragmento_suelto_de_la_semilla():
         assert not malas, g
 
 # --- fin ronda 2 ---
+
+
+# --- ronda 3 de revision ---
+# R2-H4: una cifra presente no basta; cada una va con su papel.
+
+def _f(v, d):
+    return formas(v, d)[0]
+
+
+def test_r3_p1_cada_media_de_la_cadena_va_con_su_conjunto():
+    op = c.cifras_c2_optimismo()
+    parr = parrafo_de(texto(P1), "las medias de entrenamiento, validación y prueba")
+    e, v, p = (_f(op[f"media_{k}"], 1) for k in ("L_ent", "L_val", "L_prueba"))
+    frase = f"entrenamiento, validación y prueba son {e}, {v} y {p}"
+    assert frase in parr, frase
+    # mutacion del revisor: intercambiar entrenamiento y prueba
+    malo = parr.replace(f"{e}, {v} y {p}", f"{p}, {v} y {e}")
+    assert frase not in malo
+
+
+def test_r3_g04_cada_desviacion_va_con_su_estimador():
+    cv = c.cifras_c2_cv_vs_val()
+    parr = parrafo_de(texto(G04), "la desviación real es")
+    frase1 = f"{_f(cv['desv_val'], 2)} para validación y {_f(cv['desv_cv'], 2)}"
+    frase2 = f"{_f(cv['ee_val_medio'], 2)} y {_f(cv['ee_cv_medio'], 2)}"
+    assert frase1 in parr and frase2 in parr
+    malo = parr.replace(_f(cv["desv_val"], 2), "9" + _f(cv["desv_val"], 2))  # 4.85 -> 94.85
+    assert not esta(cv["desv_val"], malo, 2)
+    assert cv["desv_cv"] < cv["desv_val"]          # «Aquí CV varía menos»
+
+
+def test_r3_g03_el_primer_cruce_es_el_de_la_fuente():
+    pm = c.cifras_c2_optimismo()["sesgo_prueba_por_M"]
+    primero = min(M for M in pm if pm[M] < -2)
+    assert primero == 7 and pm[6] >= -2
+    parr = parrafo_de(texto(G03), "el primer cruce ocurre con")
+    assert f"$M={primero}$: la media es {_f(pm[primero], 2)}" in parr
+    assert f"Con $M={primero - 1}$ era {_f(pm[primero - 1], 2)}" in parr
+    t = parrafo_de(texto(G03), "La tabla tampoco baja")
+    assert f"pasa de {_f(pm[11], 2)} con $M=11$ a {_f(pm[12], 2)} con $M=12$" in t
+    assert pm[12] > pm[11]
+
+
+
+def test_r3_p1_los_dos_paneles_con_el_mismo_estadistico():
+    """H4 de r3: arriba la media y abajo la mediana invitaba a leer mal; cada
+    par (medianas, medias con EE) va en una misma frase, en §4 y al cierre."""
+    op = c.cifras_c2_optimismo()
+    medianas = (op["mediana_prueba"], op["mediana_validacion"])
+    medias = (op["sesgo_prueba"], op["sesgo_validacion"])
+    for t in (sin_alt(seccion(P1, 4)), llevarse(P1)):
+        frases = re.split(r"(?<=[.;])\s+(?=[A-ZÁÉÍÓÚ])", t)
+        assert any(all(esta(v, f) for v in medianas) and "median" in f for f in frases)
+        assert any(all(esta(v, f) for v in medias) and esta(op["ee_validacion"], f)
+                   and "media" in f for f in frases)
+    assert op["mediana_prueba"] < op["mediana_validacion"] < 0
+    # la media con la prueba a mas de cuatro EE bajo cero; la de validacion, a menos de dos
+    assert -op["sesgo_prueba"] > 4 * op["ee_prueba"]
+    assert "más de cuatro EE" in sin_alt(seccion(P1, 4)) and "más de cuatro EE" in llevarse(P1)
+
+
+def test_r3_p1_la_frecuencia_no_se_vende_como_teorema():
+    s4 = sin_alt(seccion(P1, 4))
+    assert "casi siempre" not in s4
+    assert "optimista en promedio" in s4
+    assert "no una consecuencia del teorema" in s4
+
+
+def test_r3_p3_el_sesgo_interior_es_un_promedio():
+    sv = c.cifras_c2_sesgo_varianza()
+    parr = parrafo_de(texto(P3), "En el tramo interior")
+    assert "promediado sobre las entradas del tramo" in parr
+    assert all(sv["sesgo2_interior"][N] <= 0.25 for N in range(6, 13))
+
+
+def test_r3_p3_minutos_cuadrados_y_el_diagnostico_de_a():
+    s5 = seccion(P3, 5)
+    vineta = next(r for r in s5.splitlines() if r.startswith("- **C: "))
+    assert "minutos²" in vineta
+    fi = c.cifras_c2_diagnostico_final()
+    a = fi["A"][min(c.N_CONSULTOR)]
+    assert a["CV"] <= c.UMBRAL_BRECHA * a["L_ent"]          # A no cruza la pregunta 1
+    t = texto(P3)
+    resp = t[t.find("{#ml-c2-resp-final-sesgo-y-varianza"):]
+    resp = resp[:resp.find("\n:::")]
+    assert "sobreajusta" not in resp
+    assert "no cruza el umbral de la pregunta 1" in resp
+
+
+def test_r3_los_guiones_no_nombran_colores_del_tema_oscuro():
+    for g in (G03, G04, G05):
+        t = texto(g)
+        assert "crema" not in t and "rosa" not in t, g

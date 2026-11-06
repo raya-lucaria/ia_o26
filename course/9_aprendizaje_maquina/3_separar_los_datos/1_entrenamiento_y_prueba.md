@@ -234,11 +234,15 @@ Con 400 observaciones esperas $\mathrm{EE}=0.4$. Para llegar a 0.2 necesitas 160
 
 Cada barra cuenta repeticiones: nuevos datos, elección de grado y comparación de lo anunciado con el riesgo real. El eje horizontal muestra $L_{\text{prueba}}-R$; debajo de cero, anuncias menos error del que tendrás. Ambos paneles son sin reajuste: conservan el mismo entrenamiento; solo cambia quién elige el grado.
 
-**Piensa: Si pruebas trece grados en la misma prueba y anuncias el mejor, ¿por qué tu anuncio sale casi siempre optimista aunque cada cifra, por separado, sea honesta?**
+**Piensa: Si pruebas trece grados en la misma prueba y anuncias el mejor, ¿por qué elegir el menor error puede producir un anuncio optimista en promedio, aunque cada cifra, por separado, sea honesta?**
 
-Es como elegir el termómetro que hoy marca menos: eliges también su error de medición favorable. Arriba, eligiendo con la prueba, 74 % de los anuncios son optimistas. La media de anunciado menos real es $-7.5\pm1.8$, donde el margen es un EE de Monte Carlo: incertidumbre del promedio entre repeticiones.
+Es como elegir el termómetro que hoy marca menos: eliges también su error de medición favorable.
 
-::: remark {#ml-c2-obs-optimismo-seleccion title="El mínimo de estimaciones honestas sale optimista"}
+Las medianas de anunciado menos real son −3.2 eligiendo con la prueba y −0.6 eligiendo con validación. Las medias son $-7.5\pm1.8$ con la prueba y $-42.0\pm37.2$ con validación; el margen es un EE de Monte Carlo: la incertidumbre del promedio entre repeticiones.
+
+La proporción de anuncios optimistas es 74 % con la prueba y 56 % con validación. El 74 % es un resultado de este experimento, no una consecuencia del teorema: @ml-c2-obs-optimismo-seleccion habla de esperanzas, no de con qué frecuencia el anuncio sale de menos.
+
+::: remark {#ml-c2-obs-optimismo-seleccion title="El mínimo de estimaciones honestas sale optimista en promedio"}
 Condiciona en $\mathcal D_{\text{ent}}$: los candidatos $\widehat\beta(N)$ quedan fijos. Por @ml-c2-teo-prueba-insesgada, cada pérdida de prueba es insesgada para el riesgo de su candidato. El mínimo nunca supera a ninguno; su esperanza tampoco supera la menor esperanza:
 
 $$E\Bigl[\min_{N}L_{\text{prueba}}\bigl(\widehat\beta(N)\bigr)\Bigm|\mathcal D_{\text{ent}}\Bigr]\le\min_{N}R\bigl(\widehat\beta(N)\bigr)\le R\bigl(\widehat\beta(\widehat N)\bigr),$$
@@ -278,7 +282,7 @@ $$E\bigl[L_{\text{val}}\bigl(\widehat\beta(\widehat N)\bigr)\bigr]\le E\bigl[R\b
 
 En este experimento, sin reajuste, las medias de entrenamiento, validación y prueba son 8.5, 9.1 y 12.6. En esas mismas 300 repeticiones, el $R$ medio del elegido por validación es 54.6. Las diferencias son $0.64\pm0.28$ y $3.53\pm0.56$, cada una con su EE de Monte Carlo. Ambas superan dos EE. Ese orden observado no es un teorema; tampoco se afirma para el modelo final.
 
-Abajo, con validación, la mediana de anunciado menos real es −0.6 y 56 % de los anuncios son optimistas. La igualdad $E[L_{\text{prueba}}]=E[R]$ es de esperanzas, no de medias de 300 repeticiones. La diferencia de medias es $-42.0\pm37.2$: queda a menos de dos EE de Monte Carlo de cero. Unas pocas repeticiones con $R$ enorme mueven mucho la media; escribir solo «aproximadamente cero» ocultaría esa incertidumbre.
+La igualdad $E[L_{\text{prueba}}]=E[R]$ es de esperanzas, no de medias de 300 repeticiones. Con validación, $-42.0\pm37.2$ queda a menos de dos EE de Monte Carlo de cero. Unas pocas repeticiones con $R$ enorme mueven mucho la media. Por eso la media con validación sale más negativa que con la prueba sin contradecir la igualdad de esperanzas. La media con la prueba, en cambio, queda a más de cuatro EE bajo cero.
 
 ::: remark {#ml-c2-obs-prueba-se-gasta title="La prueba también se gasta despacio"}
 Volver a abrir la misma prueba tras cada cambio es elegir con ella, una decisión a la vez. También ocurre en una comunidad: reutilizar durante años una prueba pública favorece cifras optimistas (Goodfellow et al., §5.3).
@@ -478,8 +482,8 @@ En A la cifra corresponde al mes reservado, no promedia meses futuros. La fórmu
 ## Lo que hay que llevarse
 
 - El entrenamiento elige grado 12: obtiene 4.5 en los datos que ajustaron sus coeficientes.
-- Elegir con la prueba anuncia 7.5 menos error en promedio, con EE de Monte Carlo 1.8; el modelo elegido no se reajusta.
-- Elegir con validación deja mediana −0.6 y 56 % de anuncios optimistas. La media $-42.0\pm37.2$ queda a menos de dos EE de cero; unas pocas repeticiones pesan mucho.
+- Las medianas de anunciado menos real son −3.2 con la prueba y −0.6 con validación; el modelo elegido no se reajusta.
+- Las medias de anunciado menos real, con su EE de Monte Carlo, son $-7.5\pm1.8$ con la prueba y $-42.0\pm37.2$ con validación. Elegir con la prueba anuncia en promedio menos error del real: la media queda a más de cuatro EE bajo cero. Con validación, la media no se distingue de cero: queda a menos de dos EE; unas pocas repeticiones pesan mucho.
 - Con el modelo congelado, la prueba baila 3.8 con 20 entregas y 1.1 con 200. Una prueba honesta también tiene incertidumbre.
 - Para «el mes que viene», separar al azar promete 57.6 y el despliegue da 135.6. Apartar datos sirve si imita cómo usarás el modelo.
 

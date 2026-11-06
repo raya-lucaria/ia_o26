@@ -44,7 +44,7 @@ Deja «entregas n» y «semilla» como están; recorre «grado N» y después ac
 ### celda: bloque-1-mira
 
 **Mira.** Los círculos de la derecha miden $L_{\text{ent}}$; $N=0$ es el benchmark en entrenamiento.
-Al activar «mostrar la realidad R», compara la curva crema con la raya-punto del benchmark.
+Al activar «mostrar la realidad R», compara la línea discontinua con la raya-punto del benchmark; el eje vertical pasa a escala logarítmica, porque el riesgo del grado 12 llega a miles.
 
 Al mover «semilla», cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
 
@@ -60,7 +60,7 @@ Como recuerda «Entrenamiento y prueba», $\phi_N(x)=(1,x,\dots,x^N)$ añade col
 Un polinomio de grado 12 sigue siendo lineal en $\beta$.
 Cambiar «grado N» cambia la familia; ajustar sus parámetros no decide qué familia generaliza mejor.
 
-La curva crema estima $R$ en la realidad; su benchmark se evalúa en esa misma muestra.
+La línea discontinua estima $R$ en la realidad; su benchmark se evalúa en esa misma muestra.
 Esa comparación solo existe en el simulador. El hiperparámetro necesita otros datos.
 
 </details>
@@ -130,7 +130,7 @@ Selecciona «el mes que viene» en «contrato»; compara «al azar» y «como el
 
 ### celda: bloque-4-mira
 
-**Mira.** El cuadrado rosa mide $L_{\text{prueba}}$; la línea crema, $R$ en el despliegue de cada contrato.
+**Mira.** La barra mide $L_{\text{prueba}}$; la línea discontinua, $R$ en el despliegue de cada contrato.
 La raya-punto es la media de entrenamiento evaluada en ese despliegue.
 El eje es logarítmico. Para «más de lo mismo», usa «al azar»: es la separación que imita ese contrato.
 No tiene una separación alternativa «como el contrato».

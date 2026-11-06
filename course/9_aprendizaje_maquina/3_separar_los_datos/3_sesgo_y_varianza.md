@@ -271,7 +271,9 @@ Las cien muestras estabilizan el cálculo del simulador.
 
 De $N=0$ a $N=7$, el sesgo² estimado baja en conjunto: 43.8, 6.0, 0.90, 0.73, 0.45, 0.50, 0.24 y 0.27, con un repunte chico de $N=4$ a $N=5$. La varianza sube hasta 10.9 en $N=7$, salvo de $N=0$ a $N=1$, cuando baja de 1.43 a 0.88.
 
-Desde $N=8$, el sesgo² estimado vuelve a crecer: 20.5 en $N=9$ y 64.9 en $N=12$. El 64.9 no permite cuantificar de forma estable el sesgo poblacional del grado 12: contiene error de Monte Carlo amplificado por los ajustes extremos, unos pocos que se disparan en los bordes y arrastran el promedio de cien. En el tramo interior, $0.5<x<5.5$, el sesgo² no pasa de 0.25 desde $N=6$.
+Desde $N=8$, el sesgo² estimado vuelve a crecer: 20.5 en $N=9$ y 64.9 en $N=12$. El 64.9 no permite cuantificar de forma estable el sesgo poblacional del grado 12: contiene error de Monte Carlo amplificado por los ajustes extremos, unos pocos que se disparan en los bordes y arrastran el promedio de cien.
+
+En el tramo interior, $0.5<x<5.5$, el sesgo² estimado, promediado sobre las entradas del tramo, no pasa de 0.25 desde $N=6$.
 
 Por eso la tendencia vale hasta $N\approx7$ y lees la barra alta del grado 12 como varianza.
 
@@ -325,9 +327,9 @@ La línea punteada marca el piso del riesgo.
 ![Arriba, medianas de 50 muestras contra el número de entregas, de 30 a 960 en escala log: el riesgo R del grado 1 baja de 15.6 a 14.9 y se queda en 14.9, arriba del piso de 9.0; el del grado 10 empieza arriba de la recta y baja a 9.2 y 9.1, pegado al piso. Abajo, el grado que elige la CV 5 (mediana de 20 muestras) sube de 3 con 30 entregas a 10 con 960.](../_assets/ml-c2-curva-aprendizaje.svg)
 :::
 
-La recta se estanca: pasa de 14.7 con 30 entregas a 13.8 con 480 y con 960.
-El grado 10 empieza arriba de ella; llega a 9.1 con 480 y a 9.0 con 960.
-Son medianas; la identidad describe promedios.
+La recta se estanca: pasa de 15.6 con 30 entregas a 14.9 con 480 y con 960.
+El grado 10 empieza arriba de ella; llega a 9.2 con 480 y a 9.1 con 960.
+Son medianas; la identidad describe promedios. En cada tamaño, la mediana de $L_{\text{ent}}$ queda debajo de la de $R$, como anticipa @ml-c1-teo-optimismo-entrenamiento.
 
 **Piensa: ¿más entregas le ayudan igual a la recta que al polinomio de grado 10?**
 
@@ -378,7 +380,7 @@ con 30 entregas a 10 con 960. La capacidad elegida con 80 %
 puede cambiar al reajustar con 100 %.
 
 ::: exercise {#ml-c2-ej-mas-datos title="Evalúa si más datos ayudan"}
-El grado 1 tiene $R=13.8$ con $n_{\text{ent}}=480$ y con 960
+El grado 1 tiene $R=14.9$ con $n_{\text{ent}}=480$ y con 960
 (medianas); el piso es 9.0. ¿Cuánto bajará $R$ si duplicas otra vez?
 :::
 
@@ -499,7 +501,7 @@ media y rango de las cinco diferencias por pliegue.
 ::: answer {#ml-c2-resp-cuatro-curvas of="ml-c2-ej-cuatro-curvas" title="Respuesta · Seguir el orden"}
 - **A: subajuste.** Supera al benchmark en validación; subir el grado baja la CV más de un EE. Prueba más capacidad: es una heurística.
 - **B: sobreajuste.** La CV es 262.2 frente a 5.7 de entrenamiento. Reduce capacidad o consigue más datos.
-- **C: no aprende algo aprovechable.** Su brecha, 66.3 − 59.2 = 7.1, es la mayor en minutos de A, C y D, pero la CV no llega al doble de 59.2. Por eso pasas a la pregunta 2. La diferencia pareada no baja de cero a más de dos EE; la CV da «falta evidencia». Prueba otras variables.
+- **C: no aprende algo aprovechable.** Su brecha, 66.3 − 59.2 = 7.1, es la mayor, en minutos², de A, C y D, pero la CV no llega al doble de 59.2. Por eso pasas a la pregunta 2. La diferencia pareada no baja de cero a más de dos EE; la CV da «falta evidencia». Prueba otras variables.
 - **D: listo.** Supera al benchmark en validación, tiene brecha chica y más grado no mejora la CV; la prueba imita el despliegue.
 
 La CV sola no bastaba para afirmar que A o D superan al benchmark:
@@ -550,8 +552,7 @@ sin calcular rentabilidad.
 :::
 
 ::: answer {#ml-c2-resp-final-sesgo-y-varianza of="ml-c2-ej-final-sesgo-y-varianza" title="Respuesta · Invertir donde los datos ayudan"}
-**1. Diagnóstico.** A sobreajusta con 120 entregas: su brecha se cierra
-al crecer la muestra. B se estanca con errores parecidos:
+**1. Diagnóstico.** Con 120 entregas, A no cruza el umbral de la pregunta 1 (11.8 no pasa del doble de 8.1). Lo que delata su varianza del ajuste es la curva de aprendizaje: su brecha se cierra al crecer la muestra (de 11.8 − 8.1 con 120 entregas a 9.2 − 8.7 con 480). B se estanca con errores parecidos:
 puede tener subajuste o ruido dominante.
 
 **2. Términos.** En A, las curvas apuntan a varianza del ajuste.
@@ -588,8 +589,8 @@ $N^\star=2$ da el menor total calculado en el simulador con $f$ conocida:
 $9.0+0.90+0.99=10.89$. La estrella señala el óptimo teórico;
 la CV de una muestra eligió $\widehat N=6$.
 
-Más datos ayudan según qué parte domina. La recta se estanca en 13.8,
-por encima del piso de 9.0; el grado 10 llega a 9.0 con 960 entregas.
+Más datos ayudan según qué parte domina. La recta se estanca en 14.9,
+por encima del piso de 9.0; el grado 10 llega a 9.1 con 960 entregas.
 La CV elige grado 3 con 30 datos y 10 con 960, medianas de 20 repeticiones.
 
 Recuerda el recuadro «Un modelo exitoso»: comparación pareada favorable

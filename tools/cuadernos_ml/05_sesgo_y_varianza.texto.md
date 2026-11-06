@@ -128,7 +128,7 @@ Compara «1 y 10» en «modelos»; después activa «panel del grado elegido».
 ### celda: bloque-3-mira
 
 **Mira.** Los círculos muestran $L_{\text{ent}}$, pérdida promedio en entrenamiento;
-las líneas crema, $R$ en el despliegue. Son medianas de 50 muestras por
+las líneas sin círculos, $R$ en el despliegue. Son medianas de 50 muestras por
 tamaño. La punteada marca el piso cuadrático.
 Abajo, cada cuadrado resume el grado elegido por CV: mediana de 20 muestras.
 Los estilos distinguen grados.
@@ -140,8 +140,8 @@ comparación (la clase 3 lo define), evaluada en el despliegue.
 <details><summary>Explicación</summary>
 
 Con los valores iniciales, baja más el grado 10, que empieza arriba de la
-recta. Las medianas de $R$ del grado 1 son 14.7, 13.8 y 13.8 con
-30, 480 y 960 entregas. Las del grado 10 son 9.1 y 9.0 con 480 y 960;
+recta. Las medianas de $R$ del grado 1 son 15.6, 14.9 y 14.9 con
+30, 480 y 960 entregas. Las del grado 10 son 9.2 y 9.1 con 480 y 960;
 el piso es 9.0.
 
 En general, más datos pueden reducir la varianza sin corregir una familia
@@ -250,7 +250,7 @@ El ruido nuevo se suma aunque el ajuste promedio acierte.
 ### celda: cierre
 
 Repetir muestras separa desplazamiento y dispersión. Con 960 entregas,
-la mediana del riesgo del grado 10 llega a 9.0; la recta conserva 13.8.
+la mediana del riesgo del grado 10 llega a 9.1; la recta conserva 14.9.
 Más datos ayudan de manera distinta según la familia. Una curva aislada
 no cuenta toda la historia.
 

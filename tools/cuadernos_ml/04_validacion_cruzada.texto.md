@@ -72,7 +72,7 @@ Apuesta un número para cada grado elegido. Para «un EE», admite también
 
 ### celda: bloque-2-mira
 
-**Mira.** Los triángulos muestran medias CV; las barras, EE aproximados. Compara medias con el umbral, ambas marcas y $L_{\text{ent}}$; la curva crema muestra $R$.
+**Mira.** Los triángulos muestran medias CV; las barras, EE aproximados. Compara medias con el umbral, ambas marcas y $L_{\text{ent}}$; la línea discontinua muestra $R$.
 Bajar de la raya-punto del punto de comparación (*benchmark*) es una señal.
 
 Al mover «semilla», cambia la semilla: la población y $f$ se quedan; cambian los datos, el ajuste y, con él, su riesgo $R(\widehat\beta)$.
