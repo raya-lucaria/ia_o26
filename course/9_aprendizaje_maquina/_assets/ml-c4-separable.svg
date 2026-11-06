@@ -190,7 +190,7 @@ L -3.5 0
      </g>
     </g>
     <g id="text_16">
-     <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="22.610313" y="98.81" transform="rotate(-90 22.610313 98.81)">p̂(x) = Pr(y = 1 | x)</text>
+     <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #fff8ed" x="22.860625" y="98.81" transform="rotate(-90 22.860625 98.81)">probabilidad estimada p̂(x)</text>
     </g>
    </g>
    <g id="separable-p-0">

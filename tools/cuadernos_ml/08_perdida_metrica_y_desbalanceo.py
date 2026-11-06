@@ -196,9 +196,9 @@ def regiones(m, df, ax):            # ml.dibujar_frontera es binaria en esta ver
     malla = pd.DataFrame({"x1": u.ravel(), "x2": v.ravel()})
     z = m.predecir_prob(malla).argmax(axis=1).reshape(u.shape)
     ax.contourf(u, v, z, levels=[-0.5, 0.5, 1.5, 2.5], colors=COLORES)
+    s = df.sample(min(len(df), 600), random_state=0)   # al azar: proporciones reales
     for k, mk in zip(range(3), "o^s"):
-        s = df[df["y"] == k].iloc[:300]
-        ax.scatter(s["x1"], s["x2"], s=10, marker=mk, label=f"clase {k}")
+        ax.scatter(s.x1[s.y == k], s.x2[s.y == k], s=10, marker=mk, label=f"clase {k}")
     ax.legend(); ax.set_xlabel("x1 (enlaces)"); ax.set_ylabel("x2 (urgencia)")
 
 

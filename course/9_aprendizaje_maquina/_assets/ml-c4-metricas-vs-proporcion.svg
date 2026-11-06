@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="956" viewBox="0 0 388.8 619.2" role="img" aria-label="Al volverse rara la clase, la moda gana en aciertos y sigue en cero de MCC; con pesos, MCC y aciertos balanceados suben y los aciertos bajan; medido en una validación chica, el MCC baila mucho: banda de ancho 0.24 con uno por ciento de fraude"><title>Aciertos, aciertos balanceados y MCC contra la proporción de fraude</title><rect x="0" y="0" width="388.8" height="619.2" fill="#211033"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="956" viewBox="0 0 388.8 619.2" role="img" aria-label="Al volverse rara la clase, la moda gana en aciertos y sigue en cero de MCC; con pesos, MCC y aciertos balanceados suben y los aciertos bajan; medido en una validación chica, el MCC baila mucho: banda de ±0.24 con uno por ciento de fraude"><title>Aciertos, aciertos balanceados y MCC contra la proporción de fraude</title><rect x="0" y="0" width="388.8" height="619.2" fill="#211033"/>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -411,7 +411,7 @@ z
    </g>
    <g id="banda-aciertos_balanceados">
     <defs>
-     <path id="mf2d38970df" d="M 58.190682 -451.9494 
+     <path id="me00cd92a32" d="M 58.190682 -415.247481 
 L 58.190682 -291.059913 
 L 110.285141 -309.679831 
 L 179.15027 -322.339664 
@@ -423,13 +423,13 @@ L 352.204318 -378.948287
 L 283.339189 -383.708122 
 L 231.24473 -394.261499 
 L 179.15027 -412.834467 
-L 110.285141 -428.972791 
-L 58.190682 -451.9494 
+L 110.285141 -415.247481 
+L 58.190682 -415.247481 
 z
 " style="stroke: #583e4c"/>
     </defs>
     <g clip-path="url(#p3997ec0c16)">
-     <use xlink:href="#mf2d38970df" x="0" y="619.2" style="fill: #583e4c; stroke: #583e4c"/>
+     <use xlink:href="#me00cd92a32" x="0" y="619.2" style="fill: #583e4c; stroke: #583e4c"/>
     </g>
    </g>
    <g id="matplotlib.axis_3">

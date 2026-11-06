@@ -31,7 +31,7 @@ Este es el mapa de reservas; cada renglón tiene un trabajo distinto:
 - `cal` → fija el corte conformal $\widehat c$; **`cal` se aparta primero**.
 - prueba → se abre una vez, cuando el procedimiento ya está fijado.
 
-Aquí $\beta$ son parámetros, no el umbral de MIN de juegos. $\mu$ controla la regularización, no es una distribución de Markov. $\tau$ es el umbral de clasificación, no un tablero ni un tiempo de llegada.
+Aquí $\beta$ son parámetros, no el $\beta$ de la poda alfa-beta de la unidad de juegos. $\mu$ controla la regularización, no es una distribución de Markov. $\tau$ es el umbral de clasificación, no un tablero ni un tiempo de llegada.
 
 Los bloques binarios usan `datos`, `val_a` y `val_b`; no necesitan `cal`. Los bloques de tres clases tienen sus propias reservas. La prueba permanece cerrada en este recorrido.
 
@@ -148,7 +148,7 @@ La reserva cumple el papel de `cal3`: la pieza `cal` del proceso de tres clases.
 
 ### celda: bloque-4-mira
 
-Cada barra representa la cobertura dentro de una clase en `d4.despliegue`. Compara la barra de fraude con la línea de cobertura pedida. Mira también el tamaño medio por clase: cubrir más etiquetas tiene un costo.
+Cada barra representa la cobertura dentro de una clase en `d4.despliegue`: 0 es legítimo, 1 publicidad y 2 fraude. Compara la barra de fraude con la línea de cobertura pedida. Mira también el tamaño medio por clase: cubrir más etiquetas tiene un costo.
 
 Al activar «conformal por clase», se calcula un corte distinto con los casos de cada clase en la reserva. Con 2000 casos, mira cuántos fraudes quedaron en `cal`. Si su corte es infinito, la etiqueta fraude entra en todos los conjuntos.
 

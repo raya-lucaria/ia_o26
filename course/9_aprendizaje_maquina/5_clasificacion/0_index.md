@@ -81,6 +81,7 @@ Los 130 minutos incluyen lectura y exploración; la tarea va aparte.
 
 1. [[ml-perdida-metrica-desbalanceo|Pérdida, métrica y desbalanceo]]
 2. [[ml-calibracion-y-conformal|Calibración y predicción conformal]]
+3. [[ml-tarea-4|Tarea · Tres desenlaces y uno que importa]]
 
 ## Los notebooks
 

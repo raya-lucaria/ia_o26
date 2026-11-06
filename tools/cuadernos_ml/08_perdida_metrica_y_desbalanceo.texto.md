@@ -16,7 +16,7 @@ Ejecuta las celdas en orden. Antes de cada control, responde «Predice»; despu�
 
 ### celda: idea
 
-La [página](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/clasificacion/perdida-metrica-y-desbalanceo/) distingue ajustar probabilidades y decidir. El lagrangeano combina pérdida ponderada de entrenamiento $L^w_{\text{ent}}$ y penalización de pendientes $\beta$, sin penalizar el intercepto. Aquí $\beta$ son parámetros, no el umbral de MIN; el multiplicador $\mu$ regula la penalización, no es una distribución de Markov. `L_ent` nombra la pérdida de entrenamiento sin ponderar. Se entrena con la pérdida, se decide con $\tau$, se juzga con MCC.
+La [página](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/clasificacion/perdida-metrica-y-desbalanceo/) distingue ajustar probabilidades y decidir. El lagrangeano combina pérdida ponderada de entrenamiento $L^w_{\text{ent}}$ y penalización de pendientes $\beta$, sin penalizar el intercepto. Aquí $\beta$ son parámetros, no el $\beta$ de la poda alfa-beta de la unidad de juegos; $\mu$ regula la penalización, no es una distribución de la unidad de Markov. `L_ent` nombra la pérdida de entrenamiento sin ponderar. Se entrena con la pérdida, se decide con $\tau$, se juzga con MCC.
 
 $$
 \min L^{w}_{\text{ent}}+\mu\lVert\beta\rVert_2^2
@@ -157,7 +157,7 @@ Elige entre «coincide con el macro», «coincide con los aciertos» y «no coin
 
 ### celda: bloque-5-mira
 
-**Mira:** Los colores de fondo indican qué clase anuncia el modelo en cada región. Los puntos son casos de validación; su marca identifica la clase real.
+**Mira:** Los colores de fondo indican qué clase anuncia el modelo en cada región. Los puntos son 600 casos de validación tomados al azar, con las proporciones reales; su marca identifica la clase real.
 
 En las barras, la longitud representa los aciertos de cada clase y el grosor representa su soporte. Las líneas verticales marcan macro y ponderado. Busca si el promedio ponderado oculta una barra corta de la clase rara.
 
@@ -209,7 +209,7 @@ El bloque 5 del notebook 04 muestra el reparto que explica estas limitaciones.
 
 Cambia una opción de la celda y vuelve a ejecutarla. Conserva primero el proceso de fraude; después prueba una alternativa comentada. Para los anillos, usa también la representación polar indicada en el comentario.
 
-Antes de comparar modelos, escribe qué métrica te importa y qué error quieres reducir. Usa `datos.val` para elegir; observa en `datos.despliegue` cómo se comporta la elección sobre la población simulada.
+Antes de comparar modelos, escribe qué métrica te importa y qué error quieres reducir. Elige y diagnostica con las reservas de validación que imprime el mapa: `val_a` para la recalibración y el umbral $\tau$; `val_b` para comparar y elegir. `cal` queda fuera de toda elección; solo fija el corte conformal. Observa en `datos.despliegue` cómo se comporta la elección sobre la población simulada.
 
 Lee el mapa de reservas que imprime el taller: aparta `cal`, `val_a` y `val_b` para funciones distintas. Su salida indica predicción conformal por clase de manera automática en este proceso estratificado. El notebook 09 desarrolla esa parte; aquí concentra tu comparación en pérdida, umbral y métrica.
 

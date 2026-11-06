@@ -130,8 +130,9 @@ minimizar el MSE era maximizar la verosimilitud gaussiana (@ml-c3-obs-mse-verosi
 :::
 
 ::: remark {#ml-c4-obs-separable title="Datos separables: sin penalización no hay óptimo"}
-Supón que algún $(\beta_0,\beta)$ da $z_i>0$ en todo caso con $y_i=1$ y $z_i<0$
-en todo caso con $y_i=0$. Al multiplicar $(\beta_0,\beta)$ por un número cada vez
+Supón que entrenamiento tiene casos de las dos clases y que algún $(\beta_0,\beta)$ da $z_i>0$ en todo caso con $y_i=1$ y $z_i<0$ en todo caso con $y_i=0$.
+Con las dos clases presentes, ese $\beta$ no puede ser 0; por eso, al escalarlo, crece la norma de las pendientes.
+Al multiplicar $(\beta_0,\beta)$ por un número cada vez
 más grande, $L_{\text{ent}}$ baja hacia 0. Ningún par finito llega a ese ínfimo,
 así que $\lVert\widehat\beta\rVert_2$ crece mientras el optimizador corra.
 
@@ -311,15 +312,18 @@ Su pérdida es la entropía $-\bar y\ln\bar y-(1-\bar y)\ln(1-\bar y)$ solo cuan
 Con la proporción poblacional de 1 %, vale 0.056.
 
 ::: figure {#ml-c4-metricas-vs-proporcion title="Aciertos, aciertos balanceados y MCC contra la proporción de fraude"}
-![Al volverse rara la clase, la moda gana en aciertos y sigue en cero de MCC; con pesos, MCC y aciertos balanceados suben y los aciertos bajan; medido en una validación chica, el MCC baila mucho: banda de ancho 0.24 con uno por ciento de fraude](../_assets/ml-c4-metricas-vs-proporcion.svg)
+![Al volverse rara la clase, la moda gana en aciertos y sigue en cero de MCC; con pesos, MCC y aciertos balanceados suben y los aciertos bajan; medido en una validación chica, el MCC baila mucho: banda de ±0.24 con uno por ciento de fraude](../_assets/ml-c4-metricas-vs-proporcion.svg)
 :::
 
-Los tres primeros paneles promedian modelos reentrenados: las barras son $\pm2\,\mathrm{EE}$ de esa media, error Monte Carlo.
-La tercera serie usa pesos en la pérdida; §4 explica qué hacen y qué cuestan.
+Los tres paneles muestran MCC, $A_{\text{bal}}$ y aciertos; el cuarto renglón solo lleva la leyenda.
+Los puntos son medias en despliegue de modelos reentrenados; las barras son $\pm2\,\mathrm{EE}$ de esas medias, error Monte Carlo.
+Cada panel compara «sin pesos», «balanceado» y la moda en línea punteada.
+La serie «balanceado» usa pesos en la pérdida; §4 explica qué hacen y qué cuestan.
 En este proceso mejoran MCC y $A_{\text{bal}}$, sacrificando $A$.
 
-El cuarto panel mantiene un modelo fijo y cambia la validación: su banda es $\pm2$ desviaciones entre evaluaciones.
-Su ancho pasa de 0.16 con 50 % de fraude a 0.24 con 1 %.
+La banda sombreada encimada en cada panel mantiene fijo el modelo balanceado y cambia la validación.
+Cubre la media $\pm2$ desviaciones entre evaluaciones en validaciones chicas.
+En el MCC, la banda va de ±0.16 con 50 % de fraude a ±0.24 con 1 %.
 El punto de despliegue usa una muestra enorme.
 
 ::: remark {#ml-c4-obs-intervalo-metrica title="Cuánto se mueve un MCC medido"}
@@ -453,6 +457,7 @@ Con muestra finita, penalización o familia mal especificada, también pueden ca
 
 **Más peso no es siempre mejor.** En población, con $\mu=0$ y modelo bien especificado, la razón equivale al corte $1/(1+w_1/w_0)$.
 Cada métrica favorece un corte; pesar demasiado llena el filtro de falsas alarmas.
+El ejemplo es el fraude con 5 % de positivos del bloque 4, en población: ahí la razón balanceada es 19.
 
 | Métrica | Mejor razón en el ejemplo | Qué pasa después |
 |---|---|---|
@@ -556,7 +561,7 @@ Informa las clases del problema a `ml_lab`, mediante `ml.con_clases` en CV.
 |---|---|
 | En entrenamiento | El modelo no la aprende |
 | En validación: $A_{\text{bal}}$ | «No estimable» (`nan`); no se promedian solo las clases presentes |
-| En validación: MCC | 0 por convención; no aporta evidencia sobre esa clase |
+| En validación: MCC | En binario, 0 por convención (denominador nulo); en multiclase se calcula con las presentes y no dice nada de la ausente |
 
 Baja $k$, como máximo al conteo de la clase rara, buscando varios casos por pliegue; junta clases si tiene sentido.
 O declara que no puedes estimar ese desempeño.
@@ -587,6 +592,8 @@ Con $k=5$ tendrías dos fraudes por pliegue.
 :::
 
 **Bloque 6 · Una métrica por pliegue.** [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/08_perdida_metrica_y_desbalanceo.ipynb)
+
+En el notebook, este bloque va al final, después del bloque 5 de tres clases.
 
 ## 6 · Pasar a más de dos clases
 
@@ -647,6 +654,8 @@ El MCC de @ml-c4-def-mcc es global: no promedia MCC binarios.
 | $A$ | 0.90 | 0.57 |
 | $A_{\text{bal}}$ | 0.36 | 0.65 |
 | MCC | 0.16 | 0.22 |
+
+Un clasificador de noticias tiene tres temas: Tecnología con 100 casos, Salud con 60 y Deporte con 20.
 
 ::: figure {#ml-c4-macro-ponderado title="Macro contra ponderado en el ejemplo de noticias"}
 ![Aciertos por clase en el ejemplo de noticias: Tecnología 0.900, Salud 0.667, Deporte 0.500; el promedio ponderado, 0.778, sigue a la clase grande y el macro, 0.689, no](../_assets/ml-c4-macro-ponderado.svg)

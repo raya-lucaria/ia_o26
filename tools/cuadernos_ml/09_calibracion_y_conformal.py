@@ -80,7 +80,8 @@ def bloque_2(metodo, mismos):
         print(f"{nombre}: en val_b, Brier {ml.brier(val_b['y'], p):.3f} · "
               f"pérdida logarítmica {ml.log_loss(val_b['y'], p):.3f}")
     if metodo == "platt":
-        print("β̂ de la recalibración (son parámetros):", m.hiperparametros["beta_cal"])
+        print("β̂ de la recalibración (son parámetros):",
+              np.round(np.asarray(m.hiperparametros["beta_cal"], dtype=float), 3))
 
 
 ml.laboratorio(
@@ -149,7 +150,9 @@ def bloque_4(por_clase, delta, n):
     conf = ml.conformal(m4, cal, delta, por_clase=por_clase)
     ml.dibujar_cobertura_por_clase(conf, d4.despliegue)
     plt.show()
-    print(f"fraudes en cal: {int((cal['y'] == 2).sum())} · ĉ = {conf.c_gorro}")
+    corte = ({c: round(float(v), 3) for c, v in conf.c_gorro.items()} if por_clase
+             else round(float(conf.c_gorro), 3))   # por clase: un corte por etiqueta
+    print(f"fraudes en cal: {int((cal['y'] == 2).sum())} · ĉ = {corte}")
 
 
 ml.laboratorio(

@@ -143,7 +143,7 @@ def _np():
 # =========================================================== diagramas ===
 
 # ------------------------------------------------- ml-c4-moda-99 (a mano) ---
-MODA_W, MODA_H = 600, 430
+MODA_W, MODA_H = 600, 456
 
 
 def ml_c4_moda_99():
@@ -165,12 +165,14 @@ def ml_c4_moda_99():
     c.append(texto(16, 176, "borde rosa:", tam=13, color=ROSA, anclaje="start"))
     c.append(texto(16, 194, "el único fraude", tam=13, color=ROSA, anclaje="start"))
     yb = y0 + 10 * (lado + gap) + 22
-    c.append(caja(16, yb - 4, 568, 50, relleno=PANEL, borde=LINEA, radio=8))
-    c.append(texto(96, yb + 27, ["aciertos ", ("A", {"estilo": "italic"}), f" = {m['aciertos']}"],
-                   tam=15, peso="700"))
-    c.append(texto(316, yb + 27, "aciertos balanceados = " + m["aciertos_balanceados"], tam=15,
-                   peso="700"))
-    c.append(texto(520, yb + 27, "MCC = " + m["mcc"], tam=15, peso="700", color=ACENTO))
+    # dos renglones dentro de los primeros ~460 px: la columna del sitio puede medir ~490
+    c.append(caja(16, yb - 4, 568, 76, relleno=PANEL, borde=LINEA, radio=8))
+    c.append(texto(32, yb + 22, ["aciertos ", ("A", {"estilo": "italic"}), f" = {m['aciertos']}"],
+                   tam=15, peso="700", anclaje="start"))
+    c.append(texto(220, yb + 22, "aciertos balanceados = " + m["aciertos_balanceados"], tam=15,
+                   peso="700", anclaje="start"))
+    c.append(texto(32, yb + 54, "MCC = " + m["mcc"], tam=15, peso="700", color=ACENTO,
+                   anclaje="start"))
     aria = (f"Cien mensajes; la regla que siempre dice legítimo acierta 99 y no detecta el único "
             f"fraude: aciertos {m['aciertos']}, aciertos balanceados {m['aciertos_balanceados']}, "
             f"MCC {m['mcc']}")
@@ -222,7 +224,7 @@ def ml_c4_cadena_decision():
 
 
 # ---------------------------------------------------- ml-c4-softmax ---
-SM_W, SM_H = 600, 360
+SM_W, SM_H = 600, 340
 
 
 def ml_c4_softmax():
@@ -234,7 +236,7 @@ def ml_c4_softmax():
     for (s, sub), yy in zip(ent, ye):
         c.append(caja(20, yy - 22, 70, 40, relleno=PANEL, borde=LINEA, radio=8))
         c.append(texto(55, yy + 4, s, tam=16, peso="700"))
-    c.append(texto(16, 322, "las entradas de φ(x)", tam=12, color=SUAVE, anclaje="start"))
+    c.append(texto(16, 322, "1 y las entradas de φ(x)", tam=12, color=SUAVE, anclaje="start"))
     ys = [116, 186, 256]
     for k, yy in enumerate(ys):
         c.append(caja(220, yy - 24, 120, 44, relleno=PANEL, borde=CIAN, radio=8))
@@ -252,8 +254,6 @@ def ml_c4_softmax():
         c.append(caja(498, yy - 22, 84, 40, relleno=PANEL, borde=ORO, radio=8))
         c.append(texto(540, yy + 4, [("p", {"estilo": "italic"}), f"ᵢ,{k}"], tam=16, peso="700"))
     c.append(texto(540, 300, "suman 1", tam=12, color=ORO))
-    c.append(texto(16, 350, "Es una red de una sola capa; la unidad de redes la retoma.", tam=12,
-                   color=SUAVE, anclaje="start"))
     aria = ("Regresión softmax: cada clase tiene su puntaje lineal en las entradas de phi de x "
             "y softmax los convierte en tres probabilidades que suman uno")
     return svg(SM_W, SM_H, aria, "Regresión softmax con tres clases", c)
@@ -414,6 +414,7 @@ def ml_c4_separable():
     def dibujar(fig, ejes):
         ml.dibujar_separable(ajustes, mu=list(cif.MUS_FIGURA_SEPARABLE), datos=datos,
                              ax=list(ejes), tema="sitio")
+        ejes[0].set_ylabel("probabilidad estimada p̂(x)")   # tres ajustes: ninguno es Pr(y=1|x)
         ejes[1].set_ylabel("‖β̂‖₂ (variables estandarizadas)")
         ejes[1].set_xlabel("log₁₀ μ")
         ley = ejes[0].get_legend()
@@ -493,6 +494,8 @@ def ml_c4_contribucion_clases():
                 ax.text(xi + (j - 0.5) * 0.36, vi + 0.05, _num(vi, 2), ha="center", color=TEXTO,
                         fontsize=8.5)
         ax.set_xticks(x, nombres)
+        ax.set_ylim(top=1.15 * max(cif._col(tb, k, "perdida_media") for _, tb in filas[:2]
+                                    for k in (0, 1)) + 0.1)   # que la etiqueta no toque el borde
         ax.set_ylabel("pérdida media por caso")
         _titulo(ax, "pérdida media dentro de cada clase (modelo sin pesos)")
         ax.legend(loc="upper left")
@@ -515,13 +518,20 @@ def ml_c4_metricas_vs_proporcion():
 
     def dibujar(fig, ejes):
         ml.dibujar_metricas_vs_proporcion(tabla, ax=list(ejes[:n]), tema="sitio")
+        np = _np()
+        for ax in ejes[:n]:              # la banda ±2 desv no sale del rango de la métrica:
+            lo = -1.0 if ax.get_title() == "MCC" else 0.0   # MCC en [-1, 1]; A_bal y A en [0, 1]
+            for col in ax.collections:
+                if str(col.get_gid()).startswith("banda-"):
+                    for camino in col.get_paths():
+                        camino.vertices[:, 1] = np.clip(camino.vertices[:, 1], lo, 1.0)
         manijas, rotulos = ejes[0].get_legend_handles_labels()
         for ax in ejes[:n]:
             if ax.get_legend() is not None:
                 ax.get_legend().remove()
             ax.set_xlabel("")
-        for ax in ejes[:n]:              # A_bal y aciertos no pasan de 1: la banda ±2 desv
-            if ax.get_ylim()[1] > 1.0:   # se corta en la cota, no se dibuja arriba de ella
+        for ax in ejes[:n]:              # el eje tampoco pasa de 1 (holgura para los puntos)
+            if ax.get_ylim()[1] > 1.0:
                 ax.set_ylim(top=1.02)
         ejes[n - 1].set_xlabel("proporción de fraude Pr(y = 1), escala log")
         ejes[n].axis("off")
@@ -531,7 +541,7 @@ def ml_c4_metricas_vs_proporcion():
 
     aria = ("Al volverse rara la clase, la moda gana en aciertos y sigue en cero de MCC; con "
             "pesos, MCC y aciertos balanceados suben y los aciertos bajan; medido en una "
-            f"validación chica, el MCC baila mucho: banda de ancho {d['cita']['banda_01']} con uno "
+            f"validación chica, el MCC baila mucho: banda de ±{d['cita']['banda_01']} con uno "
             "por ciento de fraude")
     return _grafica(dibujar, aria, "Aciertos, aciertos balanceados y MCC contra la proporción de fraude",
                     8.6, filas=n + 1, gridspec_kw={"height_ratios": [1] * n + [0.42]})
@@ -675,6 +685,7 @@ def ml_c4_mcc_por_pliegue():
         ax.axhline(m["despliegue"]["mcc"], color=CREMA, ls="--", lw=1.5,
                    label=f"MCC en el despliegue = {m['cita']['mcc_despliegue']}")
         ax.legend(loc="upper left")
+        _titulo(ax, "cada raya corta es la media de los pliegues que se pueden medir", 9)
 
     aria = (f"Con pocos fraudes por pliegue, el MCC de cada pliegue salta mucho: {m['cita']['fraudes_ent']} "
             f"fraudes en entrenamiento; con diez pliegues hay uno o dos fraudes en cada uno, el MCC "
@@ -791,6 +802,12 @@ def ml_c4_confiabilidad():
         real = datos.realidad
         verdadera = ml.calibracion(real["prob"].to_numpy(), real["y"].to_numpy(), bins=10)
         ml.dibujar_calibracion(tablas, verdadera=verdadera, ax=ax, tema="sitio")
+        for b in ax.patches:             # el histograma de ml_lab es bajo y tenue en el sitio
+            if str(b.get_gid()).startswith("histograma-"):
+                b.set_height(1.4 * b.get_height())
+                b.set_width(0.016)
+                b.set_x(b.get_x() - 0.002)
+                b.set_alpha(0.6)
         ybar = float(datos.ent["y"].mean())
         ax.plot([ybar], [float(y.mean())], marker="D", ms=8, color=ACENTO, ls="none",
                 label="benchmark: la proporción")

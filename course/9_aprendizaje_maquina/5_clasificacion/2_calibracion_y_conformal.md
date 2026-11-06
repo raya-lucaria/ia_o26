@@ -202,11 +202,14 @@ Cada reserva tiene un trabajo:
 Aparta las piezas al principio, con semilla propia, antes de elegir nada; `cal` se aparta primero:
 
 ```python
+import ml_lab as ml                      # el notebook 09 ya lo carga
+datos = ml.PROCESOS["fraude"](n=2000, semilla=0, proporcion=0.05)
+C, S = "azar", 0                         # forma de separación y semilla
 cal, resto = ml.partir(datos.val, 1/3, como=C, semilla=S)
 val_a, val_b = ml.partir(resto, 0.5, como=C, semilla=S + 1)
 ```
 
-`S` es la semilla; `C` conserva la forma de separación de la muestra.
+`S` es la semilla; `C` es la forma de separación, y debe ser la de la muestra.
 Para la garantía marginal usa `"azar"` en ambas separaciones.
 `"estratificado"` fija cuotas: `cal` y el caso nuevo pierden intercambiabilidad global; usa conformal por clase (§5).
 Sin conformal, los bloques 1–2 no crean `cal`; los nombres conservan su papel.
@@ -314,10 +317,9 @@ $y\in C(x)\iff c_{\text{nuevo}}\le\widehat c$. 2) Condicionado en
 $\mathcal D_{\text{ajuste}}$, $c$ es una función fija. Una función fija aplicada
 caso por caso a casos intercambiables da puntajes intercambiables.
 
-Así que
-$c_1,\dots,c_{n_{\text{cal}}},c_{\text{nuevo}}$ son intercambiables, y la posición
-de $c_{\text{nuevo}}$ al ordenarlos es uniforme entre $1$ y $n_{\text{cal}}+1$
-(los empates solo la favorecen). 3) Si el índice
+Así que $c_1,\dots,c_{n_{\text{cal}}},c_{\text{nuevo}}$ son intercambiables.
+La posición de $c_{\text{nuevo}}$ al ordenarlos es uniforme entre $1$ y $n_{\text{cal}}+1$ si los empates se rompen al azar, con un sorteo auxiliar independiente.
+El conjunto $C(x)$ acepta los empates con $\le$; contarlos a favor del caso nuevo solo puede subir la cobertura. 3) Si el índice
 $\lceil(n_{\text{cal}}+1)(1-\delta)\rceil$ no pasa de $n_{\text{cal}}$, entonces
 $c_{\text{nuevo}}\le\widehat c$ siempre que $c_{\text{nuevo}}$ quede entre los
 $\lceil(n_{\text{cal}}+1)(1-\delta)\rceil$ menores de los $n_{\text{cal}}+1$.
@@ -335,7 +337,7 @@ Se cumple por construcción: las piezas proceden de casos independientes del mis
 Con separación estratificada corresponde la versión por clase de §5.
 
 ::: figure {#ml-c4-conformal-conjuntos title="Conjuntos que crecen donde hay duda"}
-![Tres clases equilibradas: regiones con conjuntos vacíos o de una, dos o tres etiquetas; cobertura y tamaño medio frente a delta.](../_assets/ml-c4-conformal-conjuntos.svg)
+![Tres clases equilibradas: regiones con conjuntos de una, dos o tres etiquetas; cobertura y tamaño medio frente a delta.](../_assets/ml-c4-conformal-conjuntos.svg)
 :::
 
 Compara cobertura en `despliegue` y meta $1-\delta$.

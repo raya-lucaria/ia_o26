@@ -549,32 +549,32 @@ z
    <g id="patch_26">
     <path d="M 58.744091 506.72 
 L 119.760455 506.72 
-L 119.760455 489.501884 
-L 58.744091 489.501884 
+L 119.760455 491.390501 
+L 58.744091 491.390501 
 z
 " clip-path="url(#pb38e96c39c)" style="fill: #7d6d8e"/>
    </g>
    <g id="patch_27">
     <path d="M 238.203984 506.72 
 L 299.220348 506.72 
-L 299.220348 506.382963 
-L 238.203984 506.382963 
+L 299.220348 506.419932 
+L 238.203984 506.419932 
 z
 " clip-path="url(#pb38e96c39c)" style="fill: #7d6d8e"/>
    </g>
    <g id="patch_28">
     <path d="M 123.349652 506.72 
 L 184.366016 506.72 
-L 184.366016 488.829948 
-L 123.349652 488.829948 
+L 184.366016 490.792268 
+L 123.349652 490.792268 
 z
 " clip-path="url(#pb38e96c39c)" style="fill: #ff87ad"/>
    </g>
    <g id="patch_29">
     <path d="M 302.809545 506.72 
 L 363.825909 506.72 
-L 363.825909 378.072381 
-L 302.809545 378.072381 
+L 363.825909 392.183455 
+L 302.809545 392.183455 
 z
 " clip-path="url(#pb38e96c39c)" style="fill: #ff87ad"/>
    </g>
@@ -624,34 +624,44 @@ L -3.5 0
     <g id="ytick_14">
      <g id="line2d_22">
       <g>
-       <use xlink:href="#m8247fdca18" x="43.49" y="468.94704" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
+       <use xlink:href="#m8247fdca18" x="43.49" y="473.090273" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_30">
-      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="472.176376" transform="rotate(-0 36.49 472.176376)">1</text>
+      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="476.319609" transform="rotate(-0 36.49 476.319609)">1</text>
      </g>
     </g>
     <g id="ytick_15">
      <g id="line2d_23">
       <g>
-       <use xlink:href="#m8247fdca18" x="43.49" y="431.174081" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
+       <use xlink:href="#m8247fdca18" x="43.49" y="439.460546" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_31">
-      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="434.403417" transform="rotate(-0 36.49 434.403417)">2</text>
+      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="442.689882" transform="rotate(-0 36.49 442.689882)">2</text>
      </g>
     </g>
     <g id="ytick_16">
      <g id="line2d_24">
       <g>
-       <use xlink:href="#m8247fdca18" x="43.49" y="393.401121" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
+       <use xlink:href="#m8247fdca18" x="43.49" y="405.830819" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_32">
-      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="396.630457" transform="rotate(-0 36.49 396.630457)">3</text>
+      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="409.060155" transform="rotate(-0 36.49 409.060155)">3</text>
      </g>
     </g>
-    <g id="text_33">
+    <g id="ytick_17">
+     <g id="line2d_25">
+      <g>
+       <use xlink:href="#m8247fdca18" x="43.49" y="372.201092" style="fill: #c8b9d8; stroke: #c8b9d8; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_33">
+      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #c8b9d8" x="36.49" y="375.430428" transform="rotate(-0 36.49 375.430428)">4</text>
+     </g>
+    </g>
+    <g id="text_34">
      <text style="font-size: 9px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="25.210156" y="439.18" transform="rotate(-90 25.210156 439.18)">pérdida media por caso</text>
     </g>
    </g>
@@ -675,19 +685,19 @@ L 379.08 506.72
 L 379.08 371.64 
 " style="fill: none; stroke: #c8b9d8; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="text_34">
-    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="89.252273" y="487.613236" transform="rotate(-0 89.252273 487.613236)">0.46</text>
-   </g>
    <g id="text_35">
-    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="268.712166" y="504.494315" transform="rotate(-0 268.712166 504.494315)">0.01</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="89.252273" y="489.709015" transform="rotate(-0 89.252273 489.709015)">0.46</text>
    </g>
    <g id="text_36">
-    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="153.857834" y="486.9413" transform="rotate(-0 153.857834 486.9413)">0.47</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="268.712166" y="504.738446" transform="rotate(-0 268.712166 504.738446)">0.01</text>
    </g>
    <g id="text_37">
-    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="333.317727" y="376.183733" transform="rotate(-0 333.317727 376.183733)">3.41</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="153.857834" y="489.110782" transform="rotate(-0 153.857834 489.110782)">0.47</text>
    </g>
    <g id="text_38">
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="333.317727" y="390.501968" transform="rotate(-0 333.317727 390.501968)">3.41</text>
+   </g>
+   <g id="text_39">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #f7f2ff" x="211.285" y="365.64" transform="rotate(-0 211.285 365.64)">pérdida media dentro de cada clase (modelo sin pesos)</text>
    </g>
    <g id="legend_3">
@@ -712,7 +722,7 @@ L 51.14 380.138672
 z
 " style="fill: #7d6d8e"/>
     </g>
-    <g id="text_39">
+    <g id="text_40">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="74.94" y="386.088672" transform="rotate(-0 74.94 386.088672)">legítimo</text>
     </g>
     <g id="patch_36">
@@ -723,7 +733,7 @@ L 51.14 392.615078
 z
 " style="fill: #ff87ad"/>
     </g>
-    <g id="text_40">
+    <g id="text_41">
      <text style="font-size: 8.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #f7f2ff" x="74.94" y="398.565078" transform="rotate(-0 74.94 398.565078)">fraude</text>
     </g>
    </g>
