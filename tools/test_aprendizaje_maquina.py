@@ -232,11 +232,11 @@ def test_claves_de_los_catalogos_de_1_0():
     for prohibida in ("lineal", "ar1", "cola_larga"):
         assert prohibida not in ml.PROCESOS
     # 1.3 (clase 3) agrega los casos 6 a 12 y 24 y el taller 3; 1.5 (clase 4), 17, 18, 22,
-    # 25 y el taller 4
+    # 25 y el taller 4; 1.6 (clase 5), 19, 20, 21, 26, 27, 28 y el taller 5
     assert set(ml.CASOS_BORDE) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                                   22, 23, 24, 25}
+                                   19, 20, 21, 22, 23, 24, 25, 26, 27, 28}
     assert all(isinstance(k, int) for k in ml.CASOS_BORDE)
-    assert set(ml.ANALISIS_TALLER) == {1, 2, 3, 4}
+    assert set(ml.ANALISIS_TALLER) == {1, 2, 3, 4, 5}
     # 1.4 agrega las métricas de la clase 4
     assert ml.SENTIDO == {
         "cuadratica": "min", "absoluta": "min", "logaritmica": "min", "aciertos": "max",
@@ -256,8 +256,8 @@ def test_requiere_misma_x_y_mayor_o_igual():
 
 
 def test_version_y_cambios():
-    assert ml.VERSION == "1.5"
-    assert {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"} <= set(ml.CAMBIOS)
+    assert ml.VERSION == "1.6"
+    assert {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"} <= set(ml.CAMBIOS)
     assert set(_entradas()) == set(ml.CAMBIOS)
 
 
@@ -560,8 +560,7 @@ def test_adelantos_de_proceso_lanzan_con_la_clase_que_los_trae():
         ml.proceso(n=20, deriva=lambda t: {})
     with pytest.raises(ValueError):
         ml.proceso(n=20, separar="otra")
-    with pytest.raises(NotImplementedError, match="clase 5"):
-        ml.ajustar_otro(ml.proceso(n=20), familia="arbol")
+    ml.ajustar_otro(ml.proceso(n=20), familia="arbol")  # desde 1.6 (clase 5)
 
 
 def test_piso_con_variables_visibles():
@@ -860,7 +859,8 @@ def test_casos_de_1_0_se_rompen_a_la_vista():
     assert ml.piso(c2) > 9 * ml.piso(ml.caso(2, omitir=None))
     for numero, caso in ml.CASOS_BORDE.items():
         dueña = (2 if 13 <= numero <= 16 else 3 if 6 <= numero <= 12 or numero == 24
-                 else 4 if numero in (17, 18, 22, 25) else 1)
+                 else 4 if numero in (17, 18, 22, 25)
+                 else 5 if numero in (19, 20, 21, 26, 27, 28) else 1)
         assert caso.numero == numero and caso.clase == dueña
         assert caso.pregunta.endswith("?") and caso.que_se_ve
 
@@ -1793,9 +1793,7 @@ def test_pliegues_cada_fila_valida_una_vez():
     for semilla in range(30):
         est = ml.pliegues(y, k=5, como="estratificado", semilla=semilla)
         assert all(y["y"].iloc[v].sum() > 0 for _, v in est)
-    for como in ("grupo", "temporal"):
-        with pytest.raises(NotImplementedError, match="clase 5"):
-            ml.pliegues(df, como=como)
+    assert len(ml.pliegues(df, como="temporal")) == 5  # desde 1.6 (clase 5)
     with pytest.raises(ValueError):
         ml.pliegues(df, como="azar", estratificar=True)
 
@@ -4803,3 +4801,689 @@ def test_efecto_de_pesos_coincidencia_poblacional():
     d = ml.PROCESOS["fraude"](n=500_000, proporcion=0.05)
     t = ml.efecto_de_pesos(d, [1, 3, 12, 30, 100])
     assert (t["coincidencia"] > 0.99).all()
+
+
+# === Lote de la clase 5 (1.6): clase_5.md §10.7 «Pide nuevo», contrato §5.10–§5.11 ===
+
+
+def _llego_tarde(**cambios):
+    return ml._llego_tarde(**cambios)
+
+
+def test_pliegues_temporales_solo_validan_hacia_adelante():
+    df = pd.DataFrame({"t": np.arange(60)[::-1].astype(float), "y": np.arange(60.0)})
+    part = ml.pliegues(df, k=5, como="temporal")
+    assert len(part) == 5
+    t = df["t"].to_numpy()
+    for ajuste, valida in part:
+        assert t[ajuste].max() < t[valida].min()
+    validas = np.concatenate([v for _, v in part])
+    assert len(set(validas)) == len(validas) == 50  # el primer bloque nunca valida
+    cv = ml.validacion_cruzada(df.assign(x=1.0), lambda d: ml.ajustar(d, columnas_x=["x"],
+                                                                      tarea="regresion"),
+                               particion="temporal")
+    assert np.isnan(cv.perdidas_fuera).sum() == 10
+    ml.dibujar_pliegues(60, 5, particion=part)
+
+
+def test_pliegues_por_grupo_nunca_parten_un_grupo():
+    d = ml.proceso(n=240, ruido=ml.efecto_grupo(24), con_realidad=False)
+    df = d.ent
+    part = ml.pliegues(df, k=5, como="grupo", semilla=3)
+    for ajuste, valida in part:
+        assert not set(df["grupo"].iloc[ajuste]) & set(df["grupo"].iloc[valida])
+    assert sorted(np.concatenate([v for _, v in part])) == list(range(len(df)))
+    with pytest.raises(ValueError, match="grupo"):
+        ml.pliegues(df.drop(columns="grupo"), como="grupo")
+
+
+def test_grupo_estratificado_balancea_positivos():
+    rng = np.random.default_rng(0)
+    grupo = np.repeat(np.arange(60), 5)
+    y = (rng.random(300) < np.repeat(rng.choice([0.05, 0.6], 60), 5)).astype(int)
+    df = pd.DataFrame({"grupo": grupo, "y": y})
+    df.attrs["ml"] = {"columnas_x": [], "columnas_contexto": ["grupo"],
+                      "tarea": "clasificacion", "K": 2, "clases": [0, 1]}
+    est = ml.pliegues(df, k=5, como="grupo", estratificar=True, semilla=0)
+    sin = ml.pliegues(df, k=5, como="grupo", semilla=0)
+    for ajuste, valida in est:
+        assert not set(grupo[ajuste]) & set(grupo[valida])
+    rango = lambda part: np.ptp([y[v].mean() for _, v in part])  # noqa: E731
+    assert rango(est) < rango(sin)
+    assert rango(est) < 0.2
+
+
+def test_estratificar_sin_grupo_lanza():
+    df = pd.DataFrame({"y": [0, 1] * 20})
+    for como in ("azar", "estratificado", "temporal"):
+        with pytest.raises(ValueError, match='como="grupo"'):
+            ml.pliegues(df, como=como, estratificar=True)
+
+
+@pytest.mark.parametrize("familia", ["arbol", "bosque", "boosting"])
+def test_ajustar_otro_familias_de_la_clase_5(familia):
+    reg = ml.PROCESOS["entregas_curvas"](n=120)
+    m = ml.ajustar_otro(reg, familia=familia)
+    assert m.familia == familia and m.tarea == "regresion"
+    assert ml.L(m, reg.val) < ml.benchmarks(reg, reg.val).loc["media", "cuadratica"]
+    clf = _llego_tarde(n=400)
+    m = ml.ajustar_otro(clf, familia=familia, profundidad=2)
+    assert m.predecir_prob(clf.val).shape == (len(clf.val), 2)
+    assert np.allclose(m.predecir_prob(clf.val).sum(axis=1), 1)
+    assert ml.evaluar(m, clf.val, "logaritmica") < np.inf
+    with pytest.raises(ValueError):
+        ml.ajustar_otro(reg, familia=familia, profundidad=0)
+
+
+def test_ajustar_otro_boosting_nombra_tasa_y_etapas():
+    reg = ml.PROCESOS["entregas_curvas"](n=120)
+    m = ml.ajustar_otro(reg, familia="boosting", etapas=7, tasa=0.3, profundidad=1)
+    assert m.hiperparametros == {"etapas": 7, "tasa": 0.3, "profundidad": 1}
+    assert m._est.n_estimators == 7 and m._est.learning_rate == 0.3
+    with pytest.raises(ValueError, match="tasa"):
+        ml.ajustar_otro(reg, familia="boosting", tasa=1.5)
+
+
+def test_seleccionar_solo_mira_entrenamiento():
+    d = ml.sembrar_fuga(_llego_tarde(n=200), "seleccion_previa", n_ruido=40, k=5)
+    phi = ml.seleccionar(k=5).ajustar(d.ent)
+    assert ml.seleccionar(k=5).ajustar(d.ent.copy()).nombres == phi.nombres
+    # y la lista es la de mayor |corr| en ent
+    r = ml._abs_corr_con_y(d.ent, d.columnas_universo)
+    assert set(phi.nombres) == {d.columnas_universo[i] for i in np.argsort(-r)[:5]}
+    assert ml.estandarizar(ml.seleccionar(k=5)).ajustar(d.ent).nombres == phi.nombres
+
+
+def test_seleccionar_lee_el_universo():
+    d = ml.caso(26)
+    assert len(d.columnas_universo) == 503 and len(d.columnas_x) == 10
+    assert set(d.columnas_universo) <= set(d.ent.columns)
+    assert d.ent.attrs["ml"]["columnas_universo"] == d.columnas_universo
+    assert ml.ajustar(d).Phi(d.ent).shape[1] == 11  # 10 columnas y la constante
+    phi = ml.seleccionar(10).ajustar(d.ent)
+    r = ml._abs_corr_con_y(d.ent, d.columnas_universo)
+    assert set(phi.nombres) == {d.columnas_universo[i] for i in np.argsort(-r)[:10]}
+    assert set(phi.nombres) != set(d.columnas_x)  # eligió entre las 503, no entre las 10
+    with pytest.raises(ValueError, match="contexto|constante"):
+        ml.seleccionar(1, columnas=["y"]).ajustar(d.ent)
+
+
+def test_seleccion_previa_infla_y_la_limpia_recupera():
+    d = ml.caso(26)
+    logistica = lambda df: ml.ajustar(df, pesos="balanceado")  # noqa: E731
+    limpia = ml.tuberia(ml.seleccionar(10), modelo={"familia": "logistica",
+                                                    "pesos": "balanceado"})
+    mutada = ml.tuberia(ml.seleccionar(10, columnas=d.columnas_x),
+                        modelo={"familia": "logistica", "pesos": "balanceado"})
+    cv = lambda c: ml.validacion_cruzada(d, c, particion="estratificado",  # noqa: E731
+                                         criterio="mcc").media
+    assert cv(logistica) > 0.3
+    assert abs(cv(limpia)) < 0.1
+    assert abs(ml.desempeno(limpia(ml._desarrollo(d)), d, "mcc")) < 0.1
+    assert cv(mutada) > 0.3  # reseleccionar desde columnas_x ya reducidas no recupera
+
+
+def test_tuberia_caso_26_recupera():
+    d = ml.caso(26)
+    limpia = ml.tuberia(ml.seleccionar(10), modelo={"familia": "logistica",
+                                                    "pesos": "balanceado"})
+    cv = ml.validacion_cruzada(d, limpia, particion="estratificado", criterio="mcc")
+    assert abs(cv.media) < 0.1
+
+
+def test_imputador_aprende_en_ent_y_agrega_indicadoras():
+    d = _llego_tarde(n=300, faltantes={"distancia": (0.3, "azar")})
+    imp = ml.imputar_simple(d.ent)
+    assert imp.indicadoras == ["distancia"]
+    assert imp.valores["distancia"] == pytest.approx(d.ent["distancia"].median())
+    val = imp.transformar(d.val)
+    assert not val["distancia"].isna().any()
+    assert (val["distancia_falta"] == d.val["distancia"].isna().astype(float)).all()
+    assert val.attrs["ml"]["columnas_x"] == ["distancia", "hora", "lluvia", "distancia_falta"]
+    assert d.val.attrs["ml"]["columnas_x"] == ["distancia", "hora", "lluvia"]  # no muta
+    assert repr(ml.imputador()) == "imputador()"
+    with pytest.raises(ValueError, match="no está ajustado"):
+        ml.imputador().transformar(d.val)
+    with pytest.raises(ValueError, match="contexto|y"):
+        ml.imputar_simple(d.ent, columnas=["y"])
+
+
+def test_tuberia_acepta_imputador_sin_ajustar():
+    d = _llego_tarde(n=300, faltantes={"distancia": (0.3, "azar")})
+    vistos = []
+    base = ml.tuberia(ml.imputador(), modelo={"familia": "logistica"})
+
+    def construir(df):
+        m = base(df)
+        vistos.append((m._imputadores[0].valores["distancia"], df["distancia"].median()))
+        return m
+
+    ml.validacion_cruzada(d, construir, k=5)
+    assert len(vistos) == 5
+    for aprendido, del_pliegue in vistos:
+        assert aprendido == pytest.approx(del_pliegue)
+    assert len({round(a, 12) for a, _ in vistos}) > 1  # cada pliegue la suya
+
+
+def test_tuberia_un_solo_intercepto():
+    d = _llego_tarde(n=300, faltantes={"distancia": (0.3, "azar")})
+    for phi in (ml.estandarizar(ml.seleccionar(k=2)),
+                ml.combinar(ml.columnas("distancia"), ml.columnas("hora")),
+                ml.estandarizar(ml.combinar(ml.columnas("distancia"), ml.dummies("lluvia")))):
+        m = ml.tuberia(ml.imputador(), phi, modelo={"familia": "logistica"})(d.ent)
+        assert list(m.Phi(d.val).columns).count("1") == 1
+    m = ml.tuberia(ml.imputador(), modelo={"familia": "logistica"})(d.ent)
+    assert list(m.Phi(d.val).columns) == ["1", "distancia", "hora", "lluvia", "distancia_falta"]
+
+
+def test_tuberia_dos_phi_lanza():
+    with pytest.raises(ValueError, match="a lo sumo una Φ"):
+        ml.tuberia(ml.seleccionar(3), ml.estandarizar(ml.columnas("x")), modelo={})
+    with pytest.raises(ValueError, match="antes de la Φ"):
+        ml.tuberia(ml.seleccionar(3), ml.imputador(), modelo={})
+    with pytest.raises(ValueError, match="paso"):
+        ml.tuberia("estandarizar", modelo={})
+    with pytest.raises(ValueError, match="Φ va como paso"):
+        ml.tuberia(modelo={"phi": ml.polinomio(2)})
+    with pytest.raises(ValueError, match="pesos"):
+        ml.tuberia(modelo={"familia": "vecinos", "pesos": "balanceado"})
+
+
+def test_tuberia_pesos_por_pliegue():
+    d = _llego_tarde(n=500)
+    dev = ml._desarrollo(d)
+    y = dev["y"].to_numpy()
+    orden = np.argsort(-y, kind="stable")  # positivos primero: los pliegues difieren
+    trozos = np.array_split(orden, 4)
+    part = [(np.sort(np.concatenate([t for j, t in enumerate(trozos) if j != m])),
+             np.sort(trozos[m])) for m in range(4)]
+    vistos = []
+    base = ml.tuberia(modelo={"familia": "logistica", "pesos": "balanceado"})
+
+    def construir(df):
+        m = base(df)
+        vistos.append((m.pesos, df["y"].to_numpy()))
+        return m
+
+    ml.validacion_cruzada(dev, construir, particion=lambda df: part)
+    total = {c: len(y) / (2 * np.sum(y == c)) for c in (0, 1)}
+    distintos = 0
+    for pesos, y_m in vistos:
+        for c in (0, 1):
+            assert pesos[c] == pytest.approx(len(y_m) / (2 * np.sum(y_m == c)))
+        distintos += any(not math.isclose(pesos[c], total[c]) for c in (0, 1))
+    assert distintos == len(vistos)  # contarlos con todo el desarrollo daría otros
+
+
+def test_tuberia_con_familias_de_ajustar_otro():
+    d = _llego_tarde(n=300, faltantes={"distancia": (0.3, "azar")})
+    for fam, extra in (("vecinos", {"n_vecinos": 7}), ("arbol", {"profundidad": 2})):
+        m = ml.tuberia(ml.imputador(), ml.estandarizar(ml.columnas("distancia", "hora")),
+                       modelo={"familia": fam, **extra})(d.ent)
+        assert m.familia == fam and len(m.predecir(d.val)) == len(d.val)
+        assert m.columnas_x == ["distancia", "hora", "lluvia"]
+    with pytest.raises(ValueError, match="regresion|clasificacion"):
+        ml.tuberia(modelo={"familia": "lineal"})(d.ent)
+
+
+@pytest.mark.parametrize("tipo", ["posterior", "preprocesar_antes", "duplicados",
+                                  "seleccion_previa"])
+def test_sembrar_fuga_conserva_el_proceso(tipo):
+    d = _llego_tarde(n=300, faltantes={"distancia": (0.2, "azar")})
+    f = ml.sembrar_fuga(d, tipo, n_ruido=30, k=4)
+    assert f.tarea == d.tarea and list(f.clases) == list(d.clases)
+    for parte in (f.ent, f.val, f.prueba, f.despliegue):
+        assert parte.attrs["ml"]["columnas_x"] == f.columnas_x
+        assert set(f.columnas_x) <= set(parte.columns)
+    assert d.ent.attrs["ml"]["columnas_x"] == ["distancia", "hora", "lluvia"]  # no muta
+    otra = f.rehacer(5)
+    assert otra.columnas_x == f.columnas_x or tipo == "seleccion_previa"
+    if tipo == "posterior":
+        assert f.columnas_x[-1] == "calificacion"
+        assert f.despliegue["calificacion"].nunique() == 1
+        assert f.ent.groupby("y")["calificacion"].mean().diff().iloc[-1] < -1.5
+    if tipo == "duplicados":
+        assert sum(map(len, (f.ent, f.val, f.prueba))) == 300 + 90
+    if tipo == "preprocesar_antes":
+        todo = pd.concat([f.ent, f.val, f.prueba])
+        assert todo["hora"].mean() == pytest.approx(0, abs=1e-12)
+        assert "distancia_falta" in f.columnas_x
+    if tipo == "seleccion_previa":
+        assert len(f.columnas_universo) == 33 and len(f.columnas_x) == 4
+        assert len(f.despliegue) == 10_000
+    with pytest.raises(ValueError, match="imputar_simple"):
+        ml.sembrar_fuga(d, "imputar_en_prueba")
+
+
+def test_medir_fugas_no_tiene_columna_R():
+    d = _llego_tarde(n=300)
+    tabla = ml.medir_fugas(d, lambda df: ml.ajustar(df), tipos=("posterior",), criterio="mcc")
+    assert list(tabla.columns) == ["tipo", "intensidad", "estimado", "en_uso", "inflado"]
+    assert "R" not in tabla.columns and tabla.attrs["criterio"] == "mcc"
+    fila = tabla.iloc[0]
+    assert fila["inflado"] == pytest.approx(fila["estimado"] - fila["en_uso"])
+    assert fila["estimado"] > 0.8 and fila["inflado"] > 0.3
+    ax = ml.dibujar_fugas(tabla)
+    rotulos = [t.get_text() for t in ax.get_legend().get_texts()]
+    assert "MCC de la CV" in rotulos and "MCC en el despliegue" in rotulos
+    assert not any(r.startswith("R") for r in rotulos)
+
+
+def test_dibujar_fugas_rotulos_de_tipo_no_se_enciman():
+    # Se vio renderizando en Chrome: con los cinco tipos en una línea cada uno, los
+    # rótulos del eje x se pegaban («posteriorpreprocesar antes…»).
+    tipos = ["ninguna", "posterior", "preprocesar_antes", "duplicados", "seleccion_previa"]
+    tabla = pd.DataFrame({"tipo": tipos, "intensidad": 1.0, "estimado": 0.5, "en_uso": 0.3})
+    tabla["inflado"] = tabla["estimado"] - tabla["en_uso"]
+    tabla.attrs["criterio"] = "mcc"
+    ax = ml.dibujar_fugas(tabla)
+    rotulos = [t.get_text() for t in ax.get_xticklabels()]
+    assert len(rotulos) == 5
+    assert max(len(linea) for r in rotulos for linea in r.split("\n")) <= 11
+    assert "selección\nprevia" in rotulos and "preprocesar\nantes" in rotulos
+
+
+def test_medir_fugas_ninguna_no_infla():
+    d = _llego_tarde(n=600)
+    tabla = ml.medir_fugas(d, lambda df: ml.ajustar(df), tipos=("ninguna",), criterio="mcc")
+    assert abs(tabla["inflado"].iloc[0]) < 2 * tabla.attrs["ee"][0]
+    perdida = ml.medir_fugas(d, lambda df: ml.ajustar(df), tipos=("ninguna",))
+    assert perdida.attrs["criterio"] == "logaritmica"
+    assert perdida["inflado"].iloc[0] == pytest.approx(
+        perdida["en_uso"].iloc[0] - perdida["estimado"].iloc[0])
+
+
+def test_importancia_de_ruido_cerca_de_cero():
+    d = ml.sembrar_fuga(_llego_tarde(n=800), "seleccion_previa", n_ruido=3, k=6)
+    m = ml.ajustar(d)
+    imp = ml.importancia(m, d.val, "logaritmica", repeticiones=10)
+    assert list(imp.index) == d.columnas_x and imp.name == "importancia"
+    ruido = imp[[c for c in imp.index if c.startswith("ruido_")]]
+    assert ruido.abs().max() < 0.02
+    assert imp["distancia"] > 0.05
+    ml.dibujar_importancia(imp)
+
+
+def _dos_tablas(desplaza=0.0, n_a=600, n_b=150, semilla=0, corr=None):
+    rng = np.random.default_rng(semilla)
+    a = pd.DataFrame(rng.standard_normal((n_a, 2)), columns=["x1", "x2"])
+    z = rng.standard_normal((n_b, 2))
+    if corr is not None:
+        z[:, 1] = corr * z[:, 0] + math.sqrt(1 - corr ** 2) * z[:, 1]
+    b = pd.DataFrame(z, columns=["x1", "x2"])
+    b["x1"] += desplaza
+    return a, b
+
+
+def test_adversarial_senal_nada_y_deriva():
+    a, b = _dos_tablas()
+    nada = ml.validacion_adversarial(a, b)
+    assert nada.senal == "sin señal"
+    assert abs(nada.log_loss - nada.log_loss_benchmark) < 0.02
+    assert np.mean(nada.diferencias_por_pliegue) == pytest.approx(
+        nada.log_loss - nada.log_loss_benchmark)
+    a, b = _dos_tablas(desplaza=1.0)
+    deriva = ml.validacion_adversarial(a, b)
+    assert deriva.senal == "señal" and deriva.log_loss < deriva.log_loss_benchmark - 0.05
+    assert len(deriva.diferencias_por_pliegue) == 5
+    assert deriva.importancia.idxmax() == "x1"
+    ml.dibujar_adversarial(deriva)
+
+
+def test_adversarial_mcc_con_origen_desbalanceado():
+    a, b = _dos_tablas(desplaza=0.4)
+    r = ml.validacion_adversarial(a, b)
+    assert r.o_bar == pytest.approx(0.2) and r.senal == "señal"
+    assert r.mcc > 0.15
+    con_05 = ml.mcc(r.origen, (r.prob >= 0.5).astype(int), clases=[0, 1])
+    assert abs(con_05) < 0.05  # mutación: cortar en 0.5 nunca dice «origen 1»
+
+
+def test_adversarial_sin_doble_correccion():
+    a, b = _dos_tablas(desplaza=0.8)
+    r = ml.validacion_adversarial(a, b)
+    X = np.r_[a.to_numpy(), b.to_numpy()]
+    o = r.origen
+
+    def replica(pesos):
+        pred = np.zeros(len(o), int)
+        for ajuste, valida in r.pliegues:
+            est = ml._clasificador_adversarial("bosque", 0, pesos).fit(X[ajuste], o[ajuste])
+            pred[valida] = est.predict_proba(X[valida])[:, 1] >= o[ajuste].mean()
+        return ml.mcc(o, pred, clases=[0, 1])
+
+    assert replica(None) == pytest.approx(r.mcc)  # la réplica es la función
+    assert replica("balanced") != pytest.approx(r.mcc, abs=1e-3)  # doble corrección
+
+
+def test_adversarial_firma_sin_pesos():
+    firma = inspect.signature(ml.validacion_adversarial)
+    assert list(firma.parameters) == ["df_a", "df_b", "columnas", "k", "semilla", "particion",
+                                      "familia"]
+    assert "Sin pesos" in ml.validacion_adversarial.__doc__ or \
+        "SIN pesos" in ml.validacion_adversarial.__doc__
+
+
+def test_adversarial_ve_correlacion_con_bosque():
+    a, b = _dos_tablas(corr=0.95, n_b=600)
+    bosque = ml.validacion_adversarial(a, b)
+    logistica = ml.validacion_adversarial(a, b, familia="logistica")
+    assert bosque.senal == "señal" and bosque.log_loss < bosque.log_loss_benchmark - 0.03
+    assert abs(logistica.log_loss - logistica.log_loss_benchmark) < 0.01
+    ks = ml.ks_por_variable(a, b)
+    assert (ks["estadistico"] < 0.1).all()  # las marginales son las mismas
+    ml.dibujar_ks(ks)
+
+
+def test_adversarial_por_grupos_no_detecta_clientes():
+    rng = np.random.default_rng(0)
+    filas = []
+    for origen, clientes in ((0, range(0, 30)), (1, range(30, 60))):
+        for cliente in clientes:
+            centro = rng.normal(0, 1, 2)
+            for _ in range(10):
+                filas.append((origen, cliente, *(centro + rng.normal(0, 0.05, 2))))
+    t = pd.DataFrame(filas, columns=["o", "grupo", "x1", "x2"])
+    a, b = t[t["o"] == 0], t[t["o"] == 1]
+    azar = ml.validacion_adversarial(a, b, columnas=["x1", "x2"])
+    grupos = ml.validacion_adversarial(a, b, columnas=["x1", "x2"], particion="grupo")
+    assert azar.senal == "señal"
+    assert grupos.senal == "sin señal"
+    for ajuste, valida in grupos.pliegues:
+        assert not set(t["grupo"].to_numpy()[ajuste]) & set(t["grupo"].to_numpy()[valida])
+    with pytest.raises(ValueError, match="nunca usa"):
+        ml.validacion_adversarial(a, b, columnas=["x1", "grupo"])
+
+
+def test_ks_a_mano_es_un_tercio():
+    a = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    b = pd.DataFrame({"x": [1.0, 2.0, 3.0]})
+    assert ml.ks_por_variable(a, b)["estadistico"].iloc[0] == pytest.approx(1 / 3)
+
+
+def test_autocorrelacion_denominador_comun():
+    r = ml.autocorrelacion([1, -1, 1, -1, 1, -1], rezagos=1)
+    assert r[0] == pytest.approx(-5 / 6)
+    assert "denominador común" in ml.autocorrelacion.__doc__
+    e = np.random.default_rng(0).standard_normal(400)
+    assert np.mean(np.abs(ml.autocorrelacion(e, 10)) < 2 / 20) >= 0.8
+    with pytest.raises(ValueError):
+        ml.autocorrelacion([1.0, 2.0], rezagos=2)
+
+
+def test_dibujar_residual_tiempo_con_memoria():
+    d = ml.proceso(n=200, ruido=ml.ar1(0.9), separar="tiempo", con_realidad=False)
+    m = ml.ajustar(d)
+    ax = ml.dibujar_residual_tiempo(m, d.ent)
+    assert any(l.get_gid() == "residual-tiempo" for l in ax.lines)
+    with pytest.raises(ValueError, match="t"):
+        ml.dibujar_residual_tiempo(m, d.ent.drop(columns="t"))
+
+
+def test_sellada_cuenta_aperturas():
+    df = pd.DataFrame({"x": [1.0, 2.0], "y": [0, 1]})
+    s = ml.sellar(df)
+    assert s.aperturas == 0 and len(s) == 2 and "Sellada" in repr(s)
+    assert not any(isinstance(v, pd.DataFrame) for k, v in vars(s).items()
+                   if not k.startswith("_Sellada"))
+    abierta = s.abrir()
+    abierta.loc[0, "x"] = 99.0
+    assert s.abrir()["x"].iloc[0] == 1.0
+    assert s.aperturas == 2
+
+
+def test_dibujar_sigmoides_una_curva_por_q():
+    f = np.sin
+    ajustes = {1: lambda x: 0.5 * x, 3: lambda x: x - x ** 3 / 6, 10: np.sin}
+    ax = ml.dibujar_sigmoides(f, ajustes, datos=(np.linspace(0, 3, 30), np.sin(np.linspace(0, 3, 30))))
+    gids = [l.get_gid() for l in ax.lines]
+    assert gids == ["curva-verdadera", "ajuste-1", "ajuste-3", "ajuste-10"]
+    rotulos = [t.get_text() for t in ax.get_legend().get_texts()]
+    assert {"1 unidad", "3 unidades", "10 unidades"} <= set(rotulos)
+    assert not any("R" == r or "q" in r.split() for r in rotulos)
+    with pytest.raises(ValueError):
+        ml.dibujar_sigmoides(f, {"uno": f})
+
+
+def test_casos_de_la_clase_5_se_construyen_por_nombre():
+    for numero, nombre in ((19, "variable_posterior"), (20, "preprocesar_antes"),
+                           (21, "duplicados"), (26, "seleccion_previa"),
+                           (27, "categoria_nueva"), (28, "cambio_de_concepto")):
+        cb = ml.CASOS_BORDE[numero]
+        assert cb.numero == numero and cb.nombre == nombre and cb.clase == 5
+    d = ml.caso("categoria_nueva")
+    assert "sur" not in set(d.ent["zona"]) | set(d.val["zona"])
+    assert "sur" in set(d.prueba["zona"]) and "sur" in set(d.despliegue["zona"])
+    phi = ml.combinar(ml.columnas("distancia"), ml.dummies("zona"))
+    with pytest.raises(ValueError, match="sur"):
+        ml.ajustar(d, phi=phi).predecir(d.prueba)
+    efectos = ml.ajustar(d, phi=ml.combinar(ml.columnas("distancia"),
+                                            ml.dummies("zona", codificacion="efectos")))
+    with pytest.warns(UserWarning, match="sur"):
+        pred = efectos.predecir(d.prueba)
+    e = (d.prueba["y"] - pred) ** 2
+    sur = d.prueba["zona"].to_numpy() == "sur"
+    assert e[sur].mean() > 5 * e[~sur].mean()
+    c28 = ml.caso(28)
+    m = ml.ajustar(c28)
+    assert ml.riesgo(m, c28) > 5 * ml.L(m, c28.prueba)
+
+
+def test_caso_19_y_21_rompen_la_cv():
+    vecinos = lambda df: ml.tuberia(  # noqa: E731
+        ml.estandarizar(ml.columnas(*df.attrs["ml"]["columnas_x"])),
+        modelo={"familia": "vecinos"})(df)
+    d19 = ml.caso(19)
+    assert ml.validacion_cruzada(d19, vecinos, criterio="mcc").media >= 0.9
+    limpio = ml._llego_tarde()
+    assert (ml.desempeno(vecinos(ml._desarrollo(d19)), d19, "mcc")
+            <= ml.desempeno(vecinos(ml._desarrollo(limpio)), limpio, "mcc"))
+    d21 = ml.caso(21)
+    uno = lambda df: ml.ajustar_otro(df, familia="vecinos", n_vecinos=1)  # noqa: E731
+    log = lambda df: ml.ajustar(df, pesos="balanceado")  # noqa: E731
+    infla = {}
+    for nombre, c in (("vecinos", uno), ("logistica", log)):
+        cv = ml.validacion_cruzada(d21, c, criterio="mcc").media
+        infla[nombre] = cv - ml.desempeno(c(ml._desarrollo(d21)), d21, "mcc")
+    assert infla["vecinos"] >= 0.1
+    assert abs(infla["logistica"]) < 0.5 * infla["vecinos"]
+
+
+def test_taller_y_galeria_de_la_clase_5_corren(monkeypatch):
+    monkeypatch.setattr(ml, "_widgets", lambda: None)
+    monkeypatch.setattr(ml, "_mostrar", lambda: None)
+    salida = io.StringIO()
+    with redirect_stdout(salida), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.taller(ml.proceso(n=200, ruido=ml.ar1(0.9), despliegue="futuro"), clase=5)
+        ml.taller(_llego_tarde(n=300), clase=5)
+        ml.galeria(5, casos=[28])
+    texto = salida.getvalue()
+    for marca in ("(1) Validación adversarial", "(2) KS_j", "(3) Residuales contra t",
+                  "(4) CV", "(5) Alarma de fuga", "MCC en el despliegue", "largo plazo"):
+        assert marca in texto
+    assert 5 in ml.ANALISIS_TALLER
+
+
+# === Revisión del lote c5 (Codex) ===
+
+
+def test_adversarial_categoricas_no_regalan_el_origen():
+    # Codificar por orden de aparición en la tabla unida numeraba primero las categorías
+    # de df_a: dos muestras iid de 10 000 categorías daban «señal» con MCC 0.95.
+    rng = np.random.default_rng(0)
+    a = pd.DataFrame({"c": rng.integers(0, 10_000, 600).astype(str),
+                      "x": rng.standard_normal(600)})
+    b = pd.DataFrame({"c": rng.integers(0, 10_000, 150).astype(str),
+                      "x": rng.standard_normal(150)})
+    r = ml.validacion_adversarial(a, b)
+    assert r.senal == "sin señal" and abs(r.mcc) < 0.1
+    # y una categoría nueva frecuente en df_b sí se ve
+    a = pd.DataFrame({"zona": rng.choice(["norte", "centro"], 600)})
+    b = pd.DataFrame({"zona": rng.choice(["norte", "centro", "sur"], 150)})
+    r = ml.validacion_adversarial(a, b)
+    assert r.senal == "señal" and r.mcc > 0.3
+
+
+def test_tuberia_expone_la_representacion_y_las_columnas_que_lee():
+    # Con seleccionar(10) desde el universo, columnas_x se quedaba con las 10 de entrada
+    # y importancia omitía las que el modelo sí usa; .phi era None con es_lineal=True.
+    d = ml.caso(26)
+    dev = ml._desarrollo(d)
+    m = ml.tuberia(ml.seleccionar(10), modelo={"familia": "logistica",
+                                               "pesos": "balanceado"})(dev)
+    elegidas = list(m._phi.nombres)
+    assert set(elegidas) - set(d.columnas_x)  # eligió alguna fuera de las de entrada
+    assert set(elegidas) <= set(m.columnas_x)
+    assert m.columnas_x[:10] == d.columnas_x
+    assert m.es_lineal and m.phi is not None
+    assert list(m.phi(d.val).columns) == elegidas
+    imp = ml.importancia(m, d.val, "logaritmica", repeticiones=1)
+    assert set(elegidas) <= set(imp.index)
+    usadas = imp[elegidas].abs().sum()
+    assert usadas > 0
+    # con imputador, la representación imputa antes de la Φ
+    f = _llego_tarde(n=300, faltantes={"distancia": (0.3, "azar")})
+    m = ml.tuberia(ml.imputador(), modelo={"familia": "logistica"})(f.ent)
+    assert not m.phi(f.val).isna().any().any()
+    assert m.columnas_x == ["distancia", "hora", "lluvia"]
+    assert ml.tuberia(ml.imputador(), modelo={"familia": "vecinos"})(f.ent).phi is None
+
+
+def _taller_5_texto(datos):
+    salida = io.StringIO()
+    with redirect_stdout(salida), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.taller(datos, clase=5)
+    return salida.getvalue()
+
+
+def test_taller_5_alarma_con_perdida_y_no_con_mcc(monkeypatch):
+    # Sin fuga y con Pr(y = 1) < 0.5 casi siempre, la regla verdadera cortada en 0.5 da
+    # MCC 0 y la CV un MCC positivo: la alarma por MCC saltaba sin fuga.
+    monkeypatch.setattr(ml, "_widgets", lambda: None)
+    monkeypatch.setattr(ml, "_mostrar", lambda: None)
+    d = ml._llego_tarde(n=1500, puntaje=lambda df: 0.15 * df["distancia"], proporcion=0.35)
+    alarma = [l for l in _taller_5_texto(d).splitlines() if l.startswith("(5)")][0]
+    assert "CV" not in alarma and "regla verdadera" not in alarma
+    alarma = [l for l in _taller_5_texto(ml.caso(19)).splitlines() if l.startswith("(5)")][0]
+    assert "pérdida logarítmica de la CV" in alarma
+
+
+@pytest.mark.parametrize("numero", [19, 20, 21, 26, 27, 28])
+def test_galeria_5_corre_cada_caso(monkeypatch, numero):
+    monkeypatch.setattr(ml, "_widgets", lambda: None)
+    monkeypatch.setattr(ml, "_mostrar", lambda: None)
+    salida = io.StringIO()
+    with redirect_stdout(salida), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ml.galeria(5, casos=[numero])
+    texto = salida.getvalue()
+    assert "(5) Alarma de fuga" in texto
+    if numero == 27:
+        assert "sin KS para las categóricas: zona" in texto
+
+
+def test_autocorrelacion_constante_lanza_aunque_la_media_redondee():
+    with pytest.raises(ValueError, match="constantes"):
+        ml.autocorrelacion(np.full(100, 0.1), rezagos=2)
+
+
+def test_autocorrelacion_varios_rezagos_contra_sumas_a_mano():
+    e = [0.3, -1.2, 2.0, 0.7, -0.4, 1.1, -2.2, 0.5, 0.0, 1.6]
+    media = sum(e) / len(e)
+    c = [v - media for v in e]
+    den = sum(v * v for v in c)
+    esperado = [sum(c[t] * c[t + h] for t in range(len(e) - h)) / den for h in range(1, 6)]
+    assert ml.autocorrelacion(e, rezagos=5) == pytest.approx(esperado, abs=1e-12)
+
+
+def test_ks_rechaza_columnas_nominales_o_mixtas():
+    a = pd.DataFrame({"x": [0, "A"]}, dtype=object)
+    b = pd.DataFrame({"x": [0, "B"]}, dtype=object)
+    with pytest.raises(ValueError, match="nominal o mixta"):
+        ml.ks_por_variable(a, b)
+    with pytest.raises(ValueError, match="nominal o mixta"):
+        ml.ks_por_variable(pd.DataFrame({"z": ["n", "s"]}), pd.DataFrame({"z": ["n", "c"]}))
+    # una columna object con puros números sí pasa
+    r = ml.ks_por_variable(pd.DataFrame({"x": np.array([0, 1, 2], dtype=object)}),
+                           pd.DataFrame({"x": [1.0, 2.0, 3.0]}))
+    assert r["estadistico"].iloc[0] == pytest.approx(1 / 3)
+
+
+def test_caso_20_con_logistica_sin_castigo_no_cambia_la_cv():
+    # Imputar una constante con su indicadora y escalar solo reparametrizan la logística
+    # sin castigo: la fuga y la tubería dan la misma pérdida (no «más optimista»).
+    assert "más optimista" not in ml.CASOS_BORDE[20].que_se_ve
+    assert "reparametrizan" in ml.CASOS_BORDE[20].que_se_ve
+    for s in (0, 1, 2):
+        limpio = ml._llego_tarde(semilla=s, faltantes={"distancia": (0.3, "depende_x")})
+        fuga = ml.validacion_cruzada(ml.caso(20, semilla=s), lambda df: ml.ajustar(df)).media
+        tub = ml.validacion_cruzada(limpio, ml.tuberia(ml.imputador(),
+                                                       modelo={"familia": "logistica"})).media
+        assert fuga == pytest.approx(tub, abs=1e-9)
+
+
+@pytest.mark.parametrize("familia", ["arbol", "boosting"])  # el bosque remuestrea: no da 0.5
+def test_arboles_desempatan_en_0_5_hacia_la_clase_1(familia):
+    df = pd.DataFrame({"x": [0.0, 0.0, 0.0, 0.0], "y": ["a", "b", "a", "b"]})
+    m = ml.ajustar_otro(df, familia=familia, columnas_x=["x"], tarea="clasificacion",
+                        profundidad=1)
+    p = m.predecir_p(df)
+    assert p == pytest.approx(np.full(4, 0.5), abs=1e-9)
+    assert list(m.predecir(df)) == ["b"] * 4
+    assert list(m.predecir(df)) == [m.clases[i] for i in ml.clasificar(p)]
+
+
+def test_imputar_simple_con_int64_y_mediana_no_entera():
+    df = pd.DataFrame({"a": pd.array([1, 2, None], dtype="Int64")})
+    lleno = ml.imputar_simple(df).transformar(df)
+    assert lleno["a"].tolist() == [1.0, 2.0, 1.5]
+    assert lleno["a_falta"].tolist() == [0.0, 0.0, 1.0]
+
+
+def test_boosting_con_una_sola_clase_lanza_en_espanol():
+    df = pd.DataFrame({"x": [0.0, 1.0, 2.0], "y": [1, 1, 1]})
+    with pytest.raises(ValueError, match="una sola clase"):
+        ml.ajustar_otro(df, familia="boosting", columnas_x=["x"], tarea="clasificacion")
+
+
+def test_seleccionar_con_correlaciones_conocidas():
+    # Referencia independiente de _abs_corr_con_y: columnas construidas con |corr| en un
+    # orden conocido, que no es el orden de las columnas.
+    rng = np.random.default_rng(1)
+    n = 4000
+    y = rng.standard_normal(n)
+    fuerza = {"c0": 0.0, "c1": 0.9, "c2": 0.1, "c3": -0.7, "c4": 0.3, "c5": 0.0, "c6": 0.5}
+    df = pd.DataFrame({c: a * y + math.sqrt(1 - a * a) * rng.standard_normal(n)
+                       for c, a in fuerza.items()})
+    df["y"] = y
+    df.attrs["ml"] = {"columnas_x": list(fuerza), "columnas_contexto": [],
+                      "tarea": "regresion", "K": None, "clases": None}
+    phi = ml.seleccionar(k=3).ajustar(df)
+    assert set(phi.nombres) == {"c1", "c3", "c6"}
+    assert set(ml.seleccionar(k=1).ajustar(df).nombres) == {"c1"}
+
+
+def test_adversarial_corta_cada_pliegue_en_su_proporcion():
+    # Pliegues con proporciones de origen distintas en el ajuste: el corte de cada
+    # pliegue es su propio ō, no el global.
+    a, b = _dos_tablas(desplaza=0.6, n_a=300, n_b=200)
+    o = np.r_[np.zeros(300, int), np.ones(200, int)]
+    idx0, idx1 = np.flatnonzero(o == 0), np.flatnonzero(o == 1)
+    trozos0 = np.array_split(idx0, 4)
+    trozos1 = np.split(idx1, [20, 60, 120])  # validación desigual → ajustes desiguales
+    part = []
+    for m in range(4):
+        valida = np.sort(np.r_[trozos0[m], trozos1[m]])
+        ajuste = np.setdiff1d(np.arange(500), valida)
+        part.append((ajuste, valida))
+    r = ml.validacion_adversarial(a, b, particion=lambda df: part)
+    cortes = [o[aj].mean() for aj, _ in part]
+    assert np.ptp(cortes) > 0.05
+    pred = np.zeros(500, int)
+    for (aj, va), tau in zip(part, cortes):
+        pred[va] = r.prob[va] >= tau
+    assert r.mcc == pytest.approx(ml.mcc(o, pred, clases=[0, 1]))
+    global_ = ml.mcc(o, (r.prob >= o.mean()).astype(int), clases=[0, 1])
+    assert global_ != pytest.approx(r.mcc, abs=1e-6)
