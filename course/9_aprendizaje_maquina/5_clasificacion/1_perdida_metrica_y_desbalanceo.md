@@ -76,19 +76,35 @@ Aquí $\beta$ conserva el sentido de parámetros; $\mu$ es el multiplicador de o
 ::: definition {#ml-c4-def-logistica-regularizada title="La logística regularizada, como lagrangeano"}
 Etiquetas $y_i\in\{0,1\}$. Aquí $\phi$ no incluye la constante y $\beta$ son las
 pendientes; el intercepto se escribe aparte, $\beta_0$. Puntaje y probabilidad:
-$$\begin{aligned}
+
+$$
+\begin{aligned}
 z_i&=\beta_0+\beta^{\mathsf T}\phi(x_i),\\
 p_i&=\sigma(z_i)=\frac{1}{1+e^{-z_i}}.
-\end{aligned}$$
+\end{aligned}
+$$
+
 Pérdida de una observación:
-$$\ell_i(\beta_0,\beta)=-y_i\ln p_i-(1-y_i)\ln(1-p_i).$$
+
+$$
+\ell_i(\beta_0,\beta)=-y_i\ln p_i-(1-y_i)\ln(1-p_i).
+$$
+
 El problema con capacidad acotada y su lagrangeano son
-$$\begin{aligned}
+
+$$
+\begin{aligned}
 &\min_{\beta_0,\beta}\ L_{\text{ent}}(\beta_0,\beta)\quad\text{s.a.}\quad \lVert\beta\rVert_2^2\le d,\\
 &\mathcal L(\beta_0,\beta,\mu)=L_{\text{ent}}(\beta_0,\beta)+\mu\,\bigl(\lVert\beta\rVert_2^2-d\bigr),\quad \mu\ge0.
-\end{aligned}$$
+\end{aligned}
+$$
+
 Con $\mu$ fijo, el ajuste es
-$$(\widehat\beta_0,\widehat\beta)\in\operatorname*{arg\,min}_{\beta_0,\beta}\ L_{\text{ent}}(\beta_0,\beta)+\mu\lVert\beta\rVert_2^2 .$$
+
+$$
+(\widehat\beta_0,\widehat\beta)\in\operatorname*{arg\,min}_{\beta_0,\beta}\ L_{\text{ent}}(\beta_0,\beta)+\mu\lVert\beta\rVert_2^2 .
+$$
+
 El intercepto no se penaliza. Es el mismo lagrangeano de
 @ml-c3-def-lagrangeano-capacidad con $\Omega=\Omega_2$; cambia $\ell$.
 :::
@@ -103,7 +119,11 @@ En sklearn, `C = 1/(2·μ·n)`.
 ::: remark {#ml-c4-obs-logloss-verosimilitud title="La pérdida logarítmica es verosimilitud"}
 Si, dados los $x_i$, las etiquetas son independientes y cada una es Bernoulli
 con probabilidad $p_i$, la probabilidad de observar justo esas etiquetas es
-$$\prod_{i\in\mathcal D_{\text{ent}}} p_i^{\,y_i}(1-p_i)^{1-y_i},$$
+
+$$
+\prod_{i\in\mathcal D_{\text{ent}}} p_i^{\,y_i}(1-p_i)^{1-y_i},
+$$
+
 y su logaritmo con signo menos es $n_{\text{ent}}\,L_{\text{ent}}(\beta_0,\beta)$.
 Minimizar la pérdida logarítmica es maximizar la verosimilitud Bernoulli, como
 minimizar el MSE era maximizar la verosimilitud gaussiana (@ml-c3-obs-mse-verosimilitud).
@@ -167,7 +187,11 @@ La pérdida sirve al optimizador; la métrica, al problema.
 ::: definition {#ml-c4-def-perdida-vs-metrica title="Pérdida, umbral y métrica son tres decisiones"}
 La **pérdida** es lo que minimiza el ajuste: $L_{\text{ent}}$ (o $L^{w}_{\text{ent}}$,
 más adelante). El **umbral** $\tau\in(0,1)$ convierte probabilidades en etiquetas,
-$$\widehat y_i=\mathbf 1\{\widehat p_i\ge\tau\};$$
+
+$$
+\widehat y_i=\mathbf 1\{\widehat p_i\ge\tau\};
+$$
+
 es un hiperparámetro y se elige en validación, nunca en prueba. La **métrica**
 es la cifra con que se juzga el resultado (MCC, aciertos balanceados, un costo).
 
@@ -187,10 +211,18 @@ MCC relaciona tus etiquetas con la verdad.
 
 ::: definition {#ml-c4-def-mcc title="MCC: la correlación entre lo que es y lo que dices"}
 Binario: con las etiquetas codificadas 0/1,
-$$\mathrm{MCC}=\operatorname{corr}(y,\widehat y)=\frac{\operatorname{cov}(y,\widehat y)}{\sqrt{\operatorname{Var}(y)\,\operatorname{Var}(\widehat y)}},$$
+
+$$
+\mathrm{MCC}=\operatorname{corr}(y,\widehat y)=\frac{\operatorname{cov}(y,\widehat y)}{\sqrt{\operatorname{Var}(y)\,\operatorname{Var}(\widehat y)}},
+$$
+
 calculadas sobre los casos del conjunto evaluado. Multiclase (Gorodkin): con
 $u_{iy}=\mathbf 1\{y_i=y\}$ y $\widehat u_{iy}=\mathbf 1\{\widehat y_i=y\}$,
-$$\mathrm{MCC}=\frac{\sum_{y}\operatorname{cov}(u_{\cdot y},\widehat u_{\cdot y})}{\sqrt{\sum_{y}\operatorname{Var}(u_{\cdot y})\,\sum_{y}\operatorname{Var}(\widehat u_{\cdot y})}},$$
+
+$$
+\mathrm{MCC}=\frac{\sum_{y}\operatorname{cov}(u_{\cdot y},\widehat u_{\cdot y})}{\sqrt{\sum_{y}\operatorname{Var}(u_{\cdot y})\,\sum_{y}\operatorname{Var}(\widehat u_{\cdot y})}},
+$$
+
 la misma correlación con las etiquetas en one-hot; con $K=2$ se reduce a la
 binaria. Vale 1 si acierta todo, 0 si no se relaciona con la verdad y $-1$ si
 la invierte (binario). Si un denominador es 0 (por ejemplo, una regla que
@@ -198,7 +230,11 @@ siempre dice lo mismo) se define como 0.
 
 Sus dos compañeras: los **aciertos balanceados**, la proporción de aciertos
 dentro de cada clase, promediada sobre las $K$ clases,
-$$A_{\text{bal}}=\frac1K\sum_{y=0}^{K-1}\frac{\#\{i:\ y_i=y,\ \widehat y_i=y\}}{\#\{i:\ y_i=y\}},$$
+
+$$
+A_{\text{bal}}=\frac1K\sum_{y=0}^{K-1}\frac{\#\{i:\ y_i=y,\ \widehat y_i=y\}}{\#\{i:\ y_i=y\}},
+$$
+
 y la **pérdida logarítmica sin pesos**, que mira las probabilidades y no las
 etiquetas.
 :::
@@ -346,11 +382,19 @@ Este $w_y$ es peso de clase, no la cadena de computabilidad ni el valor de un hi
 
 ::: definition {#ml-c4-def-perdida-ponderada title="La pérdida ponderada y el lagrangeano ponderado"}
 Con un peso $w_y>0$ por clase,
-$$L^{w}_{\text{ent}}=\frac1{n_{\text{ent}}}\sum_{i\in\mathcal D_{\text{ent}}} w_{y_i}\,\ell_i ,$$
+
+$$
+L^{w}_{\text{ent}}=\frac1{n_{\text{ent}}}\sum_{i\in\mathcal D_{\text{ent}}} w_{y_i}\,\ell_i ,
+$$
+
 y el ajuste resuelve
-$$\min_{\beta_0,\beta}\ L^{w}_{\text{ent}}(\beta_0,\beta)\quad\text{s.a.}\quad\lVert\beta\rVert_2^2\le d
+
+$$
+\min_{\beta_0,\beta}\ L^{w}_{\text{ent}}(\beta_0,\beta)\quad\text{s.a.}\quad\lVert\beta\rVert_2^2\le d
 \quad\Rightarrow\quad
-(\widehat\beta_0,\widehat\beta)\in\operatorname*{arg\,min}_{\beta_0,\beta}\ L^{w}_{\text{ent}}+\mu\lVert\beta\rVert_2^2 .$$
+(\widehat\beta_0,\widehat\beta)\in\operatorname*{arg\,min}_{\beta_0,\beta}\ L^{w}_{\text{ent}}+\mu\lVert\beta\rVert_2^2 .
+$$
+
 El peso **balanceado** es $w_y=n_{\text{ent}}/(K\,n_y)$, con $n_y$ los casos de
 clase $y$ en entrenamiento. Con él, $\sum_{i}w_{y_i}=n_{\text{ent}}$ y cada clase
 suma lo mismo, $n_y w_y=n_{\text{ent}}/K$. Los pesos son hiperparámetros del
@@ -363,12 +407,20 @@ Igualas el peso total de las clases, no sus pérdidas; así se construyó la ter
 Supuestos: clasificación binaria; pesos $w_0,w_1>0$; en un $x$ fijo,
 $\eta(x)=\Pr(y=1\mid x)\in(0,1)$. La probabilidad $p\in(0,1)$ que minimiza la
 pérdida ponderada esperada en ese $x$,
-$$-w_1\,\eta(x)\ln p-w_0\,(1-\eta(x))\ln(1-p),$$
+
+$$
+-w_1\,\eta(x)\ln p-w_0\,(1-\eta(x))\ln(1-p),
+$$
+
 es
-$$\begin{aligned}
+
+$$
+\begin{aligned}
 p^{w}(x)&=\frac{w_1\,\eta(x)}{w_1\,\eta(x)+w_0\,(1-\eta(x))},\\
 \ln\frac{p^{w}(x)}{1-p^{w}(x)}&=\ln\frac{\eta(x)}{1-\eta(x)}+\ln\frac{w_1}{w_0}.
-\end{aligned}$$
+\end{aligned}
+$$
+
 En consecuencia:
 
 (a) Supón que $\ln\frac{\eta(x)}{1-\eta(x)}=\beta_0+\beta^{\mathsf T}\phi(x)$, es
@@ -553,11 +605,15 @@ El que pesa cada cifra por la proporción de su clase: los muchos legítimos dom
 ::: definition {#ml-c4-def-softmax title="Softmax: la logística con K clases"}
 Las etiquetas van de $0$ a $K-1$ (en binario, $\{0,1\}$). Cada clase $y$ tiene su
 intercepto $\beta_{0,y}$ y sus coeficientes $\beta_y$:
-$$\begin{aligned}
+
+$$
+\begin{aligned}
 z_{i,y}&=\beta_{0,y}+\beta_y^{\mathsf T}\phi(x_i),\\
 p_{i,y}&=\frac{e^{z_{i,y}}}{\sum_{y'=0}^{K-1}e^{z_{i,y'}}},\\
 \ell_i&=-\ln p_{i,y_i}.
-\end{aligned}$$
+\end{aligned}
+$$
+
 Se anuncia la clase de mayor $p_{i,y}$; si hay empate, la de menor índice. El
 lagrangeano es el de @ml-c4-def-logistica-regularizada con
 $\lVert\beta\rVert_2^2=\sum_{y}\lVert\beta_y\rVert_2^2$ (sin los interceptos).
@@ -685,11 +741,13 @@ Otra opción válida selecciona con pérdida logarítmica sin pesos.
 
 **3. Lagrangeano.** Sobre desarrollo completo, $w_0=1000/(3\cdot900)\approx0.370$, $w_1=1000/(3\cdot80)\approx4.17$ y $w_2=1000/(3\cdot20)\approx16.7$.
 
-$$\begin{aligned}
+$$
+\begin{aligned}
 \mathcal L&=\frac1{n_{\text{ent}}}\sum_{i\in\mathcal D_{\text{ent}}}w_{y_i}(-\ln p_{i,y_i})
 +\mu\left(\sum_{y=0}^{2}\lVert\beta_y\rVert_2^2-d\right),\quad\mu\ge0,\\
 L^w_{\text{ent}}&=\frac1{n_{\text{ent}}}\sum_{i\in\mathcal D_{\text{ent}}}w_{y_i}(-\ln p_{i,y_i}).
-\end{aligned}$$
+\end{aligned}
+$$
 
 Con $\mu$ fijo minimizas $L^w_{\text{ent}}+\mu\sum_y\lVert\beta_y\rVert_2^2$, sin penalizar interceptos.
 En cada pliegue recalculas los pesos usando solo su entrenamiento.

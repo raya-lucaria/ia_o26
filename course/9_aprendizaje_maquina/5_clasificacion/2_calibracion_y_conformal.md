@@ -70,7 +70,11 @@ Una etiqueta borra la diferencia entre 0.55 y 0.98; aprovecharla exige que esos 
 ::: definition {#ml-c4-def-calibracion title="Calibración, curva de confiabilidad y Brier"}
 Una regla binaria que anuncia $\widehat p(x)$ está **calibrada** si, para cada
 valor $p$ que anuncia,
-$$\Pr\bigl(y=1\mid \widehat p(x)=p\bigr)=p .$$
+
+$$
+\Pr\bigl(y=1\mid \widehat p(x)=p\bigr)=p .
+$$
+
 En $K$ clases, la **calibración por clase** (uno contra el resto) pide lo mismo
 para cada clase $y$ con $\widehat p_y(x)$; es más débil que calibrar el vector
 completo, y es la que mide esta unidad.
@@ -79,7 +83,11 @@ La **curva de confiabilidad** agrupa los casos de un conjunto por su $\widehat p
 (grupos con el mismo número de casos), y dibuja, por grupo, el promedio de
 $\widehat p$ contra la fracción de casos con $y=1$; calibrada es sobre la diagonal.
 El **Brier** de un conjunto es
-$$\mathrm{Brier}=\frac1{n_{\mathcal D}}\sum_{i\in\mathcal D}\bigl(y_i-\widehat p_i\bigr)^2 .$$
+
+$$
+\mathrm{Brier}=\frac1{n_{\mathcal D}}\sum_{i\in\mathcal D}\bigl(y_i-\widehat p_i\bigr)^2 .
+$$
+
 Mezcla calibración y capacidad de separar las clases. Se compara con el Brier de
 la regla que anuncia siempre la proporción $\bar y$ de entrenamiento, evaluada en
 el mismo conjunto. Cuando ese conjunto tiene la misma proporción, vale
@@ -209,7 +217,11 @@ Compartir pacientes, grupos o momentos puede romperlo aunque no ajustes con `cal
 ::: definition {#ml-c4-def-recalibrar title="Recalibrar: un segundo ajuste, con su propio conjunto"}
 Con $(\widehat\beta_0,\widehat\beta)$ fijos y el puntaje $\widehat z(x)$, la
 **recalibración de Platt** anuncia
-$$\widehat p^{\,\text{cal}}(x)=\sigma\bigl(\widehat\beta^{\text{cal}}_0+\widehat\beta^{\text{cal}}_1\,\widehat z(x)\bigr),$$
+
+$$
+\widehat p^{\,\text{cal}}(x)=\sigma\bigl(\widehat\beta^{\text{cal}}_0+\widehat\beta^{\text{cal}}_1\,\widehat z(x)\bigr),
+$$
+
 con $(\widehat\beta^{\text{cal}}_0,\widehat\beta^{\text{cal}}_1)$ los que minimizan la
 pérdida logarítmica **sin pesos** en un conjunto de validación que el ajuste no
 tocó. Son parámetros: los elige una optimización. Qué método usar (Platt o
@@ -267,7 +279,11 @@ $c_i=c(x_i,y_i)$. Para $\delta\in(0,1)$, el cuantil corregido $\widehat c$ es el
 $\lceil(n_{\text{cal}}+1)(1-\delta)\rceil$-ésimo menor de los $c_i$, y
 $\widehat c=\infty$ si ese índice pasa de $n_{\text{cal}}$. El **conjunto de
 predicción** de un caso nuevo es
-$$C(x)=\{\,y:\ c(x,y)\le\widehat c\,\}.$$
+
+$$
+C(x)=\{\,y:\ c(x,y)\le\widehat c\,\}.
+$$
+
 :::
 
 La calibración usa `cal`.
@@ -283,7 +299,11 @@ no cambia si se permutan.
 Basta con que esos $n_{\text{cal}}+1$ casos salgan
 independientes del mismo proceso y sean independientes de $\mathcal D_{\text{ajuste}}$.
 No basta con no usar la calibración para ajustar. Entonces
-$$\Pr\bigl(y\in C(x)\bigr)\ \ge\ 1-\delta ,$$
+
+$$
+\Pr\bigl(y\in C(x)\bigr)\ \ge\ 1-\delta ,
+$$
+
 donde la probabilidad es sobre el conjunto de calibración y el caso nuevo. La
 garantía es **marginal**: no promete cobertura por clase ni por $x$.
 :::
