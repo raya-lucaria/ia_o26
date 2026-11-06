@@ -93,12 +93,13 @@ def test_lo_heredado_vale_desde_la_clase_0():
 
 
 def test_un_simbolo_desconocido_falla_hasta_que_entra_en_su_lista(tmp_path):
-    assert reglas("$\\gamma_h$", clase=5) == ["blanca"]
-    (tmp_path / "c5.txt").write_text("\\gamma | contrato §4.8 (Cybenko)\n",
+    # \varkappa no está en ninguna lista real: la prueba no depende de cN.txt
+    assert reglas("$\\varkappa_h$", clase=5) == ["blanca"]
+    (tmp_path / "c5.txt").write_text("\\varkappa | contrato §4.8 (prueba)\n",
                                      encoding="utf-8")
     blanca = nm.lista_blanca(tmp_path)
-    assert reglas("$\\gamma_h$", clase=5, blanca=blanca) == []
-    assert reglas("$\\gamma_h$", clase=4, blanca=blanca) == ["antes"]
+    assert reglas("$\\varkappa_h$", clase=5, blanca=blanca) == []
+    assert reglas("$\\varkappa_h$", clase=4, blanca=blanca) == ["antes"]
 
 
 def test_el_codigo_no_cuenta_para_la_lista_blanca():

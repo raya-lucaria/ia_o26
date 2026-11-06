@@ -7,3 +7,4 @@
 # fuente hace fallar tools/test_notacion_ml.py.
 \gamma | contrato §4.8 (Cybenko: γ_h y γ_{0,h} de las unidades sigmoides; plan-c5-10)
 \nu | contrato §5.7 (tasa de boosting, ν; plan-c5-10)
+igcap | contrato §4 (D-015, regla por omisión): intersección de los eventos de las n filas en la fórmula literal de ml-c5-def-iid (clase_5 §10.2 P1 §2)
