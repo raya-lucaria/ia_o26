@@ -48,6 +48,14 @@ Cada bloque `## Clase N` lo llena solo la rama de esa clase.
 
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
+| `ml-c1-taylor-vs-mco.svg` | La recíproca 2 + 5/x con Taylor de grados 3 y 9 en x₀ = 1 y el polinomio de grado 3 ajustado a 20 datos | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); datos sintéticos de `ml_lab` | Propio, CC BY-SA 4.0 |
+| `ml-c1-weierstrass.svg` | |x − 0.5| en [0, 1] y sus ajustes por mínimos cuadrados de grados 2, 6 y 14, con su error máximo | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`) | Propio, CC BY-SA 4.0 |
+| `ml-c1-tres-ajustes.svg` | Ajustes de grados 1, 4 y 15 a 20 datos de la recíproca, con observaciones nuevas: subajuste, capacidad adecuada y sobreajuste | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); datos sintéticos de `ml_lab`; idea de Goodfellow et al., *Deep Learning*, fig. 5.2 | Propio, CC BY-SA 4.0 |
+| `ml-c1-capacidad-brecha.svg` | Curva de capacidad medida (L_ent, R, brecha, piso y benchmark) con 20 y con 200 datos | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); datos sintéticos de `ml_lab`; idea de Goodfellow et al., *Deep Learning*, fig. 5.3 | Propio, CC BY-SA 4.0 |
+| `ml-c1-elegir-con-entrenamiento.svg` | En 200 muestras, el grado que elige el error de entrenamiento contra el de menor riesgo | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); datos sintéticos de `ml_lab` | Propio, CC BY-SA 4.0 |
+| `ml-c1-inverso-vs-potencias.svg` | La recíproca cerca de cero: el polinomio de grado 10 contra φ = (1, 1/x) y sus riesgos | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); datos sintéticos de `ml_lab` | Propio, CC BY-SA 4.0 |
+| `ml-c1-extrapolar.svg` | Interpolar contra extrapolar en las entregas, el seno y un proceso que recuerda su paso anterior | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); datos sintéticos de `ml_lab` | Propio, CC BY-SA 4.0 |
+| `ml-c1-no-free-lunch.svg` | Aciertos fuera de la muestra de tres reglas sobre las 256 funciones de 3 bits, por rugosidad | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c1.py`); cálculo exacto con `ml_lab` | Propio, CC BY-SA 4.0 |
 
 ### Clase 1 · tramo tarea
 
