@@ -114,7 +114,6 @@ def _datos_b3(ruido, donde, semilla):
     return ml.proceso(n=1000, x={"x": ml.uniforme(0, 1)}, f=lambda d: 2 + 3 * d.x,
                       ruido=RUIDOS_B3[ruido], semilla=semilla)
 
-
 def bloque_3(ruido, que, donde, semilla):
     datos = _datos_b3(ruido, donde, semilla)
     m, val = ml.ajustar(datos), datos.val       # una recta en los dos casos
