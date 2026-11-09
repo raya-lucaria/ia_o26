@@ -42,13 +42,20 @@ Ahí está el proceso que vas a adivinar. Si lo lees antes, la tarea pierde su s
 
 **Propón, registra, revela.** En los bloques 2 y 3 eliges algo. Primero
 lo propones con lo que tienes: la nube y $L_{\text{ent}}$. Después lo
-escribes en la celda `entrega-<k>`, y esa parte ya no se cambia. Solo
-entonces corres la celda «Revela».
+registras: pones `REGISTRAR = True` en la celda «Juega» y la corres.
+El notebook congela esa propuesta y su ajuste. Solo entonces corres la
+celda «Revela», que está justo debajo y revisa lo congelado, no otra cosa.
+La celda «Juega» guardada con `REGISTRAR = True` es tu registro: no la
+cambies después de revelar.
+
+Si reinicias el entorno o vuelves a correr «Prepara los procesos», el
+registro en memoria se borra. Vuelve a correr las celdas sin cambiar tus
+propuestas.
 
 ### celda: idea
 
 Esta tarea usa la muestra enorme del proceso: cien mil observaciones que
-dan $R$ casi exacto. **En la vida real no existe.** Aquí sirve para
+dan $R$ casi exacto (veinte mil en el bloque 1, para que corra rápido). **En la vida real no existe.** Aquí sirve para
 revisar una propuesta ya registrada, nunca para elegir. La clase 2 la
 reemplaza por datos que sí existen: validación.
 
@@ -56,8 +63,8 @@ El periodo del bloque 2 y la $\phi$ del bloque 3 son hiperparámetros. La
 definición [Parámetro contra hiperparámetro](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/#ml-c1-def-param-hiper)
 pide elegirlos con datos que no tocaron el ajuste. En la clase 1 no hay
 otros datos. Por eso tus elecciones son **propuestas exploratorias,
-todavía sin validar**. Con $L_{\text{ent}}$, una $\phi$ más flexible
-siempre se ve mejor, y una propuesta hecha así puede salir optimista.
+todavía sin validar**. Si agregas columnas a una $\phi$, el mínimo de
+$L_{\text{ent}}$ no sube, y una propuesta elegida así puede salir optimista.
 
 Si quieres repasar, vuelve a [¿Qué es f?](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/que-es-f/)
 y a [Polinomios y capacidad](https://raya-lucaria.github.io/ia_o26/aprendizaje-maquina/el-problema/polinomios-y-capacidad/).
@@ -113,15 +120,17 @@ $L_{\text{ent}}$. Eso sigue siendo explorar con datos que tocaron el ajuste.
 
 Con `PERIODO` puesto, la base es $\phi=(1,\sin(2\pi x/\text{periodo}),\cos(2\pi x/\text{periodo}))$.
 
-**Antes de abrir «Revela»**, escribe en `entrega-2` tu periodo y con qué lo
-propusiste. La celda «Revela» guarda la primera propuesta que ve y avisa
-si la cambias después.
+Cuando tu propuesta sea final, pon `REGISTRAR = True` y vuelve a correr.
+La salida dice «registrada en el bloque 2». Si después cambias `PERIODO`,
+la celda te avisa, y «Revela» sigue revisando lo registrado.
+Solo entonces corre la celda «Revela».
 
 ### celda: bloque-2-mira
 
 **Mira.** En la gráfica, los puntos son los datos de entrenamiento. La
 línea continua es el polinomio y la punteada, tu periódica. Los renglones
-de abajo dan $L_{\text{ent}}$ de cada ajuste.
+de abajo dan $L_{\text{ent}}$ de cada ajuste, y el último dice si tu
+propuesta ya está registrada.
 
 Al revelar aparece $R$ junto a $L_{\text{ent}}$, para los dos ajustes.
 Compara dos cosas: quién gana en $R$, y cuánto se parecen $L_{\text{ent}}$ y
@@ -129,14 +138,14 @@ $R$ en cada uno.
 
 ### celda: entrega-2
 
-**Entrega 2.** Antes de revelar:
+**Entrega 2.** Lo que registraste, copiado de la salida de «Juega»:
 
 - tu $\phi$ y tu periodo, **propuesta exploratoria, todavía sin validar**;
 - con qué lo propusiste: lo que viste en la nube y, si los usaste, los $L_{\text{ent}}$;
 - ¿el periodo es parámetro o hiperparámetro? Responde con la definición:
   ¿por qué elegirlo con $L_{\text{ent}}$ no basta?
 
-Después de revelar, sin tocar lo anterior:
+Después de revelar, sin tocar la celda «Juega»:
 
 - $R$ de tu periódica y del polinomio, copiados de la salida;
 - qué tan lejos quedó tu propuesta y si $L_{\text{ent}}$ la hacía ver mejor de lo que fue.
@@ -157,11 +166,16 @@ Mira la forma de la región donde vive la clase 1.
 Luego propón tu $\phi$ con `ml.columnas(...)`, por ejemplo
 `ml.columnas("x1", "x2 ** 2")`. Ese ejemplo no es la respuesta.
 Tu $\phi$ no puede ser polar ni el producto $x_1x_2$ del ejercicio de la página.
-Escribe `POR_QUE_3` y vuelve a correr.
+Escribe `POR_QUE_3` y vuelve a correr. Tu $\phi$ solo puede usar $x_1$ y $x_2$.
 
-Puedes probar varias $\phi$ con los aciertos en entrenamiento.
-Es exploración: una $\phi$ con más columnas siempre se ve igual o mejor ahí.
-**Registra la tuya en `entrega-3` antes de abrir «Revela».**
+Puedes probar varias $\phi$ con los aciertos en entrenamiento. Es
+exploración. Más columnas no bajan el mínimo de la pérdida logarítmica de
+entrenamiento, pero los aciertos pueden subir o bajar.
+Si el ajuste da un aviso, por ejemplo que los datos se separan, aparece
+impreso: anótalo, porque la entrega 6 pregunta por la optimización.
+
+Cuando tu $\phi$ sea final, pon `REGISTRAR = True`, vuelve a correr y
+solo entonces corre «Revela».
 
 ### celda: bloque-3-mira
 
@@ -171,19 +185,19 @@ Si no aparece línea, el modelo predice la misma clase en todo el cuadro.
 
 Al revelar aparecen los aciertos en el despliegue, la diferencia entre
 entrenamiento y despliegue, la moda y el techo de Bayes.
-El techo es el máximo de aciertos posible: lo que logra quien conoce
-$\Pr(y=1\mid x)$. Los aciertos son una métrica, no un riesgo $R$.
+El techo estima el máximo de aciertos posible: lo que logra quien conoce
+$\Pr(y=1\mid x)$, medido en la muestra enorme. Los aciertos son una métrica, no un riesgo $R$.
 
 ### celda: entrega-3
 
-**Entrega 3.** Antes de revelar:
+**Entrega 3.** Lo que registraste, copiado de la salida de «Juega»:
 
 - tu $\phi$, **propuesta exploratoria, todavía sin validar**, y por qué la
   propusiste: qué forma viste en la nube;
 - los aciertos en entrenamiento de tu $\phi$, de las cartesianas y de la moda;
 - la frontera de tu $\phi$ dibujada, que queda en la salida.
 
-Después de revelar, sin tocar lo anterior:
+Después de revelar, sin tocar la celda «Juega»:
 
 - los aciertos de tu $\phi$ en el despliegue, contra la moda y contra el techo de Bayes;
 - cuánto los exageraban los aciertos de entrenamiento.
@@ -194,8 +208,8 @@ Después de revelar, sin tocar lo anterior:
 
 **Predice.** ¿Cuántas columnas tendrá la $\Phi$ de tu $\phi$, contando la del 1?
 
-La celda imprime cuatro filas de $\Phi$ con los datos de entrenamiento, y los
-coeficientes $\widehat\beta$ del ajuste.
+La celda imprime cuatro filas de $\Phi$ de tu $\phi$ registrada, con los
+datos de entrenamiento, y los coeficientes $\widehat\beta$ del ajuste.
 
 ### celda: bloque-4-mira
 
@@ -217,7 +231,7 @@ Justifica cada uno con quién lo eligió: el ajuste o tú.
 **Predice.** Los datos del bloque 2 tienen $x$ entre 0 y 6. Si el modelo se
 usa con $x$ entre 6 y 9, ¿cuál de tus dos ajustes empeora más?
 
-La celda usa los mismos dos ajustes del bloque 2. Dibuja de 0 a 9 y mide el
+La celda usa los dos ajustes que registraste en el bloque 2. Dibuja de 0 a 9 y mide el
 error en cada zona con `error_por_zona`. Esa función supone que el uso cae
 uniforme en la zona y conoce $f$; tampoco existe en la vida real.
 
@@ -231,7 +245,8 @@ $f$, `var_y_dado_x` es el ruido y `R_zona` es su suma.
 
 **Entrega 5.** Copia `R_zona` dentro y fuera para los dos ajustes.
 Explica por qué difieren: qué supone cada $\phi$ sobre lo que pasa donde
-no hubo datos. Di cuál de los dos ajustes extrapola y cuál solo interpola bien.
+no hubo datos. ¿Alguno de tus dos ajustes extrapola bien, o solo interpolan?
+Puede que ninguno funcione fuera: dilo con tus cifras.
 Qué evaluación correspondería a cada uso es tema de la clase 2: aquí no se pide.
 
 ### celda: bloque-6-predice
@@ -248,8 +263,9 @@ La salida da las fórmulas, el piso del bloque 2 y el techo de Bayes del bloque 
 
 **Mira.** El primer renglón es el proceso de los bloques 2 y 5, con tu
 propuesta y el piso $R_{\text{Bayes}}=\sigma_\varepsilon^2$.
-El segundo es el proceso de la nube. La frontera de Bayes es donde
-$\Pr(y=1\mid x)=1/2$.
+Después viene el proceso de la nube. La frontera de Bayes es donde
+$\Pr(y=1\mid x)=1/2$: dos curvas, y entre ellas la clase 1 es la más probable.
+La celda solo corre si registraste tus propuestas de los bloques 2 y 3.
 
 ### celda: entrega-6
 

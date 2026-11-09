@@ -45,8 +45,8 @@ visibles y las seis celdas `entrega-<k>` llenas.
 2. Tu $\phi$ periódica, el periodo que propones y con qué lo propones.
    Si el periodo es parámetro o hiperparámetro, y por qué $L_{\text{ent}}$ no basta para elegirlo.
    Tras la revelación, qué tan lejos quedó tu propuesta.
-3. Tu $\phi$ para la nube, registrada antes de revelar, con su frontera dibujada.
-   Tras la revelación, sus aciertos en el despliegue contra la moda y contra el techo de Bayes.
+3. Tu $\phi$ para la nube, registrada antes de revelar, con su frontera dibujada. Solo puede usar $x_1$ y $x_2$.
+   Tras la revelación, sus aciertos en el despliegue contra la moda y contra el techo de Bayes, que se estima con la muestra enorme.
    Y cuánto los exageraban los aciertos de entrenamiento.
 4. Cuatro filas de $\Phi$, y qué es parámetro y qué hiperparámetro en tu modelo.
 5. El error dentro y fuera del rango de los datos, y por qué difieren.
@@ -70,7 +70,7 @@ Se premia el razonamiento y la honestidad sobre lo que todavía no está validad
 ## 4 · Antes de empezar
 
 - Lee antes [[ml-que-es-f|¿Qué es f?]] y [[ml-polinomios-y-capacidad|Polinomios y capacidad]].
-- En los bloques 2 y 3 sigues tres pasos: **propón** con la nube y $L_{\text{ent}}$, **registra** tu propuesta en `entrega-<k>` y solo entonces **revela**.
+- En los bloques 2 y 3 sigues tres pasos: **propón** con la nube y $L_{\text{ent}}$, **registra** tu propuesta con `REGISTRAR = True`, que la congela, y solo entonces **revela**. Copias lo registrado en `entrega-<k>`.
 - Tus elecciones de los bloques 2 y 3 son propuestas exploratorias. Las haces con datos que tocaron el ajuste, porque en la clase 1 no hay otros. La definición de hiperparámetro dice que eso no basta.
 - La muestra enorme solo sirve para revisar una propuesta ya registrada, nunca para elegir. En la vida real no existe; la clase 2 te da la herramienta que sí.
 - No abras el código de la celda «Prepara los procesos» hasta el bloque 6.
