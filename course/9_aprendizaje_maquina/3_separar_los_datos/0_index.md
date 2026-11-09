@@ -10,13 +10,17 @@ prerequisites: [ml-clase-1-el-problema]
 ---
 
 > [!WARNING]
-> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
+> **▶▶ ABRE LOS NOTEBOOKS EN COLAB ◀◀**
 >
-> **Notebook 03 · Entrenamiento y prueba.** Corre en tu navegador, sin instalar nada.
+> **Notebook 03 · Entrenamiento y prueba**, **Notebook 04 · Validación cruzada** y **Notebook 05 · Sesgo y varianza**. Corren en tu navegador, sin instalar nada.
 >
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/05_sesgo_y_varianza.ipynb)
 >
 > **[👉 Abrir `03_entrenamiento_y_prueba.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/03_entrenamiento_y_prueba.ipynb)**
+>
+> **[👉 Abrir `04_validacion_cruzada.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/04_validacion_cruzada.ipynb)**
+>
+> **[👉 Abrir `05_sesgo_y_varianza.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/05_sesgo_y_varianza.ipynb)**
 
 # Clase 2 · Separar los datos
 
