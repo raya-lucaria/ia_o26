@@ -858,4 +858,60 @@ def cifras_c1_par_impar():
 
 
 # --- tramo tarea ---
+
+# Parametros de la tarea 1 (tools/cuadernos_ml/tarea_1_proponer_phi.py, celda
+# bloque-1-prueba). DECISION prog-c1 en la bitacora. La prueba comprueba que el
+# notebook los trae literales. La phi docente del bloque 3 NO esta aqui: se
+# comprobo con un script fuera del repo (clase_1.md §10.6).
+TAREA_SEMILLA = 0
+TAREA_PERIODO, TAREA_N_2, TAREA_SIGMA_2, TAREA_X_2 = 2.5, 40, 0.5, (0, 6)
+TAREA_N_FIJO = 5
+TAREA_N_3, TAREA_X1_3, TAREA_X2_3 = 400, (-1.5, 1.5), (-1, 2.5)
+TAREA_PENDIENTE_3, TAREA_MEDIA_ANCHURA_3 = 10, 0.6
+TAREA_ZONAS = {"dentro": (0, 6), "fuera": (6, 9)}
+
+
+def tarea_proceso_periodico(semilla=TAREA_SEMILLA):
+    ml = _ml()
+    return ml.proceso(n=TAREA_N_2, x={"x": ml.uniforme(*TAREA_X_2)},
+                      f=lambda d: 3 + 2 * np.sin(2 * np.pi * d["x"] / TAREA_PERIODO),
+                      ruido=ml.normal(0, TAREA_SIGMA_2), fracciones=(1, 0, 0),
+                      semilla=semilla)
+
+
+def tarea_proceso_nube(semilla=TAREA_SEMILLA):
+    ml = _ml()
+    h2 = TAREA_MEDIA_ANCHURA_3 ** 2
+    return ml.proceso_clasificacion(
+        n=TAREA_N_3, x={"x1": ml.uniforme(*TAREA_X1_3), "x2": ml.uniforme(*TAREA_X2_3)},
+        puntaje=lambda d: TAREA_PENDIENTE_3 * (h2 - (d["x2"] - d["x1"] ** 2) ** 2),
+        fracciones=(1, 0, 0), semilla=semilla)
+
+
+def cifras_c1_tarea(semilla=TAREA_SEMILLA):
+    """Los criterios (a) y (b) de clase_1.md §10.6 con la semilla del notebook.
+
+    (a) la periodica con el periodo verdadero gana al polinomio de grado fijo
+    en R por >= 1.5x; (b) la logistica cartesiana del bloque 3 queda a <= 5
+    puntos de la moda en aciertos del despliegue. Tambien el techo de Bayes
+    (< 1) y el error por zona del bloque 5.
+    """
+    ml = _ml()
+    d2 = tarea_proceso_periodico(semilla)
+    poli = ml.ajustar(d2, phi=ml.polinomio(TAREA_N_FIJO))
+    peri = ml.ajustar(d2, phi=ml.periodicas("x", periodo=TAREA_PERIODO))
+    R_poli, R_peri = ml.riesgo(poli, d2), ml.riesgo(peri, d2)
+    zonas = {n: ml.error_por_zona(m, d2, TAREA_ZONAS).set_index("zona")["R_zona"].to_dict()
+             for n, m in (("polinomio", poli), ("periodica", peri))}
+    d3 = tarea_proceso_nube(semilla)
+    desp = d3.despliegue
+    cart = ml.ajustar(d3, tarea="clasificacion")
+    moda = float(ml.benchmarks(d3, desp).loc["moda", "aciertos"])
+    techo = float(np.mean((desp["prob"] >= 0.5).astype(int) == desp["y"]))
+    return {"R_polinomio": R_poli, "R_periodica": R_peri, "razon": R_poli / R_peri,
+            "piso_2": ml.piso(d2), "zonas": zonas,
+            "aciertos_cartesianas": ml.desempeno(cart, d3, "aciertos"),
+            "moda": moda, "techo_bayes": techo,
+            "proporcion_1": float(desp["y"].mean())}
+
 # --- fin tramo tarea ---
