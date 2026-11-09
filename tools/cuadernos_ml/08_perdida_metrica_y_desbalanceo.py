@@ -98,10 +98,8 @@ ml.laboratorio(
 #@title Juega: el 99 % que no detecta nada
 SEMILLA = 0
 PROPS = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01]
-# 20 reentrenamientos por proporción (plan §10.3: 20–50): con 2, el ±2 EE de las
-# barras sería ruido. Se calcula una vez, aquí, fuera de bloque_3 (~30 s).
 TABLA_DES = ml.metricas_vs_proporcion(PROPS, pesos=(None, "balanceado"), n=600,
-                                      repeticiones=20, semilla=SEMILLA)
+                                      repeticiones=20, semilla=SEMILLA)  # ~30 s
 TABLA_VAL, CONTRIB = {}, {}                    # la banda de validación, al pedirla
 for p in (0.5, 0.01):
     d = fraude(n=2000, semilla=SEMILLA, proporcion=p)
