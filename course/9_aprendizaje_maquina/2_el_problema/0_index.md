@@ -12,13 +12,15 @@ prerequisites: [ml-clase-0-que-es-aprender]
 > [!WARNING]
 > **▶▶ ABRE LOS NOTEBOOKS EN COLAB ◀◀**
 >
-> **Notebook 01 · ¿Qué es f?** y **Notebook 02 · Polinomios, capacidad y supuestos**. Corren en tu navegador, sin instalar nada.
+> **Notebook 01 · ¿Qué es f?**, **Notebook 02 · Polinomios, capacidad y supuestos** y **la tarea 1 · Propón la representación**. Corren en tu navegador, sin instalar nada.
 >
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb) [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/tarea_1_proponer_phi.ipynb)
 >
 > **[👉 Abrir `01_que_es_f.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/01_que_es_f.ipynb)**
 >
 > **[👉 Abrir `02_polinomios_y_capacidad.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)**
+>
+> **[👉 Abrir `tarea_1_proponer_phi.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/tarea_1_proponer_phi.ipynb)**
 
 # Clase 1 · El problema
 
@@ -82,7 +84,7 @@ Las dos páginas y sus notebooks toman 120 minutos en total: 55 + 65.
 1. [[ml-que-es-f|¿Qué es f? El proceso, el piso y la representación]]
 2. [[ml-polinomios-y-capacidad|Polinomios, capacidad y supuestos]]
 
-La tarea de esta clase, proponer una representación, todavía no está publicada.
+La tarea va aparte, unos 90 minutos en casa: [[ml-tarea-1|Tarea de la clase 1 · Propón la representación]].
 
 ## Los notebooks
 
@@ -98,6 +100,11 @@ Recorres Taylor y la curva de capacidad, y distingues quién elige el grado del 
 Exploras qué pasa al extrapolar y por qué ningún método gana en todos los problemas.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
+
+La tarea, `tarea_1_proponer_phi.ipynb`, toma unos 90 minutos, aparte del recorrido.
+Propones una representación para dos procesos que no conoces y revisas cuánto te equivocaste.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/tarea_1_proponer_phi.ipynb)
 
 ## Qué no cubre esta clase
 

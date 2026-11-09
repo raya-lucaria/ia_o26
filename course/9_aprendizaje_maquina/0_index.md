@@ -37,7 +37,7 @@ con datos nuevos, y una cifra honesta de qué tan bien lo hará.
 | Clase | Qué trabaja | Notebooks | Minutos |
 |---|---|---|---:|
 | 0 · Qué es aprender | Mitchell, supervisado y no supervisado, dónde cae el aprendizaje de máquina | ninguno | 20 |
-| 1 · El problema | El proceso, el piso, el riesgo, la representación y la capacidad | 01 y 02 | 120 |
+| 1 · El problema | El proceso, el piso, el riesgo, la representación y la capacidad | 01 y 02 y tarea 1 | 120 |
 | 2 · Separar los datos | Entrenamiento, validación y prueba; validación cruzada; sesgo y varianza | 03 a 05 y tarea 2 | 205 |
 | 3 · Leer el error y regularizar | Residuales, benchmarks y el lagrangeano: ridge, lasso y red elástica | 06 y 07 y tarea 3 | 140 |
 | 4 · Clasificación | Pérdida contra métrica, umbral, desbalanceo, calibración y conformal | 08 y 09 y tarea 4 | 130 |
