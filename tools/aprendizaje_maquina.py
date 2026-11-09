@@ -1368,15 +1368,28 @@ def _estratos(y, tarea=None):
     return np.minimum((rangos * 10) // max(len(y), 1), 9)
 
 
+def _corte_sin_empate(t_ordenado, i):
+    """Mueve el corte i hacia adelante hasta que no parta filas con el mismo t: así
+    todo lo de un lado es estrictamente anterior a todo lo del otro."""
+    n = len(t_ordenado)
+    while 0 < i < n and t_ordenado[i - 1] == t_ordenado[i]:
+        i += 1
+    return i
+
+
 def _partir_por_tiempo(t, fracciones):
-    """En orden de t: ent lo más viejo, luego val, prueba lo más reciente."""
+    """En orden de t: ent lo más viejo, luego val, prueba lo más reciente. Las filas
+    con el mismo t quedan siempre del mismo lado de cada corte."""
     fr = _validar_fracciones(fracciones)
-    orden = np.argsort(np.asarray(t), kind="stable")
+    t = np.asarray(t)
+    orden = np.argsort(t, kind="stable")
     n = len(orden)
     a = int(round(n * fr[0]))
     b = n if fr[2] == 0 else min(n, a + int(round(n * fr[1])))
     if fr[1] == 0 and fr[2] == 0:
         a = b = n
+    a = _corte_sin_empate(t[orden], a)
+    b = max(a, _corte_sin_empate(t[orden], b))
     return tuple(np.sort(orden[i:j]) for i, j in ((0, a), (a, b), (b, n)))
 
 
@@ -3175,10 +3188,15 @@ def _pliegues_temporales(df, k):
     n = len(df)
     if k + 1 > n:
         raise ValueError(f'con como="temporal", k va de 2 a {n - 1}: se parten k + 1 bloques')
-    orden = (np.argsort(np.asarray(df["t"], float), kind="stable") if "t" in df
-             else np.arange(n))
-    bloques = np.array_split(orden, k + 1)
-    return [(np.sort(np.concatenate(bloques[:m + 1])), np.sort(bloques[m + 1]))
+    t = np.asarray(df["t"], float) if "t" in df else np.arange(n, dtype=float)
+    orden = np.argsort(t, kind="stable")
+    tamanos = [len(b) for b in np.array_split(orden, k + 1)]
+    cortes = [_corte_sin_empate(t[orden], i) for i in np.cumsum(tamanos)[:-1]]
+    bordes = [0] + cortes + [n]
+    if any(bordes[m] >= bordes[m + 1] for m in range(k + 1)):
+        raise ValueError(f'con como="temporal" y k = {k}, los empates en t dejan un bloque '
+                         "vacío: ningún corte parte filas con el mismo t; usa un k menor")
+    return [(np.sort(orden[:bordes[m + 1]]), np.sort(orden[bordes[m + 1]:bordes[m + 2]]))
             for m in range(k)]
 
 
