@@ -9,6 +9,7 @@ Anclas por tramo (protocolo p5.2 §7.1): cada rama agrega sus pruebas solo
 antes del «fin» de su tramo.
 """
 import math
+import re
 from fractions import Fraction
 
 import pytest
@@ -473,5 +474,66 @@ def test_par_impar_el_polinomio_se_dispara_y_la_periodica_no():
 
 
 # --- tramo tarea ---
+
+# ------------------------------------------------------ cifras_c1_tarea ---
+
+@pytest.fixture(scope="module")
+def tarea():
+    return c.cifras_c1_tarea()
+
+
+def test_tarea_a_la_periodica_gana_al_polinomio_por_al_menos_1_5(tarea):
+    assert tarea["razon"] >= 1.5
+    assert tarea["R_periodica"] < tarea["R_polinomio"]
+    # la periodica con el periodo verdadero queda cerca del piso sigma^2 = 0.25
+    assert tarea["piso_2"] == pytest.approx(0.25, rel=1e-6)
+    assert tarea["R_periodica"] < 1.5 * tarea["piso_2"]
+
+
+def test_tarea_b_la_logistica_cartesiana_queda_a_5_puntos_de_la_moda(tarea):
+    assert abs(tarea["aciertos_cartesianas"] - tarea["moda"]) <= 0.05
+
+
+def test_tarea_el_techo_de_bayes_es_menor_que_1_y_deja_espacio(tarea):
+    assert tarea["techo_bayes"] < 1
+    # una phi docente necesita llegar a 0.85: el techo tiene que estar arriba
+    assert tarea["techo_bayes"] >= 0.88
+    assert tarea["moda"] <= 0.75     # la moda no se acerca al 0.85 pedido
+
+
+def test_tarea_fuera_del_rango_el_polinomio_se_dispara_y_la_periodica_no(tarea):
+    z = tarea["zonas"]
+    assert z["polinomio"]["fuera"] > 100 * z["polinomio"]["dentro"]
+    assert z["periodica"]["fuera"] < 1.5 * z["periodica"]["dentro"]
+
+
+@pytest.mark.parametrize("semilla", [1, 2, 3])
+def test_tarea_a_y_b_no_dependen_de_la_semilla(semilla):
+    t = c.cifras_c1_tarea(semilla)
+    assert t["razon"] >= 1.5
+    assert abs(t["aciertos_cartesianas"] - t["moda"]) <= 0.05
+
+
+def test_tarea_el_notebook_trae_los_mismos_parametros():
+    from pathlib import Path
+    fuente = (Path(c.__file__).parent / "cuadernos_ml" / "tarea_1_proponer_phi.py").read_text(
+        encoding="utf-8")
+    literales = [
+        f"SEMILLA = {c.TAREA_SEMILLA}",
+        f"_PERIODO, _N_2, _SIGMA_2, _X_2 = {c.TAREA_PERIODO}, {c.TAREA_N_2},"
+        f" {c.TAREA_SIGMA_2}, {c.TAREA_X_2}",
+        f"n={c.TAREA_N_2}, x={{\"x\": ml.uniforme{c.TAREA_X_2}}}",
+        f"np.sin(2 * np.pi * d[\"x\"] / {c.TAREA_PERIODO})",
+        f"ruido=ml.normal(0, {c.TAREA_SIGMA_2})",
+        f"N_FIJO = {c.TAREA_N_FIJO}",
+        f"n={c.TAREA_N_3}, x={{\"x1\": ml.uniforme{c.TAREA_X1_3},"
+        f" \"x2\": ml.uniforme{c.TAREA_X2_3}}}",
+        f"{c.TAREA_PENDIENTE_3} * ({c.TAREA_MEDIA_ANCHURA_3 ** 2:.2f} - (d[\"x2\"] - d[\"x1\"] ** 2) ** 2)",
+        "fracciones=(1, 0, 0), semilla=SEMILLA",
+    ]
+    faltan = [s for s in literales if s not in fuente]
+    assert not faltan, f"el notebook de la tarea no trae: {faltan}"
+    assert not re.search(r"\.(prueba|val)\b", fuente)
+
 # --- fin tramo tarea ---
 
