@@ -5,3 +5,6 @@
 # El símbolo es una macro (\gamma), una letra griega (γ) o «re:<regex>» para
 # una forma compuesta. Vale desde esta clase en adelante. Una línea sin
 # fuente hace fallar tools/test_notacion_ml.py.
+re:\\operatorname\*?\{cov\} | D-015 (plan-c3-2: cov se presenta en la clase 3, en ml-c3-teo-variable-omitida y el micro ml-c3-ej-pendiente; la lista común lo da desde la 4)
+re:\\operatorname\*?\{sign\} | D-015 (plan-c3-2: sign en ml-c3-teo-soft-thresholding)
+re:\\operatorname\*?\{Var\}_x | D-015 (plan-c3-13: Var_x en ml-c3-obs-centro-no-es-sesgo)

@@ -101,6 +101,16 @@ def test_un_simbolo_desconocido_falla_hasta_que_entra_en_su_lista(tmp_path):
     assert reglas("$\\gamma_h$", clase=4, blanca=blanca) == ["antes"]
 
 
+def test_una_forma_comun_se_adelanta_con_la_lista_de_su_clase(tmp_path):
+    cov = "$\\operatorname{cov}(x_1,x_2)$"
+    assert reglas(cov, clase=3, blanca=nm.lista_blanca(tmp_path)) == ["antes"]
+    (tmp_path / "c3.txt").write_text("re:\\\\operatorname\\*?\\{cov\\} | D-015\n",
+                                     encoding="utf-8")
+    blanca = nm.lista_blanca(tmp_path)
+    assert reglas(cov, clase=3, blanca=blanca) == []
+    assert reglas(cov, clase=2, blanca=blanca) == ["antes"]
+
+
 def test_el_codigo_no_cuenta_para_la_lista_blanca():
     texto = "```python\nphi = polinomio(N=3)  # $\\gamma$\n```\n`$\\gamma$`\n"
     assert reglas(texto, clase=0) == []
