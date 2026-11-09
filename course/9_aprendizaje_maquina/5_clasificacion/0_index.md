@@ -9,23 +9,29 @@ tags: [aprendizaje-maquina, clasificacion, desbalanceo, mcc, calibracion, confor
 prerequisites: [ml-clase-3-leer-el-error]
 ---
 
+> [!WARNING]
+> **▶▶ ABRE EL NOTEBOOK EN COLAB ◀◀**
+>
+> Los dos notebooks corren en tu navegador, sin instalar nada. Predice antes de mover cada control y explica después lo que cambió.
+>
+> **Notebook 08 · Pérdida, métrica y desbalanceo.**
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/08_perdida_metrica_y_desbalanceo.ipynb)
+>
+> **[👉 Abrir `08_perdida_metrica_y_desbalanceo.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/08_perdida_metrica_y_desbalanceo.ipynb)**
+>
+> **Notebook 09 · Calibración y conformal.**
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/09_calibracion_y_conformal.ipynb)
+>
+> **[👉 Abrir `09_calibracion_y_conformal.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/09_calibracion_y_conformal.ipynb)**
+
 # Clase 4 · Clasificación: la pérdida, la métrica y el desbalanceo
 
 **¿Con qué cifra juzgarías un filtro que casi nunca ve fraudes?**
 
 Los aciertos pueden premiar al filtro que deja pasar todos los fraudes.
 Compararás su desempeño con MCC y aciertos balanceados; también revisarás qué significan las probabilidades que anuncia.
-
-> [!TIP]
-> **Míralo correr: pérdida, métrica y probabilidades**
->
-> Abre los notebooks en tu navegador. Predice antes de mover cada control y explica después lo que cambió.
->
-> Notebook 08 · Pérdida, métrica y desbalanceo.
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/08_perdida_metrica_y_desbalanceo.ipynb)
->
-> Notebook 09 · Calibración y conformal.
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/09_calibracion_y_conformal.ipynb)
 
 ## Lo que traes
 
