@@ -5,3 +5,4 @@
 # El símbolo es una macro (\gamma), una letra griega (γ) o «re:<regex>» para
 # una forma compuesta. Vale desde esta clase en adelante. Una línea sin
 # fuente hace fallar tools/test_notacion_ml.py.
+\Bigm | D-015 (clase_2.md §10.2 P1 §4: la barra grande de la condición en ml-c2-obs-optimismo-seleccion)

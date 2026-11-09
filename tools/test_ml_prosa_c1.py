@@ -947,6 +947,17 @@ def test_unidad_9_no_usa_avisos_que_el_builder_no_conoce():
         assert not re.search(r"(?m)^> #{1,6} ", texto), f"{ruta.name}: encabezado en un aviso"
 
 
+def _orden(x):
+    """Una cifra significativa en notación científica, como la escribe el guion.
+
+    El R del grado 40 sale de un ajuste con número de condición cercano a 1e15:
+    sus cifras finas cambian con el BLAS de cada máquina (CI dio 199 349 donde
+    esta dio 199 262), así que la prosa solo cita su orden de magnitud.
+    """
+    m, e = f"{x:.0e}".split("e+")
+    return f"{m}\\times10^{{{int(e)}}}"
+
+
 def test_r1_nb02_cifras_en_su_celda():
     t, k = c.cifras_c1_taylor(), c.cifras_c1_capacidad()[20]
     i, e = c.cifras_c1_inverso(), c.cifras_c1_extrapolar()
@@ -965,9 +976,9 @@ def test_r1_nb02_cifras_en_su_celda():
     assert f"alcanza $R={_r(i['R_inverso'], 3)}$" in b4
     assert f"$\\widehat\\beta=({_r(b0, 2)},\\ {_r(b1_, 2)})$" in b4
     assert f"usa 11 columnas y da $R={_r(i['R_10'], 3)}$." in b4
-    r40 = f"{i['R_40']:,.0f}".replace(",", "\\,")
+    r40 = _orden(i["R_40"])
     assert (f"Con el grado 40 que pediste, $L_{{\\text{{ent}}}}={_r(i['L_ent_40'], 3)}$, pero "
-            f"$R={r40}$") in b4
+            f"$R\\approx {r40}$") in b4
     u = i["sube_escalado"]
     assert (f"pasa de {_r(u['L_de'], 4)} en grado {u['de']} a {_r(u['L_a'], 4)} en grado "
             f"{u['a']}.") in b4
@@ -1266,10 +1277,10 @@ def test_r3_nb02_bloque_4_columnas_escala_brecha_y_coeficiente():
             "de $R$: el teorema habla del promedio, y una muestra puede salir al revés (en "
             f"la página, {o['muestras_al_reves']} de {o['repeticiones']}).") in b4
     assert "porque el ajuste sobreajusta" not in b4
-    r40 = f"{i['R_40']:,.0f}".replace(",", "\\,")
+    r40 = _orden(i["R_40"])
     assert ("en esta base de potencias; su tamaño depende de la representación. El "
             "sobreajuste lo muestran las dos pérdidas: "
-            f"$L_{{\\text{{ent}}}}={_r(i['L_ent_40'], 3)}$ contra $R={r40}$.") in b4
+            f"$L_{{\\text{{ent}}}}={_r(i['L_ent_40'], 3)}$ contra $R\\approx {r40}$.") in b4
 
 
 def test_r3_nb02_el_taller_dice_que_hace_escalar_x():

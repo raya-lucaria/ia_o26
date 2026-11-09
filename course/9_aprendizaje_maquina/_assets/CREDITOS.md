@@ -64,8 +64,39 @@ Cada bloque `## Clase N` lo llena solo la rama de esa clase.
 
 ## Clase 2
 
+### Clase 2 · tramo rápido
+
 | Archivo | Qué muestra | Origen | Licencia |
 |---|---|---|---|
+| `ml-c2-dos-niveles.svg` | Diagrama: dos optimizaciones anidadas; afuera se elige el grado N con validación, adentro β con N fijo y entrenamiento | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`) | Propio, CC BY-SA 4.0 |
+| `ml-c2-tres-conjuntos.svg` | Diagrama: la muestra en entrenamiento, validación y prueba (60/20/20) con el rol de cada uno, el candado de la prueba y el modelo final reajustado con entrenamiento y validación | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 20, 57 y 58 del deck 04 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-simulacro.svg` | Diagrama: cuatro contratos de uso (más de lo mismo, el mes que viene, pacientes nuevos, otra ciudad) con su prueba marcada y la separación que imita cada uno | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 19, 25 y 26 del deck 04 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-pliegues.svg` | Diagrama: rejilla de cinco vueltas por cinco pliegues; en la vuelta m valida el pliegue m, y la prueba queda cerrada aparte | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 4 a 10 del deck 05 del profesor y de Goodfellow et al., *Deep Learning*, alg. 5.1 | Propio, CC BY-SA 4.0 |
+| `ml-c2-costo-cv.svg` | Diagrama: tres validaciones cruzadas apiladas, una por candidato, y el contador M·k + 1 de ajustes con el reajuste final | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de las diapositivas 11 a 15 del deck 05 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-anidada.svg` | Diagrama: la validación cruzada anidada; afuera cada pliegue externo mide, adentro una validación cruzada interna elige el grado | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`) | Propio, CC BY-SA 4.0 |
+| `ml-c2-ajustes-con-prueba.svg` | Grados 1, 4 y 12 sobre las mismas 60 entregas, con círculos de entrenamiento, cuadrados de prueba, la f verdadera y el ajuste; arriba de cada panel, L_ent y L_prueba | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de la diapositiva 23 del deck 04 del profesor y de Goodfellow et al., *Deep Learning*, fig. 5.2 | Propio, CC BY-SA 4.0 |
+| `ml-c2-prueba-ruidosa.svg` | Histogramas de L_prueba del mismo modelo congelado con 500 pruebas de 20 y de 200 entregas, contra R, con la cobertura de ±2 EE | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); Goodfellow et al., *Deep Learning*, §5.4.3 | Propio, CC BY-SA 4.0 |
+| `ml-c2-optimismo.svg` | Lo anunciado menos el riesgo real del grado elegido, sin reajuste, eligiendo con la prueba y con validación | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de la diapositiva 55 del deck 04 y del ejercicio 04_tvt del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-prueba-miente.svg` | Por contrato de uso, L_prueba con separación al azar y con la que imita el contrato, contra R del despliegue y el benchmark | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`) (casos 13 a 15) | Propio, CC BY-SA 4.0 |
+| `ml-c2-reparto.svg` | R medio del modelo y dispersión de L_prueba − R contra la fracción de la muestra que va a prueba | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de las diapositivas 27 y 28 del deck 04 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-cv-capacidad.svg` | CV con barras de ±1 EE contra el grado, con L_ent, R del simulador, piso, benchmark, el umbral de un EE y los elegidos | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de Goodfellow et al., *Deep Learning*, fig. 5.3, y de la diapositiva 18 del deck 05 del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-pliegue-anomalo.svg` | La pérdida de cada uno de los cinco pliegues para los grados 1, 4 y 8 en el caso 16, con su media | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea del notebook ejercicios/06_cv_bias_variance del profesor | Propio, CC BY-SA 4.0 |
+| `ml-c2-estratificada.svg` | Sesenta casos con 6 positivos en cinco pliegues, al azar y estratificados, con la fracción de 1000 particiones que deja algún pliegue sin positivos | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de las diapositivas 29 y 98 del deck 07 del profesor | Propio, CC BY-SA 4.0 |
+
+### Clase 2 · tramo m
+
+| Archivo | Qué muestra | Origen | Licencia |
+|---|---|---|---|
+| `ml-c2-abanico.svg` | Cien ajustes de grado 1, 4 y 12, uno por muestra del mismo proceso, con su promedio y la media verdadera de y dado x | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea del notebook _deprecated_bias_variance del profesor y de Goodfellow et al., *Deep Learning*, §5.4 | Propio, CC BY-SA 4.0 |
+| `ml-c2-diana.svg` | Las predicciones en x = 5 de cien ajustes de grado 1 y 12, su promedio y el valor verdadero, con eje fijo | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de la diapositiva 8 del deck 06 del profesor (Domingos 2012) | Propio, CC BY-SA 4.0 |
+
+### Clase 2 · tramo completo
+
+| Archivo | Qué muestra | Origen | Licencia |
+|---|---|---|---|
+| `ml-c2-sesgo-varianza.svg` | Ruido, sesgo² y varianza por grado calculados con f conocida, y la CV 5 de una sola muestra junto al total calculado | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de Goodfellow et al., figura 5.6 | Propio, CC BY-SA 4.0 |
+| `ml-c2-curva-aprendizaje.svg` | Medianas de L_ent y R de los grados 1 y 10 contra el número de entregas, con el piso, y el grado que elige la CV | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); datos sintéticos de `ml_lab` (`tools/ml_cifras_c2.py`); idea de Goodfellow et al., figura 5.4 | Propio, CC BY-SA 4.0 |
+| `ml-c2-diagnostico.svg` | Árbol de diagnóstico: brecha, benchmark, capacidad y separación, con sus cinco hojas | Generado con `tools/gen_aprendizaje_maquina.py` (`tools/figuras_ml_c2.py`); idea de Goodfellow et al., §11.3, y de las diapositivas 30–33 del deck 04 y 96 del deck 07 del profesor | Propio, CC BY-SA 4.0 |
 
 ## Clase 3
 

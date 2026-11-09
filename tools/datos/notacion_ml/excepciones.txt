@@ -5,3 +5,6 @@
 # Nunca se exceptúa con un comentario en la página.
 course/9_aprendizaje_maquina/4_leer_el_error/2_el_lagrangeano_en_accion.md | En los libros verás $\lambda$ en lugar de $\mu$, y en sklearn, `alpha` | lambda | la nota única de clase_3.md §10.2.2 §1 va en prosa justo después de ml-c3-def-lagrangeano-capacidad, no dentro (DECISIÓN prog-c3-5)
 course/9_aprendizaje_maquina/4_leer_el_error/2_el_lagrangeano_en_accion.md | En los libros verás $\lambda$ en lugar de $\mu$, y en sklearn, `alpha` | alpha | la misma nota única (DECISIÓN prog-c3-5)
+course/9_aprendizaje_maquina/3_separar_los_datos/1_entrenamiento_y_prueba.md | mezcla $\rho$ de la red elástica | antes | tabla ml-c2-tab-param-hiper: nombra las perillas antes de su clase, con su columna «Se presenta» (contrato §2.2; SOLICITUD plan-c2-3 punto 2, regla por omisión de D-015)
+course/9_aprendizaje_maquina/3_separar_los_datos/1_entrenamiento_y_prueba.md | umbral $\tau$ | antes | tabla ml-c2-tab-param-hiper (contrato §2.2; plan-c2-3 punto 2, D-015)
+course/9_aprendizaje_maquina/3_separar_los_datos/1_entrenamiento_y_prueba.md | $\tau$ será un umbral | antes | aviso de letras de la tabla ml-c2-tab-param-hiper (contrato §2.2; plan-c2-3 punto 2, D-015)

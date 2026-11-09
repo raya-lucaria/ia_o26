@@ -3336,8 +3336,11 @@ def test_proceso_clasificacion_binaria_sin_novedades_no_cambio():
     """La muestra y el oráculo de una binaria sin lo nuevo son los de 1.3 (D-004)."""
     d = ml.proceso_clasificacion(n=300)
     pob = d._pob
-    assert np.array_equal(d.realidad["prob"].to_numpy(),
-                          1 / (1 + np.exp(-(1.5 * d.realidad["x1"] + d.realidad["x2"]))))
+    # tolerancia de redondeo, no igualdad bit a bit: exp y la suma vectorizada
+    # difieren en el último bit entre CPU/BLAS (CI falló aquí con array_equal)
+    np.testing.assert_allclose(d.realidad["prob"].to_numpy(),
+                               1 / (1 + np.exp(-(1.5 * d.realidad["x1"] + d.realidad["x2"]))),
+                               rtol=1e-12, atol=0)
     assert pob.b.tolist() == [0.0, 0.0]
     import hashlib
     h = hashlib.sha256(pd.util.hash_pandas_object(d.ent).values.tobytes()).hexdigest()[:16]

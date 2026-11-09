@@ -205,7 +205,7 @@ cerca del piso, y estima $\widehat\beta=(2.03,\ 5.00)$.
 El polinomio inicial de grado 10 usa 11 columnas y da $R=1.279$.
 En esta muestra su $L_{\text{ent}}$, 1.370, queda arriba de $R$: el teorema habla
 del promedio, y una muestra puede salir al revés (en la página, 9 de 500).
-Con el grado 40 que pediste, $L_{\text{ent}}=0.074$, pero $R=199\,262$:
+Con el grado 40 que pediste, $L_{\text{ent}}=0.074$, pero $R\approx 2\times10^{5}$:
 muy lejos del piso.
 La representación recíproca puede expresar la forma del proceso con menos
 coeficientes: reduce tanto la capacidad como el error de aproximación.
@@ -224,7 +224,7 @@ exacto entre familias anidadas: el cálculo ya no lo alcanza.
 El mayor coeficiente no sirve de alarma: con escala, en grado 40 llega a
 $3.0\times10^{11}$ en esta base de potencias; su tamaño depende de la
 representación. El sobreajuste lo muestran las dos pérdidas:
-$L_{\text{ent}}=0.074$ contra $R=199\,262$.
+$L_{\text{ent}}=0.074$ contra $R\approx 2\times10^{5}$.
 Sin escalar, el cálculo descarta direcciones casi repetidas y deja los
 coeficientes pequeños.
 El caso 4 de la galería muestra esta misma subida sin escalar, con 100 datos y

@@ -705,4 +705,4 @@ El entrenamiento premia ampliar la familia; necesitas datos que no tocaron el aj
 
 **¿Cómo medimos $R$ sin la muestra enorme, con un conjunto que imite la realidad?**
 
-Continúa con [[ml-clase-1-el-problema|Clase 1 · El problema]].
+Continúa con [[ml-clase-2-separar-los-datos|Clase 2 · Separar los datos]].
