@@ -384,9 +384,42 @@ def test_cada_svg_es_el_que_produce_el_generador(nombre):
     archivo = gen.ASSETS_ML / f"{nombre}.svg"
     assert archivo.is_file(), (
         f"falta {archivo.name}: corre python3 tools/gen_aprendizaje_maquina.py")
-    assert archivo.read_text(encoding="utf-8") == gen.contenido(nombre), (
+    comiteado, generado = archivo.read_text(encoding="utf-8"), gen.contenido(nombre)
+    assert comiteado == generado or _mismo_svg_salvo_redondeo(comiteado, generado), (
         f"{archivo.name} no es el que produce el generador: corre "
         "python3 tools/gen_aprendizaje_maquina.py y revisa el diff")
+
+
+# Matplotlib escribe floats con todos sus dígitos y nombra cada clipPath con un hash
+# de sus coordenadas. En CI (otra CPU, mismo numpy) cuatro SVG salieron distintos solo
+# en el último dígito: «9.999999999999999e-05» contra «0.0001», y por eso con otro id
+# de clipPath (run 42686844702). La figura es la misma; la comparación tolera eso y
+# nada más: texto, colores y estructura deben coincidir carácter por carácter.
+_NUMERO = re.compile(r"-?\d+(?:\.\d+)?(?:e[-+]?\d+)?")
+_CLIP = re.compile(r"\bp[0-9a-f]{10}\b")
+
+
+def _mismo_svg_salvo_redondeo(a, b, absoluta=1e-3, relativa=1e-6):
+    def ids_en_orden(texto):
+        vistos = {}
+        return _CLIP.sub(lambda m: vistos.setdefault(m.group(), f"clip{len(vistos)}"), texto)
+
+    a, b = ids_en_orden(a), ids_en_orden(b)
+    if _NUMERO.split(a) != _NUMERO.split(b):
+        return False
+    na, nb = _NUMERO.findall(a), _NUMERO.findall(b)
+    return len(na) == len(nb) and all(
+        abs(float(x) - float(y)) <= max(absoluta, relativa * abs(float(x)))
+        for x, y in zip(na, nb))
+
+
+def test_la_tolerancia_de_redondeo_no_deja_pasar_un_cambio_visible():
+    base = '<g id="anotar-0.07880462815669911"><path clip-path="url(#pc7f070eaf2)" d="M 10.5 2"/></g>'
+    ruido = '<g id="anotar-0.07880462815669913"><path clip-path="url(#p822f8dad43)" d="M 10.5 2"/></g>'
+    assert _mismo_svg_salvo_redondeo(base, ruido)
+    assert not _mismo_svg_salvo_redondeo(base, base.replace("10.5", "10.6"))
+    assert not _mismo_svg_salvo_redondeo(base, base.replace("anotar", "anotad"))
+    assert not _mismo_svg_salvo_redondeo(base, base.replace('d="M', 'd="L'))
 
 
 @requiere_unidad

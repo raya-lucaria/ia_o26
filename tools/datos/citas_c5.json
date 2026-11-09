@@ -1,0 +1,234 @@
+{
+ "cifras_c5_adversarial": {
+  "benchmark_formula": "0.500",
+  "clientes": {
+   "benchmark": "0.50",
+   "ll_azar": "0.47",
+   "ll_grupos": "0.59",
+   "mcc_azar": "0.27",
+   "mcc_grupos": "-0.25"
+  },
+  "concepto_bosque": {
+   "benchmark": "0.500",
+   "log_loss": "0.505",
+   "mcc": "0.05",
+   "senal": "sin señal"
+  },
+  "control": {
+   "deriva_mcc_05": "0.47",
+   "deriva_mcc_obar": "0.18",
+   "mcc_05": "0.00",
+   "mcc_obar": "0.22"
+  },
+  "deriva_bosque": {
+   "benchmark": "0.500",
+   "log_loss": "0.425",
+   "mcc": "0.18",
+   "senal": "señal"
+  },
+  "marginales_bosque": {
+   "benchmark": "0.500",
+   "log_loss": "0.483",
+   "mcc": "0.22",
+   "senal": "señal"
+  },
+  "marginales_logistica": {
+   "benchmark": "0.500",
+   "log_loss": "0.501",
+   "mcc": "-0.01",
+   "senal": "sin señal"
+  },
+  "nada_bosque": {
+   "benchmark": "0.500",
+   "log_loss": "0.505",
+   "mcc": "0.05",
+   "senal": "sin señal"
+  },
+  "o_bar": "0.2"
+ },
+ "cifras_c5_arbol": {
+  "logistica": "0.98",
+  "mcc": {
+   "1": "0.41",
+   "3": "0.82",
+   "6": "0.90"
+  }
+ },
+ "cifras_c5_autocorrelacion": {
+  "alterna": "−5/6",
+  "mediana_fuera": "1",
+  "pearson": "−1",
+  "rezago1_con": "0.85",
+  "rezago1_sin": "0.02"
+ },
+ "cifras_c5_bagging": {
+  "formula": "0.37",
+  "simulada": "0.384"
+ },
+ "cifras_c5_cv_miente": {
+  "c13_clase2": {
+   "R": "122",
+   "azar": "50",
+   "estructurada": "133"
+  },
+  "c13_lineal": {
+   "R": "54",
+   "azar": "53",
+   "estructurada": "56"
+  },
+  "c14_clase2": {
+   "R": "17.9",
+   "azar": "2.1",
+   "estructurada": "19.3"
+  },
+  "c14_lineal": {
+   "R": "23.4",
+   "azar": "23.5",
+   "estructurada": "24.3"
+  }
+ },
+ "cifras_c5_cybenko": {
+  "error": {
+   "1": "0.72",
+   "10": "0.00",
+   "3": "0.51"
+  },
+  "n_aprendida": "3200",
+  "n_polar": "100",
+  "piso": "0.141"
+ },
+ "cifras_c5_depurar": {
+  "mse_recta": "52.8"
+ },
+ "cifras_c5_diagnostico": {
+  "L_ent": "6.9",
+  "azar": "14.7",
+  "grupos": "35.8",
+  "piso_sobre_piso": "-1 %",
+  "repeticiones": "10",
+  "sesgo_sobre_piso": "61 %"
+ },
+ "cifras_c5_dummy": {
+  "b1": [
+   "11.5",
+   "-1.2",
+   "1.8",
+   "10.9",
+   "3.8"
+  ],
+  "b2": [
+   "21.5",
+   "-11.2",
+   "-8.2",
+   "0.9",
+   "3.8"
+  ],
+  "rango": "4 de 5",
+  "ridge": [
+   "16.4",
+   "-3.8",
+   "-1.6",
+   "5.4",
+   "3.4"
+  ],
+  "yh": [
+   "14.2",
+   "21.0",
+   "33.9",
+   "25.7",
+   "23.0",
+   "28.2"
+  ]
+ },
+ "cifras_c5_escalar_mco": {
+  "ridge": "0.17"
+ },
+ "cifras_c5_familias": {
+  "bosque_10": "13.5",
+  "bosque_200": "13.1",
+  "etapas": "50",
+  "profundidad": "3",
+  "rango_10": "0.85",
+  "rango_200": "0.23"
+ },
+ "cifras_c5_final_metodologia": {
+  "L_ent": "1.7",
+  "benchmark": "7.2",
+  "bosque_azar": "4.6",
+  "bosque_grupo": "5.5",
+  "lineal_azar": "5.4",
+  "lineal_grupo": "5.4"
+ },
+ "cifras_c5_fugas": {
+  "caso20": {
+   "mediana_dif": "0.000",
+   "optimistas": "1 de 20"
+  },
+  "duplicados": {
+   "cv": "0.45",
+   "inflado": "0.18",
+   "uso": "0.27"
+  },
+  "ninguna": {
+   "cv": "0.21",
+   "inflado": "-0.05",
+   "uso": "0.29"
+  },
+  "posterior": {
+   "cv": "0.97",
+   "inflado": "0.97",
+   "uso": "0.00"
+  },
+  "preprocesar_antes": {
+   "cv": "0.21",
+   "inflado": "-0.05",
+   "uso": "0.29"
+  },
+  "seleccion_limpia": {
+   "cv": "-0.06",
+   "inflado": "-0.04",
+   "uso": "0.00"
+  },
+  "seleccion_previa": {
+   "cv": "0.43",
+   "inflado": "0.44",
+   "uso": "-0.01"
+  }
+ },
+ "cifras_c5_imputacion": {
+  "L_con": "14.9",
+  "L_sin": "26.3",
+  "mediana": "2.4",
+  "pendiente_centinela": "-0.25",
+  "pendiente_completos": "3.50",
+  "pendiente_mediana": "3.31",
+  "pico": "33 %"
+ },
+ "cifras_c5_ks": {
+  "J": "20",
+  "ks_deriva": "0.27",
+  "ks_nada": "0.18",
+  "mediana_alarmas": "1"
+ },
+ "cifras_c5_ks_a_mano": {
+  "Fa": "(1/3, 2/3, 1, 1)",
+  "Fb": "(0, 1/3, 2/3, 1)",
+  "ks": "1/3"
+ },
+ "cifras_c5_referencia": {
+  "R": "9.6",
+  "piso": "9.0"
+ },
+ "cifras_c5_tuberia": {
+  "preprocesar": {
+   "con": "0.21",
+   "sin": "0.21",
+   "uso": "0.29"
+  },
+  "seleccion": {
+   "con": "-0.06",
+   "sin": "0.43",
+   "uso": "0.00"
+  }
+ }
+}

@@ -5,3 +5,4 @@
 # El símbolo es una macro (\gamma), una letra griega (γ) o «re:<regex>» para
 # una forma compuesta. Vale desde esta clase en adelante. Una línea sin
 # fuente hace fallar tools/test_notacion_ml.py.
+\eta | contrato §5.15 C (plan-c4-9 punto 2: η(x) = Pr(y=1 dado x) solo en ml-c4-teo-pesos-mueven-puntaje y su ejemplo; plan-c5-10 la soltó)

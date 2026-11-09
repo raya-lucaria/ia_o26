@@ -5490,3 +5490,41 @@ def test_adversarial_corta_cada_pliegue_en_su_proporcion():
     assert r.mcc == pytest.approx(ml.mcc(o, pred, clases=[0, 1]))
     global_ = ml.mcc(o, (r.prob >= o.mean()).astype(int), clases=[0, 1])
     assert global_ != pytest.approx(r.mcc, abs=1e-6)
+
+
+def test_los_cortes_temporales_no_parten_un_mismo_t():
+    # Con varias filas por fecha, un corte por número de filas dejaba el mismo t a los
+    # dos lados (revisión c5 r1, H2): la clase enseña max t(ajuste) < min t(valida).
+    df = pd.DataFrame({"t": np.repeat(np.arange(8), 3)[::-1].copy(), "y": 0.0})
+    for ajuste, valida in ml.pliegues(df, k=4, como="temporal"):
+        assert df["t"].iloc[ajuste].max() < df["t"].iloc[valida].min()
+    with pytest.raises(ValueError, match="empates"):
+        ml.pliegues(pd.DataFrame({"t": [0, 0, 0, 1, 1, 1], "y": 0.0}), k=2,
+                    como="temporal")
+    t = np.array([0, 0, 0, 1, 1, 1, 2, 2, 3, 3])
+    ent, val, prueba = ml._partir_por_tiempo(t, (0.5, 0.3, 0.2))
+    for a, b in ((ent, val), (val, prueba), (ent, prueba)):
+        if len(a) and len(b):
+            assert t[a].max() < t[b].min()
+    # sin empates, los mismos bloques de siempre
+    unicos = pd.DataFrame({"t": np.arange(600), "y": 0.0})
+    assert [(len(a), len(v)) for a, v in ml.pliegues(unicos, k=5, como="temporal")] == [
+        (100, 100), (200, 100), (300, 100), (400, 100), (500, 100)]
+
+
+@pytest.mark.parametrize("criterio", ["cuadratica", "mcc"])
+def test_medir_fugas_mide_el_inflado_con_su_signo(criterio):
+    # inflado > 0 quiere decir que la CV promete de más, con una pérdida y con una
+    # métrica (revisión c5 r1, H8: ml_cifras_c5 recalcula la resta y no lo vigilaba).
+    if criterio == "mcc":
+        d = ml.proceso_clasificacion(n=300, x={"a": ml.uniforme(0, 1)},
+                                     puntaje=lambda df: 4 * (df["a"] - 0.5),
+                                     semilla=0, n_realidad=1000)
+    else:
+        d = ml.proceso(n=300, x={"a": ml.uniforme(0, 1)}, f=lambda df: 3 * df["a"],
+                       semilla=0, n_realidad=1000)
+    t = ml.medir_fugas(d, lambda df: ml.ajustar(df), tipos=("ninguna", "posterior"),
+                       criterio=criterio)
+    signo = 1 if criterio == "mcc" else -1
+    assert np.allclose(t["inflado"], signo * (t["estimado"] - t["en_uso"]))
+    assert t.set_index("tipo").loc["posterior", "inflado"] > 0
