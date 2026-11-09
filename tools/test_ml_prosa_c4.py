@@ -166,6 +166,83 @@ def anclas():
          [cal["brier_sin"], cal["brier_con"], cal["brier_recalibrado"], cal["brier_benchmark"]]),
         (P2, r"el anuncio promedio sube de {} a {} con pesos; Platt en `val_a` lo regresa a {}\.",
          [cal["p_sin"], cal["p_con"], cal["p_rec"]]),
+        *anclas_r2(),
+    ]
+
+
+def anclas_r2():
+    """Revisión ronda 2 (H4): cuatro mutaciones más pasaban (P1 0.900 → 0.100 en el
+    bootstrap y en noticias, 0.953 → 0.123 en la tabla de razones; P2 cobertura
+    global 0.91 → 0.19). Cada fila de tabla y cada frase con cifras de la fuente
+    queda atada a su rótulo, también en el guion del NB09 y en el de la tarea."""
+    bo, rz = cita("cifras_c4_bootstrap_aciertos"), cita("cifras_c4_razon_por_metrica")
+    no, mu = cita("cifras_c4_noticias"), cita("cifras_c4_multiclase")
+    an, pi = cita("cifras_c4_anillos"), cita("cifras_c4_pesos_intercepto")
+    me, co = cita("cifras_c4_pesos_mal_especificado"), cita("cifras_c4_contribucion")
+    pl, ba = cita("cifras_c4_mcc_por_pliegue"), cita("cifras_c4_banda_no_medibles")
+    f2, eq = cita("cifras_c4_final_p2"), cita("cifras_c4_conformal_equilibrado")
+    rep, cf = cita("cifras_c4_conformal_repetido"), cita("cifras_c4_conformal_cobertura")
+    cli, tasa = cita("cifras_c4_cliente_tipico"), cita("cifras_c4_tasa")
+    cinco, ng = cita("cifras_c4_cinco_puntajes"), cita("cifras_c4_noventa_global")
+    sep = cita("cifras_c4_separable")
+    S, C = mu["sin"], mu["con"]
+    return [
+        (P1, r"La norma crece despacio: unas {} unidades por década", [sep["por_decada"]]),
+        (P1, r"ambos métodos dan resultados cercanos: \${}\\pm{}\$ frente al intervalo "
+             r"\$\[{},{}\]\$", [bo["aciertos"], bo["dos_ee"], *bo["intervalo"]]),
+        (P1, r"\| \$A\$ \| 1: da {} \| Baja a {} con razón 100 \|",
+         [rz["aciertos_1"], rz["aciertos_100"]]),
+        (P1, r"\| {}, balanceada: da {} \|", [rz["razon_abal"], rz["abal_max"]]),
+        (P1, r"\| MCC \| Cerca de {}: da {} \| Baja a {} con razón 19 y a {} con 100 \|",
+         [rz["razon_mcc"], rz["mcc_max"], rz["mcc"][3], rz["mcc"][4]]),
+        (P1, r"\| Tecnología \| 100 \| {} \|\n\| Salud \| 60 \| {} \|\n"
+             r"\| Deporte \| 20 \| {} \|", no["aciertos"]),
+        (P1, r"Macro da {}; ponderado, {}; MCC global, {}\.",
+         [no["macro"], no["ponderado"], no["mcc"]]),
+        (P1, r"\| Aciertos por clase \| {} / {} / {} \| {} / {} / {} \|",
+         [*S["por_clase"], *C["por_clase"]]),
+        (P1, r"\| \$A\$ \| {} \| {} \|\n\| \$A_\{{\\text\{{bal\}}\}}\$ \| {} \| {} \|\n"
+             r"\| MCC \| {} \| {} \|",
+         [S["aciertos"], C["aciertos"], S["aciertos_balanceados"],
+          C["aciertos_balanceados"], S["mcc"], C["mcc"]]),
+        (P1, r"\| Ajuste lineal / lineal con pesos \| {} / {} en despliegue \|",
+         [an["lineal"], an["lineal_pesos"]]),
+        (P1, r"\| Ajuste cuadrático / cuadrático con pesos \| {} / {} en despliegue \|",
+         [an["cuadratica"], an["cuadratica_pesos"]]),
+        (P1, r"ni la mejor recta para MCC supera {}\.", [an["mejor_semiespacio"]]),
+        (P1, r"\| Norma de pendientes \| {} \| {} \|", [pi["pendientes_sin"], pi["pendientes_con"]]),
+        (P1, r"proporción real {} \| {} \| {} \|", [pi["prob_real"], pi["p_sin"], pi["p_con"]]),
+        (P1, r"\| Ideal: {} \| Observado: {} \|", [pi["ln_razon"], pi["salto"]]),
+        (P1, r"\| Sin pesos, umbral elegido en validación \| {} \|\n"
+             r"\| Con pesos, umbral 0\.5 \| {} \|", [me["sin"], me["con"]]),
+        (P1, r"\| Pérdida media sin pesos \| {} \| {} \|",
+         [co["perdida_media_fraude_1"], co["perdida_media_legitimo_1"]]),
+        (P1, r"Con diez pliegues, el MCC va de {} a {}; la media solo describe\.",
+         [pl["min_mcc_10"], pl["max_mcc_10"]]),
+        (P1, r"Con 1 %, {} de las {} validaciones de {} casos no traen ningún fraude\.",
+         [ba["no_medibles"], ba["total"], ba["tamano"]]),
+        (P1, r"su banda resume solo las otras {}, y el MCC cuenta esas {} como 0\.",
+         [ba["medibles"], ba["no_medibles"]]),
+        (P2, r"En `despliegue` obtiene cobertura global {}, fraude {} y tamaño medio {}\.",
+         [f2["global_pesos"], f2["fraude_pesos"], f2["tamano_pesos"]]),
+        (P2, r"otra regla del mismo proceso obtiene {} global y {} en fraude\.",
+         [f2["global"], f2["fraude"]]),
+        (P2, r"Con \$\\delta=0\.1\$, la cobertura es {} y el tamaño medio {}\.",
+         [eq["cobertura_01"], eq["tamano_01"]]),
+        (P2, r"El fraude pasa de cobertura {} a {} con la versión por clase\.",
+         [rep["marginal_fraude"], rep["por_clase_fraude"]]),
+        (P2, r"falta \$0\.90-{}={}\$\.\nLa cobertura del fraude es \$0\.0082/0\.02={}\$\.",
+         [ng["parcial"], ng["falta"], ng["fraude"]]),
+        (P2, r"una reserva da cobertura marginal global {} y en fraude {};",
+         [cf["marginal_global"], cf["marginal_fraude"]]),
+        (NB09, r"Con razón de pesos {}, un cliente con probabilidad verdadera de fraude 0\.05 "
+               r"recibe probabilidad ponderada {}\.", [cli["razon"], cli["p_w"]]),
+        (NB09, r"Con \$\\widehat c={}\$ solo \$0\.55\\le0\.6\$, así que entra la clase 0\. "
+               r"Con \$\\widehat c={}\$ entran las tres",
+         [cinco["tercio"][1], cinco["sexto"][1]]),
+        (NB09, r"la tasa es \$0\.05/\(1-0\.05\)\\approx{}\$", [tasa["sin"]]),
+        (NB09, r"obtienes \$0\.5/\(1-0\.5\)={}\$: una tasa de {}\.",
+         [tasa["con"], tasa["con_pct"]]),
     ]
 
 
@@ -189,6 +266,12 @@ def test_las_anclas_atrapan_las_mutaciones_de_la_revision():
         (P2, f"frente a {cal['brier_sin']} sin pesos y {cal['brier_con']} con pesos",
          f"frente a {cal['brier_con']} sin pesos y {cal['brier_sin']} con pesos"),
         (P2, f"_0={pl['beta0']}$", f"_0={pl['beta0'][:-3]}0{pl['beta0'][-3:]}$"),
+        # ronda 2 (H4): las cuatro que la guarda de la ronda 1 dejaba pasar
+        (P1, r"$0.900\pm0.055$", r"$0.100\pm0.055$"),
+        (P1, "| $A$ | 1: da 0.953 |", "| $A$ | 1: da 0.123 |"),
+        (P1, "| Tecnología | 100 | 0.900 |", "| Tecnología | 100 | 0.100 |"),
+        (P2, "cobertura global 0.91, fraude", "cobertura global 0.19, fraude"),
+        (NB09, "tasa es $0.05/(1-0.05)\\approx0.053$", "tasa es $0.05/(1-0.05)\\approx0.530$"),
     ]
     for ruta, original, mutado in mutaciones:
         texto = leer(ruta)
@@ -197,6 +280,26 @@ def test_las_anclas_atrapan_las_mutaciones_de_la_revision():
         rotas = [p for r, p, v in anclas() if r == ruta
                  and not re.search(p.format(*[_num(x) for x in v]), mut)]
         assert rotas, f"la mutación «{mutado}» pasa las anclas"
+
+
+def test_el_guion_de_la_tarea_dice_lo_que_hace_su_script():
+    """Ronda 2 (H4): el guion de la tarea no cita cifras de ml_cifras_c4; lo que
+    afirma son parámetros del script. Cada frase-ancla queda atada a su línea."""
+    guion = leer(NBT)
+    script = (GUIONES / "tarea_4_desbalanceo_multiclase.py").read_text(encoding="utf-8")
+    mus = re.search(r"(?m)^MUS = \[([^\]]*)\]", script).group(1).split(",")
+    numeros = {3: "tres", 4: "cuatro", 5: "cinco", 6: "seis"}
+    k = re.search(r'elegir\(datos\.ent, candidatos, con="cv", k=(\d+), '
+                  r'particion="estratificado"', script)
+    assert k, "la selección de la tarea ya no es CV estratificada con k explícito"
+    assert re.search(rf"compara los {numeros[len(mus)]} valores de `MUS`, sin pesos y con "
+                     rf"pesos balanceados, mediante CV estratificada con "
+                     rf"{numeros[int(k.group(1))]} pliegues\.", guion)
+    assert 'separar="estratificado"' in script and "por_clase=True" in script
+    assert re.search(r"La tarea usa conformal por clase porque la separación "
+                     r"estratificada fija cuotas", guion)
+    assert re.search(r"(?m)^DELTA = 0\.1 ", script)
+    assert re.search(r"objetivo \$1-\\delta\$", guion)
 
 
 # -------------------------------------------------------------- figuras ---

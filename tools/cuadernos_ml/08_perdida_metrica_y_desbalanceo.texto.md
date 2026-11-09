@@ -92,7 +92,7 @@ Elige «1 %» en «proporción de fraude Pr(y=1)». Activa «con pesos balancead
 
 **Mira:** Cada punto resume una métrica para un modelo y una proporción de fraude. Las barras muestran dos errores estándar entre repeticiones. La línea vertical marca la proporción elegida; la referencia de moda siempre anuncia la clase más frecuente.
 
-Compara los paneles de MCC, aciertos balanceados y aciertos. Al activar los pesos, busca la mejora en detección junto con la caída en aciertos globales. Con «medir en validación», observa la banda superpuesta: pocos fraudes vuelven inestable la medición.
+Compara los paneles de MCC, aciertos balanceados y aciertos. Al activar los pesos, busca la mejora en detección junto con la caída en aciertos globales. Con «medir en validación», observa la banda superpuesta: pocos fraudes vuelven inestable la medición. Con 1 %, muchas validaciones chicas no traen ningún fraude: ahí los aciertos balanceados no se pueden medir y su banda las deja fuera, mientras el MCC las cuenta como 0.
 
 La tabla inferior separa fracción de casos, fracción del peso, contribución a `L_ent` y pérdida media por clase. Localiza la fila de fraude: una clase puede pesar poco y tener una pérdida media grande.
 

@@ -60,7 +60,7 @@ Separa cómo entrenas, decides y evalúas.
 ## 1 · Plantear la logística como lagrangeano
 
 ::: figure {#ml-c4-separable title="Sin penalización, los coeficientes no se detienen"}
-![Con datos separables la norma de los coeficientes crece sin tope al bajar mu, despacio y lo mismo por cada década: unas 3.6 unidades por década; con ruido se aplana. A la izquierda, tres curvas p gorro de x para mu 1, 0.01 y 0.00001, la última casi un escalón](../_assets/ml-c4-separable.svg)
+![Con datos separables la norma de los coeficientes crece sin tope al bajar mu, despacio y lo mismo por cada década: unas 3.6 unidades por década; con ruido se aplana. Arriba, tres curvas p gorro de x para mu 1, 0.01 y 0.00001, la última casi un escalón](../_assets/ml-c4-separable.svg)
 :::
 
 En el caso 17 separable, bajar la penalización acerca la curva a un escalón.
@@ -327,6 +327,9 @@ Cubre la media $\pm2$ desviaciones entre evaluaciones en validaciones chicas.
 En el MCC, la banda va de ±0.16 con 50 % de fraude a ±0.24 con 1 %.
 El punto de despliegue usa una muestra enorme.
 
+Con 1 %, 60 de las 200 validaciones de 120 casos no traen ningún fraude.
+Ahí $A_{\text{bal}}$ no se puede medir: su banda resume solo las otras 140, y el MCC cuenta esas 60 como 0.
+
 ::: remark {#ml-c4-obs-intervalo-metrica title="Cuánto se mueve un MCC medido"}
 @ml-c2-teo-prueba-insesgada da el error estándar de un promedio de pérdidas por
 caso, como la pérdida logarítmica o $A$: esas cifras se reportan $\pm2\,\mathrm{EE}$.
@@ -487,8 +490,9 @@ Si la clase rara vive en el centro de una nube (caso 25), ninguna recta la
 separa. Con $\phi(x)=(x_1,x_2)$, la nube es simétrica y el ajuste logístico no
 encuentra ninguna pendiente útil: sin pesos dice siempre «la clase común».
 
-Los
-pesos solo corren el intercepto, y el MCC de ese ajuste sigue cerca de 0. Con
+En
+esta muestra los pesos también mueven las pendientes, pero la frontera sigue
+siendo una recta y el MCC de ese ajuste sigue cerca de 0. Con
 $\phi(x)=(x_1,x_2,x_1^2,x_2^2,x_1x_2)$ la frontera se curva y el modelo sigue
 siendo lineal en $(\beta_0,\beta)$. Es la lección de @ml-c1-anillos-polares, ahora
 con métricas.

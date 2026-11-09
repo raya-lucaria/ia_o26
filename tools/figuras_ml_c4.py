@@ -424,7 +424,7 @@ def ml_c4_separable():
 
     aria = ("Con datos separables la norma de los coeficientes crece sin tope al bajar mu, "
             f"despacio y lo mismo por cada década: unas {s['cita']['por_decada']} unidades por "
-            "década; con ruido se aplana. A la izquierda, tres curvas p gorro de x para mu 1, "
+            "década; con ruido se aplana. Arriba, tres curvas p gorro de x para mu 1, "
             "0.01 y 0.00001, la última casi un escalón")
     return _grafica(dibujar, aria, "Sin penalización, los coeficientes no se detienen", 5.6, filas=2)
 
@@ -796,29 +796,38 @@ def ml_c4_confiabilidad():
     k = cif.cifras_c4_calibracion()["cita"]
     y = val_b["y"].to_numpy()
 
-    def dibujar(fig, ax):
-        tablas = {"sin pesos": ml.calibracion(mods["sin"].predecir_p(val_b), y, bins=10),
-                  "con pesos balanceados": ml.calibracion(mods["con"].predecir_p(val_b), y, bins=10)}
+    def dibujar(fig, ejes):
+        ax, tira = ejes
+        p_sin, p_con = mods["sin"].predecir_p(val_b), mods["con"].predecir_p(val_b)
+        tablas = {"sin pesos": ml.calibracion(p_sin, y, bins=10),
+                  "con pesos balanceados": ml.calibracion(p_con, y, bins=10)}
         real = datos.realidad
         verdadera = ml.calibracion(real["prob"].to_numpy(), real["y"].to_numpy(), bins=10)
-        ml.dibujar_calibracion(tablas, verdadera=verdadera, ax=ax, tema="sitio")
-        for b in ax.patches:             # el histograma de ml_lab es bajo y tenue en el sitio
-            if str(b.get_gid()).startswith("histograma-"):
-                b.set_height(1.4 * b.get_height())
-                b.set_width(0.016)
-                b.set_x(b.get_x() - 0.002)
-                b.set_alpha(0.6)
+        # ml.calibracion agrupa por cuantiles: sus barras tendrían todas la misma altura.
+        # El histograma va aparte, con 20 grupos de ancho fijo en [0, 1].
+        ml.dibujar_calibracion(tablas, verdadera=verdadera, histograma=False, ax=ax, tema="sitio")
         ybar = float(datos.ent["y"].mean())
         ax.plot([ybar], [float(y.mean())], marker="D", ms=8, color=ACENTO, ls="none",
                 label="benchmark: la proporción")
         ax.legend(loc="upper left")
+        ax.set_xlabel("")
         _titulo(ax, f"en val_b ({k['n_val_b']} casos): Brier sin pesos {k['brier_sin']}, "
                     f"con pesos {k['brier_con']}, benchmark {k['brier_benchmark']}", 8.5)
+        bordes = [i / 20 for i in range(21)]
+        tira.hist([p_sin, p_con], bins=bordes, color=[CIAN, ROSA],
+                  label=["sin pesos", "con pesos balanceados"])
+        tira.set_xlim(0, 1)
+        tira.set_xlabel("probabilidad anunciada (media del grupo arriba; valor abajo)")
+        tira.set_ylabel("casos")
+        tira.set_title("cuántos anuncios caen en cada intervalo de ancho 0.05", fontsize=8.5)
 
     aria = ("Con pesos la curva cae bajo la diagonal: el modelo anuncia más fraude del que ocurre. "
+            "Abajo, el histograma de las probabilidades anunciadas en intervalos de ancho 0.05: "
+            "sin pesos casi todas quedan cerca de 0; con pesos se reparten. "
             f"Brier en val_b: sin pesos {k['brier_sin']}, con pesos {k['brier_con']}, benchmark "
             f"{k['brier_benchmark']}")
-    return _grafica(dibujar, aria, "¿Ocurre lo que anuncia?", 4.6)
+    return _grafica(dibujar, aria, "¿Ocurre lo que anuncia?", 6.2, filas=2,
+                    gridspec_kw={"height_ratios": [3, 1.3]})
 
 
 # ------------------------------------------------ ml-c4-conformal-conjuntos ---

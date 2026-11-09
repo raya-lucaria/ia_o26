@@ -49,13 +49,13 @@ Al terminar tendrás:
 ## 1 · Comprobar si una probabilidad significa lo que dice
 
 ::: figure {#ml-c4-confiabilidad title="¿Ocurre lo que se anuncia?"}
-![Confiabilidad en val_b: sin pesos cerca de la diagonal y con pesos debajo; histogramas de las probabilidades anunciadas.](../_assets/ml-c4-confiabilidad.svg)
+![Confiabilidad en val_b: sin pesos cerca de la diagonal y con pesos debajo; abajo, histogramas de las probabilidades anunciadas en intervalos de ancho 0.05.](../_assets/ml-c4-confiabilidad.svg)
 :::
 
 Cada punto reúne uno de diez grupos por cuantiles en `val_b`, la reserva de diagnóstico de §3.
 Horizontal: probabilidad anunciada promedio; vertical: fracción observada de fraude.
 Sin pesos, la curva sigue aproximadamente la diagonal; con pesos queda debajo: anuncia más fraude del que ocurre.
-La curva oráculo usa `prob` de `realidad`; los histogramas muestran dónde se acumulan los anuncios.
+La curva oráculo usa `prob` de `realidad`; el panel de abajo cuenta los anuncios en intervalos de ancho 0.05.
 
 **Piensa: una regla que anuncia siempre la proporción de fraudes, ¿está bien calibrada? ¿Sirve?**
 
@@ -203,14 +203,16 @@ Aparta las piezas al principio, con semilla propia, antes de elegir nada; `cal` 
 
 ```python
 import ml_lab as ml                      # el notebook 09 ya lo carga
-datos = ml.PROCESOS["fraude"](n=2000, semilla=0, proporcion=0.05)
 C, S = "azar", 0                         # forma de separación y semilla
+datos = ml.PROCESOS["fraude"](n=2000, semilla=S, proporcion=0.05, separar=C)
 cal, resto = ml.partir(datos.val, 1/3, como=C, semilla=S)
 val_a, val_b = ml.partir(resto, 0.5, como=C, semilla=S + 1)
 ```
 
-`S` es la semilla; `C` es la forma de separación, y debe ser la de la muestra.
-Para la garantía marginal usa `"azar"` en ambas separaciones.
+`S` es la semilla; `C` es la forma de separación, y vale para todas las piezas.
+`fraude` estratifica si no se le dice otra cosa; por eso `separar=C` va desde la primera partición.
+
+Para la garantía marginal usa `"azar"` en las tres separaciones.
 `"estratificado"` fija cuotas: `cal` y el caso nuevo pierden intercambiabilidad global; usa conformal por clase (§5).
 Sin conformal, los bloques 1–2 no crean `cal`; los nombres conservan su papel.
 

@@ -476,6 +476,29 @@ def cifras_c4_desbalanceo():
             "cita": {"banda_01": _f(2 * banda[0.01]["desv"], 2), "banda_50": _f(2 * banda[0.5]["desv"], 2)}}
 
 
+REPETICIONES_VAL_BANDA = 200      # repeticiones_val por omisión de metricas_vs_proporcion
+
+
+@functools.lru_cache(maxsize=None)
+def cifras_c4_banda_no_medibles(proporcion=0.01):
+    """Cuántas validaciones frescas de la banda no traen las dos clases.
+
+    metricas_vs_proporcion resume la banda con nanmean/nanstd: A_bal no se puede medir
+    sin fraudes y esas validaciones salen de su banda sin aviso, mientras el MCC las
+    cuenta como 0 por convención. Reproduce las mismas validaciones que ml_lab sortea
+    (misma población, mismo generador [semilla, 9, tamaño]) y cuenta las de una clase.
+    """
+    ml = _ml()
+    datos0 = ml.PROCESOS["fraude"](n=600, semilla=0, proporcion=proporcion)
+    tam = len(datos0.val)
+    rng = np.random.default_rng([0, 9, tam])
+    sin_dos = sum(int(ml._fresca(datos0, tam, rng)["y"].nunique() < 2)
+                  for _ in range(REPETICIONES_VAL_BANDA))
+    return {"no_medibles": sin_dos, "total": REPETICIONES_VAL_BANDA, "tamano": tam,
+            "cita": {"no_medibles": str(sin_dos), "total": str(REPETICIONES_VAL_BANDA),
+                     "medibles": str(REPETICIONES_VAL_BANDA - sin_dos), "tamano": str(tam)}}
+
+
 def _modelo_pesos(modelos):
     return [m for m in modelos if "balanceado" in str(m) or "pesos" in str(m) and "sin" not in str(m)][0]
 

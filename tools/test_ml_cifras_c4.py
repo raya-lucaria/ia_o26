@@ -38,6 +38,7 @@ def _norm(v):
 
 CITAS = {
     'cifras_c4_anillos': {"corte_mejor": "0.41", "cuadratica": "0.82", "cuadratica_pesos": "0.73", "lineal": "0.00", "lineal_pesos": "0.02", "mejor_corte": "0.83", "mejor_semiespacio": "0.22", "regla_aciertos": "0.83", "regla_balanceada": "0.78"},
+    'cifras_c4_banda_no_medibles': {"medibles": "140", "no_medibles": "60", "tamano": "120", "total": "200"},
     'cifras_c4_bootstrap_aciertos': {"aciertos": "0.900", "dos_ee": "0.055", "ee_estratificado": "0", "ee_filas": "0.030", "intervalo": ["0.842", "0.950"]},
     'cifras_c4_bootstrap_aciertos_exacto': {"ee_estratificado": "0", "ee_filas": "0.030"},
     'cifras_c4_calibracion': {"brier_benchmark": "0.044", "brier_con": "0.133", "brier_recalibrado": "0.037", "brier_sin": "0.036", "log_benchmark": "0.189", "log_con": "0.416", "log_recalibrado": "0.129", "log_sin": "0.127", "n_val_b": "300", "p_con": "0.313", "p_rec": "0.044", "p_sin": "0.051", "prob_real": "0.050"},
@@ -240,6 +241,29 @@ def test_desbalanceo_criterio():
     assert d[("moda", "mcc", 0.01)][0] == 0
     b = c.cifras_c4_desbalanceo()["banda"]
     assert b[0.01]["desv"] > b[0.5]["desv"]
+
+
+def test_banda_no_medibles_son_las_que_ml_lab_descarta():
+    """La cuenta reproduce las validaciones de ml_lab: con el modelo balanceado de la
+    primera repetición, A_bal es nan justo en esas, y la desviación sin ellas es la
+    de la tabla (nanstd). El MCC de esas mismas validaciones vale 0, no nan."""
+    ml = _ml()
+    k = c.cifras_c4_banda_no_medibles(0.01)
+    datos0 = ml.PROCESOS["fraude"](n=600, semilla=0, proporcion=0.01)
+    mod = ml.ajustar(datos0, pesos="balanceado")
+    rng = np.random.default_rng([0, 9, k["tamano"]])
+    abal, mccs = [], []
+    for _ in range(k["total"]):
+        f = ml._fresca(datos0, k["tamano"], rng)
+        abal.append(ml._metrica_con_tau(mod, f, "aciertos_balanceados", 0.5))
+        mccs.append(ml._metrica_con_tau(mod, f, "mcc", 0.5))
+    abal, mccs = np.asarray(abal, float), np.asarray(mccs, float)
+    assert int(np.isnan(abal).sum()) == k["no_medibles"] > 0
+    assert not np.isnan(mccs).any()
+    t = c.tabla_desbalanceo()
+    f = t[(t["conjunto"] == "val") & (t["metrica"] == "aciertos_balanceados")
+          & (t["modelo"] == "balanceado") & np.isclose(t["proporcion"], 0.01)]
+    assert math.isclose(float(f["desv"].iloc[0]), float(np.nanstd(abal, ddof=1)), rel_tol=1e-9)
 
 
 def test_contribucion():
