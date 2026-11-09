@@ -34,9 +34,10 @@ El experimento queda fijo antes de mirar los datos; cada bloque lo usa tal cual.
   quedan fijos dentro del bloque; las entradas (lluvia de hoy, $y_t$) sí se
   actualizan cada día. Es un origen móvil con reajuste por bloque, igual en
   validación y en despliegue.
-- **Las dos CV.** Temporal: 5 cortes con bloques de 60 días, hueco 0 (las
-  entradas no tienen promedios móviles; si el alumno agrega uno en B5, el
-  hueco es su ventana). Al azar: los mismos 600 días en 5 pliegues al azar,
+- **Las dos CV.** Temporal: 5 cortes con bloques de 100 días, hueco 0 (el
+  primer ajuste usa los días 1–100; si el alumno agrega un promedio móvil,
+  lo calcula solo con días ya cerrados y, a un día de horizonte, el hueco
+  sigue en 0). Al azar: los mismos 600 días en 5 pliegues al azar,
   con las mismas entradas: es el error que se quiere medir.
 - **Candidatos.** Lineal en $x$ (día de la semana con dummies y lluvia de
   hoy); vecinos sobre $(x,t)$; bosque sobre $(x,t)$. **Benchmark:** «el
@@ -69,7 +70,7 @@ la tabla y su predicción
 **Predice:** «En la CV al azar, ¿qué fracción de los días de validación tiene a su día anterior en el entrenamiento?»
 
 El código para dibujar ambas particiones está dado: corre tal cual.
-Usa `dibujar_pliegues(600, 5, particion=pliegues(serie, k=5, como="azar"))` y lo mismo con `como="temporal"`.
+Usa `dibujar_pliegues(600, 5, particion=pliegues(historia, k=5, como="azar"))` y lo mismo con `como="temporal"`.
 La gráfica recibe la partición ya calculada mediante `particion`; `como` pertenece a `pliegues`.
 
 El conteo de la fracción está a completar: falta una línea marcada `____`.

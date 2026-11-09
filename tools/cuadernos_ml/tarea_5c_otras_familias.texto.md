@@ -57,7 +57,7 @@ Sigue el uso de esa misma partición al pasar de una familia a otra.
 **Predice: «¿Qué profundidad crees que elige la CV: 2, 5 o 15?»**
 
 El código está **dado**: corre tal cual.
-Incluye el ajuste con `ajustar_otro(familia="arbol", profundidad=…)`, la curva de capacidad y `dibujar_frontera` en dos dimensiones.
+Incluye el ajuste con `ajustar_otro(familia="arbol", profundidad=…)` y la curva de capacidad.
 
 La regla de un EE está **a completar**: escribe la línea marcada `____`.
 Usa la curva para aplicar la regla y conserva la profundidad elegida.
@@ -66,7 +66,7 @@ Usa la curva para aplicar la regla y conserva la profundidad elegida.
 
 Mira cómo cambia el error de CV al recorrer las profundidades.
 Ubica los EE que acompañan la curva y contrasta tu elección con tu predicción inicial.
-Después examina las regiones de la figura en dos dimensiones y relaciona su detalle con la profundidad.
+El bloque 5 usará la profundidad que dé tu regla.
 
 ### celda: entrega-2
 

@@ -54,7 +54,7 @@ Las reservas siguen @ml-c4-mapa-reservas, de [[ml-calibracion-y-conformal|Calibr
 
 La recalibración y $\tau$ se ajustan en `val_a`; el método de recalibración, el diagnóstico y el benchmark, en `val_b`. Ninguna cifra se reporta en `val_a`.
 
-La razón: la recalibración de Platt es monótona, así que no cambia el orden de los puntajes, y elegir $\tau$ sobre la probabilidad recalibrada es elegir un corte del puntaje original; ajustar Platt ahí no agrega ninguna elección.
+La razón: con pendiente positiva (lo normal: un puntaje más alto anuncia más positivos), la recalibración de Platt es creciente y no cambia el orden de los puntajes. Entonces elegir $\tau$ sobre la probabilidad recalibrada es elegir un corte del puntaje original; ajustar Platt ahí no agrega ninguna elección. Nada en su ajuste prohíbe una pendiente negativa, que invertiría el orden: revisa su signo.
 
 Lo que sí sale optimista es la cifra que se reporta en los mismos datos con que se ajustó y se eligió, y por eso las cifras salen de `val_b` y, al final, de la prueba.
 
@@ -62,9 +62,9 @@ Eso corrige el protocolo del micro sobre reportar en los mismos datos. En el laz
 
 `cal` no participa en ninguna elección. Solo se abre para calcular el corte, con todo lo demás fijo.
 
-Con grupos, las reservas se apartan por grupos, y el entrenamiento no comparte grupos con `cal` ni con el caso nuevo. Aun así, el teorema de la clase 4 no se aplica tal cual, porque las filas de un mismo grupo no son intercambiables entre sí, y el corte cuenta filas.
+Con grupos, las reservas se apartan por grupos, y el entrenamiento no comparte grupos con `cal` ni con el caso nuevo. Aun así, el teorema de la clase 4 no se aplica tal cual. Las filas de un mismo grupo dependen entre sí: los puntajes de calibración y el de una fila de un grupo nuevo no son, en general, intercambiables en conjunto. Y el corte cuenta filas.
 
-Una versión que sí lo cumple usa un puntaje por grupo (por ejemplo, el de una fila elegida al azar de cada grupo). Supone grupos nuevos intercambiables con los de la reserva: la cobertura es entonces por grupo nuevo, no por fila.
+Una versión que sí lo cumple usa un puntaje por grupo (por ejemplo, el de una fila elegida al azar de cada grupo). Supone grupos nuevos intercambiables con los de la reserva: la cobertura vale para una fila elegida igual, al azar, de un grupo nuevo; no promete cubrir todas sus filas.
 
 Por eso, con grupos, el procedimiento por filas no tiene garantía: apartar la calibración por grupos es necesario, pero no basta. Si mides qué fracción de grupos nuevos queda cubierta, eso es una comprobación experimental: se reporta como una cifra medida, nunca con “$\ge 1-\delta$”.
 
@@ -137,7 +137,7 @@ en todas las filas: suman exactamente la columna del intercepto.
 
 Entonces $\Phi$ no tiene rango completo, $\Phi^{\mathsf T}\Phi$ no se invierte y hay infinitos $\widehat\beta$ con las mismas $\widehat y$. Sumar una constante a $\beta_0$ y restarla a las tres dummies no cambia ninguna predicción.
 
-Se arregla quitando una dummy (la zona que queda fuera es la referencia) o con la penalización de ridge. $\Omega(\beta)=\lVert\beta\rVert^2$ sin el intercepto y $\mu>0$ (@ml-c3-def-ridge-lasso-elastica): $\Omega$ es estrictamente convexa sobre esa recta de soluciones, así que elige un solo punto.
+Se arregla quitando una dummy (la zona que queda fuera es la referencia) o con la penalización de ridge. $\Omega(\beta)=\lVert\beta\rVert^2$ sin el intercepto y $\mu>0$ (@ml-c3-def-ridge-lasso-elastica): el objetivo penalizado es estrictamente convexo en las pendientes, así que su mínimo es único. Ya no es una de las soluciones de mínimos cuadrados: también cambia un poco las predicciones.
 
 Con lasso puede no elegir uno: con un número par de zonas el mínimo sobre la recta es todo un intervalo. Lo que se rompe es la **lectura** de $\widehat\beta$, no la predicción.
 :::
@@ -252,7 +252,7 @@ Con las regiones fijas es un modelo lineal en parámetros: $[\phi(x)]_h=\mathbf 
 
 Lo nuevo es que **las regiones se aprenden**: se elige corte tras corte el que más baja $L_{\text{ent}}$, sin garantía de llegar al mínimo. La profundidad máxima es su restricción de capacidad, como el grado $N\le N_{\max}$ (@ml-c1-def-capacidad-como-restriccion). Sin tope y sin dos $x$ iguales, cada hoja termina con un solo dato y $L_{\text{ent}}=0$ (@ml-c1-obs-no-parametrico).
 
-En clasificación, con $y\in\{0,1\}$, el mismo $\bar y_h$ es la proporción de positivos en la hoja (la probabilidad que anuncia). Cada corte se elige por cuánto baja la pérdida logarítmica.
+En clasificación, con $y\in\{0,1\}$, el mismo $\bar y_h$ es la proporción de positivos en la hoja (la probabilidad que anuncia). En los ejemplos de esta clase, cada corte se elige por cuánto baja la impureza de Gini, $2\bar y_h(1-\bar y_h)$ promediada sobre las hojas con el peso de sus filas; elegirlo por la pérdida logarítmica (la entropía) es la otra opción común.
 :::
 
 Un árbol profundo cambia mucho al cambiar la muestra. Un bosque (*random forest*) promedia árboles distintos para reducir esa variación. En la unidad 6, $B$ era la capacidad de los coeficientes; aquí es el número de árboles.

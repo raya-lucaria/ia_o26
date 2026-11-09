@@ -425,7 +425,7 @@ justifica por lo que sabrás al predecir, no por la cifra que resulte.
 
 El bootstrap por filas (@ml-c4-obs-intervalo-metrica) suponía filas independientes, sin fijar los conteos de clase. Aquí remuestreas grupos completos: cambia la unidad independiente.
 
-Con rezagos o promedios móviles, deja un hueco entre entrenamiento y validación.
+Con rezagos o promedios móviles, calcúlalos solo con lo que ya se conoce al predecir. Si la respuesta de una fila abarca varios días, puede traslaparse con validación. Entonces deja un hueco de ese tamaño.
 
 > [!TIP]
 > **Míralo correr: bloque 3 · La validación cruzada que miente**
@@ -494,7 +494,7 @@ columna. Ninguna de las dos prueba que hay fuga; las dos dicen dónde buscar.
 
 Aquí $y$ es **llegó tarde**. Medimos MCC; la moda da 0.
 
-Compara medianas de 5 semillas y rangos intercuartiles:
+Compara medianas de 5 semillas:
 
 | Variantes | Modelo | Datos |
 |---|---|---|

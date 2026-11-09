@@ -27,9 +27,9 @@ def sacar(como, punado):
         if como == "una por una (iid)":
             bolas = rng.random(N_BOLAS) < 0.4
         elif como == "a puñados":             # un puñado comparte su mezcla
-            k = N_BOLAS // punado
+            k = -(-N_BOLAS // punado)          # el último puñado puede ir incompleto
             p = np.clip(rng.normal(0.4, 0.2, k), 0, 1)
-            bolas = rng.random((k, punado)) < p[:, None]
+            bolas = (rng.random((k, punado)) < p[:, None]).ravel()[:N_BOLAS]
         elif como == "de una bolsa que se tiñe":   # la mezcla camina
             p = np.clip(0.4 + np.cumsum(rng.normal(0, 0.03, N_BOLAS)), 0, 1)
             bolas = rng.random(N_BOLAS) < p

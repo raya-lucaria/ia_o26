@@ -130,3 +130,150 @@ def test_conformal_con_grupos_literal():
 
 def test_la_tarea_dice_quien_da_la_fecha():
     assert "la fecha la da el profesor" in leer(TAREA)
+
+
+# Cada cifra citada, atada a la frase que la cita. La prueba de arriba solo busca
+# la cifra en algún lugar de la página: «0.21» o «3» aparecen en muchas frases, así
+# que cambiar un número en una tabla o intercambiar ganador y perdedor pasaba. Aquí
+# cada plantilla es la frase literal con {función/clave/...} en lugar de la cifra;
+# se compara sin espacios, porque Markdown parte las frases donde quiere.
+ANCLAS = {
+    P1: [
+        "Con$\\bar o={cifras_c5_adversarial/o_bar}$",
+        "contra la entropía {cifras_c5_adversarial/benchmark_formula}:",
+        "|Sin deriva|{cifras_c5_adversarial/nada_bosque/log_loss}|Sin señal|",
+        "|Con deriva|{cifras_c5_adversarial/deriva_bosque/log_loss}|Señal|",
+        "|Mismas marginales|{cifras_c5_adversarial/control/mcc_05}"
+        "|{cifras_c5_adversarial/control/mcc_obar}|",
+        "|Deriva fuerte|{cifras_c5_adversarial/control/deriva_mcc_05}"
+        "|{cifras_c5_adversarial/control/deriva_mcc_obar}|",
+        "(pérdida logarítmica {cifras_c5_adversarial/nada_bosque/log_loss} contra "
+        "{cifras_c5_adversarial/benchmark_formula}, sin señal)",
+        "(rezago 1: {cifras_c5_autocorrelacion/rezago1_sin})",
+        "la adversarial baja a {cifras_c5_adversarial/deriva_bosque/log_loss} (señal)",
+        "(rezago 1: {cifras_c5_autocorrelacion/rezago1_con})",
+        "da ${cifras_c5_autocorrelacion/alterna}$, frente a "
+        "${cifras_c5_autocorrelacion/pearson}$ de Pearson",
+        "las escaleras valen ${cifras_c5_ks_a_mano/Fa}$ y ${cifras_c5_ks_a_mano/Fb}$",
+        "La mayor diferencia es ${cifras_c5_ks_a_mano/ks}$",
+        "la CV al azar promete {cifras_c5_cv_miente/c14_clase2/azar} con clientes que "
+        "repiten y los clientes nuevos dan {cifras_c5_cv_miente/c14_clase2/R}; en días "
+        "seguidos, {cifras_c5_cv_miente/c13_clase2/azar} contra "
+        "{cifras_c5_cv_miente/c13_clase2/R}. Con el lineal en x, "
+        "{cifras_c5_cv_miente/c14_lineal/azar} contra {cifras_c5_cv_miente/c14_lineal/R} "
+        "y {cifras_c5_cv_miente/c13_lineal/azar} contra {cifras_c5_cv_miente/c13_lineal/R}",
+        "|Clientes nuevos|Polinomio y dummies del cliente|"
+        "{cifras_c5_cv_miente/c14_clase2/azar}|{cifras_c5_cv_miente/c14_clase2/R}|",
+        "|Clientes nuevos|Lineal en $x$|{cifras_c5_cv_miente/c14_lineal/azar}|"
+        "{cifras_c5_cv_miente/c14_lineal/R}|",
+        "|Días futuros|Vecinos sobre $(x,t)$|{cifras_c5_cv_miente/c13_clase2/azar}|"
+        "{cifras_c5_cv_miente/c13_clase2/R}|",
+        "|Días futuros|Lineal en $x$|{cifras_c5_cv_miente/c13_lineal/azar}|"
+        "{cifras_c5_cv_miente/c13_lineal/R}|",
+        "Sin fuga, la CV promete un MCC de {cifras_c5_fugas/ninguna/cv} y en el "
+        "despliegue da {cifras_c5_fugas/ninguna/uso}. Con la calificación la CV promete "
+        "{cifras_c5_fugas/posterior/cv} y en el despliegue da "
+        "{cifras_c5_fugas/posterior/uso}; escalar e imputar antes, "
+        "{cifras_c5_fugas/preprocesar_antes/cv} contra "
+        "{cifras_c5_fugas/preprocesar_antes/uso}; pedidos duplicados, "
+        "{cifras_c5_fugas/duplicados/cv} contra {cifras_c5_fugas/duplicados/uso}; elegir "
+        "variables antes (500 columnas de ruido, 100 pedidos), "
+        "{cifras_c5_fugas/seleccion_previa/cv} contra {cifras_c5_fugas/seleccion_previa/uso}",
+        "mejora aparente en {cifras_c5_fugas/caso20/optimistas} semillas; diferencia "
+        "mediana {cifras_c5_fugas/caso20/mediana_dif}",
+        "Imputar con la mediana ({cifras_c5_imputacion/mediana} km) deja un pico con el "
+        "{cifras_c5_imputacion/pico} de las filas; con la indicadora, el error en "
+        "validación baja de {cifras_c5_imputacion/L_sin} a {cifras_c5_imputacion/L_con}",
+        "tuerce la pendiente de distancia a {cifras_c5_imputacion/pendiente_centinela}, "
+        "contra {cifras_c5_imputacion/pendiente_mediana} con la mediana",
+        "|Seleccionar variables|{cifras_c5_tuberia/seleccion/sin}|"
+        "{cifras_c5_tuberia/seleccion/con}|{cifras_c5_tuberia/seleccion/uso}|",
+        "|Escalar e imputar|{cifras_c5_tuberia/preprocesar/sin}|"
+        "{cifras_c5_tuberia/preprocesar/con}|{cifras_c5_tuberia/preprocesar/uso}|",
+        "La adversarial da pérdida {cifras_c5_adversarial/nada_bosque/log_loss} sin "
+        "deriva y {cifras_c5_adversarial/deriva_bosque/log_loss} con deriva, frente a "
+        "{cifras_c5_adversarial/benchmark_formula}",
+        "clientes que repiten dan {cifras_c5_cv_miente/c14_clase2/azar} en CV al azar y "
+        "{cifras_c5_cv_miente/c14_clase2/R} en clientes nuevos; el lineal, "
+        "{cifras_c5_cv_miente/c14_lineal/azar} y {cifras_c5_cv_miente/c14_lineal/R}",
+        "Calificación posterior: MCC {cifras_c5_fugas/posterior/cv} en CV y "
+        "{cifras_c5_fugas/posterior/uso} en despliegue; duplicados: "
+        "{cifras_c5_fugas/duplicados/cv} y {cifras_c5_fugas/duplicados/uso}",
+        "La selección previa pasa de {cifras_c5_tuberia/seleccion/sin} a "
+        "{cifras_c5_tuberia/seleccion/con} en CV",
+    ],
+    P2: [
+        "rango {cifras_c5_dummy/rango}",
+        "el intercepto puede pasar de {cifras_c5_dummy/b1/0} a {cifras_c5_dummy/b2/0} sin "
+        "cambiar las predicciones",
+        "una predicción de {cifras_c5_dummy/yh/0} minutos",
+        "error cuadrático de entrenamiento {cifras_c5_diagnostico/L_ent}, CV al azar "
+        "{cifras_c5_diagnostico/azar} y CV por grupos {cifras_c5_diagnostico/grupos}",
+        "La CV al azar da {cifras_c5_diagnostico/azar} minutos cuadrados; por grupos da "
+        "{cifras_c5_diagnostico/grupos}",
+        "no baja de {cifras_c5_depurar/mse_recta} de error cuadrático medio",
+        "MCC en validación de {cifras_c5_arbol/mcc/1}, {cifras_c5_arbol/mcc/3} y "
+        "{cifras_c5_arbol/mcc/6}. La logística lineal obtiene {cifras_c5_arbol/logistica}",
+        "mejora su MCC de {cifras_c5_arbol/mcc/1} a {cifras_c5_arbol/mcc/6}. La logística "
+        "obtiene {cifras_c5_arbol/logistica}",
+        "la fórmula da {cifras_c5_bagging/formula} y la varianza medida del promedio, "
+        "{cifras_c5_bagging/simulada}",
+        "La CV elige profundidad {cifras_c5_familias/profundidad} y "
+        "{cifras_c5_familias/etapas} etapas. Con 10 y 200 árboles, el bosque da medianas "
+        "de {cifras_c5_familias/bosque_10} y {cifras_c5_familias/bosque_200}; el rango "
+        "entre semillas baja de {cifras_c5_familias/rango_10} a "
+        "{cifras_c5_familias/rango_200}",
+        "la CV elige profundidad {cifras_c5_familias/profundidad} y "
+        "{cifras_c5_familias/etapas} etapas de boosting",
+        "cambia la mediana de {cifras_c5_familias/bosque_10} a "
+        "{cifras_c5_familias/bosque_200} minutos cuadrados. El rango entre semillas baja "
+        "de {cifras_c5_familias/rango_10} a {cifras_c5_familias/rango_200}",
+        "dan errores máximos de {cifras_c5_cybenko/error/1}, {cifras_c5_cybenko/error/3} "
+        "y {cifras_c5_cybenko/error/10}",
+        "con {cifras_c5_cybenko/n_polar} filas; diez unidades aprendidas, con "
+        "{cifras_c5_cybenko/n_aprendida}. El piso es {cifras_c5_cybenko/piso}",
+        "los errores máximos con 1, 3 y 10 unidades son {cifras_c5_cybenko/error/1}, "
+        "{cifras_c5_cybenko/error/3} y {cifras_c5_cybenko/error/10}",
+        "el piso de pérdida logarítmica es {cifras_c5_cybenko/piso}",
+        "del piso con {cifras_c5_cybenko/n_polar} filas; la aprendida, con "
+        "{cifras_c5_cybenko/n_aprendida}",
+        "$L_{\\text{ent}}$ es {cifras_c5_final_metodologia/L_ent} minutos",
+        "|Bosque sin tope|Al azar|{cifras_c5_final_metodologia/bosque_azar}|",
+        "|Bosque sin tope|Por grupos|{cifras_c5_final_metodologia/bosque_grupo}|",
+        "|Lineal|Al azar|{cifras_c5_final_metodologia/lineal_azar}|",
+        "|Lineal|Por grupos|{cifras_c5_final_metodologia/lineal_grupo}|",
+        "El benchmark de la media, con CV por grupos, da "
+        "{cifras_c5_final_metodologia/benchmark} minutos",
+        "el rango queda en {cifras_c5_dummy/rango}",
+        "La recta sobre $y=x^2$ no baja de {cifras_c5_depurar/mse_recta}",
+        "Aquí la CV eligió profundidad {cifras_c5_familias/profundidad} y "
+        "{cifras_c5_familias/etapas} etapas; pasar de 10 a 200 árboles redujo el rango "
+        "entre semillas de {cifras_c5_familias/rango_10} a {cifras_c5_familias/rango_200}",
+        "las polares necesitaron {cifras_c5_cybenko/n_polar} filas y la representación "
+        "aprendida {cifras_c5_cybenko/n_aprendida}",
+    ],
+}
+
+
+def _llenar(plantilla):
+    def valor(m):
+        v = CITAS
+        for k in m.group(1).split("/"):
+            v = v[int(k)] if isinstance(v, list) else v[k]
+        return str(v)
+    return re.sub(r"\{(cifras_c5_[^{}]+)\}", valor, plantilla)
+
+
+def _sin_espacios(s):
+    return re.sub(r"\s+", "", s.replace("−", "-"))
+
+
+ANCLADAS = [(p, a) for p, lista in ANCLAS.items() for a in lista]
+
+
+@pytest.mark.parametrize("pagina,plantilla", ANCLADAS,
+                         ids=[f"{p.stem}:{i}" for i, (p, _) in enumerate(ANCLADAS)])
+def test_cada_cifra_citada_esta_en_su_frase(pagina, plantilla):
+    frase = _llenar(plantilla)
+    assert _sin_espacios(frase) in _sin_espacios(leer(pagina)), (
+        f"{pagina.name} no trae la frase «{frase}»")

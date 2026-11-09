@@ -99,8 +99,8 @@ Los parámetros se ajustan al inicio de cada bloque de validación y quedan fijo
 Para el despliegue, se ajustan al cierre del día 600.
 Las entradas sí se actualizan cada día. Este protocolo vale tanto para los candidatos como para el benchmark.
 
-La CV temporal tiene 5 cortes, con bloques de 60 días y hueco 0.
-Si agregas un promedio móvil, el hueco será su ventana.
+La CV temporal tiene 5 cortes, con bloques de 100 días y hueco 0: el primer ajuste usa los días 1–100 y valida con los 101–200.
+Si agregas un promedio móvil, calcúlalo solo con días ya cerrados; como predices un día adelante, el hueco sigue en 0.
 La CV al azar usa los mismos 600 días en 5 pliegues, con las mismas entradas.
 
 Compararás un modelo lineal, vecinos y un bosque (*random forest*).

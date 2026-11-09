@@ -752,10 +752,11 @@ def fig_trampa_dummy():
                    anclaje="start", fuente=gen.MONO))
     c.append(texto(xr, y0 + 244, "las dos primeras: mismas predicciones", tam=12,
                    color=SUAVE, anclaje="start"))
-    c.append(texto(xr, y0 + 262, "ridge elige un solo punto", tam=12, color=SUAVE,
+    c.append(texto(xr, y0 + 262, "ridge: un mínimo único, otro ŷ", tam=12, color=SUAVE,
                    anclaje="start"))
     aria = ("Las tres dummies suman la columna de unos (rango " + r["cita"]["rango"] +
-            "); dos β distintos dan las mismas predicciones; ridge elige uno")
+            "); dos β distintos dan las mismas predicciones; ridge tiene un mínimo único, "
+            "con predicciones algo distintas")
     return svg(TD_W, TD_H, aria, "La trampa de la dummy", c)
 
 

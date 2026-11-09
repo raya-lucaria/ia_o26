@@ -84,7 +84,8 @@ CANDIDATOS = {
         df, familia="bosque", n_arboles=100, columnas_x=XT),
 }
 TABLA = pd.DataFrame({
-    nombre: {p: ml.validacion_cruzada(historia, c, k=5, particion=p).media
+    nombre: {p: ml.validacion_cruzada(historia, c, k=5, particion=p,
+                                      semilla=SEMILLA).media   # los cortes de B2
              for p in ("azar", "temporal")}
     for nombre, c in CANDIDATOS.items()}).T
 benchmark = None     # ← completa: «el valor de ayer» (shift(1)), mismos pliegues
@@ -100,7 +101,7 @@ print(TABLA.round(1).to_string())
 
 # %% [codigo-visible] bloque-4-juega
 PARTICION = "azar"   # ← cambia: ¿con qué partición eliges? Corre con las dos
-sel = ml.elegir(historia, CANDIDATOS, con="cv", particion=PARTICION)
+sel = ml.elegir(historia, CANDIDATOS, con="cv", particion=PARTICION, semilla=SEMILLA)
 final = sel.modelo_final                       # reajustado con los días 1–600
 error_601_720 = ml.evaluar(final, futuro)    # error en los días 601–720 (no es R)
 print(f"elegido: {sel.elegido}; error en los días 601–720: {error_601_720:.1f}")

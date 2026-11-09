@@ -111,8 +111,10 @@ def cv(df, construir):
     return pd.Series(r.por_pliegue).describe()[["50%", "min", "max"]]
 
 
-# ← propio: un arreglo por línea; esta es la del compañero sin la columna posterior
-ARREGLOS = {"sin costo_del_reingreso": cv(limpio, ml.tuberia(
+# ← propio: un arreglo por línea. Esta base ya cambia varias cosas a la vez: sin la
+# columna posterior, sin las copias, por pacientes e imputando dentro del pliegue.
+# Compara cada arreglo tuyo contra ella, con los mismos datos y pliegues.
+ARREGLOS = {"base (varios arreglos juntos)": cv(limpio, ml.tuberia(
     ml.imputador(), ml.estandarizar(ml.columnas(*SUYAS[:2], *SUYAS[3:])),
     modelo={"familia": "logistica", "pesos": "balanceado"}))}
 print(pd.DataFrame(ARREGLOS).T.round(2).to_string())

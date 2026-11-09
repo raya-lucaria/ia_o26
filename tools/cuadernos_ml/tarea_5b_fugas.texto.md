@@ -86,6 +86,7 @@ qué detector señaló qué, y qué no puede ver ninguno
 
 Ayuda para la partición: **dado**. Usa los cinco pliegues por pacientes y estratificados de `pliegues(desarrollo, k=5, como="grupo", estratificar=True)`.
 Ayuda para los arreglos: **propio**. Escribe cada arreglo en su celda y mídelo con esa misma partición sobre `desarrollo`.
+La fila dada ya junta varios arreglos (sin la columna posterior, sin copias, por pacientes, imputando dentro del pliegue): úsala como base y cambia una sola cosa por fila a partir de ella.
 Conserva el benchmark para comparar los resultados.
 
 ### celda: bloque-3-mira
