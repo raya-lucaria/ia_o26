@@ -174,7 +174,9 @@ UMBRALES_POR_UNIDAD: dict[str, dict] = {
 # Unidades donde el contrato es obligatorio (opt-in). Arranca vacía: las
 # unidades escritas antes del contrato tienen deuda conocida y no deben romper
 # la suite. Una unidad entra aquí cuando ya da cero hallazgos alta/media.
-UNIDADES_CONTRATO: list[str] = ["course/8_markov"]
+# Auditar la unidad recorre todas sus clases (subdirectorios) y sus hojas
+# A_/B_, así que aprendizaje de máquina entra con una sola ruta (U.T6).
+UNIDADES_CONTRATO: list[str] = ["course/8_markov", "course/9_aprendizaje_maquina"]
 
 SEVERIDAD = {
     "imagen-fuera-de-figure": "alta",
