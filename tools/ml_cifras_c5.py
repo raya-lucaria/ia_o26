@@ -937,6 +937,18 @@ def _cv_log_anillos(n, modo, semilla):
 
 @functools.lru_cache(maxsize=None)
 def cifras_c5_cybenko():
+    """Envoltura de _cifras_c5_cybenko con BLAS en un solo hilo.
+
+    Los ajustes no convexos (least_squares, MLP con lbfgs) llegan a puntos distintos
+    según cuántos hilos use BLAS: con OMP_NUM_THREADS=2 la curva de ml-c5-cybenko se
+    movía un píxel y el SVG dejaba de ser el del generador. Con un hilo, el orden de
+    las sumas no depende de la máquina."""
+    from threadpoolctl import threadpool_limits
+    with threadpool_limits(limits=1):
+        return _cifras_c5_cybenko()
+
+
+def _cifras_c5_cybenko():
     """ml-c5-cybenko: error maximo con 1, 3 y 10 unidades sin ruido (mediana de cinco
     arranques); en los anillos, CV de perdida logaritmica contra n de la phi polar y de
     10 sigmoides aprendidas (cada ajuste, mediana de REPETICIONES["cybenko_anillos"]
