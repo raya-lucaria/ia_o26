@@ -60,12 +60,41 @@ pide red ni credenciales (salvo `gen_ilustraciones.py`).
 | `gen_un_arbol_todos.py` | `juegos.datos_interactivo_tpm` | El bloque JSON `<script type="application/json" id="datos">` de `course/7_juegos/_assets/un_arbol_todos.html` (T± con todos los algoritmos; `test_un_arbol_todos.py` compara sin escribir) | Al cambiar T±, `tabla_t_pm()` o las corridas de MC plano y UCT en `juegos.py` |
 | `gen_resumen_juegos.py` | Su lista `ALGORITMOS` (orden del curso, celdas, «lo que viene») | El recuadro «Lo que ya viste» de las siete páginas de algoritmo de `course/7_juegos/`, antes de «Lo que hay que llevarse» (`test_resumen_juegos.py` compara sin escribir) | Al agregar un algoritmo o cambiar qué dice su fila |
 | `gen_cuaderno_juegos.py` | Los bloques de Python de las seis páginas de algoritmo de juegos | `course/7_juegos/_assets/01_decidir_en_el_arbol_t.ipynb`, sin salidas | **Al cambiar el Python o el pseudocódigo de cualquier página de algoritmo de juegos**: cada celda de algoritmo del notebook es copia literal de su página más la instrumentación |
+| `gen_aprendizaje_maquina.py` | Su paleta y `ROLES` (la leyenda única), `FIGURAS_U` y los seis catálogos `FIGURAS_C0`…`FIGURAS_C5` de `figuras_ml_c0.py` … `figuras_ml_c5.py`, que dibujan con `ml_lab` y con las cifras de `ml_cifras_c<N>.py` | `course/9_aprendizaje_maquina/_assets/ml-u-*.svg` y `ml-c<N>-*.svg`. `--clase N` o `--unidad` generan una parte; sin argumentos lee `ML_CLASES` (`test_gen_aprendizaje_maquina.py` compara sin escribir) | Al cambiar una figura de la unidad 9, una cifra de `ml_cifras_c<N>.py` que dibuja, o `aprendizaje_maquina.py` |
+| `gen_cuadernos_ml.py` | `cuadernos_ml/<stem>.py` (celdas de código) y `cuadernos_ml/<stem>.texto.md` (el guion), más `aprendizaje_maquina.py`, que va incrustado como respaldo | Los dieciséis notebooks `course/9_aprendizaje_maquina/_assets/*.ipynb`, sin salidas, con badge de Colab y la celda de arranque que carga `ml_lab`. `--clase N`, un stem suelto o `ML_CLASES`; `--solo-codigo` y `_humo` escriben a un temporal (`test_cuadernos_ml.py` compara sin escribir) | **Al cambiar un guion, un `.py` de `cuadernos_ml/` o `aprendizaje_maquina.py`**: el respaldo incrustado tiene que ser byte-idéntico a la fuente, así que toda subida de `ml_lab` regenera los dieciséis |
 | `bajar_commons.py` | `commons.tsv` | `_assets/foto-*.jpg` + bloque de filas para `CREDITOS.md` (impreso en stdout, no escrito solo) | Al agregar una fotografía nueva desde Wikimedia Commons |
 
 Cada uno tiene su prueba homónima (`test_gen_timeline.py`, `test_gen_computo.py`,
 `test_gen_complejidad.py`, `test_commons.py`) que regenera el archivo antes de comparar, así que correr
 `pytest` ya certifica que el archivo comiteado coincide con lo que el generador
 produciría hoy.
+
+### La unidad 9, aprendizaje de máquina
+
+Todo lo de la unidad 9 depende de una sola biblioteca, `aprendizaje_maquina.py`
+(`ml_lab` para el alumno). Su copia literal vive en
+`course/9_aprendizaje_maquina/_assets/ml_lab.py`, y una prueba exige que las dos
+sean byte-idénticas: tras editar la fuente, `cp` a `_assets/` en el mismo commit.
+Sus dependencias (numpy, pandas, matplotlib, seaborn, scipy y scikit-learn)
+están fijadas en `requirements-regresion.txt`, que CI ya instala. Exportar
+`PYTHONDONTWRITEBYTECODE=1` evita dejar `__pycache__` junto al módulo.
+
+Las cifras de las páginas no se escriben a mano: `ml_cifras_c0.py` …
+`ml_cifras_c5.py` tienen una función por hecho citado, `test_ml_cifras_c<N>.py`
+las fija en la fuente y `test_ml_prosa_c<N>.py` las busca en la sección de la
+página o del guion que las cita. Cambiar un ejemplo es cambiar la cifra en su
+módulo, regenerar figuras y notebooks, y dejar que la prueba de prosa diga qué
+texto quedó desfasado. Tras una subida de `ml_lab`:
+
+```bash
+export PYTHONDONTWRITEBYTECODE=1
+cp tools/aprendizaje_maquina.py course/9_aprendizaje_maquina/_assets/ml_lab.py
+python3 tools/gen_aprendizaje_maquina.py
+python3 tools/gen_cuadernos_ml.py
+python3 tools/notacion_ml.py          # linter de notación de páginas y guiones
+python3 tools/contrato_unidad.py course/9_aprendizaje_maquina --estricto
+git status                            # tiene que quedar limpio salvo lo que cambiaste a propósito
+```
 
 Para las nueve gráficas de regresión de la página 6.5.4, instalar las
 dependencias de cálculo y dibujo y regenerar desde la raíz:
@@ -168,7 +197,14 @@ correrlo salvo que aparezca una versión nueva del deck original.
 | `commons.tsv` | Manifiesto de fotos a descargar de Wikimedia Commons: título en Commons, descripción, en qué página se usa, y la columna `unidad` (`historia`/`filosofia`) que enruta cada fila a su `_assets/` vía `ASSETS_POR_UNIDAD` | `bajar_commons.py` |
 | `imagenes_heredadas.tsv` | Inventario de las ~91 imágenes del deck heredado, con la decisión `conservar`/`descartar` por cada una y por qué. Es el registro auditable de la curaduría, no solo una lista de archivos | `curar_imagenes.py`, y `test_curar_imagenes.py` |
 | `unidades.py` | Módulo compartido (no dato): `ASSETS_POR_UNIDAD` mapea cada unidad a su `_assets/`, `filas_de_creditos()` parsea `CREDITOS.md`, y las constantes `CELDA_NOMBRE`/`CELDA_ORIGEN`/`CELDA_LICENCIA` fijan el índice de columna. Única fuente de estas tres cosas — se importa, no se copia | `test_aceptacion.py`, `test_curar_imagenes.py`, `test_commons.py` |
-| `contrato_unidad.py` | Módulo y CLI (no dato): mide el contrato de lectura de una unidad o clase —frases, negritas, párrafos, columnas de tabla, imágenes fuera de `::: figure`, ejercicio → pista → respuesta, palabras por minuto y suma de minutos— y da hallazgos `archivo:línea` con severidad. `python3 tools/contrato_unidad.py course/7_juegos [--json] [--estricto]`. `UMBRALES` (con override en `UMBRALES_POR_UNIDAD`) y `UNIDADES_CONTRATO`, la lista opt-in donde las métricas son obligatorias (arranca vacía); el docstring documenta el parser y cada criterio | `test_contrato_unidad.py`, y la skill `unidad-auditar` |
+| `contrato_unidad.py` | Módulo y CLI (no dato): mide el contrato de lectura de una unidad o clase —frases, negritas, párrafos, columnas de tabla, imágenes fuera de `::: figure`, ejercicio → pista → respuesta, palabras por minuto y suma de minutos— y da hallazgos `archivo:línea` con severidad. `python3 tools/contrato_unidad.py course/7_juegos [--json] [--estricto]`. `UMBRALES` (con override en `UMBRALES_POR_UNIDAD`) y `UNIDADES_CONTRATO`, la lista opt-in donde las métricas son obligatorias (hoy Markov y aprendizaje de máquina); el docstring documenta el parser y cada criterio | `test_contrato_unidad.py`, y la skill `unidad-auditar` |
+| `aprendizaje_maquina.py` | Módulo (no dato): `ml_lab`, la biblioteca de la unidad 9 que importan sus notebooks, figuras y cifras. Secciones `# === N · … ===` en el orden del contrato; `VERSION` y `requiere()` gobiernan la compatibilidad de cada notebook. Copia literal en `course/9_aprendizaje_maquina/_assets/ml_lab.py`; la hoja `B_laboratorio.md` la documenta para el alumno | `gen_aprendizaje_maquina.py`, `gen_cuadernos_ml.py`, `ml_cifras_c<N>.py`, `figuras_ml_c<N>.py` y sus pruebas |
+| `datos/ml_lab_superficie.json` | La superficie pública de `ml_lab` por versión: cada nombre de `__all__` con su firma y las claves de `PROCESOS`, `CASOS_BORDE` y `ANALISIS_TALLER`. Una versión nueva agrega su entrada; las viejas no se reescriben | `test_aprendizaje_maquina.py` (`test_la_superficie_publica_es_la_del_contrato`) |
+| `figuras_ml_c0.py` … `figuras_ml_c5.py` | Módulos (no datos): el catálogo `FIGURAS_C<N>` de cada clase, id → función que devuelve el SVG. Los diagramas van a mano con las primitivas del generador común; las gráficas de datos, con los `dibujar_*` de `ml_lab` | `gen_aprendizaje_maquina.py`, `test_figuras_ml_c<N>.py` |
+| `ml_cifras_c0.py` … `ml_cifras_c5.py` | Módulos (no datos): una función por cada cifra que cita una página, un guion o una figura de la clase, calculada con `ml_lab` (la clase 0, con numpy puro) | `figuras_ml_c<N>.py`, `test_ml_cifras_c<N>.py`, `test_ml_prosa_c<N>.py` |
+| `cuadernos_ml/<stem>.py`, `cuadernos_ml/<stem>.texto.md` | El código y el guion de cada notebook de la unidad 9; `_humo.*` es un notebook de prueba que nunca se publica | `gen_cuadernos_ml.py`, `test_cuadernos_ml.py` |
+| `notacion_ml.py` | Módulo y CLI (no dato): linter de notación de la unidad 9. Lista negra común (`\boldsymbol`, `\hat`, lambda o alfa para la regularización, «lagrangiano», `\log` sin subíndice…) y lista blanca por clase de presentación. `python3 tools/notacion_ml.py [archivo …]` | `test_notacion_ml.py`, `test_cuadernos_ml.py` |
+| `datos/notacion_ml/c0.txt` … `c5.txt`, `excepciones.txt` | Los símbolos que agrega cada clase a la lista blanca, uno por línea con su fuente (`símbolo \| fuente`), y las excepciones declaradas por archivo y línea, con su razón | `notacion_ml.py` |
 | `lecturas/filosofia_ia/clase_*/introduccion.md` | Fuente única de la introducción general del cuadernillo de lecturas; la página del curso (`course/2_filosofia_ia/1_aceleracionismo/0_index.md`) lleva una copia literal de su sección «Cómo leer este cuadernillo» | `lecturas.py` (la incrusta en el PDF), `test_lecturas.py` (comprueba que la copia de la página del curso no haya derivado) |
 
 **Si borras un archivo de `_assets/` porque quedó sin usar, actualiza también
@@ -199,6 +235,13 @@ corrida del generador correspondiente lo vuelve a traer.
 | `test_cuaderno_juegos.py` | Que el notebook es el que `gen_cuaderno_juegos.py` produciría hoy, que cada función es la de su página tal cual, que sus generadores dan los mismos pasos que `pasos_interactivos` (también en árboles con empates), y la forma pensada para leer (celdas cortas, preparación plegada, sin salidas) |
 | `test_pseudocodigo_juegos.py` | Que el Python de cada página de algoritmo de juegos corre y decide lo que dice la página |
 | `test_tiempos_juegos.py` | Que los tiempos de las páginas, las tablas de cada clase y el total de la unidad de juegos suman lo mismo |
+| `test_aprendizaje_maquina.py` | `ml_lab`: la superficie pública de cada versión es la de `datos/ml_lab_superficie.json`, la copia de `_assets/` es byte-idéntica a la fuente, la convención de $\mu$, el determinismo por semilla y el comportamiento de cada sección (procesos, separaciones, ajuste, métricas, CV, conformal, fugas, gráficas, taller) |
+| `test_gen_aprendizaje_maquina.py` | Las guardas comunes de las figuras de la unidad 9: catálogo, SVG que pasa `test_9`, XML válido, ancho ≤ 600, letra ≥ 12 px, sin opacidades, determinismo, roles, CLI y `ML_CLASES`; y, con la unidad presente, que cada SVG comiteado es el que produciría el generador (compara sin escribir), sin huérfanos, con su fila en `CREDITOS.md` y usado en su `::: figure` |
+| `test_figuras_ml_c0.py` … `test_figuras_ml_c5.py` | Lo propio de las figuras de cada clase, sin leer prosa: catálogo por tramos, roles de la leyenda, que cada gráfica dibuje las cifras de `ml_cifras_c<N>.py` y que su texto alternativo las nombre |
+| `test_ml_cifras_c0.py` … `test_ml_cifras_c5.py` | Cada cifra de la clase fijada en su módulo, redondeada como la escribe la página, y la propiedad que el plan de la clase le exige. No lee páginas |
+| `test_ml_prosa_c0.py` … `test_ml_prosa_c5.py` | Que cada cifra de `ml_cifras_c<N>.py` aparece en la sección de la página o del guion que la cita, que cada figura vive en su página, y las comprobaciones de prosa propias de la clase |
+| `test_cuadernos_ml.py` | Los dieciséis notebooks de la unidad 9, parametrizados por stem: son los que arma `gen_cuadernos_ml.py` hoy (compara sin escribir), anatomía y claves, corren de punta a punta con `ML_LAB_PRUEBA=1`, el cargador en sus escenarios (descarga, sin red, copia vieja, otra versión), respaldo incrustado byte-idéntico, notación del guion y que solo las celdas autorizadas lean la prueba |
+| `test_notacion_ml.py` | El linter de notación: cada regla de la lista negra y de la lista blanca con fragmentos sintéticos, que toda línea de `datos/notacion_ml/` traiga fuente, y cero hallazgos en las páginas y guiones de la unidad 9 |
 | `test_skin.py` | Que `tokens.color.surface` de `skins/eva-cyberpunk.yaml` siga siendo `#211033`, el valor que `gen_ilustraciones.py`, `test_ilustraciones.py` y `test_aceptacion.py` tienen hardcodeado por triplicado |
 | `test_contrato_unidad.py` | El parser y cada regla de `contrato_unidad.py` con fragmentos sintéticos (detecta la violación y calla en el caso limpio); cero hallazgos alta/media en cada unidad de `UNIDADES_CONTRATO`; que el CLI corre sobre juegos y optimización con `archivo:línea` reales y encuentra los errores sembrados conocidos (19 imágenes sueltas en 6.5, ejercicios sin pista en juegos); y que toda ruta `tools/…` o `.claude/skills/…` citada en las skills existe (se salta mientras las skills estén incompletas) |
 
