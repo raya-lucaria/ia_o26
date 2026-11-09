@@ -86,9 +86,11 @@ ETAPAS = [10, 50, 200, 400]
 cv_boost = {}
 for tasa in (0.1, 0.01):
     for e in ETAPAS:
-        cv_boost[(e, tasa)] = ml.validacion_cruzada(datos, lambda df, e=e: ml.ajustar_otro(
-            df, familia="boosting", etapas=e, tasa=tasa), particion=mismos).media
-    plt.plot(ETAPAS, [cv_boost[(e, tasa)] for e in ETAPAS], marker="^", label=f"ν = {tasa}")
+        cv_boost[(e, tasa)] = ml.validacion_cruzada(
+            datos, lambda df, e=e: ml.ajustar_otro(
+                df, familia="boosting", etapas=e, tasa=tasa), particion=mismos).media
+    plt.plot(ETAPAS, [cv_boost[(e, tasa)] for e in ETAPAS], marker="^",
+             label=f"ν = {tasa}")
 plt.xscale("log"); plt.xlabel("etapas"); plt.ylabel("CV por clientes (min²)")
 plt.legend(); plt.show()
 etapas_cv, tasa_cv = min(cv_boost, key=cv_boost.get)    # el par que usa el bloque 5
@@ -104,7 +106,8 @@ print(f"menor CV: {etapas_cv} etapas con ν = {tasa_cv}")
 FAMILIAS = {"lineal": lambda df: ml.ajustar(df, phi=ml.combinar(
                 ml.polinomio(3, variable="distancia"), ml.columnas("hora", "lluvia"))),
             "árbol": lambda df: ml.ajustar_otro(   # tu regla de un EE, si ya la tienes
-                df, familia="arbol", profundidad=un_ee if un_ee is not None else minimo),
+                df, familia="arbol",
+                profundidad=un_ee if un_ee is not None else minimo),
             "bosque": lambda df: ml.ajustar_otro(df, familia="bosque", n_arboles=100),
             "boosting": lambda df: ml.ajustar_otro(df, familia="boosting",
                                                    etapas=etapas_cv, tasa=tasa_cv)}
