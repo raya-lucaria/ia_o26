@@ -82,7 +82,7 @@ Las dos páginas y sus notebooks toman 120 minutos en total: 55 + 65.
 1. [[ml-que-es-f|¿Qué es f? El proceso, el piso y la representación]]
 2. [[ml-polinomios-y-capacidad|Polinomios, capacidad y supuestos]]
 
-La tarea (proponer una representación) llega en la siguiente entrega.
+La tarea de esta clase, proponer una representación, todavía no está publicada.
 
 ## Los notebooks
 
@@ -98,8 +98,6 @@ Recorres Taylor y la curva de capacidad, y distingues quién elige el grado del 
 Exploras qué pasa al extrapolar y por qué ningún método gana en todos los problemas.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/9_aprendizaje_maquina/_assets/02_polinomios_y_capacidad.ipynb)
-
-El notebook de la tarea queda pendiente de publicación.
 
 ## Qué no cubre esta clase
 
