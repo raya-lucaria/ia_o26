@@ -64,7 +64,8 @@ def tema(nombre="claro"):
 # Otra celda entra por SOLICITUD a coord.
 AUTORIZADAS = {
     "03_entrenamiento_y_prueba": {3, 4},
-    "tarea_2_separar_y_elegir": {6},
+    "tarea_2_separar_y_elegir": {6, "bloque-4-juega"},  # el reporte final abre
+                                    # la prueba una vez (clase_2 §10.6)
     "07_el_lagrangeano_en_accion": {"bloque-5-prueba"},
     "tarea_3_cincuenta_variables": {6},
     "tarea_4_desbalanceo_multiclase": {6},
