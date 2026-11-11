@@ -39,8 +39,7 @@ jobs:
   # letra por letra dentro de las celdas de tabla (las trazas de juegos), y
   # trae también los enlaces externos en pestaña nueva de af1dfe9.
   course-pages:
-    # TEMPORAL (2026-11-11, clase en curso): sin `needs: checks` para publicar ya.
-    # Restaurar `needs: checks` en el commit siguiente.
+    needs: checks
     uses: raya-lucaria/raya-lucaria.github.io/.github/workflows/reusable-course-pages.yml@45661034e3cbc68f889e2e1f4a3b87b5e8ba59df
     with:
       course_path: .
