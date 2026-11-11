@@ -13,14 +13,14 @@ tags: [deep-learning, referencia, notacion]
 Todos los símbolos están definidos en su página. Si encuentras uno a media
 lectura y no lo recuerdas, búscalo aquí.
 
-**Cómo leer la flecha:** *→ página* dice dónde se **presentó** el símbolo.
+Cada tabla reúne los símbolos que se **presentan** en esa página.
 
 ## Convenciones que valen en toda la unidad
 
 - **La capa va arriba, entre paréntesis.** $\mathbf W^{(l)}$, $\mathbf a^{(l)}$, $\mathbf z^{(l)}$: el $(l)$ nombra la capa; la capa 0 es la entrada.
 - **Un peso se lee de destino a origen.** $w^{(l)}_{ij}$ va de la neurona $j$ de la capa $l-1$ a la neurona $i$ de la capa $l$. En $\mathbf W^{(l)}$ las filas son destinos y las columnas, orígenes.
 - **Gorro para lo predicho,** como en la unidad 9: $\widehat{\mathbf y}$, $\widehat\theta$.
-- **Observaciones con $k$.** $\mathbf x_k$, $\mathbf y_k$, con $k=1,\dots,n$.
+- **Observaciones con $k$.** En negrita, el subíndice es la observación: $\mathbf x_k$, $\mathbf y_k$, $\mathbf a^{(l)}_k$, $\mathbf{δ}^{(l)}_k$. En cursiva es una componente: $a^{(l)}_i$, $\widehat y_i$. Con una sola salida, $\widehat y_k$ y $y_k$ son los números de la observación $k$.
 - **$L$ tiene dos papeles.** Como superíndice o tope del índice de capa, $\mathbf a^{(L)}$ o $l=1,\dots,L$, es el número de capas. En cualquier otro lugar, $L(\theta)$ es la pérdida promedio.
 - **$d$ con subíndice es un ancho.** $d_l$ es el ancho de la capa $l$; $d$ sola es la cota de $\Omega$.
 - **Derivadas implícitas.** Se escribe $\nabla$; solo se expande lo que la página necesita.
@@ -60,8 +60,10 @@ lectura y no lo recuerdas, búscalo aquí.
 | $w^{(l)}_{ij}$ | Peso de la neurona $j$ (capa $l-1$) a la $i$ (capa $l$) | escalar |
 | $\mathbf W^{(l)}$ | Matriz de pesos hacia la capa $l$ | $d_l\times d_{l-1}$ |
 | $\mathbf b^{(l)}$, $b^{(l)}_i$ | Sesgos de la capa $l$ | $d_l\times1$ |
-| $\theta$ | Todos los pesos y sesgos | parámetros |
+| $\theta$ | Todos los pesos y sesgos | $\sum_l d_l(d_{l-1}+1)$ números |
 :::
+
+$a^{(l)}_i$ y $b^{(l)}_i$ son escalares: la componente $i$ de $\mathbf a^{(l)}$ y de $\mathbf b^{(l)}$.
 
 ## Página 2 · La composición
 
@@ -70,7 +72,8 @@ lectura y no lo recuerdas, búscalo aquí.
 |---|---|---|
 | $\mathbf z^{(l)}$, $z^{(l)}_i$ | Preactivaciones: $\mathbf W^{(l)}\mathbf a^{(l-1)}+\mathbf b^{(l)}$ | $d_l\times1$ |
 | $g^{(l)}$ | Activación de la capa $l$: una $g:\mathbb R\to\mathbb R$ aplicada a cada componente | $\mathbb R^{d_l}\to\mathbb R^{d_l}$ |
-| $\mathrm{ReLU}$ | $\max(0,z)$ | — |
+| $\operatorname{ReLU}$ | $\max(0,z)$ | — |
+| $\mathbf u$ | La entrada de una capa, en $f^{(l)}(\mathbf u)$ | $d_{l-1}\times1$ |
 | $f^{(l)}$ | La capa $l$ como función: $g^{(l)}(\mathbf W^{(l)}\mathbf u+\mathbf b^{(l)})$ | — |
 | $f_\theta$ | La red: $f^{(L)}\circ\cdots\circ f^{(1)}$ | — |
 | $\widehat{\mathbf y}$ | La predicción $f_\theta(\mathbf x)$ | $d_L\times1$ |
@@ -88,6 +91,7 @@ lectura y no lo recuerdas, búscalo aquí.
 | $L(\theta)$ | Pérdida promedio, $\frac1n\sum_k\ell$; es el MSE en regresión |
 | $\mathrm{MSE}$, $\mathrm{RMSE}$ | Como en la unidad 9; $\mathrm{RMSE}=\sqrt{\mathrm{MSE}}$ |
 | $\widehat\theta$ | El $\theta$ que minimiza la pérdida |
+| $\nabla_\theta L$ | El vector de las derivadas de $L$ respecto de cada parámetro |
 | $\lVert\mathbf W\rVert_F^2$ | Suma de los cuadrados de las entradas de $\mathbf W$ |
 | $\Omega(\theta)$, $d$ | La medida de capacidad (ridge: $\sum_l\lVert\mathbf W^{(l)}\rVert_F^2$) y su cota |
 | $\mathcal L(\theta,\mu)$ | El lagrangeano $L(\theta)+\mu(\Omega(\theta)-d)$, con $\mu\ge0$ |
@@ -98,10 +102,11 @@ lectura y no lo recuerdas, búscalo aquí.
 ::: table {#dl-n-tab-retro title="Símbolos de la retropropagación"}
 | Símbolo | Qué es |
 |---|---|
-| $\mathbf u$, $\mathbf v$, $\mathbf s$ | Tres vectores cualesquiera en cadena: $\mathbf s$ depende de $\mathbf v$ y $\mathbf v$ de $\mathbf u$ |
+| $\mathbf u$, $\mathbf v$, $\mathbf s$ | En la página 4: tres vectores cualesquiera en cadena: $\mathbf s$ depende de $\mathbf v$ y $\mathbf v$ de $\mathbf u$ |
 | $\dim\mathbf u$ | El número de componentes de $\mathbf u$ |
 | $\partial\mathbf v/\partial\mathbf u$ | Jacobiana: fila por cada salida, columna por cada entrada; $\dim\mathbf v\times\dim\mathbf u$ |
-| $\nabla_{\mathbf u}\ell$ | Gradiente columna de $\ell$ respecto a $\mathbf u$ |
+| $\nabla_{\mathbf u}\ell$ | Gradiente de $\ell$ respecto a un vector $\mathbf u$: la columna de las $\partial\ell/\partial u_j$, de $\dim\mathbf u\times1$ |
+| $\nabla_{\mathbf W^{(l)}}\ell$, $\nabla_{\mathbf b^{(l)}}\ell$ | Gradientes del bloque, con la forma del bloque: $d_l\times d_{l-1}$ y $d_l\times1$ |
 | $\mathbf{δ}^{(l)}$, $\delta^{(l)}_i$ | Error de la capa $l$: $\nabla_{\mathbf z^{(l)}}\ell$ |
 | $\odot$ | Producto componente a componente |
 | $g^{(l)\prime}$ | Derivada de la activación; en ReLU, por convención, $g'(0)=0$ |

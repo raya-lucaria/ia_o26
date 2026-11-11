@@ -220,6 +220,10 @@ $$
 
 Es una capa afín con matriz $\mathbf W^{(2)}\mathbf W^{(1)}$ y sesgo $\mathbf W^{(2)}\mathbf b^{(1)}+\mathbf b^{(2)}$.
 Repitiendo el argumento capa por capa, la red entera es $\mathbf W'\mathbf x+\mathbf b'$, con $\mathbf W'=\mathbf W^{(L)}\cdots\mathbf W^{(1)}$, de $d_L\times d_0$.
+
+- **Filas:** una por neurona $i$ de la capa $L$.
+- **Columnas:** una por entrada $x_j$.
+- **Entrada $(i,j)$:** $w'_{ij}$.
 :::
 
 En la 2–3–2–1 sin activaciones, $\mathbf W'$ sería de $1\times2$.

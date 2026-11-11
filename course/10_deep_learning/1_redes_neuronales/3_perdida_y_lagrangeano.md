@@ -65,6 +65,7 @@ Con la única observación del ejemplo, $\mathrm{MSE}=\ell=0.206$ y $\mathrm{RMS
 ::: exercise {#dl-ej-mse title="Calcula MSE y RMSE"}
 Una red de una salida ve dos observaciones, $k=1,2$.
 Escribe $\widehat y_k$ y $y_k$ para la predicción y la respuesta de la observación $k$, y $\ell_k=(\widehat y_k-y_k)^2$ para su pérdida.
+Con una sola salida, el subíndice de $\widehat y_k$ es la observación, no la componente $i$ de arriba.
 La red predice $\widehat y_1=3$ y $\widehat y_2=5$; las respuestas son $y_1=2$ y $y_2=5$.
 
 (a) ¿Cuánto valen $\ell_1$, $\ell_2$ y $L$?
@@ -229,7 +230,7 @@ Todo eso está en [[ml-lagrangeano-en-accion|El lagrangeano en acción]]; la pá
 
 - **Pérdida de una observación:** $\ell(\widehat{\mathbf y},\mathbf y)=\sum_i(\widehat y_i-y_i)^2$. En el ejemplo, $\widehat y=0.546$ contra $y=1$ da $\ell=0.206$.
 - **Pérdida promedio:** $L(\theta)=\frac1n\sum_k\ell(f_\theta(\mathbf x_k),\mathbf y_k)$, con $k$ para las observaciones. Es el MSE; se reporta $\mathrm{RMSE}=\sqrt{\mathrm{MSE}}$, que en el ejemplo es 0.454.
-- **Entrenar es minimizar:** $\widehat\theta\in\operatorname{arg\,min}_\theta L(\theta)$. Sin fórmula cerrada: se baja con $\nabla_\theta L$.
+- **Entrenar es minimizar:** $\widehat\theta\in\operatorname*{arg\,min}_\theta L(\theta)$. Sin fórmula cerrada: se baja con $\nabla_\theta L$.
 - **El lagrangeano:** $\mathcal L(\theta,\mu)=L(\theta)+\mu\,(\Omega(\theta)-d)$, $\mu\ge0$. Con ridge, $\Omega$ suma los cuadrados de los pesos, sin sesgos: 2.24 en el ejemplo.
 - **Decaimiento de pesos:** ridge suma $2\mu\,\mathbf W^{(l)}$ al gradiente, y cada paso encoge los pesos hacia cero.
 

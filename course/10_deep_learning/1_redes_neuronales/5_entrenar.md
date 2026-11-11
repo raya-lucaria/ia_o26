@@ -31,7 +31,7 @@ Al terminar tendrás:
 
 > **Lo que traes**
 >
-> De [[dl-retropropagacion|la retropropagación]]: $\nabla_{\mathbf W^{(l)}}\ell=\mathbf{δ}^{(l)}\mathbf a^{(l-1)\mathsf T}$ y $\nabla_{\mathbf b^{(l)}}\ell=\mathbf{δ}^{(l)}$. En el hilo, $\partial\ell/\partial w^{(3)}_{11}=-0.436$ y $\partial\ell/\partial b^{(3)}=-0.908$, con $\widehat y=0.546$, $y=1$ y $\ell=0.206$.
+> De [[dl-retropropagacion|la retropropagación]]: $\nabla_{\mathbf W^{(l)}}\ell=\mathbf{δ}^{(l)}\mathbf a^{(l-1)\mathsf T}$ y $\nabla_{\mathbf b^{(l)}}\ell=\mathbf{δ}^{(l)}$. En el hilo, $\partial\ell/\partial w^{(3)}_{11}=-0.436$ y $\partial\ell/\partial b^{(3)}_1=-0.908$, con $\widehat y=0.546$, $y=1$ y $\ell=0.206$.
 >
 > De [[dl-perdida-lagrangeano|la pérdida y el lagrangeano]]: $\mathcal L(\theta,\mu)=L(\theta)+\mu(\Omega(\theta)-d)$, con $\Omega=\sum_l\lVert\mathbf W^{(l)}\rVert_F^2$.
 >
@@ -95,7 +95,7 @@ Con $\eta=0.1$ y $\mu=0.01$, actualiza a mano dos parámetros del hilo:
 
 (a) $w^{(3)}_{11}=0.7$, con $\partial\ell/\partial w^{(3)}_{11}=-0.436$.
 
-(b) $b^{(3)}=0.3$, con $\partial\ell/\partial b^{(3)}=-0.908$.
+(b) $b^{(3)}_1=0.3$, con $\partial\ell/\partial b^{(3)}_1=-0.908$.
 :::
 
 ::: hint {#dl-pista-paso-con-mu-1 of="dl-ej-paso-con-mu" title="Pista 1 · Elige la línea"}
@@ -163,7 +163,7 @@ Primero se toma un lote $\mathcal B$: es la entrada del ciclo, no uno de sus pas
 Con él se calculan cinco cosas, y cada una usa la anterior.
 
 1. **Adelante.** Para cada $\mathbf x_k$ del lote: $\mathbf a^{(0)}=\mathbf x_k$, $\mathbf z^{(l)}=\mathbf W^{(l)}\mathbf a^{(l-1)}+\mathbf b^{(l)}$, $\mathbf a^{(l)}=g^{(l)}(\mathbf z^{(l)})$. Se guardan todas las $\mathbf z^{(l)}$ y $\mathbf a^{(l)}$.
-2. **Pérdida.** $\ell_k=(\widehat y_k-y_k)^2$ y su promedio $L_{\mathcal B}$, más $\mu\Omega$.
+2. **Pérdida.** $\ell_k=(\widehat y_k-y_k)^2$ y su promedio $L_{\mathcal B}$, más $\mu\Omega$. Con una sola salida, el subíndice $k$ de $\widehat y_k$ es la observación.
 3. **Atrás.** $\mathbf{δ}^{(L)}$ y luego $\mathbf{δ}^{(L-1)},\dots,\mathbf{δ}^{(1)}$ con las dos ecuaciones (@dl-teo-dos-ecuaciones).
 4. **Gradientes.** $\mathbf{δ}^{(l)}_k\mathbf a^{(l-1)\mathsf T}_k$ y $\mathbf{δ}^{(l)}_k$, promediados en el lote, más $2\mu\mathbf W^{(l)}$.
 5. **Actualizar.** $\theta\leftarrow\theta-\eta\cdot$ gradiente. Siguiente lote.
@@ -181,7 +181,7 @@ Detrás de la fórmula hay tres ideas, una por cada pieza:
 - **El descenso usa esos gradientes:** un paso de largo $\eta$ en contra, una y otra vez.
 
 ::: figure {#dl-ciclo title="El ciclo de entrenamiento"}
-![El ciclo de entrenamiento en cinco pasos, en círculo: 1, pase hacia adelante, z(l) y a(l) de cada capa hasta ŷ; 2, la pérdida promediada en el lote, L_ℬ, más μΩ(θ); 3, pase hacia atrás, de δ(L) a δ(1); 4, los gradientes, δ(l) a(l−1) traspuesta promediado en el lote, más 2μW(l); 5, actualizar θ ← θ − η ∇ℒ(θ, μ). Luego, de nuevo con el siguiente lote. Al centro, la entrada del ciclo: tomar un lote ℬ de |ℬ| pares (xₖ, yₖ), que alimenta el paso 1. Debajo: θ son todos los W(l) y b(l); una vuelta es un paso de descenso y pasar por todos los lotes es una época.](../_assets/dl-ciclo.svg)
+![El ciclo de entrenamiento en cinco pasos, en círculo: 1, pase hacia adelante, z(l) y a(l) de cada capa hasta ŷ; 2, la pérdida promediada en el lote, L_ℬ, más μΩ(θ); 3, pase hacia atrás, de δ(L) a δ(1); 4, los gradientes, δ(l) a(l−1) traspuesta promediado en el lote, más 2μW(l); 5, actualizar θ ← θ − η ∇_θ ℒ(θ, μ). Luego, de nuevo con el siguiente lote. Al centro, la entrada del ciclo: tomar un lote ℬ de |ℬ| pares (xₖ, yₖ), que alimenta el paso 1. Debajo: θ son todos los W(l) y b(l); una vuelta es un paso de descenso y pasar por todos los lotes es una época.](../_assets/dl-ciclo.svg)
 :::
 
 En pseudocódigo, con los números de paso de la lista al margen:

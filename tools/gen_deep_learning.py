@@ -636,7 +636,7 @@ def dl_ciclo():
         "adelante, z⁽ˡ⁾ y a⁽ˡ⁾ para cada capa hasta ŷ; 2, la pérdida "
         "promediada en el lote, L_ℬ, más μΩ(θ); 3, pase hacia atrás, de δ⁽ᴸ⁾ "
         "a δ⁽¹⁾; 4, los gradientes, δ⁽ˡ⁾ a⁽ˡ⁻¹⁾ᵀ promediado en el lote, más "
-        "2μW⁽ˡ⁾; 5, actualizar θ ← θ − η ∇ℒ(θ, μ). Luego, de nuevo con el "
+        "2μW⁽ˡ⁾; 5, actualizar θ ← θ − η ∇_θ ℒ(θ, μ). Luego, de nuevo con el "
         "siguiente lote. Al centro, la entrada del ciclo: tomar un lote ℬ de "
         "|ℬ| pares (xₖ, yₖ). Debajo: θ son todos los W⁽ˡ⁾ y b⁽ˡ⁾; "
         "una vuelta es un paso de descenso y pasar por todos los lotes es "

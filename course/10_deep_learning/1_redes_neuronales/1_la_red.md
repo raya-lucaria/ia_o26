@@ -245,15 +245,15 @@ La entrada y las activaciones no se eligen; se calculan.
 ::: table {#dl-tab-simbolos title="Los símbolos de la red, con su tamaño"}
 | Símbolo | Se lee | Qué es | Tamaño |
 |---|---|---|---|
-| $L$ | «ele» | El número de capas con parámetros | Un entero |
-| $d_l$ | «de sub ele» | El ancho de la capa $l$ | Un entero |
-| $\mathbf x=\mathbf a^{(0)}$ | «equis» | La entrada | $d_0$ |
-| $\mathbf a^{(l)}$ | «a super ele» | Las activaciones de la capa $l$ | $d_l$ |
-| $a^{(l)}_i$ | «a sub i super ele» | La activación de la neurona $i$ | Un número |
-| $w^{(l)}_{ij}$ | «doble ve sub i jota» | El peso de $j$ (capa $l-1$) a $i$ (capa $l$) | Un número |
+| $L$ | «ele» | El número de capas con parámetros | entero |
+| $d_l$ | «de sub ele» | El ancho de la capa $l$ | entero |
+| $\mathbf x=\mathbf a^{(0)}$ | «equis» | La entrada | $d_0\times1$ |
+| $\mathbf a^{(l)}$ | «a super ele» | Las activaciones de la capa $l$ | $d_l\times1$ |
+| $a^{(l)}_i$ | «a sub i super ele» | La activación de la neurona $i$ | escalar |
+| $w^{(l)}_{ij}$ | «doble ve sub i jota» | El peso de $j$ (capa $l-1$) a $i$ (capa $l$) | escalar |
 | $\mathbf W^{(l)}$ | «doble ve mayúscula» | Los pesos de la capa $l$ | $d_l\times d_{l-1}$ |
-| $\mathbf b^{(l)}$ | «be super ele» | Los sesgos de la capa $l$ | $d_l$ |
-| $\theta$ | «teta» | Todos los pesos y sesgos de la red | Todos los parámetros |
+| $\mathbf b^{(l)}$ | «be super ele» | Los sesgos de la capa $l$ | $d_l\times1$ |
+| $\theta$ | «teta» | Todos los pesos y sesgos de la red | $\sum_l d_l(d_{l-1}+1)$ números |
 :::
 
 $\theta=\bigl(\mathbf W^{(1)},\mathbf b^{(1)},\dots,\mathbf W^{(L)},\mathbf b^{(L)}\bigr)$ hace el papel que hacía $\beta$ en la unidad 9.
