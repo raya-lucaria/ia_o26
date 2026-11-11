@@ -3,7 +3,7 @@ id: dl-tarea-1
 title: "Tarea de la clase 1 · Cuatro videos de 3Blue1Brown"
 nav_title: Tarea
 summary: "Para el miércoles 18 de noviembre: ver y entender los primeros cuatro videos de la serie de redes neuronales de 3Blue1Brown, y llegar con cuatro preguntas contestadas."
-status: draft
+status: ready
 estimated_time: 75m
 tags: [deep-learning, tarea, video]
 ---
