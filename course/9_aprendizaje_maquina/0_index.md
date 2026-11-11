@@ -66,9 +66,10 @@ ves el riesgo que en la práctica nunca se ve.
 
 ## Las hojas de consulta
 
-Dos hojas aparte del recorrido, para buscar algo a media lectura:
+Tres hojas aparte del recorrido, para buscar algo a media lectura:
 
 - [[notacion-aprendizaje-maquina|Toda la notación, en una hoja]]: cada símbolo de la unidad, qué es y dónde se presentó, con los avisos de letras y la leyenda de las figuras.
 - [[ml-laboratorio|El laboratorio ml_lab, en una hoja]]: cómo carga cada notebook la biblioteca y qué hace cada función.
+- [[ml-notebooks|Todos los notebooks, en una hoja]]: los diecisiete con su enlace a Colab, por clase.
 
 Empieza por [[ml-clase-0-que-es-aprender|la clase 0]].
