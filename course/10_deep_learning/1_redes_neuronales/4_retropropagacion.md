@@ -43,7 +43,7 @@ En total son 20 derivadas parciales.
 
 Basta derivar la pérdida de **una** observación.
 $L(\theta)$ es un promedio de las $\ell$, así que su gradiente es el promedio de los gradientes.
-El lagrangeano solo agrega $\mu\nabla\Omega$, que se suma al final (sección 4).
+El lagrangeano solo agrega $\mu\nabla_\theta\Omega$, que se suma al final (sección 4).
 
 > **Dado:** la red, una observación $(\mathbf x,y)$ y el pase hacia adelante con todos sus $\mathbf z^{(l)}$ y $\mathbf a^{(l)}$ guardados.
 >
@@ -111,8 +111,22 @@ Una capa tiene solo dos eslabones, y sus jacobianas son sencillas.
 - **El eslabón lineal**, $\mathbf z=\mathbf W\mathbf a+\mathbf b$. Como $z_i=\sum_j w_{ij}a_j+b_i$, la derivada $\partial z_i/\partial a_j$ es $w_{ij}$. La jacobiana **es** $\mathbf W$, y entonces $\nabla_{\mathbf a}\ell=\mathbf W^{\mathsf T}\nabla_{\mathbf z}\ell$.
 - **El eslabón de activación**, $\mathbf a=g(\mathbf z)$, componente por componente. $a_i$ depende solo de $z_i$: la jacobiana es diagonal, con $g'(z_i)$ en la diagonal.
 
+$$
+\frac{\partial\mathbf a}{\partial\mathbf z}=
+\begin{array}{c|cccc}
+ & z_1 & z_2 & \cdots & z_{\dim\mathbf z}\\\hline
+a_1 & g'(z_1) & 0 & \cdots & 0\\
+a_2 & 0 & g'(z_2) & \cdots & 0\\
+\vdots & \vdots & & \ddots & \vdots\\
+a_{\dim\mathbf z} & 0 & 0 & \cdots & g'(z_{\dim\mathbf z})
+\end{array}
+$$
+
+- **Filas:** una por salida $a_i$; **columnas:** una por entrada $z_j$, tantas como filas.
+- **Entrada $(i,j)$:** $g'(z_i)$ si $i=j$, y cero fuera de la diagonal.
+
 Multiplicar por una diagonal es multiplicar entrada por entrada.
-Eso se escribe $\odot$: $(\mathbf p\odot\mathbf q)_i=p_iq_i$, el producto componente a componente.
+Eso se escribe $\odot$: $(\mathbf u\odot\mathbf v)_i=u_iv_i$, el producto componente a componente.
 Así, $\nabla_{\mathbf z}\ell=\nabla_{\mathbf a}\ell\odot g'(\mathbf z)$.
 
 Las derivadas de las tres $g$ de la clase, en una línea cada una:
@@ -126,7 +140,7 @@ En la red del hilo, la capa 1 usa ReLU y $\mathbf z^{(1)}=(0.2,\ -0.2,\ 0.6)$.
 
 (a) ¿De qué tamaño es $\partial\mathbf a^{(1)}/\partial\mathbf z^{(1)}$? Escríbela con sus filas y columnas rotuladas.
 
-(b) Si llegara $\nabla_{\mathbf a^{(1)}}\ell=(p_1,\ p_2,\ p_3)$, ¿cuánto valdría $\nabla_{\mathbf z^{(1)}}\ell$?
+(b) Si llegara $\nabla_{\mathbf a^{(1)}}\ell=(v_1,\ v_2,\ v_3)$, ¿cuánto valdría $\nabla_{\mathbf z^{(1)}}\ell$?
 :::
 
 ::: hint {#dl-pista-jacobiana-capa-1 of="dl-ej-jacobiana-capa" title="Pista 1 · Una componente a la vez"}
@@ -147,7 +161,7 @@ a^{(1)}_3 & 0 & 0 & 1
 \end{array}
 $$
 
-(b) La traspuesta es la misma matriz, así que $\nabla_{\mathbf z^{(1)}}\ell=(p_1,\ 0,\ p_3)$: la componente 2 se corta.
+(b) La traspuesta es la misma matriz, así que $\nabla_{\mathbf z^{(1)}}\ell=(v_1,\ 0,\ v_3)$: la componente 2 se corta.
 :::
 
 ## 3 · Definir el error de cada capa
@@ -169,6 +183,7 @@ $\delta^{(l)}_i$ dice cuánto sube la pérdida por unidad que suba $z^{(l)}_i$, 
 :::
 
 «Error» es el nombre de costumbre. No es el residual $e=y-\widehat y$ de la unidad 9, aunque en la salida se le parece: con salida identidad, $\delta^{(L)}=2(\widehat y-y)=-2e$, como se ve abajo.
+Tampoco es la $\delta$ de la unidad 9, la probabilidad de fallar de la predicción conformal.
 
 ::: theorem {#dl-teo-dos-ecuaciones title="Las dos ecuaciones de la retropropagación"}
 En la capa de salida, con $\mathbf a^{(L)}=\widehat{\mathbf y}$:
@@ -388,7 +403,7 @@ i=1 & -0.436 & -0.163
 \end{array}
 $$
 
-El sesgo recibe $\nabla_{b^{(3)}}\ell=\delta^{(3)}=-0.908$.
+El sesgo recibe $\nabla_{b^{(3)}_1}\ell=\delta^{(3)}=-0.908$.
 
 Todas las cifras van redondeadas a tres decimales.
 Si multiplicas las ya redondeadas, la última cifra puede salirte distinta en uno.
@@ -535,11 +550,11 @@ Tu código escribe $\delta^{(L)}=\widehat y-y$ y olvida el 2.
 :::
 
 ::: hint {#dl-pista-olvidar-el-dos-1 of="dl-ej-olvidar-el-dos" title="Pista 1 · Sigue el factor"}
-Si $\delta^{(L)}$ sale a la mitad, ¿qué pasa con cada $\delta^{(l)}$ y cada gradiente? Escribe «retro» en términos de «difer».
+Si $\delta^{(L)}$ sale a la mitad, ¿qué pasa con cada $\mathbf{δ}^{(l)}$ y cada gradiente? Escribe «retro» en términos de «difer».
 :::
 
 ::: answer {#dl-resp-olvidar-el-dos of="dl-ej-olvidar-el-dos" title="Respuesta · Un tercio en todos los bloques"}
-Las dos ecuaciones son lineales en $\delta^{(L)}$, así que todo sale a la mitad: retro $=\tfrac12$ difer.
+Las dos ecuaciones son lineales en $\mathbf{δ}^{(L)}$, así que todo sale a la mitad: retro $=\tfrac12$ difer.
 El error relativo es $\dfrac{\tfrac12\lVert\text{difer}\rVert}{\tfrac32\lVert\text{difer}\rVert}=\tfrac13$, muy lejos de $10^{-10}$.
 :::
 
@@ -550,7 +565,7 @@ pedir ayuda a ChatGPT.**
 
 ::: exercise {#dl-ej-final-retropropagacion title="Retropropaga una red con dos salidas"}
 Una red 3–4–2 tiene la capa oculta con sigmoide y la salida identidad.
-La idea nueva: la salida tiene **dos** componentes y la pérdida es $\ell=(\widehat y_1-y_1)^2+(\widehat y_2-y_2)^2$.
+La idea nueva: la salida tiene **dos** componentes y la pérdida es $\ell=(\widehat y_1-y_1)^2+(\widehat y_2-y_2)^2$, donde el subíndice en cursiva es la componente de $\widehat{\mathbf y}$, no una observación.
 No hay números: todo se escribe en general.
 
 1. Da el tamaño de $\mathbf W^{(1)}$, $\mathbf b^{(1)}$, $\mathbf W^{(2)}$, $\mathbf b^{(2)}$, $\mathbf{δ}^{(1)}$ y $\mathbf{δ}^{(2)}$.
@@ -578,8 +593,10 @@ $\mathbf W^{(2)}$ es de $2\times4$, $\mathbf b^{(2)}$ y $\mathbf{δ}^{(2)}$ tien
 $$
 \mathbf{δ}^{(2)}=2(\widehat{\mathbf y}-\mathbf y),
 \qquad
-\mathbf{δ}^{(1)}=\bigl(\mathbf W^{(2)\mathsf T}\mathbf{δ}^{(2)}\bigr)\odot\sigma(\mathbf z^{(1)})\odot\bigl(\mathbf 1-\sigma(\mathbf z^{(1)})\bigr).
+\mathbf{δ}^{(1)}=\bigl(\mathbf W^{(2)\mathsf T}\mathbf{δ}^{(2)}\bigr)\odot\sigma(\mathbf z^{(1)})\odot\bigl(1-\sigma(\mathbf z^{(1)})\bigr).
 $$
+
+El $1-\sigma(\mathbf z^{(1)})$ se calcula componente a componente.
 
 $\mathbf W^{(2)\mathsf T}$ es de $4\times2$ y $\mathbf{δ}^{(2)}$ de $2\times1$: el producto tiene 4 entradas, como $\mathbf z^{(1)}$.
 Cada neurona oculta recoge el error de las **dos** salidas.
