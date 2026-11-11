@@ -1,0 +1,24 @@
+id: ver-videos-redes-neuronales
+type: task
+authority: official
+content:
+  title: "Tarea · Redes neuronales, cuatro videos de 3Blue1Brown"
+  instructions: >-
+    Para el miércoles 18 de noviembre hay que ver y entender los primeros
+    cuatro videos de la serie sobre redes neuronales del canal 3Blue1Brown:
+    qué es una red neuronal, descenso por gradiente, retropropagación de forma
+    intuitiva y el cálculo de la retropropagación. Duran 18, 20, 12 y 10
+    minutos, en total una hora y 18 minutos, y están en inglés; los subtítulos
+    automáticos ayudan si los necesitas. La condición no es verlos: es
+    entenderlos. Llega a clase pudiendo explicar con tus palabras qué es una
+    red y cuáles son sus parámetros, qué es la función de costo y el descenso
+    por gradiente, qué calcula la retropropagación y qué regla del cálculo usa.
+    Los enlaces y las cuatro preguntas están en la página de tarea de la
+    clase 1. No hay nada que entregar.
+  due: "2026-11-18"
+  status: published
+  tags:
+    - tarea
+    - video
+    - preparacion
+    - deep-learning

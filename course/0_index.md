@@ -43,3 +43,4 @@ sesión.
 | Lunes 21 de septiembre | Entrega · [[optimizacion-continua|Multiplicadores de Lagrange]] en Khan Academy y descenso con restricciones, por Canvas |
 | Miércoles 28 de octubre | Video · [[tarea-decidir|Procesos de decisión de Markov, con David Silver]] |
 | Miércoles 4 de noviembre | Video · [[tarea-lo-que-no-se-ve|Modelos ocultos de Markov y programación dinámica, dos videos]] |
+| Miércoles 18 de noviembre | Video · [[dl-tarea-1|Redes neuronales, cuatro videos de 3Blue1Brown]] |
