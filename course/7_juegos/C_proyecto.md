@@ -139,6 +139,10 @@ publica y juegan con las mismas reglas y límites que tú.
 **Un consejo del repositorio:** usa un agente de IA para programar, pero la
 estrategia es tuya. Lo que gana es tu idea, medida con partidas.
 
+> [!NOTE]
+> **La liga ya se jugó.** La tabla final está en
+> [[resultados-torneo-adversarial|los resultados del torneo]].
+
 ## Sigue en el repositorio
 
 Desde aquí, todo está en el repositorio del torneo:
