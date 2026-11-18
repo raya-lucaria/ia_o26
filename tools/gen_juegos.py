@@ -5761,6 +5761,12 @@ DIAGRAMAS = {
     "jue-c3-min-volteado": jue_c3_min_volteado,
 }
 
+# Las graficas de resultados del torneo viven en gen_torneo.py (leen los
+# datos publicos de la liga, no tools/juegos.py), pero sus SVG van al mismo
+# _assets/ y las guardas de esta unidad exigen un solo catalogo.
+from gen_torneo import DIAGRAMAS as _DIAGRAMAS_TORNEO  # noqa: E402
+DIAGRAMAS.update(_DIAGRAMAS_TORNEO)
+
 
 def escribir(nombre):
     ASSETS.mkdir(parents=True, exist_ok=True)
