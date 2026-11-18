@@ -115,6 +115,7 @@ La unidad cierra con un proyecto en equipos de 2: un bot que juega
 *Breakthrough de combate*, un juego de peones con dados, en una liga contra
 los bots del grupo y los nuestros. Qué es, cómo empezar, qué se entrega y
 cómo se califica: [[proyecto-torneo-adversarial|el proyecto]].
+La liga ya se jugó: [[resultados-torneo-adversarial|los resultados del torneo]].
 
 Y dos hojas de consulta, aparte del recorrido:
 
