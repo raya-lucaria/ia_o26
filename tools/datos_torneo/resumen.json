@@ -1,0 +1,13 @@
+{
+  "corridas": 7,
+  "equipos": 29,
+  "partidas": 16240,
+  "partidas_por_pareja": 40,
+  "pct_gana_blancas": 50.0,
+  "jugadas_por_partida_media": 82.1,
+  "jugadas_por_partida_mediana": 81.0,
+  "fin_por_motivo": {
+    "puntos": 16232,
+    "sin_jugadas": 8
+  }
+}

@@ -4,7 +4,7 @@ title: "Resultados del torneo: Breakthrough de combate"
 nav_title: Resultados
 summary: "La tabla final de la liga de Breakthrough de combate: 29 bots, todos contra todos, 16 240 partidas jugadas del 17 al 18 de noviembre de 2026."
 status: ready
-estimated_time: 3m
+estimated_time: 8m
 tags: [juegos, proyecto, torneo, resultados]
 ---
 
@@ -76,6 +76,51 @@ negritas; los demás son los bots de referencia.
   a los débiles.
 
 Y una más: los 16 equipos de alumnos quedaron por encima de `montecarlo`.
+
+## Las gráficas
+
+::: figure {#jue-torneo-fig-victorias title="El porcentaje de victorias de cada bot, con su intervalo de confianza al 95 %"}
+![Barras horizontales del porcentaje de victorias de los 29 bots en el orden de la tabla, magenta para los equipos de alumnos y azul para los bots de referencia, cada una con su intervalo de confianza al 95 %. Va de 78,1 % de torneo_breakthrough a 0,3 % de random.](_assets/jue-torneo-victorias.svg)
+:::
+
+Cada intervalo mide hasta ±3 puntos. Los del 2.º al 6.º lugar se enciman:
+con 1 120 partidas por bot, las diferencias entre ellos caben en el ruido de
+los dados. La del 1.º no: el intervalo de `torneo_breakthrough` no toca el de
+nadie más.
+
+::: figure {#jue-torneo-fig-cara-a-cara title="Cara a cara: cuántas de las 40 partidas ganó la fila contra la columna"}
+![Mapa de calor de 29 por 29 con filas y columnas en el orden de la tabla. Cada celda dice cuántas de las 40 partidas ganó el equipo de la fila contra el de la columna: verde si ganó la serie, magenta si la perdió. La esquina superior derecha es verde y la inferior izquierda magenta.](_assets/jue-torneo-cara-a-cara.svg)
+:::
+
+Se lee por filas: la fila de un equipo es su temporada, rival por rival.
+Cada celda y su simétrica suman 40, así que el mapa es verde arriba a la
+derecha y magenta abajo a la izquierda. Las celdas de color contrario a su
+zona son las sorpresas: un equipo que le ganó la serie a otro que quedó más
+arriba.
+
+::: figure {#jue-torneo-fig-corridas title="El porcentaje de victorias en cada una de las 7 corridas"}
+![Para cada uno de los 29 bots, siete puntos con su porcentaje de victorias en cada corrida, sobre una franja del mínimo al máximo, y una raya blanca en el porcentaje total. La franja más ancha mide 14 puntos.](_assets/jue-torneo-corridas.svg)
+:::
+
+Una sola corrida son 160 partidas por bot, y en ella el orden baila: la
+franja de `torneo_breakthrough` va de 73,2 % a 80,4 %, y la de `equipo_gg` de
+65,2 % a 76,8 %. Por eso la tabla junta siete corridas y no una.
+
+## Datos curiosos
+
+- **`torneo_breakthrough` ganó su serie contra los 28 rivales**: más de 20
+  de las 40 partidas contra cada uno. La más pareja fue contra
+  `maquinas_del_trabajo`, 23 a 17.
+- **Blancas ganan exactamente el 50,0 %** de las 16 240 partidas: mover
+  primero no da ventaja. Una partida dura en promedio 82 jugadas, y solo 8
+  terminaron porque un bando se quedó sin jugadas; las otras 16 232, por
+  peones anotados.
+- **La suerte con los dados casi no pesa.** Si se suma, en cada ataque, si
+  el dado lo dio por bueno menos la probabilidad de que lo diera, el
+  promedio por partida queda entre −0,05 y +0,07 para todos los bots. El
+  campeón tuvo de las peores, −0,04 por partida, y aun así ganó.
+- **`pamplinotas` y `equipo_gg` quedaron 20 a 20 entre ellos**: el resultado
+  directo no los separó y decidió el SB.
 
 Las reglas y el motor siguen en el
 [repositorio del torneo](https://github.com/raya-lucaria/ia_o26_torneo_adversarial).
