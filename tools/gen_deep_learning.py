@@ -87,9 +87,14 @@ def _n(v):
     return str(int(v)) if v == int(v) else str(v)
 
 
-def marco(ancho, alto, aria, titulo):
+def marco(ancho, alto, aria, titulo, mostrar=None):
     """Raiz <svg> con width/height en px, viewBox, role, aria-label, <title>,
-    el fondo del skin y un marcador de flecha por color."""
+    el fondo del skin y un marcador de flecha por color.
+
+    `mostrar` = (ancho, alto) en px cuando la figura se dibuja en un viewBox
+    mayor y se muestra reducida (el boton de Colab: 900 de dibujo, 600 de tope).
+    """
+    px_ancho, px_alto = mostrar or (ancho, alto)
     marcas = "".join(
         f'<marker id="{k}" viewBox="0 0 10 10" refX="9" refY="5" '
         f'markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" '
@@ -104,8 +109,8 @@ def marco(ancho, alto, aria, titulo):
         f'fill="{ARISTA}"/></marker>'
     )
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{_n(ancho)}" '
-        f'height="{_n(alto)}" viewBox="0 0 {_n(ancho)} {_n(alto)}" role="img" '
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{_n(px_ancho)}" '
+        f'height="{_n(px_alto)}" viewBox="0 0 {_n(ancho)} {_n(alto)}" role="img" '
         f'aria-label="{escape(aria, {chr(34): "&quot;"})}">'
         f"<title>{escape(titulo)}</title>"
         f'<rect x="0" y="0" width="{_n(ancho)}" height="{_n(alto)}" rx="16" '
@@ -842,6 +847,73 @@ def dl_curvas_rmse():
     return "".join(p)
 
 
+# --------------------------------------------- 8 · el boton de Colab ---
+# No es un diagrama: es el boton gigante de la pagina de la clase 2, una
+# imagen dentro de un enlace a Colab. Se dibuja en 900 x 225 y se muestra a
+# 600 x 150 (el tope de ANCHO_MAX). El logo es propio: dos anillos
+# entrelazados hechos con formas, no el logo oficial copiado. Todo texto va
+# en claro sobre relleno oscuro, para que contraste con el fondo del skin.
+
+NARANJA = "#ff9e2c"   # el naranja de Colab, aclarado para el fondo oscuro
+NARANJA_HONDO = "#f57c00"
+
+
+def _arco(cx, cy, r, desde, hasta):
+    """Path de un arco de circunferencia entre dos angulos (grados, sentido
+    horario en pantalla)."""
+    a0, a1 = math.radians(desde), math.radians(hasta)
+    x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
+    x1, y1 = cx + r * math.cos(a1), cy + r * math.sin(a1)
+    grande = 1 if (hasta - desde) % 360 > 180 else 0
+    return (f"M {_n(x0)} {_n(y0)} A {_n(r)} {_n(r)} 0 {grande} 1 "
+            f"{_n(x1)} {_n(y1)}")
+
+
+def dl_abrir_colab():
+    ancho, alto = 900, 225
+    aria = ("Botón grande para abrir en Google Colab el notebook 2, «Entender "
+            "una red entrenándola»: un símbolo de reproducir, el texto «Abrir "
+            "en Colab» en amarillo y dos anillos naranjas entrelazados.")
+    p = [marco(ancho, alto, aria, "Abrir en Colab el notebook 2",
+               mostrar=(600, 150))]
+    p.append(
+        '<defs><linearGradient id="dl-colab-relleno" x1="0" y1="0" x2="0" '
+        f'y2="1"><stop offset="0" stop-color="{mezclar(NARANJA, 0.42)}"/>'
+        f'<stop offset="1" stop-color="{mezclar(NARANJA_HONDO, 0.16)}"/>'
+        '</linearGradient></defs>')
+    # resplandor: dos marcos cada vez mas tenues alrededor del boton
+    p.append(caja(8, 8, 884, 209, "none", mezclar(NARANJA, 0.30), 34, 6))
+    p.append(caja(15, 15, 870, 195, "none", mezclar(AMARILLO, 0.6), 30, 3))
+    # el boton: relleno naranja oscuro y borde amarillo brillante
+    p.append(caja(22, 22, 856, 181, "url(#dl-colab-relleno)", AMARILLO, 26, 6))
+
+    # medalla con el logo: dos anillos entrelazados
+    mx, my, mr = 116, 112.5, 66
+    p.append(circulo(mx, my, mr, NARANJA, "#fff4e0", 5))
+    r, sep, grosor = 27, 19, 12
+    izq, der = (mx - sep, my), (mx + sep, my)
+    anillo = ('<circle cx="{}" cy="{}" r="{}" fill="none" stroke="{}" '
+              'stroke-width="{}"/>')
+    p.append(anillo.format(_n(izq[0]), _n(izq[1]), r, NARANJA_HONDO, grosor))
+    p.append(anillo.format(_n(der[0]), _n(der[1]), r, NARANJA, grosor))
+    # entrelazado: arriba el anillo izquierdo pasa por encima del derecho
+    corte = math.degrees(math.atan2(-math.sqrt(r * r - sep * sep), sep))
+    p.append(f'<path d="{_arco(izq[0], izq[1], r, corte - 24, corte + 24)}" '
+             f'fill="none" stroke="{NARANJA_HONDO}" stroke-width="{grosor}"/>')
+
+    # el triangulo de reproducir y el texto
+    tx, ty = 208, 106
+    p.append(f'<path d="M {tx} {ty - 28} L {tx + 44} {ty} L {tx} {ty + 28} Z" '
+             f'fill="{AMARILLO}" stroke="{TEXTO}" stroke-width="3" '
+             'stroke-linejoin="round"/>')
+    p.append(texto(tx + 64, ty + 21, "ABRIR EN COLAB", AMARILLO, 58,
+                   anclaje="start", peso="800"))
+    p.append(texto(tx + 4, ty + 70, "Notebook 2 · Entender una red entrenándola",
+                   TEXTO, 25, anclaje="start", peso="600"))
+    p.append(cierre())
+    return "".join(p)
+
+
 DIAGRAMAS = {
     "dl-red-2-3-2-1": dl_red_2_3_2_1,
     "dl-peso-wij": dl_peso_wij,
@@ -850,6 +922,7 @@ DIAGRAMAS = {
     "dl-retropropagacion": dl_retropropagacion,
     "dl-ciclo": dl_ciclo,
     "dl-curvas-rmse": dl_curvas_rmse,
+    "dl-abrir-colab": dl_abrir_colab,
 }
 
 
