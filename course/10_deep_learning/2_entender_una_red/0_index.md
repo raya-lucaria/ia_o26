@@ -45,7 +45,7 @@ El notebook ya viene ejecutado, con todas sus gráficas. Puedes leerlo completo 
 - **9 · Optimizers.** SGD, momentum, Adam y AdamW con el mismo problema.
 - **10 · Early stopping.** Overfitting a propósito, y dónde conviene parar.
 - **11–12 · Tamaño y forma de la red.** Más ancha, más profunda, y el mismo presupuesto de parámetros repartido distinto.
-- **13 · Activaciones.** ReLU, sigmoide y tanh.
+- **13 · Activaciones.** ReLU, sigmoide, tanh y GELU, y por qué la sigmoide apaga el gradiente en una red profunda.
 - **14 · El gradiente por capa (avanzado).** Cuánto gradiente llega a cada capa; se puede saltar.
 - **15 · Batch normalization y dropout.** Qué cambia entre `train()` y `eval()`.
 - **16 · Análisis del error.** Qué dígitos confunde la red y cuánta confianza tiene cuando falla.
