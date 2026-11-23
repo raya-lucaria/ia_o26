@@ -1,0 +1,37 @@
+[
+ {
+  "nombre": "pelota",
+  "prompt": "A small ball rolling downhill across a gentle landscape of smooth rolling hills and valleys, like a soft 3D surface seen from an elevated angle. A dotted trail of its previous positions curves from a hilltop down toward the lowest valley, showing the steps it has taken. Style: clean, flat editorial illustration with simple geometric shapes and soft gradients, light near-white background, gentle palette of soft blue, soft orange and soft green. Absolutely no text, no letters, no numbers, no labels, no symbols or writing anywhere in the image. No human faces. Original design, not based on any existing artwork, character, brand or logo.",
+  "modelo": "gpt-image-2",
+  "fecha": "2026-11-23",
+  "credito": "Ilustración generada con gpt-image-2 (OpenAI, vía Codex) para este curso; sin derechos de terceros."
+ },
+ {
+  "nombre": "learning_rate",
+  "prompt": "Three balls in three identical smooth U-shaped valleys side by side, each with a dotted trail of its steps. In the first valley a ball takes many tiny steps and has barely moved down. In the second valley a ball reaches the bottom in a few confident steps. In the third valley a ball bounces from wall to wall, each bounce higher than the last, and finally flies out of the valley over the rim. Style: clean, flat editorial illustration with simple geometric shapes and soft gradients, light near-white background, gentle palette of soft blue, soft orange and soft green. Absolutely no text, no letters, no numbers, no labels, no symbols or writing anywhere in the image. No human faces. Original design, not based on any existing artwork, character, brand or logo.",
+  "modelo": "gpt-image-2",
+  "fecha": "2026-11-23",
+  "credito": "Ilustración generada con gpt-image-2 (OpenAI, vía Codex) para este curso; sin derechos de terceros."
+ },
+ {
+  "nombre": "parar_a_tiempo",
+  "prompt": "A small hiker seen from behind, no face visible, standing and pausing on the top of a rounded green hill. Ahead of the hiker the ground drops into a deep steep ravine. Behind the hiker, the path already walked is marked by a dotted line winding up the hill. Calm, wise moment of stopping in time. Style: clean, flat editorial illustration with simple geometric shapes and soft gradients, light near-white background, gentle palette of soft blue, soft orange and soft green. Absolutely no text, no letters, no numbers, no labels, no symbols or writing anywhere in the image. No human faces. Original design, not based on any existing artwork, character, brand or logo.",
+  "modelo": "gpt-image-2",
+  "fecha": "2026-11-23",
+  "credito": "Ilustración generada con gpt-image-2 (OpenAI, vía Codex) para este curso; sin derechos de terceros."
+ },
+ {
+  "nombre": "embudo",
+  "prompt": "An abstract artistic diagram of a neural network shaped like a funnel: columns of glowing spheres connected by thin lines, many spheres in the wide left column, fewer and fewer spheres in each column toward the right, narrowing to a few spheres at the right end, like a funnel lying on its side. Style: clean, flat editorial illustration with simple geometric shapes and soft gradients, light near-white background, gentle palette of soft blue, soft orange and soft green. Absolutely no text, no letters, no numbers, no labels, no symbols or writing anywhere in the image. No human faces. Original design, not based on any existing artwork, character, brand or logo.",
+  "modelo": "gpt-image-2",
+  "fecha": "2026-11-23",
+  "credito": "Ilustración generada con gpt-image-2 (OpenAI, vía Codex) para este curso; sin derechos de terceros."
+ },
+ {
+  "nombre": "filtro",
+  "prompt": "A small square magnifying lens divided into a 3 by 3 grid of cells sliding over a large pixelated grid. The large grid shows a single abstract curved handwritten-like brush stroke made of dark pixels, not a readable digit or letter. Behind the lens, where it has already passed, the grid turns into a colorful heat map of soft blue, green and orange squares. Style: clean, flat editorial illustration with simple geometric shapes and soft gradients, light near-white background, gentle palette of soft blue, soft orange and soft green. Absolutely no text, no letters, no numbers, no labels, no symbols or writing anywhere in the image. No human faces. Original design, not based on any existing artwork, character, brand or logo.",
+  "modelo": "gpt-image-2",
+  "fecha": "2026-11-23",
+  "credito": "Ilustración generada con gpt-image-2 (OpenAI, vía Codex) para este curso; sin derechos de terceros."
+ }
+]
