@@ -2,58 +2,53 @@
 
 ## 19 · Cierre
 
-En la unidad 9 comparamos modelos con el error de validation. Aquí hacemos lo mismo con todas las corridas registradas, desde la demo de la caja hasta la CNN de §17. La tabla maestra y la figura ayudan a ver qué cambios movieron el error y cuáles dieron resultados parecidos. El cierre solo resume lo que hay en `CORRIDAS`. Si saltaste secciones, verás solo las corridas registradas. Si el registro está vacío, la celda te avisa.
+Compara las corridas registradas para ver **qué cambios movieron el error de validation**.
 
 ### celda: s19-tabla-texto
 
-La tabla se divide por `datos`. Compara filas dentro del mismo grupo. Hay corridas con todo train limpio, con subconjuntos y con etiquetas alteradas. Al alterar etiquetas, la red recibe ejemplos con respuestas incorrectas. Ese ruido recuerda al ruido irreducible de la unidad 9 y cambia las condiciones del ajuste.
-
-- `parametros` cuenta los pesos y sesgos entrenables. `presupuesto` es lo que pidió la `Config` (epochs, o un tope de pasos) y `pasos` las actualizaciones que dio de verdad. `mejor_epoch` indica dónde fue menor la loss de validation en esa corrida.
-- Las columnas `loss_` y `acc_` muestran la loss y la accuracy de train, validation y test en esa epoch. Dentro de cada grupo, la tabla ordena las filas de mayor a menor `acc_validation`. Test aparece solo para reportar.
-- `brecha` es la accuracy de train menos la de validation. `segundos` mide el tiempo acumulado al final de la corrida. `divergio` indica si apareció una loss no finita durante el entrenamiento.
-
-Incluso dentro del mismo grupo, el presupuesto de entrenamiento puede variar. Por ejemplo, cambiar el tamaño del batch en §7 cambia cuántas actualizaciones caben en una epoch. Lee el orden de la tabla junto con las columnas `presupuesto` y `pasos`.
+- **Compara dentro de cada grupo de datos**. Las filas se ordenan por accuracy de validation.
+- `presupuesto` indica lo configurado. `pasos` indica cuántas actualizaciones se ejecutaron.
+- La tabla reporta las métricas del checkpoint con menor loss de validation. Test queda para el reporte.
 
 ### celda: s19-figura-texto
 
-Cada grupo de datos ocupa una fila de paneles. A la izquierda, cada barra horizontal muestra la accuracy de validation en la mejor epoch de una corrida. La accuracy más alta queda arriba. El color indica la sección de origen, según la leyenda. Las corridas que divergieron llevan un rayado en esa barra y la marca «✕ divergió» junto al nombre.
-
-El eje de accuracy puede empezar por encima de cero. El título indica el inicio del eje. Un eje recortado hace más visibles las diferencias pequeñas y puede hacer que parezcan grandes. Para medirlas, lee los valores junto a las barras. Si una accuracy cae por debajo del inicio del eje, el valor lleva la marca «fuera del eje».
-
-A la derecha está la brecha de cada corrida, $a_{\text{train}} - a_{\text{validation}}$, donde $a$ es la accuracy en esa misma epoch. Una brecha positiva indica que la red acierta más en train y puede señalar overfitting. Cerca de cero, esta medida da poca señal de overfitting. Con etiquetas alteradas, la brecha puede ser negativa. Ahí train se evalúa con las etiquetas alteradas y validation con etiquetas limpias.
+- Izquierda. Compara la accuracy de validation. El eje puede empezar por encima de cero y el rayado marca divergencia.
+- Derecha. Una **brecha** positiva, $a_{\text{train}}-a_{\text{validation}}$, puede señalar overfitting.
+- Con etiquetas alteradas en train, la brecha puede ser negativa porque validation conserva etiquetas limpias.
 
 ### celda: s19-figura-mira
 
-**Qué mirar.** ¿Se amontonan las barras cerca del tope? Una vez que el entrenamiento funciona, varios cambios pueden dar casi la misma accuracy. Entre las barras de abajo, busca corridas con un learning rate que dejó el ajuste estancado o redes con un cuello muy angosto. Las redes con activaciones que saturan también pueden quedar abajo si tuvieron pocos pasos para aprender. Ubica la CNN de §17 y compárala con los MLP de su mismo grupo de datos.
-
-En el grupo con etiquetas alteradas, busca una brecha más visible. Puede variar con la semilla y con el presupuesto de entrenamiento, igual que las posiciones en la figura. Diferencias pequeñas pueden deberse al azar de una corrida.
+Busca **resultados cercanos** entre las corridas con mayor accuracy.
+En las de abajo, ubica casos con learning rates extremos, activaciones saturadas o cuellos angostos.
+Compara la CNN con los MLP del mismo grupo. Con otra semilla pueden cambiar las diferencias pequeñas.
 
 ### celda: s19-movio-texto
 
-**Qué movió de verdad el error y qué no movió nada.** Una comparación junta corridas de la misma sección, con los mismos datos y el mismo presupuesto pedido. Entre las que terminaron sin divergir, la gráfica calcula el rango de accuracy de validation, $a_{\max} - a_{\min}$, la mayor accuracy menos la menor. Se agregan dos comparaciones que cruzan secciones, si ambas corridas existen: dropout de §15 contra su control de §10, y la CNN de §17 contra el MLP elegido en §16. Las barras se ordenan de menor a mayor rango. Si hubo divergencias, la anotación «(+… divergieron)» cuenta las corridas cuyo entrenamiento se interrumpió por una loss no finita.
-
-Un rango pequeño indica que los valores probados dieron errores parecidos. Uno grande indica que el error varió más entre las corridas. El rango depende de los valores probados y del presupuesto. Solo aparece una barra cuando hay al menos dos corridas comparables. Si todas menos una divergieron, la barra queda en cero y la anotación lo dice.
+El **rango de accuracy de validation** $a_{\max}-a_{\min}$ compara corridas de la misma sección, datos y presupuesto, con dos excepciones.
+Se incluyen dropout frente a su control y CNN frente al MLP elegido.
+La gráfica muestra el mayor rango arriba. La tabla empieza por el menor.
+La anotación de divergencia cuenta las corridas que quedaron fuera del cálculo.
 
 ### celda: s19-que-viste
 
-**Qué viste.** Estas son tendencias para buscar. Pueden aparecer solo algunas en tu ejecución.
+**Qué viste**
 
-- Dar con un learning rate que permita avanzar suele cambiar más el error que cambiar de optimizer o retocar la forma de la red. Normalizar la entrada cambia qué learning rate funciona (§5).
-- Cuando la red ya tiene capacidad suficiente, añadir parámetros puede aportar poco (§11). Con tamaños similares, varias formas pueden empatar. Un cuello muy angosto sí puede dificultar la tarea (§12).
-- En redes profundas, activaciones que saturan, como la sigmoide, pueden dejar gradientes pequeños y hacer lento el aprendizaje. Batch normalization puede facilitar el entrenamiento de una red profunda (§13–15).
-- Con etiquetas alteradas, busca el overfitting en las curvas. La loss de train puede seguir bajando mientras la de validation sube. Early stopping conserva el checkpoint elegido con la loss de validation (§10).
-- La CNN usa la estructura espacial de la imagen. Su ventaja, si aparece, se ve al compararla con los MLP del mismo grupo (§17).
-
-Muchas decisiones de diseño pueden acabar en empate. Eso también es un resultado.
+- Con SGD y el mismo learning rate, escalar los píxeles mejoró la accuracy de validation (§5). Estandarizarlos dio la mayor.
+- Los cuellos angostos rindieron peor (§12). En redes profundas, ReLU superó a sigmoide y batch normalization mejoró ReLU (§13–15).
+- Con etiquetas alteradas, early stopping y su control eligieron el mismo checkpoint (§10). Otras corridas pueden mostrar una brecha distinta.
+- CNN y MLP quedaron cerca (§17). Las diferencias entre learning rates fueron mucho mayores (§8).
 
 ### celda: s19-protocolo
 
-**Cómo separar train, validation y test.**
+- Train ajusta los pesos.
+- **Decide con validation.** Usa su loss para early stopping y sus métricas para elegir el modelo.
+- Mira test una sola vez, al final, para reportar el desempeño. Mostrarlo por epoch aquí fue didáctico.
 
-1. **Train** ajusta los pesos y sesgos.
-2. **Validation** guía todas las decisiones de selección. Usa su loss para elegir la mejor epoch y aplicar early stopping. Usa validation también para comparar learning rates, optimizers, tamaños y formas de red, y para elegir el modelo final. En este notebook, `mejor_epoch` se elige por loss de validation. La selección de `s16-elegido` y el orden de la tabla usan accuracy de validation.
-3. **Test** se mira una sola vez, al final, con el modelo ya elegido. Sirve para reportar una estimación del error en datos nuevos.
+#### Receta práctica para un MLP
 
-Aquí mostramos test en cada epoch solo para aprender a leer las tres curvas. Ninguna decisión del notebook usó test. En un proyecto real, mirar test en cada epoch está mal. Si consultas test repetidamente y eliges lo que mejor se ve, conviertes test en otra validation. Como vimos con el conjunto de prueba en la unidad 9, su error puede quedar sesgado a la baja.
-
-La última celda imprime el ID de cada corrida, una vez, y al final cuántos experimentos distintos hay. `s16-elegido` no cuenta aparte: §16 guarda el MLP elegido con un segundo nombre, que apunta a la misma corrida. La celda lista ese alias por separado.
+- Empieza con una o dos capas ocultas de ancho fijo o con un embudo suave. Crece solo si validation mejora.
+- Prioriza el ancho sobre la profundidad.
+- Mantén cada capa al menos tan ancha como el número de clases. Un cuello menor puede perder información. Recuerda el de dos unidades en §12.
+- Si sobreajusta, prueba early stopping, weight decay con AdamW o dropout antes de achicar la red.
+- Empieza con ReLU o GELU, Adam o AdamW, learning rate $10^{-3}$ y batch de 32 a 256.
+- Si la red es profunda, prueba batch normalization. Para imágenes, usa una CNN (§17).
