@@ -9,7 +9,7 @@
 
 ### celda: s03-punta-a-punta-explica
 
-- **Cada dígito ocupa una fila.** El notebook 01 usaba columnas, con $\mathbf z=\mathbf W\mathbf x+\mathbf b$. Aquí usamos `xb @ W.T + b`.
+- **Cada imagen ocupa una fila.** El notebook 01 usaba columnas, con $\mathbf z=\mathbf W\mathbf x+\mathbf b$. Aquí usamos `xb @ W.T + b`.
 - `CrossEntropyLoss` recibe logits y etiquetas enteras. Su loss es el promedio de $-\log \widehat p_{k,y_k}$ tras aplicar softmax.
 - `argmax(dim=1)` predice el dígito con mayor logit en cada fila. Con probabilidades uniformes, la loss sería $\log 10 \approx 2.30$.
 
@@ -28,9 +28,14 @@
 
 ### celda: s03-evaluar-explica
 
-- **`medir` calcula loss y accuracy sin gradientes**, en modo `eval()`. Dropout se apaga y batch normalization usa sus estadísticas acumuladas.
-- `crear_optimizer` aplica weight decay a matrices y filtros. `adam_l2` suma la penalización al gradiente y `adamw` aplica el decaimiento por separado.
-- `cargar(corrida, "mejor")` recupera el checkpoint elegido con validation. Usa `"ultima"` para recuperar el último.
+- **`medir` calcula loss y accuracy sin gradientes**. En `eval()`, dropout se apaga y batch normalization usa estadísticas acumuladas.
+- `cargar(corrida, "mejor")` recupera el checkpoint elegido con validation. Usa `"ultima"` para el último.
+- `crear_optimizer` aplica weight decay a matrices y filtros.
+
+| Optimizer | Qué es | Qué esperar | Curvas de pesos sin gradiente de datos (§9) |
+|---|---|---|---|
+| adam_l2 | L2 en el gradiente | Adam reescala la penalización | Caídas absolutas parecidas |
+| adamw | Decaimiento separado | Contracción proporcional | Caídas relativas iguales |
 
 ### celda: s03-entrenar-explica
 
@@ -46,8 +51,8 @@
 
 ### celda: s03-demo-explica
 
-**Ubica el punto de partida en la epoch 0.** En el otro panel, sigue la red desde los píxeles hasta los logits.
-Usa test una vez al final. Aquí se grafica por epoch solo para practicar la lectura de curvas.
+- **Ubica el punto de partida en la epoch 0.** En el otro panel, sigue la red desde los píxeles hasta los logits.
+- Usa test una vez al final. Aquí se grafica por epoch solo para practicar la lectura de curvas.
 
 ### celda: s03-que-viste
 

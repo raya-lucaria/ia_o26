@@ -2,45 +2,50 @@
 
 ## 14 · El gradiente por capa (avanzado)
 
-Lectura opcional. Puedes seguir con la §15.
-Con la red profunda de §13, comparamos **cómo cambian los gradientes y los pesos por capa**.
-Con SGD probamos sigmoide, ReLU y ReLU con batch normalization (BN).
-La sigmoide con Adam aparece en la tabla inicial y en los paneles de loss y cambio relativo.
+- Lectura opcional. Puedes seguir con la §15.
+- Con la red profunda de §13, comparamos **gradientes y cambios de pesos por capa**.
+- Adam con sigmoide aparece en la tabla inicial y en los paneles de loss y cambio relativo.
 
 ### celda: s14-que-medimos
 
-La **norma de Frobenius** mide la magnitud del gradiente de los pesos en cada capa.
-$\|\nabla_{\mathbf W^{(l)}}L_{\mathcal B}\|_F=\sqrt{\sum_{i,j}(\partial L_{\mathcal B}/\partial w_{ij}^{(l)})^2}$, donde $L_{\mathcal B}$ es la loss promedio del mini-batch.
-En las curvas de loss, $\log 10$ marca la referencia uniforme.
+- La **norma de Frobenius** mide la magnitud del gradiente de los pesos en cada capa.
+- $\|\nabla_{\mathbf W^{(l)}}L_{\mathcal B}\|_F=\sqrt{\sum_{i,j}(\partial L_{\mathcal B}/\partial w_{ij}^{(l)})^2}$, donde $L_{\mathcal B}$ es la loss promedio del mini-batch.
+- En las curvas de loss, $\log 10$ marca la referencia uniforme.
 
 ### celda: s14-apuesta
 
-**Apuesta.** ¿Dónde será menor el gradiente con sigmoide, en la primera capa o en la salida?
-Elige también una capa para ReLU o apuesta por normas parecidas.
+- **Apuesta.** ¿Dónde será menor el gradiente con sigmoide, en la primera capa o en la salida?
+- Elige también una capa para ReLU o apuesta por normas parecidas.
 
 ### celda: s14-apuesta-respuesta
 
-**Con sigmoide, el gradiente es menor cerca de la entrada.** Cada pendiente aporta un factor de hasta $\tfrac14$.
-Con ReLU, las neuronas activas dejan pasar su componente del gradiente y las normas quedan más parejas.
+- **Con sigmoide, el gradiente es menor cerca de la entrada.** Cada pendiente aporta un factor de hasta $\tfrac14$.
+- Con ReLU, las neuronas activas dejan pasar su componente del gradiente y las normas quedan más parejas.
 
 ### celda: s14-leer-norma
 
-**Compara la primera capa con la salida** en los tres paneles de SGD.
-La escala es logarítmica. La línea tenue muestra cada paso y la gruesa, una media móvil en escala logarítmica.
-Sigue las líneas para ver cómo cambian las normas durante la corrida.
+- **Compara la primera capa con la salida** en los tres paneles de SGD.
+- En escala logarítmica, la línea tenue muestra cada paso y la gruesa, la media móvil del logaritmo.
 
 ### celda: s14-norma-que-viste
 
-- **Con sigmoide, el gradiente se desvanece hacia la entrada** y la loss sigue cerca de $\log 10$.
-- Con ReLU sin BN, las normas suben al principio mientras baja la loss.
-- Con ReLU y BN, las normas bajan desde el inicio. La primera capa queda por encima de la salida.
+| Configuración con SGD | Qué esperar | En las curvas |
+|---|---|---|
+| Sigmoide | **Gradiente que se desvanece hacia la entrada** | Capas separadas y loss cerca de $\log 10$ |
+| ReLU sin BN | Gradientes más parejos | Normas suben al inicio y loss baja |
+| ReLU con BN | BN antes de ReLU | Normas bajan y la primera capa queda arriba |
 
 ### celda: s14-va-a-cero
 
-Con **los pesos congelados**, medimos los gradientes al inicio, a la mitad y al final.
-$\mathbf g_{\mathrm{completo}}=\nabla_\theta L(\theta)$ usa todo train y $\mathbf g_{\mathcal B}=\nabla_\theta L_{\mathcal B}(\theta)$ usa un mini-batch.
-La diferencia $\mathbf g_{\mathcal B}-\mathbf g_{\mathrm{completo}}$ es el ruido del gradiente.
-Reutilizamos los mismos mini-batches. Con ReLU sin BN, el aporte de cada ejemplo es independiente de sus acompañantes.
+**Pesos congelados** al inicio, a la mitad y al final, con los mismos mini-batches.
+
+| Gradiente | Qué mide | En la gráfica |
+|---|---|---|
+| $\mathbf g_{\mathrm{completo}}=\nabla_\theta L(\theta)$ | Todo train | Rombo |
+| $\mathbf g_{\mathcal B}=\nabla_\theta L_{\mathcal B}(\theta)$ | Un mini-batch | Cajas de normas |
+| $\mathbf g_{\mathcal B}-\mathbf g_{\mathrm{completo}}$ | Ruido | Cruz para la norma mediana |
+
+Con ReLU sin BN, el aporte de cada ejemplo es independiente de sus acompañantes.
 
 ### celda: s14-cero-que-viste
 
@@ -50,13 +55,15 @@ Reutilizamos los mismos mini-batches. Con ReLU sin BN, el aporte de cada ejemplo
 
 ### celda: s14-cociente
 
-El **cambio relativo de los pesos** es $\|\mathbf W^{(l)}_{t+1}-\mathbf W^{(l)}_t\|_F/\|\mathbf W^{(l)}_t\|_F$.
-En SGD sin momentum, el numerador es $\eta\|\nabla_{\mathbf W^{(l)}}L_{\mathcal B}\|_F$. Adam reescala el paso por parámetro.
-Las dos redes con sigmoide parten de los mismos pesos. En Adam, el panel mide el paso efectivo del optimizer.
-La línea gris en $10^{-3}$ sirve de referencia práctica.
+- El **cambio relativo de los pesos** es $\|\mathbf W^{(l)}_{t+1}-\mathbf W^{(l)}_t\|_F/\|\mathbf W^{(l)}_t\|_F$.
+- Las dos redes con sigmoide parten de los mismos pesos.
+- La línea gris en $10^{-3}$ sirve de referencia práctica.
 
 ### celda: s14-que-viste
 
-- Con sigmoide y SGD, las primeras capas cambian mucho menos que la salida. Con ReLU, los cambios son más parejos.
-- Hacia el final, **Adam mueve mucho más la primera capa de la sigmoide** que SGD en proporción a sus pesos.
-- Con Adam también baja la loss de la sigmoide. Con SGD se queda cerca de la referencia uniforme.
+| Optimizer con sigmoide | Qué mide el numerador | En las curvas |
+|---|---|---|
+| SGD sin momentum | $\eta\|\nabla_{\mathbf W^{(l)}}L_{\mathcal B}\|_F$ | Poco cambio cerca de la entrada y loss cerca de $\log 10$ |
+| Adam | Paso efectivo reescalado por parámetro | **Mayor cambio relativo en la primera capa que con SGD** al final y loss descendente |
+
+Con ReLU y SGD, los cambios entre capas fueron más parejos.

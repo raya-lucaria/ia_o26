@@ -2,9 +2,9 @@
 
 ## 15 · Batch normalization y dropout
 
-**El modo de la red cambia el comportamiento de ambas capas.**
-Batch normalization (BN) ajusta el centro y la escala de las preactivaciones. Dropout apaga activaciones al azar durante train.
-Las métricas se calculan en `eval()`, incluidas las de train.
+- **El modo de la red cambia el comportamiento de ambas capas.**
+- Batch normalization (BN) ajusta centro y escala. Dropout apaga activaciones al azar durante train.
+- Calculamos las métricas en `eval()`, incluidas las de train.
 
 ### celda: s15-bn-formula
 
@@ -15,55 +15,66 @@ Las métricas se calculan en `eval()`, incluidas las de train.
 
 ### celda: s15-preact-explica
 
-Las redes comparten los pesos iniciales y el batch de train. En `train()`, BN usa las estadísticas de ese batch.
-Un hook mide la media y la desviación estándar **justo antes de cada ReLU**.
-Predice cómo cambiará la escala entre capas con BN y sin ella.
+- Las redes comparten los pesos iniciales y el batch de train. En `train()`, BN usa las estadísticas de ese batch.
+- Un hook mide la media y la desviación estándar **justo antes de cada ReLU**.
+- Predice cómo cambiará la escala entre capas con BN y sin ella.
 
 ### celda: s15-preact-lee
 
-**Con BN, la media queda cerca de cero y la desviación estándar, cerca de uno** al inicializar.
-Sin BN, la desviación estándar disminuye con la profundidad.
-Al aprender $\gamma_i$ y $\beta_i$, cada neurona puede ajustar su escala y su centro.
+| Variante | Qué esperar al inicializar | En las barras por capa |
+|---|---|---|
+| Con BN | **Centro cerca de cero y escala cerca de uno** | Media cerca de cero y desviación estable |
+| Sin BN | Escala dependiente de la profundidad | Desviación decreciente |
+
+Cada neurona aprende su escala y centro con $\gamma_i$ y $\beta_i$.
 
 ### celda: s15-apuesta
 
-**Apuesta.** ¿Con qué combinación bajará más rápido la loss? ¿Alguna podría divergir?
-Elige entre learning rate bajo o alto, con o sin BN. Todas usan SGD sin momentum.
+- **Apuesta.** ¿Con qué combinación bajará más rápido la loss? ¿Alguna podría divergir?
+- Elige entre learning rate bajo o alto, con o sin BN. Todas usan SGD sin momentum.
 
 ### celda: s15-bn-lee
 
-**Compara con y sin BN dentro de cada fila.** Arriba está el learning rate menor y abajo el mayor.
-Sigue el descenso de la loss de validation y busca oscilaciones.
-Test se reporta una sola vez, al final. Aquí se grafica para practicar. El checkpoint se elige con validation.
+- **Compara la loss de validation** sin BN a la izquierda y con BN a la derecha.
+- Reporta test solo al final y elige el checkpoint con validation. Aquí se grafica test para practicar.
 
 ### celda: s15-apuesta-respuesta
 
-**Con el learning rate mayor, la loss bajó más rápido con BN.**
-Con el paso menor, las dos curvas bajaron a ritmos parecidos.
-Las cuatro corridas terminaron. En otra corrida, la red sin BN puede oscilar más o divergir con un paso grande.
+| Learning rate | Qué esperar | Sin BN · izquierda | Con BN · derecha |
+|---|---|---|---|
+| Menor · arriba | Pasos pequeños | Descenso parecido | Descenso parecido |
+| Mayor · abajo | Pasos grandes | Oscilación inicial | **Descenso más rápido** |
+
+- Las cuatro corridas terminaron.
+- En otra corrida, un paso grande sin BN puede producir más oscilaciones o divergencia.
 
 ### celda: s15-bn-eval
 
-**En `eval()`, BN usa las estadísticas guardadas.** En `train()`, usa las del batch y actualiza sus running averages.
-La actualización es $r\leftarrow(1-m)r+mv$, con $m$ el momentum de BN y $v$ la estimación del batch.
-Con el mismo checkpoint, compara los logits de una imagen al cambiar las imágenes que la acompañan.
-En `train()`, `BatchNorm1d` exige más de una observación para esta entrada.
+- **En `eval()`, BN usa las estadísticas guardadas.** En `train()`, usa las del batch y actualiza sus running averages.
+- La actualización es $r\leftarrow(1-m)r+mv$, con $m$ el momentum de BN y $v$ la estimación del batch.
+- Con el mismo checkpoint, compara los logits de una imagen al cambiar las imágenes que la acompañan.
+- En `train()`, `BatchNorm1d` exige más de una observación para esta entrada.
 
 ### celda: s15-dropout-que-es
 
-En `train()`, **dropout apaga cada activación con probabilidad $p$** y multiplica las restantes por $1/(1-p)$.
-Así conserva su valor esperado, $\mathbb E[\widetilde a]=(1-p)\frac{a}{1-p}=a$.
-En `eval()`, las activaciones pasan intactas. En esta red, `Dropout` va después de cada ReLU oculta.
+- En `train()`, **dropout apaga cada activación con probabilidad $p$** y multiplica las restantes por $1/(1-p)$.
+- Así conserva su valor esperado, $\mathbb E[\widetilde a]=(1-p)\frac{a}{1-p}=a$.
+- En `eval()`, las activaciones pasan intactas. En esta red, `Dropout` va después de cada ReLU oculta.
 
 ### celda: s15-dropout-lee
 
-- Ambas redes entrenan 80 epochs con un 20 % de etiquetas alteradas en train.
-- **La loss de validation del control subió tras su mínimo.** Con dropout, el repunte fue posterior y menor.
-- Al final, `repite_falsa` fue mayor en el control. Mide la fracción de etiquetas alteradas que reproduce cada red.
-- La comparación de etiquetas ocurre al final y deja abierto cuándo empezó la memorización.
+Ambas redes entrenan 80 epochs con un 20 % de etiquetas alteradas en train.
+
+| Variante | Qué esperar | En las curvas de validation y las brechas |
+|---|---|---|
+| Control | Más memorización | La loss repunta antes y las brechas finales son mayores |
+| Con dropout | **Menos memorización** | Repunte más tardío y menor, con brechas finales menores |
+
+`repite_falsa`, la fracción de etiquetas alteradas reproducidas al final, fue mayor en el control.
 
 ### celda: s15-que-viste
 
-- En `train()`, con BN cambiaron los logits al cambiar las imágenes acompañantes. Con dropout varió la probabilidad del dígito real.
-- **`model.eval()` hizo repetibles los logits y las probabilidades.** BN usó estadísticas guardadas y dropout dejó pasar todas las activaciones.
-- Con dropout, las brechas finales de loss y accuracy fueron menores. En otra corrida, la diferencia puede ser más pequeña.
+- En `train()`, los logits con BN cambiaron al variar las imágenes acompañantes.
+- Con dropout, la probabilidad del dígito real varió entre evaluaciones de la misma imagen en `train()`.
+- **`model.eval()` dio los mismos logits y probabilidades salvo redondeo.**
+- En otra corrida, dropout puede reducir menos las brechas de loss y accuracy.

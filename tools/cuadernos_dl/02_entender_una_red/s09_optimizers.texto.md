@@ -2,8 +2,15 @@
 
 ## 9 · Optimizers
 
-Sea $\mathbf g_t=\nabla_\theta L_{\mathcal B_t}(\theta_t)$ el gradiente del batch y $\eta$ el learning rate.
-**Los optimizers difieren en cómo usan los gradientes.** SGD usa el batch actual y momentum acumula gradientes.
+- Sea $\mathbf g_t=\nabla_\theta L_{\mathcal B_t}(\theta_t)$ el gradiente del batch y $\eta$ el learning rate.
+- **Los optimizers difieren en cómo usan los gradientes.** Comparten pesos iniciales, batches y epochs.
+
+| Optimizer | Qué hace | Qué buscar en la loss |
+| --- | --- | --- |
+| SGD | Usa el gradiente del batch | Ritmo de descenso |
+| Momentum | Acumula gradientes | Si acelera el descenso |
+| Adam | Promedia el gradiente y su cuadrado por parámetro | Si baja pronto |
+| AdamW | Separa el weight decay | Cuánto se aparta de Adam |
 
 $$
 \begin{aligned}
@@ -12,8 +19,6 @@ $$
 \theta_{t+1}=\theta_t-\eta\mathbf m_t.
 \end{aligned}
 $$
-
-Adam ajusta cada parámetro con promedios del gradiente y de su cuadrado.
 
 $$
 \begin{aligned}
@@ -26,26 +31,25 @@ $$
 \end{aligned}
 $$
 
-Los denominadores $1-\beta_i^t$ corrigen el arranque en cero. $\varepsilon$ evita dividir entre cero.
-AdamW añade weight decay por separado. Las cuatro corridas comparten parámetros iniciales, orden de batches y epochs.
+- Los factores $1-\beta_i^t$ corrigen el arranque en cero.
+- $\varepsilon$ evita dividir entre cero.
 
 ### celda: s09-apuesta
 
-**Apuesta.** ¿Quién terminará con menor loss de validation: SGD, SGD con momentum, Adam o AdamW?
-La primera figura muestra la loss de train, validation y test por epoch con fines didácticos (§6). Decide con validation y reserva test para el informe final.
+- **Apuesta.** ¿Menor loss final de validation: SGD, momentum, Adam o AdamW?
+- La primera figura incluye test con fines didácticos (§6). Decide con validation y reserva test para el informe final.
 
 ### celda: s09-apuesta-respuesta
 
-**SGD con momentum terminó con la menor loss de validation.** Mira el último punto del panel izquierdo de la segunda figura.
-Esa figura compara solo validation. Adam y AdamW quedaron cerca y SGD sin momentum quedó atrás.
-Con otra semilla, el orden de las curvas cercanas puede cambiar.
+- **Momentum terminó con la menor loss de validation.** Mira el último punto del panel izquierdo.
+- SGD quedó atrás. Adam y AdamW casi empataron. Otra semilla puede invertirlos.
 
 ### celda: s09-l2-vs-adamw
 
 ### Weight decay en Adam + L2 y AdamW
 
-La penalización $\mu\Omega(\theta)$ suma cuadrados de pesos, $\Omega(\theta)=\sum_l\lVert\mathbf W^{(l)}\rVert_F^2$.
-**Con L2, la penalización entra en los promedios de Adam.** Su derivada da `weight_decay` igual a $2\mu$.
+- **Con L2, la penalización entra en los promedios de Adam.** Su derivada da `weight_decay` igual a $2\mu$.
+- La penalización es $\mu\Omega(\theta)$, con $\Omega(\theta)=\sum_l\lVert\mathbf W^{(l)}\rVert_F^2$.
 
 $$
 \mathbf G_t\leftarrow\mathbf G_t+2\mu\mathbf W_t.
@@ -57,25 +61,33 @@ $$
 \mathbf W_{t+1}=(1-2\eta\mu)\mathbf W_t-\mathbf D_t.
 $$
 
-Prueba ambas reglas desde $(1,2)$ con gradiente de datos y momentos en cero, $\eta=0.1$ y $2\mu=0.1$.
-Con L2, la normalización produce un cambio casi igual en ambos pesos. AdamW les aplica el mismo factor.
+Prueba ambas desde $(1,2)$ con gradiente de datos y momentos en cero, $\eta=0.1$ y $2\mu=0.1$.
 
 ### celda: s09-paso-que-viste
 
-- Con Adam + L2, los pesos bajaron casi en paralelo y el cociente $w_2/w_1$ creció.
-- **AdamW encogió ambos pesos en la misma proporción.** Con gradiente de datos cero, el cociente quedó en $2$.
+**El decay cambia la proporción entre pesos según cómo se aplique.**
+
+| Regla | Qué esperar sin gradiente de datos | Qué se ve |
+| --- | --- | --- |
+| Adam + L2 | Restas casi iguales | Pesos casi paralelos y $w_2/w_1$ creciente |
+| AdamW | Mismo factor para ambos pesos | $w_2/w_1$ constante |
 
 ### celda: s09-mnist-intro
 
-En MNIST, las tres corridas comparten pesos iniciales, learning rate, orden de batches y epochs.
-Adam + L2 y AdamW reciben el mismo `weight_decay`. Adam sin decay sirve de control.
-
-**Apuesta.** ¿Cuál terminará con menor norma de los pesos: Adam + L2, AdamW o el control?
+- Mismos pesos iniciales, learning rate, batches y epochs.
+- Mismo `weight_decay` para Adam + L2 y AdamW. Control con Adam sin decay.
+- **Apuesta.** ¿Cuál terminará con menor norma de los pesos?
 
 ### celda: s09-que-viste
 
 ### Qué viste
 
-- **El mismo weight decay produjo efectos distintos.** Adam + L2 redujo la norma al inicio y luego la mantuvo baja. Tuvo la mayor loss de validation.
-- La norma creció casi igual con AdamW y con el control. El factor $1-2\eta\mu$ estaba cerca de uno.
-- Sus curvas de validation quedaron juntas. En otra corrida, el orden de sus losses finales puede cambiar.
+- **Con L2, la norma cayó al inicio y se mantuvo baja.**
+- AdamW quedó cerca del control. Su factor $1-2\eta\mu$ estaba cerca de uno.
+- En otra corrida pueden intercambiar posiciones.
+
+| Variante | Qué aplica | Norma y loss de validation |
+| --- | --- | --- |
+| Adam + L2 | L2 en el gradiente | Norma baja y loss más alta |
+| AdamW | Decay separado | Norma creciente y loss cercana al control |
+| Adam | Sin decay | Norma creciente y loss cercana a AdamW |

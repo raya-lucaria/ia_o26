@@ -2,21 +2,23 @@
 
 ## 17 · Una red convolucional, breve
 
-Un MLP recibe una lista de $784$ píxeles. Una CNN aprovecha su **vecindad con pesos compartidos**.
-Cada filtro recorre la imagen con una ventana de $3\times3$ y puede detectar el mismo trazo en distintas posiciones.
+- El MLP recibe una lista de $784$ píxeles.
+- La CNN aprovecha la **vecindad con pesos compartidos**.
+- Cada filtro de $3\times3$ puede detectar el mismo trazo en distintas posiciones.
 
 ![Un filtro recorriendo un dígito](ilustracion:filtro)
 *(Ilustración generada con gpt-image-2.)*
 
 ### celda: s17-filtro-lee
 
-Los recuadros enlazan cada ventana del dígito con su posición en el mapa de salida.
-El **filtro de bordes verticales** resta la tinta de la izquierda a la de la derecha. Aquí $b=0$.
+- Cada recuadro enlaza una ventana con su posición en el mapa de salida.
+- El **filtro de bordes verticales** resta la tinta izquierda de la derecha, con $b=0$.
 
 $$z_{rc}=\sum_{u=-1}^{1}\sum_{v=-1}^{1}w_{uv}\,x_{r+u,c+v}+b.$$
 
-Un borde de ceros de un píxel conserva el tamaño del mapa. PyTorch aplica los pesos tal como están escritos.
-En una CNN, backpropagation ajusta los pesos y sesgos de cada filtro.
+- Un borde de ceros de un píxel conserva el tamaño del mapa.
+- PyTorch aplica los pesos tal como están escritos.
+- Backpropagation ajusta los pesos y sesgos de cada filtro.
 
 ### celda: s17-arquitectura-lee
 
@@ -33,11 +35,15 @@ En una CNN, backpropagation ajusta los pesos y sesgos de cada filtro.
 
 ### celda: s17-curvas-lee
 
-El MLP está a la izquierda y la CNN a la derecha. Cada fila comparte escala vertical.
-**Busca overfitting** si la loss de train baja mientras la de validation sube.
-La tabla usa el checkpoint de menor loss de validation. La CNN copia la escala, el batch y el presupuesto.
-Revisa el optimizer y el learning rate de cada red antes de atribuir la diferencia a la arquitectura.
-Test por epoch es didáctico. En un proyecto, decide con validation y mira test una vez al final.
+| Red | Qué es | Qué esperar | Cómo se ve |
+|---|---|---|---|
+| MLP | Capas densas sobre píxeles aplanados | Aprende relaciones entre píxeles | Panel izquierdo |
+| CNN | Filtros locales compartidos | Detecta trazos en distintas posiciones | Panel derecho |
+
+- Cada fila comparte escala. **Busca overfitting** si baja la loss de train y sube la de validation.
+- La tabla usa el checkpoint de menor loss de validation.
+- Ambas redes comparten escala, batch y presupuesto. Cambian el optimizer y el learning rate.
+- Test por epoch es didáctico. En un proyecto, decide con validation y mira test una vez al final.
 
 ### celda: s17-filtros-lee
 
@@ -57,6 +63,5 @@ Test por epoch es didáctico. En un proyecto, decide con validation y mira test 
 
 ### celda: s17-apuesta-respuesta
 
-Debajo de la tabla se imprime CNN menos MLP. Aquí **la CNN ganó en accuracy** con menos parámetros.
-Su brecha final entre train y validation fue pequeña, como la del MLP.
-Con otra semilla puede haber empate o una ventaja para el MLP.
+- **La CNN ganó en accuracy** con menos parámetros y una brecha final pequeña, como la del MLP.
+- Con otra semilla puede haber empate o una ventaja para el MLP.

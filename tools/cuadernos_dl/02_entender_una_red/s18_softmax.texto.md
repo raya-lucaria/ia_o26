@@ -2,23 +2,23 @@
 
 ## 18 · Softmax y la loss
 
-La última capa lineal entrega un logit por dígito, $\mathbf z=\mathbf W^{(L)}\mathbf a^{(L-1)}+\mathbf b^{(L)}$.
-**Softmax convierte logits en probabilidades** que suman $1$.
+- La última capa lineal entrega un logit por dígito, $\mathbf z=\mathbf W^{(L)}\mathbf a^{(L-1)}+\mathbf b^{(L)}$.
+- **Softmax convierte logits en probabilidades** que suman $1$.
 
 $$\widehat y_c=\frac{e^{z_c}}{\sum_{j=0}^{9}e^{z_j}}.$$
 
-Sumar la misma constante a todos los logits deja intactas las probabilidades.
-Usamos el checkpoint elegido en §16. Si falta, recurrimos a la línea base de §4.
+- Sumar la misma constante a todos los logits conserva las probabilidades.
+- Usamos el checkpoint de §16 o, si falta, la línea base de §4.
 
 ### celda: s18-un-digito-mira
 
-**El argmax se conserva**. La barra más alta en cada panel corresponde a la misma clase.
-El naranja marca la clase real. El ejemplo busca un acierto con confianza entre $0.5$ y $0.9$.
-El cociente entre probabilidades es $e^{z_c-z_j}$. Una diferencia pequeña entre logits puede producir probabilidades muy distintas.
+- **El argmax se conserva** entre paneles.
+- El naranja marca la clase real de un acierto con confianza entre $0.5$ y $0.9$.
+- El cociente $e^{z_c-z_j}$ amplifica las diferencias entre logits.
 
 ### celda: s18-apuesta
 
-La temperatura $T>0$ divide los logits antes de aplicar softmax. Con $T=1$ recuperas las probabilidades originales.
+La temperatura $T>0$ divide los logits antes de aplicar softmax.
 
 $$\widehat y_c(T)=\frac{e^{z_c/T}}{\sum_{j=0}^{9}e^{z_j/T}}.$$
 
@@ -27,54 +27,66 @@ $$\widehat y_c(T)=\frac{e^{z_c/T}}{\sum_{j=0}^{9}e^{z_j/T}}.$$
 
 ### celda: s18-apuesta-respuesta
 
-**La predicción se conserva** al dividir por $T>0$. La accuracy queda igual.
-Al subir $T$, baja la confianza y sube la loss de este acierto. Si hay error, lee $\widehat y_y$.
-Con igual número de aciertos, la loss puede subir. En §6 aumentaron tanto los errores como su confianza media.
+- **La predicción y la accuracy se conservan** para $T>0$.
+- Al subir $T$, baja la confianza y sube la loss de este acierto.
+- Para un error, sigue la probabilidad de la clase real, $\widehat y_y$.
 
 ### celda: s18-cross-entropy-texto
 
-La **cross-entropy** mide $-\log\widehat y_y$, con logaritmo natural y $y$ como clase verdadera.
-La loss crece sin límite cuando $\widehat y_y$ se acerca a cero. Con probabilidades uniformes vale $\log 10\approx2.30$.
+- La **cross-entropy** mide $-\log\widehat y_y$ con logaritmo natural y clase real $y$.
+- La loss crece sin límite si $\widehat y_y$ tiende a cero.
+- Con probabilidades uniformes vale $\log 10\approx2.30$.
 
 $$L(\theta)=\frac{1}{n}\sum_{k=1}^{n}-\log\widehat y_{k,y_k}.$$
 
-Con etiquetas enteras, este promedio es la negative log-likelihood por ejemplo.
-`CrossEntropyLoss` recibe logits y combina `log_softmax` con `NLLLoss`.
+Con etiquetas enteras, el promedio es la negative log-likelihood por ejemplo.
 
 ### celda: s18-cross-entropy-mira
 
-**La loss penaliza mucho los errores confiados**. A la izquierda, la loss se dispara cuando $\widehat y_y$ cae hacia cero.
-A la derecha, la mayoría de ejemplos tiene poca loss y unos pocos forman una cola de loss alta.
-El eje de conteos es logarítmico. La línea punteada señala la referencia $\log 10$.
-La loss puede subir con igual número de aciertos. En §6 aumentaron tanto los errores como su confianza media.
+- **Los errores confiados encarecen la loss**. La curva se dispara al acercarse $\widehat y_y$ a cero.
+- El histograma usa conteos logarítmicos. La línea punteada marca $\log 10$.
+- La loss puede subir con igual número de aciertos. En §6 aumentaron los errores y su confianza media.
+
+| Cálculo | Qué hace | Qué se ve en la gráfica |
+|---|---|---|
+| A mano | Promedia $-\log\widehat y_y$ | Línea discontinua del promedio |
+| `CrossEntropyLoss` / `evaluar` | Calcula la loss desde logits | Mismo promedio |
+| `NLLLoss` | Promedia desde `log_softmax` | Mismo promedio |
 
 ### celda: s18-estabilidad-texto
 
-En `float32`, $e^{-1000}$ se redondea a cero por underflow y $e^{89}$ desborda a infinito por overflow.
-Para logits $(0,-1000)$ y clase real $1$, la loss exacta es $1000+\log(1+e^{-1000})\approx1000$.
-**Apuesta.** ¿Qué filas de la tabla darán resultados finitos y cuáles darán infinitos?
+- En `float32`, $e^{-1000}$ cae a cero por underflow y $e^{89}$ desborda a infinito.
+- Para logits $(0,-1000)$ y clase real $1$, la loss es $1000+\log(1+e^{-1000})\approx1000$.
+- **Apuesta.** ¿Qué filas de la tabla darán resultados finitos y cuáles darán infinitos?
 
 ### celda: s18-estabilidad-mira
 
-Softmax por separado redondeó la probabilidad real a cero. Su logaritmo dio $-\infty$.
-**Log-sum-exp** resta $m=\max_j z_j$ antes de calcular las exponenciales.
+**Log-sum-exp** resta $m=\max_j z_j$ para que la mayor exponencial valga $1$.
 
 $$\log\widehat y_c=z_c-m-\log\sum_j e^{z_j-m}.$$
 
-La exponencial mayor vale $1$, así que la suma es finita y vale al menos $1$ para logits finitos.
-Usa `log_softmax` para log-probabilidades y pasa los logits directamente a `CrossEntropyLoss` para la loss.
+| Cálculo | Qué hace | Qué se ve en la tabla |
+|---|---|---|
+| `softmax` → `log` → `NLLLoss` | Redondea la probabilidad real a cero | Log-probabilidad $-\infty$, loss infinita |
+| `log_softmax` → `NLLLoss` | Calcula log-probabilidades con log-sum-exp | Loss finita |
+| `CrossEntropyLoss` | Recibe logits y combina ambos pasos | Misma loss finita |
 
 ### celda: s18-arquitectura-texto
 
-A la izquierda ves el ancho de la entrada, las capas ocultas y la salida.
-En el modelo impreso puedes localizar la normalización y la activación de cada capa oculta.
-A la derecha, **los logits se convierten en probabilidades**. El naranja marca la clase real.
+- A la izquierda, compara el ancho de la entrada, las capas ocultas y la salida.
+- El modelo impreso identifica la normalización y la activación de cada capa oculta.
+- A la derecha, **los logits se convierten en probabilidades**. El naranja marca la clase real.
 
 ### celda: s18-que-viste
 
 **Qué viste**
 
-- Softmax conservó el orden de los logits. La barra ganadora destacó más en probabilidades.
-- Al subir la temperatura, la distribución se aplanó y la loss del acierto subió con la misma predicción.
-- La loss de validation se concentró cerca de cero, con una cola de ejemplos costosos.
-- El cálculo directo produjo infinitos o NaN con logits extremos. Log-sum-exp dio resultados finitos en ambos ejemplos.
+- Softmax mantuvo la clase ganadora y acentuó su ventaja.
+- La loss de validation concentró muchos ejemplos cerca de cero y pocos en la cola.
+- Con logits extremos, el cálculo directo dio infinitos o NaN y log-sum-exp dio valores finitos.
+
+| Temperatura | Qué hace | Qué esperar en este acierto | Cómo se ve |
+|---|---|---|---|
+| $T<1$ | Amplía diferencias entre logits | Más confianza, menor loss | Barra ganadora más alta |
+| $T=1$ | Conserva los logits | Probabilidades originales | Panel de referencia |
+| $T>1$ | Reduce diferencias entre logits | Menos confianza, mayor loss | Barras más parejas |
