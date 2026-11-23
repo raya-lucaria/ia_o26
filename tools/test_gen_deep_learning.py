@@ -29,6 +29,8 @@ NS = "{http://www.w3.org/2000/svg}"
 IDS_DEL_PLAN = {
     "dl-red-2-3-2-1", "dl-peso-wij", "dl-matriz-w", "dl-composicion",
     "dl-retropropagacion", "dl-ciclo", "dl-curvas-rmse",
+    # el boton de Colab de la clase 2 (imagen dentro de un enlace)
+    "dl-abrir-colab",
 }
 
 
