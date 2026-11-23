@@ -10,7 +10,7 @@ tools/cuadernos_dl/02_entender_una_red/. Esta prueba ata las dos cosas:
   generador y borra la metadata de la cuenta de Colab (sintético);
 - el notebook comiteado tiene el badge, metadata de GPU T4, las mismas
   celdas que el generador (ignorando salidas), ninguna nota, cada imagen con
-  su aviso y su crédito en ilustraciones.json, y pesa menos de 8 MB;
+  su aviso y su crédito en ilustraciones.json, y pesa menos de 11 MB;
 - si trae salidas: ninguna es un error, la tabla maestra no repite IDs y la
   línea «EXPERIMENTOS COMPLETOS: <n>» está;
 - la prueba de humo corre todo el código con RAPIDO=1 en CPU (se salta sin
@@ -35,7 +35,7 @@ import gen_cuaderno_entender_red as gen
 
 NB = gen.DESTINO
 SECCIONES = range(20)
-TOPE = 8 * 1024 * 1024
+TOPE = 11 * 1024 * 1024  # la corrida en T4 con 73 figuras pesa ~10 MB; el tope del repo es 12 MB
 ID = re.compile(r"^s\d\d-[a-z0-9-]+$")
 EXPERIMENTOS = re.compile(r"EXPERIMENTOS COMPLETOS:\s*(\d+)")
 
