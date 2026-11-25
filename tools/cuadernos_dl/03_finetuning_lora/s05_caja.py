@@ -270,15 +270,21 @@ def _pipe():
 
 # %% [codigo] s05-generar-adaptador
 def _quitar_del_pipe(nombre):
-    if _PIPE is not None and nombre in _EN_PIPE:
+    if _PIPE is not None and nombre in _adaptadores(_PIPE.unet):
         _PIPE.unet.delete_adapters(nombre)
-        _EN_PIPE.discard(nombre)
+    _EN_PIPE.discard(nombre)
+
+
+def _adaptadores(unet):
+    """Nombres de adaptadores que el UNet tiene de verdad (sin peft: ninguno)."""
+    return set(getattr(unet, "peft_config", None) or {})
 
 
 def _activar(nombre):
     """Pone el adaptador `nombre` (o ninguno, si es None) en el UNet del pipe.
     Un adaptador QLoRA se aplica sobre el UNet fp16, no sobre el cuantizado."""
     unet = _pipe().unet
+    _EN_PIPE.intersection_update(_adaptadores(unet))   # sincroniza con el UNet
     if nombre is None:
         if _EN_PIPE:
             unet.disable_adapters()
@@ -302,6 +308,8 @@ def generar(nombre, prompts=PROMPT, semillas=None, escala=1.0):
     semillas = P["semillas"] if semillas is None else list(semillas)
     _activar(nombre)
     pipe, salida = _pipe(), []
+    # sin adaptador no se pasa scale: diffusers nuevo exige peft_config
+    extra = {} if nombre is None else {"cross_attention_kwargs": {"scale": escala}}
     for p in prompts:                # lotes de 2 semillas: cabe en la T4
         for i in range(0, len(semillas), 2):
             lote = semillas[i:i + 2]
@@ -309,7 +317,7 @@ def generar(nombre, prompts=PROMPT, semillas=None, escala=1.0):
             salida += pipe([p] * len(lote), generator=gens,
                            num_inference_steps=2 if RAPIDO else 20,
                            height=P["res"], width=P["res"],
-                           cross_attention_kwargs={"scale": escala}).images
+                           **extra).images
     return salida
 
 # %% [texto] s05-ver-explica
