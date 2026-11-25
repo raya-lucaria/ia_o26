@@ -2,9 +2,9 @@
 id: deep-learning
 title: Aprendizaje profundo
 nav_title: Aprendizaje profundo
-summary: "Redes neuronales profundas como composición de funciones con parámetros: su notación, el pase hacia adelante, la retropropagación y el descenso de gradiente, con la regularización como lagrangeano; y luego, en un notebook de Colab, qué cambia el error al entrenar una red de verdad."
+summary: "Redes neuronales profundas como composición de funciones con parámetros: su notación, el pase hacia adelante, la retropropagación y el descenso de gradiente, con la regularización como lagrangeano; y luego, en un notebook de Colab, qué cambia el error al entrenar una red de verdad; y, en otro, cómo ajustar un modelo generativo con LoRA."
 status: ready
-estimated_time: 305m
+estimated_time: 425m
 tags: [deep-learning, redes-neuronales]
 prerequisites: [aprendizaje-maquina]
 ---
@@ -24,10 +24,12 @@ Los gradientes salen de la regla de la cadena.
 |---|---|---|---:|
 | 1 · Redes neuronales | Notación, composición, pérdida y lagrangeano, retropropagación y descenso | 01 | 185 |
 | 2 · Entender una red | Entrenar en MNIST cambiando un factor a la vez: batch, learning rate, optimizers, early stopping, tamaño, activaciones, batch normalization y dropout | 02 | 120 |
+| 3 · Fine-tuning con LoRA | Stable Diffusion aprende un estilo: fine-tuning completo, LoRA, QLoRA y rangos; cuánto cambia el modelo, memorización y olvido | 03 | 120 |
 :::
 
 - [[dl-clase-1-redes-neuronales|Clase 1 · Redes neuronales: la formulación matemática]]
 - [[dl-clase-2-entender-una-red|Clase 2 · Entender una red entrenándola]]: la clase es un notebook de Colab.
+- [[dl-clase-3-finetuning-lora|Clase 3 · Fine-tuning generativo con LoRA]]: la clase es un notebook de Colab.
 
 ## Las hojas de consulta
 

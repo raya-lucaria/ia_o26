@@ -31,6 +31,8 @@ IDS_DEL_PLAN = {
     "dl-retropropagacion", "dl-ciclo", "dl-curvas-rmse",
     # el boton de Colab de la clase 2 (imagen dentro de un enlace)
     "dl-abrir-colab",
+    # y el de la clase 3
+    "dl-abrir-colab-3",
 }
 
 
