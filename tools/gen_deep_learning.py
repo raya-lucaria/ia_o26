@@ -870,11 +870,21 @@ def _arco(cx, cy, r, desde, hasta):
 
 
 def dl_abrir_colab():
+    return _boton_colab(2, "Entender una red entrenándola", "una red entrenándola")
+
+
+def dl_abrir_colab_3():
+    return _boton_colab(3, "Fine-tuning generativo con LoRA",
+                        "generativo con LoRA")
+
+
+def _boton_colab(n, titulo, cola):
     ancho, alto = 900, 225
-    aria = ("Botón grande para abrir en Google Colab el notebook 2, «Entender "
-            "una red entrenándola»: un símbolo de reproducir, el texto «Abrir "
+    cabeza = titulo[: len(titulo) - len(cola)].strip()
+    aria = (f"Botón grande para abrir en Google Colab el notebook {n}, «{cabeza} "
+            f"{cola}»: un símbolo de reproducir, el texto «Abrir "
             "en Colab» en amarillo y dos anillos naranjas entrelazados.")
-    p = [marco(ancho, alto, aria, "Abrir en Colab el notebook 2",
+    p = [marco(ancho, alto, aria, f"Abrir en Colab el notebook {n}",
                mostrar=(600, 150))]
     p.append(
         '<defs><linearGradient id="dl-colab-relleno" x1="0" y1="0" x2="0" '
@@ -908,7 +918,7 @@ def dl_abrir_colab():
              'stroke-linejoin="round"/>')
     p.append(texto(tx + 64, ty + 21, "ABRIR EN COLAB", AMARILLO, 58,
                    anclaje="start", peso="800"))
-    p.append(texto(tx + 4, ty + 70, "Notebook 2 · Entender una red entrenándola",
+    p.append(texto(tx + 4, ty + 70, f"Notebook {n} · {titulo}",
                    TEXTO, 25, anclaje="start", peso="600"))
     p.append(cierre())
     return "".join(p)
@@ -923,6 +933,7 @@ DIAGRAMAS = {
     "dl-ciclo": dl_ciclo,
     "dl-curvas-rmse": dl_curvas_rmse,
     "dl-abrir-colab": dl_abrir_colab,
+    "dl-abrir-colab-3": dl_abrir_colab_3,
 }
 
 
