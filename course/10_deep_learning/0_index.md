@@ -11,6 +11,18 @@ prerequisites: [aprendizaje-maquina]
 
 # Aprendizaje profundo
 
+> [!WARNING]
+> **▶▶ CLASE 3 · FINE-TUNING CON LoRA: ÁBRELA EN COLAB ◀◀**
+>
+> [![Abrir el notebook 3 en Colab](_assets/dl-abrir-colab-3.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)
+>
+> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)
+>
+> **[👉 Abrir `03_finetuning_lora.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)** · En Colab elige **T4 GPU** y luego **Ejecutar todas**.
+
+> [!TIP]
+> **Notebook de la clase 2:** [![Abrir el notebook 2 en Colab](_assets/dl-abrir-colab.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/02_entender_una_red.ipynb)
+
 Esta unidad continúa [[aprendizaje-maquina|la de aprendizaje de máquina]].
 La pregunta es la misma: cómo ajustar un modelo a datos sin engañarse.
 Lo que cambia es el modelo: una función larga, hecha de capas, con muchos parámetros.
