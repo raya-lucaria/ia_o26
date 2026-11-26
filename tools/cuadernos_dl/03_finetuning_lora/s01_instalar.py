@@ -1,11 +1,11 @@
-# §1 · Instalar: MODO, RAPIDO, paquetes que falten, GPU, constantes y semillas.
-# Define MODO, LARGO, RAPIDO, DEVICE, DTYPE, MODELO, MODELO_CLIP, DATASET,
-# PROMPT, COLORES, semilla(s) y el diccionario P de tamaños por modo.
+# §1 · Instalar y configurar: MODO, paquetes que falten, GPU, tamaños, semillas.
+# Define MODO, LARGO, RAPIDO, DEVICE, DTYPE, CUDA, MODELO, MODELO_CLIP,
+# COLORES, semilla(s) y el diccionario P de tamaños por modo.
 
 # %% [texto] s01-intro
 
 # %% [codigo] s01-modo
-MODO = "corto"   # "corto" (≈ 30 min en T4) o "largo" (≈ 75 min, todo lo ➕)
+MODO = "corto"   # "corto" (≈ 20–25 min en una T4) o "largo" (≈ 50–60 min)
 LARGO = MODO == "largo"
 
 # Instala solo lo que falta; no actualiza lo que Colab ya trae.
@@ -13,13 +13,8 @@ import importlib.util
 import subprocess
 import sys
 
-import torch
-
 FALTAN = [p for p in ["diffusers", "peft", "accelerate", "transformers"]
           if importlib.util.find_spec(p) is None]
-# bitsandbytes (4 bits, QLoRA) solo funciona con GPU de NVIDIA.
-if torch.cuda.is_available() and importlib.util.find_spec("bitsandbytes") is None:
-    FALTAN.append("bitsandbytes")
 if FALTAN:
     print("Instalando:", ", ".join(FALTAN))
     subprocess.run([sys.executable, "-m", "pip", "install", "-q", *FALTAN],
@@ -37,17 +32,17 @@ import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import torch
 import diffusers
 import peft
 import transformers
-import huggingface_hub
 
-# RAPIDO=1: prueba local en CPU con un Stable Diffusion diminuto (segundos).
+# RAPIDO=1: prueba local en CPU con modelos diminutos (sus imágenes son ruido).
 RAPIDO = os.environ.get("RAPIDO") == "1"
 HAY_GPU = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if HAY_GPU and not RAPIDO else "cpu")
-# fp16 en la GPU (la T4 no tiene bf16); fp32 en CPU.
-DTYPE = torch.float16 if DEVICE.type == "cuda" else torch.float32
+CUDA = DEVICE.type == "cuda"
+DTYPE = torch.float16 if CUDA else torch.float32   # la T4 no tiene bf16
 
 if not HAY_GPU and not RAPIDO:
     print("=" * 72)
@@ -58,14 +53,8 @@ if not HAY_GPU and not RAPIDO:
     print("=" * 72)
 
 for nombre, mod in [("torch", torch), ("diffusers", diffusers),
-                    ("peft", peft), ("transformers", transformers),
-                    ("huggingface_hub", huggingface_hub)]:
-    print(f"{nombre:16s}{mod.__version__}")
-if importlib.util.find_spec("bitsandbytes") is not None:
-    import bitsandbytes
-    print(f"{'bitsandbytes':16s}{bitsandbytes.__version__}")
-else:
-    print(f"{'bitsandbytes':16s}— (sin GPU: QLoRA se saltará)")
+                    ("peft", peft), ("transformers", transformers)]:
+    print(f"{nombre:14s}{mod.__version__}")
 print("DEVICE =", DEVICE, "· DTYPE =", DTYPE, "· RAPIDO =", RAPIDO)
 if HAY_GPU:
     props = torch.cuda.get_device_properties(0)
@@ -74,32 +63,34 @@ if HAY_GPU:
 # %% [texto] s01-constantes-explica
 
 # %% [codigo] s01-constantes
-# El modelo base y el modelo de CLIP que mide las imágenes.
+# El modelo que ajustamos y el CLIP que mide las imágenes.
 if RAPIDO:
     MODELO = "hf-internal-testing/tiny-stable-diffusion-pipe"
     MODELO_CLIP = "hf-internal-testing/tiny-random-CLIPModel"
 else:
     MODELO = "stable-diffusion-v1-5/stable-diffusion-v1-5"
     MODELO_CLIP = "openai/clip-vit-base-patch32"
-DATASET = "ComputerVisionAnimeProject/AnimeFaceColorization"
-PROMPT = "an anime face"      # el mismo caption para todas las caras
 
-# Tamaños por modo. pasos = actualizaciones del UNet por corrida.
+# Tamaños por modo. pasos = actualizaciones del adaptador.
 if RAPIDO:
-    P = dict(n_personajes=4, n_por_personaje=4, res=32, batch=2, pasos=3,
-             pasos_control=4, val_cada=1, n_val_ruido=2, semillas=[0, 1])
+    P = dict(res=32, max_imagenes=60, demo_personajes=0, demo_por_personaje=0,
+             rango=8, lr=1e-4, batch=2, pasos=4, val_cada=2, n_val_ruido=2,
+             semillas=[0, 1], n_gen=3, pasos_inferencia=2)
 elif LARGO:
-    P = dict(n_personajes=40, n_por_personaje=30, res=512, batch=4,
-             pasos=400, pasos_control=800, val_cada=50, n_val_ruido=16,
-             semillas=[0, 1, 2, 3, 4, 5])
+    P = dict(res=512, max_imagenes=3000, demo_personajes=40,
+             demo_por_personaje=15, rango=8, lr=1e-4, batch=4, pasos=1200,
+             val_cada=100, n_val_ruido=16, semillas=[0, 1, 2, 3], n_gen=16,
+             pasos_inferencia=30)
 else:
-    P = dict(n_personajes=20, n_por_personaje=20, res=512, batch=4,
-             pasos=150, pasos_control=300, val_cada=30, n_val_ruido=8,
-             semillas=[0, 1, 2, 3])
+    P = dict(res=512, max_imagenes=1000, demo_personajes=20,
+             demo_por_personaje=10, rango=8, lr=1e-4, batch=4, pasos=400,
+             val_cada=50, n_val_ruido=8, semillas=[0, 1], n_gen=8,
+             pasos_inferencia=20)
 display(pd.Series(P, name="valor").to_frame())
 
-# Un color fijo por conjunto, igual que en el notebook 02.
-COLORES = {"train": "#1f77b4", "validation": "#ff7f0e", "test": "#2ca02c"}
+# Un color fijo por conjunto, como en los notebooks 1 y 2.
+COLORES = {"train": "#1f77b4", "validation": "#ff7f0e", "test": "#2ca02c",
+           "base": "#7f7f7f", "LoRA": "#9467bd"}
 
 
 def semilla(s: int):

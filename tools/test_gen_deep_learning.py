@@ -33,6 +33,7 @@ IDS_DEL_PLAN = {
     "dl-abrir-colab",
     # y el de la clase 3
     "dl-abrir-colab-3",
+    "dl-abrir-colab-4",
 }
 
 

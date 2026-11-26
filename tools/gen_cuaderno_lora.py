@@ -1,4 +1,5 @@
-"""Arma el notebook 03 de deep learning, «Fine-tuning generativo con LoRA».
+"""Arma el notebook 03 de deep learning, «Fine-tuning de imágenes con LoRA:
+tu dataset».
 
 Envoltorio de tools/gen_cuaderno_entender_red.py: el mismo formato de
 fuentes (un par sNN_<slug>.py + sNN_<slug>.texto.md por sección, aquí en

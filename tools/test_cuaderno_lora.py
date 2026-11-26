@@ -1,4 +1,5 @@
-"""El notebook 03 «Fine-tuning generativo con LoRA» sale de su generador y está sano.
+"""El notebook 03 «Fine-tuning de imágenes con LoRA: tu dataset» sale de su
+generador y está sano.
 
 course/10_deep_learning/_assets/03_finetuning_lora.ipynb sale de
 tools/gen_cuaderno_lora.py (envoltorio del generador del notebook 02) a
@@ -15,7 +16,7 @@ propio del 03:
 - el notebook comiteado, si existe, tiene las mismas celdas que el
   generador (ignorando salidas) y pesa menos de 11 MB.
 
-Mientras falte alguna sección s00…s13, las pruebas sobre las fuentes reales
+Mientras falte alguna sección s00…s08, las pruebas sobre las fuentes reales
 se saltan con un mensaje que dice cuáles faltan.
 """
 import json
@@ -27,7 +28,7 @@ import gen_cuaderno_entender_red as gen02
 import gen_cuaderno_lora as gen
 
 NB = gen.DESTINO
-SECCIONES = range(14)
+SECCIONES = range(9)
 TOPE = 11 * 1024 * 1024  # mismo tope que el notebook 02; el del repo es 12 MB
 
 
