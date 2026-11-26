@@ -2,33 +2,32 @@
 
 ## 02 · Tu zip
 
-**Dónde subirlo.** El zip es el de la tarea (`texto.zip`: `datos.jsonl`, `prompts.txt`, `LEEME.md` en la raíz).
+Empaqueta `datos.jsonl`, `prompts.txt` y `LEEME.md` en la raíz de `texto.zip`. Cada línea de `datos.jsonl` lleva un `prompt`, la entrada al modelo, y un `completion`, la respuesta esperada.
 
-1. Abre el panel 📁 **Archivos**, a la izquierda de Colab.
-2. **Arrastra** tu `texto.zip` adentro y espera a que termine de subir (el círculo de abajo se llena).
-3. Ejecuta. La celda lo encuentra sola en `/content`.
+| Dónde está tu zip | Qué haces |
+|---|---|
+| En tu computadora | Arrástralo al panel **📁 Archivos** de Colab y espera a que termine la carga. |
+| En Google Drive | Descomenta las líneas de Drive y ajusta la ruta en `RUTA_ZIP`. |
+| Si falla el arrastre | Descomenta la línea con `files.upload()` para abrir el selector de archivos. La ejecución espera a que elijas el zip. |
 
-Si pesa mucho, súbelo a tu Drive y quita los `#` de las líneas de Drive en la celda. Si tu zip se llama distinto, escribe su ruta en `RUTA_ZIP`.
+Con `RUTA_ZIP = ""`, el cuaderno busca primero `texto.zip` en `/content` y en la carpeta actual. También reconoce otros nombres si el zip trae `datos.jsonl` en la raíz. Si tienes varios zips, indica cuál usar en `RUTA_ZIP`. Si encuentra un zip de imágenes como entrada, te dirige al notebook 3.
 
-**Sin zip no pasa nada:** la celda arma `texto_demo.zip` en el mismo formato, con `P["n_demo"]` ejemplos de `b-mc2/sql-create-context` (1,000 en modo corto, 3,000 en largo) (una tabla y una pregunta → la consulta SQL). Es una buena tarea para ver el cambio: las respuestas son cortas y se pueden comparar letra por letra.
-
-**Si subes un zip de imágenes** a este notebook, la celda se detiene y te da el enlace al notebook 3.
+Si dejas la ruta vacía y la búsqueda no encuentra un zip de texto ni de imágenes, la celda crea `texto_demo.zip` con una muestra de `b-mc2/sql-create-context`. Cada entrada trae el esquema de las tablas y una pregunta. La respuesta esperada es una consulta SQL.
 
 ### celda: s02-revisar-explica
 
-- Esta es **la misma función** de la página de la tarea, copiada sin cambios. Imprime `OK` o se detiene diciendo qué está mal: arréglalo en tu zip, vuelve a subirlo y ejecuta otra vez.
-- Después se leen los tres archivos: la ficha `LEEME.md`, los ejemplos y los prompts de prueba.
-- **Saltos de línea en `prompts.txt`:** cada línea es un prompt. Si tu prompt lleva saltos de línea (como el demo: `Tablas: …` y luego `Pregunta: …`), escríbelos como `\n`, con dos caracteres; el notebook los convierte.
+`revisar_zip` es la función de la tarea. Comprueba los archivos obligatorios, la cantidad de prompts y ejemplos, las llaves de cada ejemplo y que haya un completion. Si falla, corrige lo que indique el mensaje, vuelve a subir el zip y ejecuta la sección 02.
 
-**Cómo leer la tabla de largos:** si el máximo de `prompt` + `completion` pasa de ≈ 2,000 caracteres (≈ 500 tokens), esos ejemplos se cortan en §05 y su final no se aprende.
+La celda lee la ficha, muestra ejemplos y resume la longitud de prompts y completions en **caracteres**. Úsala para detectar entradas largas. El recorte en la sección 05 se decide en **tokens** y también cuenta las marcas de la plantilla de chat.
+
+En `prompts.txt`, escribe un prompt por línea. Si un prompt necesita un salto de línea interno, escribe los dos caracteres `\n`. Al leer el archivo, la celda los convierte en un salto de línea.
 
 ### celda: s02-split-explica
 
-| Parte | Cuánto | Para qué |
+| Split | Proporción aproximada | Para qué se usa |
 |---|---:|---|
-| train | 80 % | lo único que ve el entrenamiento |
-| validation | 10 % | medir mientras decides: curvas, métricas, la perilla $\lambda$ |
-| test | 10 % | **una sola vez**, al final (§08) |
+| **Train** | 80 % | Calcular los gradientes y actualizar el adaptador. |
+| **Validation** | 10 % | Seguir las curvas, comparar respuestas y decidir ajustes. |
+| **Test** | 10 % | Medir el resultado final **una sola vez**, en la sección 08. |
 
-- La semilla 0 fija qué ejemplo cae en cada parte. Si vuelves a correr, los conjuntos son los mismos.
-- **¿Por qué el test una sola vez?** Cada vez que miras el test y cambias algo por lo que viste, el test se vuelve parte del entrenamiento y deja de medir lo que el modelo hace con datos nuevos.
+El reparto baraja las filas con semilla fija. Con el mismo archivo y orden de filas, se repite el mismo split. Revisa los duplicados antes de empaquetar, porque dos filas iguales pueden quedar en splits distintos.

@@ -2,36 +2,33 @@
 
 ## 04 · LoRA por dentro
 
-- **Qué vas a ver:** la fórmula de LoRA y, medido en **tu** modelo, cuántos parámetros entrenas y cuánto pesa lo que te llevas.
-- Las cuentas de esta sección son exactas; los números los imprime el código.
+LoRA (*Low-Rank Adaptation*) congela los pesos base y aprende una corrección en las capas lineales elegidas. En esta sección instalas el adaptador, cuentas sus parámetros y compruebas cómo se comporta antes del primer paso.
 
 ### celda: s04-mates
 
-**LoRA (Low-Rank Adaptation).** Cada capa lineal elegida cambia así:
+$$
+W=W_0+\Delta W,\qquad \Delta W=\frac{\alpha}{r}BA.
+$$
 
-$$W=W_0+\Delta W,\qquad \Delta W=\frac{\alpha}{r}\,BA,\qquad B\in\mathbb R^{d\times r},\; A\in\mathbb R^{r\times k},\; r\ll\min(d,k).$$
-
-- $W_0\in\mathbb R^{d\times k}$ queda **congelada**; solo se entrenan $A$ y $B$. Aquí $r=8$ y $\alpha=16$, así que $\frac{\alpha}{r}=2$.
-- **Forward sin formar $\Delta W$:** $h=W_0x+\frac{\alpha}{r}\,B(Ax)$. Primero $Ax\in\mathbb R^{r}$, luego $B(Ax)\in\mathbb R^{d}$.
-- **Inicio:** $A$ al azar y $B=0$ $\Rightarrow$ $\Delta W=0$. El modelo arranca **idéntico** al base; la última celda lo comprueba.
-- **Rango:** $\operatorname{rank}(\Delta W)\le r$, porque todo pasa por un espacio de dimensión $r$. En §06 lo ves en los valores singulares.
-- **Parámetros:** $dk$ si entrenaras $W$ completa, contra $r(d+k)$ con LoRA.
-
-**Dónde va LoRA en un transformer.** Cada bloque tiene atención y un MLP, y los dos están hechos de lineales:
-
-| Lineal | Dónde | Qué hace |
+| Símbolo | Forma | Papel |
 |---|---|---|
-| `q_proj`, `k_proj`, `v_proj` | atención | arman las *queries*, *keys* y *values* |
-| `o_proj` | atención | mezcla las cabezas de vuelta al ancho del modelo |
-| `gate_proj`, `up_proj`, `down_proj` | MLP | el MLP de cada bloque (solo en `MODO = "largo"`) |
+| $W_0$ | $d\times k$ | Matriz congelada de una capa con $k$ entradas y $d$ salidas. |
+| $A$ | $r\times k$ | Proyección entrenable de la entrada a $r$ coordenadas. |
+| $B$ | $d\times r$ | Proyección entrenable de esas coordenadas a la salida. |
+| $r$, $\alpha$ | Escalares | $r$ limita el rango de la corrección y $\alpha/r$ fija su escala. |
 
-En Qwen2.5, `k_proj` y `v_proj` son **más angostas** que `q_proj`: varias cabezas de *query* comparten una misma *key* y *value* (*grouped-query attention*). Por eso su $d$ sale más chico en la tabla.
+- **Forward.** Para una entrada $x$, la parte lineal es $W_0x+\frac{\alpha}{r}B(Ax)$. Las dos proyecciones calculan la corrección sin construir la matriz completa $BA$. Durante el entrenamiento se aplica *dropout* a la entrada de la rama LoRA.
+- **Inicio.** $A$ se inicializa al azar y $B=0$. Así $\Delta W=0$ y la capa empieza con la misma salida que la original.
+- **Rango y parámetros.** La corrección pasa por $r$ coordenadas, así que $\operatorname{rank}(\Delta W)\le r$. Cuando $r$ es pequeño frente a $d$ y $k$, bastan $r(d+k)$ parámetros para el adaptador frente a los $dk$ de la matriz completa.
+
+| Proyecciones | Qué hacen |
+|---|---|
+| `q_proj`, `k_proj`, `v_proj` | Construyen las *queries*, *keys* y *values* de la atención. |
+| `o_proj` | Proyecta la salida de las cabezas de atención al ancho del modelo. |
+| `gate_proj`, `up_proj`, `down_proj` | Transforman la representación de cada token en el MLP. Reciben LoRA en modo largo. |
 
 ### celda: s04-lee
 
-**Cómo leer las tablas**
+**Cómo leer las tablas.** El porcentaje global divide los parámetros de $A$ y $B$ entre todos los parámetros del modelo con LoRA. En la tabla del primer bloque, cada porcentaje compara $r(d+k)$ con $dk$ para esa proyección. Solo los parámetros entrenables necesitan estados del optimizador. La memoria de entrenamiento también incluye las activaciones.
 
-- `% entrenable` es la fracción del modelo que recibe gradiente. Todo lo demás está congelado y no necesita ni gradiente ni momentos de AdamW: por eso cabe en una T4.
-- `MB del adaptador` es lo que descargas en §08. Compáralo con los MB del modelo: tu ajuste viaja en un archivo cientos de veces más chico, y se pone encima del modelo base de cualquiera.
-- En la tabla por capa, `%` es $r(d+k)/dk$: cuanto más grande la capa, más ahorra LoRA.
-- La diferencia de logits de la última celda tiene que ser **exactamente 0**: con $B=0$, la capa suma cero.
+Compara los MB de los pesos congelados con el tamaño del adaptador guardado en disco. Por último, lee la diferencia máxima entre los logits con el adaptador recién inicializado y con el adaptador apagado. Con $B=0$, se espera que sea cero.

@@ -2,32 +2,21 @@
 
 # Notebook 4 · Fine-tuning de un LLM con LoRA: tu dataset
 
-- Unidad 10 de *deep learning*, clase 3. Un **LLM chico** (Qwen2.5, 0.5 mil millones de parámetros) aprende **tu** dataset de texto con LoRA.
-- Pregunta: **¿qué aprende un modelo de lenguaje de unos cientos de ejemplos, y cómo lo sabes sin engañarte?**
-- Es el gemelo del notebook 3: las mismas secciones, pero con texto en vez de imágenes.
+Vas a adaptar **Qwen2.5-Instruct** a tu tarea de texto con **LoRA**. Compararás las respuestas antes y después del fine-tuning, verás qué cambió en el modelo y descargarás tu adaptador.
 
-**Tres pasos**
+1. En Colab, abre «Entorno de ejecución → Cambiar tipo de entorno», elige **T4 GPU** y guarda.
+2. Arrastra tu `texto.zip` al panel **📁 Archivos** de la izquierda y espera a que termine la carga. Si no tienes un zip, el cuaderno usa un demo de preguntas que se responden con SQL.
+3. Selecciona «Entorno de ejecución → **Ejecutar todo**». Si vas a probar ajustes, ejecuta hasta la sección 07 y reserva la 08 para tu configuración final.
 
-1. En Colab: «Entorno de ejecución → Cambiar tipo de entorno → **T4 GPU** → Guardar».
-2. Arrastra tu `texto.zip` (el de la tarea) al panel 📁 **Archivos** de la izquierda. Si no tienes zip, no pasa nada: el notebook arma uno de demostración (texto → SQL).
-3. «Entorno de ejecución → **Ejecutar todo**».
+Usa `MODO = "corto"` en clase. El modo `"largo"` usa un modelo más grande, ajusta también el MLP y dedica más pasos al entrenamiento. La duración depende del entorno, las descargas y los datos.
 
-| `MODO` | Modelo | Qué corre | Tiempo en una T4 |
-|---|---|---|---|
-| `"corto"` (por omisión) | Qwen2.5-0.5B-Instruct | un LoRA en atención, lo esencial | ≈ 20–25 min |
-| `"largo"` | Qwen2.5-1.5B-Instruct | más pasos, más datos, LoRA también en el MLP | ≈ 45–60 min |
-
-**Test, una sola vez.** Todo se decide con *validation*. El *test* se usa **solo al final (§08), una vez**, con el modelo ya entrenado.
-
-**Mapa**
-
-| § | Sección | Qué te llevas |
-|---|---|---|
-| 01 | Instalar y configurar | `MODO`, GPU, modelo |
-| 02 | Tu zip | revisar el formato, ver ejemplos, partir 80/10/10 |
-| 03 | Antes | qué contesta el modelo base |
-| 04 | LoRA por dentro | las matemáticas y cuántos parámetros entrenas de verdad |
-| 05 | Entrenar | la loss solo en el *completion*, curvas train / validation |
-| 06 | Ver LoRA | rango de $\Delta W$, qué capas cambiaron, la perilla $\lambda$, *merge* |
-| 07 | Métricas | qué mide cada número y cuál es su trampa |
-| 08 | Testeo | test una vez, olvido, descargar tu adaptador, qué mover si salió mal |
+| Sección | Qué haces |
+|---|---|
+| 01 · Configuración | Eliges el modo y compruebas la GPU. |
+| 02 · Tu zip | Revisas los datos y los repartes en tres splits. |
+| 03 · Antes | Lees las respuestas del modelo base. |
+| 04 · LoRA por dentro | Descompones la actualización y cuentas sus parámetros. |
+| 05 · Entrenamiento | Ajustas el adaptador con loss solo en el completion. |
+| 06 · Inspección | Mides el cambio por capa, ajustas su escala y pruebas el merge. |
+| 07 · Métricas | Comparas base y LoRA en **validation**. |
+| 08 · Testeo | Evalúas en **test una sola vez** y descargas el adaptador. |

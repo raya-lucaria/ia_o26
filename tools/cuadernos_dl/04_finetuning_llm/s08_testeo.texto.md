@@ -2,62 +2,45 @@
 
 ## 08 · Testeo, una sola vez
 
-- **Esta es la única vez que se usa el test.** Todo lo anterior (curvas, métricas, la perilla) se decidió con validation. Ya no cambies nada por lo que veas aquí: si lo haces, este número deja de ser honesto.
-- La tabla tiene las mismas métricas de §07, ahora en ejemplos que **nadie** miró antes.
-- Esperamos números parecidos a los de validation. Si test sale mucho peor, validation se usó de más para decidir (o los dos conjuntos son muy chicos y el azar pesa).
+> **Ejecuta la evaluación de test una sola vez**, con la configuración que elegiste en validation. Si cambias el modelo tras ver los resultados de test, necesitarás otro conjunto reservado para evaluar el resultado final.
+
+**Cómo leer las tablas.** La primera repite las cuatro métricas de la sección 07 en **test**. La segunda muestra ejemplos con la respuesta esperada, las dos generaciones y sus scores. Compara base y LoRA en el mismo split. Si el resultado difiere de validation, mira cuántos ejemplos entraron en cada medición y qué errores aparecen. Con muestras pequeñas, unas pocas respuestas pueden mover el promedio.
 
 ### celda: s08-prompts-explica
 
-**Tus prompts, antes y después.** Los de `prompts.txt` no están en el dataset: es lo más cercano a cómo usarías el modelo de verdad. La columna `base` es la misma de §03.
+**Tus prompts, antes y después.** La tabla recupera las respuestas del base a `prompts.txt` y genera nuevas con LoRA. Estos prompts son ejemplos exploratorios. Úsalos para ver si cambia el formato, si el modelo sigue la instrucción y si el contenido mejora.
 
 ### celda: s08-olvido-explica
 
-**Olvido.** Ajustar un modelo a tu tarea puede hacerle **perder** algo de lo que ya sabía (*catastrophic forgetting*). LoRA lo limita, porque $W_0$ no se mueve, pero no lo impide.
+**Olvido con el adaptador activo**
 
 | Qué mide | Rango | Qué es bueno | Trampa |
 |---|---|---|---|
-| si el modelo sigue contestando bien preguntas **ajenas** a tu dataset | sin número: se lee | respuestas de LoRA tan buenas como las del base | tres preguntas son una muestra mínima; y un LoRA que contesta todo **en el formato de tu dataset** (todo en SQL, todo en verso) también es olvido, aunque la respuesta no sea falsa |
+| Si al activar LoRA se deterioran respuestas en tres tareas generales. | Comparación cualitativa, sin escala numérica. | Mantener el contenido correcto y seguir la instrucción al menos tan bien como el base. | Tres preguntas cubren poco. Una diferencia de estilo puede ser inocua y el base también puede equivocarse. |
 
-**Cómo leer la tabla:** busca si LoRA cambió el estilo (más corto, en el formato de tus datos) o el contenido (datos falsos). Lo primero es común y a veces es lo que querías; lo segundo es olvido de verdad.
+**Cómo leer la tabla.** Revisa si se conserva el dato pedido, si la explicación sigue siendo correcta y si se respeta el formato solicitado. Si LoRA impone el formato de tu dataset en otras tareas, anota el fallo de instrucción. Esta prueba compara el comportamiento con el adaptador activo. Al apagarlo, vuelves a usar los pesos base.
 
 ### celda: s08-guardar-explica
 
-**Tu adaptador.** Se guarda solo lo que entrenaste: $A$ y $B$ de cada capa (`adapter_model.safetensors`), la configuración (`adapter_config.json`) y una ficha con tu dataset y tus números de test. Lo descargas como `mi_lora_texto.zip`.
+La celda guarda los pesos del adaptador y su configuración en `mi_lora_texto`. Añade un `LEEME.md` con el modelo base, la configuración, el número de actualizaciones válidas, la ficha del dataset y las métricas de test. Empaqueta la carpeta en `mi_lora_texto.zip` e inicia la descarga en Colab.
 
-Para usarlo otro día, en cualquier máquina con el mismo modelo base:
-
-```python
-from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer
-base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
-modelo = PeftModel.from_pretrained(base, "mi_lora_texto")
-tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
-```
-
-(En `MODO = "largo"`, el base es `Qwen/Qwen2.5-1.5B-Instruct`.) Si Colab no abre la descarga, búscala en el panel 📁 Archivos: clic derecho → Descargar.
+Si el navegador bloquea la descarga, abre el panel **📁 Archivos** y elige «Descargar» sobre el zip. Fuera de Colab, el zip queda en la carpeta actual. Para reutilizarlo, descomprime el zip y carga el adaptador con PEFT sobre el mismo modelo base que figura en la ficha.
 
 ### celda: s08-receta
 
-**Si salió mal, qué mover**
+Usa esta receta **en validation, antes de abrir test**. Cambia una cosa a la vez y vuelve a ejecutar desde la sección donde se configura.
 
-| Lo que ves | Qué pasa | Qué mover |
-|---|---|---|
-| validation casi no baja desde el paso 0 | el base ya contestaba así, o la tarea es difícil para este modelo | más `pasos`; `MODO = "largo"` (modelo de 1.5B y LoRA en el MLP) |
-| train baja y validation sube al final | memoriza train | menos `pasos`; más datos |
-| loss en `nan` o el aviso de pasos saltados | fp16 se desbordó | baja `lr` a `1e-4` |
-| las respuestas no paran hasta `max_new` | no aprendió a terminar | más `pasos`; revisa que tus completions no traigan relleno al final |
-| las respuestas salen cortadas a media frase | el tope `max_new` | sube `P["max_new"]` |
-| muchos ejemplos «cortados» en §05 | `max_len` corta tus ejemplos | acorta prompts o completions; o sube `P["max_len"]` (más memoria) |
-| exact match 0 con F1 alto | casi bien, falla un detalle | lee los ejemplos; quizá tu tarea pide F1, no exact match |
-| LoRA contesta todo en tu formato (§08, olvido) | se pasó de ajuste | menos `pasos`, o $\lambda<1$ al generar (§06) |
-| memoria agotada (*CUDA out of memory*) | ejemplos largos o modelo grande | baja `P["batch"]` a 2 y sube `P["acum"]` a 4: mismo batch efectivo |
+| Lo que ves | Qué probar |
+|---|---|
+| Las respuestas apenas cambian y todavía fallan en la tarea. | Revisa si los completions muestran un patrón claro. Prueba más pasos o el modo largo si tienes memoria suficiente. |
+| Train baja y validation sube de forma sostenida. | Prueba menos pasos o añade ejemplos variados. |
+| Aparecen avisos de gradientes no finitos. | Prueba un learning rate menor y comprueba cuántas actualizaciones se completan. |
+| Hay muchos recortes o descartes. | Acorta los ejemplos o aumenta `P["max_len"]` si cabe en memoria. Revisa si se conserva el final de la respuesta. |
+| La generación se queda a medias o se repite hasta el límite. | Si falta espacio para terminar, sube `P["max_new"]`. Si hay repeticiones, revisa los finales de tus completions y los recortes de la sección 05. |
+| F1 es alto y exact match es bajo. | Lee las respuestas. Distingue cambios de formato aceptables de errores que alteran el sentido. |
+| Las respuestas de validation pierden detalles al aplicar LoRA. | Usa la perilla de la sección 06 para explorar una corrección más débil o prueba menos pasos. |
+| Se agota la memoria al entrenar. | Reduce `P["batch"]`. Puedes aumentar `P["acum"]` para acercarte al mismo número de ejemplos por actualización. |
 
 ### celda: s08-cierre
 
-**Lo que te llevas**
-
-- Un LoRA de $r=8$ mueve una fracción mínima del modelo y aun así cambia **cómo contesta**: primero el formato, luego el contenido.
-- La loss solo en el completion le enseña a responder, no a repetir tus preguntas.
-- $\Delta W$ tiene rango $\le r$, se puede **subir o bajar** con $\lambda$, y se **fusiona** sin costo.
-- Cada métrica tiene su trampa: loss y perplexity no generan, exact match es todo o nada, F1 ignora el orden, y el olvido hay que leerlo.
-- El test se usa **una vez**. Lo que muestres de este notebook es ese número.
+Conserva el zip junto con la comparación de test. Al presentar el resultado, acompaña las métricas con una respuesta que ilustre qué cambió al activar LoRA y qué le sigue costando al modelo.

@@ -2,33 +2,19 @@
 
 ## 03 · Antes: qué contesta el modelo base
 
-- **Qué vas a ver:** las respuestas del modelo **sin entrenar** a tus prompts de prueba y a tres ejemplos de validation.
-- Es la fila de referencia: en §06 y §08 vuelven estos mismos prompts, ya con LoRA.
-- La celda descarga el modelo (≈ 1 GB en modo corto, ≈ 3 GB en largo) y lo congela: ningún peso de $W_0$ se va a mover.
+Primero genera con Qwen tal como viene. La celda carga el tokenizer y el modelo, imprime cuántos parámetros tiene y congela sus pesos. Las respuestas del base te servirán de referencia para evaluar qué aporta LoRA.
 
 ### celda: s03-plantilla-explica
 
-**La plantilla de chat.** Un modelo *Instruct* no ve tu prompt tal cual: lo ve dentro de una conversación con marcas especiales.
-
-- `<|im_start|>system`: instrucciones generales (Qwen pone una por omisión).
-- `<|im_start|>user`: lo que escribe la persona; aquí va **tu `prompt`**.
-- `<|im_start|>assistant`: aquí empieza a contestar el modelo; aquí va **tu `completion`**.
-- `<|im_end|>`: fin de un turno. Cuando el modelo lo genera, deja de hablar.
-
-- `formatear(prompt)` arma ese texto con `apply_chat_template`, la plantilla que trae el propio tokenizer.
-- Se usa **la misma** al entrenar y al generar. Si cambiaras la plantilla entre una cosa y otra, el modelo vería un formato que nunca practicó.
+`formatear(prompt)` usa `apply_chat_template` para convertir tu entrada en una conversación. La celda imprime el primer prompt ya formateado. Busca el mensaje de usuario y la marca que abre el turno del asistente. En entrenamiento, el completion ocupa ese turno. Al generar, el modelo lo escribe token a token a partir del mismo prefijo.
 
 ### celda: s03-generar-explica
 
-- `generar(prompts, lora)` contesta con **greedy decoding**: en cada paso toma el token más probable. Sin azar, así que la misma entrada da siempre la misma salida y las comparaciones son justas. Qwen viene configurado para muestrear al azar (*temperature*, *top-p*); la celda de carga lo apaga.
-- `max_new` (por omisión `P["max_new"]`) acota cuántos tokens puede escribir. Si la respuesta se ve cortada a media frase, es ese tope, no el modelo.
-- Genera en lotes de 16; el relleno (*padding*) va a la **izquierda** para que todas las respuestas empiecen justo después de su prompt.
-- `lora=False` apaga el adaptador: con **un solo modelo en la memoria** se obtienen el base y el ajustado.
+- **Greedy decoding.** En cada paso, `generar` elige el token más probable. La comparación entre base y LoRA usa la misma entrada y prescinde del azar del *sampling*.
+- **Padding.** Al generar por batches, el relleno va a la izquierda y queda enmascarado. La celda decodifica solo los tokens nuevos y omite los tokens especiales.
+- **Límite.** `P["max_new"]` acota los tokens nuevos por respuesta. Si una frase queda a medias, revisa ese límite.
+- **Base y LoRA.** Una vez instalado el adaptador, `lora=False` lo desactiva temporalmente. Puedes comparar las dos versiones con el mismo modelo cargado.
 
 ### celda: s03-lee
 
-**Cómo leer las tablas**
-
-- Con el demo SQL, el base suele **saber** SQL, pero contesta a su manera: con un bloque de código, una explicación, a veces otra sintaxis. Lo correcto no es lo mismo que lo que tu dataset pide.
-- Compara la columna `base` con `esperado`: la diferencia de **formato** es lo primero que aprende un fine-tuning.
-- Con `RAPIDO=1` el modelo es diminuto y aleatorio: sus respuestas no significan nada.
+**Cómo leer las tablas.** La primera reúne los prompts de `prompts.txt` y guarda las respuestas del base para la sección 08. La segunda compara `base` con `esperado` en tres ejemplos de validation. Fíjate por separado en el contenido y en el formato. Una consulta SQL puede resolver bien la pregunta y venir envuelta en una explicación que la referencia no trae.
