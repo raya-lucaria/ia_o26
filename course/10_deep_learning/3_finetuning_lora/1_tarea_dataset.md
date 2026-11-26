@@ -13,7 +13,8 @@ tags: [deep-learning, tarea, fine-tuning, dataset]
 > [!WARNING]
 > **Tarea para el lunes 30 de noviembre. Es individual.** Trae a clase **un
 > zip** con un dataset de **imágenes** o de **texto**, en el formato de esta
-> página. En clase lo subes a un notebook de Colab y haces fine-tuning de un
+> página. Trae lo que puedas: solo hay mínimos, **50 imágenes** o **200
+> ejemplos de texto**, y no hay tope de peso. En clase lo subes a un notebook de Colab y haces fine-tuning de un
 > modelo preentrenado con tus datos, como en [[dl-clase-3-finetuning-lora|la clase 3]].
 > Si el zip no sigue el formato, el notebook no lo lee y pierdes la clase
 > arreglándolo. Antes de venir, revísalo con la función de la sección 5.
@@ -63,15 +64,14 @@ images/0000.jpg,a photo of a butterfly specimen
 images/0001.jpg,a photo of a butterfly specimen
 ```
 
-- **Cuántas:** de 100 a 1,000 imágenes. Con menos de 50, el notebook no arranca.
+- **Cuántas:** las que puedas, con un **mínimo de 50**. Más ayuda: entre 100 y 1,000 se nota bien el cambio.
 - **Archivos:** JPG o PNG, en color, con el lado corto de al menos 512 px.
   El notebook las recorta al centro a 512 × 512, así que conviene que lo
   importante esté al centro.
 - **`text`:** una descripción corta **en inglés**, porque el text encoder de
   Stable Diffusion es CLIP y está entrenado en inglés. Puede ser **la misma
   para todas**, como «an anime face» en el notebook 3.
-- **Peso:** el zip pesa a lo más 150 MB. Si pesa más, baja la calidad del JPG
-  o usa menos imágenes.
+- **Peso:** no hay tope. Si el zip pesa mucho, súbelo a tu Drive y móntalo en Colab en vez de subirlo desde el navegador.
 
 ### Ruta texto: `texto.zip`
 
@@ -89,14 +89,14 @@ texto.zip
 {"prompt": "Escribe la consulta SQL. Tabla: cursos(id, nombre). Pregunta: ¿cómo se llama el curso 7?", "completion": "SELECT nombre FROM cursos WHERE id = 7"}
 ```
 
-- **Cuántos:** de 500 a 5,000 ejemplos. Con menos de 200, el notebook no arranca.
+- **Cuántos:** los que puedas, con un **mínimo de 200**. Más ayuda: entre 500 y 5,000 se nota bien el cambio.
 - **`prompt`:** la entrada que le das al modelo. **`completion`:** lo que
   quieres que conteste. El modelo aprende a producir el `completion` dado el
   `prompt`.
 - **Largo:** que `prompt` y `completion` juntos no pasen de unos 2,000
   caracteres. Lo más largo se corta y esa parte no se aprende.
 - **Idioma:** español o inglés, pero uno solo en todo el dataset.
-- **Archivo:** UTF-8. El zip pesa a lo más 20 MB.
+- **Archivo:** UTF-8. No hay tope de peso.
 - **Si solo quieres un estilo** (poemas, letras, tus mensajes): usa un
   `prompt` fijo, como «Escribe un poema:», y en `completion` pon el texto.
 
