@@ -42,25 +42,41 @@ print(f"exact match = {exact_match(pred, real):.0f} · "
       f"token F1 = {token_f1(pred, real):.3f}")
 
 # %% [codigo] s07-evaluar
+def perplexity(loss):
+    """e^loss: inf si se desborda; NaN si la loss es NaN."""
+    try:
+        return math.exp(loss)
+    except OverflowError:
+        return float("inf")
+
+
 def evaluar(parte):
-    """Base y LoRA en los primeros n_eval ejemplos de `parte`: una tabla con
-    las cuatro métricas y las respuestas de cada modelo."""
+    """Base y LoRA en los primeros n_eval ejemplos de `parte` (las mismas
+    filas para las cuatro métricas) y las respuestas de cada modelo."""
     ejs = DATOS[parte][:P["n_eval"]]
     reales = [e["completion"] for e in ejs]
+    n_loss = sum(t["i"] < len(ejs) for t in TOKS[parte])
+    largas = sum(len(TOK(r, add_special_tokens=False)["input_ids"]) + 1
+                 > P["max_new"] for r in reales)
     filas, preds = {}, {}
     for nombre, lora in [("base", False), ("LoRA", True)]:
         t0 = time.perf_counter()
-        loss = perdida_val(parte, lora=lora)
+        loss = perdida_val(parte, lora=lora, n=len(ejs))
         preds[nombre] = generar([e["prompt"] for e in ejs], lora=lora)
         filas[nombre] = {
-            "loss": loss, "perplexity": math.exp(min(loss, 50)),
+            "loss": loss, "perplexity": perplexity(loss),
             "exact match %": 100 * np.mean(
                 [exact_match(p, r) for p, r in zip(preds[nombre], reales)]),
             "token F1 %": 100 * np.mean(
                 [token_f1(p, r) for p, r in zip(preds[nombre], reales)])}
         print(f"{nombre}: {time.perf_counter() - t0:.0f} s")
-    print(f"({len(ejs)} ejemplos de {parte} para generar, "
-          f"{min(len(TOKS[parte]), P['n_val_loss'])} para la loss)")
+    print(f"cobertura en {parte}: exact match y F1 en {len(ejs)} filas; la "
+          f"loss en {n_loss} de esas {len(ejs)} (las demás no conservan su "
+          "completion dentro de max_len)")
+    if largas:
+        print(f"¡Ojo! {largas} de {len(ejs)} referencias pasan de max_new = "
+              f"{P['max_new']} tokens: su exact match es 0 aunque el modelo "
+              "acierte el principio")
     return pd.DataFrame(filas).T, preds
 
 

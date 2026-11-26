@@ -12,7 +12,7 @@ Primero genera con Qwen tal como viene. La celda carga el tokenizer y el modelo,
 
 - **Greedy decoding.** En cada paso, `generar` elige el token más probable. La comparación entre base y LoRA usa la misma entrada y prescinde del azar del *sampling*.
 - **Padding.** Al generar por batches, el relleno va a la izquierda y queda enmascarado. La celda decodifica solo los tokens nuevos y omite los tokens especiales.
-- **Límite.** `P["max_new"]` acota los tokens nuevos por respuesta. Si una frase queda a medias, revisa ese límite.
+- **Límite.** `P["max_new"]` acota los tokens nuevos por respuesta. La celda de carga lo fija con el completion más largo de train y validation, más 8 tokens, sin pasar de `P["max_len"]`. Si una frase queda a medias, revisa ese límite.
 - **Base y LoRA.** Una vez instalado el adaptador, `lora=False` lo desactiva temporalmente. Puedes comparar las dos versiones con el mismo modelo cargado.
 
 ### celda: s03-lee

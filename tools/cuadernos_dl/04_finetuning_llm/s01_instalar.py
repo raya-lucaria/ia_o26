@@ -1,5 +1,5 @@
 # §1 · Instalar: MODO, RAPIDO, paquetes que falten, GPU, constantes y semillas.
-# Define MODO, LARGO, RAPIDO, DEVICE, DTYPE, CUDA, MODELO, DEMO, P, COLORES,
+# Define MODO, LARGO, RAPIDO, DEVICE, DTYPE, AMP, CUDA, MODELO, DEMO, P, COLORES,
 # semilla(s) y mostrar(df).
 
 # %% [texto] s01-intro
@@ -42,8 +42,11 @@ RAPIDO = os.environ.get("RAPIDO") == "1"
 HAY_GPU = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if HAY_GPU and not RAPIDO else "cpu")
 CUDA = DEVICE.type == "cuda"
-# fp16 en la GPU (la T4 no tiene bf16); fp32 en CPU.
-DTYPE = torch.float16 if CUDA else torch.float32
+# Qwen se entrenó en bf16, que la T4 no tiene, y en fp16 puede desbordarse.
+# Corto: el 0.5B en fp32 (≈ 2 GB, cabe). Largo: el 1.5B en fp16 con
+# autocast + GradScaler (AMP), porque en fp32 apretaría la memoria.
+DTYPE = torch.float16 if CUDA and LARGO else torch.float32
+AMP = DTYPE == torch.float16
 
 if not HAY_GPU and not RAPIDO:
     print("=" * 72)
@@ -56,7 +59,8 @@ if not HAY_GPU and not RAPIDO:
 for nombre, mod in [("torch", torch), ("transformers", transformers),
                     ("peft", peft), ("huggingface_hub", huggingface_hub)]:
     print(f"{nombre:16s}{mod.__version__}")
-print("DEVICE =", DEVICE, "· DTYPE =", DTYPE, "· RAPIDO =", RAPIDO)
+print("DEVICE =", DEVICE, "· DTYPE =", DTYPE, "· AMP =", AMP,
+      "· RAPIDO =", RAPIDO)
 if HAY_GPU:
     props = torch.cuda.get_device_properties(0)
     print(f"GPU: {props.name} · {props.total_memory / 2**30:.1f} GiB")
@@ -78,15 +82,15 @@ DEMO = "b-mc2/sql-create-context"     # el dataset del demo (CC BY 4.0)
 ATENCION = ["q_proj", "k_proj", "v_proj", "o_proj"]
 if RAPIDO:
     P = dict(n_demo=200, max_len=128, batch=2, acum=1, pasos=6, lr=2e-4,
-             val_cada=3, n_val_loss=8, n_eval=4, max_new=16,
+             val_cada=3, n_val_loss=8, n_eval=4,
              rango=8, alfa=16, modulos=ATENCION)
 elif LARGO:
     P = dict(n_demo=3000, max_len=512, batch=4, acum=2, pasos=800, lr=2e-4,
-             val_cada=50, n_val_loss=200, n_eval=150, max_new=192,
+             val_cada=50, n_val_loss=200, n_eval=150,
              rango=8, alfa=16, modulos=ATENCION)
 else:
     P = dict(n_demo=1000, max_len=512, batch=4, acum=2, pasos=300, lr=2e-4,
-             val_cada=25, n_val_loss=100, n_eval=100, max_new=128,
+             val_cada=25, n_val_loss=100, n_eval=100,
              rango=8, alfa=16, modulos=ATENCION)
 if LARGO:                               # ➕ LoRA también en el MLP
     P["modulos"] = ATENCION + ["gate_proj", "up_proj", "down_proj"]

@@ -91,15 +91,17 @@ def armar_demo(ruta, n):
 
 if RUTA_ZIP:
     assert os.path.exists(RUTA_ZIP), f"no existe {RUTA_ZIP}: revisa la ruta"
-    if tipo_de_zip(RUTA_ZIP) == "imagenes":
-        raise ValueError(f"{RUTA_ZIP} es un zip de IMÁGENES: úsalo en el "
-                         f"notebook 3:\n{NB3}")
 else:
     RUTA_ZIP = buscar_zip()
     if RUTA_ZIP is None:
         print("No encontré tu texto.zip: armo el demo (texto → SQL).")
         RUTA_ZIP = armar_demo(os.path.join(os.getcwd(), "texto_demo.zip"),
                               P["n_demo"])
+# El tipo se revisa ya resuelta la ruta, venga a mano o de la búsqueda.
+if tipo_de_zip(RUTA_ZIP) == "imagenes":
+    raise ValueError(f"{RUTA_ZIP} es un zip de IMÁGENES (trae metadata.csv).\n"
+                     f"Este notebook es de texto; las imágenes van en el "
+                     f"notebook 3:\n{NB3}")
 ES_DEMO = RUTA_ZIP.endswith("texto_demo.zip")
 print("Uso:", RUTA_ZIP, "(demo)" if ES_DEMO else "(tu zip)")
 
@@ -155,24 +157,6 @@ try:
 except ImportError:
     print(LEEME)
 
-largos = pd.DataFrame({
-    "prompt": [len(e["prompt"]) for e in EJEMPLOS],
-    "completion": [len(e["completion"]) for e in EJEMPLOS]})
-print(f"{len(EJEMPLOS)} ejemplos · {len(PROMPTS)} prompts de prueba")
-display(largos.describe().loc[["mean", "50%", "max"]].round(0)
-        .rename(index={"mean": "promedio (caracteres)",
-                       "50%": "mediana", "max": "máximo"}))
-
-
-def recorta(texto, n=300):
-    return texto if len(texto) <= n else texto[:n] + " …"
-
-
-muestra = random.Random(1).sample(EJEMPLOS, 3)
-mostrar(pd.DataFrame([{"prompt": recorta(e["prompt"]),
-                       "completion": recorta(e["completion"])}
-                      for e in muestra]))
-
 # %% [texto] s02-split-explica
 
 # %% [codigo] s02-split
@@ -184,3 +168,24 @@ DATOS = {"validation": [EJEMPLOS[i] for i in orden[:n_10]],
          "train": [EJEMPLOS[i] for i in orden[2 * n_10:]]}
 display(pd.Series({k: len(v) for k, v in DATOS.items()},
                   name="ejemplos").to_frame())
+
+# %% [codigo] s02-muestra
+# Solo train: el test no se mira (ni sus respuestas) hasta §08.
+largos = pd.DataFrame({
+    "prompt": [len(e["prompt"]) for e in DATOS["train"]],
+    "completion": [len(e["completion"]) for e in DATOS["train"]]})
+print(f"{len(EJEMPLOS)} ejemplos · {len(PROMPTS)} prompts de prueba · "
+      "largos y muestra de train:")
+display(largos.describe().loc[["mean", "50%", "max"]].round(0)
+        .rename(index={"mean": "promedio (caracteres)",
+                       "50%": "mediana", "max": "máximo"}))
+
+
+def recorta(texto, n=300):
+    return texto if len(texto) <= n else texto[:n] + " …"
+
+
+muestra = random.Random(1).sample(DATOS["train"], 3)
+mostrar(pd.DataFrame([{"prompt": recorta(e["prompt"]),
+                       "completion": recorta(e["completion"])}
+                      for e in muestra]))

@@ -18,7 +18,7 @@ Si dejas la ruta vacía y la búsqueda no encuentra un zip de texto ni de imáge
 
 `revisar_zip` es la función de la tarea. Comprueba los archivos obligatorios, la cantidad de prompts y ejemplos, las llaves de cada ejemplo y que haya un completion. Si falla, corrige lo que indique el mensaje, vuelve a subir el zip y ejecuta la sección 02.
 
-La celda lee la ficha, muestra ejemplos y resume la longitud de prompts y completions en **caracteres**. Úsala para detectar entradas largas. El recorte en la sección 05 se decide en **tokens** y también cuenta las marcas de la plantilla de chat.
+La celda lee la ficha. Después del split, la última celda muestra ejemplos **de train** y resume la longitud de sus prompts y completions en **caracteres**; el test no se mira hasta la sección 08. Úsala para detectar entradas largas. El recorte en la sección 05 se decide en **tokens** y también cuenta las marcas de la plantilla de chat.
 
 En `prompts.txt`, escribe un prompt por línea. Si un prompt necesita un salto de línea interno, escribe los dos caracteres `\n`. Al leer el archivo, la celda los convierte en un salto de línea.
 

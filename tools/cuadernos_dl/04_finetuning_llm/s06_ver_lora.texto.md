@@ -31,6 +31,6 @@ Al generar, `escala_lora` aplica $W=W_0+\lambda\,\Delta W$ en cada capa adaptada
 
 ### celda: s06-merge-explica
 
-`merge_and_unload()` suma $\Delta W$ a $W_0$ en una copia del modelo y elimina las capas LoRA de esa copia. La celda cuenta las capas y los parámetros restantes, compara logits y comprueba si coinciden las respuestas de `prompts.txt`.
+`merge_and_unload()` suma $\Delta W$ a $W_0$ en una copia del modelo y elimina las capas LoRA de esa copia. La celda cuenta las capas y los parámetros restantes, compara los logits del siguiente token (solo la última posición, para no llenar la memoria con prompts largos) y comprueba si coinciden las respuestas de `prompts.txt`.
 
 En aritmética exacta, sumar los pesos o aplicar la corrección en el forward da el mismo resultado lineal. En precisión finita, las dos operaciones redondean en puntos distintos. Lee la diferencia máxima junto con la magnitud de los logits. Incluso una diferencia pequeña puede cambiar el token elegido si dos logits están muy cerca.

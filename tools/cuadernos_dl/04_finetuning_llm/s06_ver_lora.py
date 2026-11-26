@@ -110,11 +110,11 @@ TOK.padding_side = "left"
 x = TOK([formatear(p) for p in PROMPTS], return_tensors="pt", padding=True,
         add_special_tokens=False).to(DEVICE)
 TOK.padding_side = "right"
-with torch.no_grad():
-    con_adaptador = LM(**x).logits.float()
-    con_fusion = fusionado(**x).logits.float()
+with torch.no_grad():   # solo los logits del siguiente token: poca memoria
+    con_adaptador = LM(**x, logits_to_keep=1, use_cache=False).logits.float()
+    con_fusion = fusionado(**x, logits_to_keep=1, use_cache=False).logits.float()
 dif = (con_adaptador - con_fusion).abs().max().item()
-print(f"max |logits adaptador − logits fusionado| = {dif:.2e} "
+print(f"max |logits del siguiente token: adaptador − fusionado| = {dif:.2e} "
       f"(escala de los logits: {con_adaptador.abs().max().item():.1f})")
 iguales = generar(PROMPTS) == generar(PROMPTS, modelo=fusionado)
 print("¿mismas respuestas greedy en prompts.txt?", iguales)

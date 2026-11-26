@@ -26,6 +26,12 @@ LM.eval()
 _g = LM.generation_config
 _g.do_sample, _g.temperature, _g.top_p, _g.top_k = False, None, None, None
 _g.repetition_penalty = None
+# Tope de tokens al generar: el completion más largo de train y validation
+# (con su marca de fin), + 8 de holgura, sin pasar de max_len. Test no se mira.
+P["max_new"] = min(P["max_len"], 8 + max(
+    len(TOK(e["completion"], add_special_tokens=False)["input_ids"]) + 1
+    for parte in ("train", "validation") for e in DATOS[parte]))
+print("max_new =", P["max_new"], "tokens")
 n_lm = sum(p.numel() for p in LM.parameters())
 print(f"{MODELO}: {n_lm / 1e6:,.0f} M parámetros · "
       f"{n_lm * LM.dtype.itemsize / 1e9:.2f} GB en {LM.dtype}")

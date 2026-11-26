@@ -28,17 +28,18 @@ def tokenizar(ej):
             "n_prompt": len(p), "cortado": len(p) + len(c) > P["max_len"]}
 
 
-TOKS, resumen = {}, {}
+TOKS, RESUMEN = {}, {}
 for parte, ejs in DATOS.items():
-    todos = [tokenizar(e) for e in ejs]
+    todos = [dict(tokenizar(e), i=i) for i, e in enumerate(ejs)]  # i: su fila
     # sin ningún token de completion (el prompt solo ya llena max_len): fuera
     TOKS[parte] = [t for t in todos if any(l != -100 for l in t["labels"])]
-    resumen[parte] = {"ejemplos": len(todos),
+    RESUMEN[parte] = {"ejemplos": len(todos),
                       "cortados": sum(t["cortado"] for t in todos),
                       "descartados": len(todos) - len(TOKS[parte]),
                       "tokens (mediana)": int(np.median(
                           [len(t["ids"]) for t in todos]))}
-display(pd.DataFrame(resumen).T)
+# El resumen de test espera a §08: aquí todavía puedes cambiar max_len.
+display(pd.DataFrame({k: RESUMEN[k] for k in ["train", "validation"]}).T)
 assert TOKS["train"], "ningún ejemplo de train cabe en max_len: acorta prompts"
 
 # %% [texto] s05-mascara-explica
@@ -100,18 +101,24 @@ def perdida_suma(b):
 
 
 @torch.no_grad()
-def perdida_val(parte="validation", lora=True):
-    """Loss media por token de completion en los primeros n_val_loss."""
-    items, suma, cuenta = TOKS[parte][:P["n_val_loss"]], 0.0, 0
+def perdida_val(parte="validation", lora=True, n=None):
+    """Loss media por token de completion en las filas 0…n−1 de `parte`
+    (n = n_val_loss por omisión). NaN si ninguna conserva su completion."""
+    n = P["n_val_loss"] if n is None else n
+    items, suma, cuenta = [t for t in TOKS[parte] if t["i"] < n], 0.0, 0
     estaba = LM.training
     LM.eval()
     with _sin_adaptador(LM, not lora):
         for i in range(0, len(items), 2 * P["batch"]):
-            with torch.autocast("cuda", dtype=torch.float16, enabled=CUDA):
-                s, n = perdida_suma(lote(items[i:i + 2 * P["batch"]]))
-            suma, cuenta = suma + s.item(), cuenta + n.item()
+            with torch.autocast("cuda", dtype=torch.float16, enabled=AMP):
+                s, k = perdida_suma(lote(items[i:i + 2 * P["batch"]]))
+            suma, cuenta = suma + s.item(), cuenta + k.item()
     LM.train(estaba)
-    return suma / max(cuenta, 1)
+    if cuenta == 0:
+        print(f"(loss de {parte}: NaN, ninguna de sus primeras {n} filas "
+              "conserva tokens de completion dentro de max_len)")
+        return float("nan")
+    return suma / cuenta
 
 # %% [texto] s05-entrenar-explica
 
@@ -131,7 +138,7 @@ def _preparar():
     sched = get_cosine_schedule_with_warmup(
         opt, num_warmup_steps=max(1, round(0.05 * P["pasos"])),
         num_training_steps=P["pasos"])
-    return entrenables, opt, sched, torch.amp.GradScaler("cuda", enabled=CUDA)
+    return entrenables, opt, sched, torch.amp.GradScaler("cuda", enabled=AMP)
 
 
 def _batches(semilla_=0):
@@ -144,6 +151,11 @@ def _batches(semilla_=0):
             yield lote([train[j] for j in orden[i:i + n]])
 
 # %% [codigo] s05-bucle
+_DESBORDE = ("paso {}: {} (inf/NaN). Me detengo en vez de contar "
+             "un paso que no actualizó nada. Baja P['lr'] (p. ej. 1e-4) o "
+             "P['max_len'] y vuelve a correr §05.")
+
+
 def entrenar():
     """Un LoRA desde cero. Devuelve el historial de loss train/validation."""
     semilla(0)
@@ -159,16 +171,25 @@ def entrenar():
         opt.zero_grad(set_to_none=True)
         total = 0.0
         for b in lotes:                   # acumula acum gradientes
-            with torch.autocast("cuda", dtype=torch.float16, enabled=CUDA):
+            with torch.autocast("cuda", dtype=torch.float16, enabled=AMP):
                 s, _ = perdida_suma(b)
             perdida = s / n_tok           # media sobre TODOS los tokens del paso
+            if not torch.isfinite(perdida):
+                raise FloatingPointError(_DESBORDE.format(paso + 1,
+                                                        "la loss no es finita"))
             escalador.scale(perdida).backward()
             total += perdida.item()
         escalador.unscale_(opt)
-        torch.nn.utils.clip_grad_norm_(entrenables, 1.0)
+        norma = torch.nn.utils.clip_grad_norm_(entrenables, 1.0)
+        if not AMP and not torch.isfinite(norma):   # fp32: nada que reescalar
+            raise FloatingPointError(_DESBORDE.format(paso + 1,
+                                                    "el gradiente no es finito"))
         escala_previa = escalador.get_scale()
         escalador.step(opt)
         escalador.update()
+        if AMP and escalador.get_scale() == 0:      # ya no hay a dónde bajar
+            raise FloatingPointError(_DESBORDE.format(paso + 1,
+                                                    "la escala llegó a 0"))
         if escalador.get_scale() < escala_previa:   # inf/NaN: paso saltado
             continue
         paso += 1

@@ -4,7 +4,7 @@
 
 > **Ejecuta la evaluación de test una sola vez**, con la configuración que elegiste en validation. Si cambias el modelo tras ver los resultados de test, necesitarás otro conjunto reservado para evaluar el resultado final.
 
-**Cómo leer las tablas.** La primera repite las cuatro métricas de la sección 07 en **test**. La segunda muestra ejemplos con la respuesta esperada, las dos generaciones y sus scores. Compara base y LoRA en el mismo split. Si el resultado difiere de validation, mira cuántos ejemplos entraron en cada medición y qué errores aparecen. Con muestras pequeñas, unas pocas respuestas pueden mover el promedio.
+**Cómo leer las tablas.** Antes de todo, una fila resume los recortes de test, que la sección 05 no mostró para no adelantar el test. La siguiente repite las cuatro métricas de la sección 07 en **test**. La segunda muestra ejemplos con la respuesta esperada, las dos generaciones y sus scores. Compara base y LoRA en el mismo split. Si el resultado difiere de validation, mira cuántos ejemplos entraron en cada medición y qué errores aparecen. Con muestras pequeñas, unas pocas respuestas pueden mover el promedio.
 
 ### celda: s08-prompts-explica
 

@@ -4,7 +4,8 @@
 # %% [texto] s08-intro
 
 # %% [codigo] s08-test
-# El test, por primera y única vez.
+# El test, por primera y única vez: sus recortes (ver §05) y sus métricas.
+display(pd.Series(RESUMEN["test"], name="test").to_frame().T)
 TEST_TABLA, TEST_PRED = evaluar("test")
 display(TEST_TABLA.round(3))
 mostrar(por_ejemplo("test", TEST_PRED))

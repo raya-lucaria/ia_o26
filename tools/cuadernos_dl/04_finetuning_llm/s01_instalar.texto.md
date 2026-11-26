@@ -14,7 +14,7 @@ Elige `MODO` en la primera línea de código. `LARGO` indica si activaste el mod
 ### celda: s01-gpu-explica
 
 - `DEVICE` indica dónde se ejecuta el modelo. Si Colab avisa que estás en CPU, activa la **T4 GPU** y vuelve a ejecutar todo.
-- `DTYPE` indica la precisión de los pesos base. En GPU se cargan en fp16, que ocupa la mitad por parámetro que fp32. En CPU se usa fp32.
+- `DTYPE` indica la precisión de los pesos base. En modo corto, el 0.5B se carga en fp32 (≈ 2 GB), porque Qwen se entrenó en bf16, que la T4 no tiene, y en fp16 puede desbordarse. En modo largo, el 1.5B va en fp16 con `autocast` y `GradScaler` (`AMP = True`), que ocupa la mitad por parámetro. En CPU se usa fp32.
 - `RAPIDO=1` fuerza una prueba en CPU con un Qwen diminuto. Sus respuestas y métricas sirven para revisar el flujo.
 
 ### celda: s01-constantes-explica
@@ -31,7 +31,7 @@ La celda muestra `P`, la configuración efectiva de tu corrida.
 | Claves de `P` | Qué controlan |
 |---|---|
 | `n_demo` | Tamaño de la muestra del demo. |
-| `max_len`, `max_new` | Límite de tokens por ejemplo al preparar la loss y límite de tokens nuevos al generar. |
+| `max_len`, `max_new` | Límite de tokens por ejemplo al preparar la loss y límite de tokens nuevos al generar. `max_new` se fija en la sección 03 con el completion más largo de train y validation. |
 | `batch`, `acum` | Ejemplos por batch y batches cuyos gradientes se acumulan antes de actualizar. |
 | `pasos`, `lr`, `val_cada` | Actualizaciones programadas, learning rate y frecuencia de evaluación en validation. |
 | `n_val_loss`, `n_eval` | Topes de ejemplos por split para medir la loss y evaluar las respuestas generadas. |

@@ -10,7 +10,7 @@
 | `labels` | `-100` para el prefijo de chat y el id de cada token del completion que se conserva. La marca de fin también cuenta si cabe, así el modelo aprende cuándo terminar. |
 | `cortado` | Indica si el ejemplo superó `P["max_len"]` y perdió tokens al final. |
 
-La tabla cuenta los recortes por split. Si el prompt llena el espacio y no queda ningún token del completion, el ejemplo se descarta para el cálculo de la loss.
+La tabla cuenta los recortes en train y validation; el resumen de test espera a la sección 08. Si el prompt llena el espacio y no queda ningún token del completion, el ejemplo se descarta para el cálculo de la loss.
 
 ### celda: s05-mascara-explica
 
@@ -34,11 +34,11 @@ El prefijo sigue en $x_{<i}$ y condiciona la respuesta. El promedio da el mismo 
 |---|---|
 | AdamW | Actualiza el adaptador con el learning rate de `P["lr"]`. |
 | Warmup y cosine schedule | Sube el learning rate al inicio y luego lo reduce siguiendo una curva coseno. |
-| Mixed precision en GPU | Usa `autocast` y `GradScaler` para reducir el riesgo de perder gradientes pequeños. Los pesos de $A$ y $B$ se mantienen en fp32. |
+| Precisión | En modo corto todo va en fp32, sin `autocast`. En modo largo, el 1.5B usa `autocast` y `GradScaler` para no perder gradientes pequeños en fp16. Los pesos de $A$ y $B$ siempre se mantienen en fp32. |
 | Gradient checkpointing | Ahorra memoria al recalcular activaciones durante el backward. |
 | LoRA dropout | Enmascara al azar parte de la entrada a la rama LoRA durante el entrenamiento. |
 
-`entrenar()` crea un adaptador nuevo cada vez. Si `GradScaler` detecta gradientes no finitos, se salta la actualización y el scheduler no avanza. Si se agotan los intentos, la celda avisa cuántas actualizaciones válidas hizo.
+`entrenar()` crea un adaptador nuevo cada vez. Si `GradScaler` detecta gradientes no finitos, se salta la actualización y el scheduler no avanza. Si se agotan los intentos, la celda avisa cuántas actualizaciones válidas hizo. Si la loss sale no finita, o la escala de `GradScaler` llega a 0, la celda se detiene con un mensaje en vez de contar un paso que no actualizó nada.
 
 ### celda: s05-lee
 
