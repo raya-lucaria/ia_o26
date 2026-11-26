@@ -1,41 +1,37 @@
 ### celda: s00-portada
 
-# Notebook 3 · Fine-tuning generativo con LoRA
+# Notebook 3 · Fine-tuning de imágenes con LoRA: tu dataset
 
-- Unidad 10 de *deep learning*, clase 3. **Stable Diffusion 1.5 aprende el estilo «cara de anime»** con LoRA.
-- Pregunta: **¿cuánto del modelo hay que mover, y con qué precisión, para que aprenda un estilo nuevo?**
-- Se compara fine-tuning completo (no cabe en la GPU), LoRA, QLoRA y varios rangos $r$.
+Vas a enseñarle a **Stable Diffusion 1.5** el estilo de **tus imágenes** con un adaptador **LoRA**, y a medir con honestidad qué aprendió.
 
-**Cómo correrlo**
+- **Entra:** tu `imagenes.zip`, en el formato de la tarea (`metadata.csv` + `images/` + `prompts.txt` + `LEEME.md`).
+- **Sale:** imágenes antes y después, curvas de loss, cinco métricas explicadas, el examen en test y tu adaptador descargado (unos MB).
+- **Sin zip también corre:** arma un dataset demo de caras de anime en el mismo formato y lo usa.
 
-- En Colab: «Entorno de ejecución → Cambiar tipo de entorno → **T4 GPU** → Guardar», y luego «Ejecutar todo».
-- La primera celda de código fija `MODO`:
+**Tres pasos**
 
-| `MODO` | Qué corre | Tiempo en una T4 |
+1. «Entorno de ejecución → Cambiar tipo de entorno → **T4 GPU** → Guardar».
+2. Arrastra tu `imagenes.zip` al panel **📁 Archivos** de la izquierda (detalles en la sección 02).
+3. «Entorno de ejecución → **Ejecutar todo**».
+
+**Cuánto tarda.** La primera celda de código fija `MODO`:
+
+| `MODO` | Qué cambia | Tiempo en una T4 |
 |---|---|---|
-| `"corto"` (por omisión) | Lo esencial (✔) | ≈ 30 min |
-| `"largo"` | Además, las variantes marcadas ➕ | ≈ 75 min |
+| `"corto"` (por omisión) | lo esencial | ≈ 20–25 min |
+| `"largo"` | más pasos, más imágenes y más muestras para las métricas (lo marcado ➕) | ≈ 50–60 min |
 
-- En `MODO = "corto"`, una celda ➕ imprime «(solo en MODO largo)» y el notebook sigue.
-
-**Test, una sola vez.** Todas las decisiones se toman con validation. La loss de test se calcula **solo al final (§13), una vez**, con el modelo ya elegido.
-
-**Sobre las caras.** El dataset reúne caras de personajes de anime cuyos derechos son de sus autores. Se usan solo para estudiar el método. **Se entrena con un único prompt genérico, `"an anime face"`, sin nombres de personajes**: el modelo aprende un estilo, no identidades. El notebook guardado muestra caras *generadas* y, como mucho, una tira de 8 caras reales.
+**Test, una sola vez.** Todo lo que se mira para decidir usa **validation**. El conjunto de **test** se toca **una vez**, en la sección 08, con el adaptador ya entrenado.
 
 **Mapa**
 
-| § | Sección | Modo |
+| § | Sección | Qué haces |
 |---|---|---|
-| 01 | Instalar y preparar | ✔ |
-| 02 | Datos: caras, partición train / validation / test | ✔ |
-| 03 | Cómo aprende un modelo de difusión | ✔ |
-| 04 | LoRA y QLoRA en matemáticas | ✔ |
-| 05 | La caja de herramientas | ✔ |
-| 06 | Antes de entrenar: el modelo base | ✔ |
-| 07 | Los cuatro casos: completo, LoRA, QLoRA, rangos | ✔ / ➕ rangos |
-| 08 | Dónde poner LoRA | ➕ (corto: solo $\lVert\Delta W\rVert$ por capa) |
-| 09 | Learning rate y schedule | ➕ |
-| 10 | Cuánto cambia el modelo | ✔ |
-| 11 | Memorización | ✔ |
-| 12 | ¿Olvidó lo que sabía? | ✔ |
-| 13 | Cierre: test una vez, tabla final, receta, tarea | ✔ |
+| 01 | Instalar y configurar | `MODO`, GPU, semillas, tamaños |
+| 02 | Tu zip | subirlo, revisarlo, verlo, partirlo 80 / 10 / 10 |
+| 03 | Antes | el modelo base con tus `prompts.txt` |
+| 04 | LoRA por dentro | la fórmula y cuántos parámetros entrenas de verdad |
+| 05 | Entrenar | un LoRA $r=8$ y sus curvas de train y validation |
+| 06 | Ver LoRA | el rango de $\Delta W$, qué capas cambiaron, la perilla $\lambda$ |
+| 07 | Métricas | qué mide cada una, su trampa, y su valor en validation |
+| 08 | Testeo | test una vez, olvido, descargar el adaptador, qué mover si salió mal |
