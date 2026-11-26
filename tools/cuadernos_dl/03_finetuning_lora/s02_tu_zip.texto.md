@@ -26,11 +26,11 @@ Si la revisión falla, usa el mensaje para localizar el problema, corrige el zip
 
 | Paso | Qué hace |
 |---|---|
-| Descomprimir | Extrae el zip en `datos_zip/` y lee el CSV, los prompts y la ficha. |
+| Leer | Lee el CSV, los prompts y la ficha directo del zip, y extrae a una carpeta temporal solo las imágenes de la muestra. |
 | Muestrear | Si el zip supera `P["max_imagenes"]`, toma una muestra con semilla fija. |
 | Preparar | Corrige la orientación EXIF, convierte a RGB y hace un recorte cuadrado al centro del tamaño `P["res"]`. |
-| Deduplicar | Descarta imágenes con la misma huella al reducirlas. Así evita repartir copias detectadas entre los splits. |
-| Partir | Baraja con semilla fija y reparte aproximadamente 80 % para **train**, 10 % para **validation** y 10 % para **test**. |
+| Agrupar duplicados | Calcula una huella perceptual (dHash de 64 bits) de cada imagen. Las que difieren en 4 bits o menos son copias casi idénticas, aunque se hayan guardado con otra calidad de JPEG, y forman un grupo. |
+| Partir | Baraja los grupos con semilla fija y reparte aproximadamente 80 % para **train**, 10 % para **validation** y 10 % para **test**. Cada grupo completo va a un solo split, así una copia en train no aparece en test como imagen nueva. Si no hay imágenes distintas suficientes para los tres splits, la celda se detiene y lo dice. |
 
 Cada imagen conserva el caption de la columna `text`. **Train** actualiza el adaptador, **validation** orienta tus decisiones y **test** queda reservado para la evaluación final.
 

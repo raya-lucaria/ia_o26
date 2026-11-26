@@ -19,8 +19,9 @@ display(TABLA_TEST.style.format(
     {c: "{:.4f}" for c in ("base", "LoRA", "referencia", "LoRA − base")},
     na_rep="—").set_caption("TEST · base vs LoRA (una sola vez)"))
 # Validation contra test, solo para LoRA: ¿fue validation un buen juez?
+# Sin «olvido»: usa los mismos prompts ajenos en los dos; solo cambian semillas.
 display(pd.DataFrame({"validation": resumen(VAL)["LoRA"],
-                      "test": TABLA_TEST["LoRA"]}).round(4))
+                      "test": TABLA_TEST["LoRA"]}).drop(index="olvido").round(4))
 
 # %% [texto] s08-tabla-leer
 

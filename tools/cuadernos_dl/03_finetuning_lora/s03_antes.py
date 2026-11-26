@@ -12,16 +12,25 @@ from diffusers import (AutoencoderKL, DPMSolverMultistepScheduler,
 from transformers import CLIPTextModel, CLIPTokenizer
 
 
+def pesos(clase, sub):
+    """En la GPU baja la variante fp16 (la mitad de GB); si el repo no la
+    tiene, baja los pesos normales y los convierte."""
+    if CUDA:
+        try:
+            return clase.from_pretrained(MODELO, subfolder=sub,
+                                         torch_dtype=DTYPE, variant="fp16")
+        except (OSError, ValueError) as e:
+            print(f"{sub}: sin variante fp16 ({type(e).__name__}); bajo la normal")
+    return clase.from_pretrained(MODELO, subfolder=sub, torch_dtype=DTYPE)
+
+
 def cargar_pipe():
     """StableDiffusionPipeline armado pieza por pieza (fp16 en la GPU)."""
     piezas = dict(
-        vae=AutoencoderKL.from_pretrained(MODELO, subfolder="vae",
-                                          torch_dtype=DTYPE),
-        text_encoder=CLIPTextModel.from_pretrained(
-            MODELO, subfolder="text_encoder", torch_dtype=DTYPE),
+        vae=pesos(AutoencoderKL, "vae"),
+        text_encoder=pesos(CLIPTextModel, "text_encoder"),
         tokenizer=CLIPTokenizer.from_pretrained(MODELO, subfolder="tokenizer"),
-        unet=UNet2DConditionModel.from_pretrained(
-            MODELO, subfolder="unet", torch_dtype=DTYPE),
+        unet=pesos(UNet2DConditionModel, "unet"),
         scheduler=DPMSolverMultistepScheduler.from_pretrained(
             MODELO, subfolder="scheduler"))
     pipe = StableDiffusionPipeline(**piezas, safety_checker=None,

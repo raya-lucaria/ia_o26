@@ -195,23 +195,24 @@ except AssertionError as e:
 # %% [texto] s02-cargar-explica
 
 # %% [codigo] s02-cargar
-import hashlib
+import tempfile
 
 from PIL import ImageOps
 
-CARPETA_ZIP = Path("datos_zip")             # aquí se descomprime tu zip
-shutil.rmtree(CARPETA_ZIP, ignore_errors=True)
+# Una carpeta temporal NUEVA en cada corrida: nunca es la de tu zip.
+CARPETA_ZIP = Path(tempfile.mkdtemp(prefix="datos_zip_"))
 with zipfile.ZipFile(RUTA_ZIP) as z:
-    z.extractall(CARPETA_ZIP)
-with open(CARPETA_ZIP / "metadata.csv", encoding="utf-8") as f:
-    FILAS = list(csv.DictReader(f))
-PROMPTS = [p.strip() for p in (CARPETA_ZIP / "prompts.txt")
-           .read_text(encoding="utf-8").split("\n") if p.strip()]
-LEEME = (CARPETA_ZIP / "LEEME.md").read_text(encoding="utf-8")
-if len(FILAS) > P["max_imagenes"]:
-    print(f"Tu zip trae {len(FILAS)} imágenes; tomo {P['max_imagenes']} "
-          "al azar con semilla 0 (P['max_imagenes']).")
-    FILAS = random.Random(0).sample(FILAS, P["max_imagenes"])
+    FILAS = list(csv.DictReader(io.StringIO(
+        z.read("metadata.csv").decode("utf-8"))))
+    PROMPTS = [p.strip() for p in z.read("prompts.txt").decode("utf-8")
+               .split("\n") if p.strip()]
+    LEEME = z.read("LEEME.md").decode("utf-8")
+    if len(FILAS) > P["max_imagenes"]:
+        print(f"Tu zip trae {len(FILAS)} imágenes; tomo {P['max_imagenes']} "
+              "al azar con semilla 0 (P['max_imagenes']).")
+        FILAS = random.Random(0).sample(FILAS, P["max_imagenes"])
+    for fila in FILAS:                 # solo las imágenes de la muestra
+        z.extract(fila["file_name"], CARPETA_ZIP)
 
 
 def abrir(fila):
@@ -223,37 +224,72 @@ def abrir(fila):
     return ImageOps.fit(im, (P["res"], P["res"]), Image.BICUBIC), lado
 
 
-def huella(im):
-    """Hash de la imagen reducida a 16×16: detecta duplicados casi exactos."""
-    return hashlib.md5(im.resize((16, 16), Image.BILINEAR).tobytes()).hexdigest()
-
-
 with ThreadPoolExecutor(8) as pool:
     ABIERTAS = list(pool.map(abrir, FILAS))
-# Deduplicar ANTES de partir: una imagen repetida en train y en test
-# haría que test premie memorizar.
-vistas, UNICAS = set(), []
-for fila, (im, lado) in zip(FILAS, ABIERTAS):
-    if huella(im) not in vistas:
-        vistas.add(huella(im))
-        UNICAS.append((im, fila["text"].strip(), lado))
-chicas = sum(lado < 512 for _, _, lado in UNICAS)
-
-# Partición 80 / 10 / 10 con semilla 0.
-orden = list(range(len(UNICAS)))
-random.Random(0).shuffle(orden)
-n_val = n_test = max(1, round(0.1 * len(orden)))
-PARTES = {"train": orden[n_val + n_test:], "validation": orden[:n_val],
-          "test": orden[n_val:n_val + n_test]}
-IMGS = {k: [UNICAS[i][0] for i in v] for k, v in PARTES.items()}
-TEXTOS = {k: [UNICAS[i][1] for i in v] for k, v in PARTES.items()}
-display(pd.DataFrame({k: {"imágenes": len(v),
-                          "captions distintos": len(set(TEXTOS[k]))}
-                      for k, v in IMGS.items()}))
-print(f"duplicadas descartadas: {len(FILAS) - len(UNICAS)}")
+shutil.rmtree(CARPETA_ZIP, ignore_errors=True)   # ya están en memoria
+chicas = sum(lado < 512 for _, lado in ABIERTAS)
+print(f"{len(ABIERTAS)} imágenes cargadas de {RUTA_ZIP}")
 if chicas and not RAPIDO:
     print(f"Ojo: {chicas} imágenes tienen el lado corto < 512 px; se agrandan "
           "y quedan más suaves. El modelo también aprende esa suavidad.")
+
+# %% [codigo] s02-partir
+def dhash(im):
+    """Huella perceptual de 64 bits: ¿cada pixel de una miniatura 9×8 en
+    grises es más claro que su vecino de la derecha? Sobrevive a JPEG."""
+    g = np.asarray(im.convert("L").resize((9, 8), Image.BILINEAR), np.int16)
+    return int("".join("1" if b else "0" for b in (g[:, 1:] > g[:, :-1]).flat), 2)
+
+
+# Duplicados visuales: huellas a distancia de Hamming ≤ 4 van al mismo grupo
+# (union-find), y cada grupo completo va a UN solo split. Así una copia en
+# train y otra en test no hacen que test premie memorizar.
+huellas = [dhash(im) for im, _ in ABIERTAS]
+padre = list(range(len(huellas)))
+
+
+def raiz(i):
+    while padre[i] != i:
+        padre[i] = padre[padre[i]]
+        i = padre[i]
+    return i
+
+
+for i in range(len(huellas)):
+    for j in range(i + 1, len(huellas)):
+        if (huellas[i] ^ huellas[j]).bit_count() <= 4:
+            padre[raiz(j)] = raiz(i)
+GRUPOS = {}
+for i in range(len(huellas)):
+    GRUPOS.setdefault(raiz(i), []).append(i)
+GRUPOS = list(GRUPOS.values())
+
+# Partición ≈ 80 / 10 / 10 por grupos, con semilla 0.
+random.Random(0).shuffle(GRUPOS)
+meta = max(1, round(0.1 * len(ABIERTAS)))
+PARTES = {"validation": [], "test": [], "train": []}
+for grupo in GRUPOS:
+    destino = next(k for k in ("validation", "test", "train")
+                   if k == "train" or len(PARTES[k]) < meta)
+    PARTES[destino] += grupo
+vacios = [k for k, v in PARTES.items() if not v]
+if vacios:
+    raise ValueError(
+        f"Tu zip tiene {len(FILAS)} filas pero solo {len(GRUPOS)} imágenes "
+        f"distintas (las demás son copias casi idénticas): no alcanzan para "
+        f"{', '.join(vacios)}. Trae al menos 50 imágenes DISTINTAS.")
+if len(GRUPOS) < 50:
+    print(f"Ojo: solo {len(GRUPOS)} imágenes distintas; el mínimo de la "
+          "tarea son 50 y las métricas serán muy ruidosas.")
+IMGS = {k: [ABIERTAS[i][0] for i in PARTES[k]] for k in ("train", "validation",
+                                                          "test")}
+TEXTOS = {k: [FILAS[i]["text"].strip() for i in PARTES[k]] for k in IMGS}
+display(pd.DataFrame({k: {"imágenes": len(v),
+                          "captions distintos": len(set(TEXTOS[k]))}
+                      for k, v in IMGS.items()}))
+print(f"{len(GRUPOS)} imágenes distintas; "
+      f"{len(ABIERTAS) - len(GRUPOS)} son copias casi idénticas de otra "
+      "(se quedan, pero siempre en el mismo split que su original)")
 
 # %% [texto] s02-muestra-explica
 

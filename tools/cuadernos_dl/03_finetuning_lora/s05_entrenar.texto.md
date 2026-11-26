@@ -14,7 +14,7 @@ La celda precalcula los latents y un embedding por caption distinto porque el VA
 
 ### celda: s05-ruido-explica
 
-Para comparar la loss en distintos momentos, la celda fija pares $(t,\varepsilon)$. Espacia los $t$ a lo largo del scheduler y genera el ruido con semilla fija. Cada medición vuelve a emparejar las imágenes del split con los mismos pares en el mismo orden. La primera cifra es la loss de validation del modelo base.
+Para comparar la loss en distintos momentos, la celda fija pares $(t,\varepsilon)$. Espacia los $t$ a lo largo del scheduler y genera el ruido con semilla fija. Cada medición vuelve a emparejar las imágenes del split con los mismos pares en el mismo orden. Cada imagen recibe el mismo número de pares, así que todas pesan igual en la loss. La primera cifra es la loss de validation del modelo base.
 
 ### celda: s05-entrenar-explica
 
@@ -30,7 +30,7 @@ Para comparar la loss en distintos momentos, la celda fija pares $(t,\varepsilon
 | Mixed precision en GPU | Usa `autocast` para el forward y `GradScaler` para proteger gradientes pequeños. $A$ y $B$ se mantienen en fp32. |
 | Gradient checkpointing | Ahorra memoria al recalcular activaciones durante el backward. |
 
-La celda imprime la configuración, estima el tiempo a partir de los primeros pasos y reporta cuántas actualizaciones completó. Si `GradScaler` detecta gradientes no finitos, omite la actualización.
+La celda imprime la configuración, estima el tiempo a partir de los primeros pasos y reporta cuántas actualizaciones completó. Si `GradScaler` detecta gradientes no finitos, omite la actualización. Si por eso no completa `P["pasos"]` actualizaciones, la celda se detiene antes de medir un adaptador a medias.
 
 ### celda: s05-curvas-explica
 

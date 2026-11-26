@@ -4,7 +4,7 @@
 
 > **Ejecuta la evaluación de test una sola vez**, con el adaptador y la configuración ya elegidos en validation. Si usas el resultado de test para ajustar el modelo, necesitarías otro conjunto reservado para medir el resultado final.
 
-La primera tabla repite las cinco métricas con el split de **test** para la loss, el CLIP score, el parecido al estilo y el vecino en train. El olvido se mide con los mismos prompts ajenos y nuevas semillas. Las generaciones con captions de test también usan semillas nuevas. La segunda tabla compara las cifras de LoRA en validation y test.
+La primera tabla repite las cinco métricas con el split de **test** para la loss, el CLIP score, el parecido al estilo y el vecino en train. El olvido se mide con los mismos prompts ajenos y nuevas semillas. Las generaciones con captions de test también usan semillas nuevas. La segunda tabla compara las cifras de LoRA en validation y test, sin el olvido: sus prompts ajenos son los mismos en los dos casos y solo cambian las semillas, así que no dice nada de generalizar a test.
 
 ### celda: s08-tabla-leer
 

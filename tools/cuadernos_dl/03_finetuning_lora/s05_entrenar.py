@@ -67,22 +67,27 @@ RUIDO_VAL = (torch.linspace(0, T - 1, P["n_val_ruido"]).round().long(),
 
 @torch.no_grad()
 def perdida(conjunto, lora=True):
-    """MSE del ruido en `conjunto` con (t, ε) FIJOS: la evaluación i usa la
-    imagen i mod N y el par i mod K. Dos mediciones usan la misma vara."""
+    """MSE del ruido en `conjunto` con (t, ε) FIJOS. Cada imagen recibe el
+    MISMO número m = ⌈K/N⌉ de pares: la imagen i usa los pares i·m … i·m+m−1
+    (mod K). Todas pesan igual, y dos mediciones usan la misma vara."""
     usar_lora(lora)
     X, C = LATENTS[conjunto], CAP[conjunto]
     t_fijo, eps_fijo = RUIDO_VAL
     n, k = len(X), len(t_fijo)
+    m = -(-k // n)                                 # ⌈K/N⌉ pares por imagen
+    img = torch.arange(n).repeat_interleave(m)     # 0,0,…,1,1,…
+    par = torch.arange(n * m) % k
     estaba = UNET.training
     UNET.eval()
     total, cuenta = 0.0, 0
-    for lote in torch.arange(max(n, k)).split(2 * P["batch"]):
-        x0 = X[lote % n].to(DEVICE, DTYPE)
-        eps = eps_fijo[lote % k].to(DEVICE, DTYPE)
-        t = t_fijo[lote % k].to(DEVICE)
+    for lote in torch.arange(n * m).split(2 * P["batch"]):
+        i, j = img[lote], par[lote]
+        x0 = X[i].to(DEVICE, DTYPE)
+        eps = eps_fijo[j].to(DEVICE, DTYPE)
+        t = t_fijo[j].to(DEVICE)
         xt = RUIDO.add_noise(x0, eps, t)
         with torch.autocast("cuda", dtype=torch.float16, enabled=CUDA):
-            pred = UNET(xt, t, encoder_hidden_states=EMBS[C[lote % n]]).sample
+            pred = UNET(xt, t, encoder_hidden_states=EMBS[C[i]]).sample
         total += F.mse_loss(pred.float(), eps.float(), reduction="sum").item()
         cuenta += eps.numel()
     UNET.train(estaba)
@@ -169,6 +174,11 @@ while paso < P["pasos"] and intentos < 2 * P["pasos"]:
         print(f"paso {paso:5d} · loss de validation {PERDIDAS_VAL[-1][1]:.4f}")
 UNET.eval()
 UNET.disable_gradient_checkpointing()
+if paso < P["pasos"]:                 # GradScaler saltó demasiados pasos
+    raise RuntimeError(
+        f"Solo {paso} de {P['pasos']} actualizaciones válidas en {intentos} "
+        "intentos (inf/NaN en fp16). El adaptador quedó a medias: baja "
+        "P['lr'] y vuelve a correr la sección 05 desde el principio.")
 del OPT, SCHED                        # suelta los momentos de AdamW
 gc.collect()
 if CUDA:
