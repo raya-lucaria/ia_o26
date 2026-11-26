@@ -7,14 +7,14 @@ content:
     Para el lunes 30 de noviembre, cada quien trae a clase un zip con un
     dataset propio de imágenes o de texto, listo para subirlo a Colab y hacer
     fine-tuning de un modelo preentrenado con LoRA. Con imágenes, el zip
-    lleva metadata.csv (file_name,text), una carpeta images/ con 100 a 1,000
+    lleva metadata.csv (file_name,text), una carpeta images/ con al menos 50
     imágenes y textos en inglés. Con texto, lleva datos.jsonl, con un objeto
-    {"prompt", "completion"} por línea y de 500 a 5,000 ejemplos. Los dos
+    {"prompt", "completion"} por línea y al menos 200 ejemplos. Los dos
     llevan prompts.txt, con 3 a 5 prompts de prueba, y LEEME.md, con la ficha.
     Puede ser un dataset de Hugging Face o datos tuyos. El formato exacto,
     datasets sugeridos, scripts para armar el zip y una función que lo
-    revisa están en la página de tarea de la clase 3. Llega con el zip
-    revisado y una frase de qué quieres que aprenda el modelo.
+    revisa están en la página de tarea de la clase 3. Trae lo que puedas, sin tope de
+    tamaño, pero respeta esos mínimos. Llega con el zip revisado y una frase de qué quieres que aprenda el modelo.
   due: "2026-11-30"
   status: published
   tags:
