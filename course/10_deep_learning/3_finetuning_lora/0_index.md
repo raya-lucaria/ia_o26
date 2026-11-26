@@ -20,6 +20,9 @@ prerequisites: [dl-clase-2-entender-una-red]
 
 # Clase 3 · Fine-tuning generativo con LoRA
 
+> [!IMPORTANT]
+> **Tarea para el lunes 30 de noviembre:** trae tu propio dataset de imágenes o de texto, en un zip con el formato de [[dl-tarea-dataset|la página de la tarea]], para hacer fine-tuning en clase.
+
 **Esta página no tiene notas: la clase es el notebook.** En
 [[dl-clase-2-entender-una-red|la clase 2]] entrenaste una red desde cero.
 Aquí partes de un modelo ya entrenado, Stable Diffusion 1.5, y le enseñas un
