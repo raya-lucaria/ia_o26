@@ -2,36 +2,21 @@
 
 # Notebook 3 · Fine-tuning de imágenes con LoRA: tu dataset
 
-Vas a enseñarle a **Stable Diffusion 1.5** el estilo de **tus imágenes** con un adaptador **LoRA**, y a medir con honestidad qué aprendió.
+Vas a adaptar **Stable Diffusion 1.5** a tus imágenes con **LoRA**. Compararás el modelo base con el adaptado, verás qué cambió en sus capas y descargarás tu adaptador.
 
-- **Entra:** tu `imagenes.zip`, en el formato de la tarea (`metadata.csv` + `images/` + `prompts.txt` + `LEEME.md`).
-- **Sale:** imágenes antes y después, curvas de loss, cinco métricas explicadas, el examen en test y tu adaptador descargado (unos MB).
-- **Sin zip también corre:** arma un dataset demo de caras de anime en el mismo formato y lo usa.
+1. En Colab, abre «Entorno de ejecución → Cambiar tipo de entorno», elige **T4 GPU** y guarda.
+2. Arrastra tu `imagenes.zip` al panel **📁 Archivos** de la izquierda y espera a que termine la carga.
+3. Selecciona «Entorno de ejecución → **Ejecutar todo**». Puedes seguir el mismo recorrido sin subir un zip, con el demo de caras de anime.
 
-**Tres pasos**
+Elige `MODO = "corto"` para clase. En una T4, reserva unos 20–25 minutos para la ejecución completa, incluidas las descargas. El tiempo es orientativo. El modo `"largo"` permite usar más datos y dedica más pasos al entrenamiento y más muestras a la evaluación.
 
-1. «Entorno de ejecución → Cambiar tipo de entorno → **T4 GPU** → Guardar».
-2. Arrastra tu `imagenes.zip` al panel **📁 Archivos** de la izquierda (detalles en la sección 02).
-3. «Entorno de ejecución → **Ejecutar todo**».
-
-**Cuánto tarda.** La primera celda de código fija `MODO`:
-
-| `MODO` | Qué cambia | Tiempo en una T4 |
-|---|---|---|
-| `"corto"` (por omisión) | lo esencial | ≈ 20–25 min |
-| `"largo"` | más pasos, más imágenes y más muestras para las métricas (lo marcado ➕) | ≈ 50–60 min |
-
-**Test, una sola vez.** Todo lo que se mira para decidir usa **validation**. El conjunto de **test** se toca **una vez**, en la sección 08, con el adaptador ya entrenado.
-
-**Mapa**
-
-| § | Sección | Qué haces |
-|---|---|---|
-| 01 | Instalar y configurar | `MODO`, GPU, semillas, tamaños |
-| 02 | Tu zip | subirlo, revisarlo, verlo, partirlo 80 / 10 / 10 |
-| 03 | Antes | el modelo base con tus `prompts.txt` |
-| 04 | LoRA por dentro | la fórmula y cuántos parámetros entrenas de verdad |
-| 05 | Entrenar | un LoRA $r=8$ y sus curvas de train y validation |
-| 06 | Ver LoRA | el rango de $\Delta W$, qué capas cambiaron, la perilla $\lambda$ |
-| 07 | Métricas | qué mide cada una, su trampa, y su valor en validation |
-| 08 | Testeo | test una vez, olvido, descargar el adaptador, qué mover si salió mal |
+| Sección | Qué haces |
+|---|---|
+| 01 · Configuración | Eliges el modo y compruebas la GPU. |
+| 02 · Tu zip | Revisas y preparas los datos. |
+| 03 · Antes | Generas imágenes con el modelo base. |
+| 04 · LoRA por dentro | Descompones la actualización y cuentas sus parámetros. |
+| 05 · Entrenamiento | Ajustas el adaptador y lees las curvas de loss. |
+| 06 · Inspección | Ves el rango de la actualización, las capas y el efecto de cambiar su escala. |
+| 07 · Métricas | Comparas base y LoRA en **validation**. |
+| 08 · Testeo | Evalúas en **test una sola vez**, al final, y guardas el adaptador. |

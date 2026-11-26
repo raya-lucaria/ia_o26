@@ -2,58 +2,41 @@
 
 ## 08 · Testeo, una sola vez
 
-> **Test se usa una vez, aquí, y no se vuelve a tocar.** Si después de ver estos números cambias pasos o learning rate y vuelves a correr, test deja de ser una medida honesta: ya lo usaste para decidir. Para decidir está validation.
+> **Ejecuta la evaluación de test una sola vez**, con el adaptador y la configuración ya elegidos en validation. Si usas el resultado de test para ajustar el modelo, necesitarías otro conjunto reservado para medir el resultado final.
 
-- Las mismas cinco métricas de la sección 07, ahora sobre **test**: imágenes que ni el entrenamiento ni tus decisiones vieron.
-- Se generan con semillas nuevas (3000 en adelante para los captions de test, 4000 en adelante para los prompts ajenos).
-- La segunda tabla pone lado a lado los números de LoRA en validation y en test.
+La primera tabla repite las cinco métricas con el split de **test** para la loss, el CLIP score, el parecido al estilo y el vecino en train. El olvido se mide con los mismos prompts ajenos y nuevas semillas. Las generaciones con captions de test también usan semillas nuevas. La segunda tabla compara las cifras de LoRA en validation y test.
 
 ### celda: s08-tabla-leer
 
-**Cómo leer las tablas.**
+**Cómo leer las tablas.** En test, compara base y LoRA en cada fila y mira las referencias. Para estilo, son las imágenes reales de train frente al centroide de test. Para el vecino, son las imágenes reales de test frente a sus vecinos en train. Una brecha entre validation y test puede deberse a diferencias entre sus ejemplos o a la variabilidad de una muestra pequeña. Reporta lo observado junto con las mallas.
 
-- **Validation contra test.** Si los números de LoRA se parecen, validation fue un buen juez. Si test sale mucho peor, la partición tuvo mala suerte o el dataset es chico; dilo en tu reporte, no lo corrijas mirando test otra vez.
-- **Base contra LoRA.** Lee las cinco filas juntas, como en la sección 07. Un resultado raro (estilo que no sube, loss que sube) también es un resultado: coméntalo con la receta de abajo.
-
-Debajo, dos mallas:
-
-1. **Test:** la imagen real, la del base y la de LoRA con el mismo caption y la misma semilla.
-2. **Tus prompts:** para cada prompt, la fila «antes» es la misma de la sección 03 y la fila «después» usa las **mismas semillas** con el adaptador. Compara columna por columna.
+| Malla | Cómo leerla |
+|---|---|
+| **Test** | Cada columna muestra una imagen real y dos generaciones con su caption. Base y LoRA comparten el ruido inicial. |
+| **Tus prompts** | Cada prompt tiene una fila «antes», recuperada de la sección 03, y una «después». Compara la misma columna para mantener fija la semilla. |
 
 ### celda: s08-olvido-explica
 
-**Olvido, a la vista.** Para cada prompt ajeno, una fila con el base y otra con LoRA, mismas semillas.
+**Cómo leer la malla.** Por cada prompt ajeno hay una fila del base y otra de LoRA. Compara dentro de la misma columna. Distingue entre un cambio de estilo y un caso en que desaparece el objeto o la escena que pediste.
 
-- Si el perro sigue siendo perro pero «con tu estilo», es **interferencia**: $\Delta W$ actúa en la atención para cualquier prompt.
-- Si el perro **deja de verse**, es olvido con el adaptador prendido. Baja $\lambda$ o entrena menos.
-- La tabla es el CLIP score de cada prompt; la diferencia `LoRA − base` negativa dice cuánto se alejó del texto.
+La tabla muestra el CLIP score por prompt. Una diferencia «LoRA − base» negativa indica menor correspondencia según CLIP. Revisa la imagen para interpretar la caída. Esta prueba mide el comportamiento con el adaptador activo. Al apagarlo, vuelves a usar los pesos base.
 
 ### celda: s08-guardar-explica
 
-**Tu adaptador, a tu computadora.** Se guardan solo $A$ y $B$ de cada capa, en el formato de diffusers, en `mi_lora/pytorch_lora_weights.safetensors`, y Colab lo descarga. Compara sus MB con los del UNet: eso es LoRA.
+La celda guarda los pesos del adaptador en `mi_lora/pytorch_lora_weights.safetensors`, en formato diffusers. Imprime el tamaño real del archivo junto a la estimación de la sección 04 y los MB del UNet en fp16.
 
-- Si el navegador bloquea la descarga, búscalo en el panel 📁 (carpeta `mi_lora`), clic derecho → Descargar.
-- Para usarlo después, en cualquier notebook con Stable Diffusion 1.5:
-
-```python
-pipe = StableDiffusionPipeline.from_pretrained(
-    "stable-diffusion-v1-5/stable-diffusion-v1-5", torch_dtype=torch.float16).to("cuda")
-pipe.load_lora_weights("mi_lora")            # la carpeta con el .safetensors
-imagen = pipe("an anime face", cross_attention_kwargs={"scale": 1.0}).images[0]
-```
+En Colab se inicia la descarga. Si el navegador la bloquea, abre la carpeta `mi_lora` en el panel **📁 Archivos** y selecciona «Descargar» sobre el archivo. Fuera de Colab, la celda imprime la ruta donde quedó. Conserva el adaptador junto con el nombre del modelo base que usaste para entrenarlo.
 
 ### celda: s08-receta
 
-**Si salió mal, qué mover.** Cambia **una** cosa a la vez, vuelve a correr desde la sección 05 y decide con validation.
+Usa esta receta **durante la revisión en validation**, antes de abrir test. Cambia una cosa a la vez y vuelve a ejecutar desde la sección que la configura.
 
-| Lo que ves | Qué mover |
+| Lo que ves | Qué probar |
 |---|---|
-| LoRA ≈ base: las mallas casi no cambian y el estilo no sube | más `P["pasos"]`; o `P["lr"]` a $2\cdot10^{-4}$. Mira primero $\lambda=1.5$ en la sección 06: si ahí sí se nota, faltan pasos |
-| Imágenes rotas, saturadas o ruido; la loss de validation sube | baja `P["lr"]` a $5\cdot10^{-5}$ |
-| Vecino en train muy por encima de la referencia; ves copias de train | menos pasos, más imágenes, o `P["rango"]` más chico (4) |
-| CLIP score cae mucho: ignora los prompts | captions más descriptivos y variados en `metadata.csv`; menos pasos |
-| Los prompts ajenos salen con tu estilo o se pierden | al generar, $\lambda<1$; menos pasos |
-| La loss baja pero las imágenes no se ven como tu estilo | normal al principio: la loss no es calidad. Más pasos, o `MODO = "largo"` |
-| Error de memoria (*CUDA out of memory*) | `P["batch"]` a 2, y «Entorno de ejecución → Reiniciar» antes de volver a correr |
-
-- **Lo que no es un bug:** con pocas imágenes los números de CLIP cambian si cambias las semillas. Por eso se leen diferencias grandes y se miran las mallas.
+| El estilo apenas cambia y se siguen respetando los captions. | Prueba más pasos. Usa la perilla para ver si al amplificar la corrección aparece el cambio que buscabas. |
+| Aparecen artefactos y sube la loss de validation. | Prueba un learning rate menor. |
+| El vecino en train queda muy por encima de la referencia y ves ejemplos casi repetidos. | Prueba menos pasos o añade imágenes variadas. |
+| Las salidas pierden detalles que pediste en el prompt. | Revisa si los captions de train describen esos detalles. Prueba captions más específicos. |
+| Los prompts ajenos pierden el objeto o la escena. | Prueba una escala $\lambda$ menor al generar o menos pasos de entrenamiento. |
+| Baja la loss, pero el estilo sigue lejos. | Revisa los recortes, la coherencia del dataset y los captions. Juzga el estilo con las mallas y el parecido al estilo. |
+| Se agota la memoria durante el entrenamiento. | Reduce `P["batch"]`. Reinicia el entorno para liberar memoria y vuelve a ejecutar. |
