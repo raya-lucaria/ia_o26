@@ -1,8 +1,8 @@
 ---
 id: dl-clase-3-finetuning-lora
-title: "Clase 3 · Fine-tuning generativo con LoRA"
+title: "Clase 3 · Fine-tuning con LoRA: imágenes y texto"
 nav_title: "Clase 3 · Fine-tuning con LoRA"
-summary: "La clase es un notebook de Colab: Stable Diffusion 1.5 aprende el estilo «cara de anime» y comparas fine-tuning completo, LoRA, QLoRA y rangos por loss de validation, memoria, tiempo e imágenes, con las matemáticas de LoRA en forma compacta."
+summary: "La clase son dos notebooks de Colab, uno de imágenes (Stable Diffusion) y otro de texto (un LLM chico). En cada uno subes tu propio dataset en un zip, entrenas un LoRA, ves qué cambió por dentro, entiendes cada métrica y lo pruebas en test una sola vez."
 status: ready
 estimated_time: 120m
 tags: [deep-learning, fine-tuning, lora, colab]
@@ -10,58 +10,56 @@ prerequisites: [dl-clase-2-entender-una-red]
 ---
 
 > [!WARNING]
-> **▶▶ ESTA CLASE ES UN NOTEBOOK: ÁBRELO EN COLAB ◀◀**
+> **▶▶ ESTA CLASE SON DOS NOTEBOOKS: ABRE EL DE TU DATASET EN COLAB ◀◀**
+>
+> **¿Trajiste imágenes?** Abre el notebook 3:
 >
 > [![Abrir el notebook 3 en Colab](../_assets/dl-abrir-colab-3.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)
 >
-> [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)
+> **¿Trajiste texto?** Abre el notebook 4:
 >
-> **[👉 Abrir `03_finetuning_lora.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)**
+> [![Abrir el notebook 4 en Colab](../_assets/dl-abrir-colab-4.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/04_finetuning_llm.ipynb)
+>
+> **[👉 Notebook 3 · `03_finetuning_lora.ipynb`](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)** · **[👉 Notebook 4 · `04_finetuning_llm.ipynb`](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/04_finetuning_llm.ipynb)**
 
-# Clase 3 · Fine-tuning generativo con LoRA
+# Clase 3 · Fine-tuning con LoRA: imágenes y texto
 
 > [!IMPORTANT]
 > **Tarea para el lunes 30 de noviembre:** trae tu propio dataset de imágenes o de texto, en un zip con el formato de [[dl-tarea-dataset|la página de la tarea]], para hacer fine-tuning en clase.
 
-**Esta página no tiene notas: la clase es el notebook.** En
+**Esta página no tiene notas: la clase son los notebooks.** En
 [[dl-clase-2-entender-una-red|la clase 2]] entrenaste una red desde cero.
-Aquí partes de un modelo ya entrenado, Stable Diffusion 1.5, y le enseñas un
-estilo nuevo. La pregunta es cuánto del modelo hay que mover, y con qué
-precisión, para lograrlo.
+Aquí partes de un modelo que ya sabe mucho y le enseñas algo tuyo moviendo
+muy pocos números. Es la idea de LoRA.
+
+| | Notebook 3 · imágenes | Notebook 4 · texto |
+|---|---|---|
+| Modelo | Stable Diffusion 1.5 | Qwen2.5-0.5B-Instruct, un LLM chico |
+| Tu zip | `imagenes.zip`: `metadata.csv` + `images/` | `texto.zip`: `datos.jsonl` |
+| Aprende | un estilo o un tipo de objeto | a responder de cierta forma |
+| Sin zip | usa un demo de caras de anime | usa un demo de texto → SQL |
 
 ## Cómo correrlo
 
-1. Abre el notebook con el botón de arriba.
+1. Abre el notebook que toca con el botón de arriba.
 2. En Colab: **Entorno de ejecución → Cambiar tipo de entorno → T4 GPU → Guardar**.
-3. Luego: **Entorno de ejecución → Ejecutar todas**.
+3. **Arrastra tu zip** al panel de archivos 📁, a la izquierda de Colab. Si
+   pesa mucho, súbelo a tu Drive; el notebook explica cómo leerlo de ahí.
+4. **Entorno de ejecución → Ejecutar todas.** Si no subiste nada, corre con el demo.
 
-La primera celda de código fija `MODO`:
+`MODO = "corto"`, en la primera celda de código, deja la corrida en unos 25
+minutos en una T4. `MODO = "largo"` entrena más pasos y con más datos.
 
-- `MODO = "corto"` (por omisión): lo esencial, unos 30 minutos en una T4.
-- `MODO = "largo"`: además rangos, módulos y learning rates extra, unos 75 minutos.
+## Las mismas ocho secciones en los dos
 
-## Lo que vas a ver, sección por sección
-
-- **1–3 · Instalar, datos y difusión.** Caras de anime partidas en train, validation y test, y la loss de difusión, que es un MSE.
-- **4 · LoRA y QLoRA en matemáticas.** $\Delta W=\frac{\alpha}{r}BA$, por qué arranca en cero, cuántos parámetros entrena y cuánta memoria ahorra.
-- **5 · La caja de herramientas.** Entrenar, generar y medir, en funciones.
-- **6 · Antes de entrenar.** Qué dibuja el modelo base con el mismo prompt.
-- **7 · Los cuatro casos.** Fine-tuning completo (no cabe), LoRA, QLoRA y varios rangos.
-- **8–9 · Dónde poner LoRA, y learning rate y schedule.** Variantes del modo largo.
-- **10 · Cuánto cambia el modelo.** La norma de $\Delta W$ por capa, su rango efectivo y la perilla $\lambda$.
-- **11 · Memorización.** ¿Las caras generadas son nuevas o copias de train?
-- **12 · Olvido.** Qué le pasa a un prompt fuera del estilo, como un perro o una calle.
-- **13 · Cierre.** Test una vez, la tabla de todas las corridas, una receta práctica de LoRA y la tarea.
-
-## Un aviso sobre test y sobre las caras
+- **1 · Instalar.** Paquetes, GPU y semillas.
+- **2 · Tu zip.** Dónde subirlo, la revisión del formato y la partición en train, validation y test.
+- **3 · Antes.** Qué hace el modelo base con tus `prompts.txt`.
+- **4 · LoRA por dentro.** $W=W_0+\frac{\alpha}{r}BA$: cuántos parámetros entrenas y cuánto pesa el adaptador.
+- **5 · Entrenar.** Un solo LoRA, con sus curvas de train y validation.
+- **6 · Ver LoRA.** El rango de $\Delta W$, las capas que más cambiaron y la perilla $\lambda$, que va del modelo base al tuyo.
+- **7 · Las métricas.** Qué mide cada una, qué valor es bueno y su trampa.
+- **8 · Testeo.** Base contra LoRA en test, una sola vez; olvido; descargar tu adaptador.
 
 > [!CAUTION]
-> Todas las decisiones del notebook se toman con **validation**. Test se mira **una sola vez, al final**, con el modelo ya elegido.
-
-Las caras son de personajes de anime con derechos de sus autores y se usan solo para estudiar el método. Se entrena con un único prompt genérico, `"an anime face"`, sin nombres de personajes: el modelo aprende un estilo, no identidades.
-
-## Ábrelo
-
-[![Abrir el notebook 3 en Colab](../_assets/dl-abrir-colab-3.svg)](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)
-
-**[👉 Abrir `03_finetuning_lora.ipynb` en Colab](https://colab.research.google.com/github/raya-lucaria/ia_o26/blob/main/course/10_deep_learning/_assets/03_finetuning_lora.ipynb)**
+> Todas las decisiones se toman con **validation**. Test se mira **una sola vez, al final**, con el modelo ya elegido.

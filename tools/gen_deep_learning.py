@@ -874,8 +874,13 @@ def dl_abrir_colab():
 
 
 def dl_abrir_colab_3():
-    return _boton_colab(3, "Fine-tuning generativo con LoRA",
-                        "generativo con LoRA")
+    return _boton_colab(3, "Fine-tuning de imágenes con LoRA",
+                        "de imágenes con LoRA")
+
+
+def dl_abrir_colab_4():
+    return _boton_colab(4, "Fine-tuning de un LLM con LoRA",
+                        "de un LLM con LoRA")
 
 
 def _boton_colab(n, titulo, cola):
@@ -934,6 +939,7 @@ DIAGRAMAS = {
     "dl-curvas-rmse": dl_curvas_rmse,
     "dl-abrir-colab": dl_abrir_colab,
     "dl-abrir-colab-3": dl_abrir_colab_3,
+    "dl-abrir-colab-4": dl_abrir_colab_4,
 }
 
 
